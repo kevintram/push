@@ -1,13 +1,3 @@
-# Astro with Tailwind
+# Inhale
 
-```sh
-pnpm create astro@latest -- --template with-tailwindcss
-```
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/with-tailwindcss)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/with-tailwindcss/devcontainer.json)
-
-Astro comes with [Tailwind](https://tailwindcss.com) support out of the box. This example showcases how to style your Astro project with Tailwind.
-
-For complete setup instructions, please see our [Tailwind Integration Guide](https://docs.astro.build/en/guides/integrations-guide/tailwind).
+A learning app that treats more cognitive science principles/techniques than just [SRS](https://en.wikipedia.org/wiki/Spaced_repetition) and [active recall](https://en.wikipedia.org/wiki/Recall_test) as first class citizens. We consider the following ideas from cognitive science and more: [scaffolding](https://en.wikipedia.org/wiki/Instructional_scaffolding), [the variability effect](https://www.cell.com/trends/cognitive-sciences/abstract/S1364-6613(22)00065-1), [encoding](https://en.wikipedia.org/wiki/Encoding_(memory)), [interleaving](https://carlhendrick.substack.com/p/interleaving-a-short-guide), [the expertise reversal effect](https://en.wikipedia.org/wiki/Expertise_reversal_effect).
