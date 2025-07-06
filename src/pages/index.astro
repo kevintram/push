@@ -24,4 +24,13 @@ import { Button } from "../components/ui/button";
       >
     </div>
   </body>
+
+  <script>
+    import confetti from "canvas-confetti";
+    const button = document.body.querySelector("button");
+
+    if (button) {
+      button.addEventListener("click", () => confetti());
+    }
+  </script>
 </html>
