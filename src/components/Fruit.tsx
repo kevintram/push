@@ -1,7 +1,7 @@
-import type {Fruit as FruitType} from 'api/fruits'
-import {Link} from 'react-router'
-import {useMediaQuery} from 'utils/useMediaQuery'
-import {ImageAttribution} from './ImageAttribution'
+import { Link } from '@tanstack/react-router'
+import type { Fruit as FruitType } from 'api/fruits'
+import { useMediaQuery } from 'utils/useMediaQuery'
+import { ImageAttribution } from './ImageAttribution'
 
 const PREFERRED_IMAGE_WIDTH = 384
 const MOBILE_PADDING = 16
@@ -14,7 +14,7 @@ interface Properties {
 	index: number
 }
 
-export function Fruit({fruit, index}: Properties) {
+export function Fruit({ fruit, index }: Properties) {
 	const isTabletAndUp = useMediaQuery('(min-width: 600px)')
 
 	const imageWidth = Math.min(
@@ -26,7 +26,8 @@ export function Fruit({fruit, index}: Properties) {
 	return (
 		<Link
 			className='select-none rounded-lg shadow-lg focus:outline-3 focus:outline-gray-500 dark:shadow-2xl'
-			to={fruit.name.toLowerCase()}
+			params={{ fruitName: fruit.name.toLowerCase() }}
+			to='/$fruitName'
 		>
 			<div className='relative'>
 				<img

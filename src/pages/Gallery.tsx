@@ -1,10 +1,10 @@
-import {useSuspenseQuery} from '@tanstack/react-query'
-import {getFruits} from 'api/fruits'
-import {Fruit} from 'components/Fruit'
-import {Head} from 'components/Head'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { getFruits } from 'api/fruits'
+import { Fruit } from 'components/Fruit'
+import { Head } from 'components/Head'
 
 export function Gallery() {
-	const {data} = useSuspenseQuery({
+	const { data } = useSuspenseQuery({
 		queryFn: getFruits,
 		queryKey: ['fruits']
 	})

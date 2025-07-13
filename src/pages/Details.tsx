@@ -1,18 +1,18 @@
-import {useSuspenseQuery} from '@tanstack/react-query'
-import {getFruits} from 'api/fruits'
-import {Head} from 'components/Head'
-import {ImageAttribution} from 'components/ImageAttribution'
-import {Link, Navigate, useParams} from 'react-router'
-import {useMediaQuery} from 'utils/useMediaQuery'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { Link, Navigate, useParams } from '@tanstack/react-router'
+import { getFruits } from 'api/fruits'
+import { Head } from 'components/Head'
+import { ImageAttribution } from 'components/ImageAttribution'
+import { useMediaQuery } from 'utils/useMediaQuery'
 
 const DESKTOP_IMAGE_WIDTH_PERCENTAGE = 0.4
 const MOBILE_IMAGE_HEIGHT_PERCENTAGE = 0.3
 
 export function Details() {
 	const isTabletAndUp = useMediaQuery('(min-width: 600px)')
-	const {fruitName} = useParams()
+	const { fruitName } = useParams({ from: '/$fruitName' })
 
-	const {data} = useSuspenseQuery({
+	const { data } = useSuspenseQuery({
 		queryFn: getFruits,
 		queryKey: ['fruits']
 	})
@@ -21,7 +21,7 @@ export function Details() {
 		f => f.name.toLowerCase() === fruitName?.toLowerCase()
 	)
 	if (!fruit) {
-		return <Navigate replace={true} to='/' />
+		return <Navigate to='/' />
 	}
 
 	const imageWidth = isTabletAndUp
@@ -66,7 +66,7 @@ export function Details() {
 							</tr>
 						</thead>
 						<tbody>
-							{fruit.metadata.map(({name, value}) => (
+							{fruit.metadata.map(({ name, value }) => (
 								<tr className='font-medium' key={`FruitVitamin-${name}`}>
 									<td className='border border-gray-300 px-4 py-2'>{name}</td>
 									<td className='border border-gray-300 px-4 py-2'>{value}</td>

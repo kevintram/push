@@ -1,5 +1,5 @@
 import process from 'node:process'
-import {defineConfig, devices} from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
 	forbidOnly: !!process.env.CI,
@@ -7,11 +7,11 @@ export default defineConfig({
 	projects: [
 		{
 			name: 'chromium',
-			use: {...devices['Desktop Chrome']}
+			use: { ...devices['Desktop Chrome'] }
 		},
 		{
 			name: 'Mobile Chrome',
-			use: {...devices['Pixel 5']}
+			use: { ...devices['Pixel 5'] }
 		}
 	],
 	reporter: 'html',

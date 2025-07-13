@@ -15,10 +15,13 @@
 		"enabled": true,
 		"indentStyle": "tab"
 	},
+	"files": {
+		"includes": ["**/*", "!**/routeTree.gen.ts"]
+	},
 	"javascript": {
 		"formatter": {
 			"arrowParentheses": "asNeeded",
-			"bracketSpacing": false,
+			"bracketSpacing": true,
 			"jsxQuoteStyle": "single",
 			"quoteStyle": "single",
 			"semicolons": "asNeeded",
@@ -106,6 +109,18 @@
 				"rules": {
 					"performance": {
 						"useTopLevelRegex": "off"
+					}
+				}
+			}
+		},
+		{
+			// disable useFilenamingConvention in routes as it doesn't support
+			// Tanstack's dynamic routes yet
+			"includes": ["src/routes/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"useFilenamingConvention": "off"
 					}
 				}
 			}

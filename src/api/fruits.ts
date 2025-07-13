@@ -2,8 +2,8 @@ import * as v from 'valibot'
 
 const Fruit = v.object({
 	name: v.string(),
-	image: v.object({author: v.string(), color: v.string(), url: v.string()}),
-	metadata: v.array(v.object({name: v.string(), value: v.string()}))
+	image: v.object({ author: v.string(), color: v.string(), url: v.string() }),
+	metadata: v.array(v.object({ name: v.string(), value: v.string() }))
 })
 export type Fruit = v.InferOutput<typeof Fruit>
 
