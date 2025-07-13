@@ -2,6 +2,8 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { getFruits } from 'api/fruits'
 import { Fruit } from 'components/Fruit'
 import { Head } from 'components/Head'
+import { Button } from 'components/ui/Button'
+
 
 export function Gallery() {
 	const { data } = useSuspenseQuery({
@@ -16,6 +18,7 @@ export function Gallery() {
 				{data.map((fruit, index) => (
 					<Fruit fruit={fruit} index={index} key={`FruitCard-${fruit.name}`} />
 				))}
+				<Button>I AM A SHADCN BUTTON</Button>
 			</div>
 		</>
 	)
