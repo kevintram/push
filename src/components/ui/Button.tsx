@@ -1,6 +1,7 @@
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
-import type { ComponentProps } from 'react'
+import type * as React from 'react'
+
 import { cn } from '~/lib/utils'
 
 const buttonVariants = cva(
@@ -40,7 +41,7 @@ function Button({
 	size,
 	asChild = false,
 	...props
-}: ComponentProps<'button'> &
+}: React.ComponentProps<'button'> &
 	VariantProps<typeof buttonVariants> & {
 		asChild?: boolean
 	}) {
@@ -55,12 +56,4 @@ function Button({
 	)
 }
 
-/**
- * biome-ignore lint: to avoid error [useComponentExportOnlyModules](https://biomejs.dev/linter/rules/use-component-export-only-modules/).
- *
- * See the following issues for more information:
- * 1. https://github.com/shadcn-ui/ui/issues/7736
- * 2. https://github.com/ArnaudBarre/eslint-plugin-react-refresh/issues/84
- * 3. https://github.com/shadcn-ui/ui/issues/1534
- */
 export { Button, buttonVariants }

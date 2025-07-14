@@ -3,9 +3,9 @@
 	"compilerOptions": {
 		"allowUnreachableCode": false,
 		"baseUrl": ".",
-    "paths": {
-      "~/*": ["./src/*"],
-    },
+		"paths": {
+			"~/*": ["./src/*"]
+		},
 		"erasableSyntaxOnly": true,
 		"exactOptionalPropertyTypes": true,
 		"forceConsistentCasingInFileNames": true,
