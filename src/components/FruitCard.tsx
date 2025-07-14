@@ -14,7 +14,7 @@ interface Properties {
 	index: number
 }
 
-export function Fruit({ fruit, index }: Properties) {
+export function FruitCard({ fruit, index }: Properties) {
 	const isTabletAndUp = useMediaQuery('(min-width: 600px)')
 
 	const imageWidth = Math.min(
