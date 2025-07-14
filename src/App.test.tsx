@@ -6,9 +6,9 @@ import {
 } from '@tanstack/react-router'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { server } from 'mocks/server'
+import { server } from '~/mocks/server'
 import { HttpResponse, http } from 'msw'
-import { queryClient, screen } from 'test-utils'
+import { queryClient, screen } from '~/test-utils'
 import { routeTree } from './routeTree.gen'
 
 function createTestRouter(initialEntries: string[] = ['/']) {

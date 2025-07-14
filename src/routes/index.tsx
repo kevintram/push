@@ -1,9 +1,9 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { getFruits } from 'api/fruits'
-import { FruitCard } from 'components/FruitCard'
-import { Head } from 'components/Head'
-import { Button } from 'components/ui/Button'
+import { getFruits } from '~/api/fruits'
+import { FruitCard } from '~/components/FruitCard'
+import { Head } from '~/components/Head'
+import { Button } from '~/components/ui/Button'
 
 export const Route = createFileRoute('/')({
 	component: Gallery

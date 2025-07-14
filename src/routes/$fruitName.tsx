@@ -5,10 +5,10 @@ import {
 	Navigate,
 	useParams
 } from '@tanstack/react-router'
-import { getFruits } from 'api/fruits'
-import { Head } from 'components/Head'
-import { ImageAttribution } from 'components/ImageAttribution'
-import { useMediaQuery } from 'utils/useMediaQuery'
+import { getFruits } from '~/api/fruits'
+import { Head } from '~/components/Head'
+import { ImageAttribution } from '~/components/ImageAttribution'
+import { useMediaQuery } from '~/utils/useMediaQuery'
 
 export const Route = createFileRoute('/$fruitName')({
 	component: Details
