@@ -55,5 +55,12 @@ function Button({
 	)
 }
 
-// for lint error see: https://github.com/shadcn-ui/ui/issues/7736
+/**
+ * biome-ignore lint: to avoid error [useComponentExportOnlyModules](https://biomejs.dev/linter/rules/use-component-export-only-modules/).
+ * 
+ * See the following issues for more information: 
+ * 1. https://github.com/shadcn-ui/ui/issues/7736 
+ * 2. https://github.com/ArnaudBarre/eslint-plugin-react-refresh/issues/84 
+ * 3. https://github.com/shadcn-ui/ui/issues/1534
+ */
 export { Button, buttonVariants }
