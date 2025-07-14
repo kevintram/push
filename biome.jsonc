@@ -114,13 +114,12 @@
 			}
 		},
 		{
-			// disable useFilenamingConvention in routes as it doesn't support
-			// Tanstack's dynamic routes yet
 			"includes": ["src/routes/**"],
 			"linter": {
 				"rules": {
 					"style": {
-						"useFilenamingConvention": "off"
+						"useFilenamingConvention": "off", // cause it doesn't support Tanstack's dynamic routes yet
+						"useComponentExportOnlyModules": "off" // cause only routes are exported (never components)
 					}
 				}
 			}
