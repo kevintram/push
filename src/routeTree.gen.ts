@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ArchiveRouteImport } from './routes/archive'
-import { Route as FruitNameRouteImport } from './routes/$fruitName'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -24,11 +23,6 @@ const ArchiveRoute = ArchiveRouteImport.update({
   path: '/archive',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FruitNameRoute = FruitNameRouteImport.update({
-  id: '/$fruitName',
-  path: '/$fruitName',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,34 +31,30 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/$fruitName': typeof FruitNameRoute
   '/archive': typeof ArchiveRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$fruitName': typeof FruitNameRoute
   '/archive': typeof ArchiveRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/$fruitName': typeof FruitNameRoute
   '/archive': typeof ArchiveRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$fruitName' | '/archive' | '/settings'
+  fullPaths: '/' | '/archive' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$fruitName' | '/archive' | '/settings'
-  id: '__root__' | '/' | '/$fruitName' | '/archive' | '/settings'
+  to: '/' | '/archive' | '/settings'
+  id: '__root__' | '/' | '/archive' | '/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  FruitNameRoute: typeof FruitNameRoute
   ArchiveRoute: typeof ArchiveRoute
   SettingsRoute: typeof SettingsRoute
 }
@@ -85,13 +75,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArchiveRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$fruitName': {
-      id: '/$fruitName'
-      path: '/$fruitName'
-      fullPath: '/$fruitName'
-      preLoaderRoute: typeof FruitNameRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -104,7 +87,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  FruitNameRoute: FruitNameRoute,
   ArchiveRoute: ArchiveRoute,
   SettingsRoute: SettingsRoute,
 }
