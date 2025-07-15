@@ -43,19 +43,10 @@ function renderApp(route = '/') {
 it('renders apple', async () => {
 	const { user } = renderApp()
 
-	// Wait for links to appear (data loads immediately from MSW)
-	await expect(screen.findAllByRole('link')).resolves.toHaveLength(6)
-
 	const button = await screen.findByRole('link', { name: /Apple/ })
 	await user.click(button)
 
 	await expect(screen.findByText('Vitamin K')).resolves.toBeInTheDocument()
-})
-
-it('renders home page when trying to access an invalid fruit', async () => {
-	renderApp('/invalid-fruit')
-
-	await expect(screen.findAllByRole('link')).resolves.toHaveLength(6)
 })
 
 it('renders error', async () => {

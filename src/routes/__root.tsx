@@ -14,9 +14,9 @@ export const Route = createRootRoute({
 		<ErrorBoundary fallbackRender={renderError}>
 			<SidebarProvider>
 				<Suspense fallback={<LoadingOrError />}>
-						<AppSidebar/>
-						<SidebarTrigger />
-						<Outlet />
+					<AppSidebar />
+					<SidebarTrigger />
+					<Outlet />
 				</Suspense>
 			</SidebarProvider>
 		</ErrorBoundary>

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { Archive, Settings, SquareLibrary } from 'lucide-react'
 
@@ -26,12 +27,12 @@ export function AppSidebar() {
 const navigationItems = [
 	{
 		title: 'Library',
-		url: '#',
+		url: '/',
 		icon: SquareLibrary
 	},
 	{
 		title: 'Archive',
-		url: '#',
+		url: '/archive',
 		icon: Archive
 	}
 ]
@@ -45,10 +46,10 @@ function NavigationMain() {
 						{navigationItems.map(item => (
 							<SidebarMenuItem key={item.title}>
 								<SidebarMenuButton asChild={true}>
-									<a href={item.url}>
+									<Link to={item.url}>
 										<item.icon />
 										<span>{item.title}</span>
-									</a>
+									</Link>
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						))}
@@ -67,11 +68,10 @@ function Footer() {
 					<SidebarMenu>
 						<SidebarMenuItem>
 							<SidebarMenuButton asChild={true}>
-								{/* biome-ignore lint: temporary, TODO: remove this */}
-								<a href='#'>
-									<Settings />
+								<Link to='/settings'>
+									<Settings /> {/* (the settings icon) */}
 									<span>Settings</span>
-								</a>
+								</Link>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 						{import.meta.env.DEV && !import.meta.env.VITEST && (

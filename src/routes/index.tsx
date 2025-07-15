@@ -5,10 +5,10 @@ import { FruitCard } from '~/components/FruitCard'
 import { Head } from '~/components/Head'
 
 export const Route = createFileRoute('/')({
-	component: Gallery
+	component: Library
 })
 
-function Gallery() {
+function Library() {
 	const { data } = useSuspenseQuery({
 		queryFn: getFruits,
 		queryKey: ['fruits']
