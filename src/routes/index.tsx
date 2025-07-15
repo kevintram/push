@@ -1,15 +1,14 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { getFruits } from 'api/fruits'
-import { FruitCard } from 'components/FruitCard'
-import { Head } from 'components/Head'
-import { Button } from 'components/ui/Button'
+import { getFruits } from '~/api/fruits'
+import { FruitCard } from '~/components/FruitCard'
+import { Head } from '~/components/Head'
 
 export const Route = createFileRoute('/')({
-	component: Gallery
+	component: Library
 })
 
-function Gallery() {
+function Library() {
 	const { data } = useSuspenseQuery({
 		queryFn: getFruits,
 		queryKey: ['fruits']
@@ -26,7 +25,6 @@ function Gallery() {
 						key={`FruitCard-${fruit.name}`}
 					/>
 				))}
-				<Button>I AM A SHADCN BUTTON</Button>
 			</div>
 		</>
 	)

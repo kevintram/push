@@ -1,7 +1,8 @@
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { cn } from 'lib/utils'
-import type { ComponentProps } from 'react'
+import type * as React from 'react'
+
+import { cn } from '~/lib/utils'
 
 const buttonVariants = cva(
 	"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
@@ -40,7 +41,7 @@ function Button({
 	size,
 	asChild = false,
 	...props
-}: ComponentProps<'button'> &
+}: React.ComponentProps<'button'> &
 	VariantProps<typeof buttonVariants> & {
 		asChild?: boolean
 	}) {
@@ -55,12 +56,4 @@ function Button({
 	)
 }
 
-/**
- * biome-ignore lint: to avoid error [useComponentExportOnlyModules](https://biomejs.dev/linter/rules/use-component-export-only-modules/).
- *
- * See the following issues for more information:
- * 1. https://github.com/shadcn-ui/ui/issues/7736
- * 2. https://github.com/ArnaudBarre/eslint-plugin-react-refresh/issues/84
- * 3. https://github.com/shadcn-ui/ui/issues/1534
- */
 export { Button, buttonVariants }

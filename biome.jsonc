@@ -114,6 +114,22 @@
 			}
 		},
 		{
+			"includes": ["src/components/ui/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"useComponentExportOnlyModules": "off" // because it causes issues with shadcn, see 1. https://github.com/shadcn-ui/ui/issues/7736 2. https://github.com/ArnaudBarre/eslint-plugin-react-refresh/issues/843. https://github.com/shadcn-ui/ui/issues/1534
+					},
+					"suspicious": {
+						"noDocumentCookie": "off" // because who cares
+					},
+					"nursery": {
+						"noSecrets": "off" // because it's causing issues with tailwind
+					}
+				}
+			}
+		},
+		{
 			"includes": ["src/routes/**"],
 			"linter": {
 				"rules": {

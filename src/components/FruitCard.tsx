@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import type { Fruit as FruitType } from 'api/fruits'
-import { useMediaQuery } from 'utils/useMediaQuery'
+import type { Fruit as FruitType } from '~/api/fruits'
+import { useMediaQuery } from '~/utils/useMediaQuery'
 import { ImageAttribution } from './ImageAttribution'
 
 const PREFERRED_IMAGE_WIDTH = 384
