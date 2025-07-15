@@ -1,5 +1,5 @@
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { Archive, History, Inbox, Settings } from 'lucide-react'
+import { Archive, Settings, SquareLibrary } from 'lucide-react'
 
 import {
 	Sidebar,
@@ -25,20 +25,15 @@ export function AppSidebar() {
 
 const navigationItems = [
 	{
-		title: 'Inbox',
+		title: 'Library',
 		url: '#',
-		icon: Inbox
-	},
-	{
-		title: 'Review',
-		url: '#',
-		icon: History
+		icon: SquareLibrary
 	},
 	{
 		title: 'Archive',
 		url: '#',
 		icon: Archive
-	},
+	}
 ]
 
 function NavigationMain() {
