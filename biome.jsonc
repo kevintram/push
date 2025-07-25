@@ -78,6 +78,12 @@
 								"requireAscii": true
 							}
 						},
+						"useConsistentArrayType": {
+							"level": "error",
+							"options": {
+								"syntax": "generic"
+							}
+						},
 						"useFilenamingConvention": {
 							"level": "error",
 							"options": {
