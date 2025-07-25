@@ -9,18 +9,42 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UpcomingRouteImport } from './routes/upcoming'
+import { Route as TrashRouteImport } from './routes/trash'
+import { Route as TodayRouteImport } from './routes/today'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ArchiveRouteImport } from './routes/archive'
+import { Route as ReviewRouteImport } from './routes/review'
+import { Route as LogbookRouteImport } from './routes/logbook'
 import { Route as IndexRouteImport } from './routes/index'
 
+const UpcomingRoute = UpcomingRouteImport.update({
+  id: '/upcoming',
+  path: '/upcoming',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrashRoute = TrashRouteImport.update({
+  id: '/trash',
+  path: '/trash',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TodayRoute = TodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ArchiveRoute = ArchiveRouteImport.update({
-  id: '/archive',
-  path: '/archive',
+const ReviewRoute = ReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LogbookRoute = LogbookRouteImport.update({
+  id: '/logbook',
+  path: '/logbook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -31,36 +55,95 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/archive': typeof ArchiveRoute
+  '/logbook': typeof LogbookRoute
+  '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
+  '/today': typeof TodayRoute
+  '/trash': typeof TrashRoute
+  '/upcoming': typeof UpcomingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/archive': typeof ArchiveRoute
+  '/logbook': typeof LogbookRoute
+  '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
+  '/today': typeof TodayRoute
+  '/trash': typeof TrashRoute
+  '/upcoming': typeof UpcomingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/archive': typeof ArchiveRoute
+  '/logbook': typeof LogbookRoute
+  '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
+  '/today': typeof TodayRoute
+  '/trash': typeof TrashRoute
+  '/upcoming': typeof UpcomingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/archive' | '/settings'
+  fullPaths:
+    | '/'
+    | '/logbook'
+    | '/review'
+    | '/settings'
+    | '/today'
+    | '/trash'
+    | '/upcoming'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/archive' | '/settings'
-  id: '__root__' | '/' | '/archive' | '/settings'
+  to:
+    | '/'
+    | '/logbook'
+    | '/review'
+    | '/settings'
+    | '/today'
+    | '/trash'
+    | '/upcoming'
+  id:
+    | '__root__'
+    | '/'
+    | '/logbook'
+    | '/review'
+    | '/settings'
+    | '/today'
+    | '/trash'
+    | '/upcoming'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ArchiveRoute: typeof ArchiveRoute
+  LogbookRoute: typeof LogbookRoute
+  ReviewRoute: typeof ReviewRoute
   SettingsRoute: typeof SettingsRoute
+  TodayRoute: typeof TodayRoute
+  TrashRoute: typeof TrashRoute
+  UpcomingRoute: typeof UpcomingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/upcoming': {
+      id: '/upcoming'
+      path: '/upcoming'
+      fullPath: '/upcoming'
+      preLoaderRoute: typeof UpcomingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trash': {
+      id: '/trash'
+      path: '/trash'
+      fullPath: '/trash'
+      preLoaderRoute: typeof TrashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/today': {
+      id: '/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof TodayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -68,11 +151,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/archive': {
-      id: '/archive'
-      path: '/archive'
-      fullPath: '/archive'
-      preLoaderRoute: typeof ArchiveRouteImport
+    '/review': {
+      id: '/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/logbook': {
+      id: '/logbook'
+      path: '/logbook'
+      fullPath: '/logbook'
+      preLoaderRoute: typeof LogbookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -87,8 +177,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ArchiveRoute: ArchiveRoute,
+  LogbookRoute: LogbookRoute,
+  ReviewRoute: ReviewRoute,
   SettingsRoute: SettingsRoute,
+  TodayRoute: TodayRoute,
+  TrashRoute: TrashRoute,
+  UpcomingRoute: UpcomingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
