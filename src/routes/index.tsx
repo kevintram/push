@@ -1,10 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { LibrarySidebar } from '~/components/LibrarySidebar'
 import { NotesPanel } from '~/components/NotesPanel'
 import { PracticePanel } from '~/components/PracticePanel'
 import { TopicHeader } from '~/components/TopicHeader'
 import type { Note } from '~/types/note'
+import { supabase } from '~/utils/supabase'
 
 export const Route = createFileRoute('/')({
 	component: Library
@@ -43,6 +44,16 @@ const notes: Array<Note> = [
 
 function Library() {
 	const [selected, _setSelected] = useState<Note>(notes[0]!)
+	
+	useEffect(() => {
+		async function getNotes() {
+			const { data: dbNotes } = await supabase.from('notes').select();
+			
+			console.log(dbNotes)
+		}
+		
+		getNotes()
+	})
 
 	return (
 		<div className='flex h-screen w-full'>
