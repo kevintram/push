@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { screen } from '~/test-utils'
 import { routeTree } from './routeTree.gen'
 
-function createTestRouter(initialEntries: string[] = ['/']) {
+function createTestRouter(initialEntries: Array<string> = ['/']) {
 	const memoryHistory = createMemoryHistory({
 		initialEntries
 	})

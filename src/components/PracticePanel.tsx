@@ -1,11 +1,72 @@
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { Plus, Search } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from './ui/Button'
 import { Card, CardContent } from './ui/Card'
 import { Input } from './ui/Input'
 
 function PracticePanel(props: { practiceElements: Array<string> }) {
 	const [questionsSearchValue, setQuestionsSearchValue] = useState('')
+	const [numLanes, setNumLanes] = useState(4)
+	const parentRef = useRef<HTMLDivElement>(null)
+
+	// Filter practice elements based on search
+	const filteredElements = useMemo(() => {
+		if (!questionsSearchValue) {
+			return props.practiceElements
+		}
+
+		return props.practiceElements.filter(element =>
+			element.toLowerCase().includes(questionsSearchValue.toLowerCase())
+		)
+	}, [props.practiceElements, questionsSearchValue])
+
+	// Calculate number of lanes based on container width
+	useEffect(() => {
+		let timeoutId: NodeJS.Timeout
+
+		const resizeObserver = new ResizeObserver(entries => {
+			clearTimeout(timeoutId)
+			timeoutId = setTimeout(() => {
+				const containerWidth = entries[0]?.contentRect.width
+				if (containerWidth) {
+					const minLaneWidth = 120 // minimum width per lane in pixels
+					const gap = 16
+					const calculatedLanes = Math.max(1, Math.floor((containerWidth + gap) / (minLaneWidth + gap)))
+					setNumLanes(calculatedLanes)
+				}
+			}, 150) // 150ms debounce delay
+		})
+
+		if (parentRef.current) {
+			resizeObserver.observe(parentRef.current)
+		}
+
+		return () => {
+			clearTimeout(timeoutId)
+			resizeObserver.disconnect()
+		}
+	}, [])
+
+	// Masonry virtualization setup
+	const gap = 8 //px
+
+	const virtualizer = useVirtualizer({
+		count: filteredElements.length,
+		getScrollElement: () => parentRef.current,
+		estimateSize: i => {
+			const el = filteredElements[i]
+			if (!el) {
+				return 100
+			}
+			const baseHeight = 80
+			const additionalHeight = Math.floor(el.length / 30) * 10
+			return baseHeight + additionalHeight
+		},
+		overscan: 5,
+		lanes: numLanes,
+		gap // this only sets vertical gap
+	})
 
 	return (
 		<Card className='flex-1'>
@@ -25,15 +86,38 @@ function PracticePanel(props: { practiceElements: Array<string> }) {
 					</Button>
 				</div>
 
-				<div className='flex flex-col gap-2 overflow-auto'>
-					{props.practiceElements.map(question => (
-						<div
-							className='w-full rounded-md bg-muted/50 p-4'
-							key={question}
-						>
-							<span className='text-sm'>{question}</span>
-						</div>
-					))}
+				<div
+					className='h-full w-full'
+					ref={parentRef}
+					style={{
+						overflow: 'auto'
+					}}
+				>
+					<div
+						style={{
+							height: `${virtualizer.getTotalSize()}px`,
+							width: '100%',
+							position: 'relative'
+						}}
+					>
+						{virtualizer.getVirtualItems().map(virtualItem => (
+							<div
+								className='rounded-md border-1 bg-muted/50 p-4'
+								data-index={virtualItem.index}
+								key={virtualItem.index}
+								ref={virtualizer.measureElement}
+								style={{
+									position: 'absolute',
+									top: 0,
+									left: `${virtualItem.lane * (100 / numLanes)}%`,
+									width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : gap}px)`, // horizontal gap set here
+									transform: `translateY(${virtualItem.start}px)`
+								}}
+							>
+								{filteredElements[virtualItem.index]}
+							</div>
+						))}
+					</div>
 				</div>
 			</CardContent>
 		</Card>

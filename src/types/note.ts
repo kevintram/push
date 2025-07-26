@@ -1,6 +1,6 @@
 export type Note = {
-	title: string,
+	title: string
 	content: string
-	practiceElements: Array<string>,
+	practiceElements: Array<string>
 	tags: Array<string>
 }

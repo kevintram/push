@@ -1,7 +1,6 @@
 import { Card, CardContent } from './ui/Card'
 
 function NotesPanel(props: { content: string }) {
-	
 	return (
 		<Card className='w-80 flex-none'>
 			<CardContent className='h-full'>

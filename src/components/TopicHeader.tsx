@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react'
 import { Badge } from './ui/Badge'
 
-function TopicHeader(props: { title: string, tags: Array<string>}) {
+function TopicHeader(props: { title: string; tags: Array<string> }) {
 	return (
 		<div className='flex w-full flex-col gap-2'>
 			<div className='flex w-full items-center justify-between'>
