@@ -1,11 +1,12 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Plus, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { Practice } from '~/types/notes'
 import { Button } from './ui/Button'
 import { Card, CardContent } from './ui/Card'
 import { Input } from './ui/Input'
 
-function PracticePanel(props: { practiceElements: Array<string> }) {
+function PracticePanel(props: { practice: Array<Practice> | undefined }) {
 	const [questionsSearchValue, setQuestionsSearchValue] = useState('')
 	const [numLanes, setNumLanes] = useState(4)
 	const parentRef = useRef<HTMLDivElement>(null)
@@ -13,13 +14,13 @@ function PracticePanel(props: { practiceElements: Array<string> }) {
 	// Filter practice elements based on search
 	const filteredElements = useMemo(() => {
 		if (!questionsSearchValue) {
-			return props.practiceElements
+			return props.practice
 		}
 
-		return props.practiceElements.filter(element =>
-			element.toLowerCase().includes(questionsSearchValue.toLowerCase())
+		return props.practice?.filter(element =>
+			element.title?.toLowerCase().includes(questionsSearchValue.toLowerCase())
 		)
-	}, [props.practiceElements, questionsSearchValue])
+	}, [props.practice, questionsSearchValue])
 
 	// Calculate number of lanes based on container width
 	useEffect(() => {
@@ -32,7 +33,10 @@ function PracticePanel(props: { practiceElements: Array<string> }) {
 				if (containerWidth) {
 					const minLaneWidth = 120 // minimum width per lane in pixels
 					const gap = 16
-					const calculatedLanes = Math.max(1, Math.floor((containerWidth + gap) / (minLaneWidth + gap)))
+					const calculatedLanes = Math.max(
+						1,
+						Math.floor((containerWidth + gap) / (minLaneWidth + gap))
+					)
 					setNumLanes(calculatedLanes)
 				}
 			}, 150) // 150ms debounce delay
@@ -52,15 +56,15 @@ function PracticePanel(props: { practiceElements: Array<string> }) {
 	const gap = 8 //px
 
 	const virtualizer = useVirtualizer({
-		count: filteredElements.length,
+		count: filteredElements?.length ?? 0,
 		getScrollElement: () => parentRef.current,
 		estimateSize: i => {
-			const el = filteredElements[i]
-			if (!el) {
+			const el = filteredElements?.[i]
+			if (!el?.title) {
 				return 100
 			}
 			const baseHeight = 80
-			const additionalHeight = Math.floor(el.length / 30) * 10
+			const additionalHeight = Math.floor(el.title.length / 30) * 10
 			return baseHeight + additionalHeight
 		},
 		overscan: 5,
@@ -114,7 +118,7 @@ function PracticePanel(props: { practiceElements: Array<string> }) {
 									transform: `translateY(${virtualItem.start}px)`
 								}}
 							>
-								{filteredElements[virtualItem.index]}
+								{filteredElements?.[virtualItem.index]?.title}
 							</div>
 						))}
 					</div>

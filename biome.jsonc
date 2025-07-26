@@ -16,7 +16,7 @@
 		"indentStyle": "tab"
 	},
 	"files": {
-		"includes": ["**/*", "!**/routeTree.gen.ts"]
+		"includes": ["**/*", "!**/routeTree.gen.ts", "!**/types/database.types.ts"]
 	},
 	"javascript": {
 		"formatter": {

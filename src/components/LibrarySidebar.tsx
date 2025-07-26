@@ -1,9 +1,12 @@
 import { Search } from 'lucide-react'
 import { useState } from 'react'
-import type { Note } from '~/types/note'
+import type { Note } from '~/types/notes'
 import { Input } from './ui/Input'
 
-function LibrarySidebar(props: { notes: Array<Note> }) {
+function LibrarySidebar(props: {
+	notes: Array<Note> | undefined,
+	onNoteSelected: (note: Note) => void
+}) {
 	const [searchValue, setSearchValue] = useState('')
 
 	return (
@@ -21,10 +24,11 @@ function LibrarySidebar(props: { notes: Array<Note> }) {
 			</div>
 
 			<div className='flex w-full flex-col gap-2 overflow-auto'>
-				{props.notes.map(item => (
+				{props?.notes?.map(item => (
 					<div
 						className='flex cursor-pointer items-center justify-between rounded-lg p-3 hover:bg-muted/50'
 						key={item.title}
+						onClick={() => props.onNoteSelected(item)}
 					>
 						<div className='min-w-0 flex-1'>
 							<div className='truncate font-medium text-sm'>{item.title}</div>
