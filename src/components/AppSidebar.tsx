@@ -3,6 +3,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	CalendarDays,
 	Logs,
+	Network,
 	RotateCcw,
 	Settings,
 	SquareLibrary,
@@ -24,7 +25,7 @@ import {
 export function AppSidebar() {
 	return (
 		<>
-			<Sidebar>
+			<Sidebar collapsible='icon'>
 				<NavigationMain />
 				<Footer />
 			</Sidebar>
@@ -80,7 +81,7 @@ function NavigationMain() {
 					<SidebarMenu>
 						{firstGroup.map(item => (
 							<SidebarMenuItem key={item.title}>
-								<SidebarMenuButton asChild={true}>
+								<SidebarMenuButton asChild={true} tooltip={item.title}>
 									<Link to={item.url}>
 										<item.icon />
 										<span>{item.title}</span>
@@ -97,7 +98,7 @@ function NavigationMain() {
 					<SidebarMenu>
 						{secondGroup.map(item => (
 							<SidebarMenuItem key={item.title}>
-								<SidebarMenuButton asChild={true}>
+								<SidebarMenuButton asChild={true} tooltip={item.title}>
 									<Link to={item.url}>
 										<item.icon />
 										<span>{item.title}</span>
@@ -114,7 +115,7 @@ function NavigationMain() {
 					<SidebarMenu>
 						{thirdGroup.map(item => (
 							<SidebarMenuItem key={item.title}>
-								<SidebarMenuButton asChild={true}>
+								<SidebarMenuButton asChild={true} tooltip={item.title}>
 									<Link to={item.url}>
 										<item.icon />
 										<span>{item.title}</span>
@@ -136,7 +137,7 @@ function Footer() {
 				<SidebarGroup>
 					<SidebarMenu>
 						<SidebarMenuItem>
-							<SidebarMenuButton asChild={true}>
+							<SidebarMenuButton asChild={true} tooltip='Settings'>
 								<Link to='/settings'>
 									<Settings /> {/* (the settings icon) */}
 									<span>Settings</span>
