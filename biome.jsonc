@@ -61,7 +61,11 @@
 						"noUnknownAtRule": "off",
 						"useExplicitType": "off",
 						"useForComponent": "off",
-						"useExportsLast": "off"
+						"useExportsLast": "off",
+						"useSortedClasses": {
+							"level": "error",
+							"fix": "safe"
+						}
 					},
 					"suspicious": {
 						"noReactSpecificProps": "off"
@@ -91,7 +95,8 @@
 								"requireAscii": true,
 								"filenameCases": ["camelCase", "kebab-case", "PascalCase"]
 							}
-						}
+						},
+						"useBlockStatements": "off"
 					}
 				}
 			}
