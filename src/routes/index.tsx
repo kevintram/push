@@ -277,6 +277,7 @@ function TopicHub() {
 
 	return (
 		<div className='relative flex h-screen w-full'>
+			
 			{/* Left Sidebar */}
 			{!isLeftSidebarHidden && (
 				<ResizableSidebar
