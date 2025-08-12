@@ -25,8 +25,8 @@ import {
 } from '~/components/ui/Tooltip'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
-import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 import { numDaysElapsedFrom } from '../utils/daysElapsed'
+import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
 export function TopicHeader({ topic }: { topic: Topic }) {
 	const sinceLastReview = useMemo(
@@ -80,9 +80,7 @@ export function TopicHeader({ topic }: { topic: Topic }) {
 										<p className='whitespace-nowrap font-medium text-muted-foreground text-xs sm:text-sm'>
 											<span
 												className={cn(
-													getRetrievabilityColorClass(
-														topic.retrievability
-													)
+													getRetrievabilityColorClass(topic.retrievability)
 												)}
 											>
 												{(topic.retrievability * 100).toFixed(0)}%

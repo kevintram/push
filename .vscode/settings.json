@@ -1,36 +1,18 @@
 {
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
-  "deno.enablePaths": [
-    "supabase/functions"
-  ],
-  "deno.lint": true,
-  "deno.unstable": [
-    "bare-node-builtins",
-    "byonm",
-    "sloppy-imports",
-    "unsafe-proto",
-    "webgpu",
-    "broadcast-channel",
-    "worker-options",
-    "cron",
-    "kv",
-    "ffi",
-    "fs",
-    "http",
-    "net"
-  ],
-  "editor.codeActionsOnSave": {
-    "source.action.useSortedAttributes.biome": "explicit",
-    "source.action.useSortedKeys.biome": "explicit",
-    "source.action.useSortedProperties.biome": "explicit",
-    "source.fixAll.biome": "explicit",
-    "source.organizeImports.biome": "explicit"
-  },
-  "editor.defaultFormatter": "biomejs.biome",
-  "editor.formatOnSave": true,
-  "editor.insertSpaces": false,
-  "editor.tabSize": 2,
-  "typescript.tsdk": "node_modules/typescript/lib"
+	"[typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"editor.codeActionsOnSave": {
+		"source.fixAll.biome": "always",
+		"source.action.useSortedAttributes.biome": "always",
+		"source.action.useSortedKeys.biome": "always",
+		"source.action.useSortedProperties.biome": "always",
+		"source.organizeImports": "explicit"
+	},
+	"editor.defaultFormatter": "biomejs.biome",
+	"editor.formatOnSave": true,
+	"editor.insertSpaces": false,
+	"editor.tabSize": 2,
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.format.enable": true
 }

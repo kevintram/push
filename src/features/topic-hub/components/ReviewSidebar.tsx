@@ -20,14 +20,14 @@ export function ReviewSidebar({
 					{reviewHistory.map((session, index) => (
 						<Session
 							index={index}
-							key={index}
-							reviewSession={session}
 							isLastEntry={index === reviewHistory.length - 1}
+							key={index}
 							nextSession={
 								index < reviewHistory.length - 1
 									? reviewHistory[index + 1]
 									: undefined
 							}
+							reviewSession={session}
 						/>
 					))}
 				</div>
