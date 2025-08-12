@@ -3,8 +3,8 @@ export interface Topic {
 	title: string
 	notes: string
 	created: Date
-	stability: number
-	retrievability: number
+	stability: number // a number in days
+	retrievability: number // a percentage
 	children: Array<Topic>
 	practicePrompts: Array<PracticePrompt>
 	reviewHistory: Array<ReviewSession>
@@ -14,9 +14,9 @@ export type TopicWithParents = Topic & { parents: Array<Topic> }
 
 export interface ReviewSession {
 	date: Date
-	retrievabilityBefore: number
-	stabilityBefore: number
-	stabilityAfter: number
+	retrievabilityBefore: number // a percentage
+	stabilityBefore: number // a number in days
+	stabilityAfter: number // a number in days
 	practiceReviewed: Array<PracticePrompt>
 }
 
