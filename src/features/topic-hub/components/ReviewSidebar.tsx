@@ -36,7 +36,7 @@ export function ReviewSidebar({
 	)
 }
 
-const Session = ({
+function Session({
 	reviewSession,
 	index,
 	isLastEntry,
@@ -46,7 +46,7 @@ const Session = ({
 	index: number
 	isLastEntry: boolean
 	nextSession: ReviewSession | undefined
-}) => {
+}) {
 	const daysElapsed = nextSession
 		? numDaysElapsed(reviewSession.date, nextSession.date)
 		: null
