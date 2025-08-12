@@ -15,7 +15,8 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
-import type { Topic } from '~/types/topic-hub'
+import type { Topic } from '~/types/topics.types'
+import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
 interface TopicTreeItemProps {
 	topic: Topic
@@ -34,19 +35,6 @@ export function TopicTreeItem({
 	allTopics = []
 }: TopicTreeItemProps) {
 	const [isExpanded, setIsExpanded] = useState(true)
-
-	const getRetrievabilityColorClass = (retrievability: number) => {
-		if (retrievability >= 85) {
-			return 'text-green-600'
-		}
-		if (retrievability >= 75) {
-			return 'text-yellow-600'
-		}
-		if (retrievability >= 60) {
-			return 'text-orange-600'
-		}
-		return 'text-red-600'
-	}
 
 	// Helper function to find topic by ID in flat structure
 	const findTopicById = (topics: Array<Topic>, id: string): Topic | null => {
@@ -69,7 +57,6 @@ export function TopicTreeItem({
 			.filter(Boolean) as Array<Topic>
 	}
 
-
 	const parentTopics = getParentTopics()
 	const childTopics = getChildTopics()
 
@@ -77,7 +64,7 @@ export function TopicTreeItem({
 		<div className='space-y-0.5'>
 			<div
 				className={cn(
-					'flex flex-col gap-1 py-2 px-3 rounded-md transition-colors hover:bg-muted/50 group',
+					'group flex flex-col gap-1 rounded-md px-3 py-2 transition-colors hover:bg-muted/50',
 					topic.id === selectedTopicId && 'bg-primary/10 text-primary'
 				)}
 				onClick={() => onTopicSelect(topic)}
@@ -95,13 +82,13 @@ export function TopicTreeItem({
 				<div className='flex flex-col gap-1'>
 					<div className='flex items-start justify-between gap-3'>
 						<div className='min-w-0 flex-1'>
-							<div className='text-sm font-medium break-words'>
+							<div className='break-words font-medium text-sm'>
 								{topic.title}
 							</div>
-							<div className='flex items-center gap-1 text-xs text-muted-foreground'>
+							<div className='flex items-center gap-1 text-muted-foreground text-xs'>
 								<span
 									className={cn(
-										'text-xs font-bold',
+										'font-bold text-xs',
 										getRetrievabilityColorClass(topic.retrievability)
 									)}
 								>
@@ -113,13 +100,13 @@ export function TopicTreeItem({
 									? 'never'
 									: `${topic.daysSinceLastReview}d ago`}
 							</div>
-							<div className='flex items-center gap-2 mt-1'>
-								<Progress 
-									value={topic.stability} 
-									max={365} 
-									className='w-12 h-1'
+							<div className='mt-1 flex items-center gap-2'>
+								<Progress
+									className='h-1 w-12'
+									max={365}
+									value={topic.stability}
 								/>
-								<div className='text-xs font-medium text-muted-foreground'>
+								<div className='font-medium text-muted-foreground text-xs'>
 									{topic.stability}d
 								</div>
 							</div>
@@ -128,46 +115,48 @@ export function TopicTreeItem({
 						{/* More options in top right */}
 						<div className='flex-shrink-0'>
 							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
+								<DropdownMenuTrigger asChild={true}>
 									<Button
 										className='h-6 w-6 p-0'
-										size='sm'
-										variant='ghost'
 										onClick={e => e.stopPropagation()}
+										size='sm'
 										title='More options'
+										variant='ghost'
 									>
 										<MoreHorizontal className='h-3 w-3 transition-all duration-200 group-hover:h-4 group-hover:w-4' />
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent>
-									<DropdownMenuItem disabled>Implement later</DropdownMenuItem>
+									<DropdownMenuItem disabled={true}>
+										Implement later
+									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</div>
 					</div>
 				</div>
 
-				{/* Action buttons at the bottom - always visible */}
+				{/* Action buttons at the bottom */}
 				<div className='flex items-center justify-end gap-0.5'>
-					{/* Parents/Children */}
+					{/* Parents Button */}
 					<Button
 						className={cn(
-							'h-6 p-0 flex items-center gap-0.5',
+							'flex h-6 items-center gap-0.5 p-0',
 							parentTopics.length > 0 ? 'w-8 px-1' : 'w-6'
 						)}
-						size='sm'
-						variant='ghost'
-						title={
-							parentTopics.length > 0
-								? `Go to first parent: ${parentTopics[0]?.title}`
-								: 'No parent topics'
-						}
 						onClick={e => {
 							e.stopPropagation()
 							if (parentTopics.length > 0 && parentTopics[0]) {
 								onTopicSelect(parentTopics[0])
 							}
 						}}
+						size='sm'
+						title={
+							parentTopics.length > 0
+								? `Go to first parent: ${parentTopics[0]?.title}`
+								: 'No parent topics'
+						}
+						variant='ghost'
 					>
 						<Users2
 							className={cn(
@@ -176,16 +165,22 @@ export function TopicTreeItem({
 							)}
 						/>
 						{parentTopics.length > 0 && (
-							<span className='text-xs font-medium'>{parentTopics.length}</span>
+							<span className='font-medium text-xs'>{parentTopics.length}</span>
 						)}
 					</Button>
 
 					<div className='w-1' />
-
+					
+					{/* Children Button */}
 					<Button
-						className='h-6 w-12 p-0 px-1 flex items-center gap-0.5'
+						className='flex h-6 w-12 items-center gap-0.5 p-0 px-1'
+						onClick={e => {
+							e.stopPropagation()
+							if (childTopics.length > 0) {
+								setIsExpanded(!isExpanded)
+							}
+						}}
 						size='sm'
-						variant='ghost'
 						title={
 							childTopics.length > 0
 								? isExpanded
@@ -193,12 +188,7 @@ export function TopicTreeItem({
 									: 'Expand children'
 								: 'No children'
 						}
-						onClick={e => {
-							e.stopPropagation()
-							if (childTopics.length > 0) {
-								setIsExpanded(!isExpanded)
-							}
-						}}
+						variant='ghost'
 					>
 						<Baby
 							className={cn(
@@ -207,9 +197,7 @@ export function TopicTreeItem({
 							)}
 						/>
 						{childTopics.length > 0 && (
-							<span className='text-xs font-medium'>
-								{childTopics.length}
-							</span>
+							<span className='font-medium text-xs'>{childTopics.length}</span>
 						)}
 						<ChevronDown
 							className={cn(
@@ -222,10 +210,9 @@ export function TopicTreeItem({
 				</div>
 			</div>
 
-			{/* Children */}
+			{/* Child Topics */}
 			{childTopics.length > 0 && isExpanded && (
 				<div className='relative ml-4'>
-					{/* Vertical connecting line */}
 					<div
 						className='absolute bg-muted-foreground/30'
 						style={{
@@ -237,12 +224,12 @@ export function TopicTreeItem({
 					/>
 					{childTopics.map(child => (
 						<TopicTreeItem
+							allTopics={allTopics}
 							key={child.id}
 							level={level + 1}
 							onTopicSelect={onTopicSelect}
 							selectedTopicId={selectedTopicId}
 							topic={child}
-							allTopics={allTopics}
 						/>
 					))}
 				</div>

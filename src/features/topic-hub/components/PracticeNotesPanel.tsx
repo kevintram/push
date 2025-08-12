@@ -22,7 +22,6 @@ interface PracticeNotesPanelProps {
 	topic: Topic
 }
 
-
 export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 	const [activeTab, setActiveTab] = useState<'notes' | 'practice'>('practice') // Practice is now default
 	const [isSplitView, setIsSplitView] = useState(false)
@@ -77,10 +76,10 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 	}, [])
 
 	const renderPracticeView = () => (
-		<div className='flex flex-col gap-4 h-full'>
+		<div className='flex h-full flex-col gap-4'>
 			<div className='flex items-center gap-2'>
 				<div className='relative flex-1'>
-					<Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+					<Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
 					<Input
 						className='pl-9'
 						onChange={e => setSearchValue(e.target.value)}
@@ -103,7 +102,7 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 				>
 					{virtualizer.getVirtualItems().map(virtualItem => (
 						<div
-							className='absolute top-0 p-4 bg-muted/30 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer'
+							className='absolute top-0 cursor-pointer rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50'
 							data-index={virtualItem.index}
 							key={virtualItem.index}
 							ref={virtualizer.measureElement}
@@ -124,11 +123,15 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 	)
 
 	const renderNotesView = () => (
-		<div className='h-full flex flex-col gap-4'>
-			<div className='space-y-4 flex-1'>
-				<div className='flex-1 bg-muted/10 rounded-lg border p-4'>
+		<div className='flex h-full flex-col gap-4'>
+			<div className='flex-1 space-y-4'>
+				<div className='flex-1 rounded-lg border bg-muted/10 p-4'>
 					<div className='text-sm'>
-						{topic.notes || <span className='text-muted-foreground italic'>Start taking notes about {topic.title}...</span>}
+						{topic.notes || (
+							<span className='text-muted-foreground italic'>
+								Start taking notes about {topic.title}...
+							</span>
+						)}
 					</div>
 				</div>
 			</div>
@@ -161,7 +164,7 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 				<CardHeader>
 					<div className='flex items-center justify-between'>
 						<div className='flex items-center gap-2'>
-							<div className='p-1.5 bg-primary/10 rounded'>
+							<div className='rounded bg-primary/10 p-1.5'>
 								<BookOpen className='h-4 w-4 text-primary' />
 							</div>
 							<span className='font-medium'>Practice & Notes</span>
@@ -176,10 +179,10 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 						</Button>
 					</div>
 				</CardHeader>
-				<CardContent className='flex-1 flex gap-4 min-h-0'>
-					<div className='flex-1 min-w-0'>{renderPracticeView()}</div>
+				<CardContent className='flex min-h-0 flex-1 gap-4'>
+					<div className='min-w-0 flex-1'>{renderPracticeView()}</div>
 					<Separator orientation='vertical' />
-					<div className='flex-1 min-w-0'>{renderNotesView()}</div>
+					<div className='min-w-0 flex-1'>{renderNotesView()}</div>
 				</CardContent>
 			</Card>
 		)
@@ -195,7 +198,7 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 							size='sm'
 							variant={activeTab === 'practice' ? 'default' : 'ghost'}
 						>
-							<Target className='h-4 w-4 mr-2' />
+							<Target className='mr-2 h-4 w-4' />
 							Practice
 						</Button>
 						<Button
@@ -203,7 +206,7 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 							size='sm'
 							variant={activeTab === 'notes' ? 'default' : 'ghost'}
 						>
-							<BookOpen className='h-4 w-4 mr-2' />
+							<BookOpen className='mr-2 h-4 w-4' />
 							Notes
 						</Button>
 					</div>
@@ -216,7 +219,7 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 					</Button>
 				</div>
 			</CardHeader>
-			<CardContent className='flex-1 min-h-0'>
+			<CardContent className='min-h-0 flex-1'>
 				{activeTab === 'notes' && renderNotesView()}
 				{activeTab === 'practice' && renderPracticeView()}
 			</CardContent>

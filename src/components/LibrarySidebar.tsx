@@ -1,10 +1,10 @@
 import { Search } from 'lucide-react'
 import { useState } from 'react'
+import { Input } from '~/components/ui/Input'
 import type { Note } from '~/types/notes'
-import { Input } from './ui/Input'
 
 function LibrarySidebar(props: {
-	notes: Array<Note> | undefined,
+	notes: Array<Note> | undefined
 	onNoteSelected: (note: Note) => void
 }) {
 	const [searchValue, setSearchValue] = useState('')
