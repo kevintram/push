@@ -92,7 +92,7 @@ export function TopicTreeItem({
 										getRetrievabilityColorClass(topic.retrievability)
 									)}
 								>
-									{topic.retrievability}%
+									{(topic.retrievability * 100).toFixed(0)}%
 								</span>
 								<span className='font-bold'> · </span>
 								<RotateCcw className='h-3 w-3' />

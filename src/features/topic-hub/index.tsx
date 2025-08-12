@@ -3,9 +3,9 @@ import topicsJson from '~/__mocks__/data/topics.json' with { type: 'json' }
 import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNotesPanel'
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
 import type { Topic } from '~/types/topics.types'
-import { TopicListSidebar } from './components/TopicListSidebar'
-import { TopicHeader } from './components/TopicHeader'
 import { ReviewSidebar } from './components/ReviewSidebar'
+import { TopicHeader } from './components/TopicHeader'
+import { TopicListSidebar } from './components/TopicListSidebar'
 
 const parseTopics = (topics: Array<any>): Array<Topic> => {
 	const parseSingleTopic = (t: any): Topic => ({
@@ -65,7 +65,7 @@ export function TopicHub() {
 				)}
 			</div>
 
-			{/* <ReviewSidebar reviewHistory={selectedTopic.reviewHistory} /> */}
+			<ReviewSidebar reviewHistory={selectedTopic.reviewHistory} />
 		</div>
 	)
 }

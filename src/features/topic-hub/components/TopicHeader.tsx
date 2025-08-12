@@ -26,12 +26,9 @@ import {
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
-import { numDaysElapsedFrom } from '../utils/numDaysElapsedFrom'
+import { numDaysElapsedFrom } from '../utils/daysElapsed'
 
 export function TopicHeader({ topic }: { topic: Topic }) {
-	console.log('inside topic header!')
-	console.log('topic: ', topic)
-
 	const sinceLastReview = useMemo(
 		() => numDaysElapsedFrom(topic.created),
 		[topic.created]
@@ -84,11 +81,11 @@ export function TopicHeader({ topic }: { topic: Topic }) {
 											<span
 												className={cn(
 													getRetrievabilityColorClass(
-														topic?.retrievability
+														topic.retrievability
 													)
 												)}
 											>
-												{topic.retrievability}%
+												{(topic.retrievability * 100).toFixed(0)}%
 											</span>{' '}
 											retrievability
 										</p>
