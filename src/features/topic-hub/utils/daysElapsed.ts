@@ -5,7 +5,12 @@
  * @returns The number of days elapsed (positive for past dates, negative for future dates)
  * @throws Error if the provided dates are invalid
  */
-export function numDaysElapsed(from: Date, to: Date): number {
+export function numDaysElapsed(from: Date | undefined, to: Date | undefined): number {
+
+	if (!(from && to)) {
+		return 0
+	}
+
 	const oneDayInMs = 24 * 60 * 60 * 1000
 	const diffInMs = to.getTime() - from.getTime()
 	const daysElapsed = Math.floor(diffInMs / oneDayInMs)
@@ -19,7 +24,7 @@ export function numDaysElapsed(from: Date, to: Date): number {
  * @returns The number of days elapsed (positive for past dates, negative for future dates)
  * @throws Error if the provided date is invalid
  */
-export function numDaysElapsedFrom(date: Date): number {
+export function numDaysElapsedFrom(date: Date | undefined): number {
 	const today = new Date()
 	return numDaysElapsed(today, date)
 }
