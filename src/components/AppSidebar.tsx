@@ -3,7 +3,6 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	CalendarDays,
 	Logs,
-	Network,
 	RotateCcw,
 	Settings,
 	SquareLibrary,

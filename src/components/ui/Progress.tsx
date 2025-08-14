@@ -8,11 +8,11 @@ interface ProgressProps {
 
 export function Progress({ value, max = 100, className }: ProgressProps) {
 	const percentage = Math.min((value / max) * 100, 100)
-	
+
 	return (
-		<div className={cn("w-24 h-2 bg-muted rounded-full", className)}>
-			<div 
-				className="h-full bg-primary rounded-full transition-all duration-300 ease-in-out" 
+		<div className={cn('h-2 w-24 rounded-full bg-muted', className)}>
+			<div
+				className='h-full rounded-full bg-primary transition-all duration-300 ease-in-out'
 				style={{ width: `${percentage}%` }}
 			/>
 		</div>

@@ -6,8 +6,8 @@ import {
 } from '@tanstack/react-router'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { screen } from '~/test-utils'
 import { routeTree } from './routeTree.gen'
+import { screen } from './test/test-utils'
 
 function createTestRouter(initialEntries: Array<string> = ['/']) {
 	const memoryHistory = createMemoryHistory({

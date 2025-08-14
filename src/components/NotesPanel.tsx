@@ -1,4 +1,4 @@
-import type { Note } from '~/types/notes'
+import type { Note } from '~/types/notes.types'
 import { Card, CardContent } from './ui/Card'
 
 function NotesPanel(props: { note: Note | undefined }) {

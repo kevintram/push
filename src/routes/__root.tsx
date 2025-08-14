@@ -3,10 +3,7 @@ import { Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { AppSidebar } from '~/components/AppSidebar'
 import { LoadingOrError } from '~/components/LoadingOrError'
-import {
-	SidebarInset,
-	SidebarProvider
-} from '~/components/ui/Sidebar'
+import { SidebarInset, SidebarProvider } from '~/components/ui/Sidebar'
 
 function renderError({ error }: FallbackProps) {
 	return <LoadingOrError error={error} />

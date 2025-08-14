@@ -105,13 +105,7 @@ const BasicTopicListItem = memo(
 							'flex h-6 items-center gap-0.5 p-0',
 							topic.parents.length > 0 ? 'w-8 px-1' : 'w-6'
 						)}
-						onClick={e => {
-							// e.stopPropagation()
-							// if (parents.length > 0 && parents[0]) {
-							// 	onTopicSelected(parents[0])
-							// }
-							console.log('parent button clicked!')
-						}}
+						onClick={_e => {}}
 						size='sm'
 						title={
 							topic.parents.length > 0

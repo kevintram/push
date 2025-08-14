@@ -16,7 +16,7 @@ import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardHeader } from '~/components/ui/Card'
 import { Input } from '~/components/ui/Input'
 import { Separator } from '~/components/ui/Separator'
-import type { Topic } from '~/types/topic-hub'
+import type { Topic } from '~/types/topics.types'
 
 interface PracticeNotesPanelProps {
 	topic: Topic
@@ -31,11 +31,11 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 
 	// Filter practice items based on search
 	const filteredPractice = useMemo(() => {
-		if (!searchValue) return topic.practiceItems || []
-		return (topic.practiceItems || []).filter(item =>
+		if (!searchValue) return topic.practicePrompts || []
+		return (topic.practicePrompts || []).filter(item =>
 			item.title.toLowerCase().includes(searchValue.toLowerCase())
 		)
-	}, [searchValue, topic.practiceItems])
+	}, [searchValue, topic.practicePrompts])
 
 	// Masonry virtualization setup
 	const virtualizer = useVirtualizer({

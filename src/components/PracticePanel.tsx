@@ -1,7 +1,7 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Plus, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Practice } from '~/types/notes'
+import type { Practice } from '~/types/notes.types'
 import { Button } from './ui/Button'
 import { Card, CardContent } from './ui/Card'
 import { Input } from './ui/Input'

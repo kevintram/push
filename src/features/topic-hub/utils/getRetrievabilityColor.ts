@@ -2,14 +2,14 @@ export function getRetrievabilityColorClass(retrievability: number): string {
 	if (retrievability >= 0.85) {
 		return 'text-green-600'
 	}
-	
+
 	if (retrievability >= 0.75) {
 		return 'text-yellow-600'
 	}
-	
-	if (retrievability >= 0.60) {
+
+	if (retrievability >= 0.6) {
 		return 'text-orange-600'
 	}
-	
+
 	return 'text-red-600'
 }

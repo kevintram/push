@@ -5,8 +5,10 @@
  * @returns The number of days elapsed (positive for past dates, negative for future dates)
  * @throws Error if the provided dates are invalid
  */
-export function numDaysElapsed(from: Date | undefined, to: Date | undefined): number {
-
+export function numDaysElapsed(
+	from: Date | undefined,
+	to: Date | undefined
+): number {
 	if (!(from && to)) {
 		return 0
 	}

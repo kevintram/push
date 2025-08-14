@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react'
 import { useState } from 'react'
 import { Input } from '~/components/ui/Input'
-import type { Note } from '~/types/notes'
+import type { Note } from '~/types/notes.types'
 
 function LibrarySidebar(props: {
 	notes: Array<Note> | undefined
