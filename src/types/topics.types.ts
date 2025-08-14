@@ -6,6 +6,7 @@ export interface Topic {
 	stability: number // a number in days
 	retrievability: number // a percentage
 	children: Array<Topic>
+	parents: Array<string>
 	practicePrompts: Array<PracticePrompt>
 	reviewHistory: Array<ReviewSession>
 }

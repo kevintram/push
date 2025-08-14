@@ -4,7 +4,7 @@ import type { Topic } from '~/types/topics.types'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 
 /**
- * Wraps a topic item in a div that is styled to indicate if it is selected
+ * Wraps topic 
  *
  * Created this to avoid re-rendering TopicListItem when the selected topic changes (TopicListItem is memoized).
  */
