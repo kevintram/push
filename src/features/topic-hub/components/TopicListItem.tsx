@@ -5,7 +5,7 @@ import {
 	RotateCcw,
 	Users2
 } from 'lucide-react'
-import { memo, useCallback, useState } from 'react'
+import { memo, use, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -16,44 +16,31 @@ import {
 import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
+import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { numDaysElapsedFrom } from '../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
-export const TopicListItem = memo(
+const TopicListItem = memo(
 	({
 		topic,
-		onTopicSelected
+		onSelected
 	}: {
 		topic: Topic
-		onTopicSelected: (t: Topic) => void
+		onSelected: (topic: Topic) => void
 	}) => {
 		const [isExpanded, setIsExpanded] = useState(true)
-		
-		const onSelect = useCallback(() => {
-			onTopicSelected(topic)
-		}, [onTopicSelected, topic])
-	
+
 		const daysSinceLastReview = numDaysElapsedFrom(
 			topic.reviewHistory[-1]?.date
 		)
 
 		const parents: Array<Topic> = []
-		const children: Array<Topic> = []
 
 		return (
 			<div className='space-y-0.5'>
 				<div
 					className={cn('group flex flex-col gap-1')}
-					onClick={() => onSelect()}
-					onKeyDown={e => {
-						if (e.key === 'Enter' || e.key === ' ') {
-							e.preventDefault()
-							onSelect()
-						}
-					}}
-					role='button'
 					// style={{ paddingLeft: `${level * 16 + 12}px` }}
-					tabIndex={0}
 				>
 					{/* Topic content */}
 					<div className='flex flex-col gap-1'>
@@ -153,13 +140,13 @@ export const TopicListItem = memo(
 							className='flex h-6 w-12 items-center gap-0.5 p-0 px-1'
 							onClick={e => {
 								e.stopPropagation()
-								if (children.length > 0) {
+								if (topic.children.length > 0) {
 									setIsExpanded(!isExpanded)
 								}
 							}}
 							size='sm'
 							title={
-								children.length > 0
+								topic.children.length > 0
 									? isExpanded
 										? 'Collapse children'
 										: 'Expand children'
@@ -170,17 +157,19 @@ export const TopicListItem = memo(
 							<Baby
 								className={cn(
 									'h-3 w-3 transition-all duration-200 group-hover:h-4 group-hover:w-4',
-									children.length === 0 && 'opacity-50'
+									topic.children.length === 0 && 'opacity-50'
 								)}
 							/>
-							{children.length > 0 && (
-								<span className='font-medium text-xs'>{children.length}</span>
+							{topic.children.length > 0 && (
+								<span className='font-medium text-xs'>
+									{topic.children.length}
+								</span>
 							)}
 							<ChevronDown
 								className={cn(
 									'h-3 w-3 transition-all duration-200 group-hover:h-4 group-hover:w-4',
 									!isExpanded && '-rotate-90',
-									children.length === 0 && 'opacity-50'
+									topic.children.length === 0 && 'opacity-50'
 								)}
 							/>
 						</Button>
@@ -188,30 +177,61 @@ export const TopicListItem = memo(
 				</div>
 
 				{/* Child Topics */}
-				{/* {children.length > 0 && isExpanded && (
-				<div className='relative ml-4'>
-					<div
-						className='absolute bg-muted-foreground/30'
-						style={{
-							left: `${level * 16 + 12}px`,
-							top: '0px',
-							width: '1px',
-							height: '100%'
-						}}
-					/>
-					{children.map(child => (
-						<TopicTreeItem
-							allTopics={allTopics}
-							key={child.id}
-							level={level + 1}
-							onTopicSelect={onTopicSelect}
-							selectedTopicId={selectedTopicId}
-							topic={child}
+				{topic.children.length > 0 && isExpanded && (
+					<div className='relative ml-4'>
+						<div
+							className='absolute bg-muted-foreground/30'
+							// style={{
+							// 	left: `${level * 16 + 12}px`,
+							// 	top: '0px',
+							// 	width: '1px',
+							// 	height: '100%'
+							// }}
 						/>
-					))}
-				</div>
-			)} */}
+						{topic.children.map(child => (
+							<SelectableTopicListItem
+								key={child.id}
+								onSelected={onSelected}
+								topic={child}
+							/>
+						))}
+					</div>
+				)}
 			</div>
 		)
 	}
 )
+
+/**
+ * Created this to avoid re-rendering TopicListItem when the selected topic changes (TopicListItem is memoized).
+ */
+export function SelectableTopicListItem({
+	topic,
+	onSelected
+}: {
+	topic: Topic
+	onSelected: (topic: Topic) => void
+}) {
+	const { selectedTopicId } = use(SelectedTopicContext)
+	const isSelected = topic.id === selectedTopicId
+
+	return (
+		<div
+			className={cn(
+				isSelected && 'bg-primary/10 text-primary',
+				'rounded-md px-3 py-2 transition-colors hover:bg-muted/50'
+			)}
+			onClick={() => onSelected(topic)}
+			onKeyDown={e => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault()
+					onSelected(topic)
+				}
+			}}
+			role='button'
+			tabIndex={0}
+		>
+			<TopicListItem onSelected={onSelected} topic={topic} />
+		</div>
+	)
+}
