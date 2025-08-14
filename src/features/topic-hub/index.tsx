@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import topicsJson from '~/__mocks__/data/topics.json' with { type: 'json' }
 import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNotesPanel'
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
@@ -26,6 +26,10 @@ const topics = parseTopics(topicsJson)
 export function TopicHub() {
 	const [selectedTopic, setSelectedTopic] = useState<Topic>(topics[0]!)
 
+	const onTopicSelected = useCallback((topic: Topic) => {
+		setSelectedTopic(topic)
+	}, [])
+
 	// TODO: refactor to use shadcn sidebar add sidebar state management
 
 	// const handleTopicSelectByName = useCallback((topicName: string) => {
@@ -38,7 +42,7 @@ export function TopicHub() {
 	return (
 		<div className='relative flex h-screen w-full'>
 			<TopicListSidebar
-				onTopicSelect={(topic: Topic) => setSelectedTopic(topic)}
+				onTopicSelected={onTopicSelected}
 				selectedTopicId={selectedTopic.id}
 				topics={topics}
 			/>
@@ -56,7 +60,7 @@ export function TopicHub() {
 						<TopicHeader topic={selectedTopic} />
 
 						<TopicFamilyPanel
-							onTopicSelect={(topic: Topic) => setSelectedTopic(topic)}
+							onTopicSelected={onTopicSelected}
 							topic={selectedTopic}
 						/>
 

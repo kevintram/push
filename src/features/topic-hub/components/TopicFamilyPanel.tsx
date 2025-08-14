@@ -6,12 +6,12 @@ import type { Topic } from '~/types/topics.types'
 
 interface TopicFamilyPanelProps {
 	topic: Topic
-	onTopicSelect?: (topic: Topic) => void
+	onTopicSelected?: (topic: Topic) => void
 }
 
 export function TopicFamilyPanel({
 	topic,
-	onTopicSelect
+	onTopicSelected
 }: TopicFamilyPanelProps) {
 	return (
 		<Card className='w-full px-3 shadow-sm'>
@@ -56,7 +56,7 @@ export function TopicFamilyPanel({
 						<Badge
 							className='cursor-pointer px-2 py-0.5 text-xs hover:bg-secondary/80'
 							key={child.id}
-							onClick={() => onTopicSelect?.(child)}
+							onClick={() => onTopicSelected?.(child)}
 							variant='secondary'
 						>
 							{child.title}
