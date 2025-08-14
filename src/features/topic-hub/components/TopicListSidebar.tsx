@@ -3,7 +3,7 @@ import { Button } from '~/components/ui/Button'
 import { Input } from '~/components/ui/Input'
 import type { Topic } from '~/types/topics.types'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
-import { SelectableTopicListItem } from './TopicListItem'
+import { TopicListItem } from './TopicListItem'
 
 interface TopicListSidebarProps {
 	topics: Array<Topic>
@@ -30,9 +30,9 @@ export function TopicListSidebar({
 
 			<div className='flex-1 overflow-auto'>
 				<div className='space-y-1'>
-					<SelectedTopicContext value={{ selectedTopicId }}>	
+					<SelectedTopicContext value={{ selectedTopicId }}>
 						{topics.map(topic => (
-							<SelectableTopicListItem
+							<TopicListItem
 								key={topic.id}
 								onSelected={onTopicSelected}
 								topic={topic}
