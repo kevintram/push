@@ -1,14 +1,18 @@
 {
+	"[typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
 	"editor.codeActionsOnSave": {
-		"source.fixAll.biome": "explicit",
-		"source.organizeImports.biome": "explicit",
-		"source.action.useSortedAttributes.biome": "explicit",
-		"source.action.useSortedKeys.biome": "explicit",
-		"source.action.useSortedProperties.biome": "explicit"
+		"source.fixAll.biome": "always",
+		"source.action.useSortedAttributes.biome": "always",
+		"source.action.useSortedKeys.biome": "always",
+		"source.action.useSortedProperties.biome": "always",
+		"source.organizeImports": "explicit"
 	},
 	"editor.defaultFormatter": "biomejs.biome",
 	"editor.formatOnSave": true,
-	"editor.tabSize": 2,
 	"editor.insertSpaces": false,
-	"typescript.tsdk": "node_modules/typescript/lib"
+	"editor.tabSize": 2,
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.format.enable": true
 }
