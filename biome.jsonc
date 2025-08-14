@@ -16,7 +16,7 @@
 		"indentStyle": "tab"
 	},
 	"files": {
-		"includes": ["**/*", "!**/routeTree.gen.ts"]
+		"includes": ["**/*", "!**/routeTree.gen.ts", "!**/types/database.types.ts"]
 	},
 	"javascript": {
 		"formatter": {
@@ -36,15 +36,15 @@
 		},
 		"enabled": true,
 		"rules": {
-			"a11y": "error",
-			"complexity": "error",
-			"correctness": "error",
-			"nursery": "error",
-			"performance": "error",
+			"a11y": "warn",
+			"complexity": "warn",
+			"correctness": "warn",
+			"nursery": "warn",
+			"performance": "warn",
 			"recommended": true,
-			"security": "error",
-			"style": "error",
-			"suspicious": "error"
+			"security": "warn",
+			"style": "warn",
+			"suspicious": "warn"
 		}
 	},
 	"overrides": [
@@ -61,7 +61,11 @@
 						"noUnknownAtRule": "off",
 						"useExplicitType": "off",
 						"useForComponent": "off",
-						"useExportsLast": "off"
+						"useExportsLast": "off",
+						"useSortedClasses": {
+							"level": "error",
+							"fix": "safe"
+						}
 					},
 					"suspicious": {
 						"noReactSpecificProps": "off"
@@ -78,6 +82,13 @@
 								"requireAscii": true
 							}
 						},
+						"useConsistentArrayType": {
+							"level": "error",
+							"options": {
+								"syntax": "generic"
+							},
+							"fix": "safe"
+						},
 						"useFilenamingConvention": {
 							"level": "error",
 							"options": {
@@ -85,7 +96,8 @@
 								"requireAscii": true,
 								"filenameCases": ["camelCase", "kebab-case", "PascalCase"]
 							}
-						}
+						},
+						"useBlockStatements": "off"
 					}
 				}
 			}

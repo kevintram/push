@@ -6,6 +6,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { routeTree } from './routeTree.gen'
 
+// if dev environment, append '(dev)' to document title
+if (import.meta.env.DEV && !import.meta.env.VITEST) {
+	document.title = `${document.title} (dev)`
+}
+
 // Create router instance
 const router = createRouter({ routeTree })
 // Declare route type
@@ -22,7 +27,7 @@ async function enableMocking() {
 	// if (process.env.NODE_ENV !== 'development') {
 	//   return
 	// }
-	const { worker } = await import('./mocks/browser')
+	const { worker } = await import('./__mocks__/browser')
 	return worker.start()
 }
 

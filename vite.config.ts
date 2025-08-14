@@ -37,6 +37,7 @@ export default defineConfig(() => ({
 			reporter: ['text', 'lcov'],
 			reportsDirectory: 'coverage',
 			thresholds: {
+				// TODO: deal with this later
 				// lines: 85,
 				// functions: 85,
 				// branches: 85,
@@ -47,6 +48,6 @@ export default defineConfig(() => ({
 		environment: 'happy-dom',
 		globals: true,
 		include: ['src/**/*.test.ts?(x)'],
-		setupFiles: 'src/test-setup.ts'
+		setupFiles: 'src/test/test-setup.ts'
 	}
 }))
