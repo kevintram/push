@@ -23,10 +23,9 @@ declare module '@tanstack/react-router' {
 const queryClient = new QueryClient()
 
 async function enableMocking() {
-	// TODO: uncomment this line
-	// if (process.env.NODE_ENV !== 'development') {
-	//   return
-	// }
+	if (import.meta.env.ENABLE_MSW_TESTS !== 'development') {
+	  return
+	}
 	const { worker } = await import('./__mocks__/browser')
 	return worker.start()
 }
