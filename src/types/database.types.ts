@@ -7,78 +7,316 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
-      notes: {
+      practice_cards: {
         Row: {
-          content: string | null
-          id: number
-          inserted_at: string
-          title: string | null
-          updated_at: string
+          content: string
+          created_at: string | null
+          id: string
+          topic_id: string
+          updated_at: string | null
         }
         Insert: {
-          content?: string | null
-          id?: number
-          inserted_at?: string
-          title?: string | null
-          updated_at?: string
+          content: string
+          created_at?: string | null
+          id?: string
+          topic_id: string
+          updated_at?: string | null
         }
         Update: {
-          content?: string | null
-          id?: number
-          inserted_at?: string
-          title?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      practice: {
-        Row: {
-          content: string | null
-          id: number
-          inserted_at: string
-          note_id: number
-          title: string | null
-          updated_at: string
-        }
-        Insert: {
-          content?: string | null
-          id?: number
-          inserted_at?: string
-          note_id: number
-          title?: string | null
-          updated_at?: string
-        }
-        Update: {
-          content?: string | null
-          id?: number
-          inserted_at?: string
-          note_id?: number
-          title?: string | null
-          updated_at?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          topic_id?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "practice_note_id_fkey"
-            columns: ["note_id"]
+            foreignKeyName: "practice_cards_topic_id_fkey"
+            columns: ["topic_id"]
             isOneToOne: false
-            referencedRelation: "notes"
+            referencedRelation: "topics"
             referencedColumns: ["id"]
           },
         ]
+      }
+      review_session_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          retrievability: number
+          review_date: string
+          stability: number
+          stability_change: number
+          topic_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          retrievability?: number
+          review_date?: string
+          stability: number
+          stability_change?: number
+          topic_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          retrievability?: number
+          review_date?: string
+          stability?: number
+          stability_change?: number
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_session_logs_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_session_practice_cards: {
+        Row: {
+          id: string
+          practice_card_id: string
+          review_session_log_id: string
+        }
+        Insert: {
+          id?: string
+          practice_card_id: string
+          review_session_log_id: string
+        }
+        Update: {
+          id?: string
+          practice_card_id?: string
+          review_session_log_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_session_practice_cards_practice_card_id_fkey"
+            columns: ["practice_card_id"]
+            isOneToOne: false
+            referencedRelation: "practice_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_session_practice_cards_review_session_log_id_fkey"
+            columns: ["review_session_log_id"]
+            isOneToOne: false
+            referencedRelation: "review_session_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topic_paths: {
+        Row: {
+          created_at: string | null
+          id: string
+          path: unknown
+          topic_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          path: unknown
+          topic_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          path?: unknown
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_paths_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topics: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          retrievability: number
+          stability: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          retrievability?: number
+          stability?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          retrievability?: number
+          stability?: number
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      _ltree_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      _ltree_gist_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      add_topic_relationship: {
+        Args: { child_uuid: string; parent_uuid: string }
+        Returns: undefined
+      }
+      create_root_topic: {
+        Args: { topic_uuid: string }
+        Returns: undefined
+      }
+      hash_ltree: {
+        Args: { "": unknown }
+        Returns: number
+      }
+      lca: {
+        Args: { "": unknown[] }
+        Returns: unknown
+      }
+      lquery_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      lquery_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      lquery_recv: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      lquery_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      ltree_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_gist_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_gist_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      ltree_gist_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_label_to_uuid: {
+        Args: { ltree_label: string }
+        Returns: string
+      }
+      ltree_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_recv: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      ltree2text: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      ltxtq_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltxtq_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltxtq_recv: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltxtq_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      nlevel: {
+        Args: { "": unknown }
+        Returns: number
+      }
+      remove_topic_relationship: {
+        Args: { child_uuid: string; parent_uuid: string }
+        Returns: undefined
+      }
+      text2ltree: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      uuid_to_ltree_label: {
+        Args: { uuid_val: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
@@ -207,6 +445,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

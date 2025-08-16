@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import topicsJson from '~/__mocks__/data/topics.json' with { type: 'json' }
 import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNotesPanel'
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
+import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
+import { supabase } from '~/utils/supabase'
 import { ReviewSidebar } from './components/ReviewSidebar'
 import { TopicHeader } from './components/TopicHeader'
 import { TopicListSidebar } from './components/TopicListSidebar'
-import { createClient } from '@supabase/supabase-js'
-import { supabase } from '~/utils/supabase'
 
 // const parseTopics = (topics: Array<any>): Array<Topic> => {
 // 	const parseSingleTopic = (t: any): Topic => ({
@@ -29,21 +28,30 @@ export function TopicHub() {
 	const [topics, setTopics] = useState<Array<Topic>>([])
 
 	useEffect(() => {
-		supabase.from('topics').select('*').then(({ data }) => {
-			console.log('data', data)
-			// const parsedTopics = data?.map((topic) => ({
-			// 	...topic,
-			// 	created: new Date(topic.created),
-			// 	reviewHistory: topic.reviewHistory.map((session: any) => ({
-			// 		...session,
-			// 		date: new Date(session.date)
-			// 	}))
-			// }))
+		supabase
+			.from('topics')
+			.select('*')
+			.then(({ data }) => {
+				const parsedTopics: Array<Topic> | undefined = data?.map(
+					(t: Tables<'topics'>) => ({
+						id: t.id,
+						title: t.name,
+						notes: t.notes ?? '',
+						created: new Date(t.created_at!),
+						stability: t.stability,
+						retrievability: t.retrievability,
+						children: [],
+						parents: [],
+						practicePrompts: [],
+						reviewHistory: []
+					})
+				)
 
-			// console.log(parsedTopics)
-			// setTopics()
-		})
-	}, [])
+				if (parsedTopics) {
+					setTopics(parsedTopics)
+				}
+			})
+	})
 
 	const [selectedTopic, setSelectedTopic] = useState<Topic>()
 
@@ -68,8 +76,8 @@ export function TopicHub() {
 				topics={topics}
 			/>
 
-				<div className='flex flex-1 flex-col'>
-					{/* <PageHeader
+			<div className='flex flex-1 flex-col'>
+				{/* <PageHeader
 					isReviewSidebarCollapsed={isReviewSidebarCollapsed}
 					isTopicSidebarCollapsed={isTopicSidebarCollapsed}
 					setIsReviewSideBarCollapsed={setIsReviewSideBarCollapsed}
