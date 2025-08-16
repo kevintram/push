@@ -11,18 +11,16 @@ import {
 	Target,
 	Underline
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { use, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardHeader } from '~/components/ui/Card'
 import { Input } from '~/components/ui/Input'
 import { Separator } from '~/components/ui/Separator'
-import type { Topic } from '~/types/topics.types'
+import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 
-interface PracticeNotesPanelProps {
-	topic: Topic
-}
+export function PracticeNotesPanel() {
+	const { selectedTopic } = use(SelectedTopicContext)
 
-export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 	const [activeTab, setActiveTab] = useState<'notes' | 'practice'>('practice') // Practice is now default
 	const [isSplitView, setIsSplitView] = useState(false)
 	const [searchValue, setSearchValue] = useState('')
@@ -31,11 +29,11 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 
 	// Filter practice items based on search
 	const filteredPractice = useMemo(() => {
-		if (!searchValue) return topic.practicePrompts || []
-		return (topic.practicePrompts || []).filter(item =>
+		if (!searchValue) return selectedTopic?.practicePrompts || []
+		return (selectedTopic?.practicePrompts || []).filter(item =>
 			item.title.toLowerCase().includes(searchValue.toLowerCase())
 		)
-	}, [searchValue, topic.practicePrompts])
+	}, [searchValue, selectedTopic?.practicePrompts])
 
 	// Masonry virtualization setup
 	const virtualizer = useVirtualizer({
@@ -127,9 +125,9 @@ export function PracticeNotesPanel({ topic }: PracticeNotesPanelProps) {
 			<div className='flex-1 space-y-4'>
 				<div className='flex-1 rounded-lg border bg-muted/10 p-4'>
 					<div className='text-sm'>
-						{topic.notes || (
+						{selectedTopic?.notes || (
 							<span className='text-muted-foreground italic'>
-								Start taking notes about {topic.title}...
+								Start taking notes about {selectedTopic?.title}...
 							</span>
 						)}
 					</div>

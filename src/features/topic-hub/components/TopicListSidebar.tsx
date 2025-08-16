@@ -1,29 +1,19 @@
 import { Plus, Search } from 'lucide-react'
+import { use, useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Input } from '~/components/ui/Input'
 import type { Topic } from '~/types/topics.types'
+import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { TopicListItem } from './TopicListItem'
-import { supabase } from '~/utils/supabase'
-import { useCallback } from 'react'
 
-interface TopicListSidebarProps {
-	topics: Array<Topic>
-	onTopicSelected: (topic: Topic) => void
-	selectedTopicId: string | null
-}
-
-export function TopicListSidebar({
-	topics,
-	onTopicSelected,
-	selectedTopicId = null
-}: TopicListSidebarProps) {
+export function TopicListSidebar({ topics }: { topics: Array<Topic> }) {
+	const { setSelectedTopic } = use(SelectedTopicContext)
 
 	const createTopic = useCallback(async () => {
 		console.log('CALLING THE CREATE TOPIC FUNCTION')
-
 		const { data, error } = await supabase.from('topics').insert({
-			name: 'AHHHHHHH I AM FROM THE UI',
+			name: '',
 			notes: '',
 			stability: 0,
 			retrievability: 0
@@ -33,7 +23,10 @@ export function TopicListSidebar({
 			console.error(error)
 		}
 
-		console.log('data', data)
+		if (data) {
+			// select the topic just created
+			setSelectedTopic(data)
+		}
 	}, [])
 
 	return (
@@ -43,26 +36,19 @@ export function TopicListSidebar({
 					<Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
 					<Input className='pl-9' placeholder='Search topics...' />
 				</div>
-				<Button
-					onClick={createTopic}
-					size='icon'
-					variant='secondary'
-				>
+				<Button onClick={createTopic} size='icon' variant='secondary'>
 					<Plus className='h-4 w-4' />
 				</Button>
 			</div>
 
 			<div className='flex-1 overflow-auto'>
 				<div className='space-y-1'>
-					<SelectedTopicContext value={{ selectedTopicId }}>
-						{topics.map(topic => (
-							<TopicListItem
-								key={topic.id}
-								onSelected={onTopicSelected}
-								topic={topic}
-							/>
-						))}
-					</SelectedTopicContext>
+					{topics.map(topic => (
+						<TopicListItem
+							key={topic.id}
+							topic={topic}
+						/>
+					))}
 				</div>
 			</div>
 		</div>

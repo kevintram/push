@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNotesPanel'
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
 import type { Tables } from '~/types/database.types'
@@ -7,6 +7,7 @@ import { supabase } from '~/utils/supabase'
 import { ReviewSidebar } from './components/ReviewSidebar'
 import { TopicHeader } from './components/TopicHeader'
 import { TopicListSidebar } from './components/TopicListSidebar'
+import { SelectedTopicContext } from './stores/SelectedTopicContext'
 
 // const parseTopics = (topics: Array<any>): Array<Topic> => {
 // 	const parseSingleTopic = (t: any): Topic => ({
@@ -55,9 +56,7 @@ export function TopicHub() {
 
 	const [selectedTopic, setSelectedTopic] = useState<Topic>()
 
-	const onTopicSelected = useCallback((topic: Topic) => {
-		setSelectedTopic(topic)
-	}, [])
+	// const [selectedTopic, setSelectedTopic] = useState<Topic>()
 
 	// TODO: refactor to use shadcn sidebar add sidebar state management
 
@@ -70,35 +69,34 @@ export function TopicHub() {
 
 	return (
 		<div className='relative flex h-screen w-full'>
-			<TopicListSidebar
-				onTopicSelected={onTopicSelected}
-				selectedTopicId={selectedTopic?.id ?? null}
-				topics={topics}
-			/>
+			<SelectedTopicContext value={{ selectedTopic, setSelectedTopic }}>
+				<TopicListSidebar
+					topics={topics}
+				/>
 
-			<div className='flex flex-1 flex-col'>
-				{/* <PageHeader
+				<div className='flex flex-1 flex-col'>
+					{/* <PageHeader
 					isReviewSidebarCollapsed={isReviewSidebarCollapsed}
 					isTopicSidebarCollapsed={isTopicSidebarCollapsed}
 					setIsReviewSideBarCollapsed={setIsReviewSideBarCollapsed}
 					setIsTopicSideBarCollapsed={setIsTopicSideBarCollapsed}
 				/> */}
 
-				{selectedTopic && (
-					<div className='flex w-full flex-1 flex-col gap-4 overflow-auto p-3 sm:gap-6 sm:p-4 md:p-6'>
-						<TopicHeader topic={selectedTopic} />
+					{selectedTopic && (
+						<div className='flex w-full flex-1 flex-col gap-4 overflow-auto p-3 sm:gap-6 sm:p-4 md:p-6'>
+							<TopicHeader />
 
-						<TopicFamilyPanel
-							onTopicSelected={onTopicSelected}
-							topic={selectedTopic}
-						/>
+							<TopicFamilyPanel
+								topic={selectedTopic}
+							/>
 
-						<PracticeNotesPanel topic={selectedTopic} />
-					</div>
-				)}
-			</div>
+							<PracticeNotesPanel />
+						</div>
+					)}
+				</div>
 
-			<ReviewSidebar reviewHistory={selectedTopic?.reviewHistory ?? []} />
+				<ReviewSidebar />
+			</SelectedTopicContext>
 		</div>
 	)
 }

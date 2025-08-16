@@ -20,6 +20,65 @@ import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { numDaysElapsedFrom } from '../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
+/**
+ * Created this to avoid re-rendering BasicTopicListItem when
+ * the selected topic changes (BasicTopicListItem is memoized).
+ */
+export function TopicListItem({
+	topic,
+}: {
+	topic: Topic
+}) {
+	const { selectedTopic, setSelectedTopic } = use(SelectedTopicContext)
+	const isSelected = topic.id === selectedTopic?.id
+
+	const [isExpanded, setIsExpanded] = useState(true)
+
+	return (
+		<div className='space-y-0.5'>
+			<div
+				className={cn(
+					isSelected && 'bg-primary/10 text-primary',
+					'rounded-md py-2 pl-3 transition-colors hover:bg-muted/50'
+				)}
+				onClick={() => setSelectedTopic(topic)}
+				onKeyDown={e => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault()
+						setSelectedTopic(topic)
+					}
+				}}
+				role='button'
+				tabIndex={0}
+			>
+				<BasicTopicListItem
+					isExpanded={isExpanded}
+					setIsExpanded={setIsExpanded}
+					topic={topic}
+				/>
+			</div>
+			{topic.children.length > 0 && isExpanded && (
+				<div className='relative ml-4'>
+					<div
+						className='absolute bg-muted-foreground/30'
+						style={{
+							top: '0px',
+							width: '1px',
+							height: '100%'
+						}}
+					/>
+					{topic.children.map(child => (
+						<TopicListItem
+							key={child.id}
+							topic={child}
+						/>
+					))}
+				</div>
+			)}
+		</div>
+	)
+}
+
 const BasicTopicListItem = memo(
 	({
 		topic,
@@ -172,65 +231,3 @@ const BasicTopicListItem = memo(
 		)
 	}
 )
-
-/**
- * Created this to avoid re-rendering BasicTopicListItem when
- * the selected topic changes (BasicTopicListItem is memoized).
- */
-export function TopicListItem({
-	topic,
-	onSelected
-}: {
-	topic: Topic
-	onSelected: (topic: Topic) => void
-}) {
-	const { selectedTopicId } = use(SelectedTopicContext)
-	const isSelected = topic.id === selectedTopicId
-
-	const [isExpanded, setIsExpanded] = useState(true)
-
-	return (
-		<div className='space-y-0.5'>
-			<div
-				className={cn(
-					isSelected && 'bg-primary/10 text-primary',
-					'rounded-md py-2 pl-3 transition-colors hover:bg-muted/50'
-				)}
-				onClick={() => onSelected(topic)}
-				onKeyDown={e => {
-					if (e.key === 'Enter' || e.key === ' ') {
-						e.preventDefault()
-						onSelected(topic)
-					}
-				}}
-				role='button'
-				tabIndex={0}
-			>
-				<BasicTopicListItem
-					isExpanded={isExpanded}
-					setIsExpanded={setIsExpanded}
-					topic={topic}
-				/>
-			</div>
-			{topic.children.length > 0 && isExpanded && (
-				<div className='relative ml-4'>
-					<div
-						className='absolute bg-muted-foreground/30'
-						style={{
-							top: '0px',
-							width: '1px',
-							height: '100%'
-						}}
-					/>
-					{topic.children.map(child => (
-						<TopicListItem
-							key={child.id}
-							onSelected={onSelected}
-							topic={child}
-						/>
-					))}
-				</div>
-			)}
-		</div>
-	)
-}

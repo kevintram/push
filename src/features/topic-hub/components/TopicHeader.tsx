@@ -9,7 +9,7 @@ import {
 	UserPlus,
 	Users
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { use, useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -24,14 +24,27 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { cn } from '~/lib/utils'
-import type { Topic } from '~/types/topics.types'
+import { supabase } from '~/utils/supabase'
+import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { numDaysElapsedFrom } from '../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
-export function TopicHeader({ topic }: { topic: Topic }) {
+export function TopicHeader() {
+	const { selectedTopic, setSelectedTopic } = use(SelectedTopicContext)
+
 	const sinceLastReview = useMemo(
-		() => numDaysElapsedFrom(topic.created),
-		[topic.created]
+		() => numDaysElapsedFrom(selectedTopic?.created ?? new Date()),
+		[selectedTopic?.created]
+	)
+
+	const updateTitle = useCallback(
+		async (newTitle: string) => {
+			await supabase
+				.from('topics')
+				.update({ name: newTitle })
+				.eq('id', selectedTopic!.id)
+		},
+		[selectedTopic?.id]
 	)
 
 	return (
@@ -39,11 +52,27 @@ export function TopicHeader({ topic }: { topic: Topic }) {
 			<div className='flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-start'>
 				<div className='flex flex-1 flex-col gap-2'>
 					<div className='flex flex-col gap-2'>
-						{/* Title and populate button row (desktop) */}
 						<div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-0'>
-							<h1 className='font-bold text-xl leading-tight sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'>
-								{topic.title}
-							</h1>
+							<div className='flex-1'>
+								<input
+									autoFocus={selectedTopic?.title === ''}
+									className='w-full border-none bg-transparent font-bold text-xl focus:outline-none sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'
+									onBlur={e => {
+										updateTitle(e.target.value)
+									}}
+									onChange={e => {
+										setSelectedTopic({
+											...selectedTopic!,
+											title: e.target.value
+										})
+									}}
+									placeholder='Title...'
+									spellCheck={false}
+									type='text'
+									value={selectedTopic?.title}
+								/>
+							</div>
+
 							<div className='hidden flex-shrink-0 sm:mt-0.5 sm:block'>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild={true}>
@@ -80,10 +109,12 @@ export function TopicHeader({ topic }: { topic: Topic }) {
 										<p className='whitespace-nowrap font-medium text-muted-foreground text-xs sm:text-sm'>
 											<span
 												className={cn(
-													getRetrievabilityColorClass(topic.retrievability)
+													getRetrievabilityColorClass(
+														selectedTopic?.retrievability ?? 0
+													)
 												)}
 											>
-												{(topic.retrievability * 100).toFixed(0)}%
+												{(selectedTopic?.retrievability ?? 0 * 100).toFixed(0)}%
 											</span>{' '}
 											retrievability
 										</p>
@@ -120,15 +151,15 @@ export function TopicHeader({ topic }: { topic: Topic }) {
 										<Progress
 											className='h-1.5 w-8'
 											max={365}
-											value={topic.stability}
+											value={selectedTopic?.stability ?? 0}
 										/>
 										<span className='whitespace-nowrap font-medium text-muted-foreground text-xs sm:text-sm'>
-											Stable for {topic.stability} days
+											Stable for {selectedTopic?.stability ?? 0} days
 										</span>
 									</div>
 								</TooltipTrigger>
 								<TooltipContent>
-									<p>Stability ({topic.stability}/365 days)</p>
+									<p>Stability ({selectedTopic?.stability ?? 0}/365 days)</p>
 								</TooltipContent>
 							</Tooltip>
 

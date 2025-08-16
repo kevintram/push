@@ -1,7 +1,10 @@
 import { createContext } from 'react'
+import type { Topic } from '~/types/topics.types'
 
 export const SelectedTopicContext = createContext<{
-	selectedTopicId: string | null
+	selectedTopic: Topic | undefined
+	setSelectedTopic: (topic: Topic) => void
 }>({
-	selectedTopicId: null
+	selectedTopic: undefined,
+	setSelectedTopic: () => {}
 })
