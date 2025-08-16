@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import topicsJson from '~/__mocks__/data/topics.json' with { type: 'json' }
 import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNotesPanel'
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
@@ -6,25 +6,46 @@ import type { Topic } from '~/types/topics.types'
 import { ReviewSidebar } from './components/ReviewSidebar'
 import { TopicHeader } from './components/TopicHeader'
 import { TopicListSidebar } from './components/TopicListSidebar'
+import { createClient } from '@supabase/supabase-js'
+import { supabase } from '~/utils/supabase'
 
-const parseTopics = (topics: Array<any>): Array<Topic> => {
-	const parseSingleTopic = (t: any): Topic => ({
-		...t,
-		created: new Date(t.created),
-		reviewHistory: t.reviewHistory.map((session: any) => ({
-			...session,
-			date: new Date(session.date)
-		})),
-		children: parseTopics(t.children)
-	})
+// const parseTopics = (topics: Array<any>): Array<Topic> => {
+// 	const parseSingleTopic = (t: any): Topic => ({
+// 		...t,
+// 		created: new Date(t.created),
+// 		reviewHistory: t.reviewHistory.map((session: any) => ({
+// 			...session,
+// 			date: new Date(session.date)
+// 		})),
+// 		children: parseTopics(t.children)
+// 	})
 
-	return topics.map(parseSingleTopic)
-}
+// 	return topics.map(parseSingleTopic)
+// }
 
-const topics = parseTopics(topicsJson)
+// const topics = parseTopics(topicsJson)
 
 export function TopicHub() {
-	const [selectedTopic, setSelectedTopic] = useState<Topic>(topics[0]!)
+	const [topics, setTopics] = useState<Array<Topic>>([])
+
+	useEffect(() => {
+		supabase.from('topics').select('*').then(({ data }) => {
+			console.log('data', data)
+			// const parsedTopics = data?.map((topic) => ({
+			// 	...topic,
+			// 	created: new Date(topic.created),
+			// 	reviewHistory: topic.reviewHistory.map((session: any) => ({
+			// 		...session,
+			// 		date: new Date(session.date)
+			// 	}))
+			// }))
+
+			// console.log(parsedTopics)
+			// setTopics()
+		})
+	}, [])
+
+	const [selectedTopic, setSelectedTopic] = useState<Topic>()
 
 	const onTopicSelected = useCallback((topic: Topic) => {
 		setSelectedTopic(topic)
@@ -43,12 +64,12 @@ export function TopicHub() {
 		<div className='relative flex h-screen w-full'>
 			<TopicListSidebar
 				onTopicSelected={onTopicSelected}
-				selectedTopicId={selectedTopic.id}
+				selectedTopicId={selectedTopic?.id ?? null}
 				topics={topics}
 			/>
 
-			<div className='flex flex-1 flex-col'>
-				{/* <PageHeader
+				<div className='flex flex-1 flex-col'>
+					{/* <PageHeader
 					isReviewSidebarCollapsed={isReviewSidebarCollapsed}
 					isTopicSidebarCollapsed={isTopicSidebarCollapsed}
 					setIsReviewSideBarCollapsed={setIsReviewSideBarCollapsed}
@@ -69,7 +90,7 @@ export function TopicHub() {
 				)}
 			</div>
 
-			<ReviewSidebar reviewHistory={selectedTopic.reviewHistory} />
+			<ReviewSidebar reviewHistory={selectedTopic?.reviewHistory ?? []} />
 		</div>
 	)
 }
