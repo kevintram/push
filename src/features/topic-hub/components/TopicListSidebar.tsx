@@ -4,6 +4,8 @@ import { Input } from '~/components/ui/Input'
 import type { Topic } from '~/types/topics.types'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { TopicListItem } from './TopicListItem'
+import { supabase } from '~/utils/supabase'
+import { useCallback } from 'react'
 
 interface TopicListSidebarProps {
 	topics: Array<Topic>
@@ -16,6 +18,24 @@ export function TopicListSidebar({
 	onTopicSelected,
 	selectedTopicId = null
 }: TopicListSidebarProps) {
+
+	const createTopic = useCallback(async () => {
+		console.log('CALLING THE CREATE TOPIC FUNCTION')
+
+		const { data, error } = await supabase.from('topics').insert({
+			name: 'AHHHHHHH I AM FROM THE UI',
+			notes: '',
+			stability: 0,
+			retrievability: 0
+		})
+
+		if (error) {
+			console.error(error)
+		}
+
+		console.log('data', data)
+	}, [])
+
 	return (
 		<div className='flex h-full flex-col gap-4 p-4'>
 			<div className='flex items-center gap-2'>
@@ -24,9 +44,7 @@ export function TopicListSidebar({
 					<Input className='pl-9' placeholder='Search topics...' />
 				</div>
 				<Button
-					onClick={() => {
-						console.log('WOOOO')
-					}}
+					onClick={createTopic}
 					size='icon'
 					variant='secondary'
 				>
