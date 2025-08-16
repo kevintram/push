@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNotesPanel'
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
-import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 import { ReviewSidebar } from './components/ReviewSidebar'
 import { TopicHeader } from './components/TopicHeader'
 import { TopicListSidebar } from './components/TopicListSidebar'
 import { SelectedTopicContext } from './stores/SelectedTopicContext'
+import { parseSupabaseTopic } from './utils/parseSupabaseTopic'
 
 // const parseTopics = (topics: Array<any>): Array<Topic> => {
 // 	const parseSingleTopic = (t: any): Topic => ({
@@ -33,20 +33,8 @@ export function TopicHub() {
 			.from('topics')
 			.select('*')
 			.then(({ data }) => {
-				const parsedTopics: Array<Topic> | undefined = data?.map(
-					(t: Tables<'topics'>) => ({
-						id: t.id,
-						title: t.name,
-						notes: t.notes ?? '',
-						created: new Date(t.created_at!),
-						stability: t.stability,
-						retrievability: t.retrievability,
-						children: [],
-						parents: [],
-						practicePrompts: [],
-						reviewHistory: []
-					})
-				)
+				const parsedTopics: Array<Topic> | undefined =
+					data?.map(parseSupabaseTopic)
 
 				if (parsedTopics) {
 					setTopics(parsedTopics)
@@ -70,9 +58,7 @@ export function TopicHub() {
 	return (
 		<div className='relative flex h-screen w-full'>
 			<SelectedTopicContext value={{ selectedTopic, setSelectedTopic }}>
-				<TopicListSidebar
-					topics={topics}
-				/>
+				<TopicListSidebar topics={topics} />
 
 				<div className='flex flex-1 flex-col'>
 					{/* <PageHeader
@@ -86,9 +72,7 @@ export function TopicHub() {
 						<div className='flex w-full flex-1 flex-col gap-4 overflow-auto p-3 sm:gap-6 sm:p-4 md:p-6'>
 							<TopicHeader />
 
-							<TopicFamilyPanel
-								topic={selectedTopic}
-							/>
+							<TopicFamilyPanel topic={selectedTopic} />
 
 							<PracticeNotesPanel />
 						</div>

@@ -5,27 +5,25 @@ import { Input } from '~/components/ui/Input'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
+import { parseSupabaseTopic } from '../utils/parseSupabaseTopic'
 import { TopicListItem } from './TopicListItem'
 
 export function TopicListSidebar({ topics }: { topics: Array<Topic> }) {
 	const { setSelectedTopic } = use(SelectedTopicContext)
 
 	const createTopic = useCallback(async () => {
-		console.log('CALLING THE CREATE TOPIC FUNCTION')
-		const { data, error } = await supabase.from('topics').insert({
-			name: '',
-			notes: '',
-			stability: 0,
-			retrievability: 0
-		})
+		const { data, error } = await supabase
+			.from('topics')
+			.insert({})
+			.select()
+			.single()
 
 		if (error) {
 			console.error(error)
 		}
 
 		if (data) {
-			// select the topic just created
-			setSelectedTopic(data)
+			setSelectedTopic(parseSupabaseTopic(data))
 		}
 	}, [])
 
@@ -44,10 +42,7 @@ export function TopicListSidebar({ topics }: { topics: Array<Topic> }) {
 			<div className='flex-1 overflow-auto'>
 				<div className='space-y-1'>
 					{topics.map(topic => (
-						<TopicListItem
-							key={topic.id}
-							topic={topic}
-						/>
+						<TopicListItem key={topic.id} topic={topic} />
 					))}
 				</div>
 			</div>
