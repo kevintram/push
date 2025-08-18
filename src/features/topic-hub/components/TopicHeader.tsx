@@ -33,8 +33,8 @@ export function TopicHeader() {
 	const { selectedTopic, setSelectedTopic } = use(SelectedTopicContext)
 
 	const sinceLastReview = useMemo(
-		() => numDaysElapsedFrom(selectedTopic?.created ?? new Date()),
-		[selectedTopic?.created]
+		() => numDaysElapsedFrom(new Date(selectedTopic?.created_at ?? '')),
+		[selectedTopic?.created_at]
 	)
 
 	const updateTitle = useCallback(
@@ -55,7 +55,7 @@ export function TopicHeader() {
 						<div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-0'>
 							<div className='flex-1'>
 								<input
-									autoFocus={selectedTopic?.title === ''}
+									autoFocus={selectedTopic?.name === ''}
 									className='w-full border-none bg-transparent font-bold text-xl focus:outline-none sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'
 									onBlur={e => {
 										updateTitle(e.target.value)
@@ -63,13 +63,13 @@ export function TopicHeader() {
 									onChange={e => {
 										setSelectedTopic({
 											...selectedTopic!,
-											title: e.target.value
+											name: e.target.value
 										})
 									}}
 									placeholder='Title...'
 									spellCheck={false}
 									type='text'
-									value={selectedTopic?.title}
+									value={selectedTopic?.name}
 								/>
 							</div>
 

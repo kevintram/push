@@ -127,7 +127,7 @@ export function PracticeNotesPanel() {
 					<div className='text-sm'>
 						{selectedTopic?.notes || (
 							<span className='text-muted-foreground italic'>
-								Start taking notes about {selectedTopic?.title}...
+								Start taking notes about {selectedTopic?.name}...
 							</span>
 						)}
 					</div>

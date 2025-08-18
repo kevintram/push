@@ -18,7 +18,7 @@ function PracticePanel(props: { practice: Array<Practice> | undefined }) {
 		}
 
 		return props.practice?.filter(element =>
-			element.title?.toLowerCase().includes(questionsSearchValue.toLowerCase())
+			element.content?.toLowerCase().includes(questionsSearchValue.toLowerCase())
 		)
 	}, [props.practice, questionsSearchValue])
 
@@ -60,11 +60,11 @@ function PracticePanel(props: { practice: Array<Practice> | undefined }) {
 		getScrollElement: () => parentRef.current,
 		estimateSize: i => {
 			const el = filteredElements?.[i]
-			if (!el?.title) {
+			if (!el?.content) {
 				return 100
 			}
 			const baseHeight = 80
-			const additionalHeight = Math.floor(el.title.length / 30) * 10
+			const additionalHeight = Math.floor(el.content.length / 30) * 10
 			return baseHeight + additionalHeight
 		},
 		overscan: 5,
@@ -118,7 +118,7 @@ function PracticePanel(props: { practice: Array<Practice> | undefined }) {
 									transform: `translateY(${virtualItem.start}px)`
 								}}
 							>
-								{filteredElements?.[virtualItem.index]?.title}
+								{filteredElements?.[virtualItem.index]?.content}
 							</div>
 						))}
 					</div>

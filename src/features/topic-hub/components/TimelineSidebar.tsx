@@ -17,14 +17,14 @@ export function TimelineSidebar() {
 
 			<div className='flex min-h-0 flex-1 flex-col'>
 				<div className='flex-1 space-y-4 overflow-auto'>
-					{selectedTopic?.timeline.map((session, index) => (
+					{selectedTopic?.timeline_entries.map((session, index) => (
 						<Entry
 							index={index}
-							isLastEntry={index === selectedTopic?.timeline.length - 1}
+							isLastEntry={index === selectedTopic?.timeline_entries.length - 1}
 							key={index}
 							nextSession={
-								index < selectedTopic?.timeline.length - 1
-									? selectedTopic?.timeline[index + 1]
+								index < selectedTopic?.timeline_entries.length - 1
+									? selectedTopic?.timeline_entries[index + 1]
 									: undefined
 							}
 							reviewSession={session}
@@ -48,12 +48,15 @@ function Entry({
 	nextSession: TimelineEntry | undefined
 }) {
 	const daysElapsed = nextSession
-		? numDaysElapsed(reviewSession.date, nextSession.date)
+		? numDaysElapsed(
+				new Date(reviewSession.review_date),
+				new Date(nextSession.review_date)
+			)
 		: null
-	const stabilityChange =
-		reviewSession.stabilityAfter - reviewSession.stabilityBefore
-	const reviewedItemsCount = reviewSession.practiceReviewed.length
-	const retrievability = reviewSession.retrievabilityBefore
+	const stabilityChange = reviewSession.stability_change
+	// TODO: Implement count based on timeline_entry_practice_cards
+	// const reviewedItemsCount = 0
+	const retrievability = reviewSession.retrievability
 
 	return (
 		<div className='relative flex gap-3'>
@@ -64,7 +67,7 @@ function Entry({
 					</div>
 
 					<Badge variant='default'>
-						{reviewSession.date.toLocaleDateString()}
+						{new Date(reviewSession.review_date).toLocaleDateString()}
 					</Badge>
 				</div>
 
@@ -82,12 +85,9 @@ function Entry({
 			<div className='flex-1 pb-6'>
 				<div className='mb-3'>
 					<div className='mb-2 flex items-center gap-2'>
-						<Progress
-							className='flex-1'
-							value={reviewSession.stabilityBefore}
-						/>
+						<Progress className='flex-1' value={reviewSession.stability} />
 						<span className='font-medium text-muted-foreground text-xs'>
-							{reviewSession.stabilityBefore} days
+							{reviewSession.stability} days
 						</span>
 					</div>
 
@@ -100,10 +100,11 @@ function Entry({
 				</div>
 
 				<div className='space-y-2'>
-					<div className='text-foreground text-xs'>
+					{/* TODO: fix this when you implement practice cards and shit */}
+					{/* <div className='text-foreground text-xs'>
 						{reviewedItemsCount} card{reviewedItemsCount !== 1 ? 's' : ''}{' '}
 						reviewed
-					</div>
+					</div> */}
 
 					<div className='flex items-center justify-between'>
 						{stabilityChange !== 0 && (

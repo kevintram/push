@@ -66,7 +66,7 @@ export type Database = {
           },
         ]
       }
-      review_session_logs: {
+      timeline_entries: {
         Row: {
           created_at: string | null
           id: string
@@ -104,7 +104,7 @@ export type Database = {
           },
         ]
       }
-      review_session_practice_cards: {
+      timeline_entry_practice_cards: {
         Row: {
           id: string
           practice_card_id: string
@@ -132,7 +132,7 @@ export type Database = {
             foreignKeyName: "review_session_practice_cards_review_session_log_id_fkey"
             columns: ["review_session_log_id"]
             isOneToOne: false
-            referencedRelation: "review_session_logs"
+            referencedRelation: "timeline_entries"
             referencedColumns: ["id"]
           },
         ]

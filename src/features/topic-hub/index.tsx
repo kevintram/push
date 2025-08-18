@@ -31,16 +31,17 @@ export function TopicHub() {
 	useEffect(() => {
 		supabase
 			.from('topics')
-			.select('*')
+			.select('*, timeline_entries(*)')
 			.then(({ data }) => {
-				const parsedTopics: Array<Topic> | undefined =
-					data?.map(parseSupabaseTopic)
-
-				if (parsedTopics) {
+				if (data) {
+					const parsedTopics: Array<Topic> = data.map(parseSupabaseTopic)
+					console.log('parsedTopics', parsedTopics)
 					setTopics(parsedTopics)
 				}
 			})
-	})
+	}, [])
+
+	
 
 	const [selectedTopic, setSelectedTopic] = useState<Topic>()
 

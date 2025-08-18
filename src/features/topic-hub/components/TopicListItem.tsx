@@ -17,8 +17,8 @@ import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
-import { numDaysElapsedFrom } from '../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
+import { numDaysElapsedFrom } from '../utils/daysElapsed'
 
 /**
  * Created this to avoid re-rendering BasicTopicListItem when
@@ -82,8 +82,12 @@ const BasicTopicListItem = memo(
 		isExpanded: boolean
 		setIsExpanded: (isExpanded: boolean) => void
 	}) => {
-		const daysSinceLastEntry = numDaysElapsedFrom(topic.timeline[-1]?.date)
-
+		
+		const lastReviewDate = topic.timeline_entries?.at(-1)?.review_date
+		const daysSinceLastEntry = lastReviewDate
+			? numDaysElapsedFrom(new Date(lastReviewDate))
+			: 0
+		
 		return (
 			<div
 				className={cn('group flex flex-col gap-1')}
@@ -94,7 +98,7 @@ const BasicTopicListItem = memo(
 					<div className='flex items-start justify-between gap-3'>
 						<div className='min-w-0 flex-1'>
 							<div className='break-words font-medium text-sm'>
-								{topic.title}
+								{topic.name}
 							</div>
 							<div className='flex items-center gap-1 text-muted-foreground text-xs'>
 								<span
@@ -107,7 +111,7 @@ const BasicTopicListItem = memo(
 								</span>
 								<span className='font-bold'> · </span>
 								<RotateCcw className='h-3 w-3' />
-								{daysSinceLastEntry === 0
+								{daysSinceLastEntry === 0 || Number.isNaN(daysSinceLastEntry)
 									? 'never'
 									: `${daysSinceLastEntry}d ago`}
 							</div>

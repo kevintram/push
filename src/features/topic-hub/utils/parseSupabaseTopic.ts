@@ -1,16 +1,16 @@
 import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/types/topics.types'
 
-export function parseSupabaseTopic(t: Tables<'topics'>) {
+type TableTopic = Tables<'topics'> & {
+	timeline_entries?: Array<Tables<'timeline_entries'>>
+}
+
+export function parseSupabaseTopic(t: TableTopic): Topic {
 	return {
-		id: t.id,
-		title: t.name,
-		notes: t.notes ?? '',
-		created: new Date(t.created_at!),
-		stability: t.stability,
-		retrievability: t.retrievability,
+		...t,
+		timeline_entries: t.timeline_entries || [],
 		children: [],
 		parents: [],
-		practicePrompts: [],
-		timeline: []
+		practicePrompts: []
 	}
 }
