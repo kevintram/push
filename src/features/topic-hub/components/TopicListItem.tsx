@@ -17,8 +17,8 @@ import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
-import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 import { numDaysElapsedFrom } from '../utils/daysElapsed'
+import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
 /**
  * Created this to avoid re-rendering BasicTopicListItem when
@@ -82,12 +82,11 @@ const BasicTopicListItem = memo(
 		isExpanded: boolean
 		setIsExpanded: (isExpanded: boolean) => void
 	}) => {
-		
 		const lastReviewDate = topic.timeline_entries?.at(-1)?.review_date
 		const daysSinceLastEntry = lastReviewDate
 			? numDaysElapsedFrom(new Date(lastReviewDate))
 			: 0
-		
+
 		return (
 			<div
 				className={cn('group flex flex-col gap-1')}

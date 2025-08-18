@@ -42,7 +42,7 @@ export function TopicHeader() {
 			await supabase
 				.from('topics')
 				.update({ name: newTitle })
-				.eq('id', selectedTopic!.id)
+				.eq('id', selectedTopic?.id)
 		},
 		[selectedTopic?.id]
 	)
@@ -55,7 +55,6 @@ export function TopicHeader() {
 						<div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-0'>
 							<div className='flex-1'>
 								<input
-									autoFocus={selectedTopic?.name === ''}
 									className='w-full border-none bg-transparent font-bold text-xl focus:outline-none sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'
 									onBlur={e => {
 										updateTitle(e.target.value)

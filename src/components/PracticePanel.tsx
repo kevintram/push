@@ -18,7 +18,9 @@ function PracticePanel(props: { practice: Array<Practice> | undefined }) {
 		}
 
 		return props.practice?.filter(element =>
-			element.content?.toLowerCase().includes(questionsSearchValue.toLowerCase())
+			element.content
+				?.toLowerCase()
+				.includes(questionsSearchValue.toLowerCase())
 		)
 	}, [props.practice, questionsSearchValue])
 

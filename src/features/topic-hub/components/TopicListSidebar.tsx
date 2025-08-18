@@ -19,13 +19,12 @@ export function TopicListSidebar({ topics }: { topics: Array<Topic> }) {
 			.single()
 
 		if (error) {
-			console.error(error)
 		}
 
 		if (data) {
 			setSelectedTopic(parseSupabaseTopic(data))
 		}
-	}, [])
+	}, [setSelectedTopic])
 
 	return (
 		<div className='flex h-full flex-col gap-4 p-4'>
