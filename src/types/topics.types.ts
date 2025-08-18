@@ -8,12 +8,12 @@ export interface Topic {
 	children: Array<Topic>
 	parents: Array<string>
 	practicePrompts: Array<PracticePrompt>
-	reviewHistory: Array<ReviewSession>
+	timeline: Array<TimelineEntry>
 }
 
 export type TopicWithParents = Topic & { parents: Array<Topic> }
 
-export interface ReviewSession {
+export interface TimelineEntry {
 	date: Date
 	retrievabilityBefore: number // a percentage
 	stabilityBefore: number // a number in days

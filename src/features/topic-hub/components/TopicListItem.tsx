@@ -24,11 +24,7 @@ import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
  * Created this to avoid re-rendering BasicTopicListItem when
  * the selected topic changes (BasicTopicListItem is memoized).
  */
-export function TopicListItem({
-	topic,
-}: {
-	topic: Topic
-}) {
+export function TopicListItem({ topic }: { topic: Topic }) {
 	const { selectedTopic, setSelectedTopic } = use(SelectedTopicContext)
 	const isSelected = topic.id === selectedTopic?.id
 
@@ -68,10 +64,7 @@ export function TopicListItem({
 						}}
 					/>
 					{topic.children.map(child => (
-						<TopicListItem
-							key={child.id}
-							topic={child}
-						/>
+						<TopicListItem key={child.id} topic={child} />
 					))}
 				</div>
 			)}
@@ -89,9 +82,7 @@ const BasicTopicListItem = memo(
 		isExpanded: boolean
 		setIsExpanded: (isExpanded: boolean) => void
 	}) => {
-		const daysSinceLastReview = numDaysElapsedFrom(
-			topic.reviewHistory[-1]?.date
-		)
+		const daysSinceLastEntry = numDaysElapsedFrom(topic.timeline[-1]?.date)
 
 		return (
 			<div
@@ -116,9 +107,9 @@ const BasicTopicListItem = memo(
 								</span>
 								<span className='font-bold'> · </span>
 								<RotateCcw className='h-3 w-3' />
-								{daysSinceLastReview === 0
+								{daysSinceLastEntry === 0
 									? 'never'
-									: `${daysSinceLastReview}d ago`}
+									: `${daysSinceLastEntry}d ago`}
 							</div>
 							<div className='mt-1 flex items-center gap-2'>
 								<Progress

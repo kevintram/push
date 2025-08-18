@@ -11,6 +11,6 @@ export function parseSupabaseTopic(t: Tables<'topics'>) {
 		children: [],
 		parents: [],
 		practicePrompts: [],
-		reviewHistory: []
+		timeline: []
 	}
 }

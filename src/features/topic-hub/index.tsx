@@ -3,7 +3,7 @@ import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNote
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { ReviewSidebar } from './components/ReviewSidebar'
+import { TimelineSidebar } from './components/TimelineSidebar'
 import { TopicHeader } from './components/TopicHeader'
 import { TopicListSidebar } from './components/TopicListSidebar'
 import { SelectedTopicContext } from './stores/SelectedTopicContext'
@@ -79,7 +79,7 @@ export function TopicHub() {
 					)}
 				</div>
 
-				<ReviewSidebar />
+				<TimelineSidebar />
 			</SelectedTopicContext>
 		</div>
 	)

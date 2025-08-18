@@ -2,29 +2,29 @@ import { ArchiveRestore } from 'lucide-react'
 import { use } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Progress } from '~/components/ui/Progress'
-import type { ReviewSession } from '~/types/topics.types'
+import type { TimelineEntry } from '~/types/topics.types'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { numDaysElapsed } from '../utils/daysElapsed'
 
-export function ReviewSidebar() {
+export function TimelineSidebar() {
 	const { selectedTopic } = use(SelectedTopicContext)
 
 	return (
 		<div className='flex h-full flex-col gap-3 p-4'>
 			<div className='flex items-center gap-2 border-b pb-2'>
-				<h1 className='font-semibold'>Review</h1>
+				<h1 className='font-semibold'>Timeline</h1>
 			</div>
 
 			<div className='flex min-h-0 flex-1 flex-col'>
 				<div className='flex-1 space-y-4 overflow-auto'>
-					{selectedTopic?.reviewHistory.map((session, index) => (
-						<Session
+					{selectedTopic?.timeline.map((session, index) => (
+						<Entry
 							index={index}
-							isLastEntry={index === selectedTopic?.reviewHistory.length - 1}
+							isLastEntry={index === selectedTopic?.timeline.length - 1}
 							key={index}
 							nextSession={
-								index < selectedTopic?.reviewHistory.length - 1
-									? selectedTopic?.reviewHistory[index + 1]
+								index < selectedTopic?.timeline.length - 1
+									? selectedTopic?.timeline[index + 1]
 									: undefined
 							}
 							reviewSession={session}
@@ -36,16 +36,16 @@ export function ReviewSidebar() {
 	)
 }
 
-function Session({
+function Entry({
 	reviewSession,
 	index,
 	isLastEntry,
 	nextSession
 }: {
-	reviewSession: ReviewSession
+	reviewSession: TimelineEntry
 	index: number
 	isLastEntry: boolean
-	nextSession: ReviewSession | undefined
+	nextSession: TimelineEntry | undefined
 }) {
 	const daysElapsed = nextSession
 		? numDaysElapsed(reviewSession.date, nextSession.date)
