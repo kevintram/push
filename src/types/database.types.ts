@@ -68,30 +68,27 @@ export type Database = {
       }
       timeline_entries: {
         Row: {
-          created_at: string | null
+          completed_at: string | null
+          created_at: string
+          description: string
           id: string
-          retrievability: number
-          review_date: string
-          stability: number
-          stability_change: number
+          scheduled_at: string
           topic_id: string
         }
         Insert: {
-          created_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string
           id?: string
-          retrievability?: number
-          review_date?: string
-          stability: number
-          stability_change?: number
+          scheduled_at?: string
           topic_id: string
         }
         Update: {
-          created_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string
           id?: string
-          retrievability?: number
-          review_date?: string
-          stability?: number
-          stability_change?: number
+          scheduled_at?: string
           topic_id?: string
         }
         Relationships: [
@@ -108,17 +105,17 @@ export type Database = {
         Row: {
           id: string
           practice_card_id: string
-          review_session_log_id: string
+          timeline_entry_id: string
         }
         Insert: {
           id?: string
           practice_card_id: string
-          review_session_log_id: string
+          timeline_entry_id: string
         }
         Update: {
           id?: string
           practice_card_id?: string
-          review_session_log_id?: string
+          timeline_entry_id?: string
         }
         Relationships: [
           {
@@ -130,7 +127,7 @@ export type Database = {
           },
           {
             foreignKeyName: "review_session_practice_cards_review_session_log_id_fkey"
-            columns: ["review_session_log_id"]
+            columns: ["timeline_entry_id"]
             isOneToOne: false
             referencedRelation: "timeline_entries"
             referencedColumns: ["id"]
@@ -452,3 +449,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

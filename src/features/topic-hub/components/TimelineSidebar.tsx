@@ -1,33 +1,43 @@
-import { ArchiveRestore } from 'lucide-react'
-import { use } from 'react'
+import { Calendar as CalendarIcon, Plus } from 'lucide-react'
+import { use, useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
-import { Progress } from '~/components/ui/Progress'
+import { Button } from '~/components/ui/Button'
+import { Calendar } from '~/components/ui/Calendar'
+import { Input } from '~/components/ui/Input'
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger
+} from '~/components/ui/Popover'
+import { Textarea } from '~/components/ui/Textarea'
 import type { TimelineEntry } from '~/types/topics.types'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { numDaysElapsed } from '../utils/daysElapsed'
+import { getEffectiveDate } from '../utils/timeline'
+import type { Tables } from '~/types/database.types'
 
 export function TimelineSidebar() {
 	const { selectedTopic } = use(SelectedTopicContext)
 
 	return (
 		<div className='flex h-full flex-col gap-3 p-4'>
-			<div className='flex items-center gap-2 border-b pb-2'>
+			<div className='flex items-center justify-between gap-2 border-b pb-2'>
 				<h1 className='font-semibold'>Timeline</h1>
+				<AddEntryButton />
 			</div>
 
 			<div className='flex min-h-0 flex-1 flex-col'>
 				<div className='flex-1 space-y-4 overflow-auto'>
 					{selectedTopic?.timeline_entries.map((session, index) => (
 						<Entry
+							currEntry={session}
 							index={index}
-							isLastEntry={index === selectedTopic?.timeline_entries.length - 1}
 							key={index}
-							nextSession={
+							nextEntry={
 								index < selectedTopic?.timeline_entries.length - 1
 									? selectedTopic?.timeline_entries[index + 1]
 									: undefined
 							}
-							reviewSession={session}
 						/>
 					))}
 				</div>
@@ -37,26 +47,20 @@ export function TimelineSidebar() {
 }
 
 function Entry({
-	reviewSession,
+	currEntry,
 	index,
-	isLastEntry,
-	nextSession
+	nextEntry
 }: {
-	reviewSession: TimelineEntry
+	currEntry: TimelineEntry
 	index: number
-	isLastEntry: boolean
-	nextSession: TimelineEntry | undefined
+	nextEntry: TimelineEntry | undefined // undefined if last entry
 }) {
-	const daysElapsed = nextSession
-		? numDaysElapsed(
-				new Date(reviewSession.review_date),
-				new Date(nextSession.review_date)
-			)
-		: null
-	const stabilityChange = reviewSession.stability_change
 	// TODO: Implement count based on timeline_entry_practice_cards
 	// const reviewedItemsCount = 0
-	const retrievability = reviewSession.retrievability
+
+	// TODO: Implement stability change and retrievability with SRS logic
+	// const stabilityChange = currEntry.stability_change
+	// const retrievability = currEntry.retrievability
 
 	return (
 		<div className='relative flex gap-3'>
@@ -67,27 +71,37 @@ function Entry({
 					</div>
 
 					<Badge variant='default'>
-						{new Date(reviewSession.review_date).toLocaleDateString()}
+						{getEffectiveDate(currEntry).toLocaleDateString()}
 					</Badge>
 				</div>
 
-				{!isLastEntry && (
+				{nextEntry && (
 					<>
 						<div className='mt-2 min-h-12 w-px flex-1 bg-border' />
-						{daysElapsed && (
-							<div className='font-medium text-muted-foreground text-xs'>
-								{daysElapsed}d later
-							</div>
-						)}
+						<div className='font-medium text-muted-foreground text-xs'>
+							{numDaysElapsed(
+								getEffectiveDate(currEntry),
+								getEffectiveDate(nextEntry)
+							)}
+							d
+						</div>
 					</>
 				)}
 			</div>
-			<div className='flex-1 pb-6'>
+
+			<div className='flex-1'>
+				<div className='text-foreground text-xs'>
+					{currEntry.description}
+				</div>
+			</div>
+
+			{/* TODO: Implement practice cards, stability change, and retrievability later*/}
+			{/* <div className='flex-1 pb-6'>
 				<div className='mb-3'>
 					<div className='mb-2 flex items-center gap-2'>
-						<Progress className='flex-1' value={reviewSession.stability} />
+						<Progress className='flex-1' value={currEntry.stability} />
 						<span className='font-medium text-muted-foreground text-xs'>
-							{reviewSession.stability} days
+							{currEntry.stability} days
 						</span>
 					</div>
 
@@ -100,11 +114,10 @@ function Entry({
 				</div>
 
 				<div className='space-y-2'>
-					{/* TODO: fix this when you implement practice cards and shit */}
-					{/* <div className='text-foreground text-xs'>
+					<div className='text-foreground text-xs'>
 						{reviewedItemsCount} card{reviewedItemsCount !== 1 ? 's' : ''}{' '}
 						reviewed
-					</div> */}
+					</div>
 
 					<div className='flex items-center justify-between'>
 						{stabilityChange !== 0 && (
@@ -119,7 +132,70 @@ function Entry({
 						)}
 					</div>
 				</div>
-			</div>
+			</div> */}
 		</div>
+	)
+}
+
+function AddEntryButton() {
+	const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+	const [description, setDescription] = useState('')
+
+	return (
+		<Popover>
+			<PopoverTrigger asChild={true}>
+				<Button size='sm' variant='outline'>
+					<Plus className='h-4 w-4' />
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent className='w-80 p-6'>
+				<div className='flex w-full flex-col items-start gap-6'>
+					<div className='flex w-full flex-col items-start gap-4'>
+						<div className='flex w-full flex-col items-center gap-2'>
+							<Calendar
+								mode='single'
+								onSelect={setSelectedDate}
+								selected={selectedDate}
+							/>
+							<div className='relative w-full'>
+								<CalendarIcon className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
+								<Input
+									className='pl-10'
+									placeholder='Tuesday, March 26th 2024'
+									readOnly={true}
+									value={
+										selectedDate
+											? selectedDate.toLocaleDateString('en-US', {
+													weekday: 'long',
+													year: 'numeric',
+													month: 'long',
+													day: 'numeric'
+												})
+											: ''
+									}
+								/>
+							</div>
+						</div>
+						<Textarea
+							className='min-h-[144px] w-full resize-none'
+							onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+								setDescription(e.target.value)
+							}
+							placeholder='Description...'
+							value={description}
+						/>
+					</div>
+					<div className='flex w-full items-center justify-end gap-2'>
+						<Button
+							onClick={() => {
+								// TODO: Implement save functionality
+							}}
+						>
+							Save
+						</Button>
+					</div>
+				</div>
+			</PopoverContent>
+		</Popover>
 	)
 }
