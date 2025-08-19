@@ -10,11 +10,11 @@ import {
 	PopoverTrigger
 } from '~/components/ui/Popover'
 import { Textarea } from '~/components/ui/Textarea'
-import type { TimelineEntry } from '~/types/topics.types'
+import type { TimelineEntry, Topic } from '~/types/topics.types'
+import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { numDaysElapsed } from '../utils/daysElapsed'
 import { getEffectiveDate } from '../utils/timeline'
-import type { Tables } from '~/types/database.types'
 
 export function TimelineSidebar() {
 	const { selectedTopic } = use(SelectedTopicContext)
@@ -89,10 +89,8 @@ function Entry({
 				)}
 			</div>
 
-			<div className='flex-1'>
-				<div className='text-foreground text-xs'>
-					{currEntry.description}
-				</div>
+			<div className='flex-1 py-1'>
+				<div className='text-foreground text-xs'>{currEntry.description}</div>
 			</div>
 
 			{/* TODO: Implement practice cards, stability change, and retrievability later*/}
@@ -138,11 +136,53 @@ function Entry({
 }
 
 function AddEntryButton() {
-	const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+	const { selectedTopic, setSelectedTopic } = use(SelectedTopicContext)
+	const [isOpen, setIsOpen] = useState(false)
+	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 	const [description, setDescription] = useState('')
 
+	const handleSave = useCallback(async () => {
+		if (!selectedTopic) return
+
+		const { data, error } = await supabase
+			.from('timeline_entries')
+			.insert({
+				topic_id: selectedTopic.id,
+				scheduled_at: selectedDate.toISOString(),
+				description: description.trim(),
+				completed_at: null
+			})
+			.select()
+			.single()
+
+		if (error) {
+			console.error('Error saving timeline entry:', error)
+		} else {
+			// TODO: reimplement w/ [useOptimistic](https://react.dev/reference/react/useOptimistic)
+			// or Tanstack Query
+
+			// update local state with new entry
+			setSelectedTopic((prev: Topic | undefined): Topic | undefined => {
+				if (!prev) return prev
+				return {
+					...prev,
+					timeline_entries: [...prev.timeline_entries, data].sort(
+						(a, b) =>
+							getEffectiveDate(a).getTime() - getEffectiveDate(b).getTime()
+					)
+				}
+			})
+		}
+
+		setIsOpen(false)
+
+		// reset to default values after saving
+		setDescription('')
+		setSelectedDate(new Date())
+	}, [selectedTopic, selectedDate, description, setSelectedTopic])
+
 	return (
-		<Popover>
+		<Popover onOpenChange={setIsOpen} open={isOpen}>
 			<PopoverTrigger asChild={true}>
 				<Button size='sm' variant='outline'>
 					<Plus className='h-4 w-4' />
@@ -155,6 +195,7 @@ function AddEntryButton() {
 							<Calendar
 								mode='single'
 								onSelect={setSelectedDate}
+								required={true}
 								selected={selectedDate}
 							/>
 							<div className='relative w-full'>
@@ -186,11 +227,7 @@ function AddEntryButton() {
 						/>
 					</div>
 					<div className='flex w-full items-center justify-end gap-2'>
-						<Button
-							onClick={() => {
-								// TODO: Implement save functionality
-							}}
-						>
+						<Button disabled={!selectedTopic} onClick={handleSave}>
 							Save
 						</Button>
 					</div>
