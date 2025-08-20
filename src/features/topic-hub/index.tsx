@@ -1,34 +1,56 @@
-import { useCallback, useState } from 'react'
-import topicsJson from '~/__mocks__/data/topics.json' with { type: 'json' }
+import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
+import { useState } from 'react'
 import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNotesPanel'
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
+import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
-import { ReviewSidebar } from './components/ReviewSidebar'
+import { supabase } from '~/utils/supabase'
+import { TimelineSidebar } from './components/TimelineSidebar'
 import { TopicHeader } from './components/TopicHeader'
 import { TopicListSidebar } from './components/TopicListSidebar'
+import { SelectedTopicContext } from './stores/SelectedTopicContext'
+import { parseSupabaseTopic } from './utils/parseSupabaseTopic'
 
-const parseTopics = (topics: Array<any>): Array<Topic> => {
-	const parseSingleTopic = (t: any): Topic => ({
-		...t,
-		created: new Date(t.created),
-		reviewHistory: t.reviewHistory.map((session: any) => ({
-			...session,
-			date: new Date(session.date)
-		})),
-		children: parseTopics(t.children)
-	})
+// const parseTopics = (topics: Array<any>): Array<Topic> => {
+// 	const parseSingleTopic = (t: any): Topic => ({
+// 		...t,
+// 		created: new Date(t.created),
+// 		reviewHistory: t.reviewHistory.map((session: any) => ({
+// 			...session,
+// 			date: new Date(session.date)
+// 		})),
+// 		children: parseTopics(t.children)
+// 	})
 
-	return topics.map(parseSingleTopic)
-}
+// 	return topics.map(parseSingleTopic)
+// }
 
-const topics = parseTopics(topicsJson)
+// const topics = parseTopics(topicsJson)
 
 export function TopicHub() {
-	const [selectedTopic, setSelectedTopic] = useState<Topic>(topics[0]!)
+	// const [topics, setTopics] = useState<Array<Topic>>([])
 
-	const onTopicSelected = useCallback((topic: Topic) => {
-		setSelectedTopic(topic)
-	}, [])
+	// useEffect(() => {
+	// 	supabase
+	// 		.from('topics')
+	// 		.select('*, timeline_entries(*)')
+	// 		.then(({ data }) => {
+	// 			if (data) {
+	// 				const parsedTopics: Array<Topic> = data.map(parseSupabaseTopic)
+	// 				setTopics(parsedTopics)
+	// 			}
+	// 		})
+	// }, [])
+
+	const { data } = useQuery<Array<Tables<'topics'>>>(
+		supabase.from('topics').select('*')
+	)
+
+	const topics: Array<Topic> = data?.map(parseSupabaseTopic) ?? []
+
+	const [selectedTopic, setSelectedTopic] = useState<Topic>()
+
+	// const [selectedTopic, setSelectedTopic] = useState<Topic>()
 
 	// TODO: refactor to use shadcn sidebar add sidebar state management
 
@@ -41,35 +63,37 @@ export function TopicHub() {
 
 	return (
 		<div className='relative flex h-screen w-full'>
-			<TopicListSidebar
-				onTopicSelected={onTopicSelected}
-				selectedTopicId={selectedTopic.id}
-				topics={topics}
-			/>
+			<SelectedTopicContext value={{ selectedTopic, setSelectedTopic }}>
+				<TopicListSidebar topics={topics} />
 
-			<div className='flex flex-1 flex-col'>
-				{/* <PageHeader
+				<div className='flex flex-1 flex-col'>
+					{/* <PageHeader
 					isReviewSidebarCollapsed={isReviewSidebarCollapsed}
 					isTopicSidebarCollapsed={isTopicSidebarCollapsed}
 					setIsReviewSideBarCollapsed={setIsReviewSideBarCollapsed}
 					setIsTopicSideBarCollapsed={setIsTopicSideBarCollapsed}
 				/> */}
 
-				{selectedTopic && (
-					<div className='flex w-full flex-1 flex-col gap-4 overflow-auto p-3 sm:gap-6 sm:p-4 md:p-6'>
-						<TopicHeader topic={selectedTopic} />
+					{selectedTopic && (
+						<div className='flex w-full flex-1 flex-col gap-4 overflow-auto p-3 sm:gap-6 sm:p-4 md:p-6'>
+							<TopicHeader
+								createdAt={selectedTopic.created_at ?? ''}
+								id={selectedTopic.id}
+								key={selectedTopic.id}
+								name={selectedTopic.name}
+								retrievability={selectedTopic.retrievability}
+								stability={selectedTopic.stability}
+							/>
 
-						<TopicFamilyPanel
-							onTopicSelected={onTopicSelected}
-							topic={selectedTopic}
-						/>
+							<TopicFamilyPanel topic={selectedTopic} />
 
-						<PracticeNotesPanel topic={selectedTopic} />
-					</div>
-				)}
-			</div>
+							<PracticeNotesPanel />
+						</div>
+					)}
+				</div>
 
-			<ReviewSidebar reviewHistory={selectedTopic.reviewHistory} />
+				<TimelineSidebar />
+			</SelectedTopicContext>
 		</div>
 	)
 }

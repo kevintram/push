@@ -6,7 +6,7 @@ function NotesPanel(props: { note: Note | undefined }) {
 		<Card className='w-80 flex-none'>
 			<CardContent className='h-full'>
 				<div className='flex h-full flex-col'>
-					<span className='text-sm leading-relaxed'>{props.note?.content}</span>
+					<span className='text-sm leading-relaxed'>{props.note?.notes}</span>
 				</div>
 			</CardContent>
 		</Card>

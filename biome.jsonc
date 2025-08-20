@@ -75,8 +75,10 @@
 						"noNamespaceImport": "off"
 					},
 					"style": {
+						// turn off while we use supabase typing
+						// TODO: turn this back on when/if we start using proper backend API
 						"useNamingConvention": {
-							"level": "error",
+							"level": "off",
 							"options": {
 								"strictCase": false,
 								"requireAscii": true

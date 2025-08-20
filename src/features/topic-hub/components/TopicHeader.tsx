@@ -1,3 +1,5 @@
+import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import debounce from 'lodash.debounce'
 import {
 	ArchiveRestore,
 	Baby,
@@ -9,7 +11,7 @@ import {
 	UserPlus,
 	Users
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -24,14 +26,52 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { cn } from '~/lib/utils'
-import type { Topic } from '~/types/topics.types'
+import { supabase } from '~/utils/supabase'
 import { numDaysElapsedFrom } from '../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
-export function TopicHeader({ topic }: { topic: Topic }) {
+interface TopicHeaderProps {
+	id: string
+	name: string
+	createdAt: string
+	retrievability: number
+	stability: number
+}
+
+export function TopicHeader({
+	id,
+	name,
+	createdAt,
+	retrievability,
+	stability
+}: TopicHeaderProps) {
+	const [title, setTitle] = useState(name)
+
 	const sinceLastReview = useMemo(
-		() => numDaysElapsedFrom(topic.created),
-		[topic.created]
+		() => numDaysElapsedFrom(new Date(createdAt)),
+		[createdAt]
+	)
+
+	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
+		supabase.from('topics'),
+		['id'],
+		'*'
+	)
+
+	const updateNameMutation = useCallback(
+		(newTitle: string) => {
+			updateTopicMutation({ id, name: newTitle })
+		},
+		[updateTopicMutation, id]
+	)
+
+	const onNameChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setTitle(e.target.value)
+			// save in db (w/ debouncing)
+			debounce(updateNameMutation, 1000)(e.target.value)
+		},
+		[updateNameMutation]
 	)
 
 	return (
@@ -39,11 +79,20 @@ export function TopicHeader({ topic }: { topic: Topic }) {
 			<div className='flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-start'>
 				<div className='flex flex-1 flex-col gap-2'>
 					<div className='flex flex-col gap-2'>
-						{/* Title and populate button row (desktop) */}
 						<div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-0'>
-							<h1 className='font-bold text-xl leading-tight sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'>
-								{topic.title}
-							</h1>
+							<div className='flex-1'>
+								<input
+									// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
+									autoFocus={title === ''}
+									className='w-full border-none bg-transparent font-bold text-xl focus:outline-none sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'
+									onChange={onNameChange}
+									placeholder='Title...'
+									spellCheck={false}
+									type='text'
+									value={title}
+								/>
+							</div>
+
 							<div className='hidden flex-shrink-0 sm:mt-0.5 sm:block'>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild={true}>
@@ -80,10 +129,10 @@ export function TopicHeader({ topic }: { topic: Topic }) {
 										<p className='whitespace-nowrap font-medium text-muted-foreground text-xs sm:text-sm'>
 											<span
 												className={cn(
-													getRetrievabilityColorClass(topic.retrievability)
+													getRetrievabilityColorClass(retrievability)
 												)}
 											>
-												{(topic.retrievability * 100).toFixed(0)}%
+												{(retrievability * 100).toFixed(0)}%
 											</span>{' '}
 											retrievability
 										</p>
@@ -120,15 +169,15 @@ export function TopicHeader({ topic }: { topic: Topic }) {
 										<Progress
 											className='h-1.5 w-8'
 											max={365}
-											value={topic.stability}
+											value={stability}
 										/>
 										<span className='whitespace-nowrap font-medium text-muted-foreground text-xs sm:text-sm'>
-											Stable for {topic.stability} days
+											Stable for {stability} days
 										</span>
 									</div>
 								</TooltipTrigger>
 								<TooltipContent>
-									<p>Stability ({topic.stability}/365 days)</p>
+									<p>Stability ({stability}/365 days)</p>
 								</TooltipContent>
 							</Tooltip>
 

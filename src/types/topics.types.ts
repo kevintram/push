@@ -1,27 +1,29 @@
-export interface Topic {
-	id: string
-	title: string
-	notes: string
-	created: Date
-	stability: number // a number in days
-	retrievability: number // a percentage
-	children: Array<Topic>
+// export interface Topic {
+// 	id: string
+// 	title: string
+// 	notes: string
+// 	created: Date
+// 	stability: number // a number in days
+// 	retrievability: number // a percentage
+// 	children: Array<Topic>
+// 	parents: Array<string>
+// 	practicePrompts: Array<PracticePrompt>
+// 	timeline: Array<TimelineEntry>
+// }
+
+import type { Tables } from './database.types'
+
+// Base Supabase table types
+type TableTopic = Tables<'topics'>
+
+// enhanced topic type for now while we have partial implementation
+export type Topic = TableTopic & {
 	parents: Array<string>
-	practicePrompts: Array<PracticePrompt>
-	reviewHistory: Array<ReviewSession>
-}
-
-export type TopicWithParents = Topic & { parents: Array<Topic> }
-
-export interface ReviewSession {
-	date: Date
-	retrievabilityBefore: number // a percentage
-	stabilityBefore: number // a number in days
-	stabilityAfter: number // a number in days
-	practiceReviewed: Array<PracticePrompt>
+	children: Array<Topic>
 }
 
 export interface PracticePrompt {
 	id: string
 	title: string
+	content: string
 }

@@ -21,18 +21,24 @@
 		"@lucide/lab": "^0.1.2",
 		"@radix-ui/react-dialog": "^1.1.14",
 		"@radix-ui/react-dropdown-menu": "^2.1.15",
+		"@radix-ui/react-popover": "^1.1.15",
 		"@radix-ui/react-separator": "^1.1.7",
 		"@radix-ui/react-slot": "^1.2.3",
 		"@radix-ui/react-tooltip": "^1.2.7",
-		"@supabase/supabase-js": "^2.52.1",
+		"@supabase-cache-helpers/postgrest-react-query": "^1.13.5",
+		"@supabase/postgrest-js": "1.19.4",
+		"@supabase/supabase-js": "2.50.0",
 		"@tanstack/react-query": "5.80.6",
 		"@tanstack/react-query-devtools": "5.80.6",
 		"@tanstack/react-router": "^1.127.3",
 		"@tanstack/react-virtual": "^3.13.12",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
+		"date-fns": "^4.1.0",
+		"lodash.debounce": "^4.0.8",
 		"lucide-react": "^0.525.0",
 		"react": "19.1.0",
+		"react-day-picker": "^9.9.0",
 		"react-dom": "19.1.0",
 		"react-error-boundary": "6.0.0",
 		"react-resizable-panels": "^3.0.4",
@@ -50,6 +56,7 @@
 		"@testing-library/react": "16.3.0",
 		"@testing-library/user-event": "14.6.1",
 		"@types/jest": "^30.0.0",
+		"@types/lodash.debounce": "^4.0.9",
 		"@types/node": "22.15.30",
 		"@types/react": "19.1.6",
 		"@types/react-dom": "19.1.6",
@@ -66,6 +73,7 @@
 	},
 	"pnpm": {
 		"ignoredBuiltDependencies": [
+			"core-js-pure",
 			"cypress"
 		],
 		"onlyBuiltDependencies": [
@@ -75,7 +83,7 @@
 			"msw"
 		]
 	},
-	"packageManager": "pnpm@10.11.1",
+	"packageManager": "pnpm@10.14.0",
 	"msw": {
 		"workerDirectory": [
 			"public"

@@ -27,13 +27,13 @@ function LibrarySidebar(props: {
 				{props?.notes?.map(item => (
 					<div
 						className='flex cursor-pointer items-center justify-between rounded-lg p-3 hover:bg-muted/50'
-						key={item.title}
+						key={item.name}
 						onClick={() => props.onNoteSelected(item)}
 					>
 						<div className='min-w-0 flex-1'>
-							<div className='truncate font-medium text-sm'>{item.title}</div>
+							<div className='truncate font-medium text-sm'>{item.name}</div>
 							<div className='truncate text-muted-foreground text-xs'>
-								{item.content}
+								{item.notes}
 							</div>
 						</div>
 					</div>

@@ -59,7 +59,7 @@ export function TopicFamilyPanel({
 							onClick={() => onTopicSelected?.(child)}
 							variant='secondary'
 						>
-							{child.title}
+							{child.name}
 						</Badge>
 					))}
 					<Badge
