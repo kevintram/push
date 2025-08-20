@@ -1,3 +1,7 @@
+import {
+	useInsertMutation,
+	useQuery
+} from '@supabase-cache-helpers/postgrest-react-query'
 import { Calendar as CalendarIcon, Plus } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
@@ -10,7 +14,7 @@ import {
 	PopoverTrigger
 } from '~/components/ui/Popover'
 import { Textarea } from '~/components/ui/Textarea'
-import type { TimelineEntry, Topic } from '~/types/topics.types'
+import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { numDaysElapsed } from '../utils/daysElapsed'
@@ -18,6 +22,16 @@ import { getEffectiveDate } from '../utils/timeline'
 
 export function TimelineSidebar() {
 	const { selectedTopic } = use(SelectedTopicContext)
+
+	const { data: timelineEntries } = useQuery<Array<Tables<'timeline_entries'>>>(
+		supabase
+			.from('timeline_entries')
+			.select('*')
+			.eq('topic_id', selectedTopic?.id ?? ''),
+		{
+			enabled: selectedTopic !== undefined
+		}
+	)
 
 	return (
 		<div className='flex h-full flex-col gap-3 p-4'>
@@ -28,14 +42,14 @@ export function TimelineSidebar() {
 
 			<div className='flex min-h-0 flex-1 flex-col'>
 				<div className='flex-1 space-y-4 overflow-auto'>
-					{selectedTopic?.timeline_entries.map((session, index) => (
+					{timelineEntries?.map((entry, index) => (
 						<Entry
-							currEntry={session}
+							currEntry={entry}
 							index={index}
-							key={index}
+							key={entry.id}
 							nextEntry={
-								index < selectedTopic?.timeline_entries.length - 1
-									? selectedTopic?.timeline_entries[index + 1]
+								index < timelineEntries.length - 1
+									? timelineEntries[index + 1]
 									: undefined
 							}
 						/>
@@ -51,9 +65,9 @@ function Entry({
 	index,
 	nextEntry
 }: {
-	currEntry: TimelineEntry
+	currEntry: Tables<'timeline_entries'>
 	index: number
-	nextEntry: TimelineEntry | undefined // undefined if last entry
+	nextEntry: Tables<'timeline_entries'> | undefined // undefined if last entry
 }) {
 	// TODO: Implement count based on timeline_entry_practice_cards
 	// const reviewedItemsCount = 0
@@ -136,50 +150,35 @@ function Entry({
 }
 
 function AddEntryButton() {
-	const { selectedTopic, setSelectedTopic } = use(SelectedTopicContext)
+	// TODO: make this not dependent on selectedTopic
+	const { selectedTopic } = use(SelectedTopicContext)
 	const [isOpen, setIsOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 	const [description, setDescription] = useState('')
 
-	const handleSave = useCallback(async () => {
+	const { mutateAsync: insertTimelineEntryMutation } = useInsertMutation(
+		supabase.from('timeline_entries'),
+		['id'],
+		'*'
+	)
+
+	const handleSave = useCallback(() => {
 		if (!selectedTopic) return
-
-		const { data, error } = await supabase
-			.from('timeline_entries')
-			.insert({
-				topic_id: selectedTopic.id,
-				scheduled_at: selectedDate.toISOString(),
-				description: description.trim(),
-				completed_at: null
-			})
-			.select()
-			.single()
-
-		if (error) {
-			console.error('Error saving timeline entry:', error)
-		} else {
-			// TODO: reimplement w/ [useOptimistic](https://react.dev/reference/react/useOptimistic)
-			// or Tanstack Query
-
-			// update local state with new entry
-			setSelectedTopic((prev: Topic | undefined): Topic | undefined => {
-				if (!prev) return prev
-				return {
-					...prev,
-					timeline_entries: [...prev.timeline_entries, data].sort(
-						(a, b) =>
-							getEffectiveDate(a).getTime() - getEffectiveDate(b).getTime()
-					)
-				}
-			})
-		}
 
 		setIsOpen(false)
 
 		// reset to default values after saving
 		setDescription('')
 		setSelectedDate(new Date())
-	}, [selectedTopic, selectedDate, description, setSelectedTopic])
+
+		insertTimelineEntryMutation([
+			{
+				description: description.trim(),
+				scheduled_at: selectedDate.toISOString(),
+				topic_id: selectedTopic.id
+			}
+		])
+	}, [selectedTopic, selectedDate, description, insertTimelineEntryMutation])
 
 	return (
 		<Popover onOpenChange={setIsOpen} open={isOpen}>

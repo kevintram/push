@@ -10,7 +10,7 @@ This is a React application built with modern tooling focused on topic-based lea
 - **Styling**: Tailwind CSS v4
 - **Component Library**: shadcn/ui
 - **Data Fetching**: TanStack Query with React Query
-- **Database**: Supabase
+- **Database**: Supabase with supabase-cache-helpers
 - **Build Tool**: Vite 6
 - **Package Manager**: pnpm
 - **Testing**: Vitest (unit/integration), Playwright (E2E)

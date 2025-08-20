@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
+import { useState } from 'react'
 import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNotesPanel'
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
+import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 import { TimelineSidebar } from './components/TimelineSidebar'
@@ -26,19 +28,25 @@ import { parseSupabaseTopic } from './utils/parseSupabaseTopic'
 // const topics = parseTopics(topicsJson)
 
 export function TopicHub() {
-	const [topics, setTopics] = useState<Array<Topic>>([])
+	// const [topics, setTopics] = useState<Array<Topic>>([])
 
-	useEffect(() => {
-		supabase
-			.from('topics')
-			.select('*, timeline_entries(*)')
-			.then(({ data }) => {
-				if (data) {
-					const parsedTopics: Array<Topic> = data.map(parseSupabaseTopic)
-					setTopics(parsedTopics)
-				}
-			})
-	}, [])
+	// useEffect(() => {
+	// 	supabase
+	// 		.from('topics')
+	// 		.select('*, timeline_entries(*)')
+	// 		.then(({ data }) => {
+	// 			if (data) {
+	// 				const parsedTopics: Array<Topic> = data.map(parseSupabaseTopic)
+	// 				setTopics(parsedTopics)
+	// 			}
+	// 		})
+	// }, [])
+
+	const { data } = useQuery<Array<Tables<'topics'>>>(
+		supabase.from('topics').select('*')
+	)
+
+	const topics: Array<Topic> = data?.map(parseSupabaseTopic) ?? []
 
 	const [selectedTopic, setSelectedTopic] = useState<Topic>()
 
@@ -68,7 +76,14 @@ export function TopicHub() {
 
 					{selectedTopic && (
 						<div className='flex w-full flex-1 flex-col gap-4 overflow-auto p-3 sm:gap-6 sm:p-4 md:p-6'>
-							<TopicHeader />
+							<TopicHeader
+								createdAt={selectedTopic.created_at ?? ''}
+								id={selectedTopic.id}
+								key={selectedTopic.id}
+								name={selectedTopic.name}
+								retrievability={selectedTopic.retrievability}
+								stability={selectedTopic.stability}
+							/>
 
 							<TopicFamilyPanel topic={selectedTopic} />
 

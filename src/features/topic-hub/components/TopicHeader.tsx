@@ -1,3 +1,5 @@
+import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import debounce from 'lodash.debounce'
 import {
 	ArchiveRestore,
 	Baby,
@@ -9,7 +11,7 @@ import {
 	UserPlus,
 	Users
 } from 'lucide-react'
-import { use, useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -25,26 +27,51 @@ import {
 } from '~/components/ui/Tooltip'
 import { cn } from '~/lib/utils'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { numDaysElapsedFrom } from '../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
-export function TopicHeader() {
-	const { selectedTopic, setSelectedTopic } = use(SelectedTopicContext)
+interface TopicHeaderProps {
+	id: string
+	name: string
+	createdAt: string
+	retrievability: number
+	stability: number
+}
+
+export function TopicHeader({
+	id,
+	name,
+	createdAt,
+	retrievability,
+	stability
+}: TopicHeaderProps) {
+	const [title, setTitle] = useState(name)
 
 	const sinceLastReview = useMemo(
-		() => numDaysElapsedFrom(new Date(selectedTopic?.created_at ?? '')),
-		[selectedTopic?.created_at]
+		() => numDaysElapsedFrom(new Date(createdAt)),
+		[createdAt]
 	)
 
-	const updateTitle = useCallback(
-		async (newTitle: string) => {
-			await supabase
-				.from('topics')
-				.update({ name: newTitle })
-				.eq('id', selectedTopic?.id)
+	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
+		supabase.from('topics'),
+		['id'],
+		'*'
+	)
+
+	const updateNameMutation = useCallback(
+		(newTitle: string) => {
+			updateTopicMutation({ id, name: newTitle })
 		},
-		[selectedTopic?.id]
+		[updateTopicMutation, id]
+	)
+
+	const onNameChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setTitle(e.target.value)
+			// save in db (w/ debouncing)
+			debounce(updateNameMutation, 1000)(e.target.value)
+		},
+		[updateNameMutation]
 	)
 
 	return (
@@ -55,20 +82,14 @@ export function TopicHeader() {
 						<div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-0'>
 							<div className='flex-1'>
 								<input
+									// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
+									autoFocus={title === ''}
 									className='w-full border-none bg-transparent font-bold text-xl focus:outline-none sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'
-									onBlur={e => {
-										updateTitle(e.target.value)
-									}}
-									onChange={e => {
-										setSelectedTopic({
-											...selectedTopic!,
-											name: e.target.value
-										})
-									}}
+									onChange={onNameChange}
 									placeholder='Title...'
 									spellCheck={false}
 									type='text'
-									value={selectedTopic?.name}
+									value={title}
 								/>
 							</div>
 
@@ -108,12 +129,10 @@ export function TopicHeader() {
 										<p className='whitespace-nowrap font-medium text-muted-foreground text-xs sm:text-sm'>
 											<span
 												className={cn(
-													getRetrievabilityColorClass(
-														selectedTopic?.retrievability ?? 0
-													)
+													getRetrievabilityColorClass(retrievability)
 												)}
 											>
-												{(selectedTopic?.retrievability ?? 0 * 100).toFixed(0)}%
+												{(retrievability * 100).toFixed(0)}%
 											</span>{' '}
 											retrievability
 										</p>
@@ -150,15 +169,15 @@ export function TopicHeader() {
 										<Progress
 											className='h-1.5 w-8'
 											max={365}
-											value={selectedTopic?.stability ?? 0}
+											value={stability}
 										/>
 										<span className='whitespace-nowrap font-medium text-muted-foreground text-xs sm:text-sm'>
-											Stable for {selectedTopic?.stability ?? 0} days
+											Stable for {stability} days
 										</span>
 									</div>
 								</TooltipTrigger>
 								<TooltipContent>
-									<p>Stability ({selectedTopic?.stability ?? 0}/365 days)</p>
+									<p>Stability ({stability}/365 days)</p>
 								</TooltipContent>
 							</Tooltip>
 

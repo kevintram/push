@@ -1,3 +1,4 @@
+import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
 	Bold,
@@ -16,24 +17,36 @@ import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardHeader } from '~/components/ui/Card'
 import { Input } from '~/components/ui/Input'
 import { Separator } from '~/components/ui/Separator'
+import type { Tables } from '~/types/database.types'
+import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 
 export function PracticeNotesPanel() {
 	const { selectedTopic } = use(SelectedTopicContext)
 
-	const [activeTab, setActiveTab] = useState<'notes' | 'practice'>('practice') // Practice is now default
+	const [activeTab, setActiveTab] = useState<'notes' | 'practice'>('practice')
 	const [isSplitView, setIsSplitView] = useState(false)
 	const [searchValue, setSearchValue] = useState('')
 	const [numLanes, setNumLanes] = useState(3)
 	const parentRef = useRef<HTMLDivElement>(null)
 
+	const { data: practicePrompts } = useQuery<Array<Tables<'practice_cards'>>>(
+		supabase
+			.from('practice_cards')
+			.select('*')
+			.eq('topic_id', selectedTopic?.id ?? ''),
+		{
+			enabled: selectedTopic !== undefined
+		}
+	)
+
 	// Filter practice items based on search
 	const filteredPractice = useMemo(() => {
-		if (!searchValue) return selectedTopic?.practicePrompts || []
-		return (selectedTopic?.practicePrompts || []).filter(item =>
-			item.title.toLowerCase().includes(searchValue.toLowerCase())
+		if (!searchValue) return practicePrompts || []
+		return (practicePrompts || []).filter((item: Tables<'practice_cards'>) =>
+			item.content.toLowerCase().includes(searchValue.toLowerCase())
 		)
-	}, [searchValue, selectedTopic?.practicePrompts])
+	}, [searchValue, practicePrompts])
 
 	// Masonry virtualization setup
 	const virtualizer = useVirtualizer({
@@ -41,9 +54,9 @@ export function PracticeNotesPanel() {
 		getScrollElement: () => parentRef.current,
 		estimateSize: i => {
 			const item = filteredPractice[i]
-			if (!item?.title) return 100
+			if (!item?.content) return 100
 			const baseHeight = 80
-			const additionalHeight = Math.floor(item.title.length / 30) * 10
+			const additionalHeight = Math.floor(item.content.length / 30) * 10
 			return baseHeight + additionalHeight
 		},
 		overscan: 5,
@@ -111,7 +124,7 @@ export function PracticeNotesPanel() {
 							}}
 						>
 							<div className='text-sm'>
-								{filteredPractice[virtualItem.index]?.title}
+								{filteredPractice[virtualItem.index]?.content}
 							</div>
 						</div>
 					))}

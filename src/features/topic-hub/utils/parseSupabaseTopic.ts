@@ -8,9 +8,7 @@ type TableTopic = Tables<'topics'> & {
 export function parseSupabaseTopic(t: TableTopic): Topic {
 	return {
 		...t,
-		timeline_entries: t.timeline_entries || [],
 		children: [],
-		parents: [],
-		practicePrompts: []
+		parents: []
 	}
 }

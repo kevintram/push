@@ -1,10 +1,4 @@
-import {
-	Baby,
-	ChevronDown,
-	MoreHorizontal,
-	RotateCcw,
-	Users2
-} from 'lucide-react'
+import { Baby, ChevronDown, MoreHorizontal, Users2 } from 'lucide-react'
 import { memo, use, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
@@ -17,7 +11,6 @@ import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
-import { numDaysElapsedFrom } from '../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
 /**
@@ -82,10 +75,11 @@ const BasicTopicListItem = memo(
 		isExpanded: boolean
 		setIsExpanded: (isExpanded: boolean) => void
 	}) => {
-		const lastReviewDate = topic.timeline_entries?.at(-1)?.review_date
-		const daysSinceLastEntry = lastReviewDate
-			? numDaysElapsedFrom(new Date(lastReviewDate))
-			: 0
+		// TODO: reimplement this later
+		// const lastReviewDate = topic.timeline_entries?.at(-1)?.review_date
+		// const daysSinceLastEntry = lastReviewDate
+		// 	? numDaysElapsedFrom(new Date(lastReviewDate))
+		// 	: 0
 
 		return (
 			<div
@@ -109,10 +103,10 @@ const BasicTopicListItem = memo(
 									{(topic.retrievability * 100).toFixed(0)}%
 								</span>
 								<span className='font-bold'> · </span>
-								<RotateCcw className='h-3 w-3' />
+								{/* <RotateCcw className='h-3 w-3' />
 								{daysSinceLastEntry === 0 || Number.isNaN(daysSinceLastEntry)
 									? 'never'
-									: `${daysSinceLastEntry}d ago`}
+									: `${daysSinceLastEntry}d ago`} */}
 							</div>
 							<div className='mt-1 flex items-center gap-2'>
 								<Progress

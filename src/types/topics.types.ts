@@ -15,14 +15,11 @@ import type { Tables } from './database.types'
 
 // Base Supabase table types
 type TableTopic = Tables<'topics'>
-export type TimelineEntry = Tables<'timeline_entries'>
 
 // enhanced topic type for now while we have partial implementation
 export type Topic = TableTopic & {
-	timeline_entries: Array<TimelineEntry>
 	parents: Array<string>
 	children: Array<Topic>
-	practicePrompts: Array<PracticePrompt>
 }
 
 export interface PracticePrompt {
