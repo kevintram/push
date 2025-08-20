@@ -1,6 +1,7 @@
 node_modules
 .DS_Store
 .env
+.env.*
 dist
 dist-ssr
 *.local
@@ -10,3 +11,5 @@ coverage
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+# Local Netlify folder
+.netlify
