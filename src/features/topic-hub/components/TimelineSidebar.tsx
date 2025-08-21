@@ -45,7 +45,7 @@ export function TimelineSidebar() {
 			</div>
 
 			<div className='flex min-h-0 flex-1 flex-col'>
-				<div className='flex-1 space-y-4 overflow-auto'>
+				<div className='flex-1 space-y-2 overflow-auto'>
 					{timelineEntries?.map((entry, index) => (
 						<Entry
 							currEntry={entry}
@@ -113,12 +113,16 @@ function Entry({
 	}, [currEffectiveDate])
 
 	return (
-		<div className='relative flex gap-3'>
+		<div className='flex flex-row gap-3'>
 			<div className='flex flex-col items-center'>
 				<div className='flex items-center gap-2'>
 					<Checkbox
 						checked={!!currEntry.completed_at}
-						className={isOverdue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}
+						className={
+							isOverdue
+								? 'border-red-600 dark:border-red-700 dark:bg-red-700'
+								: ''
+						}
 						onCheckedChange={handleCheckboxChange}
 					/>
 
@@ -128,12 +132,9 @@ function Entry({
 				</div>
 
 				{nextEntry && (
-					<>
-						<div className='mt-2 min-h-12 w-px flex-1 bg-border' />
-						<div className='font-medium text-muted-foreground text-xs'>
-							{numDaysElapsed(currEffectiveDate, nextEffectiveDate)}d
-						</div>
-					</>
+					<DaysElapsedMarker
+						daysElapsed={numDaysElapsed(currEffectiveDate, nextEffectiveDate)}
+					/>
 				)}
 			</div>
 
@@ -184,6 +185,17 @@ function Entry({
 					</div>
 				</div>
 			</div> */}
+		</div>
+	)
+}
+
+function DaysElapsedMarker({ daysElapsed }: { daysElapsed: number }) {
+	return (
+		<div className='flex flex-col items-center gap-2'>
+			<div className='mt-2 min-h-12 w-px flex-1 bg-border' />
+			<div className='font-medium text-muted-foreground text-xs'>
+				{daysElapsed}d
+			</div>
 		</div>
 	)
 }
