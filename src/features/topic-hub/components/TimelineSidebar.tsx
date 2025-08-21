@@ -27,7 +27,8 @@ export function TimelineSidebar() {
 		supabase
 			.from('timeline_entries')
 			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? ''),
+			.eq('topic_id', selectedTopic?.id ?? '')
+			.order('scheduled_at', { ascending: true }),
 		{
 			enabled: selectedTopic !== undefined
 		}
