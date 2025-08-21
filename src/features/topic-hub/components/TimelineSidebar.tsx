@@ -1,12 +1,14 @@
 import {
 	useInsertMutation,
-	useQuery
+	useQuery,
+	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { Calendar as CalendarIcon, Plus } from 'lucide-react'
-import { use, useCallback, useState } from 'react'
+import { use, useCallback, useMemo, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { Calendar } from '~/components/ui/Calendar'
+import { Checkbox } from '~/components/ui/Checkbox'
 import { Input } from '~/components/ui/Input'
 import {
 	Popover,
@@ -18,17 +20,18 @@ import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { numDaysElapsed } from '../utils/daysElapsed'
-import { getEffectiveDate } from '../utils/timeline'
 
 export function TimelineSidebar() {
 	const { selectedTopic } = use(SelectedTopicContext)
 
-	const { data: timelineEntries } = useQuery<Array<Tables<'timeline_entries'>>>(
+	const { data: timelineEntries } = useQuery<
+		Array<Tables<'timeline_entries_with_effective_date'>>
+	>(
 		supabase
-			.from('timeline_entries')
+			.from('timeline_entries_with_effective_date')
 			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? '')
-			.order('scheduled_at', { ascending: true }),
+			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
+			.order('effective_date', { ascending: true }),
 		{
 			enabled: selectedTopic !== undefined
 		}
@@ -66,9 +69,9 @@ function Entry({
 	index,
 	nextEntry
 }: {
-	currEntry: Tables<'timeline_entries'>
+	currEntry: Tables<'timeline_entries_with_effective_date'>
 	index: number
-	nextEntry: Tables<'timeline_entries'> | undefined // undefined if last entry
+	nextEntry: Tables<'timeline_entries_with_effective_date'> | undefined // undefined if last entry
 }) {
 	// TODO: Implement count based on timeline_entry_practice_cards
 	// const reviewedItemsCount = 0
@@ -77,16 +80,50 @@ function Entry({
 	// const stabilityChange = currEntry.stability_change
 	// const retrievability = currEntry.retrievability
 
+	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
+		supabase.from('timeline_entries_with_effective_date'),
+		['id'],
+		'*'
+	)
+
+	const handleCheckboxChange = useCallback(
+		(checked: boolean) => {
+			updateTimelineEntryMutation({
+				id: currEntry.id,
+				completed_at: checked ? new Date().toISOString() : null
+			})
+		},
+		[currEntry.id, updateTimelineEntryMutation]
+	)
+
+	const currEffectiveDate: Date | undefined = useMemo(() => {
+		return currEntry.effective_date
+			? new Date(currEntry.effective_date)
+			: undefined
+	}, [currEntry.effective_date])
+
+	const nextEffectiveDate: Date | undefined = useMemo(() => {
+		return nextEntry?.effective_date
+			? new Date(nextEntry.effective_date)
+			: undefined
+	}, [nextEntry?.effective_date])
+
+	const isOverdue: boolean | undefined = useMemo(() => {
+		return currEffectiveDate && currEffectiveDate < new Date()
+	}, [currEffectiveDate])
+
 	return (
 		<div className='relative flex gap-3'>
 			<div className='flex flex-col items-center'>
 				<div className='flex items-center gap-2'>
-					<div className='font-medium text-muted-foreground text-xs'>
-						{index + 1}
-					</div>
+					<Checkbox
+						checked={!!currEntry.completed_at}
+						className={isOverdue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}
+						onCheckedChange={handleCheckboxChange}
+					/>
 
 					<Badge variant='default'>
-						{getEffectiveDate(currEntry).toLocaleDateString()}
+						{currEffectiveDate?.toLocaleDateString()}
 					</Badge>
 				</div>
 
@@ -94,18 +131,19 @@ function Entry({
 					<>
 						<div className='mt-2 min-h-12 w-px flex-1 bg-border' />
 						<div className='font-medium text-muted-foreground text-xs'>
-							{numDaysElapsed(
-								getEffectiveDate(currEntry),
-								getEffectiveDate(nextEntry)
-							)}
-							d
+							{numDaysElapsed(currEffectiveDate, nextEffectiveDate)}d
 						</div>
 					</>
 				)}
 			</div>
 
-			<div className='flex-1 py-1'>
-				<div className='text-foreground text-xs'>{currEntry.description}</div>
+			<div className='flex flex-1 flex-row gap-2 py-1'>
+				<div className='flex-1 text-foreground text-xs'>
+					{currEntry.description}
+				</div>
+				<div className='font-medium text-muted-foreground text-xs'>
+					{index + 1}
+				</div>
 			</div>
 
 			{/* TODO: Implement practice cards, stability change, and retrievability later*/}
