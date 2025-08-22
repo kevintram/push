@@ -1,17 +1,12 @@
 import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
-import debounce from 'lodash.debounce'
-import { use, useCallback, useEffect, useState } from 'react'
+import { use, useCallback } from 'react'
 import { Textarea } from '~/components/ui/Textarea'
+import { useAutoSave } from '~/hooks/useAutoSave'
 import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 
 export function Notes() {
 	const { selectedTopic } = use(SelectedTopicContext)
-	const [notes, setNotes] = useState(selectedTopic?.notes ?? '')
-
-	useEffect(() => {
-		setNotes(selectedTopic?.notes ?? '')
-	}, [selectedTopic?.notes])
 
 	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
 		supabase.from('topics'),
@@ -28,13 +23,10 @@ export function Notes() {
 		[updateTopicMutation, selectedTopic?.id]
 	)
 
-	const onNotesChange = useCallback(
-		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-			setNotes(e.target.value)
-			debounce(updateNotesMutation, 1000)(e.target.value)
-		},
-		[updateNotesMutation]
-	)
+	const { value: notes, onChange: onNotesChange } = useAutoSave({
+		initialValue: selectedTopic?.notes ?? '',
+		onSave: updateNotesMutation
+	})
 
 	return (
 		<Textarea

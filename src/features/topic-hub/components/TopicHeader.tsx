@@ -1,5 +1,4 @@
 import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
-import debounce from 'lodash.debounce'
 import {
 	ArchiveRestore,
 	Baby,
@@ -11,7 +10,7 @@ import {
 	UserPlus,
 	Users
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -25,6 +24,7 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
+import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { supabase } from '~/utils/supabase'
 import { numDaysElapsedFrom } from '../utils/daysElapsed'
@@ -45,8 +45,6 @@ export function TopicHeader({
 	retrievability,
 	stability
 }: TopicHeaderProps) {
-	const [title, setTitle] = useState(name)
-
 	const sinceLastReview = useMemo(
 		() => numDaysElapsedFrom(new Date(createdAt)),
 		[createdAt]
@@ -65,14 +63,10 @@ export function TopicHeader({
 		[updateTopicMutation, id]
 	)
 
-	const onNameChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			setTitle(e.target.value)
-			// save in db (w/ debouncing)
-			debounce(updateNameMutation, 1000)(e.target.value)
-		},
-		[updateNameMutation]
-	)
+	const { value: title, onChange: onNameChange } = useAutoSave({
+		initialValue: name,
+		onSave: updateNameMutation
+	})
 
 	return (
 		<div className='flex w-full flex-col gap-3 sm:gap-4'>
