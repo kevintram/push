@@ -1,12 +1,21 @@
-import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
+import {
+	useQuery,
+	useUpdateMutation
+} from '@supabase-cache-helpers/postgrest-react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Plus, Search } from 'lucide-react'
-import { use, useEffect, useMemo, useRef, useState } from 'react'
+import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
+import { Card, CardContent } from '~/components/ui/Card'
+import { Dialog, DialogContent } from '~/components/ui/Dialog'
 import { Input } from '~/components/ui/Input'
+import { Textarea } from '~/components/ui/Textarea'
+import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
+
+type PracticeCard = Tables<'practice_cards'>
 
 export function PracticeCards() {
 	const [searchValue, setSearchValue] = useState('')
@@ -15,23 +24,21 @@ export function PracticeCards() {
 
 	const { selectedTopic } = use(SelectedTopicContext)
 
-	const { data: practicePrompts } = useQuery(
+	const { data: practiceCards } = useQuery(
 		supabase
 			.from('practice_cards')
 			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? 0),
-		{
-			enabled: selectedTopic !== undefined
-		}
+			.eq('topic_id', selectedTopic?.id ?? 0)
+			.order('id', { ascending: false })
 	)
 
 	// Filter practice items based on search
 	const filteredPractice = useMemo(() => {
-		if (!searchValue) return practicePrompts || []
-		return (practicePrompts || []).filter((item: Tables<'practice_cards'>) =>
+		if (!searchValue) return practiceCards || []
+		return (practiceCards || []).filter((item: PracticeCard) =>
 			item.content.toLowerCase().includes(searchValue.toLowerCase())
 		)
-	}, [searchValue, practicePrompts])
+	}, [searchValue, practiceCards])
 
 	// Masonry virtualization setup
 	const virtualizer = useVirtualizer({
@@ -96,25 +103,84 @@ export function PracticeCards() {
 						position: 'relative'
 					}}
 				>
-					{virtualizer.getVirtualItems().map(virtualItem => (
-						<div
-							className='absolute top-0 cursor-pointer rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50'
-							data-index={virtualItem.index}
-							key={virtualItem.index}
-							ref={virtualizer.measureElement}
-							style={{
-								left: `${virtualItem.lane * (100 / numLanes)}%`,
-								width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : 8}px)`,
-								transform: `translateY(${virtualItem.start}px)`
-							}}
-						>
-							<div className='text-sm'>
-								{filteredPractice[virtualItem.index]?.content}
+					{virtualizer.getVirtualItems().map(virtualItem => {
+						const card = filteredPractice[virtualItem.index]!
+						return (
+							<div
+								className='absolute top-0'
+								data-index={virtualItem.index}
+								key={card.id}
+								ref={virtualizer.measureElement}
+								style={{
+									left: `${virtualItem.lane * (100 / numLanes)}%`,
+									width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : 8}px)`,
+									transform: `translateY(${virtualItem.start}px)`
+								}}
+							>
+								<PracticeCardItem card={card} />
 							</div>
-						</div>
-					))}
+						)
+					})}
 				</div>
 			</div>
+		</div>
+	)
+}
+
+function PracticeCardItem({ card }: { card: PracticeCard }) {
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+	return (
+		<>
+			<Card
+				className='cursor-pointer transition-colors hover:bg-muted/50'
+				onClick={() => setIsDialogOpen(true)}
+			>
+				<CardContent className='p-4'>
+					<div className='text-sm'>{card?.content}</div>
+				</CardContent>
+			</Card>
+			<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
+				<DialogContent>
+					<PracticeCardDetail card={card} />
+				</DialogContent>
+			</Dialog>
+		</>
+	)
+}
+
+function PracticeCardDetail({ card }: { card: PracticeCard }) {
+	const { mutateAsync: updatePracticeCard } = useUpdateMutation(
+		supabase.from('practice_cards'),
+		['id'],
+		'*',
+		{
+			onSuccess: () => {}
+		}
+	)
+
+	const updateCardContent = useCallback(
+		(newContent: string) => {
+			if (card?.id) {
+				updatePracticeCard({ id: card.id, content: newContent })
+			}
+		},
+		[updatePracticeCard, card?.id]
+	)
+
+	const { value: cardContent, onChange: onContentChange } = useAutoSave({
+		initialValue: card?.content ?? '',
+		onSave: updateCardContent
+	})
+
+	return (
+		<div className='py-4'>
+			<Textarea
+				autoFocus={true}
+				className='min-h-32 resize-none border-none shadow-none focus-visible:border-none focus-visible:ring-0'
+				onChange={onContentChange}
+				value={cardContent}
+			/>
 		</div>
 	)
 }
