@@ -1,5 +1,6 @@
-import { Baby, ChevronDown, MoreHorizontal, Users2 } from 'lucide-react'
-import { memo, use, useState } from 'react'
+import { useDeleteMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import { Baby, ChevronDown, MoreHorizontal, Trash, Users2 } from 'lucide-react'
+import { memo, use, useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -10,6 +11,7 @@ import {
 import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
+import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
@@ -75,6 +77,17 @@ const BasicTopicListItem = memo(
 		isExpanded: boolean
 		setIsExpanded: (isExpanded: boolean) => void
 	}) => {
+		const { mutateAsync: deleteTopic } = useDeleteMutation(
+			supabase.from('topics'),
+			['id']
+		)
+
+		const handleDelete = useCallback(async () => {
+			if (topic?.id) {
+				await deleteTopic({ id: topic.id })
+			}
+		}, [deleteTopic, topic?.id])
+
 		// TODO: reimplement this later
 		// const lastReviewDate = topic.timeline_entries?.at(-1)?.review_date
 		// const daysSinceLastEntry = lastReviewDate
@@ -135,8 +148,9 @@ const BasicTopicListItem = memo(
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent>
-									<DropdownMenuItem disabled={true}>
-										Implement later
+									<DropdownMenuItem onClick={handleDelete}>
+										<Trash className='mr-2 h-4 w-4' />
+										Delete
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
