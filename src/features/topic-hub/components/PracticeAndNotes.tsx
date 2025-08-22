@@ -17,7 +17,7 @@ export function PracticeAndNotes() {
 				<div className='flex items-center justify-between'>
 					<SegmentedControl
 						allActive={isSplitView}
-						onValueChange={(value) => setTab(value as 'notes' | 'practice')}
+						onValueChange={value => setTab(value as 'notes' | 'practice')}
 						value={tab}
 					>
 						<SegmentedControlItem value='practice'>
@@ -39,7 +39,9 @@ export function PracticeAndNotes() {
 					</Button>
 				</div>
 			</CardHeader>
-			<CardContent className={isSplitView ? 'flex min-h-0 flex-1 gap-4' : 'min-h-0 flex-1'}>
+			<CardContent
+				className={isSplitView ? 'flex min-h-0 flex-1 gap-4' : 'min-h-0 flex-1'}
+			>
 				{isSplitView ? (
 					<>
 						<div className='min-w-0 flex-1'>

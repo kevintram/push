@@ -28,7 +28,7 @@ function SegmentedControl({
 	return (
 		<div
 			className={cn(
-				'bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]',
+				'inline-flex h-9 w-fit items-center justify-center rounded-lg bg-muted p-[3px] text-muted-foreground',
 				className
 			)}
 			{...props}
@@ -38,10 +38,10 @@ function SegmentedControl({
 					const isActive = allActive || value === child.props.value
 					const isFirst = index === 0
 					const isLast = index === React.Children.count(children) - 1
-					
+
 					let roundedClasses = 'rounded-md'
 					let shadowClasses = 'data-[active=true]:shadow-sm'
-					
+
 					if (allActive) {
 						shadowClasses = '' // Remove shadow when all active
 						if (isFirst) {
@@ -52,7 +52,7 @@ function SegmentedControl({
 							roundedClasses = 'rounded-none'
 						}
 					}
-					
+
 					return React.cloneElement(child, {
 						...child.props,
 						onClick: () => {
@@ -60,12 +60,12 @@ function SegmentedControl({
 							child.props.onClick?.()
 						},
 						className: cn(
-							'cursor-pointer inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:outline-1 data-[active=true]:bg-background data-[active=true]:text-foreground dark:data-[active=true]:border-input dark:data-[active=true]:bg-input/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=\'size-\'])]:size-4',
+							"cursor-pointer inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:outline-1 data-[active=true]:bg-background data-[active=true]:text-foreground dark:data-[active=true]:border-input dark:data-[active=true]:bg-input/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 							roundedClasses,
 							shadowClasses,
 							child.props.className
 						),
-						'data-active': isActive,
+						'data-active': isActive
 					})
 				}
 				return child
