@@ -4,7 +4,12 @@ import {
 	useQuery,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
-import { Calendar as CalendarIcon, MoreVertical, Plus, Trash2 } from 'lucide-react'
+import {
+	Calendar as CalendarIcon,
+	MoreVertical,
+	Plus,
+	Trash2
+} from 'lucide-react'
 import { use, useCallback, useMemo, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
@@ -189,10 +194,10 @@ function Entry({
 								{currEffectiveDate.toLocaleDateString()}
 							</Badge>
 						</PopoverTrigger>
-						<PopoverContent 
-							align="start"
+						<PopoverContent
+							align='start'
 							className='w-80 p-6'
-							side="right"
+							side='right'
 							sideOffset={10}
 						>
 							<EditEntry
@@ -222,19 +227,19 @@ function Entry({
 					</div>
 					<DropdownMenu onOpenChange={setIsDropdownOpen} open={isDropdownOpen}>
 						<DropdownMenuTrigger asChild={true}>
-							<Button 
-								className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
-								variant="ghost"
+							<Button
+								className='h-4 w-4 p-0 text-muted-foreground hover:text-foreground'
+								variant='ghost'
 							>
-								<MoreVertical className="h-3 w-3" />
+								<MoreVertical className='h-3 w-3' />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" side="bottom" sideOffset={2}>
-							<DropdownMenuItem 
-								className="text-red-600 focus:text-red-600"
+						<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+							<DropdownMenuItem
+								className='text-red-600 focus:text-red-600'
 								onClick={handleDelete}
 							>
-								<Trash2 className="mr-2 h-4 w-4" />
+								<Trash2 className='mr-2 h-4 w-4' />
 								Delete
 							</DropdownMenuItem>
 						</DropdownMenuContent>
@@ -348,7 +353,13 @@ function EditEntry({
 			description: description.trim()
 		})
 		onClose()
-	}, [entry.id, selectedDate, description, updateTimelineEntryMutation, onClose])
+	}, [
+		entry.id,
+		selectedDate,
+		description,
+		updateTimelineEntryMutation,
+		onClose
+	])
 
 	return (
 		<div className='flex w-full flex-col items-start gap-6'>
@@ -389,9 +400,7 @@ function EditEntry({
 				/>
 			</div>
 			<div className='flex w-full items-center justify-end gap-2'>
-				<Button onClick={handleSave}>
-					Save
-				</Button>
+				<Button onClick={handleSave}>Save</Button>
 			</div>
 		</div>
 	)

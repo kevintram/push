@@ -31,7 +31,7 @@ import { numDaysElapsedFrom } from '../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
 
 interface TopicHeaderProps {
-	id: string
+	id: number
 	name: string
 	createdAt: string
 	retrievability: number

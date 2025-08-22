@@ -77,7 +77,7 @@ export function TopicHub() {
 					{selectedTopic && (
 						<div className='flex w-full flex-1 flex-col gap-4 overflow-auto p-3 sm:gap-6 sm:p-4 md:p-6'>
 							<TopicHeader
-								createdAt={selectedTopic.created_at ?? ''}
+								createdAt={selectedTopic.inserted_at}
 								id={selectedTopic.id}
 								key={selectedTopic.id}
 								name={selectedTopic.name}

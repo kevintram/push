@@ -34,7 +34,7 @@ export function PracticeNotesPanel() {
 		supabase
 			.from('practice_cards')
 			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? ''),
+			.eq('topic_id', selectedTopic?.id ?? 0),
 		{
 			enabled: selectedTopic !== undefined
 		}
