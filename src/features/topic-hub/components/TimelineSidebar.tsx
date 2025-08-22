@@ -1,14 +1,21 @@
 import {
+	useDeleteMutation,
 	useInsertMutation,
 	useQuery,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
-import { Calendar as CalendarIcon, Plus } from 'lucide-react'
+import { Calendar as CalendarIcon, MoreVertical, Plus, Trash2 } from 'lucide-react'
 import { use, useCallback, useMemo, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { Calendar } from '~/components/ui/Calendar'
 import { Checkbox } from '~/components/ui/Checkbox'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { Input } from '~/components/ui/Input'
 import { Label } from '~/components/ui/Label'
 import {
@@ -126,11 +133,17 @@ function Entry({
 	// const retrievability = currEntry.retrievability
 
 	const [isEditPopoverOpen, setIsEditPopoverOpen] = useState(false)
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
 	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
 		supabase.from('timeline_entries_with_effective_date'),
 		['id'],
 		'*'
+	)
+
+	const { mutateAsync: deleteTimelineEntryMutation } = useDeleteMutation(
+		supabase.from('timeline_entries_with_effective_date'),
+		['id']
 	)
 
 	const handleCheckboxChange = useCallback(
@@ -142,6 +155,11 @@ function Entry({
 		},
 		[currEntry.id, updateTimelineEntryMutation]
 	)
+
+	const handleDelete = useCallback(() => {
+		deleteTimelineEntryMutation({ id: currEntry.id })
+		setIsDropdownOpen(false)
+	}, [currEntry.id, deleteTimelineEntryMutation])
 
 	const currEffectiveDate: Date = useMemo(() => {
 		return dateOf(currEntry.effective_date)!
@@ -194,12 +212,33 @@ function Entry({
 				</div>
 			</div>
 
-			<div className='flex flex-1 flex-row gap-2 py-1'>
+			<div className='flex flex-1 flex-row items-start gap-2 py-1'>
 				<div className='flex-1 text-foreground text-xs'>
 					{currEntry.description}
 				</div>
-				<div className='font-medium text-muted-foreground text-xs'>
-					{index + 1}
+				<div className='flex items-start gap-1'>
+					<div className='font-medium text-muted-foreground text-xs'>
+						{index + 1}
+					</div>
+					<DropdownMenu onOpenChange={setIsDropdownOpen} open={isDropdownOpen}>
+						<DropdownMenuTrigger asChild={true}>
+							<Button 
+								className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
+								variant="ghost"
+							>
+								<MoreVertical className="h-3 w-3" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" side="bottom" sideOffset={2}>
+							<DropdownMenuItem 
+								className="text-red-600 focus:text-red-600"
+								onClick={handleDelete}
+							>
+								<Trash2 className="mr-2 h-4 w-4" />
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
 
