@@ -25,10 +25,11 @@ function LibrarySidebar(props: {
 
 			<div className='flex w-full flex-col gap-2 overflow-auto'>
 				{props?.notes?.map(item => (
-					<div
-						className='flex cursor-pointer items-center justify-between rounded-lg p-3 hover:bg-muted/50'
+					<button
+						className='flex w-full cursor-pointer items-center justify-between rounded-lg p-3 text-left hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
 						key={item.name}
 						onClick={() => props.onNoteSelected(item)}
+						type='button'
 					>
 						<div className='min-w-0 flex-1'>
 							<div className='truncate font-medium text-sm'>{item.name}</div>
@@ -36,7 +37,7 @@ function LibrarySidebar(props: {
 								{item.notes}
 							</div>
 						</div>
-					</div>
+					</button>
 				))}
 			</div>
 		</div>

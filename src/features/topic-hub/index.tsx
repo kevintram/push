@@ -1,6 +1,6 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useState } from 'react'
-import { PracticeNotesPanel } from '~/features/topic-hub/components/PracticeNotesPanel'
+import { PracticeAndNotes } from '~/features/topic-hub/components/PracticeAndNotes'
 import { TopicFamilyPanel } from '~/features/topic-hub/components/TopicFamilyPanel'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
@@ -87,7 +87,7 @@ export function TopicHub() {
 
 							<TopicFamilyPanel topic={selectedTopic} />
 
-							<PracticeNotesPanel />
+							<PracticeAndNotes />
 						</div>
 					)}
 				</div>
