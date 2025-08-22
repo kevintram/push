@@ -1,14 +1,11 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { EntryItem } from '~/components/EntryItem'
-import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 
 export const Route = createFileRoute('/upcoming')({
 	component: RouteComponent
 })
-
-type TimelineEntry = Tables<'timeline_entries'> & { topics: { name: string } }
 
 function RouteComponent() {
 	const { data: timelineEntries } = useQuery(
@@ -27,7 +24,7 @@ function RouteComponent() {
 
 			<div className='space-y-0.5'>
 				{timelineEntries?.map(entry => (
-					<EntryItem entry={entry} key={entry.id} isCompleted={false} />
+					<EntryItem entry={entry} isCompleted={false} key={entry.id} />
 				))}
 				{timelineEntries?.length === 0 && (
 					<div className='py-12 text-center'>
@@ -38,4 +35,3 @@ function RouteComponent() {
 		</div>
 	)
 }
-

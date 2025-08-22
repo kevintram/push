@@ -1,6 +1,4 @@
-import {
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { useCallback, useState } from 'react'
 import { Checkbox } from '~/components/ui/Checkbox'
 import type { Tables } from '~/types/database.types'
@@ -15,14 +13,11 @@ interface EntryItemProps {
 
 export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 	const dateValue = isCompleted ? entry.completed_at! : entry.scheduled_at
-	const dateLabel = new Date(dateValue).toLocaleDateString(
-		'en-US',
-		{
-			weekday: 'short',
-			month: 'short',
-			day: 'numeric'
-		}
-	)
+	const dateLabel = new Date(dateValue).toLocaleDateString('en-US', {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric'
+	})
 
 	const isOverdue = !isCompleted && new Date(entry.scheduled_at) < new Date()
 	const [isChecked, setIsChecked] = useState(isCompleted)

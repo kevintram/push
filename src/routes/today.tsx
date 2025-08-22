@@ -9,7 +9,7 @@ export const Route = createFileRoute('/today')({
 
 function RouteComponent() {
 	const today = new Date().toISOString().split('T')[0]
-	
+
 	const { data: timelineEntries } = useQuery(
 		supabase
 			.from('timeline_entries')
@@ -28,15 +28,17 @@ function RouteComponent() {
 
 			<div className='space-y-0.5'>
 				{timelineEntries?.map(entry => (
-					<EntryItem 
-						entry={entry} 
-						key={entry.id} 
-						isCompleted={entry.completed_at !== null} 
+					<EntryItem
+						entry={entry}
+						isCompleted={entry.completed_at !== null}
+						key={entry.id}
 					/>
 				))}
 				{timelineEntries?.length === 0 && (
 					<div className='py-12 text-center'>
-						<p className='text-muted-foreground'>No entries scheduled for today.</p>
+						<p className='text-muted-foreground'>
+							No entries scheduled for today.
+						</p>
 					</div>
 				)}
 			</div>

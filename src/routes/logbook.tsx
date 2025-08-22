@@ -24,7 +24,7 @@ function RouteComponent() {
 
 			<div className='space-y-0.5'>
 				{timelineEntries?.map(entry => (
-					<EntryItem entry={entry} key={entry.id} isCompleted={true} />
+					<EntryItem entry={entry} isCompleted={true} key={entry.id} />
 				))}
 				{timelineEntries?.length === 0 && (
 					<div className='py-12 text-center'>
