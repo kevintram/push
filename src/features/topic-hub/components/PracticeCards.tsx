@@ -1,13 +1,14 @@
 import {
+	useDeleteMutation,
 	useQuery,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Plus, Search } from 'lucide-react'
+import { Plus, Search, Trash2 } from 'lucide-react'
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
-import { Dialog, DialogContent } from '~/components/ui/Dialog'
+import { Dialog, DialogContent, DialogFooter } from '~/components/ui/Dialog'
 import { Input } from '~/components/ui/Input'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -130,33 +131,15 @@ export function PracticeCards() {
 function PracticeCardItem({ card }: { card: PracticeCard }) {
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-	return (
-		<>
-			<Card
-				className='cursor-pointer transition-colors hover:bg-muted/50'
-				onClick={() => setIsDialogOpen(true)}
-			>
-				<CardContent className='p-4'>
-					<div className='text-sm'>{card?.content}</div>
-				</CardContent>
-			</Card>
-			<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
-				<DialogContent>
-					<PracticeCardDetail card={card} />
-				</DialogContent>
-			</Dialog>
-		</>
-	)
-}
-
-function PracticeCardDetail({ card }: { card: PracticeCard }) {
 	const { mutateAsync: updatePracticeCard } = useUpdateMutation(
 		supabase.from('practice_cards'),
 		['id'],
-		'*',
-		{
-			onSuccess: () => {}
-		}
+		'*'
+	)
+
+	const { mutateAsync: deletePracticeCard } = useDeleteMutation(
+		supabase.from('practice_cards'),
+		['id']
 	)
 
 	const updateCardContent = useCallback(
@@ -168,19 +151,46 @@ function PracticeCardDetail({ card }: { card: PracticeCard }) {
 		[updatePracticeCard, card?.id]
 	)
 
+	const handleDelete = useCallback(async () => {
+		if (card?.id) {
+			await deletePracticeCard({ id: card.id })
+			setIsDialogOpen(false)
+		}
+	}, [deletePracticeCard, card?.id])
+
 	const { value: cardContent, onChange: onContentChange } = useAutoSave({
 		initialValue: card?.content ?? '',
 		onSave: updateCardContent
 	})
 
 	return (
-		<div className='py-4'>
-			<Textarea
-				autoFocus={true}
-				className='min-h-32 resize-none border-none shadow-none focus-visible:border-none focus-visible:ring-0'
-				onChange={onContentChange}
-				value={cardContent}
-			/>
-		</div>
+		<>
+			<Card
+				className='cursor-pointer transition-colors hover:bg-muted/50'
+				onClick={() => setIsDialogOpen(true)}
+			>
+				<CardContent className='p-4'>
+					<div className='text-sm'>{card?.content}</div>
+				</CardContent>
+			</Card>
+
+			<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
+				<DialogContent>
+					<div className='py-4'>
+						<Textarea
+							autoFocus={true}
+							className='min-h-32 resize-none border-none shadow-none focus-visible:border-none focus-visible:ring-0'
+							onChange={onContentChange}
+							value={cardContent}
+						/>
+					</div>
+					<DialogFooter className='sm:justify-start'>
+						<Button onClick={handleDelete} size="icon" variant="ghost">
+							<Trash2 className="h-4 w-4" />
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	)
 }
