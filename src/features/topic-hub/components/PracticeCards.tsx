@@ -1,12 +1,23 @@
-import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
+import {
+	useDeleteMutation,
+	useInsertMutation,
+	useQuery,
+	useUpdateMutation
+} from '@supabase-cache-helpers/postgrest-react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Plus, Search } from 'lucide-react'
-import { use, useEffect, useMemo, useRef, useState } from 'react'
+import { Plus, Search, Trash2 } from 'lucide-react'
+import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
+import { Card, CardContent } from '~/components/ui/Card'
+import { Dialog, DialogContent, DialogFooter } from '~/components/ui/Dialog'
 import { Input } from '~/components/ui/Input'
+import { Textarea } from '~/components/ui/Textarea'
+import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
+
+type PracticeCard = Tables<'practice_cards'>
 
 export function PracticeCards() {
 	const [searchValue, setSearchValue] = useState('')
@@ -15,23 +26,38 @@ export function PracticeCards() {
 
 	const { selectedTopic } = use(SelectedTopicContext)
 
-	const { data: practicePrompts } = useQuery(
+	const { mutateAsync: insertPracticeCard } = useInsertMutation(
+		supabase.from('practice_cards'),
+		['id'],
+		'*'
+	)
+
+	const handleAddCard = useCallback(async () => {
+		if (selectedTopic?.id) {
+			await insertPracticeCard([
+				{
+					topic_id: selectedTopic.id,
+					content: ''
+				}
+			])
+		}
+	}, [insertPracticeCard, selectedTopic?.id])
+
+	const { data: practiceCards } = useQuery(
 		supabase
 			.from('practice_cards')
 			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? 0),
-		{
-			enabled: selectedTopic !== undefined
-		}
+			.eq('topic_id', selectedTopic?.id ?? 0)
+			.order('id', { ascending: false })
 	)
 
 	// Filter practice items based on search
 	const filteredPractice = useMemo(() => {
-		if (!searchValue) return practicePrompts || []
-		return (practicePrompts || []).filter((item: Tables<'practice_cards'>) =>
+		if (!searchValue) return practiceCards || []
+		return (practiceCards || []).filter((item: PracticeCard) =>
 			item.content.toLowerCase().includes(searchValue.toLowerCase())
 		)
-	}, [searchValue, practicePrompts])
+	}, [searchValue, practiceCards])
 
 	// Masonry virtualization setup
 	const virtualizer = useVirtualizer({
@@ -83,7 +109,7 @@ export function PracticeCards() {
 						value={searchValue}
 					/>
 				</div>
-				<Button size='icon' variant='secondary'>
+				<Button onClick={handleAddCard} size='icon' variant='secondary'>
 					<Plus className='h-4 w-4' />
 				</Button>
 			</div>
@@ -96,25 +122,93 @@ export function PracticeCards() {
 						position: 'relative'
 					}}
 				>
-					{virtualizer.getVirtualItems().map(virtualItem => (
-						<div
-							className='absolute top-0 cursor-pointer rounded-lg border bg-muted/30 p-4 transition-colors hover:bg-muted/50'
-							data-index={virtualItem.index}
-							key={virtualItem.index}
-							ref={virtualizer.measureElement}
-							style={{
-								left: `${virtualItem.lane * (100 / numLanes)}%`,
-								width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : 8}px)`,
-								transform: `translateY(${virtualItem.start}px)`
-							}}
-						>
-							<div className='text-sm'>
-								{filteredPractice[virtualItem.index]?.content}
+					{virtualizer.getVirtualItems().map(virtualItem => {
+						const card = filteredPractice[virtualItem.index]!
+						return (
+							<div
+								className='absolute top-0'
+								data-index={virtualItem.index}
+								key={card.id}
+								ref={virtualizer.measureElement}
+								style={{
+									left: `${virtualItem.lane * (100 / numLanes)}%`,
+									width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : 8}px)`,
+									transform: `translateY(${virtualItem.start}px)`
+								}}
+							>
+								<PracticeCardItem card={card} />
 							</div>
-						</div>
-					))}
+						)
+					})}
 				</div>
 			</div>
 		</div>
+	)
+}
+
+function PracticeCardItem({ card }: { card: PracticeCard }) {
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+	const { mutateAsync: updatePracticeCard } = useUpdateMutation(
+		supabase.from('practice_cards'),
+		['id'],
+		'*'
+	)
+
+	const { mutateAsync: deletePracticeCard } = useDeleteMutation(
+		supabase.from('practice_cards'),
+		['id']
+	)
+
+	const updateCardContent = useCallback(
+		(newContent: string) => {
+			if (card?.id) {
+				updatePracticeCard({ id: card.id, content: newContent })
+			}
+		},
+		[updatePracticeCard, card?.id]
+	)
+
+	const handleDelete = useCallback(async () => {
+		if (card?.id) {
+			await deletePracticeCard({ id: card.id })
+			setIsDialogOpen(false)
+		}
+	}, [deletePracticeCard, card?.id])
+
+	const { value: cardContent, onChange: onContentChange } = useAutoSave({
+		initialValue: card?.content ?? '',
+		onSave: updateCardContent
+	})
+
+	return (
+		<>
+			<Card
+				className='cursor-pointer transition-colors hover:bg-muted/50'
+				onClick={() => setIsDialogOpen(true)}
+			>
+				<CardContent className='p-4'>
+					<div className='text-sm'>{card?.content}</div>
+				</CardContent>
+			</Card>
+
+			<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
+				<DialogContent>
+					<div className='py-4'>
+						<Textarea
+							autoFocus={true}
+							className='min-h-32 resize-none border-none shadow-none focus-visible:border-none focus-visible:ring-0'
+							onChange={onContentChange}
+							value={cardContent}
+						/>
+					</div>
+					<DialogFooter className='sm:justify-start'>
+						<Button onClick={handleDelete} size='icon' variant='ghost'>
+							<Trash2 className='h-4 w-4' />
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	)
 }
