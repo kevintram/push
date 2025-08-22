@@ -174,39 +174,6 @@ export type Database = {
         }
         Relationships: []
       }
-      topics_closure: {
-        Row: {
-          ancestor_id: number
-          descendent_id: number
-          path: number
-        }
-        Insert: {
-          ancestor_id: number
-          descendent_id: number
-          path?: number
-        }
-        Update: {
-          ancestor_id?: number
-          descendent_id?: number
-          path?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "topics_closure_ancestor_id_fkey"
-            columns: ["ancestor_id"]
-            isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "topics_closure_descendent_id_fkey"
-            columns: ["descendent_id"]
-            isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       timeline_entries_with_effective_date: {
