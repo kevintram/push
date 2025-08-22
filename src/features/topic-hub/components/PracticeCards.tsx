@@ -1,5 +1,6 @@
 import {
 	useDeleteMutation,
+	useInsertMutation,
 	useQuery,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
@@ -24,6 +25,23 @@ export function PracticeCards() {
 	const parentRef = useRef<HTMLDivElement>(null)
 
 	const { selectedTopic } = use(SelectedTopicContext)
+
+	const { mutateAsync: insertPracticeCard } = useInsertMutation(
+		supabase.from('practice_cards'),
+		['id'],
+		'*'
+	)
+
+	const handleAddCard = useCallback(async () => {
+		if (selectedTopic?.id) {
+			await insertPracticeCard([
+				{
+					topic_id: selectedTopic.id,
+					content: ''
+				}
+			])
+		}
+	}, [insertPracticeCard, selectedTopic?.id])
 
 	const { data: practiceCards } = useQuery(
 		supabase
@@ -91,7 +109,7 @@ export function PracticeCards() {
 						value={searchValue}
 					/>
 				</div>
-				<Button size='icon' variant='secondary'>
+				<Button onClick={handleAddCard} size='icon' variant='secondary'>
 					<Plus className='h-4 w-4' />
 				</Button>
 			</div>
@@ -185,8 +203,8 @@ function PracticeCardItem({ card }: { card: PracticeCard }) {
 						/>
 					</div>
 					<DialogFooter className='sm:justify-start'>
-						<Button onClick={handleDelete} size="icon" variant="ghost">
-							<Trash2 className="h-4 w-4" />
+						<Button onClick={handleDelete} size='icon' variant='ghost'>
+							<Trash2 className='h-4 w-4' />
 						</Button>
 					</DialogFooter>
 				</DialogContent>
