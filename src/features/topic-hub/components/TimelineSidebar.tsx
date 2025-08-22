@@ -1,13 +1,28 @@
 import {
+	useDeleteMutation,
 	useInsertMutation,
-	useQuery
+	useQuery,
+	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
-import { Calendar as CalendarIcon, Plus } from 'lucide-react'
-import { use, useCallback, useState } from 'react'
+import {
+	Calendar as CalendarIcon,
+	MoreVertical,
+	Plus,
+	Trash2
+} from 'lucide-react'
+import { use, useCallback, useMemo, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { Calendar } from '~/components/ui/Calendar'
+import { Checkbox } from '~/components/ui/Checkbox'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { Input } from '~/components/ui/Input'
+import { Label } from '~/components/ui/Label'
 import {
 	Popover,
 	PopoverContent,
@@ -17,21 +32,78 @@ import { Textarea } from '~/components/ui/Textarea'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import { SelectedTopicContext } from '../stores/SelectedTopicContext'
+import { dateOf } from '../utils/dateOf'
 import { numDaysElapsed } from '../utils/daysElapsed'
-import { getEffectiveDate } from '../utils/timeline'
+
+type TimelineEntry = Tables<'timeline_entries_with_effective_date'>
 
 export function TimelineSidebar() {
 	const { selectedTopic } = use(SelectedTopicContext)
 
-	const { data: timelineEntries } = useQuery<Array<Tables<'timeline_entries'>>>(
+	const { data: timelineEntries } = useQuery<Array<TimelineEntry>>(
 		supabase
-			.from('timeline_entries')
+			.from('timeline_entries_with_effective_date')
 			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? ''),
+			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
+			.order('effective_date', { ascending: true }),
 		{
 			enabled: selectedTopic !== undefined
 		}
 	)
+
+	const renderTimelineItems = useCallback(() => {
+		// add today marker while rendering timeline items
+		let todayInserted = false
+		const today = new Date()
+		today.setHours(0, 0, 0, 0)
+
+		return timelineEntries?.map((entry, i) => {
+			const date: Date = dateOf(entry.effective_date)!
+			const nextDate: Date | undefined = dateOf(
+				timelineEntries[i + 1]?.effective_date
+			)
+
+			if (!todayInserted) {
+				if (today <= date) {
+					todayInserted = true
+					return (
+						<>
+							<TodayMarker key='today-marker' nextDate={date} today={today} />
+							<Entry
+								currEntry={entry}
+								index={i}
+								key={entry.id}
+								nextDate={nextDate}
+							/>
+						</>
+					)
+				}
+
+				if (i === timelineEntries.length - 1 || today <= nextDate!) {
+					todayInserted = true
+					return (
+						<>
+							<Entry
+								currEntry={entry}
+								index={i}
+								key={entry.id}
+								nextDate={today}
+							/>
+							<TodayMarker
+								key='today-marker'
+								nextDate={nextDate}
+								today={today}
+							/>
+						</>
+					)
+				}
+			}
+
+			return (
+				<Entry currEntry={entry} index={i} key={entry.id} nextDate={nextDate} />
+			)
+		})
+	}, [timelineEntries])
 
 	return (
 		<div className='flex h-full flex-col gap-3 p-4'>
@@ -41,19 +113,8 @@ export function TimelineSidebar() {
 			</div>
 
 			<div className='flex min-h-0 flex-1 flex-col'>
-				<div className='flex-1 space-y-4 overflow-auto'>
-					{timelineEntries?.map((entry, index) => (
-						<Entry
-							currEntry={entry}
-							index={index}
-							key={entry.id}
-							nextEntry={
-								index < timelineEntries.length - 1
-									? timelineEntries[index + 1]
-									: undefined
-							}
-						/>
-					))}
+				<div className='flex-1 space-y-2 overflow-auto'>
+					{renderTimelineItems()}
 				</div>
 			</div>
 		</div>
@@ -63,11 +124,11 @@ export function TimelineSidebar() {
 function Entry({
 	currEntry,
 	index,
-	nextEntry
+	nextDate
 }: {
-	currEntry: Tables<'timeline_entries'>
+	currEntry: Tables<'timeline_entries_with_effective_date'>
 	index: number
-	nextEntry: Tables<'timeline_entries'> | undefined // undefined if last entry
+	nextDate?: Date | undefined // undefined if last entry
 }) {
 	// TODO: Implement count based on timeline_entry_practice_cards
 	// const reviewedItemsCount = 0
@@ -76,35 +137,114 @@ function Entry({
 	// const stabilityChange = currEntry.stability_change
 	// const retrievability = currEntry.retrievability
 
+	const [isEditPopoverOpen, setIsEditPopoverOpen] = useState(false)
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+
+	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
+		supabase.from('timeline_entries_with_effective_date'),
+		['id'],
+		'*'
+	)
+
+	const { mutateAsync: deleteTimelineEntryMutation } = useDeleteMutation(
+		supabase.from('timeline_entries_with_effective_date'),
+		['id']
+	)
+
+	const handleCheckboxChange = useCallback(
+		(checked: boolean) => {
+			updateTimelineEntryMutation({
+				id: currEntry.id,
+				completed_at: checked ? new Date().toISOString() : null
+			})
+		},
+		[currEntry.id, updateTimelineEntryMutation]
+	)
+
+	const handleDelete = useCallback(() => {
+		deleteTimelineEntryMutation({ id: currEntry.id })
+		setIsDropdownOpen(false)
+	}, [currEntry.id, deleteTimelineEntryMutation])
+
+	const currEffectiveDate: Date = useMemo(() => {
+		return dateOf(currEntry.effective_date)!
+	}, [currEntry.effective_date])
+
+	const isOverdue: boolean = useMemo(() => {
+		return currEffectiveDate < new Date()
+	}, [currEffectiveDate])
+
 	return (
-		<div className='relative flex gap-3'>
-			<div className='flex flex-col items-center'>
+		<div className='flex flex-row gap-3'>
+			<div className='flex flex-col items-start'>
 				<div className='flex items-center gap-2'>
+					<Checkbox
+						checked={!!currEntry.completed_at}
+						className={
+							isOverdue
+								? 'border-red-600 dark:border-red-700 dark:bg-red-700'
+								: ''
+						}
+						onCheckedChange={handleCheckboxChange}
+					/>
+
+					<Popover onOpenChange={setIsEditPopoverOpen} open={isEditPopoverOpen}>
+						<PopoverTrigger asChild={true}>
+							<Badge variant='default'>
+								{currEffectiveDate.toLocaleDateString()}
+							</Badge>
+						</PopoverTrigger>
+						<PopoverContent
+							align='start'
+							className='w-80 p-6'
+							side='right'
+							sideOffset={10}
+						>
+							<EditEntry
+								entry={currEntry}
+								onClose={() => setIsEditPopoverOpen(false)}
+							/>
+						</PopoverContent>
+					</Popover>
+				</div>
+
+				<div className='ml-10'>
+					{nextDate && (
+						<DaysElapsedMarker
+							daysElapsed={numDaysElapsed(currEffectiveDate, nextDate)}
+						/>
+					)}
+				</div>
+			</div>
+
+			<div className='flex flex-1 flex-row items-start gap-2 py-1'>
+				<div className='flex-1 text-foreground text-xs'>
+					{currEntry.description}
+				</div>
+				<div className='flex items-start gap-1'>
 					<div className='font-medium text-muted-foreground text-xs'>
 						{index + 1}
 					</div>
-
-					<Badge variant='default'>
-						{getEffectiveDate(currEntry).toLocaleDateString()}
-					</Badge>
+					<DropdownMenu onOpenChange={setIsDropdownOpen} open={isDropdownOpen}>
+						<DropdownMenuTrigger asChild={true}>
+							<Button
+								className='h-4 w-4 p-0 text-muted-foreground hover:text-foreground'
+								variant='ghost'
+							>
+								<MoreVertical className='h-3 w-3' />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+							<DropdownMenuItem
+								className='text-red-600 focus:text-red-600'
+								onClick={handleDelete}
+							>
+								<Trash2 className='mr-2 h-4 w-4' />
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
-
-				{nextEntry && (
-					<>
-						<div className='mt-2 min-h-12 w-px flex-1 bg-border' />
-						<div className='font-medium text-muted-foreground text-xs'>
-							{numDaysElapsed(
-								getEffectiveDate(currEntry),
-								getEffectiveDate(nextEntry)
-							)}
-							d
-						</div>
-					</>
-				)}
-			</div>
-
-			<div className='flex-1 py-1'>
-				<div className='text-foreground text-xs'>{currEntry.description}</div>
 			</div>
 
 			{/* TODO: Implement practice cards, stability change, and retrievability later*/}
@@ -145,6 +285,123 @@ function Entry({
 					</div>
 				</div>
 			</div> */}
+		</div>
+	)
+}
+
+function TodayMarker({
+	nextDate,
+	today
+}: {
+	nextDate?: Date | undefined
+	today: Date
+}) {
+	return (
+		<div className='flex flex-row gap-3'>
+			<div className='flex flex-col items-start'>
+				<div className='flex items-center gap-2'>
+					{/* invisible div the size of checkbox so today market lines up with other date badges */}
+					<div className='h-4 w-4' />{' '}
+					<Badge className='bg-blue-600 text-white' variant='default'>
+						Today
+					</Badge>
+				</div>
+
+				<div className='ml-10'>
+					{nextDate && (
+						<DaysElapsedMarker daysElapsed={numDaysElapsed(today, nextDate)} />
+					)}
+				</div>
+			</div>
+		</div>
+	)
+}
+
+function DaysElapsedMarker({ daysElapsed }: { daysElapsed: number }) {
+	return (
+		<div className='flex flex-col items-center gap-2'>
+			<div className='mt-2 min-h-12 w-px flex-1 bg-border' />
+			<div className='font-medium text-muted-foreground text-xs'>
+				{daysElapsed}d
+			</div>
+		</div>
+	)
+}
+
+function EditEntry({
+	entry,
+	onClose
+}: {
+	entry: Tables<'timeline_entries_with_effective_date'>
+	onClose: () => void
+}) {
+	const [selectedDate, setSelectedDate] = useState<Date>(
+		dateOf(entry.scheduled_at)!
+	)
+	const [description, setDescription] = useState(entry.description || '')
+
+	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
+		supabase.from('timeline_entries_with_effective_date'),
+		['id'],
+		'*'
+	)
+
+	const handleSave = useCallback(() => {
+		updateTimelineEntryMutation({
+			id: entry.id,
+			scheduled_at: selectedDate.toISOString(),
+			description: description.trim()
+		})
+		onClose()
+	}, [
+		entry.id,
+		selectedDate,
+		description,
+		updateTimelineEntryMutation,
+		onClose
+	])
+
+	return (
+		<div className='flex w-full flex-col items-start gap-6'>
+			<div className='flex w-full flex-col items-start gap-4'>
+				<div className='flex w-full flex-col items-start gap-2'>
+					<Label>Scheduled at</Label>
+					<Calendar
+						mode='single'
+						onSelect={setSelectedDate}
+						required={true}
+						selected={selectedDate}
+					/>
+					<div className='relative w-full'>
+						<CalendarIcon className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
+						<Input
+							className='pl-10'
+							readOnly={true}
+							value={
+								selectedDate
+									? selectedDate.toLocaleDateString('en-US', {
+											weekday: 'long',
+											year: 'numeric',
+											month: 'long',
+											day: 'numeric'
+										})
+									: ''
+							}
+						/>
+					</div>
+				</div>
+				<Textarea
+					className='min-h-[144px] w-full resize-none'
+					onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+						setDescription(e.target.value)
+					}
+					placeholder='Description...'
+					value={description}
+				/>
+			</div>
+			<div className='flex w-full items-center justify-end gap-2'>
+				<Button onClick={handleSave}>Save</Button>
+			</div>
 		</div>
 	)
 }

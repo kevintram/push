@@ -37,24 +37,24 @@ export type Database = {
       practice_cards: {
         Row: {
           content: string
-          created_at: string | null
-          id: string
-          topic_id: string
-          updated_at: string | null
+          id: number
+          inserted_at: string
+          topic_id: number
+          updated_at: string
         }
         Insert: {
           content: string
-          created_at?: string | null
-          id?: string
-          topic_id: string
-          updated_at?: string | null
+          id?: number
+          inserted_at?: string
+          topic_id: number
+          updated_at?: string
         }
         Update: {
           content?: string
-          created_at?: string | null
-          id?: string
-          topic_id?: string
-          updated_at?: string | null
+          id?: number
+          inserted_at?: string
+          topic_id?: number
+          updated_at?: string
         }
         Relationships: [
           {
@@ -69,31 +69,34 @@ export type Database = {
       timeline_entries: {
         Row: {
           completed_at: string | null
-          created_at: string
           description: string
-          id: string
+          id: number
+          inserted_at: string
           scheduled_at: string
-          topic_id: string
+          topic_id: number
+          updated_at: string
         }
         Insert: {
           completed_at?: string | null
-          created_at?: string
           description?: string
-          id?: string
+          id?: number
+          inserted_at?: string
           scheduled_at?: string
-          topic_id: string
+          topic_id: number
+          updated_at?: string
         }
         Update: {
           completed_at?: string | null
-          created_at?: string
           description?: string
-          id?: string
+          id?: number
+          inserted_at?: string
           scheduled_at?: string
-          topic_id?: string
+          topic_id?: number
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "review_session_logs_topic_id_fkey"
+            foreignKeyName: "timeline_entries_topic_id_fkey"
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
@@ -103,59 +106,143 @@ export type Database = {
       }
       timeline_entry_practice_cards: {
         Row: {
-          id: string
-          practice_card_id: string
-          timeline_entry_id: string
+          id: number
+          practice_card_id: number
+          timeline_entry_id: number
         }
         Insert: {
-          id?: string
-          practice_card_id: string
-          timeline_entry_id: string
+          id?: number
+          practice_card_id: number
+          timeline_entry_id: number
         }
         Update: {
-          id?: string
-          practice_card_id?: string
-          timeline_entry_id?: string
+          id?: number
+          practice_card_id?: number
+          timeline_entry_id?: number
         }
         Relationships: [
           {
-            foreignKeyName: "review_session_practice_cards_practice_card_id_fkey"
+            foreignKeyName: "timeline_entry_practice_cards_practice_card_id_fkey"
             columns: ["practice_card_id"]
             isOneToOne: false
             referencedRelation: "practice_cards"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "review_session_practice_cards_review_session_log_id_fkey"
+            foreignKeyName: "timeline_entry_practice_cards_timeline_entry_id_fkey"
             columns: ["timeline_entry_id"]
             isOneToOne: false
             referencedRelation: "timeline_entries"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "timeline_entry_practice_cards_timeline_entry_id_fkey"
+            columns: ["timeline_entry_id"]
+            isOneToOne: false
+            referencedRelation: "timeline_entries_with_effective_date"
+            referencedColumns: ["id"]
+          },
         ]
       }
-      topic_paths: {
+      topics: {
         Row: {
-          created_at: string | null
-          id: string
-          path: unknown
-          topic_id: string
+          id: number
+          inserted_at: string
+          name: string
+          notes: string | null
+          retrievability: number
+          stability: number
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
-          id?: string
-          path: unknown
-          topic_id: string
+          id?: number
+          inserted_at?: string
+          name?: string
+          notes?: string | null
+          retrievability?: number
+          stability?: number
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
-          id?: string
-          path?: unknown
-          topic_id?: string
+          id?: number
+          inserted_at?: string
+          name?: string
+          notes?: string | null
+          retrievability?: number
+          stability?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      topics_closure: {
+        Row: {
+          ancestor_id: number
+          descendent_id: number
+          path: number
+        }
+        Insert: {
+          ancestor_id: number
+          descendent_id: number
+          path?: number
+        }
+        Update: {
+          ancestor_id?: number
+          descendent_id?: number
+          path?: number
         }
         Relationships: [
           {
-            foreignKeyName: "topic_paths_topic_id_fkey"
+            foreignKeyName: "topics_closure_ancestor_id_fkey"
+            columns: ["ancestor_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topics_closure_descendent_id_fkey"
+            columns: ["descendent_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      timeline_entries_with_effective_date: {
+        Row: {
+          completed_at: string | null
+          description: string | null
+          effective_date: string | null
+          id: number | null
+          inserted_at: string | null
+          scheduled_at: string | null
+          topic_id: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          description?: string | null
+          effective_date?: never
+          id?: number | null
+          inserted_at?: string | null
+          scheduled_at?: string | null
+          topic_id?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          description?: string | null
+          effective_date?: never
+          id?: number | null
+          inserted_at?: string | null
+          scheduled_at?: string | null
+          topic_id?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_entries_topic_id_fkey"
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
@@ -163,157 +250,9 @@ export type Database = {
           },
         ]
       }
-      topics: {
-        Row: {
-          created_at: string | null
-          id: string
-          name: string
-          notes: string | null
-          retrievability: number
-          stability: number
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          name?: string
-          notes?: string | null
-          retrievability?: number
-          stability?: number
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          name?: string
-          notes?: string | null
-          retrievability?: number
-          stability?: number
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
     }
     Functions: {
-      _ltree_compress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      _ltree_gist_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      add_topic_relationship: {
-        Args: { child_uuid: string; parent_uuid: string }
-        Returns: undefined
-      }
-      create_root_topic: {
-        Args: { topic_uuid: string }
-        Returns: undefined
-      }
-      hash_ltree: {
-        Args: { "": unknown }
-        Returns: number
-      }
-      lca: {
-        Args: { "": unknown[] }
-        Returns: unknown
-      }
-      lquery_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      lquery_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      lquery_recv: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      lquery_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      ltree_compress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltree_decompress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltree_gist_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltree_gist_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      ltree_gist_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltree_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltree_label_to_uuid: {
-        Args: { ltree_label: string }
-        Returns: string
-      }
-      ltree_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltree_recv: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltree_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      ltree2text: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      ltxtq_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltxtq_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltxtq_recv: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ltxtq_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      nlevel: {
-        Args: { "": unknown }
-        Returns: number
-      }
-      remove_topic_relationship: {
-        Args: { child_uuid: string; parent_uuid: string }
-        Returns: undefined
-      }
-      text2ltree: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      uuid_to_ltree_label: {
-        Args: { uuid_val: string }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

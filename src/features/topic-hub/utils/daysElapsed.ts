@@ -12,12 +12,12 @@ export function numDaysElapsed(
 	if (!(from && to)) {
 		return 0
 	}
+	const diffInMs = Math.abs(to.getTime() - from.getTime())
 
 	const oneDayInMs = 24 * 60 * 60 * 1000
-	const diffInMs = to.getTime() - from.getTime()
-	const daysElapsed = Math.floor(diffInMs / oneDayInMs)
+	const daysElapsed = diffInMs / oneDayInMs
 
-	return Math.abs(daysElapsed)
+	return Math.floor(daysElapsed)
 }
 
 /**

@@ -99,7 +99,8 @@
 								"filenameCases": ["camelCase", "kebab-case", "PascalCase"]
 							}
 						},
-						"useBlockStatements": "off"
+						"useBlockStatements": "off",
+						"noNonNullAssertion": "off"
 					}
 				}
 			}
