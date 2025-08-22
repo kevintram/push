@@ -10,6 +10,7 @@ import { Button } from '~/components/ui/Button'
 import { Calendar } from '~/components/ui/Calendar'
 import { Checkbox } from '~/components/ui/Checkbox'
 import { Input } from '~/components/ui/Input'
+import { Label } from '~/components/ui/Label'
 import {
 	Popover,
 	PopoverContent,
@@ -124,6 +125,8 @@ function Entry({
 	// const stabilityChange = currEntry.stability_change
 	// const retrievability = currEntry.retrievability
 
+	const [isEditPopoverOpen, setIsEditPopoverOpen] = useState(false)
+
 	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
 		supabase.from('timeline_entries_with_effective_date'),
 		['id'],
@@ -140,14 +143,12 @@ function Entry({
 		[currEntry.id, updateTimelineEntryMutation]
 	)
 
-	const currEffectiveDate: Date | undefined = useMemo(() => {
-		return currEntry.effective_date
-			? new Date(currEntry.effective_date)
-			: undefined
+	const currEffectiveDate: Date = useMemo(() => {
+		return dateOf(currEntry.effective_date)!
 	}, [currEntry.effective_date])
 
-	const isOverdue: boolean | undefined = useMemo(() => {
-		return currEffectiveDate && currEffectiveDate < new Date()
+	const isOverdue: boolean = useMemo(() => {
+		return currEffectiveDate < new Date()
 	}, [currEffectiveDate])
 
 	return (
@@ -164,9 +165,24 @@ function Entry({
 						onCheckedChange={handleCheckboxChange}
 					/>
 
-					<Badge variant='default'>
-						{currEffectiveDate?.toLocaleDateString()}
-					</Badge>
+					<Popover onOpenChange={setIsEditPopoverOpen} open={isEditPopoverOpen}>
+						<PopoverTrigger asChild={true}>
+							<Badge variant='default'>
+								{currEffectiveDate.toLocaleDateString()}
+							</Badge>
+						</PopoverTrigger>
+						<PopoverContent 
+							align="start"
+							className='w-80 p-6'
+							side="right"
+							sideOffset={10}
+						>
+							<EditEntry
+								entry={currEntry}
+								onClose={() => setIsEditPopoverOpen(false)}
+							/>
+						</PopoverContent>
+					</Popover>
 				</div>
 
 				<div className='ml-10'>
@@ -263,6 +279,80 @@ function DaysElapsedMarker({ daysElapsed }: { daysElapsed: number }) {
 			<div className='mt-2 min-h-12 w-px flex-1 bg-border' />
 			<div className='font-medium text-muted-foreground text-xs'>
 				{daysElapsed}d
+			</div>
+		</div>
+	)
+}
+
+function EditEntry({
+	entry,
+	onClose
+}: {
+	entry: Tables<'timeline_entries_with_effective_date'>
+	onClose: () => void
+}) {
+	const [selectedDate, setSelectedDate] = useState<Date>(
+		dateOf(entry.scheduled_at)!
+	)
+	const [description, setDescription] = useState(entry.description || '')
+
+	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
+		supabase.from('timeline_entries_with_effective_date'),
+		['id'],
+		'*'
+	)
+
+	const handleSave = useCallback(() => {
+		updateTimelineEntryMutation({
+			id: entry.id,
+			scheduled_at: selectedDate.toISOString(),
+			description: description.trim()
+		})
+		onClose()
+	}, [entry.id, selectedDate, description, updateTimelineEntryMutation, onClose])
+
+	return (
+		<div className='flex w-full flex-col items-start gap-6'>
+			<div className='flex w-full flex-col items-start gap-4'>
+				<div className='flex w-full flex-col items-start gap-2'>
+					<Label>Scheduled at</Label>
+					<Calendar
+						mode='single'
+						onSelect={setSelectedDate}
+						required={true}
+						selected={selectedDate}
+					/>
+					<div className='relative w-full'>
+						<CalendarIcon className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
+						<Input
+							className='pl-10'
+							readOnly={true}
+							value={
+								selectedDate
+									? selectedDate.toLocaleDateString('en-US', {
+											weekday: 'long',
+											year: 'numeric',
+											month: 'long',
+											day: 'numeric'
+										})
+									: ''
+							}
+						/>
+					</div>
+				</div>
+				<Textarea
+					className='min-h-[144px] w-full resize-none'
+					onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+						setDescription(e.target.value)
+					}
+					placeholder='Description...'
+					value={description}
+				/>
+			</div>
+			<div className='flex w-full items-center justify-end gap-2'>
+				<Button onClick={handleSave}>
+					Save
+				</Button>
 			</div>
 		</div>
 	)
