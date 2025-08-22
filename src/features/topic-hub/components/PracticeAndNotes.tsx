@@ -2,10 +2,13 @@ import { BookOpen, Columns, Target } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardHeader } from '~/components/ui/Card'
+import {
+	SegmentedControl,
+	SegmentedControlItem
+} from '~/components/ui/SegmentedControl'
 import { Separator } from '~/components/ui/Separator'
 import { Notes } from './Notes'
 import { PracticeCards } from './PracticeCards'
-import { SegmentedControl, SegmentedControlItem } from './SegmentedControl'
 
 export function PracticeAndNotes() {
 	const [tab, setTab] = useState<'notes' | 'practice'>('practice')
