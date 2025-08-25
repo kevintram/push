@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as TrashRouteImport } from './routes/trash'
-import { Route as TodayRouteImport } from './routes/today'
+import { Route as TopicsRouteImport } from './routes/topics'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as LogbookRouteImport } from './routes/logbook'
@@ -27,9 +27,9 @@ const TrashRoute = TrashRouteImport.update({
   path: '/trash',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TodayRoute = TodayRouteImport.update({
-  id: '/today',
-  path: '/today',
+const TopicsRoute = TopicsRouteImport.update({
+  id: '/topics',
+  path: '/topics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -58,7 +58,7 @@ export interface FileRoutesByFullPath {
   '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
-  '/today': typeof TodayRoute
+  '/topics': typeof TopicsRoute
   '/trash': typeof TrashRoute
   '/upcoming': typeof UpcomingRoute
 }
@@ -67,7 +67,7 @@ export interface FileRoutesByTo {
   '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
-  '/today': typeof TodayRoute
+  '/topics': typeof TopicsRoute
   '/trash': typeof TrashRoute
   '/upcoming': typeof UpcomingRoute
 }
@@ -77,7 +77,7 @@ export interface FileRoutesById {
   '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
-  '/today': typeof TodayRoute
+  '/topics': typeof TopicsRoute
   '/trash': typeof TrashRoute
   '/upcoming': typeof UpcomingRoute
 }
@@ -88,7 +88,7 @@ export interface FileRouteTypes {
     | '/logbook'
     | '/review'
     | '/settings'
-    | '/today'
+    | '/topics'
     | '/trash'
     | '/upcoming'
   fileRoutesByTo: FileRoutesByTo
@@ -97,7 +97,7 @@ export interface FileRouteTypes {
     | '/logbook'
     | '/review'
     | '/settings'
-    | '/today'
+    | '/topics'
     | '/trash'
     | '/upcoming'
   id:
@@ -106,7 +106,7 @@ export interface FileRouteTypes {
     | '/logbook'
     | '/review'
     | '/settings'
-    | '/today'
+    | '/topics'
     | '/trash'
     | '/upcoming'
   fileRoutesById: FileRoutesById
@@ -116,7 +116,7 @@ export interface RootRouteChildren {
   LogbookRoute: typeof LogbookRoute
   ReviewRoute: typeof ReviewRoute
   SettingsRoute: typeof SettingsRoute
-  TodayRoute: typeof TodayRoute
+  TopicsRoute: typeof TopicsRoute
   TrashRoute: typeof TrashRoute
   UpcomingRoute: typeof UpcomingRoute
 }
@@ -137,11 +137,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrashRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/today': {
-      id: '/today'
-      path: '/today'
-      fullPath: '/today'
-      preLoaderRoute: typeof TodayRouteImport
+    '/topics': {
+      id: '/topics'
+      path: '/topics'
+      fullPath: '/topics'
+      preLoaderRoute: typeof TopicsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -180,7 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   LogbookRoute: LogbookRoute,
   ReviewRoute: ReviewRoute,
   SettingsRoute: SettingsRoute,
-  TodayRoute: TodayRoute,
+  TopicsRoute: TopicsRoute,
   TrashRoute: TrashRoute,
   UpcomingRoute: UpcomingRoute,
 }
