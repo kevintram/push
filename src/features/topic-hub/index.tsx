@@ -43,7 +43,10 @@ export function TopicHub() {
 	// }, [])
 
 	const { data } = useQuery<Array<Tables<'topics'>>>(
-		supabase.from('topics').select('*').order('inserted_at', { ascending: false })
+		supabase
+			.from('topics')
+			.select('*')
+			.order('inserted_at', { ascending: false })
 	)
 
 	const topics: Array<Topic> = data?.map(parseSupabaseTopic) ?? []

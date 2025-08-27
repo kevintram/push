@@ -1,9 +1,10 @@
-import './global.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { ThemeProvider } from '~/providers/ThemeProvider'
+import './global.css'
 import { routeTree } from './routeTree.gen'
 
 // if dev environment, append '(dev)' to document title
@@ -37,10 +38,12 @@ enableMocking()
 			const root = createRoot(container)
 			root.render(
 				<StrictMode>
-					<QueryClientProvider client={queryClient}>
-						<ReactQueryDevtools initialIsOpen={false} />
-						<RouterProvider router={router} />
-					</QueryClientProvider>
+					<ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
+						<QueryClientProvider client={queryClient}>
+							<ReactQueryDevtools initialIsOpen={false} />
+							<RouterProvider router={router} />
+						</QueryClientProvider>
+					</ThemeProvider>
 				</StrictMode>
 			)
 		}
