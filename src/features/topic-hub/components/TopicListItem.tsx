@@ -27,27 +27,20 @@ export function TopicListItem({ topic }: { topic: Topic }) {
 
 	return (
 		<div className='space-y-0.5'>
-			<div
+			<button
 				className={cn(
 					isSelected && 'bg-primary/10 text-primary',
-					'rounded-md py-2 pl-3 transition-colors hover:bg-muted/50'
+					'w-full rounded-md py-2 pl-3 text-left transition-colors hover:bg-muted/50'
 				)}
 				onClick={() => setSelectedTopic(topic)}
-				onKeyDown={e => {
-					if (e.key === 'Enter' || e.key === ' ') {
-						e.preventDefault()
-						setSelectedTopic(topic)
-					}
-				}}
-				role='button'
-				tabIndex={0}
+				type='button'
 			>
 				<BasicTopicListItem
 					isExpanded={isExpanded}
 					setIsExpanded={setIsExpanded}
 					topic={topic}
 				/>
-			</div>
+			</button>
 			{topic.children.length > 0 && isExpanded && (
 				<div className='relative ml-4'>
 					<div
@@ -75,7 +68,7 @@ const BasicTopicListItem = memo(
 	}: {
 		topic: Topic
 		isExpanded: boolean
-		setIsExpanded: (isExpanded: boolean) => void
+		setIsExpanded: (expanded: boolean) => void
 	}) => {
 		const { mutateAsync: deleteTopic } = useDeleteMutation(
 			supabase.from('topics'),
@@ -166,7 +159,9 @@ const BasicTopicListItem = memo(
 							'flex h-6 items-center gap-0.5 p-0',
 							topic.parents.length > 0 ? 'w-8 px-1' : 'w-6'
 						)}
-						onClick={_e => {}}
+						onClick={() => {
+							// TODO: Navigate to first parent topic
+						}}
 						size='sm'
 						title={
 							topic.parents.length > 0
@@ -200,13 +195,10 @@ const BasicTopicListItem = memo(
 							}
 						}}
 						size='sm'
-						title={
-							topic.children.length > 0
-								? isExpanded
-									? 'Collapse children'
-									: 'Expand children'
-								: 'No children'
-						}
+						title={(() => {
+							if (topic.children.length === 0) return 'No children'
+							return isExpanded ? 'Collapse children' : 'Expand children'
+						})()}
 						variant='ghost'
 					>
 						<Baby

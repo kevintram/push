@@ -7,7 +7,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { useTheme } from '~/providers/ThemeProvider'
+import { useTheme } from '~/hooks/useTheme'
 
 const THEME_OPTIONS = [
 	{ value: 'light', label: 'Light', icon: Sun },
@@ -22,7 +22,8 @@ export const Route = createFileRoute('/settings')({
 function RouteComponent() {
 	const { theme, setTheme } = useTheme()
 
-	const currentTheme = THEME_OPTIONS.find(option => option.value === theme) || THEME_OPTIONS[0]
+	const currentTheme =
+		THEME_OPTIONS.find(option => option.value === theme) || THEME_OPTIONS[0]
 
 	return (
 		<div className='space-y-6'>
@@ -42,11 +43,16 @@ function RouteComponent() {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='end'>
-							{THEME_OPTIONS.map((option) => (
-								<DropdownMenuItem key={option.value} onClick={() => setTheme(option.value)}>
+							{THEME_OPTIONS.map(option => (
+								<DropdownMenuItem
+									key={option.value}
+									onClick={() => setTheme(option.value)}
+								>
 									<option.icon className='mr-2 h-4 w-4' />
 									<span>{option.label}</span>
-									{theme === option.value && <Check className='ml-auto h-4 w-4' />}
+									{theme === option.value && (
+										<Check className='ml-auto h-4 w-4' />
+									)}
 								</DropdownMenuItem>
 							))}
 						</DropdownMenuContent>

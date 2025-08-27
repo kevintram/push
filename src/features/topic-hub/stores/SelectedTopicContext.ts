@@ -6,5 +6,7 @@ export const SelectedTopicContext = createContext<{
 	setSelectedTopic: Dispatch<SetStateAction<Topic | undefined>>
 }>({
 	selectedTopic: undefined,
-	setSelectedTopic: () => {}
+	setSelectedTopic: () => {
+		// Default no-op function for context
+	}
 })
