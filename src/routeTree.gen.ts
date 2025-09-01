@@ -11,11 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as TrashRouteImport } from './routes/trash'
-import { Route as TodayRouteImport } from './routes/today'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as LogbookRouteImport } from './routes/logbook'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
 
 const UpcomingRoute = UpcomingRouteImport.update({
   id: '/upcoming',
@@ -25,11 +25,6 @@ const UpcomingRoute = UpcomingRouteImport.update({
 const TrashRoute = TrashRouteImport.update({
   id: '/trash',
   path: '/trash',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TodayRoute = TodayRouteImport.update({
-  id: '/today',
-  path: '/today',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -52,24 +47,30 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TopicsChar123TopicIdChar125Route =
+  TopicsChar123TopicIdChar125RouteImport.update({
+    id: '/topics/{-$topicId}',
+    path: '/topics/{-$topicId}',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
-  '/today': typeof TodayRoute
   '/trash': typeof TrashRoute
   '/upcoming': typeof UpcomingRoute
+  '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
-  '/today': typeof TodayRoute
   '/trash': typeof TrashRoute
   '/upcoming': typeof UpcomingRoute
+  '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,9 +78,9 @@ export interface FileRoutesById {
   '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
-  '/today': typeof TodayRoute
   '/trash': typeof TrashRoute
   '/upcoming': typeof UpcomingRoute
+  '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,27 +89,27 @@ export interface FileRouteTypes {
     | '/logbook'
     | '/review'
     | '/settings'
-    | '/today'
     | '/trash'
     | '/upcoming'
+    | '/topics/{-$topicId}'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/logbook'
     | '/review'
     | '/settings'
-    | '/today'
     | '/trash'
     | '/upcoming'
+    | '/topics/{-$topicId}'
   id:
     | '__root__'
     | '/'
     | '/logbook'
     | '/review'
     | '/settings'
-    | '/today'
     | '/trash'
     | '/upcoming'
+    | '/topics/{-$topicId}'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -116,9 +117,9 @@ export interface RootRouteChildren {
   LogbookRoute: typeof LogbookRoute
   ReviewRoute: typeof ReviewRoute
   SettingsRoute: typeof SettingsRoute
-  TodayRoute: typeof TodayRoute
   TrashRoute: typeof TrashRoute
   UpcomingRoute: typeof UpcomingRoute
+  TopicsChar123TopicIdChar125Route: typeof TopicsChar123TopicIdChar125Route
 }
 
 declare module '@tanstack/react-router' {
@@ -135,13 +136,6 @@ declare module '@tanstack/react-router' {
       path: '/trash'
       fullPath: '/trash'
       preLoaderRoute: typeof TrashRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/today': {
-      id: '/today'
-      path: '/today'
-      fullPath: '/today'
-      preLoaderRoute: typeof TodayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -172,6 +166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/topics/{-$topicId}': {
+      id: '/topics/{-$topicId}'
+      path: '/topics/{-$topicId}'
+      fullPath: '/topics/{-$topicId}'
+      preLoaderRoute: typeof TopicsChar123TopicIdChar125RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -180,9 +181,9 @@ const rootRouteChildren: RootRouteChildren = {
   LogbookRoute: LogbookRoute,
   ReviewRoute: ReviewRoute,
   SettingsRoute: SettingsRoute,
-  TodayRoute: TodayRoute,
   TrashRoute: TrashRoute,
   UpcomingRoute: UpcomingRoute,
+  TopicsChar123TopicIdChar125Route: TopicsChar123TopicIdChar125Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

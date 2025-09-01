@@ -27,8 +27,8 @@ import {
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { supabase } from '~/utils/supabase'
-import { numDaysElapsedFrom } from '../utils/daysElapsed'
-import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
+import { numDaysElapsedFrom } from '../../utils/daysElapsed'
+import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
 interface TopicHeaderProps {
 	id: number

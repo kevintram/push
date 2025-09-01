@@ -36,7 +36,7 @@ function NavigationMain() {
 	const firstGroup = [
 		{
 			title: 'Today',
-			url: '/today',
+			url: '/',
 			icon: Star
 		},
 		{
@@ -54,7 +54,7 @@ function NavigationMain() {
 		},
 		{
 			title: 'Library',
-			url: '/',
+			url: '/topics',
 			icon: SquareLibrary
 		}
 	]

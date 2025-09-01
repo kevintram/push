@@ -12,35 +12,44 @@ import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicContext } from '../stores/SelectedTopicContext'
-import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
+import { SelectedTopicIdContext } from '../../stores/SelectedTopicIdContext'
+import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
 /**
  * Created this to avoid re-rendering BasicTopicListItem when
  * the selected topic changes (BasicTopicListItem is memoized).
  */
 export function TopicListItem({ topic }: { topic: Topic }) {
-	const { selectedTopic, setSelectedTopic } = use(SelectedTopicContext)
-	const isSelected = topic.id === selectedTopic?.id
+	const { selectedTopicId } = use(SelectedTopicIdContext)
+	const isSelected = topic.id === selectedTopicId
 
 	const [isExpanded, setIsExpanded] = useState(true)
 
 	return (
 		<div className='space-y-0.5'>
-			<button
+			<div
 				className={cn(
 					isSelected && 'bg-primary/10 text-primary',
 					'w-full rounded-md py-2 pl-3 text-left transition-colors hover:bg-muted/50'
 				)}
-				onClick={() => setSelectedTopic(topic)}
-				type='button'
+				onClick={() => {
+					// TODO: LATER
+				}}
+				onKeyDown={e => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault()
+						// DO LATER
+					}
+				}}
+				role='button'
+				tabIndex={0}
 			>
 				<BasicTopicListItem
 					isExpanded={isExpanded}
 					setIsExpanded={setIsExpanded}
 					topic={topic}
 				/>
-			</button>
+			</div>
 			{topic.children.length > 0 && isExpanded && (
 				<div className='relative ml-4'>
 					<div

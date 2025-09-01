@@ -12,17 +12,17 @@ import {
 import { Button, buttonVariants } from '~/components/ui/Button'
 import { cn } from '~/lib/utils'
 
-const CalendarRoot = ({
-	className,
+function CalendarRoot({
+	className: rootClassName,
 	rootRef,
 	...props
 }: {
 	className?: string | undefined
 	rootRef?: React.Ref<HTMLDivElement>
-} & React.HTMLAttributes<HTMLDivElement>) => {
+} & React.HTMLAttributes<HTMLDivElement>) {
 	return (
 		<div
-			className={cn(className)}
+			className={cn(rootClassName)}
 			data-slot='calendar'
 			ref={rootRef}
 			{...props}
@@ -30,31 +30,37 @@ const CalendarRoot = ({
 	)
 }
 
-const CalendarChevron = ({
-	className,
+function CalendarChevron({
+	className: chevronClassName,
 	orientation,
 	...props
 }: {
 	className?: string
-	orientation?: 'left' | 'right' | 'up' | 'down'
-} & React.SVGProps<SVGSVGElement>) => {
+	orientation?: string
+} & React.HTMLAttributes<SVGElement>) {
 	if (orientation === 'left') {
-		return <ChevronLeftIcon className={cn('size-4', className)} {...props} />
+		return (
+			<ChevronLeftIcon className={cn('size-4', chevronClassName)} {...props} />
+		)
 	}
 
 	if (orientation === 'right') {
-		return <ChevronRightIcon className={cn('size-4', className)} {...props} />
+		return (
+			<ChevronRightIcon className={cn('size-4', chevronClassName)} {...props} />
+		)
 	}
 
-	return <ChevronDownIcon className={cn('size-4', className)} {...props} />
+	return (
+		<ChevronDownIcon className={cn('size-4', chevronClassName)} {...props} />
+	)
 }
 
-const CalendarWeekNumber = ({
+function CalendarWeekNumber({
 	children,
 	...props
 }: {
 	children?: React.ReactNode
-} & React.TdHTMLAttributes<HTMLTableCellElement>) => {
+} & React.HTMLAttributes<HTMLTableDataCellElement>) {
 	return (
 		<td {...props}>
 			<div className='flex size-(--cell-size) items-center justify-center text-center'>

@@ -7,6 +7,6 @@ export const SelectedTopicContext = createContext<{
 }>({
 	selectedTopic: undefined,
 	setSelectedTopic: () => {
-		// Default no-op function for context
+		/* noop */
 	}
 })

@@ -15,7 +15,7 @@ import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicContext } from '../stores/SelectedTopicContext'
+import { SelectedTopicContext } from '../../../stores/SelectedTopicContext'
 
 type PracticeCard = Tables<'practice_cards'>
 
