@@ -12,16 +12,16 @@ import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicContext } from '../stores/SelectedTopicContext'
-import { getRetrievabilityColorClass } from '../utils/getRetrievabilityColor'
+import { SelectedTopicIdContext } from '../../stores/SelectedTopicIdContext'
+import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
 /**
  * Created this to avoid re-rendering BasicTopicListItem when
  * the selected topic changes (BasicTopicListItem is memoized).
  */
 export function TopicListItem({ topic }: { topic: Topic }) {
-	const { selectedTopic, setSelectedTopic } = use(SelectedTopicContext)
-	const isSelected = topic.id === selectedTopic?.id
+	const { selectedTopicId } = use(SelectedTopicIdContext)
+	const isSelected = topic.id === selectedTopicId
 
 	const [isExpanded, setIsExpanded] = useState(true)
 
@@ -32,11 +32,13 @@ export function TopicListItem({ topic }: { topic: Topic }) {
 					isSelected && 'bg-primary/10 text-primary',
 					'rounded-md py-2 pl-3 transition-colors hover:bg-muted/50'
 				)}
-				onClick={() => setSelectedTopic(topic)}
+				onClick={() => {
+					// TODO: LATER
+				}}
 				onKeyDown={e => {
 					if (e.key === 'Enter' || e.key === ' ') {
 						e.preventDefault()
-						setSelectedTopic(topic)
+						// DO LATER
 					}
 				}}
 				role='button'
@@ -201,7 +203,7 @@ const BasicTopicListItem = memo(
 						}}
 						size='sm'
 						title={
-							topic.children.length > 0
+							topic?.children?.length > 0
 								? isExpanded
 									? 'Collapse children'
 									: 'Expand children'
