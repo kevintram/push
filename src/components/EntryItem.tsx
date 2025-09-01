@@ -1,4 +1,5 @@
 import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import { Link } from '@tanstack/react-router'
 import { useCallback, useState } from 'react'
 import { Checkbox } from '~/components/ui/Checkbox'
 import type { Tables } from '~/types/database.types'
@@ -40,19 +41,24 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 	)
 
 	return (
-		<div className='flex items-start gap-4 rounded-lg p-4 transition-colors hover:bg-muted/50'>
-			<Checkbox
-				checked={isChecked}
-				className={`mt-1 ${isOverdue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
-				onCheckedChange={handleCheckboxChange}
-			/>
-			<div className='min-w-0 flex-1'>
-				<p className='mb-1 text-base leading-relaxed'>{entry.description}</p>
-				<p className='text-muted-foreground text-sm'>{entry.topics.name}</p>
+		<Link
+			params={{ topicId: entry.topic_id.toString() }}
+			to='/topics/{-$topicId}'
+		>
+			<div className='flex items-start gap-4 rounded-lg p-4 transition-colors hover:bg-muted/50'>
+				<Checkbox
+					checked={isChecked}
+					className={`mt-1 ${isOverdue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
+					onCheckedChange={handleCheckboxChange}
+				/>
+				<div className='min-w-0 flex-1'>
+					<p className='mb-1 text-base leading-relaxed'>{entry.description}</p>
+					<p className='text-muted-foreground text-sm'>{entry.topics.name}</p>
+				</div>
+				<div className='whitespace-nowrap text-muted-foreground text-sm'>
+					{dateLabel}
+				</div>
 			</div>
-			<div className='whitespace-nowrap text-muted-foreground text-sm'>
-				{dateLabel}
-			</div>
-		</div>
+		</Link>
 	)
 }
