@@ -5,7 +5,11 @@ export function TopicListSkeleton() {
 	return (
 		<div className='flex h-full flex-col gap-4 p-4'>
 			{/* Header with disabled add button */}
-			<TopicListHeader onCreateTopic={() => {}} />
+			<TopicListHeader
+				onCreateTopic={() => {
+					/* noop */
+				}}
+			/>
 
 			{/* Topic List Skeleton */}
 			<div className='flex-1 overflow-auto'>
@@ -13,7 +17,7 @@ export function TopicListSkeleton() {
 					{Array.from({ length: 6 }).map((_, i) => (
 						<TopicListItemSkeleton
 							hasChildren={i % 3 === 0}
-							key={i}
+							key={`skeleton-${i}`}
 							level={0}
 						/>
 					))}
@@ -84,7 +88,7 @@ function TopicListItemSkeleton({
 					{Array.from({ length: 2 }).map((_, i) => (
 						<TopicListItemSkeleton
 							hasChildren={i === 0 && level < 1}
-							key={i}
+							key={`child-skeleton-${level}-${i}`}
 							level={level + 1}
 						/>
 					))}

@@ -1,9 +1,7 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import {
-	parseSupabaseTopic,
-} from '../../utils/parseSupabaseTopic'
+import { parseSupabaseTopic } from '../../utils/parseSupabaseTopic'
 import { TopicHeader } from './Header'
 import { PracticeAndNotes } from './PracticeAndNotes'
 import { Timeline } from './Timeline'

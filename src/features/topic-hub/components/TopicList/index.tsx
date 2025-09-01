@@ -32,7 +32,7 @@ export function TopicList({
 		['id'],
 		'*',
 		{
-			onSuccess: data => {
+			onSuccess: _data => {
 				// select newly inserted topic
 				// TODO: fix this
 				// if (data?.[0]) {

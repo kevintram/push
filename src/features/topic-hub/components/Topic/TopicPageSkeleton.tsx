@@ -130,7 +130,7 @@ export function TopicPageSkeleton() {
 						<div className='flex-1 space-y-2 overflow-auto'>
 							{/* Timeline entries skeleton */}
 							{Array.from({ length: 3 }).map((_, i) => (
-								<div key={i} className='space-y-2'>
+								<div className='space-y-2' key={i}>
 									<div className='flex items-center gap-2'>
 										<Skeleton className='h-3 w-3 rounded-full' />
 										<Skeleton className='h-4 w-24' />
