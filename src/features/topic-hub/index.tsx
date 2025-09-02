@@ -25,7 +25,6 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 	)
 	const { data: directRelationships, isLoading: directRelationshipsLoading } =
 		useQuery(supabase.from('topics_closure').select('*').eq('depth', 1))
-
 	const isLoading = directRelationshipsLoading || topicsDataLoading
 
 	const topicsMap: Map<number, Topic> = useMemo(() => {
@@ -42,33 +41,10 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 
 	const selectedTopic = topicId ? topicsMap.get(topicId) : undefined
 
-	const navigate = useNavigate()
-
-	const { mutateAsync: insertTopicMutation } = useInsertMutation(
-		supabase.from('topics'),
-		['id'],
-		'*',
-		{
-			onSuccess: data => {
-				if (data?.[0]) {
-					navigate({
-						to: '/topics/{-$topicId}',
-						params: { topicId: data[0].id.toString() }
-					})
-				}
-			}
-		}
-	)
-
-	const createTopic = useCallback(() => {
-		insertTopicMutation([{}])
-	}, [insertTopicMutation])
-
 	return (
 		<div className='relative flex h-screen w-full'>
 			<TopicList
 				isLoading={topicsDataLoading || directRelationshipsLoading}
-				onCreateTopic={createTopic}
 				selectedTopic={selectedTopic}
 				topics={topics}
 			/>
