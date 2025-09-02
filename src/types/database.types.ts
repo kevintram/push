@@ -174,6 +174,48 @@ export type Database = {
         }
         Relationships: []
       }
+      topics_closure: {
+        Row: {
+          ancestor: number
+          count: number
+          depth: number
+          descendant: number
+          inserted_at: string
+          updated_at: string
+        }
+        Insert: {
+          ancestor: number
+          count?: number
+          depth?: number
+          descendant: number
+          inserted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          ancestor?: number
+          count?: number
+          depth?: number
+          descendant?: number
+          inserted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topics_closure_ancestor_fkey"
+            columns: ["ancestor"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topics_closure_descendant_fkey"
+            columns: ["descendant"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       timeline_entries_with_effective_date: {
@@ -219,7 +261,113 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      _ltree_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      _ltree_gist_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      hash_ltree: {
+        Args: { "": unknown }
+        Returns: number
+      }
+      insert_relationship: {
+        Args: { child: number; parent: number }
+        Returns: {
+          ancestor: number
+          count: number
+          depth: number
+          descendant: number
+          inserted_at: string
+          updated_at: string
+        }
+      }
+      lca: {
+        Args: { "": unknown[] }
+        Returns: unknown
+      }
+      lquery_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      lquery_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      lquery_recv: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      lquery_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      ltree_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_gist_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_gist_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      ltree_gist_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_recv: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltree_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      ltree2text: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      ltxtq_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltxtq_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltxtq_recv: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ltxtq_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      nlevel: {
+        Args: { "": unknown }
+        Returns: number
+      }
+      text2ltree: {
+        Args: { "": string }
+        Returns: unknown
+      }
     }
     Enums: {
       [_ in never]: never

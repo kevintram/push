@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { Baby, Plus, User2 } from 'lucide-react'
 import { Badge } from '~/components/ui/Badge'
 import { Card } from '~/components/ui/Card'
@@ -28,10 +29,12 @@ export function TopicFamilyPanel({
 					{topic.parents?.map(parent => (
 						<Badge
 							className='cursor-pointer px-2 py-0.5 text-xs hover:bg-secondary/80'
-							key={parent}
+							key={parent.id}
 							variant='secondary'
 						>
-							{parent}
+							<Link params={{ topicId: parent.id.toString() }} to='/topics/{-$topicId}'>
+								{parent.name}
+							</Link>
 						</Badge>
 					))}
 					<Badge
@@ -59,7 +62,9 @@ export function TopicFamilyPanel({
 							onClick={() => onTopicSelected?.(child)}
 							variant='secondary'
 						>
-							{child.name}
+							<Link params={{ topicId: child.id.toString() }} to='/topics/{-$topicId}'>
+								{child.name}
+							</Link>
 						</Badge>
 					))}
 					<Badge

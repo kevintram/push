@@ -13,12 +13,8 @@
 
 import type { Tables } from './database.types'
 
-// Base Supabase table types
-type TableTopic = Tables<'topics'>
-
-// enhanced topic type for now while we have partial implementation
-export type Topic = TableTopic & {
-	parents: Array<string>
+export type Topic = Tables<'topics'> & {
+	parents: Array<Topic>,
 	children: Array<Topic>
 }
 

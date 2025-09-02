@@ -1,4 +1,5 @@
 import { useDeleteMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import { Link } from '@tanstack/react-router'
 import { Baby, ChevronDown, MoreHorizontal, Trash, Users2 } from 'lucide-react'
 import { memo, use, useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
@@ -44,11 +45,16 @@ export function TopicListItem({ topic }: { topic: Topic }) {
 				role='button'
 				tabIndex={0}
 			>
-				<BasicTopicListItem
-					isExpanded={isExpanded}
-					setIsExpanded={setIsExpanded}
-					topic={topic}
-				/>
+				<Link
+					params={{ topicId: topic.id.toString() }}
+					to='/topics/{-$topicId}'
+				>
+					<BasicTopicListItem
+						isExpanded={isExpanded}
+						setIsExpanded={setIsExpanded}
+						topic={topic}
+					/>
+				</Link>
 			</div>
 			{topic.children.length > 0 && isExpanded && (
 				<div className='relative ml-4'>
