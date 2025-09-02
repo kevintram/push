@@ -16,10 +16,6 @@ import { supabase } from '~/utils/supabase'
 import { SelectedTopicIdContext } from '../../stores/SelectedTopicIdContext'
 import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
-/**
- * Created this to avoid re-rendering BasicTopicListItem when
- * the selected topic changes (BasicTopicListItem is memoized).
- */
 export function TopicListItem({ topic }: { topic: Topic }) {
 	const { selectedTopicId } = use(SelectedTopicIdContext)
 	const isSelected = topic.id === selectedTopicId
@@ -34,7 +30,7 @@ export function TopicListItem({ topic }: { topic: Topic }) {
 					'w-full rounded-md py-2 pl-3 text-left transition-colors hover:bg-muted/50'
 				)}
 			>
-				<BasicTopicListItem
+				<MemoizedBody
 					isExpanded={isExpanded}
 					setIsExpanded={setIsExpanded}
 					topic={topic}
@@ -59,7 +55,7 @@ export function TopicListItem({ topic }: { topic: Topic }) {
 	)
 }
 
-const BasicTopicListItem = memo(
+const MemoizedBody = memo(
 	({
 		topic,
 		isExpanded,
