@@ -46,9 +46,7 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 					topics={topics}
 				/>
 
-				{selectedTopic && (
-					<TopicPage isLoading={isLoading} topic={selectedTopic} />
-				)}
+				{selectedTopic && <TopicPage isLoading={isLoading} />}
 			</SelectedTopicContext>
 		</div>
 	)

@@ -1,19 +1,15 @@
 import { Link } from '@tanstack/react-router'
 import { Baby, Plus, User2 } from 'lucide-react'
+import { use } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Card } from '~/components/ui/Card'
 import { Separator } from '~/components/ui/Separator'
 import type { Topic } from '~/types/topics.types'
+import { SelectedTopicContext } from '../../stores/SelectedTopicContext'
 
-interface TopicFamilyPanelProps {
-	topic: Topic
-	onTopicSelected?: (topic: Topic) => void
-}
+export function TopicFamilyPanel() {
+	const { selectedTopic } = use(SelectedTopicContext)
 
-export function TopicFamilyPanel({
-	topic,
-	onTopicSelected
-}: TopicFamilyPanelProps) {
 	return (
 		<Card className='w-full px-3 shadow-sm'>
 			<div className='space-y-4'>
@@ -25,7 +21,7 @@ export function TopicFamilyPanel({
 							Parents
 						</span>
 					</div>
-					{topic.parents?.map(parent => (
+					{selectedTopic?.parents?.map(parent => (
 						<Badge
 							className='cursor-pointer px-2 py-0.5 text-xs hover:bg-secondary/80'
 							key={parent.id}
@@ -57,11 +53,10 @@ export function TopicFamilyPanel({
 							Children
 						</span>
 					</div>
-					{topic.children.map((child: Topic) => (
+					{selectedTopic?.children.map((child: Topic) => (
 						<Badge
 							className='cursor-pointer px-2 py-0.5 text-xs hover:bg-secondary/80'
 							key={child.id}
-							onClick={() => onTopicSelected?.(child)}
 							variant='secondary'
 						>
 							<Link
