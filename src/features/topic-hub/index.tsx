@@ -1,12 +1,55 @@
+import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
+import { useMemo } from 'react'
+import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/types/topics.types'
+import { supabase } from '~/utils/supabase'
 import { TopicPage } from './components/Topic/TopicPage'
 import { TopicList } from './components/TopicList'
+import { SelectedTopicContext } from './stores/SelectedTopicContext'
+import {
+	getRootTopics,
+	parseTopicRelationships
+} from './utils/parseTopicRelationships'
 
 export function TopicHub({ topicId }: { topicId: number | undefined }) {
-	return (
-		<div className='relative flex h-screen w-full'>
-			<TopicList selectedTopicId={topicId} />
+	const { data: topicsData, isLoading: topicsDataLoading } = useQuery<
+		Array<Tables<'topics'>>
+	>(
+		supabase
+			.from('topics')
+			.select('*')
+			.order('inserted_at', { ascending: false })
+	)
+	const { data: directRelationships, isLoading: directRelationshipsLoading } =
+		useQuery(supabase.from('topics_closure').select('*').eq('depth', 1))
+	const isLoading = directRelationshipsLoading || topicsDataLoading
 
-			{topicId && <TopicPage topicId={topicId} />}
+	const topicsMap: Map<number, Topic> = useMemo(() => {
+		if (!(directRelationships && topicsData)) return new Map<number, Topic>()
+
+		return parseTopicRelationships(directRelationships, topicsData)
+	}, [directRelationships, topicsData])
+
+	const topics: Array<Topic> | undefined = useMemo(() => {
+		if (!topicsMap) return
+
+		return getRootTopics(topicsMap)
+	}, [topicsMap])
+
+	const selectedTopic = topicId ? topicsMap.get(topicId) : undefined
+
+	return (
+		<div className='flex h-screen w-full'>
+			<SelectedTopicContext value={{ selectedTopic }}>
+				<TopicList
+					isLoading={topicsDataLoading || directRelationshipsLoading}
+					topics={topics}
+				/>
+
+				{selectedTopic && (
+					<TopicPage isLoading={isLoading} topic={selectedTopic} />
+				)}
+			</SelectedTopicContext>
 		</div>
 	)
 }

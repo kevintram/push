@@ -1,4 +1,5 @@
 import { useDeleteMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import { Link } from '@tanstack/react-router'
 import { Baby, ChevronDown, MoreHorizontal, Trash, Users2 } from 'lucide-react'
 import { memo, use, useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
@@ -12,16 +13,12 @@ import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicIdContext } from '../../stores/SelectedTopicIdContext'
+import { SelectedTopicContext } from '../../stores/SelectedTopicContext'
 import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
-/**
- * Created this to avoid re-rendering BasicTopicListItem when
- * the selected topic changes (BasicTopicListItem is memoized).
- */
 export function TopicListItem({ topic }: { topic: Topic }) {
-	const { selectedTopicId } = use(SelectedTopicIdContext)
-	const isSelected = topic.id === selectedTopicId
+	const { selectedTopic } = use(SelectedTopicContext)
+	const isSelected = topic.id === selectedTopic?.id
 
 	const [isExpanded, setIsExpanded] = useState(true)
 
@@ -32,19 +29,8 @@ export function TopicListItem({ topic }: { topic: Topic }) {
 					isSelected && 'bg-primary/10 text-primary',
 					'w-full rounded-md py-2 pl-3 text-left transition-colors hover:bg-muted/50'
 				)}
-				onClick={() => {
-					// TODO: LATER
-				}}
-				onKeyDown={e => {
-					if (e.key === 'Enter' || e.key === ' ') {
-						e.preventDefault()
-						// DO LATER
-					}
-				}}
-				role='button'
-				tabIndex={0}
 			>
-				<BasicTopicListItem
+				<MemoizedBody
 					isExpanded={isExpanded}
 					setIsExpanded={setIsExpanded}
 					topic={topic}
@@ -69,7 +55,7 @@ export function TopicListItem({ topic }: { topic: Topic }) {
 	)
 }
 
-const BasicTopicListItem = memo(
+const MemoizedBody = memo(
 	({
 		topic,
 		isExpanded,
@@ -97,14 +83,13 @@ const BasicTopicListItem = memo(
 		// 	: 0
 
 		return (
-			<div
-				className={cn('group flex flex-col gap-1')}
-				// style={{ paddingLeft: `${level * 16 + 12}px` }}
-			>
-				{/* Topic content */}
-				<div className='flex flex-col gap-1'>
-					<div className='flex items-start justify-between gap-3'>
-						<div className='min-w-0 flex-1'>
+			<div className='group flex flex-col gap-1'>
+				<div className='flex items-start justify-between gap-3'>
+					<div className='min-w-0 flex-1'>
+						<Link
+							params={{ topicId: topic.id.toString() }}
+							to='/topics/{-$topicId}'
+						>
 							<div className='break-words font-medium text-sm'>
 								{topic.name}
 							</div>
@@ -119,9 +104,9 @@ const BasicTopicListItem = memo(
 								</span>
 								<span className='font-bold'> · </span>
 								{/* <RotateCcw className='h-3 w-3' />
-								{daysSinceLastEntry === 0 || Number.isNaN(daysSinceLastEntry)
-									? 'never'
-									: `${daysSinceLastEntry}d ago`} */}
+									{daysSinceLastEntry === 0 || Number.isNaN(daysSinceLastEntry)
+										? 'never'
+										: `${daysSinceLastEntry}d ago`} */}
 							</div>
 							<div className='mt-1 flex items-center gap-2'>
 								<Progress
@@ -133,35 +118,35 @@ const BasicTopicListItem = memo(
 									{topic.stability}d
 								</div>
 							</div>
-						</div>
+						</Link>
+					</div>
 
-						{/* More options in top right */}
-						<div className='flex-shrink-0'>
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild={true}>
-									<Button
-										className='h-6 w-6 p-0'
-										onClick={e => e.stopPropagation()}
-										size='sm'
-										title='More options'
-										variant='ghost'
-									>
-										<MoreHorizontal className='h-3 w-3 transition-all duration-200 group-hover:h-4 group-hover:w-4' />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent>
-									<DropdownMenuItem onClick={handleDelete}>
-										<Trash className='mr-2 h-4 w-4' />
-										Delete
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
+					{/* More options in top right */}
+					<div className='flex-shrink-0'>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild={true}>
+								<Button
+									className='h-6 w-6 p-0'
+									onClick={e => e.stopPropagation()}
+									size='sm'
+									title='More options'
+									variant='ghost'
+								>
+									<MoreHorizontal className='h-3 w-3 transition-all duration-200 group-hover:h-4 group-hover:w-4' />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuItem onClick={handleDelete}>
+									<Trash className='mr-2 h-4 w-4' />
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 				</div>
 
 				{/* Parent and Children Buttons */}
-				<div className='flex items-center justify-end gap-0.5'>
+				<div className='flex items-center justify-end gap-1.5'>
 					{/* Parents Button */}
 					<Button
 						className={cn(
@@ -191,8 +176,6 @@ const BasicTopicListItem = memo(
 							</span>
 						)}
 					</Button>
-
-					<div className='w-1' />
 
 					{/* Children Button */}
 					<Button

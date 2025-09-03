@@ -79,7 +79,7 @@ export function Timeline() {
 	}, [timelineEntries])
 
 	return (
-		<div className='flex h-full flex-col gap-3 p-4'>
+		<div className='flex h-full w-full flex-col gap-3 p-4'>
 			<div className='flex items-center justify-between gap-2 border-b pb-2'>
 				<h1 className='font-semibold'>Timeline</h1>
 				<AddEntryButton />

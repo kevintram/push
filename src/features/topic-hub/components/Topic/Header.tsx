@@ -10,7 +10,7 @@ import {
 	UserPlus,
 	Users
 } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { use, useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -27,28 +27,12 @@ import {
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { supabase } from '~/utils/supabase'
+import { SelectedTopicContext } from '../../stores/SelectedTopicContext'
 import { numDaysElapsedFrom } from '../../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
-interface TopicHeaderProps {
-	id: number
-	name: string
-	createdAt: string
-	retrievability: number
-	stability: number
-}
-
-export function TopicHeader({
-	id,
-	name,
-	createdAt,
-	retrievability,
-	stability
-}: TopicHeaderProps) {
-	const sinceLastReview = useMemo(
-		() => numDaysElapsedFrom(new Date(createdAt)),
-		[createdAt]
-	)
+export function TopicHeader() {
+	const { selectedTopic } = use(SelectedTopicContext)
 
 	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
 		supabase.from('topics'),
@@ -58,15 +42,30 @@ export function TopicHeader({
 
 	const updateNameMutation = useCallback(
 		(newTitle: string) => {
-			updateTopicMutation({ id, name: newTitle })
+			if (!selectedTopic) return
+			updateTopicMutation({ id: selectedTopic.id, name: newTitle })
 		},
-		[updateTopicMutation, id]
+		[updateTopicMutation, selectedTopic]
 	)
 
 	const { value: title, onChange: onNameChange } = useAutoSave({
-		initialValue: name,
+		initialValue: selectedTopic?.name ?? '',
 		onSave: updateNameMutation
 	})
+
+	const sinceLastReview = useMemo(
+		() =>
+			selectedTopic
+				? numDaysElapsedFrom(new Date(selectedTopic.inserted_at))
+				: 0,
+		[selectedTopic]
+	)
+
+	if (!selectedTopic) {
+		return null
+	}
+
+	const { retrievability, stability } = selectedTopic
 
 	return (
 		<div className='flex w-full flex-col gap-3 sm:gap-4'>
