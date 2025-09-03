@@ -28,8 +28,8 @@ export function TopicPage({ topicId }: { topicId: number }) {
 	const topic: Topic = parseSupabaseTopic(data)
 
 	return (
-		<div>
-			<div className='flex w-full flex-1 flex-col gap-4 overflow-auto p-3 sm:gap-6 sm:p-4 md:p-6'>
+		<div className='flex h-full flex-1 flex-row'>
+			<div className='flex w-full flex-col gap-4 sm:gap-6 sm:p-4 md:p-6'>
 				<TopicHeader
 					createdAt={topic.inserted_at}
 					id={topic.id}
@@ -42,9 +42,13 @@ export function TopicPage({ topicId }: { topicId: number }) {
 				<TopicFamilyPanel topic={topic} />
 
 				<PracticeAndNotes />
+			</div>
 
+			<div className='flex'>
 				<Timeline />
 			</div>
+
+				
 		</div>
 	)
 }
