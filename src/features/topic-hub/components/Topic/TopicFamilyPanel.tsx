@@ -31,7 +31,10 @@ export function TopicFamilyPanel({
 							key={parent.id}
 							variant='secondary'
 						>
-							<Link params={{ topicId: parent.id.toString() }} to='/topics/{-$topicId}'>
+							<Link
+								params={{ topicId: parent.id.toString() }}
+								to='/topics/{-$topicId}'
+							>
 								{parent.name}
 							</Link>
 						</Badge>
@@ -61,7 +64,10 @@ export function TopicFamilyPanel({
 							onClick={() => onTopicSelected?.(child)}
 							variant='secondary'
 						>
-							<Link params={{ topicId: child.id.toString() }} to='/topics/{-$topicId}'>
+							<Link
+								params={{ topicId: child.id.toString() }}
+								to='/topics/{-$topicId}'
+							>
 								{child.name}
 							</Link>
 						</Badge>

@@ -5,7 +5,6 @@ export function parseTopicRelationships(
 	directRelationships: Array<Tables<'topics_closure'>>, // relationships where depth = 1
 	topics: Array<Tables<'topics'>>
 ): Map<number, Topic> {
-
 	const m = new Map<number, Topic>()
 
 	for (const t of topics) {
@@ -30,5 +29,3 @@ export function parseTopicRelationships(
 export function getRootTopics(m: Map<number, Topic>): Array<Topic> {
 	return Array.from(m.values()).filter(t => t.parents.length === 0)
 }
-
-
