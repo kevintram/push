@@ -27,14 +27,7 @@ export function TopicPage({
 	return (
 		<div className='flex h-full flex-1 flex-row'>
 			<div className='flex w-full flex-col gap-4 sm:gap-6 sm:p-4 md:p-6'>
-				<TopicHeader
-					createdAt={topic.inserted_at}
-					id={topic.id}
-					key={topic.id}
-					name={topic.name}
-					retrievability={topic.retrievability}
-					stability={topic.stability}
-				/>
+				<TopicHeader key={topic.id} />
 
 				<TopicFamilyPanel topic={topic} />
 
@@ -44,8 +37,6 @@ export function TopicPage({
 			<div className='flex'>
 				<Timeline />
 			</div>
-
-				
 		</div>
 	)
 }

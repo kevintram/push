@@ -13,12 +13,12 @@ import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicIdContext } from '../../stores/SelectedTopicIdContext'
+import { SelectedTopicContext } from '../../stores/SelectedTopicContext'
 import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
 export function TopicListItem({ topic }: { topic: Topic }) {
-	const { selectedTopicId } = use(SelectedTopicIdContext)
-	const isSelected = topic.id === selectedTopicId
+	const { selectedTopic } = use(SelectedTopicContext)
+	const isSelected = topic.id === selectedTopic?.id
 
 	const [isExpanded, setIsExpanded] = useState(true)
 

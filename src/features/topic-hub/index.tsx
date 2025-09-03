@@ -1,14 +1,11 @@
-import {
-	useInsertMutation,
-	useQuery
-} from '@supabase-cache-helpers/postgrest-react-query'
-import { useNavigate } from '@tanstack/react-router'
-import { useCallback, useMemo } from 'react'
+import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
+import { useMemo } from 'react'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 import { TopicPage } from './components/Topic/TopicPage'
 import { TopicList } from './components/TopicList'
+import { SelectedTopicContext } from './stores/SelectedTopicContext'
 import {
 	getRootTopics,
 	parseTopicRelationships
@@ -43,15 +40,16 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 
 	return (
 		<div className='flex h-screen w-full'>
-			<TopicList
-				isLoading={topicsDataLoading || directRelationshipsLoading}
-				selectedTopic={selectedTopic}
-				topics={topics}
-			/>
+			<SelectedTopicContext value={{ selectedTopic }}>
+				<TopicList
+					isLoading={topicsDataLoading || directRelationshipsLoading}
+					topics={topics}
+				/>
 
-			{selectedTopic && (
-				<TopicPage isLoading={isLoading} topic={selectedTopic} />
-			)}
+				{selectedTopic && (
+					<TopicPage isLoading={isLoading} topic={selectedTopic} />
+				)}
+			</SelectedTopicContext>
 		</div>
 	)
 }

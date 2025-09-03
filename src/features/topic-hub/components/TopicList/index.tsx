@@ -3,19 +3,16 @@ import { useNavigate } from '@tanstack/react-router'
 import { useCallback } from 'react'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicIdContext } from '../../stores/SelectedTopicIdContext'
 import { TopicListHeader } from './TopicListHeader'
 import { TopicListItem } from './TopicListItem'
 import { TopicListSkeleton } from './TopicListSkeleton'
 
 export function TopicList({
 	topics,
-	isLoading,
-	selectedTopic
+	isLoading
 }: {
 	topics: Array<Topic> | undefined
 	isLoading: boolean
-	selectedTopic: Topic | undefined
 }) {
 	const navigate = useNavigate()
 
@@ -63,13 +60,9 @@ export function TopicList({
 
 			<div className='flex-1 overflow-auto'>
 				<div className='space-y-1'>
-					<SelectedTopicIdContext
-						value={{ selectedTopicId: selectedTopic?.id }}
-					>
-						{topics.map(topic => (
-							<TopicListItem key={topic.id} topic={topic} />
-						))}
-					</SelectedTopicIdContext>
+					{topics.map(topic => (
+						<TopicListItem key={topic.id} topic={topic} />
+					))}
 				</div>
 			</div>
 		</div>
