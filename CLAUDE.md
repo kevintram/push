@@ -96,6 +96,9 @@ src/features/awesome-feature
 +-- index.ts    # entry point for the feature, it should serve as the public API of the given feature and exports everything that should be used outside the feature
 ```
 
+### UI Components
+Please prefer using shadcn components in the 'src/components/ui' folder wherever possible instead of handrolling your own components. This will help consistency across the app!
+
 ### Data Flow
 - We pull data from Supabase, a Postgres Database Provider using the [JavaScript Client Library](https://supabase.com/docs/reference/javascript/start)
 - However, sometimes during local development, we load mock JSON data from (`src/__mocks__/`)

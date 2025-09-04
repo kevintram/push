@@ -27,12 +27,12 @@ import {
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicContext } from '../../stores/SelectedTopicContext'
+import { TopicHubContext } from '../../stores/SelectedTopicContext'
 import { numDaysElapsedFrom } from '../../utils/daysElapsed'
 import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
 export function TopicHeader() {
-	const { selectedTopic } = use(SelectedTopicContext)
+	const { selectedTopic } = use(TopicHubContext)
 
 	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
 		supabase.from('topics'),

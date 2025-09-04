@@ -1,14 +1,15 @@
 import { Link } from '@tanstack/react-router'
-import { Baby, Plus, User2 } from 'lucide-react'
+import { Baby, User2 } from 'lucide-react'
 import { use } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Card } from '~/components/ui/Card'
 import { Separator } from '~/components/ui/Separator'
 import type { Topic } from '~/types/topics.types'
-import { SelectedTopicContext } from '../../stores/SelectedTopicContext'
+import { TopicHubContext } from '../../stores/SelectedTopicContext'
+import { AddRelationshipBadge } from './AddRelationshipBadge'
 
 export function TopicFamilyPanel() {
-	const { selectedTopic } = use(SelectedTopicContext)
+	const { selectedTopic } = use(TopicHubContext)
 
 	return (
 		<Card className='w-full px-3 shadow-sm'>
@@ -35,12 +36,7 @@ export function TopicFamilyPanel() {
 							</Link>
 						</Badge>
 					))}
-					<Badge
-						className='cursor-pointer border-dashed px-1.5 py-0.5 text-xs hover:bg-muted/50'
-						variant='outline'
-					>
-						<Plus className='h-3 w-3' />
-					</Badge>
+					<AddRelationshipBadge type='parent' />
 				</div>
 
 				<Separator />
@@ -67,12 +63,8 @@ export function TopicFamilyPanel() {
 							</Link>
 						</Badge>
 					))}
-					<Badge
-						className='cursor-pointer border-dashed px-1.5 py-0.5 text-xs hover:bg-muted/50'
-						variant='outline'
-					>
-						<Plus className='h-3 w-3' />
-					</Badge>
+
+					<AddRelationshipBadge type='child' />
 				</div>
 			</div>
 		</Card>

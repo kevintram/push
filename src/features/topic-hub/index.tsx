@@ -5,7 +5,7 @@ import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 import { TopicPage } from './components/Topic/TopicPage'
 import { TopicList } from './components/TopicList'
-import { SelectedTopicContext } from './stores/SelectedTopicContext'
+import { TopicHubContext } from './stores/SelectedTopicContext'
 import {
 	getRootTopics,
 	parseTopicRelationships
@@ -40,14 +40,14 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 
 	return (
 		<div className='flex h-screen w-full'>
-			<SelectedTopicContext value={{ selectedTopic }}>
+			<TopicHubContext value={{ selectedTopic, topics: topicsMap }}>
 				<TopicList
 					isLoading={topicsDataLoading || directRelationshipsLoading}
 					topics={topics}
 				/>
 
 				{selectedTopic && <TopicPage isLoading={isLoading} />}
-			</SelectedTopicContext>
+			</TopicHubContext>
 		</div>
 	)
 }

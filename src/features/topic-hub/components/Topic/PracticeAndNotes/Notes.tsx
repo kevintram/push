@@ -3,10 +3,10 @@ import { use, useCallback } from 'react'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicContext } from '../../../stores/SelectedTopicContext'
+import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 
 export function Notes() {
-	const { selectedTopic } = use(SelectedTopicContext)
+	const { selectedTopic } = use(TopicHubContext)
 
 	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
 		supabase.from('topics'),

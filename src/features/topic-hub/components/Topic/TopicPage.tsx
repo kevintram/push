@@ -1,5 +1,5 @@
 import { use } from 'react'
-import { SelectedTopicContext } from '../../stores/SelectedTopicContext'
+import { TopicHubContext } from '../../stores/SelectedTopicContext'
 import { TopicHeader } from './Header'
 import { PracticeAndNotes } from './PracticeAndNotes'
 import { Timeline } from './Timeline'
@@ -7,7 +7,7 @@ import { TopicFamilyPanel } from './TopicFamilyPanel'
 import { TopicPageSkeleton } from './TopicPageSkeleton'
 
 export function TopicPage({ isLoading }: { isLoading: boolean }) {
-	const { selectedTopic } = use(SelectedTopicContext)
+	const { selectedTopic } = use(TopicHubContext)
 
 	if (isLoading) {
 		return <TopicPageSkeleton />

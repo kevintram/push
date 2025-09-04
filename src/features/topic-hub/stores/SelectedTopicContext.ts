@@ -1,8 +1,10 @@
 import { createContext } from 'react'
 import type { Topic } from '~/types/topics.types'
 
-export const SelectedTopicContext = createContext<{
+export const TopicHubContext = createContext<{
 	selectedTopic: Topic | undefined
+	topics: Map<number, Topic>
 }>({
-	selectedTopic: undefined
+	selectedTopic: undefined,
+	topics: new Map()
 })
