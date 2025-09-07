@@ -1,9 +1,9 @@
 import { use } from 'react'
 import { TopicHubContext } from '../../stores/SelectedTopicContext'
+import { TopicFamilyPanel } from './FamilyPanel'
 import { TopicHeader } from './Header'
 import { PracticeAndNotes } from './PracticeAndNotes'
 import { Timeline } from './Timeline'
-import { TopicFamilyPanel } from './TopicFamilyPanel'
 import { TopicPageSkeleton } from './TopicPageSkeleton'
 
 export function TopicPage({ isLoading }: { isLoading: boolean }) {

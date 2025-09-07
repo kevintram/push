@@ -261,8 +261,23 @@ export type Database = {
       }
     }
     Functions: {
+      delete_relationship: {
+        Args: { child: number; parent: number }
+        Returns: undefined
+      }
       insert_relationship: {
         Args: { child: number; parent: number }
+        Returns: {
+          ancestor: number
+          count: number
+          depth: number
+          descendant: number
+          inserted_at: string
+          updated_at: string
+        }
+      }
+      insert_topic_reflexive_path: {
+        Args: { topicid: number }
         Returns: {
           ancestor: number
           count: number

@@ -8,9 +8,9 @@ import { Badge } from '~/components/ui/Badge'
 import { Command, CommandEmpty, CommandItem } from '~/components/ui/Command'
 import { Popover, PopoverContent } from '~/components/ui/Popover'
 import { supabase } from '~/utils/supabase'
-import { useCreateRelationship } from '../../hooks/useCreateRelationship'
-import { useDebouncedSearch } from '../../hooks/useDebouncedSearch'
-import { TopicHubContext } from '../../stores/SelectedTopicContext'
+import { useCreateRelationship } from '../../../hooks/useCreateRelationship'
+import { useDebouncedSearch } from '../../../hooks/useDebouncedSearch'
+import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 
 export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 	const [open, setOpen] = useState(false)
@@ -46,17 +46,18 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 
 	const addRelationshipWithExisting = useCallback(
 		async (topicId: number) => {
+			if (!selectedTopic) return
 			setOpen(false)
 
 			if (type === 'child') {
 				await createRelationship.mutateAsync({
-					parent: selectedTopic!.id,
+					parent: selectedTopic.id,
 					child: topicId
 				})
 			} else {
 				await createRelationship.mutateAsync({
 					parent: topicId,
-					child: selectedTopic!.id
+					child: selectedTopic.id
 				})
 			}
 		},
@@ -64,6 +65,8 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 	)
 
 	const addRelationshipWithNewTopic = useCallback(async () => {
+		if (!selectedTopic) return
+
 		setOpen(false)
 		const createdTopic = await insertTopicMutation([{ name: searchTrimmed }])
 
@@ -73,13 +76,13 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 
 		if (type === 'child') {
 			await createRelationship.mutateAsync({
-				parent: selectedTopic!.id,
+				parent: selectedTopic.id,
 				child: createdTopic?.[0].id
 			})
 		} else {
 			await createRelationship.mutateAsync({
 				parent: createdTopic?.[0].id,
-				child: selectedTopic!.id
+				child: selectedTopic.id
 			})
 		}
 	}, [
@@ -104,8 +107,8 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 	return (
 		<div className='flex items-center'>
 			<Popover
-				onOpenChange={(open: boolean) => {
-					setOpen(open)
+				onOpenChange={(_open: boolean) => {
+					setOpen(_open)
 				}}
 				open={open}
 			>

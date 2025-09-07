@@ -1,12 +1,11 @@
-import { Link } from '@tanstack/react-router'
 import { Baby, User2 } from 'lucide-react'
 import { use } from 'react'
-import { Badge } from '~/components/ui/Badge'
 import { Card } from '~/components/ui/Card'
 import { Separator } from '~/components/ui/Separator'
 import type { Topic } from '~/types/topics.types'
-import { TopicHubContext } from '../../stores/SelectedTopicContext'
+import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 import { AddRelationshipBadge } from './AddRelationshipBadge'
+import { RelationshipBadge } from './RelationshipBadge'
 
 export function TopicFamilyPanel() {
 	const { selectedTopic } = use(TopicHubContext)
@@ -23,18 +22,11 @@ export function TopicFamilyPanel() {
 						</span>
 					</div>
 					{selectedTopic?.parents?.map(parent => (
-						<Badge
-							className='cursor-pointer px-2 py-0.5 text-xs hover:bg-secondary/80'
+						<RelationshipBadge
 							key={parent.id}
-							variant='secondary'
-						>
-							<Link
-								params={{ topicId: parent.id.toString() }}
-								to='/topics/{-$topicId}'
-							>
-								{parent.name}
-							</Link>
-						</Badge>
+							kin={parent}
+							relationship='parent'
+						/>
 					))}
 					<AddRelationshipBadge type='parent' />
 				</div>
@@ -50,18 +42,11 @@ export function TopicFamilyPanel() {
 						</span>
 					</div>
 					{selectedTopic?.children.map((child: Topic) => (
-						<Badge
-							className='cursor-pointer px-2 py-0.5 text-xs hover:bg-secondary/80'
+						<RelationshipBadge
 							key={child.id}
-							variant='secondary'
-						>
-							<Link
-								params={{ topicId: child.id.toString() }}
-								to='/topics/{-$topicId}'
-							>
-								{child.name}
-							</Link>
-						</Badge>
+							kin={child}
+							relationship='child'
+						/>
 					))}
 
 					<AddRelationshipBadge type='child' />
