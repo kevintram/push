@@ -18,10 +18,7 @@ export function Timeline() {
 			.from('timeline_entries_with_effective_date')
 			.select('*')
 			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
-			.order('effective_date', { ascending: true }),
-		{
-			enabled: selectedTopic !== undefined
-		}
+			.order('effective_date', { ascending: true })
 	)
 
 	const renderTimelineItems = useCallback(() => {
