@@ -15,7 +15,7 @@ import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicContext } from '../../../stores/SelectedTopicContext'
+import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 
 type PracticeCard = Tables<'practice_cards'>
 
@@ -24,7 +24,7 @@ export function PracticeCards() {
 	const [numLanes, setNumLanes] = useState(3)
 	const parentRef = useRef<HTMLDivElement>(null)
 
-	const { selectedTopic } = use(SelectedTopicContext)
+	const { selectedTopic } = use(TopicHubContext)
 
 	const { mutateAsync: insertPracticeCard } = useInsertMutation(
 		supabase.from('practice_cards'),

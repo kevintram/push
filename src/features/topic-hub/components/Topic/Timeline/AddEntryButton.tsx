@@ -11,10 +11,10 @@ import {
 } from '~/components/ui/Popover'
 import { Textarea } from '~/components/ui/Textarea'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicContext } from '../../../stores/SelectedTopicContext'
+import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 
 export function AddEntryButton() {
-	const { selectedTopic } = use(SelectedTopicContext)
+	const { selectedTopic } = use(TopicHubContext)
 	const [isOpen, setIsOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 	const [description, setDescription] = useState('')

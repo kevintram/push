@@ -2,7 +2,7 @@ import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { use, useCallback } from 'react'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
-import { SelectedTopicContext } from '../../../stores/SelectedTopicContext'
+import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 import { dateOf } from '../../../utils/dateOf'
 import { AddEntryButton } from './AddEntryButton'
 import { Entry } from './Entry'
@@ -11,7 +11,7 @@ import { TodayMarker } from './TodayMarker'
 type TimelineEntry = Tables<'timeline_entries_with_effective_date'>
 
 export function Timeline() {
-	const { selectedTopic } = use(SelectedTopicContext)
+	const { selectedTopic } = use(TopicHubContext)
 
 	const { data: timelineEntries } = useQuery<Array<TimelineEntry>>(
 		supabase
