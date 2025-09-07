@@ -20,7 +20,7 @@ export function AddEntryButton() {
 	const [description, setDescription] = useState('')
 
 	const { mutateAsync: insertTimelineEntryMutation } = useInsertMutation(
-		supabase.from('timeline_entries'),
+		supabase.from('timeline_entries_with_effective_date'),
 		['id'],
 		'*'
 	)

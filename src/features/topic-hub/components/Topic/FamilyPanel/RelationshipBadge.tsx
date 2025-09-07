@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { MoreHorizontal, Trash2 } from 'lucide-react'
+import { GitPullRequestClosed, MoreHorizontal } from 'lucide-react'
 import { use } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
@@ -64,8 +64,8 @@ export function RelationshipBadge({
 						onClick={handleDelete}
 						variant='destructive'
 					>
-						<Trash2 className='mr-2 h-4 w-4' />
-						Delete
+						<GitPullRequestClosed className='mr-2 h-4 w-4' />
+						Remove
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>

@@ -1,7 +1,17 @@
+import { useRevalidateTables } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMutation } from '@tanstack/react-query'
 import { supabase } from '~/utils/supabase'
 
 export function useDeleteRelationship() {
+	const revalidateTables = useRevalidateTables([
+		{
+			table: 'topics_closure'
+		},
+		{
+			table: 'topics'
+		}
+	])
+
 	return useMutation({
 		mutationFn: async ({
 			parent,
@@ -17,6 +27,9 @@ export function useDeleteRelationship() {
 
 			if (error) throw error
 			return data
+		},
+		onSuccess: async () => {
+			await revalidateTables() // revalidate topics_closure and topics
 		}
 	})
 }
