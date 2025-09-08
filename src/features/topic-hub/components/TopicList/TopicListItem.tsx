@@ -1,5 +1,5 @@
 import { useDeleteMutation } from '@supabase-cache-helpers/postgrest-react-query'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Baby, ChevronDown, MoreHorizontal, Trash, Users2 } from 'lucide-react'
 import { memo, use, useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
@@ -65,9 +65,20 @@ const MemoizedBody = memo(
 		isExpanded: boolean
 		setIsExpanded: (expanded: boolean) => void
 	}) => {
+		const navigate = useNavigate()
+
 		const { mutateAsync: deleteTopic } = useDeleteMutation(
 			supabase.from('topics'),
-			['id']
+			['id'],
+			'*',
+			{
+				onSuccess: () => {
+					navigate({
+						to: '/topics/{-$topicId}',
+						params: { topicId: undefined }
+					})
+				}
+			}
 		)
 
 		const handleDelete = useCallback(async () => {

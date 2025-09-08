@@ -4,7 +4,7 @@
 		"allowUnreachableCode": false,
 		"baseUrl": "src",
 		"erasableSyntaxOnly": true,
-		"exactOptionalPropertyTypes": true,
+		"exactOptionalPropertyTypes": false,
 		"forceConsistentCasingInFileNames": true,
 		"isolatedModules": true,
 		"lib": ["ESNext"],
