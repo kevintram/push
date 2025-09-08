@@ -178,7 +178,8 @@ function PracticeCardItem({ card }: { card: PracticeCard }) {
 
 	const { value: cardContent, onChange: onContentChange } = useAutoSave({
 		initialValue: card?.content ?? '',
-		onSave: updateCardContent
+		onSave: updateCardContent,
+		key: `practice-cards-${card?.id}`
 	})
 
 	return (

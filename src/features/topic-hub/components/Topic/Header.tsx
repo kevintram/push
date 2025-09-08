@@ -50,7 +50,8 @@ export function TopicHeader() {
 
 	const { value: title, onChange: onNameChange } = useAutoSave({
 		initialValue: selectedTopic?.name ?? '',
-		onSave: updateNameMutation
+		onSave: updateNameMutation,
+		key: `topics-${selectedTopic?.id}`
 	})
 
 	const sinceLastReview = useMemo(
