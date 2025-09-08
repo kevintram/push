@@ -25,7 +25,8 @@ export function Notes() {
 
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: selectedTopic?.notes ?? '',
-		onSave: updateNotesMutation
+		onSave: updateNotesMutation,
+		key: `topics-${selectedTopic?.id}`
 	})
 
 	return (

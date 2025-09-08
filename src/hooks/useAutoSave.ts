@@ -5,6 +5,7 @@ interface UseAutoSaveOptions {
 	initialValue: string
 	onSave: (value: string) => void
 	debounceMs?: number
+	key?: string
 }
 /**
  * A hook that allows you to edit a string value in real time.
@@ -12,25 +13,36 @@ interface UseAutoSaveOptions {
  * @param initialValue - The initial value of the string.
  * @param onSave - Callback that saves the value to the database.
  * @param debounceMs - The number of milliseconds to debounce the save operation.
+ * @param key - key to reset value if changes similar to tanstack query keys.
  * @returns An object with the current value and a function to update the value.
  */
 export function useAutoSave({
 	initialValue,
 	onSave,
-	debounceMs = 1000
+	debounceMs = 1000,
+	key
 }: UseAutoSaveOptions) {
 	const [value, setValue] = useState(initialValue)
+	const _key = useRef<string | undefined>(key)
 	const lastUserActionRef = useRef<number>(Date.now())
 
 	useEffect(() => {
 		const timeSinceLastUserAction = Date.now() - lastUserActionRef.current
 		const isRecentUserActivity = timeSinceLastUserAction < debounceMs + 500 // Add buffer
 
-		// Only reset if no recent user activity
+		if (_key.current !== key) {
+			_key.current = key
+			setValue(initialValue)
+			
+			return
+		}
+
 		if (!isRecentUserActivity) {
 			setValue(initialValue)
+			return
 		}
-	}, [initialValue, debounceMs])
+	}, [initialValue, debounceMs, key])
+
 
 	const debouncedSave = useCallback(
 		debounce((newValue: string) => {
