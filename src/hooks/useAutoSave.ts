@@ -1,5 +1,5 @@
 import debounce from 'lodash.debounce'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface UseAutoSaveOptions {
 	initialValue: string
@@ -20,10 +20,17 @@ export function useAutoSave({
 	debounceMs = 1000
 }: UseAutoSaveOptions) {
 	const [value, setValue] = useState(initialValue)
+	const lastUserActionRef = useRef<number>(Date.now())
 
 	useEffect(() => {
-		setValue(initialValue)
-	}, [initialValue])
+		const timeSinceLastUserAction = Date.now() - lastUserActionRef.current
+		const isRecentUserActivity = timeSinceLastUserAction < debounceMs + 500 // Add buffer
+
+		// Only reset if no recent user activity
+		if (!isRecentUserActivity) {
+			setValue(initialValue)
+		}
+	}, [initialValue, debounceMs])
 
 	const debouncedSave = useCallback(
 		debounce((newValue: string) => {
@@ -35,6 +42,7 @@ export function useAutoSave({
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 			const newValue = e.target.value
+			lastUserActionRef.current = Date.now()
 			setValue(newValue)
 			debouncedSave(newValue)
 		},
