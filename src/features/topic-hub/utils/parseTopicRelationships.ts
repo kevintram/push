@@ -16,8 +16,12 @@ export function parseTopicRelationships(
 	}
 
 	for (const r of directRelationships) {
-		const parent = m.get(r.ancestor)!
-		const child = m.get(r.descendant)!
+		const parent = m.get(r.ancestor)
+		const child = m.get(r.descendant)
+
+		if (parent === undefined || child === undefined) {
+			continue
+		}
 
 		parent.children.push(child)
 		child.parents.push(parent)
