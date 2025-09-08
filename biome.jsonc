@@ -54,7 +54,11 @@
 				"rules": {
 					"correctness": {
 						"useImportExtensions": "off",
-						"noUndeclaredDependencies": "off"
+						"noUndeclaredDependencies": "off",
+						"useExhaustiveDependencies": {
+							"level": "warn",
+							"fix": "none"
+						}
 					},
 					"nursery": {
 						"noUnresolvedImports": "off",

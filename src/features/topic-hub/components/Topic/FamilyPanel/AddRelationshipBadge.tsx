@@ -15,28 +15,35 @@ import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 	const [open, setOpen] = useState(false)
 	const { selectedTopic, topics } = use(TopicHubContext)
-	const createRelationship = useCreateRelationship()
 
-	// topics excluding current and children
+	// topics available to add as a relationship
 	const availableTopics = useMemo(
 		() =>
 			// TODO: also filter topics that would create a cycle
 			Array.from(topics.values()).filter(
 				t =>
-					t.id !== selectedTopic?.id &&
+					t.id !== selectedTopic?.id && // itself
 					(type === 'child'
-						? !selectedTopic?.children.some(child => child.id === t.id)
-						: !selectedTopic?.parents.some(parent => parent.id === t.id))
+						? !selectedTopic?.children.some(child => child.id === t.id) // already added children
+						: !selectedTopic?.parents.some(parent => parent.id === t.id)) // OR already added parents
 			),
 		[selectedTopic, topics, type]
 	)
 
-	const { searchTerm, setSearchTerm, filteredTopics } = useDebouncedSearch({
+	const {
+		query: topicToAdd,
+		setQuery: setTopicToAdd,
+		results: suggestedTopics
+	} = useDebouncedSearch({
 		topics: availableTopics,
 		debounceMs: 300
 	})
-	const searchTrimmed = searchTerm.trim()
-	const searchNotEmpty = searchTrimmed.length > 0
+	const topicToAddTrimmed = topicToAdd.trim()
+	const topicToAddEmpty = topicToAddTrimmed.length > 0
+
+	const createRelationship = useCreateRelationship(() => {
+		setTopicToAdd('') // reset on success
+	})
 
 	const { mutateAsync: insertTopicMutation } = useInsertMutation(
 		supabase.from('topics'),
@@ -68,7 +75,9 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 		if (!selectedTopic) return
 
 		setOpen(false)
-		const createdTopic = await insertTopicMutation([{ name: searchTrimmed }])
+		const createdTopic = await insertTopicMutation([
+			{ name: topicToAddTrimmed }
+		])
 
 		if (!createdTopic?.[0]) {
 			throw new Error('Failed to create topic')
@@ -87,7 +96,7 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 		}
 	}, [
 		insertTopicMutation,
-		searchTrimmed,
+		topicToAddTrimmed,
 		type,
 		createRelationship.mutateAsync,
 		selectedTopic
@@ -124,15 +133,15 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 								onFocus={() => setOpen(true)}
 								onKeyDown={e => setOpen(e.key !== 'Escape')}
 								onMouseDown={() =>
-									setOpen(currentOpen => !!searchTerm || !currentOpen)
+									setOpen(currentOpen => !!topicToAdd || !currentOpen)
 								}
-								onValueChange={setSearchTerm}
-								value={searchTerm}
+								onValueChange={setTopicToAdd}
+								value={topicToAdd}
 							>
 								<AutoSizeInput
 									className='min-w-[24px] border-none bg-transparent text-xs focus:outline-none'
-									onChange={e => setSearchTerm(e.target.value)}
-									value={searchTerm}
+									onChange={e => setTopicToAdd(e.target.value)}
+									value={topicToAdd}
 								/>
 							</CommandPrimitive.Input>
 						</Badge>
@@ -155,7 +164,7 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 						<CommandList>
 							<CommandEmpty>No topic found.</CommandEmpty>
 							<CommandGroup />
-							{filteredTopics.slice(0, searchNotEmpty ? 4 : 5).map(topic => (
+							{suggestedTopics.slice(0, topicToAddEmpty ? 4 : 5).map(topic => (
 								<CommandItem
 									key={topic.id}
 									onMouseDown={e => e.preventDefault()}
@@ -165,14 +174,14 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 									{topic.name}
 								</CommandItem>
 							))}
-							{searchNotEmpty && (
+							{topicToAddEmpty && (
 								<CommandItem
-									key={`create-${searchTrimmed}`}
+									key={`create-${topicToAddTrimmed}`}
 									onMouseDown={e => e.preventDefault()}
 									onSelect={addRelationshipWithNewTopic}
-									value={searchTrimmed}
+									value={topicToAddTrimmed}
 								>
-									Create "{searchTrimmed}"
+									Create "{topicToAddTrimmed}"
 								</CommandItem>
 							)}
 						</CommandList>

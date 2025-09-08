@@ -11,30 +11,29 @@ export function useDebouncedSearch({
 	topics,
 	debounceMs = 300
 }: UseDebouncedSearchOptions) {
-	const [searchTerm, setSearchTerm] = useState('')
-	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+	const [query, setQuery] = useState('') // query user typed
+	const [debouncedQuery, setDebouncedQuery] = useState('') // actual query used to filter topics
 
-	const debouncedSetSearch = useCallback(
-		debounce((term: string) => {
-			setDebouncedSearchTerm(term)
-		}, debounceMs),
-		[]
+	const updateDebouncedQuery = useCallback(
+		debounce((term: string) => setDebouncedQuery(term), debounceMs),
+		[debounceMs]
 	)
 
 	useEffect(() => {
-		debouncedSetSearch(searchTerm)
-	}, [searchTerm, debouncedSetSearch])
+		updateDebouncedQuery(query)
+	}, [query, updateDebouncedQuery])
 
-	const filteredTopics = useMemo(() => {
+	const results = useMemo(() => {
+		if (!debouncedQuery.trim()) return topics
 		return topics.filter(topic =>
-			topic.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+			topic.name.toLowerCase().includes(debouncedQuery.toLowerCase())
 		)
-	}, [topics, debouncedSearchTerm])
+	}, [topics, debouncedQuery])
 
 	return {
-		searchTerm,
-		setSearchTerm,
-		filteredTopics,
-		debouncedSearchTerm
+		query,
+		setQuery,
+		results,
+		isSearching: query !== debouncedQuery
 	}
 }

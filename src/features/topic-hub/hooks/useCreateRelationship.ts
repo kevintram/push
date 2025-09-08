@@ -2,7 +2,7 @@ import { useRevalidateTables } from '@supabase-cache-helpers/postgrest-react-que
 import { useMutation } from '@tanstack/react-query'
 import { supabase } from '~/utils/supabase'
 
-export function useCreateRelationship() {
+export function useCreateRelationship(onSuccess?: () => void) {
 	const revalidateTables = useRevalidateTables([
 		{
 			table: 'topics_closure'
@@ -29,6 +29,7 @@ export function useCreateRelationship() {
 			return data
 		},
 		onSuccess: async () => {
+			onSuccess?.()
 			await revalidateTables() // revalidate topics_closure and topics
 		}
 	})

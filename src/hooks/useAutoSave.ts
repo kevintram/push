@@ -33,7 +33,7 @@ export function useAutoSave({
 		if (_key.current !== key) {
 			_key.current = key
 			setValue(initialValue)
-			
+
 			return
 		}
 
@@ -42,7 +42,6 @@ export function useAutoSave({
 			return
 		}
 	}, [initialValue, debounceMs, key])
-
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: I WANT TO UPDATE WITH THE ONSAVE BRO
 	const debouncedSave = useCallback(
