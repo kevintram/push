@@ -44,11 +44,12 @@ export function useAutoSave({
 	}, [initialValue, debounceMs, key])
 
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: I WANT TO UPDATE WITH THE ONSAVE BRO
 	const debouncedSave = useCallback(
 		debounce((newValue: string) => {
 			onSave(newValue)
 		}, debounceMs),
-		[]
+		[onSave]
 	)
 
 	const handleChange = useCallback(
