@@ -29,7 +29,7 @@ export function useAutoSave({
 		debounce((newValue: string) => {
 			onSave(newValue)
 		}, debounceMs),
-		[]
+		[onSave, debounceMs]
 	)
 
 	const handleChange = useCallback(
