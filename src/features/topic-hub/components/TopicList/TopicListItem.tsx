@@ -66,6 +66,7 @@ const MemoizedBody = memo(
 		setIsExpanded: (expanded: boolean) => void
 	}) => {
 		const navigate = useNavigate()
+		const { selectedTopic } = use(TopicHubContext)
 
 		const { mutateAsync: deleteTopic } = useDeleteMutation(
 			supabase.from('topics'),
@@ -73,10 +74,12 @@ const MemoizedBody = memo(
 			'*',
 			{
 				onSuccess: () => {
-					navigate({
-						to: '/topics/{-$topicId}',
-						params: { topicId: undefined }
-					})
+					if (selectedTopic?.id === topic.id) {
+						navigate({
+							to: '/topics/{-$topicId}',
+							params: { topicId: undefined }
+						})
+					}
 				}
 			}
 		)
