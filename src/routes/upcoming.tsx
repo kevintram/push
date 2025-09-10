@@ -8,11 +8,14 @@ export const Route = createFileRoute('/upcoming')({
 })
 
 function RouteComponent() {
+	const today = new Date().toISOString().split('T')[0]
+
 	const { data: timelineEntries } = useQuery(
 		supabase
 			.from('timeline_entries')
 			.select('*, topics(name)')
 			.is('completed_at', null)
+			.gt('scheduled_at', `${today}T23:59:59.999Z`)
 			.order('scheduled_at', { ascending: true })
 	)
 

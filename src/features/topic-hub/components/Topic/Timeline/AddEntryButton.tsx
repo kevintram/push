@@ -1,4 +1,5 @@
 import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import dayjs from 'dayjs'
 import { CalendarIcon, Plus } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
@@ -28,19 +29,23 @@ export function AddEntryButton() {
 	const handleSave = useCallback(() => {
 		if (!selectedTopic) return
 
+		insertTimelineEntryMutation([
+			{
+				description: description.trim(),
+				scheduled_at: selectedDate.toISOString(),
+				topic_id: selectedTopic.id,
+				// default to completed if scheduled is in past
+				completed_at: dayjs(selectedDate).isBefore(dayjs(), 'day')
+					? selectedDate.toISOString()
+					: null
+			}
+		])
+
 		setIsOpen(false)
 
 		// reset to default values after saving
 		setDescription('')
 		setSelectedDate(new Date())
-
-		insertTimelineEntryMutation([
-			{
-				description: description.trim(),
-				scheduled_at: selectedDate.toISOString(),
-				topic_id: selectedTopic.id
-			}
-		])
 	}, [selectedTopic, selectedDate, description, insertTimelineEntryMutation])
 
 	return (

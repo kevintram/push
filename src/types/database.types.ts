@@ -139,6 +139,13 @@ export type Database = {
             foreignKeyName: "timeline_entry_practice_cards_timeline_entry_id_fkey"
             columns: ["timeline_entry_id"]
             isOneToOne: false
+            referencedRelation: "timeline_entries_today"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timeline_entry_practice_cards_timeline_entry_id_fkey"
+            columns: ["timeline_entry_id"]
+            isOneToOne: false
             referencedRelation: "timeline_entries_with_effective_date"
             referencedColumns: ["id"]
           },
@@ -218,6 +225,47 @@ export type Database = {
       }
     }
     Views: {
+      timeline_entries_today: {
+        Row: {
+          completed_at: string | null
+          description: string | null
+          effective_date: string | null
+          id: number | null
+          inserted_at: string | null
+          scheduled_at: string | null
+          topic_id: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          description?: string | null
+          effective_date?: never
+          id?: number | null
+          inserted_at?: string | null
+          scheduled_at?: string | null
+          topic_id?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          description?: string | null
+          effective_date?: never
+          id?: number | null
+          inserted_at?: string | null
+          scheduled_at?: string | null
+          topic_id?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_entries_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       timeline_entries_with_effective_date: {
         Row: {
           completed_at: string | null
