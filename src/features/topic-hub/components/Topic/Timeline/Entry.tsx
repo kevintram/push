@@ -20,7 +20,7 @@ import {
 } from '~/components/ui/Popover'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
-import { dateOf } from '../../../utils/dateOf'
+import { dateOf } from '../../../../../utils/dateOf'
 import { numDaysElapsed } from '../../../utils/daysElapsed'
 import { isOverdue } from '../../../utils/isOverdue'
 import { DaysElapsedMarker } from './DaysElapsedMarker'

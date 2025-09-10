@@ -8,7 +8,7 @@ import { Label } from '~/components/ui/Label'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
-import { dateOf } from '../../../utils/dateOf'
+import { dateOf } from '../../../../../utils/dateOf'
 
 export function EditEntry({
 	entry,
