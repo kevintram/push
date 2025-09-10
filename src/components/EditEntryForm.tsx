@@ -64,7 +64,13 @@ export function EditEntryForm({
 			description: description.trim()
 		})
 		onClose()
-	}, [entry.id, selectedDate, description, updateTimelineEntryMutation, onClose])
+	}, [
+		entry.id,
+		selectedDate,
+		description,
+		updateTimelineEntryMutation,
+		onClose
+	])
 
 	const handleDelete = useCallback(async () => {
 		await deleteTimelineEntryMutation({ id: entry.id ?? undefined })
