@@ -40,7 +40,7 @@ export function Timeline() {
 						<>
 							<TodayMarker key='today-marker' nextDate={date} today={today} />
 							<Entry
-								currEntry={entry}
+								entry={entry}
 								index={i}
 								key={entry.id}
 								nextDate={nextDate}
@@ -53,12 +53,7 @@ export function Timeline() {
 					todayInserted = true
 					return (
 						<>
-							<Entry
-								currEntry={entry}
-								index={i}
-								key={entry.id}
-								nextDate={today}
-							/>
+							<Entry entry={entry} index={i} key={entry.id} nextDate={today} />
 							<TodayMarker
 								key='today-marker'
 								nextDate={nextDate}
@@ -70,7 +65,7 @@ export function Timeline() {
 			}
 
 			return (
-				<Entry currEntry={entry} index={i} key={entry.id} nextDate={nextDate} />
+				<Entry entry={entry} index={i} key={entry.id} nextDate={nextDate} />
 			)
 		})
 	}, [timelineEntries])

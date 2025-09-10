@@ -1,7 +1,8 @@
 import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { Link } from '@tanstack/react-router'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Checkbox } from '~/components/ui/Checkbox'
+import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 
@@ -20,7 +21,15 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 		day: 'numeric'
 	})
 
-	const isOverdue = !isCompleted && new Date(entry.scheduled_at) < new Date()
+	const isOverdueValue = useMemo(
+		() =>
+			isOverdue({
+				scheduledDate: entry.scheduled_at,
+				isCompleted
+			}),
+		[isCompleted, entry.scheduled_at]
+	)
+
 	const [isChecked, setIsChecked] = useState(isCompleted)
 
 	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
@@ -48,7 +57,7 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 			<div className='flex items-start gap-4 rounded-lg p-4 transition-colors hover:bg-muted/50'>
 				<Checkbox
 					checked={isChecked}
-					className={`mt-1 ${isOverdue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
+					className={`mt-1 ${isOverdueValue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
 					onCheckedChange={handleCheckboxChange}
 				/>
 				<div className='min-w-0 flex-1'>

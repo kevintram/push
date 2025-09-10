@@ -22,15 +22,16 @@ import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import { dateOf } from '../../../utils/dateOf'
 import { numDaysElapsed } from '../../../utils/daysElapsed'
+import { isOverdue } from '../../../utils/isOverdue'
 import { DaysElapsedMarker } from './DaysElapsedMarker'
 import { EditEntry } from './EditEntry'
 
 export function Entry({
-	currEntry,
+	entry,
 	index,
 	nextDate
 }: {
-	currEntry: Tables<'timeline_entries_with_effective_date'>
+	entry: Tables<'timeline_entries_with_effective_date'>
 	index: number
 	nextDate?: Date | undefined // undefined if last entry
 }) {
@@ -58,34 +59,37 @@ export function Entry({
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
 			updateTimelineEntryMutation({
-				id: currEntry.id,
+				id: entry.id,
 				completed_at: checked ? new Date().toISOString() : null
 			})
 		},
-		[currEntry.id, updateTimelineEntryMutation]
+		[entry.id, updateTimelineEntryMutation]
 	)
 
 	const handleDelete = useCallback(() => {
-		deleteTimelineEntryMutation({ id: currEntry.id })
+		deleteTimelineEntryMutation({ id: entry.id })
 		setIsDropdownOpen(false)
-	}, [currEntry.id, deleteTimelineEntryMutation])
+	}, [entry.id, deleteTimelineEntryMutation])
 
-	const currEffectiveDate: Date = useMemo(() => {
-		return dateOf(currEntry.effective_date)!
-	}, [currEntry.effective_date])
+	const effectiveDate: Date = useMemo(() => {
+		return dateOf(entry.effective_date)!
+	}, [entry.effective_date])
 
-	const isOverdue: boolean = useMemo(() => {
-		return currEffectiveDate < new Date()
-	}, [currEffectiveDate])
+	const isOverdueValue: boolean = useMemo(() => {
+		return isOverdue({
+			scheduledDate: entry.scheduled_at,
+			isCompleted: entry.completed_at !== null
+		})
+	}, [entry.scheduled_at, entry.completed_at])
 
 	return (
 		<div className='flex flex-row gap-3'>
 			<div className='flex flex-col items-start'>
 				<div className='flex items-center gap-2'>
 					<Checkbox
-						checked={!!currEntry.completed_at}
+						checked={!!entry.completed_at}
 						className={
-							isOverdue
+							isOverdueValue
 								? 'border-red-600 dark:border-red-700 dark:bg-red-700'
 								: ''
 						}
@@ -95,7 +99,7 @@ export function Entry({
 					<Popover onOpenChange={setIsEditPopoverOpen} open={isEditPopoverOpen}>
 						<PopoverTrigger asChild={true}>
 							<Badge variant='default'>
-								{currEffectiveDate.toLocaleDateString()}
+								{effectiveDate.toLocaleDateString()}
 							</Badge>
 						</PopoverTrigger>
 						<PopoverContent
@@ -105,7 +109,7 @@ export function Entry({
 							sideOffset={10}
 						>
 							<EditEntry
-								entry={currEntry}
+								entry={entry}
 								onClose={() => setIsEditPopoverOpen(false)}
 							/>
 						</PopoverContent>
@@ -115,7 +119,7 @@ export function Entry({
 				<div className='ml-10'>
 					{nextDate && (
 						<DaysElapsedMarker
-							daysElapsed={numDaysElapsed(currEffectiveDate, nextDate)}
+							daysElapsed={numDaysElapsed(effectiveDate, nextDate)}
 						/>
 					)}
 				</div>
@@ -123,7 +127,7 @@ export function Entry({
 
 			<div className='flex flex-1 flex-row items-start gap-2 py-1'>
 				<div className='flex-1 text-foreground text-xs'>
-					{currEntry.description}
+					{entry.description}
 				</div>
 				<div className='flex items-start gap-1'>
 					<div className='font-medium text-muted-foreground text-xs'>
