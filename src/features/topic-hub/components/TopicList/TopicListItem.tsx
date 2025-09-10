@@ -27,7 +27,7 @@ export function TopicListItem({ topic }: { topic: Topic }) {
 			<div
 				className={cn(
 					isSelected && 'bg-primary/10 text-primary',
-					'w-full rounded-md py-2 pl-3 text-left transition-colors hover:bg-muted/50'
+					'w-full rounded-md px-3 py-2 text-left transition-colors hover:bg-muted/50'
 				)}
 			>
 				<MemoizedBody
@@ -97,51 +97,64 @@ const MemoizedBody = memo(
 		// 	: 0
 
 		return (
-			<div className='group flex flex-col gap-1'>
+			<Link
+				className='group flex cursor-pointer flex-col gap-1'
+				params={{ topicId: topic.id.toString() }}
+				to='/topics/{-$topicId}'
+			>
 				<div className='flex items-start justify-between gap-3'>
 					<div className='min-w-0 flex-1'>
-						<Link
-							params={{ topicId: topic.id.toString() }}
-							to='/topics/{-$topicId}'
-						>
-							<div className='break-words font-medium text-sm'>
-								{topic.name}
+						<div className='break-words font-medium text-sm'>{topic.name}</div>
+						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+							<span
+								className={cn(
+									'font-bold text-xs',
+									getRetrievabilityColorClass(topic.retrievability)
+								)}
+							>
+								{(topic.retrievability * 100).toFixed(0)}%
+							</span>
+							<span className='font-bold'> · </span>
+							{/* <RotateCcw className='h-3 w-3' />
+								{daysSinceLastEntry === 0 || Number.isNaN(daysSinceLastEntry)
+									? 'never'
+									: `${daysSinceLastEntry}d ago`} */}
+						</div>
+						<div className='mt-1 flex items-center gap-2'>
+							<Progress
+								className='h-1 w-12'
+								max={365}
+								value={topic.stability}
+							/>
+							<div className='font-medium text-muted-foreground text-xs'>
+								{topic.stability}d
 							</div>
-							<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-								<span
-									className={cn(
-										'font-bold text-xs',
-										getRetrievabilityColorClass(topic.retrievability)
-									)}
-								>
-									{(topic.retrievability * 100).toFixed(0)}%
-								</span>
-								<span className='font-bold'> · </span>
-								{/* <RotateCcw className='h-3 w-3' />
-									{daysSinceLastEntry === 0 || Number.isNaN(daysSinceLastEntry)
-										? 'never'
-										: `${daysSinceLastEntry}d ago`} */}
-							</div>
-							<div className='mt-1 flex items-center gap-2'>
-								<Progress
-									className='h-1 w-12'
-									max={365}
-									value={topic.stability}
-								/>
-								<div className='font-medium text-muted-foreground text-xs'>
-									{topic.stability}d
-								</div>
-							</div>
-						</Link>
+						</div>
 					</div>
 
 					{/* More options in top right */}
-					<div className='flex-shrink-0'>
+					{/* biome-ignore lint/a11y/noStaticElementInteractions: wrapper div to prevent event propagation to parent Link */}
+					{/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: wrapper div to prevent event propagation to parent Link */}
+					{/* biome-ignore lint/a11y/useKeyWithClickEvents: wrapper div only prevents propagation, keyboard interaction handled by child Button */}
+					<div
+						className='flex-shrink-0'
+						onClick={e => {
+							e.preventDefault()
+							e.stopPropagation()
+						}}
+						onMouseDown={e => {
+							e.preventDefault()
+							e.stopPropagation()
+						}}
+						onPointerDown={e => {
+							e.preventDefault()
+							e.stopPropagation()
+						}}
+					>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild={true}>
 								<Button
 									className='h-6 w-6 p-0'
-									onClick={e => e.stopPropagation()}
 									size='sm'
 									title='More options'
 									variant='ghost'
@@ -160,7 +173,24 @@ const MemoizedBody = memo(
 				</div>
 
 				{/* Parent and Children Buttons */}
-				<div className='flex items-center justify-end gap-1.5'>
+				{/* biome-ignore lint/a11y/noStaticElementInteractions: wrapper div to prevent event propagation to parent Link */}
+				{/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: wrapper div to prevent event propagation to parent Link */}
+				{/* biome-ignore lint/a11y/useKeyWithClickEvents: wrapper div only prevents propagation, keyboard interaction handled by child Buttons */}
+				<div
+					className='flex items-center justify-end gap-1.5'
+					onClick={e => {
+						e.preventDefault()
+						e.stopPropagation()
+					}}
+					onMouseDown={e => {
+						e.preventDefault()
+						e.stopPropagation()
+					}}
+					onPointerDown={e => {
+						e.preventDefault()
+						e.stopPropagation()
+					}}
+				>
 					{/* Parents Button */}
 					<Button
 						className={cn(
@@ -194,8 +224,7 @@ const MemoizedBody = memo(
 					{/* Children Button */}
 					<Button
 						className='flex h-6 w-12 items-center gap-0.5 p-0 px-1'
-						onClick={e => {
-							e.stopPropagation()
+						onClick={() => {
 							if (topic.children.length > 0) {
 								setIsExpanded(!isExpanded)
 							}
@@ -227,7 +256,7 @@ const MemoizedBody = memo(
 						/>
 					</Button>
 				</div>
-			</div>
+			</Link>
 		)
 	}
 )
