@@ -2,6 +2,7 @@ import {
 	useRevalidateTables,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
+import { Link } from '@tanstack/react-router'
 import { useCallback, useMemo, useState } from 'react'
 import { Checkbox } from '~/components/ui/Checkbox'
 import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
@@ -68,28 +69,48 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 	)
 
 	return (
-		// <Link
-		// 	params={{ topicId: entry.topic_id.toString() }}
-		// 	to='/topics/{-$topicId}'
-		// >
-		<div className='flex items-start gap-4 rounded-lg p-4 transition-colors hover:bg-muted/50'>
-			<Checkbox
-				checked={isChecked}
-				className={`mt-1 ${isOverdueValue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
-				onCheckedChange={handleCheckboxChange}
-			/>
-			<div className='min-w-0 flex-1'>
-				{entry.description && (
-					<p className='mb-1 text-base leading-relaxed'>{entry.description}</p>
-				)}
-				{entry.topics?.name && (
-					<p className='text-muted-foreground text-sm'>{entry.topics.name}</p>
-				)}
+		<Link
+			params={{ topicId: entry.topic_id?.toString() ?? '' }}
+			to='/topics/{-$topicId}'
+		>
+			<div className='flex items-start gap-4 rounded-lg p-4 transition-colors hover:bg-muted/50'>
+				{/* biome-ignore lint/a11y/noStaticElementInteractions: wrapper div to prevent event propagation to parent Link */}
+				{/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: wrapper div to prevent event propagation to parent Link */}
+				{/* biome-ignore lint/a11y/useKeyWithClickEvents: wrapper div only prevents propagation, keyboard interaction handled by child Checkbox */}
+				<div
+					onClick={e => {
+						e.preventDefault()
+						e.stopPropagation()
+					}}
+					onMouseDown={e => {
+						e.preventDefault()
+						e.stopPropagation()
+					}}
+					onPointerDown={e => {
+						e.preventDefault()
+						e.stopPropagation()
+					}}
+				>
+					<Checkbox
+						checked={isChecked}
+						className={`mt-1 ${isOverdueValue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
+						onCheckedChange={handleCheckboxChange}
+					/>
+				</div>
+				<div className='min-w-0 flex-1'>
+					{entry.description && (
+						<p className='mb-1 text-base leading-relaxed'>
+							{entry.description}
+						</p>
+					)}
+					{entry.topics?.name && (
+						<p className='text-muted-foreground text-sm'>{entry.topics.name}</p>
+					)}
+				</div>
+				<div className='whitespace-nowrap text-muted-foreground text-sm'>
+					{dateLabel}
+				</div>
 			</div>
-			<div className='whitespace-nowrap text-muted-foreground text-sm'>
-				{dateLabel}
-			</div>
-		</div>
-		// </Link>
+		</Link>
 	)
 }
