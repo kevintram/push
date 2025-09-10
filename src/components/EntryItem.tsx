@@ -4,7 +4,13 @@ import {
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { Link } from '@tanstack/react-router'
 import { useCallback, useMemo, useState } from 'react'
+import { EditEntryForm } from '~/components/EditEntryForm'
 import { Checkbox } from '~/components/ui/Checkbox'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
 import type { Tables } from '~/types/database.types'
 import { dateOf } from '~/utils/dateOf'
@@ -45,6 +51,7 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 	)
 
 	const [isChecked, setIsChecked] = useState(isCompleted)
+	const [isEditDropdownOpen, setIsEditDropdownOpen] = useState(false)
 
 	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
 		supabase.from('timeline_entries'),
@@ -69,48 +76,76 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 	)
 
 	return (
-		<Link
-			params={{ topicId: entry.topic_id?.toString() ?? '' }}
-			to='/topics/{-$topicId}'
+		<DropdownMenu
+			onOpenChange={setIsEditDropdownOpen}
+			open={isEditDropdownOpen}
 		>
-			<div className='flex items-start gap-4 rounded-lg p-4 transition-colors hover:bg-muted/50'>
-				{/* biome-ignore lint/a11y/noStaticElementInteractions: wrapper div to prevent event propagation to parent Link */}
-				{/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: wrapper div to prevent event propagation to parent Link */}
-				{/* biome-ignore lint/a11y/useKeyWithClickEvents: wrapper div only prevents propagation, keyboard interaction handled by child Checkbox */}
-				<div
-					onClick={e => {
-						e.preventDefault()
-						e.stopPropagation()
-					}}
-					onMouseDown={e => {
-						e.preventDefault()
-						e.stopPropagation()
-					}}
-					onPointerDown={e => {
-						e.preventDefault()
-						e.stopPropagation()
-					}}
-				>
-					<Checkbox
-						checked={isChecked}
-						className={`mt-1 ${isOverdueValue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
-						onCheckedChange={handleCheckboxChange}
+			<DropdownMenuTrigger asChild={true}>
+				<div className='flex cursor-pointer items-start gap-4 rounded-lg p-4 transition-colors hover:bg-muted/50'>
+					{/* biome-ignore lint/a11y/noStaticElementInteractions: wrapper div to prevent event propagation to parent Link */}
+					{/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: wrapper div to prevent event propagation to parent Link */}
+					{/* biome-ignore lint/a11y/useKeyWithClickEvents: wrapper div only prevents propagation, keyboard interaction handled by child Checkbox */}
+					<div
+						onClick={e => {
+							e.preventDefault()
+							e.stopPropagation()
+						}}
+						onMouseDown={e => {
+							e.preventDefault()
+							e.stopPropagation()
+						}}
+						onPointerDown={e => {
+							e.preventDefault()
+							e.stopPropagation()
+						}}
+					>
+						<Checkbox
+							checked={isChecked}
+							className={`mt-1 ${isOverdueValue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
+							onCheckedChange={handleCheckboxChange}
+						/>
+					</div>
+					<div className='min-w-0 flex-1'>
+						{entry.description && (
+							<p className='mb-1 text-base leading-relaxed'>
+								{entry.description}
+							</p>
+						)}
+						{entry.topics?.name && (
+							<p className='text-muted-foreground text-sm'>
+								{entry.topics.name}
+							</p>
+						)}
+					</div>
+					<div className='whitespace-nowrap text-muted-foreground text-sm'>
+						{dateLabel}
+					</div>
+				</div>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent
+				align='start'
+				className='w-80 p-4'
+				side='bottom'
+				sideOffset={5}
+			>
+				<div className='flex w-full flex-col items-center gap-4'>
+					{entry.topics?.name && (
+						<Link
+							className='flex w-full flex-row'
+							params={{ topicId: entry.topic_id?.toString() ?? '' }}
+							to='/topics/{-$topicId}'
+						>
+							<span className='text-center font-semibold text-lg hover:underline'>
+								{entry.topics.name}
+							</span>
+						</Link>
+					)}
+					<EditEntryForm
+						entry={entry}
+						onClose={() => setIsEditDropdownOpen(false)}
 					/>
 				</div>
-				<div className='min-w-0 flex-1'>
-					{entry.description && (
-						<p className='mb-1 text-base leading-relaxed'>
-							{entry.description}
-						</p>
-					)}
-					{entry.topics?.name && (
-						<p className='text-muted-foreground text-sm'>{entry.topics.name}</p>
-					)}
-				</div>
-				<div className='whitespace-nowrap text-muted-foreground text-sm'>
-					{dateLabel}
-				</div>
-			</div>
-		</Link>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	)
 }

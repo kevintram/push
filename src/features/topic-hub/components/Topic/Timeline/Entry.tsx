@@ -1,18 +1,8 @@
-import {
-	useDeleteMutation,
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
-import { MoreVertical, Trash2 } from 'lucide-react'
+import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { useCallback, useMemo, useState } from 'react'
+import { EditEntryForm } from '~/components/EditEntryForm'
 import { Badge } from '~/components/ui/Badge'
-import { Button } from '~/components/ui/Button'
 import { Checkbox } from '~/components/ui/Checkbox'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import {
 	Popover,
 	PopoverContent,
@@ -24,7 +14,6 @@ import { dateOf } from '../../../../../utils/dateOf'
 import { numDaysElapsed } from '../../../utils/daysElapsed'
 import { isOverdue } from '../../../utils/isOverdue'
 import { DaysElapsedMarker } from './DaysElapsedMarker'
-import { EditEntry } from './EditEntry'
 
 export function Entry({
 	entry,
@@ -43,17 +32,11 @@ export function Entry({
 	// const retrievability = currEntry.retrievability
 
 	const [isEditPopoverOpen, setIsEditPopoverOpen] = useState(false)
-	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
 	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
 		supabase.from('timeline_entries_with_effective_date'),
 		['id'],
 		'*'
-	)
-
-	const { mutateAsync: deleteTimelineEntryMutation } = useDeleteMutation(
-		supabase.from('timeline_entries_with_effective_date'),
-		['id']
 	)
 
 	const handleCheckboxChange = useCallback(
@@ -65,11 +48,6 @@ export function Entry({
 		},
 		[entry.id, updateTimelineEntryMutation]
 	)
-
-	const handleDelete = useCallback(() => {
-		deleteTimelineEntryMutation({ id: entry.id })
-		setIsDropdownOpen(false)
-	}, [entry.id, deleteTimelineEntryMutation])
 
 	const effectiveDate: Date = useMemo(() => {
 		return dateOf(entry.effective_date)!
@@ -108,7 +86,7 @@ export function Entry({
 							side='right'
 							sideOffset={10}
 						>
-							<EditEntry
+							<EditEntryForm
 								entry={entry}
 								onClose={() => setIsEditPopoverOpen(false)}
 							/>
@@ -133,25 +111,6 @@ export function Entry({
 					<div className='font-medium text-muted-foreground text-xs'>
 						{index + 1}
 					</div>
-					<DropdownMenu onOpenChange={setIsDropdownOpen} open={isDropdownOpen}>
-						<DropdownMenuTrigger asChild={true}>
-							<Button
-								className='h-4 w-4 p-0 text-muted-foreground hover:text-foreground'
-								variant='ghost'
-							>
-								<MoreVertical className='h-3 w-3' />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-							<DropdownMenuItem
-								className='text-red-600 focus:text-red-600'
-								onClick={handleDelete}
-							>
-								<Trash2 className='mr-2 h-4 w-4' />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
 				</div>
 			</div>
 
