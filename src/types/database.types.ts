@@ -313,6 +313,20 @@ export type Database = {
         Args: { child: number; parent: number }
         Returns: undefined
       }
+      get_potential_children: {
+        Args: { topic_id: number }
+        Returns: {
+          id: number
+          name: string
+        }[]
+      }
+      get_potential_parents: {
+        Args: { topic_id: number }
+        Returns: {
+          id: number
+          name: string
+        }[]
+      }
       insert_relationship: {
         Args: { child: number; parent: number }
         Returns: {

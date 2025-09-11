@@ -2,11 +2,13 @@ import * as PopoverPrimitive from '@radix-ui/react-popover'
 import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { CommandGroup, CommandList, Command as CommandPrimitive } from 'cmdk'
 import { Plus } from 'lucide-react'
-import { use, useCallback, useMemo, useState } from 'react'
+import { use, useCallback, useState } from 'react'
 import { AutoSizeInput } from '~/components/ui/AutoSizeInput'
 import { Badge } from '~/components/ui/Badge'
 import { Command, CommandEmpty, CommandItem } from '~/components/ui/Command'
 import { Popover, PopoverContent } from '~/components/ui/Popover'
+import { useGetPotentialChildren } from '~/features/topic-hub/hooks/useGetPotentialChildren'
+import { useGetPotentialParents } from '~/features/topic-hub/hooks/useGetPotentialParents'
 import { supabase } from '~/utils/supabase'
 import { useCreateRelationship } from '../../../hooks/useCreateRelationship'
 import { useDebouncedSearch } from '../../../hooks/useDebouncedSearch'
@@ -14,20 +16,17 @@ import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 
 export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 	const [open, setOpen] = useState(false)
-	const { selectedTopic, topics } = use(TopicHubContext)
+	const { selectedTopic } = use(TopicHubContext)
 
-	// topics available to add as a relationship
-	const availableTopics = useMemo(
-		() =>
-			// TODO: also filter topics that would create a cycle
-			Array.from(topics.values()).filter(
-				t =>
-					t.id !== selectedTopic?.id && // itself
-					(type === 'child'
-						? !selectedTopic?.children.some(child => child.id === t.id) // already added children
-						: !selectedTopic?.parents.some(parent => parent.id === t.id)) // OR already added parents
-			),
-		[selectedTopic, topics, type]
+	const { data: potentialParents } = useGetPotentialParents(selectedTopic?.id, {
+		enabled: selectedTopic !== undefined && type === 'parent'
+	})
+
+	const { data: potentialChildren } = useGetPotentialChildren(
+		selectedTopic?.id,
+		{
+			enabled: selectedTopic !== undefined && type === 'child'
+		}
 	)
 
 	const {
@@ -35,7 +34,7 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 		setQuery: setTopicToAdd,
 		results: suggestedTopics
 	} = useDebouncedSearch({
-		topics: availableTopics,
+		topics: potentialParents || potentialChildren || [],
 		debounceMs: 300
 	})
 	const topicToAddTrimmed = topicToAdd.trim()

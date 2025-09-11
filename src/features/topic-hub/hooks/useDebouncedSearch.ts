@@ -1,9 +1,8 @@
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { Topic } from '~/types/topics.types'
 
 interface UseDebouncedSearchOptions {
-	topics: Array<Topic>
+	topics: Array<{ id: number; name: string }>
 	debounceMs?: number
 }
 

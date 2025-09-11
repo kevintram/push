@@ -40,7 +40,7 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 
 	return (
 		<div className='flex h-screen w-full'>
-			<TopicHubContext value={{ selectedTopic, topics: topicsMap }}>
+			<TopicHubContext value={{ selectedTopic }}>
 				<TopicList
 					isLoading={topicsDataLoading || directRelationshipsLoading}
 					topics={topics}
