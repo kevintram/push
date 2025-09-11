@@ -1,16 +1,14 @@
 import {
 	useDeleteMutation,
-	useInsertMutation,
 	useQuery,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Plus, Search, Trash2 } from 'lucide-react'
-import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Trash2 } from 'lucide-react'
+import { use, useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Card, CardContent } from '~/components/ui/Card'
+import { Card, CardContent, CardFooter } from '~/components/ui/Card'
 import { Dialog, DialogContent, DialogFooter } from '~/components/ui/Dialog'
-import { Input } from '~/components/ui/Input'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
@@ -20,51 +18,25 @@ import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 type PracticeCard = Tables<'practice_cards'>
 
 export function PracticeCards() {
-	const [searchValue, setSearchValue] = useState('')
 	const [numLanes, setNumLanes] = useState(3)
 	const parentRef = useRef<HTMLDivElement>(null)
 
 	const { selectedTopic } = use(TopicHubContext)
-
-	const { mutateAsync: insertPracticeCard } = useInsertMutation(
-		supabase.from('practice_cards'),
-		['id'],
-		'*'
-	)
-
-	const handleAddCard = useCallback(async () => {
-		if (selectedTopic?.id) {
-			await insertPracticeCard([
-				{
-					topic_id: selectedTopic.id,
-					content: ''
-				}
-			])
-		}
-	}, [insertPracticeCard, selectedTopic?.id])
 
 	const { data: practiceCards } = useQuery(
 		supabase
 			.from('practice_cards')
 			.select('*')
 			.eq('topic_id', selectedTopic?.id ?? 0)
-			.order('id', { ascending: false })
+			.order('id', { ascending: true })
 	)
-
-	// Filter practice items based on search
-	const filteredPractice = useMemo(() => {
-		if (!searchValue) return practiceCards || []
-		return (practiceCards || []).filter((item: PracticeCard) =>
-			item.content.toLowerCase().includes(searchValue.toLowerCase())
-		)
-	}, [searchValue, practiceCards])
 
 	// Masonry virtualization setup
 	const virtualizer = useVirtualizer({
-		count: filteredPractice.length,
+		count: practiceCards?.length || 0,
 		getScrollElement: () => parentRef.current,
 		estimateSize: i => {
-			const item = filteredPractice[i]
+			const item = practiceCards?.[i]
 			if (!item?.content) return 100
 			const baseHeight = 80
 			const additionalHeight = Math.floor(item.content.length / 30) * 10
@@ -98,22 +70,7 @@ export function PracticeCards() {
 	}, [])
 
 	return (
-		<div className='flex h-full flex-col gap-4'>
-			<div className='flex items-center gap-2'>
-				<div className='relative flex-1'>
-					<Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
-					<Input
-						className='pl-9'
-						onChange={e => setSearchValue(e.target.value)}
-						placeholder='Search practice items...'
-						value={searchValue}
-					/>
-				</div>
-				<Button onClick={handleAddCard} size='icon' variant='secondary'>
-					<Plus className='h-4 w-4' />
-				</Button>
-			</div>
-
+		<div className='flex h-full flex-col'>
 			<div className='flex-1 overflow-auto' ref={parentRef}>
 				<div
 					style={{
@@ -123,7 +80,7 @@ export function PracticeCards() {
 					}}
 				>
 					{virtualizer.getVirtualItems().map(virtualItem => {
-						const card = filteredPractice[virtualItem.index]!
+						const card = practiceCards?.[virtualItem.index]!
 						return (
 							<div
 								className='absolute top-0'
@@ -185,12 +142,24 @@ function PracticeCardItem({ card }: { card: PracticeCard }) {
 	return (
 		<>
 			<Card
-				className='cursor-pointer transition-colors hover:bg-muted/50'
+				className='group relative cursor-pointer pb-0 transition-colors hover:bg-muted/50'
 				onClick={() => setIsDialogOpen(true)}
 			>
-				<CardContent className='p-4'>
+				<CardContent className=''>
 					<div className='text-sm'>{card?.content}</div>
 				</CardContent>
+				<CardFooter className='pb-2 pl-2 opacity-0 transition-opacity group-hover:opacity-100'>
+					<Button
+						onClick={e => {
+							e.stopPropagation()
+							handleDelete()
+						}}
+						size='icon'
+						variant='ghost'
+					>
+						<Trash2 className='h-4 w-4' />
+					</Button>
+				</CardFooter>
 			</Card>
 
 			<Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
@@ -198,7 +167,7 @@ function PracticeCardItem({ card }: { card: PracticeCard }) {
 					<div className='py-4'>
 						<Textarea
 							autoFocus={true}
-							className='min-h-32 resize-none border-none shadow-none focus-visible:border-none focus-visible:ring-0'
+							className='!bg-transparent min-h-32 resize-none border-none shadow-none focus-visible:border-none focus-visible:ring-0'
 							onChange={onContentChange}
 							value={cardContent}
 						/>
