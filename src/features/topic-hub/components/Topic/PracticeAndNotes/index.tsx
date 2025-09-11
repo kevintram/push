@@ -1,6 +1,4 @@
-import {
-	useInsertMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { BookOpen, Columns, Plus, Target } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
