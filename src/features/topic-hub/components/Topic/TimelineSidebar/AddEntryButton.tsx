@@ -51,7 +51,7 @@ export function AddEntryButton() {
 	return (
 		<Popover onOpenChange={setIsOpen} open={isOpen}>
 			<PopoverTrigger asChild={true}>
-				<Button size='sm' variant='outline'>
+				<Button size='sm' variant='ghost'>
 					<Plus className='h-4 w-4' />
 				</Button>
 			</PopoverTrigger>

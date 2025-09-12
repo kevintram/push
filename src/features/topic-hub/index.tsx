@@ -1,6 +1,6 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMemo } from 'react'
-import { SidebarProvider } from '~/components/ui/Sidebar'
+import { SidebarInset, SidebarProvider } from '~/components/ui/Sidebar'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
@@ -11,6 +11,7 @@ import {
 	getRootTopics,
 	parseTopicRelationships
 } from './utils/parseTopicRelationships'
+import { TimelineSidebar } from './components/Topic/TimelineSidebar'
 
 export function TopicHub({ topicId }: { topicId: number | undefined }) {
 	const { data: topicsData, isLoading: topicsDataLoading } = useQuery<
@@ -47,8 +48,10 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 						isLoading={topicsDataLoading || directRelationshipsLoading}
 						topics={topics}
 					/>
-
-					{selectedTopic && <TopicPage isLoading={isLoading} />}
+					<SidebarInset>
+						{selectedTopic && <TopicPage isLoading={isLoading} />}
+					</SidebarInset>
+					<TimelineSidebar />
 				</SidebarProvider>
 			</TopicHubContext>
 		</div>

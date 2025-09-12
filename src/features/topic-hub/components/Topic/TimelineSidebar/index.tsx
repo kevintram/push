@@ -1,5 +1,6 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { use, useCallback } from 'react'
+import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import { dateOf } from '../../../../../utils/dateOf'
@@ -10,7 +11,7 @@ import { TodayMarker } from './TodayMarker'
 
 type TimelineEntry = Tables<'timeline_entries_with_effective_date'>
 
-export function Timeline() {
+export function TimelineSidebar() {
 	const { selectedTopic } = use(TopicHubContext)
 
 	const { data: timelineEntries } = useQuery<Array<TimelineEntry>>(
@@ -71,17 +72,12 @@ export function Timeline() {
 	}, [timelineEntries])
 
 	return (
-		<div className='flex h-full w-full flex-col gap-3 p-4'>
-			<div className='flex items-center justify-between gap-2 border-b pb-2'>
+		<Sidebar collapsible='none' side='right'>
+			<SidebarHeader className='mb-2 flex flex-row items-center justify-between gap-2'>
 				<h1 className='font-semibold'>Timeline</h1>
 				<AddEntryButton />
-			</div>
-
-			<div className='flex min-h-0 flex-1 flex-col'>
-				<div className='flex-1 space-y-2 overflow-auto'>
-					{renderTimelineItems()}
-				</div>
-			</div>
-		</div>
+			</SidebarHeader>
+			<SidebarContent className='px-2'>{renderTimelineItems()}</SidebarContent>
+		</Sidebar>
 	)
 }

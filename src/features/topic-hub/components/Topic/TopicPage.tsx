@@ -3,7 +3,6 @@ import { TopicHubContext } from '../../stores/SelectedTopicContext'
 import { TopicFamilyPanel } from './FamilyPanel'
 import { TopicHeader } from './Header'
 import { PracticeAndNotes } from './PracticeAndNotes'
-import { Timeline } from './Timeline'
 import { TopicPageSkeleton } from './TopicPageSkeleton'
 
 export function TopicPage({ isLoading }: { isLoading: boolean }) {
@@ -22,18 +21,12 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 	}
 
 	return (
-		<div className='flex h-full flex-1 flex-row'>
-			<div className='flex w-full flex-col gap-4 sm:gap-6 sm:p-4 md:p-6'>
-				<TopicHeader />
+		<div className='flex w-full flex-col gap-4 sm:gap-6 sm:p-4 md:p-6'>
+			<TopicHeader />
 
-				<TopicFamilyPanel />
+			<TopicFamilyPanel />
 
-				<PracticeAndNotes />
-			</div>
-
-			<div className='flex'>
-				<Timeline />
-			</div>
+			<PracticeAndNotes />
 		</div>
 	)
 }
