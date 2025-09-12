@@ -7,6 +7,7 @@ import { Input } from '~/components/ui/Input'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
+import { useDebouncedSearch } from '../../hooks/useDebouncedSearch'
 import { TopicListBody } from './TopicListBody'
 
 export function TopicListSidebar({
@@ -34,6 +35,14 @@ export function TopicListSidebar({
 		}
 	)
 
+	const {
+		query,
+		setQuery,
+		results: filteredTopics
+	} = useDebouncedSearch({
+		topics: topics || []
+	})
+
 	const createTopic = useCallback(() => {
 		insertTopicMutation([{}])
 	}, [insertTopicMutation])
@@ -43,7 +52,12 @@ export function TopicListSidebar({
 			<SidebarHeader>
 				<div className='flex items-center gap-2'>
 					<div className='flex-1'>
-						<Input placeholder='Search' type='search' />
+						<Input
+							onChange={e => setQuery(e.target.value)}
+							placeholder='Search'
+							type='search'
+							value={query}
+						/>
 					</div>
 					<Button onClick={createTopic} size='icon' variant='secondary'>
 						<Plus className='h-4 w-4' />
@@ -52,7 +66,7 @@ export function TopicListSidebar({
 			</SidebarHeader>
 			<SidebarContent>
 				<div className='space-y-0.5'>
-					<TopicListBody isLoading={isLoading} topics={topics} />
+					<TopicListBody isLoading={isLoading} topics={filteredTopics} />
 				</div>
 			</SidebarContent>
 		</Sidebar>

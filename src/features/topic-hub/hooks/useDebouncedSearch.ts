@@ -1,15 +1,15 @@
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-interface UseDebouncedSearchOptions {
-	topics: Array<{ id: number; name: string }>
+interface UseDebouncedSearchOptions<T extends { id: number; name: string }> {
+	topics: Array<T>
 	debounceMs?: number
 }
 
-export function useDebouncedSearch({
+export function useDebouncedSearch<T extends { id: number; name: string }>({
 	topics,
 	debounceMs = 300
-}: UseDebouncedSearchOptions) {
+}: UseDebouncedSearchOptions<T>) {
 	const [query, setQuery] = useState('') // query user typed
 	const [debouncedQuery, setDebouncedQuery] = useState('') // actual query used to filter topics
 
