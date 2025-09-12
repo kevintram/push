@@ -66,7 +66,6 @@ export function TopicHeader() {
 
 	return (
 		<div className='flex w-full flex-col gap-4'>
-			<SidebarTrigger />
 			<div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-0'>
 				<div className='flex-1'>
 					<input

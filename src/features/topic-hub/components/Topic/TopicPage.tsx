@@ -21,7 +21,7 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 	}
 
 	return (
-		<div className='flex w-full flex-col gap-4 sm:gap-6 sm:p-4 md:p-6'>
+		<div className='!pt-0 flex flex-1 flex-col items-center gap-4 sm:gap-6 sm:p-4 md:p-6'>
 			<TopicHeader />
 
 			<TopicFamilyPanel />

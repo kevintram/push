@@ -33,7 +33,7 @@ export function Notes() {
 		<Textarea
 			className='h-full resize-none'
 			onChange={onNotesChange}
-			placeholder='Add notes here...'
+			placeholder='Notes...'
 			value={notes}
 		/>
 	)
