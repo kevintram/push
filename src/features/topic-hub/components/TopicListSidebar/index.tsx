@@ -51,7 +51,9 @@ export function TopicListSidebar({
 				</div>
 			</SidebarHeader>
 			<SidebarContent>
-				<TopicListBody isLoading={isLoading} topics={topics} />
+				<div className='space-y-0.5'>
+					<TopicListBody isLoading={isLoading} topics={topics} />
+				</div>
 			</SidebarContent>
 		</Sidebar>
 	)
