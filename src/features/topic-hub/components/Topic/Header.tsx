@@ -19,7 +19,6 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Progress } from '~/components/ui/Progress'
-import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { supabase } from '~/utils/supabase'
@@ -119,7 +118,9 @@ export function TopicHeader() {
 									<p className='font-medium text-sm'>Retrievability</p>
 									<p className='text-muted-foreground text-xs'>
 										<span
-											className={cn(getRetrievabilityColorClass(retrievability))}
+											className={cn(
+												getRetrievabilityColorClass(retrievability)
+											)}
 										>
 											{(retrievability * 100).toFixed(0)}%
 										</span>
