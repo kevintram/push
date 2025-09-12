@@ -1,10 +1,11 @@
 import {
 	useDeleteMutation,
+	useInsertMutation,
 	useQuery,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { use, useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter } from '~/components/ui/Card'
@@ -28,15 +29,35 @@ export function PracticeCards() {
 			.from('practice_cards')
 			.select('*')
 			.eq('topic_id', selectedTopic?.id ?? 0)
-			.order('id', { ascending: true })
+			.order('id', { ascending: false })
 	)
+
+	const { mutateAsync: insertPracticeCard } = useInsertMutation(
+		supabase.from('practice_cards'),
+		['id'],
+		'*'
+	)
+
+	const handleAddCard = useCallback(async () => {
+		if (selectedTopic?.id) {
+			await insertPracticeCard([
+				{
+					topic_id: selectedTopic.id,
+					content: ''
+				}
+			])
+		}
+	}, [insertPracticeCard, selectedTopic?.id])
 
 	// Masonry virtualization setup
 	const virtualizer = useVirtualizer({
-		count: practiceCards?.length || 0,
+		count: (practiceCards?.length || 0) + 1,
 		getScrollElement: () => parentRef.current,
 		estimateSize: i => {
-			const item = practiceCards?.[i]
+			// Add button is always at index 0
+			if (i === 0) return 45
+
+			const item = practiceCards?.[i - 1]
 			if (!item?.content) return 100
 			const baseHeight = 80
 			const additionalHeight = Math.floor(item.content.length / 30) * 10
@@ -80,7 +101,33 @@ export function PracticeCards() {
 					}}
 				>
 					{virtualizer.getVirtualItems().map(virtualItem => {
-						const card = practiceCards?.[virtualItem.index]!
+						// Add button is at index 0
+						if (virtualItem.index === 0) {
+							return (
+								<div
+									className='absolute top-0'
+									data-index={virtualItem.index}
+									key='add-button'
+									ref={virtualizer.measureElement}
+									style={{
+										left: `${virtualItem.lane * (100 / numLanes)}%`,
+										width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : 8}px)`,
+										transform: `translateY(${virtualItem.start}px)`
+									}}
+								>
+									<Card
+										className='cursor-pointer border-2 border-dashed transition-colors hover:bg-muted/50'
+										onClick={handleAddCard}
+									>
+										<CardContent className='flex items-center justify-center px-2 py-0.5'>
+											<Plus className='h-4 w-4 text-muted-foreground' />
+										</CardContent>
+									</Card>
+								</div>
+							)
+						}
+
+						const card = practiceCards?.[virtualItem.index - 1]!
 						return (
 							<div
 								className='absolute top-0'
