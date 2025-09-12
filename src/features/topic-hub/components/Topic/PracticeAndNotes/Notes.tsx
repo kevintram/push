@@ -31,7 +31,7 @@ export function Notes() {
 
 	return (
 		<Textarea
-			className='h-full resize-none !bg-transparent border-none shadow-none focus-visible:border-none focus-visible:ring-0'
+			className='!bg-transparent h-full resize-none border-none shadow-none focus-visible:border-none focus-visible:ring-0'
 			onChange={onNotesChange}
 			placeholder='Notes...'
 			value={notes}
