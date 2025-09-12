@@ -7,7 +7,6 @@ import {
 	SegmentedControl,
 	SegmentedControlItem
 } from '~/components/ui/SegmentedControl'
-import { Separator } from '~/components/ui/Separator'
 import { supabase } from '~/utils/supabase'
 import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 import { Notes } from './Notes'
@@ -82,7 +81,6 @@ export function PracticeAndNotes() {
 						<div className='min-w-0 flex-1'>
 							<PracticeCards />
 						</div>
-						<Separator orientation='vertical' />
 						<div className='min-w-0 flex-1'>
 							<Notes />
 						</div>

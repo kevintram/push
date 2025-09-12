@@ -85,7 +85,7 @@ export function Entry({
 									</Badge>
 								</div>
 
-								<div className='ml-10'>
+								<div className='ml-10 flex flex-1'>
 									{nextDate && (
 										<DaysElapsedMarker
 											daysElapsed={numDaysElapsed(effectiveDate, nextDate)}
@@ -95,7 +95,7 @@ export function Entry({
 							</div>
 
 							<div className='flex flex-1 flex-row items-start gap-2 py-1'>
-								<div className='flex-1 text-foreground text-xs'>
+								<div className='flex-1 break-all text-foreground text-xs'>
 									{entry.description}
 								</div>
 								<div className='flex items-start gap-1'>

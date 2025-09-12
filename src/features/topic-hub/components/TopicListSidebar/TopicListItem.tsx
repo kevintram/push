@@ -17,25 +17,15 @@ import { TopicHubContext } from '../../stores/SelectedTopicContext'
 import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
 export function TopicListItem({ topic }: { topic: Topic }) {
-	const { selectedTopic } = use(TopicHubContext)
-	const isSelected = topic.id === selectedTopic?.id
-
 	const [isExpanded, setIsExpanded] = useState(true)
 
 	return (
-		<div className='space-y-0.5'>
-			<div
-				className={cn(
-					isSelected && 'bg-primary/10 text-primary',
-					'w-full rounded-md px-3 py-2 text-left transition-colors hover:bg-muted/50'
-				)}
-			>
-				<MemoizedBody
-					isExpanded={isExpanded}
-					setIsExpanded={setIsExpanded}
-					topic={topic}
-				/>
-			</div>
+		<div>
+			<MemoizedBody
+				isExpanded={isExpanded}
+				setIsExpanded={setIsExpanded}
+				topic={topic}
+			/>
 			{topic.children.length > 0 && isExpanded && (
 				<div className='relative ml-4'>
 					<div
@@ -96,9 +86,14 @@ const MemoizedBody = memo(
 		// 	? numDaysElapsedFrom(new Date(lastReviewDate))
 		// 	: 0
 
+		const isSelected = topic.id === selectedTopic?.id
+
 		return (
 			<Link
-				className='group flex cursor-pointer flex-col gap-1'
+				className={cn(
+					'group m-2 flex cursor-pointer flex-col gap-1 rounded-md px-3 py-2 text-left transition-colors hover:bg-muted/50',
+					isSelected && 'bg-primary/10 text-primary'
+				)}
 				params={{ topicId: topic.id.toString() }}
 				to='/topics/{-$topicId}'
 			>

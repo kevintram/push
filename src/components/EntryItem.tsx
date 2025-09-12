@@ -107,12 +107,12 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 					</div>
 					<div className='min-w-0 flex-1'>
 						{entry.description && (
-							<p className='mb-1 text-base leading-relaxed'>
+							<p className='mb-1 break-all text-base leading-relaxed'>
 								{entry.description}
 							</p>
 						)}
 						{entry.topics?.name && (
-							<p className='text-muted-foreground text-sm'>
+							<p className='break-all text-muted-foreground text-sm'>
 								{entry.topics.name}
 							</p>
 						)}

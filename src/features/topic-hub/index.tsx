@@ -1,10 +1,16 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMemo } from 'react'
+import {
+	SidebarInset,
+	SidebarProvider,
+	SidebarTrigger
+} from '~/components/ui/Sidebar'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
+import { TimelineSidebar } from './components/Topic/TimelineSidebar'
 import { TopicPage } from './components/Topic/TopicPage'
-import { TopicList } from './components/TopicList'
+import { TopicListSidebar } from './components/TopicListSidebar'
 import { TopicHubContext } from './stores/SelectedTopicContext'
 import {
 	getRootTopics,
@@ -41,12 +47,19 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 	return (
 		<div className='flex h-screen w-full'>
 			<TopicHubContext value={{ selectedTopic }}>
-				<TopicList
-					isLoading={topicsDataLoading || directRelationshipsLoading}
-					topics={topics}
-				/>
-
-				{selectedTopic && <TopicPage isLoading={isLoading} />}
+				<SidebarProvider defaultOpen={true}>
+					<TopicListSidebar
+						isLoading={topicsDataLoading || directRelationshipsLoading}
+						topics={topics}
+					/>
+					<SidebarInset>
+						<SidebarTrigger className='z-10 mt-2 ml-2' />
+						<div className='mx-auto flex h-full w-full max-w-screen-lg flex-1'>
+							{selectedTopic && <TopicPage isLoading={isLoading} />}
+						</div>
+					</SidebarInset>
+					<TimelineSidebar />
+				</SidebarProvider>
 			</TopicHubContext>
 		</div>
 	)
