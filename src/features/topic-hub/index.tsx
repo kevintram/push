@@ -1,10 +1,11 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMemo } from 'react'
+import { SidebarProvider } from '~/components/ui/Sidebar'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 import { TopicPage } from './components/Topic/TopicPage'
-import { TopicList } from './components/TopicList'
+import { TopicListSidebar } from './components/TopicListSidebar'
 import { TopicHubContext } from './stores/SelectedTopicContext'
 import {
 	getRootTopics,
@@ -41,12 +42,14 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 	return (
 		<div className='flex h-screen w-full'>
 			<TopicHubContext value={{ selectedTopic }}>
-				<TopicList
-					isLoading={topicsDataLoading || directRelationshipsLoading}
-					topics={topics}
-				/>
+				<SidebarProvider defaultOpen={true}>
+					<TopicListSidebar
+						isLoading={topicsDataLoading || directRelationshipsLoading}
+						topics={topics}
+					/>
 
-				{selectedTopic && <TopicPage isLoading={isLoading} />}
+					{selectedTopic && <TopicPage isLoading={isLoading} />}
+				</SidebarProvider>
 			</TopicHubContext>
 		</div>
 	)

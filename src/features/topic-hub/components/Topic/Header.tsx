@@ -19,6 +19,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Progress } from '~/components/ui/Progress'
+import { SidebarTrigger } from '~/components/ui/Sidebar'
 import {
 	Tooltip,
 	TooltipContent,
@@ -73,6 +74,7 @@ export function TopicHeader() {
 			<div className='flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-start'>
 				<div className='flex flex-1 flex-col gap-2'>
 					<div className='flex flex-col gap-2'>
+						<SidebarTrigger />
 						<div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-0'>
 							<div className='flex-1'>
 								<input

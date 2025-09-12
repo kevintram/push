@@ -15,11 +15,9 @@ export const Route = createRootRoute({
 			<SidebarProvider defaultOpen={false}>
 				<AppSidebar />
 				<SidebarInset>
-					<div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
-						<Suspense fallback={<LoadingOrError />}>
-							<Outlet />
-						</Suspense>
-					</div>
+					<Suspense fallback={<LoadingOrError />}>
+						<Outlet />
+					</Suspense>
 				</SidebarInset>
 			</SidebarProvider>
 		</ErrorBoundary>

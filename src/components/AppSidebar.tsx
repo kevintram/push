@@ -62,7 +62,7 @@ export function AppSidebar() {
 	]
 
 	return (
-		<Sidebar collapsible='icon'>
+		<Sidebar collapsible='icon' className='z-20'>
 			<SidebarContent>
 				{/* First Group (Today, Upcoming) */}
 				<SidebarGroup>
