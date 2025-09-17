@@ -72,7 +72,7 @@ export type Database = {
           description: string
           id: number
           inserted_at: string
-          scheduled_at: string
+          scheduled_at: string | null
           topic_id: number
           updated_at: string
         }
@@ -81,7 +81,7 @@ export type Database = {
           description?: string
           id?: number
           inserted_at?: string
-          scheduled_at?: string
+          scheduled_at?: string | null
           topic_id: number
           updated_at?: string
         }
@@ -90,7 +90,7 @@ export type Database = {
           description?: string
           id?: number
           inserted_at?: string
-          scheduled_at?: string
+          scheduled_at?: string | null
           topic_id?: number
           updated_at?: string
         }

@@ -10,7 +10,7 @@ import {
 	UserPlus,
 	Users
 } from 'lucide-react'
-import { use, useCallback, useEffect, useMemo, useRef } from 'react'
+import { use, useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -19,6 +19,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Progress } from '~/components/ui/Progress'
+import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { supabase } from '~/utils/supabase'
@@ -49,19 +50,7 @@ export function TopicHeader() {
 		key: `topics-${selectedTopic?.id}`
 	})
 
-	const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-	// Auto-resize textarea based on content
-	useEffect(() => {
-		const textarea = textareaRef.current
-		if (textarea) {
-			// Reset height and temporarily hide overflow to get accurate measurement
-			textarea.style.height = 'auto'
-			textarea.style.overflow = 'hidden'
-			textarea.style.height = `${textarea.scrollHeight}px`
-			textarea.style.overflow = 'visible'
-		}
-	}, [title])
+	const textareaRef = useAutoResizeTextarea(title)
 
 	const sinceLastReview = useMemo(
 		() =>
