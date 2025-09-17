@@ -10,7 +10,7 @@ import {
 	UserPlus,
 	Users
 } from 'lucide-react'
-import { use, useCallback, useMemo } from 'react'
+import { use, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -49,6 +49,20 @@ export function TopicHeader() {
 		key: `topics-${selectedTopic?.id}`
 	})
 
+	const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+	// Auto-resize textarea based on content
+	useEffect(() => {
+		const textarea = textareaRef.current
+		if (textarea) {
+			// Reset height and temporarily hide overflow to get accurate measurement
+			textarea.style.height = 'auto'
+			textarea.style.overflow = 'hidden'
+			textarea.style.height = `${textarea.scrollHeight}px`
+			textarea.style.overflow = 'visible'
+		}
+	}, [title])
+
 	const sinceLastReview = useMemo(
 		() =>
 			selectedTopic
@@ -67,14 +81,14 @@ export function TopicHeader() {
 		<div className='flex w-full flex-col gap-4'>
 			<div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-0'>
 				<div className='flex-1'>
-					<input
+					<textarea
 						// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
 						autoFocus={title === ''}
-						className='w-full border-none bg-transparent font-bold text-xl focus:outline-none sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'
+						className='break-word w-full resize-none border-none bg-transparent font-bold text-xl focus:outline-none sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'
 						onChange={onNameChange}
 						placeholder='Title...'
+						ref={textareaRef}
 						spellCheck={false}
-						type='text'
 						value={title}
 					/>
 				</div>
