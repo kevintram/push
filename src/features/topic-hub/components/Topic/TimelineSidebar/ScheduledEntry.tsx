@@ -1,4 +1,4 @@
-import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import { useRevalidateTables, useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { useCallback, useMemo, useState } from 'react'
 import { EditEntryForm } from '~/components/EditEntryForm'
 import { Badge } from '~/components/ui/Badge'
@@ -34,10 +34,20 @@ export function ScheduledEntry({
 
 	const [isEditPopoverOpen, setIsEditPopoverOpen] = useState(false)
 
+	const revalidateOtherTimelineTables = useRevalidateTables([
+		{ schema: 'public', table: 'timeline_entries' },
+		{ schema: 'public', table: 'timeline_entries_today' }
+	])
+
 	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
 		supabase.from('timeline_entries_with_effective_date'),
 		['id'],
-		'*'
+		'*',
+		{
+			onSuccess: () => {
+				revalidateOtherTimelineTables()
+			}
+		}
 	)
 
 	const handleCheckboxChange = useCallback(
