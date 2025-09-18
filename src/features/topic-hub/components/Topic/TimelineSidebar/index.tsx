@@ -26,7 +26,7 @@ export function TimelineSidebar() {
 			.from('timeline_entries_with_effective_date')
 			.select('*')
 			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
-			.not('scheduled_at', 'is', null)
+			.not('effective_date', 'is', null)
 			.order('effective_date', { ascending: true })
 	)
 
@@ -38,6 +38,7 @@ export function TimelineSidebar() {
 			.select('*')
 			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
 			.is('scheduled_at', null)
+			.is('completed_at', null)
 			.order('inserted_at', { ascending: false })
 	)
 
