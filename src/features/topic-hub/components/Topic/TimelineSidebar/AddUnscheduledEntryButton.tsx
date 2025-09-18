@@ -28,7 +28,7 @@ export function AddUnscheduledButton() {
 	}, [selectedTopic, insertTimelineEntry])
 
 	return (
-		<Button size='sm' variant='ghost' onClick={handleAddTodo}>
+		<Button onClick={handleAddTodo} size='sm' variant='ghost'>
 			<Plus className='h-4 w-4' />
 		</Button>
 	)

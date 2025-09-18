@@ -1,6 +1,11 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { use, useCallback } from 'react'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarSeparator } from '~/components/ui/Sidebar'
+import {
+	Panel,
+	PanelGroup,
+	ResizableHandle
+} from '~/components/ui/ResizablePanel'
+import { Sidebar, SidebarHeader } from '~/components/ui/Sidebar'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import { dateOf } from '../../../../../utils/dateOf'
@@ -25,7 +30,9 @@ export function TimelineSidebar() {
 			.order('effective_date', { ascending: true })
 	)
 
-	const { data: unscheduledEntries } = useQuery<Array<Tables<'timeline_entries'>>>(
+	const { data: unscheduledEntries } = useQuery<
+		Array<Tables<'timeline_entries'>>
+	>(
 		supabase
 			.from('timeline_entries')
 			.select('*')
@@ -66,7 +73,12 @@ export function TimelineSidebar() {
 					todayInserted = true
 					return (
 						<>
-							<ScheduledEntry entry={entry} index={i} key={entry.id} nextDate={today} />
+							<ScheduledEntry
+								entry={entry}
+								index={i}
+								key={entry.id}
+								nextDate={today}
+							/>
 							<TodayMarker
 								key='today-marker'
 								nextDate={nextDate}
@@ -78,7 +90,12 @@ export function TimelineSidebar() {
 			}
 
 			return (
-				<ScheduledEntry entry={entry} index={i} key={entry.id} nextDate={nextDate} />
+				<ScheduledEntry
+					entry={entry}
+					index={i}
+					key={entry.id}
+					nextDate={nextDate}
+				/>
 			)
 		})
 	}, [timelineEntries])
@@ -89,19 +106,35 @@ export function TimelineSidebar() {
 				<h1 className='font-semibold'>Timeline</h1>
 				<AddEntryButton />
 			</SidebarHeader>
-			<SidebarContent className='px-2'>{renderTimelineItems()}</SidebarContent>
-			<SidebarSeparator className='mx-0' />
-			<SidebarFooter className='flex min-h-[25%] flex-col gap-2'>
-				<div className='flex flex-row items-center justify-between gap-2'>
-					<h2 className='font-semibold text-sm'>Unscheduled</h2>
-					<AddUnscheduledButton />
-				</div>
-				<div className='flex flex-col gap-1'>
-					{unscheduledEntries?.map((entry) => (
-						<UnscheduledEntry key={entry.id} entry={entry} />
-					))}
-				</div>
-			</SidebarFooter>
+			<PanelGroup className='min-h-0 flex-1' direction='vertical'>
+				<Panel
+					className='min-h-0 overflow-hidden'
+					defaultSize={70}
+					minSize={20}
+				>
+					<div className='flex h-full flex-col gap-2 overflow-auto px-2 py-2'>
+						{renderTimelineItems()}
+					</div>
+				</Panel>
+				<ResizableHandle />
+				<Panel
+					className='min-h-0 overflow-hidden'
+					defaultSize={30}
+					minSize={15}
+				>
+					<div className='flex h-full flex-col gap-2 overflow-auto p-2'>
+						<div className='flex flex-shrink-0 flex-row items-center justify-between gap-2'>
+							<h2 className='font-semibold text-sm'>Unscheduled</h2>
+							<AddUnscheduledButton />
+						</div>
+						<div className='flex min-h-0 flex-1 flex-col gap-1 overflow-auto'>
+							{unscheduledEntries?.map(entry => (
+								<UnscheduledEntry entry={entry} key={entry.id} />
+							))}
+						</div>
+					</div>
+				</Panel>
+			</PanelGroup>
 		</Sidebar>
 	)
 }

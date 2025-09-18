@@ -97,14 +97,17 @@ export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
 	}, [deleteTimelineEntry, entry?.id])
 
 	const handleSchedule = useCallback(() => {
-		updateTimelineEntry({
-			id: entry.id,
-			scheduled_at: selectedDate.toISOString()
-		}, {
-			onSuccess: () => {
-				revalidateTables()
+		updateTimelineEntry(
+			{
+				id: entry.id,
+				scheduled_at: selectedDate.toISOString()
+			},
+			{
+				onSuccess: () => {
+					revalidateTables()
+				}
 			}
-		})
+		)
 		setIsSchedulePopoverOpen(false)
 	}, [entry.id, selectedDate, updateTimelineEntry, revalidateTables])
 
@@ -130,9 +133,7 @@ export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
 			</div>
 
 			{/* Action buttons - only visible on hover */}
-			<div
-				className='mt-0.5 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100'
-			>
+			<div className='mt-0.5 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
 				{/* Schedule button */}
 				{/* Schedule popover */}
 				<Popover
