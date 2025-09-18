@@ -99,7 +99,16 @@ const MemoizedBody = memo(
 			>
 				<div className='flex items-start justify-between gap-3'>
 					<div className='min-w-0 flex-1'>
-						<div className='break-words font-medium text-sm'>{topic.name}</div>
+						{topic.name && (
+							<div className='break-words font-semibold text-md'>
+								{topic.name}
+							</div>
+						)}
+
+						<div className='mt-1 break-words text-sm'>
+							{topic.notes}
+						</div>
+
 						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
 							<span
 								className={cn(
