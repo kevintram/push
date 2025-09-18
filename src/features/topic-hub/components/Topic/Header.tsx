@@ -10,7 +10,7 @@ import {
 	UserPlus,
 	Users
 } from 'lucide-react'
-import { use, useCallback, useEffect, useMemo, useRef } from 'react'
+import { use, useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -19,6 +19,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Progress } from '~/components/ui/Progress'
+import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { supabase } from '~/utils/supabase'
@@ -49,45 +50,7 @@ export function TopicHeader() {
 		key: `topics-${selectedTopic?.id}`
 	})
 
-	const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-	// Auto-resize textarea based on content (we're doing this manually, css
-	// property [field-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/field-sizing)
-	// is still experiemental)
-	const adjustTextareaHeight = useCallback(() => {
-		const textarea = textareaRef.current
-		if (textarea) {
-			// Reset height and temporarily hide overflow to get accurate measurement
-			textarea.style.height = 'auto'
-			textarea.style.overflow = 'hidden'
-			textarea.style.height = `${textarea.scrollHeight}px`
-			textarea.style.overflow = 'visible'
-		}
-	}, [])
-
-	// Adjust height when content changes
-	// biome-ignore lint/correctness/useExhaustiveDependencies: title is needed to trigger height recalculation on content changes
-	useEffect(() => {
-		adjustTextareaHeight()
-	}, [title, adjustTextareaHeight])
-
-	// Set up ResizeObserver to handle textareadimension changes
-	useEffect(() => {
-		const textarea = textareaRef.current
-		if (!textarea) return
-
-		// Use ResizeObserver to watch for any size changes to the textarea
-		// This handles window resize, responsive breakpoints, font loading, etc.
-		const resizeObserver = new ResizeObserver(() => {
-			adjustTextareaHeight()
-		})
-
-		resizeObserver.observe(textarea)
-
-		return () => {
-			resizeObserver.disconnect()
-		}
-	}, [adjustTextareaHeight])
+	const textareaRef = useAutoResizeTextarea(title)
 
 	const sinceLastReview = useMemo(
 		() =>
