@@ -20,7 +20,6 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { Textarea } from '~/components/ui/Textarea'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
@@ -84,10 +83,8 @@ export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
 		return timeDiff < 10_000 // 10 seconds
 	}, [entry.inserted_at])
 
-	// Auto-focus if description is empty AND entry was recently created
-	const shouldAutoFocus = description === '' && isRecentlyCreated
-
 	const [isSchedulePopoverOpen, setIsSchedulePopoverOpen] = useState(false)
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
 	const handleDelete = useCallback(async () => {
@@ -112,28 +109,36 @@ export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
 	}, [entry.id, selectedDate, updateTimelineEntry, revalidateTables])
 
 	return (
-		<div className='group flex items-start gap-2.5 py-1'>
-			<Checkbox
-				checked={isCompleted}
-				className='mt-0.5'
-				onCheckedChange={handleToggleComplete}
-			/>
-			<div className='min-w-0 flex-1'>
-				<Textarea
-					autoFocus={shouldAutoFocus}
-					className={`min-h-[32px] w-full resize-none border-none bg-transparent p-0 text-sm shadow-none focus-visible:ring-0 ${
-						isCompleted ? 'text-muted-foreground line-through' : ''
-					}`}
-					onChange={onDescriptionChange}
-					placeholder='New Entry'
-					ref={textareaRef}
-					style={{ backgroundColor: 'transparent' }}
-					value={description}
+		<div className='group flex items-start gap-2 py-1'>
+			<div className='flex items-start gap-2.5'>
+				<Checkbox
+					checked={isCompleted}
+					className='mt-1'
+					onCheckedChange={handleToggleComplete}
 				/>
+				<div className='-mr-1 flex min-w-0 flex-1 items-center'>
+					<textarea
+						// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
+						autoFocus={description === '' && isRecentlyCreated}
+						className='break-word mt-0.5 w-full resize-none border-none bg-transparent p-0 text-sm shadow-none outline-none focus:outline-none focus-visible:ring-0'
+						onChange={onDescriptionChange}
+						placeholder='New Entry'
+						ref={textareaRef}
+						rows={1}
+						spellCheck={false}
+						value={description}
+					/>
+				</div>
 			</div>
 
-			{/* Action buttons - only visible on hover */}
-			<div className='mt-0.5 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+			{/* Action buttons - with gradient background */}
+			<div
+				className={`z-10 flex items-center gap-1 bg-gradient-to-l from-80% from-sidebar to-transparent transition-opacity ${
+					isSchedulePopoverOpen || isDropdownOpen
+						? 'opacity-100'
+						: 'opacity-0 group-hover:opacity-100'
+				}`}
+			>
 				{/* Schedule button */}
 				{/* Schedule popover */}
 				<Popover
@@ -191,7 +196,7 @@ export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
 				</Popover>
 
 				{/* More options dropdown */}
-				<DropdownMenu>
+				<DropdownMenu onOpenChange={setIsDropdownOpen}>
 					<DropdownMenuTrigger asChild={true}>
 						<Button
 							className='h-6 w-6 p-0'

@@ -11,11 +11,10 @@ export function useAutoResizeTextarea(content: string) {
 	const adjustTextareaHeight = useCallback(() => {
 		const textarea = textareaRef.current
 		if (textarea) {
-			// Reset height and temporarily hide overflow to get accurate measurement
+			// Reset height and hide overflow to get accurate measurement and prevent scrollbars
 			textarea.style.height = 'auto'
 			textarea.style.overflow = 'hidden'
 			textarea.style.height = `${textarea.scrollHeight}px`
-			textarea.style.overflow = 'visible'
 		}
 	}, [])
 
