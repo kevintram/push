@@ -39,9 +39,7 @@ export function TopicChildrenPanel() {
 				parent: selectedTopic.id,
 				child: createdTopic[0].id
 			})
-		} catch (error) {
-			console.error('Failed to create child topic:', error)
-		}
+		} catch (_error) {}
 	}, [selectedTopic, insertTopicMutation, createRelationship])
 
 	// Masonry virtualization setup

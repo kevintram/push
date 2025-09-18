@@ -47,7 +47,7 @@ export function RelationshipBadge({
 		<div className='group relative'>
 			<TooltipProvider>
 				<Tooltip>
-					<TooltipTrigger asChild>
+					<TooltipTrigger asChild={true}>
 						<Badge
 							className='flex cursor-pointer items-center px-2 py-1 text-xs hover:bg-secondary/80'
 							variant='secondary'
@@ -61,10 +61,12 @@ export function RelationshipBadge({
 							</Link>
 						</Badge>
 					</TooltipTrigger>
-					<TooltipContent className="max-w-72">
-						{kin.name && <h3 className="break-words font-semibold text-md">{kin.name}</h3>}
-						{kin.name &&  kin.notes && <br/>}
-						{kin.notes && <p className="break-words text-xs">{kin.notes}</p>}
+					<TooltipContent className='max-w-72'>
+						{kin.name && (
+							<h3 className='break-words font-semibold text-md'>{kin.name}</h3>
+						)}
+						{kin.name && kin.notes && <br />}
+						{kin.notes && <p className='break-words text-xs'>{kin.notes}</p>}
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>

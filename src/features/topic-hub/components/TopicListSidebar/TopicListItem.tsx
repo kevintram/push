@@ -105,9 +105,7 @@ const MemoizedBody = memo(
 							</div>
 						)}
 
-						<div className='mt-1 break-words text-sm'>
-							{topic.notes}
-						</div>
+						<div className='mt-1 break-words text-sm'>{topic.notes}</div>
 
 						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
 							<span
