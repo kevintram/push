@@ -33,12 +33,8 @@ export function ChildCard({ child }: ChildCardProps) {
 		deleteRelationship.mutate({ parent: selectedTopic.id, child: child.id })
 	}
 
-	const handleDeleteTopic = async () => {
-		try {
-			await deleteTopicMutation({ id: child.id })
-		} catch (error) {
-			console.error('Failed to delete topic:', error)
-		}
+	const handleDeleteTopic = () => {
+		deleteTopicMutation({ id: child.id })
 	}
 
 	return (
@@ -74,9 +70,9 @@ export function ChildCard({ child }: ChildCardProps) {
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							className='text-red-600 focus:text-red-600'
-							onClick={async e => {
+							onClick={e => {
 								e.preventDefault()
-								await handleDeleteTopic()
+								handleDeleteTopic()
 							}}
 							variant='destructive'
 						>
