@@ -99,12 +99,10 @@ export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
 	}, [deleteTimelineEntry, entry?.id])
 
 	const handleSchedule = useCallback(() => {
-		updateTimelineEntry(
-			{
-				id: entry.id,
-				scheduled_at: selectedDate.toISOString()
-			}
-		)
+		updateTimelineEntry({
+			id: entry.id,
+			scheduled_at: selectedDate.toISOString()
+		})
 		setIsSchedulePopoverOpen(false)
 	}, [entry.id, selectedDate, updateTimelineEntry])
 

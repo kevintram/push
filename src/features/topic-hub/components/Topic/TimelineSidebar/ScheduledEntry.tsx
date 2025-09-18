@@ -1,4 +1,7 @@
-import { useRevalidateTables, useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import {
+	useRevalidateTables,
+	useUpdateMutation
+} from '@supabase-cache-helpers/postgrest-react-query'
 import { useCallback, useMemo, useState } from 'react'
 import { EditEntryForm } from '~/components/EditEntryForm'
 import { Badge } from '~/components/ui/Badge'
