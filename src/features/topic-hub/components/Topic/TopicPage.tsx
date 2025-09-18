@@ -1,6 +1,6 @@
 import { TopicFamilyPanel } from './FamilyPanel'
 import { TopicHeader } from './Header'
-import { PracticeAndNotes } from './PracticeAndNotes'
+import { Notes } from './Notes'
 import { TopicPageSkeleton } from './TopicPageSkeleton'
 
 export function TopicPage({ isLoading }: { isLoading: boolean }) {
@@ -14,7 +14,7 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 
 			<TopicFamilyPanel />
 
-			<PracticeAndNotes />
+			<Notes />
 		</div>
 	)
 }
