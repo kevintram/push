@@ -5,13 +5,13 @@ import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { supabase } from '~/utils/supabase'
 import { TopicHubContext } from '../../stores/SelectedTopicContext'
-import { TopicFamilyPanel } from './FamilyPanel'
+import { TopicChildrenPanel } from './FamilyPanel/TopicChildrenPanel'
+import { TopicParentsPanel } from './FamilyPanel/TopicParentsPanel'
 import { TopicHeader } from './Header'
 import { TopicPageSkeleton } from './TopicPageSkeleton'
 
 export function TopicPage({ isLoading }: { isLoading: boolean }) {
 	const { selectedTopic } = use(TopicHubContext)
-	const notesRef = useRef<HTMLTextAreaElement>(null)
 
 	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
 		supabase.from('topics'),
@@ -34,28 +34,31 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 		key: `topics-${selectedTopic?.id}`
 	})
 
-	// focus on notes whenever selected topic changes
-	useEffect(() => {
-		if (!isLoading && notesRef.current) {
-			notesRef.current.focus()
-		}
-	}, [isLoading, selectedTopic?.id, notesRef])
-
 	if (isLoading) {
 		return <TopicPageSkeleton />
 	}
+	const notesRef = useRef<HTMLTextAreaElement>(null)
+	// focus on notes whenever selected topic changes
+	useEffect(() => {
+		if (notesRef.current) {
+			notesRef.current.focus()
+		}
+	}, [selectedTopic?.id, notesRef])
 
 	return (
 		<div className='!pt-0 flex flex-1 flex-col items-center gap-4 sm:gap-6 sm:p-4 md:p-6'>
-			<TopicFamilyPanel />
+			<div className='w-full'>
+				<TopicParentsPanel />
+			</div>
 
-			<Card className='w-full flex-1'>
+			<Card className='w-full'>
 				<CardHeader>
 					<TopicHeader />
 				</CardHeader>
-				<CardContent className='min-h-0 flex-1 px-4'>
+				<CardContent className='min-h-96 px-4'>
 					<Textarea
 						className='!bg-transparent h-full w-full resize-none border-none shadow-none focus-visible:border-none focus-visible:ring-0'
+						name='notes'
 						onChange={onNotesChange}
 						placeholder='Notes'
 						ref={notesRef}
@@ -63,6 +66,10 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 					/>
 				</CardContent>
 			</Card>
+
+			<div className='w-full'>
+				<TopicChildrenPanel />
+			</div>
 		</div>
 	)
 }
