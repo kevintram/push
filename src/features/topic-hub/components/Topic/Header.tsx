@@ -77,6 +77,7 @@ export function TopicHeader() {
 						onChange={onNameChange}
 						placeholder='Title...'
 						ref={textareaRef}
+						rows={1}
 						spellCheck={false}
 						value={title}
 					/>
