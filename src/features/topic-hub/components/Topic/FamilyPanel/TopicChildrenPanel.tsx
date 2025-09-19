@@ -1,7 +1,14 @@
 import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Baby, Plus } from 'lucide-react'
-import { use, useCallback, useEffect, useRef, useState } from 'react'
+import {
+	use,
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState
+} from 'react'
 import { Card, CardContent } from '~/components/ui/Card'
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
 import { TopicHubContext } from '~/features/topic-hub/stores/SelectedTopicContext'
@@ -9,7 +16,7 @@ import { supabase } from '~/utils/supabase'
 import { ChildCard } from './ChildCard'
 
 export function TopicChildrenPanel() {
-	const [numLanes, setNumLanes] = useState(3)
+	const [numLanes, setNumLanes] = useState(1)
 	const parentRef = useRef<HTMLDivElement>(null)
 	const { selectedTopic } = use(TopicHubContext)
 
@@ -42,26 +49,37 @@ export function TopicChildrenPanel() {
 		} catch (_error) {}
 	}, [selectedTopic, insertTopicMutation, createRelationship])
 
+	const estimateSize = useCallback(
+		(index: number) => {
+			// Add button is always at index 0
+			if (index === 0) return 60
+
+			// Estimate height based on topic name and notes length
+			const child = children[index - 1]
+			if (!child) return 100
+			const baseHeight = 80
+			const nameHeight = Math.floor((child.name?.length || 0) / 30) * 10
+			const notesHeight = Math.floor((child.notes?.length || 0) / 30) * 10
+			return Math.max(baseHeight + nameHeight + notesHeight, 192)
+		},
+		[children]
+	)
+
 	// Masonry virtualization setup
 	const virtualizer = useVirtualizer({
 		count: children.length + 1, // +1 for add button
 		getScrollElement: () => parentRef.current,
-		estimateSize: i => {
-			// Add button is always at index 0
-			if (i === 0) return 60
-
-			// Estimate height based on topic name and notes length
-			const child = children[i - 1]
-			if (!child) return 100
-			const baseHeight = 80
-			const nameHeight = Math.floor((child.name?.length || 0) / 25) * 10
-			const notesHeight = Math.floor((child.notes?.length || 0) / 40) * 10
-			return baseHeight + nameHeight + notesHeight
-		},
+		estimateSize,
 		overscan: 5,
 		lanes: numLanes,
 		gap: 8
 	})
+
+	useLayoutEffect(() => {
+		// trigger virtualizer to re-render when numLanes changes
+		// ... i feel like there should be a better way to do this
+		virtualizer.measure()
+	}, [virtualizer, numLanes])
 
 	// Calculate lanes based on container width
 	useEffect(() => {
@@ -70,11 +88,15 @@ export function TopicChildrenPanel() {
 			if (containerWidth) {
 				const minLaneWidth = 180
 				const gap = 16
+
 				const calculatedLanes = Math.max(
 					1,
 					Math.floor((containerWidth + gap) / (minLaneWidth + gap))
 				)
-				setNumLanes(calculatedLanes)
+
+				const changed = calculatedLanes !== numLanes
+
+				if (changed) setNumLanes(calculatedLanes)
 			}
 		})
 
@@ -83,7 +105,7 @@ export function TopicChildrenPanel() {
 		}
 
 		return () => resizeObserver.disconnect()
-	}, [])
+	}, [numLanes])
 
 	return (
 		<div className='flex h-full flex-col'>
@@ -93,7 +115,7 @@ export function TopicChildrenPanel() {
 					Children
 				</span>
 			</div>
-			<div className='flex-1 overflow-auto'>
+			<div className='flex-1'>
 				<div
 					ref={parentRef}
 					style={{
@@ -134,7 +156,7 @@ export function TopicChildrenPanel() {
 							<div
 								className='absolute top-0'
 								data-index={virtualItem.index}
-								key={child.id}
+								key={virtualItem.key}
 								ref={virtualizer.measureElement}
 								style={{
 									left: `${virtualItem.lane * (100 / numLanes)}%`,
