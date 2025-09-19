@@ -77,7 +77,7 @@ export type Database = {
           id: number
           inserted_at: string
           name: string
-          notes: string | null
+          notes: string
           retrievability: number
           stability: number
           updated_at: string
@@ -86,7 +86,7 @@ export type Database = {
           id?: number
           inserted_at?: string
           name?: string
-          notes?: string | null
+          notes?: string
           retrievability?: number
           stability?: number
           updated_at?: string
@@ -95,7 +95,7 @@ export type Database = {
           id?: number
           inserted_at?: string
           name?: string
-          notes?: string | null
+          notes?: string
           retrievability?: number
           stability?: number
           updated_at?: string

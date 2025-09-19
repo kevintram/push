@@ -1,6 +1,16 @@
-import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import {
+	useDeleteMutation,
+	useInsertMutation
+} from '@supabase-cache-helpers/postgrest-react-query'
+import { Link } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Baby, Plus } from 'lucide-react'
+import {
+	Baby,
+	GitPullRequestClosed,
+	MoreHorizontal,
+	Plus,
+	Trash2
+} from 'lucide-react'
 import {
 	use,
 	useCallback,
@@ -9,11 +19,23 @@ import {
 	useRef,
 	useState
 } from 'react'
+import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
+import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import { TopicHubContext } from '~/features/topic-hub/stores/SelectedTopicContext'
+import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { ChildCard } from './ChildCard'
+
+const MIN_WIDTH = 192
+const MIN_HEIGHT = 96
+const GAP = 16
 
 export function TopicChildrenPanel() {
 	const [numLanes, setNumLanes] = useState(1)
@@ -56,11 +78,21 @@ export function TopicChildrenPanel() {
 
 			// Estimate height based on topic name and notes length
 			const child = children[index - 1]
-			if (!child) return 100
+			if (!child) return MIN_HEIGHT
+
 			const baseHeight = 80
-			const nameHeight = Math.floor((child.name?.length || 0) / 30) * 10
-			const notesHeight = Math.floor((child.notes?.length || 0) / 30) * 10
-			return Math.max(baseHeight + nameHeight + notesHeight, 192)
+			const lineHeight = 10
+			const numCharsPerLine = 30
+			const newLine = 10
+
+			const nameHeight =
+				Math.floor(child.name.length / numCharsPerLine) * lineHeight
+			const notesHeight =
+				Math.floor(child.notes.length / numCharsPerLine) * lineHeight
+
+			const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
+
+			return Math.max(calculatedHeight, MIN_HEIGHT)
 		},
 		[children]
 	)
@@ -72,7 +104,7 @@ export function TopicChildrenPanel() {
 		estimateSize,
 		overscan: 5,
 		lanes: numLanes,
-		gap: 8
+		gap: GAP
 	})
 
 	useLayoutEffect(() => {
@@ -86,17 +118,14 @@ export function TopicChildrenPanel() {
 		const resizeObserver = new ResizeObserver(entries => {
 			const containerWidth = entries[0]?.contentRect.width
 			if (containerWidth) {
-				const minLaneWidth = 180
-				const gap = 16
+				const minLaneWidth = MIN_WIDTH
 
 				const calculatedLanes = Math.max(
 					1,
-					Math.floor((containerWidth + gap) / (minLaneWidth + gap))
+					Math.floor((containerWidth + GAP) / (minLaneWidth + GAP))
 				)
 
-				const changed = calculatedLanes !== numLanes
-
-				if (changed) setNumLanes(calculatedLanes)
+				if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
 			}
 		})
 
@@ -171,5 +200,79 @@ export function TopicChildrenPanel() {
 				</div>
 			</div>
 		</div>
+	)
+}
+
+interface ChildCardProps {
+	child: Topic
+}
+
+function ChildCard({ child }: ChildCardProps) {
+	const { selectedTopic } = use(TopicHubContext)
+	const deleteRelationship = useDeleteRelationship()
+
+	const { mutateAsync: deleteTopicMutation } = useDeleteMutation(
+		supabase.from('topics'),
+		['id']
+	)
+
+	const handleRemoveRelationship = () => {
+		if (!selectedTopic) return
+		deleteRelationship.mutate({ parent: selectedTopic.id, child: child.id })
+	}
+
+	const handleDeleteTopic = () => {
+		deleteTopicMutation({ id: child.id })
+	}
+
+	return (
+		<Card className='group relative cursor-pointer p-0 transition-colors hover:bg-muted/50'>
+			<Link params={{ topicId: child.id.toString() }} to='/topics/{-$topicId}'>
+				<CardContent
+					className='px-3 py-2'
+					style={{ minHeight: `${MIN_HEIGHT}px` }}
+				>
+					{child.name && (
+						<h3 className='mb-1 font-semibold text-md'>{child.name}</h3>
+					)}
+					<div className='line-clamp-5 text-sm'>{child.notes}</div>
+				</CardContent>
+			</Link>
+			<div className='absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100'>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild={true}>
+						<Button
+							className='h-6 w-6 p-0'
+							onClick={e => e.preventDefault()}
+							variant='ghost'
+						>
+							<MoreHorizontal className='h-3 w-3' />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align='center' side='bottom' sideOffset={2}>
+						<DropdownMenuItem
+							onClick={e => {
+								e.preventDefault()
+								handleRemoveRelationship()
+							}}
+						>
+							<GitPullRequestClosed className='mr-2 h-4 w-4' />
+							Remove as Child
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							className='text-red-600 focus:text-red-600'
+							onClick={e => {
+								e.preventDefault()
+								handleDeleteTopic()
+							}}
+							variant='destructive'
+						>
+							<Trash2 className='mr-2 h-4 w-4' />
+							Delete
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
+		</Card>
 	)
 }
