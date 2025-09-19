@@ -9,6 +9,12 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
 import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import { TopicHubContext } from '~/features/topic-hub/stores/SelectedTopicContext'
 import type { Topic } from '~/types/topics.types'
@@ -35,20 +41,35 @@ export function RelationshipBadge({
 		}
 	}
 
+	const displayText = kin.name ? kin.name : kin.notes
+
 	return (
 		<div className='group relative'>
-			<Badge
-				className='flex cursor-pointer items-center px-2 py-1 text-xs hover:bg-secondary/80'
-				variant='secondary'
-			>
-				<Link
-					className='flex-1'
-					params={{ topicId: kin.id.toString() }}
-					to='/topics/{-$topicId}'
-				>
-					{kin.name}
-				</Link>
-			</Badge>
+			<TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger asChild={true}>
+						<Badge
+							className='flex cursor-pointer items-center px-2 py-1 text-xs hover:bg-secondary/80'
+							variant='secondary'
+						>
+							<Link
+								className='max-w-24 flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap font-semibold text-md'
+								params={{ topicId: kin.id.toString() }}
+								to='/topics/{-$topicId}'
+							>
+								{displayText}
+							</Link>
+						</Badge>
+					</TooltipTrigger>
+					<TooltipContent className='max-w-72'>
+						{kin.name && (
+							<h3 className='break-words font-semibold text-md'>{kin.name}</h3>
+						)}
+						{kin.name && kin.notes && <br />}
+						{kin.notes && <p className='break-words text-xs'>{kin.notes}</p>}
+					</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild={true}>
 					<Button
@@ -58,14 +79,14 @@ export function RelationshipBadge({
 						<MoreHorizontal className='h-3 w-3' />
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+				<DropdownMenuContent align='center' side='bottom' sideOffset={2}>
 					<DropdownMenuItem
 						className='text-red-600 focus:text-red-600'
 						onClick={handleDelete}
 						variant='destructive'
 					>
 						<GitPullRequestClosed className='mr-2 h-4 w-4' />
-						Remove
+						Remove as Parent
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>

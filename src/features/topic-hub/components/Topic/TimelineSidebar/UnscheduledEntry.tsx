@@ -30,15 +30,20 @@ interface UnscheduledEntryProps {
 }
 
 export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
-	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'timeline_entries' },
+	const revalidateOtherTimelineTabels = useRevalidateTables([
 		{ schema: 'public', table: 'timeline_entries_today' },
 		{ schema: 'public', table: 'timeline_entries_with_effective_date' }
 	])
 
 	const { mutateAsync: updateTimelineEntry } = useUpdateMutation(
 		supabase.from('timeline_entries'),
-		['id']
+		['id'],
+		'*',
+		{
+			onSuccess: () => {
+				revalidateOtherTimelineTabels()
+			}
+		}
 	)
 
 	const { mutateAsync: deleteTimelineEntry } = useDeleteMutation(
@@ -94,19 +99,12 @@ export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
 	}, [deleteTimelineEntry, entry?.id])
 
 	const handleSchedule = useCallback(() => {
-		updateTimelineEntry(
-			{
-				id: entry.id,
-				scheduled_at: selectedDate.toISOString()
-			},
-			{
-				onSuccess: () => {
-					revalidateTables()
-				}
-			}
-		)
+		updateTimelineEntry({
+			id: entry.id,
+			scheduled_at: selectedDate.toISOString()
+		})
 		setIsSchedulePopoverOpen(false)
-	}, [entry.id, selectedDate, updateTimelineEntry, revalidateTables])
+	}, [entry.id, selectedDate, updateTimelineEntry])
 
 	return (
 		<div className='group flex items-start gap-2 py-1'>

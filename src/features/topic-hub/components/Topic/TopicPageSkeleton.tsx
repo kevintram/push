@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader } from '~/components/ui/Card'
+import { Card, CardContent } from '~/components/ui/Card'
 import { Separator } from '~/components/ui/Separator'
 import { Skeleton } from '~/components/ui/Skeleton'
 
@@ -95,20 +95,9 @@ export function TopicPageSkeleton() {
 					</div>
 				</Card>
 
-				{/* PracticeAndNotes Skeleton */}
+				{/* Notes Skeleton */}
 				<Card className='w-full flex-1'>
-					<CardHeader>
-						<div className='flex items-center justify-between'>
-							{/* Segmented control skeleton */}
-							<div className='flex rounded-lg border'>
-								<Skeleton className='h-8 w-20' />
-								<Skeleton className='h-8 w-16' />
-							</div>
-							{/* Split view button skeleton */}
-							<Skeleton className='h-8 w-8' />
-						</div>
-					</CardHeader>
-					<CardContent className='min-h-0 flex-1'>
+					<CardContent className='min-h-0 flex-1 p-6'>
 						{/* Content area skeleton */}
 						<div className='space-y-3'>
 							<Skeleton className='h-4 w-full' />

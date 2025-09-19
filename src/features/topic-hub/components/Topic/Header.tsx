@@ -71,11 +71,9 @@ export function TopicHeader() {
 			<div className='flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-0'>
 				<div className='flex-1'>
 					<textarea
-						// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
-						autoFocus={title === ''}
 						className='break-word w-full resize-none border-none bg-transparent font-bold text-xl focus:outline-none sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'
 						onChange={onNameChange}
-						placeholder='Title...'
+						placeholder='Title'
 						ref={textareaRef}
 						rows={1}
 						spellCheck={false}

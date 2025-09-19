@@ -34,38 +34,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      practice_cards: {
-        Row: {
-          content: string
-          id: number
-          inserted_at: string
-          topic_id: number
-          updated_at: string
-        }
-        Insert: {
-          content: string
-          id?: number
-          inserted_at?: string
-          topic_id: number
-          updated_at?: string
-        }
-        Update: {
-          content?: string
-          id?: number
-          inserted_at?: string
-          topic_id?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "practice_cards_topic_id_fkey"
-            columns: ["topic_id"]
-            isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       timeline_entries: {
         Row: {
           completed_at: string | null
@@ -104,59 +72,12 @@ export type Database = {
           },
         ]
       }
-      timeline_entry_practice_cards: {
-        Row: {
-          id: number
-          practice_card_id: number
-          timeline_entry_id: number
-        }
-        Insert: {
-          id?: number
-          practice_card_id: number
-          timeline_entry_id: number
-        }
-        Update: {
-          id?: number
-          practice_card_id?: number
-          timeline_entry_id?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "timeline_entry_practice_cards_practice_card_id_fkey"
-            columns: ["practice_card_id"]
-            isOneToOne: false
-            referencedRelation: "practice_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "timeline_entry_practice_cards_timeline_entry_id_fkey"
-            columns: ["timeline_entry_id"]
-            isOneToOne: false
-            referencedRelation: "timeline_entries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "timeline_entry_practice_cards_timeline_entry_id_fkey"
-            columns: ["timeline_entry_id"]
-            isOneToOne: false
-            referencedRelation: "timeline_entries_today"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "timeline_entry_practice_cards_timeline_entry_id_fkey"
-            columns: ["timeline_entry_id"]
-            isOneToOne: false
-            referencedRelation: "timeline_entries_with_effective_date"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       topics: {
         Row: {
           id: number
           inserted_at: string
           name: string
-          notes: string | null
+          notes: string
           retrievability: number
           stability: number
           updated_at: string
@@ -165,7 +86,7 @@ export type Database = {
           id?: number
           inserted_at?: string
           name?: string
-          notes?: string | null
+          notes?: string
           retrievability?: number
           stability?: number
           updated_at?: string
@@ -174,7 +95,7 @@ export type Database = {
           id?: number
           inserted_at?: string
           name?: string
-          notes?: string | null
+          notes?: string
           retrievability?: number
           stability?: number
           updated_at?: string
