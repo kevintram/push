@@ -105,7 +105,7 @@ const MemoizedBody = memo(
 							</div>
 						)}
 
-						<div className='break-wordtext-sm mt-1 [overflow-wrap:anywhere]'>
+						<div className='break-word mt-1 text-sm [overflow-wrap:anywhere]'>
 							{topic.notes}
 						</div>
 
