@@ -63,10 +63,16 @@ export function RelationshipBadge({
 					</TooltipTrigger>
 					<TooltipContent className='max-w-72'>
 						{kin.name && (
-							<h3 className='break-words font-semibold text-md'>{kin.name}</h3>
+							<h3 className='break-word font-semibold text-md [overflow-wrap:anywhere]'>
+								{kin.name}
+							</h3>
 						)}
 						{kin.name && kin.notes && <br />}
-						{kin.notes && <p className='break-words text-xs'>{kin.notes}</p>}
+						{kin.notes && (
+							<p className='break-word text-xs [overflow-wrap:anywhere]'>
+								{kin.notes}
+							</p>
+						)}
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>

@@ -35,7 +35,7 @@ import { supabase } from '~/utils/supabase'
 
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
-const GAP = 16
+const GAP = 12
 
 export function TopicChildrenPanel() {
 	const [numLanes, setNumLanes] = useState(1)
@@ -164,7 +164,7 @@ export function TopicChildrenPanel() {
 									ref={virtualizer.measureElement}
 									style={{
 										left: `${virtualItem.lane * (100 / numLanes)}%`,
-										width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : 8}px)`,
+										width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : GAP}px)`,
 										transform: `translateY(${virtualItem.start}px)`
 									}}
 								>
@@ -189,7 +189,7 @@ export function TopicChildrenPanel() {
 								ref={virtualizer.measureElement}
 								style={{
 									left: `${virtualItem.lane * (100 / numLanes)}%`,
-									width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : 8}px)`,
+									width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : GAP}px)`,
 									transform: `translateY(${virtualItem.start}px)`
 								}}
 							>

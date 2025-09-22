@@ -108,9 +108,9 @@ export function ScheduledEntry({
 							</div>
 
 							<div className='flex flex-1 flex-row items-start gap-2 py-1'>
-								<div className='break-word flex-1 text-foreground text-xs'>
+								<p className='break-word min-w-0 flex-1 text-foreground text-xs [overflow-wrap:anywhere]'>
 									{entry.description}
-								</div>
+								</p>
 								<div className='flex items-start gap-1'>
 									<div className='font-medium text-muted-foreground text-xs'>
 										{index + 1}
