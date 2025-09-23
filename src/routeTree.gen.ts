@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as TrashRouteImport } from './routes/trash'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReviewRouteImport } from './routes/review'
@@ -17,11 +16,6 @@ import { Route as LogbookRouteImport } from './routes/logbook'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
 
-const UpcomingRoute = UpcomingRouteImport.update({
-  id: '/upcoming',
-  path: '/upcoming',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TrashRoute = TrashRouteImport.update({
   id: '/trash',
   path: '/trash',
@@ -60,7 +54,6 @@ export interface FileRoutesByFullPath {
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/trash': typeof TrashRoute
-  '/upcoming': typeof UpcomingRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesByTo {
@@ -69,7 +62,6 @@ export interface FileRoutesByTo {
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/trash': typeof TrashRoute
-  '/upcoming': typeof UpcomingRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesById {
@@ -79,7 +71,6 @@ export interface FileRoutesById {
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/trash': typeof TrashRoute
-  '/upcoming': typeof UpcomingRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRouteTypes {
@@ -90,7 +81,6 @@ export interface FileRouteTypes {
     | '/review'
     | '/settings'
     | '/trash'
-    | '/upcoming'
     | '/topics/{-$topicId}'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,7 +89,6 @@ export interface FileRouteTypes {
     | '/review'
     | '/settings'
     | '/trash'
-    | '/upcoming'
     | '/topics/{-$topicId}'
   id:
     | '__root__'
@@ -108,7 +97,6 @@ export interface FileRouteTypes {
     | '/review'
     | '/settings'
     | '/trash'
-    | '/upcoming'
     | '/topics/{-$topicId}'
   fileRoutesById: FileRoutesById
 }
@@ -118,19 +106,11 @@ export interface RootRouteChildren {
   ReviewRoute: typeof ReviewRoute
   SettingsRoute: typeof SettingsRoute
   TrashRoute: typeof TrashRoute
-  UpcomingRoute: typeof UpcomingRoute
   TopicsChar123TopicIdChar125Route: typeof TopicsChar123TopicIdChar125Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/upcoming': {
-      id: '/upcoming'
-      path: '/upcoming'
-      fullPath: '/upcoming'
-      preLoaderRoute: typeof UpcomingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/trash': {
       id: '/trash'
       path: '/trash'
@@ -182,7 +162,6 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewRoute: ReviewRoute,
   SettingsRoute: SettingsRoute,
   TrashRoute: TrashRoute,
-  UpcomingRoute: UpcomingRoute,
   TopicsChar123TopicIdChar125Route: TopicsChar123TopicIdChar125Route,
 }
 export const routeTree = rootRouteImport

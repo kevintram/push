@@ -34,7 +34,12 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 		{ schema: 'public', table: 'timeline_entries_with_effective_date' }
 	])
 
-	const dateValue = isCompleted ? entry.completed_at : entry.scheduled_at
+	const dateValue =
+		'effective_date' in entry && entry.effective_date
+			? entry.effective_date
+			: isCompleted
+				? entry.completed_at
+				: entry.scheduled_at
 	const dateLabel = dateOf(dateValue)?.toLocaleDateString('en-US', {
 		weekday: 'short',
 		month: 'short',

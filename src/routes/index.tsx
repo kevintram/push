@@ -1,43 +1,6 @@
-import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { EntryItem } from '~/components/EntryItem'
-import { supabase } from '~/utils/supabase'
+import { TimelinePage } from '~/features/timeline'
 
 export const Route = createFileRoute('/')({
-	component: RouteComponent
+	component: TimelinePage
 })
-
-function RouteComponent() {
-	const { data: timelineEntries } = useQuery(
-		supabase
-			.from('timeline_entries_today')
-			.select('*, topics(name)')
-			.order('completed_at', { ascending: true, nullsFirst: true })
-			.order('scheduled_at', { ascending: true })
-	)
-
-	return (
-		<div className='container mx-auto p-6'>
-			<div className='mb-2'>
-				<h1 className='font-bold text-3xl'>Today</h1>
-			</div>
-
-			<div className='space-y-0.5'>
-				{timelineEntries?.map(entry => (
-					<EntryItem
-						entry={entry}
-						isCompleted={entry.completed_at !== null}
-						key={entry.id}
-					/>
-				))}
-				{timelineEntries?.length === 0 && (
-					<div className='py-12 text-center'>
-						<p className='text-muted-foreground'>
-							No entries scheduled for today.
-						</p>
-					</div>
-				)}
-			</div>
-		</div>
-	)
-}
