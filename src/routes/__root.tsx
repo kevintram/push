@@ -17,11 +17,11 @@ export const Route = createRootRoute({
 				<AppSidebar />
 				<SidebarInset>
 					<Header />
-					<main className='flex-1'>
+					<div className='flex-1'>
 						<Suspense fallback={<LoadingOrError />}>
 							<Outlet />
 						</Suspense>
-					</main>
+					</div>
 				</SidebarInset>
 			</SidebarProvider>
 		</ErrorBoundary>
