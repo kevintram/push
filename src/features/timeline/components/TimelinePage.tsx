@@ -107,7 +107,7 @@ export function TimelinePage() {
 			)}
 
 			{!hasAnyEntries && (
-				<EmptyState message="No entries found. Get gulping!" />
+				<EmptyState message='No entries found. Get gulping!' />
 			)}
 		</div>
 	)
