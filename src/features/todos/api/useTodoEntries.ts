@@ -2,7 +2,7 @@ import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMemo } from 'react'
 import { supabase } from '~/utils/supabase'
 
-export function useTodoEntries() {
+export function useTodoEntries(showArchived = false) {
 	const todayDate = new Date().toISOString().split('T')[0]
 	const todayStart = `${todayDate}T00:00:00.000Z`
 	const todayEnd = `${todayDate}T23:59:59.999Z`
@@ -20,7 +20,8 @@ export function useTodoEntries() {
 	const query = useQuery(
 		supabase
 			.from('timeline_entries_with_effective_date')
-			.select('*, topics(name)')
+			.select('*, topics!inner(name, is_archived)')
+			.eq('topics.is_archived', showArchived)
 			.order('completed_at', { ascending: true, nullsFirst: true })
 			.order('scheduled_at', { ascending: true })
 	)
