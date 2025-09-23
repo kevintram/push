@@ -21,7 +21,7 @@ export function useGlobalSearch() {
 		supabase
 			.from('topics')
 			.select('*')
-			.ilike('name', `%${debouncedQuery}%`)
+			.or(`name.ilike.%${debouncedQuery}%,notes.ilike.%${debouncedQuery}%`)
 			.order('name', { ascending: true })
 			.limit(10),
 		{
@@ -32,6 +32,7 @@ export function useGlobalSearch() {
 	return {
 		query,
 		setQuery,
+		debouncedQuery,
 		results: results || [],
 		isLoading: isLoading && debouncedQuery.trim().length > 0,
 		hasQuery: debouncedQuery.trim().length > 0

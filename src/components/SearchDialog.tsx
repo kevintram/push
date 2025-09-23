@@ -3,6 +3,7 @@ import { FileText, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
 import type { Tables } from '~/types/database.types'
+import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { Card, CardContent } from './ui/Card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/Dialog'
 import { Input } from './ui/Input'
@@ -17,7 +18,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [selectedIndex, setSelectedIndex] = useState(0)
 
-	const { query, setQuery, results, isLoading, hasQuery } = useGlobalSearch()
+	const { query, setQuery, debouncedQuery, results, isLoading, hasQuery } =
+		useGlobalSearch()
 
 	useEffect(() => {
 		if (open) {
@@ -107,16 +109,22 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 									onMouseEnter={() => setSelectedIndex(index)}
 								>
 									<CardContent className='px-4 py-0'>
-										<div className='flex items-center gap-3'>
-											<FileText className='h-4 w-4 flex-shrink-0 text-muted-foreground' />
+										<div className='flex items-start gap-3'>
+											<FileText className='mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground' />
 											<div className='min-w-0 flex-1'>
-												<div className='truncate font-medium'>
-													{topic.name || 'Untitled'}
+												<div className='line-clamp-1 font-medium'>
+													{highlightText({
+														text: topic.name || 'Untitled',
+														query: debouncedQuery
+													})}
 												</div>
-												{topic.inserted_at && (
-													<div className='text-muted-foreground text-xs'>
-														Created{' '}
-														{new Date(topic.inserted_at).toLocaleDateString()}
+												{topic.notes && (
+													<div className='mt-1 line-clamp-2 text-muted-foreground text-sm'>
+														{truncateWithHighlight(
+															topic.notes,
+															debouncedQuery,
+															120
+														)}
 													</div>
 												)}
 											</div>
