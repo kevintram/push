@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { FileText, Search } from 'lucide-react'
+import { FileText, Search, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
 import type { Tables } from '~/types/database.types'
@@ -11,15 +11,17 @@ import { Input } from './ui/Input'
 interface SearchDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
+	query: string
+	setQuery: (query: string) => void
 }
 
-export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
+export function SearchDialog({ open, onOpenChange, query, setQuery }: SearchDialogProps) {
 	const navigate = useNavigate()
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [selectedIndex, setSelectedIndex] = useState(0)
 
-	const { query, setQuery, debouncedQuery, results, isLoading, hasQuery } =
-		useGlobalSearch()
+	const { debouncedQuery, results, isLoading, hasQuery } =
+		useGlobalSearch(query)
 
 	useEffect(() => {
 		if (open) {
@@ -27,10 +29,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 				inputRef.current?.focus()
 			}, 0)
 		} else {
-			setQuery('')
 			setSelectedIndex(0)
 		}
-	}, [open, setQuery])
+	}, [open])
 
 	useEffect(() => {
 		setSelectedIndex(0)
@@ -71,13 +72,22 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 					<div className='relative'>
 						<Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
 						<Input
-							className='border-0 pl-10 text-lg shadow-none'
+							className='border-0 pl-10 pr-10 shadow-none text-lg'
 							onChange={e => setQuery(e.target.value)}
 							onKeyDown={handleKeyDown}
 							placeholder='Search topics...'
 							ref={inputRef}
 							value={query}
 						/>
+						{query && (
+							<button
+								className='absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground'
+								onClick={() => setQuery('')}
+								type='button'
+							>
+								<X className='h-4 w-4' />
+							</button>
+						)}
 					</div>
 				</DialogHeader>
 

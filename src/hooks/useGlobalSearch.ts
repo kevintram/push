@@ -4,8 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 
-export function useGlobalSearch() {
-	const [query, setQuery] = useState('')
+export function useGlobalSearch(externalQuery = '') {
 	const [debouncedQuery, setDebouncedQuery] = useState('')
 
 	const updateDebouncedQuery = useCallback(
@@ -14,8 +13,8 @@ export function useGlobalSearch() {
 	)
 
 	useEffect(() => {
-		updateDebouncedQuery(query)
-	}, [query, updateDebouncedQuery])
+		updateDebouncedQuery(externalQuery)
+	}, [externalQuery, updateDebouncedQuery])
 
 	const { data: results, isLoading } = useQuery<Array<Tables<'topics'>>>(
 		supabase
@@ -30,8 +29,6 @@ export function useGlobalSearch() {
 	)
 
 	return {
-		query,
-		setQuery,
 		debouncedQuery,
 		results: results || [],
 		isLoading: isLoading && debouncedQuery.trim().length > 0,
