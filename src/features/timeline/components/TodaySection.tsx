@@ -1,6 +1,5 @@
 import { EntryItem } from '~/components/EntryItem'
 import { useTodayEntries } from '../api'
-import { EmptyState } from './EmptyState'
 
 export function TodaySection() {
 	const { data: todayEntries } = useTodayEntries()
@@ -19,9 +18,6 @@ export function TodaySection() {
 						key={entry.id}
 					/>
 				))}
-				{todayEntries?.length === 0 && (
-					<EmptyState message='No entries scheduled for today.' />
-				)}
 			</div>
 		</div>
 	)
