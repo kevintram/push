@@ -100,10 +100,10 @@ export function SearchDialog({
 				</DialogHeader>
 
 				<div className='max-h-192 min-h-80 overflow-y-auto p-4 pt-0'>
-					{isLoading && hasQuery && (
+					{isLoading && (
 						<div className='flex items-center justify-center py-8 text-muted-foreground'>
 							<div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
-							Searching...
+							{hasQuery ? 'Searching...' : 'Loading recent topics...'}
 						</div>
 					)}
 
@@ -113,9 +113,19 @@ export function SearchDialog({
 						</div>
 					)}
 
-					{!(hasQuery || isLoading) && (
+					{!hasQuery && !isLoading && results.length === 0 && (
 						<div className='flex items-center justify-center py-8 text-muted-foreground'>
-							Start typing to search topics...
+							No topics found
+						</div>
+					)}
+
+					{results.length > 0 && (
+						<div className='mb-2'>
+							{!hasQuery && (
+								<div className='mb-3 font-medium text-muted-foreground text-sm'>
+									Recent
+								</div>
+							)}
 						</div>
 					)}
 
