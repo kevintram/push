@@ -6,4 +6,6 @@ declare global {
 	interface Window {
 		happyDOM?: DetachedWindowApi
 	}
+
+	const __APP_BRANCH__: string | undefined
 }

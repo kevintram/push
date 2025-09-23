@@ -159,6 +159,7 @@
 				}
 			}
 		},
+
 		{
 			"includes": ["public/**"],
 			"formatter": {
