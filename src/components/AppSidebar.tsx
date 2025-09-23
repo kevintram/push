@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
-	Calendar,
+	ListChecks,
 	Logs,
 	RotateCcw,
 	Settings,
@@ -23,9 +23,9 @@ import {
 export function AppSidebar() {
 	const menuItems = [
 		{
-			title: 'Scheduled',
+			title: 'Todo',
 			url: '/',
-			icon: Calendar
+			icon: ListChecks
 		},
 		{
 			title: 'Library',
