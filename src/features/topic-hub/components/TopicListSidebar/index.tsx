@@ -3,11 +3,9 @@ import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Input } from '~/components/ui/Input'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { useDebouncedSearch } from '../../hooks/useDebouncedSearch'
 import { TopicListBody } from './TopicListBody'
 
 export function TopicListSidebar({
@@ -35,14 +33,6 @@ export function TopicListSidebar({
 		}
 	)
 
-	const {
-		query,
-		setQuery,
-		results: filteredTopics
-	} = useDebouncedSearch({
-		topics: topics || []
-	})
-
 	const createTopic = useCallback(() => {
 		insertTopicMutation([{}])
 	}, [insertTopicMutation])
@@ -50,23 +40,16 @@ export function TopicListSidebar({
 	return (
 		<Sidebar>
 			<SidebarHeader>
-				<div className='flex items-center gap-2'>
-					<div className='flex-1'>
-						<Input
-							onChange={e => setQuery(e.target.value)}
-							placeholder='Search'
-							type='search'
-							value={query}
-						/>
-					</div>
-					<Button onClick={createTopic} size='icon' variant='secondary'>
+				<div className='flex items-center justify-between'>
+					<h2 className='font-semibold text-lg'>Topics</h2>
+					<Button onClick={createTopic} size='icon' variant='ghost'>
 						<Plus className='h-4 w-4' />
 					</Button>
 				</div>
 			</SidebarHeader>
 			<SidebarContent>
 				<div className='space-y-0.5'>
-					<TopicListBody isLoading={isLoading} topics={filteredTopics} />
+					<TopicListBody isLoading={isLoading} topics={topics || []} />
 				</div>
 			</SidebarContent>
 		</Sidebar>
