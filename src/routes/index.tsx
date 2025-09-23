@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { TimelinePage } from '~/features/timeline'
+import { TodosPage } from '~/features/todos'
 
 export const Route = createFileRoute('/')({
-	component: TimelinePage
+	component: TodosPage
 })
