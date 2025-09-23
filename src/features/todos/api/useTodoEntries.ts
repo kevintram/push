@@ -2,7 +2,7 @@ import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMemo } from 'react'
 import { supabase } from '~/utils/supabase'
 
-export function useTimelineEntries() {
+export function useTodoEntries() {
 	const todayDate = new Date().toISOString().split('T')[0]
 	const todayStart = `${todayDate}T00:00:00.000Z`
 	const todayEnd = `${todayDate}T23:59:59.999Z`

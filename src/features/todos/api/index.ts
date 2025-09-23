@@ -1,3 +1,3 @@
-export { useTimelineEntries } from './useTimelineEntries'
+export { useTodoEntries } from './useTodoEntries'
 export { useTodayEntries } from './useTodayEntries'
 export { useUpcomingEntries } from './useUpcomingEntries'

@@ -1,10 +1,10 @@
 import { EntryItem } from '~/components/EntryItem'
-import { useTimelineEntries } from '../api'
+import { useTodoEntries } from '../api'
 import { EmptyState } from './EmptyState'
 
-export function TimelinePage() {
+export function TodosPage() {
 	const { overdue, today, tomorrow, nextSevenDays, future, unscheduled } =
-		useTimelineEntries()
+		useTodoEntries()
 
 	const hasAnyEntries =
 		(overdue && overdue.length > 0) ||
