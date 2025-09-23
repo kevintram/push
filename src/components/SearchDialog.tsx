@@ -15,7 +15,12 @@ interface SearchDialogProps {
 	setQuery: (query: string) => void
 }
 
-export function SearchDialog({ open, onOpenChange, query, setQuery }: SearchDialogProps) {
+export function SearchDialog({
+	open,
+	onOpenChange,
+	query,
+	setQuery
+}: SearchDialogProps) {
 	const navigate = useNavigate()
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [selectedIndex, setSelectedIndex] = useState(0)
@@ -66,13 +71,16 @@ export function SearchDialog({ open, onOpenChange, query, setQuery }: SearchDial
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className='p-0 sm:max-w-2xl' showCloseButton={false}>
-				<DialogHeader className='p-4 pb-0'>
+			<DialogContent
+				className='-translate-x-1/2 fixed top-0 left-1/2 w-full min-w-5xl translate-y-0 p-0'
+				showCloseButton={false}
+			>
+				<DialogHeader className='px-4 pt-2 pb-0'>
 					<DialogTitle className='sr-only'>Search topics</DialogTitle>
 					<div className='relative'>
 						<Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
 						<Input
-							className='border-0 pl-10 pr-10 shadow-none text-lg'
+							className='border-0 px-10 text-lg shadow-none'
 							onChange={e => setQuery(e.target.value)}
 							onKeyDown={handleKeyDown}
 							placeholder='Search topics...'
@@ -81,7 +89,7 @@ export function SearchDialog({ open, onOpenChange, query, setQuery }: SearchDial
 						/>
 						{query && (
 							<button
-								className='absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground'
+								className='-translate-y-1/2 absolute top-1/2 right-3 h-4 w-4 text-muted-foreground transition-colors hover:text-foreground'
 								onClick={() => setQuery('')}
 								type='button'
 							>
@@ -91,7 +99,7 @@ export function SearchDialog({ open, onOpenChange, query, setQuery }: SearchDial
 					</div>
 				</DialogHeader>
 
-				<div className='max-h-80 overflow-y-auto p-4 pt-0'>
+				<div className='max-h-192 min-h-80 overflow-y-auto p-4 pt-0'>
 					{isLoading && hasQuery && (
 						<div className='flex items-center justify-center py-8 text-muted-foreground'>
 							<div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
@@ -102,6 +110,12 @@ export function SearchDialog({ open, onOpenChange, query, setQuery }: SearchDial
 					{hasQuery && !isLoading && results.length === 0 && (
 						<div className='flex items-center justify-center py-8 text-muted-foreground'>
 							No topics found for "{query}"
+						</div>
+					)}
+
+					{!(hasQuery || isLoading) && (
+						<div className='flex items-center justify-center py-8 text-muted-foreground'>
+							Start typing to search topics...
 						</div>
 					)}
 
