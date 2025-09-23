@@ -28,7 +28,7 @@ export function Header() {
 							className='w-128 cursor-pointer pl-10'
 							onClick={() => setSearchOpen(true)}
 							onFocus={() => setSearchOpen(true)}
-							placeholder='Search'
+							placeholder='Search (⌘K)'
 							readOnly={true}
 							type='search'
 						/>
