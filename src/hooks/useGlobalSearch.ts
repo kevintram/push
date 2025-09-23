@@ -16,7 +16,9 @@ export function useGlobalSearch(externalQuery = '') {
 		updateDebouncedQuery(externalQuery)
 	}, [externalQuery, updateDebouncedQuery])
 
-	const { data: searchResults, isLoading: isSearchLoading } = useQuery<Array<Tables<'topics'>>>(
+	const { data: searchResults, isLoading: isSearchLoading } = useQuery<
+		Array<Tables<'topics'>>
+	>(
 		supabase
 			.from('topics')
 			.select('*')
@@ -28,7 +30,9 @@ export function useGlobalSearch(externalQuery = '') {
 		}
 	)
 
-	const { data: recentResults, isLoading: isRecentLoading } = useQuery<Array<Tables<'topics'>>>(
+	const { data: recentResults, isLoading: isRecentLoading } = useQuery<
+		Array<Tables<'topics'>>
+	>(
 		supabase
 			.from('topics')
 			.select('*')

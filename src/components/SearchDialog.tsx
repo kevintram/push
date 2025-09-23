@@ -113,7 +113,7 @@ export function SearchDialog({
 						</div>
 					)}
 
-					{!hasQuery && !isLoading && results.length === 0 && (
+					{!(hasQuery || isLoading) && results.length === 0 && (
 						<div className='flex items-center justify-center py-8 text-muted-foreground'>
 							No topics found
 						</div>

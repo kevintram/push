@@ -33,7 +33,6 @@ export function TopicListSidebar({
 		}
 	)
 
-
 	const createTopic = useCallback(() => {
 		insertTopicMutation([{}])
 	}, [insertTopicMutation])
@@ -42,7 +41,7 @@ export function TopicListSidebar({
 		<Sidebar>
 			<SidebarHeader>
 				<div className='flex items-center justify-between'>
-					<h2 className='text-lg font-semibold'>Topics</h2>
+					<h2 className='font-semibold text-lg'>Topics</h2>
 					<Button onClick={createTopic} size='icon' variant='ghost'>
 						<Plus className='h-4 w-4' />
 					</Button>

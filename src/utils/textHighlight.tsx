@@ -6,12 +6,19 @@ interface HighlightTextProps {
 	className?: string
 }
 
-export function highlightText({ text, query, className = '' }: HighlightTextProps): ReactNode {
-	if (!query.trim() || !text) {
+export function highlightText({
+	text,
+	query,
+	className = ''
+}: HighlightTextProps): ReactNode {
+	if (!(query.trim() && text)) {
 		return text
 	}
 
-	const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+	const regex = new RegExp(
+		`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
+		'gi'
+	)
 	const parts = text.split(regex)
 
 	return parts.map((part, index) => {
@@ -21,8 +28,8 @@ export function highlightText({ text, query, className = '' }: HighlightTextProp
 		if (isMatch) {
 			return (
 				<mark
-					key={index}
 					className={`bg-yellow-200 text-yellow-900 dark:bg-yellow-400/30 dark:text-yellow-200 ${className}`}
+					key={index}
 				>
 					{part}
 				</mark>
@@ -32,7 +39,11 @@ export function highlightText({ text, query, className = '' }: HighlightTextProp
 	})
 }
 
-export function truncateWithHighlight(text: string, query: string, maxLength: number = 150): ReactNode {
+export function truncateWithHighlight(
+	text: string,
+	query: string,
+	maxLength = 150
+): ReactNode {
 	if (!text) return ''
 
 	if (text.length <= maxLength) {
