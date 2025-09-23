@@ -1,12 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
-	CalendarDays,
+	ListChecks,
 	Logs,
 	RotateCcw,
 	Settings,
 	SquareLibrary,
-	Star,
 	Trash2
 } from 'lucide-react'
 
@@ -22,33 +21,22 @@ import {
 } from '~/components/ui/Sidebar'
 
 export function AppSidebar() {
-	const firstGroup = [
+	const menuItems = [
 		{
-			title: 'Today',
+			title: 'Todo',
 			url: '/',
-			icon: Star
-		},
-		{
-			title: 'Upcoming',
-			url: '/upcoming',
-			icon: CalendarDays
-		}
-	]
-
-	const secondGroup = [
-		{
-			title: 'Review',
-			url: '/review',
-			icon: RotateCcw
+			icon: ListChecks
 		},
 		{
 			title: 'Library',
 			url: '/topics',
 			icon: SquareLibrary
-		}
-	]
-
-	const thirdGroup = [
+		},
+		{
+			title: 'Review',
+			url: '/review',
+			icon: RotateCcw
+		},
 		{
 			title: 'Logbook',
 			url: '/logbook',
@@ -64,45 +52,10 @@ export function AppSidebar() {
 	return (
 		<Sidebar className='z-20' collapsible='icon'>
 			<SidebarContent>
-				{/* First Group (Today, Upcoming) */}
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{firstGroup.map(item => (
-								<SidebarMenuItem key={item.title}>
-									<SidebarMenuButton asChild={true} tooltip={item.title}>
-										<Link to={item.url}>
-											<item.icon />
-											<span>{item.title}</span>
-										</Link>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-				{/* Second Group (Review, Library) */}
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							{secondGroup.map(item => (
-								<SidebarMenuItem key={item.title}>
-									<SidebarMenuButton asChild={true} tooltip={item.title}>
-										<Link to={item.url}>
-											<item.icon />
-											<span>{item.title}</span>
-										</Link>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-				{/* Third Group (Logbook, Trash) */}
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							{thirdGroup.map(item => (
+							{menuItems.map(item => (
 								<SidebarMenuItem key={item.title}>
 									<SidebarMenuButton asChild={true} tooltip={item.title}>
 										<Link to={item.url}>
