@@ -75,12 +75,8 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 				id: selectedTopic.id,
 				is_archived: true
 			})
-			navigate({
-				to: '/topics/{-$topicId}',
-				params: { topicId: undefined }
-			})
 		}
-	}, [updateTopicMutation, selectedTopic?.id, navigate])
+	}, [updateTopicMutation, selectedTopic?.id])
 
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: selectedTopic?.notes ?? '',
@@ -117,29 +113,45 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 
 			<Card className='w-full gap-0 pt-4'>
 				<CardHeader className='flex flex-col gap-1 pr-4'>
-					<div className='flex w-full justify-end'>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild={true}>
-								<Button
-									className='h-6 w-6 p-0'
-									size='sm'
-									title='More options'
-									variant='ghost'
-								>
-									<MoreVertical className='h-4 w-4' />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent>
-								<DropdownMenuItem onClick={handleArchive}>
-									<Archive className='mr-2 h-4 w-4' />
-									Archive
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={handleDelete} variant='destructive'>
-									<Trash className='mr-2 h-4 w-4' />
-									Delete
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+					<div className='flex w-full flex-row'>
+						<div className='flex flex-1'>
+							{selectedTopic?.is_archived && (
+								<>
+									<Archive className='mr-2 h-4 w-4 text-muted-foreground' />
+									<span className='text-muted-foreground text-xs'>
+										Archived
+									</span>
+								</>
+							)}
+						</div>
+
+						<div className='flex justify-end'>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild={true}>
+									<Button
+										className='h-6 w-6 p-0'
+										size='sm'
+										title='More options'
+										variant='ghost'
+									>
+										<MoreVertical className='h-4 w-4' />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent>
+									<DropdownMenuItem onClick={handleArchive}>
+										<Archive className='mr-2 h-4 w-4' />
+										Archive
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={handleDelete}
+										variant='destructive'
+									>
+										<Trash className='mr-2 h-4 w-4' />
+										Delete
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
 					</div>
 
 					<textarea
