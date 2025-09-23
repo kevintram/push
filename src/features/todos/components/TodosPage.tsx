@@ -110,11 +110,7 @@ export function TodosPage() {
 
 					<div className='space-y-0.5'>
 						{unscheduled.map(entry => (
-							<EntryItem
-								entry={entry}
-								isCompleted={false}
-								key={entry.id}
-							/>
+							<EntryItem entry={entry} isCompleted={false} key={entry.id} />
 						))}
 					</div>
 				</div>
