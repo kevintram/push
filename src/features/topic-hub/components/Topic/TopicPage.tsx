@@ -3,7 +3,7 @@ import {
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { Archive, MoreVertical, Trash } from 'lucide-react'
+import { Archive, ArchiveRestore, MoreVertical, Trash } from 'lucide-react'
 import { use, useCallback, useEffect, useRef } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardHeader } from '~/components/ui/Card'
@@ -69,14 +69,14 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 		}
 	}, [deleteTopic, selectedTopic?.id])
 
-	const handleArchive = useCallback(async () => {
+	const handleArchiveToggle = useCallback(async () => {
 		if (selectedTopic?.id) {
 			await updateTopicMutation({
 				id: selectedTopic.id,
-				is_archived: true
+				is_archived: !selectedTopic.is_archived
 			})
 		}
-	}, [updateTopicMutation, selectedTopic?.id])
+	}, [updateTopicMutation, selectedTopic?.id, selectedTopic?.is_archived])
 
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: selectedTopic?.notes ?? '',
@@ -138,9 +138,18 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent>
-									<DropdownMenuItem onClick={handleArchive}>
-										<Archive className='mr-2 h-4 w-4' />
-										Archive
+									<DropdownMenuItem onClick={handleArchiveToggle}>
+										{selectedTopic?.is_archived ? (
+											<>
+												<ArchiveRestore className='mr-2 h-4 w-4' />
+												Unarchive
+											</>
+										) : (
+											<>
+												<Archive className='mr-2 h-4 w-4' />
+												Archive
+											</>
+										)}
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										onClick={handleDelete}
