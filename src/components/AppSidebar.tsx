@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
-	CalendarDays,
 	Logs,
 	RotateCcw,
 	Settings,
@@ -27,11 +26,6 @@ export function AppSidebar() {
 			title: 'Today',
 			url: '/',
 			icon: Star
-		},
-		{
-			title: 'Upcoming',
-			url: '/upcoming',
-			icon: CalendarDays
 		}
 	]
 
@@ -64,7 +58,7 @@ export function AppSidebar() {
 	return (
 		<Sidebar className='z-20' collapsible='icon'>
 			<SidebarContent>
-				{/* First Group (Today, Upcoming) */}
+				{/* First Group (Today) */}
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
