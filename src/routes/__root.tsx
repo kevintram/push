@@ -2,6 +2,7 @@ import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { AppSidebar } from '~/components/AppSidebar'
+import { Header } from '~/components/Header'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { SidebarInset, SidebarProvider } from '~/components/ui/Sidebar'
 
@@ -15,9 +16,12 @@ export const Route = createRootRoute({
 			<SidebarProvider defaultOpen={false}>
 				<AppSidebar />
 				<SidebarInset>
-					<Suspense fallback={<LoadingOrError />}>
-						<Outlet />
-					</Suspense>
+					<Header />
+					<main className='flex-1'>
+						<Suspense fallback={<LoadingOrError />}>
+							<Outlet />
+						</Suspense>
+					</main>
 				</SidebarInset>
 			</SidebarProvider>
 		</ErrorBoundary>
