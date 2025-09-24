@@ -9,21 +9,14 @@ import { routeTree } from './routeTree.gen'
 
 // in dev mode, append port and git branch to document title for quick context
 if (import.meta.env.DEV && !import.meta.env.VITEST) {
-	const port = window.location.port
-
 	const branchLabel =
 		// biome-ignore lint/correctness/noUndeclaredVariables: __APP_BRANCH__ is defined in vite.config.ts
 		typeof __APP_BRANCH__ === 'string' && __APP_BRANCH__.length > 0
 			? // biome-ignore lint/correctness/noUndeclaredVariables: __APP_BRANCH__ is defined in vite.config.ts
 				__APP_BRANCH__
 			: ''
-	const suffixParts = [`dev${port ? `:${port}` : ''}`]
-	if (branchLabel) {
-		suffixParts.push(branchLabel)
-	}
-	const suffix = `(${suffixParts.join(' ')})`
-	if (!document.title.includes(suffix)) {
-		document.title = `${document.title} ${suffix}`.trim()
+	if (!document.title.includes(branchLabel)) {
+		document.title = `${document.title} ${branchLabel}`.trim()
 	}
 }
 
