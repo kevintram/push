@@ -153,14 +153,14 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 					>
 						<Checkbox
 							checked={isChecked}
-							className={`mt-1 ${isOverdueValue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
+							className={`mt-2 ${isOverdueValue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
 							onCheckedChange={handleCheckboxChange}
 						/>
 					</div>
 
 					{/* Description */}
 					<Textarea
-						className='!bg-transparent mb-1 min-h-[1.5rem] flex-1 resize-none border-0 p-0 text-md leading-relaxed shadow-none focus:border-transparent focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:border-transparent focus-visible:ring-0'
+						className='!bg-transparent mt-1 mb-1 min-h-[1.5rem] flex-1 resize-none border-0 p-0 text-md leading-relaxed shadow-none focus:border-transparent focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:border-transparent focus-visible:ring-0'
 						onChange={onDescriptionChange}
 						placeholder='Description'
 						rows={1}
