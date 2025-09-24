@@ -76,6 +76,7 @@ export type Database = {
         Row: {
           id: number
           inserted_at: string
+          is_archived: boolean
           name: string
           notes: string
           retrievability: number
@@ -85,6 +86,7 @@ export type Database = {
         Insert: {
           id?: number
           inserted_at?: string
+          is_archived?: boolean
           name?: string
           notes?: string
           retrievability?: number
@@ -94,6 +96,7 @@ export type Database = {
         Update: {
           id?: number
           inserted_at?: string
+          is_archived?: boolean
           name?: string
           notes?: string
           retrievability?: number
