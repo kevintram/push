@@ -2,7 +2,6 @@ import {
 	useDeleteMutation,
 	useInsertMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
-import { Link } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
 	Baby,
@@ -32,6 +31,7 @@ import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelat
 import { TopicHubContext } from '~/features/topic-hub/stores/SelectedTopicContext'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
+import { TopicDialog } from '../TopicDialog'
 
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
@@ -39,6 +39,10 @@ const GAP = 12
 
 export function TopicChildrenPanel() {
 	const [numLanes, setNumLanes] = useState(1)
+	const [selectedChildTopic, setSelectedChildTopic] = useState<Topic | null>(
+		null
+	)
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const parentRef = useRef<HTMLDivElement>(null)
 	const { selectedTopic } = use(TopicHubContext)
 
@@ -70,6 +74,11 @@ export function TopicChildrenPanel() {
 			})
 		} catch (_error) {}
 	}, [selectedTopic, insertTopicMutation, createRelationship])
+
+	const handleChildClick = useCallback((child: Topic) => {
+		setSelectedChildTopic(child)
+		setIsDialogOpen(true)
+	}, [])
 
 	const estimateSize = useCallback(
 		(index: number) => {
@@ -193,21 +202,27 @@ export function TopicChildrenPanel() {
 									transform: `translateY(${virtualItem.start}px)`
 								}}
 							>
-								<ChildCard child={child} />
+								<ChildCard child={child} onChildClick={handleChildClick} />
 							</div>
 						)
 					})}
 				</div>
 			</div>
+			<TopicDialog
+				onOpenChange={setIsDialogOpen}
+				open={isDialogOpen}
+				topic={selectedChildTopic}
+			/>
 		</div>
 	)
 }
 
 interface ChildCardProps {
 	child: Topic
+	onChildClick: (child: Topic) => void
 }
 
-function ChildCard({ child }: ChildCardProps) {
+function ChildCard({ child, onChildClick }: ChildCardProps) {
 	const { selectedTopic } = use(TopicHubContext)
 	const deleteRelationship = useDeleteRelationship()
 
@@ -227,17 +242,16 @@ function ChildCard({ child }: ChildCardProps) {
 
 	return (
 		<Card className='group relative cursor-pointer p-0 transition-colors hover:bg-muted/50'>
-			<Link params={{ topicId: child.id.toString() }} to='/topics/{-$topicId}'>
-				<CardContent
-					className='px-3 py-2'
-					style={{ minHeight: `${MIN_HEIGHT}px` }}
-				>
-					{child.name && (
-						<h3 className='mb-1 font-semibold text-md'>{child.name}</h3>
-					)}
-					<div className='line-clamp-5 text-sm'>{child.notes}</div>
-				</CardContent>
-			</Link>
+			<CardContent
+				className='px-3 py-2'
+				onClick={() => onChildClick(child)}
+				style={{ minHeight: `${MIN_HEIGHT}px` }}
+			>
+				{child.name && (
+					<h3 className='mb-1 font-semibold text-md'>{child.name}</h3>
+				)}
+				<div className='line-clamp-5 text-sm'>{child.notes}</div>
+			</CardContent>
 			<div className='absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100'>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild={true}>
