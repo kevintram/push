@@ -1,25 +1,45 @@
+import { useVirtualizer } from '@tanstack/react-virtual'
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState
+} from 'react'
 import { Skeleton } from '~/components/ui/Skeleton'
 import type { Tables } from '~/types/database.types'
 import { InboxItem } from './InboxItem'
 
+const MIN_CARD_WIDTH = 280
+const MIN_CARD_HEIGHT = 168
+const CHARS_PER_LINE = 36
+const LINE_HEIGHT = 18
+const BASE_HEIGHT = 140
+const GAP = 16
+
 export function InboxList({
 	topics,
+	onTopicSelect,
 	isLoading
 }: {
 	topics: Array<Tables<'topics'>> | undefined | null
+	onTopicSelect: (topic: Tables<'topics'>) => void
 	isLoading: boolean
 }) {
 	if (isLoading) {
 		return (
-			<div className='space-y-3'>
-				{Array.from({ length: 3 }).map((_, index) => (
-					<div className='rounded-lg border p-4' key={`skeleton-${index}`}>
-						<div className='space-y-2'>
-							<Skeleton className='h-5 w-3/4' />
-							<Skeleton className='h-4 w-1/2' />
-							<div className='flex justify-end'>
-								<Skeleton className='h-8 w-20' />
-							</div>
+			<div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3'>
+				{Array.from({ length: 6 }).map((_, index) => (
+					<div
+						className='space-y-3 rounded-lg border p-4'
+						key={`skeleton-${index}`}
+					>
+						<Skeleton className='h-5 w-3/4' />
+						<Skeleton className='h-4 w-5/6' />
+						<Skeleton className='h-4 w-2/3' />
+						<div className='flex justify-end'>
+							<Skeleton className='h-8 w-24' />
 						</div>
 					</div>
 				))}
@@ -27,7 +47,9 @@ export function InboxList({
 		)
 	}
 
-	if (!topics || topics?.length === 0) {
+	const topicList = useMemo(() => topics ?? [], [topics])
+
+	if (topicList.length === 0) {
 		return (
 			<div className='flex flex-1 items-center justify-center py-12'>
 				<div className='text-center text-muted-foreground'>
@@ -38,11 +60,90 @@ export function InboxList({
 		)
 	}
 
+	const parentRef = useRef<HTMLDivElement>(null)
+	const [numLanes, setNumLanes] = useState(1)
+
+	const estimateSize = useCallback(
+		(index: number) => {
+			const topic = topicList[index]
+			if (!topic) return MIN_CARD_HEIGHT
+
+			const nameLength = topic.name?.length ?? 0
+			const notesLength = topic.notes?.length ?? 0
+
+			const nameLines = Math.max(1, Math.ceil(nameLength / CHARS_PER_LINE))
+			const notesLines =
+				notesLength > 0 ? Math.ceil(notesLength / CHARS_PER_LINE) : 0
+
+			const height =
+				BASE_HEIGHT + (nameLines - 1) * LINE_HEIGHT + notesLines * LINE_HEIGHT
+
+			return Math.max(height, MIN_CARD_HEIGHT)
+		},
+		[topicList]
+	)
+
+	const virtualizer = useVirtualizer({
+		count: topicList.length,
+		getScrollElement: () => parentRef.current,
+		estimateSize,
+		lanes: numLanes,
+		overscan: 6,
+		gap: GAP
+	})
+
+	useLayoutEffect(() => {
+		virtualizer.measure()
+	}, [virtualizer, numLanes])
+
+	useEffect(() => {
+		if (!parentRef.current || typeof ResizeObserver === 'undefined') return
+
+		const resizeObserver = new ResizeObserver(entries => {
+			const containerWidth = entries[0]?.contentRect.width ?? 0
+			if (!containerWidth) return
+
+			const calculatedLanes = Math.max(
+				1,
+				Math.floor((containerWidth + GAP) / (MIN_CARD_WIDTH + GAP))
+			)
+
+			if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
+		})
+
+		resizeObserver.observe(parentRef.current)
+
+		return () => resizeObserver.disconnect()
+	}, [numLanes])
+
 	return (
-		<div className='space-y-3'>
-			{topics.map(topic => (
-				<InboxItem key={topic.id} topic={topic} />
-			))}
+		<div
+			className='relative'
+			ref={parentRef}
+			style={{
+				height: `${virtualizer.getTotalSize()}px`,
+				width: '100%'
+			}}
+		>
+			{virtualizer.getVirtualItems().map(virtualItem => {
+				const topic = topicList[virtualItem.index]!
+
+				return (
+					<div
+						className='absolute top-0'
+						data-index={virtualItem.index}
+						key={virtualItem.key}
+						ref={virtualizer.measureElement}
+						style={{
+							left: `${virtualItem.lane * (100 / numLanes)}%`,
+							width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : GAP}px)`,
+							transform: `translateY(${virtualItem.start}px)`
+						}}
+					>
+						<InboxItem onSelect={onTopicSelect} topic={topic} />
+					</div>
+				)
+			})}
 		</div>
 	)
 }

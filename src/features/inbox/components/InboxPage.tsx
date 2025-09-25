@@ -1,9 +1,26 @@
+import { useCallback, useState } from 'react'
+import { TopicDialog } from '~/components/TopicDialog'
+import type { Tables } from '~/types/database.types'
 import { useInboxTopics } from '../api'
 import { CreateInboxTopic } from './CreateInboxTopic'
 import { InboxList } from './InboxList'
 
 export function InboxPage() {
 	const { data: inboxTopics, isLoading } = useInboxTopics()
+	const [selectedTopic, setSelectedTopic] = useState<Tables<'topics'> | null>(null)
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+	const handleTopicSelect = useCallback((topic: Tables<'topics'>) => {
+		setSelectedTopic(topic)
+		setIsDialogOpen(true)
+	}, [])
+
+	const handleDialogOpenChange = useCallback((open: boolean) => {
+		setIsDialogOpen(open)
+		if (!open) {
+			setSelectedTopic(null)
+		}
+	}, [])
 
 	return (
 		<div className='container mx-auto'>
@@ -14,8 +31,18 @@ export function InboxPage() {
 				</div>
 			</div>
 			<div className='px-6 pb-6'>
-				<InboxList isLoading={isLoading} topics={inboxTopics} />
+				<InboxList
+					isLoading={isLoading}
+					onTopicSelect={handleTopicSelect}
+					topics={inboxTopics}
+				/>
 			</div>
+
+			<TopicDialog
+				onOpenChange={handleDialogOpenChange}
+				open={isDialogOpen}
+				topic={selectedTopic}
+			/>
 		</div>
 	)
 }
