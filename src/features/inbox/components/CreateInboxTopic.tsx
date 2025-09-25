@@ -53,13 +53,12 @@ export function CreateInboxTopic() {
 		<Dialog onOpenChange={setOpen} open={open}>
 			<DialogTrigger asChild={true}>
 				<Button>
-					<Plus className='mr-2 h-4 w-4' />
-					Quick Add
+					<Plus className='h-4 w-4' />
 				</Button>
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Create Quick Topic</DialogTitle>
+					<DialogTitle>Add Topic</DialogTitle>
 					<DialogDescription>
 						Add a new topic to your inbox for later processing
 					</DialogDescription>
