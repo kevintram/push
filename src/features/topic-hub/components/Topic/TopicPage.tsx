@@ -3,7 +3,13 @@ import {
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { Archive, ArchiveRestore, MoreVertical, Trash } from 'lucide-react'
+import {
+	Archive,
+	ArchiveRestore,
+	Inbox,
+	MoreVertical,
+	Trash
+} from 'lucide-react'
 import { use, useCallback, useEffect, useRef } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardHeader } from '~/components/ui/Card'
@@ -78,6 +84,15 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 		}
 	}, [updateTopicMutation, selectedTopic?.id, selectedTopic?.is_archived])
 
+	const handleInboxToggle = useCallback(async () => {
+		if (selectedTopic?.id) {
+			await updateTopicMutation({
+				id: selectedTopic.id,
+				is_inboxed: !selectedTopic.is_inboxed
+			})
+		}
+	}, [updateTopicMutation, selectedTopic?.id, selectedTopic?.is_inboxed])
+
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: selectedTopic?.notes ?? '',
 		onSave: updateNotesMutation,
@@ -114,14 +129,20 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 			<Card className='w-full gap-0 pt-4'>
 				<CardHeader className='flex flex-col gap-1 pr-4'>
 					<div className='flex w-full flex-row'>
-						<div className='flex flex-1'>
+						<div className='flex flex-1 items-center gap-4'>
 							{selectedTopic?.is_archived && (
-								<>
+								<div className='flex items-center'>
 									<Archive className='mr-2 h-4 w-4 text-muted-foreground' />
 									<span className='text-muted-foreground text-xs'>
 										Archived
 									</span>
-								</>
+								</div>
+							)}
+							{selectedTopic?.is_inboxed && (
+								<div className='flex items-center'>
+									<Inbox className='mr-2 h-4 w-4 text-muted-foreground' />
+									<span className='text-muted-foreground text-xs'>Inbox</span>
+								</div>
 							)}
 						</div>
 
@@ -148,6 +169,19 @@ export function TopicPage({ isLoading }: { isLoading: boolean }) {
 											<>
 												<Archive className='mr-2 h-4 w-4' />
 												Archive
+											</>
+										)}
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={handleInboxToggle}>
+										{selectedTopic?.is_inboxed ? (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Remove from Inbox
+											</>
+										) : (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Add to Inbox
 											</>
 										)}
 									</DropdownMenuItem>

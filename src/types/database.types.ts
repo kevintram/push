@@ -77,6 +77,7 @@ export type Database = {
           id: number
           inserted_at: string
           is_archived: boolean
+          is_inboxed: boolean
           name: string
           notes: string
           retrievability: number
@@ -87,6 +88,7 @@ export type Database = {
           id?: number
           inserted_at?: string
           is_archived?: boolean
+          is_inboxed?: boolean
           name?: string
           notes?: string
           retrievability?: number
@@ -97,6 +99,7 @@ export type Database = {
           id?: number
           inserted_at?: string
           is_archived?: boolean
+          is_inboxed?: boolean
           name?: string
           notes?: string
           retrievability?: number
