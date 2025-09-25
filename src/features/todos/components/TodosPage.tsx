@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Archive, X } from 'lucide-react'
+import { Archive, Check, X } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { EntryItem } from '~/components/EntryItem'
 import { Badge } from '~/components/ui/Badge'
@@ -199,6 +199,9 @@ export function TodosPage() {
 									onClick={item.filter.onClick}
 									variant={item.filter.isActive ? 'default' : 'outline'}
 								>
+									{item.filter.isActive && (
+										<Check aria-hidden='true' className='h-4 w-4' />
+									)}
 									{item.filter.id === 'archive' && (
 										<Archive className='h-4 w-4' />
 									)}
