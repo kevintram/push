@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
+	Inbox,
 	ListChecks,
 	Logs,
 	RotateCcw,
@@ -22,6 +23,11 @@ import {
 
 export function AppSidebar() {
 	const menuItems = [
+		{
+			title: 'Inbox',
+			url: '/inbox',
+			icon: Inbox
+		},
 		{
 			title: 'Todo',
 			url: '/',
