@@ -79,47 +79,41 @@ export function ScheduledEntry({
 			<PopoverTrigger asChild={true}>
 				<Card className='cursor-pointer rounded border-none bg-transparent px-2 py-1 shadow-none transition-colors hover:bg-muted/50'>
 					<CardContent className='p-0'>
-						<div className='flex flex-row gap-3'>
-							<div className='flex flex-col items-start'>
-								<div className='flex items-center gap-2'>
-									<Checkbox
-										checked={!!entry.completed_at}
-										className={
-											isOverdueValue
-												? 'border-red-600 dark:border-red-700 dark:bg-red-700'
-												: ''
-										}
-										onCheckedChange={handleCheckboxChange}
-										onClick={e => e.stopPropagation()}
-									/>
-
-									<Badge variant='default'>
-										{effectiveDate.toLocaleDateString()}
-									</Badge>
-								</div>
-
-								<div className='ml-10 flex flex-1'>
-									{nextDate && (
-										<DaysElapsedMarker
-											daysElapsed={numDaysElapsed(effectiveDate, nextDate)}
-										/>
-									)}
-								</div>
-							</div>
-
-							<div className='flex flex-1 flex-row items-start gap-2 py-1'>
+						<div className='flex flex-row items-stretch gap-3 py-1'>
+							<Checkbox
+								checked={!!entry.completed_at}
+								className={
+									isOverdueValue
+										? 'border-red-600 dark:border-red-700 dark:bg-red-700'
+										: ''
+								}
+								onCheckedChange={handleCheckboxChange}
+								onClick={e => e.stopPropagation()}
+							/>
+							<div className='flex min-w-0 flex-1 items-stretch gap-3'>
 								<p className='break-word min-w-0 flex-1 text-foreground text-xs [overflow-wrap:anywhere]'>
 									{entry.description}
 								</p>
-								<div className='flex items-start gap-1'>
-									<div className='font-medium text-muted-foreground text-xs'>
-										{index + 1}
-									</div>
+								<div className='flex flex-col items-end gap-2 text-xs'>
+									<Badge className='text-xs' variant='default'>
+										{effectiveDate.toLocaleDateString()}
+									</Badge>
+									{nextDate && (
+										<div className='mr-6 flex h-full'>
+											<DaysElapsedMarker
+												daysElapsed={numDaysElapsed(effectiveDate, nextDate)}
+											/>
+										</div>
+									)}
+								</div>
+								<div className='flex items-start font-medium text-muted-foreground text-xs'>
+									{index + 1}
 								</div>
 							</div>
+						</div>
 
-							{/* TODO: Implement practice cards, stability change, and retrievability later*/}
-							{/* <div className='flex-1 pb-6'>
+						{/* TODO: Implement practice cards, stability change, and retrievability later*/}
+						{/* <div className='flex-1 pb-6'>
 								<div className='mb-3'>
 									<div className='mb-2 flex items-center gap-2'>
 										<Progress className='flex-1' value={currEntry.stability} />
@@ -156,7 +150,6 @@ export function ScheduledEntry({
 									</div>
 								</div>
 							</div> */}
-						</div>
 					</CardContent>
 				</Card>
 			</PopoverTrigger>
