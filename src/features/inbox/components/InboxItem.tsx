@@ -9,8 +9,6 @@ interface InboxItemProps {
 }
 
 export function InboxItem({ topic, onSelect }: InboxItemProps) {
-	const createdAt = new Date(topic.inserted_at)
-
 	const handleActivate = useCallback(() => {
 		onSelect(topic)
 	}, [onSelect, topic])
@@ -40,11 +38,7 @@ export function InboxItem({ topic, onSelect }: InboxItemProps) {
 							{topic.name}
 						</h3>
 					)}
-					{topic.notes && (
-						<p className='line-clamp-5 text-sm'>
-							{topic.notes}
-						</p>
-					)}
+					{topic.notes && <p className='line-clamp-5 text-sm'>{topic.notes}</p>}
 				</div>
 			</CardContent>
 		</Card>

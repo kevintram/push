@@ -7,7 +7,9 @@ import { InboxList } from './InboxList'
 
 export function InboxPage() {
 	const { data: inboxTopics, isLoading } = useInboxTopics()
-	const [selectedTopic, setSelectedTopic] = useState<Tables<'topics'> | null>(null)
+	const [selectedTopic, setSelectedTopic] = useState<Tables<'topics'> | null>(
+		null
+	)
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
 	const handleTopicSelect = useCallback((topic: Tables<'topics'>) => {
