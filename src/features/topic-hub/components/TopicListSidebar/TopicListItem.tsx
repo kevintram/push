@@ -80,12 +80,6 @@ const MemoizedBody = memo(
 			}
 		}, [deleteTopic, topic?.id])
 
-		// TODO: reimplement this later
-		// const lastReviewDate = topic.timeline_entries?.at(-1)?.review_date
-		// const daysSinceLastEntry = lastReviewDate
-		// 	? numDaysElapsedFrom(new Date(lastReviewDate))
-		// 	: 0
-
 		const isSelected = topic.id === selectedTopic?.id
 
 		return (

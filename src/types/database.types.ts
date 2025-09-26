@@ -34,7 +34,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      timeline_entries: {
+      todos: {
         Row: {
           completed_at: string | null
           description: string
@@ -152,7 +152,7 @@ export type Database = {
       }
     }
     Views: {
-      timeline_entries_today: {
+      todos_today: {
         Row: {
           completed_at: string | null
           description: string | null
@@ -193,7 +193,7 @@ export type Database = {
           },
         ]
       }
-      timeline_entries_with_effective_date: {
+      todos_with_effective_date: {
         Row: {
           completed_at: string | null
           description: string | null

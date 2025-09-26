@@ -13,23 +13,22 @@ export function TodayMarker({
 	return (
 		<Card className='rounded border-none bg-transparent px-2 py-1 shadow-none'>
 			<CardContent className='p-0'>
-				<div className='flex flex-row gap-3'>
-					<div className='flex flex-col items-start'>
-						<div className='flex items-center gap-2'>
-							{/* invisible div the size of checkbox so today marker lines up with other date badges */}
-							<div className='h-4 w-4' />{' '}
-							<Badge className='bg-blue-600 text-white' variant='default'>
-								Today
-							</Badge>
-						</div>
-
-						<div className='ml-10'>
-							{nextDate && (
+				<div className='flex flex-row justify-end gap-3 py-1'>
+					<div className='flex shrink-0 flex-col items-end gap-2 text-xs'>
+						<Badge className='bg-blue-600 text-white text-xs' variant='default'>
+							Today
+						</Badge>
+						{nextDate && (
+							<div className='mr-6 flex h-full'>
 								<DaysElapsedMarker
 									daysElapsed={numDaysElapsed(today, nextDate)}
 								/>
-							)}
-						</div>
+							</div>
+						)}
+					</div>
+					{/* invisible index so today marker lines up with scheduled entries */}
+					<div className='flex font-medium text-muted-foreground text-xs opacity-100'>
+						0
 					</div>
 				</div>
 			</CardContent>

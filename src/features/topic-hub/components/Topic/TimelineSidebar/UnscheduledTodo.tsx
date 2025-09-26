@@ -25,56 +25,56 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 
-interface UnscheduledEntryProps {
-	entry: Tables<'timeline_entries'>
+interface UnscheduledTodoProps {
+	entry: Tables<'todos'>
 }
 
-export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
-	const revalidateOtherTimelineTabels = useRevalidateTables([
-		{ schema: 'public', table: 'timeline_entries_today' },
-		{ schema: 'public', table: 'timeline_entries_with_effective_date' }
+export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
+	const revalidateOtherTodoTables = useRevalidateTables([
+		{ schema: 'public', table: 'todos_today' },
+		{ schema: 'public', table: 'todos_with_effective_date' }
 	])
 
-	const { mutateAsync: updateTimelineEntry } = useUpdateMutation(
-		supabase.from('timeline_entries'),
+	const { mutateAsync: updateTodo } = useUpdateMutation(
+		supabase.from('todos'),
 		['id'],
 		'*',
 		{
 			onSuccess: () => {
-				revalidateOtherTimelineTabels()
+				revalidateOtherTodoTables()
 			}
 		}
 	)
 
-	const { mutateAsync: deleteTimelineEntry } = useDeleteMutation(
-		supabase.from('timeline_entries'),
+	const { mutateAsync: deleteTodo } = useDeleteMutation(
+		supabase.from('todos'),
 		['id']
 	)
 
 	const handleToggleComplete = useCallback(
 		(checked: boolean) => {
-			updateTimelineEntry({
+			updateTodo({
 				id: entry.id,
 				completed_at: checked ? new Date().toISOString() : null
 			})
 		},
-		[entry.id, updateTimelineEntry]
+		[entry.id, updateTodo]
 	)
 
 	const updateDescription = useCallback(
 		(description: string) => {
-			updateTimelineEntry({
+			updateTodo({
 				id: entry.id,
 				description
 			})
 		},
-		[entry.id, updateTimelineEntry]
+		[entry.id, updateTodo]
 	)
 
 	const { value: description, onChange: onDescriptionChange } = useAutoSave({
 		initialValue: entry.description || '',
 		onSave: updateDescription,
-		key: `timeline-entry-${entry.id}`
+		key: `todo-entry-${entry.id}`
 	})
 
 	const textareaRef = useAutoResizeTextarea(description)
@@ -94,17 +94,17 @@ export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
 
 	const handleDelete = useCallback(async () => {
 		if (entry?.id) {
-			await deleteTimelineEntry({ id: entry.id })
+			await deleteTodo({ id: entry.id })
 		}
-	}, [deleteTimelineEntry, entry?.id])
+	}, [deleteTodo, entry?.id])
 
 	const handleSchedule = useCallback(() => {
-		updateTimelineEntry({
+		updateTodo({
 			id: entry.id,
 			scheduled_at: selectedDate.toISOString()
 		})
 		setIsSchedulePopoverOpen(false)
-	}, [entry.id, selectedDate, updateTimelineEntry])
+	}, [entry.id, selectedDate, updateTodo])
 
 	return (
 		<div className='group flex items-start gap-2 py-1'>
@@ -120,7 +120,7 @@ export function UnscheduledEntry({ entry }: UnscheduledEntryProps) {
 						autoFocus={description === '' && isRecentlyCreated}
 						className='break-word mt-0.5 w-full resize-none border-none bg-transparent p-0 text-sm shadow-none outline-none focus:outline-none focus-visible:ring-0'
 						onChange={onDescriptionChange}
-						placeholder='New Entry'
+						placeholder='New Todo'
 						ref={textareaRef}
 						rows={1}
 						spellCheck={false}

@@ -5,11 +5,11 @@ import { Button } from '~/components/ui/Button'
 import { supabase } from '~/utils/supabase'
 import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 
-export function AddUnscheduledButton() {
+export function AddUnscheduledTodoButton() {
 	const { selectedTopic } = use(TopicHubContext)
 
-	const { mutateAsync: insertTimelineEntry } = useInsertMutation(
-		supabase.from('timeline_entries'),
+	const { mutateAsync: insertTodo } = useInsertMutation(
+		supabase.from('todos'),
 		['id'],
 		'*'
 	)
@@ -17,7 +17,7 @@ export function AddUnscheduledButton() {
 	const handleAddTodo = useCallback(() => {
 		if (!selectedTopic) return
 
-		insertTimelineEntry([
+		insertTodo([
 			{
 				description: '',
 				topic_id: selectedTopic.id,
@@ -25,7 +25,7 @@ export function AddUnscheduledButton() {
 				completed_at: null
 			}
 		])
-	}, [selectedTopic, insertTimelineEntry])
+	}, [selectedTopic, insertTodo])
 
 	return (
 		<Button onClick={handleAddTodo} size='sm' variant='ghost'>
