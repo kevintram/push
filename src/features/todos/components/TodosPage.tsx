@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Archive, Check, X } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { EntryItem } from '~/components/EntryItem'
 import { Badge } from '~/components/ui/Badge'
 import { useTodoEntries } from '../api'
@@ -42,12 +42,12 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	{ id: 'unscheduled', label: 'Unscheduled', headingClassName: 'text-gray-600' }
 ]
 
-const FILTERS: Array<FilterId> = [
+const FILTER_ORDER: Array<FilterId> = [
+	'overdue',
 	'today',
 	'tomorrow',
 	'nextSevenDays',
 	'future',
-	'overdue',
 	'unscheduled',
 	'archive'
 ]
@@ -94,24 +94,44 @@ export function TodosPage() {
 		})
 	}, [])
 
-	const filters = FILTERS.map(filterId => {
-		const sectionDefinition = SECTION_DEFINITIONS.find(
-			definition => definition.id === filterId
-		)
+	const hasOverdueEntries = sectionEntries.overdue.length > 0
 
-		return {
-			id: filterId,
-			label:
-				filterId === 'archive'
-					? 'Archived'
-					: (sectionDefinition?.label ?? filterId),
-			isActive:
-				filterId === 'archive'
-					? showArchived
-					: activeSections.includes(filterId),
-			onClick: () => handleFilterClick(filterId)
+	useEffect(() => {
+		if (!hasOverdueEntries && activeSections.includes('overdue')) {
+			setActiveSections(prev => prev.filter(id => id !== 'overdue'))
 		}
-	})
+	}, [hasOverdueEntries, activeSections])
+
+	const filterOrder = useMemo(
+		() =>
+			hasOverdueEntries
+				? FILTER_ORDER
+				: FILTER_ORDER.filter(filterId => filterId !== 'overdue'),
+		[hasOverdueEntries]
+	)
+
+	const filters = useMemo(
+		() =>
+			filterOrder.map(filterId => {
+				const sectionDefinition = SECTION_DEFINITIONS.find(
+					definition => definition.id === filterId
+				)
+
+				return {
+					id: filterId,
+					label:
+						filterId === 'archive'
+							? 'Archived'
+							: (sectionDefinition?.label ?? filterId),
+					isActive:
+						filterId === 'archive'
+							? showArchived
+							: activeSections.includes(filterId),
+					onClick: () => handleFilterClick(filterId)
+				}
+			}),
+		[filterOrder, activeSections, showArchived, handleFilterClick]
+	)
 
 	const activeFilters = filters.filter(filter => filter.isActive)
 	const inactiveFilters = filters.filter(filter => !filter.isActive)
