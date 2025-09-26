@@ -15,7 +15,6 @@ import {
 	useRef,
 	useState
 } from 'react'
-import { CreateAndSearchTopicDialog } from '~/components/CreateAndSearchTopicDialog'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
 import {
@@ -30,6 +29,7 @@ import { TopicHubContext } from '~/features/topic-hub/stores/SelectedTopicContex
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
+import { AddRelationshipDialog } from '../AddRelationshipDialog'
 import { TopicDialog } from '../TopicDialog'
 
 const MIN_WIDTH = 192
@@ -210,10 +210,12 @@ export function TopicChildrenPanel() {
 				/>
 			</div>
 
-			<CreateAndSearchTopicDialog
+			<AddRelationshipDialog
 				onOpenChange={setShowCreateDialog}
-				onTopicCreated={handleTopicCreated}
+				onRelationshipCreated={handleTopicCreated}
 				open={showCreateDialog}
+				relationshipType='child'
+				topicId={selectedTopic?.id}
 			/>
 		</>
 	)

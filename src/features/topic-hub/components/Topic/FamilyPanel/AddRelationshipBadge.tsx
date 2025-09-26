@@ -18,12 +18,17 @@ export function AddRelationshipBadge({ type }: { type: 'child' | 'parent' }) {
 	const [open, setOpen] = useState(false)
 	const { selectedTopic } = use(TopicHubContext)
 
-	const { data: potentialParents } = useGetPotentialParents(selectedTopic?.id, {
-		enabled: selectedTopic !== undefined && type === 'parent'
-	})
+	const { data: potentialParents } = useGetPotentialParents(
+		selectedTopic?.id,
+		undefined,
+		{
+			enabled: selectedTopic !== undefined && type === 'parent'
+		}
+	)
 
 	const { data: potentialChildren } = useGetPotentialChildren(
 		selectedTopic?.id,
+		undefined,
 		{
 			enabled: selectedTopic !== undefined && type === 'child'
 		}
