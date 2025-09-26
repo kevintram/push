@@ -1,7 +1,4 @@
-import {
-	useDeleteMutation,
-	useInsertMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useDeleteMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
 	Baby,
@@ -29,8 +26,10 @@ import {
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import { TopicHubContext } from '~/features/topic-hub/stores/SelectedTopicContext'
+import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
+import { AddRelationshipDialog } from '../AddRelationshipDialog'
 import { TopicDialog } from '../TopicDialog'
 
 const MIN_WIDTH = 192
@@ -42,42 +41,37 @@ export function TopicChildrenPanel() {
 	const [selectedChildTopic, setSelectedChildTopic] = useState<Topic | null>(
 		null
 	)
-	const [isDialogOpen, setIsDialogOpen] = useState(false)
+	const [showEditDialog, setShowEditDialog] = useState(false)
+	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const parentRef = useRef<HTMLDivElement>(null)
 	const { selectedTopic } = use(TopicHubContext)
 
 	const children = selectedTopic?.children || []
 
-	const { mutateAsync: insertTopicMutation } = useInsertMutation(
-		supabase.from('topics'),
-		['id'],
-		'*'
-	)
-
 	const createRelationship = useCreateRelationship()
 
-	const handleAddChild = useCallback(async () => {
-		if (!selectedTopic) return
+	const handleAddChild = useCallback(() => {
+		setShowCreateDialog(true)
+	}, [])
 
-		try {
-			// Create a blank topic
-			const createdTopic = await insertTopicMutation([{ name: '', notes: '' }])
+	const handleTopicCreated = useCallback(
+		async (topic: Tables<'topics'>) => {
+			if (!selectedTopic) return
 
-			if (!createdTopic?.[0]) {
-				throw new Error('Failed to create topic')
-			}
-
-			// Create parent-child relationship
-			await createRelationship.mutateAsync({
-				parent: selectedTopic.id,
-				child: createdTopic[0].id
-			})
-		} catch (_error) {}
-	}, [selectedTopic, insertTopicMutation, createRelationship])
+			try {
+				// Create parent-child relationship
+				await createRelationship.mutateAsync({
+					parent: selectedTopic.id,
+					child: topic.id
+				})
+			} catch (_error) {}
+		},
+		[selectedTopic, createRelationship]
+	)
 
 	const handleChildClick = useCallback((child: Topic) => {
 		setSelectedChildTopic(child)
-		setIsDialogOpen(true)
+		setShowEditDialog(true)
 	}, [])
 
 	const estimateSize = useCallback(
@@ -146,30 +140,56 @@ export function TopicChildrenPanel() {
 	}, [numLanes])
 
 	return (
-		<div className='flex h-full flex-col'>
-			<div className='mb-3 flex items-center gap-2'>
-				<Baby className='h-4 w-4' />
-				<span className='font-medium text-muted-foreground text-xs'>
-					Children
-				</span>
-			</div>
-			<div className='flex-1'>
-				<div
-					ref={parentRef}
-					style={{
-						height: `${virtualizer.getTotalSize()}px`,
-						width: '100%',
-						position: 'relative'
-					}}
-				>
-					{virtualizer.getVirtualItems().map(virtualItem => {
-						// Add button is at index 0
-						if (virtualItem.index === 0) {
+		<>
+			<div className='flex h-full flex-col'>
+				<div className='mb-3 flex items-center gap-2'>
+					<Baby className='h-4 w-4' />
+					<span className='font-medium text-muted-foreground text-xs'>
+						Children
+					</span>
+				</div>
+				<div className='flex-1'>
+					<div
+						ref={parentRef}
+						style={{
+							height: `${virtualizer.getTotalSize()}px`,
+							width: '100%',
+							position: 'relative'
+						}}
+					>
+						{virtualizer.getVirtualItems().map(virtualItem => {
+							// Add button is at index 0
+							if (virtualItem.index === 0) {
+								return (
+									<div
+										className='absolute top-0'
+										data-index={virtualItem.index}
+										key='add-button'
+										ref={virtualizer.measureElement}
+										style={{
+											left: `${virtualItem.lane * (100 / numLanes)}%`,
+											width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : GAP}px)`,
+											transform: `translateY(${virtualItem.start}px)`
+										}}
+									>
+										<Card
+											className='cursor-pointer border-2 border-dashed transition-colors hover:bg-muted/50'
+											onClick={handleAddChild}
+										>
+											<CardContent className='flex items-center justify-center p-3'>
+												<Plus className='h-4 w-4 text-muted-foreground' />
+											</CardContent>
+										</Card>
+									</div>
+								)
+							}
+
+							const child = children[virtualItem.index - 1]!
 							return (
 								<div
 									className='absolute top-0'
 									data-index={virtualItem.index}
-									key='add-button'
+									key={virtualItem.key}
 									ref={virtualizer.measureElement}
 									style={{
 										left: `${virtualItem.lane * (100 / numLanes)}%`,
@@ -177,43 +197,27 @@ export function TopicChildrenPanel() {
 										transform: `translateY(${virtualItem.start}px)`
 									}}
 								>
-									<Card
-										className='cursor-pointer border-2 border-dashed transition-colors hover:bg-muted/50'
-										onClick={handleAddChild}
-									>
-										<CardContent className='flex items-center justify-center p-3'>
-											<Plus className='h-4 w-4 text-muted-foreground' />
-										</CardContent>
-									</Card>
+									<ChildCard child={child} onChildClick={handleChildClick} />
 								</div>
 							)
-						}
-
-						const child = children[virtualItem.index - 1]!
-						return (
-							<div
-								className='absolute top-0'
-								data-index={virtualItem.index}
-								key={virtualItem.key}
-								ref={virtualizer.measureElement}
-								style={{
-									left: `${virtualItem.lane * (100 / numLanes)}%`,
-									width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : GAP}px)`,
-									transform: `translateY(${virtualItem.start}px)`
-								}}
-							>
-								<ChildCard child={child} onChildClick={handleChildClick} />
-							</div>
-						)
-					})}
+						})}
+					</div>
 				</div>
+				<TopicDialog
+					onOpenChange={setShowEditDialog}
+					open={showEditDialog}
+					topic={selectedChildTopic}
+				/>
 			</div>
-			<TopicDialog
-				onOpenChange={setIsDialogOpen}
-				open={isDialogOpen}
-				topic={selectedChildTopic}
+
+			<AddRelationshipDialog
+				onOpenChange={setShowCreateDialog}
+				onRelationshipCreated={handleTopicCreated}
+				open={showCreateDialog}
+				relationshipType='child'
+				topicId={selectedTopic?.id}
 			/>
-		</div>
+		</>
 	)
 }
 

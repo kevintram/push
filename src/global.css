@@ -153,6 +153,34 @@
 		border: none;
 	}
 
+	.sidebar-scroll {
+		scrollbar-color: rgba(0, 0, 0, 0.3) var(--sidebar);
+	}
+
+	.sidebar-scroll:hover,
+	.sidebar-scroll:focus-within {
+		scrollbar-color: rgba(0, 0, 0, 0.4) var(--sidebar);
+	}
+
+	.sidebar-scroll::-webkit-scrollbar-track,
+	.sidebar-scroll::-webkit-scrollbar-track-piece {
+		background: var(--sidebar);
+	}
+
+	.dark .sidebar-scroll {
+		scrollbar-color: rgba(255, 255, 255, 0.3) var(--sidebar);
+	}
+
+	.dark .sidebar-scroll:hover,
+	.dark .sidebar-scroll:focus-within {
+		scrollbar-color: rgba(255, 255, 255, 0.4) var(--sidebar);
+	}
+
+	.dark .sidebar-scroll::-webkit-scrollbar-track,
+	.dark .sidebar-scroll::-webkit-scrollbar-track-piece {
+		background: var(--sidebar);
+	}
+
 	*::-webkit-scrollbar-corner {
 		background: transparent;
 	}
