@@ -1,3 +1,4 @@
+import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { FileText, PanelRightClose, PanelRightOpen } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '~/components/ui/Button'
@@ -8,8 +9,10 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
+import { Textarea } from '~/components/ui/Textarea'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import type { Tables } from '~/types/database.types'
+import { supabase } from '~/utils/supabase'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { useCreateRelationship } from '../../hooks/useCreateRelationship'
 import { useDebouncedPotentialTopics } from '../../hooks/useDebouncedPotentialTopics'
@@ -29,10 +32,12 @@ export function AddRelationshipDialog({
 	relationshipType,
 	onRelationshipCreated
 }: AddRelationshipDialogProps) {
-	const [searchQuery, setSearchQuery] = useState('')
+	const [name, setName] = useState('')
+	const [notes, setNotes] = useState('')
 	const [sidebarOpen, setSidebarOpen] = useState(true)
 
-	const searchTextareaRef = useAutoResizeTextarea(searchQuery)
+	const nameTextareaRef = useAutoResizeTextarea(name)
+	const notesTextareaRef = useAutoResizeTextarea(notes)
 
 	const { setQuery, debouncedQuery, results, isLoading } =
 		useDebouncedPotentialTopics({
@@ -42,29 +47,32 @@ export function AddRelationshipDialog({
 		})
 
 	const createRelationship = useCreateRelationship()
+	const { mutateAsync: insertTopicMutation, isPending: isCreatingTopic } =
+		useInsertMutation(supabase.from('topics'), ['id'], '*')
 
-	// Focus search input when dialog opens
+	// Focus notes input when dialog opens
 	useEffect(() => {
 		if (open) {
 			setTimeout(() => {
-				searchTextareaRef.current?.focus()
+				notesTextareaRef.current?.focus()
 			}, 0)
 		}
-	}, [open, searchTextareaRef])
+	}, [open, notesTextareaRef])
 
 	// Reset state when dialog opens/closes
 	useEffect(() => {
 		if (open) {
-			setSearchQuery('')
+			setName('')
+			setNotes('')
 			setQuery('')
 			setSidebarOpen(true)
 		}
 	}, [open, setQuery])
 
-	// Sync search query with the hook's query
+	// Sync notes with the hook's query for search
 	useEffect(() => {
-		setQuery(searchQuery)
-	}, [searchQuery, setQuery])
+		setQuery(notes)
+	}, [notes, setQuery])
 
 	const handleTopicSelect = useCallback(
 		async (topic: Tables<'topics'>) => {
@@ -95,6 +103,49 @@ export function AddRelationshipDialog({
 			onOpenChange
 		]
 	)
+
+	const handleCreateTopic = useCallback(async () => {
+		if (!(topicId && name.trim())) return
+
+		try {
+			const createdTopic = await insertTopicMutation([
+				{
+					name: name.trim(),
+					notes: notes.trim()
+				}
+			])
+
+			if (!createdTopic?.[0]) {
+				throw new Error('Failed to create topic')
+			}
+
+			const newTopic = createdTopic[0]
+
+			if (relationshipType === 'child') {
+				await createRelationship.mutateAsync({
+					parent: topicId,
+					child: newTopic.id
+				})
+			} else {
+				await createRelationship.mutateAsync({
+					parent: newTopic.id,
+					child: topicId
+				})
+			}
+
+			onRelationshipCreated?.(newTopic)
+			onOpenChange(false)
+		} catch (_error) {}
+	}, [
+		topicId,
+		name,
+		notes,
+		relationshipType,
+		insertTopicMutation,
+		createRelationship,
+		onRelationshipCreated,
+		onOpenChange
+	])
 
 	const dialogTitle =
 		relationshipType === 'child' ? 'Add Child Topic' : 'Add Parent Topic'
@@ -128,26 +179,34 @@ export function AddRelationshipDialog({
 							<div className='space-y-4'>
 								<textarea
 									className='!bg-transparent break-word flex w-full resize-none border-none font-bold text-xl focus:outline-none'
-									onChange={e => setSearchQuery(e.target.value)}
-									placeholder={`Search for ${relationshipType} topics...`}
-									ref={searchTextareaRef}
+									onChange={e => setName(e.target.value)}
+									placeholder='Name'
+									ref={nameTextareaRef}
 									rows={1}
 									spellCheck={false}
-									value={searchQuery}
+									value={name}
 								/>
 
-								<div className='text-muted-foreground text-sm'>
-									{relationshipType === 'child'
-										? 'Search for topics that can be added as children of the current topic.'
-										: 'Search for topics that can become parents of the current topic.'}
-								</div>
+								<Textarea
+									className='!bg-transparent min-h-48 w-full resize-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									onChange={e => setNotes(e.target.value)}
+									placeholder='Notes'
+									ref={notesTextareaRef}
+									value={notes}
+								/>
 							</div>
 						</div>
 
 						<div className='flex-shrink-0 border-t px-6 py-4'>
-							<div className='flex justify-end'>
+							<div className='flex justify-between'>
 								<Button onClick={() => onOpenChange(false)} variant='outline'>
 									Cancel
+								</Button>
+								<Button
+									disabled={!name.trim() || isCreatingTopic}
+									onClick={handleCreateTopic}
+								>
+									{isCreatingTopic ? 'Creating...' : 'Create New Topic'}
 								</Button>
 							</div>
 						</div>
@@ -157,7 +216,7 @@ export function AddRelationshipDialog({
 						<div className='flex h-full w-2/5 flex-shrink-0 flex-col border-l bg-sidebar lg:w-1/3'>
 							<div className='flex-shrink-0 p-4 pb-2'>
 								<h2 className='font-medium text-lg'>
-									{debouncedQuery === '' ? 'All Available' : 'Matching Topics'}
+									{debouncedQuery === '' ? 'Recent' : 'Matching Topics'}
 								</h2>
 							</div>
 							<div className='flex-1 overflow-y-auto px-4 pb-4'>
