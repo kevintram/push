@@ -241,17 +241,31 @@ export type Database = {
         Returns: undefined
       }
       get_potential_children: {
-        Args: { topic_id: number }
+        Args: { search_query?: string; topic_id: number }
         Returns: {
           id: number
+          inserted_at: string
+          is_archived: boolean
+          is_inboxed: boolean
           name: string
+          notes: string
+          retrievability: number
+          stability: number
+          updated_at: string
         }[]
       }
       get_potential_parents: {
-        Args: { topic_id: number }
+        Args: { search_query?: string; topic_id: number }
         Returns: {
           id: number
+          inserted_at: string
+          is_archived: boolean
+          is_inboxed: boolean
           name: string
+          notes: string
+          retrievability: number
+          stability: number
+          updated_at: string
         }[]
       }
       insert_relationship: {

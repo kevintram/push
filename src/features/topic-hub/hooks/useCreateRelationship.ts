@@ -1,8 +1,9 @@
 import { useRevalidateTables } from '@supabase-cache-helpers/postgrest-react-query'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '~/utils/supabase'
 
 export function useCreateRelationship(onSuccess?: () => void) {
+	const queryClient = useQueryClient()
 	const revalidateTables = useRevalidateTables([
 		{
 			table: 'topics_closure'
@@ -31,6 +32,14 @@ export function useCreateRelationship(onSuccess?: () => void) {
 		onSuccess: async () => {
 			onSuccess?.()
 			await revalidateTables() // revalidate topics_closure and topics
+
+			// Invalidate potential relationships cache since the graph has changed
+			await queryClient.invalidateQueries({
+				queryKey: ['potential-children']
+			})
+			await queryClient.invalidateQueries({
+				queryKey: ['potential-parents']
+			})
 		}
 	})
 }
