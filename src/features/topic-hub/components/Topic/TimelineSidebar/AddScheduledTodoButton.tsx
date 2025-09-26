@@ -14,14 +14,14 @@ import { Textarea } from '~/components/ui/Textarea'
 import { supabase } from '~/utils/supabase'
 import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 
-export function AddEntryButton() {
+export function AddScheduledTodoButton() {
 	const { selectedTopic } = use(TopicHubContext)
 	const [isOpen, setIsOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 	const [description, setDescription] = useState('')
 
-	const { mutateAsync: insertTimelineEntryMutation } = useInsertMutation(
-		supabase.from('timeline_entries_with_effective_date'),
+	const { mutateAsync: insertTodoMutation } = useInsertMutation(
+		supabase.from('todos_with_effective_date'),
 		['id'],
 		'*'
 	)
@@ -29,7 +29,7 @@ export function AddEntryButton() {
 	const handleSave = useCallback(() => {
 		if (!selectedTopic) return
 
-		insertTimelineEntryMutation([
+		insertTodoMutation([
 			{
 				description: description.trim(),
 				scheduled_at: selectedDate.toISOString(),
@@ -46,7 +46,7 @@ export function AddEntryButton() {
 		// reset to default values after saving
 		setDescription('')
 		setSelectedDate(new Date())
-	}, [selectedTopic, selectedDate, description, insertTimelineEntryMutation])
+	}, [selectedTopic, selectedDate, description, insertTodoMutation])
 
 	return (
 		<Popover onOpenChange={setIsOpen} open={isOpen}>

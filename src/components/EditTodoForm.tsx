@@ -13,36 +13,31 @@ import type { Tables } from '~/types/database.types'
 import { dateOf } from '~/utils/dateOf'
 import { supabase } from '~/utils/supabase'
 
-// Unified entry type that works with both timeline tables
-type TimelineEntry = (
-	| Tables<'timeline_entries'>
-	| Tables<'timeline_entries_with_effective_date'>
-) & { topics?: { name: string } | null }
+// Unified todo type that works with both todo tables
+type TodoEntry = (Tables<'todos'> | Tables<'todos_with_effective_date'>) & {
+	topics?: { name: string } | null
+}
 
-interface EditEntryFormProps {
-	entry: TimelineEntry
+interface EditTodoFormProps {
+	entry: TodoEntry
 	topicName?: string | null
 	onClose: () => void
 }
 
-export function EditEntryForm({
-	entry,
-	topicName,
-	onClose
-}: EditEntryFormProps) {
+export function EditTodoForm({ entry, topicName, onClose }: EditTodoFormProps) {
 	const [selectedDate, setSelectedDate] = useState<Date>(
 		dateOf(entry.scheduled_at)!
 	)
 	const [description, setDescription] = useState(entry.description || '')
 
 	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'timeline_entries' },
-		{ schema: 'public', table: 'timeline_entries_today' },
-		{ schema: 'public', table: 'timeline_entries_with_effective_date' }
+		{ schema: 'public', table: 'todos' },
+		{ schema: 'public', table: 'todos_today' },
+		{ schema: 'public', table: 'todos_with_effective_date' }
 	])
 
-	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
-		supabase.from('timeline_entries'),
+	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
+		supabase.from('todos'),
 		['id'],
 		'*, topics(name)',
 		{
@@ -52,31 +47,25 @@ export function EditEntryForm({
 		}
 	)
 
-	const { mutateAsync: deleteTimelineEntryMutation } = useDeleteMutation(
-		supabase.from('timeline_entries'),
+	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
+		supabase.from('todos'),
 		['id']
 	)
 
 	const handleSave = useCallback(() => {
-		updateTimelineEntryMutation({
+		updateTodoMutation({
 			id: entry.id ?? undefined,
 			scheduled_at: selectedDate.toISOString(),
 			description: description.trim()
 		})
 		onClose()
-	}, [
-		entry.id,
-		selectedDate,
-		description,
-		updateTimelineEntryMutation,
-		onClose
-	])
+	}, [entry.id, selectedDate, description, updateTodoMutation, onClose])
 
 	const handleDelete = useCallback(async () => {
-		await deleteTimelineEntryMutation({ id: entry.id ?? undefined })
+		await deleteTodoMutation({ id: entry.id ?? undefined })
 		revalidateTables()
 		onClose()
-	}, [entry.id, deleteTimelineEntryMutation, revalidateTables, onClose])
+	}, [entry.id, deleteTodoMutation, revalidateTables, onClose])
 
 	return (
 		<div className='flex w-full flex-col items-center gap-4'>

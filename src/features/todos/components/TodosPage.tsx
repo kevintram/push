@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Archive, Check, X } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { EntryItem } from '~/components/EntryItem'
+import { TodoItem } from '~/components/TodoItem'
 import { Badge } from '~/components/ui/Badge'
 import { useTodoEntries } from '../api'
 import { EmptyState } from './EmptyState'
@@ -225,7 +225,7 @@ export function TodosPage() {
 
 						<div className='space-y-0.5'>
 							{section.entries.map(entry => (
-								<EntryItem
+								<TodoItem
 									entry={entry}
 									isCompleted={entry.completed_at !== null}
 									key={entry.id}

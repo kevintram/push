@@ -19,7 +19,7 @@ export function useTodoEntries(showArchived = false) {
 
 	const query = useQuery(
 		supabase
-			.from('timeline_entries_with_effective_date')
+			.from('todos_with_effective_date')
 			.select('*, topics!inner(name, is_archived)')
 			.eq('topics.is_archived', showArchived)
 			.order('completed_at', { ascending: true, nullsFirst: true })

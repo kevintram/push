@@ -3,7 +3,7 @@ import {
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { useCallback, useMemo, useState } from 'react'
-import { EditEntryForm } from '~/components/EditEntryForm'
+import { EditTodoForm } from '~/components/EditTodoForm'
 import { Badge } from '~/components/ui/Badge'
 import { Card, CardContent } from '~/components/ui/Card'
 import { Checkbox } from '~/components/ui/Checkbox'
@@ -19,48 +19,41 @@ import { numDaysElapsed } from '../../../utils/daysElapsed'
 import { isOverdue } from '../../../utils/isOverdue'
 import { DaysElapsedMarker } from './DaysElapsedMarker'
 
-export function ScheduledEntry({
+export function ScheduledTodo({
 	entry,
 	index,
 	nextDate
 }: {
-	entry: Tables<'timeline_entries_with_effective_date'>
+	entry: Tables<'todos_with_effective_date'>
 	index: number
 	nextDate?: Date | undefined // undefined if last entry
 }) {
-	// TODO: Implement count based on timeline_entry_practice_cards
-	// const reviewedItemsCount = 0
-
-	// TODO: Implement stability change and retrievability with SRS logic
-	// const stabilityChange = currEntry.stability_change
-	// const retrievability = currEntry.retrievability
-
 	const [isEditPopoverOpen, setIsEditPopoverOpen] = useState(false)
 
-	const revalidateOtherTimelineTables = useRevalidateTables([
-		{ schema: 'public', table: 'timeline_entries' },
-		{ schema: 'public', table: 'timeline_entries_today' }
+	const revalidateOtherTodoTables = useRevalidateTables([
+		{ schema: 'public', table: 'todos' },
+		{ schema: 'public', table: 'todos_today' }
 	])
 
-	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
-		supabase.from('timeline_entries_with_effective_date'),
+	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
+		supabase.from('todos_with_effective_date'),
 		['id'],
 		'*',
 		{
 			onSuccess: () => {
-				revalidateOtherTimelineTables()
+				revalidateOtherTodoTables()
 			}
 		}
 	)
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
-			updateTimelineEntryMutation({
+			updateTodoMutation({
 				id: entry.id,
 				completed_at: checked ? new Date().toISOString() : null
 			})
 		},
-		[entry.id, updateTimelineEntryMutation]
+		[entry.id, updateTodoMutation]
 	)
 
 	const effectiveDate: Date = useMemo(() => {
@@ -159,7 +152,7 @@ export function ScheduledEntry({
 				side='right'
 				sideOffset={10}
 			>
-				<EditEntryForm
+				<EditTodoForm
 					entry={entry}
 					onClose={() => setIsEditPopoverOpen(false)}
 				/>

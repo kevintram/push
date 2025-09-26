@@ -28,21 +28,20 @@ import { dateOf } from '~/utils/dateOf'
 import { supabase } from '~/utils/supabase'
 
 // TODO: clean up this mess when migrate to hono API
-type TimelineEntry = (
-	| Tables<'timeline_entries'>
-	| Tables<'timeline_entries_with_effective_date'>
-) & { topics: { name: string } | null }
+type TodoEntry = (Tables<'todos'> | Tables<'todos_with_effective_date'>) & {
+	topics: { name: string } | null
+}
 
-interface EntryItemProps {
-	entry: TimelineEntry
+interface TodoItemProps {
+	entry: TodoEntry
 	isCompleted?: boolean
 }
 
-export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
+export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'timeline_entries' },
-		{ schema: 'public', table: 'timeline_entries_today' },
-		{ schema: 'public', table: 'timeline_entries_with_effective_date' }
+		{ schema: 'public', table: 'todos' },
+		{ schema: 'public', table: 'todos_today' },
+		{ schema: 'public', table: 'todos_with_effective_date' }
 	])
 
 	const dateValue = (() => {
@@ -76,8 +75,8 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 	)
 	const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
 
-	const { mutateAsync: updateTimelineEntryMutation } = useUpdateMutation(
-		supabase.from('timeline_entries'),
+	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
+		supabase.from('todos'),
 		['id'],
 		'*, topics(name)',
 		{
@@ -87,54 +86,54 @@ export function EntryItem({ entry, isCompleted = false }: EntryItemProps) {
 		}
 	)
 
-	const { mutateAsync: deleteTimelineEntryMutation } = useDeleteMutation(
-		supabase.from('timeline_entries'),
+	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
+		supabase.from('todos'),
 		['id']
 	)
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
 			setIsChecked(checked)
-			updateTimelineEntryMutation({
+			updateTodoMutation({
 				id: entry.id ?? undefined,
 				completed_at: checked ? new Date().toISOString() : null
 			})
 		},
-		[entry.id, updateTimelineEntryMutation]
+		[entry.id, updateTodoMutation]
 	)
 
 	const updateDescription = useCallback(
 		(newDescription: string) => {
-			updateTimelineEntryMutation({
+			updateTodoMutation({
 				id: entry.id ?? undefined,
 				description: newDescription.trim()
 			})
 		},
-		[entry.id, updateTimelineEntryMutation]
+		[entry.id, updateTodoMutation]
 	)
 
 	const { value: description, onChange: onDescriptionChange } = useAutoSave({
 		initialValue: entry.description || '',
 		onSave: updateDescription,
-		key: `timeline-entry-${entry.id}`
+		key: `todo-entry-${entry.id}`
 	})
 
 	const handleDateSave = useCallback(
 		(newDate: Date) => {
 			setSelectedDate(newDate)
-			updateTimelineEntryMutation({
+			updateTodoMutation({
 				id: entry.id ?? undefined,
 				scheduled_at: newDate.toISOString()
 			})
 			setIsDatePopoverOpen(false)
 		},
-		[entry.id, updateTimelineEntryMutation]
+		[entry.id, updateTodoMutation]
 	)
 
 	const handleDelete = useCallback(async () => {
-		await deleteTimelineEntryMutation({ id: entry.id ?? undefined })
+		await deleteTodoMutation({ id: entry.id ?? undefined })
 		revalidateTables()
-	}, [entry.id, deleteTimelineEntryMutation, revalidateTables])
+	}, [entry.id, deleteTodoMutation, revalidateTables])
 
 	return (
 		<div className='group rounded-lg p-4'>

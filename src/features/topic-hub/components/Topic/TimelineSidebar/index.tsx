@@ -10,31 +10,29 @@ import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import { dateOf } from '../../../../../utils/dateOf'
 import { TopicHubContext } from '../../../stores/SelectedTopicContext'
-import { AddEntryButton } from './AddScheduledEntryButton'
-import { AddUnscheduledButton } from './AddUnscheduledEntryButton'
-import { ScheduledEntry } from './ScheduledEntry'
+import { AddScheduledTodoButton } from './AddScheduledTodoButton'
+import { AddUnscheduledTodoButton } from './AddUnscheduledTodoButton'
+import { ScheduledTodo } from './ScheduledTodo'
 import { TodayMarker } from './TodayMarker'
-import { UnscheduledEntry } from './UnscheduledEntry'
+import { UnscheduledTodo } from './UnscheduledTodo'
 
-type TimelineEntry = Tables<'timeline_entries_with_effective_date'>
+type Todos = Tables<'todos_with_effective_date'>
 
 export function TimelineSidebar() {
 	const { selectedTopic } = use(TopicHubContext)
 
-	const { data: timelineEntries } = useQuery<Array<TimelineEntry>>(
+	const { data: scheduledTodos } = useQuery<Array<Todos>>(
 		supabase
-			.from('timeline_entries_with_effective_date')
+			.from('todos_with_effective_date')
 			.select('*')
 			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
 			.not('effective_date', 'is', null)
 			.order('effective_date', { ascending: true })
 	)
 
-	const { data: unscheduledEntries } = useQuery<
-		Array<Tables<'timeline_entries'>>
-	>(
+	const { data: unscheduledTodos } = useQuery<Array<Tables<'todos'>>>(
 		supabase
-			.from('timeline_entries')
+			.from('todos')
 			.select('*')
 			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
 			.is('scheduled_at', null)
@@ -42,16 +40,16 @@ export function TimelineSidebar() {
 			.order('inserted_at', { ascending: false })
 	)
 
-	const renderTimelineItems = useCallback(() => {
-		// add today marker while rendering timeline items
+	const renderTodos = useCallback(() => {
+		// add today marker while rendering todos
 		let todayInserted = false
 		const today = new Date()
 		today.setHours(0, 0, 0, 0)
 
-		return timelineEntries?.map((entry, i) => {
+		return scheduledTodos?.map((entry, i) => {
 			const date: Date = dateOf(entry.effective_date)!
 			const nextDate: Date | undefined = dateOf(
-				timelineEntries[i + 1]?.effective_date
+				scheduledTodos[i + 1]?.effective_date
 			)
 
 			if (!todayInserted) {
@@ -60,7 +58,7 @@ export function TimelineSidebar() {
 					return (
 						<>
 							<TodayMarker key='today-marker' nextDate={date} today={today} />
-							<ScheduledEntry
+							<ScheduledTodo
 								entry={entry}
 								index={i}
 								key={entry.id}
@@ -70,11 +68,11 @@ export function TimelineSidebar() {
 					)
 				}
 
-				if (i === timelineEntries.length - 1 || today <= nextDate!) {
+				if (i === scheduledTodos.length - 1 || today <= nextDate!) {
 					todayInserted = true
 					return (
 						<>
-							<ScheduledEntry
+							<ScheduledTodo
 								entry={entry}
 								index={i}
 								key={entry.id}
@@ -91,7 +89,7 @@ export function TimelineSidebar() {
 			}
 
 			return (
-				<ScheduledEntry
+				<ScheduledTodo
 					entry={entry}
 					index={i}
 					key={entry.id}
@@ -99,13 +97,13 @@ export function TimelineSidebar() {
 				/>
 			)
 		})
-	}, [timelineEntries])
+	}, [scheduledTodos])
 
 	return (
 		<Sidebar collapsible='none' side='right'>
 			<SidebarHeader className='mb-2 flex flex-row items-center justify-between gap-2'>
 				<h1 className='font-semibold'>Timeline</h1>
-				<AddEntryButton />
+				<AddScheduledTodoButton />
 			</SidebarHeader>
 			<PanelGroup className='min-h-0 flex-1' direction='vertical'>
 				<Panel
@@ -114,7 +112,7 @@ export function TimelineSidebar() {
 					minSize={20}
 				>
 					<div className='flex h-full flex-col gap-2 overflow-auto px-2 py-2'>
-						{renderTimelineItems()}
+						{renderTodos()}
 					</div>
 				</Panel>
 				<ResizableHandle />
@@ -126,11 +124,11 @@ export function TimelineSidebar() {
 					<div className='flex h-full flex-col gap-2 overflow-auto p-2'>
 						<div className='flex flex-shrink-0 flex-row items-center justify-between gap-2'>
 							<h2 className='font-semibold text-sm'>Unscheduled</h2>
-							<AddUnscheduledButton />
+							<AddUnscheduledTodoButton />
 						</div>
 						<div className='flex min-h-0 flex-1 flex-col gap-1 overflow-auto'>
-							{unscheduledEntries?.map(entry => (
-								<UnscheduledEntry entry={entry} key={entry.id} />
+							{unscheduledTodos?.map(entry => (
+								<UnscheduledTodo entry={entry} key={entry.id} />
 							))}
 						</div>
 					</div>

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 
 /**
- * Determines if a timeline entry is overdue based on its scheduled date and completion status
+ * Determines if a todo is overdue based on its scheduled date and completion status
  * @param options - The options object
  * @param options.scheduledDate - The scheduled date string or Date object
  * @param options.isCompleted - Whether the entry is completed (optional, defaults to false)
