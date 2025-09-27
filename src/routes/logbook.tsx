@@ -11,7 +11,7 @@ function RouteComponent() {
 	const { data: todos } = useQuery(
 		supabase
 			.from('todos')
-			.select('*, topics(name)')
+			.select('*, todos_topics(topics(id, name))')
 			.not('completed_at', 'is', null)
 			.order('completed_at', { ascending: false })
 	)

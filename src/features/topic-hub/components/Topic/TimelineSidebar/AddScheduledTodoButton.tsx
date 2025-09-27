@@ -1,4 +1,4 @@
-import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import { useRevalidateTables } from '@supabase-cache-helpers/postgrest-react-query'
 import dayjs from 'dayjs'
 import { CalendarIcon, Plus } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
@@ -20,33 +20,36 @@ export function AddScheduledTodoButton() {
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 	const [description, setDescription] = useState('')
 
-	const { mutateAsync: insertTodoMutation } = useInsertMutation(
-		supabase.from('todos_with_effective_date'),
-		['id'],
-		'*'
-	)
+	const revalidateTables = useRevalidateTables([
+		{ schema: 'public', table: 'todos' },
+		{ schema: 'public', table: 'todos_today' },
+		{ schema: 'public', table: 'todos_with_effective_date' },
+		{ schema: 'public', table: 'todos_topics' }
+	])
 
-	const handleSave = useCallback(() => {
+	const handleSave = useCallback(async () => {
 		if (!selectedTopic) return
 
-		insertTodoMutation([
-			{
-				description: description.trim(),
-				scheduled_at: selectedDate.toISOString(),
-				topic_id: selectedTopic.id,
-				// default to completed if scheduled is in past
-				completed_at: dayjs(selectedDate).isBefore(dayjs(), 'day')
-					? selectedDate.toISOString()
-					: null
-			}
-		])
+		const completedAt = dayjs(selectedDate).isBefore(dayjs(), 'day')
+			? selectedDate.toISOString()
+			: null
+
+		await supabase.rpc('insert_todo_with_topics', {
+			p_todo_description: description.trim(),
+			p_todo_scheduled_at: selectedDate.toISOString(),
+			p_todo_completed_at: completedAt as string,
+			p_topic_ids: [selectedTopic.id]
+		})
+
+		// Revalidate cache to update UI
+		revalidateTables()
 
 		setIsOpen(false)
 
 		// reset to default values after saving
 		setDescription('')
 		setSelectedDate(new Date())
-	}, [selectedTopic, selectedDate, description, insertTodoMutation])
+	}, [selectedTopic, selectedDate, description, revalidateTables])
 
 	return (
 		<Popover onOpenChange={setIsOpen} open={isOpen}>

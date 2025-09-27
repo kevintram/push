@@ -24,8 +24,8 @@ export function TimelineSidebar() {
 	const { data: scheduledTodos } = useQuery<Array<Todos>>(
 		supabase
 			.from('todos_with_effective_date')
-			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
+			.select('*, todos_topics!inner(topics(id))')
+			.eq('todos_topics.topic_id', selectedTopic?.id ?? Number.NaN)
 			.not('effective_date', 'is', null)
 			.order('effective_date', { ascending: true })
 	)
@@ -33,8 +33,8 @@ export function TimelineSidebar() {
 	const { data: unscheduledTodos } = useQuery<Array<Tables<'todos'>>>(
 		supabase
 			.from('todos')
-			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
+			.select('*, todos_topics!inner(topics(id))')
+			.eq('todos_topics.topic_id', selectedTopic?.id ?? Number.NaN)
 			.is('scheduled_at', null)
 			.is('completed_at', null)
 			.order('inserted_at', { ascending: false })

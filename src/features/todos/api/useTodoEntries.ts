@@ -2,7 +2,7 @@ import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMemo } from 'react'
 import { supabase } from '~/utils/supabase'
 
-export function useTodoEntries(showArchived = false) {
+export function useTodoEntries() {
 	const todayDate = new Date().toISOString().split('T')[0]
 	const todayStart = `${todayDate}T00:00:00.000Z`
 	const todayEnd = `${todayDate}T23:59:59.999Z`
@@ -19,9 +19,8 @@ export function useTodoEntries(showArchived = false) {
 
 	const query = useQuery(
 		supabase
-			.from('todos_with_effective_date')
-			.select('*, topics!inner(name, is_archived)')
-			.eq('topics.is_archived', showArchived)
+			.from('todos')
+			.select('*, todos_topics(topics(id, name, notes))')
 			.order('completed_at', { ascending: true, nullsFirst: true })
 			.order('scheduled_at', { ascending: true })
 	)
@@ -55,7 +54,9 @@ export function useTodoEntries(showArchived = false) {
 					continue
 				}
 
-				const effectiveDate = new Date(entry.effective_date || '')
+				const effectiveDate = new Date(
+					entry.completed_at || entry.scheduled_at || ''
+				)
 				const scheduledAt = new Date(entry.scheduled_at)
 
 				// Categorize entries by effective_date and scheduled_at

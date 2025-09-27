@@ -29,7 +29,7 @@ import { supabase } from '~/utils/supabase'
 
 // TODO: clean up this mess when migrate to hono API
 type TodoEntry = (Tables<'todos'> | Tables<'todos_with_effective_date'>) & {
-	topics: { name: string } | null
+	todos_topics: Array<{ topics: { id: number; name: string } }>
 }
 
 interface TodoItemProps {
@@ -78,7 +78,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
 		supabase.from('todos'),
 		['id'],
-		'*, topics(name)',
+		'*, todos_topics(topics(id, name))',
 		{
 			onSuccess: () => {
 				revalidateTables()
@@ -246,17 +246,18 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					{/* Spacer (same width as checkbox) */}
 					<div className='w-6' />
 
-					{/* Topic */}
-					<div className='flex-1'>
-						{entry.topics?.name && (
+					{/* Topics */}
+					<div className='flex flex-1 flex-wrap gap-2'>
+						{entry.todos_topics?.map(todoTopic => (
 							<Link
 								className='break-word text-muted-foreground text-sm [overflow-wrap:anywhere] hover:underline'
-								params={{ topicId: entry.topic_id?.toString() ?? '' }}
+								key={todoTopic.topics.id}
+								params={{ topicId: todoTopic.topics.id?.toString() ?? '' }}
 								to='/topics/{-$topicId}'
 							>
-								{entry.topics.name}
+								{todoTopic.topics.name}
 							</Link>
-						)}
+						))}
 					</div>
 				</div>
 			</div>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Archive, Check, X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TodoItem } from '~/components/TodoItem'
 import { Badge } from '~/components/ui/Badge'
@@ -20,7 +20,7 @@ type SectionDefinition = {
 	headingClassName?: string
 }
 
-type FilterId = SectionKey | 'archive'
+type FilterId = SectionKey
 
 type FilterBadge = {
 	id: FilterId
@@ -48,15 +48,13 @@ const FILTER_ORDER: Array<FilterId> = [
 	'tomorrow',
 	'nextSevenDays',
 	'future',
-	'unscheduled',
-	'archive'
+	'unscheduled'
 ]
 
 export function TodosPage() {
-	const [showArchived, setShowArchived] = useState(false)
 	const [activeSections, setActiveSections] = useState<Array<SectionKey>>([])
 	const { overdue, today, tomorrow, nextSevenDays, future, unscheduled } =
-		useTodoEntries(showArchived)
+		useTodoEntries()
 
 	const sectionEntries = useMemo(
 		() => ({
@@ -80,11 +78,6 @@ export function TodosPage() {
 	)
 
 	const handleFilterClick = useCallback((filterId: FilterId) => {
-		if (filterId === 'archive') {
-			setShowArchived(prev => !prev)
-			return
-		}
-
 		setActiveSections(prev => {
 			const isActive = prev.includes(filterId)
 			if (isActive) {
@@ -119,18 +112,12 @@ export function TodosPage() {
 
 				return {
 					id: filterId,
-					label:
-						filterId === 'archive'
-							? 'Archived'
-							: (sectionDefinition?.label ?? filterId),
-					isActive:
-						filterId === 'archive'
-							? showArchived
-							: activeSections.includes(filterId),
+					label: sectionDefinition?.label ?? filterId,
+					isActive: activeSections.includes(filterId),
 					onClick: () => handleFilterClick(filterId)
 				}
 			}),
-		[filterOrder, activeSections, showArchived, handleFilterClick]
+		[filterOrder, activeSections, handleFilterClick]
 	)
 
 	const activeFilters = filters.filter(filter => filter.isActive)
@@ -177,7 +164,6 @@ export function TodosPage() {
 
 	const handleClearFilters = useCallback(() => {
 		setActiveSections([])
-		setShowArchived(false)
 	}, [])
 
 	return (
@@ -222,9 +208,6 @@ export function TodosPage() {
 									{item.filter.isActive && (
 										<Check aria-hidden='true' className='h-4 w-4' />
 									)}
-									{item.filter.id === 'archive' && (
-										<Archive className='h-4 w-4' />
-									)}
 									{item.filter.label}
 								</Badge>
 							</motion.div>
@@ -256,13 +239,7 @@ export function TodosPage() {
 				))}
 
 				{!hasAnyEntries && (
-					<EmptyState
-						message={
-							showArchived
-								? 'No archived entries found.'
-								: 'No entries found. Get gulping!'
-						}
-					/>
+					<EmptyState message='No entries found. Get gulping!' />
 				)}
 			</div>
 		</div>
