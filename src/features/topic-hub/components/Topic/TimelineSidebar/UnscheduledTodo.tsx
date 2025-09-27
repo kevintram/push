@@ -106,13 +106,13 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 	return (
 		<div className='group flex items-start gap-2 py-1'>
-			<div className='flex items-start gap-2.5'>
+			<div className='flex flex-1 flex-row items-start gap-2.5'>
 				<Checkbox
 					checked={isCompleted}
-					className='mt-1'
+					className='mt-1 flex'
 					onCheckedChange={handleToggleComplete}
 				/>
-				<div className='-mr-1 flex min-w-0 flex-1 items-center'>
+				<div className='flex min-w-0 flex-1'>
 					<textarea
 						// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
 						autoFocus={description === '' && isRecentlyCreated}
@@ -129,7 +129,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 			{/* Action buttons - with gradient background */}
 			<div
-				className={`z-10 flex items-center gap-1 bg-gradient-to-l from-80% from-sidebar to-transparent transition-opacity ${
+				className={`flex gap-1 bg-gradient-to-l from-80% from-sidebar to-transparent transition-opacity ${
 					isSchedulePopoverOpen || isDropdownOpen
 						? 'opacity-100'
 						: 'opacity-0 group-hover:opacity-100'

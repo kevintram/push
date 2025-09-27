@@ -1,13 +1,20 @@
 import {
+	useDeleteMutation,
 	useRevalidateTables,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
 import { Checkbox } from '~/components/ui/Checkbox'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
@@ -27,6 +34,7 @@ export function ScheduledTodo({
 	nextDate?: Date | undefined // undefined if last entry
 }) {
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(
 		dateOf(entry.scheduled_at) || new Date()
 	)
@@ -45,6 +53,11 @@ export function ScheduledTodo({
 				revalidateOtherTodoTables()
 			}
 		}
+	)
+
+	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
+		supabase.from('todos'),
+		['id']
 	)
 
 	const handleCheckboxChange = useCallback(
@@ -87,6 +100,12 @@ export function ScheduledTodo({
 		[entry.id, updateTodoMutation]
 	)
 
+	const handleDelete = useCallback(async () => {
+		if (entry?.id) {
+			await deleteTodoMutation({ id: entry.id })
+		}
+	}, [deleteTodoMutation, entry?.id])
+
 	const effectiveDate: Date = useMemo(() => {
 		return dateOf(entry.effective_date)!
 	}, [entry.effective_date])
@@ -101,7 +120,7 @@ export function ScheduledTodo({
 	return (
 		<Card className='rounded border-none bg-transparent px-2 py-1 shadow-none'>
 			<CardContent className='p-0'>
-				<div className='flex flex-row items-stretch gap-3 py-1'>
+				<div className='group flex flex-row items-stretch gap-3 py-1'>
 					<Checkbox
 						checked={!!entry.completed_at}
 						className={
@@ -148,8 +167,48 @@ export function ScheduledTodo({
 								</div>
 							)}
 						</div>
-						<div className='flex items-start font-medium text-muted-foreground text-xs'>
-							{index + 1}
+						<div className='relative flex items-start font-medium text-muted-foreground text-xs'>
+							{/* Original index display */}
+							<span
+								className={`transition-opacity duration-200 ${
+									isDropdownOpen ? 'opacity-0' : 'group-hover:opacity-0'
+								}`}
+							>
+								{index + 1}
+							</span>
+
+							{/* More icon button that appears on hover */}
+							<div
+								className={`-right-2 absolute top-0 transition-opacity duration-200 ${
+									isDropdownOpen
+										? 'opacity-100'
+										: 'opacity-0 group-hover:opacity-100'
+								}`}
+							>
+								<DropdownMenu onOpenChange={setIsDropdownOpen}>
+									<DropdownMenuTrigger asChild={true}>
+										<Button
+											className='h-6 w-6 p-0'
+											size='sm'
+											title='More options'
+											variant='ghost'
+										>
+											<MoreHorizontal className='h-3 w-3' />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent
+										align='end'
+										avoidCollisions={true}
+										side='bottom'
+										sideOffset={4}
+									>
+										<DropdownMenuItem onClick={handleDelete}>
+											<Trash className='mr-2 h-4 w-4' />
+											Delete
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</div>
 						</div>
 					</div>
 				</div>
