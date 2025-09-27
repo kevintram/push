@@ -25,7 +25,7 @@ export type TopicSummary = {
 }
 
 // Context interface
-interface TimelineContextValue {
+export interface TimelineContextValue {
 	// Data
 	scheduledTodos: Array<TodoWithTopics>
 	unscheduledTodos: Array<TodoWithTopics>
@@ -46,7 +46,9 @@ interface TimelineContextValue {
 	revalidateTimeline: () => void
 }
 
-const TimelineDataContext = createContext<TimelineContextValue | null>(null)
+export const TimelineDataContext = createContext<TimelineContextValue | null>(
+	null
+)
 
 interface TimelineDataProviderProps {
 	children: React.ReactNode
@@ -123,7 +125,6 @@ export function TimelineDataProvider({
 
 	// Apply optimistic updates and split into scheduled/unscheduled
 	const { scheduledTodos, unscheduledTodos } = useMemo(() => {
-
 		// First filter todos to only include those associated with the selected topic
 		const todosForSelectedTopic = (rawAllTodos ?? []).filter(todo =>
 			todo.todos_topics?.some(tt => tt.topics?.id === selectedTopicId)
@@ -141,7 +142,7 @@ export function TimelineDataProvider({
 				(a, b) =>
 					new Date(a.effective_date!).getTime() -
 					new Date(b.effective_date!).getTime()
-				)
+			)
 
 		const unscheduled = allTodosWithOptimisticUpdates
 			.filter(todo => todo.effective_date == null)

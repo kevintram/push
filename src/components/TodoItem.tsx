@@ -3,7 +3,6 @@ import {
 	useRevalidateTables,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
-import { Link } from '@tanstack/react-router'
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
@@ -16,6 +15,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Textarea } from '~/components/ui/Textarea'
+import { TodoTopicsDropdown } from '~/features/topic-hub/components/Topic/TimelineSidebar/TodoTopicsDropdown'
 import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
@@ -69,6 +69,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		dateOf(entry.scheduled_at)!
 	)
 	const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
+	const [isTopicsDropdownOpen, setIsTopicsDropdownOpen] = useState(false)
 
 	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
 		supabase.from('todos'),
@@ -84,6 +85,15 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
 		supabase.from('todos'),
 		['id']
+	)
+
+	const { mutateAsync: deleteTodoTopicMutation } = useDeleteMutation(
+		supabase.from('todos_topics'),
+		['topic_id', 'todo_id'],
+		undefined,
+		{
+			onSuccess: () => revalidateTables()
+		}
 	)
 
 	const handleCheckboxChange = useCallback(
@@ -129,6 +139,13 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		await deleteTodoMutation({ id: entry.id ?? undefined })
 		revalidateTables()
 	}, [entry.id, deleteTodoMutation, revalidateTables])
+
+	const removeTopicFromTodo = useCallback(
+		async (todoId: number, topicId: number) => {
+			await deleteTodoTopicMutation({ todo_id: todoId, topic_id: topicId })
+		},
+		[deleteTodoTopicMutation]
+	)
 
 	return (
 		<div className='group rounded-lg p-4'>
@@ -217,17 +234,24 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					<div className='w-6' />
 
 					{/* Topics */}
-					<div className='flex flex-1 flex-wrap gap-2'>
-						{entry.todos_topics?.map(todoTopic => (
-							<Link
-								className='break-word text-muted-foreground text-sm [overflow-wrap:anywhere] hover:underline'
-								key={todoTopic.topics.id}
-								params={{ topicId: todoTopic.topics.id?.toString() ?? '' }}
-								to='/topics/{-$topicId}'
-							>
-								{todoTopic.topics.name}
-							</Link>
-						))}
+					<div className='flex flex-1'>
+						<TodoTopicsDropdown
+							isOpen={isTopicsDropdownOpen}
+							onOpenChange={setIsTopicsDropdownOpen}
+							onRemoveTopicFromTodo={removeTopicFromTodo}
+							side='bottom'
+							todoId={entry.id ?? undefined}
+							topics={
+								entry.todos_topics?.map(tt => tt.topics as Tables<'topics'>) ??
+								[]
+							}
+							trigger={
+								<div className='cursor-pointer text-muted-foreground text-sm hover:underline'>
+									{entry.todos_topics?.length ?? 0} Topic
+									{entry.todos_topics?.length !== 1 ? 's' : ''}
+								</div>
+							}
+						/>
 					</div>
 				</div>
 			</div>

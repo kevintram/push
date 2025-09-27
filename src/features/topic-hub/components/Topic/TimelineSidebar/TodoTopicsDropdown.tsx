@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { MoreHorizontal, Plus, X } from 'lucide-react'
-import { type ReactNode, useCallback, useState } from 'react'
+import { type ReactNode, useCallback, useContext, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
 import {
@@ -16,7 +16,7 @@ import {
 } from '~/components/ui/Popover'
 import type { Tables } from '~/types/database.types'
 import { AddTopicToTodoDialog } from './AddTopicToTodoDialog'
-import { useTimelineData } from './TimelineDataContext'
+import { TimelineDataContext } from './TimelineDataContext'
 
 interface TodoTopicsDropdownProps {
 	isOpen: boolean
@@ -26,6 +26,7 @@ interface TodoTopicsDropdownProps {
 	trigger: ReactNode
 	side?: 'top' | 'right' | 'bottom' | 'left'
 	align?: 'start' | 'center' | 'end'
+	onRemoveTopicFromTodo?: (todoId: number, topicId: number) => Promise<void>
 }
 
 export function TodoTopicsDropdown({
@@ -35,15 +36,19 @@ export function TodoTopicsDropdown({
 	topics,
 	trigger,
 	side = 'bottom',
-	align = 'start'
+	align = 'start',
+	onRemoveTopicFromTodo
 }: TodoTopicsDropdownProps) {
 	const [showAddDialog, setShowAddDialog] = useState(false)
 
-	const { removeTopicFromTodo } = useTimelineData()
+	// Try to get removeTopicFromTodo from context, but fall back to prop
+	const timelineData = useContext(TimelineDataContext)
+	const removeTopicFromTodo =
+		onRemoveTopicFromTodo || timelineData?.removeTopicFromTodo
 
 	const handleRemoveTopic = useCallback(
 		async (topicId: number) => {
-			if (!todoId) return
+			if (!(todoId && removeTopicFromTodo)) return
 			await removeTopicFromTodo(todoId, topicId)
 		},
 		[todoId, removeTopicFromTodo]

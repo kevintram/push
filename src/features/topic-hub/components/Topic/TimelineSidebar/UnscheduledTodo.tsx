@@ -1,9 +1,4 @@
-import {
-	Calendar as CalendarIcon,
-	File,
-	MoreHorizontal,
-	Trash
-} from 'lucide-react'
+import { Calendar as CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
 import { Button } from '~/components/ui/Button'
@@ -106,52 +101,32 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 						spellCheck={false}
 						value={description}
 					/>
-					{entry.todos_topics && entry.todos_topics.length > 0 && (
-						<div className='mt-1 flex flex-wrap gap-1'>
-							{entry.todos_topics.slice(0, 2).map(todoTopic => (
-								<span
-									className='text-muted-foreground text-xs'
-									key={todoTopic.topics.id}
-								>
-									{todoTopic.topics.name}
-								</span>
-							))}
-							{entry.todos_topics.length > 2 && (
-								<span className='text-muted-foreground text-xs'>
-									+{entry.todos_topics.length - 2} more
-								</span>
-							)}
-						</div>
-					)}
+					<div className='mt-1'>
+						<TodoTopicsDropdown
+							isOpen={isTopicsDropdownOpen}
+							onOpenChange={setIsTopicsDropdownOpen}
+							side='left'
+							todoId={entry.id ?? undefined}
+							topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
+							trigger={
+								<div className='cursor-pointer text-muted-foreground text-xs hover:underline'>
+									{entry.todos_topics?.length ?? 0} Topic
+									{entry.todos_topics?.length !== 1 ? 's' : ''}
+								</div>
+							}
+						/>
+					</div>
 				</div>
 			</div>
 
 			{/* Action buttons - with gradient background */}
 			<div
 				className={`flex gap-1 bg-gradient-to-l from-80% from-sidebar to-transparent transition-opacity ${
-					isSchedulePopoverOpen || isDropdownOpen || isTopicsDropdownOpen
+					isSchedulePopoverOpen || isDropdownOpen
 						? 'opacity-100'
 						: 'opacity-0 group-hover:opacity-100'
 				}`}
 			>
-				{/* Topics button */}
-				<TodoTopicsDropdown
-					isOpen={isTopicsDropdownOpen}
-					onOpenChange={setIsTopicsDropdownOpen}
-					todoId={entry.id ?? undefined}
-					topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
-					trigger={
-						<Button
-							className='h-6 w-6 p-0'
-							size='sm'
-							title='Topics'
-							variant='ghost'
-						>
-							<File className='h-3 w-3' />
-						</Button>
-					}
-				/>
-
 				{/* Schedule button */}
 				<DatePickerDropdown
 					align='start'
