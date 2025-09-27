@@ -1,12 +1,7 @@
-import {
-	useDeleteMutation,
-	useRevalidateTables,
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
 import { Calendar as CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { DatePickerDropdown } from '~/components/DatePickerDropdown'
 import { Button } from '~/components/ui/Button'
-import { Calendar } from '~/components/ui/Calendar'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
 	DropdownMenu,
@@ -14,47 +9,23 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { Input } from '~/components/ui/Input'
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger
-} from '~/components/ui/Popover'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
+import type { TodoWithTopics } from './TimelineDataContext'
+import { useTimelineData } from './TimelineDataContext'
+import { TodoTopicsDropdown } from './TodoTopicsDropdown'
 
 interface UnscheduledTodoProps {
-	entry: Tables<'todos'>
+	entry: TodoWithTopics
 }
 
 export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
-	const revalidateOtherTodoTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos_today' },
-		{ schema: 'public', table: 'todos_with_effective_date' }
-	])
-
-	const { mutateAsync: updateTodo } = useUpdateMutation(
-		supabase.from('todos'),
-		['id'],
-		'*',
-		{
-			onSuccess: () => {
-				revalidateOtherTodoTables()
-			}
-		}
-	)
-
-	const { mutateAsync: deleteTodo } = useDeleteMutation(
-		supabase.from('todos'),
-		['id']
-	)
+	const { updateTodo, deleteTodo } = useTimelineData()
 
 	const handleToggleComplete = useCallback(
 		(checked: boolean) => {
-			updateTodo({
-				id: entry.id,
+			if (entry.id == null) return
+			updateTodo(entry.id, {
 				completed_at: checked ? new Date().toISOString() : null
 			})
 		},
@@ -63,10 +34,8 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 	const updateDescription = useCallback(
 		(description: string) => {
-			updateTodo({
-				id: entry.id,
-				description
-			})
+			if (entry.id == null) return
+			updateTodo(entry.id, { description })
 		},
 		[entry.id, updateTodo]
 	)
@@ -82,6 +51,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 	// Check if entry was created recently (within last 10 seconds)
 	const isRecentlyCreated = useMemo(() => {
+		if (!entry.inserted_at) return false
 		const now = new Date()
 		const createdAt = new Date(entry.inserted_at)
 		const timeDiff = now.getTime() - createdAt.getTime()
@@ -90,35 +60,40 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 	const [isSchedulePopoverOpen, setIsSchedulePopoverOpen] = useState(false)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+	const [isTopicsDropdownOpen, setIsTopicsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
 	const handleDelete = useCallback(async () => {
 		if (entry?.id) {
-			await deleteTodo({ id: entry.id })
+			await deleteTodo(entry.id)
 		}
 	}, [deleteTodo, entry?.id])
 
-	const handleSchedule = useCallback(() => {
-		updateTodo({
-			id: entry.id,
-			scheduled_at: selectedDate.toISOString()
-		})
-		setIsSchedulePopoverOpen(false)
-	}, [entry.id, selectedDate, updateTodo])
+	const handleSchedule = useCallback(
+		(date: Date) => {
+			if (entry.id == null) return
+			setSelectedDate(date)
+			updateTodo(entry.id, {
+				scheduled_at: date.toISOString()
+			})
+			setIsSchedulePopoverOpen(false)
+		},
+		[entry.id, updateTodo]
+	)
 
 	return (
 		<div className='group flex items-start gap-2 py-1'>
-			<div className='flex items-start gap-2.5'>
+			<div className='flex flex-1 flex-row items-start gap-2.5'>
 				<Checkbox
 					checked={isCompleted}
-					className='mt-1'
+					className='mt-1 flex'
 					onCheckedChange={handleToggleComplete}
 				/>
-				<div className='-mr-1 flex min-w-0 flex-1 items-center'>
+				<div className='flex min-w-0 flex-1 flex-col'>
 					<textarea
 						// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
 						autoFocus={description === '' && isRecentlyCreated}
-						className='break-word mt-0.5 w-full resize-none border-none bg-transparent p-0 text-sm shadow-none outline-none focus:outline-none focus-visible:ring-0'
+						className='break-word mt-0.5 w-full resize-none border-none bg-transparent p-0 text-sm shadow-none outline-none [overflow-wrap:anywhere] focus:outline-none focus-visible:ring-0'
 						onChange={onDescriptionChange}
 						placeholder='New Todo'
 						ref={textareaRef}
@@ -126,72 +101,52 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 						spellCheck={false}
 						value={description}
 					/>
+					<div className='mt-1'>
+						<TodoTopicsDropdown
+							isOpen={isTopicsDropdownOpen}
+							onOpenChange={setIsTopicsDropdownOpen}
+							side='left'
+							todoId={entry.id ?? undefined}
+							topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
+							trigger={
+								<div className='cursor-pointer text-muted-foreground text-xs hover:underline'>
+									{entry.todos_topics?.length ?? 0} Topic
+									{entry.todos_topics?.length !== 1 ? 's' : ''}
+								</div>
+							}
+						/>
+					</div>
 				</div>
 			</div>
 
 			{/* Action buttons - with gradient background */}
 			<div
-				className={`z-10 flex items-center gap-1 bg-gradient-to-l from-80% from-sidebar to-transparent transition-opacity ${
+				className={`flex gap-1 bg-gradient-to-l from-80% from-sidebar to-transparent transition-opacity ${
 					isSchedulePopoverOpen || isDropdownOpen
 						? 'opacity-100'
 						: 'opacity-0 group-hover:opacity-100'
 				}`}
 			>
 				{/* Schedule button */}
-				{/* Schedule popover */}
-				<Popover
+				<DatePickerDropdown
+					align='start'
+					isOpen={isSchedulePopoverOpen}
+					onDateChange={handleSchedule}
 					onOpenChange={setIsSchedulePopoverOpen}
-					open={isSchedulePopoverOpen}
-				>
-					<PopoverTrigger asChild={true}>
+					selectedDate={selectedDate}
+					side='right'
+					sideOffset={10}
+					trigger={
 						<Button
 							className='h-6 w-6 p-0'
-							onClick={() => setIsSchedulePopoverOpen(true)}
 							size='sm'
 							title='Schedule'
 							variant='ghost'
 						>
 							<CalendarIcon className='h-3 w-3' />
 						</Button>
-					</PopoverTrigger>
-					<PopoverContent
-						align='start'
-						className='w-80 p-6'
-						side='right'
-						sideOffset={10}
-					>
-						<div className='flex w-full flex-col items-start gap-4'>
-							<div className='flex w-full flex-col items-center gap-2'>
-								<Calendar
-									mode='single'
-									onSelect={setSelectedDate}
-									required={true}
-									selected={selectedDate}
-								/>
-								<div className='relative w-full'>
-									<CalendarIcon className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
-									<Input
-										className='pl-10'
-										readOnly={true}
-										value={
-											selectedDate
-												? selectedDate.toLocaleDateString('en-US', {
-														weekday: 'long',
-														year: 'numeric',
-														month: 'long',
-														day: 'numeric'
-													})
-												: ''
-										}
-									/>
-								</div>
-							</div>
-							<div className='flex w-full justify-end gap-2'>
-								<Button onClick={handleSchedule}>Save</Button>
-							</div>
-						</div>
-					</PopoverContent>
-				</Popover>
+					}
+				/>
 
 				{/* More options dropdown */}
 				<DropdownMenu onOpenChange={setIsDropdownOpen}>

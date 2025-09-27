@@ -1,4 +1,3 @@
-import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { use, useCallback } from 'react'
 import {
 	Panel,
@@ -6,39 +5,17 @@ import {
 	ResizableHandle
 } from '~/components/ui/ResizablePanel'
 import { Sidebar, SidebarHeader } from '~/components/ui/Sidebar'
-import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
 import { dateOf } from '../../../../../utils/dateOf'
 import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 import { AddScheduledTodoButton } from './AddScheduledTodoButton'
 import { AddUnscheduledTodoButton } from './AddUnscheduledTodoButton'
 import { ScheduledTodo } from './ScheduledTodo'
+import { TimelineDataProvider, useTimelineData } from './TimelineDataContext'
 import { TodayMarker } from './TodayMarker'
 import { UnscheduledTodo } from './UnscheduledTodo'
 
-type Todos = Tables<'todos_with_effective_date'>
-
-export function TimelineSidebar() {
-	const { selectedTopic } = use(TopicHubContext)
-
-	const { data: scheduledTodos } = useQuery<Array<Todos>>(
-		supabase
-			.from('todos_with_effective_date')
-			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
-			.not('effective_date', 'is', null)
-			.order('effective_date', { ascending: true })
-	)
-
-	const { data: unscheduledTodos } = useQuery<Array<Tables<'todos'>>>(
-		supabase
-			.from('todos')
-			.select('*')
-			.eq('topic_id', selectedTopic?.id ?? Number.NaN)
-			.is('scheduled_at', null)
-			.is('completed_at', null)
-			.order('inserted_at', { ascending: false })
-	)
+function TimelineSidebarContent() {
+	const { scheduledTodos, unscheduledTodos } = useTimelineData()
 
 	const renderTodos = useCallback(() => {
 		// add today marker while rendering todos
@@ -46,7 +23,7 @@ export function TimelineSidebar() {
 		const today = new Date()
 		today.setHours(0, 0, 0, 0)
 
-		return scheduledTodos?.map((entry, i) => {
+		return scheduledTodos.map((entry, i) => {
 			const date: Date = dateOf(entry.effective_date)!
 			const nextDate: Date | undefined = dateOf(
 				scheduledTodos[i + 1]?.effective_date
@@ -100,7 +77,15 @@ export function TimelineSidebar() {
 	}, [scheduledTodos])
 
 	return (
-		<Sidebar collapsible='none' side='right'>
+		<Sidebar
+			collapsible='none'
+			side='right'
+			style={
+				{
+					'--sidebar-width': '20rem'
+				} as React.CSSProperties
+			}
+		>
 			<SidebarHeader className='mb-2 flex flex-row items-center justify-between gap-2'>
 				<h1 className='font-semibold'>Timeline</h1>
 				<AddScheduledTodoButton />
@@ -127,7 +112,7 @@ export function TimelineSidebar() {
 							<AddUnscheduledTodoButton />
 						</div>
 						<div className='flex min-h-0 flex-1 flex-col gap-1 overflow-auto'>
-							{unscheduledTodos?.map(entry => (
+							{unscheduledTodos.map(entry => (
 								<UnscheduledTodo entry={entry} key={entry.id} />
 							))}
 						</div>
@@ -135,5 +120,15 @@ export function TimelineSidebar() {
 				</Panel>
 			</PanelGroup>
 		</Sidebar>
+	)
+}
+
+export function TimelineSidebar() {
+	const { selectedTopic } = use(TopicHubContext)
+
+	return (
+		<TimelineDataProvider selectedTopicId={selectedTopic?.id}>
+			<TimelineSidebarContent />
+		</TimelineDataProvider>
 	)
 }

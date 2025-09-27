@@ -3,11 +3,10 @@ import {
 	useRevalidateTables,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
-import { Link } from '@tanstack/react-router'
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { DatePickerDropdown } from '~/components/DatePickerDropdown'
 import { Button } from '~/components/ui/Button'
-import { Calendar } from '~/components/ui/Calendar'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
 	DropdownMenu,
@@ -15,12 +14,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger
-} from '~/components/ui/Popover'
 import { Textarea } from '~/components/ui/Textarea'
+import { TodoTopicsDropdown } from '~/features/topic-hub/components/Topic/TimelineSidebar/TodoTopicsDropdown'
 import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
@@ -29,7 +24,7 @@ import { supabase } from '~/utils/supabase'
 
 // TODO: clean up this mess when migrate to hono API
 type TodoEntry = (Tables<'todos'> | Tables<'todos_with_effective_date'>) & {
-	topics: { name: string } | null
+	todos_topics: Array<{ topics: { id: number; name: string } }>
 }
 
 interface TodoItemProps {
@@ -74,11 +69,12 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		dateOf(entry.scheduled_at)!
 	)
 	const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
+	const [isTopicsDropdownOpen, setIsTopicsDropdownOpen] = useState(false)
 
 	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
 		supabase.from('todos'),
 		['id'],
-		'*, topics(name)',
+		'*, todos_topics(topics(id, name))',
 		{
 			onSuccess: () => {
 				revalidateTables()
@@ -89,6 +85,15 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
 		supabase.from('todos'),
 		['id']
+	)
+
+	const { mutateAsync: deleteTodoTopicMutation } = useDeleteMutation(
+		supabase.from('todos_topics'),
+		['topic_id', 'todo_id'],
+		undefined,
+		{
+			onSuccess: () => revalidateTables()
+		}
 	)
 
 	const handleCheckboxChange = useCallback(
@@ -135,6 +140,13 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		revalidateTables()
 	}, [entry.id, deleteTodoMutation, revalidateTables])
 
+	const removeTopicFromTodo = useCallback(
+		async (todoId: number, topicId: number) => {
+			await deleteTodoTopicMutation({ todo_id: todoId, topic_id: topicId })
+		},
+		[deleteTodoTopicMutation]
+	)
+
 	return (
 		<div className='group rounded-lg p-4'>
 			<div className='flex flex-col gap-2'>
@@ -169,11 +181,12 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					{/* Date and More Actions */}
 					<div className='flex items-center gap-0'>
 						{/* Date */}
-						<Popover
+						<DatePickerDropdown
+							isOpen={isDatePopoverOpen}
+							onDateChange={handleDateSave}
 							onOpenChange={setIsDatePopoverOpen}
-							open={isDatePopoverOpen}
-						>
-							<PopoverTrigger asChild={true}>
+							selectedDate={selectedDate}
+							trigger={
 								<Button
 									className='h-auto whitespace-nowrap p-1 text-muted-foreground text-sm hover:bg-muted/50'
 									size='sm'
@@ -182,34 +195,8 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 									<CalendarIcon className='mr-1 h-3 w-3' />
 									{dateLabel}
 								</Button>
-							</PopoverTrigger>
-							<PopoverContent align='end' className='w-auto p-4'>
-								<div className='space-y-4'>
-									<Calendar
-										mode='single'
-										onSelect={date => {
-											if (date) {
-												handleDateSave(date)
-											}
-										}}
-										selected={selectedDate}
-									/>
-									<div className='flex items-center gap-2'>
-										<input
-											className='flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
-											onChange={e => {
-												if (e.target.value) {
-													const newDate = new Date(e.target.value)
-													handleDateSave(newDate)
-												}
-											}}
-											type='date'
-											value={selectedDate?.toISOString().split('T')[0]}
-										/>
-									</div>
-								</div>
-							</PopoverContent>
-						</Popover>
+							}
+						/>
 
 						{/* More Actions Dropdown */}
 						<DropdownMenu
@@ -246,17 +233,25 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					{/* Spacer (same width as checkbox) */}
 					<div className='w-6' />
 
-					{/* Topic */}
-					<div className='flex-1'>
-						{entry.topics?.name && (
-							<Link
-								className='break-word text-muted-foreground text-sm [overflow-wrap:anywhere] hover:underline'
-								params={{ topicId: entry.topic_id?.toString() ?? '' }}
-								to='/topics/{-$topicId}'
-							>
-								{entry.topics.name}
-							</Link>
-						)}
+					{/* Topics */}
+					<div className='flex flex-1'>
+						<TodoTopicsDropdown
+							isOpen={isTopicsDropdownOpen}
+							onOpenChange={setIsTopicsDropdownOpen}
+							onRemoveTopicFromTodo={removeTopicFromTodo}
+							side='bottom'
+							todoId={entry.id ?? undefined}
+							topics={
+								entry.todos_topics?.map(tt => tt.topics as Tables<'topics'>) ??
+								[]
+							}
+							trigger={
+								<div className='cursor-pointer text-muted-foreground text-sm hover:underline'>
+									{entry.todos_topics?.length ?? 0} Topic
+									{entry.todos_topics?.length !== 1 ? 's' : ''}
+								</div>
+							}
+						/>
 					</div>
 				</div>
 			</div>

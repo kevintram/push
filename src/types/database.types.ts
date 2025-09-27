@@ -41,7 +41,6 @@ export type Database = {
           id: number
           inserted_at: string
           scheduled_at: string | null
-          topic_id: number
           updated_at: string
         }
         Insert: {
@@ -50,7 +49,6 @@ export type Database = {
           id?: number
           inserted_at?: string
           scheduled_at?: string | null
-          topic_id: number
           updated_at?: string
         }
         Update: {
@@ -59,12 +57,46 @@ export type Database = {
           id?: number
           inserted_at?: string
           scheduled_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      todos_topics: {
+        Row: {
+          inserted_at: string
+          todo_id: number
+          topic_id: number
+          updated_at: string
+        }
+        Insert: {
+          inserted_at?: string
+          todo_id: number
+          topic_id: number
+          updated_at?: string
+        }
+        Update: {
+          inserted_at?: string
+          todo_id?: number
           topic_id?: number
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "timeline_entries_topic_id_fkey"
+            foreignKeyName: "todos_topics_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "todos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todos_topics_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "todos_with_effective_date"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "todos_topics_topic_id_fkey"
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
@@ -152,47 +184,6 @@ export type Database = {
       }
     }
     Views: {
-      todos_today: {
-        Row: {
-          completed_at: string | null
-          description: string | null
-          effective_date: string | null
-          id: number | null
-          inserted_at: string | null
-          scheduled_at: string | null
-          topic_id: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          completed_at?: string | null
-          description?: string | null
-          effective_date?: never
-          id?: number | null
-          inserted_at?: string | null
-          scheduled_at?: string | null
-          topic_id?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          completed_at?: string | null
-          description?: string | null
-          effective_date?: never
-          id?: number | null
-          inserted_at?: string | null
-          scheduled_at?: string | null
-          topic_id?: number | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "timeline_entries_topic_id_fkey"
-            columns: ["topic_id"]
-            isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       todos_with_effective_date: {
         Row: {
           completed_at: string | null
@@ -201,7 +192,6 @@ export type Database = {
           id: number | null
           inserted_at: string | null
           scheduled_at: string | null
-          topic_id: number | null
           updated_at: string | null
         }
         Insert: {
@@ -211,7 +201,6 @@ export type Database = {
           id?: number | null
           inserted_at?: string | null
           scheduled_at?: string | null
-          topic_id?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -221,18 +210,9 @@ export type Database = {
           id?: number | null
           inserted_at?: string | null
           scheduled_at?: string | null
-          topic_id?: number | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "timeline_entries_topic_id_fkey"
-            columns: ["topic_id"]
-            isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
@@ -278,6 +258,21 @@ export type Database = {
           inserted_at: string
           updated_at: string
         }
+      }
+      insert_todo_with_topics: {
+        Args: {
+          p_todo_completed_at: string
+          p_todo_description?: string
+          p_todo_scheduled_at: string
+          p_topic_ids: number[]
+        }
+        Returns: {
+          todo_completed_at: string
+          todo_description: string
+          todo_id: number
+          todo_scheduled_at: string
+          topic_ids: number[]
+        }[]
       }
       insert_topic_reflexive_path: {
         Args: { topicid: number }
