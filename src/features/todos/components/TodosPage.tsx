@@ -57,6 +57,13 @@ export function TodosPage() {
 					isActive: activeSections.includes(filterId),
 					onClick: () => handleFilterClick(filterId)
 				}
+			}).filter(filter => {
+				// Hide overdue filter when overdue section has no entries
+				if (filter.id === 'overdue') {
+					const overdueSection = sections.find(s => s.id === 'overdue')
+					return overdueSection && overdueSection.entries.length > 0
+				}
+				return true
 			}),
 		[activeSections, handleFilterClick, sections]
 	)
@@ -90,11 +97,23 @@ export function TodosPage() {
 			}))
 
 	const filteredSections = useMemo(() => {
+		let sectionsToShow = sections
+
 		if (activeSections.length === 0) {
-			return sections
+			// Hide overdue section when it has no entries
+			sectionsToShow = sections.filter(section => {
+				if (section.id === 'overdue' && section.entries.length === 0) {
+					return false
+				}
+				return true
+			})
+		} else {
+			sectionsToShow = sections.filter(section =>
+				activeSections.includes(section.id)
+			)
 		}
 
-		return sections.filter(section => activeSections.includes(section.id))
+		return sectionsToShow
 	}, [activeSections, sections])
 
 	const handleClearFilters = useCallback(() => {
