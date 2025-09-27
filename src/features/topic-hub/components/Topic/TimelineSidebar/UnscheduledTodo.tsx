@@ -5,8 +5,8 @@ import {
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { Calendar as CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { DatePickerDropdown } from '~/components/DatePickerDropdown'
 import { Button } from '~/components/ui/Button'
-import { Calendar } from '~/components/ui/Calendar'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
 	DropdownMenu,
@@ -14,12 +14,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { Input } from '~/components/ui/Input'
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger
-} from '~/components/ui/Popover'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
@@ -98,13 +92,17 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 		}
 	}, [deleteTodo, entry?.id])
 
-	const handleSchedule = useCallback(() => {
-		updateTodo({
-			id: entry.id,
-			scheduled_at: selectedDate.toISOString()
-		})
-		setIsSchedulePopoverOpen(false)
-	}, [entry.id, selectedDate, updateTodo])
+	const handleSchedule = useCallback(
+		(date: Date) => {
+			setSelectedDate(date)
+			updateTodo({
+				id: entry.id,
+				scheduled_at: date.toISOString()
+			})
+			setIsSchedulePopoverOpen(false)
+		},
+		[entry.id, updateTodo]
+	)
 
 	return (
 		<div className='group flex items-start gap-2 py-1'>
@@ -118,7 +116,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 					<textarea
 						// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
 						autoFocus={description === '' && isRecentlyCreated}
-						className='break-word mt-0.5 w-full resize-none border-none bg-transparent p-0 text-sm shadow-none outline-none focus:outline-none focus-visible:ring-0'
+						className='break-word mt-0.5 w-full resize-none border-none bg-transparent p-0 text-sm shadow-none outline-none [overflow-wrap:anywhere] focus:outline-none focus-visible:ring-0'
 						onChange={onDescriptionChange}
 						placeholder='New Todo'
 						ref={textareaRef}
@@ -138,60 +136,25 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 				}`}
 			>
 				{/* Schedule button */}
-				{/* Schedule popover */}
-				<Popover
+				<DatePickerDropdown
+					align='start'
+					isOpen={isSchedulePopoverOpen}
+					onDateChange={handleSchedule}
 					onOpenChange={setIsSchedulePopoverOpen}
-					open={isSchedulePopoverOpen}
-				>
-					<PopoverTrigger asChild={true}>
+					selectedDate={selectedDate}
+					side='right'
+					sideOffset={10}
+					trigger={
 						<Button
 							className='h-6 w-6 p-0'
-							onClick={() => setIsSchedulePopoverOpen(true)}
 							size='sm'
 							title='Schedule'
 							variant='ghost'
 						>
 							<CalendarIcon className='h-3 w-3' />
 						</Button>
-					</PopoverTrigger>
-					<PopoverContent
-						align='start'
-						className='w-80 p-6'
-						side='right'
-						sideOffset={10}
-					>
-						<div className='flex w-full flex-col items-start gap-4'>
-							<div className='flex w-full flex-col items-center gap-2'>
-								<Calendar
-									mode='single'
-									onSelect={setSelectedDate}
-									required={true}
-									selected={selectedDate}
-								/>
-								<div className='relative w-full'>
-									<CalendarIcon className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
-									<Input
-										className='pl-10'
-										readOnly={true}
-										value={
-											selectedDate
-												? selectedDate.toLocaleDateString('en-US', {
-														weekday: 'long',
-														year: 'numeric',
-														month: 'long',
-														day: 'numeric'
-													})
-												: ''
-										}
-									/>
-								</div>
-							</div>
-							<div className='flex w-full justify-end gap-2'>
-								<Button onClick={handleSchedule}>Save</Button>
-							</div>
-						</div>
-					</PopoverContent>
-				</Popover>
+					}
+				/>
 
 				{/* More options dropdown */}
 				<DropdownMenu onOpenChange={setIsDropdownOpen}>

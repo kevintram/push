@@ -6,8 +6,8 @@ import {
 import { Link } from '@tanstack/react-router'
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { DatePickerDropdown } from '~/components/DatePickerDropdown'
 import { Button } from '~/components/ui/Button'
-import { Calendar } from '~/components/ui/Calendar'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
 	DropdownMenu,
@@ -15,11 +15,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger
-} from '~/components/ui/Popover'
 import { Textarea } from '~/components/ui/Textarea'
 import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -169,11 +164,12 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					{/* Date and More Actions */}
 					<div className='flex items-center gap-0'>
 						{/* Date */}
-						<Popover
+						<DatePickerDropdown
+							isOpen={isDatePopoverOpen}
+							onDateChange={handleDateSave}
 							onOpenChange={setIsDatePopoverOpen}
-							open={isDatePopoverOpen}
-						>
-							<PopoverTrigger asChild={true}>
+							selectedDate={selectedDate}
+							trigger={
 								<Button
 									className='h-auto whitespace-nowrap p-1 text-muted-foreground text-sm hover:bg-muted/50'
 									size='sm'
@@ -182,34 +178,8 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 									<CalendarIcon className='mr-1 h-3 w-3' />
 									{dateLabel}
 								</Button>
-							</PopoverTrigger>
-							<PopoverContent align='end' className='w-auto p-4'>
-								<div className='space-y-4'>
-									<Calendar
-										mode='single'
-										onSelect={date => {
-											if (date) {
-												handleDateSave(date)
-											}
-										}}
-										selected={selectedDate}
-									/>
-									<div className='flex items-center gap-2'>
-										<input
-											className='flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
-											onChange={e => {
-												if (e.target.value) {
-													const newDate = new Date(e.target.value)
-													handleDateSave(newDate)
-												}
-											}}
-											type='date'
-											value={selectedDate?.toISOString().split('T')[0]}
-										/>
-									</div>
-								</div>
-							</PopoverContent>
-						</Popover>
+							}
+						/>
 
 						{/* More Actions Dropdown */}
 						<DropdownMenu
