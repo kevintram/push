@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
-import { Check, X } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Check, Plus, X } from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
 import { TodoItem } from '~/components/TodoItem'
 import { Badge } from '~/components/ui/Badge'
-import { useTodoEntries } from '../api'
-import { EmptyState } from './EmptyState'
+import { Button } from '~/components/ui/Button'
+import { useSectionedTodos } from '../api'
 
 type SectionKey =
 	| 'overdue'
@@ -14,12 +14,6 @@ type SectionKey =
 	| 'future'
 	| 'unscheduled'
 
-type SectionDefinition = {
-	id: SectionKey
-	label: string
-	headingClassName?: string
-}
-
 type FilterId = SectionKey
 
 type FilterBadge = {
@@ -28,19 +22,6 @@ type FilterBadge = {
 	isActive: boolean
 	onClick: () => void
 }
-
-const SECTION_DEFINITIONS: Array<SectionDefinition> = [
-	{
-		id: 'overdue',
-		label: 'Overdue',
-		headingClassName: 'text-red-600'
-	},
-	{ id: 'today', label: 'Today' },
-	{ id: 'tomorrow', label: 'Tomorrow' },
-	{ id: 'nextSevenDays', label: 'Next 7 Days' },
-	{ id: 'future', label: 'In the Future' },
-	{ id: 'unscheduled', label: 'Unscheduled', headingClassName: 'text-gray-600' }
-]
 
 const FILTER_ORDER: Array<FilterId> = [
 	'overdue',
@@ -53,29 +34,7 @@ const FILTER_ORDER: Array<FilterId> = [
 
 export function TodosPage() {
 	const [activeSections, setActiveSections] = useState<Array<SectionKey>>([])
-	const { overdue, today, tomorrow, nextSevenDays, future, unscheduled } =
-		useTodoEntries()
-
-	const sectionEntries = useMemo(
-		() => ({
-			overdue: overdue ?? [],
-			today: today ?? [],
-			tomorrow: tomorrow ?? [],
-			nextSevenDays: nextSevenDays ?? [],
-			future: future ?? [],
-			unscheduled: unscheduled ?? []
-		}),
-		[overdue, today, tomorrow, nextSevenDays, future, unscheduled]
-	)
-
-	const sections = useMemo(
-		() =>
-			SECTION_DEFINITIONS.map(definition => ({
-				...definition,
-				entries: sectionEntries[definition.id]
-			})),
-		[sectionEntries]
-	)
+	const { sections, addTodoToSection } = useSectionedTodos()
 
 	const handleFilterClick = useCallback((filterId: FilterId) => {
 		setActiveSections(prev => {
@@ -87,37 +46,19 @@ export function TodosPage() {
 		})
 	}, [])
 
-	const hasOverdueEntries = sectionEntries.overdue.length > 0
-
-	useEffect(() => {
-		if (!hasOverdueEntries && activeSections.includes('overdue')) {
-			setActiveSections(prev => prev.filter(id => id !== 'overdue'))
-		}
-	}, [hasOverdueEntries, activeSections])
-
-	const filterOrder = useMemo(
-		() =>
-			hasOverdueEntries
-				? FILTER_ORDER
-				: FILTER_ORDER.filter(filterId => filterId !== 'overdue'),
-		[hasOverdueEntries]
-	)
-
 	const filters = useMemo(
 		() =>
-			filterOrder.map(filterId => {
-				const sectionDefinition = SECTION_DEFINITIONS.find(
-					definition => definition.id === filterId
-				)
+			FILTER_ORDER.map(filterId => {
+				const section = sections.find(s => s.id === filterId)
 
 				return {
 					id: filterId,
-					label: sectionDefinition?.label ?? filterId,
+					label: section?.label ?? filterId,
 					isActive: activeSections.includes(filterId),
 					onClick: () => handleFilterClick(filterId)
 				}
 			}),
-		[filterOrder, activeSections, handleFilterClick]
+		[activeSections, handleFilterClick, sections]
 	)
 
 	const activeFilters = filters.filter(filter => filter.isActive)
@@ -155,12 +96,6 @@ export function TodosPage() {
 
 		return sections.filter(section => activeSections.includes(section.id))
 	}, [activeSections, sections])
-
-	const visibleSections = filteredSections.filter(
-		section => section.entries.length > 0
-	)
-
-	const hasAnyEntries = visibleSections.length > 0
 
 	const handleClearFilters = useCallback(() => {
 		setActiveSections([])
@@ -216,31 +151,43 @@ export function TodosPage() {
 				</motion.div>
 			</div>
 			<div className='px-6 pb-6'>
-				{visibleSections.map(section => (
+				{filteredSections.map(section => (
 					<div className='mb-8' key={section.id}>
-						<div className='mb-2'>
+						<div className='mb-2 flex items-center justify-between'>
 							<h2
 								className={`font-bold text-3xl ${section.headingClassName ?? ''}`.trim()}
 							>
 								{section.label}
 							</h2>
+							{section.canAdd && (
+								<Button
+									className='mr-4'
+									onClick={() => addTodoToSection(section.id)}
+									size='sm'
+									variant='ghost'
+								>
+									<Plus className='h-4 w-4' />
+								</Button>
+							)}
 						</div>
 
-						<div className='space-y-0.5'>
-							{section.entries.map(entry => (
-								<TodoItem
-									entry={entry}
-									isCompleted={entry.completed_at !== null}
-									key={entry.id}
-								/>
-							))}
-						</div>
+						{section.entries.length > 0 ? (
+							<div className='space-y-0.5'>
+								{section.entries.map(entry => (
+									<TodoItem
+										entry={entry}
+										isCompleted={entry.completed_at !== null}
+										key={entry.id}
+									/>
+								))}
+							</div>
+						) : (
+							<p className='text-muted-foreground text-sm italic'>
+								{section.emptyMessage}
+							</p>
+						)}
 					</div>
 				))}
-
-				{!hasAnyEntries && (
-					<EmptyState message='No entries found. Get gulping!' />
-				)}
 			</div>
 		</div>
 	)
