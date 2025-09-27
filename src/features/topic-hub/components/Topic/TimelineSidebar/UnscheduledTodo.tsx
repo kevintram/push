@@ -1,9 +1,9 @@
 import {
-	useDeleteMutation,
-	useRevalidateTables,
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
-import { Calendar as CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
+	Calendar as CalendarIcon,
+	File,
+	MoreHorizontal,
+	Trash
+} from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
 import { Button } from '~/components/ui/Button'
@@ -16,39 +16,21 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
+import type { TodoWithTopics } from './TimelineDataContext'
+import { useTimelineData } from './TimelineDataContext'
+import { TodoTopicsDropdown } from './TodoTopicsDropdown'
 
 interface UnscheduledTodoProps {
-	entry: Tables<'todos'>
+	entry: TodoWithTopics
 }
 
 export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
-	const revalidateOtherTodoTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos_today' },
-		{ schema: 'public', table: 'todos_with_effective_date' }
-	])
-
-	const { mutateAsync: updateTodo } = useUpdateMutation(
-		supabase.from('todos'),
-		['id'],
-		'*',
-		{
-			onSuccess: () => {
-				revalidateOtherTodoTables()
-			}
-		}
-	)
-
-	const { mutateAsync: deleteTodo } = useDeleteMutation(
-		supabase.from('todos'),
-		['id']
-	)
+	const { updateTodo, deleteTodo } = useTimelineData()
 
 	const handleToggleComplete = useCallback(
 		(checked: boolean) => {
-			updateTodo({
-				id: entry.id,
+			if (entry.id == null) return
+			updateTodo(entry.id, {
 				completed_at: checked ? new Date().toISOString() : null
 			})
 		},
@@ -57,10 +39,8 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 	const updateDescription = useCallback(
 		(description: string) => {
-			updateTodo({
-				id: entry.id,
-				description
-			})
+			if (entry.id == null) return
+			updateTodo(entry.id, { description })
 		},
 		[entry.id, updateTodo]
 	)
@@ -76,6 +56,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 	// Check if entry was created recently (within last 10 seconds)
 	const isRecentlyCreated = useMemo(() => {
+		if (!entry.inserted_at) return false
 		const now = new Date()
 		const createdAt = new Date(entry.inserted_at)
 		const timeDiff = now.getTime() - createdAt.getTime()
@@ -84,19 +65,20 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 	const [isSchedulePopoverOpen, setIsSchedulePopoverOpen] = useState(false)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+	const [isTopicsDropdownOpen, setIsTopicsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
 	const handleDelete = useCallback(async () => {
 		if (entry?.id) {
-			await deleteTodo({ id: entry.id })
+			await deleteTodo(entry.id)
 		}
 	}, [deleteTodo, entry?.id])
 
 	const handleSchedule = useCallback(
 		(date: Date) => {
+			if (entry.id == null) return
 			setSelectedDate(date)
-			updateTodo({
-				id: entry.id,
+			updateTodo(entry.id, {
 				scheduled_at: date.toISOString()
 			})
 			setIsSchedulePopoverOpen(false)
@@ -112,7 +94,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 					className='mt-1 flex'
 					onCheckedChange={handleToggleComplete}
 				/>
-				<div className='flex min-w-0 flex-1'>
+				<div className='flex min-w-0 flex-1 flex-col'>
 					<textarea
 						// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
 						autoFocus={description === '' && isRecentlyCreated}
@@ -124,17 +106,52 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 						spellCheck={false}
 						value={description}
 					/>
+					{entry.todos_topics && entry.todos_topics.length > 0 && (
+						<div className='mt-1 flex flex-wrap gap-1'>
+							{entry.todos_topics.slice(0, 2).map(todoTopic => (
+								<span
+									className='text-muted-foreground text-xs'
+									key={todoTopic.topics.id}
+								>
+									{todoTopic.topics.name}
+								</span>
+							))}
+							{entry.todos_topics.length > 2 && (
+								<span className='text-muted-foreground text-xs'>
+									+{entry.todos_topics.length - 2} more
+								</span>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 
 			{/* Action buttons - with gradient background */}
 			<div
 				className={`flex gap-1 bg-gradient-to-l from-80% from-sidebar to-transparent transition-opacity ${
-					isSchedulePopoverOpen || isDropdownOpen
+					isSchedulePopoverOpen || isDropdownOpen || isTopicsDropdownOpen
 						? 'opacity-100'
 						: 'opacity-0 group-hover:opacity-100'
 				}`}
 			>
+				{/* Topics button */}
+				<TodoTopicsDropdown
+					isOpen={isTopicsDropdownOpen}
+					onOpenChange={setIsTopicsDropdownOpen}
+					todoId={entry.id ?? undefined}
+					topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
+					trigger={
+						<Button
+							className='h-6 w-6 p-0'
+							size='sm'
+							title='Topics'
+							variant='ghost'
+						>
+							<File className='h-3 w-3' />
+						</Button>
+					}
+				/>
+
 				{/* Schedule button */}
 				<DatePickerDropdown
 					align='start'

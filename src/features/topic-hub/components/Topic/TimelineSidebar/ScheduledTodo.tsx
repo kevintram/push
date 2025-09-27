@@ -1,8 +1,3 @@
-import {
-	useDeleteMutation,
-	useRevalidateTables,
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
 import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
@@ -17,67 +12,50 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
 import { dateOf } from '../../../../../utils/dateOf'
 import { numDaysElapsed } from '../../../utils/daysElapsed'
 import { isOverdue } from '../../../utils/isOverdue'
 import { DaysElapsedMarker } from './DaysElapsedMarker'
+import type { TodoWithTopics } from './TimelineDataContext'
+import { useTimelineData } from './TimelineDataContext'
+import { TodoTopicsDropdown } from './TodoTopicsDropdown'
 
 export function ScheduledTodo({
 	entry,
 	index,
 	nextDate
 }: {
-	entry: Tables<'todos_with_effective_date'>
+	entry: TodoWithTopics
 	index: number
 	nextDate?: Date | undefined // undefined if last entry
 }) {
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+	const [isTopicsDropdownOpen, setIsTopicsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(
 		dateOf(entry.scheduled_at) || new Date()
 	)
 
-	const revalidateOtherTodoTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos' },
-		{ schema: 'public', table: 'todos_today' }
-	])
-
-	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
-		supabase.from('todos'),
-		['id'],
-		'*',
-		{
-			onSuccess: () => {
-				revalidateOtherTodoTables()
-			}
-		}
-	)
-
-	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
-		supabase.from('todos'),
-		['id']
-	)
+	const { updateTodo, deleteTodo } = useTimelineData()
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
-			updateTodoMutation({
-				id: entry.id ?? undefined,
-				completed_at: checked ? new Date().toISOString() : null
-			})
+			if (entry.id) {
+				updateTodo(entry.id, {
+					completed_at: checked ? new Date().toISOString() : null
+				})
+			}
 		},
-		[entry.id, updateTodoMutation]
+		[entry.id, updateTodo]
 	)
 
 	const updateDescription = useCallback(
 		(description: string) => {
-			updateTodoMutation({
-				id: entry.id ?? undefined,
-				description
-			})
+			if (entry.id) {
+				updateTodo(entry.id, { description })
+			}
 		},
-		[entry.id, updateTodoMutation]
+		[entry.id, updateTodo]
 	)
 
 	const { value: description, onChange: onDescriptionChange } = useAutoSave({
@@ -91,20 +69,21 @@ export function ScheduledTodo({
 	const handleDateSave = useCallback(
 		(newDate: Date) => {
 			setSelectedDate(newDate)
-			updateTodoMutation({
-				id: entry.id ?? undefined,
-				scheduled_at: newDate.toISOString()
-			})
+			if (entry.id) {
+				updateTodo(entry.id, {
+					scheduled_at: newDate.toISOString()
+				})
+			}
 			setIsDatePopoverOpen(false)
 		},
-		[entry.id, updateTodoMutation]
+		[entry.id, updateTodo]
 	)
 
 	const handleDelete = useCallback(async () => {
 		if (entry?.id) {
-			await deleteTodoMutation({ id: entry.id })
+			await deleteTodo(entry.id)
 		}
-	}, [deleteTodoMutation, entry?.id])
+	}, [deleteTodo, entry?.id])
 
 	const effectiveDate: Date = useMemo(() => {
 		return dateOf(entry.effective_date)!
@@ -131,7 +110,7 @@ export function ScheduledTodo({
 						onCheckedChange={handleCheckboxChange}
 					/>
 					<div className='flex min-w-0 flex-1 items-stretch gap-3'>
-						<div className='min-w-0 flex-1'>
+						<div className='flex min-w-0 flex-1 flex-col gap-1'>
 							<textarea
 								className='break-word w-full resize-none border-none bg-transparent p-0 text-foreground text-xs shadow-none outline-none [overflow-wrap:anywhere] focus:outline-none focus-visible:ring-0'
 								onChange={onDescriptionChange}
@@ -141,6 +120,21 @@ export function ScheduledTodo({
 								spellCheck={false}
 								value={description}
 							/>
+							<div className='mt-2'>
+								<TodoTopicsDropdown
+									isOpen={isTopicsDropdownOpen}
+									onOpenChange={setIsTopicsDropdownOpen}
+									side='left'
+									todoId={entry.id ?? undefined}
+									topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
+									trigger={
+										<div className='cursor-pointer text-muted-foreground text-xs hover:underline'>
+											{entry.todos_topics?.length ?? 0} Topic
+											{entry.todos_topics?.length !== 1 ? 's' : ''}
+										</div>
+									}
+								/>
+							</div>
 						</div>
 						<div className='flex flex-col items-end gap-2 text-xs'>
 							<DatePickerDropdown
