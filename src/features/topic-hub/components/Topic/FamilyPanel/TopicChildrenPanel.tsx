@@ -1,7 +1,9 @@
 import { useDeleteMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import { useNavigate } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
 	Baby,
+	ExternalLink,
 	GitPullRequestClosed,
 	MoreHorizontal,
 	Plus,
@@ -229,6 +231,7 @@ interface ChildCardProps {
 function ChildCard({ child, onChildClick }: ChildCardProps) {
 	const { selectedTopic } = use(TopicHubContext)
 	const deleteRelationship = useDeleteRelationship()
+	const navigate = useNavigate()
 
 	const { mutateAsync: deleteTopicMutation } = useDeleteMutation(
 		supabase.from('topics'),
@@ -244,53 +247,72 @@ function ChildCard({ child, onChildClick }: ChildCardProps) {
 		deleteTopicMutation({ id: child.id })
 	}
 
+	const handleNavigate = () => {
+		navigate({
+			to: '/topics/{-$topicId}',
+			params: { topicId: child.id.toString() }
+		})
+	}
+
 	return (
-		<Card className='group relative cursor-pointer p-0 transition-colors hover:bg-muted/50'>
+		<Card className='group cursor-pointer p-0 transition-colors hover:bg-muted/50'>
 			<CardContent
-				className='px-3 py-2'
+				className='flex h-full flex-col justify-between px-3 py-2'
 				onClick={() => onChildClick(child)}
 				style={{ minHeight: `${MIN_HEIGHT}px` }}
 			>
-				{child.name && (
-					<h3 className='mb-1 font-semibold text-md'>{child.name}</h3>
-				)}
-				<div className='line-clamp-5 text-sm'>{child.notes}</div>
+				<div>
+					{child.name && (
+						<h3 className='mb-1 font-semibold text-md'>{child.name}</h3>
+					)}
+					<div className='line-clamp-5 text-sm'>{child.notes}</div>
+				</div>
+				<div className='flex justify-start gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+					<Button
+						className='h-6 w-6 p-0'
+						onClick={e => {
+							e.stopPropagation()
+							handleNavigate()
+						}}
+						variant='ghost'
+					>
+						<ExternalLink className='h-3 w-3' />
+					</Button>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild={true}>
+							<Button
+								className='h-6 w-6 p-0'
+								onClick={e => e.preventDefault()}
+								variant='ghost'
+							>
+								<MoreHorizontal className='h-3 w-3' />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='center' side='bottom' sideOffset={2}>
+							<DropdownMenuItem
+								onClick={e => {
+									e.preventDefault()
+									handleRemoveRelationship()
+								}}
+							>
+								<GitPullRequestClosed className='mr-2 h-4 w-4' />
+								Remove as Child
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								className='text-red-600 focus:text-red-600'
+								onClick={e => {
+									e.preventDefault()
+									handleDeleteTopic()
+								}}
+								variant='destructive'
+							>
+								<Trash2 className='mr-2 h-4 w-4' />
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
 			</CardContent>
-			<div className='absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100'>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild={true}>
-						<Button
-							className='h-6 w-6 p-0'
-							onClick={e => e.preventDefault()}
-							variant='ghost'
-						>
-							<MoreHorizontal className='h-3 w-3' />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align='center' side='bottom' sideOffset={2}>
-						<DropdownMenuItem
-							onClick={e => {
-								e.preventDefault()
-								handleRemoveRelationship()
-							}}
-						>
-							<GitPullRequestClosed className='mr-2 h-4 w-4' />
-							Remove as Child
-						</DropdownMenuItem>
-						<DropdownMenuItem
-							className='text-red-600 focus:text-red-600'
-							onClick={e => {
-								e.preventDefault()
-								handleDeleteTopic()
-							}}
-							variant='destructive'
-						>
-							<Trash2 className='mr-2 h-4 w-4' />
-							Delete
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			</div>
 		</Card>
 	)
 }

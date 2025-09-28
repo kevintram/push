@@ -2,7 +2,7 @@ import {
 	useDeleteMutation,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
-import { useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import {
 	Archive,
 	ArchiveRestore,
@@ -38,8 +38,6 @@ interface TopicDialogProps {
 }
 
 export function TopicDialog({ topic, open, onOpenChange }: TopicDialogProps) {
-	const navigate = useNavigate()
-
 	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
 		supabase.from('topics'),
 		['id'],
@@ -88,16 +86,6 @@ export function TopicDialog({ topic, open, onOpenChange }: TopicDialogProps) {
 			})
 		}
 	}, [updateTopicMutation, topic?.id, topic?.is_archived])
-
-	const handleNavigate = useCallback(() => {
-		if (topic?.id) {
-			navigate({
-				to: '/topics/{-$topicId}',
-				params: { topicId: topic.id.toString() }
-			})
-			onOpenChange(false)
-		}
-	}, [topic?.id, navigate, onOpenChange])
 
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: topic?.notes ?? '',
@@ -164,14 +152,19 @@ export function TopicDialog({ topic, open, onOpenChange }: TopicDialogProps) {
 				</div>
 
 				<div className='flex justify-start gap-2 pt-4'>
-					<Button
-						className='h-8 w-8 p-0'
-						onClick={handleNavigate}
-						size='sm'
-						variant='ghost'
+					<Link
+						params={{ topicId: topic.id.toString() }}
+						to='/topics/{-$topicId}'
 					>
-						<ExternalLink className='h-4 w-4' />
-					</Button>
+						<Button
+							className='h-8 w-8 p-0'
+							onClick={() => onOpenChange(false)}
+							size='sm'
+							variant='ghost'
+						>
+							<ExternalLink className='h-4 w-4' />
+						</Button>
+					</Link>
 
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true}>
