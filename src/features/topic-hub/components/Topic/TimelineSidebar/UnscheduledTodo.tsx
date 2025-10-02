@@ -1,6 +1,7 @@
 import { Calendar as CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
+import { TodoTopicBadges } from '~/components/TodoTopicBadges'
 import { Button } from '~/components/ui/Button'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
@@ -13,14 +14,13 @@ import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { TodoWithTopics } from './TimelineDataContext'
 import { useTimelineData } from './TimelineDataContext'
-import { TodoTopicsDropdown } from './TodoTopicsDropdown'
 
 interface UnscheduledTodoProps {
 	entry: TodoWithTopics
 }
 
 export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
-	const { updateTodo, deleteTodo } = useTimelineData()
+	const { updateTodo, deleteTodo, removeTopicFromTodo } = useTimelineData()
 
 	const handleToggleComplete = useCallback(
 		(checked: boolean) => {
@@ -60,7 +60,6 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 	const [isSchedulePopoverOpen, setIsSchedulePopoverOpen] = useState(false)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-	const [isTopicsDropdownOpen, setIsTopicsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
 	const handleDelete = useCallback(async () => {
@@ -102,18 +101,10 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 						value={description}
 					/>
 					<div className='mt-1'>
-						<TodoTopicsDropdown
-							isOpen={isTopicsDropdownOpen}
-							onOpenChange={setIsTopicsDropdownOpen}
-							side='left'
+						<TodoTopicBadges
+							onRemoveTopicFromTodo={removeTopicFromTodo}
 							todoId={entry.id ?? undefined}
 							topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
-							trigger={
-								<div className='cursor-pointer text-muted-foreground text-xs hover:underline'>
-									{entry.todos_topics?.length ?? 0} Topic
-									{entry.todos_topics?.length !== 1 ? 's' : ''}
-								</div>
-							}
 						/>
 					</div>
 				</div>
