@@ -1,9 +1,10 @@
-import { Plus } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
+import { DropdownMenuItem } from '~/components/ui/DropdownMenu'
 import { AddTopicToTodoDialog } from '~/features/topic-hub/components/Topic/TimelineSidebar/AddTopicToTodoDialog'
 import type { Tables } from '~/types/database.types'
-import { TodoTopicBadge } from './TodoTopicBadge'
+import { TopicBadge } from './TopicBadge'
 
 interface TodoTopicBadgesProps {
 	topics: Array<Tables<'topics'>>
@@ -29,11 +30,20 @@ export function TodoTopicBadges({
 					Topics
 				</span>
 				{topics.map(topic => (
-					<TodoTopicBadge
+					<TopicBadge
 						key={topic.id}
-						onRemove={onRemoveTopicFromTodo}
-						todoId={todoId ?? 0}
-						topic={topic}
+						menuItems={
+							<DropdownMenuItem
+								className='text-red-600 focus:text-red-600'
+								onClick={() => onRemoveTopicFromTodo(todoId ?? 0, topic.id)}
+							>
+								<X className='mr-2 h-3 w-3' />
+								Remove
+							</DropdownMenuItem>
+						}
+						name={topic.name}
+						notes={topic.notes}
+						topicId={topic.id}
 					/>
 				))}
 				<Badge

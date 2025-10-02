@@ -1,17 +1,20 @@
-import { Plus, User2 } from 'lucide-react'
+import { GitPullRequestClosed, Plus, User2 } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
+import { TopicBadge } from '~/components/TopicBadge'
 import { Badge } from '~/components/ui/Badge'
+import { DropdownMenuItem } from '~/components/ui/DropdownMenu'
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
+import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import type { Tables } from '~/types/database.types'
 import { TopicHubContext } from '../../../stores/SelectedTopicContext'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
-import { RelationshipBadge } from './RelationshipBadge'
 
 export function TopicParentsPanel() {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { selectedTopic } = use(TopicHubContext)
 
 	const createRelationship = useCreateRelationship()
+	const deleteRelationship = useDeleteRelationship()
 
 	const handleAddParent = useCallback(() => {
 		setShowCreateDialog(true)
@@ -43,10 +46,27 @@ export function TopicParentsPanel() {
 					</span>
 				</div>
 				{selectedTopic?.parents?.map(parent => (
-					<RelationshipBadge
+					<TopicBadge
 						key={parent.id}
-						kin={parent}
-						relationship='parent'
+						menuItems={
+							<DropdownMenuItem
+								className='text-red-600 focus:text-red-600'
+								onClick={() => {
+									if (!selectedTopic) return
+									deleteRelationship.mutate({
+										parent: parent.id,
+										child: selectedTopic.id
+									})
+								}}
+								variant='destructive'
+							>
+								<GitPullRequestClosed className='mr-2 h-4 w-4' />
+								Remove as Parent
+							</DropdownMenuItem>
+						}
+						name={parent.name}
+						notes={parent.notes}
+						topicId={parent.id}
 					/>
 				))}
 				<Badge
