@@ -6,6 +6,7 @@ import {
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
+import { TodoTopicBadges } from '~/components/TodoTopicBadges'
 import { Button } from '~/components/ui/Button'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
@@ -15,7 +16,6 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Textarea } from '~/components/ui/Textarea'
-import { TodoTopicsDropdown } from '~/features/topic-hub/components/Topic/TimelineSidebar/TodoTopicsDropdown'
 import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
@@ -69,7 +69,6 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		dateOf(entry.scheduled_at)!
 	)
 	const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
-	const [isTopicsDropdownOpen, setIsTopicsDropdownOpen] = useState(false)
 
 	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
 		supabase.from('todos'),
@@ -228,31 +227,19 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					</div>
 				</div>
 
-				{/* Row 2: Spacer + Topic */}
+				{/* Row 2: Spacer + Topics */}
 				<div className='flex items-center gap-2'>
 					{/* Spacer (same width as checkbox) */}
 					<div className='w-6' />
 
 					{/* Topics */}
-					<div className='flex flex-1'>
-						<TodoTopicsDropdown
-							isOpen={isTopicsDropdownOpen}
-							onOpenChange={setIsTopicsDropdownOpen}
-							onRemoveTopicFromTodo={removeTopicFromTodo}
-							side='bottom'
-							todoId={entry.id ?? undefined}
-							topics={
-								entry.todos_topics?.map(tt => tt.topics as Tables<'topics'>) ??
-								[]
-							}
-							trigger={
-								<div className='cursor-pointer text-muted-foreground text-sm hover:underline'>
-									{entry.todos_topics?.length ?? 0} Topic
-									{entry.todos_topics?.length !== 1 ? 's' : ''}
-								</div>
-							}
-						/>
-					</div>
+					<TodoTopicBadges
+						onRemoveTopicFromTodo={removeTopicFromTodo}
+						todoId={entry.id ?? undefined}
+						topics={
+							entry.todos_topics?.map(tt => tt.topics as Tables<'topics'>) ?? []
+						}
+					/>
 				</div>
 			</div>
 		</div>

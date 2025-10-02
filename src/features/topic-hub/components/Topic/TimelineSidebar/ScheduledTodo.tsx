@@ -1,6 +1,7 @@
 import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
+import { TodoTopicBadges } from '~/components/TodoTopicBadges'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
 import { Checkbox } from '~/components/ui/Checkbox'
@@ -18,7 +19,6 @@ import { isOverdue } from '../../../utils/isOverdue'
 import { DaysElapsedMarker } from './DaysElapsedMarker'
 import type { TodoWithTopics } from './TimelineDataContext'
 import { useTimelineData } from './TimelineDataContext'
-import { TodoTopicsDropdown } from './TodoTopicsDropdown'
 
 export function ScheduledTodo({
 	entry,
@@ -31,12 +31,11 @@ export function ScheduledTodo({
 }) {
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-	const [isTopicsDropdownOpen, setIsTopicsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(
 		dateOf(entry.scheduled_at) || new Date()
 	)
 
-	const { updateTodo, deleteTodo } = useTimelineData()
+	const { updateTodo, deleteTodo, removeTopicFromTodo } = useTimelineData()
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
@@ -121,18 +120,10 @@ export function ScheduledTodo({
 								value={description}
 							/>
 							<div className='mt-2'>
-								<TodoTopicsDropdown
-									isOpen={isTopicsDropdownOpen}
-									onOpenChange={setIsTopicsDropdownOpen}
-									side='left'
+								<TodoTopicBadges
+									onRemoveTopicFromTodo={removeTopicFromTodo}
 									todoId={entry.id ?? undefined}
 									topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
-									trigger={
-										<div className='cursor-pointer text-muted-foreground text-xs hover:underline'>
-											{entry.todos_topics?.length ?? 0} Topic
-											{entry.todos_topics?.length !== 1 ? 's' : ''}
-										</div>
-									}
 								/>
 							</div>
 						</div>
