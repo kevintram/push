@@ -1,13 +1,7 @@
 import { Link } from '@tanstack/react-router'
-import { MoreHorizontal, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { X } from 'lucide-react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import {
 	Tooltip,
 	TooltipContent,
@@ -19,21 +13,21 @@ interface TopicBadgeProps {
 	topicId: number
 	name?: string | null
 	notes?: string | null
-	menuItems: ReactNode
+	onRemove: () => void
 }
 
 export function TopicBadge({
 	topicId,
 	name,
 	notes,
-	menuItems
+	onRemove
 }: TopicBadgeProps) {
 	const displayText = name ? name : notes
 
 	return (
-		<div className='group'>
+		<div className='group/badge relative'>
 			<TooltipProvider>
-				<Tooltip>
+				<Tooltip delayDuration={700}>
 					<TooltipTrigger asChild={true}>
 						<Badge
 							className='flex min-w-16 cursor-pointer items-center gap-0.5 px-2 py-1 text-xs hover:bg-secondary/80'
@@ -46,26 +40,16 @@ export function TopicBadge({
 							>
 								{displayText}
 							</Link>
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild={true}>
-									<Button
-										className='flex h-3 w-2 items-center justify-center rounded-full border-0 p-0 hover:bg-secondary/80'
-										variant='ghost'
-									>
-										<X className='h-3 w-2' />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent
-									align='center'
-									side='bottom'
-									sideOffset={2}
-								>
-									{menuItems}
-								</DropdownMenuContent>
-							</DropdownMenu>
+							<Button
+								className='-top-2 absolute right-0 h-4 w-2 items-center justify-center rounded-full border-0 p-0 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'
+								onClick={onRemove}
+								variant='default'
+							>
+								<X className='h-4 w-2' />
+							</Button>
 						</Badge>
 					</TooltipTrigger>
-					<TooltipContent className='max-w-72'>
+					<TooltipContent className='max-w-72' side='bottom'>
 						{name && (
 							<h3 className='break-word font-semibold text-md [overflow-wrap:anywhere]'>
 								{name}
