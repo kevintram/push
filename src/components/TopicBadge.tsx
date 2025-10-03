@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
@@ -36,7 +36,7 @@ export function TopicBadge({
 				<Tooltip>
 					<TooltipTrigger asChild={true}>
 						<Badge
-							className='relative flex min-w-16 cursor-pointer items-center px-2 py-1 text-xs hover:bg-secondary/80'
+							className='flex min-w-16 cursor-pointer items-center gap-0.5 px-2 py-1 text-xs hover:bg-secondary/80'
 							variant='secondary'
 						>
 							<Link
@@ -49,10 +49,10 @@ export function TopicBadge({
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild={true}>
 									<Button
-										className='absolute top-0 right-0 flex h-full w-8 items-center justify-center rounded-full border-0 bg-gradient-to-r from-0% from-transparent via-30% via-secondary to-50% to-secondary p-0 opacity-0 transition-opacity hover:to-secondary/80 group-hover:opacity-100 data-[state=open]:opacity-100'
+										className='flex h-3 w-2 items-center justify-center rounded-full border-0 p-0 hover:bg-secondary/80'
 										variant='ghost'
 									>
-										<MoreHorizontal className='h-3 w-3' />
+										<X className='h-3 w-2' />
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent
