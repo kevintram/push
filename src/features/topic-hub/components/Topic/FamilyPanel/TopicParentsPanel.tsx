@@ -1,8 +1,7 @@
-import { GitPullRequestClosed, Plus, User2 } from 'lucide-react'
+import { Plus, User2 } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { TopicBadge } from '~/components/TopicBadge'
 import { Badge } from '~/components/ui/Badge'
-import { DropdownMenuItem } from '~/components/ui/DropdownMenu'
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import type { Tables } from '~/types/database.types'
@@ -48,24 +47,15 @@ export function TopicParentsPanel() {
 				{selectedTopic?.parents?.map(parent => (
 					<TopicBadge
 						key={parent.id}
-						menuItems={
-							<DropdownMenuItem
-								className='text-red-600 focus:text-red-600'
-								onClick={() => {
-									if (!selectedTopic) return
-									deleteRelationship.mutate({
-										parent: parent.id,
-										child: selectedTopic.id
-									})
-								}}
-								variant='destructive'
-							>
-								<GitPullRequestClosed className='mr-2 h-4 w-4' />
-								Remove as Parent
-							</DropdownMenuItem>
-						}
 						name={parent.name}
 						notes={parent.notes}
+						onRemove={() => {
+							if (!selectedTopic) return
+							deleteRelationship.mutate({
+								parent: parent.id,
+								child: selectedTopic.id
+							})
+						}}
 						topicId={parent.id}
 					/>
 				))}
