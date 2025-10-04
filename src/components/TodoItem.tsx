@@ -65,9 +65,12 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 
 	const [isChecked, setIsChecked] = useState(isCompleted)
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
-	const [selectedDate, setSelectedDate] = useState<Date>(
-		dateOf(entry.scheduled_at)!
-	)
+	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+		if (isCompleted) {
+			return dateOf(entry.completed_at) ?? null
+		}
+		return dateOf(entry.scheduled_at) ?? null
+	})
 	const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
 
 	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
@@ -123,15 +126,22 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	})
 
 	const handleDateSave = useCallback(
-		(newDate: Date) => {
+		(newDate: Date | null) => {
 			setSelectedDate(newDate)
-			updateTodoMutation({
-				id: entry.id ?? undefined,
-				scheduled_at: newDate.toISOString()
-			})
+			if (isCompleted) {
+				updateTodoMutation({
+					id: entry.id ?? undefined,
+					completed_at: newDate ? newDate.toISOString() : null
+				})
+			} else {
+				updateTodoMutation({
+					id: entry.id ?? undefined,
+					scheduled_at: newDate ? newDate.toISOString() : null
+				})
+			}
 			setIsDatePopoverOpen(false)
 		},
-		[entry.id, updateTodoMutation]
+		[entry.id, updateTodoMutation, isCompleted]
 	)
 
 	const handleDelete = useCallback(async () => {

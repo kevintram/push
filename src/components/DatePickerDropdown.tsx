@@ -1,3 +1,4 @@
+import { Button } from '~/components/ui/Button'
 import { Calendar } from '~/components/ui/Calendar'
 import {
 	Popover,
@@ -6,8 +7,8 @@ import {
 } from '~/components/ui/Popover'
 
 interface DatePickerDropdownProps {
-	selectedDate: Date
-	onDateChange: (date: Date) => void
+	selectedDate: Date | null
+	onDateChange: (date: Date | null) => void
 	isOpen: boolean
 	onOpenChange: (open: boolean) => void
 	trigger: React.ReactNode
@@ -32,11 +33,21 @@ export function DatePickerDropdown({
 		}
 	}
 
-	const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (e.target.value) {
-			const newDate = new Date(e.target.value)
-			onDateChange(newDate)
-		}
+	const setToday = () => {
+		const today = new Date()
+		today.setHours(0, 0, 0, 0)
+		onDateChange(today)
+	}
+
+	const setTomorrow = () => {
+		const tomorrow = new Date()
+		tomorrow.setDate(tomorrow.getDate() + 1)
+		tomorrow.setHours(0, 0, 0, 0)
+		onDateChange(tomorrow)
+	}
+
+	const clearDate = () => {
+		onDateChange(null)
 	}
 
 	return (
@@ -49,19 +60,42 @@ export function DatePickerDropdown({
 				sideOffset={sideOffset}
 			>
 				<div className='space-y-4'>
+					{/* Quick Action Buttons */}
+					<div className='flex gap-2'>
+						<Button
+							className='flex-1'
+							onClick={setToday}
+							size='sm'
+							variant='outline'
+						>
+							Today
+						</Button>
+						<Button
+							className='flex-1'
+							onClick={setTomorrow}
+							size='sm'
+							variant='outline'
+						>
+							Tomorrow
+						</Button>
+					</div>
+
+					{/* Calendar */}
 					<Calendar
 						mode='single'
 						onSelect={handleDateSelect}
-						selected={selectedDate}
+						selected={selectedDate || undefined}
 					/>
-					<div className='flex items-center gap-2'>
-						<input
-							className='flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
-							onChange={handleDateInputChange}
-							type='date'
-							value={selectedDate?.toISOString().split('T')[0]}
-						/>
-					</div>
+
+					{/* Clear Date Button */}
+					<Button
+						className='w-full'
+						onClick={clearDate}
+						size='sm'
+						variant='outline'
+					>
+						Clear
+					</Button>
 				</div>
 			</PopoverContent>
 		</Popover>
