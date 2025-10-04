@@ -60,7 +60,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 
 	const [isSchedulePopoverOpen, setIsSchedulePopoverOpen] = useState(false)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+	const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
 
 	const handleDelete = useCallback(async () => {
 		if (entry?.id) {
@@ -69,8 +69,9 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 	}, [deleteTodo, entry?.id])
 
 	const handleSchedule = useCallback(
-		(date: Date) => {
+		(date: Date | null) => {
 			if (entry.id == null) return
+			if (date === null) return // Don't unschedule unscheduled todos
 			setSelectedDate(date)
 			updateTodo(entry.id, {
 				scheduled_at: date.toISOString()

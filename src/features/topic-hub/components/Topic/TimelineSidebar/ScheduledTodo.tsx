@@ -31,9 +31,12 @@ export function ScheduledTodo({
 }) {
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-	const [selectedDate, setSelectedDate] = useState<Date>(
-		dateOf(entry.scheduled_at) || new Date()
-	)
+	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+		if (entry.completed_at) {
+			return dateOf(entry.completed_at) ?? null
+		}
+		return dateOf(entry.scheduled_at) ?? null
+	})
 
 	const { updateTodo, deleteTodo, removeTopicFromTodo } = useTimelineData()
 
@@ -66,16 +69,22 @@ export function ScheduledTodo({
 	const textareaRef = useAutoResizeTextarea(description)
 
 	const handleDateSave = useCallback(
-		(newDate: Date) => {
+		(newDate: Date | null) => {
 			setSelectedDate(newDate)
 			if (entry.id) {
-				updateTodo(entry.id, {
-					scheduled_at: newDate.toISOString()
-				})
+				if (entry.completed_at) {
+					updateTodo(entry.id, {
+						completed_at: newDate ? newDate.toISOString() : null
+					})
+				} else {
+					updateTodo(entry.id, {
+						scheduled_at: newDate ? newDate.toISOString() : null
+					})
+				}
 			}
 			setIsDatePopoverOpen(false)
 		},
-		[entry.id, updateTodo]
+		[entry.id, entry.completed_at, updateTodo]
 	)
 
 	const handleDelete = useCallback(async () => {
