@@ -237,7 +237,7 @@ export function TopicDialog({ open, onOpenChange }: TopicDialogProps) {
 							</DialogDescription>
 						</DialogHeader>
 
-						<div className='space-y-4'>
+						<div className='space-y-4 pt-6'>
 							<TopicParentsPanel />
 
 							<textarea
