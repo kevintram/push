@@ -41,11 +41,11 @@ export function TopicBadge({
 								{displayText}
 							</Link>
 							<Button
-								className='-top-2 absolute right-0 h-4 w-2 items-center justify-center rounded-full border-0 p-0 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'
+								className='-top-2 dark:!bg-input dark:hover:!bg-destructive/90 absolute right-0 h-4 w-4 items-center justify-center border-0 p-0 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'
 								onClick={onRemove}
-								variant='default'
+								variant='outline'
 							>
-								<X className='h-4 w-2' />
+								<X className='h-4 w-4' />
 							</Button>
 						</Badge>
 					</TooltipTrigger>
