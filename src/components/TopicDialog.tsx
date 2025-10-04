@@ -6,12 +6,13 @@ import { useNavigate } from '@tanstack/react-router'
 import {
 	Archive,
 	ArchiveRestore,
-	ExternalLink,
 	Inbox,
+	Maximize2,
 	MoreHorizontal,
-	Trash
+	Trash,
+	X
 } from 'lucide-react'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	Dialog,
@@ -27,6 +28,9 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Textarea } from '~/components/ui/Textarea'
+import { TopicChildrenPanel } from '~/features/topic-hub/components/Topic/FamilyPanel/TopicChildrenPanel'
+import { TopicParentsPanel } from '~/features/topic-hub/components/Topic/FamilyPanel/TopicParentsPanel'
+import { TopicHubContext } from '~/features/topic-hub/stores/SelectedTopicContext'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
@@ -131,105 +135,137 @@ export function TopicDialog({ topic, open, onOpenChange }: TopicDialogProps) {
 		}
 	}, [open])
 
+	const contextValue = useMemo(
+		() => ({ selectedTopic: topic as Topic | undefined }),
+		[topic]
+	)
+
 	if (!topic) {
 		return null
 	}
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent className='max-w-2xl'>
-				<DialogHeader>
-					<div className='flex items-center gap-4'>
-						{topic.is_archived && (
-							<div className='flex items-center gap-2'>
-								<Archive className='h-4 w-4 text-muted-foreground' />
-								<span className='text-muted-foreground text-xs'>Archived</span>
-							</div>
-						)}
-						{topic.is_inboxed && (
-							<div className='flex items-center gap-2'>
-								<Inbox className='h-4 w-4 text-muted-foreground' />
-								<span className='text-muted-foreground text-xs'>Inbox</span>
-							</div>
-						)}
-					</div>
-					<DialogTitle className='sr-only'>Edit Topic</DialogTitle>
-					<DialogDescription className='sr-only'>
-						Edit the topic name and notes, or perform other actions.
-					</DialogDescription>
-				</DialogHeader>
-
-				<div className='space-y-4'>
-					<textarea
-						className='!bg-transparent break-word flex w-full resize-none border-none font-bold text-xl focus:outline-none'
-						onChange={onNameChange}
-						placeholder='Title'
-						ref={titleTextareaRef}
-						rows={1}
-						spellCheck={false}
-						value={title}
-					/>
-
-					<Textarea
-						className='!bg-transparent min-h-48 w-full resize-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-						name='notes'
-						onChange={onNotesChange}
-						placeholder='Notes'
-						ref={notesRef}
-						value={notes}
-					/>
-				</div>
-
-				<div className='flex justify-start gap-2 pt-4'>
-					<Button
-						className='h-8 w-8 p-0'
-						onClick={handleNavigate}
-						size='sm'
-						variant='ghost'
-					>
-						<ExternalLink className='h-4 w-4' />
-					</Button>
-
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true}>
-							<Button className='h-8 w-8 p-0' size='sm' variant='ghost'>
-								<MoreHorizontal className='h-4 w-4' />
+			<DialogContent
+				className='max-h-[90vh] max-w-2xl overflow-y-auto'
+				showCloseButton={false}
+			>
+				<TopicHubContext value={contextValue}>
+					<DialogHeader>
+						<div className='absolute top-2 left-2 p-2'>
+							{topic.is_archived && (
+								<div className='flex items-center gap-2'>
+									<Archive className='h-4 w-4 text-muted-foreground' />
+									<span className='text-muted-foreground text-xs'>
+										Archived
+									</span>
+								</div>
+							)}
+							{topic.is_inboxed && (
+								<div className='flex items-center gap-2'>
+									<Inbox className='h-4 w-4 text-muted-foreground' />
+									<span className='text-muted-foreground text-xs'>Inbox</span>
+								</div>
+							)}
+						</div>
+						<div className='absolute top-2 right-2'>
+							<Button
+								className='h-8 w-8 p-0 text-muted-foreground'
+								onClick={handleNavigate}
+								size='sm'
+								variant='ghost'
+							>
+								<Maximize2 className='h-4 w-4' />
 							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='start' side='top' sideOffset={4}>
-							<DropdownMenuItem onClick={handleArchiveToggle}>
-								{topic.is_archived ? (
-									<>
-										<ArchiveRestore className='mr-2 h-4 w-4' />
-										Unarchive
-									</>
-								) : (
-									<>
-										<Archive className='mr-2 h-4 w-4' />
-										Archive
-									</>
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={handleInboxToggle}>
-								{topic.is_inboxed ? (
-									<>
-										<Inbox className='mr-2 h-4 w-4' />
-										Remove from Inbox
-									</>
-								) : (
-									<>
-										<Inbox className='mr-2 h-4 w-4' />
-										Add to Inbox
-									</>
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={handleDelete} variant='destructive'>
-								<Trash className='mr-2 h-4 w-4' />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
+
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild={true}>
+									<Button
+										className='h-8 w-8 p-0 text-muted-foreground'
+										size='sm'
+										variant='ghost'
+									>
+										<MoreHorizontal className='h-4 w-4' />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+									<DropdownMenuItem onClick={handleArchiveToggle}>
+										{topic.is_archived ? (
+											<>
+												<ArchiveRestore className='mr-2 h-4 w-4' />
+												Unarchive
+											</>
+										) : (
+											<>
+												<Archive className='mr-2 h-4 w-4' />
+												Archive
+											</>
+										)}
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={handleInboxToggle}>
+										{topic.is_inboxed ? (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Remove from Inbox
+											</>
+										) : (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Add to Inbox
+											</>
+										)}
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={handleDelete}
+										variant='destructive'
+									>
+										<Trash className='mr-2 h-4 w-4' />
+										Delete
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+
+							<Button
+								className='h-8 w-8 p-0 text-muted-foreground'
+								onClick={() => onOpenChange(false)}
+								size='sm'
+								variant='ghost'
+							>
+								<X className='h-4 w-4' />
+							</Button>
+						</div>
+
+						<DialogTitle className='sr-only'>Edit Topic</DialogTitle>
+						<DialogDescription className='sr-only'>
+							Edit the topic name and notes, or perform other actions.
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className='space-y-4'>
+						<TopicParentsPanel />
+
+						<textarea
+							className='!bg-transparent break-word flex w-full resize-none border-none font-bold text-xl focus:outline-none'
+							onChange={onNameChange}
+							placeholder='Title'
+							ref={titleTextareaRef}
+							rows={1}
+							spellCheck={false}
+							value={title}
+						/>
+
+						<Textarea
+							className='!bg-transparent min-h-48 w-full resize-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+							name='notes'
+							onChange={onNotesChange}
+							placeholder='Notes'
+							ref={notesRef}
+							value={notes}
+						/>
+
+						<TopicChildrenPanel />
+					</div>
+				</TopicHubContext>
 			</DialogContent>
 		</Dialog>
 	)

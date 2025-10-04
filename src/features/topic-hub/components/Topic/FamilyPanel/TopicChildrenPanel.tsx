@@ -31,8 +31,8 @@ import { TopicHubContext } from '~/features/topic-hub/stores/SelectedTopicContex
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
+import { TopicDialog } from '~/components/TopicDialog'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
-import { TopicDialog } from '../TopicDialog'
 
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
@@ -143,7 +143,7 @@ export function TopicChildrenPanel() {
 
 	return (
 		<>
-			<div className='flex h-full flex-col'>
+			<div className='flex flex-col'>
 				<div className='mb-3 flex items-center gap-2'>
 					<Baby className='h-4 w-4' />
 					<span className='font-medium text-muted-foreground text-xs'>
