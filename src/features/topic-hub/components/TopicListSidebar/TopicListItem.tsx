@@ -13,7 +13,7 @@ import { Progress } from '~/components/ui/Progress'
 import { cn } from '~/lib/utils'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { TopicHubContext } from '../../stores/SelectedTopicContext'
+import { TopicContext } from '../../stores/SelectedTopicContext'
 import { getRetrievabilityColorClass } from '../../utils/getRetrievabilityColor'
 
 export function TopicListItem({ topic }: { topic: Topic }) {
@@ -56,7 +56,7 @@ const MemoizedBody = memo(
 		setIsExpanded: (expanded: boolean) => void
 	}) => {
 		const navigate = useNavigate()
-		const { selectedTopic } = use(TopicHubContext)
+		const { topic: selectedTopic } = use(TopicContext)
 
 		const { mutateAsync: deleteTopic } = useDeleteMutation(
 			supabase.from('topics'),

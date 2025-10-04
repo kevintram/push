@@ -1,8 +1,10 @@
 import { createContext } from 'react'
 import type { Topic } from '~/types/topics.types'
 
-export const TopicHubContext = createContext<{
-	selectedTopic: Topic | undefined
+export const TopicContext = createContext<{
+	topic: Topic | undefined
+	onTopicChange?: (topic: Topic) => void
 }>({
-	selectedTopic: undefined
+	topic: undefined,
+	onTopicChange: undefined
 })

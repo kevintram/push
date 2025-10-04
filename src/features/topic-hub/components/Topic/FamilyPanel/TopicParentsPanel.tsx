@@ -5,12 +5,12 @@ import { Badge } from '~/components/ui/Badge'
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import type { Tables } from '~/types/database.types'
-import { TopicHubContext } from '../../../stores/SelectedTopicContext'
+import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
 export function TopicParentsPanel() {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
-	const { selectedTopic } = use(TopicHubContext)
+	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
 
 	const createRelationship = useCreateRelationship()
 	const deleteRelationship = useDeleteRelationship()
@@ -49,6 +49,7 @@ export function TopicParentsPanel() {
 						key={parent.id}
 						name={parent.name}
 						notes={parent.notes}
+						onClick={onTopicChange ? () => onTopicChange(parent) : undefined}
 						onRemove={() => {
 							if (!selectedTopic) return
 							deleteRelationship.mutate({
