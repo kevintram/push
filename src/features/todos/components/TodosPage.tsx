@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Check, Plus, X } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TodoItem } from '~/components/TodoItem'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
@@ -35,6 +35,24 @@ const FILTER_ORDER: Array<FilterId> = [
 export function TodosPage() {
 	const [activeSections, setActiveSections] = useState<Array<SectionKey>>([])
 	const { sections, addTodoToSection } = useSectionedTodos()
+	const overdueSection = useMemo(
+		() => sections.find(section => section.id === 'overdue'),
+		[sections]
+	)
+
+	useEffect(() => {
+		if (!overdueSection || overdueSection.entries.length > 0) {
+			return
+		}
+
+		setActiveSections(prev => {
+			if (!prev.includes('overdue')) {
+				return prev
+			}
+
+			return prev.filter(sectionId => sectionId !== 'overdue')
+		})
+	}, [overdueSection])
 
 	const handleFilterClick = useCallback((filterId: FilterId) => {
 		setActiveSections(prev => {
