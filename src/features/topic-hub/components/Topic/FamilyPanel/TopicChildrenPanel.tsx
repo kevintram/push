@@ -27,11 +27,10 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
-import { TopicHubContext } from '~/features/topic-hub/stores/SelectedTopicContext'
+import { TopicContext } from '~/features/topic-hub/stores/SelectedTopicContext'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { TopicDialog } from '~/components/TopicDialog'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
 const MIN_WIDTH = 192
@@ -40,13 +39,9 @@ const GAP = 12
 
 export function TopicChildrenPanel() {
 	const [numLanes, setNumLanes] = useState(1)
-	const [selectedChildTopic, setSelectedChildTopic] = useState<Topic | null>(
-		null
-	)
-	const [showEditDialog, setShowEditDialog] = useState(false)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const parentRef = useRef<HTMLDivElement>(null)
-	const { selectedTopic } = use(TopicHubContext)
+	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
 
 	const children = selectedTopic?.children || []
 
@@ -71,10 +66,14 @@ export function TopicChildrenPanel() {
 		[selectedTopic, createRelationship]
 	)
 
-	const handleChildClick = useCallback((child: Topic) => {
-		setSelectedChildTopic(child)
-		setShowEditDialog(true)
-	}, [])
+	const handleChildClick = useCallback(
+		(child: Topic) => {
+			if (onTopicChange) {
+				onTopicChange(child)
+			}
+		},
+		[onTopicChange]
+	)
 
 	const estimateSize = useCallback(
 		(index: number) => {
@@ -205,11 +204,6 @@ export function TopicChildrenPanel() {
 						})}
 					</div>
 				</div>
-				<TopicDialog
-					onOpenChange={setShowEditDialog}
-					open={showEditDialog}
-					topic={selectedChildTopic}
-				/>
 			</div>
 
 			<AddRelationshipDialog
@@ -225,11 +219,11 @@ export function TopicChildrenPanel() {
 
 interface ChildCardProps {
 	child: Topic
-	onChildClick: (child: Topic) => void
+	onChildClick?: (child: Topic) => void
 }
 
 function ChildCard({ child, onChildClick }: ChildCardProps) {
-	const { selectedTopic } = use(TopicHubContext)
+	const { topic: selectedTopic } = use(TopicContext)
 	const deleteRelationship = useDeleteRelationship()
 	const navigate = useNavigate()
 
@@ -258,7 +252,7 @@ function ChildCard({ child, onChildClick }: ChildCardProps) {
 		<Card className='group cursor-pointer p-0 transition-colors hover:bg-muted/50'>
 			<CardContent
 				className='flex h-full flex-col justify-between px-3 py-2'
-				onClick={() => onChildClick(child)}
+				onClick={() => onChildClick?.(child)}
 				style={{ minHeight: `${MIN_HEIGHT}px` }}
 			>
 				<div>

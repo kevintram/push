@@ -1,9 +1,11 @@
 import { Plus } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { TopicDialog } from '~/components/TopicDialog'
 import { Button } from '~/components/ui/Button'
+import { TopicContext } from '~/features/topic-hub/stores/SelectedTopicContext'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
 import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/types/topics.types'
 import { useInboxTopics } from '../api'
 import { InboxList } from './InboxList'
 
@@ -25,6 +27,18 @@ export function InboxPage() {
 			setSelectedTopic(null)
 		}
 	}, [])
+
+	const handleTopicChange = useCallback((topic: Topic) => {
+		setSelectedTopic(topic)
+	}, [])
+
+	const contextValue = useMemo(
+		() => ({
+			topic: selectedTopic as Topic | undefined,
+			onTopicChange: handleTopicChange
+		}),
+		[selectedTopic, handleTopicChange]
+	)
 
 	return (
 		<div className='container mx-auto'>
@@ -52,11 +66,12 @@ export function InboxPage() {
 				/>
 			</div>
 
-			<TopicDialog
-				onOpenChange={handleDialogOpenChange}
-				open={isDialogOpen}
-				topic={selectedTopic}
-			/>
+			<TopicContext value={contextValue}>
+				<TopicDialog
+					onOpenChange={handleDialogOpenChange}
+					open={isDialogOpen}
+				/>
+			</TopicContext>
 		</div>
 	)
 }

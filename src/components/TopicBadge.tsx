@@ -14,13 +14,15 @@ interface TopicBadgeProps {
 	name?: string | null
 	notes?: string | null
 	onRemove: () => void
+	onClick?: () => void
 }
 
 export function TopicBadge({
 	topicId,
 	name,
 	notes,
-	onRemove
+	onRemove,
+	onClick
 }: TopicBadgeProps) {
 	const displayText = name ? name : notes
 
@@ -33,13 +35,23 @@ export function TopicBadge({
 							className='flex min-w-16 cursor-pointer items-center gap-0.5 px-2 py-1 text-xs hover:bg-secondary/80'
 							variant='secondary'
 						>
-							<Link
-								className='max-w-32 flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap text-center font-semibold text-md'
-								params={{ topicId: topicId.toString() }}
-								to='/topics/{-$topicId}'
-							>
-								{displayText}
-							</Link>
+							{onClick ? (
+								<button
+									className='max-w-32 flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap border-0 bg-transparent p-0 text-center font-semibold text-md'
+									onClick={onClick}
+									type='button'
+								>
+									{displayText}
+								</button>
+							) : (
+								<Link
+									className='max-w-32 flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap text-center font-semibold text-md'
+									params={{ topicId: topicId.toString() }}
+									to='/topics/{-$topicId}'
+								>
+									{displayText}
+								</Link>
+							)}
 							<Button
 								className='-top-2 dark:!bg-input dark:hover:!bg-destructive/90 absolute right-0 h-4 w-4 items-center justify-center border-0 p-0 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'
 								onClick={onRemove}

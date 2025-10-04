@@ -3,10 +3,10 @@ import { Plus } from 'lucide-react'
 import { use, useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
 import { supabase } from '~/utils/supabase'
-import { TopicHubContext } from '../../../stores/SelectedTopicContext'
+import { TopicContext } from '../../../stores/SelectedTopicContext'
 
 export function AddUnscheduledTodoButton() {
-	const { selectedTopic } = use(TopicHubContext)
+	const { topic: selectedTopic } = use(TopicContext)
 
 	const revalidateTables = useRevalidateTables([
 		{ schema: 'public', table: 'todos' },

@@ -11,7 +11,7 @@ import { supabase } from '~/utils/supabase'
 import { TimelineSidebar } from './components/Topic/TimelineSidebar'
 import { TopicPage } from './components/Topic/TopicPage'
 import { TopicListSidebar } from './components/TopicListSidebar'
-import { TopicHubContext } from './stores/SelectedTopicContext'
+import { TopicContext } from './stores/SelectedTopicContext'
 import {
 	getRootTopics,
 	parseTopicRelationships
@@ -46,7 +46,7 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 
 	return (
 		<div className='flex h-screen w-full'>
-			<TopicHubContext value={{ selectedTopic }}>
+			<TopicContext value={{ topic: selectedTopic }}>
 				<SidebarProvider defaultOpen={true}>
 					<TopicListSidebar
 						isLoading={topicsDataLoading || directRelationshipsLoading}
@@ -60,7 +60,7 @@ export function TopicHub({ topicId }: { topicId: number | undefined }) {
 					</SidebarInset>
 					<TimelineSidebar />
 				</SidebarProvider>
-			</TopicHubContext>
+			</TopicContext>
 		</div>
 	)
 }

@@ -12,10 +12,10 @@ import {
 } from '~/components/ui/Popover'
 import { Textarea } from '~/components/ui/Textarea'
 import { supabase } from '~/utils/supabase'
-import { TopicHubContext } from '../../../stores/SelectedTopicContext'
+import { TopicContext } from '../../../stores/SelectedTopicContext'
 
 export function AddScheduledTodoButton() {
-	const { selectedTopic } = use(TopicHubContext)
+	const { topic: selectedTopic } = use(TopicContext)
 	const [isOpen, setIsOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 	const [description, setDescription] = useState('')

@@ -6,7 +6,7 @@ import {
 } from '~/components/ui/ResizablePanel'
 import { Sidebar, SidebarHeader } from '~/components/ui/Sidebar'
 import { dateOf } from '../../../../../utils/dateOf'
-import { TopicHubContext } from '../../../stores/SelectedTopicContext'
+import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { AddScheduledTodoButton } from './AddScheduledTodoButton'
 import { AddUnscheduledTodoButton } from './AddUnscheduledTodoButton'
 import { ScheduledTodo } from './ScheduledTodo'
@@ -124,7 +124,7 @@ function TimelineSidebarContent() {
 }
 
 export function TimelineSidebar() {
-	const { selectedTopic } = use(TopicHubContext)
+	const { topic: selectedTopic } = use(TopicContext)
 
 	return (
 		<TimelineDataProvider selectedTopicId={selectedTopic?.id}>
