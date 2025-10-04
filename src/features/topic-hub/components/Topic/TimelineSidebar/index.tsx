@@ -78,6 +78,7 @@ function TimelineSidebarContent() {
 
 	return (
 		<Sidebar
+			className='border-l'
 			collapsible='none'
 			side='right'
 			style={

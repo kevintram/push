@@ -27,9 +27,11 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import { SidebarInset, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { TopicChildrenPanel } from '~/features/topic-hub/components/Topic/FamilyPanel/TopicChildrenPanel'
 import { TopicParentsPanel } from '~/features/topic-hub/components/Topic/FamilyPanel/TopicParentsPanel'
+import { TimelineSidebar } from '~/features/topic-hub/components/Topic/TimelineSidebar'
 import { TopicContext } from '~/features/topic-hub/stores/SelectedTopicContext'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -140,118 +142,128 @@ export function TopicDialog({ open, onOpenChange }: TopicDialogProps) {
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent
-				className='max-h-[90vh] max-w-2xl overflow-y-auto'
+				className='h-full w-full p-0 md:max-h-[600px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1100px] 2xl:max-w-[1200px]'
 				showCloseButton={false}
 			>
-				<DialogHeader>
-					<div className='absolute top-2 left-2 p-2'>
-						{topic.is_archived && (
-							<div className='flex items-center gap-2'>
-								<Archive className='h-4 w-4 text-muted-foreground' />
-								<span className='text-muted-foreground text-xs'>Archived</span>
+				<SidebarProvider defaultOpen={true}>
+					<SidebarInset className='overflow-y-auto p-6'>
+						<DialogHeader>
+							<div className='absolute top-2 left-2 p-2'>
+								{topic.is_archived && (
+									<div className='flex items-center gap-2'>
+										<Archive className='h-4 w-4 text-muted-foreground' />
+										<span className='text-muted-foreground text-xs'>
+											Archived
+										</span>
+									</div>
+								)}
+								{topic.is_inboxed && (
+									<div className='flex items-center gap-2'>
+										<Inbox className='h-4 w-4 text-muted-foreground' />
+										<span className='text-muted-foreground text-xs'>Inbox</span>
+									</div>
+								)}
 							</div>
-						)}
-						{topic.is_inboxed && (
-							<div className='flex items-center gap-2'>
-								<Inbox className='h-4 w-4 text-muted-foreground' />
-								<span className='text-muted-foreground text-xs'>Inbox</span>
-							</div>
-						)}
-					</div>
-					<div className='absolute top-2 right-2'>
-						<Button
-							className='h-8 w-8 p-0 text-muted-foreground'
-							onClick={handleNavigate}
-							size='sm'
-							variant='ghost'
-						>
-							<Maximize2 className='h-4 w-4' />
-						</Button>
-
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild={true}>
+							<div className='absolute top-2 right-2'>
 								<Button
 									className='h-8 w-8 p-0 text-muted-foreground'
+									onClick={handleNavigate}
 									size='sm'
 									variant='ghost'
 								>
-									<MoreHorizontal className='h-4 w-4' />
+									<Maximize2 className='h-4 w-4' />
 								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
-								<DropdownMenuItem onClick={handleArchiveToggle}>
-									{topic.is_archived ? (
-										<>
-											<ArchiveRestore className='mr-2 h-4 w-4' />
-											Unarchive
-										</>
-									) : (
-										<>
-											<Archive className='mr-2 h-4 w-4' />
-											Archive
-										</>
-									)}
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={handleInboxToggle}>
-									{topic.is_inboxed ? (
-										<>
-											<Inbox className='mr-2 h-4 w-4' />
-											Remove from Inbox
-										</>
-									) : (
-										<>
-											<Inbox className='mr-2 h-4 w-4' />
-											Add to Inbox
-										</>
-									)}
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={handleDelete} variant='destructive'>
-									<Trash className='mr-2 h-4 w-4' />
-									Delete
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
 
-						<Button
-							className='h-8 w-8 p-0 text-muted-foreground'
-							onClick={() => onOpenChange(false)}
-							size='sm'
-							variant='ghost'
-						>
-							<X className='h-4 w-4' />
-						</Button>
-					</div>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild={true}>
+										<Button
+											className='h-8 w-8 p-0 text-muted-foreground'
+											size='sm'
+											variant='ghost'
+										>
+											<MoreHorizontal className='h-4 w-4' />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+										<DropdownMenuItem onClick={handleArchiveToggle}>
+											{topic.is_archived ? (
+												<>
+													<ArchiveRestore className='mr-2 h-4 w-4' />
+													Unarchive
+												</>
+											) : (
+												<>
+													<Archive className='mr-2 h-4 w-4' />
+													Archive
+												</>
+											)}
+										</DropdownMenuItem>
+										<DropdownMenuItem onClick={handleInboxToggle}>
+											{topic.is_inboxed ? (
+												<>
+													<Inbox className='mr-2 h-4 w-4' />
+													Remove from Inbox
+												</>
+											) : (
+												<>
+													<Inbox className='mr-2 h-4 w-4' />
+													Add to Inbox
+												</>
+											)}
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={handleDelete}
+											variant='destructive'
+										>
+											<Trash className='mr-2 h-4 w-4' />
+											Delete
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
 
-					<DialogTitle className='sr-only'>Edit Topic</DialogTitle>
-					<DialogDescription className='sr-only'>
-						Edit the topic name and notes, or perform other actions.
-					</DialogDescription>
-				</DialogHeader>
+								<Button
+									className='h-8 w-8 p-0 text-muted-foreground'
+									onClick={() => onOpenChange(false)}
+									size='sm'
+									variant='ghost'
+								>
+									<X className='h-4 w-4' />
+								</Button>
+							</div>
 
-				<div className='space-y-4'>
-					<TopicParentsPanel />
+							<DialogTitle className='sr-only'>Edit Topic</DialogTitle>
+							<DialogDescription className='sr-only'>
+								Edit the topic name and notes, or perform other actions.
+							</DialogDescription>
+						</DialogHeader>
 
-					<textarea
-						className='!bg-transparent break-word flex w-full resize-none border-none font-bold text-xl focus:outline-none'
-						onChange={onNameChange}
-						placeholder='Title'
-						ref={titleTextareaRef}
-						rows={1}
-						spellCheck={false}
-						value={title}
-					/>
+						<div className='space-y-4'>
+							<TopicParentsPanel />
 
-					<Textarea
-						className='!bg-transparent min-h-48 w-full resize-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-						name='notes'
-						onChange={onNotesChange}
-						placeholder='Notes'
-						ref={notesRef}
-						value={notes}
-					/>
+							<textarea
+								className='!bg-transparent break-word flex w-full resize-none border-none font-bold text-xl focus:outline-none'
+								onChange={onNameChange}
+								placeholder='Title'
+								ref={titleTextareaRef}
+								rows={1}
+								spellCheck={false}
+								value={title}
+							/>
 
-					<TopicChildrenPanel />
-				</div>
+							<Textarea
+								className='!bg-transparent min-h-48 w-full resize-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+								name='notes'
+								onChange={onNotesChange}
+								placeholder='Notes'
+								ref={notesRef}
+								value={notes}
+							/>
+
+							<TopicChildrenPanel />
+						</div>
+					</SidebarInset>
+					<TimelineSidebar />
+				</SidebarProvider>
 			</DialogContent>
 		</Dialog>
 	)
