@@ -19,7 +19,7 @@ import { Textarea } from '~/components/ui/Textarea'
 import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
-import { dateOf } from '~/utils/dateOf'
+import { dateOf, toDateString, todayDateString } from '~/utils/dateFormatting'
 import { supabase } from '~/utils/supabase'
 
 // TODO: clean up this mess when migrate to hono API
@@ -103,7 +103,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 			setIsChecked(checked)
 			updateTodoMutation({
 				id: entry.id ?? undefined,
-				completed_at: checked ? new Date().toISOString() : null
+				completed_at: checked ? todayDateString() : null
 			})
 		},
 		[entry.id, updateTodoMutation]
@@ -131,12 +131,12 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 			if (isCompleted) {
 				updateTodoMutation({
 					id: entry.id ?? undefined,
-					completed_at: newDate ? newDate.toISOString() : null
+					completed_at: newDate ? toDateString(newDate) : null
 				})
 			} else {
 				updateTodoMutation({
 					id: entry.id ?? undefined,
-					scheduled_at: newDate ? newDate.toISOString() : null
+					scheduled_at: newDate ? toDateString(newDate) : null
 				})
 			}
 			setIsDatePopoverOpen(false)

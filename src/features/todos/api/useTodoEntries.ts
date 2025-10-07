@@ -1,21 +1,18 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMemo } from 'react'
+import { toDateString } from '~/utils/dateFormatting'
 import { supabase } from '~/utils/supabase'
 
 export function useTodoEntries() {
-	const todayDate = new Date().toISOString().split('T')[0]
-	const todayStart = `${todayDate}T00:00:00.000Z`
-	const todayEnd = `${todayDate}T23:59:59.999Z`
+	const todayDateStr = toDateString(new Date())
 
 	const tomorrowDate = new Date()
 	tomorrowDate.setDate(tomorrowDate.getDate() + 1)
-	const tomorrowDateStr = tomorrowDate.toISOString().split('T')[0]
-	const tomorrowStart = `${tomorrowDateStr}T00:00:00.000Z`
-	const tomorrowEnd = `${tomorrowDateStr}T23:59:59.999Z`
+	const tomorrowDateStr = toDateString(tomorrowDate)
 
-	const nextWeek = new Date()
-	nextWeek.setDate(nextWeek.getDate() + 7)
-	const nextWeekEnd = `${nextWeek.toISOString().split('T')[0]}T23:59:59.999Z`
+	const nextWeekDate = new Date()
+	nextWeekDate.setDate(nextWeekDate.getDate() + 7)
+	const nextWeekDateStr = toDateString(nextWeekDate)
 
 	const query = useQuery(
 		supabase
@@ -54,45 +51,33 @@ export function useTodoEntries() {
 					continue
 				}
 
-				const effectiveDate = new Date(
-					entry.completed_at || entry.scheduled_at || ''
-				)
-				const scheduledAt = new Date(entry.scheduled_at)
-
-				// Categorize entries by effective_date and scheduled_at
-				const isEffectiveDateToday =
-					effectiveDate >= new Date(todayStart) &&
-					effectiveDate <= new Date(todayEnd)
-				const isEffectiveDateTomorrow =
-					effectiveDate >= new Date(tomorrowStart) &&
-					effectiveDate <= new Date(tomorrowEnd)
-				const isEffectiveDateNextSevenDays =
-					effectiveDate > new Date(tomorrowEnd) &&
-					effectiveDate <= new Date(nextWeekEnd)
+				// Use date strings for comparison since columns are now date-only
+				const effectiveDateStr = entry.completed_at || entry.scheduled_at || ''
+				const scheduledAtStr = entry.scheduled_at
 
 				// Today: ALL entries (completed and uncompleted) with effective_date for today
-				if (isEffectiveDateToday) {
+				if (effectiveDateStr === todayDateStr) {
 					todayList.push(entry)
 				}
 				// Tomorrow: ALL entries (completed and uncompleted) with effective_date for tomorrow
-				else if (isEffectiveDateTomorrow) {
+				else if (effectiveDateStr === tomorrowDateStr) {
 					tomorrowList.push(entry)
 				}
 				// Next 7 Days: ALL entries (completed and uncompleted) with effective_date in next 7 days
-				else if (isEffectiveDateNextSevenDays) {
+				else if (
+					effectiveDateStr > tomorrowDateStr &&
+					effectiveDateStr <= nextWeekDateStr
+				) {
 					nextSevenDaysList.push(entry)
 				}
-				// Overdue: ONLY incomplete entries with scheduled_at before today (matches red checkbox criteria)
-				else if (
-					entry.completed_at === null &&
-					scheduledAt < new Date(todayStart)
-				) {
+				// Overdue: ONLY incomplete entries with scheduled_at before today
+				else if (entry.completed_at === null && scheduledAtStr < todayDateStr) {
 					overdueList.push(entry)
 				}
 				// Upcoming: ONLY incomplete entries with scheduled_at after next week
 				else if (
 					entry.completed_at === null &&
-					scheduledAt > new Date(nextWeekEnd)
+					scheduledAtStr > nextWeekDateStr
 				) {
 					upcomingList.push(entry)
 				}
@@ -106,14 +91,7 @@ export function useTodoEntries() {
 				future: upcomingList,
 				unscheduled: unscheduledList
 			}
-		}, [
-			query.data,
-			todayStart,
-			todayEnd,
-			tomorrowStart,
-			tomorrowEnd,
-			nextWeekEnd
-		])
+		}, [query.data, todayDateStr, tomorrowDateStr, nextWeekDateStr])
 
 	return {
 		...query,

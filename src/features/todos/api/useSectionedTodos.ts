@@ -4,6 +4,7 @@ import {
 	useRevalidateTables
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { useCallback, useMemo } from 'react'
+import { toDateString } from '~/utils/dateFormatting'
 import { supabase } from '~/utils/supabase'
 
 type SectionKey =
@@ -66,36 +67,30 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 export function useSectionedTodos() {
 	// Centralized date boundary calculations
 	const dateBoundaries = useMemo(() => {
-		const todayDate = new Date().toISOString().split('T')[0]
-		const todayStart = `${todayDate}T00:00:00.000Z`
-		const todayEnd = `${todayDate}T23:59:59.999Z`
+		const todayDateStr = toDateString(new Date())
 
 		const tomorrowDate = new Date()
 		tomorrowDate.setDate(tomorrowDate.getDate() + 1)
-		const tomorrowDateStr = tomorrowDate.toISOString().split('T')[0]
-		const tomorrowStart = `${tomorrowDateStr}T00:00:00.000Z`
-		const tomorrowEnd = `${tomorrowDateStr}T23:59:59.999Z`
+		const tomorrowDateStr = toDateString(tomorrowDate)
 
-		const nextWeek = new Date()
-		nextWeek.setDate(nextWeek.getDate() + 7)
-		const nextWeekEnd = `${nextWeek.toISOString().split('T')[0]}T23:59:59.999Z`
+		const nextWeekDate = new Date()
+		nextWeekDate.setDate(nextWeekDate.getDate() + 7)
+		const nextWeekDateStr = toDateString(nextWeekDate)
 
-		const dayAfterTomorrow = new Date()
-		dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2)
-		const dayAfterTomorrowStart = `${dayAfterTomorrow.toISOString().split('T')[0]}T00:00:00.000Z`
+		const dayAfterTomorrowDate = new Date()
+		dayAfterTomorrowDate.setDate(dayAfterTomorrowDate.getDate() + 2)
+		const dayAfterTomorrowDateStr = toDateString(dayAfterTomorrowDate)
 
-		const futureStart = new Date(nextWeek)
-		futureStart.setDate(futureStart.getDate() + 1)
-		const futureStartStr = `${futureStart.toISOString().split('T')[0]}T00:00:00.000Z`
+		const futureStartDate = new Date()
+		futureStartDate.setDate(futureStartDate.getDate() + 8)
+		const futureStartDateStr = toDateString(futureStartDate)
 
 		return {
-			todayStart,
-			todayEnd,
-			tomorrowStart,
-			tomorrowEnd,
-			nextWeekEnd,
-			dayAfterTomorrowStart,
-			futureStart: futureStartStr
+			todayDateStr,
+			tomorrowDateStr,
+			nextWeekDateStr,
+			dayAfterTomorrowDateStr,
+			futureStartDateStr
 		}
 	}, [])
 
@@ -153,45 +148,36 @@ export function useSectionedTodos() {
 					continue
 				}
 
-				const effectiveDate = new Date(
-					entry.completed_at || entry.scheduled_at || ''
-				)
-				const scheduledAt = new Date(entry.scheduled_at)
-
-				// Categorize entries by effective_date and scheduled_at
-				const isEffectiveDateToday =
-					effectiveDate >= new Date(dateBoundaries.todayStart) &&
-					effectiveDate <= new Date(dateBoundaries.todayEnd)
-				const isEffectiveDateTomorrow =
-					effectiveDate >= new Date(dateBoundaries.tomorrowStart) &&
-					effectiveDate <= new Date(dateBoundaries.tomorrowEnd)
-				const isEffectiveDateNextSevenDays =
-					effectiveDate > new Date(dateBoundaries.tomorrowEnd) &&
-					effectiveDate <= new Date(dateBoundaries.nextWeekEnd)
+				// Use date strings for comparison since columns are now date-only
+				const effectiveDateStr = entry.completed_at || entry.scheduled_at || ''
+				const scheduledAtStr = entry.scheduled_at
 
 				// Today: ALL entries (completed and uncompleted) with effective_date for today
-				if (isEffectiveDateToday) {
+				if (effectiveDateStr === dateBoundaries.todayDateStr) {
 					todayList.push(entry)
 				}
 				// Tomorrow: ALL entries (completed and uncompleted) with effective_date for tomorrow
-				else if (isEffectiveDateTomorrow) {
+				else if (effectiveDateStr === dateBoundaries.tomorrowDateStr) {
 					tomorrowList.push(entry)
 				}
 				// Next 7 Days: ALL entries (completed and uncompleted) with effective_date in next 7 days
-				else if (isEffectiveDateNextSevenDays) {
+				else if (
+					effectiveDateStr >= dateBoundaries.dayAfterTomorrowDateStr &&
+					effectiveDateStr <= dateBoundaries.nextWeekDateStr
+				) {
 					nextSevenDaysList.push(entry)
 				}
-				// Overdue: ONLY incomplete entries with scheduled_at before today (matches red checkbox criteria)
+				// Overdue: ONLY incomplete entries with scheduled_at before today
 				else if (
 					entry.completed_at === null &&
-					scheduledAt < new Date(dateBoundaries.todayStart)
+					scheduledAtStr < dateBoundaries.todayDateStr
 				) {
 					overdueList.push(entry)
 				}
 				// Upcoming: ONLY incomplete entries with scheduled_at after next week
 				else if (
 					entry.completed_at === null &&
-					scheduledAt > new Date(dateBoundaries.nextWeekEnd)
+					scheduledAtStr > dateBoundaries.nextWeekDateStr
 				) {
 					upcomingList.push(entry)
 				}
@@ -207,11 +193,10 @@ export function useSectionedTodos() {
 			}
 		}, [
 			query.data,
-			dateBoundaries.todayStart,
-			dateBoundaries.todayEnd,
-			dateBoundaries.tomorrowStart,
-			dateBoundaries.tomorrowEnd,
-			dateBoundaries.nextWeekEnd
+			dateBoundaries.todayDateStr,
+			dateBoundaries.tomorrowDateStr,
+			dateBoundaries.dayAfterTomorrowDateStr,
+			dateBoundaries.nextWeekDateStr
 		])
 
 	const sectionEntries = useMemo(
@@ -239,13 +224,13 @@ export function useSectionedTodos() {
 		(sectionId: SectionKey): string | null => {
 			switch (sectionId) {
 				case 'today':
-					return dateBoundaries.todayStart
+					return dateBoundaries.todayDateStr
 				case 'tomorrow':
-					return dateBoundaries.tomorrowStart
+					return dateBoundaries.tomorrowDateStr
 				case 'nextSevenDays':
-					return dateBoundaries.dayAfterTomorrowStart
+					return dateBoundaries.dayAfterTomorrowDateStr
 				case 'future':
-					return dateBoundaries.futureStart
+					return dateBoundaries.futureStartDateStr
 				case 'unscheduled':
 					return null
 				default:

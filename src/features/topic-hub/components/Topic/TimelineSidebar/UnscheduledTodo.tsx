@@ -12,6 +12,7 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import { toDateString, todayDateString } from '~/utils/dateFormatting'
 import type { TodoWithTopics } from './TimelineDataContext'
 import { useTimelineData } from './TimelineDataContext'
 
@@ -26,7 +27,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 		(checked: boolean) => {
 			if (entry.id == null) return
 			updateTodo(entry.id, {
-				completed_at: checked ? new Date().toISOString() : null
+				completed_at: checked ? todayDateString() : null
 			})
 		},
 		[entry.id, updateTodo]
@@ -74,7 +75,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 			if (date === null) return // Don't unschedule unscheduled todos
 			setSelectedDate(date)
 			updateTodo(entry.id, {
-				scheduled_at: date.toISOString()
+				scheduled_at: toDateString(date)
 			})
 			setIsSchedulePopoverOpen(false)
 		},
