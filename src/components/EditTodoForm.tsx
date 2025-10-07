@@ -10,7 +10,7 @@ import { Calendar } from '~/components/ui/Calendar'
 import { Input } from '~/components/ui/Input'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Tables } from '~/types/database.types'
-import { dateOf } from '~/utils/dateOf'
+import { dateOf, toDateString } from '~/utils/dateFormatting'
 import { supabase } from '~/utils/supabase'
 
 // Unified todo type that works with both todo tables
@@ -55,7 +55,7 @@ export function EditTodoForm({ entry, topicName, onClose }: EditTodoFormProps) {
 	const handleSave = useCallback(() => {
 		updateTodoMutation({
 			id: entry.id ?? undefined,
-			scheduled_at: selectedDate.toISOString(),
+			scheduled_at: toDateString(selectedDate),
 			description: description.trim()
 		})
 		onClose()

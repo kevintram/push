@@ -13,7 +13,11 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import { dateOf } from '../../../../../utils/dateOf'
+import {
+	dateOf,
+	toDateString,
+	todayDateString
+} from '../../../../../utils/dateFormatting'
 import { numDaysElapsed } from '../../../utils/daysElapsed'
 import { isOverdue } from '../../../utils/isOverdue'
 import { DaysElapsedMarker } from './DaysElapsedMarker'
@@ -44,7 +48,7 @@ export function ScheduledTodo({
 		(checked: boolean) => {
 			if (entry.id) {
 				updateTodo(entry.id, {
-					completed_at: checked ? new Date().toISOString() : null
+					completed_at: checked ? todayDateString() : null
 				})
 			}
 		},
@@ -72,13 +76,14 @@ export function ScheduledTodo({
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
 			if (entry.id) {
+				const newDateString = newDate ? toDateString(newDate) : null
 				if (entry.completed_at) {
 					updateTodo(entry.id, {
-						completed_at: newDate ? newDate.toISOString() : null
+						completed_at: newDateString
 					})
 				} else {
 					updateTodo(entry.id, {
-						scheduled_at: newDate ? newDate.toISOString() : null
+						scheduled_at: newDateString
 					})
 				}
 			}

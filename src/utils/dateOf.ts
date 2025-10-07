@@ -1,3 +1,2 @@
-export function dateOf(dateStr: string | undefined | null): Date | undefined {
-	return dateStr ? new Date(dateStr) : undefined
-}
+// Re-export from dateFormatting for backward compatibility
+export { dateOf } from './dateFormatting'
