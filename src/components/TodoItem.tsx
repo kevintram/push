@@ -48,11 +48,13 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		}
 		return entry.scheduled_at
 	})()
-	const dateLabel = dayjs(dateValue).toDate().toLocaleDateString('en-US', {
-		weekday: 'short',
-		month: 'short',
-		day: 'numeric'
-	})
+	const dateLabel = dateValue
+		? dayjs(dateValue).toDate().toLocaleDateString('en-US', {
+				weekday: 'short',
+				month: 'short',
+				day: 'numeric'
+			})
+		: ''
 
 	const isOverdueValue = useMemo(
 		() =>
