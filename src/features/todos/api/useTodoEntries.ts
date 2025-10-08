@@ -1,18 +1,18 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
+import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import { toDateString } from '~/utils/dateFormatting'
 import { supabase } from '~/utils/supabase'
 
 export function useTodoEntries() {
-	const todayDateStr = toDateString(new Date())
+	const todayDateStr = dayjs(new Date()).format('YYYY-MM-DD')
 
 	const tomorrowDate = new Date()
 	tomorrowDate.setDate(tomorrowDate.getDate() + 1)
-	const tomorrowDateStr = toDateString(tomorrowDate)
+	const tomorrowDateStr = dayjs(tomorrowDate).format('YYYY-MM-DD')
 
 	const nextWeekDate = new Date()
 	nextWeekDate.setDate(nextWeekDate.getDate() + 7)
-	const nextWeekDateStr = toDateString(nextWeekDate)
+	const nextWeekDateStr = dayjs(nextWeekDate).format('YYYY-MM-DD')
 
 	const query = useQuery(
 		supabase

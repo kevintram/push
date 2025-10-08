@@ -3,6 +3,7 @@ import {
 	useRevalidateTables,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
+import dayjs from 'dayjs'
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
@@ -19,7 +20,6 @@ import { Textarea } from '~/components/ui/Textarea'
 import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
-import { dateOf, toDateString, todayDateString } from '~/utils/dateFormatting'
 import { supabase } from '~/utils/supabase'
 
 // TODO: clean up this mess when migrate to hono API
@@ -48,7 +48,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		}
 		return entry.scheduled_at
 	})()
-	const dateLabel = dateOf(dateValue)?.toLocaleDateString('en-US', {
+	const dateLabel = dayjs(dateValue).toDate().toLocaleDateString('en-US', {
 		weekday: 'short',
 		month: 'short',
 		day: 'numeric'
@@ -67,9 +67,9 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
 		if (isCompleted) {
-			return dateOf(entry.completed_at) ?? null
+			return entry.completed_at ? dayjs(entry.completed_at).toDate() : null
 		}
-		return dateOf(entry.scheduled_at) ?? null
+		return entry.scheduled_at ? dayjs(entry.scheduled_at).toDate() : null
 	})
 	const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
 
@@ -103,7 +103,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 			setIsChecked(checked)
 			updateTodoMutation({
 				id: entry.id ?? undefined,
-				completed_at: checked ? todayDateString() : null
+				completed_at: checked ? dayjs(new Date()).format('YYYY-MM-DD') : null
 			})
 		},
 		[entry.id, updateTodoMutation]
@@ -131,12 +131,12 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 			if (isCompleted) {
 				updateTodoMutation({
 					id: entry.id ?? undefined,
-					completed_at: newDate ? toDateString(newDate) : null
+					completed_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
 				})
 			} else {
 				updateTodoMutation({
 					id: entry.id ?? undefined,
-					scheduled_at: newDate ? toDateString(newDate) : null
+					scheduled_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
 				})
 			}
 			setIsDatePopoverOpen(false)

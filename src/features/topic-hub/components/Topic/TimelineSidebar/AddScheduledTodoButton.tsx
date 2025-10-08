@@ -11,7 +11,6 @@ import {
 	PopoverTrigger
 } from '~/components/ui/Popover'
 import { Textarea } from '~/components/ui/Textarea'
-import { toDateString } from '~/utils/dateFormatting'
 import { supabase } from '~/utils/supabase'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 
@@ -32,12 +31,12 @@ export function AddScheduledTodoButton() {
 		if (!selectedTopic) return
 
 		const completedAt = dayjs(selectedDate).isBefore(dayjs(), 'day')
-			? toDateString(selectedDate)
+			? dayjs(selectedDate).format('YYYY-MM-DD')
 			: null
 
 		await supabase.rpc('insert_todo_with_topics', {
 			p_todo_description: description.trim(),
-			p_todo_scheduled_at: toDateString(selectedDate),
+			p_todo_scheduled_at: dayjs(selectedDate).format('YYYY-MM-DD'),
 			p_todo_completed_at: completedAt as string,
 			p_topic_ids: [selectedTopic.id]
 		})
