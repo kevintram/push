@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { supabase } from '~/utils/supabase'
 
 export function useTodoEntries() {
-	const todayDateStr = dayjs(new Date()).format('YYYY-MM-DD')
+	const todayDateStr = dayjs().format('YYYY-MM-DD')
 
 	const tomorrowDate = new Date()
 	tomorrowDate.setDate(tomorrowDate.getDate() + 1)
