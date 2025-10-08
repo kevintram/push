@@ -27,7 +27,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 		(checked: boolean) => {
 			if (entry.id == null) return
 			updateTodo(entry.id, {
-				completed_at: checked ? dayjs(new Date()).format('YYYY-MM-DD') : null
+				completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
 			})
 		},
 		[entry.id, updateTodo]

@@ -105,7 +105,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 			setIsChecked(checked)
 			updateTodoMutation({
 				id: entry.id ?? undefined,
-				completed_at: checked ? dayjs(new Date()).format('YYYY-MM-DD') : null
+				completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
 			})
 		},
 		[entry.id, updateTodoMutation]
