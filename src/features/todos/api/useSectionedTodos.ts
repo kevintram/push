@@ -3,8 +3,8 @@ import {
 	useQuery,
 	useRevalidateTables
 } from '@supabase-cache-helpers/postgrest-react-query'
+import dayjs from 'dayjs'
 import { useCallback, useMemo } from 'react'
-import { toDateString } from '~/utils/dateFormatting'
 import { supabase } from '~/utils/supabase'
 
 type SectionKey =
@@ -67,23 +67,26 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 export function useSectionedTodos() {
 	// Centralized date boundary calculations
 	const dateBoundaries = useMemo(() => {
-		const todayDateStr = toDateString(new Date())
+		const newDate = new Date()
+
+		const todayDateStr = dayjs(newDate).format('YYYY-MM-DD')
 
 		const tomorrowDate = new Date()
 		tomorrowDate.setDate(tomorrowDate.getDate() + 1)
-		const tomorrowDateStr = toDateString(tomorrowDate)
+		const tomorrowDateStr = dayjs(tomorrowDate).format('YYYY-MM-DD')
 
 		const nextWeekDate = new Date()
 		nextWeekDate.setDate(nextWeekDate.getDate() + 7)
-		const nextWeekDateStr = toDateString(nextWeekDate)
+		const nextWeekDateStr = dayjs(nextWeekDate).format('YYYY-MM-DD')
 
 		const dayAfterTomorrowDate = new Date()
 		dayAfterTomorrowDate.setDate(dayAfterTomorrowDate.getDate() + 2)
-		const dayAfterTomorrowDateStr = toDateString(dayAfterTomorrowDate)
+		const dayAfterTomorrowDateStr =
+			dayjs(dayAfterTomorrowDate).format('YYYY-MM-DD')
 
 		const futureStartDate = new Date()
 		futureStartDate.setDate(futureStartDate.getDate() + 8)
-		const futureStartDateStr = toDateString(futureStartDate)
+		const futureStartDateStr = dayjs(futureStartDate).format('YYYY-MM-DD')
 
 		return {
 			todayDateStr,

@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { use, useCallback } from 'react'
 import {
 	Panel,
@@ -5,7 +6,6 @@ import {
 	ResizableHandle
 } from '~/components/ui/ResizablePanel'
 import { Sidebar, SidebarHeader } from '~/components/ui/Sidebar'
-import { dateOf } from '../../../../../utils/dateOf'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { AddScheduledTodoButton } from './AddScheduledTodoButton'
 import { AddUnscheduledTodoButton } from './AddUnscheduledTodoButton'
@@ -24,10 +24,11 @@ function TimelineSidebarContent() {
 		today.setHours(0, 0, 0, 0)
 
 		return scheduledTodos.map((entry, i) => {
-			const date: Date = dateOf(entry.effective_date)!
-			const nextDate: Date | undefined = dateOf(
-				scheduledTodos[i + 1]?.effective_date
-			)
+			const date: Date = dayjs(entry.effective_date).toDate()
+			const nextEntry = scheduledTodos[i + 1]
+			const nextDate: Date | undefined = nextEntry?.effective_date
+				? dayjs(nextEntry.effective_date).toDate()
+				: undefined
 
 			if (!todayInserted) {
 				if (today <= date) {

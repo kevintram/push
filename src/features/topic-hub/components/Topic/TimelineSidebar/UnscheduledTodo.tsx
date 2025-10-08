@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { Calendar as CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
@@ -12,7 +13,6 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import { toDateString, todayDateString } from '~/utils/dateFormatting'
 import type { TodoWithTopics } from './TimelineDataContext'
 import { useTimelineData } from './TimelineDataContext'
 
@@ -27,7 +27,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 		(checked: boolean) => {
 			if (entry.id == null) return
 			updateTodo(entry.id, {
-				completed_at: checked ? todayDateString() : null
+				completed_at: checked ? dayjs(new Date()).format('YYYY-MM-DD') : null
 			})
 		},
 		[entry.id, updateTodo]
@@ -75,7 +75,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 			if (date === null) return // Don't unschedule unscheduled todos
 			setSelectedDate(date)
 			updateTodo(entry.id, {
-				scheduled_at: toDateString(date)
+				scheduled_at: dayjs(date).format('YYYY-MM-DD')
 			})
 			setIsSchedulePopoverOpen(false)
 		},

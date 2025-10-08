@@ -11,6 +11,7 @@ This is a React application built with modern tooling focused on topic-based lea
 - **Component Library**: shadcn/ui
 - **Data Fetching**: TanStack Query with React Query
 - **Database**: Supabase with supabase-cache-helpers
+- **Date Handling**: Day.js for all date parsing, formatting, and manipulation
 - **Build Tool**: Vite 6
 - **Package Manager**: pnpm
 - **Testing**: Vitest (unit/integration), Playwright (E2E)
@@ -114,6 +115,7 @@ Please prefer using shadcn components in the 'src/components/ui' folder wherever
 - Uses Biome for consistent formatting (see biome.jsonc file for config run `pnpm lint:biome` to run Biome linting and formatting).
 - Strict TypeScript configuration with path aliases (`~` for src)
 - React components use PascalCase, files use camelCase/kebab-case/PascalCase
+- **Date Handling**: Always use Day.js for date operations. Use `dayjs(date).format('YYYY-MM-DD')` for date strings and `dayjs(dateStr).toDate()` for parsing dates. This ensures consistent timezone handling across the application.
 
 ### Testing Setup
 - Unit tests use Vitest with Happy DOM environment

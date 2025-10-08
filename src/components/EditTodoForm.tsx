@@ -3,6 +3,7 @@ import {
 	useRevalidateTables,
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
+import dayjs from 'dayjs'
 import { CalendarIcon, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
@@ -10,7 +11,6 @@ import { Calendar } from '~/components/ui/Calendar'
 import { Input } from '~/components/ui/Input'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Tables } from '~/types/database.types'
-import { dateOf, toDateString } from '~/utils/dateFormatting'
 import { supabase } from '~/utils/supabase'
 
 // Unified todo type that works with both todo tables
@@ -26,7 +26,7 @@ interface EditTodoFormProps {
 
 export function EditTodoForm({ entry, topicName, onClose }: EditTodoFormProps) {
 	const [selectedDate, setSelectedDate] = useState<Date>(
-		dateOf(entry.scheduled_at)!
+		dayjs(entry.scheduled_at).toDate()
 	)
 	const [description, setDescription] = useState(entry.description || '')
 
@@ -55,7 +55,7 @@ export function EditTodoForm({ entry, topicName, onClose }: EditTodoFormProps) {
 	const handleSave = useCallback(() => {
 		updateTodoMutation({
 			id: entry.id ?? undefined,
-			scheduled_at: toDateString(selectedDate),
+			scheduled_at: dayjs(selectedDate).format('YYYY-MM-DD'),
 			description: description.trim()
 		})
 		onClose()

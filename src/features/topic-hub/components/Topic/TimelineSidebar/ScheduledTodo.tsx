@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { DatePickerDropdown } from '~/components/DatePickerDropdown'
@@ -13,11 +14,6 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import {
-	dateOf,
-	toDateString,
-	todayDateString
-} from '../../../../../utils/dateFormatting'
 import { numDaysElapsed } from '../../../utils/daysElapsed'
 import { isOverdue } from '../../../utils/isOverdue'
 import { DaysElapsedMarker } from './DaysElapsedMarker'
@@ -37,9 +33,9 @@ export function ScheduledTodo({
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
 		if (entry.completed_at) {
-			return dateOf(entry.completed_at) ?? null
+			return entry.completed_at ? dayjs(entry.completed_at).toDate() : null
 		}
-		return dateOf(entry.scheduled_at) ?? null
+		return entry.scheduled_at ? dayjs(entry.scheduled_at).toDate() : null
 	})
 
 	const { updateTodo, deleteTodo, removeTopicFromTodo } = useTimelineData()
@@ -48,7 +44,7 @@ export function ScheduledTodo({
 		(checked: boolean) => {
 			if (entry.id) {
 				updateTodo(entry.id, {
-					completed_at: checked ? todayDateString() : null
+					completed_at: checked ? dayjs(new Date()).format('YYYY-MM-DD') : null
 				})
 			}
 		},
@@ -76,7 +72,9 @@ export function ScheduledTodo({
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
 			if (entry.id) {
-				const newDateString = newDate ? toDateString(newDate) : null
+				const newDateString = newDate
+					? dayjs(newDate).format('YYYY-MM-DD')
+					: null
 				if (entry.completed_at) {
 					updateTodo(entry.id, {
 						completed_at: newDateString
@@ -99,7 +97,7 @@ export function ScheduledTodo({
 	}, [deleteTodo, entry?.id])
 
 	const effectiveDate: Date = useMemo(() => {
-		return dateOf(entry.effective_date)!
+		return dayjs(entry.effective_date).toDate()
 	}, [entry.effective_date])
 
 	const isOverdueValue: boolean = useMemo(() => {
