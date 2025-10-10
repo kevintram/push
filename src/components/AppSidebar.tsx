@@ -5,8 +5,7 @@ import {
 	ListChecks,
 	RotateCcw,
 	Settings,
-	SquareLibrary,
-	Trash2
+	SquareLibrary
 } from 'lucide-react'
 
 import {
@@ -41,11 +40,6 @@ export function AppSidebar() {
 			title: 'Review',
 			url: '/review',
 			icon: RotateCcw
-		},
-		{
-			title: 'Trash',
-			url: '/trash',
-			icon: Trash2
 		}
 	]
 
