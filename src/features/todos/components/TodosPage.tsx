@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Check, Plus, X } from 'lucide-react'
+import { Check, Logs, Plus, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TodoItem } from '~/components/TodoItem'
 import { Badge } from '~/components/ui/Badge'
@@ -13,6 +13,7 @@ type SectionKey =
 	| 'nextSevenDays'
 	| 'future'
 	| 'unscheduled'
+	| 'logbook'
 
 type FilterId = SectionKey
 
@@ -29,7 +30,8 @@ const FILTER_ORDER: Array<FilterId> = [
 	'tomorrow',
 	'nextSevenDays',
 	'future',
-	'unscheduled'
+	'unscheduled',
+	'logbook'
 ]
 
 export function TodosPage() {
@@ -60,9 +62,19 @@ export function TodosPage() {
 			if (isActive) {
 				return prev.filter(id => id !== filterId)
 			}
+			// If clicking 'logbook', only show logbook
+			if (filterId === 'logbook') {
+				return ['logbook']
+			}
+			// If logbook is currently active and clicking another filter, replace with that filter
+			if (prev.includes('logbook')) {
+				return [filterId]
+			}
 			return [...prev, filterId]
 		})
 	}, [])
+
+	const isLogbookActive = activeSections.includes('logbook')
 
 	const filters = useMemo(
 		() =>
@@ -76,6 +88,17 @@ export function TodosPage() {
 					onClick: () => handleFilterClick(filterId)
 				}
 			}).filter(filter => {
+				// When logbook is active, hide all other filters
+				if (isLogbookActive && filter.id !== 'logbook') {
+					return false
+				}
+				// When any other filter is active, hide logbook
+				const hasOtherActiveFilters = activeSections.some(
+					id => id !== 'logbook'
+				)
+				if (hasOtherActiveFilters && filter.id === 'logbook') {
+					return false
+				}
 				// Hide overdue filter when overdue section has no entries
 				if (filter.id === 'overdue') {
 					const overdueSection = sections.find(s => s.id === 'overdue')
@@ -83,7 +106,7 @@ export function TodosPage() {
 				}
 				return true
 			}),
-		[activeSections, handleFilterClick, sections]
+		[activeSections, handleFilterClick, sections, isLogbookActive]
 	)
 
 	const activeFilters = filters.filter(filter => filter.isActive)
@@ -118,9 +141,12 @@ export function TodosPage() {
 		let sectionsToShow = sections
 
 		if (activeSections.length === 0) {
-			// Hide overdue section when it has no entries
+			// Hide overdue and logbook sections when they have no entries
 			sectionsToShow = sections.filter(section => {
 				if (section.id === 'overdue' && section.entries.length === 0) {
+					return false
+				}
+				if (section.id === 'logbook' && section.entries.length === 0) {
 					return false
 				}
 				return true
@@ -177,8 +203,12 @@ export function TodosPage() {
 									onClick={item.filter.onClick}
 									variant={item.filter.isActive ? 'default' : 'outline'}
 								>
-									{item.filter.isActive && (
-										<Check aria-hidden='true' className='h-4 w-4' />
+									{item.filter.id === 'logbook' ? (
+										<Logs aria-hidden='true' className='h-4 w-4' />
+									) : (
+										item.filter.isActive && (
+											<Check aria-hidden='true' className='h-4 w-4' />
+										)
 									)}
 									{item.filter.label}
 								</Badge>

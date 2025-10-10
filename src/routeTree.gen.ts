@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrashRouteImport } from './routes/trash'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReviewRouteImport } from './routes/review'
-import { Route as LogbookRouteImport } from './routes/logbook'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
@@ -30,11 +29,6 @@ const SettingsRoute = SettingsRouteImport.update({
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LogbookRoute = LogbookRouteImport.update({
-  id: '/logbook',
-  path: '/logbook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InboxRoute = InboxRouteImport.update({
@@ -57,7 +51,6 @@ const TopicsChar123TopicIdChar125Route =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
-  '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/trash': typeof TrashRoute
@@ -66,7 +59,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
-  '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/trash': typeof TrashRoute
@@ -76,7 +68,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
-  '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/trash': typeof TrashRoute
@@ -87,7 +78,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/inbox'
-    | '/logbook'
     | '/review'
     | '/settings'
     | '/trash'
@@ -96,7 +86,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/inbox'
-    | '/logbook'
     | '/review'
     | '/settings'
     | '/trash'
@@ -105,7 +94,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/inbox'
-    | '/logbook'
     | '/review'
     | '/settings'
     | '/trash'
@@ -115,7 +103,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   InboxRoute: typeof InboxRoute
-  LogbookRoute: typeof LogbookRoute
   ReviewRoute: typeof ReviewRoute
   SettingsRoute: typeof SettingsRoute
   TrashRoute: typeof TrashRoute
@@ -145,13 +132,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/logbook': {
-      id: '/logbook'
-      path: '/logbook'
-      fullPath: '/logbook'
-      preLoaderRoute: typeof LogbookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/inbox': {
       id: '/inbox'
       path: '/inbox'
@@ -179,7 +159,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   InboxRoute: InboxRoute,
-  LogbookRoute: LogbookRoute,
   ReviewRoute: ReviewRoute,
   SettingsRoute: SettingsRoute,
   TrashRoute: TrashRoute,
