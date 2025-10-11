@@ -23,6 +23,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import { useTopicRelationshipCounts } from '~/features/topic-hub/hooks/useTopicRelationshipCounts'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
@@ -48,6 +49,9 @@ export function TopicCard({
 		supabase.from('topics'),
 		['id']
 	)
+
+	// Fetch relationship counts for this topic
+	const { parentCount, childCount } = useTopicRelationshipCounts(topic.id)
 
 	// Fetch todos associated with this topic
 	const { data: todos = [] } = useQuery<Array<TodoWithEffectiveDate>>(
@@ -134,7 +138,7 @@ export function TopicCard({
 						{/* Parents count - top left */}
 						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
 							<User2 className='h-3 w-3' />
-							<span>{topic.parents?.length || 0}</span>
+							<span>{parentCount}</span>
 						</div>
 
 						{/* Menu - top right */}
@@ -224,7 +228,7 @@ export function TopicCard({
 					{/* Children count - bottom right */}
 					<div className='flex items-center gap-1'>
 						<Baby className='h-3 w-3' />
-						<span>{topic.children?.length || 0}</span>
+						<span>{childCount}</span>
 					</div>
 				</div>
 			</CardContent>
