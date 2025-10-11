@@ -12,11 +12,13 @@ import {
 	useMemo,
 	useState
 } from 'react'
+import { TopicCard } from '~/components/TopicCard'
 import { Button } from '~/components/ui/Button'
+import { useTopicsWithRelationships } from '~/features/topic-hub/hooks/useTopicsWithRelationships'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
-import { TopicCard } from './TopicCard'
 
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
@@ -42,14 +44,21 @@ export function RootTopicsPage() {
 		Array<{ descendant: number }>
 	>(supabase.from('topics_closure').select('descendant').eq('depth', 1))
 
-	const isLoading = topicsLoading || descendantsLoading
-
 	// Filter: Root topics = topics NOT in descendants
 	const rootTopics = useMemo(() => {
 		if (!(allTopics && descendants)) return []
 		const descendantIds = new Set(descendants.map(d => d.descendant))
 		return allTopics.filter(topic => !descendantIds.has(topic.id))
 	}, [allTopics, descendants])
+
+	// Get root topic IDs
+	const rootTopicIds = useMemo(() => rootTopics.map(t => t.id), [rootTopics])
+
+	// Enrich root topics with relationships
+	const { topics: enrichedTopics, isLoading: relationshipsLoading } =
+		useTopicsWithRelationships(rootTopicIds)
+
+	const isLoading = topicsLoading || descendantsLoading || relationshipsLoading
 
 	const { mutateAsync: insertTopicMutation } = useInsertMutation(
 		supabase.from('topics'),
@@ -67,17 +76,17 @@ export function RootTopicsPage() {
 		}
 	)
 
-	const topics = rootTopics || []
+	const topics = enrichedTopics || []
 
 	const handleCreateTopic = useCallback(() => {
 		insertTopicMutation([{}])
 	}, [insertTopicMutation])
 
 	const handleTopicClick = useCallback(
-		(topicId: number) => {
+		(topic: Topic) => {
 			navigate({
 				to: '/topics/{-$topicId}',
-				params: { topicId: topicId.toString() }
+				params: { topicId: topic.id.toString() }
 			})
 		},
 		[navigate]
@@ -198,7 +207,7 @@ export function RootTopicsPage() {
 							>
 								<TopicCard
 									minHeight={MIN_HEIGHT}
-									onClick={() => handleTopicClick(topic.id)}
+									onTopicClick={handleTopicClick}
 									topic={topic}
 								/>
 							</div>

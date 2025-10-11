@@ -1,9 +1,9 @@
 import { TopicCard } from '~/components/TopicCard'
-import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/types/topics.types'
 
 interface InboxItemProps {
-	onSelect: (topic: Tables<'topics'>) => void
-	topic: Tables<'topics'>
+	onSelect: (topic: Topic) => void
+	topic: Topic
 }
 
 export function InboxItem({ topic, onSelect }: InboxItemProps) {
