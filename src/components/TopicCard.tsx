@@ -2,7 +2,6 @@ import {
 	useDeleteMutation,
 	useQuery
 } from '@supabase-cache-helpers/postgrest-react-query'
-import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
 	Archive,
@@ -16,7 +15,6 @@ import {
 } from 'lucide-react'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useMemo } from 'react'
-import { TopicBadge } from '~/components/TopicBadge'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
 import {
@@ -25,7 +23,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
@@ -47,14 +44,10 @@ export function TopicCard({
 	onRemoveRelationship,
 	minHeight = MIN_HEIGHT
 }: TopicCardProps) {
-	const navigate = useNavigate()
-
 	const { mutateAsync: deleteTopicMutation } = useDeleteMutation(
 		supabase.from('topics'),
 		['id']
 	)
-
-	const deleteRelationship = useDeleteRelationship()
 
 	// Fetch todos associated with this topic
 	const { data: todos = [] } = useQuery<Array<TodoWithEffectiveDate>>(
@@ -122,20 +115,6 @@ export function TopicCard({
 	const handleDeleteTopic = () => {
 		deleteTopicMutation({ id: topic.id })
 	}
-
-	const handleRemoveParent = useCallback(
-		(parentId: number) => {
-			deleteRelationship.mutate({ parent: parentId, child: topic.id })
-		},
-		[deleteRelationship, topic.id]
-	)
-
-	const handleRemoveChild = useCallback(
-		(childId: number) => {
-			deleteRelationship.mutate({ parent: topic.id, child: childId })
-		},
-		[deleteRelationship, topic.id]
-	)
 
 	return (
 		<Card

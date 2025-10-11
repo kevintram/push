@@ -20,9 +20,9 @@ import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 
-const MIN_WIDTH = 192
+const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96
-const GAP = 12
+const GAP = 16
 
 export function RootTopicsPage() {
 	const [numLanes, setNumLanes] = useState(1)
@@ -129,7 +129,7 @@ export function RootTopicsPage() {
 		if (rect) {
 			const calculatedLanes = Math.max(
 				1,
-				Math.floor((rect.width + GAP) / (MIN_WIDTH + GAP))
+				Math.floor((rect.width + GAP) / (MIN_CARD_WIDTH + GAP))
 			)
 			if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
 		}
@@ -142,12 +142,14 @@ export function RootTopicsPage() {
 
 	if (isLoading) {
 		return (
-			<div className='flex h-screen w-full flex-col p-6'>
-				<div className='mb-6 flex items-center gap-3'>
-					<SquareLibrary className='h-6 w-6' />
-					<h1 className='font-bold text-2xl'>Library</h1>
+			<div className='container mx-auto'>
+				<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+					<div className='flex items-center gap-3'>
+						<SquareLibrary className='h-6 w-6' />
+						<h1 className='font-bold text-3xl'>Library</h1>
+					</div>
 				</div>
-				<div className='flex flex-1 items-center justify-center'>
+				<div className='flex flex-1 items-center justify-center px-6 pb-6'>
 					<p className='text-muted-foreground'>Loading topics...</p>
 				</div>
 			</div>
@@ -156,12 +158,14 @@ export function RootTopicsPage() {
 
 	if (topics.length === 0) {
 		return (
-			<div className='flex h-screen w-full flex-col p-6'>
-				<div className='mb-6 flex items-center gap-3'>
-					<SquareLibrary className='h-6 w-6' />
-					<h1 className='font-bold text-2xl'>Library</h1>
+			<div className='container mx-auto'>
+				<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+					<div className='flex items-center gap-3'>
+						<SquareLibrary className='h-6 w-6' />
+						<h1 className='font-bold text-3xl'>Library</h1>
+					</div>
 				</div>
-				<div className='flex flex-1 items-center justify-center'>
+				<div className='flex flex-1 items-center justify-center px-6 pb-6'>
 					<div className='text-center'>
 						<SquareLibrary className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
 						<p className='mb-2 text-muted-foreground'>No root topics yet</p>
@@ -176,13 +180,15 @@ export function RootTopicsPage() {
 	}
 
 	return (
-		<div className='flex h-screen w-full flex-col p-6'>
-			<div className='mb-6 flex items-center gap-3'>
-				<SquareLibrary className='h-6 w-6' />
-				<h1 className='font-bold text-2xl'>Library</h1>
+		<div className='container mx-auto'>
+			<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+				<div className='flex items-center gap-3'>
+					<SquareLibrary className='h-6 w-6' />
+					<h1 className='font-bold text-3xl'>Library</h1>
+				</div>
 			</div>
 
-			<div className='flex-1'>
+			<div className='px-6 pb-6'>
 				<div
 					ref={parentRef}
 					style={{
