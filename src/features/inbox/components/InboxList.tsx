@@ -6,10 +6,10 @@ import {
 	useMemo,
 	useState
 } from 'react'
+import { TopicCard } from '~/components/TopicCard'
 import { Skeleton } from '~/components/ui/Skeleton'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Tables } from '~/types/database.types'
-import { InboxItem } from './InboxItem'
 
 const MIN_CARD_WIDTH = 280
 const MIN_CARD_HEIGHT = 168
@@ -131,7 +131,7 @@ export function InboxList({
 							transform: `translateY(${virtualItem.start}px)`
 						}}
 					>
-						<InboxItem onSelect={onTopicSelect} topic={topic} />
+						<TopicCard onTopicClick={onTopicSelect} topic={topic} />
 					</div>
 				)
 			})}
