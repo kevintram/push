@@ -9,19 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TrashRouteImport } from './routes/trash'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReviewRouteImport } from './routes/review'
-import { Route as LogbookRouteImport } from './routes/logbook'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TopicsIndexRouteImport } from './routes/topics.index'
 import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
 
-const TrashRoute = TrashRouteImport.update({
-  id: '/trash',
-  path: '/trash',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -30,11 +24,6 @@ const SettingsRoute = SettingsRouteImport.update({
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LogbookRoute = LogbookRouteImport.update({
-  id: '/logbook',
-  path: '/logbook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InboxRoute = InboxRouteImport.update({
@@ -47,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TopicsIndexRoute = TopicsIndexRouteImport.update({
+  id: '/topics/',
+  path: '/topics/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TopicsChar123TopicIdChar125Route =
   TopicsChar123TopicIdChar125RouteImport.update({
     id: '/topics/{-$topicId}',
@@ -57,80 +51,66 @@ const TopicsChar123TopicIdChar125Route =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
-  '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
-  '/trash': typeof TrashRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
+  '/topics': typeof TopicsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
-  '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
-  '/trash': typeof TrashRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
+  '/topics': typeof TopicsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
-  '/logbook': typeof LogbookRoute
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
-  '/trash': typeof TrashRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
+  '/topics/': typeof TopicsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/inbox'
-    | '/logbook'
     | '/review'
     | '/settings'
-    | '/trash'
     | '/topics/{-$topicId}'
+    | '/topics'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/inbox'
-    | '/logbook'
     | '/review'
     | '/settings'
-    | '/trash'
     | '/topics/{-$topicId}'
+    | '/topics'
   id:
     | '__root__'
     | '/'
     | '/inbox'
-    | '/logbook'
     | '/review'
     | '/settings'
-    | '/trash'
     | '/topics/{-$topicId}'
+    | '/topics/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   InboxRoute: typeof InboxRoute
-  LogbookRoute: typeof LogbookRoute
   ReviewRoute: typeof ReviewRoute
   SettingsRoute: typeof SettingsRoute
-  TrashRoute: typeof TrashRoute
   TopicsChar123TopicIdChar125Route: typeof TopicsChar123TopicIdChar125Route
+  TopicsIndexRoute: typeof TopicsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/trash': {
-      id: '/trash'
-      path: '/trash'
-      fullPath: '/trash'
-      preLoaderRoute: typeof TrashRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -143,13 +123,6 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof ReviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/logbook': {
-      id: '/logbook'
-      path: '/logbook'
-      fullPath: '/logbook'
-      preLoaderRoute: typeof LogbookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inbox': {
@@ -166,6 +139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/topics/': {
+      id: '/topics/'
+      path: '/topics'
+      fullPath: '/topics'
+      preLoaderRoute: typeof TopicsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/topics/{-$topicId}': {
       id: '/topics/{-$topicId}'
       path: '/topics/{-$topicId}'
@@ -179,11 +159,10 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   InboxRoute: InboxRoute,
-  LogbookRoute: LogbookRoute,
   ReviewRoute: ReviewRoute,
   SettingsRoute: SettingsRoute,
-  TrashRoute: TrashRoute,
   TopicsChar123TopicIdChar125Route: TopicsChar123TopicIdChar125Route,
+  TopicsIndexRoute: TopicsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

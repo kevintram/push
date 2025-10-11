@@ -1,36 +1,14 @@
-import { useDeleteMutation } from '@supabase-cache-helpers/postgrest-react-query'
-import { useNavigate } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import {
-	Baby,
-	ExternalLink,
-	GitPullRequestClosed,
-	MoreHorizontal,
-	Plus,
-	Trash2
-} from 'lucide-react'
-import {
-	use,
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useRef,
-	useState
-} from 'react'
-import { Button } from '~/components/ui/Button'
+import { Baby, Plus } from 'lucide-react'
+import { use, useCallback, useEffect, useLayoutEffect, useState } from 'react'
+import { TopicCard } from '~/components/TopicCard'
 import { Card, CardContent } from '~/components/ui/Card'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topic-hub/stores/SelectedTopicContext'
+import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
-import { supabase } from '~/utils/supabase'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
 const MIN_WIDTH = 192
@@ -40,7 +18,7 @@ const GAP = 12
 export function TopicChildrenPanel() {
 	const [numLanes, setNumLanes] = useState(1)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
-	const parentRef = useRef<HTMLDivElement>(null)
+	const [parentRef, rect] = useResizeObserver<HTMLDivElement>()
 	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
 
 	const children = selectedTopic?.children || []
@@ -119,26 +97,15 @@ export function TopicChildrenPanel() {
 
 	// Calculate lanes based on container width
 	useEffect(() => {
-		const resizeObserver = new ResizeObserver(entries => {
-			const containerWidth = entries[0]?.contentRect.width
-			if (containerWidth) {
-				const minLaneWidth = MIN_WIDTH
+		if (rect.width) {
+			const calculatedLanes = Math.max(
+				1,
+				Math.floor((rect.width + GAP) / (MIN_WIDTH + GAP))
+			)
 
-				const calculatedLanes = Math.max(
-					1,
-					Math.floor((containerWidth + GAP) / (minLaneWidth + GAP))
-				)
-
-				if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
-			}
-		})
-
-		if (parentRef.current) {
-			resizeObserver.observe(parentRef.current)
+			if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
 		}
-
-		return () => resizeObserver.disconnect()
-	}, [numLanes])
+	}, [rect.width, numLanes])
 
 	return (
 		<>
@@ -225,88 +192,25 @@ interface ChildCardProps {
 function ChildCard({ child, onChildClick }: ChildCardProps) {
 	const { topic: selectedTopic } = use(TopicContext)
 	const deleteRelationship = useDeleteRelationship()
-	const navigate = useNavigate()
-
-	const { mutateAsync: deleteTopicMutation } = useDeleteMutation(
-		supabase.from('topics'),
-		['id']
-	)
 
 	const handleRemoveRelationship = () => {
 		if (!selectedTopic) return
 		deleteRelationship.mutate({ parent: selectedTopic.id, child: child.id })
 	}
 
-	const handleDeleteTopic = () => {
-		deleteTopicMutation({ id: child.id })
-	}
-
-	const handleNavigate = () => {
-		navigate({
-			to: '/topics/{-$topicId}',
-			params: { topicId: child.id.toString() }
-		})
-	}
+	const handleClick = useCallback(
+		(_topic: Tables<'topics'>) => {
+			onChildClick?.(child)
+		},
+		[onChildClick, child]
+	)
 
 	return (
-		<Card className='group cursor-pointer p-0 transition-colors hover:bg-muted/50'>
-			<CardContent
-				className='flex h-full flex-col justify-between px-3 py-2'
-				onClick={() => onChildClick?.(child)}
-				style={{ minHeight: `${MIN_HEIGHT}px` }}
-			>
-				<div>
-					{child.name && (
-						<h3 className='mb-1 font-semibold text-md'>{child.name}</h3>
-					)}
-					<div className='line-clamp-5 text-sm'>{child.notes}</div>
-				</div>
-				<div className='flex justify-start gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
-					<Button
-						className='h-6 w-6 p-0'
-						onClick={e => {
-							e.stopPropagation()
-							handleNavigate()
-						}}
-						variant='ghost'
-					>
-						<ExternalLink className='h-3 w-3' />
-					</Button>
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true}>
-							<Button
-								className='h-6 w-6 p-0'
-								onClick={e => e.preventDefault()}
-								variant='ghost'
-							>
-								<MoreHorizontal className='h-3 w-3' />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='center' side='bottom' sideOffset={2}>
-							<DropdownMenuItem
-								onClick={e => {
-									e.preventDefault()
-									handleRemoveRelationship()
-								}}
-							>
-								<GitPullRequestClosed className='mr-2 h-4 w-4' />
-								Remove as Child
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								className='text-red-600 focus:text-red-600'
-								onClick={e => {
-									e.preventDefault()
-									handleDeleteTopic()
-								}}
-								variant='destructive'
-							>
-								<Trash2 className='mr-2 h-4 w-4' />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-			</CardContent>
-		</Card>
+		<TopicCard
+			minHeight={MIN_HEIGHT}
+			onRemoveRelationship={handleRemoveRelationship}
+			onTopicClick={handleClick}
+			topic={child}
+		/>
 	)
 }

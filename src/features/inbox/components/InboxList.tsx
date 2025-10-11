@@ -4,12 +4,12 @@ import {
 	useEffect,
 	useLayoutEffect,
 	useMemo,
-	useRef,
 	useState
 } from 'react'
+import { TopicCard } from '~/components/TopicCard'
 import { Skeleton } from '~/components/ui/Skeleton'
+import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Tables } from '~/types/database.types'
-import { InboxItem } from './InboxItem'
 
 const MIN_CARD_WIDTH = 280
 const MIN_CARD_HEIGHT = 168
@@ -60,7 +60,7 @@ export function InboxList({
 		)
 	}
 
-	const parentRef = useRef<HTMLDivElement>(null)
+	const [parentRef, rect] = useResizeObserver<HTMLDivElement>()
 	const [numLanes, setNumLanes] = useState(1)
 
 	const estimateSize = useCallback(
@@ -97,24 +97,15 @@ export function InboxList({
 	}, [virtualizer, numLanes])
 
 	useEffect(() => {
-		if (!parentRef.current || typeof ResizeObserver === 'undefined') return
-
-		const resizeObserver = new ResizeObserver(entries => {
-			const containerWidth = entries[0]?.contentRect.width ?? 0
-			if (!containerWidth) return
-
+		if (rect.width) {
 			const calculatedLanes = Math.max(
 				1,
-				Math.floor((containerWidth + GAP) / (MIN_CARD_WIDTH + GAP))
+				Math.floor((rect.width + GAP) / (MIN_CARD_WIDTH + GAP))
 			)
 
 			if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
-		})
-
-		resizeObserver.observe(parentRef.current)
-
-		return () => resizeObserver.disconnect()
-	}, [numLanes])
+		}
+	}, [rect.width, numLanes])
 
 	return (
 		<div
@@ -140,7 +131,7 @@ export function InboxList({
 							transform: `translateY(${virtualItem.start}px)`
 						}}
 					>
-						<InboxItem onSelect={onTopicSelect} topic={topic} />
+						<TopicCard onTopicClick={onTopicSelect} topic={topic} />
 					</div>
 				)
 			})}
