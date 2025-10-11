@@ -3,11 +3,9 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Inbox,
 	ListChecks,
-	Logs,
 	RotateCcw,
 	Settings,
-	SquareLibrary,
-	Trash2
+	SquareLibrary
 } from 'lucide-react'
 
 import {
@@ -42,16 +40,6 @@ export function AppSidebar() {
 			title: 'Review',
 			url: '/review',
 			icon: RotateCcw
-		},
-		{
-			title: 'Logbook',
-			url: '/logbook',
-			icon: Logs
-		},
-		{
-			title: 'Trash',
-			url: '/trash',
-			icon: Trash2
 		}
 	]
 

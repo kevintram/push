@@ -1,18 +1,12 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Baby, Plus } from 'lucide-react'
-import {
-	use,
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useRef,
-	useState
-} from 'react'
+import { use, useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { TopicCard } from '~/components/TopicCard'
 import { Card, CardContent } from '~/components/ui/Card'
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topic-hub/stores/SelectedTopicContext'
+import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
@@ -24,7 +18,7 @@ const GAP = 12
 export function TopicChildrenPanel() {
 	const [numLanes, setNumLanes] = useState(1)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
-	const parentRef = useRef<HTMLDivElement>(null)
+	const [parentRef, rect] = useResizeObserver<HTMLDivElement>()
 	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
 
 	const children = selectedTopic?.children || []
@@ -103,26 +97,15 @@ export function TopicChildrenPanel() {
 
 	// Calculate lanes based on container width
 	useEffect(() => {
-		const resizeObserver = new ResizeObserver(entries => {
-			const containerWidth = entries[0]?.contentRect.width
-			if (containerWidth) {
-				const minLaneWidth = MIN_WIDTH
+		if (rect.width) {
+			const calculatedLanes = Math.max(
+				1,
+				Math.floor((rect.width + GAP) / (MIN_WIDTH + GAP))
+			)
 
-				const calculatedLanes = Math.max(
-					1,
-					Math.floor((containerWidth + GAP) / (minLaneWidth + GAP))
-				)
-
-				if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
-			}
-		})
-
-		if (parentRef.current) {
-			resizeObserver.observe(parentRef.current)
+			if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
 		}
-
-		return () => resizeObserver.disconnect()
-	}, [numLanes])
+	}, [rect.width, numLanes])
 
 	return (
 		<>
