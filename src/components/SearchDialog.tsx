@@ -1,12 +1,15 @@
 import { useNavigate } from '@tanstack/react-router'
-import { FileText, Search, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { Search, X } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
 import type { Tables } from '~/types/database.types'
-import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
-import { Card, CardContent } from './ui/Card'
+import { MasonryLayout } from './MasonryLayout'
+import { SearchResultCard } from './SearchResultCard'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/Dialog'
 import { Input } from './ui/Input'
+
+const MIN_CARD_WIDTH = 280
+const MIN_HEIGHT = 96
 
 interface SearchDialogProps {
 	open: boolean
@@ -40,15 +43,18 @@ export function SearchDialog({
 
 	useEffect(() => {
 		setSelectedIndex(0)
-	}, [results])
+	}, [query])
 
-	const handleTopicSelect = (topic: Tables<'topics'>) => {
-		navigate({
-			to: '/topics/{-$topicId}',
-			params: { topicId: topic.id.toString() }
-		})
-		onOpenChange(false)
-	}
+	const handleTopicSelect = useCallback(
+		(topic: Tables<'topics'>) => {
+			navigate({
+				to: '/topics/{-$topicId}',
+				params: { topicId: topic.id.toString() }
+			})
+			onOpenChange(false)
+		},
+		[navigate, onOpenChange]
+	)
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (!hasQuery || results.length === 0) return
@@ -68,6 +74,36 @@ export function SearchDialog({
 			onOpenChange(false)
 		}
 	}
+
+	const estimateItemSize = useCallback((topic: Tables<'topics'>) => {
+		const baseHeight = 80
+		const lineHeight = 20
+		const charsPerLine = 40
+
+		const nameLines = Math.ceil((topic.name?.length || 8) / charsPerLine)
+		const notesLines = topic.notes
+			? Math.min(2, Math.ceil(topic.notes.length / charsPerLine))
+			: 0
+
+		return Math.max(
+			MIN_HEIGHT,
+			baseHeight + (nameLines - 1) * lineHeight + notesLines * lineHeight
+		)
+	}, [])
+
+	const renderItem = useCallback(
+		(topic: Tables<'topics'>) => (
+			<SearchResultCard
+				minHeight={MIN_HEIGHT}
+				onTopicClick={handleTopicSelect}
+				query={debouncedQuery}
+				topic={topic}
+			/>
+		),
+		[handleTopicSelect, debouncedQuery]
+	)
+
+	const getItemKey = useCallback((topic: Tables<'topics'>) => topic.id, [])
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
@@ -130,43 +166,14 @@ export function SearchDialog({
 					)}
 
 					{results.length > 0 && (
-						<div className='space-y-2'>
-							{results.map((topic, index) => (
-								<Card
-									className={`cursor-pointer gap-0 border-border py-3 shadow-none transition-colors hover:bg-accent ${
-										index === selectedIndex
-											? 'border-accent-foreground/20 bg-accent'
-											: ''
-									}`}
-									key={topic.id}
-									onClick={() => handleTopicSelect(topic)}
-									onMouseEnter={() => setSelectedIndex(index)}
-								>
-									<CardContent className='px-4 py-0'>
-										<div className='flex items-start gap-3'>
-											<FileText className='mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground' />
-											<div className='min-w-0 flex-1'>
-												<div className='line-clamp-1 font-medium'>
-													{highlightText({
-														text: topic.name || 'Untitled',
-														query: debouncedQuery
-													})}
-												</div>
-												{topic.notes && (
-													<div className='mt-1 line-clamp-2 text-muted-foreground text-sm'>
-														{truncateWithHighlight(
-															topic.notes,
-															debouncedQuery,
-															120
-														)}
-													</div>
-												)}
-											</div>
-										</div>
-									</CardContent>
-								</Card>
-							))}
-						</div>
+						<MasonryLayout
+							estimateItemSize={estimateItemSize}
+							gap={12}
+							getItemKey={getItemKey}
+							items={results}
+							minItemWidth={MIN_CARD_WIDTH}
+							renderItem={renderItem}
+						/>
 					)}
 				</div>
 

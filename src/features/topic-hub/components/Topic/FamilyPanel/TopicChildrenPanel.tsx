@@ -1,24 +1,22 @@
-import { useVirtualizer } from '@tanstack/react-virtual'
 import { Baby, Plus } from 'lucide-react'
-import { use, useCallback, useEffect, useLayoutEffect, useState } from 'react'
+import { use, useCallback, useState } from 'react'
+import { MasonryLayout } from '~/components/MasonryLayout'
 import { TopicCard } from '~/components/TopicCard'
 import { Card, CardContent } from '~/components/ui/Card'
 import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topic-hub/stores/SelectedTopicContext'
-import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
-const GAP = 12
+
+type ListItem = { type: 'add-button' } | { type: 'child'; child: Topic }
 
 export function TopicChildrenPanel() {
-	const [numLanes, setNumLanes] = useState(1)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
-	const [parentRef, rect] = useResizeObserver<HTMLDivElement>()
 	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
 
 	const children = selectedTopic?.children || []
@@ -53,59 +51,57 @@ export function TopicChildrenPanel() {
 		[onTopicChange]
 	)
 
-	const estimateSize = useCallback(
-		(index: number) => {
-			// Add button is always at index 0
-			if (index === 0) return 60
+	// Combine add button and children into a single array
+	const items: Array<ListItem> = [
+		{ type: 'add-button' },
+		...children.map(child => ({ type: 'child' as const, child }))
+	]
 
-			// Estimate height based on topic name and notes length
-			const child = children[index - 1]
-			if (!child) return MIN_HEIGHT
+	const estimateItemSize = useCallback((item: ListItem) => {
+		// Add button is always first
+		if (item.type === 'add-button') return 60
 
-			const baseHeight = 80
-			const lineHeight = 10
-			const numCharsPerLine = 30
-			const newLine = 10
+		// Estimate height based on topic name and notes length
+		const { child } = item
+		const baseHeight = 80
+		const lineHeight = 10
+		const numCharsPerLine = 30
+		const newLine = 10
 
-			const nameHeight =
-				Math.floor(child.name.length / numCharsPerLine) * lineHeight
-			const notesHeight =
-				Math.floor(child.notes.length / numCharsPerLine) * lineHeight
+		const nameHeight =
+			Math.floor(child.name.length / numCharsPerLine) * lineHeight
+		const notesHeight =
+			Math.floor(child.notes.length / numCharsPerLine) * lineHeight
 
-			const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
+		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
 
-			return Math.max(calculatedHeight, MIN_HEIGHT)
+		return Math.max(calculatedHeight, MIN_HEIGHT)
+	}, [])
+
+	const renderItem = useCallback(
+		(item: ListItem) => {
+			if (item.type === 'add-button') {
+				return (
+					<Card
+						className='cursor-pointer border-2 border-dashed transition-colors hover:bg-muted/50'
+						onClick={handleAddChild}
+					>
+						<CardContent className='flex items-center justify-center p-3'>
+							<Plus className='h-4 w-4 text-muted-foreground' />
+						</CardContent>
+					</Card>
+				)
+			}
+
+			return <ChildCard child={item.child} onChildClick={handleChildClick} />
 		},
-		[children]
+		[handleAddChild, handleChildClick]
 	)
 
-	// Masonry virtualization setup
-	const virtualizer = useVirtualizer({
-		count: children.length + 1, // +1 for add button
-		getScrollElement: () => parentRef.current,
-		estimateSize,
-		overscan: 5,
-		lanes: numLanes,
-		gap: GAP
-	})
-
-	useLayoutEffect(() => {
-		// trigger virtualizer to re-render when numLanes changes
-		// ... i feel like there should be a better way to do this
-		virtualizer.measure()
-	}, [virtualizer, numLanes])
-
-	// Calculate lanes based on container width
-	useEffect(() => {
-		if (rect.width) {
-			const calculatedLanes = Math.max(
-				1,
-				Math.floor((rect.width + GAP) / (MIN_WIDTH + GAP))
-			)
-
-			if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
-		}
-	}, [rect.width, numLanes])
+	const getItemKey = useCallback((item: ListItem, _index: number) => {
+		if (item.type === 'add-button') return 'add-button'
+		return item.child.id
+	}, [])
 
 	return (
 		<>
@@ -117,59 +113,14 @@ export function TopicChildrenPanel() {
 					</span>
 				</div>
 				<div className='flex-1'>
-					<div
-						ref={parentRef}
-						style={{
-							height: `${virtualizer.getTotalSize()}px`,
-							width: '100%',
-							position: 'relative'
-						}}
-					>
-						{virtualizer.getVirtualItems().map(virtualItem => {
-							// Add button is at index 0
-							if (virtualItem.index === 0) {
-								return (
-									<div
-										className='absolute top-0'
-										data-index={virtualItem.index}
-										key='add-button'
-										ref={virtualizer.measureElement}
-										style={{
-											left: `${virtualItem.lane * (100 / numLanes)}%`,
-											width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : GAP}px)`,
-											transform: `translateY(${virtualItem.start}px)`
-										}}
-									>
-										<Card
-											className='cursor-pointer border-2 border-dashed transition-colors hover:bg-muted/50'
-											onClick={handleAddChild}
-										>
-											<CardContent className='flex items-center justify-center p-3'>
-												<Plus className='h-4 w-4 text-muted-foreground' />
-											</CardContent>
-										</Card>
-									</div>
-								)
-							}
-
-							const child = children[virtualItem.index - 1]!
-							return (
-								<div
-									className='absolute top-0'
-									data-index={virtualItem.index}
-									key={virtualItem.key}
-									ref={virtualizer.measureElement}
-									style={{
-										left: `${virtualItem.lane * (100 / numLanes)}%`,
-										width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : GAP}px)`,
-										transform: `translateY(${virtualItem.start}px)`
-									}}
-								>
-									<ChildCard child={child} onChildClick={handleChildClick} />
-								</div>
-							)
-						})}
-					</div>
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						gap={16}
+						getItemKey={getItemKey}
+						items={items}
+						minItemWidth={MIN_WIDTH}
+						renderItem={renderItem}
+					/>
 				</div>
 			</div>
 
