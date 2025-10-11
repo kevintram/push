@@ -57,29 +57,26 @@ export function TopicChildrenPanel() {
 		...children.map(child => ({ type: 'child' as const, child }))
 	]
 
-	const estimateItemSize = useCallback(
-		(item: ListItem) => {
-			// Add button is always first
-			if (item.type === 'add-button') return 60
+	const estimateItemSize = useCallback((item: ListItem) => {
+		// Add button is always first
+		if (item.type === 'add-button') return 60
 
-			// Estimate height based on topic name and notes length
-			const { child } = item
-			const baseHeight = 80
-			const lineHeight = 10
-			const numCharsPerLine = 30
-			const newLine = 10
+		// Estimate height based on topic name and notes length
+		const { child } = item
+		const baseHeight = 80
+		const lineHeight = 10
+		const numCharsPerLine = 30
+		const newLine = 10
 
-			const nameHeight =
-				Math.floor(child.name.length / numCharsPerLine) * lineHeight
-			const notesHeight =
-				Math.floor(child.notes.length / numCharsPerLine) * lineHeight
+		const nameHeight =
+			Math.floor(child.name.length / numCharsPerLine) * lineHeight
+		const notesHeight =
+			Math.floor(child.notes.length / numCharsPerLine) * lineHeight
 
-			const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
+		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
 
-			return Math.max(calculatedHeight, MIN_HEIGHT)
-		},
-		[]
-	)
+		return Math.max(calculatedHeight, MIN_HEIGHT)
+	}, [])
 
 	const renderItem = useCallback(
 		(item: ListItem) => {
@@ -101,7 +98,7 @@ export function TopicChildrenPanel() {
 		[handleAddChild, handleChildClick]
 	)
 
-	const getItemKey = useCallback((item: ListItem, index: number) => {
+	const getItemKey = useCallback((item: ListItem, _index: number) => {
 		if (item.type === 'add-button') return 'add-button'
 		return item.child.id
 	}, [])

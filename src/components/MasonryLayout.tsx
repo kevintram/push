@@ -49,8 +49,10 @@ export function MasonryLayout<T>({
 	})
 
 	useLayoutEffect(() => {
-		// Trigger virtualizer to re-measure when numLanes changes
-		virtualizer.measure()
+		if (numLanes > 0) {
+			// Trigger virtualizer to re-measure when numLanes changes
+			virtualizer.measure()
+		}
 	}, [virtualizer, numLanes])
 
 	useEffect(() => {
