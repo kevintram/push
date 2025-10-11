@@ -3,28 +3,20 @@ import {
 	useQuery
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { useNavigate } from '@tanstack/react-router'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import { motion } from 'framer-motion'
 import { Archive, Check, Inbox, Plus, SquareLibrary, X } from 'lucide-react'
-import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useState
-} from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { MasonryLayout } from '~/components/MasonryLayout'
 import { TopicCard } from '~/components/TopicCard'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { useTopicsWithRelationships } from '~/features/topic-hub/hooks/useTopicsWithRelationships'
-import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 
 const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96
-const GAP = 16
 
 type FilterId = 'archived' | 'inboxed'
 
@@ -37,9 +29,7 @@ type FilterBadge = {
 }
 
 export function RootTopicsPage() {
-	const [numLanes, setNumLanes] = useState(1)
 	const [activeFilters, setActiveFilters] = useState<Array<FilterId>>([])
-	const [parentRef, rect] = useResizeObserver()
 	const navigate = useNavigate()
 
 	// Query 1: All topics
@@ -184,53 +174,34 @@ export function RootTopicsPage() {
 		[navigate]
 	)
 
-	const estimateSize = useCallback(
-		(index: number) => {
-			// Estimate height based on topic name and notes length
-			const topic = filteredTopics[index]
-			if (!topic) return MIN_HEIGHT
+	const estimateItemSize = useCallback((topic: Topic) => {
+		const baseHeight = 80
+		const lineHeight = 10
+		const numCharsPerLine = 30
+		const newLine = 10
 
-			const baseHeight = 80
-			const lineHeight = 10
-			const numCharsPerLine = 30
-			const newLine = 10
+		const nameHeight =
+			Math.floor(topic.name.length / numCharsPerLine) * lineHeight
+		const notesHeight =
+			Math.floor(topic.notes.length / numCharsPerLine) * lineHeight
 
-			const nameHeight =
-				Math.floor(topic.name.length / numCharsPerLine) * lineHeight
-			const notesHeight =
-				Math.floor(topic.notes.length / numCharsPerLine) * lineHeight
+		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
 
-			const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
+		return Math.max(calculatedHeight, MIN_HEIGHT)
+	}, [])
 
-			return Math.max(calculatedHeight, MIN_HEIGHT)
-		},
-		[filteredTopics]
+	const renderItem = useCallback(
+		(topic: Topic) => (
+			<TopicCard
+				minHeight={MIN_HEIGHT}
+				onTopicClick={handleTopicClick}
+				topic={topic}
+			/>
+		),
+		[handleTopicClick]
 	)
 
-	// Masonry virtualization setup
-	const virtualizer = useVirtualizer({
-		count: filteredTopics.length,
-		getScrollElement: () => parentRef.current,
-		estimateSize,
-		overscan: 5,
-		lanes: numLanes,
-		gap: GAP
-	})
-
-	useEffect(() => {
-		if (rect) {
-			const calculatedLanes = Math.max(
-				1,
-				Math.floor((rect.width + GAP) / (MIN_CARD_WIDTH + GAP))
-			)
-			if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
-		}
-	}, [rect, numLanes])
-
-	useLayoutEffect(() => {
-		// trigger virtualizer to re-render when numLanes changes
-		virtualizer.measure()
-	}, [virtualizer, numLanes])
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	if (isLoading) {
 		return (
@@ -430,37 +401,14 @@ export function RootTopicsPage() {
 			</div>
 
 			<div className='px-6 pb-6'>
-				<div
-					ref={parentRef}
-					style={{
-						height: `${virtualizer.getTotalSize()}px`,
-						width: '100%',
-						position: 'relative'
-					}}
-				>
-					{virtualizer.getVirtualItems().map(virtualItem => {
-						const topic = filteredTopics[virtualItem.index]!
-						return (
-							<div
-								className='absolute top-0'
-								data-index={virtualItem.index}
-								key={virtualItem.key}
-								ref={virtualizer.measureElement}
-								style={{
-									left: `${virtualItem.lane * (100 / numLanes)}%`,
-									width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : GAP}px)`,
-									transform: `translateY(${virtualItem.start}px)`
-								}}
-							>
-								<TopicCard
-									minHeight={MIN_HEIGHT}
-									onTopicClick={handleTopicClick}
-									topic={topic}
-								/>
-							</div>
-						)
-					})}
-				</div>
+				<MasonryLayout
+					estimateItemSize={estimateItemSize}
+					gap={16}
+					getItemKey={getItemKey}
+					items={filteredTopics}
+					minItemWidth={MIN_CARD_WIDTH}
+					renderItem={renderItem}
+				/>
 			</div>
 		</div>
 	)

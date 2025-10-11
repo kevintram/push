@@ -1,14 +1,7 @@
-import { useVirtualizer } from '@tanstack/react-virtual'
-import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useState
-} from 'react'
+import { useCallback, useMemo } from 'react'
+import { MasonryLayout } from '~/components/MasonryLayout'
 import { TopicCard } from '~/components/TopicCard'
 import { Skeleton } from '~/components/ui/Skeleton'
-import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Tables } from '~/types/database.types'
 
 const MIN_CARD_WIDTH = 280
@@ -16,7 +9,6 @@ const MIN_CARD_HEIGHT = 168
 const CHARS_PER_LINE = 36
 const LINE_HEIGHT = 18
 const BASE_HEIGHT = 140
-const GAP = 16
 
 export function InboxList({
 	topics,
@@ -49,6 +41,29 @@ export function InboxList({
 
 	const topicList = useMemo(() => topics ?? [], [topics])
 
+	const estimateItemSize = useCallback((topic: Tables<'topics'>) => {
+		const nameLength = topic.name?.length ?? 0
+		const notesLength = topic.notes?.length ?? 0
+
+		const nameLines = Math.max(1, Math.ceil(nameLength / CHARS_PER_LINE))
+		const notesLines =
+			notesLength > 0 ? Math.ceil(notesLength / CHARS_PER_LINE) : 0
+
+		const height =
+			BASE_HEIGHT + (nameLines - 1) * LINE_HEIGHT + notesLines * LINE_HEIGHT
+
+		return Math.max(height, MIN_CARD_HEIGHT)
+	}, [])
+
+	const renderItem = useCallback(
+		(topic: Tables<'topics'>) => (
+			<TopicCard onTopicClick={onTopicSelect} topic={topic} />
+		),
+		[onTopicSelect]
+	)
+
+	const getItemKey = useCallback((topic: Tables<'topics'>) => topic.id, [])
+
 	if (topicList.length === 0) {
 		return (
 			<div className='flex flex-1 items-center justify-center py-12'>
@@ -60,81 +75,15 @@ export function InboxList({
 		)
 	}
 
-	const [parentRef, rect] = useResizeObserver<HTMLDivElement>()
-	const [numLanes, setNumLanes] = useState(1)
-
-	const estimateSize = useCallback(
-		(index: number) => {
-			const topic = topicList[index]
-			if (!topic) return MIN_CARD_HEIGHT
-
-			const nameLength = topic.name?.length ?? 0
-			const notesLength = topic.notes?.length ?? 0
-
-			const nameLines = Math.max(1, Math.ceil(nameLength / CHARS_PER_LINE))
-			const notesLines =
-				notesLength > 0 ? Math.ceil(notesLength / CHARS_PER_LINE) : 0
-
-			const height =
-				BASE_HEIGHT + (nameLines - 1) * LINE_HEIGHT + notesLines * LINE_HEIGHT
-
-			return Math.max(height, MIN_CARD_HEIGHT)
-		},
-		[topicList]
-	)
-
-	const virtualizer = useVirtualizer({
-		count: topicList.length,
-		getScrollElement: () => parentRef.current,
-		estimateSize,
-		lanes: numLanes,
-		overscan: 6,
-		gap: GAP
-	})
-
-	useLayoutEffect(() => {
-		virtualizer.measure()
-	}, [virtualizer, numLanes])
-
-	useEffect(() => {
-		if (rect.width) {
-			const calculatedLanes = Math.max(
-				1,
-				Math.floor((rect.width + GAP) / (MIN_CARD_WIDTH + GAP))
-			)
-
-			if (calculatedLanes !== numLanes) setNumLanes(calculatedLanes)
-		}
-	}, [rect.width, numLanes])
-
 	return (
-		<div
-			className='relative'
-			ref={parentRef}
-			style={{
-				height: `${virtualizer.getTotalSize()}px`,
-				width: '100%'
-			}}
-		>
-			{virtualizer.getVirtualItems().map(virtualItem => {
-				const topic = topicList[virtualItem.index]!
-
-				return (
-					<div
-						className='absolute top-0'
-						data-index={virtualItem.index}
-						key={virtualItem.key}
-						ref={virtualizer.measureElement}
-						style={{
-							left: `${virtualItem.lane * (100 / numLanes)}%`,
-							width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : GAP}px)`,
-							transform: `translateY(${virtualItem.start}px)`
-						}}
-					>
-						<TopicCard onTopicClick={onTopicSelect} topic={topic} />
-					</div>
-				)
-			})}
-		</div>
+		<MasonryLayout
+			estimateItemSize={estimateItemSize}
+			gap={16}
+			getItemKey={getItemKey}
+			items={topicList}
+			minItemWidth={MIN_CARD_WIDTH}
+			overscan={6}
+			renderItem={renderItem}
+		/>
 	)
 }
