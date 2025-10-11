@@ -109,8 +109,8 @@ export function RootTopicsPage() {
 	// Filter topics based on active filters
 	const filteredTopics = useMemo(() => {
 		if (activeFilters.length === 0) {
-			// Default: show non-archived topics
-			return topics.filter(topic => !topic.is_archived)
+			// Default: show non-archived and non-inboxed topics
+			return topics.filter(topic => !(topic.is_archived || topic.is_inboxed))
 		}
 
 		// When filters are active, show topics matching ANY filter (OR logic)
