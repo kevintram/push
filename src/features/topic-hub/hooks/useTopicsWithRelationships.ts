@@ -100,16 +100,27 @@ export function useTopicsWithRelationships(topicIds: Array<number>) {
 		return map
 	}, [childRelations, childTopics])
 
-	// Enrich topics with relationships
+	// Enrich topics with relationships, preserving the order from topicIds
 	const topics: Array<Topic> = useMemo(() => {
 		if (!topicsData) return []
 
-		return topicsData.map(topic => ({
-			...topic,
-			parents: parentsByDescendant.get(topic.id) ?? [],
-			children: childrenByAncestor.get(topic.id) ?? []
-		}))
-	}, [topicsData, parentsByDescendant, childrenByAncestor])
+		// Create a map for quick lookup
+		const topicMap = new Map(topicsData.map(t => [t.id, t]))
+
+		return topicIds.reduce<Array<Topic>>((accumulator, id) => {
+			const topic = topicMap.get(id)
+			if (!topic) return accumulator
+
+			const enrichedTopic: Topic = {
+				...topic,
+				parents: parentsByDescendant.get(id) ?? [],
+				children: childrenByAncestor.get(id) ?? []
+			}
+
+			accumulator.push(enrichedTopic)
+			return accumulator
+		}, [])
+	}, [topicIds, topicsData, parentsByDescendant, childrenByAncestor])
 
 	const isLoading =
 		topicsLoading ||
