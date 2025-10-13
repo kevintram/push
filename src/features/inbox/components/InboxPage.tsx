@@ -40,11 +40,18 @@ export function InboxPage() {
 		[selectedTopic, handleTopicChange]
 	)
 
+	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
+
 	return (
 		<div className='container mx-auto'>
 			<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
 				<div className='flex items-center justify-between'>
-					<h1 className='font-bold text-3xl'>Inbox</h1>
+					<h1 className='font-bold text-3xl'>
+						Inbox{' '}
+						<span className='font-semibold text-muted-foreground text-xl'>
+							({inboxCountLabel})
+						</span>
+					</h1>
 					<CreateTopicDialog
 						showSidebar={false}
 						submitButtonText='Create Topic'

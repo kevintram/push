@@ -1,10 +1,12 @@
 import {
 	useDeleteMutation,
-	useQuery
+	useQuery,
+	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
 import dayjs from 'dayjs'
 import {
 	Archive,
+	ArchiveRestore,
 	Baby,
 	Calendar,
 	GitPullRequestClosed,
@@ -48,6 +50,12 @@ export function TopicCard({
 	const { mutateAsync: deleteTopicMutation } = useDeleteMutation(
 		supabase.from('topics'),
 		['id']
+	)
+
+	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
+		supabase.from('topics'),
+		['id'],
+		'*'
 	)
 
 	// Fetch relationship counts for this topic
@@ -120,6 +128,28 @@ export function TopicCard({
 		deleteTopicMutation({ id: topic.id })
 	}
 
+	const handleArchiveToggle = useCallback(
+		async (e: React.MouseEvent) => {
+			e.stopPropagation()
+			await updateTopicMutation({
+				id: topic.id,
+				is_archived: !topic.is_archived
+			})
+		},
+		[updateTopicMutation, topic.id, topic.is_archived]
+	)
+
+	const handleInboxToggle = useCallback(
+		async (e: React.MouseEvent) => {
+			e.stopPropagation()
+			await updateTopicMutation({
+				id: topic.id,
+				is_inboxed: !topic.is_inboxed
+			})
+		},
+		[updateTopicMutation, topic.id, topic.is_inboxed]
+	)
+
 	return (
 		<Card
 			className='group relative cursor-pointer p-0 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
@@ -153,6 +183,32 @@ export function TopicCard({
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+								<DropdownMenuItem onClick={handleInboxToggle}>
+									{topic.is_inboxed ? (
+										<>
+											<Inbox className='mr-2 h-4 w-4' />
+											Remove from Inbox
+										</>
+									) : (
+										<>
+											<Inbox className='mr-2 h-4 w-4' />
+											Add to Inbox
+										</>
+									)}
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={handleArchiveToggle}>
+									{topic.is_archived ? (
+										<>
+											<ArchiveRestore className='mr-2 h-4 w-4' />
+											Unarchive
+										</>
+									) : (
+										<>
+											<Archive className='mr-2 h-4 w-4' />
+											Archive
+										</>
+									)}
+								</DropdownMenuItem>
 								{onRemoveRelationship && (
 									<DropdownMenuItem
 										onClick={e => {
@@ -165,7 +221,6 @@ export function TopicCard({
 									</DropdownMenuItem>
 								)}
 								<DropdownMenuItem
-									className='text-red-600 focus:text-red-600'
 									onClick={e => {
 										e.stopPropagation()
 										handleDeleteTopic()
