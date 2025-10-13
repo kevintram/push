@@ -1,9 +1,11 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMemo } from 'react'
+import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 
 /**
- * Hook to fetch the count of direct parents and children for a topic
+ * Hook to fetch the count of direct parents and children for a topic,
+ * along with the actual parent and child topics
  */
 export function useTopicRelationshipCounts(topicId: number | undefined) {
 	// Fetch parent IDs (where this topic is a descendant at depth 1)
@@ -30,6 +32,32 @@ export function useTopicRelationshipCounts(topicId: number | undefined) {
 		}
 	)
 
+	const parentIds = useMemo(
+		() => parentRelations?.map(r => r.ancestor) ?? [],
+		[parentRelations]
+	)
+
+	const childIds = useMemo(
+		() => childRelations?.map(r => r.descendant) ?? [],
+		[childRelations]
+	)
+
+	// Fetch parent topics
+	const { data: parentTopics } = useQuery<Array<Tables<'topics'>>>(
+		supabase.from('topics').select('*').in('id', parentIds),
+		{
+			enabled: parentIds.length > 0
+		}
+	)
+
+	// Fetch child topics
+	const { data: childTopics } = useQuery<Array<Tables<'topics'>>>(
+		supabase.from('topics').select('*').in('id', childIds),
+		{
+			enabled: childIds.length > 0
+		}
+	)
+
 	const parentCount = useMemo(
 		() => parentRelations?.length ?? 0,
 		[parentRelations]
@@ -42,6 +70,8 @@ export function useTopicRelationshipCounts(topicId: number | undefined) {
 
 	return {
 		parentCount,
-		childCount
+		childCount,
+		parentTopics: parentTopics ?? [],
+		childTopics: childTopics ?? []
 	}
 }
