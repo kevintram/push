@@ -25,10 +25,16 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger
+} from '~/components/ui/Popover'
 import { useTopicRelationshipCounts } from '~/features/topic-hub/hooks/useTopicRelationshipCounts'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
+import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
 type TodoWithEffectiveDate = Tables<'todos_with_effective_date'>
 
@@ -39,13 +45,15 @@ interface TopicCardProps {
 	onTopicClick?: (topic: Topic) => void
 	onRemoveRelationship?: () => void
 	minHeight?: number
+	searchQuery?: string
 }
 
 export function TopicCard({
 	topic,
 	onTopicClick,
 	onRemoveRelationship,
-	minHeight = MIN_HEIGHT
+	minHeight = MIN_HEIGHT,
+	searchQuery // for topic card in search dialog to support highlighting and shit
 }: TopicCardProps) {
 	const { mutateAsync: deleteTopicMutation } = useDeleteMutation(
 		supabase.from('topics'),
@@ -58,8 +66,9 @@ export function TopicCard({
 		'*'
 	)
 
-	// Fetch relationship counts for this topic
-	const { parentCount, childCount } = useTopicRelationshipCounts(topic.id)
+	// Fetch relationship counts and topics for this topic
+	const { parentCount, childCount, parentTopics, childTopics } =
+		useTopicRelationshipCounts(topic.id)
 
 	// Fetch todos associated with this topic
 	const { data: todos = [] } = useQuery<Array<TodoWithEffectiveDate>>(
@@ -166,10 +175,42 @@ export function TopicCard({
 					{/* Top row: Parent count and menu */}
 					<div className='flex items-center justify-between'>
 						{/* Parents count - top left */}
-						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-							<User2 className='h-3 w-3' />
-							<span>{parentCount}</span>
-						</div>
+						<Popover>
+							<PopoverTrigger asChild={true}>
+								<div
+									className='flex cursor-pointer items-center gap-1 text-muted-foreground text-xs hover:text-foreground'
+									onClick={e => e.stopPropagation()}
+								>
+									<User2 className='h-3 w-3' />
+									<span>{parentCount}</span>
+								</div>
+							</PopoverTrigger>
+							<PopoverContent
+								align='start'
+								className='w-64 p-3'
+								onClick={e => e.stopPropagation()}
+								onKeyDown={e => e.stopPropagation()}
+								side='top'
+							>
+								<div className='flex flex-col gap-2'>
+									<h4 className='font-semibold text-sm'>Parent Topics</h4>
+									{parentTopics.length === 0 ? (
+										<p className='text-muted-foreground text-xs'>No parents</p>
+									) : (
+										<ul className='flex flex-col gap-1.5'>
+											{parentTopics.map(parent => (
+												<li
+													className='break-words text-sm leading-tight '
+													key={parent.id}
+												>
+													{parent.name || parent.notes || 'Untitled'}
+												</li>
+											))}
+										</ul>
+									)}
+								</div>
+							</PopoverContent>
+						</Popover>
 
 						{/* Menu - top right */}
 						<DropdownMenu>
@@ -255,10 +296,18 @@ export function TopicCard({
 
 						<div className='flex flex-col gap-0.5'>
 							{topic.name && (
-								<h3 className='font-semibold leading-tight'>{topic.name}</h3>
+								<h3 className='font-semibold leading-tight'>
+									{searchQuery
+										? highlightText({ text: topic.name, query: searchQuery })
+										: topic.name}
+								</h3>
 							)}
 							{topic.notes && (
-								<p className='line-clamp-3 text-sm'>{topic.notes}</p>
+								<p className='line-clamp-3 text-sm'>
+									{searchQuery
+										? truncateWithHighlight(topic.notes, searchQuery, 150)
+										: topic.notes}
+								</p>
 							)}
 						</div>
 					</div>
@@ -281,10 +330,42 @@ export function TopicCard({
 					</div>
 
 					{/* Children count - bottom right */}
-					<div className='flex items-center gap-1'>
-						<Baby className='h-3 w-3' />
-						<span>{childCount}</span>
-					</div>
+					<Popover>
+						<PopoverTrigger asChild={true}>
+							<div
+								className='flex cursor-pointer items-center gap-1 hover:text-foreground'
+								onClick={e => e.stopPropagation()}
+							>
+								<Baby className='h-3 w-3' />
+								<span>{childCount}</span>
+							</div>
+						</PopoverTrigger>
+						<PopoverContent
+							align='end'
+							className='w-64 p-3'
+							onClick={e => e.stopPropagation()}
+							onKeyDown={e => e.stopPropagation()}
+							side='bottom'
+						>
+							<div className='flex flex-col gap-2'>
+								<h4 className='font-semibold text-sm'>Child Topics</h4>
+								{childTopics.length === 0 ? (
+									<p className='text-muted-foreground text-xs'>No children</p>
+								) : (
+									<ul className='flex flex-col gap-1.5'>
+										{childTopics.map(child => (
+											<li
+												className='break-words text-sm leading-tight'
+												key={child.id}
+											>
+												{child.name || child.notes || 'Untitled'}
+											</li>
+										))}
+									</ul>
+								)}
+							</div>
+						</PopoverContent>
+					</Popover>
 				</div>
 			</CardContent>
 		</Card>

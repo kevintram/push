@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
 import type { Tables } from '~/types/database.types'
 import { MasonryLayout } from './MasonryLayout'
-import { SearchResultCard } from './SearchResultCard'
+import { TopicCard } from './TopicCard'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/Dialog'
 import { Input } from './ui/Input'
 
@@ -93,10 +93,10 @@ export function SearchDialog({
 
 	const renderItem = useCallback(
 		(topic: Tables<'topics'>) => (
-			<SearchResultCard
+			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicSelect}
-				query={debouncedQuery}
+				searchQuery={debouncedQuery}
 				topic={topic}
 			/>
 		),
