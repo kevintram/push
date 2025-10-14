@@ -1,0 +1,68 @@
+import debounce from 'lodash.debounce'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+interface UseAutoSaveOptions {
+	initialValue: string
+	onSave: (value: string) => void
+	debounceMs?: number
+	key?: string
+}
+/**
+ * A hook that allows you to edit a string value in real time.
+ * It debounces the save operation and updates the value in the background.
+ * @param initialValue - The initial value of the string.
+ * @param onSave - Callback that saves the value to the database.
+ * @param debounceMs - The number of milliseconds to debounce the save operation.
+ * @param key - key to reset value if changes similar to tanstack query keys.
+ * @returns An object with the current value and a function to update the value.
+ */
+export function useAutoSave({
+	initialValue,
+	onSave,
+	debounceMs = 1000,
+	key
+}: UseAutoSaveOptions) {
+	const [value, setValue] = useState(initialValue)
+	const _key = useRef<string | undefined>(key)
+	const lastUserActionRef = useRef<number>(Date.now())
+
+	useEffect(() => {
+		const timeSinceLastUserAction = Date.now() - lastUserActionRef.current
+		const isRecentUserActivity = timeSinceLastUserAction < debounceMs + 500 // Add buffer
+
+		if (_key.current !== key) {
+			_key.current = key
+			setValue(initialValue)
+
+			return
+		}
+
+		if (!isRecentUserActivity) {
+			setValue(initialValue)
+			return
+		}
+	}, [initialValue, debounceMs, key])
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: I WANT TO UPDATE WITH THE ONSAVE BRO
+	const debouncedSave = useCallback(
+		debounce((newValue: string) => {
+			onSave(newValue)
+		}, debounceMs),
+		[onSave]
+	)
+
+	const handleChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+			const newValue = e.target.value
+			lastUserActionRef.current = Date.now()
+			setValue(newValue)
+			debouncedSave(newValue)
+		},
+		[debouncedSave]
+	)
+
+	return {
+		value,
+		onChange: handleChange
+	}
+}
