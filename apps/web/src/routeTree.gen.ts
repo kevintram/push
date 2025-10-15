@@ -13,7 +13,6 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TopicsIndexRouteImport } from './routes/topics.index'
 import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -36,11 +35,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TopicsIndexRoute = TopicsIndexRouteImport.update({
-  id: '/topics/',
-  path: '/topics/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TopicsChar123TopicIdChar125Route =
   TopicsChar123TopicIdChar125RouteImport.update({
     id: '/topics/{-$topicId}',
@@ -54,7 +48,6 @@ export interface FileRoutesByFullPath {
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
-  '/topics': typeof TopicsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,7 +55,6 @@ export interface FileRoutesByTo {
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
-  '/topics': typeof TopicsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,25 +63,12 @@ export interface FileRoutesById {
   '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
-  '/topics/': typeof TopicsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/inbox'
-    | '/review'
-    | '/settings'
-    | '/topics/{-$topicId}'
-    | '/topics'
+  fullPaths: '/' | '/inbox' | '/review' | '/settings' | '/topics/{-$topicId}'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/inbox'
-    | '/review'
-    | '/settings'
-    | '/topics/{-$topicId}'
-    | '/topics'
+  to: '/' | '/inbox' | '/review' | '/settings' | '/topics/{-$topicId}'
   id:
     | '__root__'
     | '/'
@@ -97,7 +76,6 @@ export interface FileRouteTypes {
     | '/review'
     | '/settings'
     | '/topics/{-$topicId}'
-    | '/topics/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,7 +84,6 @@ export interface RootRouteChildren {
   ReviewRoute: typeof ReviewRoute
   SettingsRoute: typeof SettingsRoute
   TopicsChar123TopicIdChar125Route: typeof TopicsChar123TopicIdChar125Route
-  TopicsIndexRoute: typeof TopicsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -139,13 +116,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/topics/': {
-      id: '/topics/'
-      path: '/topics'
-      fullPath: '/topics'
-      preLoaderRoute: typeof TopicsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/topics/{-$topicId}': {
       id: '/topics/{-$topicId}'
       path: '/topics/{-$topicId}'
@@ -162,7 +132,6 @@ const rootRouteChildren: RootRouteChildren = {
   ReviewRoute: ReviewRoute,
   SettingsRoute: SettingsRoute,
   TopicsChar123TopicIdChar125Route: TopicsChar123TopicIdChar125Route,
-  TopicsIndexRoute: TopicsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
