@@ -1,10 +1,16 @@
-name: Test
+name: Web - Test
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/web-test.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/web-test.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,6 +19,9 @@ concurrency:
 jobs:
   Test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
 
     steps:
       - uses: actions/checkout@v4
@@ -23,6 +32,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'pnpm'
+          cache-dependency-path: 'apps/web/pnpm-lock.yaml'
 
       - name: Install dependencies
         run: pnpm i && pnpm playwright install --with-deps
