@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     WORKOS_API_KEY: str
     WORKOS_CLIENT_ID: str
     WORKOS_COOKIE_PASSWORD: str
+    WORKOS_COOKIE_NAME:str
 
     CORS_ALLOWED_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_origins)
@@ -44,6 +45,9 @@ class Settings(BaseSettings):
     @property
     def CORS_ALLOWED_ORIGINS_AS_STRINGS(self) -> list[str]:
         return [str(origin).rstrip("/") for origin in self.CORS_ALLOWED_ORIGINS]
+        
+    APP_URL: str
+    API_URL: str
 
 
 settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
