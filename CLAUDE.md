@@ -12,6 +12,7 @@ This is a **monorepo** containing multiple independent applications that share a
 - **API** (FastAPI/Python)
 - **Android** (Kotlin/Gradle)
 - **iOS** (Swift/Xcode)
+- **Supabase** (shared database configuration, migrations, and seeds at root level)
 
 ## Monorepo Structure
 
