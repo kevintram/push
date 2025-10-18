@@ -12,6 +12,7 @@ This is a monorepo containing all 3gulp applications and services.
 │   ├── api/          # FastAPI backend (Python/uv)
 │   ├── android/      # Android app (Kotlin/Gradle)
 │   └── ios/          # iOS app (Swift/Xcode)
+├── supabase/         # Supabase configuration, migrations, and seeds
 └── .gitignore
 ```
 

@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 - `src/` holds application code: `features/` for domain flows, `components/` for shared UI, `routes/` for TanStack route files, and `providers/` plus `lib/` for cross-cutting glue.
 - UI primitives that mirror shadcn live under `src/components/ui/`; reuse them instead of duplicating markup.
-- Unit tests sit beside components (for example `App.test.tsx`), while end-to-end specs live in `tests/` and Supabase SQL lives in `supabase/migrations/`.
+- Unit tests sit beside components (for example `App.test.tsx`), while end-to-end specs live in `tests/`.
 - Static assets come from `public/`; adjust MSW worker files there when mocking APIs.
 
 ## Build, Test, and Development Commands
@@ -28,4 +28,4 @@
 - Adopt the existing Conventional Commit pattern (`feat:`, `fix:`, `chore:`) visible in `git log` so automated changelog tools remain effective.
 - Squash minor WIP commits locally; keep messages focused on the surface-level behavior change.
 - PRs should describe the user impact, list verification steps (`pnpm validate`, manual QA), link the relevant issue, and include screenshots or screen captures for UI changes.
-- Request a review before merging and mention any toggles, migrations, or Supabase config updates that require coordination.
+- Request a review before merging and mention any toggles or migrations that require coordination.
