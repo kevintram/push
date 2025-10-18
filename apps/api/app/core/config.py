@@ -48,6 +48,8 @@ class Settings(BaseSettings):
         
     APP_URL: str
     API_URL: str
+    DOMAIN: str
+    ENV: str
 
 
 settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
