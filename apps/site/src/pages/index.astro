@@ -13,15 +13,15 @@ import { Button } from "../components/ui/button";
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro + TailwindCSS</title>
+    <title>3gulp</title>
   </head>
 
   <body>
     <div class="grid place-items-center h-screen content-center">
-      <Button>Tailwind Button in Astro!</Button>
-      <a href="/markdown-page" class="p-4 underline"
-        >Markdown is also supported...</a
-      >
+      <div class="flex flex-col gap-8 items-center">
+        <h1 class="text-9xl">3gulp</h1>
+        <Button>Login</Button>
+      </div>
     </div>
   </body>
 
@@ -30,7 +30,10 @@ import { Button } from "../components/ui/button";
     const button = document.body.querySelector("button");
 
     if (button) {
-      button.addEventListener("click", () => confetti());
+      button.addEventListener("click", () => {
+        confetti();
+        window.location.href = import.meta.env.PUBLIC_APP_URL
+      });
     }
   </script>
 </html>

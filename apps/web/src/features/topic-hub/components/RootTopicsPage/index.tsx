@@ -203,6 +203,14 @@ export function RootTopicsPage() {
 
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
+	const getTopics = useCallback(() => {
+		fetch(`${import.meta.env.VITE_API_URL}/topics/`, {
+			credentials: 'include'
+		}).then(res => {
+			return res.json()
+		})
+	}, [])
+
 	if (isLoading) {
 		return (
 			<div className='container mx-auto'>
@@ -350,6 +358,21 @@ export function RootTopicsPage() {
 				<div className='mb-3 flex items-center gap-3'>
 					<SquareLibrary className='h-6 w-6' />
 					<h1 className='font-bold text-3xl'>Library</h1>
+					<Button onClick={() => getTopics()}>Get Topics</Button>
+					<Button
+						onClick={() => {
+							document.location.href = `${import.meta.env.VITE_API_URL}/login`
+						}}
+					>
+						Login
+					</Button>
+					<Button
+						onClick={() => {
+							document.location.href = `${import.meta.env.VITE_API_URL}/logout`
+						}}
+					>
+						Logout
+					</Button>
 				</div>
 				<motion.div
 					className='flex flex-wrap items-center gap-2'

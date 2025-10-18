@@ -1,22 +1,15 @@
-from workos import WorkOSClient
 from app.core.config import settings
+from app.core.auth import workos
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from starlette import status
 
-workos = WorkOSClient(
-    api_key=settings.WORKOS_API_KEY, client_id=settings.WORKOS_CLIENT_ID
-)
-
 router = APIRouter()
-
-SESSION_COOKIE_NAME = "wos_session"
-
 
 @router.get("/login")
 def login():
     authorization_url = workos.user_management.get_authorization_url(
-        provider="authkit", redirect_uri="http://127.0.0.1:8000/callback"
+        provider="authkit", redirect_uri=f"{settings.API_URL}/callback"
     )
 
     return RedirectResponse(url=authorization_url, status_code=status.HTTP_302_FOUND)
@@ -34,10 +27,10 @@ def callback(code: str):
         )
 
         resp = RedirectResponse(
-            url="http://localhost:5173", status_code=status.HTTP_302_FOUND
+            url=settings.APP_URL, status_code=status.HTTP_302_FOUND
         )
         resp.set_cookie(
-            SESSION_COOKIE_NAME,
+            settings.WORKOS_COOKIE_NAME,
             value=auth_response.sealed_session,
             secure=False,  # todo: set True in prod
             httponly=True,
@@ -53,7 +46,7 @@ def callback(code: str):
 @router.get("/logout")
 def logout(request: Request):
     session = workos.user_management.load_sealed_session(
-        sealed_session=request.cookies.get(SESSION_COOKIE_NAME),
+        sealed_session=request.cookies.get(settings.WORKOS_COOKIE_NAME),
         cookie_password=settings.WORKOS_COOKIE_PASSWORD,
     )
 
@@ -61,9 +54,9 @@ def logout(request: Request):
         resp = RedirectResponse(
             url=session.get_logout_url(), status_code=status.HTTP_302_FOUND
         )
-        resp.delete_cookie(SESSION_COOKIE_NAME)
+        resp.delete_cookie(settings.WORKOS_COOKIE_NAME)
         return resp
     except Exception:
         resp = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
-        resp.delete_cookie(SESSION_COOKIE_NAME)
+        resp.delete_cookie(settings.WORKOS_COOKIE_NAME)
         return resp
