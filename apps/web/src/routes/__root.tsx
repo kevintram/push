@@ -4,7 +4,7 @@ import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { AppSidebar } from '~/components/AppSidebar'
 import { Header } from '~/components/Header'
 import { LoadingOrError } from '~/components/LoadingOrError'
-import { SidebarInset, SidebarProvider } from '~/components/ui/Sidebar'
+import { SidebarProvider } from '~/components/ui/Sidebar'
 
 function renderError({ error }: FallbackProps) {
 	return <LoadingOrError error={error} />
@@ -13,16 +13,16 @@ function renderError({ error }: FallbackProps) {
 export const Route = createRootRoute({
 	component: () => (
 		<ErrorBoundary fallbackRender={renderError}>
-			<SidebarProvider defaultOpen={false}>
+			<SidebarProvider className='h-svh' defaultOpen={false}>
 				<AppSidebar />
-				<SidebarInset>
+				<div className='relative flex min-h-0 flex-1 flex-col bg-background'>
 					<Header />
-					<div className='flex-1'>
+					<div className='relative min-h-0 flex-1 rounded-tl-xl border-1 bg-primary-foreground'>
 						<Suspense fallback={<LoadingOrError />}>
 							<Outlet />
 						</Suspense>
 					</div>
-				</SidebarInset>
+				</div>
 			</SidebarProvider>
 		</ErrorBoundary>
 	)

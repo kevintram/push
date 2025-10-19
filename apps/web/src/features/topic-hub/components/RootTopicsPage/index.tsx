@@ -213,62 +213,63 @@ export function RootTopicsPage() {
 
 	if (isLoading) {
 		return (
-			<div className='container mx-auto'>
-				<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-					<div className='mb-3 flex items-center gap-3'>
-						<SquareLibrary className='h-6 w-6' />
-						<h1 className='font-bold text-3xl'>Library</h1>
-					</div>
-					<motion.div
-						className='flex flex-wrap items-center gap-2'
-						layout={true}
-						transition={{ duration: 0.2, ease: 'easeInOut' }}
-					>
-						{renderedFilters.map(item => {
-							if (item.type === 'clear') {
-								return (
-									<motion.div
-										key='clear'
-										layout={true}
-										transition={{ duration: 0.2, ease: 'easeInOut' }}
-									>
-										<Badge
-											aria-label='Clear filters'
-											className='flex cursor-pointer items-center gap-1'
-											onClick={handleClearFilters}
-											variant='secondary'
-										>
-											<X className='h-4 w-4' />
-										</Badge>
-									</motion.div>
-								)
-							}
+			<div className='scrollbar-track-transparent relative h-full w-full overflow-auto'>
+				<div className='mx-auto my-16 flex flex-col items-center'>
+					<div className='flex w-full max-w-screen-lg flex-col'>
+						<h1 className='font-bold text-4xl'>Library</h1>
+						<div className='top-0 z-10 py-3'>
+							<motion.div
+								className='flex flex-wrap items-center gap-2'
+								layout={true}
+								transition={{ duration: 0.2, ease: 'easeInOut' }}
+							>
+								{renderedFilters.map(item => {
+									if (item.type === 'clear') {
+										return (
+											<motion.div
+												key='clear'
+												layout={true}
+												transition={{ duration: 0.2, ease: 'easeInOut' }}
+											>
+												<Badge
+													aria-label='Clear filters'
+													className='flex cursor-pointer items-center gap-1'
+													onClick={handleClearFilters}
+													variant='secondary'
+												>
+													<X className='h-4 w-4' />
+												</Badge>
+											</motion.div>
+										)
+									}
 
-							return (
-								<motion.div
-									key={item.key}
-									layout={true}
-									transition={{ duration: 0.2, ease: 'easeInOut' }}
-								>
-									<Badge
-										className='flex cursor-pointer items-center gap-1'
-										onClick={item.filter.onClick}
-										variant={item.filter.isActive ? 'default' : 'outline'}
-									>
-										{item.filter.isActive ? (
-											<Check aria-hidden='true' className='h-4 w-4' />
-										) : (
-											item.filter.icon
-										)}
-										{item.filter.label}
-									</Badge>
-								</motion.div>
-							)
-						})}
-					</motion.div>
-				</div>
-				<div className='flex flex-1 items-center justify-center px-6 pb-6'>
-					<p className='text-muted-foreground'>Loading topics...</p>
+									return (
+										<motion.div
+											key={item.key}
+											layout={true}
+											transition={{ duration: 0.2, ease: 'easeInOut' }}
+										>
+											<Badge
+												className='flex cursor-pointer items-center gap-1'
+												onClick={item.filter.onClick}
+												variant={item.filter.isActive ? 'default' : 'outline'}
+											>
+												{item.filter.isActive ? (
+													<Check aria-hidden='true' className='h-4 w-4' />
+												) : (
+													item.filter.icon
+												)}
+												{item.filter.label}
+											</Badge>
+										</motion.div>
+									)
+								})}
+							</motion.div>
+						</div>
+					</div>
+					<div className='h-full w-full p-6'>
+						<p className='text-muted-foreground'>Loading topics...</p>
+					</div>
 				</div>
 			</div>
 		)
@@ -282,70 +283,71 @@ export function RootTopicsPage() {
 				: 'No topics to show'
 
 		return (
-			<div className='container mx-auto'>
-				<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-					<div className='mb-3 flex items-center gap-3'>
-						<SquareLibrary className='h-6 w-6' />
-						<h1 className='font-bold text-3xl'>Library</h1>
-					</div>
-					<motion.div
-						className='flex flex-wrap items-center gap-2'
-						layout={true}
-						transition={{ duration: 0.2, ease: 'easeInOut' }}
-					>
-						{renderedFilters.map(item => {
-							if (item.type === 'clear') {
-								return (
-									<motion.div
-										key='clear'
-										layout={true}
-										transition={{ duration: 0.2, ease: 'easeInOut' }}
-									>
-										<Badge
-											aria-label='Clear filters'
-											className='flex cursor-pointer items-center gap-1'
-											onClick={handleClearFilters}
-											variant='secondary'
-										>
-											<X className='h-4 w-4' />
-										</Badge>
-									</motion.div>
-								)
-							}
+			<div className='scrollbar-track-transparent relative h-full w-full overflow-auto'>
+				<div className='mx-auto my-16 flex flex-col items-center'>
+					<div className='flex w-full max-w-screen-lg flex-col'>
+						<h1 className='font-bold text-4xl'>Library</h1>
+						<div className='top-0 z-10 py-3'>
+							<motion.div
+								className='flex flex-wrap items-center gap-2'
+								layout={true}
+								transition={{ duration: 0.2, ease: 'easeInOut' }}
+							>
+								{renderedFilters.map(item => {
+									if (item.type === 'clear') {
+										return (
+											<motion.div
+												key='clear'
+												layout={true}
+												transition={{ duration: 0.2, ease: 'easeInOut' }}
+											>
+												<Badge
+													aria-label='Clear filters'
+													className='flex cursor-pointer items-center gap-1'
+													onClick={handleClearFilters}
+													variant='secondary'
+												>
+													<X className='h-4 w-4' />
+												</Badge>
+											</motion.div>
+										)
+									}
 
-							return (
-								<motion.div
-									key={item.key}
-									layout={true}
-									transition={{ duration: 0.2, ease: 'easeInOut' }}
-								>
-									<Badge
-										className='flex cursor-pointer items-center gap-1'
-										onClick={item.filter.onClick}
-										variant={item.filter.isActive ? 'default' : 'outline'}
-									>
-										{item.filter.isActive ? (
-											<Check aria-hidden='true' className='h-4 w-4' />
-										) : (
-											item.filter.icon
-										)}
-										{item.filter.label}
-									</Badge>
-								</motion.div>
-							)
-						})}
-					</motion.div>
-				</div>
-				<div className='flex flex-1 items-center justify-center px-6 pb-6'>
-					<div className='text-center'>
-						<SquareLibrary className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
-						<p className='mb-2 text-muted-foreground'>{emptyMessage}</p>
-						{topics.length === 0 && (
-							<Button onClick={handleCreateTopic} variant='outline'>
-								<Plus className='mr-2 h-4 w-4' />
-								Create your first topic
-							</Button>
-						)}
+									return (
+										<motion.div
+											key={item.key}
+											layout={true}
+											transition={{ duration: 0.2, ease: 'easeInOut' }}
+										>
+											<Badge
+												className='flex cursor-pointer items-center gap-1'
+												onClick={item.filter.onClick}
+												variant={item.filter.isActive ? 'default' : 'outline'}
+											>
+												{item.filter.isActive ? (
+													<Check aria-hidden='true' className='h-4 w-4' />
+												) : (
+													item.filter.icon
+												)}
+												{item.filter.label}
+											</Badge>
+										</motion.div>
+									)
+								})}
+							</motion.div>
+						</div>
+					</div>
+					<div className='h-full w-full p-6'>
+						<div className='text-center'>
+							<SquareLibrary className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
+							<p className='mb-2 text-muted-foreground'>{emptyMessage}</p>
+							{topics.length === 0 && (
+								<Button onClick={handleCreateTopic} variant='outline'>
+									<Plus className='mr-2 h-4 w-4' />
+									Create your first topic
+								</Button>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -353,85 +355,88 @@ export function RootTopicsPage() {
 	}
 
 	return (
-		<div className='container mx-auto'>
-			<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-				<div className='mb-3 flex items-center gap-3'>
-					<SquareLibrary className='h-6 w-6' />
-					<h1 className='font-bold text-3xl'>Library</h1>
-					<Button onClick={() => getTopics()}>Get Topics</Button>
-					<Button
-						onClick={() => {
-							document.location.href = `${import.meta.env.VITE_API_URL}/login`
-						}}
-					>
-						Login
-					</Button>
-					<Button
-						onClick={() => {
-							document.location.href = `${import.meta.env.VITE_API_URL}/logout`
-						}}
-					>
-						Logout
-					</Button>
-				</div>
-				<motion.div
-					className='flex flex-wrap items-center gap-2'
-					layout={true}
-					transition={{ duration: 0.2, ease: 'easeInOut' }}
-				>
-					{renderedFilters.map(item => {
-						if (item.type === 'clear') {
-							return (
-								<motion.div
-									key='clear'
-									layout={true}
-									transition={{ duration: 0.2, ease: 'easeInOut' }}
-								>
-									<Badge
-										aria-label='Clear filters'
-										className='flex cursor-pointer items-center gap-1'
-										onClick={handleClearFilters}
-										variant='secondary'
+		<div className='scrollbar-track-transparent relative h-full w-full overflow-auto'>
+			<div className='mx-auto my-16 flex flex-col items-center'>
+				<div className='flex w-full max-w-screen-lg flex-col'>
+					<div className='flex items-center gap-3'>
+						<h1 className='font-bold text-4xl'>Library</h1>
+						<Button onClick={() => getTopics()}>Get Topics</Button>
+						<Button
+							onClick={() => {
+								document.location.href = `${import.meta.env.VITE_API_URL}/login`
+							}}
+						>
+							Login
+						</Button>
+						<Button
+							onClick={() => {
+								document.location.href = `${import.meta.env.VITE_API_URL}/logout`
+							}}
+						>
+							Logout
+						</Button>
+					</div>
+					<div className='top-0 z-10 py-3'>
+						<motion.div
+							className='flex flex-wrap items-center gap-2'
+							layout={true}
+							transition={{ duration: 0.2, ease: 'easeInOut' }}
+						>
+							{renderedFilters.map(item => {
+								if (item.type === 'clear') {
+									return (
+										<motion.div
+											key='clear'
+											layout={true}
+											transition={{ duration: 0.2, ease: 'easeInOut' }}
+										>
+											<Badge
+												aria-label='Clear filters'
+												className='flex cursor-pointer items-center gap-1'
+												onClick={handleClearFilters}
+												variant='secondary'
+											>
+												<X className='h-4 w-4' />
+											</Badge>
+										</motion.div>
+									)
+								}
+
+								return (
+									<motion.div
+										key={item.key}
+										layout={true}
+										transition={{ duration: 0.2, ease: 'easeInOut' }}
 									>
-										<X className='h-4 w-4' />
-									</Badge>
-								</motion.div>
-							)
-						}
+										<Badge
+											className='flex cursor-pointer items-center gap-1'
+											onClick={item.filter.onClick}
+											variant={item.filter.isActive ? 'default' : 'outline'}
+										>
+											{item.filter.isActive ? (
+												<Check aria-hidden='true' className='h-4 w-4' />
+											) : (
+												item.filter.icon
+											)}
+											{item.filter.label}
+										</Badge>
+									</motion.div>
+								)
+							})}
+						</motion.div>
+					</div>
+				</div>
 
-						return (
-							<motion.div
-								key={item.key}
-								layout={true}
-								transition={{ duration: 0.2, ease: 'easeInOut' }}
-							>
-								<Badge
-									className='flex cursor-pointer items-center gap-1'
-									onClick={item.filter.onClick}
-									variant={item.filter.isActive ? 'default' : 'outline'}
-								>
-									{item.filter.isActive ? (
-										<Check aria-hidden='true' className='h-4 w-4' />
-									) : (
-										item.filter.icon
-									)}
-									{item.filter.label}
-								</Badge>
-							</motion.div>
-						)
-					})}
-				</motion.div>
-			</div>
-
-			<div className='px-6 pb-6'>
-				<MasonryLayout
-					estimateItemSize={estimateItemSize}
-					gap={16}
-					getItemKey={getItemKey}
-					items={filteredTopics}
-					minItemWidth={MIN_CARD_WIDTH}
-					renderItem={renderItem}
-				/>
+				<div className='h-full w-full p-6'>
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						gap={16}
+						getItemKey={getItemKey}
+						items={filteredTopics}
+						minItemWidth={MIN_CARD_WIDTH}
+						renderItem={renderItem}
+					/>
+				</div>
 			</div>
 		</div>
 	)

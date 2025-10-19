@@ -98,7 +98,7 @@ function TimelineSidebarContent() {
 					defaultSize={70}
 					minSize={20}
 				>
-					<div className='flex h-full flex-col gap-2 overflow-auto px-2 py-2'>
+					<div className='scrollbar-track-transparent flex h-full flex-col gap-2 overflow-auto overscroll-contain px-2 py-2'>
 						{renderTodos()}
 					</div>
 				</Panel>
@@ -108,7 +108,7 @@ function TimelineSidebarContent() {
 					defaultSize={30}
 					minSize={15}
 				>
-					<div className='flex h-full flex-col gap-2 overflow-auto p-2'>
+					<div className='scrollbar-track-transparent flex h-full flex-col gap-2 overflow-auto overscroll-contain p-2'>
 						<div className='flex flex-shrink-0 flex-row items-center justify-between gap-2'>
 							<h2 className='font-semibold text-sm'>Unscheduled</h2>
 							<AddUnscheduledTodoButton />

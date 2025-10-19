@@ -43,10 +43,10 @@ export function InboxPage() {
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
 	return (
-		<div className='container mx-auto'>
-			<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-				<div className='flex items-center justify-between'>
-					<h1 className='font-bold text-3xl'>
+		<div className='scrollbar-track-transparent relative h-full w-full overflow-auto'>
+			<div className='mx-auto my-16 flex flex-col items-center'>
+				<div className='flex w-full max-w-screen-lg flex-row items-center justify-between'>
+					<h1 className='font-bold text-4xl'>
 						Inbox{' '}
 						<span className='font-semibold text-muted-foreground text-xl'>
 							({inboxCountLabel})
@@ -64,21 +64,21 @@ export function InboxPage() {
 						}
 					/>
 				</div>
-			</div>
-			<div className='px-6 pb-6'>
-				<InboxList
-					isLoading={isLoading}
-					onTopicSelect={handleTopicSelect}
-					topics={inboxTopics}
-				/>
-			</div>
+				<div className='h-full w-full p-6'>
+					<InboxList
+						isLoading={isLoading}
+						onTopicSelect={handleTopicSelect}
+						topics={inboxTopics}
+					/>
+				</div>
 
-			<TopicContext value={contextValue}>
-				<TopicDialog
-					onOpenChange={handleDialogOpenChange}
-					open={isDialogOpen}
-				/>
-			</TopicContext>
+				<TopicContext value={contextValue}>
+					<TopicDialog
+						onOpenChange={handleDialogOpenChange}
+						open={isDialogOpen}
+					/>
+				</TopicContext>
+			</div>
 		</div>
 	)
 }

@@ -165,96 +165,99 @@ export function TodosPage() {
 	}, [])
 
 	return (
-		<div className='container mx-auto'>
-			<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-				<motion.div
-					className='flex flex-wrap items-center gap-2'
-					layout={true}
-					transition={{ duration: 0.2, ease: 'easeInOut' }}
-				>
-					{renderedFilters.map(item => {
-						if (item.type === 'clear') {
+		<div className='scrollbar-track-transparent relative h-full w-full overflow-auto'>
+			<div className='mx-auto my-16 flex max-w-screen-lg flex-col '>
+				<h1 className='font-bold text-4xl'>Todos</h1>
+				<div className='top-0 z-10 py-3'>
+					<motion.div
+						className='flex flex-wrap items-center gap-2'
+						layout={true}
+						transition={{ duration: 0.2, ease: 'easeInOut' }}
+					>
+						{renderedFilters.map(item => {
+							if (item.type === 'clear') {
+								return (
+									<motion.div
+										key='clear'
+										layout={true}
+										transition={{ duration: 0.2, ease: 'easeInOut' }}
+									>
+										<Badge
+											aria-label='Clear filters'
+											className='flex cursor-pointer items-center gap-1'
+											onClick={handleClearFilters}
+											variant='secondary'
+										>
+											<X className='h-4 w-4' />
+										</Badge>
+									</motion.div>
+								)
+							}
+
 							return (
 								<motion.div
-									key='clear'
+									key={item.key}
 									layout={true}
 									transition={{ duration: 0.2, ease: 'easeInOut' }}
 								>
 									<Badge
-										aria-label='Clear filters'
 										className='flex cursor-pointer items-center gap-1'
-										onClick={handleClearFilters}
-										variant='secondary'
+										onClick={item.filter.onClick}
+										variant={item.filter.isActive ? 'default' : 'outline'}
 									>
-										<X className='h-4 w-4' />
+										{item.filter.id === 'logbook' ? (
+											<Logs aria-hidden='true' className='h-4 w-4' />
+										) : (
+											item.filter.isActive && (
+												<Check aria-hidden='true' className='h-4 w-4' />
+											)
+										)}
+										{item.filter.label}
 									</Badge>
 								</motion.div>
 							)
-						}
+						})}
+					</motion.div>
+				</div>
+				<div className='pb-6'>
+					{filteredSections.map(section => (
+						<div className='mb-8' key={section.id}>
+							<div className='mb-2 flex items-center justify-between'>
+								<h2
+									className={`font-bold text-3xl ${section.headingClassName ?? ''}`.trim()}
+								>
+									{section.label}
+								</h2>
+								{section.canAdd && (
+									<Button
+										className='mr-4'
+										onClick={() => addTodoToSection(section.id)}
+										size='sm'
+										variant='ghost'
+									>
+										<Plus className='h-4 w-4' />
+									</Button>
+								)}
+							</div>
 
-						return (
-							<motion.div
-								key={item.key}
-								layout={true}
-								transition={{ duration: 0.2, ease: 'easeInOut' }}
-							>
-								<Badge
-									className='flex cursor-pointer items-center gap-1'
-									onClick={item.filter.onClick}
-									variant={item.filter.isActive ? 'default' : 'outline'}
-								>
-									{item.filter.id === 'logbook' ? (
-										<Logs aria-hidden='true' className='h-4 w-4' />
-									) : (
-										item.filter.isActive && (
-											<Check aria-hidden='true' className='h-4 w-4' />
-										)
-									)}
-									{item.filter.label}
-								</Badge>
-							</motion.div>
-						)
-					})}
-				</motion.div>
-			</div>
-			<div className='px-6 pb-6'>
-				{filteredSections.map(section => (
-					<div className='mb-8' key={section.id}>
-						<div className='mb-2 flex items-center justify-between'>
-							<h2
-								className={`font-bold text-3xl ${section.headingClassName ?? ''}`.trim()}
-							>
-								{section.label}
-							</h2>
-							{section.canAdd && (
-								<Button
-									className='mr-4'
-									onClick={() => addTodoToSection(section.id)}
-									size='sm'
-									variant='ghost'
-								>
-									<Plus className='h-4 w-4' />
-								</Button>
+							{section.entries.length > 0 ? (
+								<div className='space-y-0.5'>
+									{section.entries.map(entry => (
+										<TodoItem
+											entry={entry}
+											isCompleted={entry.completed_at !== null}
+											key={entry.id}
+										/>
+									))}
+								</div>
+							) : (
+								<p className='text-muted-foreground text-sm italic'>
+									{section.emptyMessage}
+								</p>
 							)}
 						</div>
-
-						{section.entries.length > 0 ? (
-							<div className='space-y-0.5'>
-								{section.entries.map(entry => (
-									<TodoItem
-										entry={entry}
-										isCompleted={entry.completed_at !== null}
-										key={entry.id}
-									/>
-								))}
-							</div>
-						) : (
-							<p className='text-muted-foreground text-sm italic'>
-								{section.emptyMessage}
-							</p>
-						)}
-					</div>
-				))}
+					))}
+				</div>
 			</div>
 		</div>
 	)
