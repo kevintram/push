@@ -43,28 +43,30 @@ export function InboxPage() {
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
 	return (
-		<div className='scrollbar-track-transparent relative h-full w-full overflow-auto'>
-			<div className='mx-auto my-16 flex flex-col items-center'>
-				<div className='flex w-full max-w-screen-lg flex-row items-center justify-between'>
-					<h1 className='font-bold text-4xl'>
-						Inbox{' '}
-						<span className='font-semibold text-muted-foreground text-xl'>
-							({inboxCountLabel})
-						</span>
-					</h1>
-					<CreateTopicDialog
-						showSidebar={false}
-						submitButtonText='Create Topic'
-						title='Add Topic'
-						topicDefaults={{ is_inboxed: true }}
-						trigger={
-							<Button>
-								<Plus className='h-4 w-4' />
-							</Button>
-						}
-					/>
+		<div className='scrollbar-track-transparent relative h-full w-full'>
+			<div className='flex h-full flex-col overflow-auto'>
+				<div className='sticky top-0 z-10 rounded-xl border-tl-2 bg-primary-foreground px-8 pt-6 pb-0'>
+					<div className='flex items-center justify-between'>
+						<h1 className='font-bold text-2xl'>
+							Inbox{' '}
+							<span className='font-semibold text-muted-foreground text-xl'>
+								({inboxCountLabel})
+							</span>
+						</h1>
+						<CreateTopicDialog
+							showSidebar={false}
+							submitButtonText='Create Topic'
+							title='Add Topic'
+							topicDefaults={{ is_inboxed: true }}
+							trigger={
+								<Button size='icon' variant='ghost'>
+									<Plus />
+								</Button>
+							}
+						/>
+					</div>
 				</div>
-				<div className='h-full w-full p-6'>
+				<div className='p-8 pt-2'>
 					<InboxList
 						isLoading={isLoading}
 						onTopicSelect={handleTopicSelect}

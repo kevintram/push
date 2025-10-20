@@ -23,7 +23,7 @@ export function Header() {
 	return (
 		<>
 			<header
-				className='relative top-0 w-full items-center px-2 py-2'
+				className='relative top-0 w-full items-center px-2 py-0'
 				style={{
 					height: 'var(--app-header-height)',
 					minHeight: 'var(--app-header-height)'

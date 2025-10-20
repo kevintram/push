@@ -159,8 +159,8 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	)
 
 	return (
-		<div className='group rounded-lg p-4'>
-			<div className='flex flex-col gap-2'>
+		<div className='group rounded-lg px-4'>
+			<div className='flex flex-col'>
 				{/* Row 1: Checkbox + Description + Date + More Button */}
 				<div className='flex items-start gap-4'>
 					{/* Checkbox */}

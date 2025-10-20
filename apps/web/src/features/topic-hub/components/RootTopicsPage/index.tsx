@@ -11,6 +11,7 @@ import { TopicCard } from '~/components/TopicCard'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { useTopicsWithRelationships } from '~/features/topic-hub/hooks/useTopicsWithRelationships'
+import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
@@ -213,11 +214,23 @@ export function RootTopicsPage() {
 
 	if (isLoading) {
 		return (
-			<div className='scrollbar-track-transparent relative h-full w-full overflow-auto'>
-				<div className='mx-auto my-16 flex flex-col items-center'>
-					<div className='flex w-full max-w-screen-lg flex-col'>
-						<h1 className='font-bold text-4xl'>Library</h1>
-						<div className='top-0 z-10 py-3'>
+			<div className='scrollbar-track-transparent relative h-full w-full'>
+				<div className='flex h-full flex-col overflow-auto'>
+					<div className='sticky top-0 z-10 rounded-xl border-tl-2 bg-primary-foreground p-6 pb-0'>
+						<div className='flex items-center justify-between'>
+							<h1 className='font-bold text-2xl'>Library</h1>
+							<CreateTopicDialog
+								showSidebar={false}
+								submitButtonText='Create Topic'
+								title='Add Topic'
+								trigger={
+									<Button size='icon' variant='ghost'>
+										<Plus />
+									</Button>
+								}
+							/>
+						</div>
+						<div className='py-3'>
 							<motion.div
 								className='flex flex-wrap items-center gap-2'
 								layout={true}
@@ -267,7 +280,7 @@ export function RootTopicsPage() {
 							</motion.div>
 						</div>
 					</div>
-					<div className='h-full w-full p-6'>
+					<div className='p-6 pt-2'>
 						<p className='text-muted-foreground'>Loading topics...</p>
 					</div>
 				</div>
@@ -283,11 +296,23 @@ export function RootTopicsPage() {
 				: 'No topics to show'
 
 		return (
-			<div className='scrollbar-track-transparent relative h-full w-full overflow-auto'>
-				<div className='mx-auto my-16 flex flex-col items-center'>
-					<div className='flex w-full max-w-screen-lg flex-col'>
-						<h1 className='font-bold text-4xl'>Library</h1>
-						<div className='top-0 z-10 py-3'>
+			<div className='scrollbar-track-transparent relative h-full w-full'>
+				<div className='flex h-full flex-col overflow-auto'>
+					<div className='sticky top-0 z-10 rounded-xl border-tl-2 bg-primary-foreground p-8 pb-0'>
+						<div className='flex items-center justify-between'>
+							<h1 className='font-bold text-2xl'>Library</h1>
+							<CreateTopicDialog
+								showSidebar={false}
+								submitButtonText='Create Topic'
+								title='Add Topic'
+								trigger={
+									<Button size='icon' variant='ghost'>
+										<Plus />
+									</Button>
+								}
+							/>
+						</div>
+						<div className='py-3'>
 							<motion.div
 								className='flex flex-wrap items-center gap-2'
 								layout={true}
@@ -337,7 +362,7 @@ export function RootTopicsPage() {
 							</motion.div>
 						</div>
 					</div>
-					<div className='h-full w-full p-6'>
+					<div className='p-8 pt-2'>
 						<div className='text-center'>
 							<SquareLibrary className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
 							<p className='mb-2 text-muted-foreground'>{emptyMessage}</p>
@@ -355,28 +380,40 @@ export function RootTopicsPage() {
 	}
 
 	return (
-		<div className='scrollbar-track-transparent relative h-full w-full overflow-auto'>
-			<div className='mx-auto my-16 flex flex-col items-center'>
-				<div className='flex w-full max-w-screen-lg flex-col'>
-					<div className='flex items-center gap-3'>
-						<h1 className='font-bold text-4xl'>Library</h1>
-						<Button onClick={() => getTopics()}>Get Topics</Button>
-						<Button
-							onClick={() => {
-								document.location.href = `${import.meta.env.VITE_API_URL}/login`
-							}}
-						>
-							Login
-						</Button>
-						<Button
-							onClick={() => {
-								document.location.href = `${import.meta.env.VITE_API_URL}/logout`
-							}}
-						>
-							Logout
-						</Button>
+		<div className='scrollbar-track-transparent relative h-full w-full'>
+			<div className='flex h-full flex-col overflow-auto'>
+				<div className='sticky top-0 z-10 rounded-xl border-tl-2 bg-primary-foreground px-8 pt-6 pb-0'>
+					<div className='flex items-center justify-between'>
+						<div className='flex items-center gap-3'>
+							<h1 className='font-bold text-2xl'>Library</h1>
+							<Button onClick={() => getTopics()}>Get Topics</Button>
+							<Button
+								onClick={() => {
+									document.location.href = `${import.meta.env.VITE_API_URL}/login`
+								}}
+							>
+								Login
+							</Button>
+							<Button
+								onClick={() => {
+									document.location.href = `${import.meta.env.VITE_API_URL}/logout`
+								}}
+							>
+								Logout
+							</Button>
+						</div>
+						<CreateTopicDialog
+							showSidebar={false}
+							submitButtonText='Create Topic'
+							title='Add Topic'
+							trigger={
+								<Button size='icon' variant='ghost'>
+									<Plus />
+								</Button>
+							}
+						/>
 					</div>
-					<div className='top-0 z-10 py-3'>
+					<div className='py-3'>
 						<motion.div
 							className='flex flex-wrap items-center gap-2'
 							layout={true}
@@ -427,7 +464,7 @@ export function RootTopicsPage() {
 					</div>
 				</div>
 
-				<div className='h-full w-full p-6'>
+				<div className='p-8 pt-2'>
 					<MasonryLayout
 						estimateItemSize={estimateItemSize}
 						gap={16}
