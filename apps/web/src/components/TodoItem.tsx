@@ -17,7 +17,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Textarea } from '~/components/ui/Textarea'
-import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
+import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'

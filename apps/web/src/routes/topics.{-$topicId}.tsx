@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { TopicHub } from '~/features/topic-hub'
-import { RootTopicsPage } from '~/features/topic-hub/components/RootTopicsPage'
+import { TopicHub } from '~/features/topics'
+import { RootTopicsPage } from '~/features/topics/components/RootTopicsPage'
 
 export const Route = createFileRoute('/topics/{-$topicId}')({
 	component: RouteComponent

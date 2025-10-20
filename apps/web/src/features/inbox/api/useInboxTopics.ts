@@ -1,6 +1,6 @@
 import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMemo } from 'react'
-import { useTopicsWithRelationships } from '~/features/topic-hub/hooks/useTopicsWithRelationships'
+import { useTopicsWithRelationships } from '~/features/topics/hooks/useTopicsWithRelationships'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 

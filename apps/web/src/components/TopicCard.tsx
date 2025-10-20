@@ -30,7 +30,7 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { useTopicRelationshipCounts } from '~/features/topic-hub/hooks/useTopicRelationshipCounts'
+import { useTopicRelationshipCounts } from '~/features/topics/hooks/useTopicRelationshipCounts'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'

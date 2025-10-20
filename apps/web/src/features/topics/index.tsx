@@ -1,6 +1,6 @@
 import { SidebarProvider } from '~/components/ui/Sidebar'
-import { TimelineSidebar } from './components/Topic/TimelineSidebar'
-import { TopicPage } from './components/Topic/TopicPage'
+import { TimelineSidebar } from './components/TopicPage/TimelineSidebar'
+import { TopicPage } from './components/TopicPage/TopicPage'
 import { useTopicWithRelationships } from './hooks/useTopicWithRelationships'
 import { TopicContext } from './stores/SelectedTopicContext'
 
