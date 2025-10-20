@@ -1,9 +1,9 @@
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
+import { TopicBadge } from '~/features/topics/components/TopicBadge'
 import { AddTopicToTodoDialog } from '~/features/topics/components/TopicPage/TimelineSidebar/AddTopicToTodoDialog'
 import type { Tables } from '~/types/database.types'
-import { TopicBadge } from './TopicBadge'
 
 interface TodoTopicBadgesProps {
 	topics: Array<Tables<'topics'>>

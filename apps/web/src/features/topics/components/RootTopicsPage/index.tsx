@@ -7,7 +7,6 @@ import { motion } from 'framer-motion'
 import { Archive, Check, Inbox, Plus, SquareLibrary, X } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
-import { TopicCard } from '~/components/TopicCard'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
@@ -15,6 +14,7 @@ import { useTopicsWithRelationships } from '~/features/topics/hooks/useTopicsWit
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
+import { TopicCard } from '../TopicCard'
 
 const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96

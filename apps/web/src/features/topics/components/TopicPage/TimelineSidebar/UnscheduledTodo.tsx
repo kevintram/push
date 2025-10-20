@@ -1,8 +1,6 @@
 import dayjs from 'dayjs'
 import { Calendar as CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { DatePickerDropdown } from '~/components/DatePickerDropdown'
-import { TodoTopicBadges } from '~/components/TodoTopicBadges'
 import { Button } from '~/components/ui/Button'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
@@ -11,6 +9,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import { DatePickerDropdown } from '~/features/todos/components/DatePickerDropdown'
+import { TodoTopicBadges } from '~/features/todos/components/TodoTopicBadges'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { TodoWithTopics } from './TimelineDataContext'

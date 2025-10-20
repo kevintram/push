@@ -11,7 +11,6 @@ import {
 	Trash
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { TopicDialog } from '~/components/TopicDialog'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardHeader } from '~/components/ui/Card'
 import {
@@ -28,6 +27,7 @@ import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 import { useTopicWithRelationships } from '../../hooks/useTopicWithRelationships'
 import { TopicContext } from '../../stores/SelectedTopicContext'
+import { TopicDialog } from '../TopicDialog'
 import { TopicChildrenPanel } from './FamilyPanel/TopicChildrenPanel'
 import { TopicParentsPanel } from './FamilyPanel/TopicParentsPanel'
 import { TimelineSidebar } from './TimelineSidebar'

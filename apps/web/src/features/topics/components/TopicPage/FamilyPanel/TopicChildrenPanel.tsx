@@ -1,13 +1,13 @@
 import { Baby, Plus } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
-import { TopicCard } from '~/components/TopicCard'
 import { Card, CardContent } from '~/components/ui/Card'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
+import { TopicCard } from '../../TopicCard'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
 const MIN_WIDTH = 192

@@ -1,11 +1,11 @@
 import { Plus, User2 } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
-import { TopicBadge } from '~/components/TopicBadge'
 import { Badge } from '~/components/ui/Badge'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import type { Tables } from '~/types/database.types'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
+import { TopicBadge } from '../../TopicBadge'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
 export function TopicParentsPanel() {

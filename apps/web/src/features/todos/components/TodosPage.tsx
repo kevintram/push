@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
 import { Check, Logs, Plus, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { TodoItem } from '~/components/TodoItem'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { useSectionedTodos } from '../api'
+import { TodoItem } from './TodoItem'
 
 type SectionKey =
 	| 'overdue'

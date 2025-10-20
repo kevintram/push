@@ -6,8 +6,6 @@ import {
 import dayjs from 'dayjs'
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { DatePickerDropdown } from '~/components/DatePickerDropdown'
-import { TodoTopicBadges } from '~/components/TodoTopicBadges'
 import { Button } from '~/components/ui/Button'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
@@ -21,6 +19,8 @@ import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
+import { DatePickerDropdown } from './DatePickerDropdown'
+import { TodoTopicBadges } from './TodoTopicBadges'
 
 // TODO: clean up this mess when migrate to hono API
 type TodoEntry = (Tables<'todos'> | Tables<'todos_with_effective_date'>) & {

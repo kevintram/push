@@ -1,7 +1,7 @@
 import { Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Input } from '~/components/ui/Input'
-import { SearchDialog } from './SearchDialog'
+import { SearchDialog } from '~/features/search/components/SearchDialog'
 import { SidebarTrigger } from './ui/Sidebar'
 
 export function Header() {

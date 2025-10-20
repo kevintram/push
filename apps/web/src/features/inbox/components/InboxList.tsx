@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
-import { TopicCard } from '~/components/TopicCard'
 import { Skeleton } from '~/components/ui/Skeleton'
+import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Tables } from '~/types/database.types'
 
 const MIN_CARD_WIDTH = 280
