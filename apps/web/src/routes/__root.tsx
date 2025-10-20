@@ -17,7 +17,7 @@ export const Route = createRootRoute({
 				<AppSidebar />
 				<div className='relative flex min-h-0 flex-1 flex-col bg-background'>
 					<Header />
-					<div className='relative min-h-0 flex-1 rounded-tl-xl border-1 bg-primary-foreground'>
+					<div className='relative min-h-0 flex-1 rounded-tl-sm border-1 bg-primary-foreground'>
 						<Suspense fallback={<LoadingOrError />}>
 							<Outlet />
 						</Suspense>
