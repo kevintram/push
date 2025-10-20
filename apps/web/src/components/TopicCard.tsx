@@ -294,16 +294,17 @@ export function TopicCard({
 							</div>
 						)}
 
+						{/* The Actual Content */}
 						<div className='flex flex-col gap-0.5'>
 							{topic.name && (
-								<h3 className='font-semibold leading-tight'>
+								<h3 className='break-word font-semibold leading-tight [overflow-wrap:anywhere]'>
 									{searchQuery
 										? highlightText({ text: topic.name, query: searchQuery })
 										: topic.name}
 								</h3>
 							)}
 							{topic.notes && (
-								<p className='line-clamp-3 text-sm'>
+								<p className='break-word text-sm [overflow-wrap:anywhere]'>
 									{searchQuery
 										? truncateWithHighlight(topic.notes, searchQuery, 150)
 										: topic.notes}
