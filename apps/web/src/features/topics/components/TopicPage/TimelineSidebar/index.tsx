@@ -78,16 +78,7 @@ function TimelineSidebarContent() {
 	}, [scheduledTodos])
 
 	return (
-		<Sidebar
-			className='border-l'
-			collapsible='none'
-			side='right'
-			style={
-				{
-					'--sidebar-width': '20rem'
-				} as React.CSSProperties
-			}
-		>
+		<Sidebar className='absolute border-l' side='right'>
 			<SidebarHeader className='mb-2 flex flex-row items-center justify-between gap-2'>
 				<h1 className='font-semibold'>Timeline</h1>
 				<AddScheduledTodoButton />

@@ -3,34 +3,19 @@ import {
 	useUpdateMutation
 } from '@supabase-cache-helpers/postgrest-react-query'
 import { useNavigate } from '@tanstack/react-router'
-import {
-	Archive,
-	ArchiveRestore,
-	Inbox,
-	MoreVertical,
-	Trash
-} from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Button } from '~/components/ui/Button'
-import { Card, CardContent, CardHeader } from '~/components/ui/Card'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
-import { SidebarProvider } from '~/components/ui/Sidebar'
+import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
-import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 import { useTopicWithRelationships } from '../../hooks/useTopicWithRelationships'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import { TopicDialog } from '../TopicDialog'
 import { TopicChildrenPanel } from './FamilyPanel/TopicChildrenPanel'
-import { TopicParentsPanel } from './FamilyPanel/TopicParentsPanel'
 import { TimelineSidebar } from './TimelineSidebar'
+import { TopicPageHeader } from './TopicPageHeader'
 import { TopicPageSkeleton } from './TopicPageSkeleton'
 
 export function TopicPage({ topicId }: { topicId: number | undefined }) {
@@ -112,9 +97,8 @@ export function TopicPage({ topicId }: { topicId: number | undefined }) {
 		key: `topics-${selectedTopic?.id}`
 	})
 
-	const textareaRef = useAutoResizeTextarea(title)
-
-	const notesRef = useRef<HTMLTextAreaElement>(null)
+	const notesRef = useRef<HTMLTextAreaElement | null>(null)
+	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
 
 	// focus on notes whenever selected topic changes
 	useEffect(() => {
@@ -149,122 +133,49 @@ export function TopicPage({ topicId }: { topicId: number | undefined }) {
 	}
 
 	return (
-		<div className='flex h-screen w-full'>
-			<TopicContext value={pageContextValue}>
-				<SidebarProvider defaultOpen={true}>
-					<div className='mx-auto flex h-full w-full max-w-screen-lg flex-1'>
-						<div className='flex flex-1 flex-col items-center gap-4 sm:gap-6 sm:p-4 md:p-6'>
-							<div className='w-full'>
-								<TopicParentsPanel />
+		<TopicContext value={pageContextValue}>
+			<SidebarProvider defaultOpen={true}>
+				<div className='flex h-full min-h-0 flex-col'>
+					<TopicPageHeader
+						onArchiveToggle={handleArchiveToggle}
+						onDelete={handleDelete}
+						onInboxToggle={handleInboxToggle}
+						topic={selectedTopic}
+					/>
+					<SidebarHolder className='flex min-h-0 flex-1'>
+						<div
+							className='scrollbar-track-transparent min-h-0 w-full overflow-y-scroll px-6 py-4'
+							ref={scrollContainerRef}
+						>
+							<div className='pb-4'>
+								<Textarea
+									className='!bg-transparent break-word !text-4xl m-0 mb-1 min-h-12 w-full max-w-xl resize-none rounded-none border-none p-0 font-bold focus:outline-none focus-visible:border-none focus-visible:ring-0'
+									onChange={onNameChange}
+									placeholder='Title'
+									spellCheck={false}
+									value={title}
+								/>
+								<Textarea
+									className='!bg-transparent m-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									name='notes'
+									onChange={onNotesChange}
+									placeholder='Notes'
+									ref={notesRef}
+									value={notes}
+								/>
 							</div>
-
-							<Card className='w-full gap-0 pt-4'>
-								<CardHeader className='flex flex-col gap-1 pr-4'>
-									<div className='flex w-full flex-row'>
-										<div className='flex flex-1 items-center gap-4'>
-											{selectedTopic?.is_archived && (
-												<div className='flex items-center'>
-													<Archive className='mr-2 h-4 w-4 text-muted-foreground' />
-													<span className='text-muted-foreground text-xs'>
-														Archived
-													</span>
-												</div>
-											)}
-											{selectedTopic?.is_inboxed && (
-												<div className='flex items-center'>
-													<Inbox className='mr-2 h-4 w-4 text-muted-foreground' />
-													<span className='text-muted-foreground text-xs'>
-														Inbox
-													</span>
-												</div>
-											)}
-										</div>
-
-										<div className='flex justify-end'>
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild={true}>
-													<Button
-														className='h-6 w-6 p-0'
-														size='sm'
-														title='More options'
-														variant='ghost'
-													>
-														<MoreVertical className='h-4 w-4' />
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent>
-													<DropdownMenuItem onClick={handleArchiveToggle}>
-														{selectedTopic?.is_archived ? (
-															<>
-																<ArchiveRestore className='mr-2 h-4 w-4' />
-																Unarchive
-															</>
-														) : (
-															<>
-																<Archive className='mr-2 h-4 w-4' />
-																Archive
-															</>
-														)}
-													</DropdownMenuItem>
-													<DropdownMenuItem onClick={handleInboxToggle}>
-														{selectedTopic?.is_inboxed ? (
-															<>
-																<Inbox className='mr-2 h-4 w-4' />
-																Remove from Inbox
-															</>
-														) : (
-															<>
-																<Inbox className='mr-2 h-4 w-4' />
-																Add to Inbox
-															</>
-														)}
-													</DropdownMenuItem>
-													<DropdownMenuItem
-														onClick={handleDelete}
-														variant='destructive'
-													>
-														<Trash className='mr-2 h-4 w-4' />
-														Delete
-													</DropdownMenuItem>
-												</DropdownMenuContent>
-											</DropdownMenu>
-										</div>
-									</div>
-
-									<textarea
-										className='!bg-transparent break-word flex w-full resize-none border-none font-bold text-xl focus:outline-none sm:flex-1 sm:pr-4 sm:text-2xl md:text-3xl'
-										onChange={onNameChange}
-										placeholder='Title'
-										ref={textareaRef}
-										rows={1}
-										spellCheck={false}
-										value={title}
-									/>
-								</CardHeader>
-								<CardContent className='min-h-96 px-4'>
-									<Textarea
-										className='!bg-transparent h-full w-full resize-none border-none shadow-none focus-visible:border-none focus-visible:ring-0'
-										name='notes'
-										onChange={onNotesChange}
-										placeholder='Notes'
-										ref={notesRef}
-										value={notes}
-									/>
-								</CardContent>
-							</Card>
-
-							<div className='w-full'>
-								<TopicChildrenPanel />
-							</div>
+							<TopicChildrenPanel
+								getScrollElement={() => scrollContainerRef.current}
+							/>
 						</div>
-					</div>
-					<TimelineSidebar />
-				</SidebarProvider>
+						<TimelineSidebar />
+					</SidebarHolder>
+				</div>
+			</SidebarProvider>
 
-				<TopicContext value={dialogContextValue}>
-					<TopicDialog onOpenChange={setShowDialog} open={showDialog} />
-				</TopicContext>
+			<TopicContext value={dialogContextValue}>
+				<TopicDialog onOpenChange={setShowDialog} open={showDialog} />
 			</TopicContext>
-		</div>
+		</TopicContext>
 	)
 }

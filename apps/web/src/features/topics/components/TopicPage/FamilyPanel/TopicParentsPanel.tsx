@@ -37,11 +37,11 @@ export function TopicParentsPanel() {
 
 	return (
 		<>
-			<div className='flex w-full flex-wrap items-center gap-2'>
+			<div className='flex flex-wrap items-center gap-2'>
 				<div className='flex items-center gap-2'>
 					<User2 className='h-4 w-4' />
 					<span className='font-medium text-muted-foreground text-xs'>
-						Parents
+						Parents ({selectedTopic?.parents?.length || 0})
 					</span>
 				</div>
 				{selectedTopic?.parents?.map(parent => (
