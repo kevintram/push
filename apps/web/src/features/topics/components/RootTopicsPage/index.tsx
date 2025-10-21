@@ -216,9 +216,9 @@ export function RootTopicsPage() {
 		return (
 			<div className='scrollbar-track-transparent relative h-full w-full'>
 				<div className='flex h-full flex-col overflow-auto'>
-					<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground p-6 pb-0'>
+					<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
 						<div className='flex items-center justify-between'>
-							<h1 className='font-bold text-2xl'>Library</h1>
+							<h1 className='font-bold text-xl'>Library</h1>
 							<CreateTopicDialog
 								showSidebar={false}
 								submitButtonText='Create Topic'
@@ -230,7 +230,7 @@ export function RootTopicsPage() {
 								}
 							/>
 						</div>
-						<div className='py-3'>
+						<div className='py-2'>
 							<motion.div
 								className='flex flex-wrap items-center gap-2'
 								layout={true}
@@ -280,7 +280,7 @@ export function RootTopicsPage() {
 							</motion.div>
 						</div>
 					</div>
-					<div className='p-6 pt-2'>
+					<div className='px-6 pt-2'>
 						<p className='text-muted-foreground'>Loading topics...</p>
 					</div>
 				</div>
@@ -298,9 +298,9 @@ export function RootTopicsPage() {
 		return (
 			<div className='scrollbar-track-transparent relative h-full w-full'>
 				<div className='flex h-full flex-col overflow-auto'>
-					<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground p-8 pb-0'>
+					<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
 						<div className='flex items-center justify-between'>
-							<h1 className='font-bold text-2xl'>Library</h1>
+							<h1 className='font-bold text-xl'>Library</h1>
 							<CreateTopicDialog
 								showSidebar={false}
 								submitButtonText='Create Topic'
@@ -312,7 +312,7 @@ export function RootTopicsPage() {
 								}
 							/>
 						</div>
-						<div className='py-3'>
+						<div className='py-2'>
 							<motion.div
 								className='flex flex-wrap items-center gap-2'
 								layout={true}
@@ -362,7 +362,7 @@ export function RootTopicsPage() {
 							</motion.div>
 						</div>
 					</div>
-					<div className='p-8 pt-2'>
+					<div className='px-6 pt-2'>
 						<div className='text-center'>
 							<SquareLibrary className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
 							<p className='mb-2 text-muted-foreground'>{emptyMessage}</p>
@@ -382,10 +382,10 @@ export function RootTopicsPage() {
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
-				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-8 pt-6 pb-0'>
+				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
 					<div className='flex items-center justify-between'>
 						<div className='flex items-center gap-3'>
-							<h1 className='font-bold text-2xl'>Library</h1>
+							<h1 className='font-bold text-xl'>Library</h1>
 							<Button onClick={() => getTopics()}>Get Topics</Button>
 							<Button
 								onClick={() => {
@@ -413,7 +413,7 @@ export function RootTopicsPage() {
 							}
 						/>
 					</div>
-					<div className='py-3'>
+					<div className='pt-2 pb-3'>
 						<motion.div
 							className='flex flex-wrap items-center gap-2'
 							layout={true}
@@ -464,7 +464,7 @@ export function RootTopicsPage() {
 					</div>
 				</div>
 
-				<div className='p-8 pt-2'>
+				<div className='p-6 pt-2'>
 					<MasonryLayout
 						estimateItemSize={estimateItemSize}
 						gap={16}

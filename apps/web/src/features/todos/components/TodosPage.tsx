@@ -167,8 +167,8 @@ export function TodosPage() {
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
-				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-8 pt-6 pb-0'>
-					<h1 className='font-bold text-2xl'>Todos</h1>
+				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
+					<h1 className='font-bold text-xl'>Todos</h1>
 					<div className='top-0 z-10 py-2'>
 						<motion.div
 							className='flex flex-wrap items-center gap-2'
@@ -221,12 +221,12 @@ export function TodosPage() {
 						</motion.div>
 					</div>
 				</div>
-				<div className='px-10 pb-8'>
+				<div className='px-6'>
 					{filteredSections.map(section => (
 						<div className='mb-4' key={section.id}>
-							<div className='sticky top-[98px] z-[5] flex items-center justify-between bg-primary-foreground pb-2'>
+							<div className='sticky top-[86px] z-[5] flex items-center justify-between bg-primary-foreground py-2'>
 								<h2
-									className={`font-bold text-xl ${section.headingClassName ?? ''}`.trim()}
+									className={`font-bold text-l ${section.headingClassName ?? ''}`.trim()}
 								>
 									{section.label}
 								</h2>

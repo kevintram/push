@@ -45,9 +45,9 @@ export function InboxPage() {
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
-				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-8 pt-6 pb-0'>
+				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-1'>
 					<div className='flex items-center justify-between'>
-						<h1 className='font-bold text-2xl'>
+						<h1 className='font-bold text-xl'>
 							Inbox{' '}
 							<span className='font-semibold text-muted-foreground text-xl'>
 								({inboxCountLabel})
@@ -66,7 +66,7 @@ export function InboxPage() {
 						/>
 					</div>
 				</div>
-				<div className='p-8 pt-2'>
+				<div className='p-6 pt-2'>
 					<InboxList
 						isLoading={isLoading}
 						onTopicSelect={handleTopicSelect}
