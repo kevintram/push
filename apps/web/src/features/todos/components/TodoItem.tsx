@@ -6,8 +6,6 @@ import {
 import dayjs from 'dayjs'
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { DatePickerDropdown } from '~/components/DatePickerDropdown'
-import { TodoTopicBadges } from '~/components/TodoTopicBadges'
 import { Button } from '~/components/ui/Button'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
@@ -17,10 +15,12 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Textarea } from '~/components/ui/Textarea'
-import { isOverdue } from '~/features/topic-hub/utils/isOverdue'
+import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
+import { DatePickerDropdown } from './DatePickerDropdown'
+import { TodoTopicBadges } from './TodoTopicBadges'
 
 // TODO: clean up this mess when migrate to hono API
 type TodoEntry = (Tables<'todos'> | Tables<'todos_with_effective_date'>) & {
@@ -159,8 +159,8 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	)
 
 	return (
-		<div className='group rounded-lg p-4'>
-			<div className='flex flex-col gap-2'>
+		<div className='group rounded-lg px-4'>
+			<div className='flex flex-col'>
 				{/* Row 1: Checkbox + Description + Date + More Button */}
 				<div className='flex items-start gap-4'>
 					{/* Checkbox */}

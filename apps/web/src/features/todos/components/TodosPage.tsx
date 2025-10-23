@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
 import { Check, Logs, Plus, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { TodoItem } from '~/components/TodoItem'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { useSectionedTodos } from '../api'
+import { TodoItem } from './TodoItem'
 
 type SectionKey =
 	| 'overdue'
@@ -165,96 +165,101 @@ export function TodosPage() {
 	}, [])
 
 	return (
-		<div className='container mx-auto'>
-			<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-				<motion.div
-					className='flex flex-wrap items-center gap-2'
-					layout={true}
-					transition={{ duration: 0.2, ease: 'easeInOut' }}
-				>
-					{renderedFilters.map(item => {
-						if (item.type === 'clear') {
-							return (
-								<motion.div
-									key='clear'
-									layout={true}
-									transition={{ duration: 0.2, ease: 'easeInOut' }}
-								>
-									<Badge
-										aria-label='Clear filters'
-										className='flex cursor-pointer items-center gap-1'
-										onClick={handleClearFilters}
-										variant='secondary'
-									>
-										<X className='h-4 w-4' />
-									</Badge>
-								</motion.div>
-							)
-						}
+		<div className='scrollbar-track-transparent relative h-full w-full'>
+			<div className='flex h-full flex-col overflow-auto'>
+				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
+					<h1 className='font-bold text-xl'>Todos</h1>
+					<div className='top-0 z-10 pt-2 pb-1'>
+						<motion.div
+							className='flex flex-wrap items-center gap-2'
+							layout={true}
+							transition={{ duration: 0.2, ease: 'easeInOut' }}
+						>
+							{renderedFilters.map(item => {
+								if (item.type === 'clear') {
+									return (
+										<motion.div
+											key='clear'
+											layout={true}
+											transition={{ duration: 0.2, ease: 'easeInOut' }}
+										>
+											<Badge
+												aria-label='Clear filters'
+												className='flex cursor-pointer items-center gap-1'
+												onClick={handleClearFilters}
+												variant='secondary'
+											>
+												<X className='h-4 w-4' />
+											</Badge>
+										</motion.div>
+									)
+								}
 
-						return (
-							<motion.div
-								key={item.key}
-								layout={true}
-								transition={{ duration: 0.2, ease: 'easeInOut' }}
-							>
-								<Badge
-									className='flex cursor-pointer items-center gap-1'
-									onClick={item.filter.onClick}
-									variant={item.filter.isActive ? 'default' : 'outline'}
+								return (
+									<motion.div
+										key={item.key}
+										layout={true}
+										transition={{ duration: 0.2, ease: 'easeInOut' }}
+									>
+										<Badge
+											className='flex cursor-pointer items-center gap-1'
+											onClick={item.filter.onClick}
+											variant={item.filter.isActive ? 'default' : 'outline'}
+										>
+											{item.filter.id === 'logbook' ? (
+												<Logs aria-hidden='true' className='h-4 w-4' />
+											) : (
+												item.filter.isActive && (
+													<Check aria-hidden='true' className='h-4 w-4' />
+												)
+											)}
+											{item.filter.label}
+										</Badge>
+									</motion.div>
+								)
+							})}
+						</motion.div>
+					</div>
+				</div>
+				<div className='px-6'>
+					{filteredSections.map(section => (
+						<div className='mb-4' key={section.id}>
+							<div className='sticky top-[82px] z-[5] flex items-center justify-between bg-primary-foreground py-2'>
+								<h2
+									className={`font-bold text-l ${section.headingClassName ?? ''}`.trim()}
 								>
-									{item.filter.id === 'logbook' ? (
-										<Logs aria-hidden='true' className='h-4 w-4' />
-									) : (
-										item.filter.isActive && (
-											<Check aria-hidden='true' className='h-4 w-4' />
-										)
-									)}
-									{item.filter.label}
-								</Badge>
-							</motion.div>
-						)
-					})}
-				</motion.div>
-			</div>
-			<div className='px-6 pb-6'>
-				{filteredSections.map(section => (
-					<div className='mb-8' key={section.id}>
-						<div className='mb-2 flex items-center justify-between'>
-							<h2
-								className={`font-bold text-3xl ${section.headingClassName ?? ''}`.trim()}
-							>
-								{section.label}
-							</h2>
-							{section.canAdd && (
-								<Button
-									className='mr-4'
-									onClick={() => addTodoToSection(section.id)}
-									size='sm'
-									variant='ghost'
-								>
-									<Plus className='h-4 w-4' />
-								</Button>
+									{section.label}
+								</h2>
+								{section.canAdd && (
+									<Button
+										className='mr-4'
+										onClick={() => addTodoToSection(section.id)}
+										size='sm'
+										variant='ghost'
+									>
+										<Plus className='h-4 w-4' />
+									</Button>
+								)}
+							</div>
+
+							{section.entries.length > 0 ? (
+								<div className='space-y-4'>
+									{section.entries.map(entry => (
+										<TodoItem
+											entry={entry}
+											isCompleted={entry.completed_at !== null}
+											key={entry.id}
+										/>
+									))}
+								</div>
+							) : (
+								<p className='text-muted-foreground text-sm italic'>
+									{section.emptyMessage}
+								</p>
 							)}
 						</div>
-
-						{section.entries.length > 0 ? (
-							<div className='space-y-0.5'>
-								{section.entries.map(entry => (
-									<TodoItem
-										entry={entry}
-										isCompleted={entry.completed_at !== null}
-										key={entry.id}
-									/>
-								))}
-							</div>
-						) : (
-							<p className='text-muted-foreground text-sm italic'>
-								{section.emptyMessage}
-							</p>
-						)}
-					</div>
-				))}
+					))}
+				</div>
 			</div>
 		</div>
 	)

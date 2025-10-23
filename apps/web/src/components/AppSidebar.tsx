@@ -44,8 +44,12 @@ export function AppSidebar() {
 	]
 
 	return (
-		<Sidebar className='z-20' collapsible='icon'>
-			<SidebarContent>
+		<Sidebar
+			className='!border-0 z-20 bg-background'
+			collapsible='icon'
+			variant='inset'
+		>
+			<SidebarContent className='bg-background'>
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
@@ -63,34 +67,30 @@ export function AppSidebar() {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
-			<SidebarFooter>
-				<SidebarContent>
-					<SidebarGroup>
-						<SidebarMenu>
-							<SidebarMenuItem>
-								<SidebarMenuButton asChild={true} tooltip='Settings'>
-									<Link to='/settings'>
-										<Settings />
-										<span>Settings</span>
-									</Link>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-							{import.meta.env.DEV && !import.meta.env.VITEST && (
-								<SidebarMenuItem>
-									<SidebarMenuButton asChild={true}>
-										<TanStackRouterDevtools
-											toggleButtonProps={{
-												style: {
-													position: 'static'
-												}
-											}}
-										/>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							)}
-						</SidebarMenu>
-					</SidebarGroup>
-				</SidebarContent>
+			<SidebarFooter className='bg-background'>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton asChild={true} tooltip='Settings'>
+							<Link to='/settings'>
+								<Settings />
+								<span>Settings</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					{import.meta.env.DEV && !import.meta.env.VITEST && (
+						<SidebarMenuItem>
+							<SidebarMenuButton asChild={true}>
+								<TanStackRouterDevtools
+									toggleButtonProps={{
+										style: {
+											position: 'static'
+										}
+									}}
+								/>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					)}
+				</SidebarMenu>
 			</SidebarFooter>
 		</Sidebar>
 	)

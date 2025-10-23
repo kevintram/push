@@ -1,11 +1,11 @@
 import { Plus, User2 } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
-import { TopicBadge } from '~/components/TopicBadge'
 import { Badge } from '~/components/ui/Badge'
-import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
-import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
+import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
+import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import type { Tables } from '~/types/database.types'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
+import { TopicBadge } from '../../TopicBadge'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
 export function TopicParentsPanel() {
@@ -37,11 +37,11 @@ export function TopicParentsPanel() {
 
 	return (
 		<>
-			<div className='flex w-full flex-wrap items-center gap-2'>
+			<div className='flex flex-wrap items-center gap-2'>
 				<div className='flex items-center gap-2'>
 					<User2 className='h-4 w-4' />
 					<span className='font-medium text-muted-foreground text-xs'>
-						Parents
+						Parents ({selectedTopic?.parents?.length || 0})
 					</span>
 				</div>
 				{selectedTopic?.parents?.map(parent => (

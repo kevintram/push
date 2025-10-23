@@ -1,13 +1,13 @@
 import { Baby, Plus } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
-import { TopicCard } from '~/components/TopicCard'
 import { Card, CardContent } from '~/components/ui/Card'
-import { useCreateRelationship } from '~/features/topic-hub/hooks/useCreateRelationship'
-import { useDeleteRelationship } from '~/features/topic-hub/hooks/useDeleteRelationship'
-import { TopicContext } from '~/features/topic-hub/stores/SelectedTopicContext'
+import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
+import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
+import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
+import { TopicCard } from '../../TopicCard'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
 const MIN_WIDTH = 192
@@ -15,7 +15,15 @@ const MIN_HEIGHT = 96
 
 type ListItem = { type: 'add-button' } | { type: 'child'; child: Topic }
 
-export function TopicChildrenPanel() {
+interface TopicChildrenPanelProps {
+	getScrollElement?: () => HTMLDivElement | null
+	scrollMargin?: number
+}
+
+export function TopicChildrenPanel({
+	getScrollElement,
+	scrollMargin
+}: TopicChildrenPanelProps = {}) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
 
@@ -109,7 +117,7 @@ export function TopicChildrenPanel() {
 				<div className='mb-3 flex items-center gap-2'>
 					<Baby className='h-4 w-4' />
 					<span className='font-medium text-muted-foreground text-xs'>
-						Children
+						Children ({children.length})
 					</span>
 				</div>
 				<div className='flex-1'>
@@ -117,9 +125,11 @@ export function TopicChildrenPanel() {
 						estimateItemSize={estimateItemSize}
 						gap={16}
 						getItemKey={getItemKey}
+						getScrollElement={getScrollElement}
 						items={items}
 						minItemWidth={MIN_WIDTH}
 						renderItem={renderItem}
+						scrollMargin={scrollMargin}
 					/>
 				</div>
 			</div>

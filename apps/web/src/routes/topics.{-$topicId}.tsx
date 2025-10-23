@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { TopicHub } from '~/features/topic-hub'
-import { RootTopicsPage } from '~/features/topic-hub/components/RootTopicsPage'
+import { RootTopicsPage } from '~/features/topics/components/RootTopicsPage'
+import { TopicPage } from '~/features/topics/components/TopicPage/TopicPage'
 
 export const Route = createFileRoute('/topics/{-$topicId}')({
 	component: RouteComponent
@@ -13,7 +13,5 @@ function RouteComponent() {
 		return <RootTopicsPage />
 	}
 
-	return (
-		<TopicHub topicId={topicId ? Number.parseInt(topicId, 10) : undefined} />
-	)
+	return <TopicPage topicId={Number.parseInt(topicId, 10)} />
 }

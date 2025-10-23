@@ -1,9 +1,9 @@
 import { Plus } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { TopicDialog } from '~/components/TopicDialog'
 import { Button } from '~/components/ui/Button'
-import { TopicContext } from '~/features/topic-hub/stores/SelectedTopicContext'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
+import { TopicDialog } from '~/features/topics/components/TopicDialog'
+import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Tables } from '~/types/database.types'
 import type { Topic } from '~/types/topics.types'
 import { useInboxTopics } from '../api'
@@ -43,42 +43,44 @@ export function InboxPage() {
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
 	return (
-		<div className='container mx-auto'>
-			<div className='sticky top-0 z-10 bg-background/95 p-6 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
-				<div className='flex items-center justify-between'>
-					<h1 className='font-bold text-3xl'>
-						Inbox{' '}
-						<span className='font-semibold text-muted-foreground text-xl'>
-							({inboxCountLabel})
-						</span>
-					</h1>
-					<CreateTopicDialog
-						showSidebar={false}
-						submitButtonText='Create Topic'
-						title='Add Topic'
-						topicDefaults={{ is_inboxed: true }}
-						trigger={
-							<Button>
-								<Plus className='h-4 w-4' />
-							</Button>
-						}
+		<div className='scrollbar-track-transparent relative h-full w-full'>
+			<div className='flex h-full flex-col overflow-auto'>
+				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-1'>
+					<div className='flex items-center justify-between'>
+						<h1 className='font-bold text-xl'>
+							Inbox{' '}
+							<span className='font-semibold text-muted-foreground text-xl'>
+								({inboxCountLabel})
+							</span>
+						</h1>
+						<CreateTopicDialog
+							showSidebar={false}
+							submitButtonText='Create Topic'
+							title='Add Topic'
+							topicDefaults={{ is_inboxed: true }}
+							trigger={
+								<Button size='icon' variant='ghost'>
+									<Plus />
+								</Button>
+							}
+						/>
+					</div>
+				</div>
+				<div className='p-6 pt-2'>
+					<InboxList
+						isLoading={isLoading}
+						onTopicSelect={handleTopicSelect}
+						topics={inboxTopics}
 					/>
 				</div>
-			</div>
-			<div className='px-6 pb-6'>
-				<InboxList
-					isLoading={isLoading}
-					onTopicSelect={handleTopicSelect}
-					topics={inboxTopics}
-				/>
-			</div>
 
-			<TopicContext value={contextValue}>
-				<TopicDialog
-					onOpenChange={handleDialogOpenChange}
-					open={isDialogOpen}
-				/>
-			</TopicContext>
+				<TopicContext value={contextValue}>
+					<TopicDialog
+						onOpenChange={handleDialogOpenChange}
+						open={isDialogOpen}
+					/>
+				</TopicContext>
+			</div>
 		</div>
 	)
 }

@@ -1,14 +1,9 @@
+'use client'
+
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { PanelLeftIcon } from 'lucide-react'
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useState
-} from 'react'
+import * as React from 'react'
 import { Button } from '~/components/ui/Button'
 import { Input } from '~/components/ui/Input'
 import { Separator } from '~/components/ui/Separator'
@@ -46,10 +41,10 @@ type SidebarContextProps = {
 	toggleSidebar: () => void
 }
 
-const SidebarContext = createContext<SidebarContextProps | null>(null)
+const SidebarContext = React.createContext<SidebarContextProps | null>(null)
 
 function useSidebar() {
-	const context = useContext(SidebarContext)
+	const context = React.useContext(SidebarContext)
 	if (!context) {
 		throw new Error('useSidebar must be used within a SidebarProvider.')
 	}
@@ -61,24 +56,22 @@ function SidebarProvider({
 	defaultOpen = true,
 	open: openProp,
 	onOpenChange: setOpenProp,
-	className,
-	style,
-	children,
-	...props
-}: React.ComponentProps<'div'> & {
+	children
+}: {
 	defaultOpen?: boolean
 	open?: boolean
 	onOpenChange?: (open: boolean) => void
+	children?: React.ReactNode
 }) {
 	const isMobile = useIsMobile()
-	const [openMobile, setOpenMobile] = useState(false)
+	const [openMobile, setOpenMobile] = React.useState(false)
 
 	// This is the internal state of the sidebar.
 	// We use openProp and setOpenProp for control from outside the component.
-	const [_open, _setOpen] = useState(defaultOpen)
+	const [_open, _setOpen] = React.useState(defaultOpen)
 	const open = openProp ?? _open
-	const setOpen = useCallback(
-		(value: boolean | ((v: boolean) => boolean)) => {
+	const setOpen = React.useCallback(
+		(value: boolean | ((value: boolean) => boolean)) => {
 			const openState = typeof value === 'function' ? value(open) : value
 			if (setOpenProp) {
 				setOpenProp(openState)
@@ -93,12 +86,12 @@ function SidebarProvider({
 	)
 
 	// Helper to toggle the sidebar.
-	const toggleSidebar = useCallback(() => {
-		return isMobile ? setOpenMobile(o => !o) : setOpen(o => !o)
-	}, [isMobile, setOpen])
+	const toggleSidebar = React.useCallback(() => {
+		return isMobile ? setOpenMobile(open => !open) : setOpen(open => !open)
+	}, [isMobile, setOpen, setOpenMobile])
 
 	// Adds a keyboard shortcut to toggle the sidebar.
-	useEffect(() => {
+	React.useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (
 				event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -117,7 +110,7 @@ function SidebarProvider({
 	// This makes it easier to style the sidebar with Tailwind classes.
 	const state = open ? 'expanded' : 'collapsed'
 
-	const contextValue = useMemo<SidebarContextProps>(
+	const contextValue = React.useMemo<SidebarContextProps>(
 		() => ({
 			state,
 			open,
@@ -127,31 +120,40 @@ function SidebarProvider({
 			setOpenMobile,
 			toggleSidebar
 		}),
-		[state, open, setOpen, isMobile, openMobile, toggleSidebar]
+		[state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
 	)
 
 	return (
 		<SidebarContext.Provider value={contextValue}>
-			<TooltipProvider delayDuration={0}>
-				<div
-					className={cn(
-						'group/sidebar-wrapper flex w-full has-data-[variant=inset]:bg-sidebar',
-						className
-					)}
-					data-slot='sidebar-wrapper'
-					style={
-						{
-							'--sidebar-width': SIDEBAR_WIDTH,
-							'--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
-							...style
-						} as React.CSSProperties
-					}
-					{...props}
-				>
-					{children}
-				</div>
-			</TooltipProvider>
+			<TooltipProvider delayDuration={0}>{children}</TooltipProvider>
 		</SidebarContext.Provider>
+	)
+}
+
+function SidebarHolder({
+	className,
+	style,
+	children,
+	...props
+}: React.ComponentProps<'div'>) {
+	return (
+		<div
+			className={cn(
+				'group/sidebar-wrapper relative flex w-full has-data-[variant=inset]:bg-sidebar',
+				className
+			)}
+			data-slot='sidebar-wrapper'
+			style={
+				{
+					'--sidebar-width': SIDEBAR_WIDTH,
+					'--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
+					...style
+				} as React.CSSProperties
+			}
+			{...props}
+		>
+			{children}
+		</div>
 	)
 }
 
@@ -232,7 +234,7 @@ function Sidebar({
 			/>
 			<div
 				className={cn(
-					'absolute inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-75 ease-linear md:flex',
+					'absolute inset-y-0 z-10 hidden w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex',
 					side === 'left'
 						? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
 						: 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
@@ -611,7 +613,7 @@ function SidebarMenuSkeleton({
 	showIcon?: boolean
 }) {
 	// Random width between 50 to 90%.
-	const width = useMemo(() => {
+	const width = React.useMemo(() => {
 		return `${Math.floor(Math.random() * 40) + 50}%`
 	}, [])
 
@@ -711,6 +713,7 @@ export {
 	SidebarGroupContent,
 	SidebarGroupLabel,
 	SidebarHeader,
+	SidebarHolder,
 	SidebarInput,
 	SidebarInset,
 	SidebarMenu,

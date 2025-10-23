@@ -16,6 +16,8 @@ interface MasonryLayoutProps<T> {
 	gap?: number
 	overscan?: number
 	getItemKey?: (item: T, index: number) => string | number
+	getScrollElement?: () => HTMLDivElement | null
+	scrollMargin?: number
 }
 
 export function MasonryLayout<T>({
@@ -25,7 +27,9 @@ export function MasonryLayout<T>({
 	minItemWidth = 280,
 	gap = 16,
 	overscan = 5,
-	getItemKey
+	getItemKey,
+	getScrollElement,
+	scrollMargin
 }: MasonryLayoutProps<T>) {
 	const [numLanes, setNumLanes] = useState(1)
 	const [parentRef, rect] = useResizeObserver<HTMLDivElement>()
@@ -41,11 +45,12 @@ export function MasonryLayout<T>({
 
 	const virtualizer = useVirtualizer({
 		count: items.length,
-		getScrollElement: () => parentRef.current,
+		getScrollElement: getScrollElement ?? (() => parentRef.current),
 		estimateSize,
 		overscan,
 		lanes: numLanes,
-		gap
+		gap,
+		scrollMargin
 	})
 
 	useLayoutEffect(() => {
@@ -90,7 +95,7 @@ export function MasonryLayout<T>({
 						style={{
 							left: `${virtualItem.lane * (100 / numLanes)}%`,
 							width: `calc(${100 / numLanes}% - ${virtualItem.lane === numLanes - 1 ? 0 : gap}px)`,
-							transform: `translateY(${virtualItem.start}px)`
+							transform: `translateY(${virtualItem.start - virtualizer.options.scrollMargin}px)`
 						}}
 					>
 						{renderItem(item, virtualItem.index)}

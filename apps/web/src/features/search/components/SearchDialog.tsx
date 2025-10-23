@@ -1,12 +1,17 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Search, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { MasonryLayout } from '~/components/MasonryLayout'
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle
+} from '~/components/ui/Dialog'
+import { Input } from '~/components/ui/Input'
+import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
 import type { Tables } from '~/types/database.types'
-import { MasonryLayout } from './MasonryLayout'
-import { TopicCard } from './TopicCard'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/Dialog'
-import { Input } from './ui/Input'
 
 const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96
