@@ -211,6 +211,14 @@ export function RootTopicsPage() {
 			return res.json()
 		})
 	}, [])
+	
+	const getTodos = useCallback(() => {
+		fetch(`${import.meta.env.VITE_API_URL}/todos/`, {
+			credentials: 'include'
+		}).then(res => {
+			return res.json()
+		})
+	}, [])
 
 	if (isLoading) {
 		return (
@@ -387,6 +395,7 @@ export function RootTopicsPage() {
 						<div className='flex items-center gap-3'>
 							<h1 className='font-bold text-xl'>Library</h1>
 							<Button onClick={() => getTopics()}>Get Topics</Button>
+							<Button onClick={() => getTodos()}>Get Todos</Button>
 							<Button
 								onClick={() => {
 									document.location.href = `${import.meta.env.VITE_API_URL}/login`

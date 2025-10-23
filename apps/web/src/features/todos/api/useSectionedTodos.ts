@@ -1,11 +1,35 @@
 import {
 	useInsertMutation,
-	useQuery,
 	useRevalidateTables
 } from '@supabase-cache-helpers/postgrest-react-query'
+import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback, useMemo } from 'react'
 import { supabase } from '~/utils/supabase'
+
+type Topic = {
+	id: number
+	name: string
+	notes: string
+	inserted_at: string
+	updated_at: string
+	user_id: string
+	stability: number
+	retrievability: number
+	is_archived: boolean
+	is_inboxed: boolean
+}
+
+type Todo = {
+	id: number
+	scheduled_at: string | null
+	completed_at: string | null
+	inserted_at: string
+	updated_at: string
+	description: string
+	user_id: string
+	topics: Array<Topic>
+}
 
 type SectionKey =
 	| 'overdue'
@@ -71,6 +95,16 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	}
 ]
 
+async function fetchTodos(): Promise<Array<Todo>> {
+	const response = await fetch(`${import.meta.env.VITE_API_URL}/todos/`, {
+		credentials: 'include'
+	})
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`)
+	}
+	return response.json()
+}
+
 export function useSectionedTodos() {
 	// Centralized date boundary calculations
 	const dateBoundaries = useMemo(() => {
@@ -104,13 +138,10 @@ export function useSectionedTodos() {
 		}
 	}, [])
 
-	const query = useQuery(
-		supabase
-			.from('todos')
-			.select('*, todos_topics(topics(id, name, notes))')
-			.order('completed_at', { ascending: true, nullsFirst: true })
-			.order('scheduled_at', { ascending: true })
-	)
+	const query = useQuery({
+		queryKey: ['todos'],
+		queryFn: fetchTodos
+	})
 
 	const revalidateTables = useRevalidateTables([
 		{ schema: 'public', table: 'todos' },

@@ -24,7 +24,7 @@ import { TodoTopicBadges } from './TodoTopicBadges'
 
 // TODO: clean up this mess when migrate to hono API
 type TodoEntry = (Tables<'todos'> | Tables<'todos_with_effective_date'>) & {
-	todos_topics: Array<{ topics: { id: number; name: string } }>
+	topics: Array<{ id: number; name: string }>
 }
 
 interface TodoItemProps {
@@ -248,9 +248,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					<TodoTopicBadges
 						onRemoveTopicFromTodo={removeTopicFromTodo}
 						todoId={entry.id ?? undefined}
-						topics={
-							entry.todos_topics?.map(tt => tt.topics as Tables<'topics'>) ?? []
-						}
+						topics={entry.topics ?? []}
 					/>
 				</div>
 			</div>

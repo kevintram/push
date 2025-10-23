@@ -1,21 +1,17 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncConnection
-from app.core.db import get_db_connection
-from app.dependencies import get_user_id
+from fastapi import APIRouter
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from app.dependencies import SessionDep, UserIdDep
+from app.models import TopicsWithTodosPublic, TopicsTable
 
 router = APIRouter()
 
 
 @router.get("/topics/", tags=["topics"])
 async def read_topics(
-    conn: AsyncConnection = Depends(get_db_connection),
-    user_id: bool = Depends(get_user_id),
-):
-    result = await conn.execute(text("SELECT * FROM topics"))
-    rows = result.fetchall()
-
-    # Convert rows to list of dicts for JSON serialization
-    topics = [dict(row._mapping) for row in rows]
-
-    return {"topics": topics}
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> list[TopicsWithTodosPublic]:
+    stmt = select(TopicsTable).where(TopicsTable.user_id == user_id).options(selectinload(TopicsTable.todos))
+    result = await session.execute(stmt)
+    return result.scalars().all()
