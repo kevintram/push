@@ -1,11 +1,13 @@
-import { Link } from '@tanstack/react-router'
+import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Inbox,
 	ListChecks,
 	RotateCcw,
 	Settings,
-	SquareLibrary
+	SquareLibrary,
+	SquarePen
 } from 'lucide-react'
 
 import {
@@ -18,8 +20,24 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem
 } from '~/components/ui/Sidebar'
+import { supabase } from '~/utils/supabase'
 
 export function AppSidebar() {
+	const navigate = useNavigate()
+	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
+		useInsertMutation(supabase.from('topics'), ['id'], '*')
+
+	const handleCreateTopic = async () => {
+		const result = await insertTopic([{ is_inboxed: true }])
+		const createdTopic = result?.[0]
+		if (createdTopic) {
+			await navigate({
+				to: '/topics/{-$topicId}',
+				params: { topicId: createdTopic.id.toString() }
+			})
+		}
+	}
+
 	const menuItems = [
 		{
 			title: 'Inbox',
@@ -53,6 +71,17 @@ export function AppSidebar() {
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									disabled={isCreatingTopic}
+									onClick={handleCreateTopic}
+									tooltip='Add Topic'
+									variant='secondary'
+								>
+									<SquarePen />
+									<span>Add Topic</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
 							{menuItems.map(item => (
 								<SidebarMenuItem key={item.title}>
 									<SidebarMenuButton asChild={true} tooltip={item.title}>
