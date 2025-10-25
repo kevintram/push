@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback, useMemo } from 'react'
 import { supabase } from '~/utils/supabase'
+import { apiFetch } from '~/utils/apiFetch'
 
 type Topic = {
 	id: number
@@ -96,12 +97,7 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 ]
 
 async function fetchTodos(): Promise<Array<Todo>> {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/todos/`, {
-		credentials: 'include'
-	})
-	if (!response.ok) {
-		throw new Error(`HTTP error! status: ${response.status}`)
-	}
+	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/todos/`)
 	return response.json()
 }
 

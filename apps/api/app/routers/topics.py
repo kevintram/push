@@ -9,7 +9,7 @@ router = APIRouter()
 
 @router.get("/topics/", tags=["topics"])
 async def read_topics(
-    session: SessionDep,
+    session: SessionDep,    
     user_id: UserIdDep,
 ) -> list[TopicsWithTodosPublic]:
     stmt = select(TopicsTable).where(TopicsTable.user_id == user_id).options(selectinload(TopicsTable.todos))

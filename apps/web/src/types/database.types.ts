@@ -42,6 +42,7 @@ export type Database = {
           inserted_at: string
           scheduled_at: string | null
           updated_at: string
+          user_id: string
         }
         Insert: {
           completed_at?: string | null
@@ -50,6 +51,7 @@ export type Database = {
           inserted_at?: string
           scheduled_at?: string | null
           updated_at?: string
+          user_id: string
         }
         Update: {
           completed_at?: string | null
@@ -58,6 +60,7 @@ export type Database = {
           inserted_at?: string
           scheduled_at?: string | null
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -67,18 +70,21 @@ export type Database = {
           todo_id: number
           topic_id: number
           updated_at: string
+          user_id: string
         }
         Insert: {
           inserted_at?: string
           todo_id: number
           topic_id: number
           updated_at?: string
+          user_id: string
         }
         Update: {
           inserted_at?: string
           todo_id?: number
           topic_id?: number
           updated_at?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -115,6 +121,7 @@ export type Database = {
           retrievability: number
           stability: number
           updated_at: string
+          user_id: string
         }
         Insert: {
           id?: number
@@ -126,6 +133,7 @@ export type Database = {
           retrievability?: number
           stability?: number
           updated_at?: string
+          user_id: string
         }
         Update: {
           id?: number
@@ -137,6 +145,7 @@ export type Database = {
           retrievability?: number
           stability?: number
           updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -232,6 +241,7 @@ export type Database = {
           retrievability: number
           stability: number
           updated_at: string
+          user_id: string
         }[]
       }
       get_potential_parents: {
@@ -246,6 +256,7 @@ export type Database = {
           retrievability: number
           stability: number
           updated_at: string
+          user_id: string
         }[]
       }
       insert_relationship: {
