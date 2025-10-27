@@ -19,12 +19,13 @@ import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
+import type { Topic } from '../api/schemas'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { TodoTopicBadges } from './TodoTopicBadges'
 
 // TODO: clean up this mess when migrate to hono API
 type TodoEntry = (Tables<'todos'> | Tables<'todos_with_effective_date'>) & {
-	topics: Array<{ id: number; name: string }>
+	topics: Array<Topic>
 }
 
 interface TodoItemProps {

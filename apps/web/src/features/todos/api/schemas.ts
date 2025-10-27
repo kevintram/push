@@ -1,0 +1,30 @@
+import * as v from 'valibot'
+
+export const TopicSchema = v.object({
+	id: v.number(),
+	name: v.string(),
+	notes: v.string(),
+	inserted_at: v.string(),
+	updated_at: v.string(),
+	user_id: v.string(),
+	stability: v.number(),
+	retrievability: v.number(),
+	is_archived: v.boolean(),
+	is_inboxed: v.boolean()
+})
+
+export const TodoSchema = v.object({
+	id: v.number(),
+	scheduled_at: v.nullable(v.string()),
+	completed_at: v.nullable(v.string()),
+	inserted_at: v.string(),
+	updated_at: v.string(),
+	description: v.string(),
+	user_id: v.string(),
+	topics: v.array(TopicSchema)
+})
+
+export const TodosResponseSchema = v.array(TodoSchema)
+
+export type Topic = v.InferOutput<typeof TopicSchema>
+export type Todo = v.InferOutput<typeof TodoSchema>

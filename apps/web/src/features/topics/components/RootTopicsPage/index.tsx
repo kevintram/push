@@ -211,7 +211,7 @@ export function RootTopicsPage() {
 			return res.json()
 		})
 	}, [])
-	
+
 	const getTodos = useCallback(() => {
 		fetch(`${import.meta.env.VITE_API_URL}/todos/`, {
 			credentials: 'include'

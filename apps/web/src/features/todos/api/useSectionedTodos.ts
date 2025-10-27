@@ -5,32 +5,10 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback, useMemo } from 'react'
-import { supabase } from '~/utils/supabase'
+import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
-
-type Topic = {
-	id: number
-	name: string
-	notes: string
-	inserted_at: string
-	updated_at: string
-	user_id: string
-	stability: number
-	retrievability: number
-	is_archived: boolean
-	is_inboxed: boolean
-}
-
-type Todo = {
-	id: number
-	scheduled_at: string | null
-	completed_at: string | null
-	inserted_at: string
-	updated_at: string
-	description: string
-	user_id: string
-	topics: Array<Topic>
-}
+import { supabase } from '~/utils/supabase'
+import { type Todo, TodosResponseSchema } from './schemas'
 
 type SectionKey =
 	| 'overdue'
@@ -98,7 +76,8 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 
 async function fetchTodos(): Promise<Array<Todo>> {
 	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/todos/`)
-	return response.json()
+	const data = await response.json()
+	return v.parse(TodosResponseSchema, data)
 }
 
 export function useSectionedTodos() {
