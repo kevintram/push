@@ -1,14 +1,9 @@
-import {
-	useInsertMutation,
-	useRevalidateTables
-} from '@supabase-cache-helpers/postgrest-react-query'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback, useMemo } from 'react'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
-import { supabase } from '~/utils/supabase'
-import { type Todo, TodosResponseSchema } from './schemas'
+import { type Todo, TodoSchema, TodosResponseSchema } from './schemas'
 
 type SectionKey =
 	| 'overdue'
@@ -80,7 +75,31 @@ async function fetchTodos(): Promise<Array<Todo>> {
 	return v.parse(TodosResponseSchema, data)
 }
 
+type CreateTodoInput = {
+	description: string
+	scheduled_at: string | null
+}
+
+async function createTodo(input: CreateTodoInput): Promise<Todo> {
+	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/todos/`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			description: input.description,
+			scheduled_at: input.scheduled_at,
+			completed_at: null,
+			topics: []
+		})
+	})
+	const data = await response.json()
+	return v.parse(TodoSchema, data)
+}
+
 export function useSectionedTodos() {
+	const queryClient = useQueryClient()
+
 	// Centralized date boundary calculations
 	const dateBoundaries = useMemo(() => {
 		const newDate = new Date()
@@ -118,22 +137,12 @@ export function useSectionedTodos() {
 		queryFn: fetchTodos
 	})
 
-	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos' },
-		{ schema: 'public', table: 'todos_today' },
-		{ schema: 'public', table: 'todos_with_effective_date' }
-	])
-
-	const { mutateAsync: insertTodoMutation } = useInsertMutation(
-		supabase.from('todos'),
-		['id'],
-		'*, todos_topics(topics(id, name))',
-		{
-			onSuccess: () => {
-				revalidateTables()
-			}
+	const { mutateAsync: insertTodoMutation } = useMutation({
+		mutationFn: createTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
-	)
+	})
 
 	const {
 		overdue,
@@ -282,12 +291,10 @@ export function useSectionedTodos() {
 		async (sectionId: SectionKey) => {
 			const scheduledAt = getSectionStartDate(sectionId)
 
-			await insertTodoMutation([
-				{
-					description: '',
-					scheduled_at: scheduledAt
-				}
-			])
+			await insertTodoMutation({
+				description: '',
+				scheduled_at: scheduledAt
+			})
 		},
 		[getSectionStartDate, insertTodoMutation]
 	)
