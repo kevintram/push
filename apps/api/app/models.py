@@ -37,7 +37,6 @@ todos_topic_table = Table(
         nullable=False,
         server_default=text("timezone('utc'::text, now())"),
     ),
-    Column("user_id", String, nullable=False),
 )
 
 
@@ -63,7 +62,8 @@ class TodosTable(Base):
         secondary=todos_topic_table, back_populates="todos"
     )
 
-class TodosBase(BaseModel):
+
+class TodoBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -75,18 +75,28 @@ class TodosBase(BaseModel):
     user_id: str
 
 
-class TodosRead(TodosBase):
+class TodoRead(TodoBase):
     model_config = ConfigDict(from_attributes=True)
     topics: list[TopicsPublic]
-    
 
-class TodosCreate(BaseModel):
+
+class TodoCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    scheduled_at: date | None
-    completed_at: date | None
+    scheduled_at: date | None = None
+    completed_at: date | None = None
     description: str
     topics: list[TopicsPublic]
+
+
+class TodoUpdate(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    scheduled_at: date | None = None
+    completed_at: date | None = None
+    description: str | None = None
+    topics: list[TopicsPublic] | None = None
 
 
 class TopicsTable(Base):
@@ -140,4 +150,4 @@ class TopicsPublic(BaseModel):
 
 class TopicsWithTodosPublic(TopicsPublic):
     model_config = ConfigDict(from_attributes=True)
-    todos: list[TodosBase]
+    todos: list[TodoUpdate]
