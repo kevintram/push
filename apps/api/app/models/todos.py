@@ -9,7 +9,7 @@ from sqlalchemy.types import TIMESTAMP, Text
 from app.models.base import Base
 
 
-class Todos(Base):
+class Todo(Base):
     __tablename__ = "todos"
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
@@ -27,6 +27,6 @@ class Todos(Base):
         server_default=text("timezone('utc'::text, now())"),
     )
     user_id: Mapped[str] = mapped_column(String, nullable=False)
-    topics: Mapped[list["Topics"]] = relationship(
+    topics: Mapped[list["Topic"]] = relationship(
         secondary="todos_topics", back_populates="todos"
     )

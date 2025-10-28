@@ -1,4 +1,3 @@
-import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { FileText, PanelRightClose, PanelRightOpen } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useState } from 'react'
@@ -13,8 +12,8 @@ import {
 } from '~/components/ui/Dialog'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
+import { useCreateTopic } from '../api/useCreateTopic'
 import { TopicComposerFields } from './TopicComposerFields'
 
 interface SearchResult {
@@ -70,7 +69,7 @@ export function CreateTopicDialog({
 	const canCreateTopic = Boolean(name.trim() || notes.trim())
 
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
-		useInsertMutation(supabase.from('topics'), ['id'], '*')
+		useCreateTopic()
 
 	// Focus notes input when dialog opens
 	useEffect(() => {
@@ -117,22 +116,14 @@ export function CreateTopicDialog({
 		if (!(trimmedName || trimmedNotes)) return
 
 		try {
-			const createdTopic = await insertTopic([
-				{
-					name: trimmedName || '',
-					notes: trimmedNotes || '',
-					...topicDefaults
-				}
-			])
-
-			if (!createdTopic?.[0]) {
-				throw new Error('Failed to create topic')
-			}
-
-			const newTopic = createdTopic[0]
+			const newTopic = await insertTopic({
+				name: trimmedName || '',
+				notes: trimmedNotes || '',
+				...topicDefaults
+			})
 
 			if (onTopicCreated) {
-				await onTopicCreated(newTopic)
+				await onTopicCreated(newTopic as Tables<'topics'>)
 			}
 
 			setOpen(false)

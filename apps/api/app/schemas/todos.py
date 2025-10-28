@@ -15,7 +15,7 @@ class TodoBase(BaseModel):
 class TodoWithTopics(TodoBase):
     model_config = ConfigDict(from_attributes=True)
 
-    topics: list["TopicsBase"]
+    topics: list["TopicBase"]
 
 
 class TodoRead(TodoWithTopics):

@@ -5,13 +5,9 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 
-class TopicsBase(BaseModel):
+class TopicBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
-    inserted_at: datetime
-    updated_at: datetime
-    user_id: str
     name: str
     notes: str
     stability: int
@@ -20,6 +16,20 @@ class TopicsBase(BaseModel):
     is_inboxed: bool
 
 
-class TopicsWithTodosPublic(TopicsBase):
+class TopicBaseWithTodos(TopicBase):
     model_config = ConfigDict(from_attributes=True)
+
     todos: list["TodoWithTopics"]
+
+
+class TopicRead(TopicBaseWithTodos):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    inserted_at: datetime
+    updated_at: datetime
+    user_id: str
+
+
+class TopicCreate(TopicBase):
+    model_config = ConfigDict(from_attributes=True)
