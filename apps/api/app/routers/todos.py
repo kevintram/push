@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.dependencies import UserIdDep, SessionDep
-from sqlalchemy import select, update, insert
+from sqlalchemy import select, update, delete
 from sqlalchemy.orm import selectinload
 from app.models import (
     TodoCreate,
@@ -112,3 +112,16 @@ async def update_todo(
     )
     final_result = await session.execute(stmt)
     return final_result.scalar_one()
+
+@router.delete("/todos/{todo_id}", tags=["todos"])
+async def delete_todo(
+    todo_id: int,
+    session: SessionDep,
+    user_id: UserIdDep
+):
+    stmt = delete(TodosTable).where(TodosTable.id==todo_id).returning(TodosTable)
+    result = await session.execute(stmt)
+    deleted_todo = result.scalar_one_or_none()
+
+    if not deleted_todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
