@@ -1,32 +1,26 @@
-import {
-	useInsertMutation,
-	useQuery,
-	useRevalidateTables
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
+import { updateTodo, type Todo } from '~/features/todos/api/useSectionedTodos'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 
 interface AddTopicToTodoDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	todoId: number | undefined
+	todo: Todo | undefined
 }
 
 export function AddTopicToTodoDialog({
 	open,
 	onOpenChange,
-	todoId
+	todo
 }: AddTopicToTodoDialogProps) {
 	const [searchQuery, setSearchQuery] = useState('')
 	const [debouncedQuery, setDebouncedQuery] = useState('')
-
-	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos' },
-		{ schema: 'public', table: 'todos_topics' }
-	])
+	const queryClient = useQueryClient()
 
 	// Debounced search query
 	const updateDebouncedQuery = useCallback(
@@ -62,16 +56,12 @@ export function AddTopicToTodoDialog({
 		return topics ?? []
 	}, [topics, debouncedQuery])
 
-	const { mutateAsync: insertTodoTopicMutation } = useInsertMutation(
-		supabase.from('todos_topics'),
-		['topic_id', 'todo_id'],
-		'*',
-		{
-			onSuccess: () => {
-				revalidateTables()
-			}
+	const { mutateAsync: updateTodoMutation } = useMutation({
+		mutationFn: updateTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
-	)
+	})
 
 	// Reset state when dialog opens/closes
 	useEffect(() => {
@@ -82,20 +72,20 @@ export function AddTopicToTodoDialog({
 
 	const handleTopicCreatedOrSelected = useCallback(
 		async (topic: Tables<'topics'>) => {
-			if (!todoId) return
+			if (!todo) return
 
 			try {
-				await insertTodoTopicMutation([
-					{
-						topic_id: topic.id,
-						todo_id: todoId
-					}
-				])
+				// Add the new topic to the existing topics
+				const updatedTopics = [...todo.topics, topic]
+				await updateTodoMutation({
+					id: todo.id,
+					topics: updatedTopics
+				})
 			} catch (_error) {
 				// Handle error silently for now
 			}
 		},
-		[todoId, insertTodoTopicMutation]
+		[todo, updateTodoMutation]
 	)
 
 	const useSearch = useCallback(

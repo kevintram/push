@@ -134,8 +134,16 @@ export function ScheduledTodo({
 							<div className='mt-2'>
 								<TodoTopicBadges
 									onRemoveTopicFromTodo={removeTopicFromTodo}
-									todoId={entry.id ?? undefined}
-									topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
+									todo={{
+										id: entry.id ?? 0,
+										description: entry.description ?? '',
+										scheduled_at: entry.scheduled_at ?? null,
+										completed_at: entry.completed_at ?? null,
+										inserted_at: entry.inserted_at ?? '',
+										updated_at: entry.updated_at ?? '',
+										user_id: '', // Not available in todos_with_effective_date view
+										topics: entry.todos_topics?.map(tt => tt.topics) ?? []
+									}}
 								/>
 							</div>
 						</div>

@@ -1,8 +1,5 @@
-import {
-	useDeleteMutation,
-	useRevalidateTables,
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useDeleteMutation, useRevalidateTables } from '@supabase-cache-helpers/postgrest-react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
@@ -20,6 +17,7 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
 import type { Topic } from '../api/schemas'
+import { updateTodo } from '../api/useSectionedTodos'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { TodoTopicBadges } from './TodoTopicBadges'
 
@@ -34,6 +32,7 @@ interface TodoItemProps {
 }
 
 export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
+	const queryClient = useQueryClient()
 	const revalidateTables = useRevalidateTables([
 		{ schema: 'public', table: 'todos' },
 		{ schema: 'public', table: 'todos_today' },
@@ -76,48 +75,39 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	})
 	const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
 
-	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
-		supabase.from('todos'),
-		['id'],
-		'*, todos_topics(topics(id, name))',
-		{
-			onSuccess: () => {
-				revalidateTables()
-			}
+	const { mutateAsync: updateTodoMutation } = useMutation({
+		mutationFn: updateTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
-	)
+	})
 
 	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
 		supabase.from('todos'),
 		['id']
 	)
 
-	const { mutateAsync: deleteTodoTopicMutation } = useDeleteMutation(
-		supabase.from('todos_topics'),
-		['topic_id', 'todo_id'],
-		undefined,
-		{
-			onSuccess: () => revalidateTables()
-		}
-	)
-
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
 			setIsChecked(checked)
-			updateTodoMutation({
-				id: entry.id ?? undefined,
-				completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
-			})
+			if (entry.id) {
+				updateTodoMutation({
+					id: entry.id,
+					completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
+				})
+			}
 		},
 		[entry.id, updateTodoMutation]
 	)
 
 	const updateDescription = useCallback(
 		(newDescription: string) => {
-			updateTodoMutation({
-				id: entry.id ?? undefined,
-				description: newDescription.trim()
-			})
+			if (entry.id) {
+				updateTodoMutation({
+					id: entry.id,
+					description: newDescription.trim()
+				})
+			}
 		},
 		[entry.id, updateTodoMutation]
 	)
@@ -131,16 +121,18 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	const handleDateSave = useCallback(
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
-			if (isCompleted) {
-				updateTodoMutation({
-					id: entry.id ?? undefined,
-					completed_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
-				})
-			} else {
-				updateTodoMutation({
-					id: entry.id ?? undefined,
-					scheduled_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
-				})
+			if (entry.id) {
+				if (isCompleted) {
+					updateTodoMutation({
+						id: entry.id,
+						completed_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
+					})
+				} else {
+					updateTodoMutation({
+						id: entry.id,
+						scheduled_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
+					})
+				}
 			}
 			setIsDatePopoverOpen(false)
 		},
@@ -154,9 +146,13 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 
 	const removeTopicFromTodo = useCallback(
 		async (todoId: number, topicId: number) => {
-			await deleteTodoTopicMutation({ todo_id: todoId, topic_id: topicId })
+			const updatedTopics = entry.topics.filter(t => t.id !== topicId)
+			await updateTodoMutation({
+				id: todoId,
+				topics: updatedTopics
+			})
 		},
-		[deleteTodoTopicMutation]
+		[entry.topics, updateTodoMutation]
 	)
 
 	return (
@@ -248,8 +244,16 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					{/* Topics */}
 					<TodoTopicBadges
 						onRemoveTopicFromTodo={removeTopicFromTodo}
-						todoId={entry.id ?? undefined}
-						topics={entry.topics ?? []}
+						todo={{
+							id: entry.id ?? 0,
+							description: entry.description ?? '',
+							scheduled_at: entry.scheduled_at ?? null,
+							completed_at: entry.completed_at ?? null,
+							inserted_at: entry.inserted_at ?? '',
+							updated_at: entry.updated_at ?? '',
+							user_id: '', // Not available in TodoEntry
+							topics: entry.topics ?? []
+						}}
 					/>
 				</div>
 			</div>

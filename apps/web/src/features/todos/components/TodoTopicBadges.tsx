@@ -1,19 +1,17 @@
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
+import type{ Todo } from '~/features/todos/api/useSectionedTodos'
 import { TopicBadge } from '~/features/topics/components/TopicBadge'
-import { AddTopicToTodoDialog } from '~/features/topics/components/TopicPage/TimelineSidebar/AddTopicToTodoDialog'
-import type { Tables } from '~/types/database.types'
+import { AddTopicToTodoDialog } from '~/features/todos/components/AddTopicToTodoDialog'
 
 interface TodoTopicBadgesProps {
-	topics: Array<Tables<'topics'>>
-	todoId: number | undefined
+	todo: Todo
 	onRemoveTopicFromTodo: (todoId: number, topicId: number) => Promise<void>
 }
 
 export function TodoTopicBadges({
-	topics,
-	todoId,
+	todo,
 	onRemoveTopicFromTodo
 }: TodoTopicBadgesProps) {
 	const [showAddDialog, setShowAddDialog] = useState(false)
@@ -28,12 +26,12 @@ export function TodoTopicBadges({
 				<span className='font-medium text-muted-foreground text-xs'>
 					Topics
 				</span>
-				{topics.map(topic => (
+				{todo.topics.map((topic: { id: number; name: string; notes: string }) => (
 					<TopicBadge
 						key={topic.id}
 						name={topic.name}
 						notes={topic.notes}
-						onRemove={() => onRemoveTopicFromTodo(todoId ?? 0, topic.id)}
+						onRemove={() => onRemoveTopicFromTodo(todo.id, topic.id)}
 						topicId={topic.id}
 					/>
 				))}
@@ -49,7 +47,7 @@ export function TodoTopicBadges({
 			<AddTopicToTodoDialog
 				onOpenChange={setShowAddDialog}
 				open={showAddDialog}
-				todoId={todoId}
+				todo={todo}
 			/>
 		</>
 	)
