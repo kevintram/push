@@ -1,4 +1,3 @@
-import { useDeleteMutation, useRevalidateTables } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
@@ -15,9 +14,8 @@ import { Textarea } from '~/components/ui/Textarea'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
 import type { Topic } from '../api/schemas'
-import { updateTodo } from '../api/useSectionedTodos'
+import { deleteTodo, updateTodo } from '../api/useSectionedTodos'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { TodoTopicBadges } from './TodoTopicBadges'
 
@@ -33,11 +31,6 @@ interface TodoItemProps {
 
 export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	const queryClient = useQueryClient()
-	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos' },
-		{ schema: 'public', table: 'todos_today' },
-		{ schema: 'public', table: 'todos_with_effective_date' }
-	])
 
 	const dateValue = (() => {
 		if ('effective_date' in entry && entry.effective_date) {
@@ -82,10 +75,12 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		}
 	})
 
-	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
-		supabase.from('todos'),
-		['id']
-	)
+	const { mutateAsync: deleteTodoMutation } = useMutation({
+		mutationFn: deleteTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
+		}
+	})
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
@@ -140,9 +135,10 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	)
 
 	const handleDelete = useCallback(async () => {
-		await deleteTodoMutation({ id: entry.id ?? undefined })
-		revalidateTables()
-	}, [entry.id, deleteTodoMutation, revalidateTables])
+		if (entry.id) {
+			await deleteTodoMutation(entry.id)
+		}
+	}, [entry.id, deleteTodoMutation])
 
 	const removeTopicFromTodo = useCallback(
 		async (todoId: number, topicId: number) => {

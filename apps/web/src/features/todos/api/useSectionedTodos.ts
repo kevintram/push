@@ -125,7 +125,13 @@ async function updateTodo(input: UpdateTodoInput): Promise<Todo> {
 	return v.parse(TodoSchema, data)
 }
 
-export { updateTodo }
+async function deleteTodo(id: number): Promise<void> {
+	await apiFetch(`${import.meta.env.VITE_API_URL}/todos/${id}`, {
+		method: 'DELETE'
+	})
+}
+
+export { updateTodo, deleteTodo }
 export type { UpdateTodoInput, Todo }
 
 export function useSectionedTodos() {
