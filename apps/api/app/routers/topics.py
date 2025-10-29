@@ -10,22 +10,48 @@ from app.schemas import TopicRead, TopicCreate, TopicUpdate, TopicReadWithRelati
 router = APIRouter()
 
 
+@router.get("/topics/search/", tags=["topics"])
+async def search_topics(
+    session: SessionDep,
+    user_id: UserIdDep,
+    query: str | None = None,
+    limit: int = 10,
+) -> list[TopicRead]:
+    cleaned_query = query.strip() if query else ""
+    stmt = select(Topic).where(Topic.user_id == user_id)
+
+    if cleaned_query:
+        like_pattern = f"%{cleaned_query}%"
+        stmt = stmt.where(
+            or_(
+                Topic.name.ilike(like_pattern),
+                Topic.notes.ilike(like_pattern),
+            )
+        )
+        stmt = stmt.order_by(Topic.name.asc())
+    else:
+        stmt = stmt.order_by(Topic.updated_at.desc())
+
+    limit = max(1, min(limit, 50))
+    stmt = stmt.limit(limit)
+
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
+
 @router.get("/topics/", tags=["topics"])
 async def read_topics(
     session: SessionDep,
     user_id: UserIdDep,
     inboxed: bool | None = None,
     archived: bool | None = None,
-    q: str | None = None,
     root: bool | None = None,
 ) -> list[TopicReadWithRelationships]:
-    stmt = select(Topic).where(Topic.user_id == user_id)
+    stmt = select(Topic).where(Topic.user_id == user_id).order_by(Topic.updated_at)
     if inboxed is not None:
         stmt = stmt.where(Topic.inboxed == inboxed)
     if archived is not None:
         stmt = stmt.where(Topic.archived == archived)
-    if q is not None:
-        stmt = stmt.where(or_(Topic.name.ilike(f"%{q}%"), Topic.notes.ilike(f"{q}")))
 
     if root is not None and root is True:
         topics_with_ancestors = select(t_topics_closure.c.descendant).where(t_topics_closure.c.depth > 0)

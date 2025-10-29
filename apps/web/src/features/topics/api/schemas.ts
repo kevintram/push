@@ -2,7 +2,7 @@ import * as v from 'valibot'
 import type { Topic } from '~/types/topics.types'
 
 // Base topic schema matching the API response from /topics/ endpoint
-const TopicsSchema = v.object({
+export const TopicSchema = v.object({
 	id: v.number(),
 	name: v.string(),
 	notes: v.string(),
@@ -24,8 +24,8 @@ export const TopicWithRelationshipsSchema = v.object({
 	retrievability: v.number(),
 	archived: v.boolean(),
 	inboxed: v.boolean(),
-	parents: v.array(TopicsSchema),
-	children: v.array(TopicsSchema)
+	parents: v.array(TopicSchema),
+	children: v.array(TopicSchema)
 })
 
 type TopicWithRelationshipsRaw = v.InferOutput<

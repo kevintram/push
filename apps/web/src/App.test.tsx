@@ -9,6 +9,10 @@ import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { routeTree } from './routeTree.gen'
 
+vi.mock('~/features/topics/api/searchTopics', () => ({
+	searchTopics: vi.fn(async () => [])
+}))
+
 // Mock the Supabase client so component hooks stay in-memory during tests.
 vi.mock('~/utils/supabase', () => {
 	const createMockResponse = () => ({
