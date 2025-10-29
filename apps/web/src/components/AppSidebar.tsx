@@ -23,10 +23,11 @@ import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 
 export function AppSidebar() {
 	const navigate = useNavigate()
-	const { mutateAsync: insertTopic, isPending: isCreatingTopic } = useCreateTopic()
+	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
+		useCreateTopic()
 
 	const handleCreateTopic = async () => {
-		const createdTopic = await insertTopic()
+		const createdTopic = await insertTopic({})
 		await navigate({
 			to: '/topics/{-$topicId}',
 			params: { topicId: createdTopic.id.toString() }
