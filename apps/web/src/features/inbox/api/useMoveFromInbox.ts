@@ -1,6 +1,42 @@
-import { useUpdateMutation } from '@supabase-cache-helpers/postgrest-react-query'
-import { supabase } from '~/utils/supabase'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import * as v from 'valibot'
+import { TopicSchema } from '~/features/todos/api/schemas'
+import { apiFetch } from '~/utils/apiFetch'
+
+type UpdateTopicInput = {
+	id: number
+	inboxed?: boolean
+	archived?: boolean
+	name?: string
+	notes?: string
+}
+
+async function updateTopic(input: UpdateTopicInput) {
+	const { id, ...updateData } = input
+	const response = await apiFetch(
+		`${import.meta.env.VITE_API_URL}/topics/${id}/`,
+		{
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(updateData)
+		}
+	)
+	if (!response.ok) {
+		throw new Error(`API request failed: ${response.status}`)
+	}
+	const data = await response.json()
+	return v.parse(TopicSchema, data)
+}
 
 export function useMoveFromInbox() {
-	return useUpdateMutation(supabase.from('topics'), ['id'], '*')
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: updateTopic,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
 }

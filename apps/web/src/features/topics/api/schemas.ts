@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import type { Topic } from '~/types/topics.types'
 
 // Base topic schema matching the API response from /topics/ endpoint
 const TopicsSchema = v.object({
@@ -27,23 +28,19 @@ export const TopicWithRelationshipsSchema = v.object({
 	children: v.array(TopicsSchema)
 })
 
-export type TopicWithRelationships = v.InferOutput<
+type TopicWithRelationshipsRaw = v.InferOutput<
 	typeof TopicWithRelationshipsSchema
 >
 
+export type TopicWithRelationships = TopicWithRelationshipsRaw &
+	Topic & {
+		parents: Array<Topic>
+		children: Array<Topic>
+	}
+
 // Common type for TopicCard - works with both API and Supabase data
 // The only difference is user_id (present in Supabase, absent in API)
-export type TopicCardTopic = {
-	id: number
-	name: string
-	notes: string
-	inserted_at: string
-	updated_at: string
-	stability: number
-	retrievability: number
-	archived: boolean
-	inboxed: boolean
-	user_id?: string // Optional - only present from Supabase
-	parents?: Array<Omit<TopicCardTopic, 'parents' | 'children'>>
-	children?: Array<Omit<TopicCardTopic, 'parents' | 'children'>>
+export type TopicCardTopic = Topic & {
+	parents?: Array<Omit<Topic, 'parents' | 'children'>>
+	children?: Array<Omit<Topic, 'parents' | 'children'>>
 }

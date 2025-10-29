@@ -1,11 +1,11 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, update
 from sqlalchemy.orm import selectinload
 
 from app.dependencies import SessionDep, UserIdDep
 from app.models import Topic, t_topics_closure
-from app.schemas import TopicRead, TopicCreate, TopicReadWithRelationships
+from app.schemas import TopicRead, TopicCreate, TopicUpdate, TopicReadWithRelationships
 
 router = APIRouter()
 
@@ -64,11 +64,27 @@ async def insert_topic(
     return new_topic
 
 
-# @router.post(f"/topics/{topic_id}", tags=["topics"])
-# async def update_topic(
-#     topic_id: int,
-#     topic: TopicUpdate,
-#     session: SessionDep,
-#     user_id: UserIdDep
-# ) -> TopicRead:
-    
+@router.post("/topics/{topic_id}/", tags=["topics"])
+async def update_topic(
+    topic_id: int,
+    topic: TopicUpdate,
+    session: SessionDep,
+    user_id: UserIdDep
+) -> TopicRead:
+    update_values = topic.model_dump(exclude_unset=True)
+
+    if update_values:
+        stmt = (
+            update(Topic)
+            .where(Topic.id == topic_id, Topic.user_id == user_id)
+            .values(update_values)
+        )
+        result = await session.execute(stmt)
+
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Topic not found")
+
+    # Fetch and return updated topic
+    select_stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    result = await session.execute(select_stmt)
+    return result.scalar_one()

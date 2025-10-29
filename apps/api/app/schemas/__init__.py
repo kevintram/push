@@ -1,5 +1,5 @@
 from app.schemas.todos import TodoBase, TodoCreate, TodoRead, TodoUpdate, TodoWithTopics
-from app.schemas.topics import TopicBase, TopicRead, TopicCreate, TopicReadWithRelationships
+from app.schemas.topics import TopicBase, TopicRead, TopicCreate, TopicReadWithRelationships, TopicUpdate
 
 # Rebuild models to resolve forward references
 TodoWithTopics.model_rebuild()
@@ -18,5 +18,6 @@ __all__ = [
     "TopicBase",
     "TopicRead",
     "TopicCreate",
+    "TopicUpdate",
     "TopicReadWithRelationships"
 ]

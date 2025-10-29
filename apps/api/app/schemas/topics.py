@@ -38,3 +38,12 @@ class TopicReadWithRelationships(TopicRead):
 
 class TopicCreate(TopicBase):
     model_config = ConfigDict(from_attributes=True)
+
+
+class TopicUpdate(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str | None = None
+    notes: str | None = None
+    archived: bool | None = None
+    inboxed: bool | None = None

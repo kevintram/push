@@ -1,9 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import {
-	type Topic,
-	TopicSchema,
-} from '~/features/todos/api/schemas'
+import { type Topic, TopicSchema } from '~/features/todos/api/schemas'
 import { apiFetch } from '~/utils/apiFetch'
 
 type CreateTopicInput = {
@@ -15,9 +12,7 @@ type CreateTopicInput = {
 	inboxed?: boolean
 }
 
-async function createTopic(
-	input: CreateTopicInput = {}
-): Promise<Topic> {
+async function createTopic(input: CreateTopicInput = {}): Promise<Topic> {
 	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/topics/`, {
 		method: 'POST',
 		headers: {
@@ -38,7 +33,6 @@ async function createTopic(
 		return v.parse(TopicSchema, data)
 	} catch (error) {
 		if (error instanceof v.ValiError) {
-			console.log(error.issues)
 		}
 		throw error
 	}
