@@ -13,8 +13,8 @@ import {
 import { Textarea } from '~/components/ui/Textarea'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import { deleteTodo, removeTopicFromTodo, updateTodo } from '../api'
 import type { Topic } from '../api/schemas'
-import { deleteTodo, updateTodo } from '../api/useSectionedTodos'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { TodoTopicBadges } from './TodoTopicBadges'
 
@@ -88,6 +88,14 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		}
 	})
 
+	const { mutateAsync: removeTopicMutation } = useMutation({
+		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
+			removeTopicFromTodo(todoId, topicId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
+		}
+	})
+
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
 			setIsChecked(checked)
@@ -146,15 +154,11 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 		}
 	}, [entry.id, deleteTodoMutation])
 
-	const removeTopicFromTodo = useCallback(
+	const handleRemoveTopicFromTodo = useCallback(
 		async (todoId: number, topicId: number) => {
-			const updatedTopics = entry.topics.filter(t => t.id !== topicId)
-			await updateTodoMutation({
-				id: todoId,
-				topics: updatedTopics
-			})
+			await removeTopicMutation({ todoId, topicId })
 		},
-		[entry.topics, updateTodoMutation]
+		[removeTopicMutation]
 	)
 
 	return (
@@ -245,7 +249,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 
 					{/* Topics */}
 					<TodoTopicBadges
-						onRemoveTopicFromTodo={removeTopicFromTodo}
+						onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
 						todo={{
 							id: entry.id ?? 0,
 							description: entry.description ?? '',

@@ -3,7 +3,7 @@ from app.dependencies import UserIdDep, SessionDep
 from sqlalchemy import select, update, delete
 from sqlalchemy.orm import selectinload
 from app.models import Todo, Topic, t_todos_topics
-from app.schemas import TodoCreate, TodoRead, TodoUpdate, TopicIdPayload
+from app.schemas import TodoCreate, TodoRead, TodoUpdate, TopicIdPayload, TopicRead
 
 router = APIRouter()
 
@@ -71,6 +71,15 @@ async def update_todo(
     final_result = await session.execute(stmt)
     return final_result.scalar_one()
 
+@router.get("/todos/{todo_id}/topics/", tags=["todos"])
+async def read_topics_for_todo(
+    todo_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> list[TopicRead]:
+    stmt = select(Topic).where(Topic.todos.any(Todo.id == todo_id), Topic.user_id == user_id)
+    result = await session.execute(stmt)
+    return result.scalars().all()
 
 @router.post("/todos/{todo_id}/topics/", tags=["todos"])
 async def add_topic(

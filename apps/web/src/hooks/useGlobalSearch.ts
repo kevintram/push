@@ -19,10 +19,7 @@ export function useGlobalSearch(externalQuery = '') {
 	const trimmedQuery = debouncedQuery.trim()
 	const hasQuery = trimmedQuery.length > 0
 
-	const {
-		data: searchResults = [],
-		isLoading: isSearchLoading
-	} = useQuery({
+	const { data: searchResults = [], isLoading: isSearchLoading } = useQuery({
 		queryKey: ['topics', 'search', trimmedQuery],
 		queryFn: () =>
 			searchTopics({
@@ -32,10 +29,7 @@ export function useGlobalSearch(externalQuery = '') {
 		enabled: hasQuery
 	})
 
-	const {
-		data: recentResults = [],
-		isLoading: isRecentLoading
-	} = useQuery({
+	const { data: recentResults = [], isLoading: isRecentLoading } = useQuery({
 		queryKey: ['topics', 'search', 'recent'],
 		queryFn: () =>
 			searchTopics({

@@ -1,1 +1,6 @@
+export { addTopicToTodo } from './addTopicToTodo'
+export { deleteTodo } from './deleteTodo'
+export { removeTopicFromTodo } from './removeTopicFromTodo'
+export type { Todo } from './schemas'
+export { type UpdateTodoInput, updateTodo } from './updateTodo'
 export { useSectionedTodos } from './useSectionedTodos'

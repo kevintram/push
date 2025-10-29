@@ -3,12 +3,7 @@ import dayjs from 'dayjs'
 import { useCallback, useMemo } from 'react'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
-import {
-	type Todo,
-	TodoSchema,
-	TodosResponseSchema,
-	type Topic
-} from './schemas'
+import { type Todo, TodoSchema, TodosResponseSchema } from './schemas'
 
 type SectionKey =
 	| 'overdue'
@@ -94,50 +89,12 @@ async function createTodo(input: CreateTodoInput): Promise<Todo> {
 		body: JSON.stringify({
 			description: input.description,
 			scheduled_at: input.scheduled_at,
-			completed_at: null,
-			topics: []
+			completed_at: null
 		})
 	})
 	const data = await response.json()
 	return v.parse(TodoSchema, data)
 }
-
-type UpdateTodoInput = {
-	id: number
-	description?: string
-	scheduled_at?: string | null
-	completed_at?: string | null
-	topics?: Array<Topic>
-}
-
-async function updateTodo(input: UpdateTodoInput): Promise<Todo> {
-	const { id, topics, ...updateData } = input
-	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/todos/${id}`,
-		{
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				id,
-				...updateData,
-				topics: topics || []
-			})
-		}
-	)
-	const data = await response.json()
-	return v.parse(TodoSchema, data)
-}
-
-async function deleteTodo(id: number): Promise<void> {
-	await apiFetch(`${import.meta.env.VITE_API_URL}/todos/${id}`, {
-		method: 'DELETE'
-	})
-}
-
-export { updateTodo, deleteTodo }
-export type { UpdateTodoInput, Todo }
 
 export function useSectionedTodos() {
 	const queryClient = useQueryClient()

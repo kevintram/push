@@ -2,7 +2,7 @@ import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { type Todo, updateTodo } from '~/features/todos/api/useSectionedTodos'
+import { addTopicToTodo, type Todo } from '~/features/todos/api'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
 import type { Tables } from '~/types/database.types'
 import { supabase } from '~/utils/supabase'
@@ -56,8 +56,9 @@ export function AddTopicToTodoDialog({
 		return topics ?? []
 	}, [topics, debouncedQuery])
 
-	const { mutateAsync: updateTodoMutation } = useMutation({
-		mutationFn: updateTodo,
+	const { mutateAsync: addTopicMutation } = useMutation({
+		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
+			addTopicToTodo(todoId, topicId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
@@ -75,17 +76,15 @@ export function AddTopicToTodoDialog({
 			if (!todo) return
 
 			try {
-				// Add the new topic to the existing topics
-				const updatedTopics = [...todo.topics, topic]
-				await updateTodoMutation({
-					id: todo.id,
-					topics: updatedTopics
+				await addTopicMutation({
+					todoId: todo.id,
+					topicId: topic.id
 				})
 			} catch (_error) {
 				// Handle error silently for now
 			}
 		},
-		[todo, updateTodoMutation]
+		[todo, addTopicMutation]
 	)
 
 	const useSearch = useCallback(

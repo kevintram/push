@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
-import type { Todo } from '~/features/todos/api/useSectionedTodos'
+import type { Todo } from '~/features/todos/api'
 import { AddTopicToTodoDialog } from '~/features/todos/components/AddTopicToTodoDialog'
 import { TopicBadge } from '~/features/topics/components/TopicBadge'
 

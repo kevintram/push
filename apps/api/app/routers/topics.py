@@ -16,6 +16,7 @@ from app.schemas import (
     TopicParentRelationshipCreate,
     TopicReadWithTodos,
     TodoIdPayload,
+    TodoWithTopics,
 )
 
 router = APIRouter()
@@ -311,6 +312,17 @@ async def delete_parent(
         child_id=child_id,
         focus_topic_id=child_id,
     )
+
+@router.get("/topics/{topic_id}/todos/", tags=["topics"])
+async def read_todos_for_topic(
+    topic_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> list[TodoWithTopics]:
+    stmt = select(Todo).where(Todo.topics.any(Topic.id == topic_id), Todo.user_id == user_id)
+    stmt = stmt.options(selectinload(Todo.topics))
+    result = await session.execute(stmt)
+    return result.scalars().all()
 
 @router.post("/topics/{topic_id}/todos/", tags=["topics"])
 async def add_todo(
