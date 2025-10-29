@@ -1,11 +1,11 @@
 from fastapi import APIRouter
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import selectinload
 
 from app.dependencies import SessionDep, UserIdDep
 from app.models import Topic, t_topics_closure
-from app.schemas import TopicRead, TopicCreate
+from app.schemas import TopicRead, TopicCreate, TopicReadWithRelationships
 
 router = APIRouter()
 
@@ -14,17 +14,37 @@ router = APIRouter()
 async def read_topics(
     session: SessionDep,
     user_id: UserIdDep,
-    root: bool = False,
-) -> list[TopicRead]:
+    inboxed: bool | None = None,
+    archived: bool | None = None,
+    q: str | None = None,
+    root: bool | None = None,
+) -> list[TopicReadWithRelationships]:
+    stmt = select(Topic).where(Topic.user_id == user_id)
+    if inboxed is not None:
+        stmt = stmt.where(Topic.inboxed == inboxed)
+    if archived is not None:
+        stmt = stmt.where(Topic.archived == archived)
+    if q is not None:
+        stmt = stmt.where(or_(Topic.name.ilike(f"%{q}%"), Topic.notes.ilike(f"{q}")))
 
-    topics_closure = await session.execute(select(t_topics_closure))
-    print(topics_closure.scalars().all())
+    if root is not None and root is True:
+        topics_with_ancestors = select(t_topics_closure.c.descendant).where(t_topics_closure.c.depth > 0)
+        stmt = stmt.where(Topic.id.notin_(topics_with_ancestors))
 
-    stmt = (
-        select(Topic)
-        .where(Topic.user_id == user_id)
-        .options(selectinload(Topic.todos))
-    )
+    stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children))
+
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
+@router.get("/topics/{topic_id}/", tags=["topics"])
+async def read_topic(
+    session: SessionDep,
+    user_id: UserIdDep,
+    topic_id: int
+) -> TopicReadWithRelationships:
+    stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children))
+
     result = await session.execute(stmt)
     return result.scalars().all()
 
@@ -42,3 +62,13 @@ async def insert_topic(
     await session.refresh(new_topic, ["todos"])
 
     return new_topic
+
+
+# @router.post(f"/topics/{topic_id}", tags=["topics"])
+# async def update_topic(
+#     topic_id: int,
+#     topic: TopicUpdate,
+#     session: SessionDep,
+#     user_id: UserIdDep
+# ) -> TopicRead:
+    

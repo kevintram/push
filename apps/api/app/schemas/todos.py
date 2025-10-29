@@ -23,7 +23,6 @@ class TodoRead(TodoWithTopics):
     id: int
     inserted_at: datetime
     updated_at: datetime
-    user_id: str
 
 
 class TodoCreate(TodoWithTopics):
