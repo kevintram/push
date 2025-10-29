@@ -1,18 +1,23 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+import {
+	type Topic,
+	TopicSchema,
+} from '~/features/todos/api/schemas'
 import { apiFetch } from '~/utils/apiFetch'
-import { TopicWithTodosSchema, type TopicWithTodos } from '~/features/todos/api/schemas'
 
 type CreateTopicInput = {
 	name?: string
 	notes?: string
 	stability?: number
 	retrievability?: number
-	is_archived?: boolean
-	is_inboxed?: boolean
+	archived?: boolean
+	inboxed?: boolean
 }
 
-async function createTopic(input: CreateTopicInput = {}): Promise<TopicWithTodos> {
+async function createTopic(
+	input: CreateTopicInput = {}
+): Promise<Topic> {
 	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/topics/`, {
 		method: 'POST',
 		headers: {
@@ -23,16 +28,30 @@ async function createTopic(input: CreateTopicInput = {}): Promise<TopicWithTodos
 			notes: input.notes ?? '',
 			stability: input.stability ?? 1,
 			retrievability: input.retrievability ?? 0.0,
-			is_archived: input.is_archived ?? false,
-			is_inboxed: input.is_inboxed ?? false
+			archived: input.archived ?? false,
+			inboxed: input.inboxed ?? false
 		})
 	})
+
 	const data = await response.json()
-	return v.parse(TopicWithTodosSchema, data)
+	try {
+		return v.parse(TopicSchema, data)
+	} catch (error) {
+		if (error instanceof v.ValiError) {
+			console.log(error.issues)
+		}
+		throw error
+	}
 }
 
 export function useCreateTopic() {
+	const queryClient = useQueryClient()
+
 	return useMutation({
-		mutationFn: createTopic
+		mutationFn: createTopic,
+		onSuccess: () => {
+			// Invalidate all topics queries to trigger refetch
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
 	})
 }

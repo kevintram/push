@@ -6,11 +6,10 @@ export const TopicSchema = v.object({
 	notes: v.string(),
 	inserted_at: v.string(),
 	updated_at: v.string(),
-	user_id: v.string(),
 	stability: v.number(),
 	retrievability: v.number(),
-	is_archived: v.boolean(),
-	is_inboxed: v.boolean()
+	archived: v.boolean(),
+	inboxed: v.boolean()
 })
 
 export const TodoSchema = v.object({
@@ -20,7 +19,6 @@ export const TodoSchema = v.object({
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	description: v.string(),
-	user_id: v.string(),
 	topics: v.array(TopicSchema)
 })
 
@@ -30,11 +28,10 @@ export const TopicWithTodosSchema = v.object({
 	notes: v.string(),
 	inserted_at: v.string(),
 	updated_at: v.string(),
-	user_id: v.string(),
 	stability: v.number(),
 	retrievability: v.number(),
-	is_archived: v.boolean(),
-	is_inboxed: v.boolean(),
+	archived: v.boolean(),
+	inboxed: v.boolean(),
 	todos: v.array(v.lazy(() => TodoSchema))
 })
 
