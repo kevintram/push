@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException
 from app.dependencies import UserIdDep, SessionDep
 from sqlalchemy import select, update, delete
 from sqlalchemy.orm import selectinload
-from app.models import Todo, Topic
-from app.schemas import TodoCreate, TodoRead, TodoUpdate
+from app.models import Todo, Topic, t_todos_topics
+from app.schemas import TodoCreate, TodoRead, TodoUpdate, TopicIdPayload
 
 router = APIRouter()
 
@@ -37,19 +37,7 @@ async def create_todo(
     )
     session.add(new_todo)
     await session.flush()
-
-    # Associate topics if provided
-    if todo.topics:
-        topic_ids = [topic.id for topic in todo.topics]
-        topic_stmt = select(Topic).where(
-            Topic.id.in_(topic_ids), Topic.user_id == user_id
-        )
-        result = await session.execute(topic_stmt)
-        topics = result.scalars().all()
-        new_todo.topics = list(topics)
-
-    # Eagerly load the topics relationship before returning
-    await session.refresh(new_todo, ["topics"]) 
+    await session.refresh(new_todo, ["topics"])
     return new_todo
 
 
@@ -60,46 +48,21 @@ async def update_todo(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> TodoRead:
-    # Prepare update values
-    update_values = todo.model_dump(
-        exclude_unset=True, exclude={"id", "user_id", "topics"}
+    update_values = todo.model_dump(exclude_unset=True, exclude={"id", "user_id"})
+
+    if not update_values:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    update_stmt = (
+        update(Todo)
+        .where(Todo.id == todo_id, Todo.user_id == user_id)
+        .values(update_values)
     )
+    result = await session.execute(update_stmt)
 
-    # Only perform update if there are fields to update
-    if update_values:
-        update_stmt = (
-            update(Todo)
-            .where(Todo.id == todo_id, Todo.user_id == user_id)
-            .values(update_values)
-        )
-        result = await session.execute(update_stmt)
+    if result.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Todo not found")
 
-        if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Todo not found")
-
-    # Handle topics if provided
-    if todo.topics is not None:
-        # Fetch the todo with topics eagerly loaded to update its topics
-        todo_stmt = (
-            select(Todo)
-            .where(Todo.id == todo_id, Todo.user_id == user_id)
-            .options(selectinload(Todo.topics))
-        )
-        todo_result = await session.execute(todo_stmt)
-        updated_todo = todo_result.scalar_one_or_none()
-
-        if not updated_todo:
-            raise HTTPException(status_code=404, detail="Todo not found")
-
-        topic_ids = [topic.id for topic in todo.topics]
-        topic_stmt = select(Topic).where(
-            Topic.id.in_(topic_ids), Topic.user_id == user_id
-        )
-        topic_result = await session.execute(topic_stmt)
-        topics = topic_result.scalars().all()
-        updated_todo.topics = list(topics)
-
-    # Re-fetch with topics eagerly loaded
     stmt = (
         select(Todo)
         .where(Todo.id == todo_id, Todo.user_id == user_id)
@@ -107,6 +70,89 @@ async def update_todo(
     )
     final_result = await session.execute(stmt)
     return final_result.scalar_one()
+
+
+@router.post("/todos/{todo_id}/topics/", tags=["todos"])
+async def add_topic(
+    todo_id: int,
+    payload: TopicIdPayload,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> TodoRead:
+    topic_id = payload.topic_id
+
+    todo_result = await session.execute(
+        select(Todo)
+        .where(Todo.id == todo_id, Todo.user_id == user_id)
+        .options(selectinload(Todo.topics))
+    )
+    todo = todo_result.scalar_one_or_none()
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    topic_result = await session.execute(
+        select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    )
+    topic = topic_result.scalar_one_or_none()
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    existing_link = await session.execute(
+        select(t_todos_topics.c.todo_id).where(
+            t_todos_topics.c.todo_id == todo_id,
+            t_todos_topics.c.topic_id == topic_id,
+        )
+    )
+    if existing_link.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=409, detail="Topic already linked to todo")
+
+    todo.topics.append(topic)
+    await session.flush()
+    await session.refresh(todo, ["topics"])
+    return todo
+
+
+@router.delete("/todos/{todo_id}/topics/{topic_id}/", tags=["todos"])
+async def remove_topic(
+    todo_id: int,
+    topic_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> TodoRead:
+    todo_result = await session.execute(
+        select(Todo)
+        .where(Todo.id == todo_id, Todo.user_id == user_id)
+        .options(selectinload(Todo.topics))
+    )
+    todo = todo_result.scalar_one_or_none()
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    topic_result = await session.execute(
+        select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    )
+    topic = topic_result.scalar_one_or_none()
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    relationship_result = await session.execute(
+        select(t_todos_topics.c.todo_id).where(
+            t_todos_topics.c.todo_id == todo_id,
+            t_todos_topics.c.topic_id == topic_id,
+        )
+    )
+    if relationship_result.scalar_one_or_none() is None:
+        raise HTTPException(status_code=404, detail="Topic not linked to todo")
+
+    await session.execute(
+        delete(t_todos_topics).where(
+            t_todos_topics.c.todo_id == todo_id,
+            t_todos_topics.c.topic_id == topic_id,
+        )
+    )
+    await session.flush()
+    await session.refresh(todo, ["topics"])
+    return todo
 
 
 @router.delete("/todos/{todo_id}", tags=["todos"])

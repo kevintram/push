@@ -29,15 +29,38 @@ class TopicRead(TopicBase):
     inserted_at: datetime
     updated_at: datetime
 
+class TopicReadWithTodos(TopicRead):
+    model_config = ConfigDict(from_attributes=True)
+
+    todos: list["TodoRead"]
+
 class TopicReadWithRelationships(TopicRead):
     model_config = ConfigDict(from_attributes=True)
 
     parents: list["TopicRead"]
     children: list["TopicRead"]
 
+class TopicReadWithRelationshipsAndTodos(TopicRead):
+    model_config = ConfigDict(from_attributes=True)
+
+    parents: list["TopicRead"]
+    children: list["TopicRead"]
+    todos: list["TodoRead"]
 
 class TopicCreate(TopicBase):
     model_config = ConfigDict(from_attributes=True)
+
+
+class TopicRelationshipCreate(BaseModel):
+    child_id: int
+
+
+class TopicParentRelationshipCreate(BaseModel):
+    parent_id: int
+
+
+class TodoIdPayload(BaseModel):
+    todo_id: int
 
 
 class TopicUpdate(BaseModel):

@@ -9,13 +9,14 @@ class TodoBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     scheduled_at: date | None = None
     completed_at: date | None = None
+    effective_date: date | None = None
     description: str
 
 
 class TodoWithTopics(TodoBase):
     model_config = ConfigDict(from_attributes=True)
 
-    topics: list["TopicBase"]
+    topics: list["TopicRead"]
 
 
 class TodoRead(TodoWithTopics):
@@ -25,10 +26,14 @@ class TodoRead(TodoWithTopics):
     updated_at: datetime
 
 
-class TodoCreate(TodoWithTopics):
+class TodoCreate(TodoBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class TodoUpdate(TodoWithTopics):
+class TodoUpdate(TodoBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class TopicIdPayload(BaseModel):
+    topic_id: int
