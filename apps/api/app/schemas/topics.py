@@ -12,8 +12,8 @@ class TopicBase(BaseModel):
     notes: str
     stability: int
     retrievability: float
-    is_archived: bool
-    is_inboxed: bool
+    archived: bool
+    inboxed: bool
 
 
 class TopicBaseWithTodos(TopicBase):
@@ -22,13 +22,18 @@ class TopicBaseWithTodos(TopicBase):
     todos: list["TodoWithTopics"]
 
 
-class TopicRead(TopicBaseWithTodos):
+class TopicRead(TopicBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     inserted_at: datetime
     updated_at: datetime
-    user_id: str
+
+class TopicReadWithRelationships(TopicRead):
+    model_config = ConfigDict(from_attributes=True)
+
+    parents: list["TopicRead"]
+    children: list["TopicRead"]
 
 
 class TopicCreate(TopicBase):

@@ -41,14 +41,26 @@ class Topic(Base):
     retrievability: Mapped[float] = mapped_column(
         Numeric(5, 4), nullable=False, server_default=text("0.0000")
     )
-    is_archived: Mapped[bool] = mapped_column(
+    archived: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
-    is_inboxed: Mapped[bool] = mapped_column(
+    inboxed: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
     todos: Mapped[list["Todo"]] = relationship(
         secondary="todos_topics", back_populates="topics"
+    )
+    parents: Mapped[list["Topic"]] = relationship(
+        secondary="topics_closure", 
+        back_populates="children", 
+        primaryjoin="and_(Topic.id == topics_closure.c.descendant, topics_closure.c.depth == 1)",
+        secondaryjoin="topics_closure.c.ancestor == Topic.id"
+    )
+    children: Mapped[list["Topic"]] = relationship(
+        secondary="topics_closure", 
+        back_populates="parents", 
+        primaryjoin="and_(Topic.id == topics_closure.c.ancestor, topics_closure.c.depth == 1)",
+        secondaryjoin="topics_closure.c.descendant == Topic.id"
     )
 
 
