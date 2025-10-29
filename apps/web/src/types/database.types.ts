@@ -70,21 +70,18 @@ export type Database = {
           todo_id: number
           topic_id: number
           updated_at: string
-          user_id: string
         }
         Insert: {
           inserted_at?: string
           todo_id: number
           topic_id: number
           updated_at?: string
-          user_id: string
         }
         Update: {
           inserted_at?: string
           todo_id?: number
           topic_id?: number
           updated_at?: string
-          user_id?: string
         }
         Relationships: [
           {
@@ -112,10 +109,10 @@ export type Database = {
       }
       topics: {
         Row: {
+          archived: boolean
           id: number
+          inboxed: boolean
           inserted_at: string
-          is_archived: boolean
-          is_inboxed: boolean
           name: string
           notes: string
           retrievability: number
@@ -124,10 +121,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived?: boolean
           id?: number
+          inboxed?: boolean
           inserted_at?: string
-          is_archived?: boolean
-          is_inboxed?: boolean
           name?: string
           notes?: string
           retrievability?: number
@@ -136,10 +133,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived?: boolean
           id?: number
+          inboxed?: boolean
           inserted_at?: string
-          is_archived?: boolean
-          is_inboxed?: boolean
           name?: string
           notes?: string
           retrievability?: number
@@ -232,10 +229,10 @@ export type Database = {
       get_potential_children: {
         Args: { search_query?: string; topic_id: number }
         Returns: {
+          archived: boolean
           id: number
+          inboxed: boolean
           inserted_at: string
-          is_archived: boolean
-          is_inboxed: boolean
           name: string
           notes: string
           retrievability: number
@@ -247,10 +244,10 @@ export type Database = {
       get_potential_parents: {
         Args: { search_query?: string; topic_id: number }
         Returns: {
+          archived: boolean
           id: number
+          inboxed: boolean
           inserted_at: string
-          is_archived: boolean
-          is_inboxed: boolean
           name: string
           notes: string
           retrievability: number

@@ -112,7 +112,6 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 								completed_at: entry.completed_at ?? null,
 								inserted_at: entry.inserted_at ?? '',
 								updated_at: entry.updated_at ?? '',
-								user_id: '', // Not available in todos_with_effective_date view
 								topics: entry.todos_topics?.map(tt => tt.topics) ?? []
 							}}
 						/>
