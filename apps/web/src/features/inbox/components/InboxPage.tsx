@@ -57,7 +57,7 @@ export function InboxPage() {
 							showSidebar={false}
 							submitButtonText='Create Topic'
 							title='Add Topic'
-							topicDefaults={{ is_inboxed: true }}
+							topicDefaults={{ inboxed: true }}
 							trigger={
 								<Button size='icon' variant='ghost'>
 									<Plus />

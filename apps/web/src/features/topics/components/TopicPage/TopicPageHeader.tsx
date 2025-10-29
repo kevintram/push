@@ -37,13 +37,13 @@ export function TopicPageHeader({
 				</div>
 
 				<div className='flex items-center gap-2'>
-					{topic.is_archived && (
+					{topic.archived && (
 						<div className='flex items-center'>
 							<Archive className='mr-2 h-4 w-4 text-muted-foreground' />
 							<span className='text-muted-foreground text-xs'>Archived</span>
 						</div>
 					)}
-					{topic.is_inboxed && (
+					{topic.inboxed && (
 						<div className='flex items-center'>
 							<Inbox className='mr-2 h-4 w-4 text-muted-foreground' />
 							<span className='text-muted-foreground text-xs'>Inbox</span>
@@ -63,7 +63,7 @@ export function TopicPageHeader({
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
 							<DropdownMenuItem onClick={onArchiveToggle}>
-								{topic.is_archived ? (
+								{topic.archived ? (
 									<>
 										<ArchiveRestore className='mr-2 h-4 w-4' />
 										Unarchive
@@ -76,7 +76,7 @@ export function TopicPageHeader({
 								)}
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={onInboxToggle}>
-								{topic.is_inboxed ? (
+								{topic.inboxed ? (
 									<>
 										<Inbox className='mr-2 h-4 w-4' />
 										Remove from Inbox

@@ -78,19 +78,19 @@ export function TopicDetail({
 		if (selectedTopic?.id) {
 			await updateTopicMutation({
 				id: selectedTopic.id,
-				is_archived: !selectedTopic.is_archived
+				archived: !selectedTopic.archived
 			})
 		}
-	}, [updateTopicMutation, selectedTopic?.id, selectedTopic?.is_archived])
+	}, [updateTopicMutation, selectedTopic?.id, selectedTopic?.archived])
 
 	const handleInboxToggle = useCallback(async () => {
 		if (selectedTopic?.id) {
 			await updateTopicMutation({
 				id: selectedTopic.id,
-				is_inboxed: !selectedTopic.is_inboxed
+				inboxed: !selectedTopic.inboxed
 			})
 		}
-	}, [updateTopicMutation, selectedTopic?.id, selectedTopic?.is_inboxed])
+	}, [updateTopicMutation, selectedTopic?.id, selectedTopic?.inboxed])
 
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: selectedTopic?.notes ?? '',

@@ -123,7 +123,7 @@ export function CreateTopicDialog({
 			})
 
 			if (onTopicCreated) {
-				await onTopicCreated(newTopic as Tables<'topics'>)
+				await onTopicCreated(newTopic as any)
 			}
 
 			setOpen(false)

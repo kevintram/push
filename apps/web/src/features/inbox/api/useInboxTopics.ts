@@ -11,7 +11,7 @@ export function useInboxTopics() {
 		supabase
 			.from('topics')
 			.select('*')
-			.eq('is_inboxed', true)
+			.eq('inboxed', true)
 			.order('inserted_at', { ascending: false })
 	)
 

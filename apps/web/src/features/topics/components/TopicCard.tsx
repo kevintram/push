@@ -32,17 +32,17 @@ import {
 } from '~/components/ui/Popover'
 import { useTopicRelationshipCounts } from '~/features/topics/hooks/useTopicRelationshipCounts'
 import type { Tables } from '~/types/database.types'
-import type { Topic } from '~/types/topics.types'
 import { supabase } from '~/utils/supabase'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
+import type { TopicCardTopic } from '../api/schemas'
 
 type TodoWithEffectiveDate = Tables<'todos_with_effective_date'>
 
 const MIN_HEIGHT = 96
 
 interface TopicCardProps {
-	topic: Topic
-	onTopicClick?: (topic: Topic) => void
+	topic: TopicCardTopic
+	onTopicClick?: (topic: any) => void // Flexible to accept both Supabase and API topics
 	onRemoveRelationship?: () => void
 	minHeight?: number
 	searchQuery?: string
@@ -142,10 +142,10 @@ export function TopicCard({
 			e.stopPropagation()
 			await updateTopicMutation({
 				id: topic.id,
-				is_archived: !topic.is_archived
+				archived: !topic.archived
 			})
 		},
-		[updateTopicMutation, topic.id, topic.is_archived]
+		[updateTopicMutation, topic.id, topic.archived]
 	)
 
 	const handleInboxToggle = useCallback(
@@ -153,10 +153,10 @@ export function TopicCard({
 			e.stopPropagation()
 			await updateTopicMutation({
 				id: topic.id,
-				is_inboxed: !topic.is_inboxed
+				inboxed: !topic.inboxed
 			})
 		},
-		[updateTopicMutation, topic.id, topic.is_inboxed]
+		[updateTopicMutation, topic.id, topic.inboxed]
 	)
 
 	return (
@@ -225,7 +225,7 @@ export function TopicCard({
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
 								<DropdownMenuItem onClick={handleInboxToggle}>
-									{topic.is_inboxed ? (
+									{topic.inboxed ? (
 										<>
 											<Inbox className='mr-2 h-4 w-4' />
 											Remove from Inbox
@@ -238,7 +238,7 @@ export function TopicCard({
 									)}
 								</DropdownMenuItem>
 								<DropdownMenuItem onClick={handleArchiveToggle}>
-									{topic.is_archived ? (
+									{topic.archived ? (
 										<>
 											<ArchiveRestore className='mr-2 h-4 w-4' />
 											Unarchive
@@ -277,15 +277,15 @@ export function TopicCard({
 
 					<div className='flex flex-col gap-1'>
 						{/* Inbox/Archive indicators */}
-						{(topic.is_inboxed || topic.is_archived) && (
+						{(topic.inboxed || topic.archived) && (
 							<div className='flex items-center gap-2 text-muted-foreground text-xs'>
-								{topic.is_inboxed && (
+								{topic.inboxed && (
 									<div className='flex items-center gap-1'>
 										<Inbox className='h-3 w-3' />
 										<span>Inbox</span>
 									</div>
 								)}
-								{topic.is_archived && (
+								{topic.archived && (
 									<div className='flex items-center gap-1'>
 										<Archive className='h-3 w-3' />
 										<span>Archived</span>
