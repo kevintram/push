@@ -16,10 +16,11 @@ export const TodoSchema = v.object({
 	id: v.number(),
 	scheduled_at: v.nullable(v.string()),
 	completed_at: v.nullable(v.string()),
+	effective_date: v.nullable(v.string()),
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	description: v.string(),
-	topics: v.array(TopicSchema)
+	topics: v.optional(v.array(TopicSchema), [])
 })
 
 export const TopicWithTodosSchema = v.object({
