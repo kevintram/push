@@ -1,4 +1,3 @@
-import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { FileText, PanelRightClose, PanelRightOpen } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useState } from 'react'
@@ -12,13 +11,13 @@ import {
 	DialogTrigger
 } from '~/components/ui/Dialog'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
-import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
+import type { Topic } from '~/models/todo-topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
+import { useCreateTopic } from '../api/useCreateTopic'
 import { TopicComposerFields } from './TopicComposerFields'
 
 interface SearchResult {
-	results: Array<Tables<'topics'>>
+	results: Array<Topic>
 	isLoading: boolean
 	debouncedQuery: string
 }
@@ -30,8 +29,8 @@ interface CreateTopicDialogProps {
 	title: string
 	submitButtonText?: string
 	showSidebar?: boolean
-	topicDefaults?: Partial<Tables<'topics'>>
-	onTopicCreated?: (topic: Tables<'topics'>) => Promise<void> | void
+	topicDefaults?: Partial<Topic>
+	onTopicCreated?: (topic: Topic) => Promise<void> | void
 	useSearch?: (query: string) => SearchResult
 	sidebarTitle?: (debouncedQuery: string) => string
 }
@@ -70,7 +69,7 @@ export function CreateTopicDialog({
 	const canCreateTopic = Boolean(name.trim() || notes.trim())
 
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
-		useInsertMutation(supabase.from('topics'), ['id'], '*')
+		useCreateTopic()
 
 	// Focus notes input when dialog opens
 	useEffect(() => {
@@ -101,7 +100,7 @@ export function CreateTopicDialog({
 	}, [notes, name, showSidebar])
 
 	const handleTopicSelect = useCallback(
-		async (topic: Tables<'topics'>) => {
+		async (topic: Topic) => {
 			if (onTopicCreated) {
 				await onTopicCreated(topic)
 			}
@@ -117,19 +116,11 @@ export function CreateTopicDialog({
 		if (!(trimmedName || trimmedNotes)) return
 
 		try {
-			const createdTopic = await insertTopic([
-				{
-					name: trimmedName || '',
-					notes: trimmedNotes || '',
-					...topicDefaults
-				}
-			])
-
-			if (!createdTopic?.[0]) {
-				throw new Error('Failed to create topic')
-			}
-
-			const newTopic = createdTopic[0]
+			const newTopic = await insertTopic({
+				name: trimmedName || '',
+				notes: trimmedNotes || '',
+				...topicDefaults
+			})
 
 			if (onTopicCreated) {
 				await onTopicCreated(newTopic)

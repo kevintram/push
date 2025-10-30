@@ -92,7 +92,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 				/>
 				<div className='flex min-w-0 flex-1 flex-col'>
 					<textarea
-						// biome-ignore lint/a11y/noAutofocus: because I feel like it's fine in this case
+						// biome-ignore lint/a11y/noAutofocus: intentional to focus newly created todo
 						autoFocus={description === '' && isRecentlyCreated}
 						className='break-word mt-0.5 w-full resize-none border-none bg-transparent p-0 text-sm shadow-none outline-none [overflow-wrap:anywhere] focus:outline-none focus-visible:ring-0'
 						onChange={onDescriptionChange}
@@ -105,8 +105,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 					<div className='mt-1'>
 						<TodoTopicBadges
 							onRemoveTopicFromTodo={removeTopicFromTodo}
-							todoId={entry.id ?? undefined}
-							topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
+							todo={entry}
 						/>
 					</div>
 				</div>

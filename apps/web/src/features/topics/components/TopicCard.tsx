@@ -1,8 +1,4 @@
-import {
-	useDeleteMutation,
-	useQuery,
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import {
 	Archive,
@@ -30,13 +26,10 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { useTopicRelationshipCounts } from '~/features/topics/hooks/useTopicRelationshipCounts'
-import type { Tables } from '~/types/database.types'
-import type { Topic } from '~/types/topics.types'
-import { supabase } from '~/utils/supabase'
+import type { Todo, Topic } from '~/models/todo-topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
-
-type TodoWithEffectiveDate = Tables<'todos_with_effective_date'>
+import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
+import { updateTopic as updateTopicApi } from '../api/updateTopic'
 
 const MIN_HEIGHT = 96
 
@@ -46,45 +39,44 @@ interface TopicCardProps {
 	onRemoveRelationship?: () => void
 	minHeight?: number
 	searchQuery?: string
+	todos?: Array<Todo>
 }
 
 export function TopicCard({
 	topic,
+	todos: todosProp,
 	onTopicClick,
 	onRemoveRelationship,
 	minHeight = MIN_HEIGHT,
 	searchQuery // for topic card in search dialog to support highlighting and shit
 }: TopicCardProps) {
-	const { mutateAsync: deleteTopicMutation } = useDeleteMutation(
-		supabase.from('topics'),
-		['id']
-	)
+	const queryClient = useQueryClient()
 
-	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
-		supabase.from('topics'),
-		['id'],
-		'*'
-	)
+	const { mutateAsync: deleteTopicMutation } = useMutation({
+		mutationFn: deleteTopicApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
 
-	// Fetch relationship counts and topics for this topic
-	const { parentCount, childCount, parentTopics, childTopics } =
-		useTopicRelationshipCounts(topic.id)
+	const { mutateAsync: updateTopicMutation } = useMutation({
+		mutationFn: updateTopicApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
 
-	// Fetch todos associated with this topic
-	const { data: todos = [] } = useQuery<Array<TodoWithEffectiveDate>>(
-		supabase
-			.from('todos_with_effective_date')
-			.select('*,todos_topics!inner(topic_id)')
-			.eq('todos_topics.topic_id', topic.id)
-	)
+	const parentCount = topic.parents?.length ?? 0
+	const childCount = topic.children?.length ?? 0
+
+	const todos = todosProp ?? []
 
 	// Calculate the next or last timeline date
 	const timelineDate = useMemo(() => {
-		if (todos && todos.length === 0) return null
+		if (todos.length === 0) return null
 
 		const now = dayjs()
-		const todosWithDates =
-			todos?.filter(todo => todo.effective_date != null) ?? []
+		const todosWithDates = todos.filter(todo => todo.effective_date != null)
 
 		if (todosWithDates.length === 0) return null
 
@@ -134,7 +126,7 @@ export function TopicCard({
 	)
 
 	const handleDeleteTopic = () => {
-		deleteTopicMutation({ id: topic.id })
+		deleteTopicMutation(topic.id)
 	}
 
 	const handleArchiveToggle = useCallback(
@@ -142,10 +134,10 @@ export function TopicCard({
 			e.stopPropagation()
 			await updateTopicMutation({
 				id: topic.id,
-				is_archived: !topic.is_archived
+				archived: !topic.archived
 			})
 		},
-		[updateTopicMutation, topic.id, topic.is_archived]
+		[updateTopicMutation, topic.id, topic.archived]
 	)
 
 	const handleInboxToggle = useCallback(
@@ -153,10 +145,10 @@ export function TopicCard({
 			e.stopPropagation()
 			await updateTopicMutation({
 				id: topic.id,
-				is_inboxed: !topic.is_inboxed
+				inboxed: !topic.inboxed
 			})
 		},
-		[updateTopicMutation, topic.id, topic.is_inboxed]
+		[updateTopicMutation, topic.id, topic.inboxed]
 	)
 
 	return (
@@ -194,11 +186,11 @@ export function TopicCard({
 							>
 								<div className='flex flex-col gap-2'>
 									<h4 className='font-semibold text-sm'>Parent Topics</h4>
-									{parentTopics.length === 0 ? (
+									{parentCount === 0 ? (
 										<p className='text-muted-foreground text-xs'>No parents</p>
 									) : (
 										<ul className='flex flex-col gap-1.5'>
-											{parentTopics.map(parent => (
+											{(topic.parents ?? []).map(parent => (
 												<li
 													className='break-words text-sm leading-tight '
 													key={parent.id}
@@ -225,7 +217,7 @@ export function TopicCard({
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
 								<DropdownMenuItem onClick={handleInboxToggle}>
-									{topic.is_inboxed ? (
+									{topic.inboxed ? (
 										<>
 											<Inbox className='mr-2 h-4 w-4' />
 											Remove from Inbox
@@ -238,7 +230,7 @@ export function TopicCard({
 									)}
 								</DropdownMenuItem>
 								<DropdownMenuItem onClick={handleArchiveToggle}>
-									{topic.is_archived ? (
+									{topic.archived ? (
 										<>
 											<ArchiveRestore className='mr-2 h-4 w-4' />
 											Unarchive
@@ -277,15 +269,15 @@ export function TopicCard({
 
 					<div className='flex flex-col gap-1'>
 						{/* Inbox/Archive indicators */}
-						{(topic.is_inboxed || topic.is_archived) && (
+						{(topic.inboxed || topic.archived) && (
 							<div className='flex items-center gap-2 text-muted-foreground text-xs'>
-								{topic.is_inboxed && (
+								{topic.inboxed && (
 									<div className='flex items-center gap-1'>
 										<Inbox className='h-3 w-3' />
 										<span>Inbox</span>
 									</div>
 								)}
-								{topic.is_archived && (
+								{topic.archived && (
 									<div className='flex items-center gap-1'>
 										<Archive className='h-3 w-3' />
 										<span>Archived</span>
@@ -350,11 +342,11 @@ export function TopicCard({
 						>
 							<div className='flex flex-col gap-2'>
 								<h4 className='font-semibold text-sm'>Child Topics</h4>
-								{childTopics.length === 0 ? (
+								{childCount === 0 ? (
 									<p className='text-muted-foreground text-xs'>No children</p>
 								) : (
 									<ul className='flex flex-col gap-1.5'>
-										{childTopics.map(child => (
+										{(topic.children ?? []).map(child => (
 											<li
 												className='break-words text-sm leading-tight'
 												key={child.id}

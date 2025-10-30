@@ -5,8 +5,7 @@ import { Card, CardContent } from '~/components/ui/Card'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import type { Tables } from '~/types/database.types'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 import { TopicCard } from '../../TopicCard'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
@@ -36,7 +35,7 @@ export function TopicChildrenPanel({
 	}, [])
 
 	const handleTopicCreated = useCallback(
-		async (topic: Tables<'topics'>) => {
+		async (topic: Topic) => {
 			if (!selectedTopic) return
 
 			try {
@@ -160,7 +159,7 @@ function ChildCard({ child, onChildClick }: ChildCardProps) {
 	}
 
 	const handleClick = useCallback(
-		(_topic: Tables<'topics'>) => {
+		(_topic: Topic) => {
 			onChildClick?.(child)
 		},
 		[onChildClick, child]
@@ -171,6 +170,7 @@ function ChildCard({ child, onChildClick }: ChildCardProps) {
 			minHeight={MIN_HEIGHT}
 			onRemoveRelationship={handleRemoveRelationship}
 			onTopicClick={handleClick}
+			todos={child.todos ?? []}
 			topic={child}
 		/>
 	)

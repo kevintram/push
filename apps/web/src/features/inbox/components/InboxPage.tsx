@@ -4,19 +4,16 @@ import { Button } from '~/components/ui/Button'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
 import { TopicDialog } from '~/features/topics/components/TopicDialog'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import type { Tables } from '~/types/database.types'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 import { useInboxTopics } from '../api'
 import { InboxList } from './InboxList'
 
 export function InboxPage() {
 	const { data: inboxTopics, isLoading } = useInboxTopics()
-	const [selectedTopic, setSelectedTopic] = useState<Tables<'topics'> | null>(
-		null
-	)
+	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-	const handleTopicSelect = useCallback((topic: Tables<'topics'>) => {
+	const handleTopicSelect = useCallback((topic: Topic) => {
 		setSelectedTopic(topic)
 		setIsDialogOpen(true)
 	}, [])
@@ -34,7 +31,7 @@ export function InboxPage() {
 
 	const contextValue = useMemo(
 		() => ({
-			topic: selectedTopic as Topic | undefined,
+			topic: selectedTopic ?? undefined,
 			onTopicChange: handleTopicChange
 		}),
 		[selectedTopic, handleTopicChange]
@@ -57,7 +54,7 @@ export function InboxPage() {
 							showSidebar={false}
 							submitButtonText='Create Topic'
 							title='Add Topic'
-							topicDefaults={{ is_inboxed: true }}
+							topicDefaults={{ inboxed: true }}
 							trigger={
 								<Button size='icon' variant='ghost'>
 									<Plus />

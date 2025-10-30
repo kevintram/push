@@ -4,7 +4,7 @@ import { use, useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 import { TopicDetail } from './TopicDetail/TopicDetail'
 
 interface TopicDialogProps {

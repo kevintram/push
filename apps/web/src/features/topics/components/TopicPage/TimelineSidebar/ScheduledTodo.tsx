@@ -134,8 +134,7 @@ export function ScheduledTodo({
 							<div className='mt-2'>
 								<TodoTopicBadges
 									onRemoveTopicFromTodo={removeTopicFromTodo}
-									todoId={entry.id ?? undefined}
-									topics={entry.todos_topics?.map(tt => tt.topics) ?? []}
+									todo={entry}
 								/>
 							</div>
 						</div>

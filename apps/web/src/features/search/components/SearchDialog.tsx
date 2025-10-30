@@ -11,7 +11,7 @@ import {
 import { Input } from '~/components/ui/Input'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
-import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/models/todo-topic.types'
 
 const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96
@@ -33,8 +33,10 @@ export function SearchDialog({
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [selectedIndex, setSelectedIndex] = useState(0)
 
-	const { debouncedQuery, results, isLoading, hasQuery } =
-		useGlobalSearch(query)
+	const { debouncedQuery, results, isLoading, hasQuery } = useGlobalSearch(
+		query,
+		open
+	)
 
 	useEffect(() => {
 		if (open) {
@@ -51,7 +53,7 @@ export function SearchDialog({
 	}, [query])
 
 	const handleTopicSelect = useCallback(
-		(topic: Tables<'topics'>) => {
+		(topic: Topic) => {
 			navigate({
 				to: '/topics/{-$topicId}',
 				params: { topicId: topic.id.toString() }
@@ -80,7 +82,7 @@ export function SearchDialog({
 		}
 	}
 
-	const estimateItemSize = useCallback((topic: Tables<'topics'>) => {
+	const estimateItemSize = useCallback((topic: Topic) => {
 		const baseHeight = 80
 		const lineHeight = 20
 		const charsPerLine = 40
@@ -97,18 +99,19 @@ export function SearchDialog({
 	}, [])
 
 	const renderItem = useCallback(
-		(topic: Tables<'topics'>) => (
+		(topic: Topic) => (
 			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicSelect}
 				searchQuery={debouncedQuery}
+				todos={topic.todos ?? []}
 				topic={topic}
 			/>
 		),
 		[handleTopicSelect, debouncedQuery]
 	)
 
-	const getItemKey = useCallback((topic: Tables<'topics'>) => topic.id, [])
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>

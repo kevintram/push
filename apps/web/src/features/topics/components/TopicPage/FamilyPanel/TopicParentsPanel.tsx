@@ -1,9 +1,7 @@
 import { Plus, User2 } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
-import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
-import type { Tables } from '~/types/database.types'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { TopicBadge } from '../../TopicBadge'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
@@ -12,28 +10,11 @@ export function TopicParentsPanel() {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
 
-	const createRelationship = useCreateRelationship()
 	const deleteRelationship = useDeleteRelationship()
 
 	const handleAddParent = useCallback(() => {
 		setShowCreateDialog(true)
 	}, [])
-
-	const handleTopicCreated = useCallback(
-		async (topic: Tables<'topics'>) => {
-			if (!selectedTopic) return
-
-			try {
-				await createRelationship.mutateAsync({
-					parent: topic.id,
-					child: selectedTopic.id
-				})
-			} catch (_error) {
-				// Error is handled by the mutation's error state
-			}
-		},
-		[selectedTopic, createRelationship]
-	)
 
 	return (
 		<>
@@ -71,7 +52,6 @@ export function TopicParentsPanel() {
 
 			<AddRelationshipDialog
 				onOpenChange={setShowCreateDialog}
-				onRelationshipCreated={handleTopicCreated}
 				open={showCreateDialog}
 				relationshipType='parent'
 				topicId={selectedTopic?.id}

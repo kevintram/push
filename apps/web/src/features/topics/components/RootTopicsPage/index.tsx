@@ -1,7 +1,3 @@
-import {
-	useInsertMutation,
-	useQuery
-} from '@supabase-cache-helpers/postgrest-react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
 import { Archive, Check, Inbox, Plus, SquareLibrary, X } from 'lucide-react'
@@ -9,11 +5,10 @@ import { useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
+import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
+import { useRootTopics } from '~/features/topics/api/useRootTopics'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
-import { useTopicsWithRelationships } from '~/features/topics/hooks/useTopicsWithRelationships'
-import type { Tables } from '~/types/database.types'
-import type { Topic } from '~/types/topics.types'
-import { supabase } from '~/utils/supabase'
+import type { Topic } from '~/models/todo-topic.types'
 import { TopicCard } from '../TopicCard'
 
 const MIN_CARD_WIDTH = 280
@@ -30,87 +25,34 @@ type FilterBadge = {
 }
 
 export function RootTopicsPage() {
-	const [activeFilters, setActiveFilters] = useState<Array<FilterId>>([])
+	const [activeFilter, setActiveFilter] = useState<FilterId | null>(null)
 	const navigate = useNavigate()
 
-	// Query 1: All topics
-	const { data: allTopics, isLoading: topicsLoading } = useQuery<
-		Array<Tables<'topics'>>
-	>(
-		supabase
-			.from('topics')
-			.select('*')
-			.order('inserted_at', { ascending: false })
-	)
-
-	// Query 2: All descendant IDs (topics that have parents)
-	const { data: descendants, isLoading: descendantsLoading } = useQuery<
-		Array<{ descendant: number }>
-	>(supabase.from('topics_closure').select('descendant').eq('depth', 1))
-
-	// Filter: Root topics = topics NOT in descendants
-	const rootTopics = useMemo(() => {
-		if (!(allTopics && descendants)) return []
-		const descendantIds = new Set(descendants.map(d => d.descendant))
-		return allTopics.filter(topic => !descendantIds.has(topic.id))
-	}, [allTopics, descendants])
-
-	// Get root topic IDs
-	const rootTopicIds = useMemo(() => rootTopics.map(t => t.id), [rootTopics])
-
-	// Enrich root topics with relationships
-	const { topics: enrichedTopics, isLoading: relationshipsLoading } =
-		useTopicsWithRelationships(rootTopicIds)
-
-	const isLoading = topicsLoading || descendantsLoading || relationshipsLoading
-
-	const { mutateAsync: insertTopicMutation } = useInsertMutation(
-		supabase.from('topics'),
-		['id'],
-		'*',
-		{
-			onSuccess: data => {
-				if (data?.[0]) {
-					navigate({
-						to: '/topics/{-$topicId}',
-						params: { topicId: data[0].id.toString() }
-					})
-				}
-			}
+	// Build query params based on active filter (mutually exclusive)
+	const queryParams = useMemo(() => {
+		if (activeFilter === 'inboxed') {
+			return { inboxed: true }
 		}
-	)
+		if (activeFilter === 'archived') {
+			return { archived: true }
+		}
+		// Default: show non-archived and non-inboxed topics
+		return { inboxed: false, archived: false }
+	}, [activeFilter])
 
-	const topics = enrichedTopics || []
+	// Fetch root topics from API with server-side filtering
+	const { data: topics = [], isLoading } = useRootTopics(queryParams)
 
-	// Filter handler
+	const { mutateAsync: createTopicAsync } = useCreateTopic()
+
+	// Filter handler - mutually exclusive (radio behavior)
 	const handleFilterClick = useCallback((filterId: FilterId) => {
-		setActiveFilters(prev => {
-			const isActive = prev.includes(filterId)
-			if (isActive) {
-				return prev.filter(id => id !== filterId)
-			}
-			return [...prev, filterId]
-		})
+		setActiveFilter(prev => (prev === filterId ? null : filterId))
 	}, [])
 
 	const handleClearFilters = useCallback(() => {
-		setActiveFilters([])
+		setActiveFilter(null)
 	}, [])
-
-	// Filter topics based on active filters
-	const filteredTopics = useMemo(() => {
-		if (activeFilters.length === 0) {
-			// Default: show non-archived and non-inboxed topics
-			return topics.filter(topic => !(topic.is_archived || topic.is_inboxed))
-		}
-
-		// When filters are active, show topics matching ANY filter (OR logic)
-		return topics.filter(topic => {
-			if (activeFilters.includes('archived') && topic.is_archived) return true
-			if (activeFilters.includes('inboxed') && topic.is_inboxed) return true
-			return false
-		})
-	}, [topics, activeFilters])
 
 	// Create filter badges
 	const filters: Array<FilterBadge> = useMemo(
@@ -119,35 +61,35 @@ export function RootTopicsPage() {
 				id: 'inboxed' as const,
 				label: 'Inbox',
 				icon: <Inbox className='h-4 w-4' />,
-				isActive: activeFilters.includes('inboxed'),
+				isActive: activeFilter === 'inboxed',
 				onClick: () => handleFilterClick('inboxed')
 			},
 			{
 				id: 'archived' as const,
 				label: 'Archived',
 				icon: <Archive className='h-4 w-4' />,
-				isActive: activeFilters.includes('archived'),
+				isActive: activeFilter === 'archived',
 				onClick: () => handleFilterClick('archived')
 			}
 		],
-		[activeFilters, handleFilterClick]
+		[activeFilter, handleFilterClick]
 	)
 
-	const activeFilterBadges = filters.filter(f => f.isActive)
+	const activeFilterBadge = filters.find(f => f.isActive)
 	const inactiveFilterBadges = filters.filter(f => !f.isActive)
-	const hasActiveFilters = activeFilterBadges.length > 0
+	const hasActiveFilter = activeFilterBadge !== undefined
 
 	type RenderedFilter =
 		| { key: FilterId; type: 'filter'; filter: FilterBadge }
 		| { key: 'clear'; type: 'clear' }
 
-	const renderedFilters: Array<RenderedFilter> = hasActiveFilters
+	const renderedFilters: Array<RenderedFilter> = hasActiveFilter
 		? [
-				...activeFilterBadges.map(filter => ({
-					key: filter.id,
+				{
+					key: activeFilterBadge.id,
 					type: 'filter' as const,
-					filter
-				})),
+					filter: activeFilterBadge
+				},
 				{ key: 'clear', type: 'clear' as const },
 				...inactiveFilterBadges.map(filter => ({
 					key: filter.id,
@@ -161,9 +103,13 @@ export function RootTopicsPage() {
 				filter
 			}))
 
-	const handleCreateTopic = useCallback(() => {
-		insertTopicMutation([{}])
-	}, [insertTopicMutation])
+	const handleCreateTopic = useCallback(async () => {
+		const data = await createTopicAsync({})
+		navigate({
+			to: '/topics/{-$topicId}',
+			params: { topicId: data.id.toString() }
+		})
+	}, [createTopicAsync, navigate])
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -196,6 +142,7 @@ export function RootTopicsPage() {
 			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicClick}
+				todos={topic.todos ?? []}
 				topic={topic}
 			/>
 		),
@@ -203,14 +150,6 @@ export function RootTopicsPage() {
 	)
 
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
-
-	const getTopics = useCallback(() => {
-		fetch(`${import.meta.env.VITE_API_URL}/topics/`, {
-			credentials: 'include'
-		}).then(res => {
-			return res.json()
-		})
-	}, [])
 
 	if (isLoading) {
 		return (
@@ -288,12 +227,10 @@ export function RootTopicsPage() {
 		)
 	}
 
-	if (filteredTopics.length === 0) {
-		const emptyMessage = hasActiveFilters
-			? 'No topics match the selected filters'
-			: topics.length === 0
-				? 'No root topics yet'
-				: 'No topics to show'
+	if (topics.length === 0) {
+		const emptyMessage = hasActiveFilter
+			? 'No topics match the selected filter'
+			: 'No root topics yet'
 
 		return (
 			<div className='scrollbar-track-transparent relative h-full w-full'>
@@ -384,24 +321,7 @@ export function RootTopicsPage() {
 			<div className='flex h-full flex-col overflow-auto'>
 				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
 					<div className='flex items-center justify-between'>
-						<div className='flex items-center gap-3'>
-							<h1 className='font-bold text-xl'>Library</h1>
-							<Button onClick={() => getTopics()}>Get Topics</Button>
-							<Button
-								onClick={() => {
-									document.location.href = `${import.meta.env.VITE_API_URL}/login`
-								}}
-							>
-								Login
-							</Button>
-							<Button
-								onClick={() => {
-									document.location.href = `${import.meta.env.VITE_API_URL}/logout`
-								}}
-							>
-								Logout
-							</Button>
-						</div>
+						<h1 className='font-bold text-xl'>Library</h1>
 						<CreateTopicDialog
 							showSidebar={false}
 							submitButtonText='Create Topic'
@@ -413,7 +333,7 @@ export function RootTopicsPage() {
 							}
 						/>
 					</div>
-					<div className='pt-2 pb-3'>
+					<div className='py-2'>
 						<motion.div
 							className='flex flex-wrap items-center gap-2'
 							layout={true}
@@ -469,7 +389,7 @@ export function RootTopicsPage() {
 						estimateItemSize={estimateItemSize}
 						gap={16}
 						getItemKey={getItemKey}
-						items={filteredTopics}
+						items={topics}
 						minItemWidth={MIN_CARD_WIDTH}
 						renderItem={renderItem}
 					/>

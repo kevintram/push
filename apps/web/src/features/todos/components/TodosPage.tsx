@@ -168,7 +168,9 @@ export function TodosPage() {
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
 				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
-					<h1 className='font-bold text-xl'>Todos</h1>
+					<div className='flex items-center justify-between'>
+						<h1 className='font-bold text-xl'>Todos</h1>
+					</div>
 					<div className='top-0 z-10 pt-2 pb-1'>
 						<motion.div
 							className='flex flex-wrap items-center gap-2'

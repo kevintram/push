@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Skeleton } from '~/components/ui/Skeleton'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/models/todo-topic.types'
 
 const MIN_CARD_WIDTH = 280
 const MIN_CARD_HEIGHT = 168
@@ -15,13 +15,13 @@ export function InboxList({
 	onTopicSelect,
 	isLoading
 }: {
-	topics: Array<Tables<'topics'>> | undefined | null
-	onTopicSelect: (topic: Tables<'topics'>) => void
+	topics: Array<Topic> | undefined | null
+	onTopicSelect: (topic: Topic) => void
 	isLoading: boolean
 }) {
-	const topicList = useMemo(() => topics ?? [], [topics])
+	const topicList = useMemo<Array<Topic>>(() => topics ?? [], [topics])
 
-	const estimateItemSize = useCallback((topic: Tables<'topics'>) => {
+	const estimateItemSize = useCallback((topic: Topic) => {
 		const nameLength = topic.name?.length ?? 0
 		const notesLength = topic.notes?.length ?? 0
 
@@ -36,13 +36,17 @@ export function InboxList({
 	}, [])
 
 	const renderItem = useCallback(
-		(topic: Tables<'topics'>) => (
-			<TopicCard onTopicClick={onTopicSelect} topic={topic} />
+		(topic: Topic) => (
+			<TopicCard
+				onTopicClick={onTopicSelect}
+				todos={topic.todos ?? []}
+				topic={topic}
+			/>
 		),
 		[onTopicSelect]
 	)
 
-	const getItemKey = useCallback((topic: Tables<'topics'>) => topic.id, [])
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	if (isLoading) {
 		return (

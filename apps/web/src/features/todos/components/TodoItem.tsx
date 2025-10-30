@@ -1,8 +1,4 @@
-import {
-	useDeleteMutation,
-	useRevalidateTables,
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
@@ -17,27 +13,18 @@ import {
 import { Textarea } from '~/components/ui/Textarea'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
+import type { Todo } from '~/models/todo-topic.types'
+import { deleteTodo, removeTopicFromTodo, updateTodo } from '../api'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { TodoTopicBadges } from './TodoTopicBadges'
 
-// TODO: clean up this mess when migrate to hono API
-type TodoEntry = (Tables<'todos'> | Tables<'todos_with_effective_date'>) & {
-	todos_topics: Array<{ topics: { id: number; name: string } }>
-}
-
 interface TodoItemProps {
-	entry: TodoEntry
+	entry: Todo
 	isCompleted?: boolean
 }
 
 export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
-	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos' },
-		{ schema: 'public', table: 'todos_today' },
-		{ schema: 'public', table: 'todos_with_effective_date' }
-	])
+	const queryClient = useQueryClient()
 
 	const dateValue = (() => {
 		if ('effective_date' in entry && entry.effective_date) {
@@ -75,48 +62,49 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	})
 	const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
 
-	const { mutateAsync: updateTodoMutation } = useUpdateMutation(
-		supabase.from('todos'),
-		['id'],
-		'*, todos_topics(topics(id, name))',
-		{
-			onSuccess: () => {
-				revalidateTables()
-			}
+	const { mutateAsync: updateTodoMutation } = useMutation({
+		mutationFn: updateTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
-	)
+	})
 
-	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
-		supabase.from('todos'),
-		['id']
-	)
-
-	const { mutateAsync: deleteTodoTopicMutation } = useDeleteMutation(
-		supabase.from('todos_topics'),
-		['topic_id', 'todo_id'],
-		undefined,
-		{
-			onSuccess: () => revalidateTables()
+	const { mutateAsync: deleteTodoMutation } = useMutation({
+		mutationFn: deleteTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
-	)
+	})
+
+	const { mutateAsync: removeTopicMutation } = useMutation({
+		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
+			removeTopicFromTodo(todoId, topicId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
+		}
+	})
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
 			setIsChecked(checked)
-			updateTodoMutation({
-				id: entry.id ?? undefined,
-				completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
-			})
+			if (entry.id) {
+				updateTodoMutation({
+					id: entry.id,
+					completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
+				})
+			}
 		},
 		[entry.id, updateTodoMutation]
 	)
 
 	const updateDescription = useCallback(
 		(newDescription: string) => {
-			updateTodoMutation({
-				id: entry.id ?? undefined,
-				description: newDescription.trim()
-			})
+			if (entry.id) {
+				updateTodoMutation({
+					id: entry.id,
+					description: newDescription.trim()
+				})
+			}
 		},
 		[entry.id, updateTodoMutation]
 	)
@@ -130,16 +118,18 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	const handleDateSave = useCallback(
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
-			if (isCompleted) {
-				updateTodoMutation({
-					id: entry.id ?? undefined,
-					completed_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
-				})
-			} else {
-				updateTodoMutation({
-					id: entry.id ?? undefined,
-					scheduled_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
-				})
+			if (entry.id) {
+				if (isCompleted) {
+					updateTodoMutation({
+						id: entry.id,
+						completed_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
+					})
+				} else {
+					updateTodoMutation({
+						id: entry.id,
+						scheduled_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
+					})
+				}
 			}
 			setIsDatePopoverOpen(false)
 		},
@@ -147,15 +137,16 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 	)
 
 	const handleDelete = useCallback(async () => {
-		await deleteTodoMutation({ id: entry.id ?? undefined })
-		revalidateTables()
-	}, [entry.id, deleteTodoMutation, revalidateTables])
+		if (entry.id) {
+			await deleteTodoMutation(entry.id)
+		}
+	}, [entry.id, deleteTodoMutation])
 
-	const removeTopicFromTodo = useCallback(
+	const handleRemoveTopicFromTodo = useCallback(
 		async (todoId: number, topicId: number) => {
-			await deleteTodoTopicMutation({ todo_id: todoId, topic_id: topicId })
+			await removeTopicMutation({ todoId, topicId })
 		},
-		[deleteTodoTopicMutation]
+		[removeTopicMutation]
 	)
 
 	return (
@@ -246,11 +237,8 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 
 					{/* Topics */}
 					<TodoTopicBadges
-						onRemoveTopicFromTodo={removeTopicFromTodo}
-						todoId={entry.id ?? undefined}
-						topics={
-							entry.todos_topics?.map(tt => tt.topics as Tables<'topics'>) ?? []
-						}
+						onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
+						todo={entry}
 					/>
 				</div>
 			</div>

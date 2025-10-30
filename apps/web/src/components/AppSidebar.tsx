@@ -1,4 +1,3 @@
-import { useInsertMutation } from '@supabase-cache-helpers/postgrest-react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
@@ -20,22 +19,19 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem
 } from '~/components/ui/Sidebar'
-import { supabase } from '~/utils/supabase'
+import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 
 export function AppSidebar() {
 	const navigate = useNavigate()
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
-		useInsertMutation(supabase.from('topics'), ['id'], '*')
+		useCreateTopic()
 
 	const handleCreateTopic = async () => {
-		const result = await insertTopic([{ is_inboxed: true }])
-		const createdTopic = result?.[0]
-		if (createdTopic) {
-			await navigate({
-				to: '/topics/{-$topicId}',
-				params: { topicId: createdTopic.id.toString() }
-			})
-		}
+		const createdTopic = await insertTopic({})
+		await navigate({
+			to: '/topics/{-$topicId}',
+			params: { topicId: createdTopic.id.toString() }
+		})
 	}
 
 	const menuItems = [
