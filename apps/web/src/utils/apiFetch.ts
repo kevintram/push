@@ -3,7 +3,7 @@
  *
  * Features:
  * - Automatically includes credentials (cookies)
- * - Detects server redirects and navigates the browser (like a login button)
+ * - Detects 401 errors and redirects to login page
  * - No global error handling needed
  */
 
@@ -13,14 +13,13 @@ export async function apiFetch(
 ): Promise<Response> {
 	const response = await fetch(url, {
 		...options,
-		credentials: 'include',
-		redirect: 'manual'
+		credentials: 'include'
 	})
 
-	// Server returned a redirect (likely auth redirect)
-	// Navigate the full page, just like clicking a login link
-	if (response.type === 'opaqueredirect') {
-		window.location.href = url
+	// Server returned 401 Unauthorized
+	// Navigate to login page
+	if (response.status === 401) {
+		window.location.href = `${import.meta.env.VITE_API_URL}/login`
 		// Return a never-resolving promise since we're navigating away
 		return new Promise(() => {})
 	}
