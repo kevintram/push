@@ -8,7 +8,9 @@ import {
 	SquareLibrary,
 	SquarePen
 } from 'lucide-react'
+import { useState } from 'react'
 
+import { SettingsDialog } from '~/components/SettingsDialog'
 import {
 	Sidebar,
 	SidebarContent,
@@ -25,6 +27,7 @@ export function AppSidebar() {
 	const navigate = useNavigate()
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
+	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 
 	const handleCreateTopic = async () => {
 		const createdTopic = await insertTopic({})
@@ -95,11 +98,12 @@ export function AppSidebar() {
 			<SidebarFooter className='bg-background'>
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<SidebarMenuButton asChild={true} tooltip='Settings'>
-							<Link to='/settings'>
-								<Settings />
-								<span>Settings</span>
-							</Link>
+						<SidebarMenuButton
+							onClick={() => setIsSettingsDialogOpen(true)}
+							tooltip='Settings'
+						>
+							<Settings />
+							<span>Settings</span>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 					{import.meta.env.DEV && !import.meta.env.VITEST && (
@@ -117,6 +121,10 @@ export function AppSidebar() {
 					)}
 				</SidebarMenu>
 			</SidebarFooter>
+			<SettingsDialog
+				onOpenChange={setIsSettingsDialogOpen}
+				open={isSettingsDialogOpen}
+			/>
 		</Sidebar>
 	)
 }
