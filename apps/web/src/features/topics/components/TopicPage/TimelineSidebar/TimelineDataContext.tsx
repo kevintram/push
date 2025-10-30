@@ -14,7 +14,6 @@ import {
 	removeTopicFromTodo,
 	updateTodo as updateTodoApi
 } from '~/features/todos/api'
-import type { Tables } from '~/types/database.types'
 
 // Enhanced types for todos with topics
 export type TodoWithTopics = ApiTodo
@@ -34,7 +33,7 @@ export interface TimelineContextValue {
 	isLoadingTodos: boolean
 
 	// Todo operations
-	updateTodo: (id: number, updates: Partial<Tables<'todos'>>) => Promise<void>
+	updateTodo: (id: number, updates: Partial<ApiTodo>) => Promise<void>
 	deleteTodo: (id: number) => Promise<void>
 
 	// Topic operations
