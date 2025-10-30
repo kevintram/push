@@ -142,6 +142,7 @@ export function RootTopicsPage() {
 			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicClick}
+				todos={topic.todos ?? []}
 				topic={topic}
 			/>
 		),

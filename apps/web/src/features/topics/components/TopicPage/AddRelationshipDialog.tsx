@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
-import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/types/topics.types'
 import { useCreateRelationship } from '../../hooks/useCreateRelationship'
 import { useDebouncedPotentialTopics } from '../../hooks/useDebouncedPotentialTopics'
 
@@ -9,7 +9,7 @@ interface AddRelationshipDialogProps {
 	onOpenChange: (open: boolean) => void
 	topicId: number | undefined
 	relationshipType: 'child' | 'parent'
-	onRelationshipCreated?: (topic: Tables<'topics'>) => void
+	onRelationshipCreated?: (topic: Topic) => void
 }
 
 export function AddRelationshipDialog({
@@ -44,7 +44,7 @@ export function AddRelationshipDialog({
 	}, [searchQuery, setQuery])
 
 	const handleTopicCreatedOrSelected = useCallback(
-		async (topic: Tables<'topics'>) => {
+		async (topic: Topic) => {
 			if (!topicId) return
 
 			try {

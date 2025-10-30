@@ -1,7 +1,4 @@
-import {
-	useDeleteMutation,
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
@@ -9,7 +6,8 @@ import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Topic } from '~/types/topics.types'
-import { supabase } from '~/utils/supabase'
+import { deleteTopic as deleteTopicApi } from '../../api/deleteTopic'
+import { updateTopic as updateTopicApi } from '../../api/updateTopic'
 import { useTopicWithRelationships } from '../../hooks/useTopicWithRelationships'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import { TopicChildrenPanel } from '../TopicPage/FamilyPanel/TopicChildrenPanel'
@@ -31,25 +29,24 @@ export function TopicDetail({
 	headerActions
 }: TopicDetailProps) {
 	const { topic: selectedTopic, isLoading } = useTopicWithRelationships(topicId)
+	const queryClient = useQueryClient()
 
-	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
-		supabase.from('topics'),
-		['id'],
-		'*'
-	)
+	const { mutateAsync: updateTopicMutation } = useMutation({
+		mutationFn: updateTopicApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
 
-	const { mutateAsync: deleteTopic } = useDeleteMutation(
-		supabase.from('topics'),
-		['id'],
-		'*',
-		{
-			onSuccess: async () => {
-				if (onDelete) {
-					await onDelete()
-				}
+	const { mutateAsync: deleteTopic } = useMutation({
+		mutationFn: deleteTopicApi,
+		onSuccess: async () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+			if (onDelete) {
+				await onDelete()
 			}
 		}
-	)
+	})
 
 	const updateNotesMutation = useCallback(
 		(newNotes: string) => {
@@ -70,7 +67,7 @@ export function TopicDetail({
 
 	const handleDelete = useCallback(async () => {
 		if (selectedTopic?.id) {
-			await deleteTopic({ id: selectedTopic.id })
+			await deleteTopic(selectedTopic.id)
 		}
 	}, [deleteTopic, selectedTopic?.id])
 

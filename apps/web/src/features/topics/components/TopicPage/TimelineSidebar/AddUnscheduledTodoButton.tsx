@@ -1,33 +1,35 @@
-import { useRevalidateTables } from '@supabase-cache-helpers/postgrest-react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { use, useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { supabase } from '~/utils/supabase'
+import { createTodo } from '~/features/todos/api'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
+import { useTimelineData } from './TimelineDataContext'
 
 export function AddUnscheduledTodoButton() {
 	const { topic: selectedTopic } = use(TopicContext)
+	const { addTopicToTodo } = useTimelineData()
 
-	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos' },
-		{ schema: 'public', table: 'todos_today' },
-		{ schema: 'public', table: 'todos_with_effective_date' },
-		{ schema: 'public', table: 'todos_topics' }
-	])
+	const queryClient = useQueryClient()
+
+	const { mutateAsync: createTodoMutation } = useMutation({
+		mutationFn: createTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
+		}
+	})
 
 	const handleAddTodo = useCallback(async () => {
 		if (!selectedTopic) return
 
-		await supabase.rpc('insert_todo_with_topics', {
-			p_todo_description: '',
-			p_todo_scheduled_at: null as any,
-			p_todo_completed_at: null as any,
-			p_topic_ids: [selectedTopic.id]
+		const todo = await createTodoMutation({
+			description: '',
+			scheduledAt: null,
+			completedAt: null
 		})
 
-		// Revalidate cache to update UI
-		revalidateTables()
-	}, [selectedTopic, revalidateTables])
+		await addTopicToTodo(todo.id, selectedTopic.id)
+	}, [selectedTopic, createTodoMutation, addTopicToTodo])
 
 	return (
 		<Button onClick={handleAddTodo} size='sm' variant='ghost'>

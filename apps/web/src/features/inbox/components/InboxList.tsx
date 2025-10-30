@@ -36,7 +36,13 @@ export function InboxList({
 	}, [])
 
 	const renderItem = useCallback(
-		(topic: Topic) => <TopicCard onTopicClick={onTopicSelect} topic={topic} />,
+		(topic: Topic) => (
+			<TopicCard
+				onTopicClick={onTopicSelect}
+				todos={topic.todos ?? []}
+				topic={topic}
+			/>
+		),
 		[onTopicSelect]
 	)
 

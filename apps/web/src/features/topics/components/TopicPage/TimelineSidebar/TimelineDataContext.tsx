@@ -1,9 +1,4 @@
-import {
-	useDeleteMutation,
-	useInsertMutation,
-	useQuery,
-	useRevalidateTables
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
 	createContext,
 	useCallback,
@@ -11,13 +6,18 @@ import {
 	useMemo,
 	useState
 } from 'react'
+import {
+	type Todo as ApiTodo,
+	addTopicToTodo,
+	deleteTodo as deleteTodoApi,
+	getTodos,
+	removeTopicFromTodo,
+	updateTodo as updateTodoApi
+} from '~/features/todos/api'
 import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
 
 // Enhanced types for todos with topics
-export type TodoWithTopics = Tables<'todos_with_effective_date'> & {
-	todos_topics: Array<{ topics: Tables<'topics'> }>
-}
+export type TodoWithTopics = ApiTodo
 
 export type TopicSummary = {
 	id: number
@@ -60,77 +60,56 @@ export function TimelineDataProvider({
 	selectedTopicId
 }: TimelineDataProviderProps) {
 	const [optimisticUpdates, setOptimisticUpdates] = useState<
-		Map<number, Partial<Tables<'todos'>>>
+		Map<number, Partial<ApiTodo>>
 	>(new Map())
 
-	// Central table revalidation
-	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos' },
-		{ schema: 'public', table: 'todos_today' },
-		{ schema: 'public', table: 'todos_with_effective_date' },
-		{ schema: 'public', table: 'todos_topics' }
-	])
+	const queryClient = useQueryClient()
 
-	// Fetch all todos with all their topic relationships, then filter by selected topic
+	// Fetch all todos for the selected topic
 	const {
 		data: rawAllTodos = [],
 		isLoading: isLoadingTodos,
 		refetch: refetchTodos
-	} = useQuery<Array<TodoWithTopics>>(
-		supabase
-			.from('todos_with_effective_date')
-			.select('*,todos_topics(topics(*))')
-			.order('inserted_at', { ascending: false }),
-		{
-			enabled: !!selectedTopicId
-		}
-	)
+	} = useQuery({
+		queryKey: ['todos', { topicId: selectedTopicId }],
+		queryFn: () => getTodos({ topicId: selectedTopicId }),
+		enabled: !!selectedTopicId
+	})
 
-	// Mutations - using raw supabase due to cache helper bug
-	const updateTodoMutation = useCallback(
-		async (data: { id: number } & Partial<Tables<'todos'>>) => {
-			const { id, ...updates } = data
-			await supabase.from('todos').update(updates).eq('id', id)
-			revalidateTables()
-		},
-		[revalidateTables]
-	)
-
-	const { mutateAsync: deleteTodoMutation } = useDeleteMutation(
-		supabase.from('todos'),
-		['id'],
-		undefined,
-		{
-			onSuccess: () => revalidateTables()
+	// Mutations
+	const { mutateAsync: updateTodoMutation } = useMutation({
+		mutationFn: updateTodoApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
-	)
+	})
 
-	const { mutateAsync: insertTodoTopicMutation } = useInsertMutation(
-		supabase.from('todos_topics'),
-		['topic_id', 'todo_id'],
-		'*',
-		{
-			onSuccess: () => revalidateTables()
+	const { mutateAsync: deleteTodoMutation } = useMutation({
+		mutationFn: deleteTodoApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
-	)
+	})
 
-	const { mutateAsync: deleteTodoTopicMutation } = useDeleteMutation(
-		supabase.from('todos_topics'),
-		['topic_id', 'todo_id'],
-		undefined,
-		{
-			onSuccess: () => revalidateTables()
+	const { mutateAsync: addTopicMutation } = useMutation({
+		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
+			addTopicToTodo(todoId, topicId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
-	)
+	})
+
+	const { mutateAsync: removeTopicMutation } = useMutation({
+		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
+			removeTopicFromTodo(todoId, topicId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
+		}
+	})
 
 	// Apply optimistic updates and split into scheduled/unscheduled
 	const { scheduledTodos, unscheduledTodos } = useMemo(() => {
-		// First filter todos to only include those associated with the selected topic
-		const todosForSelectedTopic = (rawAllTodos ?? []).filter(todo =>
-			todo.todos_topics?.some(tt => tt.topics?.id === selectedTopicId)
-		)
-
-		const allTodosWithOptimisticUpdates = todosForSelectedTopic.map(todo => {
+		const allTodosWithOptimisticUpdates = rawAllTodos.map(todo => {
 			const optimisticUpdate = optimisticUpdates.get(todo.id ?? 0)
 			return optimisticUpdate ? { ...todo, ...optimisticUpdate } : todo
 		})
@@ -153,11 +132,11 @@ export function TimelineDataProvider({
 			)
 
 		return { scheduledTodos: scheduled, unscheduledTodos: unscheduled }
-	}, [rawAllTodos, optimisticUpdates, selectedTopicId])
+	}, [rawAllTodos, optimisticUpdates])
 
 	// Operations
 	const updateTodo = useCallback(
-		async (id: number, updates: Partial<Tables<'todos'>>) => {
+		async (id: number, updates: Partial<ApiTodo>) => {
 			// Apply optimistic update
 			setOptimisticUpdates(prev => new Map(prev).set(id, updates))
 
@@ -177,23 +156,23 @@ export function TimelineDataProvider({
 
 	const deleteTodo = useCallback(
 		async (id: number) => {
-			await deleteTodoMutation({ id })
+			await deleteTodoMutation(id)
 		},
 		[deleteTodoMutation]
 	)
 
-	const addTopicToTodo = useCallback(
+	const addTopicToTodoFn = useCallback(
 		async (todoId: number, topicId: number) => {
-			await insertTodoTopicMutation([{ todo_id: todoId, topic_id: topicId }])
+			await addTopicMutation({ todoId, topicId })
 		},
-		[insertTodoTopicMutation]
+		[addTopicMutation]
 	)
 
-	const removeTopicFromTodo = useCallback(
+	const removeTopicFromTodoFn = useCallback(
 		async (todoId: number, topicId: number) => {
-			await deleteTodoTopicMutation({ todo_id: todoId, topic_id: topicId })
+			await removeTopicMutation({ todoId, topicId })
 		},
-		[deleteTodoTopicMutation]
+		[removeTopicMutation]
 	)
 
 	const getTopicsForTodo = useCallback(
@@ -202,9 +181,9 @@ export function TimelineDataProvider({
 			const allTodos = [...scheduledTodos, ...unscheduledTodos]
 			const todo = allTodos.find(t => t.id === todoId)
 			return (
-				todo?.todos_topics?.map(tt => ({
-					id: tt.topics.id,
-					name: tt.topics.name
+				todo?.topics?.map(t => ({
+					id: t.id,
+					name: t.name
 				})) ?? []
 			)
 		},
@@ -213,8 +192,8 @@ export function TimelineDataProvider({
 
 	const revalidateTimeline = useCallback(() => {
 		refetchTodos()
-		revalidateTables()
-	}, [refetchTodos, revalidateTables])
+		queryClient.invalidateQueries({ queryKey: ['todos'] })
+	}, [refetchTodos, queryClient])
 
 	const contextValue: TimelineContextValue = {
 		scheduledTodos,
@@ -222,8 +201,8 @@ export function TimelineDataProvider({
 		isLoadingTodos,
 		updateTodo,
 		deleteTodo,
-		addTopicToTodo,
-		removeTopicFromTodo,
+		addTopicToTodo: addTopicToTodoFn,
+		removeTopicFromTodo: removeTopicFromTodoFn,
 		getTopicsForTodo,
 		revalidateTimeline
 	}

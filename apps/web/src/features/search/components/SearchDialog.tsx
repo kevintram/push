@@ -33,8 +33,10 @@ export function SearchDialog({
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [selectedIndex, setSelectedIndex] = useState(0)
 
-	const { debouncedQuery, results, isLoading, hasQuery } =
-		useGlobalSearch(query)
+	const { debouncedQuery, results, isLoading, hasQuery } = useGlobalSearch(
+		query,
+		open
+	)
 
 	useEffect(() => {
 		if (open) {
@@ -102,6 +104,7 @@ export function SearchDialog({
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicSelect}
 				searchQuery={debouncedQuery}
+				todos={topic.todos ?? []}
 				topic={topic}
 			/>
 		),

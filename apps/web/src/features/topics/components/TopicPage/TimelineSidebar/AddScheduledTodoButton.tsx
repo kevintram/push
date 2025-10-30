@@ -1,4 +1,4 @@
-import { useRevalidateTables } from '@supabase-cache-helpers/postgrest-react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { CalendarIcon, Plus } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
@@ -11,21 +11,25 @@ import {
 	PopoverTrigger
 } from '~/components/ui/Popover'
 import { Textarea } from '~/components/ui/Textarea'
-import { supabase } from '~/utils/supabase'
+import { createTodo } from '~/features/todos/api'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
+import { useTimelineData } from './TimelineDataContext'
 
 export function AddScheduledTodoButton() {
 	const { topic: selectedTopic } = use(TopicContext)
+	const { addTopicToTodo } = useTimelineData()
 	const [isOpen, setIsOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 	const [description, setDescription] = useState('')
 
-	const revalidateTables = useRevalidateTables([
-		{ schema: 'public', table: 'todos' },
-		{ schema: 'public', table: 'todos_today' },
-		{ schema: 'public', table: 'todos_with_effective_date' },
-		{ schema: 'public', table: 'todos_topics' }
-	])
+	const queryClient = useQueryClient()
+
+	const { mutateAsync: createTodoMutation } = useMutation({
+		mutationFn: createTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
+		}
+	})
 
 	const handleSave = useCallback(async () => {
 		if (!selectedTopic) return
@@ -34,22 +38,26 @@ export function AddScheduledTodoButton() {
 			? dayjs(selectedDate).format('YYYY-MM-DD')
 			: null
 
-		await supabase.rpc('insert_todo_with_topics', {
-			p_todo_description: description.trim(),
-			p_todo_scheduled_at: dayjs(selectedDate).format('YYYY-MM-DD'),
-			p_todo_completed_at: completedAt as string,
-			p_topic_ids: [selectedTopic.id]
+		const todo = await createTodoMutation({
+			description: description.trim(),
+			scheduledAt: dayjs(selectedDate).format('YYYY-MM-DD'),
+			completedAt
 		})
 
-		// Revalidate cache to update UI
-		revalidateTables()
+		await addTopicToTodo(todo.id, selectedTopic.id)
 
 		setIsOpen(false)
 
 		// reset to default values after saving
 		setDescription('')
 		setSelectedDate(new Date())
-	}, [selectedTopic, selectedDate, description, revalidateTables])
+	}, [
+		selectedTopic,
+		selectedDate,
+		description,
+		createTodoMutation,
+		addTopicToTodo
+	])
 
 	return (
 		<Popover onOpenChange={setIsOpen} open={isOpen}>

@@ -11,13 +11,13 @@ import {
 	DialogTrigger
 } from '~/components/ui/Dialog'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
-import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/types/topics.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { useCreateTopic } from '../api/useCreateTopic'
 import { TopicComposerFields } from './TopicComposerFields'
 
 interface SearchResult {
-	results: Array<Tables<'topics'>>
+	results: Array<Topic>
 	isLoading: boolean
 	debouncedQuery: string
 }
@@ -29,8 +29,8 @@ interface CreateTopicDialogProps {
 	title: string
 	submitButtonText?: string
 	showSidebar?: boolean
-	topicDefaults?: Partial<Tables<'topics'>>
-	onTopicCreated?: (topic: Tables<'topics'>) => Promise<void> | void
+	topicDefaults?: Partial<Topic>
+	onTopicCreated?: (topic: Topic) => Promise<void> | void
 	useSearch?: (query: string) => SearchResult
 	sidebarTitle?: (debouncedQuery: string) => string
 }
@@ -100,7 +100,7 @@ export function CreateTopicDialog({
 	}, [notes, name, showSidebar])
 
 	const handleTopicSelect = useCallback(
-		async (topic: Tables<'topics'>) => {
+		async (topic: Topic) => {
 			if (onTopicCreated) {
 				await onTopicCreated(topic)
 			}
@@ -123,7 +123,7 @@ export function CreateTopicDialog({
 			})
 
 			if (onTopicCreated) {
-				await onTopicCreated(newTopic as any)
+				await onTopicCreated(newTopic)
 			}
 
 			setOpen(false)

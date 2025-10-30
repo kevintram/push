@@ -1,8 +1,4 @@
-import {
-	useDeleteMutation,
-	useQuery,
-	useUpdateMutation
-} from '@supabase-cache-helpers/postgrest-react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import {
 	Archive,
@@ -30,61 +26,58 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { useTopicRelationshipCounts } from '~/features/topics/hooks/useTopicRelationshipCounts'
-import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
+import type { Todo } from '~/features/todos/api/schemas'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
-import type { TopicCardTopic } from '../api/schemas'
-
-type TodoWithEffectiveDate = Tables<'todos_with_effective_date'>
+import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
+import type { Topic } from '~/types/topics.types'
+import { updateTopic as updateTopicApi } from '../api/updateTopic'
 
 const MIN_HEIGHT = 96
 
 interface TopicCardProps {
-	topic: TopicCardTopic
-	onTopicClick?: (topic: any) => void // Flexible to accept both Supabase and API topics
+	topic: Topic
+	onTopicClick?: (topic: Topic) => void
 	onRemoveRelationship?: () => void
 	minHeight?: number
 	searchQuery?: string
+	todos?: Array<Todo>
 }
 
 export function TopicCard({
 	topic,
+	todos: todosProp,
 	onTopicClick,
 	onRemoveRelationship,
 	minHeight = MIN_HEIGHT,
 	searchQuery // for topic card in search dialog to support highlighting and shit
 }: TopicCardProps) {
-	const { mutateAsync: deleteTopicMutation } = useDeleteMutation(
-		supabase.from('topics'),
-		['id']
-	)
+	const queryClient = useQueryClient()
 
-	const { mutateAsync: updateTopicMutation } = useUpdateMutation(
-		supabase.from('topics'),
-		['id'],
-		'*'
-	)
+	const { mutateAsync: deleteTopicMutation } = useMutation({
+		mutationFn: deleteTopicApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
 
-	// Fetch relationship counts and topics for this topic
-	const { parentCount, childCount, parentTopics, childTopics } =
-		useTopicRelationshipCounts(topic.id)
+	const { mutateAsync: updateTopicMutation } = useMutation({
+		mutationFn: updateTopicApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
 
-	// Fetch todos associated with this topic
-	const { data: todos = [] } = useQuery<Array<TodoWithEffectiveDate>>(
-		supabase
-			.from('todos_with_effective_date')
-			.select('*,todos_topics!inner(topic_id)')
-			.eq('todos_topics.topic_id', topic.id)
-	)
+	const parentCount = topic.parents?.length ?? 0
+	const childCount = topic.children?.length ?? 0
+
+	const todos = todosProp ?? []
 
 	// Calculate the next or last timeline date
 	const timelineDate = useMemo(() => {
-		if (todos && todos.length === 0) return null
+		if (todos.length === 0) return null
 
 		const now = dayjs()
-		const todosWithDates =
-			todos?.filter(todo => todo.effective_date != null) ?? []
+		const todosWithDates = todos.filter(todo => todo.effective_date != null)
 
 		if (todosWithDates.length === 0) return null
 
@@ -134,7 +127,7 @@ export function TopicCard({
 	)
 
 	const handleDeleteTopic = () => {
-		deleteTopicMutation({ id: topic.id })
+		deleteTopicMutation(topic.id)
 	}
 
 	const handleArchiveToggle = useCallback(
@@ -192,23 +185,23 @@ export function TopicCard({
 								onKeyDown={e => e.stopPropagation()}
 								side='top'
 							>
-								<div className='flex flex-col gap-2'>
-									<h4 className='font-semibold text-sm'>Parent Topics</h4>
-									{parentTopics.length === 0 ? (
-										<p className='text-muted-foreground text-xs'>No parents</p>
-									) : (
-										<ul className='flex flex-col gap-1.5'>
-											{parentTopics.map(parent => (
-												<li
-													className='break-words text-sm leading-tight '
-													key={parent.id}
-												>
-													{parent.name || parent.notes || 'Untitled'}
-												</li>
-											))}
-										</ul>
-									)}
-								</div>
+						<div className='flex flex-col gap-2'>
+							<h4 className='font-semibold text-sm'>Parent Topics</h4>
+							{parentCount === 0 ? (
+								<p className='text-muted-foreground text-xs'>No parents</p>
+							) : (
+								<ul className='flex flex-col gap-1.5'>
+									{(topic.parents ?? []).map(parent => (
+										<li
+											className='break-words text-sm leading-tight '
+											key={parent.id}
+										>
+											{parent.name || parent.notes || 'Untitled'}
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
 							</PopoverContent>
 						</Popover>
 
@@ -348,23 +341,23 @@ export function TopicCard({
 							onKeyDown={e => e.stopPropagation()}
 							side='bottom'
 						>
-							<div className='flex flex-col gap-2'>
-								<h4 className='font-semibold text-sm'>Child Topics</h4>
-								{childTopics.length === 0 ? (
-									<p className='text-muted-foreground text-xs'>No children</p>
-								) : (
-									<ul className='flex flex-col gap-1.5'>
-										{childTopics.map(child => (
-											<li
-												className='break-words text-sm leading-tight'
-												key={child.id}
-											>
-												{child.name || child.notes || 'Untitled'}
-											</li>
-										))}
-									</ul>
-								)}
-							</div>
+						<div className='flex flex-col gap-2'>
+							<h4 className='font-semibold text-sm'>Child Topics</h4>
+							{childCount === 0 ? (
+								<p className='text-muted-foreground text-xs'>No children</p>
+							) : (
+								<ul className='flex flex-col gap-1.5'>
+									{(topic.children ?? []).map(child => (
+										<li
+											className='break-words text-sm leading-tight'
+											key={child.id}
+										>
+											{child.name || child.notes || 'Untitled'}
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
 						</PopoverContent>
 					</Popover>
 				</div>
