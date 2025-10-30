@@ -1,3 +1,5 @@
+import type { Todo } from '~/features/todos/api/schemas'
+
 export type Topic = {
 	id: number
 	name: string
@@ -8,9 +10,9 @@ export type Topic = {
 	retrievability: number
 	archived: boolean
 	inboxed: boolean
-	user_id?: string
 	parents?: Array<Topic>
 	children?: Array<Topic>
+	todos?: Array<Todo>
 }
 
 export interface PracticePrompt {
