@@ -5,10 +5,10 @@ import { useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
-import type { TopicWithRelationships } from '~/features/topics/api/schemas'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 import { useRootTopics } from '~/features/topics/api/useRootTopics'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
+import type { Topic } from '~/models/todo-topic.types'
 import { TopicCard } from '../TopicCard'
 
 const MIN_CARD_WIDTH = 280
@@ -112,7 +112,7 @@ export function RootTopicsPage() {
 	}, [createTopicAsync, navigate])
 
 	const handleTopicClick = useCallback(
-		(topic: TopicWithRelationships) => {
+		(topic: Topic) => {
 			navigate({
 				to: '/topics/{-$topicId}',
 				params: { topicId: topic.id.toString() }
@@ -121,7 +121,7 @@ export function RootTopicsPage() {
 		[navigate]
 	)
 
-	const estimateItemSize = useCallback((topic: TopicWithRelationships) => {
+	const estimateItemSize = useCallback((topic: Topic) => {
 		const baseHeight = 80
 		const lineHeight = 10
 		const numCharsPerLine = 30
@@ -138,7 +138,7 @@ export function RootTopicsPage() {
 	}, [])
 
 	const renderItem = useCallback(
-		(topic: TopicWithRelationships) => (
+		(topic: Topic) => (
 			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicClick}
@@ -149,10 +149,7 @@ export function RootTopicsPage() {
 		[handleTopicClick]
 	)
 
-	const getItemKey = useCallback(
-		(topic: TopicWithRelationships) => topic.id,
-		[]
-	)
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	if (isLoading) {
 		return (

@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useMemo, useState } from 'react'
 import { SidebarTrigger } from '~/components/ui/Sidebar'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import { TopicDetail } from '../TopicDetail/TopicDetail'
 import { TopicDialog } from '../TopicDialog'

@@ -26,10 +26,9 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import type { Todo } from '~/features/todos/api/schemas'
+import type { Todo, Topic } from '~/models/todo-topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
-import type { Topic } from '~/types/topics.types'
 import { updateTopic as updateTopicApi } from '../api/updateTopic'
 
 const MIN_HEIGHT = 96
@@ -185,23 +184,23 @@ export function TopicCard({
 								onKeyDown={e => e.stopPropagation()}
 								side='top'
 							>
-						<div className='flex flex-col gap-2'>
-							<h4 className='font-semibold text-sm'>Parent Topics</h4>
-							{parentCount === 0 ? (
-								<p className='text-muted-foreground text-xs'>No parents</p>
-							) : (
-								<ul className='flex flex-col gap-1.5'>
-									{(topic.parents ?? []).map(parent => (
-										<li
-											className='break-words text-sm leading-tight '
-											key={parent.id}
-										>
-											{parent.name || parent.notes || 'Untitled'}
-										</li>
-									))}
-								</ul>
-							)}
-						</div>
+								<div className='flex flex-col gap-2'>
+									<h4 className='font-semibold text-sm'>Parent Topics</h4>
+									{parentCount === 0 ? (
+										<p className='text-muted-foreground text-xs'>No parents</p>
+									) : (
+										<ul className='flex flex-col gap-1.5'>
+											{(topic.parents ?? []).map(parent => (
+												<li
+													className='break-words text-sm leading-tight '
+													key={parent.id}
+												>
+													{parent.name || parent.notes || 'Untitled'}
+												</li>
+											))}
+										</ul>
+									)}
+								</div>
 							</PopoverContent>
 						</Popover>
 
@@ -341,23 +340,23 @@ export function TopicCard({
 							onKeyDown={e => e.stopPropagation()}
 							side='bottom'
 						>
-						<div className='flex flex-col gap-2'>
-							<h4 className='font-semibold text-sm'>Child Topics</h4>
-							{childCount === 0 ? (
-								<p className='text-muted-foreground text-xs'>No children</p>
-							) : (
-								<ul className='flex flex-col gap-1.5'>
-									{(topic.children ?? []).map(child => (
-										<li
-											className='break-words text-sm leading-tight'
-											key={child.id}
-										>
-											{child.name || child.notes || 'Untitled'}
-										</li>
-									))}
-								</ul>
-							)}
-						</div>
+							<div className='flex flex-col gap-2'>
+								<h4 className='font-semibold text-sm'>Child Topics</h4>
+								{childCount === 0 ? (
+									<p className='text-muted-foreground text-xs'>No children</p>
+								) : (
+									<ul className='flex flex-col gap-1.5'>
+										{(topic.children ?? []).map(child => (
+											<li
+												className='break-words text-sm leading-tight'
+												key={child.id}
+											>
+												{child.name || child.notes || 'Untitled'}
+											</li>
+										))}
+									</ul>
+								)}
+							</div>
 						</PopoverContent>
 					</Popover>
 				</div>

@@ -11,7 +11,7 @@ import {
 	DialogTrigger
 } from '~/components/ui/Dialog'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { useCreateTopic } from '../api/useCreateTopic'
 import { TopicComposerFields } from './TopicComposerFields'

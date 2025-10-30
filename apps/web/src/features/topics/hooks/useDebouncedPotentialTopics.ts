@@ -1,6 +1,6 @@
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 import { useGetPotentialChildren } from './useGetPotentialChildren'
 import { useGetPotentialParents } from './useGetPotentialParents'
 

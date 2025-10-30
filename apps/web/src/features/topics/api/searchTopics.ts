@@ -1,9 +1,8 @@
 import * as v from 'valibot'
-import type { Topic } from '~/types/topics.types'
+import { type Topic, TopicSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { TopicWithRelationshipsAndTodosSchema } from './schemas'
 
-const TopicSearchResponseSchema = v.array(TopicWithRelationshipsAndTodosSchema)
+const TopicSearchResponseSchema = v.array(TopicSchema)
 
 export type SearchTopicsParams = {
 	query?: string

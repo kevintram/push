@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 
 export const TopicContext = createContext<{
 	topic: Topic | undefined

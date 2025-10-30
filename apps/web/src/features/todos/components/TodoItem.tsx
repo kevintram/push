@@ -13,25 +13,13 @@ import {
 import { Textarea } from '~/components/ui/Textarea'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import type { Todo } from '~/models/todo-topic.types'
 import { deleteTodo, removeTopicFromTodo, updateTodo } from '../api'
-import type { Topic } from '../api/schemas'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { TodoTopicBadges } from './TodoTopicBadges'
 
-// Clean type representing what TodoItem actually needs
-type TodoEntry = {
-	id: number
-	description: string
-	scheduled_at: string | null
-	completed_at: string | null
-	inserted_at: string
-	updated_at: string
-	effective_date?: string | null // Optional - only from todos_with_effective_date view
-	topics: Array<Topic>
-}
-
 interface TodoItemProps {
-	entry: TodoEntry
+	entry: Todo
 	isCompleted?: boolean
 }
 
@@ -250,15 +238,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					{/* Topics */}
 					<TodoTopicBadges
 						onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
-						todo={{
-							id: entry.id ?? 0,
-							description: entry.description ?? '',
-							scheduled_at: entry.scheduled_at ?? null,
-							completed_at: entry.completed_at ?? null,
-							inserted_at: entry.inserted_at ?? '',
-							updated_at: entry.updated_at ?? '',
-							topics: entry.topics ?? []
-						}}
+						todo={entry}
 					/>
 				</div>
 			</div>

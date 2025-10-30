@@ -1,6 +1,6 @@
 import * as v from 'valibot'
+import { TopicSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { TopicWithRelationshipsSchema } from './schemas'
 
 type DeleteChildRelationshipInput = {
 	parentId: number
@@ -27,7 +27,7 @@ export async function deleteChildRelationship(
 	}
 
 	const data = await response.json()
-	return v.parse(TopicWithRelationshipsSchema, data)
+	return v.parse(TopicSchema, data)
 }
 
 export async function deleteParentRelationship(
@@ -45,5 +45,5 @@ export async function deleteParentRelationship(
 	}
 
 	const data = await response.json()
-	return v.parse(TopicWithRelationshipsSchema, data)
+	return v.parse(TopicSchema, data)
 }

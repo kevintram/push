@@ -4,7 +4,7 @@ import { Button } from '~/components/ui/Button'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
 import { TopicDialog } from '~/features/topics/components/TopicDialog'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 import { useInboxTopics } from '../api'
 import { InboxList } from './InboxList'
 

@@ -13,7 +13,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { SidebarTrigger } from '~/components/ui/Sidebar'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 import { TopicParentsPanel } from './FamilyPanel/TopicParentsPanel'
 
 interface TopicPageHeaderProps {

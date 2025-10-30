@@ -1,6 +1,6 @@
 import * as v from 'valibot'
+import { TopicSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { TopicWithRelationshipsSchema } from './schemas'
 
 type GetTopicsParams = {
 	topicIds: Array<number>
@@ -20,7 +20,7 @@ async function getTopics(params: GetTopicsParams) {
 			}
 
 			const data = await response.json()
-			return v.parse(TopicWithRelationshipsSchema, data)
+			return v.parse(TopicSchema, data)
 		})
 	)
 

@@ -1,6 +1,6 @@
 import * as v from 'valibot'
+import { TodoSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { TodoSchema } from './schemas'
 
 type GetTodosFilters = {
 	topicId?: number

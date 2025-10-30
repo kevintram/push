@@ -26,7 +26,7 @@ export function TodoTopicBadges({
 				<span className='font-medium text-muted-foreground text-xs'>
 					Topics
 				</span>
-				{todo.topics.map(
+				{todo.topics?.map(
 					(topic: { id: number; name: string; notes: string }) => (
 						<TopicBadge
 							key={topic.id}

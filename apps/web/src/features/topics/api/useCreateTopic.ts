@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { type Topic, TopicSchema } from '~/features/todos/api/schemas'
+import { type Topic, TopicSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
 type CreateTopicInput = {

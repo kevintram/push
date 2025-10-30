@@ -1,6 +1,6 @@
 import * as v from 'valibot'
+import { TopicSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { TopicSchema } from './schemas'
 
 type UpdateTopicInput = {
 	id: number

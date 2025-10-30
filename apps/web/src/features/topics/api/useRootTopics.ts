@@ -1,10 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
+import { type Topic, TopicSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import {
-	type TopicWithRelationships,
-	TopicWithRelationshipsSchema
-} from './schemas'
 
 type UseRootTopicsParams = {
 	inboxed?: boolean
@@ -13,7 +10,7 @@ type UseRootTopicsParams = {
 
 async function fetchRootTopics(
 	params: UseRootTopicsParams = {}
-): Promise<Array<TopicWithRelationships>> {
+): Promise<Array<Topic>> {
 	const searchParams = new URLSearchParams({ root: 'true' })
 
 	if (params.inboxed !== undefined) {
@@ -33,7 +30,7 @@ async function fetchRootTopics(
 	}
 
 	const data = await response.json()
-	return v.parse(v.array(TopicWithRelationshipsSchema), data)
+	return v.parse(v.array(TopicSchema), data)
 }
 
 export function useRootTopics(params: UseRootTopicsParams = {}) {

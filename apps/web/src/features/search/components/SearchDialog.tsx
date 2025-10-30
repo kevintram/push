@@ -11,7 +11,7 @@ import {
 import { Input } from '~/components/ui/Input'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 
 const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96

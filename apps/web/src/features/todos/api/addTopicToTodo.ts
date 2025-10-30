@@ -1,6 +1,6 @@
 import * as v from 'valibot'
+import { type Todo, TodoSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { type Todo, TodoSchema } from './schemas'
 
 export async function addTopicToTodo(
 	todoId: number,

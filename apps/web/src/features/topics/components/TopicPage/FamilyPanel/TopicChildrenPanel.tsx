@@ -5,7 +5,7 @@ import { Card, CardContent } from '~/components/ui/Card'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import type { Topic } from '~/types/topics.types'
+import type { Topic } from '~/models/todo-topic.types'
 import { TopicCard } from '../../TopicCard'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 

@@ -1,12 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
-import {
-	type TopicWithRelationships,
-	TopicWithRelationshipsSchema
-} from '~/features/topics/api/schemas'
+import { type Topic, TopicSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
-async function fetchInboxTopics(): Promise<Array<TopicWithRelationships>> {
+async function fetchInboxTopics(): Promise<Array<Topic>> {
 	const searchParams = new URLSearchParams({ inboxed: 'true' })
 
 	const response = await apiFetch(
@@ -18,7 +15,7 @@ async function fetchInboxTopics(): Promise<Array<TopicWithRelationships>> {
 	}
 
 	const data = await response.json()
-	return v.parse(v.array(TopicWithRelationshipsSchema), data)
+	return v.parse(v.array(TopicSchema), data)
 }
 
 export function useInboxTopics() {

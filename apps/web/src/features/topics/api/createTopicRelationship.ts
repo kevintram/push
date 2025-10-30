@@ -1,6 +1,6 @@
 import * as v from 'valibot'
+import { TopicSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { TopicWithRelationshipsSchema } from './schemas'
 
 type CreateChildRelationshipInput = {
 	parentId: number
@@ -33,7 +33,7 @@ export async function createChildRelationship(
 	}
 
 	const data = await response.json()
-	return v.parse(TopicWithRelationshipsSchema, data)
+	return v.parse(TopicSchema, data)
 }
 
 export async function createParentRelationship(
@@ -57,5 +57,5 @@ export async function createParentRelationship(
 	}
 
 	const data = await response.json()
-	return v.parse(TopicWithRelationshipsSchema, data)
+	return v.parse(TopicSchema, data)
 }
