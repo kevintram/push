@@ -14,6 +14,7 @@ import {
 	removeTopicFromTodo,
 	updateTodo as updateTodoApi
 } from '~/features/todos/api'
+import type { Topic } from '~/models/todo-topic.types'
 
 // Enhanced types for todos with topics
 export type TodoWithTopics = ApiTodo
@@ -180,7 +181,7 @@ export function TimelineDataProvider({
 			const allTodos = [...scheduledTodos, ...unscheduledTodos]
 			const todo = allTodos.find(t => t.id === todoId)
 			return (
-				todo?.topics?.map(t => ({
+				todo?.topics?.map((t: Topic) => ({
 					id: t.id,
 					name: t.name
 				})) ?? []
