@@ -110,7 +110,7 @@ chore: update root .gitignore
 ### Web App Architecture
 - **Feature-based structure**: Code organized by domain/feature in `src/features/`
 - **Routing**: TanStack Router with file-based routing (type-safe)
-- **Data fetching**: TanStack Query + Supabase
+- **Data fetching**: TanStack Query + FastAPI backend
 - **Date handling**: Always use Day.js (never native Date)
 - **UI Components**: Prefer shadcn/ui components from `src/components/ui/`
 - **Testing**: Vitest (unit), Playwright (E2E), MSW (mocking)
