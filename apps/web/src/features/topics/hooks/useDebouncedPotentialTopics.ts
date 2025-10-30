@@ -1,6 +1,6 @@
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { Tables } from '~/types/database.types'
+import type { Topic } from '~/types/topics.types'
 import { useGetPotentialChildren } from './useGetPotentialChildren'
 import { useGetPotentialParents } from './useGetPotentialParents'
 
@@ -43,7 +43,7 @@ export function useDebouncedPotentialTopics({
 		enabled: relationshipType === 'parent' && !!topicId
 	})
 
-	const results = useMemo((): Array<Tables<'topics'>> => {
+	const results = useMemo((): Array<Topic> => {
 		if (relationshipType === 'child') {
 			return potentialChildren
 		}

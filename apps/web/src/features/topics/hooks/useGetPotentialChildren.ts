@@ -1,28 +1,22 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
-import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
+import type { Topic } from '~/types/topics.types'
+import { searchTopics } from '../api/searchTopics'
 
 export function useGetPotentialChildren(
 	topicId: number | undefined,
 	searchQuery?: string,
-	options?: Omit<
-		UseQueryOptions<Array<Tables<'topics'>>, Error>,
-		'queryKey' | 'queryFn'
-	>
+	options?: Omit<UseQueryOptions<Array<Topic>, Error>, 'queryKey' | 'queryFn'>
 ) {
 	return useQuery({
 		queryKey: ['potential-children', topicId, searchQuery],
-		queryFn: async (): Promise<Array<Tables<'topics'>>> => {
+		queryFn: async (): Promise<Array<Topic>> => {
 			if (!topicId) return []
 
-			const { data, error } = await supabase.rpc('get_potential_children', {
-				topic_id: topicId,
-				search_query: searchQuery || undefined
+			return searchTopics({
+				query: searchQuery,
+				addableAsChildTo: topicId
 			})
-
-			if (error) throw error
-			return data || []
 		},
 		...options
 	})
