@@ -10,7 +10,7 @@ This is a React application built with modern tooling focused on topic-based lea
 - **Styling**: Tailwind CSS v4
 - **Component Library**: shadcn/ui
 - **Data Fetching**: TanStack Query with React Query
-- **Database**: Supabase with supabase-cache-helpers
+- **Backend**: FastAPI (Python) for data access and business logic
 - **Date Handling**: Day.js for all date parsing, formatting, and manipulation
 - **Build Tool**: Vite 6
 - **Package Manager**: pnpm
@@ -101,9 +101,10 @@ src/features/awesome-feature
 Please prefer using shadcn components in the 'src/components/ui' folder wherever possible instead of handrolling your own components. This will help consistency across the app!
 
 ### Data Flow
-- We pull data from Supabase, a Postgres Database Provider using the [JavaScript Client Library](https://supabase.com/docs/reference/javascript/start)
-- However, sometimes during local development, we load mock JSON data from (`src/__mocks__/`)
-- The core data object is a Topic which follows a hierarchical structure.
+- Data is fetched from the FastAPI backend (`apps/api/`) using TanStack Query
+- API requests are defined in feature-based `api` folders (e.g., `src/features/*/api`)
+- Mock Service Worker (MSW) is used for API mocking during testing and development (handlers in `src/__mocks__/`)
+- The core data object is a Topic which follows a hierarchical structure
 
 ### Routing Structure
 - We use TanStack Router
