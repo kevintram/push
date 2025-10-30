@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict
 
 class TodoBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
     scheduled_at: date | None = None
     completed_at: date | None = None
     description: str
@@ -33,9 +34,12 @@ class TodoCreate(TodoBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class TodoUpdate(TodoBase):
+class TodoUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    id: int
+
+    scheduled_at: date | None = None
+    completed_at: date | None = None
+    description: str | None = None
 
 
 class TopicIdPayload(BaseModel):
