@@ -1,11 +1,10 @@
-import { useQuery } from '@supabase-cache-helpers/postgrest-react-query'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { addTopicToTodo, type Todo } from '~/features/todos/api'
+import { searchTopics } from '~/features/topics/api/searchTopics'
 import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
-import type { Tables } from '~/types/database.types'
-import { supabase } from '~/utils/supabase'
+import type { Topic } from '~/types/topics.types'
 
 interface AddTopicToTodoDialogProps {
 	open: boolean
@@ -32,21 +31,15 @@ export function AddTopicToTodoDialog({
 		updateDebouncedQuery(searchQuery)
 	}, [searchQuery, updateDebouncedQuery])
 
-	// Build query conditionally to avoid 400 error when debouncedQuery is empty
-	const topicsQuery = useMemo(() => {
-		let query = supabase.from('topics').select('*')
-
-		if (debouncedQuery) {
-			query = query.or(
-				`name.ilike.%${debouncedQuery}%,notes.ilike.%${debouncedQuery}%`
-			)
-		}
-
-		return query.order('updated_at', { ascending: false }).limit(20)
-	}, [debouncedQuery])
-
-	const { data: topics = [], isLoading } = useQuery(topicsQuery, {
-		enabled: open
+	const { data: topics = [], isLoading } = useQuery({
+		queryKey: ['topics', 'search', debouncedQuery || 'recent', todo?.id],
+		queryFn: () =>
+			searchTopics({
+				query: debouncedQuery || undefined,
+				limit: 20,
+				addableToTodo: todo?.id
+			}),
+		enabled: open && !!todo
 	})
 
 	const results = useMemo(() => {
@@ -72,7 +65,7 @@ export function AddTopicToTodoDialog({
 	}, [open])
 
 	const handleTopicCreatedOrSelected = useCallback(
-		async (topic: Tables<'topics'>) => {
+		async (topic: Topic) => {
 			if (!todo) return
 
 			try {
