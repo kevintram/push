@@ -1,13 +1,16 @@
 import * as v from 'valibot'
 import type { Topic } from '~/types/topics.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { TopicSchema } from './schemas'
+import { TopicWithRelationshipsAndTodosSchema } from './schemas'
 
-const TopicSearchResponseSchema = v.array(TopicSchema)
+const TopicSearchResponseSchema = v.array(TopicWithRelationshipsAndTodosSchema)
 
 export type SearchTopicsParams = {
 	query?: string
 	limit?: number
+	addableToTodo?: number
+	addableAsParentTo?: number
+	addableAsChildTo?: number
 }
 
 export async function searchTopics(
@@ -24,6 +27,18 @@ export async function searchTopics(
 		searchParams.set('limit', String(params.limit))
 	}
 
+	if (typeof params.addableToTodo === 'number') {
+		searchParams.set('addable_to_todo', String(params.addableToTodo))
+	}
+
+	if (typeof params.addableAsParentTo === 'number') {
+		searchParams.set('addable_as_parent_to', String(params.addableAsParentTo))
+	}
+
+	if (typeof params.addableAsChildTo === 'number') {
+		searchParams.set('addable_as_child_to', String(params.addableAsChildTo))
+	}
+
 	const url = `${import.meta.env.VITE_API_URL}/topics/search/${
 		searchParams.size > 0 ? `?${searchParams.toString()}` : ''
 	}`
@@ -35,5 +50,10 @@ export async function searchTopics(
 	}
 
 	const data = await response.json()
-	return v.parse(TopicSearchResponseSchema, data)
+	try {
+		const parsed = v.parse(TopicSearchResponseSchema, data)
+		return parsed
+	} catch (_error) {
+		return []
+	}
 }
