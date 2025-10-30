@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from sqlalchemy import or_, select, update, delete
+from sqlalchemy import or_, select, update, delete, Connection
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,13 +10,13 @@ from app.schemas import (
     TopicRead,
     TopicCreate,
     TopicUpdate,
-    TopicReadWithRelationships,
     TopicReadWithRelationshipsAndTodos,
     TopicRelationshipCreate,
     TopicParentRelationshipCreate,
     TopicReadWithTodos,
     TodoIdPayload,
-    TodoWithTopics,
+    TodoRead,
+    TodoReadWithTopics,
 )
 
 router = APIRouter()
@@ -46,14 +46,22 @@ async def _insert_topic_relationship(
     if child_id not in topic_ids:
         raise HTTPException(status_code=404, detail="Child topic not found")
 
+    # Check if relationship already exists
+    relationship_result = await session.execute(
+        select(t_topics_closure.c.ancestor).where(
+            t_topics_closure.c.ancestor == parent_id,
+            t_topics_closure.c.descendant == child_id,
+            t_topics_closure.c.depth == 1,
+        )
+    )
+    if relationship_result.scalar_one_or_none() is not None:
+        raise HTTPException(status_code=409, detail="Relationship already exists")
+
     conn = await session.connection()
-
-    def _call_insert_relationship(sync_conn):
-        with sync_conn.cursor() as cursor:
-            cursor.callproc("insert_relationship", [parent_id, child_id])
-            return cursor.fetchall()
-
-    inserted_rows = await conn.run_sync(_call_insert_relationship)
+    raw_conn = await conn.get_raw_connection()
+    inserted_rows = await raw_conn.driver_connection.fetch(
+        "SELECT * FROM insert_relationship($1, $2)", parent_id, child_id
+    )
 
     if not inserted_rows:
         raise HTTPException(
@@ -116,11 +124,13 @@ async def _delete_topic_relationship(
 
     conn = await session.connection()
 
-    def _call_delete_relationship(sync_conn):
-        with sync_conn.cursor() as cursor:
-            cursor.callproc("delete_relationship", [parent_id, child_id])
+    raw_conn = await conn.get_raw_connection()
+    deleted_rows = await raw_conn.driver_connection.fetch(
+        "SELECT * FROM delete_relationship($1, $2)", parent_id, child_id
+    )
 
-    await conn.run_sync(_call_delete_relationship)
+    if not deleted_rows:
+        raise HTTPException(status_code=404, detail="Relationship not found")
 
     refreshed_topic = await session.execute(
         select(Topic)
@@ -148,7 +158,7 @@ async def search_topics(
     addable_to_todo: int | None = None,
     query: str | None = None,
     limit: int = 10,
-) -> list[TopicRead]:
+) -> list[TopicReadWithRelationshipsAndTodos]:
     cleaned_query = query.strip() if query else ""
     stmt = select(Topic).where(Topic.user_id == user_id)
 
@@ -192,6 +202,11 @@ async def search_topics(
 
     limit = max(1, min(limit, 50))
     stmt = stmt.limit(limit)
+    stmt = stmt.options(
+        selectinload(Topic.parents),
+        selectinload(Topic.children),
+        selectinload(Topic.todos),
+    )
 
     result = await session.execute(stmt)
     return result.scalars().all()
@@ -229,9 +244,13 @@ async def read_topic(
 ) -> TopicReadWithRelationshipsAndTodos:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children), selectinload(Topic.todos))
-
     result = await session.execute(stmt)
-    return result.scalars().all()
+
+    topic = result.scalar_one_or_none()
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    return topic 
 
 
 @router.post("/topics/", tags=["topics"])
@@ -318,7 +337,7 @@ async def read_todos_for_topic(
     topic_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> list[TodoWithTopics]:
+) -> list[TodoReadWithTopics]:
     stmt = select(Todo).where(Todo.topics.any(Topic.id == topic_id), Todo.user_id == user_id)
     stmt = stmt.options(selectinload(Todo.topics))
     result = await session.execute(stmt)
@@ -443,7 +462,11 @@ async def delete_topic(
     session: SessionDep,
     user_id: UserIdDep
 ):
-    stmt = delete(Topic).where(Topic.id == topic_id).returning(Topic)
+    stmt = (
+        delete(Topic)
+        .where(Topic.id == topic_id, Topic.user_id == user_id)
+        .returning(Topic)
+    )
     result = await session.execute(stmt)
     deleted_topic = result.scalar_one_or_none()
 

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from app.dependencies import UserIdDep, SessionDep
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, func
 from sqlalchemy.orm import selectinload
 from app.models import Todo, Topic, t_todos_topics
-from app.schemas import TodoCreate, TodoRead, TodoUpdate, TopicIdPayload, TopicRead
+from app.schemas import TodoCreate, TodoRead, TodoUpdate, TopicIdPayload, TopicRead, TodoReadWithTopics
 
 router = APIRouter()
 
@@ -12,15 +12,21 @@ router = APIRouter()
 async def read_todos(
     session: SessionDep,
     user_id: UserIdDep,
-) -> list[TodoRead]:
+    topic_id: int | None = None,
+) -> list[TodoReadWithTopics]:
     stmt = (
         select(Todo)
         .where(Todo.user_id == user_id)
         .order_by(Todo.completed_at.asc().nulls_first(), Todo.scheduled_at.asc())
         .options(selectinload(Todo.topics))
     )
+
+    if topic_id is not None:
+        stmt = stmt.where(Todo.topics.any(Topic.id == topic_id))
+
     result = await session.execute(stmt)
-    return result.scalars().all()
+    ret = result.scalars().all()
+    return ret
 
 
 @router.post("/todos/", tags=["todos"])
@@ -37,7 +43,7 @@ async def create_todo(
     )
     session.add(new_todo)
     await session.flush()
-    await session.refresh(new_todo, ["topics"])
+    await session.refresh(new_todo)
     return new_todo
 
 
@@ -117,7 +123,7 @@ async def add_topic(
 
     todo.topics.append(topic)
     await session.flush()
-    await session.refresh(todo, ["topics"])
+    await session.refresh(todo)
     return todo
 
 
@@ -160,13 +166,17 @@ async def remove_topic(
         )
     )
     await session.flush()
-    await session.refresh(todo, ["topics"])
+    await session.refresh(todo)
     return todo
 
 
 @router.delete("/todos/{todo_id}", tags=["todos"])
 async def delete_todo(todo_id: int, session: SessionDep, user_id: UserIdDep):
-    stmt = delete(Todo).where(Todo.id == todo_id).returning(Todo)
+    stmt = (
+        delete(Todo)
+        .where(Todo.id == todo_id, Todo.user_id == user_id)
+        .returning(Todo)
+    )
     result = await session.execute(stmt)
     deleted_todo = result.scalar_one_or_none()
 
