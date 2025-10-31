@@ -1,5 +1,4 @@
 import { LogOut, Monitor, Moon, Sun } from 'lucide-react'
-import { useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	Dialog,
@@ -8,7 +7,6 @@ import {
 	DialogTitle
 } from '~/components/ui/Dialog'
 import { useTheme } from '~/stores/ThemeContext'
-import { apiFetch } from '~/utils/apiFetch'
 
 const THEME_OPTIONS = [
 	{ value: 'light', label: 'Light', icon: Sun },
@@ -23,19 +21,9 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 	const { theme, setTheme } = useTheme()
-	const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-	const handleLogout = async () => {
-		setIsLoggingOut(true)
-		try {
-			await apiFetch(`${import.meta.env.VITE_API_URL}/logout`, {
-				method: 'GET'
-			})
-		} catch {
-			// Error handling is done by apiFetch redirect behavior
-		} finally {
-			setIsLoggingOut(false)
-		}
+	const handleLogout = () => {
+		window.location.href = `${import.meta.env.VITE_API_URL}/logout`
 	}
 
 	return (
@@ -68,11 +56,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
 					<div className='flex items-start justify-between border-t pt-6'>
 						<div className='font-medium text-sm'>Log out</div>
-						<Button
-							disabled={isLoggingOut}
-							onClick={handleLogout}
-							variant='outline'
-						>
+						<Button onClick={handleLogout} variant='outline'>
 							<LogOut className='mr-2 h-4 w-4' />
 							Log out
 						</Button>
