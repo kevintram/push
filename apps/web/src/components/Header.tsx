@@ -22,7 +22,7 @@ export function Header() {
 
 	return (
 		<>
-			<header className='relative top-0 flex w-full flex-row items-center justify-start px-2 py-2'>
+			<header className='relative top-0 flex w-full flex-row items-center justify-start py-2'>
 				<SidebarTrigger />
 				<div className='-translate-x-1/2 relative left-1/2'>
 					<Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
