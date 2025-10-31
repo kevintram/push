@@ -32,7 +32,9 @@ import { Button } from "../components/ui/button";
     if (button) {
       button.addEventListener("click", () => {
         confetti();
-        window.location.href = import.meta.env.PUBLIC_APP_URL
+        setTimeout(() => {
+          window.location.href = import.meta.env.PUBLIC_APP_URL
+        }, 1000);
       });
     }
   </script>
