@@ -15,7 +15,14 @@ async function fetchInboxTopics(): Promise<Array<Topic>> {
 	}
 
 	const data = await response.json()
-	return v.parse(v.array(TopicSchema), data)
+	try {
+		return v.parse(v.array(TopicSchema), data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
 }
 
 export function useInboxTopics() {

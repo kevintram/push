@@ -27,7 +27,14 @@ async function updateTopic(input: UpdateTopicInput) {
 		throw new Error(`API request failed: ${response.status}`)
 	}
 	const data = await response.json()
-	return v.parse(TopicSchema, data)
+	try {
+		return v.parse(TopicSchema, data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
 }
 
 export function useMoveFromInbox() {

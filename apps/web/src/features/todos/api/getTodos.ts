@@ -24,5 +24,12 @@ export async function getTodos(filters?: GetTodosFilters) {
 	}
 
 	const data = await response.json()
-	return v.parse(v.array(TodoSchema), data)
+	try {
+		return v.parse(v.array(TodoSchema), data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
 }

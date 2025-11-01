@@ -20,7 +20,14 @@ async function getTopics(params: GetTopicsParams) {
 			}
 
 			const data = await response.json()
-			return v.parse(TopicSchema, data)
+			try {
+				return v.parse(TopicSchema, data)
+			} catch (error) {
+				if (v.isValiError(error)) {
+					throw new Error(`Validation failed: ${error.message}`)
+				}
+				throw error
+			}
 		})
 	)
 
