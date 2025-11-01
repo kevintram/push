@@ -72,7 +72,14 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 async function fetchTodos(): Promise<Array<Todo>> {
 	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/todos/`)
 	const data = await response.json()
-	return v.parse(v.array(TodoSchema), data)
+	try {
+		return v.parse(v.array(TodoSchema), data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
 }
 
 type CreateTodoInput = {
@@ -93,7 +100,14 @@ async function createTodo(input: CreateTodoInput): Promise<Todo> {
 		})
 	})
 	const data = await response.json()
-	return v.parse(TodoSchema, data)
+	try {
+		return v.parse(TodoSchema, data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
 }
 
 export function useSectionedTodos() {

@@ -32,7 +32,8 @@ async function createTopic(input: CreateTopicInput = {}): Promise<Topic> {
 	try {
 		return v.parse(TopicSchema, data)
 	} catch (error) {
-		if (error instanceof v.ValiError) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
 		}
 		throw error
 	}

@@ -25,5 +25,12 @@ export async function updateTodo(input: UpdateTodoInput): Promise<Todo> {
 		}
 	)
 	const data = await response.json()
-	return v.parse(TodoSchema, data)
+	try {
+		return v.parse(TodoSchema, data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
 }

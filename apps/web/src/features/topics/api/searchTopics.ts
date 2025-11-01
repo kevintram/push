@@ -50,9 +50,11 @@ export async function searchTopics(
 
 	const data = await response.json()
 	try {
-		const parsed = v.parse(TopicSearchResponseSchema, data)
-		return parsed
-	} catch (_error) {
-		return []
+		return v.parse(TopicSearchResponseSchema, data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
 	}
 }

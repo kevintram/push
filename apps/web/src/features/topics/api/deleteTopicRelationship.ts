@@ -27,7 +27,14 @@ export async function deleteChildRelationship(
 	}
 
 	const data = await response.json()
-	return v.parse(TopicSchema, data)
+	try {
+		return v.parse(TopicSchema, data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
 }
 
 export async function deleteParentRelationship(
@@ -45,5 +52,12 @@ export async function deleteParentRelationship(
 	}
 
 	const data = await response.json()
-	return v.parse(TopicSchema, data)
+	try {
+		return v.parse(TopicSchema, data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
 }
