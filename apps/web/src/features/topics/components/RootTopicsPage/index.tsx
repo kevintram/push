@@ -8,6 +8,7 @@ import { useRootTopics } from '~/features/topics/api/useRootTopics'
 import type { Topic } from '~/models/todo-topic.types'
 import { TopicCard } from '../TopicCard'
 import type { RenderedFilter } from './FilterBadges'
+import { RootTopicsPageSkeleton } from './RootTopicsPageSkeleton'
 import { TopicsPageHeader } from './TopicsPageHeader'
 import { TopicsPageLayout } from './TopicsPageLayout'
 
@@ -186,11 +187,7 @@ export function RootTopicsPage() {
 				renderedFilters={renderedFilters}
 			/>
 
-			{isLoading && (
-				<div className='px-6 pt-2'>
-					<p className='text-muted-foreground'>Loading topics...</p>
-				</div>
-			)}
+			{isLoading && <RootTopicsPageSkeleton />}
 
 			{!isLoading && topics.length === 0 && (
 				<div className='px-6 pt-2'>
