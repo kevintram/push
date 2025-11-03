@@ -1,50 +1,32 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Maximize2, X } from 'lucide-react'
-import { use, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
-import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import type { Topic } from '~/models/todo-topic.types'
 import { TopicDetail } from './TopicDetail/TopicDetail'
 
 interface TopicDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
+	topicId: number | undefined
 }
 
-export function TopicDialog({ open, onOpenChange }: TopicDialogProps) {
+export function TopicDialog({ open, onOpenChange, topicId }: TopicDialogProps) {
 	const navigate = useNavigate()
-	const { topic: contextTopic } = use(TopicContext)
-
-	// Track the current topic being viewed in the dialog
-	const [currentTopicId, setCurrentTopicId] = useState<number | undefined>(
-		contextTopic?.id
-	)
-
-	// Update current topic when context topic changes
-	useEffect(() => {
-		if (contextTopic?.id) {
-			setCurrentTopicId(contextTopic.id)
-		}
-	}, [contextTopic?.id])
 
 	const handleDelete = useCallback(() => {
 		onOpenChange(false)
 	}, [onOpenChange])
 
-	const handleTopicChange = useCallback((topic: Topic) => {
-		setCurrentTopicId(topic.id)
-	}, [])
-
 	const handleNavigate = useCallback(() => {
-		if (currentTopicId) {
+		if (topicId) {
 			navigate({
 				to: '/topics/{-$topicId}',
-				params: { topicId: currentTopicId.toString() }
+				params: { topicId: topicId.toString() }
 			})
 			onOpenChange(false)
 		}
-	}, [currentTopicId, navigate, onOpenChange])
+	}, [topicId, navigate, onOpenChange])
 
 	const headerActions = useMemo(
 		() => (
@@ -71,7 +53,7 @@ export function TopicDialog({ open, onOpenChange }: TopicDialogProps) {
 		[handleNavigate, onOpenChange]
 	)
 
-	if (!contextTopic) {
+	if (!topicId) {
 		return null
 	}
 
@@ -84,8 +66,7 @@ export function TopicDialog({ open, onOpenChange }: TopicDialogProps) {
 				<TopicDetail
 					headerActions={headerActions}
 					onDelete={handleDelete}
-					onTopicChange={handleTopicChange}
-					topicId={currentTopicId}
+					topicId={topicId}
 				/>
 			</DialogContent>
 		</Dialog>

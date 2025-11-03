@@ -1,7 +1,5 @@
 import { createContext, use, useCallback, useMemo, useState } from 'react'
 import { TopicDialog } from '../components/TopicDialog'
-import { useTopicWithRelationships } from '../hooks/useTopicWithRelationships'
-import { TopicContext } from './SelectedTopicContext'
 
 interface TopicDialogContextValue {
 	openTopicDialog: (topicId: number) => void
@@ -18,16 +16,14 @@ export function TopicDialogProvider({
 	const [isOpen, setIsOpen] = useState(false)
 	const [selectedTopicId, setSelectedTopicId] = useState<number | undefined>()
 
-	// Fetch the full topic with relationships
-	const { topic } = useTopicWithRelationships(selectedTopicId)
-
 	const openTopicDialog = useCallback((topicId: number) => {
-		setSelectedTopicId(topicId)
 		setIsOpen(true)
+		setSelectedTopicId(topicId)
 	}, [])
 
 	const closeTopicDialog = useCallback(() => {
 		setIsOpen(false)
+		setSelectedTopicId(undefined)
 	}, [])
 
 	const contextValue = useMemo(
@@ -35,20 +31,14 @@ export function TopicDialogProvider({
 		[openTopicDialog, closeTopicDialog]
 	)
 
-	const topicContextValue = useMemo(
-		() => ({
-			topic,
-			onTopicChange: (topic: { id: number }) => openTopicDialog(topic.id)
-		}),
-		[topic, openTopicDialog]
-	)
-
 	return (
 		<TopicDialogContext value={contextValue}>
 			{children}
-			<TopicContext value={topicContextValue}>
-				<TopicDialog onOpenChange={setIsOpen} open={isOpen} />
-			</TopicContext>
+			<TopicDialog
+				onOpenChange={setIsOpen}
+				open={isOpen}
+				topicId={selectedTopicId}
+			/>
 		</TopicDialogContext>
 	)
 }
