@@ -3,7 +3,7 @@ import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { addTopicToTodo, type Todo } from '~/features/todos/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
-import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
+import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
 
 interface AddTopicToTodoDialogProps {
@@ -82,7 +82,7 @@ export function AddTopicToTodoDialog({
 
 	const useSearch = useCallback(
 		(query: string) => {
-			// Update search query when CreateTopicDialog's input changes
+			// Update search query when SearchOrCreateTopicDialog's input changes
 			useEffect(() => {
 				setSearchQuery(query)
 			}, [query])
@@ -97,7 +97,7 @@ export function AddTopicToTodoDialog({
 	)
 
 	return (
-		<CreateTopicDialog
+		<SearchOrCreateTopicDialog
 			onOpenChange={onOpenChange}
 			onTopicCreated={handleTopicCreatedOrSelected}
 			open={open}

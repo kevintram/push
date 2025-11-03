@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
+import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
 import { useCreateRelationship } from '../../hooks/useCreateRelationship'
 import { useDebouncedPotentialTopics } from '../../hooks/useDebouncedPotentialTopics'
@@ -70,7 +70,7 @@ export function AddRelationshipDialog({
 
 	const useSearch = useCallback(
 		(query: string) => {
-			// Update search query when CreateTopicDialog's input changes
+			// Update search query when SearchOrCreateTopicDialog's input changes
 			useEffect(() => {
 				setSearchQuery(query)
 			}, [query])
@@ -88,7 +88,7 @@ export function AddRelationshipDialog({
 		relationshipType === 'child' ? 'Add Child Topic' : 'Add Parent Topic'
 
 	return (
-		<CreateTopicDialog
+		<SearchOrCreateTopicDialog
 			onOpenChange={onOpenChange}
 			onTopicCreated={handleTopicCreatedOrSelected}
 			open={open}
