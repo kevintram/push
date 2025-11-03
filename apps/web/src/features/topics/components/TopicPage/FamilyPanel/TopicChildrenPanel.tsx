@@ -4,6 +4,7 @@ import { MasonryLayout } from '~/components/MasonryLayout'
 import { Card, CardContent } from '~/components/ui/Card'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
+import { useTopicChildren } from '~/features/topics/hooks/useTopicChildren'
 import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/todo-topic.types'
@@ -28,7 +29,7 @@ export function TopicChildrenPanel({
 	const { topic: selectedTopic } = use(TopicContext)
 	const { openTopicDialog } = useTopicDialog()
 
-	const children = selectedTopic?.children || []
+	const { data: children = [] } = useTopicChildren(selectedTopic?.id)
 
 	const createRelationship = useCreateRelationship()
 
