@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import { Archive, Inbox, Plus, SquareLibrary } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
@@ -27,7 +26,6 @@ type FilterBadge = {
 
 export function RootTopicsPage() {
 	const [activeFilter, setActiveFilter] = useState<FilterId | null>(null)
-	const navigate = useNavigate()
 	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -133,12 +131,10 @@ export function RootTopicsPage() {
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
-			navigate({
-				to: '/topics/{-$topicId}',
-				params: { topicId: topic.id.toString() }
-			})
+			setSelectedTopic(topic)
+			setIsDialogOpen(true)
 		},
-		[navigate]
+		[]
 	)
 
 	const estimateItemSize = useCallback((topic: Topic) => {
