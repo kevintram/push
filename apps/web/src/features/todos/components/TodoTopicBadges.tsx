@@ -8,7 +8,11 @@ import { TopicBadge } from '~/features/topics/components/TopicBadge'
 interface TodoTopicBadgesProps {
 	todo: Todo
 	onRemoveTopicFromTodo: (todoId: number, topicId: number) => Promise<void>
-	onTopicClick?: (topicId: number, name?: string | null, notes?: string | null) => void
+	onTopicClick?: (
+		topicId: number,
+		name?: string | null,
+		notes?: string | null
+	) => void
 }
 
 export function TodoTopicBadges({

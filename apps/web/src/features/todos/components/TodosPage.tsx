@@ -124,23 +124,23 @@ export function TodosPage() {
 
 	const renderedFilters: Array<RenderedFilter> = hasActiveFilters
 		? [
-			...activeFilters.map(filter => ({
-				key: filter.id,
-				type: 'filter' as const,
-				filter
-			})),
-			{ key: 'clear', type: 'clear' as const },
-			...inactiveFilters.map(filter => ({
+				...activeFilters.map(filter => ({
+					key: filter.id,
+					type: 'filter' as const,
+					filter
+				})),
+				{ key: 'clear', type: 'clear' as const },
+				...inactiveFilters.map(filter => ({
+					key: filter.id,
+					type: 'filter' as const,
+					filter
+				}))
+			]
+		: filters.map(filter => ({
 				key: filter.id,
 				type: 'filter' as const,
 				filter
 			}))
-		]
-		: filters.map(filter => ({
-			key: filter.id,
-			type: 'filter' as const,
-			filter
-		}))
 
 	const filteredSections = useMemo(() => {
 		let sectionsToShow = sections
@@ -169,22 +169,25 @@ export function TodosPage() {
 		setActiveSections([])
 	}, [])
 
-	const handleTopicClick = useCallback((topicId: number, name?: string | null, notes?: string | null) => {
-		// Create a minimal Topic object - TopicDetail will fetch the full topic
-		const minimalTopic: Topic = {
-			id: topicId,
-			name: name || '',
-			notes: notes || '',
-			inserted_at: '',
-			updated_at: '',
-			stability: 0,
-			retrievability: 0,
-			archived: false,
-			inboxed: false
-		}
-		setSelectedTopic(minimalTopic)
-		setIsDialogOpen(true)
-	}, [])
+	const handleTopicClick = useCallback(
+		(topicId: number, name?: string | null, notes?: string | null) => {
+			// Create a minimal Topic object - TopicDetail will fetch the full topic
+			const minimalTopic: Topic = {
+				id: topicId,
+				name: name || '',
+				notes: notes || '',
+				inserted_at: '',
+				updated_at: '',
+				stability: 0,
+				retrievability: 0,
+				archived: false,
+				inboxed: false
+			}
+			setSelectedTopic(minimalTopic)
+			setIsDialogOpen(true)
+		},
+		[]
+	)
 
 	const handleTopicChange = useCallback((topic: Topic) => {
 		setSelectedTopic(topic)

@@ -21,10 +21,18 @@ import { TodoTopicBadges } from './TodoTopicBadges'
 interface TodoItemProps {
 	entry: Todo
 	isCompleted?: boolean
-	onTopicClick?: (topicId: number, name?: string | null, notes?: string | null) => void
+	onTopicClick?: (
+		topicId: number,
+		name?: string | null,
+		notes?: string | null
+	) => void
 }
 
-export function TodoItem({ entry, isCompleted = false, onTopicClick }: TodoItemProps) {
+export function TodoItem({
+	entry,
+	isCompleted = false,
+	onTopicClick
+}: TodoItemProps) {
 	const queryClient = useQueryClient()
 
 	const dateValue = (() => {
@@ -38,10 +46,10 @@ export function TodoItem({ entry, isCompleted = false, onTopicClick }: TodoItemP
 	})()
 	const dateLabel = dateValue
 		? dayjs(dateValue).toDate().toLocaleDateString('en-US', {
-			weekday: 'short',
-			month: 'short',
-			day: 'numeric'
-		})
+				weekday: 'short',
+				month: 'short',
+				day: 'numeric'
+			})
 		: ''
 
 	const isOverdueValue = useMemo(

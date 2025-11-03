@@ -3,9 +3,9 @@ import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { addTopicToTodo, type Todo } from '~/features/todos/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
+import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
 import { TopicDialog } from '~/features/topics/components/TopicDialog'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
 
 interface AddTopicToTodoDialogProps {

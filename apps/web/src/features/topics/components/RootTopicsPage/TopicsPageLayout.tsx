@@ -3,7 +3,7 @@ import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/todo-topic.types'
 
 type TopicContextValue = {
-	topic?: Topic
+	topic: Topic | undefined
 	onTopicChange: (topic: Topic) => void
 }
 
@@ -36,4 +36,3 @@ export function TopicsPageLayout({
 		</div>
 	)
 }
-

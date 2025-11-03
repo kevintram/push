@@ -82,24 +82,23 @@ export function RootTopicsPage() {
 
 	const renderedFilters: Array<RenderedFilter> = hasActiveFilter
 		? [
-			{
-				key: activeFilterBadge.id,
-				type: 'filter' as const,
-				filter: activeFilterBadge
-			},
-			{ key: 'clear', type: 'clear' as const },
-			...inactiveFilterBadges.map(filter => ({
+				{
+					key: activeFilterBadge.id,
+					type: 'filter' as const,
+					filter: activeFilterBadge
+				},
+				{ key: 'clear', type: 'clear' as const },
+				...inactiveFilterBadges.map(filter => ({
+					key: filter.id,
+					type: 'filter' as const,
+					filter
+				}))
+			]
+		: filters.map(filter => ({
 				key: filter.id,
 				type: 'filter' as const,
 				filter
 			}))
-		]
-		: filters.map(filter => ({
-			key: filter.id,
-			type: 'filter' as const,
-			filter
-		}))
-
 
 	const handleCreateTopic = useCallback(async () => {
 		const newTopic = await createTopicAsync({
@@ -129,13 +128,10 @@ export function RootTopicsPage() {
 		[selectedTopic, handleTopicChange]
 	)
 
-	const handleTopicClick = useCallback(
-		(topic: Topic) => {
-			setSelectedTopic(topic)
-			setIsDialogOpen(true)
-		},
-		[]
-	)
+	const handleTopicClick = useCallback((topic: Topic) => {
+		setSelectedTopic(topic)
+		setIsDialogOpen(true)
+	}, [])
 
 	const estimateItemSize = useCallback((topic: Topic) => {
 		const baseHeight = 80

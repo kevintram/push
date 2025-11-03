@@ -21,7 +21,10 @@ type FilterBadgesProps = {
 	onClearFilters: () => void
 }
 
-export function FilterBadges({ renderedFilters, onClearFilters }: FilterBadgesProps) {
+export function FilterBadges({
+	renderedFilters,
+	onClearFilters
+}: FilterBadgesProps) {
 	return (
 		<motion.div
 			className='flex flex-wrap items-center gap-2'
@@ -72,4 +75,3 @@ export function FilterBadges({ renderedFilters, onClearFilters }: FilterBadgesPr
 		</motion.div>
 	)
 }
-

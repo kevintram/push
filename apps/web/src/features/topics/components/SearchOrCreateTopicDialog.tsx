@@ -61,9 +61,9 @@ export function SearchOrCreateTopicDialog({
 	const open = isControlled ? controlledOpen : uncontrolledOpen
 	const setOpen = isControlled
 		? controlledOnOpenChange ||
-		(() => {
-			// No-op function for controlled mode without onChange handler
-		})
+			(() => {
+				// No-op function for controlled mode without onChange handler
+			})
 		: setUncontrolledOpen
 
 	// Use custom search hook if provided, otherwise use default useGlobalSearch
@@ -157,7 +157,6 @@ export function SearchOrCreateTopicDialog({
 			// Error handling could be added here if needed
 		}
 	}, [searchQuery, topicDefaults, createTopicAsync, onTopicCreated, setOpen])
-
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (!searchResults.hasQuery || searchResults.results.length === 0) return
