@@ -250,7 +250,49 @@ async def read_topic(
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
 
-    return topic 
+    return topic
+
+
+@router.get("/topics/{topic_id}/parents/", tags=["topics"])
+async def read_topic_parents(
+    session: SessionDep,
+    user_id: UserIdDep,
+    topic_id: int
+) -> list[TopicReadWithRelationshipsAndTodos]:
+    stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    stmt = stmt.options(
+        selectinload(Topic.parents).selectinload(Topic.parents),
+        selectinload(Topic.parents).selectinload(Topic.children),
+        selectinload(Topic.parents).selectinload(Topic.todos)
+    )
+    result = await session.execute(stmt)
+    topic = result.scalar_one_or_none()
+
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    return topic.parents
+
+
+@router.get("/topics/{topic_id}/children/", tags=["topics"])
+async def read_topic_children(
+    session: SessionDep,
+    user_id: UserIdDep,
+    topic_id: int
+) -> list[TopicReadWithRelationshipsAndTodos]:
+    stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    stmt = stmt.options(
+        selectinload(Topic.children).selectinload(Topic.parents),
+        selectinload(Topic.children).selectinload(Topic.children),
+        selectinload(Topic.children).selectinload(Topic.todos)
+    )
+    result = await session.execute(stmt)
+    topic = result.scalar_one_or_none()
+
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    return topic.children 
 
 
 @router.post("/topics/", tags=["topics"])

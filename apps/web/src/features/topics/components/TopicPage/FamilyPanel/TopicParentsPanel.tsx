@@ -2,6 +2,7 @@ import { Plus, User2 } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
+import { useTopicParents } from '~/features/topics/hooks/useTopicParents'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { TopicBadge } from '../../TopicBadge'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
@@ -9,6 +10,8 @@ import { AddRelationshipDialog } from '../AddRelationshipDialog'
 export function TopicParentsPanel() {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
+
+	const { data: parents = [] } = useTopicParents(selectedTopic?.id)
 
 	const deleteRelationship = useDeleteRelationship()
 
@@ -22,10 +25,10 @@ export function TopicParentsPanel() {
 				<div className='flex items-center gap-2'>
 					<User2 className='h-4 w-4' />
 					<span className='font-medium text-muted-foreground text-xs'>
-						Parents ({selectedTopic?.parents?.length || 0})
+						Parents ({parents.length})
 					</span>
 				</div>
-				{selectedTopic?.parents?.map(parent => (
+				{parents.map(parent => (
 					<TopicBadge
 						key={parent.id}
 						name={parent.name}
