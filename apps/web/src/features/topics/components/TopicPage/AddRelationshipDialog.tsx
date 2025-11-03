@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
-import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
+import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
 import { useCreateRelationship } from '../../hooks/useCreateRelationship'
 import { useDebouncedPotentialTopics } from '../../hooks/useDebouncedPotentialTopics'

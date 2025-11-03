@@ -3,8 +3,8 @@ import type { Topic } from '~/models/todo-topic.types'
 
 export const TopicContext = createContext<{
 	topic: Topic | undefined
-	onTopicChange?: (topic: Topic) => void
+	isLoading: boolean
 }>({
 	topic: undefined,
-	onTopicChange: undefined
+	isLoading: false
 })

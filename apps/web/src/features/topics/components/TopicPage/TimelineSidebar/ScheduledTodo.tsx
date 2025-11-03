@@ -12,7 +12,7 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { DatePickerDropdown } from '~/features/todos/components/DatePickerDropdown'
 import { TodoTopicBadges } from '~/features/todos/components/TodoTopicBadges'
-import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
+import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { numDaysElapsed } from '../../../utils/daysElapsed'

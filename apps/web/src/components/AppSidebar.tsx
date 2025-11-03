@@ -22,7 +22,7 @@ import {
 	SidebarMenuItem
 } from '~/components/ui/Sidebar'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
-import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
+import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 
 export function AppSidebar() {
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =

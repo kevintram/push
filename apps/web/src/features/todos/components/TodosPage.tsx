@@ -3,7 +3,7 @@ import { Check, Logs, Plus, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
-import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
+import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import { useSectionedTodos } from '../api'
 import { TodoItem } from './TodoItem'
 
