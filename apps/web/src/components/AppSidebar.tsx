@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Inbox,
@@ -8,7 +8,7 @@ import {
 	SquareLibrary,
 	SquarePen
 } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { SettingsDialog } from '~/components/SettingsDialog'
 import {
@@ -22,20 +22,41 @@ import {
 	SidebarMenuItem
 } from '~/components/ui/Sidebar'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
+import { TopicDialog } from '~/features/topics/components/TopicDialog'
+import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
+import type { Topic } from '~/models/todo-topic.types'
 
 export function AppSidebar() {
-	const navigate = useNavigate()
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
+	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-	const handleCreateTopic = async () => {
+	const handleDialogOpenChange = useCallback((open: boolean) => {
+		setIsDialogOpen(open)
+		if (!open) {
+			setSelectedTopic(null)
+		}
+	}, [])
+
+	const handleTopicChange = useCallback((topic: Topic) => {
+		setSelectedTopic(topic)
+	}, [])
+
+	const handleCreateTopic = useCallback(async () => {
 		const createdTopic = await insertTopic({})
-		await navigate({
-			to: '/topics/{-$topicId}',
-			params: { topicId: createdTopic.id.toString() }
-		})
-	}
+		setSelectedTopic(createdTopic)
+		setIsDialogOpen(true)
+	}, [insertTopic])
+
+	const contextValue = useMemo(
+		() => ({
+			topic: selectedTopic ?? undefined,
+			onTopicChange: handleTopicChange
+		}),
+		[selectedTopic, handleTopicChange]
+	)
 
 	const menuItems = [
 		{
@@ -125,6 +146,12 @@ export function AppSidebar() {
 				onOpenChange={setIsSettingsDialogOpen}
 				open={isSettingsDialogOpen}
 			/>
+			<TopicContext value={contextValue}>
+				<TopicDialog
+					onOpenChange={handleDialogOpenChange}
+					open={isDialogOpen}
+				/>
+			</TopicContext>
 		</Sidebar>
 	)
 }
