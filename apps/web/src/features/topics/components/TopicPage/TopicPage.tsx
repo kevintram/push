@@ -1,13 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { SidebarTrigger } from '~/components/ui/Sidebar'
-import type { Topic } from '~/models/todo-topic.types'
-import { useTopicDialog } from '../../stores/TopicDialogContext'
+import { useTopicWithRelationships } from '../../hooks/useTopicWithRelationships'
+import { TopicContext } from '../../stores/SelectedTopicContext'
 import { TopicDetail } from '../TopicDetail/TopicDetail'
 
 export function TopicPage({ topicId }: { topicId: number | undefined }) {
 	const navigate = useNavigate()
-	const { openTopicDialog } = useTopicDialog()
+	const { topic, isLoading } = useTopicWithRelationships(topicId)
 
 	const handleDelete = useCallback(() => {
 		navigate({
@@ -16,19 +16,17 @@ export function TopicPage({ topicId }: { topicId: number | undefined }) {
 		})
 	}, [navigate])
 
-	const handleTopicDialogOpen = useCallback(
-		(topic: Topic) => {
-			openTopicDialog(topic.id)
-		},
-		[openTopicDialog]
+	const contextValue = useMemo(
+		() => ({
+			topic,
+			isLoading
+		}),
+		[topic, isLoading]
 	)
 
 	return (
-		<TopicDetail
-			headerActions={<SidebarTrigger />}
-			onDelete={handleDelete}
-			onTopicChange={handleTopicDialogOpen}
-			topicId={topicId}
-		/>
+		<TopicContext value={contextValue}>
+			<TopicDetail headerActions={<SidebarTrigger />} onDelete={handleDelete} />
+		</TopicContext>
 	)
 }

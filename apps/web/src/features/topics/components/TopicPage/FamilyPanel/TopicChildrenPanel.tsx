@@ -5,6 +5,7 @@ import { Card, CardContent } from '~/components/ui/Card'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { useTopicChildren } from '~/features/topics/hooks/useTopicChildren'
+import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/todo-topic.types'
 import { TopicCard } from '../../TopicCard'
@@ -25,7 +26,8 @@ export function TopicChildrenPanel({
 	scrollMargin
 }: TopicChildrenPanelProps = {}) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
-	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
+	const { topic: selectedTopic } = use(TopicContext)
+	const { openTopicDialog } = useTopicDialog()
 
 	const { data: children = [] } = useTopicChildren(selectedTopic?.id)
 
@@ -52,11 +54,9 @@ export function TopicChildrenPanel({
 
 	const handleChildClick = useCallback(
 		(child: Topic) => {
-			if (onTopicChange) {
-				onTopicChange(child)
-			}
+			openTopicDialog(child.id)
 		},
-		[onTopicChange]
+		[openTopicDialog]
 	)
 
 	// Combine add button and children into a single array

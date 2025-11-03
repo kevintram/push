@@ -5,7 +5,7 @@ import { AppSidebar } from '~/components/AppSidebar'
 import { Header } from '~/components/Header'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
-import { TopicDialogProvider } from '~/features/topics/stores/TopicDialogContext'
+import { TopicDialogProvider } from '~/features/topics/providers/TopicDialogProvider'
 
 function renderError({ error }: FallbackProps) {
 	return <LoadingOrError error={error} />

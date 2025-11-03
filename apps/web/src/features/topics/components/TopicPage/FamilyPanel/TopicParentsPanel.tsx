@@ -3,13 +3,15 @@ import { use, useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { useTopicParents } from '~/features/topics/hooks/useTopicParents'
+import { useTopicDialog } from '../../../hooks/useTopicDialog'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { TopicBadge } from '../../TopicBadge'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
 export function TopicParentsPanel() {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
-	const { topic: selectedTopic, onTopicChange } = use(TopicContext)
+	const { topic: selectedTopic } = use(TopicContext)
+	const { openTopicDialog } = useTopicDialog()
 
 	const { data: parents = [] } = useTopicParents(selectedTopic?.id)
 
@@ -33,7 +35,7 @@ export function TopicParentsPanel() {
 						key={parent.id}
 						name={parent.name}
 						notes={parent.notes}
-						onClick={onTopicChange ? () => onTopicChange(parent) : undefined}
+						onClick={() => openTopicDialog(parent.id)}
 						onRemove={() => {
 							if (!selectedTopic) return
 							deleteRelationship.mutate({
