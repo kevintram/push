@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { addTopicToTodo, type Todo } from '~/features/todos/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
-import { TopicDialog } from '~/features/topics/components/TopicDialog'
-import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
+import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
 import type { Topic } from '~/models/todo-topic.types'
 
 interface AddTopicToTodoDialogProps {
@@ -21,9 +20,8 @@ export function AddTopicToTodoDialog({
 }: AddTopicToTodoDialogProps) {
 	const [searchQuery, setSearchQuery] = useState('')
 	const [debouncedQuery, setDebouncedQuery] = useState('')
-	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
-	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const queryClient = useQueryClient()
+	const { openTopicDialog } = useTopicDialog()
 
 	// Debounced search query
 	const updateDebouncedQuery = useCallback(
@@ -79,13 +77,12 @@ export function AddTopicToTodoDialog({
 				})
 
 				// Open TopicDialog with newly created topic
-				setSelectedTopic(topic)
-				setIsDialogOpen(true)
+				openTopicDialog(topic.id)
 			} catch (_error) {
 				// Handle error silently for now
 			}
 		},
-		[todo, addTopicMutation]
+		[todo, addTopicMutation, openTopicDialog]
 	)
 
 	const handleTopicSelected = useCallback(
@@ -104,25 +101,6 @@ export function AddTopicToTodoDialog({
 		[todo, addTopicMutation]
 	)
 
-	const handleDialogOpenChange = useCallback((isOpen: boolean) => {
-		setIsDialogOpen(isOpen)
-		if (!isOpen) {
-			setSelectedTopic(null)
-		}
-	}, [])
-
-	const handleTopicChange = useCallback((topic: Topic) => {
-		setSelectedTopic(topic)
-	}, [])
-
-	const contextValue = useMemo(
-		() => ({
-			topic: selectedTopic ?? undefined,
-			onTopicChange: handleTopicChange
-		}),
-		[selectedTopic, handleTopicChange]
-	)
-
 	const useSearch = useCallback(
 		(_query: string) => {
 			return {
@@ -136,22 +114,14 @@ export function AddTopicToTodoDialog({
 	)
 
 	return (
-		<>
-			<SearchOrCreateTopicDialog
-				onOpenChange={onOpenChange}
-				onSearchQueryChange={setSearchQuery}
-				onTopicCreated={handleTopicCreated}
-				onTopicSelected={handleTopicSelected}
-				open={open}
-				title='Add Topic to Todo'
-				useSearch={useSearch}
-			/>
-			<TopicContext value={contextValue}>
-				<TopicDialog
-					onOpenChange={handleDialogOpenChange}
-					open={isDialogOpen}
-				/>
-			</TopicContext>
-		</>
+		<SearchOrCreateTopicDialog
+			onOpenChange={onOpenChange}
+			onSearchQueryChange={setSearchQuery}
+			onTopicCreated={handleTopicCreated}
+			onTopicSelected={handleTopicSelected}
+			open={open}
+			title='Add Topic to Todo'
+			useSearch={useSearch}
+		/>
 	)
 }

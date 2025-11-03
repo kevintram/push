@@ -3,9 +3,7 @@ import { Check, Logs, Plus, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
-import { TopicDialog } from '~/features/topics/components/TopicDialog'
-import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import type { Topic } from '~/models/todo-topic.types'
+import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
 import { useSectionedTodos } from '../api'
 import { TodoItem } from './TodoItem'
 
@@ -39,9 +37,8 @@ const FILTER_ORDER: Array<FilterId> = [
 
 export function TodosPage() {
 	const [activeSections, setActiveSections] = useState<Array<SectionKey>>([])
-	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
-	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const { sections, addTodoToSection } = useSectionedTodos()
+	const { openTopicDialog } = useTopicDialog()
 	const overdueSection = useMemo(
 		() => sections.find(section => section.id === 'overdue'),
 		[sections]
@@ -170,42 +167,10 @@ export function TodosPage() {
 	}, [])
 
 	const handleTopicClick = useCallback(
-		(topicId: number, name?: string | null, notes?: string | null) => {
-			// Create a minimal Topic object - TopicDetail will fetch the full topic
-			const minimalTopic: Topic = {
-				id: topicId,
-				name: name || '',
-				notes: notes || '',
-				inserted_at: '',
-				updated_at: '',
-				stability: 0,
-				retrievability: 0,
-				archived: false,
-				inboxed: false
-			}
-			setSelectedTopic(minimalTopic)
-			setIsDialogOpen(true)
+		(topicId: number) => {
+			openTopicDialog(topicId)
 		},
-		[]
-	)
-
-	const handleTopicChange = useCallback((topic: Topic) => {
-		setSelectedTopic(topic)
-	}, [])
-
-	const handleDialogOpenChange = useCallback((open: boolean) => {
-		setIsDialogOpen(open)
-		if (!open) {
-			setSelectedTopic(null)
-		}
-	}, [])
-
-	const contextValue = useMemo(
-		() => ({
-			topic: selectedTopic ?? undefined,
-			onTopicChange: handleTopicChange
-		}),
-		[selectedTopic, handleTopicChange]
+		[openTopicDialog]
 	)
 
 	return (
@@ -307,14 +272,6 @@ export function TodosPage() {
 						</div>
 					))}
 				</div>
-				{contextValue.topic && (
-					<TopicContext value={contextValue}>
-						<TopicDialog
-							onOpenChange={handleDialogOpenChange}
-							open={isDialogOpen}
-						/>
-					</TopicContext>
-				)}
 			</div>
 		</div>
 	)

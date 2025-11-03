@@ -4,6 +4,7 @@ import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 import { useRootTopics } from '~/features/topics/api/useRootTopics'
+import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
 import type { Topic } from '~/models/todo-topic.types'
 import { TopicCard } from '../TopicCard'
 import type { RenderedFilter } from './FilterBadges'
@@ -26,8 +27,7 @@ type FilterBadge = {
 
 export function RootTopicsPage() {
 	const [activeFilter, setActiveFilter] = useState<FilterId | null>(null)
-	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
-	const [isDialogOpen, setIsDialogOpen] = useState(false)
+	const { openTopicDialog } = useTopicDialog()
 
 	// Build query params based on active filter (mutually exclusive)
 	const queryParams = useMemo(() => {
@@ -105,33 +105,15 @@ export function RootTopicsPage() {
 			inboxed: false,
 			archived: false
 		})
-		setSelectedTopic(newTopic)
-		setIsDialogOpen(true)
-	}, [createTopicAsync])
+		openTopicDialog(newTopic.id)
+	}, [createTopicAsync, openTopicDialog])
 
-	const handleTopicChange = useCallback((topic: Topic) => {
-		setSelectedTopic(topic)
-	}, [])
-
-	const handleDialogOpenChange = useCallback((open: boolean) => {
-		setIsDialogOpen(open)
-		if (!open) {
-			setSelectedTopic(null)
-		}
-	}, [])
-
-	const contextValue = useMemo(
-		() => ({
-			topic: selectedTopic ?? undefined,
-			onTopicChange: handleTopicChange
-		}),
-		[selectedTopic, handleTopicChange]
+	const handleTopicClick = useCallback(
+		(topic: Topic) => {
+			openTopicDialog(topic.id)
+		},
+		[openTopicDialog]
 	)
-
-	const handleTopicClick = useCallback((topic: Topic) => {
-		setSelectedTopic(topic)
-		setIsDialogOpen(true)
-	}, [])
 
 	const estimateItemSize = useCallback((topic: Topic) => {
 		const baseHeight = 80
@@ -168,11 +150,7 @@ export function RootTopicsPage() {
 		: 'No root topics yet'
 
 	return (
-		<TopicsPageLayout
-			contextValue={contextValue}
-			isDialogOpen={isDialogOpen}
-			onDialogOpenChange={handleDialogOpenChange}
-		>
+		<TopicsPageLayout>
 			<TopicsPageHeader
 				onClearFilters={handleClearFilters}
 				onCreateTopic={handleCreateTopic}

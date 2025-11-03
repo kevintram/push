@@ -11,6 +11,7 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { DatePickerDropdown } from '~/features/todos/components/DatePickerDropdown'
 import { TodoTopicBadges } from '~/features/todos/components/TodoTopicBadges'
+import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { TodoWithTopics } from './TimelineDataContext'
@@ -22,6 +23,14 @@ interface UnscheduledTodoProps {
 
 export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 	const { updateTodo, deleteTodo, removeTopicFromTodo } = useTimelineData()
+	const { openTopicDialog } = useTopicDialog()
+
+	const handleTopicClick = useCallback(
+		(topicId: number) => {
+			openTopicDialog(topicId)
+		},
+		[openTopicDialog]
+	)
 
 	const handleToggleComplete = useCallback(
 		(checked: boolean) => {
@@ -105,6 +114,7 @@ export function UnscheduledTodo({ entry }: UnscheduledTodoProps) {
 					<div className='mt-1'>
 						<TodoTopicBadges
 							onRemoveTopicFromTodo={removeTopicFromTodo}
+							onTopicClick={handleTopicClick}
 							todo={entry}
 						/>
 					</div>
