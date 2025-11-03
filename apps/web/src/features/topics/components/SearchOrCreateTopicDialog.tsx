@@ -1,302 +1,317 @@
-import { FileText, PanelRightClose, PanelRightOpen } from 'lucide-react'
+import { Search, SquarePen, X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import { Card, CardContent } from '~/components/ui/Card'
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger
 } from '~/components/ui/Dialog'
-import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
+import { Input } from '~/components/ui/Input'
+import { useGlobalSearch } from '~/hooks/useGlobalSearch'
 import type { Topic } from '~/models/todo-topic.types'
-import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { useCreateTopic } from '../api/useCreateTopic'
-import { TopicComposerFields } from './TopicComposerFields'
+import { TopicCard } from './TopicCard'
 
 interface SearchResult {
-    results: Array<Topic>
-    isLoading: boolean
-    debouncedQuery: string
+	results: Array<Topic>
+	isLoading: boolean
+	debouncedQuery: string
+	hasQuery?: boolean
 }
 
 interface SearchOrCreateTopicDialogProps {
-    open?: boolean
-    onOpenChange?: (open: boolean) => void
-    trigger?: ReactNode
-    title: string
-    submitButtonText?: string
-    showSidebar?: boolean
-    topicDefaults?: Partial<Topic>
-    onTopicCreated?: (topic: Topic) => Promise<void> | void
-    useSearch?: (query: string) => SearchResult
-    sidebarTitle?: (debouncedQuery: string) => string
+	open?: boolean
+	onOpenChange?: (open: boolean) => void
+	trigger?: ReactNode
+	title: string
+	topicDefaults?: Partial<Topic>
+	onTopicCreated?: (topic: Topic) => Promise<void> | void
+	onTopicSelected?: (topic: Topic) => Promise<void> | void
+	useSearch?: (query: string) => SearchResult
+	defaultQuery?: string
+	onSearchQueryChange?: (query: string) => void
 }
+
+const MIN_CARD_WIDTH = 280
+const MIN_HEIGHT = 96
 
 export function SearchOrCreateTopicDialog({
-    open: controlledOpen,
-    onOpenChange: controlledOnOpenChange,
-    trigger,
-    title,
-    submitButtonText = 'Create Topic',
-    showSidebar = false,
-    topicDefaults = {},
-    onTopicCreated,
-    useSearch,
-    sidebarTitle = query => (query === '' ? 'Recent Topics' : 'Matching Topics')
+	open: controlledOpen,
+	onOpenChange: controlledOnOpenChange,
+	trigger,
+	title,
+	topicDefaults = {},
+	onTopicCreated,
+	onTopicSelected,
+	useSearch,
+	defaultQuery = '',
+	onSearchQueryChange
 }: SearchOrCreateTopicDialogProps) {
-    const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
-    const [name, setName] = useState('')
-    const [notes, setNotes] = useState('')
-    const [sidebarOpen, setSidebarOpen] = useState(true)
-    const [searchQuery, setSearchQuery] = useState('')
+	const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
+	const [searchQuery, setSearchQuery] = useState(defaultQuery)
+	const [selectedIndex, setSelectedIndex] = useState(0)
+	const inputRef = useRef<HTMLInputElement>(null)
 
-    const nameTextareaRef = useAutoResizeTextarea(name)
-    const notesTextareaRef = useAutoResizeTextarea(notes)
+	// Use controlled or uncontrolled state
+	const isControlled = controlledOpen !== undefined
+	const open = isControlled ? controlledOpen : uncontrolledOpen
+	const setOpen = isControlled
+		? controlledOnOpenChange ||
+		(() => {
+			// No-op function for controlled mode without onChange handler
+		})
+		: setUncontrolledOpen
 
-    // Use controlled or uncontrolled state
-    const isControlled = controlledOpen !== undefined
-    const open = isControlled ? controlledOpen : uncontrolledOpen
-    const setOpen = isControlled
-        ? controlledOnOpenChange || (() => { })
-        : setUncontrolledOpen
+	// Use custom search hook if provided, otherwise use default useGlobalSearch
+	const defaultSearchResults = useGlobalSearch(searchQuery, open && !useSearch)
 
-    // Search results (only if sidebar is enabled and search hook provided)
-    const searchResults = useSearch?.(searchQuery)
+	const customSearchResults = useSearch?.(searchQuery)
 
-    const canCreateTopic = Boolean(name.trim() || notes.trim())
+	const searchResults: SearchResult = useMemo(() => {
+		if (useSearch && customSearchResults) {
+			return customSearchResults
+		}
+		return {
+			results: defaultSearchResults.results,
+			isLoading: defaultSearchResults.isLoading,
+			debouncedQuery: defaultSearchResults.debouncedQuery,
+			hasQuery: defaultSearchResults.hasQuery
+		}
+	}, [
+		useSearch,
+		customSearchResults,
+		defaultSearchResults.results,
+		defaultSearchResults.isLoading,
+		defaultSearchResults.debouncedQuery,
+		defaultSearchResults.hasQuery
+	])
 
-    const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
-        useCreateTopic()
+	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
+		useCreateTopic()
 
-    // Focus notes input when dialog opens
-    useEffect(() => {
-        if (open) {
-            setTimeout(() => {
-                notesTextareaRef.current?.focus()
-            }, 0)
-        }
-    }, [open, notesTextareaRef])
+	// Focus search input when dialog opens
+	useEffect(() => {
+		if (open) {
+			setTimeout(() => {
+				inputRef.current?.focus()
+			}, 0)
+		} else {
+			setSelectedIndex(0)
+		}
+	}, [open])
 
-    // Reset state when dialog opens/closes
-    useEffect(() => {
-        if (open) {
-            setName('')
-            setNotes('')
-            setSearchQuery('')
-            setSidebarOpen(true)
-        }
-    }, [open])
+	// Reset search query when dialog opens/closes
+	useEffect(() => {
+		if (open) {
+			setSearchQuery(defaultQuery)
+		}
+	}, [open, defaultQuery])
 
-    // Sync form input with the search query
-    useEffect(() => {
-        if (showSidebar) {
-            const trimmedNotes = notes.trim()
-            const trimmedName = name.trim()
-            setSearchQuery(trimmedNotes || trimmedName)
-        }
-    }, [notes, name, showSidebar])
+	// Sync search query to parent when useSearch is provided
+	useEffect(() => {
+		if (useSearch && onSearchQueryChange) {
+			onSearchQueryChange(searchQuery)
+		}
+	}, [searchQuery, useSearch, onSearchQueryChange])
 
-    const handleTopicSelect = useCallback(
-        async (topic: Topic) => {
-            if (onTopicCreated) {
-                await onTopicCreated(topic)
-            }
-            setOpen(false)
-        },
-        [onTopicCreated, setOpen]
-    )
+	// Reset selected index when query changes
+	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally want this to run when searchQuery changes
+	useEffect(() => {
+		setSelectedIndex(0)
+	}, [searchQuery])
 
-    const handleCreateTopic = useCallback(async () => {
-        const trimmedName = name.trim()
-        const trimmedNotes = notes.trim()
+	const handleTopicSelect = useCallback(
+		async (topic: Topic) => {
+			// Call onTopicSelected callback
+			if (onTopicSelected) {
+				await onTopicSelected(topic)
+			}
 
-        if (!(trimmedName || trimmedNotes)) return
+			// Close the dialog
+			setOpen(false)
+		},
+		[onTopicSelected, setOpen]
+	)
 
-        try {
-            const newTopic = await insertTopic({
-                name: trimmedName || '',
-                notes: trimmedNotes || '',
-                ...topicDefaults
-            })
+	const handleCreateTopic = useCallback(async () => {
+		try {
+			const trimmedQuery = searchQuery.trim()
 
-            if (onTopicCreated) {
-                await onTopicCreated(newTopic)
-            }
+			const newTopic = await createTopicAsync({
+				notes: trimmedQuery || '',
+				...topicDefaults
+			})
 
-            setOpen(false)
-        } catch (_error) {
-            // Error handling could be added here if needed
-        }
-    }, [name, notes, topicDefaults, insertTopic, onTopicCreated, setOpen])
+			// Call onTopicCreated callback
+			if (onTopicCreated) {
+				await onTopicCreated(newTopic)
+			}
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        await handleCreateTopic()
-    }
+			// Close the dialog
+			setOpen(false)
+		} catch (_error) {
+			// Error handling could be added here if needed
+		}
+	}, [searchQuery, topicDefaults, createTopicAsync, onTopicCreated, setOpen])
 
-    const dialogContent = (
-        <DialogContent
-            className={
-                showSidebar
-                    ? '!max-w-[1100px] h-[600px] max-h-[90vh] w-[95vw] p-0'
-                    : 'p-0 sm:max-w-[600px]'
-            }
-            showCloseButton={!showSidebar}
-        >
-            <div
-                className={
-                    showSidebar ? 'flex h-full overflow-hidden' : 'flex flex-col'
-                }
-            >
-                <div
-                    className={
-                        showSidebar ? 'flex min-w-0 flex-[2] flex-col' : 'flex flex-col'
-                    }
-                >
-                    <DialogHeader className='flex-shrink-0 border-b px-6 pt-6 pb-4'>
-                        {showSidebar ? (
-                            <div className='flex items-center justify-between'>
-                                <DialogTitle>{title}</DialogTitle>
-                                <Button
-                                    onClick={() => setSidebarOpen(!sidebarOpen)}
-                                    size='icon'
-                                    variant='ghost'
-                                >
-                                    {sidebarOpen ? (
-                                        <PanelRightClose className='h-4 w-4' />
-                                    ) : (
-                                        <PanelRightOpen className='h-4 w-4' />
-                                    )}
-                                </Button>
-                            </div>
-                        ) : (
-                            <DialogTitle>{title}</DialogTitle>
-                        )}
-                    </DialogHeader>
-                    <form className='flex flex-1 flex-col' onSubmit={handleSubmit}>
-                        <div className='flex-1 overflow-y-auto px-6 py-4'>
-                            <TopicComposerFields
-                                name={name}
-                                namePlaceholder='Name'
-                                nameRef={nameTextareaRef}
-                                notes={notes}
-                                notesPlaceholder='Notes'
-                                notesRef={notesTextareaRef}
-                                onNameChange={setName}
-                                onNotesChange={setNotes}
-                            />
-                        </div>
-                        <div className='flex-shrink-0 border-t px-6 py-4'>
-                            <div className='flex justify-between'>
-                                <Button
-                                    onClick={() => setOpen(false)}
-                                    type='button'
-                                    variant='outline'
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    disabled={!canCreateTopic || isCreatingTopic}
-                                    type='submit'
-                                >
-                                    {isCreatingTopic ? 'Creating...' : submitButtonText}
-                                </Button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
 
-                {showSidebar && sidebarOpen && searchResults && (
-                    <div className='flex h-full w-2/5 flex-shrink-0 flex-col border-l bg-sidebar lg:w-1/3'>
-                        <div className='flex-shrink-0 p-4 pb-2'>
-                            <h2 className='font-medium text-lg'>
-                                {sidebarTitle(searchResults.debouncedQuery)}
-                            </h2>
-                        </div>
-                        <div className='flex-1 overflow-y-auto px-4 pb-4'>
-                            <div className='space-y-2'>
-                                {searchResults.isLoading && searchResults.debouncedQuery && (
-                                    <div className='flex items-center justify-center py-4 text-muted-foreground text-sm'>
-                                        <div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
-                                        Searching...
-                                    </div>
-                                )}
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (!searchResults.hasQuery || searchResults.results.length === 0) return
 
-                                {searchResults.debouncedQuery &&
-                                    !searchResults.isLoading &&
-                                    searchResults.results.length === 0 && (
-                                        <div className='py-4 text-center text-muted-foreground text-sm'>
-                                            No topics found for "{searchResults.debouncedQuery}"
-                                        </div>
-                                    )}
+		if (e.key === 'ArrowDown') {
+			e.preventDefault()
+			setSelectedIndex(prev =>
+				prev < searchResults.results.length - 1 ? prev + 1 : 0
+			)
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault()
+			setSelectedIndex(prev =>
+				prev > 0 ? prev - 1 : searchResults.results.length - 1
+			)
+		} else if (e.key === 'Enter') {
+			e.preventDefault()
+			if (searchResults.results[selectedIndex]) {
+				handleTopicSelect(searchResults.results[selectedIndex])
+			}
+		} else if (e.key === 'Escape') {
+			setOpen(false)
+		}
+	}
 
-                                {searchResults.results.length > 0 && (
-                                    <div className='space-y-2'>
-                                        {searchResults.results.map(topic => (
-                                            <Card
-                                                className='cursor-pointer p-3 transition-colors hover:bg-accent'
-                                                key={topic.id}
-                                                onClick={() => handleTopicSelect(topic)}
-                                            >
-                                                <CardContent className='p-0'>
-                                                    <div className='flex items-start gap-2'>
-                                                        <FileText className='mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground' />
-                                                        <div className='min-w-0 flex-1'>
-                                                            <div className='line-clamp-1 font-medium text-sm'>
-                                                                {highlightText({
-                                                                    text: topic.name || 'Untitled',
-                                                                    query: searchResults.debouncedQuery
-                                                                })}
-                                                            </div>
-                                                            {topic.notes && (
-                                                                <div className='mt-1 line-clamp-2 text-muted-foreground text-xs'>
-                                                                    {truncateWithHighlight(
-                                                                        topic.notes,
-                                                                        searchResults.debouncedQuery,
-                                                                        80
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                )}
+	const estimateItemSize = useCallback((topic: Topic) => {
+		const baseHeight = 80
+		const lineHeight = 20
+		const charsPerLine = 40
 
-                                {!searchResults.debouncedQuery &&
-                                    searchResults.results.length === 0 && (
-                                        <div className='py-4 text-center text-muted-foreground text-sm'>
-                                            Start typing to search for available topics
-                                        </div>
-                                    )}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </DialogContent>
-    )
+		const nameLines = Math.ceil((topic.name?.length || 8) / charsPerLine)
+		const notesLines = topic.notes
+			? Math.min(2, Math.ceil(topic.notes.length / charsPerLine))
+			: 0
 
-    // If trigger provided, wrap in Dialog with trigger
-    if (trigger) {
-        return (
-            <Dialog onOpenChange={setOpen} open={open}>
-                <DialogTrigger asChild={true}>{trigger}</DialogTrigger>
-                {dialogContent}
-            </Dialog>
-        )
-    }
+		return Math.max(
+			MIN_HEIGHT,
+			baseHeight + (nameLines - 1) * lineHeight + notesLines * lineHeight
+		)
+	}, [])
 
-    // Otherwise, return controlled dialog without trigger
-    return (
-        <Dialog onOpenChange={setOpen} open={open}>
-            {dialogContent}
-        </Dialog>
-    )
+	const renderItem = useCallback(
+		(topic: Topic) => (
+			<TopicCard
+				minHeight={MIN_HEIGHT}
+				onTopicClick={handleTopicSelect}
+				searchQuery={searchResults.debouncedQuery}
+				todos={topic.todos ?? []}
+				topic={topic}
+			/>
+		),
+		[handleTopicSelect, searchResults.debouncedQuery]
+	)
+
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
+
+	const dialogContent = (
+		<DialogContent
+			className='-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 flex h-[600px] w-full min-w-5xl flex-col p-0'
+			showCloseButton={false}
+		>
+			<DialogHeader className='flex-shrink-0 px-4 pt-4'>
+				<DialogTitle className='sr-only'>{title}</DialogTitle>
+				<div className='flex items-center gap-4'>
+					<div className='relative flex-1'>
+						<Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
+						<Input
+							className='border-0 px-10 text-lg shadow-none'
+							onChange={e => setSearchQuery(e.target.value)}
+							onKeyDown={handleKeyDown}
+							placeholder='Search topics...'
+							ref={inputRef}
+							value={searchQuery}
+						/>
+						{searchQuery && (
+							<button
+								className='-translate-y-1/2 absolute top-1/2 right-3 h-4 w-4 text-muted-foreground transition-colors hover:text-foreground'
+								onClick={() => setSearchQuery('')}
+								type='button'
+							>
+								<X className='h-4 w-4' />
+							</button>
+						)}
+					</div>
+					<Button
+						disabled={isCreatingTopic}
+						onClick={handleCreateTopic}
+						size='default'
+						variant='secondary'
+					>
+						<SquarePen className='h-4 w-4' />
+						New Topic
+					</Button>
+				</div>
+			</DialogHeader>
+
+			<div className='scrollbar-track-transparent flex-1 overflow-y-auto p-4 pt-0'>
+				{searchResults.isLoading && (
+					<div className='flex items-center justify-center py-8 text-muted-foreground'>
+						<div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
+						{searchResults.hasQuery
+							? 'Searching...'
+							: 'Loading recent topics...'}
+					</div>
+				)}
+
+				{searchResults.hasQuery &&
+					!searchResults.isLoading &&
+					searchResults.results.length === 0 && (
+						<div className='flex items-center justify-center py-8 text-muted-foreground'>
+							No topics found for "{searchQuery}"
+						</div>
+					)}
+
+				{!(searchResults.hasQuery || searchResults.isLoading) &&
+					searchResults.results.length === 0 && (
+						<div className='flex items-center justify-center py-8 text-muted-foreground'>
+							No topics found
+						</div>
+					)}
+
+				{searchResults.results.length > 0 && (
+					<div className='mb-2'>
+						{!searchResults.hasQuery && (
+							<div className='mb-3 font-medium text-muted-foreground text-sm'>
+								Recent
+							</div>
+						)}
+					</div>
+				)}
+
+				{searchResults.results.length > 0 && (
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						gap={12}
+						getItemKey={getItemKey}
+						items={searchResults.results}
+						minItemWidth={MIN_CARD_WIDTH}
+						renderItem={renderItem}
+					/>
+				)}
+			</div>
+		</DialogContent>
+	)
+
+	const dialogWithTrigger = trigger ? (
+		<Dialog onOpenChange={setOpen} open={open}>
+			<DialogTrigger asChild={true}>{trigger}</DialogTrigger>
+			{dialogContent}
+		</Dialog>
+	) : (
+		<Dialog onOpenChange={setOpen} open={open}>
+			{dialogContent}
+		</Dialog>
+	)
+
+	return dialogWithTrigger
 }
-

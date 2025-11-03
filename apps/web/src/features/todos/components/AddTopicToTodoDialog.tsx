@@ -3,6 +3,8 @@ import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { addTopicToTodo, type Todo } from '~/features/todos/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
+import { TopicDialog } from '~/features/topics/components/TopicDialog'
+import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
 
@@ -19,6 +21,8 @@ export function AddTopicToTodoDialog({
 }: AddTopicToTodoDialogProps) {
 	const [searchQuery, setSearchQuery] = useState('')
 	const [debouncedQuery, setDebouncedQuery] = useState('')
+	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
 	const queryClient = useQueryClient()
 
 	// Debounced search query
@@ -64,7 +68,27 @@ export function AddTopicToTodoDialog({
 		}
 	}, [open])
 
-	const handleTopicCreatedOrSelected = useCallback(
+	const handleTopicCreated = useCallback(
+		async (topic: Topic) => {
+			if (!todo) return
+
+			try {
+				await addTopicMutation({
+					todoId: todo.id,
+					topicId: topic.id
+				})
+
+				// Open TopicDialog with newly created topic
+				setSelectedTopic(topic)
+				setIsDialogOpen(true)
+			} catch (_error) {
+				// Handle error silently for now
+			}
+		},
+		[todo, addTopicMutation]
+	)
+
+	const handleTopicSelected = useCallback(
 		async (topic: Topic) => {
 			if (!todo) return
 
@@ -80,34 +104,54 @@ export function AddTopicToTodoDialog({
 		[todo, addTopicMutation]
 	)
 
-	const useSearch = useCallback(
-		(query: string) => {
-			// Update search query when SearchOrCreateTopicDialog's input changes
-			useEffect(() => {
-				setSearchQuery(query)
-			}, [query])
+	const handleDialogOpenChange = useCallback((isOpen: boolean) => {
+		setIsDialogOpen(isOpen)
+		if (!isOpen) {
+			setSelectedTopic(null)
+		}
+	}, [])
 
+	const handleTopicChange = useCallback((topic: Topic) => {
+		setSelectedTopic(topic)
+	}, [])
+
+	const contextValue = useMemo(
+		() => ({
+			topic: selectedTopic ?? undefined,
+			onTopicChange: handleTopicChange
+		}),
+		[selectedTopic, handleTopicChange]
+	)
+
+	const useSearch = useCallback(
+		(_query: string) => {
 			return {
 				results,
 				isLoading,
-				debouncedQuery
+				debouncedQuery,
+				hasQuery: Boolean(debouncedQuery.trim())
 			}
 		},
 		[results, isLoading, debouncedQuery]
 	)
 
 	return (
-		<SearchOrCreateTopicDialog
-			onOpenChange={onOpenChange}
-			onTopicCreated={handleTopicCreatedOrSelected}
-			open={open}
-			showSidebar={true}
-			sidebarTitle={query =>
-				query === '' ? 'Recent Topics' : 'Matching Topics'
-			}
-			submitButtonText='Create & Add Topic'
-			title='Add Topic to Todo'
-			useSearch={useSearch}
-		/>
+		<>
+			<SearchOrCreateTopicDialog
+				onOpenChange={onOpenChange}
+				onSearchQueryChange={setSearchQuery}
+				onTopicCreated={handleTopicCreated}
+				onTopicSelected={handleTopicSelected}
+				open={open}
+				title='Add Topic to Todo'
+				useSearch={useSearch}
+			/>
+			<TopicContext value={contextValue}>
+				<TopicDialog
+					onOpenChange={handleDialogOpenChange}
+					open={isDialogOpen}
+				/>
+			</TopicContext>
+		</>
 	)
 }

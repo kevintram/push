@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
+import { TopicDialog } from '~/features/topics/components/TopicDialog'
+import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/todo-topic.types'
 import { useCreateRelationship } from '../../hooks/useCreateRelationship'
 import { useDebouncedPotentialTopics } from '../../hooks/useDebouncedPotentialTopics'
@@ -20,6 +22,8 @@ export function AddRelationshipDialog({
 	onRelationshipCreated
 }: AddRelationshipDialogProps) {
 	const [searchQuery, setSearchQuery] = useState('')
+	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
 	const { setQuery, debouncedQuery, results, isLoading } =
 		useDebouncedPotentialTopics({
@@ -43,7 +47,36 @@ export function AddRelationshipDialog({
 		setQuery(searchQuery)
 	}, [searchQuery, setQuery])
 
-	const handleTopicCreatedOrSelected = useCallback(
+	const handleTopicCreated = useCallback(
+		async (topic: Topic) => {
+			if (!topicId) return
+
+			try {
+				if (relationshipType === 'child') {
+					await createRelationship.mutateAsync({
+						parent: topicId,
+						child: topic.id
+					})
+				} else {
+					await createRelationship.mutateAsync({
+						parent: topic.id,
+						child: topicId
+					})
+				}
+
+				onRelationshipCreated?.(topic)
+
+				// Open TopicDialog with newly created topic
+				setSelectedTopic(topic)
+				setIsDialogOpen(true)
+			} catch (_error) {
+				// Error handling could be added here if needed
+			}
+		},
+		[topicId, relationshipType, createRelationship, onRelationshipCreated]
+	)
+
+	const handleTopicSelected = useCallback(
 		async (topic: Topic) => {
 			if (!topicId) return
 
@@ -68,17 +101,32 @@ export function AddRelationshipDialog({
 		[topicId, relationshipType, createRelationship, onRelationshipCreated]
 	)
 
-	const useSearch = useCallback(
-		(query: string) => {
-			// Update search query when SearchOrCreateTopicDialog's input changes
-			useEffect(() => {
-				setSearchQuery(query)
-			}, [query])
+	const handleDialogOpenChange = useCallback((isOpen: boolean) => {
+		setIsDialogOpen(isOpen)
+		if (!isOpen) {
+			setSelectedTopic(null)
+		}
+	}, [])
 
+	const handleTopicChange = useCallback((topic: Topic) => {
+		setSelectedTopic(topic)
+	}, [])
+
+	const contextValue = useMemo(
+		() => ({
+			topic: selectedTopic ?? undefined,
+			onTopicChange: handleTopicChange
+		}),
+		[selectedTopic, handleTopicChange]
+	)
+
+	const useSearch = useCallback(
+		(_query: string) => {
 			return {
 				results,
 				isLoading,
-				debouncedQuery
+				debouncedQuery,
+				hasQuery: Boolean(debouncedQuery.trim())
 			}
 		},
 		[results, isLoading, debouncedQuery]
@@ -88,15 +136,22 @@ export function AddRelationshipDialog({
 		relationshipType === 'child' ? 'Add Child Topic' : 'Add Parent Topic'
 
 	return (
-		<SearchOrCreateTopicDialog
-			onOpenChange={onOpenChange}
-			onTopicCreated={handleTopicCreatedOrSelected}
-			open={open}
-			showSidebar={true}
-			sidebarTitle={query => (query === '' ? 'Recent' : 'Matching Topics')}
-			submitButtonText='Create New Topic'
-			title={dialogTitle}
-			useSearch={useSearch}
-		/>
+		<>
+			<SearchOrCreateTopicDialog
+				onOpenChange={onOpenChange}
+				onSearchQueryChange={setSearchQuery}
+				onTopicCreated={handleTopicCreated}
+				onTopicSelected={handleTopicSelected}
+				open={open}
+				title={dialogTitle}
+				useSearch={useSearch}
+			/>
+			<TopicContext value={contextValue}>
+				<TopicDialog
+					onOpenChange={handleDialogOpenChange}
+					open={isDialogOpen}
+				/>
+			</TopicContext>
+		</>
 	)
 }
