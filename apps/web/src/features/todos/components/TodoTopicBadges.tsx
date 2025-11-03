@@ -8,11 +8,13 @@ import { TopicBadge } from '~/features/topics/components/TopicBadge'
 interface TodoTopicBadgesProps {
 	todo: Todo
 	onRemoveTopicFromTodo: (todoId: number, topicId: number) => Promise<void>
+	onTopicClick?: (topicId: number, name?: string | null, notes?: string | null) => void
 }
 
 export function TodoTopicBadges({
 	todo,
-	onRemoveTopicFromTodo
+	onRemoveTopicFromTodo,
+	onTopicClick
 }: TodoTopicBadgesProps) {
 	const [showAddDialog, setShowAddDialog] = useState(false)
 
@@ -32,6 +34,7 @@ export function TodoTopicBadges({
 							key={topic.id}
 							name={topic.name}
 							notes={topic.notes}
+							onClick={() => onTopicClick?.(topic.id, topic.name, topic.notes)}
 							onRemove={() => onRemoveTopicFromTodo(todo.id, topic.id)}
 							topicId={topic.id}
 						/>
