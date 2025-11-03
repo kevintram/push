@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
-import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
+import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 import { TopicDialog } from '~/features/topics/components/TopicDialog'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/todo-topic.types'
@@ -12,6 +12,7 @@ export function InboxPage() {
 	const { data: inboxTopics, isLoading } = useInboxTopics()
 	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
+	const { mutateAsync: createTopicAsync } = useCreateTopic()
 
 	const handleTopicSelect = useCallback((topic: Topic) => {
 		setSelectedTopic(topic)
@@ -28,6 +29,12 @@ export function InboxPage() {
 	const handleTopicChange = useCallback((topic: Topic) => {
 		setSelectedTopic(topic)
 	}, [])
+
+	const handleCreateTopic = useCallback(async () => {
+		const newTopic = await createTopicAsync({ inboxed: true })
+		setSelectedTopic(newTopic)
+		setIsDialogOpen(true)
+	}, [createTopicAsync])
 
 	const contextValue = useMemo(
 		() => ({
@@ -50,17 +57,9 @@ export function InboxPage() {
 								({inboxCountLabel})
 							</span>
 						</h1>
-						<CreateTopicDialog
-							showSidebar={false}
-							submitButtonText='Create Topic'
-							title='Add Topic'
-							topicDefaults={{ inboxed: true }}
-							trigger={
-								<Button size='icon' variant='ghost'>
-									<Plus />
-								</Button>
-							}
-						/>
+						<Button onClick={handleCreateTopic} size='icon' variant='ghost'>
+							<Plus />
+						</Button>
 					</div>
 				</div>
 				<div className='p-6 pt-2'>

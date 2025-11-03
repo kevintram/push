@@ -7,7 +7,8 @@ import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 import { useRootTopics } from '~/features/topics/api/useRootTopics'
-import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
+import { TopicDialog } from '~/features/topics/components/TopicDialog'
+import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/todo-topic.types'
 import { TopicCard } from '../TopicCard'
 
@@ -27,6 +28,8 @@ type FilterBadge = {
 export function RootTopicsPage() {
 	const [activeFilter, setActiveFilter] = useState<FilterId | null>(null)
 	const navigate = useNavigate()
+	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
 	// Build query params based on active filter (mutually exclusive)
 	const queryParams = useMemo(() => {
@@ -85,31 +88,52 @@ export function RootTopicsPage() {
 
 	const renderedFilters: Array<RenderedFilter> = hasActiveFilter
 		? [
-				{
-					key: activeFilterBadge.id,
-					type: 'filter' as const,
-					filter: activeFilterBadge
-				},
-				{ key: 'clear', type: 'clear' as const },
-				...inactiveFilterBadges.map(filter => ({
-					key: filter.id,
-					type: 'filter' as const,
-					filter
-				}))
-			]
-		: filters.map(filter => ({
+			{
+				key: activeFilterBadge.id,
+				type: 'filter' as const,
+				filter: activeFilterBadge
+			},
+			{ key: 'clear', type: 'clear' as const },
+			...inactiveFilterBadges.map(filter => ({
 				key: filter.id,
 				type: 'filter' as const,
 				filter
 			}))
+		]
+		: filters.map(filter => ({
+			key: filter.id,
+			type: 'filter' as const,
+			filter
+		}))
+
 
 	const handleCreateTopic = useCallback(async () => {
-		const data = await createTopicAsync({})
-		navigate({
-			to: '/topics/{-$topicId}',
-			params: { topicId: data.id.toString() }
+		const newTopic = await createTopicAsync({
+			inboxed: false,
+			archived: false
 		})
-	}, [createTopicAsync, navigate])
+		setSelectedTopic(newTopic)
+		setIsDialogOpen(true)
+	}, [createTopicAsync])
+
+	const handleTopicChange = useCallback((topic: Topic) => {
+		setSelectedTopic(topic)
+	}, [])
+
+	const handleDialogOpenChange = useCallback((open: boolean) => {
+		setIsDialogOpen(open)
+		if (!open) {
+			setSelectedTopic(null)
+		}
+	}, [])
+
+	const contextValue = useMemo(
+		() => ({
+			topic: selectedTopic ?? undefined,
+			onTopicChange: handleTopicChange
+		}),
+		[selectedTopic, handleTopicChange]
+	)
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -158,16 +182,9 @@ export function RootTopicsPage() {
 					<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
 						<div className='flex items-center justify-between'>
 							<h1 className='font-bold text-xl'>Library</h1>
-							<CreateTopicDialog
-								showSidebar={false}
-								submitButtonText='Create Topic'
-								title='Add Topic'
-								trigger={
-									<Button size='icon' variant='ghost'>
-										<Plus />
-									</Button>
-								}
-							/>
+							<Button onClick={handleCreateTopic} size='icon' variant='ghost'>
+								<Plus />
+							</Button>
 						</div>
 						<div className='py-2'>
 							<motion.div
@@ -222,6 +239,13 @@ export function RootTopicsPage() {
 					<div className='px-6 pt-2'>
 						<p className='text-muted-foreground'>Loading topics...</p>
 					</div>
+
+					<TopicContext value={contextValue}>
+						<TopicDialog
+							onOpenChange={handleDialogOpenChange}
+							open={isDialogOpen}
+						/>
+					</TopicContext>
 				</div>
 			</div>
 		)
@@ -238,16 +262,9 @@ export function RootTopicsPage() {
 					<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
 						<div className='flex items-center justify-between'>
 							<h1 className='font-bold text-xl'>Library</h1>
-							<CreateTopicDialog
-								showSidebar={false}
-								submitButtonText='Create Topic'
-								title='Add Topic'
-								trigger={
-									<Button size='icon' variant='ghost'>
-										<Plus />
-									</Button>
-								}
-							/>
+							<Button onClick={handleCreateTopic} size='icon' variant='ghost'>
+								<Plus />
+							</Button>
 						</div>
 						<div className='py-2'>
 							<motion.div
@@ -311,6 +328,13 @@ export function RootTopicsPage() {
 							)}
 						</div>
 					</div>
+
+					<TopicContext value={contextValue}>
+						<TopicDialog
+							onOpenChange={handleDialogOpenChange}
+							open={isDialogOpen}
+						/>
+					</TopicContext>
 				</div>
 			</div>
 		)
@@ -322,16 +346,9 @@ export function RootTopicsPage() {
 				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
 					<div className='flex items-center justify-between'>
 						<h1 className='font-bold text-xl'>Library</h1>
-						<CreateTopicDialog
-							showSidebar={false}
-							submitButtonText='Create Topic'
-							title='Add Topic'
-							trigger={
-								<Button size='icon' variant='ghost'>
-									<Plus />
-								</Button>
-							}
-						/>
+						<Button onClick={handleCreateTopic} size='icon' variant='ghost'>
+							<Plus />
+						</Button>
 					</div>
 					<div className='py-2'>
 						<motion.div
@@ -394,6 +411,13 @@ export function RootTopicsPage() {
 						renderItem={renderItem}
 					/>
 				</div>
+
+				<TopicContext value={contextValue}>
+					<TopicDialog
+						onOpenChange={handleDialogOpenChange}
+						open={isDialogOpen}
+					/>
+				</TopicContext>
 			</div>
 		</div>
 	)
