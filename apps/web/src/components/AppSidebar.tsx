@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Inbox,
@@ -8,7 +8,7 @@ import {
 	SquareLibrary,
 	SquarePen
 } from 'lucide-react'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { SettingsDialog } from '~/components/SettingsDialog'
 import {
@@ -22,20 +22,18 @@ import {
 	SidebarMenuItem
 } from '~/components/ui/Sidebar'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
+import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
 
 export function AppSidebar() {
-	const navigate = useNavigate()
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
+	const { openTopicDialog } = useTopicDialog()
 
-	const handleCreateTopic = async () => {
+	const handleCreateTopic = useCallback(async () => {
 		const createdTopic = await insertTopic({})
-		await navigate({
-			to: '/topics/{-$topicId}',
-			params: { topicId: createdTopic.id.toString() }
-		})
-	}
+		openTopicDialog(createdTopic.id)
+	}, [insertTopic, openTopicDialog])
 
 	const menuItems = [
 		{

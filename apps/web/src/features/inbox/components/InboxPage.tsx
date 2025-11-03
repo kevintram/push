@@ -1,41 +1,28 @@
 import { Plus } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
-import { TopicDialog } from '~/features/topics/components/TopicDialog'
-import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
+import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
+import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
 import type { Topic } from '~/models/todo-topic.types'
 import { useInboxTopics } from '../api'
 import { InboxList } from './InboxList'
 
 export function InboxPage() {
 	const { data: inboxTopics, isLoading } = useInboxTopics()
-	const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
-	const [isDialogOpen, setIsDialogOpen] = useState(false)
+	const { mutateAsync: createTopicAsync } = useCreateTopic()
+	const { openTopicDialog } = useTopicDialog()
 
-	const handleTopicSelect = useCallback((topic: Topic) => {
-		setSelectedTopic(topic)
-		setIsDialogOpen(true)
-	}, [])
-
-	const handleDialogOpenChange = useCallback((open: boolean) => {
-		setIsDialogOpen(open)
-		if (!open) {
-			setSelectedTopic(null)
-		}
-	}, [])
-
-	const handleTopicChange = useCallback((topic: Topic) => {
-		setSelectedTopic(topic)
-	}, [])
-
-	const contextValue = useMemo(
-		() => ({
-			topic: selectedTopic ?? undefined,
-			onTopicChange: handleTopicChange
-		}),
-		[selectedTopic, handleTopicChange]
+	const handleTopicSelect = useCallback(
+		(topic: Topic) => {
+			openTopicDialog(topic.id)
+		},
+		[openTopicDialog]
 	)
+
+	const handleCreateTopic = useCallback(async () => {
+		const newTopic = await createTopicAsync({ inboxed: true })
+		openTopicDialog(newTopic.id)
+	}, [createTopicAsync, openTopicDialog])
 
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
@@ -50,17 +37,9 @@ export function InboxPage() {
 								({inboxCountLabel})
 							</span>
 						</h1>
-						<CreateTopicDialog
-							showSidebar={false}
-							submitButtonText='Create Topic'
-							title='Add Topic'
-							topicDefaults={{ inboxed: true }}
-							trigger={
-								<Button size='icon' variant='ghost'>
-									<Plus />
-								</Button>
-							}
-						/>
+						<Button onClick={handleCreateTopic} size='icon' variant='ghost'>
+							<Plus />
+						</Button>
 					</div>
 				</div>
 				<div className='p-6 pt-2'>
@@ -70,13 +49,6 @@ export function InboxPage() {
 						topics={inboxTopics}
 					/>
 				</div>
-
-				<TopicContext value={contextValue}>
-					<TopicDialog
-						onOpenChange={handleDialogOpenChange}
-						open={isDialogOpen}
-					/>
-				</TopicContext>
 			</div>
 		</div>
 	)

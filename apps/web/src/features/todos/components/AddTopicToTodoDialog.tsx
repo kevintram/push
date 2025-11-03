@@ -3,7 +3,8 @@ import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { addTopicToTodo, type Todo } from '~/features/todos/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
-import { CreateTopicDialog } from '~/features/topics/components/CreateTopicDialog'
+import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
+import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
 import type { Topic } from '~/models/todo-topic.types'
 
 interface AddTopicToTodoDialogProps {
@@ -20,6 +21,7 @@ export function AddTopicToTodoDialog({
 	const [searchQuery, setSearchQuery] = useState('')
 	const [debouncedQuery, setDebouncedQuery] = useState('')
 	const queryClient = useQueryClient()
+	const { openTopicDialog } = useTopicDialog()
 
 	// Debounced search query
 	const updateDebouncedQuery = useCallback(
@@ -64,7 +66,26 @@ export function AddTopicToTodoDialog({
 		}
 	}, [open])
 
-	const handleTopicCreatedOrSelected = useCallback(
+	const handleTopicCreated = useCallback(
+		async (topic: Topic) => {
+			if (!todo) return
+
+			try {
+				await addTopicMutation({
+					todoId: todo.id,
+					topicId: topic.id
+				})
+
+				// Open TopicDialog with newly created topic
+				openTopicDialog(topic.id)
+			} catch (_error) {
+				// Handle error silently for now
+			}
+		},
+		[todo, addTopicMutation, openTopicDialog]
+	)
+
+	const handleTopicSelected = useCallback(
 		async (topic: Topic) => {
 			if (!todo) return
 
@@ -81,31 +102,24 @@ export function AddTopicToTodoDialog({
 	)
 
 	const useSearch = useCallback(
-		(query: string) => {
-			// Update search query when CreateTopicDialog's input changes
-			useEffect(() => {
-				setSearchQuery(query)
-			}, [query])
-
+		(_query: string) => {
 			return {
 				results,
 				isLoading,
-				debouncedQuery
+				debouncedQuery,
+				hasQuery: Boolean(debouncedQuery.trim())
 			}
 		},
 		[results, isLoading, debouncedQuery]
 	)
 
 	return (
-		<CreateTopicDialog
+		<SearchOrCreateTopicDialog
 			onOpenChange={onOpenChange}
-			onTopicCreated={handleTopicCreatedOrSelected}
+			onSearchQueryChange={setSearchQuery}
+			onTopicCreated={handleTopicCreated}
+			onTopicSelected={handleTopicSelected}
 			open={open}
-			showSidebar={true}
-			sidebarTitle={query =>
-				query === '' ? 'Recent Topics' : 'Matching Topics'
-			}
-			submitButtonText='Create & Add Topic'
 			title='Add Topic to Todo'
 			useSearch={useSearch}
 		/>

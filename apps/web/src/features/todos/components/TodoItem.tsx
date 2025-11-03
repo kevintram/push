@@ -21,9 +21,18 @@ import { TodoTopicBadges } from './TodoTopicBadges'
 interface TodoItemProps {
 	entry: Todo
 	isCompleted?: boolean
+	onTopicClick?: (
+		topicId: number,
+		name?: string | null,
+		notes?: string | null
+	) => void
 }
 
-export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
+export function TodoItem({
+	entry,
+	isCompleted = false,
+	onTopicClick
+}: TodoItemProps) {
 	const queryClient = useQueryClient()
 
 	const dateValue = (() => {
@@ -238,6 +247,7 @@ export function TodoItem({ entry, isCompleted = false }: TodoItemProps) {
 					{/* Topics */}
 					<TodoTopicBadges
 						onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
+						onTopicClick={onTopicClick}
 						todo={entry}
 					/>
 				</div>

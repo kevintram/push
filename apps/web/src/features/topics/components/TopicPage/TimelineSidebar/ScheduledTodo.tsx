@@ -12,6 +12,7 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { DatePickerDropdown } from '~/features/todos/components/DatePickerDropdown'
 import { TodoTopicBadges } from '~/features/todos/components/TodoTopicBadges'
+import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
 import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { numDaysElapsed } from '../../../utils/daysElapsed'
@@ -39,6 +40,14 @@ export function ScheduledTodo({
 	})
 
 	const { updateTodo, deleteTodo, removeTopicFromTodo } = useTimelineData()
+	const { openTopicDialog } = useTopicDialog()
+
+	const handleTopicClick = useCallback(
+		(topicId: number) => {
+			openTopicDialog(topicId)
+		},
+		[openTopicDialog]
+	)
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
@@ -134,6 +143,7 @@ export function ScheduledTodo({
 							<div className='mt-2'>
 								<TodoTopicBadges
 									onRemoveTopicFromTodo={removeTopicFromTodo}
+									onTopicClick={handleTopicClick}
 									todo={entry}
 								/>
 							</div>

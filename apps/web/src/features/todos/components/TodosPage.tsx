@@ -3,6 +3,7 @@ import { Check, Logs, Plus, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
+import { useTopicDialog } from '~/features/topics/stores/TopicDialogContext'
 import { useSectionedTodos } from '../api'
 import { TodoItem } from './TodoItem'
 
@@ -37,6 +38,7 @@ const FILTER_ORDER: Array<FilterId> = [
 export function TodosPage() {
 	const [activeSections, setActiveSections] = useState<Array<SectionKey>>([])
 	const { sections, addTodoToSection } = useSectionedTodos()
+	const { openTopicDialog } = useTopicDialog()
 	const overdueSection = useMemo(
 		() => sections.find(section => section.id === 'overdue'),
 		[sections]
@@ -164,6 +166,13 @@ export function TodosPage() {
 		setActiveSections([])
 	}, [])
 
+	const handleTopicClick = useCallback(
+		(topicId: number) => {
+			openTopicDialog(topicId)
+		},
+		[openTopicDialog]
+	)
+
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
@@ -251,6 +260,7 @@ export function TodosPage() {
 											entry={entry}
 											isCompleted={entry.completed_at !== null}
 											key={entry.id}
+											onTopicClick={handleTopicClick}
 										/>
 									))}
 								</div>
