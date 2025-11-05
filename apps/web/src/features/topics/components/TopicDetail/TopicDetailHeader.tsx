@@ -1,10 +1,4 @@
-import {
-	Archive,
-	ArchiveRestore,
-	Inbox,
-	MoreVertical,
-	Trash
-} from 'lucide-react'
+import { Archive, ArchiveX, Inbox, MoreHorizontal, Trash } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
@@ -39,19 +33,6 @@ export function TopicDetailHeader({
 				</div>
 
 				<div className='flex items-center gap-2'>
-					{topic.archived && (
-						<div className='flex items-center'>
-							<Archive className='mr-2 h-4 w-4 text-muted-foreground' />
-							<span className='text-muted-foreground text-xs'>Archived</span>
-						</div>
-					)}
-					{topic.inboxed && (
-						<div className='flex items-center'>
-							<Inbox className='mr-2 h-4 w-4 text-muted-foreground' />
-							<span className='text-muted-foreground text-xs'>Inbox</span>
-						</div>
-					)}
-
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true}>
 							<Button
@@ -60,14 +41,14 @@ export function TopicDetailHeader({
 								title='More options'
 								variant='ghost'
 							>
-								<MoreVertical className='h-4 w-4' />
+								<MoreHorizontal className='h-4 w-4' />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
 							<DropdownMenuItem onClick={onArchiveToggle}>
 								{topic.archived ? (
 									<>
-										<ArchiveRestore className='mr-2 h-4 w-4' />
+										<ArchiveX className='mr-2 h-4 w-4' />
 										Unarchive
 									</>
 								) : (
