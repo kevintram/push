@@ -4,7 +4,7 @@ from fastapi import Cookie, Header, HTTPException, status, Request, Depends, Res
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.auth import workos
-from app.core.db import engine
+from app.core.db import get_db
 from typing import AsyncGenerator
 
 async def get_token_header(x_token: Annotated[str, Header()]):
@@ -62,9 +62,4 @@ async def get_user_id(
 UserIdDep = Annotated[str, Depends(get_user_id)]
 
 
-async def get_db_session() -> AsyncGenerator:
-    async with AsyncSession(engine) as session:
-        # Optional: BEGIN a transaction; many apps prefer explicit begin
-        async with session.begin():
-            yield session
-SessionDep = Annotated[AsyncSession, Depends(get_db_session)]
+SessionDep = Annotated[AsyncSession, Depends(get_db)]
