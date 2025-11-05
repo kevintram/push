@@ -1,6 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Archive, ArchiveX, Inbox, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { use, useCallback, useEffect, useRef } from 'react'
+import { Button } from '~/components/ui/Button'
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger
+} from '~/components/ui/Popover'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -118,9 +125,67 @@ export function TopicDetail({ onDelete, headerActions }: TopicDetailProps) {
 				/>
 				<SidebarHolder className='flex min-h-0 flex-1'>
 					<div
-						className='scrollbar-track-transparent min-h-0 w-full overflow-y-scroll px-6 py-4'
+						className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll px-6 py-4'
 						ref={scrollContainerRef}
 					>
+						{(topic.archived || topic.inboxed) && (
+							<div className='-translate-x-2 flex flex-row'>
+								{topic.archived && (
+									<Popover>
+										<PopoverTrigger asChild={true}>
+											<Button
+												className='flex items-center'
+												size='sm'
+												variant='ghost'
+											>
+												<Archive className='h-4 w-4 text-muted-foreground' />
+												<span className='text-muted-foreground text-xs'>
+													Archived
+												</span>
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent className='w-auto p-2'>
+											<Button
+												className='w-full justify-start'
+												onClick={handleArchiveToggle}
+												size='sm'
+												variant='ghost'
+											>
+												<ArchiveX className='mr-2 h-4 w-4' />
+												Unarchive
+											</Button>
+										</PopoverContent>
+									</Popover>
+								)}
+								{topic.inboxed && (
+									<Popover>
+										<PopoverTrigger asChild={true}>
+											<Button
+												className='flex items-center'
+												size='sm'
+												variant='ghost'
+											>
+												<Inbox className='h-4 w-4 text-muted-foreground' />
+												<span className='text-muted-foreground text-xs'>
+													Inboxed
+												</span>
+											</Button>
+										</PopoverTrigger>
+										<PopoverContent className='w-auto p-2'>
+											<Button
+												className='w-full justify-start'
+												onClick={handleInboxToggle}
+												size='sm'
+												variant='ghost'
+											>
+												<X className='mr-2 h-4 w-4' />
+												Remove from inbox
+											</Button>
+										</PopoverContent>
+									</Popover>
+								)}
+							</div>
+						)}
 						<div className='pb-4'>
 							<Textarea
 								className='!bg-transparent break-word !text-4xl m-0 mb-1 min-h-12 w-full max-w-xl resize-none rounded-none border-none p-0 font-bold focus:outline-none focus-visible:border-none focus-visible:ring-0'
