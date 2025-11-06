@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from app.dependencies import UserIdDep, SessionDep
 from sqlalchemy import select, update, delete, func
 from sqlalchemy.orm import selectinload
-from app.models import Todo, Topic, t_todos_topics
+from app.models import Todo, Topic, Review
 from app.schemas import TodoCreate, TodoRead, TodoUpdate, TopicIdPayload, TopicRead, TodoReadWithTopics
 
 router = APIRouter()
@@ -93,7 +93,7 @@ async def add_topic(
     payload: TopicIdPayload,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TodoRead:
+) -> TodoReadWithTopics:
     topic_id = payload.topic_id
 
     todo_result = await session.execute(
@@ -113,17 +113,18 @@ async def add_topic(
         raise HTTPException(status_code=404, detail="Topic not found")
 
     existing_link = await session.execute(
-        select(t_todos_topics.c.todo_id).where(
-            t_todos_topics.c.todo_id == todo_id,
-            t_todos_topics.c.topic_id == topic_id,
+        select(Review.todo_id).where(
+            Review.todo_id == todo_id,
+            Review.topic_id == topic_id,
         )
     )
     if existing_link.scalar_one_or_none() is not None:
         raise HTTPException(status_code=409, detail="Topic already linked to todo")
 
-    todo.topics.append(topic)
+    review = Review(todo_id=todo_id, topic_id=topic_id, rating="good")
+    session.add(review)
     await session.flush()
-    await session.refresh(todo)
+    await session.refresh(todo, ["topics"])
     return todo
 
 
@@ -151,18 +152,18 @@ async def remove_topic(
         raise HTTPException(status_code=404, detail="Topic not found")
 
     relationship_result = await session.execute(
-        select(t_todos_topics.c.todo_id).where(
-            t_todos_topics.c.todo_id == todo_id,
-            t_todos_topics.c.topic_id == topic_id,
+        select(Review.todo_id).where(
+            Review.todo_id == todo_id,
+            Review.topic_id == topic_id,
         )
     )
     if relationship_result.scalar_one_or_none() is None:
         raise HTTPException(status_code=404, detail="Topic not linked to todo")
 
     await session.execute(
-        delete(t_todos_topics).where(
-            t_todos_topics.c.todo_id == todo_id,
-            t_todos_topics.c.topic_id == topic_id,
+        delete(Review).where(
+            Review.todo_id == todo_id,
+            Review.topic_id == topic_id,
         )
     )
     await session.flush()

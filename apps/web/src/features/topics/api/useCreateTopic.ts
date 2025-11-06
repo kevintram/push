@@ -6,7 +6,9 @@ import { apiFetch } from '~/utils/apiFetch'
 type CreateTopicInput = {
 	name?: string
 	notes?: string
-	stability?: number
+	stability?: number | null
+	difficulty?: number | null
+	state?: 'LEARNING' | 'REVIEW' | 'RELEARNING'
 	retrievability?: number
 	archived?: boolean
 	inboxed?: boolean
@@ -22,6 +24,8 @@ async function createTopic(input: CreateTopicInput = {}): Promise<Topic> {
 			name: input.name ?? '',
 			notes: input.notes ?? '',
 			stability: input.stability ?? 1,
+			difficulty: input.difficulty ?? null,
+			state: input.state ?? 'LEARNING',
 			retrievability: input.retrievability ?? 0.0,
 			archived: input.archived ?? false,
 			inboxed: input.inboxed ?? false
