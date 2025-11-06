@@ -6,7 +6,7 @@ import { type Todo as ApiTodo, getTodos } from '~/features/todos/api'
 export type TodoWithTopics = ApiTodo
 
 // Context interface
-export interface TimelineContextValue {
+export interface ReviewsContextValue {
 	// Data
 	scheduledTodos: Array<TodoWithTopics>
 	unscheduledTodos: Array<TodoWithTopics>
@@ -15,22 +15,22 @@ export interface TimelineContextValue {
 	isLoadingTodos: boolean
 
 	// Utilities
-	revalidateTimeline: () => void
+	revalidateReviews: () => void
 }
 
-export const TimelineDataContext = createContext<TimelineContextValue | null>(
+export const ReviewsDataContext = createContext<ReviewsContextValue | null>(
 	null
 )
 
-interface TimelineDataProviderProps {
+interface ReviewsDataProviderProps {
 	children: React.ReactNode
 	selectedTopicId: number | undefined
 }
 
-export function TimelineDataProvider({
+export function ReviewsDataProvider({
 	children,
 	selectedTopicId
-}: TimelineDataProviderProps) {
+}: ReviewsDataProviderProps) {
 	const queryClient = useQueryClient()
 
 	// Fetch all todos for the selected topic
@@ -66,29 +66,29 @@ export function TimelineDataProvider({
 		return { scheduledTodos: scheduled, unscheduledTodos: unscheduled }
 	}, [rawAllTodos])
 
-	const revalidateTimeline = useCallback(() => {
+	const revalidateReviews = useCallback(() => {
 		refetchTodos()
 		queryClient.invalidateQueries({ queryKey: ['todos'] })
 	}, [refetchTodos, queryClient])
 
-	const contextValue: TimelineContextValue = {
+	const contextValue: ReviewsContextValue = {
 		scheduledTodos,
 		unscheduledTodos,
 		isLoadingTodos,
-		revalidateTimeline
+		revalidateReviews
 	}
 
 	return (
-		<TimelineDataContext.Provider value={contextValue}>
+		<ReviewsDataContext value={contextValue}>
 			{children}
-		</TimelineDataContext.Provider>
+		</ReviewsDataContext>
 	)
 }
 
-export function useTimelineData() {
-	const context = useContext(TimelineDataContext)
+export function useReviewsData() {
+	const context = useContext(ReviewsDataContext)
 	if (!context) {
-		throw new Error('useTimelineData must be used within TimelineDataProvider')
+		throw new Error('useReviewsData must be used within ReviewsDataProvider')
 	}
 	return context
 }

@@ -5,7 +5,7 @@ import { Button } from '~/components/ui/Button'
 import { addTopicToTodo, createTodo } from '~/features/todos/api'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 
-export function AddTodoButton() {
+export function AddReviewButton() {
 	const { topic: selectedTopic } = use(TopicContext)
 
 	const queryClient = useQueryClient()

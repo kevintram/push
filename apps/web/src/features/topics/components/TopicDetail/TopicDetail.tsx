@@ -16,7 +16,7 @@ import { deleteTopic as deleteTopicApi } from '../../api/deleteTopic'
 import { updateTopic as updateTopicApi } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import { TopicChildrenPanel } from '../TopicPage/FamilyPanel/TopicChildrenPanel'
-import { TimelineSidebar } from '../TopicPage/TimelineSidebar'
+import { ReviewsSidebar } from '../TopicPage/ReviewsSidebar'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 
@@ -207,7 +207,7 @@ export function TopicDetail({ onDelete, headerActions }: TopicDetailProps) {
 							getScrollElement={() => scrollContainerRef.current}
 						/>
 					</div>
-					<TimelineSidebar />
+					<ReviewsSidebar />
 				</SidebarHolder>
 			</div>
 		</SidebarProvider>
