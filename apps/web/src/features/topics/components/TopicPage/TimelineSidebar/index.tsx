@@ -6,16 +6,24 @@ import {
 	ResizableHandle
 } from '~/components/ui/ResizablePanel'
 import { Sidebar, SidebarHeader } from '~/components/ui/Sidebar'
+import { TodoItem } from '~/features/todos/components/TodoItem'
+import { useTopicDialog } from '../../../hooks/useTopicDialog'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { AddScheduledTodoButton } from './AddScheduledTodoButton'
 import { AddUnscheduledTodoButton } from './AddUnscheduledTodoButton'
-import { ScheduledTodo } from './ScheduledTodo'
 import { TimelineDataProvider, useTimelineData } from './TimelineDataContext'
 import { TodayMarker } from './TodayMarker'
-import { UnscheduledTodo } from './UnscheduledTodo'
 
 function TimelineSidebarContent() {
 	const { scheduledTodos, unscheduledTodos } = useTimelineData()
+	const { openTopicDialog } = useTopicDialog()
+
+	const handleTopicClick = useCallback(
+		(topicId: number) => {
+			openTopicDialog(topicId)
+		},
+		[openTopicDialog]
+	)
 
 	const renderTodos = useCallback(() => {
 		// add today marker while rendering todos
@@ -36,12 +44,7 @@ function TimelineSidebarContent() {
 					return (
 						<>
 							<TodayMarker key='today-marker' nextDate={date} today={today} />
-							<ScheduledTodo
-								entry={entry}
-								index={i}
-								key={entry.id}
-								nextDate={nextDate}
-							/>
+							<TodoItem entry={entry} key={entry.id} onTopicClick={handleTopicClick} />
 						</>
 					)
 				}
@@ -50,12 +53,7 @@ function TimelineSidebarContent() {
 					todayInserted = true
 					return (
 						<>
-							<ScheduledTodo
-								entry={entry}
-								index={i}
-								key={entry.id}
-								nextDate={today}
-							/>
+							<TodoItem entry={entry} key={entry.id} onTopicClick={handleTopicClick} />
 							<TodayMarker
 								key='today-marker'
 								nextDate={nextDate}
@@ -66,16 +64,9 @@ function TimelineSidebarContent() {
 				}
 			}
 
-			return (
-				<ScheduledTodo
-					entry={entry}
-					index={i}
-					key={entry.id}
-					nextDate={nextDate}
-				/>
-			)
+			return <TodoItem entry={entry} key={entry.id} onTopicClick={handleTopicClick} />
 		})
-	}, [scheduledTodos])
+	}, [scheduledTodos, handleTopicClick])
 
 	return (
 		<Sidebar className='absolute border-l' side='right'>
@@ -106,7 +97,7 @@ function TimelineSidebarContent() {
 						</div>
 						<div className='flex min-h-0 flex-1 flex-col gap-1 overflow-auto'>
 							{unscheduledTodos.map(entry => (
-								<UnscheduledTodo entry={entry} key={entry.id} />
+								<TodoItem entry={entry} key={entry.id} onTopicClick={handleTopicClick} />
 							))}
 						</div>
 					</div>

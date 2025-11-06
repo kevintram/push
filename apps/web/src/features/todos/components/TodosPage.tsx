@@ -258,7 +258,6 @@ export function TodosPage() {
 									{section.entries.map(entry => (
 										<TodoItem
 											entry={entry}
-											isCompleted={entry.completed_at !== null}
 											key={entry.id}
 											onTopicClick={handleTopicClick}
 										/>
