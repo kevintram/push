@@ -12,8 +12,6 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
-import { useAutoResizeTextarea } from '~/hooks/useAutoResizeTextarea'
-import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Todo } from '~/models/todo-topic.types'
 import { deleteTodo, removeTopicFromTodo, updateTodo } from '../api'
 import { DatePickerDropdown } from './DatePickerDropdown'
@@ -22,9 +20,10 @@ import { TodoTopicBadges } from './TodoTopicBadges'
 interface TodoItemProps {
 	entry: Todo
 	onTopicClick?: (topicId: number) => void
+	onTodoClick?: (todoId: number) => void
 }
 
-export function TodoItem({ entry, onTopicClick }: TodoItemProps) {
+export function TodoItem({ entry, onTopicClick, onTodoClick }: TodoItemProps) {
 	const queryClient = useQueryClient()
 
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
@@ -70,26 +69,6 @@ export function TodoItem({ entry, onTopicClick }: TodoItemProps) {
 		[entry.id, updateTodoMutation]
 	)
 
-	const updateDescription = useCallback(
-		(description: string) => {
-			if (entry.id) {
-				updateTodoMutation({
-					id: entry.id,
-					description
-				})
-			}
-		},
-		[entry.id, updateTodoMutation]
-	)
-
-	const { value: description, onChange: onDescriptionChange } = useAutoSave({
-		initialValue: entry.description || '',
-		onSave: updateDescription,
-		key: `todo-${entry.id}`
-	})
-
-	const textareaRef = useAutoResizeTextarea(description)
-
 	const handleDateSave = useCallback(
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
@@ -134,6 +113,12 @@ export function TodoItem({ entry, onTopicClick }: TodoItemProps) {
 		[onTopicClick]
 	)
 
+	const handleTodoClick = useCallback(() => {
+		if (entry.id) {
+			onTodoClick?.(entry.id)
+		}
+	}, [entry.id, onTodoClick])
+
 	const effectiveDate: Date | null = useMemo(() => {
 		if (entry.effective_date) {
 			return dayjs(entry.effective_date).toDate()
@@ -148,21 +133,15 @@ export function TodoItem({ entry, onTopicClick }: TodoItemProps) {
 		})
 	}, [entry.scheduled_at, entry.completed_at])
 
-	// Check if entry was created recently (within last 10 seconds) for autofocus
-	const isRecentlyCreated = useMemo(() => {
-		if (!entry.inserted_at) return false
-		const now = new Date()
-		const createdAt = new Date(entry.inserted_at)
-		const timeDiff = now.getTime() - createdAt.getTime()
-		return timeDiff < 10_000 // 10 seconds
-	}, [entry.inserted_at])
-
 	return (
-		<Card className='border-0 bg-transparent p-0 shadow-none hover:bg-muted/50'>
+		<Card
+			className='cursor-pointer border-0 bg-transparent p-0 shadow-none hover:bg-muted/50'
+			onClick={handleTodoClick}
+		>
 			<CardContent className='p-2'>
 				<div className='flex flex-col'>
 					{/* Row 1: Checkbox, Description, Date, More Button */}
-					<div className='flex flex-row items-center justify-center py-1'>
+					<div className='flex items-center py-1'>
 						<Checkbox
 							checked={!!entry.completed_at}
 							className={
@@ -171,18 +150,13 @@ export function TodoItem({ entry, onTopicClick }: TodoItemProps) {
 									: ''
 							}
 							onCheckedChange={handleCheckboxChange}
+							onClick={e => e.stopPropagation()}
 						/>
-						<textarea
-							// biome-ignore lint/a11y/noAutofocus: intentional to focus newly created todo
-							autoFocus={description === '' && isRecentlyCreated}
-							className='break-word ml-2 min-w-0 flex-1 resize-none border-none bg-transparent text-foreground text-sm shadow-none outline-none [overflow-wrap:anywhere] focus:outline-none focus-visible:ring-0'
-							onChange={onDescriptionChange}
-							placeholder='Description'
-							ref={textareaRef}
-							rows={1}
-							spellCheck={false}
-							value={description}
-						/>
+						<span
+							className={`ml-2 min-w-0 flex-1 truncate text-sm ${entry.description === '' || entry.description === null ? 'text-muted-foreground' : 'text-foreground'}`}
+						>
+							{entry.description || 'Description'}
+						</span>
 						<DatePickerDropdown
 							isOpen={isDatePopoverOpen}
 							onDateChange={handleDateSave}
@@ -191,6 +165,7 @@ export function TodoItem({ entry, onTopicClick }: TodoItemProps) {
 							trigger={
 								<Button
 									className='text-xs hover:bg-muted/50'
+									onClick={e => e.stopPropagation()}
 									size='sm'
 									variant='ghost'
 								>
@@ -203,6 +178,7 @@ export function TodoItem({ entry, onTopicClick }: TodoItemProps) {
 							<DropdownMenuTrigger asChild={true}>
 								<Button
 									className='h-6 w-6 p-0'
+									onClick={e => e.stopPropagation()}
 									size='sm'
 									title='More options'
 									variant='ghost'

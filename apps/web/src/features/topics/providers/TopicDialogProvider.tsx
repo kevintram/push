@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react'
-import { TopicDialog } from '../components/TopicDialog'
 import { TopicDialogContext } from '../stores/TopicDialogContext'
 
 export function TopicDialogProvider({
@@ -21,18 +20,11 @@ export function TopicDialogProvider({
 	}, [])
 
 	const contextValue = useMemo(
-		() => ({ openTopicDialog, closeTopicDialog }),
-		[openTopicDialog, closeTopicDialog]
+		() => ({ isOpen, selectedTopicId, openTopicDialog, closeTopicDialog }),
+		[isOpen, selectedTopicId, openTopicDialog, closeTopicDialog]
 	)
 
 	return (
-		<TopicDialogContext value={contextValue}>
-			{children}
-			<TopicDialog
-				onOpenChange={setIsOpen}
-				open={isOpen}
-				topicId={selectedTopicId}
-			/>
-		</TopicDialogContext>
+		<TopicDialogContext value={contextValue}>{children}</TopicDialogContext>
 	)
 }

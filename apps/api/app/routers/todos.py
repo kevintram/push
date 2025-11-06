@@ -29,6 +29,23 @@ async def read_todos(
     return ret
 
 
+@router.get("/todos/{todo_id}/", tags=["todos"])
+async def read_todo(
+    session: SessionDep,
+    user_id: UserIdDep,
+    todo_id: int
+) -> TodoReadWithTopics:
+    stmt = select(Todo).where(Todo.id == todo_id, Todo.user_id == user_id)
+    stmt = stmt.options(selectinload(Todo.topics))
+    result = await session.execute(stmt)
+
+    todo = result.scalar_one_or_none()
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    return todo
+
+
 @router.post("/todos/", tags=["todos"])
 async def create_todo(
     todo: TodoCreate,

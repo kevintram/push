@@ -1,5 +1,6 @@
 import { use, useCallback } from 'react'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
+import { useTodoDialog } from '~/features/todos'
 import { TodoItem } from '~/features/todos/components/TodoItem'
 import { useTopicDialog } from '../../../hooks/useTopicDialog'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
@@ -9,12 +10,20 @@ import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 function ReviewsSidebarContent() {
 	const { scheduledTodos, unscheduledTodos } = useReviewsData()
 	const { openTopicDialog } = useTopicDialog()
+	const { openTodoDialog } = useTodoDialog()
 
 	const handleTopicClick = useCallback(
 		(topicId: number) => {
 			openTopicDialog(topicId)
 		},
 		[openTopicDialog]
+	)
+
+	const handleTodoClick = useCallback(
+		(todoId: number) => {
+			openTodoDialog(todoId)
+		},
+		[openTodoDialog]
 	)
 
 	return (
@@ -31,6 +40,7 @@ function ReviewsSidebarContent() {
 							<TodoItem
 								entry={entry}
 								key={entry.id}
+								onTodoClick={handleTodoClick}
 								onTopicClick={handleTopicClick}
 							/>
 						))}
@@ -48,6 +58,7 @@ function ReviewsSidebarContent() {
 								<TodoItem
 									entry={entry}
 									key={entry.id}
+									onTodoClick={handleTodoClick}
 									onTopicClick={handleTopicClick}
 								/>
 							))}

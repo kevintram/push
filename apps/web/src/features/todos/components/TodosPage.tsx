@@ -5,6 +5,7 @@ import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import { useSectionedTodos } from '../api'
+import { useTodoDialog } from '../hooks/useTodoDialog'
 import { TodoItem } from './TodoItem'
 
 type SectionKey =
@@ -39,6 +40,7 @@ export function TodosPage() {
 	const [activeSections, setActiveSections] = useState<Array<SectionKey>>([])
 	const { sections, addTodoToSection } = useSectionedTodos()
 	const { openTopicDialog } = useTopicDialog()
+	const { openTodoDialog } = useTodoDialog()
 	const overdueSection = useMemo(
 		() => sections.find(section => section.id === 'overdue'),
 		[sections]
@@ -173,6 +175,13 @@ export function TodosPage() {
 		[openTopicDialog]
 	)
 
+	const handleTodoClick = useCallback(
+		(todoId: number) => {
+			openTodoDialog(todoId)
+		},
+		[openTodoDialog]
+	)
+
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
@@ -259,6 +268,7 @@ export function TodosPage() {
 										<TodoItem
 											entry={entry}
 											key={entry.id}
+											onTodoClick={handleTodoClick}
 											onTopicClick={handleTopicClick}
 										/>
 									))}
