@@ -20,7 +20,7 @@ function ReviewsSidebarContent() {
 	return (
 		<Sidebar className='absolute border-l' side='right'>
 			<SidebarHeader className='flex flex-row items-center justify-between'>
-				<h1 className='font-semibold'>Reviews</h1>
+				<h1 className='font-semibold text-lg'>Reviews</h1>
 				<AddReviewButton />
 			</SidebarHeader>
 			<SidebarContent className='scrollbar-track-transparent flex h-full flex-col gap-6 overflow-auto overscroll-contain px-2 pb-2'>
@@ -40,7 +40,7 @@ function ReviewsSidebarContent() {
 				{/* Unscheduled Todos Section */}
 				{unscheduledTodos.length > 0 && (
 					<div className='flex flex-col gap-2'>
-						<div className='flex flex-row items-center justify-between gap-2 border-b pb-1'>
+						<div className='flex flex-row items-center justify-between gap-2 border-b pt-6 pb-1'>
 							<h2 className='font-semibold text-sm'>Unscheduled</h2>
 						</div>
 						<div className='flex flex-col gap-1'>

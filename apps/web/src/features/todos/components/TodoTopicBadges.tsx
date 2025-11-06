@@ -26,11 +26,13 @@ export function TodoTopicBadges({
 		setShowAddDialog(true)
 	}
 
+	const topicCount = todo.topics?.length ?? 0
+
 	return (
 		<>
 			<div className='flex flex-wrap items-center gap-2'>
 				<span className='font-medium text-muted-foreground text-xs'>
-					Topics
+					Topics{topicCount > 0 && ` (${topicCount})`}
 				</span>
 				{todo.topics?.map(
 					(topic: { id: number; name: string; notes: string }) => (

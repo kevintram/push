@@ -79,9 +79,7 @@ export function ReviewsDataProvider({
 	}
 
 	return (
-		<ReviewsDataContext value={contextValue}>
-			{children}
-		</ReviewsDataContext>
+		<ReviewsDataContext value={contextValue}>{children}</ReviewsDataContext>
 	)
 }
 

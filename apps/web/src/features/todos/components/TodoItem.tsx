@@ -28,7 +28,7 @@ export function TodoItem({ entry, onTopicClick }: TodoItemProps) {
 	const queryClient = useQueryClient()
 
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
-	const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+	const [_isDropdownOpen, setIsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
 		if (entry.completed_at) {
 			return entry.completed_at ? dayjs(entry.completed_at).toDate() : null
@@ -158,90 +158,77 @@ export function TodoItem({ entry, onTopicClick }: TodoItemProps) {
 	}, [entry.inserted_at])
 
 	return (
-		<Card className='rounded border-none bg-transparent px-2 py-1 shadow-none'>
-			<CardContent className='p-0'>
-				<div className='group flex flex-row items-stretch gap-3 py-1'>
-					<Checkbox
-						checked={!!entry.completed_at}
-						className={
-							isOverdueValue
-								? 'border-red-600 dark:border-red-700 dark:bg-red-700'
-								: ''
-						}
-						onCheckedChange={handleCheckboxChange}
-					/>
-					<div className='flex min-w-0 flex-1 items-stretch gap-3'>
-						<div className='flex min-w-0 flex-1 flex-col gap-1'>
-							<textarea
-								// biome-ignore lint/a11y/noAutofocus: intentional to focus newly created todo
-								autoFocus={description === '' && isRecentlyCreated}
-								className='break-word w-full resize-none border-none bg-transparent p-0 text-foreground text-xs shadow-none outline-none [overflow-wrap:anywhere] focus:outline-none focus-visible:ring-0'
-								onChange={onDescriptionChange}
-								placeholder='Description'
-								ref={textareaRef}
-								rows={1}
-								spellCheck={false}
-								value={description}
-							/>
-							<div className='mt-2'>
-								<TodoTopicBadges
-									onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
-									onTopicClick={handleTopicClick}
-									todo={entry}
-								/>
-							</div>
-						</div>
-						<div className='flex flex-col items-end gap-2 text-xs'>
-							<DatePickerDropdown
-								isOpen={isDatePopoverOpen}
-								onDateChange={handleDateSave}
-								onOpenChange={setIsDatePopoverOpen}
-								selectedDate={selectedDate}
-								trigger={
-									<Button
-										className='h-auto p-1 text-xs hover:bg-muted/50'
-										size='sm'
-										variant='ghost'
-									>
-										<CalendarIcon className='mr-1 h-3 w-3' />
-										{effectiveDate?.toLocaleDateString()}
-									</Button>
-								}
-							/>
-						</div>
-						<div className='relative flex items-start font-medium text-muted-foreground text-xs'>
-							<div
-								className={`transition-opacity duration-200 ${isDropdownOpen
-										? 'opacity-100'
-										: 'opacity-0 group-hover:opacity-100'
-									}`}
+		<Card className='border-0 bg-transparent p-0 shadow-none hover:bg-muted/50'>
+			<CardContent className='p-2'>
+				<div className='flex flex-col'>
+					{/* Row 1: Checkbox, Description, Date, More Button */}
+					<div className='flex flex-row items-center justify-center py-1'>
+						<Checkbox
+							checked={!!entry.completed_at}
+							className={
+								isOverdueValue
+									? 'border-red-600 dark:border-red-700 dark:bg-red-700'
+									: ''
+							}
+							onCheckedChange={handleCheckboxChange}
+						/>
+						<textarea
+							// biome-ignore lint/a11y/noAutofocus: intentional to focus newly created todo
+							autoFocus={description === '' && isRecentlyCreated}
+							className='break-word ml-2 min-w-0 flex-1 resize-none border-none bg-transparent text-foreground text-sm shadow-none outline-none [overflow-wrap:anywhere] focus:outline-none focus-visible:ring-0'
+							onChange={onDescriptionChange}
+							placeholder='Description'
+							ref={textareaRef}
+							rows={1}
+							spellCheck={false}
+							value={description}
+						/>
+						<DatePickerDropdown
+							isOpen={isDatePopoverOpen}
+							onDateChange={handleDateSave}
+							onOpenChange={setIsDatePopoverOpen}
+							selectedDate={selectedDate}
+							trigger={
+								<Button
+									className='text-xs hover:bg-muted/50'
+									size='sm'
+									variant='ghost'
+								>
+									<CalendarIcon className='h-3 w-3' />
+									{effectiveDate?.toLocaleDateString()}
+								</Button>
+							}
+						/>
+						<DropdownMenu onOpenChange={setIsDropdownOpen}>
+							<DropdownMenuTrigger asChild={true}>
+								<Button
+									className='h-6 w-6 p-0'
+									size='sm'
+									title='More options'
+									variant='ghost'
+								>
+									<MoreHorizontal className='h-3 w-3' />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align='end'
+								avoidCollisions={true}
+								side='bottom'
+								sideOffset={4}
 							>
-								<DropdownMenu onOpenChange={setIsDropdownOpen}>
-									<DropdownMenuTrigger asChild={true}>
-										<Button
-											className='h-6 w-6 p-0'
-											size='sm'
-											title='More options'
-											variant='ghost'
-										>
-											<MoreHorizontal className='h-3 w-3' />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent
-										align='end'
-										avoidCollisions={true}
-										side='bottom'
-										sideOffset={4}
-									>
-										<DropdownMenuItem onClick={handleDelete}>
-											<Trash className='mr-2 h-4 w-4' />
-											Delete
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</div>
-						</div>
+								<DropdownMenuItem onClick={handleDelete}>
+									<Trash className='mr-2 h-4 w-4' />
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
+					{/* Row 2: Topic Badges */}
+					<TodoTopicBadges
+						onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
+						onTopicClick={handleTopicClick}
+						todo={entry}
+					/>
 				</div>
 			</CardContent>
 		</Card>
