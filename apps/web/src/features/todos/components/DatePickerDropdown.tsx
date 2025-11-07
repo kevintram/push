@@ -56,6 +56,7 @@ export function DatePickerDropdown({
 			<PopoverContent
 				align={align}
 				className='w-auto p-4'
+				onClick={e => e.stopPropagation()}
 				side={side}
 				sideOffset={sideOffset}
 			>

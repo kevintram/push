@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import type { ReactNode } from 'react'
-import { use, useCallback, useRef } from 'react'
+import { use, useCallback, useEffect, useRef, useState } from 'react'
 import { Checkbox } from '~/components/ui/Checkbox'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -10,6 +10,7 @@ import { deleteTodo as deleteTodoApi } from '../../api/deleteTodo'
 import { removeTopicFromTodo as removeTopicFromTodoApi } from '../../api/removeTopicFromTodo'
 import { updateTodo as updateTodoApi } from '../../api/updateTodo'
 import { TodoContext } from '../../stores/SelectedTodoContext'
+import { AddTopicToTodoDialog } from '../AddTopicToTodoDialog'
 import { TodoDetailHeader } from './TodoDetailHeader'
 import { TodoTopicsPanel } from './TodoTopicsPanel'
 
@@ -21,6 +22,7 @@ interface TodoDetailProps {
 export function TodoDetail({ onDelete, headerActions }: TodoDetailProps) {
 	const { todo, isLoading } = use(TodoContext)
 	const queryClient = useQueryClient()
+	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 
 	const { mutateAsync: updateTodoMutation } = useMutation({
 		mutationFn: updateTodoApi,
@@ -81,6 +83,10 @@ export function TodoDetail({ onDelete, headerActions }: TodoDetailProps) {
 		[removeTopicMutation]
 	)
 
+	const handleAddTopic = useCallback(() => {
+		setIsAddTopicDialogOpen(true)
+	}, [])
+
 	const handleDateChange = useCallback(
 		(newDate: Date | null) => {
 			if (todo?.id) {
@@ -111,6 +117,13 @@ export function TodoDetail({ onDelete, headerActions }: TodoDetailProps) {
 
 	const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
+
+	// focus on description whenever selected todo changes
+	useEffect(() => {
+		if (descriptionRef.current) {
+			descriptionRef.current.focus()
+		}
+	}, [todo?.id])
 
 	if (isLoading || !todo) {
 		return <div>Loading...</div>
@@ -148,11 +161,17 @@ export function TodoDetail({ onDelete, headerActions }: TodoDetailProps) {
 					<div className='w-full flex-1'>
 						<TodoTopicsPanel
 							getScrollElement={() => scrollContainerRef.current}
+							onAddTopic={handleAddTopic}
 							onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
 						/>
 					</div>
 				</div>
 			</div>
+			<AddTopicToTodoDialog
+				onOpenChange={setIsAddTopicDialogOpen}
+				open={isAddTopicDialogOpen}
+				todo={todo}
+			/>
 		</div>
 	)
 }

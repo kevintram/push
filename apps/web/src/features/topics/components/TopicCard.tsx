@@ -37,6 +37,7 @@ interface TopicCardProps {
 	topic: Topic
 	onTopicClick?: (topic: Topic) => void
 	onRemoveRelationship?: () => void
+	removeRelationshipText?: string
 	minHeight?: number
 	searchQuery?: string
 	todos?: Array<Todo>
@@ -47,6 +48,7 @@ export function TopicCard({
 	todos: todosProp,
 	onTopicClick,
 	onRemoveRelationship,
+	removeRelationshipText = 'Remove as Child',
 	minHeight = MIN_HEIGHT,
 	searchQuery // for topic card in search dialog to support highlighting and shit
 }: TopicCardProps) {
@@ -250,7 +252,7 @@ export function TopicCard({
 										}}
 									>
 										<GitPullRequestClosed className='mr-2 h-4 w-4' />
-										Remove as Child
+										{removeRelationshipText}
 									</DropdownMenuItem>
 								)}
 								<DropdownMenuItem

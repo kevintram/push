@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -9,6 +9,12 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
+import { isOverdue } from '~/features/topics/utils/isOverdue'
 import type { Todo } from '~/models/todo-topic.types'
 import { DatePickerDropdown } from '../DatePickerDropdown'
 
@@ -37,6 +43,27 @@ export function TodoDetailHeader({
 		? dayjs(todo.effective_date).toDate()
 		: null
 
+	const relativeDate = useMemo(() => {
+		if (!effectiveDate) return 'No date'
+
+		const today = dayjs().startOf('day')
+		const dateDay = dayjs(effectiveDate).startOf('day')
+		const diffDays = dateDay.diff(today, 'day')
+
+		if (diffDays === 0) return 'Today'
+		if (diffDays === 1) return 'Tomorrow'
+		if (diffDays === -1) return 'Yesterday'
+		if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
+		return `in ${diffDays}d`
+	}, [effectiveDate])
+
+	const isOverdueValue = useMemo(() => {
+		return isOverdue({
+			scheduledDate: todo.scheduled_at,
+			isCompleted: todo.completed_at !== null
+		})
+	}, [todo.scheduled_at, todo.completed_at])
+
 	const handleDateSave = (newDate: Date | null) => {
 		onDateChange(newDate)
 		setIsDatePopoverOpen(false)
@@ -45,22 +72,39 @@ export function TodoDetailHeader({
 	return (
 		<div className='flex items-center justify-between gap-4 px-2 py-1'>
 			<div className='flex min-w-0 flex-1 items-center gap-4'>
-				<DatePickerDropdown
-					isOpen={isDatePopoverOpen}
-					onDateChange={handleDateSave}
-					onOpenChange={setIsDatePopoverOpen}
-					selectedDate={selectedDate}
-					trigger={
-						<Button size='sm' variant='ghost'>
-							<CalendarIcon className='mr-2 h-4 w-4' />
-							<span className='text-sm'>
-								{effectiveDate
-									? dayjs(effectiveDate).format('MMM D, YYYY')
-									: 'No date'}
-							</span>
-						</Button>
-					}
-				/>
+				<Tooltip>
+					<DatePickerDropdown
+						isOpen={isDatePopoverOpen}
+						onDateChange={handleDateSave}
+						onOpenChange={setIsDatePopoverOpen}
+						selectedDate={selectedDate}
+						trigger={
+							<TooltipTrigger asChild>
+								<Button
+									className={
+										isOverdueValue
+											? 'text-red-600 dark:text-red-400'
+											: relativeDate === 'Today'
+												? 'text-blue-600 dark:text-blue-400'
+												: ''
+									}
+									size='sm'
+									variant='ghost'
+								>
+									<CalendarIcon className='mr-2 h-4 w-4' />
+									<span className='text-sm'>
+										{relativeDate}
+									</span>
+								</Button>
+							</TooltipTrigger>
+						}
+					/>
+					{effectiveDate && (
+						<TooltipContent>
+							{dayjs(effectiveDate).format('MMMM D, YYYY')}
+						</TooltipContent>
+					)}
+				</Tooltip>
 			</div>
 
 			<div className='flex items-center gap-2'>

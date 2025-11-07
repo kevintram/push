@@ -11,6 +11,12 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import type { Todo } from '~/models/todo-topic.types'
 import { deleteTodo, removeTopicFromTodo, updateTodo } from '../api'
@@ -19,11 +25,10 @@ import { TodoTopicBadges } from './TodoTopicBadges'
 
 interface TodoItemProps {
 	entry: Todo
-	onTopicClick?: (topicId: number) => void
 	onTodoClick?: (todoId: number) => void
 }
 
-export function TodoItem({ entry, onTopicClick, onTodoClick }: TodoItemProps) {
+export function TodoItem({ entry, onTodoClick }: TodoItemProps) {
 	const queryClient = useQueryClient()
 
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
@@ -99,20 +104,6 @@ export function TodoItem({ entry, onTopicClick, onTodoClick }: TodoItemProps) {
 		}
 	}, [deleteTodoMutation, entry?.id])
 
-	const handleRemoveTopicFromTodo = useCallback(
-		async (todoId: number, topicId: number) => {
-			await removeTopicMutation({ todoId, topicId })
-		},
-		[removeTopicMutation]
-	)
-
-	const handleTopicClick = useCallback(
-		(topicId: number) => {
-			onTopicClick?.(topicId)
-		},
-		[onTopicClick]
-	)
-
 	const handleTodoClick = useCallback(() => {
 		if (entry.id) {
 			onTodoClick?.(entry.id)
@@ -133,15 +124,28 @@ export function TodoItem({ entry, onTopicClick, onTodoClick }: TodoItemProps) {
 		})
 	}, [entry.scheduled_at, entry.completed_at])
 
+	const relativeDate = useMemo(() => {
+		if (!effectiveDate) return null
+
+		const today = dayjs().startOf('day')
+		const dateDay = dayjs(effectiveDate).startOf('day')
+		const diffDays = dateDay.diff(today, 'day')
+
+		if (diffDays === 0) return 'Today'
+		if (diffDays === 1) return 'Tomorrow'
+		if (diffDays === -1) return 'Yesterday'
+		if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
+		return `in ${diffDays}d`
+	}, [effectiveDate])
+
 	return (
 		<Card
-			className='cursor-pointer border-0 bg-transparent p-0 shadow-none hover:bg-muted/50'
-			onClick={handleTodoClick}
+			className='border-0 rounded-none bg-transparent py-2 shadow-none border-b'
 		>
-			<CardContent className='p-2'>
+			<CardContent className='cursor-pointer rounded-md p-1 hover:bg-muted/50' onClick={handleTodoClick}>
 				<div className='flex flex-col'>
 					{/* Row 1: Checkbox, Description, Date, More Button */}
-					<div className='flex items-center py-1'>
+					<div className='flex items-center pb-1'>
 						<Checkbox
 							checked={!!entry.completed_at}
 							className={
@@ -157,23 +161,36 @@ export function TodoItem({ entry, onTopicClick, onTodoClick }: TodoItemProps) {
 						>
 							{entry.description || 'Description'}
 						</span>
-						<DatePickerDropdown
-							isOpen={isDatePopoverOpen}
-							onDateChange={handleDateSave}
-							onOpenChange={setIsDatePopoverOpen}
-							selectedDate={selectedDate}
-							trigger={
-								<Button
-									className='text-xs hover:bg-muted/50'
-									onClick={e => e.stopPropagation()}
-									size='sm'
-									variant='ghost'
-								>
-									<CalendarIcon className='h-3 w-3' />
-									{effectiveDate?.toLocaleDateString()}
-								</Button>
-							}
-						/>
+						<Tooltip>
+							<DatePickerDropdown
+								isOpen={isDatePopoverOpen}
+								onDateChange={handleDateSave}
+								onOpenChange={setIsDatePopoverOpen}
+								selectedDate={selectedDate}
+								trigger={
+									<TooltipTrigger asChild>
+										<Button
+											className={`text-xs hover:bg-muted/50 ${
+												isOverdueValue
+													? 'text-red-600 dark:text-red-400'
+													: relativeDate === 'Today'
+														? 'text-blue-600 dark:text-blue-400'
+														: ''
+											}`}
+											onClick={e => e.stopPropagation()}
+											size='sm'
+											variant='ghost'
+										>
+											<CalendarIcon className='h-3 w-3' />
+											{relativeDate}
+										</Button>
+									</TooltipTrigger>
+								}
+							/>
+							<TooltipContent>
+								{effectiveDate && dayjs(effectiveDate).format('MMMM D, YYYY')}
+							</TooltipContent>
+						</Tooltip>
 						<DropdownMenu onOpenChange={setIsDropdownOpen}>
 							<DropdownMenuTrigger asChild={true}>
 								<Button
@@ -192,7 +209,12 @@ export function TodoItem({ entry, onTopicClick, onTodoClick }: TodoItemProps) {
 								side='bottom'
 								sideOffset={4}
 							>
-								<DropdownMenuItem onClick={handleDelete}>
+								<DropdownMenuItem
+									onClick={e => {
+										e.stopPropagation()
+										handleDelete()
+									}}
+								>
 									<Trash className='mr-2 h-4 w-4' />
 									Delete
 								</DropdownMenuItem>
@@ -201,8 +223,6 @@ export function TodoItem({ entry, onTopicClick, onTodoClick }: TodoItemProps) {
 					</div>
 					{/* Row 2: Topic Badges */}
 					<TodoTopicBadges
-						onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
-						onTopicClick={handleTopicClick}
 						todo={entry}
 					/>
 				</div>

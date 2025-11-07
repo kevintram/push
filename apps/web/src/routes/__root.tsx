@@ -18,9 +18,9 @@ export const Route = createRootRoute({
 				<SidebarProvider defaultOpen={false}>
 					<SidebarHolder className='!bg-background h-svh'>
 						<AppSidebar />
-						<div className='relative ml-1 flex min-h-0 flex-1 flex-col bg-background'>
+						<div className='relative ml-1 flex min-h-0 min-w-0 flex-1 flex-col bg-background'>
 							<Header />
-							<div className='relative min-h-0 flex-1 rounded-tl-sm border-1 bg-primary-foreground'>
+							<div className='relative min-h-0 flex-1 min-w-0 rounded-tl-sm border-1 bg-primary-foreground'>
 								<Suspense fallback={<LoadingOrError />}>
 									<Outlet />
 								</Suspense>

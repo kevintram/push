@@ -1,4 +1,6 @@
 import { use, useCallback } from 'react'
+import { Plus } from 'lucide-react'
+import { Button } from '~/components/ui/Button'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
@@ -13,12 +15,14 @@ type ListItem = { type: 'topic'; topic: Topic }
 interface TodoTopicsPanelProps {
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
+	onAddTopic: () => void
 	onRemoveTopicFromTodo: (todoId: number, topicId: number) => void
 }
 
 export function TodoTopicsPanel({
 	getScrollElement,
 	scrollMargin,
+	onAddTopic,
 	onRemoveTopicFromTodo
 }: TodoTopicsPanelProps) {
 	const { todo } = use(TodoContext)
@@ -64,6 +68,7 @@ export function TodoTopicsPanel({
 						onRemoveTopicFromTodo(todo!.id, item.topic.id)
 					}
 					onTopicClick={handleTopicClick}
+					removeRelationshipText='Remove from todo'
 					todos={item.topic.todos ?? []}
 					topic={item.topic}
 				/>
@@ -82,6 +87,10 @@ export function TodoTopicsPanel({
 				<span className='font-medium text-muted-foreground text-xs'>
 					Topics ({topics.length})
 				</span>
+				<div className='flex-1' />
+				<Button onClick={onAddTopic} variant='ghost' size='icon-sm'>
+					<Plus />
+				</Button>
 			</div>
 			<div className='flex-1'>
 				<MasonryLayout

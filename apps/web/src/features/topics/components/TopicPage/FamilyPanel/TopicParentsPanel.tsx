@@ -43,7 +43,6 @@ export function TopicParentsPanel() {
 								child: selectedTopic.id
 							})
 						}}
-						topicId={parent.id}
 					/>
 				))}
 				<Badge

@@ -2,11 +2,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { use, useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/Tooltip'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { addTopicToTodo, createTodo } from '~/features/todos/api'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 
 export function AddReviewButton() {
 	const { topic: selectedTopic } = use(TopicContext)
+	const { openTodoDialog } = useTodoTopicDialog()
 
 	const queryClient = useQueryClient()
 
@@ -35,11 +38,17 @@ export function AddReviewButton() {
 		})
 
 		await addTopicMutation({ todoId: todo.id, topicId: selectedTopic.id })
-	}, [selectedTopic, createTodoMutation, addTopicMutation])
+		openTodoDialog(todo.id)
+	}, [selectedTopic, createTodoMutation, addTopicMutation, openTodoDialog])
 
 	return (
-		<Button onClick={handleAddTodo} size='sm' variant='ghost'>
-			<Plus className='h-4 w-4' />
-		</Button>
-	)
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<Button onClick={handleAddTodo} size='sm' variant='ghost'>
+					<Plus className='h-4 w-4' />
+				</Button>
+			</TooltipTrigger>
+			<TooltipContent>Add Review</TooltipContent>
+		</Tooltip>
+	);
 }

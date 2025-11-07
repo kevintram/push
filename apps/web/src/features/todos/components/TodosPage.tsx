@@ -261,13 +261,12 @@ export function TodosPage() {
 							</div>
 
 							{section.entries.length > 0 ? (
-								<div className='space-y-4'>
+								<div className='space-y-1'>
 									{section.entries.map(entry => (
 										<TodoItem
 											entry={entry}
 											key={entry.id}
 											onTodoClick={handleTodoClick}
-											onTopicClick={handleTopicClick}
 										/>
 									))}
 								</div>
