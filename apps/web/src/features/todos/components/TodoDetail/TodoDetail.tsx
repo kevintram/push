@@ -117,36 +117,41 @@ export function TodoDetail({ onDelete, headerActions }: TodoDetailProps) {
 	}
 
 	return (
-		<div className='flex h-full min-h-0 flex-col'>
-			<TodoDetailHeader
-				headerActions={headerActions}
-				onDateChange={handleDateChange}
-				onDelete={handleDelete}
-				todo={todo}
-			/>
+		<div className='flex min-h-0 flex-1 flex-col'>
+			<div className='sticky top-0 z-10 w-full border-b'>
+				<TodoDetailHeader
+					headerActions={headerActions}
+					onDateChange={handleDateChange}
+					onDelete={handleDelete}
+					todo={todo}
+				/>
+			</div>
+
 			<div
-				className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll px-6 py-4'
+				className='scrollbar-track-transparent flex flex-1 gap-4 overflow-y-auto p-4'
 				ref={scrollContainerRef}
 			>
-				<div className='flex flex-row items-start gap-3 pb-4'>
-					<Checkbox
-						checked={!!todo.completed_at}
-						className='mt-1'
-						onCheckedChange={handleCheckboxChange}
-					/>
+				<Checkbox
+					checked={!!todo.completed_at}
+					className='mt-0.5'
+					onCheckedChange={handleCheckboxChange}
+				/>
+				<div className='flex-1'>
 					<Textarea
-						className='!bg-transparent break-word m-0 min-h-12 w-full flex-1 resize-none rounded-none border-none p-0 shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+						className='!bg-transparent m-0 min-h-0 resize-none rounded-none border-none p-0 pb-4 shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
 						onChange={onDescriptionChange}
 						placeholder='Description'
 						ref={descriptionRef}
 						spellCheck={false}
 						value={description}
 					/>
+					<div className='w-full flex-1'>
+						<TodoTopicsPanel
+							getScrollElement={() => scrollContainerRef.current}
+							onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
+						/>
+					</div>
 				</div>
-				<TodoTopicsPanel
-					getScrollElement={() => scrollContainerRef.current}
-					onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
-				/>
 			</div>
 		</div>
 	)

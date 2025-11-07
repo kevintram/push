@@ -43,49 +43,47 @@ export function TodoDetailHeader({
 	}
 
 	return (
-		<div className='sticky top-0 z-10 w-full border-b'>
-			<div className='flex items-center justify-between gap-4 px-2 py-1'>
-				<div className='flex min-w-0 flex-1 items-center gap-4'>
-					<DatePickerDropdown
-						isOpen={isDatePopoverOpen}
-						onDateChange={handleDateSave}
-						onOpenChange={setIsDatePopoverOpen}
-						selectedDate={selectedDate}
-						trigger={
-							<Button size='sm' variant='ghost'>
-								<CalendarIcon className='mr-2 h-4 w-4' />
-								<span className='text-sm'>
-									{effectiveDate
-										? dayjs(effectiveDate).format('MMM D, YYYY')
-										: 'No date'}
-								</span>
-							</Button>
-						}
-					/>
-				</div>
+		<div className='flex items-center justify-between gap-4 px-2 py-1'>
+			<div className='flex min-w-0 flex-1 items-center gap-4'>
+				<DatePickerDropdown
+					isOpen={isDatePopoverOpen}
+					onDateChange={handleDateSave}
+					onOpenChange={setIsDatePopoverOpen}
+					selectedDate={selectedDate}
+					trigger={
+						<Button size='sm' variant='ghost'>
+							<CalendarIcon className='mr-2 h-4 w-4' />
+							<span className='text-sm'>
+								{effectiveDate
+									? dayjs(effectiveDate).format('MMM D, YYYY')
+									: 'No date'}
+							</span>
+						</Button>
+					}
+				/>
+			</div>
 
-				<div className='flex items-center gap-2'>
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true}>
-							<Button
-								className='h-6 w-6 p-0'
-								size='sm'
-								title='More options'
-								variant='ghost'
-							>
-								<MoreHorizontal className='h-4 w-4' />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent>
-							<DropdownMenuItem onClick={onDelete} variant='destructive'>
-								<Trash className='mr-2 h-4 w-4' />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+			<div className='flex items-center gap-2'>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild={true}>
+						<Button
+							className='h-6 w-6 p-0'
+							size='sm'
+							title='More options'
+							variant='ghost'
+						>
+							<MoreHorizontal className='h-4 w-4' />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent>
+						<DropdownMenuItem onClick={onDelete} variant='destructive'>
+							<Trash className='mr-2 h-4 w-4' />
+							Delete
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 
-					{headerActions}
-				</div>
+				{headerActions}
 			</div>
 		</div>
 	)
