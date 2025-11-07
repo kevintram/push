@@ -21,14 +21,14 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem
 } from '~/components/ui/Sidebar'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
-import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 
 export function AppSidebar() {
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
-	const { openTopicDialog } = useTopicDialog()
+	const { openTopicDialog } = useTodoTopicDialog()
 
 	const handleCreateTopic = useCallback(async () => {
 		const createdTopic = await insertTopic({})

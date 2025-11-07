@@ -2,9 +2,9 @@ import { Archive, Inbox, Plus, SquareLibrary } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 import { useRootTopics } from '~/features/topics/api/useRootTopics'
-import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
 import { TopicCard } from '../TopicCard'
 import type { RenderedFilter } from './FilterBadges'
@@ -27,7 +27,7 @@ type FilterBadge = {
 
 export function RootTopicsPage() {
 	const [activeFilter, setActiveFilter] = useState<FilterId | null>(null)
-	const { openTopicDialog } = useTopicDialog()
+	const { openTopicDialog } = useTodoTopicDialog()
 
 	// Build query params based on active filter (mutually exclusive)
 	const queryParams = useMemo(() => {

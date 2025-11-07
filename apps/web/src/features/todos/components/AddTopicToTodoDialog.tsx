@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { addTopicToTodo, type Todo } from '~/features/todos/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
-import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
 
 interface AddTopicToTodoDialogProps {
@@ -21,7 +21,7 @@ export function AddTopicToTodoDialog({
 	const [searchQuery, setSearchQuery] = useState('')
 	const [debouncedQuery, setDebouncedQuery] = useState('')
 	const queryClient = useQueryClient()
-	const { openTopicDialog } = useTopicDialog()
+	const { openTopicDialog } = useTodoTopicDialog()
 
 	// Debounced search query
 	const updateDebouncedQuery = useCallback(

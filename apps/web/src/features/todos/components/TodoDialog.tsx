@@ -2,13 +2,14 @@ import { X } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
-import { useTodoDialog } from '../hooks/useTodoDialog'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useTodoWithTopics } from '../hooks/useTodoWithTopics'
 import { TodoContext } from '../stores/SelectedTodoContext'
 import { TodoDetail } from './TodoDetail/TodoDetail'
 
 export function TodoDialog() {
-	const { isOpen, selectedTodoId, closeTodoDialog } = useTodoDialog()
+	const { todoDialogState, closeTodoDialog } = useTodoTopicDialog()
+	const { isOpen, todoId: selectedTodoId } = todoDialogState
 	const { todo, isLoading } = useTodoWithTopics(selectedTodoId)
 
 	const handleDelete = useCallback(() => {

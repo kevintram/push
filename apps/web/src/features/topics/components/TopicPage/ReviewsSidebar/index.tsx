@@ -1,16 +1,14 @@
 import { use, useCallback } from 'react'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
-import { useTodoDialog } from '~/features/todos'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { TodoItem } from '~/features/todos/components/TodoItem'
-import { useTopicDialog } from '../../../hooks/useTopicDialog'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { AddReviewButton } from './AddReviewButton'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
 function ReviewsSidebarContent() {
 	const { scheduledTodos, unscheduledTodos } = useReviewsData()
-	const { openTopicDialog } = useTopicDialog()
-	const { openTodoDialog } = useTodoDialog()
+	const { openTopicDialog, openTodoDialog } = useTodoTopicDialog()
 
 	const handleTopicClick = useCallback(
 		(topicId: number) => {

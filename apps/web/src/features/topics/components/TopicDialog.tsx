@@ -3,13 +3,15 @@ import { Maximize2, X } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
-import { useTopicDialog } from '../hooks/useTopicDialog'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useTopicWithRelationships } from '../hooks/useTopicWithRelationships'
 import { TopicContext } from '../stores/SelectedTopicContext'
 import { TopicDetail } from './TopicDetail/TopicDetail'
 
 export function TopicDialog() {
-	const { isOpen, selectedTopicId, closeTopicDialog } = useTopicDialog()
+	const { topicDialogState, closeTopicDialog, maximizeTopicDialog } =
+		useTodoTopicDialog()
+	const { isOpen, topicId: selectedTopicId } = topicDialogState
 	const navigate = useNavigate()
 	const { topic, isLoading } = useTopicWithRelationships(selectedTopicId)
 
@@ -19,13 +21,13 @@ export function TopicDialog() {
 
 	const handleNavigate = useCallback(() => {
 		if (selectedTopicId) {
+			maximizeTopicDialog()
 			navigate({
 				to: '/topics/{-$topicId}',
 				params: { topicId: selectedTopicId.toString() }
 			})
-			closeTopicDialog()
 		}
-	}, [selectedTopicId, navigate, closeTopicDialog])
+	}, [selectedTopicId, navigate, maximizeTopicDialog])
 
 	const headerActions = useMemo(
 		() => (

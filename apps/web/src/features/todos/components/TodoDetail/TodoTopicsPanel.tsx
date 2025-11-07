@@ -1,7 +1,7 @@
 import { use, useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
 import { TodoContext } from '../../stores/SelectedTodoContext'
 
@@ -22,7 +22,7 @@ export function TodoTopicsPanel({
 	onRemoveTopicFromTodo
 }: TodoTopicsPanelProps) {
 	const { todo } = use(TodoContext)
-	const { openTopicDialog } = useTopicDialog()
+	const { openTopicDialog } = useTodoTopicDialog()
 
 	const topics = todo?.topics ?? []
 
