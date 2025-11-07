@@ -6,6 +6,7 @@ import { Button } from '~/components/ui/Button'
 import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import { useSectionedTodos } from '../api'
 import { TodoItem } from './TodoItem'
+import { TodosPageSkeleton } from './TodosPageSkeleton'
 
 type SectionKey =
 	| 'overdue'
@@ -37,7 +38,7 @@ const FILTER_ORDER: Array<FilterId> = [
 
 export function TodosPage() {
 	const [activeSections, setActiveSections] = useState<Array<SectionKey>>([])
-	const { sections, addTodoToSection } = useSectionedTodos()
+	const { sections, addTodoToSection, isLoading } = useSectionedTodos()
 	const { openTopicDialog } = useTopicDialog()
 	const overdueSection = useMemo(
 		() => sections.find(section => section.id === 'overdue'),
@@ -172,6 +173,10 @@ export function TodosPage() {
 		},
 		[openTopicDialog]
 	)
+
+	if (isLoading) {
+		return <TodosPageSkeleton />
+	}
 
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
