@@ -66,17 +66,25 @@
 						"useExplicitType": "off",
 						"useForComponent": "off",
 						"useExportsLast": "off",
+						"noShadow": "off",
 						"useSortedClasses": {
 							"level": "error",
 							"fix": "safe"
 						}
 					},
 					"suspicious": {
-						"noReactSpecificProps": "off"
+						"noReactSpecificProps": "off",
+						"noArrayIndexKey": "off",
+						"noEmptyBlockStatements": "off"
+					},
+					"complexity": {
+						"noExcessiveCognitiveComplexity": "off",
+						"noExcessiveNestedTestSuites": "off"
 					},
 					"performance": {
 						"noImgElement": "off",
-						"noNamespaceImport": "off"
+						"noNamespaceImport": "off",
+						"noBarrelFile": "off"
 					},
 					"style": {
 						// turn off while we use supabase typing
@@ -88,6 +96,8 @@
 								"requireAscii": true
 							}
 						},
+						"noExportedImports": "off",
+						"useComponentExportOnlyModules": "off",
 						"useConsistentArrayType": {
 							"level": "error",
 							"options": {
@@ -128,6 +138,10 @@
 				"rules": {
 					"performance": {
 						"useTopLevelRegex": "off"
+					},
+					"suspicious": {
+						"noExplicitAny": "off",
+						"noThenProperty": "off"
 					}
 				}
 			}

@@ -79,7 +79,7 @@ export function TodoDetailHeader({
 						onOpenChange={setIsDatePopoverOpen}
 						selectedDate={selectedDate}
 						trigger={
-							<TooltipTrigger asChild>
+							<TooltipTrigger asChild={true}>
 								<Button
 									className={
 										isOverdueValue
@@ -92,9 +92,7 @@ export function TodoDetailHeader({
 									variant='ghost'
 								>
 									<CalendarIcon className='mr-2 h-4 w-4' />
-									<span className='text-sm'>
-										{relativeDate}
-									</span>
+									<span className='text-sm'>{relativeDate}</span>
 								</Button>
 							</TooltipTrigger>
 						}

@@ -63,7 +63,7 @@ export function TodosPageHeader({
 	)
 
 	return (
-		<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 backdrop-blur-sm px-4 pt-4 pb-1'>
+		<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 px-4 pt-4 pb-1 backdrop-blur-sm'>
 			<div className='flex items-center justify-between'>
 				<h1 className='font-bold text-xl'>Todos</h1>
 			</div>

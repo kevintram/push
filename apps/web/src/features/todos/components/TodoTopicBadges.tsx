@@ -5,9 +5,7 @@ interface TodoTopicBadgesProps {
 	todo: Todo
 }
 
-export function TodoTopicBadges({
-	todo,
-}: TodoTopicBadgesProps) {
+export function TodoTopicBadges({ todo }: TodoTopicBadgesProps) {
 	const topicCount = todo.topics?.length ?? 0
 
 	return (

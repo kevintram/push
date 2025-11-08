@@ -1,7 +1,7 @@
-import { use, useCallback } from 'react'
 import { Plus } from 'lucide-react'
-import { Button } from '~/components/ui/Button'
+import { use, useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
+import { Button } from '~/components/ui/Button'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/models/todo-topic.types'
@@ -88,7 +88,7 @@ export function TodoTopicsPanel({
 					Topics ({topics.length})
 				</span>
 				<div className='flex-1' />
-				<Button onClick={onAddTopic} variant='ghost' size='icon-sm'>
+				<Button onClick={onAddTopic} size='icon-sm' variant='ghost'>
 					<Plus />
 				</Button>
 			</div>

@@ -14,12 +14,11 @@ import {
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipProvider,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import type { Todo } from '~/models/todo-topic.types'
-import { deleteTodo, removeTopicFromTodo, updateTodo } from '../api'
+import { deleteTodo, updateTodo } from '../api'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { TodoTopicBadges } from './TodoTopicBadges'
 
@@ -49,14 +48,6 @@ export function TodoItem({ entry, onTodoClick }: TodoItemProps) {
 
 	const { mutateAsync: deleteTodoMutation } = useMutation({
 		mutationFn: deleteTodo,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['todos'] })
-		}
-	})
-
-	const { mutateAsync: removeTopicMutation } = useMutation({
-		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
-			removeTopicFromTodo(todoId, topicId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
@@ -139,10 +130,11 @@ export function TodoItem({ entry, onTodoClick }: TodoItemProps) {
 	}, [effectiveDate])
 
 	return (
-		<Card
-			className='border-0 rounded-none bg-transparent py-2 shadow-none border-b'
-		>
-			<CardContent className='cursor-pointer rounded-md p-1 hover:bg-muted/50' onClick={handleTodoClick}>
+		<Card className='rounded-none border-0 border-b bg-transparent py-2 shadow-none'>
+			<CardContent
+				className='cursor-pointer rounded-md p-1 hover:bg-muted/50'
+				onClick={handleTodoClick}
+			>
 				<div className='flex flex-col'>
 					{/* Row 1: Checkbox, Description, Date, More Button */}
 					<div className='flex items-center pb-1'>
@@ -168,7 +160,7 @@ export function TodoItem({ entry, onTodoClick }: TodoItemProps) {
 								onOpenChange={setIsDatePopoverOpen}
 								selectedDate={selectedDate}
 								trigger={
-									<TooltipTrigger asChild>
+									<TooltipTrigger asChild={true}>
 										<Button
 											className={`text-xs hover:bg-muted/50 ${
 												isOverdueValue
@@ -222,9 +214,7 @@ export function TodoItem({ entry, onTodoClick }: TodoItemProps) {
 						</DropdownMenu>
 					</div>
 					{/* Row 2: Topic Badges */}
-					<TodoTopicBadges
-						todo={entry}
-					/>
+					<TodoTopicBadges todo={entry} />
 				</div>
 			</CardContent>
 		</Card>

@@ -2,7 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { use, useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/Tooltip'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { addTopicToTodo, createTodo } from '~/features/todos/api'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
@@ -43,12 +47,12 @@ export function AddReviewButton() {
 
 	return (
 		<Tooltip>
-			<TooltipTrigger asChild>
+			<TooltipTrigger asChild={true}>
 				<Button onClick={handleAddTodo} size='sm' variant='ghost'>
 					<Plus className='h-4 w-4' />
 				</Button>
 			</TooltipTrigger>
 			<TooltipContent>Add Review</TooltipContent>
 		</Tooltip>
-	);
+	)
 }
