@@ -1,8 +1,19 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { motion } from 'framer-motion'
-import { Check, Logs, X } from 'lucide-react'
-import { useMemo } from 'react'
+import { BookCheck, Check, Logs, Plus, X } from 'lucide-react'
+import { useCallback, useMemo } from 'react'
 import { Badge } from '~/components/ui/Badge'
+import { Button } from '~/components/ui/Button'
 import { Separator } from '~/components/ui/Separator'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
+import { createTodo } from '~/features/todos/api'
 
 type SectionKey =
 	| 'overdue'
@@ -31,6 +42,34 @@ export function TodosPageHeader({
 	filters,
 	onClearFilters
 }: TodosPageHeaderProps) {
+	const queryClient = useQueryClient()
+	const { openTodoDialog } = useTodoTopicDialog()
+
+	const { mutateAsync: createTodoMutation } = useMutation({
+		mutationFn: createTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
+		}
+	})
+
+	const handleAddTodo = useCallback(async () => {
+		const todo = await createTodoMutation({
+			description: '',
+			scheduledAt: null,
+			completedAt: null
+		})
+		openTodoDialog(todo.id)
+	}, [createTodoMutation, openTodoDialog])
+
+	const handleLogNow = useCallback(async () => {
+		const todo = await createTodoMutation({
+			description: '',
+			scheduledAt: null,
+			completedAt: dayjs().format('YYYY-MM-DD')
+		})
+		openTodoDialog(todo.id)
+	}, [createTodoMutation, openTodoDialog])
+
 	const activeFilters = filters.filter(filter => filter.isActive)
 	const inactiveFilters = filters.filter(filter => !filter.isActive)
 	const hasActiveFilters = activeFilters.length > 0
@@ -85,6 +124,26 @@ export function TodosPageHeader({
 		<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 px-4 pt-4 pb-1 backdrop-blur-sm'>
 			<div className='flex items-center justify-between'>
 				<h1 className='font-bold text-xl'>Todos</h1>
+				<TooltipProvider>
+					<div className='flex items-center gap-1'>
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<Button onClick={handleLogNow} size='sm' variant='ghost'>
+									<BookCheck />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Log Review Now</TooltipContent>
+						</Tooltip>
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<Button onClick={handleAddTodo} size='sm' variant='ghost'>
+									<Plus />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Add Todo</TooltipContent>
+						</Tooltip>
+					</div>
+				</TooltipProvider>
 			</div>
 			<div className='top-0 z-10 pt-2 pb-1'>
 				<motion.div
