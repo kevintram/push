@@ -1,5 +1,5 @@
 from app.models.base import Base
-from app.models.association import Review
+from app.models.reviews import Review
 from app.models.todos import Todo
 from app.models.topics import Topic, t_topics_closure
 

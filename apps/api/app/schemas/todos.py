@@ -30,6 +30,10 @@ class TodoReadWithTopics(TodoRead):
     model_config = ConfigDict(from_attributes=True)
     topics: list["TopicRead"]
 
+class TodoReadWithReviews(TodoRead):
+    model_config = ConfigDict(from_attributes=True)
+    reviews: list["ReviewWithTopic"]
+
 class TodoCreate(TodoBase):
     model_config = ConfigDict(from_attributes=True)
 

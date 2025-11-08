@@ -4,13 +4,13 @@ import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Rating, Topic } from '~/models/todo-topic.types'
 import { TodoContext } from '../../stores/SelectedTodoContext'
 
-const MIN_WIDTH = 192
+const MIN_WIDTH = 210
 const MIN_HEIGHT = 96
 
-type ListItem = { type: 'topic'; topic: Topic }
+type ListItem = { type: 'topic'; topic: Topic; rating?: Rating }
 
 interface TodoTopicsPanelProps {
 	getScrollElement?: () => HTMLDivElement | null
@@ -28,7 +28,8 @@ export function TodoTopicsPanel({
 	const { todo } = use(TodoContext)
 	const { openTopicDialog } = useTodoTopicDialog()
 
-	const topics = todo?.topics ?? []
+	// Extract topics from reviews if available, otherwise fallback to topics
+	const topics = todo?.reviews?.map(review => review.topic) ?? todo?.topics ?? []
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -37,10 +38,16 @@ export function TodoTopicsPanel({
 		[openTopicDialog]
 	)
 
-	const items: Array<ListItem> = topics.map(topic => ({
-		type: 'topic' as const,
-		topic
-	}))
+	const items: Array<ListItem> = todo?.reviews
+		? todo.reviews.map(review => ({
+				type: 'topic' as const,
+				topic: review.topic,
+				rating: review.rating
+			}))
+		: (todo?.topics ?? []).map(topic => ({
+				type: 'topic' as const,
+				topic
+			}))
 
 	const estimateItemSize = useCallback((item: ListItem) => {
 		const { topic } = item
@@ -68,6 +75,7 @@ export function TodoTopicsPanel({
 						onRemoveTopicFromTodo(todo!.id, item.topic.id)
 					}
 					onTopicClick={handleTopicClick}
+					rating={item.rating}
 					removeRelationshipText='Remove from todo'
 					todos={item.topic.todos ?? []}
 					topic={item.topic}

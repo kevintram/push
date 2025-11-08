@@ -3,7 +3,7 @@ from app.dependencies import UserIdDep, SessionDep
 from sqlalchemy import select, update, delete, func
 from sqlalchemy.orm import selectinload
 from app.models import Todo, Topic, Review
-from app.schemas import TodoCreate, TodoRead, TodoUpdate, TopicIdPayload, TopicRead, TodoReadWithTopics
+from app.schemas import TodoCreate, TodoRead, TodoUpdate, TopicIdPayload, TopicRead, TodoReadWithReviews
 
 router = APIRouter()
 
@@ -13,12 +13,12 @@ async def read_todos(
     session: SessionDep,
     user_id: UserIdDep,
     topic_id: int | None = None,
-) -> list[TodoReadWithTopics]:
+) -> list[TodoReadWithReviews]:
     stmt = (
         select(Todo)
         .where(Todo.user_id == user_id)
         .order_by(Todo.completed_at.asc().nulls_first(), Todo.scheduled_at.asc())
-        .options(selectinload(Todo.topics))
+        .options(selectinload(Todo.reviews).selectinload(Review.topic))
     )
 
     if topic_id is not None:
@@ -34,9 +34,9 @@ async def read_todo(
     session: SessionDep,
     user_id: UserIdDep,
     todo_id: int
-) -> TodoReadWithTopics:
+) -> TodoReadWithReviews:
     stmt = select(Todo).where(Todo.id == todo_id, Todo.user_id == user_id)
-    stmt = stmt.options(selectinload(Todo.topics))
+    stmt = stmt.options(selectinload(Todo.reviews).selectinload(Review.topic))
     result = await session.execute(stmt)
 
     todo = result.scalar_one_or_none()
@@ -89,7 +89,7 @@ async def update_todo(
     stmt = (
         select(Todo)
         .where(Todo.id == todo_id, Todo.user_id == user_id)
-        .options(selectinload(Todo.topics))
+        .options(selectinload(Todo.reviews).selectinload(Review.topic))
     )
     final_result = await session.execute(stmt)
     return final_result.scalar_one()
@@ -110,13 +110,13 @@ async def add_topic(
     payload: TopicIdPayload,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TodoReadWithTopics:
+) -> TodoReadWithReviews:
     topic_id = payload.topic_id
 
     todo_result = await session.execute(
         select(Todo)
         .where(Todo.id == todo_id, Todo.user_id == user_id)
-        .options(selectinload(Todo.topics))
+        .options(selectinload(Todo.reviews).selectinload(Review.topic))
     )
     todo = todo_result.scalar_one_or_none()
     if not todo:
@@ -141,7 +141,7 @@ async def add_topic(
     review = Review(todo_id=todo_id, topic_id=topic_id, rating="good")
     session.add(review)
     await session.flush()
-    await session.refresh(todo, ["topics"])
+    await session.refresh(todo, ["reviews"])
     return todo
 
 
@@ -155,7 +155,7 @@ async def remove_topic(
     todo_result = await session.execute(
         select(Todo)
         .where(Todo.id == todo_id, Todo.user_id == user_id)
-        .options(selectinload(Todo.topics))
+        .options(selectinload(Todo.reviews))
     )
     todo = todo_result.scalar_one_or_none()
     if not todo:

@@ -33,7 +33,8 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import type { Todo, Topic } from '~/models/todo-topic.types'
+import type { Rating, Todo, Topic } from '~/models/todo-topic.types'
+import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
 import { updateTopic as updateTopicApi } from '../api/updateTopic'
@@ -48,6 +49,7 @@ interface TopicCardProps {
 	minHeight?: number
 	searchQuery?: string
 	todos?: Array<Todo>
+	rating?: Rating | null
 }
 
 export function TopicCard({
@@ -57,7 +59,8 @@ export function TopicCard({
 	onRemoveRelationship,
 	removeRelationshipText = 'Remove as Child',
 	minHeight = MIN_HEIGHT,
-	searchQuery // for topic card in search dialog to support highlighting and shit
+	searchQuery, // for topic card in search dialog to support highlighting and shit
+	rating
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
 
@@ -213,17 +216,29 @@ export function TopicCard({
 							</PopoverContent>
 						</Popover>
 
-						{/* Menu - top right */}
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild={true}>
+						{/* Rating and Menu - top right */}
+						<div className='flex items-center gap-1'>
+							{rating && (
 								<Button
-									className='h-5 w-5 p-0 opacity-0 transition-opacity group-hover:opacity-100'
+									className='h-5 gap-1 px-1.5 text-xs capitalize'
 									onClick={e => e.stopPropagation()}
-									variant='ghost'
+									size='sm'
+									variant='outline'
 								>
-									<MoreHorizontal className='h-3 w-3' />
+									{getRatingIcon(rating)}
+									{rating}
 								</Button>
-							</DropdownMenuTrigger>
+							)}
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild={true}>
+									<Button
+										className='h-5 w-5 p-0'
+										onClick={e => e.stopPropagation()}
+										variant='ghost'
+									>
+										<MoreHorizontal className='h-3 w-3' />
+									</Button>
+								</DropdownMenuTrigger>
 							<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
 								<DropdownMenuItem onClick={handleInboxToggle}>
 									{topic.inboxed ? (
@@ -273,7 +288,8 @@ export function TopicCard({
 									Delete
 								</DropdownMenuItem>
 							</DropdownMenuContent>
-						</DropdownMenu>
+							</DropdownMenu>
+						</div>
 					</div>
 
 					<div className='flex flex-col gap-1'>

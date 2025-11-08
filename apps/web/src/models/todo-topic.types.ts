@@ -1,6 +1,16 @@
 import * as v from 'valibot'
 
 export type LearningState = 'LEARNING' | 'REVIEW' | 'RELEARNING'
+export type Rating = 'miss' | 'hard' | 'good' | 'easy'
+
+export type Review = {
+	todo_id: number
+	topic_id: number
+	rating: Rating
+	inserted_at: string
+	updated_at: string
+	topic: Topic
+}
 
 export type Todo = {
 	id: number
@@ -11,6 +21,7 @@ export type Todo = {
 	updated_at: string
 	description: string
 	topics?: Array<Topic>
+	reviews?: Array<Review>
 }
 
 export type Topic = {
@@ -29,6 +40,15 @@ export type Topic = {
 	todos?: Array<Todo>
 }
 
+export const ReviewSchema: v.GenericSchema<Review> = v.object({
+	todo_id: v.number(),
+	topic_id: v.number(),
+	rating: v.picklist(['miss', 'hard', 'good', 'easy']),
+	inserted_at: v.string(),
+	updated_at: v.string(),
+	topic: v.lazy(() => TopicSchema)
+})
+
 export const TodoSchema: v.GenericSchema<Todo> = v.object({
 	id: v.number(),
 	scheduled_at: v.nullable(v.string()),
@@ -37,7 +57,8 @@ export const TodoSchema: v.GenericSchema<Todo> = v.object({
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	description: v.string(),
-	topics: v.optional(v.array(v.lazy(() => TopicSchema)), [])
+	topics: v.optional(v.array(v.lazy(() => TopicSchema)), []),
+	reviews: v.optional(v.array(v.lazy(() => ReviewSchema)), [])
 })
 
 export const TopicSchema: v.GenericSchema<Topic> = v.object({
