@@ -29,7 +29,7 @@ export function InboxPage() {
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
-				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-1'>
+				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 backdrop-blur-sm px-4 pt-4 pb-2'>
 					<div className='flex items-center justify-between'>
 						<h1 className='font-bold text-xl'>
 							Inbox{' '}
@@ -42,7 +42,7 @@ export function InboxPage() {
 						</Button>
 					</div>
 				</div>
-				<div className='p-6 pt-2'>
+				<div className='p-6'>
 					<InboxList
 						isLoading={isLoading}
 						onTopicSelect={handleTopicSelect}

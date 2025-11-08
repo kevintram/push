@@ -173,7 +173,7 @@ export function RootTopicsPage() {
 			)}
 
 			{!isLoading && topics.length > 0 && (
-				<div className='p-6 pt-2'>
+				<div className='p-6'>
 					<MasonryLayout
 						estimateItemSize={estimateItemSize}
 						gap={16}

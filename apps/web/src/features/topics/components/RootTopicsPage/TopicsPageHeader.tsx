@@ -14,14 +14,14 @@ export function TopicsPageHeader({
 	onClearFilters
 }: TopicsPageHeaderProps) {
 	return (
-		<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
+		<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 backdrop-blur-sm px-4 pt-4 pb-1'>
 			<div className='flex items-center justify-between'>
 				<h1 className='font-bold text-xl'>Library</h1>
 				<Button onClick={onCreateTopic} size='icon' variant='ghost'>
 					<Plus />
 				</Button>
 			</div>
-			<div className='py-2'>
+			<div className='top-0 z-10 pt-2 pb-1'>
 				<FilterBadges
 					onClearFilters={onClearFilters}
 					renderedFilters={renderedFilters}

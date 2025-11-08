@@ -1,11 +1,10 @@
-import { motion } from 'framer-motion'
-import { Check, Logs, Plus, X } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useSectionedTodos } from '../api'
 import { TodoItem } from './TodoItem'
+import { TodosPageHeader } from './TodosPageHeader'
 
 type SectionKey =
 	| 'overdue'
@@ -17,13 +16,6 @@ type SectionKey =
 	| 'logbook'
 
 type FilterId = SectionKey
-
-type FilterBadge = {
-	id: FilterId
-	label: string
-	isActive: boolean
-	onClick: () => void
-}
 
 const FILTER_ORDER: Array<FilterId> = [
 	'overdue',
@@ -38,7 +30,7 @@ const FILTER_ORDER: Array<FilterId> = [
 export function TodosPage() {
 	const [activeSections, setActiveSections] = useState<Array<SectionKey>>([])
 	const { sections, addTodoToSection } = useSectionedTodos()
-	const { openTopicDialog, openTodoDialog } = useTodoTopicDialog()
+	const { openTodoDialog } = useTodoTopicDialog()
 	const overdueSection = useMemo(
 		() => sections.find(section => section.id === 'overdue'),
 		[sections]
@@ -111,33 +103,6 @@ export function TodosPage() {
 		[activeSections, handleFilterClick, sections, isLogbookActive]
 	)
 
-	const activeFilters = filters.filter(filter => filter.isActive)
-	const inactiveFilters = filters.filter(filter => !filter.isActive)
-	const hasActiveFilters = activeFilters.length > 0
-
-	type RenderedFilter =
-		| { key: FilterId; type: 'filter'; filter: FilterBadge }
-		| { key: 'clear'; type: 'clear' }
-
-	const renderedFilters: Array<RenderedFilter> = hasActiveFilters
-		? [
-				...activeFilters.map(filter => ({
-					key: filter.id,
-					type: 'filter' as const,
-					filter
-				})),
-				{ key: 'clear', type: 'clear' as const },
-				...inactiveFilters.map(filter => ({
-					key: filter.id,
-					type: 'filter' as const,
-					filter
-				}))
-			]
-		: filters.map(filter => ({
-				key: filter.id,
-				type: 'filter' as const,
-				filter
-			}))
 
 	const filteredSections = useMemo(() => {
 		let sectionsToShow = sections
@@ -166,13 +131,6 @@ export function TodosPage() {
 		setActiveSections([])
 	}, [])
 
-	const handleTopicClick = useCallback(
-		(topicId: number) => {
-			openTopicDialog(topicId)
-		},
-		[openTopicDialog]
-	)
-
 	const handleTodoClick = useCallback(
 		(todoId: number) => {
 			openTodoDialog(todoId)
@@ -183,66 +141,11 @@ export function TodosPage() {
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
-				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
-					<div className='flex items-center justify-between'>
-						<h1 className='font-bold text-xl'>Todos</h1>
-					</div>
-					<div className='top-0 z-10 pt-2 pb-1'>
-						<motion.div
-							className='flex flex-wrap items-center gap-2'
-							layout={true}
-							transition={{ duration: 0.2, ease: 'easeInOut' }}
-						>
-							{renderedFilters.map(item => {
-								if (item.type === 'clear') {
-									return (
-										<motion.div
-											key='clear'
-											layout={true}
-											transition={{ duration: 0.2, ease: 'easeInOut' }}
-										>
-											<Badge
-												aria-label='Clear filters'
-												className='flex cursor-pointer items-center gap-1'
-												onClick={handleClearFilters}
-												variant='secondary'
-											>
-												<X className='h-4 w-4' />
-											</Badge>
-										</motion.div>
-									)
-								}
-
-								return (
-									<motion.div
-										key={item.key}
-										layout={true}
-										transition={{ duration: 0.2, ease: 'easeInOut' }}
-									>
-										<Badge
-											className='flex cursor-pointer items-center gap-1'
-											onClick={item.filter.onClick}
-											variant={item.filter.isActive ? 'default' : 'outline'}
-										>
-											{item.filter.id === 'logbook' ? (
-												<Logs aria-hidden='true' className='h-4 w-4' />
-											) : (
-												item.filter.isActive && (
-													<Check aria-hidden='true' className='h-4 w-4' />
-												)
-											)}
-											{item.filter.label}
-										</Badge>
-									</motion.div>
-								)
-							})}
-						</motion.div>
-					</div>
-				</div>
+				<TodosPageHeader filters={filters} onClearFilters={handleClearFilters} />
 				<div className='px-6'>
 					{filteredSections.map(section => (
-						<div className='mb-4' key={section.id}>
-							<div className='sticky top-[82px] z-[5] flex items-center justify-between bg-primary-foreground py-2'>
+						<div className='mb-2 mt-12' key={section.id}>
+							<div className='flex items-center justify-between bg-primary-foreground'>
 								<h2
 									className={`font-bold text-l ${section.headingClassName ?? ''}`.trim()}
 								>
@@ -261,7 +164,7 @@ export function TodosPage() {
 							</div>
 
 							{section.entries.length > 0 ? (
-								<div className='space-y-1'>
+								<div >
 									{section.entries.map(entry => (
 										<TodoItem
 											entry={entry}
