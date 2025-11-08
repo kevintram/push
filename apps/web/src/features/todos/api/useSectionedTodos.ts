@@ -44,13 +44,13 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	},
 	{
 		id: 'nextSevenDays',
-		label: 'Next 7 Days',
-		emptyMessage: 'No todos scheduled in the next 7 days.',
+		label: 'Next Few Days',
+		emptyMessage: 'No todos scheduled for the next few days.',
 		canAdd: true
 	},
 	{
 		id: 'future',
-		label: 'In the Future',
+		label: 'Future',
 		emptyMessage: 'No future todos yet.',
 		canAdd: true
 	},
