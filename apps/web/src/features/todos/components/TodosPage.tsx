@@ -5,6 +5,7 @@ import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useSectionedTodos } from '../api'
 import { TodoItem } from './TodoItem'
 import { TodosPageHeader } from './TodosPageHeader'
+import { TodosPageSkeleton } from './TodosPageSkeleton'
 
 export function TodosPage() {
 	const {
@@ -12,7 +13,8 @@ export function TodosPage() {
 		filters,
 		addTodoToSection,
 		toggleSectionCollapse,
-		handleClearFilters
+		handleClearFilters,
+		isLoading
 	} = useSectionedTodos()
 	const { openTodoDialog } = useTodoTopicDialog()
 
@@ -32,6 +34,10 @@ export function TodosPage() {
 		},
 		[addTodoToSection, openTodoDialog]
 	)
+
+	if (isLoading) {
+		return <TodosPageSkeleton />
+	}
 
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
