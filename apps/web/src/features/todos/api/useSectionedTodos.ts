@@ -474,10 +474,12 @@ export function useSectionedTodos() {
 		async (sectionId: SectionKey) => {
 			const scheduledAt = getSectionStartDate(sectionId)
 
-			await insertTodoMutation({
+			const newTodo = await insertTodoMutation({
 				description: '',
 				scheduled_at: scheduledAt
 			})
+
+			return newTodo.id
 		},
 		[getSectionStartDate, insertTodoMutation]
 	)

@@ -23,6 +23,16 @@ export function TodosPage() {
 		[openTodoDialog]
 	)
 
+	const handleAddTodo = useCallback(
+		async (sectionId: string) => {
+			const newTodoId = await addTodoToSection(
+				sectionId as Parameters<typeof addTodoToSection>[0]
+			)
+			openTodoDialog(newTodoId)
+		},
+		[addTodoToSection, openTodoDialog]
+	)
+
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
@@ -61,7 +71,7 @@ export function TodosPage() {
 											className='mr-4'
 											onClick={e => {
 												e.stopPropagation()
-												addTodoToSection(section.id)
+												handleAddTodo(section.id)
 											}}
 											size='sm'
 											variant='ghost'
