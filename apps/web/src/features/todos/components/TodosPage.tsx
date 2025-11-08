@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
@@ -17,6 +17,13 @@ type SectionKey =
 
 type FilterId = SectionKey
 
+type SectionState = {
+	isActive: boolean
+	isCollapsed: boolean
+}
+
+type SectionStates = Record<SectionKey, SectionState>
+
 const FILTER_ORDER: Array<FilterId> = [
 	'overdue',
 	'today',
@@ -28,7 +35,15 @@ const FILTER_ORDER: Array<FilterId> = [
 ]
 
 export function TodosPage() {
-	const [activeSections, setActiveSections] = useState<Array<SectionKey>>([])
+	const [sectionStates, setSectionStates] = useState<SectionStates>({
+		overdue: { isActive: false, isCollapsed: false },
+		today: { isActive: false, isCollapsed: false },
+		tomorrow: { isActive: false, isCollapsed: false },
+		nextSevenDays: { isActive: false, isCollapsed: false },
+		future: { isActive: false, isCollapsed: false },
+		unscheduled: { isActive: false, isCollapsed: false },
+		logbook: { isActive: false, isCollapsed: false }
+	})
 	const { sections, addTodoToSection } = useSectionedTodos()
 	const { openTodoDialog } = useTodoTopicDialog()
 	const overdueSection = useMemo(
@@ -41,34 +56,52 @@ export function TodosPage() {
 			return
 		}
 
-		setActiveSections(prev => {
-			if (!prev.includes('overdue')) {
+		setSectionStates(prev => {
+			if (!prev.overdue.isActive) {
 				return prev
 			}
 
-			return prev.filter(sectionId => sectionId !== 'overdue')
+			return {
+				...prev,
+				overdue: { ...prev.overdue, isActive: false }
+			}
 		})
 	}, [overdueSection])
 
 	const handleFilterClick = useCallback((filterId: FilterId) => {
-		setActiveSections(prev => {
-			const isActive = prev.includes(filterId)
-			if (isActive) {
-				return prev.filter(id => id !== filterId)
-			}
+		setSectionStates(prev => {
+			const isActive = prev[filterId].isActive
+			const isLogbookActive = prev.logbook.isActive
+
 			// If clicking 'logbook', only show logbook
 			if (filterId === 'logbook') {
-				return ['logbook']
+				return Object.fromEntries(
+					Object.entries(prev).map(([key, state]) => [
+						key,
+						{ ...state, isActive: key === 'logbook' ? !isActive : false }
+					])
+				) as SectionStates
 			}
+
 			// If logbook is currently active and clicking another filter, replace with that filter
-			if (prev.includes('logbook')) {
-				return [filterId]
+			if (isLogbookActive) {
+				return Object.fromEntries(
+					Object.entries(prev).map(([key, state]) => [
+						key,
+						{ ...state, isActive: key === filterId }
+					])
+				) as SectionStates
 			}
-			return [...prev, filterId]
+
+			// Toggle the clicked filter
+			return {
+				...prev,
+				[filterId]: { ...prev[filterId], isActive: !isActive }
+			}
 		})
 	}, [])
 
-	const isLogbookActive = activeSections.includes('logbook')
+	const isLogbookActive = sectionStates.logbook.isActive
 
 	const filters = useMemo(
 		() =>
@@ -78,7 +111,7 @@ export function TodosPage() {
 				return {
 					id: filterId,
 					label: section?.label ?? filterId,
-					isActive: activeSections.includes(filterId),
+					isActive: sectionStates[filterId].isActive,
 					onClick: () => handleFilterClick(filterId)
 				}
 			}).filter(filter => {
@@ -87,8 +120,8 @@ export function TodosPage() {
 					return false
 				}
 				// When any other filter is active, hide logbook
-				const hasOtherActiveFilters = activeSections.some(
-					id => id !== 'logbook'
+				const hasOtherActiveFilters = Object.entries(sectionStates).some(
+					([id, state]) => id !== 'logbook' && state.isActive
 				)
 				if (hasOtherActiveFilters && filter.id === 'logbook') {
 					return false
@@ -100,14 +133,16 @@ export function TodosPage() {
 				}
 				return true
 			}),
-		[activeSections, handleFilterClick, sections, isLogbookActive]
+		[sectionStates, handleFilterClick, sections, isLogbookActive]
 	)
 
 
 	const filteredSections = useMemo(() => {
 		let sectionsToShow = sections
 
-		if (activeSections.length === 0) {
+		const hasActiveFilters = Object.values(sectionStates).some(state => state.isActive)
+
+		if (!hasActiveFilters) {
 			// Hide overdue and logbook sections when they have no entries
 			sectionsToShow = sections.filter(section => {
 				if (section.id === 'overdue' && section.entries.length === 0) {
@@ -120,15 +155,22 @@ export function TodosPage() {
 			})
 		} else {
 			sectionsToShow = sections.filter(section =>
-				activeSections.includes(section.id)
+				sectionStates[section.id].isActive
 			)
 		}
 
 		return sectionsToShow
-	}, [activeSections, sections])
+	}, [sectionStates, sections])
 
 	const handleClearFilters = useCallback(() => {
-		setActiveSections([])
+		setSectionStates(prev =>
+			Object.fromEntries(
+				Object.entries(prev).map(([key, state]) => [
+					key,
+					{ ...state, isActive: false }
+				])
+			) as SectionStates
+		)
 	}, [])
 
 	const handleTodoClick = useCallback(
@@ -138,48 +180,70 @@ export function TodosPage() {
 		[openTodoDialog]
 	)
 
+	const toggleSectionCollapse = useCallback((sectionId: SectionKey) => {
+		setSectionStates(prev => ({
+			...prev,
+			[sectionId]: { ...prev[sectionId], isCollapsed: !prev[sectionId].isCollapsed }
+		}))
+	}, [])
+
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
 				<TodosPageHeader filters={filters} onClearFilters={handleClearFilters} />
 				<div className='px-6'>
-					{filteredSections.map(section => (
-						<div className='mb-2 mt-12' key={section.id}>
-							<div className='flex items-center justify-between bg-primary-foreground'>
-								<h2
-									className={`font-bold text-l ${section.headingClassName ?? ''}`.trim()}
-								>
-									{section.label} <span className='text-muted-foreground'>({section.entries.length})</span>
-								</h2>
-								{section.canAdd && (
+					{filteredSections.map(section => {
+						const isCollapsed = sectionStates[section.id].isCollapsed
+						return (
+							<div className='mb-2 mt-12' key={section.id}>
+								<div className='flex items-center justify-between bg-primary-foreground'>
 									<Button
-										className='mr-4'
-										onClick={() => addTodoToSection(section.id)}
-										size='sm'
+										className='flex items-center gap-2 p-0 -translate-x-3'
+										onClick={() => toggleSectionCollapse(section.id)}
 										variant='ghost'
 									>
-										<Plus className='h-4 w-4' />
+										<h2
+											className={`font-bold text-lg ${section.headingClassName ?? ''}`.trim()}
+										>
+											{section.label} <span className='text-muted-foreground'>({section.entries.length})</span>
+										</h2>
+										<ChevronDown className={`h-5 w-5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
 									</Button>
-								)}
-							</div>
-
-							{section.entries.length > 0 ? (
-								<div >
-									{section.entries.map(entry => (
-										<TodoItem
-											entry={entry}
-											key={entry.id}
-											onTodoClick={handleTodoClick}
-										/>
-									))}
+									{section.canAdd && (
+										<Button
+											className='mr-4'
+											onClick={(e) => {
+												e.stopPropagation()
+												addTodoToSection(section.id)
+											}}
+											size='sm'
+											variant='ghost'
+										>
+											<Plus className='h-4 w-4' />
+										</Button>
+									)}
 								</div>
-							) : (
-								<p className='text-muted-foreground text-sm italic'>
-									{section.emptyMessage}
-								</p>
+
+							{!isCollapsed && (
+								section.entries.length > 0 ? (
+									<div >
+										{section.entries.map(entry => (
+											<TodoItem
+												entry={entry}
+												key={entry.id}
+												onTodoClick={handleTodoClick}
+											/>
+										))}
+									</div>
+								) : (
+									<p className='text-muted-foreground text-sm italic'>
+										{section.emptyMessage}
+									</p>
+								)
 							)}
-						</div>
-					))}
+							</div>
+						)
+					})}
 				</div>
 			</div>
 		</div>
