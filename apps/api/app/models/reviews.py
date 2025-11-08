@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Enum, ForeignKey, text
+from sqlalchemy import BigInteger, Enum, ForeignKey, Identity, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TIMESTAMP
 
@@ -12,12 +12,14 @@ from app.models.base import Base
 class Review(Base):
     __tablename__ = "reviews"
 
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
     todo_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("todos.id"), primary_key=True
+        BigInteger, ForeignKey("todos.id"), nullable=False
     )
     topic_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("topics.id"), primary_key=True
+        BigInteger, ForeignKey("topics.id"), nullable=False
     )
+    user_id: Mapped[str] = mapped_column(String, nullable=False)
     rating: Mapped[str] = mapped_column(
         Enum("miss", "hard", "good", "easy", name="rating"),
         nullable=False,

@@ -24,6 +24,8 @@ from app.schemas.reviews import (
     ReviewBase,
     ReviewRead,
     ReviewWithTopic,
+    ReviewCreate,
+    ReviewUpdate,
 )
 
 # Rebuild models to resolve forward references
@@ -40,7 +42,8 @@ TodoUpdate.model_rebuild()
 ReviewBase.model_rebuild()
 ReviewRead.model_rebuild()
 ReviewWithTopic.model_rebuild()
-
+ReviewCreate.model_rebuild()
+ReviewUpdate.model_rebuild()
 __all__ = [
     "TodoBase",
     "TodoCreate",
@@ -63,4 +66,6 @@ __all__ = [
     "ReviewBase",
     "ReviewRead",
     "ReviewWithTopic",
+    "ReviewCreate",
+    "ReviewUpdate",
 ]

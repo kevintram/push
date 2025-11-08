@@ -16,6 +16,7 @@ class ReviewBase(BaseModel):
 class ReviewRead(ReviewBase):
     model_config = ConfigDict(from_attributes=True)
 
+    id: int
     todo_id: int
     topic_id: int
     inserted_at: datetime
@@ -26,3 +27,17 @@ class ReviewWithTopic(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 
     topic: TopicRead
+
+
+class ReviewCreate(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    todo_id: int
+    topic_id: int
+    rating: str
+
+
+class ReviewUpdate(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    rating: str
