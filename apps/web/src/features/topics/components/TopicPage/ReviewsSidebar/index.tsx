@@ -1,5 +1,11 @@
+import { BicepsFlexed, Mountain } from 'lucide-react'
 import { use, useCallback } from 'react'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { TodoItem } from '~/features/todos/components/TodoItem'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
@@ -10,6 +16,7 @@ import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 function ReviewsSidebarContent() {
 	const { scheduledTodos, unscheduledTodos } = useReviewsData()
 	const { openTodoDialog } = useTodoTopicDialog()
+	const { topic } = use(TopicContext)
 
 	const handleTodoClick = useCallback(
 		(todoId: number) => {
@@ -20,11 +27,50 @@ function ReviewsSidebarContent() {
 
 	return (
 		<Sidebar className='absolute border-l' side='right'>
-			<SidebarHeader className='flex flex-row items-center justify-between pb-0'>
-				<h1 className='font-semibold text-lg'>Reviews</h1>
-				<div className='flex items-center gap-1'>
-					<LogNowButton />
-					<AddReviewButton />
+			<SidebarHeader className='flex flex-col gap-0 pb-0'>
+				<div className='flex flex-row items-center justify-between'>
+					<h1 className='font-semibold text-lg'>Reviews</h1>
+					<div className='flex items-center gap-1'>
+						<LogNowButton />
+						<AddReviewButton />
+					</div>
+				</div>
+				<div className='flex text-muted-foreground text-xs'>
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<div className='flex items-center gap-1'>
+								<BicepsFlexed className='h-3 w-3' />
+								<span>
+									{topic?.stability != null
+										? `${topic.stability}d`
+										: 'No data'}
+								</span>
+							</div>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>
+							{topic?.stability != null
+								? `Stable for ${topic.stability} days`
+								: 'Stability not yet calculated'}
+						</TooltipContent>
+					</Tooltip>
+					&nbsp;·&nbsp;
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<div className='flex items-center gap-1'>
+								<Mountain className='h-3 w-3' />
+								<span>
+									{topic?.difficulty != null
+										? `${topic.difficulty}/10`
+										: 'No data'}
+								</span>
+							</div>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>
+							{topic?.difficulty != null
+								? `${topic.difficulty}/10 difficulty`
+								: 'Difficulty not yet calculated'}
+						</TooltipContent>
+					</Tooltip>
 				</div>
 			</SidebarHeader>
 			<SidebarContent className='scrollbar-track-transparent flex h-full flex-col gap-6 overflow-auto overscroll-contain px-2 pb-2'>

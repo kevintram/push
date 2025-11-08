@@ -4,10 +4,12 @@ import {
 	Archive,
 	ArchiveRestore,
 	Baby,
+	BicepsFlexed,
 	Calendar,
 	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
+	Mountain,
 	Trash2,
 	User2
 } from 'lucide-react'
@@ -26,6 +28,11 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
 import type { Todo, Topic } from '~/models/todo-topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
@@ -309,20 +316,70 @@ export function TopicCard({
 				</div>
 
 				{/* Bottom row: Review date and children count */}
-				<div className='flex items-center justify-between text-muted-foreground text-xs'>
+				<div className='flex items-center gap-1 text-muted-foreground text-xs'>
 					{/* Review date - bottom left */}
-					<div className='flex items-center gap-1'>
-						<Calendar className='h-3 w-3' />
-						{reviewDate ? (
-							<span className={reviewDate.isUpcoming ? '' : 'opacity-60'}>
-								{reviewDate.isUpcoming
-									? `in ${dayjs(reviewDate.date).diff(dayjs(), 'day')} days`
-									: `${dayjs().diff(dayjs(reviewDate.date), 'day')} days ago`}
-							</span>
-						) : (
-							<span>None</span>
-						)}
-					</div>
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<div className='flex items-center gap-1'>
+								<Calendar className='h-3 w-3' />
+								{reviewDate ? (
+									<span className={reviewDate.isUpcoming ? '' : 'opacity-60'}>
+										{reviewDate.isUpcoming
+											? `in ${dayjs(reviewDate.date).diff(dayjs(), 'day')}d`
+											: `${dayjs().diff(dayjs(reviewDate.date), 'day')}d ago`}
+									</span>
+								) : (
+									<span>None</span>
+								)}
+							</div>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>
+							{(() => {
+								if (!reviewDate) return 'Never reviewed'
+								if (reviewDate.isUpcoming) {
+									return `Next review in ${dayjs(reviewDate.date).diff(dayjs(), 'day')} days`
+								}
+								return `Last reviewed ${dayjs().diff(dayjs(reviewDate.date), 'day')} days ago`
+							})()}
+						</TooltipContent>
+					</Tooltip>
+					&nbsp;·&nbsp;
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<div className='flex items-center gap-1'>
+								<BicepsFlexed className='h-3 w-3' />
+								<span>
+									{topic.stability != null
+										? `${topic.stability}d`
+										: 'No data'}
+								</span>
+							</div>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>
+							{topic.stability != null
+								? `Stable for ${topic.stability} days`
+								: 'Stability not yet calculated'}
+						</TooltipContent>
+					</Tooltip>
+					&nbsp;·&nbsp;
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<div className='flex items-center gap-1'>
+								<Mountain className='h-3 w-3' />
+								<span>
+									{topic.difficulty != null
+										? `${topic.difficulty}/10`
+										: 'No data'}
+								</span>
+							</div>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>
+							{topic.difficulty != null
+								? `${topic.difficulty}/10 difficulty`
+								: 'Difficulty not yet calculated'}
+						</TooltipContent>
+					</Tooltip>
+					<div className="flex-1"/>
 
 					{/* Children count - bottom right */}
 					<Popover>
@@ -363,6 +420,6 @@ export function TopicCard({
 					</Popover>
 				</div>
 			</CardContent>
-		</Card>
+		</Card >
 	)
 }
