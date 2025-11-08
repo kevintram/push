@@ -12,6 +12,7 @@ import { updateTodo as updateTodoApi } from '../../api/updateTodo'
 import { TodoContext } from '../../stores/SelectedTodoContext'
 import { AddTopicToTodoDialog } from '../AddTopicToTodoDialog'
 import { TodoDetailHeader } from './TodoDetailHeader'
+import { TodoDetailSkeleton } from './TodoDetailSkeleton'
 import { TodoTopicsPanel } from './TodoTopicsPanel'
 
 interface TodoDetailProps {
@@ -126,7 +127,7 @@ export function TodoDetail({ onDelete, headerActions }: TodoDetailProps) {
 	}, [todo?.id])
 
 	if (isLoading || !todo) {
-		return <div>Loading...</div>
+		return <TodoDetailSkeleton />
 	}
 
 	return (
