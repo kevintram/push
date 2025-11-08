@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
-import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
 import { useCreateRelationship } from '../../hooks/useCreateRelationship'
 import { useDebouncedPotentialTopics } from '../../hooks/useDebouncedPotentialTopics'
@@ -30,7 +30,7 @@ export function AddRelationshipDialog({
 		})
 
 	const createRelationship = useCreateRelationship()
-	const { openTopicDialog } = useTopicDialog()
+	const { openTopicDialog } = useTodoTopicDialog()
 
 	// Reset query when dialog opens/closes
 	useEffect(() => {

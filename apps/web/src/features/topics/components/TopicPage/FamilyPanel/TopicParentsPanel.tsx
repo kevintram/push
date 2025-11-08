@@ -1,9 +1,9 @@
 import { Plus, User2 } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { useTopicParents } from '~/features/topics/hooks/useTopicParents'
-import { useTopicDialog } from '../../../hooks/useTopicDialog'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { TopicBadge } from '../../TopicBadge'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
@@ -11,7 +11,7 @@ import { AddRelationshipDialog } from '../AddRelationshipDialog'
 export function TopicParentsPanel() {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { topic: selectedTopic } = use(TopicContext)
-	const { openTopicDialog } = useTopicDialog()
+	const { openTopicDialog } = useTodoTopicDialog()
 
 	const { data: parents = [] } = useTopicParents(selectedTopic?.id)
 
@@ -43,7 +43,6 @@ export function TopicParentsPanel() {
 								child: selectedTopic.id
 							})
 						}}
-						topicId={parent.id}
 					/>
 				))}
 				<Badge

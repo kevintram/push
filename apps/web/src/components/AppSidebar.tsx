@@ -5,11 +5,11 @@ import {
 	ListChecks,
 	RotateCcw,
 	Settings,
-	SquareLibrary,
-	SquarePen
+	SquareLibrary
 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
+import { CombinedActionButton } from '~/components/AppSidebar/CombinedActionButton'
 import { SettingsDialog } from '~/components/SettingsDialog'
 import {
 	Sidebar,
@@ -21,19 +21,9 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem
 } from '~/components/ui/Sidebar'
-import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
-import { useTopicDialog } from '~/features/topics/hooks/useTopicDialog'
 
 export function AppSidebar() {
-	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
-		useCreateTopic()
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
-	const { openTopicDialog } = useTopicDialog()
-
-	const handleCreateTopic = useCallback(async () => {
-		const createdTopic = await insertTopic({})
-		openTopicDialog(createdTopic.id)
-	}, [insertTopic, openTopicDialog])
 
 	const menuItems = [
 		{
@@ -69,15 +59,7 @@ export function AppSidebar() {
 					<SidebarGroupContent>
 						<SidebarMenu>
 							<SidebarMenuItem>
-								<SidebarMenuButton
-									disabled={isCreatingTopic}
-									onClick={handleCreateTopic}
-									tooltip='Add Topic'
-									variant='secondary'
-								>
-									<SquarePen />
-									<span>Add Topic</span>
-								</SidebarMenuButton>
+								<CombinedActionButton />
 							</SidebarMenuItem>
 							{menuItems.map(item => (
 								<SidebarMenuItem key={item.title}>

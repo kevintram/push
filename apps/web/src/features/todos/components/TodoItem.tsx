@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { CalendarIcon, MoreVertical, Trash2 } from 'lucide-react'
+import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
+import { Card, CardContent } from '~/components/ui/Card'
 import { Checkbox } from '~/components/ui/Checkbox'
 import {
 	DropdownMenu,
@@ -10,66 +11,33 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { Textarea } from '~/components/ui/Textarea'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
-import { useAutoSave } from '~/hooks/useAutoSave'
 import type { Todo } from '~/models/todo-topic.types'
-import { deleteTodo, removeTopicFromTodo, updateTodo } from '../api'
+import { deleteTodo, updateTodo } from '../api'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { TodoTopicBadges } from './TodoTopicBadges'
 
 interface TodoItemProps {
 	entry: Todo
-	isCompleted?: boolean
-	onTopicClick?: (
-		topicId: number,
-		name?: string | null,
-		notes?: string | null
-	) => void
+	onTodoClick?: (todoId: number) => void
 }
 
-export function TodoItem({
-	entry,
-	isCompleted = false,
-	onTopicClick
-}: TodoItemProps) {
+export function TodoItem({ entry, onTodoClick }: TodoItemProps) {
 	const queryClient = useQueryClient()
 
-	const dateValue = (() => {
-		if ('effective_date' in entry && entry.effective_date) {
-			return entry.effective_date
-		}
-		if (isCompleted) {
-			return entry.completed_at
-		}
-		return entry.scheduled_at
-	})()
-	const dateLabel = dateValue
-		? dayjs(dateValue).toDate().toLocaleDateString('en-US', {
-				weekday: 'short',
-				month: 'short',
-				day: 'numeric'
-			})
-		: ''
-
-	const isOverdueValue = useMemo(
-		() =>
-			isOverdue({
-				scheduledDate: entry.scheduled_at,
-				isCompleted
-			}),
-		[isCompleted, entry.scheduled_at]
-	)
-
-	const [isChecked, setIsChecked] = useState(isCompleted)
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
+	const [_isDropdownOpen, setIsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
-		if (isCompleted) {
+		if (entry.completed_at) {
 			return entry.completed_at ? dayjs(entry.completed_at).toDate() : null
 		}
 		return entry.scheduled_at ? dayjs(entry.scheduled_at).toDate() : null
 	})
-	const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
 
 	const { mutateAsync: updateTodoMutation } = useMutation({
 		mutationFn: updateTodo,
@@ -85,17 +53,8 @@ export function TodoItem({
 		}
 	})
 
-	const { mutateAsync: removeTopicMutation } = useMutation({
-		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
-			removeTopicFromTodo(todoId, topicId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['todos'] })
-		}
-	})
-
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
-			setIsChecked(checked)
 			if (entry.id) {
 				updateTodoMutation({
 					id: entry.id,
@@ -106,152 +65,158 @@ export function TodoItem({
 		[entry.id, updateTodoMutation]
 	)
 
-	const updateDescription = useCallback(
-		(newDescription: string) => {
-			if (entry.id) {
-				updateTodoMutation({
-					id: entry.id,
-					description: newDescription.trim()
-				})
-			}
-		},
-		[entry.id, updateTodoMutation]
-	)
-
-	const { value: description, onChange: onDescriptionChange } = useAutoSave({
-		initialValue: entry.description || '',
-		onSave: updateDescription,
-		key: `todo-entry-${entry.id}`
-	})
-
 	const handleDateSave = useCallback(
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
 			if (entry.id) {
-				if (isCompleted) {
+				const newDateString = newDate
+					? dayjs(newDate).format('YYYY-MM-DD')
+					: null
+				if (entry.completed_at) {
 					updateTodoMutation({
 						id: entry.id,
-						completed_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
+						completed_at: newDateString
 					})
 				} else {
 					updateTodoMutation({
 						id: entry.id,
-						scheduled_at: newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
+						scheduled_at: newDateString
 					})
 				}
 			}
 			setIsDatePopoverOpen(false)
 		},
-		[entry.id, updateTodoMutation, isCompleted]
+		[entry.id, entry.completed_at, updateTodoMutation]
 	)
 
 	const handleDelete = useCallback(async () => {
-		if (entry.id) {
+		if (entry?.id) {
 			await deleteTodoMutation(entry.id)
 		}
-	}, [entry.id, deleteTodoMutation])
+	}, [deleteTodoMutation, entry?.id])
 
-	const handleRemoveTopicFromTodo = useCallback(
-		async (todoId: number, topicId: number) => {
-			await removeTopicMutation({ todoId, topicId })
-		},
-		[removeTopicMutation]
-	)
+	const handleTodoClick = useCallback(() => {
+		if (entry.id) {
+			onTodoClick?.(entry.id)
+		}
+	}, [entry.id, onTodoClick])
+
+	const effectiveDate: Date | null = useMemo(() => {
+		if (entry.effective_date) {
+			return dayjs(entry.effective_date).toDate()
+		}
+		return null
+	}, [entry.effective_date])
+
+	const isOverdueValue: boolean = useMemo(() => {
+		return isOverdue({
+			scheduledDate: entry.scheduled_at,
+			isCompleted: entry.completed_at !== null
+		})
+	}, [entry.scheduled_at, entry.completed_at])
+
+	const relativeDate = useMemo(() => {
+		if (!effectiveDate) return null
+
+		const today = dayjs().startOf('day')
+		const dateDay = dayjs(effectiveDate).startOf('day')
+		const diffDays = dateDay.diff(today, 'day')
+
+		if (diffDays === 0) return 'Today'
+		if (diffDays === 1) return 'Tomorrow'
+		if (diffDays === -1) return 'Yesterday'
+		if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
+		return `in ${diffDays}d`
+	}, [effectiveDate])
 
 	return (
-		<div className='group rounded-lg px-4'>
-			<div className='flex flex-col'>
-				{/* Row 1: Checkbox + Description + Date + More Button */}
-				<div className='flex items-start gap-4'>
-					{/* Checkbox */}
-					{/* biome-ignore lint/a11y/noStaticElementInteractions: wrapper div to prevent event propagation to parent */}
-					{/* biome-ignore lint/nursery/noNoninteractiveElementInteractions: wrapper div to prevent event propagation to parent */}
-					{/* biome-ignore lint/a11y/useKeyWithClickEvents: wrapper div only prevents propagation, keyboard interaction handled by child Checkbox */}
-					<div
-						onClick={e => {
-							e.preventDefault()
-							e.stopPropagation()
-						}}
-					>
+		<Card className='rounded-none border-0 border-b bg-transparent py-2 shadow-none'>
+			<CardContent
+				className='cursor-pointer rounded-md p-1 hover:bg-muted/50'
+				onClick={handleTodoClick}
+			>
+				<div className='flex flex-col'>
+					{/* Row 1: Checkbox, Description, Date, More Button */}
+					<div className='flex items-center pb-1'>
 						<Checkbox
-							checked={isChecked}
-							className={`mt-2 ${isOverdueValue ? 'border-red-500 data-[state=checked]:border-red-500 data-[state=checked]:bg-red-500' : ''}`}
-							onCheckedChange={handleCheckboxChange}
-						/>
-					</div>
-
-					{/* Description */}
-					<Textarea
-						className='!bg-transparent mt-1 mb-1 min-h-[1.5rem] flex-1 resize-none border-0 p-0 text-md leading-relaxed shadow-none focus:border-transparent focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:border-transparent focus-visible:ring-0'
-						onChange={onDescriptionChange}
-						placeholder='Description'
-						rows={1}
-						value={description}
-					/>
-
-					{/* Date and More Actions */}
-					<div className='flex items-center gap-0'>
-						{/* Date */}
-						<DatePickerDropdown
-							isOpen={isDatePopoverOpen}
-							onDateChange={handleDateSave}
-							onOpenChange={setIsDatePopoverOpen}
-							selectedDate={selectedDate}
-							trigger={
-								<Button
-									className='h-auto whitespace-nowrap p-1 text-muted-foreground text-sm hover:bg-muted/50'
-									size='sm'
-									variant='ghost'
-								>
-									<CalendarIcon className='mr-1 h-3 w-3' />
-									{dateLabel}
-								</Button>
+							checked={!!entry.completed_at}
+							className={
+								isOverdueValue
+									? 'border-red-600 dark:border-red-700 dark:bg-red-700'
+									: ''
 							}
+							onCheckedChange={handleCheckboxChange}
+							onClick={e => e.stopPropagation()}
 						/>
-
-						{/* More Actions Dropdown */}
-						<DropdownMenu
-							onOpenChange={setIsMoreDropdownOpen}
-							open={isMoreDropdownOpen}
+						<span
+							className={`ml-2 min-w-0 flex-1 truncate text-sm ${entry.description === '' || entry.description === null ? 'text-muted-foreground' : 'text-foreground'}`}
 						>
+							{entry.description || 'Description'}
+						</span>
+						<Tooltip>
+							<DatePickerDropdown
+								isOpen={isDatePopoverOpen}
+								onDateChange={handleDateSave}
+								onOpenChange={setIsDatePopoverOpen}
+								selectedDate={selectedDate}
+								trigger={
+									<TooltipTrigger asChild={true}>
+										<Button
+											className={`text-xs hover:bg-muted/50 ${
+												isOverdueValue
+													? 'text-red-600 dark:text-red-400'
+													: relativeDate === 'Today'
+														? 'text-blue-600 dark:text-blue-400'
+														: ''
+											}`}
+											onClick={e => e.stopPropagation()}
+											size='sm'
+											variant='ghost'
+										>
+											<CalendarIcon className='h-3 w-3' />
+											{relativeDate}
+										</Button>
+									</TooltipTrigger>
+								}
+							/>
+							<TooltipContent>
+								{effectiveDate && dayjs(effectiveDate).format('MMMM D, YYYY')}
+							</TooltipContent>
+						</Tooltip>
+						<DropdownMenu onOpenChange={setIsDropdownOpen}>
 							<DropdownMenuTrigger asChild={true}>
 								<Button
-									className='h-6 w-6 p-0 text-muted-foreground hover:text-foreground'
+									className='h-6 w-6 p-0'
+									onClick={e => e.stopPropagation()}
 									size='sm'
+									title='More options'
 									variant='ghost'
 								>
-									<MoreVertical className='h-3 w-3' />
+									<MoreHorizontal className='h-3 w-3' />
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end' className='w-32'>
+							<DropdownMenuContent
+								align='end'
+								avoidCollisions={true}
+								side='bottom'
+								sideOffset={4}
+							>
 								<DropdownMenuItem
-									className='text-red-600 focus:text-red-600'
-									onClick={() => {
+									onClick={e => {
+										e.stopPropagation()
 										handleDelete()
-										setIsMoreDropdownOpen(false)
 									}}
 								>
-									<Trash2 className='mr-2 h-4 w-4' />
+									<Trash className='mr-2 h-4 w-4' />
 									Delete
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
+					{/* Row 2: Topic Badges */}
+					<TodoTopicBadges todo={entry} />
 				</div>
-
-				{/* Row 2: Spacer + Topics */}
-				<div className='flex items-center gap-2'>
-					{/* Spacer (same width as checkbox) */}
-					<div className='w-6' />
-
-					{/* Topics */}
-					<TodoTopicBadges
-						onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
-						onTopicClick={onTopicClick}
-						todo={entry}
-					/>
-				</div>
-			</div>
-		</div>
+			</CardContent>
+		</Card>
 	)
 }

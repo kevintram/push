@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import (
     BigInteger,
     CheckConstraint,
+    Enum,
     ForeignKey,
     Identity,
     String,
@@ -35,11 +36,18 @@ class Topic(Base):
     user_id: Mapped[str] = mapped_column(String, nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
     notes: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
-    stability: Mapped[int] = mapped_column(
-        Integer, nullable=False, server_default=text("1")
+    stability: Mapped[float] = mapped_column(
+        Numeric, nullable=False, server_default=text("1"),
+        info={"check_constraint": "stability > 0"}
     )
-    retrievability: Mapped[float] = mapped_column(
-        Numeric(5, 4), nullable=False, server_default=text("0.0000")
+    difficulty: Mapped[float] = mapped_column(
+        Numeric, nullable=False, server_default=text("5"),
+        info={"check_constraint": "difficulty >= 0 AND difficulty <= 10"}
+    )
+    state: Mapped[str] = mapped_column(
+        Enum("LEARNING", "REVIEW", "RELEARNING", name="learning_state"),
+        nullable=False,
+        server_default=text("'LEARNING'::learning_state")
     )
     archived: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
@@ -47,8 +55,9 @@ class Topic(Base):
     inboxed: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
+    reviews: Mapped[list["Review"]] = relationship(back_populates="topic")
     todos: Mapped[list["Todo"]] = relationship(
-        secondary="todos_topics", back_populates="topics"
+        secondary="reviews", back_populates="topics", viewonly=True
     )
     parents: Mapped[list["Topic"]] = relationship(
         secondary="topics_closure", 

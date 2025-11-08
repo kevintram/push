@@ -30,6 +30,7 @@ class Todo(Base):
         server_default=text("timezone('utc'::text, now())"),
     )
     user_id: Mapped[str] = mapped_column(String, nullable=False)
+    reviews: Mapped[list["Review"]] = relationship(back_populates="todo")
     topics: Mapped[list["Topic"]] = relationship(
-        secondary="todos_topics", back_populates="todos"
+        secondary="reviews", back_populates="todos", viewonly=True
     )

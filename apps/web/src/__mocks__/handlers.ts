@@ -1,7 +1,9 @@
 import { delay, HttpResponse, http } from 'msw'
 import type { Topic } from '~/models/todo-topic.types'
 import fruits from './data/fruits.json' with { type: 'json' }
-import topics from './data/topics.json' with { type: 'json' }
+import topicsData from './data/topics.json' with { type: 'json' }
+
+const topics = topicsData as Array<Topic>
 
 // Helper function to find a topic by ID in the nested structure
 function findTopicById(

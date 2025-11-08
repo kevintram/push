@@ -1,4 +1,3 @@
-import { Link } from '@tanstack/react-router'
 import { X } from 'lucide-react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
@@ -10,19 +9,19 @@ import {
 } from '~/components/ui/Tooltip'
 
 interface TopicBadgeProps {
-	topicId: number
 	name?: string | null
 	notes?: string | null
-	onRemove: () => void
+	onRemove?: () => void
 	onClick?: () => void
+	maxWidth?: number
 }
 
 export function TopicBadge({
-	topicId,
 	name,
 	notes,
 	onRemove,
-	onClick
+	onClick,
+	maxWidth = 32
 }: TopicBadgeProps) {
 	const displayText = name ? name : notes
 
@@ -35,30 +34,23 @@ export function TopicBadge({
 							className='flex min-w-16 cursor-pointer items-center gap-0.5 px-2 py-1 text-xs hover:bg-secondary/80'
 							variant='secondary'
 						>
-							{onClick ? (
-								<button
-									className='max-w-32 flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap border-0 bg-transparent p-0 text-center font-semibold text-md'
-									onClick={onClick}
-									type='button'
-								>
-									{displayText}
-								</button>
-							) : (
-								<Link
-									className='max-w-32 flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap text-center font-semibold text-md'
-									params={{ topicId: topicId.toString() }}
-									to='/topics/{-$topicId}'
-								>
-									{displayText}
-								</Link>
-							)}
-							<Button
-								className='-top-2 dark:!bg-input dark:hover:!bg-destructive/90 absolute right-0 h-4 w-4 items-center justify-center border-0 p-0 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'
-								onClick={onRemove}
-								variant='outline'
+							<button
+								className='flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap border-0 bg-transparent p-0 text-center font-semibold text-md'
+								onClick={onClick}
+								style={{ maxWidth: `${maxWidth * 4}px` }}
+								type='button'
 							>
-								<X className='h-4 w-4' />
-							</Button>
+								{displayText}
+							</button>
+							{onRemove && (
+								<Button
+									className='-top-2 dark:!bg-input dark:hover:!bg-destructive/90 absolute right-0 h-4 w-4 items-center justify-center border-0 p-0 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'
+									onClick={onRemove}
+									variant='outline'
+								>
+									<X className='h-4 w-4' />
+								</Button>
+							)}
 						</Badge>
 					</TooltipTrigger>
 					<TooltipContent className='max-w-72' side='bottom'>

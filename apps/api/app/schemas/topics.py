@@ -10,8 +10,9 @@ class TopicBase(BaseModel):
 
     name: str
     notes: str
-    stability: int
-    retrievability: float
+    stability: float | None
+    difficulty: float | None
+    state: str
     archived: bool
     inboxed: bool
 

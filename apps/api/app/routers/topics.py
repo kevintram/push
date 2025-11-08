@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import SessionDep, UserIdDep
-from app.models import Topic, t_topics_closure, Todo, t_todos_topics
+from app.models import Topic, t_topics_closure, Todo, Review
 from app.schemas import (
     TopicRead,
     TopicCreate,
@@ -185,7 +185,7 @@ async def search_topics(
     if addable_to_todo is not None:
         # filter out all topics that can't be added to addable_to_todo
         # filter out addable_to_todo's topics (don't want to add a topic that's already a topic)
-        topics = select(t_todos_topics.c.topic_id).where(t_todos_topics.c.todo_id == addable_to_todo)
+        topics = select(Review.topic_id).where(Review.todo_id == addable_to_todo)
         stmt = stmt.where(Topic.id.notin_(topics))
 
     if cleaned_query:
@@ -413,15 +413,16 @@ async def add_todo(
         raise HTTPException(status_code=404, detail="Topic not found")
 
     existing_link = await session.execute(
-        select(t_todos_topics.c.todo_id).where(
-            t_todos_topics.c.todo_id == todo_id,
-            t_todos_topics.c.topic_id == topic_id,
+        select(Review.todo_id).where(
+            Review.todo_id == todo_id,
+            Review.topic_id == topic_id,
         )
     )
     if existing_link.first():
         raise HTTPException(status_code=409, detail="Todo already linked to topic")
 
-    todo.topics.append(topic)
+    review = Review(todo_id=todo_id, topic_id=topic_id, rating="good")
+    session.add(review)
     await session.flush()
     await session.refresh(topic, ["todos"])
     return topic
@@ -453,18 +454,18 @@ async def remove_todo(
         raise HTTPException(status_code=404, detail="Topic not found")
 
     relationship_result = await session.execute(
-        select(t_todos_topics.c.todo_id).where(
-            t_todos_topics.c.todo_id == todo_id,
-            t_todos_topics.c.topic_id == topic_id,
+        select(Review.todo_id).where(
+            Review.todo_id == todo_id,
+            Review.topic_id == topic_id,
         )
     )
     if relationship_result.scalar_one_or_none() is None:
         raise HTTPException(status_code=404, detail="Todo not linked to topic")
 
     await session.execute(
-        delete(t_todos_topics).where(
-            t_todos_topics.c.todo_id == todo_id,
-            t_todos_topics.c.topic_id == topic_id,
+        delete(Review).where(
+            Review.todo_id == todo_id,
+            Review.topic_id == topic_id,
         )
     )
     await session.flush()

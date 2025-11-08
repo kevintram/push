@@ -1,5 +1,7 @@
 import * as v from 'valibot'
 
+export type LearningState = 'LEARNING' | 'REVIEW' | 'RELEARNING'
+
 export type Todo = {
 	id: number
 	scheduled_at: string | null
@@ -17,8 +19,9 @@ export type Topic = {
 	notes: string
 	inserted_at: string
 	updated_at: string
-	stability: number
-	retrievability: number
+	stability: number | null
+	difficulty: number | null
+	state: LearningState
 	archived: boolean
 	inboxed: boolean
 	parents?: Array<Topic>
@@ -43,8 +46,9 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	notes: v.string(),
 	inserted_at: v.string(),
 	updated_at: v.string(),
-	stability: v.number(),
-	retrievability: v.number(),
+	stability: v.nullable(v.number()),
+	difficulty: v.nullable(v.number()),
+	state: v.picklist(['LEARNING', 'REVIEW', 'RELEARNING']),
 	archived: v.boolean(),
 	inboxed: v.boolean(),
 	parents: v.optional(v.array(v.lazy(() => TopicSchema)), []),

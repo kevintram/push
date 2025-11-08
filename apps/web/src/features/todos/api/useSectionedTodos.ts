@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as v from 'valibot'
 import { type Todo, TodoSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
-type SectionKey =
+export type SectionKey =
 	| 'overdue'
 	| 'today'
 	| 'tomorrow'
@@ -13,6 +13,15 @@ type SectionKey =
 	| 'future'
 	| 'unscheduled'
 	| 'logbook'
+
+type FilterId = SectionKey
+
+type SectionState = {
+	isActive: boolean
+	isCollapsed: boolean
+}
+
+type SectionStates = Record<SectionKey, SectionState>
 
 type SectionDefinition = {
 	id: SectionKey
@@ -44,13 +53,13 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	},
 	{
 		id: 'nextSevenDays',
-		label: 'Next 7 Days',
-		emptyMessage: 'No todos scheduled in the next 7 days.',
+		label: 'Next Few Days',
+		emptyMessage: 'No todos scheduled for the next few days.',
 		canAdd: true
 	},
 	{
 		id: 'future',
-		label: 'In the Future',
+		label: 'Future',
 		emptyMessage: 'No future todos yet.',
 		canAdd: true
 	},
@@ -67,6 +76,16 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 		emptyMessage: 'No completed entries yet.',
 		canAdd: false
 	}
+]
+
+const FILTER_ORDER: Array<FilterId> = [
+	'overdue',
+	'today',
+	'tomorrow',
+	'nextSevenDays',
+	'future',
+	'unscheduled',
+	'logbook'
 ]
 
 async function fetchTodos(): Promise<Array<Todo>> {
@@ -112,6 +131,16 @@ async function createTodo(input: CreateTodoInput): Promise<Todo> {
 
 export function useSectionedTodos() {
 	const queryClient = useQueryClient()
+
+	const [sectionStates, setSectionStates] = useState<SectionStates>({
+		overdue: { isActive: false, isCollapsed: false },
+		today: { isActive: false, isCollapsed: false },
+		tomorrow: { isActive: false, isCollapsed: false },
+		nextSevenDays: { isActive: false, isCollapsed: false },
+		future: { isActive: false, isCollapsed: false },
+		unscheduled: { isActive: false, isCollapsed: false },
+		logbook: { isActive: false, isCollapsed: false }
+	})
 
 	// Centralized date boundary calculations
 	const dateBoundaries = useMemo(() => {
@@ -275,10 +304,151 @@ export function useSectionedTodos() {
 		() =>
 			SECTION_DEFINITIONS.map(definition => ({
 				...definition,
-				entries: sectionEntries[definition.id]
+				entries: sectionEntries[definition.id],
+				isActive: sectionStates[definition.id].isActive,
+				isCollapsed: sectionStates[definition.id].isCollapsed
 			})),
-		[sectionEntries]
+		[sectionEntries, sectionStates]
 	)
+
+	const overdueSection = useMemo(
+		() => sections.find(section => section.id === 'overdue'),
+		[sections]
+	)
+
+	useEffect(() => {
+		if (!overdueSection || overdueSection.entries.length > 0) {
+			return
+		}
+
+		setSectionStates(prev => {
+			if (!prev.overdue.isActive) {
+				return prev
+			}
+
+			return {
+				...prev,
+				overdue: { ...prev.overdue, isActive: false }
+			}
+		})
+	}, [overdueSection])
+
+	const handleFilterClick = useCallback((filterId: FilterId) => {
+		setSectionStates(prev => {
+			const isActive = prev[filterId].isActive
+			const isLogbookActive = prev.logbook.isActive
+
+			// If clicking 'logbook', only show logbook
+			if (filterId === 'logbook') {
+				return Object.fromEntries(
+					Object.entries(prev).map(([key, state]) => [
+						key,
+						{ ...state, isActive: key === 'logbook' ? !isActive : false }
+					])
+				) as SectionStates
+			}
+
+			// If logbook is currently active and clicking another filter, replace with that filter
+			if (isLogbookActive) {
+				return Object.fromEntries(
+					Object.entries(prev).map(([key, state]) => [
+						key,
+						{ ...state, isActive: key === filterId }
+					])
+				) as SectionStates
+			}
+
+			// Toggle the clicked filter
+			return {
+				...prev,
+				[filterId]: { ...prev[filterId], isActive: !isActive }
+			}
+		})
+	}, [])
+
+	const toggleSectionCollapse = useCallback((sectionId: SectionKey) => {
+		setSectionStates(prev => ({
+			...prev,
+			[sectionId]: {
+				...prev[sectionId],
+				isCollapsed: !prev[sectionId].isCollapsed
+			}
+		}))
+	}, [])
+
+	const handleClearFilters = useCallback(() => {
+		setSectionStates(
+			prev =>
+				Object.fromEntries(
+					Object.entries(prev).map(([key, state]) => [
+						key,
+						{ ...state, isActive: false }
+					])
+				) as SectionStates
+		)
+	}, [])
+
+	const isLogbookActive = sectionStates.logbook.isActive
+
+	const filters = useMemo(
+		() =>
+			FILTER_ORDER.map(filterId => {
+				const section = sections.find(s => s.id === filterId)
+
+				return {
+					id: filterId,
+					label: section?.label ?? filterId,
+					isActive: sectionStates[filterId].isActive,
+					onClick: () => handleFilterClick(filterId)
+				}
+			}).filter(filter => {
+				// When logbook is active, hide all other filters
+				if (isLogbookActive && filter.id !== 'logbook') {
+					return false
+				}
+				// When any other filter is active, hide logbook
+				const hasOtherActiveFilters = Object.entries(sectionStates).some(
+					([id, state]) => id !== 'logbook' && state.isActive
+				)
+				if (hasOtherActiveFilters && filter.id === 'logbook') {
+					return false
+				}
+				// Hide overdue filter when overdue section has no entries
+				if (filter.id === 'overdue') {
+					const overdueSection = sections.find(s => s.id === 'overdue')
+					return overdueSection && overdueSection.entries.length > 0
+				}
+				return true
+			}),
+		[sectionStates, handleFilterClick, sections, isLogbookActive]
+	)
+
+	const filteredSections = useMemo(() => {
+		let sectionsToShow = sections
+
+		const hasActiveFilters = Object.values(sectionStates).some(
+			state => state.isActive
+		)
+
+		if (hasActiveFilters) {
+			sectionsToShow = sections.filter(
+				section => sectionStates[section.id].isActive
+			)
+		} else {
+			// Hide overdue and logbook sections when they have no entries
+			sectionsToShow = sections.filter(section => {
+				if (section.id === 'overdue' && section.entries.length === 0) {
+					return false
+				}
+				if (section.id === 'logbook' && section.entries.length === 0) {
+					return false
+				}
+				return true
+			})
+		}
+
+		return sectionsToShow
+	}, [sectionStates, sections])
 
 	const getSectionStartDate = useCallback(
 		(sectionId: SectionKey): string | null => {
@@ -304,17 +474,24 @@ export function useSectionedTodos() {
 		async (sectionId: SectionKey) => {
 			const scheduledAt = getSectionStartDate(sectionId)
 
-			await insertTodoMutation({
+			const newTodo = await insertTodoMutation({
 				description: '',
 				scheduled_at: scheduledAt
 			})
+
+			return newTodo.id
 		},
 		[getSectionStartDate, insertTodoMutation]
 	)
 
 	return {
 		sections,
+		filteredSections,
+		filters,
 		addTodoToSection,
+		handleFilterClick,
+		toggleSectionCollapse,
+		handleClearFilters,
 		isLoading: query.isLoading,
 		error: query.error,
 		// Expose the original data for backward compatibility if needed

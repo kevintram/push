@@ -3,33 +3,31 @@ import { Maximize2, X } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useTopicWithRelationships } from '../hooks/useTopicWithRelationships'
 import { TopicContext } from '../stores/SelectedTopicContext'
 import { TopicDetail } from './TopicDetail/TopicDetail'
 
-interface TopicDialogProps {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-	topicId: number | undefined
-}
-
-export function TopicDialog({ open, onOpenChange, topicId }: TopicDialogProps) {
+export function TopicDialog() {
+	const { topicDialogState, closeTopicDialog, maximizeTopicDialog } =
+		useTodoTopicDialog()
+	const { isOpen, topicId: selectedTopicId } = topicDialogState
 	const navigate = useNavigate()
-	const { topic, isLoading } = useTopicWithRelationships(topicId)
+	const { topic, isLoading } = useTopicWithRelationships(selectedTopicId)
 
 	const handleDelete = useCallback(() => {
-		onOpenChange(false)
-	}, [onOpenChange])
+		closeTopicDialog()
+	}, [closeTopicDialog])
 
 	const handleNavigate = useCallback(() => {
-		if (topicId) {
+		if (selectedTopicId) {
+			maximizeTopicDialog()
 			navigate({
 				to: '/topics/{-$topicId}',
-				params: { topicId: topicId.toString() }
+				params: { topicId: selectedTopicId.toString() }
 			})
-			onOpenChange(false)
 		}
-	}, [topicId, navigate, onOpenChange])
+	}, [selectedTopicId, navigate, maximizeTopicDialog])
 
 	const headerActions = useMemo(
 		() => (
@@ -45,7 +43,7 @@ export function TopicDialog({ open, onOpenChange, topicId }: TopicDialogProps) {
 
 				<Button
 					className='h-6 w-6 p-0 text-muted-foreground'
-					onClick={() => onOpenChange(false)}
+					onClick={closeTopicDialog}
 					size='sm'
 					variant='ghost'
 				>
@@ -53,7 +51,7 @@ export function TopicDialog({ open, onOpenChange, topicId }: TopicDialogProps) {
 				</Button>
 			</>
 		),
-		[handleNavigate, onOpenChange]
+		[handleNavigate, closeTopicDialog]
 	)
 
 	const contextValue = useMemo(
@@ -64,12 +62,12 @@ export function TopicDialog({ open, onOpenChange, topicId }: TopicDialogProps) {
 		[topic, isLoading]
 	)
 
-	if (!topicId) {
+	if (!selectedTopicId) {
 		return null
 	}
 
 	return (
-		<Dialog onOpenChange={onOpenChange} open={open}>
+		<Dialog onOpenChange={closeTopicDialog} open={isOpen}>
 			<DialogContent
 				className='h-full w-full p-0 md:max-h-[600px] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1100px] 2xl:max-w-[1200px]'
 				showCloseButton={false}

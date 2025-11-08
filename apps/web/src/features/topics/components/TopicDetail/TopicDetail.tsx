@@ -16,7 +16,7 @@ import { deleteTopic as deleteTopicApi } from '../../api/deleteTopic'
 import { updateTopic as updateTopicApi } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import { TopicChildrenPanel } from '../TopicPage/FamilyPanel/TopicChildrenPanel'
-import { TimelineSidebar } from '../TopicPage/TimelineSidebar'
+import { ReviewsSidebar } from '../TopicPage/ReviewsSidebar'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 
@@ -186,7 +186,7 @@ export function TopicDetail({ onDelete, headerActions }: TopicDetailProps) {
 								)}
 							</div>
 						)}
-						<div className='flex flex-col gap-1 pb-4'>
+						<div className='pb-4'>
 							<Textarea
 								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 font-semibold focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onChange={onNameChange}
@@ -207,7 +207,7 @@ export function TopicDetail({ onDelete, headerActions }: TopicDetailProps) {
 							getScrollElement={() => scrollContainerRef.current}
 						/>
 					</div>
-					<TimelineSidebar />
+					<ReviewsSidebar />
 				</SidebarHolder>
 			</div>
 		</SidebarProvider>

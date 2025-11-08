@@ -37,6 +37,7 @@ interface TopicCardProps {
 	topic: Topic
 	onTopicClick?: (topic: Topic) => void
 	onRemoveRelationship?: () => void
+	removeRelationshipText?: string
 	minHeight?: number
 	searchQuery?: string
 	todos?: Array<Todo>
@@ -47,6 +48,7 @@ export function TopicCard({
 	todos: todosProp,
 	onTopicClick,
 	onRemoveRelationship,
+	removeRelationshipText = 'Remove as Child',
 	minHeight = MIN_HEIGHT,
 	searchQuery // for topic card in search dialog to support highlighting and shit
 }: TopicCardProps) {
@@ -71,8 +73,8 @@ export function TopicCard({
 
 	const todos = todosProp ?? []
 
-	// Calculate the next or last timeline date
-	const timelineDate = useMemo(() => {
+	// Calculate the next or last review date
+	const reviewDate = useMemo(() => {
 		if (todos.length === 0) return null
 
 		const now = dayjs()
@@ -250,7 +252,7 @@ export function TopicCard({
 										}}
 									>
 										<GitPullRequestClosed className='mr-2 h-4 w-4' />
-										Remove as Child
+										{removeRelationshipText}
 									</DropdownMenuItem>
 								)}
 								<DropdownMenuItem
@@ -306,16 +308,16 @@ export function TopicCard({
 					</div>
 				</div>
 
-				{/* Bottom row: Timeline date and children count */}
+				{/* Bottom row: Review date and children count */}
 				<div className='flex items-center justify-between text-muted-foreground text-xs'>
-					{/* Timeline date - bottom left */}
+					{/* Review date - bottom left */}
 					<div className='flex items-center gap-1'>
 						<Calendar className='h-3 w-3' />
-						{timelineDate ? (
-							<span className={timelineDate.isUpcoming ? '' : 'opacity-60'}>
-								{timelineDate.isUpcoming
-									? `in ${dayjs(timelineDate.date).diff(dayjs(), 'day')} days`
-									: `${dayjs().diff(dayjs(timelineDate.date), 'day')} days ago`}
+						{reviewDate ? (
+							<span className={reviewDate.isUpcoming ? '' : 'opacity-60'}>
+								{reviewDate.isUpcoming
+									? `in ${dayjs(reviewDate.date).diff(dayjs(), 'day')} days`
+									: `${dayjs().diff(dayjs(reviewDate.date), 'day')} days ago`}
 							</span>
 						) : (
 							<span>None</span>
