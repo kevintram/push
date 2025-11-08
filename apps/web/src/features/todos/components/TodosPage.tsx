@@ -149,7 +149,7 @@ export function TodosPage() {
 								<h2
 									className={`font-bold text-l ${section.headingClassName ?? ''}`.trim()}
 								>
-									{section.label}
+									{section.label} <span className='text-muted-foreground'>({section.entries.length})</span>
 								</h2>
 								{section.canAdd && (
 									<Button
