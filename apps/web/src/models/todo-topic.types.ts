@@ -4,6 +4,7 @@ export type LearningState = 'LEARNING' | 'REVIEW' | 'RELEARNING'
 export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 
 export type Review = {
+	id: number
 	todo_id: number
 	topic_id: number
 	rating: Rating
@@ -41,6 +42,7 @@ export type Topic = {
 }
 
 export const ReviewSchema: v.GenericSchema<Review> = v.object({
+	id: v.number(),
 	todo_id: v.number(),
 	topic_id: v.number(),
 	rating: v.picklist(['miss', 'hard', 'good', 'easy']),

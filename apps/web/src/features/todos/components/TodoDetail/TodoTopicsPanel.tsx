@@ -10,26 +10,32 @@ import { TodoContext } from '../../stores/SelectedTodoContext'
 const MIN_WIDTH = 210
 const MIN_HEIGHT = 96
 
-type ListItem = { type: 'topic'; topic: Topic; rating?: Rating }
+type ListItem = {
+	type: 'topic'
+	topic: Topic
+	rating?: Rating
+	reviewId?: number
+}
 
 interface TodoTopicsPanelProps {
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	onAddTopic: () => void
-	onRemoveTopicFromTodo: (todoId: number, topicId: number) => void
+	onRemoveReview: (reviewId: number) => void
 }
 
 export function TodoTopicsPanel({
 	getScrollElement,
 	scrollMargin,
 	onAddTopic,
-	onRemoveTopicFromTodo
+	onRemoveReview
 }: TodoTopicsPanelProps) {
 	const { todo } = use(TodoContext)
 	const { openTopicDialog } = useTodoTopicDialog()
 
 	// Extract topics from reviews if available, otherwise fallback to topics
-	const topics = todo?.reviews?.map(review => review.topic) ?? todo?.topics ?? []
+	const topics =
+		todo?.reviews?.map(review => review.topic) ?? todo?.topics ?? []
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -42,7 +48,8 @@ export function TodoTopicsPanel({
 		? todo.reviews.map(review => ({
 				type: 'topic' as const,
 				topic: review.topic,
-				rating: review.rating
+				rating: review.rating,
+				reviewId: review.id
 			}))
 		: (todo?.topics ?? []).map(topic => ({
 				type: 'topic' as const,
@@ -68,21 +75,22 @@ export function TodoTopicsPanel({
 
 	const renderItem = useCallback(
 		(item: ListItem) => {
+			if (!(todo && item.reviewId)) return null
+
 			return (
 				<TopicCard
 					minHeight={MIN_HEIGHT}
-					onRemoveRelationship={() =>
-						onRemoveTopicFromTodo(todo!.id, item.topic.id)
-					}
+					onRemoveRelationship={() => onRemoveReview(item.reviewId!)}
 					onTopicClick={handleTopicClick}
 					rating={item.rating}
 					removeRelationshipText='Remove from todo'
+					reviewId={item.reviewId}
 					todos={item.topic.todos ?? []}
 					topic={item.topic}
 				/>
 			)
 		},
-		[handleTopicClick, onRemoveTopicFromTodo, todo]
+		[handleTopicClick, onRemoveReview, todo]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {

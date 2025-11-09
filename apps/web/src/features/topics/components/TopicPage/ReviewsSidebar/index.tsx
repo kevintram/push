@@ -41,9 +41,7 @@ function ReviewsSidebarContent() {
 							<div className='flex items-center gap-1'>
 								<BicepsFlexed className='h-3 w-3' />
 								<span>
-									{topic?.stability != null
-										? `${topic.stability}d`
-										: 'No data'}
+									{topic?.stability != null ? `${topic.stability}d` : 'No data'}
 								</span>
 							</div>
 						</TooltipTrigger>

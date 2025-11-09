@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { addTopicToTodo, type Todo } from '~/features/todos/api'
+import { createReview } from '~/features/reviews/api'
+import type { Todo } from '~/features/todos/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
 import type { Topic } from '~/models/todo-topic.types'
@@ -51,9 +52,9 @@ export function AddTopicToTodoDialog({
 		return topics ?? []
 	}, [topics, debouncedQuery])
 
-	const { mutateAsync: addTopicMutation } = useMutation({
+	const { mutateAsync: createReviewMutation } = useMutation({
 		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
-			addTopicToTodo(todoId, topicId),
+			createReview(todoId, topicId, 'good'),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
@@ -71,7 +72,7 @@ export function AddTopicToTodoDialog({
 			if (!todo) return
 
 			try {
-				await addTopicMutation({
+				await createReviewMutation({
 					todoId: todo.id,
 					topicId: topic.id
 				})
@@ -82,7 +83,7 @@ export function AddTopicToTodoDialog({
 				// Handle error silently for now
 			}
 		},
-		[todo, addTopicMutation, openTopicDialog]
+		[todo, createReviewMutation, openTopicDialog]
 	)
 
 	const handleTopicSelected = useCallback(
@@ -90,7 +91,7 @@ export function AddTopicToTodoDialog({
 			if (!todo) return
 
 			try {
-				await addTopicMutation({
+				await createReviewMutation({
 					todoId: todo.id,
 					topicId: topic.id
 				})
@@ -98,7 +99,7 @@ export function AddTopicToTodoDialog({
 				// Handle error silently for now
 			}
 		},
-		[todo, addTopicMutation]
+		[todo, createReviewMutation]
 	)
 
 	const useSearch = useCallback(

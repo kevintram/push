@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 
 from app.dependencies import SessionDep, UserIdDep
 from app.models import Review, Todo, Topic
-from app.schemas import ReviewCreate, ReviewRead, ReviewUpdate, ReviewWithTopic
+from app.schemas import ReviewCreate, ReviewUpdate, ReviewWithTopic
 
 router = APIRouter()
 
@@ -63,7 +63,7 @@ async def create_review(
     review: ReviewCreate,
     session: SessionDep,
     user_id: UserIdDep,
-) -> ReviewRead:
+) -> ReviewWithTopic:
     """Create a new review."""
     # Verify todo exists and belongs to user
     todo_result = await session.execute(
@@ -96,7 +96,8 @@ async def create_review(
             status_code=409, detail="Review already exists for this todo-topic pair"
         )
 
-    await session.refresh(new_review)
+    # Refresh with topic relationship loaded
+    await session.refresh(new_review, ["topic", "todo"])
     return new_review
 
 
@@ -106,7 +107,7 @@ async def update_review(
     review: ReviewUpdate,
     session: SessionDep,
     user_id: UserIdDep,
-) -> ReviewRead:
+) -> ReviewWithTopic:
     """Update a review's rating."""
     # Update the review
     update_stmt = (
@@ -119,8 +120,12 @@ async def update_review(
     if result.rowcount == 0:
         raise HTTPException(status_code=404, detail="Review not found")
 
-    # Fetch and return updated review
-    stmt = select(Review).where(Review.id == review_id)
+    # Fetch and return updated review with topic loaded
+    stmt = (
+        select(Review)
+        .where(Review.id == review_id)
+        .options(selectinload(Review.topic), selectinload(Review.todo))
+    )
     result = await session.execute(stmt)
     return result.scalar_one()
 

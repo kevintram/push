@@ -13,9 +13,6 @@ from app.schemas import (
     TopicReadWithRelationshipsAndTodos,
     TopicRelationshipCreate,
     TopicParentRelationshipCreate,
-    TopicReadWithTodos,
-    TodoIdPayload,
-    TodoRead,
     TodoReadWithTopics,
 )
 
@@ -384,95 +381,6 @@ async def read_todos_for_topic(
     stmt = stmt.options(selectinload(Todo.topics))
     result = await session.execute(stmt)
     return result.scalars().all()
-
-@router.post("/topics/{topic_id}/todos/", tags=["topics"])
-async def add_todo(
-    topic_id: int,
-    payload: TodoIdPayload,
-    session: SessionDep,
-    user_id: UserIdDep
-) -> TopicReadWithTodos:
-    todo_id = payload.todo_id
-
-    todo_result = await session.execute(
-        select(Todo)
-        .where(Todo.id == todo_id, Todo.user_id == user_id)
-        .options(selectinload(Todo.topics))
-    )
-    todo = todo_result.scalar_one_or_none()
-    if not todo:
-        raise HTTPException(status_code=404, detail="Todo not found")
-
-    topic_result = await session.execute(
-        select(Topic)
-        .where(Topic.id == topic_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.todos))
-    )
-    topic = topic_result.scalar_one_or_none()
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-
-    existing_link = await session.execute(
-        select(Review.todo_id).where(
-            Review.todo_id == todo_id,
-            Review.topic_id == topic_id,
-        )
-    )
-    if existing_link.first():
-        raise HTTPException(status_code=409, detail="Todo already linked to topic")
-
-    review = Review(todo_id=todo_id, topic_id=topic_id, rating="good")
-    session.add(review)
-    await session.flush()
-    await session.refresh(topic, ["todos"])
-    return topic
-
-
-@router.delete("/topics/{topic_id}/todos/{todo_id}/", tags=["topics"])
-async def remove_todo(
-    topic_id: int,
-    todo_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> TopicReadWithTodos:
-    todo_result = await session.execute(
-        select(Todo)
-        .where(Todo.id == todo_id, Todo.user_id == user_id)
-        .options(selectinload(Todo.topics))
-    )
-    todo = todo_result.scalar_one_or_none()
-    if not todo:
-        raise HTTPException(status_code=404, detail="Todo not found")
-
-    topic_result = await session.execute(
-        select(Topic)
-        .where(Topic.id == topic_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.todos))
-    )
-    topic = topic_result.scalar_one_or_none()
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-
-    relationship_result = await session.execute(
-        select(Review.todo_id).where(
-            Review.todo_id == todo_id,
-            Review.topic_id == topic_id,
-        )
-    )
-    if relationship_result.scalar_one_or_none() is None:
-        raise HTTPException(status_code=404, detail="Todo not linked to topic")
-
-    await session.execute(
-        delete(Review).where(
-            Review.todo_id == todo_id,
-            Review.topic_id == topic_id,
-        )
-    )
-    await session.flush()
-    await session.refresh(topic, ["todos"])
-    return topic
-
-
 
 @router.post("/topics/{topic_id}/", tags=["topics"])
 async def update_topic(

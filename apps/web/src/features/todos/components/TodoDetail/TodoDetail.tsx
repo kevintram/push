@@ -4,10 +4,10 @@ import type { ReactNode } from 'react'
 import { use, useCallback, useEffect, useRef, useState } from 'react'
 import { Checkbox } from '~/components/ui/Checkbox'
 import { Textarea } from '~/components/ui/Textarea'
+import { deleteReview } from '~/features/reviews/api'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { deleteTodo as deleteTodoApi } from '../../api/deleteTodo'
-import { removeTopicFromTodo as removeTopicFromTodoApi } from '../../api/removeTopicFromTodo'
 import { updateTodo as updateTodoApi } from '../../api/updateTodo'
 import { TodoContext } from '../../stores/SelectedTodoContext'
 import { AddTopicToTodoDialog } from '../AddTopicToTodoDialog'
@@ -41,9 +41,8 @@ export function TodoDetail({ onDelete, headerActions }: TodoDetailProps) {
 		}
 	})
 
-	const { mutateAsync: removeTopicMutation } = useMutation({
-		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
-			removeTopicFromTodoApi(todoId, topicId),
+	const { mutateAsync: deleteReviewMutation } = useMutation({
+		mutationFn: deleteReview,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
@@ -76,11 +75,11 @@ export function TodoDetail({ onDelete, headerActions }: TodoDetailProps) {
 		[todo?.id, updateTodoMutation]
 	)
 
-	const handleRemoveTopicFromTodo = useCallback(
-		async (todoId: number, topicId: number) => {
-			await removeTopicMutation({ todoId, topicId })
+	const handleRemoveReview = useCallback(
+		async (reviewId: number) => {
+			await deleteReviewMutation(reviewId)
 		},
-		[removeTopicMutation]
+		[deleteReviewMutation]
 	)
 
 	const handleAddTopic = useCallback(() => {
@@ -162,7 +161,7 @@ export function TodoDetail({ onDelete, headerActions }: TodoDetailProps) {
 						<TodoTopicsPanel
 							getScrollElement={() => scrollContainerRef.current}
 							onAddTopic={handleAddTopic}
-							onRemoveTopicFromTodo={handleRemoveTopicFromTodo}
+							onRemoveReview={handleRemoveReview}
 						/>
 					</div>
 				</div>

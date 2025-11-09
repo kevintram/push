@@ -8,7 +8,8 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { addTopicToTodo, createTodo } from '~/features/todos/api'
+import { createReview } from '~/features/reviews/api'
+import { createTodo } from '~/features/todos/api'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 
 export function AddReviewButton() {
@@ -24,9 +25,9 @@ export function AddReviewButton() {
 		}
 	})
 
-	const { mutateAsync: addTopicMutation } = useMutation({
+	const { mutateAsync: createReviewMutation } = useMutation({
 		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
-			addTopicToTodo(todoId, topicId),
+			createReview(todoId, topicId, 'good'),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
@@ -41,9 +42,9 @@ export function AddReviewButton() {
 			completedAt: null
 		})
 
-		await addTopicMutation({ todoId: todo.id, topicId: selectedTopic.id })
+		await createReviewMutation({ todoId: todo.id, topicId: selectedTopic.id })
 		openTodoDialog(todo.id)
-	}, [selectedTopic, createTodoMutation, addTopicMutation, openTodoDialog])
+	}, [selectedTopic, createTodoMutation, createReviewMutation, openTodoDialog])
 
 	return (
 		<Tooltip>

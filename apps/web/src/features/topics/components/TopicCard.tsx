@@ -6,6 +6,7 @@ import {
 	Baby,
 	BicepsFlexed,
 	Calendar,
+	ChevronDown,
 	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
@@ -33,6 +34,7 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
+import { updateReview as updateReviewApi } from '~/features/reviews/api/updateReview'
 import type { Rating, Todo, Topic } from '~/models/todo-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
@@ -50,6 +52,7 @@ interface TopicCardProps {
 	searchQuery?: string
 	todos?: Array<Todo>
 	rating?: Rating | null
+	reviewId?: number
 }
 
 export function TopicCard({
@@ -60,7 +63,8 @@ export function TopicCard({
 	removeRelationshipText = 'Remove as Child',
 	minHeight = MIN_HEIGHT,
 	searchQuery, // for topic card in search dialog to support highlighting and shit
-	rating
+	rating,
+	reviewId
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
 
@@ -75,6 +79,14 @@ export function TopicCard({
 		mutationFn: updateTopicApi,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
+
+	const { mutateAsync: updateReviewMutation } = useMutation({
+		mutationFn: ({ reviewId, rating }: { reviewId: number; rating: Rating }) =>
+			updateReviewApi(reviewId, rating),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
 	})
 
@@ -163,6 +175,14 @@ export function TopicCard({
 		[updateTopicMutation, topic.id, topic.inboxed]
 	)
 
+	const handleRatingChange = useCallback(
+		async (newRating: Rating) => {
+			if (!reviewId) return
+			await updateReviewMutation({ reviewId, rating: newRating })
+		},
+		[reviewId, updateReviewMutation]
+	)
+
 	return (
 		<Card
 			className='group relative cursor-pointer p-0 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
@@ -218,7 +238,65 @@ export function TopicCard({
 
 						{/* Rating and Menu - top right */}
 						<div className='flex items-center gap-1'>
-							{rating && (
+							{rating && reviewId && (
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild={true}>
+										<Button
+											className='h-5 gap-1 px-1.5 text-xs capitalize'
+											onClick={e => e.stopPropagation()}
+											size='sm'
+											variant='outline'
+										>
+											{getRatingIcon(rating)}
+											{rating}
+											<ChevronDown className='h-3 w-3' />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent
+										align='start'
+										side='bottom'
+										sideOffset={2}
+									>
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												handleRatingChange('miss')
+											}}
+										>
+											{getRatingIcon('miss')}
+											<span className='ml-2 capitalize'>Miss</span>
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												handleRatingChange('hard')
+											}}
+										>
+											{getRatingIcon('hard')}
+											<span className='ml-2 capitalize'>Hard</span>
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												handleRatingChange('good')
+											}}
+										>
+											{getRatingIcon('good')}
+											<span className='ml-2 capitalize'>Good</span>
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												handleRatingChange('easy')
+											}}
+										>
+											{getRatingIcon('easy')}
+											<span className='ml-2 capitalize'>Easy</span>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							)}
+							{rating && !reviewId && (
 								<Button
 									className='h-5 gap-1 px-1.5 text-xs capitalize'
 									onClick={e => e.stopPropagation()}
@@ -239,55 +317,55 @@ export function TopicCard({
 										<MoreHorizontal className='h-3 w-3' />
 									</Button>
 								</DropdownMenuTrigger>
-							<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-								<DropdownMenuItem onClick={handleInboxToggle}>
-									{topic.inboxed ? (
-										<>
-											<Inbox className='mr-2 h-4 w-4' />
-											Remove from Inbox
-										</>
-									) : (
-										<>
-											<Inbox className='mr-2 h-4 w-4' />
-											Add to Inbox
-										</>
+								<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+									<DropdownMenuItem onClick={handleInboxToggle}>
+										{topic.inboxed ? (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Remove from Inbox
+											</>
+										) : (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Add to Inbox
+											</>
+										)}
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={handleArchiveToggle}>
+										{topic.archived ? (
+											<>
+												<ArchiveRestore className='mr-2 h-4 w-4' />
+												Unarchive
+											</>
+										) : (
+											<>
+												<Archive className='mr-2 h-4 w-4' />
+												Archive
+											</>
+										)}
+									</DropdownMenuItem>
+									{onRemoveRelationship && (
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												onRemoveRelationship()
+											}}
+										>
+											<GitPullRequestClosed className='mr-2 h-4 w-4' />
+											{removeRelationshipText}
+										</DropdownMenuItem>
 									)}
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={handleArchiveToggle}>
-									{topic.archived ? (
-										<>
-											<ArchiveRestore className='mr-2 h-4 w-4' />
-											Unarchive
-										</>
-									) : (
-										<>
-											<Archive className='mr-2 h-4 w-4' />
-											Archive
-										</>
-									)}
-								</DropdownMenuItem>
-								{onRemoveRelationship && (
 									<DropdownMenuItem
 										onClick={e => {
 											e.stopPropagation()
-											onRemoveRelationship()
+											handleDeleteTopic()
 										}}
+										variant='destructive'
 									>
-										<GitPullRequestClosed className='mr-2 h-4 w-4' />
-										{removeRelationshipText}
+										<Trash2 className='mr-2 h-4 w-4' />
+										Delete
 									</DropdownMenuItem>
-								)}
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleDeleteTopic()
-									}}
-									variant='destructive'
-								>
-									<Trash2 className='mr-2 h-4 w-4' />
-									Delete
-								</DropdownMenuItem>
-							</DropdownMenuContent>
+								</DropdownMenuContent>
 							</DropdownMenu>
 						</div>
 					</div>
@@ -365,9 +443,7 @@ export function TopicCard({
 							<div className='flex items-center gap-1'>
 								<BicepsFlexed className='h-3 w-3' />
 								<span>
-									{topic.stability != null
-										? `${topic.stability}d`
-										: 'No data'}
+									{topic.stability != null ? `${topic.stability}d` : 'No data'}
 								</span>
 							</div>
 						</TooltipTrigger>
@@ -395,8 +471,7 @@ export function TopicCard({
 								: 'Difficulty not yet calculated'}
 						</TooltipContent>
 					</Tooltip>
-					<div className="flex-1"/>
-
+					<div className='flex-1' />
 					{/* Children count - bottom right */}
 					<Popover>
 						<PopoverTrigger asChild={true}>
@@ -436,6 +511,6 @@ export function TopicCard({
 					</Popover>
 				</div>
 			</CardContent>
-		</Card >
+		</Card>
 	)
 }
