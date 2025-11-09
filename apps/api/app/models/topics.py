@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, date
 
 from sqlalchemy import (
     BigInteger,
@@ -14,7 +14,7 @@ from sqlalchemy import (
     Column,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.types import TIMESTAMP, Boolean, Integer, REAL, Text
+from sqlalchemy.types import TIMESTAMP, Boolean, Date, Integer, REAL, Text
 
 from app.models.base import Base
 
@@ -49,12 +49,14 @@ class Topic(Base):
         nullable=False,
         server_default=text("'LEARNING'::learning_state")
     )
+    step: Mapped[int | None] = mapped_column(Integer, nullable=True)
     archived: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
     inboxed: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
+    due: Mapped[date | None] = mapped_column(Date, nullable=True)
     reviews: Mapped[list["Review"]] = relationship(back_populates="topic")
     todos: Mapped[list["Todo"]] = relationship(
         secondary="reviews", back_populates="topics", viewonly=True

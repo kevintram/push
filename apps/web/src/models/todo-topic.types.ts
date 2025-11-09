@@ -11,6 +11,19 @@ export type Review = {
 	inserted_at: string
 	updated_at: string
 	topic: Topic
+
+	// FSRS state before review
+	stability_before: number | null
+	difficulty_before: number | null
+	state_before: LearningState | null
+	step_before: number | null
+
+	// FSRS state after review
+	stability_after: number | null
+	difficulty_after: number | null
+	state_after: LearningState | null
+	step_after: number | null
+	due_after: string | null
 }
 
 export type Todo = {
@@ -34,8 +47,10 @@ export type Topic = {
 	stability: number | null
 	difficulty: number | null
 	state: LearningState
+	step: number | null
 	archived: boolean
 	inboxed: boolean
+	due: string | null
 	parents?: Array<Topic>
 	children?: Array<Topic>
 	todos?: Array<Todo>
@@ -48,7 +63,20 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	rating: v.picklist(['miss', 'hard', 'good', 'easy']),
 	inserted_at: v.string(),
 	updated_at: v.string(),
-	topic: v.lazy(() => TopicSchema)
+	topic: v.lazy(() => TopicSchema),
+
+	// FSRS state before review
+	stability_before: v.nullable(v.number()),
+	difficulty_before: v.nullable(v.number()),
+	state_before: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
+	step_before: v.nullable(v.number()),
+
+	// FSRS state after review
+	stability_after: v.nullable(v.number()),
+	difficulty_after: v.nullable(v.number()),
+	state_after: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
+	step_after: v.nullable(v.number()),
+	due_after: v.nullable(v.string())
 })
 
 export const TodoSchema: v.GenericSchema<Todo> = v.object({
@@ -72,8 +100,10 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	stability: v.nullable(v.number()),
 	difficulty: v.nullable(v.number()),
 	state: v.picklist(['LEARNING', 'REVIEW', 'RELEARNING']),
+	step: v.nullable(v.number()),
 	archived: v.boolean(),
 	inboxed: v.boolean(),
+	due: v.nullable(v.string()),
 	parents: v.optional(v.array(v.lazy(() => TopicSchema)), []),
 	children: v.optional(v.array(v.lazy(() => TopicSchema)), []),
 	todos: v.optional(v.array(v.lazy(() => TodoSchema)), [])

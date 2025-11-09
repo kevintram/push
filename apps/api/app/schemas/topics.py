@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, date
 
 from pydantic import BaseModel, ConfigDict
 
@@ -13,8 +13,10 @@ class TopicBase(BaseModel):
     stability: float | None
     difficulty: float | None
     state: str
+    step: int | None
     archived: bool
     inboxed: bool
+    due: date | None
 
 
 class TopicBaseWithTodos(TopicBase):
