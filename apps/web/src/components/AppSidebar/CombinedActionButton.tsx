@@ -28,7 +28,7 @@ export function CombinedActionButton() {
 	})
 
 	const handleCreateTopic = useCallback(async () => {
-		const createdTopic = await insertTopic({})
+		const createdTopic = await insertTopic({ inboxed: true })
 		openTopicDialog(createdTopic.id)
 	}, [insertTopic, openTopicDialog])
 
