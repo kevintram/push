@@ -26,7 +26,8 @@ export function AddRelationshipDialog({
 		useDebouncedPotentialTopics({
 			topicId,
 			relationshipType,
-			debounceMs: 300
+			debounceMs: 300,
+			enabled: open
 		})
 
 	const createRelationship = useCreateRelationship()
