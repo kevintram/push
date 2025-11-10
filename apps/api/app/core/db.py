@@ -6,7 +6,7 @@ from .config import settings
 engine: AsyncEngine = create_async_engine(
     str(settings.POSTGRES_URL), 
     future=True,
-    echo=True
+    echo=False
 )
 
 # Create the session factory

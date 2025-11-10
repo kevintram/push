@@ -10,13 +10,13 @@ class TopicBase(BaseModel):
 
     name: str
     notes: str
-    stability: float | None
-    difficulty: float | None
-    state: str
-    step: int | None
+    stability: float | None = None
+    difficulty: float | None = None
+    state: str = "LEARNING"
+    step: int | None = None
     archived: bool
     inboxed: bool
-    due: date | None
+    due: date | None = None
 
 
 class TopicBaseWithTodos(TopicBase):

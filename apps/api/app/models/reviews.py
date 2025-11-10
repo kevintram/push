@@ -20,9 +20,9 @@ class Review(Base):
         BigInteger, ForeignKey("topics.id"), nullable=False
     )
     user_id: Mapped[str] = mapped_column(String, nullable=False)
-    rating: Mapped[str] = mapped_column(
+    rating: Mapped[str | None] = mapped_column(
         Enum("miss", "hard", "good", "easy", name="rating"),
-        nullable=False,
+        nullable=True,
     )
     inserted_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),

@@ -10,7 +10,7 @@ from app.schemas.topics import TopicRead
 class ReviewBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    rating: str
+    rating: str | None
 
 
 class ReviewRead(ReviewBase):
@@ -48,10 +48,10 @@ class ReviewCreate(BaseModel):
 
     todo_id: int
     topic_id: int
-    rating: str
+    rating: str | None
 
 
 class ReviewUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    rating: str
+    rating: str | None

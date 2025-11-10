@@ -7,7 +7,7 @@ export type Review = {
 	id: number
 	todo_id: number
 	topic_id: number
-	rating: Rating
+	rating: Rating | null
 	inserted_at: string
 	updated_at: string
 	topic: Topic
@@ -61,7 +61,7 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	id: v.number(),
 	todo_id: v.number(),
 	topic_id: v.number(),
-	rating: v.picklist(['miss', 'hard', 'good', 'easy']),
+	rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	topic: v.lazy(() => TopicSchema),

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 
 from fastapi import APIRouter, HTTPException
 from fsrs import Card, Rating as FSRSRating, Scheduler, State as FSRSState
@@ -94,29 +94,23 @@ async def replay_subsequent_reviews(
     return current_card
 
 
-async def replay_all_reviews_for_topic(
+async def replay_reviews_from_date(
     session: SessionDep,
     topic_id: int,
     user_id: str,
+    from_date: date,
 ) -> None:
     """
-    Rebuild the entire FSRS state chain for a topic from scratch.
+    Replay reviews for a topic starting from a specific date.
 
-    This function:
-    1. Fetches the topic
-    2. Fetches all completed reviews for the topic (ordered chronologically)
-    3. Starts from the topic's initial state
-    4. Replays all reviews in chronological order
-    5. Updates each review's before/after states
-    6. Updates the topic with the final FSRS state
-
-    Used when todo completion dates change or todos are deleted, as this can
-    affect the chronological order of reviews.
+    Only replays reviews where todo.completed_at >= from_date.
+    More efficient than replaying all reviews when only later reviews are affected.
 
     Args:
         session: Database session
         topic_id: ID of the topic to replay
         user_id: User ID for authorization
+        from_date: Only replay reviews with todo.completed_at >= from_date
     """
     # Fetch the topic
     topic_result = await session.execute(
@@ -124,9 +118,9 @@ async def replay_all_reviews_for_topic(
     )
     topic = topic_result.scalar_one_or_none()
     if not topic:
-        return  # Topic not found, nothing to replay
+        return
 
-    # Fetch all completed reviews for this topic, ordered by todo completion date
+    # Fetch completed reviews from from_date onward
     reviews_result = await session.execute(
         select(Review)
         .join(Todo, Review.todo_id == Todo.id)
@@ -134,38 +128,58 @@ async def replay_all_reviews_for_topic(
             Review.topic_id == topic_id,
             Review.user_id == user_id,
             Todo.completed_at.isnot(None),
+            Todo.completed_at >= from_date,
         )
         .order_by(Todo.completed_at.asc())
         .options(selectinload(Review.todo))
     )
-    all_reviews = list(reviews_result.scalars().all())
+    reviews_to_replay = list(reviews_result.scalars().all())
 
-    # If no completed reviews, reset topic to initial state
-    if not all_reviews:
-        topic.stability = None
-        topic.difficulty = None
-        topic.state = "LEARNING"
-        topic.step = None
-        topic.due = None
-        await session.flush()
+    if not reviews_to_replay:
+        # No reviews to replay
         return
+
+    # Find the last review BEFORE from_date to get starting FSRS state
+    before_review_result = await session.execute(
+        select(Review)
+        .join(Todo, Review.todo_id == Todo.id)
+        .where(
+            Review.topic_id == topic_id,
+            Review.user_id == user_id,
+            Todo.completed_at.isnot(None),
+            Todo.completed_at < from_date,
+        )
+        .order_by(Todo.completed_at.desc())
+        .limit(1)
+    )
+    last_before_review = before_review_result.scalar_one_or_none()
 
     # Initialize FSRS scheduler
     scheduler = Scheduler()
 
-    # Create initial card state from topic's default values
-    initial_card = Card(
-        state=FSRSState.Learning,
-        stability=None,
-        difficulty=None,
-        step=None,
-    )
+    # Determine starting card state
+    if last_before_review and last_before_review.topic_stability_after is not None:
+        # Start from the "after" state of the last review before from_date
+        starting_card = Card(
+            state=map_state_to_fsrs(last_before_review.topic_state_after),
+            stability=last_before_review.topic_stability_after,
+            difficulty=last_before_review.topic_difficulty_after,
+            step=last_before_review.topic_step_after,
+        )
+    else:
+        # No prior reviews or no FSRS state, start from initial state
+        starting_card = Card(
+            state=FSRSState.Learning,
+            stability=None,
+            difficulty=None,
+            step=None,
+        )
 
-    # Replay all reviews starting from initial state
+    # Replay reviews from the determined starting state
     final_card = await replay_subsequent_reviews(
         topic=topic,
-        starting_card=initial_card,
-        subsequent_reviews=all_reviews,
+        starting_card=starting_card,
+        subsequent_reviews=reviews_to_replay,
         scheduler=scheduler,
     )
 
@@ -252,12 +266,11 @@ async def create_review(
 
     # Check if todo is completed - only run FSRS if it is
     if todo.completed_at is None:
-        # Todo not completed yet - create review without FSRS
+        # Todo not completed yet - create review without FSRS or rating
         new_review = Review(
             todo_id=review.todo_id,
             topic_id=review.topic_id,
             user_id=user_id,
-            rating=review.rating,
             # All FSRS fields remain None
         )
         session.add(new_review)
@@ -281,6 +294,9 @@ async def create_review(
     topic_step_before = topic.step
     topic_due_before = topic.due
 
+    # Use provided rating or default to "good"
+    rating_value = review.rating or "good"
+
     # Initialize FSRS scheduler with default parameters
     scheduler = Scheduler()
 
@@ -293,7 +309,7 @@ async def create_review(
     )
 
     # Review the card with FSRS
-    fsrs_rating = map_rating_to_fsrs(review.rating)
+    fsrs_rating = map_rating_to_fsrs(rating_value)
     review_datetime = datetime.now(timezone.utc)
     updated_card, review_log = scheduler.review_card(
         card=card,
@@ -309,7 +325,7 @@ async def create_review(
         todo_id=review.todo_id,
         topic_id=review.topic_id,
         user_id=user_id,
-        rating=review.rating,
+        rating=rating_value,
         # Topic before state
         topic_stability_before=topic_stability_before,
         topic_difficulty_before=topic_difficulty_before,
@@ -338,6 +354,14 @@ async def create_review(
     topic.state = map_fsrs_state_to_db(updated_card.state)
     topic.step = updated_card.step
     topic.due = due_after_date
+
+    # Replay all reviews that come after this newly created review
+    await replay_reviews_from_date(
+        session=session,
+        topic_id=topic.id,
+        user_id=user_id,
+        from_date=todo.completed_at,
+    )
 
     # Refresh with topic relationship loaded
     await session.refresh(new_review, ["topic", "todo"])
@@ -377,6 +401,9 @@ async def update_review(
         return existing_review
 
     # Todo is completed - run FSRS recalculation
+    # Use provided rating or default to "good"
+    rating_value = review.rating or "good"
+
     # Initialize FSRS scheduler with default parameters
     scheduler = Scheduler()
 
@@ -390,7 +417,7 @@ async def update_review(
     )
 
     # Review the card with the NEW rating
-    fsrs_rating = map_rating_to_fsrs(review.rating)
+    fsrs_rating = map_rating_to_fsrs(rating_value)
     review_datetime = datetime.now(timezone.utc)
     updated_card, review_log = scheduler.review_card(
         card=card,
@@ -402,51 +429,22 @@ async def update_review(
     due_after_date = updated_card.due.date()
 
     # Update the review with new rating and "after" state
-    existing_review.rating = review.rating
+    existing_review.rating = rating_value
     existing_review.topic_stability_after = updated_card.stability
     existing_review.topic_difficulty_after = updated_card.difficulty
     existing_review.topic_state_after = map_fsrs_state_to_db(updated_card.state)
     existing_review.topic_step_after = updated_card.step
     existing_review.topic_due_after = due_after_date
 
-    # Fetch all subsequent completed reviews for this topic (ordered by todo completion date)
-    subsequent_reviews_result = await session.execute(
-        select(Review)
-        .join(Todo, Review.todo_id == Todo.id)
-        .where(
-            Review.topic_id == existing_review.topic_id,
-            Review.user_id == user_id,
-            Todo.completed_at.isnot(None),
-            Todo.completed_at > todo.completed_at,
-        )
-        .order_by(Todo.completed_at.asc())
-        .options(selectinload(Review.todo))
-    )
-    subsequent_reviews = list(subsequent_reviews_result.scalars().all())
-
-    # Replay all subsequent reviews if there are any
-    if subsequent_reviews:
-        final_card = await replay_subsequent_reviews(
-            topic=topic,
-            starting_card=updated_card,
-            subsequent_reviews=subsequent_reviews,
-            scheduler=scheduler,
-        )
-        # Update topic with final state after replaying all reviews
-        topic.stability = final_card.stability
-        topic.difficulty = final_card.difficulty
-        topic.state = map_fsrs_state_to_db(final_card.state)
-        topic.step = final_card.step
-        topic.due = final_card.due.date()
-    else:
-        # No subsequent reviews - just update topic with this review's state
-        topic.stability = updated_card.stability
-        topic.difficulty = updated_card.difficulty
-        topic.state = map_fsrs_state_to_db(updated_card.state)
-        topic.step = updated_card.step
-        topic.due = due_after_date
-
     await session.flush()
+
+    # Replay from this review's date to recalculate subsequent reviews
+    await replay_reviews_from_date(
+        session=session,
+        topic_id=topic.id,
+        user_id=user_id,
+        from_date=todo.completed_at,
+    )
 
     # Refresh and return with relationships loaded
     await session.refresh(existing_review, ["topic", "todo"])
@@ -471,63 +469,20 @@ async def delete_review(
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
 
-    topic = review.topic
-    todo = review.todo
+    topic_id = review.topic_id
+    todo_completed_at = review.todo.completed_at
 
-    # Check if todo is completed - only restore topic state if it was
-    if todo.completed_at is not None:
-        # Todo was completed - need to restore and replay
-        # Initialize FSRS scheduler
-        scheduler = Scheduler()
-
-        # Restore topic to the deleted review's "before" state
-        # Create a card from this state to use as starting point for replay
-        card = Card(
-            state=map_state_to_fsrs(review.topic_state_before) if review.topic_state_before else FSRSState.Learning,
-            stability=review.topic_stability_before,
-            difficulty=review.topic_difficulty_before,
-            step=review.topic_step_before,
-        )
-
-        # Fetch all subsequent completed reviews for this topic (ordered by todo completion date)
-        subsequent_reviews_result = await session.execute(
-            select(Review)
-            .join(Todo, Review.todo_id == Todo.id)
-            .where(
-                Review.topic_id == review.topic_id,
-                Review.user_id == user_id,
-                Todo.completed_at.isnot(None),
-                Todo.completed_at > todo.completed_at,
-            )
-            .order_by(Todo.completed_at.asc())
-            .options(selectinload(Review.todo))
-        )
-        subsequent_reviews = list(subsequent_reviews_result.scalars().all())
-
-        # Replay all subsequent reviews if there are any
-        if subsequent_reviews:
-            final_card = await replay_subsequent_reviews(
-                topic=topic,
-                starting_card=card,
-                subsequent_reviews=subsequent_reviews,
-                scheduler=scheduler,
-            )
-            # Update topic with final state after replaying all reviews
-            topic.stability = final_card.stability
-            topic.difficulty = final_card.difficulty
-            topic.state = map_fsrs_state_to_db(final_card.state)
-            topic.step = final_card.step
-            topic.due = final_card.due.date()
-        else:
-            # No subsequent reviews - just restore to the deleted review's before state
-            topic.stability = review.topic_stability_before
-            topic.difficulty = review.topic_difficulty_before
-            topic.state = review.topic_state_before
-            topic.step = review.topic_step_before
-            topic.due = review.topic_due_before
-
-    # Delete the review (whether todo was completed or not)
+    # Delete the review
     await session.delete(review)
     await session.flush()
+
+    # Only replay if todo was completed
+    if todo_completed_at is not None:
+        await replay_reviews_from_date(
+            session=session,
+            topic_id=topic_id,
+            user_id=user_id,
+            from_date=todo_completed_at,
+        )
 
     return {"message": "Review deleted successfully"}
