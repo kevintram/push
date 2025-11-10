@@ -10,6 +10,7 @@ from app.schemas import (
     TopicRead,
     TodoReadWithReviews,
 )
+from app.routers.reviews import replay_all_reviews_for_topic
 
 router = APIRouter()
 
@@ -80,6 +81,32 @@ async def update_todo(
     if not update_values:
         raise HTTPException(status_code=400, detail="No fields to update")
 
+    # Fetch the old todo to check if completed_at is changing
+    old_todo_result = await session.execute(
+        select(Todo).where(Todo.id == todo_id, Todo.user_id == user_id)
+    )
+    old_todo = old_todo_result.scalar_one_or_none()
+
+    if not old_todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    # Check if completed_at is changing
+    completed_at_changed = (
+        "completed_at" in update_values
+        and update_values["completed_at"] != old_todo.completed_at
+    )
+
+    # If completed_at changed, get all affected topic IDs before the update
+    affected_topic_ids = set()
+    if completed_at_changed:
+        reviews_result = await session.execute(
+            select(Review.topic_id)
+            .where(Review.todo_id == todo_id, Review.user_id == user_id)
+            .distinct()
+        )
+        affected_topic_ids = {row[0] for row in reviews_result.all()}
+
+    # Perform the update
     update_stmt = (
         update(Todo)
         .where(Todo.id == todo_id, Todo.user_id == user_id)
@@ -89,6 +116,15 @@ async def update_todo(
 
     if result.rowcount == 0:
         raise HTTPException(status_code=404, detail="Todo not found")
+
+    # If completed_at changed, replay all affected topics
+    if completed_at_changed and affected_topic_ids:
+        for topic_id in affected_topic_ids:
+            await replay_all_reviews_for_topic(
+                session=session,
+                topic_id=topic_id,
+                user_id=user_id,
+            )
 
     stmt = (
         select(Todo)
@@ -114,6 +150,15 @@ async def read_topics_for_todo(
 
 @router.delete("/todos/{todo_id}", tags=["todos"])
 async def delete_todo(todo_id: int, session: SessionDep, user_id: UserIdDep):
+    # Fetch all reviews associated with this todo to get affected topic IDs
+    reviews_result = await session.execute(
+        select(Review.topic_id)
+        .where(Review.todo_id == todo_id, Review.user_id == user_id)
+        .distinct()
+    )
+    affected_topic_ids = {row[0] for row in reviews_result.all()}
+
+    # Delete the todo (reviews will be cascade deleted if DB is configured that way)
     stmt = (
         delete(Todo).where(Todo.id == todo_id, Todo.user_id == user_id).returning(Todo)
     )
@@ -122,3 +167,14 @@ async def delete_todo(todo_id: int, session: SessionDep, user_id: UserIdDep):
 
     if not deleted_todo:
         raise HTTPException(status_code=404, detail="Todo not found")
+
+    # Replay all affected topics to recalculate FSRS with remaining reviews
+    if affected_topic_ids:
+        for topic_id in affected_topic_ids:
+            await replay_all_reviews_for_topic(
+                session=session,
+                topic_id=topic_id,
+                user_id=user_id,
+            )
+
+    return {"message": "Todo deleted successfully"}

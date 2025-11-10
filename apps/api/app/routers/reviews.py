@@ -94,6 +94,91 @@ async def replay_subsequent_reviews(
     return current_card
 
 
+async def replay_all_reviews_for_topic(
+    session: SessionDep,
+    topic_id: int,
+    user_id: str,
+) -> None:
+    """
+    Rebuild the entire FSRS state chain for a topic from scratch.
+
+    This function:
+    1. Fetches the topic
+    2. Fetches all completed reviews for the topic (ordered chronologically)
+    3. Starts from the topic's initial state
+    4. Replays all reviews in chronological order
+    5. Updates each review's before/after states
+    6. Updates the topic with the final FSRS state
+
+    Used when todo completion dates change or todos are deleted, as this can
+    affect the chronological order of reviews.
+
+    Args:
+        session: Database session
+        topic_id: ID of the topic to replay
+        user_id: User ID for authorization
+    """
+    # Fetch the topic
+    topic_result = await session.execute(
+        select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    )
+    topic = topic_result.scalar_one_or_none()
+    if not topic:
+        return  # Topic not found, nothing to replay
+
+    # Fetch all completed reviews for this topic, ordered by todo completion date
+    reviews_result = await session.execute(
+        select(Review)
+        .join(Todo, Review.todo_id == Todo.id)
+        .where(
+            Review.topic_id == topic_id,
+            Review.user_id == user_id,
+            Todo.completed_at.isnot(None),
+        )
+        .order_by(Todo.completed_at.asc())
+        .options(selectinload(Review.todo))
+    )
+    all_reviews = list(reviews_result.scalars().all())
+
+    # If no completed reviews, reset topic to initial state
+    if not all_reviews:
+        topic.stability = None
+        topic.difficulty = None
+        topic.state = "LEARNING"
+        topic.step = None
+        topic.due = None
+        await session.flush()
+        return
+
+    # Initialize FSRS scheduler
+    scheduler = Scheduler()
+
+    # Create initial card state from topic's default values
+    initial_card = Card(
+        state=FSRSState.Learning,
+        stability=None,
+        difficulty=None,
+        step=None,
+    )
+
+    # Replay all reviews starting from initial state
+    final_card = await replay_subsequent_reviews(
+        topic=topic,
+        starting_card=initial_card,
+        subsequent_reviews=all_reviews,
+        scheduler=scheduler,
+    )
+
+    # Update topic with final state
+    topic.stability = final_card.stability
+    topic.difficulty = final_card.difficulty
+    topic.state = map_fsrs_state_to_db(final_card.state)
+    topic.step = final_card.step
+    topic.due = final_card.due.date()
+
+    await session.flush()
+
+
 @router.get("/reviews/", tags=["reviews"])
 async def read_reviews(
     session: SessionDep,
