@@ -17,6 +17,7 @@ export type Review = {
 	topic_difficulty_before: number | null
 	topic_state_before: LearningState | null
 	topic_step_before: number | null
+	topic_due_before: string | null
 
 	// Topic FSRS state after review
 	topic_stability_after: number | null
@@ -70,6 +71,7 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	topic_difficulty_before: v.nullable(v.number()),
 	topic_state_before: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
 	topic_step_before: v.nullable(v.number()),
+	topic_due_before: v.nullable(v.string()),
 
 	// Topic FSRS state after review
 	topic_stability_after: v.nullable(v.number()),

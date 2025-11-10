@@ -120,6 +120,7 @@ async def create_review(
     topic_difficulty_before = topic.difficulty
     topic_state_before = topic.state
     topic_step_before = topic.step
+    topic_due_before = topic.due
 
     # Initialize FSRS scheduler with default parameters
     scheduler = Scheduler()
@@ -155,6 +156,7 @@ async def create_review(
         topic_difficulty_before=topic_difficulty_before,
         topic_state_before=topic_state_before,
         topic_step_before=topic_step_before,
+        topic_due_before=topic_due_before,
         # Topic after state
         topic_stability_after=updated_card.stability,
         topic_difficulty_after=updated_card.difficulty,
@@ -190,26 +192,64 @@ async def update_review(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> ReviewWithTopic:
-    """Update a review's rating."""
-    # Update the review
-    update_stmt = (
-        update(Review)
+    """Update a review's rating and recalculate FSRS state."""
+    # Fetch the existing review
+    review_result = await session.execute(
+        select(Review)
         .where(Review.id == review_id, Review.user_id == user_id)
-        .values(rating=review.rating)
+        .options(selectinload(Review.topic))
     )
-    result = await session.execute(update_stmt)
+    existing_review = review_result.scalar_one_or_none()
 
-    if result.rowcount == 0:
+    if not existing_review:
         raise HTTPException(status_code=404, detail="Review not found")
 
-    # Fetch and return updated review with topic loaded
-    stmt = (
-        select(Review)
-        .where(Review.id == review_id)
-        .options(selectinload(Review.topic), selectinload(Review.todo))
+    topic = existing_review.topic
+
+    # Initialize FSRS scheduler with default parameters
+    scheduler = Scheduler()
+
+    # Create a Card from the review's "before" state
+    # This represents the topic state BEFORE this review was originally made
+    card = Card(
+        state=map_state_to_fsrs(existing_review.topic_state_before) if existing_review.topic_state_before else FSRSState.Learning,
+        stability=existing_review.topic_stability_before,
+        difficulty=existing_review.topic_difficulty_before,
+        step=existing_review.topic_step_before,
     )
-    result = await session.execute(stmt)
-    return result.scalar_one()
+
+    # Review the card with the NEW rating
+    fsrs_rating = map_rating_to_fsrs(review.rating)
+    review_datetime = datetime.now(timezone.utc)
+    updated_card, review_log = scheduler.review_card(
+        card=card,
+        rating=fsrs_rating,
+        review_datetime=review_datetime
+    )
+
+    # Calculate new topic_due_after as a date
+    due_after_date = updated_card.due.date()
+
+    # Update the review with new rating and "after" state
+    existing_review.rating = review.rating
+    existing_review.topic_stability_after = updated_card.stability
+    existing_review.topic_difficulty_after = updated_card.difficulty
+    existing_review.topic_state_after = map_fsrs_state_to_db(updated_card.state)
+    existing_review.topic_step_after = updated_card.step
+    existing_review.topic_due_after = due_after_date
+
+    # Update the topic with new FSRS state
+    topic.stability = updated_card.stability
+    topic.difficulty = updated_card.difficulty
+    topic.state = map_fsrs_state_to_db(updated_card.state)
+    topic.step = updated_card.step
+    topic.due = due_after_date
+
+    await session.flush()
+
+    # Refresh and return with relationships loaded
+    await session.refresh(existing_review, ["topic", "todo"])
+    return existing_review
 
 
 @router.delete("/reviews/{review_id}/", tags=["reviews"])
@@ -218,16 +258,29 @@ async def delete_review(
     session: SessionDep,
     user_id: UserIdDep,
 ):
-    """Delete a review."""
-    stmt = (
-        delete(Review)
+    """Delete a review and restore topic to its before state."""
+    # Fetch the review with topic before deleting
+    review_result = await session.execute(
+        select(Review)
         .where(Review.id == review_id, Review.user_id == user_id)
-        .returning(Review)
+        .options(selectinload(Review.topic))
     )
-    result = await session.execute(stmt)
-    deleted_review = result.scalar_one_or_none()
+    review = review_result.scalar_one_or_none()
 
-    if not deleted_review:
+    if not review:
         raise HTTPException(status_code=404, detail="Review not found")
+
+    topic = review.topic
+
+    # Restore topic to its "before" state
+    topic.stability = review.topic_stability_before
+    topic.difficulty = review.topic_difficulty_before
+    topic.state = review.topic_state_before
+    topic.step = review.topic_step_before
+    topic.due = review.topic_due_before
+
+    # Delete the review
+    await session.delete(review)
+    await session.flush()
 
     return {"message": "Review deleted successfully"}

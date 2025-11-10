@@ -27,6 +27,7 @@ class ReviewRead(ReviewBase):
     topic_difficulty_before: float | None
     topic_state_before: str | None
     topic_step_before: int | None
+    topic_due_before: date | None
 
     # Topic FSRS state after review
     topic_stability_after: float | None

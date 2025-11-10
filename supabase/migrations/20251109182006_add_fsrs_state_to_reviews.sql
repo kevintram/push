@@ -6,6 +6,7 @@ alter table "public"."reviews" add column "topic_stability_before" real;
 alter table "public"."reviews" add column "topic_difficulty_before" real;
 alter table "public"."reviews" add column "topic_state_before" learning_state;
 alter table "public"."reviews" add column "topic_step_before" int;
+alter table "public"."reviews" add column "topic_due_before" date;
 
 -- Topic state after review (not null for new reviews - existing reviews will have nulls)
 alter table "public"."reviews" add column "topic_stability_after" real;

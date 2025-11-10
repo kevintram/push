@@ -43,6 +43,7 @@ class Review(Base):
         nullable=True,
     )
     topic_step_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    topic_due_before: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     # Topic FSRS state after review
     topic_stability_after: Mapped[float | None] = mapped_column(Float, nullable=True)
