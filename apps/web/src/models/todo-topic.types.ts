@@ -12,18 +12,18 @@ export type Review = {
 	updated_at: string
 	topic: Topic
 
-	// FSRS state before review
-	stability_before: number | null
-	difficulty_before: number | null
-	state_before: LearningState | null
-	step_before: number | null
+	// Topic FSRS state before review
+	topic_stability_before: number | null
+	topic_difficulty_before: number | null
+	topic_state_before: LearningState | null
+	topic_step_before: number | null
 
-	// FSRS state after review
-	stability_after: number | null
-	difficulty_after: number | null
-	state_after: LearningState | null
-	step_after: number | null
-	due_after: string | null
+	// Topic FSRS state after review
+	topic_stability_after: number | null
+	topic_difficulty_after: number | null
+	topic_state_after: LearningState | null
+	topic_step_after: number | null
+	topic_due_after: string | null
 }
 
 export type Todo = {
@@ -65,18 +65,18 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	updated_at: v.string(),
 	topic: v.lazy(() => TopicSchema),
 
-	// FSRS state before review
-	stability_before: v.nullable(v.number()),
-	difficulty_before: v.nullable(v.number()),
-	state_before: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
-	step_before: v.nullable(v.number()),
+	// Topic FSRS state before review
+	topic_stability_before: v.nullable(v.number()),
+	topic_difficulty_before: v.nullable(v.number()),
+	topic_state_before: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
+	topic_step_before: v.nullable(v.number()),
 
-	// FSRS state after review
-	stability_after: v.nullable(v.number()),
-	difficulty_after: v.nullable(v.number()),
-	state_after: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
-	step_after: v.nullable(v.number()),
-	due_after: v.nullable(v.string())
+	// Topic FSRS state after review
+	topic_stability_after: v.nullable(v.number()),
+	topic_difficulty_after: v.nullable(v.number()),
+	topic_state_after: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
+	topic_step_after: v.nullable(v.number()),
+	topic_due_after: v.nullable(v.string())
 })
 
 export const TodoSchema: v.GenericSchema<Todo> = v.object({

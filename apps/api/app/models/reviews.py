@@ -35,24 +35,24 @@ class Review(Base):
         server_default=text("timezone('utc'::text, now())"),
     )
 
-    # FSRS state before review
-    stability_before: Mapped[float | None] = mapped_column(Float, nullable=True)
-    difficulty_before: Mapped[float | None] = mapped_column(Float, nullable=True)
-    state_before: Mapped[str | None] = mapped_column(
+    # Topic FSRS state before review
+    topic_stability_before: Mapped[float | None] = mapped_column(Float, nullable=True)
+    topic_difficulty_before: Mapped[float | None] = mapped_column(Float, nullable=True)
+    topic_state_before: Mapped[str | None] = mapped_column(
         Enum("LEARNING", "REVIEW", "RELEARNING", name="learning_state"),
         nullable=True,
     )
-    step_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    topic_step_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    # FSRS state after review
-    stability_after: Mapped[float | None] = mapped_column(Float, nullable=True)
-    difficulty_after: Mapped[float | None] = mapped_column(Float, nullable=True)
-    state_after: Mapped[str | None] = mapped_column(
+    # Topic FSRS state after review
+    topic_stability_after: Mapped[float | None] = mapped_column(Float, nullable=True)
+    topic_difficulty_after: Mapped[float | None] = mapped_column(Float, nullable=True)
+    topic_state_after: Mapped[str | None] = mapped_column(
         Enum("LEARNING", "REVIEW", "RELEARNING", name="learning_state"),
         nullable=True,
     )
-    step_after: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    due_after: Mapped[date | None] = mapped_column(Date, nullable=True)
+    topic_step_after: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    topic_due_after: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     # Relationships
     todo: Mapped["Todo"] = relationship(back_populates="reviews")

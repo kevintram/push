@@ -116,10 +116,10 @@ async def create_review(
         raise HTTPException(status_code=404, detail="Topic not found")
 
     # Store topic's current state as "before" state
-    stability_before = topic.stability
-    difficulty_before = topic.difficulty
-    state_before = topic.state
-    step_before = topic.step
+    topic_stability_before = topic.stability
+    topic_difficulty_before = topic.difficulty
+    topic_state_before = topic.state
+    topic_step_before = topic.step
 
     # Initialize FSRS scheduler with default parameters
     scheduler = Scheduler()
@@ -150,17 +150,17 @@ async def create_review(
         topic_id=review.topic_id,
         user_id=user_id,
         rating=review.rating,
-        # Before state
-        stability_before=stability_before,
-        difficulty_before=difficulty_before,
-        state_before=state_before,
-        step_before=step_before,
-        # After state
-        stability_after=updated_card.stability,
-        difficulty_after=updated_card.difficulty,
-        state_after=map_fsrs_state_to_db(updated_card.state),
-        step_after=updated_card.step,
-        due_after=due_after_date,
+        # Topic before state
+        topic_stability_before=topic_stability_before,
+        topic_difficulty_before=topic_difficulty_before,
+        topic_state_before=topic_state_before,
+        topic_step_before=topic_step_before,
+        # Topic after state
+        topic_stability_after=updated_card.stability,
+        topic_difficulty_after=updated_card.difficulty,
+        topic_state_after=map_fsrs_state_to_db(updated_card.state),
+        topic_step_after=updated_card.step,
+        topic_due_after=due_after_date,
     )
     session.add(new_review)
 

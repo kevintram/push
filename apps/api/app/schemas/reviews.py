@@ -22,18 +22,18 @@ class ReviewRead(ReviewBase):
     inserted_at: datetime
     updated_at: datetime
 
-    # FSRS state before review
-    stability_before: float | None
-    difficulty_before: float | None
-    state_before: str | None
-    step_before: int | None
+    # Topic FSRS state before review
+    topic_stability_before: float | None
+    topic_difficulty_before: float | None
+    topic_state_before: str | None
+    topic_step_before: int | None
 
-    # FSRS state after review
-    stability_after: float | None
-    difficulty_after: float | None
-    state_after: str | None
-    step_after: int | None
-    due_after: date | None
+    # Topic FSRS state after review
+    topic_stability_after: float | None
+    topic_difficulty_after: float | None
+    topic_state_after: str | None
+    topic_step_after: int | None
+    topic_due_after: date | None
 
 
 class ReviewWithTopic(ReviewRead):
