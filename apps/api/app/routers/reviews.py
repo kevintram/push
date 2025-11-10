@@ -115,6 +115,30 @@ async def create_review(
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
 
+    # Check if todo is completed - only run FSRS if it is
+    if todo.completed_at is None:
+        # Todo not completed yet - create review without FSRS
+        new_review = Review(
+            todo_id=review.todo_id,
+            topic_id=review.topic_id,
+            user_id=user_id,
+            rating=review.rating,
+            # All FSRS fields remain None
+        )
+        session.add(new_review)
+
+        try:
+            await session.flush()
+        except IntegrityError:
+            raise HTTPException(
+                status_code=409, detail="Review already exists for this todo-topic pair"
+            )
+
+        # Refresh with topic relationship loaded
+        await session.refresh(new_review, ["topic", "todo"])
+        return new_review
+
+    # Todo is completed - run FSRS
     # Store topic's current state as "before" state
     topic_stability_before = topic.stability
     topic_difficulty_before = topic.difficulty
@@ -193,11 +217,11 @@ async def update_review(
     user_id: UserIdDep,
 ) -> ReviewWithTopic:
     """Update a review's rating and recalculate FSRS state."""
-    # Fetch the existing review
+    # Fetch the existing review with todo and topic
     review_result = await session.execute(
         select(Review)
         .where(Review.id == review_id, Review.user_id == user_id)
-        .options(selectinload(Review.topic))
+        .options(selectinload(Review.topic), selectinload(Review.todo))
     )
     existing_review = review_result.scalar_one_or_none()
 
@@ -205,7 +229,19 @@ async def update_review(
         raise HTTPException(status_code=404, detail="Review not found")
 
     topic = existing_review.topic
+    todo = existing_review.todo
 
+    # Check if todo is completed - only run FSRS if it is
+    if todo.completed_at is None:
+        # Todo not completed yet - only update rating, skip FSRS
+        existing_review.rating = review.rating
+        await session.flush()
+
+        # Refresh and return with relationships loaded
+        await session.refresh(existing_review, ["topic", "todo"])
+        return existing_review
+
+    # Todo is completed - run FSRS recalculation
     # Initialize FSRS scheduler with default parameters
     scheduler = Scheduler()
 
@@ -259,11 +295,11 @@ async def delete_review(
     user_id: UserIdDep,
 ):
     """Delete a review and restore topic to its before state."""
-    # Fetch the review with topic before deleting
+    # Fetch the review with topic and todo before deleting
     review_result = await session.execute(
         select(Review)
         .where(Review.id == review_id, Review.user_id == user_id)
-        .options(selectinload(Review.topic))
+        .options(selectinload(Review.topic), selectinload(Review.todo))
     )
     review = review_result.scalar_one_or_none()
 
@@ -271,15 +307,18 @@ async def delete_review(
         raise HTTPException(status_code=404, detail="Review not found")
 
     topic = review.topic
+    todo = review.todo
 
-    # Restore topic to its "before" state
-    topic.stability = review.topic_stability_before
-    topic.difficulty = review.topic_difficulty_before
-    topic.state = review.topic_state_before
-    topic.step = review.topic_step_before
-    topic.due = review.topic_due_before
+    # Check if todo is completed - only restore topic state if it was
+    if todo.completed_at is not None:
+        # Todo was completed - restore topic to its "before" state
+        topic.stability = review.topic_stability_before
+        topic.difficulty = review.topic_difficulty_before
+        topic.state = review.topic_state_before
+        topic.step = review.topic_step_before
+        topic.due = review.topic_due_before
 
-    # Delete the review
+    # Delete the review (whether todo was completed or not)
     await session.delete(review)
     await session.flush()
 
