@@ -1,4 +1,7 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, HTTPException
+from fsrs import Card, Rating as FSRSRating, Scheduler, State as FSRSState
 from sqlalchemy import select, update, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
@@ -8,6 +11,37 @@ from app.models import Review, Todo, Topic
 from app.schemas import ReviewCreate, ReviewUpdate, ReviewWithTopic
 
 router = APIRouter()
+
+
+def map_rating_to_fsrs(rating: str) -> FSRSRating:
+    """Map database rating string to FSRS Rating enum."""
+    mapping = {
+        "miss": FSRSRating.Again,
+        "hard": FSRSRating.Hard,
+        "good": FSRSRating.Good,
+        "easy": FSRSRating.Easy,
+    }
+    return mapping[rating]
+
+
+def map_state_to_fsrs(state: str) -> FSRSState:
+    """Map database state string to FSRS State enum."""
+    mapping = {
+        "LEARNING": FSRSState.Learning,
+        "REVIEW": FSRSState.Review,
+        "RELEARNING": FSRSState.Relearning,
+    }
+    return mapping[state]
+
+
+def map_fsrs_state_to_db(state: FSRSState) -> str:
+    """Map FSRS State enum to database string."""
+    mapping = {
+        FSRSState.Learning: "LEARNING",
+        FSRSState.Review: "REVIEW",
+        FSRSState.Relearning: "RELEARNING",
+    }
+    return mapping[state]
 
 
 @router.get("/reviews/", tags=["reviews"])
@@ -81,11 +115,52 @@ async def create_review(
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
 
+    # Store topic's current state as "before" state
+    stability_before = topic.stability
+    difficulty_before = topic.difficulty
+    state_before = topic.state
+    step_before = topic.step
+
+    # Initialize FSRS scheduler with default parameters
+    scheduler = Scheduler()
+
+    # Create a Card representing the topic's current state
+    card = Card(
+        state=map_state_to_fsrs(topic.state),
+        stability=topic.stability,
+        difficulty=topic.difficulty,
+        step=topic.step,
+    )
+
+    # Review the card with FSRS
+    fsrs_rating = map_rating_to_fsrs(review.rating)
+    review_datetime = datetime.now(timezone.utc)
+    updated_card, review_log = scheduler.review_card(
+        card=card,
+        rating=fsrs_rating,
+        review_datetime=review_datetime
+    )
+
+    # Calculate due_after as a date (extract date from datetime)
+    due_after_date = updated_card.due.date()
+
+    # Create the review with FSRS state
     new_review = Review(
         todo_id=review.todo_id,
         topic_id=review.topic_id,
         user_id=user_id,
         rating=review.rating,
+        # Before state
+        stability_before=stability_before,
+        difficulty_before=difficulty_before,
+        state_before=state_before,
+        step_before=step_before,
+        # After state
+        stability_after=updated_card.stability,
+        difficulty_after=updated_card.difficulty,
+        state_after=map_fsrs_state_to_db(updated_card.state),
+        step_after=updated_card.step,
+        due_after=due_after_date,
     )
     session.add(new_review)
 
@@ -95,6 +170,13 @@ async def create_review(
         raise HTTPException(
             status_code=409, detail="Review already exists for this todo-topic pair"
         )
+
+    # Update the topic with new FSRS state
+    topic.stability = updated_card.stability
+    topic.difficulty = updated_card.difficulty
+    topic.state = map_fsrs_state_to_db(updated_card.state)
+    topic.step = updated_card.step
+    topic.due = due_after_date
 
     # Refresh with topic relationship loaded
     await session.refresh(new_review, ["topic", "todo"])
