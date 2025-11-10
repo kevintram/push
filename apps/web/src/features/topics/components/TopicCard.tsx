@@ -43,6 +43,10 @@ import { updateTopic as updateTopicApi } from '../api/updateTopic'
 
 const MIN_HEIGHT = 96
 
+function roundToTwoDecimals(num: number): number {
+	return Math.round(num * 100) / 100
+}
+
 interface TopicCardProps {
 	topic: Topic
 	onTopicClick?: (topic: Topic) => void
@@ -443,13 +447,15 @@ export function TopicCard({
 							<div className='flex items-center gap-1'>
 								<BicepsFlexed className='h-3 w-3' />
 								<span>
-									{topic.stability != null ? `${topic.stability}d` : 'No data'}
+									{topic.stability != null
+										? `${Math.round(topic.stability)}d`
+										: 'No data'}
 								</span>
 							</div>
 						</TooltipTrigger>
 						<TooltipContent side='bottom'>
 							{topic.stability != null
-								? `Stable for ${topic.stability} days`
+								? `Stable for ${Math.round(topic.stability)} days`
 								: 'Stability not yet calculated'}
 						</TooltipContent>
 					</Tooltip>
@@ -460,14 +466,14 @@ export function TopicCard({
 								<Mountain className='h-3 w-3' />
 								<span>
 									{topic.difficulty != null
-										? `${topic.difficulty}/10`
+										? `${roundToTwoDecimals(topic.difficulty)}/10`
 										: 'No data'}
 								</span>
 							</div>
 						</TooltipTrigger>
 						<TooltipContent side='bottom'>
 							{topic.difficulty != null
-								? `${topic.difficulty}/10 difficulty`
+								? `${roundToTwoDecimals(topic.difficulty)}/10 difficulty`
 								: 'Difficulty not yet calculated'}
 						</TooltipContent>
 					</Tooltip>
