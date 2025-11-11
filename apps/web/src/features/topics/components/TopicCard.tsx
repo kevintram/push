@@ -97,47 +97,34 @@ export function TopicCard({
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
 
-	const todos = todosProp ?? []
+	// Calculate the due date display
+	const dueDateDisplay = useMemo(() => {
+		if (!topic.due) return null
 
-	// Calculate the next or last review date
-	const reviewDate = useMemo(() => {
-		if (todos.length === 0) return null
+		const now = dayjs().startOf('day')
+		const dueDayjs = dayjs(topic.due).startOf('day')
+		const diffDays = dueDayjs.diff(now, 'day')
+		const isUpcoming = dueDayjs.isAfter(now)
 
-		const now = dayjs()
-		const todosWithDates = todos.filter(todo => todo.effective_date != null)
-
-		if (todosWithDates.length === 0) return null
-
-		// Find next upcoming date
-		const upcomingTodos = todosWithDates
-			.filter(todo => dayjs(todo.effective_date).isAfter(now))
-			.sort(
-				(a, b) =>
-					dayjs(a.effective_date).valueOf() - dayjs(b.effective_date).valueOf()
-			)
-
-		if (upcomingTodos.length > 0 && upcomingTodos[0]) {
-			return {
-				date: upcomingTodos[0].effective_date!,
-				isUpcoming: true
-			}
+		let displayText: string
+		if (diffDays === 0) {
+			displayText = 'Today'
+		} else if (diffDays === 1) {
+			displayText = 'Tomorrow'
+		} else if (diffDays === -1) {
+			displayText = 'Yesterday'
+		} else if (isUpcoming) {
+			displayText = `in ${diffDays}d`
+		} else {
+			displayText = `${Math.abs(diffDays)}d ago`
 		}
 
-		// Find last past date
-		const pastTodos = todosWithDates.sort(
-			(a, b) =>
-				dayjs(b.effective_date).valueOf() - dayjs(a.effective_date).valueOf()
-		)
-
-		if (pastTodos.length > 0 && pastTodos[0]) {
-			return {
-				date: pastTodos[0].effective_date!,
-				isUpcoming: false
-			}
+		return {
+			dueDate: topic.due,
+			isUpcoming,
+			displayText
 		}
-
-		return null
-	}, [todos])
+	}, [topic.due])
 
 	const handleActivate = useCallback(() => {
 		onTopicClick?.(topic)
@@ -415,32 +402,51 @@ export function TopicCard({
 
 				{/* Bottom row: Review date and children count */}
 				<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-					{/* Review date - bottom left */}
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
-								<Calendar className='h-3 w-3' />
-								{reviewDate ? (
-									<span className={reviewDate.isUpcoming ? '' : 'opacity-60'}>
-										{reviewDate.isUpcoming
-											? `in ${dayjs(reviewDate.date).diff(dayjs(), 'day')}d`
-											: `${dayjs().diff(dayjs(reviewDate.date), 'day')}d ago`}
+					{/* Due date - bottom left */}
+					{dueDateDisplay ? (
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<div className='flex items-center gap-1'>
+									<Calendar
+										className={`h-3 w-3 ${dueDateDisplay.displayText === 'Today'
+												? 'text-blue-600 dark:text-blue-400'
+												: dueDateDisplay.displayText === 'Yesterday' ||
+													dueDateDisplay.displayText.includes('ago')
+													? 'text-red-600 dark:text-red-400'
+													: ''
+											}`}
+									/>
+									<span
+										className={
+											dueDateDisplay.displayText === 'Today'
+												? 'text-blue-600 dark:text-blue-400'
+												: dueDateDisplay.displayText === 'Yesterday' ||
+													dueDateDisplay.displayText.includes('ago')
+													? 'text-red-600 dark:text-red-400'
+													: ''
+										}
+									>
+										{dueDateDisplay.displayText}
 									</span>
-								) : (
+								</div>
+							</TooltipTrigger>
+							<TooltipContent side='bottom'>
+								Due on {dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}
+							</TooltipContent>
+						</Tooltip>
+					) : (
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<div className='flex items-center gap-1'>
+									<Calendar className='h-3 w-3' />
 									<span>None</span>
-								)}
-							</div>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>
-							{(() => {
-								if (!reviewDate) return 'Never reviewed'
-								if (reviewDate.isUpcoming) {
-									return `Next review in ${dayjs(reviewDate.date).diff(dayjs(), 'day')} days`
-								}
-								return `Last reviewed ${dayjs().diff(dayjs(reviewDate.date), 'day')} days ago`
-							})()}
-						</TooltipContent>
-					</Tooltip>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent side='bottom'>
+								No due date
+							</TooltipContent>
+						</Tooltip>
+					)}
 					&nbsp;·&nbsp;
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
