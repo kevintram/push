@@ -2,7 +2,6 @@ import { ChevronDown } from 'lucide-react'
 import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import { Sidebar, SidebarContent } from '~/components/ui/Sidebar'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useSectionedTopics } from '~/features/topics/api/useSectionedTopics'
@@ -64,29 +63,26 @@ export function TopicsSidebar() {
 
 	if (isLoading) {
 		return (
-			<Sidebar className='absolute border-l' side='right'>
-				<div className='scrollbar-track-transparent flex h-full flex-col overflow-auto overscroll-contain'>
-					<TopicsSidebarHeader
-						filters={[]}
-						onClearFilters={handleClearFilters}
-					/>
-					<div className='flex flex-col gap-6 px-2 pb-2'>
-						<div className='text-muted-foreground text-sm'>Loading...</div>
-					</div>
+			<div className='flex h-full flex-col overflow-auto bg-primary-foreground border-l'>
+				<TopicsSidebarHeader
+					filters={[]}
+					onClearFilters={handleClearFilters}
+				/>
+				<div className='flex flex-col gap-6 px-2 pb-2'>
+					<div className='text-muted-foreground text-sm'>Loading...</div>
 				</div>
-			</Sidebar>
+			</div>
 		)
 	}
 
 	return (
-		<Sidebar className='absolute border-l' side='right'>
-			<div className='scrollbar-track-transparent flex h-full flex-col overflow-auto overscroll-contain'>
-				<TopicsSidebarHeader
-					filters={filters}
-					onClearFilters={handleClearFilters}
-				/>
-				<div className='flex flex-col gap-6 px-2 pb-2'>
-					{filteredSections.map(section => (
+		<div className='flex h-full flex-col overflow-auto bg-primary-foreground border-l'>
+			<TopicsSidebarHeader
+				filters={filters}
+				onClearFilters={handleClearFilters}
+			/>
+			<div className='flex flex-col gap-6 px-2 pb-2'>
+				{filteredSections.map(section => (
 					<div className='flex flex-col' key={section.id}>
 						<div className='mb-3 flex items-center justify-between'>
 							<Button
@@ -126,8 +122,7 @@ export function TopicsSidebar() {
 							))}
 					</div>
 				))}
-				</div>
 			</div>
-		</Sidebar>
+		</div>
 	)
 }

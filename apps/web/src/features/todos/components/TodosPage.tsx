@@ -1,7 +1,7 @@
 import { ChevronDown, Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
+import { Panel, PanelGroup, ResizableHandle } from '~/components/ui/ResizablePanel'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useSectionedTodos } from '../api'
 import { TodoItem } from './TodoItem'
@@ -42,9 +42,10 @@ export function TodosPage() {
 	}
 
 	return (
-		<SidebarProvider defaultOpen={true}>
-			<SidebarHolder className='scrollbar-track-transparent relative h-full w-full'>
-				<div className='flex h-full flex-col overflow-auto'>
+		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
+			<PanelGroup className='min-h-0 flex-1' direction='horizontal'>
+				<Panel className='min-h-0 overflow-hidden' defaultSize={60} minSize={40}>
+					<div className='flex h-full flex-col overflow-auto bg-primary-foreground'>
 					<TodosPageHeader
 						filters={filters}
 						onClearFilters={handleClearFilters}
@@ -110,9 +111,13 @@ export function TodosPage() {
 							)
 						})}
 					</div>
-				</div>
-				<TopicsSidebar />
-			</SidebarHolder>
-		</SidebarProvider>
+					</div>
+				</Panel>
+				<ResizableHandle />
+				<Panel className='min-h-0 overflow-hidden' defaultSize={40} maxSize={60} minSize={20}>
+					<TopicsSidebar />
+				</Panel>
+			</PanelGroup>
+		</div>
 	)
 }
