@@ -9,16 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ReviewRouteImport } from './routes/review'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
 
-const ReviewRoute = ReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const InboxRoute = InboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
@@ -39,46 +33,35 @@ const TopicsChar123TopicIdChar125Route =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
-  '/review': typeof ReviewRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
-  '/review': typeof ReviewRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
-  '/review': typeof ReviewRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/inbox' | '/review' | '/topics/{-$topicId}'
+  fullPaths: '/' | '/inbox' | '/topics/{-$topicId}'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/inbox' | '/review' | '/topics/{-$topicId}'
-  id: '__root__' | '/' | '/inbox' | '/review' | '/topics/{-$topicId}'
+  to: '/' | '/inbox' | '/topics/{-$topicId}'
+  id: '__root__' | '/' | '/inbox' | '/topics/{-$topicId}'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   InboxRoute: typeof InboxRoute
-  ReviewRoute: typeof ReviewRoute
   TopicsChar123TopicIdChar125Route: typeof TopicsChar123TopicIdChar125Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/review': {
-      id: '/review'
-      path: '/review'
-      fullPath: '/review'
-      preLoaderRoute: typeof ReviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/inbox': {
       id: '/inbox'
       path: '/inbox'
@@ -106,7 +89,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   InboxRoute: InboxRoute,
-  ReviewRoute: ReviewRoute,
   TopicsChar123TopicIdChar125Route: TopicsChar123TopicIdChar125Route,
 }
 export const routeTree = rootRouteImport

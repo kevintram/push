@@ -3,7 +3,6 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Inbox,
 	ListChecks,
-	RotateCcw,
 	Settings,
 	SquareLibrary
 } from 'lucide-react'
@@ -40,11 +39,6 @@ export function AppSidebar() {
 			title: 'Library',
 			url: '/topics',
 			icon: SquareLibrary
-		},
-		{
-			title: 'Review',
-			url: '/review',
-			icon: RotateCcw
 		}
 	]
 
