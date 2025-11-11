@@ -1,11 +1,12 @@
 import { Archive, Inbox, Plus, SquareLibrary } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 import { useRootTopics } from '~/features/topics/api/useRootTopics'
 import type { Topic } from '~/models/todo-topic.types'
+import { getCookie, setCookie } from '~/utils/cookies'
 import { TopicCard } from '../TopicCard'
 import type { RenderedFilter } from './FilterBadges'
 import { RootTopicsPageSkeleton } from './RootTopicsPageSkeleton'
@@ -14,6 +15,7 @@ import { TopicsPageLayout } from './TopicsPageLayout'
 
 const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96
+const FILTER_COOKIE_KEY = 'root-topics-filter'
 
 type FilterId = 'archived' | 'inboxed'
 
@@ -26,8 +28,15 @@ type FilterBadge = {
 }
 
 export function RootTopicsPage() {
-	const [activeFilter, setActiveFilter] = useState<FilterId | null>(null)
+	const [activeFilter, setActiveFilter] = useState<FilterId | null>(() => {
+		return getCookie<FilterId | null>(FILTER_COOKIE_KEY) ?? null
+	})
 	const { openTopicDialog } = useTodoTopicDialog()
+
+	// Save filter to cookie whenever it changes
+	useEffect(() => {
+		setCookie(FILTER_COOKIE_KEY, activeFilter)
+	}, [activeFilter])
 
 	// Build query params based on active filter (mutually exclusive)
 	const queryParams = useMemo(() => {

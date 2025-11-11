@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import * as v from 'valibot'
 import { type Todo, TodoSchema } from '~/models/todo-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
@@ -22,6 +22,9 @@ type SectionState = {
 }
 
 type SectionStates = Record<SectionKey, SectionState>
+
+// Public type for external filter state (only isActive, not isCollapsed)
+export type SectionFilterStates = Record<SectionKey, { isActive: boolean }>
 
 type SectionDefinition = {
 	id: SectionKey
@@ -129,18 +132,38 @@ async function createTodo(input: CreateTodoInput): Promise<Todo> {
 	}
 }
 
-export function useSectionedTodos() {
+type UseSectionedTodosOptions = {
+	externalFilterStates?: SectionFilterStates
+}
+
+export function useSectionedTodos(options?: UseSectionedTodosOptions) {
+	const { externalFilterStates } = options ?? {}
 	const queryClient = useQueryClient()
 
-	const [sectionStates, setSectionStates] = useState<SectionStates>({
-		overdue: { isActive: false, isCollapsed: false },
-		today: { isActive: false, isCollapsed: false },
-		tomorrow: { isActive: false, isCollapsed: false },
-		nextSevenDays: { isActive: false, isCollapsed: false },
-		future: { isActive: false, isCollapsed: false },
-		unscheduled: { isActive: false, isCollapsed: false },
-		logbook: { isActive: false, isCollapsed: false }
+	// Only manage collapse state internally
+	const [collapsedStates, setCollapsedStates] = useState<
+		Record<SectionKey, boolean>
+	>({
+		overdue: false,
+		today: false,
+		tomorrow: false,
+		nextSevenDays: false,
+		future: false,
+		unscheduled: false,
+		logbook: false
 	})
+
+	// Merge external filter states with internal collapse states
+	const sectionStates: SectionStates = useMemo(() => {
+		const result: SectionStates = {} as SectionStates
+		for (const key of Object.keys(collapsedStates) as Array<SectionKey>) {
+			result[key] = {
+				isActive: externalFilterStates?.[key]?.isActive ?? false,
+				isCollapsed: collapsedStates[key]
+			}
+		}
+		return result
+	}, [externalFilterStates, collapsedStates])
 
 	// Centralized date boundary calculations
 	const dateBoundaries = useMemo(() => {
@@ -311,81 +334,22 @@ export function useSectionedTodos() {
 		[sectionEntries, sectionStates]
 	)
 
-	const overdueSection = useMemo(
-		() => sections.find(section => section.id === 'overdue'),
-		[sections]
-	)
-
-	useEffect(() => {
-		if (!overdueSection || overdueSection.entries.length > 0) {
-			return
-		}
-
-		setSectionStates(prev => {
-			if (!prev.overdue.isActive) {
-				return prev
-			}
-
-			return {
-				...prev,
-				overdue: { ...prev.overdue, isActive: false }
-			}
-		})
-	}, [overdueSection])
-
-	const handleFilterClick = useCallback((filterId: FilterId) => {
-		setSectionStates(prev => {
-			const isActive = prev[filterId].isActive
-			const isLogbookActive = prev.logbook.isActive
-
-			// If clicking 'logbook', only show logbook
-			if (filterId === 'logbook') {
-				return Object.fromEntries(
-					Object.entries(prev).map(([key, state]) => [
-						key,
-						{ ...state, isActive: key === 'logbook' ? !isActive : false }
-					])
-				) as SectionStates
-			}
-
-			// If logbook is currently active and clicking another filter, replace with that filter
-			if (isLogbookActive) {
-				return Object.fromEntries(
-					Object.entries(prev).map(([key, state]) => [
-						key,
-						{ ...state, isActive: key === filterId }
-					])
-				) as SectionStates
-			}
-
-			// Toggle the clicked filter
-			return {
-				...prev,
-				[filterId]: { ...prev[filterId], isActive: !isActive }
-			}
-		})
+	// Note: handleFilterClick is now managed externally
+	// This is just a placeholder for the filters array
+	const handleFilterClick = useCallback((_filterId: FilterId) => {
+		// This will be provided externally
 	}, [])
 
 	const toggleSectionCollapse = useCallback((sectionId: SectionKey) => {
-		setSectionStates(prev => ({
+		setCollapsedStates(prev => ({
 			...prev,
-			[sectionId]: {
-				...prev[sectionId],
-				isCollapsed: !prev[sectionId].isCollapsed
-			}
+			[sectionId]: !prev[sectionId]
 		}))
 	}, [])
 
+	// Note: handleClearFilters is now managed externally
 	const handleClearFilters = useCallback(() => {
-		setSectionStates(
-			prev =>
-				Object.fromEntries(
-					Object.entries(prev).map(([key, state]) => [
-						key,
-						{ ...state, isActive: false }
-					])
-				) as SectionStates
-		)
+		// This will be provided externally
 	}, [])
 
 	const isLogbookActive = sectionStates.logbook.isActive

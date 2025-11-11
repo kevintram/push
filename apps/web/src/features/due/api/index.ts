@@ -3,4 +3,8 @@ export { createTodo } from './createTodo'
 export { deleteTodo } from './deleteTodo'
 export { getTodos } from './getTodos'
 export { type UpdateTodoInput, updateTodo } from './updateTodo'
-export { type SectionKey, useSectionedTodos } from './useSectionedTodos'
+export {
+	type SectionFilterStates,
+	type SectionKey,
+	useSectionedTodos
+} from './useSectionedTodos'

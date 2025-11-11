@@ -1,12 +1,17 @@
 import { ChevronDown } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
 import { useSectionedTopics } from '~/features/topics/api/useSectionedTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/models/todo-topic.types'
-import { useSectionedTodos } from '../api'
+import { getCookie, removeCookie, setCookie } from '~/utils/cookies'
+import {
+	type SectionFilterStates,
+	type SectionKey,
+	useSectionedTodos
+} from '../api'
 import { DuePageHeader } from './DuePageHeader'
 import { DuePageSkeleton } from './DuePageSkeleton'
 import { TodoItem } from './TodoItem'
@@ -22,29 +27,86 @@ type SubsectionState = {
 
 const MIN_TOPIC_WIDTH = 280
 const MIN_TOPIC_HEIGHT = 96
+const CONTENT_FILTER_COOKIE_KEY = 'due-content-filters'
+const SECTION_FILTER_COOKIE_KEY = 'due-section-filters'
 
 export function DuePage() {
+	// Clean up old cookie keys on first mount
+	useEffect(() => {
+		removeCookie('due-todo-section-states')
+		removeCookie('due-topic-section-states')
+	}, [])
+
+	// Shared section filter state (applies to both todos and topics)
+	const [sectionFilterStates, setSectionFilterStates] =
+		useState<SectionFilterStates>(() => {
+			const saved = getCookie<SectionFilterStates>(SECTION_FILTER_COOKIE_KEY)
+			return (
+				saved ?? {
+					overdue: { isActive: false },
+					today: { isActive: false },
+					tomorrow: { isActive: false },
+					nextSevenDays: { isActive: false },
+					future: { isActive: false },
+					unscheduled: { isActive: false },
+					logbook: { isActive: false }
+				}
+			)
+		})
+
+	// Save section filters to cookie whenever they change
+	useEffect(() => {
+		setCookie(SECTION_FILTER_COOKIE_KEY, sectionFilterStates)
+	}, [sectionFilterStates])
+
 	const {
 		filteredSections: todoSections,
 		filters: todoFilters,
 		toggleSectionCollapse: toggleTodoSectionCollapse,
-		handleClearFilters: handleClearTodoFilters,
 		isLoading: todosLoading
-	} = useSectionedTodos()
+	} = useSectionedTodos({ externalFilterStates: sectionFilterStates })
 
 	const {
 		filteredSections: topicSections,
 		toggleSectionCollapse: toggleTopicSectionCollapse,
-		handleClearFilters: handleClearTopicFilters,
 		isLoading: topicsLoading
-	} = useSectionedTopics()
+	} = useSectionedTopics({ externalFilterStates: sectionFilterStates })
 
 	const { openTodoDialog, openTopicDialog } = useTodoTopicDialog()
+
+	// Auto-deactivate overdue filter when no overdue items exist
+	useEffect(() => {
+		if (!sectionFilterStates.overdue.isActive) return
+
+		const hasOverdueTodos = todoSections.some(
+			s => s.id === 'overdue' && s.entries.length > 0
+		)
+		const hasOverdueTopics = topicSections.some(
+			s => s.id === 'overdue' && s.entries.length > 0
+		)
+
+		if (!(hasOverdueTodos || hasOverdueTopics)) {
+			setSectionFilterStates(
+				(prev: SectionFilterStates): SectionFilterStates => ({
+					...prev,
+					overdue: { isActive: false }
+				})
+			)
+		}
+	}, [sectionFilterStates.overdue.isActive, todoSections, topicSections])
 
 	// Content type filter state (empty = show all, like section filters)
 	const [activeContentTypes, setActiveContentTypes] = useState<
 		Set<ContentType>
-	>(new Set())
+	>(() => {
+		const saved = getCookie<Array<ContentType>>(CONTENT_FILTER_COOKIE_KEY)
+		return saved ? new Set(saved) : new Set()
+	})
+
+	// Save content filters to cookie whenever they change
+	useEffect(() => {
+		setCookie(CONTENT_FILTER_COOKIE_KEY, Array.from(activeContentTypes))
+	}, [activeContentTypes])
 
 	// Subsection collapse state
 	const [subsectionStates, setSubsectionStates] = useState<SubsectionState>({})
@@ -77,6 +139,49 @@ export function DuePage() {
 
 	const clearContentTypeFilters = useCallback(() => {
 		setActiveContentTypes(new Set())
+	}, [])
+
+	// Section filter handlers
+	const handleFilterClick = useCallback((filterId: SectionKey) => {
+		setSectionFilterStates((prev: SectionFilterStates): SectionFilterStates => {
+			const isActive = prev[filterId].isActive
+			const isLogbookActive = prev.logbook.isActive
+
+			// If clicking 'logbook', only show logbook
+			if (filterId === 'logbook') {
+				return Object.fromEntries(
+					Object.entries(prev).map(([key]) => [
+						key,
+						{ isActive: key === 'logbook' ? !isActive : false }
+					])
+				) as SectionFilterStates
+			}
+
+			// If logbook is currently active and clicking another filter, replace with that filter
+			if (isLogbookActive) {
+				return Object.fromEntries(
+					Object.entries(prev).map(([key]) => [
+						key,
+						{ isActive: key === filterId }
+					])
+				) as SectionFilterStates
+			}
+
+			// Toggle the clicked filter
+			return {
+				...prev,
+				[filterId]: { isActive: !isActive }
+			}
+		})
+	}, [])
+
+	const handleClearAllFilters = useCallback(() => {
+		setSectionFilterStates(
+			(prev: SectionFilterStates): SectionFilterStates =>
+				Object.fromEntries(
+					Object.entries(prev).map(([key]) => [key, { isActive: false }])
+				) as SectionFilterStates
+		)
 	}, [])
 
 	const toggleSubsection = useCallback(
@@ -183,6 +288,32 @@ export function DuePage() {
 		})
 	}, [todoSections, topicSections])
 
+	// Merge section filters from both hooks, enriching with onClick handlers
+	const sectionFilters = useMemo(() => {
+		const isLogbookActive = sectionFilterStates.logbook.isActive
+
+		return todoFilters
+			.map(filter => ({
+				...filter,
+				onClick: () => handleFilterClick(filter.id as SectionKey)
+			}))
+			.filter(filter => {
+				// When logbook is active, hide all other filters
+				if (isLogbookActive && filter.id !== 'logbook') {
+					return false
+				}
+				// When any other filter is active, hide logbook
+				const hasOtherActiveFilters = Object.entries(sectionFilterStates).some(
+					([id, state]: [string, { isActive: boolean }]) =>
+						id !== 'logbook' && state.isActive
+				)
+				if (hasOtherActiveFilters && filter.id === 'logbook') {
+					return false
+				}
+				return true
+			})
+	}, [todoFilters, sectionFilterStates, handleFilterClick])
+
 	const contentTypeFilters = useMemo(
 		() => [
 			{
@@ -201,11 +332,6 @@ export function DuePage() {
 		[activeContentTypes, toggleContentType]
 	)
 
-	const handleClearAllFilters = useCallback(() => {
-		handleClearTodoFilters()
-		handleClearTopicFilters()
-	}, [handleClearTodoFilters, handleClearTopicFilters])
-
 	if (todosLoading || topicsLoading) {
 		return <DuePageSkeleton />
 	}
@@ -217,7 +343,7 @@ export function DuePage() {
 					contentTypeFilters={contentTypeFilters}
 					onClearContentTypeFilters={clearContentTypeFilters}
 					onClearFilters={handleClearAllFilters}
-					sectionFilters={todoFilters}
+					sectionFilters={sectionFilters}
 				/>
 				<div className='px-6'>
 					{mergedSections.map((section, index) => {

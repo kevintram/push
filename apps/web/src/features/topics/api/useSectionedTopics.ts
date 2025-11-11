@@ -19,6 +19,12 @@ type SectionState = {
 
 type SectionStates = Record<TopicSectionKey, SectionState>
 
+// Public type for external filter state (only isActive, not isCollapsed)
+export type TopicSectionFilterStates = Record<
+	TopicSectionKey,
+	{ isActive: boolean }
+>
+
 type SectionDefinition = {
 	id: TopicSectionKey
 	label: string
@@ -61,17 +67,37 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	}
 ]
 
-export function useSectionedTopics() {
+type UseSectionedTopicsOptions = {
+	externalFilterStates?: TopicSectionFilterStates
+}
+
+export function useSectionedTopics(options?: UseSectionedTopicsOptions) {
+	const { externalFilterStates } = options ?? {}
 	const { data: topics = [], isLoading } = useAllTopics()
 
-	const [sectionStates, setSectionStates] = useState<SectionStates>({
-		overdue: { isActive: false, isCollapsed: false },
-		today: { isActive: false, isCollapsed: false },
-		tomorrow: { isActive: false, isCollapsed: false },
-		nextSevenDays: { isActive: false, isCollapsed: false },
-		future: { isActive: false, isCollapsed: false },
-		unscheduled: { isActive: false, isCollapsed: false }
+	// Only manage collapse state internally
+	const [collapsedStates, setCollapsedStates] = useState<
+		Record<TopicSectionKey, boolean>
+	>({
+		overdue: false,
+		today: false,
+		tomorrow: false,
+		nextSevenDays: false,
+		future: false,
+		unscheduled: false
 	})
+
+	// Merge external filter states with internal collapse states
+	const sectionStates: SectionStates = useMemo(() => {
+		const result: SectionStates = {} as SectionStates
+		for (const key of Object.keys(collapsedStates) as Array<TopicSectionKey>) {
+			result[key] = {
+				isActive: externalFilterStates?.[key]?.isActive ?? false,
+				isCollapsed: collapsedStates[key]
+			}
+		}
+		return result
+	}, [externalFilterStates, collapsedStates])
 
 	// Centralized date boundary calculations
 	const dateBoundaries = useMemo(() => {
@@ -198,38 +224,21 @@ export function useSectionedTopics() {
 		[sectionEntries, sectionStates]
 	)
 
-	const handleFilterClick = useCallback((filterId: FilterId) => {
-		setSectionStates(prev => {
-			const isActive = prev[filterId].isActive
-
-			// Toggle the clicked filter
-			return {
-				...prev,
-				[filterId]: { ...prev[filterId], isActive: !isActive }
-			}
-		})
+	// Note: handleFilterClick is now managed externally
+	const handleFilterClick = useCallback((_filterId: FilterId) => {
+		// This will be provided externally
 	}, [])
 
 	const toggleSectionCollapse = useCallback((sectionId: TopicSectionKey) => {
-		setSectionStates(prev => ({
+		setCollapsedStates(prev => ({
 			...prev,
-			[sectionId]: {
-				...prev[sectionId],
-				isCollapsed: !prev[sectionId].isCollapsed
-			}
+			[sectionId]: !prev[sectionId]
 		}))
 	}, [])
 
+	// Note: handleClearFilters is now managed externally
 	const handleClearFilters = useCallback(() => {
-		setSectionStates(
-			prev =>
-				Object.fromEntries(
-					Object.entries(prev).map(([key, state]) => [
-						key,
-						{ ...state, isActive: false }
-					])
-				) as SectionStates
-		)
+		// This will be provided externally
 	}, [])
 
 	const filters = useMemo(
