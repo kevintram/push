@@ -5,6 +5,7 @@ import {
 	ArchiveRestore,
 	Baby,
 	BicepsFlexed,
+	BookCheck,
 	Calendar,
 	ChevronDown,
 	GitPullRequestClosed,
@@ -34,6 +35,9 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
+import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
+import { createTodo } from '~/features/due/api'
+import { createReview } from '~/features/reviews/api'
 import { updateReview as updateReviewApi } from '~/features/reviews/api/updateReview'
 import type { Rating, Todo, Topic } from '~/models/todo-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
@@ -70,6 +74,7 @@ export function TopicCard({
 	reviewId
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
+	const { openTodoDialog } = useTodoTopicDialog()
 
 	const { mutateAsync: deleteTopicMutation } = useMutation({
 		mutationFn: deleteTopicApi,
@@ -88,6 +93,21 @@ export function TopicCard({
 	const { mutateAsync: updateReviewMutation } = useMutation({
 		mutationFn: ({ reviewId, rating }: { reviewId: number; rating: Rating }) =>
 			updateReviewApi(reviewId, rating),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
+		}
+	})
+
+	const { mutateAsync: createTodoMutation } = useMutation({
+		mutationFn: createTodo,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['todos'] })
+		}
+	})
+
+	const { mutateAsync: createReviewMutation } = useMutation({
+		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
+			createReview(todoId, topicId, 'good'),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['todos'] })
 		}
@@ -173,6 +193,22 @@ export function TopicCard({
 		[reviewId, updateReviewMutation]
 	)
 
+	const handleLogNow = useCallback(
+		async (e: React.MouseEvent) => {
+			e.stopPropagation()
+
+			const todo = await createTodoMutation({
+				description: '',
+				scheduledAt: null,
+				completedAt: dayjs().format('YYYY-MM-DD')
+			})
+
+			await createReviewMutation({ todoId: todo.id, topicId: topic.id })
+			openTodoDialog(todo.id)
+		},
+		[topic.id, createTodoMutation, createReviewMutation, openTodoDialog]
+	)
+
 	return (
 		<Card
 			className='group relative cursor-pointer p-0 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
@@ -226,7 +262,7 @@ export function TopicCard({
 							</PopoverContent>
 						</Popover>
 
-						{/* Rating and Menu - top right */}
+						{/* Rating/Log Now and Menu - top right */}
 						<div className='flex items-center gap-1'>
 							{rating && reviewId && (
 								<DropdownMenu>
@@ -296,6 +332,21 @@ export function TopicCard({
 									{getRatingIcon(rating)}
 									{rating}
 								</Button>
+							)}
+							{!rating && (
+								<Tooltip>
+									<TooltipTrigger asChild={true}>
+										<Button
+											className='h-5 w-5 p-0'
+											onClick={handleLogNow}
+											size='sm'
+											variant='ghost'
+										>
+											<BookCheck className='h-3 w-3' />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Log Now</TooltipContent>
+								</Tooltip>
 							)}
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild={true}>
