@@ -36,7 +36,7 @@ export function AppSidebar() {
 			icon: ListChecks
 		},
 		{
-			title: 'Library',
+			title: 'Topics',
 			url: '/topics',
 			icon: SquareLibrary
 		}
