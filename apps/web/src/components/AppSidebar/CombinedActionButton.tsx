@@ -11,7 +11,7 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { createTodo } from '~/features/todos/api'
+import { createTodo } from '~/features/due/api'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 
 export function CombinedActionButton() {

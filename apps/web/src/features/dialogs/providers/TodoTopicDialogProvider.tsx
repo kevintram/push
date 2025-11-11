@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { TodoDialog } from '~/features/todos/components/TodoDialog'
+import { TodoDialog } from '~/features/due/components/TodoDialog'
 import { TopicDialog } from '~/features/topics/components/TopicDialog'
 import { TodoTopicDialogContext } from '../stores/TodoTopicDialogContext'
 

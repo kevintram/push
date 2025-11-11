@@ -1,5 +1,5 @@
-import { BicepsFlexed, Calendar, Mountain } from 'lucide-react'
 import dayjs from 'dayjs'
+import { BicepsFlexed, Calendar, Mountain } from 'lucide-react'
 import { use, useCallback, useMemo } from 'react'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import {
@@ -8,7 +8,7 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { TodoItem } from '~/features/todos/components/TodoItem'
+import { TodoItem } from '~/features/due/components/TodoItem'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { AddReviewButton } from './AddReviewButton'
 import { LogNowButton } from './LogNowButton'
@@ -76,20 +76,21 @@ function ReviewsSidebarContent() {
 								<TooltipTrigger asChild={true}>
 									<div className='flex items-center gap-1'>
 										<Calendar
-											className={`h-3 w-3 ${dueDateDisplay.displayText === 'Today'
+											className={`h-3 w-3 ${
+												dueDateDisplay.displayText === 'Today'
 													? 'text-blue-600 dark:text-blue-400'
 													: dueDateDisplay.displayText === 'Yesterday' ||
-														dueDateDisplay.displayText.includes('ago')
+															dueDateDisplay.displayText.includes('ago')
 														? 'text-red-600 dark:text-red-400'
 														: ''
-												}`}
+											}`}
 										/>
 										<span
 											className={
 												dueDateDisplay.displayText === 'Today'
 													? 'text-blue-600 dark:text-blue-400'
 													: dueDateDisplay.displayText === 'Yesterday' ||
-														dueDateDisplay.displayText.includes('ago')
+															dueDateDisplay.displayText.includes('ago')
 														? 'text-red-600 dark:text-red-400'
 														: ''
 											}
@@ -113,9 +114,7 @@ function ReviewsSidebarContent() {
 										<span>None</span>
 									</div>
 								</TooltipTrigger>
-								<TooltipContent side='bottom'>
-									No due date
-								</TooltipContent>
+								<TooltipContent side='bottom'>No due date</TooltipContent>
 							</Tooltip>
 							&nbsp;·&nbsp;
 						</>

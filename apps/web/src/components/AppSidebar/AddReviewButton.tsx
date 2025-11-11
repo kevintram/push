@@ -3,7 +3,7 @@ import { BookPlus } from 'lucide-react'
 import { useCallback } from 'react'
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { createTodo } from '~/features/todos/api'
+import { createTodo } from '~/features/due/api'
 
 export function AddReviewButton() {
 	const { openTodoDialog } = useTodoTopicDialog()

@@ -1,13 +1,19 @@
-export { useAllTopics } from './useAllTopics'
-export { useSectionedTopics, type TopicSectionKey } from './useSectionedTopics'
-export { useTopicsWithRelationships } from '../hooks/useTopicsWithRelationships'
 export { useInboxTopics } from '~/features/inbox/api/useInboxTopics'
-export { useRootTopics } from './useRootTopics'
+export { useTopicsWithRelationships } from '../hooks/useTopicsWithRelationships'
+export {
+	createChildRelationship,
+	createParentRelationship
+} from './createTopicRelationship'
+export { deleteTopic } from './deleteTopic'
+export {
+	deleteChildRelationship,
+	deleteParentRelationship
+} from './deleteTopicRelationship'
 export { getTopic } from './getTopic'
 export { getTopics } from './getTopics'
 export { searchTopics } from './searchTopics'
-export { updateTopic, type UpdateTopicInput } from './updateTopic'
-export { deleteTopic } from './deleteTopic'
-export { createTopicRelationship } from './createTopicRelationship'
-export { deleteTopicRelationship } from './deleteTopicRelationship'
+export { updateTopic } from './updateTopic'
+export { useAllTopics } from './useAllTopics'
 export { useCreateTopic } from './useCreateTopic'
+export { useRootTopics } from './useRootTopics'
+export { type TopicSectionKey, useSectionedTopics } from './useSectionedTopics'

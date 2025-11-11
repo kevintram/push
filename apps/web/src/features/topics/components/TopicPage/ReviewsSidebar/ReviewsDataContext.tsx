@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useMemo } from 'react'
-import { type Todo as ApiTodo, getTodos } from '~/features/todos/api'
+import { type Todo as ApiTodo, getTodos } from '~/features/due/api'
 
 // Enhanced types for todos with topics
 export type TodoWithTopics = ApiTodo

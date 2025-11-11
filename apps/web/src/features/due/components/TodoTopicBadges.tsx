@@ -1,4 +1,4 @@
-import type { Todo } from '~/features/todos/api'
+import type { Todo } from '~/features/due/api'
 import { TopicBadge } from '~/features/topics/components/TopicBadge'
 
 interface TodoTopicBadgesProps {

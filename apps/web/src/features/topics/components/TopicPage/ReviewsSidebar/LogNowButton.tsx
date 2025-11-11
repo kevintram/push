@@ -9,8 +9,8 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
+import { createTodo } from '~/features/due/api'
 import { createReview } from '~/features/reviews/api'
-import { createTodo } from '~/features/todos/api'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 
 export function LogNowButton() {

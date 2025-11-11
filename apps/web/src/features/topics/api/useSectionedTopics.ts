@@ -1,6 +1,5 @@
 import dayjs from 'dayjs'
 import { useCallback, useMemo, useState } from 'react'
-import type { Topic } from '~/models/todo-topic.types'
 import { useAllTopics } from './useAllTopics'
 
 export type TopicSectionKey =
@@ -9,7 +8,7 @@ export type TopicSectionKey =
 	| 'tomorrow'
 	| 'nextSevenDays'
 	| 'future'
-	| 'noDueDate'
+	| 'unscheduled'
 
 type FilterId = TopicSectionKey
 
@@ -55,8 +54,8 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 		emptyMessage: 'No future topics yet.'
 	},
 	{
-		id: 'noDueDate',
-		label: 'No Due Date',
+		id: 'unscheduled',
+		label: 'Unscheduled',
 		headingClassName: 'text-gray-600',
 		emptyMessage: 'All topics have due dates.'
 	}
@@ -71,7 +70,7 @@ export function useSectionedTopics() {
 		tomorrow: { isActive: false, isCollapsed: false },
 		nextSevenDays: { isActive: false, isCollapsed: false },
 		future: { isActive: false, isCollapsed: false },
-		noDueDate: { isActive: false, isCollapsed: false }
+		unscheduled: { isActive: false, isCollapsed: false }
 	})
 
 	// Centralized date boundary calculations
@@ -106,81 +105,75 @@ export function useSectionedTopics() {
 		}
 	}, [])
 
-	const {
-		overdue,
-		today,
-		tomorrow,
-		nextSevenDays,
-		future,
-		noDueDate
-	} = useMemo(() => {
-		if (!topics) {
+	const { overdue, today, tomorrow, nextSevenDays, future, unscheduled } =
+		useMemo(() => {
+			if (!topics) {
+				return {
+					overdue: [],
+					today: [],
+					tomorrow: [],
+					nextSevenDays: [],
+					future: [],
+					unscheduled: []
+				}
+			}
+
+			const overdueList: typeof topics = []
+			const todayList: typeof topics = []
+			const tomorrowList: typeof topics = []
+			const nextSevenDaysList: typeof topics = []
+			const futureList: typeof topics = []
+			const unscheduledList: typeof topics = []
+
+			for (const topic of topics) {
+				// Handle topics without due date
+				if (!topic.due) {
+					unscheduledList.push(topic)
+					continue
+				}
+
+				const dueDate = topic.due
+
+				// Today
+				if (dueDate === dateBoundaries.todayDateStr) {
+					todayList.push(topic)
+				}
+				// Tomorrow
+				else if (dueDate === dateBoundaries.tomorrowDateStr) {
+					tomorrowList.push(topic)
+				}
+				// Next 7 Days
+				else if (
+					dueDate >= dateBoundaries.dayAfterTomorrowDateStr &&
+					dueDate <= dateBoundaries.nextWeekDateStr
+				) {
+					nextSevenDaysList.push(topic)
+				}
+				// Overdue
+				else if (dueDate < dateBoundaries.todayDateStr) {
+					overdueList.push(topic)
+				}
+				// Future
+				else if (dueDate > dateBoundaries.nextWeekDateStr) {
+					futureList.push(topic)
+				}
+			}
+
 			return {
-				overdue: [],
-				today: [],
-				tomorrow: [],
-				nextSevenDays: [],
-				future: [],
-				noDueDate: []
+				overdue: overdueList,
+				today: todayList,
+				tomorrow: tomorrowList,
+				nextSevenDays: nextSevenDaysList,
+				future: futureList,
+				unscheduled: unscheduledList
 			}
-		}
-
-		const overdueList: typeof topics = []
-		const todayList: typeof topics = []
-		const tomorrowList: typeof topics = []
-		const nextSevenDaysList: typeof topics = []
-		const futureList: typeof topics = []
-		const noDueDateList: typeof topics = []
-
-		for (const topic of topics) {
-			// Handle topics without due date
-			if (!topic.due) {
-				noDueDateList.push(topic)
-				continue
-			}
-
-			const dueDate = topic.due
-
-			// Today
-			if (dueDate === dateBoundaries.todayDateStr) {
-				todayList.push(topic)
-			}
-			// Tomorrow
-			else if (dueDate === dateBoundaries.tomorrowDateStr) {
-				tomorrowList.push(topic)
-			}
-			// Next 7 Days
-			else if (
-				dueDate >= dateBoundaries.dayAfterTomorrowDateStr &&
-				dueDate <= dateBoundaries.nextWeekDateStr
-			) {
-				nextSevenDaysList.push(topic)
-			}
-			// Overdue
-			else if (dueDate < dateBoundaries.todayDateStr) {
-				overdueList.push(topic)
-			}
-			// Future
-			else if (dueDate > dateBoundaries.nextWeekDateStr) {
-				futureList.push(topic)
-			}
-		}
-
-		return {
-			overdue: overdueList,
-			today: todayList,
-			tomorrow: tomorrowList,
-			nextSevenDays: nextSevenDaysList,
-			future: futureList,
-			noDueDate: noDueDateList
-		}
-	}, [
-		topics,
-		dateBoundaries.todayDateStr,
-		dateBoundaries.tomorrowDateStr,
-		dateBoundaries.dayAfterTomorrowDateStr,
-		dateBoundaries.nextWeekDateStr
-	])
+		}, [
+			topics,
+			dateBoundaries.todayDateStr,
+			dateBoundaries.tomorrowDateStr,
+			dateBoundaries.dayAfterTomorrowDateStr,
+			dateBoundaries.nextWeekDateStr
+		])
 
 	const sectionEntries = useMemo(
 		() => ({
@@ -189,9 +182,9 @@ export function useSectionedTopics() {
 			tomorrow: tomorrow ?? [],
 			nextSevenDays: nextSevenDays ?? [],
 			future: future ?? [],
-			noDueDate: noDueDate ?? []
+			unscheduled: unscheduled ?? []
 		}),
-		[overdue, today, tomorrow, nextSevenDays, future, noDueDate]
+		[overdue, today, tomorrow, nextSevenDays, future, unscheduled]
 	)
 
 	const sections = useMemo(

@@ -69,14 +69,18 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	// Topic FSRS state before review
 	topic_stability_before: v.nullable(v.number()),
 	topic_difficulty_before: v.nullable(v.number()),
-	topic_state_before: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
+	topic_state_before: v.nullable(
+		v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])
+	),
 	topic_step_before: v.nullable(v.number()),
 	topic_due_before: v.nullable(v.string()),
 
 	// Topic FSRS state after review
 	topic_stability_after: v.nullable(v.number()),
 	topic_difficulty_after: v.nullable(v.number()),
-	topic_state_after: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
+	topic_state_after: v.nullable(
+		v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])
+	),
 	topic_step_after: v.nullable(v.number()),
 	topic_due_after: v.nullable(v.string())
 })

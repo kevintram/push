@@ -3,8 +3,8 @@ import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useSectionedTopics } from '~/features/topics/api/useSectionedTopics'
+import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/models/todo-topic.types'
 import { TopicsSidebarHeader } from './TopicsSidebarHeader'
 
@@ -63,11 +63,8 @@ export function TopicsSidebar() {
 
 	if (isLoading) {
 		return (
-			<div className='flex h-full flex-col overflow-auto bg-primary-foreground border-l'>
-				<TopicsSidebarHeader
-					filters={[]}
-					onClearFilters={handleClearFilters}
-				/>
+			<div className='flex h-full flex-col overflow-auto border-l bg-primary-foreground'>
+				<TopicsSidebarHeader filters={[]} onClearFilters={handleClearFilters} />
 				<div className='flex flex-col gap-6 px-2 pb-2'>
 					<div className='text-muted-foreground text-sm'>Loading...</div>
 				</div>
@@ -76,7 +73,7 @@ export function TopicsSidebar() {
 	}
 
 	return (
-		<div className='flex h-full flex-col overflow-auto bg-primary-foreground border-l'>
+		<div className='flex h-full flex-col overflow-auto border-l bg-primary-foreground'>
 			<TopicsSidebarHeader
 				filters={filters}
 				onClearFilters={handleClearFilters}
