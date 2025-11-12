@@ -134,11 +134,6 @@ async def replay_reviews_from_date(
         .options(selectinload(Review.todo))
     )
     reviews_to_replay = list(reviews_result.scalars().all())
-
-    if not reviews_to_replay:
-        # No reviews to replay
-        return
-
     # Find the last review BEFORE from_date to get starting FSRS state
     before_review_result = await session.execute(
         select(Review)
@@ -153,6 +148,26 @@ async def replay_reviews_from_date(
         .limit(1)
     )
     last_before_review = before_review_result.scalar_one_or_none()
+
+    if not reviews_to_replay:
+        # No reviews to replay - reset topic to the state before from_date
+        if last_before_review and last_before_review.topic_stability_after is not None:
+            # Set topic to the "after" state of the last review before from_date
+            topic.stability = last_before_review.topic_stability_after
+            topic.difficulty = last_before_review.topic_difficulty_after
+            topic.state = last_before_review.topic_state_after
+            topic.step = last_before_review.topic_step_after
+            topic.due = last_before_review.topic_due_after
+        else:
+            # No prior reviews - reset to initial state
+            topic.stability = None
+            topic.difficulty = None
+            topic.state = "LEARNING"
+            topic.step = None
+            topic.due = None
+
+        await session.flush()
+        return
 
     # Initialize FSRS scheduler
     scheduler = Scheduler()
