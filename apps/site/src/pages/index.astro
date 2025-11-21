@@ -14,6 +14,19 @@ import { Button } from "../components/ui/button";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>3gulp</title>
+
+    <script is:inline>
+      function applyTheme() {
+        const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.classList.toggle("dark", isDark);
+      }
+      
+      // Apply immediately
+      applyTheme();
+      
+      // Listen for system changes
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+    </script>
   </head>
 
   <body>
