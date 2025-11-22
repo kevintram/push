@@ -2,12 +2,12 @@ import { Baby, Plus } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Card, CardContent } from '~/components/ui/Card'
-import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { useTopicChildren } from '~/features/topics/hooks/useTopicChildren'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 import { TopicCard } from '../../TopicCard'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 
@@ -27,7 +27,7 @@ export function TopicChildrenPanel({
 }: TopicChildrenPanelProps = {}) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { topic: selectedTopic } = use(TopicContext)
-	const { openTopicDialog } = useTodoTopicDialog()
+	const { openTopicDialog } = useReviewTopicDialog()
 
 	const { data: children = [] } = useTopicChildren(selectedTopic?.id)
 
@@ -171,7 +171,7 @@ function ChildCard({ child, onChildClick }: ChildCardProps) {
 			minHeight={MIN_HEIGHT}
 			onRemoveRelationship={handleRemoveRelationship}
 			onTopicClick={handleClick}
-			todos={child.todos ?? []}
+			reviews={child.reviews ?? []}
 			topic={child}
 		/>
 	)

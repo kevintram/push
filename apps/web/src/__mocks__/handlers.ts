@@ -1,5 +1,5 @@
 import { delay, HttpResponse, http } from 'msw'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 import fruits from './data/fruits.json' with { type: 'json' }
 import topicsData from './data/topics.json' with { type: 'json' }
 

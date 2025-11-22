@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime, date
+from datetime import date, datetime
 
-from sqlalchemy import BigInteger, Enum, Float, Integer, ForeignKey, Identity, String, text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.types import Date, TIMESTAMP
+from sqlalchemy import BigInteger, Date, Identity, String, func, text
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
+from sqlalchemy.types import TIMESTAMP, Text
 
 from app.models.base import Base
 
@@ -13,16 +13,11 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
-    todo_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("todos.id"), nullable=False
-    )
-    topic_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("topics.id"), nullable=False
-    )
-    user_id: Mapped[str] = mapped_column(String, nullable=False)
-    rating: Mapped[str | None] = mapped_column(
-        Enum("miss", "hard", "good", "easy", name="rating"),
-        nullable=True,
+    description: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    scheduled_at: Mapped[date] = mapped_column(Date)
+    completed_at: Mapped[date] = mapped_column(Date)
+    effective_date: Mapped[date] = column_property(
+        func.coalesce(completed_at, scheduled_at)
     )
     inserted_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
@@ -34,27 +29,8 @@ class Review(Base):
         nullable=False,
         server_default=text("timezone('utc'::text, now())"),
     )
-
-    # Topic FSRS state before review
-    topic_stability_before: Mapped[float | None] = mapped_column(Float, nullable=True)
-    topic_difficulty_before: Mapped[float | None] = mapped_column(Float, nullable=True)
-    topic_state_before: Mapped[str | None] = mapped_column(
-        Enum("LEARNING", "REVIEW", "RELEARNING", name="learning_state"),
-        nullable=True,
+    user_id: Mapped[str] = mapped_column(String, nullable=False)
+    topic_reviews: Mapped[list["TopicReview"]] = relationship(back_populates="review")
+    topics: Mapped[list["Topic"]] = relationship(  # needed for Topics.reviews
+        secondary="topic_reviews", back_populates="reviews", viewonly=True
     )
-    topic_step_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    topic_due_before: Mapped[date | None] = mapped_column(Date, nullable=True)
-
-    # Topic FSRS state after review
-    topic_stability_after: Mapped[float | None] = mapped_column(Float, nullable=True)
-    topic_difficulty_after: Mapped[float | None] = mapped_column(Float, nullable=True)
-    topic_state_after: Mapped[str | None] = mapped_column(
-        Enum("LEARNING", "REVIEW", "RELEARNING", name="learning_state"),
-        nullable=True,
-    )
-    topic_step_after: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    topic_due_after: Mapped[date | None] = mapped_column(Date, nullable=True)
-
-    # Relationships
-    todo: Mapped["Todo"] = relationship(back_populates="reviews")
-    topic: Mapped["Topic"] = relationship(back_populates="reviews")

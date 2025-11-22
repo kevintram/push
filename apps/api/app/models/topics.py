@@ -57,9 +57,9 @@ class Topic(Base):
         Boolean, nullable=False, server_default=text("false")
     )
     due: Mapped[date | None] = mapped_column(Date, nullable=True)
-    reviews: Mapped[list["Review"]] = relationship(back_populates="topic")
-    todos: Mapped[list["Todo"]] = relationship(
-        secondary="reviews", back_populates="topics", viewonly=True
+    topic_reviews: Mapped[list["TopicReview"]] = relationship(back_populates="topic")
+    reviews: Mapped[list["Review"]] = relationship(
+        secondary="topic_reviews", back_populates="topics", viewonly=True
     )
     parents: Mapped[list["Topic"]] = relationship(
         secondary="topics_closure", 

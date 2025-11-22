@@ -7,7 +7,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 import { TopicParentsPanel } from '../TopicPage/FamilyPanel/TopicParentsPanel'
 
 interface TopicDetailHeaderProps {

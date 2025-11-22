@@ -1,24 +1,29 @@
 import * as v from 'valibot'
-import type { Rating } from '~/models/todo-topic.types'
-import { ReviewSchema } from '~/models/todo-topic.types'
+import { type Review, ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
-export async function updateReview(reviewId: number, rating: Rating) {
+export type UpdateReviewInput = {
+	id: number
+	description?: string
+	scheduled_at?: string | null
+	completed_at?: string | null
+}
+
+export async function updateReview(input: UpdateReviewInput): Promise<Review> {
+	const { id, ...updateData } = input
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/reviews/${reviewId}/`,
+		`${import.meta.env.VITE_API_URL}/reviews/${id}`,
 		{
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ rating })
+			body: JSON.stringify({
+				id,
+				...updateData
+			})
 		}
 	)
-
-	if (!response.ok) {
-		throw new Error(`API request failed: ${response.status}`)
-	}
-
 	const data = await response.json()
 	try {
 		return v.parse(ReviewSchema, data)

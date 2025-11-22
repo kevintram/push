@@ -1,8 +1,15 @@
 from __future__ import annotations
 
 from datetime import datetime, date
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict
+
+if TYPE_CHECKING:
+    from app.schemas.reviews import (
+        ReviewRead,
+        ReviewWithTopics,
+    )
 
 
 class TopicBase(BaseModel):
@@ -19,10 +26,10 @@ class TopicBase(BaseModel):
     due: date | None = None
 
 
-class TopicBaseWithTodos(TopicBase):
+class TopicBaseWithReviews(TopicBase):
     model_config = ConfigDict(from_attributes=True)
 
-    todos: list["TodoWithTopics"]
+    reviews: list["ReviewWithTopics"]
 
 
 class TopicRead(TopicBase):
@@ -32,10 +39,12 @@ class TopicRead(TopicBase):
     inserted_at: datetime
     updated_at: datetime
 
-class TopicReadWithTodos(TopicRead):
+
+class TopicReadWithReviews(TopicRead):
     model_config = ConfigDict(from_attributes=True)
 
-    todos: list["TodoRead"]
+    reviews: list["ReviewRead"]
+
 
 class TopicReadWithRelationships(TopicRead):
     model_config = ConfigDict(from_attributes=True)
@@ -43,12 +52,14 @@ class TopicReadWithRelationships(TopicRead):
     parents: list["TopicRead"]
     children: list["TopicRead"]
 
-class TopicReadWithRelationshipsAndTodos(TopicRead):
+
+class TopicReadWithRelationshipsAndReviews(TopicRead):
     model_config = ConfigDict(from_attributes=True)
 
     parents: list["TopicRead"]
     children: list["TopicRead"]
-    todos: list["TodoRead"]
+    reviews: list["ReviewRead"]
+
 
 class TopicCreate(TopicBase):
     model_config = ConfigDict(from_attributes=True)
@@ -62,8 +73,8 @@ class TopicParentRelationshipCreate(BaseModel):
     parent_id: int
 
 
-class TodoIdPayload(BaseModel):
-    todo_id: int
+class ReviewIdPayload(BaseModel):
+    review_id: int
 
 
 class TopicUpdate(BaseModel):

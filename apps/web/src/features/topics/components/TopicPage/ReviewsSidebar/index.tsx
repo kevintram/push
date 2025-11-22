@@ -7,8 +7,8 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { TodoItem } from '~/features/due/components/TodoItem'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { AddReviewButton } from './AddReviewButton'
 import { LogNowButton } from './LogNowButton'
@@ -19,15 +19,15 @@ function roundToTwoDecimals(num: number): number {
 }
 
 function ReviewsSidebarContent() {
-	const { scheduledTodos, unscheduledTodos } = useReviewsData()
-	const { openTodoDialog } = useTodoTopicDialog()
+	const { scheduledReviews, unscheduledReviews } = useReviewsData()
+	const { openReviewDialog } = useReviewTopicDialog()
 	const { topic } = use(TopicContext)
 
-	const handleTodoClick = useCallback(
-		(todoId: number) => {
-			openTodoDialog(todoId)
+	const handleReviewClick = useCallback(
+		(reviewId: number) => {
+			openReviewDialog(reviewId)
 		},
-		[openTodoDialog]
+		[openReviewDialog]
 	)
 
 	// Calculate the due date display
@@ -59,6 +59,14 @@ function ReviewsSidebarContent() {
 		}
 	}, [topic?.due])
 
+	const dueDateColorClass =
+		dueDateDisplay?.displayText === 'Today'
+			? 'text-blue-600 dark:text-blue-400'
+			: dueDateDisplay?.displayText === 'Yesterday' ||
+					dueDateDisplay?.displayText.includes('ago')
+				? 'text-red-600 dark:text-red-400'
+				: ''
+
 	return (
 		<Sidebar className='absolute border-l' side='right'>
 			<SidebarHeader className='flex flex-col gap-0 pb-0'>
@@ -75,26 +83,8 @@ function ReviewsSidebarContent() {
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
 									<div className='flex items-center gap-1'>
-										<Calendar
-											className={`h-3 w-3 ${
-												dueDateDisplay.displayText === 'Today'
-													? 'text-blue-600 dark:text-blue-400'
-													: dueDateDisplay.displayText === 'Yesterday' ||
-															dueDateDisplay.displayText.includes('ago')
-														? 'text-red-600 dark:text-red-400'
-														: ''
-											}`}
-										/>
-										<span
-											className={
-												dueDateDisplay.displayText === 'Today'
-													? 'text-blue-600 dark:text-blue-400'
-													: dueDateDisplay.displayText === 'Yesterday' ||
-															dueDateDisplay.displayText.includes('ago')
-														? 'text-red-600 dark:text-red-400'
-														: ''
-											}
-										>
+										<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
+										<span className={dueDateColorClass}>
 											{dueDateDisplay.displayText}
 										</span>
 									</div>
@@ -157,31 +147,31 @@ function ReviewsSidebarContent() {
 				</div>
 			</SidebarHeader>
 			<SidebarContent className='scrollbar-track-transparent flex h-full flex-col gap-6 overflow-auto overscroll-contain px-2 pb-2'>
-				{/* Scheduled Todos Section */}
-				{scheduledTodos.length > 0 && (
+				{/* Scheduled Reviews Section */}
+				{scheduledReviews.length > 0 && (
 					<div className='flex flex-col'>
-						{scheduledTodos.map(entry => (
-							<TodoItem
+						{scheduledReviews.map(entry => (
+							<ReviewItem
 								entry={entry}
 								key={entry.id}
-								onTodoClick={handleTodoClick}
+								onReviewClick={handleReviewClick}
 							/>
 						))}
 					</div>
 				)}
 
-				{/* Unscheduled Todos Section */}
-				{unscheduledTodos.length > 0 && (
+				{/* Unscheduled Reviews Section */}
+				{unscheduledReviews.length > 0 && (
 					<div className='flex flex-col'>
 						<div className='flex flex-row items-center gap-2 pt-6'>
 							<h2 className='font-semibold text-sm'>Unscheduled</h2>
 						</div>
 						<div className='flex flex-col'>
-							{unscheduledTodos.map(entry => (
-								<TodoItem
+							{unscheduledReviews.map(entry => (
+								<ReviewItem
 									entry={entry}
 									key={entry.id}
-									onTodoClick={handleTodoClick}
+									onReviewClick={handleReviewClick}
 								/>
 							))}
 						</div>

@@ -1,21 +1,23 @@
 import * as v from 'valibot'
-import { type Rating, ReviewSchema } from '~/models/todo-topic.types'
+import { ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
-export async function createReview(
-	todoId: number,
-	topicId: number,
-	rating: Rating = 'good'
-) {
+type CreateReviewInput = {
+	description: string
+	scheduledAt?: string | null
+	completedAt?: string | null
+}
+
+export async function createReview(input: CreateReviewInput) {
 	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/reviews/`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			todo_id: todoId,
-			topic_id: topicId,
-			rating
+			description: input.description,
+			scheduled_at: input.scheduledAt,
+			completed_at: input.completedAt
 		})
 	})
 

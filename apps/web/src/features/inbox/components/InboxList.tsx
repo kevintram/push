@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Skeleton } from '~/components/ui/Skeleton'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 
 const MIN_CARD_WIDTH = 280
 const MIN_CARD_HEIGHT = 168
@@ -39,7 +39,7 @@ export function InboxList({
 		(topic: Topic) => (
 			<TopicCard
 				onTopicClick={onTopicSelect}
-				todos={topic.todos ?? []}
+				reviews={topic.reviews ?? []}
 				topic={topic}
 			/>
 		),

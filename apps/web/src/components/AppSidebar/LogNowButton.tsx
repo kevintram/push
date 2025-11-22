@@ -3,30 +3,30 @@ import dayjs from 'dayjs'
 import { BookCheck } from 'lucide-react'
 import { useCallback } from 'react'
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
-import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { createTodo } from '~/features/due/api'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { createReview } from '~/features/reviews/api'
 
 export function LogNowButton() {
-	const { openTodoDialog } = useTodoTopicDialog()
+	const { openReviewDialog } = useReviewTopicDialog()
 
 	const queryClient = useQueryClient()
 
-	const { mutateAsync: createTodoMutation } = useMutation({
-		mutationFn: createTodo,
+	const { mutateAsync: createReviewMutation } = useMutation({
+		mutationFn: createReview,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['todos'] })
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
 
 	const handleLogNow = useCallback(async () => {
-		const todo = await createTodoMutation({
+		const review = await createReviewMutation({
 			description: '',
 			scheduledAt: null,
 			completedAt: dayjs().format('YYYY-MM-DD')
 		})
 
-		openTodoDialog(todo.id)
-	}, [createTodoMutation, openTodoDialog])
+		openReviewDialog(review.id)
+	}, [createReviewMutation, openReviewDialog])
 
 	return (
 		<SidebarMenuButton

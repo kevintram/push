@@ -1,71 +1,71 @@
-from app.schemas.todos import (
-    TodoBase,
-    TodoCreate,
-    TodoRead,
-    TodoUpdate,
-    TodoWithTopics,
+from app.schemas.reviews import (
+    ReviewBase,
+    ReviewCreate,
+    ReviewRead,
+    ReviewUpdate,
+    ReviewWithTopics,
     TopicIdPayload,
-    TodoReadWithTopics,
-    TodoReadWithReviews,
+    ReviewReadWithTopics,
+    ReviewReadWithTopicReviews,
 )
 from app.schemas.topics import (
     TopicBase,
     TopicRead,
     TopicCreate,
     TopicReadWithRelationships,
-    TopicReadWithRelationshipsAndTodos,
+    TopicReadWithRelationshipsAndReviews,
     TopicRelationshipCreate,
     TopicParentRelationshipCreate,
-    TodoIdPayload,
+    ReviewIdPayload,
     TopicUpdate,
-    TopicReadWithTodos,
+    TopicReadWithReviews,
 )
-from app.schemas.reviews import (
-    ReviewBase,
-    ReviewRead,
-    ReviewWithTopic,
-    ReviewCreate,
-    ReviewUpdate,
+from app.schemas.topic_reviews import (
+    TopicReviewBase,
+    TopicReviewRead,
+    TopicReviewWithTopic,
+    TopicReviewCreate,
+    TopicReviewUpdate,
 )
 
 # Rebuild models to resolve forward references
-TodoWithTopics.model_rebuild()
-TodoReadWithTopics.model_rebuild()
-TodoReadWithReviews.model_rebuild()
+ReviewWithTopics.model_rebuild()
+ReviewReadWithTopics.model_rebuild()
+ReviewReadWithTopicReviews.model_rebuild()
 TopicRead.model_rebuild()
 TopicReadWithRelationships.model_rebuild()
-TopicReadWithRelationshipsAndTodos.model_rebuild()
-TopicReadWithTodos.model_rebuild()
-TodoRead.model_rebuild()
-TodoCreate.model_rebuild()
-TodoUpdate.model_rebuild()
-ReviewBase.model_rebuild()
+TopicReadWithRelationshipsAndReviews.model_rebuild()
+TopicReadWithReviews.model_rebuild()
 ReviewRead.model_rebuild()
-ReviewWithTopic.model_rebuild()
 ReviewCreate.model_rebuild()
 ReviewUpdate.model_rebuild()
+TopicReviewBase.model_rebuild()
+TopicReviewRead.model_rebuild()
+TopicReviewWithTopic.model_rebuild()
+TopicReviewCreate.model_rebuild()
+TopicReviewUpdate.model_rebuild()
 __all__ = [
-    "TodoBase",
-    "TodoCreate",
-    "TodoRead",
-    "TodoUpdate",
-    "TodoWithTopics",
+    "ReviewBase",
+    "ReviewCreate",
+    "ReviewRead",
+    "ReviewUpdate",
+    "ReviewWithTopics",
     "TopicIdPayload",
-    "TodoReadWithTopics",
+    "ReviewReadWithTopics",
     "TopicBase",
     "TopicRead",
     "TopicCreate",
     "TopicRelationshipCreate",
     "TopicParentRelationshipCreate",
-    "TodoIdPayload",
+    "ReviewIdPayload",
     "TopicUpdate",
     "TopicReadWithRelationships",
-    "TopicReadWithRelationshipsAndTodos",
-    "TopicReadWithTodos",
-    "TodoReadWithReviews",
-    "ReviewBase",
-    "ReviewRead",
-    "ReviewWithTopic",
-    "ReviewCreate",
-    "ReviewUpdate",
+    "TopicReadWithRelationshipsAndReviews",
+    "TopicReadWithReviews",
+    "ReviewReadWithTopicReviews",
+    "TopicReviewBase",
+    "TopicReviewRead",
+    "TopicReviewWithTopic",
+    "TopicReviewCreate",
+    "TopicReviewUpdate",
 ]

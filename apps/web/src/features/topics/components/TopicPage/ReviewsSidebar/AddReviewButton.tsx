@@ -7,49 +7,62 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { createTodo } from '~/features/due/api'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { createReview } from '~/features/reviews/api'
+import { createTopicReview } from '~/features/topic_reviews/api'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 
 export function AddReviewButton() {
 	const { topic: selectedTopic } = use(TopicContext)
-	const { openTodoDialog } = useTodoTopicDialog()
+	const { openReviewDialog } = useReviewTopicDialog()
 
 	const queryClient = useQueryClient()
 
-	const { mutateAsync: createTodoMutation } = useMutation({
-		mutationFn: createTodo,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['todos'] })
-		}
-	})
-
 	const { mutateAsync: createReviewMutation } = useMutation({
-		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
-			createReview(todoId, topicId, 'good'),
+		mutationFn: createReview,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['todos'] })
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
 
-	const handleAddTodo = useCallback(async () => {
+	const { mutateAsync: createTopicReviewMutation } = useMutation({
+		mutationFn: ({
+			reviewId,
+			topicId
+		}: {
+			reviewId: number
+			topicId: number
+		}) => createTopicReview(reviewId, topicId, 'good'),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		}
+	})
+
+	const handleAddReview = useCallback(async () => {
 		if (!selectedTopic) return
 
-		const todo = await createTodoMutation({
+		const review = await createReviewMutation({
 			description: '',
 			scheduledAt: null,
 			completedAt: null
 		})
 
-		await createReviewMutation({ todoId: todo.id, topicId: selectedTopic.id })
-		openTodoDialog(todo.id)
-	}, [selectedTopic, createTodoMutation, createReviewMutation, openTodoDialog])
+		await createTopicReviewMutation({
+			reviewId: review.id,
+			topicId: selectedTopic.id
+		})
+		openReviewDialog(review.id)
+	}, [
+		selectedTopic,
+		createReviewMutation,
+		createTopicReviewMutation,
+		openReviewDialog
+	])
 
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild={true}>
-				<Button onClick={handleAddTodo} size='sm' variant='ghost'>
+				<Button onClick={handleAddReview} size='sm' variant='ghost'>
 					<Plus className='h-4 w-4' />
 				</Button>
 			</TooltipTrigger>

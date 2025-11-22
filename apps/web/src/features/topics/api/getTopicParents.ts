@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { TopicSchema } from '~/models/todo-topic.types'
+import { TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
 export async function getTopicParents(topicId: number) {

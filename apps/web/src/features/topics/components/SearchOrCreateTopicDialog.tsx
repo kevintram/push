@@ -12,7 +12,7 @@ import {
 } from '~/components/ui/Dialog'
 import { Input } from '~/components/ui/Input'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 import { useCreateTopic } from '../api/useCreateTopic'
 import { TopicCard } from './TopicCard'
 
@@ -202,8 +202,8 @@ export function SearchOrCreateTopicDialog({
 			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicSelect}
+				reviews={topic.reviews ?? []}
 				searchQuery={searchResults.debouncedQuery}
-				todos={topic.todos ?? []}
 				topic={topic}
 			/>
 		),

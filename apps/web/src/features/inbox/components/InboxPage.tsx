@@ -1,16 +1,16 @@
 import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 import { useInboxTopics } from '../api'
 import { InboxList } from './InboxList'
 
 export function InboxPage() {
 	const { data: inboxTopics, isLoading } = useInboxTopics()
 	const { mutateAsync: createTopicAsync } = useCreateTopic()
-	const { openTopicDialog } = useTodoTopicDialog()
+	const { openTopicDialog } = useReviewTopicDialog()
 
 	const handleTopicSelect = useCallback(
 		(topic: Topic) => {

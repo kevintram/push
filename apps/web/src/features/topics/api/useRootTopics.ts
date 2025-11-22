@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { type Topic, TopicSchema } from '~/models/todo-topic.types'
+import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
 type UseRootTopicsParams = {

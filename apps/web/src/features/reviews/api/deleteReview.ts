@@ -1,16 +1,7 @@
 import { apiFetch } from '~/utils/apiFetch'
 
-export async function deleteReview(reviewId: number) {
-	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/reviews/${reviewId}/`,
-		{
-			method: 'DELETE'
-		}
-	)
-
-	if (!response.ok) {
-		throw new Error(`API request failed: ${response.status}`)
-	}
-
-	return response.json()
+export async function deleteReview(id: number): Promise<void> {
+	await apiFetch(`${import.meta.env.VITE_API_URL}/reviews/${id}`, {
+		method: 'DELETE'
+	})
 }

@@ -35,11 +35,11 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { createTodo } from '~/features/due/api'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { createReview } from '~/features/reviews/api'
-import { updateReview as updateReviewApi } from '~/features/reviews/api/updateReview'
-import type { Rating, Todo, Topic } from '~/models/todo-topic.types'
+import { createTopicReview } from '~/features/topic_reviews/api'
+import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
+import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
@@ -58,7 +58,7 @@ interface TopicCardProps {
 	removeRelationshipText?: string
 	minHeight?: number
 	searchQuery?: string
-	todos?: Array<Todo>
+	reviews?: Array<Review>
 	rating?: Rating | null
 	reviewId?: number
 }
@@ -74,7 +74,7 @@ export function TopicCard({
 	reviewId
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
-	const { openTodoDialog } = useTodoTopicDialog()
+	const { openReviewDialog } = useReviewTopicDialog()
 
 	const { mutateAsync: deleteTopicMutation } = useMutation({
 		mutationFn: deleteTopicApi,
@@ -92,24 +92,29 @@ export function TopicCard({
 
 	const { mutateAsync: updateReviewMutation } = useMutation({
 		mutationFn: ({ reviewId, rating }: { reviewId: number; rating: Rating }) =>
-			updateReviewApi(reviewId, rating),
+			updateTopicReviewApi(reviewId, rating),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['todos'] })
-		}
-	})
-
-	const { mutateAsync: createTodoMutation } = useMutation({
-		mutationFn: createTodo,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['todos'] })
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
 
 	const { mutateAsync: createReviewMutation } = useMutation({
-		mutationFn: ({ todoId, topicId }: { todoId: number; topicId: number }) =>
-			createReview(todoId, topicId, 'good'),
+		mutationFn: createReview,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['todos'] })
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		}
+	})
+
+	const { mutateAsync: createTopicReviewMutation } = useMutation({
+		mutationFn: ({
+			reviewId,
+			topicId
+		}: {
+			reviewId: number
+			topicId: number
+		}) => createTopicReview(reviewId, topicId, 'good'),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
 
@@ -197,17 +202,33 @@ export function TopicCard({
 		async (e: React.MouseEvent) => {
 			e.stopPropagation()
 
-			const todo = await createTodoMutation({
+			const review = await createReviewMutation({
 				description: '',
 				scheduledAt: null,
 				completedAt: dayjs().format('YYYY-MM-DD')
 			})
 
-			await createReviewMutation({ todoId: todo.id, topicId: topic.id })
-			openTodoDialog(todo.id)
+			await createTopicReviewMutation({
+				reviewId: review.id,
+				topicId: topic.id
+			})
+			openReviewDialog(review.id)
 		},
-		[topic.id, createTodoMutation, createReviewMutation, openTodoDialog]
+		[
+			topic.id,
+			createReviewMutation,
+			createTopicReviewMutation,
+			openReviewDialog
+		]
 	)
+
+	const dueDateColorClass =
+		dueDateDisplay?.displayText === 'Today'
+			? 'text-blue-600 dark:text-blue-400'
+			: dueDateDisplay?.displayText === 'Yesterday' ||
+					dueDateDisplay?.displayText.includes('ago')
+				? 'text-red-600 dark:text-red-400'
+				: ''
 
 	return (
 		<Card
@@ -457,26 +478,8 @@ export function TopicCard({
 						<Tooltip>
 							<TooltipTrigger asChild={true}>
 								<div className='flex items-center gap-1'>
-									<Calendar
-										className={`h-3 w-3 ${
-											dueDateDisplay.displayText === 'Today'
-												? 'text-blue-600 dark:text-blue-400'
-												: dueDateDisplay.displayText === 'Yesterday' ||
-														dueDateDisplay.displayText.includes('ago')
-													? 'text-red-600 dark:text-red-400'
-													: ''
-										}`}
-									/>
-									<span
-										className={
-											dueDateDisplay.displayText === 'Today'
-												? 'text-blue-600 dark:text-blue-400'
-												: dueDateDisplay.displayText === 'Yesterday' ||
-														dueDateDisplay.displayText.includes('ago')
-													? 'text-red-600 dark:text-red-400'
-													: ''
-										}
-									>
+									<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
+									<span className={dueDateColorClass}>
 										{dueDateDisplay.displayText}
 									</span>
 								</div>

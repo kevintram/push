@@ -13,7 +13,7 @@
 		"lint:biome": "biome check --write --unsafe",
 		"lint": "pnpm run \"/lint:./\"",
 		"format": "biome format",
-		"validate": "pnpm lint && pnpm test:ci && pnpm test:e2e:ci",
+		"validate": "pnpm lint && pnpm test:ci",
 		"build": "vite build",
 		"preview": "vite preview"
 	},

@@ -10,20 +10,20 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
-import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { createTodo } from '~/features/due/api'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { createReview } from '~/features/reviews/api'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 
 export function CombinedActionButton() {
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
-	const { openTopicDialog, openTodoDialog } = useTodoTopicDialog()
+	const { openTopicDialog, openReviewDialog } = useReviewTopicDialog()
 	const queryClient = useQueryClient()
 
-	const { mutateAsync: createTodoMutation } = useMutation({
-		mutationFn: createTodo,
+	const { mutateAsync: createReviewMutation } = useMutation({
+		mutationFn: createReview,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['todos'] })
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
 
@@ -33,28 +33,28 @@ export function CombinedActionButton() {
 	}, [insertTopic, openTopicDialog])
 
 	const handleAddReview = useCallback(async () => {
-		const todo = await createTodoMutation({
+		const review = await createReviewMutation({
 			description: '',
 			scheduledAt: null,
 			completedAt: null
 		})
-		openTodoDialog(todo.id)
-	}, [createTodoMutation, openTodoDialog])
+		openReviewDialog(review.id)
+	}, [createReviewMutation, openReviewDialog])
 
 	const handleLogNow = useCallback(async () => {
-		const todo = await createTodoMutation({
+		const review = await createReviewMutation({
 			description: '',
 			scheduledAt: null,
 			completedAt: dayjs().format('YYYY-MM-DD')
 		})
-		openTodoDialog(todo.id)
-	}, [createTodoMutation, openTodoDialog])
+		openReviewDialog(review.id)
+	}, [createReviewMutation, openReviewDialog])
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild={true}>
 				<SidebarMenuButton
-					tooltip='Add Topic, Todo, or Review Now'
+					tooltip='Add Topic, Review, or Log Now'
 					variant='secondary'
 				>
 					<Plus />
@@ -72,7 +72,7 @@ export function CombinedActionButton() {
 				<DropdownMenuSeparator />
 				<DropdownMenuItem onClick={handleAddReview}>
 					<SquarePlus />
-					<span>Add Todo</span>
+					<span>Add Review</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleLogNow}>
 					<BookCheck />

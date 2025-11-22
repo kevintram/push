@@ -1,0 +1,133 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import debounce from 'lodash.debounce'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import type { Review } from '~/features/reviews/api'
+import { createTopicReview } from '~/features/topic_reviews/api'
+import { searchTopics } from '~/features/topics/api/searchTopics'
+import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
+import type { Topic } from '~/models/review-topic.types'
+
+interface AddTopicToReviewDialogProps {
+	open: boolean
+	onOpenChange: (open: boolean) => void
+	review: Review | undefined
+}
+
+export function AddTopicToReviewDialog({
+	open,
+	onOpenChange,
+	review
+}: AddTopicToReviewDialogProps) {
+	const [searchQuery, setSearchQuery] = useState('')
+	const [debouncedQuery, setDebouncedQuery] = useState('')
+	const queryClient = useQueryClient()
+	const { openTopicDialog } = useReviewTopicDialog()
+
+	// Debounced search query
+	const updateDebouncedQuery = useCallback(
+		debounce((term: string) => setDebouncedQuery(term), 300),
+		[]
+	)
+
+	useEffect(() => {
+		updateDebouncedQuery(searchQuery)
+	}, [searchQuery, updateDebouncedQuery])
+
+	const { data: topics = [], isLoading } = useQuery({
+		queryKey: ['topics', 'search', debouncedQuery || 'recent', review?.id],
+		queryFn: () =>
+			searchTopics({
+				query: debouncedQuery || undefined,
+				limit: 20,
+				addableToReview: review?.id
+			}),
+		enabled: open && !!review
+	})
+
+	const results = useMemo(() => {
+		if (!debouncedQuery) {
+			return topics?.slice(0, 10) ?? [] // Show recent topics when no search
+		}
+		return topics ?? []
+	}, [topics, debouncedQuery])
+
+	const { mutateAsync: createTopicReviewMutation } = useMutation({
+		mutationFn: ({
+			reviewId,
+			topicId
+		}: {
+			reviewId: number
+			topicId: number
+		}) => createTopicReview(reviewId, topicId, 'good'),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		}
+	})
+
+	// Reset state when dialog opens/closes
+	useEffect(() => {
+		if (open) {
+			setSearchQuery('')
+		}
+	}, [open])
+
+	const handleTopicCreated = useCallback(
+		async (topic: Topic) => {
+			if (!review) return
+
+			try {
+				await createTopicReviewMutation({
+					reviewId: review.id,
+					topicId: topic.id
+				})
+
+				// Open TopicDialog with newly created topic
+				openTopicDialog(topic.id)
+			} catch (_error) {
+				// Handle error silently for now
+			}
+		},
+		[review, createTopicReviewMutation, openTopicDialog]
+	)
+
+	const handleTopicSelected = useCallback(
+		async (topic: Topic) => {
+			if (!review) return
+
+			try {
+				await createTopicReviewMutation({
+					reviewId: review.id,
+					topicId: topic.id
+				})
+			} catch (_error) {
+				// Handle error silently for now
+			}
+		},
+		[review, createTopicReviewMutation]
+	)
+
+	const useSearch = useCallback(
+		(_query: string) => {
+			return {
+				results,
+				isLoading,
+				debouncedQuery,
+				hasQuery: Boolean(debouncedQuery.trim())
+			}
+		},
+		[results, isLoading, debouncedQuery]
+	)
+
+	return (
+		<SearchOrCreateTopicDialog
+			onOpenChange={onOpenChange}
+			onSearchQueryChange={setSearchQuery}
+			onTopicCreated={handleTopicCreated}
+			onTopicSelected={handleTopicSelected}
+			open={open}
+			title='Add Topic to Review'
+			useSearch={useSearch}
+		/>
+	)
+}
