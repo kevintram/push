@@ -1,2 +1,2 @@
 export * from './api'
-export { ReviewsPage } from './components/ReviewsPage'
+export { ReviewPage } from './components/ReviewPage'

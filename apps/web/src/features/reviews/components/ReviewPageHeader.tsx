@@ -35,19 +35,19 @@ type FilterBadge = {
 	onClick: () => void
 }
 
-type ReviewsPageHeaderProps = {
+type ReviewPageHeaderProps = {
 	sectionFilters: Array<FilterBadge>
 	contentTypeFilters: Array<FilterBadge>
 	onClearFilters: () => void
 	onClearContentTypeFilters: () => void
 }
 
-export function ReviewsPageHeader({
+export function ReviewPageHeader({
 	sectionFilters,
 	contentTypeFilters,
 	onClearFilters,
 	onClearContentTypeFilters
-}: ReviewsPageHeaderProps) {
+}: ReviewPageHeaderProps) {
 	const queryClient = useQueryClient()
 	const { openReviewDialog } = useReviewTopicDialog()
 
@@ -175,7 +175,7 @@ export function ReviewsPageHeader({
 	return (
 		<div className='sticky top-0 z-10 flex flex-col gap-2 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 px-4 pt-4 pb-1 backdrop-blur-sm'>
 			<div className='flex items-center justify-between'>
-				<h1 className='font-bold text-xl'>Reviews</h1>
+				<h1 className='font-bold text-xl'>Review</h1>
 				<TooltipProvider>
 					<div className='flex items-center gap-1'>
 						<Tooltip>

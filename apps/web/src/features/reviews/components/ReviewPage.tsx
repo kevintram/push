@@ -13,8 +13,8 @@ import {
 	useSectionedReviews
 } from '../api'
 import { ReviewItem } from './ReviewItem'
-import { ReviewsPageHeader } from './ReviewsPageHeader'
-import { ReviewsPageSkeleton } from './ReviewsPageSkeleton'
+import { ReviewPageHeader } from './ReviewPageHeader'
+import { ReviewPageSkeleton } from './ReviewPageSkeleton'
 
 type ContentType = 'reviews' | 'topics'
 
@@ -30,7 +30,7 @@ const MIN_TOPIC_HEIGHT = 96
 const CONTENT_FILTER_COOKIE_KEY = 'reviews-content-filters'
 const SECTION_FILTER_COOKIE_KEY = 'reviews-section-filters'
 
-export function ReviewsPage() {
+export function ReviewPage() {
 	// Clean up old cookie keys on first mount
 	useEffect(() => {
 		removeCookie('due-todo-section-states')
@@ -335,13 +335,13 @@ export function ReviewsPage() {
 	)
 
 	if (reviewsLoading || topicsLoading) {
-		return <ReviewsPageSkeleton />
+		return <ReviewPageSkeleton />
 	}
 
 	return (
 		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
 			<div className='flex h-full flex-col overflow-auto bg-primary-foreground'>
-				<ReviewsPageHeader
+				<ReviewPageHeader
 					contentTypeFilters={contentTypeFilters}
 					onClearContentTypeFilters={clearContentTypeFilters}
 					onClearFilters={handleClearAllFilters}

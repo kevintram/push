@@ -53,7 +53,7 @@ function SectionSkeleton() {
 	)
 }
 
-export function ReviewsPageSkeleton() {
+export function ReviewPageSkeleton() {
 	return (
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
