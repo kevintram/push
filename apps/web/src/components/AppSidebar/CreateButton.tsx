@@ -61,10 +61,7 @@ export function CreateButton() {
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='start' side='right'>
-				<DropdownMenuItem
-					disabled={isCreatingTopic}
-					onClick={hanedleNewTopic}
-				>
+				<DropdownMenuItem disabled={isCreatingTopic} onClick={hanedleNewTopic}>
 					<SquarePen />
 					<span>New topic</span>
 				</DropdownMenuItem>

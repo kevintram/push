@@ -12,6 +12,7 @@ import { updateReview as updateReviewApi } from '../../api/updateReview'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import { AddTopicToReviewDialog } from '../AddTopicToReviewDialog'
 import { ReviewDetailHeader } from './ReviewDetailHeader'
+import { ReviewDetailSkeleton } from './ReviewDetailSkeleton'
 import { ReviewTopicsPanel } from './ReviewTopicsPanel'
 
 interface ReviewDetailProps {
@@ -125,7 +126,7 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 	}, [review?.id])
 
 	if (isLoading || !review) {
-		return <div>Loading...</div>
+		return <ReviewDetailSkeleton />
 	}
 
 	return (

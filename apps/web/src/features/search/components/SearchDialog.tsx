@@ -143,7 +143,7 @@ export function SearchDialog({
 					</div>
 				</DialogHeader>
 
-				<div className='max-h-192 min-h-80 overflow-y-auto p-4 pt-0'>
+				<div className='scrollbar-track-transparent max-h-192 min-h-80 overflow-y-auto p-4 pt-0'>
 					{isLoading && (
 						<div className='flex items-center justify-center py-8 text-muted-foreground'>
 							<div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />

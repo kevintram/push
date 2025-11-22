@@ -8,12 +8,14 @@ interface UseDebouncedPotentialTopicsProps {
 	topicId: number | undefined
 	relationshipType: 'child' | 'parent'
 	debounceMs?: number
+	enabled?: boolean
 }
 
 export function useDebouncedPotentialTopics({
 	topicId,
 	relationshipType,
-	debounceMs = 300
+	debounceMs = 300,
+	enabled = true
 }: UseDebouncedPotentialTopicsProps) {
 	const [query, setQuery] = useState('')
 	const [debouncedQuery, setDebouncedQuery] = useState('')
@@ -32,7 +34,7 @@ export function useDebouncedPotentialTopics({
 		isLoading: isLoadingChildren,
 		error: childrenError
 	} = useGetPotentialChildren(topicId, debouncedQuery || undefined, {
-		enabled: relationshipType === 'child' && !!topicId
+		enabled: enabled && relationshipType === 'child' && !!topicId
 	})
 
 	const {
@@ -40,7 +42,7 @@ export function useDebouncedPotentialTopics({
 		isLoading: isLoadingParents,
 		error: parentsError
 	} = useGetPotentialParents(topicId, debouncedQuery || undefined, {
-		enabled: relationshipType === 'parent' && !!topicId
+		enabled: enabled && relationshipType === 'parent' && !!topicId
 	})
 
 	const results = useMemo((): Array<Topic> => {
