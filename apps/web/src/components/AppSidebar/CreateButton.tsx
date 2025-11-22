@@ -1,12 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { BookCheck, Plus, SquarePen, SquarePlus } from 'lucide-react'
+import { ListChecks, Plus, Square, SquareCheck, SquarePen } from 'lucide-react'
 import { useCallback } from 'react'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
@@ -14,7 +16,7 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { createReview } from '~/features/reviews/api'
 import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 
-export function CombinedActionButton() {
+export function CreateButton() {
 	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 	const { openTopicDialog, openReviewDialog } = useReviewTopicDialog()
@@ -27,21 +29,12 @@ export function CombinedActionButton() {
 		}
 	})
 
-	const handleCreateTopic = useCallback(async () => {
+	const hanedleNewTopic = useCallback(async () => {
 		const createdTopic = await insertTopic({})
 		openTopicDialog(createdTopic.id)
 	}, [insertTopic, openTopicDialog])
 
-	const handleAddReview = useCallback(async () => {
-		const review = await createReviewMutation({
-			description: '',
-			scheduledAt: null,
-			completedAt: null
-		})
-		openReviewDialog(review.id)
-	}, [createReviewMutation, openReviewDialog])
-
-	const handleLogNow = useCallback(async () => {
+	const handleNewReviewNow = useCallback(async () => {
 		const review = await createReviewMutation({
 			description: '',
 			scheduledAt: null,
@@ -50,34 +43,47 @@ export function CombinedActionButton() {
 		openReviewDialog(review.id)
 	}, [createReviewMutation, openReviewDialog])
 
+	const handleNewReviewLater = useCallback(async () => {
+		const review = await createReviewMutation({
+			description: '',
+			scheduledAt: null,
+			completedAt: null
+		})
+		openReviewDialog(review.id)
+	}, [createReviewMutation, openReviewDialog])
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild={true}>
-				<SidebarMenuButton
-					tooltip='Add Topic, Review, or Log Now'
-					variant='secondary'
-				>
+				<SidebarMenuButton tooltip='Create new...' variant='secondary'>
 					<Plus />
-					<span>Add</span>
+					<span>Create</span>
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align='start'>
+			<DropdownMenuContent align='start' side='right'>
 				<DropdownMenuItem
 					disabled={isCreatingTopic}
-					onClick={handleCreateTopic}
+					onClick={hanedleNewTopic}
 				>
 					<SquarePen />
-					<span>Add Topic</span>
+					<span>New topic</span>
 				</DropdownMenuItem>
-				<DropdownMenuSeparator />
-				<DropdownMenuItem onClick={handleAddReview}>
-					<SquarePlus />
-					<span>Add Review</span>
-				</DropdownMenuItem>
-				<DropdownMenuItem onClick={handleLogNow}>
-					<BookCheck />
-					<span>Log Review</span>
-				</DropdownMenuItem>
+				<DropdownMenuSub>
+					<DropdownMenuSubTrigger>
+						<ListChecks />
+						<span>New review</span>
+					</DropdownMenuSubTrigger>
+					<DropdownMenuSubContent>
+						<DropdownMenuItem onClick={handleNewReviewNow}>
+							<SquareCheck />
+							<span>Now</span>
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleNewReviewLater}>
+							<Square />
+							<span>Later</span>
+						</DropdownMenuItem>
+					</DropdownMenuSubContent>
+				</DropdownMenuSub>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	)

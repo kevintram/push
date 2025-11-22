@@ -1,9 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { Calendar, Inbox, Settings, SquareLibrary } from 'lucide-react'
+import { Inbox, ListChecks, Settings, SquareLibrary } from 'lucide-react'
 import { useState } from 'react'
 
-import { CombinedActionButton } from '~/components/AppSidebar/CombinedActionButton'
+import { CreateButton } from '~/components/AppSidebar/CreateButton'
 import { SettingsDialog } from '~/components/SettingsDialog'
 import {
 	Sidebar,
@@ -26,9 +26,9 @@ export function AppSidebar() {
 			icon: Inbox
 		},
 		{
-			title: 'Due',
+			title: 'Review',
 			url: '/',
-			icon: Calendar
+			icon: ListChecks
 		},
 		{
 			title: 'Topics',
@@ -48,7 +48,7 @@ export function AppSidebar() {
 					<SidebarGroupContent>
 						<SidebarMenu>
 							<SidebarMenuItem>
-								<CombinedActionButton />
+								<CreateButton />
 							</SidebarMenuItem>
 							{menuItems.map(item => (
 								<SidebarMenuItem key={item.title}>
