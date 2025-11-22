@@ -66,27 +66,29 @@ async def replay_subsequent_reviews(
 
     for review in subsequent_reviews:
         # Update this review's "before" state to match current card state
-        review.topic_stability_before = current_card.stability
-        review.topic_difficulty_before = current_card.difficulty
-        review.topic_state_before = map_fsrs_state_to_db(current_card.state)
-        review.topic_step_before = current_card.step
-        review.topic_due_before = current_card.due.date() if hasattr(current_card.due, 'date') else current_card.due
+        review.stability_before = current_card.stability
+        review.difficulty_before = current_card.difficulty
+        review.state_before = map_fsrs_state_to_db(current_card.state)
+        review.step_before = current_card.step
+        review.due_before = (
+            current_card.due.date()
+            if hasattr(current_card.due, "date")
+            else current_card.due
+        )
 
         # Review the card with this review's rating
         fsrs_rating = map_rating_to_fsrs(review.rating)
         review_datetime = datetime.now(timezone.utc)
         updated_card, review_log = scheduler.review_card(
-            card=current_card,
-            rating=fsrs_rating,
-            review_datetime=review_datetime
+            card=current_card, rating=fsrs_rating, review_datetime=review_datetime
         )
 
         # Update this review's "after" state with the new calculation
-        review.topic_stability_after = updated_card.stability
-        review.topic_difficulty_after = updated_card.difficulty
-        review.topic_state_after = map_fsrs_state_to_db(updated_card.state)
-        review.topic_step_after = updated_card.step
-        review.topic_due_after = updated_card.due.date()
+        review.stability_after = updated_card.stability
+        review.difficulty_after = updated_card.difficulty
+        review.state_after = map_fsrs_state_to_db(updated_card.state)
+        review.step_after = updated_card.step
+        review.due_after = updated_card.due.date()
 
         # This becomes the starting point for the next review
         current_card = updated_card
@@ -151,13 +153,13 @@ async def replay_reviews_from_date(
 
     if not reviews_to_replay:
         # No reviews to replay - reset topic to the state before from_date
-        if last_before_review and last_before_review.topic_stability_after is not None:
+        if last_before_review and last_before_review.stability_after is not None:
             # Set topic to the "after" state of the last review before from_date
-            topic.stability = last_before_review.topic_stability_after
-            topic.difficulty = last_before_review.topic_difficulty_after
-            topic.state = last_before_review.topic_state_after
-            topic.step = last_before_review.topic_step_after
-            topic.due = last_before_review.topic_due_after
+            topic.stability = last_before_review.stability_after
+            topic.difficulty = last_before_review.difficulty_after
+            topic.state = last_before_review.state_after
+            topic.step = last_before_review.step_after
+            topic.due = last_before_review.due_after
         else:
             # No prior reviews - reset to initial state
             topic.stability = None
@@ -173,13 +175,13 @@ async def replay_reviews_from_date(
     scheduler = Scheduler()
 
     # Determine starting card state
-    if last_before_review and last_before_review.topic_stability_after is not None:
+    if last_before_review and last_before_review.stability_after is not None:
         # Start from the "after" state of the last review before from_date
         starting_card = Card(
-            state=map_state_to_fsrs(last_before_review.topic_state_after),
-            stability=last_before_review.topic_stability_after,
-            difficulty=last_before_review.topic_difficulty_after,
-            step=last_before_review.topic_step_after,
+            state=map_state_to_fsrs(last_before_review.state_after),
+            stability=last_before_review.stability_after,
+            difficulty=last_before_review.difficulty_after,
+            step=last_before_review.step_after,
         )
     else:
         # No prior reviews or no FSRS state, start from initial state
@@ -265,7 +267,9 @@ async def create_topic_review(
     """Create a new topic review."""
     # Verify review exists and belongs to user
     review_result = await session.execute(
-        select(Review).where(Review.id == topic_review.review_id, Review.user_id == user_id)
+        select(Review).where(
+            Review.id == topic_review.review_id, Review.user_id == user_id
+        )
     )
     review = review_result.scalar_one_or_none()
     if not review:
@@ -294,7 +298,8 @@ async def create_topic_review(
             await session.flush()
         except IntegrityError:
             raise HTTPException(
-                status_code=409, detail="Topic Review already exists for this review-topic pair"
+                status_code=409,
+                detail="Topic Review already exists for this review-topic pair",
             )
 
         # Refresh with topic relationship loaded
@@ -303,11 +308,11 @@ async def create_topic_review(
 
     # Review is completed - run FSRS
     # Store topic's current state as "before" state
-    topic_stability_before = topic.stability
-    topic_difficulty_before = topic.difficulty
-    topic_state_before = topic.state
-    topic_step_before = topic.step
-    topic_due_before = topic.due
+    stability_before = topic.stability
+    difficulty_before = topic.difficulty
+    state_before = topic.state
+    step_before = topic.step
+    due_before = topic.due
 
     # Use provided rating or default to "good"
     rating_value = topic_review.rating or "good"
@@ -327,9 +332,7 @@ async def create_topic_review(
     fsrs_rating = map_rating_to_fsrs(rating_value)
     review_datetime = datetime.now(timezone.utc)
     updated_card, review_log = scheduler.review_card(
-        card=card,
-        rating=fsrs_rating,
-        review_datetime=review_datetime
+        card=card, rating=fsrs_rating, review_datetime=review_datetime
     )
 
     # Calculate due_after as a date (extract date from datetime)
@@ -342,17 +345,17 @@ async def create_topic_review(
         user_id=user_id,
         rating=rating_value,
         # Topic before state
-        topic_stability_before=topic_stability_before,
-        topic_difficulty_before=topic_difficulty_before,
-        topic_state_before=topic_state_before,
-        topic_step_before=topic_step_before,
-        topic_due_before=topic_due_before,
+        stability_before=stability_before,
+        difficulty_before=difficulty_before,
+        state_before=state_before,
+        step_before=step_before,
+        due_before=due_before,
         # Topic after state
-        topic_stability_after=updated_card.stability,
-        topic_difficulty_after=updated_card.difficulty,
-        topic_state_after=map_fsrs_state_to_db(updated_card.state),
-        topic_step_after=updated_card.step,
-        topic_due_after=due_after_date,
+        stability_after=updated_card.stability,
+        difficulty_after=updated_card.difficulty,
+        state_after=map_fsrs_state_to_db(updated_card.state),
+        step_after=updated_card.step,
+        due_after=due_after_date,
     )
     session.add(new_topic_review)
 
@@ -360,7 +363,8 @@ async def create_topic_review(
         await session.flush()
     except IntegrityError:
         raise HTTPException(
-            status_code=409, detail="Topic Review already exists for this review-topic pair"
+            status_code=409,
+            detail="Topic Review already exists for this review-topic pair",
         )
 
     # Update the topic with new FSRS state
@@ -425,31 +429,31 @@ async def update_topic_review(
     # Create a Card from the topic review's "before" state
     # This represents the topic state BEFORE this review was originally made
     card = Card(
-        state=map_state_to_fsrs(existing_topic_review.topic_state_before) if existing_topic_review.topic_state_before else FSRSState.Learning,
-        stability=existing_topic_review.topic_stability_before,
-        difficulty=existing_topic_review.topic_difficulty_before,
-        step=existing_topic_review.topic_step_before,
+        state=map_state_to_fsrs(existing_topic_review.state_before)
+        if existing_topic_review.state_before
+        else FSRSState.Learning,
+        stability=existing_topic_review.stability_before,
+        difficulty=existing_topic_review.difficulty_before,
+        step=existing_topic_review.step_before,
     )
 
     # Review the card with the NEW rating
     fsrs_rating = map_rating_to_fsrs(rating_value)
     review_datetime = datetime.now(timezone.utc)
     updated_card, review_log = scheduler.review_card(
-        card=card,
-        rating=fsrs_rating,
-        review_datetime=review_datetime
+        card=card, rating=fsrs_rating, review_datetime=review_datetime
     )
 
-    # Calculate new topic_due_after as a date
+    # Calculate new due_after as a date
     due_after_date = updated_card.due.date()
 
     # Update the topic review with new rating and "after" state
     existing_topic_review.rating = rating_value
-    existing_topic_review.topic_stability_after = updated_card.stability
-    existing_topic_review.topic_difficulty_after = updated_card.difficulty
-    existing_topic_review.topic_state_after = map_fsrs_state_to_db(updated_card.state)
-    existing_topic_review.topic_step_after = updated_card.step
-    existing_topic_review.topic_due_after = due_after_date
+    existing_topic_review.stability_after = updated_card.stability
+    existing_topic_review.difficulty_after = updated_card.difficulty
+    existing_topic_review.state_after = map_fsrs_state_to_db(updated_card.state)
+    existing_topic_review.step_after = updated_card.step
+    existing_topic_review.due_after = due_after_date
 
     await session.flush()
 
