@@ -1,6 +1,21 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { BicepsFlexed, Calendar, Mountain } from 'lucide-react'
+import {
+	BicepsFlexed,
+	Calendar,
+	Mountain,
+	Plus,
+	Square,
+	SquareCheck
+} from 'lucide-react'
 import { use, useCallback, useMemo } from 'react'
+import { Button } from '~/components/ui/Button'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import {
 	Tooltip,
@@ -8,10 +23,10 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { createReview } from '~/features/reviews/api'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
+import { createTopicReview } from '~/features/topic_reviews/api'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
-import { AddReviewButton } from './AddReviewButton'
-import { LogNowButton } from './LogNowButton'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
 function roundToTwoDecimals(num: number): number {
@@ -22,6 +37,60 @@ function ReviewsSidebarContent() {
 	const { scheduledReviews, unscheduledReviews } = useReviewsData()
 	const { openReviewDialog } = useReviewTopicDialog()
 	const { topic } = use(TopicContext)
+
+	const queryClient = useQueryClient()
+
+	const { mutateAsync: createReviewMutation } = useMutation({
+		mutationFn: createReview,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		}
+	})
+
+	const { mutateAsync: createTopicReviewMutation } = useMutation({
+		mutationFn: ({
+			reviewId,
+			topicId
+		}: {
+			reviewId: number
+			topicId: number
+		}) => createTopicReview(reviewId, topicId, 'good'),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		}
+	})
+
+	const handleNewReviewNow = useCallback(async () => {
+		if (!topic) return
+
+		const review = await createReviewMutation({
+			description: '',
+			scheduledAt: null,
+			completedAt: dayjs().format('YYYY-MM-DD')
+		})
+
+		await createTopicReviewMutation({
+			reviewId: review.id,
+			topicId: topic.id
+		})
+		openReviewDialog(review.id)
+	}, [topic, createReviewMutation, createTopicReviewMutation, openReviewDialog])
+
+	const handleNewReviewLater = useCallback(async () => {
+		if (!topic) return
+
+		const review = await createReviewMutation({
+			description: '',
+			scheduledAt: null,
+			completedAt: null
+		})
+
+		await createTopicReviewMutation({
+			reviewId: review.id,
+			topicId: topic.id
+		})
+		openReviewDialog(review.id)
+	}, [topic, createReviewMutation, createTopicReviewMutation, openReviewDialog])
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
@@ -59,23 +128,62 @@ function ReviewsSidebarContent() {
 		}
 	}, [topic?.due])
 
-	const dueDateColorClass =
-		dueDateDisplay?.displayText === 'Today'
-			? 'text-blue-600 dark:text-blue-400'
-			: dueDateDisplay?.displayText === 'Yesterday' ||
-					dueDateDisplay?.displayText.includes('ago')
-				? 'text-red-600 dark:text-red-400'
-				: ''
+	const dueDateColorClass = (() => {
+		if (dueDateDisplay?.displayText === 'Today') {
+			return 'text-blue-600 dark:text-blue-400'
+		}
+		if (
+			dueDateDisplay?.displayText === 'Yesterday' ||
+			dueDateDisplay?.displayText.includes('ago')
+		) {
+			return 'text-red-600 dark:text-red-400'
+		}
+		return ''
+	})()
+
+	const stabilityText =
+		topic?.stability != null ? `${Math.round(topic.stability)}d` : 'No data'
+	const stabilityTooltip =
+		topic?.stability != null
+			? `Stable for ${Math.round(topic.stability)} days`
+			: 'Stability not yet calculated'
+
+	const difficultyText =
+		topic?.difficulty != null
+			? `${roundToTwoDecimals(topic.difficulty)}/10`
+			: 'No data'
+	const difficultyTooltip =
+		topic?.difficulty != null
+			? `${roundToTwoDecimals(topic.difficulty)}/10 difficulty`
+			: 'Difficulty not yet calculated'
 
 	return (
 		<Sidebar className='absolute border-l' side='right'>
 			<SidebarHeader className='flex flex-col gap-0 pb-0'>
 				<div className='flex flex-row items-center justify-between'>
 					<h1 className='font-semibold text-lg'>Reviews</h1>
-					<div className='flex items-center gap-1'>
-						<LogNowButton />
-						<AddReviewButton />
-					</div>
+					<DropdownMenu>
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<DropdownMenuTrigger asChild={true}>
+									<Button size='sm' variant='ghost'>
+										<Plus />
+									</Button>
+								</DropdownMenuTrigger>
+							</TooltipTrigger>
+							<TooltipContent>Create new review</TooltipContent>
+						</Tooltip>
+						<DropdownMenuContent align='end'>
+							<DropdownMenuItem onClick={handleNewReviewNow}>
+								<SquareCheck />
+								<span>Now</span>
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={handleNewReviewLater}>
+								<Square />
+								<span>Later</span>
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 				<div className='flex text-muted-foreground text-xs'>
 					{dueDateDisplay ? (
@@ -113,36 +221,20 @@ function ReviewsSidebarContent() {
 						<TooltipTrigger asChild={true}>
 							<div className='flex items-center gap-1'>
 								<BicepsFlexed className='h-3 w-3' />
-								<span>
-									{topic?.stability != null
-										? `${Math.round(topic.stability)}d`
-										: 'No data'}
-								</span>
+								<span>{stabilityText}</span>
 							</div>
 						</TooltipTrigger>
-						<TooltipContent side='bottom'>
-							{topic?.stability != null
-								? `Stable for ${Math.round(topic.stability)} days`
-								: 'Stability not yet calculated'}
-						</TooltipContent>
+						<TooltipContent side='bottom'>{stabilityTooltip}</TooltipContent>
 					</Tooltip>
 					&nbsp;·&nbsp;
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
 							<div className='flex items-center gap-1'>
 								<Mountain className='h-3 w-3' />
-								<span>
-									{topic?.difficulty != null
-										? `${roundToTwoDecimals(topic.difficulty)}/10`
-										: 'No data'}
-								</span>
+								<span>{difficultyText}</span>
 							</div>
 						</TooltipTrigger>
-						<TooltipContent side='bottom'>
-							{topic?.difficulty != null
-								? `${roundToTwoDecimals(topic.difficulty)}/10 difficulty`
-								: 'Difficulty not yet calculated'}
-						</TooltipContent>
+						<TooltipContent side='bottom'>{difficultyTooltip}</TooltipContent>
 					</Tooltip>
 				</div>
 			</SidebarHeader>

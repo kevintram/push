@@ -1,10 +1,16 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { motion } from 'framer-motion'
-import { BookCheck, Check, Logs, SquarePlus, X } from 'lucide-react'
+import { Check, Logs, Plus, Square, SquareCheck, X } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { Separator } from '~/components/ui/Separator'
 import {
 	Tooltip,
@@ -58,7 +64,7 @@ export function ReviewPageHeader({
 		}
 	})
 
-	const handleAddReview = useCallback(async () => {
+	const handleNewReviewLater = useCallback(async () => {
 		const review = await createReviewMutation({
 			description: '',
 			scheduledAt: null,
@@ -67,7 +73,7 @@ export function ReviewPageHeader({
 		openReviewDialog(review.id)
 	}, [createReviewMutation, openReviewDialog])
 
-	const handleLogNow = useCallback(async () => {
+	const handleNewReviewNow = useCallback(async () => {
 		const review = await createReviewMutation({
 			description: '',
 			scheduledAt: null,
@@ -176,26 +182,30 @@ export function ReviewPageHeader({
 		<div className='sticky top-0 z-10 flex flex-col gap-2 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 px-4 pt-4 pb-1 backdrop-blur-sm'>
 			<div className='flex items-center justify-between'>
 				<h1 className='font-bold text-xl'>Review</h1>
-				<TooltipProvider>
-					<div className='flex items-center gap-1'>
+				<DropdownMenu>
+					<TooltipProvider>
 						<Tooltip>
 							<TooltipTrigger asChild={true}>
-								<Button onClick={handleLogNow} size='sm' variant='ghost'>
-									<BookCheck />
-								</Button>
+								<DropdownMenuTrigger asChild={true}>
+									<Button size='icon' variant='ghost'>
+										<Plus />
+									</Button>
+								</DropdownMenuTrigger>
 							</TooltipTrigger>
-							<TooltipContent>Log Review Now</TooltipContent>
+							<TooltipContent>Create new review</TooltipContent>
 						</Tooltip>
-						<Tooltip>
-							<TooltipTrigger asChild={true}>
-								<Button onClick={handleAddReview} size='sm' variant='ghost'>
-									<SquarePlus />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>Add Review</TooltipContent>
-						</Tooltip>
-					</div>
-				</TooltipProvider>
+					</TooltipProvider>
+					<DropdownMenuContent align='end'>
+						<DropdownMenuItem onClick={handleNewReviewNow}>
+							<SquareCheck />
+							<span>Now</span>
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleNewReviewLater}>
+							<Square />
+							<span>Later</span>
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</div>
 			{/* Filters Row */}
 			<div className='top-0 pb-1'>
