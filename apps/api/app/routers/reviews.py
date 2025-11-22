@@ -104,7 +104,6 @@ async def update_review(
         "completed_at" in update_values
         and update_values["completed_at"] != old_completed_at
     )
-    print(f"completed_at_changed: {completed_at_changed}")
     if not completed_at_changed:
         # fetch and return updated review
         stmt = (
@@ -119,7 +118,6 @@ async def update_review(
     new_completed_at = update_values.get("completed_at")
     # Case 1: Review became completed (None → date)
     if old_completed_at is None and new_completed_at is not None:
-        print("due is none -> date, so set rating -> good")
         # Set all null ratings to "good"
         await session.execute(
             update(TopicReview)
@@ -133,7 +131,6 @@ async def update_review(
         await session.flush()
     # Case 2: Review became uncompleted (date → None)
     elif old_completed_at is not None and new_completed_at is None:
-        print("due is date -> none, so set rating -> none")
         # Set all ratings back to None
         await session.execute(
             update(TopicReview)

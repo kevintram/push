@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, time
 
 from fastapi import APIRouter, HTTPException
 from fsrs import Card, Rating as FSRSRating, Scheduler, State as FSRSState
@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.dependencies import SessionDep, UserIdDep
+from app.core.config import settings
 from app.models import TopicReview, Review, Topic
 from app.schemas import TopicReviewCreate, TopicReviewUpdate, TopicReviewWithTopic
 
@@ -45,7 +46,6 @@ def map_fsrs_state_to_db(state: FSRSState) -> str:
 
 
 async def replay_subsequent_reviews(
-    topic: Topic,
     starting_card: Card,
     subsequent_reviews: list[TopicReview],
     scheduler: Scheduler,
@@ -54,7 +54,6 @@ async def replay_subsequent_reviews(
     Replay a list of reviews in chronological order, updating their before/after states.
 
     Args:
-        topic: The topic being reviewed
         starting_card: The card state to start replaying from
         subsequent_reviews: List of reviews to replay, ordered by review.completed_at ASC
         scheduler: FSRS scheduler instance
@@ -77,8 +76,18 @@ async def replay_subsequent_reviews(
         )
 
         # Review the card with this review's rating
-        fsrs_rating = map_rating_to_fsrs(review.rating)
-        review_datetime = datetime.now(timezone.utc)
+        fsrs_rating = map_rating_to_fsrs(review.rating or "good")
+
+        # Use the actual review completion date
+        review_date = review.review.completed_at
+        if isinstance(review_date, datetime):
+            review_datetime = review_date
+        else:
+            # Convert date to datetime at midnight UTC
+            review_datetime = datetime.combine(review_date, time.min).replace(
+                tzinfo=timezone.utc
+            )
+
         updated_card, review_log = scheduler.review_card(
             card=current_card, rating=fsrs_rating, review_datetime=review_datetime
         )
@@ -147,6 +156,7 @@ async def replay_reviews_from_date(
             Review.completed_at < from_date,
         )
         .order_by(Review.completed_at.desc())
+        .options(selectinload(TopicReview.review))
         .limit(1)
     )
     last_before_review = before_review_result.scalar_one_or_none()
@@ -162,9 +172,9 @@ async def replay_reviews_from_date(
             topic.due = last_before_review.due_after
         else:
             # No prior reviews - reset to initial state
-            topic.stability = None
-            topic.difficulty = None
-            topic.state = "LEARNING"
+            topic.stability = settings.FSRS_INITIAL_STABILITY
+            topic.difficulty = settings.FSRS_INITIAL_DIFFICULTY
+            topic.state = settings.FSRS_INITIAL_STATE
             topic.step = None
             topic.due = None
 
@@ -177,24 +187,37 @@ async def replay_reviews_from_date(
     # Determine starting card state
     if last_before_review and last_before_review.stability_after is not None:
         # Start from the "after" state of the last review before from_date
+        state = map_state_to_fsrs(last_before_review.state_after)
+
+        # Get the last review date
+        last_review_date = last_before_review.review.completed_at
+        if isinstance(last_review_date, datetime):
+            last_review_datetime = last_review_date
+        else:
+            last_review_datetime = datetime.combine(last_review_date, time.min).replace(
+                tzinfo=timezone.utc
+            )
+
         starting_card = Card(
-            state=map_state_to_fsrs(last_before_review.state_after),
+            state=state,
             stability=last_before_review.stability_after,
             difficulty=last_before_review.difficulty_after,
-            step=last_before_review.step_after,
+            step=None if state == FSRSState.Review else last_before_review.step_after,
+            last_review=last_review_datetime,
         )
     else:
         # No prior reviews or no FSRS state, start from initial state
+        state = map_state_to_fsrs(settings.FSRS_INITIAL_STATE)
         starting_card = Card(
-            state=FSRSState.Learning,
-            stability=None,
-            difficulty=None,
+            state=state,
+            stability=settings.FSRS_INITIAL_STABILITY,
+            difficulty=settings.FSRS_INITIAL_DIFFICULTY,
             step=None,
+            last_review=datetime.now(timezone.utc),
         )
 
     # Replay reviews from the determined starting state
     final_card = await replay_subsequent_reviews(
-        topic=topic,
         starting_card=starting_card,
         subsequent_reviews=reviews_to_replay,
         scheduler=scheduler,
@@ -321,11 +344,13 @@ async def create_topic_review(
     scheduler = Scheduler()
 
     # Create a Card representing the topic's current state
+    state = map_state_to_fsrs(topic.state)
     card = Card(
-        state=map_state_to_fsrs(topic.state),
+        state=state,
         stability=topic.stability,
         difficulty=topic.difficulty,
-        step=topic.step,
+        step=None if state == FSRSState.Review else topic.step,
+        last_review=datetime.now(timezone.utc),
     )
 
     # Review the card with FSRS
@@ -428,13 +453,16 @@ async def update_topic_review(
 
     # Create a Card from the topic review's "before" state
     # This represents the topic state BEFORE this review was originally made
-    card = Card(
-        state=map_state_to_fsrs(existing_topic_review.state_before)
+    state = (
+        map_state_to_fsrs(existing_topic_review.state_before)
         if existing_topic_review.state_before
-        else FSRSState.Learning,
+        else FSRSState.Learning
+    )
+    card = Card(
+        state=state,
         stability=existing_topic_review.stability_before,
         difficulty=existing_topic_review.difficulty_before,
-        step=existing_topic_review.step_before,
+        step=None if state == FSRSState.Review else existing_topic_review.step_before,
     )
 
     # Review the card with the NEW rating
