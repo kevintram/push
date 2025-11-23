@@ -4,10 +4,14 @@ import {
 	Archive,
 	ArchiveRestore,
 	Baby,
+	BicepsFlexed,
+	BookCheck,
 	Calendar,
+	ChevronDown,
 	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
+	Mountain,
 	Trash2,
 	User2
 } from 'lucide-react'
@@ -26,12 +30,26 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import type { Todo, Topic } from '~/models/todo-topic.types'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { createReview } from '~/features/reviews/api'
+import { createTopicReview } from '~/features/topic_reviews/api'
+import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
+import type { Rating, Review, Topic } from '~/models/review-topic.types'
+import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
 import { updateTopic as updateTopicApi } from '../api/updateTopic'
 
 const MIN_HEIGHT = 96
+
+function roundToTwoDecimals(num: number): number {
+	return Math.round(num * 100) / 100
+}
 
 interface TopicCardProps {
 	topic: Topic
@@ -40,19 +58,23 @@ interface TopicCardProps {
 	removeRelationshipText?: string
 	minHeight?: number
 	searchQuery?: string
-	todos?: Array<Todo>
+	reviews?: Array<Review>
+	rating?: Rating | null
+	reviewId?: number
 }
 
 export function TopicCard({
 	topic,
-	todos: todosProp,
 	onTopicClick,
 	onRemoveRelationship,
 	removeRelationshipText = 'Remove as Child',
 	minHeight = MIN_HEIGHT,
-	searchQuery // for topic card in search dialog to support highlighting and shit
+	searchQuery, // for topic card in search dialog to support highlighting and shit
+	rating,
+	reviewId
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
+	const { openReviewDialog } = useReviewTopicDialog()
 
 	const { mutateAsync: deleteTopicMutation } = useMutation({
 		mutationFn: deleteTopicApi,
@@ -68,50 +90,65 @@ export function TopicCard({
 		}
 	})
 
+	const { mutateAsync: updateReviewMutation } = useMutation({
+		mutationFn: ({ reviewId, rating }: { reviewId: number; rating: Rating }) =>
+			updateTopicReviewApi(reviewId, rating),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		}
+	})
+
+	const { mutateAsync: createReviewMutation } = useMutation({
+		mutationFn: createReview,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		}
+	})
+
+	const { mutateAsync: createTopicReviewMutation } = useMutation({
+		mutationFn: ({
+			reviewId,
+			topicId
+		}: {
+			reviewId: number
+			topicId: number
+		}) => createTopicReview(reviewId, topicId, 'good'),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		}
+	})
+
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
 
-	const todos = todosProp ?? []
+	// Calculate the due date display
+	const dueDateDisplay = useMemo(() => {
+		if (!topic.due) return null
 
-	// Calculate the next or last review date
-	const reviewDate = useMemo(() => {
-		if (todos.length === 0) return null
+		const now = dayjs().startOf('day')
+		const dueDayjs = dayjs(topic.due).startOf('day')
+		const diffDays = dueDayjs.diff(now, 'day')
+		const isUpcoming = dueDayjs.isAfter(now)
 
-		const now = dayjs()
-		const todosWithDates = todos.filter(todo => todo.effective_date != null)
-
-		if (todosWithDates.length === 0) return null
-
-		// Find next upcoming date
-		const upcomingTodos = todosWithDates
-			.filter(todo => dayjs(todo.effective_date).isAfter(now))
-			.sort(
-				(a, b) =>
-					dayjs(a.effective_date).valueOf() - dayjs(b.effective_date).valueOf()
-			)
-
-		if (upcomingTodos.length > 0 && upcomingTodos[0]) {
-			return {
-				date: upcomingTodos[0].effective_date!,
-				isUpcoming: true
-			}
+		let displayText: string
+		if (diffDays === 0) {
+			displayText = 'Today'
+		} else if (diffDays === 1) {
+			displayText = 'Tomorrow'
+		} else if (diffDays === -1) {
+			displayText = 'Yesterday'
+		} else if (isUpcoming) {
+			displayText = `in ${diffDays}d`
+		} else {
+			displayText = `${Math.abs(diffDays)}d ago`
 		}
 
-		// Find last past date
-		const pastTodos = todosWithDates.sort(
-			(a, b) =>
-				dayjs(b.effective_date).valueOf() - dayjs(a.effective_date).valueOf()
-		)
-
-		if (pastTodos.length > 0 && pastTodos[0]) {
-			return {
-				date: pastTodos[0].effective_date!,
-				isUpcoming: false
-			}
+		return {
+			dueDate: topic.due,
+			isUpcoming,
+			displayText
 		}
-
-		return null
-	}, [todos])
+	}, [topic.due])
 
 	const handleActivate = useCallback(() => {
 		onTopicClick?.(topic)
@@ -152,6 +189,46 @@ export function TopicCard({
 		},
 		[updateTopicMutation, topic.id, topic.inboxed]
 	)
+
+	const handleRatingChange = useCallback(
+		async (newRating: Rating) => {
+			if (!reviewId) return
+			await updateReviewMutation({ reviewId, rating: newRating })
+		},
+		[reviewId, updateReviewMutation]
+	)
+
+	const handleLogNow = useCallback(
+		async (e: React.MouseEvent) => {
+			e.stopPropagation()
+
+			const review = await createReviewMutation({
+				description: '',
+				scheduledAt: null,
+				completedAt: dayjs().format('YYYY-MM-DD')
+			})
+
+			await createTopicReviewMutation({
+				reviewId: review.id,
+				topicId: topic.id
+			})
+			openReviewDialog(review.id)
+		},
+		[
+			topic.id,
+			createReviewMutation,
+			createTopicReviewMutation,
+			openReviewDialog
+		]
+	)
+
+	const dueDateColorClass =
+		dueDateDisplay?.displayText === 'Today'
+			? 'text-blue-600 dark:text-blue-400'
+			: dueDateDisplay?.displayText === 'Yesterday' ||
+					dueDateDisplay?.displayText.includes('ago')
+				? 'text-red-600 dark:text-red-400'
+				: ''
 
 	return (
 		<Card
@@ -206,67 +283,153 @@ export function TopicCard({
 							</PopoverContent>
 						</Popover>
 
-						{/* Menu - top right */}
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild={true}>
+						{/* Rating/Log Now and Menu - top right */}
+						<div className='flex items-center gap-1'>
+							{rating && reviewId && (
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild={true}>
+										<Button
+											className='h-5 gap-1 px-1.5 text-xs capitalize'
+											onClick={e => e.stopPropagation()}
+											size='sm'
+											variant='outline'
+										>
+											{getRatingIcon(rating)}
+											{rating}
+											<ChevronDown className='h-3 w-3' />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent
+										align='start'
+										side='bottom'
+										sideOffset={2}
+									>
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												handleRatingChange('miss')
+											}}
+										>
+											{getRatingIcon('miss')}
+											<span className='ml-2 capitalize'>Miss</span>
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												handleRatingChange('hard')
+											}}
+										>
+											{getRatingIcon('hard')}
+											<span className='ml-2 capitalize'>Hard</span>
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												handleRatingChange('good')
+											}}
+										>
+											{getRatingIcon('good')}
+											<span className='ml-2 capitalize'>Good</span>
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												handleRatingChange('easy')
+											}}
+										>
+											{getRatingIcon('easy')}
+											<span className='ml-2 capitalize'>Easy</span>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							)}
+							{rating && !reviewId && (
 								<Button
-									className='h-5 w-5 p-0 opacity-0 transition-opacity group-hover:opacity-100'
+									className='h-5 gap-1 px-1.5 text-xs capitalize'
 									onClick={e => e.stopPropagation()}
-									variant='ghost'
+									size='sm'
+									variant='outline'
 								>
-									<MoreHorizontal className='h-3 w-3' />
+									{getRatingIcon(rating)}
+									{rating}
 								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-								<DropdownMenuItem onClick={handleInboxToggle}>
-									{topic.inboxed ? (
-										<>
-											<Inbox className='mr-2 h-4 w-4' />
-											Remove from Inbox
-										</>
-									) : (
-										<>
-											<Inbox className='mr-2 h-4 w-4' />
-											Add to Inbox
-										</>
+							)}
+							{!rating && (
+								<Tooltip>
+									<TooltipTrigger asChild={true}>
+										<Button
+											className='h-5 w-5 p-0'
+											onClick={handleLogNow}
+											size='sm'
+											variant='ghost'
+										>
+											<BookCheck className='h-3 w-3' />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Log Now</TooltipContent>
+								</Tooltip>
+							)}
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild={true}>
+									<Button
+										className='h-5 w-5 p-0'
+										onClick={e => e.stopPropagation()}
+										variant='ghost'
+									>
+										<MoreHorizontal className='h-3 w-3' />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+									<DropdownMenuItem onClick={handleInboxToggle}>
+										{topic.inboxed ? (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Remove from Inbox
+											</>
+										) : (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Add to Inbox
+											</>
+										)}
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={handleArchiveToggle}>
+										{topic.archived ? (
+											<>
+												<ArchiveRestore className='mr-2 h-4 w-4' />
+												Unarchive
+											</>
+										) : (
+											<>
+												<Archive className='mr-2 h-4 w-4' />
+												Archive
+											</>
+										)}
+									</DropdownMenuItem>
+									{onRemoveRelationship && (
+										<DropdownMenuItem
+											onClick={e => {
+												e.stopPropagation()
+												onRemoveRelationship()
+											}}
+										>
+											<GitPullRequestClosed className='mr-2 h-4 w-4' />
+											{removeRelationshipText}
+										</DropdownMenuItem>
 									)}
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={handleArchiveToggle}>
-									{topic.archived ? (
-										<>
-											<ArchiveRestore className='mr-2 h-4 w-4' />
-											Unarchive
-										</>
-									) : (
-										<>
-											<Archive className='mr-2 h-4 w-4' />
-											Archive
-										</>
-									)}
-								</DropdownMenuItem>
-								{onRemoveRelationship && (
 									<DropdownMenuItem
 										onClick={e => {
 											e.stopPropagation()
-											onRemoveRelationship()
+											handleDeleteTopic()
 										}}
+										variant='destructive'
 									>
-										<GitPullRequestClosed className='mr-2 h-4 w-4' />
-										{removeRelationshipText}
+										<Trash2 className='mr-2 h-4 w-4' />
+										Delete
 									</DropdownMenuItem>
-								)}
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleDeleteTopic()
-									}}
-									variant='destructive'
-								>
-									<Trash2 className='mr-2 h-4 w-4' />
-									Delete
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
 					</div>
 
 					<div className='flex flex-col gap-1'>
@@ -309,21 +472,70 @@ export function TopicCard({
 				</div>
 
 				{/* Bottom row: Review date and children count */}
-				<div className='flex items-center justify-between text-muted-foreground text-xs'>
-					{/* Review date - bottom left */}
-					<div className='flex items-center gap-1'>
-						<Calendar className='h-3 w-3' />
-						{reviewDate ? (
-							<span className={reviewDate.isUpcoming ? '' : 'opacity-60'}>
-								{reviewDate.isUpcoming
-									? `in ${dayjs(reviewDate.date).diff(dayjs(), 'day')} days`
-									: `${dayjs().diff(dayjs(reviewDate.date), 'day')} days ago`}
-							</span>
-						) : (
-							<span>None</span>
-						)}
-					</div>
-
+				<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+					{/* Due date - bottom left */}
+					{dueDateDisplay ? (
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<div className='flex items-center gap-1'>
+									<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
+									<span className={dueDateColorClass}>
+										{dueDateDisplay.displayText}
+									</span>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent side='bottom'>
+								Due on {dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}
+							</TooltipContent>
+						</Tooltip>
+					) : (
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<div className='flex items-center gap-1'>
+									<Calendar className='h-3 w-3' />
+									<span>None</span>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent side='bottom'>No due date</TooltipContent>
+						</Tooltip>
+					)}
+					&nbsp;·&nbsp;
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<div className='flex items-center gap-1'>
+								<BicepsFlexed className='h-3 w-3' />
+								<span>
+									{topic.stability != null
+										? `${Math.round(topic.stability)}d`
+										: 'No data'}
+								</span>
+							</div>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>
+							{topic.stability != null
+								? `Stable for ${Math.round(topic.stability)} days`
+								: 'Stability not yet calculated'}
+						</TooltipContent>
+					</Tooltip>
+					&nbsp;·&nbsp;
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<div className='flex items-center gap-1'>
+								<Mountain className='h-3 w-3' />
+								<span>
+									{topic.difficulty != null
+										? `${roundToTwoDecimals(topic.difficulty)}/10`
+										: 'No data'}
+								</span>
+							</div>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>
+							{topic.difficulty != null
+								? `${roundToTwoDecimals(topic.difficulty)}/10 difficulty`
+								: 'Difficulty not yet calculated'}
+						</TooltipContent>
+					</Tooltip>
+					<div className='flex-1' />
 					{/* Children count - bottom right */}
 					<Popover>
 						<PopoverTrigger asChild={true}>

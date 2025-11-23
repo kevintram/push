@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 import { getTopic } from '../api/getTopic'
 
 /**

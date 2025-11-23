@@ -5,18 +5,15 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import SessionDep, UserIdDep
-from app.models import Topic, t_topics_closure, Todo, Review
+from app.models import Topic, t_topics_closure, Review, TopicReview
 from app.schemas import (
     TopicRead,
     TopicCreate,
     TopicUpdate,
-    TopicReadWithRelationshipsAndTodos,
+    TopicReadWithRelationshipsAndReviews,
     TopicRelationshipCreate,
     TopicParentRelationshipCreate,
-    TopicReadWithTodos,
-    TodoIdPayload,
-    TodoRead,
-    TodoReadWithTopics,
+    ReviewReadWithTopics,
 )
 
 router = APIRouter()
@@ -75,7 +72,7 @@ async def _insert_topic_relationship(
         .options(
             selectinload(Topic.parents),
             selectinload(Topic.children),
-            selectinload(Topic.todos),
+            selectinload(Topic.reviews),
         )
     )
     topic = refreshed_topic.scalar_one_or_none()
@@ -138,7 +135,7 @@ async def _delete_topic_relationship(
         .options(
             selectinload(Topic.parents),
             selectinload(Topic.children),
-            selectinload(Topic.todos),
+            selectinload(Topic.reviews),
         )
     )
     topic = refreshed_topic.scalar_one_or_none()
@@ -155,10 +152,10 @@ async def search_topics(
     user_id: UserIdDep,
     addable_as_parent_to: int | None = None,
     addable_as_child_to: int | None = None,
-    addable_to_todo: int | None = None,
+    addable_to_review: int | None = None,
     query: str | None = None,
     limit: int = 10,
-) -> list[TopicReadWithRelationshipsAndTodos]:
+) -> list[TopicReadWithRelationshipsAndReviews]:
     cleaned_query = query.strip() if query else ""
     stmt = select(Topic).where(Topic.user_id == user_id)
 
@@ -182,10 +179,10 @@ async def search_topics(
         # 2. filter out addable_as_child_to's children (don't want to add a topic that's already a child)
         children = select(t_topics_closure.c.descendant).where(t_topics_closure.c.ancestor == addable_as_child_to, t_topics_closure.c.depth == 1)
         stmt = stmt.where(Topic.id.notin_(children))
-    if addable_to_todo is not None:
-        # filter out all topics that can't be added to addable_to_todo
-        # filter out addable_to_todo's topics (don't want to add a topic that's already a topic)
-        topics = select(Review.topic_id).where(Review.todo_id == addable_to_todo)
+    if addable_to_review is not None:
+        # filter out all topics that can't be added to addable_to_review
+        # filter out addable_to_review's topics (don't want to add a topic that's already a topic)
+        topics = select(TopicReview.topic_id).where(TopicReview.review_id == addable_to_review)
         stmt = stmt.where(Topic.id.notin_(topics))
 
     if cleaned_query:
@@ -205,7 +202,7 @@ async def search_topics(
     stmt = stmt.options(
         selectinload(Topic.parents),
         selectinload(Topic.children),
-        selectinload(Topic.todos),
+        selectinload(Topic.reviews),
     )
 
     result = await session.execute(stmt)
@@ -219,7 +216,7 @@ async def read_topics(
     inboxed: bool | None = None,
     archived: bool | None = None,
     root: bool | None = None,
-) -> list[TopicReadWithRelationshipsAndTodos]:
+) -> list[TopicReadWithRelationshipsAndReviews]:
     stmt = select(Topic).where(Topic.user_id == user_id).order_by(Topic.updated_at)
     if inboxed is not None:
         stmt = stmt.where(Topic.inboxed == inboxed)
@@ -230,7 +227,7 @@ async def read_topics(
         topics_with_ancestors = select(t_topics_closure.c.descendant).where(t_topics_closure.c.depth > 0)
         stmt = stmt.where(Topic.id.notin_(topics_with_ancestors))
 
-    stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children), selectinload(Topic.todos))
+    stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children), selectinload(Topic.reviews))
 
     result = await session.execute(stmt)
     return result.scalars().all()
@@ -241,9 +238,9 @@ async def read_topic(
     session: SessionDep,
     user_id: UserIdDep,
     topic_id: int
-) -> TopicReadWithRelationshipsAndTodos:
+) -> TopicReadWithRelationshipsAndReviews:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
-    stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children), selectinload(Topic.todos))
+    stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children), selectinload(Topic.reviews))
     result = await session.execute(stmt)
 
     topic = result.scalar_one_or_none()
@@ -258,12 +255,12 @@ async def read_topic_parents(
     session: SessionDep,
     user_id: UserIdDep,
     topic_id: int
-) -> list[TopicReadWithRelationshipsAndTodos]:
+) -> list[TopicReadWithRelationshipsAndReviews]:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(
         selectinload(Topic.parents).selectinload(Topic.parents),
         selectinload(Topic.parents).selectinload(Topic.children),
-        selectinload(Topic.parents).selectinload(Topic.todos)
+        selectinload(Topic.parents).selectinload(Topic.reviews)
     )
     result = await session.execute(stmt)
     topic = result.scalar_one_or_none()
@@ -279,12 +276,12 @@ async def read_topic_children(
     session: SessionDep,
     user_id: UserIdDep,
     topic_id: int
-) -> list[TopicReadWithRelationshipsAndTodos]:
+) -> list[TopicReadWithRelationshipsAndReviews]:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(
         selectinload(Topic.children).selectinload(Topic.parents),
         selectinload(Topic.children).selectinload(Topic.children),
-        selectinload(Topic.children).selectinload(Topic.todos)
+        selectinload(Topic.children).selectinload(Topic.reviews)
     )
     result = await session.execute(stmt)
     topic = result.scalar_one_or_none()
@@ -305,7 +302,7 @@ async def insert_topic(
 
     session.add(new_topic)
     await session.flush()
-    await session.refresh(new_topic, ["todos"])
+    await session.refresh(new_topic, ["reviews"])
 
     return new_topic
 
@@ -315,7 +312,7 @@ async def insert_child(
     payload: TopicRelationshipCreate,
     session: SessionDep,
     user_id: UserIdDep
-) -> TopicReadWithRelationshipsAndTodos:
+) -> TopicReadWithRelationshipsAndReviews:
     child_id = payload.child_id
     return await _insert_topic_relationship(
         session,
@@ -332,7 +329,7 @@ async def insert_parent(
     payload: TopicParentRelationshipCreate,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TopicReadWithRelationshipsAndTodos:
+) -> TopicReadWithRelationshipsAndReviews:
     parent_id = payload.parent_id
     return await _insert_topic_relationship(
         session,
@@ -349,7 +346,7 @@ async def delete_child(
     child_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TopicReadWithRelationshipsAndTodos:
+) -> TopicReadWithRelationshipsAndReviews:
     return await _delete_topic_relationship(
         session,
         user_id=user_id,
@@ -365,7 +362,7 @@ async def delete_parent(
     parent_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TopicReadWithRelationshipsAndTodos:
+) -> TopicReadWithRelationshipsAndReviews:
     return await _delete_topic_relationship(
         session,
         user_id=user_id,
@@ -374,105 +371,16 @@ async def delete_parent(
         focus_topic_id=child_id,
     )
 
-@router.get("/topics/{topic_id}/todos/", tags=["topics"])
-async def read_todos_for_topic(
+@router.get("/topics/{topic_id}/reviews/", tags=["topics"])
+async def read_reviews_for_topic(
     topic_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> list[TodoReadWithTopics]:
-    stmt = select(Todo).where(Todo.topics.any(Topic.id == topic_id), Todo.user_id == user_id)
-    stmt = stmt.options(selectinload(Todo.topics))
+) -> list[ReviewReadWithTopics]:
+    stmt = select(Review).where(Review.topics.any(Topic.id == topic_id), Review.user_id == user_id)
+    stmt = stmt.options(selectinload(Review.topics))
     result = await session.execute(stmt)
     return result.scalars().all()
-
-@router.post("/topics/{topic_id}/todos/", tags=["topics"])
-async def add_todo(
-    topic_id: int,
-    payload: TodoIdPayload,
-    session: SessionDep,
-    user_id: UserIdDep
-) -> TopicReadWithTodos:
-    todo_id = payload.todo_id
-
-    todo_result = await session.execute(
-        select(Todo)
-        .where(Todo.id == todo_id, Todo.user_id == user_id)
-        .options(selectinload(Todo.topics))
-    )
-    todo = todo_result.scalar_one_or_none()
-    if not todo:
-        raise HTTPException(status_code=404, detail="Todo not found")
-
-    topic_result = await session.execute(
-        select(Topic)
-        .where(Topic.id == topic_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.todos))
-    )
-    topic = topic_result.scalar_one_or_none()
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-
-    existing_link = await session.execute(
-        select(Review.todo_id).where(
-            Review.todo_id == todo_id,
-            Review.topic_id == topic_id,
-        )
-    )
-    if existing_link.first():
-        raise HTTPException(status_code=409, detail="Todo already linked to topic")
-
-    review = Review(todo_id=todo_id, topic_id=topic_id, rating="good")
-    session.add(review)
-    await session.flush()
-    await session.refresh(topic, ["todos"])
-    return topic
-
-
-@router.delete("/topics/{topic_id}/todos/{todo_id}/", tags=["topics"])
-async def remove_todo(
-    topic_id: int,
-    todo_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> TopicReadWithTodos:
-    todo_result = await session.execute(
-        select(Todo)
-        .where(Todo.id == todo_id, Todo.user_id == user_id)
-        .options(selectinload(Todo.topics))
-    )
-    todo = todo_result.scalar_one_or_none()
-    if not todo:
-        raise HTTPException(status_code=404, detail="Todo not found")
-
-    topic_result = await session.execute(
-        select(Topic)
-        .where(Topic.id == topic_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.todos))
-    )
-    topic = topic_result.scalar_one_or_none()
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-
-    relationship_result = await session.execute(
-        select(Review.todo_id).where(
-            Review.todo_id == todo_id,
-            Review.topic_id == topic_id,
-        )
-    )
-    if relationship_result.scalar_one_or_none() is None:
-        raise HTTPException(status_code=404, detail="Todo not linked to topic")
-
-    await session.execute(
-        delete(Review).where(
-            Review.todo_id == todo_id,
-            Review.topic_id == topic_id,
-        )
-    )
-    await session.flush()
-    await session.refresh(topic, ["todos"])
-    return topic
-
-
 
 @router.post("/topics/{topic_id}/", tags=["topics"])
 async def update_topic(

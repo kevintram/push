@@ -1,11 +1,12 @@
 import { Archive, Inbox, Plus, SquareLibrary } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import { useTodoTopicDialog } from '~/features/dialogs/hooks/useTodoTopicDialog'
-import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useRootTopics } from '~/features/topics/api/useRootTopics'
-import type { Topic } from '~/models/todo-topic.types'
+import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
+import type { Topic } from '~/models/review-topic.types'
+import { getCookie, setCookie } from '~/utils/cookies'
 import { TopicCard } from '../TopicCard'
 import type { RenderedFilter } from './FilterBadges'
 import { RootTopicsPageSkeleton } from './RootTopicsPageSkeleton'
@@ -14,6 +15,7 @@ import { TopicsPageLayout } from './TopicsPageLayout'
 
 const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96
+const FILTER_COOKIE_KEY = 'root-topics-filter'
 
 type FilterId = 'archived' | 'inboxed'
 
@@ -26,8 +28,16 @@ type FilterBadge = {
 }
 
 export function RootTopicsPage() {
-	const [activeFilter, setActiveFilter] = useState<FilterId | null>(null)
-	const { openTopicDialog } = useTodoTopicDialog()
+	const [activeFilter, setActiveFilter] = useState<FilterId | null>(() => {
+		return getCookie<FilterId | null>(FILTER_COOKIE_KEY) ?? null
+	})
+	const { openTopicDialog } = useReviewTopicDialog()
+	const { createTopicWithReview } = useCreateTopicWithReview()
+
+	// Save filter to cookie whenever it changes
+	useEffect(() => {
+		setCookie(FILTER_COOKIE_KEY, activeFilter)
+	}, [activeFilter])
 
 	// Build query params based on active filter (mutually exclusive)
 	const queryParams = useMemo(() => {
@@ -43,8 +53,6 @@ export function RootTopicsPage() {
 
 	// Fetch root topics from API with server-side filtering
 	const { data: topics = [], isLoading } = useRootTopics(queryParams)
-
-	const { mutateAsync: createTopicAsync } = useCreateTopic()
 
 	// Filter handler - mutually exclusive (radio behavior)
 	const handleFilterClick = useCallback((filterId: FilterId) => {
@@ -101,12 +109,12 @@ export function RootTopicsPage() {
 			}))
 
 	const handleCreateTopic = useCallback(async () => {
-		const newTopic = await createTopicAsync({
+		const newTopic = await createTopicWithReview({
 			inboxed: false,
 			archived: false
 		})
 		openTopicDialog(newTopic.id)
-	}, [createTopicAsync, openTopicDialog])
+	}, [createTopicWithReview, openTopicDialog])
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -136,7 +144,7 @@ export function RootTopicsPage() {
 			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicClick}
-				todos={topic.todos ?? []}
+				reviews={topic.reviews ?? []}
 				topic={topic}
 			/>
 		),

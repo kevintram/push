@@ -7,6 +7,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
+import type { Rating } from '~/models/review-topic.types'
+import { getRatingIcon } from '~/utils/getRatingIcon'
 
 interface TopicBadgeProps {
 	name?: string | null
@@ -14,6 +16,7 @@ interface TopicBadgeProps {
 	onRemove?: () => void
 	onClick?: () => void
 	maxWidth?: number
+	rating?: Rating | null
 }
 
 export function TopicBadge({
@@ -21,7 +24,8 @@ export function TopicBadge({
 	notes,
 	onRemove,
 	onClick,
-	maxWidth = 32
+	maxWidth = 32,
+	rating
 }: TopicBadgeProps) {
 	const displayText = name ? name : notes
 
@@ -31,9 +35,10 @@ export function TopicBadge({
 				<Tooltip delayDuration={700}>
 					<TooltipTrigger asChild={true}>
 						<Badge
-							className='flex min-w-16 cursor-pointer items-center gap-0.5 px-2 py-1 text-xs hover:bg-secondary/80'
+							className='flex min-w-16 cursor-pointer items-center gap-1 px-2 py-1 text-xs hover:bg-secondary/80'
 							variant='secondary'
 						>
+							{getRatingIcon(rating)}
 							<button
 								className='flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap border-0 bg-transparent p-0 text-center font-semibold text-md'
 								onClick={onClick}

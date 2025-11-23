@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { type Topic, TopicSchema } from '~/models/todo-topic.types'
+import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
 const TopicSearchResponseSchema = v.array(TopicSchema)
@@ -7,7 +7,7 @@ const TopicSearchResponseSchema = v.array(TopicSchema)
 export type SearchTopicsParams = {
 	query?: string
 	limit?: number
-	addableToTodo?: number
+	addableToReview?: number
 	addableAsParentTo?: number
 	addableAsChildTo?: number
 }
@@ -26,8 +26,8 @@ export async function searchTopics(
 		searchParams.set('limit', String(params.limit))
 	}
 
-	if (typeof params.addableToTodo === 'number') {
-		searchParams.set('addable_to_todo', String(params.addableToTodo))
+	if (typeof params.addableToReview === 'number') {
+		searchParams.set('addable_to_review', String(params.addableToReview))
 	}
 
 	if (typeof params.addableAsParentTo === 'number') {

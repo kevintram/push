@@ -5,7 +5,7 @@ import { AppSidebar } from '~/components/AppSidebar'
 import { Header } from '~/components/Header'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
-import { TodoTopicDialogProvider } from '~/features/dialogs/providers/TodoTopicDialogProvider'
+import { ReviewTopicDialogProvider } from '~/features/dialogs/providers/ReviewTopicDialogProvider'
 
 function renderError({ error }: FallbackProps) {
 	return <LoadingOrError error={error} />
@@ -14,7 +14,7 @@ function renderError({ error }: FallbackProps) {
 export const Route = createRootRoute({
 	component: () => (
 		<ErrorBoundary fallbackRender={renderError}>
-			<TodoTopicDialogProvider>
+			<ReviewTopicDialogProvider>
 				<SidebarProvider defaultOpen={false}>
 					<SidebarHolder className='!bg-background h-svh'>
 						<AppSidebar />
@@ -28,7 +28,7 @@ export const Route = createRootRoute({
 						</div>
 					</SidebarHolder>
 				</SidebarProvider>
-			</TodoTopicDialogProvider>
+			</ReviewTopicDialogProvider>
 		</ErrorBoundary>
 	)
 })

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { type Topic, TopicSchema } from '~/models/todo-topic.types'
+import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
 type CreateTopicInput = {
@@ -9,7 +9,6 @@ type CreateTopicInput = {
 	stability?: number | null
 	difficulty?: number | null
 	state?: 'LEARNING' | 'REVIEW' | 'RELEARNING'
-	retrievability?: number
 	archived?: boolean
 	inboxed?: boolean
 }
@@ -23,10 +22,17 @@ async function createTopic(input: CreateTopicInput = {}): Promise<Topic> {
 		body: JSON.stringify({
 			name: input.name ?? '',
 			notes: input.notes ?? '',
-			stability: input.stability ?? 1,
-			difficulty: input.difficulty ?? null,
-			state: input.state ?? 'LEARNING',
-			retrievability: input.retrievability ?? 0.0,
+			stability:
+				input.stability ?? Number(import.meta.env.VITE_FSRS_INITIAL_STABILITY),
+			difficulty:
+				input.difficulty ??
+				Number(import.meta.env.VITE_FSRS_INITIAL_DIFFICULTY),
+			state:
+				input.state ??
+				(import.meta.env.VITE_FSRS_INITIAL_STATE as
+					| 'LEARNING'
+					| 'REVIEW'
+					| 'RELEARNING'),
 			archived: input.archived ?? false,
 			inboxed: input.inboxed ?? false
 		})

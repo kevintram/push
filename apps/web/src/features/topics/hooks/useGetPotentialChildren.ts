@@ -1,6 +1,6 @@
 import type { UseQueryOptions } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 import { searchTopics } from '../api/searchTopics'
 
 export function useGetPotentialChildren(

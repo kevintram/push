@@ -51,5 +51,9 @@ class Settings(BaseSettings):
     DOMAIN: str
     ENV: str
 
+    FSRS_INITIAL_STABILITY: float
+    FSRS_INITIAL_DIFFICULTY: float
+    FSRS_INITIAL_STATE: str
+
 
 settings = Settings(_env_file=".env", _env_file_encoding="utf-8")

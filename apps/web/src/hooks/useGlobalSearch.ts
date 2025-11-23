@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useState } from 'react'
 import { searchTopics } from '~/features/topics/api/searchTopics'
-import type { Topic } from '~/models/todo-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 
 export function useGlobalSearch(externalQuery = '', enabled = true) {
 	const [debouncedQuery, setDebouncedQuery] = useState('')

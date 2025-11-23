@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, date
 
 from sqlalchemy import (
     BigInteger,
@@ -14,7 +14,7 @@ from sqlalchemy import (
     Column,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.types import TIMESTAMP, Boolean, Integer, Numeric, Text
+from sqlalchemy.types import TIMESTAMP, Boolean, Date, Integer, REAL, Text
 
 from app.models.base import Base
 
@@ -36,12 +36,12 @@ class Topic(Base):
     user_id: Mapped[str] = mapped_column(String, nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
     notes: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
-    stability: Mapped[float] = mapped_column(
-        Numeric, nullable=False, server_default=text("1"),
+    stability: Mapped[float | None] = mapped_column(
+        REAL, nullable=True,
         info={"check_constraint": "stability > 0"}
     )
-    difficulty: Mapped[float] = mapped_column(
-        Numeric, nullable=False, server_default=text("5"),
+    difficulty: Mapped[float | None] = mapped_column(
+        REAL, nullable=True,
         info={"check_constraint": "difficulty >= 0 AND difficulty <= 10"}
     )
     state: Mapped[str] = mapped_column(
@@ -49,15 +49,17 @@ class Topic(Base):
         nullable=False,
         server_default=text("'LEARNING'::learning_state")
     )
+    step: Mapped[int | None] = mapped_column(Integer, nullable=True)
     archived: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
     inboxed: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
-    reviews: Mapped[list["Review"]] = relationship(back_populates="topic")
-    todos: Mapped[list["Todo"]] = relationship(
-        secondary="reviews", back_populates="topics", viewonly=True
+    due: Mapped[date | None] = mapped_column(Date, nullable=True)
+    topic_reviews: Mapped[list["TopicReview"]] = relationship(back_populates="topic")
+    reviews: Mapped[list["Review"]] = relationship(
+        secondary="topic_reviews", back_populates="topics", viewonly=True
     )
     parents: Mapped[list["Topic"]] = relationship(
         secondary="topics_closure", 
