@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import type { ReactNode } from 'react'
-import { use, useCallback, useEffect, useRef, useState } from 'react'
+import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Checkbox } from '~/components/ui/Checkbox'
 import { Textarea } from '~/components/ui/Textarea'
 import { deleteTopicReview } from '~/features/topic_reviews/api'
+import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { deleteReview as deleteReviewApi } from '../../api/deleteReview'
@@ -115,6 +116,13 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 		key: `review-detail-${review?.id}`
 	})
 
+	const isOverdueValue: boolean = useMemo(() => {
+		return isOverdue({
+			scheduled_at: review?.scheduled_at ?? null,
+			isCompleted: review?.completed_at !== null
+		})
+	}, [review?.scheduled_at, review?.completed_at])
+
 	const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
 
@@ -146,7 +154,11 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 			>
 				<Checkbox
 					checked={!!review.completed_at}
-					className='mt-0.5'
+					className={
+						isOverdueValue
+							? 'mt-0.5 border-red-600 dark:border-red-700 dark:bg-red-700'
+							: 'mt-0.5'
+					}
 					onCheckedChange={handleCheckboxChange}
 				/>
 				<div className='flex-1'>

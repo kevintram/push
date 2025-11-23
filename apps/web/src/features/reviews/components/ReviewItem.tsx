@@ -110,7 +110,7 @@ export function ReviewItem({ entry, onReviewClick }: ReviewItemProps) {
 
 	const isOverdueValue: boolean = useMemo(() => {
 		return isOverdue({
-			scheduledDate: entry.scheduled_at,
+			scheduled_at: entry.scheduled_at,
 			isCompleted: entry.completed_at !== null
 		})
 	}, [entry.scheduled_at, entry.completed_at])
