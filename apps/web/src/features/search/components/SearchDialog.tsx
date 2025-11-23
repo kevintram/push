@@ -1,6 +1,12 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Search, X } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState
+} from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import {
 	Dialog,
@@ -32,6 +38,7 @@ export function SearchDialog({
 	const navigate = useNavigate()
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [selectedIndex, setSelectedIndex] = useState(0)
+	const [gap, setGap] = useState(12)
 
 	const { debouncedQuery, results, isLoading, hasQuery } = useGlobalSearch(
 		query,
@@ -51,6 +58,15 @@ export function SearchDialog({
 	useEffect(() => {
 		setSelectedIndex(0)
 	}, [query])
+
+	useLayoutEffect(() => {
+		const updateGap = () => {
+			setGap(window.innerWidth < 640 ? 8 : 12)
+		}
+		updateGap()
+		window.addEventListener('resize', updateGap)
+		return () => window.removeEventListener('resize', updateGap)
+	}, [])
 
 	const handleTopicSelect = useCallback(
 		(topic: Topic) => {
@@ -116,15 +132,15 @@ export function SearchDialog({
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent
-				className='-translate-x-1/2 fixed top-0 left-1/2 w-full min-w-5xl translate-y-0 p-0'
+				className='-translate-x-1/2 fixed top-0 left-1/2 w-full translate-y-0 p-0 md:max-w-2xl lg:max-w-4xl xl:max-w-5xl'
 				showCloseButton={false}
 			>
-				<DialogHeader className='px-4 pt-2 pb-0'>
+				<DialogHeader className='px-2 pt-2 pb-0 sm:px-4'>
 					<DialogTitle className='sr-only'>Search topics</DialogTitle>
 					<div className='relative'>
-						<Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
+						<Search className='-translate-y-1/2 absolute top-1/2 left-2 h-4 w-4 text-muted-foreground sm:left-3' />
 						<Input
-							className='border-0 px-10 text-lg shadow-none'
+							className='border-0 px-8 text-base shadow-none sm:px-10 sm:text-lg'
 							onChange={e => setQuery(e.target.value)}
 							onKeyDown={handleKeyDown}
 							placeholder='Search topics...'
@@ -133,7 +149,7 @@ export function SearchDialog({
 						/>
 						{query && (
 							<button
-								className='-translate-y-1/2 absolute top-1/2 right-3 h-4 w-4 text-muted-foreground transition-colors hover:text-foreground'
+								className='-translate-y-1/2 absolute top-1/2 right-2 h-4 w-4 text-muted-foreground transition-colors hover:text-foreground sm:right-3'
 								onClick={() => setQuery('')}
 								type='button'
 							>
@@ -143,7 +159,7 @@ export function SearchDialog({
 					</div>
 				</DialogHeader>
 
-				<div className='scrollbar-track-transparent max-h-192 min-h-80 overflow-y-auto p-4 pt-0'>
+				<div className='scrollbar-track-transparent max-h-192 min-h-80 overflow-y-auto p-2 pt-0 sm:p-4'>
 					{isLoading && (
 						<div className='flex items-center justify-center py-8 text-muted-foreground'>
 							<div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
@@ -176,22 +192,13 @@ export function SearchDialog({
 					{results.length > 0 && (
 						<MasonryLayout
 							estimateItemSize={estimateItemSize}
-							gap={12}
+							gap={gap}
 							getItemKey={getItemKey}
 							items={results}
 							minItemWidth={MIN_CARD_WIDTH}
 							renderItem={renderItem}
 						/>
 					)}
-				</div>
-
-				<div className='border-t px-4 py-2 text-muted-foreground text-xs'>
-					<kbd className='rounded bg-muted px-1.5 py-0.5 text-xs'>↑↓</kbd> to
-					navigate
-					<kbd className='ml-2 rounded bg-muted px-1.5 py-0.5 text-xs'>↵</kbd>{' '}
-					to select
-					<kbd className='ml-2 rounded bg-muted px-1.5 py-0.5 text-xs'>esc</kbd>{' '}
-					to close
 				</div>
 			</DialogContent>
 		</Dialog>
