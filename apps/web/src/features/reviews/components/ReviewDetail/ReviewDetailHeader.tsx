@@ -59,7 +59,7 @@ export function ReviewDetailHeader({
 
 	const isOverdueValue = useMemo(() => {
 		return isOverdue({
-			scheduledDate: review.scheduled_at,
+			scheduled_at: review.scheduled_at,
 			isCompleted: review.completed_at !== null
 		})
 	}, [review.scheduled_at, review.completed_at])
