@@ -14,11 +14,11 @@ import {
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { createReview } from '~/features/reviews/api'
-import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
+import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 
 export function CreateButton() {
-	const { mutateAsync: insertTopic, isPending: isCreatingTopic } =
-		useCreateTopic()
+	const { createTopicWithReview, isPending: isCreatingTopic } =
+		useCreateTopicWithReview()
 	const { openTopicDialog, openReviewDialog } = useReviewTopicDialog()
 	const queryClient = useQueryClient()
 
@@ -29,10 +29,10 @@ export function CreateButton() {
 		}
 	})
 
-	const hanedleNewTopic = useCallback(async () => {
-		const createdTopic = await insertTopic({})
+	const handleNewTopic = useCallback(async () => {
+		const createdTopic = await createTopicWithReview({})
 		openTopicDialog(createdTopic.id)
-	}, [insertTopic, openTopicDialog])
+	}, [createTopicWithReview, openTopicDialog])
 
 	const handleNewReviewNow = useCallback(async () => {
 		const review = await createReviewMutation({
@@ -61,7 +61,7 @@ export function CreateButton() {
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='start' side='right'>
-				<DropdownMenuItem disabled={isCreatingTopic} onClick={hanedleNewTopic}>
+				<DropdownMenuItem disabled={isCreatingTopic} onClick={handleNewTopic}>
 					<SquarePen />
 					<span>New topic</span>
 				</DropdownMenuItem>

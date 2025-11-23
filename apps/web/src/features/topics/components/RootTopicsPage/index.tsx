@@ -3,8 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateTopic } from '~/features/topics/api/useCreateTopic'
 import { useRootTopics } from '~/features/topics/api/useRootTopics'
+import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import type { Topic } from '~/models/review-topic.types'
 import { getCookie, setCookie } from '~/utils/cookies'
 import { TopicCard } from '../TopicCard'
@@ -32,6 +32,7 @@ export function RootTopicsPage() {
 		return getCookie<FilterId | null>(FILTER_COOKIE_KEY) ?? null
 	})
 	const { openTopicDialog } = useReviewTopicDialog()
+	const { createTopicWithReview } = useCreateTopicWithReview()
 
 	// Save filter to cookie whenever it changes
 	useEffect(() => {
@@ -52,8 +53,6 @@ export function RootTopicsPage() {
 
 	// Fetch root topics from API with server-side filtering
 	const { data: topics = [], isLoading } = useRootTopics(queryParams)
-
-	const { mutateAsync: createTopicAsync } = useCreateTopic()
 
 	// Filter handler - mutually exclusive (radio behavior)
 	const handleFilterClick = useCallback((filterId: FilterId) => {
@@ -110,12 +109,12 @@ export function RootTopicsPage() {
 			}))
 
 	const handleCreateTopic = useCallback(async () => {
-		const newTopic = await createTopicAsync({
+		const newTopic = await createTopicWithReview({
 			inboxed: false,
 			archived: false
 		})
 		openTopicDialog(newTopic.id)
-	}, [createTopicAsync, openTopicDialog])
+	}, [createTopicWithReview, openTopicDialog])
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {

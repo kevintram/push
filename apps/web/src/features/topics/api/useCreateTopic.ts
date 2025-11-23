@@ -1,27 +1,27 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import * as v from "valibot";
-import { type Topic, TopicSchema } from "~/models/review-topic.types";
-import { apiFetch } from "~/utils/apiFetch";
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import * as v from 'valibot'
+import { type Topic, TopicSchema } from '~/models/review-topic.types'
+import { apiFetch } from '~/utils/apiFetch'
 
 type CreateTopicInput = {
-	name?: string;
-	notes?: string;
-	stability?: number | null;
-	difficulty?: number | null;
-	state?: "LEARNING" | "REVIEW" | "RELEARNING";
-	archived?: boolean;
-	inboxed?: boolean;
-};
+	name?: string
+	notes?: string
+	stability?: number | null
+	difficulty?: number | null
+	state?: 'LEARNING' | 'REVIEW' | 'RELEARNING'
+	archived?: boolean
+	inboxed?: boolean
+}
 
 async function createTopic(input: CreateTopicInput = {}): Promise<Topic> {
 	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/topics/`, {
-		method: "POST",
+		method: 'POST',
 		headers: {
-			"Content-Type": "application/json",
+			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			name: input.name ?? "",
-			notes: input.notes ?? "",
+			name: input.name ?? '',
+			notes: input.notes ?? '',
 			stability:
 				input.stability ?? Number(import.meta.env.VITE_FSRS_INITIAL_STABILITY),
 			difficulty:
@@ -30,33 +30,33 @@ async function createTopic(input: CreateTopicInput = {}): Promise<Topic> {
 			state:
 				input.state ??
 				(import.meta.env.VITE_FSRS_INITIAL_STATE as
-					| "LEARNING"
-					| "REVIEW"
-					| "RELEARNING"),
+					| 'LEARNING'
+					| 'REVIEW'
+					| 'RELEARNING'),
 			archived: input.archived ?? false,
-			inboxed: input.inboxed ?? false,
-		}),
-	});
+			inboxed: input.inboxed ?? false
+		})
+	})
 
-	const data = await response.json();
+	const data = await response.json()
 	try {
-		return v.parse(TopicSchema, data);
+		return v.parse(TopicSchema, data)
 	} catch (error) {
 		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`);
+			throw new Error(`Validation failed: ${error.message}`)
 		}
-		throw error;
+		throw error
 	}
 }
 
 export function useCreateTopic() {
-	const queryClient = useQueryClient();
+	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: createTopic,
 		onSuccess: () => {
 			// Invalidate all topics queries to trigger refetch
-			queryClient.invalidateQueries({ queryKey: ["topics"] });
-		},
-	});
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
 }
