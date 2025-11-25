@@ -4,7 +4,10 @@ import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
 async function fetchInboxTopics(): Promise<Array<Topic>> {
-	const searchParams = new URLSearchParams({ inboxed: 'true' })
+	const searchParams = new URLSearchParams({
+		inboxed: 'true',
+		archived: 'false'
+	})
 
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/topics/?${searchParams.toString()}`
