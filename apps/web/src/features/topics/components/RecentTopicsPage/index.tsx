@@ -7,6 +7,7 @@ import { useRecentTopics } from '~/features/topics/api/useRecentTopics'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import type { Topic } from '~/models/review-topic.types'
 import { RootTopicsPageSkeleton } from '../RootTopicsPage/RootTopicsPageSkeleton'
+import { TopicsPageHeader } from '../RootTopicsPage/TopicsPageHeader'
 import { TopicsPageLayout } from '../RootTopicsPage/TopicsPageLayout'
 import { TopicCard } from '../TopicCard'
 
@@ -67,9 +68,7 @@ export function RecentTopicsPage() {
 
 	return (
 		<TopicsPageLayout>
-			<div className='flex items-center justify-between border-b px-6 py-4'>
-				<h1 className='font-semibold text-xl'>Recent</h1>
-			</div>
+			<TopicsPageHeader onCreateTopic={handleCreateTopic} title='Recent' />
 
 			{isLoading && <RootTopicsPageSkeleton />}
 
