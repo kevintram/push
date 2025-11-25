@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from datetime import datetime
 from app.dependencies import UserIdDep, SessionDep
 from sqlalchemy import select, update, delete
 from sqlalchemy.orm import selectinload
@@ -20,6 +21,11 @@ async def read_reviews(
     session: SessionDep,
     user_id: UserIdDep,
     topic_id: int | None = None,
+    effective_date_before: str | None = None,
+    effective_date_after: str | None = None,
+    completed: bool | None = None,
+    scheduled: bool | None = None,
+    completed_before: str | None = None,
 ) -> list[ReviewReadWithTopicReviews]:
     stmt = (
         select(Review)
@@ -30,6 +36,33 @@ async def read_reviews(
 
     if topic_id is not None:
         stmt = stmt.where(Review.topics.any(Topic.id == topic_id))
+
+    if effective_date_before is not None:
+        date_before = datetime.strptime(effective_date_before, '%Y-%m-%d').date()
+        stmt = stmt.where(Review.effective_date < date_before)
+
+    if effective_date_after is not None:
+        date_after = datetime.strptime(effective_date_after, '%Y-%m-%d').date()
+        stmt = stmt.where(Review.effective_date >= date_after)
+
+    if completed is not None:
+        if completed:
+            stmt = stmt.where(Review.completed_at.isnot(None))
+        else:
+            stmt = stmt.where(Review.completed_at.is_(None))
+
+    if scheduled is not None:
+        if scheduled:
+            stmt = stmt.where(Review.scheduled_at.isnot(None))
+        else:
+            stmt = stmt.where(Review.scheduled_at.is_(None))
+
+    if completed_before is not None:
+        date_completed_before = datetime.strptime(completed_before, '%Y-%m-%d').date()
+        stmt = stmt.where(
+            Review.completed_at < date_completed_before,
+            Review.completed_at.isnot(None)
+        )
 
     result = await session.execute(stmt)
     ret = result.scalars().all()

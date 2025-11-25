@@ -1,6 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { ReviewPage } from '~/features/reviews'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-	component: ReviewPage
+	beforeLoad: () => {
+		throw redirect({ to: '/reviews/soon' })
+	}
 })

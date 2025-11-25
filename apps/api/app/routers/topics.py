@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from datetime import datetime
 
 from sqlalchemy import or_, select, update, delete, Connection
 from sqlalchemy.orm import selectinload
@@ -216,6 +217,8 @@ async def read_topics(
     inboxed: bool | None = None,
     archived: bool | None = None,
     root: bool | None = None,
+    due_before: str | None = None,
+    due_after: str | None = None,
 ) -> list[TopicReadWithRelationshipsAndReviews]:
     stmt = select(Topic).where(Topic.user_id == user_id).order_by(Topic.updated_at)
     if inboxed is not None:
@@ -226,6 +229,14 @@ async def read_topics(
     if root is not None and root is True:
         topics_with_ancestors = select(t_topics_closure.c.descendant).where(t_topics_closure.c.depth > 0)
         stmt = stmt.where(Topic.id.notin_(topics_with_ancestors))
+
+    if due_before is not None:
+        date_before = datetime.strptime(due_before, '%Y-%m-%d').date()
+        stmt = stmt.where(Topic.due < date_before)
+
+    if due_after is not None:
+        date_after = datetime.strptime(due_after, '%Y-%m-%d').date()
+        stmt = stmt.where(Topic.due >= date_after)
 
     stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children), selectinload(Topic.reviews))
 

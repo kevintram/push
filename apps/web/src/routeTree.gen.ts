@@ -9,10 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
+import { Route as ReviewsUnscheduledRouteImport } from './routes/reviews/unscheduled'
+import { Route as ReviewsSoonRouteImport } from './routes/reviews/soon'
+import { Route as ReviewsLogbookRouteImport } from './routes/reviews/logbook'
+import { Route as ReviewsFutureRouteImport } from './routes/reviews/future'
 
+const ReviewsRoute = ReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InboxRoute = InboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
@@ -29,39 +39,107 @@ const TopicsChar123TopicIdChar125Route =
     path: '/topics/{-$topicId}',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ReviewsUnscheduledRoute = ReviewsUnscheduledRouteImport.update({
+  id: '/unscheduled',
+  path: '/unscheduled',
+  getParentRoute: () => ReviewsRoute,
+} as any)
+const ReviewsSoonRoute = ReviewsSoonRouteImport.update({
+  id: '/soon',
+  path: '/soon',
+  getParentRoute: () => ReviewsRoute,
+} as any)
+const ReviewsLogbookRoute = ReviewsLogbookRouteImport.update({
+  id: '/logbook',
+  path: '/logbook',
+  getParentRoute: () => ReviewsRoute,
+} as any)
+const ReviewsFutureRoute = ReviewsFutureRouteImport.update({
+  id: '/future',
+  path: '/future',
+  getParentRoute: () => ReviewsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
+  '/reviews': typeof ReviewsRouteWithChildren
+  '/reviews/future': typeof ReviewsFutureRoute
+  '/reviews/logbook': typeof ReviewsLogbookRoute
+  '/reviews/soon': typeof ReviewsSoonRoute
+  '/reviews/unscheduled': typeof ReviewsUnscheduledRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
+  '/reviews': typeof ReviewsRouteWithChildren
+  '/reviews/future': typeof ReviewsFutureRoute
+  '/reviews/logbook': typeof ReviewsLogbookRoute
+  '/reviews/soon': typeof ReviewsSoonRoute
+  '/reviews/unscheduled': typeof ReviewsUnscheduledRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
+  '/reviews': typeof ReviewsRouteWithChildren
+  '/reviews/future': typeof ReviewsFutureRoute
+  '/reviews/logbook': typeof ReviewsLogbookRoute
+  '/reviews/soon': typeof ReviewsSoonRoute
+  '/reviews/unscheduled': typeof ReviewsUnscheduledRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/inbox' | '/topics/{-$topicId}'
+  fullPaths:
+    | '/'
+    | '/inbox'
+    | '/reviews'
+    | '/reviews/future'
+    | '/reviews/logbook'
+    | '/reviews/soon'
+    | '/reviews/unscheduled'
+    | '/topics/{-$topicId}'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/inbox' | '/topics/{-$topicId}'
-  id: '__root__' | '/' | '/inbox' | '/topics/{-$topicId}'
+  to:
+    | '/'
+    | '/inbox'
+    | '/reviews'
+    | '/reviews/future'
+    | '/reviews/logbook'
+    | '/reviews/soon'
+    | '/reviews/unscheduled'
+    | '/topics/{-$topicId}'
+  id:
+    | '__root__'
+    | '/'
+    | '/inbox'
+    | '/reviews'
+    | '/reviews/future'
+    | '/reviews/logbook'
+    | '/reviews/soon'
+    | '/reviews/unscheduled'
+    | '/topics/{-$topicId}'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   InboxRoute: typeof InboxRoute
+  ReviewsRoute: typeof ReviewsRouteWithChildren
   TopicsChar123TopicIdChar125Route: typeof TopicsChar123TopicIdChar125Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reviews': {
+      id: '/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof ReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inbox': {
       id: '/inbox'
       path: '/inbox'
@@ -83,12 +161,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TopicsChar123TopicIdChar125RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reviews/unscheduled': {
+      id: '/reviews/unscheduled'
+      path: '/unscheduled'
+      fullPath: '/reviews/unscheduled'
+      preLoaderRoute: typeof ReviewsUnscheduledRouteImport
+      parentRoute: typeof ReviewsRoute
+    }
+    '/reviews/soon': {
+      id: '/reviews/soon'
+      path: '/soon'
+      fullPath: '/reviews/soon'
+      preLoaderRoute: typeof ReviewsSoonRouteImport
+      parentRoute: typeof ReviewsRoute
+    }
+    '/reviews/logbook': {
+      id: '/reviews/logbook'
+      path: '/logbook'
+      fullPath: '/reviews/logbook'
+      preLoaderRoute: typeof ReviewsLogbookRouteImport
+      parentRoute: typeof ReviewsRoute
+    }
+    '/reviews/future': {
+      id: '/reviews/future'
+      path: '/future'
+      fullPath: '/reviews/future'
+      preLoaderRoute: typeof ReviewsFutureRouteImport
+      parentRoute: typeof ReviewsRoute
+    }
   }
 }
+
+interface ReviewsRouteChildren {
+  ReviewsFutureRoute: typeof ReviewsFutureRoute
+  ReviewsLogbookRoute: typeof ReviewsLogbookRoute
+  ReviewsSoonRoute: typeof ReviewsSoonRoute
+  ReviewsUnscheduledRoute: typeof ReviewsUnscheduledRoute
+}
+
+const ReviewsRouteChildren: ReviewsRouteChildren = {
+  ReviewsFutureRoute: ReviewsFutureRoute,
+  ReviewsLogbookRoute: ReviewsLogbookRoute,
+  ReviewsSoonRoute: ReviewsSoonRoute,
+  ReviewsUnscheduledRoute: ReviewsUnscheduledRoute,
+}
+
+const ReviewsRouteWithChildren =
+  ReviewsRoute._addFileChildren(ReviewsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   InboxRoute: InboxRoute,
+  ReviewsRoute: ReviewsRouteWithChildren,
   TopicsChar123TopicIdChar125Route: TopicsChar123TopicIdChar125Route,
 }
 export const routeTree = rootRouteImport
