@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
+	Archive,
 	History,
 	Inbox,
 	ListChecks,
@@ -45,6 +46,11 @@ export function AppSidebar() {
 			title: 'Topics',
 			url: '/topics',
 			icon: SquareLibrary
+		},
+		{
+			title: 'Archived',
+			url: '/archived',
+			icon: Archive
 		}
 	]
 
