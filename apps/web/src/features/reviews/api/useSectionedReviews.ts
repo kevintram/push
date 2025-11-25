@@ -12,7 +12,6 @@ export type SectionKey =
 	| 'nextSevenDays'
 	| 'future'
 	| 'unscheduled'
-	| 'logbook'
 
 type FilterId = SectionKey
 
@@ -72,12 +71,6 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 		headingClassName: 'text-gray-600',
 		emptyMessage: 'No unscheduled reviews.',
 		canAdd: true
-	},
-	{
-		id: 'logbook',
-		label: 'Logbook',
-		emptyMessage: 'No completed entries yet.',
-		canAdd: false
 	}
 ]
 
@@ -87,8 +80,7 @@ const FILTER_ORDER: Array<FilterId> = [
 	'tomorrow',
 	'nextSevenDays',
 	'future',
-	'unscheduled',
-	'logbook'
+	'unscheduled'
 ]
 
 async function fetchReviews(): Promise<Array<Review>> {
@@ -149,8 +141,7 @@ export function useSectionedReviews(options?: UseSectionedReviewsOptions) {
 		tomorrow: false,
 		nextSevenDays: false,
 		future: false,
-		unscheduled: false,
-		logbook: false
+		unscheduled: false
 	})
 
 	// Merge external filter states with internal collapse states
@@ -209,106 +200,78 @@ export function useSectionedReviews(options?: UseSectionedReviewsOptions) {
 		}
 	})
 
-	const {
-		overdue,
-		today,
-		tomorrow,
-		nextSevenDays,
-		future,
-		unscheduled,
-		logbook
-	} = useMemo(() => {
-		if (!query.data) {
-			return {
-				overdue: [],
-				today: [],
-				tomorrow: [],
-				nextSevenDays: [],
-				future: [],
-				unscheduled: [],
-				logbook: []
-			}
-		}
-
-		const overdueList: typeof query.data = []
-		const todayList: typeof query.data = []
-		const tomorrowList: typeof query.data = []
-		const nextSevenDaysList: typeof query.data = []
-		const upcomingList: typeof query.data = []
-		const unscheduledList: typeof query.data = []
-		const logbookList: typeof query.data = []
-
-		for (const entry of query.data) {
-			// Collect all completed entries for the logbook section
-			if (entry.completed_at !== null) {
-				logbookList.push(entry)
-			}
-
-			// Handle unscheduled entries (no scheduled_at) - only incomplete ones
-			if (!entry.scheduled_at) {
-				if (entry.completed_at === null) {
-					unscheduledList.push(entry)
+	const { overdue, today, tomorrow, nextSevenDays, future, unscheduled } =
+		useMemo(() => {
+			if (!query.data) {
+				return {
+					overdue: [],
+					today: [],
+					tomorrow: [],
+					nextSevenDays: [],
+					future: [],
+					unscheduled: []
 				}
-				continue
 			}
 
-			// Use date strings for comparison since columns are now date-only
-			const effectiveDateStr = entry.completed_at || entry.scheduled_at || ''
-			const scheduledAtStr = entry.scheduled_at
+			const overdueList: typeof query.data = []
+			const todayList: typeof query.data = []
+			const tomorrowList: typeof query.data = []
+			const nextSevenDaysList: typeof query.data = []
+			const futureList: typeof query.data = []
+			const unscheduledList: typeof query.data = []
 
-			// Today: ALL entries (completed and uncompleted) with effective_date for today
-			if (effectiveDateStr === dateBoundaries.todayDateStr) {
-				todayList.push(entry)
-			}
-			// Tomorrow: ALL entries (completed and uncompleted) with effective_date for tomorrow
-			else if (effectiveDateStr === dateBoundaries.tomorrowDateStr) {
-				tomorrowList.push(entry)
-			}
-			// Next 7 Days: ALL entries (completed and uncompleted) with effective_date in next 7 days
-			else if (
-				effectiveDateStr >= dateBoundaries.dayAfterTomorrowDateStr &&
-				effectiveDateStr <= dateBoundaries.nextWeekDateStr
-			) {
-				nextSevenDaysList.push(entry)
-			}
-			// Overdue: ONLY incomplete entries with scheduled_at before today
-			else if (
-				entry.completed_at === null &&
-				scheduledAtStr < dateBoundaries.todayDateStr
-			) {
-				overdueList.push(entry)
-			}
-			// Upcoming: ONLY incomplete entries with scheduled_at after next week
-			else if (
-				entry.completed_at === null &&
-				scheduledAtStr > dateBoundaries.nextWeekDateStr
-			) {
-				upcomingList.push(entry)
-			}
-		}
+			for (const entry of query.data) {
+				if (entry.effective_date === null) {
+					unscheduledList.push(entry)
+					continue
+				}
 
-		// Sort logbook entries by completed_at descending (most recent first)
-		logbookList.sort((a, b) => {
-			if (!(a.completed_at && b.completed_at)) return 0
-			return b.completed_at.localeCompare(a.completed_at)
-		})
+				// Today: ALL entries (completed and uncompleted) with effective_date for today
+				if (entry.effective_date === dateBoundaries.todayDateStr) {
+					todayList.push(entry)
+				}
+				// Tomorrow: ALL entries (completed and uncompleted) with effective_date for tomorrow
+				else if (entry.effective_date === dateBoundaries.tomorrowDateStr) {
+					tomorrowList.push(entry)
+				}
+				// Next 7 Days: ALL entries (completed and uncompleted) with effective_date in next 7 days
+				else if (
+					entry.effective_date >= dateBoundaries.dayAfterTomorrowDateStr &&
+					entry.effective_date <= dateBoundaries.nextWeekDateStr
+				) {
+					nextSevenDaysList.push(entry)
+				}
+				// Overdue: ONLY incomplete entries with scheduled_at before today
+				else if (
+					entry.completed_at === null &&
+					entry.effective_date < dateBoundaries.todayDateStr
+				) {
+					overdueList.push(entry)
+				}
+				// Upcoming: ONLY incomplete entries with scheduled_at after next week
+				else if (
+					entry.completed_at === null &&
+					entry.effective_date > dateBoundaries.nextWeekDateStr
+				) {
+					futureList.push(entry)
+				}
+			}
 
-		return {
-			overdue: overdueList,
-			today: todayList,
-			tomorrow: tomorrowList,
-			nextSevenDays: nextSevenDaysList,
-			future: upcomingList,
-			unscheduled: unscheduledList,
-			logbook: logbookList
-		}
-	}, [
-		query.data,
-		dateBoundaries.todayDateStr,
-		dateBoundaries.tomorrowDateStr,
-		dateBoundaries.dayAfterTomorrowDateStr,
-		dateBoundaries.nextWeekDateStr
-	])
+			return {
+				overdue: overdueList,
+				today: todayList,
+				tomorrow: tomorrowList,
+				nextSevenDays: nextSevenDaysList,
+				future: futureList,
+				unscheduled: unscheduledList
+			}
+		}, [
+			query.data,
+			dateBoundaries.todayDateStr,
+			dateBoundaries.tomorrowDateStr,
+			dateBoundaries.dayAfterTomorrowDateStr,
+			dateBoundaries.nextWeekDateStr
+		])
 
 	const sectionEntries = useMemo(
 		() => ({
@@ -317,10 +280,9 @@ export function useSectionedReviews(options?: UseSectionedReviewsOptions) {
 			tomorrow: tomorrow ?? [],
 			nextSevenDays: nextSevenDays ?? [],
 			future: future ?? [],
-			unscheduled: unscheduled ?? [],
-			logbook: logbook ?? []
+			unscheduled: unscheduled ?? []
 		}),
-		[overdue, today, tomorrow, nextSevenDays, future, unscheduled, logbook]
+		[overdue, today, tomorrow, nextSevenDays, future, unscheduled]
 	)
 
 	const sections = useMemo(
@@ -352,8 +314,6 @@ export function useSectionedReviews(options?: UseSectionedReviewsOptions) {
 		// This will be provided externally
 	}, [])
 
-	const isLogbookActive = sectionStates.logbook.isActive
-
 	const filters = useMemo(
 		() =>
 			FILTER_ORDER.map(filterId => {
@@ -366,17 +326,6 @@ export function useSectionedReviews(options?: UseSectionedReviewsOptions) {
 					onClick: () => handleFilterClick(filterId)
 				}
 			}).filter(filter => {
-				// When logbook is active, hide all other filters
-				if (isLogbookActive && filter.id !== 'logbook') {
-					return false
-				}
-				// When any other filter is active, hide logbook
-				const hasOtherActiveFilters = Object.entries(sectionStates).some(
-					([id, state]) => id !== 'logbook' && state.isActive
-				)
-				if (hasOtherActiveFilters && filter.id === 'logbook') {
-					return false
-				}
 				// Hide overdue filter when overdue section has no entries
 				if (filter.id === 'overdue') {
 					const overdueSection = sections.find(s => s.id === 'overdue')
@@ -384,7 +333,7 @@ export function useSectionedReviews(options?: UseSectionedReviewsOptions) {
 				}
 				return true
 			}),
-		[sectionStates, handleFilterClick, sections, isLogbookActive]
+		[sectionStates, handleFilterClick, sections]
 	)
 
 	const filteredSections = useMemo(() => {
@@ -402,9 +351,6 @@ export function useSectionedReviews(options?: UseSectionedReviewsOptions) {
 			// Hide overdue and logbook sections when they have no entries
 			sectionsToShow = sections.filter(section => {
 				if (section.id === 'overdue' && section.entries.length === 0) {
-					return false
-				}
-				if (section.id === 'logbook' && section.entries.length === 0) {
 					return false
 				}
 				return true
@@ -464,7 +410,6 @@ export function useSectionedReviews(options?: UseSectionedReviewsOptions) {
 		tomorrow,
 		nextSevenDays,
 		future,
-		unscheduled,
-		logbook
+		unscheduled
 	}
 }
