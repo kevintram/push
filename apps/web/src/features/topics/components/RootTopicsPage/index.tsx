@@ -1,112 +1,28 @@
-import { Archive, Inbox, Plus, SquareLibrary } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Plus, SquareLibrary } from 'lucide-react'
+import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useRootTopics } from '~/features/topics/api/useRootTopics'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import type { Topic } from '~/models/review-topic.types'
-import { getCookie, setCookie } from '~/utils/cookies'
 import { TopicCard } from '../TopicCard'
-import type { RenderedFilter } from './FilterBadges'
 import { RootTopicsPageSkeleton } from './RootTopicsPageSkeleton'
 import { TopicsPageHeader } from './TopicsPageHeader'
 import { TopicsPageLayout } from './TopicsPageLayout'
 
 const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96
-const FILTER_COOKIE_KEY = 'root-topics-filter'
-
-type FilterId = 'archived' | 'inboxed'
-
-type FilterBadge = {
-	id: FilterId
-	label: string
-	icon: React.ReactNode
-	isActive: boolean
-	onClick: () => void
-}
 
 export function RootTopicsPage() {
-	const [activeFilter, setActiveFilter] = useState<FilterId | null>(() => {
-		return getCookie<FilterId | null>(FILTER_COOKIE_KEY) ?? null
-	})
 	const { openTopicDialog } = useReviewTopicDialog()
 	const { createTopicWithReview } = useCreateTopicWithReview()
 
-	// Save filter to cookie whenever it changes
-	useEffect(() => {
-		setCookie(FILTER_COOKIE_KEY, activeFilter)
-	}, [activeFilter])
-
-	// Build query params based on active filter (mutually exclusive)
-	const queryParams = useMemo(() => {
-		if (activeFilter === 'inboxed') {
-			return { inboxed: true }
-		}
-		if (activeFilter === 'archived') {
-			return { archived: true }
-		}
-		// Default: show non-archived and non-inboxed topics
-		return { inboxed: false, archived: false }
-	}, [activeFilter])
-
-	// Fetch root topics from API with server-side filtering
-	const { data: topics = [], isLoading } = useRootTopics(queryParams)
-
-	// Filter handler - mutually exclusive (radio behavior)
-	const handleFilterClick = useCallback((filterId: FilterId) => {
-		setActiveFilter(prev => (prev === filterId ? null : filterId))
-	}, [])
-
-	const handleClearFilters = useCallback(() => {
-		setActiveFilter(null)
-	}, [])
-
-	// Create filter badges
-	const filters: Array<FilterBadge> = useMemo(
-		() => [
-			{
-				id: 'inboxed' as const,
-				label: 'Inbox',
-				icon: <Inbox className='h-4 w-4' />,
-				isActive: activeFilter === 'inboxed',
-				onClick: () => handleFilterClick('inboxed')
-			},
-			{
-				id: 'archived' as const,
-				label: 'Archived',
-				icon: <Archive className='h-4 w-4' />,
-				isActive: activeFilter === 'archived',
-				onClick: () => handleFilterClick('archived')
-			}
-		],
-		[activeFilter, handleFilterClick]
-	)
-
-	const activeFilterBadge = filters.find(f => f.isActive)
-	const inactiveFilterBadges = filters.filter(f => !f.isActive)
-	const hasActiveFilter = activeFilterBadge !== undefined
-
-	const renderedFilters: Array<RenderedFilter> = hasActiveFilter
-		? [
-				{
-					key: activeFilterBadge.id,
-					type: 'filter' as const,
-					filter: activeFilterBadge
-				},
-				{ key: 'clear', type: 'clear' as const },
-				...inactiveFilterBadges.map(filter => ({
-					key: filter.id,
-					type: 'filter' as const,
-					filter
-				}))
-			]
-		: filters.map(filter => ({
-				key: filter.id,
-				type: 'filter' as const,
-				filter
-			}))
+	// Fetch root topics from API - show non-archived and non-inboxed topics
+	const { data: topics = [], isLoading } = useRootTopics({
+		inboxed: false,
+		archived: false
+	})
 
 	const handleCreateTopic = useCallback(async () => {
 		const newTopic = await createTopicWithReview({
@@ -153,17 +69,11 @@ export function RootTopicsPage() {
 
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
-	const emptyMessage = hasActiveFilter
-		? 'No topics match the selected filter'
-		: 'No root topics yet'
+	const emptyMessage = 'No root topics yet'
 
 	return (
 		<TopicsPageLayout>
-			<TopicsPageHeader
-				onClearFilters={handleClearFilters}
-				onCreateTopic={handleCreateTopic}
-				renderedFilters={renderedFilters}
-			/>
+			<TopicsPageHeader onCreateTopic={handleCreateTopic} />
 
 			{isLoading && <RootTopicsPageSkeleton />}
 
