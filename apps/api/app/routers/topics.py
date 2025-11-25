@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException
 
-from sqlalchemy import or_, select, update, delete, Connection
+from sqlalchemy import or_, select, update, delete, Connection, desc
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Literal
 
 from app.dependencies import SessionDep, UserIdDep
 from app.models import Topic, t_topics_closure, Review, TopicReview
@@ -216,8 +217,16 @@ async def read_topics(
     inboxed: bool | None = None,
     archived: bool | None = None,
     root: bool | None = None,
+    limit: int | None = None,
+    order: Literal["asc", "desc"] = "asc",
 ) -> list[TopicReadWithRelationshipsAndReviews]:
-    stmt = select(Topic).where(Topic.user_id == user_id).order_by(Topic.updated_at)
+    stmt = select(Topic).where(Topic.user_id == user_id)
+
+    # Apply ordering
+    if order == "desc":
+        stmt = stmt.order_by(desc(Topic.updated_at))
+    else:
+        stmt = stmt.order_by(Topic.updated_at)
     if inboxed is not None:
         stmt = stmt.where(Topic.inboxed == inboxed)
     if archived is not None:
@@ -228,6 +237,10 @@ async def read_topics(
         stmt = stmt.where(Topic.id.notin_(topics_with_ancestors))
 
     stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children), selectinload(Topic.reviews))
+
+    # Apply limit if provided
+    if limit is not None:
+        stmt = stmt.limit(limit)
 
     result = await session.execute(stmt)
     return result.scalars().all()

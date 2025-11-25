@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RecentRouteImport } from './routes/recent'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
 
+const RecentRoute = RecentRouteImport.update({
+  id: '/recent',
+  path: '/recent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InboxRoute = InboxRouteImport.update({
   id: '/inbox',
   path: '/inbox',
@@ -33,35 +39,46 @@ const TopicsChar123TopicIdChar125Route =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
+  '/recent': typeof RecentRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
+  '/recent': typeof RecentRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/inbox': typeof InboxRoute
+  '/recent': typeof RecentRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/inbox' | '/topics/{-$topicId}'
+  fullPaths: '/' | '/inbox' | '/recent' | '/topics/{-$topicId}'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/inbox' | '/topics/{-$topicId}'
-  id: '__root__' | '/' | '/inbox' | '/topics/{-$topicId}'
+  to: '/' | '/inbox' | '/recent' | '/topics/{-$topicId}'
+  id: '__root__' | '/' | '/inbox' | '/recent' | '/topics/{-$topicId}'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   InboxRoute: typeof InboxRoute
+  RecentRoute: typeof RecentRoute
   TopicsChar123TopicIdChar125Route: typeof TopicsChar123TopicIdChar125Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/recent': {
+      id: '/recent'
+      path: '/recent'
+      fullPath: '/recent'
+      preLoaderRoute: typeof RecentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inbox': {
       id: '/inbox'
       path: '/inbox'
@@ -89,6 +106,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   InboxRoute: InboxRoute,
+  RecentRoute: RecentRoute,
   TopicsChar123TopicIdChar125Route: TopicsChar123TopicIdChar125Route,
 }
 export const routeTree = rootRouteImport

@@ -1,6 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { Inbox, ListChecks, Settings, SquareLibrary } from 'lucide-react'
+import {
+	History,
+	Inbox,
+	ListChecks,
+	Settings,
+	SquareLibrary
+} from 'lucide-react'
 import { useState } from 'react'
 
 import { CreateButton } from '~/components/AppSidebar/CreateButton'
@@ -29,6 +35,11 @@ export function AppSidebar() {
 			title: 'Review',
 			url: '/',
 			icon: ListChecks
+		},
+		{
+			title: 'Recent',
+			url: '/recent',
+			icon: History
 		},
 		{
 			title: 'Topics',
