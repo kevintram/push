@@ -8,7 +8,7 @@ import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useUnscheduledTopics } from '~/features/topics/api/useUnscheduledTopics'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/reviews/unscheduled')({
+export const Route = createFileRoute('/unscheduled')({
 	component: UnscheduledPage
 })
 

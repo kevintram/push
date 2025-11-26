@@ -7,7 +7,7 @@ import { useLogbookReviews } from '~/features/reviews/api/useLogbookReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 
-export const Route = createFileRoute('/reviews/logbook')({
+export const Route = createFileRoute('/logbook')({
 	component: LogbookPage
 })
 

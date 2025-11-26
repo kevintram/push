@@ -11,7 +11,7 @@ import { useFutureTopics } from '~/features/topics/api/useFutureTopics'
 import { useSoonTopics } from '~/features/topics/api/useSoonTopics'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/reviews/upcoming')({
+export const Route = createFileRoute('/upcoming')({
 	component: UpcomingPage
 })
 

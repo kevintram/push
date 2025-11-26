@@ -8,7 +8,7 @@ import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useTodayTopics } from '~/features/topics/api/useTodayTopics'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/reviews/today')({
+export const Route = createFileRoute('/today')({
 	component: TodayPage
 })
 
