@@ -2,11 +2,14 @@ import { Link, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
+	Badge,
+	Calendar,
 	History,
+	Home,
 	Inbox,
 	ListChecks,
 	Settings,
-	SquareLibrary
+	Star
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -18,6 +21,7 @@ import {
 	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
+	SidebarGroupLabel,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem
@@ -27,14 +31,34 @@ export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
 
-	const menuItems = [
+	const reviewItems = [
 		{
-			title: 'Review',
-			url: '/',
-			icon: ListChecks,
-			isActive: (pathname: string) =>
-				pathname === '/' || pathname.startsWith('/reviews')
+			title: 'Soon',
+			url: '/reviews/soon',
+			icon: Star,
+			isActive: (pathname: string) => pathname === '/reviews/soon'
 		},
+		{
+			title: 'Future',
+			url: '/reviews/future',
+			icon: Calendar,
+			isActive: (pathname: string) => pathname === '/reviews/future'
+		},
+		{
+			title: 'Unscheduled',
+			url: '/reviews/unscheduled',
+			icon: Badge,
+			isActive: (pathname: string) => pathname === '/reviews/unscheduled'
+		},
+		{
+			title: 'Logbook',
+			url: '/reviews/logbook',
+			icon: ListChecks,
+			isActive: (pathname: string) => pathname === '/reviews/logbook'
+		}
+	]
+
+	const topicItems = [
 		{
 			title: 'Inbox',
 			url: '/inbox',
@@ -48,10 +72,11 @@ export function AppSidebar() {
 			isActive: (pathname: string) => pathname === '/recent'
 		},
 		{
-			title: 'Topics',
+			title: 'Home',
 			url: '/topics',
-			icon: SquareLibrary,
-			isActive: (pathname: string) => pathname.startsWith('/topics')
+			icon: Home,
+			isActive: (pathname: string) =>
+				pathname === '/topics' || pathname.startsWith('/topics/')
 		},
 		{
 			title: 'Archived',
@@ -74,7 +99,40 @@ export function AppSidebar() {
 							<SidebarMenuItem>
 								<CreateButton />
 							</SidebarMenuItem>
-							{menuItems.map(item => {
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+
+				<SidebarGroup>
+					<SidebarGroupLabel>Review</SidebarGroupLabel>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{reviewItems.map(item => {
+								const isActive = item.isActive(location.pathname)
+								return (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton
+											asChild={true}
+											isActive={isActive}
+											tooltip={item.title}
+										>
+											<Link to={item.url}>
+												<item.icon />
+												<span>{item.title}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								)
+							})}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+
+				<SidebarGroup>
+					<SidebarGroupLabel>Topics</SidebarGroupLabel>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{topicItems.map(item => {
 								const isActive = item.isActive(location.pathname)
 								return (
 									<SidebarMenuItem key={item.title}>
@@ -95,6 +153,7 @@ export function AppSidebar() {
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
+
 			<SidebarFooter className='bg-background'>
 				<SidebarMenu>
 					<SidebarMenuItem>
@@ -121,6 +180,7 @@ export function AppSidebar() {
 					)}
 				</SidebarMenu>
 			</SidebarFooter>
+
 			<SettingsDialog
 				onOpenChange={setIsSettingsDialogOpen}
 				open={isSettingsDialogOpen}

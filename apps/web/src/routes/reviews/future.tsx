@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useMemo, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useFutureReviews } from '~/features/reviews/api/useFutureReviews'
-import { ReviewPageHeader } from '~/features/reviews/components/ReviewPageHeader'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useFutureTopics } from '~/features/topics/api/useFutureTopics'
@@ -93,8 +92,12 @@ function FuturePage() {
 
 	return (
 		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
-			<div className='flex h-full flex-col overflow-auto bg-primary-foreground'>
-				<ReviewPageHeader activeBadge='future' />
+			<div className='flex h-full flex-col overflow-auto'>
+				<div className='sticky top-0 z-10 flex flex-col gap-2 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 px-4 pt-4 pb-2 backdrop-blur-sm'>
+					<div className='flex items-center justify-between'>
+						<h1 className='font-bold text-xl'>Future</h1>
+					</div>
+				</div>
 				<div className='px-6'>
 					{mergedSections.length === 0 ? (
 						<p className='mt-8 text-center text-muted-foreground text-sm italic'>
