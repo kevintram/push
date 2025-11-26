@@ -12,11 +12,10 @@ type LogbookSection = {
 }
 
 async function fetchLogbookReviews(): Promise<Array<Review>> {
-	const today = dayjs().format('YYYY-MM-DD')
-
-	// Fetch completed reviews with completed_at < today
+	const yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD')
+	// Fetch completed reviews with completed_at <= yesterday
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/reviews/?completed_before=${today}`
+		`${import.meta.env.VITE_API_URL}/reviews/?completed_before=${yesterday}`
 	)
 	const data = await response.json()
 	try {
