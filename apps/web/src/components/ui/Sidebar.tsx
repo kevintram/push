@@ -39,6 +39,9 @@ type SidebarContextProps = {
 	setOpenMobile: (open: boolean) => void
 	isMobile: boolean
 	toggleSidebar: () => void
+	width: string
+	widthMobile: string
+	widthIcon: string
 }
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
@@ -57,13 +60,19 @@ function SidebarProvider({
 	open: openProp,
 	onOpenChange: setOpenProp,
 	children,
-	enableKeyboardShortcut = true
+	enableKeyboardShortcut = true,
+	width = SIDEBAR_WIDTH,
+	widthMobile = SIDEBAR_WIDTH_MOBILE,
+	widthIcon = SIDEBAR_WIDTH_ICON
 }: {
 	defaultOpen?: boolean
 	open?: boolean
 	onOpenChange?: (open: boolean) => void
 	children?: React.ReactNode
 	enableKeyboardShortcut?: boolean
+	width?: string
+	widthMobile?: string
+	widthIcon?: string
 }) {
 	const isMobile = useIsMobile()
 	const [openMobile, setOpenMobile] = React.useState(false)
@@ -122,9 +131,23 @@ function SidebarProvider({
 			isMobile,
 			openMobile,
 			setOpenMobile,
-			toggleSidebar
+			toggleSidebar,
+			width,
+			widthMobile,
+			widthIcon
 		}),
-		[state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+		[
+			state,
+			open,
+			setOpen,
+			isMobile,
+			openMobile,
+			setOpenMobile,
+			toggleSidebar,
+			width,
+			widthMobile,
+			widthIcon
+		]
 	)
 
 	return (
@@ -138,8 +161,18 @@ function SidebarHolder({
 	className,
 	style,
 	children,
+	width,
+	widthIcon,
 	...props
-}: React.ComponentProps<'div'>) {
+}: React.ComponentProps<'div'> & {
+	width?: string
+	widthIcon?: string
+}) {
+	const sidebarContext = React.useContext(SidebarContext)
+	const sidebarWidth = width ?? sidebarContext?.width ?? SIDEBAR_WIDTH
+	const sidebarWidthIcon =
+		widthIcon ?? sidebarContext?.widthIcon ?? SIDEBAR_WIDTH_ICON
+
 	return (
 		<div
 			className={cn(
@@ -149,8 +182,8 @@ function SidebarHolder({
 			data-slot='sidebar-wrapper'
 			style={
 				{
-					'--sidebar-width': SIDEBAR_WIDTH,
-					'--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
+					'--sidebar-width': sidebarWidth,
+					'--sidebar-width-icon': sidebarWidthIcon,
 					...style
 				} as React.CSSProperties
 			}
@@ -173,7 +206,9 @@ function Sidebar({
 	variant?: 'sidebar' | 'floating' | 'inset'
 	collapsible?: 'offcanvas' | 'icon' | 'none'
 }) {
-	const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+	const { isMobile, state, openMobile, setOpenMobile, widthMobile } =
+		useSidebar()
+	const sidebarWidthMobile = widthMobile ?? SIDEBAR_WIDTH_MOBILE
 
 	if (collapsible === 'none') {
 		return (
@@ -201,7 +236,7 @@ function Sidebar({
 					side={side}
 					style={
 						{
-							'--sidebar-width': SIDEBAR_WIDTH_MOBILE
+							'--sidebar-width': sidebarWidthMobile
 						} as React.CSSProperties
 					}
 				>
