@@ -2,8 +2,8 @@ import { Link, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
-	Badge,
 	Calendar,
+	CircleDashed,
 	History,
 	Home,
 	Inbox,
@@ -47,7 +47,7 @@ export function AppSidebar() {
 		{
 			title: 'Unscheduled',
 			url: '/unscheduled',
-			icon: Badge,
+			icon: CircleDashed,
 			isActive: (pathname: string) => pathname === '/unscheduled'
 		},
 		{
