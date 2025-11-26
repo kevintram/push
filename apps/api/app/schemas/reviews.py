@@ -18,6 +18,7 @@ class ReviewBase(BaseModel):
     scheduled_at: date | None = None
     completed_at: date | None = None
     description: str
+    notes: str
 
 
 class ReviewWithTopics(ReviewBase):
@@ -55,6 +56,7 @@ class ReviewUpdate(BaseModel):
     scheduled_at: date | None = None
     completed_at: date | None = None
     description: str | None = None
+    notes: str | None = None
 
 
 class TopicIdPayload(BaseModel):

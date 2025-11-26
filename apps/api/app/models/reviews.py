@@ -14,6 +14,7 @@ class Review(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
     description: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    notes: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
     scheduled_at: Mapped[date] = mapped_column(Date)
     completed_at: Mapped[date] = mapped_column(Date)
     effective_date: Mapped[date] = column_property(
