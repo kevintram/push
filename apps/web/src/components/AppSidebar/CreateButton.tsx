@@ -1,14 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
-import { ListChecks, Plus, Square, SquareCheck, SquarePen } from 'lucide-react'
+import { ListChecks, Plus, SquarePen } from 'lucide-react'
 import { useCallback } from 'react'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuSub,
-	DropdownMenuSubContent,
-	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
@@ -34,16 +30,7 @@ export function CreateButton() {
 		openTopicDialog(createdTopic.id)
 	}, [createTopicWithReview, openTopicDialog])
 
-	const handleNewReviewNow = useCallback(async () => {
-		const review = await createReviewMutation({
-			description: '',
-			scheduledAt: null,
-			completedAt: dayjs().format('YYYY-MM-DD')
-		})
-		openReviewDialog(review.id)
-	}, [createReviewMutation, openReviewDialog])
-
-	const handleNewReviewLater = useCallback(async () => {
+	const handleNewReview = useCallback(async () => {
 		const review = await createReviewMutation({
 			description: '',
 			scheduledAt: null,
@@ -61,26 +48,14 @@ export function CreateButton() {
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='start' side='right'>
+				<DropdownMenuItem onClick={handleNewReview}>
+					<ListChecks />
+					<span>New review</span>
+				</DropdownMenuItem>
 				<DropdownMenuItem disabled={isCreatingTopic} onClick={handleNewTopic}>
 					<SquarePen />
 					<span>New topic</span>
 				</DropdownMenuItem>
-				<DropdownMenuSub>
-					<DropdownMenuSubTrigger>
-						<ListChecks />
-						<span>New review</span>
-					</DropdownMenuSubTrigger>
-					<DropdownMenuSubContent>
-						<DropdownMenuItem onClick={handleNewReviewNow}>
-							<SquareCheck />
-							<span>Now</span>
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={handleNewReviewLater}>
-							<Square />
-							<span>Later</span>
-						</DropdownMenuItem>
-					</DropdownMenuSubContent>
-				</DropdownMenuSub>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	)

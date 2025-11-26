@@ -1,21 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import {
-	BicepsFlexed,
-	Calendar,
-	Mountain,
-	Plus,
-	Square,
-	SquareCheck
-} from 'lucide-react'
+import { BicepsFlexed, Calendar, Mountain, Plus } from 'lucide-react'
 import { use, useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import {
 	Tooltip,
@@ -60,23 +47,7 @@ function ReviewsSidebarContent() {
 		}
 	})
 
-	const handleNewReviewNow = useCallback(async () => {
-		if (!topic) return
-
-		const review = await createReviewMutation({
-			description: '',
-			scheduledAt: null,
-			completedAt: dayjs().format('YYYY-MM-DD')
-		})
-
-		await createTopicReviewMutation({
-			reviewId: review.id,
-			topicId: topic.id
-		})
-		openReviewDialog(review.id)
-	}, [topic, createReviewMutation, createTopicReviewMutation, openReviewDialog])
-
-	const handleNewReviewLater = useCallback(async () => {
+	const handleNewReview = useCallback(async () => {
 		if (!topic) return
 
 		const review = await createReviewMutation({
@@ -162,28 +133,14 @@ function ReviewsSidebarContent() {
 			<SidebarHeader className='flex flex-col gap-0 pb-0'>
 				<div className='flex flex-row items-center justify-between'>
 					<h1 className='font-semibold text-lg'>Reviews</h1>
-					<DropdownMenu>
-						<Tooltip>
-							<TooltipTrigger asChild={true}>
-								<DropdownMenuTrigger asChild={true}>
-									<Button size='sm' variant='ghost'>
-										<Plus />
-									</Button>
-								</DropdownMenuTrigger>
-							</TooltipTrigger>
-							<TooltipContent>Create new review</TooltipContent>
-						</Tooltip>
-						<DropdownMenuContent align='end'>
-							<DropdownMenuItem onClick={handleNewReviewNow}>
-								<SquareCheck />
-								<span>Now</span>
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={handleNewReviewLater}>
-								<Square />
-								<span>Later</span>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<Button onClick={handleNewReview} size='sm' variant='ghost'>
+								<Plus />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>Create new review</TooltipContent>
+					</Tooltip>
 				</div>
 				<div className='flex text-muted-foreground text-xs'>
 					{dueDateDisplay ? (
