@@ -60,6 +60,13 @@ export function AppSidebar() {
 
 	const topicItems = [
 		{
+			title: 'Home',
+			url: '/topics',
+			icon: Home,
+			isActive: (pathname: string) =>
+				pathname === '/topics' || pathname.startsWith('/topics/')
+		},
+		{
 			title: 'Inbox',
 			url: '/inbox',
 			icon: Inbox,
@@ -70,13 +77,6 @@ export function AppSidebar() {
 			url: '/recent',
 			icon: History,
 			isActive: (pathname: string) => pathname === '/recent'
-		},
-		{
-			title: 'Home',
-			url: '/topics',
-			icon: Home,
-			isActive: (pathname: string) =>
-				pathname === '/topics' || pathname.startsWith('/topics/')
 		},
 		{
 			title: 'Archived',
