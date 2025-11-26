@@ -28,14 +28,14 @@ export function AppSidebar() {
 
 	const menuItems = [
 		{
-			title: 'Inbox',
-			url: '/inbox',
-			icon: Inbox
-		},
-		{
 			title: 'Review',
 			url: '/',
 			icon: ListChecks
+		},
+		{
+			title: 'Inbox',
+			url: '/inbox',
+			icon: Inbox
 		},
 		{
 			title: 'Recent',
