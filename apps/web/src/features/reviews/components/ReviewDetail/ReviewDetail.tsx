@@ -169,7 +169,7 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 			>
 				<Checkbox
 					checked={!!review.completed_at}
-					className={`mt-2 ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
+					className={`translate-y-[7px] ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
 					onCheckedChange={handleCheckboxChange}
 				/>
 				<div className='flex-1'>
