@@ -2,21 +2,21 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Star } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useSoonReviews } from '~/features/reviews/api/useSoonReviews'
+import { useTodayReviews } from '~/features/reviews/api/useTodayReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useSoonTopics } from '~/features/topics/api/useSoonTopics'
+import { useTodayTopics } from '~/features/topics/api/useTodayTopics'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/reviews/soon')({
-	component: SoonPage
+export const Route = createFileRoute('/reviews/today')({
+	component: TodayPage
 })
 
-function SoonPage() {
+function TodayPage() {
 	const { sections: reviewSections, isLoading: reviewsLoading } =
-		useSoonReviews()
+		useTodayReviews()
 
-	const { sections: topicSections, isLoading: topicsLoading } = useSoonTopics()
+	const { sections: topicSections, isLoading: topicsLoading } = useTodayTopics()
 
 	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
 
@@ -84,13 +84,7 @@ function SoonPage() {
 		}
 
 		// Convert to array and sort by predefined order
-		const sectionOrder = [
-			'overdue',
-			'today',
-			'tomorrow',
-			'nextSevenDays',
-			'unscheduled'
-		]
+		const sectionOrder = ['overdue', 'today']
 
 		return Array.from(sectionMap.values()).sort((a, b) => {
 			const aIndex = sectionOrder.indexOf(a.id)
@@ -110,7 +104,7 @@ function SoonPage() {
 					<div className='flex items-center justify-between'>
 						<h1 className='flex items-center gap-2 font-bold text-xl'>
 							<Star className='h-5 w-5' />
-							Soon
+							Today
 						</h1>
 					</div>
 				</div>
@@ -127,6 +121,7 @@ function SoonPage() {
 
 						return (
 							<ReviewSection
+								alwaysShow={section.id === 'today'}
 								headingClassName={section.headingClassName}
 								id={section.id}
 								isCollapsed={isSectionCollapsed}

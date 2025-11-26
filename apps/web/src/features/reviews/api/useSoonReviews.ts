@@ -5,7 +5,7 @@ import * as v from 'valibot'
 import { type Review, ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
-export type SoonSectionKey = 'overdue' | 'today' | 'tomorrow' | 'nextSevenDays'
+export type SoonSectionKey = 'tomorrow' | 'nextSevenDays'
 
 type SectionDefinition = {
 	id: SoonSectionKey
@@ -15,17 +15,6 @@ type SectionDefinition = {
 }
 
 const SECTION_DEFINITIONS: Array<SectionDefinition> = [
-	{
-		id: 'overdue',
-		label: 'Overdue',
-		headingClassName: 'text-red-600',
-		emptyMessage: "You're all caught up—no overdue reviews."
-	},
-	{
-		id: 'today',
-		label: 'Today',
-		emptyMessage: 'Nothing scheduled for today.'
-	},
 	{
 		id: 'tomorrow',
 		label: 'Tomorrow',
@@ -39,12 +28,16 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 ]
 
 async function fetchSoonReviews(): Promise<Array<Review>> {
-	const nextWeekDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
-
-	// Fetch reviews with effective_date < today + 8 days
-	// This includes overdue, today, tomorrow, and next 7 days
+	const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
+	const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
+	const searchParams = new URLSearchParams({
+		effective_date_after: tomorrow,
+		effective_date_before: nextWeekDate
+	})
+	// Fetch reviews with effective_date between today and today + 7 days
+	// This includes today, tomorrow, and next 7 days
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/reviews/?effective_date_before=${nextWeekDate}`
+		`${import.meta.env.VITE_API_URL}/reviews/?${searchParams.toString()}`
 	)
 	const data = await response.json()
 	try {
@@ -98,8 +91,6 @@ export function useSoonReviews() {
 			}))
 		}
 
-		const overdueList: Array<Review> = []
-		const todayList: Array<Review> = []
 		const tomorrowList: Array<Review> = []
 		const nextSevenDaysList: Array<Review> = []
 
@@ -109,12 +100,8 @@ export function useSoonReviews() {
 				continue
 			}
 
-			// Today: ALL entries (completed and uncompleted) with effective_date for today
-			if (entry.effective_date === dateBoundaries.todayDateStr) {
-				todayList.push(entry)
-			}
 			// Tomorrow: ALL entries (completed and uncompleted) with effective_date for tomorrow
-			else if (entry.effective_date === dateBoundaries.tomorrowDateStr) {
+			if (entry.effective_date === dateBoundaries.tomorrowDateStr) {
 				tomorrowList.push(entry)
 			}
 			// Next 7 Days: ALL entries (completed and uncompleted) with effective_date in next 7 days
@@ -124,26 +111,10 @@ export function useSoonReviews() {
 			) {
 				nextSevenDaysList.push(entry)
 			}
-			// Overdue: ONLY incomplete entries with scheduled_at before today
-			else if (
-				entry.completed_at === null &&
-				entry.effective_date < dateBoundaries.todayDateStr
-			) {
-				overdueList.push(entry)
-			}
 		}
 
 		return SECTION_DEFINITIONS.map(def => {
-			let entries: Array<Review>
-			if (def.id === 'overdue') {
-				entries = overdueList
-			} else if (def.id === 'today') {
-				entries = todayList
-			} else if (def.id === 'tomorrow') {
-				entries = tomorrowList
-			} else {
-				entries = nextSevenDaysList
-			}
+			const entries = def.id === 'tomorrow' ? tomorrowList : nextSevenDaysList
 
 			return {
 				...def,

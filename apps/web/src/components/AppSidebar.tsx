@@ -33,16 +33,16 @@ export function AppSidebar() {
 
 	const reviewItems = [
 		{
-			title: 'Soon',
-			url: '/reviews/soon',
+			title: 'Today',
+			url: '/reviews/today',
 			icon: Star,
-			isActive: (pathname: string) => pathname === '/reviews/soon'
+			isActive: (pathname: string) => pathname === '/reviews/today'
 		},
 		{
-			title: 'Future',
-			url: '/reviews/future',
+			title: 'Upcoming',
+			url: '/reviews/upcoming',
 			icon: Calendar,
-			isActive: (pathname: string) => pathname === '/reviews/future'
+			isActive: (pathname: string) => pathname === '/reviews/upcoming'
 		},
 		{
 			title: 'Unscheduled',

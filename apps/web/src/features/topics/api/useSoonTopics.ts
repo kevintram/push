@@ -5,11 +5,7 @@ import * as v from 'valibot'
 import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
-export type SoonTopicSectionKey =
-	| 'overdue'
-	| 'today'
-	| 'tomorrow'
-	| 'nextSevenDays'
+export type SoonTopicSectionKey = 'tomorrow' | 'nextSevenDays'
 
 type SectionDefinition = {
 	id: SoonTopicSectionKey
@@ -19,17 +15,6 @@ type SectionDefinition = {
 }
 
 const SECTION_DEFINITIONS: Array<SectionDefinition> = [
-	{
-		id: 'overdue',
-		label: 'Overdue',
-		headingClassName: 'text-red-600',
-		emptyMessage: "You're all caught up—no overdue topics."
-	},
-	{
-		id: 'today',
-		label: 'Today',
-		emptyMessage: 'No topics due today.'
-	},
 	{
 		id: 'tomorrow',
 		label: 'Tomorrow',
@@ -43,13 +28,15 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 ]
 
 async function fetchSoonTopics(): Promise<Array<Topic>> {
-	const nextWeekDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
+	const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
+	const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
 	const searchParams = new URLSearchParams({
+		due_after: tomorrow,
 		due_before: nextWeekDate,
 		archived: 'false'
 	})
 
-	// Fetch topics with due < today + 8 days (only scheduled topics)
+	// Fetch topics with due between tomorrow and tomorow + 6 days (only scheduled topics)
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/topics/?${searchParams.toString()}`
 	)
@@ -100,8 +87,6 @@ export function useSoonTopics() {
 	const sections = useMemo(() => {
 		const topics = query.data ?? []
 
-		const overdueList: Array<Topic> = []
-		const todayList: Array<Topic> = []
 		const tomorrowList: Array<Topic> = []
 		const nextSevenDaysList: Array<Topic> = []
 
@@ -113,12 +98,8 @@ export function useSoonTopics() {
 
 			const dueDate = topic.due
 
-			// Today
-			if (dueDate === dateBoundaries.todayDateStr) {
-				todayList.push(topic)
-			}
 			// Tomorrow
-			else if (dueDate === dateBoundaries.tomorrowDateStr) {
+			if (dueDate === dateBoundaries.tomorrowDateStr) {
 				tomorrowList.push(topic)
 			}
 			// Next 7 Days
@@ -128,23 +109,10 @@ export function useSoonTopics() {
 			) {
 				nextSevenDaysList.push(topic)
 			}
-			// Overdue
-			else if (dueDate < dateBoundaries.todayDateStr) {
-				overdueList.push(topic)
-			}
 		}
 
 		return SECTION_DEFINITIONS.map(def => {
-			let entries: Array<Topic>
-			if (def.id === 'overdue') {
-				entries = overdueList
-			} else if (def.id === 'today') {
-				entries = todayList
-			} else if (def.id === 'tomorrow') {
-				entries = tomorrowList
-			} else {
-				entries = nextSevenDaysList
-			}
+			const entries = def.id === 'tomorrow' ? tomorrowList : nextSevenDaysList
 
 			return {
 				...def,

@@ -39,7 +39,7 @@ async def read_reviews(
 
     if effective_date_before is not None:
         date_before = datetime.strptime(effective_date_before, '%Y-%m-%d').date()
-        stmt = stmt.where(Review.effective_date < date_before)
+        stmt = stmt.where(Review.effective_date <= date_before)
 
     if effective_date_after is not None:
         date_after = datetime.strptime(effective_date_after, '%Y-%m-%d').date()
@@ -60,7 +60,7 @@ async def read_reviews(
     if completed_before is not None:
         date_completed_before = datetime.strptime(completed_before, '%Y-%m-%d').date()
         stmt = stmt.where(
-            Review.completed_at < date_completed_before,
+            Review.completed_at <= date_completed_before,
             Review.completed_at.isnot(None)
         )
 

@@ -20,6 +20,7 @@ type ReviewSectionProps = {
 	onReviewClick: (reviewId: number) => void
 	onTopicClick: (topic: Topic) => void
 	showPreviousCollapsed?: boolean
+	alwaysShow?: boolean
 }
 
 export function ReviewSection({
@@ -32,7 +33,8 @@ export function ReviewSection({
 	onToggleCollapse,
 	onReviewClick,
 	onTopicClick,
-	showPreviousCollapsed = false
+	showPreviousCollapsed = false,
+	alwaysShow = false
 }: ReviewSectionProps) {
 	// Always call hooks first, before any conditional returns
 	const estimateTopicSize = useCallback((topic: Topic) => {
@@ -70,8 +72,8 @@ export function ReviewSection({
 
 	const totalCount = reviewEntries.length + topicEntries.length
 
-	// Skip section if both subsections are empty
-	if (totalCount === 0) return null
+	// Skip section if both subsections are empty (unless alwaysShow is true)
+	if (totalCount === 0 && !alwaysShow) return null
 
 	return (
 		<div className={`mb-2 ${showPreviousCollapsed ? '' : 'mt-12'}`} key={id}>
