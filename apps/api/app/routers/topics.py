@@ -221,7 +221,7 @@ async def read_topics(
     due_before: str | None = None,
     due_after: str | None = None,
     limit: int | None = None,
-    order: Literal["asc", "desc"] = "asc",
+    order: Literal["asc", "desc"] = "desc",
 ) -> list[TopicReadWithRelationshipsAndReviews]:
     stmt = select(Topic).where(Topic.user_id == user_id)
 
