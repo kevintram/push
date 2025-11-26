@@ -32,10 +32,11 @@ async function fetchFutureTopics(): Promise<Array<Topic>> {
 	}
 }
 
-export function useFutureTopics() {
+export function useFutureTopics(options?: { enabled?: boolean }) {
 	const query = useQuery({
 		queryKey: ['topics', 'future'],
-		queryFn: fetchFutureTopics
+		queryFn: fetchFutureTopics,
+		enabled: options?.enabled ?? true
 	})
 
 	// Group topics by month
@@ -83,6 +84,7 @@ export function useFutureTopics() {
 	return {
 		sections,
 		isLoading: query.isLoading,
+		isFetched: query.isFetched,
 		error: query.error
 	}
 }

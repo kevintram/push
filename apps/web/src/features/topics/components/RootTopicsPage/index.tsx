@@ -1,4 +1,4 @@
-import { Plus, SquareLibrary } from 'lucide-react'
+import { Home, Plus, SquareLibrary } from 'lucide-react'
 import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
@@ -73,7 +73,7 @@ export function RootTopicsPage() {
 
 	return (
 		<TopicsPageLayout>
-			<TopicsPageHeader onCreateTopic={handleCreateTopic} />
+			<TopicsPageHeader icon={Home} />
 
 			{isLoading && <RootTopicsPageSkeleton />}
 

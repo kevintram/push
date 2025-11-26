@@ -241,7 +241,7 @@ async def read_topics(
 
     if due_before is not None:
         date_before = datetime.strptime(due_before, '%Y-%m-%d').date()
-        stmt = stmt.where(Topic.due < date_before)
+        stmt = stmt.where(Topic.due <= date_before)
 
     if due_after is not None:
         date_after = datetime.strptime(due_after, '%Y-%m-%d').date()

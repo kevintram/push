@@ -29,10 +29,11 @@ async function fetchFutureReviews(): Promise<Array<Review>> {
 	}
 }
 
-export function useFutureReviews() {
+export function useFutureReviews(options?: { enabled?: boolean }) {
 	const query = useQuery({
 		queryKey: ['reviews', 'future'],
-		queryFn: fetchFutureReviews
+		queryFn: fetchFutureReviews,
+		enabled: options?.enabled ?? true
 	})
 
 	// Group reviews by month
@@ -80,6 +81,7 @@ export function useFutureReviews() {
 	return {
 		sections,
 		isLoading: query.isLoading,
+		isFetched: query.isFetched,
 		error: query.error
 	}
 }

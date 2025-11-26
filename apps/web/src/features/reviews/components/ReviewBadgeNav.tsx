@@ -23,12 +23,12 @@ const BADGES: Array<BadgeConfig> = [
 	{
 		id: 'unscheduled',
 		label: 'Unscheduled',
-		path: '/reviews/unscheduled'
+		path: '/unscheduled'
 	},
 	{
 		id: 'logbook',
 		label: 'Logbook',
-		path: '/reviews/logbook'
+		path: '/logbook'
 	}
 ]
 

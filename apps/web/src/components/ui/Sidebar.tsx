@@ -39,6 +39,9 @@ type SidebarContextProps = {
 	setOpenMobile: (open: boolean) => void
 	isMobile: boolean
 	toggleSidebar: () => void
+	width: string
+	widthMobile: string
+	widthIcon: string
 }
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
@@ -56,12 +59,20 @@ function SidebarProvider({
 	defaultOpen = true,
 	open: openProp,
 	onOpenChange: setOpenProp,
-	children
+	children,
+	enableKeyboardShortcut = true,
+	width = SIDEBAR_WIDTH,
+	widthMobile = SIDEBAR_WIDTH_MOBILE,
+	widthIcon = SIDEBAR_WIDTH_ICON
 }: {
 	defaultOpen?: boolean
 	open?: boolean
 	onOpenChange?: (open: boolean) => void
 	children?: React.ReactNode
+	enableKeyboardShortcut?: boolean
+	width?: string
+	widthMobile?: string
+	widthIcon?: string
 }) {
 	const isMobile = useIsMobile()
 	const [openMobile, setOpenMobile] = React.useState(false)
@@ -92,6 +103,8 @@ function SidebarProvider({
 
 	// Adds a keyboard shortcut to toggle the sidebar.
 	React.useEffect(() => {
+		if (!enableKeyboardShortcut) return
+
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (
 				event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -104,7 +117,7 @@ function SidebarProvider({
 
 		window.addEventListener('keydown', handleKeyDown)
 		return () => window.removeEventListener('keydown', handleKeyDown)
-	}, [toggleSidebar])
+	}, [enableKeyboardShortcut, toggleSidebar])
 
 	// We add a state so that we can do data-state="expanded" or "collapsed".
 	// This makes it easier to style the sidebar with Tailwind classes.
@@ -118,9 +131,23 @@ function SidebarProvider({
 			isMobile,
 			openMobile,
 			setOpenMobile,
-			toggleSidebar
+			toggleSidebar,
+			width,
+			widthMobile,
+			widthIcon
 		}),
-		[state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+		[
+			state,
+			open,
+			setOpen,
+			isMobile,
+			openMobile,
+			setOpenMobile,
+			toggleSidebar,
+			width,
+			widthMobile,
+			widthIcon
+		]
 	)
 
 	return (
@@ -134,8 +161,18 @@ function SidebarHolder({
 	className,
 	style,
 	children,
+	width,
+	widthIcon,
 	...props
-}: React.ComponentProps<'div'>) {
+}: React.ComponentProps<'div'> & {
+	width?: string
+	widthIcon?: string
+}) {
+	const sidebarContext = React.useContext(SidebarContext)
+	const sidebarWidth = width ?? sidebarContext?.width ?? SIDEBAR_WIDTH
+	const sidebarWidthIcon =
+		widthIcon ?? sidebarContext?.widthIcon ?? SIDEBAR_WIDTH_ICON
+
 	return (
 		<div
 			className={cn(
@@ -145,8 +182,8 @@ function SidebarHolder({
 			data-slot='sidebar-wrapper'
 			style={
 				{
-					'--sidebar-width': SIDEBAR_WIDTH,
-					'--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
+					'--sidebar-width': sidebarWidth,
+					'--sidebar-width-icon': sidebarWidthIcon,
 					...style
 				} as React.CSSProperties
 			}
@@ -169,7 +206,9 @@ function Sidebar({
 	variant?: 'sidebar' | 'floating' | 'inset'
 	collapsible?: 'offcanvas' | 'icon' | 'none'
 }) {
-	const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+	const { isMobile, state, openMobile, setOpenMobile, widthMobile } =
+		useSidebar()
+	const sidebarWidthMobile = widthMobile ?? SIDEBAR_WIDTH_MOBILE
 
 	if (collapsible === 'none') {
 		return (
@@ -197,7 +236,7 @@ function Sidebar({
 					side={side}
 					style={
 						{
-							'--sidebar-width': SIDEBAR_WIDTH_MOBILE
+							'--sidebar-width': sidebarWidthMobile
 						} as React.CSSProperties
 					}
 				>
@@ -488,7 +527,7 @@ const sidebarMenuButtonVariants = cva(
 				outline:
 					'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]',
 				secondary:
-					'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+					'bg-secondary/60 text-secondary-foreground hover:bg-secondary/80'
 			},
 			size: {
 				default: 'h-8 text-sm',

@@ -1,12 +1,15 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
+	Badge,
+	Calendar,
 	History,
+	Home,
 	Inbox,
 	ListChecks,
 	Settings,
-	SquareLibrary
+	Star
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -18,6 +21,7 @@ import {
 	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
+	SidebarGroupLabel,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem
@@ -25,32 +29,60 @@ import {
 
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
+	const location = useLocation()
 
-	const menuItems = [
+	const reviewItems = [
 		{
-			title: 'Review',
-			url: '/',
-			icon: ListChecks
+			title: 'Today',
+			url: '/today',
+			icon: Star,
+			isActive: (pathname: string) => pathname === '/today'
+		},
+		{
+			title: 'Upcoming',
+			url: '/upcoming',
+			icon: Calendar,
+			isActive: (pathname: string) => pathname === '/upcoming'
+		},
+		{
+			title: 'Unscheduled',
+			url: '/unscheduled',
+			icon: Badge,
+			isActive: (pathname: string) => pathname === '/unscheduled'
+		},
+		{
+			title: 'Logbook',
+			url: '/logbook',
+			icon: ListChecks,
+			isActive: (pathname: string) => pathname === '/logbook'
+		}
+	]
+
+	const topicItems = [
+		{
+			title: 'Home',
+			url: '/topics',
+			icon: Home,
+			isActive: (pathname: string) =>
+				pathname === '/topics' || pathname.startsWith('/topics/')
 		},
 		{
 			title: 'Inbox',
 			url: '/inbox',
-			icon: Inbox
+			icon: Inbox,
+			isActive: (pathname: string) => pathname === '/inbox'
 		},
 		{
 			title: 'Recent',
 			url: '/recent',
-			icon: History
-		},
-		{
-			title: 'Topics',
-			url: '/topics',
-			icon: SquareLibrary
+			icon: History,
+			isActive: (pathname: string) => pathname === '/recent'
 		},
 		{
 			title: 'Archived',
 			url: '/archived',
-			icon: Archive
+			icon: Archive,
+			isActive: (pathname: string) => pathname === '/archived'
 		}
 	]
 
@@ -67,20 +99,61 @@ export function AppSidebar() {
 							<SidebarMenuItem>
 								<CreateButton />
 							</SidebarMenuItem>
-							{menuItems.map(item => (
-								<SidebarMenuItem key={item.title}>
-									<SidebarMenuButton asChild={true} tooltip={item.title}>
-										<Link to={item.url}>
-											<item.icon />
-											<span>{item.title}</span>
-										</Link>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+
+				<SidebarGroup>
+					<SidebarGroupLabel>Review</SidebarGroupLabel>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{reviewItems.map(item => {
+								const isActive = item.isActive(location.pathname)
+								return (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton
+											asChild={true}
+											isActive={isActive}
+											tooltip={item.title}
+										>
+											<Link to={item.url}>
+												<item.icon />
+												<span>{item.title}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								)
+							})}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+
+				<SidebarGroup>
+					<SidebarGroupLabel>Topics</SidebarGroupLabel>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{topicItems.map(item => {
+								const isActive = item.isActive(location.pathname)
+								return (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton
+											asChild={true}
+											isActive={isActive}
+											tooltip={item.title}
+										>
+											<Link to={item.url}>
+												<item.icon />
+												<span>{item.title}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								)
+							})}
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
+
 			<SidebarFooter className='bg-background'>
 				<SidebarMenu>
 					<SidebarMenuItem>
@@ -107,6 +180,7 @@ export function AppSidebar() {
 					)}
 				</SidebarMenu>
 			</SidebarFooter>
+
 			<SettingsDialog
 				onOpenChange={setIsSettingsDialogOpen}
 				open={isSettingsDialogOpen}

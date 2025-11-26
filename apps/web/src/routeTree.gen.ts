@@ -9,25 +9,39 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ReviewsRouteImport } from './routes/reviews'
+import { Route as UpcomingRouteImport } from './routes/upcoming'
+import { Route as UnscheduledRouteImport } from './routes/unscheduled'
+import { Route as TodayRouteImport } from './routes/today'
 import { Route as RecentRouteImport } from './routes/recent'
+import { Route as LogbookRouteImport } from './routes/logbook'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as ArchivedRouteImport } from './routes/archived'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
-import { Route as ReviewsUnscheduledRouteImport } from './routes/reviews/unscheduled'
-import { Route as ReviewsSoonRouteImport } from './routes/reviews/soon'
-import { Route as ReviewsLogbookRouteImport } from './routes/reviews/logbook'
-import { Route as ReviewsFutureRouteImport } from './routes/reviews/future'
 
-const ReviewsRoute = ReviewsRouteImport.update({
-  id: '/reviews',
-  path: '/reviews',
+const UpcomingRoute = UpcomingRouteImport.update({
+  id: '/upcoming',
+  path: '/upcoming',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnscheduledRoute = UnscheduledRouteImport.update({
+  id: '/unscheduled',
+  path: '/unscheduled',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TodayRoute = TodayRouteImport.update({
+  id: '/today',
+  path: '/today',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecentRoute = RecentRouteImport.update({
   id: '/recent',
   path: '/recent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LogbookRoute = LogbookRouteImport.update({
+  id: '/logbook',
+  path: '/logbook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InboxRoute = InboxRouteImport.update({
@@ -51,49 +65,27 @@ const TopicsChar123TopicIdChar125Route =
     path: '/topics/{-$topicId}',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ReviewsUnscheduledRoute = ReviewsUnscheduledRouteImport.update({
-  id: '/unscheduled',
-  path: '/unscheduled',
-  getParentRoute: () => ReviewsRoute,
-} as any)
-const ReviewsSoonRoute = ReviewsSoonRouteImport.update({
-  id: '/soon',
-  path: '/soon',
-  getParentRoute: () => ReviewsRoute,
-} as any)
-const ReviewsLogbookRoute = ReviewsLogbookRouteImport.update({
-  id: '/logbook',
-  path: '/logbook',
-  getParentRoute: () => ReviewsRoute,
-} as any)
-const ReviewsFutureRoute = ReviewsFutureRouteImport.update({
-  id: '/future',
-  path: '/future',
-  getParentRoute: () => ReviewsRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/archived': typeof ArchivedRoute
   '/inbox': typeof InboxRoute
+  '/logbook': typeof LogbookRoute
   '/recent': typeof RecentRoute
-  '/reviews': typeof ReviewsRouteWithChildren
-  '/reviews/future': typeof ReviewsFutureRoute
-  '/reviews/logbook': typeof ReviewsLogbookRoute
-  '/reviews/soon': typeof ReviewsSoonRoute
-  '/reviews/unscheduled': typeof ReviewsUnscheduledRoute
+  '/today': typeof TodayRoute
+  '/unscheduled': typeof UnscheduledRoute
+  '/upcoming': typeof UpcomingRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/archived': typeof ArchivedRoute
   '/inbox': typeof InboxRoute
+  '/logbook': typeof LogbookRoute
   '/recent': typeof RecentRoute
-  '/reviews': typeof ReviewsRouteWithChildren
-  '/reviews/future': typeof ReviewsFutureRoute
-  '/reviews/logbook': typeof ReviewsLogbookRoute
-  '/reviews/soon': typeof ReviewsSoonRoute
-  '/reviews/unscheduled': typeof ReviewsUnscheduledRoute
+  '/today': typeof TodayRoute
+  '/unscheduled': typeof UnscheduledRoute
+  '/upcoming': typeof UpcomingRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRoutesById {
@@ -101,12 +93,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/archived': typeof ArchivedRoute
   '/inbox': typeof InboxRoute
+  '/logbook': typeof LogbookRoute
   '/recent': typeof RecentRoute
-  '/reviews': typeof ReviewsRouteWithChildren
-  '/reviews/future': typeof ReviewsFutureRoute
-  '/reviews/logbook': typeof ReviewsLogbookRoute
-  '/reviews/soon': typeof ReviewsSoonRoute
-  '/reviews/unscheduled': typeof ReviewsUnscheduledRoute
+  '/today': typeof TodayRoute
+  '/unscheduled': typeof UnscheduledRoute
+  '/upcoming': typeof UpcomingRoute
   '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
 }
 export interface FileRouteTypes {
@@ -115,36 +106,33 @@ export interface FileRouteTypes {
     | '/'
     | '/archived'
     | '/inbox'
+    | '/logbook'
     | '/recent'
-    | '/reviews'
-    | '/reviews/future'
-    | '/reviews/logbook'
-    | '/reviews/soon'
-    | '/reviews/unscheduled'
+    | '/today'
+    | '/unscheduled'
+    | '/upcoming'
     | '/topics/{-$topicId}'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/archived'
     | '/inbox'
+    | '/logbook'
     | '/recent'
-    | '/reviews'
-    | '/reviews/future'
-    | '/reviews/logbook'
-    | '/reviews/soon'
-    | '/reviews/unscheduled'
+    | '/today'
+    | '/unscheduled'
+    | '/upcoming'
     | '/topics/{-$topicId}'
   id:
     | '__root__'
     | '/'
     | '/archived'
     | '/inbox'
+    | '/logbook'
     | '/recent'
-    | '/reviews'
-    | '/reviews/future'
-    | '/reviews/logbook'
-    | '/reviews/soon'
-    | '/reviews/unscheduled'
+    | '/today'
+    | '/unscheduled'
+    | '/upcoming'
     | '/topics/{-$topicId}'
   fileRoutesById: FileRoutesById
 }
@@ -152,18 +140,35 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ArchivedRoute: typeof ArchivedRoute
   InboxRoute: typeof InboxRoute
+  LogbookRoute: typeof LogbookRoute
   RecentRoute: typeof RecentRoute
-  ReviewsRoute: typeof ReviewsRouteWithChildren
+  TodayRoute: typeof TodayRoute
+  UnscheduledRoute: typeof UnscheduledRoute
+  UpcomingRoute: typeof UpcomingRoute
   TopicsChar123TopicIdChar125Route: typeof TopicsChar123TopicIdChar125Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/reviews': {
-      id: '/reviews'
-      path: '/reviews'
-      fullPath: '/reviews'
-      preLoaderRoute: typeof ReviewsRouteImport
+    '/upcoming': {
+      id: '/upcoming'
+      path: '/upcoming'
+      fullPath: '/upcoming'
+      preLoaderRoute: typeof UpcomingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unscheduled': {
+      id: '/unscheduled'
+      path: '/unscheduled'
+      fullPath: '/unscheduled'
+      preLoaderRoute: typeof UnscheduledRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/today': {
+      id: '/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof TodayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recent': {
@@ -171,6 +176,13 @@ declare module '@tanstack/react-router' {
       path: '/recent'
       fullPath: '/recent'
       preLoaderRoute: typeof RecentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/logbook': {
+      id: '/logbook'
+      path: '/logbook'
+      fullPath: '/logbook'
+      preLoaderRoute: typeof LogbookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inbox': {
@@ -201,60 +213,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TopicsChar123TopicIdChar125RouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/reviews/unscheduled': {
-      id: '/reviews/unscheduled'
-      path: '/unscheduled'
-      fullPath: '/reviews/unscheduled'
-      preLoaderRoute: typeof ReviewsUnscheduledRouteImport
-      parentRoute: typeof ReviewsRoute
-    }
-    '/reviews/soon': {
-      id: '/reviews/soon'
-      path: '/soon'
-      fullPath: '/reviews/soon'
-      preLoaderRoute: typeof ReviewsSoonRouteImport
-      parentRoute: typeof ReviewsRoute
-    }
-    '/reviews/logbook': {
-      id: '/reviews/logbook'
-      path: '/logbook'
-      fullPath: '/reviews/logbook'
-      preLoaderRoute: typeof ReviewsLogbookRouteImport
-      parentRoute: typeof ReviewsRoute
-    }
-    '/reviews/future': {
-      id: '/reviews/future'
-      path: '/future'
-      fullPath: '/reviews/future'
-      preLoaderRoute: typeof ReviewsFutureRouteImport
-      parentRoute: typeof ReviewsRoute
-    }
   }
 }
-
-interface ReviewsRouteChildren {
-  ReviewsFutureRoute: typeof ReviewsFutureRoute
-  ReviewsLogbookRoute: typeof ReviewsLogbookRoute
-  ReviewsSoonRoute: typeof ReviewsSoonRoute
-  ReviewsUnscheduledRoute: typeof ReviewsUnscheduledRoute
-}
-
-const ReviewsRouteChildren: ReviewsRouteChildren = {
-  ReviewsFutureRoute: ReviewsFutureRoute,
-  ReviewsLogbookRoute: ReviewsLogbookRoute,
-  ReviewsSoonRoute: ReviewsSoonRoute,
-  ReviewsUnscheduledRoute: ReviewsUnscheduledRoute,
-}
-
-const ReviewsRouteWithChildren =
-  ReviewsRoute._addFileChildren(ReviewsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ArchivedRoute: ArchivedRoute,
   InboxRoute: InboxRoute,
+  LogbookRoute: LogbookRoute,
   RecentRoute: RecentRoute,
-  ReviewsRoute: ReviewsRouteWithChildren,
+  TodayRoute: TodayRoute,
+  UnscheduledRoute: UnscheduledRoute,
+  UpcomingRoute: UpcomingRoute,
   TopicsChar123TopicIdChar125Route: TopicsChar123TopicIdChar125Route,
 }
 export const routeTree = rootRouteImport
