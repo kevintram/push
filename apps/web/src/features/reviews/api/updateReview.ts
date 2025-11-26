@@ -5,6 +5,7 @@ import { apiFetch } from '~/utils/apiFetch'
 export type UpdateReviewInput = {
 	id: number
 	description?: string
+	notes?: string
 	scheduled_at?: string | null
 	completed_at?: string | null
 }

@@ -92,6 +92,7 @@ async def create_review(
 ) -> ReviewRead:
     new_review = Review(
         description=review.description,
+        notes=review.notes,
         scheduled_at=review.scheduled_at,
         completed_at=review.completed_at,
         user_id=user_id,

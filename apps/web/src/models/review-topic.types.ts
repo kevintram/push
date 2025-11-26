@@ -35,6 +35,7 @@ export type Review = {
 	inserted_at: string
 	updated_at: string
 	description: string
+	notes: string
 	topics?: Array<Topic>
 	topic_reviews?: Array<TopicReview>
 }
@@ -89,6 +90,7 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	description: v.string(),
+	notes: v.string(),
 	topics: v.optional(v.array(v.lazy(() => TopicSchema)), []),
 	topic_reviews: v.optional(v.array(v.lazy(() => TopicReviewSchema)), [])
 })

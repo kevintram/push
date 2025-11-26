@@ -59,6 +59,15 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 		[updateReviewMutation, review?.id]
 	)
 
+	const updateNotesMutation = useCallback(
+		(newNotes: string) => {
+			if (review?.id) {
+				updateReviewMutation({ id: review.id, notes: newNotes })
+			}
+		},
+		[updateReviewMutation, review?.id]
+	)
+
 	const handleDelete = useCallback(async () => {
 		if (review?.id) {
 			await deleteReviewMutation(review.id)
@@ -116,6 +125,12 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 		key: `review-detail-${review?.id}`
 	})
 
+	const { value: notes, onChange: onNotesChange } = useAutoSave({
+		initialValue: review?.notes ?? '',
+		onSave: updateNotesMutation,
+		key: `review-detail-notes-${review?.id}`
+	})
+
 	const isOverdueValue: boolean = useMemo(() => {
 		return isOverdue({
 			scheduled_at: review?.scheduled_at ?? null,
@@ -154,22 +169,28 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 			>
 				<Checkbox
 					checked={!!review.completed_at}
-					className={
-						isOverdueValue
-							? 'mt-0.5 border-red-600 dark:border-red-700 dark:bg-red-700'
-							: 'mt-0.5'
-					}
+					className={`mt-2 ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
 					onCheckedChange={handleCheckboxChange}
 				/>
 				<div className='flex-1'>
-					<Textarea
-						className='!bg-transparent m-0 min-h-0 resize-none rounded-none border-none p-0 pb-4 shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
-						onChange={onDescriptionChange}
-						placeholder='Description'
-						ref={descriptionRef}
-						spellCheck={false}
-						value={description}
-					/>
+					<div className='pb-4'>
+						<Textarea
+							className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 font-semibold focus:outline-none focus-visible:border-none focus-visible:ring-0'
+							onChange={onDescriptionChange}
+							placeholder='Description'
+							ref={descriptionRef}
+							spellCheck={false}
+							value={description}
+						/>
+						<Textarea
+							className='!bg-transparent m-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+							name='notes'
+							onChange={onNotesChange}
+							placeholder='Notes'
+							spellCheck={false}
+							value={notes}
+						/>
+					</div>
 					<div className='w-full flex-1'>
 						<ReviewTopicsPanel
 							getScrollElement={() => scrollContainerRef.current}

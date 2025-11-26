@@ -4,6 +4,7 @@ import { apiFetch } from '~/utils/apiFetch'
 
 type CreateReviewInput = {
 	description: string
+	notes?: string
 	scheduledAt?: string | null
 	completedAt?: string | null
 }
@@ -16,6 +17,7 @@ export async function createReview(input: CreateReviewInput) {
 		},
 		body: JSON.stringify({
 			description: input.description,
+			notes: input.notes ?? '',
 			scheduled_at: input.scheduledAt,
 			completed_at: input.completedAt
 		})
