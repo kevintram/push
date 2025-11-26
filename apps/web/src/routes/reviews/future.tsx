@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Calendar } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useFutureReviews } from '~/features/reviews/api/useFutureReviews'
@@ -95,7 +96,10 @@ function FuturePage() {
 			<div className='flex h-full flex-col overflow-auto'>
 				<div className='sticky top-0 z-10 flex flex-col gap-2 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 px-4 pt-4 pb-2 backdrop-blur-sm'>
 					<div className='flex items-center justify-between'>
-						<h1 className='font-bold text-xl'>Future</h1>
+						<h1 className='flex items-center gap-2 font-bold text-xl'>
+							<Calendar className='h-5 w-5' />
+							Future
+						</h1>
 					</div>
 				</div>
 				<div className='px-6'>
