@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
@@ -25,32 +25,39 @@ import {
 
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
+	const location = useLocation()
 
 	const menuItems = [
 		{
 			title: 'Review',
 			url: '/',
-			icon: ListChecks
+			icon: ListChecks,
+			isActive: (pathname: string) =>
+				pathname === '/' || pathname.startsWith('/reviews')
 		},
 		{
 			title: 'Inbox',
 			url: '/inbox',
-			icon: Inbox
+			icon: Inbox,
+			isActive: (pathname: string) => pathname === '/inbox'
 		},
 		{
 			title: 'Recent',
 			url: '/recent',
-			icon: History
+			icon: History,
+			isActive: (pathname: string) => pathname === '/recent'
 		},
 		{
 			title: 'Topics',
 			url: '/topics',
-			icon: SquareLibrary
+			icon: SquareLibrary,
+			isActive: (pathname: string) => pathname.startsWith('/topics')
 		},
 		{
 			title: 'Archived',
 			url: '/archived',
-			icon: Archive
+			icon: Archive,
+			isActive: (pathname: string) => pathname === '/archived'
 		}
 	]
 
@@ -67,16 +74,23 @@ export function AppSidebar() {
 							<SidebarMenuItem>
 								<CreateButton />
 							</SidebarMenuItem>
-							{menuItems.map(item => (
-								<SidebarMenuItem key={item.title}>
-									<SidebarMenuButton asChild={true} tooltip={item.title}>
-										<Link to={item.url}>
-											<item.icon />
-											<span>{item.title}</span>
-										</Link>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
+							{menuItems.map(item => {
+								const isActive = item.isActive(location.pathname)
+								return (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton
+											asChild={true}
+											isActive={isActive}
+											tooltip={item.title}
+										>
+											<Link to={item.url}>
+												<item.icon />
+												<span>{item.title}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								)
+							})}
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>

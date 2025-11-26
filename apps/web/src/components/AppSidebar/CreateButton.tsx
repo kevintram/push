@@ -42,8 +42,12 @@ export function CreateButton() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild={true}>
-				<SidebarMenuButton tooltip='Create new...' variant='secondary'>
-					<Plus />
+				<SidebarMenuButton
+					className='rounded-full'
+					tooltip='Create new...'
+					variant='secondary'
+				>
+					<Plus className='' />
 					<span>Create</span>
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
