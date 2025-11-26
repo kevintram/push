@@ -68,7 +68,7 @@ export function RecentTopicsPage() {
 
 	return (
 		<TopicsPageLayout>
-			<TopicsPageHeader onCreateTopic={handleCreateTopic} title='Recent' />
+			<TopicsPageHeader title='Recent' />
 
 			{isLoading && <RootTopicsPageSkeleton />}
 

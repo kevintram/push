@@ -1,15 +1,11 @@
-import { Plus } from 'lucide-react'
 import { useCallback } from 'react'
-import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import type { Topic } from '~/models/review-topic.types'
 import { useInboxTopics } from '../api'
 import { InboxList } from './InboxList'
 
 export function InboxPage() {
 	const { data: inboxTopics, isLoading } = useInboxTopics()
-	const { createTopicWithReview } = useCreateTopicWithReview()
 	const { openTopicDialog } = useReviewTopicDialog()
 
 	const handleTopicSelect = useCallback(
@@ -18,11 +14,6 @@ export function InboxPage() {
 		},
 		[openTopicDialog]
 	)
-
-	const handleCreateTopic = useCallback(async () => {
-		const newTopic = await createTopicWithReview({ inboxed: true })
-		openTopicDialog(newTopic.id)
-	}, [createTopicWithReview, openTopicDialog])
 
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
@@ -37,9 +28,6 @@ export function InboxPage() {
 								({inboxCountLabel})
 							</span>
 						</h1>
-						<Button onClick={handleCreateTopic} size='icon' variant='ghost'>
-							<Plus />
-						</Button>
 					</div>
 				</div>
 				<div className='p-6'>

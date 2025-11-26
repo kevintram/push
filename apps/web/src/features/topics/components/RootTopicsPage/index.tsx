@@ -73,7 +73,7 @@ export function RootTopicsPage() {
 
 	return (
 		<TopicsPageLayout>
-			<TopicsPageHeader onCreateTopic={handleCreateTopic} />
+			<TopicsPageHeader />
 
 			{isLoading && <RootTopicsPageSkeleton />}
 

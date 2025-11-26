@@ -68,7 +68,7 @@ export function ArchivePage() {
 
 	return (
 		<TopicsPageLayout>
-			<TopicsPageHeader onCreateTopic={handleCreateTopic} title='Archived' />
+			<TopicsPageHeader title='Archived' />
 
 			{isLoading && <RootTopicsPageSkeleton />}
 
