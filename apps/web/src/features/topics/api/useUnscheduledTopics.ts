@@ -20,7 +20,9 @@ const SECTION_DEFINITION: SectionDefinition = {
 async function fetchUnscheduledTopics(): Promise<Array<Topic>> {
 	// Fetch all topics and filter for those with due IS NULL
 	// Backend doesn't have a direct parameter for null due dates
-	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/topics/`)
+	const response = await apiFetch(
+		`${import.meta.env.VITE_API_URL}/topics/?archived=false`
+	)
 	const data = await response.json()
 	try {
 		const allTopics = v.parse(v.array(TopicSchema), data)
