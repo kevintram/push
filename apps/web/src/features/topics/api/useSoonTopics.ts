@@ -44,10 +44,14 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 
 async function fetchSoonTopics(): Promise<Array<Topic>> {
 	const nextWeekDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
+	const searchParams = new URLSearchParams({
+		due_before: nextWeekDate,
+		archived: 'false'
+	})
 
 	// Fetch topics with due < today + 8 days (only scheduled topics)
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/?due_before=${nextWeekDate}`
+		`${import.meta.env.VITE_API_URL}/topics/?${searchParams.toString()}`
 	)
 	const data = await response.json()
 	try {

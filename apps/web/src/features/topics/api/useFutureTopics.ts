@@ -13,10 +13,13 @@ type FutureSection = {
 
 async function fetchFutureTopics(): Promise<Array<Topic>> {
 	const futureStartDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
-
+	const searchParams = new URLSearchParams({
+		due_after: futureStartDate,
+		archived: 'false'
+	})
 	// Fetch topics with due >= today + 8 days
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/?due_after=${futureStartDate}`
+		`${import.meta.env.VITE_API_URL}/topics/?${searchParams.toString()}`
 	)
 	const data = await response.json()
 	try {
