@@ -63,7 +63,7 @@ function UnscheduledPage() {
 						</h1>
 					</div>
 				</div>
-				<div className='px-6 py-4'>
+				<div className='p-4'>
 					{reviewSection.entries.length > 0 ||
 					topicSection.entries.length > 0 ? (
 						<div className='mb-2'>

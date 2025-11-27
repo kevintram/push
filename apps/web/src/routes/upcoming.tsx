@@ -204,7 +204,7 @@ function UpcomingPage() {
 						</h1>
 					</div>
 				</div>
-				<div className='px-6 py-4'>
+				<div className='p-4'>
 					{allSections.length === 0 ? (
 						<p className='mt-8 text-center text-muted-foreground text-sm italic'>
 							No upcoming reviews or topics yet.

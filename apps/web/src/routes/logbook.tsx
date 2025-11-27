@@ -49,7 +49,7 @@ function LogbookPage() {
 						</h1>
 					</div>
 				</div>
-				<div className='px-6 py-4'>
+				<div className='p-4'>
 					{sections.length === 0 ? (
 						<p className='mt-8 text-center text-muted-foreground text-sm italic'>
 							No completed reviews yet.
@@ -70,7 +70,7 @@ function LogbookPage() {
 								>
 									<div className='flex items-center justify-between bg-primary-foreground'>
 										<Button
-											className='-translate-x-3 flex items-center gap-2 p-0'
+											className='flex items-center gap-2 p-0'
 											onClick={() => toggleSection(section.id)}
 											variant='ghost'
 										>
@@ -82,7 +82,7 @@ function LogbookPage() {
 									</div>
 
 									{!isSectionCollapsed && (
-										<div className='mt-2 ml-2 border-border border-l-2 pl-4'>
+										<div className='mt-2 ml-5 border-border border-l-2 pl-4'>
 											<h3 className='font-semibold text-md'>
 												Reviews{' '}
 												<span className='text-muted-foreground'>
