@@ -13,6 +13,7 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { createReview } from '~/features/reviews/api'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { createTopicReview } from '~/features/topic_reviews/api'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
@@ -29,8 +30,8 @@ function ReviewsSidebarContent() {
 
 	const { mutateAsync: createReviewMutation } = useMutation({
 		mutationFn: createReview,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 
@@ -42,8 +43,8 @@ function ReviewsSidebarContent() {
 			reviewId: number
 			topicId: number
 		}) => createTopicReview(reviewId, topicId, 'good'),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 

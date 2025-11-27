@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { createParentRelationship } from '../api/createTopicRelationship'
 
 export function useCreateRelationship(onSuccess?: () => void) {
@@ -17,8 +18,8 @@ export function useCreateRelationship(onSuccess?: () => void) {
 		onSuccess: async () => {
 			onSuccess?.()
 
-			// Invalidate topics cache
-			await queryClient.invalidateQueries({ queryKey: ['topics'] })
+			// Invalidate topic and review caches
+			await invalidateTopicsAndReviews(queryClient)
 
 			// Invalidate potential relationships cache since the graph has changed
 			await queryClient.invalidateQueries({

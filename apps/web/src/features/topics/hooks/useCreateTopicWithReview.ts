@@ -4,7 +4,8 @@ import { useCallback } from 'react'
 import { createReview } from '~/features/reviews/api'
 import { createTopicReview } from '~/features/topic_reviews/api/createTopicReview'
 import type { Topic } from '~/models/review-topic.types'
-import { useCreateTopic } from '../api/useCreateTopic'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { useCreateTopic } from './useCreateTopic'
 
 type CreateTopicWithReviewInput = {
 	name?: string
@@ -27,8 +28,8 @@ export function useCreateTopicWithReview() {
 
 	const { mutateAsync: createReviewMutation } = useMutation({
 		mutationFn: createReview,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 

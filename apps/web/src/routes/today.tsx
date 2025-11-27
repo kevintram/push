@@ -2,10 +2,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Star } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useTodayReviews } from '~/features/reviews/api/useTodayReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useTodayTopics } from '~/features/topics/api/useTodayTopics'
+import { useTodayReviews } from '~/features/reviews/hooks'
+import { useTodayTopics } from '~/features/topics/hooks'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/today')({

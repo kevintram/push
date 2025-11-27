@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 type CreateTopicInput = {
 	name?: string
@@ -54,9 +55,9 @@ export function useCreateTopic() {
 
 	return useMutation({
 		mutationFn: createTopic,
-		onSuccess: () => {
-			// Invalidate all topics queries to trigger refetch
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		onSuccess: async () => {
+			// Invalidate topic and review queries to reflect the new topic
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 }

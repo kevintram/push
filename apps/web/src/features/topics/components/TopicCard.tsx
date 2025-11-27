@@ -41,6 +41,7 @@ import { createTopicReview } from '~/features/topic_reviews/api'
 import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
 import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
 import { updateTopic as updateTopicApi } from '../api/updateTopic'
@@ -78,30 +79,30 @@ export function TopicCard({
 
 	const { mutateAsync: deleteTopicMutation } = useMutation({
 		mutationFn: deleteTopicApi,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 
 	const { mutateAsync: updateTopicMutation } = useMutation({
 		mutationFn: updateTopicApi,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 
 	const { mutateAsync: updateReviewMutation } = useMutation({
 		mutationFn: ({ reviewId, rating }: { reviewId: number; rating: Rating }) =>
 			updateTopicReviewApi(reviewId, rating),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 
 	const { mutateAsync: createReviewMutation } = useMutation({
 		mutationFn: createReview,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 
@@ -113,8 +114,8 @@ export function TopicCard({
 			reviewId: number
 			topicId: number
 		}) => createTopicReview(reviewId, topicId, 'good'),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 

@@ -7,6 +7,7 @@ import { createTopicReview } from '~/features/topic_reviews/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
 import type { Topic } from '~/models/review-topic.types'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 interface AddTopicToReviewDialogProps {
 	open: boolean
@@ -60,8 +61,8 @@ export function AddTopicToReviewDialog({
 			reviewId: number
 			topicId: number
 		}) => createTopicReview(reviewId, topicId, 'good'),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 

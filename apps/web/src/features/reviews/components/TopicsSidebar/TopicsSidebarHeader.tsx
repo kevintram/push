@@ -3,7 +3,7 @@ import { Check, X } from 'lucide-react'
 import { useMemo } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import { Separator } from '~/components/ui/Separator'
-import type { TopicSectionKey } from '~/features/topics/api/useSectionedTopics'
+import type { TopicSectionKey } from '~/features/topics/hooks'
 
 type FilterId = TopicSectionKey
 
