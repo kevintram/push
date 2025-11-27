@@ -116,7 +116,7 @@ function TodayPage() {
 						</h1>
 					</div>
 				</div>
-				<div className='px-6 py-4'>
+				<div className='p-4'>
 					{mergedSections.map((section, index) => {
 						const prev = index > 0 ? mergedSections[index - 1] : undefined
 						const reviewEntries = section.reviewsData?.entries ?? []
