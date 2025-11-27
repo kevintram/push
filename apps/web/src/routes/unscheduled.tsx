@@ -63,18 +63,23 @@ function UnscheduledPage() {
 						</h1>
 					</div>
 				</div>
-				<div className='px-6'>
-					<ReviewSection
-						headingClassName={reviewSection.headingClassName}
-						id='unscheduled'
-						isCollapsed={isSectionCollapsed}
-						label={reviewSection.label}
-						onReviewClick={handleReviewClick}
-						onToggleCollapse={toggleSection}
-						onTopicClick={handleTopicClick}
-						reviewEntries={reviewSection.entries}
-						topicEntries={topicSection.entries}
-					/>
+				<div className='px-6 py-4'>
+					{reviewSection.entries.length > 0 ||
+					topicSection.entries.length > 0 ? (
+						<div className='mb-2'>
+							<ReviewSection
+								headingClassName={reviewSection.headingClassName}
+								id='unscheduled'
+								isCollapsed={isSectionCollapsed}
+								label={reviewSection.label}
+								onReviewClick={handleReviewClick}
+								onToggleCollapse={toggleSection}
+								onTopicClick={handleTopicClick}
+								reviewEntries={reviewSection.entries}
+								topicEntries={topicSection.entries}
+							/>
+						</div>
+					) : null}
 				</div>
 			</div>
 		</div>

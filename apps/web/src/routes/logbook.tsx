@@ -49,7 +49,7 @@ function LogbookPage() {
 						</h1>
 					</div>
 				</div>
-				<div className='px-6'>
+				<div className='px-6 py-4'>
 					{sections.length === 0 ? (
 						<p className='mt-8 text-center text-muted-foreground text-sm italic'>
 							No completed reviews yet.
@@ -61,10 +61,11 @@ function LogbookPage() {
 							const prevCollapsed = prev
 								? (collapsedSections[prev.id] ?? false)
 								: false
+							const showTopMargin = index !== 0 && !prevCollapsed
 
 							return (
 								<div
-									className={`mb-2 ${prevCollapsed ? '' : 'mt-12'}`}
+									className={`mb-2 ${showTopMargin ? 'mt-12' : ''}`}
 									key={section.id}
 								>
 									<div className='flex items-center justify-between bg-primary-foreground'>

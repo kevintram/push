@@ -171,9 +171,19 @@ function UpcomingPage() {
 		)
 	}, [futureReviewSections, futureTopicSections])
 
-	// Combine all sections
+	// Combine all sections and filter out ones that shouldn't be shown
 	const allSections = useMemo(() => {
-		return [...soonMergedSections, ...futureMergedSections]
+		const combined = [...soonMergedSections, ...futureMergedSections]
+		return combined.filter(section => {
+			const reviewEntries = section.reviewsData?.entries ?? []
+			const topicEntries = section.topicsData?.entries ?? []
+			const totalCount = reviewEntries.length + topicEntries.length
+			return (
+				totalCount > 0 ||
+				section.id === 'tomorrow' ||
+				section.id === 'nextSevenDays'
+			)
+		})
 	}, [soonMergedSections, futureMergedSections])
 
 	const isInitialLoading = soonReviewsLoading || soonTopicsLoading
@@ -194,7 +204,7 @@ function UpcomingPage() {
 						</h1>
 					</div>
 				</div>
-				<div className='px-6'>
+				<div className='px-6 py-4'>
 					{allSections.length === 0 ? (
 						<p className='mt-8 text-center text-muted-foreground text-sm italic'>
 							No upcoming reviews or topics yet.
@@ -212,23 +222,24 @@ function UpcomingPage() {
 									? (collapsedSections[prev.id] ?? false)
 									: false
 
+								const shouldShowTopMargin = index !== 0 && !prevCollapsed
+
 								return (
-									<ReviewSection
-										alwaysShow={
-											section.id === 'tomorrow' ||
-											section.id === 'nextSevenDays'
-										}
-										id={section.id}
-										isCollapsed={isSectionCollapsed}
+									<div
+										className={`mb-2 ${shouldShowTopMargin ? 'mt-12' : ''}`}
 										key={section.id}
-										label={section.label}
-										onReviewClick={handleReviewClick}
-										onToggleCollapse={toggleSection}
-										onTopicClick={handleTopicClick}
-										reviewEntries={reviewEntries}
-										showPreviousCollapsed={prevCollapsed}
-										topicEntries={topicEntries}
-									/>
+									>
+										<ReviewSection
+											id={section.id}
+											isCollapsed={isSectionCollapsed}
+											label={section.label}
+											onReviewClick={handleReviewClick}
+											onToggleCollapse={toggleSection}
+											onTopicClick={handleTopicClick}
+											reviewEntries={reviewEntries}
+											topicEntries={topicEntries}
+										/>
+									</div>
 								)
 							})}
 

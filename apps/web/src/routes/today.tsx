@@ -86,10 +86,18 @@ function TodayPage() {
 		// Convert to array and sort by predefined order
 		const sectionOrder = ['overdue', 'today']
 
-		return Array.from(sectionMap.values()).sort((a, b) => {
+		const sorted = Array.from(sectionMap.values()).sort((a, b) => {
 			const aIndex = sectionOrder.indexOf(a.id)
 			const bIndex = sectionOrder.indexOf(b.id)
 			return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex)
+		})
+
+		// Filter out sections that shouldn't be shown
+		return sorted.filter(section => {
+			const reviewEntries = section.reviewsData?.entries ?? []
+			const topicEntries = section.topicsData?.entries ?? []
+			const totalCount = reviewEntries.length + topicEntries.length
+			return totalCount > 0 || section.id === 'today'
 		})
 	}, [reviewSections, topicSections])
 
@@ -108,7 +116,7 @@ function TodayPage() {
 						</h1>
 					</div>
 				</div>
-				<div className='px-6'>
+				<div className='px-6 py-4'>
 					{mergedSections.map((section, index) => {
 						const prev = index > 0 ? mergedSections[index - 1] : undefined
 						const reviewEntries = section.reviewsData?.entries ?? []
@@ -119,21 +127,25 @@ function TodayPage() {
 							? (collapsedSections[prev.id] ?? false)
 							: false
 
+						const showTopMargin = index !== 0 && !prevCollapsed
+
 						return (
-							<ReviewSection
-								alwaysShow={section.id === 'today'}
-								headingClassName={section.headingClassName}
-								id={section.id}
-								isCollapsed={isSectionCollapsed}
+							<div
+								className={`mb-2 ${showTopMargin ? 'mt-12' : ''}`}
 								key={section.id}
-								label={section.label}
-								onReviewClick={handleReviewClick}
-								onToggleCollapse={toggleSection}
-								onTopicClick={handleTopicClick}
-								reviewEntries={reviewEntries}
-								showPreviousCollapsed={prevCollapsed}
-								topicEntries={topicEntries}
-							/>
+							>
+								<ReviewSection
+									headingClassName={section.headingClassName}
+									id={section.id}
+									isCollapsed={isSectionCollapsed}
+									label={section.label}
+									onReviewClick={handleReviewClick}
+									onToggleCollapse={toggleSection}
+									onTopicClick={handleTopicClick}
+									reviewEntries={reviewEntries}
+									topicEntries={topicEntries}
+								/>
+							</div>
 						)
 					})}
 				</div>
