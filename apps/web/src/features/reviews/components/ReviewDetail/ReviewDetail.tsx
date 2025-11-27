@@ -8,6 +8,7 @@ import { deleteTopicReview } from '~/features/topic_reviews/api'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { deleteReview as deleteReviewApi } from '../../api/deleteReview'
 import { updateReview as updateReviewApi } from '../../api/updateReview'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
@@ -28,15 +29,15 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 
 	const { mutateAsync: updateReviewMutation } = useMutation({
 		mutationFn: updateReviewApi,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 
 	const { mutateAsync: deleteReviewMutation } = useMutation({
 		mutationFn: deleteReviewApi,
 		onSuccess: async () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+			await invalidateTopicsAndReviews(queryClient)
 			if (onDelete) {
 				await onDelete()
 			}
@@ -45,8 +46,8 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 
 	const { mutateAsync: deleteTopicReviewMutation } = useMutation({
 		mutationFn: deleteTopicReview,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 

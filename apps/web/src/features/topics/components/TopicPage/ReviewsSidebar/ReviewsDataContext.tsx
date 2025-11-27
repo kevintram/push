@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useMemo } from 'react'
 import { type Review as ApiReview, getReviews } from '~/features/reviews/api'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 // Context interface
 export interface ReviewsContextValue {
@@ -65,7 +66,7 @@ export function ReviewsDataProvider({
 
 	const revalidateReviews = useCallback(() => {
 		refetchReviews()
-		queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		invalidateTopicsAndReviews(queryClient)
 	}, [refetchReviews, queryClient])
 
 	const contextValue: ReviewsContextValue = {

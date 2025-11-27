@@ -18,6 +18,7 @@ import {
 } from '~/components/ui/Tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import type { Review } from '~/models/review-topic.types'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { deleteReview, updateReview } from '../api'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { ReviewTopicBadges } from './ReviewTopicBadges'
@@ -41,15 +42,15 @@ export function ReviewItem({ entry, onReviewClick }: ReviewItemProps) {
 
 	const { mutateAsync: updateReviewMutation } = useMutation({
 		mutationFn: updateReview,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 
 	const { mutateAsync: deleteReviewMutation } = useMutation({
 		mutationFn: deleteReview,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 

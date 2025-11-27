@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 import * as v from 'valibot'
 import { type Review, ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 export type SectionKey =
 	| 'overdue'
@@ -195,8 +196,8 @@ export function useSectionedReviews(options?: UseSectionedReviewsOptions) {
 
 	const { mutateAsync: insertReviewMutation } = useMutation({
 		mutationFn: createReview,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 

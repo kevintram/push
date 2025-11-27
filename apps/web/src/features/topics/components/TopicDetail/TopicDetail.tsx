@@ -12,6 +12,7 @@ import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { deleteTopic as deleteTopicApi } from '../../api/deleteTopic'
 import { updateTopic as updateTopicApi } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
@@ -31,15 +32,15 @@ export function TopicDetail({ onDelete, headerActions }: TopicDetailProps) {
 
 	const { mutateAsync: updateTopicMutation } = useMutation({
 		mutationFn: updateTopicApi,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
 
 	const { mutateAsync: deleteTopic } = useMutation({
 		mutationFn: deleteTopicApi,
 		onSuccess: async () => {
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
+			await invalidateTopicsAndReviews(queryClient)
 			if (onDelete) {
 				await onDelete()
 			}
