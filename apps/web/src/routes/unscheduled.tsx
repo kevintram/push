@@ -2,10 +2,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { CircleDashed } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useUnscheduledReviews } from '~/features/reviews/api/useUnscheduledReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useUnscheduledTopics } from '~/features/topics/api/useUnscheduledTopics'
+import { useUnscheduledReviews } from '~/features/reviews/hooks'
+import { useUnscheduledTopics } from '~/features/topics/hooks'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/unscheduled')({

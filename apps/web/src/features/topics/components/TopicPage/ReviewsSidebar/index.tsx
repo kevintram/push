@@ -13,9 +13,9 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { createReview } from '~/features/reviews/api'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { createTopicReview } from '~/features/topic_reviews/api'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 function roundToTwoDecimals(num: number): number {
 	return Math.round(num * 100) / 100

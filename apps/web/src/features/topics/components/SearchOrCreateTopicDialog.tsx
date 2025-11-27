@@ -13,7 +13,7 @@ import {
 import { Input } from '~/components/ui/Input'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
 import type { Topic } from '~/models/review-topic.types'
-import { useCreateTopic } from '../api/useCreateTopic'
+import { useCreateTopic } from '../hooks/useCreateTopic'
 import { TopicCard } from './TopicCard'
 
 interface SearchResult {

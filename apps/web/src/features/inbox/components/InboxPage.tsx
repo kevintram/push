@@ -2,7 +2,7 @@ import { Inbox } from 'lucide-react'
 import { useCallback } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import type { Topic } from '~/models/review-topic.types'
-import { useInboxTopics } from '../api'
+import { useInboxTopics } from '../hooks'
 import { InboxList } from './InboxList'
 
 export function InboxPage() {

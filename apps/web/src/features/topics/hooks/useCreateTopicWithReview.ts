@@ -5,7 +5,7 @@ import { createReview } from '~/features/reviews/api'
 import { createTopicReview } from '~/features/topic_reviews/api/createTopicReview'
 import type { Topic } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { useCreateTopic } from '../api/useCreateTopic'
+import { useCreateTopic } from './useCreateTopic'
 
 type CreateTopicWithReviewInput = {
 	name?: string
