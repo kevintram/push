@@ -42,6 +42,21 @@ function UpcomingPage() {
 		}
 	}, [futureReviewsFetched, futureTopicsFetched])
 
+	useEffect(() => {
+		const totalEntries =
+			soonReviewSections.reduce(
+				(sum, section) => sum + section.entries.length,
+				0
+			) +
+			soonTopicSections.reduce(
+				(sum, section) => sum + section.entries.length,
+				0
+			)
+		if (totalEntries < 20) {
+			setShowFuture(true)
+		}
+	}, [soonReviewSections, soonTopicSections])
+
 	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
 
 	const [collapsedSections, setCollapsedSections] = useState<
