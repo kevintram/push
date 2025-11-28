@@ -3,12 +3,12 @@ import { use, useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Rating, Topic } from '~/models/review-topic.types'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
+import { ReviewTopicCard } from './ReviewTopicCard'
 
 const MIN_WIDTH = 210
-const MIN_HEIGHT = 96
+const MIN_HEIGHT = 72
 
 type ListItem = {
 	type: 'topic'
@@ -78,15 +78,13 @@ export function ReviewTopicsPanel({
 			if (!(review && item.topicReviewId)) return null
 
 			return (
-				<TopicCard
+				<ReviewTopicCard
 					minHeight={MIN_HEIGHT}
-					onRemoveRelationship={() => onRemoveTopicReview(item.topicReviewId!)}
+					onRemoveFromReview={onRemoveTopicReview}
 					onTopicClick={handleTopicClick}
 					rating={item.rating}
-					removeRelationshipText='Remove from review'
-					reviewId={item.topicReviewId}
-					reviews={item.topic.reviews ?? []}
 					topic={item.topic}
+					topicReviewId={item.topicReviewId}
 				/>
 			)
 		},

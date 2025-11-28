@@ -1,9 +1,16 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
+import { CalendarIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Button } from '~/components/ui/Button'
 import { Checkbox } from '~/components/ui/Checkbox'
 import { Textarea } from '~/components/ui/Textarea'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
 import { deleteTopicReview } from '~/features/topic_reviews/api'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -13,6 +20,7 @@ import { deleteReview as deleteReviewApi } from '../../api/deleteReview'
 import { updateReview as updateReviewApi } from '../../api/updateReview'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import { AddTopicToReviewDialog } from '../AddTopicToReviewDialog'
+import { DatePickerDropdown } from '../DatePickerDropdown'
 import { ReviewDetailHeader } from './ReviewDetailHeader'
 import { ReviewDetailSkeleton } from './ReviewDetailSkeleton'
 import { ReviewTopicsPanel } from './ReviewTopicsPanel'
@@ -26,6 +34,7 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 	const { review, isLoading } = use(ReviewContext)
 	const queryClient = useQueryClient()
 	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
+	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 
 	const { mutateAsync: updateReviewMutation } = useMutation({
 		mutationFn: updateReviewApi,
@@ -116,9 +125,34 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 					})
 				}
 			}
+			setIsDatePopoverOpen(false)
 		},
 		[review?.id, review?.completed_at, updateReviewMutation]
 	)
+
+	const selectedDate = review?.completed_at
+		? dayjs(review.completed_at).toDate()
+		: review?.scheduled_at
+			? dayjs(review.scheduled_at).toDate()
+			: null
+
+	const effectiveDate = review?.effective_date
+		? dayjs(review.effective_date).toDate()
+		: null
+
+	const relativeDate = useMemo(() => {
+		if (!effectiveDate) return 'No date'
+
+		const today = dayjs().startOf('day')
+		const dateDay = dayjs(effectiveDate).startOf('day')
+		const diffDays = dateDay.diff(today, 'day')
+
+		if (diffDays === 0) return 'Today'
+		if (diffDays === 1) return 'Tomorrow'
+		if (diffDays === -1) return 'Yesterday'
+		if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
+		return `in ${diffDays}d`
+	}, [effectiveDate])
 
 	const { value: description, onChange: onDescriptionChange } = useAutoSave({
 		initialValue: review?.description ?? '',
@@ -158,9 +192,7 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 			<div className='sticky top-0 z-10 w-full border-b'>
 				<ReviewDetailHeader
 					headerActions={headerActions}
-					onDateChange={handleDateChange}
 					onDelete={handleDelete}
-					review={review}
 				/>
 			</div>
 
@@ -174,23 +206,56 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 					onCheckedChange={handleCheckboxChange}
 				/>
 				<div className='flex-1'>
-					<div className='pb-4'>
-						<Textarea
-							className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 font-semibold focus:outline-none focus-visible:border-none focus-visible:ring-0'
-							onChange={onDescriptionChange}
-							placeholder='Description'
-							ref={descriptionRef}
-							spellCheck={false}
-							value={description}
-						/>
-						<Textarea
-							className='!bg-transparent m-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-							name='notes'
-							onChange={onNotesChange}
-							placeholder='Notes'
-							spellCheck={false}
-							value={notes}
-						/>
+					<div className='flex items-start justify-between gap-4 pb-4'>
+						<div className='flex flex-1 flex-col'>
+							<Textarea
+								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 font-semibold focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								onChange={onDescriptionChange}
+								placeholder='Description'
+								ref={descriptionRef}
+								spellCheck={false}
+								value={description}
+							/>
+							<Textarea
+								className='!bg-transparent m-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+								name='notes'
+								onChange={onNotesChange}
+								placeholder='Notes'
+								spellCheck={false}
+								value={notes}
+							/>
+						</div>
+						<Tooltip>
+							<DatePickerDropdown
+								isOpen={isDatePopoverOpen}
+								onDateChange={handleDateChange}
+								onOpenChange={setIsDatePopoverOpen}
+								selectedDate={selectedDate}
+								trigger={
+									<TooltipTrigger asChild={true}>
+										<Button
+											className={
+												isOverdueValue
+													? 'text-red-600 dark:text-red-400'
+													: relativeDate === 'Today'
+														? 'text-blue-600 dark:text-blue-400'
+														: ''
+											}
+											size='sm'
+											variant='ghost'
+										>
+											<CalendarIcon className='h-4 w-4' />
+											<span className='text-sm'>{relativeDate}</span>
+										</Button>
+									</TooltipTrigger>
+								}
+							/>
+							{effectiveDate && (
+								<TooltipContent>
+									{dayjs(effectiveDate).format('MMMM D, YYYY')}
+								</TooltipContent>
+							)}
+						</Tooltip>
 					</div>
 					<div className='w-full flex-1'>
 						<ReviewTopicsPanel

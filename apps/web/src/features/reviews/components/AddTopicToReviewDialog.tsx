@@ -8,6 +8,7 @@ import { searchTopics } from '~/features/topics/api/searchTopics'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
 import type { Topic } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { AddTopicCard } from './AddTopicCard'
 
 interface AddTopicToReviewDialogProps {
 	open: boolean
@@ -92,7 +93,7 @@ export function AddTopicToReviewDialog({
 		[review, createTopicReviewMutation, openTopicDialog]
 	)
 
-	const handleTopicSelected = useCallback(
+	const handleTopicClick = useCallback(
 		async (topic: Topic) => {
 			if (!review) return
 
@@ -101,11 +102,26 @@ export function AddTopicToReviewDialog({
 					reviewId: review.id,
 					topicId: topic.id
 				})
+
+				// Close the dialog immediately
+				onOpenChange(false)
 			} catch (_error) {
 				// Handle error silently for now
 			}
 		},
-		[review, createTopicReviewMutation]
+		[review, createTopicReviewMutation, onOpenChange]
+	)
+
+	const renderAddTopicCard = useCallback(
+		(topic: Topic) => (
+			<AddTopicCard
+				minHeight={72}
+				onTopicClick={handleTopicClick}
+				searchQuery={debouncedQuery}
+				topic={topic}
+			/>
+		),
+		[handleTopicClick, debouncedQuery]
 	)
 
 	const useSearch = useCallback(
@@ -125,8 +141,8 @@ export function AddTopicToReviewDialog({
 			onOpenChange={onOpenChange}
 			onSearchQueryChange={setSearchQuery}
 			onTopicCreated={handleTopicCreated}
-			onTopicSelected={handleTopicSelected}
 			open={open}
+			renderItem={renderAddTopicCard}
 			title='Add Topic to Review'
 			useSearch={useSearch}
 		/>

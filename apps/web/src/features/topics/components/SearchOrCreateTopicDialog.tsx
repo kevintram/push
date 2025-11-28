@@ -34,6 +34,7 @@ interface SearchOrCreateTopicDialogProps {
 	useSearch?: (query: string) => SearchResult
 	defaultQuery?: string
 	onSearchQueryChange?: (query: string) => void
+	renderItem?: (topic: Topic) => ReactNode
 }
 
 const MIN_CARD_WIDTH = 280
@@ -49,7 +50,8 @@ export function SearchOrCreateTopicDialog({
 	onTopicSelected,
 	useSearch,
 	defaultQuery = '',
-	onSearchQueryChange
+	onSearchQueryChange,
+	renderItem: customRenderItem
 }: SearchOrCreateTopicDialogProps) {
 	const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
 	const [searchQuery, setSearchQuery] = useState(defaultQuery)
@@ -198,16 +200,23 @@ export function SearchOrCreateTopicDialog({
 	}, [])
 
 	const renderItem = useCallback(
-		(topic: Topic) => (
-			<TopicCard
-				minHeight={MIN_HEIGHT}
-				onTopicClick={handleTopicSelect}
-				reviews={topic.reviews ?? []}
-				searchQuery={searchResults.debouncedQuery}
-				topic={topic}
-			/>
-		),
-		[handleTopicSelect, searchResults.debouncedQuery]
+		(topic: Topic) => {
+			// Use custom renderItem if provided, otherwise use default TopicCard
+			if (customRenderItem) {
+				return customRenderItem(topic)
+			}
+
+			return (
+				<TopicCard
+					minHeight={MIN_HEIGHT}
+					onTopicClick={handleTopicSelect}
+					reviews={topic.reviews ?? []}
+					searchQuery={searchResults.debouncedQuery}
+					topic={topic}
+				/>
+			)
+		},
+		[customRenderItem, handleTopicSelect, searchResults.debouncedQuery]
 	)
 
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
