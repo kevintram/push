@@ -3,7 +3,7 @@ import { ChevronDown, GitPullRequestClosed, MoreHorizontal } from 'lucide-react'
 import type { KeyboardEvent } from 'react'
 import { useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Card, CardContent } from '~/components/ui/Card'
+import { Card, CardContent, CardHeader } from '~/components/ui/Card'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -30,7 +30,7 @@ export function ReviewTopicCard({
 	topicReviewId,
 	onTopicClick,
 	onRemoveFromReview,
-	minHeight = 96
+	minHeight = 72
 }: ReviewTopicCardProps) {
 	const queryClient = useQueryClient()
 
@@ -74,110 +74,104 @@ export function ReviewTopicCard({
 
 	return (
 		<Card
-			className='group relative cursor-pointer p-0 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+			className={`${rating ? 'gap-3' : 'gap-0'} cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
 			onClick={handleActivate}
 			onKeyDown={handleKeyDown}
 			role='button'
+			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardContent
-				className='flex h-full flex-col gap-3 p-3'
-				style={{ minHeight: `${minHeight}px` }}
-			>
-				{/* Top row - Rating and More menu */}
-				<div className='flex items-center'>
-					{/* Rating dropdown - left */}
-					{rating && (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild={true}>
-								<Button
-									className='gap-1 rounded-lg text-xs capitalize'
-									onClick={e => e.stopPropagation()}
-									size='sm'
-									variant='outline'
-								>
-									{getRatingIcon(rating)}
-									{rating}
-									<ChevronDown className='h-3 w-3' />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align='start' side='bottom' sideOffset={2}>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('miss')
-									}}
-								>
-									{getRatingIcon('miss')}
-									<span className='ml-2 capitalize'>Miss</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('hard')
-									}}
-								>
-									{getRatingIcon('hard')}
-									<span className='ml-2 capitalize'>Hard</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('good')
-									}}
-								>
-									{getRatingIcon('good')}
-									<span className='ml-2 capitalize'>Good</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('easy')
-									}}
-								>
-									{getRatingIcon('easy')}
-									<span className='ml-2 capitalize'>Easy</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					)}
-					<div className='flex-1' />
-
-					{/* More menu - right */}
+			<CardHeader className='flex items-center'>
+				{/* Rating dropdown - left */}
+				{rating && (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true}>
 							<Button
-								className='h-5 w-5 p-0'
+								className='gap-1 rounded-lg text-xs capitalize'
 								onClick={e => e.stopPropagation()}
 								size='sm'
-								title='More options'
-								variant='ghost'
+								variant='outline'
 							>
-								<MoreHorizontal className='h-3 w-3' />
+								{getRatingIcon(rating)}
+								{rating}
+								<ChevronDown className='h-3 w-3' />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-							<DropdownMenuItem onClick={handleRemoveFromReview}>
-								<GitPullRequestClosed className='mr-2 h-4 w-4' />
-								Remove from review
+						<DropdownMenuContent align='start' side='bottom' sideOffset={2}>
+							<DropdownMenuItem
+								onClick={e => {
+									e.stopPropagation()
+									handleRatingChange('miss')
+								}}
+							>
+								{getRatingIcon('miss')}
+								<span className='ml-2 capitalize'>Miss</span>
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={e => {
+									e.stopPropagation()
+									handleRatingChange('hard')
+								}}
+							>
+								{getRatingIcon('hard')}
+								<span className='ml-2 capitalize'>Hard</span>
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={e => {
+									e.stopPropagation()
+									handleRatingChange('good')
+								}}
+							>
+								{getRatingIcon('good')}
+								<span className='ml-2 capitalize'>Good</span>
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={e => {
+									e.stopPropagation()
+									handleRatingChange('easy')
+								}}
+							>
+								{getRatingIcon('easy')}
+								<span className='ml-2 capitalize'>Easy</span>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
-				</div>
+				)}
+				<div className='flex-1' />
 
+				{/* More menu - right */}
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild={true}>
+						<Button
+							className='h-3 w-3 p-0'
+							onClick={e => e.stopPropagation()}
+							size='sm'
+							title='More options'
+							variant='ghost'
+						>
+							<MoreHorizontal className='h-3 w-3' />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+						<DropdownMenuItem onClick={handleRemoveFromReview}>
+							<GitPullRequestClosed className='mr-2 h-4 w-4' />
+							Remove from review
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</CardHeader>
+			<CardContent className='flex flex-col gap-0.5'>
 				{/* Content - Name and Notes */}
-				<div className='flex flex-col gap-0.5 px-2'>
-					{topic.name && (
-						<h3 className='break-word font-semibold leading-tight [overflow-wrap:anywhere]'>
-							{topic.name}
-						</h3>
-					)}
-					{topic.notes && (
-						<p className='break-word text-sm [overflow-wrap:anywhere]'>
-							{topic.notes}
-						</p>
-					)}
-				</div>
+				{topic.name && (
+					<h3 className='break-word font-semibold leading-tight [overflow-wrap:anywhere]'>
+						{topic.name}
+					</h3>
+				)}
+				{topic.notes && (
+					<p className='break-word text-sm [overflow-wrap:anywhere]'>
+						{topic.notes}
+					</p>
+				)}
 			</CardContent>
 		</Card>
 	)

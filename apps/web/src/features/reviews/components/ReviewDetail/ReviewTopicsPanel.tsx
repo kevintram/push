@@ -8,7 +8,7 @@ import { ReviewContext } from '../../stores/SelectedReviewContext'
 import { ReviewTopicCard } from './ReviewTopicCard'
 
 const MIN_WIDTH = 210
-const MIN_HEIGHT = 96
+const MIN_HEIGHT = 72
 
 type ListItem = {
 	type: 'topic'
