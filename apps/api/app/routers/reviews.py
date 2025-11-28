@@ -30,7 +30,7 @@ async def read_reviews(
     stmt = (
         select(Review)
         .where(Review.user_id == user_id)
-        .order_by(Review.completed_at.asc().nulls_first(), Review.scheduled_at.asc())
+        .order_by(Review.completed_at.asc().nulls_first(), Review.scheduled_at.asc(), Review.id.asc())
         .options(selectinload(Review.topic_reviews).selectinload(TopicReview.topic))
     )
 
