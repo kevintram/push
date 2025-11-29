@@ -281,7 +281,6 @@ export function AddTopicToReviewDialog({
 							size='default'
 							variant='secondary'
 						>
-							<SquarePen className='h-4 w-4' />
 							Create New
 						</Button>
 						{topicCount !== undefined && (
@@ -295,7 +294,7 @@ export function AddTopicToReviewDialog({
 										size='default'
 										variant='secondary'
 									>
-										{topicCount} {topicCount === 1 ? 'Topic' : 'Topics'}
+										{topicCount} Added
 									</Button>
 								</PopoverTrigger>
 								<PopoverContent
