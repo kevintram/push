@@ -256,7 +256,7 @@ export function SearchOrCreateTopicDialog({
 						variant='secondary'
 					>
 						<SquarePen className='h-4 w-4' />
-						New Topic
+						Create New
 					</Button>
 				</div>
 			</DialogHeader>
