@@ -1,12 +1,12 @@
-import { Plus, User2 } from 'lucide-react'
-import { use, useCallback, useState } from 'react'
-import { Badge } from '~/components/ui/Badge'
+import { User2 } from 'lucide-react'
+import { use, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { useTopicParents } from '~/features/topics/hooks/useTopicParents'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { TopicBadge } from '../../TopicBadge'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
+import { AddRelationshipDropdown } from './AddRelationshipDropdown'
 
 export function TopicParentsPanel() {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
@@ -16,10 +16,6 @@ export function TopicParentsPanel() {
 	const { data: parents = [] } = useTopicParents(selectedTopic?.id)
 
 	const deleteRelationship = useDeleteRelationship()
-
-	const handleAddParent = useCallback(() => {
-		setShowCreateDialog(true)
-	}, [])
 
 	return (
 		<>
@@ -45,13 +41,12 @@ export function TopicParentsPanel() {
 						}}
 					/>
 				))}
-				<Badge
-					className='cursor-pointer items-center border-dashed py-1 hover:bg-muted/50'
-					onClick={handleAddParent}
-					variant='outline'
-				>
-					<Plus className='h-3 w-3' />
-				</Badge>
+				<AddRelationshipDropdown
+					onOpenSearchDialog={() => setShowCreateDialog(true)}
+					relationshipType='parent'
+					topicId={selectedTopic?.id}
+					variant='badge'
+				/>
 			</div>
 
 			<AddRelationshipDialog

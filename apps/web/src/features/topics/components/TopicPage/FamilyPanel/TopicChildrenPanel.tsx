@@ -1,7 +1,6 @@
-import { Baby, Plus } from 'lucide-react'
+import { Baby } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
-import { Card, CardContent } from '~/components/ui/Card'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
@@ -10,6 +9,7 @@ import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/review-topic.types'
 import { TopicCard } from '../../TopicCard'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
+import { AddRelationshipDropdown } from './AddRelationshipDropdown'
 
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
@@ -32,10 +32,6 @@ export function TopicChildrenPanel({
 	const { data: children = [] } = useTopicChildren(selectedTopic?.id)
 
 	const createRelationship = useCreateRelationship()
-
-	const handleAddChild = useCallback(() => {
-		setShowCreateDialog(true)
-	}, [])
 
 	const handleTopicCreated = useCallback(
 		async (topic: Topic) => {
@@ -90,20 +86,19 @@ export function TopicChildrenPanel({
 		(item: ListItem) => {
 			if (item.type === 'add-button') {
 				return (
-					<Card
-						className='cursor-pointer border-2 border-dashed transition-colors hover:bg-muted/50'
-						onClick={handleAddChild}
-					>
-						<CardContent className='flex items-center justify-center p-3'>
-							<Plus className='h-4 w-4 text-muted-foreground' />
-						</CardContent>
-					</Card>
+					<AddRelationshipDropdown
+						onOpenSearchDialog={() => setShowCreateDialog(true)}
+						onRelationshipCreated={handleTopicCreated}
+						relationshipType='child'
+						topicId={selectedTopic?.id}
+						variant='card'
+					/>
 				)
 			}
 
 			return <ChildCard child={item.child} onChildClick={handleChildClick} />
 		},
-		[handleAddChild, handleChildClick]
+		[handleChildClick, handleTopicCreated, selectedTopic?.id]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {
