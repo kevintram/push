@@ -1,4 +1,5 @@
 import { Baby } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
@@ -19,11 +20,17 @@ type ListItem = { type: 'add-button' } | { type: 'child'; child: Topic }
 interface TopicChildrenPanelProps {
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
+	renderChildCard?: (child: Topic, removeRelationship: () => void) => ReactNode
+	onChildClick?: (child: Topic) => void
+	onTopicCreated?: (topic: Topic) => void
 }
 
 export function TopicChildrenPanel({
 	getScrollElement,
-	scrollMargin
+	scrollMargin,
+	renderChildCard,
+	onChildClick,
+	onTopicCreated
 }: TopicChildrenPanelProps = {}) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { topic: selectedTopic } = use(TopicContext)
@@ -32,6 +39,7 @@ export function TopicChildrenPanel({
 	const { data: children = [] } = useTopicChildren(selectedTopic?.id)
 
 	const createRelationship = useCreateRelationship()
+	const deleteRelationship = useDeleteRelationship()
 
 	const handleTopicCreated = useCallback(
 		async (topic: Topic) => {
@@ -43,16 +51,21 @@ export function TopicChildrenPanel({
 					parent: selectedTopic.id,
 					child: topic.id
 				})
+				onTopicCreated?.(topic)
 			} catch (_error) {}
 		},
-		[selectedTopic, createRelationship]
+		[selectedTopic, createRelationship, onTopicCreated]
 	)
 
 	const handleChildClick = useCallback(
 		(child: Topic) => {
+			if (onChildClick) {
+				onChildClick(child)
+				return
+			}
 			openTopicDialog(child.id)
 		},
-		[openTopicDialog]
+		[onChildClick, openTopicDialog]
 	)
 
 	// Combine add button and children into a single array
@@ -89,6 +102,7 @@ export function TopicChildrenPanel({
 					<AddRelationshipDropdown
 						onOpenSearchDialog={() => setShowCreateDialog(true)}
 						onRelationshipCreated={handleTopicCreated}
+						onTopicOpen={handleChildClick}
 						relationshipType='child'
 						topicId={selectedTopic?.id}
 						variant='card'
@@ -96,9 +110,33 @@ export function TopicChildrenPanel({
 				)
 			}
 
-			return <ChildCard child={item.child} onChildClick={handleChildClick} />
+			const handleRemoveRelationship = () => {
+				if (!selectedTopic) return
+				deleteRelationship.mutate({
+					parent: selectedTopic.id,
+					child: item.child.id
+				})
+			}
+
+			if (renderChildCard) {
+				return renderChildCard(item.child, handleRemoveRelationship)
+			}
+
+			return (
+				<ChildCard
+					child={item.child}
+					onChildClick={handleChildClick}
+					onRemoveRelationship={handleRemoveRelationship}
+				/>
+			)
 		},
-		[handleChildClick, handleTopicCreated, selectedTopic?.id]
+		[
+			deleteRelationship,
+			handleChildClick,
+			handleTopicCreated,
+			renderChildCard,
+			selectedTopic
+		]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {
@@ -132,6 +170,7 @@ export function TopicChildrenPanel({
 			<AddRelationshipDialog
 				onOpenChange={setShowCreateDialog}
 				onRelationshipCreated={handleTopicCreated}
+				onTopicOpen={handleChildClick}
 				open={showCreateDialog}
 				relationshipType='child'
 				topicId={selectedTopic?.id}
@@ -143,17 +182,14 @@ export function TopicChildrenPanel({
 interface ChildCardProps {
 	child: Topic
 	onChildClick?: (child: Topic) => void
+	onRemoveRelationship?: () => void
 }
 
-function ChildCard({ child, onChildClick }: ChildCardProps) {
-	const { topic: selectedTopic } = use(TopicContext)
-	const deleteRelationship = useDeleteRelationship()
-
-	const handleRemoveRelationship = () => {
-		if (!selectedTopic) return
-		deleteRelationship.mutate({ parent: selectedTopic.id, child: child.id })
-	}
-
+function ChildCard({
+	child,
+	onChildClick,
+	onRemoveRelationship
+}: ChildCardProps) {
 	const handleClick = useCallback(
 		(_topic: Topic) => {
 			onChildClick?.(child)
@@ -164,7 +200,7 @@ function ChildCard({ child, onChildClick }: ChildCardProps) {
 	return (
 		<TopicCard
 			minHeight={MIN_HEIGHT}
-			onRemoveRelationship={handleRemoveRelationship}
+			onRemoveRelationship={onRemoveRelationship}
 			onTopicClick={handleClick}
 			reviews={child.reviews ?? []}
 			topic={child}

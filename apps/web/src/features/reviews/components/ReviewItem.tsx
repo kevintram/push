@@ -26,9 +26,14 @@ import { ReviewTopicBadges } from './ReviewTopicBadges'
 interface ReviewItemProps {
 	entry: Review
 	onReviewClick?: (reviewId: number) => void
+	readonly?: boolean
 }
 
-export function ReviewItem({ entry, onReviewClick }: ReviewItemProps) {
+export function ReviewItem({
+	entry,
+	onReviewClick,
+	readonly = false
+}: ReviewItemProps) {
 	const queryClient = useQueryClient()
 
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
@@ -97,10 +102,11 @@ export function ReviewItem({ entry, onReviewClick }: ReviewItemProps) {
 	}, [deleteReviewMutation, entry?.id])
 
 	const handleReviewClick = useCallback(() => {
+		if (readonly) return
 		if (entry.id) {
 			onReviewClick?.(entry.id)
 		}
-	}, [entry.id, onReviewClick])
+	}, [entry.id, onReviewClick, readonly])
 
 	const effectiveDate: Date | null = useMemo(() => {
 		if (entry.effective_date) {
@@ -133,7 +139,7 @@ export function ReviewItem({ entry, onReviewClick }: ReviewItemProps) {
 	return (
 		<Card className='rounded-none border-0 border-b bg-transparent py-2 shadow-none'>
 			<CardContent
-				className='cursor-pointer rounded-md p-1 hover:bg-muted/50'
+				className={`rounded-md p-1 ${readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'}`}
 				onClick={handleReviewClick}
 			>
 				<div className='flex flex-col'>
@@ -146,6 +152,7 @@ export function ReviewItem({ entry, onReviewClick }: ReviewItemProps) {
 									? 'border-red-600 dark:border-red-700 dark:bg-red-700'
 									: ''
 							}
+							disabled={readonly}
 							onCheckedChange={handleCheckboxChange}
 							onClick={e => e.stopPropagation()}
 						/>
@@ -156,6 +163,7 @@ export function ReviewItem({ entry, onReviewClick }: ReviewItemProps) {
 						</span>
 						<Tooltip>
 							<DatePickerDropdown
+								disabled={readonly}
 								isOpen={isDatePopoverOpen}
 								onDateChange={handleDateSave}
 								onOpenChange={setIsDatePopoverOpen}
@@ -163,13 +171,14 @@ export function ReviewItem({ entry, onReviewClick }: ReviewItemProps) {
 								trigger={
 									<TooltipTrigger asChild={true}>
 										<Button
-											className={`text-xs hover:bg-muted/50 ${
+											className={`text-xs ${readonly ? 'cursor-default opacity-50' : 'hover:bg-muted/50'} ${
 												isOverdueValue
 													? 'text-red-600 dark:text-red-400'
 													: relativeDate === 'Today'
 														? 'text-blue-600 dark:text-blue-400'
 														: ''
 											}`}
+											disabled={readonly}
 											onClick={e => e.stopPropagation()}
 											size='sm'
 											variant='ghost'
@@ -184,35 +193,37 @@ export function ReviewItem({ entry, onReviewClick }: ReviewItemProps) {
 								{effectiveDate && dayjs(effectiveDate).format('MMMM D, YYYY')}
 							</TooltipContent>
 						</Tooltip>
-						<DropdownMenu onOpenChange={setIsDropdownOpen}>
-							<DropdownMenuTrigger asChild={true}>
-								<Button
-									className='h-6 w-6 p-0'
-									onClick={e => e.stopPropagation()}
-									size='sm'
-									title='More options'
-									variant='ghost'
+						{!readonly && (
+							<DropdownMenu onOpenChange={setIsDropdownOpen}>
+								<DropdownMenuTrigger asChild={true}>
+									<Button
+										className='h-6 w-6 p-0'
+										onClick={e => e.stopPropagation()}
+										size='sm'
+										title='More options'
+										variant='ghost'
+									>
+										<MoreHorizontal className='h-3 w-3' />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent
+									align='end'
+									avoidCollisions={true}
+									side='bottom'
+									sideOffset={4}
 								>
-									<MoreHorizontal className='h-3 w-3' />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent
-								align='end'
-								avoidCollisions={true}
-								side='bottom'
-								sideOffset={4}
-							>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleDelete()
-									}}
-								>
-									<Trash className='mr-2 h-4 w-4' />
-									Delete
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+									<DropdownMenuItem
+										onClick={e => {
+											e.stopPropagation()
+											handleDelete()
+										}}
+									>
+										<Trash className='mr-2 h-4 w-4' />
+										Delete
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						)}
 					</div>
 					{/* Row 2: Topic Badges */}
 					<ReviewTopicBadges review={entry} />

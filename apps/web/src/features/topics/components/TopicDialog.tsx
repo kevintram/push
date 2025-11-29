@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import { Maximize2, X } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
@@ -14,6 +14,21 @@ export function TopicDialog() {
 	const { isOpen, topicId: selectedTopicId } = topicDialogState
 	const navigate = useNavigate()
 	const { topic, isLoading } = useTopicWithRelationships(selectedTopicId)
+	const params = useParams({ strict: false })
+
+	// Check if the background page topic (from URL) is a parent or child of the dialog topic
+	const relatedTopicId = useMemo(() => {
+		const backgroundTopicId = params.topicId
+			? Number.parseInt(params.topicId, 10)
+			: undefined
+
+		if (!(backgroundTopicId && topic)) return
+
+		const isParent = topic.parents?.some(p => p.id === backgroundTopicId)
+		const isChild = topic.children?.some(c => c.id === backgroundTopicId)
+
+		return isParent || isChild ? backgroundTopicId : undefined
+	}, [params.topicId, topic])
 
 	const handleDelete = useCallback(() => {
 		closeTopicDialog()
@@ -73,7 +88,11 @@ export function TopicDialog() {
 				showCloseButton={false}
 			>
 				<TopicContext value={contextValue}>
-					<TopicDetail headerActions={headerActions} onDelete={handleDelete} />
+					<TopicDetail
+						headerActions={headerActions}
+						onDelete={handleDelete}
+						relatedTopicId={relatedTopicId}
+					/>
 				</TopicContext>
 			</DialogContent>
 		</Dialog>

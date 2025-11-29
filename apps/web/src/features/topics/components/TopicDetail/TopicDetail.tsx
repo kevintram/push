@@ -12,6 +12,7 @@ import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
+import type { Topic } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { deleteTopic as deleteTopicApi } from '../../api/deleteTopic'
 import { updateTopic as updateTopicApi } from '../../api/updateTopic'
@@ -24,9 +25,34 @@ import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 interface TopicDetailProps {
 	onDelete?: () => void | Promise<void>
 	headerActions?: ReactNode
+	allowReviewCreation?: boolean
+	renderChildCard?: (child: Topic, removeRelationship: () => void) => ReactNode
+	onChildSelect?: (child: Topic) => void
+	onParentSelect?: (parent: Topic) => void
+	relatedTopicId?: number
+	readonly?: boolean
+	isAddedToReview?: boolean
+	onAddToReview?: () => void
+	onRemoveFromReview?: () => void
+	onTopicCreated?: (topic: Topic) => void
+	renderReviewToggle?: ReactNode
 }
 
-export function TopicDetail({ onDelete, headerActions }: TopicDetailProps) {
+export function TopicDetail({
+	onDelete,
+	headerActions,
+	allowReviewCreation = true,
+	renderChildCard,
+	onChildSelect,
+	onParentSelect,
+	relatedTopicId,
+	readonly = false,
+	isAddedToReview,
+	onAddToReview,
+	onRemoveFromReview,
+	onTopicCreated,
+	renderReviewToggle
+}: TopicDetailProps) {
 	const { topic, isLoading } = use(TopicContext)
 	const queryClient = useQueryClient()
 
@@ -105,7 +131,7 @@ export function TopicDetail({ onDelete, headerActions }: TopicDetailProps) {
 
 	// focus on notes whenever selected topic changes
 	useEffect(() => {
-		if (notesRef.current) {
+		if (notesRef.current && topic?.id) {
 			notesRef.current.focus()
 		}
 	}, [topic?.id])
@@ -119,9 +145,15 @@ export function TopicDetail({ onDelete, headerActions }: TopicDetailProps) {
 			<div className='flex h-full min-h-0 flex-col'>
 				<TopicDetailHeader
 					headerActions={headerActions}
+					isAddedToReview={isAddedToReview}
+					onAddToReview={onAddToReview}
 					onArchiveToggle={handleArchiveToggle}
 					onDelete={handleDelete}
 					onInboxToggle={handleInboxToggle}
+					onParentSelect={onParentSelect}
+					onRemoveFromReview={onRemoveFromReview}
+					onTopicCreated={onTopicCreated}
+					renderReviewToggle={renderReviewToggle}
 					topic={topic}
 				/>
 				<SidebarHolder className='flex min-h-0 flex-1'>
@@ -206,9 +238,16 @@ export function TopicDetail({ onDelete, headerActions }: TopicDetailProps) {
 						</div>
 						<TopicChildrenPanel
 							getScrollElement={() => scrollContainerRef.current}
+							onChildClick={onChildSelect}
+							onTopicCreated={onTopicCreated}
+							renderChildCard={renderChildCard}
 						/>
 					</div>
-					<ReviewsSidebar />
+					<ReviewsSidebar
+						allowReviewCreation={allowReviewCreation}
+						readonly={readonly}
+						relatedTopicId={relatedTopicId}
+					/>
 				</SidebarHolder>
 			</div>
 		</SidebarProvider>

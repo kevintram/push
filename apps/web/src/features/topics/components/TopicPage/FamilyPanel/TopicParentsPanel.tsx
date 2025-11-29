@@ -3,12 +3,21 @@ import { use, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { useTopicParents } from '~/features/topics/hooks/useTopicParents'
+import type { Topic } from '~/models/review-topic.types'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { TopicBadge } from '../../TopicBadge'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 import { AddRelationshipDropdown } from './AddRelationshipDropdown'
 
-export function TopicParentsPanel() {
+interface TopicParentsPanelProps {
+	onParentSelect?: (parent: Topic) => void
+	onTopicCreated?: (topic: Topic) => void
+}
+
+export function TopicParentsPanel({
+	onParentSelect,
+	onTopicCreated
+}: TopicParentsPanelProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { topic: selectedTopic } = use(TopicContext)
 	const { openTopicDialog } = useReviewTopicDialog()
@@ -16,6 +25,14 @@ export function TopicParentsPanel() {
 	const { data: parents = [] } = useTopicParents(selectedTopic?.id)
 
 	const deleteRelationship = useDeleteRelationship()
+
+	const handleParentClick = (parent: Topic) => {
+		if (onParentSelect) {
+			onParentSelect(parent)
+			return
+		}
+		openTopicDialog(parent.id)
+	}
 
 	return (
 		<>
@@ -31,7 +48,7 @@ export function TopicParentsPanel() {
 						key={parent.id}
 						name={parent.name}
 						notes={parent.notes}
-						onClick={() => openTopicDialog(parent.id)}
+						onClick={() => handleParentClick(parent)}
 						onRemove={() => {
 							if (!selectedTopic) return
 							deleteRelationship.mutate({
@@ -43,6 +60,8 @@ export function TopicParentsPanel() {
 				))}
 				<AddRelationshipDropdown
 					onOpenSearchDialog={() => setShowCreateDialog(true)}
+					onRelationshipCreated={onTopicCreated}
+					onTopicOpen={handleParentClick}
 					relationshipType='parent'
 					topicId={selectedTopic?.id}
 					variant='badge'
@@ -51,6 +70,8 @@ export function TopicParentsPanel() {
 
 			<AddRelationshipDialog
 				onOpenChange={setShowCreateDialog}
+				onRelationshipCreated={onTopicCreated}
+				onTopicOpen={handleParentClick}
 				open={showCreateDialog}
 				relationshipType='parent'
 				topicId={selectedTopic?.id}

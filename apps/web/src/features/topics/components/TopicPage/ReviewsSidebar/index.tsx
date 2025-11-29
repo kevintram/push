@@ -21,7 +21,17 @@ function roundToTwoDecimals(num: number): number {
 	return Math.round(num * 100) / 100
 }
 
-function ReviewsSidebarContent() {
+interface ReviewsSidebarProps {
+	allowReviewCreation?: boolean
+	relatedTopicId?: number
+	readonly?: boolean
+}
+
+function ReviewsSidebarContent({
+	allowReviewCreation = true,
+	relatedTopicId,
+	readonly = false
+}: ReviewsSidebarProps) {
 	const { scheduledReviews, unscheduledReviews } = useReviewsData()
 	const { openReviewDialog } = useReviewTopicDialog()
 	const { topic } = use(TopicContext)
@@ -61,14 +71,28 @@ function ReviewsSidebarContent() {
 			reviewId: review.id,
 			topicId: topic.id
 		})
+
+		if (relatedTopicId) {
+			await createTopicReviewMutation({
+				reviewId: review.id,
+				topicId: relatedTopicId
+			})
+		}
 		openReviewDialog(review.id)
-	}, [topic, createReviewMutation, createTopicReviewMutation, openReviewDialog])
+	}, [
+		topic,
+		createReviewMutation,
+		createTopicReviewMutation,
+		openReviewDialog,
+		relatedTopicId
+	])
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
+			if (readonly) return
 			openReviewDialog(reviewId)
 		},
-		[openReviewDialog]
+		[openReviewDialog, readonly]
 	)
 
 	// Calculate the due date display
@@ -134,14 +158,16 @@ function ReviewsSidebarContent() {
 			<SidebarHeader className='flex flex-col gap-0 pb-0'>
 				<div className='flex flex-row items-center justify-between'>
 					<h1 className='font-semibold text-lg'>Reviews</h1>
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<Button onClick={handleNewReview} size='sm' variant='ghost'>
-								<Plus />
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>Create new review</TooltipContent>
-					</Tooltip>
+					{allowReviewCreation && (
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<Button onClick={handleNewReview} size='sm' variant='ghost'>
+									<Plus />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Create new review</TooltipContent>
+						</Tooltip>
+					)}
 				</div>
 				<div className='flex text-muted-foreground text-xs'>
 					{dueDateDisplay ? (
@@ -205,6 +231,7 @@ function ReviewsSidebarContent() {
 								entry={entry}
 								key={entry.id}
 								onReviewClick={handleReviewClick}
+								readonly={readonly}
 							/>
 						))}
 					</div>
@@ -222,6 +249,7 @@ function ReviewsSidebarContent() {
 									entry={entry}
 									key={entry.id}
 									onReviewClick={handleReviewClick}
+									readonly={readonly}
 								/>
 							))}
 						</div>
@@ -232,12 +260,20 @@ function ReviewsSidebarContent() {
 	)
 }
 
-export function ReviewsSidebar() {
+export function ReviewsSidebar({
+	allowReviewCreation = true,
+	relatedTopicId,
+	readonly = false
+}: ReviewsSidebarProps) {
 	const { topic: selectedTopic } = use(TopicContext)
 
 	return (
 		<ReviewsDataProvider selectedTopicId={selectedTopic?.id}>
-			<ReviewsSidebarContent />
+			<ReviewsSidebarContent
+				allowReviewCreation={allowReviewCreation}
+				readonly={readonly}
+				relatedTopicId={relatedTopicId}
+			/>
 		</ReviewsDataProvider>
 	)
 }

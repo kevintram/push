@@ -1,8 +1,14 @@
 import dayjs from 'dayjs'
-import { Calendar, Check, Plus } from 'lucide-react'
+import { Calendar, Check, EllipsisVertical, Plus } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import {
 	Tooltip,
 	TooltipContent,
@@ -14,19 +20,23 @@ import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 interface AddTopicCardProps {
 	topic: Topic
 	onTopicClick: (topic: Topic) => void
+	onCardClick?: (topic: Topic) => void
 	onRemoveClick?: (topic: Topic) => void
 	searchQuery?: string
 	minHeight?: number
 	isAdded?: boolean
+	onRemoveRelationship?: () => void
 }
 
 export function AddTopicCard({
 	topic,
 	onTopicClick,
+	onCardClick,
 	onRemoveClick,
 	searchQuery,
 	minHeight = 72,
-	isAdded = false
+	isAdded = false,
+	onRemoveRelationship
 }: AddTopicCardProps) {
 	// Search highlighting
 	const highlightedName = useMemo(() => {
@@ -79,49 +89,87 @@ export function AddTopicCard({
 				: ''
 
 	// Click handlers
-	const handleClick = useCallback(() => {
-		if (isAdded && onRemoveClick) {
-			onRemoveClick(topic)
-		} else {
-			onTopicClick(topic)
+	const handleButtonClick = useCallback(
+		(e: React.MouseEvent) => {
+			e.stopPropagation() // Prevent card click
+			if (isAdded && onRemoveClick) {
+				onRemoveClick(topic)
+			} else {
+				onTopicClick(topic)
+			}
+		},
+		[isAdded, onRemoveClick, onTopicClick, topic]
+	)
+
+	const handleCardClick = useCallback(() => {
+		if (onCardClick) {
+			onCardClick(topic)
 		}
-	}, [isAdded, onRemoveClick, onTopicClick, topic])
+	}, [onCardClick, topic])
 
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
 			if (e.key === 'Enter' || e.key === ' ') {
 				e.preventDefault()
-				handleClick()
+				handleCardClick()
 			}
 		},
-		[handleClick]
+		[handleCardClick]
 	)
 
 	return (
 		<Card
 			className='cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+			onClick={handleCardClick}
 			onKeyDown={handleKeyDown}
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardHeader className='-top-1 -left-1 relative flex'>
-				<Button
-					className={`!p-2 h-6 gap-1 rounded-lg ${isAdded ? 'text-green-400' : ''}`}
-					onClick={handleClick}
-					variant='secondary'
-				>
-					{isAdded ? (
-						<>
-							<Check />
-							Added
-						</>
-					) : (
-						<>
-							<Plus />
-							Add
-						</>
-					)}
-				</Button>
+			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
+				<div className='flex items-center gap-2'>
+					<Button
+						className={`!p-2 h-6 gap-1 rounded-lg ${isAdded ? 'text-green-400' : ''}`}
+						onClick={handleButtonClick}
+						variant='secondary'
+					>
+						{isAdded ? (
+							<>
+								<Check />
+								Added
+							</>
+						) : (
+							<>
+								<Plus />
+								Add
+							</>
+						)}
+					</Button>
+				</div>
+				{onRemoveRelationship && (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild={true}>
+							<Button
+								className='h-6 w-6 p-0 text-muted-foreground'
+								onClick={e => e.stopPropagation()}
+								size='sm'
+								title='More actions'
+								variant='ghost'
+							>
+								<EllipsisVertical className='h-4 w-4' />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end'>
+							<DropdownMenuItem
+								onClick={e => {
+									e.stopPropagation()
+									onRemoveRelationship()
+								}}
+							>
+								Remove as child
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)}
 			</CardHeader>
 			<CardContent className='mb-3 flex flex-1 flex-col gap-0.5'>
 				{highlightedName && (

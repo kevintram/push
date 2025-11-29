@@ -21,6 +21,7 @@ interface AddRelationshipDropdownProps {
 	variant: 'badge' | 'card'
 	className?: string
 	onRelationshipCreated?: (topic: Topic) => void
+	onTopicOpen?: (topic: Topic) => void
 }
 
 export function AddRelationshipDropdown({
@@ -29,7 +30,8 @@ export function AddRelationshipDropdown({
 	onOpenSearchDialog,
 	variant,
 	className,
-	onRelationshipCreated
+	onRelationshipCreated,
+	onTopicOpen
 }: AddRelationshipDropdownProps) {
 	const createTopic = useCreateTopic()
 	const createRelationship = useCreateRelationship()
@@ -64,7 +66,11 @@ export function AddRelationshipDropdown({
 			onRelationshipCreated?.(newTopic)
 
 			// Open the created topic
-			openTopicDialog(newTopic.id)
+			if (onTopicOpen) {
+				onTopicOpen(newTopic)
+			} else {
+				openTopicDialog(newTopic.id)
+			}
 		} catch (_error) {}
 	}, [
 		topicId,
@@ -72,7 +78,8 @@ export function AddRelationshipDropdown({
 		createTopic,
 		createRelationship,
 		onRelationshipCreated,
-		openTopicDialog
+		openTopicDialog,
+		onTopicOpen
 	])
 
 	return (
