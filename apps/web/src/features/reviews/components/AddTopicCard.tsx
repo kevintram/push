@@ -1,7 +1,8 @@
 import dayjs from 'dayjs'
-import { Calendar } from 'lucide-react'
+import { Calendar, Check, Plus } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import { Card, CardContent, CardFooter } from '~/components/ui/Card'
+import { Button } from '~/components/ui/Button'
+import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
 import {
 	Tooltip,
 	TooltipContent,
@@ -13,15 +14,19 @@ import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 interface AddTopicCardProps {
 	topic: Topic
 	onTopicClick: (topic: Topic) => void
+	onRemoveClick?: (topic: Topic) => void
 	searchQuery?: string
 	minHeight?: number
+	isAdded?: boolean
 }
 
 export function AddTopicCard({
 	topic,
 	onTopicClick,
+	onRemoveClick,
 	searchQuery,
-	minHeight = 72
+	minHeight = 72,
+	isAdded = false
 }: AddTopicCardProps) {
 	// Search highlighting
 	const highlightedName = useMemo(() => {
@@ -75,8 +80,12 @@ export function AddTopicCard({
 
 	// Click handlers
 	const handleClick = useCallback(() => {
-		onTopicClick(topic)
-	}, [onTopicClick, topic])
+		if (isAdded && onRemoveClick) {
+			onRemoveClick(topic)
+		} else {
+			onTopicClick(topic)
+		}
+	}, [isAdded, onRemoveClick, onTopicClick, topic])
 
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
@@ -91,12 +100,30 @@ export function AddTopicCard({
 	return (
 		<Card
 			className='cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
-			onClick={handleClick}
 			onKeyDown={handleKeyDown}
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardContent className='flex flex-1 flex-col gap-0.5'>
+			<CardHeader className='-top-1 -left-1 relative flex'>
+				<Button
+					className={`!p-2 h-6 gap-1 rounded-lg ${isAdded ? 'text-green-400' : ''}`}
+					onClick={handleClick}
+					variant='secondary'
+				>
+					{isAdded ? (
+						<>
+							<Check />
+							Added
+						</>
+					) : (
+						<>
+							<Plus />
+							Add
+						</>
+					)}
+				</Button>
+			</CardHeader>
+			<CardContent className='mb-3 flex flex-1 flex-col gap-0.5'>
 				{highlightedName && (
 					<h3 className='break-word font-semibold leading-tight [overflow-wrap:anywhere]'>
 						{highlightedName}
@@ -108,7 +135,6 @@ export function AddTopicCard({
 					</p>
 				)}
 			</CardContent>
-
 			{/* Bottom row: Due date */}
 			<CardFooter className='text-muted-foreground text-xs'>
 				{dueDateDisplay ? (
