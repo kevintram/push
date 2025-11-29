@@ -11,15 +11,8 @@ import {
 	DialogTrigger
 } from '~/components/ui/Dialog'
 import { Input } from '~/components/ui/Input'
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger
-} from '~/components/ui/Popover'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { ReviewTopicCard } from '~/features/reviews/components/ReviewDetail/ReviewTopicCard'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
-import type { Topic, TopicReview } from '~/models/review-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 import { useCreateTopic } from '../hooks/useCreateTopic'
 import { TopicCard } from './TopicCard'
 
@@ -42,10 +35,6 @@ interface SearchOrCreateTopicDialogProps {
 	defaultQuery?: string
 	onSearchQueryChange?: (query: string) => void
 	renderItem?: (topic: Topic) => ReactNode
-	topicCount?: number
-	onTopicCountClick?: () => void
-	reviewTopicReviews?: Array<TopicReview>
-	onRemoveTopicReview?: (topicReviewId: number) => void
 }
 
 const MIN_CARD_WIDTH = 280
@@ -62,17 +51,12 @@ export function SearchOrCreateTopicDialog({
 	useSearch,
 	defaultQuery = '',
 	onSearchQueryChange,
-	renderItem: customRenderItem,
-	topicCount,
-	reviewTopicReviews,
-	onRemoveTopicReview
+	renderItem: customRenderItem
 }: SearchOrCreateTopicDialogProps) {
 	const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
 	const [searchQuery, setSearchQuery] = useState(defaultQuery)
 	const [selectedIndex, setSelectedIndex] = useState(0)
-	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 	const inputRef = useRef<HTMLInputElement>(null)
-	const { openTopicDialog } = useReviewTopicDialog()
 
 	// Use controlled or uncontrolled state
 	const isControlled = controlledOpen !== undefined
@@ -273,77 +257,6 @@ export function SearchOrCreateTopicDialog({
 					>
 						<SquarePen className='h-4 w-4' />
 						Create New
-					</Button>
-					{topicCount !== undefined && (
-						<Popover onOpenChange={setIsPopoverOpen} open={isPopoverOpen}>
-							<PopoverTrigger asChild={true}>
-								<Button
-									onClick={e => {
-										e.stopPropagation()
-										setIsPopoverOpen(!isPopoverOpen)
-									}}
-									size='default'
-									variant='secondary'
-								>
-									{topicCount} {topicCount === 1 ? 'Topic' : 'Topics Added'}
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent
-								align='end'
-								className='max-h-[500px] min-h-[350px] w-[600px] overflow-y-auto p-4'
-								onClick={e => e.stopPropagation()}
-								side='bottom'
-							>
-								{reviewTopicReviews && reviewTopicReviews.length > 0 ? (
-									<div>
-										<MasonryLayout
-											estimateItemSize={topicReview => {
-												const topic = topicReview.topic
-												const baseHeight = 72
-												const nameLines = Math.ceil(
-													(topic.name?.length || 8) / 40
-												)
-												const notesLines = topic.notes
-													? Math.min(2, Math.ceil(topic.notes.length / 40))
-													: 0
-												return Math.max(
-													72,
-													baseHeight + (nameLines - 1) * 20 + notesLines * 20
-												)
-											}}
-											gap={12}
-											getItemKey={topicReview => topicReview.id}
-											items={reviewTopicReviews}
-											minItemWidth={250}
-											renderItem={topicReview => (
-												<ReviewTopicCard
-													minHeight={72}
-													onRemoveFromReview={onRemoveTopicReview}
-													onTopicClick={topic => {
-														openTopicDialog(topic.id)
-														setIsPopoverOpen(false)
-													}}
-													rating={topicReview.rating}
-													topic={topicReview.topic}
-													topicReviewId={topicReview.id}
-												/>
-											)}
-										/>
-									</div>
-								) : (
-									<div className='py-8 text-center text-muted-foreground'>
-										No topics
-									</div>
-								)}
-							</PopoverContent>
-						</Popover>
-					)}
-					<Button
-						onClick={() => setOpen(false)}
-						size='default'
-						variant='default'
-					>
-						Done
 					</Button>
 				</div>
 			</DialogHeader>

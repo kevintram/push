@@ -106,7 +106,7 @@ export function AddTopicCard({
 		>
 			<CardHeader className='-top-1 -left-1 relative flex'>
 				<Button
-					className={`!p-2 h-6 gap-1 rounded-lg ${isAdded ? 'text-green-400' : ''}`}	
+					className={`!p-2 h-6 gap-1 rounded-lg ${isAdded ? 'text-green-400' : ''}`}
 					onClick={handleClick}
 					variant='secondary'
 				>
