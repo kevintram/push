@@ -3,7 +3,10 @@ import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import type { Review } from '~/features/reviews/api'
-import { createTopicReview } from '~/features/topic_reviews/api'
+import {
+	createTopicReview,
+	deleteTopicReview
+} from '~/features/topic_reviews/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
 import { SearchOrCreateTopicDialog } from '~/features/topics/components/SearchOrCreateTopicDialog'
 import type { Topic } from '~/models/review-topic.types'
@@ -26,6 +29,25 @@ export function AddTopicToReviewDialog({
 	const queryClient = useQueryClient()
 	const { openTopicDialog } = useReviewTopicDialog()
 
+	// Calculate existing topic IDs from the review
+	const existingTopicIds = useMemo(
+		() => new Set(review?.topic_reviews?.map(tr => tr.topic_id) ?? []),
+		[review?.topic_reviews]
+	)
+
+	// Calculate topic count
+	const topicCount = review?.topic_reviews?.length ?? 0
+
+	// Sort topic reviews by date added (descending)
+	const sortedTopicReviews = useMemo(() => {
+		if (!review?.topic_reviews) return []
+
+		return [...review.topic_reviews].sort(
+			(a, b) =>
+				new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
+		)
+	}, [review?.topic_reviews])
+
 	// Debounced search query
 	const updateDebouncedQuery = useCallback(
 		debounce((term: string) => setDebouncedQuery(term), 300),
@@ -41,8 +63,7 @@ export function AddTopicToReviewDialog({
 		queryFn: () =>
 			searchTopics({
 				query: debouncedQuery || undefined,
-				limit: 20,
-				addableToReview: review?.id
+				limit: 20
 			}),
 		enabled: open && !!review
 	})
@@ -62,6 +83,13 @@ export function AddTopicToReviewDialog({
 			reviewId: number
 			topicId: number
 		}) => createTopicReview(reviewId, topicId, 'good'),
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
+		}
+	})
+
+	const { mutateAsync: deleteTopicReviewMutation } = useMutation({
+		mutationFn: deleteTopicReview,
 		onSuccess: async () => {
 			await invalidateTopicsAndReviews(queryClient)
 		}
@@ -102,26 +130,46 @@ export function AddTopicToReviewDialog({
 					reviewId: review.id,
 					topicId: topic.id
 				})
-
-				// Close the dialog immediately
-				onOpenChange(false)
+				// Dialog stays open - removed onOpenChange(false)
 			} catch (_error) {
 				// Handle error silently for now
 			}
 		},
-		[review, createTopicReviewMutation, onOpenChange]
+		[review, createTopicReviewMutation]
+	)
+
+	const handleRemoveTopicReview = useCallback(
+		async (topicReviewId: number) => {
+			await deleteTopicReviewMutation(topicReviewId)
+		},
+		[deleteTopicReviewMutation]
+	)
+
+	const handleRemoveTopicClick = useCallback(
+		async (topic: Topic) => {
+			// Find the topicReviewId for this topic
+			const topicReview = review?.topic_reviews?.find(
+				tr => tr.topic_id === topic.id
+			)
+			if (topicReview) {
+				await handleRemoveTopicReview(topicReview.id)
+			}
+		},
+		[review?.topic_reviews, handleRemoveTopicReview]
 	)
 
 	const renderAddTopicCard = useCallback(
 		(topic: Topic) => (
 			<AddTopicCard
+				isAdded={existingTopicIds.has(topic.id)}
 				minHeight={72}
+				onRemoveClick={handleRemoveTopicClick}
 				onTopicClick={handleTopicClick}
 				searchQuery={debouncedQuery}
 				topic={topic}
 			/>
 		),
-		[handleTopicClick, debouncedQuery]
+		[handleTopicClick, debouncedQuery, existingTopicIds, handleRemoveTopicClick]
 	)
 
 	const useSearch = useCallback(
@@ -139,11 +187,14 @@ export function AddTopicToReviewDialog({
 	return (
 		<SearchOrCreateTopicDialog
 			onOpenChange={onOpenChange}
+			onRemoveTopicReview={handleRemoveTopicReview}
 			onSearchQueryChange={setSearchQuery}
 			onTopicCreated={handleTopicCreated}
 			open={open}
 			renderItem={renderAddTopicCard}
+			reviewTopicReviews={sortedTopicReviews}
 			title='Add Topic to Review'
+			topicCount={topicCount}
 			useSearch={useSearch}
 		/>
 	)
