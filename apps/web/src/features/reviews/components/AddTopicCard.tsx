@@ -1,7 +1,8 @@
 import dayjs from 'dayjs'
-import { Calendar } from 'lucide-react'
+import { Calendar, Plus } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import { Card, CardContent, CardFooter } from '~/components/ui/Card'
+import { Button } from '~/components/ui/Button'
+import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
 import {
 	Tooltip,
 	TooltipContent,
@@ -90,13 +91,22 @@ export function AddTopicCard({
 
 	return (
 		<Card
-			className='cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
-			onClick={handleClick}
+			className='cursor-pointer gap-0 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 			onKeyDown={handleKeyDown}
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardContent className='flex flex-1 flex-col gap-0.5'>
+			<CardHeader className='-top-1 -left-1 relative flex'>
+				<Button
+					className='!p-1 gap-1 rounded-lg'
+					onClick={handleClick}
+					variant='ghost'
+				>
+					<Plus />
+					Add
+				</Button>
+			</CardHeader>
+			<CardContent className='mb-3 flex flex-1 flex-col gap-0.5'>
 				{highlightedName && (
 					<h3 className='break-word font-semibold leading-tight [overflow-wrap:anywhere]'>
 						{highlightedName}
@@ -108,7 +118,6 @@ export function AddTopicCard({
 					</p>
 				)}
 			</CardContent>
-
 			{/* Bottom row: Due date */}
 			<CardFooter className='text-muted-foreground text-xs'>
 				{dueDateDisplay ? (
