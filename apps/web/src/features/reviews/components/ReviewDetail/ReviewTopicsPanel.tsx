@@ -99,7 +99,7 @@ export function ReviewTopicsPanel({
 		<div className='flex flex-col'>
 			<div className='mb-3 flex items-center gap-2'>
 				<span className='font-medium text-muted-foreground text-xs'>
-					Topics ({topics.length})
+					Topics covered ({topics.length})
 				</span>
 				<div className='flex-1' />
 				<Button onClick={onAddTopic} size='icon-sm' variant='ghost'>
