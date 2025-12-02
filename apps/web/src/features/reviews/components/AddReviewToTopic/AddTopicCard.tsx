@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Calendar, Check, EllipsisVertical, Plus } from 'lucide-react'
+import { Calendar, EllipsisVertical } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
@@ -14,8 +14,9 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import type { Topic } from '~/models/review-topic.types'
+import type { Rating, Topic } from '~/models/review-topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
+import { TopicReviewStatusButton } from './ReviewStatusButton'
 
 interface AddTopicCardProps {
 	topic: Topic
@@ -26,6 +27,11 @@ interface AddTopicCardProps {
 	minHeight?: number
 	isAdded?: boolean
 	onRemoveRelationship?: () => void
+	// Rating props for completed reviews
+	rating?: Rating | null
+	topicReviewId?: number
+	onRatingChange?: (topicReviewId: number, rating: Rating) => void
+	isReviewCompleted?: boolean
 }
 
 export function AddTopicCard({
@@ -36,7 +42,11 @@ export function AddTopicCard({
 	searchQuery,
 	minHeight = 72,
 	isAdded = false,
-	onRemoveRelationship
+	onRemoveRelationship,
+	rating,
+	topicReviewId,
+	onRatingChange,
+	isReviewCompleted = false
 }: AddTopicCardProps) {
 	// Search highlighting
 	const highlightedName = useMemo(() => {
@@ -89,16 +99,21 @@ export function AddTopicCard({
 				: ''
 
 	// Click handlers
-	const handleButtonClick = useCallback(
-		(e: React.MouseEvent) => {
-			e.stopPropagation() // Prevent card click
-			if (isAdded && onRemoveClick) {
-				onRemoveClick(topic)
-			} else {
-				onTopicClick(topic)
+	const handleAdd = useCallback(() => {
+		onTopicClick(topic)
+	}, [onTopicClick, topic])
+
+	const handleRemove = useCallback(() => {
+		onRemoveClick?.(topic)
+	}, [onRemoveClick, topic])
+
+	const handleRatingChange = useCallback(
+		(newRating: Rating) => {
+			if (topicReviewId && onRatingChange) {
+				onRatingChange(topicReviewId, newRating)
 			}
 		},
-		[isAdded, onRemoveClick, onTopicClick, topic]
+		[topicReviewId, onRatingChange]
 	)
 
 	const handleCardClick = useCallback(() => {
@@ -127,23 +142,14 @@ export function AddTopicCard({
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
 				<div className='flex items-center gap-2'>
-					<Button
-						className={`!p-2 h-6 gap-1 rounded-lg ${isAdded ? 'text-green-400' : ''}`}
-						onClick={handleButtonClick}
-						variant='secondary'
-					>
-						{isAdded ? (
-							<>
-								<Check />
-								Added
-							</>
-						) : (
-							<>
-								<Plus />
-								Add
-							</>
-						)}
-					</Button>
+					<TopicReviewStatusButton
+						isAdded={isAdded}
+						isReviewCompleted={isReviewCompleted}
+						onAdd={handleAdd}
+						onRatingChange={handleRatingChange}
+						onRemove={handleRemove}
+						rating={rating}
+					/>
 				</div>
 				{onRemoveRelationship && (
 					<DropdownMenu>

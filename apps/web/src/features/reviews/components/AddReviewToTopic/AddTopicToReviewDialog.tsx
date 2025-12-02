@@ -1,14 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-	Check,
-	ChevronUp,
-	Minus,
-	Plus,
-	Search,
-	SquarePen,
-	X
-} from 'lucide-react'
+import { ChevronUp, Minus, Search, SquarePen, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Button } from '~/components/ui/Button'
@@ -29,16 +21,18 @@ import {
 	createTopicReview,
 	deleteTopicReview
 } from '~/features/topic_reviews/api'
+import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
 import { searchTopics } from '~/features/topics/api/searchTopics'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
 import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
 import { useTopicWithRelationships } from '~/features/topics/hooks/useTopicWithRelationships'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
-import type { Topic } from '~/models/review-topic.types'
+import type { Rating, Topic } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { ReviewTopicCard } from '../ReviewDetail/ReviewTopicCard'
 import { AddTopicCard } from './AddTopicCard'
-import { ReviewTopicCard } from './ReviewDetail/ReviewTopicCard'
+import { TopicReviewStatusButton } from './ReviewStatusButton'
 
 const MIN_CARD_WIDTH = 280
 const MIN_HEIGHT = 96
@@ -83,6 +77,12 @@ export function AddTopicToReviewDialog({
 
 	const addedTopicsCount = review?.topic_reviews?.length ?? 0
 
+	// Check if the review is completed
+	const isReviewCompleted = useMemo(
+		() => !!review?.completed_at,
+		[review?.completed_at]
+	)
+
 	// Focus search input when dialog opens
 	useEffect(() => {
 		if (open) {
@@ -119,11 +119,13 @@ export function AddTopicToReviewDialog({
 	const { mutateAsync: createTopicReviewMutation } = useMutation({
 		mutationFn: ({
 			reviewId,
-			topicId
+			topicId,
+			rating
 		}: {
 			reviewId: number
 			topicId: number
-		}) => createTopicReview(reviewId, topicId, 'good'),
+			rating?: Rating | null
+		}) => createTopicReview(reviewId, topicId, rating),
 		onSuccess: async () => {
 			await invalidateTopicsAndReviews(queryClient)
 		}
@@ -131,6 +133,14 @@ export function AddTopicToReviewDialog({
 
 	const { mutateAsync: deleteTopicReviewMutation } = useMutation({
 		mutationFn: deleteTopicReview,
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
+		}
+	})
+
+	const { mutateAsync: updateTopicReviewMutation } = useMutation({
+		mutationFn: ({ id, rating }: { id: number; rating: Rating }) =>
+			updateTopicReviewApi(id, rating),
 		onSuccess: async () => {
 			await invalidateTopicsAndReviews(queryClient)
 		}
@@ -148,7 +158,8 @@ export function AddTopicToReviewDialog({
 			if (review) {
 				await createTopicReviewMutation({
 					reviewId: review.id,
-					topicId: newTopic.id
+					topicId: newTopic.id,
+					rating: isReviewCompleted ? 'good' : null
 				})
 				// Navigate to detail view instead of opening TopicDialog
 				setSelectedTopicId(newTopic.id)
@@ -157,7 +168,13 @@ export function AddTopicToReviewDialog({
 		} catch (_error) {
 			// Error handling could be added here if needed
 		}
-	}, [searchQuery, createTopicAsync, review, createTopicReviewMutation])
+	}, [
+		searchQuery,
+		createTopicAsync,
+		review,
+		createTopicReviewMutation,
+		isReviewCompleted
+	])
 
 	const handleTopicClick = useCallback(
 		async (topic: Topic) => {
@@ -166,14 +183,15 @@ export function AddTopicToReviewDialog({
 			try {
 				await createTopicReviewMutation({
 					reviewId: review.id,
-					topicId: topic.id
+					topicId: topic.id,
+					rating: isReviewCompleted ? 'good' : null
 				})
 				// Dialog stays open
 			} catch (_error) {
 				// Handle error silently for now
 			}
 		},
-		[review, createTopicReviewMutation]
+		[review, createTopicReviewMutation, isReviewCompleted]
 	)
 
 	// Callback for when a new topic is created from nested views (parents/children)
@@ -185,7 +203,8 @@ export function AddTopicToReviewDialog({
 			try {
 				await createTopicReviewMutation({
 					reviewId: review.id,
-					topicId: topic.id
+					topicId: topic.id,
+					rating: isReviewCompleted ? 'good' : null
 				})
 				// Also select it to show it in the detail view
 				setSelectedTopicId(topic.id)
@@ -195,7 +214,7 @@ export function AddTopicToReviewDialog({
 				// Handle error silently for now
 			}
 		},
-		[review, createTopicReviewMutation]
+		[review, createTopicReviewMutation, isReviewCompleted]
 	)
 
 	const handleRemoveTopicReview = useCallback(
@@ -288,6 +307,21 @@ export function AddTopicToReviewDialog({
 		[viewMode, isTopicMinimized]
 	)
 
+	const handleRatingChange = useCallback(
+		async (topicReviewId: number, rating: Rating) => {
+			await updateTopicReviewMutation({ id: topicReviewId, rating })
+		},
+		[updateTopicReviewMutation]
+	)
+
+	// Helper to get topic review for a topic
+	const getTopicReview = useCallback(
+		(topicId: number) => {
+			return review?.topic_reviews?.find(tr => tr.topic_id === topicId)
+		},
+		[review?.topic_reviews]
+	)
+
 	// Item size estimation for MasonryLayout
 	const estimateItemSize = useCallback((topic: Topic) => {
 		const baseHeight = 80
@@ -319,29 +353,39 @@ export function AddTopicToReviewDialog({
 	)
 
 	const renderAddTopicCard = useCallback(
-		(topic: Topic, removeRelationship?: () => void) => (
-			<AddTopicCard
-				isAdded={isTopicAdded(topic.id)}
-				minHeight={72}
-				onCardClick={
-					removeRelationship
-						? () => onTopicSwitched(topic)
-						: handleCardDetailClick
-				}
-				onRemoveClick={handleRemoveTopicClick}
-				onRemoveRelationship={removeRelationship}
-				onTopicClick={handleTopicClick}
-				searchQuery={debouncedQuery}
-				topic={topic}
-			/>
-		),
+		(topic: Topic, removeRelationship?: () => void) => {
+			const topicReview = getTopicReview(topic.id)
+			return (
+				<AddTopicCard
+					isAdded={isTopicAdded(topic.id)}
+					isReviewCompleted={isReviewCompleted}
+					minHeight={72}
+					onCardClick={
+						removeRelationship
+							? () => onTopicSwitched(topic)
+							: handleCardDetailClick
+					}
+					onRatingChange={handleRatingChange}
+					onRemoveClick={handleRemoveTopicClick}
+					onRemoveRelationship={removeRelationship}
+					onTopicClick={handleTopicClick}
+					rating={topicReview?.rating}
+					searchQuery={debouncedQuery}
+					topic={topic}
+					topicReviewId={topicReview?.id}
+				/>
+			)
+		},
 		[
 			handleTopicClick,
 			debouncedQuery,
 			isTopicAdded,
 			handleRemoveTopicClick,
 			handleCardDetailClick,
-			onTopicSwitched
+			onTopicSwitched,
+			getTopicReview,
+			handleRatingChange,
+			isReviewCompleted
 		]
 	)
 
@@ -357,6 +401,11 @@ export function AddTopicToReviewDialog({
 	const selectedTopicIsAdded = useMemo(
 		() => (selectedTopic ? isTopicAdded(selectedTopic.id) : false),
 		[selectedTopic, isTopicAdded]
+	)
+
+	const selectedTopicReview = useMemo(
+		() => (selectedTopic ? getTopicReview(selectedTopic.id) : undefined),
+		[selectedTopic, getTopicReview]
 	)
 
 	const topicContextValue = useMemo(
@@ -571,30 +620,24 @@ export function AddTopicToReviewDialog({
 													allowReviewCreation={false}
 													beforeMoreButton={
 														selectedTopic ? (
-															<Button
-																className={`!p-2 h-6 gap-1 rounded-lg ${selectedTopicIsAdded ? 'text-green-400' : ''}`}
-																onClick={async () => {
-																	if (!selectedTopic) return
-																	if (selectedTopicIsAdded) {
-																		await handleRemoveTopicClick(selectedTopic)
-																	} else {
-																		await handleTopicClick(selectedTopic)
-																	}
-																}}
-																variant='secondary'
-															>
-																{selectedTopicIsAdded ? (
-																	<>
-																		<Check />
-																		Added
-																	</>
-																) : (
-																	<>
-																		<Plus />
-																		Add
-																	</>
-																)}
-															</Button>
+															<TopicReviewStatusButton
+																isAdded={selectedTopicIsAdded}
+																isReviewCompleted={isReviewCompleted}
+																onAdd={() => handleTopicClick(selectedTopic)}
+																onRatingChange={
+																	selectedTopicReview
+																		? rating =>
+																				handleRatingChange(
+																					selectedTopicReview.id,
+																					rating
+																				)
+																		: undefined
+																}
+																onRemove={() =>
+																	handleRemoveTopicClick(selectedTopic)
+																}
+																rating={selectedTopicReview?.rating}
+															/>
 														) : null
 													}
 													onChildClicked={onTopicSwitched}
