@@ -5,7 +5,7 @@ import { apiFetch } from '~/utils/apiFetch'
 export async function createTopicReview(
 	reviewId: number,
 	topicId: number,
-	rating: Rating = 'good'
+	rating?: Rating | null
 ) {
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/topic-reviews/`,
