@@ -1,10 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ListChecks, Plus, SquarePen } from 'lucide-react'
+import { ListChecks, Plus, Square, SquareCheck, SquarePen } from 'lucide-react'
 import { useCallback } from 'react'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
@@ -31,7 +34,17 @@ export function CreateButton() {
 		openTopicDialog(createdTopic.id)
 	}, [createTopicWithReview, openTopicDialog])
 
-	const handleNewReview = useCallback(async () => {
+	const handleLogReviewNow = useCallback(async () => {
+		const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+		const review = await createReviewMutation({
+			description: '',
+			scheduledAt: null,
+			completedAt: today
+		})
+		openReviewDialog(review.id)
+	}, [createReviewMutation, openReviewDialog])
+
+	const handleNewReviewForLater = useCallback(async () => {
 		const review = await createReviewMutation({
 			description: '',
 			scheduledAt: null,
@@ -53,10 +66,22 @@ export function CreateButton() {
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='start' side='right'>
-				<DropdownMenuItem onClick={handleNewReview}>
-					<ListChecks />
-					<span>New review</span>
-				</DropdownMenuItem>
+				<DropdownMenuSub>
+					<DropdownMenuSubTrigger>
+						<ListChecks />
+						<span>New review</span>
+					</DropdownMenuSubTrigger>
+					<DropdownMenuSubContent>
+						<DropdownMenuItem onClick={handleLogReviewNow}>
+							<SquareCheck />
+							Log review now
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleNewReviewForLater}>
+							<Square />
+							For later
+						</DropdownMenuItem>
+					</DropdownMenuSubContent>
+				</DropdownMenuSub>
 				<DropdownMenuItem disabled={isCreatingTopic} onClick={handleNewTopic}>
 					<SquarePen />
 					<span>New topic</span>
