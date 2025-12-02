@@ -15,6 +15,7 @@ interface DatePickerDropdownProps {
 	align?: 'start' | 'center' | 'end'
 	side?: 'top' | 'right' | 'bottom' | 'left'
 	sideOffset?: number
+	disabled?: boolean
 }
 
 export function DatePickerDropdown({
@@ -25,7 +26,8 @@ export function DatePickerDropdown({
 	trigger,
 	align = 'end',
 	side = 'bottom',
-	sideOffset = 0
+	sideOffset = 0,
+	disabled = false
 }: DatePickerDropdownProps) {
 	const handleDateSelect = (date: Date | undefined) => {
 		if (date) {
@@ -51,8 +53,13 @@ export function DatePickerDropdown({
 	}
 
 	return (
-		<Popover onOpenChange={onOpenChange} open={isOpen}>
-			<PopoverTrigger asChild={true}>{trigger}</PopoverTrigger>
+		<Popover
+			onOpenChange={disabled ? undefined : onOpenChange}
+			open={disabled ? false : isOpen}
+		>
+			<PopoverTrigger asChild={true} disabled={disabled}>
+				{trigger}
+			</PopoverTrigger>
 			<PopoverContent
 				align={align}
 				className='w-auto p-4'

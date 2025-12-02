@@ -11,6 +11,7 @@ interface AddRelationshipDialogProps {
 	topicId: number | undefined
 	relationshipType: 'child' | 'parent'
 	onRelationshipCreated?: (topic: Topic) => void
+	onTopicOpen?: (topic: Topic) => void
 }
 
 export function AddRelationshipDialog({
@@ -18,7 +19,8 @@ export function AddRelationshipDialog({
 	onOpenChange,
 	topicId,
 	relationshipType,
-	onRelationshipCreated
+	onRelationshipCreated,
+	onTopicOpen
 }: AddRelationshipDialogProps) {
 	const [searchQuery, setSearchQuery] = useState('')
 
@@ -66,7 +68,11 @@ export function AddRelationshipDialog({
 				onRelationshipCreated?.(topic)
 
 				// Open TopicDialog with newly created topic
-				openTopicDialog(topic.id)
+				if (onTopicOpen) {
+					onTopicOpen(topic)
+				} else {
+					openTopicDialog(topic.id)
+				}
 			} catch (_error) {
 				// Error handling could be added here if needed
 			}
@@ -76,7 +82,8 @@ export function AddRelationshipDialog({
 			relationshipType,
 			createRelationship,
 			onRelationshipCreated,
-			openTopicDialog
+			openTopicDialog,
+			onTopicOpen
 		]
 	)
 
@@ -98,11 +105,26 @@ export function AddRelationshipDialog({
 				}
 
 				onRelationshipCreated?.(topic)
+
+				// Open selected topic
+				if (onTopicOpen) {
+					onTopicOpen(topic)
+				} else {
+					// We might want to open it, or maybe not for "select existing"?
+					// The previous code didn't open it for "select existing" in handleTopicSelected?
+					// Wait, looking at handleTopicSelected below...
+				}
 			} catch (_error) {
 				// Error handling could be added here if needed
 			}
 		},
-		[topicId, relationshipType, createRelationship, onRelationshipCreated]
+		[
+			topicId,
+			relationshipType,
+			createRelationship,
+			onRelationshipCreated,
+			onTopicOpen
+		]
 	)
 
 	const useSearch = useCallback(

@@ -1,27 +1,27 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { createContext, useCallback, useContext, useMemo } from 'react'
-import { type Review as ApiReview, getReviews } from '~/features/reviews/api'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { useQuery } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
+import { createContext, useContext, useMemo } from 'react'
+import { getReviews } from '~/features/reviews/api/getReviews'
+import type { Review } from '~/models/review-topic.types'
 
-// Context interface
-export interface ReviewsContextValue {
-	// Data
-	scheduledReviews: Array<ApiReview>
-	unscheduledReviews: Array<ApiReview>
-
-	// Loading states
-	isLoadingReviews: boolean
-
-	// Utilities
-	revalidateReviews: () => void
+interface ReviewsDataContextValue {
+	scheduledReviews: Array<Review>
+	unscheduledReviews: Array<Review>
+	isLoading: boolean
 }
 
-export const ReviewsDataContext = createContext<ReviewsContextValue | null>(
-	null
-)
+const ReviewsDataContext = createContext<ReviewsDataContextValue | null>(null)
+
+export function useReviewsData() {
+	const context = useContext(ReviewsDataContext)
+	if (!context) {
+		throw new Error('useReviewsData must be used within a ReviewsDataProvider')
+	}
+	return context
+}
 
 interface ReviewsDataProviderProps {
-	children: React.ReactNode
+	children: ReactNode
 	selectedTopicId: number | undefined
 }
 
@@ -29,62 +29,57 @@ export function ReviewsDataProvider({
 	children,
 	selectedTopicId
 }: ReviewsDataProviderProps) {
-	const queryClient = useQueryClient()
-
-	// Fetch all reviews for the selected topic
-	const {
-		data: rawAllReviews = [],
-		isLoading: isLoadingReviews,
-		refetch: refetchReviews
-	} = useQuery({
-		queryKey: ['reviews', { topicId: selectedTopicId }],
+	const { data: reviews = [], isLoading } = useQuery({
+		queryKey: ['reviews', selectedTopicId],
 		queryFn: () => getReviews({ topicId: selectedTopicId }),
-		enabled: !!selectedTopicId
+		enabled: selectedTopicId !== undefined
 	})
 
-	// Split into scheduled/unscheduled
 	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
-		// Split into scheduled (has effective_date) and unscheduled (no effective_date)
-		const scheduled = rawAllReviews
-			.filter(review => review.effective_date != null)
-			.sort(
-				(a, b) =>
-					new Date(a.effective_date!).getTime() -
-					new Date(b.effective_date!).getTime()
+		const scheduled: Array<Review> = []
+		const unscheduled: Array<Review> = []
+
+		for (const review of reviews) {
+			if (review.scheduled_at) {
+				scheduled.push(review)
+			} else {
+				unscheduled.push(review)
+			}
+		}
+
+		// Sort scheduled by date asc
+		scheduled.sort((a, b) => {
+			return (
+				new Date(a.scheduled_at!).getTime() -
+				new Date(b.scheduled_at!).getTime()
 			)
+		})
 
-		const unscheduled = rawAllReviews
-			.filter(review => review.effective_date == null)
-			.sort(
-				(a, b) =>
-					new Date(b.inserted_at!).getTime() -
-					new Date(a.inserted_at!).getTime()
+		// Sort unscheduled by inserted_at desc (newest first)
+		unscheduled.sort((a, b) => {
+			return (
+				new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
 			)
+		})
 
-		return { scheduledReviews: scheduled, unscheduledReviews: unscheduled }
-	}, [rawAllReviews])
+		return {
+			scheduledReviews: scheduled,
+			unscheduledReviews: unscheduled
+		}
+	}, [reviews])
 
-	const revalidateReviews = useCallback(() => {
-		refetchReviews()
-		invalidateTopicsAndReviews(queryClient)
-	}, [refetchReviews, queryClient])
-
-	const contextValue: ReviewsContextValue = {
-		scheduledReviews,
-		unscheduledReviews,
-		isLoadingReviews,
-		revalidateReviews
-	}
+	const value = useMemo(
+		() => ({
+			scheduledReviews,
+			unscheduledReviews,
+			isLoading
+		}),
+		[scheduledReviews, unscheduledReviews, isLoading]
+	)
 
 	return (
-		<ReviewsDataContext value={contextValue}>{children}</ReviewsDataContext>
+		<ReviewsDataContext.Provider value={value}>
+			{children}
+		</ReviewsDataContext.Provider>
 	)
-}
-
-export function useReviewsData() {
-	const context = useContext(ReviewsDataContext)
-	if (!context) {
-		throw new Error('useReviewsData must be used within ReviewsDataProvider')
-	}
-	return context
 }

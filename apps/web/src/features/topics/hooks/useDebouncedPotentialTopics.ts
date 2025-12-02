@@ -1,5 +1,5 @@
-import debounce from 'lodash.debounce'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import type { Topic } from '~/models/review-topic.types'
 import { useGetPotentialChildren } from './useGetPotentialChildren'
 import { useGetPotentialParents } from './useGetPotentialParents'
@@ -18,16 +18,7 @@ export function useDebouncedPotentialTopics({
 	enabled = true
 }: UseDebouncedPotentialTopicsProps) {
 	const [query, setQuery] = useState('')
-	const [debouncedQuery, setDebouncedQuery] = useState('')
-
-	const updateDebouncedQuery = useCallback(
-		debounce((term: string) => setDebouncedQuery(term), debounceMs),
-		[]
-	)
-
-	useEffect(() => {
-		updateDebouncedQuery(query)
-	}, [query, updateDebouncedQuery])
+	const debouncedQuery = useDebouncedValue(query, debounceMs)
 
 	const {
 		data: potentialChildren = [],

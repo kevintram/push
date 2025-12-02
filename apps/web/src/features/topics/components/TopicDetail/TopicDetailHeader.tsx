@@ -15,7 +15,10 @@ interface TopicDetailHeaderProps {
 	onArchiveToggle: () => void
 	onInboxToggle: () => void
 	onDelete: () => void
-	headerActions?: ReactNode
+	onParentSelect?: (parent: Topic) => void
+	onTopicCreated?: (topic: Topic) => void
+	beforeMoreButton?: ReactNode
+	afterMoreButton?: ReactNode
 }
 
 export function TopicDetailHeader({
@@ -23,16 +26,23 @@ export function TopicDetailHeader({
 	onArchiveToggle,
 	onInboxToggle,
 	onDelete,
-	headerActions
+	onParentSelect,
+	onTopicCreated,
+	beforeMoreButton,
+	afterMoreButton
 }: TopicDetailHeaderProps) {
 	return (
 		<div className='sticky top-0 z-10 w-full border-b'>
 			<div className='flex items-center justify-between gap-4 px-2 py-1'>
 				<div className='flex min-w-0 flex-1 items-center gap-4'>
-					<TopicParentsPanel />
+					<TopicParentsPanel
+						onParentSelect={onParentSelect}
+						onTopicCreated={onTopicCreated}
+					/>
 				</div>
 
 				<div className='flex items-center gap-2'>
+					{beforeMoreButton ? beforeMoreButton : null}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true}>
 							<Button
@@ -78,7 +88,7 @@ export function TopicDetailHeader({
 						</DropdownMenuContent>
 					</DropdownMenu>
 
-					{headerActions}
+					{afterMoreButton}
 				</div>
 			</div>
 		</div>
