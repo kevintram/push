@@ -602,8 +602,7 @@ export function AddTopicToReviewDialog({
 										>
 											<TopicContext value={topicContextValue}>
 												<TopicDetail
-													allowReviewCreation={false}
-													headerActions={
+													afterMoreButton={
 														<>
 															<Button
 																className='h-6 w-6 p-0 text-muted-foreground'
@@ -625,24 +624,14 @@ export function AddTopicToReviewDialog({
 															</Button>
 														</>
 													}
-													isAddedToReview={selectedTopicIsAdded}
-													onAddToReview={() => {
-														if (selectedTopic) {
-															handleTopicClick(selectedTopic)
-														}
-													}}
-													onChildSelect={handleInlineTopicSwitch}
+													allowReviewCreation={false}
+													beforeMoreButton={renderReviewToggleButton}
+													onChildClicked={handleInlineTopicSwitch}
 													onDelete={handleTopicDeleted}
-													onParentSelect={handleInlineTopicSwitch}
-													onRemoveFromReview={() => {
-														if (selectedTopic) {
-															handleRemoveTopicClick(selectedTopic)
-														}
-													}}
+													onParentClicked={handleInlineTopicSwitch}
 													onTopicCreated={handleNestedTopicCreated}
-													readonly={true}
 													renderChildCard={renderAddTopicCard}
-													renderReviewToggle={renderReviewToggleButton}
+													reviewSidebarReadonly={true}
 												/>
 											</TopicContext>
 										</motion.div>

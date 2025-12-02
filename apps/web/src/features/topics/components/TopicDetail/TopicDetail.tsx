@@ -24,34 +24,28 @@ import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 
 interface TopicDetailProps {
 	onDelete?: () => void | Promise<void>
-	headerActions?: ReactNode
+	beforeMoreButton?: ReactNode
+	afterMoreButton?: ReactNode
 	allowReviewCreation?: boolean
 	renderChildCard?: (child: Topic, removeRelationship: () => void) => ReactNode
-	onChildSelect?: (child: Topic) => void
-	onParentSelect?: (parent: Topic) => void
+	onChildClicked?: (child: Topic) => void
+	onParentClicked?: (parent: Topic) => void
 	relatedTopicId?: number
-	readonly?: boolean
-	isAddedToReview?: boolean
-	onAddToReview?: () => void
-	onRemoveFromReview?: () => void
+	reviewSidebarReadonly?: boolean
 	onTopicCreated?: (topic: Topic) => void
-	renderReviewToggle?: ReactNode
 }
 
 export function TopicDetail({
 	onDelete,
-	headerActions,
+	beforeMoreButton,
+	afterMoreButton,
 	allowReviewCreation = true,
 	renderChildCard,
-	onChildSelect,
-	onParentSelect,
+	onChildClicked,
+	onParentClicked,
 	relatedTopicId,
-	readonly = false,
-	isAddedToReview,
-	onAddToReview,
-	onRemoveFromReview,
-	onTopicCreated,
-	renderReviewToggle
+	reviewSidebarReadonly = false,
+	onTopicCreated
 }: TopicDetailProps) {
 	const { topic, isLoading } = use(TopicContext)
 	const queryClient = useQueryClient()
@@ -144,16 +138,13 @@ export function TopicDetail({
 		<SidebarProvider defaultOpen={true} enableKeyboardShortcut={false}>
 			<div className='flex h-full min-h-0 flex-col'>
 				<TopicDetailHeader
-					headerActions={headerActions}
-					isAddedToReview={isAddedToReview}
-					onAddToReview={onAddToReview}
+					afterMoreButton={afterMoreButton}
+					beforeMoreButton={beforeMoreButton}
 					onArchiveToggle={handleArchiveToggle}
 					onDelete={handleDelete}
 					onInboxToggle={handleInboxToggle}
-					onParentSelect={onParentSelect}
-					onRemoveFromReview={onRemoveFromReview}
+					onParentSelect={onParentClicked}
 					onTopicCreated={onTopicCreated}
-					renderReviewToggle={renderReviewToggle}
 					topic={topic}
 				/>
 				<SidebarHolder className='flex min-h-0 flex-1'>
@@ -238,14 +229,14 @@ export function TopicDetail({
 						</div>
 						<TopicChildrenPanel
 							getScrollElement={() => scrollContainerRef.current}
-							onChildClick={onChildSelect}
+							onChildClick={onChildClicked}
 							onTopicCreated={onTopicCreated}
 							renderChildCard={renderChildCard}
 						/>
 					</div>
 					<ReviewsSidebar
 						allowReviewCreation={allowReviewCreation}
-						readonly={readonly}
+						readonly={reviewSidebarReadonly}
 						relatedTopicId={relatedTopicId}
 					/>
 				</SidebarHolder>

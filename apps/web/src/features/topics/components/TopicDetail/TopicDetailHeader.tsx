@@ -1,12 +1,4 @@
-import {
-	Archive,
-	ArchiveX,
-	Check,
-	Inbox,
-	MoreHorizontal,
-	Plus,
-	Trash
-} from 'lucide-react'
+import { Archive, ArchiveX, Inbox, MoreHorizontal, Trash } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
@@ -24,12 +16,9 @@ interface TopicDetailHeaderProps {
 	onInboxToggle: () => void
 	onDelete: () => void
 	onParentSelect?: (parent: Topic) => void
-	headerActions?: ReactNode
-	isAddedToReview?: boolean
-	onAddToReview?: () => void
-	onRemoveFromReview?: () => void
 	onTopicCreated?: (topic: Topic) => void
-	renderReviewToggle?: ReactNode
+	beforeMoreButton?: ReactNode
+	afterMoreButton?: ReactNode
 }
 
 export function TopicDetailHeader({
@@ -38,12 +27,9 @@ export function TopicDetailHeader({
 	onInboxToggle,
 	onDelete,
 	onParentSelect,
-	headerActions,
-	isAddedToReview,
-	onAddToReview,
-	onRemoveFromReview,
 	onTopicCreated,
-	renderReviewToggle
+	beforeMoreButton,
+	afterMoreButton
 }: TopicDetailHeaderProps) {
 	return (
 		<div className='sticky top-0 z-10 w-full border-b'>
@@ -56,28 +42,7 @@ export function TopicDetailHeader({
 				</div>
 
 				<div className='flex items-center gap-2'>
-					{renderReviewToggle
-						? renderReviewToggle
-						: onAddToReview &&
-							onRemoveFromReview && (
-								<Button
-									className={`!p-2 h-6 gap-1 rounded-lg ${isAddedToReview ? 'text-green-400' : ''}`}
-									onClick={isAddedToReview ? onRemoveFromReview : onAddToReview}
-									variant='secondary'
-								>
-									{isAddedToReview ? (
-										<>
-											<Check className='h-4 w-4' />
-											Added
-										</>
-									) : (
-										<>
-											<Plus className='h-4 w-4' />
-											Add
-										</>
-									)}
-								</Button>
-							)}
+					{beforeMoreButton ? beforeMoreButton : null}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true}>
 							<Button
@@ -123,7 +88,7 @@ export function TopicDetailHeader({
 						</DropdownMenuContent>
 					</DropdownMenu>
 
-					{headerActions}
+					{afterMoreButton}
 				</div>
 			</div>
 		</div>

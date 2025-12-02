@@ -26,7 +26,10 @@ export function TopicPage({ topicId }: { topicId: number | undefined }) {
 
 	return (
 		<TopicContext value={contextValue}>
-			<TopicDetail headerActions={<SidebarTrigger />} onDelete={handleDelete} />
+			<TopicDetail
+				afterMoreButton={<SidebarTrigger />}
+				onDelete={handleDelete}
+			/>
 		</TopicContext>
 	)
 }
