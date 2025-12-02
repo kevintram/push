@@ -102,8 +102,14 @@ export function ReviewTopicsPanel({
 					Topics covered ({topics.length})
 				</span>
 				<div className='flex-1' />
-				<Button onClick={onAddTopic} size='icon-sm' variant='ghost'>
+				<Button
+					className='gap-1'
+					onClick={onAddTopic}
+					size='sm'
+					variant='outline'
+				>
 					<Plus />
+					Add
 				</Button>
 			</div>
 			<div className='flex-1'>
