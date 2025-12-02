@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
-import debounce from 'lodash.debounce'
 import {
 	Check,
 	ChevronUp,
@@ -35,6 +34,7 @@ import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetai
 import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
 import { useTopicWithRelationships } from '~/features/topics/hooks/useTopicWithRelationships'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
+import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import type { Topic } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { AddTopicCard } from './AddTopicCard'
@@ -56,7 +56,6 @@ export function AddTopicToReviewDialog({
 }: AddTopicToReviewDialogProps) {
 	// State
 	const [searchQuery, setSearchQuery] = useState('')
-	const [debouncedQuery, setDebouncedQuery] = useState('')
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 	const [selectedTopicId, setSelectedTopicId] = useState<number | undefined>(
 		undefined
@@ -71,35 +70,18 @@ export function AddTopicToReviewDialog({
 		useCreateTopic()
 	const { topic: selectedTopic, isLoading: isLoadingTopic } =
 		useTopicWithRelationships(selectedTopicId)
+	const debouncedQuery = useDebouncedValue(searchQuery, 300)
 
-	// Calculate existing topic IDs from the review
-	const existingTopicIds = useMemo(
+	const addedTopics = useMemo(
 		() => new Set(review?.topic_reviews?.map(tr => tr.topic_id) ?? []),
 		[review?.topic_reviews]
 	)
-
-	// Calculate topic count
-	const topicCount = review?.topic_reviews?.length ?? 0
-
-	// Sort topic reviews by date added (descending)
-	const sortedTopicReviews = useMemo(() => {
-		if (!review?.topic_reviews) return []
-
-		return [...review.topic_reviews].sort(
-			(a, b) =>
-				new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
-		)
-	}, [review?.topic_reviews])
-
-	// Debounced search query
-	const updateDebouncedQuery = useCallback(
-		debounce((term: string) => setDebouncedQuery(term), 300),
-		[]
+	const isTopicAdded = useCallback(
+		(topicId: number) => addedTopics.has(topicId),
+		[addedTopics]
 	)
 
-	useEffect(() => {
-		updateDebouncedQuery(searchQuery)
-	}, [searchQuery, updateDebouncedQuery])
+	const addedTopicsCount = review?.topic_reviews?.length ?? 0
 
 	// Focus search input when dialog opens
 	useEffect(() => {
@@ -153,11 +135,6 @@ export function AddTopicToReviewDialog({
 			await invalidateTopicsAndReviews(queryClient)
 		}
 	})
-
-	const isTopicAdded = useCallback(
-		(topicId: number) => existingTopicIds.has(topicId),
-		[existingTopicIds]
-	)
 
 	// Event handlers
 	const handleCreateTopic = useCallback(async () => {
@@ -267,40 +244,34 @@ export function AddTopicToReviewDialog({
 		[selectedTopicId, isTopicMinimized, viewMode]
 	)
 
-	const handleBackToSearch = useCallback(() => {
+	const onTopicDetailClose = useCallback(() => {
 		setViewMode('search')
 		setIsTopicMinimized(false)
 		setTimeout(() => setSelectedTopicId(undefined), 200)
 	}, [])
 
-	const handleTopicDeleted = useCallback(() => {
+	const onTopicDeleted = useCallback(() => {
 		setViewMode('search')
 		setIsTopicMinimized(false)
 		setSelectedTopicId(undefined)
 	}, [])
 
-	const handleMinimizeTopic = useCallback(() => {
+	const onToicDetailMinimize = useCallback(() => {
 		setIsTopicMinimized(true)
 	}, [])
 
-	const handleMaximizeTopic = useCallback(() => {
+	const onTopicDetailMaximize = useCallback(() => {
 		setIsTopicMinimized(false)
 	}, [])
 
-	const handleCloseTopicDetail = useCallback(() => {
-		setViewMode('search')
-		setIsTopicMinimized(false)
-		setTimeout(() => setSelectedTopicId(undefined), 200)
-	}, [])
-
-	const handleSearchFocus = useCallback(() => {
+	const onSearchFocus = useCallback(() => {
 		// If TopicDetail is expanded (not minimized), minimize it when search is focused
 		if (viewMode === 'detail' && !isTopicMinimized) {
 			setIsTopicMinimized(true)
 		}
 	}, [viewMode, isTopicMinimized])
 
-	const handleInlineTopicSwitch = useCallback((topic: Topic) => {
+	const onTopicSwitched = useCallback((topic: Topic) => {
 		setSelectedTopicId(topic.id)
 		setViewMode('detail')
 		setIsTopicMinimized(false)
@@ -354,7 +325,7 @@ export function AddTopicToReviewDialog({
 				minHeight={72}
 				onCardClick={
 					removeRelationship
-						? () => handleInlineTopicSwitch(topic)
+						? () => onTopicSwitched(topic)
 						: handleCardDetailClick
 				}
 				onRemoveClick={handleRemoveTopicClick}
@@ -370,16 +341,16 @@ export function AddTopicToReviewDialog({
 			isTopicAdded,
 			handleRemoveTopicClick,
 			handleCardDetailClick,
-			handleInlineTopicSwitch
+			onTopicSwitched
 		]
 	)
 
-	const renderMasonryItem = useCallback(
+	const renderSearchResultItem = useCallback(
 		(topic: Topic) => renderAddTopicCard(topic),
 		[renderAddTopicCard]
 	)
 
-	const getItemKey = useCallback((topic: Topic) => topic.id, [])
+	const getSearchResultItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	const hasQuery = Boolean(debouncedQuery.trim())
 
@@ -396,33 +367,6 @@ export function AddTopicToReviewDialog({
 		[selectedTopic, isLoadingTopic]
 	)
 
-	const renderReviewToggleButton = selectedTopic ? (
-		<Button
-			className={`!p-2 h-6 gap-1 rounded-lg ${selectedTopicIsAdded ? 'text-green-400' : ''}`}
-			onClick={async () => {
-				if (!selectedTopic) return
-				if (selectedTopicIsAdded) {
-					await handleRemoveTopicClick(selectedTopic)
-				} else {
-					await handleTopicClick(selectedTopic)
-				}
-			}}
-			variant='secondary'
-		>
-			{selectedTopicIsAdded ? (
-				<>
-					<Check />
-					Added
-				</>
-			) : (
-				<>
-					<Plus />
-					Add
-				</>
-			)}
-		</Button>
-	) : null
-
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent
@@ -432,7 +376,7 @@ export function AddTopicToReviewDialog({
 				<DialogHeader className='flex-shrink-0 px-4 pt-4'>
 					<DialogTitle className='sr-only'>Add Topic to Review</DialogTitle>
 					<div className='flex items-center gap-4'>
-						{topicCount !== undefined && (
+						{addedTopicsCount !== undefined && (
 							<Popover onOpenChange={setIsPopoverOpen} open={isPopoverOpen}>
 								<PopoverTrigger asChild={true}>
 									<Button
@@ -444,7 +388,7 @@ export function AddTopicToReviewDialog({
 										size='default'
 										variant='link'
 									>
-										{topicCount} topics added to review
+										{addedTopicsCount} topics added to review
 									</Button>
 								</PopoverTrigger>
 								<PopoverContent
@@ -453,13 +397,13 @@ export function AddTopicToReviewDialog({
 									onClick={e => e.stopPropagation()}
 									side='bottom'
 								>
-									{sortedTopicReviews && sortedTopicReviews.length > 0 ? (
+									{review?.topic_reviews && review.topic_reviews.length > 0 ? (
 										<div>
 											<MasonryLayout
 												estimateItemSize={estimateTopicReviewItemSize}
 												gap={12}
 												getItemKey={topicReview => topicReview.id}
-												items={sortedTopicReviews}
+												items={review.topic_reviews}
 												minItemWidth={250}
 												renderItem={topicReview => (
 													<ReviewTopicCard
@@ -490,7 +434,7 @@ export function AddTopicToReviewDialog({
 							<Input
 								className='border-0 px-10 text-lg shadow-none'
 								onChange={handleSearchChange}
-								onFocus={handleSearchFocus}
+								onFocus={onSearchFocus}
 								placeholder='Search topics...'
 								ref={inputRef}
 								value={searchQuery}
@@ -528,7 +472,7 @@ export function AddTopicToReviewDialog({
 				<div className='scrollbar-track-transparent flex-1 overflow-y-auto p-4 pt-0'>
 					<AnimatePresence initial={false} mode='wait'>
 						{viewMode === 'search' ||
-							(viewMode === 'detail' && isTopicMinimized) ? (
+						(viewMode === 'detail' && isTopicMinimized) ? (
 							<motion.div
 								animate={{ opacity: 1 }}
 								exit={{ opacity: 0 }}
@@ -569,10 +513,10 @@ export function AddTopicToReviewDialog({
 									<MasonryLayout
 										estimateItemSize={estimateItemSize}
 										gap={12}
-										getItemKey={getItemKey}
+										getItemKey={getSearchResultItemKey}
 										items={results}
 										minItemWidth={MIN_CARD_WIDTH}
-										renderItem={renderMasonryItem}
+										renderItem={renderSearchResultItem}
 									/>
 								)}
 							</motion.div>
@@ -606,7 +550,7 @@ export function AddTopicToReviewDialog({
 														<>
 															<Button
 																className='h-6 w-6 p-0 text-muted-foreground'
-																onClick={handleMinimizeTopic}
+																onClick={onToicDetailMinimize}
 																size='sm'
 																title='Minimize'
 																variant='ghost'
@@ -615,7 +559,7 @@ export function AddTopicToReviewDialog({
 															</Button>
 															<Button
 																className='h-6 w-6 p-0 text-muted-foreground'
-																onClick={handleBackToSearch}
+																onClick={onTopicDetailClose}
 																size='sm'
 																title='Back to search'
 																variant='ghost'
@@ -625,10 +569,37 @@ export function AddTopicToReviewDialog({
 														</>
 													}
 													allowReviewCreation={false}
-													beforeMoreButton={renderReviewToggleButton}
-													onChildClicked={handleInlineTopicSwitch}
-													onDelete={handleTopicDeleted}
-													onParentClicked={handleInlineTopicSwitch}
+													beforeMoreButton={
+														selectedTopic ? (
+															<Button
+																className={`!p-2 h-6 gap-1 rounded-lg ${selectedTopicIsAdded ? 'text-green-400' : ''}`}
+																onClick={async () => {
+																	if (!selectedTopic) return
+																	if (selectedTopicIsAdded) {
+																		await handleRemoveTopicClick(selectedTopic)
+																	} else {
+																		await handleTopicClick(selectedTopic)
+																	}
+																}}
+																variant='secondary'
+															>
+																{selectedTopicIsAdded ? (
+																	<>
+																		<Check />
+																		Added
+																	</>
+																) : (
+																	<>
+																		<Plus />
+																		Add
+																	</>
+																)}
+															</Button>
+														) : null
+													}
+													onChildClicked={onTopicSwitched}
+													onDelete={onTopicDeleted}
+													onParentClicked={onTopicSwitched}
 													onTopicCreated={handleNestedTopicCreated}
 													renderChildCard={renderAddTopicCard}
 													reviewSidebarReadonly={true}
@@ -648,11 +619,11 @@ export function AddTopicToReviewDialog({
 						aria-label='Restore topic detail'
 						className='fixed right-4 bottom-4 z-50 flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg border bg-background p-3 hover:bg-muted'
 						layoutId='topic-container'
-						onClick={handleMaximizeTopic}
+						onClick={onTopicDetailMaximize}
 						onKeyDown={e => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault()
-								handleMaximizeTopic()
+								onTopicDetailMaximize()
 							}
 						}}
 						tabIndex={0}
@@ -679,7 +650,7 @@ export function AddTopicToReviewDialog({
 										className='h-5 w-5 p-0 text-muted-foreground'
 										onClick={e => {
 											e.stopPropagation()
-											handleCloseTopicDetail()
+											onTopicDetailClose()
 										}}
 										size='sm'
 										title='Close'
