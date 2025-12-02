@@ -63,9 +63,6 @@ export function AddTopicToReviewDialog({
 	)
 	const [viewMode, setViewMode] = useState<'search' | 'detail'>('search')
 	const [isTopicMinimized, setIsTopicMinimized] = useState(false)
-	const [optimisticTopicIds, setOptimisticTopicIds] = useState<Set<number>>(
-		new Set()
-	)
 	const inputRef = useRef<HTMLInputElement>(null)
 
 	// Hooks
@@ -118,10 +115,6 @@ export function AddTopicToReviewDialog({
 		}
 	}, [open])
 
-	useEffect(() => {
-		setOptimisticTopicIds(new Set())
-	}, [review?.topic_reviews])
-
 	// Search topics query
 	const { data: topics = [], isLoading } = useQuery({
 		queryKey: ['topics', 'search', debouncedQuery || 'recent', review?.id],
@@ -161,26 +154,9 @@ export function AddTopicToReviewDialog({
 		}
 	})
 
-	const markTopicAsAdded = useCallback((topicId: number) => {
-		setOptimisticTopicIds(prev => {
-			const next = new Set(prev)
-			next.add(topicId)
-			return next
-		})
-	}, [])
-
-	const markTopicAsRemoved = useCallback((topicId: number) => {
-		setOptimisticTopicIds(prev => {
-			const next = new Set(prev)
-			next.delete(topicId)
-			return next
-		})
-	}, [])
-
 	const isTopicAdded = useCallback(
-		(topicId: number) =>
-			existingTopicIds.has(topicId) || optimisticTopicIds.has(topicId),
-		[existingTopicIds, optimisticTopicIds]
+		(topicId: number) => existingTopicIds.has(topicId),
+		[existingTopicIds]
 	)
 
 	// Event handlers
@@ -197,8 +173,6 @@ export function AddTopicToReviewDialog({
 					reviewId: review.id,
 					topicId: newTopic.id
 				})
-				markTopicAsAdded(newTopic.id)
-
 				// Navigate to detail view instead of opening TopicDialog
 				setSelectedTopicId(newTopic.id)
 				setViewMode('detail')
@@ -206,13 +180,7 @@ export function AddTopicToReviewDialog({
 		} catch (_error) {
 			// Error handling could be added here if needed
 		}
-	}, [
-		searchQuery,
-		createTopicAsync,
-		review,
-		createTopicReviewMutation,
-		markTopicAsAdded
-	])
+	}, [searchQuery, createTopicAsync, review, createTopicReviewMutation])
 
 	const handleTopicClick = useCallback(
 		async (topic: Topic) => {
@@ -223,13 +191,12 @@ export function AddTopicToReviewDialog({
 					reviewId: review.id,
 					topicId: topic.id
 				})
-				markTopicAsAdded(topic.id)
 				// Dialog stays open
 			} catch (_error) {
 				// Handle error silently for now
 			}
 		},
-		[review, createTopicReviewMutation, markTopicAsAdded]
+		[review, createTopicReviewMutation]
 	)
 
 	// Callback for when a new topic is created from nested views (parents/children)
@@ -243,7 +210,6 @@ export function AddTopicToReviewDialog({
 					reviewId: review.id,
 					topicId: topic.id
 				})
-				markTopicAsAdded(topic.id)
 				// Also select it to show it in the detail view
 				setSelectedTopicId(topic.id)
 				setViewMode('detail')
@@ -252,20 +218,14 @@ export function AddTopicToReviewDialog({
 				// Handle error silently for now
 			}
 		},
-		[review, createTopicReviewMutation, markTopicAsAdded]
+		[review, createTopicReviewMutation]
 	)
 
 	const handleRemoveTopicReview = useCallback(
 		async (topicReviewId: number) => {
 			await deleteTopicReviewMutation(topicReviewId)
-			const topicId = review?.topic_reviews?.find(
-				tr => tr.id === topicReviewId
-			)?.topic_id
-			if (topicId) {
-				markTopicAsRemoved(topicId)
-			}
 		},
-		[deleteTopicReviewMutation, review?.topic_reviews, markTopicAsRemoved]
+		[deleteTopicReviewMutation]
 	)
 
 	const handleRemoveTopicClick = useCallback(
@@ -276,10 +236,9 @@ export function AddTopicToReviewDialog({
 			)
 			if (topicReview) {
 				await handleRemoveTopicReview(topicReview.id)
-				markTopicAsRemoved(topic.id)
 			}
 		},
-		[review?.topic_reviews, handleRemoveTopicReview, markTopicAsRemoved]
+		[review?.topic_reviews, handleRemoveTopicReview]
 	)
 
 	const handleCardDetailClick = useCallback(
@@ -569,7 +528,7 @@ export function AddTopicToReviewDialog({
 				<div className='scrollbar-track-transparent flex-1 overflow-y-auto p-4 pt-0'>
 					<AnimatePresence initial={false} mode='wait'>
 						{viewMode === 'search' ||
-						(viewMode === 'detail' && isTopicMinimized) ? (
+							(viewMode === 'detail' && isTopicMinimized) ? (
 							<motion.div
 								animate={{ opacity: 1 }}
 								exit={{ opacity: 0 }}
