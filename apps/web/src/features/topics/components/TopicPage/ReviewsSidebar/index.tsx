@@ -26,6 +26,7 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { useCreateReview } from '~/features/reviews/hooks'
 import { createTopicReview } from '~/features/topic_reviews/api'
+import { type Rating } from '~/models/review-topic.types'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
@@ -47,11 +48,13 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const { mutateAsync: createTopicReviewMutation } = useMutation({
 		mutationFn: ({
 			reviewId,
-			topicId
+			topicId,
+			rating
 		}: {
 			reviewId: number
 			topicId: number
-		}) => createTopicReview(reviewId, topicId, 'good'),
+			rating: Rating | null
+		}) => createTopicReview(reviewId, topicId, rating),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['topics'] })
 			queryClient.invalidateQueries({ queryKey: ['reviews'] })
@@ -59,7 +62,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	})
 
 	const createReviewWithTopic = useCallback(
-		async (completedAt: string | null) => {
+		async (completedAt: string | null, rating: Rating | null) => {
 			if (!topic) throw new Error('Topic not found')
 
 			const review = await createReviewMutation({
@@ -70,7 +73,8 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 
 			createTopicReviewMutation({
 				reviewId: review.id,
-				topicId: topic.id
+				topicId: topic.id,
+				rating
 			}).catch(error => {
 				throw error
 			})
@@ -82,11 +86,11 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 
 	const handleLogReviewNow = useCallback(async () => {
 		const today = new Date().toISOString().split('T')[0] ?? '' // YYYY-MM-DD format
-		await createReviewWithTopic(today)
+		await createReviewWithTopic(today, 'good')
 	}, [createReviewWithTopic])
 
 	const handleNewReviewForLater = useCallback(async () => {
-		await createReviewWithTopic(null)
+		await createReviewWithTopic(null, null)
 	}, [createReviewWithTopic])
 
 	const handleReviewClick = useCallback(
