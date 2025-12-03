@@ -1,10 +1,11 @@
+import { useQuery } from '@tanstack/react-query'
 import { History, Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useRecentTopics } from '~/features/topics/hooks'
+import { getTopics } from '~/features/topics/api'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import type { Topic } from '~/models/review-topic.types'
 import { RootTopicsPageSkeleton } from '../RootTopicsPage/RootTopicsPageSkeleton'
@@ -19,7 +20,10 @@ export function RecentTopicsPage() {
 	const { createTopicWithReview } = useCreateTopicWithReview()
 
 	// Fetch 50 most recent topics
-	const { data: topics = [], isLoading } = useRecentTopics()
+	const { data: topics = [], isLoading } = useQuery({
+		queryKey: ['topics', 'recent'],
+		queryFn: () => getTopics({ order: 'desc', limit: 50 })
+	})
 
 	const handleCreateTopic = useCallback(async () => {
 		const newTopic = await createTopicWithReview({

@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import * as v from 'valibot'
-import { type Topic, TopicSchema } from '~/models/review-topic.types'
-import { apiFetch } from '~/utils/apiFetch'
+import type { Topic } from '~/models/review-topic.types'
+import { getTopics } from '../api'
 
 export type TodayTopicSectionKey = 'overdue' | 'today'
 
@@ -28,32 +27,13 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	}
 ]
 
-async function fetchTodayTopics(): Promise<Array<Topic>> {
-	const today = dayjs().format('YYYY-MM-DD')
-	const searchParams = new URLSearchParams({
-		due_before: today,
-		archived: 'false'
-	})
-
-	// Fetch topics with due <= today (only scheduled topics)
-	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/?${searchParams.toString()}`
-	)
-	const data = await response.json()
-	try {
-		return v.parse(v.array(TopicSchema), data)
-	} catch (error) {
-		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`)
-		}
-		throw error
-	}
-}
-
 export function useTodayTopics() {
 	const query = useQuery({
 		queryKey: ['topics', 'today'],
-		queryFn: fetchTodayTopics
+		queryFn: () => {
+			const today = dayjs().format('YYYY-MM-DD')
+			return getTopics({ dueBefore: today, archived: false })
+		}
 	})
 
 	const todayDateStr = useMemo(() => {

@@ -4,8 +4,7 @@ import { useCallback } from 'react'
 import { createReview } from '~/features/reviews/api'
 import { createTopicReview } from '~/features/topic_reviews/api/createTopicReview'
 import type { Topic } from '~/models/review-topic.types'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { useCreateTopic } from './useCreateTopic'
+import { createTopic } from '../api'
 
 type CreateTopicWithReviewInput = {
 	name?: string
@@ -23,38 +22,75 @@ type CreateTopicWithReviewInput = {
  * logging it as a completed review for tracking purposes.
  */
 export function useCreateTopicWithReview() {
-	const { mutateAsync: createTopicAsync, isPending } = useCreateTopic()
 	const queryClient = useQueryClient()
 
-	const { mutateAsync: createReviewMutation } = useMutation({
+	const { mutateAsync: createTopicMutation, isPending: isTopicCreatePending } =
+		useMutation({
+			mutationFn: createTopic
+		})
+	const {
+		mutateAsync: createReviewMutation,
+		isPending: isReviewCreatePending
+	} = useMutation({
 		mutationFn: createReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
+		retry: 2
+	})
+	const {
+		mutateAsync: createTopicReviewMutation,
+		isPending: isTopicReviewCreatePending
+	} = useMutation({
+		mutationFn: ({
+			reviewId,
+			topicId
+		}: {
+			reviewId: number
+			topicId: number
+		}) => createTopicReview(reviewId, topicId, 'good'),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		},
+		retry: 2
 	})
 
 	const createTopicWithReview = useCallback(
 		async (input: CreateTopicWithReviewInput = {}): Promise<Topic> => {
-			// Create the topic
-			const newTopic = await createTopicAsync(input)
-
-			// Create a completed "Created" review for today
-			const review = await createReviewMutation({
+			// Start both requests immediately (don't await yet)
+			const topicPromise = createTopicMutation(input)
+			const reviewPromise = createReviewMutation({
 				description: 'Created',
 				scheduledAt: null,
 				completedAt: dayjs().format('YYYY-MM-DD')
 			})
 
-			// Link the review to the topic with a 'good' rating
-			await createTopicReview(review.id, newTopic.id, 'good')
+			// Await topic to return it immediately
+			const newTopic = await topicPromise
 
-			// Invalidate topic-reviews cache to reflect the new association
-			queryClient.invalidateQueries({ queryKey: ['topic-reviews'] })
+			// Start the linking operation that waits for both (fire-and-forget)
+			Promise.all([topicPromise, reviewPromise])
+				.then(([topic, review]) => {
+					return createTopicReviewMutation({
+						reviewId: review.id,
+						topicId: topic.id
+					})
+				})
+				.catch(error => {
+					throw error
+				})
 
 			return newTopic
 		},
-		[createTopicAsync, createReviewMutation, queryClient]
+		[createTopicMutation, createReviewMutation, createTopicReviewMutation]
 	)
 
-	return { createTopicWithReview, isPending }
+	return {
+		createTopicWithReview,
+		isTopicCreatePending,
+		isReviewCreatePending,
+		isTopicReviewCreatePending,
+		isPending:
+			isTopicCreatePending ||
+			isReviewCreatePending ||
+			isTopicReviewCreatePending
+	}
 }

@@ -4,6 +4,11 @@ import { apiFetch } from '~/utils/apiFetch'
 
 type GetReviewsFilters = {
 	topicId?: number
+	effectiveDateBefore?: string
+	effectiveDateAfter?: string
+	scheduled?: boolean
+	completed?: boolean
+	completedBefore?: string
 }
 
 export async function getReviews(filters?: GetReviewsFilters) {
@@ -11,6 +16,26 @@ export async function getReviews(filters?: GetReviewsFilters) {
 
 	if (filters?.topicId !== undefined) {
 		params.append('topic_id', filters.topicId.toString())
+	}
+
+	if (filters?.effectiveDateBefore !== undefined) {
+		params.append('effective_date_before', filters.effectiveDateBefore)
+	}
+
+	if (filters?.effectiveDateAfter !== undefined) {
+		params.append('effective_date_after', filters.effectiveDateAfter)
+	}
+
+	if (filters?.scheduled !== undefined) {
+		params.append('scheduled', String(filters.scheduled))
+	}
+
+	if (filters?.completed !== undefined) {
+		params.append('completed', String(filters.completed))
+	}
+
+	if (filters?.completedBefore !== undefined) {
+		params.append('completed_before', filters.completedBefore)
 	}
 
 	const url = `${import.meta.env.VITE_API_URL}/reviews/${params.toString() ? `?${params.toString()}` : ''}`

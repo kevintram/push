@@ -1,6 +1,17 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ListChecks, Plus, Square, SquareCheck, SquarePen } from 'lucide-react'
+// React
+
+// External libraries
+import {
+	ListChecks,
+	Loader2,
+	Plus,
+	Square,
+	SquareCheck,
+	SquarePen
+} from 'lucide-react'
 import { useCallback } from 'react'
+
+// UI Components
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -11,58 +22,61 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
+
+// Feature hooks
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { createReview } from '~/features/reviews/api'
-import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { useCreateReview } from '~/features/reviews/hooks'
+import { useCreateTopicWithReview } from '~/features/topics/hooks'
 
 export function CreateButton() {
-	const { createTopicWithReview, isPending: isCreatingTopic } =
+	// Hooks
+	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
+	const { createReview, isPending: isCreatingReview } = useCreateReview()
 	const { openTopicDialog, openReviewDialog } = useReviewTopicDialog()
-	const queryClient = useQueryClient()
 
-	const { mutateAsync: createReviewMutation } = useMutation({
-		mutationFn: createReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
+	const isLoading = isCreatingTopic || isCreatingReview
 
+	// Handlers
 	const handleNewTopic = useCallback(async () => {
 		const createdTopic = await createTopicWithReview({})
 		openTopicDialog(createdTopic.id)
 	}, [createTopicWithReview, openTopicDialog])
 
 	const handleLogReviewNow = useCallback(async () => {
-		const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
-		const review = await createReviewMutation({
+		const today = new Date().toISOString().split('T')[0]
+		const review = await createReview({
 			description: '',
 			scheduledAt: null,
 			completedAt: today
 		})
 		openReviewDialog(review.id)
-	}, [createReviewMutation, openReviewDialog])
+	}, [createReview, openReviewDialog])
 
 	const handleNewReviewForLater = useCallback(async () => {
-		const review = await createReviewMutation({
+		const review = await createReview({
 			description: '',
 			scheduledAt: null,
 			completedAt: null
 		})
 		openReviewDialog(review.id)
-	}, [createReviewMutation, openReviewDialog])
+	}, [createReview, openReviewDialog])
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild={true}>
+			<DropdownMenuTrigger asChild={true} disabled={isLoading}>
 				<SidebarMenuButton
 					className='rounded-full'
-					tooltip='Create new...'
+					disabled={isLoading}
+					tooltip={isLoading ? 'Creating...' : 'Create new...'}
 					variant='secondary'
 				>
-					<Plus className='' />
-					<span>Create</span>
+					{isLoading ? (
+						<Loader2 className='animate-spin' />
+					) : (
+						<Plus className='' />
+					)}
+					<span>{isLoading ? 'Creating...' : 'Create'}</span>
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='start' side='right'>
@@ -82,7 +96,7 @@ export function CreateButton() {
 						</DropdownMenuItem>
 					</DropdownMenuSubContent>
 				</DropdownMenuSub>
-				<DropdownMenuItem disabled={isCreatingTopic} onClick={handleNewTopic}>
+				<DropdownMenuItem disabled={isLoading} onClick={handleNewTopic}>
 					<SquarePen />
 					<span>New topic</span>
 				</DropdownMenuItem>

@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import * as v from 'valibot'
-import { type Review, ReviewSchema } from '~/models/review-topic.types'
-import { apiFetch } from '~/utils/apiFetch'
+import type { Review } from '~/models/review-topic.types'
+import { getReviews } from '../api/getReviews'
 
 type LogbookSection = {
 	id: string
@@ -11,27 +10,13 @@ type LogbookSection = {
 	entries: Array<Review>
 }
 
-async function fetchLogbookReviews(): Promise<Array<Review>> {
-	const yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD')
-	// Fetch completed reviews with completed_at <= yesterday
-	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/reviews/?completed_before=${yesterday}`
-	)
-	const data = await response.json()
-	try {
-		return v.parse(v.array(ReviewSchema), data)
-	} catch (error) {
-		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`)
-		}
-		throw error
-	}
-}
-
 export function useLogbookReviews() {
 	const query = useQuery({
 		queryKey: ['reviews', 'logbook'],
-		queryFn: fetchLogbookReviews
+		queryFn: () => {
+			const yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD')
+			return getReviews({ completedBefore: yesterday })
+		}
 	})
 
 	// Group reviews into Yesterday, Last Week, and Monthly sections

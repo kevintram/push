@@ -1,10 +1,11 @@
+import { useQuery } from '@tanstack/react-query'
 import { Archive, Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useArchivedTopics } from '~/features/topics/hooks'
+import { getTopics } from '~/features/topics/api'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import type { Topic } from '~/models/review-topic.types'
 import { RootTopicsPageSkeleton } from '../RootTopicsPage/RootTopicsPageSkeleton'
@@ -19,7 +20,10 @@ export function ArchivePage() {
 	const { createTopicWithReview } = useCreateTopicWithReview()
 
 	// Fetch archived topics sorted by most recently updated
-	const { data: topics = [], isLoading } = useArchivedTopics()
+	const { data: topics = [], isLoading } = useQuery({
+		queryKey: ['topics', 'archived'],
+		queryFn: () => getTopics({ archived: true, order: 'desc' })
+	})
 
 	const handleCreateTopic = useCallback(async () => {
 		const newTopic = await createTopicWithReview({

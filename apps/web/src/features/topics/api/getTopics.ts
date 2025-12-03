@@ -1,37 +1,65 @@
 import * as v from 'valibot'
-import { TopicSchema } from '~/models/review-topic.types'
+import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 
-type GetTopicsParams = {
-	topicIds: Array<number>
+export type GetTopicsParams = {
+	root?: boolean
+	inboxed?: boolean
+	archived?: boolean
+	order?: 'desc' | 'asc'
+	limit?: number
+	dueBefore?: string
+	dueAfter?: string
 }
 
-async function getTopics(params: GetTopicsParams) {
-	// For now, fetch topics individually since we don't have a batch endpoint
-	// In the future, we could add a batch endpoint to the API
-	const topics = await Promise.all(
-		params.topicIds.map(async id => {
-			const response = await apiFetch(
-				`${import.meta.env.VITE_API_URL}/topics/${id}/`
-			)
+export async function getTopics(
+	params: GetTopicsParams = {}
+): Promise<Array<Topic>> {
+	const searchParams = new URLSearchParams()
 
-			if (!response.ok) {
-				throw new Error(`API request failed: ${response.status}`)
-			}
+	if (params.root !== undefined) {
+		searchParams.append('root', String(params.root))
+	}
 
-			const data = await response.json()
-			try {
-				return v.parse(TopicSchema, data)
-			} catch (error) {
-				if (v.isValiError(error)) {
-					throw new Error(`Validation failed: ${error.message}`)
-				}
-				throw error
-			}
-		})
+	if (params.inboxed !== undefined) {
+		searchParams.append('inboxed', String(params.inboxed))
+	}
+
+	if (params.archived !== undefined) {
+		searchParams.append('archived', String(params.archived))
+	}
+
+	if (params.order !== undefined) {
+		searchParams.append('order', params.order)
+	}
+
+	if (params.limit !== undefined) {
+		searchParams.append('limit', String(params.limit))
+	}
+
+	if (params.dueBefore !== undefined) {
+		searchParams.append('due_before', params.dueBefore)
+	}
+
+	if (params.dueAfter !== undefined) {
+		searchParams.append('due_after', params.dueAfter)
+	}
+
+	const response = await apiFetch(
+		`${import.meta.env.VITE_API_URL}/topics/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
 	)
 
-	return topics
-}
+	if (!response.ok) {
+		throw new Error(`API request failed: ${response.status}`)
+	}
 
-export { getTopics }
+	const data = await response.json()
+	try {
+		return v.parse(v.array(TopicSchema), data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
+}

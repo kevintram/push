@@ -1,3 +1,4 @@
+export { createTopic } from './createTopic'
 export {
 	createChildRelationship,
 	createParentRelationship

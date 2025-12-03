@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import * as v from 'valibot'
-import { type Topic, TopicSchema } from '~/models/review-topic.types'
-import { apiFetch } from '~/utils/apiFetch'
+import type { Topic } from '~/models/review-topic.types'
+import { getTopics } from '../api/getTopics'
 
 export type SoonTopicSectionKey = 'tomorrow' | 'nextSevenDays'
 
@@ -27,34 +26,18 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	}
 ]
 
-async function fetchSoonTopics(): Promise<Array<Topic>> {
-	const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
-	const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
-	const searchParams = new URLSearchParams({
-		due_after: tomorrow,
-		due_before: nextWeekDate,
-		archived: 'false'
-	})
-
-	// Fetch topics with due between tomorrow and tomorow + 6 days (only scheduled topics)
-	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/?${searchParams.toString()}`
-	)
-	const data = await response.json()
-	try {
-		return v.parse(v.array(TopicSchema), data)
-	} catch (error) {
-		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`)
-		}
-		throw error
-	}
-}
-
 export function useSoonTopics() {
 	const query = useQuery({
 		queryKey: ['topics', 'soon'],
-		queryFn: fetchSoonTopics
+		queryFn: () => {
+			const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
+			const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
+			return getTopics({
+				dueAfter: tomorrow,
+				dueBefore: nextWeekDate,
+				archived: false
+			})
+		}
 	})
 
 	// Centralized date boundary calculations
