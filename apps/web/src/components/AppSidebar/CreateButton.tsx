@@ -14,7 +14,6 @@ import { SidebarMenuButton } from '~/components/ui/Sidebar'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { createReview } from '~/features/reviews/api'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 export function CreateButton() {
 	const { createTopicWithReview, isPending: isCreatingTopic } =
@@ -24,9 +23,7 @@ export function CreateButton() {
 
 	const { mutateAsync: createReviewMutation } = useMutation({
 		mutationFn: createReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reviews'] })
 	})
 
 	const handleNewTopic = useCallback(async () => {
