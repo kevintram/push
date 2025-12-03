@@ -1,5 +1,4 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Search, X } from 'lucide-react'
 import {
 	useCallback,
 	useEffect,
@@ -7,20 +6,20 @@ import {
 	useRef,
 	useState
 } from 'react'
-import { MasonryLayout } from '~/components/MasonryLayout'
+import {
+	MIN_HEIGHT,
+	SearchInput,
+	SearchResultsContainer
+} from '~/components/search'
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
-import { Input } from '~/components/ui/Input'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
 import type { Topic } from '~/models/review-topic.types'
-
-const MIN_CARD_WIDTH = 280
-const MIN_HEIGHT = 96
 
 interface SearchDialogProps {
 	open: boolean
@@ -55,6 +54,7 @@ export function SearchDialog({
 		}
 	}, [open])
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally want this to run when query changes
 	useEffect(() => {
 		setSelectedIndex(0)
 	}, [query])
@@ -79,40 +79,38 @@ export function SearchDialog({
 		[navigate, onOpenChange]
 	)
 
-	const handleKeyDown = (e: React.KeyboardEvent) => {
-		if (!hasQuery || results.length === 0) return
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent<HTMLInputElement>) => {
+			if (!hasQuery || results.length === 0) return
 
-		if (e.key === 'ArrowDown') {
-			e.preventDefault()
-			setSelectedIndex(prev => (prev < results.length - 1 ? prev + 1 : 0))
-		} else if (e.key === 'ArrowUp') {
-			e.preventDefault()
-			setSelectedIndex(prev => (prev > 0 ? prev - 1 : results.length - 1))
-		} else if (e.key === 'Enter') {
-			e.preventDefault()
-			if (results[selectedIndex]) {
-				handleTopicSelect(results[selectedIndex])
+			if (e.key === 'ArrowDown') {
+				e.preventDefault()
+				setSelectedIndex(prev => (prev < results.length - 1 ? prev + 1 : 0))
+			} else if (e.key === 'ArrowUp') {
+				e.preventDefault()
+				setSelectedIndex(prev => (prev > 0 ? prev - 1 : results.length - 1))
+			} else if (e.key === 'Enter') {
+				e.preventDefault()
+				if (results[selectedIndex]) {
+					handleTopicSelect(results[selectedIndex])
+				}
+			} else if (e.key === 'Escape') {
+				onOpenChange(false)
 			}
-		} else if (e.key === 'Escape') {
-			onOpenChange(false)
-		}
-	}
+		},
+		[hasQuery, results, selectedIndex, handleTopicSelect, onOpenChange]
+	)
 
-	const estimateItemSize = useCallback((topic: Topic) => {
-		const baseHeight = 80
-		const lineHeight = 20
-		const charsPerLine = 40
+	const handleSearchChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setQuery(e.target.value)
+		},
+		[setQuery]
+	)
 
-		const nameLines = Math.ceil((topic.name?.length || 8) / charsPerLine)
-		const notesLines = topic.notes
-			? Math.min(2, Math.ceil(topic.notes.length / charsPerLine))
-			: 0
-
-		return Math.max(
-			MIN_HEIGHT,
-			baseHeight + (nameLines - 1) * lineHeight + notesLines * lineHeight
-		)
-	}, [])
+	const handleClear = useCallback(() => {
+		setQuery('')
+	}, [setQuery])
 
 	const renderItem = useCallback(
 		(topic: Topic) => (
@@ -127,8 +125,6 @@ export function SearchDialog({
 		[handleTopicSelect, debouncedQuery]
 	)
 
-	const getItemKey = useCallback((topic: Topic) => topic.id, [])
-
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent
@@ -137,68 +133,37 @@ export function SearchDialog({
 			>
 				<DialogHeader className='px-2 pt-2 pb-0 sm:px-4'>
 					<DialogTitle className='sr-only'>Search topics</DialogTitle>
-					<div className='relative'>
-						<Search className='-translate-y-1/2 absolute top-1/2 left-2 h-4 w-4 text-muted-foreground sm:left-3' />
-						<Input
-							className='border-0 px-8 text-base shadow-none sm:px-10 sm:text-lg'
-							onChange={e => setQuery(e.target.value)}
-							onKeyDown={handleKeyDown}
-							placeholder='Search topics...'
-							ref={inputRef}
-							value={query}
-						/>
-						{query && (
-							<button
-								className='-translate-y-1/2 absolute top-1/2 right-2 h-4 w-4 text-muted-foreground transition-colors hover:text-foreground sm:right-3'
-								onClick={() => setQuery('')}
-								type='button'
-							>
-								<X className='h-4 w-4' />
-							</button>
-						)}
-					</div>
+					<SearchInput
+						inputClassName='px-8 text-base sm:px-10 sm:text-lg'
+						inputRef={inputRef}
+						onChange={handleSearchChange}
+						onClear={handleClear}
+						onKeyDown={handleKeyDown}
+						value={query}
+					/>
 				</DialogHeader>
 
 				<div className='scrollbar-track-transparent max-h-192 min-h-80 overflow-y-auto p-2 pt-0 sm:p-4'>
-					{isLoading && (
-						<div className='flex items-center justify-center py-8 text-muted-foreground'>
-							<div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
-							{hasQuery ? 'Searching...' : 'Loading recent topics...'}
-						</div>
-					)}
-
-					{hasQuery && !isLoading && results.length === 0 && (
-						<div className='flex items-center justify-center py-8 text-muted-foreground'>
-							No topics found for "{query}"
-						</div>
-					)}
-
-					{!(hasQuery || isLoading) && results.length === 0 && (
-						<div className='flex items-center justify-center py-8 text-muted-foreground'>
-							No topics found
-						</div>
-					)}
-
-					{results.length > 0 && (
-						<div className='mb-2'>
-							{!hasQuery && (
-								<div className='mb-3 font-medium text-muted-foreground text-sm'>
-									Recent
-								</div>
-							)}
-						</div>
-					)}
-
-					{results.length > 0 && (
-						<MasonryLayout
-							estimateItemSize={estimateItemSize}
-							gap={gap}
-							getItemKey={getItemKey}
-							items={results}
-							minItemWidth={MIN_CARD_WIDTH}
-							renderItem={renderItem}
-						/>
-					)}
+					<SearchResultsContainer
+						animate={false}
+						estimateItemSize={topic => {
+							const nameLines = Math.ceil((topic.name?.length || 8) / 40)
+							const notesLines = topic.notes
+								? Math.min(2, Math.ceil(topic.notes.length / 40))
+								: 0
+							return Math.max(
+								MIN_HEIGHT,
+								80 + (nameLines - 1) * 20 + notesLines * 20
+							)
+						}}
+						gap={gap}
+						getItemKey={topic => topic.id}
+						hasQuery={hasQuery}
+						isLoading={isLoading}
+						renderItem={renderItem}
+						results={results}
+						searchQuery={query}
+					/>
 				</div>
 			</DialogContent>
 		</Dialog>

@@ -1,7 +1,11 @@
-import { Search, SquarePen, X } from 'lucide-react'
+import { SquarePen } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MasonryLayout } from '~/components/MasonryLayout'
+import {
+	MIN_HEIGHT,
+	SearchInput,
+	SearchResultsContainer
+} from '~/components/search'
 import { Button } from '~/components/ui/Button'
 import {
 	Dialog,
@@ -10,7 +14,6 @@ import {
 	DialogTitle,
 	DialogTrigger
 } from '~/components/ui/Dialog'
-import { Input } from '~/components/ui/Input'
 import { useGlobalSearch } from '~/hooks/useGlobalSearch'
 import type { Topic } from '~/models/review-topic.types'
 import { useCreateTopic } from '../hooks/useCreateTopic'
@@ -36,9 +39,6 @@ interface SearchOrCreateTopicDialogProps {
 	onSearchQueryChange?: (query: string) => void
 	renderItem?: (topic: Topic) => ReactNode
 }
-
-const MIN_CARD_WIDTH = 280
-const MIN_HEIGHT = 96
 
 export function SearchOrCreateTopicDialog({
 	open: controlledOpen,
@@ -160,43 +160,47 @@ export function SearchOrCreateTopicDialog({
 		}
 	}, [searchQuery, topicDefaults, createTopicAsync, onTopicCreated, setOpen])
 
-	const handleKeyDown = (e: React.KeyboardEvent) => {
-		if (!searchResults.hasQuery || searchResults.results.length === 0) return
+	const handleKeyDown = useCallback(
+		(e: React.KeyboardEvent<HTMLInputElement>) => {
+			if (!searchResults.hasQuery || searchResults.results.length === 0) return
 
-		if (e.key === 'ArrowDown') {
-			e.preventDefault()
-			setSelectedIndex(prev =>
-				prev < searchResults.results.length - 1 ? prev + 1 : 0
-			)
-		} else if (e.key === 'ArrowUp') {
-			e.preventDefault()
-			setSelectedIndex(prev =>
-				prev > 0 ? prev - 1 : searchResults.results.length - 1
-			)
-		} else if (e.key === 'Enter') {
-			e.preventDefault()
-			if (searchResults.results[selectedIndex]) {
-				handleTopicSelect(searchResults.results[selectedIndex])
+			if (e.key === 'ArrowDown') {
+				e.preventDefault()
+				setSelectedIndex(prev =>
+					prev < searchResults.results.length - 1 ? prev + 1 : 0
+				)
+			} else if (e.key === 'ArrowUp') {
+				e.preventDefault()
+				setSelectedIndex(prev =>
+					prev > 0 ? prev - 1 : searchResults.results.length - 1
+				)
+			} else if (e.key === 'Enter') {
+				e.preventDefault()
+				if (searchResults.results[selectedIndex]) {
+					handleTopicSelect(searchResults.results[selectedIndex])
+				}
+			} else if (e.key === 'Escape') {
+				setOpen(false)
 			}
-		} else if (e.key === 'Escape') {
-			setOpen(false)
-		}
-	}
+		},
+		[
+			searchResults.hasQuery,
+			searchResults.results,
+			selectedIndex,
+			handleTopicSelect,
+			setOpen
+		]
+	)
 
-	const estimateItemSize = useCallback((topic: Topic) => {
-		const baseHeight = 80
-		const lineHeight = 20
-		const charsPerLine = 40
+	const handleSearchChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			setSearchQuery(e.target.value)
+		},
+		[]
+	)
 
-		const nameLines = Math.ceil((topic.name?.length || 8) / charsPerLine)
-		const notesLines = topic.notes
-			? Math.min(2, Math.ceil(topic.notes.length / charsPerLine))
-			: 0
-
-		return Math.max(
-			MIN_HEIGHT,
-			baseHeight + (nameLines - 1) * lineHeight + notesLines * lineHeight
-		)
+	const handleClear = useCallback(() => {
+		setSearchQuery('')
 	}, [])
 
 	const renderItem = useCallback(
@@ -219,8 +223,6 @@ export function SearchOrCreateTopicDialog({
 		[customRenderItem, handleTopicSelect, searchResults.debouncedQuery]
 	)
 
-	const getItemKey = useCallback((topic: Topic) => topic.id, [])
-
 	const dialogContent = (
 		<DialogContent
 			className='-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 flex h-[600px] w-full min-w-5xl flex-col p-0'
@@ -229,26 +231,13 @@ export function SearchOrCreateTopicDialog({
 			<DialogHeader className='flex-shrink-0 px-4 pt-4'>
 				<DialogTitle className='sr-only'>{title}</DialogTitle>
 				<div className='flex items-center gap-4'>
-					<div className='relative flex-1'>
-						<Search className='-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground' />
-						<Input
-							className='border-0 px-10 text-lg shadow-none'
-							onChange={e => setSearchQuery(e.target.value)}
-							onKeyDown={handleKeyDown}
-							placeholder='Search topics...'
-							ref={inputRef}
-							value={searchQuery}
-						/>
-						{searchQuery && (
-							<button
-								className='-translate-y-1/2 absolute top-1/2 right-3 h-4 w-4 text-muted-foreground transition-colors hover:text-foreground'
-								onClick={() => setSearchQuery('')}
-								type='button'
-							>
-								<X className='h-4 w-4' />
-							</button>
-						)}
-					</div>
+					<SearchInput
+						inputRef={inputRef}
+						onChange={handleSearchChange}
+						onClear={handleClear}
+						onKeyDown={handleKeyDown}
+						value={searchQuery}
+					/>
 					<Button
 						disabled={isCreatingTopic}
 						onClick={handleCreateTopic}
@@ -262,50 +251,25 @@ export function SearchOrCreateTopicDialog({
 			</DialogHeader>
 
 			<div className='scrollbar-track-transparent flex-1 overflow-y-auto p-4 pt-0'>
-				{searchResults.isLoading && (
-					<div className='flex items-center justify-center py-8 text-muted-foreground'>
-						<div className='mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent' />
-						{searchResults.hasQuery
-							? 'Searching...'
-							: 'Loading recent topics...'}
-					</div>
-				)}
-
-				{searchResults.hasQuery &&
-					!searchResults.isLoading &&
-					searchResults.results.length === 0 && (
-						<div className='flex items-center justify-center py-8 text-muted-foreground'>
-							No topics found for "{searchQuery}"
-						</div>
-					)}
-
-				{!(searchResults.hasQuery || searchResults.isLoading) &&
-					searchResults.results.length === 0 && (
-						<div className='flex items-center justify-center py-8 text-muted-foreground'>
-							No topics found
-						</div>
-					)}
-
-				{searchResults.results.length > 0 && (
-					<div className='mb-2'>
-						{!searchResults.hasQuery && (
-							<div className='mb-3 font-medium text-muted-foreground text-sm'>
-								Recent
-							</div>
-						)}
-					</div>
-				)}
-
-				{searchResults.results.length > 0 && (
-					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						gap={12}
-						getItemKey={getItemKey}
-						items={searchResults.results}
-						minItemWidth={MIN_CARD_WIDTH}
-						renderItem={renderItem}
-					/>
-				)}
+				<SearchResultsContainer
+					animate={false}
+					estimateItemSize={topic => {
+						const nameLines = Math.ceil((topic.name?.length || 8) / 40)
+						const notesLines = topic.notes
+							? Math.min(2, Math.ceil(topic.notes.length / 40))
+							: 0
+						return Math.max(
+							MIN_HEIGHT,
+							80 + (nameLines - 1) * 20 + notesLines * 20
+						)
+					}}
+					getItemKey={topic => topic.id}
+					hasQuery={searchResults.hasQuery ?? false}
+					isLoading={searchResults.isLoading}
+					renderItem={renderItem}
+					results={searchResults.results}
+					searchQuery={searchQuery}
+				/>
 			</div>
 		</DialogContent>
 	)

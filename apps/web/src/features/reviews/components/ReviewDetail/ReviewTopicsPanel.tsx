@@ -5,7 +5,7 @@ import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import type { Rating, Topic } from '~/models/review-topic.types'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
-import { AddTopicToReviewDialog } from '../AddReviewToTopic/AddTopicToReviewDialog'
+import { AddTopicToReviewDialog } from '../AddTopicToReviewDialog/AddTopicToReviewDialog'
 import { ReviewTopicCard } from './ReviewTopicCard'
 
 const MIN_WIDTH = 210
