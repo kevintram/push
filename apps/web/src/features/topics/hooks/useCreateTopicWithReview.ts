@@ -75,7 +75,6 @@ export function useCreateTopicWithReview() {
 					})
 				})
 				.catch(error => {
-					console.error('Failed to link topic and review:', error)
 					throw error
 				})
 

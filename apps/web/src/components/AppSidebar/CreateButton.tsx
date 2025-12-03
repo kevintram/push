@@ -1,5 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ListChecks, Loader2, Plus, Square, SquareCheck, SquarePen } from 'lucide-react'
+import {
+	ListChecks,
+	Loader2,
+	Plus,
+	Square,
+	SquareCheck,
+	SquarePen
+} from 'lucide-react'
 import { useCallback } from 'react'
 import {
 	DropdownMenu,
@@ -21,10 +28,11 @@ export function CreateButton() {
 	const { openTopicDialog, openReviewDialog } = useReviewTopicDialog()
 	const queryClient = useQueryClient()
 
-	const { mutateAsync: createReviewMutation, isPending: isCreatingReview } = useMutation({
-		mutationFn: createReview,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reviews'] })
-	})
+	const { mutateAsync: createReviewMutation, isPending: isCreatingReview } =
+		useMutation({
+			mutationFn: createReview,
+			onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		})
 
 	const isLoading = isCreatingTopic || isCreatingReview
 
