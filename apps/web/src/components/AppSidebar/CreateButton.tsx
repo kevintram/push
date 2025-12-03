@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ListChecks, Plus, Square, SquareCheck, SquarePen } from 'lucide-react'
+import { ListChecks, Loader2, Plus, Square, SquareCheck, SquarePen } from 'lucide-react'
 import { useCallback } from 'react'
 import {
 	DropdownMenu,
@@ -16,15 +16,17 @@ import { createReview } from '~/features/reviews/api'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 
 export function CreateButton() {
-	const { createTopicWithReview, isPending: isCreatingTopic } =
+	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
 	const { openTopicDialog, openReviewDialog } = useReviewTopicDialog()
 	const queryClient = useQueryClient()
 
-	const { mutateAsync: createReviewMutation } = useMutation({
+	const { mutateAsync: createReviewMutation, isPending: isCreatingReview } = useMutation({
 		mutationFn: createReview,
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reviews'] })
 	})
+
+	const isLoading = isCreatingTopic || isCreatingReview
 
 	const handleNewTopic = useCallback(async () => {
 		const createdTopic = await createTopicWithReview({})
@@ -52,14 +54,19 @@ export function CreateButton() {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild={true}>
+			<DropdownMenuTrigger asChild={true} disabled={isLoading}>
 				<SidebarMenuButton
 					className='rounded-full'
-					tooltip='Create new...'
+					disabled={isLoading}
+					tooltip={isLoading ? 'Creating...' : 'Create new...'}
 					variant='secondary'
 				>
-					<Plus className='' />
-					<span>Create</span>
+					{isLoading ? (
+						<Loader2 className='animate-spin' />
+					) : (
+						<Plus className='' />
+					)}
+					<span>{isLoading ? 'Creating...' : 'Create'}</span>
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='start' side='right'>
@@ -79,7 +86,7 @@ export function CreateButton() {
 						</DropdownMenuItem>
 					</DropdownMenuSubContent>
 				</DropdownMenuSub>
-				<DropdownMenuItem disabled={isCreatingTopic} onClick={handleNewTopic}>
+				<DropdownMenuItem disabled={isLoading} onClick={handleNewTopic}>
 					<SquarePen />
 					<span>New topic</span>
 				</DropdownMenuItem>
