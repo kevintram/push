@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getTopicsList } from '../api'
+import { getTopics } from '../api'
 
 type UseRootTopicsParams = {
 	inboxed?: boolean
@@ -9,6 +9,6 @@ type UseRootTopicsParams = {
 export function useRootTopics(params: UseRootTopicsParams = {}) {
 	return useQuery({
 		queryKey: ['topics', 'root', params],
-		queryFn: () => getTopicsList({ root: true, ...params })
+		queryFn: () => getTopics({ root: true, ...params })
 	})
 }

@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import * as v from 'valibot'
-import { type Review, ReviewSchema } from '~/models/review-topic.types'
-import { apiFetch } from '~/utils/apiFetch'
+import type { Review } from '~/models/review-topic.types'
+import { getReviews } from '../api/getReviews'
 
 export type SoonSectionKey = 'tomorrow' | 'nextSevenDays'
 
@@ -27,33 +26,17 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	}
 ]
 
-async function fetchSoonReviews(): Promise<Array<Review>> {
-	const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
-	const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
-	const searchParams = new URLSearchParams({
-		effective_date_after: tomorrow,
-		effective_date_before: nextWeekDate
-	})
-	// Fetch reviews with effective_date between today and today + 7 days
-	// This includes today, tomorrow, and next 7 days
-	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/reviews/?${searchParams.toString()}`
-	)
-	const data = await response.json()
-	try {
-		return v.parse(v.array(ReviewSchema), data)
-	} catch (error) {
-		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`)
-		}
-		throw error
-	}
-}
-
 export function useSoonReviews() {
 	const query = useQuery({
 		queryKey: ['reviews', 'soon'],
-		queryFn: fetchSoonReviews
+		queryFn: () => {
+			const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
+			const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
+			return getReviews({
+				effectiveDateAfter: tomorrow,
+				effectiveDateBefore: nextWeekDate
+			})
+		}
 	})
 
 	// Centralized date boundary calculations

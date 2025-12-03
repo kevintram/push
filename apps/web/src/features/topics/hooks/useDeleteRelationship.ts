@@ -6,13 +6,7 @@ export function useDeleteRelationship() {
 	const queryClient = useQueryClient()
 
 	return useMutation({
-		mutationFn: async ({
-			parent,
-			child
-		}: {
-			parent: number
-			child: number
-		}) => {
+		mutationFn: ({ parent, child }: { parent: number; child: number }) => {
 			return deleteParentRelationship({ childId: child, parentId: parent })
 		},
 		onSuccess: async () => {

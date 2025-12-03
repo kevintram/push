@@ -6,13 +6,7 @@ export function useCreateRelationship() {
 	const queryClient = useQueryClient()
 
 	return useMutation({
-		mutationFn: ({
-			parent,
-			child
-		}: {
-			parent: number
-			child: number
-		}) => {
+		mutationFn: ({ parent, child }: { parent: number; child: number }) => {
 			return createParentRelationship({ childId: child, parentId: parent })
 		},
 		onSuccess: async () => {

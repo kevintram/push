@@ -10,8 +10,8 @@ export function useGetPotentialParents(
 ) {
 	return useQuery({
 		queryKey: ['potential-parents', topicId, searchQuery],
-		queryFn: async (): Promise<Array<Topic>> => {
-			if (!topicId) return []
+		queryFn: (): Promise<Array<Topic>> => {
+			if (!topicId) return Promise.resolve([])
 
 			return searchTopics({
 				query: searchQuery,

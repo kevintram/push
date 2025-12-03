@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import * as v from 'valibot'
-import { type Topic, TopicSchema } from '~/models/review-topic.types'
-import { apiFetch } from '~/utils/apiFetch'
+import type { Topic } from '~/models/review-topic.types'
+import { getTopics } from '../api'
 
 type FutureSection = {
 	id: string
@@ -11,31 +10,13 @@ type FutureSection = {
 	entries: Array<Topic>
 }
 
-async function fetchFutureTopics(): Promise<Array<Topic>> {
-	const futureStartDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
-	const searchParams = new URLSearchParams({
-		due_after: futureStartDate,
-		archived: 'false'
-	})
-	// Fetch topics with due >= today + 8 days
-	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/?${searchParams.toString()}`
-	)
-	const data = await response.json()
-	try {
-		return v.parse(v.array(TopicSchema), data)
-	} catch (error) {
-		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`)
-		}
-		throw error
-	}
-}
-
 export function useFutureTopics(options?: { enabled?: boolean }) {
 	const query = useQuery({
 		queryKey: ['topics', 'future'],
-		queryFn: fetchFutureTopics,
+		queryFn: () => {
+			const futureStartDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
+			return getTopics({ dueAfter: futureStartDate, archived: false })
+		},
 		enabled: options?.enabled ?? true
 	})
 

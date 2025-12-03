@@ -10,6 +10,6 @@ export {
 } from './deleteTopicRelationship'
 export { getTopic } from './getTopic'
 export { getTopics } from './getTopics'
-export { getTopicsList } from './getTopicsList'
+export { getTopicsByIds } from './getTopicsByIds'
 export { searchTopics } from './searchTopics'
 export { updateTopic } from './updateTopic'

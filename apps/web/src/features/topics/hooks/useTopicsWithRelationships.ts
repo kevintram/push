@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import type { Topic } from '~/models/review-topic.types'
-import { getTopics } from '../api/getTopics'
+import { getTopicsByIds } from '../api'
 
 /**
  * Hook to fetch multiple topics with their direct parents and children (depth = 1 only)
@@ -9,7 +9,7 @@ import { getTopics } from '../api/getTopics'
 export function useTopicsWithRelationships(topicIds: Array<number>) {
 	const { data: topics = [], isLoading } = useQuery({
 		queryKey: ['topics', 'batch', topicIds],
-		queryFn: () => getTopics({ topicIds }),
+		queryFn: () => getTopicsByIds({ topicIds }),
 		enabled: topicIds.length > 0
 	})
 
