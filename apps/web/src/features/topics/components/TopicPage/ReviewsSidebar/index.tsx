@@ -35,14 +35,10 @@ function roundToTwoDecimals(num: number): number {
 }
 
 interface ReviewsSidebarProps {
-	allowReviewCreation?: boolean
 	readonly?: boolean
 }
 
-function ReviewsSidebarContent({
-	allowReviewCreation = true,
-	readonly = false
-}: ReviewsSidebarProps) {
+function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const { scheduledReviews, unscheduledReviews } = useReviewsData()
 	const { openReviewDialog } = useReviewTopicDialog()
 	const { topic } = use(TopicContext)
@@ -187,7 +183,7 @@ function ReviewsSidebarContent({
 			<SidebarHeader className='flex flex-col gap-0 pb-0'>
 				<div className='flex flex-row items-center justify-between'>
 					<h1 className='font-semibold text-lg'>Reviews</h1>
-					{allowReviewCreation && (
+					{!readonly && (
 						<DropdownMenu>
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
@@ -303,18 +299,12 @@ function ReviewsSidebarContent({
 	)
 }
 
-export function ReviewsSidebar({
-	allowReviewCreation = true,
-	readonly = false
-}: ReviewsSidebarProps) {
+export function ReviewsSidebar({ readonly = false }: ReviewsSidebarProps) {
 	const { topic: selectedTopic } = use(TopicContext)
 
 	return (
 		<ReviewsDataProvider selectedTopicId={selectedTopic?.id}>
-			<ReviewsSidebarContent
-				allowReviewCreation={allowReviewCreation}
-				readonly={readonly}
-			/>
+			<ReviewsSidebarContent readonly={readonly} />
 		</ReviewsDataProvider>
 	)
 }
