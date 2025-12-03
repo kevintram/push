@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import {
 	BicepsFlexed,
 	Calendar,
+	Loader2,
 	Mountain,
 	Plus,
 	Square,
@@ -26,7 +27,7 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { useCreateReview } from '~/features/reviews/hooks'
 import { createTopicReview } from '~/features/topic_reviews/api'
-import { type Rating } from '~/models/review-topic.types'
+import type { Rating } from '~/models/review-topic.types'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
@@ -44,7 +45,8 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const { topic } = use(TopicContext)
 	const queryClient = useQueryClient()
 
-	const { createReview: createReviewMutation } = useCreateReview()
+	const { createReview: createReviewMutation, isPending: isCreatingReview } =
+		useCreateReview()
 	const { mutateAsync: createTopicReviewMutation } = useMutation({
 		mutationFn: ({
 			reviewId,
@@ -60,6 +62,8 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
+
+	const isCreatingReviewWithTopic = isCreatingReview
 
 	const createReviewWithTopic = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
@@ -169,19 +173,37 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
 									<DropdownMenuTrigger asChild={true}>
-										<Button size='sm' variant='ghost'>
-											<Plus />
+										<Button
+											disabled={isCreatingReviewWithTopic}
+											size='sm'
+											variant='ghost'
+										>
+											{isCreatingReviewWithTopic ? (
+												<Loader2 className='animate-spin' />
+											) : (
+												<Plus />
+											)}
 										</Button>
 									</DropdownMenuTrigger>
 								</TooltipTrigger>
-								<TooltipContent>Create new review</TooltipContent>
+								<TooltipContent>
+									{isCreatingReviewWithTopic
+										? 'Creating review...'
+										: 'Create new review'}
+								</TooltipContent>
 							</Tooltip>
 							<DropdownMenuContent align='end'>
-								<DropdownMenuItem onClick={handleLogReviewNow}>
+								<DropdownMenuItem
+									disabled={isCreatingReviewWithTopic}
+									onClick={handleLogReviewNow}
+								>
 									<SquareCheck />
 									Log review now
 								</DropdownMenuItem>
-								<DropdownMenuItem onClick={handleNewReviewForLater}>
+								<DropdownMenuItem
+									disabled={isCreatingReviewWithTopic}
+									onClick={handleNewReviewForLater}
+								>
 									<Square />
 									For later
 								</DropdownMenuItem>
