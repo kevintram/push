@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getTopics } from '../../topics/api'
+import { getTopics } from '../api'
 
 export function useInboxTopics() {
 	return useQuery({

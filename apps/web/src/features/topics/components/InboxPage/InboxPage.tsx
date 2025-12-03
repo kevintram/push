@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import type { Topic } from '~/models/review-topic.types'
-import { useInboxTopics } from '../hooks'
+import { useInboxTopics } from '../../hooks'
 import { InboxList } from './InboxList'
 
 export function InboxPage() {
