@@ -36,13 +36,11 @@ function roundToTwoDecimals(num: number): number {
 
 interface ReviewsSidebarProps {
 	allowReviewCreation?: boolean
-	relatedTopicId?: number
 	readonly?: boolean
 }
 
 function ReviewsSidebarContent({
 	allowReviewCreation = true,
-	relatedTopicId,
 	readonly = false
 }: ReviewsSidebarProps) {
 	const { scheduledReviews, unscheduledReviews } = useReviewsData()
@@ -86,20 +84,14 @@ function ReviewsSidebarContent({
 			topicId: topic.id
 		})
 
-		if (relatedTopicId) {
+		if (topic?.id) {
 			await createTopicReviewMutation({
 				reviewId: review.id,
-				topicId: relatedTopicId
+				topicId: topic.id
 			})
 		}
 		openReviewDialog(review.id)
-	}, [
-		topic,
-		createReviewMutation,
-		createTopicReviewMutation,
-		openReviewDialog,
-		relatedTopicId
-	])
+	}, [topic, createReviewMutation, createTopicReviewMutation, openReviewDialog])
 
 	const handleNewReviewForLater = useCallback(async () => {
 		if (!topic) return
@@ -115,20 +107,14 @@ function ReviewsSidebarContent({
 			topicId: topic.id
 		})
 
-		if (relatedTopicId) {
+		if (topic?.id) {
 			await createTopicReviewMutation({
 				reviewId: review.id,
-				topicId: relatedTopicId
+				topicId: topic.id
 			})
 		}
 		openReviewDialog(review.id)
-	}, [
-		topic,
-		createReviewMutation,
-		createTopicReviewMutation,
-		openReviewDialog,
-		relatedTopicId
-	])
+	}, [topic, createReviewMutation, createTopicReviewMutation, openReviewDialog])
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
@@ -319,7 +305,6 @@ function ReviewsSidebarContent({
 
 export function ReviewsSidebar({
 	allowReviewCreation = true,
-	relatedTopicId,
 	readonly = false
 }: ReviewsSidebarProps) {
 	const { topic: selectedTopic } = use(TopicContext)
@@ -329,7 +314,6 @@ export function ReviewsSidebar({
 			<ReviewsSidebarContent
 				allowReviewCreation={allowReviewCreation}
 				readonly={readonly}
-				relatedTopicId={relatedTopicId}
 			/>
 		</ReviewsDataProvider>
 	)

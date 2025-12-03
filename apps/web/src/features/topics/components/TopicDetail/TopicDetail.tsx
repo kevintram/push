@@ -30,7 +30,6 @@ interface TopicDetailProps {
 	renderChildCard?: (child: Topic, removeRelationship: () => void) => ReactNode
 	onChildClicked?: (child: Topic) => void
 	onParentClicked?: (parent: Topic) => void
-	relatedTopicId?: number
 	reviewSidebarReadonly?: boolean
 	onTopicCreated?: (topic: Topic) => void
 }
@@ -43,7 +42,6 @@ export function TopicDetail({
 	renderChildCard,
 	onChildClicked,
 	onParentClicked,
-	relatedTopicId,
 	reviewSidebarReadonly = false,
 	onTopicCreated
 }: TopicDetailProps) {
@@ -237,7 +235,6 @@ export function TopicDetail({
 					<ReviewsSidebar
 						allowReviewCreation={allowReviewCreation}
 						readonly={reviewSidebarReadonly}
-						relatedTopicId={relatedTopicId}
 					/>
 				</SidebarHolder>
 			</div>
