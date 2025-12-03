@@ -40,7 +40,7 @@ export function ReviewsDataProvider({
 		const unscheduled: Array<Review> = []
 
 		for (const review of reviews) {
-			if (review.scheduled_at) {
+			if (review.effective_date) {
 				scheduled.push(review)
 			} else {
 				unscheduled.push(review)
@@ -50,8 +50,8 @@ export function ReviewsDataProvider({
 		// Sort scheduled by date asc
 		scheduled.sort((a, b) => {
 			return (
-				new Date(a.scheduled_at!).getTime() -
-				new Date(b.scheduled_at!).getTime()
+				new Date(a.effective_date!).getTime() -
+				new Date(b.effective_date!).getTime()
 			)
 		})
 
