@@ -362,7 +362,7 @@ export function TopicCard({
 							{topic.inboxed && (
 								<div className='flex items-center gap-1'>
 									<Inbox className='h-3 w-3' />
-									<span>Inbox</span>
+									<span>Inboxed</span>
 								</div>
 							)}
 							{topic.archived && (
