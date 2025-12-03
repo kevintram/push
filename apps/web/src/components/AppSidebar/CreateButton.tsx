@@ -1,4 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+// React
+
+// External libraries
 import {
 	ListChecks,
 	Loader2,
@@ -8,6 +10,8 @@ import {
 	SquarePen
 } from 'lucide-react'
 import { useCallback } from 'react'
+
+// UI Components
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -18,47 +22,45 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
+
+// Feature hooks
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { createReview } from '~/features/reviews/api'
-import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
+import { useCreateReview } from '~/features/reviews/hooks'
+import { useCreateTopicWithReview } from '~/features/topics/hooks'
 
 export function CreateButton() {
+	// Hooks
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
+	const { createReview, isPending: isCreatingReview } = useCreateReview()
 	const { openTopicDialog, openReviewDialog } = useReviewTopicDialog()
-	const queryClient = useQueryClient()
-
-	const { mutateAsync: createReviewMutation, isPending: isCreatingReview } =
-		useMutation({
-			mutationFn: createReview,
-			onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reviews'] })
-		})
 
 	const isLoading = isCreatingTopic || isCreatingReview
 
+	// Handlers
 	const handleNewTopic = useCallback(async () => {
 		const createdTopic = await createTopicWithReview({})
 		openTopicDialog(createdTopic.id)
 	}, [createTopicWithReview, openTopicDialog])
 
 	const handleLogReviewNow = useCallback(async () => {
-		const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
-		const review = await createReviewMutation({
+		const today = new Date().toISOString().split('T')[0]
+		const review = await createReview({
 			description: '',
 			scheduledAt: null,
 			completedAt: today
 		})
 		openReviewDialog(review.id)
-	}, [createReviewMutation, openReviewDialog])
+	}, [createReview, openReviewDialog])
 
 	const handleNewReviewForLater = useCallback(async () => {
-		const review = await createReviewMutation({
+		const review = await createReview({
 			description: '',
 			scheduledAt: null,
 			completedAt: null
 		})
 		openReviewDialog(review.id)
-	}, [createReviewMutation, openReviewDialog])
+	}, [createReview, openReviewDialog])
 
 	return (
 		<DropdownMenu>
