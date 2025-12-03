@@ -59,7 +59,7 @@ function UnscheduledPage() {
 				<PageHeader icon={CircleDashed} title='Unscheduled' />
 				<div className='p-4'>
 					{reviewSection.entries.length > 0 ||
-						topicSection.entries.length > 0 ? (
+					topicSection.entries.length > 0 ? (
 						<div className='mb-2'>
 							<ReviewSection
 								headingClassName={reviewSection.headingClassName}

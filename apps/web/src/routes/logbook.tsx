@@ -49,19 +49,10 @@ function LogbookPage() {
 							No completed reviews yet.
 						</p>
 					) : (
-						sections.map((section, index) => {
-							const prev = index > 0 ? sections[index - 1] : undefined
+						sections.map(section => {
 							const isSectionCollapsed = collapsedSections[section.id] ?? false
-							const prevCollapsed = prev
-								? (collapsedSections[prev.id] ?? false)
-								: false
-							const showTopMargin = index !== 0 && !prevCollapsed
-
 							return (
-								<div
-									className={`mb-2 ${showTopMargin ? 'mt-12' : ''}`}
-									key={section.id}
-								>
+								<div className='mb-2' key={section.id}>
 									<div className='flex items-center justify-between bg-primary-foreground'>
 										<Button
 											className='flex items-center gap-2 p-0'
@@ -76,7 +67,7 @@ function LogbookPage() {
 									</div>
 
 									{!isSectionCollapsed && (
-										<div className='mt-2 ml-5 border-border border-l-2 pl-4'>
+										<div className='mt-2 mb-10 ml-5 border-border border-l-2 pl-4'>
 											<h3 className='font-semibold text-md'>
 												Reviews{' '}
 												<span className='text-muted-foreground'>

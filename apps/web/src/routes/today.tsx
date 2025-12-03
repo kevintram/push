@@ -111,37 +111,20 @@ function TodayPage() {
 			<div className='flex h-full flex-col overflow-auto'>
 				<PageHeader icon={Star} title='Today' />
 				<div className='p-4'>
-					{mergedSections.map((section, index) => {
-						const prev = index > 0 ? mergedSections[index - 1] : undefined
-						const reviewEntries = section.reviewsData?.entries ?? []
-						const topicEntries = section.topicsData?.entries ?? []
-
-						const isSectionCollapsed = collapsedSections[section.id] ?? false
-						const prevCollapsed = prev
-							? (collapsedSections[prev.id] ?? false)
-							: false
-
-						const showTopMargin = index !== 0 && !prevCollapsed
-
-						return (
-							<div
-								className={`mb-2 ${showTopMargin ? 'mt-12' : ''}`}
-								key={section.id}
-							>
-								<ReviewSection
-									headingClassName={section.headingClassName}
-									id={section.id}
-									isCollapsed={isSectionCollapsed}
-									label={section.label}
-									onReviewClick={handleReviewClick}
-									onToggleCollapse={toggleSection}
-									onTopicClick={handleTopicClick}
-									reviewEntries={reviewEntries}
-									topicEntries={topicEntries}
-								/>
-							</div>
-						)
-					})}
+					{mergedSections.map(section => (
+						<ReviewSection
+							headingClassName={section.headingClassName}
+							id={section.id}
+							isCollapsed={collapsedSections[section.id] ?? false}
+							key={section.id}
+							label={section.label}
+							onReviewClick={handleReviewClick}
+							onToggleCollapse={toggleSection}
+							onTopicClick={handleTopicClick}
+							reviewEntries={section.reviewsData?.entries ?? []}
+							topicEntries={section.topicsData?.entries ?? []}
+						/>
+					))}
 				</div>
 			</div>
 		</div>

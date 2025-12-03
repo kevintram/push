@@ -205,37 +205,19 @@ function UpcomingPage() {
 						</p>
 					) : (
 						<>
-							{allSections.map((section, index) => {
-								const prev = index > 0 ? allSections[index - 1] : undefined
-								const reviewEntries = section.reviewsData?.entries ?? []
-								const topicEntries = section.topicsData?.entries ?? []
-
-								const isSectionCollapsed =
-									collapsedSections[section.id] ?? false
-								const prevCollapsed = prev
-									? (collapsedSections[prev.id] ?? false)
-									: false
-
-								const shouldShowTopMargin = index !== 0 && !prevCollapsed
-
-								return (
-									<div
-										className={`mb-2 ${shouldShowTopMargin ? 'mt-12' : ''}`}
-										key={section.id}
-									>
-										<ReviewSection
-											id={section.id}
-											isCollapsed={isSectionCollapsed}
-											label={section.label}
-											onReviewClick={handleReviewClick}
-											onToggleCollapse={toggleSection}
-											onTopicClick={handleTopicClick}
-											reviewEntries={reviewEntries}
-											topicEntries={topicEntries}
-										/>
-									</div>
-								)
-							})}
+							{allSections.map(section => (
+								<ReviewSection
+									id={section.id}
+									isCollapsed={collapsedSections[section.id] ?? false}
+									key={section.id}
+									label={section.label}
+									onReviewClick={handleReviewClick}
+									onToggleCollapse={toggleSection}
+									onTopicClick={handleTopicClick}
+									reviewEntries={section.reviewsData?.entries ?? []}
+									topicEntries={section.topicsData?.entries ?? []}
+								/>
+							))}
 
 							{/* Show More button */}
 							{!showFuture && (

@@ -66,7 +66,7 @@ export function ReviewSection({
 	}, [])
 
 	return (
-		<>
+		<div className='mb-2'>
 			<div className='flex items-center justify-between'>
 				<Button
 					className='flex items-center gap-2 p-0'
@@ -83,7 +83,7 @@ export function ReviewSection({
 			</div>
 
 			{!isCollapsed && (
-				<div className='mt-2 ml-5 grid grid-cols-1 gap-4 border-border border-l-2 pl-4 md:grid-cols-2'>
+				<div className='mt-2 mb-10 ml-5 grid grid-cols-1 gap-4 border-border border-l-2 pl-4 md:grid-cols-2'>
 					{/* Reviews Subsection */}
 					<div className='flex flex-col gap-2'>
 						<h3 className='font-semibold text-md'>
@@ -137,6 +137,6 @@ export function ReviewSection({
 					</div>
 				</div>
 			)}
-		</>
+		</div>
 	)
 }
