@@ -1,11 +1,12 @@
+import { useQuery } from '@tanstack/react-query'
 import { Baby } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { getTopicChildren } from '~/features/topics/api/getTopicChildren'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
-import { useTopicChildren } from '~/features/topics/hooks/useTopicChildren'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/review-topic.types'
 import { TopicCard } from '../../TopicCard'
@@ -36,7 +37,11 @@ export function TopicChildrenPanel({
 	const { topic: selectedTopic } = use(TopicContext)
 	const { openTopicDialog } = useReviewTopicDialog()
 
-	const { data: children = [] } = useTopicChildren(selectedTopic?.id)
+	const { data: children = [] } = useQuery({
+		queryKey: ['topics', selectedTopic?.id, 'children'],
+		queryFn: () => getTopicChildren(selectedTopic!.id),
+		enabled: selectedTopic?.id !== undefined
+	})
 
 	const createRelationship = useCreateRelationship()
 	const deleteRelationship = useDeleteRelationship()

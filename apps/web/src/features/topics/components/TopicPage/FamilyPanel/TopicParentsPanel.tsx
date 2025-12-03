@@ -1,8 +1,9 @@
+import { useQuery } from '@tanstack/react-query'
 import { User2 } from 'lucide-react'
 import { use, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { getTopicParents } from '~/features/topics/api/getTopicParents'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
-import { useTopicParents } from '~/features/topics/hooks/useTopicParents'
 import type { Topic } from '~/models/review-topic.types'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { TopicBadge } from '../../TopicBadge'
@@ -22,7 +23,11 @@ export function TopicParentsPanel({
 	const { topic: selectedTopic } = use(TopicContext)
 	const { openTopicDialog } = useReviewTopicDialog()
 
-	const { data: parents = [] } = useTopicParents(selectedTopic?.id)
+	const { data: parents = [] } = useQuery({
+		queryKey: ['topics', selectedTopic?.id, 'parents'],
+		queryFn: () => getTopicParents(selectedTopic!.id),
+		enabled: selectedTopic?.id !== undefined
+	})
 
 	const deleteRelationship = useDeleteRelationship()
 

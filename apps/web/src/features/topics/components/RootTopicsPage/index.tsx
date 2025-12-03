@@ -1,10 +1,11 @@
+import { useQuery } from '@tanstack/react-query'
 import { Home, Plus, SquareLibrary } from 'lucide-react'
 import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useRootTopics } from '~/features/topics/hooks'
+import { getTopics } from '~/features/topics/api'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import type { Topic } from '~/models/review-topic.types'
 import { TopicCard } from '../TopicCard'
@@ -19,9 +20,9 @@ export function RootTopicsPage() {
 	const { createTopicWithReview } = useCreateTopicWithReview()
 
 	// Fetch root topics from API - show non-archived and non-inboxed topics
-	const { data: topics = [], isLoading } = useRootTopics({
-		inboxed: false,
-		archived: false
+	const { data: topics = [], isLoading } = useQuery({
+		queryKey: ['topics', 'root'],
+		queryFn: () => getTopics({ root: true, archived: false, inboxed: false })
 	})
 
 	const handleCreateTopic = useCallback(async () => {
