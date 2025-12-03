@@ -4,14 +4,11 @@ import {
 	Archive,
 	ArchiveRestore,
 	Baby,
-	BicepsFlexed,
-	BookCheck,
 	Calendar,
 	ChevronDown,
 	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
-	Mountain,
 	Trash2,
 	User2
 } from 'lucide-react'
@@ -35,9 +32,6 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { createReview } from '~/features/reviews/api'
-import { createTopicReview } from '~/features/topic_reviews/api'
 import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
 import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
@@ -47,10 +41,6 @@ import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
 import { updateTopic as updateTopicApi } from '../api/updateTopic'
 
 const MIN_HEIGHT = 96
-
-function roundToTwoDecimals(num: number): number {
-	return Math.round(num * 100) / 100
-}
 
 interface TopicCardProps {
 	topic: Topic
@@ -75,7 +65,6 @@ export function TopicCard({
 	reviewId
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
-	const { openReviewDialog } = useReviewTopicDialog()
 
 	const { mutateAsync: deleteTopicMutation } = useMutation({
 		mutationFn: deleteTopicApi,
@@ -94,26 +83,6 @@ export function TopicCard({
 	const { mutateAsync: updateReviewMutation } = useMutation({
 		mutationFn: ({ reviewId, rating }: { reviewId: number; rating: Rating }) =>
 			updateTopicReviewApi(reviewId, rating),
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	const { mutateAsync: createReviewMutation } = useMutation({
-		mutationFn: createReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	const { mutateAsync: createTopicReviewMutation } = useMutation({
-		mutationFn: ({
-			reviewId,
-			topicId
-		}: {
-			reviewId: number
-			topicId: number
-		}) => createTopicReview(reviewId, topicId, 'good'),
 		onSuccess: async () => {
 			await invalidateTopicsAndReviews(queryClient)
 		}
@@ -199,30 +168,6 @@ export function TopicCard({
 		[reviewId, updateReviewMutation]
 	)
 
-	const handleLogNow = useCallback(
-		async (e: React.MouseEvent) => {
-			e.stopPropagation()
-
-			const review = await createReviewMutation({
-				description: '',
-				scheduledAt: null,
-				completedAt: dayjs().format('YYYY-MM-DD')
-			})
-
-			await createTopicReviewMutation({
-				reviewId: review.id,
-				topicId: topic.id
-			})
-			openReviewDialog(review.id)
-		},
-		[
-			topic.id,
-			createReviewMutation,
-			createTopicReviewMutation,
-			openReviewDialog
-		]
-	)
-
 	const dueDateColorClass =
 		dueDateDisplay?.displayText === 'Today'
 			? 'text-blue-600 dark:text-blue-400'
@@ -279,7 +224,7 @@ export function TopicCard({
 					</PopoverContent>
 				</Popover>
 
-				{/* Rating/Log Now and Menu - top right */}
+				{/* Rating and Menu - top right */}
 				<div className='flex items-center gap-1'>
 					{rating && reviewId && (
 						<DropdownMenu>
@@ -345,21 +290,6 @@ export function TopicCard({
 							{getRatingIcon(rating)}
 							{rating}
 						</Button>
-					)}
-					{!rating && (
-						<Tooltip>
-							<TooltipTrigger asChild={true}>
-								<Button
-									className='h-5 w-5 p-0'
-									onClick={handleLogNow}
-									size='sm'
-									variant='ghost'
-								>
-									<BookCheck className='h-3 w-3' />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>Log Now</TooltipContent>
-						</Tooltip>
 					)}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true}>
@@ -432,7 +362,7 @@ export function TopicCard({
 							{topic.inboxed && (
 								<div className='flex items-center gap-1'>
 									<Inbox className='h-3 w-3' />
-									<span>Inbox</span>
+									<span>Inboxed</span>
 								</div>
 							)}
 							{topic.archived && (
@@ -492,42 +422,6 @@ export function TopicCard({
 						<TooltipContent side='bottom'>No due date</TooltipContent>
 					</Tooltip>
 				)}
-				&nbsp;·&nbsp;
-				<Tooltip>
-					<TooltipTrigger asChild={true}>
-						<div className='flex items-center gap-1'>
-							<BicepsFlexed className='h-3 w-3' />
-							<span>
-								{topic.stability != null
-									? `${Math.round(topic.stability)}d`
-									: 'No data'}
-							</span>
-						</div>
-					</TooltipTrigger>
-					<TooltipContent side='bottom'>
-						{topic.stability != null
-							? `Stable for ${Math.round(topic.stability)} days`
-							: 'Stability not yet calculated'}
-					</TooltipContent>
-				</Tooltip>
-				&nbsp;·&nbsp;
-				<Tooltip>
-					<TooltipTrigger asChild={true}>
-						<div className='flex items-center gap-1'>
-							<Mountain className='h-3 w-3' />
-							<span>
-								{topic.difficulty != null
-									? `${roundToTwoDecimals(topic.difficulty)}/10`
-									: 'No data'}
-							</span>
-						</div>
-					</TooltipTrigger>
-					<TooltipContent side='bottom'>
-						{topic.difficulty != null
-							? `${roundToTwoDecimals(topic.difficulty)}/10 difficulty`
-							: 'Difficulty not yet calculated'}
-					</TooltipContent>
-				</Tooltip>
 				<div className='flex-1' />
 				{/* Children count - bottom right */}
 				<Popover>

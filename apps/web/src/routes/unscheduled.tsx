@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { CircleDashed } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
@@ -55,14 +56,7 @@ function UnscheduledPage() {
 	return (
 		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
 			<div className='flex h-full flex-col overflow-auto'>
-				<div className='sticky top-0 z-10 flex flex-col gap-2 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 px-4 pt-4 pb-2 backdrop-blur-sm'>
-					<div className='flex items-center justify-between'>
-						<h1 className='flex items-center gap-2 font-bold text-xl'>
-							<CircleDashed className='h-5 w-5' />
-							Unscheduled
-						</h1>
-					</div>
-				</div>
+				<PageHeader icon={CircleDashed} title='Unscheduled' />
 				<div className='p-4'>
 					{reviewSection.entries.length > 0 ||
 					topicSection.entries.length > 0 ? (

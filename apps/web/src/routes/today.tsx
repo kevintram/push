@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Star } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
@@ -108,46 +109,22 @@ function TodayPage() {
 	return (
 		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
 			<div className='flex h-full flex-col overflow-auto'>
-				<div className='sticky top-0 z-10 flex flex-col gap-2 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 px-4 pt-4 pb-2 backdrop-blur-sm'>
-					<div className='flex items-center justify-between'>
-						<h1 className='flex items-center gap-2 font-bold text-xl'>
-							<Star className='h-5 w-5' />
-							Today
-						</h1>
-					</div>
-				</div>
+				<PageHeader icon={Star} title='Today' />
 				<div className='p-4'>
-					{mergedSections.map((section, index) => {
-						const prev = index > 0 ? mergedSections[index - 1] : undefined
-						const reviewEntries = section.reviewsData?.entries ?? []
-						const topicEntries = section.topicsData?.entries ?? []
-
-						const isSectionCollapsed = collapsedSections[section.id] ?? false
-						const prevCollapsed = prev
-							? (collapsedSections[prev.id] ?? false)
-							: false
-
-						const showTopMargin = index !== 0 && !prevCollapsed
-
-						return (
-							<div
-								className={`mb-2 ${showTopMargin ? 'mt-12' : ''}`}
-								key={section.id}
-							>
-								<ReviewSection
-									headingClassName={section.headingClassName}
-									id={section.id}
-									isCollapsed={isSectionCollapsed}
-									label={section.label}
-									onReviewClick={handleReviewClick}
-									onToggleCollapse={toggleSection}
-									onTopicClick={handleTopicClick}
-									reviewEntries={reviewEntries}
-									topicEntries={topicEntries}
-								/>
-							</div>
-						)
-					})}
+					{mergedSections.map(section => (
+						<ReviewSection
+							headingClassName={section.headingClassName}
+							id={section.id}
+							isCollapsed={collapsedSections[section.id] ?? false}
+							key={section.id}
+							label={section.label}
+							onReviewClick={handleReviewClick}
+							onToggleCollapse={toggleSection}
+							onTopicClick={handleTopicClick}
+							reviewEntries={section.reviewsData?.entries ?? []}
+							topicEntries={section.topicsData?.entries ?? []}
+						/>
+					))}
 				</div>
 			</div>
 		</div>

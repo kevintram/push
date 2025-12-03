@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { ChevronDown, ListChecks } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
@@ -41,33 +42,17 @@ function LogbookPage() {
 	return (
 		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
 			<div className='flex h-full flex-col overflow-auto'>
-				<div className='sticky top-0 z-10 flex flex-col gap-2 rounded-tl-sm border-tl-2 border-b-1 bg-primary-foreground/40 px-4 pt-4 pb-2 backdrop-blur-sm'>
-					<div className='flex items-center justify-between'>
-						<h1 className='flex items-center gap-2 font-bold text-xl'>
-							<ListChecks className='h-5 w-5' />
-							Logbook
-						</h1>
-					</div>
-				</div>
+				<PageHeader icon={ListChecks} title='Logbook' />
 				<div className='p-4'>
 					{sections.length === 0 ? (
 						<p className='mt-8 text-center text-muted-foreground text-sm italic'>
 							No completed reviews yet.
 						</p>
 					) : (
-						sections.map((section, index) => {
-							const prev = index > 0 ? sections[index - 1] : undefined
+						sections.map(section => {
 							const isSectionCollapsed = collapsedSections[section.id] ?? false
-							const prevCollapsed = prev
-								? (collapsedSections[prev.id] ?? false)
-								: false
-							const showTopMargin = index !== 0 && !prevCollapsed
-
 							return (
-								<div
-									className={`mb-2 ${showTopMargin ? 'mt-12' : ''}`}
-									key={section.id}
-								>
+								<div className='mb-2' key={section.id}>
 									<div className='flex items-center justify-between bg-primary-foreground'>
 										<Button
 											className='flex items-center gap-2 p-0'
@@ -82,7 +67,7 @@ function LogbookPage() {
 									</div>
 
 									{!isSectionCollapsed && (
-										<div className='mt-2 ml-5 border-border border-l-2 pl-4'>
+										<div className='mt-2 mb-10 ml-5 border-border border-l-2 pl-4'>
 											<h3 className='font-semibold text-md'>
 												Reviews{' '}
 												<span className='text-muted-foreground'>

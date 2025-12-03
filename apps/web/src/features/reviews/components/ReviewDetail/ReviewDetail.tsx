@@ -19,7 +19,6 @@ import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { deleteReview as deleteReviewApi } from '../../api/deleteReview'
 import { updateReview as updateReviewApi } from '../../api/updateReview'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
-import { AddTopicToReviewDialog } from '../AddReviewToTopic/AddTopicToReviewDialog'
 import { DatePickerDropdown } from '../DatePickerDropdown'
 import { ReviewDetailHeader } from './ReviewDetailHeader'
 import { ReviewDetailSkeleton } from './ReviewDetailSkeleton'
@@ -33,7 +32,6 @@ interface ReviewDetailProps {
 export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 	const { review, isLoading } = use(ReviewContext)
 	const queryClient = useQueryClient()
-	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 
 	const { mutateAsync: updateReviewMutation } = useMutation({
@@ -102,10 +100,6 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 		},
 		[deleteTopicReviewMutation]
 	)
-
-	const handleAddTopic = useCallback(() => {
-		setIsAddTopicDialogOpen(true)
-	}, [])
 
 	const handleDateChange = useCallback(
 		(newDate: Date | null) => {
@@ -260,17 +254,11 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 					<div className='w-full flex-1'>
 						<ReviewTopicsPanel
 							getScrollElement={() => scrollContainerRef.current}
-							onAddTopic={handleAddTopic}
 							onRemoveTopicReview={handleRemoveTopicReview}
 						/>
 					</div>
 				</div>
 			</div>
-			<AddTopicToReviewDialog
-				onOpenChange={setIsAddTopicDialogOpen}
-				open={isAddTopicDialogOpen}
-				review={review}
-			/>
 		</div>
 	)
 }
