@@ -1,13 +1,13 @@
 import { Archive, Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
+import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useArchivedTopics } from '~/features/topics/hooks'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import type { Topic } from '~/models/review-topic.types'
 import { RootTopicsPageSkeleton } from '../RootTopicsPage/RootTopicsPageSkeleton'
-import { TopicsPageHeader } from '../RootTopicsPage/TopicsPageHeader'
 import { TopicsPageLayout } from '../RootTopicsPage/TopicsPageLayout'
 import { TopicCard } from '../TopicCard'
 
@@ -68,7 +68,7 @@ export function ArchivePage() {
 
 	return (
 		<TopicsPageLayout>
-			<TopicsPageHeader icon={Archive} title='Archived' />
+			<PageHeader icon={Archive} title='Archived' />
 
 			{isLoading && <RootTopicsPageSkeleton />}
 

@@ -1,6 +1,7 @@
 import { Home, Plus, SquareLibrary } from 'lucide-react'
 import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
+import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useRootTopics } from '~/features/topics/hooks'
@@ -8,7 +9,6 @@ import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopic
 import type { Topic } from '~/models/review-topic.types'
 import { TopicCard } from '../TopicCard'
 import { RootTopicsPageSkeleton } from './RootTopicsPageSkeleton'
-import { TopicsPageHeader } from './TopicsPageHeader'
 import { TopicsPageLayout } from './TopicsPageLayout'
 
 const MIN_CARD_WIDTH = 280
@@ -73,7 +73,7 @@ export function RootTopicsPage() {
 
 	return (
 		<TopicsPageLayout>
-			<TopicsPageHeader icon={Home} />
+			<PageHeader icon={Home} title='Topics' />
 
 			{isLoading && <RootTopicsPageSkeleton />}
 
