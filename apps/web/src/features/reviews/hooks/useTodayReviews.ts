@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import * as v from 'valibot'
-import { type Review, ReviewSchema } from '~/models/review-topic.types'
-import { apiFetch } from '~/utils/apiFetch'
+import type { Review } from '~/models/review-topic.types'
+import { getReviews } from '../api'
 
 export type TodaySectionKey = 'overdue' | 'today'
 
@@ -28,29 +27,13 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	}
 ]
 
-async function fetchTodayReviews(): Promise<Array<Review>> {
-	const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
-
-	// Fetch reviews with effective_date < tomorrow
-	// This includes overdue and today's reviews
-	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/reviews/?effective_date_before=${tomorrow}`
-	)
-	const data = await response.json()
-	try {
-		return v.parse(v.array(ReviewSchema), data)
-	} catch (error) {
-		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`)
-		}
-		throw error
-	}
-}
-
 export function useTodayReviews() {
 	const query = useQuery({
 		queryKey: ['reviews', 'today'],
-		queryFn: fetchTodayReviews
+		queryFn: () => {
+			const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
+			return getReviews({ effectiveDateBefore: tomorrow })
+		}
 	})
 
 	const todayDateStr = useMemo(() => {

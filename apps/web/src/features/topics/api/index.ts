@@ -1,3 +1,4 @@
+export { createTopic } from './createTopic'
 export {
 	createChildRelationship,
 	createParentRelationship
@@ -9,5 +10,6 @@ export {
 } from './deleteTopicRelationship'
 export { getTopic } from './getTopic'
 export { getTopics } from './getTopics'
+export { getTopicsList } from './getTopicsList'
 export { searchTopics } from './searchTopics'
 export { updateTopic } from './updateTopic'
