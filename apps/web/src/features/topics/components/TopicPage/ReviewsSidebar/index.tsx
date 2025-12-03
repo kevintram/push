@@ -23,10 +23,9 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { createReview } from '~/features/reviews/api'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
+import { useCreateReview } from '~/features/reviews/hooks'
 import { createTopicReview } from '~/features/topic_reviews/api'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
@@ -42,16 +41,9 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const { scheduledReviews, unscheduledReviews } = useReviewsData()
 	const { openReviewDialog } = useReviewTopicDialog()
 	const { topic } = use(TopicContext)
-
 	const queryClient = useQueryClient()
 
-	const { mutateAsync: createReviewMutation } = useMutation({
-		mutationFn: createReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
+	const { createReview: createReviewMutation } = useCreateReview()
 	const { mutateAsync: createTopicReviewMutation } = useMutation({
 		mutationFn: ({
 			reviewId,
@@ -60,57 +52,42 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 			reviewId: number
 			topicId: number
 		}) => createTopicReview(reviewId, topicId, 'good'),
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
 
-	const handleLogReviewNow = useCallback(async () => {
-		if (!topic) return
+	const createReviewWithTopic = useCallback(
+		async (completedAt: string | null) => {
+			if (!topic) throw new Error('Topic not found')
 
-		const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
-		const review = await createReviewMutation({
-			description: '',
-			scheduledAt: null,
-			completedAt: today
-		})
+			const review = await createReviewMutation({
+				description: '',
+				scheduledAt: null,
+				completedAt
+			})
 
-		await createTopicReviewMutation({
-			reviewId: review.id,
-			topicId: topic.id
-		})
-
-		if (topic?.id) {
-			await createTopicReviewMutation({
+			createTopicReviewMutation({
 				reviewId: review.id,
 				topicId: topic.id
+			}).catch(error => {
+				throw error
 			})
-		}
-		openReviewDialog(review.id)
-	}, [topic, createReviewMutation, createTopicReviewMutation, openReviewDialog])
+
+			openReviewDialog(review.id)
+		},
+		[topic, createReviewMutation, createTopicReviewMutation, openReviewDialog]
+	)
+
+	const handleLogReviewNow = useCallback(async () => {
+		const today = new Date().toISOString().split('T')[0] ?? '' // YYYY-MM-DD format
+		await createReviewWithTopic(today)
+	}, [createReviewWithTopic])
 
 	const handleNewReviewForLater = useCallback(async () => {
-		if (!topic) return
-
-		const review = await createReviewMutation({
-			description: '',
-			scheduledAt: null,
-			completedAt: null
-		})
-
-		await createTopicReviewMutation({
-			reviewId: review.id,
-			topicId: topic.id
-		})
-
-		if (topic?.id) {
-			await createTopicReviewMutation({
-				reviewId: review.id,
-				topicId: topic.id
-			})
-		}
-		openReviewDialog(review.id)
-	}, [topic, createReviewMutation, createTopicReviewMutation, openReviewDialog])
+		await createReviewWithTopic(null)
+	}, [createReviewWithTopic])
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
