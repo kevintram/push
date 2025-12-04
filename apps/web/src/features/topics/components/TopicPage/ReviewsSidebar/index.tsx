@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import {
 	BicepsFlexed,
 	Calendar,
+	Loader2,
 	Mountain,
 	Plus,
 	Square,
@@ -23,10 +24,10 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { createReview } from '~/features/reviews/api'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
+import { useCreateReview } from '~/features/reviews/hooks'
 import { createTopicReview } from '~/features/topic_reviews/api'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import type { Rating } from '~/models/review-topic.types'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
@@ -35,100 +36,73 @@ function roundToTwoDecimals(num: number): number {
 }
 
 interface ReviewsSidebarProps {
-	allowReviewCreation?: boolean
-	relatedTopicId?: number
 	readonly?: boolean
 }
 
-function ReviewsSidebarContent({
-	allowReviewCreation = true,
-	relatedTopicId,
-	readonly = false
-}: ReviewsSidebarProps) {
+function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const { scheduledReviews, unscheduledReviews } = useReviewsData()
 	const { openReviewDialog } = useReviewTopicDialog()
 	const { topic } = use(TopicContext)
-
 	const queryClient = useQueryClient()
 
-	const { mutateAsync: createReviewMutation } = useMutation({
-		mutationFn: createReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
+	const { createReview: createReviewMutation, isPending: isCreatingReview } =
+		useCreateReview()
 	const { mutateAsync: createTopicReviewMutation } = useMutation({
 		mutationFn: ({
 			reviewId,
-			topicId
+			topicId,
+			rating
 		}: {
 			reviewId: number
 			topicId: number
-		}) => createTopicReview(reviewId, topicId, 'good'),
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
+			rating: Rating | null
+		}) => createTopicReview(reviewId, topicId, rating),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
 
-	const handleLogReviewNow = useCallback(async () => {
-		if (!topic) return
+	const isCreatingReviewWithTopic = isCreatingReview
 
-		const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
-		const review = await createReviewMutation({
-			description: '',
-			scheduledAt: null,
-			completedAt: today
-		})
+	const createReviewWithTopic = useCallback(
+		async (completedAt: string | null, rating: Rating | null) => {
+			if (!topic) throw new Error('Topic not found')
 
-		await createTopicReviewMutation({
-			reviewId: review.id,
-			topicId: topic.id
-		})
-
-		if (relatedTopicId) {
-			await createTopicReviewMutation({
-				reviewId: review.id,
-				topicId: relatedTopicId
+			const review = await createReviewMutation({
+				description: '',
+				scheduledAt: null,
+				completedAt
 			})
-		}
-		openReviewDialog(review.id)
-	}, [
-		topic,
-		createReviewMutation,
-		createTopicReviewMutation,
-		openReviewDialog,
-		relatedTopicId
-	])
+			queryClient.setQueryData(['reviews', review.id], review)
+
+			createTopicReviewMutation({
+				reviewId: review.id,
+				topicId: topic.id,
+				rating
+			}).catch(error => {
+				throw error
+			})
+
+			openReviewDialog(review.id)
+		},
+		[
+			topic,
+			createReviewMutation,
+			createTopicReviewMutation,
+			openReviewDialog,
+			queryClient
+		]
+	)
+
+	const handleLogReviewNow = useCallback(async () => {
+		const today = new Date().toISOString().split('T')[0] ?? '' // YYYY-MM-DD format
+		await createReviewWithTopic(today, 'good')
+	}, [createReviewWithTopic])
 
 	const handleNewReviewForLater = useCallback(async () => {
-		if (!topic) return
-
-		const review = await createReviewMutation({
-			description: '',
-			scheduledAt: null,
-			completedAt: null
-		})
-
-		await createTopicReviewMutation({
-			reviewId: review.id,
-			topicId: topic.id
-		})
-
-		if (relatedTopicId) {
-			await createTopicReviewMutation({
-				reviewId: review.id,
-				topicId: relatedTopicId
-			})
-		}
-		openReviewDialog(review.id)
-	}, [
-		topic,
-		createReviewMutation,
-		createTopicReviewMutation,
-		openReviewDialog,
-		relatedTopicId
-	])
+		await createReviewWithTopic(null, null)
+	}, [createReviewWithTopic])
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
@@ -201,24 +175,42 @@ function ReviewsSidebarContent({
 			<SidebarHeader className='flex flex-col gap-0 pb-0'>
 				<div className='flex flex-row items-center justify-between'>
 					<h1 className='font-semibold text-lg'>Reviews</h1>
-					{allowReviewCreation && (
+					{!readonly && (
 						<DropdownMenu>
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
 									<DropdownMenuTrigger asChild={true}>
-										<Button size='sm' variant='ghost'>
-											<Plus />
+										<Button
+											disabled={isCreatingReviewWithTopic}
+											size='sm'
+											variant='ghost'
+										>
+											{isCreatingReviewWithTopic ? (
+												<Loader2 className='animate-spin' />
+											) : (
+												<Plus />
+											)}
 										</Button>
 									</DropdownMenuTrigger>
 								</TooltipTrigger>
-								<TooltipContent>Create new review</TooltipContent>
+								<TooltipContent>
+									{isCreatingReviewWithTopic
+										? 'Creating review...'
+										: 'Create new review'}
+								</TooltipContent>
 							</Tooltip>
 							<DropdownMenuContent align='end'>
-								<DropdownMenuItem onClick={handleLogReviewNow}>
+								<DropdownMenuItem
+									disabled={isCreatingReviewWithTopic}
+									onClick={handleLogReviewNow}
+								>
 									<SquareCheck />
 									Log review now
 								</DropdownMenuItem>
-								<DropdownMenuItem onClick={handleNewReviewForLater}>
+								<DropdownMenuItem
+									disabled={isCreatingReviewWithTopic}
+									onClick={handleNewReviewForLater}
+								>
 									<Square />
 									For later
 								</DropdownMenuItem>
@@ -317,20 +309,12 @@ function ReviewsSidebarContent({
 	)
 }
 
-export function ReviewsSidebar({
-	allowReviewCreation = true,
-	relatedTopicId,
-	readonly = false
-}: ReviewsSidebarProps) {
+export function ReviewsSidebar({ readonly = false }: ReviewsSidebarProps) {
 	const { topic: selectedTopic } = use(TopicContext)
 
 	return (
 		<ReviewsDataProvider selectedTopicId={selectedTopic?.id}>
-			<ReviewsSidebarContent
-				allowReviewCreation={allowReviewCreation}
-				readonly={readonly}
-				relatedTopicId={relatedTopicId}
-			/>
+			<ReviewsSidebarContent readonly={readonly} />
 		</ReviewsDataProvider>
 	)
 }

@@ -88,7 +88,6 @@ export function TopicDetailView({
 										</Button>
 									</>
 								}
-								allowReviewCreation={false}
 								beforeMoreButton={
 									dialog.selectedTopic ? (
 										<TopicReviewStatusButton

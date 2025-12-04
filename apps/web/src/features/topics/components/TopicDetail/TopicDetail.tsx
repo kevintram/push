@@ -26,11 +26,9 @@ interface TopicDetailProps {
 	onDelete?: () => void | Promise<void>
 	beforeMoreButton?: ReactNode
 	afterMoreButton?: ReactNode
-	allowReviewCreation?: boolean
 	renderChildCard?: (child: Topic, removeRelationship: () => void) => ReactNode
 	onChildClicked?: (child: Topic) => void
 	onParentClicked?: (parent: Topic) => void
-	relatedTopicId?: number
 	reviewSidebarReadonly?: boolean
 	onTopicCreated?: (topic: Topic) => void
 }
@@ -39,11 +37,9 @@ export function TopicDetail({
 	onDelete,
 	beforeMoreButton,
 	afterMoreButton,
-	allowReviewCreation = true,
 	renderChildCard,
 	onChildClicked,
 	onParentClicked,
-	relatedTopicId,
 	reviewSidebarReadonly = false,
 	onTopicCreated
 }: TopicDetailProps) {
@@ -234,11 +230,7 @@ export function TopicDetail({
 							renderChildCard={renderChildCard}
 						/>
 					</div>
-					<ReviewsSidebar
-						allowReviewCreation={allowReviewCreation}
-						readonly={reviewSidebarReadonly}
-						relatedTopicId={relatedTopicId}
-					/>
+					<ReviewsSidebar readonly={reviewSidebarReadonly} />
 				</SidebarHolder>
 			</div>
 		</SidebarProvider>
