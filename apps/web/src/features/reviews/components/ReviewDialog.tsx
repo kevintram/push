@@ -10,7 +10,7 @@ import { ReviewDetail } from './ReviewDetail/ReviewDetail'
 export function ReviewDialog() {
 	const { reviewDialogState, closeReviewDialog } = useReviewTopicDialog()
 	const { isOpen, reviewId: selectedReviewId } = reviewDialogState
-	const { review, isLoading } = useReviewWithTopics(selectedReviewId)
+	const { review, isLoading } = useReviewWithTopics(selectedReviewId!)
 
 	const handleDelete = useCallback(() => {
 		closeReviewDialog()
