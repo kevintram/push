@@ -196,14 +196,14 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 			>
 				<Checkbox
 					checked={!!review.completed_at}
-					className={`translate-y-[7px] ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
+					className={`translate-y-1 ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
 					onCheckedChange={handleCheckboxChange}
 				/>
 				<div className='flex-1'>
 					<div className='flex items-start justify-between gap-4 pb-4'>
 						<div className='flex flex-1 flex-col'>
 							<Textarea
-								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 font-semibold focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								className='!bg-transparent break-word m-0 min-h-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 font-bold focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onChange={onDescriptionChange}
 								placeholder='Description'
 								ref={descriptionRef}
