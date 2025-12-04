@@ -38,10 +38,6 @@ export function ReviewDialog() {
 		[review, isLoading]
 	)
 
-	if (!selectedReviewId) {
-		return null
-	}
-
 	return (
 		<Dialog onOpenChange={closeReviewDialog} open={isOpen}>
 			<DialogContent

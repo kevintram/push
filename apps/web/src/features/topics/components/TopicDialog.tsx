@@ -62,10 +62,6 @@ export function TopicDialog() {
 		[topic, isLoading]
 	)
 
-	if (!selectedTopicId) {
-		return null
-	}
-
 	return (
 		<Dialog onOpenChange={closeTopicDialog} open={isOpen}>
 			<DialogContent

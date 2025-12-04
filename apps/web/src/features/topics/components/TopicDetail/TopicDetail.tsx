@@ -55,11 +55,10 @@ export function TopicDetail({
 
 	const { mutateAsync: deleteTopic } = useMutation({
 		mutationFn: deleteTopicApi,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-			if (onDelete) {
-				await onDelete()
-			}
+		onSuccess: () => {
+			onDelete?.()
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
 
