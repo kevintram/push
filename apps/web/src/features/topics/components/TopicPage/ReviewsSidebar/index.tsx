@@ -17,7 +17,13 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import {
+	HoverCard,
+	HoverCardContent,
+	HoverCardTrigger
+} from '~/components/ui/HoverCard'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
+import { Toggle } from '~/components/ui/Toggle'
 import {
 	Tooltip,
 	TooltipContent,
@@ -28,6 +34,7 @@ import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { useCreateReview } from '~/features/reviews/hooks'
 import { createTopicReview } from '~/features/topic_reviews/api'
 import type { Rating } from '~/models/review-topic.types'
+import { updateTopic as updateTopicApi } from '../../../api/updateTopic'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
@@ -62,6 +69,24 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
+
+	const { mutateAsync: updateTopicMutation } = useMutation({
+		mutationFn: updateTopicApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
+
+	const handleSrsToggle = useCallback(
+		async (pressed: boolean) => {
+			if (!topic || readonly) return
+			await updateTopicMutation({
+				id: topic.id,
+				srs_enabled: pressed
+			})
+		},
+		[topic, readonly, updateTopicMutation]
+	)
 
 	const isCreatingReviewWithTopic = isCreatingReview
 
@@ -218,38 +243,58 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 						</DropdownMenu>
 					)}
 				</div>
-				<div className='flex text-muted-foreground text-xs'>
-					{dueDateDisplay ? (
-						<>
-							<Tooltip>
-								<TooltipTrigger asChild={true}>
-									<div className='flex items-center gap-1'>
-										<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
-										<span className={dueDateColorClass}>
-											{dueDateDisplay.displayText}
-										</span>
-									</div>
-								</TooltipTrigger>
-								<TooltipContent side='bottom'>
-									Due on {dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}
-								</TooltipContent>
-							</Tooltip>
-							&nbsp;·&nbsp;
-						</>
-					) : (
-						<>
-							<Tooltip>
-								<TooltipTrigger asChild={true}>
-									<div className='flex items-center gap-1'>
-										<Calendar className='h-3 w-3' />
-										<span>None</span>
-									</div>
-								</TooltipTrigger>
-								<TooltipContent side='bottom'>No due date</TooltipContent>
-							</Tooltip>
-							&nbsp;·&nbsp;
-						</>
-					)}
+				<div className='flex items-center text-muted-foreground text-xs'>
+					<HoverCard openDelay={300}>
+						<HoverCardTrigger asChild={true}>
+							<Toggle
+								aria-label='Toggle SRS scheduling'
+								className='h-6 px-1.5 data-[state=on]:bg-transparent data-[state=off]:text-muted-foreground data-[state=on]:text-accent-foreground'
+								disabled={readonly}
+								onPressedChange={handleSrsToggle}
+								pressed={topic?.srs_enabled ?? true}
+								size='sm'
+								variant='outline'
+							>
+								<Calendar
+									className={`h-3 w-3 ${topic?.srs_enabled ? 'text-foreground' : 'text-muted-foreground'}`}
+								/>
+								{dueDateDisplay ? (
+									<span
+										className={
+											topic?.srs_enabled
+												? dueDateColorClass || 'text-foreground'
+												: 'text-muted-foreground'
+										}
+									>
+										{dueDateDisplay.displayText}
+									</span>
+								) : (
+									<span
+										className={
+											topic?.srs_enabled
+												? 'text-foreground'
+												: 'text-muted-foreground'
+										}
+									>
+										None
+									</span>
+								)}
+							</Toggle>
+						</HoverCardTrigger>
+						<HoverCardContent className='w-auto p-3' side='bottom'>
+							<div className='flex flex-col gap-1'>
+								<div className='font-semibold text-sm'>
+									{dueDateDisplay
+										? `Due on ${dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}`
+										: 'No due date set'}
+								</div>
+								<p className='text-muted-foreground text-xs'>
+									{topic?.srs_enabled ? 'SRS Enabled' : 'SRS Disabled'}
+								</p>
+							</div>
+						</HoverCardContent>
+					</HoverCard>
+					&nbsp;·&nbsp;
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
 							<div className='flex items-center gap-1'>

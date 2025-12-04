@@ -6,6 +6,7 @@ export type GetTopicsParams = {
 	root?: boolean
 	inboxed?: boolean
 	archived?: boolean
+	srsEnabled?: boolean
 	order?: 'desc' | 'asc'
 	limit?: number
 	dueBefore?: string
@@ -43,6 +44,10 @@ export async function getTopics(
 
 	if (params.dueAfter !== undefined) {
 		searchParams.append('due_after', params.dueAfter)
+	}
+
+	if (params.srsEnabled !== undefined) {
+		searchParams.append('srs_enabled', String(params.srsEnabled))
 	}
 
 	const response = await apiFetch(

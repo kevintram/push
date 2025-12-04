@@ -53,6 +53,7 @@ export type Topic = {
 	archived: boolean
 	inboxed: boolean
 	due: string | null
+	srs_enabled: boolean
 	parents?: Array<Topic>
 	children?: Array<Topic>
 	reviews?: Array<Review>
@@ -108,6 +109,7 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	archived: v.boolean(),
 	inboxed: v.boolean(),
 	due: v.nullable(v.string()),
+	srs_enabled: v.boolean(),
 	parents: v.optional(v.array(v.lazy(() => TopicSchema)), []),
 	children: v.optional(v.array(v.lazy(() => TopicSchema)), []),
 	reviews: v.optional(v.array(v.lazy(() => ReviewSchema)), [])

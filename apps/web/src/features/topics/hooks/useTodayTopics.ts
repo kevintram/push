@@ -32,7 +32,7 @@ export function useTodayTopics() {
 		queryKey: ['topics', 'today'],
 		queryFn: () => {
 			const today = dayjs().format('YYYY-MM-DD')
-			return getTopics({ dueBefore: today, archived: false })
+			return getTopics({ dueBefore: today, archived: false, srsEnabled: true })
 		}
 	})
 

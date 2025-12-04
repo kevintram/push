@@ -24,6 +24,7 @@ class TopicBase(BaseModel):
     archived: bool
     inboxed: bool
     due: date | None = None
+    srs_enabled: bool = True
 
 
 class TopicBaseWithReviews(TopicBase):
@@ -84,3 +85,4 @@ class TopicUpdate(BaseModel):
     notes: str | None = None
     archived: bool | None = None
     inboxed: bool | None = None
+    srs_enabled: bool | None = None

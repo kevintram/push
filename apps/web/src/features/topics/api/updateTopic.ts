@@ -8,6 +8,7 @@ type UpdateTopicInput = {
 	notes?: string
 	archived?: boolean
 	inboxed?: boolean
+	srs_enabled?: boolean
 }
 
 export async function updateTopic(input: UpdateTopicInput) {

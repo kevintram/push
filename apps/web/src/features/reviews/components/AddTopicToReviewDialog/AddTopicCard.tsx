@@ -10,10 +10,10 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger
-} from '~/components/ui/Tooltip'
+	HoverCard,
+	HoverCardContent,
+	HoverCardTrigger
+} from '~/components/ui/HoverCard'
 import type { Rating, Topic } from '~/models/review-topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { TopicReviewStatusButton } from './ReviewStatusButton'
@@ -90,13 +90,19 @@ export function AddTopicCard({
 		}
 	}, [topic.due])
 
-	const dueDateColorClass =
-		dueDateDisplay?.displayText === 'Today'
-			? 'text-blue-600 dark:text-blue-400'
-			: dueDateDisplay?.displayText === 'Yesterday' ||
-					dueDateDisplay?.displayText.includes('ago')
-				? 'text-red-600 dark:text-red-400'
-				: ''
+	const dueDateColorClass = useMemo(() => {
+		if (!topic.srs_enabled) return 'text-muted-foreground'
+		if (dueDateDisplay?.displayText === 'Today') {
+			return 'text-blue-600 dark:text-blue-400'
+		}
+		if (
+			dueDateDisplay?.displayText === 'Yesterday' ||
+			dueDateDisplay?.displayText.includes('ago')
+		) {
+			return 'text-red-600 dark:text-red-400'
+		}
+		return 'text-foreground'
+	}, [topic.srs_enabled, dueDateDisplay?.displayText])
 
 	// Click handlers
 	const handleAdd = useCallback(() => {
@@ -191,31 +197,28 @@ export function AddTopicCard({
 			</CardContent>
 			{/* Bottom row: Due date */}
 			<CardFooter className='text-muted-foreground text-xs'>
-				{dueDateDisplay ? (
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
-								<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
-								<span className={dueDateColorClass}>
-									{dueDateDisplay.displayText}
-								</span>
+				<HoverCard openDelay={300}>
+					<HoverCardTrigger asChild={true}>
+						<div className='flex items-center gap-1'>
+							<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
+							<span className={dueDateColorClass}>
+								{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
+							</span>
+						</div>
+					</HoverCardTrigger>
+					<HoverCardContent className='w-auto p-3' side='bottom'>
+						<div className='flex flex-col gap-1'>
+							<div className='font-semibold text-sm'>
+								{dueDateDisplay
+									? `Due on ${dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}`
+									: 'No due date set'}
 							</div>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>
-							Due on {dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}
-						</TooltipContent>
-					</Tooltip>
-				) : (
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
-								<Calendar className='h-3 w-3' />
-								<span>None</span>
-							</div>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>No due date</TooltipContent>
-					</Tooltip>
-				)}
+							<p className='text-muted-foreground text-xs'>
+								{topic.srs_enabled ? 'SRS Enabled' : 'SRS Disabled'}
+							</p>
+						</div>
+					</HoverCardContent>
+				</HoverCard>
 			</CardFooter>
 		</Card>
 	)
