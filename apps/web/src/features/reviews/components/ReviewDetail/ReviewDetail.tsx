@@ -43,18 +43,18 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 
 	const { mutateAsync: deleteReviewMutation } = useMutation({
 		mutationFn: deleteReviewApi,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-			if (onDelete) {
-				await onDelete()
-			}
+		onSuccess: () => {
+			onDelete?.()
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
 		}
 	})
 
 	const { mutateAsync: deleteTopicReviewMutation } = useMutation({
 		mutationFn: deleteTopicReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
 
