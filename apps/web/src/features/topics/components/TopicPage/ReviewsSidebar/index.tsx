@@ -74,6 +74,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 				scheduledAt: null,
 				completedAt
 			})
+			queryClient.setQueryData(['reviews', review.id], review)
 
 			createTopicReviewMutation({
 				reviewId: review.id,
@@ -85,7 +86,13 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 
 			openReviewDialog(review.id)
 		},
-		[topic, createReviewMutation, createTopicReviewMutation, openReviewDialog]
+		[
+			topic,
+			createReviewMutation,
+			createTopicReviewMutation,
+			openReviewDialog,
+			queryClient
+		]
 	)
 
 	const handleLogReviewNow = useCallback(async () => {
