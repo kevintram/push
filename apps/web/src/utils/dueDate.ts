@@ -10,7 +10,9 @@ export interface DueDateDisplayInfo {
  * Calculates the display text and metadata for a due date.
  * Returns null if no due date is provided.
  */
-export function getDueDateDisplay(due: string | null): DueDateDisplayInfo | null {
+export function getDueDateDisplay(
+	due: string | null
+): DueDateDisplayInfo | null {
 	if (!due) return null
 
 	const now = dayjs().startOf('day')
@@ -59,4 +61,3 @@ export function getDueDateColorClass(
 
 	return 'text-foreground'
 }
-

@@ -9,6 +9,7 @@ import {
 	SquareCheck
 } from 'lucide-react'
 import { use, useCallback, useMemo } from 'react'
+import { DueDateHoverCard } from '~/components/DueDateHoverCard'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -31,7 +32,6 @@ import type { Rating } from '~/models/review-topic.types'
 import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
 import { updateTopic as updateTopicApi } from '../../../api/updateTopic'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
-import { DueDateHoverCard } from '~/components/DueDateHoverCard'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
 function roundToTwoDecimals(num: number): number {

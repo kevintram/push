@@ -34,7 +34,11 @@ export function InteractiveHoverCard({
 	}, [])
 
 	return (
-		<HoverCard onOpenChange={handleOpenChange} open={open} openDelay={openDelay}>
+		<HoverCard
+			onOpenChange={handleOpenChange}
+			open={open}
+			openDelay={openDelay}
+		>
 			<HoverCardTrigger asChild={true} onClick={handleClick}>
 				{children}
 			</HoverCardTrigger>
@@ -44,4 +48,3 @@ export function InteractiveHoverCard({
 		</HoverCard>
 	)
 }
-
