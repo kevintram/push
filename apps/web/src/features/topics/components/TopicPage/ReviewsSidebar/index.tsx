@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import {
 	BicepsFlexed,
 	Calendar,
@@ -17,11 +16,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger
-} from '~/components/ui/Popover'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import { Toggle } from '~/components/ui/Toggle'
 import {
@@ -37,8 +31,8 @@ import type { Rating } from '~/models/review-topic.types'
 import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
 import { updateTopic as updateTopicApi } from '../../../api/updateTopic'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
-import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 import { DueDateHoverCard } from '~/components/DueDateHoverCard'
+import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
 function roundToTwoDecimals(num: number): number {
 	return Math.round(num * 100) / 100

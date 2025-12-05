@@ -40,7 +40,15 @@ export function DueDateHoverCard({
 
     return (
         <HoverCard openDelay={300}>
-            <HoverCardTrigger asChild={true}>
+            <HoverCardTrigger
+                asChild={true}
+                onClick={(e) => {
+                    e.stopPropagation()
+                }}
+                onPointerDown={(e) => {
+                    e.stopPropagation()
+                }}
+            >
                 {children ?? defaultTrigger}
             </HoverCardTrigger>
             <HoverCardContent className='w-auto p-3' side='bottom'>
