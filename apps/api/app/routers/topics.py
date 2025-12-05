@@ -30,7 +30,9 @@ async def _insert_topic_relationship(
     focus_topic_id: int,
 ) -> Topic:
     if parent_id == child_id:
-        raise HTTPException(status_code=400, detail="Parent and child must be different topics")
+        raise HTTPException(
+            status_code=400, detail="Parent and child must be different topics"
+        )
 
     topics_result = await session.execute(
         select(Topic.id).where(
@@ -94,7 +96,9 @@ async def _delete_topic_relationship(
     focus_topic_id: int,
 ) -> Topic:
     if parent_id == child_id:
-        raise HTTPException(status_code=400, detail="Parent and child must be different topics")
+        raise HTTPException(
+            status_code=400, detail="Parent and child must be different topics"
+        )
 
     topics_result = await session.execute(
         select(Topic.id).where(
@@ -162,29 +166,41 @@ async def search_topics(
     stmt = select(Topic).where(Topic.user_id == user_id)
 
     if addable_as_parent_to is not None:
-        # filter out all topics that can't be parents to addable_as_parent_to   
+        # filter out all topics that can't be parents to addable_as_parent_to
 
         # 1. filter out addable_as_parent_to's descendants (if add a descendant as parent, it will create a cycle)
-        descendants = select(t_topics_closure.c.descendant).where(t_topics_closure.c.ancestor == addable_as_parent_to)
+        descendants = select(t_topics_closure.c.descendant).where(
+            t_topics_closure.c.ancestor == addable_as_parent_to
+        )
         stmt = stmt.where(Topic.id.notin_(descendants))
 
         # 2. filter out addable_as_parent_to's parents (don't want to add a topic that's already a parent)
-        parents = select(t_topics_closure.c.ancestor).where(t_topics_closure.c.descendant == addable_as_parent_to, t_topics_closure.c.depth == 1)
+        parents = select(t_topics_closure.c.ancestor).where(
+            t_topics_closure.c.descendant == addable_as_parent_to,
+            t_topics_closure.c.depth == 1,
+        )
         stmt = stmt.where(Topic.id.notin_(parents))
     if addable_as_child_to is not None:
         # filter out all topics that can't be children to addable_as_child_to
 
         # 1. filter out addable_as_child_to's ancestors (if add an ancestor as child, it will create a cycle)
-        ancestors = select(t_topics_closure.c.ancestor).where(t_topics_closure.c.descendant == addable_as_child_to)
+        ancestors = select(t_topics_closure.c.ancestor).where(
+            t_topics_closure.c.descendant == addable_as_child_to
+        )
         stmt = stmt.where(Topic.id.notin_(ancestors))
 
         # 2. filter out addable_as_child_to's children (don't want to add a topic that's already a child)
-        children = select(t_topics_closure.c.descendant).where(t_topics_closure.c.ancestor == addable_as_child_to, t_topics_closure.c.depth == 1)
+        children = select(t_topics_closure.c.descendant).where(
+            t_topics_closure.c.ancestor == addable_as_child_to,
+            t_topics_closure.c.depth == 1,
+        )
         stmt = stmt.where(Topic.id.notin_(children))
     if addable_to_review is not None:
         # filter out all topics that can't be added to addable_to_review
         # filter out addable_to_review's topics (don't want to add a topic that's already a topic)
-        topics = select(TopicReview.topic_id).where(TopicReview.review_id == addable_to_review)
+        topics = select(TopicReview.topic_id).where(
+            TopicReview.review_id == addable_to_review
+        )
         stmt = stmt.where(Topic.id.notin_(topics))
 
     if cleaned_query:
@@ -220,6 +236,7 @@ async def read_topics(
     root: bool | None = None,
     due_before: str | None = None,
     due_after: str | None = None,
+    srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
 ) -> list[TopicReadWithRelationshipsAndReviews]:
@@ -234,20 +251,28 @@ async def read_topics(
         stmt = stmt.where(Topic.inboxed == inboxed)
     if archived is not None:
         stmt = stmt.where(Topic.archived == archived)
+    if srs_enabled is not None:
+        stmt = stmt.where(Topic.srs_enabled == srs_enabled)
 
     if root is not None and root is True:
-        topics_with_ancestors = select(t_topics_closure.c.descendant).where(t_topics_closure.c.depth > 0)
+        topics_with_ancestors = select(t_topics_closure.c.descendant).where(
+            t_topics_closure.c.depth > 0
+        )
         stmt = stmt.where(Topic.id.notin_(topics_with_ancestors))
 
     if due_before is not None:
-        date_before = datetime.strptime(due_before, '%Y-%m-%d').date()
+        date_before = datetime.strptime(due_before, "%Y-%m-%d").date()
         stmt = stmt.where(Topic.due <= date_before)
 
     if due_after is not None:
-        date_after = datetime.strptime(due_after, '%Y-%m-%d').date()
+        date_after = datetime.strptime(due_after, "%Y-%m-%d").date()
         stmt = stmt.where(Topic.due >= date_after)
 
-    stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children), selectinload(Topic.reviews))
+    stmt = stmt.options(
+        selectinload(Topic.parents),
+        selectinload(Topic.children),
+        selectinload(Topic.reviews),
+    )
 
     # Apply limit if provided
     if limit is not None:
@@ -259,12 +284,14 @@ async def read_topics(
 
 @router.get("/topics/{topic_id}/", tags=["topics"])
 async def read_topic(
-    session: SessionDep,
-    user_id: UserIdDep,
-    topic_id: int
+    session: SessionDep, user_id: UserIdDep, topic_id: int
 ) -> TopicReadWithRelationshipsAndReviews:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
-    stmt = stmt.options(selectinload(Topic.parents), selectinload(Topic.children), selectinload(Topic.reviews))
+    stmt = stmt.options(
+        selectinload(Topic.parents),
+        selectinload(Topic.children),
+        selectinload(Topic.reviews),
+    )
     result = await session.execute(stmt)
 
     topic = result.scalar_one_or_none()
@@ -276,15 +303,13 @@ async def read_topic(
 
 @router.get("/topics/{topic_id}/parents/", tags=["topics"])
 async def read_topic_parents(
-    session: SessionDep,
-    user_id: UserIdDep,
-    topic_id: int
+    session: SessionDep, user_id: UserIdDep, topic_id: int
 ) -> list[TopicReadWithRelationshipsAndReviews]:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(
         selectinload(Topic.parents).selectinload(Topic.parents),
         selectinload(Topic.parents).selectinload(Topic.children),
-        selectinload(Topic.parents).selectinload(Topic.reviews)
+        selectinload(Topic.parents).selectinload(Topic.reviews),
     )
     result = await session.execute(stmt)
     topic = result.scalar_one_or_none()
@@ -297,15 +322,13 @@ async def read_topic_parents(
 
 @router.get("/topics/{topic_id}/children/", tags=["topics"])
 async def read_topic_children(
-    session: SessionDep,
-    user_id: UserIdDep,
-    topic_id: int
+    session: SessionDep, user_id: UserIdDep, topic_id: int
 ) -> list[TopicReadWithRelationshipsAndReviews]:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(
         selectinload(Topic.children).selectinload(Topic.parents),
         selectinload(Topic.children).selectinload(Topic.children),
-        selectinload(Topic.children).selectinload(Topic.reviews)
+        selectinload(Topic.children).selectinload(Topic.reviews),
     )
     result = await session.execute(stmt)
     topic = result.scalar_one_or_none()
@@ -313,14 +336,12 @@ async def read_topic_children(
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
 
-    return topic.children 
+    return topic.children
 
 
 @router.post("/topics/", tags=["topics"])
 async def insert_topic(
-    topic: TopicCreate,
-    session: SessionDep,
-    user_id: UserIdDep
+    topic: TopicCreate, session: SessionDep, user_id: UserIdDep
 ) -> TopicRead:
     new_topic = Topic(**topic.model_dump(), user_id=user_id)
 
@@ -330,12 +351,13 @@ async def insert_topic(
 
     return new_topic
 
+
 @router.post("/topics/{parent_id}/children/", tags=["topics"])
 async def insert_child(
     parent_id: int,
     payload: TopicRelationshipCreate,
     session: SessionDep,
-    user_id: UserIdDep
+    user_id: UserIdDep,
 ) -> TopicReadWithRelationshipsAndReviews:
     child_id = payload.child_id
     return await _insert_topic_relationship(
@@ -395,23 +417,24 @@ async def delete_parent(
         focus_topic_id=child_id,
     )
 
+
 @router.get("/topics/{topic_id}/reviews/", tags=["topics"])
 async def read_reviews_for_topic(
     topic_id: int,
     session: SessionDep,
     user_id: UserIdDep,
 ) -> list[ReviewReadWithTopics]:
-    stmt = select(Review).where(Review.topics.any(Topic.id == topic_id), Review.user_id == user_id)
+    stmt = select(Review).where(
+        Review.topics.any(Topic.id == topic_id), Review.user_id == user_id
+    )
     stmt = stmt.options(selectinload(Review.topics))
     result = await session.execute(stmt)
     return result.scalars().all()
 
+
 @router.post("/topics/{topic_id}/", tags=["topics"])
 async def update_topic(
-    topic_id: int,
-    topic: TopicUpdate,
-    session: SessionDep,
-    user_id: UserIdDep
+    topic_id: int, topic: TopicUpdate, session: SessionDep, user_id: UserIdDep
 ) -> TopicRead:
     update_values = topic.model_dump(exclude_unset=True)
 
@@ -431,12 +454,9 @@ async def update_topic(
     result = await session.execute(select_stmt)
     return result.scalar_one()
 
+
 @router.delete("/topics/{topic_id}/", tags=["topics"])
-async def delete_topic(
-    topic_id: int,
-    session: SessionDep,
-    user_id: UserIdDep
-):
+async def delete_topic(topic_id: int, session: SessionDep, user_id: UserIdDep):
     stmt = (
         delete(Topic)
         .where(Topic.id == topic_id, Topic.user_id == user_id)

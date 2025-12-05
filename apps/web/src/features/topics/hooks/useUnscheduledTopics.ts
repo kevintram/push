@@ -19,7 +19,7 @@ export function useUnscheduledTopics() {
 	const query = useQuery({
 		queryKey: ['topics', 'unscheduled'],
 		queryFn: async () => {
-			const allTopics = await getTopics({ archived: false })
+			const allTopics = await getTopics({ archived: false, srsEnabled: true })
 			return allTopics.filter(topic => topic.due === null)
 		}
 	})

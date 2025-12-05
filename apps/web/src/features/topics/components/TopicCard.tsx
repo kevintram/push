@@ -1,10 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import {
 	Archive,
 	ArchiveRestore,
 	Baby,
-	Calendar,
 	ChevronDown,
 	GitPullRequestClosed,
 	Inbox,
@@ -13,7 +11,8 @@ import {
 	User2
 } from 'lucide-react'
 import type { KeyboardEvent } from 'react'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
+import { DueDateHoverCard } from '~/components/DueDateHoverCard'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
 import {
@@ -27,11 +26,6 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger
-} from '~/components/ui/Tooltip'
 import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
 import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
@@ -91,35 +85,6 @@ export function TopicCard({
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
 
-	// Calculate the due date display
-	const dueDateDisplay = useMemo(() => {
-		if (!topic.due) return null
-
-		const now = dayjs().startOf('day')
-		const dueDayjs = dayjs(topic.due).startOf('day')
-		const diffDays = dueDayjs.diff(now, 'day')
-		const isUpcoming = dueDayjs.isAfter(now)
-
-		let displayText: string
-		if (diffDays === 0) {
-			displayText = 'Today'
-		} else if (diffDays === 1) {
-			displayText = 'Tomorrow'
-		} else if (diffDays === -1) {
-			displayText = 'Yesterday'
-		} else if (isUpcoming) {
-			displayText = `in ${diffDays}d`
-		} else {
-			displayText = `${Math.abs(diffDays)}d ago`
-		}
-
-		return {
-			dueDate: topic.due,
-			isUpcoming,
-			displayText
-		}
-	}, [topic.due])
-
 	const handleActivate = useCallback(() => {
 		onTopicClick?.(topic)
 	}, [onTopicClick, topic])
@@ -167,14 +132,6 @@ export function TopicCard({
 		},
 		[reviewId, updateReviewMutation]
 	)
-
-	const dueDateColorClass =
-		dueDateDisplay?.displayText === 'Today'
-			? 'text-blue-600 dark:text-blue-400'
-			: dueDateDisplay?.displayText === 'Yesterday' ||
-					dueDateDisplay?.displayText.includes('ago')
-				? 'text-red-600 dark:text-red-400'
-				: ''
 
 	return (
 		<Card
@@ -397,31 +354,7 @@ export function TopicCard({
 			{/* Bottom row: Review date and children count */}
 			<CardFooter className='gap-1 text-muted-foreground text-xs'>
 				{/* Due date - bottom left */}
-				{dueDateDisplay ? (
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
-								<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
-								<span className={dueDateColorClass}>
-									{dueDateDisplay.displayText}
-								</span>
-							</div>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>
-							Due on {dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}
-						</TooltipContent>
-					</Tooltip>
-				) : (
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
-								<Calendar className='h-3 w-3' />
-								<span>None</span>
-							</div>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>No due date</TooltipContent>
-					</Tooltip>
-				)}
+				<DueDateHoverCard due={topic.due} srsEnabled={topic.srs_enabled} />
 				<div className='flex-1' />
 				{/* Children count - bottom right */}
 				<Popover>

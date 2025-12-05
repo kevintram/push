@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import {
 	BicepsFlexed,
 	Calendar,
@@ -10,6 +9,7 @@ import {
 	SquareCheck
 } from 'lucide-react'
 import { use, useCallback, useMemo } from 'react'
+import { DueDateHoverCard } from '~/components/DueDateHoverCard'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -18,6 +18,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
+import { Toggle } from '~/components/ui/Toggle'
 import {
 	Tooltip,
 	TooltipContent,
@@ -28,6 +29,8 @@ import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { useCreateReview } from '~/features/reviews/hooks'
 import { createTopicReview } from '~/features/topic_reviews/api'
 import type { Rating } from '~/models/review-topic.types'
+import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
+import { updateTopic as updateTopicApi } from '../../../api/updateTopic'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
@@ -62,6 +65,24 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 			queryClient.invalidateQueries({ queryKey: ['reviews'] })
 		}
 	})
+
+	const { mutateAsync: updateTopicMutation } = useMutation({
+		mutationFn: updateTopicApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics'] })
+		}
+	})
+
+	const handleSrsToggle = useCallback(
+		async (pressed: boolean) => {
+			if (!topic || readonly) return
+			await updateTopicMutation({
+				id: topic.id,
+				srs_enabled: pressed
+			})
+		},
+		[topic, readonly, updateTopicMutation]
+	)
 
 	const isCreatingReviewWithTopic = isCreatingReview
 
@@ -112,47 +133,20 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 		[openReviewDialog, readonly]
 	)
 
-	// Calculate the due date display
-	const dueDateDisplay = useMemo(() => {
-		if (!topic?.due) return null
+	// Calculate the due date display using shared utilities
+	const dueDateDisplay = useMemo(
+		() => getDueDateDisplay(topic?.due ?? null),
+		[topic?.due]
+	)
 
-		const now = dayjs().startOf('day')
-		const dueDayjs = dayjs(topic.due).startOf('day')
-		const diffDays = dueDayjs.diff(now, 'day')
-		const isUpcoming = dueDayjs.isAfter(now)
-
-		let displayText: string
-		if (diffDays === 0) {
-			displayText = 'Today'
-		} else if (diffDays === 1) {
-			displayText = 'Tomorrow'
-		} else if (diffDays === -1) {
-			displayText = 'Yesterday'
-		} else if (isUpcoming) {
-			displayText = `in ${diffDays}d`
-		} else {
-			displayText = `${Math.abs(diffDays)}d ago`
-		}
-
-		return {
-			dueDate: topic.due,
-			isUpcoming,
-			displayText
-		}
-	}, [topic?.due])
-
-	const dueDateColorClass = (() => {
-		if (dueDateDisplay?.displayText === 'Today') {
-			return 'text-blue-600 dark:text-blue-400'
-		}
-		if (
-			dueDateDisplay?.displayText === 'Yesterday' ||
-			dueDateDisplay?.displayText.includes('ago')
-		) {
-			return 'text-red-600 dark:text-red-400'
-		}
-		return ''
-	})()
+	const dueDateColorClass = useMemo(
+		() =>
+			getDueDateColorClass(
+				dueDateDisplay?.displayText ?? null,
+				topic?.srs_enabled ?? true
+			),
+		[dueDateDisplay?.displayText, topic?.srs_enabled]
+	)
 
 	const stabilityText =
 		topic?.stability != null ? `${Math.round(topic.stability)}d` : 'No data'
@@ -218,38 +212,27 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 						</DropdownMenu>
 					)}
 				</div>
-				<div className='flex text-muted-foreground text-xs'>
-					{dueDateDisplay ? (
-						<>
-							<Tooltip>
-								<TooltipTrigger asChild={true}>
-									<div className='flex items-center gap-1'>
-										<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
-										<span className={dueDateColorClass}>
-											{dueDateDisplay.displayText}
-										</span>
-									</div>
-								</TooltipTrigger>
-								<TooltipContent side='bottom'>
-									Due on {dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}
-								</TooltipContent>
-							</Tooltip>
-							&nbsp;·&nbsp;
-						</>
-					) : (
-						<>
-							<Tooltip>
-								<TooltipTrigger asChild={true}>
-									<div className='flex items-center gap-1'>
-										<Calendar className='h-3 w-3' />
-										<span>None</span>
-									</div>
-								</TooltipTrigger>
-								<TooltipContent side='bottom'>No due date</TooltipContent>
-							</Tooltip>
-							&nbsp;·&nbsp;
-						</>
-					)}
+				<div className='flex items-center text-muted-foreground text-xs'>
+					<DueDateHoverCard
+						due={topic?.due ?? null}
+						srsEnabled={topic?.srs_enabled ?? true}
+					>
+						<Toggle
+							aria-label='Toggle SRS scheduling'
+							className='h-6 px-1.5 data-[state=on]:bg-transparent data-[state=off]:text-muted-foreground data-[state=on]:text-accent-foreground'
+							disabled={readonly}
+							onPressedChange={handleSrsToggle}
+							pressed={topic?.srs_enabled ?? true}
+							size='sm'
+							variant='outline'
+						>
+							<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
+							<span className={dueDateColorClass}>
+								{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
+							</span>
+						</Toggle>
+					</DueDateHoverCard>
+					&nbsp;·&nbsp;
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
 							<div className='flex items-center gap-1'>

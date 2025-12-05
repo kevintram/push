@@ -35,7 +35,8 @@ export function useSoonTopics() {
 			return getTopics({
 				dueAfter: tomorrow,
 				dueBefore: nextWeekDate,
-				archived: false
+				archived: false,
+				srsEnabled: true
 			})
 		}
 	})

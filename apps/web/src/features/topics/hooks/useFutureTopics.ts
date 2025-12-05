@@ -15,7 +15,11 @@ export function useFutureTopics(options?: { enabled?: boolean }) {
 		queryKey: ['topics', 'future'],
 		queryFn: () => {
 			const futureStartDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
-			return getTopics({ dueAfter: futureStartDate, archived: false })
+			return getTopics({
+				dueAfter: futureStartDate,
+				archived: false,
+				srsEnabled: true
+			})
 		},
 		enabled: options?.enabled ?? true
 	})

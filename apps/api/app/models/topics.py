@@ -37,17 +37,17 @@ class Topic(Base):
     name: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
     notes: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
     stability: Mapped[float | None] = mapped_column(
-        REAL, nullable=True,
-        info={"check_constraint": "stability > 0"}
+        REAL, nullable=True, info={"check_constraint": "stability > 0"}
     )
     difficulty: Mapped[float | None] = mapped_column(
-        REAL, nullable=True,
-        info={"check_constraint": "difficulty >= 0 AND difficulty <= 10"}
+        REAL,
+        nullable=True,
+        info={"check_constraint": "difficulty >= 0 AND difficulty <= 10"},
     )
     state: Mapped[str] = mapped_column(
         Enum("LEARNING", "REVIEW", "RELEARNING", name="learning_state"),
         nullable=False,
-        server_default=text("'LEARNING'::learning_state")
+        server_default=text("'LEARNING'::learning_state"),
     )
     step: Mapped[int | None] = mapped_column(Integer, nullable=True)
     archived: Mapped[bool] = mapped_column(
@@ -57,21 +57,24 @@ class Topic(Base):
         Boolean, nullable=False, server_default=text("false")
     )
     due: Mapped[date | None] = mapped_column(Date, nullable=True)
+    srs_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("true")
+    )
     topic_reviews: Mapped[list["TopicReview"]] = relationship(back_populates="topic")
     reviews: Mapped[list["Review"]] = relationship(
         secondary="topic_reviews", back_populates="topics", viewonly=True
     )
     parents: Mapped[list["Topic"]] = relationship(
-        secondary="topics_closure", 
-        back_populates="children", 
+        secondary="topics_closure",
+        back_populates="children",
         primaryjoin="and_(Topic.id == topics_closure.c.descendant, topics_closure.c.depth == 1)",
-        secondaryjoin="topics_closure.c.ancestor == Topic.id"
+        secondaryjoin="topics_closure.c.ancestor == Topic.id",
     )
     children: Mapped[list["Topic"]] = relationship(
-        secondary="topics_closure", 
-        back_populates="parents", 
+        secondary="topics_closure",
+        back_populates="parents",
         primaryjoin="and_(Topic.id == topics_closure.c.ancestor, topics_closure.c.depth == 1)",
-        secondaryjoin="topics_closure.c.descendant == Topic.id"
+        secondaryjoin="topics_closure.c.descendant == Topic.id",
     )
 
 
