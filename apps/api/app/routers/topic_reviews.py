@@ -287,31 +287,58 @@ async def create_topic_review(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> TopicReviewWithTopic:
-    """Create a new topic review."""
-    # Verify review exists and belongs to user
-    review_result = await session.execute(
-        select(Review).where(
-            Review.id == topic_review.review_id, Review.user_id == user_id
-        )
-    )
-    review = review_result.scalar_one_or_none()
-    if not review:
-        raise HTTPException(status_code=404, detail="Review not found")
+    """Create a new topic review.
 
-    # Verify topic exists and belongs to user
-    topic_result = await session.execute(
-        select(Topic).where(Topic.id == topic_review.topic_id, Topic.user_id == user_id)
-    )
-    topic = topic_result.scalar_one_or_none()
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
+    Supports creating and linking entities in any combination:
+    - Link existing topic + existing review (provide topic_id and review_id)
+    - Create new topic + link to existing review (provide topic and review_id)
+    - Link existing topic + create new review (provide topic_id and review)
+    - Create both new topic and review (provide topic and review)
+    """
+    # Resolve or create Topic
+    if topic_review.topic_id is not None:
+        # Fetch existing topic
+        topic_result = await session.execute(
+            select(Topic).where(
+                Topic.id == topic_review.topic_id, Topic.user_id == user_id
+            )
+        )
+        topic = topic_result.scalar_one_or_none()
+        if not topic:
+            raise HTTPException(status_code=404, detail="Topic not found")
+    else:
+        # Create new topic from inline data
+        # Assertion validated by Pydantic model_validator
+        assert topic_review.topic is not None
+        topic = Topic(**topic_review.topic.model_dump(), user_id=user_id)
+        session.add(topic)
+        await session.flush()
+
+    # Resolve or create Review
+    if topic_review.review_id is not None:
+        # Fetch existing review
+        review_result = await session.execute(
+            select(Review).where(
+                Review.id == topic_review.review_id, Review.user_id == user_id
+            )
+        )
+        review = review_result.scalar_one_or_none()
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found")
+    else:
+        # Create new review from inline data
+        # Assertion validated by Pydantic model_validator
+        assert topic_review.review is not None
+        review = Review(**topic_review.review.model_dump(), user_id=user_id)
+        session.add(review)
+        await session.flush()
 
     # Check if review is completed - only run FSRS if it is
     if review.completed_at is None:
         # Review not completed yet - create topic review without FSRS or rating
         new_topic_review = TopicReview(
-            review_id=topic_review.review_id,
-            topic_id=topic_review.topic_id,
+            review_id=review.id,
+            topic_id=topic.id,
             user_id=user_id,
             # All FSRS fields remain None
         )
@@ -365,8 +392,8 @@ async def create_topic_review(
 
     # Create the topic review with FSRS state
     new_topic_review = TopicReview(
-        review_id=topic_review.review_id,
-        topic_id=topic_review.topic_id,
+        review_id=review.id,
+        topic_id=topic.id,
         user_id=user_id,
         rating=rating_value,
         # Topic before state
