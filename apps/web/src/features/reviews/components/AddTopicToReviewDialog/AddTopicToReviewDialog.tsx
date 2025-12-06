@@ -97,7 +97,7 @@ function AddTopicToReviewDialogContent({
 	}, [open, setSelectedTopicId])
 
 	// Topic Creation
-	const createNewTopic = useCallback(async () => {
+	const onCreateNewClicked = useCallback(async () => {
 		if (!review) return
 
 		try {
@@ -248,7 +248,7 @@ function AddTopicToReviewDialogContent({
 					{/* Action Buttons */}
 					<Button
 						disabled={isCreatingTopicReview}
-						onClick={createNewTopic}
+						onClick={onCreateNewClicked}
 						size='default'
 						variant='secondary'
 					>
