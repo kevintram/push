@@ -1,13 +1,43 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { Topic } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { createParentRelationship } from '../api/createTopicRelationship'
+import {
+	createChildRelationship,
+	createParentRelationship
+} from '../api/createTopicRelationship'
+
+type CreateRelationshipInput =
+	| { parent: number; child: number }
+	| {
+			parent: number
+			childData: Pick<Topic, 'name' | 'notes' | 'archived' | 'inboxed'>
+	  }
+	| {
+			child: number
+			parentData: Pick<Topic, 'name' | 'notes' | 'archived' | 'inboxed'>
+	  }
 
 export function useCreateRelationship() {
 	const queryClient = useQueryClient()
 
 	return useMutation({
-		mutationFn: ({ parent, child }: { parent: number; child: number }) => {
-			return createParentRelationship({ childId: child, parentId: parent })
+		mutationFn: (input: CreateRelationshipInput) => {
+			if ('childData' in input) {
+				return createChildRelationship({
+					parentId: input.parent,
+					child: input.childData
+				})
+			}
+			if ('parentData' in input) {
+				return createParentRelationship({
+					childId: input.child,
+					parent: input.parentData
+				})
+			}
+			return createChildRelationship({
+				parentId: input.parent,
+				childId: input.child
+			})
 		},
 		onSuccess: async () => {
 			// Invalidate topic and review caches

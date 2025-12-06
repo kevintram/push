@@ -15,7 +15,7 @@ import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import { cn } from '~/lib/utils'
-import { AddTopicToReviewRelationshipDialog } from './AddRelationshipDialog'
+import { AddRelationshipDialog } from './AddRelationshipDialog'
 
 interface ReviewTopicParentsPanelProps {
 	onParentSelect: (topicId: number) => void
@@ -117,7 +117,7 @@ export function ReviewTopicParentsPanel({
 				</DropdownMenu>
 			</div>
 
-			<AddTopicToReviewRelationshipDialog
+			<AddRelationshipDialog
 				onOpenChange={setShowSearchDialog}
 				onTopicCreated={onParentSelect}
 				open={showSearchDialog}

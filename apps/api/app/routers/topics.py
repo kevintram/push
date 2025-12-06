@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
 
-from sqlalchemy import or_, select, update, delete, Connection, desc
+from sqlalchemy import or_, select, update, delete, desc
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Literal
@@ -13,8 +13,9 @@ from app.schemas import (
     TopicCreate,
     TopicUpdate,
     TopicReadWithRelationshipsAndReviews,
-    TopicRelationshipCreate,
+    TopicChildRelationshipCreate,
     TopicParentRelationshipCreate,
+    TopicRelationshipResponse,
     ReviewReadWithTopics,
 )
 
@@ -355,17 +356,47 @@ async def insert_topic(
 @router.post("/topics/{parent_id}/children/", tags=["topics"])
 async def insert_child(
     parent_id: int,
-    payload: TopicRelationshipCreate,
+    payload: TopicChildRelationshipCreate,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TopicReadWithRelationshipsAndReviews:
-    child_id = payload.child_id
-    return await _insert_topic_relationship(
+) -> TopicRelationshipResponse:
+    # Resolve or create child topic
+    if payload.child_id is not None:
+        # Use existing topic
+        child_id = payload.child_id
+    else:
+        # Create new topic from inline data
+        # Assertion validated by Pydantic model_validator
+        assert payload.child is not None
+        new_child = Topic(**payload.child.model_dump(), user_id=user_id)
+        session.add(new_child)
+        await session.flush()
+        child_id = new_child.id
+
+    await _insert_topic_relationship(
         session,
         user_id=user_id,
         parent_id=parent_id,
         child_id=child_id,
         focus_topic_id=parent_id,
+    )
+
+    # Fetch both topics with relationships
+    stmt = (
+        select(Topic)
+        .where(Topic.id.in_([parent_id, child_id]), Topic.user_id == user_id)
+        .options(
+            selectinload(Topic.parents),
+            selectinload(Topic.children),
+        )
+    )
+    result = await session.execute(stmt)
+    topics = result.scalars().all()
+    topic_map = {t.id: t for t in topics}
+
+    return TopicRelationshipResponse(
+        parent=topic_map[parent_id],
+        child=topic_map[child_id],
     )
 
 
@@ -375,14 +406,44 @@ async def insert_parent(
     payload: TopicParentRelationshipCreate,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TopicReadWithRelationshipsAndReviews:
-    parent_id = payload.parent_id
-    return await _insert_topic_relationship(
+) -> TopicRelationshipResponse:
+    # Resolve or create parent topic
+    if payload.parent_id is not None:
+        # Use existing topic
+        parent_id = payload.parent_id
+    else:
+        # Create new topic from inline data
+        # Assertion validated by Pydantic model_validator
+        assert payload.parent is not None
+        new_parent = Topic(**payload.parent.model_dump(), user_id=user_id)
+        session.add(new_parent)
+        await session.flush()
+        parent_id = new_parent.id
+
+    await _insert_topic_relationship(
         session,
         user_id=user_id,
         parent_id=parent_id,
         child_id=child_id,
         focus_topic_id=child_id,
+    )
+
+    # Fetch both topics with relationships
+    stmt = (
+        select(Topic)
+        .where(Topic.id.in_([parent_id, child_id]), Topic.user_id == user_id)
+        .options(
+            selectinload(Topic.parents),
+            selectinload(Topic.children),
+        )
+    )
+    result = await session.execute(stmt)
+    topics = result.scalars().all()
+    topic_map = {t.id: t for t in topics}
+
+    return TopicRelationshipResponse(
+        parent=topic_map[parent_id],
+        child=topic_map[child_id],
     )
 
 

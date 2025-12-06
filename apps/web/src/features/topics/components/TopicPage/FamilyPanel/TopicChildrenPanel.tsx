@@ -4,7 +4,6 @@ import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { getTopicChildren } from '~/features/topics/api/getTopicChildren'
-import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/review-topic.types'
@@ -36,30 +35,7 @@ export function TopicChildrenPanel({
 		enabled: selectedTopic?.id !== undefined
 	})
 
-	const createRelationship = useCreateRelationship()
 	const deleteRelationship = useDeleteRelationship()
-
-	const handleTopicCreated = useCallback(
-		async (topic: Topic) => {
-			if (!selectedTopic) return
-
-			try {
-				// Create parent-child relationship
-				await createRelationship.mutateAsync({
-					parent: selectedTopic.id,
-					child: topic.id
-				})
-			} catch (_error) {}
-		},
-		[selectedTopic, createRelationship]
-	)
-
-	const handleChildClick = useCallback(
-		(child: Topic) => {
-			openTopicDialog(child.id)
-		},
-		[openTopicDialog]
-	)
 
 	// Combine add button and children into a single array
 	const items: Array<ListItem> = [
@@ -94,8 +70,9 @@ export function TopicChildrenPanel({
 				return (
 					<AddRelationshipDropdown
 						onOpenSearchDialog={() => setShowCreateDialog(true)}
-						onRelationshipCreated={handleTopicCreated}
-						onTopicOpen={handleChildClick}
+						onTopicOpen={(topicId: number) => {
+							openTopicDialog(topicId)
+						}}
 						relationshipType='child'
 						topicId={selectedTopic?.id}
 						variant='card'
@@ -112,14 +89,18 @@ export function TopicChildrenPanel({
 			}
 
 			return (
-				<ChildCard
-					child={item.child}
-					onChildClick={handleChildClick}
+				<TopicCard
+					minHeight={MIN_HEIGHT}
 					onRemoveRelationship={handleRemoveRelationship}
+					onTopicClick={() => {
+						openTopicDialog(item.child.id)
+					}}
+					reviews={item.child.reviews ?? []}
+					topic={item.child}
 				/>
 			)
 		},
-		[deleteRelationship, handleChildClick, handleTopicCreated, selectedTopic]
+		[deleteRelationship, openTopicDialog, selectedTopic]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {
@@ -152,41 +133,13 @@ export function TopicChildrenPanel({
 
 			<AddRelationshipDialog
 				onOpenChange={setShowCreateDialog}
-				onRelationshipCreated={handleTopicCreated}
-				onTopicOpen={handleChildClick}
+				onTopicCreated={(topicId: number) => {
+					openTopicDialog(topicId)
+				}}
 				open={showCreateDialog}
 				relationshipType='child'
 				topicId={selectedTopic?.id}
 			/>
 		</>
-	)
-}
-
-interface ChildCardProps {
-	child: Topic
-	onChildClick?: (child: Topic) => void
-	onRemoveRelationship?: () => void
-}
-
-function ChildCard({
-	child,
-	onChildClick,
-	onRemoveRelationship
-}: ChildCardProps) {
-	const handleClick = useCallback(
-		(_topic: Topic) => {
-			onChildClick?.(child)
-		},
-		[onChildClick, child]
-	)
-
-	return (
-		<TopicCard
-			minHeight={MIN_HEIGHT}
-			onRemoveRelationship={onRemoveRelationship}
-			onTopicClick={handleClick}
-			reviews={child.reviews ?? []}
-			topic={child}
-		/>
 	)
 }

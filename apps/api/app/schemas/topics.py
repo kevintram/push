@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, date
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 if TYPE_CHECKING:
     from app.schemas.reviews import (
@@ -66,16 +66,43 @@ class TopicCreate(TopicBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class TopicRelationshipCreate(BaseModel):
-    child_id: int
+class TopicChildRelationshipCreate(BaseModel):
+    # Mutually exclusive: provide child_id OR child (not both)
+    child_id: int | None = None
+    child: "TopicCreate | None" = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "TopicChildRelationshipCreate":
+        if self.child_id is not None and self.child is not None:
+            raise ValueError("Cannot provide both child_id and child")
+        if self.child_id is None and self.child is None:
+            raise ValueError("Must provide either child_id or child")
+        return self
 
 
 class TopicParentRelationshipCreate(BaseModel):
-    parent_id: int
+    # Mutually exclusive: provide parent_id OR parent (not both)
+    parent_id: int | None = None
+    parent: "TopicCreate | None" = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "TopicParentRelationshipCreate":
+        if self.parent_id is not None and self.parent is not None:
+            raise ValueError("Cannot provide both parent_id and parent")
+        if self.parent_id is None and self.parent is None:
+            raise ValueError("Must provide either parent_id or parent")
+        return self
 
 
 class ReviewIdPayload(BaseModel):
     review_id: int
+
+
+class TopicRelationshipResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    parent: TopicReadWithRelationships
+    child: TopicReadWithRelationships
 
 
 class TopicUpdate(BaseModel):
