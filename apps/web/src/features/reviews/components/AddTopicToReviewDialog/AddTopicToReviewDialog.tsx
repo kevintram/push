@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { SquarePen } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SearchInput, SearchResultsContainer } from '~/components/search'
@@ -574,25 +574,62 @@ export function AddTopicToReviewDialog({
 								searchQuery={searchQuery}
 							/>
 						) : (
-							<TopicDetailView
-								dialog={dialogState}
-								isTopicMinimized={isTopicMinimized}
-								onNestedTopicCreated={handleNestedTopicCreated}
-								renderAddTopicCard={renderAddTopicCard}
-							/>
+							<motion.div
+								animate={{ opacity: 1, scale: 1 }}
+								className='h-full overflow-hidden rounded-md border-1'
+								exit={{ opacity: 0, scale: 0.98 }}
+								initial={{ opacity: 0, scale: 0.95 }}
+								key='topic-detail'
+								layoutId='topic-container'
+								transition={{
+									layout: { duration: 0.25, ease: 'easeInOut' },
+									opacity: { duration: 0.18 },
+									scale: { duration: 0.18 }
+								}}
+							>
+								<AnimatePresence mode='wait'>
+									{!isTopicMinimized && (
+										<motion.div
+											animate={{ opacity: 1 }}
+											className='h-full'
+											exit={{ opacity: 0 }}
+											initial={{ opacity: 0 }}
+											key='topic-detail-content'
+											transition={{ duration: 0.15 }}
+										>
+											<TopicDetailView
+												dialog={dialogState}
+												onNestedTopicCreated={handleNestedTopicCreated}
+												renderAddTopicCard={renderAddTopicCard}
+											/>
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</motion.div>
 						)}
 					</AnimatePresence>
 				</div>
 
 				{/* Floating Card for Minimized State */}
-				{showFloatingCard && (
-					<FloatingTopicCard
-						displayName={selectedTopicDisplayName}
-						isMinimized={isTopicMinimized}
-						onClose={closeTopicDetail}
-						onMaximize={maximizeTopicDetail}
-					/>
-				)}
+				<AnimatePresence mode='wait'>
+					{showFloatingCard && (
+						<motion.div
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							initial={{ opacity: 0 }}
+							key='floating-card-content'
+							transition={{
+								opacity: { duration: 0.15, delay: 0.15 }
+							}}
+						>
+							<FloatingTopicCard
+								displayName={selectedTopicDisplayName}
+								onClose={closeTopicDetail}
+								onMaximize={maximizeTopicDetail}
+							/>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</DialogContent>
 		</Dialog>
 	)

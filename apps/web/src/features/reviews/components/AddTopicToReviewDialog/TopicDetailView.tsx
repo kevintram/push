@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from 'framer-motion'
 import { Minus, X } from 'lucide-react'
 import { Button } from '~/components/ui/Button'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
@@ -26,7 +25,6 @@ interface DialogState {
 
 interface TopicDetailViewProps {
 	dialog: DialogState
-	isTopicMinimized: boolean
 	onNestedTopicCreated: (topic: Topic) => Promise<void>
 	renderAddTopicCard: (
 		topic: Topic,
@@ -36,106 +34,73 @@ interface TopicDetailViewProps {
 
 export function TopicDetailView({
 	dialog,
-	isTopicMinimized,
 	onNestedTopicCreated,
 	renderAddTopicCard
 }: TopicDetailViewProps) {
 	return (
-		<motion.div
-			animate={{ opacity: 1, scale: 1 }}
-			className='h-full overflow-hidden rounded-md border-1'
-			exit={{ opacity: 0, scale: 0.98 }}
-			initial={{ opacity: 0, scale: 0.95 }}
-			key='topic-detail'
-			layoutId='topic-container'
-			transition={{
-				layout: { duration: 0.25, ease: 'easeInOut' },
-				opacity: { duration: 0.18 },
-				scale: { duration: 0.18 }
-			}}
-		>
-			<AnimatePresence mode='wait'>
-				{!isTopicMinimized && (
-					<motion.div
-						animate={{ opacity: 1 }}
-						className='h-full'
-						exit={{ opacity: 0 }}
-						initial={{ opacity: 0 }}
-						key='topic-detail-content'
-						transition={{ duration: 0.15 }}
-					>
-						<TopicContext value={dialog.topicContextValue}>
-							<TopicDetail
-								afterMoreButton={
-									<>
-										<Button
-											className='h-6 w-6 p-0 text-muted-foreground'
-											onClick={dialog.minimizeTopicDetail}
-											size='sm'
-											title='Minimize'
-											variant='ghost'
-										>
-											<Minus className='h-4 w-4' />
-										</Button>
-										<Button
-											className='h-6 w-6 p-0 text-muted-foreground'
-											onClick={dialog.closeTopicDetail}
-											size='sm'
-											title='Back to search'
-											variant='ghost'
-										>
-											<X className='h-4 w-4' />
-										</Button>
-									</>
+		<TopicContext value={dialog.topicContextValue}>
+			<TopicDetail
+				afterMoreButton={
+					<>
+						<Button
+							className='h-6 w-6 p-0 text-muted-foreground'
+							onClick={dialog.minimizeTopicDetail}
+							size='sm'
+							title='Minimize'
+							variant='ghost'
+						>
+							<Minus className='h-4 w-4' />
+						</Button>
+						<Button
+							className='h-6 w-6 p-0 text-muted-foreground'
+							onClick={dialog.closeTopicDetail}
+							size='sm'
+							title='Back to search'
+							variant='ghost'
+						>
+							<X className='h-4 w-4' />
+						</Button>
+					</>
+				}
+				beforeMoreButton={
+					dialog.selectedTopic ? (
+						<TopicReviewStatusButton
+							isAdded={dialog.selectedTopicIsAdded}
+							isReviewCompleted={dialog.isReviewCompleted}
+							onAdd={() => {
+								if (dialog.selectedTopic) {
+									dialog.addTopicToReview(dialog.selectedTopic).catch(() => {})
 								}
-								beforeMoreButton={
-									dialog.selectedTopic ? (
-										<TopicReviewStatusButton
-											isAdded={dialog.selectedTopicIsAdded}
-											isReviewCompleted={dialog.isReviewCompleted}
-											onAdd={() => {
-												if (dialog.selectedTopic) {
-													dialog
-														.addTopicToReview(dialog.selectedTopic)
-														.catch(() => {})
-												}
-											}}
-											onRatingChange={
-												dialog.selectedTopicReview
-													? rating => {
-															if (dialog.selectedTopicReview) {
-																dialog
-																	.updateRating(
-																		dialog.selectedTopicReview.id,
-																		rating
-																	)
-																	.catch(() => {})
-															}
-														}
-													: undefined
+							}}
+							onRatingChange={
+								dialog.selectedTopicReview
+									? rating => {
+											if (dialog.selectedTopicReview) {
+												dialog
+													.updateRating(dialog.selectedTopicReview.id, rating)
+													.catch(() => {})
 											}
-											onRemove={() => {
-												if (dialog.selectedTopic) {
-													dialog
-														.removeTopicFromReview(dialog.selectedTopic)
-														.catch(() => {})
-												}
-											}}
-											rating={dialog.selectedTopicReview?.rating}
-										/>
-									) : null
+										}
+									: undefined
+							}
+							onRemove={() => {
+								if (dialog.selectedTopic) {
+									dialog
+										.removeTopicFromReview(dialog.selectedTopic)
+										.catch(() => {})
 								}
-								onChildClicked={dialog.switchToTopic}
-								onDelete={dialog.handleTopicDeleted}
-								onParentClicked={dialog.switchToTopic}
-								onTopicCreated={onNestedTopicCreated}
-								renderChildCard={renderAddTopicCard}
-								reviewSidebarReadonly={true}
-							/>
-						</TopicContext>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</motion.div>
+							}}
+							rating={dialog.selectedTopicReview?.rating}
+						/>
+					) : null
+				}
+				onChildClicked={dialog.switchToTopic}
+				onDelete={dialog.handleTopicDeleted}
+				onParentClicked={dialog.switchToTopic}
+				onTopicCreated={onNestedTopicCreated}
+				renderChildCard={renderAddTopicCard}
+				reviewSidebarReadonly={true}
+			/>
+		</TopicContext>
 	)
 }
