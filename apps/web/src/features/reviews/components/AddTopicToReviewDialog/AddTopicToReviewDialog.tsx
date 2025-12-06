@@ -27,16 +27,10 @@ import { AddTopicCard } from './AddTopicCard'
 import { FloatingTopicCard } from './FloatingTopicCard'
 import { TopicDetailView } from './TopicDetailView'
 
-// ============================================================================
 // Constants
-// ============================================================================
-
 const MIN_HEIGHT = 72
 
-// ============================================================================
 // Types
-// ============================================================================
-
 interface AddTopicToReviewDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
@@ -45,10 +39,7 @@ interface AddTopicToReviewDialogProps {
 
 type ViewMode = 'search' | 'detail'
 
-// ============================================================================
 // Main Component
-// ============================================================================
-
 export function AddTopicToReviewDialog({
 	open,
 	onOpenChange,
@@ -57,10 +48,7 @@ export function AddTopicToReviewDialog({
 	const queryClient = useQueryClient()
 	const inputRef = useRef<HTMLInputElement>(null)
 
-	// ---------------------------------------------------------------------------
 	// State
-	// ---------------------------------------------------------------------------
-
 	const [searchQuery, setSearchQuery] = useState('')
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 	const [selectedTopicId, setSelectedTopicId] = useState<number | undefined>(
@@ -69,18 +57,12 @@ export function AddTopicToReviewDialog({
 	const [viewMode, setViewMode] = useState<ViewMode>('search')
 	const [isTopicMinimized, setIsTopicMinimized] = useState(false)
 
-	// ---------------------------------------------------------------------------
 	// External Hooks
-	// ---------------------------------------------------------------------------
-
 	const { topic: selectedTopic, isLoading: isLoadingTopic } =
 		useTopicWithRelationships(selectedTopicId)
 	const debouncedQuery = useDebouncedValue(searchQuery, 300)
 
-	// ---------------------------------------------------------------------------
 	// Derived State
-	// ---------------------------------------------------------------------------
-
 	const addedTopics = useMemo(
 		() => new Set(review?.topic_reviews?.map(tr => tr.topic_id) ?? []),
 		[review?.topic_reviews]
@@ -93,10 +75,7 @@ export function AddTopicToReviewDialog({
 	)
 	const hasQuery = Boolean(debouncedQuery.trim())
 
-	// ---------------------------------------------------------------------------
 	// Queries
-	// ---------------------------------------------------------------------------
-
 	const { data: topics = [], isLoading: isSearching } = useQuery({
 		queryKey: ['topics', 'search', debouncedQuery || 'recent', review?.id],
 		queryFn: () =>
@@ -114,10 +93,7 @@ export function AddTopicToReviewDialog({
 		return topics ?? []
 	}, [topics, debouncedQuery])
 
-	// ---------------------------------------------------------------------------
 	// Mutations
-	// ---------------------------------------------------------------------------
-
 	const {
 		mutateAsync: createTopicReviewMutation,
 		isPending: isCreatingTopicReview
@@ -143,10 +119,7 @@ export function AddTopicToReviewDialog({
 		}
 	})
 
-	// ---------------------------------------------------------------------------
 	// Effects
-	// ---------------------------------------------------------------------------
-
 	useEffect(() => {
 		if (open) {
 			setTimeout(() => {
@@ -160,10 +133,7 @@ export function AddTopicToReviewDialog({
 		}
 	}, [open])
 
-	// ---------------------------------------------------------------------------
 	// Helper Functions
-	// ---------------------------------------------------------------------------
-
 	const isTopicAdded = useCallback(
 		(topicId: number) => addedTopics.has(topicId),
 		[addedTopics]
@@ -176,10 +146,7 @@ export function AddTopicToReviewDialog({
 		[review?.topic_reviews]
 	)
 
-	// ---------------------------------------------------------------------------
 	// Topic Review Actions
-	// ---------------------------------------------------------------------------
-
 	const addTopicToReview = useCallback(
 		async (topic: Topic) => {
 			if (!review) return
@@ -223,10 +190,7 @@ export function AddTopicToReviewDialog({
 		[updateTopicReviewMutation]
 	)
 
-	// ---------------------------------------------------------------------------
 	// Topic Creation
-	// ---------------------------------------------------------------------------
-
 	const createNewTopic = useCallback(async () => {
 		if (!review) return
 
@@ -272,10 +236,7 @@ export function AddTopicToReviewDialog({
 		[review, createTopicReviewMutation, isReviewCompleted]
 	)
 
-	// ---------------------------------------------------------------------------
 	// View State Management
-	// ---------------------------------------------------------------------------
-
 	const openTopicDetail = useCallback(
 		(topic: Topic) => {
 			if (selectedTopicId === topic.id) {
@@ -321,10 +282,7 @@ export function AddTopicToReviewDialog({
 		setIsTopicMinimized(false)
 	}, [])
 
-	// ---------------------------------------------------------------------------
 	// Search Handlers
-	// ---------------------------------------------------------------------------
-
 	const handleSearchChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			if (viewMode === 'detail' && !isTopicMinimized) {
@@ -377,10 +335,7 @@ export function AddTopicToReviewDialog({
 		[selectedTopic, isLoadingTopic]
 	)
 
-	// ---------------------------------------------------------------------------
 	// Render Callbacks
-	// ---------------------------------------------------------------------------
-
 	const renderAddTopicCard = useCallback(
 		(topic: Topic, removeRelationship?: () => void) => {
 			const topicReviewData = getTopicReview(topic.id)
@@ -436,10 +391,7 @@ export function AddTopicToReviewDialog({
 		[removeTopicReview, openPopoverAndSelectTopic]
 	)
 
-	// ---------------------------------------------------------------------------
 	// Derived Values for Render
-	// ---------------------------------------------------------------------------
-
 	const showSearchView =
 		viewMode === 'search' || (viewMode === 'detail' && isTopicMinimized)
 
@@ -451,10 +403,7 @@ export function AddTopicToReviewDialog({
 		return selectedTopic.name || selectedTopic.notes || 'Untitled Topic'
 	}, [selectedTopic])
 
-	// ---------------------------------------------------------------------------
 	// Dialog State Object (for TopicDetailView)
-	// ---------------------------------------------------------------------------
-
 	const dialogState = useMemo(
 		() => ({
 			topicContextValue,
@@ -485,10 +434,6 @@ export function AddTopicToReviewDialog({
 			handleTopicDeleted
 		]
 	)
-
-	// ---------------------------------------------------------------------------
-	// Render
-	// ---------------------------------------------------------------------------
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
