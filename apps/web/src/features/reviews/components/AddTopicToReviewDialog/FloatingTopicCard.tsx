@@ -1,18 +1,25 @@
 import { motion } from 'framer-motion'
 import { ChevronUp, X } from 'lucide-react'
+import { useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
+import { useAddTopicToReview } from './AddTopicToReviewContext'
 
 interface FloatingTopicCardProps {
-	displayName: string
 	onMaximize: () => void
 	onClose: () => void
 }
 
 export function FloatingTopicCard({
-	displayName,
 	onMaximize,
 	onClose
 }: FloatingTopicCardProps) {
+	const { selectedTopic } = useAddTopicToReview()
+
+	const displayName = useMemo(() => {
+		if (!selectedTopic) return 'Untitled Topic'
+		return selectedTopic.name || selectedTopic.notes || 'Untitled Topic'
+	}, [selectedTopic])
+
 	return (
 		<motion.button
 			aria-label='Restore topic detail'
