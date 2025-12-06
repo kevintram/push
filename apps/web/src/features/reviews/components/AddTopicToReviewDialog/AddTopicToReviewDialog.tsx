@@ -130,7 +130,7 @@ export function AddTopicToReviewDialog({
 			reviewId: number
 			topicId: number
 			rating?: Rating | null
-		}) => createTopicReview(reviewId, topicId, rating),
+		}) => createTopicReview({ review_id: reviewId, topic_id: topicId, rating }),
 		onSuccess: async () => {
 			await invalidateTopicsAndReviews(queryClient)
 		}
