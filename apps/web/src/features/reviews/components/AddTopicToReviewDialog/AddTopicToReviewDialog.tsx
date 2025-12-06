@@ -21,7 +21,7 @@ import {
 	useAddTopicToReview
 } from './AddTopicToReviewContext'
 import { FloatingTopicCard } from './FloatingTopicCard'
-import { ReviewTopicDetail } from './ReviewTopicDetail'
+import { ReviewTopicDetail } from './TopicDetail/TopicDetail'
 
 // Constants
 const MIN_HEIGHT = 72
@@ -50,8 +50,7 @@ function AddTopicToReviewDialogContent({
 		review,
 		selectedTopicId,
 		setSelectedTopicId,
-		addTopicToReview,
-		createTopicAndAddToReview,
+		addTopicToReview: createTopicReview,
 		isCreatingTopicReview
 	} = useAddTopicToReview()
 
@@ -103,11 +102,13 @@ function AddTopicToReviewDialogContent({
 		try {
 			const trimmedQuery = searchQuery.trim()
 
-			const topicReview = await createTopicAndAddToReview({
-				name: '',
-				notes: trimmedQuery || '',
-				archived: false,
-				inboxed: true
+			const topicReview = await createTopicReview({
+				topic: {
+					name: '',
+					notes: trimmedQuery || '',
+					archived: false,
+					inboxed: true
+				}
 			})
 
 			setSelectedTopicId(topicReview.topic_id)
@@ -115,23 +116,7 @@ function AddTopicToReviewDialogContent({
 		} catch {
 			// Error handling could be added here if needed
 		}
-	}, [searchQuery, review, createTopicAndAddToReview, setSelectedTopicId])
-
-	const handleNestedTopicCreated = useCallback(
-		async (topic: Topic) => {
-			if (!review) return
-
-			try {
-				await addTopicToReview(topic)
-				setSelectedTopicId(topic.id)
-				setViewMode('detail')
-				setIsTopicMinimized(false)
-			} catch {
-				// Handle error silently for now
-			}
-		},
-		[review, addTopicToReview, setSelectedTopicId]
-	)
+	}, [searchQuery, review, createTopicReview, setSelectedTopicId])
 
 	// View State Management
 	const openTopicDetail = useCallback(
@@ -153,9 +138,9 @@ function AddTopicToReviewDialogContent({
 		[selectedTopicId, isTopicMinimized, viewMode, setSelectedTopicId]
 	)
 
-	const switchToTopic = useCallback(
-		(topic: Topic) => {
-			setSelectedTopicId(topic.id)
+	const openTopic = useCallback(
+		(topicId: number) => {
+			setSelectedTopicId(topicId)
 			setViewMode('detail')
 			setIsTopicMinimized(false)
 		},
@@ -321,9 +306,8 @@ function AddTopicToReviewDialogContent({
 										<ReviewTopicDetail
 											onClose={closeTopicDetail}
 											onMinimize={minimizeTopicDetail}
-											onNestedTopicCreated={handleNestedTopicCreated}
 											onTopicDeleted={handleTopicDeleted}
-											onTopicSwitch={switchToTopic}
+											onTopicSelected={openTopic}
 										/>
 									</motion.div>
 								)}

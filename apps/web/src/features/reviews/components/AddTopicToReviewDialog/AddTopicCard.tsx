@@ -34,7 +34,7 @@ export function AddTopicCard({
 		isReviewCompleted,
 		isTopicAdded,
 		getTopicReview,
-		addTopicToReview,
+		addTopicToReview: createTopicReview,
 		removeTopicFromReview,
 		updateRating
 	} = useAddTopicToReview()
@@ -58,8 +58,8 @@ export function AddTopicCard({
 
 	// Click handlers
 	const handleAdd = useCallback(() => {
-		addTopicToReview(topic)
-	}, [addTopicToReview, topic])
+		createTopicReview({ topicId: topic.id })
+	}, [createTopicReview, topic])
 
 	const handleRemove = useCallback(() => {
 		removeTopicFromReview(topic)

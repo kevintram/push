@@ -124,11 +124,15 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 		[review?.id, review?.completed_at, updateReviewMutation]
 	)
 
-	const selectedDate = review?.completed_at
-		? dayjs(review.completed_at).toDate()
-		: review?.scheduled_at
-			? dayjs(review.scheduled_at).toDate()
-			: null
+	const selectedDate = (() => {
+		if (review?.completed_at) {
+			return dayjs(review.completed_at).toDate()
+		}
+		if (review?.scheduled_at) {
+			return dayjs(review.scheduled_at).toDate()
+		}
+		return null
+	})()
 
 	const effectiveDate = review?.effective_date
 		? dayjs(review.effective_date).toDate()
@@ -167,6 +171,16 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 		})
 	}, [review?.scheduled_at, review?.completed_at])
 
+	const dateButtonClassName = useMemo(() => {
+		if (isOverdueValue) {
+			return 'text-red-600 dark:text-red-400'
+		}
+		if (relativeDate === 'Today') {
+			return 'text-blue-600 dark:text-blue-400'
+		}
+		return ''
+	}, [isOverdueValue, relativeDate])
+
 	const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
 
@@ -175,6 +189,7 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 		if (descriptionRef.current) {
 			descriptionRef.current.focus()
 		}
+		// biome-ignore lint/correctness/useExhaustiveDependencies: We want to focus when review changes
 	}, [review?.id])
 
 	if (isLoading || !review) {
@@ -228,13 +243,7 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 								trigger={
 									<TooltipTrigger asChild={true}>
 										<Button
-											className={
-												isOverdueValue
-													? 'text-red-600 dark:text-red-400'
-													: relativeDate === 'Today'
-														? 'text-blue-600 dark:text-blue-400'
-														: ''
-											}
+											className={dateButtonClassName}
 											size='sm'
 											variant='ghost'
 										>

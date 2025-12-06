@@ -136,6 +136,16 @@ export function ReviewItem({
 		return `in ${diffDays}d`
 	}, [effectiveDate])
 
+	const dateButtonColorClass = useMemo(() => {
+		if (isOverdueValue) {
+			return 'text-red-600 dark:text-red-400'
+		}
+		if (relativeDate === 'Today') {
+			return 'text-blue-600 dark:text-blue-400'
+		}
+		return ''
+	}, [isOverdueValue, relativeDate])
+
 	return (
 		<Card className='rounded-none border-0 border-b bg-transparent py-2 shadow-none'>
 			<CardContent
@@ -171,13 +181,7 @@ export function ReviewItem({
 								trigger={
 									<TooltipTrigger asChild={true}>
 										<Button
-											className={`text-xs ${readonly ? 'cursor-default opacity-50' : 'hover:bg-muted/50'} ${
-												isOverdueValue
-													? 'text-red-600 dark:text-red-400'
-													: relativeDate === 'Today'
-														? 'text-blue-600 dark:text-blue-400'
-														: ''
-											}`}
+											className={`text-xs ${readonly ? 'cursor-default opacity-50' : 'hover:bg-muted/50'} ${dateButtonColorClass}`}
 											disabled={readonly}
 											onClick={e => e.stopPropagation()}
 											size='sm'

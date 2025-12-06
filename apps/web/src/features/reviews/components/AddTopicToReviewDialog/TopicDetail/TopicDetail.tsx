@@ -30,30 +30,26 @@ import { ReviewsSidebar } from '~/features/topics/components/TopicPage/ReviewsSi
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
-import type { Rating, Topic } from '~/models/review-topic.types'
+import type { Rating } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { useAddTopicToReview } from './AddTopicToReviewContext'
-import { TopicReviewStatusButton } from './ReviewStatusButton'
-import { ReviewTopicChildrenPanel } from './ReviewTopicChildrenPanel'
-import { ReviewTopicParentsPanel } from './ReviewTopicParentsPanel'
+import { useAddTopicToReview } from '../AddTopicToReviewContext'
+import { TopicReviewStatusButton } from '../ReviewStatusButton'
+import { ReviewTopicChildrenPanel } from './TopicChildrenPanel'
+import { ReviewTopicParentsPanel } from './TopicParentsPanel'
 
 interface ReviewTopicDetailProps {
 	// View state callbacks
 	onMinimize: () => void
 	onClose: () => void
 	onTopicDeleted: () => void
-	// Navigation
-	onTopicSwitch: (topic: Topic) => void
-	// Topic creation callback (for creating new related topics)
-	onNestedTopicCreated: (topic: Topic) => Promise<void>
+	onTopicSelected: (topicId: number) => void
 }
 
 export function ReviewTopicDetail({
 	onMinimize,
 	onClose,
 	onTopicDeleted,
-	onTopicSwitch,
-	onNestedTopicCreated
+	onTopicSelected
 }: ReviewTopicDetailProps) {
 	const queryClient = useQueryClient()
 
@@ -89,7 +85,7 @@ export function ReviewTopicDetail({
 	// Topic review action handlers
 	const handleAddToReview = useCallback(async () => {
 		if (!topic) return
-		await addTopicToReview(topic)
+		await addTopicToReview({ topicId: topic.id })
 	}, [topic, addTopicToReview])
 
 	const handleRemoveFromReview = useCallback(async () => {
@@ -190,11 +186,7 @@ export function ReviewTopicDetail({
 					<div className='sticky top-0 z-10 w-full border-b'>
 						<div className='flex items-center justify-between gap-4 px-2 py-1'>
 							<div className='flex min-w-0 flex-1 items-center gap-4'>
-								<ReviewTopicParentsPanel
-									onNestedTopicCreated={onNestedTopicCreated}
-									onParentSelect={onTopicSwitch}
-									topic={topic}
-								/>
+								<ReviewTopicParentsPanel onParentSelect={onTopicSelected} />
 							</div>
 
 							<div className='flex items-center gap-2'>
@@ -370,9 +362,7 @@ export function ReviewTopicDetail({
 							{/* Children */}
 							<ReviewTopicChildrenPanel
 								getScrollElement={() => scrollContainerRef.current}
-								onNestedTopicCreated={onNestedTopicCreated}
-								onTopicSwitch={onTopicSwitch}
-								topic={topic}
+								onChildSelected={onTopicSelected}
 							/>
 						</div>
 						<ReviewsSidebar readonly={true} />

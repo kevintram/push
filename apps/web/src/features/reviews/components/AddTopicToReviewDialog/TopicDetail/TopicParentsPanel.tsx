@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Plus, Search, SquarePen, User2 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { use, useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import {
 	DropdownMenu,
@@ -10,35 +10,36 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { getTopicParents } from '~/features/topics/api/getTopicParents'
 import { TopicBadge } from '~/features/topics/components/TopicBadge'
-import { AddRelationshipDialog } from '~/features/topics/components/TopicPage/AddRelationshipDialog'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
+import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import { cn } from '~/lib/utils'
-import type { Topic } from '~/models/review-topic.types'
+import { AddTopicToReviewRelationshipDialog } from './AddRelationshipDialog'
 
 interface ReviewTopicParentsPanelProps {
-	topic?: Topic
-	onParentSelect: (parent: Topic) => void
-	onNestedTopicCreated: (topic: Topic) => Promise<void>
+	onParentSelect: (topicId: number) => void
 }
 
 export function ReviewTopicParentsPanel({
-	topic,
-	onParentSelect,
-	onNestedTopicCreated
+	onParentSelect
 }: ReviewTopicParentsPanelProps) {
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 
+	const { topic } = use(TopicContext)
+
 	const { data: parents = [] } = useQuery({
 		queryKey: ['topics', topic?.id, 'parents'],
-		queryFn: () => getTopicParents(topic!.id),
+		queryFn: () => {
+			if (!topic?.id) throw new Error('Topic ID is required')
+			return getTopicParents(topic.id)
+		},
 		enabled: topic?.id !== undefined
 	})
 
-	const createTopic = useCreateTopic()
-	const createRelationship = useCreateRelationship()
 	const deleteRelationship = useDeleteRelationship()
+	const createRelationship = useCreateRelationship()
+	const createTopic = useCreateTopic()
 
 	const isCreating = createTopic.isPending || createRelationship.isPending
 
@@ -46,58 +47,23 @@ export function ReviewTopicParentsPanel({
 		if (!topic) return
 
 		try {
-			// Create blank topic
 			const newTopic = await createTopic.mutateAsync({
 				name: '',
-				notes: ''
+				notes: '',
+				archived: false,
+				inboxed: false
 			})
 
-			// Create relationship (new topic is parent)
 			await createRelationship.mutateAsync({
 				parent: newTopic.id,
 				child: topic.id
 			})
 
-			// Call the callback which will add to review and navigate
-			await onNestedTopicCreated(newTopic)
-		} catch (_error) {}
-	}, [topic, createTopic, createRelationship, onNestedTopicCreated])
-
-	const handleTopicCreatedFromSearch = useCallback(
-		async (newTopic: Topic) => {
-			if (!topic) return
-
-			try {
-				// Create relationship (new topic is parent)
-				await createRelationship.mutateAsync({
-					parent: newTopic.id,
-					child: topic.id
-				})
-				await onNestedTopicCreated(newTopic)
-			} catch (_error) {}
-		},
-		[topic, createRelationship, onNestedTopicCreated]
-	)
-
-	const handleExistingTopicSelected = useCallback(
-		async (selectedTopic: Topic) => {
-			if (!topic) return
-
-			try {
-				// Create relationship (selected topic is parent)
-				await createRelationship.mutateAsync({
-					parent: selectedTopic.id,
-					child: topic.id
-				})
-				await onNestedTopicCreated(selectedTopic)
-			} catch (_error) {}
-		},
-		[topic, createRelationship, onNestedTopicCreated]
-	)
-
-	const handleParentClick = (parent: Topic) => {
-		onParentSelect(parent)
-	}
+			onParentSelect(newTopic.id)
+		} catch (_error) {
+			// Error is handled by React Query mutation state
+		}
+	}, [topic, createTopic, createRelationship, onParentSelect])
 
 	return (
 		<>
@@ -113,7 +79,7 @@ export function ReviewTopicParentsPanel({
 						key={parent.id}
 						name={parent.name}
 						notes={parent.notes}
-						onClick={() => handleParentClick(parent)}
+						onClick={() => onParentSelect(parent.id)}
 						onRemove={() => {
 							if (!topic) return
 							deleteRelationship.mutate({
@@ -151,10 +117,9 @@ export function ReviewTopicParentsPanel({
 				</DropdownMenu>
 			</div>
 
-			<AddRelationshipDialog
+			<AddTopicToReviewRelationshipDialog
 				onOpenChange={setShowSearchDialog}
-				onRelationshipCreated={handleTopicCreatedFromSearch}
-				onTopicOpen={handleExistingTopicSelected}
+				onTopicCreated={onParentSelect}
 				open={showSearchDialog}
 				relationshipType='parent'
 				topicId={topic?.id}
