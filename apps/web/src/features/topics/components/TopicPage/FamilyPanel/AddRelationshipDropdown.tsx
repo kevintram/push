@@ -10,9 +10,7 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { cn } from '~/lib/utils'
-import type { Topic } from '~/models/review-topic.types'
 import { useCreateRelationship } from '../../../hooks/useCreateRelationship'
-import { useCreateTopic } from '../../../hooks/useCreateTopic'
 
 interface AddRelationshipDropdownProps {
 	topicId: number | undefined
@@ -20,8 +18,7 @@ interface AddRelationshipDropdownProps {
 	onOpenSearchDialog: () => void
 	variant: 'badge' | 'card'
 	className?: string
-	onRelationshipCreated?: (topic: Topic) => void
-	onTopicOpen?: (topic: Topic) => void
+	onTopicOpen?: (topicId: number) => void
 }
 
 export function AddRelationshipDropdown({
@@ -30,54 +27,46 @@ export function AddRelationshipDropdown({
 	onOpenSearchDialog,
 	variant,
 	className,
-	onRelationshipCreated,
 	onTopicOpen
 }: AddRelationshipDropdownProps) {
-	const createTopic = useCreateTopic()
 	const createRelationship = useCreateRelationship()
 	const { openTopicDialog } = useReviewTopicDialog()
 
-	const isCreating = createTopic.isPending || createRelationship.isPending
+	const isCreating = createRelationship.isPending
 
 	const handleCreateNew = useCallback(async () => {
 		if (!topicId) return
 
 		try {
-			// Create blank topic
-			const newTopic = await createTopic.mutateAsync({
+			const newTopicData = {
 				name: '',
-				notes: ''
-			})
-
-			// Create relationship based on type
-			if (relationshipType === 'child') {
-				await createRelationship.mutateAsync({
-					parent: topicId,
-					child: newTopic.id
-				})
-			} else {
-				await createRelationship.mutateAsync({
-					parent: newTopic.id,
-					child: topicId
-				})
+				notes: '',
+				archived: false,
+				inboxed: false
 			}
 
-			// Call onRelationshipCreated callback if provided
-			onRelationshipCreated?.(newTopic)
+			// Use inline creation - create topic and relationship in one call
+			const response = await createRelationship.mutateAsync(
+				relationshipType === 'child'
+					? { parent: topicId, childData: newTopicData }
+					: { child: topicId, parentData: newTopicData }
+			)
+
+			// Get the newly created topic ID (child or parent depending on relationship type)
+			const newTopicId =
+				relationshipType === 'child' ? response.child.id : response.parent.id
 
 			// Open the created topic
 			if (onTopicOpen) {
-				onTopicOpen(newTopic)
+				onTopicOpen(newTopicId)
 			} else {
-				openTopicDialog(newTopic.id)
+				openTopicDialog(newTopicId)
 			}
 		} catch (_error) {}
 	}, [
 		topicId,
 		relationshipType,
-		createTopic,
 		createRelationship,
-		onRelationshipCreated,
 		openTopicDialog,
 		onTopicOpen
 	])

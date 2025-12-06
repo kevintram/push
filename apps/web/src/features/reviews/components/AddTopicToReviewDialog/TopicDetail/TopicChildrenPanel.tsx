@@ -16,7 +16,7 @@ import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelation
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/review-topic.types'
 import { AddTopicCard } from '../AddTopicCard'
-import { AddTopicToReviewRelationshipDialog } from './AddRelationshipDialog'
+import { AddRelationshipDialog } from './AddRelationshipDialog'
 
 // Constants
 const MIN_WIDTH = 192
@@ -187,7 +187,7 @@ export function ReviewTopicChildrenPanel({
 				</div>
 			</div>
 
-			<AddTopicToReviewRelationshipDialog
+			<AddRelationshipDialog
 				onOpenChange={setShowSearchDialog}
 				onTopicCreated={onChildSelected}
 				open={showSearchDialog}

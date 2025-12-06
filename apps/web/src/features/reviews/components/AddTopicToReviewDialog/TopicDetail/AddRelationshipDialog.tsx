@@ -14,11 +14,10 @@ import {
 } from '~/components/ui/Dialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
-import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
 import { useDebouncedPotentialTopics } from '~/features/topics/hooks/useDebouncedPotentialTopics'
 import type { Topic } from '~/models/review-topic.types'
 
-interface AddTopicToReviewRelationshipDialogProps {
+interface AddRelationshipDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	topicId: number | undefined
@@ -27,14 +26,14 @@ interface AddTopicToReviewRelationshipDialogProps {
 	onTopicCreated?: (topicId: number) => void
 }
 
-export function AddTopicToReviewRelationshipDialog({
+export function AddRelationshipDialog({
 	open,
 	onOpenChange,
 	topicId: selectedTopicId,
 	relationshipType,
 	onRelationshipCreated,
 	onTopicCreated
-}: AddTopicToReviewRelationshipDialogProps) {
+}: AddRelationshipDialogProps) {
 	// Refs
 	const inputRef = useRef<HTMLInputElement>(null)
 
@@ -48,7 +47,6 @@ export function AddTopicToReviewRelationshipDialog({
 		})
 
 	const createRelationship = useCreateRelationship()
-	const createTopic = useCreateTopic()
 
 	// Effects
 	useEffect(() => {
@@ -79,41 +77,30 @@ export function AddTopicToReviewRelationshipDialog({
 	const dialogTitle =
 		relationshipType === 'child' ? 'Add Child Topic' : 'Add Parent Topic'
 
-	// Helper functions
-	const createRelationshipWith = useCallback(
-		async (topicIdToLink: number) => {
-			if (!selectedTopicId) return
-
-			if (relationshipType === 'child') {
-				await createRelationship.mutateAsync({
-					parent: selectedTopicId,
-					child: topicIdToLink
-				})
-			} else {
-				await createRelationship.mutateAsync({
-					parent: topicIdToLink,
-					child: selectedTopicId
-				})
-			}
-		},
-		[selectedTopicId, relationshipType, createRelationship]
-	)
-
 	// Main handlers
 	const handleCreateTopicClick = useCallback(async () => {
 		if (!selectedTopicId) return
 
 		try {
-			const newTopic = await createTopic.mutateAsync({
+			const newTopicData = {
 				name: '',
 				notes: query.trim() || '',
 				archived: false,
 				inboxed: false
-			})
+			}
 
-			await createRelationshipWith(newTopic.id)
-			onRelationshipCreated?.(newTopic.id)
-			onTopicCreated?.(newTopic.id)
+			// Use inline creation - create topic and relationship in one call
+			const response = await createRelationship.mutateAsync(
+				relationshipType === 'child'
+					? { parent: selectedTopicId, childData: newTopicData }
+					: { child: selectedTopicId, parentData: newTopicData }
+			)
+
+			// Get the newly created topic ID (child or parent depending on relationship type)
+			const newTopicId =
+				relationshipType === 'child' ? response.child.id : response.parent.id
+			onRelationshipCreated?.(newTopicId)
+			onTopicCreated?.(newTopicId)
 			onOpenChange(false)
 		} catch (_error) {
 			// Error is handled by React Query mutation state
@@ -121,8 +108,8 @@ export function AddTopicToReviewRelationshipDialog({
 	}, [
 		selectedTopicId,
 		query,
-		createTopic,
-		createRelationshipWith,
+		relationshipType,
+		createRelationship,
 		onRelationshipCreated,
 		onTopicCreated,
 		onOpenChange
@@ -133,7 +120,17 @@ export function AddTopicToReviewRelationshipDialog({
 			if (!selectedTopicId) return
 
 			try {
-				await createRelationshipWith(topic.id)
+				if (relationshipType === 'child') {
+					await createRelationship.mutateAsync({
+						parent: selectedTopicId,
+						child: topic.id
+					})
+				} else {
+					await createRelationship.mutateAsync({
+						parent: topic.id,
+						child: selectedTopicId
+					})
+				}
 				onRelationshipCreated?.(topic.id)
 				onOpenChange(false)
 			} catch (_error) {
@@ -142,7 +139,8 @@ export function AddTopicToReviewRelationshipDialog({
 		},
 		[
 			selectedTopicId,
-			createRelationshipWith,
+			relationshipType,
+			createRelationship,
 			onRelationshipCreated,
 			onOpenChange
 		]
@@ -197,7 +195,7 @@ export function AddTopicToReviewRelationshipDialog({
 							value={query}
 						/>
 						<Button
-							disabled={createTopic.isPending}
+							disabled={createRelationship.isPending}
 							onClick={handleCreateTopicClick}
 							size='default'
 							variant='secondary'

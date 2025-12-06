@@ -59,6 +59,11 @@ export type Topic = {
 	reviews?: Array<Review>
 }
 
+export type TopicRelationshipResponse = {
+	parent: Topic
+	child: Topic
+}
+
 export const TopicReviewSchema: v.GenericSchema<TopicReview> = v.object({
 	id: v.number(),
 	review_id: v.number(),
@@ -114,3 +119,9 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	children: v.optional(v.array(v.lazy(() => TopicSchema)), []),
 	reviews: v.optional(v.array(v.lazy(() => ReviewSchema)), [])
 })
+
+export const TopicRelationshipResponseSchema: v.GenericSchema<TopicRelationshipResponse> =
+	v.object({
+		parent: v.lazy(() => TopicSchema),
+		child: v.lazy(() => TopicSchema)
+	})
