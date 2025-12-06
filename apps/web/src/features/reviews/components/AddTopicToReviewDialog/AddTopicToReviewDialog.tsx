@@ -17,7 +17,6 @@ import {
 } from '~/features/topic_reviews/api'
 import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
 import { searchTopics } from '~/features/topics/api/searchTopics'
-import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
 import { useTopicWithRelationships } from '~/features/topics/hooks/useTopicWithRelationships'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import type { Rating, Topic, TopicReview } from '~/models/review-topic.types'
@@ -74,8 +73,6 @@ export function AddTopicToReviewDialog({
 	// External Hooks
 	// ---------------------------------------------------------------------------
 
-	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
-		useCreateTopic()
 	const { topic: selectedTopic, isLoading: isLoadingTopic } =
 		useTopicWithRelationships(selectedTopicId)
 	const debouncedQuery = useDebouncedValue(searchQuery, 300)
@@ -121,16 +118,11 @@ export function AddTopicToReviewDialog({
 	// Mutations
 	// ---------------------------------------------------------------------------
 
-	const { mutateAsync: createTopicReviewMutation } = useMutation({
-		mutationFn: ({
-			reviewId,
-			topicId,
-			rating
-		}: {
-			reviewId: number
-			topicId: number
-			rating?: Rating | null
-		}) => createTopicReview({ review_id: reviewId, topic_id: topicId, rating }),
+	const {
+		mutateAsync: createTopicReviewMutation,
+		isPending: isCreatingTopicReview
+	} = useMutation({
+		mutationFn: createTopicReview,
 		onSuccess: async () => {
 			await invalidateTopicsAndReviews(queryClient)
 		}
@@ -194,8 +186,8 @@ export function AddTopicToReviewDialog({
 
 			try {
 				await createTopicReviewMutation({
-					reviewId: review.id,
-					topicId: topic.id,
+					review_id: review.id,
+					topic_id: topic.id,
 					rating: isReviewCompleted ? 'good' : null
 				})
 			} catch {
@@ -236,32 +228,29 @@ export function AddTopicToReviewDialog({
 	// ---------------------------------------------------------------------------
 
 	const createNewTopic = useCallback(async () => {
+		if (!review) return
+
 		try {
 			const trimmedQuery = searchQuery.trim()
 
-			const newTopic = await createTopicAsync({
-				notes: trimmedQuery || ''
+			// Create topic and link to review in a single API call
+			const topicReview = await createTopicReviewMutation({
+				review_id: review.id,
+				topic: {
+					name: '',
+					notes: trimmedQuery || '',
+					archived: false,
+					inboxed: true
+				},
+				rating: isReviewCompleted ? 'good' : null
 			})
 
-			if (review) {
-				await createTopicReviewMutation({
-					reviewId: review.id,
-					topicId: newTopic.id,
-					rating: isReviewCompleted ? 'good' : null
-				})
-				setSelectedTopicId(newTopic.id)
-				setViewMode('detail')
-			}
+			setSelectedTopicId(topicReview.topic_id)
+			setViewMode('detail')
 		} catch {
 			// Error handling could be added here if needed
 		}
-	}, [
-		searchQuery,
-		createTopicAsync,
-		review,
-		createTopicReviewMutation,
-		isReviewCompleted
-	])
+	}, [searchQuery, review, createTopicReviewMutation, isReviewCompleted])
 
 	const handleNestedTopicCreated = useCallback(
 		async (topic: Topic) => {
@@ -269,8 +258,8 @@ export function AddTopicToReviewDialog({
 
 			try {
 				await createTopicReviewMutation({
-					reviewId: review.id,
-					topicId: topic.id,
+					review_id: review.id,
+					topic_id: topic.id,
 					rating: isReviewCompleted ? 'good' : null
 				})
 				setSelectedTopicId(topic.id)
@@ -543,7 +532,7 @@ export function AddTopicToReviewDialog({
 
 						{/* Action Buttons */}
 						<Button
-							disabled={isCreatingTopic}
+							disabled={isCreatingTopicReview}
 							onClick={createNewTopic}
 							size='default'
 							variant='secondary'
