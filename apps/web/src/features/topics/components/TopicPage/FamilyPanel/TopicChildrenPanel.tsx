@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { Baby } from 'lucide-react'
-import type { ReactNode } from 'react'
 import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
@@ -21,17 +20,11 @@ type ListItem = { type: 'add-button' } | { type: 'child'; child: Topic }
 interface TopicChildrenPanelProps {
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
-	renderChildCard?: (child: Topic, removeRelationship: () => void) => ReactNode
-	onChildClick?: (child: Topic) => void
-	onTopicCreated?: (topic: Topic) => void
 }
 
 export function TopicChildrenPanel({
 	getScrollElement,
-	scrollMargin,
-	renderChildCard,
-	onChildClick,
-	onTopicCreated
+	scrollMargin
 }: TopicChildrenPanelProps = {}) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { topic: selectedTopic } = use(TopicContext)
@@ -56,21 +49,16 @@ export function TopicChildrenPanel({
 					parent: selectedTopic.id,
 					child: topic.id
 				})
-				onTopicCreated?.(topic)
 			} catch (_error) {}
 		},
-		[selectedTopic, createRelationship, onTopicCreated]
+		[selectedTopic, createRelationship]
 	)
 
 	const handleChildClick = useCallback(
 		(child: Topic) => {
-			if (onChildClick) {
-				onChildClick(child)
-				return
-			}
 			openTopicDialog(child.id)
 		},
-		[onChildClick, openTopicDialog]
+		[openTopicDialog]
 	)
 
 	// Combine add button and children into a single array
@@ -123,10 +111,6 @@ export function TopicChildrenPanel({
 				})
 			}
 
-			if (renderChildCard) {
-				return renderChildCard(item.child, handleRemoveRelationship)
-			}
-
 			return (
 				<ChildCard
 					child={item.child}
@@ -135,13 +119,7 @@ export function TopicChildrenPanel({
 				/>
 			)
 		},
-		[
-			deleteRelationship,
-			handleChildClick,
-			handleTopicCreated,
-			renderChildCard,
-			selectedTopic
-		]
+		[deleteRelationship, handleChildClick, handleTopicCreated, selectedTopic]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {

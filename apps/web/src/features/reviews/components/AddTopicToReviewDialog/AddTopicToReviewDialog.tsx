@@ -25,7 +25,7 @@ import { ReviewTopicCard } from '../ReviewDetail/ReviewTopicCard'
 import { AddedTopicsPopover } from './AddedTopicsPopover'
 import { AddTopicCard } from './AddTopicCard'
 import { FloatingTopicCard } from './FloatingTopicCard'
-import { TopicDetailView } from './TopicDetailView'
+import { ReviewTopicDetail } from './ReviewTopicDetail'
 
 // Constants
 const MIN_HEIGHT = 72
@@ -327,14 +327,6 @@ export function AddTopicToReviewDialog({
 		[selectedTopic, getTopicReview]
 	)
 
-	const topicContextValue = useMemo(
-		() => ({
-			topic: selectedTopic,
-			isLoading: isLoadingTopic
-		}),
-		[selectedTopic, isLoadingTopic]
-	)
-
 	// Render Callbacks
 	const renderAddTopicCard = useCallback(
 		(topic: Topic, removeRelationship?: () => void) => {
@@ -402,38 +394,6 @@ export function AddTopicToReviewDialog({
 		if (!selectedTopic) return 'Untitled Topic'
 		return selectedTopic.name || selectedTopic.notes || 'Untitled Topic'
 	}, [selectedTopic])
-
-	// Dialog State Object (for TopicDetailView)
-	const dialogState = useMemo(
-		() => ({
-			topicContextValue,
-			minimizeTopicDetail,
-			closeTopicDetail,
-			selectedTopic,
-			selectedTopicIsAdded,
-			isReviewCompleted,
-			selectedTopicReview,
-			addTopicToReview,
-			updateRating,
-			removeTopicFromReview,
-			switchToTopic,
-			handleTopicDeleted
-		}),
-		[
-			topicContextValue,
-			minimizeTopicDetail,
-			closeTopicDetail,
-			selectedTopic,
-			selectedTopicIsAdded,
-			isReviewCompleted,
-			selectedTopicReview,
-			addTopicToReview,
-			updateRating,
-			removeTopicFromReview,
-			switchToTopic,
-			handleTopicDeleted
-		]
-	)
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
@@ -542,10 +502,21 @@ export function AddTopicToReviewDialog({
 											key='topic-detail-content'
 											transition={{ duration: 0.15 }}
 										>
-											<TopicDetailView
-												dialog={dialogState}
+											<ReviewTopicDetail
+												isAdded={selectedTopicIsAdded}
+												isLoading={isLoadingTopic}
+												isReviewCompleted={isReviewCompleted}
+												onAddToReview={addTopicToReview}
+												onClose={closeTopicDetail}
+												onMinimize={minimizeTopicDetail}
 												onNestedTopicCreated={handleNestedTopicCreated}
-												renderAddTopicCard={renderAddTopicCard}
+												onRatingChange={updateRating}
+												onRemoveFromReview={removeTopicFromReview}
+												onTopicDeleted={handleTopicDeleted}
+												onTopicSwitch={switchToTopic}
+												renderChildCard={renderAddTopicCard}
+												topic={selectedTopic}
+												topicReview={selectedTopicReview}
 											/>
 										</motion.div>
 									)}
