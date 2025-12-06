@@ -112,13 +112,18 @@ export function ReviewTopicCard({
 		}
 	}, [topic.due])
 
-	const dueDateColorClass =
-		dueDateDisplay?.displayText === 'Today'
-			? 'text-blue-600 dark:text-blue-400'
-			: dueDateDisplay?.displayText === 'Yesterday' ||
-					dueDateDisplay?.displayText.includes('ago')
-				? 'text-red-600 dark:text-red-400'
-				: ''
+	const dueDateColorClass = (() => {
+		if (dueDateDisplay?.displayText === 'Today') {
+			return 'text-blue-600 dark:text-blue-400'
+		}
+		if (
+			dueDateDisplay?.displayText === 'Yesterday' ||
+			dueDateDisplay?.displayText.includes('ago')
+		) {
+			return 'text-red-600 dark:text-red-400'
+		}
+		return ''
+	})()
 
 	return (
 		<Card

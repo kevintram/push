@@ -10,15 +10,7 @@ import { TopicBadge } from '../../TopicBadge'
 import { AddRelationshipDialog } from '../AddRelationshipDialog'
 import { AddRelationshipDropdown } from './AddRelationshipDropdown'
 
-interface TopicParentsPanelProps {
-	onParentSelect?: (parent: Topic) => void
-	onTopicCreated?: (topic: Topic) => void
-}
-
-export function TopicParentsPanel({
-	onParentSelect,
-	onTopicCreated
-}: TopicParentsPanelProps) {
+export function TopicParentsPanel() {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { topic: selectedTopic } = use(TopicContext)
 	const { openTopicDialog } = useReviewTopicDialog()
@@ -32,10 +24,6 @@ export function TopicParentsPanel({
 	const deleteRelationship = useDeleteRelationship()
 
 	const handleParentClick = (parent: Topic) => {
-		if (onParentSelect) {
-			onParentSelect(parent)
-			return
-		}
 		openTopicDialog(parent.id)
 	}
 
@@ -65,7 +53,6 @@ export function TopicParentsPanel({
 				))}
 				<AddRelationshipDropdown
 					onOpenSearchDialog={() => setShowCreateDialog(true)}
-					onRelationshipCreated={onTopicCreated}
 					onTopicOpen={handleParentClick}
 					relationshipType='parent'
 					topicId={selectedTopic?.id}
@@ -75,7 +62,6 @@ export function TopicParentsPanel({
 
 			<AddRelationshipDialog
 				onOpenChange={setShowCreateDialog}
-				onRelationshipCreated={onTopicCreated}
 				onTopicOpen={handleParentClick}
 				open={showCreateDialog}
 				relationshipType='parent'

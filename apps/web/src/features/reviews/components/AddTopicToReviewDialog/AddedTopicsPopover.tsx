@@ -6,26 +6,26 @@ import {
 	PopoverTrigger
 } from '~/components/ui/Popover'
 import type { Topic, TopicReview } from '~/models/review-topic.types'
+import { ReviewTopicCard } from '../ReviewDetail/ReviewTopicCard'
+import { useAddTopicToReview } from './AddTopicToReviewContext'
+
+const MIN_HEIGHT = 72
 
 interface AddedTopicsPopoverProps {
-	addedTopicsCount: number
 	isOpen: boolean
 	onOpenChange: (open: boolean) => void
-	topicReviews: Array<TopicReview> | undefined
-	renderItem: (topicReview: TopicReview) => React.ReactNode
-	estimateItemSize: (topicReview: { topic: Topic }) => number
-	getItemKey: (topicReview: { id: number }) => number
+	onTopicClick: (topic: Topic) => void
 }
 
 export function AddedTopicsPopover({
-	addedTopicsCount,
 	isOpen,
 	onOpenChange,
-	topicReviews,
-	renderItem,
-	estimateItemSize,
-	getItemKey
+	onTopicClick
 }: AddedTopicsPopoverProps) {
+	const { review, removeTopicReviewById } = useAddTopicToReview()
+	const topicReviews = review?.topic_reviews
+	const addedTopicsCount = topicReviews?.length ?? 0
+
 	return (
 		<Popover onOpenChange={onOpenChange} open={isOpen}>
 			<PopoverTrigger asChild={true}>
@@ -49,12 +49,31 @@ export function AddedTopicsPopover({
 			>
 				{topicReviews && topicReviews.length > 0 ? (
 					<MasonryLayout
-						estimateItemSize={estimateItemSize}
+						estimateItemSize={(tr: TopicReview) => {
+							const topic = tr.topic
+							const nameLines = Math.ceil((topic.name?.length || 8) / 40)
+							const notesLines = topic.notes
+								? Math.min(2, Math.ceil(topic.notes.length / 40))
+								: 0
+							return Math.max(
+								MIN_HEIGHT,
+								72 + (nameLines - 1) * 20 + notesLines * 20
+							)
+						}}
 						gap={12}
-						getItemKey={getItemKey}
+						getItemKey={(tr: TopicReview) => tr.id}
 						items={topicReviews}
 						minItemWidth={250}
-						renderItem={renderItem}
+						renderItem={(topicReview: TopicReview) => (
+							<ReviewTopicCard
+								minHeight={MIN_HEIGHT}
+								onRemoveFromReview={removeTopicReviewById}
+								onTopicClick={onTopicClick}
+								rating={topicReview.rating}
+								topic={topicReview.topic}
+								topicReviewId={topicReview.id}
+							/>
+						)}
 					/>
 				) : (
 					<div className='py-8 text-center text-muted-foreground'>

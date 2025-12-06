@@ -3,10 +3,11 @@ from __future__ import annotations
 from datetime import datetime, date
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 if TYPE_CHECKING:
-    from app.schemas.topics import TopicRead
+    from app.schemas.topics import TopicRead, TopicCreate
+    from app.schemas.reviews import ReviewCreate
 
 
 class TopicReviewBase(BaseModel):
@@ -48,9 +49,31 @@ class TopicReviewWithTopic(TopicReviewRead):
 class TopicReviewCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    review_id: int
-    topic_id: int
-    rating: str | None
+    # Mutually exclusive: provide topic_id OR topic (not both)
+    topic_id: int | None = None
+    topic: "TopicCreate | None" = None
+
+    # Mutually exclusive: provide review_id OR review (not both)
+    review_id: int | None = None
+    review: "ReviewCreate | None" = None
+
+    rating: str | None = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "TopicReviewCreate":
+        # Validate topic fields
+        if self.topic_id is not None and self.topic is not None:
+            raise ValueError("Cannot provide both topic_id and topic")
+        if self.topic_id is None and self.topic is None:
+            raise ValueError("Must provide either topic_id or topic")
+
+        # Validate review fields
+        if self.review_id is not None and self.review is not None:
+            raise ValueError("Cannot provide both review_id and review")
+        if self.review_id is None and self.review is None:
+            raise ValueError("Must provide either review_id or review")
+
+        return self
 
 
 class TopicReviewUpdate(BaseModel):

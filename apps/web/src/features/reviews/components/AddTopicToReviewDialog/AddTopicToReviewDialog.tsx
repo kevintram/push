@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AnimatePresence } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
+import { AnimatePresence, motion } from 'framer-motion'
 import { SquarePen } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SearchInput, SearchResultsContainer } from '~/components/search'
@@ -11,33 +11,22 @@ import {
 	DialogTitle
 } from '~/components/ui/Dialog'
 import type { Review } from '~/features/reviews/api'
-import {
-	createTopicReview,
-	deleteTopicReview
-} from '~/features/topic_reviews/api'
-import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
 import { searchTopics } from '~/features/topics/api/searchTopics'
-import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
-import { useTopicWithRelationships } from '~/features/topics/hooks/useTopicWithRelationships'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
-import type { Rating, Topic, TopicReview } from '~/models/review-topic.types'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { ReviewTopicCard } from '../ReviewDetail/ReviewTopicCard'
+import type { Topic } from '~/models/review-topic.types'
 import { AddedTopicsPopover } from './AddedTopicsPopover'
 import { AddTopicCard } from './AddTopicCard'
+import {
+	AddTopicToReviewProvider,
+	useAddTopicToReview
+} from './AddTopicToReviewContext'
 import { FloatingTopicCard } from './FloatingTopicCard'
-import { TopicDetailView } from './TopicDetailView'
+import { ReviewTopicDetail } from './TopicDetail/TopicDetail'
 
-// ============================================================================
 // Constants
-// ============================================================================
-
 const MIN_HEIGHT = 72
 
-// ============================================================================
 // Types
-// ============================================================================
-
 interface AddTopicToReviewDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
@@ -46,59 +35,34 @@ interface AddTopicToReviewDialogProps {
 
 type ViewMode = 'search' | 'detail'
 
-// ============================================================================
-// Main Component
-// ============================================================================
-
-export function AddTopicToReviewDialog({
+// Inner component that uses the context
+function AddTopicToReviewDialogContent({
 	open,
-	onOpenChange,
-	review
-}: AddTopicToReviewDialogProps) {
-	const queryClient = useQueryClient()
+	onOpenChange
+}: {
+	open: boolean
+	onOpenChange: (open: boolean) => void
+}) {
 	const inputRef = useRef<HTMLInputElement>(null)
 
-	// ---------------------------------------------------------------------------
-	// State
-	// ---------------------------------------------------------------------------
+	// Get shared state from context
+	const {
+		review,
+		selectedTopicId,
+		setSelectedTopicId,
+		addTopicToReview: createTopicReview,
+		isCreatingTopicReview
+	} = useAddTopicToReview()
 
+	// Local view state
 	const [searchQuery, setSearchQuery] = useState('')
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-	const [selectedTopicId, setSelectedTopicId] = useState<number | undefined>(
-		undefined
-	)
 	const [viewMode, setViewMode] = useState<ViewMode>('search')
 	const [isTopicMinimized, setIsTopicMinimized] = useState(false)
 
-	// ---------------------------------------------------------------------------
-	// External Hooks
-	// ---------------------------------------------------------------------------
-
-	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
-		useCreateTopic()
-	const { topic: selectedTopic, isLoading: isLoadingTopic } =
-		useTopicWithRelationships(selectedTopicId)
+	// Search
 	const debouncedQuery = useDebouncedValue(searchQuery, 300)
-
-	// ---------------------------------------------------------------------------
-	// Derived State
-	// ---------------------------------------------------------------------------
-
-	const addedTopics = useMemo(
-		() => new Set(review?.topic_reviews?.map(tr => tr.topic_id) ?? []),
-		[review?.topic_reviews]
-	)
-
-	const addedTopicsCount = review?.topic_reviews?.length ?? 0
-	const isReviewCompleted = useMemo(
-		() => !!review?.completed_at,
-		[review?.completed_at]
-	)
 	const hasQuery = Boolean(debouncedQuery.trim())
-
-	// ---------------------------------------------------------------------------
-	// Queries
-	// ---------------------------------------------------------------------------
 
 	const { data: topics = [], isLoading: isSearching } = useQuery({
 		queryKey: ['topics', 'search', debouncedQuery || 'recent', review?.id],
@@ -117,44 +81,7 @@ export function AddTopicToReviewDialog({
 		return topics ?? []
 	}, [topics, debouncedQuery])
 
-	// ---------------------------------------------------------------------------
-	// Mutations
-	// ---------------------------------------------------------------------------
-
-	const { mutateAsync: createTopicReviewMutation } = useMutation({
-		mutationFn: ({
-			reviewId,
-			topicId,
-			rating
-		}: {
-			reviewId: number
-			topicId: number
-			rating?: Rating | null
-		}) => createTopicReview(reviewId, topicId, rating),
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	const { mutateAsync: deleteTopicReviewMutation } = useMutation({
-		mutationFn: deleteTopicReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	const { mutateAsync: updateTopicReviewMutation } = useMutation({
-		mutationFn: ({ id, rating }: { id: number; rating: Rating }) =>
-			updateTopicReviewApi(id, rating),
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	// ---------------------------------------------------------------------------
 	// Effects
-	// ---------------------------------------------------------------------------
-
 	useEffect(() => {
 		if (open) {
 			setTimeout(() => {
@@ -166,127 +93,32 @@ export function AddTopicToReviewDialog({
 			setIsTopicMinimized(false)
 			setSelectedTopicId(undefined)
 		}
-	}, [open])
+	}, [open, setSelectedTopicId])
 
-	// ---------------------------------------------------------------------------
-	// Helper Functions
-	// ---------------------------------------------------------------------------
-
-	const isTopicAdded = useCallback(
-		(topicId: number) => addedTopics.has(topicId),
-		[addedTopics]
-	)
-
-	const getTopicReview = useCallback(
-		(topicId: number) => {
-			return review?.topic_reviews?.find(tr => tr.topic_id === topicId)
-		},
-		[review?.topic_reviews]
-	)
-
-	// ---------------------------------------------------------------------------
-	// Topic Review Actions
-	// ---------------------------------------------------------------------------
-
-	const addTopicToReview = useCallback(
-		async (topic: Topic) => {
-			if (!review) return
-
-			try {
-				await createTopicReviewMutation({
-					reviewId: review.id,
-					topicId: topic.id,
-					rating: isReviewCompleted ? 'good' : null
-				})
-			} catch {
-				// Handle error silently for now
-			}
-		},
-		[review, createTopicReviewMutation, isReviewCompleted]
-	)
-
-	const removeTopicReview = useCallback(
-		async (topicReviewId: number) => {
-			await deleteTopicReviewMutation(topicReviewId)
-		},
-		[deleteTopicReviewMutation]
-	)
-
-	const removeTopicFromReview = useCallback(
-		async (topic: Topic) => {
-			const topicReview = review?.topic_reviews?.find(
-				tr => tr.topic_id === topic.id
-			)
-			if (topicReview) {
-				await removeTopicReview(topicReview.id)
-			}
-		},
-		[review?.topic_reviews, removeTopicReview]
-	)
-
-	const updateRating = useCallback(
-		async (topicReviewId: number, rating: Rating) => {
-			await updateTopicReviewMutation({ id: topicReviewId, rating })
-		},
-		[updateTopicReviewMutation]
-	)
-
-	// ---------------------------------------------------------------------------
 	// Topic Creation
-	// ---------------------------------------------------------------------------
+	const onCreateNewClicked = useCallback(async () => {
+		if (!review) return
 
-	const createNewTopic = useCallback(async () => {
 		try {
 			const trimmedQuery = searchQuery.trim()
 
-			const newTopic = await createTopicAsync({
-				notes: trimmedQuery || ''
+			const topicReview = await createTopicReview({
+				topic: {
+					name: '',
+					notes: trimmedQuery || '',
+					archived: false,
+					inboxed: true
+				}
 			})
 
-			if (review) {
-				await createTopicReviewMutation({
-					reviewId: review.id,
-					topicId: newTopic.id,
-					rating: isReviewCompleted ? 'good' : null
-				})
-				setSelectedTopicId(newTopic.id)
-				setViewMode('detail')
-			}
+			setSelectedTopicId(topicReview.topic_id)
+			setViewMode('detail')
 		} catch {
 			// Error handling could be added here if needed
 		}
-	}, [
-		searchQuery,
-		createTopicAsync,
-		review,
-		createTopicReviewMutation,
-		isReviewCompleted
-	])
+	}, [searchQuery, review, createTopicReview, setSelectedTopicId])
 
-	const handleNestedTopicCreated = useCallback(
-		async (topic: Topic) => {
-			if (!review) return
-
-			try {
-				await createTopicReviewMutation({
-					reviewId: review.id,
-					topicId: topic.id,
-					rating: isReviewCompleted ? 'good' : null
-				})
-				setSelectedTopicId(topic.id)
-				setViewMode('detail')
-				setIsTopicMinimized(false)
-			} catch {
-				// Handle error silently for now
-			}
-		},
-		[review, createTopicReviewMutation, isReviewCompleted]
-	)
-
-	// ---------------------------------------------------------------------------
 	// View State Management
-	// ---------------------------------------------------------------------------
-
 	const openTopicDetail = useCallback(
 		(topic: Topic) => {
 			if (selectedTopicId === topic.id) {
@@ -303,26 +135,29 @@ export function AddTopicToReviewDialog({
 				setViewMode('detail')
 			}
 		},
-		[selectedTopicId, isTopicMinimized, viewMode]
+		[selectedTopicId, isTopicMinimized, viewMode, setSelectedTopicId]
 	)
 
-	const switchToTopic = useCallback((topic: Topic) => {
-		setSelectedTopicId(topic.id)
-		setViewMode('detail')
-		setIsTopicMinimized(false)
-	}, [])
+	const openTopic = useCallback(
+		(topicId: number) => {
+			setSelectedTopicId(topicId)
+			setViewMode('detail')
+			setIsTopicMinimized(false)
+		},
+		[setSelectedTopicId]
+	)
 
 	const closeTopicDetail = useCallback(() => {
 		setViewMode('search')
 		setIsTopicMinimized(false)
 		setTimeout(() => setSelectedTopicId(undefined), 200)
-	}, [])
+	}, [setSelectedTopicId])
 
 	const handleTopicDeleted = useCallback(() => {
 		setViewMode('search')
 		setIsTopicMinimized(false)
 		setSelectedTopicId(undefined)
-	}, [])
+	}, [setSelectedTopicId])
 
 	const minimizeTopicDetail = useCallback(() => {
 		setIsTopicMinimized(true)
@@ -332,10 +167,7 @@ export function AddTopicToReviewDialog({
 		setIsTopicMinimized(false)
 	}, [])
 
-	// ---------------------------------------------------------------------------
 	// Search Handlers
-	// ---------------------------------------------------------------------------
-
 	const handleSearchChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			if (viewMode === 'detail' && !isTopicMinimized) {
@@ -356,255 +188,172 @@ export function AddTopicToReviewDialog({
 		setSearchQuery('')
 	}, [])
 
-	// ---------------------------------------------------------------------------
 	// Popover Handlers
-	// ---------------------------------------------------------------------------
-
-	const openPopoverAndSelectTopic = useCallback((topic: Topic) => {
-		setSelectedTopicId(topic.id)
-		setViewMode('detail')
-		setIsPopoverOpen(false)
-	}, [])
-
-	// ---------------------------------------------------------------------------
-	// Memoized Values for Selected Topic
-	// ---------------------------------------------------------------------------
-
-	const selectedTopicIsAdded = useMemo(
-		() => (selectedTopic ? isTopicAdded(selectedTopic.id) : false),
-		[selectedTopic, isTopicAdded]
-	)
-
-	const selectedTopicReview = useMemo(
-		() => (selectedTopic ? getTopicReview(selectedTopic.id) : undefined),
-		[selectedTopic, getTopicReview]
-	)
-
-	const topicContextValue = useMemo(
-		() => ({
-			topic: selectedTopic,
-			isLoading: isLoadingTopic
-		}),
-		[selectedTopic, isLoadingTopic]
-	)
-
-	// ---------------------------------------------------------------------------
-	// Render Callbacks
-	// ---------------------------------------------------------------------------
-
-	const renderAddTopicCard = useCallback(
-		(topic: Topic, removeRelationship?: () => void) => {
-			const topicReviewData = getTopicReview(topic.id)
-			return (
-				<AddTopicCard
-					isAdded={isTopicAdded(topic.id)}
-					isReviewCompleted={isReviewCompleted}
-					minHeight={MIN_HEIGHT}
-					onCardClick={
-						removeRelationship ? () => switchToTopic(topic) : openTopicDetail
-					}
-					onRatingChange={updateRating}
-					onRemoveClick={removeTopicFromReview}
-					onRemoveRelationship={removeRelationship}
-					onTopicClick={addTopicToReview}
-					rating={topicReviewData?.rating}
-					searchQuery={hasQuery ? searchQuery : ''}
-					topic={topic}
-					topicReviewId={topicReviewData?.id}
-				/>
-			)
+	const closePopoverAndSelectTopic = useCallback(
+		(topic: Topic) => {
+			setSelectedTopicId(topic.id)
+			setViewMode('detail')
+			setIsPopoverOpen(false)
 		},
-		[
-			getTopicReview,
-			isTopicAdded,
-			isReviewCompleted,
-			switchToTopic,
-			openTopicDetail,
-			updateRating,
-			removeTopicFromReview,
-			addTopicToReview,
-			hasQuery,
-			searchQuery
-		]
+		[setSelectedTopicId]
 	)
 
-	const renderSearchResultItem = useCallback(
-		(topic: Topic) => renderAddTopicCard(topic),
-		[renderAddTopicCard]
-	)
-
-	const renderPopoverTopicCard = useCallback(
-		(topicReview: TopicReview) => (
-			<ReviewTopicCard
-				minHeight={MIN_HEIGHT}
-				onRemoveFromReview={removeTopicReview}
-				onTopicClick={openPopoverAndSelectTopic}
-				rating={topicReview.rating}
-				topic={topicReview.topic}
-				topicReviewId={topicReview.id}
-			/>
-		),
-		[removeTopicReview, openPopoverAndSelectTopic]
-	)
-
-	// ---------------------------------------------------------------------------
 	// Derived Values for Render
-	// ---------------------------------------------------------------------------
-
 	const showSearchView =
 		viewMode === 'search' || (viewMode === 'detail' && isTopicMinimized)
 
 	const showFloatingCard =
-		viewMode === 'detail' && isTopicMinimized && selectedTopic
-
-	const selectedTopicDisplayName = useMemo(() => {
-		if (!selectedTopic) return 'Untitled Topic'
-		return selectedTopic.name || selectedTopic.notes || 'Untitled Topic'
-	}, [selectedTopic])
-
-	// ---------------------------------------------------------------------------
-	// Dialog State Object (for TopicDetailView)
-	// ---------------------------------------------------------------------------
-
-	const dialogState = useMemo(
-		() => ({
-			topicContextValue,
-			minimizeTopicDetail,
-			closeTopicDetail,
-			selectedTopic,
-			selectedTopicIsAdded,
-			isReviewCompleted,
-			selectedTopicReview,
-			addTopicToReview,
-			updateRating,
-			removeTopicFromReview,
-			switchToTopic,
-			handleTopicDeleted
-		}),
-		[
-			topicContextValue,
-			minimizeTopicDetail,
-			closeTopicDetail,
-			selectedTopic,
-			selectedTopicIsAdded,
-			isReviewCompleted,
-			selectedTopicReview,
-			addTopicToReview,
-			updateRating,
-			removeTopicFromReview,
-			switchToTopic,
-			handleTopicDeleted
-		]
-	)
-
-	// ---------------------------------------------------------------------------
-	// Render
-	// ---------------------------------------------------------------------------
+		viewMode === 'detail' && isTopicMinimized && selectedTopicId !== undefined
 
 	return (
-		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent
-				className='-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 flex h-[600px] w-full max-w-[90vw] flex-col p-0 md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1100px] 2xl:max-w-[1200px]'
-				showCloseButton={false}
-			>
-				{/* Header */}
-				<DialogHeader className='flex-shrink-0 px-4 pt-4'>
-					<DialogTitle className='sr-only'>Add Topic to Review</DialogTitle>
-					<div className='flex items-center gap-4'>
-						{/* Added Topics Popover */}
-						<AddedTopicsPopover
-							addedTopicsCount={addedTopicsCount}
-							estimateItemSize={tr => {
-								const topic = tr.topic
+		<DialogContent
+			className='-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 flex h-[600px] w-full max-w-[90vw] flex-col p-0 md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1100px] 2xl:max-w-[1200px]'
+			showCloseButton={false}
+		>
+			{/* Header */}
+			<DialogHeader className='flex-shrink-0 px-4 pt-4'>
+				<DialogTitle className='sr-only'>Add Topic to Review</DialogTitle>
+				<div className='flex items-center gap-4'>
+					{/* Added Topics Popover */}
+					<AddedTopicsPopover
+						isOpen={isPopoverOpen}
+						onOpenChange={setIsPopoverOpen}
+						onTopicClick={closePopoverAndSelectTopic}
+					/>
+
+					{/* Search Input */}
+					<SearchInput
+						inputRef={inputRef}
+						onChange={handleSearchChange}
+						onClear={clearSearch}
+						onFocus={handleSearchFocus}
+						value={searchQuery}
+					/>
+
+					{/* Action Buttons */}
+					<Button
+						disabled={isCreatingTopicReview}
+						onClick={onCreateNewClicked}
+						size='default'
+						variant='secondary'
+					>
+						<SquarePen className='h-4 w-4' />
+						Create New
+					</Button>
+
+					<Button
+						onClick={() => onOpenChange(false)}
+						size='default'
+						variant='default'
+					>
+						Done
+					</Button>
+				</div>
+			</DialogHeader>
+
+			{/* Content */}
+			<div className='scrollbar-track-transparent flex-1 overflow-y-auto p-4 pt-0'>
+				<AnimatePresence initial={false} mode='wait'>
+					{showSearchView ? (
+						<SearchResultsContainer
+							estimateItemSize={topic => {
 								const nameLines = Math.ceil((topic.name?.length || 8) / 40)
 								const notesLines = topic.notes
 									? Math.min(2, Math.ceil(topic.notes.length / 40))
 									: 0
 								return Math.max(
 									MIN_HEIGHT,
-									72 + (nameLines - 1) * 20 + notesLines * 20
+									80 + (nameLines - 1) * 20 + notesLines * 20
 								)
 							}}
-							getItemKey={tr => tr.id}
-							isOpen={isPopoverOpen}
-							onOpenChange={setIsPopoverOpen}
-							renderItem={renderPopoverTopicCard}
-							topicReviews={review?.topic_reviews}
+							getItemKey={topic => topic.id}
+							hasQuery={hasQuery}
+							isLoading={isSearching}
+							renderItem={topic => (
+								<AddTopicCard
+									onCardClick={openTopicDetail}
+									searchQuery={hasQuery ? searchQuery : ''}
+									topic={topic}
+								/>
+							)}
+							results={searchResults}
+							searchQuery={searchQuery}
 						/>
-
-						{/* Search Input */}
-						<SearchInput
-							inputRef={inputRef}
-							onChange={handleSearchChange}
-							onClear={clearSearch}
-							onFocus={handleSearchFocus}
-							value={searchQuery}
-						/>
-
-						{/* Action Buttons */}
-						<Button
-							disabled={isCreatingTopic}
-							onClick={createNewTopic}
-							size='default'
-							variant='secondary'
+					) : (
+						<motion.div
+							animate={{ opacity: 1, scale: 1 }}
+							className='h-full overflow-hidden rounded-md border-1'
+							exit={{ opacity: 0, scale: 0.98 }}
+							initial={{ opacity: 0, scale: 0.95 }}
+							key='topic-detail'
+							layoutId='topic-container'
+							transition={{
+								layout: { duration: 0.25, ease: 'easeInOut' },
+								opacity: { duration: 0.18 },
+								scale: { duration: 0.18 }
+							}}
 						>
-							<SquarePen className='h-4 w-4' />
-							Create New
-						</Button>
+							<AnimatePresence mode='wait'>
+								{!isTopicMinimized && (
+									<motion.div
+										animate={{ opacity: 1 }}
+										className='h-full'
+										exit={{ opacity: 0 }}
+										initial={{ opacity: 0 }}
+										key='topic-detail-content'
+										transition={{ duration: 0.15 }}
+									>
+										<ReviewTopicDetail
+											onClose={closeTopicDetail}
+											onMinimize={minimizeTopicDetail}
+											onTopicDeleted={handleTopicDeleted}
+											onTopicSelected={openTopic}
+										/>
+									</motion.div>
+								)}
+							</AnimatePresence>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
 
-						<Button
-							onClick={() => onOpenChange(false)}
-							size='default'
-							variant='default'
-						>
-							Done
-						</Button>
-					</div>
-				</DialogHeader>
-
-				{/* Content */}
-				<div className='scrollbar-track-transparent flex-1 overflow-y-auto p-4 pt-0'>
-					<AnimatePresence initial={false} mode='wait'>
-						{showSearchView ? (
-							<SearchResultsContainer
-								estimateItemSize={topic => {
-									const nameLines = Math.ceil((topic.name?.length || 8) / 40)
-									const notesLines = topic.notes
-										? Math.min(2, Math.ceil(topic.notes.length / 40))
-										: 0
-									return Math.max(
-										MIN_HEIGHT,
-										80 + (nameLines - 1) * 20 + notesLines * 20
-									)
-								}}
-								getItemKey={topic => topic.id}
-								hasQuery={hasQuery}
-								isLoading={isSearching}
-								renderItem={renderSearchResultItem}
-								results={searchResults}
-								searchQuery={searchQuery}
-							/>
-						) : (
-							<TopicDetailView
-								dialog={dialogState}
-								isTopicMinimized={isTopicMinimized}
-								onNestedTopicCreated={handleNestedTopicCreated}
-								renderAddTopicCard={renderAddTopicCard}
-							/>
-						)}
-					</AnimatePresence>
-				</div>
-
-				{/* Floating Card for Minimized State */}
+			{/* Floating Card for Minimized State */}
+			<AnimatePresence mode='wait'>
 				{showFloatingCard && (
-					<FloatingTopicCard
-						displayName={selectedTopicDisplayName}
-						isMinimized={isTopicMinimized}
-						onClose={closeTopicDetail}
-						onMaximize={maximizeTopicDetail}
-					/>
+					<motion.div
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						initial={{ opacity: 0 }}
+						key='floating-card-content'
+						transition={{
+							opacity: { duration: 0.15, delay: 0.15 }
+						}}
+					>
+						<FloatingTopicCard
+							onClose={closeTopicDetail}
+							onMaximize={maximizeTopicDetail}
+						/>
+					</motion.div>
 				)}
-			</DialogContent>
+			</AnimatePresence>
+		</DialogContent>
+	)
+}
+
+// Main Component with Provider wrapper
+export function AddTopicToReviewDialog({
+	open,
+	onOpenChange,
+	review
+}: AddTopicToReviewDialogProps) {
+	return (
+		<Dialog onOpenChange={onOpenChange} open={open}>
+			<AddTopicToReviewProvider review={review}>
+				<AddTopicToReviewDialogContent
+					onOpenChange={onOpenChange}
+					open={open}
+				/>
+			</AddTopicToReviewProvider>
 		</Dialog>
 	)
 }

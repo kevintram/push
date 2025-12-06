@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Archive, ArchiveX, Inbox, X } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { use, useCallback, useEffect, useRef } from 'react'
+import { type ReactNode, use, useCallback, useEffect, useRef } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	Popover,
@@ -12,7 +11,6 @@ import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
-import type { Topic } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { deleteTopic as deleteTopicApi } from '../../api/deleteTopic'
 import { updateTopic as updateTopicApi } from '../../api/updateTopic'
@@ -24,25 +22,10 @@ import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 
 interface TopicDetailProps {
 	onDelete?: () => void | Promise<void>
-	beforeMoreButton?: ReactNode
 	afterMoreButton?: ReactNode
-	renderChildCard?: (child: Topic, removeRelationship: () => void) => ReactNode
-	onChildClicked?: (child: Topic) => void
-	onParentClicked?: (parent: Topic) => void
-	reviewSidebarReadonly?: boolean
-	onTopicCreated?: (topic: Topic) => void
 }
 
-export function TopicDetail({
-	onDelete,
-	beforeMoreButton,
-	afterMoreButton,
-	renderChildCard,
-	onChildClicked,
-	onParentClicked,
-	reviewSidebarReadonly = false,
-	onTopicCreated
-}: TopicDetailProps) {
+export function TopicDetail({ onDelete, afterMoreButton }: TopicDetailProps) {
 	const { topic, isLoading } = use(TopicContext)
 	const queryClient = useQueryClient()
 
@@ -134,12 +117,9 @@ export function TopicDetail({
 			<div className='flex h-full min-h-0 flex-col'>
 				<TopicDetailHeader
 					afterMoreButton={afterMoreButton}
-					beforeMoreButton={beforeMoreButton}
 					onArchiveToggle={handleArchiveToggle}
 					onDelete={handleDelete}
 					onInboxToggle={handleInboxToggle}
-					onParentSelect={onParentClicked}
-					onTopicCreated={onTopicCreated}
 					topic={topic}
 				/>
 				<SidebarHolder className='flex min-h-0 flex-1'>
@@ -224,12 +204,9 @@ export function TopicDetail({
 						</div>
 						<TopicChildrenPanel
 							getScrollElement={() => scrollContainerRef.current}
-							onChildClick={onChildClicked}
-							onTopicCreated={onTopicCreated}
-							renderChildCard={renderChildCard}
 						/>
 					</div>
-					<ReviewsSidebar readonly={reviewSidebarReadonly} />
+					<ReviewsSidebar />
 				</SidebarHolder>
 			</div>
 		</SidebarProvider>

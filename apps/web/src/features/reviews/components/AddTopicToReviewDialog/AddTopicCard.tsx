@@ -9,40 +9,40 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import type { Rating, Topic } from '~/models/review-topic.types'
+import type { Topic } from '~/models/review-topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
+import { useAddTopicToReview } from './AddTopicToReviewContext'
 import { TopicReviewStatusButton } from './ReviewStatusButton'
 
 interface AddTopicCardProps {
 	topic: Topic
-	onTopicClick: (topic: Topic) => void
-	onCardClick?: (topic: Topic) => void
-	onRemoveClick?: (topic: Topic) => void
+	onCardClick: (topic: Topic) => void
 	searchQuery?: string
-	minHeight?: number
-	isAdded?: boolean
 	onRemoveRelationship?: () => void
-	// Rating props for completed reviews
-	rating?: Rating | null
-	topicReviewId?: number
-	onRatingChange?: (topicReviewId: number, rating: Rating) => void
-	isReviewCompleted?: boolean
 }
+
+const MIN_HEIGHT = 72
 
 export function AddTopicCard({
 	topic,
-	onTopicClick,
 	onCardClick,
-	onRemoveClick,
 	searchQuery,
-	minHeight = 72,
-	isAdded = false,
-	onRemoveRelationship,
-	rating,
-	topicReviewId,
-	onRatingChange,
-	isReviewCompleted = false
+	onRemoveRelationship
 }: AddTopicCardProps) {
+	// Get shared state from context
+	const {
+		isReviewCompleted,
+		isTopicAdded,
+		getTopicReview,
+		addTopicToReview: createTopicReview,
+		removeTopicFromReview,
+		updateRating
+	} = useAddTopicToReview()
+
+	const isAdded = isTopicAdded(topic.id)
+	const topicReviewData = getTopicReview(topic.id)
+	const rating = topicReviewData?.rating
+	const topicReviewId = topicReviewData?.id
 	// Search highlighting
 	const highlightedName = useMemo(() => {
 		if (!topic.name) return null
@@ -58,20 +58,20 @@ export function AddTopicCard({
 
 	// Click handlers
 	const handleAdd = useCallback(() => {
-		onTopicClick(topic)
-	}, [onTopicClick, topic])
+		createTopicReview({ topicId: topic.id })
+	}, [createTopicReview, topic])
 
 	const handleRemove = useCallback(() => {
-		onRemoveClick?.(topic)
-	}, [onRemoveClick, topic])
+		removeTopicFromReview(topic)
+	}, [removeTopicFromReview, topic])
 
 	const handleRatingChange = useCallback(
-		(newRating: Rating) => {
-			if (topicReviewId && onRatingChange) {
-				onRatingChange(topicReviewId, newRating)
+		(newRating: Parameters<typeof updateRating>[1]) => {
+			if (topicReviewId) {
+				updateRating(topicReviewId, newRating)
 			}
 		},
-		[topicReviewId, onRatingChange]
+		[topicReviewId, updateRating]
 	)
 
 	const handleCardClick = useCallback(() => {
@@ -95,7 +95,7 @@ export function AddTopicCard({
 			className='cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 			onClick={handleCardClick}
 			onKeyDown={handleKeyDown}
-			style={{ minHeight: `${minHeight}px` }}
+			style={{ minHeight: `${MIN_HEIGHT}px` }}
 			tabIndex={0}
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>

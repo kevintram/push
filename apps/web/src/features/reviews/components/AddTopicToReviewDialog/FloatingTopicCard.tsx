@@ -1,20 +1,25 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ChevronUp, X } from 'lucide-react'
+import { useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
+import { useAddTopicToReview } from './AddTopicToReviewContext'
 
 interface FloatingTopicCardProps {
-	displayName: string
-	isMinimized: boolean
 	onMaximize: () => void
 	onClose: () => void
 }
 
 export function FloatingTopicCard({
-	displayName,
-	isMinimized,
 	onMaximize,
 	onClose
 }: FloatingTopicCardProps) {
+	const { selectedTopic } = useAddTopicToReview()
+
+	const displayName = useMemo(() => {
+		if (!selectedTopic) return 'Untitled Topic'
+		return selectedTopic.name || selectedTopic.notes || 'Untitled Topic'
+	}, [selectedTopic])
+
 	return (
 		<motion.button
 			aria-label='Restore topic detail'
@@ -29,35 +34,22 @@ export function FloatingTopicCard({
 			}}
 			tabIndex={0}
 		>
-			<AnimatePresence mode='wait'>
-				{isMinimized && (
-					<motion.div
-						animate={{ opacity: 1 }}
-						className='flex items-center gap-2'
-						exit={{ opacity: 0 }}
-						initial={{ opacity: 0 }}
-						key='floating-card-content'
-						transition={{
-							opacity: { duration: 0.15, delay: 0.15 }
-						}}
-					>
-						<ChevronUp className='h-4 w-4 text-muted-foreground' />
-						<span className='flex-1'>{displayName}</span>
-						<Button
-							className='h-5 w-5 p-0 text-muted-foreground'
-							onClick={e => {
-								e.stopPropagation()
-								onClose()
-							}}
-							size='sm'
-							title='Close'
-							variant='ghost'
-						>
-							<X className='h-3 w-3' />
-						</Button>
-					</motion.div>
-				)}
-			</AnimatePresence>
+			<div className='flex items-center gap-2'>
+				<ChevronUp className='h-4 w-4 text-muted-foreground' />
+				<span className='flex-1'>{displayName}</span>
+				<Button
+					className='h-5 w-5 p-0 text-muted-foreground'
+					onClick={e => {
+						e.stopPropagation()
+						onClose()
+					}}
+					size='sm'
+					title='Close'
+					variant='ghost'
+				>
+					<X className='h-3 w-3' />
+				</Button>
+			</div>
 		</motion.button>
 	)
 }

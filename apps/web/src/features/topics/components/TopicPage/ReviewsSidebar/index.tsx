@@ -26,7 +26,6 @@ import {
 } from '~/components/ui/Tooltip'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import { useCreateReview } from '~/features/reviews/hooks'
 import { createTopicReview } from '~/features/topic_reviews/api'
 import type { Rating } from '~/models/review-topic.types'
 import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
@@ -48,18 +47,11 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const { topic } = use(TopicContext)
 	const queryClient = useQueryClient()
 
-	const { createReview: createReviewMutation, isPending: isCreatingReview } =
-		useCreateReview()
-	const { mutateAsync: createTopicReviewMutation } = useMutation({
-		mutationFn: ({
-			reviewId,
-			topicId,
-			rating
-		}: {
-			reviewId: number
-			topicId: number
-			rating: Rating | null
-		}) => createTopicReview(reviewId, topicId, rating),
+	const {
+		mutateAsync: createTopicReviewMutation,
+		isPending: isCreatingTopicReview
+	} = useMutation({
+		mutationFn: createTopicReview,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['topics'] })
 			queryClient.invalidateQueries({ queryKey: ['reviews'] })
@@ -84,36 +76,27 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 		[topic, readonly, updateTopicMutation]
 	)
 
-	const isCreatingReviewWithTopic = isCreatingReview
+	const isCreatingReviewWithTopic = isCreatingTopicReview
 
 	const createReviewWithTopic = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
 			if (!topic) throw new Error('Topic not found')
 
-			const review = await createReviewMutation({
-				description: '',
-				scheduledAt: null,
-				completedAt
-			})
-			queryClient.setQueryData(['reviews', review.id], review)
-
-			createTopicReviewMutation({
-				reviewId: review.id,
-				topicId: topic.id,
+			// Create review and link to topic in a single API call
+			const topicReview = await createTopicReviewMutation({
+				topic_id: topic.id,
+				review: {
+					description: '',
+					notes: '',
+					scheduled_at: null,
+					completed_at: completedAt
+				},
 				rating
-			}).catch(error => {
-				throw error
 			})
 
-			openReviewDialog(review.id)
+			openReviewDialog(topicReview.review_id)
 		},
-		[
-			topic,
-			createReviewMutation,
-			createTopicReviewMutation,
-			openReviewDialog,
-			queryClient
-		]
+		[topic, createTopicReviewMutation, openReviewDialog]
 	)
 
 	const handleLogReviewNow = useCallback(async () => {
