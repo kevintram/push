@@ -10,13 +10,13 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { getTopicChildren } from '~/features/topics/api/getTopicChildren'
+import { AddRelationshipDialog } from '~/features/topics/components/AddRelationshipDialog'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/review-topic.types'
 import { AddTopicCard } from '../AddTopicCard'
-import { AddRelationshipDialog } from './AddRelationshipDialog'
 
 // Constants
 const MIN_WIDTH = 192

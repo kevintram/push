@@ -3,10 +3,10 @@ import { User2 } from 'lucide-react'
 import { use, useState } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { getTopicParents } from '~/features/topics/api/getTopicParents'
+import { AddRelationshipDialog } from '~/features/topics/components/AddRelationshipDialog'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '../../../stores/SelectedTopicContext'
 import { TopicBadge } from '../../TopicBadge'
-import { AddRelationshipDialog } from '../AddRelationshipDialog'
 import { AddRelationshipDropdown } from './AddRelationshipDropdown'
 
 export function TopicParentsPanel() {

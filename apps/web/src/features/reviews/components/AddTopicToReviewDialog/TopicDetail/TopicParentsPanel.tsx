@@ -9,13 +9,13 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { getTopicParents } from '~/features/topics/api/getTopicParents'
+import { AddRelationshipDialog } from '~/features/topics/components/AddRelationshipDialog'
 import { TopicBadge } from '~/features/topics/components/TopicBadge'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import { cn } from '~/lib/utils'
-import { AddRelationshipDialog } from './AddRelationshipDialog'
 
 interface ReviewTopicParentsPanelProps {
 	onParentSelect: (topicId: number) => void

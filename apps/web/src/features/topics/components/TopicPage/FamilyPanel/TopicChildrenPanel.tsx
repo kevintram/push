@@ -4,11 +4,11 @@ import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { getTopicChildren } from '~/features/topics/api/getTopicChildren'
+import { AddRelationshipDialog } from '~/features/topics/components/AddRelationshipDialog'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/review-topic.types'
 import { TopicCard } from '../../TopicCard'
-import { AddRelationshipDialog } from '../AddRelationshipDialog'
 import { AddRelationshipDropdown } from './AddRelationshipDropdown'
 
 const MIN_WIDTH = 192
