@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { Baby, Loader2, Plus, Search, SquarePen } from 'lucide-react'
 import { use, useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
@@ -9,6 +10,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import { createTopicReview as createTopicReviewApi } from '~/features/topic_reviews/api/createTopicReview'
 import { getTopicChildren } from '~/features/topics/api/getTopicChildren'
 import { AddRelationshipDialog } from '~/features/topics/components/AddRelationshipDialog'
 import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
@@ -55,6 +57,13 @@ export function ReviewTopicChildrenPanel({
 	const createRelationship = useCreateRelationship()
 	const deleteRelationship = useDeleteRelationship()
 	const createTopic = useCreateTopic()
+	const queryClient = useQueryClient()
+	const { mutateAsync: createTopicReview } = useMutation({
+		mutationFn: createTopicReviewApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics', 'reviews'] })
+		}
+	})
 
 	// Memoized values
 	const isCreating = createTopic.isPending || createRelationship.isPending
@@ -68,27 +77,62 @@ export function ReviewTopicChildrenPanel({
 	)
 
 	// Event handlers
-	const handleCreateNew = useCallback(async () => {
-		if (!topic) return
+	const handleCreateNew = useCallback(
+		async (query = '') => {
+			if (!topic) return
 
-		try {
-			const newTopic = await createTopic.mutateAsync({
-				name: '',
-				notes: '',
-				archived: false,
-				inboxed: false
-			})
+			try {
+				const newTopic = await createTopic.mutateAsync({
+					name: '',
+					notes: query.trim() || '',
+					archived: false,
+					inboxed: false
+				})
 
-			await createRelationship.mutateAsync({
-				parent: topic.id,
-				child: newTopic.id
-			})
+				await createRelationship.mutateAsync({
+					parent: topic.id,
+					child: newTopic.id
+				})
 
-			onChildSelected(newTopic.id)
-		} catch (_error) {
-			// Error is handled by React Query mutation state
-		}
-	}, [topic, createTopic, createRelationship, onChildSelected])
+				// fire and forget 'Created' review creation
+				createTopicReview({
+					topic_id: newTopic.id,
+					review: {
+						description: 'Created',
+						notes: '',
+						scheduled_at: null,
+						completed_at: dayjs().format('YYYY-MM-DD')
+					},
+					rating: 'good'
+				}).catch(() => {
+					// Ignore fire-and-forget errors (for now)
+				})
+
+				onChildSelected(newTopic.id)
+			} catch (_error) {
+				// Error is handled by React Query mutation state
+			}
+		},
+		[topic, createTopic, createRelationship, onChildSelected, createTopicReview]
+	)
+
+	const handleTopicSelected = useCallback(
+		async (selectedTopic: Topic) => {
+			if (!topic) return
+
+			try {
+				await createRelationship.mutateAsync({
+					parent: topic.id,
+					child: selectedTopic.id
+				})
+
+				onChildSelected(selectedTopic.id)
+			} catch (_error) {
+				// Error is handled by React Query mutation state
+			}
+		},
+		[topic, createRelationship, onChildSelected]
+	)
 
 	// Render helpers
 	const estimateItemSize = useCallback((item: ListItem) => {
@@ -136,7 +180,7 @@ export function ReviewTopicChildrenPanel({
 								<Search className='h-4 w-4' />
 								Search
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={handleCreateNew}>
+							<DropdownMenuItem onClick={() => handleCreateNew()}>
 								<SquarePen className='h-4 w-4' />
 								Create New
 							</DropdownMenuItem>
@@ -188,8 +232,10 @@ export function ReviewTopicChildrenPanel({
 			</div>
 
 			<AddRelationshipDialog
+				isCreating={isCreating}
+				onCreateNew={handleCreateNew}
 				onOpenChange={setShowSearchDialog}
-				onTopicCreated={onChildSelected}
+				onSelected={handleTopicSelected}
 				open={showSearchDialog}
 				relationshipType='child'
 				topicId={topic?.id}

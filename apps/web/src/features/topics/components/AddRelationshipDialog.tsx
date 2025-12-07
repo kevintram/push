@@ -13,7 +13,6 @@ import {
 	DialogTitle
 } from '~/components/ui/Dialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDebouncedPotentialTopics } from '~/features/topics/hooks/useDebouncedPotentialTopics'
 import type { Topic } from '~/models/review-topic.types'
 
@@ -22,8 +21,9 @@ interface AddRelationshipDialogProps {
 	onOpenChange: (open: boolean) => void
 	topicId: number | undefined
 	relationshipType: 'child' | 'parent'
-	onRelationshipCreated?: (topicId: number) => void
-	onTopicCreated?: (topicId: number) => void
+	onCreateNew?: (query: string) => void
+	onSelected?: (topic: Topic) => void
+	isCreating?: boolean
 }
 
 export function AddRelationshipDialog({
@@ -31,8 +31,9 @@ export function AddRelationshipDialog({
 	onOpenChange,
 	topicId: selectedTopicId,
 	relationshipType,
-	onRelationshipCreated,
-	onTopicCreated
+	onCreateNew,
+	onSelected,
+	isCreating = false
 }: AddRelationshipDialogProps) {
 	// Refs
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -45,9 +46,6 @@ export function AddRelationshipDialog({
 			debounceMs: 300,
 			enabled: open
 		})
-
-	const createRelationship = useCreateRelationship()
-
 	// Effects
 	useEffect(() => {
 		if (open) {
@@ -78,72 +76,17 @@ export function AddRelationshipDialog({
 		relationshipType === 'child' ? 'Add Child Topic' : 'Add Parent Topic'
 
 	// Main handlers
-	const handleCreateTopicClick = useCallback(async () => {
-		if (!selectedTopicId) return
-
-		try {
-			const newTopicData = {
-				name: '',
-				notes: query.trim() || '',
-				archived: false,
-				inboxed: false
-			}
-
-			// Use inline creation - create topic and relationship in one call
-			const response = await createRelationship.mutateAsync(
-				relationshipType === 'child'
-					? { parent: selectedTopicId, childData: newTopicData }
-					: { child: selectedTopicId, parentData: newTopicData }
-			)
-
-			// Get the newly created topic ID (child or parent depending on relationship type)
-			const newTopicId =
-				relationshipType === 'child' ? response.child.id : response.parent.id
-			onRelationshipCreated?.(newTopicId)
-			onTopicCreated?.(newTopicId)
-			onOpenChange(false)
-		} catch (_error) {
-			// Error is handled by React Query mutation state
-		}
-	}, [
-		selectedTopicId,
-		query,
-		relationshipType,
-		createRelationship,
-		onRelationshipCreated,
-		onTopicCreated,
-		onOpenChange
-	])
+	const handleCreateTopicClick = useCallback(() => {
+		onCreateNew?.(query)
+		onOpenChange(false)
+	}, [query, onCreateNew, onOpenChange])
 
 	const handleTopicSelected = useCallback(
-		async (topic: Topic) => {
-			if (!selectedTopicId) return
-
-			try {
-				if (relationshipType === 'child') {
-					await createRelationship.mutateAsync({
-						parent: selectedTopicId,
-						child: topic.id
-					})
-				} else {
-					await createRelationship.mutateAsync({
-						parent: topic.id,
-						child: selectedTopicId
-					})
-				}
-				onRelationshipCreated?.(topic.id)
-				onOpenChange(false)
-			} catch (_error) {
-				// Error is handled by React Query mutation state
-			}
+		(topic: Topic) => {
+			onSelected?.(topic)
+			onOpenChange(false)
 		},
-		[
-			selectedTopicId,
-			relationshipType,
-			createRelationship,
-			onRelationshipCreated,
-			onOpenChange
-		]
+		[onSelected, onOpenChange]
 	)
 
 	const handleSearchChange = useCallback(
@@ -195,7 +138,7 @@ export function AddRelationshipDialog({
 							value={query}
 						/>
 						<Button
-							disabled={createRelationship.isPending}
+							disabled={isCreating}
 							onClick={handleCreateTopicClick}
 							size='default'
 							variant='secondary'
