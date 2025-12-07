@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Baby, Loader2, Plus, Search, SquarePen } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
-import { MasonryLayout } from '~/components/MasonryLayout'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Card, CardContent } from '~/components/ui/Card'
 import {
 	DropdownMenu,

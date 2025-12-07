@@ -1,4 +1,4 @@
-import { MasonryLayout } from '~/components/MasonryLayout'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import {
 	Popover,

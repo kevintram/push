@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Inbox } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import { MasonryLayout } from '~/components/MasonryLayout'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
-import { TopicsPageSkeleton } from '~/features/topics/components/TopicsPageSkeleton'
 import { useInboxTopics } from '~/features/topics/hooks'
 import type { Topic } from '~/models/review-topic.types'
 
@@ -89,7 +89,7 @@ function InboxList({
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	if (isLoading) {
-		return <TopicsPageSkeleton />
+		return <MasonryLayoutSkeleton />
 	}
 
 	if (topicList.length === 0) {

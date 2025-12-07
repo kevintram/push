@@ -2,13 +2,13 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Home, Plus, SquareLibrary } from 'lucide-react'
 import { useCallback } from 'react'
-import { MasonryLayout } from '~/components/MasonryLayout'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { getTopics } from '~/features/topics/api'
 import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
-import { TopicsPageSkeleton } from '~/features/topics/components/TopicsPageSkeleton'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/models/review-topic.types'
@@ -72,7 +72,7 @@ function RootTopicsList({
 	})
 
 	if (isLoading) {
-		return <TopicsPageSkeleton />
+		return <MasonryLayoutSkeleton />
 	}
 
 	if (topics.length === 0) {

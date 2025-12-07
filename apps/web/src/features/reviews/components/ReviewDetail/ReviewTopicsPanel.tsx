@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
-import { MasonryLayout } from '~/components/MasonryLayout'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import type { Rating, Topic } from '~/models/review-topic.types'
