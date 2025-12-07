@@ -6,11 +6,9 @@ import {
 	useRef,
 	useState
 } from 'react'
-import {
-	MIN_HEIGHT,
-	SearchInput,
-	SearchResultsContainer
-} from '~/components/search'
+import { MIN_HEIGHT } from '~/components/search/constants'
+import { SearchInput } from '~/components/search/SearchInput'
+import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
 import {
 	Dialog,
 	DialogContent,

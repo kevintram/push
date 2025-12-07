@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
 import type { Topic } from '~/models/review-topic.types'
-import { getTopics } from '../api'
+import { getTopics } from '../api/getTopics'
 
 export type TodayTopicSectionKey = 'overdue' | 'today'
 

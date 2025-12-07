@@ -7,7 +7,7 @@ import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayout
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { getTopics } from '~/features/topics/api'
+import { getTopics } from '~/features/topics/api/getTopics'
 import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'

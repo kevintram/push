@@ -6,7 +6,7 @@ import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
-import { useLogbookReviews } from '~/features/reviews/hooks'
+import { useLogbookReviews } from '~/features/reviews/hooks/useLogbookReviews'
 
 export const Route = createFileRoute('/logbook')({
 	component: LogbookPage

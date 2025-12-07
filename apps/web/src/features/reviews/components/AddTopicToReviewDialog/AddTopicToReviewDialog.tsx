@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Minus, SquarePen, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { SearchInput, SearchResultsContainer } from '~/components/search'
+import { SearchInput } from '~/components/search/SearchInput'
+import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
 import { Button } from '~/components/ui/Button'
 import {
 	Dialog,
@@ -10,12 +11,11 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
-import type { Review } from '~/features/reviews/api'
 import { searchTopics } from '~/features/topics/api/searchTopics'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
-import type { Rating, Topic } from '~/models/review-topic.types'
+import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { AddedTopicsPopover } from './AddedTopicsPopover'
 import { AddTopicCard } from './AddTopicCard'
 import {

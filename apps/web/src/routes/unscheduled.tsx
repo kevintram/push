@@ -5,8 +5,8 @@ import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useUnscheduledReviews } from '~/features/reviews/hooks'
-import { useUnscheduledTopics } from '~/features/topics/hooks'
+import { useUnscheduledReviews } from '~/features/reviews/hooks/useUnscheduledReviews'
+import { useUnscheduledTopics } from '~/features/topics/hooks/useUnscheduledTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/unscheduled')({

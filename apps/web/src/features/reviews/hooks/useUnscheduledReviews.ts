@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getReviews } from '../api'
+import { getReviews } from '../api/getReviews'
 
 type SectionDefinition = {
 	id: 'unscheduled'

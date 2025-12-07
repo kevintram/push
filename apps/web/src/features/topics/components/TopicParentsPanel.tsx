@@ -10,7 +10,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { createTopicReview as createTopicReviewApi } from '~/features/reviews/api'
+import { createTopicReview as createTopicReviewApi } from '~/features/reviews/api/createTopicReview'
 import type { Topic } from '~/models/review-topic.types'
 import { getTopicParents } from '../api/getTopicParents'
 import { useCreateRelationship } from '../hooks/useCreateRelationship'

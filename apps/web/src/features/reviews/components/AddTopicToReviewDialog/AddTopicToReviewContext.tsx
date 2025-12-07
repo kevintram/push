@@ -6,14 +6,16 @@ import {
 	useMemo,
 	useState
 } from 'react'
-import type { Review } from '~/features/reviews/api'
-import {
-	createTopicReview as createTopicReviewApi,
-	deleteTopicReview
-} from '~/features/reviews/api'
+import { createTopicReview as createTopicReviewApi } from '~/features/reviews/api/createTopicReview'
+import { deleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
 import { updateTopicReview as updateTopicReviewApi } from '~/features/reviews/api/updateTopicReview'
 import { useTopicWithRelationships } from '~/features/topics/hooks/useTopicWithRelationships'
-import type { Rating, Topic, TopicReview } from '~/models/review-topic.types'
+import type {
+	Rating,
+	Review,
+	Topic,
+	TopicReview
+} from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 interface AddTopicToReviewContextValue {

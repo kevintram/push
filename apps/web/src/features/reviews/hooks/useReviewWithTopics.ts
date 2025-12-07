@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getReview } from '../api'
+import { getReview } from '../api/getReview'
 
 export function useReviewWithTopics(reviewId: number) {
 	const { data: review, isLoading } = useQuery({

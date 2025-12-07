@@ -19,7 +19,8 @@ import {
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import type { Review } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { deleteReview, updateReview } from '../api'
+import { deleteReview } from '../api/deleteReview'
+import { updateReview } from '../api/updateReview'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { ReviewTopicBadges } from './ReviewTopicBadges'
 

@@ -6,8 +6,10 @@ import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useFutureReviews, useSoonReviews } from '~/features/reviews/hooks'
-import { useFutureTopics, useSoonTopics } from '~/features/topics/hooks'
+import { useFutureReviews } from '~/features/reviews/hooks/useFutureReviews'
+import { useSoonReviews } from '~/features/reviews/hooks/useSoonReviews'
+import { useFutureTopics } from '~/features/topics/hooks/useFutureTopics'
+import { useSoonTopics } from '~/features/topics/hooks/useSoonTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/upcoming')({

@@ -5,8 +5,8 @@ import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useTodayReviews } from '~/features/reviews/hooks'
-import { useTodayTopics } from '~/features/topics/hooks'
+import { useTodayReviews } from '~/features/reviews/hooks/useTodayReviews'
+import { useTodayTopics } from '~/features/topics/hooks/useTodayTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/today')({

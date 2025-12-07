@@ -25,8 +25,8 @@ import { SidebarMenuButton } from '~/components/ui/Sidebar'
 
 // Feature hooks
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateReview } from '~/features/reviews/hooks'
-import { useCreateTopicWithReview } from '~/features/topics/hooks'
+import { useCreateReview } from '~/features/reviews/hooks/useCreateReview'
+import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 
 export function CreateButton() {
 	// Hooks

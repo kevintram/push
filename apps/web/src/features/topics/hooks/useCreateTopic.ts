@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { createTopic } from '../api'
+import { createTopic } from '../api/createTopic'
 
 export function useCreateTopic() {
 	const queryClient = useQueryClient()
