@@ -1,15 +1,24 @@
-import { useQuery } from '@tanstack/react-query'
-import { Baby } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import dayjs from 'dayjs'
+import { Baby, Loader2, Plus, Search, SquarePen } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
+import { Card, CardContent } from '~/components/ui/Card'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { createTopicReview as createTopicReviewApi } from '~/features/topic_reviews/api'
 import { getTopicChildren } from '~/features/topics/api/getTopicChildren'
+import { AddRelationshipDialog } from '~/features/topics/components/AddRelationshipDialog'
+import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
 import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/review-topic.types'
 import { TopicCard } from '../../TopicCard'
-import { AddRelationshipDialog } from '../AddRelationshipDialog'
-import { AddRelationshipDropdown } from './AddRelationshipDropdown'
 
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
@@ -36,6 +45,77 @@ export function TopicChildrenPanel({
 	})
 
 	const deleteRelationship = useDeleteRelationship()
+	const createRelationship = useCreateRelationship()
+	const queryClient = useQueryClient()
+	const { mutateAsync: createTopicReview } = useMutation({
+		mutationFn: createTopicReviewApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['topics', 'reviews'] })
+		}
+	})
+
+	const isCreating = createRelationship.isPending
+
+	const handleCreateNew = useCallback(
+		async (query = '') => {
+			if (!selectedTopic) return
+
+			try {
+				const newTopicData = {
+					name: '',
+					notes: query.trim() || '',
+					archived: false,
+					inboxed: false
+				}
+
+				// Use inline creation - create topic and relationship in one call
+				const response = await createRelationship.mutateAsync({
+					parent: selectedTopic.id,
+					childData: newTopicData
+				})
+
+				// Get the newly created child topic ID
+				const newTopicId = response.child.id
+
+				// fire and forget 'Created' review creation
+				createTopicReview({
+					topic_id: newTopicId,
+					review: {
+						description: 'Created',
+						notes: '',
+						scheduled_at: null,
+						completed_at: dayjs().format('YYYY-MM-DD')
+					},
+					rating: 'good'
+				}).catch(() => {
+					// Ignore fire-and-forget errors (for now)
+				})
+
+				// Open the created topic
+				openTopicDialog(newTopicId)
+			} catch (_error) {}
+		},
+		[selectedTopic, createRelationship, openTopicDialog, createTopicReview]
+	)
+
+	const handleTopicSelected = useCallback(
+		async (topic: Topic) => {
+			if (!selectedTopic) return
+
+			try {
+				await createRelationship.mutateAsync({
+					parent: selectedTopic.id,
+					child: topic.id
+				})
+
+				// Open the selected topic dialog
+				openTopicDialog(topic.id)
+			} catch (_error) {
+				// Error is handled by React Query mutation state
+			}
+		},
+		[selectedTopic, createRelationship, openTopicDialog]
+	)
 
 	// Combine add button and children into a single array
 	const items: Array<ListItem> = [
@@ -68,15 +148,29 @@ export function TopicChildrenPanel({
 		(item: ListItem) => {
 			if (item.type === 'add-button') {
 				return (
-					<AddRelationshipDropdown
-						onOpenSearchDialog={() => setShowCreateDialog(true)}
-						onTopicOpen={(topicId: number) => {
-							openTopicDialog(topicId)
-						}}
-						relationshipType='child'
-						topicId={selectedTopic?.id}
-						variant='card'
-					/>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
+							<Card className='cursor-pointer border-2 border-dashed transition-colors hover:bg-muted/50'>
+								<CardContent className='flex items-center justify-center p-3'>
+									{isCreating ? (
+										<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
+									) : (
+										<Plus className='h-4 w-4 text-muted-foreground' />
+									)}
+								</CardContent>
+							</Card>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='start' side='right'>
+							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
+								<Search className='h-4 w-4' />
+								Search
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => handleCreateNew()}>
+								<SquarePen className='h-4 w-4' />
+								Create New
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				)
 			}
 
@@ -100,7 +194,13 @@ export function TopicChildrenPanel({
 				/>
 			)
 		},
-		[deleteRelationship, openTopicDialog, selectedTopic]
+		[
+			deleteRelationship,
+			openTopicDialog,
+			selectedTopic,
+			isCreating,
+			handleCreateNew
+		]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {
@@ -132,10 +232,10 @@ export function TopicChildrenPanel({
 			</div>
 
 			<AddRelationshipDialog
+				isCreating={isCreating}
+				onCreateNew={handleCreateNew}
 				onOpenChange={setShowCreateDialog}
-				onTopicCreated={(topicId: number) => {
-					openTopicDialog(topicId)
-				}}
+				onSelected={handleTopicSelected}
 				open={showCreateDialog}
 				relationshipType='child'
 				topicId={selectedTopic?.id}
