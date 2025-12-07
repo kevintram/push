@@ -1,7 +1,7 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
-import { AppSidebar } from '~/components/AppSidebar'
+import { AppSidebar } from '~/components/app-sidebar/AppSidebar'
 import { Header } from '~/components/Header'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'

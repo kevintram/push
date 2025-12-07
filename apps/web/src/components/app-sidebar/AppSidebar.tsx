@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { CreateButton } from '~/components/AppSidebar/CreateButton'
+import { CreateButton } from '~/components/app-sidebar/CreateButton'
 import { SettingsDialog } from '~/components/SettingsDialog'
 import {
 	Sidebar,
