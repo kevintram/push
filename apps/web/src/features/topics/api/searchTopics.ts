@@ -98,3 +98,18 @@ export function useGetPotentialParents(
 		...options
 	})
 }
+
+export function useSearchTopics(
+	params: SearchTopicsParams & {
+		enabled?: boolean
+		queryKey?: Array<unknown>
+	}
+) {
+	const { enabled = true, queryKey, ...searchParams } = params
+
+	return useQuery({
+		queryKey: queryKey ?? ['topics', 'search', searchParams.query || 'recent'],
+		queryFn: () => searchTopics(searchParams),
+		enabled
+	})
+}

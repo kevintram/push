@@ -471,3 +471,11 @@ export function useLogbookReviews() {
 		error: query.error
 	}
 }
+
+export function useReviewsByTopic(topicId: number | undefined) {
+	return useQuery({
+		queryKey: ['reviews', topicId],
+		queryFn: () => getReviews({ topicId }),
+		enabled: topicId !== undefined
+	})
+}

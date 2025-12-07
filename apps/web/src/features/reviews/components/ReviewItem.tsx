@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
@@ -18,9 +17,8 @@ import {
 } from '~/components/ui/Tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import type { Review } from '~/models/review-topic.types'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { deleteReview } from '../api/deleteReview'
-import { updateReview } from '../api/updateReview'
+import { useDeleteReview } from '../api/deleteReview'
+import { useUpdateReview } from '../api/updateReview'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { ReviewTopicBadges } from './ReviewTopicBadges'
 
@@ -35,8 +33,6 @@ export function ReviewItem({
 	onReviewClick,
 	readonly = false
 }: ReviewItemProps) {
-	const queryClient = useQueryClient()
-
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 	const [_isDropdownOpen, setIsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
@@ -46,24 +42,13 @@ export function ReviewItem({
 		return entry.scheduled_at ? dayjs(entry.scheduled_at).toDate() : null
 	})
 
-	const { mutateAsync: updateReviewMutation } = useMutation({
-		mutationFn: updateReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	const { mutateAsync: deleteReviewMutation } = useMutation({
-		mutationFn: deleteReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
+	const updateReviewMutation = useUpdateReview()
+	const deleteReviewMutation = useDeleteReview()
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
 			if (entry.id) {
-				updateReviewMutation({
+				updateReviewMutation.mutateAsync({
 					id: entry.id,
 					completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
 				})
@@ -80,12 +65,12 @@ export function ReviewItem({
 					? dayjs(newDate).format('YYYY-MM-DD')
 					: null
 				if (entry.completed_at) {
-					updateReviewMutation({
+					updateReviewMutation.mutateAsync({
 						id: entry.id,
 						completed_at: newDateString
 					})
 				} else {
-					updateReviewMutation({
+					updateReviewMutation.mutateAsync({
 						id: entry.id,
 						scheduled_at: newDateString
 					})
@@ -98,7 +83,7 @@ export function ReviewItem({
 
 	const handleDelete = useCallback(async () => {
 		if (entry?.id) {
-			await deleteReviewMutation(entry.id)
+			await deleteReviewMutation.mutateAsync(entry.id)
 		}
 	}, [deleteReviewMutation, entry?.id])
 

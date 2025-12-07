@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Minus, SquarePen, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -11,10 +10,9 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
-import { searchTopics } from '~/features/topics/api/searchTopics'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
+import { useDebouncedTopicSearch } from '~/features/topics/hooks/useDebouncedTopicSearch'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { AddedTopicsPopover } from './AddedTopicsPopover'
 import { AddTopicCard } from './AddTopicCard'
@@ -63,17 +61,21 @@ function AddTopicToReviewDialogContent({
 	const [isTopicMinimized, setIsTopicMinimized] = useState(false)
 
 	// Search
-	const debouncedQuery = useDebouncedValue(searchQuery, 300)
-	const hasQuery = Boolean(debouncedQuery.trim())
-
-	const { data: topics = [], isLoading: isSearching } = useQuery({
-		queryKey: ['topics', 'search', debouncedQuery || 'recent', review?.id],
-		queryFn: () =>
-			searchTopics({
-				query: debouncedQuery || undefined,
-				limit: 20
-			}),
-		enabled: open && !!review
+	const {
+		debouncedQuery,
+		results: topics = [],
+		isLoading: isSearching,
+		hasQuery
+	} = useDebouncedTopicSearch({
+		query: searchQuery,
+		limit: 20,
+		enabled: open && !!review,
+		queryKey: debouncedQuery => [
+			'topics',
+			'search',
+			debouncedQuery || 'recent',
+			review?.id
+		]
 	})
 
 	const searchResults = useMemo(() => {

@@ -1,6 +1,8 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { type Review, ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 export type UpdateReviewInput = {
 	id: number
@@ -34,4 +36,15 @@ export async function updateReview(input: UpdateReviewInput): Promise<Review> {
 		}
 		throw error
 	}
+}
+
+export function useUpdateReview() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: updateReview,
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
+		}
+	})
 }

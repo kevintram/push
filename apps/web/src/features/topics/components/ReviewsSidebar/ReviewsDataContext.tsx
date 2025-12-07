@@ -1,7 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { createContext, useContext, useMemo } from 'react'
-import { getReviews } from '~/features/reviews/api/getReviews'
+import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
 import type { Review } from '~/models/review-topic.types'
 
 interface ReviewsDataContextValue {
@@ -29,11 +28,7 @@ export function ReviewsDataProvider({
 	children,
 	selectedTopicId
 }: ReviewsDataProviderProps) {
-	const { data: reviews = [], isLoading } = useQuery({
-		queryKey: ['reviews', selectedTopicId],
-		queryFn: () => getReviews({ topicId: selectedTopicId }),
-		enabled: selectedTopicId !== undefined
-	})
+	const { data: reviews = [], isLoading } = useReviewsByTopic(selectedTopicId)
 
 	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
 		const scheduled: Array<Review> = []

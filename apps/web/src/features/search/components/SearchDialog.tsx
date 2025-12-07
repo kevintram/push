@@ -16,7 +16,7 @@ import {
 	DialogTitle
 } from '~/components/ui/Dialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import { useGlobalSearch } from '~/hooks/useGlobalSearch'
+import { useDebouncedTopicSearch } from '~/features/topics/hooks/useDebouncedTopicSearch'
 import type { Topic } from '~/models/review-topic.types'
 
 interface SearchDialogProps {
@@ -37,10 +37,11 @@ export function SearchDialog({
 	const [selectedIndex, setSelectedIndex] = useState(0)
 	const [gap, setGap] = useState(12)
 
-	const { debouncedQuery, results, isLoading, hasQuery } = useGlobalSearch(
-		query,
-		open
-	)
+	const { debouncedQuery, results, isLoading, hasQuery } =
+		useDebouncedTopicSearch({
+			query,
+			enabled: open
+		})
 
 	useEffect(() => {
 		if (open) {

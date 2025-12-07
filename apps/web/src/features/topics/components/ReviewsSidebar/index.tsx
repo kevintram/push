@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
 	BicepsFlexed,
 	Calendar,
@@ -25,11 +24,11 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { createTopicReview } from '~/features/reviews/api/createTopicReview'
+import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { Rating } from '~/models/review-topic.types'
 import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
-import { updateTopic as updateTopicApi } from '../../api/updateTopic'
+import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
@@ -45,30 +44,16 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const { scheduledReviews, unscheduledReviews } = useReviewsData()
 	const { openReviewDialog } = useReviewTopicDialog()
 	const { topic } = use(TopicContext)
-	const queryClient = useQueryClient()
 
-	const {
-		mutateAsync: createTopicReviewMutation,
-		isPending: isCreatingTopicReview
-	} = useMutation({
-		mutationFn: createTopicReview,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
-		}
-	})
+	const createTopicReviewMutation = useCreateTopicReview()
+	const updateTopicMutation = useUpdateTopic()
 
-	const { mutateAsync: updateTopicMutation } = useMutation({
-		mutationFn: updateTopicApi,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
-		}
-	})
+	const isCreatingTopicReview = createTopicReviewMutation.isPending
 
 	const handleSrsToggle = useCallback(
 		async (pressed: boolean) => {
 			if (!topic || readonly) return
-			await updateTopicMutation({
+			await updateTopicMutation.mutateAsync({
 				id: topic.id,
 				srs_enabled: pressed
 			})
@@ -83,7 +68,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 			if (!topic) throw new Error('Topic not found')
 
 			// Create review and link to topic in a single API call
-			const topicReview = await createTopicReviewMutation({
+			const topicReview = await createTopicReviewMutation.mutateAsync({
 				topic_id: topic.id,
 				review: {
 					description: '',

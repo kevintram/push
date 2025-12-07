@@ -368,3 +368,24 @@ export function useFutureTopics(options?: { enabled?: boolean }) {
 		error: query.error
 	}
 }
+
+export function useRootTopics() {
+	return useQuery({
+		queryKey: ['topics', 'root'],
+		queryFn: () => getTopics({ root: true, archived: false, inboxed: false })
+	})
+}
+
+export function useArchivedTopics() {
+	return useQuery({
+		queryKey: ['topics', 'archived'],
+		queryFn: () => getTopics({ archived: true, order: 'desc' })
+	})
+}
+
+export function useRecentTopics() {
+	return useQuery({
+		queryKey: ['topics', 'recent'],
+		queryFn: () => getTopics({ order: 'desc', limit: 50 })
+	})
+}

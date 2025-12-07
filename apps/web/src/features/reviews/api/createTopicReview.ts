@@ -9,6 +9,7 @@ import {
 	TopicReviewSchema
 } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 // Inline topic creation payload
 type TopicCreate = {
@@ -146,4 +147,15 @@ export function useCreateTopicWithReview() {
 		isTopicReviewCreatePending: false, // No longer separate
 		isPending
 	}
+}
+
+export function useCreateTopicReview() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: createTopicReview,
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
+		}
+	})
 }

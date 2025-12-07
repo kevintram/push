@@ -41,7 +41,7 @@ export async function updateTopic(input: UpdateTopicInput) {
 	}
 }
 
-export function useMoveFromInbox() {
+export function useUpdateTopic() {
 	const queryClient = useQueryClient()
 
 	return useMutation({

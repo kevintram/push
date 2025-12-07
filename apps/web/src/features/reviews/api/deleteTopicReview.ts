@@ -1,4 +1,6 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiFetch } from '~/utils/apiFetch'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 export async function deleteTopicReview(id: number) {
 	const response = await apiFetch(
@@ -13,4 +15,15 @@ export async function deleteTopicReview(id: number) {
 	}
 
 	return response.json()
+}
+
+export function useDeleteTopicReview() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: deleteTopicReview,
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
+		}
+	})
 }

@@ -1,4 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Loader2, Plus, Search, SquarePen, User2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -10,11 +9,11 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { createTopicReview as createTopicReviewApi } from '~/features/reviews/api/createTopicReview'
+import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import type { Topic } from '~/models/review-topic.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
-import { getTopicParents } from '../api/getTopicParents'
+import { useTopicParents } from '../api/getTopicParents'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { TopicBadge } from './TopicBadge'
 
@@ -34,24 +33,11 @@ export function TopicParentsPanel({
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
-	const { data: parents = [] } = useQuery({
-		queryKey: ['topics', topicId, 'parents'],
-		queryFn: () => {
-			if (!topicId) throw new Error('Topic ID is required')
-			return getTopicParents(topicId)
-		},
-		enabled: topicId !== undefined
-	})
+	const { data: parents = [] } = useTopicParents(topicId)
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
-	const queryClient = useQueryClient()
-	const { mutateAsync: createTopicReview } = useMutation({
-		mutationFn: createTopicReviewApi,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['topics', 'reviews'] })
-		}
-	})
+	const createTopicReviewMutation = useCreateTopicReview()
 
 	const isCreating = createRelationship.isPending
 
@@ -89,18 +75,20 @@ export function TopicParentsPanel({
 				const newTopicId = response.parent.id
 
 				// fire and forget 'Created' review creation
-				createTopicReview({
-					topic_id: newTopicId,
-					review: {
-						description: 'Created',
-						notes: '',
-						scheduled_at: null,
-						completed_at: dayjs().format('YYYY-MM-DD')
-					},
-					rating: 'good'
-				}).catch(() => {
-					// Ignore fire-and-forget errors (for now)
-				})
+				createTopicReviewMutation
+					.mutateAsync({
+						topic_id: newTopicId,
+						review: {
+							description: 'Created',
+							notes: '',
+							scheduled_at: null,
+							completed_at: dayjs().format('YYYY-MM-DD')
+						},
+						rating: 'good'
+					})
+					.catch(() => {
+						// Ignore fire-and-forget errors (for now)
+					})
 
 				// Navigate to the created topic
 				handleParentSelect(newTopicId)
@@ -108,7 +96,7 @@ export function TopicParentsPanel({
 				// Error is handled by React Query mutation state
 			}
 		},
-		[topicId, createRelationship, handleParentSelect, createTopicReview]
+		[topicId, createRelationship, handleParentSelect, createTopicReviewMutation]
 	)
 
 	const handleTopicSelected = useCallback(

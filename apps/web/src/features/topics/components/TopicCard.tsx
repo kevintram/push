@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
 	Archive,
 	ArchiveRestore,
@@ -26,13 +25,12 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { updateTopicReview as updateTopicReviewApi } from '~/features/reviews/api/updateTopicReview'
+import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
 import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
-import { deleteTopic as deleteTopicApi } from '../api/deleteTopic'
-import { updateTopic as updateTopicApi } from '../api/updateTopic'
+import { useDeleteTopic } from '../api/deleteTopic'
+import { useUpdateTopic } from '../api/updateTopic'
 
 const MIN_HEIGHT = 96
 
@@ -58,29 +56,9 @@ export function TopicCard({
 	rating,
 	reviewId
 }: TopicCardProps) {
-	const queryClient = useQueryClient()
-
-	const { mutateAsync: deleteTopicMutation } = useMutation({
-		mutationFn: deleteTopicApi,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	const { mutateAsync: updateTopicMutation } = useMutation({
-		mutationFn: updateTopicApi,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	const { mutateAsync: updateReviewMutation } = useMutation({
-		mutationFn: ({ reviewId, rating }: { reviewId: number; rating: Rating }) =>
-			updateTopicReviewApi(reviewId, rating),
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
+	const deleteTopicMutation = useDeleteTopic()
+	const updateTopicMutation = useUpdateTopic()
+	const updateReviewMutation = useUpdateTopicReview()
 
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
@@ -100,13 +78,13 @@ export function TopicCard({
 	)
 
 	const handleDeleteTopic = () => {
-		deleteTopicMutation(topic.id)
+		deleteTopicMutation.mutate(topic.id)
 	}
 
 	const handleArchiveToggle = useCallback(
 		async (e: React.MouseEvent) => {
 			e.stopPropagation()
-			await updateTopicMutation({
+			await updateTopicMutation.mutateAsync({
 				id: topic.id,
 				archived: !topic.archived
 			})
@@ -117,7 +95,7 @@ export function TopicCard({
 	const handleInboxToggle = useCallback(
 		async (e: React.MouseEvent) => {
 			e.stopPropagation()
-			await updateTopicMutation({
+			await updateTopicMutation.mutateAsync({
 				id: topic.id,
 				inboxed: !topic.inboxed
 			})
@@ -128,7 +106,10 @@ export function TopicCard({
 	const handleRatingChange = useCallback(
 		async (newRating: Rating) => {
 			if (!reviewId) return
-			await updateReviewMutation({ reviewId, rating: newRating })
+			await updateReviewMutation.mutateAsync({
+				id: reviewId,
+				rating: newRating
+			})
 		},
 		[reviewId, updateReviewMutation]
 	)

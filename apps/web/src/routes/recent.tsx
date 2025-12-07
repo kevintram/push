@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { History, Plus } from 'lucide-react'
 import { useCallback } from 'react'
@@ -8,7 +7,7 @@ import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
-import { getTopics } from '~/features/topics/api/getTopics'
+import { useRecentTopics } from '~/features/topics/api/getTopics'
 import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/models/review-topic.types'
@@ -22,10 +21,7 @@ function RouteComponent() {
 	const { createTopicWithReview } = useCreateTopicWithReview()
 
 	// Fetch 50 most recent topics
-	const { data: topics = [], isLoading } = useQuery({
-		queryKey: ['topics', 'recent'],
-		queryFn: () => getTopics({ order: 'desc', limit: 50 })
-	})
+	const { data: topics = [], isLoading } = useRecentTopics()
 
 	const handleCreateTopic = useCallback(async () => {
 		const newTopic = await createTopicWithReview({

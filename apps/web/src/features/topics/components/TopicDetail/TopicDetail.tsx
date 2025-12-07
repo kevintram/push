@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Archive, ArchiveX, Inbox, X } from 'lucide-react'
 import { type ReactNode, use, useCallback, useEffect, useRef } from 'react'
 import { Button } from '~/components/ui/Button'
@@ -12,9 +11,8 @@ import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import type { Topic } from '~/models/review-topic.types'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { deleteTopic as deleteTopicApi } from '../../api/deleteTopic'
-import { updateTopic as updateTopicApi } from '../../api/updateTopic'
+import { useDeleteTopic } from '../../api/deleteTopic'
+import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import { ReviewsSidebar } from '../ReviewsSidebar'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
@@ -77,28 +75,21 @@ export function TopicDetail({
 	const isLoading =
 		isLoadingProp !== undefined ? isLoadingProp : contextValue.isLoading
 
-	const queryClient = useQueryClient()
+	const updateTopicMutation = useUpdateTopic()
+	const deleteTopicMutation = useDeleteTopic()
 
-	const { mutateAsync: updateTopicMutation } = useMutation({
-		mutationFn: updateTopicApi,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	const { mutateAsync: deleteTopic } = useMutation({
-		mutationFn: deleteTopicApi,
-		onSuccess: () => {
+	const deleteTopic = useCallback(
+		async (topicId: number) => {
+			await deleteTopicMutation.mutateAsync(topicId)
 			onDelete?.()
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
-		}
-	})
+		},
+		[deleteTopicMutation, onDelete]
+	)
 
 	const updateNotesMutation = useCallback(
 		(newNotes: string) => {
 			if (topic?.id) {
-				updateTopicMutation({ id: topic.id, notes: newNotes })
+				updateTopicMutation.mutateAsync({ id: topic.id, notes: newNotes })
 			}
 		},
 		[updateTopicMutation, topic?.id]
@@ -107,7 +98,7 @@ export function TopicDetail({
 	const updateNameMutation = useCallback(
 		(newTitle: string) => {
 			if (!topic) return
-			updateTopicMutation({ id: topic.id, name: newTitle })
+			updateTopicMutation.mutateAsync({ id: topic.id, name: newTitle })
 		},
 		[updateTopicMutation, topic]
 	)
@@ -120,7 +111,7 @@ export function TopicDetail({
 
 	const handleArchiveToggle = useCallback(async () => {
 		if (topic?.id) {
-			await updateTopicMutation({
+			await updateTopicMutation.mutateAsync({
 				id: topic.id,
 				archived: !topic.archived
 			})
@@ -129,7 +120,7 @@ export function TopicDetail({
 
 	const handleInboxToggle = useCallback(async () => {
 		if (topic?.id) {
-			await updateTopicMutation({
+			await updateTopicMutation.mutateAsync({
 				id: topic.id,
 				inboxed: !topic.inboxed
 			})
