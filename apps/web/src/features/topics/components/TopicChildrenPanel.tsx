@@ -13,9 +13,9 @@ import {
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { createTopicReview as createTopicReviewApi } from '~/features/reviews/api/createTopicReview'
 import type { Topic } from '~/models/review-topic.types'
+import { useCreateRelationship } from '../api/createTopicRelationship'
+import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { getTopicChildren } from '../api/getTopicChildren'
-import { useCreateRelationship } from '../hooks/useCreateRelationship'
-import { useDeleteRelationship } from '../hooks/useDeleteRelationship'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { TopicCard } from './TopicCard'
 

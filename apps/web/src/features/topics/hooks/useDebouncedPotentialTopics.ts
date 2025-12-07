@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import type { Topic } from '~/models/review-topic.types'
-import { useGetPotentialChildren } from './useGetPotentialChildren'
-import { useGetPotentialParents } from './useGetPotentialParents'
+import {
+	useGetPotentialChildren,
+	useGetPotentialParents
+} from '../api/searchTopics'
 
 interface UseDebouncedPotentialTopicsProps {
 	topicId: number | undefined

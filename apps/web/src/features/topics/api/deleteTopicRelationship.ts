@@ -1,6 +1,8 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 type DeleteChildRelationshipInput = {
 	parentId: number
@@ -60,4 +62,17 @@ export async function deleteParentRelationship(
 		}
 		throw error
 	}
+}
+
+export function useDeleteRelationship() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: ({ parent, child }: { parent: number; child: number }) => {
+			return deleteParentRelationship({ childId: child, parentId: parent })
+		},
+		onSuccess: async () => {
+			await invalidateTopicsAndReviews(queryClient)
+		}
+	})
 }

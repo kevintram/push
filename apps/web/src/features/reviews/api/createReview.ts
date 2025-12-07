@@ -1,3 +1,4 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
@@ -35,5 +36,21 @@ export async function createReview(input: CreateReviewInput) {
 			throw new Error(`Validation failed: ${error.message}`)
 		}
 		throw error
+	}
+}
+
+export function useCreateReview() {
+	const queryClient = useQueryClient()
+
+	const { mutateAsync, isPending } = useMutation({
+		mutationFn: createReview,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+		}
+	})
+
+	return {
+		createReview: mutateAsync,
+		isPending
 	}
 }

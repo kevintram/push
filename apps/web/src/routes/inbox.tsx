@@ -5,9 +5,9 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useInboxTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
-import { useInboxTopics } from '~/features/topics/hooks/useInboxTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 const MIN_CARD_WIDTH = 280

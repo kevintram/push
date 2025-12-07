@@ -4,12 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import {
+	useFutureReviews,
+	useSoonReviews
+} from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useFutureReviews } from '~/features/reviews/hooks/useFutureReviews'
-import { useSoonReviews } from '~/features/reviews/hooks/useSoonReviews'
-import { useFutureTopics } from '~/features/topics/hooks/useFutureTopics'
-import { useSoonTopics } from '~/features/topics/hooks/useSoonTopics'
+import { useFutureTopics, useSoonTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/upcoming')({

@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useCallback, useMemo } from 'react'
 import { SidebarTrigger } from '~/components/ui/Sidebar'
+import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
-import { useTopicWithRelationships } from '~/features/topics/hooks/useTopicWithRelationships'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 
 export const Route = createFileRoute('/topics_/$topicId')({

@@ -3,10 +3,10 @@ import { Star } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useTodayReviews } from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useTodayReviews } from '~/features/reviews/hooks/useTodayReviews'
-import { useTodayTopics } from '~/features/topics/hooks/useTodayTopics'
+import { useTodayTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/today')({

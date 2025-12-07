@@ -9,7 +9,7 @@ import {
 import { createTopicReview as createTopicReviewApi } from '~/features/reviews/api/createTopicReview'
 import { deleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
 import { updateTopicReview as updateTopicReviewApi } from '~/features/reviews/api/updateTopicReview'
-import { useTopicWithRelationships } from '~/features/topics/hooks/useTopicWithRelationships'
+import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import type {
 	Rating,
 	Review,

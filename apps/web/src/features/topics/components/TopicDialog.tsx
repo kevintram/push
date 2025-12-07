@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useTopicWithRelationships } from '../hooks/useTopicWithRelationships'
+import { useTopicWithRelationships } from '../api/getTopic'
 import { TopicContext } from '../stores/SelectedTopicContext'
 import { TopicDetail } from './TopicDetail/TopicDetail'
 

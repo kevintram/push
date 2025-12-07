@@ -3,10 +3,10 @@ import { CircleDashed } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useUnscheduledReviews } from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useUnscheduledReviews } from '~/features/reviews/hooks/useUnscheduledReviews'
-import { useUnscheduledTopics } from '~/features/topics/hooks/useUnscheduledTopics'
+import { useUnscheduledTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/unscheduled')({
