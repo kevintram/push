@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback } from 'react'
-import { createTopicReview } from '~/features/topic_reviews/api/createTopicReview'
+import { createTopicReview } from '~/features/reviews/api/createTopicReview'
 import type { Topic } from '~/models/review-topic.types'
 
 type CreateTopicWithReviewInput = {

@@ -11,7 +11,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { createTopicReview as createTopicReviewApi } from '~/features/topic_reviews/api'
+import { createTopicReview as createTopicReviewApi } from '~/features/reviews/api'
 import type { Topic } from '~/models/review-topic.types'
 import { getTopicChildren } from '../api/getTopicChildren'
 import { useCreateRelationship } from '../hooks/useCreateRelationship'

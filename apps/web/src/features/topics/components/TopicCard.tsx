@@ -26,7 +26,7 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
+import { updateTopicReview as updateTopicReviewApi } from '~/features/reviews/api/updateTopicReview'
 import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'

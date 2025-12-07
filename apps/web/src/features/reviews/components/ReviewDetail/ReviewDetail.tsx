@@ -11,7 +11,7 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { deleteTopicReview } from '~/features/topic_reviews/api'
+import { deleteTopicReview } from '~/features/reviews/api'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'

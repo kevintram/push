@@ -25,8 +25,8 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { createTopicReview } from '~/features/reviews/api'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import { createTopicReview } from '~/features/topic_reviews/api'
 import type { Rating } from '~/models/review-topic.types'
 import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
 import { updateTopic as updateTopicApi } from '../../api/updateTopic'

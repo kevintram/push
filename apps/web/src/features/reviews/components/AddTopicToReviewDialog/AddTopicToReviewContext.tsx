@@ -10,8 +10,8 @@ import type { Review } from '~/features/reviews/api'
 import {
 	createTopicReview as createTopicReviewApi,
 	deleteTopicReview
-} from '~/features/topic_reviews/api'
-import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
+} from '~/features/reviews/api'
+import { updateTopicReview as updateTopicReviewApi } from '~/features/reviews/api/updateTopicReview'
 import { useTopicWithRelationships } from '~/features/topics/hooks/useTopicWithRelationships'
 import type { Rating, Topic, TopicReview } from '~/models/review-topic.types'
 import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
