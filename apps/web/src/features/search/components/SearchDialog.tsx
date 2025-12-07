@@ -71,7 +71,7 @@ export function SearchDialog({
 	const handleTopicSelect = useCallback(
 		(topic: Topic) => {
 			navigate({
-				to: '/topics/{-$topicId}',
+				to: '/topics/$topicId',
 				params: { topicId: topic.id.toString() }
 			})
 			onOpenChange(false)

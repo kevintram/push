@@ -7,28 +7,17 @@ import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { getTopics } from '~/features/topics/api'
-import { TopicPage } from '~/features/topics/components/TopicPage/TopicPage'
 import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import { TopicsPageSkeleton } from '~/features/topics/components/TopicsPageSkeleton'
 import { useCreateTopicWithReview } from '~/features/topics/hooks/useCreateTopicWithReview'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/topics/{-$topicId}')({
+export const Route = createFileRoute('/home')({
 	component: RouteComponent
 })
 
 function RouteComponent() {
-	const { topicId } = Route.useParams()
-
-	if (!topicId) {
-		return <RootTopicsPageContent />
-	}
-
-	return <TopicPage topicId={Number.parseInt(topicId, 10)} />
-}
-
-function RootTopicsPageContent() {
 	const { openTopicDialog } = useReviewTopicDialog()
 	const { createTopicWithReview } = useCreateTopicWithReview()
 

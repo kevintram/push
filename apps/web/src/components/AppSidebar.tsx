@@ -61,10 +61,10 @@ export function AppSidebar() {
 	const topicItems = [
 		{
 			title: 'Home',
-			url: '/topics',
+			url: '/home',
 			icon: Home,
 			isActive: (pathname: string) =>
-				pathname === '/topics' || pathname.startsWith('/topics/')
+				pathname === '/home' || pathname.startsWith('/topics/')
 		},
 		{
 			title: 'Inbox',

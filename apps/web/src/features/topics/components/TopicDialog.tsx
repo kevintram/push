@@ -23,7 +23,7 @@ export function TopicDialog() {
 		if (selectedTopicId) {
 			maximizeTopicDialog()
 			navigate({
-				to: '/topics/{-$topicId}',
+				to: '/topics/$topicId',
 				params: { topicId: selectedTopicId.toString() }
 			})
 		}

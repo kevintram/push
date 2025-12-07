@@ -29,8 +29,8 @@ import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { createTopicReview } from '~/features/topic_reviews/api'
 import type { Rating } from '~/models/review-topic.types'
 import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
-import { updateTopic as updateTopicApi } from '../../../api/updateTopic'
-import { TopicContext } from '../../../stores/SelectedTopicContext'
+import { updateTopic as updateTopicApi } from '../../api/updateTopic'
+import { TopicContext } from '../../stores/SelectedTopicContext'
 import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
 function roundToTwoDecimals(num: number): number {
