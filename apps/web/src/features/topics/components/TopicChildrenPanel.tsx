@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Baby, Loader2, Plus, Search, SquarePen } from 'lucide-react'
-import { use, useCallback, useState } from 'react'
+import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/MasonryLayout'
 import { Card, CardContent } from '~/components/ui/Card'
 import {
@@ -12,13 +12,12 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { createTopicReview as createTopicReviewApi } from '~/features/topic_reviews/api'
-import { getTopicChildren } from '~/features/topics/api/getTopicChildren'
-import { AddRelationshipDialog } from '~/features/topics/components/AddRelationshipDialog'
-import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
-import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
-import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/models/review-topic.types'
-import { TopicCard } from '../../TopicCard'
+import { getTopicChildren } from '../api/getTopicChildren'
+import { useCreateRelationship } from '../hooks/useCreateRelationship'
+import { useDeleteRelationship } from '../hooks/useDeleteRelationship'
+import { AddRelationshipDialog } from './AddRelationshipDialog'
+import { TopicCard } from './TopicCard'
 
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
@@ -26,22 +25,44 @@ const MIN_HEIGHT = 96
 type ListItem = { type: 'add-button' } | { type: 'child'; child: Topic }
 
 interface TopicChildrenPanelProps {
+	topicId: number | undefined
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
+	/**
+	 * Called when a child is selected/clicked.
+	 * If not provided, defaults to opening the topic dialog.
+	 */
+	onChildSelect?: (topicId: number) => void
+	/**
+	 * Custom card renderer. If not provided, uses default TopicCard.
+	 * @param topic - The child topic to render
+	 * @param onRemove - Callback to remove the relationship
+	 * @param onClick - Callback when the card is clicked
+	 */
+	renderCard?: (
+		topic: Topic,
+		onRemove: () => void,
+		onClick: () => void
+	) => ReactNode
 }
 
 export function TopicChildrenPanel({
+	topicId,
 	getScrollElement,
-	scrollMargin
-}: TopicChildrenPanelProps = {}) {
+	scrollMargin,
+	onChildSelect,
+	renderCard
+}: TopicChildrenPanelProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
-	const { topic: selectedTopic } = use(TopicContext)
 	const { openTopicDialog } = useReviewTopicDialog()
 
 	const { data: children = [] } = useQuery({
-		queryKey: ['topics', selectedTopic?.id, 'children'],
-		queryFn: () => getTopicChildren(selectedTopic!.id),
-		enabled: selectedTopic?.id !== undefined
+		queryKey: ['topics', topicId, 'children'],
+		queryFn: () => {
+			if (!topicId) throw new Error('Topic ID is required')
+			return getTopicChildren(topicId)
+		},
+		enabled: topicId !== undefined
 	})
 
 	const deleteRelationship = useDeleteRelationship()
@@ -56,9 +77,21 @@ export function TopicChildrenPanel({
 
 	const isCreating = createRelationship.isPending
 
+	// Determine navigation behavior
+	const handleChildSelect = useCallback(
+		(childTopicId: number) => {
+			if (onChildSelect) {
+				onChildSelect(childTopicId)
+			} else {
+				openTopicDialog(childTopicId)
+			}
+		},
+		[onChildSelect, openTopicDialog]
+	)
+
 	const handleCreateNew = useCallback(
 		async (query = '') => {
-			if (!selectedTopic) return
+			if (!topicId) return
 
 			try {
 				const newTopicData = {
@@ -70,7 +103,7 @@ export function TopicChildrenPanel({
 
 				// Use inline creation - create topic and relationship in one call
 				const response = await createRelationship.mutateAsync({
-					parent: selectedTopic.id,
+					parent: topicId,
 					childData: newTopicData
 				})
 
@@ -91,37 +124,42 @@ export function TopicChildrenPanel({
 					// Ignore fire-and-forget errors (for now)
 				})
 
-				// Open the created topic
-				openTopicDialog(newTopicId)
-			} catch (_error) {}
-		},
-		[selectedTopic, createRelationship, openTopicDialog, createTopicReview]
-	)
-
-	const handleTopicSelected = useCallback(
-		async (topic: Topic) => {
-			if (!selectedTopic) return
-
-			try {
-				await createRelationship.mutateAsync({
-					parent: selectedTopic.id,
-					child: topic.id
-				})
-
-				// Open the selected topic dialog
-				openTopicDialog(topic.id)
+				// Navigate to the created topic
+				handleChildSelect(newTopicId)
 			} catch (_error) {
 				// Error is handled by React Query mutation state
 			}
 		},
-		[selectedTopic, createRelationship, openTopicDialog]
+		[topicId, createRelationship, handleChildSelect, createTopicReview]
+	)
+
+	const handleTopicSelected = useCallback(
+		async (topic: Topic) => {
+			if (!topicId) return
+
+			try {
+				await createRelationship.mutateAsync({
+					parent: topicId,
+					child: topic.id
+				})
+
+				// Navigate to the selected topic
+				handleChildSelect(topic.id)
+			} catch (_error) {
+				// Error is handled by React Query mutation state
+			}
+		},
+		[topicId, createRelationship, handleChildSelect]
 	)
 
 	// Combine add button and children into a single array
-	const items: Array<ListItem> = [
-		{ type: 'add-button' },
-		...children.map(child => ({ type: 'child' as const, child }))
-	]
+	const items = useMemo<Array<ListItem>>(
+		() => [
+			{ type: 'add-button' },
+			...children.map(child => ({ type: 'child' as const, child }))
+		],
+		[children]
+	)
 
 	const estimateItemSize = useCallback((item: ListItem) => {
 		// Add button is always first
@@ -175,20 +213,28 @@ export function TopicChildrenPanel({
 			}
 
 			const handleRemoveRelationship = () => {
-				if (!selectedTopic) return
+				if (!topicId) return
 				deleteRelationship.mutate({
-					parent: selectedTopic.id,
+					parent: topicId,
 					child: item.child.id
 				})
 			}
 
+			const handleClick = () => {
+				handleChildSelect(item.child.id)
+			}
+
+			// Use custom renderer if provided
+			if (renderCard) {
+				return renderCard(item.child, handleRemoveRelationship, handleClick)
+			}
+
+			// Default card rendering
 			return (
 				<TopicCard
 					minHeight={MIN_HEIGHT}
 					onRemoveRelationship={handleRemoveRelationship}
-					onTopicClick={() => {
-						openTopicDialog(item.child.id)
-					}}
+					onTopicClick={() => handleClick()}
 					reviews={item.child.reviews ?? []}
 					topic={item.child}
 				/>
@@ -196,10 +242,11 @@ export function TopicChildrenPanel({
 		},
 		[
 			deleteRelationship,
-			openTopicDialog,
-			selectedTopic,
+			topicId,
 			isCreating,
-			handleCreateNew
+			handleCreateNew,
+			handleChildSelect,
+			renderCard
 		]
 	)
 
@@ -238,7 +285,7 @@ export function TopicChildrenPanel({
 				onSelected={handleTopicSelected}
 				open={showCreateDialog}
 				relationshipType='child'
-				topicId={selectedTopic?.id}
+				topicId={topicId}
 			/>
 		</>
 	)

@@ -29,7 +29,7 @@ export function TopicDialog() {
 		}
 	}, [selectedTopicId, navigate, maximizeTopicDialog])
 
-	const afterMoreButton = useMemo(
+	const headerAfterActions = useMemo(
 		() => (
 			<>
 				<Button
@@ -70,7 +70,7 @@ export function TopicDialog() {
 			>
 				<TopicContext value={contextValue}>
 					<TopicDetail
-						afterMoreButton={afterMoreButton}
+						headerAfterActions={headerAfterActions}
 						onDelete={handleDelete}
 					/>
 				</TopicContext>

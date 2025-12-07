@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Loader2, Plus, Search, SquarePen, User2 } from 'lucide-react'
-import { use, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import {
 	DropdownMenu,
@@ -9,39 +9,42 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { createTopicReview as createTopicReviewApi } from '~/features/topic_reviews/api/createTopicReview'
-import { getTopicParents } from '~/features/topics/api/getTopicParents'
-import { AddRelationshipDialog } from '~/features/topics/components/AddRelationshipDialog'
-import { TopicBadge } from '~/features/topics/components/TopicBadge'
-import { useCreateRelationship } from '~/features/topics/hooks/useCreateRelationship'
-import { useCreateTopic } from '~/features/topics/hooks/useCreateTopic'
-import { useDeleteRelationship } from '~/features/topics/hooks/useDeleteRelationship'
-import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
-import { cn } from '~/lib/utils'
+import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { createTopicReview as createTopicReviewApi } from '~/features/topic_reviews/api'
+import type { Topic } from '~/models/review-topic.types'
+import { getTopicParents } from '../api/getTopicParents'
+import { useCreateRelationship } from '../hooks/useCreateRelationship'
+import { useDeleteRelationship } from '../hooks/useDeleteRelationship'
+import { AddRelationshipDialog } from './AddRelationshipDialog'
+import { TopicBadge } from './TopicBadge'
 
-interface ReviewTopicParentsPanelProps {
-	onParentSelect: (topicId: number) => void
+interface TopicParentsPanelProps {
+	topicId: number | undefined
+	/**
+	 * Called when a parent is selected/clicked.
+	 * If not provided, defaults to opening the topic dialog.
+	 */
+	onParentSelect?: (topicId: number) => void
 }
 
-export function ReviewTopicParentsPanel({
+export function TopicParentsPanel({
+	topicId,
 	onParentSelect
-}: ReviewTopicParentsPanelProps) {
-	const [showSearchDialog, setShowSearchDialog] = useState(false)
-
-	const { topic } = use(TopicContext)
+}: TopicParentsPanelProps) {
+	const [showCreateDialog, setShowCreateDialog] = useState(false)
+	const { openTopicDialog } = useReviewTopicDialog()
 
 	const { data: parents = [] } = useQuery({
-		queryKey: ['topics', topic?.id, 'parents'],
+		queryKey: ['topics', topicId, 'parents'],
 		queryFn: () => {
-			if (!topic?.id) throw new Error('Topic ID is required')
-			return getTopicParents(topic.id)
+			if (!topicId) throw new Error('Topic ID is required')
+			return getTopicParents(topicId)
 		},
-		enabled: topic?.id !== undefined
+		enabled: topicId !== undefined
 	})
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
-	const createTopic = useCreateTopic()
 	const queryClient = useQueryClient()
 	const { mutateAsync: createTopicReview } = useMutation({
 		mutationFn: createTopicReviewApi,
@@ -50,28 +53,44 @@ export function ReviewTopicParentsPanel({
 		}
 	})
 
-	const isCreating = createTopic.isPending || createRelationship.isPending
+	const isCreating = createRelationship.isPending
+
+	// Determine navigation behavior
+	const handleParentSelect = useCallback(
+		(parentTopicId: number) => {
+			if (onParentSelect) {
+				onParentSelect(parentTopicId)
+			} else {
+				openTopicDialog(parentTopicId)
+			}
+		},
+		[onParentSelect, openTopicDialog]
+	)
 
 	const handleCreateNew = useCallback(
 		async (query = '') => {
-			if (!topic) return
+			if (!topicId) return
 
 			try {
-				const newTopic = await createTopic.mutateAsync({
+				const newTopicData = {
 					name: '',
 					notes: query.trim() || '',
 					archived: false,
 					inboxed: false
+				}
+
+				// Use inline creation - create topic and relationship in one call
+				const response = await createRelationship.mutateAsync({
+					child: topicId,
+					parentData: newTopicData
 				})
 
-				await createRelationship.mutateAsync({
-					parent: newTopic.id,
-					child: topic.id
-				})
+				// Get the newly created parent topic ID
+				const newTopicId = response.parent.id
 
 				// fire and forget 'Created' review creation
 				createTopicReview({
-					topic_id: newTopic.id,
+					topic_id: newTopicId,
 					review: {
 						description: 'Created',
 						notes: '',
@@ -83,30 +102,32 @@ export function ReviewTopicParentsPanel({
 					// Ignore fire-and-forget errors (for now)
 				})
 
-				onParentSelect(newTopic.id)
+				// Navigate to the created topic
+				handleParentSelect(newTopicId)
 			} catch (_error) {
 				// Error is handled by React Query mutation state
 			}
 		},
-		[topic, createTopic, createRelationship, onParentSelect, createTopicReview]
+		[topicId, createRelationship, handleParentSelect, createTopicReview]
 	)
 
 	const handleTopicSelected = useCallback(
-		async (selectedTopic: import('~/models/review-topic.types').Topic) => {
-			if (!topic) return
+		async (topic: Topic) => {
+			if (!topicId) return
 
 			try {
 				await createRelationship.mutateAsync({
-					parent: selectedTopic.id,
-					child: topic.id
+					parent: topic.id,
+					child: topicId
 				})
 
-				onParentSelect(selectedTopic.id)
+				// Navigate to the selected topic
+				handleParentSelect(topic.id)
 			} catch (_error) {
 				// Error is handled by React Query mutation state
 			}
 		},
-		[topic, createRelationship, onParentSelect]
+		[topicId, createRelationship, handleParentSelect]
 	)
 
 	return (
@@ -123,12 +144,12 @@ export function ReviewTopicParentsPanel({
 						key={parent.id}
 						name={parent.name}
 						notes={parent.notes}
-						onClick={() => onParentSelect(parent.id)}
+						onClick={() => handleParentSelect(parent.id)}
 						onRemove={() => {
-							if (!topic) return
+							if (!topicId) return
 							deleteRelationship.mutate({
 								parent: parent.id,
-								child: topic.id
+								child: topicId
 							})
 						}}
 					/>
@@ -136,9 +157,7 @@ export function ReviewTopicParentsPanel({
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild={true} disabled={isCreating}>
 						<Badge
-							className={cn(
-								'cursor-pointer items-center border-dashed py-1 hover:bg-muted/50'
-							)}
+							className='cursor-pointer items-center border-dashed py-1 hover:bg-muted/50'
 							variant='outline'
 						>
 							{isCreating ? (
@@ -149,7 +168,7 @@ export function ReviewTopicParentsPanel({
 						</Badge>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align='start' side='right'>
-						<DropdownMenuItem onClick={() => setShowSearchDialog(true)}>
+						<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
 							<Search className='h-4 w-4' />
 							Search
 						</DropdownMenuItem>
@@ -164,11 +183,11 @@ export function ReviewTopicParentsPanel({
 			<AddRelationshipDialog
 				isCreating={isCreating}
 				onCreateNew={handleCreateNew}
-				onOpenChange={setShowSearchDialog}
+				onOpenChange={setShowCreateDialog}
 				onSelected={handleTopicSelected}
-				open={showSearchDialog}
+				open={showCreateDialog}
 				relationshipType='parent'
-				topicId={topic?.id}
+				topicId={topicId}
 			/>
 		</>
 	)

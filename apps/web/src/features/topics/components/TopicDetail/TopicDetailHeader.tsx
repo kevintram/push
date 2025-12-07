@@ -8,14 +8,25 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import type { Topic } from '~/models/review-topic.types'
-import { TopicParentsPanel } from '../TopicPage/FamilyPanel/TopicParentsPanel'
+import { TopicParentsPanel } from '../TopicParentsPanel'
 
 interface TopicDetailHeaderProps {
 	topic: Topic
 	onArchiveToggle: () => void
 	onInboxToggle: () => void
 	onDelete: () => void
-	afterMoreButton?: ReactNode
+	/**
+	 * Content to render before the "more" dropdown (e.g., review status button)
+	 */
+	beforeActions?: ReactNode
+	/**
+	 * Content to render after the "more" dropdown (e.g., close/minimize buttons)
+	 */
+	afterActions?: ReactNode
+	/**
+	 * Callback when a parent is selected. If not provided, uses default dialog behavior.
+	 */
+	onParentSelect?: (topicId: number) => void
 }
 
 export function TopicDetailHeader({
@@ -23,16 +34,23 @@ export function TopicDetailHeader({
 	onArchiveToggle,
 	onInboxToggle,
 	onDelete,
-	afterMoreButton
+	beforeActions,
+	afterActions,
+	onParentSelect
 }: TopicDetailHeaderProps) {
 	return (
 		<div className='sticky top-0 z-10 w-full border-b'>
 			<div className='flex items-center justify-between gap-4 px-2 py-1'>
 				<div className='flex min-w-0 flex-1 items-center gap-4'>
-					<TopicParentsPanel />
+					<TopicParentsPanel
+						onParentSelect={onParentSelect}
+						topicId={topic.id}
+					/>
 				</div>
 
 				<div className='flex items-center gap-2'>
+					{beforeActions}
+
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true}>
 							<Button
@@ -78,7 +96,7 @@ export function TopicDetailHeader({
 						</DropdownMenuContent>
 					</DropdownMenu>
 
-					{afterMoreButton}
+					{afterActions}
 				</div>
 			</div>
 		</div>
