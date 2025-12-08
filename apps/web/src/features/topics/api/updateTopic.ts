@@ -3,7 +3,7 @@ import * as v from 'valibot'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
 import type { UpdateTopicInput } from '../types/api.types'
-import { TopicSchema } from '../types/topic.types'
+import { TopicSchema } from '../types/topic.schemas'
 import { topicKeys } from './queryKeys'
 
 export async function updateTopic(input: UpdateTopicInput) {

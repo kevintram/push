@@ -7,10 +7,8 @@ import type {
 	CreateParentRelationshipInput,
 	CreateRelationshipInput
 } from '../types/api.types'
-import {
-	type TopicRelationshipResponse,
-	TopicRelationshipResponseSchema
-} from '../types/topic.types'
+import { TopicRelationshipResponseSchema } from '../types/topic.schemas'
+import type { TopicRelationshipResponse } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 export async function createChildRelationship(

@@ -6,7 +6,7 @@ import type {
 	DeleteChildRelationshipInput,
 	DeleteParentRelationshipInput
 } from '../types/api.types'
-import { TopicSchema } from '../types/topic.types'
+import { TopicSchema } from '../types/topic.schemas'
 import { topicKeys } from './queryKeys'
 
 export async function deleteChildRelationship(

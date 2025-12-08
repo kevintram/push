@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import type { SearchTopicsParams } from '../types/api.types'
-import { type Topic, TopicSchema } from '../types/topic.types'
+import { TopicSchema } from '../types/topic.schemas'
+import type { Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 const TopicSearchResponseSchema = v.array(TopicSchema)

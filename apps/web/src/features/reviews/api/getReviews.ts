@@ -11,7 +11,8 @@ import type {
 	SoonSectionDefinition,
 	UnscheduledSectionDefinition
 } from '../types/api.types'
-import { type Review, ReviewSchema } from '../types/review.types'
+import { ReviewSchema } from '../types/review.schemas'
+import type { Review } from '../types/review.types'
 import { reviewKeys } from './queryKeys'
 
 export async function getReviews(filters?: GetReviewsFilters) {

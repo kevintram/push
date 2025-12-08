@@ -9,7 +9,7 @@ import type {
 	CreateTopicReviewPayload,
 	CreateTopicWithReviewInput
 } from '../types/api.types'
-import { TopicReviewSchema } from '../types/review.types'
+import { TopicReviewSchema } from '../types/review.schemas'
 import { reviewKeys } from './queryKeys'
 
 /**

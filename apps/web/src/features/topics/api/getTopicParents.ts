@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
-import { TopicSchema } from '../types/topic.types'
+import { TopicSchema } from '../types/topic.schemas'
 import { topicKeys } from './queryKeys'
 
 export async function getTopicParents(topicId: number) {
