@@ -207,7 +207,7 @@ async def read_topics_for_review(
     user_id: UserIdDep,
 ) -> list[TopicRead]:
     stmt = select(Topic).where(
-        Topic.reviews.any(Review.id == review_id), Topic.user_id == user_id
+        Topic.topic_reviews.any(TopicReview.review_id == review_id), Topic.user_id == user_id
     )
     result = await session.execute(stmt)
     return result.scalars().all()

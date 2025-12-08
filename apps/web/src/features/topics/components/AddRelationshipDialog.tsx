@@ -104,7 +104,6 @@ export function AddRelationshipDialog({
 			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicSelected}
-				reviews={topic.reviews ?? []}
 				searchQuery={debouncedQuery}
 				topic={topic}
 			/>

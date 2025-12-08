@@ -15,8 +15,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TIMESTAMP, Boolean, Date, Integer, REAL, Text
+from typing import TYPE_CHECKING
 
 from app.models.base import Base
+
+if TYPE_CHECKING:
+    from app.models.topic_reviews import TopicReview
 
 
 class Topic(Base):
@@ -61,9 +65,6 @@ class Topic(Base):
         Boolean, nullable=False, server_default=text("true")
     )
     topic_reviews: Mapped[list["TopicReview"]] = relationship(back_populates="topic")
-    reviews: Mapped[list["Review"]] = relationship(
-        secondary="topic_reviews", back_populates="topics", viewonly=True
-    )
     parents: Mapped[list["Topic"]] = relationship(
         secondary="topics_closure",
         back_populates="children",

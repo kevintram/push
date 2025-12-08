@@ -121,7 +121,6 @@ export function SearchDialog({
 			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicSelect}
-				reviews={topic.reviews ?? []}
 				searchQuery={debouncedQuery}
 				topic={topic}
 			/>

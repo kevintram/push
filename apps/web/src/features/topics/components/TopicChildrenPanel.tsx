@@ -223,7 +223,6 @@ export function TopicChildrenPanel({
 					minHeight={MIN_HEIGHT}
 					onRemoveRelationship={handleRemoveRelationship}
 					onTopicClick={() => handleClick()}
-					reviews={item.child.reviews ?? []}
 					topic={item.child}
 				/>
 			)

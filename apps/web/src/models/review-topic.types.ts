@@ -56,7 +56,6 @@ export type Topic = {
 	srs_enabled: boolean
 	parents?: Array<Topic>
 	children?: Array<Topic>
-	reviews?: Array<Review>
 }
 
 export type TopicRelationshipResponse = {
@@ -116,8 +115,7 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	due: v.nullable(v.string()),
 	srs_enabled: v.boolean(),
 	parents: v.optional(v.array(v.lazy(() => TopicSchema)), []),
-	children: v.optional(v.array(v.lazy(() => TopicSchema)), []),
-	reviews: v.optional(v.array(v.lazy(() => ReviewSchema)), [])
+	children: v.optional(v.array(v.lazy(() => TopicSchema)), [])
 })
 
 export const TopicRelationshipResponseSchema: v.GenericSchema<TopicRelationshipResponse> =

@@ -9,17 +9,13 @@ from app.schemas.reviews import (
     ReviewReadWithTopicReviews,
 )
 from app.schemas.topics import (
-    TopicBase,
     TopicRead,
     TopicCreate,
+    TopicUpdate,
     TopicReadWithRelationships,
-    TopicReadWithRelationshipsAndReviews,
     TopicChildRelationshipCreate,
     TopicParentRelationshipCreate,
     TopicRelationshipResponse,
-    ReviewIdPayload,
-    TopicUpdate,
-    TopicReadWithReviews,
 )
 from app.schemas.topic_reviews import (
     TopicReviewBase,
@@ -35,8 +31,6 @@ ReviewReadWithTopics.model_rebuild()
 ReviewReadWithTopicReviews.model_rebuild()
 TopicRead.model_rebuild()
 TopicReadWithRelationships.model_rebuild()
-TopicReadWithRelationshipsAndReviews.model_rebuild()
-TopicReadWithReviews.model_rebuild()
 ReviewRead.model_rebuild()
 ReviewCreate.model_rebuild()
 ReviewUpdate.model_rebuild()
@@ -62,8 +56,6 @@ __all__ = [
     "ReviewIdPayload",
     "TopicUpdate",
     "TopicReadWithRelationships",
-    "TopicReadWithRelationshipsAndReviews",
-    "TopicReadWithReviews",
     "ReviewReadWithTopicReviews",
     "TopicReviewBase",
     "TopicReviewRead",

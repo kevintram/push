@@ -26,7 +26,7 @@ import {
 	PopoverTrigger
 } from '~/components/ui/Popover'
 import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
-import type { Rating, Review, Topic } from '~/models/review-topic.types'
+import type { Rating, Topic } from '~/models/review-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { useDeleteTopic } from '../api/deleteTopic'
@@ -41,7 +41,6 @@ interface TopicCardProps {
 	removeRelationshipText?: string
 	minHeight?: number
 	searchQuery?: string
-	reviews?: Array<Review>
 	rating?: Rating | null
 	reviewId?: number
 }

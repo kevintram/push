@@ -102,13 +102,7 @@ function InboxList({
 	}, [])
 
 	const renderItem = useCallback(
-		(topic: Topic) => (
-			<TopicCard
-				onTopicClick={onTopicSelect}
-				reviews={topic.reviews ?? []}
-				topic={topic}
-			/>
-		),
+		(topic: Topic) => <TopicCard onTopicClick={onTopicSelect} topic={topic} />,
 		[onTopicSelect]
 	)
 

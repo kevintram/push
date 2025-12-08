@@ -6,10 +6,15 @@ from sqlalchemy import BigInteger, Date, Identity, String, func, text
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from sqlalchemy.types import TIMESTAMP, Text
 
+from typing import TYPE_CHECKING
+
 from app.models.base import Base
 
 # Import TopicReview for order_by in relationship (no circular import since topic_reviews doesn't import Review)
 from app.models.topic_reviews import TopicReview
+
+if TYPE_CHECKING:
+    from app.models.topics import Topic
 
 
 class Review(Base):
@@ -37,6 +42,6 @@ class Review(Base):
     topic_reviews: Mapped[list["TopicReview"]] = relationship(
         back_populates="review", order_by=TopicReview.inserted_at.desc()
     )
-    topics: Mapped[list["Topic"]] = relationship(  # needed for Topics.reviews
-        secondary="topic_reviews", back_populates="reviews", viewonly=True
+    topics: Mapped[list["Topic"]] = relationship(
+        secondary="topic_reviews", viewonly=True
     )

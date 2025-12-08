@@ -1,15 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime, date
-from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-if TYPE_CHECKING:
-    from app.schemas.reviews import (
-        ReviewRead,
-        ReviewWithTopics,
-    )
 
 
 class TopicBase(BaseModel):
@@ -27,12 +21,6 @@ class TopicBase(BaseModel):
     srs_enabled: bool = True
 
 
-class TopicBaseWithReviews(TopicBase):
-    model_config = ConfigDict(from_attributes=True)
-
-    reviews: list["ReviewWithTopics"]
-
-
 class TopicRead(TopicBase):
     model_config = ConfigDict(from_attributes=True)
 
@@ -41,25 +29,11 @@ class TopicRead(TopicBase):
     updated_at: datetime
 
 
-class TopicReadWithReviews(TopicRead):
-    model_config = ConfigDict(from_attributes=True)
-
-    reviews: list["ReviewRead"]
-
-
 class TopicReadWithRelationships(TopicRead):
     model_config = ConfigDict(from_attributes=True)
 
     parents: list["TopicRead"]
     children: list["TopicRead"]
-
-
-class TopicReadWithRelationshipsAndReviews(TopicRead):
-    model_config = ConfigDict(from_attributes=True)
-
-    parents: list["TopicRead"]
-    children: list["TopicRead"]
-    reviews: list["ReviewRead"]
 
 
 class TopicCreate(TopicBase):

@@ -35,7 +35,6 @@ export function useTopicsList({
 				<TopicCard
 					minHeight={minHeight}
 					onTopicClick={onTopicClick}
-					reviews={topic.reviews ?? []}
 					topic={topic}
 				/>
 			)
