@@ -4,8 +4,8 @@ export const topicKeys = {
 	all: ['topics'] as const,
 	lists: () => [...topicKeys.all, 'list'] as const,
 	list: (params: GetTopicsParams = {}) => {
+		// Add params to key 
 		const key: Array<string | number> = [...topicKeys.lists()]
-		// Add params to key for proper cache invalidation
 		for (const [paramKey, value] of Object.entries(params)) {
 			if (value !== undefined) {
 				key.push(paramKey, typeof value === 'string' ? value : String(value))
