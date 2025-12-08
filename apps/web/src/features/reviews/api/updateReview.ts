@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { topicKeys } from '~/features/topics/api/queryKeys'
-import { type Review, ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 import type { UpdateReviewInput } from '../types/api.types'
+import { type Review, ReviewSchema } from '../types/review.types'
 import { reviewKeys } from './queryKeys'
 
 export async function updateReview(input: UpdateReviewInput): Promise<Review> {

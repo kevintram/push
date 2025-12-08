@@ -1,16 +1,16 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
-import {
-	type TopicRelationshipResponse,
-	TopicRelationshipResponseSchema
-} from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 import type {
 	CreateChildRelationshipInput,
 	CreateParentRelationshipInput,
 	CreateRelationshipInput
 } from '../types/api.types'
+import {
+	type TopicRelationshipResponse,
+	TopicRelationshipResponseSchema
+} from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 export async function createChildRelationship(

@@ -2,8 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
 import * as v from 'valibot'
-import type { Review } from '~/models/review-topic.types'
-import { ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 import type {
 	FutureSection,
@@ -13,6 +11,7 @@ import type {
 	SoonSectionDefinition,
 	UnscheduledSectionDefinition
 } from '../types/api.types'
+import { type Review, ReviewSchema } from '../types/review.types'
 import { reviewKeys } from './queryKeys'
 
 export async function getReviews(filters?: GetReviewsFilters) {

@@ -1,4 +1,4 @@
-import type { Topic } from '~/models/review-topic.types'
+import type { Topic } from './topic.types'
 
 export type GetTopicsParams = {
 	root?: boolean

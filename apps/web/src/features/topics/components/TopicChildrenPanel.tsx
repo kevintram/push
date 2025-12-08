@@ -11,10 +11,10 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
-import type { Topic } from '~/models/review-topic.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicChildren } from '../api/getTopicChildren'
+import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { TopicCard } from './TopicCard'
 

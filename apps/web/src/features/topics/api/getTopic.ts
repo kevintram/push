@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import * as v from 'valibot'
-import type { Topic } from '~/models/review-topic.types'
-import { TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { type Topic, TopicSchema } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 export async function getTopic(topicId: number) {

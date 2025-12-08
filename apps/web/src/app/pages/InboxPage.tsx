@@ -18,7 +18,7 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import type { Topic } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
 
 const MIN_CARD_WIDTH = 280
 const MIN_CARD_HEIGHT = 168

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { createContext, useContext, useMemo } from 'react'
 import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
-import type { Review } from '~/models/review-topic.types'
+import type { Review } from '~/features/reviews/types/review.types'
 
 interface ReviewsDataContextValue {
 	scheduledReviews: Array<Review>

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
-import type { Topic } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
 
 /**
  * Hook that provides common event handlers for review pages.

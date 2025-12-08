@@ -7,7 +7,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import type { Rating } from '~/models/review-topic.types'
+import type { Rating } from '~/features/reviews/types/review.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 
 interface TopicBadgeProps {

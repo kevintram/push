@@ -17,8 +17,8 @@ import {
 } from '~/components/ui/Dialog'
 import { useSearchTopics } from '~/features/topics/api/searchTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
+import type { Topic } from '~/features/topics/types/topic.types'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
-import type { Topic } from '~/models/review-topic.types'
 
 interface SearchDialogProps {
 	open: boolean

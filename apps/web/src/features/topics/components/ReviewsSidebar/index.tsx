@@ -26,7 +26,7 @@ import {
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import type { Rating } from '~/models/review-topic.types'
+import type { Rating } from '~/features/reviews/types/review.types'
 import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'

@@ -9,7 +9,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import type { Topic } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { useAddTopicToReview } from './AddTopicToReviewContext'
 import { TopicReviewStatusButton } from './ReviewStatusButton'

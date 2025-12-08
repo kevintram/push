@@ -19,8 +19,9 @@ import {
 } from '~/components/ui/Empty'
 import { useTodayReviews } from '~/features/reviews/api/getReviews'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
+import type { Review } from '~/features/reviews/types/review.types'
 import { useTopics } from '~/features/topics/api/getTopics'
-import type { Review, Topic } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
 
 type TodayTopicSectionKey = 'overdue' | 'today'
 

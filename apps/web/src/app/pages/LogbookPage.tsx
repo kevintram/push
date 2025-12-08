@@ -15,7 +15,7 @@ import {
 } from '~/components/ui/Empty'
 import { useLogbookReviews } from '~/features/reviews/api/getReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import type { Review } from '~/models/review-topic.types'
+import type { Review } from '~/features/reviews/types/review.types'
 
 export function LogbookPage() {
 	const { sections, isLoading } = useLogbookReviews()

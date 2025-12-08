@@ -1,5 +1,5 @@
 import { TopicBadge } from '~/features/topics/components/TopicBadge'
-import type { Review } from '~/models/review-topic.types'
+import type { Review } from '../types/review.types'
 
 interface ReviewTopicBadgesProps {
 	review: Review
