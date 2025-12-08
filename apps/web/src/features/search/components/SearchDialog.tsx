@@ -15,7 +15,6 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
-import { topicKeys } from '~/features/topics/api/queryKeys'
 import { useSearchTopics } from '~/features/topics/api/searchTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
@@ -46,8 +45,7 @@ export function SearchDialog({
 	const { data: results = [], isLoading } = useSearchTopics({
 		query: trimmedQuery || undefined,
 		limit: 10,
-		enabled: open,
-		queryKey: topicKeys.search(trimmedQuery || 'recent')
+		enabled: open
 	})
 
 	useEffect(() => {
