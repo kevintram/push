@@ -1,9 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { ChevronDown, ListChecks } from 'lucide-react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { ChevronDown, Home, ListChecks } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
+import {
+	Empty,
+	EmptyContent,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle
+} from '~/components/ui/Empty'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useLogbookReviews } from '~/features/reviews/api/getReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
@@ -13,9 +22,12 @@ export const Route = createFileRoute('/logbook')({
 })
 
 function LogbookPage() {
+	const navigate = useNavigate()
 	const { sections, isLoading } = useLogbookReviews()
 
-	const { openReviewDialog } = useReviewTopicDialog()
+	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
+	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
+		useCreateTopicWithReview()
 
 	const [collapsedSections, setCollapsedSections] = useState<
 		Record<string, boolean>
@@ -35,6 +47,11 @@ function LogbookPage() {
 		[openReviewDialog]
 	)
 
+	const handleCreateTopic = useCallback(async () => {
+		const createdTopic = await createTopicWithReview({})
+		openTopicDialog(createdTopic.id)
+	}, [createTopicWithReview, openTopicDialog])
+
 	if (isLoading) {
 		return <ReviewPageSkeleton />
 	}
@@ -45,9 +62,29 @@ function LogbookPage() {
 				<PageHeader icon={ListChecks} title='Logbook' />
 				<div className='p-4'>
 					{sections.length === 0 ? (
-						<p className='mt-8 text-center text-muted-foreground text-sm italic'>
-							No completed reviews yet.
-						</p>
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<ListChecks />
+								</EmptyMedia>
+								<EmptyTitle>Completed reviews will appear here.</EmptyTitle>
+							</EmptyHeader>
+							<EmptyContent>
+								<div className='flex gap-2'>
+									<EmptyStateCreateTopicButton
+										disabled={isCreatingTopic}
+										onClick={handleCreateTopic}
+									/>
+									<Button
+										onClick={() => navigate({ to: '/home' })}
+										variant='outline'
+									>
+										<Home />
+										Topics
+									</Button>
+								</div>
+							</EmptyContent>
+						</Empty>
 					) : (
 						sections.map(section => {
 							const isSectionCollapsed = collapsedSections[section.id] ?? false

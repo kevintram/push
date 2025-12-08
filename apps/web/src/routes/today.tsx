@@ -1,9 +1,20 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { Star } from 'lucide-react'
+import { ArrowUpRight, Home, Star } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { PageHeader } from '~/components/PageHeader'
+import { Button } from '~/components/ui/Button'
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle
+} from '~/components/ui/Empty'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTodayReviews } from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
@@ -38,6 +49,7 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 ]
 
 function TodayPage() {
+	const navigate = useNavigate()
 	const { sections: reviewSections, isLoading: reviewsLoading } =
 		useTodayReviews()
 
@@ -87,6 +99,8 @@ function TodayPage() {
 	}, [topics, todayDateStr])
 
 	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
+	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
+		useCreateTopicWithReview()
 
 	const [collapsedSections, setCollapsedSections] = useState<
 		Record<string, boolean>
@@ -112,6 +126,11 @@ function TodayPage() {
 		},
 		[openTopicDialog]
 	)
+
+	const handleCreateTopic = useCallback(async () => {
+		const createdTopic = await createTopicWithReview({})
+		openTopicDialog(createdTopic.id)
+	}, [createTopicWithReview, openTopicDialog])
 
 	// Merge sections by matching IDs
 	const mergedSections = useMemo(() => {
@@ -173,25 +192,70 @@ function TodayPage() {
 		return <ReviewPageSkeleton />
 	}
 
+	// Check if all sections are empty
+	const allSectionsEmpty = mergedSections.every(section => {
+		const reviewEntries = section.reviewsData?.entries ?? []
+		const topicEntries = section.topicsData?.entries ?? []
+		return reviewEntries.length === 0 && topicEntries.length === 0
+	})
+
 	return (
 		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
 			<div className='flex h-full flex-col overflow-auto'>
 				<PageHeader icon={Star} title='Today' />
 				<div className='p-4'>
-					{mergedSections.map(section => (
-						<ReviewSection
-							headingClassName={section.headingClassName}
-							id={section.id}
-							isCollapsed={collapsedSections[section.id] ?? false}
-							key={section.id}
-							label={section.label}
-							onReviewClick={handleReviewClick}
-							onToggleCollapse={toggleSection}
-							onTopicClick={handleTopicClick}
-							reviewEntries={section.reviewsData?.entries ?? []}
-							topicEntries={section.topicsData?.entries ?? []}
-						/>
-					))}
+					{allSectionsEmpty ? (
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<Star />
+								</EmptyMedia>
+								<EmptyTitle>Nothing due today.</EmptyTitle>
+								<EmptyDescription>
+									Reviews and topics due today will appear here.
+								</EmptyDescription>
+								<EmptyContent>
+									<div className='flex gap-2'>
+										<EmptyStateCreateTopicButton
+											disabled={isCreatingTopic}
+											onClick={handleCreateTopic}
+										/>
+										<Button
+											onClick={() => navigate({ to: '/home' })}
+											variant='outline'
+										>
+											<Home />
+											Topics
+										</Button>
+									</div>
+								</EmptyContent>
+								<div className='flex gap-2'>
+									<Button
+										onClick={() => navigate({ to: '/upcoming' })}
+										variant='link'
+									>
+										Check upcoming
+										<ArrowUpRight />
+									</Button>
+								</div>
+							</EmptyHeader>
+						</Empty>
+					) : (
+						mergedSections.map(section => (
+							<ReviewSection
+								headingClassName={section.headingClassName}
+								id={section.id}
+								isCollapsed={collapsedSections[section.id] ?? false}
+								key={section.id}
+								label={section.label}
+								onReviewClick={handleReviewClick}
+								onToggleCollapse={toggleSection}
+								onTopicClick={handleTopicClick}
+								reviewEntries={section.reviewsData?.entries ?? []}
+								topicEntries={section.topicsData?.entries ?? []}
+							/>
+						))
+					)}
 				</div>
 			</div>
 		</div>

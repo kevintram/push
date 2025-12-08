@@ -1,10 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { History, Plus } from 'lucide-react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { History, Home } from 'lucide-react'
 import { useCallback } from 'react'
+import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
+import {
+	Empty,
+	EmptyContent,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle
+} from '~/components/ui/Empty'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
@@ -18,7 +26,8 @@ export const Route = createFileRoute('/recent')({
 
 function RouteComponent() {
 	const { openTopicDialog } = useReviewTopicDialog()
-	const { createTopicWithReview } = useCreateTopicWithReview()
+	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
+		useCreateTopicWithReview()
 
 	// Fetch 50 most recent topics
 	const { data: topics = [], isLoading } = useTopics({
@@ -45,6 +54,7 @@ function RouteComponent() {
 		<TopicsPageLayout>
 			<PageHeader icon={History} title='Recent' />
 			<RecentList
+				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
 				onCreateTopic={handleCreateTopic}
 				onTopicClick={handleTopicClick}
@@ -58,13 +68,16 @@ function RecentList({
 	topics,
 	onTopicClick,
 	onCreateTopic,
-	isLoading
+	isLoading,
+	isCreatingTopic
 }: {
 	topics: Array<Topic>
 	onTopicClick: (topic: Topic) => void
 	onCreateTopic: () => void
 	isLoading: boolean
+	isCreatingTopic: boolean
 }) {
+	const navigate = useNavigate()
 	const { estimateItemSize, renderItem, getItemKey } = useTopicsList({
 		minHeight: 96,
 		onTopicClick
@@ -76,15 +89,30 @@ function RecentList({
 
 	if (topics.length === 0) {
 		return (
-			<div className='px-6 pt-2'>
-				<div className='text-center'>
-					<History className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
-					<p className='mb-2 text-muted-foreground'>No topics yet</p>
-					<Button onClick={onCreateTopic} variant='outline'>
-						<Plus className='mr-2 h-4 w-4' />
-						Create your first topic
-					</Button>
-				</div>
+			<div className='p-4'>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<History />
+						</EmptyMedia>
+						<EmptyTitle>Your most recent topics will appear here.</EmptyTitle>
+					</EmptyHeader>
+					<EmptyContent>
+						<div className='flex gap-2'>
+							<EmptyStateCreateTopicButton
+								disabled={isCreatingTopic}
+								onClick={onCreateTopic}
+							/>
+							<Button
+								onClick={() => navigate({ to: '/home' })}
+								variant='outline'
+							>
+								<Home />
+								Topics
+							</Button>
+						</div>
+					</EmptyContent>
+				</Empty>
 			</div>
 		)
 	}
