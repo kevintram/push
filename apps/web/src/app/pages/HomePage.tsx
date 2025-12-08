@@ -1,6 +1,6 @@
 import { Home } from 'lucide-react'
 import { useCallback } from 'react'
-import { PageHeader } from '~/app/layouts/PageHeader'
+import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
@@ -14,7 +14,6 @@ import {
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
-import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/models/review-topic.types'
 
@@ -46,8 +45,8 @@ export function HomePage() {
 	)
 
 	return (
-		<TopicsPageLayout>
-			<PageHeader icon={Home} title='Topics' />
+		<PageLayout>
+			<PageLayout.Header icon={Home} title='Topics' />
 			<RootTopicsList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
@@ -55,7 +54,7 @@ export function HomePage() {
 				onTopicClick={handleTopicClick}
 				topics={topics}
 			/>
-		</TopicsPageLayout>
+		</PageLayout>
 	)
 }
 

@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Home, Inbox } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import { PageHeader } from '~/app/layouts/PageHeader'
+import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
@@ -18,7 +18,6 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import type { Topic } from '~/models/review-topic.types'
 
 const MIN_CARD_WIDTH = 280
@@ -54,12 +53,12 @@ export function InboxPage() {
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
 	return (
-		<TopicsPageLayout>
-			<PageHeader icon={Inbox} title='Inbox'>
+		<PageLayout>
+			<PageLayout.Header icon={Inbox} title='Inbox'>
 				<span className='font-semibold text-muted-foreground text-xl'>
 					({inboxCountLabel})
 				</span>
-			</PageHeader>
+			</PageLayout.Header>
 
 			<InboxList
 				isCreatingTopic={isCreatingTopic}
@@ -68,7 +67,7 @@ export function InboxPage() {
 				onTopicSelect={handleTopicSelect}
 				topics={inboxTopics}
 			/>
-		</TopicsPageLayout>
+		</PageLayout>
 	)
 }
 

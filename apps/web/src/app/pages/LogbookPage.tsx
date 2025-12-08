@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronDown, Home, ListChecks } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { PageHeader } from '~/app/layouts/PageHeader'
+import { PageHeader } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
 import {

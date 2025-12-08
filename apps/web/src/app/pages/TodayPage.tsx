@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { ArrowUpRight, Home, Star } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { PageHeader } from '~/app/layouts/PageHeader'
+import { PageHeader } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
 import {
