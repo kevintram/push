@@ -1,7 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
 import { CircleDashed, Home } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
-import { PageHeader } from '~/app/layouts/PageLayout'
+import { useMemo } from 'react'
+import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
+import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
+import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
 import {
@@ -11,13 +13,10 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useUnscheduledReviews } from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useTopics } from '~/features/topics/api/getTopics'
-import type { Topic } from '~/models/review-topic.types'
 
 type UnscheduledSectionDefinition = {
 	id: 'unscheduled'
@@ -53,39 +52,13 @@ export function UnscheduledPage() {
 		}
 	}, [allTopics])
 
-	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
-	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
-		useCreateTopicWithReview()
-
-	const [collapsedSections, setCollapsedSections] = useState<
-		Record<string, boolean>
-	>({})
-
-	const toggleSection = useCallback((sectionId: string) => {
-		setCollapsedSections(prev => ({
-			...prev,
-			[sectionId]: !prev[sectionId]
-		}))
-	}, [])
-
-	const handleReviewClick = useCallback(
-		(reviewId: number) => {
-			openReviewDialog(reviewId)
-		},
-		[openReviewDialog]
-	)
-
-	const handleTopicClick = useCallback(
-		(topic: Topic) => {
-			openTopicDialog(topic.id)
-		},
-		[openTopicDialog]
-	)
-
-	const handleCreateTopic = useCallback(async () => {
-		const createdTopic = await createTopicWithReview({})
-		openTopicDialog(createdTopic.id)
-	}, [createTopicWithReview, openTopicDialog])
+	const {
+		handleReviewClick,
+		handleTopicClick,
+		handleCreateTopic,
+		isCreatingTopic
+	} = useReviewPageHandlers()
+	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	if (reviewsLoading || topicsLoading) {
 		return <ReviewPageSkeleton />
@@ -96,53 +69,51 @@ export function UnscheduledPage() {
 		reviewSection.entries.length > 0 || topicSection.entries.length > 0
 
 	return (
-		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
-			<div className='flex h-full flex-col overflow-auto'>
-				<PageHeader icon={CircleDashed} title='Unscheduled' />
-				<div className='p-4'>
-					{hasEntries ? (
-						<div className='mb-2'>
-							<ReviewSection
-								headingClassName={reviewSection.headingClassName}
-								id='unscheduled'
-								isCollapsed={isSectionCollapsed}
-								label={reviewSection.label}
-								onReviewClick={handleReviewClick}
-								onToggleCollapse={toggleSection}
-								onTopicClick={handleTopicClick}
-								reviewEntries={reviewSection.entries}
-								topicEntries={topicSection.entries}
-							/>
-						</div>
-					) : (
-						<Empty>
-							<EmptyHeader>
-								<EmptyMedia variant='icon'>
-									<CircleDashed />
-								</EmptyMedia>
-								<EmptyTitle>
-									Unscheduled topics and reviews will appear here.
-								</EmptyTitle>
-							</EmptyHeader>
-							<EmptyContent>
-								<div className='flex gap-2'>
-									<EmptyStateCreateTopicButton
-										disabled={isCreatingTopic}
-										onClick={handleCreateTopic}
-									/>
-									<Button
-										onClick={() => navigate({ to: '/home' })}
-										variant='outline'
-									>
-										<Home />
-										Topics
-									</Button>
-								</div>
-							</EmptyContent>
-						</Empty>
-					)}
-				</div>
+		<PageLayout>
+			<PageLayout.Header icon={CircleDashed} title='Unscheduled' />
+			<div className='p-4'>
+				{hasEntries ? (
+					<div className='mb-2'>
+						<ReviewSection
+							headingClassName={reviewSection.headingClassName}
+							id='unscheduled'
+							isCollapsed={isSectionCollapsed}
+							label={reviewSection.label}
+							onReviewClick={handleReviewClick}
+							onToggleCollapse={toggleSection}
+							onTopicClick={handleTopicClick}
+							reviewEntries={reviewSection.entries}
+							topicEntries={topicSection.entries}
+						/>
+					</div>
+				) : (
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<CircleDashed />
+							</EmptyMedia>
+							<EmptyTitle>
+								Unscheduled topics and reviews will appear here.
+							</EmptyTitle>
+						</EmptyHeader>
+						<EmptyContent>
+							<div className='flex gap-2'>
+								<EmptyStateCreateTopicButton
+									disabled={isCreatingTopic}
+									onClick={handleCreateTopic}
+								/>
+								<Button
+									onClick={() => navigate({ to: '/home' })}
+									variant='outline'
+								>
+									<Home />
+									Topics
+								</Button>
+							</div>
+						</EmptyContent>
+					</Empty>
+				)}
 			</div>
-		</div>
+		</PageLayout>
 	)
 }
