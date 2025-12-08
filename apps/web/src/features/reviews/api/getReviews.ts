@@ -78,10 +78,11 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 ]
 
 export function useTodayReviews() {
+	const tomorrow = useMemo(() => dayjs().add(1, 'day').format('YYYY-MM-DD'), [])
+
 	const query = useQuery({
-		queryKey: reviewKeys.today(),
+		queryKey: reviewKeys.list({ effectiveDateBefore: tomorrow }),
 		queryFn: () => {
-			const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
 			return getReviews({ effectiveDateBefore: tomorrow })
 		}
 	})
@@ -151,11 +152,18 @@ const SOON_SECTION_DEFINITIONS: Array<SoonSectionDefinition> = [
 ]
 
 export function useSoonReviews() {
+	const tomorrow = useMemo(() => dayjs().add(1, 'day').format('YYYY-MM-DD'), [])
+	const nextWeekDate = useMemo(
+		() => dayjs().add(7, 'day').format('YYYY-MM-DD'),
+		[]
+	)
+
 	const query = useQuery({
-		queryKey: reviewKeys.soon(),
+		queryKey: reviewKeys.list({
+			effectiveDateAfter: tomorrow,
+			effectiveDateBefore: nextWeekDate
+		}),
 		queryFn: () => {
-			const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
-			const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
 			return getReviews({
 				effectiveDateAfter: tomorrow,
 				effectiveDateBefore: nextWeekDate
@@ -246,7 +254,7 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 
 export function useUnscheduledReviews() {
 	const query = useQuery({
-		queryKey: reviewKeys.unscheduled(),
+		queryKey: reviewKeys.list({ scheduled: false, completed: false }),
 		queryFn: () => getReviews({ scheduled: false, completed: false })
 	})
 
@@ -263,10 +271,17 @@ export function useUnscheduledReviews() {
 }
 
 export function useFutureReviews(options?: { enabled?: boolean }) {
+	const futureStartDate = useMemo(
+		() => dayjs().add(8, 'day').format('YYYY-MM-DD'),
+		[]
+	)
+
 	const query = useQuery({
-		queryKey: reviewKeys.future(),
+		queryKey: reviewKeys.list({
+			effectiveDateAfter: futureStartDate,
+			completed: false
+		}),
 		queryFn: () => {
-			const futureStartDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
 			return getReviews({
 				effectiveDateAfter: futureStartDate,
 				completed: false
@@ -326,10 +341,14 @@ export function useFutureReviews(options?: { enabled?: boolean }) {
 }
 
 export function useLogbookReviews() {
+	const yesterday = useMemo(
+		() => dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
+		[]
+	)
+
 	const query = useQuery({
-		queryKey: reviewKeys.logbook(),
+		queryKey: reviewKeys.list({ completedBefore: yesterday }),
 		queryFn: () => {
-			const yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD')
 			return getReviews({ completedBefore: yesterday })
 		}
 	})
@@ -437,7 +456,7 @@ export function useLogbookReviews() {
 
 export function useReviewsByTopic(topicId: number | undefined) {
 	return useQuery({
-		queryKey: reviewKeys.byTopic(topicId!),
+		queryKey: reviewKeys.list({ topicId }),
 		queryFn: () => getReviews({ topicId }),
 		enabled: topicId !== undefined
 	})
