@@ -1,10 +1,10 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Archive, Home } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { History, Home } from 'lucide-react'
 import { useCallback } from 'react'
+import { PageHeader } from '~/app/layouts/PageHeader'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
@@ -20,25 +20,21 @@ import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/archived')({
-	component: RouteComponent
-})
-
-function RouteComponent() {
+export function RecentPage() {
 	const { openTopicDialog } = useReviewTopicDialog()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
 
-	// Fetch archived topics sorted by most recently updated
+	// Fetch 50 most recent topics
 	const { data: topics = [], isLoading } = useTopics({
-		archived: true,
-		order: 'desc'
+		order: 'desc',
+		limit: 50
 	})
 
 	const handleCreateTopic = useCallback(async () => {
 		const newTopic = await createTopicWithReview({
 			inboxed: false,
-			archived: true
+			archived: false
 		})
 		openTopicDialog(newTopic.id)
 	}, [createTopicWithReview, openTopicDialog])
@@ -52,8 +48,8 @@ function RouteComponent() {
 
 	return (
 		<TopicsPageLayout>
-			<PageHeader icon={Archive} title='Archived' />
-			<ArchivedList
+			<PageHeader icon={History} title='Recent' />
+			<RecentList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
 				onCreateTopic={handleCreateTopic}
@@ -64,7 +60,7 @@ function RouteComponent() {
 	)
 }
 
-function ArchivedList({
+function RecentList({
 	topics,
 	onTopicClick,
 	onCreateTopic,
@@ -93,9 +89,9 @@ function ArchivedList({
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<Archive />
+							<History />
 						</EmptyMedia>
-						<EmptyTitle>Archived topics will appear here.</EmptyTitle>
+						<EmptyTitle>Your most recent topics will appear here.</EmptyTitle>
 					</EmptyHeader>
 					<EmptyContent>
 						<div className='flex gap-2'>

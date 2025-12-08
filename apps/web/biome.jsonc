@@ -163,7 +163,7 @@
 			}
 		},
 		{
-			"includes": ["src/routes/**"],
+			"includes": ["src/app/routes/**"],
 			"linter": {
 				"rules": {
 					"style": {

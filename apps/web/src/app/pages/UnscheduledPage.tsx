@@ -1,8 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { CircleDashed, Home } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { PageHeader } from '~/app/layouts/PageHeader'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
@@ -19,10 +19,6 @@ import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/unscheduled')({
-	component: UnscheduledPage
-})
-
 type UnscheduledSectionDefinition = {
 	id: 'unscheduled'
 	label: string
@@ -37,7 +33,7 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 	emptyMessage: 'All topics have due dates.'
 }
 
-function UnscheduledPage() {
+export function UnscheduledPage() {
 	const navigate = useNavigate()
 	const { section: reviewSection, isLoading: reviewsLoading } =
 		useUnscheduledReviews()

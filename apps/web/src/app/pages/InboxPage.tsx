@@ -1,10 +1,10 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Home, Inbox } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
+import { PageHeader } from '~/app/layouts/PageHeader'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
@@ -27,11 +27,7 @@ const CHARS_PER_LINE = 36
 const LINE_HEIGHT = 18
 const BASE_HEIGHT = 140
 
-export const Route = createFileRoute('/inbox')({
-	component: RouteComponent
-})
-
-function RouteComponent() {
+export function InboxPage() {
 	const { data: inboxTopics, isLoading } = useTopics({
 		inboxed: true,
 		archived: false

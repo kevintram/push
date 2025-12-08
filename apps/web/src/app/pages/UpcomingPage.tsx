@@ -1,9 +1,9 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { Calendar, Home } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { PageHeader } from '~/app/layouts/PageHeader'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
@@ -22,10 +22,6 @@ import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkel
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/models/review-topic.types'
-
-export const Route = createFileRoute('/upcoming')({
-	component: UpcomingPage
-})
 
 type SoonTopicSectionKey = 'tomorrow' | 'nextSevenDays'
 
@@ -55,7 +51,7 @@ type FutureSection = {
 	entries: Array<Topic>
 }
 
-function UpcomingPage() {
+export function UpcomingPage() {
 	const navigate = useNavigate()
 	const [showFuture, setShowFuture] = useState(false)
 

@@ -1,8 +1,8 @@
 import { Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Input } from '~/components/ui/Input'
+import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { SearchDialog } from '~/features/search/components/SearchDialog'
-import { SidebarTrigger } from './ui/Sidebar'
 
 export function Header() {
 	const [searchOpen, setSearchOpen] = useState(false)

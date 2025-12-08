@@ -7,7 +7,7 @@ import {
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { routeTree } from './routeTree.gen'
+import { routeTree } from './app/routeTree.gen'
 
 vi.mock('~/features/topics/api/searchTopics', () => ({
 	searchTopics: vi.fn(async () => [])

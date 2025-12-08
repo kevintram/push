@@ -1,8 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { ChevronDown, Home, ListChecks } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { PageHeader } from '~/app/layouts/PageHeader'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
@@ -17,11 +17,7 @@ import { useLogbookReviews } from '~/features/reviews/api/getReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 
-export const Route = createFileRoute('/logbook')({
-	component: LogbookPage
-})
-
-function LogbookPage() {
+export function LogbookPage() {
 	const navigate = useNavigate()
 	const { sections, isLoading } = useLogbookReviews()
 

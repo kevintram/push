@@ -1,10 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { Home } from 'lucide-react'
 import { useCallback } from 'react'
+import { PageHeader } from '~/app/layouts/PageHeader'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { PageHeader } from '~/components/PageHeader'
 import {
 	Empty,
 	EmptyContent,
@@ -19,11 +18,7 @@ import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/home')({
-	component: RouteComponent
-})
-
-function RouteComponent() {
+export function HomePage() {
 	const { openTopicDialog } = useReviewTopicDialog()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
