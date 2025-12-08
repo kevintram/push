@@ -1,10 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
 import { CircleDashed, Home } from 'lucide-react'
 import { useMemo } from 'react'
+import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import { ReviewListSkeleton } from '~/app/layouts/ReviewListSkeleton'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
 import {
