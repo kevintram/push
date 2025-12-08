@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
-import { MasonryLayout } from '~/components/MasonryLayout'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MIN_CARD_WIDTH } from './constants'
 
 interface SearchResultsContainerProps<T> {

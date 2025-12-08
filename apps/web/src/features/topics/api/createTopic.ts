@@ -1,16 +1,10 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-
-export type CreateTopicInput = {
-	name?: string
-	notes?: string
-	stability?: number | null
-	difficulty?: number | null
-	state?: 'LEARNING' | 'REVIEW' | 'RELEARNING'
-	archived?: boolean
-	inboxed?: boolean
-}
+import type { CreateTopicInput } from '../types/api.types'
+import { topicKeys } from './queryKeys'
 
 export async function createTopic(
 	input: CreateTopicInput = {}
@@ -48,4 +42,19 @@ export async function createTopic(
 		}
 		throw error
 	}
+}
+
+export function useCreateTopic() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: createTopic,
+		onSuccess: async () => {
+			// Invalidate topic and review queries to reflect the new topic
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			])
+		}
+	})
 }

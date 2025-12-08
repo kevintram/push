@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useTopicWithRelationships } from '../hooks/useTopicWithRelationships'
+import { useTopicWithRelationships } from '../api/getTopic'
 import { TopicContext } from '../stores/SelectedTopicContext'
 import { TopicDetail } from './TopicDetail/TopicDetail'
 
@@ -23,13 +23,13 @@ export function TopicDialog() {
 		if (selectedTopicId) {
 			maximizeTopicDialog()
 			navigate({
-				to: '/topics/{-$topicId}',
+				to: '/topics/$topicId',
 				params: { topicId: selectedTopicId.toString() }
 			})
 		}
 	}, [selectedTopicId, navigate, maximizeTopicDialog])
 
-	const afterMoreButton = useMemo(
+	const headerAfterActions = useMemo(
 		() => (
 			<>
 				<Button
@@ -70,7 +70,7 @@ export function TopicDialog() {
 			>
 				<TopicContext value={contextValue}>
 					<TopicDetail
-						afterMoreButton={afterMoreButton}
+						headerAfterActions={headerAfterActions}
 						onDelete={handleDelete}
 					/>
 				</TopicContext>

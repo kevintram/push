@@ -1,6 +1,8 @@
+import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { reviewKeys } from './queryKeys'
 
 export async function getReview(reviewId: number) {
 	const response = await apiFetch(
@@ -22,5 +24,18 @@ export async function getReview(reviewId: number) {
 			throw new Error(`Validation failed: ${error.message}`)
 		}
 		throw error
+	}
+}
+
+export function useReviewWithTopics(reviewId: number) {
+	const { data: review, isLoading } = useQuery({
+		queryKey: reviewKeys.detail(reviewId),
+		queryFn: () => getReview(reviewId),
+		enabled: !!reviewId
+	})
+
+	return {
+		review,
+		isLoading
 	}
 }

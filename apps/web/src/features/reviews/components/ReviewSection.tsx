@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import { useCallback } from 'react'
-import { MasonryLayout } from '~/components/MasonryLayout'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Review, Topic } from '~/models/review-topic.types'

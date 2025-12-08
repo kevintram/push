@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { topicKeys } from '~/features/topics/api/queryKeys'
 import { searchTopics } from '~/features/topics/api/searchTopics'
 import type { Topic } from '~/models/review-topic.types'
 import { useDebouncedValue } from './useDebouncedValue'
@@ -10,7 +11,7 @@ export function useGlobalSearch(externalQuery = '', enabled = true) {
 	const hasQuery = trimmedQuery.length > 0
 
 	const { data: results = [], isLoading } = useQuery({
-		queryKey: ['topics', 'search', trimmedQuery || 'recent'],
+		queryKey: topicKeys.search(trimmedQuery || 'recent'),
 		queryFn: () =>
 			searchTopics({
 				query: trimmedQuery || undefined,

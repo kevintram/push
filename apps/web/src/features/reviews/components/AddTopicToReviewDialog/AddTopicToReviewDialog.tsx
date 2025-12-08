@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
-import { SquarePen } from 'lucide-react'
+import { Minus, SquarePen, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { SearchInput, SearchResultsContainer } from '~/components/search'
+import { SearchInput } from '~/components/search/SearchInput'
+import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
 import { Button } from '~/components/ui/Button'
 import {
 	Dialog,
@@ -10,10 +10,12 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
-import type { Review } from '~/features/reviews/api'
-import { searchTopics } from '~/features/topics/api/searchTopics'
+import { topicKeys } from '~/features/topics/api/queryKeys'
+import { useSearchTopics } from '~/features/topics/api/searchTopics'
+import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
+import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
-import type { Topic } from '~/models/review-topic.types'
+import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { AddedTopicsPopover } from './AddedTopicsPopover'
 import { AddTopicCard } from './AddTopicCard'
 import {
@@ -21,7 +23,7 @@ import {
 	useAddTopicToReview
 } from './AddTopicToReviewContext'
 import { FloatingTopicCard } from './FloatingTopicCard'
-import { ReviewTopicDetail } from './TopicDetail/TopicDetail'
+import { TopicReviewStatusButton } from './ReviewStatusButton'
 
 // Constants
 const MIN_HEIGHT = 72
@@ -62,16 +64,14 @@ function AddTopicToReviewDialogContent({
 
 	// Search
 	const debouncedQuery = useDebouncedValue(searchQuery, 300)
-	const hasQuery = Boolean(debouncedQuery.trim())
+	const trimmedQuery = debouncedQuery.trim()
+	const hasQuery = trimmedQuery.length > 0
 
-	const { data: topics = [], isLoading: isSearching } = useQuery({
-		queryKey: ['topics', 'search', debouncedQuery || 'recent', review?.id],
-		queryFn: () =>
-			searchTopics({
-				query: debouncedQuery || undefined,
-				limit: 20
-			}),
-		enabled: open && !!review
+	const { data: topics = [], isLoading: isSearching } = useSearchTopics({
+		query: trimmedQuery || undefined,
+		limit: 20,
+		enabled: open && !!review,
+		queryKey: topicKeys.search(trimmedQuery || 'recent', review?.id)
 	})
 
 	const searchResults = useMemo(() => {
@@ -303,7 +303,7 @@ function AddTopicToReviewDialogContent({
 										key='topic-detail-content'
 										transition={{ duration: 0.15 }}
 									>
-										<ReviewTopicDetail
+										<TopicDetailInReviewMode
 											onClose={closeTopicDetail}
 											onMinimize={minimizeTopicDetail}
 											onTopicDeleted={handleTopicDeleted}
@@ -337,6 +337,118 @@ function AddTopicToReviewDialogContent({
 				)}
 			</AnimatePresence>
 		</DialogContent>
+	)
+}
+
+// Wrapper component that uses the unified TopicDetail with review-specific configuration
+interface TopicDetailInReviewModeProps {
+	onClose: () => void
+	onMinimize: () => void
+	onTopicDeleted: () => void
+	onTopicSelected: (topicId: number) => void
+}
+
+function TopicDetailInReviewMode({
+	onClose,
+	onMinimize,
+	onTopicDeleted,
+	onTopicSelected
+}: TopicDetailInReviewModeProps) {
+	const {
+		selectedTopic,
+		isLoadingTopic,
+		isReviewCompleted,
+		isSelectedTopicAdded,
+		selectedTopicReview,
+		addTopicToReview,
+		removeTopicFromReview,
+		updateRating
+	} = useAddTopicToReview()
+
+	const handleAddToReview = useCallback(async () => {
+		if (!selectedTopic) return
+		await addTopicToReview({ topicId: selectedTopic.id })
+	}, [selectedTopic, addTopicToReview])
+
+	const handleRemoveFromReview = useCallback(async () => {
+		if (!selectedTopic) return
+		await removeTopicFromReview(selectedTopic)
+	}, [selectedTopic, removeTopicFromReview])
+
+	const handleRatingChange = useCallback(
+		async (rating: Rating) => {
+			if (!selectedTopicReview) return
+			await updateRating(selectedTopicReview.id, rating)
+		},
+		[selectedTopicReview, updateRating]
+	)
+
+	// Custom card renderer for children panel in review mode
+	const renderChildCard = useCallback(
+		(topic: Topic, onRemove: () => void, onClick: () => void) => (
+			<AddTopicCard
+				onCardClick={() => onClick()}
+				onRemoveRelationship={onRemove}
+				topic={topic}
+			/>
+		),
+		[]
+	)
+
+	// Context value for TopicDetail (needed because TopicDetail can read from context)
+	const topicContextValue = useMemo(
+		() => ({
+			topic: selectedTopic,
+			isLoading: isLoadingTopic
+		}),
+		[selectedTopic, isLoadingTopic]
+	)
+
+	return (
+		<TopicContext value={topicContextValue}>
+			<TopicDetail
+				headerAfterActions={
+					<>
+						<Button
+							className='h-6 w-6 p-0 text-muted-foreground'
+							onClick={onMinimize}
+							size='sm'
+							title='Minimize'
+							variant='ghost'
+						>
+							<Minus className='h-4 w-4' />
+						</Button>
+						<Button
+							className='h-6 w-6 p-0 text-muted-foreground'
+							onClick={onClose}
+							size='sm'
+							title='Back to search'
+							variant='ghost'
+						>
+							<X className='h-4 w-4' />
+						</Button>
+					</>
+				}
+				headerBeforeActions={
+					<TopicReviewStatusButton
+						isAdded={isSelectedTopicAdded}
+						isReviewCompleted={isReviewCompleted}
+						onAdd={handleAddToReview}
+						onRatingChange={
+							selectedTopicReview ? handleRatingChange : undefined
+						}
+						onRemove={handleRemoveFromReview}
+						rating={selectedTopicReview?.rating}
+					/>
+				}
+				isLoading={isLoadingTopic}
+				onDelete={onTopicDeleted}
+				onTopicNavigate={onTopicSelected}
+				renderChildCard={renderChildCard}
+				sidebarReadonly={true}
+				topic={selectedTopic}
+			/>
+		</TopicContext>
 	)
 }
 

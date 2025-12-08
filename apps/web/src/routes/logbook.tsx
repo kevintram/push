@@ -4,9 +4,9 @@ import { useCallback, useState } from 'react'
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useLogbookReviews } from '~/features/reviews/api/getReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
-import { useLogbookReviews } from '~/features/reviews/hooks'
 
 export const Route = createFileRoute('/logbook')({
 	component: LogbookPage

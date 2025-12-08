@@ -1,17 +1,9 @@
+import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-
-export type GetTopicsParams = {
-	root?: boolean
-	inboxed?: boolean
-	archived?: boolean
-	srsEnabled?: boolean
-	order?: 'desc' | 'asc'
-	limit?: number
-	dueBefore?: string
-	dueAfter?: string
-}
+import type { GetTopicsParams } from '../types/api.types'
+import { topicKeys } from './queryKeys'
 
 export async function getTopics(
 	params: GetTopicsParams = {}
@@ -67,4 +59,15 @@ export async function getTopics(
 		}
 		throw error
 	}
+}
+
+export function useTopics(
+	params: GetTopicsParams = {},
+	options?: { enabled?: boolean }
+) {
+	return useQuery({
+		queryKey: topicKeys.list(params),
+		queryFn: () => getTopics(params),
+		enabled: options?.enabled ?? true
+	})
 }

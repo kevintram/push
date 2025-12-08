@@ -1,39 +1,17 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import {
 	type TopicRelationshipResponse,
 	TopicRelationshipResponseSchema
 } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-
-type CreateChildRelationshipInput =
-	| {
-			parentId: number
-			childId: number
-	  }
-	| {
-			parentId: number
-			child: {
-				name: string
-				notes: string
-				archived: boolean
-				inboxed: boolean
-			}
-	  }
-
-type CreateParentRelationshipInput =
-	| {
-			childId: number
-			parentId: number
-	  }
-	| {
-			childId: number
-			parent: {
-				name: string
-				notes: string
-				archived: boolean
-				inboxed: boolean
-			}
-	  }
+import type {
+	CreateChildRelationshipInput,
+	CreateParentRelationshipInput,
+	CreateRelationshipInput
+} from '../types/api.types'
+import { topicKeys } from './queryKeys'
 
 export async function createChildRelationship(
 	input: CreateChildRelationshipInput
@@ -115,4 +93,44 @@ export async function createParentRelationship(
 		}
 		throw error
 	}
+}
+
+export function useCreateRelationship() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: (input: CreateRelationshipInput) => {
+			if ('childData' in input) {
+				return createChildRelationship({
+					parentId: input.parent,
+					child: input.childData
+				})
+			}
+			if ('parentData' in input) {
+				return createParentRelationship({
+					childId: input.child,
+					parent: input.parentData
+				})
+			}
+			return createChildRelationship({
+				parentId: input.parent,
+				childId: input.child
+			})
+		},
+		onSuccess: async () => {
+			// Invalidate topic and review caches
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			])
+
+			// Invalidate potential relationships cache since the graph has changed
+			await queryClient.invalidateQueries({
+				queryKey: ['potential-children']
+			})
+			await queryClient.invalidateQueries({
+				queryKey: ['potential-parents']
+			})
+		}
+	})
 }

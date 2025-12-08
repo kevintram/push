@@ -1,23 +1,90 @@
 import { createFileRoute } from '@tanstack/react-router'
+import dayjs from 'dayjs'
 import { Star } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useTodayReviews } from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useTodayReviews } from '~/features/reviews/hooks'
-import { useTodayTopics } from '~/features/topics/hooks'
+import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/today')({
 	component: TodayPage
 })
 
+type TodayTopicSectionKey = 'overdue' | 'today'
+
+type SectionDefinition = {
+	id: TodayTopicSectionKey
+	label: string
+	headingClassName?: string
+	emptyMessage: string
+}
+
+const SECTION_DEFINITIONS: Array<SectionDefinition> = [
+	{
+		id: 'overdue',
+		label: 'Overdue',
+		headingClassName: 'text-red-600',
+		emptyMessage: "You're all caught up—no overdue topics."
+	},
+	{
+		id: 'today',
+		label: 'Today',
+		emptyMessage: 'No topics due today.'
+	}
+]
+
 function TodayPage() {
 	const { sections: reviewSections, isLoading: reviewsLoading } =
 		useTodayReviews()
 
-	const { sections: topicSections, isLoading: topicsLoading } = useTodayTopics()
+	const today = dayjs().format('YYYY-MM-DD')
+	const { data: topics, isLoading: topicsLoading } = useTopics({
+		dueBefore: today,
+		archived: false,
+		srsEnabled: true
+	})
+
+	const todayDateStr = useMemo(() => {
+		return dayjs().format('YYYY-MM-DD')
+	}, [])
+
+	const topicSections = useMemo(() => {
+		const topicList = topics ?? []
+
+		const overdueList: Array<Topic> = []
+		const todayList: Array<Topic> = []
+
+		for (const topic of topicList) {
+			if (!topic.due) {
+				// Skip unscheduled topics (shouldn't happen with our query but be safe)
+				continue
+			}
+
+			const dueDate = topic.due
+
+			// Today
+			if (dueDate === todayDateStr) {
+				todayList.push(topic)
+			}
+			// Overdue
+			else if (dueDate < todayDateStr) {
+				overdueList.push(topic)
+			}
+		}
+
+		return SECTION_DEFINITIONS.map(def => {
+			const entries = def.id === 'overdue' ? overdueList : todayList
+
+			return {
+				...def,
+				entries
+			}
+		})
+	}, [topics, todayDateStr])
 
 	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
 

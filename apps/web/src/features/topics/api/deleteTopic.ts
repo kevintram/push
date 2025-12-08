@@ -1,4 +1,7 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
+import { topicKeys } from './queryKeys'
 
 export async function deleteTopic(topicId: number) {
 	const response = await apiFetch(
@@ -11,4 +14,18 @@ export async function deleteTopic(topicId: number) {
 	if (!response.ok) {
 		throw new Error(`API request failed: ${response.status}`)
 	}
+}
+
+export function useDeleteTopic() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: deleteTopic,
+		onSuccess: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			])
+		}
+	})
 }

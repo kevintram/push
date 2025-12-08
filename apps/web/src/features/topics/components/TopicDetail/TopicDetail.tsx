@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Archive, ArchiveX, Inbox, X } from 'lucide-react'
 import { type ReactNode, use, useCallback, useEffect, useRef } from 'react'
 import { Button } from '~/components/ui/Button'
@@ -11,44 +10,86 @@ import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { deleteTopic as deleteTopicApi } from '../../api/deleteTopic'
-import { updateTopic as updateTopicApi } from '../../api/updateTopic'
+import type { Topic } from '~/models/review-topic.types'
+import { useDeleteTopic } from '../../api/deleteTopic'
+import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
-import { TopicChildrenPanel } from '../TopicPage/FamilyPanel/TopicChildrenPanel'
-import { ReviewsSidebar } from '../TopicPage/ReviewsSidebar'
+import { ReviewsSidebar } from '../ReviewsSidebar'
+import { TopicChildrenPanel } from '../TopicChildrenPanel'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 
 interface TopicDetailProps {
+	/**
+	 * The topic to display. If not provided, reads from TopicContext.
+	 */
+	topic?: Topic | null
+	/**
+	 * Loading state. If not provided, reads from TopicContext.
+	 */
+	isLoading?: boolean
+	/**
+	 * Content to render before the "more" dropdown in the header.
+	 */
+	headerBeforeActions?: ReactNode
+	/**
+	 * Content to render after the "more" dropdown in the header.
+	 */
+	headerAfterActions?: ReactNode
+	/**
+	 * Whether the sidebar should be readonly. Defaults to false.
+	 */
+	sidebarReadonly?: boolean
+	/**
+	 * Callback when the topic is deleted.
+	 */
 	onDelete?: () => void | Promise<void>
-	afterMoreButton?: ReactNode
+	/**
+	 * Callback when navigating to another topic (parent/child click).
+	 * If not provided, uses default dialog behavior.
+	 */
+	onTopicNavigate?: (topicId: number) => void
+	/**
+	 * Custom card renderer for children panel.
+	 */
+	renderChildCard?: (
+		topic: Topic,
+		onRemove: () => void,
+		onClick: () => void
+	) => ReactNode
 }
 
-export function TopicDetail({ onDelete, afterMoreButton }: TopicDetailProps) {
-	const { topic, isLoading } = use(TopicContext)
-	const queryClient = useQueryClient()
+export function TopicDetail({
+	topic: topicProp,
+	isLoading: isLoadingProp,
+	headerBeforeActions,
+	headerAfterActions,
+	sidebarReadonly = false,
+	onDelete,
+	onTopicNavigate,
+	renderChildCard
+}: TopicDetailProps) {
+	// Get topic from context if not provided via props
+	const contextValue = use(TopicContext)
+	const topic = topicProp !== undefined ? topicProp : contextValue.topic
+	const isLoading =
+		isLoadingProp !== undefined ? isLoadingProp : contextValue.isLoading
 
-	const { mutateAsync: updateTopicMutation } = useMutation({
-		mutationFn: updateTopicApi,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
+	const updateTopicMutation = useUpdateTopic()
+	const deleteTopicMutation = useDeleteTopic()
 
-	const { mutateAsync: deleteTopic } = useMutation({
-		mutationFn: deleteTopicApi,
-		onSuccess: () => {
+	const deleteTopic = useCallback(
+		async (topicId: number) => {
+			await deleteTopicMutation.mutateAsync(topicId)
 			onDelete?.()
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
-		}
-	})
+		},
+		[deleteTopicMutation, onDelete]
+	)
 
 	const updateNotesMutation = useCallback(
 		(newNotes: string) => {
 			if (topic?.id) {
-				updateTopicMutation({ id: topic.id, notes: newNotes })
+				updateTopicMutation.mutateAsync({ id: topic.id, notes: newNotes })
 			}
 		},
 		[updateTopicMutation, topic?.id]
@@ -57,7 +98,7 @@ export function TopicDetail({ onDelete, afterMoreButton }: TopicDetailProps) {
 	const updateNameMutation = useCallback(
 		(newTitle: string) => {
 			if (!topic) return
-			updateTopicMutation({ id: topic.id, name: newTitle })
+			updateTopicMutation.mutateAsync({ id: topic.id, name: newTitle })
 		},
 		[updateTopicMutation, topic]
 	)
@@ -70,7 +111,7 @@ export function TopicDetail({ onDelete, afterMoreButton }: TopicDetailProps) {
 
 	const handleArchiveToggle = useCallback(async () => {
 		if (topic?.id) {
-			await updateTopicMutation({
+			await updateTopicMutation.mutateAsync({
 				id: topic.id,
 				archived: !topic.archived
 			})
@@ -79,7 +120,7 @@ export function TopicDetail({ onDelete, afterMoreButton }: TopicDetailProps) {
 
 	const handleInboxToggle = useCallback(async () => {
 		if (topic?.id) {
-			await updateTopicMutation({
+			await updateTopicMutation.mutateAsync({
 				id: topic.id,
 				inboxed: !topic.inboxed
 			})
@@ -116,10 +157,12 @@ export function TopicDetail({ onDelete, afterMoreButton }: TopicDetailProps) {
 		<SidebarProvider defaultOpen={true} enableKeyboardShortcut={false}>
 			<div className='flex h-full min-h-0 flex-col'>
 				<TopicDetailHeader
-					afterMoreButton={afterMoreButton}
+					afterActions={headerAfterActions}
+					beforeActions={headerBeforeActions}
 					onArchiveToggle={handleArchiveToggle}
 					onDelete={handleDelete}
 					onInboxToggle={handleInboxToggle}
+					onParentSelect={onTopicNavigate}
 					topic={topic}
 				/>
 				<SidebarHolder className='flex min-h-0 flex-1'>
@@ -204,9 +247,12 @@ export function TopicDetail({ onDelete, afterMoreButton }: TopicDetailProps) {
 						</div>
 						<TopicChildrenPanel
 							getScrollElement={() => scrollContainerRef.current}
+							onChildSelect={onTopicNavigate}
+							renderCard={renderChildCard}
+							topicId={topic.id}
 						/>
 					</div>
-					<ReviewsSidebar />
+					<ReviewsSidebar readonly={sidebarReadonly} />
 				</SidebarHolder>
 			</div>
 		</SidebarProvider>

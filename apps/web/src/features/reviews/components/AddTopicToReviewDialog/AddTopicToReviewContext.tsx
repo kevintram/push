@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
 	createContext,
 	useCallback,
@@ -6,15 +5,16 @@ import {
 	useMemo,
 	useState
 } from 'react'
-import type { Review } from '~/features/reviews/api'
-import {
-	createTopicReview as createTopicReviewApi,
-	deleteTopicReview
-} from '~/features/topic_reviews/api'
-import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
-import { useTopicWithRelationships } from '~/features/topics/hooks/useTopicWithRelationships'
-import type { Rating, Topic, TopicReview } from '~/models/review-topic.types'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
+import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
+import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
+import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
+import type {
+	Rating,
+	Review,
+	Topic,
+	TopicReview
+} from '~/models/review-topic.types'
 
 interface AddTopicToReviewContextValue {
 	// Review
@@ -68,8 +68,6 @@ export function AddTopicToReviewProvider({
 	review,
 	children
 }: AddTopicToReviewProviderProps) {
-	const queryClient = useQueryClient()
-
 	// Selected topic state
 	const [selectedTopicId, setSelectedTopicId] = useState<number | undefined>(
 		undefined
@@ -115,30 +113,11 @@ export function AddTopicToReviewProvider({
 	)
 
 	// Mutations
-	const {
-		mutateAsync: createTopicReviewMutation,
-		isPending: isCreatingTopicReview
-	} = useMutation({
-		mutationFn: createTopicReviewApi,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
+	const createTopicReviewMutation = useCreateTopicReview()
+	const deleteTopicReviewMutation = useDeleteTopicReview()
+	const updateTopicReviewMutation = useUpdateTopicReview()
 
-	const { mutateAsync: deleteTopicReviewMutation } = useMutation({
-		mutationFn: deleteTopicReview,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
-
-	const { mutateAsync: updateTopicReviewMutation } = useMutation({
-		mutationFn: ({ id, rating }: { id: number; rating: Rating }) =>
-			updateTopicReviewApi(id, rating),
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
+	const isCreatingTopicReview = createTopicReviewMutation.isPending
 
 	// Action handlers
 	const addTopicToReview = useCallback(
@@ -171,14 +150,14 @@ export function AddTopicToReviewProvider({
 							rating
 						}
 
-			return await createTopicReviewMutation(payload)
+			return await createTopicReviewMutation.mutateAsync(payload)
 		},
 		[review, createTopicReviewMutation, isReviewCompleted]
 	)
 
 	const removeTopicReviewById = useCallback(
 		async (topicReviewId: number) => {
-			await deleteTopicReviewMutation(topicReviewId)
+			await deleteTopicReviewMutation.mutateAsync(topicReviewId)
 		},
 		[deleteTopicReviewMutation]
 	)
@@ -197,7 +176,7 @@ export function AddTopicToReviewProvider({
 
 	const updateRating = useCallback(
 		async (topicReviewId: number, rating: Rating) => {
-			await updateTopicReviewMutation({ id: topicReviewId, rating })
+			await updateTopicReviewMutation.mutateAsync({ id: topicReviewId, rating })
 		},
 		[updateTopicReviewMutation]
 	)

@@ -1,24 +1,50 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { CircleDashed } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { PageHeader } from '~/components/PageHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useUnscheduledReviews } from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useUnscheduledReviews } from '~/features/reviews/hooks'
-import { useUnscheduledTopics } from '~/features/topics/hooks'
+import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/unscheduled')({
 	component: UnscheduledPage
 })
 
+type UnscheduledSectionDefinition = {
+	id: 'unscheduled'
+	label: string
+	headingClassName?: string
+	emptyMessage: string
+}
+
+const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
+	id: 'unscheduled',
+	label: 'Unscheduled',
+	headingClassName: 'text-gray-600',
+	emptyMessage: 'All topics have due dates.'
+}
+
 function UnscheduledPage() {
 	const { section: reviewSection, isLoading: reviewsLoading } =
 		useUnscheduledReviews()
 
-	const { section: topicSection, isLoading: topicsLoading } =
-		useUnscheduledTopics()
+	const { data: allTopics, isLoading: topicsLoading } = useTopics({
+		archived: false,
+		srsEnabled: true
+	})
+
+	const topicSection = useMemo(() => {
+		const unscheduledTopics = (allTopics ?? []).filter(
+			topic => topic.due === null
+		)
+		return {
+			...UNSCHEDULED_SECTION_DEFINITION,
+			entries: unscheduledTopics
+		}
+	}, [allTopics])
 
 	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
 

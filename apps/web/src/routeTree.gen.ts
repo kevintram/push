@@ -11,13 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as UnscheduledRouteImport } from './routes/unscheduled'
+import { Route as TopicsRouteImport } from './routes/topics'
 import { Route as TodayRouteImport } from './routes/today'
 import { Route as RecentRouteImport } from './routes/recent'
 import { Route as LogbookRouteImport } from './routes/logbook'
 import { Route as InboxRouteImport } from './routes/inbox'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as ArchivedRouteImport } from './routes/archived'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TopicsChar123TopicIdChar125RouteImport } from './routes/topics.{-$topicId}'
+import { Route as TopicsTopicIdRouteImport } from './routes/topics_.$topicId'
 
 const UpcomingRoute = UpcomingRouteImport.update({
   id: '/upcoming',
@@ -27,6 +29,11 @@ const UpcomingRoute = UpcomingRouteImport.update({
 const UnscheduledRoute = UnscheduledRouteImport.update({
   id: '/unscheduled',
   path: '/unscheduled',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TopicsRoute = TopicsRouteImport.update({
+  id: '/topics',
+  path: '/topics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TodayRoute = TodayRouteImport.update({
@@ -49,6 +56,11 @@ const InboxRoute = InboxRouteImport.update({
   path: '/inbox',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArchivedRoute = ArchivedRouteImport.update({
   id: '/archived',
   path: '/archived',
@@ -59,93 +71,106 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TopicsChar123TopicIdChar125Route =
-  TopicsChar123TopicIdChar125RouteImport.update({
-    id: '/topics/{-$topicId}',
-    path: '/topics/{-$topicId}',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const TopicsTopicIdRoute = TopicsTopicIdRouteImport.update({
+  id: '/topics_/$topicId',
+  path: '/topics/$topicId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/archived': typeof ArchivedRoute
+  '/home': typeof HomeRoute
   '/inbox': typeof InboxRoute
   '/logbook': typeof LogbookRoute
   '/recent': typeof RecentRoute
   '/today': typeof TodayRoute
+  '/topics': typeof TopicsRoute
   '/unscheduled': typeof UnscheduledRoute
   '/upcoming': typeof UpcomingRoute
-  '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
+  '/topics/$topicId': typeof TopicsTopicIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/archived': typeof ArchivedRoute
+  '/home': typeof HomeRoute
   '/inbox': typeof InboxRoute
   '/logbook': typeof LogbookRoute
   '/recent': typeof RecentRoute
   '/today': typeof TodayRoute
+  '/topics': typeof TopicsRoute
   '/unscheduled': typeof UnscheduledRoute
   '/upcoming': typeof UpcomingRoute
-  '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
+  '/topics/$topicId': typeof TopicsTopicIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/archived': typeof ArchivedRoute
+  '/home': typeof HomeRoute
   '/inbox': typeof InboxRoute
   '/logbook': typeof LogbookRoute
   '/recent': typeof RecentRoute
   '/today': typeof TodayRoute
+  '/topics': typeof TopicsRoute
   '/unscheduled': typeof UnscheduledRoute
   '/upcoming': typeof UpcomingRoute
-  '/topics/{-$topicId}': typeof TopicsChar123TopicIdChar125Route
+  '/topics_/$topicId': typeof TopicsTopicIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/archived'
+    | '/home'
     | '/inbox'
     | '/logbook'
     | '/recent'
     | '/today'
+    | '/topics'
     | '/unscheduled'
     | '/upcoming'
-    | '/topics/{-$topicId}'
+    | '/topics/$topicId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/archived'
+    | '/home'
     | '/inbox'
     | '/logbook'
     | '/recent'
     | '/today'
+    | '/topics'
     | '/unscheduled'
     | '/upcoming'
-    | '/topics/{-$topicId}'
+    | '/topics/$topicId'
   id:
     | '__root__'
     | '/'
     | '/archived'
+    | '/home'
     | '/inbox'
     | '/logbook'
     | '/recent'
     | '/today'
+    | '/topics'
     | '/unscheduled'
     | '/upcoming'
-    | '/topics/{-$topicId}'
+    | '/topics_/$topicId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ArchivedRoute: typeof ArchivedRoute
+  HomeRoute: typeof HomeRoute
   InboxRoute: typeof InboxRoute
   LogbookRoute: typeof LogbookRoute
   RecentRoute: typeof RecentRoute
   TodayRoute: typeof TodayRoute
+  TopicsRoute: typeof TopicsRoute
   UnscheduledRoute: typeof UnscheduledRoute
   UpcomingRoute: typeof UpcomingRoute
-  TopicsChar123TopicIdChar125Route: typeof TopicsChar123TopicIdChar125Route
+  TopicsTopicIdRoute: typeof TopicsTopicIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -162,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/unscheduled'
       fullPath: '/unscheduled'
       preLoaderRoute: typeof UnscheduledRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/topics': {
+      id: '/topics'
+      path: '/topics'
+      fullPath: '/topics'
+      preLoaderRoute: typeof TopicsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/today': {
@@ -192,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InboxRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/archived': {
       id: '/archived'
       path: '/archived'
@@ -206,11 +245,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/topics/{-$topicId}': {
-      id: '/topics/{-$topicId}'
-      path: '/topics/{-$topicId}'
-      fullPath: '/topics/{-$topicId}'
-      preLoaderRoute: typeof TopicsChar123TopicIdChar125RouteImport
+    '/topics_/$topicId': {
+      id: '/topics_/$topicId'
+      path: '/topics/$topicId'
+      fullPath: '/topics/$topicId'
+      preLoaderRoute: typeof TopicsTopicIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -219,13 +258,15 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ArchivedRoute: ArchivedRoute,
+  HomeRoute: HomeRoute,
   InboxRoute: InboxRoute,
   LogbookRoute: LogbookRoute,
   RecentRoute: RecentRoute,
   TodayRoute: TodayRoute,
+  TopicsRoute: TopicsRoute,
   UnscheduledRoute: UnscheduledRoute,
   UpcomingRoute: UpcomingRoute,
-  TopicsChar123TopicIdChar125Route: TopicsChar123TopicIdChar125Route,
+  TopicsTopicIdRoute: TopicsTopicIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

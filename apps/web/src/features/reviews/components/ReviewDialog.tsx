@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useReviewWithTopics } from '../hooks/useReviewWithTopics'
+import { useReviewWithTopics } from '../api/getReview'
 import { ReviewContext } from '../stores/SelectedReviewContext'
 import { ReviewDetail } from './ReviewDetail/ReviewDetail'
 

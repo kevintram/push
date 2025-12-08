@@ -6,19 +6,19 @@ import {
 	useRef,
 	useState
 } from 'react'
-import {
-	MIN_HEIGHT,
-	SearchInput,
-	SearchResultsContainer
-} from '~/components/search'
+import { MIN_HEIGHT } from '~/components/search/constants'
+import { SearchInput } from '~/components/search/SearchInput'
+import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
+import { topicKeys } from '~/features/topics/api/queryKeys'
+import { useSearchTopics } from '~/features/topics/api/searchTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import { useGlobalSearch } from '~/hooks/useGlobalSearch'
+import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import type { Topic } from '~/models/review-topic.types'
 
 interface SearchDialogProps {
@@ -39,10 +39,16 @@ export function SearchDialog({
 	const [selectedIndex, setSelectedIndex] = useState(0)
 	const [gap, setGap] = useState(12)
 
-	const { debouncedQuery, results, isLoading, hasQuery } = useGlobalSearch(
-		query,
-		open
-	)
+	const debouncedQuery = useDebouncedValue(query, 300)
+	const trimmedQuery = debouncedQuery.trim()
+	const hasQuery = trimmedQuery.length > 0
+
+	const { data: results = [], isLoading } = useSearchTopics({
+		query: trimmedQuery || undefined,
+		limit: 10,
+		enabled: open,
+		queryKey: topicKeys.search(trimmedQuery || 'recent')
+	})
 
 	useEffect(() => {
 		if (open) {
@@ -71,7 +77,7 @@ export function SearchDialog({
 	const handleTopicSelect = useCallback(
 		(topic: Topic) => {
 			navigate({
-				to: '/topics/{-$topicId}',
+				to: '/topics/$topicId',
 				params: { topicId: topic.id.toString() }
 			})
 			onOpenChange(false)

@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { CalendarIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -11,13 +10,12 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { deleteTopicReview } from '~/features/topic_reviews/api'
+import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
-import { deleteReview as deleteReviewApi } from '../../api/deleteReview'
-import { updateReview as updateReviewApi } from '../../api/updateReview'
+import { useDeleteReview } from '../../api/deleteReview'
+import { useUpdateReview } from '../../api/updateReview'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import { DatePickerDropdown } from '../DatePickerDropdown'
 import { ReviewDetailHeader } from './ReviewDetailHeader'
@@ -31,37 +29,27 @@ interface ReviewDetailProps {
 
 export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 	const { review, isLoading } = use(ReviewContext)
-	const queryClient = useQueryClient()
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 
-	const { mutateAsync: updateReviewMutation } = useMutation({
-		mutationFn: updateReviewApi,
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
+	const updateReviewMutation = useUpdateReview()
+	const deleteReviewMutation = useDeleteReview()
+	const deleteTopicReviewMutation = useDeleteTopicReview()
 
-	const { mutateAsync: deleteReviewMutation } = useMutation({
-		mutationFn: deleteReviewApi,
-		onSuccess: () => {
+	const handleDeleteReview = useCallback(
+		async (reviewId: number) => {
+			await deleteReviewMutation.mutateAsync(reviewId)
 			onDelete?.()
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
-		}
-	})
-
-	const { mutateAsync: deleteTopicReviewMutation } = useMutation({
-		mutationFn: deleteTopicReview,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
-		}
-	})
+		},
+		[deleteReviewMutation, onDelete]
+	)
 
 	const updateDescriptionMutation = useCallback(
 		(newDescription: string) => {
 			if (review?.id) {
-				updateReviewMutation({ id: review.id, description: newDescription })
+				updateReviewMutation.mutateAsync({
+					id: review.id,
+					description: newDescription
+				})
 			}
 		},
 		[updateReviewMutation, review?.id]
@@ -70,7 +58,7 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 	const updateNotesMutation = useCallback(
 		(newNotes: string) => {
 			if (review?.id) {
-				updateReviewMutation({ id: review.id, notes: newNotes })
+				updateReviewMutation.mutateAsync({ id: review.id, notes: newNotes })
 			}
 		},
 		[updateReviewMutation, review?.id]
@@ -78,14 +66,14 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 
 	const handleDelete = useCallback(async () => {
 		if (review?.id) {
-			await deleteReviewMutation(review.id)
+			await handleDeleteReview(review.id)
 		}
-	}, [deleteReviewMutation, review?.id])
+	}, [handleDeleteReview, review?.id])
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
 			if (review?.id) {
-				updateReviewMutation({
+				updateReviewMutation.mutateAsync({
 					id: review.id,
 					completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
 				})
@@ -96,7 +84,7 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 
 	const handleRemoveTopicReview = useCallback(
 		async (topicReviewId: number) => {
-			await deleteTopicReviewMutation(topicReviewId)
+			await deleteTopicReviewMutation.mutateAsync(topicReviewId)
 		},
 		[deleteTopicReviewMutation]
 	)
@@ -108,12 +96,12 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 					? dayjs(newDate).format('YYYY-MM-DD')
 					: null
 				if (review.completed_at) {
-					updateReviewMutation({
+					updateReviewMutation.mutateAsync({
 						id: review.id,
 						completed_at: newDateString
 					})
 				} else {
-					updateReviewMutation({
+					updateReviewMutation.mutateAsync({
 						id: review.id,
 						scheduled_at: newDateString
 					})

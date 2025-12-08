@@ -1,4 +1,3 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import {
 	Calendar,
@@ -21,10 +20,9 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { updateTopicReview as updateTopicReviewApi } from '~/features/topic_reviews/api/updateTopicReview'
+import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
 import type { Rating, Topic } from '~/models/review-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
 
 interface ReviewTopicCardProps {
 	topic: Topic
@@ -43,20 +41,15 @@ export function ReviewTopicCard({
 	onRemoveFromReview,
 	minHeight = 72
 }: ReviewTopicCardProps) {
-	const queryClient = useQueryClient()
-
-	const { mutateAsync: updateReviewMutation } = useMutation({
-		mutationFn: ({ id, rating }: { id: number; rating: Rating }) =>
-			updateTopicReviewApi(id, rating),
-		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
-		}
-	})
+	const updateReviewMutation = useUpdateTopicReview()
 
 	const handleRatingChange = useCallback(
 		async (newRating: Rating) => {
 			if (!topicReviewId) return
-			await updateReviewMutation({ id: topicReviewId, rating: newRating })
+			await updateReviewMutation.mutateAsync({
+				id: topicReviewId,
+				rating: newRating
+			})
 		},
 		[topicReviewId, updateReviewMutation]
 	)
