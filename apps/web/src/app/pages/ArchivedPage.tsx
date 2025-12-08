@@ -1,10 +1,10 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Archive, Home } from 'lucide-react'
 import { useCallback } from 'react'
+import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
@@ -16,15 +16,10 @@ import {
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
-import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/archived')({
-	component: RouteComponent
-})
-
-function RouteComponent() {
+export function ArchivedPage() {
 	const { openTopicDialog } = useReviewTopicDialog()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
@@ -51,8 +46,8 @@ function RouteComponent() {
 	)
 
 	return (
-		<TopicsPageLayout>
-			<PageHeader icon={Archive} title='Archived' />
+		<PageLayout>
+			<PageLayout.Header icon={Archive} title='Archived' />
 			<ArchivedList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
@@ -60,7 +55,7 @@ function RouteComponent() {
 				onTopicClick={handleTopicClick}
 				topics={topics}
 			/>
-		</TopicsPageLayout>
+		</PageLayout>
 	)
 }
 

@@ -5,7 +5,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ThemeProvider } from '~/stores/ThemeContext'
 import './global.css'
-import { routeTree } from './routeTree.gen'
+import { routeTree } from './app/routeTree.gen'
 
 // in dev mode, append port and git branch to document title for quick context
 if (import.meta.env.DEV && !import.meta.env.VITEST) {

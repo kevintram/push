@@ -1,11 +1,9 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { History, Home } from 'lucide-react'
+import { Home } from 'lucide-react'
 import { useCallback } from 'react'
+import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { PageHeader } from '~/components/PageHeader'
-import { Button } from '~/components/ui/Button'
 import {
 	Empty,
 	EmptyContent,
@@ -16,23 +14,19 @@ import {
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
-import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/models/review-topic.types'
 
-export const Route = createFileRoute('/recent')({
-	component: RouteComponent
-})
-
-function RouteComponent() {
+export function HomePage() {
 	const { openTopicDialog } = useReviewTopicDialog()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
 
-	// Fetch 50 most recent topics
+	// Fetch root topics from API - show non-archived and non-inboxed topics
 	const { data: topics = [], isLoading } = useTopics({
-		order: 'desc',
-		limit: 50
+		root: true,
+		archived: false,
+		inboxed: false
 	})
 
 	const handleCreateTopic = useCallback(async () => {
@@ -51,20 +45,20 @@ function RouteComponent() {
 	)
 
 	return (
-		<TopicsPageLayout>
-			<PageHeader icon={History} title='Recent' />
-			<RecentList
+		<PageLayout>
+			<PageLayout.Header icon={Home} title='Topics' />
+			<RootTopicsList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
 				onCreateTopic={handleCreateTopic}
 				onTopicClick={handleTopicClick}
 				topics={topics}
 			/>
-		</TopicsPageLayout>
+		</PageLayout>
 	)
 }
 
-function RecentList({
+function RootTopicsList({
 	topics,
 	onTopicClick,
 	onCreateTopic,
@@ -77,7 +71,6 @@ function RecentList({
 	isLoading: boolean
 	isCreatingTopic: boolean
 }) {
-	const navigate = useNavigate()
 	const { estimateItemSize, renderItem, getItemKey } = useTopicsList({
 		minHeight: 96,
 		onTopicClick
@@ -93,24 +86,18 @@ function RecentList({
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<History />
+							<Home />
 						</EmptyMedia>
-						<EmptyTitle>Your most recent topics will appear here.</EmptyTitle>
+						<EmptyTitle>
+							Topics are anything you want to learn or remember.
+						</EmptyTitle>
 					</EmptyHeader>
 					<EmptyContent>
-						<div className='flex gap-2'>
-							<EmptyStateCreateTopicButton
-								disabled={isCreatingTopic}
-								onClick={onCreateTopic}
-							/>
-							<Button
-								onClick={() => navigate({ to: '/home' })}
-								variant='outline'
-							>
-								<Home />
-								Topics
-							</Button>
-						</div>
+						<EmptyStateCreateTopicButton
+							disabled={isCreatingTopic}
+							onClick={onCreateTopic}
+							showHoverCard={false}
+						/>
 					</EmptyContent>
 				</Empty>
 			</div>

@@ -1,10 +1,10 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Home, Inbox } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
+import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
@@ -18,7 +18,6 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import type { Topic } from '~/models/review-topic.types'
 
 const MIN_CARD_WIDTH = 280
@@ -27,11 +26,7 @@ const CHARS_PER_LINE = 36
 const LINE_HEIGHT = 18
 const BASE_HEIGHT = 140
 
-export const Route = createFileRoute('/inbox')({
-	component: RouteComponent
-})
-
-function RouteComponent() {
+export function InboxPage() {
 	const { data: inboxTopics, isLoading } = useTopics({
 		inboxed: true,
 		archived: false
@@ -58,12 +53,12 @@ function RouteComponent() {
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
 	return (
-		<TopicsPageLayout>
-			<PageHeader icon={Inbox} title='Inbox'>
+		<PageLayout>
+			<PageLayout.Header icon={Inbox} title='Inbox'>
 				<span className='font-semibold text-muted-foreground text-xl'>
 					({inboxCountLabel})
 				</span>
-			</PageHeader>
+			</PageLayout.Header>
 
 			<InboxList
 				isCreatingTopic={isCreatingTopic}
@@ -72,7 +67,7 @@ function RouteComponent() {
 				onTopicSelect={handleTopicSelect}
 				topics={inboxTopics}
 			/>
-		</TopicsPageLayout>
+		</PageLayout>
 	)
 }
 
