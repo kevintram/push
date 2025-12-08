@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import { ReviewListSkeleton } from '~/app/layouts/ReviewListSkeleton'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
 import {
@@ -14,7 +15,6 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { useUnscheduledReviews } from '~/features/reviews/api/getReviews'
-import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Review, Topic } from '~/models/review-topic.types'
@@ -60,10 +60,6 @@ export function UnscheduledPage() {
 	} = useReviewPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
-	if (reviewsLoading || topicsLoading) {
-		return <ReviewPageSkeleton />
-	}
-
 	const isSectionCollapsed = collapsedSections.unscheduled ?? false
 	const hasEntries =
 		reviewSection.entries.length > 0 || topicSection.entries.length > 0
@@ -74,6 +70,7 @@ export function UnscheduledPage() {
 			<UnscheduledList
 				hasEntries={hasEntries}
 				isCreatingTopic={isCreatingTopic}
+				isLoading={reviewsLoading || topicsLoading}
 				isSectionCollapsed={isSectionCollapsed}
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
@@ -89,6 +86,7 @@ export function UnscheduledPage() {
 function UnscheduledList({
 	hasEntries,
 	isCreatingTopic,
+	isLoading,
 	isSectionCollapsed,
 	onCreateTopic,
 	onReviewClick,
@@ -99,6 +97,7 @@ function UnscheduledList({
 }: {
 	hasEntries: boolean
 	isCreatingTopic: boolean
+	isLoading: boolean
 	isSectionCollapsed: boolean
 	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
@@ -114,6 +113,10 @@ function UnscheduledList({
 	}
 }) {
 	const navigate = useNavigate()
+
+	if (isLoading) {
+		return <ReviewListSkeleton />
+	}
 
 	if (!hasEntries) {
 		return (

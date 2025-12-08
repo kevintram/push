@@ -1,0 +1,63 @@
+import { Skeleton } from '~/components/ui/Skeleton'
+
+function ReviewItemSkeleton() {
+	return (
+		<div className='group rounded-lg px-4'>
+			<div className='flex flex-col'>
+				{/* Row 1: Checkbox + Description + Date + More Button */}
+				<div className='flex items-start gap-4'>
+					{/* Checkbox skeleton */}
+					<Skeleton className='mt-2 h-4 w-4' />
+
+					{/* Description skeleton */}
+					<div className='mt-1 flex-1'>
+						<Skeleton className='h-6 w-full max-w-md' />
+					</div>
+
+					{/* Date and More Actions skeleton */}
+					<div className='flex items-center gap-0'>
+						<Skeleton className='h-6 w-24' />
+						<Skeleton className='h-6 w-6' />
+					</div>
+				</div>
+
+				{/* Row 2: Spacer + Topics skeleton */}
+				<div className='mt-2 flex items-center gap-2'>
+					<div className='w-6' />
+					<div className='flex gap-1'>
+						<Skeleton className='h-5 w-16 rounded-full' />
+						<Skeleton className='h-5 w-20 rounded-full' />
+					</div>
+				</div>
+			</div>
+		</div>
+	)
+}
+
+function SectionSkeleton() {
+	return (
+		<div className='mb-4'>
+			{/* Section header */}
+			<div className='flex items-center justify-between py-2'>
+				<Skeleton className='h-6 w-32' />
+				<Skeleton className='h-8 w-8 rounded' />
+			</div>
+
+			{/* Section items */}
+			<div className='space-y-4'>
+				<ReviewItemSkeleton />
+				<ReviewItemSkeleton />
+				<ReviewItemSkeleton />
+			</div>
+		</div>
+	)
+}
+
+export function ReviewListSkeleton() {
+	return (
+		<div className='p-4'>
+			<SectionSkeleton />
+			<SectionSkeleton />
+		</div>
+	)
+}

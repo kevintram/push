@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import { ReviewListSkeleton } from '~/app/layouts/ReviewListSkeleton'
 import { mergeReviewSections } from '~/app/utils/reviewSections'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
@@ -19,7 +20,6 @@ import {
 	useFutureReviews,
 	useSoonReviews
 } from '~/features/reviews/api/getReviews'
-import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Review, Topic } from '~/models/review-topic.types'
@@ -259,10 +259,6 @@ export function UpcomingPage() {
 	const isInitialLoading = soonReviewsLoading || soonTopicsLoading
 	const isMonthlyLoading = futureReviewsLoading || futureTopicsLoading
 
-	if (isInitialLoading) {
-		return <ReviewPageSkeleton />
-	}
-
 	// Check if all sections are empty
 	const allSectionsEmpty = allSections.every(section => {
 		const reviewEntries = section.reviewsData?.entries ?? []
@@ -278,6 +274,7 @@ export function UpcomingPage() {
 				allSectionsEmpty={allSectionsEmpty}
 				collapsedSections={collapsedSections}
 				isCreatingTopic={isCreatingTopic}
+				isInitialLoading={isInitialLoading}
 				isMonthlyLoading={isMonthlyLoading}
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
@@ -295,6 +292,7 @@ function UpcomingList({
 	allSectionsEmpty,
 	collapsedSections,
 	isCreatingTopic,
+	isInitialLoading,
 	isMonthlyLoading,
 	onCreateTopic,
 	onReviewClick,
@@ -312,6 +310,7 @@ function UpcomingList({
 	allSectionsEmpty: boolean
 	collapsedSections: Record<string, boolean>
 	isCreatingTopic: boolean
+	isInitialLoading: boolean
 	isMonthlyLoading: boolean
 	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
@@ -321,6 +320,10 @@ function UpcomingList({
 	showFuture: boolean
 }) {
 	const navigate = useNavigate()
+
+	if (isInitialLoading) {
+		return <ReviewListSkeleton />
+	}
 
 	if (allSectionsEmpty) {
 		return (

@@ -3,6 +3,7 @@ import { ChevronDown, Home, ListChecks } from 'lucide-react'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import { ReviewListSkeleton } from '~/app/layouts/ReviewListSkeleton'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
 import {
@@ -14,7 +15,6 @@ import {
 } from '~/components/ui/Empty'
 import { useLogbookReviews } from '~/features/reviews/api/getReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import type { Review } from '~/models/review-topic.types'
 
 export function LogbookPage() {
@@ -24,16 +24,13 @@ export function LogbookPage() {
 		useReviewPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
-	if (isLoading) {
-		return <ReviewPageSkeleton />
-	}
-
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={ListChecks} title='Logbook' />
 			<LogbookList
 				collapsedSections={collapsedSections}
 				isCreatingTopic={isCreatingTopic}
+				isLoading={isLoading}
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
 				onToggleCollapse={toggleSection}
@@ -46,6 +43,7 @@ export function LogbookPage() {
 function LogbookList({
 	collapsedSections,
 	isCreatingTopic,
+	isLoading,
 	onCreateTopic,
 	onReviewClick,
 	onToggleCollapse,
@@ -53,6 +51,7 @@ function LogbookList({
 }: {
 	collapsedSections: Record<string, boolean>
 	isCreatingTopic: boolean
+	isLoading: boolean
 	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
 	onToggleCollapse: (sectionId: string) => void
@@ -63,6 +62,10 @@ function LogbookList({
 	}>
 }) {
 	const navigate = useNavigate()
+
+	if (isLoading) {
+		return <ReviewListSkeleton />
+	}
 
 	if (sections.length === 0) {
 		return (

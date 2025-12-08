@@ -5,6 +5,7 @@ import { useMemo } from 'react'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import { ReviewListSkeleton } from '~/app/layouts/ReviewListSkeleton'
 import { mergeReviewSections } from '~/app/utils/reviewSections'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
@@ -17,7 +18,6 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { useTodayReviews } from '~/features/reviews/api/getReviews'
-import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Review, Topic } from '~/models/review-topic.types'
@@ -115,10 +115,6 @@ export function TodayPage() {
 		})
 	}, [reviewSections, topicSections])
 
-	if (reviewsLoading || topicsLoading) {
-		return <ReviewPageSkeleton />
-	}
-
 	// Check if all sections are empty
 	const allSectionsEmpty = mergedSections.every(section => {
 		const reviewEntries = section.reviewsData?.entries ?? []
@@ -133,6 +129,7 @@ export function TodayPage() {
 				allSectionsEmpty={allSectionsEmpty}
 				collapsedSections={collapsedSections}
 				isCreatingTopic={isCreatingTopic}
+				isLoading={reviewsLoading || topicsLoading}
 				mergedSections={mergedSections}
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
@@ -147,6 +144,7 @@ function TodayList({
 	allSectionsEmpty,
 	collapsedSections,
 	isCreatingTopic,
+	isLoading,
 	mergedSections,
 	onCreateTopic,
 	onReviewClick,
@@ -156,6 +154,7 @@ function TodayList({
 	allSectionsEmpty: boolean
 	collapsedSections: Record<string, boolean>
 	isCreatingTopic: boolean
+	isLoading: boolean
 	mergedSections: Array<{
 		id: string
 		label: string
@@ -169,6 +168,10 @@ function TodayList({
 	onTopicClick: (topic: Topic) => void
 }) {
 	const navigate = useNavigate()
+
+	if (isLoading) {
+		return <ReviewListSkeleton />
+	}
 
 	if (allSectionsEmpty) {
 		return (
