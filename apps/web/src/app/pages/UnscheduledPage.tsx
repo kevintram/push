@@ -17,6 +17,7 @@ import { useUnscheduledReviews } from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useTopics } from '~/features/topics/api/getTopics'
+import type { Review, Topic } from '~/models/review-topic.types'
 
 type UnscheduledSectionDefinition = {
 	id: 'unscheduled'
@@ -33,7 +34,6 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 }
 
 export function UnscheduledPage() {
-	const navigate = useNavigate()
 	const { section: reviewSection, isLoading: reviewsLoading } =
 		useUnscheduledReviews()
 
@@ -71,49 +71,97 @@ export function UnscheduledPage() {
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={CircleDashed} title='Unscheduled' />
-			<div className='p-4'>
-				{hasEntries ? (
-					<div className='mb-2'>
-						<ReviewSection
-							headingClassName={reviewSection.headingClassName}
-							id='unscheduled'
-							isCollapsed={isSectionCollapsed}
-							label={reviewSection.label}
-							onReviewClick={handleReviewClick}
-							onToggleCollapse={toggleSection}
-							onTopicClick={handleTopicClick}
-							reviewEntries={reviewSection.entries}
-							topicEntries={topicSection.entries}
-						/>
-					</div>
-				) : (
-					<Empty>
-						<EmptyHeader>
-							<EmptyMedia variant='icon'>
-								<CircleDashed />
-							</EmptyMedia>
-							<EmptyTitle>
-								Unscheduled topics and reviews will appear here.
-							</EmptyTitle>
-						</EmptyHeader>
-						<EmptyContent>
-							<div className='flex gap-2'>
-								<EmptyStateCreateTopicButton
-									disabled={isCreatingTopic}
-									onClick={handleCreateTopic}
-								/>
-								<Button
-									onClick={() => navigate({ to: '/home' })}
-									variant='outline'
-								>
-									<Home />
-									Topics
-								</Button>
-							</div>
-						</EmptyContent>
-					</Empty>
-				)}
-			</div>
+			<UnscheduledList
+				hasEntries={hasEntries}
+				isCreatingTopic={isCreatingTopic}
+				isSectionCollapsed={isSectionCollapsed}
+				onCreateTopic={handleCreateTopic}
+				onReviewClick={handleReviewClick}
+				onToggleCollapse={toggleSection}
+				onTopicClick={handleTopicClick}
+				reviewSection={reviewSection}
+				topicSection={topicSection}
+			/>
 		</PageLayout>
+	)
+}
+
+function UnscheduledList({
+	hasEntries,
+	isCreatingTopic,
+	isSectionCollapsed,
+	onCreateTopic,
+	onReviewClick,
+	onToggleCollapse,
+	onTopicClick,
+	reviewSection,
+	topicSection
+}: {
+	hasEntries: boolean
+	isCreatingTopic: boolean
+	isSectionCollapsed: boolean
+	onCreateTopic: () => void
+	onReviewClick: (reviewId: number) => void
+	onToggleCollapse: (sectionId: string) => void
+	onTopicClick: (topic: Topic) => void
+	reviewSection: {
+		headingClassName?: string
+		label: string
+		entries: Array<Review>
+	}
+	topicSection: {
+		entries: Array<Topic>
+	}
+}) {
+	const navigate = useNavigate()
+
+	if (!hasEntries) {
+		return (
+			<div className='p-4'>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<CircleDashed />
+						</EmptyMedia>
+						<EmptyTitle>
+							Unscheduled topics and reviews will appear here.
+						</EmptyTitle>
+					</EmptyHeader>
+					<EmptyContent>
+						<div className='flex gap-2'>
+							<EmptyStateCreateTopicButton
+								disabled={isCreatingTopic}
+								onClick={onCreateTopic}
+							/>
+							<Button
+								onClick={() => navigate({ to: '/home' })}
+								variant='outline'
+							>
+								<Home />
+								Topics
+							</Button>
+						</div>
+					</EmptyContent>
+				</Empty>
+			</div>
+		)
+	}
+
+	return (
+		<div className='p-4'>
+			<div className='mb-2'>
+				<ReviewSection
+					headingClassName={reviewSection.headingClassName}
+					id='unscheduled'
+					isCollapsed={isSectionCollapsed}
+					label={reviewSection.label}
+					onReviewClick={onReviewClick}
+					onToggleCollapse={onToggleCollapse}
+					onTopicClick={onTopicClick}
+					reviewEntries={reviewSection.entries}
+					topicEntries={topicSection.entries}
+				/>
+			</div>
+		</div>
 	)
 }

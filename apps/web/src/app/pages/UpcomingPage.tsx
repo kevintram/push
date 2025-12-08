@@ -22,7 +22,7 @@ import {
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import { useTopics } from '~/features/topics/api/getTopics'
-import type { Topic } from '~/models/review-topic.types'
+import type { Review, Topic } from '~/models/review-topic.types'
 
 type SoonTopicSectionKey = 'tomorrow' | 'nextSevenDays'
 
@@ -53,7 +53,6 @@ type FutureSection = {
 }
 
 export function UpcomingPage() {
-	const navigate = useNavigate()
 	const [showFuture, setShowFuture] = useState(false)
 
 	// Always fetch soon data (tomorrow + next 7 days)
@@ -274,64 +273,115 @@ export function UpcomingPage() {
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={Calendar} title='Upcoming' />
-			<div className='p-4'>
-				{allSectionsEmpty ? (
-					<Empty>
-						<EmptyHeader>
-							<EmptyMedia variant='icon'>
-								<Calendar />
-							</EmptyMedia>
-							<EmptyTitle>
-								Scheduled reviews and topics will appear here.
-							</EmptyTitle>
-						</EmptyHeader>
-						<EmptyContent>
-							<div className='flex gap-2'>
-								<EmptyStateCreateTopicButton
-									disabled={isCreatingTopic}
-									onClick={handleCreateTopic}
-								/>
-								<Button
-									onClick={() => navigate({ to: '/home' })}
-									variant='outline'
-								>
-									<Home />
-									Topics
-								</Button>
-							</div>
-						</EmptyContent>
-					</Empty>
-				) : (
-					<>
-						{allSections.map(section => (
-							<ReviewSection
-								id={section.id}
-								isCollapsed={collapsedSections[section.id] ?? false}
-								key={section.id}
-								label={section.label}
-								onReviewClick={handleReviewClick}
-								onToggleCollapse={toggleSection}
-								onTopicClick={handleTopicClick}
-								reviewEntries={section.reviewsData?.entries ?? []}
-								topicEntries={section.topicsData?.entries ?? []}
-							/>
-						))}
-
-						{/* Show More button */}
-						{!showFuture && (
-							<div className='mt-8 text-center'>
-								<Button
-									disabled={isMonthlyLoading}
-									onClick={() => setShowFuture(true)}
-									variant='outline'
-								>
-									{isMonthlyLoading ? 'Loading...' : 'Show More'}
-								</Button>
-							</div>
-						)}
-					</>
-				)}
-			</div>
+			<UpcomingList
+				allSections={allSections}
+				allSectionsEmpty={allSectionsEmpty}
+				collapsedSections={collapsedSections}
+				isCreatingTopic={isCreatingTopic}
+				isMonthlyLoading={isMonthlyLoading}
+				onCreateTopic={handleCreateTopic}
+				onReviewClick={handleReviewClick}
+				onShowMore={() => setShowFuture(true)}
+				onToggleCollapse={toggleSection}
+				onTopicClick={handleTopicClick}
+				showFuture={showFuture}
+			/>
 		</PageLayout>
+	)
+}
+
+function UpcomingList({
+	allSections,
+	allSectionsEmpty,
+	collapsedSections,
+	isCreatingTopic,
+	isMonthlyLoading,
+	onCreateTopic,
+	onReviewClick,
+	onShowMore,
+	onToggleCollapse,
+	onTopicClick,
+	showFuture
+}: {
+	allSections: Array<{
+		id: string
+		label: string
+		reviewsData?: { entries: Array<Review> }
+		topicsData?: { entries: Array<Topic> }
+	}>
+	allSectionsEmpty: boolean
+	collapsedSections: Record<string, boolean>
+	isCreatingTopic: boolean
+	isMonthlyLoading: boolean
+	onCreateTopic: () => void
+	onReviewClick: (reviewId: number) => void
+	onShowMore: () => void
+	onToggleCollapse: (sectionId: string) => void
+	onTopicClick: (topic: Topic) => void
+	showFuture: boolean
+}) {
+	const navigate = useNavigate()
+
+	if (allSectionsEmpty) {
+		return (
+			<div className='p-4'>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<Calendar />
+						</EmptyMedia>
+						<EmptyTitle>
+							Scheduled reviews and topics will appear here.
+						</EmptyTitle>
+					</EmptyHeader>
+					<EmptyContent>
+						<div className='flex gap-2'>
+							<EmptyStateCreateTopicButton
+								disabled={isCreatingTopic}
+								onClick={onCreateTopic}
+							/>
+							<Button
+								onClick={() => navigate({ to: '/home' })}
+								variant='outline'
+							>
+								<Home />
+								Topics
+							</Button>
+						</div>
+					</EmptyContent>
+				</Empty>
+			</div>
+		)
+	}
+
+	return (
+		<div className='p-4'>
+			{allSections.map(section => (
+				<ReviewSection
+					id={section.id}
+					isCollapsed={collapsedSections[section.id] ?? false}
+					key={section.id}
+					label={section.label}
+					onReviewClick={onReviewClick}
+					onToggleCollapse={onToggleCollapse}
+					onTopicClick={onTopicClick}
+					reviewEntries={section.reviewsData?.entries ?? []}
+					topicEntries={section.topicsData?.entries ?? []}
+				/>
+			))}
+
+			{/* Show More button */}
+			{!showFuture && (
+				<div className='mt-8 text-center'>
+					<Button
+						disabled={isMonthlyLoading}
+						onClick={onShowMore}
+						variant='outline'
+					>
+						{isMonthlyLoading ? 'Loading...' : 'Show More'}
+					</Button>
+				</div>
+			)}
+		</div>
 	)
 }
