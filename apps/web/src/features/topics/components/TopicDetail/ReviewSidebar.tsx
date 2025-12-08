@@ -25,12 +25,12 @@ import {
 } from '~/components/ui/Tooltip'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
+import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import type { Rating } from '~/features/reviews/types/review.types'
+import type { Rating, Review } from '~/features/reviews/types/review.types'
 import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
-import { ReviewsDataProvider, useReviewsData } from './ReviewsDataContext'
 
 function roundToTwoDecimals(num: number): number {
 	return Math.round(num * 100) / 100
@@ -41,9 +41,40 @@ interface ReviewsSidebarProps {
 }
 
 function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
-	const { scheduledReviews, unscheduledReviews } = useReviewsData()
 	const { openReviewDialog } = useReviewTopicDialog()
 	const { topic } = use(TopicContext)
+	const { data: reviews = [] } = useReviewsByTopic(topic?.id)
+
+	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
+		const scheduled: Array<Review> = []
+		const unscheduled: Array<Review> = []
+
+		for (const review of reviews) {
+			if (review.effective_date) {
+				scheduled.push(review)
+			} else {
+				unscheduled.push(review)
+			}
+		}
+
+		scheduled.sort((a, b) => {
+			return (
+				new Date(a.effective_date!).getTime() -
+				new Date(b.effective_date!).getTime()
+			)
+		})
+
+		unscheduled.sort((a, b) => {
+			return (
+				new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
+			)
+		})
+
+		return {
+			scheduledReviews: scheduled,
+			unscheduledReviews: unscheduled
+		}
+	}, [reviews])
 
 	const createTopicReviewMutation = useCreateTopicReview()
 	const updateTopicMutation = useUpdateTopic()
@@ -261,11 +292,5 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 }
 
 export function ReviewsSidebar({ readonly = false }: ReviewsSidebarProps) {
-	const { topic: selectedTopic } = use(TopicContext)
-
-	return (
-		<ReviewsDataProvider selectedTopicId={selectedTopic?.id}>
-			<ReviewsSidebarContent readonly={readonly} />
-		</ReviewsDataProvider>
-	)
+	return <ReviewsSidebarContent readonly={readonly} />
 }
