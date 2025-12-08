@@ -1,10 +1,19 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { Calendar } from 'lucide-react'
+import { Calendar, Home } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
+import {
+	Empty,
+	EmptyContent,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle
+} from '~/components/ui/Empty'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import {
 	useFutureReviews,
 	useSoonReviews
@@ -47,6 +56,7 @@ type FutureSection = {
 }
 
 function UpcomingPage() {
+	const navigate = useNavigate()
 	const [showFuture, setShowFuture] = useState(false)
 
 	// Always fetch soon data (tomorrow + next 7 days)
@@ -211,6 +221,8 @@ function UpcomingPage() {
 	}, [soonReviewSections, soonTopicSections])
 
 	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
+	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
+		useCreateTopicWithReview()
 
 	const [collapsedSections, setCollapsedSections] = useState<
 		Record<string, boolean>
@@ -236,6 +248,11 @@ function UpcomingPage() {
 		},
 		[openTopicDialog]
 	)
+
+	const handleCreateTopic = useCallback(async () => {
+		const createdTopic = await createTopicWithReview({})
+		openTopicDialog(createdTopic.id)
+	}, [createTopicWithReview, openTopicDialog])
 
 	// Merge soon sections (tomorrow + next 7 days)
 	const soonMergedSections = useMemo(() => {
@@ -348,15 +365,44 @@ function UpcomingPage() {
 		return <ReviewPageSkeleton />
 	}
 
+	// Check if all sections are empty
+	const allSectionsEmpty = allSections.every(section => {
+		const reviewEntries = section.reviewsData?.entries ?? []
+		const topicEntries = section.topicsData?.entries ?? []
+		return reviewEntries.length === 0 && topicEntries.length === 0
+	})
+
 	return (
 		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
 			<div className='flex h-full flex-col overflow-auto'>
 				<PageHeader icon={Calendar} title='Upcoming' />
 				<div className='p-4'>
-					{allSections.length === 0 ? (
-						<p className='mt-8 text-center text-muted-foreground text-sm italic'>
-							No upcoming reviews or topics yet.
-						</p>
+					{allSectionsEmpty ? (
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<Calendar />
+								</EmptyMedia>
+								<EmptyTitle>
+									Scheduled reviews and topics will appear here.
+								</EmptyTitle>
+							</EmptyHeader>
+							<EmptyContent>
+								<div className='flex gap-2'>
+									<EmptyStateCreateTopicButton
+										disabled={isCreatingTopic}
+										onClick={handleCreateTopic}
+									/>
+									<Button
+										onClick={() => navigate({ to: '/home' })}
+										variant='outline'
+									>
+										<Home />
+										Topics
+									</Button>
+								</div>
+							</EmptyContent>
+						</Empty>
 					) : (
 						<>
 							{allSections.map(section => (

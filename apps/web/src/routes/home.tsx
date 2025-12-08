@@ -1,10 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Home, Plus, SquareLibrary } from 'lucide-react'
+import { Home } from 'lucide-react'
 import { useCallback } from 'react'
+import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { PageHeader } from '~/components/PageHeader'
-import { Button } from '~/components/ui/Button'
+import {
+	Empty,
+	EmptyContent,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle
+} from '~/components/ui/Empty'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
@@ -18,7 +25,8 @@ export const Route = createFileRoute('/home')({
 
 function RouteComponent() {
 	const { openTopicDialog } = useReviewTopicDialog()
-	const { createTopicWithReview } = useCreateTopicWithReview()
+	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
+		useCreateTopicWithReview()
 
 	// Fetch root topics from API - show non-archived and non-inboxed topics
 	const { data: topics = [], isLoading } = useTopics({
@@ -46,6 +54,7 @@ function RouteComponent() {
 		<TopicsPageLayout>
 			<PageHeader icon={Home} title='Topics' />
 			<RootTopicsList
+				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
 				onCreateTopic={handleCreateTopic}
 				onTopicClick={handleTopicClick}
@@ -59,12 +68,14 @@ function RootTopicsList({
 	topics,
 	onTopicClick,
 	onCreateTopic,
-	isLoading
+	isLoading,
+	isCreatingTopic
 }: {
 	topics: Array<Topic>
 	onTopicClick: (topic: Topic) => void
 	onCreateTopic: () => void
 	isLoading: boolean
+	isCreatingTopic: boolean
 }) {
 	const { estimateItemSize, renderItem, getItemKey } = useTopicsList({
 		minHeight: 96,
@@ -77,15 +88,24 @@ function RootTopicsList({
 
 	if (topics.length === 0) {
 		return (
-			<div className='px-6 pt-2'>
-				<div className='text-center'>
-					<SquareLibrary className='mx-auto mb-4 h-12 w-12 text-muted-foreground' />
-					<p className='mb-2 text-muted-foreground'>No root topics yet</p>
-					<Button onClick={onCreateTopic} variant='outline'>
-						<Plus className='mr-2 h-4 w-4' />
-						Create your first topic
-					</Button>
-				</div>
+			<div className='p-4'>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<Home />
+						</EmptyMedia>
+						<EmptyTitle>
+							Topics are anything you want to learn or remember.
+						</EmptyTitle>
+					</EmptyHeader>
+					<EmptyContent>
+						<EmptyStateCreateTopicButton
+							disabled={isCreatingTopic}
+							onClick={onCreateTopic}
+							showHoverCard={false}
+						/>
+					</EmptyContent>
+				</Empty>
 			</div>
 		)
 	}

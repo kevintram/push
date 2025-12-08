@@ -1,10 +1,21 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Inbox } from 'lucide-react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Home, Inbox } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
+import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { PageHeader } from '~/components/PageHeader'
+import { Button } from '~/components/ui/Button'
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle
+} from '~/components/ui/Empty'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
@@ -26,6 +37,8 @@ function RouteComponent() {
 		archived: false
 	})
 	const { openTopicDialog } = useReviewTopicDialog()
+	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
+		useCreateTopicWithReview()
 
 	const handleTopicSelect = useCallback(
 		(topic: Topic) => {
@@ -33,6 +46,14 @@ function RouteComponent() {
 		},
 		[openTopicDialog]
 	)
+
+	const handleCreateInboxTopic = useCallback(async () => {
+		const newTopic = await createTopicWithReview({
+			inboxed: true,
+			archived: false
+		})
+		openTopicDialog(newTopic.id)
+	}, [createTopicWithReview, openTopicDialog])
 
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
@@ -45,7 +66,9 @@ function RouteComponent() {
 			</PageHeader>
 
 			<InboxList
+				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
+				onCreateInboxTopic={handleCreateInboxTopic}
 				onTopicSelect={handleTopicSelect}
 				topics={inboxTopics}
 			/>
@@ -56,12 +79,17 @@ function RouteComponent() {
 function InboxList({
 	topics,
 	onTopicSelect,
-	isLoading
+	onCreateInboxTopic,
+	isLoading,
+	isCreatingTopic
 }: {
 	topics: Array<Topic> | undefined | null
 	onTopicSelect: (topic: Topic) => void
+	onCreateInboxTopic: () => void
 	isLoading: boolean
+	isCreatingTopic: boolean
 }) {
+	const navigate = useNavigate()
 	const topicList = useMemo<Array<Topic>>(() => topics ?? [], [topics])
 
 	const estimateItemSize = useCallback((topic: Topic) => {
@@ -97,11 +125,35 @@ function InboxList({
 
 	if (topicList.length === 0) {
 		return (
-			<div className='flex flex-1 items-center justify-center py-12'>
-				<div className='text-center text-muted-foreground'>
-					<p className='font-medium text-lg'>Your inbox is empty</p>
-					<p className='text-sm'>Create your first quick entry topic above</p>
-				</div>
+			<div className='p-4'>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<Inbox />
+						</EmptyMedia>
+						<EmptyTitle>Your inbox is empty.</EmptyTitle>
+						<EmptyDescription>
+							The inbox is for topics to be processed later. Fleeting notes,
+							sudden ideas, whatever.
+						</EmptyDescription>
+					</EmptyHeader>
+					<EmptyContent>
+						<div className='flex gap-2'>
+							<EmptyStateCreateTopicButton
+								buttonText='Add a topic to your inbox'
+								disabled={isCreatingTopic}
+								onClick={onCreateInboxTopic}
+							/>
+							<Button
+								onClick={() => navigate({ to: '/home' })}
+								variant='outline'
+							>
+								<Home />
+								Topics
+							</Button>
+						</div>
+					</EmptyContent>
+				</Empty>
 			</div>
 		)
 	}

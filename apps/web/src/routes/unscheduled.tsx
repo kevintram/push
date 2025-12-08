@@ -1,8 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { CircleDashed } from 'lucide-react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { CircleDashed, Home } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { PageHeader } from '~/components/PageHeader'
+import { Button } from '~/components/ui/Button'
+import {
+	Empty,
+	EmptyContent,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle
+} from '~/components/ui/Empty'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useUnscheduledReviews } from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
@@ -28,6 +38,7 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 }
 
 function UnscheduledPage() {
+	const navigate = useNavigate()
 	const { section: reviewSection, isLoading: reviewsLoading } =
 		useUnscheduledReviews()
 
@@ -47,6 +58,8 @@ function UnscheduledPage() {
 	}, [allTopics])
 
 	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
+	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
+		useCreateTopicWithReview()
 
 	const [collapsedSections, setCollapsedSections] = useState<
 		Record<string, boolean>
@@ -73,19 +86,25 @@ function UnscheduledPage() {
 		[openTopicDialog]
 	)
 
+	const handleCreateTopic = useCallback(async () => {
+		const createdTopic = await createTopicWithReview({})
+		openTopicDialog(createdTopic.id)
+	}, [createTopicWithReview, openTopicDialog])
+
 	if (reviewsLoading || topicsLoading) {
 		return <ReviewPageSkeleton />
 	}
 
 	const isSectionCollapsed = collapsedSections.unscheduled ?? false
+	const hasEntries =
+		reviewSection.entries.length > 0 || topicSection.entries.length > 0
 
 	return (
 		<div className='scrollbar-track-transparent relative flex h-full w-full flex-col'>
 			<div className='flex h-full flex-col overflow-auto'>
 				<PageHeader icon={CircleDashed} title='Unscheduled' />
 				<div className='p-4'>
-					{reviewSection.entries.length > 0 ||
-					topicSection.entries.length > 0 ? (
+					{hasEntries ? (
 						<div className='mb-2'>
 							<ReviewSection
 								headingClassName={reviewSection.headingClassName}
@@ -99,7 +118,33 @@ function UnscheduledPage() {
 								topicEntries={topicSection.entries}
 							/>
 						</div>
-					) : null}
+					) : (
+						<Empty>
+							<EmptyHeader>
+								<EmptyMedia variant='icon'>
+									<CircleDashed />
+								</EmptyMedia>
+								<EmptyTitle>
+									Unscheduled topics and reviews will appear here.
+								</EmptyTitle>
+							</EmptyHeader>
+							<EmptyContent>
+								<div className='flex gap-2'>
+									<EmptyStateCreateTopicButton
+										disabled={isCreatingTopic}
+										onClick={handleCreateTopic}
+									/>
+									<Button
+										onClick={() => navigate({ to: '/home' })}
+										variant='outline'
+									>
+										<Home />
+										Topics
+									</Button>
+								</div>
+							</EmptyContent>
+						</Empty>
+					)}
 				</div>
 			</div>
 		</div>
