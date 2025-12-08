@@ -35,7 +35,7 @@ export function ReviewTopicsPanel({
 
 	// Extract topics from reviews if available, otherwise fallback to topics
 	const topics =
-		review?.topic_reviews?.map(tr => tr.topic) ?? review?.topics ?? []
+		review?.topic_reviews?.map(tr => tr.topic) ?? []
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -55,10 +55,7 @@ export function ReviewTopicsPanel({
 				rating: tr.rating,
 				topicReviewId: tr.id
 			}))
-		: (review?.topics ?? []).map(topic => ({
-				type: 'topic' as const,
-				topic
-			}))
+		: []
 
 	const estimateItemSize = useCallback((item: ListItem) => {
 		const { topic } = item

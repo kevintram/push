@@ -16,7 +16,7 @@ from app.schemas import (
     TopicChildRelationshipCreate,
     TopicParentRelationshipCreate,
     TopicRelationshipResponse,
-    ReviewReadWithTopics,
+    ReviewReadWithTopicReviews,
 )
 
 router = APIRouter()
@@ -477,11 +477,11 @@ async def read_reviews_for_topic(
     topic_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> list[ReviewReadWithTopics]:
+) -> list[ReviewReadWithTopicReviews]:
     stmt = select(Review).where(
-        Review.topics.any(Topic.id == topic_id), Review.user_id == user_id
+        Review.topic_reviews.any(TopicReview.topic_id == topic_id), Review.user_id == user_id
     )
-    stmt = stmt.options(selectinload(Review.topics))
+    stmt = stmt.options(selectinload(Review.topic_reviews).selectinload(TopicReview.topic))
     result = await session.execute(stmt)
     return result.scalars().all()
 

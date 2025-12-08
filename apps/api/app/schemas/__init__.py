@@ -3,9 +3,7 @@ from app.schemas.reviews import (
     ReviewCreate,
     ReviewRead,
     ReviewUpdate,
-    ReviewWithTopics,
     TopicIdPayload,
-    ReviewReadWithTopics,
     ReviewReadWithTopicReviews,
 )
 from app.schemas.topics import (
@@ -26,8 +24,6 @@ from app.schemas.topic_reviews import (
 )
 
 # Rebuild models to resolve forward references
-ReviewWithTopics.model_rebuild()
-ReviewReadWithTopics.model_rebuild()
 ReviewReadWithTopicReviews.model_rebuild()
 TopicRead.model_rebuild()
 TopicReadWithRelationships.model_rebuild()
@@ -44,9 +40,7 @@ __all__ = [
     "ReviewCreate",
     "ReviewRead",
     "ReviewUpdate",
-    "ReviewWithTopics",
     "TopicIdPayload",
-    "ReviewReadWithTopics",
     "TopicBase",
     "TopicRead",
     "TopicCreate",

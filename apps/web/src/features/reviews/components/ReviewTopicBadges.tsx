@@ -12,7 +12,7 @@ export function ReviewTopicBadges({ review }: ReviewTopicBadgesProps) {
 				topic: tr.topic,
 				rating: tr.rating
 			}))
-		: (review.topics ?? []).map(topic => ({ topic, rating: null }))
+		: []
 
 	const topicCount = items.length
 

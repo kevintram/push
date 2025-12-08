@@ -34,7 +34,7 @@ async def read_reviews(
     )
 
     if topic_id is not None:
-        stmt = stmt.where(Review.topics.any(Topic.id == topic_id))
+        stmt = stmt.where(Review.topic_reviews.any(TopicReview.topic_id == topic_id))
 
     if effective_date_before is not None:
         date_before = datetime.strptime(effective_date_before, '%Y-%m-%d').date()
