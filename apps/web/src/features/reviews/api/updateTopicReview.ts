@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+import { topicKeys } from '~/features/topics/api/queryKeys'
 import type { Rating } from '~/models/review-topic.types'
 import { TopicReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { reviewKeys } from './queryKeys'
 
 export async function updateTopicReview(id: number, rating: Rating) {
 	const response = await apiFetch(
@@ -39,7 +40,10 @@ export function useUpdateTopicReview() {
 		mutationFn: ({ id, rating }: { id: number; rating: Rating }) =>
 			updateTopicReview(id, rating),
 		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			])
 		}
 	})
 }

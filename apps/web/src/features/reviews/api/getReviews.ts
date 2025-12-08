@@ -5,6 +5,7 @@ import * as v from 'valibot'
 import type { Review } from '~/models/review-topic.types'
 import { ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { reviewKeys } from './queryKeys'
 
 type GetReviewsFilters = {
 	topicId?: number
@@ -88,7 +89,7 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 
 export function useTodayReviews() {
 	const query = useQuery({
-		queryKey: ['reviews', 'today'],
+		queryKey: reviewKeys.today(),
 		queryFn: () => {
 			const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
 			return getReviews({ effectiveDateBefore: tomorrow })
@@ -170,7 +171,7 @@ const SOON_SECTION_DEFINITIONS: Array<SoonSectionDefinition> = [
 
 export function useSoonReviews() {
 	const query = useQuery({
-		queryKey: ['reviews', 'soon'],
+		queryKey: reviewKeys.soon(),
 		queryFn: () => {
 			const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
 			const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
@@ -271,7 +272,7 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 
 export function useUnscheduledReviews() {
 	const query = useQuery({
-		queryKey: ['reviews', 'unscheduled'],
+		queryKey: reviewKeys.unscheduled(),
 		queryFn: () => getReviews({ scheduled: false, completed: false })
 	})
 
@@ -295,7 +296,7 @@ type FutureSection = {
 
 export function useFutureReviews(options?: { enabled?: boolean }) {
 	const query = useQuery({
-		queryKey: ['reviews', 'future'],
+		queryKey: reviewKeys.future(),
 		queryFn: () => {
 			const futureStartDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
 			return getReviews({
@@ -364,7 +365,7 @@ type LogbookSection = {
 
 export function useLogbookReviews() {
 	const query = useQuery({
-		queryKey: ['reviews', 'logbook'],
+		queryKey: reviewKeys.logbook(),
 		queryFn: () => {
 			const yesterday = dayjs().subtract(1, 'day').format('YYYY-MM-DD')
 			return getReviews({ completedBefore: yesterday })
@@ -474,7 +475,7 @@ export function useLogbookReviews() {
 
 export function useReviewsByTopic(topicId: number | undefined) {
 	return useQuery({
-		queryKey: ['reviews', topicId],
+		queryKey: reviewKeys.byTopic(topicId!),
 		queryFn: () => getReviews({ topicId }),
 		enabled: topicId !== undefined
 	})

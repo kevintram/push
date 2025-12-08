@@ -10,9 +10,11 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
+import { topicKeys } from '~/features/topics/api/queryKeys'
+import { useSearchTopics } from '~/features/topics/api/searchTopics'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
-import { useDebouncedTopicSearch } from '~/features/topics/hooks/useDebouncedTopicSearch'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
+import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import type { Rating, Review, Topic } from '~/models/review-topic.types'
 import { AddedTopicsPopover } from './AddedTopicsPopover'
 import { AddTopicCard } from './AddTopicCard'
@@ -61,21 +63,15 @@ function AddTopicToReviewDialogContent({
 	const [isTopicMinimized, setIsTopicMinimized] = useState(false)
 
 	// Search
-	const {
-		debouncedQuery,
-		results: topics = [],
-		isLoading: isSearching,
-		hasQuery
-	} = useDebouncedTopicSearch({
-		query: searchQuery,
+	const debouncedQuery = useDebouncedValue(searchQuery, 300)
+	const trimmedQuery = debouncedQuery.trim()
+	const hasQuery = trimmedQuery.length > 0
+
+	const { data: topics = [], isLoading: isSearching } = useSearchTopics({
+		query: trimmedQuery || undefined,
 		limit: 20,
 		enabled: open && !!review,
-		queryKey: debouncedQuery => [
-			'topics',
-			'search',
-			debouncedQuery || 'recent',
-			review?.id
-		]
+		queryKey: topicKeys.search(trimmedQuery || 'recent', review?.id)
 	})
 
 	const searchResults = useMemo(() => {

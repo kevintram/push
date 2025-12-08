@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { reviewKeys } from './queryKeys'
 
 type CreateReviewInput = {
 	description: string
@@ -45,7 +46,7 @@ export function useCreateReview() {
 	const { mutateAsync, isPending } = useMutation({
 		mutationFn: createReview,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
+			queryClient.invalidateQueries({ queryKey: reviewKeys.all })
 		}
 	})
 

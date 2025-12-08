@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback } from 'react'
 import * as v from 'valibot'
+import { topicKeys } from '~/features/topics/api/queryKeys'
 import {
 	type LearningState,
 	type Rating,
@@ -9,7 +10,7 @@ import {
 	TopicReviewSchema
 } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { reviewKeys } from './queryKeys'
 
 // Inline topic creation payload
 type TopicCreate = {
@@ -105,8 +106,8 @@ export function useCreateTopicWithReview() {
 	const { mutateAsync: createTopicReviewMutation, isPending } = useMutation({
 		mutationFn: createTopicReview,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['reviews'] })
-			queryClient.invalidateQueries({ queryKey: ['topics'] })
+			queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			queryClient.invalidateQueries({ queryKey: topicKeys.all })
 		},
 		retry: 2
 	})
@@ -155,7 +156,10 @@ export function useCreateTopicReview() {
 	return useMutation({
 		mutationFn: createTopicReview,
 		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			])
 		}
 	})
 }

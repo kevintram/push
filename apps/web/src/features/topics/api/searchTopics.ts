@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { topicKeys } from './queryKeys'
 
 const TopicSearchResponseSchema = v.array(TopicSchema)
 
@@ -67,7 +68,7 @@ export function useGetPotentialChildren(
 	options?: Omit<UseQueryOptions<Array<Topic>, Error>, 'queryKey' | 'queryFn'>
 ) {
 	return useQuery({
-		queryKey: ['potential-children', topicId, searchQuery],
+		queryKey: topicKeys.potentialChildren(topicId!, searchQuery || ''),
 		queryFn: (): Promise<Array<Topic>> => {
 			if (!topicId) return Promise.resolve([])
 
@@ -86,7 +87,7 @@ export function useGetPotentialParents(
 	options?: Omit<UseQueryOptions<Array<Topic>, Error>, 'queryKey' | 'queryFn'>
 ) {
 	return useQuery({
-		queryKey: ['potential-parents', topicId, searchQuery],
+		queryKey: topicKeys.potentialParents(topicId!, searchQuery || ''),
 		queryFn: (): Promise<Array<Topic>> => {
 			if (!topicId) return Promise.resolve([])
 
@@ -102,7 +103,7 @@ export function useGetPotentialParents(
 export function useSearchTopics(
 	params: SearchTopicsParams & {
 		enabled?: boolean
-		queryKey?: Array<unknown>
+		queryKey?: ReadonlyArray<unknown> | Array<unknown>
 	}
 ) {
 	const { enabled = true, queryKey, ...searchParams } = params

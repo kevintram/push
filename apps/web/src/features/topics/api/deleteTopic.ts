@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiFetch } from '~/utils/apiFetch'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { topicKeys } from './queryKeys'
+import { reviewKeys } from '~/features/reviews/api/queryKeys'
 
 export async function deleteTopic(topicId: number) {
 	const response = await apiFetch(
@@ -21,7 +22,10 @@ export function useDeleteTopic() {
 	return useMutation({
 		mutationFn: deleteTopic,
 		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			])
 		}
 	})
 }

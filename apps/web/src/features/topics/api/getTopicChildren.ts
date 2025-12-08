@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { topicKeys } from './queryKeys'
 
 export async function getTopicChildren(topicId: number) {
 	const response = await apiFetch(
@@ -28,7 +29,7 @@ export async function getTopicChildren(topicId: number) {
 
 export function useTopicChildren(topicId: number | undefined) {
 	return useQuery({
-		queryKey: ['topics', topicId, 'children'],
+		queryKey: topicKeys.children(topicId!),
 		queryFn: () => {
 			if (!topicId) throw new Error('Topic ID is required')
 			return getTopicChildren(topicId)

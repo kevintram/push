@@ -4,6 +4,7 @@ import * as v from 'valibot'
 import type { Topic } from '~/models/review-topic.types'
 import { TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { topicKeys } from './queryKeys'
 
 export async function getTopic(topicId: number) {
 	const response = await apiFetch(
@@ -33,7 +34,7 @@ export async function getTopic(topicId: number) {
  */
 export function useTopicWithRelationships(topicId: number | undefined) {
 	const { data: topicData, isLoading } = useQuery({
-		queryKey: ['topics', topicId],
+		queryKey: topicKeys.detail(topicId!),
 		queryFn: () => getTopic(topicId!),
 		enabled: topicId !== undefined
 	})

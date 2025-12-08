@@ -6,7 +6,8 @@ import {
 	TopicRelationshipResponseSchema
 } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { topicKeys } from './queryKeys'
+import { reviewKeys } from '~/features/reviews/api/queryKeys'
 
 type CreateChildRelationshipInput =
 	| {
@@ -155,7 +156,10 @@ export function useCreateRelationship() {
 		},
 		onSuccess: async () => {
 			// Invalidate topic and review caches
-			await invalidateTopicsAndReviews(queryClient)
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			])
 
 			// Invalidate potential relationships cache since the graph has changed
 			await queryClient.invalidateQueries({

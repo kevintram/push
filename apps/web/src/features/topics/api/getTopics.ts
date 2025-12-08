@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import * as v from 'valibot'
 import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { topicKeys } from './queryKeys'
 
 export type GetTopicsParams = {
 	root?: boolean
@@ -97,7 +98,7 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 
 export function useTodayTopics() {
 	const query = useQuery({
-		queryKey: ['topics', 'today'],
+		queryKey: topicKeys.today(),
 		queryFn: () => {
 			const today = dayjs().format('YYYY-MM-DD')
 			return getTopics({ dueBefore: today, archived: false, srsEnabled: true })
@@ -173,7 +174,7 @@ const SOON_SECTION_DEFINITIONS: Array<SoonSectionDefinition> = [
 
 export function useSoonTopics() {
 	const query = useQuery({
-		queryKey: ['topics', 'soon'],
+		queryKey: topicKeys.soon(),
 		queryFn: () => {
 			const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
 			const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
@@ -273,7 +274,7 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 
 export function useUnscheduledTopics() {
 	const query = useQuery({
-		queryKey: ['topics', 'unscheduled'],
+		queryKey: topicKeys.unscheduled(),
 		queryFn: async () => {
 			const allTopics = await getTopics({ archived: false, srsEnabled: true })
 			return allTopics.filter(topic => topic.due === null)
@@ -294,7 +295,7 @@ export function useUnscheduledTopics() {
 
 export function useInboxTopics() {
 	return useQuery({
-		queryKey: ['topics', 'inbox'],
+		queryKey: topicKeys.inbox(),
 		queryFn: () => getTopics({ inboxed: true, archived: false })
 	})
 }
@@ -307,7 +308,7 @@ type FutureSection = {
 
 export function useFutureTopics(options?: { enabled?: boolean }) {
 	const query = useQuery({
-		queryKey: ['topics', 'future'],
+		queryKey: topicKeys.future(),
 		queryFn: () => {
 			const futureStartDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
 			return getTopics({
@@ -371,21 +372,21 @@ export function useFutureTopics(options?: { enabled?: boolean }) {
 
 export function useRootTopics() {
 	return useQuery({
-		queryKey: ['topics', 'root'],
+		queryKey: topicKeys.root(),
 		queryFn: () => getTopics({ root: true, archived: false, inboxed: false })
 	})
 }
 
 export function useArchivedTopics() {
 	return useQuery({
-		queryKey: ['topics', 'archived'],
+		queryKey: topicKeys.archived(),
 		queryFn: () => getTopics({ archived: true, order: 'desc' })
 	})
 }
 
 export function useRecentTopics() {
 	return useQuery({
-		queryKey: ['topics', 'recent'],
+		queryKey: topicKeys.recent(),
 		queryFn: () => getTopics({ order: 'desc', limit: 50 })
 	})
 }

@@ -2,7 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { invalidateTopicsAndReviews } from '~/utils/invalidateTopicsAndReviews'
+import { topicKeys } from './queryKeys'
+import { reviewKeys } from '~/features/reviews/api/queryKeys'
 
 type DeleteChildRelationshipInput = {
 	parentId: number
@@ -72,7 +73,10 @@ export function useDeleteRelationship() {
 			return deleteParentRelationship({ childId: child, parentId: parent })
 		},
 		onSuccess: async () => {
-			await invalidateTopicsAndReviews(queryClient)
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			])
 		}
 	})
 }
