@@ -1,19 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import type {
+	DeleteChildRelationshipInput,
+	DeleteParentRelationshipInput
+} from '../types/api.types'
 import { topicKeys } from './queryKeys'
-import { reviewKeys } from '~/features/reviews/api/queryKeys'
-
-type DeleteChildRelationshipInput = {
-	parentId: number
-	childId: number
-}
-
-type DeleteParentRelationshipInput = {
-	childId: number
-	parentId: number
-}
 
 export async function deleteChildRelationship(
 	input: DeleteChildRelationshipInput

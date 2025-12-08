@@ -5,16 +5,15 @@ import * as v from 'valibot'
 import type { Review } from '~/models/review-topic.types'
 import { ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import type {
+	FutureSection,
+	GetReviewsFilters,
+	LogbookSection,
+	SectionDefinition,
+	SoonSectionDefinition,
+	UnscheduledSectionDefinition
+} from '../types/api.types'
 import { reviewKeys } from './queryKeys'
-
-type GetReviewsFilters = {
-	topicId?: number
-	effectiveDateBefore?: string
-	effectiveDateAfter?: string
-	scheduled?: boolean
-	completed?: boolean
-	completedBefore?: string
-}
 
 export async function getReviews(filters?: GetReviewsFilters) {
 	const params = new URLSearchParams()
@@ -62,15 +61,6 @@ export async function getReviews(filters?: GetReviewsFilters) {
 		}
 		throw error
 	}
-}
-
-export type TodaySectionKey = 'overdue' | 'today'
-
-type SectionDefinition = {
-	id: TodaySectionKey
-	label: string
-	headingClassName?: string
-	emptyMessage: string
 }
 
 const SECTION_DEFINITIONS: Array<SectionDefinition> = [
@@ -145,15 +135,6 @@ export function useTodayReviews() {
 		isLoading: query.isLoading,
 		error: query.error
 	}
-}
-
-export type SoonSectionKey = 'tomorrow' | 'nextSevenDays'
-
-type SoonSectionDefinition = {
-	id: SoonSectionKey
-	label: string
-	headingClassName?: string
-	emptyMessage: string
 }
 
 const SOON_SECTION_DEFINITIONS: Array<SoonSectionDefinition> = [
@@ -256,13 +237,6 @@ export function useSoonReviews() {
 	}
 }
 
-type UnscheduledSectionDefinition = {
-	id: 'unscheduled'
-	label: string
-	headingClassName?: string
-	emptyMessage: string
-}
-
 const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 	id: 'unscheduled',
 	label: 'Unscheduled',
@@ -286,12 +260,6 @@ export function useUnscheduledReviews() {
 		isLoading: query.isLoading,
 		error: query.error
 	}
-}
-
-type FutureSection = {
-	id: string
-	label: string
-	entries: Array<Review>
 }
 
 export function useFutureReviews(options?: { enabled?: boolean }) {
@@ -355,12 +323,6 @@ export function useFutureReviews(options?: { enabled?: boolean }) {
 		isFetched: query.isFetched,
 		error: query.error
 	}
-}
-
-type LogbookSection = {
-	id: string
-	label: string
-	entries: Array<Review>
 }
 
 export function useLogbookReviews() {

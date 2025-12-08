@@ -2,14 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import type { CreateReviewInput } from '../types/api.types'
 import { reviewKeys } from './queryKeys'
-
-type CreateReviewInput = {
-	description: string
-	notes?: string
-	scheduledAt?: string | null
-	completedAt?: string | null
-}
 
 export async function createReview(input: CreateReviewInput) {
 	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/reviews/`, {

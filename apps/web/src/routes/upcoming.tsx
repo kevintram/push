@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import dayjs from 'dayjs'
 import { Calendar } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '~/components/PageHeader'
@@ -10,12 +11,40 @@ import {
 } from '~/features/reviews/api/getReviews'
 import { ReviewPageSkeleton } from '~/features/reviews/components/ReviewPageSkeleton'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import { useFutureTopics, useSoonTopics } from '~/features/topics/api/getTopics'
+import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/models/review-topic.types'
 
 export const Route = createFileRoute('/upcoming')({
 	component: UpcomingPage
 })
+
+type SoonTopicSectionKey = 'tomorrow' | 'nextSevenDays'
+
+type SoonSectionDefinition = {
+	id: SoonTopicSectionKey
+	label: string
+	headingClassName?: string
+	emptyMessage: string
+}
+
+const SOON_SECTION_DEFINITIONS: Array<SoonSectionDefinition> = [
+	{
+		id: 'tomorrow',
+		label: 'Tomorrow',
+		emptyMessage: 'No topics due tomorrow.'
+	},
+	{
+		id: 'nextSevenDays',
+		label: 'Next Few Days',
+		emptyMessage: 'No topics due in the next few days.'
+	}
+]
+
+type FutureSection = {
+	id: string
+	label: string
+	entries: Array<Topic>
+}
 
 function UpcomingPage() {
 	const [showFuture, setShowFuture] = useState(false)
@@ -23,8 +52,79 @@ function UpcomingPage() {
 	// Always fetch soon data (tomorrow + next 7 days)
 	const { sections: soonReviewSections, isLoading: soonReviewsLoading } =
 		useSoonReviews()
-	const { sections: soonTopicSections, isLoading: soonTopicsLoading } =
-		useSoonTopics()
+
+	const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
+	const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
+	const { data: soonTopics, isLoading: soonTopicsLoading } = useTopics({
+		dueAfter: tomorrow,
+		dueBefore: nextWeekDate,
+		archived: false,
+		srsEnabled: true
+	})
+
+	// Centralized date boundary calculations
+	const dateBoundaries = useMemo(() => {
+		const newDate = new Date()
+
+		const todayDateStr = dayjs(newDate).format('YYYY-MM-DD')
+
+		const tomorrowDate = new Date()
+		tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+		const tomorrowDateStr = dayjs(tomorrowDate).format('YYYY-MM-DD')
+
+		const nextWeekDate = new Date()
+		nextWeekDate.setDate(nextWeekDate.getDate() + 7)
+		const nextWeekDateStr = dayjs(nextWeekDate).format('YYYY-MM-DD')
+
+		const dayAfterTomorrowDate = new Date()
+		dayAfterTomorrowDate.setDate(dayAfterTomorrowDate.getDate() + 2)
+		const dayAfterTomorrowDateStr =
+			dayjs(dayAfterTomorrowDate).format('YYYY-MM-DD')
+
+		return {
+			todayDateStr,
+			tomorrowDateStr,
+			nextWeekDateStr,
+			dayAfterTomorrowDateStr
+		}
+	}, [])
+
+	const soonTopicSections = useMemo(() => {
+		const topicList = soonTopics ?? []
+
+		const tomorrowList: Array<Topic> = []
+		const nextSevenDaysList: Array<Topic> = []
+
+		for (const topic of topicList) {
+			if (!topic.due) {
+				// Skip unscheduled topics (shouldn't happen with our query but be safe)
+				continue
+			}
+
+			const dueDate = topic.due
+
+			// Tomorrow
+			if (dueDate === dateBoundaries.tomorrowDateStr) {
+				tomorrowList.push(topic)
+			}
+			// Next 7 Days
+			else if (
+				dueDate >= dateBoundaries.dayAfterTomorrowDateStr &&
+				dueDate <= dateBoundaries.nextWeekDateStr
+			) {
+				nextSevenDaysList.push(topic)
+			}
+		}
+
+		return SOON_SECTION_DEFINITIONS.map(def => {
+			const entries = def.id === 'tomorrow' ? tomorrowList : nextSevenDaysList
+
+			return {
+				...def,
+				entries
+			}
+		})
+	}, [soonTopics, dateBoundaries])
 
 	// Conditionally fetch future data (8+ days, monthly groups)
 	const {
@@ -32,11 +132,62 @@ function UpcomingPage() {
 		isLoading: futureReviewsLoading,
 		isFetched: futureReviewsFetched
 	} = useFutureReviews({ enabled: showFuture })
+
+	const futureStartDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
 	const {
-		sections: futureTopicSections = [],
+		data: futureTopics,
 		isLoading: futureTopicsLoading,
 		isFetched: futureTopicsFetched
-	} = useFutureTopics({ enabled: showFuture })
+	} = useTopics(
+		{
+			dueAfter: futureStartDate,
+			archived: false,
+			srsEnabled: true
+		},
+		{ enabled: showFuture }
+	)
+
+	// Group topics by month
+	const futureTopicSections = useMemo(() => {
+		if (!futureTopics) {
+			return []
+		}
+
+		const monthlyGroups = new Map<string, Array<Topic>>()
+
+		for (const topic of futureTopics) {
+			const dueDate = topic.due
+
+			// Skip topics without due date
+			if (!dueDate) {
+				continue
+			}
+
+			const monthKey = dayjs(dueDate).format('YYYY-MM')
+
+			if (!monthlyGroups.has(monthKey)) {
+				monthlyGroups.set(monthKey, [])
+			}
+			const group = monthlyGroups.get(monthKey)
+			if (group) {
+				group.push(topic)
+			}
+		}
+
+		// Convert to array of sections, sorted by month ascending (earliest first)
+		const sectionsArray: Array<FutureSection> = Array.from(
+			monthlyGroups.entries()
+		).map(([monthKey, entries]) => ({
+			id: monthKey,
+			label: dayjs(`${monthKey}-01`).format('MMMM YYYY'),
+			entries
+		}))
+
+		// Sort by month key ascending (earliest month first)
+		sectionsArray.sort((a, b) => a.id.localeCompare(b.id))
+
+		return sectionsArray
+	}, [futureTopics])
 
 	useEffect(() => {
 		if (futureReviewsFetched && futureTopicsFetched) {

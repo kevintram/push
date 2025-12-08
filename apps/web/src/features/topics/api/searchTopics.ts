@@ -3,17 +3,10 @@ import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import type { SearchTopicsParams } from '../types/api.types'
 import { topicKeys } from './queryKeys'
 
 const TopicSearchResponseSchema = v.array(TopicSchema)
-
-export type SearchTopicsParams = {
-	query?: string
-	limit?: number
-	addableToReview?: number
-	addableAsParentTo?: number
-	addableAsChildTo?: number
-}
 
 export async function searchTopics(
 	params: SearchTopicsParams = {}

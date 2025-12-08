@@ -3,15 +3,8 @@ import * as v from 'valibot'
 import { topicKeys } from '~/features/topics/api/queryKeys'
 import { type Review, ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import type { UpdateReviewInput } from '../types/api.types'
 import { reviewKeys } from './queryKeys'
-
-export type UpdateReviewInput = {
-	id: number
-	description?: string
-	notes?: string
-	scheduled_at?: string | null
-	completed_at?: string | null
-}
 
 export async function updateReview(input: UpdateReviewInput): Promise<Review> {
 	const { id, ...updateData } = input

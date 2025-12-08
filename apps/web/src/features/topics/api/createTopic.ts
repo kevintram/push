@@ -3,17 +3,8 @@ import * as v from 'valibot'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import type { CreateTopicInput } from '../types/api.types'
 import { topicKeys } from './queryKeys'
-
-export type CreateTopicInput = {
-	name?: string
-	notes?: string
-	stability?: number | null
-	difficulty?: number | null
-	state?: 'LEARNING' | 'REVIEW' | 'RELEARNING'
-	archived?: boolean
-	inboxed?: boolean
-}
 
 export async function createTopic(
 	input: CreateTopicInput = {}

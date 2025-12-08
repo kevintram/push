@@ -3,48 +3,13 @@ import dayjs from 'dayjs'
 import { useCallback } from 'react'
 import * as v from 'valibot'
 import { topicKeys } from '~/features/topics/api/queryKeys'
-import {
-	type LearningState,
-	type Rating,
-	type Topic,
-	TopicReviewSchema
-} from '~/models/review-topic.types'
+import { type Topic, TopicReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import type {
+	CreateTopicReviewPayload,
+	CreateTopicWithReviewInput
+} from '../types/api.types'
 import { reviewKeys } from './queryKeys'
-
-// Inline topic creation payload
-type TopicCreate = {
-	name: string
-	notes: string
-	archived: boolean
-	inboxed: boolean
-	stability?: number | null
-	difficulty?: number | null
-	state?: LearningState
-	step?: number | null
-	due?: string | null
-	srs_enabled?: boolean
-}
-
-// Inline review creation payload
-type ReviewCreate = {
-	description: string
-	notes: string
-	scheduled_at?: string | null
-	completed_at?: string | null
-}
-
-// Payload options for createTopicReview
-type CreateTopicReviewPayload = {
-	rating?: Rating | null
-} & (
-	| { topic_id: number; topic?: never }
-	| { topic: TopicCreate; topic_id?: never }
-) &
-	(
-		| { review_id: number; review?: never }
-		| { review: ReviewCreate; review_id?: never }
-	)
 
 /**
  * Creates a topic-review link, optionally creating the topic and/or review inline.
@@ -80,16 +45,6 @@ export async function createTopicReview(payload: CreateTopicReviewPayload) {
 		}
 		throw error
 	}
-}
-
-type CreateTopicWithReviewInput = {
-	name?: string
-	notes?: string
-	stability?: number | null
-	difficulty?: number | null
-	state?: 'LEARNING' | 'REVIEW' | 'RELEARNING'
-	archived?: boolean
-	inboxed?: boolean
 }
 
 /**

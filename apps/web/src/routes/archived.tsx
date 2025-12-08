@@ -7,7 +7,7 @@ import { PageHeader } from '~/components/PageHeader'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
-import { useArchivedTopics } from '~/features/topics/api/getTopics'
+import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicsPageLayout } from '~/features/topics/components/TopicsPageLayout'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/models/review-topic.types'
@@ -21,7 +21,10 @@ function RouteComponent() {
 	const { createTopicWithReview } = useCreateTopicWithReview()
 
 	// Fetch archived topics sorted by most recently updated
-	const { data: topics = [], isLoading } = useArchivedTopics()
+	const { data: topics = [], isLoading } = useTopics({
+		archived: true,
+		order: 'desc'
+	})
 
 	const handleCreateTopic = useCallback(async () => {
 		const newTopic = await createTopicWithReview({

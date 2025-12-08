@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { searchTopics } from '~/features/topics/api/searchTopics'
 import { topicKeys } from '~/features/topics/api/queryKeys'
+import { searchTopics } from '~/features/topics/api/searchTopics'
 import type { Topic } from '~/models/review-topic.types'
 import { useDebouncedValue } from './useDebouncedValue'
 

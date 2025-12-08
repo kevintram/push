@@ -6,6 +6,5 @@ export const reviewKeys = {
 	future: () => [...reviewKeys.all, 'future'] as const,
 	logbook: () => [...reviewKeys.all, 'logbook'] as const,
 	byTopic: (topicId: number) => [...reviewKeys.all, topicId] as const,
-	detail: (reviewId: number) => [...reviewKeys.all, reviewId] as const,
+	detail: (reviewId: number) => [...reviewKeys.all, reviewId] as const
 }
-

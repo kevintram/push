@@ -3,16 +3,8 @@ import * as v from 'valibot'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import type { UpdateTopicInput } from '../types/api.types'
 import { topicKeys } from './queryKeys'
-
-type UpdateTopicInput = {
-	id: number
-	name?: string
-	notes?: string
-	archived?: boolean
-	inboxed?: boolean
-	srs_enabled?: boolean
-}
 
 export async function updateTopic(input: UpdateTopicInput) {
 	const { id, ...updateData } = input

@@ -1,43 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import type { Topic } from '~/models/review-topic.types'
+import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import {
 	type TopicRelationshipResponse,
 	TopicRelationshipResponseSchema
 } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import type {
+	CreateChildRelationshipInput,
+	CreateParentRelationshipInput,
+	CreateRelationshipInput
+} from '../types/api.types'
 import { topicKeys } from './queryKeys'
-import { reviewKeys } from '~/features/reviews/api/queryKeys'
-
-type CreateChildRelationshipInput =
-	| {
-			parentId: number
-			childId: number
-	  }
-	| {
-			parentId: number
-			child: {
-				name: string
-				notes: string
-				archived: boolean
-				inboxed: boolean
-			}
-	  }
-
-type CreateParentRelationshipInput =
-	| {
-			childId: number
-			parentId: number
-	  }
-	| {
-			childId: number
-			parent: {
-				name: string
-				notes: string
-				archived: boolean
-				inboxed: boolean
-			}
-	  }
 
 export async function createChildRelationship(
 	input: CreateChildRelationshipInput
@@ -120,17 +94,6 @@ export async function createParentRelationship(
 		throw error
 	}
 }
-
-type CreateRelationshipInput =
-	| { parent: number; child: number }
-	| {
-			parent: number
-			childData: Pick<Topic, 'name' | 'notes' | 'archived' | 'inboxed'>
-	  }
-	| {
-			child: number
-			parentData: Pick<Topic, 'name' | 'notes' | 'archived' | 'inboxed'>
-	  }
 
 export function useCreateRelationship() {
 	const queryClient = useQueryClient()
