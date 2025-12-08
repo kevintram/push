@@ -68,7 +68,8 @@ async def test_search_topics_with_query_filters_and_orders_by_name():
     compiled = str(
         session.last_statement.compile(compile_kwargs={"literal_binds": True})
     )
-    assert "ILIKE '%Topic%'" in compiled
+    # SQLAlchemy compiles ILIKE to lower(...) LIKE lower(...) for generic dialects
+    assert "lower(topics.name) LIKE lower('%Topic%')" in compiled
     assert "ORDER BY topics.name ASC" in compiled
     assert "LIMIT 25" in compiled
 
