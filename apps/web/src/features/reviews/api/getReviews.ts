@@ -38,10 +38,6 @@ export async function getReviews(filters?: GetReviewsFilters) {
 		params.append('completed', String(filters.completed))
 	}
 
-	if (filters?.completedBefore !== undefined) {
-		params.append('completed_before', filters.completedBefore)
-	}
-
 	const url = `${import.meta.env.VITE_API_URL}/reviews/${params.toString() ? `?${params.toString()}` : ''}`
 
 	const response = await apiFetch(url, {
@@ -347,9 +343,15 @@ export function useLogbookReviews() {
 	)
 
 	const query = useQuery({
-		queryKey: reviewKeys.list({ completedBefore: yesterday }),
+		queryKey: reviewKeys.list({
+			effectiveDateBefore: yesterday,
+			completed: true
+		}),
 		queryFn: () => {
-			return getReviews({ completedBefore: yesterday })
+			return getReviews({
+				effectiveDateBefore: yesterday,
+				completed: true
+			})
 		}
 	})
 

@@ -25,7 +25,6 @@ async def read_reviews(
     effective_date_after: str | None = None,
     completed: bool | None = None,
     scheduled: bool | None = None,
-    completed_before: str | None = None,
 ) -> list[ReviewReadWithTopicReviews]:
     stmt = (
         select(Review)
@@ -56,13 +55,6 @@ async def read_reviews(
             stmt = stmt.where(Review.scheduled_at.isnot(None))
         else:
             stmt = stmt.where(Review.scheduled_at.is_(None))
-
-    if completed_before is not None:
-        date_completed_before = datetime.strptime(completed_before, '%Y-%m-%d').date()
-        stmt = stmt.where(
-            Review.completed_at <= date_completed_before,
-            Review.completed_at.isnot(None)
-        )
 
     result = await session.execute(stmt)
     ret = result.scalars().all()
