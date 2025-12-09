@@ -13,11 +13,12 @@ export const topicKeys = {
 		}
 		return key
 	},
-	detail: (topicId: number) => [...topicKeys.all, topicId] as const,
+	byId: (topicId: number) => [...topicKeys.all, topicId] as const,
+	detail: (topicId: number) => [...topicKeys.byId(topicId), 'detail'] as const,
 	children: (topicId: number) =>
-		[...topicKeys.detail(topicId), 'children'] as const,
+		[...topicKeys.byId(topicId), 'children'] as const,
 	parents: (topicId: number) =>
-		[...topicKeys.detail(topicId), 'parents'] as const,
+		[...topicKeys.byId(topicId), 'parents'] as const,
 	search: (params: SearchTopicsParams = {}) => {
 		// Add params to key
 		const key: Array<string | number> = [...topicKeys.all, 'search']

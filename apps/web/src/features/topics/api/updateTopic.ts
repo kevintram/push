@@ -39,10 +39,12 @@ export function useUpdateTopic() {
 
 	return useMutation({
 		mutationFn: updateTopic,
-		onSuccess: async () => {
+		onSuccess: async data => {
+			queryClient.setQueryData(topicKeys.detail(data.id), data)
 			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
-				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+				queryClient.invalidateQueries({
+					queryKey: reviewKeys.list({ topicId: data.id })
+				})
 			])
 		}
 	})
