@@ -13,6 +13,7 @@ export interface ReviewTopicDialogContextValue {
 	// Review actions
 	openReviewDialog: (reviewId: number) => void
 	closeReviewDialog: () => void
+	maximizeReviewDialog: () => void
 }
 
 export const ReviewTopicDialogContext =
