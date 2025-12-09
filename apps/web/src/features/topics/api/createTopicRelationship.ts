@@ -121,14 +121,6 @@ export function useCreateRelationship() {
 				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
 				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
 			])
-
-			// Invalidate potential relationships cache since the graph has changed
-			await queryClient.invalidateQueries({
-				queryKey: ['potential-children']
-			})
-			await queryClient.invalidateQueries({
-				queryKey: ['potential-parents']
-			})
 		}
 	})
 }
