@@ -1,5 +1,7 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useRouter } from '@tanstack/react-router'
+import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
+import { Button } from '~/components/ui/Button'
 import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
@@ -7,6 +9,22 @@ import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 
 interface TopicDetailPageProps {
 	topicId: string
+}
+
+function BrowserNavigationButtons() {
+	const router = useRouter()
+
+	return (
+		<Button
+			className='h-6 w-6 p-0'
+			onClick={() => router.history.back()}
+			size='sm'
+			title='Go back'
+			variant='ghost'
+		>
+			<ArrowLeft className='h-4 w-4' />
+		</Button>
+	)
 }
 
 export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
@@ -43,6 +61,7 @@ export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
 		<TopicContext value={contextValue}>
 			<TopicDetail
 				headerAfterActions={<SidebarTrigger />}
+				headerBeforeActions={<BrowserNavigationButtons />}
 				onDelete={handleDelete}
 				onTopicNavigate={handleTopicNavigate}
 			/>
