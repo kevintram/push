@@ -1,8 +1,8 @@
+import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import type { Rating } from '../../types/review.types'
@@ -23,15 +23,17 @@ interface ReviewTopicsPanelProps {
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	onRemoveTopicReview: (topicReviewId: number) => void
+	onNavigate?: () => void | Promise<void>
 }
 
 export function ReviewTopicsPanel({
 	getScrollElement,
 	scrollMargin,
-	onRemoveTopicReview
+	onRemoveTopicReview,
+	onNavigate
 }: ReviewTopicsPanelProps) {
 	const { review } = use(ReviewContext)
-	const { openTopicDialog } = useReviewTopicDialog()
+	const navigate = useNavigate()
 	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 
 	// Extract topics from reviews if available, otherwise fallback to topics
@@ -39,9 +41,13 @@ export function ReviewTopicsPanel({
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
-			openTopicDialog(topic.id)
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topic.id.toString() }
+			})
+			onNavigate?.()
 		},
-		[openTopicDialog]
+		[navigate, onNavigate]
 	)
 
 	const handleAddTopic = useCallback(() => {
