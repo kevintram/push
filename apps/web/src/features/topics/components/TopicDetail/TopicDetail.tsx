@@ -86,23 +86,6 @@ export function TopicDetail({
 		[deleteTopicMutation, onDelete]
 	)
 
-	const updateNotesMutation = useCallback(
-		(newNotes: string) => {
-			if (topic?.id) {
-				updateTopicMutation.mutateAsync({ id: topic.id, notes: newNotes })
-			}
-		},
-		[updateTopicMutation, topic?.id]
-	)
-
-	const updateNameMutation = useCallback(
-		(newTitle: string) => {
-			if (!topic) return
-			updateTopicMutation.mutateAsync({ id: topic.id, name: newTitle })
-		},
-		[updateTopicMutation, topic]
-	)
-
 	const handleDelete = useCallback(async () => {
 		if (topic?.id) {
 			await deleteTopic(topic.id)
@@ -129,13 +112,25 @@ export function TopicDetail({
 
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: topic?.notes ?? '',
-		onSave: updateNotesMutation,
+		onSave: useCallback(
+			(newNotes: string) => {
+				if (!topic?.id) return
+				updateTopicMutation.mutateAsync({ id: topic.id, notes: newNotes })
+			},
+			[updateTopicMutation, topic?.id]
+		),
 		key: `topics-${topic?.id}`
 	})
 
 	const { value: title, onChange: onNameChange } = useAutoSave({
 		initialValue: topic?.name ?? '',
-		onSave: updateNameMutation,
+		onSave: useCallback(
+			(newTitle: string) => {
+				if (!topic?.id) return
+				updateTopicMutation.mutateAsync({ id: topic.id, name: newTitle })
+			},
+			[updateTopicMutation, topic?.id]
+		),
 		key: `topics-${topic?.id}`
 	})
 
