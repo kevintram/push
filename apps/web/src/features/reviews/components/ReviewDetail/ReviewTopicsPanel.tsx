@@ -1,12 +1,11 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
-import { use, useCallback, useState } from 'react'
+import { use, useCallback } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import type { Rating } from '../../types/review.types'
-import { AddTopicToReviewDialog } from '../AddTopicToReviewDialog/AddTopicToReviewDialog'
 import { ReviewTopicCard } from './ReviewTopicCard'
 
 const MIN_WIDTH = 210
@@ -34,7 +33,6 @@ export function ReviewTopicsPanel({
 }: ReviewTopicsPanelProps) {
 	const { review } = use(ReviewContext)
 	const navigate = useNavigate()
-	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 
 	// Extract topics from reviews if available, otherwise fallback to topics
 	const topics = review?.topic_reviews?.map(tr => tr.topic) ?? []
@@ -51,8 +49,12 @@ export function ReviewTopicsPanel({
 	)
 
 	const handleAddTopic = useCallback(() => {
-		setIsAddTopicDialogOpen(true)
-	}, [])
+		if (!review?.id) return
+		navigate({
+			to: '/reviews/$reviewId/add',
+			params: { reviewId: review.id.toString() }
+		})
+	}, [navigate, review?.id])
 
 	const items: Array<ListItem> = review?.topic_reviews
 		? review.topic_reviews.map(tr => ({
@@ -131,11 +133,6 @@ export function ReviewTopicsPanel({
 					scrollMargin={scrollMargin}
 				/>
 			</div>
-			<AddTopicToReviewDialog
-				onOpenChange={setIsAddTopicDialogOpen}
-				open={isAddTopicDialogOpen}
-				review={review}
-			/>
 		</div>
 	)
 }

@@ -1,27 +1,18 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Minus, SquarePen, X } from 'lucide-react'
+import { ArrowLeft, Minus, SquarePen, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { SearchInput } from '~/components/search/SearchInput'
 import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
 import { Button } from '~/components/ui/Button'
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle
-} from '~/components/ui/Dialog'
 import { useSearchTopics } from '~/features/topics/api/searchTopics'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
-import type { Rating, Review } from '../../types/review.types'
+import type { Rating } from '../../types/review.types'
 import { AddedTopicsPopover } from './AddedTopicsPopover'
 import { AddTopicCard } from './AddTopicCard'
-import {
-	AddTopicToReviewProvider,
-	useAddTopicToReview
-} from './AddTopicToReviewContext'
+import { useAddTopicToReview } from './AddTopicToReviewContext'
 import { FloatingTopicCard } from './FloatingTopicCard'
 import { TopicReviewStatusButton } from './ReviewStatusButton'
 
@@ -29,22 +20,16 @@ import { TopicReviewStatusButton } from './ReviewStatusButton'
 const MIN_HEIGHT = 72
 
 // Types
-interface AddTopicToReviewDialogProps {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-	review: Review | undefined
+interface AddTopicToReviewContentProps {
+	onClose: () => void
 }
 
 type ViewMode = 'search' | 'detail'
 
-// Inner component that uses the context
-function AddTopicToReviewDialogContent({
-	open,
-	onOpenChange
-}: {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-}) {
+// Main component that uses the context
+export function AddTopicToReviewContent({
+	onClose
+}: AddTopicToReviewContentProps) {
 	const inputRef = useRef<HTMLInputElement>(null)
 
 	// Get shared state from context
@@ -70,7 +55,7 @@ function AddTopicToReviewDialogContent({
 	const { data: topics = [], isLoading: isSearching } = useSearchTopics({
 		query: trimmedQuery || undefined,
 		limit: 20,
-		enabled: open && !!review
+		enabled: !!review
 	})
 
 	const searchResults = useMemo(() => {
@@ -82,17 +67,18 @@ function AddTopicToReviewDialogContent({
 
 	// Effects
 	useEffect(() => {
-		if (open) {
-			setTimeout(() => {
-				inputRef.current?.focus()
-			}, 0)
-			setSearchQuery('')
-		} else {
+		setTimeout(() => {
+			inputRef.current?.focus()
+		}, 0)
+	}, [])
+
+	useEffect(() => {
+		return () => {
 			setViewMode('search')
 			setIsTopicMinimized(false)
 			setSelectedTopicId(undefined)
 		}
-	}, [open, setSelectedTopicId])
+	}, [setSelectedTopicId])
 
 	// Topic Creation
 	const onCreateNewClicked = useCallback(async () => {
@@ -205,14 +191,21 @@ function AddTopicToReviewDialogContent({
 		viewMode === 'detail' && isTopicMinimized && selectedTopicId !== undefined
 
 	return (
-		<DialogContent
-			className='-translate-x-1/2 -translate-y-1/2 fixed top-1/2 left-1/2 flex h-[600px] w-full max-w-[90vw] flex-col p-0 md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1100px] 2xl:max-w-[1200px]'
-			showCloseButton={false}
-		>
+		<div className='flex h-screen w-full flex-col p-4'>
 			{/* Header */}
-			<DialogHeader className='flex-shrink-0 px-4 pt-4'>
-				<DialogTitle className='sr-only'>Add Topic to Review</DialogTitle>
+			<div className='flex-shrink-0 pb-4'>
 				<div className='flex items-center gap-4'>
+					{/* Back Button */}
+					<Button
+						className='h-9 w-9 p-0'
+						onClick={onClose}
+						size='sm'
+						title='Go back'
+						variant='ghost'
+					>
+						<ArrowLeft className='h-4 w-4' />
+					</Button>
+
 					{/* Added Topics Popover */}
 					<AddedTopicsPopover
 						isOpen={isPopoverOpen}
@@ -240,15 +233,11 @@ function AddTopicToReviewDialogContent({
 						Create New
 					</Button>
 
-					<Button
-						onClick={() => onOpenChange(false)}
-						size='default'
-						variant='default'
-					>
+					<Button onClick={onClose} size='default' variant='default'>
 						Done
 					</Button>
 				</div>
-			</DialogHeader>
+			</div>
 
 			{/* Content */}
 			<div className='scrollbar-track-transparent flex-1 overflow-y-auto p-4 pt-0'>
@@ -335,7 +324,7 @@ function AddTopicToReviewDialogContent({
 					</motion.div>
 				)}
 			</AnimatePresence>
-		</DialogContent>
+		</div>
 	)
 }
 
@@ -448,23 +437,5 @@ function TopicDetailInReviewMode({
 				topic={selectedTopic}
 			/>
 		</TopicContext>
-	)
-}
-
-// Main Component with Provider wrapper
-export function AddTopicToReviewDialog({
-	open,
-	onOpenChange,
-	review
-}: AddTopicToReviewDialogProps) {
-	return (
-		<Dialog onOpenChange={onOpenChange} open={open}>
-			<AddTopicToReviewProvider review={review}>
-				<AddTopicToReviewDialogContent
-					onOpenChange={onOpenChange}
-					open={open}
-				/>
-			</AddTopicToReviewProvider>
-		</Dialog>
 	)
 }
