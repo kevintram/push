@@ -103,17 +103,13 @@ export function TopicParentsPanel({
 		async (topic: Topic) => {
 			if (!topicId) return
 
-			try {
-				await createRelationship.mutateAsync({
-					parent: topic.id,
-					child: topicId
-				})
+			await createRelationship.mutateAsync({
+				parent: topic.id,
+				child: topicId
+			})
 
-				// Navigate to the selected topic
-				handleParentSelect(topic.id)
-			} catch (_error) {
-				// Error is handled by React Query mutation state
-			}
+			// Navigate to the selected topic
+			handleParentSelect(topic.id)
 		},
 		[topicId, createRelationship, handleParentSelect]
 	)
