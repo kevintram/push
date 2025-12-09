@@ -12,11 +12,11 @@ from app.schemas import (
     TopicRead,
     TopicCreate,
     TopicUpdate,
-    TopicReadWithRelationshipsAndReviews,
+    TopicReadWithRelationships,
     TopicChildRelationshipCreate,
     TopicParentRelationshipCreate,
     TopicRelationshipResponse,
-    ReviewReadWithTopics,
+    ReviewReadWithTopicReviews,
 )
 
 router = APIRouter()
@@ -77,7 +77,6 @@ async def _insert_topic_relationship(
         .options(
             selectinload(Topic.parents),
             selectinload(Topic.children),
-            selectinload(Topic.reviews),
         )
     )
     topic = refreshed_topic.scalar_one_or_none()
@@ -142,7 +141,6 @@ async def _delete_topic_relationship(
         .options(
             selectinload(Topic.parents),
             selectinload(Topic.children),
-            selectinload(Topic.reviews),
         )
     )
     topic = refreshed_topic.scalar_one_or_none()
@@ -162,7 +160,7 @@ async def search_topics(
     addable_to_review: int | None = None,
     query: str | None = None,
     limit: int = 10,
-) -> list[TopicReadWithRelationshipsAndReviews]:
+) -> list[TopicReadWithRelationships]:
     cleaned_query = query.strip() if query else ""
     stmt = select(Topic).where(Topic.user_id == user_id)
 
@@ -221,7 +219,6 @@ async def search_topics(
     stmt = stmt.options(
         selectinload(Topic.parents),
         selectinload(Topic.children),
-        selectinload(Topic.reviews),
     )
 
     result = await session.execute(stmt)
@@ -240,7 +237,7 @@ async def read_topics(
     srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
-) -> list[TopicReadWithRelationshipsAndReviews]:
+) -> list[TopicReadWithRelationships]:
     stmt = select(Topic).where(Topic.user_id == user_id)
 
     # Apply ordering
@@ -272,7 +269,6 @@ async def read_topics(
     stmt = stmt.options(
         selectinload(Topic.parents),
         selectinload(Topic.children),
-        selectinload(Topic.reviews),
     )
 
     # Apply limit if provided
@@ -286,12 +282,11 @@ async def read_topics(
 @router.get("/topics/{topic_id}/", tags=["topics"])
 async def read_topic(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> TopicReadWithRelationshipsAndReviews:
+) -> TopicReadWithRelationships:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(
         selectinload(Topic.parents),
         selectinload(Topic.children),
-        selectinload(Topic.reviews),
     )
     result = await session.execute(stmt)
 
@@ -305,12 +300,11 @@ async def read_topic(
 @router.get("/topics/{topic_id}/parents/", tags=["topics"])
 async def read_topic_parents(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> list[TopicReadWithRelationshipsAndReviews]:
+) -> list[TopicReadWithRelationships]:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(
         selectinload(Topic.parents).selectinload(Topic.parents),
         selectinload(Topic.parents).selectinload(Topic.children),
-        selectinload(Topic.parents).selectinload(Topic.reviews),
     )
     result = await session.execute(stmt)
     topic = result.scalar_one_or_none()
@@ -324,12 +318,11 @@ async def read_topic_parents(
 @router.get("/topics/{topic_id}/children/", tags=["topics"])
 async def read_topic_children(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> list[TopicReadWithRelationshipsAndReviews]:
+) -> list[TopicReadWithRelationships]:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(
         selectinload(Topic.children).selectinload(Topic.parents),
         selectinload(Topic.children).selectinload(Topic.children),
-        selectinload(Topic.children).selectinload(Topic.reviews),
     )
     result = await session.execute(stmt)
     topic = result.scalar_one_or_none()
@@ -348,7 +341,7 @@ async def insert_topic(
 
     session.add(new_topic)
     await session.flush()
-    await session.refresh(new_topic, ["reviews"])
+    await session.refresh(new_topic)
 
     return new_topic
 
@@ -453,7 +446,7 @@ async def delete_child(
     child_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TopicReadWithRelationshipsAndReviews:
+) -> TopicReadWithRelationships:
     return await _delete_topic_relationship(
         session,
         user_id=user_id,
@@ -469,7 +462,7 @@ async def delete_parent(
     parent_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TopicReadWithRelationshipsAndReviews:
+) -> TopicReadWithRelationships:
     return await _delete_topic_relationship(
         session,
         user_id=user_id,
@@ -484,11 +477,11 @@ async def read_reviews_for_topic(
     topic_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> list[ReviewReadWithTopics]:
+) -> list[ReviewReadWithTopicReviews]:
     stmt = select(Review).where(
-        Review.topics.any(Topic.id == topic_id), Review.user_id == user_id
+        Review.topic_reviews.any(TopicReview.topic_id == topic_id), Review.user_id == user_id
     )
-    stmt = stmt.options(selectinload(Review.topics))
+    stmt = stmt.options(selectinload(Review.topic_reviews).selectinload(TopicReview.topic))
     result = await session.execute(stmt)
     return result.scalars().all()
 

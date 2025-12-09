@@ -10,12 +10,12 @@ import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
-import type { Topic } from '~/models/review-topic.types'
 import { useDeleteTopic } from '../../api/deleteTopic'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
-import { ReviewsSidebar } from '../ReviewsSidebar'
+import type { Topic } from '../../types/topic.types'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
+import { ReviewsSidebar } from './ReviewSidebar'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 
@@ -75,67 +75,66 @@ export function TopicDetail({
 	const isLoading =
 		isLoadingProp !== undefined ? isLoadingProp : contextValue.isLoading
 
-	const updateTopicMutation = useUpdateTopic()
-	const deleteTopicMutation = useDeleteTopic()
+	const { mutateAsync: updateTopic } = useUpdateTopic()
+	const { mutateAsync: deleteTopic } = useDeleteTopic()
 
-	const deleteTopic = useCallback(
+	const handleDeleteTopic = useCallback(
 		async (topicId: number) => {
-			await deleteTopicMutation.mutateAsync(topicId)
+			await deleteTopic(topicId)
 			onDelete?.()
 		},
-		[deleteTopicMutation, onDelete]
-	)
-
-	const updateNotesMutation = useCallback(
-		(newNotes: string) => {
-			if (topic?.id) {
-				updateTopicMutation.mutateAsync({ id: topic.id, notes: newNotes })
-			}
-		},
-		[updateTopicMutation, topic?.id]
-	)
-
-	const updateNameMutation = useCallback(
-		(newTitle: string) => {
-			if (!topic) return
-			updateTopicMutation.mutateAsync({ id: topic.id, name: newTitle })
-		},
-		[updateTopicMutation, topic]
+		[deleteTopic, onDelete]
 	)
 
 	const handleDelete = useCallback(async () => {
 		if (topic?.id) {
-			await deleteTopic(topic.id)
+			await handleDeleteTopic(topic.id)
 		}
-	}, [deleteTopic, topic?.id])
+	}, [handleDeleteTopic, topic?.id])
 
 	const handleArchiveToggle = useCallback(async () => {
 		if (topic?.id) {
-			await updateTopicMutation.mutateAsync({
+			await updateTopic({
 				id: topic.id,
 				archived: !topic.archived
 			})
 		}
-	}, [updateTopicMutation, topic?.id, topic?.archived])
+	}, [updateTopic, topic?.id, topic?.archived])
 
 	const handleInboxToggle = useCallback(async () => {
 		if (topic?.id) {
-			await updateTopicMutation.mutateAsync({
+			await updateTopic({
 				id: topic.id,
 				inboxed: !topic.inboxed
 			})
 		}
-	}, [updateTopicMutation, topic?.id, topic?.inboxed])
+	}, [updateTopic, topic?.id, topic?.inboxed])
+
+	const updateNotes = useCallback(
+		(newNotes: string) => {
+			if (!topic?.id) return
+			updateTopic({ id: topic.id, notes: newNotes })
+		},
+		[updateTopic, topic?.id]
+	)
+
+	const updateName = useCallback(
+		(newName: string) => {
+			if (!topic?.id) return
+			updateTopic({ id: topic.id, name: newName })
+		},
+		[updateTopic, topic?.id]
+	)
 
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: topic?.notes ?? '',
-		onSave: updateNotesMutation,
+		onSave: updateNotes,
 		key: `topics-${topic?.id}`
 	})
 
 	const { value: title, onChange: onNameChange } = useAutoSave({
 		initialValue: topic?.name ?? '',
-		onSave: updateNameMutation,
+		onSave: updateName,
 		key: `topics-${topic?.id}`
 	})
 

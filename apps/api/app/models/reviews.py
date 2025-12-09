@@ -12,6 +12,8 @@ from app.models.base import Base
 from app.models.topic_reviews import TopicReview
 
 
+
+
 class Review(Base):
     __tablename__ = "reviews"
 
@@ -36,7 +38,4 @@ class Review(Base):
     user_id: Mapped[str] = mapped_column(String, nullable=False)
     topic_reviews: Mapped[list["TopicReview"]] = relationship(
         back_populates="review", order_by=TopicReview.inserted_at.desc()
-    )
-    topics: Mapped[list["Topic"]] = relationship(  # needed for Topics.reviews
-        secondary="topic_reviews", back_populates="reviews", viewonly=True
     )

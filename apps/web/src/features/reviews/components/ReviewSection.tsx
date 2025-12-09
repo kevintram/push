@@ -3,7 +3,8 @@ import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import type { Review, Topic } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
+import type { Review } from '../types/review.types'
 import { ReviewItem } from './ReviewItem'
 
 const MIN_TOPIC_WIDTH = 280

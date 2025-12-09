@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { reviewKeys } from '~/features/reviews/api/queryKeys'
-import { TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 import type {
 	DeleteChildRelationshipInput,
 	DeleteParentRelationshipInput
 } from '../types/api.types'
+import { TopicSchema } from '../types/topic.schemas'
+import type { Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 export async function deleteChildRelationship(
@@ -66,11 +66,24 @@ export function useDeleteRelationship() {
 		mutationFn: ({ parent, child }: { parent: number; child: number }) => {
 			return deleteParentRelationship({ childId: child, parentId: parent })
 		},
-		onSuccess: async () => {
-			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
-				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
-			])
+		onSuccess: (_, variables) => {
+			const parentId = variables.parent
+			const childId = variables.child
+
+			// Remove the child from the parent's children
+			queryClient.setQueryData(
+				topicKeys.children(parentId),
+				(old: Array<Topic>) => {
+					return old.filter((topic: Topic) => topic.id !== childId)
+				}
+			)
+			// Remove the parent from the child's parents
+			queryClient.setQueryData(
+				topicKeys.parents(childId),
+				(old: Array<Topic>) => {
+					return old.filter((topic: Topic) => topic.id !== parentId)
+				}
+			)
 		}
 	})
 }

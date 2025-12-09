@@ -3,12 +3,13 @@ import dayjs from 'dayjs'
 import { useCallback } from 'react'
 import * as v from 'valibot'
 import { topicKeys } from '~/features/topics/api/queryKeys'
-import { type Topic, TopicReviewSchema } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 import type {
 	CreateTopicReviewPayload,
 	CreateTopicWithReviewInput
 } from '../types/api.types'
+import { TopicReviewSchema } from '../types/review.schemas'
 import { reviewKeys } from './queryKeys'
 
 /**

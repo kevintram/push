@@ -13,10 +13,14 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.types import Date, TIMESTAMP
+from sqlalchemy.types import TIMESTAMP, Date
+from typing import TYPE_CHECKING
 
 from app.models.base import Base
 
+if TYPE_CHECKING:
+    from app.models.reviews import Review
+    from app.models.topics import Topic
 
 class TopicReview(Base):
     __tablename__ = "topic_reviews"

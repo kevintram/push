@@ -16,9 +16,9 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
-import type { Review } from '~/models/review-topic.types'
 import { useDeleteReview } from '../api/deleteReview'
 import { useUpdateReview } from '../api/updateReview'
+import type { Review } from '../types/review.types'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { ReviewTopicBadges } from './ReviewTopicBadges'
 

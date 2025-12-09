@@ -1,4 +1,5 @@
-import type { LearningState, Rating, Review } from '~/models/review-topic.types'
+import type { LearningState } from '~/models/learning-state.types'
+import type { Rating, Review } from './review.types'
 
 export type CreateReviewInput = {
 	description: string
@@ -62,7 +63,6 @@ export type GetReviewsFilters = {
 	effectiveDateAfter?: string
 	scheduled?: boolean
 	completed?: boolean
-	completedBefore?: string
 }
 
 export type TodaySectionKey = 'overdue' | 'today'

@@ -10,10 +10,10 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
-import type { Topic } from '~/models/review-topic.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicParents } from '../api/getTopicParents'
+import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { TopicBadge } from './TopicBadge'
 
@@ -103,17 +103,13 @@ export function TopicParentsPanel({
 		async (topic: Topic) => {
 			if (!topicId) return
 
-			try {
-				await createRelationship.mutateAsync({
-					parent: topic.id,
-					child: topicId
-				})
+			await createRelationship.mutateAsync({
+				parent: topic.id,
+				child: topicId
+			})
 
-				// Navigate to the selected topic
-				handleParentSelect(topic.id)
-			} catch (_error) {
-				// Error is handled by React Query mutation state
-			}
+			// Navigate to the selected topic
+			handleParentSelect(topic.id)
 		},
 		[topicId, createRelationship, handleParentSelect]
 	)

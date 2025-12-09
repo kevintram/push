@@ -1,16 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { reviewKeys } from '~/features/reviews/api/queryKeys'
-import {
-	type TopicRelationshipResponse,
-	TopicRelationshipResponseSchema
-} from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 import type {
 	CreateChildRelationshipInput,
 	CreateParentRelationshipInput,
 	CreateRelationshipInput
 } from '../types/api.types'
+import { TopicRelationshipResponseSchema } from '../types/topic.schemas'
+import type { TopicRelationshipResponse } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 export async function createChildRelationship(
@@ -117,20 +114,16 @@ export function useCreateRelationship() {
 				childId: input.child
 			})
 		},
-		onSuccess: async () => {
-			// Invalidate topic and review caches
-			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
-				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
-			])
+		onSuccess: async data => {
+			const parentId = data.parent.id
+			const childId = data.child.id
 
-			// Invalidate potential relationships cache since the graph has changed
-			await queryClient.invalidateQueries({
-				queryKey: ['potential-children']
-			})
-			await queryClient.invalidateQueries({
-				queryKey: ['potential-parents']
-			})
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: topicKeys.children(parentId)
+				}),
+				queryClient.invalidateQueries({ queryKey: topicKeys.parents(childId) })
+			])
 		}
 	})
 }

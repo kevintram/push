@@ -12,7 +12,7 @@ import {
 } from '~/components/ui/Dialog'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useDebouncedPotentialTopics } from '~/features/topics/hooks/useDebouncedPotentialTopics'
-import type { Topic } from '~/models/review-topic.types'
+import type { Topic } from '../types/topic.types'
 
 interface AddRelationshipDialogProps {
 	open: boolean
@@ -104,7 +104,6 @@ export function AddRelationshipDialog({
 			<TopicCard
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicSelected}
-				reviews={topic.reviews ?? []}
 				searchQuery={debouncedQuery}
 				topic={topic}
 			/>

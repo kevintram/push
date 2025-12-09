@@ -1,31 +1,154 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
-- `src/` holds application code: `features/` for domain flows, `components/` for shared UI, `routes/` for TanStack route files, and `providers/` plus `lib/` for cross-cutting glue.
-- UI primitives that mirror shadcn live under `src/components/ui/`; reuse them instead of duplicating markup.
-- Unit tests sit beside components (for example `App.test.tsx`), while end-to-end specs live in `tests/`.
-- Static assets come from `public/`; adjust MSW worker files there when mocking APIs.
+## Project Architecture
 
-## Build, Test, and Development Commands
-- Use `pnpm dev` to launch Vite with hot reload; it opens the app automatically.
-- Run `pnpm build` for a production bundle and `pnpm preview` to smoke-test the built output.
-- `pnpm test` starts Vitest in watch mode, while `pnpm test:ci` runs the suite headlessly; pass `--coverage` if you need a report.
-- Execute `pnpm test:e2e` for Playwright’s interactive runner and `pnpm test:e2e:ci` for headless checks; ensure the dev server is running first.
-- Keep quality gates green with `pnpm lint:tsc` (type safety), `pnpm lint:biome` (Biome lint/fix pass), and the aggregated `pnpm validate` task before opening a PR.
+This is a React application built with modern tooling focused on topic-based learning and practice.
+- **Frontend**: React 19 with TypeScript
+- **Routing**: TanStack Router (file-based routing with type safety)
+- **Styling**: Tailwind CSS v4
+- **Component Library**: shadcn/ui
+- **Data Fetching**: TanStack Query with React Query
+- **Backend**: FastAPI (Python) for data access and business logic
+- **Date Handling**: Day.js for all date parsing, formatting, and manipulation
+- **Build Tool**: Vite 6
+- **Package Manager**: pnpm
+- **Testing**: Vitest (unit/integration), Playwright (E2E)
+- **Linting/Formatting**: Biome V2
+- **Mocking**: MSW (Mock Service Worker)
 
-## Coding Style & Naming Conventions
-- Biome enforces tab indentation, single quotes for JSX/TS, no semicolons unless required, and sorted imports/attributes; let `pnpm format` handle bulk cleanups.
-- Follow the enforced filename cases (camelCase, kebab-case, PascalCase) and group route modules under `src/routes` using TanStack’s generated `routeTree.gen.ts`.
-- Prefer functional React components with inline hooks; keep stateful logic in `contexts/` or `providers/`.
-- Guard new environment-driven logic with `import.meta.env` checks to preserve Vitest compatibility.
+## Development Commands
+- Please see the package.json file for all the latest command scripts. 
 
-## Testing Guidelines
-- Unit tests should mirror the module name (`FeatureName.test.tsx`) and rely on Testing Library helpers from `src/test/` for consistent queries.
-- Mock network calls with MSW; enable the worker locally via `ENABLE_MSW_TESTS=development` when exercising mocked flows in the browser.
-- Maintain or increase coverage when touching critical routes, and capture regression cases for bug fixes before committing the fix.
+For for your convience, these are the commands of writing this:
+- `pnpm dev` - Start development server with hot reload
+- `pnpm build` - Build for production (output to `dist/`)
+- `pnpm preview` - Preview production build locally
+- `pnpm test` - Run unit/integration tests in watch mode
+- `pnpm test:ci` - Run all tests once (for CI)
+- `pnpm test:e2e` - Run E2E tests with Playwright UI
+- `pnpm test:e2e:ci` - Run E2E tests headlessly
+- `pnpm lint:tsc` - Run TypeScript compiler checks
+- `pnpm lint:biome` - Run Biome linting and formatting
+- `pnpm lint` - Run all linting (TypeScript + Biome)
+- `pnpm format` - Format code with Biome
+- `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
 
-## Commit & Pull Request Guidelines
-- Adopt the existing Conventional Commit pattern (`feat:`, `fix:`, `chore:`) visible in `git log` so automated changelog tools remain effective.
-- Squash minor WIP commits locally; keep messages focused on the surface-level behavior change.
-- PRs should describe the user impact, list verification steps (`pnpm validate`, manual QA), link the relevant issue, and include screenshots or screen captures for UI changes.
-- Request a review before merging and mention any toggles or migrations that require coordination.
+## Project Structure
+
+The application generally follows [bulletproof react](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md) project structure, however it has been modified to accommodate [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview).
+
+Most of the code lives in the src folder and looks like this:
+
+```
+src
+|
++-- app               # application shell (routes, pages, layouts, app-level components)
+|
++-- components        # shared components and shadcn/ui components
+|
++-- features          # feature based modules (domain-specific functionality)
+|
++-- hooks             # shared hooks used across the entire application
+|
++-- lib               # re-exporting different libraries preconfigured for the application
+|
++-- __mocks__         # mock data and MSW handlers
+|
++-- models            # shared data models
+|
++-- stores            # global state stores
+|
++-- test              # test utilities and mock server
+|
++-- utils             # shared utility functions
+```
+
+### App Folder (`src/app/`)
+
+The `app` folder contains the application shell and routing infrastructure:
+
+```
+src/app
+|
++-- routes            # TanStack Router file-based routes
+|
++-- pages             # page components rendered by routes
+|
++-- layouts           # layout components (e.g., PageLayout)
+|
++-- components        # app-level components (AppHeader, AppSidebar, etc.)
+|
++-- hooks             # app-level hooks
+|
++-- types             # app-level types
+|
++-- utils             # app-level utility functions
+|
++-- routeTree.gen.ts  # auto-generated route tree (should be committed)
+```
+
+### Features Folder (`src/features/`)
+
+For maintainable scaling, the application uses feature-based folders. Each feature folder contains domain-specific code, which keeps functionality scoped and separate from shared components.
+
+A feature could have the following structure:
+
+```
+src/features/awesome-feature
+|
++-- api         # exported API request declarations and api hooks related to a specific feature
+|
++-- components  # components scoped to a specific feature
+|
++-- hooks       # hooks scoped to a specific feature
+|
++-- types       # typescript types for TS specific feature domain
+|
++-- utils       # utility functions for a specific feature
+|
++-- index.ts    # entry point for the feature, it should serve as the public API of the given feature and exports everything that should be used outside the feature
+```
+
+### UI Components
+Please prefer using shadcn components in the 'src/components/ui' folder wherever possible instead of handrolling your own components. This will help consistency across the app!
+
+### Data Flow
+- Data is fetched from the FastAPI backend (`apps/api/`) using TanStack Query
+- API requests are defined in feature-based `api` folders (e.g., `src/features/*/api`)
+- Mock Service Worker (MSW) is used for API mocking during testing and development (handlers in `src/__mocks__/`)
+- The core data object is a Topic which follows a hierarchical structure
+
+### Routing Structure
+- We use TanStack Router
+- Root layout provides sidebar navigation and error boundaries
+- File-based routing generates type-safe routes automatically
+- Route files live in `src/app/routes/`
+- Route tree is generated by TanStack Router in `src/app/routeTree.gen.ts` (should be committed)
+
+### Code Style & Standards
+- Uses Biome for consistent formatting (see biome.jsonc file for config run `pnpm lint:biome` to run Biome linting and formatting).
+- Strict TypeScript configuration with path aliases (`~` for src)
+- React components use PascalCase, files use camelCase/kebab-case/PascalCase
+- **Date Handling**: Always use Day.js for date operations. Use `dayjs(date).format('YYYY-MM-DD')` for date strings and `dayjs(dateStr).toDate()` for parsing dates. This ensures consistent timezone handling across the application.
+
+### Testing Setup
+- Unit tests use Vitest with Happy DOM environment
+- E2E tests use Playwright
+- Coverage thresholds are configured but commented out
+- Test setup includes MSW for API mocking
+
+## Documentation
+- Keep README.md up to date with getting started, design tokens, and component usage notes
+- Keep CLAUDE.md updated with any relevant changes.
+
+## Commit Style Guide
+We use [conventional commits](https://www.conventionalcommits.org/) with package/app-specific scopes:
+- Format: `<type>: <description>`
+- Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
+
+## Directions for problem solving:
+Please write a high quality, general purpose solution. Implement a solution that works correctly for all valid inputs, not just the test cases. Do not hard-code values or create solutions that only work for specific test inputs. Instead, implement the actual logic that solves the problem generally.
+
+Focus on understanding the problem requirements and implementing the correct algorithm. Tests are there to verify correctness, not to define the solution. Provide a principled implementation that follows best practices and software design principles.
+
+If the task is unreasonable or infeasible, or if any of the tests are incorrect, please tell me. The solution should be robust, maintainable, and extendable.

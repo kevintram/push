@@ -7,8 +7,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import type { Rating } from '~/models/review-topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
+import type { Rating } from '../../types/review.types'
 
 interface TopicReviewStatusButton {
 	isAdded: boolean

@@ -1,11 +1,11 @@
-import type { GetTopicsParams } from '../types/api.types'
+import type { GetTopicsParams, SearchTopicsParams } from '../types/api.types'
 
 export const topicKeys = {
 	all: ['topics'] as const,
 	lists: () => [...topicKeys.all, 'list'] as const,
 	list: (params: GetTopicsParams = {}) => {
+		// Add params to key
 		const key: Array<string | number> = [...topicKeys.lists()]
-		// Add params to key for proper cache invalidation
 		for (const [paramKey, value] of Object.entries(params)) {
 			if (value !== undefined) {
 				key.push(paramKey, typeof value === 'string' ? value : String(value))
@@ -13,17 +13,20 @@ export const topicKeys = {
 		}
 		return key
 	},
-	detail: (topicId: number) => [...topicKeys.all, topicId] as const,
+	byId: (topicId: number) => [...topicKeys.all, topicId] as const,
+	detail: (topicId: number) => [...topicKeys.byId(topicId), 'detail'] as const,
 	children: (topicId: number) =>
-		[...topicKeys.detail(topicId), 'children'] as const,
+		[...topicKeys.byId(topicId), 'children'] as const,
 	parents: (topicId: number) =>
-		[...topicKeys.detail(topicId), 'parents'] as const,
-	search: (query: string, reviewId?: number) => {
-		const base = [...topicKeys.all, 'search', query || 'recent'] as const
-		return reviewId !== undefined ? ([...base, reviewId] as const) : base
-	},
-	potentialChildren: (topicId: number, searchQuery: string) =>
-		['potential-children', topicId, searchQuery] as const,
-	potentialParents: (topicId: number, searchQuery: string) =>
-		['potential-parents', topicId, searchQuery] as const
+		[...topicKeys.byId(topicId), 'parents'] as const,
+	search: (params: SearchTopicsParams = {}) => {
+		// Add params to key
+		const key: Array<string | number> = [...topicKeys.all, 'search']
+		for (const [paramKey, value] of Object.entries(params)) {
+			if (value !== undefined) {
+				key.push(paramKey, typeof value === 'string' ? value : String(value))
+			}
+		}
+		return key
+	}
 }

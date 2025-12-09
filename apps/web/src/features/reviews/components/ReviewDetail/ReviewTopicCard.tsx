@@ -21,8 +21,9 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
-import type { Rating, Topic } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
+import type { Rating } from '../../types/review.types'
 
 interface ReviewTopicCardProps {
 	topic: Topic

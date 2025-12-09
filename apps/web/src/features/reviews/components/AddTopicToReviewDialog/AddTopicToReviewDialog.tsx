@@ -10,12 +10,12 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
-import { topicKeys } from '~/features/topics/api/queryKeys'
 import { useSearchTopics } from '~/features/topics/api/searchTopics'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
+import type { Topic } from '~/features/topics/types/topic.types'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
-import type { Rating, Review, Topic } from '~/models/review-topic.types'
+import type { Rating, Review } from '../../types/review.types'
 import { AddedTopicsPopover } from './AddedTopicsPopover'
 import { AddTopicCard } from './AddTopicCard'
 import {
@@ -70,8 +70,7 @@ function AddTopicToReviewDialogContent({
 	const { data: topics = [], isLoading: isSearching } = useSearchTopics({
 		query: trimmedQuery || undefined,
 		limit: 20,
-		enabled: open && !!review,
-		queryKey: topicKeys.search(trimmedQuery || 'recent', review?.id)
+		enabled: open && !!review
 	})
 
 	const searchResults = useMemo(() => {

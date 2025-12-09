@@ -5,7 +5,8 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import type { Topic, TopicReview } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
+import type { TopicReview } from '../../types/review.types'
 import { ReviewTopicCard } from '../ReviewDetail/ReviewTopicCard'
 import { useAddTopicToReview } from './AddTopicToReviewContext'
 

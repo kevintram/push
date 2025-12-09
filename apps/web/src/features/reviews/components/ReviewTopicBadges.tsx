@@ -1,5 +1,5 @@
 import { TopicBadge } from '~/features/topics/components/TopicBadge'
-import type { Review } from '~/models/review-topic.types'
+import type { Review } from '../types/review.types'
 
 interface ReviewTopicBadgesProps {
 	review: Review
@@ -12,7 +12,7 @@ export function ReviewTopicBadges({ review }: ReviewTopicBadgesProps) {
 				topic: tr.topic,
 				rating: tr.rating
 			}))
-		: (review.topics ?? []).map(topic => ({ topic, rating: null }))
+		: []
 
 	const topicCount = items.length
 

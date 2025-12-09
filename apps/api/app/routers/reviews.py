@@ -25,7 +25,6 @@ async def read_reviews(
     effective_date_after: str | None = None,
     completed: bool | None = None,
     scheduled: bool | None = None,
-    completed_before: str | None = None,
 ) -> list[ReviewReadWithTopicReviews]:
     stmt = (
         select(Review)
@@ -35,7 +34,7 @@ async def read_reviews(
     )
 
     if topic_id is not None:
-        stmt = stmt.where(Review.topics.any(Topic.id == topic_id))
+        stmt = stmt.where(Review.topic_reviews.any(TopicReview.topic_id == topic_id))
 
     if effective_date_before is not None:
         date_before = datetime.strptime(effective_date_before, '%Y-%m-%d').date()
@@ -56,13 +55,6 @@ async def read_reviews(
             stmt = stmt.where(Review.scheduled_at.isnot(None))
         else:
             stmt = stmt.where(Review.scheduled_at.is_(None))
-
-    if completed_before is not None:
-        date_completed_before = datetime.strptime(completed_before, '%Y-%m-%d').date()
-        stmt = stmt.where(
-            Review.completed_at <= date_completed_before,
-            Review.completed_at.isnot(None)
-        )
 
     result = await session.execute(stmt)
     ret = result.scalars().all()
@@ -215,7 +207,7 @@ async def read_topics_for_review(
     user_id: UserIdDep,
 ) -> list[TopicRead]:
     stmt = select(Topic).where(
-        Topic.reviews.any(Review.id == review_id), Topic.user_id == user_id
+        Topic.topic_reviews.any(TopicReview.review_id == review_id), Topic.user_id == user_id
     )
     result = await session.execute(stmt)
     return result.scalars().all()

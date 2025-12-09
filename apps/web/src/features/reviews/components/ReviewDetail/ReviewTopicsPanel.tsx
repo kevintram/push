@@ -3,8 +3,9 @@ import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import type { Rating, Topic } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
+import type { Rating } from '../../types/review.types'
 import { AddTopicToReviewDialog } from '../AddTopicToReviewDialog/AddTopicToReviewDialog'
 import { ReviewTopicCard } from './ReviewTopicCard'
 
@@ -34,8 +35,7 @@ export function ReviewTopicsPanel({
 	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 
 	// Extract topics from reviews if available, otherwise fallback to topics
-	const topics =
-		review?.topic_reviews?.map(tr => tr.topic) ?? review?.topics ?? []
+	const topics = review?.topic_reviews?.map(tr => tr.topic) ?? []
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -55,10 +55,7 @@ export function ReviewTopicsPanel({
 				rating: tr.rating,
 				topicReviewId: tr.id
 			}))
-		: (review?.topics ?? []).map(topic => ({
-				type: 'topic' as const,
-				topic
-			}))
+		: []
 
 	const estimateItemSize = useCallback((item: ListItem) => {
 		const { topic } = item

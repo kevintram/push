@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { ReviewSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
+import { ReviewSchema } from '../types/review.schemas'
 import { reviewKeys } from './queryKeys'
 
 export async function getReview(reviewId: number) {

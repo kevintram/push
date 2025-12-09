@@ -11,10 +11,10 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
-import type { Topic } from '~/models/review-topic.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicChildren } from '../api/getTopicChildren'
+import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { TopicCard } from './TopicCard'
 
@@ -125,17 +125,13 @@ export function TopicChildrenPanel({
 		async (topic: Topic) => {
 			if (!topicId) return
 
-			try {
-				await createRelationship.mutateAsync({
-					parent: topicId,
-					child: topic.id
-				})
+			await createRelationship.mutateAsync({
+				parent: topicId,
+				child: topic.id
+			})
 
-				// Navigate to the selected topic
-				handleChildSelect(topic.id)
-			} catch (_error) {
-				// Error is handled by React Query mutation state
-			}
+			// Navigate to the selected topic
+			handleChildSelect(topic.id)
 		},
 		[topicId, createRelationship, handleChildSelect]
 	)
@@ -223,7 +219,6 @@ export function TopicChildrenPanel({
 					minHeight={MIN_HEIGHT}
 					onRemoveRelationship={handleRemoveRelationship}
 					onTopicClick={() => handleClick()}
-					reviews={item.child.reviews ?? []}
 					topic={item.child}
 				/>
 			)

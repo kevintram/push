@@ -1,9 +1,9 @@
-import type { UseQueryOptions } from '@tanstack/react-query'
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { type Topic, TopicSchema } from '~/models/review-topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 import type { SearchTopicsParams } from '../types/api.types'
+import { TopicSchema } from '../types/topic.schemas'
+import type { Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 const TopicSearchResponseSchema = v.array(TopicSchema)
@@ -55,44 +55,6 @@ export async function searchTopics(
 	}
 }
 
-export function useGetPotentialChildren(
-	topicId: number | undefined,
-	searchQuery?: string,
-	options?: Omit<UseQueryOptions<Array<Topic>, Error>, 'queryKey' | 'queryFn'>
-) {
-	return useQuery({
-		queryKey: topicKeys.potentialChildren(topicId!, searchQuery || ''),
-		queryFn: (): Promise<Array<Topic>> => {
-			if (!topicId) return Promise.resolve([])
-
-			return searchTopics({
-				query: searchQuery,
-				addableAsChildTo: topicId
-			})
-		},
-		...options
-	})
-}
-
-export function useGetPotentialParents(
-	topicId: number | undefined,
-	searchQuery?: string,
-	options?: Omit<UseQueryOptions<Array<Topic>, Error>, 'queryKey' | 'queryFn'>
-) {
-	return useQuery({
-		queryKey: topicKeys.potentialParents(topicId!, searchQuery || ''),
-		queryFn: (): Promise<Array<Topic>> => {
-			if (!topicId) return Promise.resolve([])
-
-			return searchTopics({
-				query: searchQuery,
-				addableAsParentTo: topicId
-			})
-		},
-		...options
-	})
-}
-
 export function useSearchTopics(
 	params: SearchTopicsParams & {
 		enabled?: boolean
@@ -102,7 +64,7 @@ export function useSearchTopics(
 	const { enabled = true, queryKey, ...searchParams } = params
 
 	return useQuery({
-		queryKey: queryKey ?? ['topics', 'search', searchParams.query || 'recent'],
+		queryKey: queryKey ?? topicKeys.search(searchParams),
 		queryFn: () => searchTopics(searchParams),
 		enabled
 	})

@@ -17,7 +17,7 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
-import type { Topic } from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
 
 export function RecentPage() {
 	const { openTopicDialog } = useReviewTopicDialog()

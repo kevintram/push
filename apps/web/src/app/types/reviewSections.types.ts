@@ -1,4 +1,5 @@
-import type { Review, Topic } from '~/models/review-topic.types'
+import type { Review } from '~/features/reviews/types/review.types'
+import type { Topic } from '~/features/topics/types/topic.types'
 
 export type ReviewSection = {
 	id: string

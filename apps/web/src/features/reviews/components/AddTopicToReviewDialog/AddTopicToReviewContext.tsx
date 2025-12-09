@@ -9,12 +9,8 @@ import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
 import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
-import type {
-	Rating,
-	Review,
-	Topic,
-	TopicReview
-} from '~/models/review-topic.types'
+import type { Topic } from '~/features/topics/types/topic.types'
+import type { Rating, Review, TopicReview } from '../../types/review.types'
 
 interface AddTopicToReviewContextValue {
 	// Review

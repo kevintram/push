@@ -9,7 +9,6 @@ from pydantic import BaseModel, ConfigDict
 # but if we need it, we import it. `reviews.py` imports TopicRead.
 if TYPE_CHECKING:
     from app.schemas.topic_reviews import TopicReviewWithTopic
-    from app.schemas.topics import TopicRead
 
 
 class ReviewBase(BaseModel):
@@ -21,12 +20,6 @@ class ReviewBase(BaseModel):
     notes: str
 
 
-class ReviewWithTopics(ReviewBase):
-    model_config = ConfigDict(from_attributes=True)
-
-    topics: list["TopicRead"]
-
-
 class ReviewRead(ReviewBase):
     model_config = ConfigDict(from_attributes=True)
 
@@ -34,11 +27,6 @@ class ReviewRead(ReviewBase):
     inserted_at: datetime
     updated_at: datetime
     effective_date: date | None = None
-
-
-class ReviewReadWithTopics(ReviewRead):
-    model_config = ConfigDict(from_attributes=True)
-    topics: list["TopicRead"]
 
 
 class ReviewReadWithTopicReviews(ReviewRead):

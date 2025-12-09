@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
-import type { Topic } from '~/models/review-topic.types'
 import { TopicCard } from '../components/TopicCard'
+import type { Topic } from '../types/topic.types'
 
 export function useTopicsList({
 	minHeight = 96,
@@ -35,7 +35,6 @@ export function useTopicsList({
 				<TopicCard
 					minHeight={minHeight}
 					onTopicClick={onTopicClick}
-					reviews={topic.reviews ?? []}
 					topic={topic}
 				/>
 			)
