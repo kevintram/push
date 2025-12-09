@@ -29,15 +29,15 @@ function BrowserNavigationButtons() {
 
 export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
 	const navigate = useNavigate()
+	const router = useRouter()
+
 	const { topic, isLoading } = useTopicWithRelationships(
 		Number.parseInt(topicId, 10)
 	)
 
 	const handleDelete = useCallback(() => {
-		navigate({
-			to: '/home'
-		})
-	}, [navigate])
+		router.history.back()
+	}, [router])
 
 	const handleTopicNavigate = useCallback(
 		(topicId: number) => {

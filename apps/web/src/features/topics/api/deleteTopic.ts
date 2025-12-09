@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
-import { topicKeys } from './queryKeys'
 
 export async function deleteTopic(topicId: number) {
 	const response = await apiFetch(
@@ -21,14 +20,26 @@ export function useDeleteTopic() {
 
 	return useMutation({
 		mutationFn: deleteTopic,
-		onSuccess: async (_, variables) => {
-			const topicId = variables
-			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
-				queryClient.invalidateQueries({
-					queryKey: reviewKeys.list({ topicId })
-				})
-			])
+		onSuccess: (_, topicId) => {
+			// Invalidate all topic queries except the byId query for the deleted topic
+			queryClient.invalidateQueries({
+				predicate: query => {
+					const queryKey = query.queryKey
+					// Check if it's a topic query
+					if (queryKey[0] !== 'topics') return false
+
+					// Don't invalidate the byId query for the deleted topic
+					// byId structure: ['topics', topicId, ...]
+					if (queryKey.length >= 2 && queryKey[1] === topicId) {
+						return false
+					}
+
+					return true
+				}
+			})
+			queryClient.invalidateQueries({
+				queryKey: reviewKeys.all
+			})
 		}
 	})
 }
