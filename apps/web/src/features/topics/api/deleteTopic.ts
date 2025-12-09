@@ -21,10 +21,13 @@ export function useDeleteTopic() {
 
 	return useMutation({
 		mutationFn: deleteTopic,
-		onSuccess: async () => {
+		onSuccess: async (_, variables) => {
+			const topicId = variables
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
-				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+				queryClient.invalidateQueries({
+					queryKey: reviewKeys.list({ topicId })
+				})
 			])
 		}
 	})
