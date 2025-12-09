@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
 import type {
 	CreateChildRelationshipInput,
@@ -115,11 +114,15 @@ export function useCreateRelationship() {
 				childId: input.child
 			})
 		},
-		onSuccess: async () => {
-			// Invalidate topic and review caches
+		onSuccess: async data => {
+			const parentId = data.parent.id
+			const childId = data.child.id
+
 			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
-				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+				queryClient.invalidateQueries({
+					queryKey: topicKeys.children(parentId)
+				}),
+				queryClient.invalidateQueries({ queryKey: topicKeys.parents(childId) })
 			])
 		}
 	})
