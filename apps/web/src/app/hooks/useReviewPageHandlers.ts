@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import { useCallback } from 'react'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
@@ -7,12 +8,12 @@ import type { Topic } from '~/features/topics/types/topic.types'
  * Hook that provides common event handlers for review pages.
  *
  * This hook encapsulates the logic for handling user interactions on review pages,
- * including opening review dialogs, opening topic dialogs, and creating new topics.
+ * including opening review dialogs, navigating to topic pages, and creating new topics.
  *
  * @returns An object containing:
  *   - `handleReviewClick`: Function to open a review dialog by review ID
- *   - `handleTopicClick`: Function to open a topic dialog by topic object
- *   - `handleCreateTopic`: Async function to create a new topic and open its dialog
+ *   - `handleTopicClick`: Function to navigate to a topic page by topic object
+ *   - `handleCreateTopic`: Async function to create a new topic and navigate to its page
  *   - `isCreatingTopic`: Boolean indicating if a topic is currently being created
  *
  * @example
@@ -27,15 +28,16 @@ import type { Topic } from '~/features/topics/types/topic.types'
  * // Open a review dialog
  * handleReviewClick(123)
  *
- * // Open a topic dialog
+ * // Navigate to topic page
  * handleTopicClick(topic)
  *
- * // Create and open a new topic
+ * // Create and navigate to a new topic
  * await handleCreateTopic()
  * ```
  */
 export function useReviewPageHandlers() {
-	const { openReviewDialog, openTopicDialog } = useReviewTopicDialog()
+	const navigate = useNavigate()
+	const { openReviewDialog } = useReviewTopicDialog()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
 
@@ -48,15 +50,21 @@ export function useReviewPageHandlers() {
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
-			openTopicDialog(topic.id)
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topic.id.toString() }
+			})
 		},
-		[openTopicDialog]
+		[navigate]
 	)
 
 	const handleCreateTopic = useCallback(async () => {
 		const createdTopic = await createTopicWithReview({})
-		openTopicDialog(createdTopic.id)
-	}, [createTopicWithReview, openTopicDialog])
+		navigate({
+			to: '/topics/$topicId',
+			params: { topicId: createdTopic.id.toString() }
+		})
+	}, [createTopicWithReview, navigate])
 
 	return {
 		handleReviewClick,

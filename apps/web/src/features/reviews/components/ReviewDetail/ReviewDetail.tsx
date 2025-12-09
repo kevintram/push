@@ -24,10 +24,15 @@ import { ReviewTopicsPanel } from './ReviewTopicsPanel'
 
 interface ReviewDetailProps {
 	onDelete?: () => void | Promise<void>
+	onNavigate?: () => void | Promise<void>
 	headerActions?: ReactNode
 }
 
-export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
+export function ReviewDetail({
+	onDelete,
+	onNavigate,
+	headerActions
+}: ReviewDetailProps) {
 	const { review, isLoading } = use(ReviewContext)
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 
@@ -251,6 +256,7 @@ export function ReviewDetail({ onDelete, headerActions }: ReviewDetailProps) {
 					<div className='w-full flex-1'>
 						<ReviewTopicsPanel
 							getScrollElement={() => scrollContainerRef.current}
+							onNavigate={onNavigate}
 							onRemoveTopicReview={handleRemoveTopicReview}
 						/>
 					</div>

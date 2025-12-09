@@ -29,11 +29,15 @@ interface TopicDetailProps {
 	 */
 	isLoading?: boolean
 	/**
-	 * Content to render before the "more" dropdown in the header.
+	 * Content to render in the left section before the parents panel (e.g., navigation buttons).
 	 */
 	headerBeforeActions?: ReactNode
 	/**
-	 * Content to render after the "more" dropdown in the header.
+	 * Content to render before the "more" dropdown in the header (right side).
+	 */
+	headerBeforeMoreActions?: ReactNode
+	/**
+	 * Content to render after the "more" dropdown in the header (right side).
 	 */
 	headerAfterActions?: ReactNode
 	/**
@@ -63,6 +67,7 @@ export function TopicDetail({
 	topic: topicProp,
 	isLoading: isLoadingProp,
 	headerBeforeActions,
+	headerBeforeMoreActions,
 	headerAfterActions,
 	sidebarReadonly = false,
 	onDelete,
@@ -157,7 +162,8 @@ export function TopicDetail({
 			<div className='flex h-full min-h-0 flex-col'>
 				<TopicDetailHeader
 					afterActions={headerAfterActions}
-					beforeActions={headerBeforeActions}
+					beforeActions={headerBeforeMoreActions}
+					headerBeforeActions={headerBeforeActions}
 					onArchiveToggle={handleArchiveToggle}
 					onDelete={handleDelete}
 					onInboxToggle={handleInboxToggle}

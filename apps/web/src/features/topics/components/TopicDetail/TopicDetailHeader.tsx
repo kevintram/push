@@ -16,6 +16,10 @@ interface TopicDetailHeaderProps {
 	onInboxToggle: () => void
 	onDelete: () => void
 	/**
+	 * Content to render in the left section before the parents panel (e.g., navigation buttons)
+	 */
+	headerBeforeActions?: ReactNode
+	/**
 	 * Content to render before the "more" dropdown (e.g., review status button)
 	 */
 	beforeActions?: ReactNode
@@ -34,6 +38,7 @@ export function TopicDetailHeader({
 	onArchiveToggle,
 	onInboxToggle,
 	onDelete,
+	headerBeforeActions,
 	beforeActions,
 	afterActions,
 	onParentSelect
@@ -42,6 +47,7 @@ export function TopicDetailHeader({
 		<div className='sticky top-0 z-10 w-full border-b'>
 			<div className='flex items-center justify-between gap-4 px-2 py-1'>
 				<div className='flex min-w-0 flex-1 items-center gap-4'>
+					{headerBeforeActions}
 					<TopicParentsPanel
 						onParentSelect={onParentSelect}
 						topicId={topic.id}

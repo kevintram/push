@@ -16,6 +16,10 @@ export function ReviewDialog() {
 		closeReviewDialog()
 	}, [closeReviewDialog])
 
+	const handleNavigate = useCallback(() => {
+		closeReviewDialog()
+	}, [closeReviewDialog])
+
 	const headerActions = useMemo(
 		() => (
 			<Button
@@ -45,7 +49,11 @@ export function ReviewDialog() {
 				showCloseButton={false}
 			>
 				<ReviewContext value={contextValue}>
-					<ReviewDetail headerActions={headerActions} onDelete={handleDelete} />
+					<ReviewDetail
+						headerActions={headerActions}
+						onDelete={handleDelete}
+						onNavigate={handleNavigate}
+					/>
 				</ReviewContext>
 			</DialogContent>
 		</Dialog>
