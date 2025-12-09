@@ -13,6 +13,7 @@ export type Topic = {
 	archived: boolean
 	inboxed: boolean
 	due: string | null
+	scheduled_at: string | null
 	srs_enabled: boolean
 	parents?: Array<Topic>
 	children?: Array<Topic>

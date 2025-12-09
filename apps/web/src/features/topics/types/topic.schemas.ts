@@ -14,6 +14,7 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	archived: v.boolean(),
 	inboxed: v.boolean(),
 	due: v.nullable(v.string()),
+	scheduled_at: v.nullable(v.string()),
 	srs_enabled: v.boolean(),
 	parents: v.optional(v.array(v.lazy(() => TopicSchema)), []),
 	children: v.optional(v.array(v.lazy(() => TopicSchema)), [])

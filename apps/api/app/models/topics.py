@@ -8,16 +8,20 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Identity,
+    func,
+    select,
     String,
     text,
     Table,
     Column,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from sqlalchemy.types import TIMESTAMP, Boolean, Date, Integer, REAL, Text
 from typing import TYPE_CHECKING
 
 from app.models.base import Base
+from app.models.reviews import Review
+from app.models.topic_reviews import TopicReview
 
 if TYPE_CHECKING:
     from app.models.topic_reviews import TopicReview
@@ -63,6 +67,19 @@ class Topic(Base):
     due: Mapped[date | None] = mapped_column(Date, nullable=True)
     srs_enabled: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("true")
+    )
+    scheduled_at: Mapped[date | None] = column_property(
+        select(func.min(Review.scheduled_at))
+        .join(TopicReview, TopicReview.review_id == Review.id)
+        .where(
+            TopicReview.topic_id == id,
+            TopicReview.user_id == user_id,
+            Review.user_id == user_id,
+            Review.completed_at.is_(None),
+            Review.scheduled_at.isnot(None),
+        )
+        .correlate_except(Review, TopicReview)
+        .scalar_subquery()
     )
     topic_reviews: Mapped[list["TopicReview"]] = relationship(back_populates="topic")
     parents: Mapped[list["Topic"]] = relationship(

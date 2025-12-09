@@ -335,7 +335,11 @@ export function TopicCard({
 			{/* Bottom row: Review date and children count */}
 			<CardFooter className='gap-1 text-muted-foreground text-xs'>
 				{/* Due date - bottom left */}
-				<DueDateHoverCard due={topic.due} srsEnabled={topic.srs_enabled} />
+				<DueDateHoverCard
+					due={topic.due}
+					scheduledAt={topic.scheduled_at}
+					srsEnabled={topic.srs_enabled}
+				/>
 				<div className='flex-1' />
 				{/* Children count - bottom right */}
 				<Popover>

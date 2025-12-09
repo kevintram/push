@@ -149,7 +149,11 @@ export function AddTopicCard({
 			</CardContent>
 			{/* Bottom row: Due date */}
 			<CardFooter className='text-muted-foreground text-xs'>
-				<DueDateHoverCard due={topic.due} srsEnabled={topic.srs_enabled} />
+				<DueDateHoverCard
+					due={topic.due}
+					scheduledAt={topic.scheduled_at}
+					srsEnabled={topic.srs_enabled}
+				/>
 			</CardFooter>
 		</Card>
 	)

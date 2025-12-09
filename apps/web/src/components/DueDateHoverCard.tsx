@@ -11,6 +11,7 @@ import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
 
 interface DueDateHoverCardProps {
 	due: string | null
+	scheduledAt?: string | null
 	srsEnabled: boolean
 	className?: string
 	children?: ReactNode
@@ -18,11 +19,16 @@ interface DueDateHoverCardProps {
 
 export function DueDateHoverCard({
 	due,
+	scheduledAt = null,
 	srsEnabled,
 	className,
 	children
 }: DueDateHoverCardProps) {
 	const dueDateDisplay = useMemo(() => getDueDateDisplay(due), [due])
+	const nextScheduledDisplay = useMemo(
+		() => getDueDateDisplay(scheduledAt),
+		[scheduledAt]
+	)
 
 	const colorClass = useMemo(
 		() => getDueDateColorClass(dueDateDisplay?.displayText ?? null, srsEnabled),
@@ -35,6 +41,11 @@ export function DueDateHoverCard({
 			<span className={colorClass}>
 				{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
 			</span>
+			{nextScheduledDisplay && (
+				<span className='text-muted-foreground text-xs'>
+					· Scheduled {nextScheduledDisplay.displayText}
+				</span>
+			)}
 		</div>
 	)
 
@@ -52,15 +63,29 @@ export function DueDateHoverCard({
 				{children ?? defaultTrigger}
 			</HoverCardTrigger>
 			<HoverCardContent className='w-auto p-3' side='bottom'>
-				<div className='flex flex-col gap-1'>
-					<div className='font-semibold text-sm'>
-						{dueDateDisplay
-							? `Due on ${dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}`
-							: 'No due date set'}
+				<div className='flex flex-col gap-2'>
+					<div className='flex flex-col gap-1'>
+						<div className='font-semibold text-sm'>
+							{dueDateDisplay
+								? `Due on ${dayjs(dueDateDisplay.dueDate).format('MMMM D, YYYY')}`
+								: 'No due date set'}
+						</div>
+						<p className='text-muted-foreground text-xs'>
+							{srsEnabled ? 'SRS Enabled' : 'SRS Disabled'}
+						</p>
 					</div>
-					<p className='text-muted-foreground text-xs'>
-						{srsEnabled ? 'SRS Enabled' : 'SRS Disabled'}
-					</p>
+					<div className='flex flex-col gap-1'>
+						<div className='font-semibold text-sm'>
+							{nextScheduledDisplay
+								? `Next scheduled on ${dayjs(nextScheduledDisplay.dueDate).format('MMMM D, YYYY')}`
+								: 'No review scheduled'}
+						</div>
+						{nextScheduledDisplay && (
+							<p className='text-muted-foreground text-xs'>
+								Scheduled {nextScheduledDisplay.displayText}
+							</p>
+						)}
+					</div>
 				</div>
 			</HoverCardContent>
 		</HoverCard>

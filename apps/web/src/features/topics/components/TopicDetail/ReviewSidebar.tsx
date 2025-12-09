@@ -214,6 +214,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 				<div className='flex items-center text-muted-foreground text-xs'>
 					<DueDateHoverCard
 						due={topic?.due ?? null}
+						scheduledAt={topic?.scheduled_at ?? null}
 						srsEnabled={topic?.srs_enabled ?? true}
 					>
 						<Toggle

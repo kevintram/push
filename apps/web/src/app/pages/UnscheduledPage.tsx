@@ -45,7 +45,7 @@ export function UnscheduledPage() {
 
 	const topicSection = useMemo(() => {
 		const unscheduledTopics = (allTopics ?? []).filter(
-			topic => topic.due === null
+			topic => topic.due === null && topic.scheduled_at === null
 		)
 		return {
 			...UNSCHEDULED_SECTION_DEFINITION,
