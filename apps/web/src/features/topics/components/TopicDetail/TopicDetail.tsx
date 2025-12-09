@@ -83,19 +83,12 @@ export function TopicDetail({
 	const { mutateAsync: updateTopic } = useUpdateTopic()
 	const { mutateAsync: deleteTopic } = useDeleteTopic()
 
-	const handleDeleteTopic = useCallback(
-		async (topicId: number) => {
-			await deleteTopic(topicId)
-			onDelete?.()
-		},
-		[deleteTopic, onDelete]
-	)
-
 	const handleDelete = useCallback(async () => {
 		if (topic?.id) {
-			await handleDeleteTopic(topic.id)
+			await deleteTopic(topic.id)
+			onDelete?.()
 		}
-	}, [handleDeleteTopic, topic?.id])
+	}, [deleteTopic, topic?.id, onDelete])
 
 	const handleArchiveToggle = useCallback(async () => {
 		if (topic?.id) {
