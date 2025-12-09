@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import {
 	BicepsFlexed,
 	Calendar,
@@ -23,7 +24,6 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
@@ -41,7 +41,7 @@ interface ReviewsSidebarProps {
 }
 
 function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
-	const { openReviewDialog } = useReviewTopicDialog()
+	const navigate = useNavigate()
 	const { topic } = use(TopicContext)
 	const { data: reviews = [] } = useReviewsByTopic(topic?.id)
 
@@ -110,9 +110,12 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 				rating
 			})
 
-			openReviewDialog(topicReview.review_id)
+			navigate({
+				to: '/reviews/$reviewId',
+				params: { reviewId: topicReview.review_id.toString() }
+			})
 		},
-		[topic, createTopicReviewMutation, openReviewDialog]
+		[topic, createTopicReviewMutation, navigate]
 	)
 
 	const handleLogReviewNow = useCallback(async () => {
@@ -127,9 +130,12 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
 			if (readonly) return
-			openReviewDialog(reviewId)
+			navigate({
+				to: '/reviews/$reviewId',
+				params: { reviewId: reviewId.toString() }
+			})
 		},
-		[openReviewDialog, readonly]
+		[navigate, readonly]
 	)
 
 	// Calculate the due date display using shared utilities

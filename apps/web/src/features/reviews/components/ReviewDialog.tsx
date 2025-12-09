@@ -1,4 +1,5 @@
-import { X } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { Maximize2, X } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
@@ -8,8 +9,10 @@ import { ReviewContext } from '../stores/SelectedReviewContext'
 import { ReviewDetail } from './ReviewDetail/ReviewDetail'
 
 export function ReviewDialog() {
-	const { reviewDialogState, closeReviewDialog } = useReviewTopicDialog()
+	const { reviewDialogState, closeReviewDialog, maximizeReviewDialog } =
+		useReviewTopicDialog()
 	const { isOpen, reviewId: selectedReviewId } = reviewDialogState
+	const navigate = useNavigate()
 	const { review, isLoading } = useReviewWithTopics(selectedReviewId!)
 
 	const handleDelete = useCallback(() => {
@@ -17,21 +20,38 @@ export function ReviewDialog() {
 	}, [closeReviewDialog])
 
 	const handleNavigate = useCallback(() => {
-		closeReviewDialog()
-	}, [closeReviewDialog])
+		if (selectedReviewId) {
+			maximizeReviewDialog()
+			navigate({
+				to: '/reviews/$reviewId',
+				params: { reviewId: selectedReviewId.toString() }
+			})
+		}
+	}, [selectedReviewId, navigate, maximizeReviewDialog])
 
 	const headerActions = useMemo(
 		() => (
-			<Button
-				className='h-6 w-6 p-0 text-muted-foreground'
-				onClick={closeReviewDialog}
-				size='sm'
-				variant='ghost'
-			>
-				<X className='h-4 w-4' />
-			</Button>
+			<>
+				<Button
+					className='h-6 w-6 p-0 text-muted-foreground'
+					onClick={handleNavigate}
+					size='sm'
+					variant='ghost'
+				>
+					<Maximize2 className='h-4 w-4' />
+				</Button>
+
+				<Button
+					className='h-6 w-6 p-0 text-muted-foreground'
+					onClick={closeReviewDialog}
+					size='sm'
+					variant='ghost'
+				>
+					<X className='h-4 w-4' />
+				</Button>
+			</>
 		),
-		[closeReviewDialog]
+		[handleNavigate, closeReviewDialog]
 	)
 
 	const contextValue = useMemo(
@@ -50,7 +70,7 @@ export function ReviewDialog() {
 			>
 				<ReviewContext value={contextValue}>
 					<ReviewDetail
-						headerActions={headerActions}
+						headerAfterActions={headerActions}
 						onDelete={handleDelete}
 						onNavigate={handleNavigate}
 					/>

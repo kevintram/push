@@ -72,6 +72,12 @@ export function ReviewTopicDialogProvider({
 		setReviewDialog({ isOpen: false, reviewId: undefined })
 	}, [])
 
+	const maximizeReviewDialog = useCallback(() => {
+		// Clear everything so nothing reopens
+		setTopicDialog({ isOpen: false, topicId: undefined })
+		setReviewDialog({ isOpen: false, reviewId: undefined })
+	}, [])
+
 	const contextValue = useMemo(
 		() => ({
 			topicDialogState: topicDialog,
@@ -80,7 +86,8 @@ export function ReviewTopicDialogProvider({
 			closeTopicDialog,
 			maximizeTopicDialog,
 			openReviewDialog,
-			closeReviewDialog
+			closeReviewDialog,
+			maximizeReviewDialog
 		}),
 		[
 			topicDialog,
@@ -89,7 +96,8 @@ export function ReviewTopicDialogProvider({
 			closeTopicDialog,
 			maximizeTopicDialog,
 			openReviewDialog,
-			closeReviewDialog
+			closeReviewDialog,
+			maximizeReviewDialog
 		]
 	)
 
