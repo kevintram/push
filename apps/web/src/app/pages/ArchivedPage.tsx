@@ -13,14 +13,13 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/features/topics/types/topic.types'
 
 export function ArchivedPage() {
-	const { openTopicDialog } = useReviewTopicDialog()
+	const navigate = useNavigate()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
 
@@ -35,14 +34,20 @@ export function ArchivedPage() {
 			inboxed: false,
 			archived: true
 		})
-		openTopicDialog(newTopic.id)
-	}, [createTopicWithReview, openTopicDialog])
+		navigate({
+			to: '/topics/$topicId',
+			params: { topicId: newTopic.id.toString() }
+		})
+	}, [createTopicWithReview, navigate])
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
-			openTopicDialog(topic.id)
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topic.id.toString() }
+			})
 		},
-		[openTopicDialog]
+		[navigate]
 	)
 
 	return (

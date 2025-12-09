@@ -14,7 +14,6 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
@@ -27,19 +26,22 @@ const LINE_HEIGHT = 18
 const BASE_HEIGHT = 140
 
 export function InboxPage() {
+	const navigate = useNavigate()
 	const { data: inboxTopics, isLoading } = useTopics({
 		inboxed: true,
 		archived: false
 	})
-	const { openTopicDialog } = useReviewTopicDialog()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
 
 	const handleTopicSelect = useCallback(
 		(topic: Topic) => {
-			openTopicDialog(topic.id)
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topic.id.toString() }
+			})
 		},
-		[openTopicDialog]
+		[navigate]
 	)
 
 	const handleCreateInboxTopic = useCallback(async () => {
@@ -47,8 +49,11 @@ export function InboxPage() {
 			inboxed: true,
 			archived: false
 		})
-		openTopicDialog(newTopic.id)
-	}, [createTopicWithReview, openTopicDialog])
+		navigate({
+			to: '/topics/$topicId',
+			params: { topicId: newTopic.id.toString() }
+		})
+	}, [createTopicWithReview, navigate])
 
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
