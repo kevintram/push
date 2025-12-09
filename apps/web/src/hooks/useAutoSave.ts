@@ -2,54 +2,117 @@ import debounce from 'lodash.debounce'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface UseAutoSaveOptions {
+	/** The initial value to display in the input */
 	initialValue: string
+	/** Callback invoked after the debounce delay when the value changes */
 	onSave: (value: string) => void
+	/** Debounce delay in milliseconds. Defaults to 5000ms (5 seconds) */
 	debounceMs?: number
+	/**
+	 * Optional key to identify this auto-save instance. When the key changes,
+	 * the local value is reset to initialValue. Useful for resetting state
+	 * when switching between different entities (e.g., different topic IDs).
+	 */
 	key?: string
 }
+
+interface UseAutoSaveReturn {
+	/** The current local value (updated immediately on user input) */
+	value: string
+	/** Change handler to attach to input/textarea elements */
+	onChange: (
+		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+	) => void
+}
+
 /**
- * A hook that allows you to edit a string value in real time.
- * It debounces the save operation and updates the value in the background.
- * @param initialValue - The initial value of the string.
- * @param onSave - Callback that saves the value to the database.
- * @param debounceMs - The number of milliseconds to debounce the save operation.
- * @param key - key to reset value if changes similar to tanstack query keys.
- * @returns An object with the current value and a function to update the value.
+ * A hook for auto-saving user input with debouncing.
+ *
+ * This hook manages local state for immediate UI updates while debouncing
+ * the actual save operation. It handles the common pattern of editing text
+ * fields that auto-save to a backend.
+ *
+ * ## Features
+ * - **Immediate UI updates**: Local state updates instantly for responsive UX
+ * - **Debounced saves**: Only calls `onSave` after user stops typing
+ * - **Smart resets**: Prevents local changes from being overwritten by external updates
+ * - **Stable debouncing**: Works correctly even with unstable `onSave` callbacks
+ * - **Key-based reset**: Automatically resets when switching entities
+ *
+ * ## How it works
+ * 1. User types → local `value` updates immediately
+ * 2. After debounce delay → `onSave` is called with the latest value
+ * 3. External `initialValue` updates are ignored during recent user activity
+ * 4. When `key` changes → local value resets to new `initialValue`
+ *
+ * ## Example usage
+ * ```tsx
+ * const { mutateAsync: updateNote } = useUpdateNote()
+ *
+ * const updateNoteContent = useCallback(
+ *   (newContent: string) => {
+ *     if (!noteId) return
+ *     updateNote({ id: noteId, content: newContent })
+ *   },
+ *   [updateNote, noteId]
+ * )
+ *
+ * const { value, onChange } = useAutoSave({
+ *   initialValue: note?.content ?? '',
+ *   onSave: updateNoteContent,
+ *   debounceMs: 3000,
+ *   key: `note-${noteId}`
+ * })
+ *
+ * return <textarea value={value} onChange={onChange} />
+ * ```
+ *
+ * @param options - Configuration options
+ * @returns Object with current value and onChange handler
  */
 export function useAutoSave({
 	initialValue,
 	onSave,
 	debounceMs = 1000,
 	key
-}: UseAutoSaveOptions) {
+}: UseAutoSaveOptions): UseAutoSaveReturn {
 	const [value, setValue] = useState(initialValue)
-	const _key = useRef<string | undefined>(key)
+	const keyRef = useRef<string | undefined>(key)
 	const lastUserActionRef = useRef<number>(Date.now())
 
+	// Keep onSave ref up-to-date without recreating the debounced function
+	const onSaveRef = useRef(onSave)
 	useEffect(() => {
-		const timeSinceLastUserAction = Date.now() - lastUserActionRef.current
-		const isRecentUserActivity = timeSinceLastUserAction < debounceMs + 500 // Add buffer
+		onSaveRef.current = onSave
+	}, [onSave])
 
-		if (_key.current !== key) {
-			_key.current = key
-			setValue(initialValue)
-
-			return
-		}
-
-		if (!isRecentUserActivity) {
-			setValue(initialValue)
-			return
-		}
-	}, [initialValue, debounceMs, key])
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: I WANT TO UPDATE WITH THE ONSAVE BRO
-	const debouncedSave = useCallback(
+	// Create debounced save function once and reuse it
+	// Uses onSaveRef so it always calls the latest onSave callback
+	const debouncedSave = useRef(
 		debounce((newValue: string) => {
-			onSave(newValue)
-		}, debounceMs),
-		[onSave]
-	)
+			onSaveRef.current(newValue)
+		}, debounceMs)
+	).current
+
+	// Handle external initialValue updates intelligently
+	useEffect(() => {
+		// Reset value when key changes (e.g., switching to a different entity)
+		if (keyRef.current !== key) {
+			keyRef.current = key
+			setValue(initialValue)
+			return
+		}
+
+		// Prevent external updates from overwriting recent user changes
+		const timeSinceLastUserAction = Date.now() - lastUserActionRef.current
+		const isRecentUserActivity = timeSinceLastUserAction < debounceMs + 500
+		if (isRecentUserActivity) {
+			return
+		}
+
+		// Safe to update from external source if user hasn't typed recently
+		setValue(initialValue)
+	}, [initialValue, debounceMs, key])
 
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

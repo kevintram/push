@@ -75,62 +75,66 @@ export function TopicDetail({
 	const isLoading =
 		isLoadingProp !== undefined ? isLoadingProp : contextValue.isLoading
 
-	const updateTopicMutation = useUpdateTopic()
-	const deleteTopicMutation = useDeleteTopic()
+	const { mutateAsync: updateTopic } = useUpdateTopic()
+	const { mutateAsync: deleteTopic } = useDeleteTopic()
 
-	const deleteTopic = useCallback(
+	const handleDeleteTopic = useCallback(
 		async (topicId: number) => {
-			await deleteTopicMutation.mutateAsync(topicId)
+			await deleteTopic(topicId)
 			onDelete?.()
 		},
-		[deleteTopicMutation, onDelete]
+		[deleteTopic, onDelete]
 	)
 
 	const handleDelete = useCallback(async () => {
 		if (topic?.id) {
-			await deleteTopic(topic.id)
+			await handleDeleteTopic(topic.id)
 		}
-	}, [deleteTopic, topic?.id])
+	}, [handleDeleteTopic, topic?.id])
 
 	const handleArchiveToggle = useCallback(async () => {
 		if (topic?.id) {
-			await updateTopicMutation.mutateAsync({
+			await updateTopic({
 				id: topic.id,
 				archived: !topic.archived
 			})
 		}
-	}, [updateTopicMutation, topic?.id, topic?.archived])
+	}, [updateTopic, topic?.id, topic?.archived])
 
 	const handleInboxToggle = useCallback(async () => {
 		if (topic?.id) {
-			await updateTopicMutation.mutateAsync({
+			await updateTopic({
 				id: topic.id,
 				inboxed: !topic.inboxed
 			})
 		}
-	}, [updateTopicMutation, topic?.id, topic?.inboxed])
+	}, [updateTopic, topic?.id, topic?.inboxed])
+
+	const updateNotes = useCallback(
+		(newNotes: string) => {
+			if (!topic?.id) return
+			updateTopic({ id: topic.id, notes: newNotes })
+		},
+		[updateTopic, topic?.id]
+	)
+
+	const updateName = useCallback(
+		(newName: string) => {
+			if (!topic?.id) return
+			updateTopic({ id: topic.id, name: newName })
+		},
+		[updateTopic, topic?.id]
+	)
 
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: topic?.notes ?? '',
-		onSave: useCallback(
-			(newNotes: string) => {
-				if (!topic?.id) return
-				updateTopicMutation.mutateAsync({ id: topic.id, notes: newNotes })
-			},
-			[updateTopicMutation, topic?.id]
-		),
+		onSave: updateNotes,
 		key: `topics-${topic?.id}`
 	})
 
 	const { value: title, onChange: onNameChange } = useAutoSave({
 		initialValue: topic?.name ?? '',
-		onSave: useCallback(
-			(newTitle: string) => {
-				if (!topic?.id) return
-				updateTopicMutation.mutateAsync({ id: topic.id, name: newTitle })
-			},
-			[updateTopicMutation, topic?.id]
-		),
+		onSave: updateName,
 		key: `topics-${topic?.id}`
 	})
 
