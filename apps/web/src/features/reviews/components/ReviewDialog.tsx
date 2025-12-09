@@ -50,7 +50,7 @@ export function ReviewDialog() {
 			>
 				<ReviewContext value={contextValue}>
 					<ReviewDetail
-						headerActions={headerActions}
+						headerAfterActions={headerActions}
 						onDelete={handleDelete}
 						onNavigate={handleNavigate}
 					/>

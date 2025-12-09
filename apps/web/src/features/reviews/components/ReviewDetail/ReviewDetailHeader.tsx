@@ -10,15 +10,29 @@ import {
 
 interface ReviewDetailHeaderProps {
 	onDelete: () => void
-	headerActions?: ReactNode
+	/**
+	 * Content to render in the left section (e.g., navigation buttons)
+	 */
+	headerBeforeActions?: ReactNode
+	/**
+	 * Content to render after the "more" dropdown (e.g., close/minimize buttons)
+	 */
+	headerAfterActions?: ReactNode
 }
 
 export function ReviewDetailHeader({
 	onDelete,
-	headerActions
+	headerBeforeActions,
+	headerAfterActions
 }: ReviewDetailHeaderProps) {
 	return (
-		<div className='flex items-center justify-end gap-4 px-2 py-1'>
+		<div className='flex items-center justify-between gap-4 px-2 py-1'>
+			{headerBeforeActions && (
+				<div className='flex items-center gap-2'>{headerBeforeActions}</div>
+			)}
+
+			<div className='flex-1' />
+
 			<div className='flex items-center gap-2'>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild={true}>
@@ -39,7 +53,7 @@ export function ReviewDetailHeader({
 					</DropdownMenuContent>
 				</DropdownMenu>
 
-				{headerActions}
+				{headerAfterActions}
 			</div>
 		</div>
 	)

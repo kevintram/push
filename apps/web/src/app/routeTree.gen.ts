@@ -20,6 +20,7 @@ import { Route as HomeRouteImport } from './routes/home'
 import { Route as ArchivedRouteImport } from './routes/archived'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TopicsTopicIdRouteImport } from './routes/topics_.$topicId'
+import { Route as ReviewsReviewIdRouteImport } from './routes/reviews.$reviewId'
 
 const UpcomingRoute = UpcomingRouteImport.update({
   id: '/upcoming',
@@ -76,6 +77,11 @@ const TopicsTopicIdRoute = TopicsTopicIdRouteImport.update({
   path: '/topics/$topicId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewsReviewIdRoute = ReviewsReviewIdRouteImport.update({
+  id: '/reviews/$reviewId',
+  path: '/reviews/$reviewId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/topics': typeof TopicsRoute
   '/unscheduled': typeof UnscheduledRoute
   '/upcoming': typeof UpcomingRoute
+  '/reviews/$reviewId': typeof ReviewsReviewIdRoute
   '/topics/$topicId': typeof TopicsTopicIdRoute
 }
 export interface FileRoutesByTo {
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/topics': typeof TopicsRoute
   '/unscheduled': typeof UnscheduledRoute
   '/upcoming': typeof UpcomingRoute
+  '/reviews/$reviewId': typeof ReviewsReviewIdRoute
   '/topics/$topicId': typeof TopicsTopicIdRoute
 }
 export interface FileRoutesById {
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/topics': typeof TopicsRoute
   '/unscheduled': typeof UnscheduledRoute
   '/upcoming': typeof UpcomingRoute
+  '/reviews/$reviewId': typeof ReviewsReviewIdRoute
   '/topics_/$topicId': typeof TopicsTopicIdRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/topics'
     | '/unscheduled'
     | '/upcoming'
+    | '/reviews/$reviewId'
     | '/topics/$topicId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/topics'
     | '/unscheduled'
     | '/upcoming'
+    | '/reviews/$reviewId'
     | '/topics/$topicId'
   id:
     | '__root__'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/topics'
     | '/unscheduled'
     | '/upcoming'
+    | '/reviews/$reviewId'
     | '/topics_/$topicId'
   fileRoutesById: FileRoutesById
 }
@@ -170,6 +182,7 @@ export interface RootRouteChildren {
   TopicsRoute: typeof TopicsRoute
   UnscheduledRoute: typeof UnscheduledRoute
   UpcomingRoute: typeof UpcomingRoute
+  ReviewsReviewIdRoute: typeof ReviewsReviewIdRoute
   TopicsTopicIdRoute: typeof TopicsTopicIdRoute
 }
 
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TopicsTopicIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reviews/$reviewId': {
+      id: '/reviews/$reviewId'
+      path: '/reviews/$reviewId'
+      fullPath: '/reviews/$reviewId'
+      preLoaderRoute: typeof ReviewsReviewIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -266,6 +286,7 @@ const rootRouteChildren: RootRouteChildren = {
   TopicsRoute: TopicsRoute,
   UnscheduledRoute: UnscheduledRoute,
   UpcomingRoute: UpcomingRoute,
+  ReviewsReviewIdRoute: ReviewsReviewIdRoute,
   TopicsTopicIdRoute: TopicsTopicIdRoute,
 }
 export const routeTree = rootRouteImport
