@@ -9,127 +9,196 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UpcomingRouteImport } from './routes/upcoming'
-import { Route as UnscheduledRouteImport } from './routes/unscheduled'
-import { Route as TopicsRouteImport } from './routes/topics'
-import { Route as TodayRouteImport } from './routes/today'
-import { Route as RecentRouteImport } from './routes/recent'
-import { Route as LogbookRouteImport } from './routes/logbook'
-import { Route as InboxRouteImport } from './routes/inbox'
-import { Route as HomeRouteImport } from './routes/home'
-import { Route as ArchivedRouteImport } from './routes/archived'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as TopicsTopicIdRouteImport } from './routes/topics_.$topicId'
-import { Route as ReviewsReviewIdRouteImport } from './routes/reviews.$reviewId'
+import { Route as MainRouteImport } from './routes/_main'
+import { Route as MainIndexRouteImport } from './routes/_main/index'
+import { Route as MainUpcomingRouteImport } from './routes/_main/upcoming'
+import { Route as MainUnscheduledRouteImport } from './routes/_main/unscheduled'
+import { Route as MainTopicsRouteImport } from './routes/_main/topics'
+import { Route as MainTodayRouteImport } from './routes/_main/today'
+import { Route as MainRecentRouteImport } from './routes/_main/recent'
+import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
+import { Route as MainInboxRouteImport } from './routes/_main/inbox'
+import { Route as MainHomeRouteImport } from './routes/_main/home'
+import { Route as MainArchivedRouteImport } from './routes/_main/archived'
+import { Route as ReviewsReviewIdAddRouteImport } from './routes/reviews.$reviewId_.add'
+import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
+import { Route as MainReviewsReviewIdRouteImport } from './routes/_main/reviews.$reviewId'
+import { Route as ReviewsReviewIdAddListRouteImport } from './routes/reviews.$reviewId_.add._list'
+import { Route as ReviewsReviewIdAddListIndexRouteImport } from './routes/reviews.$reviewId_.add._list.index'
+import { Route as ReviewsReviewIdAddTopicsTopicIdRouteImport } from './routes/reviews.$reviewId_.add.topics.$topicId'
+import { Route as ReviewsReviewIdAddListRecentRouteImport } from './routes/reviews.$reviewId_.add._list.recent'
+import { Route as ReviewsReviewIdAddListInboxRouteImport } from './routes/reviews.$reviewId_.add._list.inbox'
+import { Route as ReviewsReviewIdAddListArchivedRouteImport } from './routes/reviews.$reviewId_.add._list.archived'
 
-const UpcomingRoute = UpcomingRouteImport.update({
-  id: '/upcoming',
-  path: '/upcoming',
+const MainRoute = MainRouteImport.update({
+  id: '/_main',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UnscheduledRoute = UnscheduledRouteImport.update({
-  id: '/unscheduled',
-  path: '/unscheduled',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TopicsRoute = TopicsRouteImport.update({
-  id: '/topics',
-  path: '/topics',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TodayRoute = TodayRouteImport.update({
-  id: '/today',
-  path: '/today',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecentRoute = RecentRouteImport.update({
-  id: '/recent',
-  path: '/recent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LogbookRoute = LogbookRouteImport.update({
-  id: '/logbook',
-  path: '/logbook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InboxRoute = InboxRouteImport.update({
-  id: '/inbox',
-  path: '/inbox',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArchivedRoute = ArchivedRouteImport.update({
-  id: '/archived',
-  path: '/archived',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
+const MainIndexRoute = MainIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainUpcomingRoute = MainUpcomingRouteImport.update({
+  id: '/upcoming',
+  path: '/upcoming',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainUnscheduledRoute = MainUnscheduledRouteImport.update({
+  id: '/unscheduled',
+  path: '/unscheduled',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainTopicsRoute = MainTopicsRouteImport.update({
+  id: '/topics',
+  path: '/topics',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainTodayRoute = MainTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainRecentRoute = MainRecentRouteImport.update({
+  id: '/recent',
+  path: '/recent',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainLogbookRoute = MainLogbookRouteImport.update({
+  id: '/logbook',
+  path: '/logbook',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainInboxRoute = MainInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainHomeRoute = MainHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainArchivedRoute = MainArchivedRouteImport.update({
+  id: '/archived',
+  path: '/archived',
+  getParentRoute: () => MainRoute,
+} as any)
+const ReviewsReviewIdAddRoute = ReviewsReviewIdAddRouteImport.update({
+  id: '/reviews/$reviewId_/add',
+  path: '/reviews/$reviewId/add',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TopicsTopicIdRoute = TopicsTopicIdRouteImport.update({
+const MainTopicsTopicIdRoute = MainTopicsTopicIdRouteImport.update({
   id: '/topics_/$topicId',
   path: '/topics/$topicId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => MainRoute,
 } as any)
-const ReviewsReviewIdRoute = ReviewsReviewIdRouteImport.update({
+const MainReviewsReviewIdRoute = MainReviewsReviewIdRouteImport.update({
   id: '/reviews/$reviewId',
   path: '/reviews/$reviewId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => MainRoute,
 } as any)
+const ReviewsReviewIdAddListRoute = ReviewsReviewIdAddListRouteImport.update({
+  id: '/_list',
+  getParentRoute: () => ReviewsReviewIdAddRoute,
+} as any)
+const ReviewsReviewIdAddListIndexRoute =
+  ReviewsReviewIdAddListIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ReviewsReviewIdAddListRoute,
+  } as any)
+const ReviewsReviewIdAddTopicsTopicIdRoute =
+  ReviewsReviewIdAddTopicsTopicIdRouteImport.update({
+    id: '/topics/$topicId',
+    path: '/topics/$topicId',
+    getParentRoute: () => ReviewsReviewIdAddRoute,
+  } as any)
+const ReviewsReviewIdAddListRecentRoute =
+  ReviewsReviewIdAddListRecentRouteImport.update({
+    id: '/recent',
+    path: '/recent',
+    getParentRoute: () => ReviewsReviewIdAddListRoute,
+  } as any)
+const ReviewsReviewIdAddListInboxRoute =
+  ReviewsReviewIdAddListInboxRouteImport.update({
+    id: '/inbox',
+    path: '/inbox',
+    getParentRoute: () => ReviewsReviewIdAddListRoute,
+  } as any)
+const ReviewsReviewIdAddListArchivedRoute =
+  ReviewsReviewIdAddListArchivedRouteImport.update({
+    id: '/archived',
+    path: '/archived',
+    getParentRoute: () => ReviewsReviewIdAddListRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/archived': typeof ArchivedRoute
-  '/home': typeof HomeRoute
-  '/inbox': typeof InboxRoute
-  '/logbook': typeof LogbookRoute
-  '/recent': typeof RecentRoute
-  '/today': typeof TodayRoute
-  '/topics': typeof TopicsRoute
-  '/unscheduled': typeof UnscheduledRoute
-  '/upcoming': typeof UpcomingRoute
-  '/reviews/$reviewId': typeof ReviewsReviewIdRoute
-  '/topics/$topicId': typeof TopicsTopicIdRoute
+  '/archived': typeof MainArchivedRoute
+  '/home': typeof MainHomeRoute
+  '/inbox': typeof MainInboxRoute
+  '/logbook': typeof MainLogbookRoute
+  '/recent': typeof MainRecentRoute
+  '/today': typeof MainTodayRoute
+  '/topics': typeof MainTopicsRoute
+  '/unscheduled': typeof MainUnscheduledRoute
+  '/upcoming': typeof MainUpcomingRoute
+  '/': typeof MainIndexRoute
+  '/reviews/$reviewId': typeof MainReviewsReviewIdRoute
+  '/topics/$topicId': typeof MainTopicsTopicIdRoute
+  '/reviews/$reviewId/add': typeof ReviewsReviewIdAddListRouteWithChildren
+  '/reviews/$reviewId/add/archived': typeof ReviewsReviewIdAddListArchivedRoute
+  '/reviews/$reviewId/add/inbox': typeof ReviewsReviewIdAddListInboxRoute
+  '/reviews/$reviewId/add/recent': typeof ReviewsReviewIdAddListRecentRoute
+  '/reviews/$reviewId/add/topics/$topicId': typeof ReviewsReviewIdAddTopicsTopicIdRoute
+  '/reviews/$reviewId/add/': typeof ReviewsReviewIdAddListIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/archived': typeof ArchivedRoute
-  '/home': typeof HomeRoute
-  '/inbox': typeof InboxRoute
-  '/logbook': typeof LogbookRoute
-  '/recent': typeof RecentRoute
-  '/today': typeof TodayRoute
-  '/topics': typeof TopicsRoute
-  '/unscheduled': typeof UnscheduledRoute
-  '/upcoming': typeof UpcomingRoute
-  '/reviews/$reviewId': typeof ReviewsReviewIdRoute
-  '/topics/$topicId': typeof TopicsTopicIdRoute
+  '/archived': typeof MainArchivedRoute
+  '/home': typeof MainHomeRoute
+  '/inbox': typeof MainInboxRoute
+  '/logbook': typeof MainLogbookRoute
+  '/recent': typeof MainRecentRoute
+  '/today': typeof MainTodayRoute
+  '/topics': typeof MainTopicsRoute
+  '/unscheduled': typeof MainUnscheduledRoute
+  '/upcoming': typeof MainUpcomingRoute
+  '/': typeof MainIndexRoute
+  '/reviews/$reviewId': typeof MainReviewsReviewIdRoute
+  '/topics/$topicId': typeof MainTopicsTopicIdRoute
+  '/reviews/$reviewId/add': typeof ReviewsReviewIdAddListIndexRoute
+  '/reviews/$reviewId/add/archived': typeof ReviewsReviewIdAddListArchivedRoute
+  '/reviews/$reviewId/add/inbox': typeof ReviewsReviewIdAddListInboxRoute
+  '/reviews/$reviewId/add/recent': typeof ReviewsReviewIdAddListRecentRoute
+  '/reviews/$reviewId/add/topics/$topicId': typeof ReviewsReviewIdAddTopicsTopicIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/archived': typeof ArchivedRoute
-  '/home': typeof HomeRoute
-  '/inbox': typeof InboxRoute
-  '/logbook': typeof LogbookRoute
-  '/recent': typeof RecentRoute
-  '/today': typeof TodayRoute
-  '/topics': typeof TopicsRoute
-  '/unscheduled': typeof UnscheduledRoute
-  '/upcoming': typeof UpcomingRoute
-  '/reviews/$reviewId': typeof ReviewsReviewIdRoute
-  '/topics_/$topicId': typeof TopicsTopicIdRoute
+  '/_main': typeof MainRouteWithChildren
+  '/_main/archived': typeof MainArchivedRoute
+  '/_main/home': typeof MainHomeRoute
+  '/_main/inbox': typeof MainInboxRoute
+  '/_main/logbook': typeof MainLogbookRoute
+  '/_main/recent': typeof MainRecentRoute
+  '/_main/today': typeof MainTodayRoute
+  '/_main/topics': typeof MainTopicsRoute
+  '/_main/unscheduled': typeof MainUnscheduledRoute
+  '/_main/upcoming': typeof MainUpcomingRoute
+  '/_main/': typeof MainIndexRoute
+  '/_main/reviews/$reviewId': typeof MainReviewsReviewIdRoute
+  '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
+  '/reviews/$reviewId_/add': typeof ReviewsReviewIdAddRouteWithChildren
+  '/reviews/$reviewId_/add/_list': typeof ReviewsReviewIdAddListRouteWithChildren
+  '/reviews/$reviewId_/add/_list/archived': typeof ReviewsReviewIdAddListArchivedRoute
+  '/reviews/$reviewId_/add/_list/inbox': typeof ReviewsReviewIdAddListInboxRoute
+  '/reviews/$reviewId_/add/_list/recent': typeof ReviewsReviewIdAddListRecentRoute
+  '/reviews/$reviewId_/add/topics/$topicId': typeof ReviewsReviewIdAddTopicsTopicIdRoute
+  '/reviews/$reviewId_/add/_list/': typeof ReviewsReviewIdAddListIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/archived'
     | '/home'
     | '/inbox'
@@ -139,11 +208,17 @@ export interface FileRouteTypes {
     | '/topics'
     | '/unscheduled'
     | '/upcoming'
+    | '/'
     | '/reviews/$reviewId'
     | '/topics/$topicId'
+    | '/reviews/$reviewId/add'
+    | '/reviews/$reviewId/add/archived'
+    | '/reviews/$reviewId/add/inbox'
+    | '/reviews/$reviewId/add/recent'
+    | '/reviews/$reviewId/add/topics/$topicId'
+    | '/reviews/$reviewId/add/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/archived'
     | '/home'
     | '/inbox'
@@ -153,141 +228,256 @@ export interface FileRouteTypes {
     | '/topics'
     | '/unscheduled'
     | '/upcoming'
+    | '/'
     | '/reviews/$reviewId'
     | '/topics/$topicId'
+    | '/reviews/$reviewId/add'
+    | '/reviews/$reviewId/add/archived'
+    | '/reviews/$reviewId/add/inbox'
+    | '/reviews/$reviewId/add/recent'
+    | '/reviews/$reviewId/add/topics/$topicId'
   id:
     | '__root__'
-    | '/'
-    | '/archived'
-    | '/home'
-    | '/inbox'
-    | '/logbook'
-    | '/recent'
-    | '/today'
-    | '/topics'
-    | '/unscheduled'
-    | '/upcoming'
-    | '/reviews/$reviewId'
-    | '/topics_/$topicId'
+    | '/_main'
+    | '/_main/archived'
+    | '/_main/home'
+    | '/_main/inbox'
+    | '/_main/logbook'
+    | '/_main/recent'
+    | '/_main/today'
+    | '/_main/topics'
+    | '/_main/unscheduled'
+    | '/_main/upcoming'
+    | '/_main/'
+    | '/_main/reviews/$reviewId'
+    | '/_main/topics_/$topicId'
+    | '/reviews/$reviewId_/add'
+    | '/reviews/$reviewId_/add/_list'
+    | '/reviews/$reviewId_/add/_list/archived'
+    | '/reviews/$reviewId_/add/_list/inbox'
+    | '/reviews/$reviewId_/add/_list/recent'
+    | '/reviews/$reviewId_/add/topics/$topicId'
+    | '/reviews/$reviewId_/add/_list/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ArchivedRoute: typeof ArchivedRoute
-  HomeRoute: typeof HomeRoute
-  InboxRoute: typeof InboxRoute
-  LogbookRoute: typeof LogbookRoute
-  RecentRoute: typeof RecentRoute
-  TodayRoute: typeof TodayRoute
-  TopicsRoute: typeof TopicsRoute
-  UnscheduledRoute: typeof UnscheduledRoute
-  UpcomingRoute: typeof UpcomingRoute
-  ReviewsReviewIdRoute: typeof ReviewsReviewIdRoute
-  TopicsTopicIdRoute: typeof TopicsTopicIdRoute
+  MainRoute: typeof MainRouteWithChildren
+  ReviewsReviewIdAddRoute: typeof ReviewsReviewIdAddRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/upcoming': {
-      id: '/upcoming'
-      path: '/upcoming'
-      fullPath: '/upcoming'
-      preLoaderRoute: typeof UpcomingRouteImport
+    '/_main': {
+      id: '/_main'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof MainRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/unscheduled': {
-      id: '/unscheduled'
-      path: '/unscheduled'
-      fullPath: '/unscheduled'
-      preLoaderRoute: typeof UnscheduledRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/topics': {
-      id: '/topics'
-      path: '/topics'
-      fullPath: '/topics'
-      preLoaderRoute: typeof TopicsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/today': {
-      id: '/today'
-      path: '/today'
-      fullPath: '/today'
-      preLoaderRoute: typeof TodayRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recent': {
-      id: '/recent'
-      path: '/recent'
-      fullPath: '/recent'
-      preLoaderRoute: typeof RecentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/logbook': {
-      id: '/logbook'
-      path: '/logbook'
-      fullPath: '/logbook'
-      preLoaderRoute: typeof LogbookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inbox': {
-      id: '/inbox'
-      path: '/inbox'
-      fullPath: '/inbox'
-      preLoaderRoute: typeof InboxRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/archived': {
-      id: '/archived'
-      path: '/archived'
-      fullPath: '/archived'
-      preLoaderRoute: typeof ArchivedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_main/': {
+      id: '/_main/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof MainIndexRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/upcoming': {
+      id: '/_main/upcoming'
+      path: '/upcoming'
+      fullPath: '/upcoming'
+      preLoaderRoute: typeof MainUpcomingRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/unscheduled': {
+      id: '/_main/unscheduled'
+      path: '/unscheduled'
+      fullPath: '/unscheduled'
+      preLoaderRoute: typeof MainUnscheduledRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/topics': {
+      id: '/_main/topics'
+      path: '/topics'
+      fullPath: '/topics'
+      preLoaderRoute: typeof MainTopicsRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/today': {
+      id: '/_main/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof MainTodayRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/recent': {
+      id: '/_main/recent'
+      path: '/recent'
+      fullPath: '/recent'
+      preLoaderRoute: typeof MainRecentRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/logbook': {
+      id: '/_main/logbook'
+      path: '/logbook'
+      fullPath: '/logbook'
+      preLoaderRoute: typeof MainLogbookRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/inbox': {
+      id: '/_main/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof MainInboxRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/home': {
+      id: '/_main/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof MainHomeRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/archived': {
+      id: '/_main/archived'
+      path: '/archived'
+      fullPath: '/archived'
+      preLoaderRoute: typeof MainArchivedRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/reviews/$reviewId_/add': {
+      id: '/reviews/$reviewId_/add'
+      path: '/reviews/$reviewId/add'
+      fullPath: '/reviews/$reviewId/add'
+      preLoaderRoute: typeof ReviewsReviewIdAddRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/topics_/$topicId': {
-      id: '/topics_/$topicId'
+    '/_main/topics_/$topicId': {
+      id: '/_main/topics_/$topicId'
       path: '/topics/$topicId'
       fullPath: '/topics/$topicId'
-      preLoaderRoute: typeof TopicsTopicIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof MainTopicsTopicIdRouteImport
+      parentRoute: typeof MainRoute
     }
-    '/reviews/$reviewId': {
-      id: '/reviews/$reviewId'
+    '/_main/reviews/$reviewId': {
+      id: '/_main/reviews/$reviewId'
       path: '/reviews/$reviewId'
       fullPath: '/reviews/$reviewId'
-      preLoaderRoute: typeof ReviewsReviewIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof MainReviewsReviewIdRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/reviews/$reviewId_/add/_list': {
+      id: '/reviews/$reviewId_/add/_list'
+      path: ''
+      fullPath: '/reviews/$reviewId/add'
+      preLoaderRoute: typeof ReviewsReviewIdAddListRouteImport
+      parentRoute: typeof ReviewsReviewIdAddRoute
+    }
+    '/reviews/$reviewId_/add/_list/': {
+      id: '/reviews/$reviewId_/add/_list/'
+      path: '/'
+      fullPath: '/reviews/$reviewId/add/'
+      preLoaderRoute: typeof ReviewsReviewIdAddListIndexRouteImport
+      parentRoute: typeof ReviewsReviewIdAddListRoute
+    }
+    '/reviews/$reviewId_/add/topics/$topicId': {
+      id: '/reviews/$reviewId_/add/topics/$topicId'
+      path: '/topics/$topicId'
+      fullPath: '/reviews/$reviewId/add/topics/$topicId'
+      preLoaderRoute: typeof ReviewsReviewIdAddTopicsTopicIdRouteImport
+      parentRoute: typeof ReviewsReviewIdAddRoute
+    }
+    '/reviews/$reviewId_/add/_list/recent': {
+      id: '/reviews/$reviewId_/add/_list/recent'
+      path: '/recent'
+      fullPath: '/reviews/$reviewId/add/recent'
+      preLoaderRoute: typeof ReviewsReviewIdAddListRecentRouteImport
+      parentRoute: typeof ReviewsReviewIdAddListRoute
+    }
+    '/reviews/$reviewId_/add/_list/inbox': {
+      id: '/reviews/$reviewId_/add/_list/inbox'
+      path: '/inbox'
+      fullPath: '/reviews/$reviewId/add/inbox'
+      preLoaderRoute: typeof ReviewsReviewIdAddListInboxRouteImport
+      parentRoute: typeof ReviewsReviewIdAddListRoute
+    }
+    '/reviews/$reviewId_/add/_list/archived': {
+      id: '/reviews/$reviewId_/add/_list/archived'
+      path: '/archived'
+      fullPath: '/reviews/$reviewId/add/archived'
+      preLoaderRoute: typeof ReviewsReviewIdAddListArchivedRouteImport
+      parentRoute: typeof ReviewsReviewIdAddListRoute
     }
   }
 }
 
+interface MainRouteChildren {
+  MainArchivedRoute: typeof MainArchivedRoute
+  MainHomeRoute: typeof MainHomeRoute
+  MainInboxRoute: typeof MainInboxRoute
+  MainLogbookRoute: typeof MainLogbookRoute
+  MainRecentRoute: typeof MainRecentRoute
+  MainTodayRoute: typeof MainTodayRoute
+  MainTopicsRoute: typeof MainTopicsRoute
+  MainUnscheduledRoute: typeof MainUnscheduledRoute
+  MainUpcomingRoute: typeof MainUpcomingRoute
+  MainIndexRoute: typeof MainIndexRoute
+  MainReviewsReviewIdRoute: typeof MainReviewsReviewIdRoute
+  MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRoute
+}
+
+const MainRouteChildren: MainRouteChildren = {
+  MainArchivedRoute: MainArchivedRoute,
+  MainHomeRoute: MainHomeRoute,
+  MainInboxRoute: MainInboxRoute,
+  MainLogbookRoute: MainLogbookRoute,
+  MainRecentRoute: MainRecentRoute,
+  MainTodayRoute: MainTodayRoute,
+  MainTopicsRoute: MainTopicsRoute,
+  MainUnscheduledRoute: MainUnscheduledRoute,
+  MainUpcomingRoute: MainUpcomingRoute,
+  MainIndexRoute: MainIndexRoute,
+  MainReviewsReviewIdRoute: MainReviewsReviewIdRoute,
+  MainTopicsTopicIdRoute: MainTopicsTopicIdRoute,
+}
+
+const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren)
+
+interface ReviewsReviewIdAddListRouteChildren {
+  ReviewsReviewIdAddListArchivedRoute: typeof ReviewsReviewIdAddListArchivedRoute
+  ReviewsReviewIdAddListInboxRoute: typeof ReviewsReviewIdAddListInboxRoute
+  ReviewsReviewIdAddListRecentRoute: typeof ReviewsReviewIdAddListRecentRoute
+  ReviewsReviewIdAddListIndexRoute: typeof ReviewsReviewIdAddListIndexRoute
+}
+
+const ReviewsReviewIdAddListRouteChildren: ReviewsReviewIdAddListRouteChildren =
+  {
+    ReviewsReviewIdAddListArchivedRoute: ReviewsReviewIdAddListArchivedRoute,
+    ReviewsReviewIdAddListInboxRoute: ReviewsReviewIdAddListInboxRoute,
+    ReviewsReviewIdAddListRecentRoute: ReviewsReviewIdAddListRecentRoute,
+    ReviewsReviewIdAddListIndexRoute: ReviewsReviewIdAddListIndexRoute,
+  }
+
+const ReviewsReviewIdAddListRouteWithChildren =
+  ReviewsReviewIdAddListRoute._addFileChildren(
+    ReviewsReviewIdAddListRouteChildren,
+  )
+
+interface ReviewsReviewIdAddRouteChildren {
+  ReviewsReviewIdAddListRoute: typeof ReviewsReviewIdAddListRouteWithChildren
+  ReviewsReviewIdAddTopicsTopicIdRoute: typeof ReviewsReviewIdAddTopicsTopicIdRoute
+}
+
+const ReviewsReviewIdAddRouteChildren: ReviewsReviewIdAddRouteChildren = {
+  ReviewsReviewIdAddListRoute: ReviewsReviewIdAddListRouteWithChildren,
+  ReviewsReviewIdAddTopicsTopicIdRoute: ReviewsReviewIdAddTopicsTopicIdRoute,
+}
+
+const ReviewsReviewIdAddRouteWithChildren =
+  ReviewsReviewIdAddRoute._addFileChildren(ReviewsReviewIdAddRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ArchivedRoute: ArchivedRoute,
-  HomeRoute: HomeRoute,
-  InboxRoute: InboxRoute,
-  LogbookRoute: LogbookRoute,
-  RecentRoute: RecentRoute,
-  TodayRoute: TodayRoute,
-  TopicsRoute: TopicsRoute,
-  UnscheduledRoute: UnscheduledRoute,
-  UpcomingRoute: UpcomingRoute,
-  ReviewsReviewIdRoute: ReviewsReviewIdRoute,
-  TopicsTopicIdRoute: TopicsTopicIdRoute,
+  MainRoute: MainRouteWithChildren,
+  ReviewsReviewIdAddRoute: ReviewsReviewIdAddRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

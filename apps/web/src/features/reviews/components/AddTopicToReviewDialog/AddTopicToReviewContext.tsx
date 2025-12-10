@@ -1,14 +1,7 @@
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useMemo,
-	useState
-} from 'react'
+import { createContext, useCallback, useContext, useMemo } from 'react'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
 import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
-import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { Rating, Review, TopicReview } from '../../types/review.types'
 
@@ -16,16 +9,6 @@ interface AddTopicToReviewContextValue {
 	// Review
 	review: Review | undefined
 	isReviewCompleted: boolean
-
-	// Selected topic (single query)
-	selectedTopicId: number | undefined
-	setSelectedTopicId: (id: number | undefined) => void
-	selectedTopic: Topic | undefined
-	isLoadingTopic: boolean
-
-	// Derived state for selected topic
-	isSelectedTopicAdded: boolean
-	selectedTopicReview: TopicReview | undefined
 
 	// Helpers (for any topic, not just selected)
 	isTopicAdded: (topicId: number) => boolean
@@ -64,15 +47,6 @@ export function AddTopicToReviewProvider({
 	review,
 	children
 }: AddTopicToReviewProviderProps) {
-	// Selected topic state
-	const [selectedTopicId, setSelectedTopicId] = useState<number | undefined>(
-		undefined
-	)
-
-	// Single source of truth for selected topic data
-	const { topic: selectedTopic, isLoading: isLoadingTopic } =
-		useTopicWithRelationships(selectedTopicId)
-
 	// Derived review state
 	const isReviewCompleted = useMemo(
 		() => !!review?.completed_at,
@@ -95,17 +69,6 @@ export function AddTopicToReviewProvider({
 			return review?.topic_reviews?.find(tr => tr.topic_id === topicId)
 		},
 		[review?.topic_reviews]
-	)
-
-	// Derived state for selected topic
-	const isSelectedTopicAdded = useMemo(
-		() => (selectedTopic ? isTopicAdded(selectedTopic.id) : false),
-		[selectedTopic, isTopicAdded]
-	)
-
-	const selectedTopicReview = useMemo(
-		() => (selectedTopic ? getTopicReview(selectedTopic.id) : undefined),
-		[selectedTopic, getTopicReview]
 	)
 
 	// Mutations
@@ -181,12 +144,6 @@ export function AddTopicToReviewProvider({
 		() => ({
 			review,
 			isReviewCompleted,
-			selectedTopicId,
-			setSelectedTopicId,
-			selectedTopic,
-			isLoadingTopic,
-			isSelectedTopicAdded,
-			selectedTopicReview,
 			isTopicAdded,
 			getTopicReview,
 			addTopicToReview,
@@ -198,11 +155,6 @@ export function AddTopicToReviewProvider({
 		[
 			review,
 			isReviewCompleted,
-			selectedTopicId,
-			selectedTopic,
-			isLoadingTopic,
-			isSelectedTopicAdded,
-			selectedTopicReview,
 			isTopicAdded,
 			getTopicReview,
 			addTopicToReview,

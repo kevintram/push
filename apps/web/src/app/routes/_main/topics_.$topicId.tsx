@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { TopicDetailPage } from '~/app/pages/TopicDetailPage'
 
-export const Route = createFileRoute('/topics_/$topicId')({
+export const Route = createFileRoute('/_main/topics_/$topicId')({
 	component: RouteComponent
 })
 

@@ -2,7 +2,6 @@ import {
 	Archive,
 	ArchiveRestore,
 	Baby,
-	ChevronDown,
 	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
@@ -10,7 +9,7 @@ import {
 	User2
 } from 'lucide-react'
 import type { KeyboardEvent } from 'react'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { TopicDateDisplay } from '~/components/TopicDateDisplay'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
@@ -25,43 +24,58 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
-import type { Rating } from '~/features/reviews/types/review.types'
-import { getRatingIcon } from '~/utils/getRatingIcon'
+import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
+import { useUpdateTopic } from '~/features/topics/api/updateTopic'
+import type { Topic } from '~/features/topics/types/topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
-import { useDeleteTopic } from '../api/deleteTopic'
-import { useUpdateTopic } from '../api/updateTopic'
-import type { Topic } from '../types/topic.types'
 
 const MIN_HEIGHT = 96
 
 interface TopicCardProps {
 	topic: Topic
 	onTopicClick?: (topic: Topic) => void
-	onRemoveRelationship?: () => void
-	removeRelationshipText?: string
 	minHeight?: number
 	searchQuery?: string
-	rating?: Rating | null
-	reviewId?: number
+
+	// Slots for customization
+	headerLeft?: React.ReactNode
+	headerRight?: React.ReactNode
+	additionalMenuItems?: React.ReactNode
+
+	// Helper props for common relationship removal pattern
+	onRemoveRelationship?: () => void
+	removeRelationshipText?: string
 }
 
 export function TopicCard({
 	topic,
 	onTopicClick,
-	onRemoveRelationship,
-	removeRelationshipText = 'Remove as Child',
 	minHeight = MIN_HEIGHT,
-	searchQuery, // for topic card in search dialog to support highlighting and shit
-	rating,
-	reviewId
+	searchQuery,
+	headerLeft,
+	headerRight,
+	additionalMenuItems,
+	onRemoveRelationship,
+	removeRelationshipText = 'Remove as Child'
 }: TopicCardProps) {
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic()
-	const updateReviewMutation = useUpdateTopicReview()
 
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
+
+	// Search highlighting
+	const highlightedName = useMemo(() => {
+		if (!topic.name) return null
+		if (!searchQuery?.trim()) return topic.name
+		return highlightText({ text: topic.name, query: searchQuery })
+	}, [topic.name, searchQuery])
+
+	const highlightedNotes = useMemo(() => {
+		if (!topic.notes) return null
+		if (!searchQuery?.trim()) return topic.notes
+		return truncateWithHighlight(topic.notes, searchQuery, 200)
+	}, [topic.notes, searchQuery])
 
 	const handleActivate = useCallback(() => {
 		onTopicClick?.(topic)
@@ -77,9 +91,9 @@ export function TopicCard({
 		[onTopicClick, topic]
 	)
 
-	const handleDeleteTopic = () => {
+	const handleDeleteTopic = useCallback(() => {
 		deleteTopicMutation.mutate(topic.id)
-	}
+	}, [deleteTopicMutation, topic.id])
 
 	const handleArchiveToggle = useCallback(
 		async (e: React.MouseEvent) => {
@@ -103,17 +117,6 @@ export function TopicCard({
 		[updateTopicMutation, topic.id, topic.inboxed]
 	)
 
-	const handleRatingChange = useCallback(
-		async (newRating: Rating) => {
-			if (!reviewId) return
-			await updateReviewMutation.mutateAsync({
-				id: reviewId,
-				rating: newRating
-			})
-		},
-		[reviewId, updateReviewMutation]
-	)
-
 	return (
 		<Card
 			className='cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
@@ -123,112 +126,50 @@ export function TopicCard({
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardHeader className='flex flex-row items-center justify-between'>
-				{/* Parents count - top left */}
-				<Popover>
-					<PopoverTrigger asChild={true}>
-						<div
-							className='flex cursor-pointer items-center gap-1 text-muted-foreground text-xs hover:text-foreground'
+			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
+				<div className='flex items-center gap-2'>
+					{headerLeft}
+					{/* Parents count - right of left header content (or start if empty) */}
+					<Popover>
+						<PopoverTrigger asChild={true}>
+							<div
+								className='flex cursor-pointer items-center gap-1 text-muted-foreground text-xs hover:text-foreground'
+								onClick={e => e.stopPropagation()}
+							>
+								<User2 className='h-3 w-3' />
+								<span>{parentCount}</span>
+							</div>
+						</PopoverTrigger>
+						<PopoverContent
+							align='start'
+							className='w-64 p-3'
 							onClick={e => e.stopPropagation()}
+							onKeyDown={e => e.stopPropagation()}
+							side='bottom'
 						>
-							<User2 className='h-3 w-3' />
-							<span>{parentCount}</span>
-						</div>
-					</PopoverTrigger>
-					<PopoverContent
-						align='start'
-						className='w-64 p-3'
-						onClick={e => e.stopPropagation()}
-						onKeyDown={e => e.stopPropagation()}
-						side='top'
-					>
-						<div className='flex flex-col gap-2'>
-							<h4 className='font-semibold text-sm'>Parent Topics</h4>
-							{parentCount === 0 ? (
-								<p className='text-muted-foreground text-xs'>No parents</p>
-							) : (
-								<ul className='flex flex-col gap-1.5'>
-									{(topic.parents ?? []).map(parent => (
-										<li
-											className='break-words text-sm leading-tight '
-											key={parent.id}
-										>
-											{parent.name || parent.notes || 'Untitled'}
-										</li>
-									))}
-								</ul>
-							)}
-						</div>
-					</PopoverContent>
-				</Popover>
+							<div className='flex flex-col gap-2'>
+								<h4 className='font-semibold text-sm'>Parent Topics</h4>
+								{parentCount === 0 ? (
+									<p className='text-muted-foreground text-xs'>No parents</p>
+								) : (
+									<ul className='flex flex-col gap-1.5'>
+										{(topic.parents ?? []).map(parent => (
+											<li
+												className='break-words text-sm leading-tight'
+												key={parent.id}
+											>
+												{parent.name || parent.notes || 'Untitled'}
+											</li>
+										))}
+									</ul>
+								)}
+							</div>
+						</PopoverContent>
+					</Popover>
+				</div>
 
-				{/* Rating and Menu - top right */}
 				<div className='flex items-center gap-1'>
-					{rating && reviewId && (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild={true}>
-								<Button
-									className='h-5 gap-1 px-1.5 text-xs capitalize'
-									onClick={e => e.stopPropagation()}
-									size='sm'
-									variant='outline'
-								>
-									{getRatingIcon(rating)}
-									{rating}
-									<ChevronDown className='h-3 w-3' />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align='start' side='bottom' sideOffset={2}>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('miss')
-									}}
-								>
-									{getRatingIcon('miss')}
-									<span className='ml-2 capitalize'>Miss</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('hard')
-									}}
-								>
-									{getRatingIcon('hard')}
-									<span className='ml-2 capitalize'>Hard</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('good')
-									}}
-								>
-									{getRatingIcon('good')}
-									<span className='ml-2 capitalize'>Good</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('easy')
-									}}
-								>
-									{getRatingIcon('easy')}
-									<span className='ml-2 capitalize'>Easy</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					)}
-					{rating && !reviewId && (
-						<Button
-							className='h-5 gap-1 px-1.5 text-xs capitalize'
-							onClick={e => e.stopPropagation()}
-							size='sm'
-							variant='outline'
-						>
-							{getRatingIcon(rating)}
-							{rating}
-						</Button>
-					)}
+					{headerRight}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true}>
 							<Button
@@ -266,6 +207,7 @@ export function TopicCard({
 									</>
 								)}
 							</DropdownMenuItem>
+							{additionalMenuItems}
 							{onRemoveRelationship && (
 								<DropdownMenuItem
 									onClick={e => {
@@ -292,7 +234,7 @@ export function TopicCard({
 				</div>
 			</CardHeader>
 
-			<CardContent className='flex flex-col gap-3'>
+			<CardContent className='mb-3 flex flex-1 flex-col gap-3'>
 				<div className='flex flex-col gap-1'>
 					{/* Inbox/Archive indicators */}
 					{(topic.inboxed || topic.archived) && (
@@ -312,29 +254,22 @@ export function TopicCard({
 						</div>
 					)}
 
-					{/* The Actual Content */}
 					<div className='flex flex-col gap-0.5'>
-						{topic.name && (
+						{highlightedName && (
 							<h3 className='break-word font-semibold leading-tight [overflow-wrap:anywhere]'>
-								{searchQuery
-									? highlightText({ text: topic.name, query: searchQuery })
-									: topic.name}
+								{highlightedName}
 							</h3>
 						)}
-						{topic.notes && (
+						{highlightedNotes && (
 							<p className='break-word text-sm [overflow-wrap:anywhere]'>
-								{searchQuery
-									? truncateWithHighlight(topic.notes, searchQuery, 150)
-									: topic.notes}
+								{highlightedNotes}
 							</p>
 						)}
 					</div>
 				</div>
 			</CardContent>
-
-			{/* Bottom row: Review date and children count */}
+			{/* Bottom row: Due date and Children */}
 			<CardFooter className='gap-1 text-muted-foreground text-xs'>
-				{/* Due date - bottom left */}
 				<TopicDateDisplay
 					due={topic.due}
 					scheduledAt={topic.scheduled_at}
