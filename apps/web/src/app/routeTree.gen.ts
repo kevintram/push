@@ -23,8 +23,12 @@ import { Route as MainArchivedRouteImport } from './routes/_main/archived'
 import { Route as ReviewsReviewIdAddRouteImport } from './routes/reviews.$reviewId_.add'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
 import { Route as MainReviewsReviewIdRouteImport } from './routes/_main/reviews.$reviewId'
-import { Route as ReviewsReviewIdAddIndexRouteImport } from './routes/reviews.$reviewId_.add.index'
+import { Route as ReviewsReviewIdAddListRouteImport } from './routes/reviews.$reviewId_.add._list'
+import { Route as ReviewsReviewIdAddListIndexRouteImport } from './routes/reviews.$reviewId_.add._list.index'
 import { Route as ReviewsReviewIdAddTopicsTopicIdRouteImport } from './routes/reviews.$reviewId_.add.topics.$topicId'
+import { Route as ReviewsReviewIdAddListRecentRouteImport } from './routes/reviews.$reviewId_.add._list.recent'
+import { Route as ReviewsReviewIdAddListInboxRouteImport } from './routes/reviews.$reviewId_.add._list.inbox'
+import { Route as ReviewsReviewIdAddListArchivedRouteImport } from './routes/reviews.$reviewId_.add._list.archived'
 
 const MainRoute = MainRouteImport.update({
   id: '/_main',
@@ -95,16 +99,39 @@ const MainReviewsReviewIdRoute = MainReviewsReviewIdRouteImport.update({
   path: '/reviews/$reviewId',
   getParentRoute: () => MainRoute,
 } as any)
-const ReviewsReviewIdAddIndexRoute = ReviewsReviewIdAddIndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ReviewsReviewIdAddListRoute = ReviewsReviewIdAddListRouteImport.update({
+  id: '/_list',
   getParentRoute: () => ReviewsReviewIdAddRoute,
 } as any)
+const ReviewsReviewIdAddListIndexRoute =
+  ReviewsReviewIdAddListIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ReviewsReviewIdAddListRoute,
+  } as any)
 const ReviewsReviewIdAddTopicsTopicIdRoute =
   ReviewsReviewIdAddTopicsTopicIdRouteImport.update({
     id: '/topics/$topicId',
     path: '/topics/$topicId',
     getParentRoute: () => ReviewsReviewIdAddRoute,
+  } as any)
+const ReviewsReviewIdAddListRecentRoute =
+  ReviewsReviewIdAddListRecentRouteImport.update({
+    id: '/recent',
+    path: '/recent',
+    getParentRoute: () => ReviewsReviewIdAddListRoute,
+  } as any)
+const ReviewsReviewIdAddListInboxRoute =
+  ReviewsReviewIdAddListInboxRouteImport.update({
+    id: '/inbox',
+    path: '/inbox',
+    getParentRoute: () => ReviewsReviewIdAddListRoute,
+  } as any)
+const ReviewsReviewIdAddListArchivedRoute =
+  ReviewsReviewIdAddListArchivedRouteImport.update({
+    id: '/archived',
+    path: '/archived',
+    getParentRoute: () => ReviewsReviewIdAddListRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -120,9 +147,12 @@ export interface FileRoutesByFullPath {
   '/': typeof MainIndexRoute
   '/reviews/$reviewId': typeof MainReviewsReviewIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
-  '/reviews/$reviewId/add': typeof ReviewsReviewIdAddRouteWithChildren
-  '/reviews/$reviewId/add/': typeof ReviewsReviewIdAddIndexRoute
+  '/reviews/$reviewId/add': typeof ReviewsReviewIdAddListRouteWithChildren
+  '/reviews/$reviewId/add/archived': typeof ReviewsReviewIdAddListArchivedRoute
+  '/reviews/$reviewId/add/inbox': typeof ReviewsReviewIdAddListInboxRoute
+  '/reviews/$reviewId/add/recent': typeof ReviewsReviewIdAddListRecentRoute
   '/reviews/$reviewId/add/topics/$topicId': typeof ReviewsReviewIdAddTopicsTopicIdRoute
+  '/reviews/$reviewId/add/': typeof ReviewsReviewIdAddListIndexRoute
 }
 export interface FileRoutesByTo {
   '/archived': typeof MainArchivedRoute
@@ -137,7 +167,10 @@ export interface FileRoutesByTo {
   '/': typeof MainIndexRoute
   '/reviews/$reviewId': typeof MainReviewsReviewIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
-  '/reviews/$reviewId/add': typeof ReviewsReviewIdAddIndexRoute
+  '/reviews/$reviewId/add': typeof ReviewsReviewIdAddListIndexRoute
+  '/reviews/$reviewId/add/archived': typeof ReviewsReviewIdAddListArchivedRoute
+  '/reviews/$reviewId/add/inbox': typeof ReviewsReviewIdAddListInboxRoute
+  '/reviews/$reviewId/add/recent': typeof ReviewsReviewIdAddListRecentRoute
   '/reviews/$reviewId/add/topics/$topicId': typeof ReviewsReviewIdAddTopicsTopicIdRoute
 }
 export interface FileRoutesById {
@@ -156,8 +189,12 @@ export interface FileRoutesById {
   '/_main/reviews/$reviewId': typeof MainReviewsReviewIdRoute
   '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
   '/reviews/$reviewId_/add': typeof ReviewsReviewIdAddRouteWithChildren
-  '/reviews/$reviewId_/add/': typeof ReviewsReviewIdAddIndexRoute
+  '/reviews/$reviewId_/add/_list': typeof ReviewsReviewIdAddListRouteWithChildren
+  '/reviews/$reviewId_/add/_list/archived': typeof ReviewsReviewIdAddListArchivedRoute
+  '/reviews/$reviewId_/add/_list/inbox': typeof ReviewsReviewIdAddListInboxRoute
+  '/reviews/$reviewId_/add/_list/recent': typeof ReviewsReviewIdAddListRecentRoute
   '/reviews/$reviewId_/add/topics/$topicId': typeof ReviewsReviewIdAddTopicsTopicIdRoute
+  '/reviews/$reviewId_/add/_list/': typeof ReviewsReviewIdAddListIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -175,8 +212,11 @@ export interface FileRouteTypes {
     | '/reviews/$reviewId'
     | '/topics/$topicId'
     | '/reviews/$reviewId/add'
-    | '/reviews/$reviewId/add/'
+    | '/reviews/$reviewId/add/archived'
+    | '/reviews/$reviewId/add/inbox'
+    | '/reviews/$reviewId/add/recent'
     | '/reviews/$reviewId/add/topics/$topicId'
+    | '/reviews/$reviewId/add/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/archived'
@@ -192,6 +232,9 @@ export interface FileRouteTypes {
     | '/reviews/$reviewId'
     | '/topics/$topicId'
     | '/reviews/$reviewId/add'
+    | '/reviews/$reviewId/add/archived'
+    | '/reviews/$reviewId/add/inbox'
+    | '/reviews/$reviewId/add/recent'
     | '/reviews/$reviewId/add/topics/$topicId'
   id:
     | '__root__'
@@ -209,8 +252,12 @@ export interface FileRouteTypes {
     | '/_main/reviews/$reviewId'
     | '/_main/topics_/$topicId'
     | '/reviews/$reviewId_/add'
-    | '/reviews/$reviewId_/add/'
+    | '/reviews/$reviewId_/add/_list'
+    | '/reviews/$reviewId_/add/_list/archived'
+    | '/reviews/$reviewId_/add/_list/inbox'
+    | '/reviews/$reviewId_/add/_list/recent'
     | '/reviews/$reviewId_/add/topics/$topicId'
+    | '/reviews/$reviewId_/add/_list/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -318,12 +365,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainReviewsReviewIdRouteImport
       parentRoute: typeof MainRoute
     }
-    '/reviews/$reviewId_/add/': {
-      id: '/reviews/$reviewId_/add/'
+    '/reviews/$reviewId_/add/_list': {
+      id: '/reviews/$reviewId_/add/_list'
+      path: ''
+      fullPath: '/reviews/$reviewId/add'
+      preLoaderRoute: typeof ReviewsReviewIdAddListRouteImport
+      parentRoute: typeof ReviewsReviewIdAddRoute
+    }
+    '/reviews/$reviewId_/add/_list/': {
+      id: '/reviews/$reviewId_/add/_list/'
       path: '/'
       fullPath: '/reviews/$reviewId/add/'
-      preLoaderRoute: typeof ReviewsReviewIdAddIndexRouteImport
-      parentRoute: typeof ReviewsReviewIdAddRoute
+      preLoaderRoute: typeof ReviewsReviewIdAddListIndexRouteImport
+      parentRoute: typeof ReviewsReviewIdAddListRoute
     }
     '/reviews/$reviewId_/add/topics/$topicId': {
       id: '/reviews/$reviewId_/add/topics/$topicId'
@@ -331,6 +385,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/reviews/$reviewId/add/topics/$topicId'
       preLoaderRoute: typeof ReviewsReviewIdAddTopicsTopicIdRouteImport
       parentRoute: typeof ReviewsReviewIdAddRoute
+    }
+    '/reviews/$reviewId_/add/_list/recent': {
+      id: '/reviews/$reviewId_/add/_list/recent'
+      path: '/recent'
+      fullPath: '/reviews/$reviewId/add/recent'
+      preLoaderRoute: typeof ReviewsReviewIdAddListRecentRouteImport
+      parentRoute: typeof ReviewsReviewIdAddListRoute
+    }
+    '/reviews/$reviewId_/add/_list/inbox': {
+      id: '/reviews/$reviewId_/add/_list/inbox'
+      path: '/inbox'
+      fullPath: '/reviews/$reviewId/add/inbox'
+      preLoaderRoute: typeof ReviewsReviewIdAddListInboxRouteImport
+      parentRoute: typeof ReviewsReviewIdAddListRoute
+    }
+    '/reviews/$reviewId_/add/_list/archived': {
+      id: '/reviews/$reviewId_/add/_list/archived'
+      path: '/archived'
+      fullPath: '/reviews/$reviewId/add/archived'
+      preLoaderRoute: typeof ReviewsReviewIdAddListArchivedRouteImport
+      parentRoute: typeof ReviewsReviewIdAddListRoute
     }
   }
 }
@@ -367,13 +442,33 @@ const MainRouteChildren: MainRouteChildren = {
 
 const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren)
 
+interface ReviewsReviewIdAddListRouteChildren {
+  ReviewsReviewIdAddListArchivedRoute: typeof ReviewsReviewIdAddListArchivedRoute
+  ReviewsReviewIdAddListInboxRoute: typeof ReviewsReviewIdAddListInboxRoute
+  ReviewsReviewIdAddListRecentRoute: typeof ReviewsReviewIdAddListRecentRoute
+  ReviewsReviewIdAddListIndexRoute: typeof ReviewsReviewIdAddListIndexRoute
+}
+
+const ReviewsReviewIdAddListRouteChildren: ReviewsReviewIdAddListRouteChildren =
+  {
+    ReviewsReviewIdAddListArchivedRoute: ReviewsReviewIdAddListArchivedRoute,
+    ReviewsReviewIdAddListInboxRoute: ReviewsReviewIdAddListInboxRoute,
+    ReviewsReviewIdAddListRecentRoute: ReviewsReviewIdAddListRecentRoute,
+    ReviewsReviewIdAddListIndexRoute: ReviewsReviewIdAddListIndexRoute,
+  }
+
+const ReviewsReviewIdAddListRouteWithChildren =
+  ReviewsReviewIdAddListRoute._addFileChildren(
+    ReviewsReviewIdAddListRouteChildren,
+  )
+
 interface ReviewsReviewIdAddRouteChildren {
-  ReviewsReviewIdAddIndexRoute: typeof ReviewsReviewIdAddIndexRoute
+  ReviewsReviewIdAddListRoute: typeof ReviewsReviewIdAddListRouteWithChildren
   ReviewsReviewIdAddTopicsTopicIdRoute: typeof ReviewsReviewIdAddTopicsTopicIdRoute
 }
 
 const ReviewsReviewIdAddRouteChildren: ReviewsReviewIdAddRouteChildren = {
-  ReviewsReviewIdAddIndexRoute: ReviewsReviewIdAddIndexRoute,
+  ReviewsReviewIdAddListRoute: ReviewsReviewIdAddListRouteWithChildren,
   ReviewsReviewIdAddTopicsTopicIdRoute: ReviewsReviewIdAddTopicsTopicIdRoute,
 }
 
