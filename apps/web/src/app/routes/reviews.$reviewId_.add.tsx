@@ -10,6 +10,7 @@ import {
 	AddTopicToReviewProvider,
 	useAddTopicToReview
 } from '~/features/reviews/components/AddTopicToReviewDialog/AddTopicToReviewContext'
+import { useAddFlowHistory } from '~/features/reviews/components/AddTopicToReviewDialog/useAddFlowHistory'
 import type { Topic } from '~/features/topics/types/topic.types'
 
 export const Route = createFileRoute('/reviews/$reviewId_/add')({
@@ -33,6 +34,7 @@ function LayoutContent() {
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 	const { addTopicToReview, isCreatingTopicReview } = useAddTopicToReview()
 	const { reviewId } = Route.useParams()
+	const { exitFlow } = useAddFlowHistory()
 
 	// Search Dialog State
 	const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -46,11 +48,11 @@ function LayoutContent() {
 	}, [navigate, reviewId])
 
 	const handleClose = useCallback(() => {
-		navigate({
+		exitFlow({
 			to: '/reviews/$reviewId',
 			params: { reviewId }
 		})
-	}, [navigate, reviewId])
+	}, [exitFlow, reviewId])
 
 	const handleSearchFocus = useCallback(() => {
 		setIsSearchOpen(true)
