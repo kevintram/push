@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { Home, SquarePen } from 'lucide-react'
+import { Home, SquarePen, X } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { SearchInput } from '~/components/search/SearchInput'
 import { Button } from '~/components/ui/Button'
@@ -155,8 +155,8 @@ function LayoutContent() {
 						Create New
 					</Button>
 
-					<Button onClick={handleClose} size='default' variant='default'>
-						Done
+					<Button onClick={handleClose} size='default' variant='ghost'>
+						<X className='h-4 w-4' />
 					</Button>
 				</div>
 			</div>
