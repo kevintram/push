@@ -17,9 +17,19 @@ export type Topic = {
 	srs_enabled: boolean
 	parents?: Array<Topic>
 	children?: Array<Topic>
+	related?: Array<Topic>
 }
 
 export type TopicRelationshipResponse = {
 	parent: Topic
 	child: Topic
+}
+
+export type TopicOtherRelationshipCreate = {
+	to_topic_id: number
+}
+
+export type TopicOtherRelationshipResponse = {
+	from_topic: Topic
+	to_topic: Topic
 }

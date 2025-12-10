@@ -88,3 +88,14 @@ class TopicUpdate(BaseModel):
     archived: bool | None = None
     inboxed: bool | None = None
     srs_enabled: bool | None = None
+
+
+class TopicOtherRelationshipCreate(BaseModel):
+    to_topic_id: int
+
+
+class TopicOtherRelationshipResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    from_topic: TopicRead
+    to_topic: TopicRead

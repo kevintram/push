@@ -19,6 +19,8 @@ export const topicKeys = {
 		[...topicKeys.byId(topicId), 'children'] as const,
 	parents: (topicId: number) =>
 		[...topicKeys.byId(topicId), 'parents'] as const,
+	related: (topicId: number) =>
+		[...topicKeys.byId(topicId), 'related'] as const,
 	search: (params: SearchTopicsParams = {}) => {
 		// Add params to key
 		const key: Array<string | number> = [...topicKeys.all, 'search']

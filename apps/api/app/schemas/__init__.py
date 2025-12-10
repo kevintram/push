@@ -14,6 +14,8 @@ from app.schemas.topics import (
     TopicChildRelationshipCreate,
     TopicParentRelationshipCreate,
     TopicRelationshipResponse,
+    TopicOtherRelationshipCreate,
+    TopicOtherRelationshipResponse,
 )
 from app.schemas.topic_reviews import (
     TopicReviewBase,
@@ -47,6 +49,8 @@ __all__ = [
     "TopicChildRelationshipCreate",
     "TopicParentRelationshipCreate",
     "TopicRelationshipResponse",
+    "TopicOtherRelationshipCreate",
+    "TopicOtherRelationshipResponse",
     "ReviewIdPayload",
     "TopicUpdate",
     "TopicReadWithRelationships",

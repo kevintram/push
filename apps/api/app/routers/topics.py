@@ -1,13 +1,14 @@
 from fastapi import APIRouter, HTTPException
-from datetime import datetime
+from datetime import datetime, timezone as dt_timezone
 
-from sqlalchemy import or_, select, update, delete, desc
+from sqlalchemy import or_, select, update, delete, desc, union, insert
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from typing import Literal
 
 from app.dependencies import SessionDep, UserIdDep
-from app.models import Topic, t_topics_closure, Review, TopicReview
+from app.models import Topic, t_topics_closure, t_topic_other_relations, Review, TopicReview
 from app.schemas import (
     TopicRead,
     TopicCreate,
@@ -16,6 +17,8 @@ from app.schemas import (
     TopicChildRelationshipCreate,
     TopicParentRelationshipCreate,
     TopicRelationshipResponse,
+    TopicOtherRelationshipCreate,
+    TopicOtherRelationshipResponse,
     ReviewReadWithTopicReviews,
 )
 
@@ -339,6 +342,42 @@ async def read_topic_children(
     return topic.children
 
 
+@router.get("/topics/{topic_id}/related/", tags=["topics"])
+async def read_topic_related(
+    session: SessionDep, user_id: UserIdDep, topic_id: int
+) -> list[TopicRead]:
+    """Get all topics related to this topic (bidirectional)"""
+    # First verify the topic exists and belongs to user
+    verify_stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    topic_result = await session.execute(verify_stmt)
+    if not topic_result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    # Build subquery for outgoing relationships (from -> to)
+    outgoing = select(t_topic_other_relations.c.to_topic_id).where(
+        t_topic_other_relations.c.from_topic_id == topic_id
+    )
+
+    # Build subquery for incoming relationships (to <- from)
+    incoming = select(t_topic_other_relations.c.from_topic_id).where(
+        t_topic_other_relations.c.to_topic_id == topic_id
+    )
+
+    # Union the two subqueries
+    related_ids = union(outgoing, incoming)
+
+    # Select topics that match the related IDs with user isolation
+    stmt = select(Topic).where(
+        Topic.user_id == user_id,
+        Topic.id.in_(related_ids),
+        Topic.id != topic_id,
+    )
+
+    result = await session.execute(stmt)
+    topics = result.scalars().all()
+    return topics
+
+
 @router.post("/topics/", tags=["topics"])
 async def insert_topic(
     topic: TopicCreate, session: SessionDep, user_id: UserIdDep
@@ -476,6 +515,66 @@ async def delete_parent(
         child_id=child_id,
         focus_topic_id=child_id,
     )
+
+
+@router.post("/topics/{from_topic_id}/related/", tags=["topics"])
+async def create_topic_other_relationship(
+    from_topic_id: int,
+    relationship: TopicOtherRelationshipCreate,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> TopicOtherRelationshipResponse:
+    """Create a directional relationship from one topic to another"""
+    # Verify both topics exist and belong to user
+    from_topic = await session.get(Topic, from_topic_id)
+    to_topic = await session.get(Topic, relationship.to_topic_id)
+
+    if not from_topic or from_topic.user_id != user_id:
+        raise HTTPException(status_code=404, detail="From topic not found")
+    if not to_topic or to_topic.user_id != user_id:
+        raise HTTPException(status_code=404, detail="To topic not found")
+    if from_topic_id == relationship.to_topic_id:
+        raise HTTPException(status_code=400, detail="Cannot relate topic to itself")
+
+    # Insert relationship
+    stmt = insert(t_topic_other_relations).values(
+        from_topic_id=from_topic_id,
+        to_topic_id=relationship.to_topic_id,
+        inserted_at=datetime.now(dt_timezone.utc),
+        updated_at=datetime.now(dt_timezone.utc),
+    )
+    try:
+        await session.execute(stmt)
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise HTTPException(status_code=400, detail="Relationship already exists")
+
+    return TopicOtherRelationshipResponse(from_topic=from_topic, to_topic=to_topic)
+
+
+@router.delete("/topics/{from_topic_id}/related/{to_topic_id}/", tags=["topics"])
+async def delete_topic_other_relationship(
+    from_topic_id: int,
+    to_topic_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> None:
+    """Delete a directional relationship between topics"""
+    # Verify from_topic belongs to user
+    from_topic = await session.get(Topic, from_topic_id)
+    if not from_topic or from_topic.user_id != user_id:
+        raise HTTPException(status_code=404, detail="Topic not found")
+
+    stmt = delete(t_topic_other_relations).where(
+        t_topic_other_relations.c.from_topic_id == from_topic_id,
+        t_topic_other_relations.c.to_topic_id == to_topic_id,
+    )
+    result = await session.execute(stmt)
+    await session.commit()
+
+    if result.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Relationship not found")
 
 
 @router.get("/topics/{topic_id}/reviews/", tags=["topics"])
