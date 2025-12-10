@@ -27,6 +27,7 @@ class TopicRead(TopicBase):
     id: int
     inserted_at: datetime
     updated_at: datetime
+    scheduled_at: date | None = None
 
 
 class TopicReadWithRelationships(TopicRead):

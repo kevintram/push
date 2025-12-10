@@ -66,7 +66,8 @@ export function UpcomingPage() {
 		dueAfter: tomorrow,
 		dueBefore: nextWeekDate,
 		archived: false,
-		srsEnabled: true
+		srsEnabled: true,
+		scheduled: false
 	})
 
 	// Centralized date boundary calculations
@@ -149,7 +150,8 @@ export function UpcomingPage() {
 		{
 			dueAfter: futureStartDate,
 			archived: false,
-			srsEnabled: true
+			srsEnabled: true,
+			scheduled: false
 		},
 		{ enabled: showFuture }
 	)

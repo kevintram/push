@@ -1,6 +1,6 @@
 import { EllipsisVertical } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import { DueDateHoverCard } from '~/components/DueDateHoverCard'
+import { TopicDateDisplay } from '~/components/TopicDateDisplay'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
 import {
@@ -149,7 +149,11 @@ export function AddTopicCard({
 			</CardContent>
 			{/* Bottom row: Due date */}
 			<CardFooter className='text-muted-foreground text-xs'>
-				<DueDateHoverCard due={topic.due} srsEnabled={topic.srs_enabled} />
+				<TopicDateDisplay
+					due={topic.due}
+					scheduledAt={topic.scheduled_at}
+					srsEnabled={topic.srs_enabled}
+				/>
 			</CardFooter>
 		</Card>
 	)
