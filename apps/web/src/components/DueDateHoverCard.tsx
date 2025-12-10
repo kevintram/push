@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Calendar } from 'lucide-react'
+import { Calendar, Flag, FlagOff, FlagTriangleRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 import {
@@ -7,7 +7,7 @@ import {
 	HoverCardContent,
 	HoverCardTrigger
 } from '~/components/ui/HoverCard'
-import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
+import { getDateColor, getRelativeDateDisplay } from '~/utils/dueDate'
 
 interface DueDateHoverCardProps {
 	due: string | null
@@ -24,28 +24,47 @@ export function DueDateHoverCard({
 	className,
 	children
 }: DueDateHoverCardProps) {
-	const dueDateDisplay = useMemo(() => getDueDateDisplay(due), [due])
+	const dueDateDisplay = useMemo(() => getRelativeDateDisplay(due), [due])
 	const nextScheduledDisplay = useMemo(
-		() => getDueDateDisplay(scheduledAt),
+		() => getRelativeDateDisplay(scheduledAt),
 		[scheduledAt]
 	)
 
-	const colorClass = useMemo(
-		() => getDueDateColorClass(dueDateDisplay?.displayText ?? null, srsEnabled),
+	const dueDateColor = useMemo(
+		() => getDateColor(dueDateDisplay?.displayText ?? null, srsEnabled),
 		[dueDateDisplay?.displayText, srsEnabled]
+	)
+
+	const scheduledColor = useMemo(
+		() => getDateColor(nextScheduledDisplay?.displayText ?? null),
+		[nextScheduledDisplay?.displayText]
 	)
 
 	const defaultTrigger = (
 		<div className={`flex items-center gap-1 ${className ?? ''}`}>
-			<Calendar className={`h-3 w-3 ${colorClass}`} />
-			<span className={colorClass}>
-				{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
-			</span>
 			{nextScheduledDisplay && (
-				<span className='text-muted-foreground text-xs'>
-					· Scheduled {nextScheduledDisplay.displayText}
-				</span>
+				<div className='flex items-center gap-1'>
+					<Calendar className={`h-3 w-3 ${scheduledColor}`} />
+					<span className={`text-xs ${scheduledColor}`}>
+						{nextScheduledDisplay.displayText}
+					</span>
+					<span className='text-muted-foreground text-xs'>
+						·
+					</span>
+				</div>
 			)}
+			<div className='flex items-center gap-1'>
+				{
+					srsEnabled ? (
+						<Flag className={`h-3 w-3 ${dueDateColor}`} />
+					) : (
+						<FlagOff className={`h-3 w-3 ${dueDateColor}`} />
+					)
+				}
+				<span className={`text-xs ${dueDateColor}`}>
+					{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
+				</span>
+			</div>
 		</div>
 	)
 
