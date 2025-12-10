@@ -28,7 +28,7 @@ import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { Rating, Review } from '~/features/reviews/types/review.types'
-import { getDateColor, getRelativeDateDisplay } from '~/utils/dueDate'
+import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 
@@ -134,7 +134,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 
 	// Calculate the due date display using shared utilities
 	const dueDateDisplay = useMemo(
-		() => getRelativeDateDisplay(topic?.due ?? null),
+		() => getDueDateDisplay(topic?.due ?? null),
 		[topic?.due]
 	)
 

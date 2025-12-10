@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Calendar, Flag, FlagOff, FlagTriangleRight } from 'lucide-react'
+import { Calendar, Flag, FlagOff } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 import {
@@ -7,7 +7,7 @@ import {
 	HoverCardContent,
 	HoverCardTrigger
 } from '~/components/ui/HoverCard'
-import { getDateColor, getRelativeDateDisplay } from '~/utils/dueDate'
+import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
 
 interface DueDateHoverCardProps {
 	due: string | null
@@ -24,9 +24,9 @@ export function DueDateHoverCard({
 	className,
 	children
 }: DueDateHoverCardProps) {
-	const dueDateDisplay = useMemo(() => getRelativeDateDisplay(due), [due])
+	const dueDateDisplay = useMemo(() => getDueDateDisplay(due), [due])
 	const nextScheduledDisplay = useMemo(
-		() => getRelativeDateDisplay(scheduledAt),
+		() => getDueDateDisplay(scheduledAt),
 		[scheduledAt]
 	)
 
@@ -48,19 +48,15 @@ export function DueDateHoverCard({
 					<span className={`text-xs ${scheduledColor}`}>
 						{nextScheduledDisplay.displayText}
 					</span>
-					<span className='text-muted-foreground text-xs'>
-						·
-					</span>
+					<span className='text-muted-foreground text-xs'>·</span>
 				</div>
 			)}
 			<div className='flex items-center gap-1'>
-				{
-					srsEnabled ? (
-						<Flag className={`h-3 w-3 ${dueDateColor}`} />
-					) : (
-						<FlagOff className={`h-3 w-3 ${dueDateColor}`} />
-					)
-				}
+				{srsEnabled ? (
+					<Flag className={`h-3 w-3 ${dueDateColor}`} />
+				) : (
+					<FlagOff className={`h-3 w-3 ${dueDateColor}`} />
+				)}
 				<span className={`text-xs ${dueDateColor}`}>
 					{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
 				</span>

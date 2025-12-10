@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import type { KeyboardEvent } from 'react'
 import { useCallback } from 'react'
-import { DueDateHoverCard } from '~/components/DueDateHoverCard'
+import { TopicDateDisplay } from '~/components/TopicDateDisplay'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
 import {
@@ -335,7 +335,7 @@ export function TopicCard({
 			{/* Bottom row: Review date and children count */}
 			<CardFooter className='gap-1 text-muted-foreground text-xs'>
 				{/* Due date - bottom left */}
-				<DueDateHoverCard
+				<TopicDateDisplay
 					due={topic.due}
 					scheduledAt={topic.scheduled_at}
 					srsEnabled={topic.srs_enabled}
