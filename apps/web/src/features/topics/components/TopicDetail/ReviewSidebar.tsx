@@ -1,7 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
+import dayjs from 'dayjs'
 import {
 	BicepsFlexed,
-	Calendar,
+	Flag,
 	Loader2,
 	Mountain,
 	Plus,
@@ -9,7 +10,6 @@ import {
 	SquareCheck
 } from 'lucide-react'
 import { use, useCallback, useMemo } from 'react'
-import { DueDateHoverCard } from '~/components/DueDateHoverCard'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -18,7 +18,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
-import { Toggle } from '~/components/ui/Toggle'
+import { Switch } from '~/components/ui/Switch'
 import {
 	Tooltip,
 	TooltipContent,
@@ -28,7 +28,7 @@ import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { Rating, Review } from '~/features/reviews/types/review.types'
-import { getDueDateColorClass, getDueDateDisplay } from '~/utils/dueDate'
+import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 
@@ -146,7 +146,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 
 	const dueDateColorClass = useMemo(
 		() =>
-			getDueDateColorClass(
+			getDateColor(
 				dueDateDisplay?.displayText ?? null,
 				topic?.srs_enabled ?? true
 			),
@@ -218,25 +218,46 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 					)}
 				</div>
 				<div className='flex items-center text-muted-foreground text-xs'>
-					<DueDateHoverCard
-						due={topic?.due ?? null}
-						srsEnabled={topic?.srs_enabled ?? true}
-					>
-						<Toggle
-							aria-label='Toggle SRS scheduling'
-							className='h-6 px-1.5 data-[state=on]:bg-transparent data-[state=off]:text-muted-foreground data-[state=on]:text-accent-foreground'
-							disabled={readonly}
-							onPressedChange={handleSrsToggle}
-							pressed={topic?.srs_enabled ?? true}
-							size='sm'
-							variant='outline'
-						>
-							<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
-							<span className={dueDateColorClass}>
-								{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
-							</span>
-						</Toggle>
-					</DueDateHoverCard>
+					<div className='flex items-center gap-1 rounded-md border-1 p-1.5'>
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<button
+									className='flex cursor-pointer items-center gap-1 bg-transparent p-0'
+									disabled={readonly}
+									onClick={e => {
+										if (!readonly && topic) {
+											handleSrsToggle(!topic.srs_enabled)
+											e.stopPropagation()
+										}
+									}}
+									type='button'
+								>
+									<Switch
+										checked={topic?.srs_enabled ?? true}
+										className='mx-0.5'
+										disabled={readonly}
+										onCheckedChange={handleSrsToggle}
+										size='sm'
+									/>
+									<Flag className={`h-3 w-3 ${dueDateColorClass}`} />
+									<span className={dueDateColorClass}>
+										{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
+									</span>
+								</button>
+							</TooltipTrigger>
+							<TooltipContent className='text-center' side='bottom'>
+								<span>
+									{topic?.due
+										? `Due on ${dayjs(topic.due).format('MMMM D, YYYY')}`
+										: 'No due date'}
+								</span>
+								<br />
+								<span className='italic'>
+									{topic?.srs_enabled ? '(SRS enabled)' : '(SRS disabled)'}
+								</span>
+							</TooltipContent>
+						</Tooltip>
+					</div>
 					&nbsp;·&nbsp;
 					<Tooltip>
 						<TooltipTrigger asChild={true}>

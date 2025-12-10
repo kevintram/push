@@ -42,12 +42,12 @@ export function getDueDateDisplay(
 
 /**
  * Returns the appropriate Tailwind color class for a due date display.
- * When SRS is disabled, always returns muted color.
- * When SRS is enabled: Today = blue, Overdue = red, otherwise foreground.
+ * When SRS is disabled, always returns muted-foreground.
+ * When SRS is enabled: Today = blue, Overdue = red, otherwise muted-foreground.
  */
-export function getDueDateColorClass(
+export function getDateColor(
 	displayText: string | null,
-	srsEnabled: boolean
+	srsEnabled = true
 ): string {
 	if (!srsEnabled) return 'text-muted-foreground'
 
@@ -59,5 +59,5 @@ export function getDueDateColorClass(
 		return 'text-red-600 dark:text-red-400'
 	}
 
-	return 'text-foreground'
+	return 'text-muted-foreground'
 }

@@ -54,7 +54,8 @@ export function TodayPage() {
 	const { data: topics, isLoading: topicsLoading } = useTopics({
 		dueBefore: today,
 		archived: false,
-		srsEnabled: true
+		srsEnabled: true,
+		scheduled: false
 	})
 
 	const todayDateStr = useMemo(() => {
