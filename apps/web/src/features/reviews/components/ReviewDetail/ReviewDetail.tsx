@@ -25,13 +25,21 @@ import { ReviewTopicsPanel } from './ReviewTopicsPanel'
 interface ReviewDetailProps {
 	onDelete?: () => void | Promise<void>
 	onNavigate?: () => void | Promise<void>
-	headerActions?: ReactNode
+	/**
+	 * Content to render in the left section (e.g., navigation buttons)
+	 */
+	headerBeforeActions?: ReactNode
+	/**
+	 * Content to render after the "more" dropdown (e.g., close/minimize buttons)
+	 */
+	headerAfterActions?: ReactNode
 }
 
 export function ReviewDetail({
 	onDelete,
 	onNavigate,
-	headerActions
+	headerBeforeActions,
+	headerAfterActions
 }: ReviewDetailProps) {
 	const { review, isLoading } = use(ReviewContext)
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
@@ -193,7 +201,8 @@ export function ReviewDetail({
 		<div className='flex min-h-0 flex-1 flex-col'>
 			<div className='sticky top-0 z-10 w-full border-b'>
 				<ReviewDetailHeader
-					headerActions={headerActions}
+					headerAfterActions={headerAfterActions}
+					headerBeforeActions={headerBeforeActions}
 					onDelete={handleDelete}
 				/>
 			</div>

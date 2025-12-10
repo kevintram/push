@@ -1,6 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback } from 'react'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import type { Topic } from '~/features/topics/types/topic.types'
 
@@ -8,10 +7,10 @@ import type { Topic } from '~/features/topics/types/topic.types'
  * Hook that provides common event handlers for review pages.
  *
  * This hook encapsulates the logic for handling user interactions on review pages,
- * including opening review dialogs, navigating to topic pages, and creating new topics.
+ * including navigating to review pages, navigating to topic pages, and creating new topics.
  *
  * @returns An object containing:
- *   - `handleReviewClick`: Function to open a review dialog by review ID
+ *   - `handleReviewClick`: Function to navigate to a review page by review ID
  *   - `handleTopicClick`: Function to navigate to a topic page by topic object
  *   - `handleCreateTopic`: Async function to create a new topic and navigate to its page
  *   - `isCreatingTopic`: Boolean indicating if a topic is currently being created
@@ -25,7 +24,7 @@ import type { Topic } from '~/features/topics/types/topic.types'
  *   isCreatingTopic
  * } = useReviewPageHandlers()
  *
- * // Open a review dialog
+ * // Navigate to review page
  * handleReviewClick(123)
  *
  * // Navigate to topic page
@@ -37,15 +36,17 @@ import type { Topic } from '~/features/topics/types/topic.types'
  */
 export function useReviewPageHandlers() {
 	const navigate = useNavigate()
-	const { openReviewDialog } = useReviewTopicDialog()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
-			openReviewDialog(reviewId)
+			navigate({
+				to: '/reviews/$reviewId',
+				params: { reviewId: reviewId.toString() }
+			})
 		},
-		[openReviewDialog]
+		[navigate]
 	)
 
 	const handleTopicClick = useCallback(
