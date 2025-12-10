@@ -90,6 +90,7 @@ export function ReviewTopicsPanel({
 			return (
 				<ReviewTopicCard
 					minHeight={MIN_HEIGHT}
+					onNavigate={onNavigate}
 					onRemoveFromReview={onRemoveTopicReview}
 					onTopicClick={handleTopicClick}
 					rating={item.rating}
@@ -98,7 +99,7 @@ export function ReviewTopicsPanel({
 				/>
 			)
 		},
-		[handleTopicClick, onRemoveTopicReview, review]
+		[handleTopicClick, onNavigate, onRemoveTopicReview, review]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {
