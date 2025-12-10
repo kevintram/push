@@ -2,7 +2,6 @@ import {
 	Archive,
 	ArchiveRestore,
 	Baby,
-	ChevronDown,
 	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
@@ -25,9 +24,6 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
-import type { Rating } from '~/features/reviews/types/review.types'
-import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import { useDeleteTopic } from '../api/deleteTopic'
 import { useUpdateTopic } from '../api/updateTopic'
@@ -42,8 +38,6 @@ interface TopicCardProps {
 	removeRelationshipText?: string
 	minHeight?: number
 	searchQuery?: string
-	rating?: Rating | null
-	reviewId?: number
 }
 
 export function TopicCard({
@@ -52,13 +46,10 @@ export function TopicCard({
 	onRemoveRelationship,
 	removeRelationshipText = 'Remove as Child',
 	minHeight = MIN_HEIGHT,
-	searchQuery, // for topic card in search dialog to support highlighting and shit
-	rating,
-	reviewId
+	searchQuery // for topic card in search dialog to support highlighting and shit
 }: TopicCardProps) {
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic()
-	const updateReviewMutation = useUpdateTopicReview()
 
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
@@ -101,17 +92,6 @@ export function TopicCard({
 			})
 		},
 		[updateTopicMutation, topic.id, topic.inboxed]
-	)
-
-	const handleRatingChange = useCallback(
-		async (newRating: Rating) => {
-			if (!reviewId) return
-			await updateReviewMutation.mutateAsync({
-				id: reviewId,
-				rating: newRating
-			})
-		},
-		[reviewId, updateReviewMutation]
 	)
 
 	return (
@@ -164,71 +144,6 @@ export function TopicCard({
 
 				{/* Rating and Menu - top right */}
 				<div className='flex items-center gap-1'>
-					{rating && reviewId && (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild={true}>
-								<Button
-									className='h-5 gap-1 px-1.5 text-xs capitalize'
-									onClick={e => e.stopPropagation()}
-									size='sm'
-									variant='outline'
-								>
-									{getRatingIcon(rating)}
-									{rating}
-									<ChevronDown className='h-3 w-3' />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align='start' side='bottom' sideOffset={2}>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('miss')
-									}}
-								>
-									{getRatingIcon('miss')}
-									<span className='ml-2 capitalize'>Miss</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('hard')
-									}}
-								>
-									{getRatingIcon('hard')}
-									<span className='ml-2 capitalize'>Hard</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('good')
-									}}
-								>
-									{getRatingIcon('good')}
-									<span className='ml-2 capitalize'>Good</span>
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										handleRatingChange('easy')
-									}}
-								>
-									{getRatingIcon('easy')}
-									<span className='ml-2 capitalize'>Easy</span>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					)}
-					{rating && !reviewId && (
-						<Button
-							className='h-5 gap-1 px-1.5 text-xs capitalize'
-							onClick={e => e.stopPropagation()}
-							size='sm'
-							variant='outline'
-						>
-							{getRatingIcon(rating)}
-							{rating}
-						</Button>
-					)}
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true}>
 							<Button
