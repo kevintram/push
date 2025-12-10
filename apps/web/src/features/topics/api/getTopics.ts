@@ -43,6 +43,10 @@ export async function getTopics(
 		searchParams.append('srs_enabled', String(params.srsEnabled))
 	}
 
+	if (params.scheduled !== undefined) {
+		searchParams.append('scheduled', String(params.scheduled))
+	}
+
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/topics/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
 	)

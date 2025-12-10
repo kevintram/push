@@ -235,6 +235,7 @@ async def read_topics(
     due_before: str | None = None,
     due_after: str | None = None,
     srs_enabled: bool | None = None,
+    scheduled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
 ) -> list[TopicReadWithRelationships]:
@@ -251,6 +252,11 @@ async def read_topics(
         stmt = stmt.where(Topic.archived == archived)
     if srs_enabled is not None:
         stmt = stmt.where(Topic.srs_enabled == srs_enabled)
+    if scheduled is not None:
+        if scheduled:
+            stmt = stmt.where(Topic.scheduled_at.isnot(None))
+        else:
+            stmt = stmt.where(Topic.scheduled_at.is_(None))
 
     if root is not None and root is True:
         topics_with_ancestors = select(t_topics_closure.c.descendant).where(

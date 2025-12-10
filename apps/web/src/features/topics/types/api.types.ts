@@ -9,6 +9,7 @@ export type GetTopicsParams = {
 	limit?: number
 	dueBefore?: string
 	dueAfter?: string
+	scheduled?: boolean
 }
 
 export type SearchTopicsParams = {
