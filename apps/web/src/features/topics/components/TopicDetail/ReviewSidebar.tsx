@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import {
 	BicepsFlexed,
 	Flag,
@@ -214,20 +215,40 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 					<div className='flex items-center gap-1 rounded-md border-1 p-1.5'>
 						<Tooltip>
 							<TooltipTrigger asChild={true}>
-								<div className='flex items-center gap-1'>
+								<button
+									className='flex cursor-pointer items-center gap-1 bg-transparent p-0'
+									disabled={readonly}
+									onClick={e => {
+										if (!readonly && topic) {
+											handleSrsToggle(!topic.srs_enabled)
+											e.stopPropagation()
+										}
+									}}
+									type='button'
+								>
+									<Switch
+										checked={topic?.srs_enabled ?? true}
+										className='mx-0.5'
+										disabled={readonly}
+										onCheckedChange={handleSrsToggle}
+										size='sm'
+									/>
 									<Flag className={`h-3 w-3 ${dueDateColorClass}`} />
 									<span className={dueDateColorClass}>
 										{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
 									</span>
-									<Switch
-										checked={topic?.srs_enabled ?? true}
-										disabled={readonly}
-										onCheckedChange={handleSrsToggle}
-									/>
-								</div>
+								</button>
 							</TooltipTrigger>
-							<TooltipContent side='bottom'>
-								{topic?.srs_enabled ? 'SRS enabled' : 'SRS disabled'}
+							<TooltipContent className='text-center' side='bottom'>
+								<span>
+									{topic?.due
+										? `Due on ${dayjs(topic.due).format('MMMM D, YYYY')}`
+										: 'No due date'}
+								</span>
+								<br />
+								<span className='italic'>
+									{topic?.srs_enabled ? '(SRS enabled)' : '(SRS disabled)'}
+								</span>
 							</TooltipContent>
 						</Tooltip>
 					</div>
@@ -251,7 +272,6 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 						</TooltipTrigger>
 						<TooltipContent side='bottom'>{difficultyTooltip}</TooltipContent>
 					</Tooltip>
-					&nbsp;·&nbsp;
 				</div>
 			</SidebarHeader>
 			<SidebarContent className='scrollbar-track-transparent flex h-full flex-col gap-6 overflow-auto overscroll-contain px-2 pb-2'>
