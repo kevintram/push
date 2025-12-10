@@ -52,7 +52,8 @@ export function ReviewTopicsPanel({
 		if (!review?.id) return
 		navigate({
 			to: '/reviews/$reviewId/add',
-			params: { reviewId: review.id.toString() }
+			params: { reviewId: review.id.toString() },
+			search: { q: undefined }
 		})
 	}, [navigate, review?.id])
 
