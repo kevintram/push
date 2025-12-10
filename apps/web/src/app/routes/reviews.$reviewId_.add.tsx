@@ -1,10 +1,11 @@
-import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
-import { SquarePen } from 'lucide-react'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { Home, SquarePen } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { SearchInput } from '~/components/search/SearchInput'
 import { Button } from '~/components/ui/Button'
 import { useReviewWithTopics } from '~/features/reviews/api/getReview'
 import { AddedTopicsPopover } from '~/features/reviews/components/AddTopicToReviewDialog/AddedTopicsPopover'
+import { AddTopicSearchDialog } from '~/features/reviews/components/AddTopicToReviewDialog/AddTopicSearchDialog'
 import {
 	AddTopicToReviewProvider,
 	useAddTopicToReview
@@ -12,12 +13,7 @@ import {
 import type { Topic } from '~/features/topics/types/topic.types'
 
 export const Route = createFileRoute('/reviews/$reviewId_/add')({
-	component: RouteComponent,
-	validateSearch: (search: Record<string, unknown>) => {
-		return {
-			q: typeof search.q === 'string' ? search.q : undefined
-		}
-	}
+	component: RouteComponent
 })
 
 function RouteComponent() {
@@ -32,43 +28,50 @@ function RouteComponent() {
 }
 
 function LayoutContent() {
-	const router = useRouter()
 	const navigate = Route.useNavigate()
-	const { q } = Route.useSearch()
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 	const { addTopicToReview, isCreatingTopicReview } = useAddTopicToReview()
 	const { reviewId } = Route.useParams()
+
+	// Search Dialog State
+	const [isSearchOpen, setIsSearchOpen] = useState(false)
+	const [searchQuery, setSearchQuery] = useState('')
+
+	const handleHome = useCallback(() => {
+		navigate({
+			to: '/reviews/$reviewId/add',
+			params: { reviewId }
+		})
+	}, [navigate, reviewId])
 
 	const handleClose = useCallback(() => {
 		navigate({
 			to: '/reviews/$reviewId',
 			params: { reviewId }
 		})
-	}, [router])
+	}, [navigate, reviewId])
+
+	const handleSearchFocus = useCallback(() => {
+		setIsSearchOpen(true)
+	}, [])
 
 	const handleSearchChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const value = e.target.value
-			navigate({
-				search: { q: value || undefined },
-				replace: true,
-				params: true
-			})
+			setSearchQuery(e.target.value)
+			if (!isSearchOpen) {
+				setIsSearchOpen(true)
+			}
 		},
-		[navigate]
+		[isSearchOpen]
 	)
 
 	const clearSearch = useCallback(() => {
-		navigate({
-			search: { q: undefined },
-			replace: true,
-			params: true
-		})
-	}, [navigate])
+		setSearchQuery('')
+	}, [])
 
 	const onCreateNewClicked = useCallback(async () => {
-		const trimmedQuery = q?.trim()
+		const trimmedQuery = searchQuery?.trim()
 
 		try {
 			const topicReview = await addTopicToReview({
@@ -80,24 +83,25 @@ function LayoutContent() {
 				}
 			})
 
+			// Close search if open
+			setIsSearchOpen(false)
+
 			navigate({
 				to: '/reviews/$reviewId/add/topics/$topicId',
 				params: {
 					reviewId,
 					topicId: topicReview.topic_id.toString()
-				},
-				search: old => old
+				}
 			})
 		} catch (_e) {}
-	}, [q, addTopicToReview, navigate, reviewId])
+	}, [searchQuery, addTopicToReview, navigate, reviewId])
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
 			setIsPopoverOpen(false)
 			navigate({
 				to: '/reviews/$reviewId/add/topics/$topicId',
-				params: { reviewId, topicId: topic.id.toString() },
-				search: old => old
+				params: { reviewId, topicId: topic.id.toString() }
 			})
 		},
 		[navigate, reviewId]
@@ -105,34 +109,54 @@ function LayoutContent() {
 
 	return (
 		<div className='flex h-screen w-full flex-col'>
+			<AddTopicSearchDialog
+				onOpenChange={setIsSearchOpen}
+				open={isSearchOpen}
+				query={searchQuery}
+				setQuery={setSearchQuery}
+			/>
+
 			{/* Header */}
-			<div className='flex flex-shrink-0 items-center gap-4 border-b px-4 py-2'>
-				<AddedTopicsPopover
-					isOpen={isPopoverOpen}
-					onOpenChange={setIsPopoverOpen}
-					onTopicClick={handleTopicClick}
-				/>
+			<div className='flex-shrink-0 border-b py-2'>
+				<div className='flex items-center gap-4 px-4'>
+					<AddedTopicsPopover
+						isOpen={isPopoverOpen}
+						onOpenChange={setIsPopoverOpen}
+						onTopicClick={handleTopicClick}
+					/>
 
-				<SearchInput
-					inputRef={inputRef}
-					onChange={handleSearchChange}
-					onClear={clearSearch}
-					value={q ?? ''}
-				/>
+					<Button
+						className='h-6 w-6 p-0'
+						onClick={handleHome}
+						size='sm'
+						title='Home'
+						variant='ghost'
+					>
+						<Home className='h-4 w-4' />
+					</Button>
 
-				<Button
-					disabled={isCreatingTopicReview}
-					onClick={onCreateNewClicked}
-					size='default'
-					variant='secondary'
-				>
-					<SquarePen className='h-4 w-4' />
-					Create New
-				</Button>
+					<SearchInput
+						inputRef={inputRef}
+						onChange={handleSearchChange}
+						onClear={clearSearch}
+						onFocus={handleSearchFocus}
+						value={searchQuery}
+					/>
 
-				<Button onClick={handleClose} size='default' variant='default'>
-					Done
-				</Button>
+					<Button
+						disabled={isCreatingTopicReview}
+						onClick={onCreateNewClicked}
+						size='default'
+						variant='secondary'
+					>
+						<SquarePen className='h-4 w-4' />
+						Create New
+					</Button>
+
+					<Button onClick={handleClose} size='default' variant='default'>
+						Done
+					</Button>
+				</div>
 			</div>
 
 			{/* Content */}
