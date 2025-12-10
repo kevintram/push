@@ -1,6 +1,6 @@
 import {
 	BicepsFlexed,
-	Calendar,
+	Flag,
 	Loader2,
 	Mountain,
 	Plus,
@@ -8,7 +8,6 @@ import {
 	SquareCheck
 } from 'lucide-react'
 import { use, useCallback, useMemo } from 'react'
-import { DueDateHoverCard } from '~/components/DueDateHoverCard'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -17,7 +16,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
-import { Toggle } from '~/components/ui/Toggle'
+import { Switch } from '~/components/ui/Switch'
 import {
 	Tooltip,
 	TooltipContent,
@@ -212,26 +211,26 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 					)}
 				</div>
 				<div className='flex items-center text-muted-foreground text-xs'>
-					<DueDateHoverCard
-						due={topic?.due ?? null}
-						scheduledAt={topic?.scheduled_at ?? null}
-						srsEnabled={topic?.srs_enabled ?? true}
-					>
-						<Toggle
-							aria-label='Toggle SRS scheduling'
-							className='h-6 px-1.5 data-[state=on]:bg-transparent data-[state=off]:text-muted-foreground data-[state=on]:text-accent-foreground'
-							disabled={readonly}
-							onPressedChange={handleSrsToggle}
-							pressed={topic?.srs_enabled ?? true}
-							size='sm'
-							variant='outline'
-						>
-							<Calendar className={`h-3 w-3 ${dueDateColorClass}`} />
-							<span className={dueDateColorClass}>
-								{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
-							</span>
-						</Toggle>
-					</DueDateHoverCard>
+					<div className='flex items-center gap-1 rounded-md border-1 p-1.5'>
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<div className='flex items-center gap-1'>
+									<Flag className={`h-3 w-3 ${dueDateColorClass}`} />
+									<span className={dueDateColorClass}>
+										{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
+									</span>
+									<Switch
+										checked={topic?.srs_enabled ?? true}
+										disabled={readonly}
+										onCheckedChange={handleSrsToggle}
+									/>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent side='bottom'>
+								{topic?.srs_enabled ? 'SRS enabled' : 'SRS disabled'}
+							</TooltipContent>
+						</Tooltip>
+					</div>
 					&nbsp;·&nbsp;
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
@@ -252,6 +251,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 						</TooltipTrigger>
 						<TooltipContent side='bottom'>{difficultyTooltip}</TooltipContent>
 					</Tooltip>
+					&nbsp;·&nbsp;
 				</div>
 			</SidebarHeader>
 			<SidebarContent className='scrollbar-track-transparent flex h-full flex-col gap-6 overflow-auto overscroll-contain px-2 pb-2'>
