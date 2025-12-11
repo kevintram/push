@@ -69,6 +69,14 @@ interface TopicDetailProps {
 		onRemove: () => void,
 		onClick: () => void
 	) => ReactNode
+	/**
+	 * Custom card renderer for related panel.
+	 */
+	renderRelatedCard?: (
+		topic: Topic,
+		onRemove: () => void,
+		onClick: () => void
+	) => ReactNode
 }
 
 export function TopicDetail({
@@ -80,7 +88,8 @@ export function TopicDetail({
 	sidebarReadonly = false,
 	onDelete,
 	onTopicNavigate,
-	renderChildCard
+	renderChildCard,
+	renderRelatedCard
 }: TopicDetailProps) {
 	// Get topic from context if not provided via props
 	const contextValue = use(TopicContext)
@@ -273,9 +282,10 @@ export function TopicDetail({
 								onToggleCollapse={() =>
 									setIsRelatedCollapsed(!isRelatedCollapsed)
 								}
+								renderCard={renderRelatedCard}
 								topicId={topic.id}
 							/>
-						</div>
+						</div>{' '}
 					</div>
 					<ReviewsSidebar readonly={sidebarReadonly} />
 				</SidebarHolder>
