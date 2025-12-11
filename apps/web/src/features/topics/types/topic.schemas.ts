@@ -4,6 +4,7 @@ import type {
 	TopicOtherRelationshipResponse,
 	TopicRelationshipResponse
 } from './topic.types'
+import { RelationshipDirection } from './topic.types'
 
 export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	id: v.number(),
@@ -22,7 +23,8 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	srs_enabled: v.boolean(),
 	parents: v.optional(v.array(v.lazy(() => TopicSchema)), []),
 	children: v.optional(v.array(v.lazy(() => TopicSchema)), []),
-	related: v.optional(v.array(v.lazy(() => TopicSchema)), [])
+	related: v.optional(v.array(v.lazy(() => TopicSchema)), []),
+	relationship_direction: v.optional(v.enum_(RelationshipDirection))
 })
 
 export const TopicRelationshipResponseSchema: v.GenericSchema<TopicRelationshipResponse> =

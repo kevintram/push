@@ -16,6 +16,8 @@ from app.schemas.topics import (
     TopicRelationshipResponse,
     TopicOtherRelationshipCreate,
     TopicOtherRelationshipResponse,
+    TopicRelatedRead,
+    RelationshipDirection,
 )
 from app.schemas.topic_reviews import (
     TopicReviewBase,
@@ -37,6 +39,8 @@ TopicReviewRead.model_rebuild()
 TopicReviewWithTopic.model_rebuild()
 TopicReviewCreate.model_rebuild()
 TopicReviewUpdate.model_rebuild()
+TopicRelatedRead.model_rebuild()
+
 __all__ = [
     "ReviewBase",
     "ReviewCreate",
@@ -60,4 +64,6 @@ __all__ = [
     "TopicReviewWithTopic",
     "TopicReviewCreate",
     "TopicReviewUpdate",
+    "TopicRelatedRead",
+    "RelationshipDirection",
 ]

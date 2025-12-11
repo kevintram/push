@@ -2,12 +2,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import { TopicOtherRelationshipResponseSchema } from '../types/topic.schemas'
-import type { TopicOtherRelationshipResponse } from '../types/topic.types'
+import type {
+	TopicOtherRelationshipCreate,
+	TopicOtherRelationshipResponse
+} from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 export async function createTopicOtherRelationship(
 	fromTopicId: number,
-	toTopicId: number
+	data: TopicOtherRelationshipCreate
 ): Promise<TopicOtherRelationshipResponse> {
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/topics/${fromTopicId}/related/`,
@@ -16,7 +19,7 @@ export async function createTopicOtherRelationship(
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ to_topic_id: toTopicId })
+			body: JSON.stringify(data)
 		}
 	)
 
@@ -24,9 +27,9 @@ export async function createTopicOtherRelationship(
 		throw new Error(`API request failed: ${response.status}`)
 	}
 
-	const data = await response.json()
+	const responseData = await response.json()
 	try {
-		return v.parse(TopicOtherRelationshipResponseSchema, data)
+		return v.parse(TopicOtherRelationshipResponseSchema, responseData)
 	} catch (error) {
 		if (v.isValiError(error)) {
 			throw new Error(`Validation failed: ${error.message}`)
@@ -41,14 +44,14 @@ export function useCreateTopicOtherRelationship() {
 	return useMutation({
 		mutationFn: ({
 			fromTopicId,
-			toTopicId
+			data
 		}: {
 			fromTopicId: number
-			toTopicId: number
-		}) => createTopicOtherRelationship(fromTopicId, toTopicId),
-		onSuccess: async data => {
-			const fromTopicId = data.from_topic.id
-			const toTopicId = data.to_topic.id
+			data: TopicOtherRelationshipCreate
+		}) => createTopicOtherRelationship(fromTopicId, data),
+		onSuccess: async responseData => {
+			const fromTopicId = responseData.from_topic.id
+			const toTopicId = responseData.to_topic.id
 
 			await Promise.all([
 				queryClient.invalidateQueries({

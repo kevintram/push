@@ -4,7 +4,7 @@ import { useSearchTopics } from '../api/searchTopics'
 
 interface UseDebouncedPotentialTopicsProps {
 	topicId: number | undefined
-	relationshipType: 'child' | 'parent'
+	relationshipType: 'child' | 'parent' | 'related'
 	debounceMs?: number
 	enabled?: boolean
 }
@@ -26,6 +26,7 @@ export function useDebouncedPotentialTopics({
 		query: debouncedQuery || undefined,
 		addableAsChildTo: relationshipType === 'child' ? topicId : undefined,
 		addableAsParentTo: relationshipType === 'parent' ? topicId : undefined,
+		addableAsRelatedTo: relationshipType === 'related' ? topicId : undefined,
 		enabled: enabled && !!topicId
 	})
 

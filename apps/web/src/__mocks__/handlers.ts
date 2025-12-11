@@ -44,5 +44,57 @@ export const handlers = [
 		}
 
 		return HttpResponse.json(topic)
-	})
+	}),
+
+	// Mock endpoint for getting related topics
+	http.get(
+		'http://localhost:8000/topics/:topicId/related/',
+		async ({ params }) => {
+			await delay('real')
+			const topicId = Number(params.topicId)
+
+			if (Number.isNaN(topicId)) {
+				return new HttpResponse(null, { status: 400 })
+			}
+
+			// For demonstration, let's return a couple of hardcoded related topics
+			// In a real scenario, you might want more dynamic related topic generation
+			const mockRelatedTopics: Array<Topic> = [
+				{
+					id: 999,
+					name: 'Mock Related Topic 1',
+					notes: 'This is a mock related topic.',
+					inserted_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
+					stability: null,
+					difficulty: null,
+					state: 'LEARNING',
+					step: null,
+					archived: false,
+					inboxed: false,
+					due: null,
+					scheduled_at: null,
+					srs_enabled: false
+				},
+				{
+					id: 998,
+					name: 'Mock Related Topic 2',
+					notes: 'Another mock related topic for testing.',
+					inserted_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
+					stability: null,
+					difficulty: null,
+					state: 'LEARNING',
+					step: 1,
+					archived: false,
+					inboxed: false,
+					due: null,
+					scheduled_at: null,
+					srs_enabled: true
+				}
+			]
+
+			return HttpResponse.json(mockRelatedTopics)
+		}
+	)
 ]

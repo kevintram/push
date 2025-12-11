@@ -1,5 +1,13 @@
 import type { LearningState } from '~/models/learning-state.types'
 
+export const RelationshipDirection = {
+	Outgoing: 'outgoing',
+	Incoming: 'incoming'
+} as const
+
+export type RelationshipDirection =
+	(typeof RelationshipDirection)[keyof typeof RelationshipDirection]
+
 export type Topic = {
 	id: number
 	name: string
@@ -18,6 +26,7 @@ export type Topic = {
 	parents?: Array<Topic>
 	children?: Array<Topic>
 	related?: Array<Topic>
+	relationship_direction?: RelationshipDirection
 }
 
 export type TopicRelationshipResponse = {
@@ -26,7 +35,13 @@ export type TopicRelationshipResponse = {
 }
 
 export type TopicOtherRelationshipCreate = {
-	to_topic_id: number
+	to_topic_id?: number
+	to_topic?: {
+		name: string
+		notes: string
+		archived: boolean
+		inboxed: boolean
+	}
 }
 
 export type TopicOtherRelationshipResponse = {

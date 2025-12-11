@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, date
+from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
@@ -35,6 +36,17 @@ class TopicReadWithRelationships(TopicRead):
 
     parents: list["TopicRead"]
     children: list["TopicRead"]
+
+
+class RelationshipDirection(str, Enum):
+    OUTGOING = "outgoing"
+    INCOMING = "incoming"
+
+
+class TopicRelatedRead(TopicRead):
+    model_config = ConfigDict(from_attributes=True)
+
+    relationship_direction: RelationshipDirection
 
 
 class TopicCreate(TopicBase):
@@ -91,7 +103,17 @@ class TopicUpdate(BaseModel):
 
 
 class TopicOtherRelationshipCreate(BaseModel):
-    to_topic_id: int
+    # Mutually exclusive: provide to_topic_id OR to_topic (not both)
+    to_topic_id: int | None = None
+    to_topic: "TopicCreate | None" = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "TopicOtherRelationshipCreate":
+        if self.to_topic_id is not None and self.to_topic is not None:
+            raise ValueError("Cannot provide both to_topic_id and to_topic")
+        if self.to_topic_id is None and self.to_topic is None:
+            raise ValueError("Must provide either to_topic_id or to_topic")
+        return self
 
 
 class TopicOtherRelationshipResponse(BaseModel):
