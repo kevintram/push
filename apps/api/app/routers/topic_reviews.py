@@ -354,7 +354,8 @@ async def create_topic_review(
 
         # Refresh with topic relationship loaded
         await session.refresh(new_topic_review, ["topic", "review"])
-        return new_topic_review
+        await session.refresh(new_topic_review.topic, ["scheduled_at"])
+        return TopicReviewWithTopic.model_validate(new_topic_review)
 
     # Review is completed - run FSRS
     # Store topic's current state as "before" state
@@ -436,7 +437,8 @@ async def create_topic_review(
 
     # Refresh with topic relationship loaded
     await session.refresh(new_topic_review, ["topic", "review"])
-    return new_topic_review
+    await session.refresh(new_topic_review.topic, ["scheduled_at"])
+    return TopicReviewWithTopic.model_validate(new_topic_review)
 
 
 @router.post("/topic-reviews/{id}/", tags=["topic-reviews"])
@@ -469,7 +471,8 @@ async def update_topic_review(
 
         # Refresh and return with relationships loaded
         await session.refresh(existing_topic_review, ["topic", "review"])
-        return existing_topic_review
+        await session.refresh(existing_topic_review.topic, ["scheduled_at"])
+        return TopicReviewWithTopic.model_validate(existing_topic_review)
 
     # Review is completed - run FSRS recalculation
     # Use provided rating or default to "good"
@@ -522,7 +525,8 @@ async def update_topic_review(
 
     # Refresh and return with relationships loaded
     await session.refresh(existing_topic_review, ["topic", "review"])
-    return existing_topic_review
+    await session.refresh(existing_topic_review.topic, ["scheduled_at"])
+    return TopicReviewWithTopic.model_validate(existing_topic_review)
 
 
 @router.delete("/topic-reviews/{id}/", tags=["topic-reviews"])
