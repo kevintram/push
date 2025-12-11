@@ -94,6 +94,22 @@ class Topic(Base):
         primaryjoin="and_(Topic.id == topics_closure.c.ancestor, topics_closure.c.depth == 1)",
         secondaryjoin="topics_closure.c.descendant == Topic.id",
     )
+    related_outgoing: Mapped[list["Topic"]] = relationship(
+        "Topic",
+        secondary="topic_other_relations",
+        primaryjoin="Topic.id == topic_other_relations.c.from_topic_id",
+        secondaryjoin="topic_other_relations.c.to_topic_id == Topic.id",
+        foreign_keys="[topic_other_relations.c.from_topic_id, topic_other_relations.c.to_topic_id]",
+        viewonly=True,
+    )
+    related_incoming: Mapped[list["Topic"]] = relationship(
+        "Topic",
+        secondary="topic_other_relations",
+        primaryjoin="Topic.id == topic_other_relations.c.to_topic_id",
+        secondaryjoin="topic_other_relations.c.from_topic_id == Topic.id",
+        foreign_keys="[topic_other_relations.c.to_topic_id, topic_other_relations.c.from_topic_id]",
+        viewonly=True,
+    )
 
 
 t_topics_closure = Table(
@@ -128,4 +144,35 @@ t_topics_closure = Table(
         server_default=text("timezone('utc'::text, now())"),
     ),
     CheckConstraint("count <= depth OR depth = 0", name="max_paths"),
+)
+
+t_topic_other_relations = Table(
+    "topic_other_relations",
+    Base.metadata,
+    Column(
+        "from_topic_id",
+        BigInteger,
+        ForeignKey("topics.id", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    ),
+    Column(
+        "to_topic_id",
+        BigInteger,
+        ForeignKey("topics.id", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    ),
+    Column(
+        "inserted_at",
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=text("timezone('utc'::text, now())"),
+    ),
+    Column(
+        "updated_at",
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=text("timezone('utc'::text, now())"),
+    ),
 )

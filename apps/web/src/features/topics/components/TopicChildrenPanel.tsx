@@ -1,7 +1,15 @@
 import dayjs from 'dayjs'
-import { Baby, Loader2, Plus, Search, SquarePen } from 'lucide-react'
+import {
+	Baby,
+	ChevronDown,
+	Loader2,
+	Plus,
+	Search,
+	SquarePen
+} from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
 import {
 	DropdownMenu,
@@ -27,6 +35,8 @@ interface TopicChildrenPanelProps {
 	topicId: number | undefined
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
+	isCollapsed?: boolean
+	onToggleCollapse?: () => void
 	/**
 	 * Called when a child is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
@@ -49,6 +59,8 @@ export function TopicChildrenPanel({
 	topicId,
 	getScrollElement,
 	scrollMargin,
+	isCollapsed = false,
+	onToggleCollapse,
 	onChildSelect,
 	renderCard
 }: TopicChildrenPanelProps) {
@@ -241,24 +253,35 @@ export function TopicChildrenPanel({
 	return (
 		<>
 			<div className='flex flex-col'>
-				<div className='mb-3 flex items-center gap-2'>
-					<Baby className='h-4 w-4' />
-					<span className='font-medium text-muted-foreground text-xs'>
-						Children ({children.length})
-					</span>
+				<div className='mb-3 flex items-center justify-between'>
+					<Button
+						className='flex items-center gap-2 p-0'
+						onClick={onToggleCollapse}
+						variant='ghost'
+					>
+						<Baby className='h-4 w-4' />
+						<span className='font-medium text-muted-foreground text-xs'>
+							Children ({children.length})
+						</span>
+						<ChevronDown
+							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+						/>
+					</Button>
 				</div>
-				<div className='flex-1'>
-					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						gap={16}
-						getItemKey={getItemKey}
-						getScrollElement={getScrollElement}
-						items={items}
-						minItemWidth={MIN_WIDTH}
-						renderItem={renderItem}
-						scrollMargin={scrollMargin}
-					/>
-				</div>
+				{!isCollapsed && (
+					<div className='flex-1'>
+						<MasonryLayout
+							estimateItemSize={estimateItemSize}
+							gap={16}
+							getItemKey={getItemKey}
+							getScrollElement={getScrollElement}
+							items={items}
+							minItemWidth={MIN_WIDTH}
+							renderItem={renderItem}
+							scrollMargin={scrollMargin}
+						/>
+					</div>
+				)}
 			</div>
 
 			<AddRelationshipDialog

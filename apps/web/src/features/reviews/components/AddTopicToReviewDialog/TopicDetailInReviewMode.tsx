@@ -79,6 +79,18 @@ export function TopicDetailInReviewMode({
 		[]
 	)
 
+	// Custom card renderer for related panel in review mode
+	const renderRelatedCard = useCallback(
+		(topic: Topic, onRemove: () => void, onClick: () => void) => (
+			<AddTopicCard
+				onCardClick={() => onClick()}
+				onRemoveRelationship={onRemove}
+				topic={topic}
+			/>
+		),
+		[]
+	)
+
 	// Context value for TopicDetail (needed because TopicDetail can read from context)
 	const topicContextValue = useMemo(
 		() => ({
@@ -118,6 +130,7 @@ export function TopicDetailInReviewMode({
 				onDelete={handleTopicDeleted}
 				onTopicNavigate={onTopicSelected}
 				renderChildCard={renderChildCard}
+				renderRelatedCard={renderRelatedCard}
 				sidebarReadonly={true}
 				topic={selectedTopic}
 			/>

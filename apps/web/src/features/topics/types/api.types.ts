@@ -18,6 +18,7 @@ export type SearchTopicsParams = {
 	addableToReview?: number
 	addableAsParentTo?: number
 	addableAsChildTo?: number
+	addableAsRelatedTo?: number
 }
 
 export type CreateTopicInput = {

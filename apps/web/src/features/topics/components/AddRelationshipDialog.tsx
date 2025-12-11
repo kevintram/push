@@ -18,7 +18,7 @@ interface AddRelationshipDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
 	topicId: number | undefined
-	relationshipType: 'child' | 'parent'
+	relationshipType: 'child' | 'parent' | 'related'
 	onCreateNew?: (query: string) => void
 	onSelected?: (topic: Topic) => void
 	isCreating?: boolean

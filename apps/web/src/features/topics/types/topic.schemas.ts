@@ -1,5 +1,10 @@
 import * as v from 'valibot'
-import type { Topic, TopicRelationshipResponse } from './topic.types'
+import type {
+	Topic,
+	TopicOtherRelationshipResponse,
+	TopicRelationshipResponse
+} from './topic.types'
+import { RelationshipDirection } from './topic.types'
 
 export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	id: v.number(),
@@ -17,11 +22,19 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	scheduled_at: v.nullable(v.string()),
 	srs_enabled: v.boolean(),
 	parents: v.optional(v.array(v.lazy(() => TopicSchema)), []),
-	children: v.optional(v.array(v.lazy(() => TopicSchema)), [])
+	children: v.optional(v.array(v.lazy(() => TopicSchema)), []),
+	related: v.optional(v.array(v.lazy(() => TopicSchema)), []),
+	relationship_direction: v.optional(v.enum_(RelationshipDirection))
 })
 
 export const TopicRelationshipResponseSchema: v.GenericSchema<TopicRelationshipResponse> =
 	v.object({
 		parent: v.lazy(() => TopicSchema),
 		child: v.lazy(() => TopicSchema)
+	})
+
+export const TopicOtherRelationshipResponseSchema: v.GenericSchema<TopicOtherRelationshipResponse> =
+	v.object({
+		from_topic: v.lazy(() => TopicSchema),
+		to_topic: v.lazy(() => TopicSchema)
 	})

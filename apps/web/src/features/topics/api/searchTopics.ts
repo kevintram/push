@@ -34,6 +34,10 @@ export async function searchTopics(
 		searchParams.set('addable_as_child_to', String(params.addableAsChildTo))
 	}
 
+	if (typeof params.addableAsRelatedTo === 'number') {
+		searchParams.set('addable_as_related_to', String(params.addableAsRelatedTo))
+	}
+
 	const url = `${import.meta.env.VITE_API_URL}/topics/search/${
 		searchParams.size > 0 ? `?${searchParams.toString()}` : ''
 	}`
