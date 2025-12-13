@@ -7,7 +7,7 @@ import type { Topic } from '~/features/topics/types/topic.types'
 import type { Review } from '../types/review.types'
 import { ReviewItem } from './ReviewItem'
 
-const MIN_TOPIC_WIDTH = 280
+const MIN_TOPIC_WIDTH = 210
 const MIN_TOPIC_HEIGHT = 96
 
 type ReviewSectionProps = {

@@ -1,15 +1,22 @@
 import dayjs from 'dayjs'
-import { Link, Loader2, Plus, Search, SquarePen } from 'lucide-react'
+import {
+	ChevronDown,
+	Link,
+	Loader2,
+	Plus,
+	Search,
+	SquarePen
+} from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import { CollapsiblePanel } from '~/components/ui/CollapsiblePanel'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
@@ -215,9 +222,9 @@ export function TopicRelatedPanel({
 	}, [])
 
 	return (
-		<>
-			<CollapsiblePanel
-				addButton={
+		<div className='flex flex-col'>
+			<TopicPanelHeader
+				actions={
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
 							<Button className='gap-1' size='sm' variant='secondary'>
@@ -241,23 +248,36 @@ export function TopicRelatedPanel({
 						</DropdownMenuContent>
 					</DropdownMenu>
 				}
-				count={related.length}
-				icon={<Link className='h-4 w-4' />}
-				isCollapsed={isCollapsed}
-				onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-				title='Other related'
-			>
-				<MasonryLayout
-					estimateItemSize={estimateItemSize}
-					gap={16}
-					getItemKey={getItemKey}
-					getScrollElement={getScrollElement}
-					items={items}
-					minItemWidth={MIN_WIDTH}
-					renderItem={renderItem}
-					scrollMargin={scrollMargin}
-				/>
-			</CollapsiblePanel>
+				label={
+					<Button
+						className='flex items-center gap-2 p-0'
+						onClick={() => setIsCollapsed(!isCollapsed)}
+						variant='ghost'
+					>
+						<Link className='h-4 w-4' />
+						<span className='font-medium text-md text-muted-foreground'>
+							Other related ({related.length})
+						</span>
+						<ChevronDown
+							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+						/>
+					</Button>
+				}
+			/>
+			{!isCollapsed && (
+				<div className='flex-1 py-6'>
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						gap={16}
+						getItemKey={getItemKey}
+						getScrollElement={getScrollElement}
+						items={items}
+						minItemWidth={MIN_WIDTH}
+						renderItem={renderItem}
+						scrollMargin={scrollMargin}
+					/>
+				</div>
+			)}
 
 			<AddRelationshipDialog
 				isCreating={isCreating}
@@ -268,6 +288,6 @@ export function TopicRelatedPanel({
 				relationshipType='related'
 				topicId={topicId}
 			/>
-		</>
+		</div>
 	)
 }
