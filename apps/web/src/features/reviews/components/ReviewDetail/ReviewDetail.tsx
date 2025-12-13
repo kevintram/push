@@ -178,16 +178,6 @@ export function ReviewDetail({
 		})
 	}, [review?.scheduled_at, review?.completed_at])
 
-	const dateButtonClassName = useMemo(() => {
-		if (isOverdueValue) {
-			return 'text-red-600 dark:text-red-400'
-		}
-		if (relativeDate === 'Today') {
-			return 'text-blue-600 dark:text-blue-400'
-		}
-		return ''
-	}, [isOverdueValue, relativeDate])
-
 	const descriptionRef = useRef<HTMLTextAreaElement | null>(null)
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
 
@@ -222,14 +212,14 @@ export function ReviewDetail({
 			>
 				<Checkbox
 					checked={!!review.completed_at}
-					className={`translate-y-1 ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
+					className={`translate-y-0.5 ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
 					onCheckedChange={handleCheckboxChange}
 				/>
 				<div className='flex-1'>
 					<div className='flex items-start justify-between gap-4 pb-4'>
 						<div className='flex flex-1 flex-col'>
 							<Textarea
-								className='!bg-transparent break-word m-0 min-h-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 font-bold focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								className='!bg-transparent break-word m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-bold focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onChange={onDescriptionChange}
 								placeholder='Description'
 								ref={descriptionRef}
@@ -254,7 +244,11 @@ export function ReviewDetail({
 								trigger={
 									<TooltipTrigger asChild={true}>
 										<Button
-											className={dateButtonClassName}
+											className={cn(
+												'-translate-y-1.5',
+												isOverdueValue && 'text-red-600 dark:text-red-400',
+												relativeDate === 'Today' && 'text-blue-600 dark:text-blue-400'
+											)}
 											size='sm'
 											variant='ghost'
 										>
