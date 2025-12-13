@@ -221,17 +221,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 				<div className='flex items-center text-muted-foreground text-xs'>
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
-							<button
-								className='flex cursor-pointer items-center gap-1 rounded-lg border-1 bg-secondary p-1.5 hover:bg-secondary/80'
-								disabled={isUpdatingTopic}
-								onClick={e => {
-									if (!isUpdatingTopic && topic) {
-										handleSrsToggle(!topic.srs_enabled)
-										e.stopPropagation()
-									}
-								}}
-								type='button'
-							>
+							<div className='flex items-center gap-1 rounded-lg border-1 bg-secondary p-1.5 hover:bg-secondary/80'>
 								<Switch
 									checked={topic?.srs_enabled ?? true}
 									className='mx-0.5'
@@ -243,7 +233,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 								<span className={dueDateColorClass}>
 									{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
 								</span>
-							</button>
+							</div>
 						</TooltipTrigger>
 						<TooltipContent className='text-center' side='bottom'>
 							<span>
