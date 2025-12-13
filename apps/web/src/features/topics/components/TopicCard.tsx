@@ -1,31 +1,13 @@
-import {
-	Archive,
-	ArchiveRestore,
-	Baby,
-	GitPullRequestClosed,
-	Inbox,
-	MoreHorizontal,
-	Trash2,
-	User2
-} from 'lucide-react'
+import { Archive, Baby, Inbox, User2 } from 'lucide-react'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useMemo } from 'react'
 import { TopicDateDisplay } from '~/components/TopicDateDisplay'
-import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
-import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
@@ -36,15 +18,8 @@ interface TopicCardProps {
 	onTopicClick?: (topic: Topic) => void
 	minHeight?: number
 	searchQuery?: string
-
-	// Slots for customization
 	headerLeft?: React.ReactNode
 	headerRight?: React.ReactNode
-	additionalMenuItems?: React.ReactNode
-
-	// Helper props for common relationship removal pattern
-	onRemoveRelationship?: () => void
-	removeRelationshipText?: string
 }
 
 export function TopicCard({
@@ -53,14 +28,8 @@ export function TopicCard({
 	minHeight = MIN_HEIGHT,
 	searchQuery,
 	headerLeft,
-	headerRight,
-	additionalMenuItems,
-	onRemoveRelationship,
-	removeRelationshipText = 'Remove as Child'
+	headerRight
 }: TopicCardProps) {
-	const deleteTopicMutation = useDeleteTopic()
-	const updateTopicMutation = useUpdateTopic()
-
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
 
@@ -89,32 +58,6 @@ export function TopicCard({
 			}
 		},
 		[onTopicClick, topic]
-	)
-
-	const handleDeleteTopic = useCallback(() => {
-		deleteTopicMutation.mutate(topic.id)
-	}, [deleteTopicMutation, topic.id])
-
-	const handleArchiveToggle = useCallback(
-		async (e: React.MouseEvent) => {
-			e.stopPropagation()
-			await updateTopicMutation.mutateAsync({
-				id: topic.id,
-				archived: !topic.archived
-			})
-		},
-		[updateTopicMutation, topic.id, topic.archived]
-	)
-
-	const handleInboxToggle = useCallback(
-		async (e: React.MouseEvent) => {
-			e.stopPropagation()
-			await updateTopicMutation.mutateAsync({
-				id: topic.id,
-				inboxed: !topic.inboxed
-			})
-		},
-		[updateTopicMutation, topic.id, topic.inboxed]
 	)
 
 	return (
@@ -168,70 +111,7 @@ export function TopicCard({
 					</Popover>
 				</div>
 
-				<div className='flex items-center gap-1'>
-					{headerRight}
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true}>
-							<Button
-								className='h-5 w-5 p-0'
-								onClick={e => e.stopPropagation()}
-								variant='ghost'
-							>
-								<MoreHorizontal className='h-3 w-3' />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-							<DropdownMenuItem onClick={handleInboxToggle}>
-								{topic.inboxed ? (
-									<>
-										<Inbox className='mr-2 h-4 w-4' />
-										Remove from Inbox
-									</>
-								) : (
-									<>
-										<Inbox className='mr-2 h-4 w-4' />
-										Add to Inbox
-									</>
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={handleArchiveToggle}>
-								{topic.archived ? (
-									<>
-										<ArchiveRestore className='mr-2 h-4 w-4' />
-										Unarchive
-									</>
-								) : (
-									<>
-										<Archive className='mr-2 h-4 w-4' />
-										Archive
-									</>
-								)}
-							</DropdownMenuItem>
-							{additionalMenuItems}
-							{onRemoveRelationship && (
-								<DropdownMenuItem
-									onClick={e => {
-										e.stopPropagation()
-										onRemoveRelationship()
-									}}
-								>
-									<GitPullRequestClosed className='mr-2 h-4 w-4' />
-									{removeRelationshipText}
-								</DropdownMenuItem>
-							)}
-							<DropdownMenuItem
-								onClick={e => {
-									e.stopPropagation()
-									handleDeleteTopic()
-								}}
-								variant='destructive'
-							>
-								<Trash2 className='mr-2 h-4 w-4' />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
+				<div className='flex items-center gap-1'>{headerRight}</div>
 			</CardHeader>
 
 			<CardContent className='mb-3 flex flex-1 flex-col gap-3'>

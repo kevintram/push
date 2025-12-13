@@ -2,6 +2,7 @@ import { ChevronDown } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { Review } from '../types/review.types'
@@ -56,6 +57,7 @@ export function ReviewSection({
 		(topic: Topic) => {
 			return (
 				<TopicCard
+					headerRight={<TopicActionMenu topic={topic} />}
 					minHeight={MIN_TOPIC_HEIGHT}
 					onTopicClick={onTopicClick}
 					topic={topic}

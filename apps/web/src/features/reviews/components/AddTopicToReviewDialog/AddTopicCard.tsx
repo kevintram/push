@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { useAddTopicToReview } from './AddTopicToReviewContext'
@@ -64,8 +65,13 @@ export function AddTopicCard({
 					rating={rating}
 				/>
 			}
+			headerRight={
+				<TopicActionMenu
+					onRemoveRelationship={onRemoveRelationship}
+					topic={topic}
+				/>
+			}
 			minHeight={MIN_HEIGHT}
-			onRemoveRelationship={onRemoveRelationship}
 			onTopicClick={onCardClick}
 			searchQuery={searchQuery}
 			topic={topic}

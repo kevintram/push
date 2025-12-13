@@ -11,7 +11,6 @@ import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
-import { useDeleteTopic } from '../../api/deleteTopic'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import type { Topic } from '../../types/topic.types'
@@ -97,14 +96,6 @@ export function TopicDetail({
 		isLoadingProp !== undefined ? isLoadingProp : contextValue.isLoading
 
 	const { mutateAsync: updateTopic } = useUpdateTopic()
-	const { mutateAsync: deleteTopic } = useDeleteTopic()
-
-	const handleDelete = useCallback(async () => {
-		if (topic?.id) {
-			await deleteTopic(topic.id)
-			onDelete?.()
-		}
-	}, [deleteTopic, topic?.id, onDelete])
 
 	const handleArchiveToggle = useCallback(async () => {
 		if (topic?.id) {
@@ -173,9 +164,7 @@ export function TopicDetail({
 					afterActions={headerAfterActions}
 					beforeActions={headerBeforeMoreActions}
 					headerBeforeActions={headerBeforeActions}
-					onArchiveToggle={handleArchiveToggle}
-					onDelete={handleDelete}
-					onInboxToggle={handleInboxToggle}
+					onDelete={onDelete}
 					onParentSelect={onTopicNavigate}
 					topic={topic}
 				/>

@@ -24,6 +24,7 @@ import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicChildren } from '../api/getTopicChildren'
 import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
+import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
 
 const MIN_WIDTH = 192
@@ -191,8 +192,14 @@ export function TopicChildrenPanel({
 			// Default card rendering
 			return (
 				<TopicCard
+					headerRight={
+						<TopicActionMenu
+							onRemoveRelationship={handleRemoveRelationship}
+							removeRelationshipText='Remove as Child'
+							topic={item.child}
+						/>
+					}
 					minHeight={MIN_HEIGHT}
-					onRemoveRelationship={handleRemoveRelationship}
 					onTopicClick={() => handleClick()}
 					topic={item.child}
 				/>

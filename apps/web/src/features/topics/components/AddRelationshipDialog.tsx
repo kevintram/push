@@ -10,6 +10,7 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useDebouncedPotentialTopics } from '~/features/topics/hooks/useDebouncedPotentialTopics'
 import type { Topic } from '../types/topic.types'
@@ -102,6 +103,7 @@ export function AddRelationshipDialog({
 	const renderItem = useCallback(
 		(topic: Topic) => (
 			<TopicCard
+				headerRight={<TopicActionMenu topic={topic} />}
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicSelected}
 				searchQuery={debouncedQuery}

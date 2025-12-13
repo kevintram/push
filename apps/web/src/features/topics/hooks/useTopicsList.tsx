@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
+import { TopicActionMenu } from '../components/TopicActionMenu'
 import { TopicCard } from '../components/TopicCard'
 import type { Topic } from '../types/topic.types'
 
@@ -33,6 +34,7 @@ export function useTopicsList({
 		(topic: Topic, _index: number): ReactNode => {
 			return (
 				<TopicCard
+					headerRight={<TopicActionMenu topic={topic} />}
 					minHeight={minHeight}
 					onTopicClick={onTopicClick}
 					topic={topic}

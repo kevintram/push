@@ -16,6 +16,7 @@ import {
 	DialogTitle
 } from '~/components/ui/Dialog'
 import { useSearchTopics } from '~/features/topics/api/searchTopics'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
@@ -119,6 +120,7 @@ export function SearchDialog({
 	const renderItem = useCallback(
 		(topic: Topic) => (
 			<TopicCard
+				headerRight={<TopicActionMenu topic={topic} />}
 				minHeight={MIN_HEIGHT}
 				onTopicClick={handleTopicSelect}
 				searchQuery={debouncedQuery}
