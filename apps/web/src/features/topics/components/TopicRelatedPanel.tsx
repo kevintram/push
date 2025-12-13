@@ -10,7 +10,6 @@ import {
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import { Card, CardContent } from '~/components/ui/Card'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -29,7 +28,7 @@ import { TopicCard } from './TopicCard'
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
 
-type ListItem = { type: 'add-button' } | { type: 'related'; topic: Topic }
+type ListItem = { type: 'related'; topic: Topic }
 
 interface TopicRelatedPanelProps {
 	topicId: number | undefined
@@ -150,19 +149,13 @@ export function TopicRelatedPanel({
 		[topicId, createRelationship]
 	)
 
-	// Combine add button and related topics into a single array
+	// Map related topics into array
 	const items = useMemo<Array<ListItem>>(
-		() => [
-			{ type: 'add-button' },
-			...related.map(topic => ({ type: 'related' as const, topic }))
-		],
+		() => related.map(topic => ({ type: 'related' as const, topic })),
 		[related]
 	)
 
 	const estimateItemSize = useCallback((item: ListItem) => {
-		// Add button is always first
-		if (item.type === 'add-button') return 60
-
 		// Estimate height based on topic name and notes length
 		const { topic } = item
 		const baseHeight = 80
@@ -182,34 +175,6 @@ export function TopicRelatedPanel({
 
 	const renderItem = useCallback(
 		(item: ListItem) => {
-			if (item.type === 'add-button') {
-				return (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
-							<Card className='cursor-pointer border-2 border-dashed transition-colors hover:bg-muted/50'>
-								<CardContent className='flex items-center justify-center p-3'>
-									{isCreating ? (
-										<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
-									) : (
-										<Plus className='h-4 w-4 text-muted-foreground' />
-									)}
-								</CardContent>
-							</Card>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='start' side='right'>
-							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
-								<Search className='h-4 w-4' />
-								Search
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => handleCreateNew()}>
-								<SquarePen className='h-4 w-4' />
-								Create New
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				)
-			}
-
 			const handleRemoveRelationship = () => {
 				if (!topicId) return
 
@@ -251,41 +216,56 @@ export function TopicRelatedPanel({
 				/>
 			)
 		},
-		[
-			deleteRelationship,
-			topicId,
-			isCreating,
-			handleCreateNew,
-			handleRelatedSelect,
-			renderCard
-		]
+		[deleteRelationship, topicId, handleRelatedSelect, renderCard]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {
-		if (item.type === 'add-button') return 'add-button'
 		return item.topic.id
 	}, [])
 
 	return (
 		<>
 			<div className='flex flex-col'>
-				<div className='mb-3 flex items-center justify-between'>
+				<div className='flex items-center gap-2 border-b-1 pb-1'>
 					<Button
 						className='flex items-center gap-2 p-0'
 						onClick={onToggleCollapse}
 						variant='ghost'
 					>
 						<Link className='h-4 w-4' />
-						<span className='font-medium text-muted-foreground text-xs'>
+						<span className='font-medium text-md text-muted-foreground'>
 							Other related ({related.length})
 						</span>
 						<ChevronDown
 							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
 						/>
 					</Button>
+					<div className='flex-1' />
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
+							<Button className='gap-1' size='sm' variant='secondary'>
+								{isCreating ? (
+									<Loader2 className='h-4 w-4 animate-spin' />
+								) : (
+									<Plus className='h-4 w-4' />
+								)}
+								Add
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end' side='bottom'>
+							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
+								<Search className='h-4 w-4' />
+								Search
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => handleCreateNew()}>
+								<SquarePen className='h-4 w-4' />
+								Create New
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 				{!isCollapsed && (
-					<div className='flex-1'>
+					<div className='flex-1 py-6'>
 						<MasonryLayout
 							estimateItemSize={estimateItemSize}
 							gap={16}
