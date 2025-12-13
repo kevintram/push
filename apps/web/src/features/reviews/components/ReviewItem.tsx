@@ -16,6 +16,7 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
+import { cn } from '~/lib/utils'
 import { useDeleteReview } from '../api/deleteReview'
 import { useUpdateReview } from '../api/updateReview'
 import type { Review } from '../types/review.types'
@@ -133,9 +134,12 @@ export function ReviewItem({
 	}, [isOverdueValue, relativeDate])
 
 	return (
-		<Card className='rounded-none border-0 border-b bg-transparent py-2 shadow-none'>
+		<Card className='rounded-none border-0 border-b bg-transparent shadow-none'>
 			<CardContent
-				className={`rounded-md p-1 ${readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'}`}
+				className={cn(
+					'rounded-md py-2',
+					readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'
+				)}
 				onClick={handleReviewClick}
 			>
 				<div className='flex flex-col'>
