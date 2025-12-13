@@ -177,7 +177,7 @@ function TodayList({
 
 	if (allSectionsEmpty) {
 		return (
-			<div className='p-4'>
+			<PageLayout.Content>
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
@@ -213,12 +213,12 @@ function TodayList({
 						</div>
 					</EmptyHeader>
 				</Empty>
-			</div>
+			</PageLayout.Content>
 		)
 	}
 
 	return (
-		<div className='p-4'>
+		<PageLayout.Content>
 			{mergedSections.map(section => (
 				<ReviewSection
 					headingClassName={section.headingClassName}
@@ -233,6 +233,6 @@ function TodayList({
 					topicEntries={section.topicsData?.entries ?? []}
 				/>
 			))}
-		</div>
+		</PageLayout.Content>
 	)
 }

@@ -88,7 +88,7 @@ function RootTopicsList({
 
 	if (topics.length === 0) {
 		return (
-			<div className='p-4'>
+			<PageLayout.Content>
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
@@ -106,12 +106,12 @@ function RootTopicsList({
 						/>
 					</EmptyContent>
 				</Empty>
-			</div>
+			</PageLayout.Content>
 		)
 	}
 
 	return (
-		<div className='p-6'>
+		<PageLayout.Content className='max-w-screen p-6'>
 			<MasonryLayout
 				estimateItemSize={estimateItemSize}
 				gap={16}
@@ -120,6 +120,6 @@ function RootTopicsList({
 				minItemWidth={280}
 				renderItem={renderItem}
 			/>
-		</div>
+		</PageLayout.Content>
 	)
 }

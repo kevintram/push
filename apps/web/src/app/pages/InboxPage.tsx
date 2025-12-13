@@ -119,7 +119,7 @@ function InboxList({
 
 	if (topicList.length === 0) {
 		return (
-			<div className='p-4'>
+			<PageLayout.Content>
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
@@ -148,12 +148,12 @@ function InboxList({
 						</div>
 					</EmptyContent>
 				</Empty>
-			</div>
+			</PageLayout.Content>
 		)
 	}
 
 	return (
-		<div className='p-6'>
+		<PageLayout.Content className='max-w-screen p-6'>
 			<MasonryLayout
 				estimateItemSize={estimateItemSize}
 				gap={16}
@@ -163,6 +163,6 @@ function InboxList({
 				overscan={6}
 				renderItem={renderItem}
 			/>
-		</div>
+		</PageLayout.Content>
 	)
 }

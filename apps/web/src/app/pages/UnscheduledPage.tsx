@@ -121,7 +121,7 @@ function UnscheduledList({
 
 	if (!hasEntries) {
 		return (
-			<div className='p-4'>
+			<PageLayout.Content>
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
@@ -147,12 +147,12 @@ function UnscheduledList({
 						</div>
 					</EmptyContent>
 				</Empty>
-			</div>
+			</PageLayout.Content>
 		)
 	}
 
 	return (
-		<div className='p-4'>
+		<PageLayout.Content>
 			<div className='mb-2'>
 				<ReviewSection
 					headingClassName={reviewSection.headingClassName}
@@ -166,6 +166,6 @@ function UnscheduledList({
 					topicEntries={topicSection.entries}
 				/>
 			</div>
-		</div>
+		</PageLayout.Content>
 	)
 }

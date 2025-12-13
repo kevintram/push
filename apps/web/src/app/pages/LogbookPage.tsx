@@ -69,7 +69,7 @@ function LogbookList({
 
 	if (sections.length === 0) {
 		return (
-			<div className='p-4'>
+			<PageLayout.Content>
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
@@ -93,12 +93,12 @@ function LogbookList({
 						</div>
 					</EmptyContent>
 				</Empty>
-			</div>
+			</PageLayout.Content>
 		)
 	}
 
 	return (
-		<div className='p-4'>
+		<PageLayout.Content>
 			{sections.map(section => {
 				const isSectionCollapsed = collapsedSections[section.id] ?? false
 				return (
@@ -138,6 +138,6 @@ function LogbookList({
 					</div>
 				)
 			})}
-		</div>
+		</PageLayout.Content>
 	)
 }
