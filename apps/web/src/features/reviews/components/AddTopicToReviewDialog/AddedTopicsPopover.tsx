@@ -39,7 +39,8 @@ export function AddedTopicsPopover({
 					size='default'
 					variant='link'
 				>
-					{addedTopicsCount} topics added to review
+					{addedTopicsCount} topic{addedTopicsCount === 1 ? '' : 's'} added to
+					review
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
