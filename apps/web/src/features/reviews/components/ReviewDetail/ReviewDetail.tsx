@@ -14,6 +14,7 @@ import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
+import { cn } from '~/lib/utils'
 import { useDeleteReview } from '../../api/deleteReview'
 import { useUpdateReview } from '../../api/updateReview'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
@@ -33,13 +34,18 @@ interface ReviewDetailProps {
 	 * Content to render after the "more" dropdown (e.g., close/minimize buttons)
 	 */
 	headerAfterActions?: ReactNode
+	/**
+	 * Optional className to apply to the scroll container
+	 */
+	className?: string
 }
 
 export function ReviewDetail({
 	onDelete,
 	onNavigate,
 	headerBeforeActions,
-	headerAfterActions
+	headerAfterActions,
+	className
 }: ReviewDetailProps) {
 	const { review, isLoading } = use(ReviewContext)
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
@@ -208,7 +214,10 @@ export function ReviewDetail({
 			</div>
 
 			<div
-				className='scrollbar-track-transparent flex flex-1 gap-4 overflow-y-auto p-4'
+				className={cn(
+					'scrollbar-track-transparent flex w-full flex-1 gap-4 overflow-y-auto py-4 ',
+					className
+				)}
 				ref={scrollContainerRef}
 			>
 				<Checkbox
@@ -228,7 +237,7 @@ export function ReviewDetail({
 								value={description}
 							/>
 							<Textarea
-								className='!bg-transparent m-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
 								name='notes'
 								onChange={onNotesChange}
 								placeholder='Notes'

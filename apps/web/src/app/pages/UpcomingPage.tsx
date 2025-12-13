@@ -330,7 +330,7 @@ function UpcomingList({
 
 	if (allSectionsEmpty) {
 		return (
-			<div className='p-4'>
+			<PageLayout.Content>
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
@@ -356,12 +356,12 @@ function UpcomingList({
 						</div>
 					</EmptyContent>
 				</Empty>
-			</div>
+			</PageLayout.Content>
 		)
 	}
 
 	return (
-		<div className='p-4'>
+		<PageLayout.Content>
 			{allSections.map(section => (
 				<ReviewSection
 					id={section.id}
@@ -388,6 +388,6 @@ function UpcomingList({
 					</Button>
 				</div>
 			)}
-		</div>
+		</PageLayout.Content>
 	)
 }
