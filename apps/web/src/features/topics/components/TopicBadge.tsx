@@ -58,13 +58,15 @@ export function TopicBadge({
 				</Tooltip>
 			</TooltipProvider>
 			{onRemove && (
-				<Button
-					className='-top-2 dark:!bg-input dark:hover:!bg-destructive/90 absolute right-0 h-4 w-4 items-center justify-center border-0 p-0 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'
-					onClick={onRemove}
-					variant='outline'
-				>
-					<X className='h-4 w-4' />
-				</Button>
+				<div className='-translate-y-1/2 mask-fade-in absolute top-1/2 right-0 flex h-6 items-center justify-center rounded-r-full bg-secondary pl-4 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'>
+					<Button
+						className='h-4 w-4 text-muted-foreground hover:text-foreground'
+						onClick={onRemove}
+						variant='ghost'
+					>
+						<X className='h-4 w-4' />
+					</Button>
+				</div>
 			)}
 		</div>
 	)

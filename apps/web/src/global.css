@@ -140,3 +140,15 @@
 		scrollbar-color: rgba(200, 200, 200, 0.7) transparent;
 	}
 }
+
+@layer utilities {
+	.mask-fade-in {
+		mask-image: linear-gradient(90deg, transparent 0%, #000 50%, #000 100%);
+		-webkit-mask-image: linear-gradient(
+			90deg,
+			transparent 0%,
+			#000 50%,
+			#000 100%
+		);
+	}
+}
