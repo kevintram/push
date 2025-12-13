@@ -247,7 +247,8 @@ export function ReviewDetail({
 											className={cn(
 												'-translate-y-1.5',
 												isOverdueValue && 'text-red-600 dark:text-red-400',
-												relativeDate === 'Today' && 'text-blue-600 dark:text-blue-400'
+												relativeDate === 'Today' &&
+													'text-blue-600 dark:text-blue-400'
 											)}
 											size='sm'
 											variant='ghost'
