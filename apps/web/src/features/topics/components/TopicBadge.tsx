@@ -24,10 +24,9 @@ export function TopicBadge({
 	notes,
 	onRemove,
 	onClick,
-	maxWidth = 32,
 	rating
 }: TopicBadgeProps) {
-	const displayText = name ? name : notes
+	const displayText = name ?? notes ?? ''
 
 	return (
 		<div className='group/badge relative'>
@@ -35,32 +34,17 @@ export function TopicBadge({
 				<Tooltip delayDuration={700}>
 					<TooltipTrigger asChild={true}>
 						<Badge
-							className='flex min-w-16 cursor-pointer items-center gap-1 px-2 py-1 text-xs hover:bg-secondary/80'
+							className='flex h-6 min-w-16 max-w-32 cursor-pointer items-center justify-start gap-1 px-2 py-1 font-semibold text-xs hover:bg-secondary/80'
+							onClick={onClick}
 							variant='secondary'
 						>
 							{getRatingIcon(rating)}
-							<button
-								className='flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap border-0 bg-transparent p-0 text-center font-semibold text-md'
-								onClick={onClick}
-								style={{ maxWidth: `${maxWidth * 4}px` }}
-								type='button'
-							>
-								{displayText}
-							</button>
-							{onRemove && (
-								<Button
-									className='-top-2 dark:!bg-input dark:hover:!bg-destructive/90 absolute right-0 h-4 w-4 items-center justify-center border-0 p-0 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'
-									onClick={onRemove}
-									variant='outline'
-								>
-									<X className='h-4 w-4' />
-								</Button>
-							)}
+							<span className='min-w-0 flex-1 truncate'>{displayText}</span>
 						</Badge>
 					</TooltipTrigger>
 					<TooltipContent className='max-w-72' side='bottom'>
 						{name && (
-							<h3 className='break-word font-semibold text-md [overflow-wrap:anywhere]'>
+							<h3 className='break-word font-semibold [overflow-wrap:anywhere]'>
 								{name}
 							</h3>
 						)}
@@ -73,6 +57,17 @@ export function TopicBadge({
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
+			{onRemove && (
+				<div className='-translate-y-1/2 mask-fade-in absolute top-1/2 right-0 flex h-6 items-center justify-center rounded-r-full bg-secondary pl-4 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'>
+					<Button
+						className='h-4 w-4 text-muted-foreground hover:text-foreground'
+						onClick={onRemove}
+						variant='ghost'
+					>
+						<X className='h-4 w-4' />
+					</Button>
+				</div>
+			)}
 		</div>
 	)
 }

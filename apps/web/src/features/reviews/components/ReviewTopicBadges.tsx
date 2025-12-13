@@ -24,7 +24,6 @@ export function ReviewTopicBadges({ review }: ReviewTopicBadgesProps) {
 			{items.map(({ topic, rating }) => (
 				<TopicBadge
 					key={topic.id}
-					maxWidth={12}
 					name={topic.name}
 					notes={topic.notes}
 					rating={rating}
