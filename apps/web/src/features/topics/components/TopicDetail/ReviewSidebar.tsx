@@ -253,7 +253,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 								</span>
 								<br />
 								<span className='italic'>
-									{topic?.srs_enabled ? '(SRS enabled)' : '(SRS disabled)'}
+									{topic?.srs_enabled ? '(enabled)' : '(disabled)'}
 								</span>
 							</TooltipContent>
 						</Tooltip>
