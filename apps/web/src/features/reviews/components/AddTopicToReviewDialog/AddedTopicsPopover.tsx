@@ -31,7 +31,7 @@ export function AddedTopicsPopover({
 		<Popover onOpenChange={onOpenChange} open={isOpen}>
 			<PopoverTrigger asChild={true}>
 				<Button
-					className='px-2 font-semibold text-md'
+					className='px-0 font-semibold text-md'
 					onClick={e => {
 						e.stopPropagation()
 						onOpenChange(!isOpen)
@@ -39,7 +39,8 @@ export function AddedTopicsPopover({
 					size='default'
 					variant='link'
 				>
-					{addedTopicsCount} topics added to review
+					{addedTopicsCount} topic{addedTopicsCount === 1 ? '' : 's'} added to
+					review
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent
