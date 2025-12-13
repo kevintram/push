@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronDown, Plus, Tag } from 'lucide-react'
-import { use, useCallback, useState } from 'react'
+import { Plus, Tag } from 'lucide-react'
+import { use, useCallback } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
@@ -34,7 +34,6 @@ export function ReviewTopicsPanel({
 }: ReviewTopicsPanelProps) {
 	const { review } = use(ReviewContext)
 	const navigate = useNavigate()
-	const [isCollapsed, setIsCollapsed] = useState(false)
 
 	// Extract topics from reviews if available, otherwise fallback to topics
 	const topics = review?.topic_reviews?.map(tr => tr.topic) ?? []
@@ -125,33 +124,28 @@ export function ReviewTopicsPanel({
 				label={
 					<Button
 						className='flex items-center gap-2 p-0'
-						onClick={() => setIsCollapsed(!isCollapsed)}
-						variant='ghost'
+						onClick={handleAddTopic}
+						variant='link'
 					>
 						<Tag className='h-4 w-4' />
 						<span className='font-medium text-md text-muted-foreground'>
 							Topics covered ({topics.length})
 						</span>
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
 					</Button>
 				}
 			/>
-			{!isCollapsed && (
-				<div className='flex-1 py-6'>
-					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						gap={16}
-						getItemKey={getItemKey}
-						getScrollElement={getScrollElement}
-						items={items}
-						minItemWidth={MIN_WIDTH}
-						renderItem={renderItem}
-						scrollMargin={scrollMargin}
-					/>
-				</div>
-			)}
+			<div className='flex-1 py-6'>
+				<MasonryLayout
+					estimateItemSize={estimateItemSize}
+					gap={16}
+					getItemKey={getItemKey}
+					getScrollElement={getScrollElement}
+					items={items}
+					minItemWidth={MIN_WIDTH}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			</div>
 		</div>
 	)
 }
