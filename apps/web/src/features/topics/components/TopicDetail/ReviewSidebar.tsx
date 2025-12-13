@@ -77,19 +77,19 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	}, [reviews])
 
 	const createTopicReviewMutation = useCreateTopicReview()
-	const updateTopicMutation = useUpdateTopic()
+	const {mutateAsync: updateTopic, isPending: isUpdatingTopic} = useUpdateTopic()
 
 	const isCreatingTopicReview = createTopicReviewMutation.isPending
 
 	const handleSrsToggle = useCallback(
 		async (pressed: boolean) => {
 			if (!topic || readonly) return
-			await updateTopicMutation.mutateAsync({
+			await updateTopic({
 				id: topic.id,
 				srs_enabled: pressed
 			})
 		},
-		[topic, readonly, updateTopicMutation]
+		[topic, readonly, updateTopic]
 	)
 
 	const isCreatingReviewWithTopic = isCreatingTopicReview
@@ -223,9 +223,9 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 							<TooltipTrigger asChild={true}>
 								<button
 									className='flex cursor-pointer items-center gap-1 bg-transparent p-0'
-									disabled={readonly}
+									disabled={isUpdatingTopic}
 									onClick={e => {
-										if (!readonly && topic) {
+										if (!isUpdatingTopic && topic) {
 											handleSrsToggle(!topic.srs_enabled)
 											e.stopPropagation()
 										}
@@ -235,7 +235,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 									<Switch
 										checked={topic?.srs_enabled ?? true}
 										className='mx-0.5'
-										disabled={readonly}
+										disabled={isUpdatingTopic}
 										onCheckedChange={handleSrsToggle}
 										size='sm'
 									/>
