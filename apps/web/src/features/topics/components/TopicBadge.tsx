@@ -35,7 +35,7 @@ export function TopicBadge({
 				<Tooltip delayDuration={700}>
 					<TooltipTrigger asChild={true}>
 						<Badge
-							className='flex min-w-16 cursor-pointer items-center gap-1 px-2 py-1 text-xs hover:bg-secondary/80'
+							className='flex h-6 min-w-16 cursor-pointer items-center gap-1 px-2 py-1 text-xs hover:bg-secondary/80'
 							variant='secondary'
 						>
 							{getRatingIcon(rating)}
