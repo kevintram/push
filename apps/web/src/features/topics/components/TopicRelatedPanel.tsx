@@ -1,16 +1,9 @@
 import dayjs from 'dayjs'
-import {
-	ChevronDown,
-	Link,
-	Loader2,
-	Plus,
-	Search,
-	SquarePen
-} from 'lucide-react'
+import { Link, Loader2, Plus, Search, SquarePen } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import { Card, CardContent } from '~/components/ui/Card'
+import { CollapsiblePanel } from '~/components/ui/CollapsiblePanel'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -29,14 +22,12 @@ import { TopicCard } from './TopicCard'
 const MIN_WIDTH = 192
 const MIN_HEIGHT = 96
 
-type ListItem = { type: 'add-button' } | { type: 'related'; topic: Topic }
+type ListItem = { type: 'related'; topic: Topic }
 
 interface TopicRelatedPanelProps {
 	topicId: number | undefined
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
-	isCollapsed?: boolean
-	onToggleCollapse?: () => void
 	/**
 	 * Called when a related topic is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
@@ -59,12 +50,11 @@ export function TopicRelatedPanel({
 	topicId,
 	getScrollElement,
 	scrollMargin,
-	isCollapsed = false,
-	onToggleCollapse,
 	onRelatedSelect,
 	renderCard
 }: TopicRelatedPanelProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
+	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
 	const { data: related = [] } = useTopicsRelatedTo(topicId)
@@ -150,19 +140,13 @@ export function TopicRelatedPanel({
 		[topicId, createRelationship]
 	)
 
-	// Combine add button and related topics into a single array
+	// Map related topics into array
 	const items = useMemo<Array<ListItem>>(
-		() => [
-			{ type: 'add-button' },
-			...related.map(topic => ({ type: 'related' as const, topic }))
-		],
+		() => related.map(topic => ({ type: 'related' as const, topic })),
 		[related]
 	)
 
 	const estimateItemSize = useCallback((item: ListItem) => {
-		// Add button is always first
-		if (item.type === 'add-button') return 60
-
 		// Estimate height based on topic name and notes length
 		const { topic } = item
 		const baseHeight = 80
@@ -182,34 +166,6 @@ export function TopicRelatedPanel({
 
 	const renderItem = useCallback(
 		(item: ListItem) => {
-			if (item.type === 'add-button') {
-				return (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
-							<Card className='cursor-pointer border-2 border-dashed transition-colors hover:bg-muted/50'>
-								<CardContent className='flex items-center justify-center p-3'>
-									{isCreating ? (
-										<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
-									) : (
-										<Plus className='h-4 w-4 text-muted-foreground' />
-									)}
-								</CardContent>
-							</Card>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='start' side='right'>
-							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
-								<Search className='h-4 w-4' />
-								Search
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => handleCreateNew()}>
-								<SquarePen className='h-4 w-4' />
-								Create New
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				)
-			}
-
 			const handleRemoveRelationship = () => {
 				if (!topicId) return
 
@@ -251,54 +207,57 @@ export function TopicRelatedPanel({
 				/>
 			)
 		},
-		[
-			deleteRelationship,
-			topicId,
-			isCreating,
-			handleCreateNew,
-			handleRelatedSelect,
-			renderCard
-		]
+		[deleteRelationship, topicId, handleRelatedSelect, renderCard]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {
-		if (item.type === 'add-button') return 'add-button'
 		return item.topic.id
 	}, [])
 
 	return (
 		<>
-			<div className='flex flex-col'>
-				<div className='mb-3 flex items-center justify-between'>
-					<Button
-						className='flex items-center gap-2 p-0'
-						onClick={onToggleCollapse}
-						variant='ghost'
-					>
-						<Link className='h-4 w-4' />
-						<span className='font-medium text-muted-foreground text-xs'>
-							Other related ({related.length})
-						</span>
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
-					</Button>
-				</div>
-				{!isCollapsed && (
-					<div className='flex-1'>
-						<MasonryLayout
-							estimateItemSize={estimateItemSize}
-							gap={16}
-							getItemKey={getItemKey}
-							getScrollElement={getScrollElement}
-							items={items}
-							minItemWidth={MIN_WIDTH}
-							renderItem={renderItem}
-							scrollMargin={scrollMargin}
-						/>
-					</div>
-				)}
-			</div>
+			<CollapsiblePanel
+				addButton={
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
+							<Button className='gap-1' size='sm' variant='secondary'>
+								{isCreating ? (
+									<Loader2 className='h-4 w-4 animate-spin' />
+								) : (
+									<Plus className='h-4 w-4' />
+								)}
+								Add
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end' side='bottom'>
+							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
+								<Search className='h-4 w-4' />
+								Search
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => handleCreateNew()}>
+								<SquarePen className='h-4 w-4' />
+								Create New
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				}
+				count={related.length}
+				icon={<Link className='h-4 w-4' />}
+				isCollapsed={isCollapsed}
+				onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+				title='Other related'
+			>
+				<MasonryLayout
+					estimateItemSize={estimateItemSize}
+					gap={16}
+					getItemKey={getItemKey}
+					getScrollElement={getScrollElement}
+					items={items}
+					minItemWidth={MIN_WIDTH}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			</CollapsiblePanel>
 
 			<AddRelationshipDialog
 				isCreating={isCreating}

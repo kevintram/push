@@ -1,8 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
-import { use, useCallback } from 'react'
+import { Plus, Tag } from 'lucide-react'
+import { use, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
+import { CollapsiblePanel } from '~/components/ui/CollapsiblePanel'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import type { Rating } from '../../types/review.types'
@@ -33,6 +34,7 @@ export function ReviewTopicsPanel({
 }: ReviewTopicsPanelProps) {
 	const { review } = use(ReviewContext)
 	const navigate = useNavigate()
+	const [isCollapsed, setIsCollapsed] = useState(false)
 
 	// Extract topics from reviews if available, otherwise fallback to topics
 	const topics = review?.topic_reviews?.map(tr => tr.topic) ?? []
@@ -107,34 +109,34 @@ export function ReviewTopicsPanel({
 	}, [])
 
 	return (
-		<div className='flex flex-col'>
-			<div className='mb-3 flex items-center gap-2'>
-				<span className='font-medium text-muted-foreground text-xs'>
-					Topics covered ({topics.length})
-				</span>
-				<div className='flex-1' />
+		<CollapsiblePanel
+			addButton={
 				<Button
 					className='gap-1'
 					onClick={handleAddTopic}
 					size='sm'
-					variant='outline'
+					variant='secondary'
 				>
 					<Plus />
 					Add
 				</Button>
-			</div>
-			<div className='flex-1'>
-				<MasonryLayout
-					estimateItemSize={estimateItemSize}
-					gap={16}
-					getItemKey={getItemKey}
-					getScrollElement={getScrollElement}
-					items={items}
-					minItemWidth={MIN_WIDTH}
-					renderItem={renderItem}
-					scrollMargin={scrollMargin}
-				/>
-			</div>
-		</div>
+			}
+			count={topics.length}
+			icon={<Tag className='h-4 w-4' />}
+			isCollapsed={isCollapsed}
+			onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+			title='Topics covered'
+		>
+			<MasonryLayout
+				estimateItemSize={estimateItemSize}
+				gap={16}
+				getItemKey={getItemKey}
+				getScrollElement={getScrollElement}
+				items={items}
+				minItemWidth={MIN_WIDTH}
+				renderItem={renderItem}
+				scrollMargin={scrollMargin}
+			/>
+		</CollapsiblePanel>
 	)
 }

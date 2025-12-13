@@ -1,12 +1,5 @@
 import { Archive, ArchiveX, Inbox, X } from 'lucide-react'
-import {
-	type ReactNode,
-	use,
-	useCallback,
-	useEffect,
-	useRef,
-	useState
-} from 'react'
+import { type ReactNode, use, useCallback, useEffect, useRef } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	Popover,
@@ -156,10 +149,6 @@ export function TopicDetail({
 	const notesRef = useRef<HTMLTextAreaElement | null>(null)
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
 
-	// Collapse state for children and related panels
-	const [isChildrenCollapsed, setIsChildrenCollapsed] = useState(false)
-	const [isRelatedCollapsed, setIsRelatedCollapsed] = useState(false)
-
 	// focus on notes whenever selected topic changes
 	useEffect(() => {
 		if (notesRef.current && topic?.id) {
@@ -266,22 +255,14 @@ export function TopicDetail({
 						</div>
 						<TopicChildrenPanel
 							getScrollElement={() => scrollContainerRef.current}
-							isCollapsed={isChildrenCollapsed}
 							onChildSelect={onTopicNavigate}
-							onToggleCollapse={() =>
-								setIsChildrenCollapsed(!isChildrenCollapsed)
-							}
 							renderCard={renderChildCard}
 							topicId={topic.id}
 						/>
 						<div className='mt-4'>
 							<TopicRelatedPanel
 								getScrollElement={() => scrollContainerRef.current}
-								isCollapsed={isRelatedCollapsed}
 								onRelatedSelect={onTopicNavigate}
-								onToggleCollapse={() =>
-									setIsRelatedCollapsed(!isRelatedCollapsed)
-								}
 								renderCard={renderRelatedCard}
 								topicId={topic.id}
 							/>
