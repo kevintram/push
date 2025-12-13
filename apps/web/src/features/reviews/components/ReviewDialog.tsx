@@ -70,6 +70,7 @@ export function ReviewDialog() {
 			>
 				<ReviewContext value={contextValue}>
 					<ReviewDetail
+						className='p-4'
 						headerAfterActions={headerActions}
 						onDelete={handleDelete}
 						onNavigate={handleNavigate}

@@ -10,6 +10,7 @@ import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
+import { cn } from '~/lib/utils'
 import { useDeleteTopic } from '../../api/deleteTopic'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
@@ -70,6 +71,10 @@ interface TopicDetailProps {
 		onRemove: () => void,
 		onClick: () => void
 	) => ReactNode
+	/**
+	 * Optional className to apply to the scroll container
+	 */
+	className?: string
 }
 
 export function TopicDetail({
@@ -82,7 +87,8 @@ export function TopicDetail({
 	onDelete,
 	onTopicNavigate,
 	renderChildCard,
-	renderRelatedCard
+	renderRelatedCard,
+	className
 }: TopicDetailProps) {
 	// Get topic from context if not provided via props
 	const contextValue = use(TopicContext)
@@ -175,7 +181,10 @@ export function TopicDetail({
 				/>
 				<SidebarHolder className='flex min-h-0 flex-1'>
 					<div
-						className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll px-6 py-4'
+						className={cn(
+							'scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll px-6 py-4',
+							className
+						)}
 						ref={scrollContainerRef}
 					>
 						{(topic.archived || topic.inboxed) && (
@@ -238,14 +247,14 @@ export function TopicDetail({
 						)}
 						<div className='pb-4'>
 							<Textarea
-								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 font-semibold focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onChange={onNameChange}
 								placeholder='Title'
 								spellCheck={false}
 								value={title}
 							/>
 							<Textarea
-								className='!bg-transparent m-0 w-full max-w-2xl resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
 								name='notes'
 								onChange={onNotesChange}
 								placeholder='Notes'

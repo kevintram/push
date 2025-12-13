@@ -103,6 +103,7 @@ export function TopicDetailInReviewMode({
 	return (
 		<TopicContext value={topicContextValue}>
 			<TopicDetail
+				className='mx-auto max-w-5xl'
 				headerBeforeActions={
 					<>
 						<Button

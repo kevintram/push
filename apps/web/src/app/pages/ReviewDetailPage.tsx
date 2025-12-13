@@ -47,6 +47,7 @@ export function ReviewDetailPage({ reviewId }: ReviewDetailPageProps) {
 	return (
 		<ReviewContext value={contextValue}>
 			<ReviewDetail
+				className='mx-auto max-w-5xl'
 				headerBeforeActions={headerBeforeActions}
 				onDelete={handleDelete}
 			/>

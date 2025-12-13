@@ -60,6 +60,7 @@ export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
 	return (
 		<TopicContext value={contextValue}>
 			<TopicDetail
+				className='mx-auto max-w-5xl'
 				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
 				onDelete={handleDelete}
