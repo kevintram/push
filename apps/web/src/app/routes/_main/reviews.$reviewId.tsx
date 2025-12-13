@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ReviewPage } from '~/app/pages/ReviewPage'
+import { ReviewDetailPage } from '~/app/pages/ReviewDetailPage'
 
 export const Route = createFileRoute('/_main/reviews/$reviewId')({
 	component: RouteComponent
@@ -7,5 +7,5 @@ export const Route = createFileRoute('/_main/reviews/$reviewId')({
 
 function RouteComponent() {
 	const { reviewId } = Route.useParams()
-	return <ReviewPage reviewId={reviewId} />
+	return <ReviewDetailPage reviewId={reviewId} />
 }

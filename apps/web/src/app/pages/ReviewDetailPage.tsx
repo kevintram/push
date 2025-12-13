@@ -6,11 +6,11 @@ import { useReviewWithTopics } from '~/features/reviews/api/getReview'
 import { ReviewDetail } from '~/features/reviews/components/ReviewDetail/ReviewDetail'
 import { ReviewContext } from '~/features/reviews/stores/SelectedReviewContext'
 
-interface ReviewPageProps {
+interface ReviewDetailPageProps {
 	reviewId: string
 }
 
-export function ReviewPage({ reviewId }: ReviewPageProps) {
+export function ReviewDetailPage({ reviewId }: ReviewDetailPageProps) {
 	const router = useRouter()
 
 	const { review, isLoading } = useReviewWithTopics(
