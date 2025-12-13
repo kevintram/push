@@ -121,19 +121,17 @@ function LayoutContent() {
 			{/* Header */}
 			<div className='flex-shrink-0 border-b py-2'>
 				<div className='flex items-center gap-4 px-4'>
+					<Button onClick={handleClose} size='icon' variant='ghost'>
+						<X className='h-4 w-4' />
+					</Button>
+
 					<AddedTopicsPopover
 						isOpen={isPopoverOpen}
 						onOpenChange={setIsPopoverOpen}
 						onTopicClick={handleTopicClick}
 					/>
 
-					<Button
-						className='h-6 w-6 p-0'
-						onClick={handleHome}
-						size='sm'
-						title='Home'
-						variant='ghost'
-					>
+					<Button onClick={handleHome} size='icon' title='Home' variant='ghost'>
 						<Home className='h-4 w-4' />
 					</Button>
 
@@ -153,10 +151,6 @@ function LayoutContent() {
 					>
 						<SquarePen className='h-4 w-4' />
 						Create New
-					</Button>
-
-					<Button onClick={handleClose} size='default' variant='ghost'>
-						<X className='h-4 w-4' />
 					</Button>
 				</div>
 			</div>
