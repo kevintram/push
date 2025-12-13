@@ -77,7 +77,8 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	}, [reviews])
 
 	const createTopicReviewMutation = useCreateTopicReview()
-	const {mutateAsync: updateTopic, isPending: isUpdatingTopic} = useUpdateTopic()
+	const { mutateAsync: updateTopic, isPending: isUpdatingTopic } =
+		useUpdateTopic()
 
 	const isCreatingTopicReview = createTopicReviewMutation.isPending
 
@@ -218,46 +219,44 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 					)}
 				</div>
 				<div className='flex items-center text-muted-foreground text-xs'>
-					<div className='flex items-center gap-1 rounded-md border-1 p-1.5'>
-						<Tooltip>
-							<TooltipTrigger asChild={true}>
-								<button
-									className='flex cursor-pointer items-center gap-1 bg-transparent p-0'
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<button
+								className='flex cursor-pointer items-center gap-1 rounded-lg border-1 bg-secondary p-1.5 hover:bg-secondary/80'
+								disabled={isUpdatingTopic}
+								onClick={e => {
+									if (!isUpdatingTopic && topic) {
+										handleSrsToggle(!topic.srs_enabled)
+										e.stopPropagation()
+									}
+								}}
+								type='button'
+							>
+								<Switch
+									checked={topic?.srs_enabled ?? true}
+									className='mx-0.5'
 									disabled={isUpdatingTopic}
-									onClick={e => {
-										if (!isUpdatingTopic && topic) {
-											handleSrsToggle(!topic.srs_enabled)
-											e.stopPropagation()
-										}
-									}}
-									type='button'
-								>
-									<Switch
-										checked={topic?.srs_enabled ?? true}
-										className='mx-0.5'
-										disabled={isUpdatingTopic}
-										onCheckedChange={handleSrsToggle}
-										size='sm'
-									/>
-									<Flag className={`h-3 w-3 ${dueDateColorClass}`} />
-									<span className={dueDateColorClass}>
-										{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
-									</span>
-								</button>
-							</TooltipTrigger>
-							<TooltipContent className='text-center' side='bottom'>
-								<span>
-									{topic?.due
-										? `Due on ${dayjs(topic.due).format('MMMM D, YYYY')}`
-										: 'No due date'}
+									onCheckedChange={handleSrsToggle}
+									size='sm'
+								/>
+								<Flag className={`h-3 w-3 ${dueDateColorClass}`} />
+								<span className={dueDateColorClass}>
+									{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
 								</span>
-								<br />
-								<span className='italic'>
-									{topic?.srs_enabled ? '(enabled)' : '(disabled)'}
-								</span>
-							</TooltipContent>
-						</Tooltip>
-					</div>
+							</button>
+						</TooltipTrigger>
+						<TooltipContent className='text-center' side='bottom'>
+							<span>
+								{topic?.due
+									? `Due on ${dayjs(topic.due).format('MMMM D, YYYY')}`
+									: 'No due date'}
+							</span>
+							<br />
+							<span className='italic'>
+								{topic?.srs_enabled ? '(enabled)' : '(disabled)'}
+							</span>
+						</TooltipContent>
+					</Tooltip>
 					&nbsp;·&nbsp;
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
