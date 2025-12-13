@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
+import { ChevronDown, Plus, Tag } from 'lucide-react'
 import { use, useCallback } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
@@ -21,6 +21,8 @@ type ListItem = {
 interface ReviewTopicsPanelProps {
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
+	isCollapsed?: boolean
+	onToggleCollapse?: () => void
 	onRemoveTopicReview: (topicReviewId: number) => void
 	onNavigate?: () => void | Promise<void>
 }
@@ -28,6 +30,8 @@ interface ReviewTopicsPanelProps {
 export function ReviewTopicsPanel({
 	getScrollElement,
 	scrollMargin,
+	isCollapsed = false,
+	onToggleCollapse,
 	onRemoveTopicReview,
 	onNavigate
 }: ReviewTopicsPanelProps) {
@@ -59,11 +63,11 @@ export function ReviewTopicsPanel({
 
 	const items: Array<ListItem> = review?.topic_reviews
 		? review.topic_reviews.map(tr => ({
-				type: 'topic' as const,
-				topic: tr.topic,
-				rating: tr.rating,
-				topicReviewId: tr.id
-			}))
+			type: 'topic' as const,
+			topic: tr.topic,
+			rating: tr.rating,
+			topicReviewId: tr.id
+		}))
 		: []
 
 	const estimateItemSize = useCallback((item: ListItem) => {
@@ -108,33 +112,45 @@ export function ReviewTopicsPanel({
 
 	return (
 		<div className='flex flex-col'>
-			<div className='mb-3 flex items-center gap-2'>
-				<span className='font-medium text-muted-foreground text-xs'>
-					Topics covered ({topics.length})
-				</span>
+			<div className='flex items-center gap-2 border-b-1 pb-1'>
+				<Button
+					className='flex items-center gap-2 p-0'
+					onClick={onToggleCollapse}
+					variant='ghost'
+				>
+					<Tag className='h-4 w-4' />
+					<span className='font-medium text-md text-muted-foreground'>
+						Topics covered ({topics.length})
+					</span>
+					<ChevronDown
+						className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+					/>
+				</Button>
 				<div className='flex-1' />
 				<Button
 					className='gap-1'
 					onClick={handleAddTopic}
 					size='sm'
-					variant='outline'
+					variant='secondary'
 				>
 					<Plus />
 					Add
 				</Button>
 			</div>
-			<div className='flex-1'>
-				<MasonryLayout
-					estimateItemSize={estimateItemSize}
-					gap={16}
-					getItemKey={getItemKey}
-					getScrollElement={getScrollElement}
-					items={items}
-					minItemWidth={MIN_WIDTH}
-					renderItem={renderItem}
-					scrollMargin={scrollMargin}
-				/>
-			</div>
+			{!isCollapsed && (
+				<div className='flex-1 py-6'>
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						gap={16}
+						getItemKey={getItemKey}
+						getScrollElement={getScrollElement}
+						items={items}
+						minItemWidth={MIN_WIDTH}
+						renderItem={renderItem}
+						scrollMargin={scrollMargin}
+					/>
+				</div>
+			)}
 		</div>
 	)
 }
