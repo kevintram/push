@@ -3,6 +3,7 @@ import { Home, SquarePen, X } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { SearchInput } from '~/components/search/SearchInput'
 import { Button } from '~/components/ui/Button'
+import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useReviewWithTopics } from '~/features/reviews/api/getReview'
 import { AddedTopicsPopover } from '~/features/reviews/components/AddTopicToReviewDialog/AddedTopicsPopover'
 import { AddTopicSearchDialog } from '~/features/reviews/components/AddTopicToReviewDialog/AddTopicSearchDialog'
@@ -11,6 +12,7 @@ import {
 	useAddTopicToReview
 } from '~/features/reviews/components/AddTopicToReviewDialog/AddTopicToReviewContext'
 import { useAddFlowHistory } from '~/features/reviews/components/AddTopicToReviewDialog/useAddFlowHistory'
+import type { Rating } from '~/features/reviews/types/review.types'
 import type { Topic } from '~/features/topics/types/topic.types'
 
 export const Route = createFileRoute('/reviews/$reviewId_/add')({
@@ -32,7 +34,8 @@ function LayoutContent() {
 	const navigate = Route.useNavigate()
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-	const { addTopicToReview, isCreatingTopicReview } = useAddTopicToReview()
+	const { review, isReviewCompleted } = useAddTopicToReview()
+	const createTopicReviewMutation = useCreateTopicReview()
 	const { reviewId } = Route.useParams()
 	const { exitFlow } = useAddFlowHistory()
 
@@ -73,16 +76,21 @@ function LayoutContent() {
 	}, [])
 
 	const onCreateNewClicked = useCallback(async () => {
+		if (!review) return
+
 		const trimmedQuery = searchQuery?.trim()
+		const ratingValue: Rating | null = isReviewCompleted ? 'good' : null
 
 		try {
-			const topicReview = await addTopicToReview({
+			const topicReview = await createTopicReviewMutation.mutateAsync({
+				review_id: review.id,
 				topic: {
 					name: '',
 					notes: trimmedQuery || '',
 					archived: false,
 					inboxed: true
-				}
+				},
+				rating: ratingValue
 			})
 
 			// Close search if open
@@ -96,7 +104,14 @@ function LayoutContent() {
 				}
 			})
 		} catch (_e) {}
-	}, [searchQuery, addTopicToReview, navigate, reviewId])
+	}, [
+		searchQuery,
+		review,
+		isReviewCompleted,
+		createTopicReviewMutation,
+		navigate,
+		reviewId
+	])
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -144,7 +159,7 @@ function LayoutContent() {
 					/>
 
 					<Button
-						disabled={isCreatingTopicReview}
+						disabled={createTopicReviewMutation.isPending}
 						onClick={onCreateNewClicked}
 						size='default'
 						variant='secondary'

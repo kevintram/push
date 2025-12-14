@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Plus } from 'lucide-react'
+import { Check, ChevronDown, Loader2, Plus } from 'lucide-react'
 import { useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
@@ -12,6 +12,7 @@ import type { Rating } from '../../types/review.types'
 
 interface TopicReviewStatusButton {
 	isAdded: boolean
+	isLoading: boolean
 	isReviewCompleted: boolean
 	rating?: Rating | null
 	onAdd: () => void
@@ -21,6 +22,7 @@ interface TopicReviewStatusButton {
 
 export function TopicReviewStatusButton({
 	isAdded,
+	isLoading,
 	isReviewCompleted,
 	rating,
 	onAdd,
@@ -39,13 +41,14 @@ export function TopicReviewStatusButton({
 		return (
 			<Button
 				className='!p-2 h-6 gap-1 rounded-lg'
+				disabled={isLoading}
 				onClick={e => {
 					e.stopPropagation()
 					onAdd()
 				}}
 				variant='secondary'
 			>
-				<Plus />
+				{isLoading ? <Loader2 className='animate-spin' /> : <Plus />}
 				Add
 			</Button>
 		)
@@ -56,13 +59,14 @@ export function TopicReviewStatusButton({
 		return (
 			<Button
 				className='!p-2 h-6 gap-1 rounded-lg text-green-400'
+				disabled={isLoading}
 				onClick={e => {
 					e.stopPropagation()
 					onRemove()
 				}}
 				variant='secondary'
 			>
-				<Check />
+				{isLoading ? <Loader2 className='animate-spin' /> : <Check />}
 				Added
 			</Button>
 		)
@@ -71,13 +75,18 @@ export function TopicReviewStatusButton({
 	// State 3: Added and review completed - show rating dropdown
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild={true}>
+			<DropdownMenuTrigger asChild={true} disabled={isLoading}>
 				<Button
 					className='!p-2 h-6 gap-1 rounded-lg text-green-400 capitalize'
+					disabled={isLoading}
 					onClick={e => e.stopPropagation()}
 					variant='secondary'
 				>
-					{getRatingIcon(rating)}
+					{isLoading ? (
+						<Loader2 className='animate-spin' />
+					) : (
+						getRatingIcon(rating)
+					)}
 					{rating || 'Rate'}
 					<ChevronDown className='h-3 w-3' />
 				</Button>

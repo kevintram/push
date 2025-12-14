@@ -5,6 +5,7 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
+import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { TopicReview } from '../../types/review.types'
 import { ReviewTopicCard } from '../ReviewDetail/ReviewTopicCard'
@@ -23,9 +24,14 @@ export function AddedTopicsPopover({
 	onOpenChange,
 	onTopicClick
 }: AddedTopicsPopoverProps) {
-	const { review, removeTopicReviewById } = useAddTopicToReview()
+	const { review } = useAddTopicToReview()
+	const deleteTopicReviewMutation = useDeleteTopicReview()
 	const topicReviews = review?.topic_reviews
 	const addedTopicsCount = topicReviews?.length ?? 0
+
+	const handleRemoveTopicReview = (topicReviewId: number) => {
+		deleteTopicReviewMutation.mutateAsync(topicReviewId)
+	}
 
 	return (
 		<Popover onOpenChange={onOpenChange} open={isOpen}>
@@ -69,7 +75,7 @@ export function AddedTopicsPopover({
 						renderItem={(topicReview: TopicReview) => (
 							<ReviewTopicCard
 								minHeight={MIN_HEIGHT}
-								onRemoveFromReview={removeTopicReviewById}
+								onRemoveFromReview={handleRemoveTopicReview}
 								onTopicClick={onTopicClick}
 								rating={topicReview.rating}
 								topic={topicReview.topic}

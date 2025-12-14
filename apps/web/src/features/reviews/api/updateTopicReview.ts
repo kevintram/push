@@ -39,11 +39,9 @@ export function useUpdateTopicReview() {
 	return useMutation({
 		mutationFn: ({ id, rating }: { id: number; rating: Rating }) =>
 			updateTopicReview(id, rating),
-		onSuccess: async () => {
-			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
-				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
-			])
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: topicKeys.all })
+			queryClient.invalidateQueries({ queryKey: reviewKeys.all })
 		}
 	})
 }

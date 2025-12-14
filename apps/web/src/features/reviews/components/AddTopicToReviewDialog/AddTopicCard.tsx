@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
+import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
+import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
+import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
+import type { Rating } from '../../types/review.types'
 import { useAddTopicToReview } from './AddTopicToReviewContext'
 import { TopicReviewStatusButton } from './ReviewStatusButton'
 
@@ -23,14 +27,13 @@ export function AddTopicCard({
 	onTopicUpdateSuccess
 }: AddTopicCardProps) {
 	// Get shared state from context
-	const {
-		isReviewCompleted,
-		isTopicAdded,
-		getTopicReview,
-		addTopicToReview: createTopicReview,
-		removeTopicFromReview,
-		updateRating
-	} = useAddTopicToReview()
+	const { review, isReviewCompleted, isTopicAdded, getTopicReview } =
+		useAddTopicToReview()
+
+	// Mutations
+	const createTopicReviewMutation = useCreateTopicReview()
+	const deleteTopicReviewMutation = useDeleteTopicReview()
+	const updateTopicReviewMutation = useUpdateTopicReview()
 
 	const isAdded = isTopicAdded(topic.id)
 	const topicReviewData = getTopicReview(topic.id)
@@ -39,20 +42,34 @@ export function AddTopicCard({
 
 	// Click handlers
 	const handleAdd = useCallback(() => {
-		createTopicReview({ topicId: topic.id })
-	}, [createTopicReview, topic])
+		if (!review) return
+
+		const ratingValue: Rating | null = isReviewCompleted ? 'good' : null
+		const payload = {
+			review_id: review.id,
+			topic_id: topic.id,
+			rating: ratingValue
+		}
+
+		createTopicReviewMutation.mutateAsync(payload)
+	}, [review, isReviewCompleted, topic.id, createTopicReviewMutation])
 
 	const handleRemove = useCallback(() => {
-		removeTopicFromReview(topic)
-	}, [removeTopicFromReview, topic])
+		if (topicReviewId) {
+			deleteTopicReviewMutation.mutateAsync(topicReviewId)
+		}
+	}, [topicReviewId, deleteTopicReviewMutation])
 
 	const handleRatingChange = useCallback(
-		(newRating: Parameters<typeof updateRating>[1]) => {
+		(newRating: Rating) => {
 			if (topicReviewId) {
-				updateRating(topicReviewId, newRating)
+				updateTopicReviewMutation.mutateAsync({
+					id: topicReviewId,
+					rating: newRating
+				})
 			}
 		},
-		[topicReviewId, updateRating]
+		[topicReviewId, updateTopicReviewMutation]
 	)
 
 	return (
@@ -60,6 +77,11 @@ export function AddTopicCard({
 			headerLeft={
 				<TopicReviewStatusButton
 					isAdded={isAdded}
+					isLoading={
+						createTopicReviewMutation.isPending ||
+						deleteTopicReviewMutation.isPending ||
+						updateTopicReviewMutation.isPending
+					}
 					isReviewCompleted={isReviewCompleted}
 					onAdd={handleAdd}
 					onRatingChange={handleRatingChange}
