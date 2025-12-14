@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -68,7 +69,7 @@ export function TopicRelatedPanel({
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
-	const { data: related = [] } = useTopicsRelatedTo(topicId)
+	const { data: related = [], isLoading } = useTopicsRelatedTo(topicId)
 
 	const deleteRelationship = useDeleteTopicOtherRelationship()
 	const createRelationship = useCreateTopicOtherRelationship()
@@ -299,16 +300,24 @@ export function TopicRelatedPanel({
 			/>
 			{!isCollapsed && (
 				<div className='flex-1 py-6'>
-					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						gap={16}
-						getItemKey={getItemKey}
-						getScrollElement={getScrollElement}
-						items={items}
-						minItemWidth={MIN_WIDTH}
-						renderItem={renderItem}
-						scrollMargin={scrollMargin}
-					/>
+					{isLoading ? (
+						<MasonryLayoutSkeleton
+							count={6}
+							gap={16}
+							minItemWidth={MIN_WIDTH}
+						/>
+					) : (
+						<MasonryLayout
+							estimateItemSize={estimateItemSize}
+							gap={16}
+							getItemKey={getItemKey}
+							getScrollElement={getScrollElement}
+							items={items}
+							minItemWidth={MIN_WIDTH}
+							renderItem={renderItem}
+							scrollMargin={scrollMargin}
+						/>
+					)}
 				</div>
 			)}
 

@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Loader2, Plus, Search, SquarePen, User2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -8,11 +9,13 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import { Skeleton } from '~/components/ui/Skeleton'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicParents } from '../api/getTopicParents'
+import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { TopicBadge } from './TopicBadge'
@@ -32,8 +35,9 @@ export function TopicParentsPanel({
 }: TopicParentsPanelProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
+	const queryClient = useQueryClient()
 
-	const { data: parents = [] } = useTopicParents(topicId)
+	const { data: parents = [], isLoading } = useTopicParents(topicId)
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
@@ -114,6 +118,23 @@ export function TopicParentsPanel({
 		[topicId, createRelationship, handleParentSelect]
 	)
 
+	const handleParentMouseEnter = useCallback(
+		(parent: Topic) => {
+			// Store parent topic in query cache for prefetching
+			queryClient.setQueryData(topicKeys.detail(parent.id), parent)
+			if (parent.parents && parent.parents.length > 0) {
+				queryClient.setQueryData(topicKeys.parents(parent.id), parent.parents)
+			}
+			if (parent.children && parent.children.length > 0) {
+				queryClient.setQueryData(topicKeys.children(parent.id), parent.children)
+			}
+			if (parent.related && parent.related.length > 0) {
+				queryClient.setQueryData(topicKeys.related(parent.id), parent.related)
+			}
+		},
+		[queryClient]
+	)
+
 	return (
 		<>
 			<div className='flex flex-wrap items-center gap-2'>
@@ -123,21 +144,30 @@ export function TopicParentsPanel({
 						Parents ({parents.length})
 					</span>
 				</div>
-				{parents.map(parent => (
-					<TopicBadge
-						key={parent.id}
-						name={parent.name}
-						notes={parent.notes}
-						onClick={() => handleParentSelect(parent.id)}
-						onRemove={() => {
-							if (!topicId) return
-							deleteRelationship.mutate({
-								parent: parent.id,
-								child: topicId
-							})
-						}}
-					/>
-				))}
+				{isLoading ? (
+					<>
+						<Skeleton className='h-6 w-20 rounded-full' />
+						<Skeleton className='h-6 w-24 rounded-full' />
+						<Skeleton className='h-6 w-16 rounded-full' />
+					</>
+				) : (
+					parents.map(parent => (
+						<TopicBadge
+							key={parent.id}
+							name={parent.name}
+							notes={parent.notes}
+							onClick={() => handleParentSelect(parent.id)}
+							onMouseEnter={() => handleParentMouseEnter(parent)}
+							onRemove={() => {
+								if (!topicId) return
+								deleteRelationship.mutate({
+									parent: parent.id,
+									child: topicId
+								})
+							}}
+						/>
+					))
+				)}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild={true} disabled={isCreating}>
 						<Badge
