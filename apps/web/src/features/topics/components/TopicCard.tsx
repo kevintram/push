@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Archive, Baby, Inbox, User2 } from 'lucide-react'
 import type { KeyboardEvent } from 'react'
 import { useCallback, useMemo } from 'react'
@@ -8,6 +9,7 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
+import { topicKeys } from '~/features/topics/api/queryKeys'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
@@ -30,6 +32,7 @@ export function TopicCard({
 	headerLeft,
 	headerRight
 }: TopicCardProps) {
+	const queryClient = useQueryClient()
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
 
@@ -60,11 +63,17 @@ export function TopicCard({
 		[onTopicClick, topic]
 	)
 
+	const handleMouseEnter = useCallback(() => {
+		// Store topic in query cache for prefetching
+		queryClient.setQueryData(topicKeys.detail(topic.id), topic)
+	}, [queryClient, topic])
+
 	return (
 		<Card
 			className='cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 			onClick={handleActivate}
 			onKeyDown={handleKeyDown}
+			onMouseEnter={handleMouseEnter}
 			role='button'
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
