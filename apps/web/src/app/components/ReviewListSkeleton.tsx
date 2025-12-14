@@ -1,3 +1,4 @@
+import { PageLayout } from '~/app/layouts/PageLayout'
 import { Skeleton } from '~/components/ui/Skeleton'
 
 function ReviewItemSkeleton() {
@@ -34,20 +35,63 @@ function ReviewItemSkeleton() {
 	)
 }
 
+function TopicCardSkeleton() {
+	return (
+		<div className='rounded-lg border p-3'>
+			<div className='flex flex-col gap-2'>
+				{/* Topic name */}
+				<Skeleton className='h-5 w-32' />
+				{/* Topic notes */}
+				<Skeleton className='h-4 w-full' />
+				<Skeleton className='h-4 w-3/4' />
+			</div>
+		</div>
+	)
+}
+
 function SectionSkeleton() {
 	return (
-		<div className='mb-4'>
-			{/* Section header */}
-			<div className='flex items-center justify-between py-2'>
-				<Skeleton className='h-6 w-32' />
-				<Skeleton className='h-8 w-8 rounded' />
+		<div className='mb-2'>
+			{/* Section header with title and chevron */}
+			<div className='flex items-center justify-between'>
+				<div className='flex items-center gap-2'>
+					<Skeleton className='h-6 w-32' />
+					<Skeleton className='h-5 w-5' />
+				</div>
 			</div>
 
-			{/* Section items */}
-			<div className='space-y-4'>
-				<ReviewItemSkeleton />
-				<ReviewItemSkeleton />
-				<ReviewItemSkeleton />
+			{/* Single column content with left border */}
+			<div className='mt-2 mb-10 ml-5 flex flex-col gap-4 border-border border-l-2 pl-2'>
+				{/* Reviews Subsection */}
+				<div className='flex flex-col'>
+					<div className='flex items-center gap-2'>
+						<Skeleton className='h-5 w-28' />
+						<Skeleton className='h-4 w-4' />
+					</div>
+					<div className='px-4'>
+						<ReviewItemSkeleton />
+						<ReviewItemSkeleton />
+						<ReviewItemSkeleton />
+					</div>
+				</div>
+
+				{/* Topics Subsection */}
+				<div className='flex flex-col'>
+					<div className='flex items-center gap-2'>
+						<Skeleton className='h-5 w-24' />
+						<Skeleton className='h-4 w-4' />
+					</div>
+					<div
+						className='grid gap-4 p-4 pb-0'
+						style={{
+							gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))'
+						}}
+					>
+						<TopicCardSkeleton />
+						<TopicCardSkeleton />
+						<TopicCardSkeleton />
+					</div>
+				</div>
 			</div>
 		</div>
 	)
@@ -55,9 +99,9 @@ function SectionSkeleton() {
 
 export function ReviewListSkeleton() {
 	return (
-		<div className='p-4'>
+		<PageLayout.Content>
 			<SectionSkeleton />
 			<SectionSkeleton />
-		</div>
+		</PageLayout.Content>
 	)
 }
