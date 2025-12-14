@@ -236,7 +236,7 @@ export function TopicDetail({
 						)}
 						<div className='pb-4'>
 							<Textarea
-								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onChange={onNameChange}
 								placeholder='Title'
 								spellCheck={false}

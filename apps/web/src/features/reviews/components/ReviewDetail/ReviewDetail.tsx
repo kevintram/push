@@ -219,7 +219,7 @@ export function ReviewDetail({
 					<div className='flex items-start justify-between gap-4 pb-4'>
 						<div className='flex flex-1 flex-col'>
 							<Textarea
-								className='!bg-transparent break-word m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-bold focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								className='!bg-transparent break-word m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onChange={onDescriptionChange}
 								placeholder='Description'
 								ref={descriptionRef}
