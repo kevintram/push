@@ -1,6 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { MoreHorizontal } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
+import { topicKeys } from '../../api/queryKeys'
 import type { Topic } from '../../types/topic.types'
 import { TopicActionMenu } from '../TopicActionMenu'
 import { TopicParentsPanel } from '../TopicParentsPanel'
@@ -34,6 +37,15 @@ export function TopicDetailHeader({
 	afterActions,
 	onParentSelect
 }: TopicDetailHeaderProps) {
+	const queryClient = useQueryClient()
+
+	const handleTopicUpdateSuccess = useCallback(
+		(updatedTopic: Topic) => {
+			queryClient.setQueryData(topicKeys.detail(updatedTopic.id), updatedTopic)
+		},
+		[queryClient]
+	)
+
 	return (
 		<div className='sticky top-0 z-10 w-full border-b'>
 			<div className='flex items-center justify-between gap-4 px-2 py-1'>
@@ -50,6 +62,7 @@ export function TopicDetailHeader({
 
 					<TopicActionMenu
 						onDelete={onDelete}
+						onTopicUpdateSuccess={handleTopicUpdateSuccess}
 						topic={topic}
 						trigger={
 							<Button

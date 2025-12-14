@@ -34,18 +34,26 @@ export async function updateTopic(input: UpdateTopicInput) {
 	}
 }
 
-export function useUpdateTopic() {
+export function useUpdateTopic(
+	onSuccessOverride?: (
+		data: v.InferOutput<typeof TopicSchema>
+	) => Promise<unknown> | unknown
+) {
 	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: updateTopic,
 		onSuccess: async data => {
-			queryClient.setQueryData(topicKeys.detail(data.id), data)
-			await Promise.all([
+			if (onSuccessOverride) {
+				await onSuccessOverride(data)
+			} else {
 				queryClient.invalidateQueries({
-					queryKey: reviewKeys.list({ topicId: data.id })
+					queryKey: topicKeys.all
 				})
-			])
+				queryClient.invalidateQueries({
+					queryKey: reviewKeys.all
+				})
+			}
 		}
 	})
 }

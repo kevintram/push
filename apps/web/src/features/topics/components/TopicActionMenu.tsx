@@ -25,6 +25,7 @@ interface TopicActionMenuProps {
 	children?: React.ReactNode
 	onDelete?: () => void
 	trigger?: React.ReactNode
+	onTopicUpdateSuccess?: (topic: Topic) => Promise<unknown> | unknown
 }
 
 export function TopicActionMenu({
@@ -33,10 +34,11 @@ export function TopicActionMenu({
 	removeRelationshipText = 'Remove as Child',
 	children,
 	onDelete,
-	trigger
+	trigger,
+	onTopicUpdateSuccess
 }: TopicActionMenuProps) {
 	const deleteTopicMutation = useDeleteTopic()
-	const updateTopicMutation = useUpdateTopic()
+	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
 
 	const handleDeleteTopic = useCallback(() => {
 		deleteTopicMutation.mutate(topic.id, {
