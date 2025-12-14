@@ -9,7 +9,7 @@ interface MasonryLayoutSkeletonProps {
 }
 
 export function MasonryLayoutSkeleton({
-	count = 6,
+	count = 30,
 	gap = 16,
 	minItemWidth = 280
 }: MasonryLayoutSkeletonProps) {
