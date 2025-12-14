@@ -1,20 +1,16 @@
-import { Archive, ArchiveX, Inbox, MoreHorizontal, Trash } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { MoreHorizontal } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+import { topicKeys } from '../../api/queryKeys'
 import type { Topic } from '../../types/topic.types'
+import { TopicActionMenu } from '../TopicActionMenu'
 import { TopicParentsPanel } from '../TopicParentsPanel'
 
 interface TopicDetailHeaderProps {
 	topic: Topic
-	onArchiveToggle: () => void
-	onInboxToggle: () => void
-	onDelete: () => void
+	onDelete?: () => void
 	/**
 	 * Content to render in the left section before the parents panel (e.g., navigation buttons)
 	 */
@@ -35,14 +31,21 @@ interface TopicDetailHeaderProps {
 
 export function TopicDetailHeader({
 	topic,
-	onArchiveToggle,
-	onInboxToggle,
 	onDelete,
 	headerBeforeActions,
 	beforeActions,
 	afterActions,
 	onParentSelect
 }: TopicDetailHeaderProps) {
+	const queryClient = useQueryClient()
+
+	const handleTopicUpdateSuccess = useCallback(
+		(updatedTopic: Topic) => {
+			queryClient.setQueryData(topicKeys.detail(updatedTopic.id), updatedTopic)
+		},
+		[queryClient]
+	)
+
 	return (
 		<div className='sticky top-0 z-10 w-full border-b'>
 			<div className='flex items-center justify-between gap-4 px-2 py-1'>
@@ -57,8 +60,11 @@ export function TopicDetailHeader({
 				<div className='flex items-center gap-2'>
 					{beforeActions}
 
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true}>
+					<TopicActionMenu
+						onDelete={onDelete}
+						onTopicUpdateSuccess={handleTopicUpdateSuccess}
+						topic={topic}
+						trigger={
 							<Button
 								className='h-6 w-6 p-0'
 								size='sm'
@@ -67,40 +73,8 @@ export function TopicDetailHeader({
 							>
 								<MoreHorizontal className='h-4 w-4' />
 							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent>
-							<DropdownMenuItem onClick={onArchiveToggle}>
-								{topic.archived ? (
-									<>
-										<ArchiveX className='mr-2 h-4 w-4' />
-										Unarchive
-									</>
-								) : (
-									<>
-										<Archive className='mr-2 h-4 w-4' />
-										Archive
-									</>
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={onInboxToggle}>
-								{topic.inboxed ? (
-									<>
-										<Inbox className='mr-2 h-4 w-4' />
-										Remove from Inbox
-									</>
-								) : (
-									<>
-										<Inbox className='mr-2 h-4 w-4' />
-										Add to Inbox
-									</>
-								)}
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={onDelete} variant='destructive'>
-								<Trash className='mr-2 h-4 w-4' />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+						}
+					/>
 
 					{afterActions}
 				</div>

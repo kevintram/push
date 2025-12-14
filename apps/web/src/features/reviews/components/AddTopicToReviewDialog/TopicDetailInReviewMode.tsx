@@ -1,9 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { useAddTopicToReview } from '~/features/reviews/components/AddTopicToReviewDialog/AddTopicToReviewContext'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
+import { topicKeys } from '~/features/topics/api/queryKeys'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -20,6 +22,7 @@ export function TopicDetailInReviewMode({
 	topicId,
 	onTopicSelected
 }: TopicDetailInReviewModeProps) {
+	const queryClient = useQueryClient()
 	const {
 		isReviewCompleted,
 		isTopicAdded,
@@ -67,16 +70,51 @@ export function TopicDetailInReviewMode({
 		router.history.back()
 	}, [router])
 
+	const handleChildTopicUpdateSuccess = useCallback(
+		(updatedTopic: Topic) => {
+			queryClient.setQueryData(
+				topicKeys.children(topicId),
+				(old: Array<Topic>) => {
+					return old.map(child => {
+						if (child.id === updatedTopic.id) {
+							return updatedTopic
+						}
+						return child
+					})
+				}
+			)
+		},
+		[queryClient, topicId]
+	)
+
+	const handleRelatedTopicUpdateSuccess = useCallback(
+		(updatedTopic: Topic) => {
+			queryClient.setQueryData(
+				topicKeys.related(topicId),
+				(old: Array<Topic>) => {
+					return old.map(topic => {
+						if (topic.id === updatedTopic.id) {
+							return updatedTopic
+						}
+						return topic
+					})
+				}
+			)
+		},
+		[queryClient, topicId]
+	)
+
 	// Custom card renderer for children panel in review mode
 	const renderChildCard = useCallback(
 		(topic: Topic, onRemove: () => void, onClick: () => void) => (
 			<AddTopicCard
 				onCardClick={() => onClick()}
 				onRemoveRelationship={onRemove}
+				onTopicUpdateSuccess={handleChildTopicUpdateSuccess}
 				topic={topic}
 			/>
 		),
-		[]
+		[handleChildTopicUpdateSuccess]
 	)
 
 	// Custom card renderer for related panel in review mode
@@ -85,10 +123,11 @@ export function TopicDetailInReviewMode({
 			<AddTopicCard
 				onCardClick={() => onClick()}
 				onRemoveRelationship={onRemove}
+				onTopicUpdateSuccess={handleRelatedTopicUpdateSuccess}
 				topic={topic}
 			/>
 		),
-		[]
+		[handleRelatedTopicUpdateSuccess]
 	)
 
 	// Context value for TopicDetail (needed because TopicDetail can read from context)

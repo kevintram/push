@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Plus, Tag } from 'lucide-react'
 import { use, useCallback } from 'react'
@@ -5,8 +6,9 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import type { Topic } from '~/features/topics/types/topic.types'
+import { reviewKeys } from '../../api/queryKeys'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
-import type { Rating } from '../../types/review.types'
+import type { Rating, Review } from '../../types/review.types'
 import { ReviewTopicCard } from './ReviewTopicCard'
 
 const MIN_WIDTH = 210
@@ -32,6 +34,7 @@ export function ReviewTopicsPanel({
 	onRemoveTopicReview,
 	onNavigate
 }: ReviewTopicsPanelProps) {
+	const queryClient = useQueryClient()
 	const { review } = use(ReviewContext)
 	const navigate = useNavigate()
 
@@ -57,6 +60,30 @@ export function ReviewTopicsPanel({
 			search: { q: undefined }
 		})
 	}, [navigate, review?.id])
+
+	const handleTopicUpdateSuccess = useCallback(
+		(updatedTopic: Topic) => {
+			if (!review?.id) return
+
+			queryClient.setQueryData(reviewKeys.detail(review.id), (old: Review) => {
+				if (!old?.topic_reviews) return old
+
+				return {
+					...old,
+					topic_reviews: old.topic_reviews.map(tr => {
+						if (tr.topic.id === updatedTopic.id) {
+							return {
+								...tr,
+								topic: updatedTopic
+							}
+						}
+						return tr
+					})
+				}
+			})
+		},
+		[queryClient, review?.id]
+	)
 
 	const items: Array<ListItem> = review?.topic_reviews
 		? review.topic_reviews.map(tr => ({
@@ -94,13 +121,20 @@ export function ReviewTopicsPanel({
 					onNavigate={onNavigate}
 					onRemoveFromReview={onRemoveTopicReview}
 					onTopicClick={handleTopicClick}
+					onTopicUpdateSuccess={handleTopicUpdateSuccess}
 					rating={item.rating}
 					topic={item.topic}
 					topicReviewId={item.topicReviewId}
 				/>
 			)
 		},
-		[handleTopicClick, onNavigate, onRemoveTopicReview, review]
+		[
+			handleTopicClick,
+			onNavigate,
+			onRemoveTopicReview,
+			review,
+			handleTopicUpdateSuccess
+		]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {

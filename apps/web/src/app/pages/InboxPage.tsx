@@ -16,6 +16,7 @@ import {
 } from '~/components/ui/Empty'
 import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
 import { useTopics } from '~/features/topics/api/getTopics'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 
@@ -107,7 +108,13 @@ function InboxList({
 	}, [])
 
 	const renderItem = useCallback(
-		(topic: Topic) => <TopicCard onTopicClick={onTopicSelect} topic={topic} />,
+		(topic: Topic) => (
+			<TopicCard
+				headerRight={<TopicActionMenu topic={topic} />}
+				onTopicClick={onTopicSelect}
+				topic={topic}
+			/>
+		),
 		[onTopicSelect]
 	)
 

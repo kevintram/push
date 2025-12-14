@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { useAddTopicToReview } from './AddTopicToReviewContext'
@@ -9,6 +10,7 @@ interface AddTopicCardProps {
 	onCardClick: (topic: Topic) => void
 	searchQuery?: string
 	onRemoveRelationship?: () => void
+	onTopicUpdateSuccess?: (updatedTopic: Topic) => void
 }
 
 const MIN_HEIGHT = 72
@@ -17,7 +19,8 @@ export function AddTopicCard({
 	topic,
 	onCardClick,
 	searchQuery,
-	onRemoveRelationship
+	onRemoveRelationship,
+	onTopicUpdateSuccess
 }: AddTopicCardProps) {
 	// Get shared state from context
 	const {
@@ -64,8 +67,14 @@ export function AddTopicCard({
 					rating={rating}
 				/>
 			}
+			headerRight={
+				<TopicActionMenu
+					onRemoveRelationship={onRemoveRelationship}
+					onTopicUpdateSuccess={onTopicUpdateSuccess}
+					topic={topic}
+				/>
+			}
 			minHeight={MIN_HEIGHT}
-			onRemoveRelationship={onRemoveRelationship}
 			onTopicClick={onCardClick}
 			searchQuery={searchQuery}
 			topic={topic}

@@ -19,6 +19,7 @@ import {
 	PopoverTrigger
 } from '~/components/ui/Popover'
 import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
@@ -32,6 +33,7 @@ interface ReviewTopicCardProps {
 	onTopicClick?: (topic: Topic) => void
 	onRemoveFromReview?: (topicReviewId: number) => void
 	onNavigate?: () => void | Promise<void>
+	onTopicUpdateSuccess?: (updatedTopic: Topic) => void
 	minHeight?: number
 }
 
@@ -42,6 +44,7 @@ export function ReviewTopicCard({
 	onTopicClick,
 	onRemoveFromReview,
 	onNavigate,
+	onTopicUpdateSuccess,
 	minHeight = 72
 }: ReviewTopicCardProps) {
 	const { review } = use(ReviewContext)
@@ -108,12 +111,6 @@ export function ReviewTopicCard({
 			<PopoverTrigger asChild={true}>
 				<div>
 					<TopicCard
-						additionalMenuItems={
-							<DropdownMenuItem onClick={handleRemoveFromReview}>
-								<GitPullRequestClosed className='mr-2 h-4 w-4' />
-								Remove from review
-							</DropdownMenuItem>
-						}
 						headerLeft={
 							rating && (
 								<DropdownMenu>
@@ -173,6 +170,17 @@ export function ReviewTopicCard({
 									</DropdownMenuContent>
 								</DropdownMenu>
 							)
+						}
+						headerRight={
+							<TopicActionMenu
+								onTopicUpdateSuccess={onTopicUpdateSuccess}
+								topic={topic}
+							>
+								<DropdownMenuItem onClick={handleRemoveFromReview}>
+									<GitPullRequestClosed className='mr-2 h-4 w-4' />
+									Remove from review
+								</DropdownMenuItem>
+							</TopicActionMenu>
 						}
 						minHeight={minHeight}
 						onTopicClick={handleTopicClick}

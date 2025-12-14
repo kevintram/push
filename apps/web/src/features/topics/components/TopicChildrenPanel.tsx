@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import {
 	Baby,
@@ -22,8 +23,10 @@ import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicChildren } from '../api/getTopicChildren'
+import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
+import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
 
 const MIN_WIDTH = 192
@@ -60,6 +63,7 @@ export function TopicChildrenPanel({
 	onChildSelect,
 	renderCard
 }: TopicChildrenPanelProps) {
+	const queryClient = useQueryClient()
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
@@ -145,6 +149,23 @@ export function TopicChildrenPanel({
 		[topicId, createRelationship, handleChildSelect]
 	)
 
+	const handleTopicUpdateSuccess = useCallback(
+		(updatedTopic: Topic) => {
+			queryClient.setQueryData(
+				topicKeys.children(topicId!),
+				(old: Array<Topic>) => {
+					return old.map(child => {
+						if (child.id === updatedTopic.id) {
+							return updatedTopic
+						}
+						return child
+					})
+				}
+			)
+		},
+		[queryClient, topicId]
+	)
+
 	// Map children into array
 	const items = useMemo<Array<ListItem>>(
 		() => children.map(child => ({ type: 'child' as const, child })),
@@ -191,14 +212,27 @@ export function TopicChildrenPanel({
 			// Default card rendering
 			return (
 				<TopicCard
+					headerRight={
+						<TopicActionMenu
+							onRemoveRelationship={handleRemoveRelationship}
+							onTopicUpdateSuccess={handleTopicUpdateSuccess}
+							removeRelationshipText='Remove as Child'
+							topic={item.child}
+						/>
+					}
 					minHeight={MIN_HEIGHT}
-					onRemoveRelationship={handleRemoveRelationship}
 					onTopicClick={() => handleClick()}
 					topic={item.child}
 				/>
 			)
 		},
-		[deleteRelationship, topicId, handleChildSelect, renderCard]
+		[
+			deleteRelationship,
+			topicId,
+			handleChildSelect,
+			renderCard,
+			handleTopicUpdateSuccess
+		]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {
