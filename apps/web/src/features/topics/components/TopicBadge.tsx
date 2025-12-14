@@ -43,6 +43,17 @@ export function TopicBadge({
 						>
 							{getRatingIcon(rating)}
 							<span className='min-w-0 flex-1 truncate'>{displayText}</span>
+							{onRemove && (
+								<div className='-translate-y-1/2 mask-fade-in absolute top-1/2 right-0 flex h-6 items-center justify-center rounded-r-full bg-secondary pl-4 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'>
+									<Button
+										className='h-4 w-4 text-muted-foreground hover:text-foreground'
+										onClick={onRemove}
+										variant='ghost'
+									>
+										<X className='h-4 w-4' />
+									</Button>
+								</div>
+							)}
 						</Badge>
 					</TooltipTrigger>
 					<TooltipContent className='max-w-72' side='bottom'>
@@ -60,17 +71,6 @@ export function TopicBadge({
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
-			{onRemove && (
-				<div className='-translate-y-1/2 mask-fade-in absolute top-1/2 right-0 flex h-6 items-center justify-center rounded-r-full bg-secondary pl-4 opacity-0 transition-opacity hover:opacity-100 group-hover/badge:opacity-100'>
-					<Button
-						className='h-4 w-4 text-muted-foreground hover:text-foreground'
-						onClick={onRemove}
-						variant='ghost'
-					>
-						<X className='h-4 w-4' />
-					</Button>
-				</div>
-			)}
 		</div>
 	)
 }
