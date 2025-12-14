@@ -1,6 +1,7 @@
 // React
 
 // External libraries
+import { useNavigate } from '@tanstack/react-router'
 import {
 	ListChecks,
 	Loader2,
@@ -30,10 +31,11 @@ import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicRevi
 
 export function CreateButton() {
 	// Hooks
+	const navigate = useNavigate()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
 	const { createReview, isPending: isCreatingReview } = useCreateReview()
-	const { openTopicDialog, openReviewDialog } = useReviewTopicDialog()
+	const { openTopicDialog } = useReviewTopicDialog()
 
 	const isLoading = isCreatingTopic || isCreatingReview
 
@@ -50,8 +52,11 @@ export function CreateButton() {
 			scheduledAt: null,
 			completedAt: today
 		})
-		openReviewDialog(review.id)
-	}, [createReview, openReviewDialog])
+		navigate({
+			to: '/reviews/$reviewId',
+			params: { reviewId: review.id.toString() }
+		})
+	}, [createReview, navigate])
 
 	const handleNewReviewForLater = useCallback(async () => {
 		const review = await createReview({
@@ -59,8 +64,11 @@ export function CreateButton() {
 			scheduledAt: null,
 			completedAt: null
 		})
-		openReviewDialog(review.id)
-	}, [createReview, openReviewDialog])
+		navigate({
+			to: '/reviews/$reviewId',
+			params: { reviewId: review.id.toString() }
+		})
+	}, [createReview, navigate])
 
 	return (
 		<DropdownMenu>
