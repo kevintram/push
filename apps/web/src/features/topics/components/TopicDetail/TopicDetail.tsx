@@ -158,7 +158,11 @@ export function TopicDetail({
 	}
 
 	return (
-		<SidebarProvider defaultOpen={true} enableKeyboardShortcut={false}>
+		<SidebarProvider
+			cookieName='sidebar:topic-detail'
+			defaultOpen={true}
+			enableKeyboardShortcut={false}
+		>
 			<div className='flex h-full min-h-0 flex-col'>
 				<TopicDetailHeader
 					afterActions={headerAfterActions}

@@ -63,8 +63,7 @@ export function AppSidebar() {
 			title: 'Home',
 			url: '/home',
 			icon: Home,
-			isActive: (pathname: string) =>
-				pathname === '/home' || pathname.startsWith('/topics/')
+			isActive: (pathname: string) => pathname === '/home'
 		},
 		{
 			title: 'Inbox',
