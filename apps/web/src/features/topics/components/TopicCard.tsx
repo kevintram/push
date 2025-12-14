@@ -66,6 +66,15 @@ export function TopicCard({
 	const handleMouseEnter = useCallback(() => {
 		// Store topic in query cache for prefetching
 		queryClient.setQueryData(topicKeys.detail(topic.id), topic)
+		if (topic.parents && topic.parents.length > 0) {
+			queryClient.setQueryData(topicKeys.parents(topic.id), topic.parents)
+		}
+		if (topic.children && topic.children.length > 0) {
+			queryClient.setQueryData(topicKeys.children(topic.id), topic.children)
+		}
+		if (topic.related && topic.related.length > 0) {
+			queryClient.setQueryData(topicKeys.related(topic.id), topic.related)
+		}
 	}, [queryClient, topic])
 
 	return (
