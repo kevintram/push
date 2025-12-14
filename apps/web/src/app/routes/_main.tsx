@@ -9,7 +9,7 @@ export const Route = createFileRoute('/_main')({
 
 function MainLayout() {
 	return (
-		<SidebarProvider defaultOpen={false} width='12rem'>
+		<SidebarProvider width='12rem'>
 			<SidebarHolder className='!bg-background h-svh'>
 				<AppSidebar />
 				<div className='relative ml-1 flex min-h-0 min-w-0 flex-1 flex-col bg-background'>

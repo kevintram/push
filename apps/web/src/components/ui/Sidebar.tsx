@@ -31,6 +31,24 @@ const SIDEBAR_WIDTH_MOBILE = '18rem'
 const SIDEBAR_WIDTH_ICON = '3rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
 
+/**
+ * Reads the sidebar state from the cookie.
+ * Returns true if open, false if closed, or null if no cookie exists.
+ */
+function getSidebarStateFromCookie(): boolean | null {
+	if (typeof document === 'undefined') return null
+
+	const cookies = document.cookie.split(';')
+	const sidebarCookie = cookies.find(cookie =>
+		cookie.trim().startsWith(`${SIDEBAR_COOKIE_NAME}=`)
+	)
+
+	if (!sidebarCookie) return null
+
+	const value = sidebarCookie.split('=')[1]?.trim()
+	return value === 'true'
+}
+
 type SidebarContextProps = {
 	state: 'expanded' | 'collapsed'
 	open: boolean
@@ -77,9 +95,22 @@ function SidebarProvider({
 	const isMobile = useIsMobile()
 	const [openMobile, setOpenMobile] = React.useState(false)
 
+	// Read the saved sidebar state from cookie, or use defaultOpen if provided.
+	// If no cookie exists and no defaultOpen is provided, default to true (open) for first-time users.
+	// This is computed once on mount - useState only uses the initial value on first render.
+	const initialOpenState = React.useMemo(() => {
+		// If controlled from outside, use that value
+		if (openProp !== undefined) return openProp
+		// Try to read from cookie
+		const cookieState = getSidebarStateFromCookie()
+		if (cookieState !== null) return cookieState
+		// Default to provided defaultOpen, or true for first-time users
+		return defaultOpen !== undefined ? defaultOpen : true
+	}, []) // eslint-disable-line react-hooks/exhaustive-deps
+
 	// This is the internal state of the sidebar.
 	// We use openProp and setOpenProp for control from outside the component.
-	const [_open, _setOpen] = React.useState(defaultOpen)
+	const [_open, _setOpen] = React.useState(initialOpenState)
 	const open = openProp ?? _open
 	const setOpen = React.useCallback(
 		(value: boolean | ((value: boolean) => boolean)) => {
@@ -95,6 +126,14 @@ function SidebarProvider({
 		},
 		[setOpenProp, open]
 	)
+
+	// Persist initial state to cookie if it doesn't exist (for first-time users)
+	React.useEffect(() => {
+		if (getSidebarStateFromCookie() === null && openProp === undefined) {
+			// No cookie exists and component is uncontrolled - save initial state
+			document.cookie = `${SIDEBAR_COOKIE_NAME}=${initialOpenState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+		}
+	}, []) // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Helper to toggle the sidebar.
 	const toggleSidebar = React.useCallback(() => {
