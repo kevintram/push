@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Loader2, Plus, Search, SquarePen, User2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -14,6 +15,7 @@ import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicParents } from '../api/getTopicParents'
+import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { TopicBadge } from './TopicBadge'
@@ -33,6 +35,7 @@ export function TopicParentsPanel({
 }: TopicParentsPanelProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
+	const queryClient = useQueryClient()
 
 	const { data: parents = [], isLoading } = useTopicParents(topicId)
 
@@ -115,6 +118,23 @@ export function TopicParentsPanel({
 		[topicId, createRelationship, handleParentSelect]
 	)
 
+	const handleParentMouseEnter = useCallback(
+		(parent: Topic) => {
+			// Store parent topic in query cache for prefetching
+			queryClient.setQueryData(topicKeys.detail(parent.id), parent)
+			if (parent.parents && parent.parents.length > 0) {
+				queryClient.setQueryData(topicKeys.parents(parent.id), parent.parents)
+			}
+			if (parent.children && parent.children.length > 0) {
+				queryClient.setQueryData(topicKeys.children(parent.id), parent.children)
+			}
+			if (parent.related && parent.related.length > 0) {
+				queryClient.setQueryData(topicKeys.related(parent.id), parent.related)
+			}
+		},
+		[queryClient]
+	)
+
 	return (
 		<>
 			<div className='flex flex-wrap items-center gap-2'>
@@ -137,6 +157,7 @@ export function TopicParentsPanel({
 							name={parent.name}
 							notes={parent.notes}
 							onClick={() => handleParentSelect(parent.id)}
+							onMouseEnter={() => handleParentMouseEnter(parent)}
 							onRemove={() => {
 								if (!topicId) return
 								deleteRelationship.mutate({

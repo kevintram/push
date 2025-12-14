@@ -15,6 +15,7 @@ interface TopicBadgeProps {
 	notes?: string | null
 	onRemove?: () => void
 	onClick?: () => void
+	onMouseEnter?: () => void
 	maxWidth?: number
 	rating?: Rating | null
 }
@@ -24,6 +25,7 @@ export function TopicBadge({
 	notes,
 	onRemove,
 	onClick,
+	onMouseEnter,
 	rating
 }: TopicBadgeProps) {
 	const displayText = name ?? notes ?? ''
@@ -36,6 +38,7 @@ export function TopicBadge({
 						<Badge
 							className='flex h-6 min-w-16 max-w-32 cursor-pointer items-center justify-start gap-1 px-2 py-1 font-semibold text-xs hover:bg-secondary/80'
 							onClick={onClick}
+							onMouseEnter={onMouseEnter}
 							variant='secondary'
 						>
 							{getRatingIcon(rating)}
