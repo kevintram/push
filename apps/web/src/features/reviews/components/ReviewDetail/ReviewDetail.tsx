@@ -205,7 +205,7 @@ export function ReviewDetail({
 
 			<div
 				className={cn(
-					'scrollbar-track-transparent flex w-full flex-1 gap-4 overflow-y-auto py-4 ',
+					'scrollbar-track-transparent flex w-full flex-1 gap-4 overflow-y-auto p-4 ',
 					className
 				)}
 				ref={scrollContainerRef}
