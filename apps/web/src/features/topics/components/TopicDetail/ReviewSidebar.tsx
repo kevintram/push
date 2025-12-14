@@ -18,6 +18,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
+import { Skeleton } from '~/components/ui/Skeleton'
 import { Switch } from '~/components/ui/Switch'
 import {
 	Tooltip,
@@ -43,7 +44,7 @@ interface ReviewsSidebarProps {
 function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const navigate = useNavigate()
 	const { topic } = use(TopicContext)
-	const { data: reviews = [] } = useReviewsByTopic(topic?.id)
+	const { data: reviews = [], isLoading } = useReviewsByTopic(topic?.id)
 
 	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
 		const scheduled: Array<Review> = []
@@ -270,37 +271,61 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 				</div>
 			</SidebarHeader>
 			<SidebarContent className='scrollbar-track-transparent flex h-full flex-col gap-6 overflow-auto overscroll-contain px-2 pb-2'>
-				{/* Scheduled Reviews Section */}
-				{scheduledReviews.length > 0 && (
-					<div className='flex flex-col'>
-						{scheduledReviews.map(entry => (
-							<ReviewItem
-								entry={entry}
-								key={entry.id}
-								onReviewClick={handleReviewClick}
-								readonly={readonly}
-							/>
+				{isLoading ? (
+					<div className='flex flex-col gap-4'>
+						{Array.from({ length: 5 }).map((_, i) => (
+							<div
+								className='flex flex-col gap-2 rounded-lg p-3'
+								key={`skeleton-review-${i}`}
+							>
+								<div className='flex items-start justify-between'>
+									<Skeleton className='h-5 w-3/4' />
+									<Skeleton className='h-5 w-16' />
+								</div>
+								<Skeleton className='h-4 w-full' />
+								<Skeleton className='h-4 w-2/3' />
+								<div className='mt-2 flex gap-2'>
+									<Skeleton className='h-5 w-16 rounded-full' />
+									<Skeleton className='h-5 w-20 rounded-full' />
+								</div>
+							</div>
 						))}
 					</div>
-				)}
+				) : (
+					<>
+						{/* Scheduled Reviews Section */}
+						{scheduledReviews.length > 0 && (
+							<div className='flex flex-col'>
+								{scheduledReviews.map(entry => (
+									<ReviewItem
+										entry={entry}
+										key={entry.id}
+										onReviewClick={handleReviewClick}
+										readonly={readonly}
+									/>
+								))}
+							</div>
+						)}
 
-				{/* Unscheduled Reviews Section */}
-				{unscheduledReviews.length > 0 && (
-					<div className='flex flex-col'>
-						<div className='flex flex-row items-center gap-2 pt-6'>
-							<h2 className='font-semibold text-sm'>Unscheduled</h2>
-						</div>
-						<div className='flex flex-col'>
-							{unscheduledReviews.map(entry => (
-								<ReviewItem
-									entry={entry}
-									key={entry.id}
-									onReviewClick={handleReviewClick}
-									readonly={readonly}
-								/>
-							))}
-						</div>
-					</div>
+						{/* Unscheduled Reviews Section */}
+						{unscheduledReviews.length > 0 && (
+							<div className='flex flex-col'>
+								<div className='flex flex-row items-center gap-2 pt-6'>
+									<h2 className='font-semibold text-sm'>Unscheduled</h2>
+								</div>
+								<div className='flex flex-col'>
+									{unscheduledReviews.map(entry => (
+										<ReviewItem
+											entry={entry}
+											key={entry.id}
+											onReviewClick={handleReviewClick}
+											readonly={readonly}
+										/>
+									))}
+								</div>
+							</div>
+						)}
+					</>
 				)}
 			</SidebarContent>
 		</Sidebar>

@@ -8,6 +8,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import { Skeleton } from '~/components/ui/Skeleton'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useCreateRelationship } from '../api/createTopicRelationship'
@@ -33,7 +34,7 @@ export function TopicParentsPanel({
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
-	const { data: parents = [] } = useTopicParents(topicId)
+	const { data: parents = [], isLoading } = useTopicParents(topicId)
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
@@ -123,21 +124,29 @@ export function TopicParentsPanel({
 						Parents ({parents.length})
 					</span>
 				</div>
-				{parents.map(parent => (
-					<TopicBadge
-						key={parent.id}
-						name={parent.name}
-						notes={parent.notes}
-						onClick={() => handleParentSelect(parent.id)}
-						onRemove={() => {
-							if (!topicId) return
-							deleteRelationship.mutate({
-								parent: parent.id,
-								child: topicId
-							})
-						}}
-					/>
-				))}
+				{isLoading ? (
+					<>
+						<Skeleton className='h-6 w-20 rounded-full' />
+						<Skeleton className='h-6 w-24 rounded-full' />
+						<Skeleton className='h-6 w-16 rounded-full' />
+					</>
+				) : (
+					parents.map(parent => (
+						<TopicBadge
+							key={parent.id}
+							name={parent.name}
+							notes={parent.notes}
+							onClick={() => handleParentSelect(parent.id)}
+							onRemove={() => {
+								if (!topicId) return
+								deleteRelationship.mutate({
+									parent: parent.id,
+									child: topicId
+								})
+							}}
+						/>
+					))
+				)}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild={true} disabled={isCreating}>
 						<Badge
