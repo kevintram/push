@@ -33,6 +33,7 @@ interface ReviewTopicCardProps {
 	onTopicClick?: (topic: Topic) => void
 	onRemoveFromReview?: (topicReviewId: number) => void
 	onNavigate?: () => void | Promise<void>
+	onTopicUpdateSuccess?: (updatedTopic: Topic) => void
 	minHeight?: number
 }
 
@@ -43,6 +44,7 @@ export function ReviewTopicCard({
 	onTopicClick,
 	onRemoveFromReview,
 	onNavigate,
+	onTopicUpdateSuccess,
 	minHeight = 72
 }: ReviewTopicCardProps) {
 	const { review } = use(ReviewContext)
@@ -170,7 +172,10 @@ export function ReviewTopicCard({
 							)
 						}
 						headerRight={
-							<TopicActionMenu topic={topic}>
+							<TopicActionMenu
+								onTopicUpdateSuccess={onTopicUpdateSuccess}
+								topic={topic}
+							>
 								<DropdownMenuItem onClick={handleRemoveFromReview}>
 									<GitPullRequestClosed className='mr-2 h-4 w-4' />
 									Remove from review

@@ -10,6 +10,7 @@ interface AddTopicCardProps {
 	onCardClick: (topic: Topic) => void
 	searchQuery?: string
 	onRemoveRelationship?: () => void
+	onTopicUpdateSuccess?: (updatedTopic: Topic) => void
 }
 
 const MIN_HEIGHT = 72
@@ -18,7 +19,8 @@ export function AddTopicCard({
 	topic,
 	onCardClick,
 	searchQuery,
-	onRemoveRelationship
+	onRemoveRelationship,
+	onTopicUpdateSuccess
 }: AddTopicCardProps) {
 	// Get shared state from context
 	const {
@@ -68,6 +70,7 @@ export function AddTopicCard({
 			headerRight={
 				<TopicActionMenu
 					onRemoveRelationship={onRemoveRelationship}
+					onTopicUpdateSuccess={onTopicUpdateSuccess}
 					topic={topic}
 				/>
 			}

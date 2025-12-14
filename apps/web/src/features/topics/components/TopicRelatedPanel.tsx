@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import {
 	ChevronDown,
@@ -22,6 +23,7 @@ import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
 import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
 import { useDeleteTopicOtherRelationship } from '../api/deleteTopicOtherRelationship'
 import { useTopicsRelatedTo } from '../api/getTopicsRelatedTo'
+import { topicKeys } from '../api/queryKeys'
 import { RelationshipDirection, type Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { TopicActionMenu } from './TopicActionMenu'
@@ -61,6 +63,7 @@ export function TopicRelatedPanel({
 	onRelatedSelect,
 	renderCard
 }: TopicRelatedPanelProps) {
+	const queryClient = useQueryClient()
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
@@ -148,6 +151,23 @@ export function TopicRelatedPanel({
 		[topicId, createRelationship]
 	)
 
+	const handleTopicUpdateSuccess = useCallback(
+		(updatedTopic: Topic) => {
+			queryClient.setQueryData(
+				topicKeys.related(topicId!),
+				(old: Array<Topic>) => {
+					return old.map(topic => {
+						if (topic.id === updatedTopic.id) {
+							return updatedTopic
+						}
+						return topic
+					})
+				}
+			)
+		},
+		[queryClient, topicId]
+	)
+
 	// Map related topics into array
 	const items = useMemo<Array<ListItem>>(
 		() => related.map(topic => ({ type: 'related' as const, topic })),
@@ -210,6 +230,7 @@ export function TopicRelatedPanel({
 					headerRight={
 						<TopicActionMenu
 							onRemoveRelationship={handleRemoveRelationship}
+							onTopicUpdateSuccess={handleTopicUpdateSuccess}
 							removeRelationshipText='Remove as related'
 							topic={item.topic}
 						/>
@@ -220,7 +241,13 @@ export function TopicRelatedPanel({
 				/>
 			)
 		},
-		[deleteRelationship, topicId, handleRelatedSelect, renderCard]
+		[
+			deleteRelationship,
+			topicId,
+			handleRelatedSelect,
+			renderCard,
+			handleTopicUpdateSuccess
+		]
 	)
 
 	const getItemKey = useCallback((item: ListItem, _index: number) => {
