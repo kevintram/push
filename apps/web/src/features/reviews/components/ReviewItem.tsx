@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
@@ -18,6 +19,7 @@ import {
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
 import { useDeleteReview } from '../api/deleteReview'
+import { reviewKeys } from '../api/queryKeys'
 import { useUpdateReview } from '../api/updateReview'
 import type { Review } from '../types/review.types'
 import { DatePickerDropdown } from './DatePickerDropdown'
@@ -34,6 +36,7 @@ export function ReviewItem({
 	onReviewClick,
 	readonly = false
 }: ReviewItemProps) {
+	const queryClient = useQueryClient()
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 	const [_isDropdownOpen, setIsDropdownOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
@@ -95,6 +98,13 @@ export function ReviewItem({
 		}
 	}, [entry.id, onReviewClick, readonly])
 
+	const handleMouseEnter = useCallback(() => {
+		// Store review in query cache for prefetching
+		if (entry.id) {
+			queryClient.setQueryData(reviewKeys.detail(entry.id), entry)
+		}
+	}, [queryClient, entry])
+
 	const effectiveDate: Date | null = useMemo(() => {
 		if (entry.effective_date) {
 			return dayjs(entry.effective_date).toDate()
@@ -141,6 +151,7 @@ export function ReviewItem({
 					readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'
 				)}
 				onClick={handleReviewClick}
+				onMouseEnter={handleMouseEnter}
 			>
 				<div className='flex flex-col'>
 					{/* Row 1: Checkbox, Description, Date, More Button */}
