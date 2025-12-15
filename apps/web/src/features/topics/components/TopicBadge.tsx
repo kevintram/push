@@ -36,7 +36,7 @@ export function TopicBadge({
 				<Tooltip delayDuration={700}>
 					<TooltipTrigger asChild={true}>
 						<Badge
-							className='flex h-6 min-w-16 max-w-32 cursor-pointer items-center justify-start gap-1 px-2 py-1 font-semibold text-xs hover:bg-secondary/80'
+							className='flex h-6 min-w-16 max-w-32 cursor-pointer items-center justify-start gap-1 px-2 py-1 text-center font-semibold text-xs hover:bg-secondary/80'
 							onClick={onClick}
 							onMouseEnter={onMouseEnter}
 							variant='secondary'
