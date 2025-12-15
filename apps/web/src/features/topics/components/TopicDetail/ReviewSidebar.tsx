@@ -4,7 +4,6 @@ import {
 	BicepsFlexed,
 	Flag,
 	Loader2,
-	Mountain,
 	Plus,
 	Square,
 	SquareCheck
@@ -32,10 +31,6 @@ import type { Rating, Review } from '~/features/reviews/types/review.types'
 import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
-
-function roundToTwoDecimals(num: number): number {
-	return Math.round(num * 100) / 100
-}
 
 interface ReviewsSidebarProps {
 	readonly?: boolean
@@ -162,15 +157,6 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 			? `Stable for ${Math.round(topic.stability)} days`
 			: 'Stability not yet calculated'
 
-	const difficultyText =
-		topic?.difficulty != null
-			? `${roundToTwoDecimals(topic.difficulty)}/10`
-			: 'No data'
-	const difficultyTooltip =
-		topic?.difficulty != null
-			? `${roundToTwoDecimals(topic.difficulty)}/10 difficulty`
-			: 'Difficulty not yet calculated'
-
 	return (
 		<Sidebar className='absolute border-l' side='right'>
 			<SidebarHeader className='flex flex-col gap-0 pb-0'>
@@ -257,16 +243,6 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 							</div>
 						</TooltipTrigger>
 						<TooltipContent side='bottom'>{stabilityTooltip}</TooltipContent>
-					</Tooltip>
-					&nbsp;·&nbsp;
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
-								<Mountain className='h-3 w-3' />
-								<span>{difficultyText}</span>
-							</div>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>{difficultyTooltip}</TooltipContent>
 					</Tooltip>
 				</div>
 			</SidebarHeader>
