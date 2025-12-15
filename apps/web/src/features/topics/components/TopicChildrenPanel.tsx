@@ -275,7 +275,7 @@ export function TopicChildrenPanel({
 					>
 						<Baby className='h-4 w-4' />
 						<span className='font-medium text-muted-foreground text-sm'>
-							Children ({children.length})
+							Child topics ({children.length})
 						</span>
 						<ChevronDown
 							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}

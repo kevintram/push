@@ -290,7 +290,7 @@ export function TopicRelatedPanel({
 					>
 						<Link className='h-4 w-4' />
 						<span className='font-medium text-md text-muted-foreground'>
-							Other related ({related.length})
+							Other related topics ({related.length})
 						</span>
 						<ChevronDown
 							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
