@@ -57,7 +57,7 @@ export function TopicParentsPanel({
 		[onParentSelect, openTopicDialog]
 	)
 
-	const handleCreateNew = useCallback(
+	const handleCreateNewAndAdd = useCallback(
 		async (query = '') => {
 			if (!topicId) return
 
@@ -103,7 +103,7 @@ export function TopicParentsPanel({
 		[topicId, createRelationship, handleParentSelect, createTopicReviewMutation]
 	)
 
-	const handleTopicSelected = useCallback(
+	const handleAdd = useCallback(
 		async (topic: Topic) => {
 			if (!topicId) return
 
@@ -141,7 +141,7 @@ export function TopicParentsPanel({
 				<div className='flex items-center gap-2'>
 					<User2 className='h-4 w-4' />
 					<span className='font-medium text-muted-foreground text-xs'>
-						Parents ({parents.length})
+						Parent topics ({parents.length})
 					</span>
 				</div>
 				{isLoading ? (
@@ -186,7 +186,7 @@ export function TopicParentsPanel({
 							<Search className='h-4 w-4' />
 							Search
 						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => handleCreateNew()}>
+						<DropdownMenuItem onClick={() => handleCreateNewAndAdd()}>
 							<SquarePen className='h-4 w-4' />
 							Create New
 						</DropdownMenuItem>
@@ -196,9 +196,9 @@ export function TopicParentsPanel({
 
 			<AddRelationshipDialog
 				isCreating={isCreating}
-				onCreateNew={handleCreateNew}
+				onCreateNew={handleCreateNewAndAdd}
 				onOpenChange={setShowCreateDialog}
-				onSelected={handleTopicSelected}
+				onSelected={handleAdd}
 				open={showCreateDialog}
 				relationshipType='parent'
 				topicId={topicId}

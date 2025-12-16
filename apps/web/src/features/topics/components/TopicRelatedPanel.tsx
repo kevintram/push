@@ -89,7 +89,7 @@ export function TopicRelatedPanel({
 		[onRelatedSelect, openTopicDialog]
 	)
 
-	const handleCreateNew = useCallback(
+	const handleCreateNewAndAdd = useCallback(
 		async (query = '') => {
 			if (!topicId) return
 
@@ -140,7 +140,7 @@ export function TopicRelatedPanel({
 		]
 	)
 
-	const handleTopicSelected = useCallback(
+	const handleAdd = useCallback(
 		async (topic: Topic) => {
 			if (!topicId) return
 
@@ -275,7 +275,7 @@ export function TopicRelatedPanel({
 								<Search className='h-4 w-4' />
 								Search
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => handleCreateNew()}>
+							<DropdownMenuItem onClick={() => handleCreateNewAndAdd()}>
 								<SquarePen className='h-4 w-4' />
 								Create New
 							</DropdownMenuItem>
@@ -290,7 +290,7 @@ export function TopicRelatedPanel({
 					>
 						<Link className='h-4 w-4' />
 						<span className='font-medium text-md text-muted-foreground'>
-							Other related ({related.length})
+							Other related topics ({related.length})
 						</span>
 						<ChevronDown
 							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
@@ -323,9 +323,9 @@ export function TopicRelatedPanel({
 
 			<AddRelationshipDialog
 				isCreating={isCreating}
-				onCreateNew={handleCreateNew}
+				onCreateNew={handleCreateNewAndAdd}
 				onOpenChange={setShowCreateDialog}
-				onSelected={handleTopicSelected}
+				onSelected={handleAdd}
 				open={showCreateDialog}
 				relationshipType='related'
 				topicId={topicId}

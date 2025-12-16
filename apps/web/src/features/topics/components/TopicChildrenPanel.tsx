@@ -89,7 +89,7 @@ export function TopicChildrenPanel({
 		[onChildSelect, openTopicDialog]
 	)
 
-	const handleCreateNew = useCallback(
+	const handleCreateNewAndAdd = useCallback(
 		async (query = '') => {
 			if (!topicId) return
 
@@ -135,7 +135,7 @@ export function TopicChildrenPanel({
 		[topicId, createRelationship, handleChildSelect, createTopicReviewMutation]
 	)
 
-	const handleTopicSelected = useCallback(
+	const handleAddTopic = useCallback(
 		async (topic: Topic) => {
 			if (!topicId) return
 
@@ -143,11 +143,8 @@ export function TopicChildrenPanel({
 				parent: topicId,
 				child: topic.id
 			})
-
-			// Navigate to the selected topic
-			handleChildSelect(topic.id)
 		},
-		[topicId, createRelationship, handleChildSelect]
+		[topicId, createRelationship]
 	)
 
 	const handleTopicUpdateSuccess = useCallback(
@@ -260,7 +257,7 @@ export function TopicChildrenPanel({
 								<Search className='h-4 w-4' />
 								Search
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => handleCreateNew()}>
+							<DropdownMenuItem onClick={() => handleCreateNewAndAdd()}>
 								<SquarePen className='h-4 w-4' />
 								Create New
 							</DropdownMenuItem>
@@ -275,7 +272,7 @@ export function TopicChildrenPanel({
 					>
 						<Baby className='h-4 w-4' />
 						<span className='font-medium text-muted-foreground text-sm'>
-							Children ({children.length})
+							Child topics ({children.length})
 						</span>
 						<ChevronDown
 							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
@@ -308,9 +305,9 @@ export function TopicChildrenPanel({
 
 			<AddRelationshipDialog
 				isCreating={isCreating}
-				onCreateNew={handleCreateNew}
+				onCreateNew={handleCreateNewAndAdd}
 				onOpenChange={setShowCreateDialog}
-				onSelected={handleTopicSelected}
+				onSelected={handleAddTopic}
 				open={showCreateDialog}
 				relationshipType='child'
 				topicId={topicId}

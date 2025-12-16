@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Maximize2, X } from 'lucide-react'
+import { Maximize2 } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
@@ -41,13 +41,8 @@ export function TopicDialog() {
 					<Maximize2 className='h-4 w-4' />
 				</Button>
 
-				<Button
-					className='h-6 w-6 p-0 text-muted-foreground'
-					onClick={closeTopicDialog}
-					size='sm'
-					variant='ghost'
-				>
-					<X className='h-4 w-4' />
+				<Button className='h-6' onClick={closeTopicDialog} size='sm'>
+					Done
 				</Button>
 			</>
 		),
