@@ -5,17 +5,17 @@ import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import type {
 	FutureSection,
-	GetReviewsFilters,
+	GetReviewSessionsFilters,
 	LogbookSection,
 	SectionDefinition,
 	SoonSectionDefinition,
 	UnscheduledSectionDefinition
 } from '../types/api.types'
-import { ReviewSchema } from '../types/review.schemas'
-import type { Review } from '../types/review.types'
-import { reviewKeys } from './queryKeys'
+import { ReviewSessionSchema } from '../types/review.schemas'
+import type { ReviewSession } from '../types/review.types'
+import { reviewSessionKeys } from './queryKeys'
 
-export async function getReviews(filters?: GetReviewsFilters) {
+export async function getReviewSessions(filters?: GetReviewSessionsFilters) {
 	const params = new URLSearchParams()
 
 	if (filters?.topicId !== undefined) {
@@ -38,7 +38,7 @@ export async function getReviews(filters?: GetReviewsFilters) {
 		params.append('completed', String(filters.completed))
 	}
 
-	const url = `${import.meta.env.VITE_API_URL}/reviews/${params.toString() ? `?${params.toString()}` : ''}`
+	const url = `${import.meta.env.VITE_API_URL}/review-sessions/${params.toString() ? `?${params.toString()}` : ''}`
 
 	const response = await apiFetch(url, {
 		method: 'GET'
@@ -50,7 +50,7 @@ export async function getReviews(filters?: GetReviewsFilters) {
 
 	const data = await response.json()
 	try {
-		return v.parse(v.array(ReviewSchema), data)
+		return v.parse(v.array(ReviewSessionSchema), data)
 	} catch (error) {
 		if (v.isValiError(error)) {
 			throw new Error(`Validation failed: ${error.message}`)
@@ -73,13 +73,13 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 	}
 ]
 
-export function useTodayReviews() {
+export function useTodayReviewSessions() {
 	const tomorrow = useMemo(() => dayjs().add(1, 'day').format('YYYY-MM-DD'), [])
 
 	const query = useQuery({
-		queryKey: reviewKeys.list({ effectiveDateBefore: tomorrow }),
+		queryKey: reviewSessionKeys.list({ effectiveDateBefore: tomorrow }),
 		queryFn: () => {
-			return getReviews({ effectiveDateBefore: tomorrow })
+			return getReviewSessions({ effectiveDateBefore: tomorrow })
 		}
 	})
 
@@ -95,8 +95,8 @@ export function useTodayReviews() {
 			}))
 		}
 
-		const overdueList: Array<Review> = []
-		const todayList: Array<Review> = []
+		const overdueList: Array<ReviewSession> = []
+		const todayList: Array<ReviewSession> = []
 
 		for (const entry of query.data) {
 			if (entry.effective_date === null) {
@@ -147,7 +147,7 @@ const SOON_SECTION_DEFINITIONS: Array<SoonSectionDefinition> = [
 	}
 ]
 
-export function useSoonReviews() {
+export function useSoonReviewSessions() {
 	const tomorrow = useMemo(() => dayjs().add(1, 'day').format('YYYY-MM-DD'), [])
 	const nextWeekDate = useMemo(
 		() => dayjs().add(7, 'day').format('YYYY-MM-DD'),
@@ -155,12 +155,12 @@ export function useSoonReviews() {
 	)
 
 	const query = useQuery({
-		queryKey: reviewKeys.list({
+		queryKey: reviewSessionKeys.list({
 			effectiveDateAfter: tomorrow,
 			effectiveDateBefore: nextWeekDate
 		}),
 		queryFn: () => {
-			return getReviews({
+			return getReviewSessions({
 				effectiveDateAfter: tomorrow,
 				effectiveDateBefore: nextWeekDate
 			})
@@ -202,8 +202,8 @@ export function useSoonReviews() {
 			}))
 		}
 
-		const tomorrowList: Array<Review> = []
-		const nextSevenDaysList: Array<Review> = []
+		const tomorrowList: Array<ReviewSession> = []
+		const nextSevenDaysList: Array<ReviewSession> = []
 
 		for (const entry of query.data) {
 			if (entry.effective_date === null) {
@@ -248,10 +248,10 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 	emptyMessage: 'No unscheduled reviews.'
 }
 
-export function useUnscheduledReviews() {
+export function useUnscheduledReviewSessions() {
 	const query = useQuery({
-		queryKey: reviewKeys.list({ scheduled: false, completed: false }),
-		queryFn: () => getReviews({ scheduled: false, completed: false })
+		queryKey: reviewSessionKeys.list({ scheduled: false, completed: false }),
+		queryFn: () => getReviewSessions({ scheduled: false, completed: false })
 	})
 
 	const section = {
@@ -266,19 +266,19 @@ export function useUnscheduledReviews() {
 	}
 }
 
-export function useFutureReviews(options?: { enabled?: boolean }) {
+export function useFutureReviewSessions(options?: { enabled?: boolean }) {
 	const futureStartDate = useMemo(
 		() => dayjs().add(8, 'day').format('YYYY-MM-DD'),
 		[]
 	)
 
 	const query = useQuery({
-		queryKey: reviewKeys.list({
+		queryKey: reviewSessionKeys.list({
 			effectiveDateAfter: futureStartDate,
 			completed: false
 		}),
 		queryFn: () => {
-			return getReviews({
+			return getReviewSessions({
 				effectiveDateAfter: futureStartDate,
 				completed: false
 			})
@@ -292,7 +292,7 @@ export function useFutureReviews(options?: { enabled?: boolean }) {
 			return []
 		}
 
-		const monthlyGroups = new Map<string, Array<Review>>()
+		const monthlyGroups = new Map<string, Array<ReviewSession>>()
 
 		for (const review of query.data) {
 			const effectiveDate = review.effective_date
@@ -336,19 +336,19 @@ export function useFutureReviews(options?: { enabled?: boolean }) {
 	}
 }
 
-export function useLogbookReviews() {
+export function useLogbookReviewSessions() {
 	const yesterday = useMemo(
 		() => dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
 		[]
 	)
 
 	const query = useQuery({
-		queryKey: reviewKeys.list({
+		queryKey: reviewSessionKeys.list({
 			effectiveDateBefore: yesterday,
 			completed: true
 		}),
 		queryFn: () => {
-			return getReviews({
+			return getReviewSessions({
 				effectiveDateBefore: yesterday,
 				completed: true
 			})
@@ -373,9 +373,9 @@ export function useLogbookReviews() {
 		const twoDaysAgoDateStr = twoDaysAgo.format('YYYY-MM-DD')
 
 		// Categorize reviews
-		const yesterdayReviews: Array<Review> = []
-		const lastWeekReviews: Array<Review> = []
-		const monthlyGroups = new Map<string, Array<Review>>()
+		const yesterdayReviews: Array<ReviewSession> = []
+		const lastWeekReviews: Array<ReviewSession> = []
+		const monthlyGroups = new Map<string, Array<ReviewSession>>()
 
 		for (const review of query.data) {
 			const effectiveDate = review.effective_date
@@ -456,10 +456,10 @@ export function useLogbookReviews() {
 	}
 }
 
-export function useReviewsByTopic(topicId: number | undefined) {
+export function useReviewSessionsByTopic(topicId: number | undefined) {
 	return useQuery({
-		queryKey: reviewKeys.list({ topicId }),
-		queryFn: () => getReviews({ topicId }),
+		queryKey: reviewSessionKeys.list({ topicId }),
+		queryFn: () => getReviewSessions({ topicId }),
 		enabled: topicId !== undefined
 	})
 }

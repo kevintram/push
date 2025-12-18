@@ -1,21 +1,21 @@
 import { createContext, useCallback, useContext, useMemo } from 'react'
-import type { Review, TopicReview } from '../../types/review.types'
+import type { Review, ReviewSession } from '../../types/review.types'
 
 interface AddTopicToReviewContextValue {
-	// Review
-	review: Review | undefined
+	// ReviewSession
+	review: ReviewSession | undefined
 	isReviewCompleted: boolean
 
 	// Helpers (for any topic, not just selected)
 	isTopicAdded: (topicId: number) => boolean
-	getTopicReview: (topicId: number) => TopicReview | undefined
+	getReview: (topicId: number) => Review | undefined
 }
 
 const AddTopicToReviewContext =
 	createContext<AddTopicToReviewContextValue | null>(null)
 
 interface AddTopicToReviewProviderProps {
-	review: Review | undefined
+	review: ReviewSession | undefined
 	children: React.ReactNode
 }
 
@@ -30,8 +30,8 @@ export function AddTopicToReviewProvider({
 	)
 
 	const addedTopics = useMemo(
-		() => new Set(review?.topic_reviews?.map(tr => tr.topic_id) ?? []),
-		[review?.topic_reviews]
+		() => new Set(review?.reviews?.map(tr => tr.topic_id) ?? []),
+		[review?.reviews]
 	)
 
 	// Helper functions
@@ -40,11 +40,11 @@ export function AddTopicToReviewProvider({
 		[addedTopics]
 	)
 
-	const getTopicReview = useCallback(
+	const getReview = useCallback(
 		(topicId: number) => {
-			return review?.topic_reviews?.find(tr => tr.topic_id === topicId)
+			return review?.reviews?.find(tr => tr.topic_id === topicId)
 		},
-		[review?.topic_reviews]
+		[review?.reviews]
 	)
 
 	const value = useMemo<AddTopicToReviewContextValue>(
@@ -52,9 +52,9 @@ export function AddTopicToReviewProvider({
 			review,
 			isReviewCompleted,
 			isTopicAdded,
-			getTopicReview
+			getReview
 		}),
-		[review, isReviewCompleted, isTopicAdded, getTopicReview]
+		[review, isReviewCompleted, isTopicAdded, getReview]
 	)
 
 	return (

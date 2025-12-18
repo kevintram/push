@@ -18,7 +18,7 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
+import { useUpdateReview } from '~/features/reviews/api/updateReview'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -49,7 +49,7 @@ export function ReviewTopicCard({
 }: ReviewTopicCardProps) {
 	const { review } = use(ReviewContext)
 	const navigate = useNavigate()
-	const updateReviewMutation = useUpdateTopicReview()
+	const updateReviewMutation = useUpdateReview()
 	const [isOpenPopoverOpen, setIsOpenPopoverOpen] = useState(false)
 
 	const handleOpenInReviewMode = useCallback(() => {
@@ -197,7 +197,7 @@ export function ReviewTopicCard({
 						variant='ghost'
 					>
 						<BookOpen className='h-4 w-4' />
-						Review mode
+						ReviewSession mode
 					</Button>
 					<Button
 						className='justify-start gap-2'

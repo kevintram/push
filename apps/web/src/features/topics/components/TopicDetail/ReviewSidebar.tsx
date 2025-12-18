@@ -24,10 +24,13 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
-import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
+import { useCreateReview } from '~/features/reviews/api/createReview'
+import { useReviewSessionsByTopic } from '~/features/reviews/api/getReviewSessions'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import type { Rating, Review } from '~/features/reviews/types/review.types'
+import type {
+	Rating,
+	ReviewSession
+} from '~/features/reviews/types/review.types'
 import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
@@ -39,11 +42,11 @@ interface ReviewsSidebarProps {
 function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const navigate = useNavigate()
 	const { topic } = use(TopicContext)
-	const { data: reviews = [], isLoading } = useReviewsByTopic(topic?.id)
+	const { data: reviews = [], isLoading } = useReviewSessionsByTopic(topic?.id)
 
 	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
-		const scheduled: Array<Review> = []
-		const unscheduled: Array<Review> = []
+		const scheduled: Array<ReviewSession> = []
+		const unscheduled: Array<ReviewSession> = []
 
 		for (const review of reviews) {
 			if (review.effective_date) {
@@ -72,11 +75,11 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 		}
 	}, [reviews])
 
-	const createTopicReviewMutation = useCreateTopicReview()
+	const createReviewMutation = useCreateReview()
 	const { mutateAsync: updateTopic, isPending: isUpdatingTopic } =
 		useUpdateTopic()
 
-	const isCreatingTopicReview = createTopicReviewMutation.isPending
+	const isCreatingReview = createReviewMutation.isPending
 
 	const handleSrsToggle = useCallback(
 		async (pressed: boolean) => {
@@ -89,30 +92,33 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 		[topic, readonly, updateTopic]
 	)
 
-	const isCreatingReviewWithTopic = isCreatingTopicReview
+	const isCreatingReviewWithTopic = isCreatingReview
 
 	const createReviewWithTopic = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
 			if (!topic) throw new Error('Topic not found')
 
 			// Create review and link to topic in a single API call
-			const topicReview = await createTopicReviewMutation.mutateAsync({
+			const topicReview = await createReviewMutation.mutateAsync({
 				topic_id: topic.id,
-				review: {
-					description: '',
+				review_session: {
+					description: 'Created',
 					notes: '',
 					scheduled_at: null,
 					completed_at: completedAt
 				},
-				rating
+				rating,
+				description: 'Created',
+				scheduled_at: null,
+				completed_at: completedAt
 			})
 
 			navigate({
 				to: '/reviews/$reviewId',
-				params: { reviewId: topicReview.review_id.toString() }
+				params: { reviewId: topicReview.review_session_id.toString() }
 			})
 		},
-		[topic, createTopicReviewMutation, navigate]
+		[topic, createReviewMutation, navigate]
 	)
 
 	const handleLogReviewNow = useCallback(async () => {

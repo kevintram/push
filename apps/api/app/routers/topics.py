@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from typing import Literal
 
 from app.dependencies import SessionDep, UserIdDep
-from app.models import Topic, t_topics_closure, t_topic_other_relations, Review, TopicReview
+from app.models import Topic, t_topics_closure, t_topic_other_relations, ReviewSession, Review
 from app.schemas import (
     TopicRead,
     TopicCreate,
@@ -19,7 +19,7 @@ from app.schemas import (
     TopicRelationshipResponse,
     TopicOtherRelationshipCreate,
     TopicOtherRelationshipResponse,
-    ReviewReadWithTopicReviews,
+    ReviewSessionReadWithReviews,
     TopicRelatedRead,
     RelationshipDirection,
 )
@@ -162,7 +162,7 @@ async def search_topics(
     user_id: UserIdDep,
     addable_as_parent_to: int | None = None,
     addable_as_child_to: int | None = None,
-    addable_to_review: int | None = None,
+    addable_to_review_session: int | None = None,
     addable_as_related_to: int | None = None,
     query: str | None = None,
     limit: int = 10,
@@ -216,11 +216,11 @@ async def search_topics(
             t_topics_closure.c.depth == 1,
         )
         stmt = stmt.where(Topic.id.notin_(children))
-    if addable_to_review is not None:
-        # filter out all topics that can't be added to addable_to_review
-        # filter out addable_to_review's topics (don't want to add a topic that's already a topic)
-        topics = select(TopicReview.topic_id).where(
-            TopicReview.review_id == addable_to_review
+    if addable_to_review_session is not None:
+        # filter out all topics that can't be added to addable_to_review_session
+        # filter out addable_to_review_session's topics (don't want to add a topic that's already a topic)
+        topics = select(Review.topic_id).where(
+            Review.review_session_id == addable_to_review_session
         )
         stmt = stmt.where(Topic.id.notin_(topics))
 
@@ -639,16 +639,16 @@ async def delete_topic_other_relationship(
         raise HTTPException(status_code=404, detail="Relationship not found")
 
 
-@router.get("/topics/{topic_id}/reviews/", tags=["topics"])
-async def read_reviews_for_topic(
+@router.get("/topics/{topic_id}/review-sessions/", tags=["topics"])
+async def read_review_sessions_for_topic(
     topic_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> list[ReviewReadWithTopicReviews]:
-    stmt = select(Review).where(
-        Review.topic_reviews.any(TopicReview.topic_id == topic_id), Review.user_id == user_id
+) -> list[ReviewSessionReadWithReviews]:
+    stmt = select(ReviewSession).where(
+        ReviewSession.reviews.any(Review.topic_id == topic_id), ReviewSession.user_id == user_id
     )
-    stmt = stmt.options(selectinload(Review.topic_reviews).selectinload(TopicReview.topic))
+    stmt = stmt.options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
     result = await session.execute(stmt)
     return result.scalars().all()
 

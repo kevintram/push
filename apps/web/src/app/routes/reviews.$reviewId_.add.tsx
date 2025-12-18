@@ -3,8 +3,8 @@ import { Home, SquarePen, X } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { SearchInput } from '~/components/search/SearchInput'
 import { Button } from '~/components/ui/Button'
-import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
-import { useReviewWithTopics } from '~/features/reviews/api/getReview'
+import { useCreateReview } from '~/features/reviews/api/createReview'
+import { useReviewSessionWithReviews } from '~/features/reviews/api/getReviewSession'
 import { AddedTopicsPopover } from '~/features/reviews/components/AddTopicToReviewDialog/AddedTopicsPopover'
 import { AddTopicSearchDialog } from '~/features/reviews/components/AddTopicToReviewDialog/AddTopicSearchDialog'
 import {
@@ -21,7 +21,9 @@ export const Route = createFileRoute('/reviews/$reviewId_/add')({
 
 function RouteComponent() {
 	const { reviewId } = Route.useParams()
-	const { review } = useReviewWithTopics(Number.parseInt(reviewId, 10))
+	const { reviewSession: review } = useReviewSessionWithReviews(
+		Number.parseInt(reviewId, 10)
+	)
 
 	return (
 		<AddTopicToReviewProvider review={review}>
@@ -35,7 +37,7 @@ function LayoutContent() {
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 	const { review, isReviewCompleted } = useAddTopicToReview()
-	const createTopicReviewMutation = useCreateTopicReview()
+	const createReviewMutation = useCreateReview()
 	const { reviewId } = Route.useParams()
 	const { exitFlow } = useAddFlowHistory()
 
@@ -82,8 +84,8 @@ function LayoutContent() {
 		const ratingValue: Rating | null = isReviewCompleted ? 'good' : null
 
 		try {
-			const topicReview = await createTopicReviewMutation.mutateAsync({
-				review_id: review.id,
+			const topicReview = await createReviewMutation.mutateAsync({
+				review_session_id: review.id,
 				topic: {
 					name: '',
 					notes: trimmedQuery || '',
@@ -108,7 +110,7 @@ function LayoutContent() {
 		searchQuery,
 		review,
 		isReviewCompleted,
-		createTopicReviewMutation,
+		createReviewMutation,
 		navigate,
 		reviewId
 	])
@@ -159,7 +161,7 @@ function LayoutContent() {
 					/>
 
 					<Button
-						disabled={createTopicReviewMutation.isPending}
+						disabled={createReviewMutation.isPending}
 						onClick={onCreateNewClicked}
 						size='default'
 						variant='secondary'

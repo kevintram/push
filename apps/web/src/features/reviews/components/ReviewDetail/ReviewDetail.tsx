@@ -10,13 +10,13 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
+import { useDeleteReview } from '~/features/reviews/api/deleteReview'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
-import { useDeleteReview } from '../../api/deleteReview'
-import { useUpdateReview } from '../../api/updateReview'
+import { useDeleteReviewSession } from '../../api/deleteReviewSession'
+import { useUpdateReviewSession } from '../../api/updateReviewSession'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import { DatePickerDropdown } from '../DatePickerDropdown'
 import { ReviewDetailHeader } from './ReviewDetailHeader'
@@ -50,16 +50,16 @@ export function ReviewDetail({
 	const { review, isLoading } = use(ReviewContext)
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 
-	const updateReviewMutation = useUpdateReview()
+	const updateReviewMutation = useUpdateReviewSession()
+	const deleteReviewSessionMutation = useDeleteReviewSession()
 	const deleteReviewMutation = useDeleteReview()
-	const deleteTopicReviewMutation = useDeleteTopicReview()
 
 	const handleDeleteReview = useCallback(
 		async (reviewId: number) => {
-			await deleteReviewMutation.mutateAsync(reviewId)
+			await deleteReviewSessionMutation.mutateAsync(reviewId)
 			onDelete?.()
 		},
-		[deleteReviewMutation, onDelete]
+		[deleteReviewSessionMutation, onDelete]
 	)
 
 	const updateDescriptionMutation = useCallback(
@@ -101,11 +101,11 @@ export function ReviewDetail({
 		[review?.id, updateReviewMutation]
 	)
 
-	const handleRemoveTopicReview = useCallback(
+	const handleRemoveReview = useCallback(
 		async (topicReviewId: number) => {
-			await deleteTopicReviewMutation.mutateAsync(topicReviewId)
+			await deleteReviewMutation.mutateAsync(topicReviewId)
 		},
-		[deleteTopicReviewMutation]
+		[deleteReviewMutation]
 	)
 
 	const handleDateChange = useCallback(
@@ -270,7 +270,7 @@ export function ReviewDetail({
 						<ReviewTopicsPanel
 							getScrollElement={() => scrollContainerRef.current}
 							onNavigate={onNavigate}
-							onRemoveTopicReview={handleRemoveTopicReview}
+							onRemoveReview={handleRemoveReview}
 						/>
 					</div>
 				</div>

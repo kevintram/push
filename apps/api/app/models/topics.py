@@ -21,10 +21,9 @@ from typing import TYPE_CHECKING
 
 from app.models.base import Base
 from app.models.reviews import Review
-from app.models.topic_reviews import TopicReview
 
 if TYPE_CHECKING:
-    from app.models.topic_reviews import TopicReview
+    from app.models.reviews import Review
 
 
 class Topic(Base):
@@ -70,18 +69,16 @@ class Topic(Base):
     )
     scheduled_at: Mapped[date | None] = column_property(
         select(func.min(Review.scheduled_at))
-        .join(TopicReview, TopicReview.review_id == Review.id)
         .where(
-            TopicReview.topic_id == id,
-            TopicReview.user_id == user_id,
+            Review.topic_id == id,
             Review.user_id == user_id,
             Review.completed_at.is_(None),
             Review.scheduled_at.isnot(None),
         )
-        .correlate_except(Review, TopicReview)
+        .correlate_except(Review)
         .scalar_subquery()
     )
-    topic_reviews: Mapped[list["TopicReview"]] = relationship(back_populates="topic")
+    reviews: Mapped[list["Review"]] = relationship(back_populates="topic")
     parents: Mapped[list["Topic"]] = relationship(
         secondary="topics_closure",
         back_populates="children",

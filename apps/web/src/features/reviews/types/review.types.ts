@@ -3,11 +3,16 @@ import type { LearningState } from '~/models/learning-state.types'
 
 export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 
-export type TopicReview = {
+export type Review = {
 	id: number
-	review_id: number
+	review_session_id: number
 	topic_id: number
 	rating: Rating | null
+
+	description: string
+	scheduled_at: string | null
+	completed_at: string | null
+
 	inserted_at: string
 	updated_at: string
 	topic: Topic
@@ -27,7 +32,7 @@ export type TopicReview = {
 	due_after: string | null
 }
 
-export type Review = {
+export type ReviewSession = {
 	id: number
 	scheduled_at: string | null
 	completed_at: string | null
@@ -36,5 +41,5 @@ export type Review = {
 	updated_at: string
 	description: string
 	notes: string
-	topic_reviews?: Array<TopicReview>
+	reviews?: Array<Review>
 }

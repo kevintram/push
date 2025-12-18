@@ -5,9 +5,9 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
+import { useDeleteReview } from '~/features/reviews/api/deleteReview'
 import type { Topic } from '~/features/topics/types/topic.types'
-import type { TopicReview } from '../../types/review.types'
+import type { Review } from '../../types/review.types'
 import { ReviewTopicCard } from '../ReviewDetail/ReviewTopicCard'
 import { useAddTopicToReview } from './AddTopicToReviewContext'
 
@@ -25,12 +25,12 @@ export function AddedTopicsPopover({
 	onTopicClick
 }: AddedTopicsPopoverProps) {
 	const { review } = useAddTopicToReview()
-	const deleteTopicReviewMutation = useDeleteTopicReview()
-	const topicReviews = review?.topic_reviews
+	const deleteReviewMutation = useDeleteReview()
+	const topicReviews = review?.reviews
 	const addedTopicsCount = topicReviews?.length ?? 0
 
-	const handleRemoveTopicReview = (topicReviewId: number) => {
-		deleteTopicReviewMutation.mutateAsync(topicReviewId)
+	const handleRemoveReview = (topicReviewId: number) => {
+		deleteReviewMutation.mutateAsync(topicReviewId)
 	}
 
 	return (
@@ -57,7 +57,7 @@ export function AddedTopicsPopover({
 			>
 				{topicReviews && topicReviews.length > 0 ? (
 					<MasonryLayout
-						estimateItemSize={(tr: TopicReview) => {
+						estimateItemSize={(tr: Review) => {
 							const topic = tr.topic
 							const nameLines = Math.ceil((topic.name?.length || 8) / 40)
 							const notesLines = topic.notes
@@ -69,13 +69,13 @@ export function AddedTopicsPopover({
 							)
 						}}
 						gap={12}
-						getItemKey={(tr: TopicReview) => tr.id}
+						getItemKey={(tr: Review) => tr.id}
 						items={topicReviews}
 						minItemWidth={250}
-						renderItem={(topicReview: TopicReview) => (
+						renderItem={(topicReview: Review) => (
 							<ReviewTopicCard
 								minHeight={MIN_HEIGHT}
-								onRemoveFromReview={handleRemoveTopicReview}
+								onRemoveFromReview={handleRemoveReview}
 								onTopicClick={onTopicClick}
 								rating={topicReview.rating}
 								topic={topicReview.topic}

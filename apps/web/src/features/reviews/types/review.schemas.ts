@@ -1,12 +1,17 @@
 import * as v from 'valibot'
 import { TopicSchema } from '~/features/topics/types/topic.schemas'
-import type { Review, TopicReview } from './review.types'
+import type { Review, ReviewSession } from './review.types'
 
-export const TopicReviewSchema: v.GenericSchema<TopicReview> = v.object({
+export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	id: v.number(),
-	review_id: v.number(),
+	review_session_id: v.number(),
 	topic_id: v.number(),
 	rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
+
+	description: v.string(),
+	scheduled_at: v.nullable(v.string()),
+	completed_at: v.nullable(v.string()),
+
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	topic: v.lazy(() => TopicSchema),
@@ -26,7 +31,7 @@ export const TopicReviewSchema: v.GenericSchema<TopicReview> = v.object({
 	due_after: v.nullable(v.string())
 })
 
-export const ReviewSchema: v.GenericSchema<Review> = v.object({
+export const ReviewSessionSchema: v.GenericSchema<ReviewSession> = v.object({
 	id: v.number(),
 	scheduled_at: v.nullable(v.string()),
 	completed_at: v.nullable(v.string()),
@@ -35,5 +40,5 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	updated_at: v.string(),
 	description: v.string(),
 	notes: v.string(),
-	topic_reviews: v.optional(v.array(v.lazy(() => TopicReviewSchema)), [])
+	reviews: v.optional(v.array(v.lazy(() => ReviewSchema)), [])
 })

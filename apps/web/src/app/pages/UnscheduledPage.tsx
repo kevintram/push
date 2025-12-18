@@ -14,9 +14,9 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useUnscheduledReviews } from '~/features/reviews/api/getReviews'
+import { useUnscheduledReviewSessions } from '~/features/reviews/api/getReviewSessions'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import type { Review } from '~/features/reviews/types/review.types'
+import type { ReviewSession } from '~/features/reviews/types/review.types'
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/features/topics/types/topic.types'
 
@@ -36,7 +36,7 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 
 export function UnscheduledPage() {
 	const { section: reviewSection, isLoading: reviewsLoading } =
-		useUnscheduledReviews()
+		useUnscheduledReviewSessions()
 
 	const { data: allTopics, isLoading: topicsLoading } = useTopics({
 		archived: false,
@@ -107,7 +107,7 @@ function UnscheduledList({
 	reviewSection: {
 		headingClassName?: string
 		label: string
-		entries: Array<Review>
+		entries: Array<ReviewSession>
 	}
 	topicSection: {
 		entries: Array<Topic>

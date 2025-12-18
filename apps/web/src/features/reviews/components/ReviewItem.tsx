@@ -18,15 +18,15 @@ import {
 } from '~/components/ui/Tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
-import { useDeleteReview } from '../api/deleteReview'
-import { reviewKeys } from '../api/queryKeys'
-import { useUpdateReview } from '../api/updateReview'
-import type { Review } from '../types/review.types'
+import { useDeleteReviewSession } from '../api/deleteReviewSession'
+import { reviewSessionKeys } from '../api/queryKeys'
+import { useUpdateReviewSession } from '../api/updateReviewSession'
+import type { ReviewSession } from '../types/review.types'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { ReviewTopicBadges } from './ReviewTopicBadges'
 
 interface ReviewItemProps {
-	entry: Review
+	entry: ReviewSession
 	onReviewClick?: (reviewId: number) => void
 	readonly?: boolean
 }
@@ -46,8 +46,8 @@ export function ReviewItem({
 		return entry.scheduled_at ? dayjs(entry.scheduled_at).toDate() : null
 	})
 
-	const updateReviewMutation = useUpdateReview()
-	const deleteReviewMutation = useDeleteReview()
+	const updateReviewMutation = useUpdateReviewSession()
+	const deleteReviewMutation = useDeleteReviewSession()
 
 	const handleCheckboxChange = useCallback(
 		(checked: boolean) => {
@@ -101,7 +101,7 @@ export function ReviewItem({
 	const handleMouseEnter = useCallback(() => {
 		// Store review in query cache for prefetching
 		if (entry.id) {
-			queryClient.setQueryData(reviewKeys.detail(entry.id), entry)
+			queryClient.setQueryData(reviewSessionKeys.detail(entry.id), entry)
 		}
 	}, [queryClient, entry])
 

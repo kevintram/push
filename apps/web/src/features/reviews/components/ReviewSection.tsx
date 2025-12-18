@@ -5,7 +5,7 @@ import { Button } from '~/components/ui/Button'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
-import type { Review } from '../types/review.types'
+import type { ReviewSession } from '../types/review.types'
 import { ReviewItem } from './ReviewItem'
 
 const MIN_TOPIC_WIDTH = 210
@@ -15,7 +15,7 @@ type ReviewSectionProps = {
 	id: string
 	label: string
 	headingClassName?: string
-	reviewEntries: Array<Review>
+	reviewEntries: Array<ReviewSession>
 	topicEntries: Array<Topic>
 	isCollapsed: boolean
 	onToggleCollapse: (sectionId: string) => void

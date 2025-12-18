@@ -10,7 +10,7 @@ export interface ReviewTopicDialogContextValue {
 	closeTopicDialog: () => void
 	maximizeTopicDialog: () => void
 
-	// Review actions
+	// ReviewSession actions
 	openReviewDialog: (reviewId: number) => void
 	closeReviewDialog: () => void
 	maximizeReviewDialog: () => void

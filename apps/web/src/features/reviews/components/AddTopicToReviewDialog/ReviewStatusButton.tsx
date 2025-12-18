@@ -10,7 +10,7 @@ import {
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import type { Rating } from '../../types/review.types'
 
-interface TopicReviewStatusButton {
+interface ReviewStatusButton {
 	isAdded: boolean
 	isLoading: boolean
 	isReviewCompleted: boolean
@@ -20,7 +20,7 @@ interface TopicReviewStatusButton {
 	onRatingChange?: (rating: Rating) => void
 }
 
-export function TopicReviewStatusButton({
+export function ReviewStatusButton({
 	isAdded,
 	isLoading,
 	isReviewCompleted,
@@ -28,7 +28,7 @@ export function TopicReviewStatusButton({
 	onAdd,
 	onRemove,
 	onRatingChange
-}: TopicReviewStatusButton) {
+}: ReviewStatusButton) {
 	const handleRatingSelect = useCallback(
 		(newRating: Rating) => {
 			onRatingChange?.(newRating)

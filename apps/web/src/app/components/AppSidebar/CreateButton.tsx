@@ -26,15 +26,16 @@ import { SidebarMenuButton } from '~/components/ui/Sidebar'
 
 // Feature hooks
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateReview } from '~/features/reviews/api/createReview'
-import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
+import { useCreateTopicWithReview } from '~/features/reviews/api/createReview'
+import { useCreateReviewSession } from '~/features/reviews/api/createReviewSession'
 
 export function CreateButton() {
 	// Hooks
 	const navigate = useNavigate()
 	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
 		useCreateTopicWithReview()
-	const { createReview, isPending: isCreatingReview } = useCreateReview()
+	const { createReviewSession: createReview, isPending: isCreatingReview } =
+		useCreateReviewSession()
 	const { openTopicDialog } = useReviewTopicDialog()
 
 	const isLoading = isCreatingTopic || isCreatingReview

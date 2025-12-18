@@ -6,9 +6,9 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import type { Topic } from '~/features/topics/types/topic.types'
-import { reviewKeys } from '../../api/queryKeys'
+import { reviewSessionKeys } from '../../api/queryKeys'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
-import type { Rating, Review } from '../../types/review.types'
+import type { Rating, ReviewSession } from '../../types/review.types'
 import { ReviewTopicCard } from './ReviewTopicCard'
 
 const MIN_WIDTH = 210
@@ -24,14 +24,14 @@ type ListItem = {
 interface ReviewTopicsPanelProps {
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
-	onRemoveTopicReview: (topicReviewId: number) => void
+	onRemoveReview: (topicReviewId: number) => void
 	onNavigate?: () => void | Promise<void>
 }
 
 export function ReviewTopicsPanel({
 	getScrollElement,
 	scrollMargin,
-	onRemoveTopicReview,
+	onRemoveReview,
 	onNavigate
 }: ReviewTopicsPanelProps) {
 	const queryClient = useQueryClient()
@@ -39,7 +39,7 @@ export function ReviewTopicsPanel({
 	const navigate = useNavigate()
 
 	// Extract topics from reviews if available, otherwise fallback to topics
-	const topics = review?.topic_reviews?.map(tr => tr.topic) ?? []
+	const topics = review?.reviews?.map(tr => tr.topic) ?? []
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -65,28 +65,31 @@ export function ReviewTopicsPanel({
 		(updatedTopic: Topic) => {
 			if (!review?.id) return
 
-			queryClient.setQueryData(reviewKeys.detail(review.id), (old: Review) => {
-				if (!old?.topic_reviews) return old
+			queryClient.setQueryData(
+				reviewSessionKeys.detail(review.id),
+				(old: ReviewSession) => {
+					if (!old?.reviews) return old
 
-				return {
-					...old,
-					topic_reviews: old.topic_reviews.map(tr => {
-						if (tr.topic.id === updatedTopic.id) {
-							return {
-								...tr,
-								topic: updatedTopic
+					return {
+						...old,
+						reviews: old.reviews.map(tr => {
+							if (tr.topic.id === updatedTopic.id) {
+								return {
+									...tr,
+									topic: updatedTopic
+								}
 							}
-						}
-						return tr
-					})
+							return tr
+						})
+					}
 				}
-			})
+			)
 		},
 		[queryClient, review?.id]
 	)
 
-	const items: Array<ListItem> = review?.topic_reviews
-		? review.topic_reviews.map(tr => ({
+	const items: Array<ListItem> = review?.reviews
+		? review.reviews.map(tr => ({
 				type: 'topic' as const,
 				topic: tr.topic,
 				rating: tr.rating,
@@ -119,7 +122,7 @@ export function ReviewTopicsPanel({
 				<ReviewTopicCard
 					minHeight={MIN_HEIGHT}
 					onNavigate={onNavigate}
-					onRemoveFromReview={onRemoveTopicReview}
+					onRemoveFromReview={onRemoveReview}
 					onTopicClick={handleTopicClick}
 					onTopicUpdateSuccess={handleTopicUpdateSuccess}
 					rating={item.rating}
@@ -131,7 +134,7 @@ export function ReviewTopicsPanel({
 		[
 			handleTopicClick,
 			onNavigate,
-			onRemoveTopicReview,
+			onRemoveReview,
 			review,
 			handleTopicUpdateSuccess
 		]

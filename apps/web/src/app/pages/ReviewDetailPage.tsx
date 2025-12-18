@@ -2,7 +2,7 @@ import { useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
-import { useReviewWithTopics } from '~/features/reviews/api/getReview'
+import { useReviewSessionWithReviews } from '~/features/reviews/api/getReviewSession'
 import { ReviewDetail } from '~/features/reviews/components/ReviewDetail/ReviewDetail'
 import { ReviewContext } from '~/features/reviews/stores/SelectedReviewContext'
 
@@ -13,7 +13,7 @@ interface ReviewDetailPageProps {
 export function ReviewDetailPage({ reviewId }: ReviewDetailPageProps) {
 	const router = useRouter()
 
-	const { review, isLoading } = useReviewWithTopics(
+	const { reviewSession: review, isLoading } = useReviewSessionWithReviews(
 		Number.parseInt(reviewId, 10)
 	)
 

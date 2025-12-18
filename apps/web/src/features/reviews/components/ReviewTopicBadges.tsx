@@ -1,14 +1,14 @@
 import { TopicBadge } from '~/features/topics/components/TopicBadge'
-import type { Review } from '../types/review.types'
+import type { ReviewSession } from '../types/review.types'
 
 interface ReviewTopicBadgesProps {
-	review: Review
+	review: ReviewSession
 }
 
 export function ReviewTopicBadges({ review }: ReviewTopicBadgesProps) {
 	// Extract topics and ratings from reviews if available, otherwise fallback to topics
-	const items = review.topic_reviews
-		? review.topic_reviews.map(tr => ({
+	const items = review.reviews
+		? review.reviews.map(tr => ({
 				topic: tr.topic,
 				rating: tr.rating
 			}))

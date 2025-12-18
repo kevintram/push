@@ -13,12 +13,12 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useLogbookReviews } from '~/features/reviews/api/getReviews'
+import { useLogbookReviewSessions } from '~/features/reviews/api/getReviewSessions'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import type { Review } from '~/features/reviews/types/review.types'
+import type { ReviewSession } from '~/features/reviews/types/review.types'
 
 export function LogbookPage() {
-	const { sections, isLoading } = useLogbookReviews()
+	const { sections, isLoading } = useLogbookReviewSessions()
 
 	const { handleReviewClick, handleCreateTopic, isCreatingTopic } =
 		useReviewPageHandlers()
@@ -58,7 +58,7 @@ function LogbookList({
 	sections: Array<{
 		id: string
 		label: string
-		entries: Array<Review>
+		entries: Array<ReviewSession>
 	}>
 }) {
 	const navigate = useNavigate()

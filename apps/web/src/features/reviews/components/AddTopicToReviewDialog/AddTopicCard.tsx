@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
-import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
-import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
-import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
+import { useCreateReview } from '~/features/reviews/api/createReview'
+import { useDeleteReview } from '~/features/reviews/api/deleteReview'
+import { useUpdateReview } from '~/features/reviews/api/updateReview'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { Rating } from '../../types/review.types'
 import { useAddTopicToReview } from './AddTopicToReviewContext'
-import { TopicReviewStatusButton } from './ReviewStatusButton'
+import { ReviewStatusButton } from './ReviewStatusButton'
 
 interface AddTopicCardProps {
 	topic: Topic
@@ -27,16 +27,16 @@ export function AddTopicCard({
 	onTopicUpdateSuccess
 }: AddTopicCardProps) {
 	// Get shared state from context
-	const { review, isReviewCompleted, isTopicAdded, getTopicReview } =
+	const { review, isReviewCompleted, isTopicAdded, getReview } =
 		useAddTopicToReview()
 
 	// Mutations
-	const createTopicReviewMutation = useCreateTopicReview()
-	const deleteTopicReviewMutation = useDeleteTopicReview()
-	const updateTopicReviewMutation = useUpdateTopicReview()
+	const createReviewMutation = useCreateReview()
+	const deleteReviewMutation = useDeleteReview()
+	const updateReviewMutation = useUpdateReview()
 
 	const isAdded = isTopicAdded(topic.id)
-	const topicReviewData = getTopicReview(topic.id)
+	const topicReviewData = getReview(topic.id)
 	const rating = topicReviewData?.rating
 	const topicReviewId = topicReviewData?.id
 
@@ -46,41 +46,41 @@ export function AddTopicCard({
 
 		const ratingValue: Rating | null = isReviewCompleted ? 'good' : null
 		const payload = {
-			review_id: review.id,
+			review_session_id: review.id,
 			topic_id: topic.id,
 			rating: ratingValue
 		}
 
-		createTopicReviewMutation.mutateAsync(payload)
-	}, [review, isReviewCompleted, topic.id, createTopicReviewMutation])
+		createReviewMutation.mutateAsync(payload)
+	}, [review, isReviewCompleted, topic.id, createReviewMutation])
 
 	const handleRemove = useCallback(() => {
 		if (topicReviewId) {
-			deleteTopicReviewMutation.mutateAsync(topicReviewId)
+			deleteReviewMutation.mutateAsync(topicReviewId)
 		}
-	}, [topicReviewId, deleteTopicReviewMutation])
+	}, [topicReviewId, deleteReviewMutation])
 
 	const handleRatingChange = useCallback(
 		(newRating: Rating) => {
 			if (topicReviewId) {
-				updateTopicReviewMutation.mutateAsync({
+				updateReviewMutation.mutateAsync({
 					id: topicReviewId,
 					rating: newRating
 				})
 			}
 		},
-		[topicReviewId, updateTopicReviewMutation]
+		[topicReviewId, updateReviewMutation]
 	)
 
 	return (
 		<TopicCard
 			headerLeft={
-				<TopicReviewStatusButton
+				<ReviewStatusButton
 					isAdded={isAdded}
 					isLoading={
-						createTopicReviewMutation.isPending ||
-						deleteTopicReviewMutation.isPending ||
-						updateTopicReviewMutation.isPending
+						createReviewMutation.isPending ||
+						deleteReviewMutation.isPending ||
+						updateReviewMutation.isPending
 					}
 					isReviewCompleted={isReviewCompleted}
 					onAdd={handleAdd}

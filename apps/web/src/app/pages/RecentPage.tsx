@@ -13,7 +13,7 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
+import { useCreateTopicWithReview } from '~/features/reviews/api/createReview'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/features/topics/types/topic.types'

@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback } from 'react'
-import { useCreateTopicWithReview } from '~/features/reviews/api/createTopicReview'
+import { useCreateTopicWithReview } from '~/features/reviews/api/createReview'
 import type { Topic } from '~/features/topics/types/topic.types'
 
 /**

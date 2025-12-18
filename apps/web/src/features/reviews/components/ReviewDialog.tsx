@@ -3,14 +3,16 @@ import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useReviewWithTopics } from '../api/getReview'
+import { useReviewSessionWithReviews } from '../api/getReviewSession'
 import { ReviewContext } from '../stores/SelectedReviewContext'
 import { ReviewDetail } from './ReviewDetail/ReviewDetail'
 
 export function ReviewDialog() {
 	const { reviewDialogState, closeReviewDialog } = useReviewTopicDialog()
 	const { isOpen, reviewId: selectedReviewId } = reviewDialogState
-	const { review, isLoading } = useReviewWithTopics(selectedReviewId!)
+	const { reviewSession: review, isLoading } = useReviewSessionWithReviews(
+		selectedReviewId!
+	)
 
 	const handleDelete = useCallback(() => {
 		closeReviewDialog()
