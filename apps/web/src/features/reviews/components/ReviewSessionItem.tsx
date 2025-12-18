@@ -16,6 +16,7 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
+import { TopicBadge } from '~/features/topics/components/TopicBadge'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
 import { useDeleteReviewSession } from '../api/deleteReviewSession'
@@ -23,19 +24,18 @@ import { reviewSessionKeys } from '../api/queryKeys'
 import { useUpdateReviewSession } from '../api/updateReviewSession'
 import type { ReviewSession } from '../types/review.types'
 import { DatePickerDropdown } from './DatePickerDropdown'
-import { ReviewTopicBadges } from './ReviewTopicBadges'
 
-interface ReviewItemProps {
+interface ReviewSessionItemProps {
 	entry: ReviewSession
 	onReviewClick?: (reviewId: number) => void
 	readonly?: boolean
 }
 
-export function ReviewItem({
+export function ReviewSessionItem({
 	entry,
 	onReviewClick,
 	readonly = false
-}: ReviewItemProps) {
+}: ReviewSessionItemProps) {
 	const queryClient = useQueryClient()
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 	const [_isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -118,6 +118,18 @@ export function ReviewItem({
 			isCompleted: entry.completed_at !== null
 		})
 	}, [entry.scheduled_at, entry.completed_at])
+
+	const topicBadgesData = useMemo(() => {
+		const items =
+			entry.reviews?.map(tr => ({
+				topic: tr.topic,
+				rating: tr.rating
+			})) ?? []
+		return {
+			items,
+			topicCount: items.length
+		}
+	}, [entry.reviews])
 
 	const relativeDate = useMemo(() => {
 		if (!effectiveDate) return null
@@ -231,7 +243,21 @@ export function ReviewItem({
 						)}
 					</div>
 					{/* Row 2: Topic Badges */}
-					<ReviewTopicBadges review={entry} />
+					<div className='flex flex-wrap items-center gap-2'>
+						<span className='font-medium text-muted-foreground text-xs'>
+							Topics
+							{topicBadgesData.topicCount > 0 &&
+								` (${topicBadgesData.topicCount})`}
+						</span>
+						{topicBadgesData.items.map(({ topic, rating }) => (
+							<TopicBadge
+								key={topic.id}
+								name={topic.name}
+								notes={topic.notes}
+								rating={rating}
+							/>
+						))}
+					</div>
 				</div>
 			</CardContent>
 		</Card>

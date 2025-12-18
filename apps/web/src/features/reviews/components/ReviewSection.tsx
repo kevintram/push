@@ -6,7 +6,7 @@ import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { ReviewSession } from '../types/review.types'
-import { ReviewItem } from './ReviewItem'
+import { ReviewSessionItem } from './ReviewSessionItem'
 
 const MIN_TOPIC_WIDTH = 210
 const MIN_TOPIC_HEIGHT = 96
@@ -111,7 +111,7 @@ export function ReviewSection({
 							<div className='px-4'>
 								{reviewEntries.length > 0 ? (
 									reviewEntries.map(entry => (
-										<ReviewItem
+										<ReviewSessionItem
 											entry={entry}
 											key={entry.id}
 											onReviewClick={onReviewClick}

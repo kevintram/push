@@ -26,7 +26,7 @@ import {
 } from '~/components/ui/Tooltip'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewSessionsByTopic } from '~/features/reviews/api/getReviewSessions'
-import { ReviewItem } from '~/features/reviews/components/ReviewItem'
+import { ReviewSessionItem } from '~/features/reviews/components/ReviewSessionItem'
 import type {
 	Rating,
 	ReviewSession
@@ -279,7 +279,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 						{scheduledReviews.length > 0 && (
 							<div className='flex flex-col'>
 								{scheduledReviews.map(entry => (
-									<ReviewItem
+									<ReviewSessionItem
 										entry={entry}
 										key={entry.id}
 										onReviewClick={handleReviewClick}
@@ -297,7 +297,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 								</div>
 								<div className='flex flex-col'>
 									{unscheduledReviews.map(entry => (
-										<ReviewItem
+										<ReviewSessionItem
 											entry={entry}
 											key={entry.id}
 											onReviewClick={handleReviewClick}

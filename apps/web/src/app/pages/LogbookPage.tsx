@@ -14,7 +14,7 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { useLogbookReviewSessions } from '~/features/reviews/api/getReviewSessions'
-import { ReviewItem } from '~/features/reviews/components/ReviewItem'
+import { ReviewSessionItem } from '~/features/reviews/components/ReviewSessionItem'
 import type { ReviewSession } from '~/features/reviews/types/review.types'
 
 export function LogbookPage() {
@@ -126,7 +126,7 @@ function LogbookList({
 								</h3>
 								<div className='mt-2'>
 									{section.entries.map(entry => (
-										<ReviewItem
+										<ReviewSessionItem
 											entry={entry}
 											key={entry.id}
 											onReviewClick={onReviewClick}
