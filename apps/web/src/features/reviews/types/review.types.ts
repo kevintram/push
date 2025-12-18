@@ -12,6 +12,7 @@ export type Review = {
 	description: string
 	scheduled_at: string | null
 	completed_at: string | null
+	effective_date: string | null
 
 	inserted_at: string
 	updated_at: string

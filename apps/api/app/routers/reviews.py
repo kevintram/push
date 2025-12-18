@@ -237,11 +237,16 @@ async def read_reviews(
     user_id: UserIdDep,
     review_session_id: int | None = None,
     topic_id: int | None = None,
+    effective_date_before: str | None = None,
+    effective_date_after: str | None = None,
+    completed: bool | None = None,
+    scheduled: bool | None = None,
 ) -> list[ReviewWithTopic]:
-    """Get all reviews for the user, with optional filters for review_session_id and topic_id."""
+    """Get all reviews for the user, with optional filters for review_session_id, topic_id, dates, and completion status."""
     stmt = (
         select(Review)
         .where(Review.user_id == user_id)
+        .order_by(Review.completed_at.asc().nulls_first(), Review.scheduled_at.asc(), Review.id.asc())
         .options(selectinload(Review.topic), selectinload(Review.review_session))
     )
 
@@ -251,7 +256,25 @@ async def read_reviews(
     if topic_id is not None:
         stmt = stmt.where(Review.topic_id == topic_id)
 
-    stmt = stmt.order_by(Review.updated_at.desc())
+    if effective_date_before is not None:
+        date_before = datetime.strptime(effective_date_before, '%Y-%m-%d').date()
+        stmt = stmt.where(Review.effective_date <= date_before)
+
+    if effective_date_after is not None:
+        date_after = datetime.strptime(effective_date_after, '%Y-%m-%d').date()
+        stmt = stmt.where(Review.effective_date >= date_after)
+
+    if completed is not None:
+        if completed:
+            stmt = stmt.where(Review.completed_at.isnot(None))
+        else:
+            stmt = stmt.where(Review.completed_at.is_(None))
+
+    if scheduled is not None:
+        if scheduled:
+            stmt = stmt.where(Review.scheduled_at.isnot(None))
+        else:
+            stmt = stmt.where(Review.scheduled_at.is_(None))
 
     result = await session.execute(stmt)
     return result.scalars().all()
@@ -351,10 +374,14 @@ async def create_review(
                 detail="Review already exists",
             )
 
-        # Refresh with topic relationship loaded
-        await session.refresh(new_review, ["topic", "review_session"])
-        await session.refresh(new_review.topic, ["scheduled_at"])
-        return ReviewWithTopic.model_validate(new_review)
+        # Re-query to get fresh data with all computed columns
+        review_result = await session.execute(
+            select(Review)
+            .where(Review.id == new_review.id)
+            .options(selectinload(Review.topic), selectinload(Review.review_session))
+        )
+        refreshed_review = review_result.scalar_one()
+        return ReviewWithTopic.model_validate(refreshed_review)
 
     # Review is completed - run FSRS
     # Store topic's current state as "before" state
@@ -440,10 +467,14 @@ async def create_review(
         from_date=review_create.completed_at,
     )
 
-    # Refresh with topic relationship loaded
-    await session.refresh(new_review, ["topic", "review_session"])
-    await session.refresh(new_review.topic, ["scheduled_at"])
-    return ReviewWithTopic.model_validate(new_review)
+    # Re-query to get fresh data with all computed columns
+    review_result = await session.execute(
+        select(Review)
+        .where(Review.id == new_review.id)
+        .options(selectinload(Review.topic), selectinload(Review.review_session))
+    )
+    refreshed_review = review_result.scalar_one()
+    return ReviewWithTopic.model_validate(refreshed_review)
 
 
 @router.post("/reviews/{id}/", tags=["reviews"])
@@ -486,13 +517,17 @@ async def update_review(
         # Review not completed yet - only update rating/desc, skip FSRS
         if review_update.rating is not None:
             existing_review.rating = review_update.rating
-        
+
         await session.flush()
 
-        # Refresh and return with relationships loaded
-        await session.refresh(existing_review, ["topic", "review_session"])
-        await session.refresh(existing_review.topic, ["scheduled_at"])
-        return ReviewWithTopic.model_validate(existing_review)
+        # Re-query to get fresh data with all computed columns
+        review_result = await session.execute(
+            select(Review)
+            .where(Review.id == id)
+            .options(selectinload(Review.topic), selectinload(Review.review_session))
+        )
+        refreshed_review = review_result.scalar_one()
+        return ReviewWithTopic.model_validate(refreshed_review)
 
     # Review is completed - run FSRS recalculation
     # Use provided rating or default to "good" or existing rating
@@ -545,10 +580,14 @@ async def update_review(
         from_date=new_completed_at,
     )
 
-    # Refresh and return with relationships loaded
-    await session.refresh(existing_review, ["topic", "review_session"])
-    await session.refresh(existing_review.topic, ["scheduled_at"])
-    return ReviewWithTopic.model_validate(existing_review)
+    # Re-query to get fresh data with all computed columns
+    review_result = await session.execute(
+        select(Review)
+        .where(Review.id == id)
+        .options(selectinload(Review.topic), selectinload(Review.review_session))
+    )
+    refreshed_review = review_result.scalar_one()
+    return ReviewWithTopic.model_validate(refreshed_review)
 
 
 @router.delete("/reviews/{id}/", tags=["reviews"])

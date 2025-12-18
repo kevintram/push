@@ -10,9 +10,10 @@ from sqlalchemy import (
     ForeignKey,
     Identity,
     String,
+    func,
     text,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from sqlalchemy.types import TIMESTAMP, Date, Text
 from typing import TYPE_CHECKING
 
@@ -36,6 +37,9 @@ class Review(Base):
     
     scheduled_at: Mapped[date | None] = mapped_column(Date, nullable=True)
     completed_at: Mapped[date | None] = mapped_column(Date, nullable=True)
+    effective_date: Mapped[date] = column_property(
+        func.coalesce(completed_at, scheduled_at)
+    )
     description: Mapped[str] = mapped_column(Text, nullable=False, default="", server_default="")
 
     rating: Mapped[str | None] = mapped_column(

@@ -27,6 +27,7 @@ class ReviewRead(ReviewBase):
     topic_id: int
     inserted_at: datetime
     updated_at: datetime
+    effective_date: date | None = None
 
     # Topic FSRS state before review
     stability_before: float | None
@@ -86,7 +87,7 @@ class ReviewCreate(BaseModel):
 class ReviewUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    rating: str | None
+    rating: str | None = None
     description: str | None = None
     scheduled_at: date | None = None
     completed_at: date | None = None

@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
 	BicepsFlexed,
@@ -8,7 +7,7 @@ import {
 	Square,
 	SquareCheck
 } from 'lucide-react'
-import { use, useCallback, useMemo } from 'react'
+import { use, useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -25,12 +24,10 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import { useCreateReview } from '~/features/reviews/api/createReview'
-import { useReviewSessionsByTopic } from '~/features/reviews/api/getReviewSessions'
-import { ReviewSessionItem } from '~/features/reviews/components/ReviewSessionItem'
-import type {
-	Rating,
-	ReviewSession
-} from '~/features/reviews/types/review.types'
+import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
+import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
+import { ReviewItem } from '~/features/reviews/components/ReviewItem'
+import type { Rating, Review } from '~/features/reviews/types/review.types'
 import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
@@ -40,13 +37,14 @@ interface ReviewsSidebarProps {
 }
 
 function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
-	const navigate = useNavigate()
 	const { topic } = use(TopicContext)
-	const { data: reviews = [], isLoading } = useReviewSessionsByTopic(topic?.id)
+	const { data: reviews = [], isLoading } = useReviewsByTopic(topic?.id)
+	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
 	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
-		const scheduled: Array<ReviewSession> = []
-		const unscheduled: Array<ReviewSession> = []
+		const scheduled: Array<Review> = []
+		const unscheduled: Array<Review> = []
 
 		for (const review of reviews) {
 			if (review.effective_date) {
@@ -99,7 +97,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 			if (!topic) throw new Error('Topic not found')
 
 			// Create review and link to topic in a single API call
-			const topicReview = await createReviewMutation.mutateAsync({
+			const review = await createReviewMutation.mutateAsync({
 				topic_id: topic.id,
 				review_session: {
 					description: 'Created',
@@ -113,12 +111,11 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 				completed_at: completedAt
 			})
 
-			navigate({
-				to: '/reviews/$reviewId',
-				params: { reviewId: topicReview.review_session_id.toString() }
-			})
+			// Open the review dialog with the newly created review
+			setSelectedReviewId(review.id)
+			setIsDialogOpen(true)
 		},
-		[topic, createReviewMutation, navigate]
+		[topic, createReviewMutation]
 	)
 
 	const handleLogReviewNow = useCallback(async () => {
@@ -133,12 +130,10 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
 			if (readonly) return
-			navigate({
-				to: '/reviews/$reviewId',
-				params: { reviewId: reviewId.toString() }
-			})
+			setSelectedReviewId(reviewId)
+			setIsDialogOpen(true)
 		},
-		[navigate, readonly]
+		[readonly]
 	)
 
 	// Calculate the due date display using shared utilities
@@ -255,7 +250,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 			<SidebarContent className='scrollbar-track-transparent flex h-full flex-col gap-6 overflow-auto overscroll-contain px-2 pb-2'>
 				{isLoading ? (
 					<div className='flex flex-col gap-4'>
-						{Array.from({ length: 5 }).map((_, i) => (
+						{[0, 1, 2, 3, 4].map(i => (
 							<div
 								className='flex flex-col gap-2 rounded-lg p-3'
 								key={`skeleton-review-${i}`}
@@ -279,7 +274,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 						{scheduledReviews.length > 0 && (
 							<div className='flex flex-col'>
 								{scheduledReviews.map(entry => (
-									<ReviewSessionItem
+									<ReviewItem
 										entry={entry}
 										key={entry.id}
 										onReviewClick={handleReviewClick}
@@ -297,7 +292,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 								</div>
 								<div className='flex flex-col'>
 									{unscheduledReviews.map(entry => (
-										<ReviewSessionItem
+										<ReviewItem
 											entry={entry}
 											key={entry.id}
 											onReviewClick={handleReviewClick}
@@ -310,6 +305,11 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 					</>
 				)}
 			</SidebarContent>
+			<ReviewDialog
+				onOpenChange={setIsDialogOpen}
+				open={isDialogOpen}
+				reviewId={selectedReviewId}
+			/>
 		</Sidebar>
 	)
 }

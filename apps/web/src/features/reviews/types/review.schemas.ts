@@ -11,6 +11,7 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	description: v.string(),
 	scheduled_at: v.nullable(v.string()),
 	completed_at: v.nullable(v.string()),
+	effective_date: v.nullable(v.string()),
 
 	inserted_at: v.string(),
 	updated_at: v.string(),

@@ -76,6 +76,15 @@ export type GetReviewSessionsFilters = {
 	completed?: boolean
 }
 
+export type GetReviewsFilters = {
+	reviewSessionId?: number
+	topicId?: number
+	effectiveDateBefore?: string
+	effectiveDateAfter?: string
+	scheduled?: boolean
+	completed?: boolean
+}
+
 export type TodaySectionKey = 'overdue' | 'today'
 
 export type SectionDefinition = {

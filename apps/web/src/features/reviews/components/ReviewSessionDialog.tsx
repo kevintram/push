@@ -8,7 +8,10 @@ import { ReviewContext } from '../stores/SelectedReviewContext'
 import { ReviewDetail } from './ReviewDetail/ReviewDetail'
 
 export function ReviewSessionDialog() {
-	const { reviewSessionDialogState: reviewDialogState, closeReviewSessionDialog: closeReviewDialog } = useReviewTopicDialog()
+	const {
+		reviewSessionDialogState: reviewDialogState,
+		closeReviewSessionDialog: closeReviewDialog
+	} = useReviewTopicDialog()
 	const { isOpen, reviewId: selectedReviewId } = reviewDialogState
 	const { reviewSession, isLoading } = useReviewSessionWithReviews(
 		selectedReviewId!
