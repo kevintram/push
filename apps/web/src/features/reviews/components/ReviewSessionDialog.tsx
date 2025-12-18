@@ -7,10 +7,10 @@ import { useReviewSessionWithReviews } from '../api/getReviewSession'
 import { ReviewContext } from '../stores/SelectedReviewContext'
 import { ReviewDetail } from './ReviewDetail/ReviewDetail'
 
-export function ReviewDialog() {
-	const { reviewDialogState, closeReviewDialog } = useReviewTopicDialog()
+export function ReviewSessionDialog() {
+	const { reviewSessionDialogState: reviewDialogState, closeReviewSessionDialog: closeReviewDialog } = useReviewTopicDialog()
 	const { isOpen, reviewId: selectedReviewId } = reviewDialogState
-	const { reviewSession: review, isLoading } = useReviewSessionWithReviews(
+	const { reviewSession, isLoading } = useReviewSessionWithReviews(
 		selectedReviewId!
 	)
 
@@ -36,10 +36,10 @@ export function ReviewDialog() {
 
 	const contextValue = useMemo(
 		() => ({
-			review,
+			review: reviewSession,
 			isLoading
 		}),
-		[review, isLoading]
+		[reviewSession, isLoading]
 	)
 
 	return (

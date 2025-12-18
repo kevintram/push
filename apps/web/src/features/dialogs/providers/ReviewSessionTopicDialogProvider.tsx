@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
-import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
+import { ReviewSessionDialog } from '~/features/reviews/components/ReviewSessionDialog'
 import { TopicDialog } from '~/features/topics/components/TopicDialog'
-import { ReviewTopicDialogContext } from '../stores/ReviewTopicDialogContext'
+import { ReviewSessionTopicDialogContext } from '../stores/ReviewSessionTopicDialogContext'
 
-export function ReviewTopicDialogProvider({
+export function ReviewSessionTopicDialogProvider({
 	children
 }: {
 	children: React.ReactNode
@@ -13,7 +13,7 @@ export function ReviewTopicDialogProvider({
 		topicId: number | undefined
 	}>({ isOpen: false, topicId: undefined })
 
-	const [reviewDialog, setReviewDialog] = useState<{
+	const [reviewSessionDialog, setReviewSessionDialog] = useState<{
 		isOpen: boolean
 		reviewId: number | undefined
 	}>({ isOpen: false, reviewId: undefined })
@@ -21,44 +21,44 @@ export function ReviewTopicDialogProvider({
 	const openTopicDialog = useCallback(
 		(topicId: number) => {
 			// If review dialog is open, close it but keep the ID for potential reopen
-			if (reviewDialog.isOpen) {
-				setReviewDialog(prev => ({ ...prev, isOpen: false }))
+			if (reviewSessionDialog.isOpen) {
+				setReviewSessionDialog(prev => ({ ...prev, isOpen: false }))
 			}
 			// Open topic dialog
 			setTopicDialog({ isOpen: true, topicId })
 		},
-		[reviewDialog.isOpen]
+		[reviewSessionDialog.isOpen]
 	)
 
-	const openReviewDialog = useCallback(
+	const openReviewSessionDialog = useCallback(
 		(reviewId: number) => {
 			// If topic dialog is open, close it but keep the ID for potential reopen
 			if (topicDialog.isOpen) {
 				setTopicDialog(prev => ({ ...prev, isOpen: false }))
 			}
 			// Open review dialog
-			setReviewDialog({ isOpen: true, reviewId })
+			setReviewSessionDialog({ isOpen: true, reviewId })
 		},
 		[topicDialog.isOpen]
 	)
 
 	const closeTopicDialog = useCallback(() => {
-		const shouldReopenReview = reviewDialog.reviewId !== undefined
+		const shouldReopenReview = reviewSessionDialog.reviewId !== undefined
 
 		// Close topic dialog and clear its ID
 		setTopicDialog({ isOpen: false, topicId: undefined })
 
 		// If review was previously open, reopen it
 		if (shouldReopenReview) {
-			setReviewDialog(prev => ({ ...prev, isOpen: true }))
+			setReviewSessionDialog(prev => ({ ...prev, isOpen: true }))
 		}
-	}, [reviewDialog.reviewId])
+	}, [reviewSessionDialog.reviewId])
 
-	const closeReviewDialog = useCallback(() => {
+	const closeReviewSessionDialog = useCallback(() => {
 		const shouldReopenTopic = topicDialog.topicId !== undefined
 
 		// Close review dialog and clear its ID
-		setReviewDialog({ isOpen: false, reviewId: undefined })
+		setReviewSessionDialog({ isOpen: false, reviewId: undefined })
 
 		// If topic was previously open, reopen it
 		if (shouldReopenTopic) {
@@ -69,43 +69,43 @@ export function ReviewTopicDialogProvider({
 	const maximizeTopicDialog = useCallback(() => {
 		// Clear everything so nothing reopens
 		setTopicDialog({ isOpen: false, topicId: undefined })
-		setReviewDialog({ isOpen: false, reviewId: undefined })
+		setReviewSessionDialog({ isOpen: false, reviewId: undefined })
 	}, [])
 
-	const maximizeReviewDialog = useCallback(() => {
+	const maximizeReviewSessionDialog = useCallback(() => {
 		// Clear everything so nothing reopens
 		setTopicDialog({ isOpen: false, topicId: undefined })
-		setReviewDialog({ isOpen: false, reviewId: undefined })
+		setReviewSessionDialog({ isOpen: false, reviewId: undefined })
 	}, [])
 
 	const contextValue = useMemo(
 		() => ({
 			topicDialogState: topicDialog,
-			reviewDialogState: reviewDialog,
+			reviewSessionDialogState: reviewSessionDialog,
 			openTopicDialog,
 			closeTopicDialog,
 			maximizeTopicDialog,
-			openReviewDialog,
-			closeReviewDialog,
-			maximizeReviewDialog
+			openReviewSessionDialog,
+			closeReviewSessionDialog,
+			maximizeReviewSessionDialog
 		}),
 		[
 			topicDialog,
-			reviewDialog,
+			reviewSessionDialog,
 			openTopicDialog,
 			closeTopicDialog,
 			maximizeTopicDialog,
-			openReviewDialog,
-			closeReviewDialog,
-			maximizeReviewDialog
+			openReviewSessionDialog,
+			closeReviewSessionDialog,
+			maximizeReviewSessionDialog
 		]
 	)
 
 	return (
-		<ReviewTopicDialogContext value={contextValue}>
+		<ReviewSessionTopicDialogContext value={contextValue}>
 			{children}
 			<TopicDialog />
-			<ReviewDialog />
-		</ReviewTopicDialogContext>
+			<ReviewSessionDialog />
+		</ReviewSessionTopicDialogContext>
 	)
 }
