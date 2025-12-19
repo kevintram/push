@@ -4,7 +4,6 @@ import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
-import { Checkbox } from '~/components/ui/Checkbox'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -23,6 +22,10 @@ import { reviewKeys } from '../api/queryKeys'
 import { useUpdateReview } from '../api/updateReview'
 import type { Review } from '../types/review.types'
 import { DatePickerDropdown } from './DatePickerDropdown'
+import {
+	ReviewRatingCheckbox,
+	type ReviewRatingState
+} from './ReviewRatingCheckbox'
 
 interface ReviewItemProps {
 	entry: Review
@@ -48,15 +51,27 @@ export function ReviewItem({
 	const updateReviewMutation = useUpdateReview()
 	const deleteReviewMutation = useDeleteReview()
 
-	const handleCheckboxChange = useCallback(
-		(checked: boolean) => {
-			if (entry.id) {
+	const reviewStatus: ReviewRatingState = useMemo(() => {
+		if (!entry.completed_at) return 'uncompleted'
+		return entry.rating ?? 'good'
+	}, [entry.completed_at, entry.rating])
+
+	const handleStatusChange = useCallback(
+		(status: ReviewRatingState) => {
+			if (!entry.id) return
+			if (status === 'uncompleted') {
 				updateReviewMutation.mutateAsync({
 					id: entry.id,
-					rating: checked ? 'good' : null,
-					completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
+					rating: null,
+					completed_at: null
 				})
+				return
 			}
+			updateReviewMutation.mutateAsync({
+				id: entry.id,
+				rating: status,
+				completed_at: dayjs().format('YYYY-MM-DD')
+			})
 		},
 		[entry.id, updateReviewMutation]
 	)
@@ -156,16 +171,15 @@ export function ReviewItem({
 				<div className='flex flex-col'>
 					{/* Row 1: Checkbox, Description, Date, More Button */}
 					<div className='flex items-center pb-1'>
-						<Checkbox
-							checked={!!entry.completed_at}
+						<ReviewRatingCheckbox
 							className={
 								isOverdueValue
 									? 'border-red-600 dark:border-red-700 dark:bg-red-700'
 									: ''
 							}
-							disabled={readonly}
-							onCheckedChange={handleCheckboxChange}
-							onClick={e => e.stopPropagation()}
+							disabled={readonly || updateReviewMutation.isPending}
+							onChange={handleStatusChange}
+							value={reviewStatus}
 						/>
 						<span
 							className={`ml-2 min-w-0 flex-1 truncate text-sm ${entry.description === '' || entry.description === null ? 'text-muted-foreground' : 'text-foreground'}`}

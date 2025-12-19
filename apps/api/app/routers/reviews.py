@@ -497,16 +497,21 @@ async def update_review(
         raise HTTPException(status_code=404, detail="Review not found")
 
     topic = existing_review.topic
+    fields_set = review_update.model_fields_set
     
     # Update simple fields
-    if review_update.description is not None:
+    if "description" in fields_set and review_update.description is not None:
         existing_review.description = review_update.description
-    if review_update.scheduled_at is not None:
+    if "scheduled_at" in fields_set:
         existing_review.scheduled_at = review_update.scheduled_at
 
     # Check if review is completed - only run FSRS if it is
     # We use the new completed_at if provided, else the existing one
-    new_completed_at = review_update.completed_at if review_update.completed_at is not None else existing_review.completed_at
+    new_completed_at = (
+        review_update.completed_at
+        if "completed_at" in fields_set
+        else existing_review.completed_at
+    )
     
     # If completed_at is changing, we might need to update it
     completed_at_changed = existing_review.completed_at != new_completed_at
@@ -515,7 +520,7 @@ async def update_review(
 
     if new_completed_at is None:
         # Review not completed yet - only update rating/desc, skip FSRS
-        if review_update.rating is not None:
+        if "rating" in fields_set:
             existing_review.rating = review_update.rating
 
         await session.flush()

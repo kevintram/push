@@ -2,7 +2,6 @@ import dayjs from 'dayjs'
 import { CalendarIcon, X } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Checkbox } from '~/components/ui/Checkbox'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
 import { Skeleton } from '~/components/ui/Skeleton'
 import { Textarea } from '~/components/ui/Textarea'
@@ -19,6 +18,10 @@ import { useReview } from '../api/getReviews'
 import { useUpdateReview } from '../api/updateReview'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { ReviewDetailHeader } from './ReviewDetail/ReviewDetailHeader'
+import {
+	ReviewRatingCheckbox,
+	type ReviewRatingState
+} from './ReviewRatingCheckbox'
 
 interface ReviewDialogProps {
 	reviewId: number | null
@@ -91,14 +94,27 @@ export function ReviewDialog({
 		key: `review-dialog-${review?.id}`
 	})
 
-	const handleCheckboxChange = useCallback(
-		(checked: boolean) => {
-			if (review?.id) {
+	const reviewStatus: ReviewRatingState = useMemo(() => {
+		if (!review?.completed_at) return 'uncompleted'
+		return review.rating ?? 'good'
+	}, [review?.completed_at, review?.rating])
+
+	const handleStatusChange = useCallback(
+		(status: ReviewRatingState) => {
+			if (!review?.id) return
+			if (status === 'uncompleted') {
 				updateReviewMutation.mutateAsync({
 					id: review.id,
-					completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
+					rating: null,
+					completed_at: null
 				})
+				return
 			}
+			updateReviewMutation.mutateAsync({
+				id: review.id,
+				rating: status,
+				completed_at: dayjs().format('YYYY-MM-DD')
+			})
 		},
 		[review?.id, updateReviewMutation]
 	)
@@ -183,10 +199,11 @@ export function ReviewDialog({
 				</div>
 
 				<div className='flex flex-1 gap-4 px-4'>
-					<Checkbox
-						checked={!!review.completed_at}
+					<ReviewRatingCheckbox
 						className={`translate-y-0.5 ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
-						onCheckedChange={handleCheckboxChange}
+						disabled={isLoading || updateReviewMutation.isPending}
+						onChange={handleStatusChange}
+						value={reviewStatus}
 					/>
 					<div className='flex flex-1 flex-col'>
 						<div className='flex items-start justify-between gap-4'>
