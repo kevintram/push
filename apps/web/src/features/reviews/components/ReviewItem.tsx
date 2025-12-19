@@ -7,7 +7,7 @@ import {
 	SquareStack,
 	Trash
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
 import {
@@ -46,6 +46,32 @@ const getRelativeDateLabel = (date: Date | null) => {
 	return `in ${diffDays}d`
 }
 
+const getInitialSelectedDate = (entry: ReviewListItem) => {
+	if (entry.completed_at) {
+		return dayjs(entry.completed_at).toDate()
+	}
+	if (entry.scheduled_at) {
+		return dayjs(entry.scheduled_at).toDate()
+	}
+	return null
+}
+
+const getStabilityChangeColorClass = (
+	before: number | null,
+	after: number | null
+) => {
+	if (after == null || before == null) {
+		return ''
+	}
+	if (after > before) {
+		return 'text-green-600 dark:text-green-400'
+	}
+	if (after < before) {
+		return 'text-red-600 dark:text-red-400'
+	}
+	return 'text-muted-foreground'
+}
+
 interface ReviewItemProps {
 	entry: ReviewListItem
 	onReviewClick?: (reviewId: number) => void
@@ -59,34 +85,31 @@ export function ReviewItem({
 }: ReviewItemProps) {
 	const navigate = useNavigate()
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
-	const [_isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
-	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
-		if (entry.completed_at) {
-			return entry.completed_at ? dayjs(entry.completed_at).toDate() : null
-		}
-		return entry.scheduled_at ? dayjs(entry.scheduled_at).toDate() : null
-	})
+	const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
+		getInitialSelectedDate(entry)
+	)
 
 	const updateReviewMutation = useUpdateReview()
 	const deleteReviewMutation = useDeleteReview()
 
-	const reviewStatus: ReviewRatingState = useMemo(() => {
-		if (!entry.completed_at) return 'uncompleted'
-		return entry.rating ?? 'good'
-	}, [entry.completed_at, entry.rating])
+	const isCompleted = entry.completed_at != null
+	const reviewStatus: ReviewRatingState = isCompleted
+		? (entry.rating ?? 'good')
+		: 'uncompleted'
 
-	const stabilityChangeColorClass = useMemo(() => {
-		if (entry.stability_after == null || entry.stability_before == null) {
-			return ''
-		}
-		if (entry.stability_after > entry.stability_before) {
-			return 'text-green-600 dark:text-green-400'
-		}
-		if (entry.stability_after < entry.stability_before) {
-			return 'text-red-600 dark:text-red-400'
-		}
-		return 'text-muted-foreground'
-	}, [entry.stability_after, entry.stability_before])
+	const stabilityChangeColorClass = getStabilityChangeColorClass(
+		entry.stability_before,
+		entry.stability_after
+	)
+	const hasStability = entry.stability_after != null && entry.stability_before != null
+	const stabilityAfterRounded = hasStability
+		? Math.round(entry.stability_after ?? 0)
+		: 0
+	const stabilityDeltaRounded = hasStability
+		? Math.round(
+				(entry.stability_after ?? 0) - (entry.stability_before ?? 0)
+			)
+		: 0
 
 	const handleStatusChange = useCallback(
 		(status: ReviewRatingState) => {
@@ -111,21 +134,23 @@ export function ReviewItem({
 	const handleDateSave = useCallback(
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
-			if (entry.id) {
-				const newDateString = newDate
-					? dayjs(newDate).format('YYYY-MM-DD')
-					: null
-				if (entry.completed_at) {
-					updateReviewMutation.mutateAsync({
-						id: entry.id,
-						completed_at: newDateString
-					})
-				} else {
-					updateReviewMutation.mutateAsync({
-						id: entry.id,
-						scheduled_at: newDateString
-					})
-				}
+			if (!entry.id) {
+				setIsDatePopoverOpen(false)
+				return
+			}
+			const newDateString = newDate
+				? dayjs(newDate).format('YYYY-MM-DD')
+				: null
+			if (entry.completed_at) {
+				updateReviewMutation.mutateAsync({
+					id: entry.id,
+					completed_at: newDateString
+				})
+			} else {
+				updateReviewMutation.mutateAsync({
+					id: entry.id,
+					scheduled_at: newDateString
+				})
 			}
 			setIsDatePopoverOpen(false)
 		},
@@ -133,10 +158,9 @@ export function ReviewItem({
 	)
 
 	const handleDelete = useCallback(async () => {
-		if (entry?.id) {
-			await deleteReviewMutation.mutateAsync(entry.id)
-		}
-	}, [deleteReviewMutation, entry?.id])
+		if (!entry.id) return
+		await deleteReviewMutation.mutateAsync(entry.id)
+	}, [deleteReviewMutation, entry.id])
 
 	const handleReviewClick = useCallback(() => {
 		if (readonly) return
@@ -156,38 +180,27 @@ export function ReviewItem({
 		[navigate, entry.review_session.id]
 	)
 
-	const effectiveDate: Date | null = useMemo(() => {
-		if (entry.effective_date) {
-			return dayjs(entry.effective_date).toDate()
-		}
-		return null
-	}, [entry.effective_date])
+	const effectiveDate = entry.effective_date
+		? dayjs(entry.effective_date).toDate()
+		: null
 
-	const isOverdueValue: boolean = useMemo(() => {
-		return isOverdue({
-			scheduled_at: entry.scheduled_at,
-			isCompleted: entry.completed_at !== null
-		})
-	}, [entry.scheduled_at, entry.completed_at])
+	const isOverdueValue = isOverdue({
+		scheduled_at: entry.scheduled_at,
+		isCompleted
+	})
 
-	const relativeDate = useMemo(() => {
-		return getRelativeDateLabel(effectiveDate)
-	}, [effectiveDate])
+	const relativeDate = getRelativeDateLabel(effectiveDate)
 
-	const sessionDisplayText = useMemo(() => {
-		const description = entry.review_session.description?.trim()
-		return description || 'no description'
-	}, [entry.review_session.description])
+	const sessionDisplayText =
+		entry.review_session.description?.trim() || 'no description'
 
-	const dateButtonColorClass = useMemo(() => {
-		if (isOverdueValue) {
-			return 'text-red-600 dark:text-red-400'
-		}
-		if (relativeDate === 'Today') {
-			return 'text-blue-600 dark:text-blue-400'
-		}
-		return ''
-	}, [isOverdueValue, relativeDate])
+	const dateButtonColorClass = cn(
+		isOverdueValue && 'text-red-600 dark:text-red-400',
+		!isOverdueValue &&
+			relativeDate === 'Today' &&
+			'text-blue-600 dark:text-blue-400'
+	)
+	const description = entry.description?.trim()
 
 	return (
 		<Card className='rounded-none border-0 border-b bg-transparent shadow-none'>
@@ -212,9 +225,12 @@ export function ReviewItem({
 							value={reviewStatus}
 						/>
 						<span
-							className={`ml-2 min-w-0 flex-1 truncate text-sm ${entry.description === '' || entry.description === null ? 'text-muted-foreground' : 'text-foreground'}`}
+							className={cn(
+								'ml-2 min-w-0 flex-1 truncate text-sm',
+								description ? 'text-foreground' : 'text-muted-foreground'
+							)}
 						>
-							{entry.description || 'No description'}
+							{description || 'No description'}
 						</span>
 						<Tooltip>
 							<DatePickerDropdown
@@ -224,9 +240,15 @@ export function ReviewItem({
 								onOpenChange={setIsDatePopoverOpen}
 								selectedDate={selectedDate}
 								trigger={
-									<TooltipTrigger asChild={true}>
+									<TooltipTrigger asChild>
 										<Button
-											className={`text-xs ${readonly ? 'cursor-default opacity-50' : 'hover:bg-muted/50'} ${dateButtonColorClass}`}
+											className={cn(
+												'text-xs',
+												readonly
+													? 'cursor-default opacity-50'
+													: 'hover:bg-muted/50',
+												dateButtonColorClass
+											)}
 											disabled={readonly}
 											onClick={e => e.stopPropagation()}
 											size='sm'
@@ -243,8 +265,8 @@ export function ReviewItem({
 							</TooltipContent>
 						</Tooltip>
 						{!readonly && (
-							<DropdownMenu onOpenChange={setIsMoreDropdownOpen}>
-								<DropdownMenuTrigger asChild={true}>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
 									<Button
 										className='h-6 w-6 p-0'
 										onClick={e => e.stopPropagation()}
@@ -257,7 +279,7 @@ export function ReviewItem({
 								</DropdownMenuTrigger>
 								<DropdownMenuContent
 									align='end'
-									avoidCollisions={true}
+									avoidCollisions
 									side='bottom'
 									sideOffset={4}
 								>
@@ -284,26 +306,19 @@ export function ReviewItem({
 							<SquareStack className='h-3 w-3' />
 							<span>{sessionDisplayText}</span>
 						</Button>
-						{entry.stability_after != null &&
-							entry.stability_before != null && (
-								<>
-									<span>⋅</span>
-									<div className='flex items-center'>
-										<BicepsFlexed className='mr-1 h-3 w-3' />
-										<span>{`${Math.round(entry.stability_after)}d`}</span>
-										<span className={`ml-1 ${stabilityChangeColorClass}`}>
-											(
-											{entry.stability_after >= entry.stability_before
-												? '+'
-												: ''}
-											{Math.round(
-												entry.stability_after - entry.stability_before
-											)}
-											)
-										</span>
-									</div>
-								</>
-							)}
+						{hasStability && (
+							<>
+								<span>⋅</span>
+								<div className='flex items-center'>
+									<BicepsFlexed className='mr-1 h-3 w-3' />
+									<span>{`${stabilityAfterRounded}d`}</span>
+									<span className={cn('ml-1', stabilityChangeColorClass)}>
+										({stabilityDeltaRounded >= 0 ? '+' : ''}
+										{stabilityDeltaRounded})
+									</span>
+								</div>
+							</>
+						)}
 					</div>
 				</div>
 			</CardContent>
