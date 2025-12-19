@@ -22,6 +22,9 @@ from app.schemas.topics import (
 from app.schemas.reviews import (
     ReviewBase,
     ReviewRead,
+    ReviewListItem,
+    ReviewSessionSummary,
+    TopicSummary,
     ReviewWithTopic,
     ReviewCreate,
     ReviewUpdate,
@@ -36,6 +39,9 @@ ReviewSessionCreate.model_rebuild()
 ReviewSessionUpdate.model_rebuild()
 ReviewBase.model_rebuild()
 ReviewRead.model_rebuild()
+ReviewListItem.model_rebuild()
+ReviewSessionSummary.model_rebuild()
+TopicSummary.model_rebuild()
 ReviewWithTopic.model_rebuild()
 ReviewCreate.model_rebuild()
 ReviewUpdate.model_rebuild()
@@ -59,6 +65,9 @@ __all__ = [
     "ReviewSessionReadWithReviews",
     "ReviewBase",
     "ReviewRead",
+    "ReviewListItem",
+    "ReviewSessionSummary",
+    "TopicSummary",
     "ReviewWithTopic",
     "ReviewCreate",
     "ReviewUpdate",

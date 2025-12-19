@@ -33,6 +33,45 @@ export type Review = {
 	due_after: string | null
 }
 
+export type ReviewListItem = {
+	id: number
+	review_session_id: number
+	topic_id: number
+	rating: Rating | null
+
+	description: string
+	scheduled_at: string | null
+	completed_at: string | null
+	effective_date: string | null
+
+	inserted_at: string
+	updated_at: string
+
+	review_session: {
+		id: number
+		description: string | null
+	}
+	topic: {
+		id: number
+		name: string
+		notes: string
+	}
+
+	// Topic FSRS state before review
+	stability_before: number | null
+	difficulty_before: number | null
+	state_before: LearningState | null
+	step_before: number | null
+	due_before: string | null
+
+	// Topic FSRS state after review
+	stability_after: number | null
+	difficulty_after: number | null
+	state_after: LearningState | null
+	step_after: number | null
+	due_after: string | null
+}
+
 export type ReviewSession = {
 	id: number
 	scheduled_at: string | null

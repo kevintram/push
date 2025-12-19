@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload
 from app.dependencies import SessionDep, UserIdDep
 from app.core.config import settings
 from app.models import Review, ReviewSession, Topic
-from app.schemas import ReviewCreate, ReviewUpdate, ReviewWithTopic
+from app.schemas import ReviewCreate, ReviewListItem, ReviewRead, ReviewUpdate, ReviewWithTopic
 
 router = APIRouter()
 
@@ -241,13 +241,25 @@ async def read_reviews(
     effective_date_after: str | None = None,
     completed: bool | None = None,
     scheduled: bool | None = None,
-) -> list[ReviewWithTopic]:
+) -> list[ReviewListItem]:
     """Get all reviews for the user, with optional filters for review_session_id, topic_id, dates, and completion status."""
     stmt = (
-        select(Review)
+        select(
+            Review,
+            Topic.id,
+            Topic.name,
+            Topic.notes,
+            ReviewSession.id,
+            ReviewSession.description,
+        )
+        .join(Topic, Review.topic_id == Topic.id)
+        .join(ReviewSession, Review.review_session_id == ReviewSession.id)
         .where(Review.user_id == user_id)
-        .order_by(Review.completed_at.asc().nulls_first(), Review.scheduled_at.asc(), Review.id.asc())
-        .options(selectinload(Review.topic), selectinload(Review.review_session))
+        .order_by(
+            Review.completed_at.asc().nulls_first(),
+            Review.scheduled_at.asc(),
+            Review.id.asc(),
+        )
     )
 
     if review_session_id is not None:
@@ -277,7 +289,27 @@ async def read_reviews(
             stmt = stmt.where(Review.scheduled_at.is_(None))
 
     result = await session.execute(stmt)
-    return result.scalars().all()
+    items: list[ReviewListItem] = []
+    for (
+        review,
+        row_topic_id,
+        topic_name,
+        topic_notes,
+        row_review_session_id,
+        review_session_description,
+    ) in result.all():
+        review_data = ReviewRead.model_validate(review).model_dump()
+        review_data["topic"] = {
+            "id": row_topic_id,
+            "name": topic_name,
+            "notes": topic_notes,
+        }
+        review_data["review_session"] = {
+            "id": row_review_session_id,
+            "description": review_session_description,
+        }
+        items.append(ReviewListItem(**review_data))
+    return items
 
 
 @router.get("/reviews/{id}/", tags=["reviews"])

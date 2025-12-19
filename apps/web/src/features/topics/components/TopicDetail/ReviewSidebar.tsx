@@ -27,7 +27,10 @@ import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import type { Rating, Review } from '~/features/reviews/types/review.types'
+import type {
+	Rating,
+	ReviewListItem
+} from '~/features/reviews/types/review.types'
 import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
@@ -43,8 +46,8 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
 	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
-		const scheduled: Array<Review> = []
-		const unscheduled: Array<Review> = []
+		const scheduled: Array<ReviewListItem> = []
+		const unscheduled: Array<ReviewListItem> = []
 
 		for (const review of reviews) {
 			if (review.effective_date) {

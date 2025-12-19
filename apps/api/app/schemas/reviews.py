@@ -44,6 +44,28 @@ class ReviewRead(ReviewBase):
     due_after: date | None
 
 
+class ReviewSessionSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    description: str | None = None
+
+
+class TopicSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    notes: str
+
+
+class ReviewListItem(ReviewRead):
+    model_config = ConfigDict(from_attributes=True)
+
+    review_session: ReviewSessionSummary
+    topic: TopicSummary
+
+
 class ReviewWithTopic(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 

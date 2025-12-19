@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import type { GetReviewsFilters } from '../types/api.types'
-import { ReviewSchema } from '../types/review.schemas'
+import { ReviewListItemSchema, ReviewSchema } from '../types/review.schemas'
 import { reviewKeys } from './queryKeys'
 
 export async function getReviews(filters?: GetReviewsFilters) {
@@ -44,7 +44,7 @@ export async function getReviews(filters?: GetReviewsFilters) {
 
 	const data = await response.json()
 	try {
-		return v.parse(v.array(ReviewSchema), data)
+		return v.parse(v.array(ReviewListItemSchema), data)
 	} catch (error) {
 		if (v.isValiError(error)) {
 			throw new Error(`Validation failed: ${error.message}`)
