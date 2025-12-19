@@ -282,6 +282,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 										key={entry.id}
 										onReviewClick={handleReviewClick}
 										readonly={readonly}
+										variant='session'
 									/>
 								))}
 							</div>
@@ -300,6 +301,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 											key={entry.id}
 											onReviewClick={handleReviewClick}
 											readonly={readonly}
+											variant='session'
 										/>
 									))}
 								</div>

@@ -10,7 +10,6 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useDeleteReview } from '~/features/reviews/api/deleteReview'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
@@ -21,11 +20,10 @@ import { ReviewContext } from '../../stores/SelectedReviewContext'
 import { DatePickerDropdown } from '../DatePickerDropdown'
 import { ReviewSessionDetailHeader } from './ReviewSessionDetailHeader'
 import { ReviewSessionDetailSkeleton } from './ReviewSessionDetailSkeleton'
-import { ReviewSessionTopicsPanel } from './ReviewSessionTopicsPanel'
+import { ReviewSessionTopicsPanel } from './ReviewsPanel'
 
 interface ReviewSessionDetailProps {
 	onDelete?: () => void | Promise<void>
-	onNavigate?: () => void | Promise<void>
 	/**
 	 * Content to render in the left section (e.g., navigation buttons)
 	 */
@@ -42,7 +40,6 @@ interface ReviewSessionDetailProps {
 
 export function ReviewSessionDetail({
 	onDelete,
-	onNavigate,
 	headerBeforeActions,
 	headerAfterActions,
 	className
@@ -52,7 +49,6 @@ export function ReviewSessionDetail({
 
 	const updateReviewMutation = useUpdateReviewSession()
 	const deleteReviewSessionMutation = useDeleteReviewSession()
-	const deleteReviewMutation = useDeleteReview()
 
 	const handleDeleteReview = useCallback(
 		async (reviewId: number) => {
@@ -99,13 +95,6 @@ export function ReviewSessionDetail({
 			}
 		},
 		[review?.id, updateReviewMutation]
-	)
-
-	const handleRemoveReview = useCallback(
-		async (topicReviewId: number) => {
-			await deleteReviewMutation.mutateAsync(topicReviewId)
-		},
-		[deleteReviewMutation]
 	)
 
 	const handleDateChange = useCallback(
@@ -267,11 +256,7 @@ export function ReviewSessionDetail({
 						</Tooltip>
 					</div>
 					<div className='w-full flex-1'>
-						<ReviewSessionTopicsPanel
-							getScrollElement={() => scrollContainerRef.current}
-							onNavigate={onNavigate}
-							onRemoveReview={handleRemoveReview}
-						/>
+						<ReviewSessionTopicsPanel />
 					</div>
 				</div>
 			</div>

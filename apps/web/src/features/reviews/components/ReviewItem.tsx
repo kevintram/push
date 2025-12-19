@@ -5,6 +5,7 @@ import {
 	CalendarIcon,
 	MoreHorizontal,
 	SquareStack,
+	StickyNote,
 	Trash
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -76,12 +77,14 @@ interface ReviewItemProps {
 	entry: ReviewListItem
 	onReviewClick?: (reviewId: number) => void
 	readonly?: boolean
+	variant?: 'default' | 'session' | 'topic'
 }
 
 export function ReviewItem({
 	entry,
 	onReviewClick,
-	readonly = false
+	readonly = false,
+	variant = 'default'
 }: ReviewItemProps) {
 	const navigate = useNavigate()
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
@@ -177,6 +180,17 @@ export function ReviewItem({
 		[navigate, entry.review_session.id]
 	)
 
+	const handleTopicClick = useCallback(
+		(event: React.MouseEvent) => {
+			event.stopPropagation()
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: entry.topic.id.toString() }
+			})
+		},
+		[navigate, entry.topic.id]
+	)
+
 	const effectiveDate = entry.effective_date
 		? dayjs(entry.effective_date).toDate()
 		: null
@@ -198,6 +212,11 @@ export function ReviewItem({
 			'text-blue-600 dark:text-blue-400'
 	)
 	const description = entry.description?.trim()
+
+	// Determine if we're actually rendering topic or session content
+	const showingTopic = (variant === 'default' || variant === 'topic') && entry.topic?.name
+	const showingSession = variant === 'default' || variant === 'session'
+	const showingTopicOrSession = showingTopic || showingSession
 
 	return (
 		<Card className='rounded-none border-0 border-b bg-transparent shadow-none'>
@@ -294,18 +313,32 @@ export function ReviewItem({
 						)}
 					</div>
 					<div className='flex items-center justify-end gap-2 text-muted-foreground text-xs'>
-						<Button
-							className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-							onClick={handleSessionClick}
-							size='sm'
-							variant='link'
-						>
-							<SquareStack className='h-3 w-3' />
-							<span>{sessionDisplayText}</span>
-						</Button>
+						{(variant === 'default' || variant === 'topic') && (
+							<Button
+								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
+								onClick={handleTopicClick}
+								size='sm'
+								variant='link'
+							>
+								<StickyNote className='h-3 w-3'/>
+								<span>{entry.topic.name}</span>
+							</Button>
+						)}
+						{variant === 'default' && <span>⋅</span>}
+						{(variant === 'default' || variant === 'session') && (
+							<Button
+								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
+								onClick={handleSessionClick}
+								size='sm'
+								variant='link'
+							>
+								<SquareStack className='h-3 w-3' />
+								<span>{sessionDisplayText}</span>
+							</Button>
+						)}
 						{hasStability && (
 							<>
-								<span>⋅</span>
+								{showingTopicOrSession && <span>⋅</span>}
 								<div className='flex items-center'>
 									<BicepsFlexed className='mr-1 h-3 w-3' />
 									<span>{`${stabilityAfterRounded}d`}</span>
