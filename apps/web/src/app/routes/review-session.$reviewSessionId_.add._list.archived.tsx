@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Home } from 'lucide-react'
+import { Archive } from 'lucide-react'
 import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
@@ -14,41 +14,41 @@ import { AddTopicCard } from '~/features/reviews/components/AddTopicToReviewDial
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/features/topics/types/topic.types'
 
-export const Route = createFileRoute('/reviews/$reviewId_/add/_list/')({
-	component: IndexComponent
+export const Route = createFileRoute(
+	'/review-session/$reviewSessionId_/add/_list/archived'
+)({
+	component: ArchivedComponent
 })
 
-function IndexComponent() {
+function ArchivedComponent() {
 	const navigate = Route.useNavigate()
-	const { reviewId } = Route.useParams()
+	const { reviewSessionId } = Route.useParams()
 
-	// Root Topics Logic
-	const { data: rootTopics = [], isLoading: isLoadingRoot } = useTopics({
-		root: true,
-		archived: false,
-		inboxed: false
+	const { data: topics = [], isLoading } = useTopics({
+		archived: true,
+		order: 'desc'
 	})
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
 			navigate({
-				to: '/reviews/$reviewId/add/topics/$topicId',
-				params: { reviewId, topicId: topic.id.toString() }
+				to: '/review-session/$reviewSessionId/add/topics/$topicId',
+				params: { reviewSessionId, topicId: topic.id.toString() }
 			})
 		},
-		[navigate, reviewId]
+		[navigate, reviewSessionId]
 	)
 
 	return (
-		<RootTopicsList
-			isLoading={isLoadingRoot}
+		<ArchivedList
+			isLoading={isLoading}
 			onTopicClick={handleTopicClick}
-			topics={rootTopics}
+			topics={topics}
 		/>
 	)
 }
 
-function RootTopicsList({
+function ArchivedList({
 	topics,
 	onTopicClick,
 	isLoading
@@ -84,11 +84,9 @@ function RootTopicsList({
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<Home />
+							<Archive />
 						</EmptyMedia>
-						<EmptyTitle>
-							Topics are anything you want to learn or remember.
-						</EmptyTitle>
+						<EmptyTitle>Archived topics will appear here.</EmptyTitle>
 					</EmptyHeader>
 				</Empty>
 			</div>

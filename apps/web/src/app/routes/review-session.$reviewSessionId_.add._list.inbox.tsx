@@ -15,13 +15,15 @@ import { AddTopicCard } from '~/features/reviews/components/AddTopicToReviewDial
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/features/topics/types/topic.types'
 
-export const Route = createFileRoute('/reviews/$reviewId_/add/_list/inbox')({
+export const Route = createFileRoute(
+	'/review-session/$reviewSessionId_/add/_list/inbox'
+)({
 	component: InboxComponent
 })
 
 function InboxComponent() {
 	const navigate = Route.useNavigate()
-	const { reviewId } = Route.useParams()
+	const { reviewSessionId } = Route.useParams()
 
 	const { data: topics, isLoading } = useTopics({
 		inboxed: true,
@@ -31,11 +33,11 @@ function InboxComponent() {
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
 			navigate({
-				to: '/reviews/$reviewId/add/topics/$topicId',
-				params: { reviewId, topicId: topic.id.toString() }
+				to: '/review-session/$reviewSessionId/add/topics/$topicId',
+				params: { reviewSessionId, topicId: topic.id.toString() }
 			})
 		},
-		[navigate, reviewId]
+		[navigate, reviewSessionId]
 	)
 
 	return (

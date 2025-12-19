@@ -54,8 +54,8 @@ export function CreateButton() {
 			completedAt: today
 		})
 		navigate({
-			to: '/reviews/$reviewId',
-			params: { reviewId: review.id.toString() }
+			to: '/review-session/$reviewSessionId',
+			params: { reviewSessionId: review.id.toString() }
 		})
 	}, [createReview, navigate])
 
@@ -66,8 +66,8 @@ export function CreateButton() {
 			completedAt: null
 		})
 		navigate({
-			to: '/reviews/$reviewId',
-			params: { reviewId: review.id.toString() }
+			to: '/review-session/$reviewSessionId',
+			params: { reviewSessionId: review.id.toString() }
 		})
 	}, [createReview, navigate])
 

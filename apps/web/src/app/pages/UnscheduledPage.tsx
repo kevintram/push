@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { CircleDashed, Home } from 'lucide-react'
 import { useMemo } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
-import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
+import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
@@ -58,7 +58,7 @@ export function UnscheduledPage() {
 		handleTopicClick,
 		handleCreateTopic,
 		isCreatingTopic
-	} = useReviewPageHandlers()
+	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	const isSectionCollapsed = collapsedSections.unscheduled ?? false

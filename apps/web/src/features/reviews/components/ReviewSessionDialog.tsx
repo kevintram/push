@@ -5,7 +5,7 @@ import { Dialog, DialogContent } from '~/components/ui/Dialog'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useReviewSessionWithReviews } from '../api/getReviewSession'
 import { ReviewContext } from '../stores/SelectedReviewContext'
-import { ReviewDetail } from './ReviewDetail/ReviewDetail'
+import { ReviewSessionDetail } from './ReviewSessionDetail/ReviewSessionDetail'
 
 export function ReviewSessionDialog() {
 	const {
@@ -52,7 +52,7 @@ export function ReviewSessionDialog() {
 				showCloseButton={false}
 			>
 				<ReviewContext value={contextValue}>
-					<ReviewDetail
+					<ReviewSessionDetail
 						className='p-4'
 						headerAfterActions={headerActions}
 						onDelete={handleDelete}

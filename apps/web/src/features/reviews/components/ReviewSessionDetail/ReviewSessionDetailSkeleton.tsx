@@ -1,6 +1,6 @@
 import { Skeleton } from '~/components/ui/Skeleton'
 
-export function ReviewDetailSkeleton() {
+export function ReviewSessionDetailSkeleton() {
 	return (
 		<div className='flex min-h-0 flex-1 flex-col'>
 			<div className='sticky top-0 z-10 w-full border-b'>

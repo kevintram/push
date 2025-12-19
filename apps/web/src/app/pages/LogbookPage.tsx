@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronDown, Home, ListChecks } from 'lucide-react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
-import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
+import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
@@ -21,7 +21,7 @@ export function LogbookPage() {
 	const { sections, isLoading } = useLogbookReviewSessions()
 
 	const { handleReviewClick, handleCreateTopic, isCreatingTopic } =
-		useReviewPageHandlers()
+		useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	return (

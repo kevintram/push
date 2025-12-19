@@ -19,11 +19,11 @@ import { useDeleteReview } from '../api/deleteReview'
 import { useReview } from '../api/getReviews'
 import { useUpdateReview } from '../api/updateReview'
 import { DatePickerDropdown } from './DatePickerDropdown'
-import { ReviewDetailHeader } from './ReviewDetail/ReviewDetailHeader'
 import {
 	ReviewRatingCheckbox,
 	type ReviewRatingState
 } from './ReviewRatingCheckbox'
+import { ReviewSessionDetailHeader } from './ReviewSessionDetail/ReviewSessionDetailHeader'
 
 interface ReviewDialogProps {
 	reviewId: number | null
@@ -178,8 +178,8 @@ export function ReviewDialog({
 	const handleSessionClick = useCallback(() => {
 		if (!review?.review_session_id) return
 		navigate({
-			to: '/reviews/$reviewId',
-			params: { reviewId: review.review_session_id.toString() }
+			to: '/review-session/$reviewSessionId',
+			params: { reviewSessionId: review.review_session_id.toString() }
 		})
 	}, [navigate, review?.review_session_id])
 
@@ -265,7 +265,7 @@ export function ReviewDialog({
 				>
 					<div className='flex h-full min-h-0 flex-col'>
 						<div className='border-b'>
-							<ReviewDetailHeader
+							<ReviewSessionDetailHeader
 								headerAfterActions={headerActions}
 								onDelete={handleDelete}
 							/>

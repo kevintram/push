@@ -15,14 +15,14 @@ import { useAddFlowHistory } from '~/features/reviews/components/AddTopicToRevie
 import type { Rating } from '~/features/reviews/types/review.types'
 import type { Topic } from '~/features/topics/types/topic.types'
 
-export const Route = createFileRoute('/reviews/$reviewId_/add')({
+export const Route = createFileRoute('/review-session/$reviewSessionId_/add')({
 	component: RouteComponent
 })
 
 function RouteComponent() {
-	const { reviewId } = Route.useParams()
+	const { reviewSessionId } = Route.useParams()
 	const { reviewSession: review } = useReviewSessionWithReviews(
-		Number.parseInt(reviewId, 10)
+		Number.parseInt(reviewSessionId, 10)
 	)
 
 	return (
@@ -38,7 +38,7 @@ function LayoutContent() {
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 	const { review, isReviewCompleted } = useAddTopicToReview()
 	const createReviewMutation = useCreateReview()
-	const { reviewId } = Route.useParams()
+	const { reviewSessionId } = Route.useParams()
 	const { exitFlow } = useAddFlowHistory()
 
 	// Search Dialog State
@@ -47,17 +47,17 @@ function LayoutContent() {
 
 	const handleHome = useCallback(() => {
 		navigate({
-			to: '/reviews/$reviewId/add',
-			params: { reviewId }
+			to: '/review-session/$reviewSessionId/add',
+			params: { reviewSessionId }
 		})
-	}, [navigate, reviewId])
+	}, [navigate, reviewSessionId])
 
 	const handleClose = useCallback(() => {
 		exitFlow({
-			to: '/reviews/$reviewId',
-			params: { reviewId }
+			to: '/review-session/$reviewSessionId',
+			params: { reviewSessionId }
 		})
-	}, [exitFlow, reviewId])
+	}, [exitFlow, reviewSessionId])
 
 	const handleSearchFocus = useCallback(() => {
 		setIsSearchOpen(true)
@@ -99,9 +99,9 @@ function LayoutContent() {
 			setIsSearchOpen(false)
 
 			navigate({
-				to: '/reviews/$reviewId/add/topics/$topicId',
+				to: '/review-session/$reviewSessionId/add/topics/$topicId',
 				params: {
-					reviewId,
+					reviewSessionId,
 					topicId: topicReview.topic_id.toString()
 				}
 			})
@@ -112,18 +112,18 @@ function LayoutContent() {
 		isReviewCompleted,
 		createReviewMutation,
 		navigate,
-		reviewId
+		reviewSessionId
 	])
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
 			setIsPopoverOpen(false)
 			navigate({
-				to: '/reviews/$reviewId/add/topics/$topicId',
-				params: { reviewId, topicId: topic.id.toString() }
+				to: '/review-session/$reviewSessionId/add/topics/$topicId',
+				params: { reviewSessionId, topicId: topic.id.toString() }
 			})
 		},
-		[navigate, reviewId]
+		[navigate, reviewSessionId]
 	)
 
 	return (

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Archive } from 'lucide-react'
+import { History } from 'lucide-react'
 import { useCallback } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
@@ -14,31 +14,33 @@ import { AddTopicCard } from '~/features/reviews/components/AddTopicToReviewDial
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/features/topics/types/topic.types'
 
-export const Route = createFileRoute('/reviews/$reviewId_/add/_list/archived')({
-	component: ArchivedComponent
+export const Route = createFileRoute(
+	'/review-session/$reviewSessionId_/add/_list/recent'
+)({
+	component: RecentComponent
 })
 
-function ArchivedComponent() {
+function RecentComponent() {
 	const navigate = Route.useNavigate()
-	const { reviewId } = Route.useParams()
+	const { reviewSessionId } = Route.useParams()
 
 	const { data: topics = [], isLoading } = useTopics({
-		archived: true,
-		order: 'desc'
+		order: 'desc',
+		limit: 50
 	})
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
 			navigate({
-				to: '/reviews/$reviewId/add/topics/$topicId',
-				params: { reviewId, topicId: topic.id.toString() }
+				to: '/review-session/$reviewSessionId/add/topics/$topicId',
+				params: { reviewSessionId, topicId: topic.id.toString() }
 			})
 		},
-		[navigate, reviewId]
+		[navigate, reviewSessionId]
 	)
 
 	return (
-		<ArchivedList
+		<RecentList
 			isLoading={isLoading}
 			onTopicClick={handleTopicClick}
 			topics={topics}
@@ -46,7 +48,7 @@ function ArchivedComponent() {
 	)
 }
 
-function ArchivedList({
+function RecentList({
 	topics,
 	onTopicClick,
 	isLoading
@@ -82,9 +84,9 @@ function ArchivedList({
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<Archive />
+							<History />
 						</EmptyMedia>
-						<EmptyTitle>Archived topics will appear here.</EmptyTitle>
+						<EmptyTitle>Your most recent topics will appear here.</EmptyTitle>
 					</EmptyHeader>
 				</Empty>
 			</div>

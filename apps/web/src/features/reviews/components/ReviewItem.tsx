@@ -101,14 +101,13 @@ export function ReviewItem({
 		entry.stability_before,
 		entry.stability_after
 	)
-	const hasStability = entry.stability_after != null && entry.stability_before != null
+	const hasStability =
+		entry.stability_after != null && entry.stability_before != null
 	const stabilityAfterRounded = hasStability
 		? Math.round(entry.stability_after ?? 0)
 		: 0
 	const stabilityDeltaRounded = hasStability
-		? Math.round(
-				(entry.stability_after ?? 0) - (entry.stability_before ?? 0)
-			)
+		? Math.round((entry.stability_after ?? 0) - (entry.stability_before ?? 0))
 		: 0
 
 	const handleStatusChange = useCallback(
@@ -138,9 +137,7 @@ export function ReviewItem({
 				setIsDatePopoverOpen(false)
 				return
 			}
-			const newDateString = newDate
-				? dayjs(newDate).format('YYYY-MM-DD')
-				: null
+			const newDateString = newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
 			if (entry.completed_at) {
 				updateReviewMutation.mutateAsync({
 					id: entry.id,
@@ -173,8 +170,8 @@ export function ReviewItem({
 		(event: React.MouseEvent) => {
 			event.stopPropagation()
 			navigate({
-				to: '/reviews/$reviewId',
-				params: { reviewId: entry.review_session.id.toString() }
+				to: '/review-session/$reviewSessionId',
+				params: { reviewSessionId: entry.review_session.id.toString() }
 			})
 		},
 		[navigate, entry.review_session.id]
@@ -240,7 +237,7 @@ export function ReviewItem({
 								onOpenChange={setIsDatePopoverOpen}
 								selectedDate={selectedDate}
 								trigger={
-									<TooltipTrigger asChild>
+									<TooltipTrigger asChild={true}>
 										<Button
 											className={cn(
 												'text-xs',
@@ -266,7 +263,7 @@ export function ReviewItem({
 						</Tooltip>
 						{!readonly && (
 							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
+								<DropdownMenuTrigger asChild={true}>
 									<Button
 										className='h-6 w-6 p-0'
 										onClick={e => e.stopPropagation()}
@@ -279,7 +276,7 @@ export function ReviewItem({
 								</DropdownMenuTrigger>
 								<DropdownMenuContent
 									align='end'
-									avoidCollisions
+									avoidCollisions={true}
 									side='bottom'
 									sideOffset={4}
 								>

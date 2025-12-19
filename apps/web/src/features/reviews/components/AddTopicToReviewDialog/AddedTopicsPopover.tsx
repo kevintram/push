@@ -8,7 +8,7 @@ import {
 import { useDeleteReview } from '~/features/reviews/api/deleteReview'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { Review } from '../../types/review.types'
-import { ReviewTopicCard } from '../ReviewDetail/ReviewTopicCard'
+import { ReviewSessionTopicCard } from '../ReviewSessionDetail/ReviewSessionTopicCard'
 import { useAddTopicToReview } from './AddTopicToReviewContext'
 
 const MIN_HEIGHT = 72
@@ -73,7 +73,7 @@ export function AddedTopicsPopover({
 						items={topicReviews}
 						minItemWidth={250}
 						renderItem={(topicReview: Review) => (
-							<ReviewTopicCard
+							<ReviewSessionTopicCard
 								minHeight={MIN_HEIGHT}
 								onRemoveFromReview={handleRemoveReview}
 								onTopicClick={onTopicClick}

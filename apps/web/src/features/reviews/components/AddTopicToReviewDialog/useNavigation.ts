@@ -3,35 +3,37 @@ import { useCallback } from 'react'
 
 export function useNavigation() {
 	const router = useRouter()
-	const { reviewId } = useParams({ from: '/reviews/$reviewId_/add' })
+	const { reviewSessionId } = useParams({
+		from: '/review-session/$reviewSessionId_/add'
+	})
 
 	const navigateToHome = useCallback(() => {
 		router.navigate({
-			to: '/reviews/$reviewId/add',
-			params: { reviewId }
+			to: '/review-session/$reviewSessionId/add',
+			params: { reviewSessionId }
 		})
-	}, [router, reviewId])
+	}, [router, reviewSessionId])
 
 	const navigateToRecent = useCallback(() => {
 		router.navigate({
-			to: '/reviews/$reviewId/add/recent',
-			params: { reviewId }
+			to: '/review-session/$reviewSessionId/add/recent',
+			params: { reviewSessionId }
 		})
-	}, [router, reviewId])
+	}, [router, reviewSessionId])
 
 	const navigateToInbox = useCallback(() => {
 		router.navigate({
-			to: '/reviews/$reviewId/add/inbox',
-			params: { reviewId }
+			to: '/review-session/$reviewSessionId/add/inbox',
+			params: { reviewSessionId }
 		})
-	}, [router, reviewId])
+	}, [router, reviewSessionId])
 
 	const navigateToArchived = useCallback(() => {
 		router.navigate({
-			to: '/reviews/$reviewId/add/archived',
-			params: { reviewId }
+			to: '/review-session/$reviewSessionId/add/archived',
+			params: { reviewSessionId }
 		})
-	}, [router, reviewId])
+	}, [router, reviewSessionId])
 
 	return {
 		navigateToHome,

@@ -26,7 +26,7 @@ import { getRatingIcon } from '~/utils/getRatingIcon'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import type { Rating } from '../../types/review.types'
 
-interface ReviewTopicCardProps {
+interface ReviewSessionTopicCardProps {
 	topic: Topic
 	rating?: Rating | null
 	topicReviewId: number
@@ -37,7 +37,7 @@ interface ReviewTopicCardProps {
 	minHeight?: number
 }
 
-export function ReviewTopicCard({
+export function ReviewSessionTopicCard({
 	topic,
 	rating,
 	topicReviewId,
@@ -46,7 +46,7 @@ export function ReviewTopicCard({
 	onNavigate,
 	onTopicUpdateSuccess,
 	minHeight = 72
-}: ReviewTopicCardProps) {
+}: ReviewSessionTopicCardProps) {
 	const { review } = use(ReviewContext)
 	const navigate = useNavigate()
 	const updateReviewMutation = useUpdateReview()
@@ -55,9 +55,9 @@ export function ReviewTopicCard({
 	const handleOpenInReviewMode = useCallback(() => {
 		if (!review?.id) return
 		navigate({
-			to: '/reviews/$reviewId/add/topics/$topicId',
+			to: '/review-session/$reviewSessionId/add/topics/$topicId',
 			params: {
-				reviewId: review.id.toString(),
+				reviewSessionId: review.id.toString(),
 				topicId: topic.id.toString()
 			}
 		})

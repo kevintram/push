@@ -34,7 +34,9 @@ export function AddTopicSearchDialog({
 	setQuery
 }: AddTopicSearchDialogProps) {
 	const navigate = useNavigate()
-	const { reviewId } = useParams({ from: '/reviews/$reviewId_/add' })
+	const { reviewSessionId } = useParams({
+		from: '/review-session/$reviewSessionId_/add'
+	})
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [selectedIndex, setSelectedIndex] = useState(0)
 	const [gap, setGap] = useState(12)
@@ -75,12 +77,12 @@ export function AddTopicSearchDialog({
 	const handleTopicSelect = useCallback(
 		(topic: Topic) => {
 			navigate({
-				to: '/reviews/$reviewId/add/topics/$topicId',
-				params: { reviewId, topicId: topic.id.toString() }
+				to: '/review-session/$reviewSessionId/add/topics/$topicId',
+				params: { reviewSessionId, topicId: topic.id.toString() }
 			})
 			onOpenChange(false)
 		},
-		[navigate, onOpenChange, reviewId]
+		[navigate, onOpenChange, reviewSessionId]
 	)
 
 	const handleKeyDown = useCallback(

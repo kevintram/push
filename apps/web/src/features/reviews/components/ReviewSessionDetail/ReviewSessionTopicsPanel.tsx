@@ -9,7 +9,7 @@ import type { Topic } from '~/features/topics/types/topic.types'
 import { reviewSessionKeys } from '../../api/queryKeys'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import type { Rating, ReviewSession } from '../../types/review.types'
-import { ReviewTopicCard } from './ReviewTopicCard'
+import { ReviewSessionTopicCard } from './ReviewSessionTopicCard'
 
 const MIN_WIDTH = 210
 const MIN_HEIGHT = 72
@@ -28,7 +28,7 @@ interface ReviewTopicsPanelProps {
 	onNavigate?: () => void | Promise<void>
 }
 
-export function ReviewTopicsPanel({
+export function ReviewSessionTopicsPanel({
 	getScrollElement,
 	scrollMargin,
 	onRemoveReview,
@@ -55,8 +55,8 @@ export function ReviewTopicsPanel({
 	const handleAddTopic = useCallback(() => {
 		if (!review?.id) return
 		navigate({
-			to: '/reviews/$reviewId/add',
-			params: { reviewId: review.id.toString() },
+			to: '/review-session/$reviewSessionId/add',
+			params: { reviewSessionId: review.id.toString() },
 			search: { q: undefined }
 		})
 	}, [navigate, review?.id])
@@ -119,7 +119,7 @@ export function ReviewTopicsPanel({
 			if (!(review && item.topicReviewId)) return null
 
 			return (
-				<ReviewTopicCard
+				<ReviewSessionTopicCard
 					minHeight={MIN_HEIGHT}
 					onNavigate={onNavigate}
 					onRemoveFromReview={onRemoveReview}

@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { Calendar, Home } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
-import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
+import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { mergeReviewSections } from '~/app/utils/reviewSections'
@@ -224,7 +224,7 @@ export function UpcomingPage() {
 		handleTopicClick,
 		handleCreateTopic,
 		isCreatingTopic
-	} = useReviewPageHandlers()
+	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	// Merge soon sections (tomorrow + next 7 days)
