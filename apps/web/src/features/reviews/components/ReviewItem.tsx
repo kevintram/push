@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
+import { BicepsFlexed, CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
@@ -55,6 +55,19 @@ export function ReviewItem({
 		if (!entry.completed_at) return 'uncompleted'
 		return entry.rating ?? 'good'
 	}, [entry.completed_at, entry.rating])
+
+	const stabilityChangeColorClass = useMemo(() => {
+		if (entry.stability_after == null || entry.stability_before == null) {
+			return ''
+		}
+		if (entry.stability_after > entry.stability_before) {
+			return 'text-green-600 dark:text-green-400'
+		}
+		if (entry.stability_after < entry.stability_before) {
+			return 'text-red-600 dark:text-red-400'
+		}
+		return 'text-muted-foreground'
+	}, [entry.stability_after, entry.stability_before])
 
 	const handleStatusChange = useCallback(
 		(status: ReviewRatingState) => {
@@ -244,6 +257,17 @@ export function ReviewItem({
 							</DropdownMenu>
 						)}
 					</div>
+					{entry.stability_after != null && entry.stability_before != null && (
+						// Stability Info
+						<div className='flex items-center justify-end text-muted-foreground text-xs'>
+							<BicepsFlexed className='mr-1 h-3 w-3' />
+							<span>{`${Math.round(entry.stability_after)}d`}</span>
+							<span className={`ml-1 ${stabilityChangeColorClass}`}>
+								({entry.stability_after >= entry.stability_before ? '+' : ''}
+								{Math.round(entry.stability_after - entry.stability_before)})
+							</span>
+						</div>
+					)}
 				</div>
 			</CardContent>
 		</Card>
