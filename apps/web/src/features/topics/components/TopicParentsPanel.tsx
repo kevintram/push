@@ -1,6 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { ChevronDown, Loader2, Plus, Search, SquarePen, User2 } from 'lucide-react'
+import {
+	ChevronDown,
+	Loader2,
+	Plus,
+	Search,
+	SquarePen,
+	User2
+} from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import {
