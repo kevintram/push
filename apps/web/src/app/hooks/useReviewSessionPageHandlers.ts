@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback } from 'react'
-import { useCreateTopicWithReview } from '~/features/reviews/api/createReview'
+import { useCreateTopic } from '~/features/topics/api/createTopic'
 import type { Topic } from '~/features/topics/types/topic.types'
 
 /**
@@ -36,8 +36,8 @@ import type { Topic } from '~/features/topics/types/topic.types'
  */
 export function useReviewSessionPageHandlers() {
 	const navigate = useNavigate()
-	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
-		useCreateTopicWithReview()
+	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
+		useCreateTopic()
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
@@ -60,12 +60,12 @@ export function useReviewSessionPageHandlers() {
 	)
 
 	const handleCreateTopic = useCallback(async () => {
-		const createdTopic = await createTopicWithReview({})
+		const createdTopic = await createTopic({})
 		navigate({
 			to: '/topics/$topicId',
 			params: { topicId: createdTopic.id.toString() }
 		})
-	}, [createTopicWithReview, navigate])
+	}, [createTopic, navigate])
 
 	return {
 		handleReviewClick,

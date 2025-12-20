@@ -13,15 +13,15 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useCreateTopicWithReview } from '~/features/reviews/api/createReview'
+import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
 import type { Topic } from '~/features/topics/types/topic.types'
 
 export function RecentPage() {
 	const navigate = useNavigate()
-	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
-		useCreateTopicWithReview()
+	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
+		useCreateTopic()
 
 	// Fetch 50 most recent topics
 	const { data: topics = [], isLoading } = useTopics({
@@ -30,7 +30,7 @@ export function RecentPage() {
 	})
 
 	const handleCreateTopic = useCallback(async () => {
-		const newTopic = await createTopicWithReview({
+		const newTopic = await createTopic({
 			inboxed: false,
 			archived: false
 		})
@@ -38,7 +38,7 @@ export function RecentPage() {
 			to: '/topics/$topicId',
 			params: { topicId: newTopic.id.toString() }
 		})
-	}, [createTopicWithReview, navigate])
+	}, [createTopic, navigate])
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {

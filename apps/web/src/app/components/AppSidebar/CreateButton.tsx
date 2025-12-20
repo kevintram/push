@@ -26,14 +26,14 @@ import { SidebarMenuButton } from '~/components/ui/Sidebar'
 
 // Feature hooks
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateTopicWithReview } from '~/features/reviews/api/createReview'
 import { useCreateReviewSession } from '~/features/reviews/api/createReviewSession'
+import { useCreateTopic } from '~/features/topics/api/createTopic'
 
 export function CreateButton() {
 	// Hooks
 	const navigate = useNavigate()
-	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
-		useCreateTopicWithReview()
+	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
+		useCreateTopic()
 	const { createReviewSession: createReview, isPending: isCreatingReview } =
 		useCreateReviewSession()
 	const { openTopicDialog } = useReviewTopicDialog()
@@ -42,9 +42,9 @@ export function CreateButton() {
 
 	// Handlers
 	const handleNewTopic = useCallback(async () => {
-		const createdTopic = await createTopicWithReview({})
+		const createdTopic = await createTopic({ inboxed: true })
 		openTopicDialog(createdTopic.id)
-	}, [createTopicWithReview, openTopicDialog])
+	}, [createTopic, openTopicDialog])
 
 	const handleLogReviewNow = useCallback(async () => {
 		const today = new Date().toISOString().split('T')[0]
