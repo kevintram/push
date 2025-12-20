@@ -8,13 +8,8 @@ export interface DueDateDisplayInfo {
 
 /**
  * Calculates the display text and metadata for a due date.
- * Returns null if no due date is provided.
  */
-export function getDueDateDisplay(
-	due: string | null
-): DueDateDisplayInfo | null {
-	if (!due) return null
-
+export function getDueDateDisplay(due: string): DueDateDisplayInfo {
 	const now = dayjs().startOf('day')
 	const dueDayjs = dayjs(due).startOf('day')
 	const diffDays = dueDayjs.diff(now, 'day')
