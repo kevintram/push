@@ -18,7 +18,7 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
+import { useUpdateReview } from '~/features/reviews/api/updateReview'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -26,7 +26,7 @@ import { getRatingIcon } from '~/utils/getRatingIcon'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import type { Rating } from '../../types/review.types'
 
-interface ReviewTopicCardProps {
+interface ReviewSessionTopicCardProps {
 	topic: Topic
 	rating?: Rating | null
 	topicReviewId: number
@@ -37,7 +37,7 @@ interface ReviewTopicCardProps {
 	minHeight?: number
 }
 
-export function ReviewTopicCard({
+export function ReviewSessionTopicCard({
 	topic,
 	rating,
 	topicReviewId,
@@ -46,18 +46,18 @@ export function ReviewTopicCard({
 	onNavigate,
 	onTopicUpdateSuccess,
 	minHeight = 72
-}: ReviewTopicCardProps) {
+}: ReviewSessionTopicCardProps) {
 	const { review } = use(ReviewContext)
 	const navigate = useNavigate()
-	const updateReviewMutation = useUpdateTopicReview()
+	const updateReviewMutation = useUpdateReview()
 	const [isOpenPopoverOpen, setIsOpenPopoverOpen] = useState(false)
 
 	const handleOpenInReviewMode = useCallback(() => {
 		if (!review?.id) return
 		navigate({
-			to: '/reviews/$reviewId/add/topics/$topicId',
+			to: '/review-session/$reviewSessionId/add/topics/$topicId',
 			params: {
-				reviewId: review.id.toString(),
+				reviewSessionId: review.id.toString(),
 				topicId: topic.id.toString()
 			}
 		})
@@ -197,7 +197,7 @@ export function ReviewTopicCard({
 						variant='ghost'
 					>
 						<BookOpen className='h-4 w-4' />
-						Review mode
+						ReviewSession mode
 					</Button>
 					<Button
 						className='justify-start gap-2'

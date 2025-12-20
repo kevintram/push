@@ -1,22 +1,27 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import dayjs from 'dayjs'
+import { useCallback } from 'react'
 import * as v from 'valibot'
+import { topicKeys } from '~/features/topics/api/queryKeys'
+import type { Topic } from '~/features/topics/types/topic.types'
 import { apiFetch } from '~/utils/apiFetch'
-import type { CreateReviewInput } from '../types/api.types'
+import type {
+	CreateReviewPayload,
+	CreateTopicWithReviewInput
+} from '../types/api.types'
 import { ReviewSchema } from '../types/review.schemas'
 import { reviewKeys } from './queryKeys'
 
-export async function createReview(input: CreateReviewInput) {
+/**
+ * Creates a review, optionally creating the topic and/or review session inline.
+ */
+export async function createReview(payload: CreateReviewPayload) {
 	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/reviews/`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify({
-			description: input.description,
-			notes: input.notes ?? '',
-			scheduled_at: input.scheduledAt,
-			completed_at: input.completedAt
-		})
+		body: JSON.stringify(payload)
 	})
 
 	if (!response.ok) {
@@ -34,18 +39,69 @@ export async function createReview(input: CreateReviewInput) {
 	}
 }
 
-export function useCreateReview() {
+export function useCreateTopicWithReview() {
 	const queryClient = useQueryClient()
 
-	const { mutateAsync, isPending } = useMutation({
+	const { mutateAsync: createReviewMutation, isPending } = useMutation({
 		mutationFn: createReview,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: reviewKeys.all })
-		}
+			queryClient.invalidateQueries({ queryKey: topicKeys.all })
+		},
+		retry: 2
 	})
 
+	const createTopicWithReview = useCallback(
+		async (input: CreateTopicWithReviewInput = {}): Promise<Topic> => {
+			// Create both topic and review session (and review) in a single API call
+			const review = await createReviewMutation({
+				topic: {
+					name: input.name ?? '',
+					notes: input.notes ?? '',
+					archived: input.archived ?? false,
+					inboxed: input.inboxed ?? true,
+					stability: input.stability,
+					difficulty: input.difficulty,
+					state: input.state,
+					srs_enabled: true
+				},
+				review_session: {
+					description: 'Created',
+					notes: '',
+					scheduled_at: null,
+					completed_at: dayjs().format('YYYY-MM-DD')
+				},
+				rating: 'good',
+				description: 'Created',
+				scheduled_at: null,
+				completed_at: dayjs().format('YYYY-MM-DD')
+			})
+
+			// Return the created topic from the response
+			return review.topic
+		},
+		[createReviewMutation]
+	)
+
 	return {
-		createReview: mutateAsync,
+		createTopicWithReview,
+		isTopicCreatePending: isPending,
+		isReviewCreatePending: false,
+		isTopicReviewCreatePending: false,
 		isPending
 	}
+}
+
+export function useCreateReview() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: createReview,
+		onSuccess: async () => {
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+			])
+		}
+	})
 }

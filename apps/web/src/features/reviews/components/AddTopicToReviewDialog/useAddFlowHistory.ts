@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react'
 /**
  * Hook to track navigation history within the /add flow and cleanly exit it.
  *
- * Problem: When navigating within /reviews/$reviewId/add (e.g., /add -> /add/recent -> /add/topics/123),
+ * Problem: When navigating within /review-session/$reviewSessionId/add (e.g., /add -> /add/recent -> /add/topics/123),
  * each navigation creates a history entry. Using `navigate({ replace: true })` only replaces the
  * current entry, leaving previous /add entries in history. This causes the browser back button
  * to return to /add pages after clicking "Done".
@@ -20,8 +20,8 @@ import { useCallback, useEffect, useRef } from 'react'
  *
  *   const handleDone = () => {
  *     exitFlow({
- *       to: '/reviews/$reviewId',
- *       params: { reviewId }
+ *       to: '/review-session/$reviewSessionId',
+ *       params: { reviewSessionId }
  *     })
  *   }
  *

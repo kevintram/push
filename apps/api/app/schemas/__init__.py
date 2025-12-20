@@ -1,10 +1,10 @@
-from app.schemas.reviews import (
-    ReviewBase,
-    ReviewCreate,
-    ReviewRead,
-    ReviewUpdate,
+from app.schemas.review_sessions import (
+    ReviewSessionBase,
+    ReviewSessionCreate,
+    ReviewSessionRead,
+    ReviewSessionUpdate,
     TopicIdPayload,
-    ReviewReadWithTopicReviews,
+    ReviewSessionReadWithReviews,
 )
 from app.schemas.topics import (
     TopicRead,
@@ -19,35 +19,40 @@ from app.schemas.topics import (
     TopicRelatedRead,
     RelationshipDirection,
 )
-from app.schemas.topic_reviews import (
-    TopicReviewBase,
-    TopicReviewRead,
-    TopicReviewWithTopic,
-    TopicReviewCreate,
-    TopicReviewUpdate,
+from app.schemas.reviews import (
+    ReviewBase,
+    ReviewRead,
+    ReviewListItem,
+    ReviewSessionSummary,
+    TopicSummary,
+    ReviewWithTopic,
+    ReviewCreate,
+    ReviewUpdate,
 )
 
 # Rebuild models to resolve forward references
-ReviewReadWithTopicReviews.model_rebuild()
+ReviewSessionReadWithReviews.model_rebuild()
 TopicRead.model_rebuild()
 TopicReadWithRelationships.model_rebuild()
+ReviewSessionRead.model_rebuild()
+ReviewSessionCreate.model_rebuild()
+ReviewSessionUpdate.model_rebuild()
+ReviewBase.model_rebuild()
 ReviewRead.model_rebuild()
+ReviewListItem.model_rebuild()
+ReviewSessionSummary.model_rebuild()
+TopicSummary.model_rebuild()
+ReviewWithTopic.model_rebuild()
 ReviewCreate.model_rebuild()
 ReviewUpdate.model_rebuild()
-TopicReviewBase.model_rebuild()
-TopicReviewRead.model_rebuild()
-TopicReviewWithTopic.model_rebuild()
-TopicReviewCreate.model_rebuild()
-TopicReviewUpdate.model_rebuild()
 TopicRelatedRead.model_rebuild()
 
 __all__ = [
-    "ReviewBase",
-    "ReviewCreate",
-    "ReviewRead",
-    "ReviewUpdate",
+    "ReviewSessionBase",
+    "ReviewSessionCreate",
+    "ReviewSessionRead",
+    "ReviewSessionUpdate",
     "TopicIdPayload",
-    "TopicBase",
     "TopicRead",
     "TopicCreate",
     "TopicChildRelationshipCreate",
@@ -55,15 +60,17 @@ __all__ = [
     "TopicRelationshipResponse",
     "TopicOtherRelationshipCreate",
     "TopicOtherRelationshipResponse",
-    "ReviewIdPayload",
     "TopicUpdate",
     "TopicReadWithRelationships",
-    "ReviewReadWithTopicReviews",
-    "TopicReviewBase",
-    "TopicReviewRead",
-    "TopicReviewWithTopic",
-    "TopicReviewCreate",
-    "TopicReviewUpdate",
+    "ReviewSessionReadWithReviews",
+    "ReviewBase",
+    "ReviewRead",
+    "ReviewListItem",
+    "ReviewSessionSummary",
+    "TopicSummary",
+    "ReviewWithTopic",
+    "ReviewCreate",
+    "ReviewUpdate",
     "TopicRelatedRead",
     "RelationshipDirection",
 ]

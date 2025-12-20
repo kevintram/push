@@ -2,8 +2,8 @@ import { useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
-import { useReviewWithTopics } from '~/features/reviews/api/getReview'
-import { ReviewDetail } from '~/features/reviews/components/ReviewDetail/ReviewDetail'
+import { useReviewSessionWithReviews } from '~/features/reviews/api/getReviewSession'
+import { ReviewSessionDetail } from '~/features/reviews/components/ReviewSessionDetail/ReviewSessionDetail'
 import { ReviewContext } from '~/features/reviews/stores/SelectedReviewContext'
 
 interface ReviewDetailPageProps {
@@ -13,7 +13,7 @@ interface ReviewDetailPageProps {
 export function ReviewDetailPage({ reviewId }: ReviewDetailPageProps) {
 	const router = useRouter()
 
-	const { review, isLoading } = useReviewWithTopics(
+	const { reviewSession: review, isLoading } = useReviewSessionWithReviews(
 		Number.parseInt(reviewId, 10)
 	)
 
@@ -46,7 +46,7 @@ export function ReviewDetailPage({ reviewId }: ReviewDetailPageProps) {
 
 	return (
 		<ReviewContext value={contextValue}>
-			<ReviewDetail
+			<ReviewSessionDetail
 				className='mx-auto max-w-5xl'
 				headerBeforeActions={headerBeforeActions}
 				onDelete={handleDelete}

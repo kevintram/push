@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { Calendar, Home } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
-import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
+import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { mergeReviewSections } from '~/app/utils/reviewSections'
@@ -17,11 +17,11 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import {
-	useFutureReviews,
-	useSoonReviews
-} from '~/features/reviews/api/getReviews'
+	useFutureReviewSessions,
+	useSoonReviewSessions
+} from '~/features/reviews/api/getReviewSessions'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import type { Review } from '~/features/reviews/types/review.types'
+import type { ReviewSession } from '~/features/reviews/types/review.types'
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/features/topics/types/topic.types'
 
@@ -58,7 +58,7 @@ export function UpcomingPage() {
 
 	// Always fetch soon data (tomorrow + next 7 days)
 	const { sections: soonReviewSections, isLoading: soonReviewsLoading } =
-		useSoonReviews()
+		useSoonReviewSessions()
 
 	const nextWeekDate = dayjs().add(7, 'day').format('YYYY-MM-DD')
 	const tomorrow = dayjs().add(1, 'day').format('YYYY-MM-DD')
@@ -139,7 +139,7 @@ export function UpcomingPage() {
 		sections: futureReviewSections = [],
 		isLoading: futureReviewsLoading,
 		isFetched: futureReviewsFetched
-	} = useFutureReviews({ enabled: showFuture })
+	} = useFutureReviewSessions({ enabled: showFuture })
 
 	const futureStartDate = dayjs().add(8, 'day').format('YYYY-MM-DD')
 	const {
@@ -224,7 +224,7 @@ export function UpcomingPage() {
 		handleTopicClick,
 		handleCreateTopic,
 		isCreatingTopic
-	} = useReviewPageHandlers()
+	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	// Merge soon sections (tomorrow + next 7 days)
@@ -307,7 +307,7 @@ function UpcomingList({
 	allSections: Array<{
 		id: string
 		label: string
-		reviewsData?: { entries: Array<Review> }
+		reviewsData?: { entries: Array<ReviewSession> }
 		topicsData?: { entries: Array<Topic> }
 	}>
 	allSectionsEmpty: boolean

@@ -1,7 +1,7 @@
 import type { LearningState } from '~/models/learning-state.types'
-import type { Rating, Review } from './review.types'
+import type { Rating, ReviewSession } from './review.types'
 
-export type CreateReviewInput = {
+export type CreateReviewSessionInput = {
 	description: string
 	notes?: string
 	scheduledAt?: string | null
@@ -21,22 +21,25 @@ export type TopicCreate = {
 	srs_enabled?: boolean
 }
 
-export type ReviewCreate = {
+export type ReviewSessionCreate = {
 	description: string
 	notes: string
 	scheduled_at?: string | null
 	completed_at?: string | null
 }
 
-export type CreateTopicReviewPayload = {
+export type CreateReviewPayload = {
 	rating?: Rating | null
+	description?: string
+	scheduled_at?: string | null
+	completed_at?: string | null
 } & (
 	| { topic_id: number; topic?: never }
 	| { topic: TopicCreate; topic_id?: never }
 ) &
 	(
-		| { review_id: number; review?: never }
-		| { review: ReviewCreate; review_id?: never }
+		| { review_session_id: number; review_session?: never }
+		| { review_session: ReviewSessionCreate; review_session_id?: never }
 	)
 
 export type CreateTopicWithReviewInput = {
@@ -49,7 +52,7 @@ export type CreateTopicWithReviewInput = {
 	inboxed?: boolean
 }
 
-export type UpdateReviewInput = {
+export type UpdateReviewSessionInput = {
 	id: number
 	description?: string
 	notes?: string
@@ -57,7 +60,24 @@ export type UpdateReviewInput = {
 	completed_at?: string | null
 }
 
+export type UpdateReviewInput = {
+	id: number
+	rating?: Rating | null
+	description?: string
+	scheduled_at?: string | null
+	completed_at?: string | null
+}
+
+export type GetReviewSessionsFilters = {
+	topicId?: number
+	effectiveDateBefore?: string
+	effectiveDateAfter?: string
+	scheduled?: boolean
+	completed?: boolean
+}
+
 export type GetReviewsFilters = {
+	reviewSessionId?: number
 	topicId?: number
 	effectiveDateBefore?: string
 	effectiveDateAfter?: string
@@ -93,11 +113,11 @@ export type UnscheduledSectionDefinition = {
 export type FutureSection = {
 	id: string
 	label: string
-	entries: Array<Review>
+	entries: Array<ReviewSession>
 }
 
 export type LogbookSection = {
 	id: string
 	label: string
-	entries: Array<Review>
+	entries: Array<ReviewSession>
 }

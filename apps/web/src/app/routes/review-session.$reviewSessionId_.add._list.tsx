@@ -4,7 +4,9 @@ import { Badge } from '~/components/ui/Badge'
 import { useNavigation } from '~/features/reviews/components/AddTopicToReviewDialog/useNavigation'
 import { cn } from '~/lib/utils'
 
-export const Route = createFileRoute('/reviews/$reviewId_/add/_list')({
+export const Route = createFileRoute(
+	'/review-session/$reviewSessionId_/add/_list'
+)({
 	component: ListLayout
 })
 

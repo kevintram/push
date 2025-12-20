@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
 	BicepsFlexed,
@@ -8,7 +7,7 @@ import {
 	Square,
 	SquareCheck
 } from 'lucide-react'
-import { use, useCallback, useMemo } from 'react'
+import { use, useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -24,10 +23,14 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
+import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewsByTopic } from '~/features/reviews/api/getReviews'
+import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import type { Rating, Review } from '~/features/reviews/types/review.types'
+import type {
+	Rating,
+	ReviewListItem
+} from '~/features/reviews/types/review.types'
 import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
@@ -37,13 +40,14 @@ interface ReviewsSidebarProps {
 }
 
 function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
-	const navigate = useNavigate()
 	const { topic } = use(TopicContext)
 	const { data: reviews = [], isLoading } = useReviewsByTopic(topic?.id)
+	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
+	const [isDialogOpen, setIsDialogOpen] = useState(false)
 
 	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
-		const scheduled: Array<Review> = []
-		const unscheduled: Array<Review> = []
+		const scheduled: Array<ReviewListItem> = []
+		const unscheduled: Array<ReviewListItem> = []
 
 		for (const review of reviews) {
 			if (review.effective_date) {
@@ -72,11 +76,11 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 		}
 	}, [reviews])
 
-	const createTopicReviewMutation = useCreateTopicReview()
+	const createReviewMutation = useCreateReview()
 	const { mutateAsync: updateTopic, isPending: isUpdatingTopic } =
 		useUpdateTopic()
 
-	const isCreatingTopicReview = createTopicReviewMutation.isPending
+	const isCreatingReview = createReviewMutation.isPending
 
 	const handleSrsToggle = useCallback(
 		async (pressed: boolean) => {
@@ -89,50 +93,49 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 		[topic, readonly, updateTopic]
 	)
 
-	const isCreatingReviewWithTopic = isCreatingTopicReview
+	const isCreatingReviewWithTopic = isCreatingReview
 
-	const createReviewWithTopic = useCallback(
+	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
 			if (!topic) throw new Error('Topic not found')
 
-			// Create review and link to topic in a single API call
-			const topicReview = await createTopicReviewMutation.mutateAsync({
+			const review = await createReviewMutation.mutateAsync({
 				topic_id: topic.id,
-				review: {
+				review_session: {
 					description: '',
 					notes: '',
 					scheduled_at: null,
 					completed_at: completedAt
 				},
-				rating
+				rating,
+				description: '',
+				scheduled_at: null,
+				completed_at: completedAt
 			})
 
-			navigate({
-				to: '/reviews/$reviewId',
-				params: { reviewId: topicReview.review_id.toString() }
-			})
+			// Open the review dialog with the newly created review
+			setSelectedReviewId(review.id)
+			setIsDialogOpen(true)
 		},
-		[topic, createTopicReviewMutation, navigate]
+		[topic, createReviewMutation]
 	)
 
 	const handleLogReviewNow = useCallback(async () => {
 		const today = new Date().toISOString().split('T')[0] ?? '' // YYYY-MM-DD format
-		await createReviewWithTopic(today, 'good')
-	}, [createReviewWithTopic])
+		await createReview(today, 'good')
+	}, [createReview])
 
 	const handleNewReviewForLater = useCallback(async () => {
-		await createReviewWithTopic(null, null)
-	}, [createReviewWithTopic])
+		await createReview(null, null)
+	}, [createReview])
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
 			if (readonly) return
-			navigate({
-				to: '/reviews/$reviewId',
-				params: { reviewId: reviewId.toString() }
-			})
+			setSelectedReviewId(reviewId)
+			setIsDialogOpen(true)
 		},
-		[navigate, readonly]
+		[readonly]
 	)
 
 	// Calculate the due date display using shared utilities
@@ -249,7 +252,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 			<SidebarContent className='scrollbar-track-transparent flex h-full flex-col gap-6 overflow-auto overscroll-contain px-2 pb-2'>
 				{isLoading ? (
 					<div className='flex flex-col gap-4'>
-						{Array.from({ length: 5 }).map((_, i) => (
+						{[0, 1, 2, 3, 4].map(i => (
 							<div
 								className='flex flex-col gap-2 rounded-lg p-3'
 								key={`skeleton-review-${i}`}
@@ -278,6 +281,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 										key={entry.id}
 										onReviewClick={handleReviewClick}
 										readonly={readonly}
+										variant='session'
 									/>
 								))}
 							</div>
@@ -296,6 +300,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 											key={entry.id}
 											onReviewClick={handleReviewClick}
 											readonly={readonly}
+											variant='session'
 										/>
 									))}
 								</div>
@@ -304,6 +309,11 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 					</>
 				)}
 			</SidebarContent>
+			<ReviewDialog
+				onOpenChange={setIsDialogOpen}
+				open={isDialogOpen}
+				reviewId={selectedReviewId}
+			/>
 		</Sidebar>
 	)
 }

@@ -1,11 +1,11 @@
-import type { Review } from '~/features/reviews/types/review.types'
+import type { ReviewSession } from '~/features/reviews/types/review.types'
 import type { Topic } from '~/features/topics/types/topic.types'
 
 export type ReviewSection = {
 	id: string
 	label: string
 	headingClassName?: string
-	entries: Array<Review>
+	entries: Array<ReviewSession>
 }
 
 export type TopicSection = {

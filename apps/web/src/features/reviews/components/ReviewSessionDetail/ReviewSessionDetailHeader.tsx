@@ -8,7 +8,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 
-interface ReviewDetailHeaderProps {
+interface ReviewSessionDetailHeaderProps {
 	onDelete: () => void
 	/**
 	 * Content to render in the left section (e.g., navigation buttons)
@@ -20,11 +20,11 @@ interface ReviewDetailHeaderProps {
 	headerAfterActions?: ReactNode
 }
 
-export function ReviewDetailHeader({
+export function ReviewSessionDetailHeader({
 	onDelete,
 	headerBeforeActions,
 	headerAfterActions
-}: ReviewDetailHeaderProps) {
+}: ReviewSessionDetailHeaderProps) {
 	return (
 		<div className='flex items-center justify-between gap-4 px-2 py-1'>
 			{headerBeforeActions && (

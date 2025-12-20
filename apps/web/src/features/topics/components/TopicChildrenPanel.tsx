@@ -20,7 +20,7 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
+import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicChildren } from '../api/getTopicChildren'
@@ -73,7 +73,7 @@ export function TopicChildrenPanel({
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
-	const createTopicReviewMutation = useCreateTopicReview()
+	const createReviewMutation = useCreateReview()
 
 	const isCreating = createRelationship.isPending
 
@@ -111,16 +111,19 @@ export function TopicChildrenPanel({
 				const newTopicId = response.child.id
 
 				// fire and forget 'Created' review creation
-				createTopicReviewMutation
+				createReviewMutation
 					.mutateAsync({
 						topic_id: newTopicId,
-						review: {
+						review_session: {
 							description: 'Created',
 							notes: '',
 							scheduled_at: null,
 							completed_at: dayjs().format('YYYY-MM-DD')
 						},
-						rating: 'good'
+						rating: 'good',
+						description: 'Created',
+						scheduled_at: null,
+						completed_at: dayjs().format('YYYY-MM-DD')
 					})
 					.catch(() => {
 						// Ignore fire-and-forget errors (for now)
@@ -132,7 +135,7 @@ export function TopicChildrenPanel({
 				// Error is handled by React Query mutation state
 			}
 		},
-		[topicId, createRelationship, handleChildSelect, createTopicReviewMutation]
+		[topicId, createRelationship, handleChildSelect, createReviewMutation]
 	)
 
 	const handleAddTopic = useCallback(

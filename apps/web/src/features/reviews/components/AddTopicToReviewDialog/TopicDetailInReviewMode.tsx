@@ -3,9 +3,9 @@ import { useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
-import { useCreateTopicReview } from '~/features/reviews/api/createTopicReview'
-import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
-import { useUpdateTopicReview } from '~/features/reviews/api/updateTopicReview'
+import { useCreateReview } from '~/features/reviews/api/createReview'
+import { useDeleteReview } from '~/features/reviews/api/deleteReview'
+import { useUpdateReview } from '~/features/reviews/api/updateReview'
 import { useAddTopicToReview } from '~/features/reviews/components/AddTopicToReviewDialog/AddTopicToReviewContext'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import { topicKeys } from '~/features/topics/api/queryKeys'
@@ -14,7 +14,7 @@ import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { Rating } from '../../types/review.types'
 import { AddTopicCard } from './AddTopicCard'
-import { TopicReviewStatusButton } from './ReviewStatusButton'
+import { ReviewStatusButton } from './ReviewStatusButton'
 
 interface TopicDetailInReviewModeProps {
 	topicId: number
@@ -26,13 +26,13 @@ export function TopicDetailInReviewMode({
 	onTopicSelected
 }: TopicDetailInReviewModeProps) {
 	const queryClient = useQueryClient()
-	const { review, isReviewCompleted, isTopicAdded, getTopicReview } =
+	const { review, isReviewCompleted, isTopicAdded, getReview } =
 		useAddTopicToReview()
 
 	// Mutations
-	const createTopicReviewMutation = useCreateTopicReview()
-	const deleteTopicReviewMutation = useDeleteTopicReview()
-	const updateTopicReviewMutation = useUpdateTopicReview()
+	const createReviewMutation = useCreateReview()
+	const deleteReviewMutation = useDeleteReview()
+	const updateReviewMutation = useUpdateReview()
 
 	const router = useRouter()
 
@@ -42,35 +42,33 @@ export function TopicDetailInReviewMode({
 	const isSelectedTopicAdded = selectedTopic
 		? isTopicAdded(selectedTopic.id)
 		: false
-	const selectedTopicReview = selectedTopic
-		? getTopicReview(selectedTopic.id)
-		: undefined
+	const selectedReview = selectedTopic ? getReview(selectedTopic.id) : undefined
 
 	const handleAddToReview = useCallback(async () => {
 		if (!(selectedTopic && review)) return
 
 		const ratingValue: Rating | null = isReviewCompleted ? 'good' : null
-		await createTopicReviewMutation.mutateAsync({
-			review_id: review.id,
+		await createReviewMutation.mutateAsync({
+			review_session_id: review.id,
 			topic_id: selectedTopic.id,
 			rating: ratingValue
 		})
-	}, [selectedTopic, review, isReviewCompleted, createTopicReviewMutation])
+	}, [selectedTopic, review, isReviewCompleted, createReviewMutation])
 
 	const handleRemoveFromReview = useCallback(async () => {
-		if (!selectedTopicReview) return
-		await deleteTopicReviewMutation.mutateAsync(selectedTopicReview.id)
-	}, [selectedTopicReview, deleteTopicReviewMutation])
+		if (!selectedReview) return
+		await deleteReviewMutation.mutateAsync(selectedReview.id)
+	}, [selectedReview, deleteReviewMutation])
 
 	const handleRatingChange = useCallback(
 		async (rating: Rating) => {
-			if (!selectedTopicReview) return
-			await updateTopicReviewMutation.mutateAsync({
-				id: selectedTopicReview.id,
+			if (!selectedReview) return
+			await updateReviewMutation.mutateAsync({
+				id: selectedReview.id,
 				rating
 			})
 		},
-		[selectedTopicReview, updateTopicReviewMutation]
+		[selectedReview, updateReviewMutation]
 	)
 
 	const onBack = useCallback(() => {
@@ -165,20 +163,18 @@ export function TopicDetailInReviewMode({
 						>
 							<ArrowLeft className='h-4 w-4' />
 						</Button>
-						<TopicReviewStatusButton
+						<ReviewStatusButton
 							isAdded={isSelectedTopicAdded}
 							isLoading={
-								createTopicReviewMutation.isPending ||
-								deleteTopicReviewMutation.isPending ||
-								updateTopicReviewMutation.isPending
+								createReviewMutation.isPending ||
+								deleteReviewMutation.isPending ||
+								updateReviewMutation.isPending
 							}
 							isReviewCompleted={isReviewCompleted}
 							onAdd={handleAddToReview}
-							onRatingChange={
-								selectedTopicReview ? handleRatingChange : undefined
-							}
+							onRatingChange={selectedReview ? handleRatingChange : undefined}
 							onRemove={handleRemoveFromReview}
-							rating={selectedTopicReview?.rating}
+							rating={selectedReview?.rating}
 						/>
 					</>
 				}

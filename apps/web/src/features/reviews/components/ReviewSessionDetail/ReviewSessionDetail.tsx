@@ -10,22 +10,20 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { useDeleteTopicReview } from '~/features/reviews/api/deleteTopicReview'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
-import { useDeleteReview } from '../../api/deleteReview'
-import { useUpdateReview } from '../../api/updateReview'
+import { useDeleteReviewSession } from '../../api/deleteReviewSession'
+import { useUpdateReviewSession } from '../../api/updateReviewSession'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import { DatePickerDropdown } from '../DatePickerDropdown'
-import { ReviewDetailHeader } from './ReviewDetailHeader'
-import { ReviewDetailSkeleton } from './ReviewDetailSkeleton'
-import { ReviewTopicsPanel } from './ReviewTopicsPanel'
+import { ReviewSessionDetailHeader } from './ReviewSessionDetailHeader'
+import { ReviewSessionDetailSkeleton } from './ReviewSessionDetailSkeleton'
+import { ReviewSessionTopicsPanel } from './ReviewsPanel'
 
-interface ReviewDetailProps {
+interface ReviewSessionDetailProps {
 	onDelete?: () => void | Promise<void>
-	onNavigate?: () => void | Promise<void>
 	/**
 	 * Content to render in the left section (e.g., navigation buttons)
 	 */
@@ -40,26 +38,24 @@ interface ReviewDetailProps {
 	className?: string
 }
 
-export function ReviewDetail({
+export function ReviewSessionDetail({
 	onDelete,
-	onNavigate,
 	headerBeforeActions,
 	headerAfterActions,
 	className
-}: ReviewDetailProps) {
+}: ReviewSessionDetailProps) {
 	const { review, isLoading } = use(ReviewContext)
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 
-	const updateReviewMutation = useUpdateReview()
-	const deleteReviewMutation = useDeleteReview()
-	const deleteTopicReviewMutation = useDeleteTopicReview()
+	const updateReviewMutation = useUpdateReviewSession()
+	const deleteReviewSessionMutation = useDeleteReviewSession()
 
 	const handleDeleteReview = useCallback(
 		async (reviewId: number) => {
-			await deleteReviewMutation.mutateAsync(reviewId)
+			await deleteReviewSessionMutation.mutateAsync(reviewId)
 			onDelete?.()
 		},
-		[deleteReviewMutation, onDelete]
+		[deleteReviewSessionMutation, onDelete]
 	)
 
 	const updateDescriptionMutation = useCallback(
@@ -99,13 +95,6 @@ export function ReviewDetail({
 			}
 		},
 		[review?.id, updateReviewMutation]
-	)
-
-	const handleRemoveTopicReview = useCallback(
-		async (topicReviewId: number) => {
-			await deleteTopicReviewMutation.mutateAsync(topicReviewId)
-		},
-		[deleteTopicReviewMutation]
 	)
 
 	const handleDateChange = useCallback(
@@ -190,13 +179,13 @@ export function ReviewDetail({
 	}, [review?.id])
 
 	if (isLoading || !review) {
-		return <ReviewDetailSkeleton />
+		return <ReviewSessionDetailSkeleton />
 	}
 
 	return (
 		<div className='flex min-h-0 flex-1 flex-col'>
 			<div className='sticky top-0 z-10 w-full border-b'>
-				<ReviewDetailHeader
+				<ReviewSessionDetailHeader
 					headerAfterActions={headerAfterActions}
 					headerBeforeActions={headerBeforeActions}
 					onDelete={handleDelete}
@@ -267,11 +256,7 @@ export function ReviewDetail({
 						</Tooltip>
 					</div>
 					<div className='w-full flex-1'>
-						<ReviewTopicsPanel
-							getScrollElement={() => scrollContainerRef.current}
-							onNavigate={onNavigate}
-							onRemoveTopicReview={handleRemoveTopicReview}
-						/>
+						<ReviewSessionTopicsPanel />
 					</div>
 				</div>
 			</div>

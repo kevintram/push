@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import { ArrowUpRight, Home, Star } from 'lucide-react'
 import { useMemo } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
-import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
+import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { mergeReviewSections } from '~/app/utils/reviewSections'
@@ -17,9 +17,9 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useTodayReviews } from '~/features/reviews/api/getReviews'
+import { useTodayReviewSessions } from '~/features/reviews/api/getReviewSessions'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import type { Review } from '~/features/reviews/types/review.types'
+import type { ReviewSession } from '~/features/reviews/types/review.types'
 import { useTopics } from '~/features/topics/api/getTopics'
 import type { Topic } from '~/features/topics/types/topic.types'
 
@@ -48,7 +48,7 @@ const SECTION_DEFINITIONS: Array<SectionDefinition> = [
 
 export function TodayPage() {
 	const { sections: reviewSections, isLoading: reviewsLoading } =
-		useTodayReviews()
+		useTodayReviewSessions()
 
 	const today = dayjs().format('YYYY-MM-DD')
 	const { data: topics, isLoading: topicsLoading } = useTopics({
@@ -101,7 +101,7 @@ export function TodayPage() {
 		handleTopicClick,
 		handleCreateTopic,
 		isCreatingTopic
-	} = useReviewPageHandlers()
+	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	// Merge sections by matching IDs
@@ -161,7 +161,7 @@ function TodayList({
 		id: string
 		label: string
 		headingClassName?: string
-		reviewsData?: { entries: Array<Review> }
+		reviewsData?: { entries: Array<ReviewSession> }
 		topicsData?: { entries: Array<Topic> }
 	}>
 	onCreateTopic: () => void

@@ -5,8 +5,8 @@ import { Button } from '~/components/ui/Button'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
-import type { Review } from '../types/review.types'
-import { ReviewItem } from './ReviewItem'
+import type { ReviewSession } from '../types/review.types'
+import { ReviewSessionItem } from './ReviewSessionItem'
 
 const MIN_TOPIC_WIDTH = 210
 const MIN_TOPIC_HEIGHT = 96
@@ -15,7 +15,7 @@ type ReviewSectionProps = {
 	id: string
 	label: string
 	headingClassName?: string
-	reviewEntries: Array<Review>
+	reviewEntries: Array<ReviewSession>
 	topicEntries: Array<Topic>
 	isCollapsed: boolean
 	onToggleCollapse: (sectionId: string) => void
@@ -111,7 +111,7 @@ export function ReviewSection({
 							<div className='px-4'>
 								{reviewEntries.length > 0 ? (
 									reviewEntries.map(entry => (
-										<ReviewItem
+										<ReviewSessionItem
 											entry={entry}
 											key={entry.id}
 											onReviewClick={onReviewClick}

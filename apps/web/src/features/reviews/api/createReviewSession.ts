@@ -1,20 +1,24 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { topicKeys } from '~/features/topics/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
-import { TopicReviewSchema } from '../types/review.schemas'
-import type { Rating } from '../types/review.types'
+import type { CreateReviewSessionInput } from '../types/api.types'
+import { ReviewSessionSchema } from '../types/review.schemas'
 import { reviewKeys } from './queryKeys'
 
-export async function updateTopicReview(id: number, rating: Rating) {
+export async function createReviewSession(input: CreateReviewSessionInput) {
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topic-reviews/${id}/`,
+		`${import.meta.env.VITE_API_URL}/review-sessions/`,
 		{
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ rating })
+			body: JSON.stringify({
+				description: input.description,
+				notes: input.notes ?? '',
+				scheduled_at: input.scheduledAt,
+				completed_at: input.completedAt
+			})
 		}
 	)
 
@@ -24,7 +28,7 @@ export async function updateTopicReview(id: number, rating: Rating) {
 
 	const data = await response.json()
 	try {
-		return v.parse(TopicReviewSchema, data)
+		return v.parse(ReviewSessionSchema, data)
 	} catch (error) {
 		if (v.isValiError(error)) {
 			throw new Error(`Validation failed: ${error.message}`)
@@ -33,15 +37,18 @@ export async function updateTopicReview(id: number, rating: Rating) {
 	}
 }
 
-export function useUpdateTopicReview() {
+export function useCreateReviewSession() {
 	const queryClient = useQueryClient()
 
-	return useMutation({
-		mutationFn: ({ id, rating }: { id: number; rating: Rating }) =>
-			updateTopicReview(id, rating),
+	const { mutateAsync, isPending } = useMutation({
+		mutationFn: createReviewSession,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: topicKeys.all })
 			queryClient.invalidateQueries({ queryKey: reviewKeys.all })
 		}
 	})
+
+	return {
+		createReviewSession: mutateAsync,
+		isPending
+	}
 }

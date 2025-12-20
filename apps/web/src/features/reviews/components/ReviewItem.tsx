@@ -1,10 +1,16 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import {
+	BicepsFlexed,
+	CalendarIcon,
+	MoreHorizontal,
+	SquareStack,
+	StickyNote,
+	Trash
+} from 'lucide-react'
+import { useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
-import { Checkbox } from '~/components/ui/Checkbox'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -19,44 +25,110 @@ import {
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
 import { useDeleteReview } from '../api/deleteReview'
-import { reviewKeys } from '../api/queryKeys'
 import { useUpdateReview } from '../api/updateReview'
-import type { Review } from '../types/review.types'
+import type { ReviewListItem } from '../types/review.types'
 import { DatePickerDropdown } from './DatePickerDropdown'
-import { ReviewTopicBadges } from './ReviewTopicBadges'
+import {
+	ReviewRatingCheckbox,
+	type ReviewRatingState
+} from './ReviewRatingCheckbox'
+
+const getRelativeDateLabel = (date: Date | null) => {
+	if (!date) return null
+
+	const today = dayjs().startOf('day')
+	const dateDay = dayjs(date).startOf('day')
+	const diffDays = dateDay.diff(today, 'day')
+
+	if (diffDays === 0) return 'Today'
+	if (diffDays === 1) return 'Tomorrow'
+	if (diffDays === -1) return 'Yesterday'
+	if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
+	return `in ${diffDays}d`
+}
+
+const getInitialSelectedDate = (entry: ReviewListItem) => {
+	if (entry.completed_at) {
+		return dayjs(entry.completed_at).toDate()
+	}
+	if (entry.scheduled_at) {
+		return dayjs(entry.scheduled_at).toDate()
+	}
+	return null
+}
+
+const getStabilityChangeColorClass = (
+	before: number | null,
+	after: number | null
+) => {
+	if (after == null || before == null) {
+		return ''
+	}
+	if (after > before) {
+		return 'text-green-600 dark:text-green-400'
+	}
+	if (after < before) {
+		return 'text-red-600 dark:text-red-400'
+	}
+	return 'text-muted-foreground'
+}
 
 interface ReviewItemProps {
-	entry: Review
+	entry: ReviewListItem
 	onReviewClick?: (reviewId: number) => void
 	readonly?: boolean
+	variant?: 'default' | 'session' | 'topic'
 }
 
 export function ReviewItem({
 	entry,
 	onReviewClick,
-	readonly = false
+	readonly = false,
+	variant = 'default'
 }: ReviewItemProps) {
-	const queryClient = useQueryClient()
+	const navigate = useNavigate()
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
-	const [_isDropdownOpen, setIsDropdownOpen] = useState(false)
-	const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
-		if (entry.completed_at) {
-			return entry.completed_at ? dayjs(entry.completed_at).toDate() : null
-		}
-		return entry.scheduled_at ? dayjs(entry.scheduled_at).toDate() : null
-	})
+	const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
+		getInitialSelectedDate(entry)
+	)
 
 	const updateReviewMutation = useUpdateReview()
 	const deleteReviewMutation = useDeleteReview()
 
-	const handleCheckboxChange = useCallback(
-		(checked: boolean) => {
-			if (entry.id) {
+	const isCompleted = entry.completed_at != null
+	const reviewStatus: ReviewRatingState = isCompleted
+		? (entry.rating ?? 'good')
+		: 'uncompleted'
+
+	const stabilityChangeColorClass = getStabilityChangeColorClass(
+		entry.stability_before,
+		entry.stability_after
+	)
+	const hasStability =
+		entry.stability_after != null && entry.stability_before != null
+	const stabilityAfterRounded = hasStability
+		? Math.round(entry.stability_after ?? 0)
+		: 0
+	const stabilityDeltaRounded = hasStability
+		? Math.round((entry.stability_after ?? 0) - (entry.stability_before ?? 0))
+		: 0
+
+	const handleStatusChange = useCallback(
+		(status: ReviewRatingState) => {
+			if (!entry.id) return
+			if (status === 'uncompleted') {
 				updateReviewMutation.mutateAsync({
 					id: entry.id,
-					completed_at: checked ? dayjs().format('YYYY-MM-DD') : null
+					rating: null,
+					completed_at: null
 				})
+				return
 			}
+			updateReviewMutation.mutateAsync({
+				id: entry.id,
+				rating: status,
+				completed_at: dayjs().format('YYYY-MM-DD')
+			})
 		},
 		[entry.id, updateReviewMutation]
 	)
@@ -64,21 +136,21 @@ export function ReviewItem({
 	const handleDateSave = useCallback(
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
-			if (entry.id) {
-				const newDateString = newDate
-					? dayjs(newDate).format('YYYY-MM-DD')
-					: null
-				if (entry.completed_at) {
-					updateReviewMutation.mutateAsync({
-						id: entry.id,
-						completed_at: newDateString
-					})
-				} else {
-					updateReviewMutation.mutateAsync({
-						id: entry.id,
-						scheduled_at: newDateString
-					})
-				}
+			if (!entry.id) {
+				setIsDatePopoverOpen(false)
+				return
+			}
+			const newDateString = newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
+			if (entry.completed_at) {
+				updateReviewMutation.mutateAsync({
+					id: entry.id,
+					completed_at: newDateString
+				})
+			} else {
+				updateReviewMutation.mutateAsync({
+					id: entry.id,
+					scheduled_at: newDateString
+				})
 			}
 			setIsDatePopoverOpen(false)
 		},
@@ -86,10 +158,9 @@ export function ReviewItem({
 	)
 
 	const handleDelete = useCallback(async () => {
-		if (entry?.id) {
-			await deleteReviewMutation.mutateAsync(entry.id)
-		}
-	}, [deleteReviewMutation, entry?.id])
+		if (!entry.id) return
+		await deleteReviewMutation.mutateAsync(entry.id)
+	}, [deleteReviewMutation, entry.id])
 
 	const handleReviewClick = useCallback(() => {
 		if (readonly) return
@@ -98,50 +169,55 @@ export function ReviewItem({
 		}
 	}, [entry.id, onReviewClick, readonly])
 
-	const handleMouseEnter = useCallback(() => {
-		// Store review in query cache for prefetching
-		if (entry.id) {
-			queryClient.setQueryData(reviewKeys.detail(entry.id), entry)
-		}
-	}, [queryClient, entry])
+	const handleSessionClick = useCallback(
+		(event: React.MouseEvent) => {
+			event.stopPropagation()
+			navigate({
+				to: '/review-session/$reviewSessionId',
+				params: { reviewSessionId: entry.review_session.id.toString() }
+			})
+		},
+		[navigate, entry.review_session.id]
+	)
 
-	const effectiveDate: Date | null = useMemo(() => {
-		if (entry.effective_date) {
-			return dayjs(entry.effective_date).toDate()
-		}
-		return null
-	}, [entry.effective_date])
+	const handleTopicClick = useCallback(
+		(event: React.MouseEvent) => {
+			event.stopPropagation()
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: entry.topic.id.toString() }
+			})
+		},
+		[navigate, entry.topic.id]
+	)
 
-	const isOverdueValue: boolean = useMemo(() => {
-		return isOverdue({
-			scheduled_at: entry.scheduled_at,
-			isCompleted: entry.completed_at !== null
-		})
-	}, [entry.scheduled_at, entry.completed_at])
+	const effectiveDate = entry.effective_date
+		? dayjs(entry.effective_date).toDate()
+		: null
 
-	const relativeDate = useMemo(() => {
-		if (!effectiveDate) return null
+	const isOverdueValue = isOverdue({
+		scheduled_at: entry.scheduled_at,
+		isCompleted
+	})
 
-		const today = dayjs().startOf('day')
-		const dateDay = dayjs(effectiveDate).startOf('day')
-		const diffDays = dateDay.diff(today, 'day')
+	const relativeDate = getRelativeDateLabel(effectiveDate)
 
-		if (diffDays === 0) return 'Today'
-		if (diffDays === 1) return 'Tomorrow'
-		if (diffDays === -1) return 'Yesterday'
-		if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
-		return `in ${diffDays}d`
-	}, [effectiveDate])
+	const sessionDisplayText =
+		entry.review_session.description?.trim() || 'no description'
 
-	const dateButtonColorClass = useMemo(() => {
-		if (isOverdueValue) {
-			return 'text-red-600 dark:text-red-400'
-		}
-		if (relativeDate === 'Today') {
-			return 'text-blue-600 dark:text-blue-400'
-		}
-		return ''
-	}, [isOverdueValue, relativeDate])
+	const dateButtonColorClass = cn(
+		isOverdueValue && 'text-red-600 dark:text-red-400',
+		!isOverdueValue &&
+			relativeDate === 'Today' &&
+			'text-blue-600 dark:text-blue-400'
+	)
+	const description = entry.description?.trim()
+
+	// Determine if we're actually rendering topic or session content
+	const showingTopic =
+		(variant === 'default' || variant === 'topic') && entry.topic?.name
+	const showingSession = variant === 'default' || variant === 'session'
+	const showingTopicOrSession = showingTopic || showingSession
 
 	return (
 		<Card className='rounded-none border-0 border-b bg-transparent shadow-none'>
@@ -151,26 +227,27 @@ export function ReviewItem({
 					readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'
 				)}
 				onClick={handleReviewClick}
-				onMouseEnter={handleMouseEnter}
 			>
 				<div className='flex flex-col'>
 					{/* Row 1: Checkbox, Description, Date, More Button */}
 					<div className='flex items-center pb-1'>
-						<Checkbox
-							checked={!!entry.completed_at}
+						<ReviewRatingCheckbox
 							className={
 								isOverdueValue
 									? 'border-red-600 dark:border-red-700 dark:bg-red-700'
 									: ''
 							}
-							disabled={readonly}
-							onCheckedChange={handleCheckboxChange}
-							onClick={e => e.stopPropagation()}
+							disabled={readonly || updateReviewMutation.isPending}
+							onChange={handleStatusChange}
+							value={reviewStatus}
 						/>
 						<span
-							className={`ml-2 min-w-0 flex-1 truncate text-sm ${entry.description === '' || entry.description === null ? 'text-muted-foreground' : 'text-foreground'}`}
+							className={cn(
+								'ml-2 min-w-0 flex-1 truncate text-sm',
+								description ? 'text-foreground' : 'text-muted-foreground'
+							)}
 						>
-							{entry.description || 'Description'}
+							{description || 'No description'}
 						</span>
 						<Tooltip>
 							<DatePickerDropdown
@@ -182,7 +259,13 @@ export function ReviewItem({
 								trigger={
 									<TooltipTrigger asChild={true}>
 										<Button
-											className={`text-xs ${readonly ? 'cursor-default opacity-50' : 'hover:bg-muted/50'} ${dateButtonColorClass}`}
+											className={cn(
+												'text-xs',
+												readonly
+													? 'cursor-default opacity-50'
+													: 'hover:bg-muted/50',
+												dateButtonColorClass
+											)}
 											disabled={readonly}
 											onClick={e => e.stopPropagation()}
 											size='sm'
@@ -199,7 +282,7 @@ export function ReviewItem({
 							</TooltipContent>
 						</Tooltip>
 						{!readonly && (
-							<DropdownMenu onOpenChange={setIsDropdownOpen}>
+							<DropdownMenu>
 								<DropdownMenuTrigger asChild={true}>
 									<Button
 										className='h-6 w-6 p-0'
@@ -230,8 +313,44 @@ export function ReviewItem({
 							</DropdownMenu>
 						)}
 					</div>
-					{/* Row 2: Topic Badges */}
-					<ReviewTopicBadges review={entry} />
+					<div className='flex items-center justify-end gap-2 text-muted-foreground text-xs'>
+						{(variant === 'default' || variant === 'topic') && (
+							<Button
+								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
+								onClick={handleTopicClick}
+								size='sm'
+								variant='link'
+							>
+								<StickyNote className='h-3 w-3' />
+								<span>{entry.topic.name}</span>
+							</Button>
+						)}
+						{variant === 'default' && <span>⋅</span>}
+						{(variant === 'default' || variant === 'session') && (
+							<Button
+								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
+								onClick={handleSessionClick}
+								size='sm'
+								variant='link'
+							>
+								<SquareStack className='h-3 w-3' />
+								<span>{sessionDisplayText}</span>
+							</Button>
+						)}
+						{hasStability && (
+							<>
+								{showingTopicOrSession && <span>⋅</span>}
+								<div className='flex items-center'>
+									<BicepsFlexed className='mr-1 h-3 w-3' />
+									<span>{`${stabilityAfterRounded}d`}</span>
+									<span className={cn('ml-1', stabilityChangeColorClass)}>
+										({stabilityDeltaRounded >= 0 ? '+' : ''}
+										{stabilityDeltaRounded})
+									</span>
+								</div>
+							</>
+						)}
+					</div>
 				</div>
 			</CardContent>
 		</Card>
