@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from datetime import datetime
+from datetime import datetime, date
 from app.dependencies import UserIdDep, SessionDep
 from sqlalchemy import select, update, delete
 from sqlalchemy.orm import selectinload
@@ -102,6 +102,7 @@ async def update_review_session(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> ReviewSessionRead:
+    # TODO: add tests for all this shit 
     update_values = review_session.model_dump(exclude_unset=True, exclude={"id", "user_id"})
     if not update_values:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -140,11 +141,12 @@ async def update_review_session(
         final_result = await session.execute(stmt)
         return final_result.scalar_one()
     
-    # since completed_at is changing, we need to update corresponding reviews (formerly topic reviews)
+    # If Review Session is becoming completed (None → date),
+    # set all null ratings to "good" and set completion date for reviews.
+    # Note: we do nothing if Review Session is becoming uncompleted (date -> None)
+    # TODO: should we return the reviews/topics since they are like side effects?
     new_completed_at = update_values.get("completed_at")
-    # Case 1: Review Session became completed (None → date)
     if old_completed_at is None and new_completed_at is not None:
-        # Set all null ratings to "good" and set completion date for reviews
         await session.execute(
             update(Review)
             .where(
@@ -155,42 +157,31 @@ async def update_review_session(
             .values(rating="good", completed_at=new_completed_at)
         )
         await session.flush()
-    # Case 2: Review Session became uncompleted (date → None)
-    elif old_completed_at is not None and new_completed_at is None:
-        # Set all ratings back to None and clear completion date for reviews
-        await session.execute(
-            update(Review)
+        
+        # Since these topics have now have an additional completed review, 
+        # we must run FSRS for them:
+
+        # get the topics
+        reviews_result = await session.execute(
+            select(Review.topic_id)
             .where(Review.review_session_id == review_session_id, Review.user_id == user_id)
-            .values(rating=None, completed_at=None)
+            .distinct()
         )
-        await session.flush()
-    
-    # Run FSRS for all affected topics, starting from earliest affected date
-    if completed_at_changed:
-        replay_from_date = None
-        if old_completed_at is not None and new_completed_at is not None:
-            replay_from_date = min(old_completed_at, new_completed_at)
-        elif old_completed_at is not None:
-            replay_from_date = old_completed_at
-        elif new_completed_at is not None:
-            replay_from_date = new_completed_at
-
-        if replay_from_date:
-            reviews_result = await session.execute(
-                select(Review.topic_id)
-                .where(Review.review_session_id == review_session_id, Review.user_id == user_id)
-                .distinct()
+        affected_topic_ids = {row[0] for row in reviews_result.all()}
+        
+        # run FSRS on the topics
+        # Note: we don't assume that the reviews are latest for each topic
+        #       thus, we must replay FSRS for them starting
+        earliest_date = min(old_completed_at or date.max, new_completed_at or date.max)
+        for topic_id in affected_topic_ids:
+            await replay_reviews_from_date(
+                session=session,
+                topic_id=topic_id,
+                user_id=user_id,
+                from_date=earliest_date,
             )
-            affected_topic_ids = {row[0] for row in reviews_result.all()}
 
-            for topic_id in affected_topic_ids:
-                await replay_reviews_from_date(
-                    session=session,
-                    topic_id=topic_id,
-                    user_id=user_id,
-                    from_date=replay_from_date,
-                )
-
+    # return latest results!
     stmt = (
         select(ReviewSession)
         .where(ReviewSession.id == review_session_id, ReviewSession.user_id == user_id)
