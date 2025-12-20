@@ -14,7 +14,7 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useCreateTopicWithReview } from '~/features/reviews/api/createReview'
+import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
@@ -32,8 +32,8 @@ export function InboxPage() {
 		inboxed: true,
 		archived: false
 	})
-	const { createTopicWithReview, isTopicCreatePending: isCreatingTopic } =
-		useCreateTopicWithReview()
+	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
+		useCreateTopic()
 
 	const handleTopicSelect = useCallback(
 		(topic: Topic) => {
@@ -46,7 +46,7 @@ export function InboxPage() {
 	)
 
 	const handleCreateInboxTopic = useCallback(async () => {
-		const newTopic = await createTopicWithReview({
+		const newTopic = await createTopic({
 			inboxed: true,
 			archived: false
 		})
@@ -54,7 +54,7 @@ export function InboxPage() {
 			to: '/topics/$topicId',
 			params: { topicId: newTopic.id.toString() }
 		})
-	}, [createTopicWithReview, navigate])
+	}, [createTopic, navigate])
 
 	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
 
