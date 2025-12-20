@@ -82,18 +82,6 @@ NEW_WORKTREE="$PARENT_DIR/$DIR_NAME"
 # Get the current branch name
 CURRENT_BRANCH=$(git branch --show-current)
 
-echo "🔄 Fetching latest from origin..."
-cd "$CURRENT_WORKTREE"
-git fetch origin
-
-# Only pull if current branch has a remote tracking branch
-if git rev-parse --verify --quiet "refs/remotes/origin/$CURRENT_BRANCH" >/dev/null 2>&1; then
-    echo "🔄 Updating $CURRENT_BRANCH branch..."
-    git pull origin "$CURRENT_BRANCH"
-else
-    echo "ℹ️  Current branch '$CURRENT_BRANCH' has no remote tracking branch, skipping pull"
-fi
-
 # Check branch existence
 LOCAL_EXISTS=false
 REMOTE_EXISTS=false
@@ -109,6 +97,11 @@ fi
 if [ "$USE_EXISTING" = true ]; then
     # EXISTING MODE: Use an existing branch
     echo "🔄 Using existing branch: $BRANCH_NAME"
+
+    # Fetch to ensure we have latest remote info
+    echo "🔄 Fetching latest from origin..."
+    cd "$CURRENT_WORKTREE"
+    git fetch origin
 
     if [ "$LOCAL_EXISTS" = false ] && [ "$REMOTE_EXISTS" = false ]; then
         echo "❌ Branch '$BRANCH_NAME' does not exist locally or on remote."
@@ -181,6 +174,19 @@ if [ "$USE_EXISTING" = true ]; then
 else
     # CREATE MODE: Create a new branch
     echo "🌱 Creating new worktree for branch: $BRANCH_NAME (from $CURRENT_BRANCH)"
+
+    # Fetch and update current branch since we're creating from it
+    echo "🔄 Fetching latest from origin..."
+    cd "$CURRENT_WORKTREE"
+    git fetch origin
+
+    # Only pull if current branch has a remote tracking branch
+    if git rev-parse --verify --quiet "refs/remotes/origin/$CURRENT_BRANCH" >/dev/null 2>&1; then
+        echo "🔄 Updating $CURRENT_BRANCH branch..."
+        git pull origin "$CURRENT_BRANCH"
+    else
+        echo "ℹ️  Current branch '$CURRENT_BRANCH' has no remote tracking branch, skipping pull"
+    fi
 
     if [ "$LOCAL_EXISTS" = true ] || [ "$REMOTE_EXISTS" = true ]; then
         # Branch exists somewhere
