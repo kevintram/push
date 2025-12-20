@@ -253,6 +253,7 @@ export function TopicChildrenPanel({
 									<Plus className='h-4 w-4' />
 								)}
 								Add
+								<ChevronDown className='h-4 w-4' />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='end' side='bottom'>
