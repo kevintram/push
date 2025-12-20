@@ -95,21 +95,20 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 
 	const isCreatingReviewWithTopic = isCreatingReview
 
-	const createReviewWithTopic = useCallback(
+	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
 			if (!topic) throw new Error('Topic not found')
-
-			// Create review and link to topic in a single API call
+			
 			const review = await createReviewMutation.mutateAsync({
 				topic_id: topic.id,
 				review_session: {
-					description: 'Created',
+					description: '',
 					notes: '',
 					scheduled_at: null,
 					completed_at: completedAt
 				},
 				rating,
-				description: 'Created',
+				description: '',
 				scheduled_at: null,
 				completed_at: completedAt
 			})
@@ -123,12 +122,12 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 
 	const handleLogReviewNow = useCallback(async () => {
 		const today = new Date().toISOString().split('T')[0] ?? '' // YYYY-MM-DD format
-		await createReviewWithTopic(today, 'good')
-	}, [createReviewWithTopic])
+		await createReview(today, 'good')
+	}, [createReview])
 
 	const handleNewReviewForLater = useCallback(async () => {
-		await createReviewWithTopic(null, null)
-	}, [createReviewWithTopic])
+		await createReview(null, null)
+	}, [createReview])
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
