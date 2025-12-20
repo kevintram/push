@@ -39,7 +39,7 @@ export function TopicBadge({
 							className='flex h-6 min-w-16 max-w-32 cursor-pointer items-center justify-start gap-1 px-2 py-1 text-center font-semibold text-xs hover:bg-secondary/80'
 							onClick={onClick}
 							onMouseEnter={onMouseEnter}
-							variant='secondary'
+							variant='outline'
 						>
 							{getRatingIcon(rating)}
 							<span className='min-w-0 flex-1 truncate'>{displayText}</span>
