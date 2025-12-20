@@ -59,7 +59,7 @@ export function useCreateTopicWithReview() {
 					name: input.name ?? '',
 					notes: input.notes ?? '',
 					archived: input.archived ?? false,
-					inboxed: input.inboxed ?? true,
+					inboxed: input.inboxed ?? false,
 					stability: input.stability,
 					difficulty: input.difficulty,
 					state: input.state,
