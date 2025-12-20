@@ -98,7 +98,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
 			if (!topic) throw new Error('Topic not found')
-			
+
 			const review = await createReviewMutation.mutateAsync({
 				topic_id: topic.id,
 				review_session: {

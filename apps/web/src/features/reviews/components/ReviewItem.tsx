@@ -214,7 +214,8 @@ export function ReviewItem({
 	const description = entry.description?.trim()
 
 	// Determine if we're actually rendering topic or session content
-	const showingTopic = (variant === 'default' || variant === 'topic') && entry.topic?.name
+	const showingTopic =
+		(variant === 'default' || variant === 'topic') && entry.topic?.name
 	const showingSession = variant === 'default' || variant === 'session'
 	const showingTopicOrSession = showingTopic || showingSession
 
@@ -320,7 +321,7 @@ export function ReviewItem({
 								size='sm'
 								variant='link'
 							>
-								<StickyNote className='h-3 w-3'/>
+								<StickyNote className='h-3 w-3' />
 								<span>{entry.topic.name}</span>
 							</Button>
 						)}
