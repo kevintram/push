@@ -159,8 +159,8 @@ export function TopicParentsPanel({
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild={true} disabled={isCreating}>
 						<Badge
-							className='cursor-pointer items-center gap-1 border-dashed py-1 hover:bg-muted/50'
-							variant='outline'
+							className='cursor-pointer items-center gap-1 py-1 hover:bg-muted/50'
+							variant='secondary'
 						>
 							{isCreating ? (
 								<Loader2 className='h-3 w-3 animate-spin' />
