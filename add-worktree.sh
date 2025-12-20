@@ -111,4 +111,5 @@ git push --set-upstream origin "$BRANCH_NAME"
 
 echo "🎉 Worktree '$BRANCH_NAME' created successfully!"
 echo "📍 Location: $NEW_WORKTREE"
-echo "💡 To switch to this worktree: cd $NEW_WORKTREE"
+echo "cd $NEW_WORKTREE" | pbcopy
+echo "📋 Copied to clipboard: cd $NEW_WORKTREE"
