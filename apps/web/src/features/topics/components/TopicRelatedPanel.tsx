@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import {
 	ChevronDown,
 	Link,
@@ -20,7 +19,6 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
 import { useDeleteTopicOtherRelationship } from '../api/deleteTopicOtherRelationship'
 import { useTopicsRelatedTo } from '../api/getTopicsRelatedTo'
@@ -73,7 +71,6 @@ export function TopicRelatedPanel({
 
 	const deleteRelationship = useDeleteTopicOtherRelationship()
 	const createRelationship = useCreateTopicOtherRelationship()
-	const createReviewMutation = useCreateReview()
 
 	const isCreating = createRelationship.isPending
 
@@ -110,32 +107,13 @@ export function TopicRelatedPanel({
 				// Get the newly created related topic ID
 				const newTopicId = newTopicResponse.to_topic.id
 
-				// fire and forget 'Created' review creation
-				createReviewMutation
-					.mutateAsync({
-						topic_id: newTopicId,
-						review_session: {
-							description: 'Created',
-							notes: '',
-							scheduled_at: null,
-							completed_at: dayjs().format('YYYY-MM-DD')
-						},
-						rating: 'good',
-						description: 'Created',
-						scheduled_at: null,
-						completed_at: dayjs().format('YYYY-MM-DD')
-					})
-					.catch(() => {
-						// Ignore fire-and-forget errors (for now)
-					})
-
 				// Navigate to the created topic
 				handleRelatedSelect(newTopicId)
 			} catch (_error) {
 				// Error is handled by React Query mutation state
 			}
 		},
-		[topicId, createRelationship, handleRelatedSelect, createReviewMutation]
+		[topicId, createRelationship, handleRelatedSelect]
 	)
 
 	const handleAdd = useCallback(

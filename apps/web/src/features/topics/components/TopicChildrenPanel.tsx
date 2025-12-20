@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import {
 	Baby,
 	ChevronDown,
@@ -20,7 +19,6 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicChildren } from '../api/getTopicChildren'
@@ -73,7 +71,6 @@ export function TopicChildrenPanel({
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
-	const createReviewMutation = useCreateReview()
 
 	const isCreating = createRelationship.isPending
 
@@ -110,32 +107,13 @@ export function TopicChildrenPanel({
 				// Get the newly created child topic ID
 				const newTopicId = response.child.id
 
-				// fire and forget 'Created' review creation
-				createReviewMutation
-					.mutateAsync({
-						topic_id: newTopicId,
-						review_session: {
-							description: 'Created',
-							notes: '',
-							scheduled_at: null,
-							completed_at: dayjs().format('YYYY-MM-DD')
-						},
-						rating: 'good',
-						description: 'Created',
-						scheduled_at: null,
-						completed_at: dayjs().format('YYYY-MM-DD')
-					})
-					.catch(() => {
-						// Ignore fire-and-forget errors (for now)
-					})
-
 				// Navigate to the created topic
 				handleChildSelect(newTopicId)
 			} catch (_error) {
 				// Error is handled by React Query mutation state
 			}
 		},
-		[topicId, createRelationship, handleChildSelect, createReviewMutation]
+		[topicId, createRelationship, handleChildSelect]
 	)
 
 	const handleAddTopic = useCallback(

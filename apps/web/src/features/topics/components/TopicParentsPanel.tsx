@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import {
 	ChevronDown,
 	Loader2,
@@ -18,7 +17,6 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { Skeleton } from '~/components/ui/Skeleton'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicParents } from '../api/getTopicParents'
@@ -48,7 +46,6 @@ export function TopicParentsPanel({
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
-	const createReviewMutation = useCreateReview()
 
 	const isCreating = createRelationship.isPending
 
@@ -85,32 +82,13 @@ export function TopicParentsPanel({
 				// Get the newly created parent topic ID
 				const newTopicId = response.parent.id
 
-				// fire and forget 'Created' review creation
-				createReviewMutation
-					.mutateAsync({
-						topic_id: newTopicId,
-						review_session: {
-							description: 'Created',
-							notes: '',
-							scheduled_at: null,
-							completed_at: dayjs().format('YYYY-MM-DD')
-						},
-						rating: 'good',
-						description: 'Created',
-						scheduled_at: null,
-						completed_at: dayjs().format('YYYY-MM-DD')
-					})
-					.catch(() => {
-						// Ignore fire-and-forget errors (for now)
-					})
-
 				// Navigate to the created topic
 				handleParentSelect(newTopicId)
 			} catch (_error) {
 				// Error is handled by React Query mutation state
 			}
 		},
-		[topicId, createRelationship, handleParentSelect, createReviewMutation]
+		[topicId, createRelationship, handleParentSelect]
 	)
 
 	const handleAdd = useCallback(
