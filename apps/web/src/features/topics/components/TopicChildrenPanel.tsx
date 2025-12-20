@@ -231,16 +231,17 @@ export function TopicChildrenPanel({
 									<Plus className='h-4 w-4' />
 								)}
 								Add
+								<ChevronDown className='h-4 w-4' />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end' side='bottom'>
-							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
-								<Search className='h-4 w-4' />
-								Search
-							</DropdownMenuItem>
+						<DropdownMenuContent align='start'>
 							<DropdownMenuItem onClick={() => handleCreateNewAndAdd()}>
 								<SquarePen className='h-4 w-4' />
 								Create New
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
+								<Search className='h-4 w-4' />
+								Search
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>

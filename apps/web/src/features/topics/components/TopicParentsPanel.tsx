@@ -1,5 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Loader2, Plus, Search, SquarePen, User2 } from 'lucide-react'
+import {
+	ChevronDown,
+	Loader2,
+	Plus,
+	Search,
+	SquarePen,
+	User2
+} from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Badge } from '~/components/ui/Badge'
 import {
@@ -152,24 +159,27 @@ export function TopicParentsPanel({
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild={true} disabled={isCreating}>
 						<Badge
-							className='cursor-pointer items-center border-dashed py-1 hover:bg-muted/50'
-							variant='outline'
+							className='cursor-pointer items-center gap-1 py-1 hover:bg-muted/50'
+							variant='secondary'
 						>
 							{isCreating ? (
 								<Loader2 className='h-3 w-3 animate-spin' />
 							) : (
-								<Plus className='h-3 w-3' />
+								<>
+									<Plus className='h-3 w-3' />
+									<ChevronDown className='h-3 w-3' />
+								</>
 							)}
 						</Badge>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align='start' side='right'>
-						<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
-							<Search className='h-4 w-4' />
-							Search
-						</DropdownMenuItem>
+					<DropdownMenuContent align='start'>
 						<DropdownMenuItem onClick={() => handleCreateNewAndAdd()}>
 							<SquarePen className='h-4 w-4' />
 							Create New
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
+							<Search className='h-4 w-4' />
+							Search
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
