@@ -1,5 +1,13 @@
-import { Archive, ArchiveX, Inbox, X } from 'lucide-react'
-import { type ReactNode, use, useCallback, useEffect, useRef } from 'react'
+import dayjs from 'dayjs'
+import { Archive, ArchiveX, BicepsFlexed, Flag, Inbox, X } from 'lucide-react'
+import {
+	type ReactNode,
+	use,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef
+} from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	Popover,
@@ -7,10 +15,17 @@ import {
 	PopoverTrigger
 } from '~/components/ui/Popover'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
+import { Switch } from '~/components/ui/Switch'
 import { Textarea } from '~/components/ui/Textarea'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
+import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import type { Topic } from '../../types/topic.types'
@@ -95,7 +110,8 @@ export function TopicDetail({
 	const isLoading =
 		isLoadingProp !== undefined ? isLoadingProp : contextValue.isLoading
 
-	const { mutateAsync: updateTopic } = useUpdateTopic()
+	const { mutateAsync: updateTopic, isPending: isUpdatingTopic } =
+		useUpdateTopic()
 
 	const handleArchiveToggle = useCallback(async () => {
 		if (topic?.id) {
@@ -114,6 +130,41 @@ export function TopicDetail({
 			})
 		}
 	}, [updateTopic, topic?.id, topic?.inboxed])
+
+	const handleSrsToggle = useCallback(
+		async (pressed: boolean) => {
+			if (!topic?.id || sidebarReadonly) return
+			await updateTopic({
+				id: topic.id,
+				srs_enabled: pressed
+			})
+		},
+		[topic?.id, sidebarReadonly, updateTopic]
+	)
+
+	// Calculate the due date display using shared utilities
+	const dueDateDisplay = useMemo(() => {
+		if (!topic?.due) return null
+
+		const dueDateDisplay = getDueDateDisplay(topic.due)
+		dueDateDisplay.displayText = `Due ${dueDateDisplay.displayText}`
+
+		return dueDateDisplay
+	}, [topic?.due])
+
+	const dueDateColorClass = useMemo(
+		() =>
+			getDateColor(
+				dueDateDisplay?.displayText ?? null,
+				topic?.srs_enabled ?? true
+			),
+		[dueDateDisplay?.displayText, topic?.srs_enabled]
+	)
+
+	const stabilityText =
+		topic?.stability != null
+			? `Stable for ${Math.round(topic.stability)}d`
+			: 'No stability data'
 
 	const updateNotes = useCallback(
 		(newNotes: string) => {
@@ -238,7 +289,7 @@ export function TopicDetail({
 								)}
 							</div>
 						)}
-						<div className='pb-4'>
+						<div className='flex flex-col gap-2 pb-4'>
 							<Textarea
 								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onChange={onNameChange}
@@ -246,6 +297,48 @@ export function TopicDetail({
 								spellCheck={false}
 								value={title}
 							/>
+							<div className='flex items-center gap-3 border-t-1 border-b-1 py-2 text-muted-foreground text-sm'>
+								<Tooltip>
+									<TooltipTrigger asChild={true}>
+										<div className='flex items-center gap-1'>
+											<Flag className={`h-3 w-3 ${dueDateColorClass}`} />
+											<span className={dueDateColorClass}>
+												{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
+											</span>
+										</div>
+									</TooltipTrigger>
+									<TooltipContent className='text-center' side='bottom'>
+										<span>
+											{topic.due
+												? `Due on ${dayjs(topic.due).format('MMMM D, YYYY')}`
+												: 'No due date'}
+										</span>
+									</TooltipContent>
+								</Tooltip>
+								⋅
+								<Tooltip>
+									<TooltipTrigger asChild={true}>
+										<div className='flex items-center gap-1'>
+											<BicepsFlexed className='h-3 w-3' />
+											<span>{stabilityText}</span>
+										</div>
+									</TooltipTrigger>
+									<TooltipContent side='bottom'>
+										The estimated number of days you can remember this topic
+										without additional review
+									</TooltipContent>
+								</Tooltip>
+								<div className='flex-1' />
+								<div className='flex items-center gap-1.5 rounded-xl border-1 p-2'>
+									<span className='pr-2'>Show when due</span>
+									<Switch
+										checked={topic.srs_enabled ?? true}
+										disabled={isUpdatingTopic || sidebarReadonly}
+										onCheckedChange={handleSrsToggle}
+										size='sm'
+									/>
+								</div>
+							</div>
 							<Textarea
 								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
 								name='notes'

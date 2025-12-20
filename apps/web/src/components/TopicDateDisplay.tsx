@@ -15,9 +15,12 @@ export function TopicDateDisplay({
 	srsEnabled,
 	className
 }: TopicDateDisplayProps) {
-	const dueDateDisplay = useMemo(() => getDueDateDisplay(due), [due])
+	const dueDateDisplay = useMemo(
+		() => (due ? getDueDateDisplay(due) : null),
+		[due]
+	)
 	const nextScheduledDisplay = useMemo(
-		() => getDueDateDisplay(scheduledAt),
+		() => (scheduledAt ? getDueDateDisplay(scheduledAt) : null),
 		[scheduledAt]
 	)
 

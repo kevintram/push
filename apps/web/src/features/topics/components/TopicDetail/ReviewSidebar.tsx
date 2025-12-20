@@ -1,12 +1,4 @@
-import dayjs from 'dayjs'
-import {
-	BicepsFlexed,
-	Flag,
-	Loader2,
-	Plus,
-	Square,
-	SquareCheck
-} from 'lucide-react'
+import { Loader2, Plus, Square, SquareCheck } from 'lucide-react'
 import { use, useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
@@ -17,7 +9,6 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import { Skeleton } from '~/components/ui/Skeleton'
-import { Switch } from '~/components/ui/Switch'
 import {
 	Tooltip,
 	TooltipContent,
@@ -31,8 +22,6 @@ import type {
 	Rating,
 	ReviewListItem
 } from '~/features/reviews/types/review.types'
-import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
-import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 
 interface ReviewsSidebarProps {
@@ -77,23 +66,7 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	}, [reviews])
 
 	const createReviewMutation = useCreateReview()
-	const { mutateAsync: updateTopic, isPending: isUpdatingTopic } =
-		useUpdateTopic()
-
 	const isCreatingReview = createReviewMutation.isPending
-
-	const handleSrsToggle = useCallback(
-		async (pressed: boolean) => {
-			if (!topic || readonly) return
-			await updateTopic({
-				id: topic.id,
-				srs_enabled: pressed
-			})
-		},
-		[topic, readonly, updateTopic]
-	)
-
-	const isCreatingReviewWithTopic = isCreatingReview
 
 	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
@@ -138,31 +111,9 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 		[readonly]
 	)
 
-	// Calculate the due date display using shared utilities
-	const dueDateDisplay = useMemo(
-		() => getDueDateDisplay(topic?.due ?? null),
-		[topic?.due]
-	)
-
-	const dueDateColorClass = useMemo(
-		() =>
-			getDateColor(
-				dueDateDisplay?.displayText ?? null,
-				topic?.srs_enabled ?? true
-			),
-		[dueDateDisplay?.displayText, topic?.srs_enabled]
-	)
-
-	const stabilityText =
-		topic?.stability != null ? `${Math.round(topic.stability)}d` : 'No data'
-	const stabilityTooltip =
-		topic?.stability != null
-			? `Stable for ${Math.round(topic.stability)} days`
-			: 'Stability not yet calculated'
-
 	return (
 		<Sidebar className='absolute border-l' side='right'>
-			<SidebarHeader className='flex flex-col gap-0 pb-0'>
+			<SidebarHeader className='flex flex-col gap-1 pb-0'>
 				<div className='flex flex-row items-center justify-between'>
 					<h1 className='font-semibold text-lg'>Reviews</h1>
 					{!readonly && (
@@ -171,11 +122,11 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 								<TooltipTrigger asChild={true}>
 									<DropdownMenuTrigger asChild={true}>
 										<Button
-											disabled={isCreatingReviewWithTopic}
+											disabled={isCreatingReview}
 											size='sm'
 											variant='ghost'
 										>
-											{isCreatingReviewWithTopic ? (
+											{isCreatingReview ? (
 												<Loader2 className='animate-spin' />
 											) : (
 												<Plus />
@@ -184,21 +135,21 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 									</DropdownMenuTrigger>
 								</TooltipTrigger>
 								<TooltipContent>
-									{isCreatingReviewWithTopic
+									{isCreatingReview
 										? 'Creating review...'
 										: 'Create new review'}
 								</TooltipContent>
 							</Tooltip>
 							<DropdownMenuContent align='end'>
 								<DropdownMenuItem
-									disabled={isCreatingReviewWithTopic}
+									disabled={isCreatingReview}
 									onClick={handleLogReviewNow}
 								>
 									<SquareCheck />
 									Log review now
 								</DropdownMenuItem>
 								<DropdownMenuItem
-									disabled={isCreatingReviewWithTopic}
+									disabled={isCreatingReview}
 									onClick={handleNewReviewForLater}
 								>
 									<Square />
@@ -207,46 +158,6 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 							</DropdownMenuContent>
 						</DropdownMenu>
 					)}
-				</div>
-				<div className='flex items-center text-muted-foreground text-xs'>
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1 rounded-lg border-1 bg-secondary p-1.5 hover:bg-secondary/80'>
-								<Switch
-									checked={topic?.srs_enabled ?? true}
-									className='mx-0.5'
-									disabled={isUpdatingTopic}
-									onCheckedChange={handleSrsToggle}
-									size='sm'
-								/>
-								<Flag className={`h-3 w-3 ${dueDateColorClass}`} />
-								<span className={dueDateColorClass}>
-									{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
-								</span>
-							</div>
-						</TooltipTrigger>
-						<TooltipContent className='text-center' side='bottom'>
-							<span>
-								{topic?.due
-									? `Due on ${dayjs(topic.due).format('MMMM D, YYYY')}`
-									: 'No due date'}
-							</span>
-							<br />
-							<span className='italic'>
-								{topic?.srs_enabled ? '(enabled)' : '(disabled)'}
-							</span>
-						</TooltipContent>
-					</Tooltip>
-					&nbsp;·&nbsp;
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
-								<BicepsFlexed className='h-3 w-3' />
-								<span>{stabilityText}</span>
-							</div>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>{stabilityTooltip}</TooltipContent>
-					</Tooltip>
 				</div>
 			</SidebarHeader>
 			<SidebarContent className='scrollbar-track-transparent flex h-full flex-col gap-6 overflow-auto overscroll-contain px-2 pb-2'>
