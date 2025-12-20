@@ -269,7 +269,7 @@ export function TopicRelatedPanel({
 								<ChevronDown className='h-4 w-4' />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end' side='bottom'>
+						<DropdownMenuContent align='start'>
 							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
 								<Search className='h-4 w-4' />
 								Search

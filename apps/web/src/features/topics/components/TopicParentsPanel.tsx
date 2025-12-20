@@ -187,7 +187,7 @@ export function TopicParentsPanel({
 							)}
 						</Badge>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align='start' side='right'>
+					<DropdownMenuContent align='start'>
 						<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
 							<Search className='h-4 w-4' />
 							Search
