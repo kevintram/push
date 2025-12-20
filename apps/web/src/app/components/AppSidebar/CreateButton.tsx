@@ -42,7 +42,7 @@ export function CreateButton() {
 
 	// Handlers
 	const handleNewTopic = useCallback(async () => {
-		const createdTopic = await createTopic({ inboxed: true })
+		const createdTopic = await createTopic({})
 		openTopicDialog(createdTopic.id)
 	}, [createTopic, openTopicDialog])
 
