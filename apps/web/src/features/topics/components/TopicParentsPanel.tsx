@@ -188,13 +188,13 @@ export function TopicParentsPanel({
 						</Badge>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align='start'>
-						<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
-							<Search className='h-4 w-4' />
-							Search
-						</DropdownMenuItem>
 						<DropdownMenuItem onClick={() => handleCreateNewAndAdd()}>
 							<SquarePen className='h-4 w-4' />
 							Create New
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
+							<Search className='h-4 w-4' />
+							Search
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
