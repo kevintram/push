@@ -5,7 +5,7 @@ import { apiFetch } from '~/utils/apiFetch'
 import type { UpdateReviewSessionInput } from '../types/api.types'
 import { ReviewSessionSchema } from '../types/review.schemas'
 import type { ReviewSession } from '../types/review.types'
-import { reviewSessionKeys } from './queryKeys'
+import { reviewKeys, reviewSessionKeys } from './queryKeys'
 
 export async function updateReviewSession(
 	input: UpdateReviewSessionInput
@@ -43,7 +43,8 @@ export function useUpdateReviewSession() {
 		onSuccess: async () => {
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
-				queryClient.invalidateQueries({ queryKey: reviewSessionKeys.all })
+				queryClient.invalidateQueries({ queryKey: reviewSessionKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
 			])
 		}
 	})
