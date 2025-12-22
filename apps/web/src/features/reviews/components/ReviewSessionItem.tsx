@@ -4,7 +4,6 @@ import { CalendarIcon, MoreHorizontal, Trash } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent } from '~/components/ui/Card'
-import { Checkbox } from '~/components/ui/Checkbox'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -24,6 +23,7 @@ import { reviewSessionKeys } from '../api/queryKeys'
 import { useUpdateReviewSession } from '../api/updateReviewSession'
 import type { ReviewSession } from '../types/review.types'
 import { DatePickerDropdown } from './DatePickerDropdown'
+import { SessionCheckbox } from './SessionCheckbox'
 
 interface ReviewSessionItemProps {
 	entry: ReviewSession
@@ -168,7 +168,7 @@ export function ReviewSessionItem({
 				<div className='flex flex-col'>
 					{/* Row 1: Checkbox, Description, Date, More Button */}
 					<div className='flex items-center pb-1'>
-						<Checkbox
+						<SessionCheckbox
 							checked={!!entry.completed_at}
 							className={
 								isOverdueValue

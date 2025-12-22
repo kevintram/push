@@ -3,7 +3,6 @@ import { CalendarIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { use, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Checkbox } from '~/components/ui/Checkbox'
 import { Textarea } from '~/components/ui/Textarea'
 import {
 	Tooltip,
@@ -18,6 +17,7 @@ import { useDeleteReviewSession } from '../../api/deleteReviewSession'
 import { useUpdateReviewSession } from '../../api/updateReviewSession'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
 import { DatePickerDropdown } from '../DatePickerDropdown'
+import { SessionCheckbox } from '../SessionCheckbox'
 import { ReviewSessionDetailHeader } from './ReviewSessionDetailHeader'
 import { ReviewSessionDetailSkeleton } from './ReviewSessionDetailSkeleton'
 import { ReviewSessionTopicsPanel } from './ReviewsPanel'
@@ -199,7 +199,7 @@ export function ReviewSessionDetail({
 				)}
 				ref={scrollContainerRef}
 			>
-				<Checkbox
+				<SessionCheckbox
 					checked={!!review.completed_at}
 					className={`translate-y-0.5 ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
 					onCheckedChange={handleCheckboxChange}

@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronDown, Home, ListChecks } from 'lucide-react'
+import { Home, ListChecks } from 'lucide-react'
+import { useMemo } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
@@ -14,15 +15,37 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { useLogbookReviewSessions } from '~/features/reviews/api/getReviewSessions'
-import { ReviewSessionItem } from '~/features/reviews/components/ReviewSessionItem'
-import type { ReviewSession } from '~/features/reviews/types/review.types'
+import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
+import {
+	type ReviewEntry,
+	ReviewSection
+} from '~/features/reviews/components/ReviewSection'
 
 export function LogbookPage() {
 	const { sections, isLoading } = useLogbookReviewSessions()
 
-	const { handleReviewClick, handleCreateTopic, isCreatingTopic } =
-		useReviewSessionPageHandlers()
+	const {
+		handleSessionClick,
+		handleReviewClick,
+		selectedReviewId,
+		closeReviewDialog,
+		handleCreateTopic,
+		isCreatingTopic
+	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
+
+	// Convert sections to use ReviewEntry type
+	const sectionsWithEntries = useMemo(() => {
+		return sections.map(section => ({
+			...section,
+			entries: section.entries.map(
+				(session): ReviewEntry => ({
+					type: 'session' as const,
+					data: session
+				})
+			)
+		}))
+	}, [sections])
 
 	return (
 		<PageLayout>
@@ -33,8 +56,16 @@ export function LogbookPage() {
 				isLoading={isLoading}
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
+				onSessionClick={handleSessionClick}
 				onToggleCollapse={toggleSection}
-				sections={sections}
+				sections={sectionsWithEntries}
+			/>
+			<ReviewDialog
+				onOpenChange={open => {
+					if (!open) closeReviewDialog()
+				}}
+				open={selectedReviewId !== null}
+				reviewId={selectedReviewId}
 			/>
 		</PageLayout>
 	)
@@ -46,6 +77,7 @@ function LogbookList({
 	isLoading,
 	onCreateTopic,
 	onReviewClick,
+	onSessionClick,
 	onToggleCollapse,
 	sections
 }: {
@@ -54,11 +86,12 @@ function LogbookList({
 	isLoading: boolean
 	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
+	onSessionClick: (sessionId: number) => void
 	onToggleCollapse: (sectionId: string) => void
 	sections: Array<{
 		id: string
 		label: string
-		entries: Array<ReviewSession>
+		entries: Array<ReviewEntry>
 	}>
 }) {
 	const navigate = useNavigate()
@@ -99,45 +132,18 @@ function LogbookList({
 
 	return (
 		<PageLayout.Content>
-			{sections.map(section => {
-				const isSectionCollapsed = collapsedSections[section.id] ?? false
-				return (
-					<div className='mb-2' key={section.id}>
-						<div className='flex items-center justify-between bg-primary-foreground'>
-							<Button
-								className='flex items-center gap-2 p-0'
-								onClick={() => onToggleCollapse(section.id)}
-								variant='ghost'
-							>
-								<h2 className='font-bold text-lg'>{section.label}</h2>
-								<ChevronDown
-									className={`h-5 w-5 transition-transform ${isSectionCollapsed ? '-rotate-90' : ''}`}
-								/>
-							</Button>
-						</div>
-
-						{!isSectionCollapsed && (
-							<div className='mt-2 mb-10 ml-5 border-border border-l-2 pl-4'>
-								<h3 className='font-semibold text-md'>
-									Reviews{' '}
-									<span className='text-muted-foreground'>
-										({section.entries.length})
-									</span>
-								</h3>
-								<div className='mt-2'>
-									{section.entries.map(entry => (
-										<ReviewSessionItem
-											entry={entry}
-											key={entry.id}
-											onReviewClick={onReviewClick}
-										/>
-									))}
-								</div>
-							</div>
-						)}
-					</div>
-				)
-			})}
+			{sections.map(section => (
+				<ReviewSection
+					entries={section.entries}
+					id={section.id}
+					isCollapsed={collapsedSections[section.id] ?? false}
+					key={section.id}
+					label={section.label}
+					onReviewClick={onReviewClick}
+					onSessionClick={onSessionClick}
+					onToggleCollapse={onToggleCollapse}
+				/>
+			))}
 		</PageLayout.Content>
 	)
 }
