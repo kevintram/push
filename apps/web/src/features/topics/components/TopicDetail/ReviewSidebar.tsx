@@ -74,12 +74,6 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 
 			const review = await createReviewMutation.mutateAsync({
 				topic_id: topic.id,
-				review_session: {
-					description: '',
-					notes: '',
-					scheduled_at: null,
-					completed_at: completedAt
-				},
 				rating,
 				description: '',
 				scheduled_at: null,
