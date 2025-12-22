@@ -22,12 +22,8 @@ export function TodayPage() {
 	const { sections: reviewSections, isLoading: reviewsLoading } =
 		useTodayReviewSessions()
 
-	const {
-		handleReviewClick,
-		handleTopicClick,
-		handleCreateTopic,
-		isCreatingTopic
-	} = useReviewSessionPageHandlers()
+	const { handleReviewClick, handleCreateTopic, isCreatingTopic } =
+		useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	// Check if all sections are empty
@@ -47,7 +43,6 @@ export function TodayPage() {
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
 				onToggleCollapse={toggleSection}
-				onTopicClick={handleTopicClick}
 				reviewSections={reviewSections}
 			/>
 		</PageLayout>
@@ -62,8 +57,7 @@ function TodayList({
 	reviewSections,
 	onCreateTopic,
 	onReviewClick,
-	onToggleCollapse,
-	onTopicClick
+	onToggleCollapse
 }: {
 	allSectionsEmpty: boolean
 	collapsedSections: Record<string, boolean>
@@ -78,7 +72,6 @@ function TodayList({
 	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
 	onToggleCollapse: (sectionId: string) => void
-	onTopicClick: (topic: { id: number }) => void
 }) {
 	const navigate = useNavigate()
 
@@ -132,6 +125,7 @@ function TodayList({
 		<PageLayout.Content>
 			{reviewSections.map(section => (
 				<ReviewSection
+					entries={section.entries}
 					headingClassName={section.headingClassName}
 					id={section.id}
 					isCollapsed={collapsedSections[section.id] ?? false}
@@ -139,9 +133,6 @@ function TodayList({
 					label={section.label}
 					onReviewClick={onReviewClick}
 					onToggleCollapse={onToggleCollapse}
-					onTopicClick={onTopicClick}
-					reviewEntries={section.entries}
-					topicEntries={[]}
 				/>
 			))}
 		</PageLayout.Content>

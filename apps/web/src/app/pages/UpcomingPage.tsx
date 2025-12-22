@@ -51,12 +51,8 @@ export function UpcomingPage() {
 		}
 	}, [soonReviewSections])
 
-	const {
-		handleReviewClick,
-		handleTopicClick,
-		handleCreateTopic,
-		isCreatingTopic
-	} = useReviewSessionPageHandlers()
+	const { handleReviewClick, handleCreateTopic, isCreatingTopic } =
+		useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	// Combine all sections
@@ -94,7 +90,6 @@ export function UpcomingPage() {
 				onReviewClick={handleReviewClick}
 				onShowMore={() => setShowFuture(true)}
 				onToggleCollapse={toggleSection}
-				onTopicClick={handleTopicClick}
 				showFuture={showFuture}
 			/>
 		</PageLayout>
@@ -112,7 +107,6 @@ function UpcomingList({
 	onReviewClick,
 	onShowMore,
 	onToggleCollapse,
-	onTopicClick,
 	showFuture
 }: {
 	allSections: Array<{
@@ -129,7 +123,6 @@ function UpcomingList({
 	onReviewClick: (reviewId: number) => void
 	onShowMore: () => void
 	onToggleCollapse: (sectionId: string) => void
-	onTopicClick: (topic: { id: number }) => void
 	showFuture: boolean
 }) {
 	const navigate = useNavigate()
@@ -172,15 +165,13 @@ function UpcomingList({
 		<PageLayout.Content>
 			{allSections.map(section => (
 				<ReviewSection
+					entries={section.entries}
 					id={section.id}
 					isCollapsed={collapsedSections[section.id] ?? false}
 					key={section.id}
 					label={section.label}
 					onReviewClick={onReviewClick}
 					onToggleCollapse={onToggleCollapse}
-					onTopicClick={onTopicClick}
-					reviewEntries={section.entries}
-					topicEntries={[]}
 				/>
 			))}
 
