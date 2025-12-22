@@ -167,14 +167,12 @@ async def replay_reviews_from_date(
             topic.difficulty = last_before_review.difficulty_after
             topic.state = last_before_review.state_after
             topic.step = last_before_review.step_after
-            topic.due = last_before_review.due_after
         else:
             # No prior reviews - reset to initial state
             topic.stability = settings.FSRS_INITIAL_STABILITY
             topic.difficulty = settings.FSRS_INITIAL_DIFFICULTY
             topic.state = settings.FSRS_INITIAL_STATE
             topic.step = None
-            topic.due = None
 
         await session.flush()
         return
@@ -226,7 +224,6 @@ async def replay_reviews_from_date(
     topic.difficulty = final_card.difficulty
     topic.state = map_fsrs_state_to_db(final_card.state)
     topic.step = final_card.step
-    topic.due = final_card.due.date()
 
     await session.flush()
 
@@ -421,7 +418,6 @@ async def create_review(
     difficulty_before = topic.difficulty
     state_before = topic.state
     step_before = topic.step
-    due_before = topic.due
 
     # Use provided rating or default to "good"
     rating_value = review_create.rating or "good"
@@ -466,7 +462,6 @@ async def create_review(
         difficulty_before=difficulty_before,
         state_before=state_before,
         step_before=step_before,
-        due_before=due_before,
         # Topic after state
         stability_after=updated_card.stability,
         difficulty_after=updated_card.difficulty,
@@ -489,7 +484,6 @@ async def create_review(
     topic.difficulty = updated_card.difficulty
     topic.state = map_fsrs_state_to_db(updated_card.state)
     topic.step = updated_card.step
-    topic.due = due_after_date
 
     # Replay all reviews that come after this newly created review
     await replay_reviews_from_date(
