@@ -1,6 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Home, ListChecks } from 'lucide-react'
-import { useMemo } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
@@ -14,7 +13,7 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useLogbookReviewSessions } from '~/features/reviews/api/getReviewSessions'
+import { useLogbookReviewEntries } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import {
 	type ReviewEntry,
@@ -22,7 +21,7 @@ import {
 } from '~/features/reviews/components/ReviewSection'
 
 export function LogbookPage() {
-	const { sections, isLoading } = useLogbookReviewSessions()
+	const { sections, isLoading } = useLogbookReviewEntries()
 
 	const {
 		handleSessionClick,
@@ -33,19 +32,6 @@ export function LogbookPage() {
 		isCreatingTopic
 	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
-
-	// Convert sections to use ReviewEntry type
-	const sectionsWithEntries = useMemo(() => {
-		return sections.map(section => ({
-			...section,
-			entries: section.entries.map(
-				(session): ReviewEntry => ({
-					type: 'session' as const,
-					data: session
-				})
-			)
-		}))
-	}, [sections])
 
 	return (
 		<PageLayout>
@@ -58,7 +44,7 @@ export function LogbookPage() {
 				onReviewClick={handleReviewClick}
 				onSessionClick={handleSessionClick}
 				onToggleCollapse={toggleSection}
-				sections={sectionsWithEntries}
+				sections={sections}
 			/>
 			<ReviewDialog
 				onOpenChange={open => {

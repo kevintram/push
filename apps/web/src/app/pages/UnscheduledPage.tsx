@@ -1,6 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
 import { CircleDashed, Home } from 'lucide-react'
-import { useMemo } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
@@ -14,7 +13,7 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useUnscheduledReviewSessions } from '~/features/reviews/api/getReviewSessions'
+import { useUnscheduledReviewEntries } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import {
 	type ReviewEntry,
@@ -23,7 +22,7 @@ import {
 
 export function UnscheduledPage() {
 	const { section: reviewSection, isLoading: reviewsLoading } =
-		useUnscheduledReviewSessions()
+		useUnscheduledReviewEntries()
 
 	const {
 		handleSessionClick,
@@ -35,22 +34,8 @@ export function UnscheduledPage() {
 	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
-	// Convert ReviewSession[] to ReviewEntry[]
-	const sectionWithEntries = useMemo(
-		() => ({
-			...reviewSection,
-			entries: reviewSection.entries.map(
-				(session): ReviewEntry => ({
-					type: 'session' as const,
-					data: session
-				})
-			)
-		}),
-		[reviewSection]
-	)
-
 	const isSectionCollapsed = collapsedSections.unscheduled ?? false
-	const hasEntries = sectionWithEntries.entries.length > 0
+	const hasEntries = reviewSection.entries.length > 0
 
 	return (
 		<PageLayout>
@@ -64,7 +49,7 @@ export function UnscheduledPage() {
 				onReviewClick={handleReviewClick}
 				onSessionClick={handleSessionClick}
 				onToggleCollapse={toggleSection}
-				reviewSection={sectionWithEntries}
+				reviewSection={reviewSection}
 			/>
 			<ReviewDialog
 				onOpenChange={open => {
