@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_main/')({
 		const isFirstTime = Cookies.get(FIRST_TIME_COOKIE)
 
 		if (isFirstTime) {
-			throw redirect({ to: '/today' })
+			throw redirect({ to: '/scheduled' })
 		}
 
 		Cookies.set(FIRST_TIME_COOKIE, 'true', { expires: 365 })
