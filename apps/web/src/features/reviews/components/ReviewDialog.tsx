@@ -1,6 +1,12 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { BicepsFlexed, CalendarIcon, SquareStack, X } from 'lucide-react'
+import {
+	BicepsFlexed,
+	CalendarIcon,
+	ExternalLink,
+	SquareStack,
+	X
+} from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
@@ -24,6 +30,7 @@ import {
 	type ReviewRatingState
 } from './ReviewRatingCheckbox'
 import { ReviewSessionDetailHeader } from './ReviewSessionDetail/ReviewSessionDetailHeader'
+import { SessionPickerPopover } from './SessionPickerPopover'
 
 interface ReviewDialogProps {
 	reviewId: number | null
@@ -42,6 +49,7 @@ export function ReviewDialog({
 	const deleteReviewMutation = useDeleteReview()
 
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
+	const [isSessionPopoverOpen, setIsSessionPopoverOpen] = useState(false)
 
 	// Computed date values
 	const selectedDate = (() => {
@@ -95,6 +103,24 @@ export function ReviewDialog({
 		initialValue: review?.description ?? '',
 		onSave: updateDescriptionMutation,
 		key: `review-dialog-${review?.id}`
+	})
+
+	const updateNotesMutation = useCallback(
+		(newNotes: string) => {
+			if (review?.id) {
+				updateReviewMutation.mutateAsync({
+					id: review.id,
+					notes: newNotes
+				})
+			}
+		},
+		[updateReviewMutation, review?.id]
+	)
+
+	const { value: notes, onChange: onNotesChange } = useAutoSave({
+		initialValue: review?.notes ?? '',
+		onSave: updateNotesMutation,
+		key: `review-dialog-notes-${review?.id}`
 	})
 
 	const reviewStatus: ReviewRatingState = useMemo(() => {
@@ -176,12 +202,24 @@ export function ReviewDialog({
 	}, [navigate, review?.topic_id])
 
 	const handleSessionClick = useCallback(() => {
-		if (!review?.review_session_id) return
+		if (!review?.review_session) return
 		navigate({
 			to: '/review-session/$reviewSessionId',
-			params: { reviewSessionId: review.review_session_id.toString() }
+			params: { reviewSessionId: review.review_session.id.toString() }
 		})
-	}, [navigate, review?.review_session_id])
+	}, [navigate, review?.review_session])
+
+	const handleSessionChange = useCallback(
+		(sessionId: number | null) => {
+			if (review?.id) {
+				updateReviewMutation.mutateAsync({
+					id: review.id,
+					review_session_id: sessionId
+				})
+			}
+		},
+		[review?.id, updateReviewMutation]
+	)
 
 	const headerActions = useMemo(
 		() => (
@@ -279,13 +317,22 @@ export function ReviewDialog({
 									onChange={handleStatusChange}
 									value={reviewStatus}
 								/>
-								<Textarea
-									className='!bg-transparent m-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
-									onChange={onDescriptionChange}
-									placeholder='Description'
-									spellCheck={false}
-									value={description}
-								/>
+								<div className='flex min-w-0 flex-1 flex-col'>
+									<Textarea
+										className='!bg-transparent m-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
+										onChange={onDescriptionChange}
+										placeholder='Description'
+										spellCheck={false}
+										value={description}
+									/>
+									<Textarea
+										className='!bg-transparent m-0 resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+										onChange={onNotesChange}
+										placeholder='Notes'
+										spellCheck={false}
+										value={notes}
+									/>
+								</div>
 							</div>
 							<Sidebar className='border-l' side='right'>
 								<SidebarHeader className='flex flex-col gap-3 p-4'>
@@ -335,27 +382,42 @@ export function ReviewDialog({
 										</Button>
 									</div>
 
-									{/* Session Link */}
+									{/* Session Picker */}
 									<div className='flex min-h-8 items-center gap-2'>
 										<span className='w-16 flex-shrink-0 text-muted-foreground text-xs'>
 											Session
 										</span>
-										{review.review_session_id ? (
+										<SessionPickerPopover
+											isOpen={isSessionPopoverOpen}
+											onOpenChange={setIsSessionPopoverOpen}
+											onSessionChange={handleSessionChange}
+											selectedSessionId={review.review_session_id}
+											trigger={
+												<Button
+													className='min-w-0 flex-1 justify-start px-2'
+													size='sm'
+													variant='ghost'
+												>
+													<SquareStack className='h-4 w-4 flex-shrink-0' />
+													<span className='truncate'>
+														{review.review_session
+															? review.review_session.description?.trim() ||
+																'No description'
+															: 'No session'}
+													</span>
+												</Button>
+											}
+										/>
+										{review.review_session && (
 											<Button
-												className='min-w-0 flex-1 justify-start px-2'
+												className='h-6 w-6 flex-shrink-0 p-0'
 												onClick={handleSessionClick}
 												size='sm'
+												title='Go to session'
 												variant='ghost'
 											>
-												<SquareStack className='h-4 w-4 flex-shrink-0' />
-												<span className='truncate'>
-													Session {review.review_session_id}
-												</span>
+												<ExternalLink className='h-3 w-3' />
 											</Button>
-										) : (
-											<span className='min-w-0 flex-1 truncate px-2 text-muted-foreground text-sm'>
-												No session
-											</span>
 										)}
 									</div>
 

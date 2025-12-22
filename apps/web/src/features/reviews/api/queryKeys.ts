@@ -21,7 +21,9 @@ export const reviewSessionKeys = {
 		}
 		return key
 	},
-	detail: (reviewId: number) => [...reviewSessionKeys.all, reviewId] as const
+	detail: (reviewId: number) => [...reviewSessionKeys.all, reviewId] as const,
+	recent: (limit: number) =>
+		[...reviewSessionKeys.all, 'recent', limit] as const
 }
 
 export const reviewKeys = {

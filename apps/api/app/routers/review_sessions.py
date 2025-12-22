@@ -16,6 +16,23 @@ from app.routers.reviews import replay_reviews_from_date
 router = APIRouter()
 
 
+@router.get("/review-sessions/recent/", tags=["review-sessions"])
+async def read_recent_review_sessions(
+    session: SessionDep,
+    user_id: UserIdDep,
+    limit: int = 10,
+) -> list[ReviewSessionRead]:
+    """Get the most recent review sessions for session selection."""
+    stmt = (
+        select(ReviewSession)
+        .where(ReviewSession.user_id == user_id)
+        .order_by(ReviewSession.updated_at.desc())
+        .limit(limit)
+    )
+    result = await session.execute(stmt)
+    return result.scalars().all()
+
+
 @router.get("/review-sessions/", tags=["review-sessions"])
 async def read_review_sessions(
     session: SessionDep,

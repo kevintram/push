@@ -15,6 +15,7 @@ class ReviewBase(BaseModel):
 
     rating: str | None
     description: str = ""
+    notes: str = ""
     scheduled_at: date | None = None
     completed_at: date | None = None
 
@@ -23,7 +24,7 @@ class ReviewRead(ReviewBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    review_session_id: int
+    review_session_id: int | None
     topic_id: int
     inserted_at: datetime
     updated_at: datetime
@@ -62,7 +63,7 @@ class TopicSummary(BaseModel):
 class ReviewListItem(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 
-    review_session: ReviewSessionSummary
+    review_session: ReviewSessionSummary | None
     topic: TopicSummary
 
 
@@ -70,6 +71,7 @@ class ReviewWithTopic(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 
     topic: "TopicRead"
+    review_session: ReviewSessionSummary | None
 
 
 class ReviewCreate(BaseModel):
@@ -97,11 +99,9 @@ class ReviewCreate(BaseModel):
         if self.topic_id is None and self.topic is None:
             raise ValueError("Must provide either topic_id or topic")
 
-        # Validate review session fields
+        # Validate review session fields (both can be None - session is optional)
         if self.review_session_id is not None and self.review_session is not None:
             raise ValueError("Cannot provide both review_session_id and review_session")
-        if self.review_session_id is None and self.review_session is None:
-            raise ValueError("Must provide either review_session_id or review_session")
 
         return self
 
@@ -111,5 +111,7 @@ class ReviewUpdate(BaseModel):
 
     rating: str | None = None
     description: str | None = None
+    notes: str | None = None
     scheduled_at: date | None = None
     completed_at: date | None = None
+    review_session_id: int | None = None

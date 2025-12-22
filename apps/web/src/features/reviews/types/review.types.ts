@@ -5,11 +5,12 @@ export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 
 export type Review = {
 	id: number
-	review_session_id: number
+	review_session_id: number | null
 	topic_id: number
 	rating: Rating | null
 
 	description: string
+	notes: string
 	scheduled_at: string | null
 	completed_at: string | null
 	effective_date: string | null
@@ -17,6 +18,10 @@ export type Review = {
 	inserted_at: string
 	updated_at: string
 	topic: Topic
+	review_session: {
+		id: number
+		description: string | null
+	} | null
 
 	// Topic FSRS state before review
 	stability_before: number | null
@@ -35,11 +40,12 @@ export type Review = {
 
 export type ReviewListItem = {
 	id: number
-	review_session_id: number
+	review_session_id: number | null
 	topic_id: number
 	rating: Rating | null
 
 	description: string
+	notes: string
 	scheduled_at: string | null
 	completed_at: string | null
 	effective_date: string | null
@@ -50,7 +56,7 @@ export type ReviewListItem = {
 	review_session: {
 		id: number
 		description: string | null
-	}
+	} | null
 	topic: {
 		id: number
 		name: string
