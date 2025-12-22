@@ -68,10 +68,10 @@ export function DueTopicsPage() {
 			}
 		}
 
-		// Sort each bucket by retrievability (lowest first for late, highest first for early)
+		// Sort each bucket by retrievability (lowest first - topics closest to leaving bucket)
 		late.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
 		onTime.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
-		early.sort((a, b) => (b.retrievability ?? 1) - (a.retrievability ?? 1))
+		early.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
 
 		return [
 			{ bucket: 'late', label: 'Late', topics: late },
