@@ -9,8 +9,7 @@ import {
 	Inbox,
 	ListChecks,
 	RotateCw,
-	Settings,
-	Star
+	Settings
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -34,16 +33,10 @@ export function AppSidebar() {
 
 	const reviewItems = [
 		{
-			title: 'Today',
-			url: '/today',
-			icon: Star,
-			isActive: (pathname: string) => pathname === '/today'
-		},
-		{
-			title: 'Upcoming',
-			url: '/upcoming',
+			title: 'Scheduled',
+			url: '/scheduled',
 			icon: Calendar,
-			isActive: (pathname: string) => pathname === '/upcoming'
+			isActive: (pathname: string) => pathname === '/scheduled'
 		},
 		{
 			title: 'Unscheduled',
