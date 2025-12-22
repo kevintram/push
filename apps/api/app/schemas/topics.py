@@ -18,7 +18,7 @@ class TopicBase(BaseModel):
     step: int | None = None
     archived: bool
     inboxed: bool
-    due: date | None = None
+    last_reviewed_at: date | None = None
     srs_enabled: bool = True
 
 
@@ -29,6 +29,7 @@ class TopicRead(TopicBase):
     inserted_at: datetime
     updated_at: datetime
     scheduled_at: date | None = None
+    retrievability: float | None = None
 
 
 class TopicReadWithRelationships(TopicRead):

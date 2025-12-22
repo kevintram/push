@@ -72,9 +72,10 @@ export const handlers = [
 					step: null,
 					archived: false,
 					inboxed: false,
-					due: null,
+					last_reviewed_at: null,
 					scheduled_at: null,
-					srs_enabled: false
+					srs_enabled: false,
+					retrievability: null
 				},
 				{
 					id: 998,
@@ -88,9 +89,10 @@ export const handlers = [
 					step: 1,
 					archived: false,
 					inboxed: false,
-					due: null,
+					last_reviewed_at: null,
 					scheduled_at: null,
-					srs_enabled: true
+					srs_enabled: true,
+					retrievability: null
 				}
 			]
 

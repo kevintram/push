@@ -44,8 +44,9 @@ export function UnscheduledPage() {
 	})
 
 	const topicSection = useMemo(() => {
+		// Topics without scheduled reviews and without retrievability (never reviewed)
 		const unscheduledTopics = (allTopics ?? []).filter(
-			topic => topic.due === null && topic.scheduled_at === null
+			topic => topic.scheduled_at === null && topic.retrievability === null
 		)
 		return {
 			...UNSCHEDULED_SECTION_DEFINITION,

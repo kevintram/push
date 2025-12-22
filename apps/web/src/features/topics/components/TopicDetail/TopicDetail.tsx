@@ -1,5 +1,4 @@
-import dayjs from 'dayjs'
-import { Archive, ArchiveX, BicepsFlexed, Flag, Inbox, X } from 'lucide-react'
+import { Archive, ArchiveX, BicepsFlexed, Gauge, Inbox, X } from 'lucide-react'
 import {
 	type ReactNode,
 	use,
@@ -25,7 +24,11 @@ import {
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
-import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
+import {
+	formatRetrievability,
+	getRetrievabilityBucket,
+	getRetrievabilityColor
+} from '~/utils/retrievability'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import type { Topic } from '../../types/topic.types'
@@ -142,24 +145,35 @@ export function TopicDetail({
 		[topic?.id, sidebarReadonly, updateTopic]
 	)
 
-	// Calculate the due date display using shared utilities
-	const dueDateDisplay = useMemo(() => {
-		if (!topic?.due) return null
+	// Calculate retrievability display
+	const retrievabilityDisplay = useMemo(() => {
+		if (topic?.retrievability == null) return null
+		return formatRetrievability(topic.retrievability)
+	}, [topic?.retrievability])
 
-		const dueDateDisplay = getDueDateDisplay(topic.due)
-		dueDateDisplay.displayText = `Due ${dueDateDisplay.displayText}`
-
-		return dueDateDisplay
-	}, [topic?.due])
-
-	const dueDateColorClass = useMemo(
+	const retrievabilityColorClass = useMemo(
 		() =>
-			getDateColor(
-				dueDateDisplay?.displayText ?? null,
+			getRetrievabilityColor(
+				topic?.retrievability ?? null,
 				topic?.srs_enabled ?? true
 			),
-		[dueDateDisplay?.displayText, topic?.srs_enabled]
+		[topic?.retrievability, topic?.srs_enabled]
 	)
+
+	const bucketLabel = useMemo(() => {
+		if (topic?.retrievability == null) return null
+		const bucket = getRetrievabilityBucket(topic.retrievability)
+		switch (bucket) {
+			case 'early':
+				return 'early'
+			case 'onTime':
+				return 'on time'
+			case 'late':
+				return 'late'
+			default:
+				return bucket satisfies never
+		}
+	}, [topic?.retrievability])
 
 	const stabilityText =
 		topic?.stability != null
@@ -301,17 +315,20 @@ export function TopicDetail({
 								<Tooltip>
 									<TooltipTrigger asChild={true}>
 										<div className='flex items-center gap-1'>
-											<Flag className={`h-3 w-3 ${dueDateColorClass}`} />
-											<span className={dueDateColorClass}>
-												{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
+											<Gauge
+												className={`h-3 w-3 ${retrievabilityColorClass}`}
+											/>
+											<span className={retrievabilityColorClass}>
+												{retrievabilityDisplay ?? 'No data'}
+												{bucketLabel && ` · ${bucketLabel}`}
 											</span>
 										</div>
 									</TooltipTrigger>
 									<TooltipContent className='text-center' side='bottom'>
 										<span>
-											{topic.due
-												? `Due on ${dayjs(topic.due).format('MMMM D, YYYY')}`
-												: 'No due date'}
+											{topic.retrievability != null
+												? 'Estimated probability of recall'
+												: 'Complete a review to calculate retrievability'}
 										</span>
 									</TooltipContent>
 								</Tooltip>

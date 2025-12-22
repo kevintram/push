@@ -1,12 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
-import dayjs from 'dayjs'
 import { ArrowUpRight, Home, Star } from 'lucide-react'
-import { useMemo } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import { mergeReviewSections } from '~/app/utils/reviewSections'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
 import {
@@ -20,81 +17,10 @@ import {
 import { useTodayReviewSessions } from '~/features/reviews/api/getReviewSessions'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 import type { ReviewSession } from '~/features/reviews/types/review.types'
-import { useTopics } from '~/features/topics/api/getTopics'
-import type { Topic } from '~/features/topics/types/topic.types'
-
-type TodayTopicSectionKey = 'overdue' | 'today'
-
-type SectionDefinition = {
-	id: TodayTopicSectionKey
-	label: string
-	headingClassName?: string
-	emptyMessage: string
-}
-
-const SECTION_DEFINITIONS: Array<SectionDefinition> = [
-	{
-		id: 'overdue',
-		label: 'Overdue',
-		headingClassName: 'text-red-600',
-		emptyMessage: "You're all caught up—no overdue topics."
-	},
-	{
-		id: 'today',
-		label: 'Today',
-		emptyMessage: 'No topics due today.'
-	}
-]
 
 export function TodayPage() {
 	const { sections: reviewSections, isLoading: reviewsLoading } =
 		useTodayReviewSessions()
-
-	const today = dayjs().format('YYYY-MM-DD')
-	const { data: topics, isLoading: topicsLoading } = useTopics({
-		dueBefore: today,
-		archived: false,
-		srsEnabled: true,
-		scheduled: false
-	})
-
-	const todayDateStr = useMemo(() => {
-		return dayjs().format('YYYY-MM-DD')
-	}, [])
-
-	const topicSections = useMemo(() => {
-		const topicList = topics ?? []
-
-		const overdueList: Array<Topic> = []
-		const todayList: Array<Topic> = []
-
-		for (const topic of topicList) {
-			if (!topic.due) {
-				// Skip unscheduled topics (shouldn't happen with our query but be safe)
-				continue
-			}
-
-			const dueDate = topic.due
-
-			// Today
-			if (dueDate === todayDateStr) {
-				todayList.push(topic)
-			}
-			// Overdue
-			else if (dueDate < todayDateStr) {
-				overdueList.push(topic)
-			}
-		}
-
-		return SECTION_DEFINITIONS.map(def => {
-			const entries = def.id === 'overdue' ? overdueList : todayList
-
-			return {
-				...def,
-				entries
-			}
-		})
-	}, [topics, todayDateStr])
 
 	const {
 		handleReviewClick,
@@ -104,24 +30,10 @@ export function TodayPage() {
 	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
-	// Merge sections by matching IDs
-	const mergedSections = useMemo(() => {
-		return mergeReviewSections(reviewSections, topicSections, {
-			sectionOrder: ['overdue', 'today'],
-			filterEmpty: section => {
-				const reviewEntries = section.reviewsData?.entries ?? []
-				const topicEntries = section.topicsData?.entries ?? []
-				const totalCount = reviewEntries.length + topicEntries.length
-				return totalCount > 0 || section.id === 'today'
-			}
-		})
-	}, [reviewSections, topicSections])
-
 	// Check if all sections are empty
-	const allSectionsEmpty = mergedSections.every(section => {
-		const reviewEntries = section.reviewsData?.entries ?? []
-		const topicEntries = section.topicsData?.entries ?? []
-		return reviewEntries.length === 0 && topicEntries.length === 0
+	const allSectionsEmpty = reviewSections.every(section => {
+		const reviewEntries = section.entries ?? []
+		return reviewEntries.length === 0
 	})
 
 	return (
@@ -131,12 +43,12 @@ export function TodayPage() {
 				allSectionsEmpty={allSectionsEmpty}
 				collapsedSections={collapsedSections}
 				isCreatingTopic={isCreatingTopic}
-				isLoading={reviewsLoading || topicsLoading}
-				mergedSections={mergedSections}
+				isLoading={reviewsLoading}
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
 				onToggleCollapse={toggleSection}
 				onTopicClick={handleTopicClick}
+				reviewSections={reviewSections}
 			/>
 		</PageLayout>
 	)
@@ -147,7 +59,7 @@ function TodayList({
 	collapsedSections,
 	isCreatingTopic,
 	isLoading,
-	mergedSections,
+	reviewSections,
 	onCreateTopic,
 	onReviewClick,
 	onToggleCollapse,
@@ -157,17 +69,16 @@ function TodayList({
 	collapsedSections: Record<string, boolean>
 	isCreatingTopic: boolean
 	isLoading: boolean
-	mergedSections: Array<{
+	reviewSections: Array<{
 		id: string
 		label: string
 		headingClassName?: string
-		reviewsData?: { entries: Array<ReviewSession> }
-		topicsData?: { entries: Array<Topic> }
+		entries: Array<ReviewSession>
 	}>
 	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
 	onToggleCollapse: (sectionId: string) => void
-	onTopicClick: (topic: Topic) => void
+	onTopicClick: (topic: { id: number }) => void
 }) {
 	const navigate = useNavigate()
 
@@ -185,7 +96,7 @@ function TodayList({
 						</EmptyMedia>
 						<EmptyTitle>Nothing due today.</EmptyTitle>
 						<EmptyDescription>
-							Reviews and topics due today will appear here.
+							Scheduled reviews for today will appear here.
 						</EmptyDescription>
 						<EmptyContent>
 							<div className='flex gap-2'>
@@ -219,7 +130,7 @@ function TodayList({
 
 	return (
 		<PageLayout.Content>
-			{mergedSections.map(section => (
+			{reviewSections.map(section => (
 				<ReviewSection
 					headingClassName={section.headingClassName}
 					id={section.id}
@@ -229,8 +140,8 @@ function TodayList({
 					onReviewClick={onReviewClick}
 					onToggleCollapse={onToggleCollapse}
 					onTopicClick={onTopicClick}
-					reviewEntries={section.reviewsData?.entries ?? []}
-					topicEntries={section.topicsData?.entries ?? []}
+					reviewEntries={section.entries}
+					topicEntries={[]}
 				/>
 			))}
 		</PageLayout.Content>

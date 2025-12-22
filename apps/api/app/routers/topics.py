@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
-from datetime import datetime, timezone as dt_timezone
+from datetime import datetime, timezone as dt_timezone, date
 
 from sqlalchemy import or_, select, update, delete, desc, insert
+from app.utils.retrievability import calculate_retrievability
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -254,13 +255,12 @@ async def read_topics(
     inboxed: bool | None = None,
     archived: bool | None = None,
     root: bool | None = None,
-    due_before: str | None = None,
-    due_after: str | None = None,
+    has_stability: bool | None = None,
     srs_enabled: bool | None = None,
     scheduled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
-) -> list[TopicReadWithRelationships]:
+) -> list[dict]:
     stmt = select(Topic).where(Topic.user_id == user_id)
 
     # Apply ordering
@@ -286,13 +286,11 @@ async def read_topics(
         )
         stmt = stmt.where(Topic.id.notin_(topics_with_ancestors))
 
-    if due_before is not None:
-        date_before = datetime.strptime(due_before, "%Y-%m-%d").date()
-        stmt = stmt.where(Topic.due <= date_before)
-
-    if due_after is not None:
-        date_after = datetime.strptime(due_after, "%Y-%m-%d").date()
-        stmt = stmt.where(Topic.due >= date_after)
+    if has_stability is not None:
+        if has_stability:
+            stmt = stmt.where(Topic.stability.isnot(None))
+        else:
+            stmt = stmt.where(Topic.stability.is_(None))
 
     stmt = stmt.options(
         selectinload(Topic.parents),
@@ -304,13 +302,25 @@ async def read_topics(
         stmt = stmt.limit(limit)
 
     result = await session.execute(stmt)
-    return result.scalars().all()
+    topics = result.scalars().all()
+
+    # Compute retrievability for each topic
+    current_date = date.today()
+    topics_with_retrievability = []
+    for topic in topics:
+        topic_dict = TopicReadWithRelationships.model_validate(topic).model_dump()
+        topic_dict["retrievability"] = calculate_retrievability(
+            topic.stability, topic.last_reviewed_at, current_date
+        )
+        topics_with_retrievability.append(topic_dict)
+
+    return topics_with_retrievability
 
 
 @router.get("/topics/{topic_id}/", tags=["topics"])
 async def read_topic(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> TopicReadWithRelationships:
+) -> dict:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(
         selectinload(Topic.parents),
@@ -322,7 +332,12 @@ async def read_topic(
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
 
-    return topic
+    # Add retrievability
+    topic_dict = TopicReadWithRelationships.model_validate(topic).model_dump()
+    topic_dict["retrievability"] = calculate_retrievability(
+        topic.stability, topic.last_reviewed_at, date.today()
+    )
+    return topic_dict
 
 
 @router.get("/topics/{topic_id}/parents/", tags=["topics"])

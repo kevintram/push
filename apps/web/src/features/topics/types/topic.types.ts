@@ -20,9 +20,10 @@ export type Topic = {
 	step: number | null
 	archived: boolean
 	inboxed: boolean
-	due: string | null
+	last_reviewed_at: string | null
 	scheduled_at: string | null
 	srs_enabled: boolean
+	retrievability: number | null
 	parents?: Array<Topic>
 	children?: Array<Topic>
 	related?: Array<Topic>

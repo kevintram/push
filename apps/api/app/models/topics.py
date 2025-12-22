@@ -63,7 +63,7 @@ class Topic(Base):
     inboxed: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
-    due: Mapped[date | None] = mapped_column(Date, nullable=True)
+    last_reviewed_at: Mapped[date | None] = mapped_column(Date, nullable=True)
     srs_enabled: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("true")
     )

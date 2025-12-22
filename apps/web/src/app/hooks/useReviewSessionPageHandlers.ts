@@ -1,7 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback } from 'react'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
-import type { Topic } from '~/features/topics/types/topic.types'
 
 /**
  * Hook that provides common event handlers for review pages.
@@ -50,7 +49,7 @@ export function useReviewSessionPageHandlers() {
 	)
 
 	const handleTopicClick = useCallback(
-		(topic: Topic) => {
+		(topic: { id: number }) => {
 			navigate({
 				to: '/topics/$topicId',
 				params: { topicId: topic.id.toString() }

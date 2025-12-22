@@ -1,37 +1,42 @@
-import { Calendar, Flag, FlagOff } from 'lucide-react'
+import { Calendar, Gauge, GaugeCircle } from 'lucide-react'
 import { useMemo } from 'react'
 import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
+import {
+	formatRetrievability,
+	getRetrievabilityColor
+} from '~/utils/retrievability'
 
 interface TopicDateDisplayProps {
-	due: string | null
+	retrievability: number | null
 	scheduledAt?: string | null
 	srsEnabled: boolean
 	className?: string
 }
 
 export function TopicDateDisplay({
-	due,
+	retrievability,
 	scheduledAt = null,
 	srsEnabled,
 	className
 }: TopicDateDisplayProps) {
-	const dueDateDisplay = useMemo(
-		() => (due ? getDueDateDisplay(due) : null),
-		[due]
-	)
 	const nextScheduledDisplay = useMemo(
 		() => (scheduledAt ? getDueDateDisplay(scheduledAt) : null),
 		[scheduledAt]
 	)
 
-	const dueDateColor = useMemo(
-		() => getDateColor(dueDateDisplay?.displayText ?? null, srsEnabled),
-		[dueDateDisplay?.displayText, srsEnabled]
-	)
-
 	const scheduledColor = useMemo(
 		() => getDateColor(nextScheduledDisplay?.displayText ?? null),
 		[nextScheduledDisplay?.displayText]
+	)
+
+	const retrievabilityColor = useMemo(
+		() => getRetrievabilityColor(retrievability, srsEnabled),
+		[retrievability, srsEnabled]
+	)
+
+	const retrievabilityText = useMemo(
+		() => formatRetrievability(retrievability),
+		[retrievability]
 	)
 
 	return (
@@ -47,12 +52,12 @@ export function TopicDateDisplay({
 			)}
 			<div className='flex items-center gap-1'>
 				{srsEnabled ? (
-					<Flag className={`h-3 w-3 ${dueDateColor}`} />
+					<Gauge className={`h-3 w-3 ${retrievabilityColor}`} />
 				) : (
-					<FlagOff className={`h-3 w-3 ${dueDateColor}`} />
+					<GaugeCircle className={`h-3 w-3 ${retrievabilityColor}`} />
 				)}
-				<span className={`text-xs ${dueDateColor}`}>
-					{dueDateDisplay ? dueDateDisplay.displayText : 'None'}
+				<span className={`text-xs ${retrievabilityColor}`}>
+					{retrievabilityText}
 				</span>
 			</div>
 		</div>

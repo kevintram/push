@@ -8,6 +8,7 @@ import {
 	Home,
 	Inbox,
 	ListChecks,
+	RotateCw,
 	Settings,
 	Star
 } from 'lucide-react'
@@ -59,6 +60,12 @@ export function AppSidebar() {
 	]
 
 	const topicItems = [
+		{
+			title: 'Due Topics',
+			url: '/due-topics',
+			icon: RotateCw,
+			isActive: (pathname: string) => pathname === '/due-topics'
+		},
 		{
 			title: 'Home',
 			url: '/home',
