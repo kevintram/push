@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '~/components/ui/Skeleton'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import {
@@ -271,6 +272,7 @@ function TopicCardWithThreshold({
 	return (
 		<TopicCard
 			footerExtra={footerExtra}
+			headerRight={<TopicActionMenu topic={topic} />}
 			onTopicClick={onTopicClick}
 			showBucketLabel={false}
 			topic={topic}
