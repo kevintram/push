@@ -7,8 +7,7 @@ export type GetTopicsParams = {
 	srsEnabled?: boolean
 	order?: 'desc' | 'asc'
 	limit?: number
-	dueBefore?: string
-	dueAfter?: string
+	hasStability?: boolean
 	scheduled?: boolean
 }
 

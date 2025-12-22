@@ -19,6 +19,7 @@ import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainInboxRouteImport } from './routes/_main/inbox'
 import { Route as MainHomeRouteImport } from './routes/_main/home'
+import { Route as MainDueTopicsRouteImport } from './routes/_main/due-topics'
 import { Route as MainArchivedRouteImport } from './routes/_main/archived'
 import { Route as ReviewSessionReviewSessionIdAddRouteImport } from './routes/review-session.$reviewSessionId_.add'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
@@ -77,6 +78,11 @@ const MainInboxRoute = MainInboxRouteImport.update({
 const MainHomeRoute = MainHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainDueTopicsRoute = MainDueTopicsRouteImport.update({
+  id: '/due-topics',
+  path: '/due-topics',
   getParentRoute: () => MainRoute,
 } as any)
 const MainArchivedRoute = MainArchivedRouteImport.update({
@@ -139,6 +145,7 @@ const ReviewSessionReviewSessionIdAddListArchivedRoute =
 
 export interface FileRoutesByFullPath {
   '/archived': typeof MainArchivedRoute
+  '/due-topics': typeof MainDueTopicsRoute
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/archived': typeof MainArchivedRoute
+  '/due-topics': typeof MainDueTopicsRoute
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_main': typeof MainRouteWithChildren
   '/_main/archived': typeof MainArchivedRoute
+  '/_main/due-topics': typeof MainDueTopicsRoute
   '/_main/home': typeof MainHomeRoute
   '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/archived'
+    | '/due-topics'
     | '/home'
     | '/inbox'
     | '/logbook'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/archived'
+    | '/due-topics'
     | '/home'
     | '/inbox'
     | '/logbook'
@@ -243,6 +254,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_main'
     | '/_main/archived'
+    | '/_main/due-topics'
     | '/_main/home'
     | '/_main/inbox'
     | '/_main/logbook'
@@ -340,6 +352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainHomeRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/due-topics': {
+      id: '/_main/due-topics'
+      path: '/due-topics'
+      fullPath: '/due-topics'
+      preLoaderRoute: typeof MainDueTopicsRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/_main/archived': {
       id: '/_main/archived'
       path: '/archived'
@@ -415,6 +434,7 @@ declare module '@tanstack/react-router' {
 
 interface MainRouteChildren {
   MainArchivedRoute: typeof MainArchivedRoute
+  MainDueTopicsRoute: typeof MainDueTopicsRoute
   MainHomeRoute: typeof MainHomeRoute
   MainInboxRoute: typeof MainInboxRoute
   MainLogbookRoute: typeof MainLogbookRoute
@@ -430,6 +450,7 @@ interface MainRouteChildren {
 
 const MainRouteChildren: MainRouteChildren = {
   MainArchivedRoute: MainArchivedRoute,
+  MainDueTopicsRoute: MainDueTopicsRoute,
   MainHomeRoute: MainHomeRoute,
   MainInboxRoute: MainInboxRoute,
   MainLogbookRoute: MainLogbookRoute,

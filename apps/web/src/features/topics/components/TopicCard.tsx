@@ -11,6 +11,7 @@ import {
 } from '~/components/ui/Popover'
 import { topicKeys } from '~/features/topics/api/queryKeys'
 import type { Topic } from '~/features/topics/types/topic.types'
+import { getRetrievabilityBucket } from '~/utils/retrievability'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
 const MIN_HEIGHT = 96
@@ -22,6 +23,10 @@ interface TopicCardProps {
 	searchQuery?: string
 	headerLeft?: React.ReactNode
 	headerRight?: React.ReactNode
+	/** Extra content to display in the footer (e.g., threshold crossing text) */
+	footerExtra?: React.ReactNode
+	/** Whether to show the bucket label (late/on time/early). Defaults to true. */
+	showBucketLabel?: boolean
 }
 
 export function TopicCard({
@@ -30,11 +35,29 @@ export function TopicCard({
 	minHeight = MIN_HEIGHT,
 	searchQuery,
 	headerLeft,
-	headerRight
+	headerRight,
+	footerExtra,
+	showBucketLabel = true
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
+
+	// Get bucket label for display
+	const bucketLabel = useMemo(() => {
+		if (topic.retrievability === null) return null
+		const bucket = getRetrievabilityBucket(topic.retrievability)
+		switch (bucket) {
+			case 'early':
+				return 'early'
+			case 'onTime':
+				return 'on time'
+			case 'late':
+				return 'late'
+			default:
+				return bucket satisfies never
+		}
+	}, [topic.retrievability])
 
 	// Search highlighting
 	const highlightedName = useMemo(() => {
@@ -166,13 +189,25 @@ export function TopicCard({
 					</div>
 				</div>
 			</CardContent>
-			{/* Bottom row: Due date and Children */}
+			{/* Bottom row: Retrievability and Children */}
 			<CardFooter className='gap-1 text-muted-foreground text-xs'>
 				<TopicDateDisplay
-					due={topic.due}
+					retrievability={topic.retrievability}
 					scheduledAt={topic.scheduled_at}
 					srsEnabled={topic.srs_enabled}
 				/>
+				{showBucketLabel && bucketLabel && (
+					<>
+						<span>·</span>
+						<span>{bucketLabel}</span>
+					</>
+				)}
+				{footerExtra && (
+					<>
+						<span>·</span>
+						{footerExtra}
+					</>
+				)}
 				<div className='flex-1' />
 				{/* Children count - bottom right */}
 				<Popover>

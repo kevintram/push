@@ -31,12 +31,8 @@ export async function getTopics(
 		searchParams.append('limit', String(params.limit))
 	}
 
-	if (params.dueBefore !== undefined) {
-		searchParams.append('due_before', params.dueBefore)
-	}
-
-	if (params.dueAfter !== undefined) {
-		searchParams.append('due_after', params.dueAfter)
+	if (params.hasStability !== undefined) {
+		searchParams.append('has_stability', String(params.hasStability))
 	}
 
 	if (params.srsEnabled !== undefined) {
