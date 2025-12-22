@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Archive, Baby, Inbox, User2 } from 'lucide-react'
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, MouseEvent } from 'react'
 import { useCallback, useMemo } from 'react'
 import { TopicDateDisplay } from '~/components/TopicDateDisplay'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
@@ -9,7 +9,9 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
+import { Switch } from '~/components/ui/Switch'
 import { topicKeys } from '~/features/topics/api/queryKeys'
+import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { getRetrievabilityBucket } from '~/utils/retrievability'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
@@ -40,6 +42,7 @@ export function TopicCard({
 	showBucketLabel = true
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
+	const { mutate: updateTopic, isPending: isUpdatingTopic } = useUpdateTopic()
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
 
@@ -99,6 +102,17 @@ export function TopicCard({
 			queryClient.setQueryData(topicKeys.related(topic.id), topic.related)
 		}
 	}, [queryClient, topic])
+
+	const handleSrsToggle = useCallback(
+		(e: MouseEvent) => {
+			e.stopPropagation()
+			updateTopic({
+				id: topic.id,
+				srs_enabled: !topic.srs_enabled
+			})
+		},
+		[updateTopic, topic.id, topic.srs_enabled]
+	)
 
 	return (
 		<Card
@@ -209,6 +223,18 @@ export function TopicCard({
 					</>
 				)}
 				<div className='flex-1' />
+				{/* SRS toggle */}
+				<div
+					className='flex items-center gap-1'
+					onClick={handleSrsToggle}
+					onKeyDown={e => e.stopPropagation()}
+				>
+					<Switch
+						checked={topic.srs_enabled ?? true}
+						disabled={isUpdatingTopic}
+						size='xs'
+					/>
+				</div>
 				{/* Children count - bottom right */}
 				<Popover>
 					<PopoverTrigger asChild={true}>
