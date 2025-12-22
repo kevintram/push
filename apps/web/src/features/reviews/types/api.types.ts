@@ -1,5 +1,5 @@
 import type { LearningState } from '~/models/learning-state.types'
-import type { Rating, ReviewSession } from './review.types'
+import type { Rating, ReviewEntry, ReviewSession } from './review.types'
 
 export type CreateReviewSessionInput = {
 	description: string
@@ -89,6 +89,14 @@ export type GetReviewsFilters = {
 	completed?: boolean
 }
 
+export type GetReviewEntriesFilters = {
+	topicId?: number
+	effectiveDateBefore?: string
+	effectiveDateAfter?: string
+	scheduled?: boolean
+	completed?: boolean
+}
+
 export type TodaySectionKey = 'overdue' | 'today'
 
 export type SectionDefinition = {
@@ -124,4 +132,41 @@ export type LogbookSection = {
 	id: string
 	label: string
 	entries: Array<ReviewSession>
+}
+
+// Entry-based section types for unified review entries endpoint
+export type TodayEntrySection = {
+	id: TodaySectionKey
+	label: string
+	headingClassName?: string
+	emptyMessage: string
+	entries: Array<ReviewEntry>
+}
+
+export type SoonEntrySection = {
+	id: SoonSectionKey
+	label: string
+	headingClassName?: string
+	emptyMessage: string
+	entries: Array<ReviewEntry>
+}
+
+export type UnscheduledEntrySection = {
+	id: 'unscheduled'
+	label: string
+	headingClassName?: string
+	emptyMessage: string
+	entries: Array<ReviewEntry>
+}
+
+export type FutureEntrySection = {
+	id: string
+	label: string
+	entries: Array<ReviewEntry>
+}
+
+export type LogbookEntrySection = {
+	id: string
+	label: string
+	entries: Array<ReviewEntry>
 }
