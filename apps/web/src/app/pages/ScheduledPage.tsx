@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Calendar, Home } from 'lucide-react'
+import { Calendar, Home, Star } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
@@ -172,6 +172,7 @@ export function ScheduledPage() {
 					onClick={toggleTodayFilter}
 					variant={todayFilter ? 'default' : 'outline'}
 				>
+					<Star className='h-3 w-3' />
 					Today
 				</Badge>
 			</PageLayout.Header>
