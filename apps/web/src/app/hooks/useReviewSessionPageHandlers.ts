@@ -1,62 +1,44 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 
 /**
  * Hook that provides common event handlers for review pages.
  *
  * This hook encapsulates the logic for handling user interactions on review pages,
- * including navigating to review pages, navigating to topic pages, and creating new topics.
+ * including navigating to review session pages, opening review dialogs, and creating new topics.
  *
  * @returns An object containing:
- *   - `handleReviewClick`: Function to navigate to a review page by review ID
- *   - `handleTopicClick`: Function to navigate to a topic page by topic object
+ *   - `handleSessionClick`: Function to navigate to a review session page by session ID
+ *   - `handleReviewClick`: Function to open a review in a dialog by review ID
+ *   - `selectedReviewId`: The currently selected review ID (for dialog)
+ *   - `closeReviewDialog`: Function to close the review dialog
  *   - `handleCreateTopic`: Async function to create a new topic and navigate to its page
  *   - `isCreatingTopic`: Boolean indicating if a topic is currently being created
- *
- * @example
- * ```tsx
- * const {
- *   handleReviewClick,
- *   handleTopicClick,
- *   handleCreateTopic,
- *   isCreatingTopic
- * } = useReviewPageHandlers()
- *
- * // Navigate to review page
- * handleReviewClick(123)
- *
- * // Navigate to topic page
- * handleTopicClick(topic)
- *
- * // Create and navigate to a new topic
- * await handleCreateTopic()
- * ```
  */
 export function useReviewSessionPageHandlers() {
 	const navigate = useNavigate()
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
+	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
 
-	const handleReviewClick = useCallback(
-		(reviewId: number) => {
+	const handleSessionClick = useCallback(
+		(sessionId: number) => {
 			navigate({
 				to: '/review-session/$reviewSessionId',
-				params: { reviewSessionId: reviewId.toString() }
+				params: { reviewSessionId: sessionId.toString() }
 			})
 		},
 		[navigate]
 	)
 
-	const handleTopicClick = useCallback(
-		(topic: { id: number }) => {
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: topic.id.toString() }
-			})
-		},
-		[navigate]
-	)
+	const handleReviewClick = useCallback((reviewId: number) => {
+		setSelectedReviewId(reviewId)
+	}, [])
+
+	const closeReviewDialog = useCallback(() => {
+		setSelectedReviewId(null)
+	}, [])
 
 	const handleCreateTopic = useCallback(async () => {
 		const createdTopic = await createTopic({})
@@ -67,8 +49,10 @@ export function useReviewSessionPageHandlers() {
 	}, [createTopic, navigate])
 
 	return {
+		handleSessionClick,
 		handleReviewClick,
-		handleTopicClick,
+		selectedReviewId,
+		closeReviewDialog,
 		handleCreateTopic,
 		isCreatingTopic
 	}

@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { CircleDashed, Home } from 'lucide-react'
+import { useMemo } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
@@ -14,19 +15,42 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { useUnscheduledReviewSessions } from '~/features/reviews/api/getReviewSessions'
-import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import type { ReviewSession } from '~/features/reviews/types/review.types'
+import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
+import {
+	ReviewSection,
+	type ReviewEntry
+} from '~/features/reviews/components/ReviewSection'
 
 export function UnscheduledPage() {
 	const { section: reviewSection, isLoading: reviewsLoading } =
 		useUnscheduledReviewSessions()
 
-	const { handleReviewClick, handleCreateTopic, isCreatingTopic } =
-		useReviewSessionPageHandlers()
+	const {
+		handleSessionClick,
+		handleReviewClick,
+		selectedReviewId,
+		closeReviewDialog,
+		handleCreateTopic,
+		isCreatingTopic
+	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
+	// Convert ReviewSession[] to ReviewEntry[]
+	const sectionWithEntries = useMemo(
+		() => ({
+			...reviewSection,
+			entries: reviewSection.entries.map(
+				(session): ReviewEntry => ({
+					type: 'session' as const,
+					data: session
+				})
+			)
+		}),
+		[reviewSection]
+	)
+
 	const isSectionCollapsed = collapsedSections.unscheduled ?? false
-	const hasEntries = reviewSection.entries.length > 0
+	const hasEntries = sectionWithEntries.entries.length > 0
 
 	return (
 		<PageLayout>
@@ -38,8 +62,16 @@ export function UnscheduledPage() {
 				isSectionCollapsed={isSectionCollapsed}
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
+				onSessionClick={handleSessionClick}
 				onToggleCollapse={toggleSection}
-				reviewSection={reviewSection}
+				reviewSection={sectionWithEntries}
+			/>
+			<ReviewDialog
+				onOpenChange={open => {
+					if (!open) closeReviewDialog()
+				}}
+				open={selectedReviewId !== null}
+				reviewId={selectedReviewId}
 			/>
 		</PageLayout>
 	)
@@ -52,6 +84,7 @@ function UnscheduledList({
 	isSectionCollapsed,
 	onCreateTopic,
 	onReviewClick,
+	onSessionClick,
 	onToggleCollapse,
 	reviewSection
 }: {
@@ -61,11 +94,12 @@ function UnscheduledList({
 	isSectionCollapsed: boolean
 	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
+	onSessionClick: (sessionId: number) => void
 	onToggleCollapse: (sectionId: string) => void
 	reviewSection: {
 		headingClassName?: string
 		label: string
-		entries: Array<ReviewSession>
+		entries: Array<ReviewEntry>
 	}
 }) {
 	const navigate = useNavigate()
@@ -82,9 +116,7 @@ function UnscheduledList({
 						<EmptyMedia variant='icon'>
 							<CircleDashed />
 						</EmptyMedia>
-						<EmptyTitle>
-							Unscheduled reviews will appear here.
-						</EmptyTitle>
+						<EmptyTitle>Unscheduled reviews will appear here.</EmptyTitle>
 					</EmptyHeader>
 					<EmptyContent>
 						<div className='flex gap-2'>
@@ -116,6 +148,7 @@ function UnscheduledList({
 					isCollapsed={isSectionCollapsed}
 					label={reviewSection.label}
 					onReviewClick={onReviewClick}
+					onSessionClick={onSessionClick}
 					onToggleCollapse={onToggleCollapse}
 				/>
 			</div>

@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowUpRight, Home, Star } from 'lucide-react'
+import { useMemo } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
@@ -15,22 +16,43 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { useTodayReviewSessions } from '~/features/reviews/api/getReviewSessions'
-import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import type { ReviewSession } from '~/features/reviews/types/review.types'
+import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
+import {
+	ReviewSection,
+	type ReviewEntry
+} from '~/features/reviews/components/ReviewSection'
 
 export function TodayPage() {
 	const { sections: reviewSections, isLoading: reviewsLoading } =
 		useTodayReviewSessions()
 
-	const { handleReviewClick, handleCreateTopic, isCreatingTopic } =
-		useReviewSessionPageHandlers()
+	const {
+		handleSessionClick,
+		handleReviewClick,
+		selectedReviewId,
+		closeReviewDialog,
+		handleCreateTopic,
+		isCreatingTopic
+	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
+	// Convert ReviewSession[] to ReviewEntry[]
+	const sectionsWithEntries = useMemo(() => {
+		return reviewSections.map(section => ({
+			...section,
+			entries: section.entries.map(
+				(session): ReviewEntry => ({
+					type: 'session' as const,
+					data: session
+				})
+			)
+		}))
+	}, [reviewSections])
+
 	// Check if all sections are empty
-	const allSectionsEmpty = reviewSections.every(section => {
-		const reviewEntries = section.entries ?? []
-		return reviewEntries.length === 0
-	})
+	const allSectionsEmpty = sectionsWithEntries.every(
+		section => section.entries.length === 0
+	)
 
 	return (
 		<PageLayout>
@@ -42,8 +64,16 @@ export function TodayPage() {
 				isLoading={reviewsLoading}
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
+				onSessionClick={handleSessionClick}
 				onToggleCollapse={toggleSection}
-				reviewSections={reviewSections}
+				reviewSections={sectionsWithEntries}
+			/>
+			<ReviewDialog
+				onOpenChange={open => {
+					if (!open) closeReviewDialog()
+				}}
+				open={selectedReviewId !== null}
+				reviewId={selectedReviewId}
 			/>
 		</PageLayout>
 	)
@@ -57,6 +87,7 @@ function TodayList({
 	reviewSections,
 	onCreateTopic,
 	onReviewClick,
+	onSessionClick,
 	onToggleCollapse
 }: {
 	allSectionsEmpty: boolean
@@ -67,10 +98,11 @@ function TodayList({
 		id: string
 		label: string
 		headingClassName?: string
-		entries: Array<ReviewSession>
+		entries: Array<ReviewEntry>
 	}>
 	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
+	onSessionClick: (sessionId: number) => void
 	onToggleCollapse: (sectionId: string) => void
 }) {
 	const navigate = useNavigate()
@@ -132,6 +164,7 @@ function TodayList({
 					key={section.id}
 					label={section.label}
 					onReviewClick={onReviewClick}
+					onSessionClick={onSessionClick}
 					onToggleCollapse={onToggleCollapse}
 				/>
 			))}

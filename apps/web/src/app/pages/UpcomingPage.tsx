@@ -18,8 +18,11 @@ import {
 	useFutureReviewSessions,
 	useSoonReviewSessions
 } from '~/features/reviews/api/getReviewSessions'
-import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import type { ReviewSession } from '~/features/reviews/types/review.types'
+import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
+import {
+	ReviewSection,
+	type ReviewEntry
+} from '~/features/reviews/components/ReviewSection'
 
 export function UpcomingPage() {
 	const [showFuture, setShowFuture] = useState(false)
@@ -51,30 +54,46 @@ export function UpcomingPage() {
 		}
 	}, [soonReviewSections])
 
-	const { handleReviewClick, handleCreateTopic, isCreatingTopic } =
-		useReviewSessionPageHandlers()
+	const {
+		handleSessionClick,
+		handleReviewClick,
+		selectedReviewId,
+		closeReviewDialog,
+		handleCreateTopic,
+		isCreatingTopic
+	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
-	// Combine all sections
+	// Combine all sections and convert to ReviewEntry type
 	const allSections = useMemo(() => {
 		const combined = [...soonReviewSections, ...futureReviewSections]
 		// Filter out empty sections except for required ones
-		return combined.filter(section => {
-			const entries = section.entries ?? []
-			return (
-				entries.length > 0 ||
-				section.id === 'tomorrow' ||
-				section.id === 'nextSevenDays'
-			)
-		})
+		return combined
+			.filter(section => {
+				const entries = section.entries ?? []
+				return (
+					entries.length > 0 ||
+					section.id === 'tomorrow' ||
+					section.id === 'nextSevenDays'
+				)
+			})
+			.map(section => ({
+				...section,
+				entries: section.entries.map(
+					(session): ReviewEntry => ({
+						type: 'session' as const,
+						data: session
+					})
+				)
+			}))
 	}, [soonReviewSections, futureReviewSections])
 
 	const isInitialLoading = soonReviewsLoading
 
 	// Check if all sections are empty
-	const allSectionsEmpty = allSections.every(section => {
-		return (section.entries ?? []).length === 0
-	})
+	const allSectionsEmpty = allSections.every(
+		section => section.entries.length === 0
+	)
 
 	return (
 		<PageLayout>
@@ -88,9 +107,17 @@ export function UpcomingPage() {
 				isMonthlyLoading={futureReviewsLoading}
 				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
+				onSessionClick={handleSessionClick}
 				onShowMore={() => setShowFuture(true)}
 				onToggleCollapse={toggleSection}
 				showFuture={showFuture}
+			/>
+			<ReviewDialog
+				onOpenChange={open => {
+					if (!open) closeReviewDialog()
+				}}
+				open={selectedReviewId !== null}
+				reviewId={selectedReviewId}
 			/>
 		</PageLayout>
 	)
@@ -105,6 +132,7 @@ function UpcomingList({
 	isMonthlyLoading,
 	onCreateTopic,
 	onReviewClick,
+	onSessionClick,
 	onShowMore,
 	onToggleCollapse,
 	showFuture
@@ -112,7 +140,7 @@ function UpcomingList({
 	allSections: Array<{
 		id: string
 		label: string
-		entries: Array<ReviewSession>
+		entries: Array<ReviewEntry>
 	}>
 	allSectionsEmpty: boolean
 	collapsedSections: Record<string, boolean>
@@ -121,6 +149,7 @@ function UpcomingList({
 	isMonthlyLoading: boolean
 	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
+	onSessionClick: (sessionId: number) => void
 	onShowMore: () => void
 	onToggleCollapse: (sectionId: string) => void
 	showFuture: boolean
@@ -171,6 +200,7 @@ function UpcomingList({
 					key={section.id}
 					label={section.label}
 					onReviewClick={onReviewClick}
+					onSessionClick={onSessionClick}
 					onToggleCollapse={onToggleCollapse}
 				/>
 			))}
