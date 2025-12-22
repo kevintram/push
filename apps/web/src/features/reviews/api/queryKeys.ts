@@ -1,4 +1,5 @@
 import type {
+	GetReviewEntriesFilters,
 	GetReviewSessionsFilters,
 	GetReviewsFilters
 } from '../types/api.types'
@@ -45,4 +46,24 @@ export const reviewKeys = {
 		return key
 	},
 	detail: (reviewId: number) => [...reviewKeys.all, reviewId] as const
+}
+
+export const reviewEntryKeys = {
+	all: ['review-entries'] as const,
+	lists: () => [...reviewEntryKeys.all, 'list'] as const,
+	list: (filters: GetReviewEntriesFilters = {}) => {
+		const key: Array<string | number | boolean> = [...reviewEntryKeys.lists()]
+		// Stable sort keys to ensure consistent cache keys
+		const sortedKeys = Object.keys(filters).sort() as Array<
+			keyof GetReviewEntriesFilters
+		>
+
+		for (const paramKey of sortedKeys) {
+			const value = filters[paramKey]
+			if (value !== undefined) {
+				key.push(paramKey, String(value))
+			}
+		}
+		return key
+	}
 }
