@@ -253,7 +253,7 @@ async def read_reviews(
             ReviewSession.description,
         )
         .join(Topic, Review.topic_id == Topic.id)
-        .join(ReviewSession, Review.review_session_id == ReviewSession.id)
+        .outerjoin(ReviewSession, Review.review_session_id == ReviewSession.id)
         .where(Review.user_id == user_id)
         .order_by(
             Review.completed_at.asc().nulls_first(),
@@ -304,10 +304,14 @@ async def read_reviews(
             "name": topic_name,
             "notes": topic_notes,
         }
-        review_data["review_session"] = {
-            "id": row_review_session_id,
-            "description": review_session_description,
-        }
+        review_data["review_session"] = (
+            {
+                "id": row_review_session_id,
+                "description": review_session_description,
+            }
+            if row_review_session_id is not None
+            else None
+        )
         items.append(ReviewListItem(**review_data))
     return items
 
@@ -366,7 +370,8 @@ async def create_review(
         session.add(topic)
         await session.flush()
 
-    # Resolve or create Review Session
+    # Resolve or create Review Session (optional - can be None)
+    review_session_id: int | None = None
     if review_create.review_session_id is not None:
         # Fetch existing review session
         session_result = await session.execute(
@@ -377,18 +382,20 @@ async def create_review(
         review_session = session_result.scalar_one_or_none()
         if not review_session:
             raise HTTPException(status_code=404, detail="Review Session not found")
-    else:
+        review_session_id = review_session.id
+    elif review_create.review_session is not None:
         # Create new review session from inline data
-        assert review_create.review_session is not None
         review_session = ReviewSession(**review_create.review_session.model_dump(), user_id=user_id)
         session.add(review_session)
         await session.flush()
+        review_session_id = review_session.id
+    # else: review_session_id remains None (no session)
 
     # Check if review is completed - only run FSRS if it is
     if review_create.completed_at is None:
         # Review not completed yet - create review without FSRS or rating
         new_review = Review(
-            review_session_id=review_session.id,
+            review_session_id=review_session_id,
             topic_id=topic.id,
             user_id=user_id,
             description=review_create.description,
@@ -454,7 +461,7 @@ async def create_review(
 
     # Create the review with FSRS state
     new_review = Review(
-        review_session_id=review_session.id,
+        review_session_id=review_session_id,
         topic_id=topic.id,
         user_id=user_id,
         description=review_create.description,
@@ -530,12 +537,16 @@ async def update_review(
 
     topic = existing_review.topic
     fields_set = review_update.model_fields_set
-    
+
     # Update simple fields
     if "description" in fields_set and review_update.description is not None:
         existing_review.description = review_update.description
+    if "notes" in fields_set and review_update.notes is not None:
+        existing_review.notes = review_update.notes
     if "scheduled_at" in fields_set:
         existing_review.scheduled_at = review_update.scheduled_at
+    if "review_session_id" in fields_set:
+        existing_review.review_session_id = review_update.review_session_id
 
     # Check if review is completed - only run FSRS if it is
     # We use the new completed_at if provided, else the existing one

@@ -27,8 +27,8 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
-    review_session_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("review_sessions.id"), nullable=False
+    review_session_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("review_sessions.id"), nullable=True
     )
     topic_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("topics.id"), nullable=False
@@ -41,6 +41,7 @@ class Review(Base):
         func.coalesce(completed_at, scheduled_at)
     )
     description: Mapped[str] = mapped_column(Text, nullable=False, default="", server_default="")
+    notes: Mapped[str] = mapped_column(Text, nullable=False, default="", server_default="")
 
     rating: Mapped[str | None] = mapped_column(
         Enum("miss", "hard", "good", "easy", name="rating"),
@@ -78,5 +79,5 @@ class Review(Base):
     due_after: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     # Relationships
-    review_session: Mapped["ReviewSession"] = relationship(back_populates="reviews")
+    review_session: Mapped["ReviewSession | None"] = relationship(back_populates="reviews")
     topic: Mapped["Topic"] = relationship(back_populates="reviews")
