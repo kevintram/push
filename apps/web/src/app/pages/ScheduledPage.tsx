@@ -22,8 +22,8 @@ import {
 } from '~/features/reviews/api/getReviewSessions'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import {
-	ReviewSection,
-	type ReviewEntry
+	type ReviewEntry,
+	ReviewSection
 } from '~/features/reviews/components/ReviewSection'
 import { getCookie, setCookie } from '~/utils/cookies'
 
@@ -97,7 +97,7 @@ export function ScheduledPage() {
 			entries: Array<ReviewEntry>
 		}
 
-		const sections: NormalizedSection[] = []
+		const sections: Array<NormalizedSection> = []
 
 		// Add today sections (Overdue, Today)
 		for (const section of todaySections) {
@@ -292,7 +292,7 @@ function ScheduledList({
 			))}
 
 			{/* Show More button (only when not filtering to today) */}
-			{!todayFilter && !showFuture && (
+			{!(todayFilter || showFuture) && (
 				<div className='mt-8 text-center'>
 					<Button
 						disabled={isMonthlyLoading}

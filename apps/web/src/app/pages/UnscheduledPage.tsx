@@ -17,8 +17,8 @@ import {
 import { useUnscheduledReviewSessions } from '~/features/reviews/api/getReviewSessions'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import {
-	ReviewSection,
-	type ReviewEntry
+	type ReviewEntry,
+	ReviewSection
 } from '~/features/reviews/components/ReviewSection'
 
 export function UnscheduledPage() {
