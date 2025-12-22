@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '~/components/ui/Skeleton'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import {
@@ -68,10 +69,10 @@ export function DueTopicsPage() {
 			}
 		}
 
-		// Sort each bucket by retrievability (lowest first for late, highest first for early)
+		// Sort each bucket by retrievability (lowest first - topics closest to leaving bucket)
 		late.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
 		onTime.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
-		early.sort((a, b) => (b.retrievability ?? 1) - (a.retrievability ?? 1))
+		early.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
 
 		return [
 			{ bucket: 'late', label: 'Late', topics: late },
@@ -271,6 +272,7 @@ function TopicCardWithThreshold({
 	return (
 		<TopicCard
 			footerExtra={footerExtra}
+			headerRight={<TopicActionMenu topic={topic} />}
 			onTopicClick={onTopicClick}
 			showBucketLabel={false}
 			topic={topic}
