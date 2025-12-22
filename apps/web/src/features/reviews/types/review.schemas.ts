@@ -4,11 +4,12 @@ import type { Review, ReviewListItem, ReviewSession } from './review.types'
 
 export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	id: v.number(),
-	review_session_id: v.number(),
+	review_session_id: v.nullable(v.number()),
 	topic_id: v.number(),
 	rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 
 	description: v.string(),
+	notes: v.string(),
 	scheduled_at: v.nullable(v.string()),
 	completed_at: v.nullable(v.string()),
 	effective_date: v.nullable(v.string()),
@@ -16,6 +17,12 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	topic: v.lazy(() => TopicSchema),
+	review_session: v.nullable(
+		v.object({
+			id: v.number(),
+			description: v.nullable(v.string())
+		})
+	),
 
 	// Topic FSRS state before review
 	stability_before: v.nullable(v.number()),
@@ -34,11 +41,12 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 
 export const ReviewListItemSchema: v.GenericSchema<ReviewListItem> = v.object({
 	id: v.number(),
-	review_session_id: v.number(),
+	review_session_id: v.nullable(v.number()),
 	topic_id: v.number(),
 	rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 
 	description: v.string(),
+	notes: v.string(),
 	scheduled_at: v.nullable(v.string()),
 	completed_at: v.nullable(v.string()),
 	effective_date: v.nullable(v.string()),
@@ -46,10 +54,12 @@ export const ReviewListItemSchema: v.GenericSchema<ReviewListItem> = v.object({
 	inserted_at: v.string(),
 	updated_at: v.string(),
 
-	review_session: v.object({
-		id: v.number(),
-		description: v.nullable(v.string())
-	}),
+	review_session: v.nullable(
+		v.object({
+			id: v.number(),
+			description: v.nullable(v.string())
+		})
+	),
 	topic: v.object({
 		id: v.number(),
 		name: v.string(),

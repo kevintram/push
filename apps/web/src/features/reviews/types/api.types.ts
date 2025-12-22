@@ -31,6 +31,7 @@ export type ReviewSessionCreate = {
 export type CreateReviewPayload = {
 	rating?: Rating | null
 	description?: string
+	notes?: string
 	scheduled_at?: string | null
 	completed_at?: string | null
 } & (
@@ -40,6 +41,7 @@ export type CreateReviewPayload = {
 	(
 		| { review_session_id: number; review_session?: never }
 		| { review_session: ReviewSessionCreate; review_session_id?: never }
+		| { review_session_id?: never; review_session?: never }
 	)
 
 export type CreateTopicWithReviewInput = {
@@ -64,8 +66,10 @@ export type UpdateReviewInput = {
 	id: number
 	rating?: Rating | null
 	description?: string
+	notes?: string
 	scheduled_at?: string | null
 	completed_at?: string | null
+	review_session_id?: number | null
 }
 
 export type GetReviewSessionsFilters = {
