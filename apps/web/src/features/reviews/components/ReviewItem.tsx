@@ -172,12 +172,13 @@ export function ReviewItem({
 	const handleSessionClick = useCallback(
 		(event: React.MouseEvent) => {
 			event.stopPropagation()
+			if (!entry.review_session) return
 			navigate({
 				to: '/review-session/$reviewSessionId',
 				params: { reviewSessionId: entry.review_session.id.toString() }
 			})
 		},
-		[navigate, entry.review_session.id]
+		[navigate, entry.review_session]
 	)
 
 	const handleTopicClick = useCallback(
@@ -202,8 +203,9 @@ export function ReviewItem({
 
 	const relativeDate = getRelativeDateLabel(effectiveDate)
 
-	const sessionDisplayText =
-		entry.review_session.description?.trim() || 'no description'
+	const sessionDisplayText = entry.review_session
+		? entry.review_session.description?.trim() || 'no description'
+		: 'No session'
 
 	const dateButtonColorClass = cn(
 		isOverdueValue && 'text-red-600 dark:text-red-400',
@@ -329,6 +331,7 @@ export function ReviewItem({
 						{(variant === 'default' || variant === 'session') && (
 							<Button
 								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
+								disabled={!entry.review_session}
 								onClick={handleSessionClick}
 								size='sm'
 								variant='link'
