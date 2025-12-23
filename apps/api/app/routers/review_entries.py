@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from fastapi import APIRouter
 from sqlalchemy import select
@@ -21,12 +22,16 @@ async def read_review_entries(
     effective_date_after: str | None = None,
     completed: bool | None = None,
     scheduled: bool | None = None,
+    sort: Literal["asc", "desc"] = "asc",
 ) -> list[ReviewEntry]:
     """Get unified list of reviews and review sessions, sorted by effective_date.
 
     Returns all reviews and all review sessions as separate entries in a
-    discriminated union. The list is sorted by effective_date (nulls first,
-    then ascending by date).
+    discriminated union.
+
+    Args:
+        sort: Sort order for effective_date. "asc" = nulls first, then ascending.
+              "desc" = descending, then nulls last.
     """
     entries: list[ReviewEntry] = []
 
@@ -143,7 +148,15 @@ async def read_review_entries(
             )
         )
 
-    # Sort by effective_date (nulls first, then ascending)
-    entries.sort(key=lambda e: (e.effective_date is not None, e.effective_date))
+    # Sort by effective_date based on sort parameter
+    if sort == "asc":
+        # Ascending: nulls first, then oldest to newest
+        entries.sort(key=lambda e: (e.effective_date is not None, e.effective_date))
+    else:
+        # Descending: newest to oldest, then nulls last
+        entries.sort(
+            key=lambda e: (e.effective_date is None, e.effective_date),
+            reverse=True,
+        )
 
     return entries
