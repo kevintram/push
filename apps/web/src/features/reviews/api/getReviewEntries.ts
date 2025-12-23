@@ -38,6 +38,10 @@ export async function getReviewEntries(filters?: GetReviewEntriesFilters) {
 		params.append('completed', String(filters.completed))
 	}
 
+	if (filters?.sort !== undefined) {
+		params.append('sort', filters.sort)
+	}
+
 	const url = `${import.meta.env.VITE_API_URL}/review-entries/${params.toString() ? `?${params.toString()}` : ''}`
 
 	const response = await apiFetch(url, {
@@ -366,12 +370,14 @@ export function useLogbookReviewEntries() {
 	const query = useQuery({
 		queryKey: reviewEntryKeys.list({
 			effectiveDateBefore: yesterday,
-			completed: true
+			completed: true,
+			sort: 'desc'
 		}),
 		queryFn: () => {
 			return getReviewEntries({
 				effectiveDateBefore: yesterday,
-				completed: true
+				completed: true,
+				sort: 'desc'
 			})
 		}
 	})
