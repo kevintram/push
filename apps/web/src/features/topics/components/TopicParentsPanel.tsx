@@ -8,6 +8,7 @@ import {
 	User2
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
 import { Badge } from '~/components/ui/Badge'
 import {
 	DropdownMenu,
@@ -174,7 +175,14 @@ export function TopicParentsPanel({
 						childTopicId: topicId
 					}}
 					onOpenChange={setShowAddTopicDialog}
-					onSuccess={() => {}}
+					onSuccess={newTopicId => {
+						toast('Topic created', {
+							action: {
+								label: 'Open',
+								onClick: () => handleParentSelect(newTopicId)
+							}
+						})
+					}}
 					open={showAddTopicDialog}
 				/>
 			)}

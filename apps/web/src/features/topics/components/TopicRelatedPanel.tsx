@@ -8,6 +8,7 @@ import {
 	SquarePen
 } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { Button } from '~/components/ui/Button'
@@ -290,7 +291,14 @@ export function TopicRelatedPanel({
 						fromTopicId: topicId
 					}}
 					onOpenChange={setShowAddTopicDialog}
-					onSuccess={() => {}}
+					onSuccess={newTopicId => {
+						toast('Topic created', {
+							action: {
+								label: 'Open',
+								onClick: () => handleRelatedSelect(newTopicId)
+							}
+						})
+					}}
 					open={showAddTopicDialog}
 				/>
 			)}
