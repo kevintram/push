@@ -10,7 +10,7 @@ import {
 	SquareCheck,
 	SquarePen
 } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 // UI Components
 import {
@@ -27,24 +27,27 @@ import { SidebarMenuButton } from '~/components/ui/Sidebar'
 // Feature hooks
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateReviewSession } from '~/features/reviews/api/createReviewSession'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
+import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 
 export function CreateButton() {
 	// Hooks
 	const navigate = useNavigate()
-	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
-		useCreateTopic()
 	const { createReviewSession: createReview, isPending: isCreatingReview } =
 		useCreateReviewSession()
 	const { openTopicDialog } = useReviewTopicDialog()
 
-	const isLoading = isCreatingTopic || isCreatingReview
+	// State for AddTopicDialog
+	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
+
+	const isLoading = isCreatingReview
 
 	// Handlers
-	const handleNewTopic = useCallback(async () => {
-		const createdTopic = await createTopic({})
-		openTopicDialog(createdTopic.id)
-	}, [createTopic, openTopicDialog])
+	const handleTopicCreated = useCallback(
+		(topicId: number) => {
+			openTopicDialog(topicId)
+		},
+		[openTopicDialog]
+	)
 
 	const handleLogReviewNow = useCallback(async () => {
 		const today = new Date().toISOString().split('T')[0]
@@ -105,11 +108,21 @@ export function CreateButton() {
 						</DropdownMenuItem>
 					</DropdownMenuSubContent>
 				</DropdownMenuSub>
-				<DropdownMenuItem disabled={isLoading} onClick={handleNewTopic}>
+				<DropdownMenuItem
+					disabled={isLoading}
+					onClick={() => setIsAddTopicDialogOpen(true)}
+				>
 					<SquarePen />
 					<span>New topic</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
+
+			<AddTopicDialog
+				context={{ type: 'standalone' }}
+				onOpenChange={setIsAddTopicDialogOpen}
+				onSuccess={handleTopicCreated}
+				open={isAddTopicDialogOpen}
+			/>
 		</DropdownMenu>
 	)
 }
