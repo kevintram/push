@@ -16,10 +16,10 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import {
-	useFutureReviewSessions,
-	useSoonReviewSessions,
-	useTodayReviewSessions
-} from '~/features/reviews/api/getReviewSessions'
+	useFutureReviewEntries,
+	useSoonReviewEntries,
+	useTodayReviewEntries
+} from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import {
 	type ReviewEntry,
@@ -38,18 +38,18 @@ export function ScheduledPage() {
 
 	// Fetch today data (overdue + today)
 	const { sections: todaySections, isLoading: todayLoading } =
-		useTodayReviewSessions()
+		useTodayReviewEntries()
 
 	// Fetch soon data (tomorrow + next 7 days)
 	const { sections: soonReviewSections, isLoading: soonReviewsLoading } =
-		useSoonReviewSessions()
+		useSoonReviewEntries()
 
 	// Conditionally fetch future data (8+ days, monthly groups)
 	const {
 		sections: futureReviewSections = [],
 		isLoading: futureReviewsLoading,
 		isFetched: futureReviewsFetched
-	} = useFutureReviewSessions({ enabled: showFuture && !todayFilter })
+	} = useFutureReviewEntries({ enabled: showFuture && !todayFilter })
 
 	useEffect(() => {
 		if (futureReviewsFetched) {
@@ -87,9 +87,8 @@ export function ScheduledPage() {
 		})
 	}, [])
 
-	// Combine all sections and convert to ReviewEntry type
+	// Combine all sections (entries are already in ReviewEntry format from the hooks)
 	const allSections = useMemo(() => {
-		// Normalize section type
 		type NormalizedSection = {
 			id: string
 			label: string
@@ -105,10 +104,7 @@ export function ScheduledPage() {
 				id: section.id,
 				label: section.label,
 				headingClassName: section.headingClassName,
-				entries: section.entries.map(session => ({
-					type: 'session' as const,
-					data: session
-				}))
+				entries: section.entries
 			})
 		}
 
@@ -119,10 +115,7 @@ export function ScheduledPage() {
 					id: section.id,
 					label: section.label,
 					headingClassName: section.headingClassName,
-					entries: section.entries.map(session => ({
-						type: 'session' as const,
-						data: session
-					}))
+					entries: section.entries
 				})
 			}
 
@@ -130,10 +123,7 @@ export function ScheduledPage() {
 				sections.push({
 					id: section.id,
 					label: section.label,
-					entries: section.entries.map(session => ({
-						type: 'session' as const,
-						data: session
-					}))
+					entries: section.entries
 				})
 			}
 		}

@@ -29,6 +29,11 @@ from app.schemas.reviews import (
     ReviewCreate,
     ReviewUpdate,
 )
+from app.schemas.review_entries import (
+    ReviewEntrySession,
+    ReviewEntryReview,
+    ReviewEntry,
+)
 
 # Rebuild models to resolve forward references
 ReviewSessionReadWithReviews.model_rebuild()
@@ -73,4 +78,7 @@ __all__ = [
     "ReviewUpdate",
     "TopicRelatedRead",
     "RelationshipDirection",
+    "ReviewEntrySession",
+    "ReviewEntryReview",
+    "ReviewEntry",
 ]

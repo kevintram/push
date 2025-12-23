@@ -89,3 +89,18 @@ export type ReviewSession = {
 	notes: string
 	reviews?: Array<Review>
 }
+
+// Discriminated union types for unified review entries endpoint
+export type ReviewEntrySession = {
+	type: 'session'
+	effective_date: string | null
+	data: ReviewSession
+}
+
+export type ReviewEntryReview = {
+	type: 'review'
+	effective_date: string | null
+	data: ReviewListItem
+}
+
+export type ReviewEntry = ReviewEntrySession | ReviewEntryReview
