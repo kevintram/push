@@ -290,7 +290,7 @@ export function TopicRelatedPanel({
 						fromTopicId: topicId
 					}}
 					onOpenChange={setShowAddTopicDialog}
-					onSuccess={handleRelatedSelect}
+					onSuccess={() => {}}
 					open={showAddTopicDialog}
 				/>
 			)}

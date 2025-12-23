@@ -71,11 +71,8 @@ export function TopicParentsPanel({
 				parent: topic.id,
 				child: topicId
 			})
-
-			// Navigate to the selected topic
-			handleParentSelect(topic.id)
 		},
-		[topicId, createRelationship, handleParentSelect]
+		[topicId, createRelationship]
 	)
 
 	const handleParentMouseEnter = useCallback(
@@ -177,7 +174,7 @@ export function TopicParentsPanel({
 						childTopicId: topicId
 					}}
 					onOpenChange={setShowAddTopicDialog}
-					onSuccess={handleParentSelect}
+					onSuccess={() => {}}
 					open={showAddTopicDialog}
 				/>
 			)}

@@ -283,7 +283,7 @@ export function TopicChildrenPanel({
 						parentStability
 					}}
 					onOpenChange={setShowAddTopicDialog}
-					onSuccess={handleChildSelect}
+					onSuccess={() => {}}
 					open={showAddTopicDialog}
 				/>
 			)}
