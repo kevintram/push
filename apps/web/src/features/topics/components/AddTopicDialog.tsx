@@ -326,15 +326,17 @@ export function AddTopicDialog({
 						{/* Inbox Toggle */}
 						<Tooltip>
 							<TooltipTrigger asChild={true}>
-								<Toggle
-									aria-label='Add to inbox'
-									onPressedChange={setInboxed}
-									pressed={inboxed}
-									size='sm'
-									variant='outline'
-								>
-									<Inbox className='h-4 w-4' />
-								</Toggle>
+								<span>
+									<Toggle
+										aria-label='Add to inbox'
+										onPressedChange={setInboxed}
+										pressed={inboxed}
+										size='sm'
+										variant='outline'
+									>
+										<Inbox className='h-4 w-4' />
+									</Toggle>
+								</span>
 							</TooltipTrigger>
 							<TooltipContent>Add to inbox</TooltipContent>
 						</Tooltip>
@@ -343,18 +345,20 @@ export function AddTopicDialog({
 						{showInheritStability && (
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
-									<Toggle
-										aria-label='Inherit stability'
-										onPressedChange={setInheritStability}
-										pressed={inheritStability}
-										size='sm'
-										variant='outline'
-									>
-										<BicepsFlexed className='h-4 w-4' />
-										<span className='ml-1 text-xs'>
-											Inherit ({Math.round(context.parentStability!)}d)
-										</span>
-									</Toggle>
+									<span>
+										<Toggle
+											aria-label='Inherit stability'
+											onPressedChange={setInheritStability}
+											pressed={inheritStability}
+											size='sm'
+											variant='outline'
+										>
+											<BicepsFlexed className='h-4 w-4' />
+											<span className='ml-1 text-xs'>
+												Inherit ({Math.round(context.parentStability!)}d)
+											</span>
+										</Toggle>
+									</span>
 								</TooltipTrigger>
 								<TooltipContent>
 									Inherit stability from parent topic
