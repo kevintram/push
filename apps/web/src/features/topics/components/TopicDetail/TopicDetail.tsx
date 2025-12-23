@@ -368,6 +368,7 @@ export function TopicDetail({
 						<TopicChildrenPanel
 							getScrollElement={() => scrollContainerRef.current}
 							onChildSelect={onTopicNavigate}
+							parentStability={topic.stability}
 							renderCard={renderChildCard}
 							topicId={topic.id}
 						/>

@@ -25,6 +25,7 @@ import { useTopicChildren } from '../api/getTopicChildren'
 import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
+import { AddTopicDialog } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
 
@@ -37,6 +38,10 @@ interface TopicChildrenPanelProps {
 	topicId: number | undefined
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
+	/**
+	 * Parent topic's stability for the "inherit stability" option.
+	 */
+	parentStability?: number | null
 	/**
 	 * Called when a child is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
@@ -59,11 +64,13 @@ export function TopicChildrenPanel({
 	topicId,
 	getScrollElement,
 	scrollMargin,
+	parentStability,
 	onChildSelect,
 	renderCard
 }: TopicChildrenPanelProps) {
 	const queryClient = useQueryClient()
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
+	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
@@ -84,36 +91,6 @@ export function TopicChildrenPanel({
 			}
 		},
 		[onChildSelect, openTopicDialog]
-	)
-
-	const handleCreateNewAndAdd = useCallback(
-		async (query = '') => {
-			if (!topicId) return
-
-			try {
-				const newTopicData = {
-					name: '',
-					notes: query.trim() || '',
-					archived: false,
-					inboxed: false
-				}
-
-				// Use inline creation - create topic and relationship in one call
-				const response = await createRelationship.mutateAsync({
-					parent: topicId,
-					childData: newTopicData
-				})
-
-				// Get the newly created child topic ID
-				const newTopicId = response.child.id
-
-				// Navigate to the created topic
-				handleChildSelect(newTopicId)
-			} catch (_error) {
-				// Error is handled by React Query mutation state
-			}
-		},
-		[topicId, createRelationship, handleChildSelect]
 	)
 
 	const handleAddTopic = useCallback(
@@ -235,7 +212,7 @@ export function TopicChildrenPanel({
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='start'>
-							<DropdownMenuItem onClick={() => handleCreateNewAndAdd()}>
+							<DropdownMenuItem onClick={() => setShowAddTopicDialog(true)}>
 								<SquarePen className='h-4 w-4' />
 								Create New
 							</DropdownMenuItem>
@@ -287,13 +264,29 @@ export function TopicChildrenPanel({
 
 			<AddRelationshipDialog
 				isCreating={isCreating}
-				onCreateNew={handleCreateNewAndAdd}
+				onCreateNew={() => {
+					setShowCreateDialog(false)
+					setShowAddTopicDialog(true)
+				}}
 				onOpenChange={setShowCreateDialog}
 				onSelected={handleAddTopic}
 				open={showCreateDialog}
 				relationshipType='child'
 				topicId={topicId}
 			/>
+
+			{topicId && (
+				<AddTopicDialog
+					context={{
+						type: 'child',
+						parentTopicId: topicId,
+						parentStability
+					}}
+					onOpenChange={setShowAddTopicDialog}
+					onSuccess={handleChildSelect}
+					open={showAddTopicDialog}
+				/>
+			)}
 		</div>
 	)
 }
