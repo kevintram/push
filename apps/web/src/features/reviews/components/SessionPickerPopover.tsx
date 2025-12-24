@@ -17,6 +17,11 @@ interface SessionPickerPopoverProps {
 	trigger: React.ReactNode
 	align?: 'start' | 'center' | 'end'
 	side?: 'top' | 'right' | 'bottom' | 'left'
+	/**
+	 * Whether to show the "Create new session" button.
+	 * @default true
+	 */
+	allowCreate?: boolean
 }
 
 export function SessionPickerPopover({
@@ -26,7 +31,8 @@ export function SessionPickerPopover({
 	onOpenChange,
 	trigger,
 	align = 'start',
-	side = 'bottom'
+	side = 'bottom',
+	allowCreate = true
 }: SessionPickerPopoverProps) {
 	const { data: sessions, isLoading } = useRecentSessions()
 	const { createReviewSession, isPending } = useCreateReviewSession()
@@ -57,18 +63,22 @@ export function SessionPickerPopover({
 				side={side}
 			>
 				{/* Create New Session Button */}
-				<Button
-					className='mb-2 w-full justify-start'
-					disabled={isPending}
-					onClick={handleCreateSession}
-					size='sm'
-					variant='ghost'
-				>
-					<Plus className='mr-2 h-4 w-4' />
-					Create new session
-				</Button>
+				{allowCreate && (
+					<>
+						<Button
+							className='mb-2 w-full justify-start'
+							disabled={isPending}
+							onClick={handleCreateSession}
+							size='sm'
+							variant='ghost'
+						>
+							<Plus className='mr-2 h-4 w-4' />
+							Create new session
+						</Button>
 
-				<div className='my-2 border-t' />
+						<div className='my-2 border-t' />
+					</>
+				)}
 
 				{/* Recent Sessions List */}
 				{isLoading ? (

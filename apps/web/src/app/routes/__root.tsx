@@ -2,6 +2,7 @@ import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { LoadingOrError } from '~/components/LoadingOrError'
+import { Toaster } from '~/components/ui/sonner'
 import { ReviewSessionTopicDialogProvider } from '~/features/dialogs/providers/ReviewSessionTopicDialogProvider'
 
 function renderError({ error }: FallbackProps) {
@@ -15,6 +16,7 @@ export const Route = createRootRoute({
 				<Suspense fallback={<LoadingOrError />}>
 					<Outlet />
 				</Suspense>
+				<Toaster />
 			</ReviewSessionTopicDialogProvider>
 		</ErrorBoundary>
 	)
