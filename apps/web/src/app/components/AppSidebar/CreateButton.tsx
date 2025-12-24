@@ -26,7 +26,6 @@ import {
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
 
 // Feature hooks
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateReviewSession } from '~/features/reviews/api/createReviewSession'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 
@@ -35,7 +34,6 @@ export function CreateButton() {
 	const navigate = useNavigate()
 	const { createReviewSession: createReview, isPending: isCreatingReview } =
 		useCreateReviewSession()
-	const { openTopicDialog } = useReviewTopicDialog()
 
 	// State for AddTopicDialog
 	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
@@ -117,7 +115,11 @@ export function CreateButton() {
 					toast('Topic created', {
 						action: {
 							label: 'Open',
-							onClick: () => openTopicDialog(topicId)
+							onClick: () =>
+								navigate({
+									to: '/topics/$topicId',
+									params: { topicId: topicId.toString() }
+								})
 						}
 					})
 				}}
