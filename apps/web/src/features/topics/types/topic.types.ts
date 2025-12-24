@@ -42,6 +42,8 @@ export type TopicOtherRelationshipCreate = {
 		notes: string
 		archived: boolean
 		inboxed: boolean
+		stability?: number | null
+		srs_enabled?: boolean
 	}
 }
 

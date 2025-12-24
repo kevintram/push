@@ -148,7 +148,7 @@ export function AddTopicDialog({
 					inheritStability &&
 					context.parentStability != null
 						? context.parentStability
-						: undefined
+						: null
 			}
 
 			// Create topic based on context

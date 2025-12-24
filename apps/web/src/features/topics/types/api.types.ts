@@ -28,6 +28,7 @@ export type CreateTopicInput = {
 	state?: 'LEARNING' | 'REVIEW' | 'RELEARNING'
 	archived?: boolean
 	inboxed?: boolean
+	srs_enabled?: boolean
 }
 
 export type UpdateTopicInput = {
@@ -51,6 +52,8 @@ export type CreateChildRelationshipInput =
 				notes: string
 				archived: boolean
 				inboxed: boolean
+				stability?: number | null
+				srs_enabled?: boolean
 			}
 	  }
 
@@ -66,6 +69,8 @@ export type CreateParentRelationshipInput =
 				notes: string
 				archived: boolean
 				inboxed: boolean
+				stability?: number | null
+				srs_enabled?: boolean
 			}
 	  }
 
@@ -73,11 +78,17 @@ export type CreateRelationshipInput =
 	| { parent: number; child: number }
 	| {
 			parent: number
-			childData: Pick<Topic, 'name' | 'notes' | 'archived' | 'inboxed'>
+			childData: Pick<
+				Topic,
+				'name' | 'notes' | 'archived' | 'inboxed' | 'stability' | 'srs_enabled'
+			>
 	  }
 	| {
 			child: number
-			parentData: Pick<Topic, 'name' | 'notes' | 'archived' | 'inboxed'>
+			parentData: Pick<
+				Topic,
+				'name' | 'notes' | 'archived' | 'inboxed' | 'stability' | 'srs_enabled'
+			>
 	  }
 
 export type DeleteChildRelationshipInput = {
