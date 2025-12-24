@@ -25,7 +25,6 @@ import {
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
 
 // Feature hooks
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateReviewSession } from '~/features/reviews/api/createReviewSession'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 
@@ -34,20 +33,11 @@ export function CreateButton() {
 	const navigate = useNavigate()
 	const { createReviewSession: createReview, isPending: isCreatingReview } =
 		useCreateReviewSession()
-	const { openTopicDialog } = useReviewTopicDialog()
 
 	// State for AddTopicDialog
 	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 
 	const isLoading = isCreatingReview
-
-	// Handlers
-	const handleTopicCreated = useCallback(
-		(topicId: number) => {
-			openTopicDialog(topicId)
-		},
-		[openTopicDialog]
-	)
 
 	const handleLogReviewNow = useCallback(async () => {
 		const today = new Date().toISOString().split('T')[0]
@@ -120,7 +110,6 @@ export function CreateButton() {
 			<AddTopicDialog
 				context={{ type: 'standalone' }}
 				onOpenChange={setIsAddTopicDialogOpen}
-				onSuccess={handleTopicCreated}
 				open={isAddTopicDialogOpen}
 			/>
 		</DropdownMenu>
