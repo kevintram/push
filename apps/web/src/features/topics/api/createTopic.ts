@@ -30,7 +30,8 @@ export async function createTopic(
 					| 'REVIEW'
 					| 'RELEARNING'),
 			archived: input.archived ?? false,
-			inboxed: input.inboxed ?? false
+			inboxed: input.inboxed ?? false,
+			srs_enabled: input.srs_enabled ?? true
 		})
 	})
 

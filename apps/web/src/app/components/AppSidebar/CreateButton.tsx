@@ -11,6 +11,7 @@ import {
 	SquarePen
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
 
 // UI Components
 import {
@@ -40,14 +41,6 @@ export function CreateButton() {
 	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 
 	const isLoading = isCreatingReview
-
-	// Handlers
-	const handleTopicCreated = useCallback(
-		(topicId: number) => {
-			openTopicDialog(topicId)
-		},
-		[openTopicDialog]
-	)
 
 	const handleLogReviewNow = useCallback(async () => {
 		const today = new Date().toISOString().split('T')[0]
@@ -120,7 +113,14 @@ export function CreateButton() {
 			<AddTopicDialog
 				context={{ type: 'standalone' }}
 				onOpenChange={setIsAddTopicDialogOpen}
-				onSuccess={handleTopicCreated}
+				onSuccess={topicId => {
+					toast('Topic created', {
+						action: {
+							label: 'Open',
+							onClick: () => openTopicDialog(topicId)
+						}
+					})
+				}}
 				open={isAddTopicDialogOpen}
 			/>
 		</DropdownMenu>

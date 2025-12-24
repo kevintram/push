@@ -21,7 +21,9 @@ export async function createChildRelationship(
 						name: input.child.name,
 						notes: input.child.notes,
 						archived: input.child.archived,
-						inboxed: input.child.inboxed
+						inboxed: input.child.inboxed,
+						stability: input.child.stability,
+						srs_enabled: input.child.srs_enabled
 					}
 				}
 
@@ -62,7 +64,9 @@ export async function createParentRelationship(
 						name: input.parent.name,
 						notes: input.parent.notes,
 						archived: input.parent.archived,
-						inboxed: input.parent.inboxed
+						inboxed: input.parent.inboxed,
+						stability: input.parent.stability,
+						srs_enabled: input.parent.srs_enabled
 					}
 				}
 
