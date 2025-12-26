@@ -7,7 +7,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.dependencies import SessionDep, UserIdDep
-from app.core.config import settings
 from app.models import Review, ReviewSession, Topic
 from app.schemas import ReviewCreate, ReviewListItem, ReviewRead, ReviewUpdate, ReviewWithTopic
 
@@ -170,11 +169,11 @@ async def replay_reviews_from_date(
         else:
             # No prior reviews - reset to initial state
             # Use topic's inherited fields if set (from parent), otherwise use defaults
-            topic.stability = topic.inherited_stability or settings.FSRS_INITIAL_STABILITY
-            topic.difficulty = topic.inherited_difficulty or settings.FSRS_INITIAL_DIFFICULTY
-            topic.state = topic.inherited_state or settings.FSRS_INITIAL_STATE
+            topic.stability = topic.inherited_stability
+            topic.difficulty = topic.inherited_difficulty
+            topic.state = topic.inherited_state or "LEARNING"
             # Step is only relevant for Learning/Relearning states
-            inherited_state = topic.inherited_state or settings.FSRS_INITIAL_STATE
+            inherited_state = topic.inherited_state or "LEARNING"
             topic.step = None if inherited_state == "REVIEW" else topic.inherited_step
 
         await session.flush()
@@ -207,7 +206,7 @@ async def replay_reviews_from_date(
     else:
         # No prior reviews or no FSRS state, start from initial state
         # Use topic's inherited fields if set (from parent), otherwise use defaults
-        inherited_state_str = topic.inherited_state or settings.FSRS_INITIAL_STATE
+        inherited_state_str = topic.inherited_state or "LEARNING"
         state = map_state_to_fsrs(inherited_state_str)
         # Convert inherited_last_review (date) to datetime for FSRS
         inherited_last_review_dt = (
@@ -217,8 +216,8 @@ async def replay_reviews_from_date(
         )
         starting_card = Card(
             state=state,
-            stability=topic.inherited_stability or settings.FSRS_INITIAL_STABILITY,
-            difficulty=topic.inherited_difficulty or settings.FSRS_INITIAL_DIFFICULTY,
+            stability=topic.inherited_stability,
+            difficulty=topic.inherited_difficulty,
             step=None if state == FSRSState.Review else topic.inherited_step,
             last_review=inherited_last_review_dt,
         )
