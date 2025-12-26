@@ -15,6 +15,11 @@ export type Topic = {
 	inserted_at: string
 	updated_at: string
 	stability: number | null
+	inherited_stability: number | null
+	inherited_difficulty: number | null
+	inherited_state: LearningState | null
+	inherited_step: number | null
+	inherited_last_review: string | null
 	difficulty: number | null
 	state: LearningState
 	step: number | null
@@ -43,6 +48,11 @@ export type TopicOtherRelationshipCreate = {
 		archived: boolean
 		inboxed: boolean
 		stability?: number | null
+		inherited_stability?: number | null
+		inherited_difficulty?: number | null
+		inherited_state?: LearningState | null
+		inherited_step?: number | null
+		inherited_last_review?: string | null
 		srs_enabled?: boolean
 	}
 }

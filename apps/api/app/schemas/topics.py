@@ -13,6 +13,11 @@ class TopicBase(BaseModel):
     name: str
     notes: str
     stability: float | None = None
+    inherited_stability: float | None = None
+    inherited_difficulty: float | None = None
+    inherited_state: str | None = None
+    inherited_step: int | None = None
+    inherited_last_review: date | None = None
     difficulty: float | None = None
     state: str = "LEARNING"
     step: int | None = None

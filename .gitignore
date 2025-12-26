@@ -71,3 +71,4 @@ DerivedData/
 *.dSYM.zip
 *.dSYM
 Pods/
+py-fsrs/
