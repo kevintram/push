@@ -23,13 +23,21 @@ import {
 	type ReviewRatingState
 } from '~/features/reviews/components/ReviewRatingCheckbox'
 import { SessionPickerPopover } from '~/features/reviews/components/SessionPickerPopover'
+import type { LearningState } from '~/models/learning-state.types'
 import { useCreateTopic } from '../api/createTopic'
 import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 
 export type AddTopicDialogContext =
 	| { type: 'standalone' }
-	| { type: 'child'; parentTopicId: number; parentStability?: number | null }
+	| {
+			type: 'child'
+			parentTopicId: number
+			parentStability?: number | null
+			parentDifficulty?: number | null
+			parentState?: LearningState | null
+			parentLastReviewedAt?: string | null
+	  }
 	| { type: 'parent'; childTopicId: number }
 	| { type: 'related'; fromTopicId: number }
 
@@ -135,20 +143,32 @@ export function AddTopicDialog({
 		try {
 			let newTopicId: number
 
-			// Build topic data
+			// Build topic data - inherit all SRS fields when toggle is on
+			const shouldInherit =
+				context.type === 'child' &&
+				inheritStability &&
+				context.parentStability != null
 			const topicData = {
 				name: name.trim(),
 				notes: notes.trim(),
 				archived: false,
 				inboxed,
 				srs_enabled: srsEnabled,
-				// Only inherit stability when toggle is on and we have parent stability
-				stability:
-					context.type === 'child' &&
-					inheritStability &&
-					context.parentStability != null
-						? context.parentStability
-						: null
+				// Only inherit SRS state when toggle is on and we have parent stability
+				stability: shouldInherit ? (context.parentStability ?? null) : null,
+				difficulty: shouldInherit ? (context.parentDifficulty ?? null) : null,
+				state: shouldInherit ? (context.parentState ?? undefined) : undefined,
+				// Set inherited fields so FSRS replay knows the starting point
+				inherited_stability: shouldInherit
+					? (context.parentStability ?? null)
+					: null,
+				inherited_difficulty: shouldInherit
+					? (context.parentDifficulty ?? null)
+					: null,
+				inherited_state: shouldInherit ? (context.parentState ?? null) : null,
+				inherited_last_review: shouldInherit
+					? (context.parentLastReviewedAt ?? null)
+					: null
 			}
 
 			// Create topic based on context
@@ -232,8 +252,8 @@ export function AddTopicDialog({
 		onOpenChange
 	])
 
-	// Show inherit stability option only for child context with parent stability
-	const showInheritStability =
+	// Show inherit SRS option only for child context with parent stability
+	const showInheritSrs =
 		context.type === 'child' && context.parentStability != null
 
 	return (
@@ -341,27 +361,25 @@ export function AddTopicDialog({
 							<TooltipContent>Add to inbox</TooltipContent>
 						</Tooltip>
 
-						{/* Inherit Stability Toggle (only for child context) */}
-						{showInheritStability && (
+						{/* Inherit SRS Toggle (only for child context) */}
+						{showInheritSrs && (
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
 									<span>
 										<Toggle
-											aria-label='Inherit stability'
+											aria-label='Inherit SRS state'
 											onPressedChange={setInheritStability}
 											pressed={inheritStability}
 											size='sm'
 											variant='outline'
 										>
 											<BicepsFlexed className='h-4 w-4' />
-											<span className='ml-1 text-xs'>
-												Inherit ({Math.round(context.parentStability!)}d)
-											</span>
+											<span className='ml-1 text-xs'>Inherit SRS</span>
 										</Toggle>
 									</span>
 								</TooltipTrigger>
 								<TooltipContent>
-									Inherit stability from parent topic
+									Inherit SRS state from parent topic
 								</TooltipContent>
 							</Tooltip>
 						)}

@@ -20,6 +20,7 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import type { LearningState } from '~/models/learning-state.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicChildren } from '../api/getTopicChildren'
@@ -40,9 +41,12 @@ interface TopicChildrenPanelProps {
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	/**
-	 * Parent topic's stability for the "inherit stability" option.
+	 * Parent topic's SRS fields for the "inherit SRS" option.
 	 */
 	parentStability?: number | null
+	parentDifficulty?: number | null
+	parentState?: LearningState | null
+	parentLastReviewedAt?: string | null
 	/**
 	 * Called when a child is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
@@ -66,6 +70,9 @@ export function TopicChildrenPanel({
 	getScrollElement,
 	scrollMargin,
 	parentStability,
+	parentDifficulty,
+	parentState,
+	parentLastReviewedAt,
 	onChildSelect,
 	renderCard
 }: TopicChildrenPanelProps) {
@@ -281,7 +288,10 @@ export function TopicChildrenPanel({
 					context={{
 						type: 'child',
 						parentTopicId: topicId,
-						parentStability
+						parentStability,
+						parentDifficulty,
+						parentState,
+						parentLastReviewedAt
 					}}
 					onOpenChange={setShowAddTopicDialog}
 					onSuccess={newTopicId => {

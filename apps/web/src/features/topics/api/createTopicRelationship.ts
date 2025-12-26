@@ -23,6 +23,10 @@ export async function createChildRelationship(
 						archived: input.child.archived,
 						inboxed: input.child.inboxed,
 						stability: input.child.stability,
+						inherited_stability: input.child.inherited_stability,
+						inherited_difficulty: input.child.inherited_difficulty,
+						inherited_state: input.child.inherited_state,
+						inherited_last_review: input.child.inherited_last_review,
 						srs_enabled: input.child.srs_enabled
 					}
 				}
@@ -66,6 +70,10 @@ export async function createParentRelationship(
 						archived: input.parent.archived,
 						inboxed: input.parent.inboxed,
 						stability: input.parent.stability,
+						inherited_stability: input.parent.inherited_stability,
+						inherited_difficulty: input.parent.inherited_difficulty,
+						inherited_state: input.parent.inherited_state,
+						inherited_last_review: input.parent.inherited_last_review,
 						srs_enabled: input.parent.srs_enabled
 					}
 				}

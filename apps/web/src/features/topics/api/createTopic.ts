@@ -20,6 +20,10 @@ export async function createTopic(
 			notes: input.notes ?? '',
 			stability:
 				input.stability ?? Number(import.meta.env.VITE_FSRS_INITIAL_STABILITY),
+			inherited_stability: input.inherited_stability ?? null,
+			inherited_difficulty: input.inherited_difficulty ?? null,
+			inherited_state: input.inherited_state ?? null,
+			inherited_last_review: input.inherited_last_review ?? null,
 			difficulty:
 				input.difficulty ??
 				Number(import.meta.env.VITE_FSRS_INITIAL_DIFFICULTY),
