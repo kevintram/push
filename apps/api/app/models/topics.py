@@ -55,6 +55,7 @@ class Topic(Base):
         info={"check_constraint": "inherited_difficulty >= 0 AND inherited_difficulty <= 10"},
     )
     inherited_state: Mapped[str | None] = mapped_column(String, nullable=True)
+    inherited_step: Mapped[int | None] = mapped_column(Integer, nullable=True)
     inherited_last_review: Mapped[date | None] = mapped_column(Date, nullable=True)
     difficulty: Mapped[float | None] = mapped_column(
         REAL,

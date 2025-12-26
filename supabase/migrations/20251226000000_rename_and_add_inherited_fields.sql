@@ -4,4 +4,5 @@
 ALTER TABLE topics ADD COLUMN inherited_stability REAL;
 ALTER TABLE topics ADD COLUMN inherited_difficulty REAL;
 ALTER TABLE topics ADD COLUMN inherited_state TEXT;
+ALTER TABLE topics ADD COLUMN inherited_step INTEGER;
 ALTER TABLE topics ADD COLUMN inherited_last_review DATE;

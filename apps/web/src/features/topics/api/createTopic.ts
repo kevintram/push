@@ -23,6 +23,7 @@ export async function createTopic(
 			inherited_stability: input.inherited_stability ?? null,
 			inherited_difficulty: input.inherited_difficulty ?? null,
 			inherited_state: input.inherited_state ?? null,
+			inherited_step: input.inherited_step ?? null,
 			inherited_last_review: input.inherited_last_review ?? null,
 			difficulty:
 				input.difficulty ??
@@ -33,6 +34,7 @@ export async function createTopic(
 					| 'LEARNING'
 					| 'REVIEW'
 					| 'RELEARNING'),
+			step: input.step ?? null,
 			archived: input.archived ?? false,
 			inboxed: input.inboxed ?? false,
 			srs_enabled: input.srs_enabled ?? true

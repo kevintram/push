@@ -173,7 +173,9 @@ async def replay_reviews_from_date(
             topic.stability = topic.inherited_stability or settings.FSRS_INITIAL_STABILITY
             topic.difficulty = topic.inherited_difficulty or settings.FSRS_INITIAL_DIFFICULTY
             topic.state = topic.inherited_state or settings.FSRS_INITIAL_STATE
-            topic.step = None
+            # Step is only relevant for Learning/Relearning states
+            inherited_state = topic.inherited_state or settings.FSRS_INITIAL_STATE
+            topic.step = None if inherited_state == "REVIEW" else topic.inherited_step
 
         await session.flush()
         return
@@ -217,7 +219,7 @@ async def replay_reviews_from_date(
             state=state,
             stability=topic.inherited_stability or settings.FSRS_INITIAL_STABILITY,
             difficulty=topic.inherited_difficulty or settings.FSRS_INITIAL_DIFFICULTY,
-            step=None,
+            step=None if state == FSRSState.Review else topic.inherited_step,
             last_review=inherited_last_review_dt,
         )
 

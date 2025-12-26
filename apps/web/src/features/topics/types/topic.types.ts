@@ -18,6 +18,7 @@ export type Topic = {
 	inherited_stability: number | null
 	inherited_difficulty: number | null
 	inherited_state: LearningState | null
+	inherited_step: number | null
 	inherited_last_review: string | null
 	difficulty: number | null
 	state: LearningState
@@ -50,6 +51,7 @@ export type TopicOtherRelationshipCreate = {
 		inherited_stability?: number | null
 		inherited_difficulty?: number | null
 		inherited_state?: LearningState | null
+		inherited_step?: number | null
 		inherited_last_review?: string | null
 		srs_enabled?: boolean
 	}

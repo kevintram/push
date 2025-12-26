@@ -16,6 +16,7 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	inherited_stability: v.nullable(v.number()),
 	inherited_difficulty: v.nullable(v.number()),
 	inherited_state: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
+	inherited_step: v.nullable(v.number()),
 	inherited_last_review: v.nullable(v.string()),
 	difficulty: v.nullable(v.number()),
 	state: v.picklist(['LEARNING', 'REVIEW', 'RELEARNING']),

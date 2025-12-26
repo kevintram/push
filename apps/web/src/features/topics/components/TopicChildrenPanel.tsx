@@ -46,6 +46,7 @@ interface TopicChildrenPanelProps {
 	parentStability?: number | null
 	parentDifficulty?: number | null
 	parentState?: LearningState | null
+	parentStep?: number | null
 	parentLastReviewedAt?: string | null
 	/**
 	 * Called when a child is selected/clicked.
@@ -72,6 +73,7 @@ export function TopicChildrenPanel({
 	parentStability,
 	parentDifficulty,
 	parentState,
+	parentStep,
 	parentLastReviewedAt,
 	onChildSelect,
 	renderCard
@@ -291,6 +293,7 @@ export function TopicChildrenPanel({
 						parentStability,
 						parentDifficulty,
 						parentState,
+						parentStep,
 						parentLastReviewedAt
 					}}
 					onOpenChange={setShowAddTopicDialog}

@@ -36,6 +36,7 @@ export type AddTopicDialogContext =
 			parentStability?: number | null
 			parentDifficulty?: number | null
 			parentState?: LearningState | null
+			parentStep?: number | null
 			parentLastReviewedAt?: string | null
 	  }
 	| { type: 'parent'; childTopicId: number }
@@ -157,7 +158,8 @@ export function AddTopicDialog({
 				// Only inherit SRS state when toggle is on and we have parent stability
 				stability: shouldInherit ? (context.parentStability ?? null) : null,
 				difficulty: shouldInherit ? (context.parentDifficulty ?? null) : null,
-				state: shouldInherit ? (context.parentState ?? undefined) : undefined,
+				state: shouldInherit ? (context.parentState ?? 'LEARNING') : 'LEARNING',
+				step: shouldInherit ? (context.parentStep ?? null) : null,
 				// Set inherited fields so FSRS replay knows the starting point
 				inherited_stability: shouldInherit
 					? (context.parentStability ?? null)
@@ -166,6 +168,7 @@ export function AddTopicDialog({
 					? (context.parentDifficulty ?? null)
 					: null,
 				inherited_state: shouldInherit ? (context.parentState ?? null) : null,
+				inherited_step: shouldInherit ? (context.parentStep ?? null) : null,
 				inherited_last_review: shouldInherit
 					? (context.parentLastReviewedAt ?? null)
 					: null

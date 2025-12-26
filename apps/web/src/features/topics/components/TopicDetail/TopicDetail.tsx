@@ -372,6 +372,7 @@ export function TopicDetail({
 							parentLastReviewedAt={topic.last_reviewed_at}
 							parentStability={topic.stability}
 							parentState={topic.state}
+							parentStep={topic.step}
 							renderCard={renderChildCard}
 							topicId={topic.id}
 						/>
