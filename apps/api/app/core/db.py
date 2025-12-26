@@ -7,7 +7,7 @@ from .config import settings
 engine: AsyncEngine = create_async_engine(
     str(settings.POSTGRES_URL),
     future=True,
-    echo=True,
+    # echo=True,
     poolclass=NullPool, # because using supabase session pooler connection handles for you
 )
 
