@@ -151,6 +151,6 @@ export function formatThresholdCrossing(
 		return null
 	}
 
-	const bucketLabel = nextBucket === 'onTime' ? 'on time' : 'late'
+	const bucketLabel = nextBucket === 'onTime' ? 'prime' : 'late'
 	return `${bucketLabel} in ${daysUntil}d`
 }

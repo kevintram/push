@@ -33,6 +33,12 @@ export function AppSidebar() {
 
 	const reviewItems = [
 		{
+			title: 'Readiness',
+			url: '/readiness',
+			icon: RotateCw,
+			isActive: (pathname: string) => pathname === '/readiness'
+		},
+		{
 			title: 'Scheduled',
 			url: '/scheduled',
 			icon: Calendar,
@@ -53,12 +59,6 @@ export function AppSidebar() {
 	]
 
 	const topicItems = [
-		{
-			title: 'Due Topics',
-			url: '/due-topics',
-			icon: RotateCw,
-			isActive: (pathname: string) => pathname === '/due-topics'
-		},
 		{
 			title: 'Home',
 			url: '/home',
