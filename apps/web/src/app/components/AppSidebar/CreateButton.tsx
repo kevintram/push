@@ -10,7 +10,8 @@ import {
 	SquareCheck,
 	SquarePen
 } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
 
 // UI Components
 import {
@@ -25,26 +26,19 @@ import {
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
 
 // Feature hooks
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateReviewSession } from '~/features/reviews/api/createReviewSession'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
+import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 
 export function CreateButton() {
 	// Hooks
 	const navigate = useNavigate()
-	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
-		useCreateTopic()
 	const { createReviewSession: createReview, isPending: isCreatingReview } =
 		useCreateReviewSession()
-	const { openTopicDialog } = useReviewTopicDialog()
 
-	const isLoading = isCreatingTopic || isCreatingReview
+	// State for AddTopicDialog
+	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 
-	// Handlers
-	const handleNewTopic = useCallback(async () => {
-		const createdTopic = await createTopic({})
-		openTopicDialog(createdTopic.id)
-	}, [createTopic, openTopicDialog])
+	const isLoading = isCreatingReview
 
 	const handleLogReviewNow = useCallback(async () => {
 		const today = new Date().toISOString().split('T')[0]
@@ -105,11 +99,32 @@ export function CreateButton() {
 						</DropdownMenuItem>
 					</DropdownMenuSubContent>
 				</DropdownMenuSub>
-				<DropdownMenuItem disabled={isLoading} onClick={handleNewTopic}>
+				<DropdownMenuItem
+					disabled={isLoading}
+					onClick={() => setIsAddTopicDialogOpen(true)}
+				>
 					<SquarePen />
 					<span>New topic</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
+
+			<AddTopicDialog
+				context={{ type: 'standalone' }}
+				onOpenChange={setIsAddTopicDialogOpen}
+				onSuccess={topicId => {
+					toast('Topic created', {
+						action: {
+							label: 'Open',
+							onClick: () =>
+								navigate({
+									to: '/topics/$topicId',
+									params: { topicId: topicId.toString() }
+								})
+						}
+					})
+				}}
+				open={isAddTopicDialogOpen}
+			/>
 		</DropdownMenu>
 	)
 }

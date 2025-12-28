@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .dependencies import get_token_header
 from .internal import admin
-from .routers import topics, review_sessions, login, reviews
+from .routers import topics, review_sessions, login, reviews, review_entries
 from .core.config import settings
 
 app = FastAPI()
@@ -19,6 +19,7 @@ app.add_middleware(
 app.include_router(topics.router)
 app.include_router(review_sessions.router)
 app.include_router(reviews.router)
+app.include_router(review_entries.router)
 app.include_router(login.router)
 app.include_router(
     admin.router,

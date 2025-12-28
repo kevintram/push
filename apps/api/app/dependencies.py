@@ -17,7 +17,7 @@ async def get_user_id(
         str | None, Cookie(alias=settings.WORKOS_COOKIE_NAME)
     ] = None,
 ) -> str:
-    print(request.cookies.__str__())
+    # print(request.cookies.__str__())
 
     session = workos.user_management.load_sealed_session(
         sealed_session=session_cookie, cookie_password=settings.WORKOS_COOKIE_PASSWORD

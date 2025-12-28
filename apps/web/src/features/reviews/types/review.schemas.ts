@@ -1,6 +1,13 @@
 import * as v from 'valibot'
 import { TopicSchema } from '~/features/topics/types/topic.schemas'
-import type { Review, ReviewListItem, ReviewSession } from './review.types'
+import type {
+	Review,
+	ReviewEntry,
+	ReviewEntryReview,
+	ReviewEntrySession,
+	ReviewListItem,
+	ReviewSession
+} from './review.types'
 
 export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	id: v.number(),
@@ -92,3 +99,23 @@ export const ReviewSessionSchema: v.GenericSchema<ReviewSession> = v.object({
 	notes: v.string(),
 	reviews: v.optional(v.array(v.lazy(() => ReviewSchema)), [])
 })
+
+// Discriminated union schemas for unified review entries endpoint
+export const ReviewEntrySessionSchema: v.GenericSchema<ReviewEntrySession> =
+	v.object({
+		type: v.literal('session'),
+		effective_date: v.nullable(v.string()),
+		data: v.lazy(() => ReviewSessionSchema)
+	})
+
+export const ReviewEntryReviewSchema: v.GenericSchema<ReviewEntryReview> =
+	v.object({
+		type: v.literal('review'),
+		effective_date: v.nullable(v.string()),
+		data: v.lazy(() => ReviewListItemSchema)
+	})
+
+export const ReviewEntrySchema: v.GenericSchema<ReviewEntry> = v.union([
+	ReviewEntrySessionSchema,
+	ReviewEntryReviewSchema
+])

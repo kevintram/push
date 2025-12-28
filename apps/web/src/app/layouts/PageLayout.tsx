@@ -28,9 +28,9 @@ function PageLayoutHeader({
 				<h1 className='flex items-center gap-2 font-bold text-xl'>
 					{Icon && <Icon className='h-5 w-5' />}
 					{title}
-					{children}
 				</h1>
 			</div>
+			{children}
 		</div>
 	)
 }

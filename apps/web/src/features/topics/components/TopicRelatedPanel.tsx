@@ -8,6 +8,7 @@ import {
 	SquarePen
 } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { Button } from '~/components/ui/Button'
@@ -25,6 +26,7 @@ import { useTopicsRelatedTo } from '../api/getTopicsRelatedTo'
 import { topicKeys } from '../api/queryKeys'
 import { RelationshipDirection, type Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
+import { AddTopicDialog } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
 
@@ -64,6 +66,7 @@ export function TopicRelatedPanel({
 }: TopicRelatedPanelProps) {
 	const queryClient = useQueryClient()
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
+	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
@@ -84,36 +87,6 @@ export function TopicRelatedPanel({
 			}
 		},
 		[onRelatedSelect, openTopicDialog]
-	)
-
-	const handleCreateNewAndAdd = useCallback(
-		async (query = '') => {
-			if (!topicId) return
-
-			try {
-				const newTopicData = {
-					name: '',
-					notes: query.trim() || '',
-					archived: false,
-					inboxed: false
-				}
-
-				// Create topic and relationship
-				const newTopicResponse = await createRelationship.mutateAsync({
-					fromTopicId: topicId,
-					data: { to_topic: newTopicData }
-				})
-
-				// Get the newly created related topic ID
-				const newTopicId = newTopicResponse.to_topic.id
-
-				// Navigate to the created topic
-				handleRelatedSelect(newTopicId)
-			} catch (_error) {
-				// Error is handled by React Query mutation state
-			}
-		},
-		[topicId, createRelationship, handleRelatedSelect]
 	)
 
 	const handleAdd = useCallback(
@@ -248,7 +221,7 @@ export function TopicRelatedPanel({
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='start'>
-							<DropdownMenuItem onClick={() => handleCreateNewAndAdd()}>
+							<DropdownMenuItem onClick={() => setShowAddTopicDialog(true)}>
 								<SquarePen className='h-4 w-4' />
 								Create New
 							</DropdownMenuItem>
@@ -300,13 +273,35 @@ export function TopicRelatedPanel({
 
 			<AddRelationshipDialog
 				isCreating={isCreating}
-				onCreateNew={handleCreateNewAndAdd}
+				onCreateNew={() => {
+					setShowCreateDialog(false)
+					setShowAddTopicDialog(true)
+				}}
 				onOpenChange={setShowCreateDialog}
 				onSelected={handleAdd}
 				open={showCreateDialog}
 				relationshipType='related'
 				topicId={topicId}
 			/>
+
+			{topicId && (
+				<AddTopicDialog
+					context={{
+						type: 'related',
+						fromTopicId: topicId
+					}}
+					onOpenChange={setShowAddTopicDialog}
+					onSuccess={newTopicId => {
+						toast('Topic created', {
+							action: {
+								label: 'Open',
+								onClick: () => handleRelatedSelect(newTopicId)
+							}
+						})
+					}}
+					open={showAddTopicDialog}
+				/>
+			)}
 		</div>
 	)
 }

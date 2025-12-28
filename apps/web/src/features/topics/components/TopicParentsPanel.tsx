@@ -8,6 +8,7 @@ import {
 	User2
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
 import { Badge } from '~/components/ui/Badge'
 import {
 	DropdownMenu,
@@ -23,6 +24,7 @@ import { useTopicParents } from '../api/getTopicParents'
 import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
+import { AddTopicDialog } from './AddTopicDialog'
 import { TopicBadge } from './TopicBadge'
 
 interface TopicParentsPanelProps {
@@ -39,6 +41,7 @@ export function TopicParentsPanel({
 	onParentSelect
 }: TopicParentsPanelProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
+	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 	const queryClient = useQueryClient()
 
@@ -61,36 +64,6 @@ export function TopicParentsPanel({
 		[onParentSelect, openTopicDialog]
 	)
 
-	const handleCreateNewAndAdd = useCallback(
-		async (query = '') => {
-			if (!topicId) return
-
-			try {
-				const newTopicData = {
-					name: '',
-					notes: query.trim() || '',
-					archived: false,
-					inboxed: false
-				}
-
-				// Use inline creation - create topic and relationship in one call
-				const response = await createRelationship.mutateAsync({
-					child: topicId,
-					parentData: newTopicData
-				})
-
-				// Get the newly created parent topic ID
-				const newTopicId = response.parent.id
-
-				// Navigate to the created topic
-				handleParentSelect(newTopicId)
-			} catch (_error) {
-				// Error is handled by React Query mutation state
-			}
-		},
-		[topicId, createRelationship, handleParentSelect]
-	)
-
 	const handleAdd = useCallback(
 		async (topic: Topic) => {
 			if (!topicId) return
@@ -99,11 +72,8 @@ export function TopicParentsPanel({
 				parent: topic.id,
 				child: topicId
 			})
-
-			// Navigate to the selected topic
-			handleParentSelect(topic.id)
 		},
-		[topicId, createRelationship, handleParentSelect]
+		[topicId, createRelationship]
 	)
 
 	const handleParentMouseEnter = useCallback(
@@ -173,7 +143,7 @@ export function TopicParentsPanel({
 						</Badge>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align='start'>
-						<DropdownMenuItem onClick={() => handleCreateNewAndAdd()}>
+						<DropdownMenuItem onClick={() => setShowAddTopicDialog(true)}>
 							<SquarePen className='h-4 w-4' />
 							Create New
 						</DropdownMenuItem>
@@ -187,13 +157,35 @@ export function TopicParentsPanel({
 
 			<AddRelationshipDialog
 				isCreating={isCreating}
-				onCreateNew={handleCreateNewAndAdd}
+				onCreateNew={() => {
+					setShowCreateDialog(false)
+					setShowAddTopicDialog(true)
+				}}
 				onOpenChange={setShowCreateDialog}
 				onSelected={handleAdd}
 				open={showCreateDialog}
 				relationshipType='parent'
 				topicId={topicId}
 			/>
+
+			{topicId && (
+				<AddTopicDialog
+					context={{
+						type: 'parent',
+						childTopicId: topicId
+					}}
+					onOpenChange={setShowAddTopicDialog}
+					onSuccess={newTopicId => {
+						toast('Topic created', {
+							action: {
+								label: 'Open',
+								onClick: () => handleParentSelect(newTopicId)
+							}
+						})
+					}}
+					open={showAddTopicDialog}
+				/>
+			)}
 		</>
 	)
 }

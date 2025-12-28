@@ -7,7 +7,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.dependencies import SessionDep, UserIdDep
-from app.core.config import settings
 from app.models import Review, ReviewSession, Topic
 from app.schemas import ReviewCreate, ReviewListItem, ReviewRead, ReviewUpdate, ReviewWithTopic
 
@@ -169,10 +168,13 @@ async def replay_reviews_from_date(
             topic.step = last_before_review.step_after
         else:
             # No prior reviews - reset to initial state
-            topic.stability = settings.FSRS_INITIAL_STABILITY
-            topic.difficulty = settings.FSRS_INITIAL_DIFFICULTY
-            topic.state = settings.FSRS_INITIAL_STATE
-            topic.step = None
+            # Use topic's inherited fields if set (from parent), otherwise use defaults
+            topic.stability = topic.inherited_stability
+            topic.difficulty = topic.inherited_difficulty
+            topic.state = topic.inherited_state or "LEARNING"
+            # Step is only relevant for Learning/Relearning states
+            inherited_state = topic.inherited_state or "LEARNING"
+            topic.step = None if inherited_state == "REVIEW" else topic.inherited_step
 
         await session.flush()
         return
@@ -203,13 +205,21 @@ async def replay_reviews_from_date(
         )
     else:
         # No prior reviews or no FSRS state, start from initial state
-        state = map_state_to_fsrs(settings.FSRS_INITIAL_STATE)
+        # Use topic's inherited fields if set (from parent), otherwise use defaults
+        inherited_state_str = topic.inherited_state or "LEARNING"
+        state = map_state_to_fsrs(inherited_state_str)
+        # Convert inherited_last_review (date) to datetime for FSRS
+        inherited_last_review_dt = (
+            datetime.combine(topic.inherited_last_review, time.min).replace(tzinfo=timezone.utc)
+            if topic.inherited_last_review is not None
+            else None
+        )
         starting_card = Card(
             state=state,
-            stability=settings.FSRS_INITIAL_STABILITY,
-            difficulty=settings.FSRS_INITIAL_DIFFICULTY,
-            step=None,
-            last_review=datetime.now(timezone.utc),
+            stability=topic.inherited_stability,
+            difficulty=topic.inherited_difficulty,
+            step=None if state == FSRSState.Review else topic.inherited_step,
+            last_review=inherited_last_review_dt,
         )
 
     # Replay reviews from the determined starting state
@@ -434,12 +444,22 @@ async def create_review(
 
     # Create a Card representing the topic's current state
     state = map_state_to_fsrs(topic.state)
+    # Use topic's last_reviewed_at if available, otherwise fall back to inherited_last_review for first review
+    last_review_dt = (
+        datetime.combine(topic.last_reviewed_at, time.min).replace(tzinfo=timezone.utc)
+        if topic.last_reviewed_at is not None
+        else (
+            datetime.combine(topic.inherited_last_review, time.min).replace(tzinfo=timezone.utc)
+            if topic.inherited_last_review is not None
+            else None
+        )
+    )
     card = Card(
         state=state,
         stability=topic.stability,
         difficulty=topic.difficulty,
         step=None if state == FSRSState.Review else topic.step,
-        last_review=datetime.now(timezone.utc),
+        last_review=last_review_dt,
     )
 
     # Review the card with FSRS
@@ -451,6 +471,13 @@ async def create_review(
     updated_card, review_log = scheduler.review_card(
         card=card, rating=fsrs_rating, review_datetime=review_datetime
     )
+    
+    print(f"last review: {last_review_dt}")
+    print(f"review_datetime: {review_datetime}")
+    print(f"State:      {card.state} -> {updated_card.state}")
+    print(f"Step:       {card.step} -> {updated_card.step}")
+    print(f"Stability:  {card.stability} -> {updated_card.stability:.4f} days")
+    print(f"Difficulty: {card.difficulty} -> {updated_card.difficulty:.4f}")
 
     # Calculate due_after as a date (extract date from datetime)
     due_after_date = updated_card.due.date()

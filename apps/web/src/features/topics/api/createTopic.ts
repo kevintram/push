@@ -18,19 +18,18 @@ export async function createTopic(
 		body: JSON.stringify({
 			name: input.name ?? '',
 			notes: input.notes ?? '',
-			stability:
-				input.stability ?? Number(import.meta.env.VITE_FSRS_INITIAL_STABILITY),
-			difficulty:
-				input.difficulty ??
-				Number(import.meta.env.VITE_FSRS_INITIAL_DIFFICULTY),
-			state:
-				input.state ??
-				(import.meta.env.VITE_FSRS_INITIAL_STATE as
-					| 'LEARNING'
-					| 'REVIEW'
-					| 'RELEARNING'),
+			stability: input.stability ?? null,
+			inherited_stability: input.inherited_stability ?? null,
+			inherited_difficulty: input.inherited_difficulty ?? null,
+			inherited_state: input.inherited_state ?? null,
+			inherited_step: input.inherited_step ?? null,
+			inherited_last_review: input.inherited_last_review ?? null,
+			difficulty: input.difficulty ?? null,
+			state: input.state ?? 'LEARNING',
+			step: input.step ?? null,
 			archived: input.archived ?? false,
-			inboxed: input.inboxed ?? false
+			inboxed: input.inboxed ?? false,
+			srs_enabled: input.srs_enabled ?? true
 		})
 	})
 
