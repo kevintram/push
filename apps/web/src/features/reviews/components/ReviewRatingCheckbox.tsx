@@ -1,4 +1,4 @@
-import { Square } from 'lucide-react'
+import { ChevronDown, Circle } from 'lucide-react'
 import type { ReactNode } from 'react'
 import {
 	DropdownMenu,
@@ -30,7 +30,7 @@ const ratingOptions: Array<{ value: ReviewRatingState; label: string }> = [
 ]
 
 function EmptyRatingIcon() {
-	return <Square className='h-3 w-3' />
+	return <Circle className='h-3 w-3' />
 }
 
 function getOptionIcon(option: ReviewRatingState): ReactNode {
@@ -50,15 +50,23 @@ export function ReviewRatingCheckbox({
 				<button
 					aria-label='Set review status'
 					className={cn(
-						'peer flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-[4px] border border-input shadow-xs outline-none transition-shadow focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:bg-input/30 dark:data-[state=checked]:bg-primary dark:aria-invalid:ring-destructive/40',
+						'flex cursor-pointer items-center gap-0.5 rounded-md border p-1 outline-none transition-shadow focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50',
 						className
 					)}
-					data-state={value === 'uncompleted' ? 'unchecked' : 'checked'}
 					disabled={disabled}
 					onClick={event => event.stopPropagation()}
 					type='button'
 				>
-					{value === 'uncompleted' ? null : getRatingIcon(value)}
+					<span
+						className={cn(
+							'flex size-4 shrink-0 items-center justify-center rounded-full border border-input shadow-xs dark:bg-input/30',
+							value !== 'uncompleted' &&
+								'border-primary bg-primary text-primary-foreground dark:bg-primary'
+						)}
+					>
+						{value === 'uncompleted' ? null : getRatingIcon(value)}
+					</span>
+					<ChevronDown className='h-3 w-3 text-muted-foreground' />
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='start' side='bottom' sideOffset={2}>
