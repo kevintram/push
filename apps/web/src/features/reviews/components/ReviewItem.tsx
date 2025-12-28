@@ -234,12 +234,8 @@ export function ReviewItem({
 					{/* Row 1: Checkbox, Description, Date, More Button */}
 					<div className='flex items-center pb-1'>
 						<ReviewRatingCheckbox
-							className={
-								isOverdueValue
-									? 'border-red-600 dark:border-red-700 dark:bg-red-700'
-									: ''
-							}
 							disabled={readonly || updateReviewMutation.isPending}
+							invalid={isOverdueValue}
 							onChange={handleStatusChange}
 							value={reviewStatus}
 						/>

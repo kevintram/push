@@ -19,6 +19,7 @@ interface ReviewRatingDropdownProps {
 	onChange: (value: ReviewRatingState) => void
 	disabled?: boolean
 	className?: string
+	invalid?: boolean
 }
 
 const ratingOptions: Array<{ value: ReviewRatingState; label: string }> = [
@@ -42,7 +43,8 @@ export function ReviewRatingCheckbox({
 	value,
 	onChange,
 	disabled = false,
-	className
+	className,
+	invalid = false
 }: ReviewRatingDropdownProps) {
 	return (
 		<DropdownMenu>
@@ -61,7 +63,10 @@ export function ReviewRatingCheckbox({
 						className={cn(
 							'flex size-4 shrink-0 items-center justify-center rounded-full border border-input shadow-xs dark:bg-input/30',
 							value !== 'uncompleted' &&
-								'border-primary bg-primary text-primary-foreground dark:bg-primary'
+								'border-primary bg-primary text-primary-foreground dark:bg-primary',
+							invalid &&
+								value === 'uncompleted' &&
+								'border-red-600 dark:border-red-500'
 						)}
 					>
 						{value === 'uncompleted' ? null : getRatingIcon(value)}
