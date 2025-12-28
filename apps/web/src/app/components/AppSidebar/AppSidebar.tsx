@@ -32,10 +32,19 @@ import { useTopics } from '~/features/topics/api/getTopics'
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
+
+	// TODO: if going too more of these badge counts,
+	// should we create some sort of overview endpoint?
 	const { data: inboxTopics } = useTopics({ inboxed: true, archived: false })
 	const inboxCount = inboxTopics?.length ?? 0
 
 	const reviewItems = [
+		{
+			title: 'Ready',
+			url: '/ready',
+			icon: RotateCw,
+			isActive: (pathname: string) => pathname === '/ready'
+		},
 		{
 			title: 'Scheduled',
 			url: '/scheduled',
@@ -57,12 +66,6 @@ export function AppSidebar() {
 	]
 
 	const topicItems = [
-		{
-			title: 'Due Topics',
-			url: '/due-topics',
-			icon: RotateCw,
-			isActive: (pathname: string) => pathname === '/due-topics'
-		},
 		{
 			title: 'Home',
 			url: '/home',

@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Home, RotateCw } from 'lucide-react'
+import { ChevronDown, Home, RotateCw } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
+import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
@@ -23,18 +24,18 @@ import type { Topic } from '~/features/topics/types/topic.types'
 import {
 	formatThresholdCrossing,
 	getRetrievabilityBucket,
-	getRetrievabilityBucketBgColor,
 	getThresholdCrossingInfo,
 	type RetrievabilityBucket
 } from '~/utils/retrievability'
 
-type BucketColumn = {
-	bucket: RetrievabilityBucket
+type BucketSection = {
+	id: RetrievabilityBucket
 	label: string
+	headingClassName: string
 	topics: Array<Topic>
 }
 
-export function DueTopicsPage() {
+export function ReadyPage() {
 	const navigate = useNavigate()
 	const { data: topics, isLoading } = useTopics({
 		hasStability: true,
@@ -43,9 +44,10 @@ export function DueTopicsPage() {
 	})
 
 	const { mutate: createTopic, isPending: isCreatingTopic } = useCreateTopic()
+	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	// Group topics by retrievability bucket
-	const bucketColumns = useMemo((): Array<BucketColumn> => {
+	const bucketSections = useMemo((): Array<BucketSection> => {
 		const late: Array<Topic> = []
 		const onTime: Array<Topic> = []
 		const early: Array<Topic> = []
@@ -75,9 +77,24 @@ export function DueTopicsPage() {
 		early.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
 
 		return [
-			{ bucket: 'late', label: 'Late', topics: late },
-			{ bucket: 'onTime', label: 'On Time', topics: onTime },
-			{ bucket: 'early', label: 'Early', topics: early }
+			{
+				id: 'late',
+				label: 'Late',
+				headingClassName: 'text-red-600 dark:text-red-400',
+				topics: late
+			},
+			{
+				id: 'onTime',
+				label: 'Ready',
+				headingClassName: 'text-blue-600 dark:text-blue-400',
+				topics: onTime
+			},
+			{
+				id: 'early',
+				label: 'Early',
+				headingClassName: 'text-green-600 dark:text-green-400',
+				topics: early
+			}
 		]
 	}, [topics])
 
@@ -106,19 +123,20 @@ export function DueTopicsPage() {
 	}, [createTopic, navigate])
 
 	const isEmpty =
-		!isLoading && bucketColumns.every(col => col.topics.length === 0)
+		!isLoading && bucketSections.every(section => section.topics.length === 0)
 
 	if (isLoading) {
 		return (
 			<PageLayout>
-				<PageLayout.Header icon={RotateCw} title='Due Topics' />
+				<PageLayout.Header icon={RotateCw} title='Ready' />
 				<PageLayout.Content>
-					<div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+					<div className='flex flex-col gap-6'>
 						{[1, 2, 3].map(i => (
 							<div className='flex flex-col gap-4' key={i}>
-								<Skeleton className='h-10 w-full' />
-								<Skeleton className='h-32 w-full' />
-								<Skeleton className='h-32 w-full' />
+								<Skeleton className='h-8 w-32' />
+								<div className='ml-5 border-border border-l-2 pl-2'>
+									<Skeleton className='h-32 w-full' />
+								</div>
 							</div>
 						))}
 					</div>
@@ -130,7 +148,7 @@ export function DueTopicsPage() {
 	if (isEmpty) {
 		return (
 			<PageLayout>
-				<PageLayout.Header icon={RotateCw} title='Due Topics' />
+				<PageLayout.Header icon={RotateCw} title='Ready' />
 				<PageLayout.Content>
 					<Empty>
 						<EmptyHeader>
@@ -166,31 +184,42 @@ export function DueTopicsPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={RotateCw} title='Due Topics' />
+			<PageLayout.Header icon={RotateCw} title='Ready' />
 			<PageLayout.Content>
-				<div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
-					{bucketColumns.map(column => (
-						<BucketColumnComponent
-							column={column}
-							key={column.bucket}
-							onTopicClick={handleTopicClick}
-						/>
-					))}
-				</div>
+				{bucketSections.map(section => (
+					<ReadinessSection
+						headingClassName={section.headingClassName}
+						id={section.id}
+						isCollapsed={collapsedSections[section.id] ?? false}
+						key={section.id}
+						label={section.label}
+						onToggleCollapse={toggleSection}
+						onTopicClick={handleTopicClick}
+						topics={section.topics}
+					/>
+				))}
 			</PageLayout.Content>
 		</PageLayout>
 	)
 }
 
-function BucketColumnComponent({
-	column,
+function ReadinessSection({
+	id,
+	label,
+	headingClassName,
+	topics,
+	isCollapsed,
+	onToggleCollapse,
 	onTopicClick
 }: {
-	column: BucketColumn
+	id: string
+	label: string
+	headingClassName: string
+	topics: Array<Topic>
+	isCollapsed: boolean
+	onToggleCollapse: (sectionId: string) => void
 	onTopicClick: (topic: Topic) => void
 }) {
-	const bgColor = getRetrievabilityBucketBgColor(column.bucket)
-
 	const estimateItemSize = useCallback((topic: Topic) => {
 		// Base height + name height + notes height
 		let height = 96
@@ -209,25 +238,41 @@ function BucketColumnComponent({
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<div className='flex flex-col gap-2'>
-			<div className={`sticky top-0 z-10 rounded-lg p-3 ${bgColor} border`}>
-				<div className='flex items-center justify-between'>
-					<h2 className='font-semibold text-sm'>{column.label}</h2>
-					<Badge variant='secondary'>{column.topics.length}</Badge>
-				</div>
+		<div className='mb-2'>
+			<div className='flex items-center justify-between'>
+				<Button
+					className='flex items-center gap-2 p-0'
+					onClick={() => onToggleCollapse(id)}
+					variant='ghost'
+				>
+					<h2 className={`font-bold text-xl ${headingClassName}`.trim()}>
+						{label}{' '}
+						<span className='text-muted-foreground'>({topics.length})</span>
+					</h2>
+					<ChevronDown
+						className={`h-5 w-5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+					/>
+				</Button>
 			</div>
-			{column.topics.length === 0 ? (
-				<div className='rounded-lg border border-dashed p-4 text-center text-muted-foreground text-sm'>
-					No topics in this category
+
+			{!isCollapsed && (
+				<div className='mt-2 mb-10 ml-5'>
+					{topics.length > 0 ? (
+						<div>
+							<MasonryLayout
+								estimateItemSize={estimateItemSize}
+								getItemKey={getItemKey}
+								items={topics}
+								minItemWidth={280}
+								renderItem={renderItem}
+							/>
+						</div>
+					) : (
+						<p className='px-4 text-muted-foreground text-sm italic'>
+							No topics
+						</p>
+					)}
 				</div>
-			) : (
-				<MasonryLayout
-					estimateItemSize={estimateItemSize}
-					getItemKey={getItemKey}
-					items={column.topics}
-					minItemWidth={280}
-					renderItem={renderItem}
-				/>
 			)}
 		</div>
 	)
