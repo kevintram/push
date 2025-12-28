@@ -32,6 +32,9 @@ import { useTopics } from '~/features/topics/api/getTopics'
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
+
+	// TODO: if going too more of these badge counts,
+	// should we create some sort of overview endpoint?
 	const { data: inboxTopics } = useTopics({ inboxed: true, archived: false })
 	const inboxCount = inboxTopics?.length ?? 0
 
