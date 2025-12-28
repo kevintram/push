@@ -82,7 +82,12 @@ NEW_WORKTREE="$PARENT_DIR/$DIR_NAME"
 # Get the current branch name
 CURRENT_BRANCH=$(git branch --show-current)
 
-# Check branch existence
+# Fetch to ensure we have latest remote info
+echo "🔄 Fetching latest from origin..."
+cd "$CURRENT_WORKTREE"
+git fetch origin
+
+# Check branch existence (after fetch so remote info is accurate)
 LOCAL_EXISTS=false
 REMOTE_EXISTS=false
 
@@ -97,11 +102,6 @@ fi
 if [ "$USE_EXISTING" = true ]; then
     # EXISTING MODE: Use an existing branch
     echo "🔄 Using existing branch: $BRANCH_NAME"
-
-    # Fetch to ensure we have latest remote info
-    echo "🔄 Fetching latest from origin..."
-    cd "$CURRENT_WORKTREE"
-    git fetch origin
 
     if [ "$LOCAL_EXISTS" = false ] && [ "$REMOTE_EXISTS" = false ]; then
         echo "❌ Branch '$BRANCH_NAME' does not exist locally or on remote."
@@ -166,19 +166,12 @@ if [ "$USE_EXISTING" = true ]; then
         echo "ℹ️  Branch exists locally only"
         git worktree add "$NEW_WORKTREE" "$BRANCH_NAME"
     else
-        # Remote only - fetch and create local tracking branch
-        echo "🔄 Fetching branch '$BRANCH_NAME' from remote..."
-        git fetch origin "$BRANCH_NAME"
+        # Remote only - create local tracking branch
         git worktree add "$NEW_WORKTREE" -b "$BRANCH_NAME" "origin/$BRANCH_NAME"
     fi
 else
     # CREATE MODE: Create a new branch
     echo "🌱 Creating new worktree for branch: $BRANCH_NAME (from $CURRENT_BRANCH)"
-
-    # Fetch and update current branch since we're creating from it
-    echo "🔄 Fetching latest from origin..."
-    cd "$CURRENT_WORKTREE"
-    git fetch origin
 
     # Only pull if current branch has a remote tracking branch
     if git rev-parse --verify --quiet "refs/remotes/origin/$CURRENT_BRANCH" >/dev/null 2>&1; then
@@ -223,9 +216,7 @@ else
                 if [ "$LOCAL_EXISTS" = true ]; then
                     git worktree add "$NEW_WORKTREE" "$BRANCH_NAME"
                 else
-                    # Remote only - fetch and create local tracking branch
-                    echo "🔄 Fetching branch '$BRANCH_NAME' from remote..."
-                    git fetch origin "$BRANCH_NAME"
+                    # Remote only - create local tracking branch
                     git worktree add "$NEW_WORKTREE" -b "$BRANCH_NAME" "origin/$BRANCH_NAME"
                 fi
                 ;;
