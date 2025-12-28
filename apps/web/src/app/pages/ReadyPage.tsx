@@ -24,7 +24,6 @@ import type { Topic } from '~/features/topics/types/topic.types'
 import {
 	formatThresholdCrossing,
 	getRetrievabilityBucket,
-	getRetrievabilityBucketBgColor,
 	getThresholdCrossingInfo,
 	type RetrievabilityBucket
 } from '~/utils/retrievability'
@@ -221,8 +220,6 @@ function ReadinessSection({
 	onToggleCollapse: (sectionId: string) => void
 	onTopicClick: (topic: Topic) => void
 }) {
-	const bgColor = getRetrievabilityBucketBgColor(id as RetrievabilityBucket)
-
 	const estimateItemSize = useCallback((topic: Topic) => {
 		// Base height + name height + notes height
 		let height = 96
@@ -259,9 +256,9 @@ function ReadinessSection({
 			</div>
 
 			{!isCollapsed && (
-				<div className='mt-2 mb-10 ml-5 border-border border-l-2 pl-2'>
+				<div className='mt-2 mb-10 ml-5'>
 					{topics.length > 0 ? (
-						<div className={`rounded-lg p-4 ${bgColor}`}>
+						<div>
 							<MasonryLayout
 								estimateItemSize={estimateItemSize}
 								getItemKey={getItemKey}
