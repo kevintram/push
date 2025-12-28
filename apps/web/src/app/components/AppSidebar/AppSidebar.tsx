@@ -23,13 +23,17 @@ import {
 	SidebarGroupContent,
 	SidebarGroupLabel,
 	SidebarMenu,
+	SidebarMenuBadge,
 	SidebarMenuButton,
 	SidebarMenuItem
 } from '~/components/ui/Sidebar'
+import { useTopics } from '~/features/topics/api/getTopics'
 
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
+	const { data: inboxTopics } = useTopics({ inboxed: true, archived: false })
+	const inboxCount = inboxTopics?.length ?? 0
 
 	const reviewItems = [
 		{
@@ -133,6 +137,7 @@ export function AppSidebar() {
 						<SidebarMenu>
 							{topicItems.map(item => {
 								const isActive = item.isActive(location.pathname)
+								const isInbox = item.title === 'Inbox'
 								return (
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
@@ -145,6 +150,9 @@ export function AppSidebar() {
 												<span>{item.title}</span>
 											</Link>
 										</SidebarMenuButton>
+										{isInbox && inboxCount > 0 && (
+											<SidebarMenuBadge>{inboxCount}</SidebarMenuBadge>
+										)}
 									</SidebarMenuItem>
 								)
 							})}
