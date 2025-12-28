@@ -8,7 +8,7 @@ import {
 	Home,
 	Inbox,
 	ListChecks,
-	RotateCw,
+	Play,
 	Settings
 } from 'lucide-react'
 import { useState } from 'react'
@@ -42,7 +42,7 @@ export function AppSidebar() {
 		{
 			title: 'Ready',
 			url: '/ready',
-			icon: RotateCw,
+			icon: Play,
 			isActive: (pathname: string) => pathname === '/ready'
 		},
 		{
