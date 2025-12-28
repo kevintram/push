@@ -15,7 +15,7 @@ import { Route as MainUnscheduledRouteImport } from './routes/_main/unscheduled'
 import { Route as MainTopicsRouteImport } from './routes/_main/topics'
 import { Route as MainScheduledRouteImport } from './routes/_main/scheduled'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
-import { Route as MainReadinessRouteImport } from './routes/_main/readiness'
+import { Route as MainReadyRouteImport } from './routes/_main/ready'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainInboxRouteImport } from './routes/_main/inbox'
 import { Route as MainHomeRouteImport } from './routes/_main/home'
@@ -52,9 +52,9 @@ const MainRecentRoute = MainRecentRouteImport.update({
   path: '/recent',
   getParentRoute: () => MainRoute,
 } as any)
-const MainReadinessRoute = MainReadinessRouteImport.update({
-  id: '/readiness',
-  path: '/readiness',
+const MainReadyRoute = MainReadyRouteImport.update({
+  id: '/ready',
+  path: '/ready',
   getParentRoute: () => MainRoute,
 } as any)
 const MainLogbookRoute = MainLogbookRouteImport.update({
@@ -94,7 +94,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
-  '/readiness': typeof MainReadinessRoute
+  '/ready': typeof MainReadyRoute
   '/recent': typeof MainRecentRoute
   '/scheduled': typeof MainScheduledRoute
   '/topics': typeof MainTopicsRoute
@@ -108,7 +108,7 @@ export interface FileRoutesByTo {
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
-  '/readiness': typeof MainReadinessRoute
+  '/ready': typeof MainReadyRoute
   '/recent': typeof MainRecentRoute
   '/scheduled': typeof MainScheduledRoute
   '/topics': typeof MainTopicsRoute
@@ -124,7 +124,7 @@ export interface FileRoutesById {
   '/_main/home': typeof MainHomeRoute
   '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
-  '/_main/readiness': typeof MainReadinessRoute
+  '/_main/ready': typeof MainReadyRoute
   '/_main/recent': typeof MainRecentRoute
   '/_main/scheduled': typeof MainScheduledRoute
   '/_main/topics': typeof MainTopicsRoute
@@ -140,7 +140,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/inbox'
     | '/logbook'
-    | '/readiness'
+    | '/ready'
     | '/recent'
     | '/scheduled'
     | '/topics'
@@ -154,7 +154,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/inbox'
     | '/logbook'
-    | '/readiness'
+    | '/ready'
     | '/recent'
     | '/scheduled'
     | '/topics'
@@ -169,7 +169,7 @@ export interface FileRouteTypes {
     | '/_main/home'
     | '/_main/inbox'
     | '/_main/logbook'
-    | '/_main/readiness'
+    | '/_main/ready'
     | '/_main/recent'
     | '/_main/scheduled'
     | '/_main/topics'
@@ -227,11 +227,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainRecentRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/readiness': {
-      id: '/_main/readiness'
-      path: '/readiness'
-      fullPath: '/readiness'
-      preLoaderRoute: typeof MainReadinessRouteImport
+    '/_main/ready': {
+      id: '/_main/ready'
+      path: '/ready'
+      fullPath: '/ready'
+      preLoaderRoute: typeof MainReadyRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/logbook': {
@@ -284,7 +284,7 @@ interface MainRouteChildren {
   MainHomeRoute: typeof MainHomeRoute
   MainInboxRoute: typeof MainInboxRoute
   MainLogbookRoute: typeof MainLogbookRoute
-  MainReadinessRoute: typeof MainReadinessRoute
+  MainReadyRoute: typeof MainReadyRoute
   MainRecentRoute: typeof MainRecentRoute
   MainScheduledRoute: typeof MainScheduledRoute
   MainTopicsRoute: typeof MainTopicsRoute
@@ -299,7 +299,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainHomeRoute: MainHomeRoute,
   MainInboxRoute: MainInboxRoute,
   MainLogbookRoute: MainLogbookRoute,
-  MainReadinessRoute: MainReadinessRoute,
+  MainReadyRoute: MainReadyRoute,
   MainRecentRoute: MainRecentRoute,
   MainScheduledRoute: MainScheduledRoute,
   MainTopicsRoute: MainTopicsRoute,

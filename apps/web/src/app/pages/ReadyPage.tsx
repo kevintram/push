@@ -36,7 +36,7 @@ type BucketSection = {
 	topics: Array<Topic>
 }
 
-export function ReadinessPage() {
+export function ReadyPage() {
 	const navigate = useNavigate()
 	const { data: topics, isLoading } = useTopics({
 		hasStability: true,
@@ -129,7 +129,7 @@ export function ReadinessPage() {
 	if (isLoading) {
 		return (
 			<PageLayout>
-				<PageLayout.Header icon={RotateCw} title='Readiness' />
+				<PageLayout.Header icon={RotateCw} title='Ready' />
 				<PageLayout.Content>
 					<div className='flex flex-col gap-6'>
 						{[1, 2, 3].map(i => (
@@ -149,7 +149,7 @@ export function ReadinessPage() {
 	if (isEmpty) {
 		return (
 			<PageLayout>
-				<PageLayout.Header icon={RotateCw} title='Readiness' />
+				<PageLayout.Header icon={RotateCw} title='Ready' />
 				<PageLayout.Content>
 					<Empty>
 						<EmptyHeader>
@@ -185,7 +185,7 @@ export function ReadinessPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={RotateCw} title='Readiness' />
+			<PageLayout.Header icon={RotateCw} title='Ready' />
 			<PageLayout.Content>
 				{bucketSections.map(section => (
 					<ReadinessSection

@@ -33,10 +33,10 @@ export function AppSidebar() {
 
 	const reviewItems = [
 		{
-			title: 'Readiness',
-			url: '/readiness',
+			title: 'Ready',
+			url: '/ready',
 			icon: RotateCw,
-			isActive: (pathname: string) => pathname === '/readiness'
+			isActive: (pathname: string) => pathname === '/ready'
 		},
 		{
 			title: 'Scheduled',
