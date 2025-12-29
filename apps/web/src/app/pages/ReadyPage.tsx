@@ -128,7 +128,7 @@ export function ReadyPage() {
 	if (isLoading) {
 		return (
 			<PageLayout>
-				<PageLayout.Header icon={Play} title='Ready' />
+				<PageLayout.Header icon={Play} title='Review' />
 				<PageLayout.Content>
 					<div className='flex flex-col gap-6'>
 						{[1, 2, 3].map(i => (
@@ -148,7 +148,7 @@ export function ReadyPage() {
 	if (isEmpty) {
 		return (
 			<PageLayout>
-				<PageLayout.Header icon={Play} title='Ready' />
+				<PageLayout.Header icon={Play} title='Review' />
 				<PageLayout.Content>
 					<Empty>
 						<EmptyHeader>
@@ -184,7 +184,7 @@ export function ReadyPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={Play} title='Ready' />
+			<PageLayout.Header icon={Play} title='Review' />
 			<PageLayout.Content>
 				{bucketSections.map(section => (
 					<ReadinessSection
