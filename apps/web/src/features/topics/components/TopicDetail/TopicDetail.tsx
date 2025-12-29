@@ -4,7 +4,7 @@ import {
 	ArchiveX,
 	BicepsFlexed,
 	BookOpen,
-	Gauge,
+	Brain,
 	Inbox,
 	MoreHorizontal,
 	X
@@ -35,9 +35,11 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
 import {
+	calculateDaysSinceLate,
 	formatRetrievability,
 	getRetrievabilityBucket,
-	getRetrievabilityColor
+	getRetrievabilityColor,
+	getThresholdCrossingInfo
 } from '~/utils/retrievability'
 import { topicKeys } from '../../api/queryKeys'
 import { useUpdateTopic } from '../../api/updateTopic'
@@ -176,25 +178,73 @@ export function TopicDetail({
 		[topic?.retrievability, topic?.srs_enabled]
 	)
 
-	const bucketLabel = useMemo(() => {
-		if (topic?.retrievability == null) return null
+	// Threshold crossing info for bucket days calculation
+	const thresholdInfo = useMemo(
+		() =>
+			getThresholdCrossingInfo(
+				topic?.retrievability ?? null,
+				topic?.stability ?? null,
+				topic?.last_reviewed_at ?? null
+			),
+		[topic?.retrievability, topic?.stability, topic?.last_reviewed_at]
+	)
+
+	// Calculate bucket info for display (matching TopicCard format)
+	const bucketInfo = useMemo(() => {
+		if (topic?.retrievability == null) {
+			return {
+				label: '—',
+				days: null,
+				suffix: null,
+				colorClass: 'text-muted-foreground'
+			}
+		}
+
 		const bucket = getRetrievabilityBucket(topic.retrievability)
+
 		switch (bucket) {
-			case 'early':
-				return 'early'
-			case 'onTime':
-				return 'on time'
-			case 'late':
-				return 'late'
+			case 'early': {
+				const days = thresholdInfo?.daysUntil ?? 0
+				return {
+					label: 'Early',
+					days,
+					suffix: 'left',
+					colorClass: 'text-green-600 dark:text-green-400'
+				}
+			}
+			case 'onTime': {
+				const days = thresholdInfo?.daysUntil ?? 0
+				return {
+					label: 'Ready',
+					days,
+					suffix: 'left',
+					colorClass: 'text-blue-600 dark:text-blue-400'
+				}
+			}
+			case 'late': {
+				const days = calculateDaysSinceLate(
+					topic.stability,
+					topic.last_reviewed_at
+				)
+				return {
+					label: 'Late',
+					days,
+					suffix: 'ago',
+					colorClass: 'text-red-600 dark:text-red-400'
+				}
+			}
 			default:
 				return bucket satisfies never
 		}
-	}, [topic?.retrievability])
+	}, [
+		topic?.retrievability,
+		topic?.stability,
+		topic?.last_reviewed_at,
+		thresholdInfo
+	])
 
 	const stabilityText =
-		topic?.stability != null
-			? `Stable for ${Math.round(topic.stability)}d`
-			: 'No stability data'
+		topic?.stability != null ? `${Math.round(topic.stability)}d` : '—'
 
 	const updateNotes = useCallback(
 		(newNotes: string) => {
@@ -326,27 +376,40 @@ export function TopicDetail({
 								value={title}
 							/>
 							<div className='flex items-center gap-3 border-t-1 border-b-1 py-2 text-muted-foreground text-sm'>
+								{/* Bucket status */}
+								<Tooltip>
+									<TooltipTrigger asChild={true}>
+										<span className={`cursor-help ${bucketInfo.colorClass}`}>
+											{bucketInfo.label}
+											{bucketInfo.days !== null &&
+												` (${bucketInfo.days}d ${bucketInfo.suffix})`}
+										</span>
+									</TooltipTrigger>
+									<TooltipContent side='bottom'>
+										{topic.retrievability != null
+											? 'Memory retention status'
+											: 'Complete a review to see status'}
+									</TooltipContent>
+								</Tooltip>
+								⋅{/* Retrievability */}
 								<Tooltip>
 									<TooltipTrigger asChild={true}>
 										<div className='flex items-center gap-1'>
-											<Gauge
+											<Brain
 												className={`h-3 w-3 ${retrievabilityColorClass}`}
 											/>
 											<span className={retrievabilityColorClass}>
-												{retrievabilityDisplay ?? 'No data'}
-												{bucketLabel && ` · ${bucketLabel}`}
+												{retrievabilityDisplay ?? '—'}
 											</span>
 										</div>
 									</TooltipTrigger>
-									<TooltipContent className='text-center' side='bottom'>
-										<span>
-											{topic.retrievability != null
-												? 'Estimated probability of recall'
-												: 'Complete a review to calculate retrievability'}
-										</span>
+									<TooltipContent side='bottom'>
+										{topic.retrievability != null
+											? 'Estimated probability of recall'
+											: 'Complete a review to calculate retrievability'}
 									</TooltipContent>
 								</Tooltip>
-								⋅
+								⋅{/* Stability */}
 								<Tooltip>
 									<TooltipTrigger asChild={true}>
 										<div className='flex items-center gap-1'>
@@ -355,8 +418,7 @@ export function TopicDetail({
 										</div>
 									</TooltipTrigger>
 									<TooltipContent side='bottom'>
-										The estimated number of days you can remember this topic
-										without additional review
+										Memory stability in days
 									</TooltipContent>
 								</Tooltip>
 								<div className='flex-1' />
