@@ -38,7 +38,6 @@ import {
 	calculateDaysSinceLate,
 	formatRetrievability,
 	getRetrievabilityBucket,
-	getRetrievabilityColor,
 	getThresholdCrossingInfo
 } from '~/utils/retrievability'
 import { topicKeys } from '../../api/queryKeys'
@@ -169,15 +168,6 @@ export function TopicDetail({
 		return formatRetrievability(topic.retrievability)
 	}, [topic?.retrievability])
 
-	const retrievabilityColorClass = useMemo(
-		() =>
-			getRetrievabilityColor(
-				topic?.retrievability ?? null,
-				topic?.srs_enabled ?? true
-			),
-		[topic?.retrievability, topic?.srs_enabled]
-	)
-
 	// Threshold crossing info for bucket days calculation
 	const thresholdInfo = useMemo(
 		() =>
@@ -195,8 +185,7 @@ export function TopicDetail({
 			return {
 				label: '—',
 				days: null,
-				suffix: null,
-				colorClass: 'text-muted-foreground'
+				suffix: null
 			}
 		}
 
@@ -208,8 +197,7 @@ export function TopicDetail({
 				return {
 					label: 'Early',
 					days,
-					suffix: 'left',
-					colorClass: 'text-green-600 dark:text-green-400'
+					suffix: 'left'
 				}
 			}
 			case 'onTime': {
@@ -217,8 +205,7 @@ export function TopicDetail({
 				return {
 					label: 'Ready',
 					days,
-					suffix: 'left',
-					colorClass: 'text-blue-600 dark:text-blue-400'
+					suffix: 'left'
 				}
 			}
 			case 'late': {
@@ -229,8 +216,7 @@ export function TopicDetail({
 				return {
 					label: 'Late',
 					days,
-					suffix: 'ago',
-					colorClass: 'text-red-600 dark:text-red-400'
+					suffix: 'ago'
 				}
 			}
 			default:
@@ -379,7 +365,7 @@ export function TopicDetail({
 								{/* Bucket status */}
 								<Tooltip>
 									<TooltipTrigger asChild={true}>
-										<span className={`cursor-help ${bucketInfo.colorClass}`}>
+										<span className='cursor-help'>
 											{bucketInfo.label}
 											{bucketInfo.days !== null &&
 												` (${bucketInfo.days}d ${bucketInfo.suffix})`}
@@ -395,12 +381,8 @@ export function TopicDetail({
 								<Tooltip>
 									<TooltipTrigger asChild={true}>
 										<div className='flex items-center gap-1'>
-											<Brain
-												className={`h-3 w-3 ${retrievabilityColorClass}`}
-											/>
-											<span className={retrievabilityColorClass}>
-												{retrievabilityDisplay ?? '—'}
-											</span>
+											<Brain className='h-3 w-3' />
+											<span>{retrievabilityDisplay ?? '—'}</span>
 										</div>
 									</TooltipTrigger>
 									<TooltipContent side='bottom'>

@@ -72,8 +72,7 @@ export function TopicCard({
 				label: '—',
 				days: null,
 				suffix: null,
-				tooltip: null,
-				colorClass: 'text-muted-foreground'
+				tooltip: null
 			}
 		}
 
@@ -86,8 +85,7 @@ export function TopicCard({
 					label: 'Early',
 					days,
 					suffix: 'left',
-					tooltip: `Early | ${days} day${days !== 1 ? 's' : ''} until ready`,
-					colorClass: 'text-green-600 dark:text-green-400'
+					tooltip: `Early | ${days} day${days !== 1 ? 's' : ''} until ready`
 				}
 			}
 			case 'onTime': {
@@ -96,8 +94,7 @@ export function TopicCard({
 					label: 'Ready',
 					days,
 					suffix: 'left',
-					tooltip: `Ready | ${days} day${days !== 1 ? 's' : ''} until late`,
-					colorClass: 'text-blue-600 dark:text-blue-400'
+					tooltip: `Ready | ${days} day${days !== 1 ? 's' : ''} until late`
 				}
 			}
 			case 'late': {
@@ -109,8 +106,7 @@ export function TopicCard({
 					label: 'Late',
 					days,
 					suffix: 'ago',
-					tooltip: `Late since ${days} day${days !== 1 ? 's' : ''} ago`,
-					colorClass: 'text-red-600 dark:text-red-400'
+					tooltip: `Late since ${days} day${days !== 1 ? 's' : ''} ago`
 				}
 			}
 			default:
@@ -309,7 +305,7 @@ export function TopicCard({
 						{bucketInfo.tooltip ? (
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
-									<span className={`cursor-help ${bucketInfo.colorClass}`}>
+									<span className='cursor-help'>
 										{bucketInfo.label}
 										{bucketInfo.days !== null &&
 											` (${bucketInfo.days}d ${bucketInfo.suffix})`}
@@ -318,7 +314,7 @@ export function TopicCard({
 								<TooltipContent side='top'>{bucketInfo.tooltip}</TooltipContent>
 							</Tooltip>
 						) : (
-							<span className={bucketInfo.colorClass}>{bucketInfo.label}</span>
+							<span>{bucketInfo.label}</span>
 						)}
 						{/* Last reviewed */}
 						<span>·</span>
