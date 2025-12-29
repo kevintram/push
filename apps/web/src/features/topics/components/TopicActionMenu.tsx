@@ -4,6 +4,7 @@ import {
 	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
+	SquareCheck,
 	Trash2
 } from 'lucide-react'
 import { useCallback } from 'react'
@@ -14,6 +15,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
+import { useCreateReview } from '~/features/reviews/api/createReview'
+import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -39,6 +42,8 @@ export function TopicActionMenu({
 }: TopicActionMenuProps) {
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
+	const createReviewMutation = useCreateReview()
+	const { openReviewDialog } = useReviewDialog()
 
 	const handleDeleteTopic = useCallback(() => {
 		deleteTopicMutation.mutate(topic.id, {
@@ -70,6 +75,22 @@ export function TopicActionMenu({
 		[updateTopicMutation, topic.id, topic.inboxed]
 	)
 
+	const handleLogNow = useCallback(
+		async (e: React.MouseEvent) => {
+			e.stopPropagation()
+			const today = new Date().toISOString().split('T')[0] ?? ''
+			const review = await createReviewMutation.mutateAsync({
+				topic_id: topic.id,
+				rating: 'good',
+				description: '',
+				scheduled_at: null,
+				completed_at: today
+			})
+			openReviewDialog(review.id)
+		},
+		[createReviewMutation, topic.id, openReviewDialog]
+	)
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild={true}>
@@ -84,6 +105,13 @@ export function TopicActionMenu({
 				)}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+				<DropdownMenuItem
+					disabled={createReviewMutation.isPending}
+					onClick={handleLogNow}
+				>
+					<SquareCheck className='mr-2 h-4 w-4' />
+					Log now
+				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleInboxToggle}>
 					{topic.inboxed ? (
 						<>
