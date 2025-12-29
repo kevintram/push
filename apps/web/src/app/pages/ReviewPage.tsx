@@ -5,6 +5,7 @@ import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
@@ -21,7 +22,9 @@ import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import {
+	formatThresholdCrossing,
 	getRetrievabilityBucket,
+	getThresholdCrossingInfo,
 	type RetrievabilityBucket
 } from '~/utils/retrievability'
 
@@ -227,12 +230,7 @@ function ReadinessSection({
 
 	const renderItem = useCallback(
 		(topic: Topic) => (
-			<TopicCard
-				headerRight={<TopicActionMenu topic={topic} />}
-				onTopicClick={onTopicClick}
-				showLeavingSoon={true}
-				topic={topic}
-			/>
+			<TopicCardWithThreshold onTopicClick={onTopicClick} topic={topic} />
 		),
 		[onTopicClick]
 	)
@@ -277,5 +275,52 @@ function ReadinessSection({
 				</div>
 			)}
 		</div>
+	)
+}
+
+function TopicCardWithThreshold({
+	topic,
+	onTopicClick
+}: {
+	topic: Topic
+	onTopicClick: (topic: Topic) => void
+}) {
+	const thresholdInfo = useMemo(
+		() =>
+			getThresholdCrossingInfo(
+				topic.retrievability,
+				topic.stability,
+				topic.last_reviewed_at
+			),
+		[topic.retrievability, topic.stability, topic.last_reviewed_at]
+	)
+
+	const thresholdText = useMemo(
+		() => formatThresholdCrossing(thresholdInfo),
+		[thresholdInfo]
+	)
+
+	const isLeavingSoon = thresholdInfo && thresholdInfo.daysUntil <= 7
+
+	const footerExtra =
+		thresholdText || isLeavingSoon ? (
+			<>
+				{thresholdText}
+				{isLeavingSoon && (
+					<Badge className='ml-1 text-xs' variant='destructive'>
+						leaving soon
+					</Badge>
+				)}
+			</>
+		) : undefined
+
+	return (
+		<TopicCard
+			footerExtra={footerExtra}
+			headerRight={<TopicActionMenu topic={topic} />}
+			onTopicClick={onTopicClick}
+			showBucketLabel={false}
+			topic={topic}
+		/>
 	)
 }

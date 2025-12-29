@@ -154,27 +154,3 @@ export function formatThresholdCrossing(
 	const bucketLabel = nextBucket === 'onTime' ? 'ready' : 'late'
 	return `${bucketLabel} in ${daysUntil}d`
 }
-
-/**
- * Calculate days since a topic crossed the late threshold (80%).
- * Returns positive number representing days since becoming late.
- * Returns 0 if the topic is not late or data is missing.
- */
-export function calculateDaysSinceLate(
-	stability: number | null,
-	lastReviewedAt: string | null
-): number {
-	if (stability === null) {
-		return 0
-	}
-
-	const daysToLate = calculateDaysToThreshold(
-		stability,
-		lastReviewedAt,
-		LATE_THRESHOLD
-	)
-
-	// daysToLate is negative when we've already crossed the threshold
-	// Negate to get positive "days since"
-	return daysToLate < 0 ? Math.abs(daysToLate) : 0
-}
