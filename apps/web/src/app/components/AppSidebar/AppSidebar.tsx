@@ -41,9 +41,9 @@ export function AppSidebar() {
 	const topItems = [
 		{
 			title: 'Home',
-			url: '/overview',
+			url: '/home',
 			icon: LayoutGrid,
-			isActive: (pathname: string) => pathname === '/overview'
+			isActive: (pathname: string) => pathname === '/home'
 		},
 		{
 			title: 'Review',
@@ -83,9 +83,9 @@ export function AppSidebar() {
 		},
 		{
 			title: 'My topics',
-			url: '/home',
+			url: '/my-topics',
 			icon: Home,
-			isActive: (pathname: string) => pathname === '/home'
+			isActive: (pathname: string) => pathname === '/my-topics'
 		},
 		{
 			title: 'Recent',
