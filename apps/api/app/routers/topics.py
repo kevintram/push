@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from datetime import datetime, timezone as dt_timezone, date
+from datetime import datetime, timezone as dt_timezone
 
 from sqlalchemy import or_, select, update, delete, desc, insert
-from app.utils.retrievability import calculate_retrievability
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -260,7 +259,7 @@ async def read_topics(
     scheduled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
-) -> list[dict]:
+) -> list[TopicReadWithRelationships]:
     stmt = select(Topic).where(Topic.user_id == user_id)
 
     # Apply ordering
@@ -302,25 +301,13 @@ async def read_topics(
         stmt = stmt.limit(limit)
 
     result = await session.execute(stmt)
-    topics = result.scalars().all()
-
-    # Compute retrievability for each topic
-    current_date = date.today()
-    topics_with_retrievability = []
-    for topic in topics:
-        topic_dict = TopicReadWithRelationships.model_validate(topic).model_dump()
-        topic_dict["retrievability"] = calculate_retrievability(
-            topic.stability, topic.last_reviewed_at, current_date
-        )
-        topics_with_retrievability.append(topic_dict)
-
-    return topics_with_retrievability
+    return result.scalars().all()
 
 
 @router.get("/topics/{topic_id}/", tags=["topics"])
 async def read_topic(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> dict:
+) -> TopicReadWithRelationships:
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     stmt = stmt.options(
         selectinload(Topic.parents),
@@ -332,12 +319,7 @@ async def read_topic(
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
 
-    # Add retrievability
-    topic_dict = TopicReadWithRelationships.model_validate(topic).model_dump()
-    topic_dict["retrievability"] = calculate_retrievability(
-        topic.stability, topic.last_reviewed_at, date.today()
-    )
-    return topic_dict
+    return topic
 
 
 @router.get("/topics/{topic_id}/parents/", tags=["topics"])
