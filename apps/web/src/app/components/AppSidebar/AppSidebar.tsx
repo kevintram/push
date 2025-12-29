@@ -47,9 +47,9 @@ export function AppSidebar() {
 		},
 		{
 			title: 'Review',
-			url: '/ready',
+			url: '/review',
 			icon: BookOpen,
-			isActive: (pathname: string) => pathname === '/ready'
+			isActive: (pathname: string) => pathname === '/review'
 		}
 	]
 

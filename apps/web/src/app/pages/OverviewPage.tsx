@@ -77,7 +77,7 @@ function ReviewCard() {
 	}, [topics])
 
 	return (
-		<Link className='group' to='/ready'>
+		<Link className='group' to='/review'>
 			<Card className='h-full transition-colors hover:bg-accent/50'>
 				<CardHeader>
 					<div className='flex items-center justify-between'>

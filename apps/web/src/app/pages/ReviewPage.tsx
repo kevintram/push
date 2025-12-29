@@ -35,7 +35,7 @@ type BucketSection = {
 	topics: Array<Topic>
 }
 
-export function ReadyPage() {
+export function ReviewPage() {
 	const navigate = useNavigate()
 	const { data: topics, isLoading } = useTopics({
 		hasStability: true,
