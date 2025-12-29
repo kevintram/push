@@ -11,11 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
+import { Route as MainUpcomingRouteImport } from './routes/_main/upcoming'
 import { Route as MainUnscheduledRouteImport } from './routes/_main/unscheduled'
 import { Route as MainTopicsRouteImport } from './routes/_main/topics'
-import { Route as MainScheduledRouteImport } from './routes/_main/scheduled'
+import { Route as MainTodayRouteImport } from './routes/_main/today'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainReadyRouteImport } from './routes/_main/ready'
+import { Route as MainOverviewRouteImport } from './routes/_main/overview'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainInboxRouteImport } from './routes/_main/inbox'
 import { Route as MainHomeRouteImport } from './routes/_main/home'
@@ -32,6 +34,11 @@ const MainIndexRoute = MainIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MainRoute,
 } as any)
+const MainUpcomingRoute = MainUpcomingRouteImport.update({
+  id: '/upcoming',
+  path: '/upcoming',
+  getParentRoute: () => MainRoute,
+} as any)
 const MainUnscheduledRoute = MainUnscheduledRouteImport.update({
   id: '/unscheduled',
   path: '/unscheduled',
@@ -42,9 +49,9 @@ const MainTopicsRoute = MainTopicsRouteImport.update({
   path: '/topics',
   getParentRoute: () => MainRoute,
 } as any)
-const MainScheduledRoute = MainScheduledRouteImport.update({
-  id: '/scheduled',
-  path: '/scheduled',
+const MainTodayRoute = MainTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
   getParentRoute: () => MainRoute,
 } as any)
 const MainRecentRoute = MainRecentRouteImport.update({
@@ -55,6 +62,11 @@ const MainRecentRoute = MainRecentRouteImport.update({
 const MainReadyRoute = MainReadyRouteImport.update({
   id: '/ready',
   path: '/ready',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainOverviewRoute = MainOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
   getParentRoute: () => MainRoute,
 } as any)
 const MainLogbookRoute = MainLogbookRouteImport.update({
@@ -94,11 +106,13 @@ export interface FileRoutesByFullPath {
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
+  '/overview': typeof MainOverviewRoute
   '/ready': typeof MainReadyRoute
   '/recent': typeof MainRecentRoute
-  '/scheduled': typeof MainScheduledRoute
+  '/today': typeof MainTodayRoute
   '/topics': typeof MainTopicsRoute
   '/unscheduled': typeof MainUnscheduledRoute
+  '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
@@ -108,11 +122,13 @@ export interface FileRoutesByTo {
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
+  '/overview': typeof MainOverviewRoute
   '/ready': typeof MainReadyRoute
   '/recent': typeof MainRecentRoute
-  '/scheduled': typeof MainScheduledRoute
+  '/today': typeof MainTodayRoute
   '/topics': typeof MainTopicsRoute
   '/unscheduled': typeof MainUnscheduledRoute
+  '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
@@ -124,11 +140,13 @@ export interface FileRoutesById {
   '/_main/home': typeof MainHomeRoute
   '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
+  '/_main/overview': typeof MainOverviewRoute
   '/_main/ready': typeof MainReadyRoute
   '/_main/recent': typeof MainRecentRoute
-  '/_main/scheduled': typeof MainScheduledRoute
+  '/_main/today': typeof MainTodayRoute
   '/_main/topics': typeof MainTopicsRoute
   '/_main/unscheduled': typeof MainUnscheduledRoute
+  '/_main/upcoming': typeof MainUpcomingRoute
   '/_main/': typeof MainIndexRoute
   '/_main/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
   '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
@@ -140,11 +158,13 @@ export interface FileRouteTypes {
     | '/home'
     | '/inbox'
     | '/logbook'
+    | '/overview'
     | '/ready'
     | '/recent'
-    | '/scheduled'
+    | '/today'
     | '/topics'
     | '/unscheduled'
+    | '/upcoming'
     | '/'
     | '/review-session/$reviewSessionId'
     | '/topics/$topicId'
@@ -154,11 +174,13 @@ export interface FileRouteTypes {
     | '/home'
     | '/inbox'
     | '/logbook'
+    | '/overview'
     | '/ready'
     | '/recent'
-    | '/scheduled'
+    | '/today'
     | '/topics'
     | '/unscheduled'
+    | '/upcoming'
     | '/'
     | '/review-session/$reviewSessionId'
     | '/topics/$topicId'
@@ -169,11 +191,13 @@ export interface FileRouteTypes {
     | '/_main/home'
     | '/_main/inbox'
     | '/_main/logbook'
+    | '/_main/overview'
     | '/_main/ready'
     | '/_main/recent'
-    | '/_main/scheduled'
+    | '/_main/today'
     | '/_main/topics'
     | '/_main/unscheduled'
+    | '/_main/upcoming'
     | '/_main/'
     | '/_main/review-session/$reviewSessionId'
     | '/_main/topics_/$topicId'
@@ -199,6 +223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainIndexRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/upcoming': {
+      id: '/_main/upcoming'
+      path: '/upcoming'
+      fullPath: '/upcoming'
+      preLoaderRoute: typeof MainUpcomingRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/_main/unscheduled': {
       id: '/_main/unscheduled'
       path: '/unscheduled'
@@ -213,11 +244,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainTopicsRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/scheduled': {
-      id: '/_main/scheduled'
-      path: '/scheduled'
-      fullPath: '/scheduled'
-      preLoaderRoute: typeof MainScheduledRouteImport
+    '/_main/today': {
+      id: '/_main/today'
+      path: '/today'
+      fullPath: '/today'
+      preLoaderRoute: typeof MainTodayRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/recent': {
@@ -232,6 +263,13 @@ declare module '@tanstack/react-router' {
       path: '/ready'
       fullPath: '/ready'
       preLoaderRoute: typeof MainReadyRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/overview': {
+      id: '/_main/overview'
+      path: '/overview'
+      fullPath: '/overview'
+      preLoaderRoute: typeof MainOverviewRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/logbook': {
@@ -284,11 +322,13 @@ interface MainRouteChildren {
   MainHomeRoute: typeof MainHomeRoute
   MainInboxRoute: typeof MainInboxRoute
   MainLogbookRoute: typeof MainLogbookRoute
+  MainOverviewRoute: typeof MainOverviewRoute
   MainReadyRoute: typeof MainReadyRoute
   MainRecentRoute: typeof MainRecentRoute
-  MainScheduledRoute: typeof MainScheduledRoute
+  MainTodayRoute: typeof MainTodayRoute
   MainTopicsRoute: typeof MainTopicsRoute
   MainUnscheduledRoute: typeof MainUnscheduledRoute
+  MainUpcomingRoute: typeof MainUpcomingRoute
   MainIndexRoute: typeof MainIndexRoute
   MainReviewSessionReviewSessionIdRoute: typeof MainReviewSessionReviewSessionIdRoute
   MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRoute
@@ -299,11 +339,13 @@ const MainRouteChildren: MainRouteChildren = {
   MainHomeRoute: MainHomeRoute,
   MainInboxRoute: MainInboxRoute,
   MainLogbookRoute: MainLogbookRoute,
+  MainOverviewRoute: MainOverviewRoute,
   MainReadyRoute: MainReadyRoute,
   MainRecentRoute: MainRecentRoute,
-  MainScheduledRoute: MainScheduledRoute,
+  MainTodayRoute: MainTodayRoute,
   MainTopicsRoute: MainTopicsRoute,
   MainUnscheduledRoute: MainUnscheduledRoute,
+  MainUpcomingRoute: MainUpcomingRoute,
   MainIndexRoute: MainIndexRoute,
   MainReviewSessionReviewSessionIdRoute: MainReviewSessionReviewSessionIdRoute,
   MainTopicsTopicIdRoute: MainTopicsTopicIdRoute,

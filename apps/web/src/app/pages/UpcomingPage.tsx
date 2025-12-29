@@ -1,12 +1,11 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Calendar, Home, Star } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Calendar, Home } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import { Badge } from '~/components/ui/Badge'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
@@ -25,16 +24,8 @@ import {
 	type ReviewEntry,
 	ReviewSection
 } from '~/features/reviews/components/ReviewSection'
-import { getCookie, setCookie } from '~/utils/cookies'
-
-const SCHEDULED_TODAY_FILTER_COOKIE = 'scheduled-today-filter'
-
-export function ScheduledPage() {
+export function UpcomingPage() {
 	const [showFuture, setShowFuture] = useState(false)
-	const [todayFilter, setTodayFilter] = useState<boolean>(() => {
-		const saved = getCookie<boolean>(SCHEDULED_TODAY_FILTER_COOKIE)
-		return saved ?? false
-	})
 
 	// Fetch today data (overdue + today)
 	const { sections: todaySections, isLoading: todayLoading } =
@@ -49,7 +40,7 @@ export function ScheduledPage() {
 		sections: futureReviewSections = [],
 		isLoading: futureReviewsLoading,
 		isFetched: futureReviewsFetched
-	} = useFutureReviewEntries({ enabled: showFuture && !todayFilter })
+	} = useFutureReviewEntries({ enabled: showFuture })
 
 	useEffect(() => {
 		if (futureReviewsFetched) {
@@ -58,8 +49,6 @@ export function ScheduledPage() {
 	}, [futureReviewsFetched])
 
 	useEffect(() => {
-		if (todayFilter) return // Don't auto-fetch future when filter is on
-
 		const totalEntries = soonReviewSections.reduce(
 			(sum, section) => sum + section.entries.length,
 			0
@@ -67,7 +56,7 @@ export function ScheduledPage() {
 		if (totalEntries < 20) {
 			setShowFuture(true)
 		}
-	}, [soonReviewSections, todayFilter])
+	}, [soonReviewSections])
 
 	const {
 		handleSessionClick,
@@ -78,14 +67,6 @@ export function ScheduledPage() {
 		isCreatingTopic
 	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
-
-	const toggleTodayFilter = useCallback(() => {
-		setTodayFilter(prev => {
-			const newValue = !prev
-			setCookie(SCHEDULED_TODAY_FILTER_COOKIE, newValue)
-			return newValue
-		})
-	}, [])
 
 	// Combine all sections (entries are already in ReviewEntry format from the hooks)
 	const allSections = useMemo(() => {
@@ -108,36 +89,29 @@ export function ScheduledPage() {
 			})
 		}
 
-		// If not filtering to today only, add soon and future sections
-		if (!todayFilter) {
-			for (const section of soonReviewSections) {
-				sections.push({
-					id: section.id,
-					label: section.label,
-					headingClassName: section.headingClassName,
-					entries: section.entries
-				})
-			}
+		// Add soon sections (Tomorrow, Next 7 Days)
+		for (const section of soonReviewSections) {
+			sections.push({
+				id: section.id,
+				label: section.label,
+				headingClassName: section.headingClassName,
+				entries: section.entries
+			})
+		}
 
-			for (const section of futureReviewSections) {
-				sections.push({
-					id: section.id,
-					label: section.label,
-					entries: section.entries
-				})
-			}
+		// Add future sections (monthly groups)
+		for (const section of futureReviewSections) {
+			sections.push({
+				id: section.id,
+				label: section.label,
+				entries: section.entries
+			})
 		}
 
 		// Filter out empty sections except for required ones
 		return sections.filter(section => {
 			if (section.entries.length > 0) return true
 
-			// Keep overdue and today when filtering
-			if (todayFilter) {
-				return section.id === 'overdue' || section.id === 'today'
-			}
-
-			// Keep tomorrow and nextSevenDays when not filtering
 			return (
 				section.id === 'overdue' ||
 				section.id === 'today' ||
@@ -145,7 +119,7 @@ export function ScheduledPage() {
 				section.id === 'nextSevenDays'
 			)
 		})
-	}, [todaySections, soonReviewSections, futureReviewSections, todayFilter])
+	}, [todaySections, soonReviewSections, futureReviewSections])
 
 	const isInitialLoading = todayLoading || soonReviewsLoading
 
@@ -156,17 +130,8 @@ export function ScheduledPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={Calendar} title='Scheduled'>
-				<Badge
-					className='cursor-pointer select-none'
-					onClick={toggleTodayFilter}
-					variant={todayFilter ? 'default' : 'outline'}
-				>
-					<Star className='h-3 w-3' />
-					Today
-				</Badge>
-			</PageLayout.Header>
-			<ScheduledList
+			<PageLayout.Header icon={Calendar} title='Upcoming' />
+			<UpcomingList
 				allSections={allSections}
 				allSectionsEmpty={allSectionsEmpty}
 				collapsedSections={collapsedSections}
@@ -179,7 +144,6 @@ export function ScheduledPage() {
 				onShowMore={() => setShowFuture(true)}
 				onToggleCollapse={toggleSection}
 				showFuture={showFuture}
-				todayFilter={todayFilter}
 			/>
 			<ReviewDialog
 				onOpenChange={open => {
@@ -192,7 +156,7 @@ export function ScheduledPage() {
 	)
 }
 
-function ScheduledList({
+function UpcomingList({
 	allSections,
 	allSectionsEmpty,
 	collapsedSections,
@@ -204,8 +168,7 @@ function ScheduledList({
 	onSessionClick,
 	onShowMore,
 	onToggleCollapse,
-	showFuture,
-	todayFilter
+	showFuture
 }: {
 	allSections: Array<{
 		id: string
@@ -224,7 +187,6 @@ function ScheduledList({
 	onShowMore: () => void
 	onToggleCollapse: (sectionId: string) => void
 	showFuture: boolean
-	todayFilter: boolean
 }) {
 	const navigate = useNavigate()
 
@@ -240,11 +202,7 @@ function ScheduledList({
 						<EmptyMedia variant='icon'>
 							<Calendar />
 						</EmptyMedia>
-						<EmptyTitle>
-							{todayFilter
-								? 'Nothing due today.'
-								: 'Scheduled reviews will appear here.'}
-						</EmptyTitle>
+						<EmptyTitle>Scheduled reviews will appear here.</EmptyTitle>
 					</EmptyHeader>
 					<EmptyContent>
 						<div className='flex gap-2'>
@@ -282,8 +240,8 @@ function ScheduledList({
 				/>
 			))}
 
-			{/* Show More button (only when not filtering to today) */}
-			{!(todayFilter || showFuture) && (
+			{/* Show More button */}
+			{!showFuture && (
 				<div className='mt-8 text-center'>
 					<Button
 						disabled={isMonthlyLoading}

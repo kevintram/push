@@ -7,9 +7,11 @@ import {
 	History,
 	Home,
 	Inbox,
+	LayoutGrid,
 	ListChecks,
-	Play,
-	Settings
+	RefreshCcw,
+	Settings,
+	Star
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -33,35 +35,42 @@ export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
 
-	// TODO: if going too more of these badge counts,
-	// should we create some sort of overview endpoint?
 	const { data: inboxTopics } = useTopics({ inboxed: true, archived: false })
 	const inboxCount = inboxTopics?.length ?? 0
 
-	const reviewItems = [
+	const topItems = [
 		{
-			title: 'Ready',
-			url: '/ready',
-			icon: Play,
-			isActive: (pathname: string) => pathname === '/ready'
+			title: 'Overview',
+			url: '/overview',
+			icon: LayoutGrid,
+			isActive: (pathname: string) => pathname === '/overview'
 		},
 		{
-			title: 'Scheduled',
-			url: '/scheduled',
+			title: 'Review',
+			url: '/ready',
+			icon: RefreshCcw,
+			isActive: (pathname: string) => pathname === '/ready'
+		}
+	]
+
+	const scheduleItems = [
+		{
+			title: 'Today',
+			url: '/today',
+			icon: Star,
+			isActive: (pathname: string) => pathname === '/today'
+		},
+		{
+			title: 'Upcoming',
+			url: '/upcoming',
 			icon: Calendar,
-			isActive: (pathname: string) => pathname === '/scheduled'
+			isActive: (pathname: string) => pathname === '/upcoming'
 		},
 		{
 			title: 'Unscheduled',
 			url: '/unscheduled',
 			icon: CircleDashed,
 			isActive: (pathname: string) => pathname === '/unscheduled'
-		},
-		{
-			title: 'Logbook',
-			url: '/logbook',
-			icon: ListChecks,
-			isActive: (pathname: string) => pathname === '/logbook'
 		}
 	]
 
@@ -110,10 +119,34 @@ export function AppSidebar() {
 				</SidebarGroup>
 
 				<SidebarGroup>
-					<SidebarGroupLabel>Review</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{reviewItems.map(item => {
+							{topItems.map(item => {
+								const isActive = item.isActive(location.pathname)
+								return (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton
+											asChild={true}
+											isActive={isActive}
+											tooltip={item.title}
+										>
+											<Link to={item.url}>
+												<item.icon />
+												<span>{item.title}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								)
+							})}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+
+				<SidebarGroup>
+					<SidebarGroupLabel>Schedule</SidebarGroupLabel>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{scheduleItems.map(item => {
 								const isActive = item.isActive(location.pathname)
 								return (
 									<SidebarMenuItem key={item.title}>
@@ -159,6 +192,26 @@ export function AppSidebar() {
 									</SidebarMenuItem>
 								)
 							})}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+
+				{/* Logbook at the bottom of the content area */}
+				<SidebarGroup>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									asChild={true}
+									isActive={location.pathname === '/logbook'}
+									tooltip='Logbook'
+								>
+									<Link to='/logbook'>
+										<ListChecks />
+										<span>Logbook</span>
+									</Link>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>
