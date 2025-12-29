@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Library } from 'lucide-react'
+import { SquareLibrary } from 'lucide-react'
 import { useCallback } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
@@ -52,7 +52,7 @@ export function MyTopicsPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={Library} title='My topics' />
+			<PageLayout.Header icon={SquareLibrary} title='My topics' />
 			<RootTopicsList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
@@ -92,7 +92,7 @@ function RootTopicsList({
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<Library />
+							<SquareLibrary />
 						</EmptyMedia>
 						<EmptyTitle>
 							Topics are anything you want to learn or remember.
