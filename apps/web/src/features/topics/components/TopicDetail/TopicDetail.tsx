@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import {
+	Anchor,
 	Archive,
 	ArchiveX,
-	BicepsFlexed,
 	BookOpen,
 	Brain,
 	Inbox,
@@ -395,7 +395,7 @@ export function TopicDetail({
 								<Tooltip>
 									<TooltipTrigger asChild={true}>
 										<div className='flex items-center gap-1'>
-											<BicepsFlexed className='h-3 w-3' />
+											<Anchor className='h-3 w-3' />
 											<span>{stabilityText}</span>
 										</div>
 									</TooltipTrigger>

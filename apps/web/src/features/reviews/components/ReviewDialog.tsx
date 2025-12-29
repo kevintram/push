@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
-	BicepsFlexed,
+	Anchor,
 	CalendarIcon,
 	ExternalLink,
 	SquareStack,
@@ -427,7 +427,7 @@ export function ReviewDialog({
 											Stability
 										</span>
 										<div className='flex min-w-0 flex-1 items-center gap-2 px-2 text-sm'>
-											<BicepsFlexed className='h-4 w-4 flex-shrink-0' />
+											<Anchor className='h-4 w-4 flex-shrink-0' />
 											<span className='truncate'>
 												{review.stability_after != null
 													? `${Math.round(review.stability_after)}d`
