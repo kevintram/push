@@ -9,7 +9,7 @@ import {
 	Inbox,
 	LayoutGrid,
 	ListChecks,
-	Play,
+	RefreshCcw,
 	Settings,
 	Star
 } from 'lucide-react'
@@ -48,7 +48,7 @@ export function AppSidebar() {
 		{
 			title: 'Review',
 			url: '/ready',
-			icon: Play,
+			icon: RefreshCcw,
 			isActive: (pathname: string) => pathname === '/ready'
 		}
 	]
