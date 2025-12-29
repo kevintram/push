@@ -8,7 +8,7 @@ import {
 	History,
 	Home,
 	Inbox,
-	LayoutGrid,
+	Library,
 	ListChecks,
 	Settings,
 	Star
@@ -40,10 +40,10 @@ export function AppSidebar() {
 
 	const topItems = [
 		{
-			title: 'Overview',
-			url: '/overview',
-			icon: LayoutGrid,
-			isActive: (pathname: string) => pathname === '/overview'
+			title: 'Home',
+			url: '/home',
+			icon: Home,
+			isActive: (pathname: string) => pathname === '/home'
 		},
 		{
 			title: 'Review',
@@ -82,10 +82,10 @@ export function AppSidebar() {
 			isActive: (pathname: string) => pathname === '/inbox'
 		},
 		{
-			title: 'Home',
-			url: '/home',
-			icon: Home,
-			isActive: (pathname: string) => pathname === '/home'
+			title: 'My topics',
+			url: '/my-topics',
+			icon: Library,
+			isActive: (pathname: string) => pathname === '/my-topics'
 		},
 		{
 			title: 'Recent',

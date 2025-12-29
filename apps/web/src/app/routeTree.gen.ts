@@ -17,7 +17,7 @@ import { Route as MainTopicsRouteImport } from './routes/_main/topics'
 import { Route as MainTodayRouteImport } from './routes/_main/today'
 import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
-import { Route as MainOverviewRouteImport } from './routes/_main/overview'
+import { Route as MainMyTopicsRouteImport } from './routes/_main/my-topics'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainInboxRouteImport } from './routes/_main/inbox'
 import { Route as MainHomeRouteImport } from './routes/_main/home'
@@ -64,9 +64,9 @@ const MainRecentRoute = MainRecentRouteImport.update({
   path: '/recent',
   getParentRoute: () => MainRoute,
 } as any)
-const MainOverviewRoute = MainOverviewRouteImport.update({
-  id: '/overview',
-  path: '/overview',
+const MainMyTopicsRoute = MainMyTopicsRouteImport.update({
+  id: '/my-topics',
+  path: '/my-topics',
   getParentRoute: () => MainRoute,
 } as any)
 const MainLogbookRoute = MainLogbookRouteImport.update({
@@ -106,7 +106,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
-  '/overview': typeof MainOverviewRoute
+  '/my-topics': typeof MainMyTopicsRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
   '/today': typeof MainTodayRoute
@@ -122,7 +122,7 @@ export interface FileRoutesByTo {
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
-  '/overview': typeof MainOverviewRoute
+  '/my-topics': typeof MainMyTopicsRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
   '/today': typeof MainTodayRoute
@@ -140,7 +140,7 @@ export interface FileRoutesById {
   '/_main/home': typeof MainHomeRoute
   '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
-  '/_main/overview': typeof MainOverviewRoute
+  '/_main/my-topics': typeof MainMyTopicsRoute
   '/_main/recent': typeof MainRecentRoute
   '/_main/review': typeof MainReviewRoute
   '/_main/today': typeof MainTodayRoute
@@ -158,7 +158,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/inbox'
     | '/logbook'
-    | '/overview'
+    | '/my-topics'
     | '/recent'
     | '/review'
     | '/today'
@@ -174,7 +174,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/inbox'
     | '/logbook'
-    | '/overview'
+    | '/my-topics'
     | '/recent'
     | '/review'
     | '/today'
@@ -191,7 +191,7 @@ export interface FileRouteTypes {
     | '/_main/home'
     | '/_main/inbox'
     | '/_main/logbook'
-    | '/_main/overview'
+    | '/_main/my-topics'
     | '/_main/recent'
     | '/_main/review'
     | '/_main/today'
@@ -265,11 +265,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainRecentRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/overview': {
-      id: '/_main/overview'
-      path: '/overview'
-      fullPath: '/overview'
-      preLoaderRoute: typeof MainOverviewRouteImport
+    '/_main/my-topics': {
+      id: '/_main/my-topics'
+      path: '/my-topics'
+      fullPath: '/my-topics'
+      preLoaderRoute: typeof MainMyTopicsRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/logbook': {
@@ -322,7 +322,7 @@ interface MainRouteChildren {
   MainHomeRoute: typeof MainHomeRoute
   MainInboxRoute: typeof MainInboxRoute
   MainLogbookRoute: typeof MainLogbookRoute
-  MainOverviewRoute: typeof MainOverviewRoute
+  MainMyTopicsRoute: typeof MainMyTopicsRoute
   MainRecentRoute: typeof MainRecentRoute
   MainReviewRoute: typeof MainReviewRoute
   MainTodayRoute: typeof MainTodayRoute
@@ -339,7 +339,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainHomeRoute: MainHomeRoute,
   MainInboxRoute: MainInboxRoute,
   MainLogbookRoute: MainLogbookRoute,
-  MainOverviewRoute: MainOverviewRoute,
+  MainMyTopicsRoute: MainMyTopicsRoute,
   MainRecentRoute: MainRecentRoute,
   MainReviewRoute: MainReviewRoute,
   MainTodayRoute: MainTodayRoute,
