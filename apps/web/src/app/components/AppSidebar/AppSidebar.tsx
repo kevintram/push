@@ -2,6 +2,7 @@ import { Link, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
+	BookOpen,
 	Calendar,
 	CircleDashed,
 	History,
@@ -9,7 +10,6 @@ import {
 	Inbox,
 	LayoutGrid,
 	ListChecks,
-	RefreshCcw,
 	Settings,
 	Star
 } from 'lucide-react'
@@ -47,9 +47,9 @@ export function AppSidebar() {
 		},
 		{
 			title: 'Review',
-			url: '/ready',
-			icon: RefreshCcw,
-			isActive: (pathname: string) => pathname === '/ready'
+			url: '/review',
+			icon: BookOpen,
+			isActive: (pathname: string) => pathname === '/review'
 		}
 	]
 

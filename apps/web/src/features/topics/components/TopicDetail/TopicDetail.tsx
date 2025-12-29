@@ -1,4 +1,14 @@
-import { Archive, ArchiveX, BicepsFlexed, Gauge, Inbox, X } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import {
+	Archive,
+	ArchiveX,
+	BicepsFlexed,
+	BookOpen,
+	Gauge,
+	Inbox,
+	MoreHorizontal,
+	X
+} from 'lucide-react'
 import {
 	type ReactNode,
 	use,
@@ -7,6 +17,7 @@ import {
 	useMemo,
 	useRef
 } from 'react'
+import { BookOpenOff } from '~/components/icons'
 import { Button } from '~/components/ui/Button'
 import {
 	Popover,
@@ -14,7 +25,6 @@ import {
 	PopoverTrigger
 } from '~/components/ui/Popover'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
-import { Switch } from '~/components/ui/Switch'
 import { Textarea } from '~/components/ui/Textarea'
 import {
 	Tooltip,
@@ -29,9 +39,11 @@ import {
 	getRetrievabilityBucket,
 	getRetrievabilityColor
 } from '~/utils/retrievability'
+import { topicKeys } from '../../api/queryKeys'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import type { Topic } from '../../types/topic.types'
+import { TopicActionMenu } from '../TopicActionMenu'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
 import { TopicRelatedPanel } from '../TopicRelatedPanel'
 import { ReviewsSidebar } from './ReviewSidebar'
@@ -52,11 +64,7 @@ interface TopicDetailProps {
 	 */
 	headerBeforeActions?: ReactNode
 	/**
-	 * Content to render before the "more" dropdown in the header (right side).
-	 */
-	headerBeforeMoreActions?: ReactNode
-	/**
-	 * Content to render after the "more" dropdown in the header (right side).
+	 * Content to render on the right side of the header (e.g., close/minimize buttons).
 	 */
 	headerAfterActions?: ReactNode
 	/**
@@ -98,7 +106,6 @@ export function TopicDetail({
 	topic: topicProp,
 	isLoading: isLoadingProp,
 	headerBeforeActions,
-	headerBeforeMoreActions,
 	headerAfterActions,
 	sidebarReadonly = false,
 	onDelete,
@@ -112,6 +119,15 @@ export function TopicDetail({
 	const topic = topicProp !== undefined ? topicProp : contextValue.topic
 	const isLoading =
 		isLoadingProp !== undefined ? isLoadingProp : contextValue.isLoading
+
+	const queryClient = useQueryClient()
+
+	const handleTopicUpdateSuccess = useCallback(
+		(updatedTopic: Topic) => {
+			queryClient.setQueryData(topicKeys.detail(updatedTopic.id), updatedTopic)
+		},
+		[queryClient]
+	)
 
 	const { mutateAsync: updateTopic, isPending: isUpdatingTopic } =
 		useUpdateTopic()
@@ -231,9 +247,7 @@ export function TopicDetail({
 			<div className='flex h-full min-h-0 flex-col'>
 				<TopicDetailHeader
 					afterActions={headerAfterActions}
-					beforeActions={headerBeforeMoreActions}
 					headerBeforeActions={headerBeforeActions}
-					onDelete={onDelete}
 					onParentSelect={onTopicNavigate}
 					topic={topic}
 				/>
@@ -346,15 +360,41 @@ export function TopicDetail({
 									</TooltipContent>
 								</Tooltip>
 								<div className='flex-1' />
-								<div className='flex items-center gap-1.5 rounded-xl border-1 p-2'>
-									<span className='pr-2'>Show when due</span>
-									<Switch
-										checked={topic.srs_enabled ?? true}
-										disabled={isUpdatingTopic || sidebarReadonly}
-										onCheckedChange={handleSrsToggle}
-										size='sm'
-									/>
-								</div>
+								<Tooltip>
+									<TooltipTrigger asChild={true}>
+										<Button
+											disabled={isUpdatingTopic || sidebarReadonly}
+											onClick={() =>
+												handleSrsToggle(!(topic.srs_enabled ?? true))
+											}
+											size='icon-sm'
+											variant='outline'
+										>
+											{(topic.srs_enabled ?? true) ? (
+												<BookOpen className='h-5 w-5 text-green-500' />
+											) : (
+												<BookOpenOff className='h-5 w-5 text-muted-foreground' />
+											)}
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent side='bottom'>
+										Surface in review page
+									</TooltipContent>
+								</Tooltip>
+								<TopicActionMenu
+									onDelete={onDelete}
+									onTopicUpdateSuccess={handleTopicUpdateSuccess}
+									topic={topic}
+									trigger={
+										<Button
+											size='icon-sm'
+											title='More options'
+											variant='outline'
+										>
+											<MoreHorizontal className='h-5 w-5' />
+										</Button>
+									}
+								/>
 							</div>
 							<Textarea
 								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'

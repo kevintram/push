@@ -15,8 +15,8 @@ import { Route as MainUpcomingRouteImport } from './routes/_main/upcoming'
 import { Route as MainUnscheduledRouteImport } from './routes/_main/unscheduled'
 import { Route as MainTopicsRouteImport } from './routes/_main/topics'
 import { Route as MainTodayRouteImport } from './routes/_main/today'
+import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
-import { Route as MainReadyRouteImport } from './routes/_main/ready'
 import { Route as MainOverviewRouteImport } from './routes/_main/overview'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainInboxRouteImport } from './routes/_main/inbox'
@@ -54,14 +54,14 @@ const MainTodayRoute = MainTodayRouteImport.update({
   path: '/today',
   getParentRoute: () => MainRoute,
 } as any)
+const MainReviewRoute = MainReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => MainRoute,
+} as any)
 const MainRecentRoute = MainRecentRouteImport.update({
   id: '/recent',
   path: '/recent',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainReadyRoute = MainReadyRouteImport.update({
-  id: '/ready',
-  path: '/ready',
   getParentRoute: () => MainRoute,
 } as any)
 const MainOverviewRoute = MainOverviewRouteImport.update({
@@ -107,8 +107,8 @@ export interface FileRoutesByFullPath {
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
   '/overview': typeof MainOverviewRoute
-  '/ready': typeof MainReadyRoute
   '/recent': typeof MainRecentRoute
+  '/review': typeof MainReviewRoute
   '/today': typeof MainTodayRoute
   '/topics': typeof MainTopicsRoute
   '/unscheduled': typeof MainUnscheduledRoute
@@ -123,8 +123,8 @@ export interface FileRoutesByTo {
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
   '/overview': typeof MainOverviewRoute
-  '/ready': typeof MainReadyRoute
   '/recent': typeof MainRecentRoute
+  '/review': typeof MainReviewRoute
   '/today': typeof MainTodayRoute
   '/topics': typeof MainTopicsRoute
   '/unscheduled': typeof MainUnscheduledRoute
@@ -141,8 +141,8 @@ export interface FileRoutesById {
   '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/overview': typeof MainOverviewRoute
-  '/_main/ready': typeof MainReadyRoute
   '/_main/recent': typeof MainRecentRoute
+  '/_main/review': typeof MainReviewRoute
   '/_main/today': typeof MainTodayRoute
   '/_main/topics': typeof MainTopicsRoute
   '/_main/unscheduled': typeof MainUnscheduledRoute
@@ -159,8 +159,8 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/logbook'
     | '/overview'
-    | '/ready'
     | '/recent'
+    | '/review'
     | '/today'
     | '/topics'
     | '/unscheduled'
@@ -175,8 +175,8 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/logbook'
     | '/overview'
-    | '/ready'
     | '/recent'
+    | '/review'
     | '/today'
     | '/topics'
     | '/unscheduled'
@@ -192,8 +192,8 @@ export interface FileRouteTypes {
     | '/_main/inbox'
     | '/_main/logbook'
     | '/_main/overview'
-    | '/_main/ready'
     | '/_main/recent'
+    | '/_main/review'
     | '/_main/today'
     | '/_main/topics'
     | '/_main/unscheduled'
@@ -251,18 +251,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainTodayRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/review': {
+      id: '/_main/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof MainReviewRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/_main/recent': {
       id: '/_main/recent'
       path: '/recent'
       fullPath: '/recent'
       preLoaderRoute: typeof MainRecentRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/ready': {
-      id: '/_main/ready'
-      path: '/ready'
-      fullPath: '/ready'
-      preLoaderRoute: typeof MainReadyRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/overview': {
@@ -323,8 +323,8 @@ interface MainRouteChildren {
   MainInboxRoute: typeof MainInboxRoute
   MainLogbookRoute: typeof MainLogbookRoute
   MainOverviewRoute: typeof MainOverviewRoute
-  MainReadyRoute: typeof MainReadyRoute
   MainRecentRoute: typeof MainRecentRoute
+  MainReviewRoute: typeof MainReviewRoute
   MainTodayRoute: typeof MainTodayRoute
   MainTopicsRoute: typeof MainTopicsRoute
   MainUnscheduledRoute: typeof MainUnscheduledRoute
@@ -340,8 +340,8 @@ const MainRouteChildren: MainRouteChildren = {
   MainInboxRoute: MainInboxRoute,
   MainLogbookRoute: MainLogbookRoute,
   MainOverviewRoute: MainOverviewRoute,
-  MainReadyRoute: MainReadyRoute,
   MainRecentRoute: MainRecentRoute,
+  MainReviewRoute: MainReviewRoute,
   MainTodayRoute: MainTodayRoute,
   MainTopicsRoute: MainTopicsRoute,
   MainUnscheduledRoute: MainUnscheduledRoute,
