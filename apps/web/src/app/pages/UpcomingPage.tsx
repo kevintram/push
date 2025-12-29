@@ -27,12 +27,12 @@ import {
 } from '~/features/reviews/components/ReviewSection'
 import { getCookie, setCookie } from '~/utils/cookies'
 
-const SCHEDULED_TODAY_FILTER_COOKIE = 'scheduled-today-filter'
+const UPCOMING_TODAY_FILTER_COOKIE = 'upcoming-today-filter'
 
-export function ScheduledPage() {
+export function UpcomingPage() {
 	const [showFuture, setShowFuture] = useState(false)
 	const [todayFilter, setTodayFilter] = useState<boolean>(() => {
-		const saved = getCookie<boolean>(SCHEDULED_TODAY_FILTER_COOKIE)
+		const saved = getCookie<boolean>(UPCOMING_TODAY_FILTER_COOKIE)
 		return saved ?? false
 	})
 
@@ -82,7 +82,7 @@ export function ScheduledPage() {
 	const toggleTodayFilter = useCallback(() => {
 		setTodayFilter(prev => {
 			const newValue = !prev
-			setCookie(SCHEDULED_TODAY_FILTER_COOKIE, newValue)
+			setCookie(UPCOMING_TODAY_FILTER_COOKIE, newValue)
 			return newValue
 		})
 	}, [])
@@ -156,7 +156,7 @@ export function ScheduledPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={Calendar} title='Scheduled'>
+			<PageLayout.Header icon={Calendar} title='Upcoming'>
 				<Badge
 					className='cursor-pointer select-none'
 					onClick={toggleTodayFilter}
@@ -166,7 +166,7 @@ export function ScheduledPage() {
 					Today
 				</Badge>
 			</PageLayout.Header>
-			<ScheduledList
+			<UpcomingList
 				allSections={allSections}
 				allSectionsEmpty={allSectionsEmpty}
 				collapsedSections={collapsedSections}
@@ -192,7 +192,7 @@ export function ScheduledPage() {
 	)
 }
 
-function ScheduledList({
+function UpcomingList({
 	allSections,
 	allSectionsEmpty,
 	collapsedSections,

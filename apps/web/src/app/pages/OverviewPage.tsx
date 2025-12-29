@@ -212,13 +212,13 @@ function ScheduledCard() {
 	}, [sections])
 
 	return (
-		<Link className='group' to='/scheduled'>
+		<Link className='group' to='/upcoming'>
 			<Card className='h-full transition-colors hover:bg-accent/50'>
 				<CardHeader>
 					<div className='flex items-center justify-between'>
 						<div className='flex items-center gap-2'>
 							<Calendar className='h-5 w-5 text-muted-foreground' />
-							<CardTitle>Scheduled</CardTitle>
+							<CardTitle>Upcoming</CardTitle>
 						</div>
 						<ChevronRight className='h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100' />
 					</div>

@@ -3,7 +3,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
 	Calendar,
-	ChevronRight,
+	CircleDashed,
 	History,
 	Home,
 	Inbox,
@@ -27,16 +27,12 @@ import {
 	SidebarMenu,
 	SidebarMenuBadge,
 	SidebarMenuButton,
-	SidebarMenuItem,
-	SidebarMenuSub,
-	SidebarMenuSubButton,
-	SidebarMenuSubItem
+	SidebarMenuItem
 } from '~/components/ui/Sidebar'
 import { useTopics } from '~/features/topics/api/getTopics'
 
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
-	const [isPlanOpen, setIsPlanOpen] = useState(true)
 	const location = useLocation()
 
 	const { data: inboxTopics } = useTopics({ inboxed: true, archived: false })
@@ -54,24 +50,26 @@ export function AppSidebar() {
 			url: '/ready',
 			icon: Play,
 			isActive: (pathname: string) => pathname === '/ready'
-		},
+		}
+	]
+
+	const scheduleItems = [
 		{
 			title: 'Today',
 			url: '/today',
 			icon: Star,
 			isActive: (pathname: string) => pathname === '/today'
-		}
-	]
-
-	const planSubItems = [
+		},
 		{
-			title: 'Scheduled',
-			url: '/scheduled',
-			isActive: (pathname: string) => pathname === '/scheduled'
+			title: 'Upcoming',
+			url: '/upcoming',
+			icon: Calendar,
+			isActive: (pathname: string) => pathname === '/upcoming'
 		},
 		{
 			title: 'Unscheduled',
 			url: '/unscheduled',
+			icon: CircleDashed,
 			isActive: (pathname: string) => pathname === '/unscheduled'
 		}
 	]
@@ -102,9 +100,6 @@ export function AppSidebar() {
 			isActive: (pathname: string) => pathname === '/archived'
 		}
 	]
-
-	const isPlanActive =
-		location.pathname === '/scheduled' || location.pathname === '/unscheduled'
 
 	return (
 		<Sidebar
@@ -143,40 +138,31 @@ export function AppSidebar() {
 									</SidebarMenuItem>
 								)
 							})}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
 
-							{/* Collapsible Plan section */}
-							<SidebarMenuItem>
-								<SidebarMenuButton
-									isActive={isPlanActive && !isPlanOpen}
-									onClick={() => setIsPlanOpen(!isPlanOpen)}
-									tooltip='Plan'
-								>
-									<Calendar />
-									<span>Plan</span>
-									<ChevronRight
-										className={`ml-auto h-4 w-4 transition-transform ${isPlanOpen ? 'rotate-90' : ''}`}
-									/>
-								</SidebarMenuButton>
-								{isPlanOpen && (
-									<SidebarMenuSub>
-										{planSubItems.map(item => {
-											const isActive = item.isActive(location.pathname)
-											return (
-												<SidebarMenuSubItem key={item.title}>
-													<SidebarMenuSubButton
-														asChild={true}
-														isActive={isActive}
-													>
-														<Link to={item.url}>
-															<span>{item.title}</span>
-														</Link>
-													</SidebarMenuSubButton>
-												</SidebarMenuSubItem>
-											)
-										})}
-									</SidebarMenuSub>
-								)}
-							</SidebarMenuItem>
+				<SidebarGroup>
+					<SidebarGroupLabel>Schedule</SidebarGroupLabel>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{scheduleItems.map(item => {
+								const isActive = item.isActive(location.pathname)
+								return (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton
+											asChild={true}
+											isActive={isActive}
+											tooltip={item.title}
+										>
+											<Link to={item.url}>
+												<item.icon />
+												<span>{item.title}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								)
+							})}
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>

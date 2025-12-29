@@ -63,11 +63,11 @@ export function TodayPage() {
 									onClick={handleCreateTopic}
 								/>
 								<Button
-									onClick={() => navigate({ to: '/scheduled' })}
+									onClick={() => navigate({ to: '/upcoming' })}
 									variant='outline'
 								>
 									<Calendar />
-									Scheduled
+									Upcoming
 								</Button>
 								<Button
 									onClick={() => navigate({ to: '/home' })}
