@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronDown, Home, RefreshCcw } from 'lucide-react'
+import { BookOpen, ChevronDown, Home } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
@@ -128,7 +128,7 @@ export function ReadyPage() {
 	if (isLoading) {
 		return (
 			<PageLayout>
-				<PageLayout.Header icon={RefreshCcw} title='Review' />
+				<PageLayout.Header icon={BookOpen} title='Review' />
 				<PageLayout.Content>
 					<div className='flex flex-col gap-6'>
 						{[1, 2, 3].map(i => (
@@ -148,12 +148,12 @@ export function ReadyPage() {
 	if (isEmpty) {
 		return (
 			<PageLayout>
-				<PageLayout.Header icon={RefreshCcw} title='Review' />
+				<PageLayout.Header icon={BookOpen} title='Review' />
 				<PageLayout.Content>
 					<Empty>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
-								<RefreshCcw />
+								<BookOpen />
 							</EmptyMedia>
 							<EmptyTitle>No topics to review yet.</EmptyTitle>
 							<EmptyDescription>
@@ -184,7 +184,7 @@ export function ReadyPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={RefreshCcw} title='Review' />
+			<PageLayout.Header icon={BookOpen} title='Review' />
 			<PageLayout.Content>
 				{bucketSections.map(section => (
 					<ReadinessSection
