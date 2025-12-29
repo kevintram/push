@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { BicepsFlexed, Inbox, Plus, RotateCcw, SquareStack } from 'lucide-react'
+import { Anchor, Inbox, Plus, RotateCcw, SquareStack } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
@@ -376,7 +376,7 @@ export function AddTopicDialog({
 											size='sm'
 											variant='outline'
 										>
-											<BicepsFlexed className='h-4 w-4' />
+											<Anchor className='h-4 w-4' />
 											<span className='ml-1 text-xs'>Inherit SRS</span>
 										</Toggle>
 									</span>

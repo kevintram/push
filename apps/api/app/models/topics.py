@@ -15,12 +15,14 @@ from sqlalchemy import (
     Table,
     Column,
 )
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from sqlalchemy.types import TIMESTAMP, Boolean, Date, Integer, REAL, Text
 from typing import TYPE_CHECKING
 
 from app.models.base import Base
 from app.models.reviews import Review
+from app.utils.retrievability import calculate_retrievability
 
 if TYPE_CHECKING:
     from app.models.reviews import Review
@@ -118,6 +120,10 @@ class Topic(Base):
         foreign_keys="[topic_other_relations.c.to_topic_id, topic_other_relations.c.from_topic_id]",
         viewonly=True,
     )
+
+    @hybrid_property
+    def retrievability(self) -> float | None:
+        return calculate_retrievability(self.stability, self.last_reviewed_at)
 
 
 t_topics_closure = Table(
