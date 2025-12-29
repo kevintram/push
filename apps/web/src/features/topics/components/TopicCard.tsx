@@ -1,19 +1,37 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Archive, Baby, BookOpen, Inbox, User2 } from 'lucide-react'
+import dayjs from 'dayjs'
+import {
+	Archive,
+	Baby,
+	BookOpen,
+	Calendar,
+	Inbox,
+	Sparkles,
+	User2
+} from 'lucide-react'
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { useCallback, useMemo } from 'react'
 import { BookOpenOff } from '~/components/icons'
-import { TopicDateDisplay } from '~/components/TopicDateDisplay'
+import { Badge } from '~/components/ui/Badge'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/Tooltip'
 import { topicKeys } from '~/features/topics/api/queryKeys'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import type { Topic } from '~/features/topics/types/topic.types'
-import { getRetrievabilityBucket } from '~/utils/retrievability'
+import {
+	calculateDaysSinceLate,
+	getRetrievabilityBucket,
+	getThresholdCrossingInfo
+} from '~/utils/retrievability'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
 const MIN_HEIGHT = 96
@@ -23,12 +41,9 @@ interface TopicCardProps {
 	onTopicClick?: (topic: Topic) => void
 	minHeight?: number
 	searchQuery?: string
-	headerLeft?: React.ReactNode
 	headerRight?: React.ReactNode
-	/** Extra content to display in the footer (e.g., threshold crossing text) */
-	footerExtra?: React.ReactNode
-	/** Whether to show the bucket label (late/on time/early). Defaults to true. */
-	showBucketLabel?: boolean
+	/** Whether to show the "leaving soon" badge in the header. Defaults to false. */
+	showLeavingSoon?: boolean
 }
 
 export function TopicCard({
@@ -36,31 +51,99 @@ export function TopicCard({
 	onTopicClick,
 	minHeight = MIN_HEIGHT,
 	searchQuery,
-	headerLeft,
 	headerRight,
-	footerExtra,
-	showBucketLabel = true
+	showLeavingSoon = false
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
 	const { mutate: updateTopic, isPending: isUpdatingTopic } = useUpdateTopic()
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
 
-	// Get bucket label for display
-	const bucketLabel = useMemo(() => {
-		if (topic.retrievability === null) return null
+	// Threshold crossing info for header badge and bucket days
+	const thresholdInfo = useMemo(
+		() =>
+			getThresholdCrossingInfo(
+				topic.retrievability,
+				topic.stability,
+				topic.last_reviewed_at
+			),
+		[topic.retrievability, topic.stability, topic.last_reviewed_at]
+	)
+
+	// Show "leaving soon" badge if crossing threshold within 7 days
+	const isLeavingSoon = thresholdInfo && thresholdInfo.daysUntil <= 7
+
+	// Calculate bucket info for footer display
+	const bucketInfo = useMemo(() => {
+		if (topic.retrievability === null) {
+			return {
+				label: '—',
+				days: null,
+				suffix: null,
+				tooltip: null
+			}
+		}
+
 		const bucket = getRetrievabilityBucket(topic.retrievability)
+
 		switch (bucket) {
-			case 'early':
-				return 'early'
-			case 'onTime':
-				return 'on time'
-			case 'late':
-				return 'late'
+			case 'early': {
+				const days = thresholdInfo?.daysUntil ?? 0
+				return {
+					label: 'Early',
+					days,
+					suffix: 'left',
+					tooltip: `Early | ${days} day${days !== 1 ? 's' : ''} until ready`
+				}
+			}
+			case 'onTime': {
+				const days = thresholdInfo?.daysUntil ?? 0
+				return {
+					label: 'Ready',
+					days,
+					suffix: 'left',
+					tooltip: `Ready | ${days} day${days !== 1 ? 's' : ''} until late`
+				}
+			}
+			case 'late': {
+				const days = calculateDaysSinceLate(
+					topic.stability,
+					topic.last_reviewed_at
+				)
+				return {
+					label: 'Late',
+					days,
+					suffix: 'ago',
+					tooltip: `Late since ${days} day${days !== 1 ? 's' : ''} ago`
+				}
+			}
 			default:
 				return bucket satisfies never
 		}
-	}, [topic.retrievability])
+	}, [
+		topic.retrievability,
+		topic.stability,
+		topic.last_reviewed_at,
+		thresholdInfo
+	])
+
+	// Format last reviewed as relative time
+	const lastReviewedText = useMemo(() => {
+		if (!topic.last_reviewed_at) return 'never'
+		const days = dayjs().diff(dayjs(topic.last_reviewed_at), 'day')
+		if (days === 0) return 'today'
+		if (days === 1) return '1d ago'
+		return `${days}d ago`
+	}, [topic.last_reviewed_at])
+
+	// Check if this is a truly new topic (no reviews, no inherited state)
+	const isNewTopic = useMemo(() => {
+		return (
+			topic.retrievability === null &&
+			!topic.last_reviewed_at &&
+			topic.inherited_stability === null
+		)
+	}, [topic.retrievability, topic.last_reviewed_at, topic.inherited_stability])
 
 	// Search highlighting
 	const highlightedName = useMemo(() => {
@@ -126,7 +209,6 @@ export function TopicCard({
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
 				<div className='flex items-center gap-2'>
-					{headerLeft}
 					{/* Parents count - right of left header content (or start if empty) */}
 					<Popover>
 						<PopoverTrigger asChild={true}>
@@ -166,6 +248,12 @@ export function TopicCard({
 					</Popover>
 				</div>
 				<div className='flex-1' />
+				{/* Leaving soon badge */}
+				{showLeavingSoon && isLeavingSoon && (
+					<Badge className='h-5 text-xs' variant='destructive'>
+						leaving soon
+					</Badge>
+				)}
 				{/* SRS toggle */}
 				<div
 					className={isUpdatingTopic ? 'opacity-50' : 'cursor-pointer'}
@@ -215,23 +303,36 @@ export function TopicCard({
 					</div>
 				</div>
 			</CardContent>
-			{/* Bottom row: Retrievability and Children */}
+			{/* Bottom row: Status info and Children */}
 			<CardFooter className='gap-1 text-muted-foreground text-xs'>
-				<TopicDateDisplay
-					retrievability={topic.retrievability}
-					scheduledAt={topic.scheduled_at}
-					srsEnabled={topic.srs_enabled}
-				/>
-				{showBucketLabel && bucketLabel && (
+				{isNewTopic ? (
+					<div className='flex items-center gap-1'>
+						<Sparkles className='h-3 w-3' />
+						<span>New</span>
+					</div>
+				) : (
 					<>
+						{/* Bucket with tooltip */}
+						{bucketInfo.tooltip ? (
+							<Tooltip>
+								<TooltipTrigger asChild={true}>
+									<span className='cursor-help'>
+										{bucketInfo.label}
+										{bucketInfo.days !== null &&
+											` (${bucketInfo.days}d ${bucketInfo.suffix})`}
+									</span>
+								</TooltipTrigger>
+								<TooltipContent side='top'>{bucketInfo.tooltip}</TooltipContent>
+							</Tooltip>
+						) : (
+							<span>{bucketInfo.label}</span>
+						)}
+						{/* Last reviewed */}
 						<span>·</span>
-						<span>{bucketLabel}</span>
-					</>
-				)}
-				{footerExtra && (
-					<>
-						<span>·</span>
-						{footerExtra}
+						<div className='flex items-center gap-1'>
+							<Calendar className='h-3 w-3' />
+							<span>{lastReviewedText}</span>
+						</div>
 					</>
 				)}
 				<div className='flex-1' />
