@@ -29,7 +29,7 @@ import { getRetrievabilityBucket } from '~/utils/retrievability'
 export function OverviewPage() {
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={LayoutGrid} title='Overview' />
+			<PageLayout.Header icon={LayoutGrid} title='Home' />
 			<PageLayout.Content className='max-w-4xl'>
 				<div className='grid gap-4 md:grid-cols-2'>
 					<ReviewCard />

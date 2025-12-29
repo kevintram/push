@@ -52,7 +52,7 @@ export function HomePage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={Home} title='Topics' />
+			<PageLayout.Header icon={Home} title='My topics' />
 			<RootTopicsList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
