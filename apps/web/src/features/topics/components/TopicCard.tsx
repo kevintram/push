@@ -23,7 +23,6 @@ interface TopicCardProps {
 	onTopicClick?: (topic: Topic) => void
 	minHeight?: number
 	searchQuery?: string
-	headerLeft?: React.ReactNode
 	headerRight?: React.ReactNode
 	/** Extra content to display in the footer (e.g., threshold crossing text) */
 	footerExtra?: React.ReactNode
@@ -36,7 +35,6 @@ export function TopicCard({
 	onTopicClick,
 	minHeight = MIN_HEIGHT,
 	searchQuery,
-	headerLeft,
 	headerRight,
 	footerExtra,
 	showBucketLabel = true
@@ -126,7 +124,6 @@ export function TopicCard({
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
 				<div className='flex items-center gap-2'>
-					{headerLeft}
 					{/* Parents count - right of left header content (or start if empty) */}
 					<Popover>
 						<PopoverTrigger asChild={true}>
