@@ -1,14 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import {
-	Archive,
-	Baby,
-	BookOpen,
-	Brain,
-	Calendar,
-	Inbox,
-	User2
-} from 'lucide-react'
+import { Archive, Baby, BookOpen, Calendar, Inbox, User2 } from 'lucide-react'
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { useCallback, useMemo } from 'react'
 import { BookOpenOff } from '~/components/icons'
@@ -130,12 +122,6 @@ export function TopicCard({
 		topic.last_reviewed_at,
 		thresholdInfo
 	])
-
-	// Format retrievability as percentage
-	const retrievabilityText = useMemo(() => {
-		if (topic.retrievability === null) return '—'
-		return `${Math.round(topic.retrievability * 100)}%`
-	}, [topic.retrievability])
 
 	// Format last reviewed as relative time
 	const lastReviewedText = useMemo(() => {
@@ -334,12 +320,6 @@ export function TopicCard({
 						) : (
 							<span className={bucketInfo.colorClass}>{bucketInfo.label}</span>
 						)}
-						{/* Retrievability */}
-						<span>·</span>
-						<div className='flex items-center gap-1'>
-							<Brain className='h-3 w-3' />
-							<span>{retrievabilityText}</span>
-						</div>
 						{/* Last reviewed */}
 						<span>·</span>
 						<div className='flex items-center gap-1'>
