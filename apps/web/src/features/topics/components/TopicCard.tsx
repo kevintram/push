@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Archive, Baby, Inbox, User2 } from 'lucide-react'
+import { Archive, Baby, BookOpen, Inbox, User2 } from 'lucide-react'
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { useCallback, useMemo } from 'react'
+import { BookOpenOff } from '~/components/icons'
 import { TopicDateDisplay } from '~/components/TopicDateDisplay'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
 import {
@@ -9,7 +10,6 @@ import {
 	PopoverContent,
 	PopoverTrigger
 } from '~/components/ui/Popover'
-import { Switch } from '~/components/ui/Switch'
 import { topicKeys } from '~/features/topics/api/queryKeys'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -165,7 +165,19 @@ export function TopicCard({
 						</PopoverContent>
 					</Popover>
 				</div>
-
+				<div className='flex-1' />
+				{/* SRS toggle */}
+				<div
+					className={isUpdatingTopic ? 'opacity-50' : 'cursor-pointer'}
+					onClick={handleSrsToggle}
+					onKeyDown={e => e.stopPropagation()}
+				>
+					{(topic.srs_enabled ?? true) ? (
+						<BookOpen className='h-4 w-4 text-green-500' />
+					) : (
+						<BookOpenOff className='h-4 w-4 text-muted-foreground' />
+					)}
+				</div>
 				<div className='flex items-center gap-1'>{headerRight}</div>
 			</CardHeader>
 
@@ -223,18 +235,6 @@ export function TopicCard({
 					</>
 				)}
 				<div className='flex-1' />
-				{/* SRS toggle */}
-				<div
-					className='flex items-center gap-1'
-					onClick={handleSrsToggle}
-					onKeyDown={e => e.stopPropagation()}
-				>
-					<Switch
-						checked={topic.srs_enabled ?? true}
-						disabled={isUpdatingTopic}
-						size='xs'
-					/>
-				</div>
 				{/* Children count - bottom right */}
 				<Popover>
 					<PopoverTrigger asChild={true}>
