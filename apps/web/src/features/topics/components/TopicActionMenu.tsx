@@ -16,6 +16,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { useCreateReview } from '~/features/reviews/api/createReview'
+import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -42,6 +43,7 @@ export function TopicActionMenu({
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
 	const createReviewMutation = useCreateReview()
+	const { openReviewDialog } = useReviewDialog()
 
 	const handleDeleteTopic = useCallback(() => {
 		deleteTopicMutation.mutate(topic.id, {
@@ -77,15 +79,16 @@ export function TopicActionMenu({
 		async (e: React.MouseEvent) => {
 			e.stopPropagation()
 			const today = new Date().toISOString().split('T')[0] ?? ''
-			await createReviewMutation.mutateAsync({
+			const review = await createReviewMutation.mutateAsync({
 				topic_id: topic.id,
 				rating: 'good',
 				description: '',
 				scheduled_at: null,
 				completed_at: today
 			})
+			openReviewDialog(review.id)
 		},
-		[createReviewMutation, topic.id]
+		[createReviewMutation, topic.id, openReviewDialog]
 	)
 
 	return (
