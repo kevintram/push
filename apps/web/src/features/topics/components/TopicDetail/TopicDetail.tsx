@@ -7,6 +7,7 @@ import {
 	Brain,
 	Inbox,
 	MoreHorizontal,
+	Sparkles,
 	X
 } from 'lucide-react'
 import {
@@ -232,6 +233,19 @@ export function TopicDetail({
 	const stabilityText =
 		topic?.stability != null ? `${Math.round(topic.stability)}d` : '—'
 
+	// Check if this is a truly new topic (no reviews, no inherited state)
+	const isNewTopic = useMemo(() => {
+		return (
+			topic?.retrievability === null &&
+			!topic?.last_reviewed_at &&
+			topic?.inherited_stability === null
+		)
+	}, [
+		topic?.retrievability,
+		topic?.last_reviewed_at,
+		topic?.inherited_stability
+	])
+
 	const updateNotes = useCallback(
 		(newNotes: string) => {
 			if (!topic?.id) return
@@ -362,47 +376,56 @@ export function TopicDetail({
 								value={title}
 							/>
 							<div className='flex items-center gap-3 border-t-1 border-b-1 py-2 text-muted-foreground text-sm'>
-								{/* Bucket status */}
-								<Tooltip>
-									<TooltipTrigger asChild={true}>
-										<span className='cursor-help'>
-											{bucketInfo.label}
-											{bucketInfo.days !== null &&
-												` (${bucketInfo.days}d ${bucketInfo.suffix})`}
-										</span>
-									</TooltipTrigger>
-									<TooltipContent side='bottom'>
-										{topic.retrievability != null
-											? 'Memory retention status'
-											: 'Complete a review to see status'}
-									</TooltipContent>
-								</Tooltip>
-								⋅{/* Retrievability */}
-								<Tooltip>
-									<TooltipTrigger asChild={true}>
-										<div className='flex items-center gap-1'>
-											<Brain className='h-3 w-3' />
-											<span>{retrievabilityDisplay ?? '—'}</span>
-										</div>
-									</TooltipTrigger>
-									<TooltipContent side='bottom'>
-										{topic.retrievability != null
-											? 'Estimated probability of recall'
-											: 'Complete a review to calculate retrievability'}
-									</TooltipContent>
-								</Tooltip>
-								⋅{/* Stability */}
-								<Tooltip>
-									<TooltipTrigger asChild={true}>
-										<div className='flex items-center gap-1'>
-											<Anchor className='h-3 w-3' />
-											<span>{stabilityText}</span>
-										</div>
-									</TooltipTrigger>
-									<TooltipContent side='bottom'>
-										Memory stability in days
-									</TooltipContent>
-								</Tooltip>
+								{isNewTopic ? (
+									<div className='flex items-center gap-1'>
+										<Sparkles className='h-3 w-3' />
+										<span>New</span>
+									</div>
+								) : (
+									<>
+										{/* Bucket status */}
+										<Tooltip>
+											<TooltipTrigger asChild={true}>
+												<span className='cursor-help'>
+													{bucketInfo.label}
+													{bucketInfo.days !== null &&
+														` (${bucketInfo.days}d ${bucketInfo.suffix})`}
+												</span>
+											</TooltipTrigger>
+											<TooltipContent side='bottom'>
+												{topic.retrievability != null
+													? 'Memory retention status'
+													: 'Complete a review to see status'}
+											</TooltipContent>
+										</Tooltip>
+										⋅{/* Retrievability */}
+										<Tooltip>
+											<TooltipTrigger asChild={true}>
+												<div className='flex items-center gap-1'>
+													<Brain className='h-3 w-3' />
+													<span>{retrievabilityDisplay ?? '—'}</span>
+												</div>
+											</TooltipTrigger>
+											<TooltipContent side='bottom'>
+												{topic.retrievability != null
+													? 'Estimated probability of recall'
+													: 'Complete a review to calculate retrievability'}
+											</TooltipContent>
+										</Tooltip>
+										⋅{/* Stability */}
+										<Tooltip>
+											<TooltipTrigger asChild={true}>
+												<div className='flex items-center gap-1'>
+													<Anchor className='h-3 w-3' />
+													<span>{stabilityText}</span>
+												</div>
+											</TooltipTrigger>
+											<TooltipContent side='bottom'>
+												Memory stability in days
+											</TooltipContent>
+										</Tooltip>
+									</>
+								)}
 								<div className='flex-1' />
 								<Tooltip>
 									<TooltipTrigger asChild={true}>

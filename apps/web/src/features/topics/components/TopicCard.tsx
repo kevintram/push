@@ -1,6 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { Archive, Baby, BookOpen, Calendar, Inbox, User2 } from 'lucide-react'
+import {
+	Archive,
+	Baby,
+	BookOpen,
+	Calendar,
+	Inbox,
+	Sparkles,
+	User2
+} from 'lucide-react'
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { useCallback, useMemo } from 'react'
 import { BookOpenOff } from '~/components/icons'
@@ -298,7 +306,10 @@ export function TopicCard({
 			{/* Bottom row: Status info and Children */}
 			<CardFooter className='gap-1 text-muted-foreground text-xs'>
 				{isNewTopic ? (
-					<span>New</span>
+					<div className='flex items-center gap-1'>
+						<Sparkles className='h-3 w-3' />
+						<span>New</span>
+					</div>
 				) : (
 					<>
 						{/* Bucket with tooltip */}
