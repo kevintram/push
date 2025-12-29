@@ -8,7 +8,7 @@ import {
 	History,
 	Home,
 	Inbox,
-	LayoutGrid,
+	Library,
 	ListChecks,
 	Settings,
 	Star
@@ -42,7 +42,7 @@ export function AppSidebar() {
 		{
 			title: 'Home',
 			url: '/home',
-			icon: LayoutGrid,
+			icon: Home,
 			isActive: (pathname: string) => pathname === '/home'
 		},
 		{
@@ -84,7 +84,7 @@ export function AppSidebar() {
 		{
 			title: 'My topics',
 			url: '/my-topics',
-			icon: Home,
+			icon: Library,
 			isActive: (pathname: string) => pathname === '/my-topics'
 		},
 		{

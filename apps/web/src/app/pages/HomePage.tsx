@@ -4,7 +4,7 @@ import {
 	ChevronRight,
 	CircleDashed,
 	History,
-	LayoutGrid,
+	Home,
 	Play,
 	Star
 } from 'lucide-react'
@@ -29,7 +29,7 @@ import { getRetrievabilityBucket } from '~/utils/retrievability'
 export function HomePage() {
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={LayoutGrid} title='Home' />
+			<PageLayout.Header icon={Home} title='Home' />
 			<PageLayout.Content className='max-w-4xl'>
 				<div className='grid gap-4 md:grid-cols-2'>
 					<ReviewCard />
