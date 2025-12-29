@@ -8,9 +8,9 @@ import {
 	History,
 	Home,
 	Inbox,
-	Library,
 	ListChecks,
 	Settings,
+	SquareLibrary,
 	Star
 } from 'lucide-react'
 import { useState } from 'react'
@@ -84,7 +84,7 @@ export function AppSidebar() {
 		{
 			title: 'My topics',
 			url: '/my-topics',
-			icon: Library,
+			icon: SquareLibrary,
 			isActive: (pathname: string) => pathname === '/my-topics'
 		},
 		{
