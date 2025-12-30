@@ -18,6 +18,7 @@ import {
 import { TopicBadge } from '~/features/topics/components/TopicBadge'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
+import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReviewSession } from '../api/deleteReviewSession'
 import { reviewSessionKeys } from '../api/queryKeys'
 import { useUpdateReviewSession } from '../api/updateReviewSession'
@@ -131,29 +132,17 @@ export function ReviewSessionItem({
 		}
 	}, [entry.reviews])
 
-	const relativeDate = useMemo(() => {
-		if (!effectiveDate) return null
-
-		const today = dayjs().startOf('day')
-		const dateDay = dayjs(effectiveDate).startOf('day')
-		const diffDays = dateDay.diff(today, 'day')
-
-		if (diffDays === 0) return 'Today'
-		if (diffDays === 1) return 'Tomorrow'
-		if (diffDays === -1) return 'Yesterday'
-		if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
-		return `in ${diffDays}d`
-	}, [effectiveDate])
+	const relativeDate = formatRelativeDate(effectiveDate)
 
 	const dateButtonColorClass = useMemo(() => {
 		if (isOverdueValue) {
 			return 'text-red-600 dark:text-red-400'
 		}
-		if (relativeDate === 'Today') {
+		if (relativeDate.text === 'Today') {
 			return 'text-blue-600 dark:text-blue-400'
 		}
 		return ''
-	}, [isOverdueValue, relativeDate])
+	}, [isOverdueValue, relativeDate.text])
 
 	return (
 		<Card className='rounded-none border-0 border-b bg-transparent shadow-none'>
@@ -201,7 +190,7 @@ export function ReviewSessionItem({
 											variant='ghost'
 										>
 											<CalendarIcon className='h-3 w-3' />
-											{relativeDate}
+											{relativeDate.text}
 										</Button>
 									</TooltipTrigger>
 								}

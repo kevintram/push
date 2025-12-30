@@ -24,6 +24,7 @@ import {
 } from '~/components/ui/Tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
+import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReview } from '../api/deleteReview'
 import { useUpdateReview } from '../api/updateReview'
 import type { ReviewListItem } from '../types/review.types'
@@ -32,20 +33,6 @@ import {
 	ReviewRatingCheckbox,
 	type ReviewRatingState
 } from './ReviewRatingCheckbox'
-
-const getRelativeDateLabel = (date: Date | null) => {
-	if (!date) return null
-
-	const today = dayjs().startOf('day')
-	const dateDay = dayjs(date).startOf('day')
-	const diffDays = dateDay.diff(today, 'day')
-
-	if (diffDays === 0) return 'Today'
-	if (diffDays === 1) return 'Tomorrow'
-	if (diffDays === -1) return 'Yesterday'
-	if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
-	return `in ${diffDays}d`
-}
 
 const getInitialSelectedDate = (entry: ReviewListItem) => {
 	if (entry.completed_at) {
@@ -201,7 +188,7 @@ export function ReviewItem({
 		isCompleted
 	})
 
-	const relativeDate = getRelativeDateLabel(effectiveDate)
+	const relativeDate = formatRelativeDate(effectiveDate)
 
 	const sessionDisplayText = entry.review_session
 		? entry.review_session.description?.trim() || 'no description'
@@ -210,7 +197,7 @@ export function ReviewItem({
 	const dateButtonColorClass = cn(
 		isOverdueValue && 'text-red-600 dark:text-red-400',
 		!isOverdueValue &&
-			relativeDate === 'Today' &&
+			relativeDate.text === 'Today' &&
 			'text-blue-600 dark:text-blue-400'
 	)
 	const description = entry.description?.trim()
@@ -270,7 +257,7 @@ export function ReviewItem({
 											variant='ghost'
 										>
 											<CalendarIcon className='h-3 w-3' />
-											{relativeDate}
+											{relativeDate.text}
 										</Button>
 									</TooltipTrigger>
 								}

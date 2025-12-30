@@ -21,6 +21,7 @@ import { Textarea } from '~/components/ui/Textarea'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
+import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReview } from '../api/deleteReview'
 import { useReview } from '../api/getReviews'
 import { useUpdateReview } from '../api/updateReview'
@@ -66,19 +67,7 @@ export function ReviewDialog({
 		? dayjs(review.effective_date).toDate()
 		: null
 
-	const relativeDate = useMemo(() => {
-		if (!effectiveDate) return 'No date'
-
-		const today = dayjs().startOf('day')
-		const dateDay = dayjs(effectiveDate).startOf('day')
-		const diffDays = dateDay.diff(today, 'day')
-
-		if (diffDays === 0) return 'Today'
-		if (diffDays === 1) return 'Tomorrow'
-		if (diffDays === -1) return 'Yesterday'
-		if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
-		return `in ${diffDays}d`
-	}, [effectiveDate])
+	const relativeDate = formatRelativeDate(effectiveDate)
 
 	const isOverdueValue: boolean = useMemo(() => {
 		return isOverdue({
@@ -352,14 +341,14 @@ export function ReviewDialog({
 													className={cn(
 														'min-w-0 flex-1 justify-start px-2',
 														isOverdueValue && 'text-red-600 dark:text-red-400',
-														relativeDate === 'Today' &&
+														relativeDate.text === 'Today' &&
 															'text-blue-600 dark:text-blue-400'
 													)}
 													size='sm'
 													variant='ghost'
 												>
 													<CalendarIcon className='h-4 w-4 flex-shrink-0' />
-													<span className='truncate'>{relativeDate}</span>
+													<span className='truncate'>{relativeDate.text}</span>
 												</Button>
 											}
 										/>

@@ -1,56 +1,23 @@
 import { useQueryClient } from '@tanstack/react-query'
-import {
-	Anchor,
-	Archive,
-	ArchiveX,
-	BookOpen,
-	Brain,
-	Inbox,
-	MoreHorizontal,
-	Sparkles,
-	X
-} from 'lucide-react'
-import {
-	type ReactNode,
-	use,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef
-} from 'react'
-import { BookOpenOff } from '~/components/icons'
-import { Button } from '~/components/ui/Button'
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger
-} from '~/components/ui/Popover'
+import { type ReactNode, use, useCallback, useEffect, useRef } from 'react'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger
-} from '~/components/ui/Tooltip'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
-import {
-	calculateDaysSinceLate,
-	formatRetrievability,
-	getRetrievabilityBucket,
-	getThresholdCrossingInfo
-} from '~/utils/retrievability'
 import { topicKeys } from '../../api/queryKeys'
 import { useUpdateTopic } from '../../api/updateTopic'
+import { useTopicMetrics } from '../../hooks/useTopicMetrics'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import type { Topic } from '../../types/topic.types'
-import { TopicActionMenu } from '../TopicActionMenu'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
 import { TopicRelatedPanel } from '../TopicRelatedPanel'
 import { ReviewsSidebar } from './ReviewSidebar'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailSkeleton } from './TopicDetailSkeleton'
+import { TopicProperties } from './TopicProperties'
+import { TopicStatus } from './TopicStatus'
+import { TopicTitleSection } from './TopicTitleSection'
 
 interface TopicDetailProps {
 	/**
@@ -163,88 +130,7 @@ export function TopicDetail({
 		[topic?.id, sidebarReadonly, updateTopic]
 	)
 
-	// Calculate retrievability display
-	const retrievabilityDisplay = useMemo(() => {
-		if (topic?.retrievability == null) return null
-		return formatRetrievability(topic.retrievability)
-	}, [topic?.retrievability])
-
-	// Threshold crossing info for bucket days calculation
-	const thresholdInfo = useMemo(
-		() =>
-			getThresholdCrossingInfo(
-				topic?.retrievability ?? null,
-				topic?.stability ?? null,
-				topic?.last_reviewed_at ?? null
-			),
-		[topic?.retrievability, topic?.stability, topic?.last_reviewed_at]
-	)
-
-	// Calculate bucket info for display (matching TopicCard format)
-	const bucketInfo = useMemo(() => {
-		if (topic?.retrievability == null) {
-			return {
-				label: '—',
-				days: null,
-				suffix: null
-			}
-		}
-
-		const bucket = getRetrievabilityBucket(topic.retrievability)
-
-		switch (bucket) {
-			case 'early': {
-				const days = thresholdInfo?.daysUntil ?? 0
-				return {
-					label: 'Early',
-					days,
-					suffix: 'left'
-				}
-			}
-			case 'onTime': {
-				const days = thresholdInfo?.daysUntil ?? 0
-				return {
-					label: 'Ready',
-					days,
-					suffix: 'left'
-				}
-			}
-			case 'late': {
-				const days = calculateDaysSinceLate(
-					topic.stability,
-					topic.last_reviewed_at
-				)
-				return {
-					label: 'Late',
-					days,
-					suffix: 'ago'
-				}
-			}
-			default:
-				return bucket satisfies never
-		}
-	}, [
-		topic?.retrievability,
-		topic?.stability,
-		topic?.last_reviewed_at,
-		thresholdInfo
-	])
-
-	const stabilityText =
-		topic?.stability != null ? `${Math.round(topic.stability)}d` : '—'
-
-	// Check if this is a truly new topic (no reviews, no inherited state)
-	const isNewTopic = useMemo(() => {
-		return (
-			topic?.retrievability === null &&
-			!topic?.last_reviewed_at &&
-			topic?.inherited_stability === null
-		)
-	}, [
-		topic?.retrievability,
-		topic?.last_reviewed_at,
-		topic?.inherited_stability
-	])
+	const metrics = useTopicMetrics(topic ?? null)
 
 	const updateNotes = useCallback(
 		(newNotes: string) => {
@@ -309,160 +195,28 @@ export function TopicDetail({
 						)}
 						ref={scrollContainerRef}
 					>
-						{(topic.archived || topic.inboxed) && (
-							<div className='-translate-x-2 flex flex-row'>
-								{topic.archived && (
-									<Popover>
-										<PopoverTrigger asChild={true}>
-											<Button
-												className='flex items-center'
-												size='sm'
-												variant='ghost'
-											>
-												<Archive className='h-4 w-4 text-muted-foreground' />
-												<span className='text-muted-foreground text-xs'>
-													Archived
-												</span>
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className='w-auto p-2'>
-											<Button
-												className='w-full justify-start'
-												onClick={handleArchiveToggle}
-												size='sm'
-												variant='ghost'
-											>
-												<ArchiveX className='mr-2 h-4 w-4' />
-												Unarchive
-											</Button>
-										</PopoverContent>
-									</Popover>
-								)}
-								{topic.inboxed && (
-									<Popover>
-										<PopoverTrigger asChild={true}>
-											<Button
-												className='flex items-center'
-												size='sm'
-												variant='ghost'
-											>
-												<Inbox className='h-4 w-4 text-muted-foreground' />
-												<span className='text-muted-foreground text-xs'>
-													Inboxed
-												</span>
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className='w-auto p-2'>
-											<Button
-												className='w-full justify-start'
-												onClick={handleInboxToggle}
-												size='sm'
-												variant='ghost'
-											>
-												<X className='mr-2 h-4 w-4' />
-												Remove from inbox
-											</Button>
-										</PopoverContent>
-									</Popover>
-								)}
-							</div>
-						)}
-						<div className='flex flex-col gap-2 pb-4'>
-							<Textarea
-								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-								onChange={onNameChange}
-								placeholder='Title'
-								spellCheck={false}
-								value={title}
+						<TopicStatus
+							archived={topic.archived}
+							inboxed={topic.inboxed}
+							onArchiveToggle={handleArchiveToggle}
+							onInboxToggle={handleInboxToggle}
+						/>
+						<TopicTitleSection
+							isUpdating={isUpdatingTopic}
+							onDelete={onDelete}
+							onSrsToggle={handleSrsToggle}
+							onTitleChange={onNameChange}
+							onTopicUpdateSuccess={handleTopicUpdateSuccess}
+							sidebarReadonly={sidebarReadonly}
+							title={title}
+							topic={topic}
+						/>
+						<div className='flex flex-col gap-1'>
+							<TopicProperties
+								insertedAt={topic.inserted_at}
+								metrics={metrics}
+								updatedAt={topic.updated_at}
 							/>
-							<div className='flex items-center gap-3 border-t-1 border-b-1 py-2 text-muted-foreground text-sm'>
-								{isNewTopic ? (
-									<div className='flex items-center gap-1'>
-										<Sparkles className='h-3 w-3' />
-										<span>New</span>
-									</div>
-								) : (
-									<>
-										{/* Bucket status */}
-										<Tooltip>
-											<TooltipTrigger asChild={true}>
-												<span className='cursor-help'>
-													{bucketInfo.label}
-													{bucketInfo.days !== null &&
-														` (${bucketInfo.days}d ${bucketInfo.suffix})`}
-												</span>
-											</TooltipTrigger>
-											<TooltipContent side='bottom'>
-												{topic.retrievability != null
-													? 'Memory retention status'
-													: 'Complete a review to see status'}
-											</TooltipContent>
-										</Tooltip>
-										⋅{/* Retrievability */}
-										<Tooltip>
-											<TooltipTrigger asChild={true}>
-												<div className='flex items-center gap-1'>
-													<Brain className='h-3 w-3' />
-													<span>{retrievabilityDisplay ?? '—'}</span>
-												</div>
-											</TooltipTrigger>
-											<TooltipContent side='bottom'>
-												{topic.retrievability != null
-													? 'Estimated probability of recall'
-													: 'Complete a review to calculate retrievability'}
-											</TooltipContent>
-										</Tooltip>
-										⋅{/* Stability */}
-										<Tooltip>
-											<TooltipTrigger asChild={true}>
-												<div className='flex items-center gap-1'>
-													<Anchor className='h-3 w-3' />
-													<span>{stabilityText}</span>
-												</div>
-											</TooltipTrigger>
-											<TooltipContent side='bottom'>
-												Memory stability in days
-											</TooltipContent>
-										</Tooltip>
-									</>
-								)}
-								<div className='flex-1' />
-								<Tooltip>
-									<TooltipTrigger asChild={true}>
-										<Button
-											disabled={isUpdatingTopic || sidebarReadonly}
-											onClick={() =>
-												handleSrsToggle(!(topic.srs_enabled ?? true))
-											}
-											size='icon-sm'
-											variant='outline'
-										>
-											{(topic.srs_enabled ?? true) ? (
-												<BookOpen className='h-5 w-5 text-green-500' />
-											) : (
-												<BookOpenOff className='h-5 w-5 text-muted-foreground' />
-											)}
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent side='bottom'>
-										Surface in review page
-									</TooltipContent>
-								</Tooltip>
-								<TopicActionMenu
-									onDelete={onDelete}
-									onTopicUpdateSuccess={handleTopicUpdateSuccess}
-									topic={topic}
-									trigger={
-										<Button
-											size='icon-sm'
-											title='More options'
-											variant='outline'
-										>
-											<MoreHorizontal className='h-5 w-5' />
-										</Button>
-									}
-								/>
-							</div>
 							<Textarea
 								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
 								name='notes'
