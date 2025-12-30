@@ -82,7 +82,7 @@ export function AppSidebar() {
 			isActive: (pathname: string) => pathname === '/inbox'
 		},
 		{
-			title: 'My topics',
+			title: 'My Topics',
 			url: '/my-topics',
 			icon: SquareLibrary,
 			isActive: (pathname: string) => pathname === '/my-topics'
