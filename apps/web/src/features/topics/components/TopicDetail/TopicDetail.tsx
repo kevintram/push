@@ -435,9 +435,18 @@ export function TopicDetail({
 												</div>
 											</TooltipTrigger>
 											<TooltipContent side='bottom'>
-												{topic.retrievability != null
-													? 'Memory retention status'
-													: 'Complete a review to see status'}
+												{(() => {
+													switch (bucketInfo.label) {
+														case 'Ready':
+															return `Ready to review, ${bucketInfo.days} days until late`
+														case 'Early':
+															return `A little early to review, ${bucketInfo.days} days until ready`
+														case 'Late':
+															return `${bucketInfo.days} days late, ready for a risky review`
+														default:
+															return 'Complete a review to see status'
+													}
+												})()}
 											</TooltipContent>
 										</Tooltip>
 										⋅{/* Retrievability */}
@@ -450,7 +459,7 @@ export function TopicDetail({
 											</TooltipTrigger>
 											<TooltipContent side='bottom'>
 												{topic.retrievability != null
-													? 'Estimated probability of recall'
+													? `${retrievabilityDisplay} chance of successfully recalling today`
 													: 'Complete a review to calculate retrievability'}
 											</TooltipContent>
 										</Tooltip>
@@ -463,7 +472,11 @@ export function TopicDetail({
 												</div>
 											</TooltipTrigger>
 											<TooltipContent side='bottom'>
-												Memory stability in days
+												Durable for{' '}
+												{topic?.stability != null
+													? `${Math.round(topic.stability)} days`
+													: '—'}{' '}
+												without review
 											</TooltipContent>
 										</Tooltip>
 									</>
