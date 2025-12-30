@@ -26,12 +26,8 @@ import {
 } from '~/components/ui/Tooltip'
 import { topicKeys } from '~/features/topics/api/queryKeys'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
+import { useTopicMetrics } from '~/features/topics/hooks/useTopicMetrics'
 import type { Topic } from '~/features/topics/types/topic.types'
-import {
-	calculateDaysSinceLate,
-	getRetrievabilityBucket,
-	getThresholdCrossingInfo
-} from '~/utils/retrievability'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
 const MIN_HEIGHT = 96
@@ -59,73 +55,7 @@ export function TopicCard({
 	const parentCount = topic.parents?.length ?? 0
 	const childCount = topic.children?.length ?? 0
 
-	// Threshold crossing info for header badge and bucket days
-	const thresholdInfo = useMemo(
-		() =>
-			getThresholdCrossingInfo(
-				topic.retrievability,
-				topic.stability,
-				topic.last_reviewed_at
-			),
-		[topic.retrievability, topic.stability, topic.last_reviewed_at]
-	)
-
-	// Show "leaving soon" badge if crossing threshold within 7 days
-	const isLeavingSoon = thresholdInfo && thresholdInfo.daysUntil <= 7
-
-	// Calculate bucket info for footer display
-	const bucketInfo = useMemo(() => {
-		if (topic.retrievability === null) {
-			return {
-				label: '—',
-				days: null,
-				suffix: null,
-				tooltip: null
-			}
-		}
-
-		const bucket = getRetrievabilityBucket(topic.retrievability)
-
-		switch (bucket) {
-			case 'early': {
-				const days = thresholdInfo?.daysUntil ?? 0
-				return {
-					label: 'Early',
-					days,
-					suffix: 'left',
-					tooltip: `A little early to review, ${days} days until ready`
-				}
-			}
-			case 'onTime': {
-				const days = thresholdInfo?.daysUntil ?? 0
-				return {
-					label: 'Ready',
-					days,
-					suffix: 'left',
-					tooltip: `Ready to review, ${days} days until late`
-				}
-			}
-			case 'late': {
-				const days = calculateDaysSinceLate(
-					topic.stability,
-					topic.last_reviewed_at
-				)
-				return {
-					label: 'Late',
-					days,
-					suffix: 'ago',
-					tooltip: `${days} days late, ready for a risky review`
-				}
-			}
-			default:
-				return bucket satisfies never
-		}
-	}, [
-		topic.retrievability,
-		topic.stability,
-		topic.last_reviewed_at,
-		thresholdInfo
-	])
+	const { bucketInfo, isNewTopic, isLeavingSoon } = useTopicMetrics(topic)
 
 	// Format last reviewed as relative time
 	const lastReviewedText = useMemo(() => {
@@ -144,15 +74,6 @@ export function TopicCard({
 		if (days === 1) return '1 day ago'
 		return `${days} days ago`
 	}, [topic.last_reviewed_at])
-
-	// Check if this is a truly new topic (no reviews, no inherited state)
-	const isNewTopic = useMemo(() => {
-		return (
-			topic.retrievability === null &&
-			!topic.last_reviewed_at &&
-			topic.inherited_stability === null
-		)
-	}, [topic.retrievability, topic.last_reviewed_at, topic.inherited_stability])
 
 	// Search highlighting
 	const highlightedName = useMemo(() => {
