@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
-	Anchor,
+	Anvil,
 	CalendarIcon,
 	MoreHorizontal,
 	SquareStack,
@@ -327,7 +327,7 @@ export function ReviewItem({
 							<>
 								{showingTopicOrSession && <span>⋅</span>}
 								<div className='flex items-center'>
-									<Anchor className='mr-1 h-3 w-3' />
+									<Anvil className='mr-1 h-3 w-3' />
 									<span>{`${stabilityAfterRounded}d`}</span>
 									<span className={cn('ml-1', stabilityChangeColorClass)}>
 										({stabilityDeltaRounded >= 0 ? '+' : ''}

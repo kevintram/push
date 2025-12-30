@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Anchor, BookOpen, Brain, Sparkles } from 'lucide-react'
+import { Anvil, BookOpen, Brain, Sparkles } from 'lucide-react'
 import {
 	Tooltip,
 	TooltipContent,
@@ -71,7 +71,7 @@ export function TopicProperties({
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
 							<div className='flex items-center gap-1'>
-								<Anchor className='h-3 w-3' />
+								<Anvil className='h-3 w-3' />
 								<span>{stabilityText}</span>
 							</div>
 						</TooltipTrigger>
