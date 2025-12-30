@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import {
 	Anchor,
 	Archive,
@@ -449,7 +450,8 @@ export function TopicDetail({
 												})()}
 											</TooltipContent>
 										</Tooltip>
-										⋅{/* Retrievability */}
+										<span>⋅</span>
+										{/* Retrievability */}
 										<Tooltip>
 											<TooltipTrigger asChild={true}>
 												<div className='flex items-center gap-1'>
@@ -463,7 +465,8 @@ export function TopicDetail({
 													: 'Complete a review to calculate retrievability'}
 											</TooltipContent>
 										</Tooltip>
-										⋅{/* Stability */}
+										<span>⋅</span>
+										{/* Stability */}
 										<Tooltip>
 											<TooltipTrigger asChild={true}>
 												<div className='flex items-center gap-1'>
@@ -481,6 +484,25 @@ export function TopicDetail({
 										</Tooltip>
 									</>
 								)}
+								<span>⋅</span>
+								{/* Edited date with edited AND created date in tooltip */}
+								<Tooltip>
+									<TooltipTrigger asChild={true}>
+										<span>{dayjs(topic.updated_at).format('MMM D, YYYY')}</span>
+									</TooltipTrigger>
+									<TooltipContent side='bottom'>
+										<div className='grid grid-cols-[auto_1fr] gap-x-2'>
+											<span>Edited:</span>
+											<span>
+												{dayjs(topic.updated_at).format('MMM D, YYYY')}
+											</span>
+											<span>Created:</span>
+											<span>
+												{dayjs(topic.inserted_at).format('MMM D, YYYY')}
+											</span>
+										</div>
+									</TooltipContent>
+								</Tooltip>
 							</div>
 							<Textarea
 								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
