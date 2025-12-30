@@ -56,7 +56,7 @@ export function useTopicMetrics(topic: TopicMetricsInput | null): TopicMetrics {
 					label: 'Early',
 					days,
 					suffix: 'left',
-					tooltip: `A little early to review, ${days} days until ready`
+					tooltip: `A little early to review, ${days} ${days === 1 ? 'day' : 'days'} until ready`
 				}
 			}
 			case 'onTime': {
@@ -65,7 +65,7 @@ export function useTopicMetrics(topic: TopicMetricsInput | null): TopicMetrics {
 					label: 'Ready',
 					days,
 					suffix: 'left',
-					tooltip: `Ready to review, ${days} days until late`
+					tooltip: `Ready to review, ${days} ${days === 1 ? 'day' : 'days'} until late`
 				}
 			}
 			case 'late': {
@@ -74,7 +74,7 @@ export function useTopicMetrics(topic: TopicMetricsInput | null): TopicMetrics {
 					label: 'Late',
 					days,
 					suffix: 'ago',
-					tooltip: `${days} days late, ready for a risky review`
+					tooltip: `${days} ${days === 1 ? 'day' : 'days'} late, ready for a risky review`
 				}
 			}
 			default:
