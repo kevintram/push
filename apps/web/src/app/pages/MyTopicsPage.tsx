@@ -52,7 +52,7 @@ export function MyTopicsPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={SquareLibrary} title='My topics' />
+			<PageLayout.Header icon={SquareLibrary} title='My Topics' />
 			<RootTopicsList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
