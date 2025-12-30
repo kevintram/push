@@ -31,7 +31,7 @@ import { AddTopicDialog } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
 
-const MIN_WIDTH = 192
+const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 type ListItem = { type: 'child'; child: Topic }
