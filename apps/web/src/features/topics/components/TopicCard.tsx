@@ -93,7 +93,7 @@ export function TopicCard({
 					label: 'Early',
 					days,
 					suffix: 'left',
-					tooltip: `Early | ${days} day${days !== 1 ? 's' : ''} until ready`
+					tooltip: `A little early to review, ${days} days until ready`
 				}
 			}
 			case 'onTime': {
@@ -102,7 +102,7 @@ export function TopicCard({
 					label: 'Ready',
 					days,
 					suffix: 'left',
-					tooltip: `Ready | ${days} day${days !== 1 ? 's' : ''} until late`
+					tooltip: `Ready to review, ${days} days until late`
 				}
 			}
 			case 'late': {
@@ -114,7 +114,7 @@ export function TopicCard({
 					label: 'Late',
 					days,
 					suffix: 'ago',
-					tooltip: `Late since ${days} day${days !== 1 ? 's' : ''} ago`
+					tooltip: `${days} days late, ready for a risky review`
 				}
 			}
 			default:
@@ -134,6 +134,15 @@ export function TopicCard({
 		if (days === 0) return 'today'
 		if (days === 1) return '1d ago'
 		return `${days}d ago`
+	}, [topic.last_reviewed_at])
+
+	// Format last reviewed tooltip text with full words
+	const lastReviewedTooltipText = useMemo(() => {
+		if (!topic.last_reviewed_at) return 'never'
+		const days = dayjs().diff(dayjs(topic.last_reviewed_at), 'day')
+		if (days === 0) return 'today'
+		if (days === 1) return '1 day ago'
+		return `${days} days ago`
 	}, [topic.last_reviewed_at])
 
 	// Check if this is a truly new topic (no reviews, no inherited state)
@@ -316,11 +325,14 @@ export function TopicCard({
 						{bucketInfo.tooltip ? (
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
-									<span className='cursor-help'>
-										{bucketInfo.label}
-										{bucketInfo.days !== null &&
-											` (${bucketInfo.days}d ${bucketInfo.suffix})`}
-									</span>
+									<div className='flex items-center gap-1'>
+										<BookOpen className='h-3 w-3' />
+										<span>
+											{bucketInfo.label}
+											{bucketInfo.days !== null &&
+												` (${bucketInfo.days}d ${bucketInfo.suffix})`}
+										</span>
+									</div>
 								</TooltipTrigger>
 								<TooltipContent side='top'>{bucketInfo.tooltip}</TooltipContent>
 							</Tooltip>
@@ -329,10 +341,17 @@ export function TopicCard({
 						)}
 						{/* Last reviewed */}
 						<span>·</span>
-						<div className='flex items-center gap-1'>
-							<Calendar className='h-3 w-3' />
-							<span>{lastReviewedText}</span>
-						</div>
+						<Tooltip>
+							<TooltipTrigger asChild={true}>
+								<div className='flex items-center gap-1'>
+									<Calendar className='h-3 w-3' />
+									<span>{lastReviewedText}</span>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent side='top'>
+								Last reviewed {lastReviewedTooltipText}
+							</TooltipContent>
+						</Tooltip>
 					</>
 				)}
 				<div className='flex-1' />
