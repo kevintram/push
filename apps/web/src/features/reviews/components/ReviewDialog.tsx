@@ -1,12 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import {
-	Anchor,
-	CalendarIcon,
-	ExternalLink,
-	SquareStack,
-	X
-} from 'lucide-react'
+import { Anvil, CalendarIcon, ExternalLink, SquareStack, X } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
@@ -416,7 +410,7 @@ export function ReviewDialog({
 											Stability
 										</span>
 										<div className='flex min-w-0 flex-1 items-center gap-2 px-2 text-sm'>
-											<Anchor className='h-4 w-4 flex-shrink-0' />
+											<Anvil className='h-4 w-4 flex-shrink-0' />
 											<span className='truncate'>
 												{review.stability_after != null
 													? `${Math.round(review.stability_after)}d`
