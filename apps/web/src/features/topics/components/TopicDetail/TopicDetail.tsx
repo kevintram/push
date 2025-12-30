@@ -367,66 +367,15 @@ export function TopicDetail({
 								)}
 							</div>
 						)}
-						<div className='flex flex-col gap-2 pb-4'>
+						<div className='flex items-start gap-2'>
 							<Textarea
-								className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								className='!mt-0.5 !bg-transparent break-word !text-xl m-0 min-h-0 flex-1 resize-none overflow-hidden rounded-none border-none p-0 font-extrabold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onChange={onNameChange}
 								placeholder='Title'
 								spellCheck={false}
 								value={title}
 							/>
-							<div className='flex items-center gap-3 border-t-1 border-b-1 py-2 text-muted-foreground text-sm'>
-								{isNewTopic ? (
-									<div className='flex items-center gap-1'>
-										<Sparkles className='h-3 w-3' />
-										<span>New</span>
-									</div>
-								) : (
-									<>
-										{/* Bucket status */}
-										<Tooltip>
-											<TooltipTrigger asChild={true}>
-												<span className='cursor-help'>
-													{bucketInfo.label}
-													{bucketInfo.days !== null &&
-														` (${bucketInfo.days}d ${bucketInfo.suffix})`}
-												</span>
-											</TooltipTrigger>
-											<TooltipContent side='bottom'>
-												{topic.retrievability != null
-													? 'Memory retention status'
-													: 'Complete a review to see status'}
-											</TooltipContent>
-										</Tooltip>
-										⋅{/* Retrievability */}
-										<Tooltip>
-											<TooltipTrigger asChild={true}>
-												<div className='flex items-center gap-1'>
-													<Brain className='h-3 w-3' />
-													<span>{retrievabilityDisplay ?? '—'}</span>
-												</div>
-											</TooltipTrigger>
-											<TooltipContent side='bottom'>
-												{topic.retrievability != null
-													? 'Estimated probability of recall'
-													: 'Complete a review to calculate retrievability'}
-											</TooltipContent>
-										</Tooltip>
-										⋅{/* Stability */}
-										<Tooltip>
-											<TooltipTrigger asChild={true}>
-												<div className='flex items-center gap-1'>
-													<Anchor className='h-3 w-3' />
-													<span>{stabilityText}</span>
-												</div>
-											</TooltipTrigger>
-											<TooltipContent side='bottom'>
-												Memory stability in days
-											</TooltipContent>
-										</Tooltip>
-									</>
-								)}
-								<div className='flex-1' />
+							<div className='flex items-center gap-2'>
 								<Tooltip>
 									<TooltipTrigger asChild={true}>
 										<Button
@@ -462,6 +411,63 @@ export function TopicDetail({
 										</Button>
 									}
 								/>
+							</div>
+						</div>
+						<div className='flex flex-col gap-1'>
+							<div className='mb-3 flex items-center justify-start gap-2 font-semibold text-sm'>
+								{isNewTopic ? (
+									<div className='flex items-center gap-1'>
+										<Sparkles className='h-3 w-3' />
+										<span>New</span>
+									</div>
+								) : (
+									<>
+										{/* Bucket status */}
+										<Tooltip>
+											<TooltipTrigger asChild={true}>
+												<div className='flex items-center gap-1'>
+													<BookOpen className='h-3 w-3' />
+													<span>
+														{bucketInfo.label}
+														{bucketInfo.days !== null &&
+															` (${bucketInfo.days}d ${bucketInfo.suffix})`}
+													</span>
+												</div>
+											</TooltipTrigger>
+											<TooltipContent side='bottom'>
+												{topic.retrievability != null
+													? 'Memory retention status'
+													: 'Complete a review to see status'}
+											</TooltipContent>
+										</Tooltip>
+										⋅{/* Retrievability */}
+										<Tooltip>
+											<TooltipTrigger asChild={true}>
+												<div className='flex items-center gap-1'>
+													<Brain className='h-3 w-3' />
+													<span>{retrievabilityDisplay ?? '—'}</span>
+												</div>
+											</TooltipTrigger>
+											<TooltipContent side='bottom'>
+												{topic.retrievability != null
+													? 'Estimated probability of recall'
+													: 'Complete a review to calculate retrievability'}
+											</TooltipContent>
+										</Tooltip>
+										⋅{/* Stability */}
+										<Tooltip>
+											<TooltipTrigger asChild={true}>
+												<div className='flex items-center gap-1'>
+													<Anchor className='h-3 w-3' />
+													<span>{stabilityText}</span>
+												</div>
+											</TooltipTrigger>
+											<TooltipContent side='bottom'>
+												Memory stability in days
+											</TooltipContent>
+										</Tooltip>
+									</>
+								)}
 							</div>
 							<Textarea
 								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
