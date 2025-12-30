@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import {
 	Archive,
 	Baby,
@@ -15,19 +14,15 @@ import { BookOpenOff } from '~/components/icons'
 import { Badge } from '~/components/ui/Badge'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
 import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger
-} from '~/components/ui/Popover'
-import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import { topicKeys } from '~/features/topics/api/queryKeys'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { useTopicMetrics } from '~/features/topics/hooks/useTopicMetrics'
 import type { Topic } from '~/features/topics/types/topic.types'
+import { prefetchTopicRelations } from '~/features/topics/utils/prefetchTopicRelations'
+import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
 const MIN_HEIGHT = 96
@@ -52,28 +47,17 @@ export function TopicCard({
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
 	const { mutate: updateTopic, isPending: isUpdatingTopic } = useUpdateTopic()
-	const parentCount = topic.parents?.length ?? 0
-	const childCount = topic.children?.length ?? 0
 
 	const { bucketInfo, isNewTopic, isLeavingSoon } = useTopicMetrics(topic)
 
-	// Format last reviewed as relative time
-	const lastReviewedText = useMemo(() => {
-		if (!topic.last_reviewed_at) return 'never'
-		const days = dayjs().diff(dayjs(topic.last_reviewed_at), 'day')
-		if (days === 0) return 'today'
-		if (days === 1) return '1d ago'
-		return `${days}d ago`
-	}, [topic.last_reviewed_at])
-
-	// Format last reviewed tooltip text with full words
-	const lastReviewedTooltipText = useMemo(() => {
-		if (!topic.last_reviewed_at) return 'never'
-		const days = dayjs().diff(dayjs(topic.last_reviewed_at), 'day')
-		if (days === 0) return 'today'
-		if (days === 1) return '1 day ago'
-		return `${days} days ago`
-	}, [topic.last_reviewed_at])
+	const lastReviewed = useMemo(
+		() =>
+			formatRelativeDate(topic.last_reviewed_at, {
+				includeFuture: false,
+				nullLabel: 'never'
+			}),
+		[topic.last_reviewed_at]
+	)
 
 	// Search highlighting
 	const highlightedName = useMemo(() => {
@@ -103,17 +87,7 @@ export function TopicCard({
 	)
 
 	const handleMouseEnter = useCallback(() => {
-		// Store topic in query cache for prefetching
-		queryClient.setQueryData(topicKeys.detail(topic.id), topic)
-		if (topic.parents && topic.parents.length > 0) {
-			queryClient.setQueryData(topicKeys.parents(topic.id), topic.parents)
-		}
-		if (topic.children && topic.children.length > 0) {
-			queryClient.setQueryData(topicKeys.children(topic.id), topic.children)
-		}
-		if (topic.related && topic.related.length > 0) {
-			queryClient.setQueryData(topicKeys.related(topic.id), topic.related)
-		}
+		prefetchTopicRelations(queryClient, topic)
 	}, [queryClient, topic])
 
 	const handleSrsToggle = useCallback(
@@ -138,44 +112,9 @@ export function TopicCard({
 			tabIndex={0}
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
-				<div className='flex items-center gap-2'>
-					{/* Parents count - right of left header content (or start if empty) */}
-					<Popover>
-						<PopoverTrigger asChild={true}>
-							<div
-								className='flex cursor-pointer items-center gap-1 text-muted-foreground text-xs hover:text-foreground'
-								onClick={e => e.stopPropagation()}
-							>
-								<User2 className='h-3 w-3' />
-								<span>{parentCount}</span>
-							</div>
-						</PopoverTrigger>
-						<PopoverContent
-							align='start'
-							className='w-64 p-3'
-							onClick={e => e.stopPropagation()}
-							onKeyDown={e => e.stopPropagation()}
-							side='bottom'
-						>
-							<div className='flex flex-col gap-2'>
-								<h4 className='font-semibold text-sm'>Parent Topics</h4>
-								{parentCount === 0 ? (
-									<p className='text-muted-foreground text-xs'>No parents</p>
-								) : (
-									<ul className='flex flex-col gap-1.5'>
-										{(topic.parents ?? []).map(parent => (
-											<li
-												className='break-words text-sm leading-tight'
-												key={parent.id}
-											>
-												{parent.name || parent.notes || 'Untitled'}
-											</li>
-										))}
-									</ul>
-								)}
-							</div>
-						</PopoverContent>
-					</Popover>
+				<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+					<User2 className='h-3 w-3' />
+					<span>{topic.parents?.length ?? 0}</span>
 				</div>
 				<div className='flex-1' />
 				{/* Leaving soon badge */}
@@ -233,6 +172,7 @@ export function TopicCard({
 					</div>
 				</div>
 			</CardContent>
+
 			{/* Bottom row: Status info and Children */}
 			<CardFooter className='gap-1 text-muted-foreground text-xs'>
 				{isNewTopic ? (
@@ -266,53 +206,21 @@ export function TopicCard({
 							<TooltipTrigger asChild={true}>
 								<div className='flex items-center gap-1'>
 									<Calendar className='h-3 w-3' />
-									<span>{lastReviewedText}</span>
+									<span>{lastReviewed.text.toLowerCase()}</span>
 								</div>
 							</TooltipTrigger>
 							<TooltipContent side='top'>
-								Last reviewed {lastReviewedTooltipText}
+								Last reviewed {lastReviewed.tooltipText.toLowerCase()}
 							</TooltipContent>
 						</Tooltip>
 					</>
 				)}
 				<div className='flex-1' />
-				{/* Children count - bottom right */}
-				<Popover>
-					<PopoverTrigger asChild={true}>
-						<div
-							className='flex cursor-pointer items-center gap-1 hover:text-foreground'
-							onClick={e => e.stopPropagation()}
-						>
-							<Baby className='h-3 w-3' />
-							<span>{childCount}</span>
-						</div>
-					</PopoverTrigger>
-					<PopoverContent
-						align='end'
-						className='w-64 p-3'
-						onClick={e => e.stopPropagation()}
-						onKeyDown={e => e.stopPropagation()}
-						side='bottom'
-					>
-						<div className='flex flex-col gap-2'>
-							<h4 className='font-semibold text-sm'>Child Topics</h4>
-							{childCount === 0 ? (
-								<p className='text-muted-foreground text-xs'>No children</p>
-							) : (
-								<ul className='flex flex-col gap-1.5'>
-									{(topic.children ?? []).map(child => (
-										<li
-											className='break-words text-sm leading-tight'
-											key={child.id}
-										>
-											{child.name || child.notes || 'Untitled'}
-										</li>
-									))}
-								</ul>
-							)}
-						</div>
-					</PopoverContent>
-				</Popover>
+				{/* Children count */}
+				<div className='flex items-center gap-1'>
+					<Baby className='h-3 w-3' />
+					<span>{topic.children?.length ?? 0}</span>
+				</div>
 			</CardFooter>
 		</Card>
 	)

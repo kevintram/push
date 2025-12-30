@@ -13,6 +13,7 @@ import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
+import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReviewSession } from '../../api/deleteReviewSession'
 import { useUpdateReviewSession } from '../../api/updateReviewSession'
 import { ReviewContext } from '../../stores/SelectedReviewContext'
@@ -134,19 +135,7 @@ export function ReviewSessionDetail({
 		? dayjs(review.effective_date).toDate()
 		: null
 
-	const relativeDate = useMemo(() => {
-		if (!effectiveDate) return 'No date'
-
-		const today = dayjs().startOf('day')
-		const dateDay = dayjs(effectiveDate).startOf('day')
-		const diffDays = dateDay.diff(today, 'day')
-
-		if (diffDays === 0) return 'Today'
-		if (diffDays === 1) return 'Tomorrow'
-		if (diffDays === -1) return 'Yesterday'
-		if (diffDays < 0) return `${Math.abs(diffDays)}d ago`
-		return `in ${diffDays}d`
-	}, [effectiveDate])
+	const relativeDate = formatRelativeDate(effectiveDate)
 
 	const { value: description, onChange: onDescriptionChange } = useAutoSave({
 		initialValue: review?.description ?? '',
@@ -236,14 +225,14 @@ export function ReviewSessionDetail({
 											className={cn(
 												'-translate-y-1.5',
 												isOverdueValue && 'text-red-600 dark:text-red-400',
-												relativeDate === 'Today' &&
+												relativeDate.text === 'Today' &&
 													'text-blue-600 dark:text-blue-400'
 											)}
 											size='sm'
 											variant='ghost'
 										>
 											<CalendarIcon className='h-4 w-4' />
-											<span className='text-sm'>{relativeDate}</span>
+											<span className='text-sm'>{relativeDate.text}</span>
 										</Button>
 									</TooltipTrigger>
 								}

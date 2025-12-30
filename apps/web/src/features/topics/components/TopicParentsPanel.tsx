@@ -21,8 +21,8 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicParents } from '../api/getTopicParents'
-import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
+import { prefetchTopicRelations } from '../utils/prefetchTopicRelations'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { AddTopicDialog } from './AddTopicDialog'
 import { TopicBadge } from './TopicBadge'
@@ -78,17 +78,7 @@ export function TopicParentsPanel({
 
 	const handleParentMouseEnter = useCallback(
 		(parent: Topic) => {
-			// Store parent topic in query cache for prefetching
-			queryClient.setQueryData(topicKeys.detail(parent.id), parent)
-			if (parent.parents && parent.parents.length > 0) {
-				queryClient.setQueryData(topicKeys.parents(parent.id), parent.parents)
-			}
-			if (parent.children && parent.children.length > 0) {
-				queryClient.setQueryData(topicKeys.children(parent.id), parent.children)
-			}
-			if (parent.related && parent.related.length > 0) {
-				queryClient.setQueryData(topicKeys.related(parent.id), parent.related)
-			}
+			prefetchTopicRelations(queryClient, parent)
 		},
 		[queryClient]
 	)
