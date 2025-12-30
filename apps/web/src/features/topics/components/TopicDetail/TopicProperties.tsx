@@ -18,8 +18,13 @@ export function TopicProperties({
 	updatedAt,
 	insertedAt
 }: TopicMetricsRowProps) {
-	const { isNewTopic, bucketInfo, retrievabilityDisplay, stabilityText } =
-		metrics
+	const {
+		isNewTopic,
+		bucketInfo,
+		retrievabilityDisplay,
+		stabilityText,
+		stabilityTooltipText
+	} = metrics
 
 	return (
 		<div className='mb-3 flex items-center justify-start gap-2 font-semibold text-sm'>
@@ -71,8 +76,7 @@ export function TopicProperties({
 							</div>
 						</TooltipTrigger>
 						<TooltipContent side='bottom'>
-							Durable for {stabilityText !== '—' ? stabilityText : '—'} without
-							review
+							Durable for {stabilityTooltipText} without review
 						</TooltipContent>
 					</Tooltip>
 				</>

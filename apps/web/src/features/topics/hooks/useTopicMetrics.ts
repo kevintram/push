@@ -26,6 +26,7 @@ export interface TopicMetrics {
 	thresholdInfo: { daysUntil: number; nextBucket: RetrievabilityBucket } | null
 	retrievabilityDisplay: string | null
 	stabilityText: string
+	stabilityTooltipText: string
 	isNewTopic: boolean
 	isLeavingSoon: boolean
 }
@@ -91,6 +92,12 @@ export function useTopicMetrics(topic: TopicMetricsInput | null): TopicMetrics {
 		return `${Math.round(stability)}d`
 	}, [stability])
 
+	const stabilityTooltipText = useMemo(() => {
+		if (stability === null) return '—'
+		const days = Math.round(stability)
+		return `${days} ${days === 1 ? 'day' : 'days'}`
+	}, [stability])
+
 	const isNewTopic = useMemo(() => {
 		return (
 			retrievability === null &&
@@ -108,6 +115,7 @@ export function useTopicMetrics(topic: TopicMetricsInput | null): TopicMetrics {
 		thresholdInfo,
 		retrievabilityDisplay,
 		stabilityText,
+		stabilityTooltipText,
 		isNewTopic,
 		isLeavingSoon
 	}
