@@ -13,13 +13,7 @@ import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle
-} from '~/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/Card'
 import { Skeleton } from '~/components/ui/Skeleton'
 import {
 	useSoonReviewEntries,
@@ -46,7 +40,7 @@ export function HomePage() {
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={Home} title='Home' />
-			<PageLayout.Content className='max-w-6xl'>
+			<PageLayout.Content className='max-w-screen'>
 				<div className='grid gap-4 md:grid-cols-2'>
 					<HomeScheduledCard />
 					<HomeReviewCard />
@@ -81,7 +75,7 @@ function HomeScheduledCard() {
 	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
 
 	// Combine and limit entries to 10 total
-	const { sections, totalCount, limitedCount } = useMemo(() => {
+	const { sections } = useMemo(() => {
 		const allSections: Array<ScheduledSection> = []
 
 		// Add today sections (Overdue, Today)
@@ -105,12 +99,10 @@ function HomeScheduledCard() {
 		}
 
 		// Calculate total and apply limit
-		let totalEntries = 0
 		let remaining = SCHEDULED_LIMIT
 		const limitedSections: Array<ScheduledSection> = []
 
 		for (const section of allSections) {
-			totalEntries += section.entries.length
 			if (remaining <= 0) continue
 
 			const entriesToTake = Math.min(section.entries.length, remaining)
@@ -135,9 +127,7 @@ function HomeScheduledCard() {
 		})
 
 		return {
-			sections: filteredSections,
-			totalCount: totalEntries,
-			limitedCount: Math.min(totalEntries, SCHEDULED_LIMIT)
+			sections: filteredSections
 		}
 	}, [todaySections, soonSections])
 
@@ -163,10 +153,6 @@ function HomeScheduledCard() {
 
 	const isEmpty = sections.every(section => section.entries.length === 0)
 
-	const description = isLoading
-		? 'Loading...'
-		: getScheduledDescription(totalCount, limitedCount, SCHEDULED_LIMIT)
-
 	return (
 		<>
 			<Card className='flex h-full flex-col'>
@@ -182,7 +168,6 @@ function HomeScheduledCard() {
 							</Button>
 						</Link>
 					</div>
-					<CardDescription>{description}</CardDescription>
 				</CardHeader>
 				<CardContent className='flex-1 overflow-y-auto'>
 					<ScheduledCardContent
@@ -279,17 +264,6 @@ function HomeScheduledSection({
 	)
 }
 
-function getScheduledDescription(
-	totalCount: number,
-	limitedCount: number,
-	limit: number
-) {
-	if (totalCount > limit) {
-		return `Showing ${limitedCount} of ${totalCount} scheduled reviews`
-	}
-	return `${totalCount} scheduled reviews`
-}
-
 function ScheduledCardContent({
 	isLoading,
 	isEmpty,
@@ -372,7 +346,7 @@ function HomeReviewCard() {
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	// Group topics by retrievability bucket and limit to 20 total
-	const { sections, totalCount, limitedCount } = useMemo(() => {
+	const { sections } = useMemo(() => {
 		const late: Array<Topic> = []
 		const onTime: Array<Topic> = []
 		const early: Array<Topic> = []
@@ -423,7 +397,6 @@ function HomeReviewCard() {
 		]
 
 		// Apply limit across all buckets
-		const totalTopics = late.length + onTime.length + early.length
 		let remaining = REVIEW_LIMIT
 		const limitedBuckets: Array<BucketSection> = []
 
@@ -437,9 +410,7 @@ function HomeReviewCard() {
 		}
 
 		return {
-			sections: limitedBuckets,
-			totalCount: totalTopics,
-			limitedCount: Math.min(totalTopics, REVIEW_LIMIT)
+			sections: limitedBuckets
 		}
 	}, [topics])
 
@@ -455,10 +426,6 @@ function HomeReviewCard() {
 
 	const isEmpty = sections.every(section => section.topics.length === 0)
 
-	const description = isLoading
-		? 'Loading...'
-		: getReviewDescription(totalCount, limitedCount, REVIEW_LIMIT)
-
 	return (
 		<Card className='flex h-full flex-col'>
 			<CardHeader>
@@ -473,7 +440,6 @@ function HomeReviewCard() {
 						</Button>
 					</Link>
 				</div>
-				<CardDescription>{description}</CardDescription>
 			</CardHeader>
 			<CardContent className='flex-1 overflow-y-auto'>
 				<ReviewCardContent
@@ -546,17 +512,6 @@ function HomeReviewSection({
 			)}
 		</div>
 	)
-}
-
-function getReviewDescription(
-	totalCount: number,
-	limitedCount: number,
-	limit: number
-) {
-	if (totalCount > limit) {
-		return `Showing ${limitedCount} of ${totalCount} topics`
-	}
-	return `${totalCount} topics ready for review`
 }
 
 function ReviewCardContent({
@@ -670,10 +625,6 @@ function HomeRecentCard() {
 
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
-	const description = isLoading
-		? 'Loading...'
-		: `${topics.length} recent topics`
-
 	return (
 		<Card>
 			<CardHeader>
@@ -688,7 +639,6 @@ function HomeRecentCard() {
 						</Button>
 					</Link>
 				</div>
-				<CardDescription>{description}</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<RecentCardContent
