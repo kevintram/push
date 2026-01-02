@@ -472,8 +472,30 @@ function HomeReviewSection({
 	onToggleCollapse: (sectionId: string) => void
 	onTopicClick: (topic: Topic) => void
 }) {
+	const estimateItemSize = useCallback((topic: Topic) => {
+		// Base height + name height + notes height
+		let height = 96
+		if (topic.name) height += Math.min(topic.name.length / 30, 3) * 24
+		if (topic.notes) height += Math.min(topic.notes.length / 50, 4) * 20
+		return height
+	}, [])
+
+	const renderItem = useCallback(
+		(topic: Topic) => (
+			<TopicCard
+				headerRight={<TopicActionMenu topic={topic} />}
+				onTopicClick={onTopicClick}
+				showLeavingSoon={true}
+				topic={topic}
+			/>
+		),
+		[onTopicClick]
+	)
+
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
+
 	return (
-		<div>
+		<div className='mb-2'>
 			<Button
 				className='flex items-center gap-2 p-0'
 				onClick={() => onToggleCollapse(id)}
@@ -489,25 +511,14 @@ function HomeReviewSection({
 			</Button>
 
 			{!isCollapsed && (
-				<div className='mt-1 ml-2 border-border border-l-2 pl-2'>
-					{topics.length > 0 ? (
-						<div className='space-y-2 py-2'>
-							{topics.map(topic => (
-								<TopicCard
-									headerRight={<TopicActionMenu topic={topic} />}
-									key={topic.id}
-									minHeight={80}
-									onTopicClick={onTopicClick}
-									showLeavingSoon={true}
-									topic={topic}
-								/>
-							))}
-						</div>
-					) : (
-						<p className='py-2 text-muted-foreground text-xs italic'>
-							No topics
-						</p>
-					)}
+				<div className='mt-2 ml-5'>
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						getItemKey={getItemKey}
+						items={topics}
+						minItemWidth={280}
+						renderItem={renderItem}
+					/>
 				</div>
 			)}
 		</div>
