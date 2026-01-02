@@ -196,7 +196,7 @@ function HomeTodayCard() {
 
 	return (
 		<>
-			<Card className='flex h-full flex-col'>
+			<Card className='flex h-full flex-col border-0'>
 				<CardHeader>
 					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
@@ -272,7 +272,7 @@ function HomeUpcomingCard() {
 
 	return (
 		<>
-			<Card className='flex h-full flex-col'>
+			<Card className='flex h-full flex-col border-0'>
 				<CardHeader>
 					<CardHeaderLink icon={Calendar} title='Upcoming' to='/upcoming' />
 				</CardHeader>
@@ -517,7 +517,7 @@ function HomeReviewCard() {
 	const isEmpty = sections.every(section => section.topics.length === 0)
 
 	return (
-		<Card className='flex h-full flex-col'>
+		<Card className='flex h-full flex-col border-0'>
 			<CardHeader>
 				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
 			</CardHeader>
@@ -710,7 +710,7 @@ function HomeRecentCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card>
+		<Card className='border-0'>
 			<CardHeader>
 				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
 			</CardHeader>
