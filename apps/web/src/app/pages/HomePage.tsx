@@ -200,7 +200,7 @@ function HomeTodayCard() {
 				<CardHeader>
 					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
-				<CardContent className='max-h-160 overflow-y-auto'>
+				<CardContent>
 					<ScheduledCardContent
 						collapsedSections={collapsedSections}
 						isEmpty={isEmpty}
@@ -517,11 +517,11 @@ function HomeReviewCard() {
 	const isEmpty = sections.every(section => section.topics.length === 0)
 
 	return (
-		<Card className='flex h-full flex-col border-0'>
+		<Card className='flex flex-col border-0'>
 			<CardHeader>
 				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
 			</CardHeader>
-			<CardContent className='max-h-160 overflow-y-auto'>
+			<CardContent>
 				<ReviewCardContent
 					collapsedSections={collapsedSections}
 					isEmpty={isEmpty}
