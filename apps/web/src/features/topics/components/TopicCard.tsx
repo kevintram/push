@@ -127,7 +127,9 @@ export function TopicCard({
 						</div>
 					</TooltipTrigger>
 					<TooltipContent side='top'>
-						{topic.parents?.length === 1 ? '1 parent' : `${topic.parents?.length ?? 0} parents`}
+						{topic.parents?.length === 1
+							? '1 parent'
+							: `${topic.parents?.length ?? 0} parents`}
 					</TooltipContent>
 				</Tooltip>
 				<div className='flex-1' />
@@ -236,7 +238,8 @@ export function TopicCard({
 										</div>
 									</TooltipTrigger>
 									<TooltipContent side='top'>
-										{retrievabilityDisplay} chance of successfully recalling today
+										{retrievabilityDisplay} chance of successfully recalling
+										today
 									</TooltipContent>
 								</Tooltip>
 							</>
@@ -266,7 +269,9 @@ export function TopicCard({
 						</div>
 					</TooltipTrigger>
 					<TooltipContent side='top'>
-						{topic.children?.length === 1 ? '1 child' : `${topic.children?.length ?? 0} children`}
+						{topic.children?.length === 1
+							? '1 child'
+							: `${topic.children?.length ?? 0} children`}
 					</TooltipContent>
 				</Tooltip>
 			</CardFooter>
