@@ -1,343 +1,703 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
+import type { LucideIcon } from 'lucide-react'
 import {
+	BookOpen,
 	Calendar,
+	ChevronDown,
 	ChevronRight,
-	CircleDashed,
 	History,
-	Home,
-	Play,
-	Star
+	Home
 } from 'lucide-react'
-import { useMemo } from 'react'
+import type { ReactNode } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle
-} from '~/components/ui/Card'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { Button } from '~/components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/Card'
 import { Skeleton } from '~/components/ui/Skeleton'
 import {
 	useSoonReviewEntries,
-	useTodayReviewEntries,
-	useUnscheduledReviewEntries
+	useTodayReviewEntries
 } from '~/features/reviews/api/getReviewEntries'
+import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
+import { ReviewItem } from '~/features/reviews/components/ReviewItem'
+import type { ReviewEntry } from '~/features/reviews/components/ReviewSection'
+import { ReviewSessionItem } from '~/features/reviews/components/ReviewSessionItem'
 import { useTopics } from '~/features/topics/api/getTopics'
-import { getRetrievabilityBucket } from '~/utils/retrievability'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
+import { TopicCard } from '~/features/topics/components/TopicCard'
+import type { Topic } from '~/features/topics/types/topic.types'
+import {
+	getRetrievabilityBucket,
+	type RetrievabilityBucket
+} from '~/utils/retrievability'
+
+const SCHEDULED_LIMIT = 10
+const REVIEW_LIMIT = 20
+const RECENT_LIMIT = 20
+
+// ============================================================================
+// Shared Helper Components
+// ============================================================================
+
+function CardHeaderLink({
+	icon: Icon,
+	title,
+	to
+}: {
+	icon: LucideIcon
+	title: string
+	to: string
+}) {
+	return (
+		<Link
+			className='group -mx-2 -my-1 flex items-center justify-between px-2 py-1'
+			to={to}
+		>
+			<div className='flex items-center gap-2'>
+				<Icon className='h-5 w-5 text-muted-foreground' />
+				<CardTitle>{title}</CardTitle>
+			</div>
+			<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
+		</Link>
+	)
+}
+
+function CollapsibleSectionHeader({
+	label,
+	count,
+	headingClassName,
+	isCollapsed,
+	onToggle
+}: {
+	label: string
+	count: number
+	headingClassName?: string
+	isCollapsed: boolean
+	onToggle: () => void
+}) {
+	return (
+		<Button
+			className='flex items-center gap-2 p-0'
+			onClick={onToggle}
+			variant='ghost'
+		>
+			<h3 className={`font-semibold text-sm ${headingClassName ?? ''}`.trim()}>
+				{label} <span className='text-muted-foreground'>({count})</span>
+			</h3>
+			<ChevronDown
+				className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+			/>
+		</Button>
+	)
+}
+
+function limitSections<T>(
+	sections: Array<T>,
+	limit: number,
+	getCount: (section: T) => number,
+	sliceItems: (section: T, count: number) => T
+): Array<T> {
+	let remaining = limit
+	const result: Array<T> = []
+
+	for (const section of sections) {
+		if (remaining <= 0) continue
+		const itemCount = getCount(section)
+		const toTake = Math.min(itemCount, remaining)
+		if (toTake > 0) {
+			result.push(sliceItems(section, toTake))
+			remaining -= toTake
+		}
+	}
+
+	return result.filter(s => getCount(s) > 0)
+}
 
 export function HomePage() {
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={Home} title='Home' />
-			<PageLayout.Content className='max-w-4xl'>
+			<PageLayout.Content className='max-w-450'>
 				<div className='grid gap-4 md:grid-cols-2'>
-					<ReviewCard />
-					<TodayCard />
-					<ScheduledCard />
-					<UnscheduledCard />
-					<RecentCard />
+					<HomeScheduledCard />
+					<HomeReviewCard />
+					<div className='md:col-span-2'>
+						<HomeRecentCard />
+					</div>
 				</div>
 			</PageLayout.Content>
 		</PageLayout>
 	)
 }
 
-function ReviewCard() {
+// ============================================================================
+// HomeScheduledCard - Shows scheduled review entries (10 items max)
+// ============================================================================
+
+type ScheduledSection = {
+	id: string
+	label: string
+	headingClassName?: string
+	entries: Array<ReviewEntry>
+}
+
+function HomeScheduledCard() {
+	const navigate = useNavigate()
+	const { sections: todaySections, isLoading: todayLoading } =
+		useTodayReviewEntries()
+	const { sections: soonSections, isLoading: soonLoading } =
+		useSoonReviewEntries()
+
+	const { collapsedSections, toggleSection } = useSectionCollapse()
+	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
+
+	// Combine and limit entries to 10 total
+	const sections = useMemo(() => {
+		const allSections: Array<ScheduledSection> = [
+			...todaySections.map(s => ({
+				id: s.id,
+				label: s.label,
+				headingClassName: s.headingClassName,
+				entries: s.entries
+			})),
+			...soonSections.map(s => ({
+				id: s.id,
+				label: s.label,
+				headingClassName: s.headingClassName,
+				entries: s.entries
+			}))
+		]
+
+		return limitSections(
+			allSections,
+			SCHEDULED_LIMIT,
+			s => s.entries.length,
+			(s, count) => ({ ...s, entries: s.entries.slice(0, count) })
+		)
+	}, [todaySections, soonSections])
+
+	const isLoading = todayLoading || soonLoading
+
+	const handleSessionClick = useCallback(
+		(sessionId: number) => {
+			navigate({
+				to: '/review-session/$reviewSessionId',
+				params: { reviewSessionId: sessionId.toString() }
+			})
+		},
+		[navigate]
+	)
+
+	const handleReviewClick = useCallback((reviewId: number) => {
+		setSelectedReviewId(reviewId)
+	}, [])
+
+	const closeReviewDialog = useCallback(() => {
+		setSelectedReviewId(null)
+	}, [])
+
+	const isEmpty = sections.every(section => section.entries.length === 0)
+
+	return (
+		<>
+			<Card className='flex h-full flex-col'>
+				<CardHeader>
+					<CardHeaderLink icon={Calendar} title='Scheduled' to='/upcoming' />
+				</CardHeader>
+				<CardContent className='max-h-160 overflow-y-auto'>
+					<ScheduledCardContent
+						collapsedSections={collapsedSections}
+						isEmpty={isEmpty}
+						isLoading={isLoading}
+						onReviewClick={handleReviewClick}
+						onSessionClick={handleSessionClick}
+						onToggleCollapse={toggleSection}
+						sections={sections}
+					/>
+				</CardContent>
+			</Card>
+			<ReviewDialog
+				onOpenChange={open => {
+					if (!open) closeReviewDialog()
+				}}
+				open={selectedReviewId !== null}
+				reviewId={selectedReviewId}
+			/>
+		</>
+	)
+}
+
+function HomeScheduledSection({
+	id,
+	label,
+	headingClassName,
+	entries,
+	isCollapsed,
+	onToggleCollapse,
+	onSessionClick,
+	onReviewClick
+}: {
+	id: string
+	label: string
+	headingClassName?: string
+	entries: Array<ReviewEntry>
+	isCollapsed: boolean
+	onToggleCollapse: (sectionId: string) => void
+	onSessionClick: (sessionId: number) => void
+	onReviewClick: (reviewId: number) => void
+}) {
+	return (
+		<div>
+			<CollapsibleSectionHeader
+				count={entries.length}
+				headingClassName={headingClassName}
+				isCollapsed={isCollapsed}
+				label={label}
+				onToggle={() => onToggleCollapse(id)}
+			/>
+
+			{!isCollapsed && (
+				<div className='mt-1 ml-2 border-border border-l-2 pl-2'>
+					{entries.length > 0 ? (
+						<div>
+							{entries.map(entry => {
+								if (entry.type === 'session') {
+									return (
+										<ReviewSessionItem
+											entry={entry.data}
+											key={`session-${entry.data.id}`}
+											onReviewClick={onSessionClick}
+										/>
+									)
+								}
+								return (
+									<ReviewItem
+										entry={entry.data}
+										key={`review-${entry.data.id}`}
+										onReviewClick={onReviewClick}
+										variant='default'
+									/>
+								)
+							})}
+						</div>
+					) : (
+						<p className='py-2 text-muted-foreground text-xs italic'>
+							No reviews
+						</p>
+					)}
+				</div>
+			)}
+		</div>
+	)
+}
+
+function ScheduledCardContent({
+	isLoading,
+	isEmpty,
+	sections,
+	collapsedSections,
+	onToggleCollapse,
+	onSessionClick,
+	onReviewClick
+}: {
+	isLoading: boolean
+	isEmpty: boolean
+	sections: Array<ScheduledSection>
+	collapsedSections: Record<string, boolean>
+	onToggleCollapse: (sectionId: string) => void
+	onSessionClick: (sessionId: number) => void
+	onReviewClick: (reviewId: number) => void
+}) {
+	if (isLoading) {
+		return <ScheduledCardSkeleton />
+	}
+
+	if (isEmpty) {
+		return <p className='text-muted-foreground text-sm'>No scheduled reviews</p>
+	}
+
+	return (
+		<div className='space-y-4'>
+			{sections.map(section => (
+				<HomeScheduledSection
+					entries={section.entries}
+					headingClassName={section.headingClassName}
+					id={section.id}
+					isCollapsed={collapsedSections[section.id] ?? false}
+					key={section.id}
+					label={section.label}
+					onReviewClick={onReviewClick}
+					onSessionClick={onSessionClick}
+					onToggleCollapse={onToggleCollapse}
+				/>
+			))}
+		</div>
+	)
+}
+
+function ScheduledCardSkeleton() {
+	return (
+		<div className='space-y-4'>
+			{[1, 2, 3].map(i => (
+				<div className='space-y-2' key={i}>
+					<Skeleton className='h-5 w-24' />
+					<div className='ml-4 space-y-2'>
+						<Skeleton className='h-12 w-full' />
+						<Skeleton className='h-12 w-full' />
+					</div>
+				</div>
+			))}
+		</div>
+	)
+}
+
+// ============================================================================
+// HomeReviewCard - Shows topics by retrievability bucket (20 items max)
+// ============================================================================
+
+type BucketSection = {
+	id: RetrievabilityBucket
+	label: string
+	headingClassName: string
+	topics: Array<Topic>
+}
+
+function HomeReviewCard() {
+	const navigate = useNavigate()
 	const { data: topics, isLoading } = useTopics({
 		hasStability: true,
 		srsEnabled: true,
 		archived: false
 	})
 
-	const counts = useMemo(() => {
-		if (!topics) return { late: 0, onTime: 0, early: 0, total: 0 }
+	const { collapsedSections, toggleSection } = useSectionCollapse()
 
-		let late = 0
-		let onTime = 0
-		let early = 0
+	// Group topics by retrievability bucket and limit to 20 total
+	const sections = useMemo(() => {
+		const late: Array<Topic> = []
+		const onTime: Array<Topic> = []
+		const early: Array<Topic> = []
 
-		for (const topic of topics) {
+		for (const topic of topics ?? []) {
 			if (topic.retrievability === null) continue
+
 			const bucket = getRetrievabilityBucket(topic.retrievability)
 			switch (bucket) {
 				case 'late':
-					late++
+					late.push(topic)
 					break
 				case 'onTime':
-					onTime++
+					onTime.push(topic)
 					break
 				case 'early':
-					early++
+					early.push(topic)
 					break
+				default:
+					bucket satisfies never
 			}
 		}
 
-		return { late, onTime, early, total: late + onTime + early }
+		// Sort each bucket by retrievability (lowest first)
+		const sortByRetrievability = (a: Topic, b: Topic) =>
+			(a.retrievability ?? 0) - (b.retrievability ?? 0)
+		late.sort(sortByRetrievability)
+		onTime.sort(sortByRetrievability)
+		early.sort(sortByRetrievability)
+
+		const allBuckets: Array<BucketSection> = [
+			{
+				id: 'late',
+				label: 'Late',
+				headingClassName: 'text-red-600 dark:text-red-400',
+				topics: late
+			},
+			{
+				id: 'onTime',
+				label: 'Ready',
+				headingClassName: 'text-blue-600 dark:text-blue-400',
+				topics: onTime
+			},
+			{
+				id: 'early',
+				label: 'Early',
+				headingClassName: 'text-green-600 dark:text-green-400',
+				topics: early
+			}
+		]
+
+		return limitSections(
+			allBuckets,
+			REVIEW_LIMIT,
+			s => s.topics.length,
+			(s, count) => ({ ...s, topics: s.topics.slice(0, count) })
+		)
 	}, [topics])
 
+	const handleTopicClick = useCallback(
+		(topic: Topic) => {
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topic.id.toString() }
+			})
+		},
+		[navigate]
+	)
+
+	const isEmpty = sections.every(section => section.topics.length === 0)
+
 	return (
-		<Link className='group' to='/review'>
-			<Card className='h-full transition-colors hover:bg-accent/50'>
-				<CardHeader>
-					<div className='flex items-center justify-between'>
-						<div className='flex items-center gap-2'>
-							<Play className='h-5 w-5 text-muted-foreground' />
-							<CardTitle>Review</CardTitle>
-						</div>
-						<ChevronRight className='h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100' />
-					</div>
-					<CardDescription>Topics ready for review</CardDescription>
-				</CardHeader>
-				<CardContent>
-					{isLoading ? (
-						<div className='flex gap-4'>
-							<Skeleton className='h-8 w-16' />
-							<Skeleton className='h-8 w-16' />
-							<Skeleton className='h-8 w-16' />
-						</div>
-					) : counts.total === 0 ? (
-						<p className='text-muted-foreground text-sm'>
-							No topics ready for review
-						</p>
-					) : (
-						<div className='flex flex-wrap gap-4'>
-							{counts.late > 0 && (
-								<div>
-									<span className='font-bold text-2xl text-red-600 dark:text-red-400'>
-										{counts.late}
-									</span>
-									<span className='ml-1 text-muted-foreground text-sm'>
-										late
-									</span>
-								</div>
-							)}
-							{counts.onTime > 0 && (
-								<div>
-									<span className='font-bold text-2xl text-blue-600 dark:text-blue-400'>
-										{counts.onTime}
-									</span>
-									<span className='ml-1 text-muted-foreground text-sm'>
-										ready
-									</span>
-								</div>
-							)}
-							{counts.early > 0 && (
-								<div>
-									<span className='font-bold text-2xl text-green-600 dark:text-green-400'>
-										{counts.early}
-									</span>
-									<span className='ml-1 text-muted-foreground text-sm'>
-										early
-									</span>
-								</div>
-							)}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</Link>
+		<Card className='flex h-full flex-col'>
+			<CardHeader>
+				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
+			</CardHeader>
+			<CardContent className='max-h-160 overflow-y-auto'>
+				<ReviewCardContent
+					collapsedSections={collapsedSections}
+					isEmpty={isEmpty}
+					isLoading={isLoading}
+					onToggleCollapse={toggleSection}
+					onTopicClick={handleTopicClick}
+					sections={sections}
+				/>
+			</CardContent>
+		</Card>
 	)
 }
 
-function TodayCard() {
-	const { sections, isLoading } = useTodayReviewEntries()
+function HomeReviewSection({
+	id,
+	label,
+	headingClassName,
+	topics,
+	isCollapsed,
+	onToggleCollapse,
+	onTopicClick
+}: {
+	id: string
+	label: string
+	headingClassName: string
+	topics: Array<Topic>
+	isCollapsed: boolean
+	onToggleCollapse: (sectionId: string) => void
+	onTopicClick: (topic: Topic) => void
+}) {
+	const estimateItemSize = useCallback((topic: Topic) => {
+		// Base height + name height + notes height
+		let height = 96
+		if (topic.name) height += Math.min(topic.name.length / 30, 3) * 24
+		if (topic.notes) height += Math.min(topic.notes.length / 50, 4) * 20
+		return height
+	}, [])
 
-	const counts = useMemo(() => {
-		const overdueSection = sections.find(s => s.id === 'overdue')
-		const todaySection = sections.find(s => s.id === 'today')
-		const overdue = overdueSection?.entries.length ?? 0
-		const today = todaySection?.entries.length ?? 0
-		return { overdue, today, total: overdue + today }
-	}, [sections])
+	const renderItem = useCallback(
+		(topic: Topic) => (
+			<TopicCard
+				headerRight={<TopicActionMenu topic={topic} />}
+				onTopicClick={onTopicClick}
+				showLeavingSoon={true}
+				topic={topic}
+			/>
+		),
+		[onTopicClick]
+	)
+
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Link className='group' to='/today'>
-			<Card className='h-full transition-colors hover:bg-accent/50'>
-				<CardHeader>
-					<div className='flex items-center justify-between'>
-						<div className='flex items-center gap-2'>
-							<Star className='h-5 w-5 text-muted-foreground' />
-							<CardTitle>Today</CardTitle>
-						</div>
-						<ChevronRight className='h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100' />
-					</div>
-					<CardDescription>Reviews due today</CardDescription>
-				</CardHeader>
-				<CardContent>
-					{isLoading ? (
-						<div className='flex gap-4'>
-							<Skeleton className='h-8 w-16' />
-							<Skeleton className='h-8 w-16' />
-						</div>
-					) : counts.total === 0 ? (
-						<p className='text-muted-foreground text-sm'>Nothing due today</p>
-					) : (
-						<div className='flex flex-wrap gap-4'>
-							{counts.overdue > 0 && (
-								<div>
-									<span className='font-bold text-2xl text-red-600'>
-										{counts.overdue}
-									</span>
-									<span className='ml-1 text-muted-foreground text-sm'>
-										overdue
-									</span>
-								</div>
-							)}
-							{counts.today > 0 && (
-								<div>
-									<span className='font-bold text-2xl'>{counts.today}</span>
-									<span className='ml-1 text-muted-foreground text-sm'>
-										today
-									</span>
-								</div>
-							)}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</Link>
+		<div className='mb-2'>
+			<CollapsibleSectionHeader
+				count={topics.length}
+				headingClassName={headingClassName}
+				isCollapsed={isCollapsed}
+				label={label}
+				onToggle={() => onToggleCollapse(id)}
+			/>
+
+			{!isCollapsed && (
+				<div className='mt-2 ml-5'>
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						getItemKey={getItemKey}
+						items={topics}
+						minItemWidth={280}
+						renderItem={renderItem}
+					/>
+				</div>
+			)}
+		</div>
 	)
 }
 
-function ScheduledCard() {
-	const { sections, isLoading } = useSoonReviewEntries()
+function ReviewCardContent({
+	isLoading,
+	isEmpty,
+	sections,
+	collapsedSections,
+	onToggleCollapse,
+	onTopicClick
+}: {
+	isLoading: boolean
+	isEmpty: boolean
+	sections: Array<BucketSection>
+	collapsedSections: Record<string, boolean>
+	onToggleCollapse: (sectionId: string) => void
+	onTopicClick: (topic: Topic) => void
+}) {
+	if (isLoading) {
+		return <ReviewCardSkeleton />
+	}
 
-	const counts = useMemo(() => {
-		const tomorrowSection = sections.find(s => s.id === 'tomorrow')
-		const nextWeekSection = sections.find(s => s.id === 'nextSevenDays')
-		const tomorrow = tomorrowSection?.entries.length ?? 0
-		const nextWeek = nextWeekSection?.entries.length ?? 0
-		return { tomorrow, nextWeek, total: tomorrow + nextWeek }
-	}, [sections])
+	if (isEmpty) {
+		return (
+			<p className='text-muted-foreground text-sm'>
+				No topics ready for review
+			</p>
+		)
+	}
 
 	return (
-		<Link className='group' to='/upcoming'>
-			<Card className='h-full transition-colors hover:bg-accent/50'>
-				<CardHeader>
-					<div className='flex items-center justify-between'>
-						<div className='flex items-center gap-2'>
-							<Calendar className='h-5 w-5 text-muted-foreground' />
-							<CardTitle>Upcoming</CardTitle>
-						</div>
-						<ChevronRight className='h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100' />
-					</div>
-					<CardDescription>Upcoming reviews</CardDescription>
-				</CardHeader>
-				<CardContent>
-					{isLoading ? (
-						<div className='flex gap-4'>
-							<Skeleton className='h-8 w-16' />
-							<Skeleton className='h-8 w-16' />
-						</div>
-					) : counts.total === 0 ? (
-						<p className='text-muted-foreground text-sm'>No upcoming reviews</p>
-					) : (
-						<div className='flex flex-wrap gap-4'>
-							{counts.tomorrow > 0 && (
-								<div>
-									<span className='font-bold text-2xl'>{counts.tomorrow}</span>
-									<span className='ml-1 text-muted-foreground text-sm'>
-										tomorrow
-									</span>
-								</div>
-							)}
-							{counts.nextWeek > 0 && (
-								<div>
-									<span className='font-bold text-2xl'>{counts.nextWeek}</span>
-									<span className='ml-1 text-muted-foreground text-sm'>
-										next week
-									</span>
-								</div>
-							)}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</Link>
+		<div className='space-y-4'>
+			{sections.map(section => (
+				<HomeReviewSection
+					headingClassName={section.headingClassName}
+					id={section.id}
+					isCollapsed={collapsedSections[section.id] ?? false}
+					key={section.id}
+					label={section.label}
+					onToggleCollapse={onToggleCollapse}
+					onTopicClick={onTopicClick}
+					topics={section.topics}
+				/>
+			))}
+		</div>
 	)
 }
 
-function UnscheduledCard() {
-	const { section, isLoading } = useUnscheduledReviewEntries()
-	const count = section.entries.length
-
+function ReviewCardSkeleton() {
 	return (
-		<Link className='group' to='/unscheduled'>
-			<Card className='h-full transition-colors hover:bg-accent/50'>
-				<CardHeader>
-					<div className='flex items-center justify-between'>
-						<div className='flex items-center gap-2'>
-							<CircleDashed className='h-5 w-5 text-muted-foreground' />
-							<CardTitle>Unscheduled</CardTitle>
-						</div>
-						<ChevronRight className='h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100' />
+		<div className='space-y-4'>
+			{[1, 2, 3].map(i => (
+				<div className='space-y-2' key={i}>
+					<Skeleton className='h-5 w-24' />
+					<div className='ml-4 space-y-2'>
+						<Skeleton className='h-20 w-full' />
 					</div>
-					<CardDescription>Reviews without a schedule</CardDescription>
-				</CardHeader>
-				<CardContent>
-					{isLoading ? (
-						<Skeleton className='h-8 w-16' />
-					) : count === 0 ? (
-						<p className='text-muted-foreground text-sm'>
-							No unscheduled reviews
-						</p>
-					) : (
-						<div>
-							<span className='font-bold text-2xl'>{count}</span>
-							<span className='ml-1 text-muted-foreground text-sm'>
-								unscheduled
-							</span>
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</Link>
+				</div>
+			))}
+		</div>
 	)
 }
 
-function RecentCard() {
-	const { data: topics, isLoading } = useTopics({
+// ============================================================================
+// HomeRecentCard - Shows recent topics in masonry layout (20 items max)
+// ============================================================================
+
+function HomeRecentCard() {
+	const navigate = useNavigate()
+	const { data: topics = [], isLoading } = useTopics({
 		order: 'desc',
-		limit: 5
+		limit: RECENT_LIMIT
 	})
 
+	const handleTopicClick = useCallback(
+		(topic: Topic) => {
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topic.id.toString() }
+			})
+		},
+		[navigate]
+	)
+
+	const estimateItemSize = useCallback((topic: Topic) => {
+		const baseHeight = 80
+		const lineHeight = 10
+		const numCharsPerLine = 30
+		const newLine = 10
+
+		const nameHeight =
+			Math.floor(topic.name.length / numCharsPerLine) * lineHeight
+		const notesHeight =
+			Math.floor(topic.notes.length / numCharsPerLine) * lineHeight
+
+		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
+
+		return Math.max(calculatedHeight, 96)
+	}, [])
+
+	const renderItem = useCallback(
+		(topic: Topic) => (
+			<TopicCard
+				headerRight={<TopicActionMenu topic={topic} />}
+				minHeight={96}
+				onTopicClick={handleTopicClick}
+				topic={topic}
+			/>
+		),
+		[handleTopicClick]
+	)
+
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
+
 	return (
-		<Link className='group md:col-span-2' to='/recent'>
-			<Card className='h-full transition-colors hover:bg-accent/50'>
-				<CardHeader>
-					<div className='flex items-center justify-between'>
-						<div className='flex items-center gap-2'>
-							<History className='h-5 w-5 text-muted-foreground' />
-							<CardTitle>Recent</CardTitle>
-						</div>
-						<ChevronRight className='h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100' />
-					</div>
-					<CardDescription>Recently viewed topics</CardDescription>
-				</CardHeader>
-				<CardContent>
-					{isLoading ? (
-						<div className='space-y-2'>
-							<Skeleton className='h-5 w-48' />
-							<Skeleton className='h-5 w-40' />
-							<Skeleton className='h-5 w-44' />
-						</div>
-					) : !topics || topics.length === 0 ? (
-						<p className='text-muted-foreground text-sm'>No recent topics</p>
-					) : (
-						<ul className='space-y-1'>
-							{topics.slice(0, 5).map(topic => (
-								<li
-									className='truncate text-muted-foreground text-sm'
-									key={topic.id}
-								>
-									{topic.name || <span className='italic'>Untitled topic</span>}
-								</li>
-							))}
-						</ul>
-					)}
-				</CardContent>
-			</Card>
-		</Link>
+		<Card>
+			<CardHeader>
+				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
+			</CardHeader>
+			<CardContent>
+				<RecentCardContent
+					estimateItemSize={estimateItemSize}
+					getItemKey={getItemKey}
+					isLoading={isLoading}
+					renderItem={renderItem}
+					topics={topics}
+				/>
+			</CardContent>
+		</Card>
+	)
+}
+
+function RecentCardContent({
+	isLoading,
+	topics,
+	estimateItemSize,
+	getItemKey,
+	renderItem
+}: {
+	isLoading: boolean
+	topics: Array<Topic>
+	estimateItemSize: (topic: Topic, index: number) => number
+	getItemKey: (topic: Topic, index: number) => string | number
+	renderItem: (topic: Topic, index: number) => ReactNode
+}) {
+	if (isLoading) {
+		return <RecentCardSkeleton />
+	}
+
+	if (topics.length === 0) {
+		return <p className='text-muted-foreground text-sm'>No recent topics</p>
+	}
+
+	return (
+		<MasonryLayout
+			estimateItemSize={estimateItemSize}
+			gap={16}
+			getItemKey={getItemKey}
+			items={topics}
+			minItemWidth={280}
+			renderItem={renderItem}
+		/>
+	)
+}
+
+function RecentCardSkeleton() {
+	return (
+		<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+			{[1, 2, 3, 4, 5, 6].map(i => (
+				<Skeleton className='h-24 w-full' key={i} />
+			))}
+		</div>
 	)
 }
