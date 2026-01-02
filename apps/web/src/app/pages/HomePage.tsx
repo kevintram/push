@@ -33,9 +33,10 @@ import {
 	type RetrievabilityBucket
 } from '~/utils/retrievability'
 
-const SCHEDULED_LIMIT = 10
-const REVIEW_LIMIT = 20
-const RECENT_LIMIT = 20
+const TODAY_LIMIT = 3
+const UPCOMING_LIMIT = 3
+const REVIEW_LIMIT = 10
+const RECENT_LIMIT = 12
 
 // ============================================================================
 // Shared Helper Components
@@ -126,7 +127,10 @@ export function HomePage() {
 			<PageLayout.Header icon={Home} title='Home' />
 			<PageLayout.Content className='max-w-450'>
 				<div className='grid gap-4 md:grid-cols-2'>
-					<HomeScheduledCard />
+					<div className='flex flex-col gap-4'>
+						<HomeTodayCard />
+						<HomeUpcomingCard />
+					</div>
 					<HomeReviewCard />
 					<div className='md:col-span-2'>
 						<HomeRecentCard />
@@ -138,7 +142,7 @@ export function HomePage() {
 }
 
 // ============================================================================
-// HomeScheduledCard - Shows scheduled review entries (10 items max)
+// HomeTodayCard - Shows today's review entries (3 items max)
 // ============================================================================
 
 type ScheduledSection = {
@@ -148,42 +152,28 @@ type ScheduledSection = {
 	entries: Array<ReviewEntry>
 }
 
-function HomeScheduledCard() {
+function HomeTodayCard() {
 	const navigate = useNavigate()
-	const { sections: todaySections, isLoading: todayLoading } =
-		useTodayReviewEntries()
-	const { sections: soonSections, isLoading: soonLoading } =
-		useSoonReviewEntries()
+	const { sections: todaySections, isLoading } = useTodayReviewEntries()
 
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
 
-	// Combine and limit entries to 10 total
 	const sections = useMemo(() => {
-		const allSections: Array<ScheduledSection> = [
-			...todaySections.map(s => ({
-				id: s.id,
-				label: s.label,
-				headingClassName: s.headingClassName,
-				entries: s.entries
-			})),
-			...soonSections.map(s => ({
-				id: s.id,
-				label: s.label,
-				headingClassName: s.headingClassName,
-				entries: s.entries
-			}))
-		]
+		const allSections: Array<ScheduledSection> = todaySections.map(s => ({
+			id: s.id,
+			label: s.label,
+			headingClassName: s.headingClassName,
+			entries: s.entries
+		}))
 
 		return limitSections(
 			allSections,
-			SCHEDULED_LIMIT,
+			TODAY_LIMIT,
 			s => s.entries.length,
 			(s, count) => ({ ...s, entries: s.entries.slice(0, count) })
 		)
-	}, [todaySections, soonSections])
-
-	const isLoading = todayLoading || soonLoading
+	}, [todaySections])
 
 	const handleSessionClick = useCallback(
 		(sessionId: number) => {
@@ -209,9 +199,85 @@ function HomeScheduledCard() {
 		<>
 			<Card className='flex h-full flex-col'>
 				<CardHeader>
-					<CardHeaderLink icon={Calendar} title='Scheduled' to='/upcoming' />
+					<CardHeaderLink icon={Calendar} title='Today' to='/today' />
 				</CardHeader>
-				<CardContent className='max-h-160 overflow-y-auto'>
+				<CardContent className='max-h-80 overflow-y-auto'>
+					<ScheduledCardContent
+						collapsedSections={collapsedSections}
+						isEmpty={isEmpty}
+						isLoading={isLoading}
+						onReviewClick={handleReviewClick}
+						onSessionClick={handleSessionClick}
+						onToggleCollapse={toggleSection}
+						sections={sections}
+					/>
+				</CardContent>
+			</Card>
+			<ReviewDialog
+				onOpenChange={open => {
+					if (!open) closeReviewDialog()
+				}}
+				open={selectedReviewId !== null}
+				reviewId={selectedReviewId}
+			/>
+		</>
+	)
+}
+
+// ============================================================================
+// HomeUpcomingCard - Shows upcoming review entries (3 items max)
+// ============================================================================
+
+function HomeUpcomingCard() {
+	const navigate = useNavigate()
+	const { sections: soonSections, isLoading } = useSoonReviewEntries()
+
+	const { collapsedSections, toggleSection } = useSectionCollapse()
+	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
+
+	const sections = useMemo(() => {
+		const allSections: Array<ScheduledSection> = soonSections.map(s => ({
+			id: s.id,
+			label: s.label,
+			headingClassName: s.headingClassName,
+			entries: s.entries
+		}))
+
+		return limitSections(
+			allSections,
+			UPCOMING_LIMIT,
+			s => s.entries.length,
+			(s, count) => ({ ...s, entries: s.entries.slice(0, count) })
+		)
+	}, [soonSections])
+
+	const handleSessionClick = useCallback(
+		(sessionId: number) => {
+			navigate({
+				to: '/review-session/$reviewSessionId',
+				params: { reviewSessionId: sessionId.toString() }
+			})
+		},
+		[navigate]
+	)
+
+	const handleReviewClick = useCallback((reviewId: number) => {
+		setSelectedReviewId(reviewId)
+	}, [])
+
+	const closeReviewDialog = useCallback(() => {
+		setSelectedReviewId(null)
+	}, [])
+
+	const isEmpty = sections.every(section => section.entries.length === 0)
+
+	return (
+		<>
+			<Card className='flex h-full flex-col'>
+				<CardHeader>
+					<CardHeaderLink icon={Calendar} title='Upcoming' to='/upcoming' />
+				</CardHeader>
+				<CardContent className='max-h-80 overflow-y-auto'>
 					<ScheduledCardContent
 						collapsedSections={collapsedSections}
 						isEmpty={isEmpty}
