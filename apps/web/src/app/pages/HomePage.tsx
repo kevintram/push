@@ -40,7 +40,7 @@ export function HomePage() {
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={Home} title='Home' />
-			<PageLayout.Content className='max-w-screen'>
+			<PageLayout.Content className='max-w-450'>
 				<div className='grid gap-4 md:grid-cols-2'>
 					<HomeScheduledCard />
 					<HomeReviewCard />
