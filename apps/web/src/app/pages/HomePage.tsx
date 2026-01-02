@@ -6,7 +6,8 @@ import {
 	ChevronDown,
 	ChevronRight,
 	History,
-	Home
+	Home,
+	Star
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useCallback, useMemo, useState } from 'react'
@@ -72,13 +73,11 @@ function CardHeaderLink({
 
 function CollapsibleSectionHeader({
 	label,
-	count,
 	headingClassName,
 	isCollapsed,
 	onToggle
 }: {
 	label: string
-	count: number
 	headingClassName?: string
 	isCollapsed: boolean
 	onToggle: () => void
@@ -90,7 +89,7 @@ function CollapsibleSectionHeader({
 			variant='ghost'
 		>
 			<h3 className={`font-semibold text-sm ${headingClassName ?? ''}`.trim()}>
-				{label} <span className='text-muted-foreground'>({count})</span>
+				{label}
 			</h3>
 			<ChevronDown
 				className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
@@ -199,7 +198,7 @@ function HomeTodayCard() {
 		<>
 			<Card className='flex h-full flex-col'>
 				<CardHeader>
-					<CardHeaderLink icon={Calendar} title='Today' to='/today' />
+					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
 				<CardContent className='max-h-80 overflow-y-auto'>
 					<ScheduledCardContent
@@ -322,7 +321,6 @@ function HomeScheduledSection({
 	return (
 		<div>
 			<CollapsibleSectionHeader
-				count={entries.length}
 				headingClassName={headingClassName}
 				isCollapsed={isCollapsed}
 				label={label}
@@ -579,7 +577,6 @@ function HomeReviewSection({
 	return (
 		<div className='mb-2'>
 			<CollapsibleSectionHeader
-				count={topics.length}
 				headingClassName={headingClassName}
 				isCollapsed={isCollapsed}
 				label={label}
