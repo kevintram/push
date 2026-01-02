@@ -143,23 +143,28 @@ export function TopicCard({
 						</TooltipTrigger>
 						<TooltipContent side='top'>
 							{thresholdInfo.daysUntil === 1
-								? '1 day until late'
-								: `${thresholdInfo.daysUntil} days until late`}
+								? `1 day until ${bucketInfo.label === 'Early' ? 'ready' : 'late'}`
+								: `${thresholdInfo.daysUntil} days until ${bucketInfo.label === 'Early' ? 'ready' : 'late'}`}
 						</TooltipContent>
 					</Tooltip>
 				)}
 				{/* SRS toggle */}
-				<div
-					className={isUpdatingTopic ? 'opacity-50' : 'cursor-pointer'}
-					onClick={handleSrsToggle}
-					onKeyDown={e => e.stopPropagation()}
-				>
-					{(topic.srs_enabled ?? true) ? (
-						<BookOpen className='h-4 w-4 text-green-500' />
-					) : (
-						<BookOpenOff className='h-4 w-4 text-muted-foreground' />
-					)}
-				</div>
+				<Tooltip>
+					<TooltipTrigger asChild={true}>
+						<div
+							className={isUpdatingTopic ? 'opacity-50' : 'cursor-pointer'}
+							onClick={handleSrsToggle}
+							onKeyDown={e => e.stopPropagation()}
+						>
+							{(topic.srs_enabled ?? true) ? (
+								<BookOpen className='h-4 w-4 text-green-500' />
+							) : (
+								<BookOpenOff className='h-4 w-4 text-muted-foreground' />
+							)}
+						</div>
+					</TooltipTrigger>
+					<TooltipContent side='top'>Surface in review page</TooltipContent>
+				</Tooltip>
 				<div className='flex items-center gap-1'>{headerRight}</div>
 			</CardHeader>
 
