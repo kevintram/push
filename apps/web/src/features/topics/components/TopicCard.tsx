@@ -112,10 +112,17 @@ export function TopicCard({
 			tabIndex={0}
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
-				<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-					<User2 className='h-3 w-3' />
-					<span>{topic.parents?.length ?? 0}</span>
-				</div>
+				<Tooltip>
+					<TooltipTrigger asChild={true}>
+						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+							<User2 className='h-3 w-3' />
+							<span>{topic.parents?.length ?? 0}</span>
+						</div>
+					</TooltipTrigger>
+					<TooltipContent side='top'>
+						{topic.parents?.length === 1 ? '1 parent' : `${topic.parents?.length ?? 0} parents`}
+					</TooltipContent>
+				</Tooltip>
 				<div className='flex-1' />
 				{/* Leaving soon badge */}
 				{showLeavingSoon && isLeavingSoon && (
@@ -217,10 +224,17 @@ export function TopicCard({
 				)}
 				<div className='flex-1' />
 				{/* Children count */}
-				<div className='flex items-center gap-1'>
-					<Baby className='h-3 w-3' />
-					<span>{topic.children?.length ?? 0}</span>
-				</div>
+				<Tooltip>
+					<TooltipTrigger asChild={true}>
+						<div className='flex items-center gap-1'>
+							<Baby className='h-3 w-3' />
+							<span>{topic.children?.length ?? 0}</span>
+						</div>
+					</TooltipTrigger>
+					<TooltipContent side='top'>
+						{topic.children?.length === 1 ? '1 child' : `${topic.children?.length ?? 0} children`}
+					</TooltipContent>
+				</Tooltip>
 			</CardFooter>
 		</Card>
 	)
