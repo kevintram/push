@@ -3,7 +3,7 @@ import {
 	BookOpen,
 	Calendar,
 	ChevronDown,
-	ExternalLink,
+	ChevronRight,
 	History,
 	Home
 } from 'lucide-react'
@@ -151,17 +151,16 @@ function HomeScheduledCard() {
 		<>
 			<Card className='flex h-full flex-col'>
 				<CardHeader>
-					<div className='flex items-center justify-between'>
+					<Link
+						className='-mx-2 -my-1 flex items-center justify-between rounded-md px-2 py-1 hover:bg-muted/50'
+						to='/upcoming'
+					>
 						<div className='flex items-center gap-2'>
 							<Calendar className='h-5 w-5 text-muted-foreground' />
 							<CardTitle>Scheduled</CardTitle>
 						</div>
-						<Link to='/upcoming'>
-							<Button size='sm' variant='ghost'>
-								<ExternalLink className='h-4 w-4' />
-							</Button>
-						</Link>
-					</div>
+						<ChevronRight className='h-4 w-4 text-muted-foreground' />
+					</Link>
 				</CardHeader>
 				<CardContent className='max-h-160 overflow-y-auto'>
 					<ScheduledCardContent
@@ -428,17 +427,16 @@ function HomeReviewCard() {
 	return (
 		<Card className='flex h-full flex-col'>
 			<CardHeader>
-				<div className='flex items-center justify-between'>
+				<Link
+					className='-mx-2 -my-1 flex items-center justify-between rounded-md px-2 py-1 hover:bg-muted/50'
+					to='/review'
+				>
 					<div className='flex items-center gap-2'>
 						<BookOpen className='h-5 w-5 text-muted-foreground' />
 						<CardTitle>Review</CardTitle>
 					</div>
-					<Link to='/review'>
-						<Button size='sm' variant='ghost'>
-							<ExternalLink className='h-4 w-4' />
-						</Button>
-					</Link>
-				</div>
+					<ChevronRight className='h-4 w-4 text-muted-foreground' />
+				</Link>
 			</CardHeader>
 			<CardContent className='max-h-160 overflow-y-auto'>
 				<ReviewCardContent
@@ -638,17 +636,16 @@ function HomeRecentCard() {
 	return (
 		<Card>
 			<CardHeader>
-				<div className='flex items-center justify-between'>
+				<Link
+					className='-mx-2 -my-1 flex items-center justify-between rounded-md px-2 py-1 hover:bg-muted/50'
+					to='/recent'
+				>
 					<div className='flex items-center gap-2'>
 						<History className='h-5 w-5 text-muted-foreground' />
 						<CardTitle>Recent Topics</CardTitle>
 					</div>
-					<Link to='/recent'>
-						<Button size='sm' variant='ghost'>
-							<ExternalLink className='h-4 w-4' />
-						</Button>
-					</Link>
-				</div>
+					<ChevronRight className='h-4 w-4 text-muted-foreground' />
+				</Link>
 			</CardHeader>
 			<CardContent>
 				<RecentCardContent
