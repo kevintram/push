@@ -3,6 +3,7 @@ import {
 	Archive,
 	Baby,
 	BookOpen,
+	Brain,
 	Calendar,
 	Inbox,
 	Sparkles,
@@ -48,7 +49,8 @@ export function TopicCard({
 	const queryClient = useQueryClient()
 	const { mutate: updateTopic, isPending: isUpdatingTopic } = useUpdateTopic()
 
-	const { bucketInfo, isNewTopic, isLeavingSoon } = useTopicMetrics(topic)
+	const { bucketInfo, isNewTopic, isLeavingSoon, retrievabilityDisplay } =
+		useTopicMetrics(topic)
 
 	const lastReviewed = useMemo(
 		() =>
@@ -207,6 +209,23 @@ export function TopicCard({
 							</Tooltip>
 						) : (
 							<span>{bucketInfo.label}</span>
+						)}
+						{/* Retrievability */}
+						{retrievabilityDisplay && (
+							<>
+								<span>·</span>
+								<Tooltip>
+									<TooltipTrigger asChild={true}>
+										<div className='flex items-center gap-1'>
+											<Brain className='h-3 w-3' />
+											<span>{retrievabilityDisplay}</span>
+										</div>
+									</TooltipTrigger>
+									<TooltipContent side='top'>
+										{retrievabilityDisplay} chance of successfully recalling today
+									</TooltipContent>
+								</Tooltip>
+							</>
 						)}
 						{/* Last reviewed */}
 						<span>·</span>
