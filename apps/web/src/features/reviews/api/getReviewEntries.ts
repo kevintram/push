@@ -74,7 +74,7 @@ const TODAY_SECTION_DEFINITIONS: Array<TodaySectionDefinition> = [
 	{
 		id: 'overdue',
 		label: 'Overdue',
-		headingClassName: 'text-red-600',
+		headingClassName: 'text-red-600 dark:text-red-400',
 		emptyMessage: "You're all caught up—no overdue reviews."
 	},
 	{
