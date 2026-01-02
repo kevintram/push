@@ -1,4 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router'
+import type { LucideIcon } from 'lucide-react'
 import {
 	BookOpen,
 	Calendar,
@@ -35,6 +36,84 @@ import {
 const SCHEDULED_LIMIT = 10
 const REVIEW_LIMIT = 20
 const RECENT_LIMIT = 20
+
+// ============================================================================
+// Shared Helper Components
+// ============================================================================
+
+function CardHeaderLink({
+	icon: Icon,
+	title,
+	to
+}: {
+	icon: LucideIcon
+	title: string
+	to: string
+}) {
+	return (
+		<Link
+			className='group -mx-2 -my-1 flex items-center justify-between px-2 py-1'
+			to={to}
+		>
+			<div className='flex items-center gap-2'>
+				<Icon className='h-5 w-5 text-muted-foreground' />
+				<CardTitle>{title}</CardTitle>
+			</div>
+			<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
+		</Link>
+	)
+}
+
+function CollapsibleSectionHeader({
+	label,
+	count,
+	headingClassName,
+	isCollapsed,
+	onToggle
+}: {
+	label: string
+	count: number
+	headingClassName?: string
+	isCollapsed: boolean
+	onToggle: () => void
+}) {
+	return (
+		<Button
+			className='flex items-center gap-2 p-0'
+			onClick={onToggle}
+			variant='ghost'
+		>
+			<h3 className={`font-semibold text-sm ${headingClassName ?? ''}`.trim()}>
+				{label} <span className='text-muted-foreground'>({count})</span>
+			</h3>
+			<ChevronDown
+				className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
+			/>
+		</Button>
+	)
+}
+
+function limitSections<T>(
+	sections: Array<T>,
+	limit: number,
+	getCount: (section: T) => number,
+	sliceItems: (section: T, count: number) => T
+): Array<T> {
+	let remaining = limit
+	const result: Array<T> = []
+
+	for (const section of sections) {
+		if (remaining <= 0) continue
+		const itemCount = getCount(section)
+		const toTake = Math.min(itemCount, remaining)
+		if (toTake > 0) {
+			result.push(sliceItems(section, toTake))
+			remaining -= toTake
+		}
+	}
+
+	return result.filter(s => getCount(s) > 0)
+}
 
 export function HomePage() {
 	return (
@@ -75,54 +154,28 @@ function HomeScheduledCard() {
 	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
 
 	// Combine and limit entries to 10 total
-	const { sections } = useMemo(() => {
-		const allSections: Array<ScheduledSection> = []
+	const sections = useMemo(() => {
+		const allSections: Array<ScheduledSection> = [
+			...todaySections.map(s => ({
+				id: s.id,
+				label: s.label,
+				headingClassName: s.headingClassName,
+				entries: s.entries
+			})),
+			...soonSections.map(s => ({
+				id: s.id,
+				label: s.label,
+				headingClassName: s.headingClassName,
+				entries: s.entries
+			}))
+		]
 
-		// Add today sections (Overdue, Today)
-		for (const section of todaySections) {
-			allSections.push({
-				id: section.id,
-				label: section.label,
-				headingClassName: section.headingClassName,
-				entries: section.entries
-			})
-		}
-
-		// Add soon sections (Tomorrow, Next 7 Days)
-		for (const section of soonSections) {
-			allSections.push({
-				id: section.id,
-				label: section.label,
-				headingClassName: section.headingClassName,
-				entries: section.entries
-			})
-		}
-
-		// Calculate total and apply limit
-		let remaining = SCHEDULED_LIMIT
-		const limitedSections: Array<ScheduledSection> = []
-
-		for (const section of allSections) {
-			if (remaining <= 0) continue
-
-			const entriesToTake = Math.min(section.entries.length, remaining)
-			if (entriesToTake > 0 || section.entries.length === 0) {
-				limitedSections.push({
-					...section,
-					entries: section.entries.slice(0, entriesToTake)
-				})
-				remaining -= entriesToTake
-			}
-		}
-
-		// Filter out empty sections
-		const filteredSections = limitedSections.filter(
-			section => section.entries.length > 0
+		return limitSections(
+			allSections,
+			SCHEDULED_LIMIT,
+			s => s.entries.length,
+			(s, count) => ({ ...s, entries: s.entries.slice(0, count) })
 		)
-
-		return {
-			sections: filteredSections
-		}
 	}, [todaySections, soonSections])
 
 	const isLoading = todayLoading || soonLoading
@@ -151,16 +204,7 @@ function HomeScheduledCard() {
 		<>
 			<Card className='flex h-full flex-col'>
 				<CardHeader>
-					<Link
-						className='group -mx-2 -my-1 flex items-center justify-between px-2 py-1'
-						to='/upcoming'
-					>
-						<div className='flex items-center gap-2'>
-							<Calendar className='h-5 w-5 text-muted-foreground' />
-							<CardTitle>Scheduled</CardTitle>
-						</div>
-						<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
-					</Link>
+					<CardHeaderLink icon={Calendar} title='Scheduled' to='/upcoming' />
 				</CardHeader>
 				<CardContent className='max-h-160 overflow-y-auto'>
 					<ScheduledCardContent
@@ -206,21 +250,13 @@ function HomeScheduledSection({
 }) {
 	return (
 		<div>
-			<Button
-				className='flex items-center gap-2 p-0'
-				onClick={() => onToggleCollapse(id)}
-				variant='ghost'
-			>
-				<h3
-					className={`font-semibold text-sm ${headingClassName ?? ''}`.trim()}
-				>
-					{label}{' '}
-					<span className='text-muted-foreground'>({entries.length})</span>
-				</h3>
-				<ChevronDown
-					className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-				/>
-			</Button>
+			<CollapsibleSectionHeader
+				count={entries.length}
+				headingClassName={headingClassName}
+				isCollapsed={isCollapsed}
+				label={label}
+				onToggle={() => onToggleCollapse(id)}
+			/>
 
 			{!isCollapsed && (
 				<div className='mt-1 ml-2 border-border border-l-2 pl-2'>
@@ -339,7 +375,7 @@ function HomeReviewCard() {
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	// Group topics by retrievability bucket and limit to 20 total
-	const { sections } = useMemo(() => {
+	const sections = useMemo(() => {
 		const late: Array<Topic> = []
 		const onTime: Array<Topic> = []
 		const early: Array<Topic> = []
@@ -364,9 +400,11 @@ function HomeReviewCard() {
 		}
 
 		// Sort each bucket by retrievability (lowest first)
-		late.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
-		onTime.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
-		early.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
+		const sortByRetrievability = (a: Topic, b: Topic) =>
+			(a.retrievability ?? 0) - (b.retrievability ?? 0)
+		late.sort(sortByRetrievability)
+		onTime.sort(sortByRetrievability)
+		early.sort(sortByRetrievability)
 
 		const allBuckets: Array<BucketSection> = [
 			{
@@ -389,27 +427,12 @@ function HomeReviewCard() {
 			}
 		]
 
-		// Apply limit across all buckets
-		let remaining = REVIEW_LIMIT
-		const limitedBuckets: Array<BucketSection> = []
-
-		for (const bucket of allBuckets) {
-			const topicsToTake = Math.min(bucket.topics.length, remaining)
-			limitedBuckets.push({
-				...bucket,
-				topics: bucket.topics.slice(0, topicsToTake)
-			})
-			remaining -= topicsToTake
-		}
-
-		// Filter out empty sections
-		const filteredBuckets = limitedBuckets.filter(
-			bucket => bucket.topics.length > 0
+		return limitSections(
+			allBuckets,
+			REVIEW_LIMIT,
+			s => s.topics.length,
+			(s, count) => ({ ...s, topics: s.topics.slice(0, count) })
 		)
-
-		return {
-			sections: filteredBuckets
-		}
 	}, [topics])
 
 	const handleTopicClick = useCallback(
@@ -427,16 +450,7 @@ function HomeReviewCard() {
 	return (
 		<Card className='flex h-full flex-col'>
 			<CardHeader>
-				<Link
-					className='group -mx-2 -my-1 flex items-center justify-between px-2 py-1'
-					to='/review'
-				>
-					<div className='flex items-center gap-2'>
-						<BookOpen className='h-5 w-5 text-muted-foreground' />
-						<CardTitle>Review</CardTitle>
-					</div>
-					<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
-				</Link>
+				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
 			</CardHeader>
 			<CardContent className='max-h-160 overflow-y-auto'>
 				<ReviewCardContent
@@ -493,19 +507,13 @@ function HomeReviewSection({
 
 	return (
 		<div className='mb-2'>
-			<Button
-				className='flex items-center gap-2 p-0'
-				onClick={() => onToggleCollapse(id)}
-				variant='ghost'
-			>
-				<h3 className={`font-semibold text-sm ${headingClassName}`.trim()}>
-					{label}{' '}
-					<span className='text-muted-foreground'>({topics.length})</span>
-				</h3>
-				<ChevronDown
-					className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-				/>
-			</Button>
+			<CollapsibleSectionHeader
+				count={topics.length}
+				headingClassName={headingClassName}
+				isCollapsed={isCollapsed}
+				label={label}
+				onToggle={() => onToggleCollapse(id)}
+			/>
 
 			{!isCollapsed && (
 				<div className='mt-2 ml-5'>
@@ -636,16 +644,7 @@ function HomeRecentCard() {
 	return (
 		<Card>
 			<CardHeader>
-				<Link
-					className='group -mx-2 -my-1 flex items-center justify-between px-2 py-1'
-					to='/recent'
-				>
-					<div className='flex items-center gap-2'>
-						<History className='h-5 w-5 text-muted-foreground' />
-						<CardTitle>Recent Topics</CardTitle>
-					</div>
-					<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
-				</Link>
+				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
 			</CardHeader>
 			<CardContent>
 				<RecentCardContent
