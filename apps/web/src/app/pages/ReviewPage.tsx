@@ -183,18 +183,20 @@ export function ReviewPage() {
 		<PageLayout>
 			<PageLayout.Header icon={BookOpen} title='Review' />
 			<PageLayout.Content>
-				{bucketSections.map(section => (
-					<ReadinessSection
-						headingClassName={section.headingClassName}
-						id={section.id}
-						isCollapsed={collapsedSections[section.id] ?? false}
-						key={section.id}
-						label={section.label}
-						onToggleCollapse={toggleSection}
-						onTopicClick={handleTopicClick}
-						topics={section.topics}
-					/>
-				))}
+				{bucketSections
+					.filter(section => section.topics.length > 0)
+					.map(section => (
+						<ReadinessSection
+							headingClassName={section.headingClassName}
+							id={section.id}
+							isCollapsed={collapsedSections[section.id] ?? false}
+							key={section.id}
+							label={section.label}
+							onToggleCollapse={toggleSection}
+							onTopicClick={handleTopicClick}
+							topics={section.topics}
+						/>
+					))}
 			</PageLayout.Content>
 		</PageLayout>
 	)
@@ -259,21 +261,13 @@ function ReadinessSection({
 
 			{!isCollapsed && (
 				<div className='mt-2 mb-10 ml-5'>
-					{topics.length > 0 ? (
-						<div>
-							<MasonryLayout
-								estimateItemSize={estimateItemSize}
-								getItemKey={getItemKey}
-								items={topics}
-								minItemWidth={280}
-								renderItem={renderItem}
-							/>
-						</div>
-					) : (
-						<p className='px-4 text-muted-foreground text-sm italic'>
-							No topics
-						</p>
-					)}
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						getItemKey={getItemKey}
+						items={topics}
+						minItemWidth={280}
+						renderItem={renderItem}
+					/>
 				</div>
 			)}
 		</div>

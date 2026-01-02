@@ -115,16 +115,10 @@ function HomeScheduledCard() {
 			}
 		}
 
-		// Filter out empty sections except for required ones
-		const filteredSections = limitedSections.filter(section => {
-			if (section.entries.length > 0) return true
-			return (
-				section.id === 'overdue' ||
-				section.id === 'today' ||
-				section.id === 'tomorrow' ||
-				section.id === 'nextSevenDays'
-			)
-		})
+		// Filter out empty sections
+		const filteredSections = limitedSections.filter(
+			section => section.entries.length > 0
+		)
 
 		return {
 			sections: filteredSections
@@ -409,8 +403,13 @@ function HomeReviewCard() {
 			remaining -= topicsToTake
 		}
 
+		// Filter out empty sections
+		const filteredBuckets = limitedBuckets.filter(
+			bucket => bucket.topics.length > 0
+		)
+
 		return {
-			sections: limitedBuckets
+			sections: filteredBuckets
 		}
 	}, [topics])
 
