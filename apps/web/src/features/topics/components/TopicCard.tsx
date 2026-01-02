@@ -198,6 +198,7 @@ export function TopicCard({
 										<span>
 											{bucketInfo.label}
 											{bucketInfo.days !== null &&
+												bucketInfo.suffix === 'ago' &&
 												` (${bucketInfo.days}d ${bucketInfo.suffix})`}
 										</span>
 									</div>
