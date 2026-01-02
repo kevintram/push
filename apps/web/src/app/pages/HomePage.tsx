@@ -163,7 +163,7 @@ function HomeScheduledCard() {
 						</Link>
 					</div>
 				</CardHeader>
-				<CardContent className='flex-1 overflow-y-auto'>
+				<CardContent className='max-h-160 overflow-y-auto'>
 					<ScheduledCardContent
 						collapsedSections={collapsedSections}
 						isEmpty={isEmpty}
@@ -440,7 +440,7 @@ function HomeReviewCard() {
 					</Link>
 				</div>
 			</CardHeader>
-			<CardContent className='flex-1 overflow-y-auto'>
+			<CardContent className='max-h-160 overflow-y-auto'>
 				<ReviewCardContent
 					collapsedSections={collapsedSections}
 					isEmpty={isEmpty}
