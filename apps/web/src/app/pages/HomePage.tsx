@@ -34,8 +34,8 @@ import {
 	type RetrievabilityBucket
 } from '~/utils/retrievability'
 
-const TODAY_LIMIT = 3
-const UPCOMING_LIMIT = 3
+const TODAY_LIMIT = 4
+const UPCOMING_LIMIT = 1
 const REVIEW_LIMIT = 10
 const RECENT_LIMIT = 12
 
@@ -200,7 +200,7 @@ function HomeTodayCard() {
 				<CardHeader>
 					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
-				<CardContent className='max-h-80 overflow-y-auto'>
+				<CardContent className='max-h-160 overflow-y-auto'>
 					<ScheduledCardContent
 						collapsedSections={collapsedSections}
 						isEmpty={isEmpty}
@@ -272,11 +272,11 @@ function HomeUpcomingCard() {
 
 	return (
 		<>
-			<Card className='flex h-full flex-col border-0'>
+			<Card className='flex flex-col border-0'>
 				<CardHeader>
 					<CardHeaderLink icon={Calendar} title='Upcoming' to='/upcoming' />
 				</CardHeader>
-				<CardContent className='max-h-80 overflow-y-auto'>
+				<CardContent>
 					<ScheduledCardContent
 						collapsedSections={collapsedSections}
 						isEmpty={isEmpty}
