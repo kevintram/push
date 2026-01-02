@@ -226,17 +226,19 @@ export function TopicDetail({
 								value={notes}
 							/>
 						</div>
-						<TopicChildrenPanel
-							getScrollElement={() => scrollContainerRef.current}
-							onChildSelect={onTopicNavigate}
-							parentDifficulty={topic.difficulty}
-							parentLastReviewedAt={topic.last_reviewed_at}
-							parentStability={topic.stability}
-							parentState={topic.state}
-							parentStep={topic.step}
-							renderCard={renderChildCard}
-							topicId={topic.id}
-						/>
+						<div className='mt-4'>
+							<TopicChildrenPanel
+								getScrollElement={() => scrollContainerRef.current}
+								onChildSelect={onTopicNavigate}
+								parentDifficulty={topic.difficulty}
+								parentLastReviewedAt={topic.last_reviewed_at}
+								parentStability={topic.stability}
+								parentState={topic.state}
+								parentStep={topic.step}
+								renderCard={renderChildCard}
+								topicId={topic.id}
+							/>
+						</div>
 						<div className='mt-4'>
 							<TopicRelatedPanel
 								getScrollElement={() => scrollContainerRef.current}
