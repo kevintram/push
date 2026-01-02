@@ -26,7 +26,7 @@ import { useTopicsRelatedTo } from '../api/getTopicsRelatedTo'
 import { topicKeys } from '../api/queryKeys'
 import { RelationshipDirection, type Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
-import { AddTopicDialog } from './AddTopicDialog'
+import { AddTopicDialog, type SrsSource } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
 
@@ -39,6 +39,10 @@ interface TopicRelatedPanelProps {
 	topicId: number | undefined
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
+	/**
+	 * Source topic's SRS fields for the "inherit SRS" option.
+	 */
+	srsSource?: SrsSource | null
 	/**
 	 * Called when a related topic is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
@@ -61,6 +65,7 @@ export function TopicRelatedPanel({
 	topicId,
 	getScrollElement,
 	scrollMargin,
+	srsSource,
 	onRelatedSelect,
 	renderCard
 }: TopicRelatedPanelProps) {
@@ -288,7 +293,8 @@ export function TopicRelatedPanel({
 				<AddTopicDialog
 					context={{
 						type: 'related',
-						fromTopicId: topicId
+						fromTopicId: topicId,
+						srsSource
 					}}
 					onOpenChange={setShowAddTopicDialog}
 					onSuccess={newTopicId => {
