@@ -152,14 +152,14 @@ function HomeScheduledCard() {
 			<Card className='flex h-full flex-col'>
 				<CardHeader>
 					<Link
-						className='-mx-2 -my-1 flex items-center justify-between rounded-md px-2 py-1 hover:bg-muted/50'
+						className='group -mx-2 -my-1 flex items-center justify-between px-2 py-1'
 						to='/upcoming'
 					>
 						<div className='flex items-center gap-2'>
 							<Calendar className='h-5 w-5 text-muted-foreground' />
 							<CardTitle>Scheduled</CardTitle>
 						</div>
-						<ChevronRight className='h-4 w-4 text-muted-foreground' />
+						<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
 					</Link>
 				</CardHeader>
 				<CardContent className='max-h-160 overflow-y-auto'>
@@ -428,14 +428,14 @@ function HomeReviewCard() {
 		<Card className='flex h-full flex-col'>
 			<CardHeader>
 				<Link
-					className='-mx-2 -my-1 flex items-center justify-between rounded-md px-2 py-1 hover:bg-muted/50'
+					className='group -mx-2 -my-1 flex items-center justify-between px-2 py-1'
 					to='/review'
 				>
 					<div className='flex items-center gap-2'>
 						<BookOpen className='h-5 w-5 text-muted-foreground' />
 						<CardTitle>Review</CardTitle>
 					</div>
-					<ChevronRight className='h-4 w-4 text-muted-foreground' />
+					<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
 				</Link>
 			</CardHeader>
 			<CardContent className='max-h-160 overflow-y-auto'>
@@ -637,14 +637,14 @@ function HomeRecentCard() {
 		<Card>
 			<CardHeader>
 				<Link
-					className='-mx-2 -my-1 flex items-center justify-between rounded-md px-2 py-1 hover:bg-muted/50'
+					className='group -mx-2 -my-1 flex items-center justify-between px-2 py-1'
 					to='/recent'
 				>
 					<div className='flex items-center gap-2'>
 						<History className='h-5 w-5 text-muted-foreground' />
 						<CardTitle>Recent Topics</CardTitle>
 					</div>
-					<ChevronRight className='h-4 w-4 text-muted-foreground' />
+					<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
 				</Link>
 			</CardHeader>
 			<CardContent>
