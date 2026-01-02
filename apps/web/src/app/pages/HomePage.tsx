@@ -59,7 +59,12 @@ function CardHeaderLink({
 				<Icon className='h-5 w-5 text-muted-foreground' />
 				<CardTitle>{title}</CardTitle>
 			</div>
-			<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
+			<div className='flex items-center gap-1'>
+				<span className='text-muted-foreground text-sm group-hover:text-primary'>
+					View all
+				</span>
+				<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
+			</div>
 		</Link>
 	)
 }
