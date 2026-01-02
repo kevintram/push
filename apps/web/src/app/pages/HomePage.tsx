@@ -6,7 +6,8 @@ import {
 	ChevronDown,
 	ChevronRight,
 	History,
-	Home
+	Home,
+	Star
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useCallback, useMemo, useState } from 'react'
@@ -33,9 +34,10 @@ import {
 	type RetrievabilityBucket
 } from '~/utils/retrievability'
 
-const SCHEDULED_LIMIT = 10
-const REVIEW_LIMIT = 20
-const RECENT_LIMIT = 20
+const TODAY_LIMIT = 4
+const UPCOMING_LIMIT = 1
+const REVIEW_LIMIT = 10
+const RECENT_LIMIT = 12
 
 // ============================================================================
 // Shared Helper Components
@@ -59,20 +61,23 @@ function CardHeaderLink({
 				<Icon className='h-5 w-5 text-muted-foreground' />
 				<CardTitle>{title}</CardTitle>
 			</div>
-			<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
+			<div className='flex items-center gap-1'>
+				<span className='text-muted-foreground text-sm group-hover:text-primary'>
+					View all
+				</span>
+				<ChevronRight className='h-4 w-4 text-muted-foreground group-hover:text-primary' />
+			</div>
 		</Link>
 	)
 }
 
 function CollapsibleSectionHeader({
 	label,
-	count,
 	headingClassName,
 	isCollapsed,
 	onToggle
 }: {
 	label: string
-	count: number
 	headingClassName?: string
 	isCollapsed: boolean
 	onToggle: () => void
@@ -84,7 +89,7 @@ function CollapsibleSectionHeader({
 			variant='ghost'
 		>
 			<h3 className={`font-semibold text-sm ${headingClassName ?? ''}`.trim()}>
-				{label} <span className='text-muted-foreground'>({count})</span>
+				{label}
 			</h3>
 			<ChevronDown
 				className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
@@ -121,7 +126,10 @@ export function HomePage() {
 			<PageLayout.Header icon={Home} title='Home' />
 			<PageLayout.Content className='max-w-450'>
 				<div className='grid gap-4 md:grid-cols-2'>
-					<HomeScheduledCard />
+					<div className='flex flex-col gap-4'>
+						<HomeTodayCard />
+						<HomeUpcomingCard />
+					</div>
 					<HomeReviewCard />
 					<div className='md:col-span-2'>
 						<HomeRecentCard />
@@ -133,7 +141,7 @@ export function HomePage() {
 }
 
 // ============================================================================
-// HomeScheduledCard - Shows scheduled review entries (10 items max)
+// HomeTodayCard - Shows today's review entries (3 items max)
 // ============================================================================
 
 type ScheduledSection = {
@@ -143,42 +151,28 @@ type ScheduledSection = {
 	entries: Array<ReviewEntry>
 }
 
-function HomeScheduledCard() {
+function HomeTodayCard() {
 	const navigate = useNavigate()
-	const { sections: todaySections, isLoading: todayLoading } =
-		useTodayReviewEntries()
-	const { sections: soonSections, isLoading: soonLoading } =
-		useSoonReviewEntries()
+	const { sections: todaySections, isLoading } = useTodayReviewEntries()
 
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
 
-	// Combine and limit entries to 10 total
 	const sections = useMemo(() => {
-		const allSections: Array<ScheduledSection> = [
-			...todaySections.map(s => ({
-				id: s.id,
-				label: s.label,
-				headingClassName: s.headingClassName,
-				entries: s.entries
-			})),
-			...soonSections.map(s => ({
-				id: s.id,
-				label: s.label,
-				headingClassName: s.headingClassName,
-				entries: s.entries
-			}))
-		]
+		const allSections: Array<ScheduledSection> = todaySections.map(s => ({
+			id: s.id,
+			label: s.label,
+			headingClassName: s.headingClassName,
+			entries: s.entries
+		}))
 
 		return limitSections(
 			allSections,
-			SCHEDULED_LIMIT,
+			TODAY_LIMIT,
 			s => s.entries.length,
 			(s, count) => ({ ...s, entries: s.entries.slice(0, count) })
 		)
-	}, [todaySections, soonSections])
-
-	const isLoading = todayLoading || soonLoading
+	}, [todaySections])
 
 	const handleSessionClick = useCallback(
 		(sessionId: number) => {
@@ -202,11 +196,87 @@ function HomeScheduledCard() {
 
 	return (
 		<>
-			<Card className='flex h-full flex-col'>
+			<Card className='flex h-full flex-col border-0'>
 				<CardHeader>
-					<CardHeaderLink icon={Calendar} title='Scheduled' to='/upcoming' />
+					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
-				<CardContent className='max-h-160 overflow-y-auto'>
+				<CardContent>
+					<ScheduledCardContent
+						collapsedSections={collapsedSections}
+						isEmpty={isEmpty}
+						isLoading={isLoading}
+						onReviewClick={handleReviewClick}
+						onSessionClick={handleSessionClick}
+						onToggleCollapse={toggleSection}
+						sections={sections}
+					/>
+				</CardContent>
+			</Card>
+			<ReviewDialog
+				onOpenChange={open => {
+					if (!open) closeReviewDialog()
+				}}
+				open={selectedReviewId !== null}
+				reviewId={selectedReviewId}
+			/>
+		</>
+	)
+}
+
+// ============================================================================
+// HomeUpcomingCard - Shows upcoming review entries (3 items max)
+// ============================================================================
+
+function HomeUpcomingCard() {
+	const navigate = useNavigate()
+	const { sections: soonSections, isLoading } = useSoonReviewEntries()
+
+	const { collapsedSections, toggleSection } = useSectionCollapse()
+	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
+
+	const sections = useMemo(() => {
+		const allSections: Array<ScheduledSection> = soonSections.map(s => ({
+			id: s.id,
+			label: s.label,
+			headingClassName: s.headingClassName,
+			entries: s.entries
+		}))
+
+		return limitSections(
+			allSections,
+			UPCOMING_LIMIT,
+			s => s.entries.length,
+			(s, count) => ({ ...s, entries: s.entries.slice(0, count) })
+		)
+	}, [soonSections])
+
+	const handleSessionClick = useCallback(
+		(sessionId: number) => {
+			navigate({
+				to: '/review-session/$reviewSessionId',
+				params: { reviewSessionId: sessionId.toString() }
+			})
+		},
+		[navigate]
+	)
+
+	const handleReviewClick = useCallback((reviewId: number) => {
+		setSelectedReviewId(reviewId)
+	}, [])
+
+	const closeReviewDialog = useCallback(() => {
+		setSelectedReviewId(null)
+	}, [])
+
+	const isEmpty = sections.every(section => section.entries.length === 0)
+
+	return (
+		<>
+			<Card className='flex flex-col border-0'>
+				<CardHeader>
+					<CardHeaderLink icon={Calendar} title='Upcoming' to='/upcoming' />
+				</CardHeader>
+				<CardContent>
 					<ScheduledCardContent
 						collapsedSections={collapsedSections}
 						isEmpty={isEmpty}
@@ -251,7 +321,6 @@ function HomeScheduledSection({
 	return (
 		<div>
 			<CollapsibleSectionHeader
-				count={entries.length}
 				headingClassName={headingClassName}
 				isCollapsed={isCollapsed}
 				label={label}
@@ -448,11 +517,11 @@ function HomeReviewCard() {
 	const isEmpty = sections.every(section => section.topics.length === 0)
 
 	return (
-		<Card className='flex h-full flex-col'>
+		<Card className='flex flex-col border-0'>
 			<CardHeader>
 				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
 			</CardHeader>
-			<CardContent className='max-h-160 overflow-y-auto'>
+			<CardContent>
 				<ReviewCardContent
 					collapsedSections={collapsedSections}
 					isEmpty={isEmpty}
@@ -508,7 +577,6 @@ function HomeReviewSection({
 	return (
 		<div className='mb-2'>
 			<CollapsibleSectionHeader
-				count={topics.length}
 				headingClassName={headingClassName}
 				isCollapsed={isCollapsed}
 				label={label}
@@ -642,7 +710,7 @@ function HomeRecentCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card>
+		<Card className='border-0'>
 			<CardHeader>
 				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
 			</CardHeader>
