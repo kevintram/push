@@ -49,8 +49,13 @@ export function TopicCard({
 	const queryClient = useQueryClient()
 	const { mutate: updateTopic, isPending: isUpdatingTopic } = useUpdateTopic()
 
-	const { bucketInfo, isNewTopic, isLeavingSoon, retrievabilityDisplay } =
-		useTopicMetrics(topic)
+	const {
+		bucketInfo,
+		isNewTopic,
+		isLeavingSoon,
+		retrievabilityDisplay,
+		thresholdInfo
+	} = useTopicMetrics(topic)
 
 	const lastReviewed = useMemo(
 		() =>
@@ -127,10 +132,19 @@ export function TopicCard({
 				</Tooltip>
 				<div className='flex-1' />
 				{/* Leaving soon badge */}
-				{showLeavingSoon && isLeavingSoon && (
-					<Badge className='h-5 text-xs' variant='destructive'>
-						leaving soon
-					</Badge>
+				{showLeavingSoon && isLeavingSoon && thresholdInfo && (
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<Badge className='h-5 text-xs' variant='destructive'>
+								leaving soon
+							</Badge>
+						</TooltipTrigger>
+						<TooltipContent side='top'>
+							{thresholdInfo.daysUntil === 1
+								? '1 day until late'
+								: `${thresholdInfo.daysUntil} days until late`}
+						</TooltipContent>
+					</Tooltip>
 				)}
 				{/* SRS toggle */}
 				<div
