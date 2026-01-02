@@ -196,7 +196,7 @@ function HomeTodayCard() {
 
 	return (
 		<>
-			<Card className='flex h-full flex-col border-0'>
+			<Card className='flex flex-col border-0'>
 				<CardHeader>
 					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
