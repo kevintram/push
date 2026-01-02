@@ -3,6 +3,7 @@ import {
 	Archive,
 	Baby,
 	BookOpen,
+	Brain,
 	Calendar,
 	Inbox,
 	Sparkles,
@@ -48,7 +49,13 @@ export function TopicCard({
 	const queryClient = useQueryClient()
 	const { mutate: updateTopic, isPending: isUpdatingTopic } = useUpdateTopic()
 
-	const { bucketInfo, isNewTopic, isLeavingSoon } = useTopicMetrics(topic)
+	const {
+		bucketInfo,
+		isNewTopic,
+		isLeavingSoon,
+		retrievabilityDisplay,
+		thresholdInfo
+	} = useTopicMetrics(topic)
 
 	const lastReviewed = useMemo(
 		() =>
@@ -112,29 +119,52 @@ export function TopicCard({
 			tabIndex={0}
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
-				<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-					<User2 className='h-3 w-3' />
-					<span>{topic.parents?.length ?? 0}</span>
-				</div>
+				<Tooltip>
+					<TooltipTrigger asChild={true}>
+						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+							<User2 className='h-3 w-3' />
+							<span>{topic.parents?.length ?? 0}</span>
+						</div>
+					</TooltipTrigger>
+					<TooltipContent side='top'>
+						{topic.parents?.length === 1
+							? '1 parent'
+							: `${topic.parents?.length ?? 0} parents`}
+					</TooltipContent>
+				</Tooltip>
 				<div className='flex-1' />
 				{/* Leaving soon badge */}
-				{showLeavingSoon && isLeavingSoon && (
-					<Badge className='h-5 text-xs' variant='destructive'>
-						leaving soon
-					</Badge>
+				{showLeavingSoon && isLeavingSoon && thresholdInfo && (
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<Badge className='h-5 text-xs' variant='destructive'>
+								leaving soon
+							</Badge>
+						</TooltipTrigger>
+						<TooltipContent side='top'>
+							{thresholdInfo.daysUntil === 1
+								? `1 day until ${bucketInfo.label === 'Early' ? 'ready' : 'late'}`
+								: `${thresholdInfo.daysUntil} days until ${bucketInfo.label === 'Early' ? 'ready' : 'late'}`}
+						</TooltipContent>
+					</Tooltip>
 				)}
 				{/* SRS toggle */}
-				<div
-					className={isUpdatingTopic ? 'opacity-50' : 'cursor-pointer'}
-					onClick={handleSrsToggle}
-					onKeyDown={e => e.stopPropagation()}
-				>
-					{(topic.srs_enabled ?? true) ? (
-						<BookOpen className='h-4 w-4 text-green-500' />
-					) : (
-						<BookOpenOff className='h-4 w-4 text-muted-foreground' />
-					)}
-				</div>
+				<Tooltip>
+					<TooltipTrigger asChild={true}>
+						<div
+							className={isUpdatingTopic ? 'opacity-50' : 'cursor-pointer'}
+							onClick={handleSrsToggle}
+							onKeyDown={e => e.stopPropagation()}
+						>
+							{(topic.srs_enabled ?? true) ? (
+								<BookOpen className='h-4 w-4 text-green-500' />
+							) : (
+								<BookOpenOff className='h-4 w-4 text-muted-foreground' />
+							)}
+						</div>
+					</TooltipTrigger>
+					<TooltipContent side='top'>Surface in review page</TooltipContent>
+				</Tooltip>
 				<div className='flex items-center gap-1'>{headerRight}</div>
 			</CardHeader>
 
@@ -191,6 +221,7 @@ export function TopicCard({
 										<span>
 											{bucketInfo.label}
 											{bucketInfo.days !== null &&
+												bucketInfo.suffix === 'ago' &&
 												` (${bucketInfo.days}d ${bucketInfo.suffix})`}
 										</span>
 									</div>
@@ -199,6 +230,24 @@ export function TopicCard({
 							</Tooltip>
 						) : (
 							<span>{bucketInfo.label}</span>
+						)}
+						{/* Retrievability */}
+						{retrievabilityDisplay && (
+							<>
+								<span>·</span>
+								<Tooltip>
+									<TooltipTrigger asChild={true}>
+										<div className='flex items-center gap-1'>
+											<Brain className='h-3 w-3' />
+											<span>{retrievabilityDisplay}</span>
+										</div>
+									</TooltipTrigger>
+									<TooltipContent side='top'>
+										{retrievabilityDisplay} chance of successfully recalling
+										today
+									</TooltipContent>
+								</Tooltip>
+							</>
 						)}
 						{/* Last reviewed */}
 						<span>·</span>
@@ -217,10 +266,19 @@ export function TopicCard({
 				)}
 				<div className='flex-1' />
 				{/* Children count */}
-				<div className='flex items-center gap-1'>
-					<Baby className='h-3 w-3' />
-					<span>{topic.children?.length ?? 0}</span>
-				</div>
+				<Tooltip>
+					<TooltipTrigger asChild={true}>
+						<div className='flex items-center gap-1'>
+							<Baby className='h-3 w-3' />
+							<span>{topic.children?.length ?? 0}</span>
+						</div>
+					</TooltipTrigger>
+					<TooltipContent side='top'>
+						{topic.children?.length === 1
+							? '1 child'
+							: `${topic.children?.length ?? 0} children`}
+					</TooltipContent>
+				</Tooltip>
 			</CardFooter>
 		</Card>
 	)

@@ -182,7 +182,7 @@ export function ReviewPage() {
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={BookOpen} title='Review' />
-			<PageLayout.Content>
+			<PageLayout.Content className='max-w-screen'>
 				{bucketSections
 					.filter(section => section.topics.length > 0)
 					.map(section => (
