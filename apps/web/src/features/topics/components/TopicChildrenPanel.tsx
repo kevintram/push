@@ -20,14 +20,13 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import type { LearningState } from '~/models/learning-state.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { useTopicChildren } from '../api/getTopicChildren'
 import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
-import { AddTopicDialog } from './AddTopicDialog'
+import { AddTopicDialog, type SrsSource } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
 
@@ -43,11 +42,7 @@ interface TopicChildrenPanelProps {
 	/**
 	 * Parent topic's SRS fields for the "inherit SRS" option.
 	 */
-	parentStability?: number | null
-	parentDifficulty?: number | null
-	parentState?: LearningState | null
-	parentStep?: number | null
-	parentLastReviewedAt?: string | null
+	srsSource?: SrsSource | null
 	/**
 	 * Called when a child is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
@@ -70,11 +65,7 @@ export function TopicChildrenPanel({
 	topicId,
 	getScrollElement,
 	scrollMargin,
-	parentStability,
-	parentDifficulty,
-	parentState,
-	parentStep,
-	parentLastReviewedAt,
+	srsSource,
 	onChildSelect,
 	renderCard
 }: TopicChildrenPanelProps) {
@@ -290,11 +281,7 @@ export function TopicChildrenPanel({
 					context={{
 						type: 'child',
 						parentTopicId: topicId,
-						parentStability,
-						parentDifficulty,
-						parentState,
-						parentStep,
-						parentLastReviewedAt
+						srsSource
 					}}
 					onOpenChange={setShowAddTopicDialog}
 					onSuccess={newTopicId => {

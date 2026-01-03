@@ -1,5 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useEffect, useRef } from 'react'
+import {
+	type ReactNode,
+	use,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef
+} from 'react'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -10,6 +17,7 @@ import { useUpdateTopic } from '../../api/updateTopic'
 import { useTopicMetrics } from '../../hooks/useTopicMetrics'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import type { Topic } from '../../types/topic.types'
+import type { SrsSource } from '../AddTopicDialog'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
 import { TopicRelatedPanel } from '../TopicRelatedPanel'
 import { ReviewsSidebar } from './ReviewSidebar'
@@ -170,6 +178,24 @@ export function TopicDetail({
 		}
 	}, [topic?.id])
 
+	// Create SRS source for child/related panels
+	const srsSource = useMemo((): SrsSource | null => {
+		if (!topic || topic.stability == null) return null
+		return {
+			stability: topic.stability,
+			difficulty: topic.difficulty,
+			state: topic.state,
+			step: topic.step,
+			lastReviewedAt: topic.last_reviewed_at
+		}
+	}, [
+		topic?.stability,
+		topic?.difficulty,
+		topic?.state,
+		topic?.step,
+		topic?.last_reviewed_at
+	])
+
 	if (isLoading || !topic) {
 		return <TopicDetailSkeleton />
 	}
@@ -230,12 +256,8 @@ export function TopicDetail({
 							<TopicChildrenPanel
 								getScrollElement={() => scrollContainerRef.current}
 								onChildSelect={onTopicNavigate}
-								parentDifficulty={topic.difficulty}
-								parentLastReviewedAt={topic.last_reviewed_at}
-								parentStability={topic.stability}
-								parentState={topic.state}
-								parentStep={topic.step}
 								renderCard={renderChildCard}
+								srsSource={srsSource}
 								topicId={topic.id}
 							/>
 						</div>
@@ -244,6 +266,7 @@ export function TopicDetail({
 								getScrollElement={() => scrollContainerRef.current}
 								onRelatedSelect={onTopicNavigate}
 								renderCard={renderRelatedCard}
+								srsSource={srsSource}
 								topicId={topic.id}
 							/>
 						</div>{' '}

@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { Anvil, Inbox, Plus, RotateCcw, SquareStack } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	Dialog,
@@ -28,19 +28,22 @@ import { useCreateTopic } from '../api/createTopic'
 import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 
+/**
+ * SRS fields that can be inherited from a source topic.
+ */
+export type SrsSource = {
+	stability: number | null
+	difficulty: number | null
+	state: LearningState | null
+	step: number | null
+	lastReviewedAt: string | null
+}
+
 export type AddTopicDialogContext =
 	| { type: 'standalone' }
-	| {
-			type: 'child'
-			parentTopicId: number
-			parentStability?: number | null
-			parentDifficulty?: number | null
-			parentState?: LearningState | null
-			parentStep?: number | null
-			parentLastReviewedAt?: string | null
-	  }
+	| { type: 'child'; parentTopicId: number; srsSource?: SrsSource | null }
 	| { type: 'parent'; childTopicId: number }
-	| { type: 'related'; fromTopicId: number }
+	| { type: 'related'; fromTopicId: number; srsSource?: SrsSource | null }
 
 interface AddTopicDialogProps {
 	open: boolean
@@ -97,6 +100,14 @@ export function AddTopicDialog({
 		isCreatingOtherRelationship ||
 		isCreatingReview
 
+	// Extract SRS source from context if available
+	const srsSource = useMemo(() => {
+		if (context.type === 'child' || context.type === 'related') {
+			return context.srsSource ?? null
+		}
+		return null
+	}, [context])
+
 	// Focus name field on open
 	useEffect(() => {
 		if (open && nameRef.current) {
@@ -145,33 +156,25 @@ export function AddTopicDialog({
 			let newTopicId: number
 
 			// Build topic data - inherit all SRS fields when toggle is on
-			const shouldInherit =
-				context.type === 'child' &&
-				inheritStability &&
-				context.parentStability != null
+			const shouldInherit = inheritStability && srsSource !== null
+
 			const topicData = {
 				name: name.trim(),
 				notes: notes.trim(),
 				archived: false,
 				inboxed,
 				srs_enabled: srsEnabled,
-				// Only inherit SRS state when toggle is on and we have parent stability
-				stability: shouldInherit ? (context.parentStability ?? null) : null,
-				difficulty: shouldInherit ? (context.parentDifficulty ?? null) : null,
-				state: shouldInherit ? (context.parentState ?? 'LEARNING') : 'LEARNING',
-				step: shouldInherit ? (context.parentStep ?? null) : null,
+				// Only inherit SRS state when toggle is on and we have source
+				stability: shouldInherit ? srsSource.stability : null,
+				difficulty: shouldInherit ? srsSource.difficulty : null,
+				state: shouldInherit ? (srsSource.state ?? 'LEARNING') : 'LEARNING',
+				step: shouldInherit ? srsSource.step : null,
 				// Set inherited fields so FSRS replay knows the starting point
-				inherited_stability: shouldInherit
-					? (context.parentStability ?? null)
-					: null,
-				inherited_difficulty: shouldInherit
-					? (context.parentDifficulty ?? null)
-					: null,
-				inherited_state: shouldInherit ? (context.parentState ?? null) : null,
-				inherited_step: shouldInherit ? (context.parentStep ?? null) : null,
-				inherited_last_review: shouldInherit
-					? (context.parentLastReviewedAt ?? null)
-					: null
+				inherited_stability: shouldInherit ? srsSource.stability : null,
+				inherited_difficulty: shouldInherit ? srsSource.difficulty : null,
+				inherited_state: shouldInherit ? srsSource.state : null,
+				inherited_step: shouldInherit ? srsSource.step : null,
+				inherited_last_review: shouldInherit ? srsSource.lastReviewedAt : null
 			}
 
 			// Create topic based on context
@@ -239,6 +242,7 @@ export function AddTopicDialog({
 		inboxed,
 		srsEnabled,
 		context,
+		srsSource,
 		inheritStability,
 		createTopic,
 		createRelationship,
@@ -254,10 +258,6 @@ export function AddTopicDialog({
 		resetContentFields,
 		onOpenChange
 	])
-
-	// Show inherit SRS option only for child context with parent stability
-	const showInheritSrs =
-		context.type === 'child' && context.parentStability != null
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
@@ -364,8 +364,8 @@ export function AddTopicDialog({
 							<TooltipContent>Add to inbox</TooltipContent>
 						</Tooltip>
 
-						{/* Inherit SRS Toggle (only for child context) */}
-						{showInheritSrs && (
+						{/* Inherit SRS Toggle (for child/related context with source stability) */}
+						{srsSource !== null && (
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
 									<span>
@@ -382,7 +382,7 @@ export function AddTopicDialog({
 									</span>
 								</TooltipTrigger>
 								<TooltipContent>
-									Inherit SRS state from parent topic
+									Inherit SRS state from source topic
 								</TooltipContent>
 							</Tooltip>
 						)}
