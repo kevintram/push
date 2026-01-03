@@ -1,12 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import {
-	type ReactNode,
-	use,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef
-} from 'react'
+import { type ReactNode, use, useCallback, useMemo } from 'react'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -168,15 +161,7 @@ export function TopicDetail({
 		key: `topics-${topic?.id}`
 	})
 
-	const notesRef = useRef<HTMLTextAreaElement | null>(null)
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
-
-	// focus on notes whenever selected topic changes
-	useEffect(() => {
-		if (notesRef.current && topic?.id) {
-			notesRef.current.focus()
-		}
-	}, [topic?.id])
 
 	// Create SRS source for child/related panels
 	const srsSource = useMemo((): SrsSource | null => {
@@ -248,7 +233,6 @@ export function TopicDetail({
 								name='notes'
 								onChange={onNotesChange}
 								placeholder='Notes'
-								ref={notesRef}
 								value={notes}
 							/>
 						</div>
