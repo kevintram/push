@@ -255,11 +255,11 @@ export function TopicCard({
 							<TooltipTrigger asChild={true}>
 								<div className='flex items-center gap-1'>
 									<Calendar className='h-3 w-3' />
-									<span>{lastReviewed.text.toLowerCase()}</span>
+									<span>{lastReviewed.text}</span>
 								</div>
 							</TooltipTrigger>
 							<TooltipContent side='top'>
-								Last reviewed {lastReviewed.tooltipText.toLowerCase()}
+								Last reviewed {lastReviewed.tooltipText}
 							</TooltipContent>
 						</Tooltip>
 					</>
