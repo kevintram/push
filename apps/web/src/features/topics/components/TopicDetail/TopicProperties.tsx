@@ -19,7 +19,7 @@ export function TopicProperties({
 	insertedAt
 }: TopicMetricsRowProps) {
 	const {
-		isNewTopic,
+		isUnreviewed,
 		bucketInfo,
 		retrievabilityDisplay,
 		stabilityText,

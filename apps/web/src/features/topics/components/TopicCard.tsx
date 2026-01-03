@@ -51,7 +51,7 @@ export function TopicCard({
 
 	const {
 		bucketInfo,
-		isNewTopic,
+		isUnreviewed,
 		isLeavingSoon,
 		retrievabilityDisplay,
 		thresholdInfo
@@ -205,7 +205,7 @@ export function TopicCard({
 
 			{/* Bottom row: Status info and Children */}
 			<CardFooter className='gap-1 text-muted-foreground text-xs'>
-				{isNewTopic ? (
+				{isUnreviewed ? (
 					<div className='flex items-center gap-1'>
 						<Sparkles className='h-3 w-3' />
 						<span>Unreviewed</span>
