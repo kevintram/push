@@ -208,7 +208,7 @@ export function TopicCard({
 				{isNewTopic ? (
 					<div className='flex items-center gap-1'>
 						<Sparkles className='h-3 w-3' />
-						<span>New</span>
+						<span>Unreviewed</span>
 					</div>
 				) : (
 					<>
