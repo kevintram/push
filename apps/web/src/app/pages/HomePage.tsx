@@ -125,8 +125,8 @@ export function HomePage() {
 		<PageLayout>
 			<PageLayout.Header icon={Home} title='Home' />
 			<PageLayout.Content className='max-w-450'>
-				<div className='grid gap-4 md:grid-cols-2'>
-					<div className='flex flex-col gap-4'>
+				<div className='grid gap-8 md:grid-cols-2'>
+					<div className='flex flex-col gap-8'>
 						<HomeTodayCard />
 						<HomeUpcomingCard />
 					</div>
