@@ -125,8 +125,8 @@ export function HomePage() {
 		<PageLayout>
 			<PageLayout.Header icon={Home} title='Home' />
 			<PageLayout.Content className='max-w-450'>
-				<div className='grid gap-8 md:grid-cols-2'>
-					<div className='flex flex-col gap-8'>
+				<div className='grid gap-6 md:grid-cols-2'>
+					<div className='flex flex-col gap-6'>
 						<HomeTodayCard />
 						<HomeUpcomingCard />
 					</div>
@@ -196,7 +196,7 @@ function HomeTodayCard() {
 
 	return (
 		<>
-			<Card className='flex flex-col border-0'>
+			<Card className='flex flex-col'>
 				<CardHeader>
 					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
@@ -272,7 +272,7 @@ function HomeUpcomingCard() {
 
 	return (
 		<>
-			<Card className='flex flex-col border-0'>
+			<Card className='flex flex-col'>
 				<CardHeader>
 					<CardHeaderLink icon={Calendar} title='Upcoming' to='/upcoming' />
 				</CardHeader>
@@ -517,7 +517,7 @@ function HomeReviewCard() {
 	const isEmpty = sections.every(section => section.topics.length === 0)
 
 	return (
-		<Card className='flex flex-col border-0'>
+		<Card className='flex flex-col'>
 			<CardHeader>
 				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
 			</CardHeader>
@@ -710,7 +710,7 @@ function HomeRecentCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card className='border-0'>
+		<Card>
 			<CardHeader>
 				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
 			</CardHeader>

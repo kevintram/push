@@ -37,7 +37,7 @@ function PageLayoutHeader({
 
 function PageLayoutContent({ children, className }: PageLayoutContentProps) {
 	return (
-		<div className={cn('mx-auto w-full max-w-5xl p-4', className)}>
+		<div className={cn('mx-auto w-full max-w-5xl p-6', className)}>
 			{children}
 		</div>
 	)
