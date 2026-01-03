@@ -27,7 +27,7 @@ export interface TopicMetrics {
 	retrievabilityDisplay: string | null
 	stabilityText: string
 	stabilityTooltipText: string
-	isNewTopic: boolean
+	isUnreviewed: boolean
 	isLeavingSoon: boolean
 }
 
@@ -98,7 +98,7 @@ export function useTopicMetrics(topic: TopicMetricsInput | null): TopicMetrics {
 		return `${days} ${days === 1 ? 'day' : 'days'}`
 	}, [stability])
 
-	const isNewTopic = useMemo(() => {
+	const isUnreviewed = useMemo(() => {
 		return (
 			retrievability === null &&
 			lastReviewedAt === null &&
@@ -116,7 +116,7 @@ export function useTopicMetrics(topic: TopicMetricsInput | null): TopicMetrics {
 		retrievabilityDisplay,
 		stabilityText,
 		stabilityTooltipText,
-		isNewTopic,
+		isUnreviewed,
 		isLeavingSoon
 	}
 }
