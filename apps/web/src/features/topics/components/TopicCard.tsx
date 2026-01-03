@@ -110,7 +110,7 @@ export function TopicCard({
 
 	return (
 		<Card
-			className='cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+			className='max-h-52 cursor-pointer overflow-hidden transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 			onClick={handleActivate}
 			onKeyDown={handleKeyDown}
 			onMouseEnter={handleMouseEnter}
@@ -190,12 +190,12 @@ export function TopicCard({
 
 					<div className='flex flex-col gap-0.5'>
 						{highlightedName && (
-							<h3 className='break-word font-semibold leading-tight [overflow-wrap:anywhere]'>
+							<h3 className='break-word line-clamp-2 font-semibold leading-tight [overflow-wrap:anywhere]'>
 								{highlightedName}
 							</h3>
 						)}
 						{highlightedNotes && (
-							<p className='break-word text-sm [overflow-wrap:anywhere]'>
+							<p className='break-word line-clamp-3 text-sm [overflow-wrap:anywhere]'>
 								{highlightedNotes}
 							</p>
 						)}
