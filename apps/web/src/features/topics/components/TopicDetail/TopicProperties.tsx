@@ -28,7 +28,7 @@ export function TopicProperties({
 
 	return (
 		<div className='mb-3 flex items-center justify-start gap-2 font-semibold text-sm'>
-			{isNewTopic ? (
+			{isUnreviewed ? (
 				<div className='flex items-center gap-1'>
 					<Sparkles className='h-3 w-3' />
 					<span>Unreviewed</span>
