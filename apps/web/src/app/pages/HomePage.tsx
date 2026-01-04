@@ -426,15 +426,14 @@ function ScheduledCardContent({
 function ScheduledCardSkeleton() {
 	return (
 		<div className='space-y-4'>
-			{[1, 2, 3].map(i => (
-				<div className='space-y-2' key={i}>
-					<Skeleton className='h-5 w-24' />
-					<div className='ml-4 space-y-2'>
-						<Skeleton className='h-12 w-full' />
-						<Skeleton className='h-12 w-full' />
-					</div>
+			<div className='space-y-2'>
+				<Skeleton className='h-5 w-24' />
+				<div className='ml-4 space-y-2'>
+					<Skeleton className='h-12 w-full' />
+					<Skeleton className='h-12 w-full' />
+					<Skeleton className='h-12 w-full' />
 				</div>
-			))}
+			</div>
 		</div>
 	)
 }
@@ -661,14 +660,14 @@ function ReviewCardContent({
 function ReviewCardSkeleton() {
 	return (
 		<div className='space-y-4'>
-			{[1, 2, 3].map(i => (
-				<div className='space-y-2' key={i}>
-					<Skeleton className='h-5 w-24' />
-					<div className='ml-4 space-y-2'>
-						<Skeleton className='h-20 w-full' />
-					</div>
+			<div className='space-y-2'>
+				<Skeleton className='h-5 w-24' />
+				<div className='ml-5 space-y-3'>
+					{[1, 2, 3, 4].map(i => (
+						<Skeleton className='h-24 w-full' key={i} />
+					))}
 				</div>
-			))}
+			</div>
 		</div>
 	)
 }
@@ -777,8 +776,8 @@ function RecentCardContent({
 
 function RecentCardSkeleton() {
 	return (
-		<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-			{[1, 2, 3, 4, 5, 6].map(i => (
+		<div className='space-y-3'>
+			{[1, 2, 3, 4].map(i => (
 				<Skeleton className='h-24 w-full' key={i} />
 			))}
 		</div>
@@ -977,8 +976,8 @@ function TopicsCardContent({
 
 function TopicsCardSkeleton() {
 	return (
-		<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-			{[1, 2, 3, 4, 5, 6].map(i => (
+		<div className='space-y-3'>
+			{[1, 2, 3, 4].map(i => (
 				<Skeleton className='h-24 w-full' key={i} />
 			))}
 		</div>
