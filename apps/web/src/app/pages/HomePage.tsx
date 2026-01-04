@@ -36,12 +36,12 @@ import {
 	type RetrievabilityBucket
 } from '~/utils/retrievability'
 
-const TODAY_LIMIT = 5
+const TODAY_LIMIT = 3
 const UPCOMING_LIMIT = 3
-const REVIEW_LIMIT = 8
-const RECENT_LIMIT = 8
-const INBOX_LIMIT = 8
-const MY_TOPICS_LIMIT = 8
+const REVIEW_LIMIT = 6
+const RECENT_LIMIT = 6
+const INBOX_LIMIT = 6
+const MY_TOPICS_LIMIT = 6
 
 // ============================================================================
 // Shared Helper Components
