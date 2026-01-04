@@ -7,6 +7,8 @@ import {
 	ChevronRight,
 	History,
 	Home,
+	Inbox,
+	SquareLibrary,
 	Star
 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -38,6 +40,8 @@ const TODAY_LIMIT = 5
 const UPCOMING_LIMIT = 3
 const REVIEW_LIMIT = 8
 const RECENT_LIMIT = 8
+const INBOX_LIMIT = 8
+const MY_TOPICS_LIMIT = 8
 
 // ============================================================================
 // Shared Helper Components
@@ -125,15 +129,13 @@ export function HomePage() {
 		<PageLayout>
 			<PageLayout.Header icon={Home} title='Home' />
 			<PageLayout.Content className='max-w-450'>
-				<div className='grid gap-6 md:grid-cols-2'>
-					<div className='flex flex-col gap-6'>
-						<HomeTodayCard />
-						<HomeUpcomingCard />
-					</div>
+				<div className='columns-1 gap-6 [column-fill:balance] md:columns-2'>
+					<HomeTodayCard />
+					<HomeUpcomingCard />
 					<HomeReviewCard />
-					<div className='md:col-span-2'>
-						<HomeRecentCard />
-					</div>
+					<HomeRecentCard />
+					<HomeInboxCard />
+					<HomeMyTopicsCard />
 				</div>
 			</PageLayout.Content>
 		</PageLayout>
@@ -196,7 +198,7 @@ function HomeTodayCard() {
 
 	return (
 		<>
-			<Card className='flex flex-col'>
+			<Card className='mb-6 flex break-inside-avoid flex-col'>
 				<CardHeader>
 					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
@@ -272,7 +274,7 @@ function HomeUpcomingCard() {
 
 	return (
 		<>
-			<Card className='flex flex-col'>
+			<Card className='mb-6 flex break-inside-avoid flex-col'>
 				<CardHeader>
 					<CardHeaderLink icon={Calendar} title='Upcoming' to='/upcoming' />
 				</CardHeader>
@@ -517,7 +519,7 @@ function HomeReviewCard() {
 	const isEmpty = sections.every(section => section.topics.length === 0)
 
 	return (
-		<Card className='flex flex-col'>
+		<Card className='mb-6 flex break-inside-avoid flex-col'>
 			<CardHeader>
 				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
 			</CardHeader>
@@ -710,7 +712,7 @@ function HomeRecentCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card>
+		<Card className='mb-6 break-inside-avoid'>
 			<CardHeader>
 				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
 			</CardHeader>
@@ -761,6 +763,202 @@ function RecentCardContent({
 }
 
 function RecentCardSkeleton() {
+	return (
+		<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+			{[1, 2, 3, 4, 5, 6].map(i => (
+				<Skeleton className='h-24 w-full' key={i} />
+			))}
+		</div>
+	)
+}
+
+// ============================================================================
+// HomeInboxCard - Shows inbox topics in masonry layout
+// ============================================================================
+
+function HomeInboxCard() {
+	const navigate = useNavigate()
+	const { data: topics = [], isLoading } = useTopics({
+		inboxed: true,
+		archived: false,
+		limit: INBOX_LIMIT
+	})
+
+	const handleTopicClick = useCallback(
+		(topic: Topic) => {
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topic.id.toString() }
+			})
+		},
+		[navigate]
+	)
+
+	const estimateItemSize = useCallback((topic: Topic) => {
+		const baseHeight = 80
+		const lineHeight = 10
+		const numCharsPerLine = 30
+		const newLine = 10
+
+		const nameHeight =
+			Math.floor(topic.name.length / numCharsPerLine) * lineHeight
+		const notesHeight =
+			Math.floor(topic.notes.length / numCharsPerLine) * lineHeight
+
+		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
+
+		return Math.max(calculatedHeight, 96)
+	}, [])
+
+	const renderItem = useCallback(
+		(topic: Topic) => (
+			<TopicCard
+				headerRight={<TopicActionMenu topic={topic} />}
+				minHeight={96}
+				onTopicClick={handleTopicClick}
+				topic={topic}
+			/>
+		),
+		[handleTopicClick]
+	)
+
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
+
+	return (
+		<Card className='mb-6 break-inside-avoid'>
+			<CardHeader>
+				<CardHeaderLink icon={Inbox} title='Inbox' to='/inbox' />
+			</CardHeader>
+			<CardContent>
+				<TopicsCardContent
+					emptyMessage='No inbox topics'
+					estimateItemSize={estimateItemSize}
+					getItemKey={getItemKey}
+					isLoading={isLoading}
+					renderItem={renderItem}
+					topics={topics}
+				/>
+			</CardContent>
+		</Card>
+	)
+}
+
+// ============================================================================
+// HomeMyTopicsCard - Shows root topics in masonry layout
+// ============================================================================
+
+function HomeMyTopicsCard() {
+	const navigate = useNavigate()
+	const { data: topics = [], isLoading } = useTopics({
+		root: true,
+		archived: false,
+		inboxed: false,
+		limit: MY_TOPICS_LIMIT
+	})
+
+	const handleTopicClick = useCallback(
+		(topic: Topic) => {
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topic.id.toString() }
+			})
+		},
+		[navigate]
+	)
+
+	const estimateItemSize = useCallback((topic: Topic) => {
+		const baseHeight = 80
+		const lineHeight = 10
+		const numCharsPerLine = 30
+		const newLine = 10
+
+		const nameHeight =
+			Math.floor(topic.name.length / numCharsPerLine) * lineHeight
+		const notesHeight =
+			Math.floor(topic.notes.length / numCharsPerLine) * lineHeight
+
+		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
+
+		return Math.max(calculatedHeight, 96)
+	}, [])
+
+	const renderItem = useCallback(
+		(topic: Topic) => (
+			<TopicCard
+				headerRight={<TopicActionMenu topic={topic} />}
+				minHeight={96}
+				onTopicClick={handleTopicClick}
+				topic={topic}
+			/>
+		),
+		[handleTopicClick]
+	)
+
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
+
+	return (
+		<Card className='mb-6 break-inside-avoid'>
+			<CardHeader>
+				<CardHeaderLink
+					icon={SquareLibrary}
+					title='My Topics'
+					to='/my-topics'
+				/>
+			</CardHeader>
+			<CardContent>
+				<TopicsCardContent
+					emptyMessage='No topics'
+					estimateItemSize={estimateItemSize}
+					getItemKey={getItemKey}
+					isLoading={isLoading}
+					renderItem={renderItem}
+					topics={topics}
+				/>
+			</CardContent>
+		</Card>
+	)
+}
+
+// ============================================================================
+// Shared TopicsCardContent - Used by Recent, Inbox, and My Topics cards
+// ============================================================================
+
+function TopicsCardContent({
+	isLoading,
+	topics,
+	emptyMessage,
+	estimateItemSize,
+	getItemKey,
+	renderItem
+}: {
+	isLoading: boolean
+	topics: Array<Topic>
+	emptyMessage: string
+	estimateItemSize: (topic: Topic, index: number) => number
+	getItemKey: (topic: Topic, index: number) => string | number
+	renderItem: (topic: Topic, index: number) => ReactNode
+}) {
+	if (isLoading) {
+		return <TopicsCardSkeleton />
+	}
+
+	if (topics.length === 0) {
+		return <p className='text-muted-foreground text-sm'>{emptyMessage}</p>
+	}
+
+	return (
+		<MasonryLayout
+			estimateItemSize={estimateItemSize}
+			gap={16}
+			getItemKey={getItemKey}
+			items={topics}
+			minItemWidth={280}
+			renderItem={renderItem}
+		/>
+	)
+}
+
+function TopicsCardSkeleton() {
 	return (
 		<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
 			{[1, 2, 3, 4, 5, 6].map(i => (
