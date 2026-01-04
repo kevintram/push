@@ -38,10 +38,10 @@ import {
 
 const TODAY_LIMIT = 3
 const UPCOMING_LIMIT = 3
-const REVIEW_LIMIT = 6
-const RECENT_LIMIT = 6
-const INBOX_LIMIT = 6
-const MY_TOPICS_LIMIT = 6
+const REVIEW_LIMIT = 4
+const RECENT_LIMIT = 4
+const INBOX_LIMIT = 4
+const MY_TOPICS_LIMIT = 4
 
 // ============================================================================
 // Shared Helper Components
