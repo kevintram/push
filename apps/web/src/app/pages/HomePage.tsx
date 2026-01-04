@@ -38,14 +38,29 @@ import {
 
 const TODAY_LIMIT = 3
 const UPCOMING_LIMIT = 3
-const REVIEW_LIMIT = 6
-const RECENT_LIMIT = 6
-const INBOX_LIMIT = 6
-const MY_TOPICS_LIMIT = 6
+const REVIEW_LIMIT = 4
+const RECENT_LIMIT = 4
+const INBOX_LIMIT = 4
+const MY_TOPICS_LIMIT = 4
 
 // ============================================================================
 // Shared Helper Components
 // ============================================================================
+
+function CardEmptyState({
+	icon: Icon,
+	message
+}: {
+	icon: LucideIcon
+	message: string
+}) {
+	return (
+		<div className='flex flex-1 flex-col items-center justify-center py-4 text-muted-foreground'>
+			<Icon className='mb-2 h-8 w-8 opacity-50' />
+			<p className='text-sm'>{message}</p>
+		</div>
+	)
+}
 
 function CardHeaderLink({
 	icon: Icon,
@@ -198,7 +213,7 @@ function HomeTodayCard() {
 
 	return (
 		<>
-			<Card className='mb-6 flex break-inside-avoid flex-col'>
+			<Card className='mb-6 flex min-h-56 break-inside-avoid flex-col'>
 				<CardHeader>
 					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
@@ -274,7 +289,7 @@ function HomeUpcomingCard() {
 
 	return (
 		<>
-			<Card className='mb-6 flex break-inside-avoid flex-col'>
+			<Card className='mb-6 flex min-h-56 break-inside-avoid flex-col'>
 				<CardHeader>
 					<CardHeaderLink icon={Calendar} title='Upcoming' to='/upcoming' />
 				</CardHeader>
@@ -386,7 +401,7 @@ function ScheduledCardContent({
 	}
 
 	if (isEmpty) {
-		return <p className='text-muted-foreground text-sm'>No scheduled reviews</p>
+		return <CardEmptyState icon={Calendar} message='No scheduled reviews' />
 	}
 
 	return (
@@ -411,15 +426,14 @@ function ScheduledCardContent({
 function ScheduledCardSkeleton() {
 	return (
 		<div className='space-y-4'>
-			{[1, 2, 3].map(i => (
-				<div className='space-y-2' key={i}>
-					<Skeleton className='h-5 w-24' />
-					<div className='ml-4 space-y-2'>
-						<Skeleton className='h-12 w-full' />
-						<Skeleton className='h-12 w-full' />
-					</div>
+			<div className='space-y-2'>
+				<Skeleton className='h-5 w-24' />
+				<div className='ml-4 space-y-2'>
+					<Skeleton className='h-12 w-full' />
+					<Skeleton className='h-12 w-full' />
+					<Skeleton className='h-12 w-full' />
 				</div>
-			))}
+			</div>
 		</div>
 	)
 }
@@ -519,7 +533,7 @@ function HomeReviewCard() {
 	const isEmpty = sections.every(section => section.topics.length === 0)
 
 	return (
-		<Card className='mb-6 flex break-inside-avoid flex-col'>
+		<Card className='mb-6 flex min-h-56 break-inside-avoid flex-col'>
 			<CardHeader>
 				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
 			</CardHeader>
@@ -621,9 +635,7 @@ function ReviewCardContent({
 
 	if (isEmpty) {
 		return (
-			<p className='text-muted-foreground text-sm'>
-				No topics ready for review
-			</p>
+			<CardEmptyState icon={BookOpen} message='No topics ready for review' />
 		)
 	}
 
@@ -648,14 +660,14 @@ function ReviewCardContent({
 function ReviewCardSkeleton() {
 	return (
 		<div className='space-y-4'>
-			{[1, 2, 3].map(i => (
-				<div className='space-y-2' key={i}>
-					<Skeleton className='h-5 w-24' />
-					<div className='ml-4 space-y-2'>
-						<Skeleton className='h-20 w-full' />
-					</div>
+			<div className='space-y-2'>
+				<Skeleton className='h-5 w-24' />
+				<div className='ml-5 space-y-3'>
+					{[1, 2, 3, 4].map(i => (
+						<Skeleton className='h-24 w-full' key={i} />
+					))}
 				</div>
-			))}
+			</div>
 		</div>
 	)
 }
@@ -712,7 +724,7 @@ function HomeRecentCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card className='mb-6 break-inside-avoid'>
+		<Card className='mb-6 min-h-56 break-inside-avoid'>
 			<CardHeader>
 				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
 			</CardHeader>
@@ -747,7 +759,7 @@ function RecentCardContent({
 	}
 
 	if (topics.length === 0) {
-		return <p className='text-muted-foreground text-sm'>No recent topics</p>
+		return <CardEmptyState icon={History} message='No recent topics' />
 	}
 
 	return (
@@ -764,8 +776,8 @@ function RecentCardContent({
 
 function RecentCardSkeleton() {
 	return (
-		<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-			{[1, 2, 3, 4, 5, 6].map(i => (
+		<div className='space-y-3'>
+			{[1, 2, 3, 4].map(i => (
 				<Skeleton className='h-24 w-full' key={i} />
 			))}
 		</div>
@@ -825,12 +837,13 @@ function HomeInboxCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card className='mb-6 break-inside-avoid'>
+		<Card className='mb-6 min-h-56 break-inside-avoid'>
 			<CardHeader>
 				<CardHeaderLink icon={Inbox} title='Inbox' to='/inbox' />
 			</CardHeader>
 			<CardContent>
 				<TopicsCardContent
+					emptyIcon={Inbox}
 					emptyMessage='No inbox topics'
 					estimateItemSize={estimateItemSize}
 					getItemKey={getItemKey}
@@ -897,7 +910,7 @@ function HomeMyTopicsCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card className='mb-6 break-inside-avoid'>
+		<Card className='mb-6 min-h-56 break-inside-avoid'>
 			<CardHeader>
 				<CardHeaderLink
 					icon={SquareLibrary}
@@ -907,6 +920,7 @@ function HomeMyTopicsCard() {
 			</CardHeader>
 			<CardContent>
 				<TopicsCardContent
+					emptyIcon={SquareLibrary}
 					emptyMessage='No topics'
 					estimateItemSize={estimateItemSize}
 					getItemKey={getItemKey}
@@ -926,6 +940,7 @@ function HomeMyTopicsCard() {
 function TopicsCardContent({
 	isLoading,
 	topics,
+	emptyIcon,
 	emptyMessage,
 	estimateItemSize,
 	getItemKey,
@@ -933,6 +948,7 @@ function TopicsCardContent({
 }: {
 	isLoading: boolean
 	topics: Array<Topic>
+	emptyIcon: LucideIcon
 	emptyMessage: string
 	estimateItemSize: (topic: Topic, index: number) => number
 	getItemKey: (topic: Topic, index: number) => string | number
@@ -943,7 +959,7 @@ function TopicsCardContent({
 	}
 
 	if (topics.length === 0) {
-		return <p className='text-muted-foreground text-sm'>{emptyMessage}</p>
+		return <CardEmptyState icon={emptyIcon} message={emptyMessage} />
 	}
 
 	return (
@@ -960,8 +976,8 @@ function TopicsCardContent({
 
 function TopicsCardSkeleton() {
 	return (
-		<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-			{[1, 2, 3, 4, 5, 6].map(i => (
+		<div className='space-y-3'>
+			{[1, 2, 3, 4].map(i => (
 				<Skeleton className='h-24 w-full' key={i} />
 			))}
 		</div>
