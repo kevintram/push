@@ -48,7 +48,7 @@ import {
 const TODAY_LIMIT = 3
 const UPCOMING_LIMIT = 3
 const REVIEW_LIMIT = 4
-const RECENT_LIMIT = 4
+const RECENT_LIMIT = 10
 const INBOX_LIMIT = 4
 
 // ============================================================================
@@ -204,11 +204,13 @@ export function HomePage() {
 		<PageLayout>
 			<PageLayout.Header icon={Home} title='Home' />
 			<PageLayout.Content className='max-w-450'>
-				<div className='columns-1 gap-6 [column-fill:balance] md:columns-2'>
-					<HomeTodayCard />
-					<HomeUpcomingCard />
-					<HomeReviewCard />
-					<HomeInboxCard />
+				<div className='flex flex-col gap-6'>
+					<div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+						<HomeTodayCard />
+						<HomeReviewCard />
+						<HomeUpcomingCard />
+						<HomeInboxCard />
+					</div>
 					<HomeRecentCard />
 				</div>
 			</PageLayout.Content>
@@ -272,7 +274,7 @@ function HomeTodayCard() {
 
 	return (
 		<>
-			<Card className='mb-6 flex min-h-56 break-inside-avoid flex-col'>
+			<Card className='flex min-h-56 flex-col'>
 				<CardHeader>
 					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
@@ -348,7 +350,7 @@ function HomeUpcomingCard() {
 
 	return (
 		<>
-			<Card className='mb-6 flex min-h-56 break-inside-avoid flex-col'>
+			<Card className='flex min-h-56 flex-col'>
 				<CardHeader>
 					<CardHeaderLink icon={Calendar} title='Upcoming' to='/upcoming' />
 				</CardHeader>
@@ -592,7 +594,7 @@ function HomeReviewCard() {
 	const isEmpty = sections.every(section => section.topics.length === 0)
 
 	return (
-		<Card className='mb-6 flex min-h-56 break-inside-avoid flex-col'>
+		<Card className='flex min-h-56 flex-col'>
 			<CardHeader>
 				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
 			</CardHeader>
@@ -783,7 +785,7 @@ function HomeRecentCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card className='mb-6 min-h-56 break-inside-avoid'>
+		<Card className='min-h-56'>
 			<CardHeader>
 				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
 			</CardHeader>
@@ -896,7 +898,7 @@ function HomeInboxCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card className='mb-6 min-h-56 break-inside-avoid'>
+		<Card className='min-h-56'>
 			<CardHeader>
 				<CardHeaderLink icon={Inbox} title='Inbox' to='/inbox' />
 			</CardHeader>
