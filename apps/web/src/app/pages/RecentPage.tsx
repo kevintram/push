@@ -6,6 +6,7 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -71,7 +72,10 @@ function RecentList({
 						<EmptyMedia variant='icon'>
 							<History />
 						</EmptyMedia>
-						<EmptyTitle>Your most recent topics will appear here.</EmptyTitle>
+						<EmptyTitle>No recent topics</EmptyTitle>
+						<EmptyDescription>
+							See your most recently edited topics
+						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
 			</PageLayout.Content>

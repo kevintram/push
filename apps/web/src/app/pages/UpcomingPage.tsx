@@ -7,6 +7,7 @@ import { PageLayout } from '~/app/layouts/PageLayout'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -189,7 +190,8 @@ function UpcomingList({
 						<EmptyMedia variant='icon'>
 							<Calendar />
 						</EmptyMedia>
-						<EmptyTitle>Scheduled reviews will appear here.</EmptyTitle>
+						<EmptyTitle>No upcoming reviews</EmptyTitle>
+						<EmptyDescription>See all scheduled reviews</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
 			</PageLayout.Content>

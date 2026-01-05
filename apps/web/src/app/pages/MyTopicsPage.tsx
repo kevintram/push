@@ -8,6 +8,7 @@ import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayout
 import {
 	Empty,
 	EmptyContent,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -94,12 +95,12 @@ function RootTopicsList({
 						<EmptyMedia variant='icon'>
 							<SquareLibrary />
 						</EmptyMedia>
-						<EmptyTitle>
-							Topics are anything you want to learn or remember.
-						</EmptyTitle>
+						<EmptyTitle>A place for all your topics</EmptyTitle>
+						<EmptyDescription>Create a topic to get started</EmptyDescription>
 					</EmptyHeader>
 					<EmptyContent>
 						<EmptyStateCreateTopicButton
+							buttonText='Create new topic'
 							disabled={isCreatingTopic}
 							onClick={onCreateTopic}
 							showHoverCard={false}

@@ -5,6 +5,7 @@ import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -80,7 +81,10 @@ function LogbookList({
 						<EmptyMedia variant='icon'>
 							<ListChecks />
 						</EmptyMedia>
-						<EmptyTitle>Completed reviews will appear here.</EmptyTitle>
+						<EmptyTitle>No completed reviews</EmptyTitle>
+						<EmptyDescription>
+							Completed reviews will appear here
+						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
 			</PageLayout.Content>

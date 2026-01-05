@@ -7,7 +7,6 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
-	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -134,11 +133,7 @@ export function ReviewPage() {
 							<EmptyMedia variant='icon'>
 								<BookOpen />
 							</EmptyMedia>
-							<EmptyTitle>No topics to review yet.</EmptyTitle>
-							<EmptyDescription>
-								Topics with SRS enabled will appear here after their first
-								review.
-							</EmptyDescription>
+							<EmptyTitle>See topics up for review</EmptyTitle>
 						</EmptyHeader>
 					</Empty>
 				</PageLayout.Content>

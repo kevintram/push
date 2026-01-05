@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/Card'
 import {
 	Empty,
 	EmptyContent,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -180,14 +181,16 @@ export function HomePage() {
 					<Empty>
 						<EmptyHeader>
 							<EmptyMedia variant='icon'>
-								<SquareLibrary />
+								<Home />
 							</EmptyMedia>
-							<EmptyTitle>
-								Topics are anything you want to learn or remember.
-							</EmptyTitle>
+							<EmptyTitle>Create a topic to get started</EmptyTitle>
+							<EmptyDescription>
+								Topics are anything you want to learn and retain
+							</EmptyDescription>
 						</EmptyHeader>
 						<EmptyContent>
 							<EmptyStateCreateTopicButton
+								buttonText='Create new topic'
 								disabled={isCreatingTopic}
 								onClick={handleCreateTopic}
 								showHoverCard={false}

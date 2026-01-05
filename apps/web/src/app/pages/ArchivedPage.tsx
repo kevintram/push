@@ -6,6 +6,7 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -71,7 +72,10 @@ function ArchivedList({
 						<EmptyMedia variant='icon'>
 							<Archive />
 						</EmptyMedia>
-						<EmptyTitle>Archived topics will appear here.</EmptyTitle>
+						<EmptyTitle>No archived topics</EmptyTitle>
+						<EmptyDescription>
+							Archive topics you want to hide but keep around just in case
+						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
 			</PageLayout.Content>

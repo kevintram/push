@@ -5,6 +5,7 @@ import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -46,7 +47,10 @@ export function TodayPage() {
 							<EmptyMedia variant='icon'>
 								<Star />
 							</EmptyMedia>
-							<EmptyTitle>Nothing due today.</EmptyTitle>
+							<EmptyTitle>Nothing for today</EmptyTitle>
+							<EmptyDescription>
+								See all reviews completed or due today
+							</EmptyDescription>
 						</EmptyHeader>
 					</Empty>
 				</PageLayout.Content>

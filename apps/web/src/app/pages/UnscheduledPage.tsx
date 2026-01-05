@@ -5,6 +5,7 @@ import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -87,7 +88,10 @@ function UnscheduledList({
 						<EmptyMedia variant='icon'>
 							<CircleDashed />
 						</EmptyMedia>
-						<EmptyTitle>Unscheduled reviews will appear here.</EmptyTitle>
+						<EmptyTitle>No unscheduled reviews</EmptyTitle>
+						<EmptyDescription>
+							See all reviews without a due date
+						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
 			</PageLayout.Content>
