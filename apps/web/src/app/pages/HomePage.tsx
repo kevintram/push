@@ -8,7 +8,6 @@ import {
 	History,
 	Home,
 	Inbox,
-	SquareLibrary,
 	Star
 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -51,7 +50,6 @@ const UPCOMING_LIMIT = 3
 const REVIEW_LIMIT = 4
 const RECENT_LIMIT = 4
 const INBOX_LIMIT = 4
-const MY_TOPICS_LIMIT = 4
 
 // ============================================================================
 // Shared Helper Components
@@ -210,9 +208,8 @@ export function HomePage() {
 					<HomeTodayCard />
 					<HomeUpcomingCard />
 					<HomeReviewCard />
-					<HomeRecentCard />
 					<HomeInboxCard />
-					<HomeMyTopicsCard />
+					<HomeRecentCard />
 				</div>
 			</PageLayout.Content>
 		</PageLayout>
@@ -919,84 +916,7 @@ function HomeInboxCard() {
 }
 
 // ============================================================================
-// HomeMyTopicsCard - Shows root topics in masonry layout
-// ============================================================================
-
-function HomeMyTopicsCard() {
-	const navigate = useNavigate()
-	const { data: topics = [], isLoading } = useTopics({
-		root: true,
-		archived: false,
-		inboxed: false,
-		limit: MY_TOPICS_LIMIT
-	})
-
-	const handleTopicClick = useCallback(
-		(topic: Topic) => {
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: topic.id.toString() }
-			})
-		},
-		[navigate]
-	)
-
-	const estimateItemSize = useCallback((topic: Topic) => {
-		const baseHeight = 80
-		const lineHeight = 10
-		const numCharsPerLine = 30
-		const newLine = 10
-
-		const nameHeight =
-			Math.floor(topic.name.length / numCharsPerLine) * lineHeight
-		const notesHeight =
-			Math.floor(topic.notes.length / numCharsPerLine) * lineHeight
-
-		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
-
-		return Math.max(calculatedHeight, 96)
-	}, [])
-
-	const renderItem = useCallback(
-		(topic: Topic) => (
-			<TopicCard
-				headerRight={<TopicActionMenu topic={topic} />}
-				minHeight={96}
-				onTopicClick={handleTopicClick}
-				topic={topic}
-			/>
-		),
-		[handleTopicClick]
-	)
-
-	const getItemKey = useCallback((topic: Topic) => topic.id, [])
-
-	return (
-		<Card className='mb-6 min-h-56 break-inside-avoid'>
-			<CardHeader>
-				<CardHeaderLink
-					icon={SquareLibrary}
-					title='My Topics'
-					to='/my-topics'
-				/>
-			</CardHeader>
-			<CardContent>
-				<TopicsCardContent
-					emptyIcon={SquareLibrary}
-					emptyMessage='No topics'
-					estimateItemSize={estimateItemSize}
-					getItemKey={getItemKey}
-					isLoading={isLoading}
-					renderItem={renderItem}
-					topics={topics}
-				/>
-			</CardContent>
-		</Card>
-	)
-}
-
-// ============================================================================
-// Shared TopicsCardContent - Used by Recent, Inbox, and My Topics cards
+// Shared TopicsCardContent - Used by Inbox card
 // ============================================================================
 
 function TopicsCardContent({
