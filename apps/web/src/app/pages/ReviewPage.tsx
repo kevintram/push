@@ -1,21 +1,17 @@
 import { useNavigate } from '@tanstack/react-router'
-import { BookOpen, ChevronDown, Home } from 'lucide-react'
+import { BookOpen, ChevronDown } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
-	EmptyContent,
-	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { Skeleton } from '~/components/ui/Skeleton'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
@@ -40,7 +36,6 @@ export function ReviewPage() {
 		archived: false
 	})
 
-	const { mutate: createTopic, isPending: isCreatingTopic } = useCreateTopic()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	// Group topics by retrievability bucket
@@ -105,20 +100,6 @@ export function ReviewPage() {
 		[navigate]
 	)
 
-	const handleCreateTopic = useCallback(() => {
-		createTopic(
-			{ name: '', notes: '', archived: false, inboxed: true },
-			{
-				onSuccess: data => {
-					navigate({
-						to: '/topics/$topicId',
-						params: { topicId: data.id.toString() }
-					})
-				}
-			}
-		)
-	}, [createTopic, navigate])
-
 	const isEmpty =
 		!isLoading && bucketSections.every(section => section.topics.length === 0)
 
@@ -152,26 +133,7 @@ export function ReviewPage() {
 							<EmptyMedia variant='icon'>
 								<BookOpen />
 							</EmptyMedia>
-							<EmptyTitle>No topics to review yet.</EmptyTitle>
-							<EmptyDescription>
-								Topics with SRS enabled will appear here after their first
-								review.
-							</EmptyDescription>
-							<EmptyContent>
-								<div className='flex gap-2'>
-									<EmptyStateCreateTopicButton
-										disabled={isCreatingTopic}
-										onClick={handleCreateTopic}
-									/>
-									<Button
-										onClick={() => navigate({ to: '/home' })}
-										variant='outline'
-									>
-										<Home />
-										Topics
-									</Button>
-								</div>
-							</EmptyContent>
+							<EmptyTitle>See topics up for review</EmptyTitle>
 						</EmptyHeader>
 					</Empty>
 				</PageLayout.Content>

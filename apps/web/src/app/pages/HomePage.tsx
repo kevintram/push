@@ -15,9 +15,18 @@ import type { ReactNode } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/Card'
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle
+} from '~/components/ui/Empty'
 import { Skeleton } from '~/components/ui/Skeleton'
 import {
 	useSoonReviewEntries,
@@ -27,6 +36,7 @@ import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { ReviewEntry } from '~/features/reviews/components/ReviewSection'
 import { ReviewSessionItem } from '~/features/reviews/components/ReviewSessionItem'
+import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
@@ -140,6 +150,58 @@ function limitSections<T>(
 }
 
 export function HomePage() {
+	const navigate = useNavigate()
+	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
+		useCreateTopic()
+
+	const { data: rootTopics = [], isLoading: isLoadingRootTopics } = useTopics({
+		root: true,
+		archived: false,
+		inboxed: false
+	})
+
+	const handleCreateTopic = useCallback(async () => {
+		const newTopic = await createTopic({
+			inboxed: false,
+			archived: false
+		})
+		navigate({
+			to: '/topics/$topicId',
+			params: { topicId: newTopic.id.toString() }
+		})
+	}, [createTopic, navigate])
+
+	const isNewUser = !isLoadingRootTopics && rootTopics.length === 0
+
+	if (isNewUser) {
+		return (
+			<PageLayout>
+				<PageLayout.Header icon={Home} title='Home' />
+				<PageLayout.Content>
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<Home />
+							</EmptyMedia>
+							<EmptyTitle>Create a topic to get started</EmptyTitle>
+							<EmptyDescription>
+								Topics are anything you want to learn and retain
+							</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
+							<EmptyStateCreateTopicButton
+								buttonText='Create new topic'
+								disabled={isCreatingTopic}
+								onClick={handleCreateTopic}
+								showHoverCard={false}
+							/>
+						</EmptyContent>
+					</Empty>
+				</PageLayout.Content>
+			</PageLayout>
+		)
+	}
+
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={Home} title='Home' />

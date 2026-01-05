@@ -1,14 +1,11 @@
-import { useNavigate } from '@tanstack/react-router'
-import { Calendar, Home, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import { Button } from '~/components/ui/Button'
 import {
 	Empty,
-	EmptyContent,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -18,16 +15,12 @@ import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 
 export function TodayPage() {
-	const navigate = useNavigate()
-
 	const { sections, isLoading } = useTodayReviewEntries()
 	const {
 		handleSessionClick,
 		handleReviewClick,
 		selectedReviewId,
-		closeReviewDialog,
-		handleCreateTopic,
-		isCreatingTopic
+		closeReviewDialog
 	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
@@ -54,30 +47,11 @@ export function TodayPage() {
 							<EmptyMedia variant='icon'>
 								<Star />
 							</EmptyMedia>
-							<EmptyTitle>Nothing due today.</EmptyTitle>
+							<EmptyTitle>Nothing for today</EmptyTitle>
+							<EmptyDescription>
+								See all reviews completed or due today
+							</EmptyDescription>
 						</EmptyHeader>
-						<EmptyContent>
-							<div className='flex gap-2'>
-								<EmptyStateCreateTopicButton
-									disabled={isCreatingTopic}
-									onClick={handleCreateTopic}
-								/>
-								<Button
-									onClick={() => navigate({ to: '/upcoming' })}
-									variant='outline'
-								>
-									<Calendar />
-									Upcoming
-								</Button>
-								<Button
-									onClick={() => navigate({ to: '/home' })}
-									variant='outline'
-								>
-									<Home />
-									Topics
-								</Button>
-							</div>
-						</EmptyContent>
 					</Empty>
 				</PageLayout.Content>
 			</PageLayout>

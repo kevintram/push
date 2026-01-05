@@ -1,14 +1,11 @@
-import { useNavigate } from '@tanstack/react-router'
-import { Home, ListChecks } from 'lucide-react'
+import { ListChecks } from 'lucide-react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import { Button } from '~/components/ui/Button'
 import {
 	Empty,
-	EmptyContent,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -27,9 +24,7 @@ export function LogbookPage() {
 		handleSessionClick,
 		handleReviewClick,
 		selectedReviewId,
-		closeReviewDialog,
-		handleCreateTopic,
-		isCreatingTopic
+		closeReviewDialog
 	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
@@ -38,9 +33,7 @@ export function LogbookPage() {
 			<PageLayout.Header icon={ListChecks} title='Logbook' />
 			<LogbookList
 				collapsedSections={collapsedSections}
-				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
-				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
 				onSessionClick={handleSessionClick}
 				onToggleCollapse={toggleSection}
@@ -59,18 +52,14 @@ export function LogbookPage() {
 
 function LogbookList({
 	collapsedSections,
-	isCreatingTopic,
 	isLoading,
-	onCreateTopic,
 	onReviewClick,
 	onSessionClick,
 	onToggleCollapse,
 	sections
 }: {
 	collapsedSections: Record<string, boolean>
-	isCreatingTopic: boolean
 	isLoading: boolean
-	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
 	onSessionClick: (sessionId: number) => void
 	onToggleCollapse: (sectionId: string) => void
@@ -80,8 +69,6 @@ function LogbookList({
 		entries: Array<ReviewEntry>
 	}>
 }) {
-	const navigate = useNavigate()
-
 	if (isLoading) {
 		return <ReviewListSkeleton />
 	}
@@ -94,23 +81,11 @@ function LogbookList({
 						<EmptyMedia variant='icon'>
 							<ListChecks />
 						</EmptyMedia>
-						<EmptyTitle>Completed reviews will appear here.</EmptyTitle>
+						<EmptyTitle>No completed reviews</EmptyTitle>
+						<EmptyDescription>
+							Completed reviews will appear here
+						</EmptyDescription>
 					</EmptyHeader>
-					<EmptyContent>
-						<div className='flex gap-2'>
-							<EmptyStateCreateTopicButton
-								disabled={isCreatingTopic}
-								onClick={onCreateTopic}
-							/>
-							<Button
-								onClick={() => navigate({ to: '/home' })}
-								variant='outline'
-							>
-								<Home />
-								Topics
-							</Button>
-						</div>
-					</EmptyContent>
 				</Empty>
 			</PageLayout.Content>
 		)

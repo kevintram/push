@@ -1,11 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Home, Inbox } from 'lucide-react'
+import { Inbox } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { Button } from '~/components/ui/Button'
 import {
 	Empty,
 	EmptyContent,
@@ -90,7 +89,6 @@ function InboxList({
 	isLoading: boolean
 	isCreatingTopic: boolean
 }) {
-	const navigate = useNavigate()
 	const topicList = useMemo<Array<Topic>>(() => topics ?? [], [topics])
 
 	const estimateItemSize = useCallback((topic: Topic) => {
@@ -132,27 +130,18 @@ function InboxList({
 						<EmptyMedia variant='icon'>
 							<Inbox />
 						</EmptyMedia>
-						<EmptyTitle>Your inbox is empty.</EmptyTitle>
+						<EmptyTitle>Your inbox is empty</EmptyTitle>
 						<EmptyDescription>
-							The inbox is for topics to be processed later. Fleeting notes,
-							sudden ideas, whatever.
+							The inbox is for topics to be processed later: fleeting notes,
+							random ideas, whatever
 						</EmptyDescription>
 					</EmptyHeader>
 					<EmptyContent>
-						<div className='flex gap-2'>
-							<EmptyStateCreateTopicButton
-								buttonText='Add a topic to your inbox'
-								disabled={isCreatingTopic}
-								onClick={onCreateInboxTopic}
-							/>
-							<Button
-								onClick={() => navigate({ to: '/home' })}
-								variant='outline'
-							>
-								<Home />
-								Topics
-							</Button>
-						</div>
+						<EmptyStateCreateTopicButton
+							buttonText='Add to your inbox'
+							disabled={isCreatingTopic}
+							onClick={onCreateInboxTopic}
+						/>
 					</EmptyContent>
 				</Empty>
 			</PageLayout.Content>
