@@ -57,15 +57,18 @@ const INBOX_LIMIT = 4
 
 function CardEmptyState({
 	icon: Icon,
-	message
+	title,
+	description
 }: {
 	icon: LucideIcon
-	message: string
+	title: string
+	description?: string
 }) {
 	return (
-		<div className='flex flex-1 flex-col items-center justify-center py-4 text-muted-foreground'>
+		<div className='flex flex-1 flex-col items-center justify-center py-4 text-center text-muted-foreground'>
 			<Icon className='mb-2 h-8 w-8 opacity-50' />
-			<p className='text-sm'>{message}</p>
+			<p className='text-sm'>{title}</p>
+			{description && <p className='text-xs opacity-75'>{description}</p>}
 		</div>
 	)
 }
@@ -278,9 +281,11 @@ function HomeTodayCard() {
 				<CardHeader>
 					<CardHeaderLink icon={Star} title='Today' to='/today' />
 				</CardHeader>
-				<CardContent>
+				<CardContent className='flex flex-1 flex-col'>
 					<ScheduledCardContent
 						collapsedSections={collapsedSections}
+						emptyIcon={Star}
+						emptyTitle='Nothing for today'
 						isEmpty={isEmpty}
 						isLoading={isLoading}
 						onReviewClick={handleReviewClick}
@@ -354,9 +359,11 @@ function HomeUpcomingCard() {
 				<CardHeader>
 					<CardHeaderLink icon={Calendar} title='Upcoming' to='/upcoming' />
 				</CardHeader>
-				<CardContent>
+				<CardContent className='flex flex-1 flex-col'>
 					<ScheduledCardContent
 						collapsedSections={collapsedSections}
+						emptyIcon={Calendar}
+						emptyTitle='No upcoming reviews'
 						isEmpty={isEmpty}
 						isLoading={isLoading}
 						onReviewClick={handleReviewClick}
@@ -447,7 +454,9 @@ function ScheduledCardContent({
 	collapsedSections,
 	onToggleCollapse,
 	onSessionClick,
-	onReviewClick
+	onReviewClick,
+	emptyIcon,
+	emptyTitle
 }: {
 	isLoading: boolean
 	isEmpty: boolean
@@ -456,13 +465,15 @@ function ScheduledCardContent({
 	onToggleCollapse: (sectionId: string) => void
 	onSessionClick: (sessionId: number) => void
 	onReviewClick: (reviewId: number) => void
+	emptyIcon: LucideIcon
+	emptyTitle: string
 }) {
 	if (isLoading) {
 		return <ScheduledCardSkeleton />
 	}
 
 	if (isEmpty) {
-		return <CardEmptyState icon={Calendar} message='No scheduled reviews' />
+		return <CardEmptyState icon={emptyIcon} title={emptyTitle} />
 	}
 
 	return (
@@ -598,7 +609,7 @@ function HomeReviewCard() {
 			<CardHeader>
 				<CardHeaderLink icon={BookOpen} title='Review' to='/review' />
 			</CardHeader>
-			<CardContent>
+			<CardContent className='flex flex-1 flex-col'>
 				<ReviewCardContent
 					collapsedSections={collapsedSections}
 					isEmpty={isEmpty}
@@ -695,9 +706,7 @@ function ReviewCardContent({
 	}
 
 	if (isEmpty) {
-		return (
-			<CardEmptyState icon={BookOpen} message='No topics ready for review' />
-		)
+		return <CardEmptyState icon={BookOpen} title='See topics up for review' />
 	}
 
 	return (
@@ -785,11 +794,11 @@ function HomeRecentCard() {
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
-		<Card className='min-h-56'>
+		<Card className='flex min-h-56 flex-col'>
 			<CardHeader>
 				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
 			</CardHeader>
-			<CardContent>
+			<CardContent className='flex flex-1 flex-col'>
 				<RecentCardContent
 					estimateItemSize={estimateItemSize}
 					getItemKey={getItemKey}
@@ -820,7 +829,7 @@ function RecentCardContent({
 	}
 
 	if (topics.length === 0) {
-		return <CardEmptyState icon={History} message='No recent topics' />
+		return <CardEmptyState icon={History} title='No recent topics' />
 	}
 
 	return (
@@ -856,6 +865,8 @@ function HomeInboxCard() {
 		archived: false,
 		limit: INBOX_LIMIT
 	})
+	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
+		useCreateTopic()
 
 	const handleTopicClick = useCallback(
 		(topic: Topic) => {
@@ -866,6 +877,17 @@ function HomeInboxCard() {
 		},
 		[navigate]
 	)
+
+	const handleCreateInboxTopic = useCallback(async () => {
+		const newTopic = await createTopic({
+			inboxed: true,
+			archived: false
+		})
+		navigate({
+			to: '/topics/$topicId',
+			params: { topicId: newTopic.id.toString() }
+		})
+	}, [createTopic, navigate])
 
 	const estimateItemSize = useCallback((topic: Topic) => {
 		const baseHeight = 80
@@ -897,18 +919,21 @@ function HomeInboxCard() {
 
 	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
+	const isEmpty = !isLoading && topics.length === 0
+
 	return (
-		<Card className='min-h-56'>
+		<Card className='flex min-h-56 flex-col'>
 			<CardHeader>
 				<CardHeaderLink icon={Inbox} title='Inbox' to='/inbox' />
 			</CardHeader>
-			<CardContent>
-				<TopicsCardContent
-					emptyIcon={Inbox}
-					emptyMessage='No inbox topics'
+			<CardContent className='flex flex-1 flex-col'>
+				<InboxCardContent
 					estimateItemSize={estimateItemSize}
 					getItemKey={getItemKey}
+					isCreatingTopic={isCreatingTopic}
+					isEmpty={isEmpty}
 					isLoading={isLoading}
+					onCreateInboxTopic={handleCreateInboxTopic}
 					renderItem={renderItem}
 					topics={topics}
 				/>
@@ -917,23 +942,21 @@ function HomeInboxCard() {
 	)
 }
 
-// ============================================================================
-// Shared TopicsCardContent - Used by Inbox card
-// ============================================================================
-
-function TopicsCardContent({
+function InboxCardContent({
 	isLoading,
+	isEmpty,
 	topics,
-	emptyIcon,
-	emptyMessage,
+	isCreatingTopic,
+	onCreateInboxTopic,
 	estimateItemSize,
 	getItemKey,
 	renderItem
 }: {
 	isLoading: boolean
+	isEmpty: boolean
 	topics: Array<Topic>
-	emptyIcon: LucideIcon
-	emptyMessage: string
+	isCreatingTopic: boolean
+	onCreateInboxTopic: () => void
 	estimateItemSize: (topic: Topic, index: number) => number
 	getItemKey: (topic: Topic, index: number) => string | number
 	renderItem: (topic: Topic, index: number) => ReactNode
@@ -942,8 +965,22 @@ function TopicsCardContent({
 		return <TopicsCardSkeleton />
 	}
 
-	if (topics.length === 0) {
-		return <CardEmptyState icon={emptyIcon} message={emptyMessage} />
+	if (isEmpty) {
+		return (
+			<div className='flex flex-1 flex-col items-center justify-center py-4 text-center text-muted-foreground'>
+				<Inbox className='mb-2 h-8 w-8 opacity-50' />
+				<p className='text-sm'>Your inbox is empty</p>
+				<p className='mb-3 text-xs opacity-75'>
+					The inbox is for topics to be processed later: fleeting notes, random
+					ideas, whatever
+				</p>
+				<EmptyStateCreateTopicButton
+					buttonText='Add to your inbox'
+					disabled={isCreatingTopic}
+					onClick={onCreateInboxTopic}
+				/>
+			</div>
+		)
 	}
 
 	return (
