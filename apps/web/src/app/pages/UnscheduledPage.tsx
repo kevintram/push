@@ -1,14 +1,10 @@
-import { useNavigate } from '@tanstack/react-router'
-import { CircleDashed, Home } from 'lucide-react'
+import { CircleDashed } from 'lucide-react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import { Button } from '~/components/ui/Button'
 import {
 	Empty,
-	EmptyContent,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -28,9 +24,7 @@ export function UnscheduledPage() {
 		handleSessionClick,
 		handleReviewClick,
 		selectedReviewId,
-		closeReviewDialog,
-		handleCreateTopic,
-		isCreatingTopic
+		closeReviewDialog
 	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
@@ -42,10 +36,8 @@ export function UnscheduledPage() {
 			<PageLayout.Header icon={CircleDashed} title='Unscheduled' />
 			<UnscheduledList
 				hasEntries={hasEntries}
-				isCreatingTopic={isCreatingTopic}
 				isLoading={reviewsLoading}
 				isSectionCollapsed={isSectionCollapsed}
-				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
 				onSessionClick={handleSessionClick}
 				onToggleCollapse={toggleSection}
@@ -64,20 +56,16 @@ export function UnscheduledPage() {
 
 function UnscheduledList({
 	hasEntries,
-	isCreatingTopic,
 	isLoading,
 	isSectionCollapsed,
-	onCreateTopic,
 	onReviewClick,
 	onSessionClick,
 	onToggleCollapse,
 	reviewSection
 }: {
 	hasEntries: boolean
-	isCreatingTopic: boolean
 	isLoading: boolean
 	isSectionCollapsed: boolean
-	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
 	onSessionClick: (sessionId: number) => void
 	onToggleCollapse: (sectionId: string) => void
@@ -87,8 +75,6 @@ function UnscheduledList({
 		entries: Array<ReviewEntry>
 	}
 }) {
-	const navigate = useNavigate()
-
 	if (isLoading) {
 		return <ReviewListSkeleton />
 	}
@@ -103,21 +89,6 @@ function UnscheduledList({
 						</EmptyMedia>
 						<EmptyTitle>Unscheduled reviews will appear here.</EmptyTitle>
 					</EmptyHeader>
-					<EmptyContent>
-						<div className='flex gap-2'>
-							<EmptyStateCreateTopicButton
-								disabled={isCreatingTopic}
-								onClick={onCreateTopic}
-							/>
-							<Button
-								onClick={() => navigate({ to: '/home' })}
-								variant='outline'
-							>
-								<Home />
-								Topics
-							</Button>
-						</div>
-					</EmptyContent>
 				</Empty>
 			</PageLayout.Content>
 		)

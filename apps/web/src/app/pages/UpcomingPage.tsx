@@ -1,15 +1,12 @@
-import { useNavigate } from '@tanstack/react-router'
-import { Calendar, Home } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
 import { Button } from '~/components/ui/Button'
 import {
 	Empty,
-	EmptyContent,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
@@ -62,9 +59,7 @@ export function UpcomingPage() {
 		handleSessionClick,
 		handleReviewClick,
 		selectedReviewId,
-		closeReviewDialog,
-		handleCreateTopic,
-		isCreatingTopic
+		closeReviewDialog
 	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
@@ -135,10 +130,8 @@ export function UpcomingPage() {
 				allSections={allSections}
 				allSectionsEmpty={allSectionsEmpty}
 				collapsedSections={collapsedSections}
-				isCreatingTopic={isCreatingTopic}
 				isInitialLoading={isInitialLoading}
 				isMonthlyLoading={futureReviewsLoading}
-				onCreateTopic={handleCreateTopic}
 				onReviewClick={handleReviewClick}
 				onSessionClick={handleSessionClick}
 				onShowMore={() => setShowFuture(true)}
@@ -160,10 +153,8 @@ function UpcomingList({
 	allSections,
 	allSectionsEmpty,
 	collapsedSections,
-	isCreatingTopic,
 	isInitialLoading,
 	isMonthlyLoading,
-	onCreateTopic,
 	onReviewClick,
 	onSessionClick,
 	onShowMore,
@@ -178,18 +169,14 @@ function UpcomingList({
 	}>
 	allSectionsEmpty: boolean
 	collapsedSections: Record<string, boolean>
-	isCreatingTopic: boolean
 	isInitialLoading: boolean
 	isMonthlyLoading: boolean
-	onCreateTopic: () => void
 	onReviewClick: (reviewId: number) => void
 	onSessionClick: (sessionId: number) => void
 	onShowMore: () => void
 	onToggleCollapse: (sectionId: string) => void
 	showFuture: boolean
 }) {
-	const navigate = useNavigate()
-
 	if (isInitialLoading) {
 		return <ReviewListSkeleton />
 	}
@@ -204,21 +191,6 @@ function UpcomingList({
 						</EmptyMedia>
 						<EmptyTitle>Scheduled reviews will appear here.</EmptyTitle>
 					</EmptyHeader>
-					<EmptyContent>
-						<div className='flex gap-2'>
-							<EmptyStateCreateTopicButton
-								disabled={isCreatingTopic}
-								onClick={onCreateTopic}
-							/>
-							<Button
-								onClick={() => navigate({ to: '/home' })}
-								variant='outline'
-							>
-								<Home />
-								Topics
-							</Button>
-						</div>
-					</EmptyContent>
 				</Empty>
 			</PageLayout.Content>
 		)
