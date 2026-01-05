@@ -208,8 +208,8 @@ export function HomePage() {
 					<HomeTodayCard />
 					<HomeUpcomingCard />
 					<HomeReviewCard />
-					<HomeRecentCard />
 					<HomeInboxCard />
+					<HomeRecentCard />
 				</div>
 			</PageLayout.Content>
 		</PageLayout>
