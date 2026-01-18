@@ -53,7 +53,7 @@ class FsrsStateBase(BaseModel):
     difficulty: float | None = None
     state: LearningState = LearningState.LEARNING
     step: int | None = None
-    srs_enabled: bool = True
+    srs_enabled: bool = False
 
 class FsrsStateRead(FsrsStateBase):
     id: int
@@ -131,6 +131,26 @@ class RelatedSourceRead(SourceSummaryRead):
 # Discriminated union for related items
 RelatedItemRead = Annotated[
     RelatedTopicRead | RelatedSourceRead,
+    Field(discriminator='entity_type')
+]
+```
+
+### Prerequisite Items (Discriminated Union)
+
+Used for `prerequisites` lists that can contain both topics and sources.
+
+```python
+class PrereqTopicRead(TopicSummaryRead):
+    """Topic prerequisite in a prerequisites list, with type discriminator."""
+    entity_type: Literal['topic'] = 'topic'
+
+class PrereqSourceRead(SourceSummaryRead):
+    """Source prerequisite in a prerequisites list, with type discriminator."""
+    entity_type: Literal['source'] = 'source'
+
+# Discriminated union for prerequisite items
+PrereqItemRead = Annotated[
+    PrereqTopicRead | PrereqSourceRead,
     Field(discriminator='entity_type')
 ]
 ```
@@ -228,14 +248,14 @@ class SourceSummaryRead(SourceRead):
     topics_count: int         # topics this source covers
     related_count: int        # total of outgoing + incoming relations
     practices_count: int      # practices from this source
-    prerequisites_count: int  # topics this source assumes knowledge of
+    prerequisites_count: int  # topics or sources this source assumes
 
 class SourceDetailRead(SourceRead):
     """For detail endpoint — includes full relationships."""
     parent: SourceSummaryRead | None = None
     children: list[SourceSummaryRead] = []
     topics: list[TopicSummaryRead] = []          # topics this source covers
-    prerequisites: list[TopicSummaryRead] = []   # topics this source assumes
+    prerequisites: list[PrereqItemRead] = []     # topics or sources this source assumes
     related_outgoing: list[RelatedItemRead] = []   # outgoing: items this source links to
     related_incoming: list[RelatedItemRead] = []  # incoming: items that link to this source
     practices: list[PracticeSummaryRead] = []    # practices from this source
@@ -350,7 +370,9 @@ class SourceTopicAdd(BaseModel):
     topic_id: int  # topic this source covers
 
 class SourcePrerequisiteAdd(BaseModel):
-    topic_id: int  # topic this source assumes knowledge of
+    """Add a prerequisite topic or source."""
+    entity_type: Literal['topic', 'source']
+    entity_id: int
 
 class SourcePracticeAdd(BaseModel):
     practice_id: int  # practice that assesses this source
@@ -547,6 +569,7 @@ class ReviewSessionUpdate(BaseModel):
 → Response: `204 No Content`
 → Error: `409 Conflict` if topic has children and `handle_children_by` param not specified
 → Error: `400 Bad Request` if invalid `handle_children_by` value
+→ Error: `400 Bad Request` if `reparent` specified but topic has no parent (is a root topic)
 
 ---
 
@@ -741,6 +764,7 @@ class ReviewSessionUpdate(BaseModel):
 → Response: `204 No Content`
 → Error: `409 Conflict` if source has children and `handle_children_by` param not specified
 → Error: `400 Bad Request` if invalid `handle_children_by` value
+→ Error: `400 Bad Request` if `reparent` specified but source has no parent (is a root source)
 
 ---
 
@@ -821,24 +845,26 @@ class ReviewSessionUpdate(BaseModel):
 
 ---
 
-**`POST /sources/{id}/prerequisites`** — Add prerequisite topic
+**`POST /sources/{id}/prerequisites`** — Add prerequisite (topic or source)
 
 | Input | Location | Type | Required | Description |
 |-------|----------|------|----------|-------------|
 | `id` | path | `int` | Yes | Source ID |
-| — | body | `SourcePrerequisiteAdd` | Yes | Topic ID |
+| `entity_type` | body | `'topic' \| 'source'` | Yes | Type of prerequisite |
+| `entity_id` | body | `int` | Yes | ID of prerequisite entity |
 
 → Response: `SourceSummaryRead`
 → Error: `409 Conflict` if relation already exists
 
 ---
 
-**`DELETE /sources/{id}/prerequisites/{topic_id}`** — Remove prerequisite topic
+**`DELETE /sources/{id}/prerequisites/{entity_type}/{entity_id}`** — Remove prerequisite
 
 | Input | Location | Type | Required | Description |
 |-------|----------|------|----------|-------------|
 | `id` | path | `int` | Yes | Source ID |
-| `topic_id` | path | `int` | Yes | Topic ID to remove |
+| `entity_type` | path | `'topic' \| 'source'` | Yes | Type of prerequisite |
+| `entity_id` | path | `int` | Yes | ID of prerequisite to remove |
 
 → Response: `204 No Content`
 
@@ -1260,7 +1286,7 @@ Unified search endpoint for finding topics, sources, and practices.
 | `q` | query | `str` | Yes | Search query |
 | `types` | query | `list[str]` | No | Entity types to search: `topic`, `source`, `practice` (default: all) |
 | `archived` | query | `bool` | No | Include archived items (default `false`) |
-| `limit` | query | `int` | No | Max results per type (default 20) |
+| `limit` | query | `int` | No | Max results per type (default 20, no pagination) |
 
 → Response: `SearchResponse`
 
@@ -1329,7 +1355,7 @@ app/models/
 app/schemas/
 ├── fsrs_state.py       # FsrsStateBase, FsrsStateRead, LearningState
 ├── related.py          # RelatedTopicRead, RelatedSourceRead, RelatedItemRead,
-│                       # RelatedItemAdd
+│                       # RelatedItemAdd, PrereqTopicRead, PrereqSourceRead, PrereqItemRead
 ├── topic.py            # TopicBase, TopicRead, TopicSummaryRead, TopicDetailRead,
 │                       # TopicCreate, TopicUpdate, TopicChildAdd, TopicSourceAdd, TopicPracticeAdd
 ├── source.py           # SourceBase, SourceRead, SourceSummaryRead, SourceDetailRead,
@@ -1441,10 +1467,14 @@ POST /sources/10/topics
 
 # Mark prerequisite topics this source assumes
 POST /sources/10/prerequisites
-{ "topic_id": 20 }  # "React Query Basics"
+{ "entity_type": "topic", "entity_id": 20 }  # "React Query Basics"
 
 POST /sources/10/prerequisites
-{ "topic_id": 21 }  # "React Component Lifecycle"
+{ "entity_type": "topic", "entity_id": 21 }  # "React Component Lifecycle"
+
+# Mark a prerequisite source (must complete this source first)
+POST /sources/10/prerequisites
+{ "entity_type": "source", "entity_id": 5 }  # "TanStack Query Basics" tutorial
 
 # Get source with all relationships
 GET /sources/10
@@ -1453,8 +1483,9 @@ GET /sources/10
     "title": "TanStack Query: Performance & Request Waterfalls",
     "topics": [{ "id": 50, "name": "Request Waterfalls", ... }],
     "prerequisites": [
-      { "id": 20, "name": "React Query Basics", ... },
-      { "id": 21, "name": "React Component Lifecycle", ... }
+      { "entity_type": "topic", "id": 20, "name": "React Query Basics", ... },
+      { "entity_type": "topic", "id": 21, "name": "React Component Lifecycle", ... },
+      { "entity_type": "source", "id": 5, "title": "TanStack Query Basics", ... }
     ],
     "related_outgoing": [],  # outgoing: items this source links to
     "related_incoming": [],  # incoming: items that link to this source

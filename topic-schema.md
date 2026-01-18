@@ -198,6 +198,8 @@ CREATE TABLE entity_relations (
 );
 ```
 
+---
+
 ### source_topics
 
 Source covers Topic.
@@ -242,15 +244,27 @@ CREATE TABLE practice_sources (
 
 ### source_prerequisites
 
-Source assumes knowledge of Topic.
+Source assumes knowledge of Topic or completion of another Source.
 
 ```sql
 CREATE TABLE source_prerequisites (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   source_id BIGINT NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
-  topic_id BIGINT NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+  prereq_topic_id BIGINT REFERENCES topics(id) ON DELETE CASCADE,
+  prereq_source_id BIGINT REFERENCES sources(id) ON DELETE CASCADE,
   inserted_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-  PRIMARY KEY (source_id, topic_id)
+
+  -- Exactly one prerequisite type must be set
+  CONSTRAINT exactly_one_prereq CHECK (
+    num_nonnulls(prereq_topic_id, prereq_source_id) = 1
+  ),
+  -- Prevent self-prerequisites (source cannot require itself)
+  CONSTRAINT no_self_prereq CHECK (
+    source_id IS DISTINCT FROM prereq_source_id
+  ),
+  -- Prevent duplicate prerequisites
+  CONSTRAINT unique_prereq UNIQUE NULLS NOT DISTINCT (source_id, prereq_topic_id, prereq_source_id)
 );
 ```
 
@@ -450,14 +464,15 @@ CREATE INDEX idx_entity_relations_to_source ON entity_relations(to_source_id) WH
 
 -- Junction table lookups (reverse direction)
 CREATE INDEX idx_source_topics_topic ON source_topics(topic_id);
-CREATE INDEX idx_source_prerequisites_topic ON source_prerequisites(topic_id);
+CREATE INDEX idx_source_prerequisites_topic ON source_prerequisites(prereq_topic_id) WHERE prereq_topic_id IS NOT NULL;
+CREATE INDEX idx_source_prerequisites_source ON source_prerequisites(prereq_source_id) WHERE prereq_source_id IS NOT NULL;
 CREATE INDEX idx_practice_topics_topic ON practice_topics(topic_id);
 CREATE INDEX idx_practice_sources_source ON practice_sources(source_id);
 
 -- Review lookups
 CREATE INDEX idx_reviews_user ON reviews(user_id);
 CREATE INDEX idx_reviews_session ON reviews(review_session_id);
-CREATE INDEX idx_reviews_scheduled ON reviews(scheduled_at) WHERE completed_at IS NULL;
+CREATE INDEX idx_reviews_scheduled ON reviews(user_id, scheduled_at) WHERE completed_at IS NULL;
 
 CREATE INDEX idx_topic_reviews_topic ON topic_reviews(topic_id);
 CREATE INDEX idx_source_reviews_source ON source_reviews(source_id);
@@ -482,6 +497,6 @@ CREATE INDEX idx_review_sessions_user ON review_sessions(user_id);
 | Parent deletion | `ON DELETE RESTRICT` with application-level handling (user chooses: delete/orphan/reparent) |
 | Entity relations | Unified `entity_relations` table with nullable FKs, check constraints, and `NULLS NOT DISTINCT` uniqueness |
 | Practice relations | Junction tables for topics (`practice_topics`) and sources (`practice_sources`) |
-| Source relations | Junction tables for topics (`source_topics`) and prerequisites (`source_prerequisites`) |
+| Source relations | Junction tables for topics (`source_topics`) and prerequisites (`source_prerequisites` with nullable `prereq_topic_id` / `prereq_source_id`) |
 | FSRS state | Shared `fsrs_states` table, FK on each entity |
 | Reviews | Shared `reviews` table + minimal association tables for type-safe FKs |

@@ -13,7 +13,7 @@ The parent/child relationship is overloaded to express conceptual containment, p
 
 **Solution:** Separate entity types. Topics, Practices, and Sources are different entities with distinct relationships.
 
-**Why Prerequisites?** Sources often assume prior knowledge. An advanced article on "React Query Performance" assumes you already understand React hooks and basic React Query usage. Tracking prerequisites lets users:
+**Why Prerequisites?** Sources often assume prior knowledge. An advanced article on "React Query Performance" assumes you already understand React hooks and basic React Query usage. Prerequisites can be either Topics (conceptual knowledge) or other Sources (prior material to complete). Tracking prerequisites lets users:
 - See what they should learn before tackling a source
 - Get warnings when reviewing sources with unlearned prerequisites
 - Build a proper learning sequence through their materials
@@ -84,7 +84,7 @@ Any created work or portion thereof—books, chapters, songs, verses, codebases,
 |--------------|--------|-------------|
 | `parent` | Source | What it belongs to (for nested sources) |
 | `topics` | Topic(s) | What topics this Source covers |
-| `prerequisites` | Topic(s) | Topics this source assumes knowledge of |
+| `prerequisites` | Topic(s) or Source(s) | Topics or sources this source assumes knowledge of / completion of |
 | `related_outgoing` | Topic(s) or Source(s) | Outgoing relations: items this source links to |
 | `related_incoming` | Topic(s) or Source(s) | Incoming relations: items that link to this source |
 
@@ -148,7 +148,7 @@ Each entity's relationships from its own perspective:
 | **Children** | Child sources (chapters, sections, quotes) |
 | **Topics** | Topics this source covers |
 | **Practices** | Practices that assess this source |
-| **Prerequisites** | Topics this source assumes knowledge of |
+| **Prerequisites** | Topics or sources this source assumes knowledge of / completion of |
 | **Related outgoing** | Outgoing: topics and sources this source links to |
 | **Related incoming** | Incoming: topics and sources that link to this source |
 
@@ -175,7 +175,7 @@ Source
   ├── children ←── Source.parent_id (inverse)
   ├── topics → source_topics
   ├── practices ←── practice_sources (inverse)
-  ├── prerequisites → source_prerequisites
+  ├── prerequisites → source_prerequisites (topic_id OR source_id)
   ├── related_outgoing → entity_relations (where from_source_id = this)
   ├── related_incoming ←── entity_relations (where to_source_id = this)
   └── fsrs_state_id → fsrs_states
