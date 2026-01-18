@@ -63,11 +63,18 @@ class LearningState(str, Enum):
     LEARNING = "LEARNING"
     REVIEW = "REVIEW"
     RELEARNING = "RELEARNING"
+
+class RetrievabilityBucket(str, Enum):
+    LATE = "LATE"
+    ON_TIME = "ON_TIME"
+    EARLY = "EARLY"
 ```
 
 #### Retrievability Computation
 
-The `retrievability` field in entity read schemas is computed using the FSRS power forgetting curve:
+The `retrievability`, `bucket`, and `days_until_threshold` fields in entity read schemas are computed server-side and included in API responses. This ensures a single source of truth and leverages React Query's automatic refetching to keep values fresh.
+
+**Retrievability** is computed using the FSRS power forgetting curve:
 
 ```python
 # FSRS constants
@@ -95,6 +102,96 @@ def calculate_retrievability(
     return (1 + FSRS_FACTOR * elapsed_days / stability) ** FSRS_DECAY
 ```
 
+**Bucket** categorizes the item based on retrievability thresholds:
+
+```python
+# Thresholds
+LATE_THRESHOLD = 0.8
+ON_TIME_THRESHOLD = 0.95
+
+def calculate_bucket(retrievability: float | None) -> RetrievabilityBucket | None:
+    """
+    Categorizes retrievability into buckets:
+    - LATE: < 80% (overdue for review)
+    - ON_TIME: 80-95% (good time to review)
+    - EARLY: >= 95% (not due yet)
+
+    Returns None if retrievability is None.
+    """
+    if retrievability is None:
+        return None
+    if retrievability >= ON_TIME_THRESHOLD:
+        return RetrievabilityBucket.EARLY
+    if retrievability >= LATE_THRESHOLD:
+        return RetrievabilityBucket.ON_TIME
+    return RetrievabilityBucket.LATE
+```
+
+**Days Until Threshold** predicts when the item will cross to the next bucket:
+
+```python
+def calculate_days_until_threshold(
+    stability: float,
+    last_reviewed_at: date | None,
+    target_retrievability: float,
+    current_date: date | None = None,
+) -> int:
+    """
+    Inverse FSRS formula: solve for days when retrievability reaches target.
+
+    Given: R = (1 + F × d / S) ^ D
+    Solve for d: d = (R^(1/D) - 1) × S / F
+
+    Returns positive for future dates (days until threshold reached),
+    negative for past dates (days since threshold crossed).
+    """
+    if current_date is None:
+        current_date = date.today()
+    if last_reviewed_at is None:
+        last_reviewed_at = current_date
+
+    # Days from last_reviewed_at when target retrievability is reached
+    target_days_from_review = (
+        (target_retrievability ** (1 / FSRS_DECAY) - 1) * stability / FSRS_FACTOR
+    )
+
+    elapsed_days = (current_date - last_reviewed_at).days
+
+    return int(target_days_from_review - elapsed_days)
+
+def calculate_days_until_next_bucket(
+    retrievability: float | None,
+    stability: float | None,
+    last_reviewed_at: date | None,
+) -> int | None:
+    """
+    Calculate days until item moves to next bucket.
+
+    - EARLY → days until ON_TIME (crosses 95% threshold)
+    - ON_TIME → days until LATE (crosses 80% threshold)
+    - LATE → None (already past threshold)
+
+    Returns None if retrievability or stability is None, or if already LATE.
+    """
+    if retrievability is None or stability is None:
+        return None
+
+    bucket = calculate_bucket(retrievability)
+
+    if bucket == RetrievabilityBucket.LATE:
+        return None  # Already late, no next threshold
+
+    # Determine target threshold based on current bucket
+    target_threshold = (
+        ON_TIME_THRESHOLD if bucket == RetrievabilityBucket.EARLY
+        else LATE_THRESHOLD
+    )
+
+    return calculate_days_until_threshold(
+        stability, last_reviewed_at, target_threshold
+    )
+```
+
 #### FSRS State Lifecycle
 
 **Creation:** An `fsrs_state` record is created when:
@@ -107,6 +204,17 @@ def calculate_retrievability(
 3. After-state is stored on the review and copied to the entity's fsrs_state
 
 **Disabling:** Setting `srs_enabled` to `false` keeps the fsrs_state record but excludes the entity from study queues. The state is preserved for potential re-enabling.
+
+#### Design Note: Server-Side Computation
+
+All time-dependent computed fields (`retrievability`, `bucket`, `days_until_threshold`) are calculated server-side and included in API responses rather than computed client-side. This design choice:
+
+- **Single source of truth** - Eliminates drift between Python and TypeScript implementations
+- **Simplifies frontend** - Less code to maintain, fewer opportunities for bugs
+- **Leverages React Query** - Automatic refetching (on window focus, mount, reconnect) keeps values fresh in 95%+ of real-world scenarios
+- **Easier to evolve** - Threshold changes or formula adjustments require only server-side updates
+
+The only edge case is a user keeping the same tab continuously focused across a day boundary, which is acceptable given React Query's aggressive default refetching behavior.
 
 ### Related Items (Discriminated Union)
 
@@ -178,12 +286,16 @@ class TopicRead(TopicBase):
     step: int | None = None
     srs_enabled: bool = False
     last_reviewed_at: date | None = None
+    # Computed fields (calculated server-side)
     retrievability: float | None = None  # computed from stability + last_reviewed_at
+    bucket: RetrievabilityBucket | None = None  # computed from retrievability
+    days_until_threshold: int | None = None  # computed from stability, last_reviewed_at, bucket
 
 class TopicSummaryRead(TopicRead):
     """For list endpoints — includes counts instead of full relationships."""
     children_count: int
-    related_count: int    # total of outgoing + incoming relations
+    related_outgoing_count: int  # outgoing relations from this topic
+    related_incoming_count: int  # incoming relations to this topic
     sources_count: int    # sources that cover this topic
     practices_count: int  # practices that assess this topic
 
@@ -240,15 +352,19 @@ class SourceRead(SourceBase):
     step: int | None = None
     srs_enabled: bool = False
     last_reviewed_at: date | None = None
+    # Computed fields (calculated server-side)
     retrievability: float | None = None  # computed from stability + last_reviewed_at
+    bucket: RetrievabilityBucket | None = None  # computed from retrievability
+    days_until_threshold: int | None = None  # computed from stability, last_reviewed_at, bucket
 
 class SourceSummaryRead(SourceRead):
     """For list endpoints — includes counts instead of full relationships."""
     children_count: int
-    topics_count: int         # topics this source covers
-    related_count: int        # total of outgoing + incoming relations
-    practices_count: int      # practices from this source
-    prerequisites_count: int  # topics or sources this source assumes
+    topics_count: int              # topics this source covers
+    related_outgoing_count: int    # outgoing relations from this source
+    related_incoming_count: int    # incoming relations to this source
+    practices_count: int           # practices from this source
+    prerequisites_count: int       # topics or sources this source assumes
 
 class SourceDetailRead(SourceRead):
     """For detail endpoint — includes full relationships."""
@@ -303,7 +419,10 @@ class PracticeRead(PracticeBase):
     step: int | None = None
     srs_enabled: bool = False
     last_reviewed_at: date | None = None
+    # Computed fields (calculated server-side)
     retrievability: float | None = None  # computed from stability + last_reviewed_at
+    bucket: RetrievabilityBucket | None = None  # computed from retrievability
+    days_until_threshold: int | None = None  # computed from stability, last_reviewed_at, bucket
 
 class PracticeSummaryRead(PracticeRead):
     """For list endpoints — includes counts instead of full relationships."""
@@ -410,6 +529,9 @@ class ReviewBase(BaseModel):
 class ReviewRead(ReviewBase):
     id: int
     review_session_id: int | None = None
+    # Entity association (which entity this review is for)
+    entity_type: Literal['topic', 'source', 'practice']
+    entity_id: int
     # FSRS snapshots
     stability_before: float | None = None
     difficulty_before: float | None = None
@@ -1562,9 +1684,9 @@ The current system has a single `topics` table with overloaded relationships and
 2. **Create sources** — For items that are source materials (books, chapters)
 3. **Create practices** — For items that are exercises/problems
 4. **Migrate relationships:**
-   - `parent/child` on conceptual topics → `subtopic_of` (keep as parent_id)
+   - `parent/child` on conceptual topics → `parent_id` (tree structure)
    - `parent/child` for source materials → New `sources` table with `parent_id`
-   - `related` between topics → `topic_relations`
+   - `related` between topics → `entity_relations`
 5. **Review history** — Migrate existing reviews to appropriate `*_reviews` tables
 
 ### Topic Graph → Tree Migration

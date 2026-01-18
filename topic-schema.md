@@ -104,7 +104,7 @@ CREATE TABLE topics (
   name TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT '',
   parent_id BIGINT REFERENCES topics(id) ON DELETE RESTRICT,
-  fsrs_state_id BIGINT REFERENCES fsrs_states(id) ON DELETE SET NULL,
+  fsrs_state_id BIGINT UNIQUE REFERENCES fsrs_states(id) ON DELETE SET NULL,
 
   -- Status
   archived BOOLEAN NOT NULL DEFAULT false,
@@ -128,7 +128,7 @@ CREATE TABLE sources (
   title TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT '',
   parent_id BIGINT REFERENCES sources(id) ON DELETE RESTRICT,
-  fsrs_state_id BIGINT REFERENCES fsrs_states(id) ON DELETE SET NULL,
+  fsrs_state_id BIGINT UNIQUE REFERENCES fsrs_states(id) ON DELETE SET NULL,
 
   -- Status
   archived BOOLEAN NOT NULL DEFAULT false,
@@ -151,7 +151,7 @@ CREATE TABLE practices (
   user_id TEXT NOT NULL,
   prompt TEXT NOT NULL DEFAULT '',
   answer TEXT NOT NULL DEFAULT '',
-  fsrs_state_id BIGINT REFERENCES fsrs_states(id) ON DELETE SET NULL,
+  fsrs_state_id BIGINT UNIQUE REFERENCES fsrs_states(id) ON DELETE SET NULL,
 
   -- Status
   archived BOOLEAN NOT NULL DEFAULT false,
@@ -498,5 +498,5 @@ CREATE INDEX idx_review_sessions_user ON review_sessions(user_id);
 | Entity relations | Unified `entity_relations` table with nullable FKs, check constraints, and `NULLS NOT DISTINCT` uniqueness |
 | Practice relations | Junction tables for topics (`practice_topics`) and sources (`practice_sources`) |
 | Source relations | Junction tables for topics (`source_topics`) and prerequisites (`source_prerequisites` with nullable `prereq_topic_id` / `prereq_source_id`) |
-| FSRS state | Shared `fsrs_states` table, FK on each entity |
+| FSRS state | Shared `fsrs_states` table, 1:1 relationship via `UNIQUE` constraint on `fsrs_state_id` FK |
 | Reviews | Shared `reviews` table + minimal association tables for type-safe FKs |
