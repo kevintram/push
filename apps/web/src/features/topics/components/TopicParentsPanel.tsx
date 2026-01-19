@@ -47,6 +47,10 @@ export function TopicParentsPanel({
 
 	const { data: parents = [], isLoading } = useTopicParents(topicId)
 
+	// With tree structure, there's at most one parent
+	const parent = parents[0] ?? null
+	const hasParent = parent !== null
+
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
 
@@ -89,60 +93,56 @@ export function TopicParentsPanel({
 				<div className='flex items-center gap-2'>
 					<User2 className='h-4 w-4' />
 					<span className='font-medium text-muted-foreground text-xs'>
-						Parent topics ({parents.length})
+						Parent topics ({hasParent ? 1 : 0})
 					</span>
 				</div>
 				{isLoading ? (
-					<>
-						<Skeleton className='h-6 w-20 rounded-full' />
-						<Skeleton className='h-6 w-24 rounded-full' />
-						<Skeleton className='h-6 w-16 rounded-full' />
-					</>
-				) : (
-					parents.map(parent => (
-						<TopicBadge
-							key={parent.id}
-							name={parent.name}
-							notes={parent.notes}
-							onClick={() => handleParentSelect(parent.id)}
-							onMouseEnter={() => handleParentMouseEnter(parent)}
-							onRemove={() => {
-								if (!topicId) return
-								deleteRelationship.mutate({
-									parent: parent.id,
-									child: topicId
-								})
-							}}
-						/>
-					))
+					<Skeleton className='h-6 w-24 rounded-full' />
+				) : parent ? (
+					<TopicBadge
+						name={parent.name}
+						notes={parent.notes}
+						onClick={() => handleParentSelect(parent.id)}
+						onMouseEnter={() => handleParentMouseEnter(parent)}
+						onRemove={() => {
+							if (!topicId) return
+							deleteRelationship.mutate({
+								parent: parent.id,
+								child: topicId
+							})
+						}}
+					/>
+				) : null}
+				{/* Only show add button if no parent exists */}
+				{!hasParent && (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
+							<Badge
+								className='cursor-pointer items-center gap-1 py-1 hover:bg-muted/50'
+								variant='secondary'
+							>
+								{isCreating ? (
+									<Loader2 className='h-3 w-3 animate-spin' />
+								) : (
+									<>
+										<Plus className='h-3 w-3' />
+										<ChevronDown className='h-3 w-3' />
+									</>
+								)}
+							</Badge>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='start'>
+							<DropdownMenuItem onClick={() => setShowAddTopicDialog(true)}>
+								<SquarePen className='h-4 w-4' />
+								Create New
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
+								<Search className='h-4 w-4' />
+								Search
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				)}
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild={true} disabled={isCreating}>
-						<Badge
-							className='cursor-pointer items-center gap-1 py-1 hover:bg-muted/50'
-							variant='secondary'
-						>
-							{isCreating ? (
-								<Loader2 className='h-3 w-3 animate-spin' />
-							) : (
-								<>
-									<Plus className='h-3 w-3' />
-									<ChevronDown className='h-3 w-3' />
-								</>
-							)}
-						</Badge>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align='start'>
-						<DropdownMenuItem onClick={() => setShowAddTopicDialog(true)}>
-							<SquarePen className='h-4 w-4' />
-							Create New
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
-							<Search className='h-4 w-4' />
-							Search
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
 			</div>
 
 			<AddRelationshipDialog

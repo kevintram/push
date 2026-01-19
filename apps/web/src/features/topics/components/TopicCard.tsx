@@ -123,13 +123,11 @@ export function TopicCard({
 					<TooltipTrigger asChild={true}>
 						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
 							<User2 className='h-3 w-3' />
-							<span>{topic.parents?.length ?? 0}</span>
+							<span>{topic.parent ? 1 : 0}</span>
 						</div>
 					</TooltipTrigger>
 					<TooltipContent side='top'>
-						{topic.parents?.length === 1
-							? '1 parent'
-							: `${topic.parents?.length ?? 0} parents`}
+						{topic.parent ? '1 parent' : '0 parents'}
 					</TooltipContent>
 				</Tooltip>
 				<div className='flex-1' />

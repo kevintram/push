@@ -12,6 +12,8 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	notes: v.string(),
 	inserted_at: v.string(),
 	updated_at: v.string(),
+	parent_id: v.nullable(v.number()),
+	fsrs_state_id: v.nullable(v.number()),
 	stability: v.nullable(v.number()),
 	inherited_stability: v.nullable(v.number()),
 	inherited_difficulty: v.nullable(v.number()),
@@ -24,12 +26,11 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	archived: v.boolean(),
 	inboxed: v.boolean(),
 	last_reviewed_at: v.nullable(v.string()),
-	scheduled_at: v.nullable(v.string()),
 	srs_enabled: v.boolean(),
 	retrievability: v.nullable(v.number()),
-	parents: v.optional(v.array(v.lazy(() => TopicSchema)), []),
+	parent: v.nullish(v.lazy(() => TopicSchema)),
 	children: v.optional(v.array(v.lazy(() => TopicSchema)), []),
-	related: v.optional(v.array(v.lazy(() => TopicSchema)), []),
+	related: v.nullish(v.array(v.lazy(() => TopicSchema))),
 	relationship_direction: v.optional(v.enum_(RelationshipDirection))
 })
 

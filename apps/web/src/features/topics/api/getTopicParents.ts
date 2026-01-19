@@ -2,11 +2,17 @@ import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import { TopicSchema } from '../types/topic.schemas'
+import type { Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
-export async function getTopicParents(topicId: number) {
+/**
+ * Gets the parent of a topic. With tree structure, each topic has at most one parent.
+ * Returns an array for backward compatibility (will contain 0 or 1 parent).
+ */
+export async function getTopicParents(topicId: number): Promise<Array<Topic>> {
+	// Fetch the topic to get its parent_id
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/${topicId}/parents/`,
+		`${import.meta.env.VITE_API_URL}/topics/${topicId}/`,
 		{
 			method: 'GET'
 		}
@@ -16,15 +22,27 @@ export async function getTopicParents(topicId: number) {
 		throw new Error(`API request failed: ${response.status}`)
 	}
 
-	const data = await response.json()
-	try {
-		return v.parse(v.array(TopicSchema), data)
-	} catch (error) {
-		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`)
-		}
-		throw error
+	const topic = v.parse(TopicSchema, await response.json())
+
+	// If topic has no parent, return empty array
+	if (!topic.parent_id) {
+		return []
 	}
+
+	// Fetch the parent topic
+	const parentResponse = await apiFetch(
+		`${import.meta.env.VITE_API_URL}/topics/${topic.parent_id}/`,
+		{
+			method: 'GET'
+		}
+	)
+
+	if (!parentResponse.ok) {
+		throw new Error(`API request failed: ${parentResponse.status}`)
+	}
+
+	const parent = v.parse(TopicSchema, await parentResponse.json())
+	return [parent]
 }
 
 export function useTopicParents(topicId: number | undefined) {

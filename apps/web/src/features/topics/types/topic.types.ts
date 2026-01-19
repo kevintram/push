@@ -14,6 +14,8 @@ export type Topic = {
 	notes: string
 	inserted_at: string
 	updated_at: string
+	parent_id: number | null
+	fsrs_state_id: number | null
 	stability: number | null
 	inherited_stability: number | null
 	inherited_difficulty: number | null
@@ -26,12 +28,11 @@ export type Topic = {
 	archived: boolean
 	inboxed: boolean
 	last_reviewed_at: string | null
-	scheduled_at: string | null
 	srs_enabled: boolean
 	retrievability: number | null
-	parents?: Array<Topic>
+	parent?: Topic | null
 	children?: Array<Topic>
-	related?: Array<Topic>
+	related?: Array<Topic> | null
 	relationship_direction?: RelationshipDirection
 }
 
@@ -47,13 +48,9 @@ export type TopicOtherRelationshipCreate = {
 		notes: string
 		archived: boolean
 		inboxed: boolean
-		stability?: number | null
-		inherited_stability?: number | null
-		inherited_difficulty?: number | null
-		inherited_state?: LearningState | null
-		inherited_step?: number | null
-		inherited_last_review?: string | null
+		parent_id?: number | null
 		srs_enabled?: boolean
+		inherit_fsrs?: boolean
 	}
 }
 

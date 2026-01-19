@@ -15,8 +15,9 @@ export function prefetchTopicRelations(
 ): void {
 	queryClient.setQueryData(topicKeys.detail(topic.id), topic)
 
-	if (topic.parents && topic.parents.length > 0) {
-		queryClient.setQueryData(topicKeys.parents(topic.id), topic.parents)
+	// With tree structure, parent is singular (0 or 1)
+	if (topic.parent) {
+		queryClient.setQueryData(topicKeys.parents(topic.id), [topic.parent])
 	}
 
 	if (topic.children && topic.children.length > 0) {
