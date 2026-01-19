@@ -13,6 +13,16 @@ CREATE TYPE rating AS ENUM ('MISS', 'HARD', 'GOOD', 'EASY');
 
 ---
 
+## Extensions
+
+```sql
+-- ltree extension for materialized path hierarchy
+-- Enables O(1) ancestry/descendant checks via path operators (<@, @>)
+CREATE EXTENSION IF NOT EXISTS ltree;
+```
+
+---
+
 ## Trigger Functions
 
 ### updated_at Auto-Update
@@ -73,7 +83,7 @@ CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews
 
 ### fsrs_states
 
-FSRS scheduling state shared across all entity types.
+FSRS scheduling state shared across all entity types. Includes inherited fields for parent-propagated state in hierarchical entities (topics, sources).
 
 ```sql
 CREATE TABLE fsrs_states (
@@ -84,10 +94,18 @@ CREATE TABLE fsrs_states (
   step INTEGER,
   last_reviewed_at DATE,
   srs_enabled BOOLEAN NOT NULL DEFAULT false,
+  -- Inherited fields (propagated from parent entity's FSRS state)
+  inherited_stability REAL,
+  inherited_difficulty REAL CHECK (inherited_difficulty >= 0 AND inherited_difficulty <= 10),
+  inherited_state learning_state,
+  inherited_step INTEGER,
+  inherited_last_review DATE,
   inserted_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 ```
+
+> **Note:** The `inherited_*` fields store FSRS state propagated from an entity's parent. This allows child entities to inherit review scheduling from their parent when they don't have their own review history. Application logic is responsible for propagating these values when parent FSRS state changes.
 
 ---
 
@@ -104,6 +122,7 @@ CREATE TABLE topics (
   name TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT '',
   parent_id BIGINT REFERENCES topics(id) ON DELETE RESTRICT,
+  path ltree,  -- Materialized path for O(1) ancestry checks (format: "root_id.parent_id.child_id")
   fsrs_state_id BIGINT UNIQUE REFERENCES fsrs_states(id) ON DELETE SET NULL,
 
   -- Status
@@ -116,6 +135,8 @@ CREATE TABLE topics (
 ```
 
 > **Note:** `ON DELETE RESTRICT` requires application-level handling. See API documentation for delete options (delete children, orphan children, or reparent to grandparent).
+
+> **Note:** The `path` column is maintained by triggers that compute the path on insert and update descendant paths when a topic moves. See implementation plan for trigger definitions.
 
 ### sources
 
@@ -128,6 +149,7 @@ CREATE TABLE sources (
   title TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT '',
   parent_id BIGINT REFERENCES sources(id) ON DELETE RESTRICT,
+  path ltree,  -- Materialized path for O(1) ancestry checks (format: "root_id.parent_id.child_id")
   fsrs_state_id BIGINT UNIQUE REFERENCES fsrs_states(id) ON DELETE SET NULL,
 
   -- Status
@@ -140,6 +162,8 @@ CREATE TABLE sources (
 ```
 
 > **Note:** `ON DELETE RESTRICT` requires application-level handling. See API documentation for delete options (delete children, orphan children, or reparent to grandparent).
+
+> **Note:** The `path` column is maintained by triggers that compute the path on insert and update descendant paths when a source moves. See implementation plan for trigger definitions.
 
 ### practices
 
@@ -445,6 +469,10 @@ CREATE TRIGGER cleanup_fsrs_after_practice_delete
 -- Hierarchy traversal
 CREATE INDEX idx_topics_parent ON topics(parent_id);
 CREATE INDEX idx_sources_parent ON sources(parent_id);
+
+-- ltree path indexes for O(1) ancestry/descendant queries
+CREATE INDEX idx_topics_path_gist ON topics USING GIST (path);
+CREATE INDEX idx_sources_path_gist ON sources USING GIST (path);
 
 -- User filtering
 CREATE INDEX idx_topics_user ON topics(user_id);
