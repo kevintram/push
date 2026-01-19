@@ -160,21 +160,26 @@ async def replay_reviews_from_date(
 
     if not reviews_to_replay:
         # No reviews to replay - reset topic to the state before from_date
+        if topic.fsrs_state is None:
+            # No fsrs_state to update
+            await session.flush()
+            return
+
         if last_before_review and last_before_review.stability_after is not None:
             # Set topic to the "after" state of the last review before from_date
-            topic.stability = last_before_review.stability_after
-            topic.difficulty = last_before_review.difficulty_after
-            topic.state = last_before_review.state_after
-            topic.step = last_before_review.step_after
+            topic.fsrs_state.stability = last_before_review.stability_after
+            topic.fsrs_state.difficulty = last_before_review.difficulty_after
+            topic.fsrs_state.state = last_before_review.state_after
+            topic.fsrs_state.step = last_before_review.step_after
         else:
             # No prior reviews - reset to initial state
             # Use topic's inherited fields if set (from parent), otherwise use defaults
-            topic.stability = topic.inherited_stability
-            topic.difficulty = topic.inherited_difficulty
-            topic.state = topic.inherited_state or "LEARNING"
+            topic.fsrs_state.stability = topic.fsrs_state.inherited_stability
+            topic.fsrs_state.difficulty = topic.fsrs_state.inherited_difficulty
+            topic.fsrs_state.state = topic.fsrs_state.inherited_state or "LEARNING"
             # Step is only relevant for Learning/Relearning states
-            inherited_state = topic.inherited_state or "LEARNING"
-            topic.step = None if inherited_state == "REVIEW" else topic.inherited_step
+            inherited_state = topic.fsrs_state.inherited_state or "LEARNING"
+            topic.fsrs_state.step = None if inherited_state == "REVIEW" else topic.fsrs_state.inherited_step
 
         await session.flush()
         return
@@ -229,11 +234,12 @@ async def replay_reviews_from_date(
         scheduler=scheduler,
     )
 
-    # Update topic with final state
-    topic.stability = final_card.stability
-    topic.difficulty = final_card.difficulty
-    topic.state = map_fsrs_state_to_db(final_card.state)
-    topic.step = final_card.step
+    # Update topic's fsrs_state with final state
+    if topic.fsrs_state is not None:
+        topic.fsrs_state.stability = final_card.stability
+        topic.fsrs_state.difficulty = final_card.difficulty
+        topic.fsrs_state.state = map_fsrs_state_to_db(final_card.state)
+        topic.fsrs_state.step = final_card.step
 
     await session.flush()
 
@@ -513,11 +519,21 @@ async def create_review(
             detail="Review already exists",
         )
 
-    # Update the topic with new FSRS state
-    topic.stability = updated_card.stability
-    topic.difficulty = updated_card.difficulty
-    topic.state = map_fsrs_state_to_db(updated_card.state)
-    topic.step = updated_card.step
+    # Update the topic's fsrs_state with new FSRS state
+    # Create fsrs_state if it doesn't exist (topic had SRS disabled)
+    if topic.fsrs_state is None:
+        from app.models import FsrsState
+        fsrs_state = FsrsState(srs_enabled=True)
+        session.add(fsrs_state)
+        await session.flush()
+        topic.fsrs_state_id = fsrs_state.id
+        topic.fsrs_state = fsrs_state
+
+    topic.fsrs_state.stability = updated_card.stability
+    topic.fsrs_state.difficulty = updated_card.difficulty
+    topic.fsrs_state.state = map_fsrs_state_to_db(updated_card.state)
+    topic.fsrs_state.step = updated_card.step
+    topic.fsrs_state.last_reviewed_at = review_create.completed_at.date() if isinstance(review_create.completed_at, datetime) else review_create.completed_at
 
     # Replay all reviews that come after this newly created review
     await replay_reviews_from_date(
