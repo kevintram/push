@@ -6,42 +6,52 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, model_validator
 
 
-
 class TopicBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    name: str
-    notes: str
+    name: str = ""
+    notes: str = ""
+    archived: bool = False
+    inboxed: bool = False
+
+
+class TopicRead(TopicBase):
+    """Topic read schema with FSRS fields flattened from fsrs_state relationship."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    parent_id: int | None = None
+    fsrs_state_id: int | None = None
+    inserted_at: datetime
+    updated_at: datetime
+
+    # FSRS fields (from joined fsrs_state via properties on Topic model)
     stability: float | None = None
+    difficulty: float | None = None
+    state: str = "LEARNING"
+    step: int | None = None
+    srs_enabled: bool = False
+    last_reviewed_at: date | None = None
+
+    # Inherited fields
     inherited_stability: float | None = None
     inherited_difficulty: float | None = None
     inherited_state: str | None = None
     inherited_step: int | None = None
     inherited_last_review: date | None = None
-    difficulty: float | None = None
-    state: str = "LEARNING"
-    step: int | None = None
-    archived: bool
-    inboxed: bool
-    last_reviewed_at: date | None = None
-    srs_enabled: bool = True
 
-
-class TopicRead(TopicBase):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    inserted_at: datetime
-    updated_at: datetime
-    scheduled_at: date | None = None
+    # Computed
     retrievability: float | None = None
 
 
 class TopicReadWithRelationships(TopicRead):
+    """Topic with parent and children loaded."""
+
     model_config = ConfigDict(from_attributes=True)
 
-    parents: list["TopicRead"]
-    children: list["TopicRead"]
+    parent: TopicRead | None = None
+    children: list[TopicRead] = []
 
 
 class RelationshipDirection(str, Enum):
@@ -50,19 +60,39 @@ class RelationshipDirection(str, Enum):
 
 
 class TopicRelatedRead(TopicRead):
+    """Topic with relationship direction for related topics."""
+
     model_config = ConfigDict(from_attributes=True)
 
     relationship_direction: RelationshipDirection
 
 
-class TopicCreate(TopicBase):
+class TopicCreate(BaseModel):
+    """Create a new topic."""
+
     model_config = ConfigDict(from_attributes=True)
+
+    name: str = ""
+    notes: str = ""
+    archived: bool = False
+    inboxed: bool = False
+    parent_id: int | None = None
+    srs_enabled: bool = False
+    inherit_fsrs: bool = False  # If true and parent_id set, copy parent's FSRS state
+
+
+class TopicChildAdd(BaseModel):
+    """Add an existing topic as a child."""
+
+    child_id: int
 
 
 class TopicChildRelationshipCreate(BaseModel):
+    """Create a child relationship - supports both existing and inline creation."""
+
     # Mutually exclusive: provide child_id OR child (not both)
     child_id: int | None = None
-    child: "TopicCreate | None" = None
+    child: TopicCreate | None = None
 
     @model_validator(mode="after")
     def validate_mutually_exclusive_fields(self) -> "TopicChildRelationshipCreate":
@@ -74,9 +104,11 @@ class TopicChildRelationshipCreate(BaseModel):
 
 
 class TopicParentRelationshipCreate(BaseModel):
+    """Create a parent relationship - supports both existing and inline creation."""
+
     # Mutually exclusive: provide parent_id OR parent (not both)
     parent_id: int | None = None
-    parent: "TopicCreate | None" = None
+    parent: TopicCreate | None = None
 
     @model_validator(mode="after")
     def validate_mutually_exclusive_fields(self) -> "TopicParentRelationshipCreate":
@@ -99,19 +131,24 @@ class TopicRelationshipResponse(BaseModel):
 
 
 class TopicUpdate(BaseModel):
+    """Update an existing topic."""
+
     model_config = ConfigDict(from_attributes=True)
 
     name: str | None = None
     notes: str | None = None
     archived: bool | None = None
     inboxed: bool | None = None
+    parent_id: int | None = None  # Explicit null clears parent
     srs_enabled: bool | None = None
 
 
 class TopicOtherRelationshipCreate(BaseModel):
+    """Create a related topic relationship."""
+
     # Mutually exclusive: provide to_topic_id OR to_topic (not both)
     to_topic_id: int | None = None
-    to_topic: "TopicCreate | None" = None
+    to_topic: TopicCreate | None = None
 
     @model_validator(mode="after")
     def validate_mutually_exclusive_fields(self) -> "TopicOtherRelationshipCreate":
