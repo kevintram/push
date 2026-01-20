@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback } from 'react'
 import * as v from 'valibot'
+import { sourceKeys } from '~/features/sources/api/queryKeys'
 import { topicKeys } from '~/features/topics/api/queryKeys'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { apiFetch } from '~/utils/apiFetch'
@@ -104,6 +105,7 @@ export function useCreateReview() {
 		onSuccess: async () => {
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: sourceKeys.all }),
 				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
 			])
 		}

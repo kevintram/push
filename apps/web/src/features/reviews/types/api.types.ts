@@ -28,6 +28,16 @@ export type ReviewSessionCreate = {
 	completed_at?: string | null
 }
 
+export type SourceCreate = {
+	title?: string
+	notes?: string
+	archived?: boolean
+	inboxed?: boolean
+	parent_id?: number | null
+	srs_enabled?: boolean
+	inherit_fsrs?: boolean
+}
+
 export type CreateReviewPayload = {
 	rating?: Rating | null
 	description?: string
@@ -35,8 +45,10 @@ export type CreateReviewPayload = {
 	scheduled_at?: string | null
 	completed_at?: string | null
 } & (
-	| { topic_id: number; topic?: never }
-	| { topic: TopicCreate; topic_id?: never }
+	| { topic_id: number; topic?: never; source_id?: never; source?: never }
+	| { topic: TopicCreate; topic_id?: never; source_id?: never; source?: never }
+	| { source_id: number; source?: never; topic_id?: never; topic?: never }
+	| { source: SourceCreate; source_id?: never; topic_id?: never; topic?: never }
 ) &
 	(
 		| { review_session_id: number; review_session?: never }
@@ -83,6 +95,7 @@ export type GetReviewSessionsFilters = {
 export type GetReviewsFilters = {
 	reviewSessionId?: number
 	topicId?: number
+	sourceId?: number
 	effectiveDateBefore?: string
 	effectiveDateAfter?: string
 	scheduled?: boolean
