@@ -2,7 +2,7 @@
 
 ## Overview
 
-This plan implements a major schema and API redesign that introduces three distinct entity types (Topics, Sources, Practices) to replace the current single-entity model. The implementation is structured as 5 vertical slices, each delivering end-to-end functionality validated by Playwright tests.
+This plan implements a major schema and API redesign that introduces three distinct entity types (Topics, Sources, Practices) to replace the current single-entity model. The implementation is structured as 5 vertical slices, each delivering end-to-end functionality validated by Claude in Chrome E2E testing.
 
 **Key Changes:**
 - New entity types: Sources (learning materials) and Practices (exercises)
@@ -55,7 +55,7 @@ This plan implements a major schema and API redesign that introduces three disti
 2. **Inherited FSRS fields**: Currently on Topic model - will move to `fsrs_states` table. **Propagation happens at entity creation time** when the user enables the "inherit" option in AddTopicDialog/AddSourceDialog. The inherited fields are set once from the parent's current FSRS state; they are not automatically updated when the parent's state changes.
 3. **Review trigger**: `trg_update_topic_last_reviewed_at` updates `topics.last_reviewed_at` - needs update for polymorphic reviews
 4. **Frontend patterns**: Feature-based architecture with query keys factory, Valibot schemas, mutation invalidation
-5. **Playwright setup**: Minimal current tests but infrastructure exists with MSW for mocking
+5. **E2E testing**: Use Claude in Chrome for manual E2E verification after each phase
 6. **ltree extension**: Added for O(1) ancestry/descendant checks via materialized path (`path` column). Not in original schema docs but necessary for efficient cycle detection and subtree queries.
 
 ## Loading Patterns (asyncpg)
@@ -504,7 +504,7 @@ DROP FUNCTION IF EXISTS update_topic_last_reviewed_at();
 
 -- Generic function to update fsrs_state.last_reviewed_at for any entity
 -- Called by entity-specific trigger functions
-CREATE OR REPLACE FUNCTION update_fsrs_last_reviewed(
+CREATE OR REPLACE FUNCTION update_last_reviewed(
   p_fsrs_state_id BIGINT,
   p_completed_at DATE
 )
@@ -521,7 +521,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function to recalculate last_reviewed_at from all reviews for an entity
-CREATE OR REPLACE FUNCTION recalculate_fsrs_last_reviewed(
+CREATE OR REPLACE FUNCTION recalc_last_reviewed(
   p_fsrs_state_id BIGINT,
   p_entity_type TEXT,
   p_entity_id BIGINT
@@ -547,7 +547,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger function for topic reviews (uses topic_reviews association)
-CREATE OR REPLACE FUNCTION update_topic_fsrs_on_review()
+CREATE OR REPLACE FUNCTION update_topic_last_reviewed()
 RETURNS TRIGGER AS $$
 DECLARE
   v_fsrs_state_id BIGINT;
@@ -576,10 +576,10 @@ BEGIN
   END IF;
 
   IF TG_OP = 'INSERT' AND v_completed_at IS NOT NULL THEN
-    PERFORM update_fsrs_last_reviewed(v_fsrs_state_id, v_completed_at);
+    PERFORM update_last_reviewed(v_fsrs_state_id, v_completed_at);
   ELSIF TG_OP = 'DELETE' AND v_completed_at IS NOT NULL THEN
     -- Recalculate from remaining reviews
-    PERFORM recalculate_fsrs_last_reviewed(v_fsrs_state_id, 'topic', v_topic_id);
+    PERFORM recalc_last_reviewed(v_fsrs_state_id, 'topic', v_topic_id);
   END IF;
 
   RETURN COALESCE(NEW, OLD);
@@ -587,13 +587,13 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Attach trigger to topic_reviews (table created in previous migration)
-CREATE TRIGGER trg_topic_reviews_fsrs
+CREATE TRIGGER trg_update_topic_last_reviewed
   AFTER INSERT OR DELETE ON topic_reviews
-  FOR EACH ROW EXECUTE FUNCTION update_topic_fsrs_on_review();
+  FOR EACH ROW EXECUTE FUNCTION update_topic_last_reviewed();
 
 -- Trigger on reviews table for completed_at changes (affects topic_reviews during Phase 1)
 -- This handles updates to reviews.completed_at
-CREATE OR REPLACE FUNCTION update_fsrs_on_review_completion()
+CREATE OR REPLACE FUNCTION refresh_last_reviewed_on_completion()
 RETURNS TRIGGER AS $$
 DECLARE
   v_fsrs_state_id BIGINT;
@@ -613,9 +613,9 @@ BEGIN
 
   IF v_fsrs_state_id IS NOT NULL THEN
     IF NEW.completed_at IS NOT NULL THEN
-      PERFORM update_fsrs_last_reviewed(v_fsrs_state_id, NEW.completed_at);
+      PERFORM update_last_reviewed(v_fsrs_state_id, NEW.completed_at);
     ELSE
-      PERFORM recalculate_fsrs_last_reviewed(v_fsrs_state_id, 'topic', v_topic_id);
+      PERFORM recalc_last_reviewed(v_fsrs_state_id, 'topic', v_topic_id);
     END IF;
   END IF;
 
@@ -623,12 +623,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_update_fsrs_on_review_completion
+CREATE TRIGGER trg_refresh_last_reviewed_on_completion
   AFTER UPDATE OF completed_at ON reviews
-  FOR EACH ROW EXECUTE FUNCTION update_fsrs_on_review_completion();
+  FOR EACH ROW EXECUTE FUNCTION refresh_last_reviewed_on_completion();
 ```
 
-**Note**: This trigger setup handles topic reviews during Phase 1. Phase 2 will extend `update_fsrs_on_review_completion()` to also check `source_reviews`, and Phase 3 will add `practice_reviews`.
+**Note**: This trigger setup handles topic reviews during Phase 1. Phase 2 will extend `refresh_last_reviewed_on_completion()` to also check `source_reviews`, and Phase 3 will add `practice_reviews`.
 
 #### 5. Drop Old Columns and Closure Table
 
@@ -1038,13 +1038,14 @@ Remove parent management (now via PATCH), update to use new schema structure.
 - [ ] SRS toggle creates/updates fsrs_state record
 - [ ] No data loss after migration
 
-#### Playwright Tests:
-- [ ] `tests/topics/topic-crud.spec.ts`: Create, read, update, delete topics
-- [ ] `tests/topics/topic-hierarchy.spec.ts`: Parent/child management, cycle prevention
-- [ ] `tests/topics/topic-delete-children.spec.ts`: Delete with handle_children_by (delete/orphan/reparent strategies)
-- [ ] `tests/topics/topic-srs.spec.ts`: SRS toggle, retrievability display
+#### Claude in Chrome E2E Testing:
+After automated verification passes, use Claude in Chrome to manually verify:
+- [ ] Create, read, update, delete topics
+- [ ] Parent/child management, cycle prevention
+- [ ] Delete with handle_children_by (delete/orphan/reparent strategies)
+- [ ] SRS toggle, retrievability display
 
-**Implementation Note**: Pause after automated verification for manual testing before proceeding to Phase 2.
+**Implementation Note**: After automated verification, proceed directly to Claude in Chrome E2E testing. Pause for user review after E2E testing is complete before proceeding to Phase 2.
 
 ---
 
@@ -1199,7 +1200,7 @@ CREATE TRIGGER cascade_review_delete_source
 -- Index for source_reviews (topic_reviews index was created in Phase 1)
 CREATE INDEX idx_source_reviews_source ON source_reviews(source_id);
 
--- Trigger function for source reviews INSERT/DELETE (mirrors update_topic_fsrs_on_review)
+-- Trigger function for source reviews INSERT/DELETE (mirrors update_topic_last_reviewed)
 CREATE OR REPLACE FUNCTION update_source_fsrs_on_review()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -1229,10 +1230,10 @@ BEGIN
   END IF;
 
   IF TG_OP = 'INSERT' AND v_completed_at IS NOT NULL THEN
-    PERFORM update_fsrs_last_reviewed(v_fsrs_state_id, v_completed_at);
+    PERFORM update_last_reviewed(v_fsrs_state_id, v_completed_at);
   ELSIF TG_OP = 'DELETE' AND v_completed_at IS NOT NULL THEN
     -- Recalculate from remaining reviews
-    PERFORM recalculate_fsrs_last_reviewed(v_fsrs_state_id, 'source', v_source_id);
+    PERFORM recalc_last_reviewed(v_fsrs_state_id, 'source', v_source_id);
   END IF;
 
   RETURN COALESCE(NEW, OLD);
@@ -1245,7 +1246,7 @@ CREATE TRIGGER trg_source_reviews_fsrs
   FOR EACH ROW EXECUTE FUNCTION update_source_fsrs_on_review();
 
 -- Extend the review completion trigger to handle source_reviews (for UPDATE of completed_at)
-CREATE OR REPLACE FUNCTION update_fsrs_on_review_completion()
+CREATE OR REPLACE FUNCTION refresh_last_reviewed_on_completion()
 RETURNS TRIGGER AS $$
 DECLARE
   v_fsrs_state_id BIGINT;
@@ -1275,9 +1276,9 @@ BEGIN
 
   IF v_fsrs_state_id IS NOT NULL THEN
     IF NEW.completed_at IS NOT NULL THEN
-      PERFORM update_fsrs_last_reviewed(v_fsrs_state_id, NEW.completed_at);
+      PERFORM update_last_reviewed(v_fsrs_state_id, NEW.completed_at);
     ELSE
-      PERFORM recalculate_fsrs_last_reviewed(v_fsrs_state_id, v_entity_type, v_entity_id);
+      PERFORM recalc_last_reviewed(v_fsrs_state_id, v_entity_type, v_entity_id);
     END IF;
   END IF;
 
@@ -1538,13 +1539,14 @@ Add "New source" option to the dropdown:
 - [ ] Source reviews can be created and completed
 - [ ] FSRS state updates on review completion
 
-#### Playwright Tests:
-- [ ] `tests/sources/source-crud.spec.ts`: Create, read, update, delete sources
-- [ ] `tests/sources/source-hierarchy.spec.ts`: Parent/child sources
-- [ ] `tests/sources/source-topics.spec.ts`: Source covers topics
-- [ ] `tests/sources/source-reviews.spec.ts`: Source review workflow
+#### Claude in Chrome E2E Testing:
+After automated verification passes, use Claude in Chrome to manually verify:
+- [ ] Create, read, update, delete sources
+- [ ] Parent/child sources
+- [ ] Source covers topics
+- [ ] Source review workflow
 
-**Implementation Note**: Pause after automated verification for manual testing before proceeding to Phase 3.
+**Implementation Note**: After automated verification, proceed directly to Claude in Chrome E2E testing. Pause for user review after E2E testing is complete before proceeding to Phase 3.
 
 ---
 
@@ -1639,7 +1641,7 @@ CREATE TRIGGER cascade_review_delete_practice
   AFTER DELETE ON practice_reviews
   FOR EACH ROW EXECUTE FUNCTION cascade_review_delete_on_practice_reviews();
 
--- Trigger function for practice reviews INSERT/DELETE (mirrors update_topic_fsrs_on_review and update_source_fsrs_on_review)
+-- Trigger function for practice reviews INSERT/DELETE (mirrors update_topic_last_reviewed and update_source_fsrs_on_review)
 CREATE OR REPLACE FUNCTION update_practice_fsrs_on_review()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -1669,10 +1671,10 @@ BEGIN
   END IF;
 
   IF TG_OP = 'INSERT' AND v_completed_at IS NOT NULL THEN
-    PERFORM update_fsrs_last_reviewed(v_fsrs_state_id, v_completed_at);
+    PERFORM update_last_reviewed(v_fsrs_state_id, v_completed_at);
   ELSIF TG_OP = 'DELETE' AND v_completed_at IS NOT NULL THEN
     -- Recalculate from remaining reviews
-    PERFORM recalculate_fsrs_last_reviewed(v_fsrs_state_id, 'practice', v_practice_id);
+    PERFORM recalc_last_reviewed(v_fsrs_state_id, 'practice', v_practice_id);
   END IF;
 
   RETURN COALESCE(NEW, OLD);
@@ -1685,7 +1687,7 @@ CREATE TRIGGER trg_practice_reviews_fsrs
   FOR EACH ROW EXECUTE FUNCTION update_practice_fsrs_on_review();
 
 -- Final extension of review completion trigger to handle all three entity types (for UPDATE of completed_at)
-CREATE OR REPLACE FUNCTION update_fsrs_on_review_completion()
+CREATE OR REPLACE FUNCTION refresh_last_reviewed_on_completion()
 RETURNS TRIGGER AS $$
 DECLARE
   v_fsrs_state_id BIGINT;
@@ -1724,9 +1726,9 @@ BEGIN
 
   IF v_fsrs_state_id IS NOT NULL THEN
     IF NEW.completed_at IS NOT NULL THEN
-      PERFORM update_fsrs_last_reviewed(v_fsrs_state_id, NEW.completed_at);
+      PERFORM update_last_reviewed(v_fsrs_state_id, NEW.completed_at);
     ELSE
-      PERFORM recalculate_fsrs_last_reviewed(v_fsrs_state_id, v_entity_type, v_entity_id);
+      PERFORM recalc_last_reviewed(v_fsrs_state_id, v_entity_type, v_entity_id);
     END IF;
   END IF;
 
@@ -2144,16 +2146,17 @@ Update sidebar to reflect new structure:
 - [ ] Recent sidebar page shows all entity types
 - [ ] My Library page shows all entity types with filter toggles
 
-#### Playwright Tests:
-- [ ] `tests/practices/practice-crud.spec.ts`
-- [ ] `tests/practices/practice-topics.spec.ts`
-- [ ] `tests/practices/practice-sources.spec.ts`
-- [ ] `tests/practices/practice-reviews.spec.ts`
-- [ ] `tests/unified/inbox-all-entities.spec.ts`: Inbox shows all entity types
-- [ ] `tests/unified/archived-all-entities.spec.ts`: Archived shows all entity types
-- [ ] `tests/unified/create-all-entities.spec.ts`: Create button works for all types
-- [ ] `tests/unified/recent-all-entities.spec.ts`: Recent page shows all entity types
-- [ ] `tests/unified/my-library.spec.ts`: My Library page with filters
+#### Claude in Chrome E2E Testing:
+After automated verification passes, use Claude in Chrome to manually verify:
+- [ ] Practice CRUD operations
+- [ ] Practice links to topics
+- [ ] Practice links to sources
+- [ ] Practice review workflow
+- [ ] Inbox shows all entity types
+- [ ] Archived shows all entity types
+- [ ] Create button works for all types
+- [ ] Recent page shows all entity types
+- [ ] My Library page with filters
 
 ---
 
@@ -2248,10 +2251,11 @@ DELETE /sources/{id}/prerequisites/{entity_type}/{entity_id}
 - [ ] Source prerequisites (topic) work
 - [ ] Source prerequisites (source) work
 
-#### Playwright Tests:
-- [ ] `tests/relations/topic-relations.spec.ts`
-- [ ] `tests/relations/source-relations.spec.ts`
-- [ ] `tests/relations/source-prerequisites.spec.ts`
+#### Claude in Chrome E2E Testing:
+After automated verification passes, use Claude in Chrome to manually verify:
+- [ ] Topic relations (topic ↔ topic, topic ↔ source)
+- [ ] Source relations (source ↔ topic, source ↔ source)
+- [ ] Source prerequisites functionality
 
 ---
 
@@ -2321,10 +2325,11 @@ Implement frontend UI for explicit child handling selection on delete:
 - [ ] Delete confirmation shows child options
 - [ ] All entity types show in appropriate buckets
 
-#### Playwright Tests:
-- [ ] `tests/search/unified-search.spec.ts`
-- [ ] `tests/review/review-page.spec.ts`
-- [ ] `tests/unified/delete-confirmation-modal.spec.ts`: UI modal for child handling selection
+#### Claude in Chrome E2E Testing:
+After automated verification passes, use Claude in Chrome to manually verify:
+- [ ] Unified search across all entity types
+- [ ] Review page consolidation works as designed
+- [ ] Delete confirmation modal for child handling selection
 
 ---
 
@@ -2349,17 +2354,15 @@ When implementing database changes for each phase:
    supabase db dump --schema public --table <table_name>
    ```
 
-3. **Run Playwright E2E tests against real API:**
+3. **Run Claude in Chrome E2E testing:**
    ```bash
    # Start the API server (if not running)
    cd apps/api && fastapi dev app/main.py
 
    # Start the web dev server (if not running)
    cd apps/web && pnpm dev
-
-   # Run E2E tests against real database
-   cd apps/web && pnpm test:e2e
    ```
+   Then use Claude in Chrome to manually verify the full stack works correctly.
 
 4. **Rollback if needed:**
    ```bash
@@ -2367,7 +2370,7 @@ When implementing database changes for each phase:
    supabase migration down
    ```
 
-**Important**: Always test migrations against a local database first. The Playwright tests hitting the real API serve as integration tests to verify the full stack (migrations → API → frontend) works correctly before proceeding to the next phase.
+**Important**: Always test migrations against a local database first. Claude in Chrome E2E testing serves as integration verification to ensure the full stack (migrations → API → frontend) works correctly before proceeding to the next phase.
 
 ### Commit Strategy
 
@@ -2376,7 +2379,6 @@ Commit changes incrementally as you complete each logical unit of work:
 1. **Database migrations**: Commit each migration file after verifying it applies cleanly
 2. **Backend changes**: Commit models, schemas, and routers together when they form a working unit
 3. **Frontend changes**: Commit API layer, components, and pages as cohesive features
-4. **Tests**: Commit tests alongside or immediately after the code they test
 
 **Example commit sequence for a phase:**
 ```
@@ -2385,100 +2387,36 @@ feat(api): add FsrsState model and update Topic model
 feat(api): update topic router for new FSRS structure
 feat(web): update topic types and API layer for FSRS changes
 feat(web): update TopicDetail component for new schema
-test(web): add Playwright tests for topic FSRS functionality
 ```
 
 Frequent commits provide rollback points and make code review easier. Don't wait until an entire phase is complete to commit.
 
-### Playwright E2E Tests
+### Claude in Chrome E2E Testing
 
-**Dual-mode approach:**
-- **Development**: Hit real API with real database for accurate integration testing
-- **CI**: Use MSW mocks for fast, deterministic, isolated tests
+E2E testing is performed by Claude in Chrome after each phase's automated verification passes. Claude should proceed directly to E2E testing without pausing, then pause for user review after E2E testing is complete.
 
-#### Development Mode (Real API)
+#### When to Run E2E Testing
 
-When developing features locally:
-1. Run against the dev server with real database
-2. Create test data, perform actions, verify results
-3. Clean up after each test
+After completing a phase and passing all automated checks (pytest, pnpm test:ci, pnpm lint, pnpm build):
+1. Ensure the API server is running: `cd apps/api && fastapi dev app/main.py`
+2. Ensure the web dev server is running: `cd apps/web && pnpm dev`
+3. Claude proceeds directly with E2E testing (no pause needed)
+4. After E2E testing is complete, pause for user review before proceeding to the next phase
 
-```bash
-# Run with real API
-pnpm test:e2e
-```
+#### What to Verify
 
-#### CI Mode (Mocked API)
+For each phase, Claude in Chrome should verify:
+- **CRUD operations**: Create, read, update, delete entities
+- **Relationships**: Parent/child, related entities, junction table associations
+- **Edge cases**: Cycle prevention, constraint violations, error handling
+- **UI/UX**: Correct display of data, navigation, form interactions
 
-In CI pipeline:
-1. Use MSW (Mock Service Worker) to intercept API requests
-2. Return predictable mock data for deterministic tests
-3. No database dependency - faster and more reliable CI
+#### Verification Approach
 
-```bash
-# Run with mocks (CI)
-CI=true pnpm test:e2e
-```
-
-#### Implementation Pattern
-
-```typescript
-// tests/fixtures/api-mode.ts
-import { test as base } from '@playwright/test'
-import { setupMockServer } from './mocks/server'
-
-export const test = base.extend({
-  // Conditionally set up MSW based on CI environment
-  page: async ({ page }, use) => {
-    if (process.env.CI) {
-      await setupMockServer(page)
-    }
-    await use(page)
-  }
-})
-
-// tests/mocks/handlers/topics.ts
-export const topicHandlers = [
-  http.get('/api/v1/topics', () => {
-    return HttpResponse.json({ items: mockTopics, total: mockTopics.length })
-  }),
-  // ... other handlers
-]
-```
-
-#### Mock Data Management
-
-```
-apps/web/tests/
-├── fixtures/
-│   ├── api-mode.ts           # Conditional mock setup
-│   └── test-data.ts          # Shared test data factories
-├── mocks/
-│   ├── server.ts             # MSW server setup
-│   └── handlers/
-│       ├── topics.ts
-│       ├── sources.ts
-│       ├── practices.ts
-│       └── reviews.ts
-├── topics/
-│   ├── topic-crud.spec.ts
-│   ├── topic-hierarchy.spec.ts
-│   └── topic-srs.spec.ts
-├── sources/
-│   └── ...
-├── practices/
-│   └── ...
-├── relations/
-│   └── ...
-├── unified/
-│   ├── inbox-all-entities.spec.ts
-│   ├── recent-all-entities.spec.ts
-│   └── my-library.spec.ts
-├── search/
-│   └── ...
-└── review/
-    └── ...
-```
+1. **Start fresh**: Reset the database with `supabase db reset` to get clean seed data
+2. **Walk through user flows**: Create new entities, modify them, verify changes persist
+3. **Test error cases**: Try invalid operations (cycles, missing required fields) and verify proper error messages
+4. **Cross-check**: Verify that changes made in UI appear correctly when refreshing or navigating away and back
 
 ### API Tests
 
@@ -2487,13 +2425,6 @@ Each router gets corresponding pytest tests:
 - Relationship management
 - Error cases (404, 409 for conflicts)
 - Authorization (403 for wrong user)
-
-### Unit Tests
-
-Frontend components get Vitest tests with MSW mocking:
-- Component rendering
-- User interactions
-- Query/mutation behavior
 
 ---
 
