@@ -12,7 +12,7 @@ import type {
 export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	id: v.number(),
 	review_session_id: v.nullable(v.number()),
-	topic_id: v.number(),
+	topic_id: v.nullable(v.number()),
 	rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 
 	description: v.string(),
@@ -23,7 +23,7 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 
 	inserted_at: v.string(),
 	updated_at: v.string(),
-	topic: v.lazy(() => TopicSchema),
+	topic: v.optional(v.nullable(v.lazy(() => TopicSchema))),
 	review_session: v.nullable(
 		v.object({
 			id: v.number(),
@@ -49,7 +49,7 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 export const ReviewListItemSchema: v.GenericSchema<ReviewListItem> = v.object({
 	id: v.number(),
 	review_session_id: v.nullable(v.number()),
-	topic_id: v.number(),
+	topic_id: v.nullable(v.number()),
 	rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 
 	description: v.string(),
@@ -67,11 +67,15 @@ export const ReviewListItemSchema: v.GenericSchema<ReviewListItem> = v.object({
 			description: v.nullable(v.string())
 		})
 	),
-	topic: v.object({
-		id: v.number(),
-		name: v.string(),
-		notes: v.string()
-	}),
+	topic: v.optional(
+		v.nullable(
+			v.object({
+				id: v.number(),
+				name: v.string(),
+				notes: v.string()
+			})
+		)
+	),
 
 	// Topic FSRS state before review
 	stability_before: v.nullable(v.number()),

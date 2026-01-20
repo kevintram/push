@@ -171,12 +171,13 @@ export function ReviewItem({
 	const handleTopicClick = useCallback(
 		(event: React.MouseEvent) => {
 			event.stopPropagation()
+			if (!entry.topic) return
 			navigate({
 				to: '/topics/$topicId',
 				params: { topicId: entry.topic.id.toString() }
 			})
 		},
-		[navigate, entry.topic.id]
+		[navigate, entry.topic]
 	)
 
 	const effectiveDate = entry.effective_date
@@ -299,7 +300,7 @@ export function ReviewItem({
 						)}
 					</div>
 					<div className='flex items-center justify-end gap-2 text-muted-foreground text-xs'>
-						{(variant === 'default' || variant === 'topic') && (
+						{(variant === 'default' || variant === 'topic') && entry.topic && (
 							<Button
 								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
 								onClick={handleTopicClick}

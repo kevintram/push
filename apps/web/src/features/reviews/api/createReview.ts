@@ -78,6 +78,10 @@ export function useCreateTopicWithReview() {
 			})
 
 			// Return the created topic from the response
+			// When creating a topic with review, the API always returns the topic
+			if (!review.topic) {
+				throw new Error('Expected topic to be created with review')
+			}
 			return review.topic
 		},
 		[createReviewMutation]

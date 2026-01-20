@@ -21,6 +21,7 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.review_sessions import ReviewSession
+    from app.models.sources import Source
     from app.models.topics import Topic
 
 class Review(Base):
@@ -30,8 +31,10 @@ class Review(Base):
     review_session_id: Mapped[int | None] = mapped_column(
         BigInteger, ForeignKey("review_sessions.id"), nullable=True
     )
-    topic_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("topics.id"), nullable=False
+    # topic_id is nullable for polymorphic reviews (topic vs source)
+    # The actual link is via topic_reviews/source_reviews association tables
+    topic_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("topics.id"), nullable=True
     )
     user_id: Mapped[str] = mapped_column(String, nullable=False)
     
@@ -80,4 +83,11 @@ class Review(Base):
 
     # Relationships
     review_session: Mapped["ReviewSession | None"] = relationship(back_populates="reviews")
-    topic: Mapped["Topic"] = relationship(back_populates="reviews")
+    topic: Mapped["Topic | None"] = relationship(back_populates="reviews")
+    # Source relationship via source_reviews association table
+    source: Mapped["Source | None"] = relationship(
+        "Source",
+        secondary="source_reviews",
+        uselist=False,
+        viewonly=True,
+    )

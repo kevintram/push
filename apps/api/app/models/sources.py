@@ -25,6 +25,7 @@ from app.utils.retrievability import calculate_retrievability, calculate_days_un
 
 if TYPE_CHECKING:
     from app.models.fsrs_state import FsrsState
+    from app.models.reviews import Review
     from app.models.topics import Topic
 
 
@@ -135,6 +136,13 @@ class Source(Base):
         "Topic",
         secondary=t_source_topics,
         back_populates="sources",
+        viewonly=True,
+    )
+
+    # Reviews for this source (via source_reviews association table)
+    reviews: Mapped[list["Review"]] = relationship(
+        "Review",
+        secondary=t_source_reviews,
         viewonly=True,
     )
 
