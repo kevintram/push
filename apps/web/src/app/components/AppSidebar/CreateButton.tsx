@@ -69,10 +69,9 @@ export function CreateButton() {
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild={true} disabled={isLoading}>
 				<SidebarMenuButton
-					className='rounded-full'
+					className='bg-primary text-primary-foreground hover:bg-primary/90'
 					disabled={isLoading}
 					tooltip={isLoading ? 'Creating...' : 'Create new...'}
-					variant='secondary'
 				>
 					{isLoading ? (
 						<Loader2 className='animate-spin' />

@@ -9,6 +9,7 @@ import {
 	Home,
 	Inbox,
 	ListChecks,
+	PanelLeft,
 	Settings,
 	SquareLibrary,
 	Star
@@ -16,7 +17,9 @@ import {
 import { useState } from 'react'
 
 import { CreateButton } from '~/app/components/AppSidebar/CreateButton'
+import { SidebarSearch } from '~/app/components/AppSidebar/SidebarSearch'
 import { SettingsDialog } from '~/components/SettingsDialog'
+import { Button } from '~/components/ui/Button'
 import {
 	Sidebar,
 	SidebarContent,
@@ -24,16 +27,19 @@ import {
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
+	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuBadge,
 	SidebarMenuButton,
-	SidebarMenuItem
+	SidebarMenuItem,
+	useSidebar
 } from '~/components/ui/Sidebar'
 import { useTopics } from '~/features/topics/api/getTopics'
 
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
+	const { toggleSidebar } = useSidebar()
 
 	const { data: inboxTopics } = useTopics({ inboxed: true, archived: false })
 	const inboxCount = inboxTopics?.length ?? 0
@@ -103,21 +109,26 @@ export function AppSidebar() {
 
 	return (
 		<Sidebar
-			className='!border-0 z-20 bg-background'
+			className='!border-0 z-20 bg-primary-foreground'
 			collapsible='icon'
 			variant='inset'
 		>
-			<SidebarContent className='bg-background'>
-				<SidebarGroup>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							<SidebarMenuItem>
-								<CreateButton />
-							</SidebarMenuItem>
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
+			<SidebarHeader className='bg-primary-foreground'>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<Button onClick={toggleSidebar} size='icon' variant='ghost'>
+							<PanelLeft />
+							<span className='sr-only'>Toggle Sidebar</span>
+						</Button>
+					</SidebarMenuItem>
+					<SidebarSearch />
+					<SidebarMenuItem>
+						<CreateButton />
+					</SidebarMenuItem>
+				</SidebarMenu>
+			</SidebarHeader>
 
+			<SidebarContent className='bg-primary-foreground'>
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
@@ -217,7 +228,7 @@ export function AppSidebar() {
 				</SidebarGroup>
 			</SidebarContent>
 
-			<SidebarFooter className='bg-background'>
+			<SidebarFooter className='bg-primary-foreground'>
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton

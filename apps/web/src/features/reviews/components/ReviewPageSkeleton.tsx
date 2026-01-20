@@ -58,7 +58,7 @@ export function ReviewPageSkeleton() {
 		<div className='scrollbar-track-transparent relative h-full w-full'>
 			<div className='flex h-full flex-col overflow-auto'>
 				{/* Header */}
-				<div className='sticky top-0 z-10 rounded-tl-sm border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
+				<div className='sticky top-0 z-10 border-tl-2 bg-primary-foreground px-4 pt-4 pb-0'>
 					<div className='flex items-center justify-between'>
 						<Skeleton className='h-8 w-24' />
 					</div>
