@@ -59,6 +59,7 @@ class TopicSummaryRead(TopicRead):
     model_config = ConfigDict(from_attributes=True)
 
     children_count: int = 0
+    sources_count: int = 0
     related_outgoing_count: int = 0
     related_incoming_count: int = 0
 

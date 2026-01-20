@@ -31,6 +31,7 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	bucket: v.nullable(v.picklist(['LATE', 'ON_TIME', 'EARLY'])),
 	days_until_threshold: v.nullable(v.number()),
 	children_count: v.optional(v.number(), 0),
+	sources_count: v.optional(v.number(), 0),
 	related_outgoing_count: v.optional(v.number(), 0),
 	related_incoming_count: v.optional(v.number(), 0),
 	parent: v.nullish(v.lazy(() => TopicSchema)),
