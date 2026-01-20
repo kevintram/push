@@ -225,7 +225,9 @@ Sidebar:
 
 ---
 
-## Phase 1: Foundation — FSRS Extraction + Topic Tree Conversion
+## Phase 1: Foundation — FSRS Extraction + Topic Tree Conversion ✅ COMPLETED
+
+**Completed:** 2026-01-20
 
 ### Overview
 
@@ -1026,24 +1028,24 @@ Remove parent management (now via PATCH), update to use new schema structure.
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Command: `cd apps/api && uv run pytest tests/`
-- [ ] Command: `cd apps/web && pnpm test:ci`
-- [ ] Command: `cd apps/web && pnpm lint`
-- [ ] Command: `cd apps/web && pnpm build`
+- [x] Command: `cd apps/api && uv run pytest tests/`
+- [x] Command: `cd apps/web && pnpm test:ci`
+- [x] Command: `cd apps/web && pnpm lint`
+- [x] Command: `cd apps/web && pnpm build`
 
 #### Manual Verification:
-- [ ] Topics display correctly with FSRS data from joined table
-- [ ] Parent/child relationships work via tree structure
-- [ ] Changing parent via topic detail updates correctly
-- [ ] SRS toggle creates/updates fsrs_state record
-- [ ] No data loss after migration
+- [x] Topics display correctly with FSRS data from joined table
+- [x] Parent/child relationships work via tree structure
+- [x] Changing parent via topic detail updates correctly
+- [x] SRS toggle creates/updates fsrs_state record
+- [x] No data loss after migration
 
 #### Claude in Chrome E2E Testing:
 After automated verification passes, use Claude in Chrome to manually verify:
-- [ ] Create, read, update, delete topics
-- [ ] Parent/child management, cycle prevention
-- [ ] Delete with handle_children_by (delete/orphan/reparent strategies)
-- [ ] SRS toggle, retrievability display
+- [x] Create, read, update, delete topics
+- [x] Parent/child management, cycle prevention
+- [x] Delete with handle_children_by (delete/orphan/reparent strategies)
+- [x] SRS toggle, retrievability display
 
 **Implementation Note**: After automated verification, proceed directly to Claude in Chrome E2E testing. Pause for user review after E2E testing is complete before proceeding to Phase 2.
 
