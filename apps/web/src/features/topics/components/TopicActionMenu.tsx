@@ -47,7 +47,7 @@ export function TopicActionMenu({
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
 
-	const hasChildren = (topic.children?.length ?? 0) > 0
+	const hasChildren = (topic.children_count ?? 0) > 0
 
 	const handleDeleteTopic = useCallback(() => {
 		if (hasChildren) {

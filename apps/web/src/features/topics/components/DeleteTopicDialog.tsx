@@ -31,7 +31,7 @@ export function DeleteTopicDialog({
 	const [strategy, setStrategy] = useState<ChildHandlingStrategy>('delete')
 	const deleteTopicMutation = useDeleteTopic()
 
-	const childrenCount = topic.children?.length ?? 0
+	const childrenCount = topic.children_count ?? 0
 	const hasParent = topic.parent_id !== null
 
 	const handleDelete = () => {

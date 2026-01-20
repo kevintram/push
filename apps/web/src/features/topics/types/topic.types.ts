@@ -34,6 +34,9 @@ export type Topic = {
 	retrievability: number | null
 	bucket: RetrievabilityBucket | null
 	days_until_threshold: number | null
+	children_count: number
+	related_outgoing_count: number
+	related_incoming_count: number
 	parent?: Topic | null
 	children?: Array<Topic>
 	related?: Array<Topic> | null

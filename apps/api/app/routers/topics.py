@@ -102,7 +102,7 @@ async def search_topics(
     addable_as_related_to: int | None = None,
     query: str | None = None,
     limit: int = 10,
-) -> list[TopicDetailRead]:
+) -> list[TopicSummaryRead]:
     cleaned_query = query.strip() if query else ""
     stmt = select(Topic).where(Topic.user_id == user_id)
 
@@ -178,13 +178,7 @@ async def search_topics(
 
     limit = max(1, min(limit, 50))
     stmt = stmt.limit(limit)
-    stmt = stmt.options(
-        selectinload(Topic.parent).selectinload(Topic.fsrs_state),
-        selectinload(Topic.children).selectinload(Topic.fsrs_state),
-        selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
-        selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
-        selectinload(Topic.fsrs_state),
-    )
+    stmt = stmt.options(selectinload(Topic.fsrs_state))
 
     result = await session.execute(stmt)
     return result.scalars().all()
@@ -201,7 +195,7 @@ async def read_topics(
     srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
-) -> list[TopicDetailRead]:
+) -> list[TopicSummaryRead]:
     stmt = select(Topic).where(Topic.user_id == user_id)
 
     # Apply ordering
@@ -266,13 +260,7 @@ async def read_topics(
                 )
             )
 
-    stmt = stmt.options(
-        selectinload(Topic.parent).selectinload(Topic.fsrs_state),
-        selectinload(Topic.children).selectinload(Topic.fsrs_state),
-        selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
-        selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
-        selectinload(Topic.fsrs_state),
-    )
+    stmt = stmt.options(selectinload(Topic.fsrs_state))
 
     # Apply limit if provided
     if limit is not None:
@@ -292,22 +280,16 @@ async def read_topic(
 @router.get("/topics/{topic_id}/children/", tags=["topics"])
 async def read_topic_children(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> list[TopicDetailRead]:
-    """Get all children of a topic with their relationships eagerly loaded."""
+) -> list[TopicSummaryRead]:
+    """Get all children of a topic."""
     # Verify topic exists and belongs to user
     await get_topic_or_404(session, topic_id, user_id)
 
-    # Query children directly with full relationships loaded
+    # Query children
     stmt = (
         select(Topic)
         .where(Topic.parent_id == topic_id, Topic.user_id == user_id)
-        .options(
-            selectinload(Topic.parent).selectinload(Topic.fsrs_state),
-            selectinload(Topic.children).selectinload(Topic.fsrs_state),
-            selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
-            selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
-            selectinload(Topic.fsrs_state),
-        )
+        .options(selectinload(Topic.fsrs_state))
     )
     result = await session.execute(stmt)
     return result.scalars().all()

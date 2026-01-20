@@ -85,7 +85,10 @@ export const handlers = [
 					srs_enabled: false,
 					retrievability: null,
 					bucket: null,
-					days_until_threshold: null
+					days_until_threshold: null,
+					children_count: 0,
+					related_outgoing_count: 0,
+					related_incoming_count: 0
 				},
 				{
 					id: 998,
@@ -110,7 +113,10 @@ export const handlers = [
 					srs_enabled: true,
 					retrievability: null,
 					bucket: null,
-					days_until_threshold: null
+					days_until_threshold: null,
+					children_count: 0,
+					related_outgoing_count: 0,
+					related_incoming_count: 0
 				}
 			]
 
