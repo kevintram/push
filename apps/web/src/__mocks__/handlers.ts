@@ -83,7 +83,9 @@ export const handlers = [
 					inboxed: false,
 					last_reviewed_at: null,
 					srs_enabled: false,
-					retrievability: null
+					retrievability: null,
+					bucket: null,
+					days_until_threshold: null
 				},
 				{
 					id: 998,
@@ -106,7 +108,9 @@ export const handlers = [
 					inboxed: false,
 					last_reviewed_at: null,
 					srs_enabled: true,
-					retrievability: null
+					retrievability: null,
+					bucket: null,
+					days_until_threshold: null
 				}
 			]
 

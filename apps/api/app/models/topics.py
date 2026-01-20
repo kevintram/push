@@ -21,7 +21,7 @@ from sqlalchemy.types import TIMESTAMP, Boolean, Text
 from app.types.ltree import LtreeType
 
 from app.models.base import Base
-from app.utils.retrievability import calculate_retrievability
+from app.utils.retrievability import calculate_retrievability, calculate_days_until_threshold
 
 if TYPE_CHECKING:
     from app.models.fsrs_state import FsrsState
@@ -155,6 +155,28 @@ class Topic(Base):
         return calculate_retrievability(
             self.fsrs_state.stability, self.fsrs_state.last_reviewed_at
         )
+
+    @property
+    def days_until_threshold(self) -> int | None:
+        if self.fsrs_state is None or self.fsrs_state.stability is None:
+            return None
+        return calculate_days_until_threshold(
+            self.fsrs_state.stability,
+            self.fsrs_state.last_reviewed_at,
+            target_retrievability=0.9,
+        )
+
+    @property
+    def bucket(self) -> str | None:
+        days = self.days_until_threshold
+        if days is None:
+            return None
+        if days < 0:
+            return "LATE"
+        elif days == 0:
+            return "ON_TIME"
+        else:
+            return "EARLY"
 
     # FSRS field accessors for backward compatibility with schemas
     @property

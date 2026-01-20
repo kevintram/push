@@ -8,6 +8,8 @@ export const RelationshipDirection = {
 export type RelationshipDirection =
 	(typeof RelationshipDirection)[keyof typeof RelationshipDirection]
 
+export type RetrievabilityBucket = 'LATE' | 'ON_TIME' | 'EARLY'
+
 export type Topic = {
 	id: number
 	name: string
@@ -30,6 +32,8 @@ export type Topic = {
 	last_reviewed_at: string | null
 	srs_enabled: boolean
 	retrievability: number | null
+	bucket: RetrievabilityBucket | null
+	days_until_threshold: number | null
 	parent?: Topic | null
 	children?: Array<Topic>
 	related?: Array<Topic> | null

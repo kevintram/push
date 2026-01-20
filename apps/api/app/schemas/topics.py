@@ -6,6 +6,12 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, model_validator
 
 
+class RetrievabilityBucket(str, Enum):
+    LATE = "LATE"
+    ON_TIME = "ON_TIME"
+    EARLY = "EARLY"
+
+
 class TopicBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -43,6 +49,8 @@ class TopicRead(TopicBase):
 
     # Computed
     retrievability: float | None = None
+    bucket: RetrievabilityBucket | None = None
+    days_until_threshold: int | None = None
 
 
 class TopicReadWithRelationships(TopicRead):
