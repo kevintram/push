@@ -7,7 +7,7 @@ import {
 	SquareCheck,
 	Trash2
 } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -19,6 +19,7 @@ import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
+import { DeleteTopicDialog } from '~/features/topics/components/DeleteTopicDialog'
 import type { Topic } from '~/features/topics/types/topic.types'
 
 interface TopicActionMenuProps {
@@ -40,18 +41,25 @@ export function TopicActionMenu({
 	trigger,
 	onTopicUpdateSuccess
 }: TopicActionMenuProps) {
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
 
+	const hasChildren = (topic.children?.length ?? 0) > 0
+
 	const handleDeleteTopic = useCallback(() => {
-		deleteTopicMutation.mutate(topic.id, {
-			onSuccess: () => {
-				onDelete?.()
-			}
-		})
-	}, [deleteTopicMutation, topic.id, onDelete])
+		if (hasChildren) {
+			setDeleteDialogOpen(true)
+		} else {
+			deleteTopicMutation.mutate(topic.id, {
+				onSuccess: () => {
+					onDelete?.()
+				}
+			})
+		}
+	}, [deleteTopicMutation, topic.id, onDelete, hasChildren])
 
 	const handleArchiveToggle = useCallback(
 		async (e: React.MouseEvent) => {
@@ -92,75 +100,84 @@ export function TopicActionMenu({
 	)
 
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild={true}>
-				{trigger ?? (
-					<Button
-						className='h-5 w-5 p-0'
-						onClick={e => e.stopPropagation()}
-						variant='ghost'
+		<>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild={true}>
+					{trigger ?? (
+						<Button
+							className='h-5 w-5 p-0'
+							onClick={e => e.stopPropagation()}
+							variant='ghost'
+						>
+							<MoreHorizontal className='h-3 w-3' />
+						</Button>
+					)}
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+					<DropdownMenuItem
+						disabled={createReviewMutation.isPending}
+						onClick={handleLogNow}
 					>
-						<MoreHorizontal className='h-3 w-3' />
-					</Button>
-				)}
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-				<DropdownMenuItem
-					disabled={createReviewMutation.isPending}
-					onClick={handleLogNow}
-				>
-					<SquareCheck className='mr-2 h-4 w-4' />
-					Log now
-				</DropdownMenuItem>
-				<DropdownMenuItem onClick={handleInboxToggle}>
-					{topic.inboxed ? (
-						<>
-							<Inbox className='mr-2 h-4 w-4' />
-							Remove from Inbox
-						</>
-					) : (
-						<>
-							<Inbox className='mr-2 h-4 w-4' />
-							Add to Inbox
-						</>
+						<SquareCheck className='mr-2 h-4 w-4' />
+						Log now
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={handleInboxToggle}>
+						{topic.inboxed ? (
+							<>
+								<Inbox className='mr-2 h-4 w-4' />
+								Remove from Inbox
+							</>
+						) : (
+							<>
+								<Inbox className='mr-2 h-4 w-4' />
+								Add to Inbox
+							</>
+						)}
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={handleArchiveToggle}>
+						{topic.archived ? (
+							<>
+								<ArchiveRestore className='mr-2 h-4 w-4' />
+								Unarchive
+							</>
+						) : (
+							<>
+								<Archive className='mr-2 h-4 w-4' />
+								Archive
+							</>
+						)}
+					</DropdownMenuItem>
+					{children}
+					{onRemoveRelationship && (
+						<DropdownMenuItem
+							onClick={e => {
+								e.stopPropagation()
+								onRemoveRelationship()
+							}}
+						>
+							<GitPullRequestClosed className='mr-2 h-4 w-4' />
+							{removeRelationshipText}
+						</DropdownMenuItem>
 					)}
-				</DropdownMenuItem>
-				<DropdownMenuItem onClick={handleArchiveToggle}>
-					{topic.archived ? (
-						<>
-							<ArchiveRestore className='mr-2 h-4 w-4' />
-							Unarchive
-						</>
-					) : (
-						<>
-							<Archive className='mr-2 h-4 w-4' />
-							Archive
-						</>
-					)}
-				</DropdownMenuItem>
-				{children}
-				{onRemoveRelationship && (
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()
-							onRemoveRelationship()
+							handleDeleteTopic()
 						}}
+						variant='destructive'
 					>
-						<GitPullRequestClosed className='mr-2 h-4 w-4' />
-						{removeRelationshipText}
+						<Trash2 className='mr-2 h-4 w-4' />
+						Delete
 					</DropdownMenuItem>
-				)}
-				<DropdownMenuItem
-					onClick={e => {
-						e.stopPropagation()
-						handleDeleteTopic()
-					}}
-					variant='destructive'
-				>
-					<Trash2 className='mr-2 h-4 w-4' />
-					Delete
-				</DropdownMenuItem>
-			</DropdownMenuContent>
-		</DropdownMenu>
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			<DeleteTopicDialog
+				onOpenChange={setDeleteDialogOpen}
+				onSuccess={onDelete}
+				open={deleteDialogOpen}
+				topic={topic}
+			/>
+		</>
 	)
 }
