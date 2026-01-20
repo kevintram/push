@@ -9,7 +9,7 @@ import { topicKeys } from '../../api/queryKeys'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { useTopicMetrics } from '../../hooks/useTopicMetrics'
 import { TopicContext } from '../../stores/SelectedTopicContext'
-import type { Topic } from '../../types/topic.types'
+import { RelationshipDirection, type Topic } from '../../types/topic.types'
 import type { SrsSource } from '../AddTopicDialog'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
 import { TopicRelatedPanel } from '../TopicRelatedPanel'
@@ -181,6 +181,20 @@ export function TopicDetail({
 		topic?.last_reviewed_at
 	])
 
+	// Merge related topics from outgoing and incoming with direction metadata
+	const mergedRelated = useMemo(() => {
+		if (!topic) return []
+		const outgoing = (topic.related_outgoing ?? []).map(t => ({
+			...t,
+			relationship_direction: RelationshipDirection.Outgoing
+		}))
+		const incoming = (topic.related_incoming ?? []).map(t => ({
+			...t,
+			relationship_direction: RelationshipDirection.Incoming
+		}))
+		return [...outgoing, ...incoming]
+	}, [topic?.related_outgoing, topic?.related_incoming])
+
 	if (isLoading || !topic) {
 		return <TopicDetailSkeleton />
 	}
@@ -238,6 +252,7 @@ export function TopicDetail({
 						</div>
 						<div className='mt-4'>
 							<TopicChildrenPanel
+								children={topic.children}
 								getScrollElement={() => scrollContainerRef.current}
 								onChildSelect={onTopicNavigate}
 								renderCard={renderChildCard}
@@ -249,6 +264,7 @@ export function TopicDetail({
 							<TopicRelatedPanel
 								getScrollElement={() => scrollContainerRef.current}
 								onRelatedSelect={onTopicNavigate}
+								related={mergedRelated}
 								renderCard={renderRelatedCard}
 								srsSource={srsSource}
 								topicId={topic.id}

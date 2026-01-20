@@ -33,12 +33,13 @@ export function useDeleteTopicOtherRelationship() {
 			const fromTopicId = variables.fromTopicId
 			const toTopicId = variables.toTopicId
 
+			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
 			await Promise.all([
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.related(fromTopicId)
+					queryKey: topicKeys.detail(fromTopicId)
 				}),
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.related(toTopicId)
+					queryKey: topicKeys.detail(toTopicId)
 				})
 			])
 		}

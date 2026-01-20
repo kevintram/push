@@ -63,7 +63,7 @@ class TopicSummaryRead(TopicRead):
     related_incoming_count: int = 0
 
 
-class TopicDetailRead(TopicRead):
+class TopicDetailRead(TopicSummaryRead):
     """Topic with full relationships loaded for detail views."""
 
     model_config = ConfigDict(from_attributes=True)

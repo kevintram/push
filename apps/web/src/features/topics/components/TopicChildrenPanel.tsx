@@ -10,7 +10,6 @@ import {
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -22,7 +21,6 @@ import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
-import { useTopicChildren } from '../api/getTopicChildren'
 import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
@@ -37,6 +35,11 @@ type ListItem = { type: 'child'; child: Topic }
 
 interface TopicChildrenPanelProps {
 	topicId: number | undefined
+	/**
+	 * Children topics from the single getTopic fetch.
+	 * When provided, the panel uses this directly instead of making a separate API call.
+	 */
+	children?: Array<Topic>
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	/**
@@ -63,6 +66,7 @@ interface TopicChildrenPanelProps {
 
 export function TopicChildrenPanel({
 	topicId,
+	children: childrenProp,
 	getScrollElement,
 	scrollMargin,
 	srsSource,
@@ -75,7 +79,8 @@ export function TopicChildrenPanel({
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
-	const { data: children = [], isLoading } = useTopicChildren(topicId)
+	// Use prop directly - children comes from the single getTopic fetch
+	const children = childrenProp ?? []
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
@@ -242,24 +247,16 @@ export function TopicChildrenPanel({
 			/>
 			{!isCollapsed && (
 				<div className='flex-1 py-6'>
-					{isLoading ? (
-						<MasonryLayoutSkeleton
-							count={6}
-							gap={16}
-							minItemWidth={MIN_WIDTH}
-						/>
-					) : (
-						<MasonryLayout
-							estimateItemSize={estimateItemSize}
-							gap={16}
-							getItemKey={getItemKey}
-							getScrollElement={getScrollElement}
-							items={items}
-							minItemWidth={MIN_WIDTH}
-							renderItem={renderItem}
-							scrollMargin={scrollMargin}
-						/>
-					)}
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						gap={16}
+						getItemKey={getItemKey}
+						getScrollElement={getScrollElement}
+						items={items}
+						minItemWidth={MIN_WIDTH}
+						renderItem={renderItem}
+						scrollMargin={scrollMargin}
+					/>
 				</div>
 			)}
 

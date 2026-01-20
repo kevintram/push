@@ -16,11 +16,9 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { Skeleton } from '~/components/ui/Skeleton'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
-import { useTopicParents } from '../api/getTopicParents'
 import type { Topic } from '../types/topic.types'
 import { prefetchTopicRelations } from '../utils/prefetchTopicRelations'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
@@ -30,6 +28,11 @@ import { TopicBadge } from './TopicBadge'
 interface TopicParentsPanelProps {
 	topicId: number | undefined
 	/**
+	 * Parent topic from the single getTopic fetch.
+	 * When provided, the panel uses this directly instead of making a separate API call.
+	 */
+	parent?: Topic | null
+	/**
 	 * Called when a parent is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
 	 */
@@ -38,6 +41,7 @@ interface TopicParentsPanelProps {
 
 export function TopicParentsPanel({
 	topicId,
+	parent: parentProp,
 	onParentSelect
 }: TopicParentsPanelProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
@@ -45,10 +49,8 @@ export function TopicParentsPanel({
 	const { openTopicDialog } = useReviewTopicDialog()
 	const queryClient = useQueryClient()
 
-	const { data: parents = [], isLoading } = useTopicParents(topicId)
-
-	// With tree structure, there's at most one parent
-	const parent = parents[0] ?? null
+	// Use prop directly - parent comes from the single getTopic fetch
+	const parent = parentProp ?? null
 	const hasParent = parent !== null
 
 	const deleteRelationship = useDeleteRelationship()
@@ -96,9 +98,7 @@ export function TopicParentsPanel({
 						Parent topics ({hasParent ? 1 : 0})
 					</span>
 				</div>
-				{isLoading ? (
-					<Skeleton className='h-6 w-24 rounded-full' />
-				) : parent ? (
+				{parent ? (
 					<TopicBadge
 						name={parent.name}
 						notes={parent.notes}

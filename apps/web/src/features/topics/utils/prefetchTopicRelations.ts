@@ -24,7 +24,12 @@ export function prefetchTopicRelations(
 		queryClient.setQueryData(topicKeys.children(topic.id), topic.children)
 	}
 
-	if (topic.related && topic.related.length > 0) {
-		queryClient.setQueryData(topicKeys.related(topic.id), topic.related)
+	// Combine outgoing and incoming related topics for the related query cache
+	const allRelated = [
+		...(topic.related_outgoing ?? []),
+		...(topic.related_incoming ?? [])
+	]
+	if (allRelated.length > 0) {
+		queryClient.setQueryData(topicKeys.related(topic.id), allRelated)
 	}
 }

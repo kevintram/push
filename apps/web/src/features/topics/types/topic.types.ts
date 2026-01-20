@@ -39,7 +39,8 @@ export type Topic = {
 	related_incoming_count: number
 	parent?: Topic | null
 	children?: Array<Topic>
-	related?: Array<Topic> | null
+	related_outgoing?: Array<Topic>
+	related_incoming?: Array<Topic>
 	relationship_direction?: RelationshipDirection
 }
 
