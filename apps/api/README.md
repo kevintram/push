@@ -26,7 +26,7 @@ uv sync
 
 Start the development server with auto-reload:
 ```bash
-fastapi dev app/main.py
+uv run fastapi dev --host localhost
 ```
 
 The API will be available at `http://localhost:8000`.

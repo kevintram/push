@@ -5,7 +5,7 @@ The FastAPI app lives in `app/`. `app/main.py` wires routers and shared dependen
 
 ## Build, Test, and Development Commands
 - `uv sync` install dependencies pinned by `uv.lock`.
-- `uv run fastapi dev app/main.py` starts the auto-reloading API at `http://localhost:8000`.
+- `uv run fastapi dev --host localhost` starts the auto-reloading API at `http://localhost:8000`.
 - `uv run fastapi run` mirrors production settings for smoke tests.
 - `uv run ruff check app` and `uv run ruff format app` enforce linting and formatting.
 
