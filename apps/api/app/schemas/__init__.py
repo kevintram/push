@@ -6,6 +6,18 @@ from app.schemas.review_sessions import (
     TopicIdPayload,
     ReviewSessionReadWithReviews,
 )
+from app.schemas.sources import (
+    SourceBase,
+    SourceRead,
+    SourceCreate,
+    SourceUpdate,
+    SourceSummaryRead,
+    SourceDetailRead,
+    SourceChildRelationshipCreate,
+    SourceRelationshipResponse,
+    SourceTopicAdd,
+    SourceTopicResponse,
+)
 from app.schemas.topics import (
     TopicRead,
     TopicCreate,
@@ -53,6 +65,11 @@ ReviewWithTopic.model_rebuild()
 ReviewCreate.model_rebuild()
 ReviewUpdate.model_rebuild()
 TopicRelatedRead.model_rebuild()
+SourceRead.model_rebuild()
+SourceSummaryRead.model_rebuild()
+SourceDetailRead.model_rebuild()
+SourceRelationshipResponse.model_rebuild()
+SourceTopicResponse.model_rebuild()
 
 __all__ = [
     "ReviewSessionBase",
@@ -84,4 +101,14 @@ __all__ = [
     "ReviewEntrySession",
     "ReviewEntryReview",
     "ReviewEntry",
+    "SourceBase",
+    "SourceRead",
+    "SourceCreate",
+    "SourceUpdate",
+    "SourceSummaryRead",
+    "SourceDetailRead",
+    "SourceChildRelationshipCreate",
+    "SourceRelationshipResponse",
+    "SourceTopicAdd",
+    "SourceTopicResponse",
 ]
