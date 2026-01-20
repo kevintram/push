@@ -53,13 +53,25 @@ class TopicRead(TopicBase):
     days_until_threshold: int | None = None
 
 
-class TopicReadWithRelationships(TopicRead):
-    """Topic with parent and children loaded."""
+class TopicSummaryRead(TopicRead):
+    """Topic with relationship counts for list views."""
 
     model_config = ConfigDict(from_attributes=True)
 
-    parent: TopicRead | None = None
-    children: list[TopicRead] = []
+    children_count: int = 0
+    related_outgoing_count: int = 0
+    related_incoming_count: int = 0
+
+
+class TopicDetailRead(TopicRead):
+    """Topic with full relationships loaded for detail views."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    parent: TopicSummaryRead | None = None
+    children: list[TopicSummaryRead] = []
+    related_outgoing: list[TopicSummaryRead] = []
+    related_incoming: list[TopicSummaryRead] = []
 
 
 class RelationshipDirection(str, Enum):
@@ -134,8 +146,8 @@ class ReviewIdPayload(BaseModel):
 class TopicRelationshipResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    parent: TopicReadWithRelationships
-    child: TopicReadWithRelationships
+    parent: TopicDetailRead
+    child: TopicDetailRead
 
 
 class TopicUpdate(BaseModel):

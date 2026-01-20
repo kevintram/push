@@ -14,7 +14,8 @@ from app.schemas import (
     TopicRead,
     TopicCreate,
     TopicUpdate,
-    TopicReadWithRelationships,
+    TopicSummaryRead,
+    TopicDetailRead,
     TopicChildRelationshipCreate,
     TopicRelationshipResponse,
     TopicOtherRelationshipCreate,
@@ -72,13 +73,15 @@ async def get_topic_or_404(
 async def load_topic_with_relationships(
     session: AsyncSession, topic_id: int, user_id: str
 ) -> Topic:
-    """Load a topic with parent and children relationships."""
+    """Load a topic with parent, children, and related relationships."""
     stmt = (
         select(Topic)
         .where(Topic.id == topic_id, Topic.user_id == user_id)
         .options(
             selectinload(Topic.parent).selectinload(Topic.fsrs_state),
             selectinload(Topic.children).selectinload(Topic.fsrs_state),
+            selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
+            selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
             selectinload(Topic.fsrs_state),
         )
     )
@@ -99,7 +102,7 @@ async def search_topics(
     addable_as_related_to: int | None = None,
     query: str | None = None,
     limit: int = 10,
-) -> list[TopicReadWithRelationships]:
+) -> list[TopicDetailRead]:
     cleaned_query = query.strip() if query else ""
     stmt = select(Topic).where(Topic.user_id == user_id)
 
@@ -178,6 +181,8 @@ async def search_topics(
     stmt = stmt.options(
         selectinload(Topic.parent).selectinload(Topic.fsrs_state),
         selectinload(Topic.children).selectinload(Topic.fsrs_state),
+        selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
+        selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
         selectinload(Topic.fsrs_state),
     )
 
@@ -196,7 +201,7 @@ async def read_topics(
     srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
-) -> list[TopicReadWithRelationships]:
+) -> list[TopicDetailRead]:
     stmt = select(Topic).where(Topic.user_id == user_id)
 
     # Apply ordering
@@ -264,6 +269,8 @@ async def read_topics(
     stmt = stmt.options(
         selectinload(Topic.parent).selectinload(Topic.fsrs_state),
         selectinload(Topic.children).selectinload(Topic.fsrs_state),
+        selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
+        selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
         selectinload(Topic.fsrs_state),
     )
 
@@ -278,14 +285,14 @@ async def read_topics(
 @router.get("/topics/{topic_id}/", tags=["topics"])
 async def read_topic(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> TopicReadWithRelationships:
+) -> TopicDetailRead:
     return await load_topic_with_relationships(session, topic_id, user_id)
 
 
 @router.get("/topics/{topic_id}/children/", tags=["topics"])
 async def read_topic_children(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> list[TopicReadWithRelationships]:
+) -> list[TopicDetailRead]:
     """Get all children of a topic with their relationships eagerly loaded."""
     # Verify topic exists and belongs to user
     await get_topic_or_404(session, topic_id, user_id)
@@ -297,6 +304,8 @@ async def read_topic_children(
         .options(
             selectinload(Topic.parent).selectinload(Topic.fsrs_state),
             selectinload(Topic.children).selectinload(Topic.fsrs_state),
+            selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
+            selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
             selectinload(Topic.fsrs_state),
         )
     )
@@ -457,7 +466,7 @@ async def delete_child(
     child_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TopicReadWithRelationships:
+) -> TopicDetailRead:
     """Remove a child from a parent (sets child's parent_id to null)."""
     await get_topic_or_404(session, parent_id, user_id)  # Verify parent exists
     child = await get_topic_or_404(session, child_id, user_id)
@@ -576,7 +585,7 @@ async def read_review_sessions_for_topic(
 @router.patch("/topics/{topic_id}/", tags=["topics"])
 async def update_topic(
     topic_id: int, payload: TopicUpdate, session: SessionDep, user_id: UserIdDep
-) -> TopicReadWithRelationships:
+) -> TopicDetailRead:
     """Update a topic using PATCH semantics."""
     topic = await get_topic_or_404(session, topic_id, user_id)
 
