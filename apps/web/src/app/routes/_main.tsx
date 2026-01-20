@@ -16,7 +16,7 @@ function MainLayout() {
 			<SidebarHolder className='!bg-primary-foreground h-svh'>
 				<AppSidebar />
 				<div className='relative ml-1 flex min-h-0 min-w-0 flex-1 flex-col bg-primary-foreground'>
-					<div className='relative min-h-0 min-w-0 flex-1 border-1 bg-background'>
+					<div className='relative min-h-0 min-w-0 flex-1 bg-background'>
 						<Outlet />
 					</div>
 				</div>
