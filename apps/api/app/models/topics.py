@@ -26,6 +26,7 @@ from app.utils.retrievability import calculate_retrievability, calculate_days_un
 if TYPE_CHECKING:
     from app.models.fsrs_state import FsrsState
     from app.models.reviews import Review
+    from app.models.sources import Source
 
 
 # Define junction tables first so they can be referenced in column_property
@@ -147,6 +148,15 @@ class Topic(Base):
         viewonly=True,
     )
 
+    # Sources that cover this topic (Phase 2)
+    # Note: secondary table import is deferred to avoid circular import
+    sources: Mapped[list["Source"]] = relationship(
+        "Source",
+        secondary="source_topics",
+        back_populates="topics",
+        viewonly=True,
+    )
+
     # Computed property for retrievability
     @hybrid_property
     def retrievability(self) -> float | None:
@@ -251,6 +261,18 @@ Topic.related_incoming_count = column_property(
     select(func.count())
     .select_from(t_topic_other_relations)
     .where(t_topic_other_relations.c.to_topic_id == Topic.id)
+    .correlate(Topic)
+    .scalar_subquery()
+)
+
+# Import source_topics table for sources_count (Phase 2)
+# Done here to avoid circular import at module level
+from app.models.sources import t_source_topics  # noqa: E402
+
+Topic.sources_count = column_property(
+    select(func.count())
+    .select_from(t_source_topics)
+    .where(t_source_topics.c.topic_id == Topic.id)
     .correlate(Topic)
     .scalar_subquery()
 )
