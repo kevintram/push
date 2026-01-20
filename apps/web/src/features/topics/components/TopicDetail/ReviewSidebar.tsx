@@ -106,7 +106,10 @@ function ReviewsSidebarContent({ readonly = false }: ReviewsSidebarProps) {
 	)
 
 	return (
-		<Sidebar className='absolute border-l' side='right'>
+		<Sidebar
+			className='absolute border-l [&_[data-slot=sidebar-inner]]:bg-background'
+			side='right'
+		>
 			<SidebarHeader className='flex flex-col gap-1 pb-0'>
 				<div className='flex flex-row items-center justify-between'>
 					<h1 className='font-semibold text-lg'>Reviews</h1>
