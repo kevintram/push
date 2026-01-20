@@ -209,3 +209,86 @@ SELECT setval('reviews_id_seq', (SELECT MAX(id) FROM reviews));
 -- Populate topic_reviews from existing reviews
 INSERT INTO topic_reviews (review_id, topic_id)
 SELECT id, topic_id FROM reviews WHERE topic_id IS NOT NULL;
+
+-- ============================================================================
+-- SOURCES (Phase 2)
+-- ============================================================================
+-- Sample sources representing learning materials
+
+-- Create FSRS states for sources
+INSERT INTO fsrs_states (id, stability, difficulty, state, step, last_reviewed_at, srs_enabled, inherited_stability, inherited_difficulty, inherited_state, inherited_step, inherited_last_review)
+OVERRIDING SYSTEM VALUE
+VALUES
+  -- Effective TypeScript (book, id=100)
+  (100, 30.0, 4.0, 'REVIEW', 0, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
+  -- Chapter 1: Getting to Know TypeScript (id=101)
+  (101, 45.0, 3.0, 'REVIEW', 0, '2026-01-10', true, 30.0, 4.0, 'REVIEW', 0, '2026-01-14'),
+  -- Chapter 2: TypeScript's Type System (id=102)
+  (102, 20.0, 5.0, 'REVIEW', 0, '2026-01-16', true, 30.0, 4.0, 'REVIEW', 0, '2026-01-14'),
+  -- React Documentation (id=103)
+  (103, 25.0, 3.5, 'REVIEW', 0, '2026-01-12', true, NULL, NULL, NULL, NULL, NULL),
+  -- Python Crash Course (book, id=104)
+  (104, 50.0, 2.5, 'REVIEW', 0, '2026-01-08', true, NULL, NULL, NULL, NULL, NULL),
+  -- Spanish Learning Podcast (id=105) - inboxed
+  (105, NULL, NULL, 'LEARNING', 0, NULL, true, NULL, NULL, NULL, NULL, NULL),
+  -- Algorithm Design Manual (archived, id=106)
+  (106, 15.0, 6.0, 'REVIEW', 0, '2025-11-15', true, NULL, NULL, NULL, NULL, NULL);
+
+-- Reset sequence for FSRS states
+SELECT setval('fsrs_states_id_seq', (SELECT MAX(id) FROM fsrs_states));
+
+-- Insert sources
+INSERT INTO sources (id, user_id, title, notes, parent_id, path, fsrs_state_id, archived, inboxed, inserted_at, updated_at)
+OVERRIDING SYSTEM VALUE
+VALUES
+  -- Effective TypeScript (root source - a book)
+  (1, 'user_01K7HCZNMJF6XN0M78QMN7TDDX', 'Effective TypeScript', '62 Specific Ways to Improve Your TypeScript by Dan Vanderkam', NULL, '1', 100, false, false, NOW() - INTERVAL '30 days', NOW()),
+
+  -- Chapter 1 (child of Effective TypeScript)
+  (2, 'user_01K7HCZNMJF6XN0M78QMN7TDDX', 'Chapter 1: Getting to Know TypeScript', 'Introduction to TypeScript and its relationship with JavaScript', 1, '1.2', 101, false, false, NOW() - INTERVAL '28 days', NOW()),
+
+  -- Chapter 2 (child of Effective TypeScript)
+  (3, 'user_01K7HCZNMJF6XN0M78QMN7TDDX', 'Chapter 2: TypeScript''s Type System', 'Deep dive into the type system', 1, '1.3', 102, false, false, NOW() - INTERVAL '20 days', NOW()),
+
+  -- React Documentation (root source)
+  (4, 'user_01K7HCZNMJF6XN0M78QMN7TDDX', 'React Documentation', 'Official React documentation - react.dev', NULL, '4', 103, false, false, NOW() - INTERVAL '25 days', NOW()),
+
+  -- Python Crash Course (root source - a book)
+  (5, 'user_01K7HCZNMJF6XN0M78QMN7TDDX', 'Python Crash Course', 'A Hands-On, Project-Based Introduction to Programming', NULL, '5', 104, false, false, NOW() - INTERVAL '60 days', NOW()),
+
+  -- Spanish Learning Podcast (inboxed - new source)
+  (6, 'user_01K7HCZNMJF6XN0M78QMN7TDDX', 'Spanish Learning Podcast', 'Need to evaluate and organize', NULL, '6', 105, false, true, NOW() - INTERVAL '2 days', NOW()),
+
+  -- Algorithm Design Manual (archived)
+  (7, 'user_01K7HCZNMJF6XN0M78QMN7TDDX', 'Algorithm Design Manual', 'Steven Skiena - decided to use different resource', NULL, '7', 106, true, false, NOW() - INTERVAL '90 days', NOW());
+
+-- Reset sequence
+SELECT setval('sources_id_seq', (SELECT MAX(id) FROM sources));
+
+-- ============================================================================
+-- SOURCE_TOPICS (which topics each source covers)
+-- ============================================================================
+INSERT INTO source_topics (source_id, topic_id) VALUES
+  -- Effective TypeScript covers TypeScript and its subtopics
+  (1, 7),   -- Effective TypeScript covers TypeScript
+  (2, 7),   -- Chapter 1 covers TypeScript basics
+  (3, 7),   -- Chapter 2 covers TypeScript
+  (3, 12),  -- Chapter 2 specifically covers Generics
+  (3, 13),  -- Chapter 2 covers Type Guards
+  (3, 14),  -- Chapter 2 covers Utility Types
+
+  -- React Documentation covers React topics
+  (4, 9),   -- React Documentation covers React
+  (4, 15),  -- React Documentation covers React Hooks
+  (4, 16),  -- React Documentation covers React Server Components
+
+  -- Python Crash Course covers Python
+  (5, 8),   -- Python Crash Course covers Python
+
+  -- Spanish Podcast covers Spanish
+  (6, 3),   -- Spanish Podcast covers Spanish
+  (6, 20),  -- Spanish Podcast covers Spanish Vocabulary
+
+  -- Algorithm Design Manual covered Math topics (archived)
+  (7, 2),   -- Algorithm Design Manual covers Mathematics
+  (7, 17);  -- Algorithm Design Manual covers Linear Algebra
