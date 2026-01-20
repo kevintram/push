@@ -35,7 +35,8 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	related_incoming_count: v.number(),
 	parent: v.nullish(v.lazy(() => TopicSchema)),
 	children: v.optional(v.array(v.lazy(() => TopicSchema)), []),
-	related: v.nullish(v.array(v.lazy(() => TopicSchema))),
+	related_outgoing: v.optional(v.array(v.lazy(() => TopicSchema)), []),
+	related_incoming: v.optional(v.array(v.lazy(() => TopicSchema)), []),
 	relationship_direction: v.optional(v.enum_(RelationshipDirection))
 })
 

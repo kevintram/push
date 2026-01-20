@@ -6,7 +6,6 @@ import type {
 	DeleteParentRelationshipInput
 } from '../types/api.types'
 import { TopicSchema } from '../types/topic.schemas'
-import type { Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 export type ChildHandlingStrategy = 'delete' | 'orphan' | 'reparent'
@@ -77,24 +76,19 @@ export function useDeleteRelationship() {
 		mutationFn: ({ parent, child }: { parent: number; child: number }) => {
 			return deleteParentRelationship({ childId: child, parentId: parent })
 		},
-		onSuccess: (_, variables) => {
+		onSuccess: async (_, variables) => {
 			const parentId = variables.parent
 			const childId = variables.child
 
-			// Remove the child from the parent's children
-			queryClient.setQueryData(
-				topicKeys.children(parentId),
-				(old: Array<Topic>) => {
-					return old.filter((topic: Topic) => topic.id !== childId)
-				}
-			)
-			// Remove the parent from the child's parents
-			queryClient.setQueryData(
-				topicKeys.parents(childId),
-				(old: Array<Topic>) => {
-					return old.filter((topic: Topic) => topic.id !== parentId)
-				}
-			)
+			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: topicKeys.detail(parentId)
+				}),
+				queryClient.invalidateQueries({
+					queryKey: topicKeys.detail(childId)
+				})
+			])
 		}
 	})
 }

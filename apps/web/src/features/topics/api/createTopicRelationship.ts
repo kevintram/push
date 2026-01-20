@@ -142,11 +142,14 @@ export function useCreateRelationship() {
 			const parentId = data.parent.id
 			const childId = data.child.id
 
+			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
 			await Promise.all([
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.children(parentId)
+					queryKey: topicKeys.detail(parentId)
 				}),
-				queryClient.invalidateQueries({ queryKey: topicKeys.parents(childId) })
+				queryClient.invalidateQueries({
+					queryKey: topicKeys.detail(childId)
+				})
 			])
 		}
 	})

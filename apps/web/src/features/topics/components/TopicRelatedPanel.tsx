@@ -10,7 +10,6 @@ import {
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -22,7 +21,6 @@ import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
 import { useDeleteTopicOtherRelationship } from '../api/deleteTopicOtherRelationship'
-import { useTopicsRelatedTo } from '../api/getTopicsRelatedTo'
 import { topicKeys } from '../api/queryKeys'
 import { RelationshipDirection, type Topic } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
@@ -37,6 +35,11 @@ type ListItem = { type: 'related'; topic: Topic }
 
 interface TopicRelatedPanelProps {
 	topicId: number | undefined
+	/**
+	 * Related topics from the single getTopic fetch (merged incoming + outgoing with direction).
+	 * When provided, the panel uses this directly instead of making a separate API call.
+	 */
+	related?: Array<Topic>
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	/**
@@ -63,6 +66,7 @@ interface TopicRelatedPanelProps {
 
 export function TopicRelatedPanel({
 	topicId,
+	related: relatedProp,
 	getScrollElement,
 	scrollMargin,
 	srsSource,
@@ -75,7 +79,8 @@ export function TopicRelatedPanel({
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
-	const { data: related = [], isLoading } = useTopicsRelatedTo(topicId)
+	// Use prop directly - related comes from the single getTopic fetch (merged incoming + outgoing)
+	const related = relatedProp ?? []
 
 	const deleteRelationship = useDeleteTopicOtherRelationship()
 	const createRelationship = useCreateTopicOtherRelationship()
@@ -255,24 +260,16 @@ export function TopicRelatedPanel({
 			/>
 			{!isCollapsed && (
 				<div className='flex-1 py-6'>
-					{isLoading ? (
-						<MasonryLayoutSkeleton
-							count={6}
-							gap={16}
-							minItemWidth={MIN_WIDTH}
-						/>
-					) : (
-						<MasonryLayout
-							estimateItemSize={estimateItemSize}
-							gap={16}
-							getItemKey={getItemKey}
-							getScrollElement={getScrollElement}
-							items={items}
-							minItemWidth={MIN_WIDTH}
-							renderItem={renderItem}
-							scrollMargin={scrollMargin}
-						/>
-					)}
+					<MasonryLayout
+						estimateItemSize={estimateItemSize}
+						gap={16}
+						getItemKey={getItemKey}
+						getScrollElement={getScrollElement}
+						items={items}
+						minItemWidth={MIN_WIDTH}
+						renderItem={renderItem}
+						scrollMargin={scrollMargin}
+					/>
 				</div>
 			)}
 
