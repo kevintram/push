@@ -10,7 +10,7 @@ This is a FastAPI application using Python 3.12+ and managed with `uv` (Python p
 
 ### Running the Application
 ```bash
-fastapi dev app/main.py
+uv run fastapi dev --host localhost
 ```
 This starts the development server with auto-reload enabled.
 
