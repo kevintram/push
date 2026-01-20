@@ -116,7 +116,12 @@ export function AppSidebar() {
 			<SidebarHeader className='bg-primary-foreground'>
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<Button onClick={toggleSidebar} size='icon' variant='ghost'>
+						<Button
+							className='-ml-0.5'
+							onClick={toggleSidebar}
+							size='icon'
+							variant='ghost'
+						>
 							<PanelLeft />
 							<span className='sr-only'>Toggle Sidebar</span>
 						</Button>
