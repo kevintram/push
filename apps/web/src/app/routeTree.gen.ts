@@ -19,6 +19,7 @@ import { Route as MainSourcesRouteImport } from './routes/_main/sources'
 import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainMyTopicsRouteImport } from './routes/_main/my-topics'
+import { Route as MainMyLibraryRouteImport } from './routes/_main/my-library'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainInboxRouteImport } from './routes/_main/inbox'
 import { Route as MainHomeRouteImport } from './routes/_main/home'
@@ -76,6 +77,11 @@ const MainMyTopicsRoute = MainMyTopicsRouteImport.update({
   path: '/my-topics',
   getParentRoute: () => MainRoute,
 } as any)
+const MainMyLibraryRoute = MainMyLibraryRouteImport.update({
+  id: '/my-library',
+  path: '/my-library',
+  getParentRoute: () => MainRoute,
+} as any)
 const MainLogbookRoute = MainLogbookRouteImport.update({
   id: '/logbook',
   path: '/logbook',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
+  '/my-library': typeof MainMyLibraryRoute
   '/my-topics': typeof MainMyTopicsRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
+  '/my-library': typeof MainMyLibraryRoute
   '/my-topics': typeof MainMyTopicsRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/_main/home': typeof MainHomeRoute
   '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
+  '/_main/my-library': typeof MainMyLibraryRoute
   '/_main/my-topics': typeof MainMyTopicsRoute
   '/_main/recent': typeof MainRecentRoute
   '/_main/review': typeof MainReviewRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/inbox'
     | '/logbook'
+    | '/my-library'
     | '/my-topics'
     | '/recent'
     | '/review'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/inbox'
     | '/logbook'
+    | '/my-library'
     | '/my-topics'
     | '/recent'
     | '/review'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/_main/home'
     | '/_main/inbox'
     | '/_main/logbook'
+    | '/_main/my-library'
     | '/_main/my-topics'
     | '/_main/recent'
     | '/_main/review'
@@ -303,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainMyTopicsRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/my-library': {
+      id: '/_main/my-library'
+      path: '/my-library'
+      fullPath: '/my-library'
+      preLoaderRoute: typeof MainMyLibraryRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/_main/logbook': {
       id: '/_main/logbook'
       path: '/logbook'
@@ -360,6 +379,7 @@ interface MainRouteChildren {
   MainHomeRoute: typeof MainHomeRoute
   MainInboxRoute: typeof MainInboxRoute
   MainLogbookRoute: typeof MainLogbookRoute
+  MainMyLibraryRoute: typeof MainMyLibraryRoute
   MainMyTopicsRoute: typeof MainMyTopicsRoute
   MainRecentRoute: typeof MainRecentRoute
   MainReviewRoute: typeof MainReviewRoute
@@ -379,6 +399,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainHomeRoute: MainHomeRoute,
   MainInboxRoute: MainInboxRoute,
   MainLogbookRoute: MainLogbookRoute,
+  MainMyLibraryRoute: MainMyLibraryRoute,
   MainMyTopicsRoute: MainMyTopicsRoute,
   MainRecentRoute: MainRecentRoute,
   MainReviewRoute: MainReviewRoute,
