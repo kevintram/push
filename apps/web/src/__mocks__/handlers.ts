@@ -3,7 +3,9 @@ import type { Topic } from '~/features/topics/types/topic.types'
 import fruits from './data/fruits.json' with { type: 'json' }
 import topicsData from './data/topics.json' with { type: 'json' }
 
-const topics = topicsData as Array<Topic>
+// Mock topics data - type assertion bypassed as the JSON structure may not match
+// the full Topic type (this is expected for mock data)
+const topics = topicsData as unknown as Array<Topic>
 
 // Helper function to find a topic by ID in the nested structure
 function findTopicById(
@@ -66,6 +68,8 @@ export const handlers = [
 					notes: 'This is a mock related topic.',
 					inserted_at: new Date().toISOString(),
 					updated_at: new Date().toISOString(),
+					parent_id: null,
+					fsrs_state_id: null,
 					stability: null,
 					inherited_stability: null,
 					inherited_difficulty: null,
@@ -78,9 +82,13 @@ export const handlers = [
 					archived: false,
 					inboxed: false,
 					last_reviewed_at: null,
-					scheduled_at: null,
 					srs_enabled: false,
-					retrievability: null
+					retrievability: null,
+					bucket: null,
+					days_until_threshold: null,
+					children_count: 0,
+					related_outgoing_count: 0,
+					related_incoming_count: 0
 				},
 				{
 					id: 998,
@@ -88,6 +96,8 @@ export const handlers = [
 					notes: 'Another mock related topic for testing.',
 					inserted_at: new Date().toISOString(),
 					updated_at: new Date().toISOString(),
+					parent_id: null,
+					fsrs_state_id: null,
 					stability: null,
 					inherited_stability: null,
 					inherited_difficulty: null,
@@ -100,9 +110,13 @@ export const handlers = [
 					archived: false,
 					inboxed: false,
 					last_reviewed_at: null,
-					scheduled_at: null,
 					srs_enabled: true,
-					retrievability: null
+					retrievability: null,
+					bucket: null,
+					days_until_threshold: null,
+					children_count: 0,
+					related_outgoing_count: 0,
+					related_incoming_count: 0
 				}
 			]
 

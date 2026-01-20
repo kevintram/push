@@ -1,21 +1,22 @@
-from fastapi import APIRouter, HTTPException
+from enum import Enum
+from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, timezone as dt_timezone
 
-from sqlalchemy import or_, select, update, delete, desc, insert
+from sqlalchemy import or_, select, update, delete, desc, insert, func, text
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from typing import Literal
 
 from app.dependencies import SessionDep, UserIdDep
-from app.models import Topic, t_topics_closure, t_topic_other_relations, ReviewSession, Review
+from app.models import Topic, t_topic_other_relations, ReviewSession, Review, FsrsState
 from app.schemas import (
     TopicRead,
     TopicCreate,
     TopicUpdate,
-    TopicReadWithRelationships,
+    TopicSummaryRead,
+    TopicDetailRead,
     TopicChildRelationshipCreate,
-    TopicParentRelationshipCreate,
     TopicRelationshipResponse,
     TopicOtherRelationshipCreate,
     TopicOtherRelationshipResponse,
@@ -27,132 +28,67 @@ from app.schemas import (
 router = APIRouter()
 
 
-async def _insert_topic_relationship(
-    session: AsyncSession,
-    *,
-    user_id: str,
-    parent_id: int,
-    child_id: int,
-    focus_topic_id: int,
+class ChildHandlingStrategy(str, Enum):
+    """Strategy for handling children when deleting a topic."""
+    DELETE = "delete"
+    ORPHAN = "orphan"
+    REPARENT = "reparent"
+
+
+async def is_descendant_of(
+    session: AsyncSession, potential_descendant_id: int, ancestor_id: int
+) -> bool:
+    """
+    Check if potential_descendant is a descendant of ancestor using ltree.
+    Returns True if setting ancestor's parent to potential_descendant would create a cycle.
+
+    Uses O(1) ltree operator: descendant.path <@ ancestor.path
+    """
+    result = await session.execute(
+        text("""
+            SELECT EXISTS (
+                SELECT 1 FROM topics d, topics a
+                WHERE d.id = :descendant_id
+                  AND a.id = :ancestor_id
+                  AND d.path <@ a.path
+            )
+        """),
+        {"descendant_id": potential_descendant_id, "ancestor_id": ancestor_id},
+    )
+    return result.scalar()
+
+
+async def get_topic_or_404(
+    session: AsyncSession, topic_id: int, user_id: str
 ) -> Topic:
-    if parent_id == child_id:
-        raise HTTPException(
-            status_code=400, detail="Parent and child must be different topics"
-        )
-
-    topics_result = await session.execute(
-        select(Topic.id).where(
-            Topic.user_id == user_id,
-            Topic.id.in_([parent_id, child_id]),
-        )
-    )
-    topic_ids = set(topics_result.scalars())
-
-    if parent_id not in topic_ids:
-        raise HTTPException(status_code=404, detail="Parent topic not found")
-    if child_id not in topic_ids:
-        raise HTTPException(status_code=404, detail="Child topic not found")
-
-    # Check if relationship already exists
-    relationship_result = await session.execute(
-        select(t_topics_closure.c.ancestor).where(
-            t_topics_closure.c.ancestor == parent_id,
-            t_topics_closure.c.descendant == child_id,
-            t_topics_closure.c.depth == 1,
-        )
-    )
-    if relationship_result.scalar_one_or_none() is not None:
-        raise HTTPException(status_code=409, detail="Relationship already exists")
-
-    conn = await session.connection()
-    raw_conn = await conn.get_raw_connection()
-    inserted_rows = await raw_conn.driver_connection.fetch(
-        "SELECT * FROM insert_relationship($1, $2)", parent_id, child_id
-    )
-
-    if not inserted_rows:
-        raise HTTPException(
-            status_code=400,
-            detail="Relationship already exists or would create a cycle",
-        )
-
-    refreshed_topic = await session.execute(
-        select(Topic)
-        .where(Topic.id == focus_topic_id, Topic.user_id == user_id)
-        .options(
-            selectinload(Topic.parents),
-            selectinload(Topic.children),
-        )
-    )
-    topic = refreshed_topic.scalar_one_or_none()
-
+    """Get a topic or raise 404 if not found."""
+    stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    result = await session.execute(stmt)
+    topic = result.scalar_one_or_none()
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
-
     return topic
 
 
-async def _delete_topic_relationship(
-    session: AsyncSession,
-    *,
-    user_id: str,
-    parent_id: int,
-    child_id: int,
-    focus_topic_id: int,
+async def load_topic_with_relationships(
+    session: AsyncSession, topic_id: int, user_id: str
 ) -> Topic:
-    if parent_id == child_id:
-        raise HTTPException(
-            status_code=400, detail="Parent and child must be different topics"
-        )
-
-    topics_result = await session.execute(
-        select(Topic.id).where(
-            Topic.user_id == user_id,
-            Topic.id.in_([parent_id, child_id]),
-        )
-    )
-    topic_ids = set(topics_result.scalars())
-
-    if parent_id not in topic_ids:
-        raise HTTPException(status_code=404, detail="Parent topic not found")
-    if child_id not in topic_ids:
-        raise HTTPException(status_code=404, detail="Child topic not found")
-
-    relationship_result = await session.execute(
-        select(t_topics_closure.c.ancestor).where(
-            t_topics_closure.c.ancestor == parent_id,
-            t_topics_closure.c.descendant == child_id,
-            t_topics_closure.c.depth == 1,
-        )
-    )
-    relationship_exists = relationship_result.scalar_one_or_none()
-
-    if relationship_exists is None:
-        raise HTTPException(status_code=404, detail="Relationship not found")
-
-    conn = await session.connection()
-
-    raw_conn = await conn.get_raw_connection()
-    deleted_rows = await raw_conn.driver_connection.fetch(
-        "SELECT * FROM delete_relationship($1, $2)", parent_id, child_id
-    )
-
-    if not deleted_rows:
-        raise HTTPException(status_code=404, detail="Relationship not found")
-
-    refreshed_topic = await session.execute(
+    """Load a topic with parent, children, and related relationships."""
+    stmt = (
         select(Topic)
-        .where(Topic.id == focus_topic_id, Topic.user_id == user_id)
+        .where(Topic.id == topic_id, Topic.user_id == user_id)
         .options(
-            selectinload(Topic.parents),
-            selectinload(Topic.children),
+            selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+            selectinload(Topic.children).selectinload(Topic.fsrs_state),
+            selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
+            selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
+            selectinload(Topic.fsrs_state),
         )
     )
-    topic = refreshed_topic.scalar_one_or_none()
-
+    result = await session.execute(stmt)
+    topic = result.scalar_one_or_none()
     if not topic:
         raise HTTPException(status_code=404, detail="Topic not found")
-
     return topic
 
 
@@ -166,7 +102,7 @@ async def search_topics(
     addable_as_related_to: int | None = None,
     query: str | None = None,
     limit: int = 10,
-) -> list[TopicReadWithRelationships]:
+) -> list[TopicSummaryRead]:
     cleaned_query = query.strip() if query else ""
     stmt = select(Topic).where(Topic.user_id == user_id)
 
@@ -181,44 +117,48 @@ async def search_topics(
         incoming = select(t_topic_other_relations.c.from_topic_id).where(
             t_topic_other_relations.c.to_topic_id == addable_as_related_to
         )
-        # Use union of selects for exclusion
         already_related = outgoing.union(incoming)
-        
+
         stmt = stmt.where(Topic.id.notin_(already_related))
 
     if addable_as_parent_to is not None:
-        # filter out all topics that can't be parents to addable_as_parent_to
-
-        # 1. filter out addable_as_parent_to's descendants (if add a descendant as parent, it will create a cycle)
-        descendants = select(t_topics_closure.c.descendant).where(
-            t_topics_closure.c.ancestor == addable_as_parent_to
+        # For tree structure: exclude self and all descendants (to prevent cycles)
+        # Using ltree: find all topics where addable_as_parent_to.path <@ their path
+        descendants_subq = (
+            select(Topic.id)
+            .where(
+                Topic.user_id == user_id,
+                text(
+                    "(SELECT path FROM topics WHERE id = :parent_candidate_id) <@ topics.path"
+                ).bindparams(parent_candidate_id=addable_as_parent_to),
+            )
         )
-        stmt = stmt.where(Topic.id.notin_(descendants))
+        stmt = stmt.where(Topic.id.notin_(descendants_subq))
 
-        # 2. filter out addable_as_parent_to's parents (don't want to add a topic that's already a parent)
-        parents = select(t_topics_closure.c.ancestor).where(
-            t_topics_closure.c.descendant == addable_as_parent_to,
-            t_topics_closure.c.depth == 1,
-        )
-        stmt = stmt.where(Topic.id.notin_(parents))
+        # Also exclude current parent
+        current_parent = select(Topic.parent_id).where(Topic.id == addable_as_parent_to)
+        stmt = stmt.where(or_(Topic.id != current_parent.scalar_subquery(), current_parent.scalar_subquery().is_(None)))
+
     if addable_as_child_to is not None:
-        # filter out all topics that can't be children to addable_as_child_to
-
-        # 1. filter out addable_as_child_to's ancestors (if add an ancestor as child, it will create a cycle)
-        ancestors = select(t_topics_closure.c.ancestor).where(
-            t_topics_closure.c.descendant == addable_as_child_to
+        # For tree structure: exclude self and all ancestors (to prevent cycles)
+        # Using ltree: find all topics where their path <@ addable_as_child_to.path
+        ancestors_subq = (
+            select(Topic.id)
+            .where(
+                Topic.user_id == user_id,
+                text(
+                    "topics.path <@ (SELECT path FROM topics WHERE id = :child_candidate_id)"
+                ).bindparams(child_candidate_id=addable_as_child_to),
+            )
         )
-        stmt = stmt.where(Topic.id.notin_(ancestors))
+        stmt = stmt.where(Topic.id.notin_(ancestors_subq))
 
-        # 2. filter out addable_as_child_to's children (don't want to add a topic that's already a child)
-        children = select(t_topics_closure.c.descendant).where(
-            t_topics_closure.c.ancestor == addable_as_child_to,
-            t_topics_closure.c.depth == 1,
-        )
-        stmt = stmt.where(Topic.id.notin_(children))
+        # Also exclude current children
+        children_subq = select(Topic.id).where(Topic.parent_id == addable_as_child_to)
+        stmt = stmt.where(Topic.id.notin_(children_subq))
+
     if addable_to_review_session is not None:
-        # filter out all topics that can't be added to addable_to_review_session
-        # filter out addable_to_review_session's topics (don't want to add a topic that's already a topic)
+        # Filter out topics already in the review session
         topics = select(Review.topic_id).where(
             Review.review_session_id == addable_to_review_session
         )
@@ -238,10 +178,7 @@ async def search_topics(
 
     limit = max(1, min(limit, 50))
     stmt = stmt.limit(limit)
-    stmt = stmt.options(
-        selectinload(Topic.parents),
-        selectinload(Topic.children),
-    )
+    stmt = stmt.options(selectinload(Topic.fsrs_state))
 
     result = await session.execute(stmt)
     return result.scalars().all()
@@ -256,10 +193,9 @@ async def read_topics(
     root: bool | None = None,
     has_stability: bool | None = None,
     srs_enabled: bool | None = None,
-    scheduled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
-) -> list[TopicReadWithRelationships]:
+) -> list[TopicSummaryRead]:
     stmt = select(Topic).where(Topic.user_id == user_id)
 
     # Apply ordering
@@ -271,91 +207,92 @@ async def read_topics(
         stmt = stmt.where(Topic.inboxed == inboxed)
     if archived is not None:
         stmt = stmt.where(Topic.archived == archived)
+
+    # srs_enabled filter using EXISTS subquery to avoid join conflicts with selectinload
     if srs_enabled is not None:
-        stmt = stmt.where(Topic.srs_enabled == srs_enabled)
-    if scheduled is not None:
-        if scheduled:
-            stmt = stmt.where(Topic.scheduled_at.isnot(None))
+        if srs_enabled:
+            stmt = stmt.where(
+                select(FsrsState.id)
+                .where(
+                    FsrsState.id == Topic.fsrs_state_id,
+                    FsrsState.srs_enabled.is_(True),
+                )
+                .exists()
+            )
         else:
-            stmt = stmt.where(Topic.scheduled_at.is_(None))
+            stmt = stmt.where(
+                or_(
+                    Topic.fsrs_state_id.is_(None),
+                    select(FsrsState.id)
+                    .where(
+                        FsrsState.id == Topic.fsrs_state_id,
+                        FsrsState.srs_enabled.is_(False),
+                    )
+                    .exists(),
+                )
+            )
 
     if root is not None and root is True:
-        topics_with_ancestors = select(t_topics_closure.c.descendant).where(
-            t_topics_closure.c.depth > 0
-        )
-        stmt = stmt.where(Topic.id.notin_(topics_with_ancestors))
+        # Root topics have no parent
+        stmt = stmt.where(Topic.parent_id.is_(None))
 
+    # has_stability filter using EXISTS subquery to avoid join conflicts with selectinload
     if has_stability is not None:
         if has_stability:
-            stmt = stmt.where(Topic.stability.isnot(None))
+            stmt = stmt.where(
+                select(FsrsState.id)
+                .where(
+                    FsrsState.id == Topic.fsrs_state_id,
+                    FsrsState.stability.isnot(None),
+                )
+                .exists()
+            )
         else:
-            stmt = stmt.where(Topic.stability.is_(None))
+            stmt = stmt.where(
+                or_(
+                    Topic.fsrs_state_id.is_(None),
+                    select(FsrsState.id)
+                    .where(
+                        FsrsState.id == Topic.fsrs_state_id,
+                        FsrsState.stability.is_(None),
+                    )
+                    .exists(),
+                )
+            )
 
-    stmt = stmt.options(
-        selectinload(Topic.parents),
-        selectinload(Topic.children),
-    )
+    stmt = stmt.options(selectinload(Topic.fsrs_state))
 
     # Apply limit if provided
     if limit is not None:
         stmt = stmt.limit(limit)
 
     result = await session.execute(stmt)
-    return result.scalars().all()
+    return result.scalars().unique().all()
 
 
 @router.get("/topics/{topic_id}/", tags=["topics"])
 async def read_topic(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> TopicReadWithRelationships:
-    stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
-    stmt = stmt.options(
-        selectinload(Topic.parents),
-        selectinload(Topic.children),
-    )
-    result = await session.execute(stmt)
-
-    topic = result.scalar_one_or_none()
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-
-    return topic
-
-
-@router.get("/topics/{topic_id}/parents/", tags=["topics"])
-async def read_topic_parents(
-    session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> list[TopicReadWithRelationships]:
-    stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
-    stmt = stmt.options(
-        selectinload(Topic.parents).selectinload(Topic.parents),
-        selectinload(Topic.parents).selectinload(Topic.children),
-    )
-    result = await session.execute(stmt)
-    topic = result.scalar_one_or_none()
-
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-
-    return topic.parents
+) -> TopicDetailRead:
+    return await load_topic_with_relationships(session, topic_id, user_id)
 
 
 @router.get("/topics/{topic_id}/children/", tags=["topics"])
 async def read_topic_children(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> list[TopicReadWithRelationships]:
-    stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
-    stmt = stmt.options(
-        selectinload(Topic.children).selectinload(Topic.parents),
-        selectinload(Topic.children).selectinload(Topic.children),
+) -> list[TopicSummaryRead]:
+    """Get all children of a topic."""
+    # Verify topic exists and belongs to user
+    await get_topic_or_404(session, topic_id, user_id)
+
+    # Query children
+    stmt = (
+        select(Topic)
+        .where(Topic.parent_id == topic_id, Topic.user_id == user_id)
+        .options(selectinload(Topic.fsrs_state))
     )
     result = await session.execute(stmt)
-    topic = result.scalar_one_or_none()
-
-    if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
-
-    return topic.children
+    return result.scalars().all()
 
 
 @router.get("/topics/{topic_id}/related/", tags=["topics"])
@@ -364,10 +301,7 @@ async def read_topic_related(
 ) -> list[TopicRelatedRead]:
     """Get all topics related to this topic (bidirectional) with direction info"""
     # First verify the topic exists and belongs to user
-    verify_stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
-    topic_result = await session.execute(verify_stmt)
-    if not topic_result.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Topic not found")
+    await get_topic_or_404(session, topic_id, user_id)
 
     # Fetch outgoing (where this topic is 'from', related topic is 'to')
     outgoing_stmt = (
@@ -379,6 +313,7 @@ async def read_topic_related(
             t_topic_other_relations.c.from_topic_id == topic_id,
             Topic.user_id == user_id,
         )
+        .options(selectinload(Topic.fsrs_state))
     )
 
     # Fetch incoming (where this topic is 'to', related topic is 'from')
@@ -390,6 +325,7 @@ async def read_topic_related(
         .where(
             t_topic_other_relations.c.to_topic_id == topic_id, Topic.user_id == user_id
         )
+        .options(selectinload(Topic.fsrs_state))
     )
 
     outgoing_result = await session.execute(outgoing_stmt)
@@ -417,7 +353,27 @@ async def read_topic_related(
 async def insert_topic(
     topic: TopicCreate, session: SessionDep, user_id: UserIdDep
 ) -> TopicRead:
-    new_topic = Topic(**topic.model_dump(), user_id=user_id)
+    # Extract fields for Topic model (exclude srs_enabled and inherit_fsrs which are for FsrsState)
+    topic_data = topic.model_dump(exclude={"srs_enabled", "inherit_fsrs"})
+    new_topic = Topic(**topic_data, user_id=user_id)
+
+    # Create FsrsState if srs_enabled
+    if topic.srs_enabled:
+        fsrs_state = FsrsState(srs_enabled=True)
+
+        # Handle FSRS inheritance from parent
+        if topic.inherit_fsrs and topic.parent_id:
+            parent = await session.get(Topic, topic.parent_id)
+            if parent and parent.fsrs_state:
+                fsrs_state.inherited_stability = parent.fsrs_state.stability
+                fsrs_state.inherited_difficulty = parent.fsrs_state.difficulty
+                fsrs_state.inherited_state = parent.fsrs_state.state
+                fsrs_state.inherited_step = parent.fsrs_state.step
+                fsrs_state.inherited_last_review = parent.fsrs_state.last_reviewed_at
+
+        session.add(fsrs_state)
+        await session.flush()
+        new_topic.fsrs_state_id = fsrs_state.id
 
     session.add(new_topic)
     await session.flush()
@@ -433,91 +389,57 @@ async def insert_child(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> TopicRelationshipResponse:
+    # Verify parent exists
+    parent = await get_topic_or_404(session, parent_id, user_id)
+
     # Resolve or create child topic
     if payload.child_id is not None:
-        # Use existing topic
+        child = await get_topic_or_404(session, payload.child_id, user_id)
+
+        # Check for cycles: child cannot already be an ancestor of parent
+        if await is_descendant_of(session, parent_id, payload.child_id):
+            raise HTTPException(
+                status_code=400, detail="Cannot add ancestor as child: would create cycle"
+            )
+
+        # Check if already a child
+        if child.parent_id == parent_id:
+            raise HTTPException(status_code=409, detail="Topic is already a child")
+
+        # Set parent
+        child.parent_id = parent_id
         child_id = payload.child_id
     else:
         # Create new topic from inline data
-        # Assertion validated by Pydantic model_validator
         assert payload.child is not None
-        new_child = Topic(**payload.child.model_dump(), user_id=user_id)
+        child_data = payload.child.model_dump(exclude={"srs_enabled", "inherit_fsrs"})
+        child_data["parent_id"] = parent_id
+        new_child = Topic(**child_data, user_id=user_id)
+
+        # Handle FsrsState creation
+        if payload.child.srs_enabled:
+            fsrs_state = FsrsState(srs_enabled=True)
+            if payload.child.inherit_fsrs and parent.fsrs_state:
+                fsrs_state.inherited_stability = parent.fsrs_state.stability
+                fsrs_state.inherited_difficulty = parent.fsrs_state.difficulty
+                fsrs_state.inherited_state = parent.fsrs_state.state
+                fsrs_state.inherited_step = parent.fsrs_state.step
+                fsrs_state.inherited_last_review = parent.fsrs_state.last_reviewed_at
+            session.add(fsrs_state)
+            await session.flush()
+            new_child.fsrs_state_id = fsrs_state.id
+
         session.add(new_child)
         await session.flush()
         child_id = new_child.id
 
-    await _insert_topic_relationship(
-        session,
-        user_id=user_id,
-        parent_id=parent_id,
-        child_id=child_id,
-        focus_topic_id=parent_id,
-    )
+    await session.commit()
 
-    # Fetch both topics with relationships
-    stmt = (
-        select(Topic)
-        .where(Topic.id.in_([parent_id, child_id]), Topic.user_id == user_id)
-        .options(
-            selectinload(Topic.parents),
-            selectinload(Topic.children),
-        )
-    )
-    result = await session.execute(stmt)
-    topics = result.scalars().all()
-    topic_map = {t.id: t for t in topics}
+    # Load both with relationships
+    parent_topic = await load_topic_with_relationships(session, parent_id, user_id)
+    child_topic = await load_topic_with_relationships(session, child_id, user_id)
 
-    return TopicRelationshipResponse(
-        parent=topic_map[parent_id],
-        child=topic_map[child_id],
-    )
-
-
-@router.post("/topics/{child_id}/parents/", tags=["topics"])
-async def insert_parent(
-    child_id: int,
-    payload: TopicParentRelationshipCreate,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> TopicRelationshipResponse:
-    # Resolve or create parent topic
-    if payload.parent_id is not None:
-        # Use existing topic
-        parent_id = payload.parent_id
-    else:
-        # Create new topic from inline data
-        # Assertion validated by Pydantic model_validator
-        assert payload.parent is not None
-        new_parent = Topic(**payload.parent.model_dump(), user_id=user_id)
-        session.add(new_parent)
-        await session.flush()
-        parent_id = new_parent.id
-
-    await _insert_topic_relationship(
-        session,
-        user_id=user_id,
-        parent_id=parent_id,
-        child_id=child_id,
-        focus_topic_id=child_id,
-    )
-
-    # Fetch both topics with relationships
-    stmt = (
-        select(Topic)
-        .where(Topic.id.in_([parent_id, child_id]), Topic.user_id == user_id)
-        .options(
-            selectinload(Topic.parents),
-            selectinload(Topic.children),
-        )
-    )
-    result = await session.execute(stmt)
-    topics = result.scalars().all()
-    topic_map = {t.id: t for t in topics}
-
-    return TopicRelationshipResponse(
-        parent=topic_map[parent_id],
-        child=topic_map[child_id],
-    )
+    return TopicRelationshipResponse(parent=parent_topic, child=child_topic)
 
 
 @router.delete("/topics/{parent_id}/children/{child_id}/", tags=["topics"])
@@ -526,30 +448,19 @@ async def delete_child(
     child_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> TopicReadWithRelationships:
-    return await _delete_topic_relationship(
-        session,
-        user_id=user_id,
-        parent_id=parent_id,
-        child_id=child_id,
-        focus_topic_id=parent_id,
-    )
+) -> TopicDetailRead:
+    """Remove a child from a parent (sets child's parent_id to null)."""
+    await get_topic_or_404(session, parent_id, user_id)  # Verify parent exists
+    child = await get_topic_or_404(session, child_id, user_id)
 
+    if child.parent_id != parent_id:
+        raise HTTPException(status_code=404, detail="Child relationship not found")
 
-@router.delete("/topics/{child_id}/parents/{parent_id}/", tags=["topics"])
-async def delete_parent(
-    child_id: int,
-    parent_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> TopicReadWithRelationships:
-    return await _delete_topic_relationship(
-        session,
-        user_id=user_id,
-        parent_id=parent_id,
-        child_id=child_id,
-        focus_topic_id=child_id,
-    )
+    # Remove parent reference (orphan the child)
+    child.parent_id = None
+    await session.commit()
+
+    return await load_topic_with_relationships(session, parent_id, user_id)
 
 
 @router.post("/topics/{from_topic_id}/related/", tags=["topics"])
@@ -561,22 +472,24 @@ async def create_topic_other_relationship(
 ) -> TopicOtherRelationshipResponse:
     """Create a directional relationship from one topic to another"""
     # Verify from_topic exists and belongs to user
-    from_topic = await session.get(Topic, from_topic_id)
-    if not from_topic or from_topic.user_id != user_id:
-        raise HTTPException(status_code=404, detail="From topic not found")
+    await get_topic_or_404(session, from_topic_id, user_id)
 
     # Resolve or create to_topic
     if relationship.to_topic_id is not None:
-        # Use existing topic
         to_topic_id = relationship.to_topic_id
-        to_topic = await session.get(Topic, to_topic_id)
-        if not to_topic or to_topic.user_id != user_id:
-            raise HTTPException(status_code=404, detail="To topic not found")
+        await get_topic_or_404(session, to_topic_id, user_id)  # Verify to_topic exists
     else:
         # Create new topic from inline data
-        # Assertion validated by Pydantic model_validator
         assert relationship.to_topic is not None
-        new_to_topic = Topic(**relationship.to_topic.model_dump(), user_id=user_id)
+        to_topic_data = relationship.to_topic.model_dump(exclude={"srs_enabled", "inherit_fsrs"})
+        new_to_topic = Topic(**to_topic_data, user_id=user_id)
+
+        if relationship.to_topic.srs_enabled:
+            fsrs_state = FsrsState(srs_enabled=True)
+            session.add(fsrs_state)
+            await session.flush()
+            new_to_topic.fsrs_state_id = fsrs_state.id
+
         session.add(new_to_topic)
         await session.flush()
         to_topic_id = new_to_topic.id
@@ -599,9 +512,11 @@ async def create_topic_other_relationship(
         await session.rollback()
         raise HTTPException(status_code=400, detail="Relationship already exists")
 
-    # Re-fetch both topics to ensure all computed properties are loaded
-    stmt = select(Topic).where(
-        Topic.id.in_([from_topic_id, to_topic_id]), Topic.user_id == user_id
+    # Re-fetch both topics
+    stmt = (
+        select(Topic)
+        .where(Topic.id.in_([from_topic_id, to_topic_id]), Topic.user_id == user_id)
+        .options(selectinload(Topic.fsrs_state))
     )
     result = await session.execute(stmt)
     topics = result.scalars().all()
@@ -619,11 +534,9 @@ async def delete_topic_other_relationship(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> None:
-    """Delete a bidirectional relationship between topics"""
+    """Delete a directional relationship between topics"""
     # Verify from_topic belongs to user
-    from_topic = await session.get(Topic, from_topic_id)
-    if not from_topic or from_topic.user_id != user_id:
-        raise HTTPException(status_code=404, detail="Topic not found")
+    await get_topic_or_404(session, from_topic_id, user_id)
 
     stmt = delete(t_topic_other_relations).where(
         t_topic_other_relations.c.from_topic_id == from_topic_id,
@@ -643,45 +556,111 @@ async def read_review_sessions_for_topic(
     user_id: UserIdDep,
 ) -> list[ReviewSessionReadWithReviews]:
     stmt = select(ReviewSession).where(
-        ReviewSession.reviews.any(Review.topic_id == topic_id), ReviewSession.user_id == user_id
+        ReviewSession.reviews.any(Review.topic_id == topic_id),
+        ReviewSession.user_id == user_id,
     )
     stmt = stmt.options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
     result = await session.execute(stmt)
     return result.scalars().all()
 
 
-@router.post("/topics/{topic_id}/", tags=["topics"])
+@router.patch("/topics/{topic_id}/", tags=["topics"])
 async def update_topic(
-    topic_id: int, topic: TopicUpdate, session: SessionDep, user_id: UserIdDep
-) -> TopicRead:
-    update_values = topic.model_dump(exclude_unset=True)
+    topic_id: int, payload: TopicUpdate, session: SessionDep, user_id: UserIdDep
+) -> TopicDetailRead:
+    """Update a topic using PATCH semantics."""
+    topic = await get_topic_or_404(session, topic_id, user_id)
 
-    if update_values:
-        stmt = (
-            update(Topic)
-            .where(Topic.id == topic_id, Topic.user_id == user_id)
-            .values(update_values)
-        )
-        result = await session.execute(stmt)
+    update_data = payload.model_dump(exclude_unset=True)
 
-        if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail="Topic not found")
+    # Handle parent_id change with cycle detection
+    if "parent_id" in update_data:
+        new_parent_id = update_data["parent_id"]
+        if new_parent_id is not None:
+            # Verify new parent exists
+            await get_topic_or_404(session, new_parent_id, user_id)
+            # Check for cycles: new parent cannot be a descendant of this topic
+            if await is_descendant_of(session, new_parent_id, topic_id):
+                raise HTTPException(409, "Cannot set parent: would create cycle")
+        topic.parent_id = new_parent_id
+        del update_data["parent_id"]
 
-    # Fetch and return updated topic
-    select_stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
-    result = await session.execute(select_stmt)
-    return result.scalar_one()
+    # Handle srs_enabled toggle
+    if "srs_enabled" in update_data:
+        if update_data["srs_enabled"] and topic.fsrs_state_id is None:
+            # Create fsrs_state
+            fsrs_state = FsrsState(srs_enabled=True)
+            session.add(fsrs_state)
+            await session.flush()
+            topic.fsrs_state_id = fsrs_state.id
+        elif not update_data["srs_enabled"] and topic.fsrs_state:
+            topic.fsrs_state.srs_enabled = False
+        del update_data["srs_enabled"]
+
+    # Apply remaining updates
+    for key, value in update_data.items():
+        setattr(topic, key, value)
+
+    await session.commit()
+    return await load_topic_with_relationships(session, topic_id, user_id)
 
 
 @router.delete("/topics/{topic_id}/", tags=["topics"])
-async def delete_topic(topic_id: int, session: SessionDep, user_id: UserIdDep):
-    stmt = (
-        delete(Topic)
-        .where(Topic.id == topic_id, Topic.user_id == user_id)
-        .returning(Topic)
-    )
-    result = await session.execute(stmt)
-    deleted_topic = result.scalar_one_or_none()
+async def delete_topic(
+    topic_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+    handle_children_by: ChildHandlingStrategy | None = Query(default=None),
+):
+    """Delete a topic. If topic has children, must specify handle_children_by strategy."""
+    topic = await get_topic_or_404(session, topic_id, user_id)
 
-    if not deleted_topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
+    # Check if topic has children
+    children_count = await session.scalar(
+        select(func.count()).select_from(Topic).where(Topic.parent_id == topic_id)
+    )
+
+    if children_count > 0:
+        if handle_children_by is None:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Topic has {children_count} children. Specify handle_children_by: delete, orphan, or reparent",
+            )
+
+        if handle_children_by == ChildHandlingStrategy.DELETE:
+            # Recursively delete all descendants using ltree
+            await session.execute(
+                delete(Topic).where(
+                    text("topics.path <@ (SELECT path FROM topics WHERE id = :delete_topic_id)").bindparams(delete_topic_id=topic_id)
+                )
+            )
+        elif handle_children_by == ChildHandlingStrategy.ORPHAN:
+            # Set children's parent_id to null (make them root topics)
+            await session.execute(
+                update(Topic).where(Topic.parent_id == topic_id).values(parent_id=None)
+            )
+        elif handle_children_by == ChildHandlingStrategy.REPARENT:
+            if topic.parent_id is None:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cannot reparent: topic has no parent (is a root topic)",
+                )
+            # Set children's parent_id to grandparent
+            await session.execute(
+                update(Topic)
+                .where(Topic.parent_id == topic_id)
+                .values(parent_id=topic.parent_id)
+            )
+
+        # Now delete the topic itself (if not already deleted by recursive delete)
+        if handle_children_by != ChildHandlingStrategy.DELETE:
+            await session.execute(
+                delete(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+            )
+    else:
+        # No children, just delete
+        await session.execute(
+            delete(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+        )
+
+    await session.commit()

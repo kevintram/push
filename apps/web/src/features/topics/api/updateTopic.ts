@@ -11,7 +11,7 @@ export async function updateTopic(input: UpdateTopicInput) {
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/topics/${id}/`,
 		{
-			method: 'POST',
+			method: 'PATCH',
 			headers: {
 				'Content-Type': 'application/json'
 			},

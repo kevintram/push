@@ -9,15 +9,21 @@ import { TopicSchema } from '../types/topic.schemas'
 import type { Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
+export type ChildHandlingStrategy = 'delete' | 'orphan' | 'reparent'
+
 export async function deleteChildRelationship(
-	input: DeleteChildRelationshipInput
+	input: DeleteChildRelationshipInput & { strategy?: ChildHandlingStrategy }
 ) {
-	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/${input.parentId}/children/${input.childId}/`,
-		{
-			method: 'DELETE'
-		}
+	const url = new URL(
+		`${import.meta.env.VITE_API_URL}/topics/${input.parentId}/children/${input.childId}/`
 	)
+	if (input.strategy) {
+		url.searchParams.set('strategy', input.strategy)
+	}
+
+	const response = await apiFetch(url.toString(), {
+		method: 'DELETE'
+	})
 
 	if (!response.ok) {
 		throw new Error(`API request failed: ${response.status}`)
@@ -37,10 +43,15 @@ export async function deleteChildRelationship(
 export async function deleteParentRelationship(
 	input: DeleteParentRelationshipInput
 ) {
+	// With tree structure, removing parent is done by setting parent_id to null via PATCH
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/${input.childId}/parents/${input.parentId}/`,
+		`${import.meta.env.VITE_API_URL}/topics/${input.childId}/`,
 		{
-			method: 'DELETE'
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ parent_id: null })
 		}
 	)
 

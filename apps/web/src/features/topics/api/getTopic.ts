@@ -44,7 +44,6 @@ export function useTopicWithRelationships(topicId: number | undefined) {
 
 		return {
 			...topicData,
-			parents: topicData.parents ?? [],
 			children: topicData.children ?? []
 		}
 	}, [topicData])

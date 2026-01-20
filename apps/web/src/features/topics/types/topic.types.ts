@@ -8,12 +8,16 @@ export const RelationshipDirection = {
 export type RelationshipDirection =
 	(typeof RelationshipDirection)[keyof typeof RelationshipDirection]
 
+export type RetrievabilityBucket = 'LATE' | 'ON_TIME' | 'EARLY'
+
 export type Topic = {
 	id: number
 	name: string
 	notes: string
 	inserted_at: string
 	updated_at: string
+	parent_id: number | null
+	fsrs_state_id: number | null
 	stability: number | null
 	inherited_stability: number | null
 	inherited_difficulty: number | null
@@ -26,12 +30,16 @@ export type Topic = {
 	archived: boolean
 	inboxed: boolean
 	last_reviewed_at: string | null
-	scheduled_at: string | null
 	srs_enabled: boolean
 	retrievability: number | null
-	parents?: Array<Topic>
+	bucket: RetrievabilityBucket | null
+	days_until_threshold: number | null
+	children_count: number
+	related_outgoing_count: number
+	related_incoming_count: number
+	parent?: Topic | null
 	children?: Array<Topic>
-	related?: Array<Topic>
+	related?: Array<Topic> | null
 	relationship_direction?: RelationshipDirection
 }
 
@@ -47,13 +55,9 @@ export type TopicOtherRelationshipCreate = {
 		notes: string
 		archived: boolean
 		inboxed: boolean
-		stability?: number | null
-		inherited_stability?: number | null
-		inherited_difficulty?: number | null
-		inherited_state?: LearningState | null
-		inherited_step?: number | null
-		inherited_last_review?: string | null
+		parent_id?: number | null
 		srs_enabled?: boolean
+		inherit_fsrs?: boolean
 	}
 }
 

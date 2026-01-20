@@ -10,7 +10,8 @@ from app.schemas.topics import (
     TopicRead,
     TopicCreate,
     TopicUpdate,
-    TopicReadWithRelationships,
+    TopicSummaryRead,
+    TopicDetailRead,
     TopicChildRelationshipCreate,
     TopicParentRelationshipCreate,
     TopicRelationshipResponse,
@@ -38,7 +39,8 @@ from app.schemas.review_entries import (
 # Rebuild models to resolve forward references
 ReviewSessionReadWithReviews.model_rebuild()
 TopicRead.model_rebuild()
-TopicReadWithRelationships.model_rebuild()
+TopicSummaryRead.model_rebuild()
+TopicDetailRead.model_rebuild()
 ReviewSessionRead.model_rebuild()
 ReviewSessionCreate.model_rebuild()
 ReviewSessionUpdate.model_rebuild()
@@ -66,7 +68,8 @@ __all__ = [
     "TopicOtherRelationshipCreate",
     "TopicOtherRelationshipResponse",
     "TopicUpdate",
-    "TopicReadWithRelationships",
+    "TopicSummaryRead",
+    "TopicDetailRead",
     "ReviewSessionReadWithReviews",
     "ReviewBase",
     "ReviewRead",
