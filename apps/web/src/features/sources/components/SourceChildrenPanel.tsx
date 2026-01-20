@@ -13,6 +13,11 @@ import {
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { sourceKeys } from '../api/queryKeys'
 import type { Source } from '../types/source.types'
+import {
+	AddSourceDialog,
+	type AddSourceDialogContext,
+	type SrsSource
+} from './AddSourceDialog'
 import { SourceActionMenu } from './SourceActionMenu'
 import { SourceCard } from './SourceCard'
 
@@ -28,12 +33,20 @@ interface SourceChildrenPanelProps {
 	 * When provided, the panel uses this directly instead of making a separate API call.
 	 */
 	children?: Array<Source>
+	/**
+	 * Parent source's SRS data for inheritance when creating children.
+	 */
+	parentSrsSource?: SrsSource | null
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	/**
 	 * Called when a child is selected/clicked.
 	 */
 	onChildSelect?: (sourceId: number) => void
+	/**
+	 * Called when a new child source is created.
+	 */
+	onChildCreated?: (sourceId: number) => void
 	/**
 	 * Custom card renderer. If not provided, uses default SourceCard.
 	 * @param source - The child source to render
@@ -50,13 +63,37 @@ interface SourceChildrenPanelProps {
 export function SourceChildrenPanel({
 	sourceId,
 	children: childrenProp,
+	parentSrsSource,
 	getScrollElement,
 	scrollMargin,
 	onChildSelect,
+	onChildCreated,
 	renderCard
 }: SourceChildrenPanelProps) {
 	const queryClient = useQueryClient()
 	const [isCollapsed, setIsCollapsed] = useState(false)
+	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+
+	// Build dialog context for creating a child source
+	const addDialogContext: AddSourceDialogContext | undefined = useMemo(() => {
+		if (sourceId === undefined) return undefined
+		return {
+			type: 'child',
+			parentSourceId: sourceId,
+			srsSource: parentSrsSource
+		}
+	}, [sourceId, parentSrsSource])
+
+	const handleChildCreated = useCallback(
+		(newSourceId: number) => {
+			// Invalidate the parent source to refresh children list
+			if (sourceId !== undefined) {
+				queryClient.invalidateQueries({ queryKey: sourceKeys.detail(sourceId) })
+			}
+			onChildCreated?.(newSourceId)
+		},
+		[queryClient, sourceId, onChildCreated]
+	)
 
 	// Use prop directly - children comes from the single getSource fetch
 	const children = childrenProp ?? []
@@ -158,20 +195,15 @@ export function SourceChildrenPanel({
 			<TopicPanelHeader
 				actions={
 					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true} disabled={true}>
-							<Button
-								className='gap-1'
-								disabled={true}
-								size='sm'
-								variant='secondary'
-							>
+						<DropdownMenuTrigger asChild={true}>
+							<Button className='gap-1' size='sm' variant='secondary'>
 								<Plus className='h-4 w-4' />
 								Add
 								<ChevronDown className='h-4 w-4' />
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='start'>
-							<DropdownMenuItem disabled={true}>
+							<DropdownMenuItem onSelect={() => setIsAddDialogOpen(true)}>
 								<SquarePen className='h-4 w-4' />
 								Create New
 							</DropdownMenuItem>
@@ -211,6 +243,16 @@ export function SourceChildrenPanel({
 						scrollMargin={scrollMargin}
 					/>
 				</div>
+			)}
+
+			{/* Add Child Source Dialog */}
+			{addDialogContext && (
+				<AddSourceDialog
+					context={addDialogContext}
+					onOpenChange={setIsAddDialogOpen}
+					onSuccess={handleChildCreated}
+					open={isAddDialogOpen}
+				/>
 			)}
 		</div>
 	)

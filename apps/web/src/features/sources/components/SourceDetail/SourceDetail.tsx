@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, use, useCallback } from 'react'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
+import type { Topic } from '~/features/topics/types/topic.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
@@ -11,6 +12,7 @@ import { useSourceMetrics } from '../../hooks/useSourceMetrics'
 import { SourceContext } from '../../stores/SelectedSourceContext'
 import type { Source } from '../../types/source.types'
 import { SourceChildrenPanel } from '../SourceChildrenPanel'
+import { SourceTopicsPanel } from '../SourceTopicsPanel'
 import { SourceDetailHeader } from './SourceDetailHeader'
 import { SourceDetailSkeleton } from './SourceDetailSkeleton'
 import { SourceProperties } from './SourceProperties'
@@ -49,10 +51,23 @@ interface SourceDetailProps {
 	 */
 	onSourceNavigate?: (sourceId: number) => void
 	/**
+	 * Callback when navigating to a topic (topic click in topics panel).
+	 * If not provided, uses default dialog behavior.
+	 */
+	onTopicNavigate?: (topicId: number) => void
+	/**
 	 * Custom card renderer for children panel.
 	 */
 	renderChildCard?: (
 		source: Source,
+		onRemove: () => void,
+		onClick: () => void
+	) => ReactNode
+	/**
+	 * Custom card renderer for topics panel.
+	 */
+	renderTopicCard?: (
+		topic: Topic,
 		onRemove: () => void,
 		onClick: () => void
 	) => ReactNode
@@ -70,7 +85,9 @@ export function SourceDetail({
 	sidebarReadonly = false,
 	onDelete,
 	onSourceNavigate,
+	onTopicNavigate,
 	renderChildCard,
+	renderTopicCard,
 	className
 }: SourceDetailProps) {
 	// Get source from context if not provided via props
@@ -215,8 +232,24 @@ export function SourceDetail({
 								children={source.children}
 								getScrollElement={() => scrollContainerRef.current}
 								onChildSelect={onSourceNavigate}
+								parentSrsSource={{
+									stability: source.stability,
+									difficulty: source.difficulty,
+									state: source.state,
+									step: source.step,
+									lastReviewedAt: source.last_reviewed_at
+								}}
 								renderCard={renderChildCard}
 								sourceId={source.id}
+							/>
+						</div>
+						<div className='mt-4'>
+							<SourceTopicsPanel
+								getScrollElement={() => scrollContainerRef.current}
+								onTopicSelect={onTopicNavigate}
+								renderCard={renderTopicCard}
+								sourceId={source.id}
+								topics={source.topics}
 							/>
 						</div>
 					</div>
