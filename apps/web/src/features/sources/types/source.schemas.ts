@@ -1,12 +1,13 @@
 import * as v from 'valibot'
-import { TopicSchema } from '~/features/topics/types/topic.schemas'
+import { TopicSchemaBase } from '~/features/topics/types/topic.schemas'
 import type {
 	Source,
 	SourceRelationshipResponse,
 	SourceTopicResponse
 } from './source.types'
 
-export const SourceSchema: v.GenericSchema<Source> = v.object({
+// Base fields shared by all source schemas
+const sourceBaseFields = {
 	id: v.number(),
 	title: v.string(),
 	notes: v.string(),
@@ -35,21 +36,47 @@ export const SourceSchema: v.GenericSchema<Source> = v.object({
 	days_until_threshold: v.nullable(v.number()),
 	// Relationship counts
 	children_count: v.optional(v.number(), 0),
-	topics_count: v.optional(v.number(), 0),
+	topics_count: v.optional(v.number(), 0)
+} as const
+
+/**
+ * Base source schema without topics relationship.
+ * Used by TopicSchema to avoid circular dependency.
+ */
+export const SourceSchemaBase: v.GenericSchema<Omit<Source, 'topics'>> =
+	v.object({
+		...sourceBaseFields,
+		// Relationships (loaded conditionally) - no topics here to avoid circular dep
+		parent: v.nullish(
+			v.lazy((): v.GenericSchema<Omit<Source, 'topics'>> => SourceSchemaBase)
+		),
+		children: v.optional(
+			v.array(
+				v.lazy((): v.GenericSchema<Omit<Source, 'topics'>> => SourceSchemaBase)
+			),
+			[]
+		)
+	})
+
+export const SourceSchema: v.GenericSchema<Source> = v.object({
+	...sourceBaseFields,
 	// Relationships (loaded conditionally)
-	parent: v.nullish(v.lazy(() => SourceSchema)),
-	children: v.optional(v.array(v.lazy(() => SourceSchema)), []),
-	topics: v.optional(v.array(TopicSchema), [])
+	parent: v.nullish(v.lazy((): v.GenericSchema<Source> => SourceSchema)),
+	children: v.optional(
+		v.array(v.lazy((): v.GenericSchema<Source> => SourceSchema)),
+		[]
+	),
+	topics: v.optional(v.array(v.lazy(() => TopicSchemaBase)), [])
 })
 
 export const SourceRelationshipResponseSchema: v.GenericSchema<SourceRelationshipResponse> =
 	v.object({
-		parent: v.lazy(() => SourceSchema),
-		child: v.lazy(() => SourceSchema)
+		parent: v.lazy((): v.GenericSchema<Source> => SourceSchema),
+		child: v.lazy((): v.GenericSchema<Source> => SourceSchema)
 	})
 
 export const SourceTopicResponseSchema: v.GenericSchema<SourceTopicResponse> =
 	v.object({
-		source: v.lazy(() => SourceSchema),
-		topic: TopicSchema
+		source: v.lazy((): v.GenericSchema<Source> => SourceSchema),
+		topic: v.lazy(() => TopicSchemaBase)
 	})

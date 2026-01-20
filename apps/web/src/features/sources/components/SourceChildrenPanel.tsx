@@ -76,7 +76,7 @@ export function SourceChildrenPanel({
 
 	// Build dialog context for creating a child source
 	const addDialogContext: AddSourceDialogContext | undefined = useMemo(() => {
-		if (sourceId === undefined) return undefined
+		if (sourceId === undefined) return
 		return {
 			type: 'child',
 			parentSourceId: sourceId,

@@ -73,6 +73,7 @@ class TopicDetailRead(TopicSummaryRead):
     children: list[TopicSummaryRead] = []
     related_outgoing: list[TopicSummaryRead] = []
     related_incoming: list[TopicSummaryRead] = []
+    sources: list["SourceSummaryRead"] = []
 
 
 class RelationshipDirection(str, Enum):

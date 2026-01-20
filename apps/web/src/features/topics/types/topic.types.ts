@@ -1,3 +1,4 @@
+import type { Source } from '~/features/sources/types/source.types'
 import type { LearningState } from '~/models/learning-state.types'
 
 export const RelationshipDirection = {
@@ -42,6 +43,7 @@ export type Topic = {
 	children?: Array<Topic>
 	related_outgoing?: Array<Topic>
 	related_incoming?: Array<Topic>
+	sources?: Array<Source>
 	relationship_direction?: RelationshipDirection
 }
 
