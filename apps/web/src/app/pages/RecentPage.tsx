@@ -1,7 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import { History } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import {
+	EntityCard,
+	type EntityItem,
+	estimateEntitySize,
+	getEntityKey
+} from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -11,25 +17,56 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
+import { useSources } from '~/features/sources/api/getSources'
+import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { useTopics } from '~/features/topics/api/getTopics'
-import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
-import type { Topic } from '~/features/topics/types/topic.types'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
+
+const RECENT_LIMIT = 50
 
 export function RecentPage() {
 	const navigate = useNavigate()
 
-	// Fetch 50 most recent topics
-	const { data: topics = [], isLoading } = useTopics({
+	// Fetch 50 most recent topics and sources
+	const { data: topics = [], isLoading: isLoadingTopics } = useTopics({
 		order: 'desc',
-		limit: 50
+		limit: RECENT_LIMIT
+	})
+	const { data: sources = [], isLoading: isLoadingSources } = useSources({
+		order: 'desc',
+		limit: RECENT_LIMIT
 	})
 
-	const handleTopicClick = useCallback(
-		(topic: Topic) => {
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: topic.id.toString() }
-			})
+	const isLoading = isLoadingTopics || isLoadingSources
+
+	// Combine topics and sources, sorted by updated_at descending, limited to 50
+	const recentItems = useMemo<Array<EntityItem>>(() => {
+		const items: Array<EntityItem> = [
+			...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item })),
+			...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
+		]
+		return items
+			.sort(
+				(a, b) =>
+					new Date(b.item.updated_at).getTime() -
+					new Date(a.item.updated_at).getTime()
+			)
+			.slice(0, RECENT_LIMIT)
+	}, [topics, sources])
+
+	const handleEntityClick = useCallback(
+		(entity: EntityItem) => {
+			if (entity.type === 'topic') {
+				navigate({
+					to: '/topics/$topicId',
+					params: { topicId: entity.item.id.toString() }
+				})
+			} else {
+				navigate({
+					to: '/sources/$sourceId',
+					params: { sourceId: entity.item.id.toString() }
+				})
+			}
 		},
 		[navigate]
 	)
@@ -39,32 +76,45 @@ export function RecentPage() {
 			<PageLayout.Header icon={History} title='Recent' />
 			<RecentList
 				isLoading={isLoading}
-				onTopicClick={handleTopicClick}
-				topics={topics}
+				items={recentItems}
+				onEntityClick={handleEntityClick}
 			/>
 		</PageLayout>
 	)
 }
 
 function RecentList({
-	topics,
-	onTopicClick,
+	items,
+	onEntityClick,
 	isLoading
 }: {
-	topics: Array<Topic>
-	onTopicClick: (topic: Topic) => void
+	items: Array<EntityItem>
+	onEntityClick: (entity: EntityItem) => void
 	isLoading: boolean
 }) {
-	const { estimateItemSize, renderItem, getItemKey } = useTopicsList({
-		minHeight: 96,
-		onTopicClick
-	})
+	const renderItem = useCallback(
+		(entity: EntityItem) => (
+			<EntityCard
+				entity={entity}
+				headerRight={
+					entity.type === 'topic' ? (
+						<TopicActionMenu topic={entity.item} />
+					) : (
+						<SourceActionMenu source={entity.item} />
+					)
+				}
+				minHeight={96}
+				onEntityClick={onEntityClick}
+			/>
+		),
+		[onEntityClick]
+	)
 
 	if (isLoading) {
 		return <MasonryLayoutSkeleton />
 	}
 
-	if (topics.length === 0) {
+	if (items.length === 0) {
 		return (
 			<PageLayout.Content>
 				<Empty>
@@ -72,9 +122,9 @@ function RecentList({
 						<EmptyMedia variant='icon'>
 							<History />
 						</EmptyMedia>
-						<EmptyTitle>No recent topics</EmptyTitle>
+						<EmptyTitle>No recent items</EmptyTitle>
 						<EmptyDescription>
-							See your most recently edited topics
+							See your most recently edited topics and sources
 						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
@@ -85,10 +135,10 @@ function RecentList({
 	return (
 		<PageLayout.Content className='max-w-screen p-6'>
 			<MasonryLayout
-				estimateItemSize={estimateItemSize}
+				estimateItemSize={estimateEntitySize}
 				gap={16}
-				getItemKey={getItemKey}
-				items={topics}
+				getItemKey={getEntityKey}
+				items={items}
 				minItemWidth={280}
 				renderItem={renderItem}
 			/>

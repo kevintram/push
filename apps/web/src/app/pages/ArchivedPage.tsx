@@ -1,7 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Archive } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import {
+	EntityCard,
+	type EntityItem,
+	estimateEntitySize,
+	getEntityKey
+} from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -11,25 +17,52 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
+import { useSources } from '~/features/sources/api/getSources'
+import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { useTopics } from '~/features/topics/api/getTopics'
-import { useTopicsList } from '~/features/topics/hooks/useTopicsList'
-import type { Topic } from '~/features/topics/types/topic.types'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 
 export function ArchivedPage() {
 	const navigate = useNavigate()
 
-	// Fetch archived topics sorted by most recently updated
-	const { data: topics = [], isLoading } = useTopics({
+	// Fetch archived topics and sources sorted by most recently updated
+	const { data: topics = [], isLoading: isLoadingTopics } = useTopics({
+		archived: true,
+		order: 'desc'
+	})
+	const { data: sources = [], isLoading: isLoadingSources } = useSources({
 		archived: true,
 		order: 'desc'
 	})
 
-	const handleTopicClick = useCallback(
-		(topic: Topic) => {
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: topic.id.toString() }
-			})
+	const isLoading = isLoadingTopics || isLoadingSources
+
+	// Combine topics and sources, sorted by updated_at descending
+	const archivedItems = useMemo<Array<EntityItem>>(() => {
+		const items: Array<EntityItem> = [
+			...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item })),
+			...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
+		]
+		return items.sort(
+			(a, b) =>
+				new Date(b.item.updated_at).getTime() -
+				new Date(a.item.updated_at).getTime()
+		)
+	}, [topics, sources])
+
+	const handleEntityClick = useCallback(
+		(entity: EntityItem) => {
+			if (entity.type === 'topic') {
+				navigate({
+					to: '/topics/$topicId',
+					params: { topicId: entity.item.id.toString() }
+				})
+			} else {
+				navigate({
+					to: '/sources/$sourceId',
+					params: { sourceId: entity.item.id.toString() }
+				})
+			}
 		},
 		[navigate]
 	)
@@ -39,32 +72,45 @@ export function ArchivedPage() {
 			<PageLayout.Header icon={Archive} title='Archived' />
 			<ArchivedList
 				isLoading={isLoading}
-				onTopicClick={handleTopicClick}
-				topics={topics}
+				items={archivedItems}
+				onEntityClick={handleEntityClick}
 			/>
 		</PageLayout>
 	)
 }
 
 function ArchivedList({
-	topics,
-	onTopicClick,
+	items,
+	onEntityClick,
 	isLoading
 }: {
-	topics: Array<Topic>
-	onTopicClick: (topic: Topic) => void
+	items: Array<EntityItem>
+	onEntityClick: (entity: EntityItem) => void
 	isLoading: boolean
 }) {
-	const { estimateItemSize, renderItem, getItemKey } = useTopicsList({
-		minHeight: 96,
-		onTopicClick
-	})
+	const renderItem = useCallback(
+		(entity: EntityItem) => (
+			<EntityCard
+				entity={entity}
+				headerRight={
+					entity.type === 'topic' ? (
+						<TopicActionMenu topic={entity.item} />
+					) : (
+						<SourceActionMenu source={entity.item} />
+					)
+				}
+				minHeight={96}
+				onEntityClick={onEntityClick}
+			/>
+		),
+		[onEntityClick]
+	)
 
 	if (isLoading) {
 		return <MasonryLayoutSkeleton />
 	}
 
-	if (topics.length === 0) {
+	if (items.length === 0) {
 		return (
 			<PageLayout.Content>
 				<Empty>
@@ -72,9 +118,9 @@ function ArchivedList({
 						<EmptyMedia variant='icon'>
 							<Archive />
 						</EmptyMedia>
-						<EmptyTitle>No archived topics</EmptyTitle>
+						<EmptyTitle>No archived items</EmptyTitle>
 						<EmptyDescription>
-							Archive topics you want to hide but keep around just in case
+							Archive items you want to hide but keep around just in case
 						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
@@ -85,10 +131,10 @@ function ArchivedList({
 	return (
 		<PageLayout.Content className='max-w-screen p-6'>
 			<MasonryLayout
-				estimateItemSize={estimateItemSize}
+				estimateItemSize={estimateEntitySize}
 				gap={16}
-				getItemKey={getItemKey}
-				items={topics}
+				getItemKey={getEntityKey}
+				items={items}
 				minItemWidth={280}
 				renderItem={renderItem}
 			/>
