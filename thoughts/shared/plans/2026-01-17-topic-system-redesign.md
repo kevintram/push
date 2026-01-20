@@ -1507,7 +1507,7 @@ Mirror the topics feature structure:
 **Files**:
 - `apps/web/src/app/routes/_main/sources.tsx` - Redirect to home
 - `apps/web/src/app/routes/_main/sources_.$sourceId.tsx` - Source detail route
-- `apps/web/src/app/pages/SourceDetailPage.tsx` - Source detail page
+- `apps/web/src/app/pages/SourceDetailPage.tsx` - Source detail page, modeled after the TopicDetailPage
 
 #### 9. Update Create Button
 

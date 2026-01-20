@@ -15,6 +15,7 @@ import { Route as MainUpcomingRouteImport } from './routes/_main/upcoming'
 import { Route as MainUnscheduledRouteImport } from './routes/_main/unscheduled'
 import { Route as MainTopicsRouteImport } from './routes/_main/topics'
 import { Route as MainTodayRouteImport } from './routes/_main/today'
+import { Route as MainSourcesRouteImport } from './routes/_main/sources'
 import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainMyTopicsRouteImport } from './routes/_main/my-topics'
@@ -23,6 +24,7 @@ import { Route as MainInboxRouteImport } from './routes/_main/inbox'
 import { Route as MainHomeRouteImport } from './routes/_main/home'
 import { Route as MainArchivedRouteImport } from './routes/_main/archived'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
+import { Route as MainSourcesSourceIdRouteImport } from './routes/_main/sources_.$sourceId'
 import { Route as MainReviewSessionReviewSessionIdRouteImport } from './routes/_main/review-session.$reviewSessionId'
 
 const MainRoute = MainRouteImport.update({
@@ -52,6 +54,11 @@ const MainTopicsRoute = MainTopicsRouteImport.update({
 const MainTodayRoute = MainTodayRouteImport.update({
   id: '/today',
   path: '/today',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainSourcesRoute = MainSourcesRouteImport.update({
+  id: '/sources',
+  path: '/sources',
   getParentRoute: () => MainRoute,
 } as any)
 const MainReviewRoute = MainReviewRouteImport.update({
@@ -94,6 +101,11 @@ const MainTopicsTopicIdRoute = MainTopicsTopicIdRouteImport.update({
   path: '/topics/$topicId',
   getParentRoute: () => MainRoute,
 } as any)
+const MainSourcesSourceIdRoute = MainSourcesSourceIdRouteImport.update({
+  id: '/sources_/$sourceId',
+  path: '/sources/$sourceId',
+  getParentRoute: () => MainRoute,
+} as any)
 const MainReviewSessionReviewSessionIdRoute =
   MainReviewSessionReviewSessionIdRouteImport.update({
     id: '/review-session/$reviewSessionId',
@@ -109,12 +121,14 @@ export interface FileRoutesByFullPath {
   '/my-topics': typeof MainMyTopicsRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
+  '/sources': typeof MainSourcesRoute
   '/today': typeof MainTodayRoute
   '/topics': typeof MainTopicsRoute
   '/unscheduled': typeof MainUnscheduledRoute
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
+  '/sources/$sourceId': typeof MainSourcesSourceIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
 }
 export interface FileRoutesByTo {
@@ -125,12 +139,14 @@ export interface FileRoutesByTo {
   '/my-topics': typeof MainMyTopicsRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
+  '/sources': typeof MainSourcesRoute
   '/today': typeof MainTodayRoute
   '/topics': typeof MainTopicsRoute
   '/unscheduled': typeof MainUnscheduledRoute
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
+  '/sources/$sourceId': typeof MainSourcesSourceIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
 }
 export interface FileRoutesById {
@@ -143,12 +159,14 @@ export interface FileRoutesById {
   '/_main/my-topics': typeof MainMyTopicsRoute
   '/_main/recent': typeof MainRecentRoute
   '/_main/review': typeof MainReviewRoute
+  '/_main/sources': typeof MainSourcesRoute
   '/_main/today': typeof MainTodayRoute
   '/_main/topics': typeof MainTopicsRoute
   '/_main/unscheduled': typeof MainUnscheduledRoute
   '/_main/upcoming': typeof MainUpcomingRoute
   '/_main/': typeof MainIndexRoute
   '/_main/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
+  '/_main/sources_/$sourceId': typeof MainSourcesSourceIdRoute
   '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
 }
 export interface FileRouteTypes {
@@ -161,12 +179,14 @@ export interface FileRouteTypes {
     | '/my-topics'
     | '/recent'
     | '/review'
+    | '/sources'
     | '/today'
     | '/topics'
     | '/unscheduled'
     | '/upcoming'
     | '/'
     | '/review-session/$reviewSessionId'
+    | '/sources/$sourceId'
     | '/topics/$topicId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -177,12 +197,14 @@ export interface FileRouteTypes {
     | '/my-topics'
     | '/recent'
     | '/review'
+    | '/sources'
     | '/today'
     | '/topics'
     | '/unscheduled'
     | '/upcoming'
     | '/'
     | '/review-session/$reviewSessionId'
+    | '/sources/$sourceId'
     | '/topics/$topicId'
   id:
     | '__root__'
@@ -194,12 +216,14 @@ export interface FileRouteTypes {
     | '/_main/my-topics'
     | '/_main/recent'
     | '/_main/review'
+    | '/_main/sources'
     | '/_main/today'
     | '/_main/topics'
     | '/_main/unscheduled'
     | '/_main/upcoming'
     | '/_main/'
     | '/_main/review-session/$reviewSessionId'
+    | '/_main/sources_/$sourceId'
     | '/_main/topics_/$topicId'
   fileRoutesById: FileRoutesById
 }
@@ -249,6 +273,13 @@ declare module '@tanstack/react-router' {
       path: '/today'
       fullPath: '/today'
       preLoaderRoute: typeof MainTodayRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/sources': {
+      id: '/_main/sources'
+      path: '/sources'
+      fullPath: '/sources'
+      preLoaderRoute: typeof MainSourcesRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/review': {
@@ -307,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainTopicsTopicIdRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/sources_/$sourceId': {
+      id: '/_main/sources_/$sourceId'
+      path: '/sources/$sourceId'
+      fullPath: '/sources/$sourceId'
+      preLoaderRoute: typeof MainSourcesSourceIdRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/_main/review-session/$reviewSessionId': {
       id: '/_main/review-session/$reviewSessionId'
       path: '/review-session/$reviewSessionId'
@@ -325,12 +363,14 @@ interface MainRouteChildren {
   MainMyTopicsRoute: typeof MainMyTopicsRoute
   MainRecentRoute: typeof MainRecentRoute
   MainReviewRoute: typeof MainReviewRoute
+  MainSourcesRoute: typeof MainSourcesRoute
   MainTodayRoute: typeof MainTodayRoute
   MainTopicsRoute: typeof MainTopicsRoute
   MainUnscheduledRoute: typeof MainUnscheduledRoute
   MainUpcomingRoute: typeof MainUpcomingRoute
   MainIndexRoute: typeof MainIndexRoute
   MainReviewSessionReviewSessionIdRoute: typeof MainReviewSessionReviewSessionIdRoute
+  MainSourcesSourceIdRoute: typeof MainSourcesSourceIdRoute
   MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRoute
 }
 
@@ -342,12 +382,14 @@ const MainRouteChildren: MainRouteChildren = {
   MainMyTopicsRoute: MainMyTopicsRoute,
   MainRecentRoute: MainRecentRoute,
   MainReviewRoute: MainReviewRoute,
+  MainSourcesRoute: MainSourcesRoute,
   MainTodayRoute: MainTodayRoute,
   MainTopicsRoute: MainTopicsRoute,
   MainUnscheduledRoute: MainUnscheduledRoute,
   MainUpcomingRoute: MainUpcomingRoute,
   MainIndexRoute: MainIndexRoute,
   MainReviewSessionReviewSessionIdRoute: MainReviewSessionReviewSessionIdRoute,
+  MainSourcesSourceIdRoute: MainSourcesSourceIdRoute,
   MainTopicsTopicIdRoute: MainTopicsTopicIdRoute,
 }
 

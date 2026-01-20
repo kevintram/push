@@ -3,6 +3,7 @@
 // External libraries
 import { useNavigate } from '@tanstack/react-router'
 import {
+	FileText,
 	ListChecks,
 	Loader2,
 	Plus,
@@ -27,6 +28,7 @@ import { SidebarMenuButton } from '~/components/ui/Sidebar'
 
 // Feature hooks
 import { useCreateReviewSession } from '~/features/reviews/api/createReviewSession'
+import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 
 export function CreateButton() {
@@ -37,6 +39,8 @@ export function CreateButton() {
 
 	// State for AddTopicDialog
 	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
+	// State for AddSourceDialog
+	const [isAddSourceDialogOpen, setIsAddSourceDialogOpen] = useState(false)
 
 	const isLoading = isCreatingReview
 
@@ -105,6 +109,13 @@ export function CreateButton() {
 					<SquarePen />
 					<span>New topic</span>
 				</DropdownMenuItem>
+				<DropdownMenuItem
+					disabled={isLoading}
+					onClick={() => setIsAddSourceDialogOpen(true)}
+				>
+					<FileText />
+					<span>New source</span>
+				</DropdownMenuItem>
 			</DropdownMenuContent>
 
 			<AddTopicDialog
@@ -123,6 +134,24 @@ export function CreateButton() {
 					})
 				}}
 				open={isAddTopicDialogOpen}
+			/>
+
+			<AddSourceDialog
+				context={{ type: 'standalone' }}
+				onOpenChange={setIsAddSourceDialogOpen}
+				onSuccess={sourceId => {
+					toast('Source created', {
+						action: {
+							label: 'Open',
+							onClick: () =>
+								navigate({
+									to: '/sources/$sourceId',
+									params: { sourceId: sourceId.toString() }
+								})
+						}
+					})
+				}}
+				open={isAddSourceDialogOpen}
 			/>
 		</DropdownMenu>
 	)

@@ -1,0 +1,71 @@
+import { useNavigate, useRouter } from '@tanstack/react-router'
+import { ArrowLeft } from 'lucide-react'
+import { useCallback, useMemo } from 'react'
+import { Button } from '~/components/ui/Button'
+import { SidebarTrigger } from '~/components/ui/Sidebar'
+import { useSourceWithRelationships } from '~/features/sources/api/getSource'
+import { SourceDetail } from '~/features/sources/components/SourceDetail/SourceDetail'
+import { SourceContext } from '~/features/sources/stores/SelectedSourceContext'
+
+interface SourceDetailPageProps {
+	sourceId: string
+}
+
+function BrowserNavigationButtons() {
+	const router = useRouter()
+
+	return (
+		<Button
+			className='h-6 w-6 p-0'
+			onClick={() => router.history.back()}
+			size='sm'
+			title='Go back'
+			variant='ghost'
+		>
+			<ArrowLeft className='h-4 w-4' />
+		</Button>
+	)
+}
+
+export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
+	const navigate = useNavigate()
+	const router = useRouter()
+
+	const { source, isLoading } = useSourceWithRelationships(
+		Number.parseInt(sourceId, 10)
+	)
+
+	const handleDelete = useCallback(() => {
+		router.history.back()
+	}, [router])
+
+	const handleSourceNavigate = useCallback(
+		(sourceId: number) => {
+			navigate({
+				to: '/sources/$sourceId',
+				params: { sourceId: sourceId.toString() }
+			})
+		},
+		[navigate]
+	)
+
+	const contextValue = useMemo(
+		() => ({
+			source,
+			isLoading
+		}),
+		[source, isLoading]
+	)
+
+	return (
+		<SourceContext value={contextValue}>
+			<SourceDetail
+				className='mx-auto max-w-5xl'
+				headerAfterActions={<SidebarTrigger />}
+				headerBeforeActions={<BrowserNavigationButtons />}
+				onDelete={handleDelete}
+				onSourceNavigate={handleSourceNavigate}
+			/>
+		</SourceContext>
+	)
+}
