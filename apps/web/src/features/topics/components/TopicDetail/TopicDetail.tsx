@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, use, useCallback, useMemo } from 'react'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
+import type { Source } from '~/features/sources/types/source.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
@@ -13,6 +14,7 @@ import { RelationshipDirection, type Topic } from '../../types/topic.types'
 import type { SrsSource } from '../AddTopicDialog'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
 import { TopicRelatedPanel } from '../TopicRelatedPanel'
+import { TopicSourcesPanel } from '../TopicSourcesPanel'
 import { ReviewsSidebar } from './ReviewSidebar'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailSkeleton } from './TopicDetailSkeleton'
@@ -51,6 +53,11 @@ interface TopicDetailProps {
 	 */
 	onTopicNavigate?: (topicId: number) => void
 	/**
+	 * Callback when navigating to a source (source click in sources panel).
+	 * If not provided, uses default dialog behavior.
+	 */
+	onSourceNavigate?: (sourceId: number) => void
+	/**
 	 * Custom card renderer for children panel.
 	 */
 	renderChildCard?: (
@@ -67,6 +74,10 @@ interface TopicDetailProps {
 		onClick: () => void
 	) => ReactNode
 	/**
+	 * Custom card renderer for sources panel.
+	 */
+	renderSourceCard?: (source: Source, onClick: () => void) => ReactNode
+	/**
 	 * Optional className to apply to the scroll container
 	 */
 	className?: string
@@ -80,8 +91,10 @@ export function TopicDetail({
 	sidebarReadonly = false,
 	onDelete,
 	onTopicNavigate,
+	onSourceNavigate,
 	renderChildCard,
 	renderRelatedCard,
+	renderSourceCard,
 	className
 }: TopicDetailProps) {
 	// Get topic from context if not provided via props
@@ -269,7 +282,15 @@ export function TopicDetail({
 								srsSource={srsSource}
 								topicId={topic.id}
 							/>
-						</div>{' '}
+						</div>
+						<div className='mt-4'>
+							<TopicSourcesPanel
+								getScrollElement={() => scrollContainerRef.current}
+								onSourceSelect={onSourceNavigate}
+								renderCard={renderSourceCard}
+								sources={topic.sources}
+							/>
+						</div>
 					</div>
 					<ReviewsSidebar readonly={sidebarReadonly} />
 				</SidebarHolder>
