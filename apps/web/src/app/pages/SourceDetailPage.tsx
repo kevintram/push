@@ -49,6 +49,16 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 		[navigate]
 	)
 
+	const handleTopicNavigate = useCallback(
+		(topicId: number) => {
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topicId.toString() }
+			})
+		},
+		[navigate]
+	)
+
 	const contextValue = useMemo(
 		() => ({
 			source,
@@ -65,6 +75,7 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 				headerBeforeActions={<BrowserNavigationButtons />}
 				onDelete={handleDelete}
 				onSourceNavigate={handleSourceNavigate}
+				onTopicNavigate={handleTopicNavigate}
 			/>
 		</SourceContext>
 	)
