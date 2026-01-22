@@ -21,7 +21,10 @@ from sqlalchemy.types import TIMESTAMP, Boolean, Text
 from app.types.ltree import LtreeType
 
 from app.models.base import Base
-from app.utils.retrievability import calculate_retrievability, calculate_days_until_threshold
+from app.utils.retrievability import (
+    calculate_retrievability,
+    calculate_days_until_threshold,
+)
 
 if TYPE_CHECKING:
     from app.models.fsrs_state import FsrsState

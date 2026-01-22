@@ -6,6 +6,7 @@ from starlette import status
 
 router = APIRouter()
 
+
 @router.get("/login")
 def login():
     authorization_url = workos.user_management.get_authorization_url(
@@ -26,9 +27,7 @@ def callback(code: str):
             },
         )
 
-        resp = RedirectResponse(
-            url=settings.APP_URL, status_code=status.HTTP_302_FOUND
-        )
+        resp = RedirectResponse(url=settings.APP_URL, status_code=status.HTTP_302_FOUND)
 
         resp.set_cookie(
             settings.WORKOS_COOKIE_NAME,

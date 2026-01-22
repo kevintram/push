@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime, date
+from datetime import date, datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, model_validator
+
+if TYPE_CHECKING:
+    from app.schemas.sources import SourceSummaryRead
 
 
 class RetrievabilityBucket(str, Enum):
