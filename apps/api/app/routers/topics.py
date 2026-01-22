@@ -9,7 +9,14 @@ from sqlalchemy.exc import IntegrityError
 from typing import Literal
 
 from app.dependencies import SessionDep, UserIdDep
-from app.models import Topic, t_topic_other_relations, ReviewSession, Review, FsrsState, Source
+from app.models import (
+    Topic,
+    t_topic_other_relations,
+    ReviewSession,
+    Review,
+    FsrsState,
+    Source,
+)
 from app.schemas import (
     TopicRead,
     TopicCreate,
@@ -30,6 +37,7 @@ router = APIRouter()
 
 class ChildHandlingStrategy(str, Enum):
     """Strategy for handling children when deleting a topic."""
+
     DELETE = "delete"
     ORPHAN = "orphan"
     REPARENT = "reparent"
@@ -58,9 +66,7 @@ async def is_descendant_of(
     return result.scalar()
 
 
-async def get_topic_or_404(
-    session: AsyncSession, topic_id: int, user_id: str
-) -> Topic:
+async def get_topic_or_404(session: AsyncSession, topic_id: int, user_id: str) -> Topic:
     """Get a topic or raise 404 if not found."""
     stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
     result = await session.execute(stmt)
@@ -125,32 +131,31 @@ async def search_topics(
     if addable_as_parent_to is not None:
         # For tree structure: exclude self and all descendants (to prevent cycles)
         # Using ltree: find all topics where addable_as_parent_to.path <@ their path
-        descendants_subq = (
-            select(Topic.id)
-            .where(
-                Topic.user_id == user_id,
-                text(
-                    "(SELECT path FROM topics WHERE id = :parent_candidate_id) <@ topics.path"
-                ).bindparams(parent_candidate_id=addable_as_parent_to),
-            )
+        descendants_subq = select(Topic.id).where(
+            Topic.user_id == user_id,
+            text(
+                "(SELECT path FROM topics WHERE id = :parent_candidate_id) <@ topics.path"
+            ).bindparams(parent_candidate_id=addable_as_parent_to),
         )
         stmt = stmt.where(Topic.id.notin_(descendants_subq))
 
         # Also exclude current parent
         current_parent = select(Topic.parent_id).where(Topic.id == addable_as_parent_to)
-        stmt = stmt.where(or_(Topic.id != current_parent.scalar_subquery(), current_parent.scalar_subquery().is_(None)))
+        stmt = stmt.where(
+            or_(
+                Topic.id != current_parent.scalar_subquery(),
+                current_parent.scalar_subquery().is_(None),
+            )
+        )
 
     if addable_as_child_to is not None:
         # For tree structure: exclude self and all ancestors (to prevent cycles)
         # Using ltree: find all topics where their path <@ addable_as_child_to.path
-        ancestors_subq = (
-            select(Topic.id)
-            .where(
-                Topic.user_id == user_id,
-                text(
-                    "topics.path <@ (SELECT path FROM topics WHERE id = :child_candidate_id)"
-                ).bindparams(child_candidate_id=addable_as_child_to),
-            )
+        ancestors_subq = select(Topic.id).where(
+            Topic.user_id == user_id,
+            text(
+                "topics.path <@ (SELECT path FROM topics WHERE id = :child_candidate_id)"
+            ).bindparams(child_candidate_id=addable_as_child_to),
         )
         stmt = stmt.where(Topic.id.notin_(ancestors_subq))
 
@@ -400,7 +405,8 @@ async def insert_child(
         # Check for cycles: child cannot already be an ancestor of parent
         if await is_descendant_of(session, parent_id, payload.child_id):
             raise HTTPException(
-                status_code=400, detail="Cannot add ancestor as child: would create cycle"
+                status_code=400,
+                detail="Cannot add ancestor as child: would create cycle",
             )
 
         # Check if already a child
@@ -482,7 +488,9 @@ async def create_topic_other_relationship(
     else:
         # Create new topic from inline data
         assert relationship.to_topic is not None
-        to_topic_data = relationship.to_topic.model_dump(exclude={"srs_enabled", "inherit_fsrs"})
+        to_topic_data = relationship.to_topic.model_dump(
+            exclude={"srs_enabled", "inherit_fsrs"}
+        )
         new_to_topic = Topic(**to_topic_data, user_id=user_id)
 
         if relationship.to_topic.srs_enabled:
@@ -632,7 +640,9 @@ async def delete_topic(
             # Recursively delete all descendants using ltree
             await session.execute(
                 delete(Topic).where(
-                    text("topics.path <@ (SELECT path FROM topics WHERE id = :delete_topic_id)").bindparams(delete_topic_id=topic_id)
+                    text(
+                        "topics.path <@ (SELECT path FROM topics WHERE id = :delete_topic_id)"
+                    ).bindparams(delete_topic_id=topic_id)
                 )
             )
         elif handle_children_by == ChildHandlingStrategy.ORPHAN:

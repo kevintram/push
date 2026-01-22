@@ -36,11 +36,13 @@ class LtreeType(types.Concatenable, types.UserDefinedType):
     def bind_processor(self, dialect):
         def process(value):
             return value
+
         return process
 
     def result_processor(self, dialect, coltype):
         def process(value):
             return value
+
         return process
 
     def literal_processor(self, dialect):
@@ -49,6 +51,7 @@ class LtreeType(types.Concatenable, types.UserDefinedType):
                 value = value.replace("'", "''")
                 return "'%s'" % value
             return "NULL"
+
         return process
 
     __visit_name__ = "LTREE"

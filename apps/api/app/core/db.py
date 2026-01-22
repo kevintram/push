@@ -1,4 +1,9 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    AsyncEngine,
+    async_sessionmaker,
+    AsyncSession,
+)
 from sqlalchemy.pool import NullPool
 from typing import AsyncGenerator
 from .config import settings
@@ -8,7 +13,7 @@ engine: AsyncEngine = create_async_engine(
     str(settings.POSTGRES_URL),
     future=True,
     # echo=True,
-    poolclass=NullPool, # because using supabase session pooler connection handles for you
+    poolclass=NullPool,  # because using supabase session pooler connection handles for you
 )
 
 # Create the session factory
@@ -17,6 +22,7 @@ AsyncSessionFactory = async_sessionmaker(
     autoflush=False,
     expire_on_commit=False,
 )
+
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionFactory() as session:

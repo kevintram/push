@@ -28,6 +28,7 @@ router = APIRouter()
 
 class ChildHandlingStrategy(str, Enum):
     """Strategy for handling children when deleting a source."""
+
     DELETE = "delete"
     ORPHAN = "orphan"
     REPARENT = "reparent"
@@ -104,33 +105,30 @@ async def search_sources(
 
     if addable_as_parent_to is not None:
         # For tree structure: exclude self and all descendants (to prevent cycles)
-        descendants_subq = (
-            select(Source.id)
-            .where(
-                Source.user_id == user_id,
-                text(
-                    "(SELECT path FROM sources WHERE id = :parent_candidate_id) <@ sources.path"
-                ).bindparams(parent_candidate_id=addable_as_parent_to),
-            )
+        descendants_subq = select(Source.id).where(
+            Source.user_id == user_id,
+            text(
+                "(SELECT path FROM sources WHERE id = :parent_candidate_id) <@ sources.path"
+            ).bindparams(parent_candidate_id=addable_as_parent_to),
         )
         stmt = stmt.where(Source.id.notin_(descendants_subq))
 
         # Also exclude current parent
-        current_parent = select(Source.parent_id).where(Source.id == addable_as_parent_to)
+        current_parent = select(Source.parent_id).where(
+            Source.id == addable_as_parent_to
+        )
         stmt = stmt.where(
-            (Source.id != current_parent.scalar_subquery()) | current_parent.scalar_subquery().is_(None)
+            (Source.id != current_parent.scalar_subquery())
+            | current_parent.scalar_subquery().is_(None)
         )
 
     if addable_as_child_to is not None:
         # For tree structure: exclude self and all ancestors (to prevent cycles)
-        ancestors_subq = (
-            select(Source.id)
-            .where(
-                Source.user_id == user_id,
-                text(
-                    "sources.path <@ (SELECT path FROM sources WHERE id = :child_candidate_id)"
-                ).bindparams(child_candidate_id=addable_as_child_to),
-            )
+        ancestors_subq = select(Source.id).where(
+            Source.user_id == user_id,
+            text(
+                "sources.path <@ (SELECT path FROM sources WHERE id = :child_candidate_id)"
+            ).bindparams(child_candidate_id=addable_as_child_to),
         )
         stmt = stmt.where(Source.id.notin_(ancestors_subq))
 
@@ -194,8 +192,8 @@ async def read_sources(
             )
         else:
             stmt = stmt.where(
-                (Source.fsrs_state_id.is_(None)) |
-                select(FsrsState.id)
+                (Source.fsrs_state_id.is_(None))
+                | select(FsrsState.id)
                 .where(
                     FsrsState.id == Source.fsrs_state_id,
                     FsrsState.srs_enabled.is_(False),
@@ -220,8 +218,8 @@ async def read_sources(
             )
         else:
             stmt = stmt.where(
-                (Source.fsrs_state_id.is_(None)) |
-                select(FsrsState.id)
+                (Source.fsrs_state_id.is_(None))
+                | select(FsrsState.id)
                 .where(
                     FsrsState.id == Source.fsrs_state_id,
                     FsrsState.stability.is_(None),
@@ -336,7 +334,8 @@ async def insert_child(
         # Check for cycles: child cannot already be an ancestor of parent
         if await is_source_descendant_of(session, parent_id, payload.child_id):
             raise HTTPException(
-                status_code=400, detail="Cannot add ancestor as child: would create cycle"
+                status_code=400,
+                detail="Cannot add ancestor as child: would create cycle",
             )
 
         # Check if already a child
@@ -459,7 +458,9 @@ async def remove_source_topic(
     await session.commit()
 
     if result.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Source-topic relationship not found")
+        raise HTTPException(
+            status_code=404, detail="Source-topic relationship not found"
+        )
 
 
 @router.patch("/sources/{source_id}/", tags=["sources"])
@@ -529,13 +530,17 @@ async def delete_source(
             # Recursively delete all descendants using ltree
             await session.execute(
                 delete(Source).where(
-                    text("sources.path <@ (SELECT path FROM sources WHERE id = :delete_source_id)").bindparams(delete_source_id=source_id)
+                    text(
+                        "sources.path <@ (SELECT path FROM sources WHERE id = :delete_source_id)"
+                    ).bindparams(delete_source_id=source_id)
                 )
             )
         elif handle_children_by == ChildHandlingStrategy.ORPHAN:
             # Set children's parent_id to null (make them root sources)
             await session.execute(
-                update(Source).where(Source.parent_id == source_id).values(parent_id=None)
+                update(Source)
+                .where(Source.parent_id == source_id)
+                .values(parent_id=None)
             )
         elif handle_children_by == ChildHandlingStrategy.REPARENT:
             if source.parent_id is None:

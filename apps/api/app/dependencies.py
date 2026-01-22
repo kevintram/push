@@ -6,9 +6,11 @@ from app.core.config import settings
 from app.core.auth import workos
 from app.core.db import get_db
 
+
 async def get_token_header(x_token: Annotated[str, Header()]):
     if x_token != "fake-super-secret-token":
         raise HTTPException(status_code=400, detail="X-Token header invalid")
+
 
 async def get_user_id(
     request: Request,
@@ -29,7 +31,7 @@ async def get_user_id(
     elif auth_response.reason == "no_session_cookie_provided":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No session cookie provided"
+            detail="No session cookie provided",
         )
     else:
         try:
@@ -38,7 +40,7 @@ async def get_user_id(
             if result.authenticated is False:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Authentication failed"
+                    detail="Authentication failed",
                 )
 
             response.set_cookie(
@@ -55,9 +57,10 @@ async def get_user_id(
         except Exception as e:
             print("Error refreshing session", e)
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Authentication failed"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication failed"
             )
+
+
 UserIdDep = Annotated[str, Depends(get_user_id)]
 
 

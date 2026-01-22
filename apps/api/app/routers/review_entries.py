@@ -8,7 +8,11 @@ from sqlalchemy.orm import selectinload
 from app.dependencies import SessionDep, UserIdDep
 from app.models import Review, ReviewSession, Topic
 from app.schemas import ReviewListItem, ReviewRead, ReviewSessionReadWithReviews
-from app.schemas.review_entries import ReviewEntry, ReviewEntryReview, ReviewEntrySession
+from app.schemas.review_entries import (
+    ReviewEntry,
+    ReviewEntryReview,
+    ReviewEntrySession,
+)
 
 router = APIRouter()
 

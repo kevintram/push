@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from app.models.sources import Source
     from app.models.topics import Topic
 
+
 class Review(Base):
     __tablename__ = "reviews"
 
@@ -37,14 +38,18 @@ class Review(Base):
         BigInteger, ForeignKey("topics.id"), nullable=True
     )
     user_id: Mapped[str] = mapped_column(String, nullable=False)
-    
+
     scheduled_at: Mapped[date | None] = mapped_column(Date, nullable=True)
     completed_at: Mapped[date | None] = mapped_column(Date, nullable=True)
     effective_date: Mapped[date] = column_property(
         func.coalesce(completed_at, scheduled_at)
     )
-    description: Mapped[str] = mapped_column(Text, nullable=False, default="", server_default="")
-    notes: Mapped[str] = mapped_column(Text, nullable=False, default="", server_default="")
+    description: Mapped[str] = mapped_column(
+        Text, nullable=False, default="", server_default=""
+    )
+    notes: Mapped[str] = mapped_column(
+        Text, nullable=False, default="", server_default=""
+    )
 
     rating: Mapped[str | None] = mapped_column(
         Enum("miss", "hard", "good", "easy", name="rating"),
@@ -82,7 +87,9 @@ class Review(Base):
     due_after: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     # Relationships
-    review_session: Mapped["ReviewSession | None"] = relationship(back_populates="reviews")
+    review_session: Mapped["ReviewSession | None"] = relationship(
+        back_populates="reviews"
+    )
     topic: Mapped["Topic | None"] = relationship(back_populates="reviews")
     # Source relationship via source_reviews association table
     source: Mapped["Source | None"] = relationship(
