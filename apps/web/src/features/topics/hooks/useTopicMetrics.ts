@@ -3,7 +3,7 @@
  * Maintains backwards compatibility with existing imports.
  */
 export {
-	useLearnableMetrics as useTopicMetrics,
 	type BucketInfo,
-	type LearnableMetrics as TopicMetrics
+	type LearnableMetrics as TopicMetrics,
+	useLearnableMetrics as useTopicMetrics
 } from '~/hooks/useLearnableMetrics'

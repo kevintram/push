@@ -1,5 +1,5 @@
-import { ChevronDown } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { type ReactNode, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
@@ -10,7 +10,7 @@ const MIN_HEIGHT = 96
 
 interface LearnablePanelProps<T> {
 	/** Items to display in the masonry layout */
-	items: T[]
+	items: Array<T>
 	/** Icon to display in the panel header */
 	icon: LucideIcon
 	/** Label for the panel (e.g., "Child topics", "Sources") */

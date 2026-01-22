@@ -4,11 +4,11 @@ import {
 	LearnableCardBase,
 	type LearnableCardConfig
 } from '~/components/LearnableCard'
-import type { BucketInfo } from '~/hooks/useLearnableMetrics'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { useTopicMetrics } from '~/features/topics/hooks/useTopicMetrics'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { prefetchTopicRelations } from '~/features/topics/utils/prefetchTopicRelations'
+import type { BucketInfo } from '~/hooks/useLearnableMetrics'
 
 const MIN_HEIGHT = 96
 
@@ -43,7 +43,10 @@ export function TopicCard({
 			onSrsToggle: (id, newValue) => updateTopic({ id, srs_enabled: newValue }),
 			isUpdating: isUpdatingTopic,
 			onPrefetch: (qc, t) => prefetchTopicRelations(qc, t),
-			getLeavingSoonTooltip: (daysUntil: number, bucketLabel: BucketInfo['label']) =>
+			getLeavingSoonTooltip: (
+				daysUntil: number,
+				bucketLabel: BucketInfo['label']
+			) =>
 				daysUntil === 1
 					? `1 day until ${bucketLabel === 'Early' ? 'ready' : 'late'}`
 					: `${daysUntil} days until ${bucketLabel === 'Early' ? 'ready' : 'late'}`
