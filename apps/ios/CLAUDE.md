@@ -13,7 +13,28 @@
 - Use 2 spaces for indentation
 - Run `swift format -i <path>` to format the code in place
 
-## Commit Style Guide
-We use [conventional commits](https://www.conventionalcommits.org/) with package/app-specific scopes:
-- Format: `<type>: <description>`
-- Types: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
+## Commit Guidelines
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/):
+
+**Format**: `<type>(<scope>): <description>`
+
+**Types**: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
+
+**Scopes**: `web`, `site`, `api`, `android`, `ios` (or omit for repo-wide changes)
+
+**Examples**:
+```
+feat(ios): add dark mode toggle
+fix(ios): handle authentication edge case
+```
+
+## TODO Annotations
+We use a priority-based TODO annotation system throughout the codebase:
+
+- `TODO(0)`: Critical - never merge
+- `TODO(1)`: High - architectural flaws, major bugs
+- `TODO(2)`: Medium - minor bugs, missing features
+- `TODO(3)`: Low - polish, tests, documentation
+- `TODO(4)`: Questions/investigations needed
+- `PERF`: Performance optimization opportunities
