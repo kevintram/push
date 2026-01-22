@@ -1,16 +1,11 @@
-import { BookMarked, ChevronDown } from 'lucide-react'
-import { type ReactNode, useCallback, useMemo, useState } from 'react'
-import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { Button } from '~/components/ui/Button'
-import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
+import { BookMarked } from 'lucide-react'
+import { type ReactNode, useCallback } from 'react'
+import { LearnablePanel } from '~/components/LearnablePanel'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { SourceCard } from '~/features/sources/components/SourceCard'
 import type { Source } from '~/features/sources/types/source.types'
 
-const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
-
-type ListItem = { type: 'source'; source: Source }
 
 interface TopicSourcesPanelProps {
 	/**
@@ -39,28 +34,10 @@ export function TopicSourcesPanel({
 	onSourceSelect,
 	renderCard
 }: TopicSourcesPanelProps) {
-	const [isCollapsed, setIsCollapsed] = useState(false)
-
 	// Use prop directly - sources comes from the single getTopic fetch
 	const sources = sourcesProp ?? []
 
-	// Determine navigation behavior
-	const handleSourceSelect = useCallback(
-		(sourceId: number) => {
-			onSourceSelect?.(sourceId)
-		},
-		[onSourceSelect]
-	)
-
-	// Map sources into array
-	const items = useMemo<Array<ListItem>>(
-		() => sources.map(source => ({ type: 'source' as const, source })),
-		[sources]
-	)
-
-	const estimateItemSize = useCallback((item: ListItem) => {
-		// Estimate height based on source title and notes length
-		const { source } = item
+	const estimateItemSize = useCallback((source: Source) => {
 		const baseHeight = 80
 		const lineHeight = 10
 		const numCharsPerLine = 30
@@ -71,77 +48,46 @@ export function TopicSourcesPanel({
 		const notesHeight =
 			Math.floor((source.notes?.length ?? 0) / numCharsPerLine) * lineHeight
 
-		const calculatedHeight = baseHeight + titleHeight + newLine + notesHeight
-
-		return Math.max(calculatedHeight, MIN_HEIGHT)
+		return baseHeight + titleHeight + newLine + notesHeight
 	}, [])
 
 	const renderItem = useCallback(
-		(item: ListItem) => {
+		(source: Source) => {
 			const handleClick = () => {
-				handleSourceSelect(item.source.id)
+				onSourceSelect?.(source.id)
 			}
 
 			// Use custom renderer if provided
 			if (renderCard) {
-				return renderCard(item.source, handleClick)
+				return renderCard(source, handleClick)
 			}
 
 			// Default card rendering (read-only - no remove button)
 			return (
 				<SourceCard
-					headerRight={<SourceActionMenu source={item.source} />}
+					headerRight={<SourceActionMenu source={source} />}
 					minHeight={MIN_HEIGHT}
-					onSourceClick={() => handleClick()}
-					source={item.source}
+					onSourceClick={handleClick}
+					source={source}
 				/>
 			)
 		},
-		[handleSourceSelect, renderCard]
+		[onSourceSelect, renderCard]
 	)
 
-	const getItemKey = useCallback((item: ListItem, _index: number) => {
-		return item.source.id
-	}, [])
-
-	// Don't render the panel if there are no sources
-	if (sources.length === 0) {
-		return null
-	}
+	const getItemKey = useCallback((source: Source) => source.id, [])
 
 	return (
-		<div className='flex flex-col'>
-			<TopicPanelHeader
-				label={
-					<Button
-						className='flex items-center gap-2 p-0'
-						onClick={() => setIsCollapsed(!isCollapsed)}
-						variant='ghost'
-					>
-						<BookMarked className='h-4 w-4' />
-						<span className='font-medium text-muted-foreground text-sm'>
-							Sources ({sources.length})
-						</span>
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
-					</Button>
-				}
-			/>
-			{!isCollapsed && (
-				<div className='flex-1 py-6'>
-					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						gap={16}
-						getItemKey={getItemKey}
-						getScrollElement={getScrollElement}
-						items={items}
-						minItemWidth={MIN_WIDTH}
-						renderItem={renderItem}
-						scrollMargin={scrollMargin}
-					/>
-				</div>
-			)}
-		</div>
+		<LearnablePanel
+			estimateItemSize={estimateItemSize}
+			getItemKey={getItemKey}
+			getScrollElement={getScrollElement}
+			hideWhenEmpty={true}
+			icon={BookMarked}
+			items={sources}
+			label='Sources'
+			renderItem={renderItem}
+			scrollMargin={scrollMargin}
+		/>
 	)
 }

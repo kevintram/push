@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { BookOpen, ChevronDown, Loader2, Plus, Search } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
-import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { LearnablePanel } from '~/components/LearnablePanel'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -9,7 +9,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -18,10 +17,7 @@ import { sourceKeys } from '../api/queryKeys'
 import { useRemoveSourceTopic } from '../api/removeSourceTopic'
 import { AddTopicToSourceDialog } from './AddTopicToSourceDialog'
 
-const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
-
-type ListItem = { type: 'topic'; topic: Topic }
 
 interface SourceTopicsPanelProps {
 	sourceId: number | undefined
@@ -58,7 +54,6 @@ export function SourceTopicsPanel({
 	renderCard
 }: SourceTopicsPanelProps) {
 	const queryClient = useQueryClient()
-	const [isCollapsed, setIsCollapsed] = useState(false)
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 
 	// Use prop directly - topics comes from the single getSource fetch
@@ -68,14 +63,6 @@ export function SourceTopicsPanel({
 	const removeSourceTopic = useRemoveSourceTopic()
 
 	const isAdding = addSourceTopic.isPending
-
-	// Determine navigation behavior
-	const handleTopicSelect = useCallback(
-		(topicId: number) => {
-			onTopicSelect?.(topicId)
-		},
-		[onTopicSelect]
-	)
 
 	const handleAdd = useCallback(
 		async (topic: Topic) => {
@@ -108,17 +95,9 @@ export function SourceTopicsPanel({
 		[queryClient, sourceId]
 	)
 
-	// Map topics into array
-	const items = useMemo<Array<ListItem>>(
-		() => topics.map(topic => ({ type: 'topic' as const, topic })),
-		[topics]
-	)
-
 	const existingTopicIds = useMemo(() => topics.map(t => t.id), [topics])
 
-	const estimateItemSize = useCallback((item: ListItem) => {
-		// Estimate height based on topic name and notes length
-		const { topic } = item
+	const estimateItemSize = useCallback((topic: Topic) => {
 		const baseHeight = 80
 		const lineHeight = 10
 		const numCharsPerLine = 30
@@ -129,28 +108,26 @@ export function SourceTopicsPanel({
 		const notesHeight =
 			Math.floor((topic.notes?.length ?? 0) / numCharsPerLine) * lineHeight
 
-		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
-
-		return Math.max(calculatedHeight, MIN_HEIGHT)
+		return baseHeight + nameHeight + newLine + notesHeight
 	}, [])
 
 	const renderItem = useCallback(
-		(item: ListItem) => {
+		(topic: Topic) => {
 			const handleRemoveRelationship = () => {
 				if (!sourceId) return
 				removeSourceTopic.mutate({
 					sourceId,
-					topicId: item.topic.id
+					topicId: topic.id
 				})
 			}
 
 			const handleClick = () => {
-				handleTopicSelect(item.topic.id)
+				onTopicSelect?.(topic.id)
 			}
 
 			// Use custom renderer if provided
 			if (renderCard) {
-				return renderCard(item.topic, handleRemoveRelationship, handleClick)
+				return renderCard(topic, handleRemoveRelationship, handleClick)
 			}
 
 			// Default card rendering
@@ -161,17 +138,17 @@ export function SourceTopicsPanel({
 							onRemoveRelationship={handleRemoveRelationship}
 							onTopicUpdateSuccess={handleTopicUpdateSuccess}
 							removeRelationshipText='Remove from Source'
-							topic={item.topic}
+							topic={topic}
 						/>
 					}
 					minHeight={MIN_HEIGHT}
-					onTopicClick={() => handleClick()}
-					topic={item.topic}
+					onTopicClick={handleClick}
+					topic={topic}
 				/>
 			)
 		},
 		[
-			handleTopicSelect,
+			onTopicSelect,
 			renderCard,
 			handleTopicUpdateSuccess,
 			sourceId,
@@ -179,64 +156,29 @@ export function SourceTopicsPanel({
 		]
 	)
 
-	const getItemKey = useCallback((item: ListItem, _index: number) => {
-		return item.topic.id
-	}, [])
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
-	return (
-		<div className='flex flex-col'>
-			<TopicPanelHeader
-				actions={
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true} disabled={isAdding}>
-							<Button className='gap-1' size='sm' variant='secondary'>
-								{isAdding ? (
-									<Loader2 className='h-4 w-4 animate-spin' />
-								) : (
-									<Plus className='h-4 w-4' />
-								)}
-								Add
-								<ChevronDown className='h-4 w-4' />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='start'>
-							<DropdownMenuItem onClick={() => setShowSearchDialog(true)}>
-								<Search className='h-4 w-4' />
-								Search
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				}
-				label={
-					<Button
-						className='flex items-center gap-2 p-0'
-						onClick={() => setIsCollapsed(!isCollapsed)}
-						variant='ghost'
-					>
-						<BookOpen className='h-4 w-4' />
-						<span className='font-medium text-muted-foreground text-sm'>
-							Topics covered ({topics.length})
-						</span>
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
+	const actions = (
+		<>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild={true} disabled={isAdding}>
+					<Button className='gap-1' size='sm' variant='secondary'>
+						{isAdding ? (
+							<Loader2 className='h-4 w-4 animate-spin' />
+						) : (
+							<Plus className='h-4 w-4' />
+						)}
+						Add
+						<ChevronDown className='h-4 w-4' />
 					</Button>
-				}
-			/>
-			{!isCollapsed && (
-				<div className='flex-1 py-6'>
-					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						gap={16}
-						getItemKey={getItemKey}
-						getScrollElement={getScrollElement}
-						items={items}
-						minItemWidth={MIN_WIDTH}
-						renderItem={renderItem}
-						scrollMargin={scrollMargin}
-					/>
-				</div>
-			)}
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align='start'>
+					<DropdownMenuItem onClick={() => setShowSearchDialog(true)}>
+						<Search className='h-4 w-4' />
+						Search
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
 
 			<AddTopicToSourceDialog
 				existingTopicIds={existingTopicIds}
@@ -245,6 +187,20 @@ export function SourceTopicsPanel({
 				onSelected={handleAdd}
 				open={showSearchDialog}
 			/>
-		</div>
+		</>
+	)
+
+	return (
+		<LearnablePanel
+			actions={actions}
+			estimateItemSize={estimateItemSize}
+			getItemKey={getItemKey}
+			getScrollElement={getScrollElement}
+			icon={BookOpen}
+			items={topics}
+			label='Topics covered'
+			renderItem={renderItem}
+			scrollMargin={scrollMargin}
+		/>
 	)
 }
