@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { Anvil, Inbox, Plus, RotateCcw, SquareStack } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '~/components/ui/Button'
 import {
 	Dialog,
@@ -187,7 +188,9 @@ export function AddSourceDialog({
 			} else {
 				onOpenChange(false)
 			}
-		} catch (_error) {}
+		} catch (_error) {
+			toast.error('Failed to create source')
+		}
 	}, [
 		title,
 		notes,
