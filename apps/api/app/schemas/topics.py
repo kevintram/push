@@ -59,6 +59,7 @@ class TopicSummaryRead(TopicRead):
     model_config = ConfigDict(from_attributes=True)
 
     children_count: int = 0
+    sources_count: int = 0
     related_outgoing_count: int = 0
     related_incoming_count: int = 0
 
@@ -72,6 +73,7 @@ class TopicDetailRead(TopicSummaryRead):
     children: list[TopicSummaryRead] = []
     related_outgoing: list[TopicSummaryRead] = []
     related_incoming: list[TopicSummaryRead] = []
+    sources: list["SourceSummaryRead"] = []
 
 
 class RelationshipDirection(str, Enum):

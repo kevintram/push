@@ -16,6 +16,10 @@ export async function getReviews(filters?: GetReviewsFilters) {
 		params.append('topic_id', filters.topicId.toString())
 	}
 
+	if (filters?.sourceId !== undefined) {
+		params.append('source_id', filters.sourceId.toString())
+	}
+
 	if (filters?.effectiveDateBefore !== undefined) {
 		params.append('effective_date_before', filters.effectiveDateBefore)
 	}
@@ -65,6 +69,14 @@ export function useReviewsByTopic(topicId: number | undefined) {
 		queryKey: reviewKeys.list({ topicId }),
 		queryFn: () => getReviews({ topicId }),
 		enabled: topicId !== undefined
+	})
+}
+
+export function useReviewsBySource(sourceId: number | undefined) {
+	return useQuery({
+		queryKey: reviewKeys.list({ sourceId }),
+		queryFn: () => getReviews({ sourceId }),
+		enabled: sourceId !== undefined
 	})
 }
 

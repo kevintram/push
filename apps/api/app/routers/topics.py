@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from typing import Literal
 
 from app.dependencies import SessionDep, UserIdDep
-from app.models import Topic, t_topic_other_relations, ReviewSession, Review, FsrsState
+from app.models import Topic, t_topic_other_relations, ReviewSession, Review, FsrsState, Source
 from app.schemas import (
     TopicRead,
     TopicCreate,
@@ -73,7 +73,7 @@ async def get_topic_or_404(
 async def load_topic_with_relationships(
     session: AsyncSession, topic_id: int, user_id: str
 ) -> Topic:
-    """Load a topic with parent, children, and related relationships."""
+    """Load a topic with parent, children, related, and sources relationships."""
     stmt = (
         select(Topic)
         .where(Topic.id == topic_id, Topic.user_id == user_id)
@@ -82,6 +82,7 @@ async def load_topic_with_relationships(
             selectinload(Topic.children).selectinload(Topic.fsrs_state),
             selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
             selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
+            selectinload(Topic.sources).selectinload(Source.fsrs_state),
             selectinload(Topic.fsrs_state),
         )
     )

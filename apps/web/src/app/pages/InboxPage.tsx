@@ -3,6 +3,12 @@ import { Inbox } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
+import {
+	EntityCard,
+	type EntityItem,
+	estimateEntitySize,
+	getEntityKey
+} from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -13,33 +19,59 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
+import { useSources } from '~/features/sources/api/getSources'
+import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
-import { TopicCard } from '~/features/topics/components/TopicCard'
-import type { Topic } from '~/features/topics/types/topic.types'
 
 const MIN_CARD_WIDTH = 280
-const MIN_CARD_HEIGHT = 168
-const CHARS_PER_LINE = 36
-const LINE_HEIGHT = 18
-const BASE_HEIGHT = 140
 
 export function InboxPage() {
 	const navigate = useNavigate()
-	const { data: inboxTopics, isLoading } = useTopics({
+	const { data: inboxTopics, isLoading: isLoadingTopics } = useTopics({
+		inboxed: true,
+		archived: false
+	})
+	const { data: inboxSources, isLoading: isLoadingSources } = useSources({
 		inboxed: true,
 		archived: false
 	})
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 
-	const handleTopicSelect = useCallback(
-		(topic: Topic) => {
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: topic.id.toString() }
-			})
+	const isLoading = isLoadingTopics || isLoadingSources
+
+	// Combine topics and sources, sorted by updated_at descending
+	const inboxItems = useMemo<Array<EntityItem>>(() => {
+		const items: Array<EntityItem> = [
+			...(inboxTopics ?? []).map(
+				(item): EntityItem => ({ type: 'topic', item })
+			),
+			...(inboxSources ?? []).map(
+				(item): EntityItem => ({ type: 'source', item })
+			)
+		]
+		return items.sort(
+			(a, b) =>
+				new Date(b.item.updated_at).getTime() -
+				new Date(a.item.updated_at).getTime()
+		)
+	}, [inboxTopics, inboxSources])
+
+	const handleEntitySelect = useCallback(
+		(entity: EntityItem) => {
+			if (entity.type === 'topic') {
+				navigate({
+					to: '/topics/$topicId',
+					params: { topicId: entity.item.id.toString() }
+				})
+			} else {
+				navigate({
+					to: '/sources/$sourceId',
+					params: { sourceId: entity.item.id.toString() }
+				})
+			}
 		},
 		[navigate]
 	)
@@ -55,7 +87,7 @@ export function InboxPage() {
 		})
 	}, [createTopic, navigate])
 
-	const inboxCountLabel = isLoading ? '...' : (inboxTopics?.length ?? 0)
+	const inboxCountLabel = isLoading ? '...' : inboxItems.length
 
 	return (
 		<PageLayout>
@@ -68,61 +100,49 @@ export function InboxPage() {
 			<InboxList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
+				items={inboxItems}
 				onCreateInboxTopic={handleCreateInboxTopic}
-				onTopicSelect={handleTopicSelect}
-				topics={inboxTopics}
+				onEntitySelect={handleEntitySelect}
 			/>
 		</PageLayout>
 	)
 }
 
 function InboxList({
-	topics,
-	onTopicSelect,
+	items,
+	onEntitySelect,
 	onCreateInboxTopic,
 	isLoading,
 	isCreatingTopic
 }: {
-	topics: Array<Topic> | undefined | null
-	onTopicSelect: (topic: Topic) => void
+	items: Array<EntityItem>
+	onEntitySelect: (entity: EntityItem) => void
 	onCreateInboxTopic: () => void
 	isLoading: boolean
 	isCreatingTopic: boolean
 }) {
-	const topicList = useMemo<Array<Topic>>(() => topics ?? [], [topics])
-
-	const estimateItemSize = useCallback((topic: Topic) => {
-		const nameLength = topic.name?.length ?? 0
-		const notesLength = topic.notes?.length ?? 0
-
-		const nameLines = Math.max(1, Math.ceil(nameLength / CHARS_PER_LINE))
-		const notesLines =
-			notesLength > 0 ? Math.ceil(notesLength / CHARS_PER_LINE) : 0
-
-		const height =
-			BASE_HEIGHT + (nameLines - 1) * LINE_HEIGHT + notesLines * LINE_HEIGHT
-
-		return Math.max(height, MIN_CARD_HEIGHT)
-	}, [])
-
 	const renderItem = useCallback(
-		(topic: Topic) => (
-			<TopicCard
-				headerRight={<TopicActionMenu topic={topic} />}
-				onTopicClick={onTopicSelect}
-				topic={topic}
+		(entity: EntityItem) => (
+			<EntityCard
+				entity={entity}
+				headerRight={
+					entity.type === 'topic' ? (
+						<TopicActionMenu topic={entity.item} />
+					) : (
+						<SourceActionMenu source={entity.item} />
+					)
+				}
+				onEntityClick={onEntitySelect}
 			/>
 		),
-		[onTopicSelect]
+		[onEntitySelect]
 	)
-
-	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	if (isLoading) {
 		return <MasonryLayoutSkeleton />
 	}
 
-	if (topicList.length === 0) {
+	if (items.length === 0) {
 		return (
 			<PageLayout.Content>
 				<Empty>
@@ -132,7 +152,7 @@ function InboxList({
 						</EmptyMedia>
 						<EmptyTitle>Your inbox is empty</EmptyTitle>
 						<EmptyDescription>
-							The inbox is for topics to be processed later: fleeting notes,
+							The inbox is for items to be processed later: fleeting notes,
 							random ideas, whatever
 						</EmptyDescription>
 					</EmptyHeader>
@@ -151,10 +171,10 @@ function InboxList({
 	return (
 		<PageLayout.Content className='max-w-screen p-6'>
 			<MasonryLayout
-				estimateItemSize={estimateItemSize}
+				estimateItemSize={estimateEntitySize}
 				gap={16}
-				getItemKey={getItemKey}
-				items={topicList}
+				getItemKey={getEntityKey}
+				items={items}
 				minItemWidth={MIN_CARD_WIDTH}
 				overscan={6}
 				renderItem={renderItem}

@@ -122,10 +122,12 @@ export function ReviewSessionItem({
 
 	const topicBadgesData = useMemo(() => {
 		const items =
-			entry.reviews?.map(tr => ({
-				topic: tr.topic,
-				rating: tr.rating
-			})) ?? []
+			entry.reviews
+				?.filter(tr => tr.topic !== null)
+				.map(tr => ({
+					topic: tr.topic!,
+					rating: tr.rating
+				})) ?? []
 		return {
 			items,
 			topicCount: items.length

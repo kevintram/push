@@ -1,3 +1,4 @@
+import type { Source } from '~/features/sources/types/source.types'
 import type { LearningState } from '~/models/learning-state.types'
 
 export const RelationshipDirection = {
@@ -35,12 +36,14 @@ export type Topic = {
 	bucket: RetrievabilityBucket | null
 	days_until_threshold: number | null
 	children_count?: number
+	sources_count?: number
 	related_outgoing_count?: number
 	related_incoming_count?: number
 	parent?: Topic | null
 	children?: Array<Topic>
 	related_outgoing?: Array<Topic>
 	related_incoming?: Array<Topic>
+	sources?: Array<Source>
 	relationship_direction?: RelationshipDirection
 }
 

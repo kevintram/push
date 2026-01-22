@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback } from 'react'
 import * as v from 'valibot'
+import { sourceKeys } from '~/features/sources/api/queryKeys'
 import { topicKeys } from '~/features/topics/api/queryKeys'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { apiFetch } from '~/utils/apiFetch'
@@ -78,6 +79,10 @@ export function useCreateTopicWithReview() {
 			})
 
 			// Return the created topic from the response
+			// When creating a topic with review, the API always returns the topic
+			if (!review.topic) {
+				throw new Error('Expected topic to be created with review')
+			}
 			return review.topic
 		},
 		[createReviewMutation]
@@ -100,6 +105,7 @@ export function useCreateReview() {
 		onSuccess: async () => {
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
+				queryClient.invalidateQueries({ queryKey: sourceKeys.all }),
 				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
 			])
 		}

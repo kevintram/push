@@ -8,10 +8,10 @@ import {
 	History,
 	Home,
 	Inbox,
+	Library,
 	ListChecks,
 	PanelLeft,
 	Settings,
-	SquareLibrary,
 	Star
 } from 'lucide-react'
 import { useState } from 'react'
@@ -80,7 +80,7 @@ export function AppSidebar() {
 		}
 	]
 
-	const topicItems = [
+	const libraryItems = [
 		{
 			title: 'Inbox',
 			url: '/inbox',
@@ -88,10 +88,10 @@ export function AppSidebar() {
 			isActive: (pathname: string) => pathname === '/inbox'
 		},
 		{
-			title: 'My Topics',
-			url: '/my-topics',
-			icon: SquareLibrary,
-			isActive: (pathname: string) => pathname === '/my-topics'
+			title: 'My Library',
+			url: '/my-library',
+			icon: Library,
+			isActive: (pathname: string) => pathname === '/my-library'
 		},
 		{
 			title: 'Recent',
@@ -184,10 +184,10 @@ export function AppSidebar() {
 				</SidebarGroup>
 
 				<SidebarGroup>
-					<SidebarGroupLabel>Topics</SidebarGroupLabel>
+					<SidebarGroupLabel>Library</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{topicItems.map(item => {
+							{libraryItems.map(item => {
 								const isActive = item.isActive(location.pathname)
 								const isInbox = item.title === 'Inbox'
 								return (

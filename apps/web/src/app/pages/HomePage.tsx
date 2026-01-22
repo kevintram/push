@@ -15,6 +15,12 @@ import { useCallback, useMemo, useState } from 'react'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
+import {
+	EntityCard,
+	type EntityItem,
+	estimateEntitySize,
+	getEntityKey
+} from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/Card'
@@ -35,6 +41,8 @@ import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { ReviewEntry } from '~/features/reviews/components/ReviewSection'
 import { ReviewSessionItem } from '~/features/reviews/components/ReviewSessionItem'
+import { useSources } from '~/features/sources/api/getSources'
+import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
@@ -743,68 +751,82 @@ function ReviewCardSkeleton() {
 }
 
 // ============================================================================
-// HomeRecentCard - Shows recent topics in masonry layout (20 items max)
+// HomeRecentCard - Shows recent topics and sources in masonry layout (10 items max)
 // ============================================================================
 
 function HomeRecentCard() {
 	const navigate = useNavigate()
-	const { data: topics = [], isLoading } = useTopics({
+	const { data: topics = [], isLoading: isLoadingTopics } = useTopics({
+		order: 'desc',
+		limit: RECENT_LIMIT
+	})
+	const { data: sources = [], isLoading: isLoadingSources } = useSources({
 		order: 'desc',
 		limit: RECENT_LIMIT
 	})
 
-	const handleTopicClick = useCallback(
-		(topic: Topic) => {
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: topic.id.toString() }
-			})
+	const isLoading = isLoadingTopics || isLoadingSources
+
+	// Combine topics and sources, sorted by updated_at descending, limited to 10
+	const recentItems = useMemo<Array<EntityItem>>(() => {
+		const items: Array<EntityItem> = [
+			...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item })),
+			...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
+		]
+		return items
+			.sort(
+				(a, b) =>
+					new Date(b.item.updated_at).getTime() -
+					new Date(a.item.updated_at).getTime()
+			)
+			.slice(0, RECENT_LIMIT)
+	}, [topics, sources])
+
+	const handleEntityClick = useCallback(
+		(entity: EntityItem) => {
+			if (entity.type === 'topic') {
+				navigate({
+					to: '/topics/$topicId',
+					params: { topicId: entity.item.id.toString() }
+				})
+			} else {
+				navigate({
+					to: '/sources/$sourceId',
+					params: { sourceId: entity.item.id.toString() }
+				})
+			}
 		},
 		[navigate]
 	)
 
-	const estimateItemSize = useCallback((topic: Topic) => {
-		const baseHeight = 80
-		const lineHeight = 10
-		const numCharsPerLine = 30
-		const newLine = 10
-
-		const nameHeight =
-			Math.floor(topic.name.length / numCharsPerLine) * lineHeight
-		const notesHeight =
-			Math.floor(topic.notes.length / numCharsPerLine) * lineHeight
-
-		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
-
-		return Math.max(calculatedHeight, 96)
-	}, [])
-
 	const renderItem = useCallback(
-		(topic: Topic) => (
-			<TopicCard
-				headerRight={<TopicActionMenu topic={topic} />}
+		(entity: EntityItem) => (
+			<EntityCard
+				entity={entity}
+				headerRight={
+					entity.type === 'topic' ? (
+						<TopicActionMenu topic={entity.item} />
+					) : (
+						<SourceActionMenu source={entity.item} />
+					)
+				}
 				minHeight={96}
-				onTopicClick={handleTopicClick}
-				topic={topic}
+				onEntityClick={handleEntityClick}
 			/>
 		),
-		[handleTopicClick]
+		[handleEntityClick]
 	)
-
-	const getItemKey = useCallback((topic: Topic) => topic.id, [])
 
 	return (
 		<Card className='flex min-h-56 flex-col'>
 			<CardHeader>
-				<CardHeaderLink icon={History} title='Recent Topics' to='/recent' />
+				<CardHeaderLink icon={History} title='Recent' to='/recent' />
 			</CardHeader>
 			<CardContent className='flex flex-1 flex-col'>
 				<RecentCardContent
-					estimateItemSize={estimateItemSize}
-					getItemKey={getItemKey}
 					isLoading={isLoading}
+					items={recentItems}
 					renderItem={renderItem}
-					topics={topics}
 				/>
 			</CardContent>
 		</Card>
@@ -813,31 +835,27 @@ function HomeRecentCard() {
 
 function RecentCardContent({
 	isLoading,
-	topics,
-	estimateItemSize,
-	getItemKey,
+	items,
 	renderItem
 }: {
 	isLoading: boolean
-	topics: Array<Topic>
-	estimateItemSize: (topic: Topic, index: number) => number
-	getItemKey: (topic: Topic, index: number) => string | number
-	renderItem: (topic: Topic, index: number) => ReactNode
+	items: Array<EntityItem>
+	renderItem: (entity: EntityItem, index: number) => ReactNode
 }) {
 	if (isLoading) {
 		return <RecentCardSkeleton />
 	}
 
-	if (topics.length === 0) {
-		return <CardEmptyState icon={History} title='No recent topics' />
+	if (items.length === 0) {
+		return <CardEmptyState icon={History} title='No recent items' />
 	}
 
 	return (
 		<MasonryLayout
-			estimateItemSize={estimateItemSize}
+			estimateItemSize={estimateEntitySize}
 			gap={16}
-			getItemKey={getItemKey}
-			items={topics}
+			getItemKey={getEntityKey}
+			items={items}
 			minItemWidth={280}
 			renderItem={renderItem}
 		/>
