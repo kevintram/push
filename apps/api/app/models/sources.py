@@ -77,6 +77,7 @@ t_source_reviews = Table(
         BigInteger,
         ForeignKey("sources.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     ),
 )
 
