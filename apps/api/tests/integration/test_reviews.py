@@ -2,6 +2,7 @@
 
 from datetime import date, timedelta
 
+import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -91,8 +92,12 @@ class TestReviewsEndpoints:
             .options(selectinload(Topic.fsrs_state))
         )
         refreshed_topic = result.scalar_one()
-        assert refreshed_topic.fsrs_state.stability == data["stability_after"]
-        assert refreshed_topic.fsrs_state.difficulty == data["difficulty_after"]
+        assert refreshed_topic.fsrs_state.stability == pytest.approx(
+            data["stability_after"]
+        )
+        assert refreshed_topic.fsrs_state.difficulty == pytest.approx(
+            data["difficulty_after"]
+        )
         assert refreshed_topic.fsrs_state.state == data["state_after"]
 
     async def test_create_review_with_inline_topic(
@@ -223,9 +228,8 @@ class TestReviewsEndpoints:
         assert response2.status_code == 200
         review2_id = response2.json()["id"]
         # Review2's before state should be review1's after state
-        # Use approximate comparison for floating point
         review2_stability_before = response2.json()["stability_before"]
-        assert abs(review2_stability_before - review1_stability_after) < 0.0001
+        assert review2_stability_before == pytest.approx(review1_stability_after)
 
         # Delete review 1 - should trigger replay of review 2
         delete_response = await test_client.delete(f"/reviews/{review1_id}/")
@@ -427,9 +431,8 @@ class TestFsrsReplayEdgeCases:
         replayed_review2 = get_response.json()
 
         # Review2's before state should now be review1's after state
-        # Use approximate comparison for floating point precision
-        assert (
-            abs(replayed_review2["stability_before"] - review1_stability_after) < 0.0001
+        assert replayed_review2["stability_before"] == pytest.approx(
+            review1_stability_after
         )
         # Before state should have changed from original
         assert replayed_review2["stability_before"] != original_review2_stability_before
@@ -579,7 +582,7 @@ class TestSourceReviews:
             .options(selectinload(Source.fsrs_state))
         )
         refreshed_source = result.scalar_one()
-        assert refreshed_source.fsrs_state.stability == source_stability
+        assert refreshed_source.fsrs_state.stability == pytest.approx(source_stability)
 
         # Verify topic was NOT updated (still initial state)
         result = await db_session.execute(
