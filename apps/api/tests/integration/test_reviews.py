@@ -98,30 +98,23 @@ class TestReviewsEndpoints:
     async def test_create_review_with_inline_topic(
         self,
         test_client: AsyncClient,
-        create_test_topic,
     ):
-        """Create a review with inline topic creation.
-
-        TODO(2): The reviews router has a bug where inline topic creation fails
-        because it passes srs_enabled to Topic model directly instead of
-        excluding it like the topics router does (reviews.py:520).
-        For now, we test using an existing topic with topic_id instead.
-        """
-        # Create topic first due to bug in inline creation
-        topic = await create_test_topic(name="Topic for Inline Test")
-
+        """Create a review with inline topic creation."""
         response = await test_client.post(
             "/reviews/",
             json={
-                "topic_id": topic.id,
+                "topic": {
+                    "name": "Inline Created Topic",
+                    "srs_enabled": True,
+                },
                 "scheduled_at": str(date.today()),
             },
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert data["topic"]["name"] == "Topic for Inline Test"
-        # Review is uncompleted (no completed_at), so no FSRS calculations
+        assert data["topic"]["name"] == "Inline Created Topic"
+        assert data["topic_id"] is not None
         assert data["completed_at"] is None
 
     async def test_list_reviews_filters_by_topic(
