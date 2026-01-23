@@ -100,47 +100,29 @@ END;
 $function$
 ;
 
+-- @supabase-only-start
 grant delete on table "public"."topics_closure" to "anon";
-
 grant insert on table "public"."topics_closure" to "anon";
-
 grant references on table "public"."topics_closure" to "anon";
-
 grant select on table "public"."topics_closure" to "anon";
-
 grant trigger on table "public"."topics_closure" to "anon";
-
 grant truncate on table "public"."topics_closure" to "anon";
-
 grant update on table "public"."topics_closure" to "anon";
-
 grant delete on table "public"."topics_closure" to "authenticated";
-
 grant insert on table "public"."topics_closure" to "authenticated";
-
 grant references on table "public"."topics_closure" to "authenticated";
-
 grant select on table "public"."topics_closure" to "authenticated";
-
 grant trigger on table "public"."topics_closure" to "authenticated";
-
 grant truncate on table "public"."topics_closure" to "authenticated";
-
 grant update on table "public"."topics_closure" to "authenticated";
-
 grant delete on table "public"."topics_closure" to "service_role";
-
 grant insert on table "public"."topics_closure" to "service_role";
-
 grant references on table "public"."topics_closure" to "service_role";
-
 grant select on table "public"."topics_closure" to "service_role";
-
 grant trigger on table "public"."topics_closure" to "service_role";
-
 grant truncate on table "public"."topics_closure" to "service_role";
-
 grant update on table "public"."topics_closure" to "service_role";
+-- @supabase-only-end
 
 CREATE TRIGGER insert_topic_reflexive_path_closure AFTER INSERT ON public.topics FOR EACH ROW EXECUTE FUNCTION insert_topic_reflexive_path();
 

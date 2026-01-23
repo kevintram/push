@@ -21,9 +21,14 @@ dev = [
     "pytest>=9.0.1",
     "pytest-asyncio>=1.3.0",
     "pytest-md>=0.2.0",
+    "pytest-cov>=4.1.0",
+    "testcontainers[postgres]>=4.0.0",
+    "httpx>=0.27.0",
+    "psycopg2-binary>=2.9.9",
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+pythonpath = ["."]
 testpaths = ["tests"]
