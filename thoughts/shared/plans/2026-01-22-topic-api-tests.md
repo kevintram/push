@@ -1470,9 +1470,9 @@ class TestSourcesEndpoints:
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Command: `cd apps/api && uv run pytest tests/integration/test_sources.py -v`
-- [ ] Command: `cd apps/api && uv run ruff check --fix`
-- [ ] Command: `cd apps/api && uv run ruff format`
+- [x] Command: `cd apps/api && uv run pytest tests/integration/test_sources.py -v`
+- [x] Command: `cd apps/api && uv run ruff check --fix`
+- [x] Command: `cd apps/api && uv run ruff format`
 
 #### Manual Verification:
 - [ ] All sources integration tests pass
