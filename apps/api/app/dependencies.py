@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import Cookie, Header, HTTPException, status, Request, Depends, Response
+from fastapi import Header, HTTPException, status, Request, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.config import settings
-from app.core.auth import workos
+
+from app.core.config import get_settings
+from app.core.auth import get_workos
 from app.core.db import get_db
 
 
@@ -15,11 +16,10 @@ async def get_token_header(x_token: Annotated[str, Header()]):
 async def get_user_id(
     request: Request,
     response: Response,
-    session_cookie: Annotated[
-        str | None, Cookie(alias=settings.WORKOS_COOKIE_NAME)
-    ] = None,
 ) -> str:
-    # print(request.cookies.__str__())
+    settings = get_settings()
+    workos = get_workos()
+    session_cookie = request.cookies.get(settings.WORKOS_COOKIE_NAME)
 
     session = workos.user_management.load_sealed_session(
         sealed_session=session_cookie, cookie_password=settings.WORKOS_COOKIE_PASSWORD

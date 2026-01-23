@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from app.dependencies import SessionDep, UserIdDep
-from app.models import Review, ReviewSession, Topic, Source
+from app.models import Review, ReviewSession, Topic, Source, FsrsState
 from app.models.sources import t_source_reviews
 from app.schemas import (
     ReviewCreate,
@@ -517,7 +517,17 @@ async def create_review(
                 raise HTTPException(status_code=404, detail="Topic not found")
         else:
             assert review_create.topic is not None
-            topic = Topic(**review_create.topic.model_dump(), user_id=user_id)
+            topic_data = review_create.topic.model_dump(
+                exclude={"srs_enabled", "inherit_fsrs"}
+            )
+            topic = Topic(**topic_data, user_id=user_id)
+
+            if review_create.topic.srs_enabled:
+                fsrs_state = FsrsState(srs_enabled=True)
+                session.add(fsrs_state)
+                await session.flush()
+                topic.fsrs_state_id = fsrs_state.id
+
             session.add(topic)
             await session.flush()
         entity_for_fsrs = topic
@@ -533,7 +543,17 @@ async def create_review(
                 raise HTTPException(status_code=404, detail="Source not found")
         else:
             assert review_create.source is not None
-            source = Source(**review_create.source.model_dump(), user_id=user_id)
+            source_data = review_create.source.model_dump(
+                exclude={"srs_enabled", "inherit_fsrs"}
+            )
+            source = Source(**source_data, user_id=user_id)
+
+            if review_create.source.srs_enabled:
+                fsrs_state = FsrsState(srs_enabled=True)
+                session.add(fsrs_state)
+                await session.flush()
+                source.fsrs_state_id = fsrs_state.id
+
             session.add(source)
             await session.flush()
         entity_for_fsrs = source
@@ -689,8 +709,6 @@ async def create_review(
 
     # Update the entity's fsrs_state with new FSRS state
     if entity_for_fsrs.fsrs_state is None:
-        from app.models import FsrsState
-
         fsrs_state = FsrsState(srs_enabled=True)
         session.add(fsrs_state)
         await session.flush()

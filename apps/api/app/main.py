@@ -4,13 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from .dependencies import get_token_header
 from .internal import admin
 from .routers import topics, review_sessions, login, reviews, review_entries, sources
-from .core.config import settings
+from .core.config import get_settings
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ALLOWED_ORIGINS_AS_STRINGS,
+    allow_origins=get_settings().CORS_ALLOWED_ORIGINS_AS_STRINGS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

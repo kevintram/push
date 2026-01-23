@@ -1,14 +1,17 @@
-from app.core.config import settings
-from app.core.auth import workos
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from starlette import status
+
+from app.core.config import get_settings
+from app.core.auth import get_workos
 
 router = APIRouter()
 
 
 @router.get("/login")
 def login():
+    settings = get_settings()
+    workos = get_workos()
     authorization_url = workos.user_management.get_authorization_url(
         provider="authkit", redirect_uri=f"{settings.API_URL}/callback"
     )
@@ -18,6 +21,8 @@ def login():
 
 @router.get("/callback")
 def callback(code: str):
+    settings = get_settings()
+    workos = get_workos()
     try:
         auth_response = workos.user_management.authenticate_with_code(
             code=code,
@@ -46,6 +51,8 @@ def callback(code: str):
 
 @router.get("/logout")
 def logout(request: Request):
+    settings = get_settings()
+    workos = get_workos()
     session = workos.user_management.load_sealed_session(
         sealed_session=request.cookies.get(settings.WORKOS_COOKIE_NAME),
         cookie_password=settings.WORKOS_COOKIE_PASSWORD,

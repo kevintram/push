@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn, computed_field, AnyUrl, BeforeValidator
 from typing import Annotated, Any
@@ -52,4 +54,6 @@ class Settings(BaseSettings):
     ENV: str
 
 
-settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
