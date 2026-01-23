@@ -1,88 +1,49 @@
 drop trigger if exists "update_practice_cards_updated_at" on "public"."practice_cards";
 
+-- @supabase-only-start
 revoke delete on table "public"."practice_cards" from "anon";
-
 revoke insert on table "public"."practice_cards" from "anon";
-
 revoke references on table "public"."practice_cards" from "anon";
-
 revoke select on table "public"."practice_cards" from "anon";
-
 revoke trigger on table "public"."practice_cards" from "anon";
-
 revoke truncate on table "public"."practice_cards" from "anon";
-
 revoke update on table "public"."practice_cards" from "anon";
-
 revoke delete on table "public"."practice_cards" from "authenticated";
-
 revoke insert on table "public"."practice_cards" from "authenticated";
-
 revoke references on table "public"."practice_cards" from "authenticated";
-
 revoke select on table "public"."practice_cards" from "authenticated";
-
 revoke trigger on table "public"."practice_cards" from "authenticated";
-
 revoke truncate on table "public"."practice_cards" from "authenticated";
-
 revoke update on table "public"."practice_cards" from "authenticated";
-
 revoke delete on table "public"."practice_cards" from "service_role";
-
 revoke insert on table "public"."practice_cards" from "service_role";
-
 revoke references on table "public"."practice_cards" from "service_role";
-
 revoke select on table "public"."practice_cards" from "service_role";
-
 revoke trigger on table "public"."practice_cards" from "service_role";
-
 revoke truncate on table "public"."practice_cards" from "service_role";
-
 revoke update on table "public"."practice_cards" from "service_role";
-
 revoke delete on table "public"."timeline_entry_practice_cards" from "anon";
-
 revoke insert on table "public"."timeline_entry_practice_cards" from "anon";
-
 revoke references on table "public"."timeline_entry_practice_cards" from "anon";
-
 revoke select on table "public"."timeline_entry_practice_cards" from "anon";
-
 revoke trigger on table "public"."timeline_entry_practice_cards" from "anon";
-
 revoke truncate on table "public"."timeline_entry_practice_cards" from "anon";
-
 revoke update on table "public"."timeline_entry_practice_cards" from "anon";
-
 revoke delete on table "public"."timeline_entry_practice_cards" from "authenticated";
-
 revoke insert on table "public"."timeline_entry_practice_cards" from "authenticated";
-
 revoke references on table "public"."timeline_entry_practice_cards" from "authenticated";
-
 revoke select on table "public"."timeline_entry_practice_cards" from "authenticated";
-
 revoke trigger on table "public"."timeline_entry_practice_cards" from "authenticated";
-
 revoke truncate on table "public"."timeline_entry_practice_cards" from "authenticated";
-
 revoke update on table "public"."timeline_entry_practice_cards" from "authenticated";
-
 revoke delete on table "public"."timeline_entry_practice_cards" from "service_role";
-
 revoke insert on table "public"."timeline_entry_practice_cards" from "service_role";
-
 revoke references on table "public"."timeline_entry_practice_cards" from "service_role";
-
 revoke select on table "public"."timeline_entry_practice_cards" from "service_role";
-
 revoke trigger on table "public"."timeline_entry_practice_cards" from "service_role";
-
 revoke truncate on table "public"."timeline_entry_practice_cards" from "service_role";
-
 revoke update on table "public"."timeline_entry_practice_cards" from "service_role";
+-- @supabase-only-end
 
 alter table "public"."practice_cards" drop constraint "practice_cards_topic_id_fkey";
 
