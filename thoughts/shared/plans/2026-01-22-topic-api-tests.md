@@ -1229,9 +1229,9 @@ class TestSourceReviews:
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Command: `cd apps/api && uv run pytest tests/integration/test_reviews.py -v`
-- [ ] Command: `cd apps/api && uv run ruff check --fix`
-- [ ] Command: `cd apps/api && uv run ruff format`
+- [x] Command: `cd apps/api && uv run pytest tests/integration/test_reviews.py -v`
+- [x] Command: `cd apps/api && uv run ruff check --fix`
+- [x] Command: `cd apps/api && uv run ruff format`
 
 #### Manual Verification:
 - [ ] Review creation updates FSRS state correctly
