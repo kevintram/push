@@ -2,6 +2,24 @@
 
 from __future__ import annotations
 
+import os
+
+# Set test environment variables before any app imports
+# These provide defaults so Settings() can be instantiated in CI
+os.environ.setdefault("DB_USER", "test")
+os.environ.setdefault("DB_PASSWORD", "test")
+os.environ.setdefault("DB_HOST", "localhost")
+os.environ.setdefault("DB_PORT", "5432")
+os.environ.setdefault("DB_NAME", "test")
+os.environ.setdefault("WORKOS_API_KEY", "test")
+os.environ.setdefault("WORKOS_CLIENT_ID", "test")
+os.environ.setdefault("WORKOS_COOKIE_PASSWORD", "test-cookie-password-32chars!!")
+os.environ.setdefault("WORKOS_COOKIE_NAME", "test_session")
+os.environ.setdefault("APP_URL", "http://localhost:3000")
+os.environ.setdefault("API_URL", "http://localhost:8000")
+os.environ.setdefault("DOMAIN", "localhost")
+os.environ.setdefault("ENV", "test")
+
 import re
 from collections.abc import AsyncGenerator
 from pathlib import Path

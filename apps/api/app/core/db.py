@@ -1,3 +1,6 @@
+from functools import lru_cache
+from typing import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     AsyncEngine,
@@ -5,27 +8,30 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
 )
 from sqlalchemy.pool import NullPool
-from typing import AsyncGenerator
-from .config import settings
 
-# Create the async engine
-engine: AsyncEngine = create_async_engine(
-    str(settings.POSTGRES_URL),
-    future=True,
-    # echo=True,
-    poolclass=NullPool,  # because using supabase session pooler connection handles for you
-)
+from .config import get_settings
 
-# Create the session factory
-AsyncSessionFactory = async_sessionmaker(
-    engine,
-    autoflush=False,
-    expire_on_commit=False,
-)
+
+@lru_cache
+def get_engine() -> AsyncEngine:
+    return create_async_engine(
+        str(get_settings().POSTGRES_URL),
+        future=True,
+        poolclass=NullPool,
+    )
+
+
+@lru_cache
+def get_session_factory() -> async_sessionmaker[AsyncSession]:
+    return async_sessionmaker(
+        get_engine(),
+        autoflush=False,
+        expire_on_commit=False,
+    )
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with AsyncSessionFactory() as session:
+    async with get_session_factory()() as session:
         try:
             yield session
             await session.commit()
