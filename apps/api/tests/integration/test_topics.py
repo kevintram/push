@@ -1,6 +1,14 @@
 """Integration tests for topics endpoints."""
 
+from datetime import date
+
+import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.models import Topic
 
 
 class TestTopicsEndpoints:
@@ -107,3 +115,187 @@ class TestTopicsEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Updated Name"
+
+
+class TestInheritFsrs:
+    """Tests for inherit_fsrs feature when creating child topics."""
+
+    async def test_inherit_fsrs_populates_inherited_fields(
+        self,
+        test_client: AsyncClient,
+        db_session: AsyncSession,
+        create_test_topic,
+    ):
+        """Child topic should copy parent's FSRS state to inherited_* fields."""
+        # Create parent and do a completed review to populate FSRS state
+        parent = await create_test_topic(name="Parent Topic")
+        await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": parent.id,
+                "scheduled_at": str(date.today()),
+                "completed_at": str(date.today()),
+                "rating": "good",
+            },
+        )
+
+        # Refresh parent to get updated FSRS state
+        result = await db_session.execute(
+            select(Topic)
+            .where(Topic.id == parent.id)
+            .options(selectinload(Topic.fsrs_state))
+        )
+        parent = result.scalar_one()
+
+        # Create child with inherit_fsrs=True
+        response = await test_client.post(
+            "/topics/",
+            json={
+                "name": "Child Topic",
+                "parent_id": parent.id,
+                "srs_enabled": True,
+                "inherit_fsrs": True,
+            },
+        )
+
+        assert response.status_code == 200
+        child_id = response.json()["id"]
+
+        # Verify child inherited parent's FSRS values
+        result = await db_session.execute(
+            select(Topic)
+            .where(Topic.id == child_id)
+            .options(selectinload(Topic.fsrs_state))
+        )
+        child = result.scalar_one()
+
+        assert child.fsrs_state.inherited_stability == pytest.approx(
+            parent.fsrs_state.stability
+        )
+        assert child.fsrs_state.inherited_difficulty == pytest.approx(
+            parent.fsrs_state.difficulty
+        )
+        assert child.fsrs_state.inherited_state == parent.fsrs_state.state
+
+    async def test_review_uses_inherited_fsrs_as_starting_point(
+        self,
+        test_client: AsyncClient,
+        db_session: AsyncSession,
+        create_test_topic,
+    ):
+        """First review on child should use inherited FSRS state as 'before' state.
+
+        This verifies that inherited values actually affect FSRS calculations,
+        not just that they're stored.
+        """
+        # Create parent and do reviews to build up FSRS state
+        parent = await create_test_topic(name="Parent Topic")
+        await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": parent.id,
+                "scheduled_at": str(date.today()),
+                "completed_at": str(date.today()),
+                "rating": "good",
+            },
+        )
+
+        # Refresh parent to get updated FSRS state
+        result = await db_session.execute(
+            select(Topic)
+            .where(Topic.id == parent.id)
+            .options(selectinload(Topic.fsrs_state))
+        )
+        parent = result.scalar_one()
+        parent_stability = parent.fsrs_state.stability
+        parent_difficulty = parent.fsrs_state.difficulty
+        parent_state = parent.fsrs_state.state
+
+        # Create child with inherit_fsrs=True
+        child_response = await test_client.post(
+            "/topics/",
+            json={
+                "name": "Child Topic",
+                "parent_id": parent.id,
+                "srs_enabled": True,
+                "inherit_fsrs": True,
+            },
+        )
+        child_id = child_response.json()["id"]
+
+        # Create a review on the child - inherited values should be used as "before" state
+        review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": child_id,
+                "scheduled_at": str(date.today()),
+                "completed_at": str(date.today()),
+                "rating": "good",
+            },
+        )
+
+        assert review_response.status_code == 200
+        review_data = review_response.json()
+
+        # The "before" state should match the inherited values from parent
+        assert review_data["stability_before"] == pytest.approx(parent_stability)
+        assert review_data["difficulty_before"] == pytest.approx(parent_difficulty)
+        assert review_data["state_before"] == parent_state
+
+        # The "after" state should be calculated (FSRS calculation applied)
+        assert review_data["stability_after"] is not None
+        assert review_data["difficulty_after"] is not None
+
+    async def test_review_without_inherit_fsrs_starts_fresh(
+        self,
+        test_client: AsyncClient,
+        db_session: AsyncSession,
+        create_test_topic,
+    ):
+        """Child without inherit_fsrs should start with null FSRS state.
+
+        Compare to inherited child to show the difference.
+        """
+        # Create parent with established FSRS state
+        parent = await create_test_topic(name="Parent Topic")
+        await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": parent.id,
+                "scheduled_at": str(date.today()),
+                "completed_at": str(date.today()),
+                "rating": "good",
+            },
+        )
+
+        # Create child WITHOUT inherit_fsrs
+        child_response = await test_client.post(
+            "/topics/",
+            json={
+                "name": "Child Without Inheritance",
+                "parent_id": parent.id,
+                "srs_enabled": True,
+                "inherit_fsrs": False,
+            },
+        )
+        child_id = child_response.json()["id"]
+
+        # Create a review on the child
+        review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": child_id,
+                "scheduled_at": str(date.today()),
+                "completed_at": str(date.today()),
+                "rating": "good",
+            },
+        )
+
+        assert review_response.status_code == 200
+        review_data = review_response.json()
+
+        # The "before" state should be null (no inheritance), except state
+        # which defaults to LEARNING for new topics
+        assert review_data["stability_before"] is None
+        assert review_data["difficulty_before"] is None
+        assert review_data["state_before"] == "LEARNING"
