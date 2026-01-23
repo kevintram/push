@@ -1247,10 +1247,102 @@ class TestSourceReviews:
 
 ---
 
-## Phase 4: Sources Integration Tests & CI Setup
+## Phase 4: CI Setup
 
 ### Overview
-Add integration tests for sources endpoints and set up GitHub Actions for CI.
+Set up GitHub Actions for CI to run integration tests on every push/PR.
+
+### Changes Required
+
+#### 1. Add GitHub Actions workflow for tests
+**File**: `.github/workflows/api-tests.yml`
+
+```yaml
+name: API Tests
+
+on:
+  push:
+    paths:
+      - 'apps/api/**'
+      - 'supabase/migrations/**'
+      - '.github/workflows/api-tests.yml'
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'supabase/migrations/**'
+      - '.github/workflows/api-tests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: uv sync --all-groups
+
+      - name: Run linting
+        working-directory: apps/api
+        run: |
+          uv run ruff check
+          uv run ruff format --check
+
+      - name: Run integration tests with coverage
+        working-directory: apps/api
+        run: |
+          uv run pytest tests/integration \
+            -v \
+            --tb=short \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: apps/api/coverage.xml
+          flags: api
+          fail_ci_if_error: false
+```
+
+**Rationale**: CI workflow ensures integration tests run on every push/PR affecting the API or migrations. Dependency caching speeds up subsequent runs. Coverage reporting via pytest-cov and Codecov integration provides visibility into test coverage. The workflow also triggers on migration changes since those affect the test database schema.
+
+### Success Criteria
+
+#### Automated Verification:
+- [ ] Command: `cd apps/api && uv run ruff check --fix`
+- [ ] Command: `cd apps/api && uv run ruff format`
+
+#### Manual Verification:
+- [ ] CI workflow file is valid YAML
+- [ ] CI workflow runs successfully when pushed
+
+**Implementation Note**: Pause after verification before proceeding to Phase 5.
+
+---
+
+## Phase 5: Sources Integration Tests
+
+### Overview
+Add integration tests for sources endpoints.
 
 ### Changes Required
 
@@ -1375,94 +1467,22 @@ class TestSourcesEndpoints:
 
 **Rationale**: Completes the CRUD integration test coverage for all main entity types. Uses centralized fixtures from conftest. No `@pytest.mark.asyncio` decorators needed.
 
-#### 2. Add GitHub Actions workflow for tests
-**File**: `.github/workflows/api-tests.yml`
-
-```yaml
-name: API Tests
-
-on:
-  push:
-    paths:
-      - 'apps/api/**'
-      - 'supabase/migrations/**'
-      - '.github/workflows/api-tests.yml'
-  pull_request:
-    paths:
-      - 'apps/api/**'
-      - 'supabase/migrations/**'
-      - '.github/workflows/api-tests.yml'
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
-
-      - name: Set up Python
-        run: uv python install 3.12
-
-      - name: Cache uv dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('apps/api/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-
-
-      - name: Install dependencies
-        working-directory: apps/api
-        run: uv sync --all-groups
-
-      - name: Run linting
-        working-directory: apps/api
-        run: |
-          uv run ruff check
-          uv run ruff format --check
-
-      - name: Run integration tests with coverage
-        working-directory: apps/api
-        run: |
-          uv run pytest tests/integration \
-            -v \
-            --tb=short \
-            --cov=app \
-            --cov-report=term-missing \
-            --cov-report=xml
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: apps/api/coverage.xml
-          flags: api
-          fail_ci_if_error: false
-```
-
-**Rationale**: CI workflow ensures integration tests run on every push/PR affecting the API or migrations. Dependency caching speeds up subsequent runs. Coverage reporting via pytest-cov and Codecov integration provides visibility into test coverage. The workflow also triggers on migration changes since those affect the test database schema.
-
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Command: `cd apps/api && uv run pytest tests/integration/ -v --cov=app`
+- [ ] Command: `cd apps/api && uv run pytest tests/integration/test_sources.py -v`
 - [ ] Command: `cd apps/api && uv run ruff check --fix`
 - [ ] Command: `cd apps/api && uv run ruff format`
 
 #### Manual Verification:
-- [ ] All integration tests pass
-- [ ] CI workflow runs successfully (if pushed)
+- [ ] All sources integration tests pass
 - [ ] Coverage report is generated
 
-**Implementation Note**: Pause after verification before proceeding to Phase 5.
+**Implementation Note**: Pause after verification before proceeding to Phase 6.
 
 ---
 
-## Phase 5: Ltree/Tree Integration Tests (Topics & Sources)
+## Phase 6: Ltree/Tree Integration Tests (Topics & Sources)
 
 ### Overview
 Add integration tests for tree hierarchy operations using ltree for both Topics and Sources. Tests verify parent/child relationships, cycle detection, path computation by database triggers, and child handling strategies on delete.
@@ -2454,10 +2474,10 @@ tests/
     ├── conftest.py                # HTTP client, mock_user_id, factory fixtures
     ├── test_health.py             # Smoke test
     ├── test_topics.py             # Topics CRUD
-    ├── test_topics_tree.py        # Topics tree/hierarchy (Phase 5)
+    ├── test_topics_tree.py        # Topics tree/hierarchy (Phase 6)
     ├── test_reviews.py            # Reviews + FSRS behavior
     ├── test_sources.py            # Sources CRUD
-    └── test_sources_tree.py       # Sources tree/hierarchy (Phase 5)
+    └── test_sources_tree.py       # Sources tree/hierarchy (Phase 6)
 ```
 
 ### Test Coverage
@@ -2482,7 +2502,7 @@ The reviews integration tests comprehensively verify FSRS behavior:
 4. **Completion Flow**: Uncompleted -> completed review triggers FSRS calculation
 5. **Polymorphic FSRS**: Source reviews update source FSRS state independently of topics
 
-### Ltree/Tree Hierarchy Coverage (Phase 5)
+### Ltree/Tree Hierarchy Coverage (Phase 6)
 The tree integration tests verify hierarchy operations for both Topics and Sources:
 
 1. **Basic Operations**: Create with parent, get children, add/remove child relationships
