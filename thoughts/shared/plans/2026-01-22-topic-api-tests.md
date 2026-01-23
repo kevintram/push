@@ -1328,8 +1328,8 @@ jobs:
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Command: `cd apps/api && uv run ruff check --fix`
-- [ ] Command: `cd apps/api && uv run ruff format`
+- [x] Command: `cd apps/api && uv run ruff check --fix`
+- [x] Command: `cd apps/api && uv run ruff format`
 
 #### Manual Verification:
 - [ ] CI workflow file is valid YAML
