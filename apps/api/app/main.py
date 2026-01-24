@@ -6,9 +6,12 @@ from app.exception_handlers import register_exception_handlers
 
 from .dependencies import get_token_header
 from .internal import admin
-from .routers import login, review_entries, review_sessions, reviews
+from .routers import login
 from .sources.router import router as sources_router
 from .topics.router import router as topics_router
+from .reviews.router import router as reviews_router
+from .reviews.entries.router import router as review_entries_router
+from .reviews.sessions.router import router as review_sessions_router
 
 app = FastAPI()
 
@@ -24,9 +27,9 @@ app.add_middleware(
 
 app.include_router(topics_router)
 app.include_router(sources_router)
-app.include_router(review_sessions.router)
-app.include_router(reviews.router)
-app.include_router(review_entries.router)
+app.include_router(reviews_router)
+app.include_router(review_entries_router)
+app.include_router(review_sessions_router)
 app.include_router(login.router)
 app.include_router(
     admin.router,

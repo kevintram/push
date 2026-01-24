@@ -1,27 +1,38 @@
-from fastapi import APIRouter, HTTPException
-from datetime import datetime, date
-from app.dependencies import UserIdDep, SessionDep
-from sqlalchemy import select, update, delete
+"""Review session business logic."""
+
+from datetime import date
+
+from sqlalchemy import delete, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.models import ReviewSession, Topic, Review
-from app.schemas import (
-    ReviewSessionCreate,
-    ReviewSessionRead,
-    ReviewSessionUpdate,
-    TopicRead,
-    ReviewSessionReadWithReviews,
-)
-from app.routers.reviews import replay_topic_reviews_from_date
 
-router = APIRouter()
+from app.exceptions import BadRequestError, NotFoundError
+from app.models import Review, ReviewSession, Topic
+from app.reviews.service import replay_topic_reviews_from_date
 
 
-@router.get("/review-sessions/recent/", tags=["review-sessions"])
-async def read_recent_review_sessions(
-    session: SessionDep,
-    user_id: UserIdDep,
+async def get_review_session(
+    session: AsyncSession, session_id: int, user_id: str
+) -> ReviewSession:
+    """Get a review session or raise NotFoundError."""
+    stmt = (
+        select(ReviewSession)
+        .where(ReviewSession.id == session_id, ReviewSession.user_id == user_id)
+        .options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
+    )
+    result = await session.execute(stmt)
+    review_session = result.scalar_one_or_none()
+    if not review_session:
+        raise NotFoundError("Review Session", session_id)
+    return review_session
+
+
+async def list_recent_review_sessions(
+    session: AsyncSession,
+    user_id: str,
+    *,
     limit: int = 10,
-) -> list[ReviewSessionRead]:
+) -> list[ReviewSession]:
     """Get the most recent review sessions for session selection."""
     stmt = (
         select(ReviewSession)
@@ -30,19 +41,20 @@ async def read_recent_review_sessions(
         .limit(limit)
     )
     result = await session.execute(stmt)
-    return result.scalars().all()
+    return list(result.scalars().all())
 
 
-@router.get("/review-sessions/", tags=["review-sessions"])
-async def read_review_sessions(
-    session: SessionDep,
-    user_id: UserIdDep,
+async def list_review_sessions(
+    session: AsyncSession,
+    user_id: str,
+    *,
     topic_id: int | None = None,
-    effective_date_before: str | None = None,
-    effective_date_after: str | None = None,
+    effective_date_before: date | None = None,
+    effective_date_after: date | None = None,
     completed: bool | None = None,
     scheduled: bool | None = None,
-) -> list[ReviewSessionReadWithReviews]:
+) -> list[ReviewSession]:
+    """List review sessions with optional filters."""
     stmt = (
         select(ReviewSession)
         .where(ReviewSession.user_id == user_id)
@@ -58,12 +70,10 @@ async def read_review_sessions(
         stmt = stmt.where(ReviewSession.reviews.any(Review.topic_id == topic_id))
 
     if effective_date_before is not None:
-        date_before = datetime.strptime(effective_date_before, "%Y-%m-%d").date()
-        stmt = stmt.where(ReviewSession.effective_date <= date_before)
+        stmt = stmt.where(ReviewSession.effective_date <= effective_date_before)
 
     if effective_date_after is not None:
-        date_after = datetime.strptime(effective_date_after, "%Y-%m-%d").date()
-        stmt = stmt.where(ReviewSession.effective_date >= date_after)
+        stmt = stmt.where(ReviewSession.effective_date >= effective_date_after)
 
     if completed is not None:
         if completed:
@@ -78,38 +88,24 @@ async def read_review_sessions(
             stmt = stmt.where(ReviewSession.scheduled_at.is_(None))
 
     result = await session.execute(stmt)
-    ret = result.scalars().all()
-    return ret
+    return list(result.scalars().all())
 
 
-@router.get("/review-sessions/{review_session_id}/", tags=["review-sessions"])
-async def read_review_session(
-    session: SessionDep, user_id: UserIdDep, review_session_id: int
-) -> ReviewSessionReadWithReviews:
-    stmt = select(ReviewSession).where(
-        ReviewSession.id == review_session_id, ReviewSession.user_id == user_id
-    )
-    stmt = stmt.options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
-    result = await session.execute(stmt)
-
-    review_session = result.scalar_one_or_none()
-    if not review_session:
-        raise HTTPException(status_code=404, detail="Review Session not found")
-
-    return review_session
-
-
-@router.post("/review-sessions/", tags=["review-sessions"])
 async def create_review_session(
-    review_session: ReviewSessionCreate,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> ReviewSessionRead:
+    session: AsyncSession,
+    user_id: str,
+    *,
+    description: str | None = None,
+    notes: str | None = None,
+    scheduled_at: date | None = None,
+    completed_at: date | None = None,
+) -> ReviewSession:
+    """Create a new review session."""
     new_review_session = ReviewSession(
-        description=review_session.description,
-        notes=review_session.notes,
-        scheduled_at=review_session.scheduled_at,
-        completed_at=review_session.completed_at,
+        description=description,
+        notes=notes,
+        scheduled_at=scheduled_at,
+        completed_at=completed_at,
         user_id=user_id,
     )
     session.add(new_review_session)
@@ -118,53 +114,52 @@ async def create_review_session(
     return new_review_session
 
 
-@router.post("/review-sessions/{review_session_id}", tags=["review-sessions"])
 async def update_review_session(
-    review_session_id: int,
-    review_session: ReviewSessionUpdate,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> ReviewSessionRead:
-    # TODO: add tests for all this shit
-    update_values = review_session.model_dump(
-        exclude_unset=True, exclude={"id", "user_id"}
-    )
+    session: AsyncSession,
+    session_id: int,
+    user_id: str,
+    *,
+    update_values: dict,
+) -> ReviewSession:
+    """Update a review session.
+
+    If completed_at is being set (from None to a date), sets all null ratings
+    to "good" and runs FSRS for affected topics.
+    """
     if not update_values:
-        raise HTTPException(status_code=400, detail="No fields to update")
+        raise BadRequestError("No fields to update")
 
     # Fetch the old review session to check if completed_at is changing
     old_review_session_result = await session.execute(
         select(ReviewSession).where(
-            ReviewSession.id == review_session_id, ReviewSession.user_id == user_id
+            ReviewSession.id == session_id, ReviewSession.user_id == user_id
         )
     )
     old_review_session = old_review_session_result.scalar_one_or_none()
     if not old_review_session:
-        raise HTTPException(status_code=404, detail="Review Session not found")
+        raise NotFoundError("Review Session", session_id)
     old_completed_at = old_review_session.completed_at
 
     # Perform the update
     update_stmt = (
         update(ReviewSession)
-        .where(ReviewSession.id == review_session_id, ReviewSession.user_id == user_id)
+        .where(ReviewSession.id == session_id, ReviewSession.user_id == user_id)
         .values(update_values)
     )
     result = await session.execute(update_stmt)
     if result.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Review Session not found")
+        raise NotFoundError("Review Session", session_id)
 
-    # check if completed_at is changing
+    # Check if completed_at is changing
     completed_at_changed = (
         "completed_at" in update_values
         and update_values["completed_at"] != old_completed_at
     )
     if not completed_at_changed:
-        # fetch and return updated review session
+        # Fetch and return updated review session
         stmt = (
             select(ReviewSession)
-            .where(
-                ReviewSession.id == review_session_id, ReviewSession.user_id == user_id
-            )
+            .where(ReviewSession.id == session_id, ReviewSession.user_id == user_id)
             .options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
         )
         final_result = await session.execute(stmt)
@@ -173,13 +168,12 @@ async def update_review_session(
     # If Review Session is becoming completed (None → date),
     # set all null ratings to "good" and set completion date for reviews.
     # Note: we do nothing if Review Session is becoming uncompleted (date -> None)
-    # TODO: should we return the reviews/topics since they are like side effects?
     new_completed_at = update_values.get("completed_at")
     if old_completed_at is None and new_completed_at is not None:
         await session.execute(
             update(Review)
             .where(
-                Review.review_session_id == review_session_id,
+                Review.review_session_id == session_id,
                 Review.user_id == user_id,
                 Review.rating.is_(None),
             )
@@ -190,17 +184,15 @@ async def update_review_session(
         # Since these topics have now have an additional completed review,
         # we must run FSRS for them:
 
-        # get the topics
+        # Get the topics
         reviews_result = await session.execute(
             select(Review.topic_id)
-            .where(
-                Review.review_session_id == review_session_id, Review.user_id == user_id
-            )
+            .where(Review.review_session_id == session_id, Review.user_id == user_id)
             .distinct()
         )
         affected_topic_ids = {row[0] for row in reviews_result.all()}
 
-        # run FSRS on the topics
+        # Run FSRS on the topics
         # Note: we don't assume that the reviews are latest for each topic
         #       thus, we must replay FSRS for them starting
         earliest_date = min(old_completed_at or date.max, new_completed_at or date.max)
@@ -212,58 +204,63 @@ async def update_review_session(
                 from_date=earliest_date,
             )
 
-    # return latest results!
+    # Return latest results
     stmt = (
         select(ReviewSession)
-        .where(ReviewSession.id == review_session_id, ReviewSession.user_id == user_id)
+        .where(ReviewSession.id == session_id, ReviewSession.user_id == user_id)
         .options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
     )
     final_result = await session.execute(stmt)
     return final_result.scalar_one()
 
 
-@router.get("/review-sessions/{review_session_id}/topics/", tags=["review-sessions"])
-async def read_topics_for_review_session(
-    review_session_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> list[TopicRead]:
+async def get_topics_for_review_session(
+    session: AsyncSession,
+    session_id: int,
+    user_id: str,
+) -> list[Topic]:
+    """Get all topics that are part of a review session."""
     stmt = select(Topic).where(
-        Topic.reviews.any(Review.review_session_id == review_session_id),
+        Topic.reviews.any(Review.review_session_id == session_id),
         Topic.user_id == user_id,
     )
     result = await session.execute(stmt)
-    return result.scalars().all()
+    return list(result.scalars().all())
 
 
-@router.delete("/review-sessions/{review_session_id}", tags=["review-sessions"])
 async def delete_review_session(
-    review_session_id: int, session: SessionDep, user_id: UserIdDep
-):
+    session: AsyncSession,
+    session_id: int,
+    user_id: str,
+) -> None:
+    """Delete a review session.
+
+    If the session was completed, replays FSRS for affected topics.
+    """
     # Fetch the review session to check if it has a completion date
     review_session_result = await session.execute(
         select(ReviewSession).where(
-            ReviewSession.id == review_session_id, ReviewSession.user_id == user_id
+            ReviewSession.id == session_id, ReviewSession.user_id == user_id
         )
     )
     review_session = review_session_result.scalar_one_or_none()
 
     if not review_session:
-        raise HTTPException(status_code=404, detail="Review Session not found")
+        raise NotFoundError("Review Session", session_id)
 
     completed_at = review_session.completed_at
 
     # Fetch all reviews associated with this review session to get affected topic IDs
     reviews_result = await session.execute(
         select(Review.topic_id)
-        .where(Review.review_session_id == review_session_id, Review.user_id == user_id)
+        .where(Review.review_session_id == session_id, Review.user_id == user_id)
         .distinct()
     )
     affected_topic_ids = {row[0] for row in reviews_result.all()}
 
-    # Delete the review session (reviews will be cascade deleted if DB is configured that way)
+    # Delete the review session (reviews will be cascade deleted if DB is configured)
     stmt = delete(ReviewSession).where(
-        ReviewSession.id == review_session_id, ReviewSession.user_id == user_id
+        ReviewSession.id == session_id, ReviewSession.user_id == user_id
     )
     await session.execute(stmt)
 
@@ -276,5 +273,3 @@ async def delete_review_session(
                 user_id=user_id,
                 from_date=completed_at,
             )
-
-    return {"message": "Review Session deleted successfully"}

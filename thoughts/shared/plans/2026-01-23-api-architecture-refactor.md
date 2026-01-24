@@ -944,14 +944,14 @@ rm apps/api/app/routers/review_sessions.py
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `uv run pytest tests/reviews/` - Review tests pass
-- [ ] `uv run pytest` - All tests pass
-- [ ] `uv run ruff check` - No lint errors
+- [x] `uv run pytest tests/reviews/` - Review tests pass
+- [x] `uv run pytest` - All tests pass
+- [x] `uv run ruff check` - No lint errors
 
 #### Manual Verification:
-- [ ] FSRS helper functions are in `service.py` (grouped at top with clear section comment)
-- [ ] Entries and sessions are sub-modules of reviews
-- [ ] Tests are in `tests/reviews/`
+- [x] FSRS helper functions are in `service.py` (grouped at top with clear section comment)
+- [x] Entries and sessions are sub-modules of reviews
+- [x] Tests are in `tests/reviews/`
 
 ---
 
