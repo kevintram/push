@@ -130,12 +130,17 @@ async def search_topics(
 
     if addable_as_parent_to is not None:
         # For tree structure: exclude self and all descendants (to prevent cycles)
-        # Using ltree: find all topics where addable_as_parent_to.path <@ their path
+        # Using ltree: find all topics where target.path <@ candidate.path (target is descendant of candidate)
         descendants_subq = select(Topic.id).where(
             Topic.user_id == user_id,
-            text(
-                "(SELECT path FROM topics WHERE id = :parent_candidate_id) <@ topics.path"
-            ).bindparams(parent_candidate_id=addable_as_parent_to),
+            text("""
+                EXISTS (
+                    SELECT 1 FROM topics candidate, topics target
+                    WHERE candidate.id = :parent_candidate_id
+                      AND target.id = topics.id
+                      AND target.path <@ candidate.path
+                )
+            """).bindparams(parent_candidate_id=addable_as_parent_to),
         )
         stmt = stmt.where(Topic.id.notin_(descendants_subq))
 
@@ -150,12 +155,17 @@ async def search_topics(
 
     if addable_as_child_to is not None:
         # For tree structure: exclude self and all ancestors (to prevent cycles)
-        # Using ltree: find all topics where their path <@ addable_as_child_to.path
+        # Using ltree: find all topics where candidate.path <@ target.path (candidate is descendant of target)
         ancestors_subq = select(Topic.id).where(
             Topic.user_id == user_id,
-            text(
-                "topics.path <@ (SELECT path FROM topics WHERE id = :child_candidate_id)"
-            ).bindparams(child_candidate_id=addable_as_child_to),
+            text("""
+                EXISTS (
+                    SELECT 1 FROM topics candidate, topics target
+                    WHERE candidate.id = :child_candidate_id
+                      AND target.id = topics.id
+                      AND candidate.path <@ target.path
+                )
+            """).bindparams(child_candidate_id=addable_as_child_to),
         )
         stmt = stmt.where(Topic.id.notin_(ancestors_subq))
 
@@ -405,7 +415,7 @@ async def insert_child(
         # Check for cycles: child cannot already be an ancestor of parent
         if await is_descendant_of(session, parent_id, payload.child_id):
             raise HTTPException(
-                status_code=400,
+                status_code=409,
                 detail="Cannot add ancestor as child: would create cycle",
             )
 
