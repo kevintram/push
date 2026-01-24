@@ -14,7 +14,6 @@ from sqlalchemy.orm import selectinload
 
 from app.exceptions import AlreadyExistsError, NotFoundError
 from app.models import FsrsState, Review, ReviewSession, Source, Topic
-from app.models.sources import t_source_reviews
 
 
 # --- FSRS Helpers (pure functions, kept here for locality) ---
@@ -51,47 +50,79 @@ def map_fsrs_state_to_db(state: FSRSState) -> str:
     return mapping[state]
 
 
-# --- Review Operations ---
-
-
-async def get_review(session: AsyncSession, review_id: int, user_id: str) -> Review:
-    """Get a review or raise NotFoundError."""
-    stmt = (
-        select(Review)
-        .where(Review.id == review_id, Review.user_id == user_id)
-        .options(
-            selectinload(Review.topic),
-            selectinload(Review.source),
-            selectinload(Review.review_session),
-        )
-    )
-    result = await session.execute(stmt)
-    review = result.scalar_one_or_none()
-    if not review:
-        raise NotFoundError("Review", review_id)
-    return review
-
-
-async def replay_subsequent_reviews(
-    starting_card: Card,
-    subsequent_reviews: list[Review],
-    scheduler: Scheduler,
-) -> Card:
+def update_fsrs(
+    fsrs_state: FsrsState,
+    reviews: list[Review],
+    last_before_review: Review | None,
+) -> None:
     """
-    Replay a list of reviews in chronological order, updating their before/after states.
+    Run FSRS calculations for a list of reviews and update entity state.
+
+    Sets before/after FSRS state on each review and updates the entity's fsrs_state
+    to match the final review's after-state.
 
     Args:
-        starting_card: The card state to start replaying from
-        subsequent_reviews: List of reviews to replay, ordered by review.completed_at ASC
-        scheduler: FSRS scheduler instance
-
-    Returns:
-        The final card state after all reviews have been replayed
+        fsrs_state: The FsrsState to update (mutated in place)
+        reviews: Reviews in chronological order by completed_at (mutated with before/after states)
+        last_before_review: Last completed review before the reviews list, or None
     """
-    current_card = starting_card
+    if not reviews:
+        # Reset to last_before_review's after-state, or inherited state
+        if last_before_review and last_before_review.stability_after is not None:
+            fsrs_state.stability = last_before_review.stability_after
+            fsrs_state.difficulty = last_before_review.difficulty_after
+            fsrs_state.state = last_before_review.state_after
+            fsrs_state.step = last_before_review.step_after
+        else:
+            fsrs_state.stability = fsrs_state.inherited_stability
+            fsrs_state.difficulty = fsrs_state.inherited_difficulty
+            fsrs_state.state = fsrs_state.inherited_state or "LEARNING"
+            inherited_state = fsrs_state.inherited_state or "LEARNING"
+            fsrs_state.step = (
+                None if inherited_state == "REVIEW" else fsrs_state.inherited_step
+            )
+        return
 
-    for review in subsequent_reviews:
-        # Update this review's "before" state to match current card state
+    # Determine starting card from last_before_review or inherited state
+    if last_before_review and last_before_review.stability_after is not None:
+        state = map_state_to_fsrs(last_before_review.state_after)
+        last_review_date = last_before_review.completed_at
+        if isinstance(last_review_date, datetime):
+            last_review_datetime = last_review_date
+        else:
+            last_review_datetime = datetime.combine(last_review_date, time.min).replace(
+                tzinfo=timezone.utc
+            )
+        starting_card = Card(
+            state=state,
+            stability=last_before_review.stability_after,
+            difficulty=last_before_review.difficulty_after,
+            step=None if state == FSRSState.Review else last_before_review.step_after,
+            last_review=last_review_datetime,
+        )
+    else:
+        inherited_state_str = fsrs_state.inherited_state or "LEARNING"
+        state = map_state_to_fsrs(inherited_state_str)
+        inherited_last_review_dt = (
+            datetime.combine(fsrs_state.inherited_last_review, time.min).replace(
+                tzinfo=timezone.utc
+            )
+            if fsrs_state.inherited_last_review is not None
+            else None
+        )
+        starting_card = Card(
+            state=state,
+            stability=fsrs_state.inherited_stability,
+            difficulty=fsrs_state.inherited_difficulty,
+            step=None if state == FSRSState.Review else fsrs_state.inherited_step,
+            last_review=inherited_last_review_dt,
+        )
+
+    # Process each review
+    scheduler = Scheduler()
+    current_card = starting_card
+    for review in reviews:
+        # Set review's before-state from current_card
         review.stability_before = current_card.stability
         review.difficulty_before = current_card.difficulty
         review.state_before = map_fsrs_state_to_db(current_card.state)
@@ -102,261 +133,104 @@ async def replay_subsequent_reviews(
             else current_card.due
         )
 
-        # Review the card with this review's rating
+        # Run FSRS
         fsrs_rating = map_rating_to_fsrs(review.rating or "good")
-
-        # Use the actual review completion date
         review_date = review.completed_at
         if isinstance(review_date, datetime):
             review_datetime = review_date
         else:
-            # Convert date to datetime at midnight UTC
             review_datetime = datetime.combine(review_date, time.min).replace(
                 tzinfo=timezone.utc
             )
 
-        updated_card, review_log = scheduler.review_card(
+        updated_card, _ = scheduler.review_card(
             card=current_card, rating=fsrs_rating, review_datetime=review_datetime
         )
 
-        # Update this review's "after" state with the new calculation
+        # Set review's after-state
         review.stability_after = updated_card.stability
         review.difficulty_after = updated_card.difficulty
         review.state_after = map_fsrs_state_to_db(updated_card.state)
         review.step_after = updated_card.step
         review.due_after = updated_card.due.date()
 
-        # This becomes the starting point for the next review
         current_card = updated_card
 
-    return current_card
+    # Update fsrs_state with final card
+    fsrs_state.stability = current_card.stability
+    fsrs_state.difficulty = current_card.difficulty
+    fsrs_state.state = map_fsrs_state_to_db(current_card.state)
+    fsrs_state.step = current_card.step
 
 
-async def _replay_reviews_for_entity(
+async def update_entity_fsrs(
+    session: AsyncSession,
     entity: Topic | Source,
-    reviews_to_replay: list[Review],
-    last_before_review: Review | None,
-    session: AsyncSession,
+    starting_from: date,
 ) -> None:
+    """Update FSRS state for an entity from a given date forward.
+
+    Fetches all completed reviews from starting_from onward, finds the prior
+    review state, and runs FSRS to recalculate. No-op if entity has no fsrs_state.
     """
-    Shared logic for replaying reviews and updating entity FSRS state.
-
-    Args:
-        entity: Topic or Source whose FSRS state should be updated
-        reviews_to_replay: Reviews to replay in chronological order
-        last_before_review: The last review before the replay window (for starting state)
-        session: Database session for flushing changes
-    """
-    if not reviews_to_replay:
-        # No reviews to replay - reset entity to the state before from_date
-        if entity.fsrs_state is None:
-            await session.flush()
-            return
-
-        if last_before_review and last_before_review.stability_after is not None:
-            # Set entity to the "after" state of the last review before from_date
-            entity.fsrs_state.stability = last_before_review.stability_after
-            entity.fsrs_state.difficulty = last_before_review.difficulty_after
-            entity.fsrs_state.state = last_before_review.state_after
-            entity.fsrs_state.step = last_before_review.step_after
-        else:
-            # No prior reviews - reset to initial state
-            entity.fsrs_state.stability = entity.fsrs_state.inherited_stability
-            entity.fsrs_state.difficulty = entity.fsrs_state.inherited_difficulty
-            entity.fsrs_state.state = entity.fsrs_state.inherited_state or "LEARNING"
-            inherited_state = entity.fsrs_state.inherited_state or "LEARNING"
-            entity.fsrs_state.step = (
-                None
-                if inherited_state == "REVIEW"
-                else entity.fsrs_state.inherited_step
-            )
-
-        await session.flush()
+    if entity.fsrs_state is None:
         return
 
-    # Initialize FSRS scheduler
-    scheduler = Scheduler()
-
-    # Determine starting card state
-    if last_before_review and last_before_review.stability_after is not None:
-        # Start from the "after" state of the last review before from_date
-        state = map_state_to_fsrs(last_before_review.state_after)
-        last_review_date = last_before_review.completed_at
-        if isinstance(last_review_date, datetime):
-            last_review_datetime = last_review_date
-        else:
-            last_review_datetime = datetime.combine(last_review_date, time.min).replace(
-                tzinfo=timezone.utc
-            )
-
-        starting_card = Card(
-            state=state,
-            stability=last_before_review.stability_after,
-            difficulty=last_before_review.difficulty_after,
-            step=None if state == FSRSState.Review else last_before_review.step_after,
-            last_review=last_review_datetime,
-        )
+    # Determine filter based on entity type
+    if isinstance(entity, Topic):
+        entity_filter = Review.topic_id == entity.id
     else:
-        # No prior reviews, start from initial state
-        inherited_state_str = entity.inherited_state or "LEARNING"
-        state = map_state_to_fsrs(inherited_state_str)
-        inherited_last_review_dt = (
-            datetime.combine(entity.inherited_last_review, time.min).replace(
-                tzinfo=timezone.utc
-            )
-            if entity.inherited_last_review is not None
-            else None
-        )
-        starting_card = Card(
-            state=state,
-            stability=entity.inherited_stability,
-            difficulty=entity.inherited_difficulty,
-            step=None if state == FSRSState.Review else entity.inherited_step,
-            last_review=inherited_last_review_dt,
-        )
+        entity_filter = Review.source_id == entity.id
 
-    # Replay reviews
-    final_card = await replay_subsequent_reviews(
-        starting_card=starting_card,
-        subsequent_reviews=reviews_to_replay,
-        scheduler=scheduler,
-    )
-
-    # Update entity's fsrs_state with final state
-    if entity.fsrs_state is not None:
-        entity.fsrs_state.stability = final_card.stability
-        entity.fsrs_state.difficulty = final_card.difficulty
-        entity.fsrs_state.state = map_fsrs_state_to_db(final_card.state)
-        entity.fsrs_state.step = final_card.step
-
-    await session.flush()
-
-
-async def replay_topic_reviews_from_date(
-    session: AsyncSession,
-    topic_id: int,
-    user_id: str,
-    from_date: date,
-) -> None:
-    """
-    Replay reviews for a topic starting from a specific date.
-
-    Only replays reviews where review.completed_at >= from_date.
-    More efficient than replaying all reviews when only later reviews are affected.
-
-    Args:
-        session: Database session
-        topic_id: ID of the topic to replay
-        user_id: User ID for authorization
-        from_date: Only replay reviews with review.completed_at >= from_date
-    """
-    # Fetch the topic
-    topic_result = await session.execute(
-        select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
-    )
-    topic = topic_result.scalar_one_or_none()
-    if not topic:
-        return
-
-    # Fetch completed reviews from from_date onward
+    # Fetch completed reviews from starting_from onward
     reviews_result = await session.execute(
         select(Review)
         .where(
-            Review.topic_id == topic_id,
-            Review.user_id == user_id,
+            entity_filter,
+            Review.user_id == entity.user_id,
             Review.completed_at.isnot(None),
-            Review.completed_at >= from_date,
+            Review.completed_at >= starting_from,
         )
         .order_by(Review.completed_at.asc())
-        .options(selectinload(Review.review_session))
-    )
-    reviews_to_replay = list(reviews_result.scalars().all())
-    # Find the last review BEFORE from_date to get starting FSRS state
-    before_review_result = await session.execute(
-        select(Review)
-        .where(
-            Review.topic_id == topic_id,
-            Review.user_id == user_id,
-            Review.completed_at.isnot(None),
-            Review.completed_at < from_date,
-        )
-        .order_by(Review.completed_at.desc())
-        .options(selectinload(Review.review_session))
-        .limit(1)
-    )
-    last_before_review = before_review_result.scalar_one_or_none()
-
-    await _replay_reviews_for_entity(
-        entity=topic,
-        reviews_to_replay=reviews_to_replay,
-        last_before_review=last_before_review,
-        session=session,
-    )
-
-
-async def replay_source_reviews_from_date(
-    session: AsyncSession,
-    source_id: int,
-    user_id: str,
-    from_date: date,
-) -> None:
-    """
-    Replay reviews for a source starting from a specific date.
-
-    Only replays reviews where review.completed_at >= from_date.
-    More efficient than replaying all reviews when only later reviews are affected.
-
-    Args:
-        session: Database session
-        source_id: ID of the source to replay
-        user_id: User ID for authorization
-        from_date: Only replay reviews with review.completed_at >= from_date
-    """
-    # Fetch the source
-    source_result = await session.execute(
-        select(Source).where(Source.id == source_id, Source.user_id == user_id)
-    )
-    source = source_result.scalar_one_or_none()
-    if not source:
-        return
-
-    # Fetch completed reviews for this source from from_date onward (via source_reviews)
-    reviews_result = await session.execute(
-        select(Review)
-        .join(t_source_reviews, Review.id == t_source_reviews.c.review_id)
-        .where(
-            t_source_reviews.c.source_id == source_id,
-            Review.user_id == user_id,
-            Review.completed_at.isnot(None),
-            Review.completed_at >= from_date,
-        )
-        .order_by(Review.completed_at.asc())
-        .options(selectinload(Review.review_session))
     )
     reviews_to_replay = list(reviews_result.scalars().all())
 
-    # Find the last review BEFORE from_date to get starting FSRS state
-    before_review_result = await session.execute(
+    # Find last review BEFORE starting_from
+    before_result = await session.execute(
         select(Review)
-        .join(t_source_reviews, Review.id == t_source_reviews.c.review_id)
         .where(
-            t_source_reviews.c.source_id == source_id,
-            Review.user_id == user_id,
+            entity_filter,
+            Review.user_id == entity.user_id,
             Review.completed_at.isnot(None),
-            Review.completed_at < from_date,
+            Review.completed_at < starting_from,
         )
         .order_by(Review.completed_at.desc())
-        .options(selectinload(Review.review_session))
         .limit(1)
     )
-    last_before_review = before_review_result.scalar_one_or_none()
+    last_before = before_result.scalar_one_or_none()
 
-    await _replay_reviews_for_entity(
-        entity=source,
-        reviews_to_replay=reviews_to_replay,
-        last_before_review=last_before_review,
-        session=session,
+    update_fsrs(entity.fsrs_state, reviews_to_replay, last_before)
+
+
+# --- Review Operations ---
+
+
+async def get_review(session: AsyncSession, review_id: int, user_id: str) -> Review:
+    """Get a review or raise NotFoundError."""
+    stmt = (
+        select(Review)
+        .where(Review.id == review_id, Review.user_id == user_id)
+        .options(
+            selectinload(Review.topic).selectinload(Topic.fsrs_state),
+            selectinload(Review.source).selectinload(Source.fsrs_state),
+            selectinload(Review.review_session),
+        )
     )
+    result = await session.execute(stmt)
+    review = result.scalar_one_or_none()
+    if not review:
+        raise NotFoundError("Review", review_id)
+    return review
 
 
 async def list_reviews(
@@ -385,8 +259,7 @@ async def list_reviews(
             ReviewSession.description,
         )
         .outerjoin(Topic, Review.topic_id == Topic.id)
-        .outerjoin(t_source_reviews, Review.id == t_source_reviews.c.review_id)
-        .outerjoin(Source, t_source_reviews.c.source_id == Source.id)
+        .outerjoin(Source, Review.source_id == Source.id)
         .outerjoin(ReviewSession, Review.review_session_id == ReviewSession.id)
         .where(Review.user_id == user_id)
         .order_by(
@@ -403,7 +276,7 @@ async def list_reviews(
         stmt = stmt.where(Review.topic_id == topic_id)
 
     if source_id is not None:
-        stmt = stmt.where(t_source_reviews.c.source_id == source_id)
+        stmt = stmt.where(Review.source_id == source_id)
 
     if effective_date_before is not None:
         stmt = stmt.where(Review.effective_date <= effective_date_before)
@@ -453,7 +326,6 @@ async def create_review(
     """
     # Determine if this is a topic or source review
     is_topic_review = topic_id is not None or topic_data is not None
-    is_source_review = source_id is not None or source_data is not None
 
     # Resolve or create the target entity (Topic or Source)
     topic: Topic | None = None
@@ -463,7 +335,9 @@ async def create_review(
     if is_topic_review:
         if topic_id is not None:
             topic_result = await session.execute(
-                select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+                select(Topic)
+                .where(Topic.id == topic_id, Topic.user_id == user_id)
+                .options(selectinload(Topic.fsrs_state))
             )
             topic = topic_result.scalar_one_or_none()
             if not topic:
@@ -488,7 +362,9 @@ async def create_review(
     else:
         if source_id is not None:
             source_result = await session.execute(
-                select(Source).where(Source.id == source_id, Source.user_id == user_id)
+                select(Source)
+                .where(Source.id == source_id, Source.user_id == user_id)
+                .options(selectinload(Source.fsrs_state))
             )
             source = source_result.scalar_one_or_none()
             if not source:
@@ -542,6 +418,7 @@ async def create_review(
         new_review = Review(
             review_session_id=resolved_review_session_id,
             topic_id=topic.id if topic else None,
+            source_id=source.id if source else None,
             user_id=user_id,
             description=description,
             scheduled_at=scheduled_at,
@@ -553,15 +430,6 @@ async def create_review(
             await session.flush()
         except IntegrityError:
             raise AlreadyExistsError("Review already exists")
-
-        # For source reviews, create the source_reviews association
-        if is_source_review and source:
-            await session.execute(
-                t_source_reviews.insert().values(
-                    review_id=new_review.id, source_id=source.id
-                )
-            )
-            await session.flush()
 
         # Re-query to get fresh data
         review_result = await session.execute(
@@ -575,73 +443,18 @@ async def create_review(
         )
         return review_result.scalar_one()
 
-    # Review is completed - run FSRS
-    # Store entity's current state as "before" state
-    stability_before = entity_for_fsrs.stability
-    difficulty_before = entity_for_fsrs.difficulty
-    state_before = entity_for_fsrs.state
-    step_before = entity_for_fsrs.step
-
-    # Use provided rating or default to "good"
+    # Review is completed - create with rating, let run_fsrs set FSRS fields
     rating_value = rating or "good"
 
-    # Initialize FSRS scheduler
-    scheduler = Scheduler()
-
-    # Create a Card representing the entity's current state
-    state = map_state_to_fsrs(entity_for_fsrs.state)
-    last_review_dt = (
-        datetime.combine(entity_for_fsrs.last_reviewed_at, time.min).replace(
-            tzinfo=timezone.utc
-        )
-        if entity_for_fsrs.last_reviewed_at is not None
-        else (
-            datetime.combine(entity_for_fsrs.inherited_last_review, time.min).replace(
-                tzinfo=timezone.utc
-            )
-            if entity_for_fsrs.inherited_last_review is not None
-            else None
-        )
-    )
-    card = Card(
-        state=state,
-        stability=entity_for_fsrs.stability,
-        difficulty=entity_for_fsrs.difficulty,
-        step=None if state == FSRSState.Review else entity_for_fsrs.step,
-        last_review=last_review_dt,
-    )
-
-    # Review the card with FSRS
-    fsrs_rating = map_rating_to_fsrs(rating_value)
-    review_datetime = datetime.combine(completed_at, time.min).replace(
-        tzinfo=timezone.utc
-    )
-
-    updated_card, review_log = scheduler.review_card(
-        card=card, rating=fsrs_rating, review_datetime=review_datetime
-    )
-
-    # Calculate due_after as a date
-    due_after_date = updated_card.due.date()
-
-    # Create the review with FSRS state
     new_review = Review(
         review_session_id=resolved_review_session_id,
         topic_id=topic.id if topic else None,
+        source_id=source.id if source else None,
         user_id=user_id,
         description=description,
         scheduled_at=scheduled_at,
         completed_at=completed_at,
         rating=rating_value,
-        stability_before=stability_before,
-        difficulty_before=difficulty_before,
-        state_before=state_before,
-        step_before=step_before,
-        stability_after=updated_card.stability,
-        difficulty_after=updated_card.difficulty,
-        state_after=map_fsrs_state_to_db(updated_card.state),
-        step_after=updated_card.step,
-        due_after=due_after_date,
     )
     session.add(new_review)
 
@@ -650,16 +463,7 @@ async def create_review(
     except IntegrityError:
         raise AlreadyExistsError("Review already exists")
 
-    # For source reviews, create the source_reviews association
-    if is_source_review and source:
-        await session.execute(
-            t_source_reviews.insert().values(
-                review_id=new_review.id, source_id=source.id
-            )
-        )
-        await session.flush()
-
-    # Update the entity's fsrs_state with new FSRS state
+    # Ensure entity has fsrs_state before running FSRS
     if entity_for_fsrs.fsrs_state is None:
         fsrs_state = FsrsState(srs_enabled=True)
         session.add(fsrs_state)
@@ -667,29 +471,9 @@ async def create_review(
         entity_for_fsrs.fsrs_state_id = fsrs_state.id
         entity_for_fsrs.fsrs_state = fsrs_state
 
-    entity_for_fsrs.fsrs_state.stability = updated_card.stability
-    entity_for_fsrs.fsrs_state.difficulty = updated_card.difficulty
-    entity_for_fsrs.fsrs_state.state = map_fsrs_state_to_db(updated_card.state)
-    entity_for_fsrs.fsrs_state.step = updated_card.step
-    entity_for_fsrs.fsrs_state.last_reviewed_at = (
-        completed_at.date() if isinstance(completed_at, datetime) else completed_at
-    )
-
-    # Replay all reviews that come after this newly created review
-    if is_topic_review and topic:
-        await replay_topic_reviews_from_date(
-            session=session,
-            topic_id=topic.id,
-            user_id=user_id,
-            from_date=completed_at,
-        )
-    elif is_source_review and source:
-        await replay_source_reviews_from_date(
-            session=session,
-            source_id=source.id,
-            user_id=user_id,
-            from_date=completed_at,
-        )
+    # Run FSRS for this review and any subsequent reviews
+    await update_entity_fsrs(session, entity_for_fsrs, completed_at)
+    await session.flush()
 
     # Re-query to get fresh data
     review_result = await session.execute(
@@ -766,58 +550,17 @@ async def update_review(
         )
         return review_result.scalar_one()
 
-    # Review is completed - run FSRS recalculation
+    # Review is completed - update rating and let run_fsrs handle FSRS calculations
     rating_value = rating or existing_review.rating or "good"
-
-    scheduler = Scheduler()
-
-    state = (
-        map_state_to_fsrs(existing_review.state_before)
-        if existing_review.state_before
-        else FSRSState.Learning
-    )
-    card = Card(
-        state=state,
-        stability=existing_review.stability_before,
-        difficulty=existing_review.difficulty_before,
-        step=None if state == FSRSState.Review else existing_review.step_before,
-    )
-
-    fsrs_rating = map_rating_to_fsrs(rating_value)
-    review_datetime = datetime.combine(new_completed_at, time.min).replace(
-        tzinfo=timezone.utc
-    )
-
-    updated_card, review_log = scheduler.review_card(
-        card=card, rating=fsrs_rating, review_datetime=review_datetime
-    )
-
-    due_after_date = updated_card.due.date()
-
     existing_review.rating = rating_value
-    existing_review.stability_after = updated_card.stability
-    existing_review.difficulty_after = updated_card.difficulty
-    existing_review.state_after = map_fsrs_state_to_db(updated_card.state)
-    existing_review.step_after = updated_card.step
-    existing_review.due_after = due_after_date
 
     await session.flush()
 
-    # Replay from this review's date to recalculate subsequent reviews
-    if is_source_review and source:
-        await replay_source_reviews_from_date(
-            session=session,
-            source_id=source.id,
-            user_id=user_id,
-            from_date=new_completed_at,
-        )
-    elif topic:
-        await replay_topic_reviews_from_date(
-            session=session,
-            topic_id=topic.id,
-            user_id=user_id,
-            from_date=new_completed_at,
-        )
+    # Run FSRS from this review's date to calculate this review and recalculate subsequent reviews
+    entity = source if is_source_review else topic
+    if entity:
+        await update_entity_fsrs(session, entity, new_completed_at)
+        await session.flush()
 
     review_result = await session.execute(
         select(Review)
@@ -840,29 +583,18 @@ async def delete_review(
     # Fetch the review with both topic and source relationships
     review = await get_review(session, review_id, user_id)
 
-    # Capture IDs before deletion
-    topic_id = review.topic_id
+    # Capture entity and info before deletion
+    topic = review.topic
     source = review.source
-    source_id = source.id if source else None
     completed_at = review.completed_at
 
-    # Delete the review (cascade will handle source_reviews association)
+    # Delete the review
     await session.delete(review)
     await session.flush()
 
     # Only replay if review was completed
     if completed_at is not None:
-        if source_id is not None:
-            await replay_source_reviews_from_date(
-                session=session,
-                source_id=source_id,
-                user_id=user_id,
-                from_date=completed_at,
-            )
-        elif topic_id is not None:
-            await replay_topic_reviews_from_date(
-                session=session,
-                topic_id=topic_id,
-                user_id=user_id,
-                from_date=completed_at,
-            )
+        entity = source if source is not None else topic
+        if entity:
+            await update_entity_fsrs(session, entity, completed_at)
+            await session.flush()

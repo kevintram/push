@@ -64,26 +64,6 @@ t_source_topics = Table(
     ),
 )
 
-# Source reviews junction table (for polymorphic reviews)
-t_source_reviews = Table(
-    "source_reviews",
-    Base.metadata,
-    Column(
-        "review_id",
-        BigInteger,
-        ForeignKey("reviews.id", ondelete="CASCADE"),
-        primary_key=True,
-        nullable=False,
-    ),
-    Column(
-        "source_id",
-        BigInteger,
-        ForeignKey("sources.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    ),
-)
-
 
 class Source(Base):
     __tablename__ = "sources"
@@ -143,12 +123,7 @@ class Source(Base):
         viewonly=True,
     )
 
-    # Reviews for this source (via source_reviews association table)
-    reviews: Mapped[list["Review"]] = relationship(
-        "Review",
-        secondary=t_source_reviews,
-        viewonly=True,
-    )
+    reviews: Mapped[list["Review"]] = relationship("Review", back_populates="source")
 
     # Computed property for retrievability
     @hybrid_property

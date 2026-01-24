@@ -41,6 +41,13 @@ pnpm install            # Install dependencies
 pnpm run dev            # Start dev server
 ```
 
+### Supabase (`supabase/`)
+```bash
+supabase db reset       # reconstruct and seed local db
+supabase migration up   # apply new migrations to local db
+supabase db push        # push new migrations to prod db
+```
+
 ## Commit Guidelines
 
 This project follows [Conventional Commits](https://www.conventionalcommits.org/):

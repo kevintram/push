@@ -32,10 +32,12 @@ class Review(Base):
     review_session_id: Mapped[int | None] = mapped_column(
         BigInteger, ForeignKey("review_sessions.id"), nullable=True
     )
-    # topic_id is nullable for polymorphic reviews (topic vs source)
-    # The actual link is via topic_reviews/source_reviews association tables
+    # Exactly one of topic_id or source_id must be set (enforced by CHECK constraint)
     topic_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey("topics.id"), nullable=True
+        BigInteger, ForeignKey("topics.id", ondelete="CASCADE"), nullable=True
+    )
+    source_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("sources.id", ondelete="CASCADE"), nullable=True
     )
     user_id: Mapped[str] = mapped_column(String, nullable=False)
 
@@ -91,10 +93,4 @@ class Review(Base):
         back_populates="reviews"
     )
     topic: Mapped["Topic | None"] = relationship(back_populates="reviews")
-    # Source relationship via source_reviews association table
-    source: Mapped["Source | None"] = relationship(
-        "Source",
-        secondary="source_reviews",
-        uselist=False,
-        viewonly=True,
-    )
+    source: Mapped["Source | None"] = relationship(back_populates="reviews")

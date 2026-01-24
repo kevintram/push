@@ -64,25 +64,6 @@ t_topic_other_relations = Table(
     ),
 )
 
-# Topic reviews junction table (for polymorphic reviews)
-t_topic_reviews = Table(
-    "topic_reviews",
-    Base.metadata,
-    Column(
-        "review_id",
-        BigInteger,
-        ForeignKey("reviews.id", ondelete="CASCADE"),
-        primary_key=True,
-        nullable=False,
-    ),
-    Column(
-        "topic_id",
-        BigInteger,
-        ForeignKey("topics.id", ondelete="CASCADE"),
-        nullable=False,
-    ),
-)
-
 
 class Topic(Base):
     __tablename__ = "topics"

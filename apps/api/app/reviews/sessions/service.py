@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from app.exceptions import BadRequestError, NotFoundError
 from app.models import Review, ReviewSession, Topic
-from app.reviews.service import replay_topic_reviews_from_date
+from app.reviews.service import update_entity_fsrs
 
 
 async def get_review_session(
@@ -181,28 +181,27 @@ async def update_review_session(
         )
         await session.flush()
 
-        # Since these topics have now have an additional completed review,
+        # Since these topics now have an additional completed review,
         # we must run FSRS for them:
 
-        # Get the topics
-        reviews_result = await session.execute(
-            select(Review.topic_id)
-            .where(Review.review_session_id == session_id, Review.user_id == user_id)
-            .distinct()
+        # Get the affected topics with their fsrs_state
+        topics_result = await session.execute(
+            select(Topic)
+            .where(
+                Topic.reviews.any(Review.review_session_id == session_id),
+                Topic.user_id == user_id,
+            )
+            .options(selectinload(Topic.fsrs_state))
         )
-        affected_topic_ids = {row[0] for row in reviews_result.all()}
+        affected_topics = list(topics_result.scalars().all())
 
         # Run FSRS on the topics
         # Note: we don't assume that the reviews are latest for each topic
-        #       thus, we must replay FSRS for them starting
+        #       thus, we must replay FSRS for them starting from earliest_date
         earliest_date = min(old_completed_at or date.max, new_completed_at or date.max)
-        for topic_id in affected_topic_ids:
-            await replay_topic_reviews_from_date(
-                session=session,
-                topic_id=topic_id,
-                user_id=user_id,
-                from_date=earliest_date,
-            )
+        for topic in affected_topics:
+            await update_entity_fsrs(session, topic, earliest_date)
+        await session.flush()
 
     # Return latest results
     stmt = (
@@ -250,13 +249,16 @@ async def delete_review_session(
 
     completed_at = review_session.completed_at
 
-    # Fetch all reviews associated with this review session to get affected topic IDs
-    reviews_result = await session.execute(
-        select(Review.topic_id)
-        .where(Review.review_session_id == session_id, Review.user_id == user_id)
-        .distinct()
+    # Fetch affected topics (with fsrs_state) before deleting
+    topics_result = await session.execute(
+        select(Topic)
+        .where(
+            Topic.reviews.any(Review.review_session_id == session_id),
+            Topic.user_id == user_id,
+        )
+        .options(selectinload(Topic.fsrs_state))
     )
-    affected_topic_ids = {row[0] for row in reviews_result.all()}
+    affected_topics = list(topics_result.scalars().all())
 
     # Delete the review session (reviews will be cascade deleted if DB is configured)
     stmt = delete(ReviewSession).where(
@@ -265,11 +267,7 @@ async def delete_review_session(
     await session.execute(stmt)
 
     # Only replay if the review session was completed (had a completion date)
-    if completed_at and affected_topic_ids:
-        for topic_id in affected_topic_ids:
-            await replay_topic_reviews_from_date(
-                session=session,
-                topic_id=topic_id,
-                user_id=user_id,
-                from_date=completed_at,
-            )
+    if completed_at and affected_topics:
+        for topic in affected_topics:
+            await update_entity_fsrs(session, topic, completed_at)
+        await session.flush()
