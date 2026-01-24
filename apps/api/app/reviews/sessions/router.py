@@ -12,6 +12,7 @@ from app.schemas import (
     ReviewSessionRead,
     ReviewSessionReadWithReviews,
     ReviewSessionUpdate,
+    SourceRead,
     TopicRead,
 )
 
@@ -33,6 +34,7 @@ async def read_review_sessions(
     session: SessionDep,
     user_id: UserIdDep,
     topic_id: int | None = None,
+    source_id: int | None = None,
     effective_date_before: str | None = None,
     effective_date_after: str | None = None,
     completed: bool | None = None,
@@ -51,6 +53,7 @@ async def read_review_sessions(
         session,
         user_id,
         topic_id=topic_id,
+        source_id=source_id,
         effective_date_before=date_before,
         effective_date_after=date_after,
         completed=completed,
@@ -112,6 +115,18 @@ async def read_topics_for_review_session(
 ) -> list[TopicRead]:
     """Get all topics that are part of a review session."""
     return await service.get_topics_for_review_session(
+        session, review_session_id, user_id
+    )
+
+
+@router.get("/{review_session_id}/sources/")
+async def read_sources_for_review_session(
+    review_session_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> list[SourceRead]:
+    """Get all sources that are part of a review session."""
+    return await service.get_sources_for_review_session(
         session, review_session_id, user_id
     )
 

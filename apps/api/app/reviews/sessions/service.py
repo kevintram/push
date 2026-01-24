@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.exceptions import BadRequestError, NotFoundError
-from app.models import Review, ReviewSession, Topic
+from app.models import Review, ReviewSession, Source, Topic
 from app.reviews.service import update_entity_fsrs
 
 
@@ -18,7 +18,10 @@ async def get_review_session(
     stmt = (
         select(ReviewSession)
         .where(ReviewSession.id == session_id, ReviewSession.user_id == user_id)
-        .options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
+        .options(
+            selectinload(ReviewSession.reviews).selectinload(Review.topic),
+            selectinload(ReviewSession.reviews).selectinload(Review.source),
+        )
     )
     result = await session.execute(stmt)
     review_session = result.scalar_one_or_none()
@@ -49,6 +52,7 @@ async def list_review_sessions(
     user_id: str,
     *,
     topic_id: int | None = None,
+    source_id: int | None = None,
     effective_date_before: date | None = None,
     effective_date_after: date | None = None,
     completed: bool | None = None,
@@ -63,11 +67,17 @@ async def list_review_sessions(
             ReviewSession.scheduled_at.asc(),
             ReviewSession.id.asc(),
         )
-        .options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
+        .options(
+            selectinload(ReviewSession.reviews).selectinload(Review.topic),
+            selectinload(ReviewSession.reviews).selectinload(Review.source),
+        )
     )
 
     if topic_id is not None:
         stmt = stmt.where(ReviewSession.reviews.any(Review.topic_id == topic_id))
+
+    if source_id is not None:
+        stmt = stmt.where(ReviewSession.reviews.any(Review.source_id == source_id))
 
     if effective_date_before is not None:
         stmt = stmt.where(ReviewSession.effective_date <= effective_date_before)
@@ -160,7 +170,10 @@ async def update_review_session(
         stmt = (
             select(ReviewSession)
             .where(ReviewSession.id == session_id, ReviewSession.user_id == user_id)
-            .options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
+            .options(
+                selectinload(ReviewSession.reviews).selectinload(Review.topic),
+                selectinload(ReviewSession.reviews).selectinload(Review.source),
+            )
         )
         final_result = await session.execute(stmt)
         return final_result.scalar_one()
@@ -201,13 +214,32 @@ async def update_review_session(
         earliest_date = min(old_completed_at or date.max, new_completed_at or date.max)
         for topic in affected_topics:
             await update_entity_fsrs(session, topic, earliest_date)
+
+        # Get the affected sources with their fsrs_state
+        sources_result = await session.execute(
+            select(Source)
+            .where(
+                Source.reviews.any(Review.review_session_id == session_id),
+                Source.user_id == user_id,
+            )
+            .options(selectinload(Source.fsrs_state))
+        )
+        affected_sources = list(sources_result.scalars().all())
+
+        # Run FSRS on the sources
+        for source in affected_sources:
+            await update_entity_fsrs(session, source, earliest_date)
+
         await session.flush()
 
     # Return latest results
     stmt = (
         select(ReviewSession)
         .where(ReviewSession.id == session_id, ReviewSession.user_id == user_id)
-        .options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
+        .options(
+            selectinload(ReviewSession.reviews).selectinload(Review.topic),
+            selectinload(ReviewSession.reviews).selectinload(Review.source),
+        )
     )
     final_result = await session.execute(stmt)
     return final_result.scalar_one()
@@ -222,6 +254,20 @@ async def get_topics_for_review_session(
     stmt = select(Topic).where(
         Topic.reviews.any(Review.review_session_id == session_id),
         Topic.user_id == user_id,
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def get_sources_for_review_session(
+    session: AsyncSession,
+    session_id: int,
+    user_id: str,
+) -> list[Source]:
+    """Get all sources that are part of a review session."""
+    stmt = select(Source).where(
+        Source.reviews.any(Review.review_session_id == session_id),
+        Source.user_id == user_id,
     )
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -260,6 +306,17 @@ async def delete_review_session(
     )
     affected_topics = list(topics_result.scalars().all())
 
+    # Fetch affected sources (with fsrs_state) before deleting
+    sources_result = await session.execute(
+        select(Source)
+        .where(
+            Source.reviews.any(Review.review_session_id == session_id),
+            Source.user_id == user_id,
+        )
+        .options(selectinload(Source.fsrs_state))
+    )
+    affected_sources = list(sources_result.scalars().all())
+
     # Delete the review session (reviews will be cascade deleted if DB is configured)
     stmt = delete(ReviewSession).where(
         ReviewSession.id == session_id, ReviewSession.user_id == user_id
@@ -267,7 +324,9 @@ async def delete_review_session(
     await session.execute(stmt)
 
     # Only replay if the review session was completed (had a completion date)
-    if completed_at and affected_topics:
+    if completed_at:
         for topic in affected_topics:
             await update_entity_fsrs(session, topic, completed_at)
+        for source in affected_sources:
+            await update_entity_fsrs(session, source, completed_at)
         await session.flush()
