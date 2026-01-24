@@ -78,7 +78,6 @@ async def search_sources(
     *,
     addable_as_parent_to: int | None = None,
     addable_as_child_to: int | None = None,
-    addable_to_review_session: int | None = None,
     query: str | None = None,
     limit: int = 10,
 ) -> list[Source]:
@@ -130,13 +129,6 @@ async def search_sources(
         # Also exclude current children
         children_subq = select(Source.id).where(Source.parent_id == addable_as_child_to)
         stmt = stmt.where(Source.id.notin_(children_subq))
-
-    if addable_to_review_session is not None:
-        # Exclude sources already in the review session
-        sources_in_session = select(Review.source_id).where(
-            Review.review_session_id == addable_to_review_session
-        )
-        stmt = stmt.where(Source.id.notin_(sources_in_session))
 
     if cleaned_query:
         like_pattern = f"%{cleaned_query}%"

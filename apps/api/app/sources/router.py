@@ -30,7 +30,6 @@ async def search_sources(
     user_id: UserIdDep,
     addable_as_parent_to: int | None = None,
     addable_as_child_to: int | None = None,
-    addable_to_review_session: int | None = None,
     query: str | None = None,
     limit: int = 10,
 ) -> list[SourceSummaryRead]:
@@ -39,7 +38,6 @@ async def search_sources(
         user_id,
         addable_as_parent_to=addable_as_parent_to,
         addable_as_child_to=addable_as_child_to,
-        addable_to_review_session=addable_to_review_session,
         query=query,
         limit=limit,
     )

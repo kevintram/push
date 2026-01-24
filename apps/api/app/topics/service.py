@@ -88,7 +88,6 @@ async def search_topics(
     *,
     addable_as_parent_to: int | None = None,
     addable_as_child_to: int | None = None,
-    addable_to_review_session: int | None = None,
     addable_as_related_to: int | None = None,
     query: str | None = None,
     limit: int = 10,
@@ -156,13 +155,6 @@ async def search_topics(
         # Also exclude current children
         children_subq = select(Topic.id).where(Topic.parent_id == addable_as_child_to)
         stmt = stmt.where(Topic.id.notin_(children_subq))
-
-    if addable_to_review_session is not None:
-        # Filter out topics already in the review session
-        topics = select(Review.topic_id).where(
-            Review.review_session_id == addable_to_review_session
-        )
-        stmt = stmt.where(Topic.id.notin_(topics))
 
     if cleaned_query:
         like_pattern = f"%{cleaned_query}%"
