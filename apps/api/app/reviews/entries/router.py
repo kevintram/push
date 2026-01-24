@@ -5,7 +5,8 @@ from typing import Literal
 
 from fastapi import APIRouter
 
-from app.dependencies import SessionDep, UserIdDep
+from app.auth.dependencies import UserIdDep
+from app.dependencies import SessionDep
 from app.reviews.entries import service
 from app.schemas import ReviewListItem, ReviewRead, ReviewSessionReadWithReviews
 from app.schemas.review_entries import (

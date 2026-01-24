@@ -32,7 +32,7 @@ from sqlalchemy.orm import selectinload
 
 from app.main import app
 from app.database import get_db
-from app.dependencies import get_user_id
+from app.auth.dependencies import get_user_id
 from app.models import Topic, Source, FsrsState
 
 

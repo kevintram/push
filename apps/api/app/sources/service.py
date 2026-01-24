@@ -373,7 +373,9 @@ async def add_child(
 
     # Load both with relationships
     parent_source = await load_source_with_relationships(session, parent_id, user_id)
-    child_source = await load_source_with_relationships(session, result_child_id, user_id)
+    child_source = await load_source_with_relationships(
+        session, result_child_id, user_id
+    )
 
     return parent_source, child_source
 

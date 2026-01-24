@@ -5,7 +5,8 @@ from typing import Literal
 from fastapi import APIRouter, Query
 
 from app.constants import ChildHandlingStrategy
-from app.dependencies import SessionDep, UserIdDep
+from app.auth.dependencies import UserIdDep
+from app.dependencies import SessionDep
 from app.schemas import (
     RelationshipDirection,
     ReviewSessionReadWithReviews,
@@ -185,7 +186,9 @@ async def delete_topic_other_relationship(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> None:
-    await service.delete_topic_relationship(session, from_topic_id, to_topic_id, user_id)
+    await service.delete_topic_relationship(
+        session, from_topic_id, to_topic_id, user_id
+    )
 
 
 @router.get("/{topic_id}/review-sessions/")

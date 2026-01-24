@@ -427,7 +427,9 @@ async def get_topic_related(
     # Fetch outgoing (where this topic is 'from', related topic is 'to')
     outgoing_stmt = (
         select(Topic)
-        .join(t_topic_other_relations, Topic.id == t_topic_other_relations.c.to_topic_id)
+        .join(
+            t_topic_other_relations, Topic.id == t_topic_other_relations.c.to_topic_id
+        )
         .where(
             t_topic_other_relations.c.from_topic_id == topic_id,
             Topic.user_id == user_id,
@@ -515,7 +517,8 @@ async def create_topic_relationship(
     stmt = (
         select(Topic)
         .where(
-            Topic.id.in_([from_topic_id, resolved_to_topic_id]), Topic.user_id == user_id
+            Topic.id.in_([from_topic_id, resolved_to_topic_id]),
+            Topic.user_id == user_id,
         )
         .options(selectinload(Topic.fsrs_state))
     )

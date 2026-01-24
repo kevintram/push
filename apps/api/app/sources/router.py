@@ -5,7 +5,8 @@ from typing import Literal
 from fastapi import APIRouter, Query
 
 from app.constants import ChildHandlingStrategy
-from app.dependencies import SessionDep, UserIdDep
+from app.auth.dependencies import UserIdDep
+from app.dependencies import SessionDep
 from app.schemas import (
     SourceChildRelationshipCreate,
     SourceCreate,

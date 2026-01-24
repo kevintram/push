@@ -84,7 +84,9 @@ async def list_review_entries(
         reviews_stmt = reviews_stmt.where(Review.topic_id == topic_id)
 
     if effective_date_before is not None:
-        reviews_stmt = reviews_stmt.where(Review.effective_date <= effective_date_before)
+        reviews_stmt = reviews_stmt.where(
+            Review.effective_date <= effective_date_before
+        )
 
     if effective_date_after is not None:
         reviews_stmt = reviews_stmt.where(Review.effective_date >= effective_date_after)

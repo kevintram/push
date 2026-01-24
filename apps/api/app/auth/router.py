@@ -1,11 +1,13 @@
+"""Auth HTTP endpoints - login, callback, logout."""
+
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from starlette import status
 
 from app.config import get_settings
-from app.core.auth import get_workos
+from app.auth.workos import get_workos
 
-router = APIRouter()
+router = APIRouter(tags=["auth"])
 
 
 @router.get("/login")
