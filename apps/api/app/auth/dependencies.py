@@ -1,11 +1,14 @@
 """Auth dependencies."""
 
+import logging
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, Response, status
 
 from app.config import get_settings
 from app.auth.workos import get_workos
+
+logger = logging.getLogger(__name__)
 
 
 async def get_user_id(
@@ -31,7 +34,7 @@ async def get_user_id(
         )
     else:
         try:
-            print("Refreshing session")
+            logger.debug("Refreshing session")
             result = session.refresh()
             if result.authenticated is False:
                 raise HTTPException(
@@ -51,7 +54,7 @@ async def get_user_id(
         except HTTPException:
             raise
         except Exception as e:
-            print("Error refreshing session", e)
+            logger.warning("Error refreshing session: %s", e)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication failed"
             )
