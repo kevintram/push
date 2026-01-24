@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import Header, HTTPException, status, Request, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
+from app.config import get_settings
 from app.core.auth import get_workos
-from app.core.db import get_db
+from app.database import get_db
 
 
 async def get_token_header(x_token: Annotated[str, Header()]):

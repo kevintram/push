@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from starlette import status
 
-from app.core.config import get_settings
+from app.config import get_settings
 from app.core.auth import get_workos
 
 router = APIRouter()

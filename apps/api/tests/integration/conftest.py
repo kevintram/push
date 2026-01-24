@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.main import app
-from app.core.db import get_db
+from app.database import get_db
 from app.dependencies import get_user_id
 from app.models import Topic, Source, FsrsState
 

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .dependencies import get_token_header
 from .internal import admin
 from .routers import topics, review_sessions, login, reviews, review_entries, sources
-from .core.config import get_settings
+from app.config import get_settings
 
 app = FastAPI()
 

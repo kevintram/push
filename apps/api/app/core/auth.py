@@ -2,7 +2,7 @@ from functools import lru_cache
 
 from workos import WorkOSClient
 
-from .config import get_settings
+from app.config import get_settings
 
 
 @lru_cache
