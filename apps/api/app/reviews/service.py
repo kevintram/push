@@ -51,11 +51,6 @@ def map_fsrs_state_to_db(state: FSRSState) -> str:
     return mapping[state]
 
 
-def create_scheduler() -> Scheduler:
-    """Create a new FSRS scheduler with default settings."""
-    return Scheduler()
-
-
 # --- Review Operations ---
 
 
