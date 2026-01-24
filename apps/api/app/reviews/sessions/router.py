@@ -12,8 +12,6 @@ from app.schemas import (
     ReviewSessionRead,
     ReviewSessionReadWithReviews,
     ReviewSessionUpdate,
-    SourceRead,
-    TopicRead,
 )
 
 router = APIRouter(prefix="/review-sessions", tags=["review-sessions"])
@@ -104,30 +102,6 @@ async def update_review_session(
         review_session_id,
         user_id,
         update_values=update_values,
-    )
-
-
-@router.get("/{review_session_id}/topics/")
-async def read_topics_for_review_session(
-    review_session_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> list[TopicRead]:
-    """Get all topics that are part of a review session."""
-    return await service.get_topics_for_review_session(
-        session, review_session_id, user_id
-    )
-
-
-@router.get("/{review_session_id}/sources/")
-async def read_sources_for_review_session(
-    review_session_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> list[SourceRead]:
-    """Get all sources that are part of a review session."""
-    return await service.get_sources_for_review_session(
-        session, review_session_id, user_id
     )
 
 

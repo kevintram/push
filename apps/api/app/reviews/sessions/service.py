@@ -245,34 +245,6 @@ async def update_review_session(
     return final_result.scalar_one()
 
 
-async def get_topics_for_review_session(
-    session: AsyncSession,
-    session_id: int,
-    user_id: str,
-) -> list[Topic]:
-    """Get all topics that are part of a review session."""
-    stmt = select(Topic).where(
-        Topic.reviews.any(Review.review_session_id == session_id),
-        Topic.user_id == user_id,
-    )
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
-
-
-async def get_sources_for_review_session(
-    session: AsyncSession,
-    session_id: int,
-    user_id: str,
-) -> list[Source]:
-    """Get all sources that are part of a review session."""
-    stmt = select(Source).where(
-        Source.reviews.any(Review.review_session_id == session_id),
-        Source.user_id == user_id,
-    )
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
-
-
 async def delete_review_session(
     session: AsyncSession,
     session_id: int,
