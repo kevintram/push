@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import NullPool
 
-from .config import get_settings
+from app.config import get_settings
 
 
 @lru_cache

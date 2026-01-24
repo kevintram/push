@@ -1,12 +1,20 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .dependencies import get_token_header
-from .internal import admin
-from .routers import topics, review_sessions, login, reviews, review_entries, sources
-from .core.config import get_settings
+from app.config import get_settings
+from app.exception_handlers import register_exception_handlers
+from app.admin.dependencies import get_token_header
+from app.topics.router import router as topics_router
+from app.sources.router import router as sources_router
+from app.reviews.router import router as reviews_router
+from app.reviews.entries.router import router as review_entries_router
+from app.reviews.sessions.router import router as review_sessions_router
+from app.auth.router import router as auth_router
+from app.admin.router import router as admin_router
 
 app = FastAPI()
+
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -16,18 +24,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(topics.router)
-app.include_router(sources.router)
-app.include_router(review_sessions.router)
-app.include_router(reviews.router)
-app.include_router(review_entries.router)
-app.include_router(login.router)
+app.include_router(topics_router)
+app.include_router(sources_router)
+app.include_router(reviews_router)
+app.include_router(review_entries_router)
+app.include_router(review_sessions_router)
+app.include_router(auth_router)
 app.include_router(
-    admin.router,
+    admin_router,
     prefix="/admin",
     tags=["admin"],
     dependencies=[Depends(get_token_header)],
-    responses={418: {"description": "I'm a teapot"}},
 )
 
 

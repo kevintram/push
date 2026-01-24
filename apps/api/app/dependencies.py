@@ -1,67 +1,14 @@
+"""Shared dependencies.
+
+Note: UserIdDep is in app/auth/dependencies.py - import from there.
+Note: get_token_header is in app/admin/dependencies.py - import from there.
+"""
+
 from typing import Annotated
 
-from fastapi import Header, HTTPException, status, Request, Depends, Response
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
-from app.core.auth import get_workos
-from app.core.db import get_db
-
-
-async def get_token_header(x_token: Annotated[str, Header()]):
-    if x_token != "fake-super-secret-token":
-        raise HTTPException(status_code=400, detail="X-Token header invalid")
-
-
-async def get_user_id(
-    request: Request,
-    response: Response,
-) -> str:
-    settings = get_settings()
-    workos = get_workos()
-    session_cookie = request.cookies.get(settings.WORKOS_COOKIE_NAME)
-
-    session = workos.user_management.load_sealed_session(
-        sealed_session=session_cookie, cookie_password=settings.WORKOS_COOKIE_PASSWORD
-    )
-    auth_response = session.authenticate()
-
-    if auth_response.authenticated:
-        return auth_response.user.id
-    elif auth_response.reason == "no_session_cookie_provided":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No session cookie provided",
-        )
-    else:
-        try:
-            print("Refreshing session")
-            result = session.refresh()
-            if result.authenticated is False:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Authentication failed",
-                )
-
-            response.set_cookie(
-                settings.WORKOS_COOKIE_NAME,
-                value=result.sealed_session,
-                secure=True if settings.ENV == "prod" else False,
-                httponly=True,
-                domain=settings.DOMAIN if settings.ENV == "prod" else None,
-                samesite="lax",
-            )
-            return result.user.id
-        except HTTPException:
-            raise
-        except Exception as e:
-            print("Error refreshing session", e)
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication failed"
-            )
-
-
-UserIdDep = Annotated[str, Depends(get_user_id)]
-
+from app.database import get_db
 
 SessionDep = Annotated[AsyncSession, Depends(get_db)]

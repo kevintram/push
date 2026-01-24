@@ -1,14 +1,16 @@
+"""Auth HTTP endpoints - login, callback, logout."""
+
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from starlette import status
 
-from app.core.config import get_settings
-from app.core.auth import get_workos
+from app.config import get_settings
+from app.auth.workos import get_workos
 
-router = APIRouter()
+router = APIRouter(tags=["auth"])
 
 
-@router.get("/login")
+@router.get("/login/")
 def login():
     settings = get_settings()
     workos = get_workos()
@@ -19,7 +21,7 @@ def login():
     return RedirectResponse(url=authorization_url, status_code=status.HTTP_302_FOUND)
 
 
-@router.get("/callback")
+@router.get("/callback/")
 def callback(code: str):
     settings = get_settings()
     workos = get_workos()
@@ -46,10 +48,10 @@ def callback(code: str):
         return resp
     except Exception as e:
         print("Error authenticating with code", e)
-        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+        return RedirectResponse(url="/login/", status_code=status.HTTP_302_FOUND)
 
 
-@router.get("/logout")
+@router.get("/logout/")
 def logout(request: Request):
     settings = get_settings()
     workos = get_workos()

@@ -1,24 +1,23 @@
-from datetime import datetime, timezone, date, time
+"""Review business logic, data access, and FSRS logic.
 
-from fastapi import APIRouter, HTTPException
+FSRS helper functions are kept here (not in a separate module) because they're
+tightly coupled with database operations in replay functions.
+"""
+
+from datetime import date, datetime, time, timezone
+
 from fsrs import Card, Rating as FSRSRating, Scheduler, State as FSRSState
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.dependencies import SessionDep, UserIdDep
-from app.models import Review, ReviewSession, Topic, Source, FsrsState
+from app.exceptions import AlreadyExistsError, NotFoundError
+from app.models import FsrsState, Review, ReviewSession, Source, Topic
 from app.models.sources import t_source_reviews
-from app.schemas import (
-    ReviewCreate,
-    ReviewListItem,
-    ReviewRead,
-    ReviewUpdate,
-    ReviewWithTopic,
-    ReviewWithSource,
-)
 
-router = APIRouter()
+
+# --- FSRS Helpers (pure functions, kept here for locality) ---
 
 
 def map_rating_to_fsrs(rating: str) -> FSRSRating:
@@ -50,6 +49,27 @@ def map_fsrs_state_to_db(state: FSRSState) -> str:
         FSRSState.Relearning: "RELEARNING",
     }
     return mapping[state]
+
+
+# --- Review Operations ---
+
+
+async def get_review(session: AsyncSession, review_id: int, user_id: str) -> Review:
+    """Get a review or raise NotFoundError."""
+    stmt = (
+        select(Review)
+        .where(Review.id == review_id, Review.user_id == user_id)
+        .options(
+            selectinload(Review.topic),
+            selectinload(Review.source),
+            selectinload(Review.review_session),
+        )
+    )
+    result = await session.execute(stmt)
+    review = result.scalar_one_or_none()
+    if not review:
+        raise NotFoundError("Review", review_id)
+    return review
 
 
 async def replay_subsequent_reviews(
@@ -116,7 +136,7 @@ async def _replay_reviews_for_entity(
     entity: Topic | Source,
     reviews_to_replay: list[Review],
     last_before_review: Review | None,
-    session: SessionDep,
+    session: AsyncSession,
 ) -> None:
     """
     Shared logic for replaying reviews and updating entity FSRS state.
@@ -213,7 +233,7 @@ async def _replay_reviews_for_entity(
 
 
 async def replay_topic_reviews_from_date(
-    session: SessionDep,
+    session: AsyncSession,
     topic_id: int,
     user_id: str,
     from_date: date,
@@ -275,7 +295,7 @@ async def replay_topic_reviews_from_date(
 
 
 async def replay_source_reviews_from_date(
-    session: SessionDep,
+    session: AsyncSession,
     source_id: int,
     user_id: str,
     from_date: date,
@@ -339,22 +359,19 @@ async def replay_source_reviews_from_date(
     )
 
 
-@router.get("/reviews/", tags=["reviews"])
-async def read_reviews(
-    session: SessionDep,
-    user_id: UserIdDep,
+async def list_reviews(
+    session: AsyncSession,
+    user_id: str,
+    *,
     review_session_id: int | None = None,
     topic_id: int | None = None,
     source_id: int | None = None,
-    effective_date_before: str | None = None,
-    effective_date_after: str | None = None,
+    effective_date_before: date | None = None,
+    effective_date_after: date | None = None,
     completed: bool | None = None,
     scheduled: bool | None = None,
-) -> list[ReviewListItem]:
-    """Get all reviews for the user, with optional filters.
-
-    Supports polymorphic reviews (topic or source).
-    """
+) -> list[tuple]:
+    """List reviews with optional filters. Returns raw query results for router to process."""
     stmt = (
         select(
             Review,
@@ -389,12 +406,10 @@ async def read_reviews(
         stmt = stmt.where(t_source_reviews.c.source_id == source_id)
 
     if effective_date_before is not None:
-        date_before = datetime.strptime(effective_date_before, "%Y-%m-%d").date()
-        stmt = stmt.where(Review.effective_date <= date_before)
+        stmt = stmt.where(Review.effective_date <= effective_date_before)
 
     if effective_date_after is not None:
-        date_after = datetime.strptime(effective_date_after, "%Y-%m-%d").date()
-        stmt = stmt.where(Review.effective_date >= date_after)
+        stmt = stmt.where(Review.effective_date >= effective_date_after)
 
     if completed is not None:
         if completed:
@@ -409,96 +424,36 @@ async def read_reviews(
             stmt = stmt.where(Review.scheduled_at.is_(None))
 
     result = await session.execute(stmt)
-    items: list[ReviewListItem] = []
-    for (
-        review,
-        row_topic_id,
-        topic_name,
-        topic_notes,
-        row_source_id,
-        source_title,
-        source_notes,
-        row_review_session_id,
-        review_session_description,
-    ) in result.all():
-        review_data = ReviewRead.model_validate(review).model_dump()
-
-        # Set polymorphic fields
-        review_data["topic_id"] = row_topic_id
-        review_data["source_id"] = row_source_id
-
-        # Set topic if present
-        review_data["topic"] = (
-            {"id": row_topic_id, "name": topic_name, "notes": topic_notes}
-            if row_topic_id is not None
-            else None
-        )
-
-        # Set source if present
-        review_data["source"] = (
-            {"id": row_source_id, "title": source_title, "notes": source_notes}
-            if row_source_id is not None
-            else None
-        )
-
-        review_data["review_session"] = (
-            {"id": row_review_session_id, "description": review_session_description}
-            if row_review_session_id is not None
-            else None
-        )
-        items.append(ReviewListItem(**review_data))
-    return items
+    return result.all()
 
 
-@router.get("/reviews/{id}/", tags=["reviews"])
-async def read_review(
-    session: SessionDep,
-    user_id: UserIdDep,
-    id: int,
-) -> ReviewWithTopic | ReviewWithSource:
-    """Get a specific review by id (polymorphic - topic or source)."""
-    stmt = (
-        select(Review)
-        .where(Review.id == id, Review.user_id == user_id)
-        .options(
-            selectinload(Review.topic),
-            selectinload(Review.source),
-            selectinload(Review.review_session),
-        )
-    )
-
-    result = await session.execute(stmt)
-    review = result.scalar_one_or_none()
-
-    if not review:
-        raise HTTPException(status_code=404, detail="Review not found")
-
-    # Return appropriate type based on whether it's a topic or source review
-    if review.source is not None:
-        return ReviewWithSource.model_validate(review)
-    return ReviewWithTopic.model_validate(review)
-
-
-@router.post("/reviews/", tags=["reviews"])
 async def create_review(
-    review_create: ReviewCreate,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> ReviewWithTopic | ReviewWithSource:
-    """Create a new review for a topic or source (polymorphic).
+    session: AsyncSession,
+    user_id: str,
+    *,
+    topic_id: int | None = None,
+    topic_data: dict | None = None,
+    source_id: int | None = None,
+    source_data: dict | None = None,
+    review_session_id: int | None = None,
+    review_session_data: dict | None = None,
+    description: str | None = None,
+    scheduled_at: date | None = None,
+    completed_at: date | None = None,
+    rating: str | None = None,
+) -> Review:
+    """Create a new review for a topic or source.
 
     Supports creating and linking entities in any combination:
-    - For topic reviews: provide topic_id or topic (inline creation)
-    - For source reviews: provide source_id or source (inline creation)
-    - Optionally link to a review session via review_session_id or review_session
+    - For topic reviews: provide topic_id or topic_data (inline creation)
+    - For source reviews: provide source_id or source_data (inline creation)
+    - Optionally link to a review session via review_session_id or review_session_data
+
+    Raises AlreadyExistsError if review already exists.
     """
     # Determine if this is a topic or source review
-    is_topic_review = (
-        review_create.topic_id is not None or review_create.topic is not None
-    )
-    is_source_review = (
-        review_create.source_id is not None or review_create.source is not None
-    )
+    is_topic_review = topic_id is not None or topic_data is not None
+    is_source_review = source_id is not None or source_data is not None
 
     # Resolve or create the target entity (Topic or Source)
     topic: Topic | None = None
@@ -506,23 +461,22 @@ async def create_review(
     entity_for_fsrs: Topic | Source  # The entity whose FSRS state we'll use
 
     if is_topic_review:
-        if review_create.topic_id is not None:
+        if topic_id is not None:
             topic_result = await session.execute(
-                select(Topic).where(
-                    Topic.id == review_create.topic_id, Topic.user_id == user_id
-                )
+                select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
             )
             topic = topic_result.scalar_one_or_none()
             if not topic:
-                raise HTTPException(status_code=404, detail="Topic not found")
+                raise NotFoundError("Topic", topic_id)
         else:
-            assert review_create.topic is not None
-            topic_data = review_create.topic.model_dump(
-                exclude={"srs_enabled", "inherit_fsrs"}
+            assert topic_data is not None
+            topic = Topic(
+                name=topic_data["name"],
+                notes=topic_data.get("notes", ""),
+                user_id=user_id,
             )
-            topic = Topic(**topic_data, user_id=user_id)
 
-            if review_create.topic.srs_enabled:
+            if topic_data.get("srs_enabled"):
                 fsrs_state = FsrsState(srs_enabled=True)
                 session.add(fsrs_state)
                 await session.flush()
@@ -532,23 +486,22 @@ async def create_review(
             await session.flush()
         entity_for_fsrs = topic
     else:
-        if review_create.source_id is not None:
+        if source_id is not None:
             source_result = await session.execute(
-                select(Source).where(
-                    Source.id == review_create.source_id, Source.user_id == user_id
-                )
+                select(Source).where(Source.id == source_id, Source.user_id == user_id)
             )
             source = source_result.scalar_one_or_none()
             if not source:
-                raise HTTPException(status_code=404, detail="Source not found")
+                raise NotFoundError("Source", source_id)
         else:
-            assert review_create.source is not None
-            source_data = review_create.source.model_dump(
-                exclude={"srs_enabled", "inherit_fsrs"}
+            assert source_data is not None
+            source = Source(
+                title=source_data["title"],
+                notes=source_data.get("notes", ""),
+                user_id=user_id,
             )
-            source = Source(**source_data, user_id=user_id)
 
-            if review_create.source.srs_enabled:
+            if source_data.get("srs_enabled"):
                 fsrs_state = FsrsState(srs_enabled=True)
                 session.add(fsrs_state)
                 await session.flush()
@@ -559,35 +512,39 @@ async def create_review(
         entity_for_fsrs = source
 
     # Resolve or create Review Session (optional - can be None)
-    review_session_id: int | None = None
-    if review_create.review_session_id is not None:
+    resolved_review_session_id: int | None = None
+    if review_session_id is not None:
         session_result = await session.execute(
             select(ReviewSession).where(
-                ReviewSession.id == review_create.review_session_id,
+                ReviewSession.id == review_session_id,
                 ReviewSession.user_id == user_id,
             )
         )
         review_session = session_result.scalar_one_or_none()
         if not review_session:
-            raise HTTPException(status_code=404, detail="Review Session not found")
-        review_session_id = review_session.id
-    elif review_create.review_session is not None:
+            raise NotFoundError("Review Session", review_session_id)
+        resolved_review_session_id = review_session.id
+    elif review_session_data is not None:
         review_session = ReviewSession(
-            **review_create.review_session.model_dump(), user_id=user_id
+            description=review_session_data.get("description"),
+            notes=review_session_data.get("notes"),
+            scheduled_at=review_session_data.get("scheduled_at"),
+            completed_at=review_session_data.get("completed_at"),
+            user_id=user_id,
         )
         session.add(review_session)
         await session.flush()
-        review_session_id = review_session.id
+        resolved_review_session_id = review_session.id
 
     # Check if review is completed - only run FSRS if it is
-    if review_create.completed_at is None:
+    if completed_at is None:
         # Review not completed yet - create review without FSRS or rating
         new_review = Review(
-            review_session_id=review_session_id,
+            review_session_id=resolved_review_session_id,
             topic_id=topic.id if topic else None,
             user_id=user_id,
-            description=review_create.description,
-            scheduled_at=review_create.scheduled_at,
+            description=description,
+            scheduled_at=scheduled_at,
             completed_at=None,
         )
         session.add(new_review)
@@ -595,7 +552,7 @@ async def create_review(
         try:
             await session.flush()
         except IntegrityError:
-            raise HTTPException(status_code=409, detail="Review already exists")
+            raise AlreadyExistsError("Review already exists")
 
         # For source reviews, create the source_reviews association
         if is_source_review and source:
@@ -616,11 +573,7 @@ async def create_review(
                 selectinload(Review.review_session),
             )
         )
-        refreshed_review = review_result.scalar_one()
-
-        if is_source_review:
-            return ReviewWithSource.model_validate(refreshed_review)
-        return ReviewWithTopic.model_validate(refreshed_review)
+        return review_result.scalar_one()
 
     # Review is completed - run FSRS
     # Store entity's current state as "before" state
@@ -630,7 +583,7 @@ async def create_review(
     step_before = entity_for_fsrs.step
 
     # Use provided rating or default to "good"
-    rating_value = review_create.rating or "good"
+    rating_value = rating or "good"
 
     # Initialize FSRS scheduler
     scheduler = Scheduler()
@@ -660,8 +613,7 @@ async def create_review(
 
     # Review the card with FSRS
     fsrs_rating = map_rating_to_fsrs(rating_value)
-    review_date = review_create.completed_at
-    review_datetime = datetime.combine(review_date, time.min).replace(
+    review_datetime = datetime.combine(completed_at, time.min).replace(
         tzinfo=timezone.utc
     )
 
@@ -674,12 +626,12 @@ async def create_review(
 
     # Create the review with FSRS state
     new_review = Review(
-        review_session_id=review_session_id,
+        review_session_id=resolved_review_session_id,
         topic_id=topic.id if topic else None,
         user_id=user_id,
-        description=review_create.description,
-        scheduled_at=review_create.scheduled_at,
-        completed_at=review_create.completed_at,
+        description=description,
+        scheduled_at=scheduled_at,
+        completed_at=completed_at,
         rating=rating_value,
         stability_before=stability_before,
         difficulty_before=difficulty_before,
@@ -696,7 +648,7 @@ async def create_review(
     try:
         await session.flush()
     except IntegrityError:
-        raise HTTPException(status_code=409, detail="Review already exists")
+        raise AlreadyExistsError("Review already exists")
 
     # For source reviews, create the source_reviews association
     if is_source_review and source:
@@ -720,9 +672,7 @@ async def create_review(
     entity_for_fsrs.fsrs_state.state = map_fsrs_state_to_db(updated_card.state)
     entity_for_fsrs.fsrs_state.step = updated_card.step
     entity_for_fsrs.fsrs_state.last_reviewed_at = (
-        review_create.completed_at.date()
-        if isinstance(review_create.completed_at, datetime)
-        else review_create.completed_at
+        completed_at.date() if isinstance(completed_at, datetime) else completed_at
     )
 
     # Replay all reviews that come after this newly created review
@@ -731,14 +681,14 @@ async def create_review(
             session=session,
             topic_id=topic.id,
             user_id=user_id,
-            from_date=review_create.completed_at,
+            from_date=completed_at,
         )
     elif is_source_review and source:
         await replay_source_reviews_from_date(
             session=session,
             source_id=source.id,
             user_id=user_id,
-            from_date=review_create.completed_at,
+            from_date=completed_at,
         )
 
     # Re-query to get fresh data
@@ -751,57 +701,47 @@ async def create_review(
             selectinload(Review.review_session),
         )
     )
-    refreshed_review = review_result.scalar_one()
-
-    if is_source_review:
-        return ReviewWithSource.model_validate(refreshed_review)
-    return ReviewWithTopic.model_validate(refreshed_review)
+    return review_result.scalar_one()
 
 
-@router.post("/reviews/{id}/", tags=["reviews"])
 async def update_review(
-    id: int,
-    review_update: ReviewUpdate,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> ReviewWithTopic | ReviewWithSource:
-    """Update a review's rating/completion and recalculate FSRS state (polymorphic)."""
-    # Fetch the existing review with both topic and source relationships
-    review_result = await session.execute(
-        select(Review)
-        .where(Review.id == id, Review.user_id == user_id)
-        .options(
-            selectinload(Review.topic),
-            selectinload(Review.source),
-            selectinload(Review.review_session),
-        )
-    )
-    existing_review = review_result.scalar_one_or_none()
+    session: AsyncSession,
+    review_id: int,
+    user_id: str,
+    *,
+    description: str | None = None,
+    notes: str | None = None,
+    scheduled_at: date | None = ...,  # Use ... as sentinel
+    completed_at: date | None = ...,  # Use ... as sentinel
+    rating: str | None = None,
+    review_session_id: int | None = ...,  # Use ... as sentinel
+    fields_set: set[str],
+) -> Review:
+    """Update a review's rating/completion and recalculate FSRS state.
 
-    if not existing_review:
-        raise HTTPException(status_code=404, detail="Review not found")
+    Uses PATCH semantics - only updates fields in fields_set.
+    """
+    # Fetch the existing review with both topic and source relationships
+    existing_review = await get_review(session, review_id, user_id)
 
     # Determine if this is a topic or source review
     is_source_review = existing_review.source is not None
     topic = existing_review.topic
     source = existing_review.source
-    fields_set = review_update.model_fields_set
 
     # Update simple fields
-    if "description" in fields_set and review_update.description is not None:
-        existing_review.description = review_update.description
-    if "notes" in fields_set and review_update.notes is not None:
-        existing_review.notes = review_update.notes
+    if "description" in fields_set and description is not None:
+        existing_review.description = description
+    if "notes" in fields_set and notes is not None:
+        existing_review.notes = notes
     if "scheduled_at" in fields_set:
-        existing_review.scheduled_at = review_update.scheduled_at
+        existing_review.scheduled_at = scheduled_at
     if "review_session_id" in fields_set:
-        existing_review.review_session_id = review_update.review_session_id
+        existing_review.review_session_id = review_session_id
 
     # Check if review is completed - only run FSRS if it is
     new_completed_at = (
-        review_update.completed_at
-        if "completed_at" in fields_set
-        else existing_review.completed_at
+        completed_at if "completed_at" in fields_set else existing_review.completed_at
     )
 
     completed_at_changed = existing_review.completed_at != new_completed_at
@@ -811,27 +751,23 @@ async def update_review(
     if new_completed_at is None:
         # Review not completed yet - only update rating/desc, skip FSRS
         if "rating" in fields_set:
-            existing_review.rating = review_update.rating
+            existing_review.rating = rating
 
         await session.flush()
 
         review_result = await session.execute(
             select(Review)
-            .where(Review.id == id)
+            .where(Review.id == review_id)
             .options(
                 selectinload(Review.topic),
                 selectinload(Review.source),
                 selectinload(Review.review_session),
             )
         )
-        refreshed_review = review_result.scalar_one()
-
-        if is_source_review:
-            return ReviewWithSource.model_validate(refreshed_review)
-        return ReviewWithTopic.model_validate(refreshed_review)
+        return review_result.scalar_one()
 
     # Review is completed - run FSRS recalculation
-    rating_value = review_update.rating or existing_review.rating or "good"
+    rating_value = rating or existing_review.rating or "good"
 
     scheduler = Scheduler()
 
@@ -848,8 +784,7 @@ async def update_review(
     )
 
     fsrs_rating = map_rating_to_fsrs(rating_value)
-    review_date = new_completed_at
-    review_datetime = datetime.combine(review_date, time.min).replace(
+    review_datetime = datetime.combine(new_completed_at, time.min).replace(
         tzinfo=timezone.utc
     )
 
@@ -886,41 +821,24 @@ async def update_review(
 
     review_result = await session.execute(
         select(Review)
-        .where(Review.id == id)
+        .where(Review.id == review_id)
         .options(
             selectinload(Review.topic),
             selectinload(Review.source),
             selectinload(Review.review_session),
         )
     )
-    refreshed_review = review_result.scalar_one()
-
-    if is_source_review:
-        return ReviewWithSource.model_validate(refreshed_review)
-    return ReviewWithTopic.model_validate(refreshed_review)
+    return review_result.scalar_one()
 
 
-@router.delete("/reviews/{id}/", tags=["reviews"])
 async def delete_review(
-    id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-):
+    session: AsyncSession,
+    review_id: int,
+    user_id: str,
+) -> None:
     """Delete a review and restore entity (topic or source) to its before state."""
     # Fetch the review with both topic and source relationships
-    review_result = await session.execute(
-        select(Review)
-        .where(Review.id == id, Review.user_id == user_id)
-        .options(
-            selectinload(Review.topic),
-            selectinload(Review.source),
-            selectinload(Review.review_session),
-        )
-    )
-    review = review_result.scalar_one_or_none()
-
-    if not review:
-        raise HTTPException(status_code=404, detail="Review not found")
+    review = await get_review(session, review_id, user_id)
 
     # Capture IDs before deletion
     topic_id = review.topic_id
@@ -948,5 +866,3 @@ async def delete_review(
                 user_id=user_id,
                 from_date=completed_at,
             )
-
-    return {"message": "Review deleted successfully"}
