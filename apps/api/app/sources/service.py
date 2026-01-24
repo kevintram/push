@@ -1,38 +1,40 @@
+"""Source business logic and data access."""
+
 from datetime import datetime, timezone as dt_timezone
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import delete, desc, func, insert, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.constants import ChildHandlingStrategy
-from app.dependencies import SessionDep, UserIdDep
-from app.models import Source, Topic, FsrsState, t_source_topics
-from app.schemas import (
-    SourceRead,
-    SourceCreate,
-    SourceUpdate,
-    SourceSummaryRead,
-    SourceDetailRead,
-    SourceChildRelationshipCreate,
-    SourceRelationshipResponse,
-    SourceTopicAdd,
-    SourceTopicResponse,
-    TopicSummaryRead,
+from app.exceptions import (
+    AlreadyExistsError,
+    BadRequestError,
+    CycleDetectedError,
+    HasChildrenError,
+    NotFoundError,
 )
+from app.models import FsrsState, Source, Topic, t_source_topics
 
-router = APIRouter()
+
+async def get_source(session: AsyncSession, source_id: int, user_id: str) -> Source:
+    """Get a source or raise NotFoundError."""
+    stmt = select(Source).where(Source.id == source_id, Source.user_id == user_id)
+    result = await session.execute(stmt)
+    source = result.scalar_one_or_none()
+    if not source:
+        raise NotFoundError("Source", source_id)
+    return source
 
 
-async def is_source_descendant_of(
+async def is_descendant_of(
     session: AsyncSession, potential_descendant_id: int, ancestor_id: int
 ) -> bool:
-    """
-    Check if potential_descendant is a descendant of ancestor using ltree.
-    Returns True if setting ancestor's parent to potential_descendant would create a cycle.
+    """Check if potential_descendant is a descendant of ancestor using ltree.
 
+    Returns True if setting ancestor's parent to potential_descendant would create a cycle.
     Uses O(1) ltree operator: descendant.path <@ ancestor.path
     """
     result = await session.execute(
@@ -47,18 +49,6 @@ async def is_source_descendant_of(
         {"descendant_id": potential_descendant_id, "ancestor_id": ancestor_id},
     )
     return result.scalar()
-
-
-async def get_source_or_404(
-    session: AsyncSession, source_id: int, user_id: str
-) -> Source:
-    """Get a source or raise 404 if not found."""
-    stmt = select(Source).where(Source.id == source_id, Source.user_id == user_id)
-    result = await session.execute(stmt)
-    source = result.scalar_one_or_none()
-    if not source:
-        raise HTTPException(status_code=404, detail="Source not found")
-    return source
 
 
 async def load_source_with_relationships(
@@ -78,20 +68,20 @@ async def load_source_with_relationships(
     result = await session.execute(stmt)
     source = result.scalar_one_or_none()
     if not source:
-        raise HTTPException(status_code=404, detail="Source not found")
+        raise NotFoundError("Source", source_id)
     return source
 
 
-@router.get("/sources/search/", tags=["sources"])
 async def search_sources(
-    session: SessionDep,
-    user_id: UserIdDep,
+    session: AsyncSession,
+    user_id: str,
+    *,
     addable_as_parent_to: int | None = None,
     addable_as_child_to: int | None = None,
     query: str | None = None,
     limit: int = 10,
-) -> list[SourceSummaryRead]:
-    """Search for sources with various filters."""
+) -> list[Source]:
+    """Search sources with various filters."""
     cleaned_query = query.strip() if query else ""
     stmt = select(Source).where(Source.user_id == user_id)
 
@@ -154,13 +144,13 @@ async def search_sources(
     stmt = stmt.options(selectinload(Source.fsrs_state))
 
     result = await session.execute(stmt)
-    return result.scalars().all()
+    return list(result.scalars().all())
 
 
-@router.get("/sources/", tags=["sources"])
-async def read_sources(
-    session: SessionDep,
-    user_id: UserIdDep,
+async def list_sources(
+    session: AsyncSession,
+    user_id: str,
+    *,
     inboxed: bool | None = None,
     archived: bool | None = None,
     root: bool | None = None,
@@ -168,7 +158,7 @@ async def read_sources(
     srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
-) -> list[SourceSummaryRead]:
+) -> list[Source]:
     """List sources with optional filters."""
     stmt = select(Source).where(Source.user_id == user_id)
 
@@ -238,70 +228,38 @@ async def read_sources(
         stmt = stmt.limit(limit)
 
     result = await session.execute(stmt)
-    return result.scalars().unique().all()
+    return list(result.scalars().unique().all())
 
 
-@router.get("/sources/{source_id}/", tags=["sources"])
-async def read_source(
-    session: SessionDep, user_id: UserIdDep, source_id: int
-) -> SourceDetailRead:
-    """Get a source with full relationships."""
-    return await load_source_with_relationships(session, source_id, user_id)
-
-
-@router.get("/sources/{source_id}/children/", tags=["sources"])
-async def read_source_children(
-    session: SessionDep, user_id: UserIdDep, source_id: int
-) -> list[SourceSummaryRead]:
-    """Get all children of a source."""
-    # Verify source exists and belongs to user
-    await get_source_or_404(session, source_id, user_id)
-
-    # Query children
-    stmt = (
-        select(Source)
-        .where(Source.parent_id == source_id, Source.user_id == user_id)
-        .options(selectinload(Source.fsrs_state))
-    )
-    result = await session.execute(stmt)
-    return result.scalars().all()
-
-
-@router.get("/sources/{source_id}/topics/", tags=["sources"])
-async def read_source_topics(
-    session: SessionDep, user_id: UserIdDep, source_id: int
-) -> list[TopicSummaryRead]:
-    """Get all topics that this source covers."""
-    # Verify source exists and belongs to user
-    await get_source_or_404(session, source_id, user_id)
-
-    # Query topics via junction table
-    stmt = (
-        select(Topic)
-        .join(t_source_topics, Topic.id == t_source_topics.c.topic_id)
-        .where(t_source_topics.c.source_id == source_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.fsrs_state))
-    )
-    result = await session.execute(stmt)
-    return result.scalars().all()
-
-
-@router.post("/sources/", tags=["sources"])
-async def insert_source(
-    source: SourceCreate, session: SessionDep, user_id: UserIdDep
-) -> SourceRead:
+async def create_source(
+    session: AsyncSession,
+    user_id: str,
+    *,
+    title: str = "",
+    notes: str = "",
+    parent_id: int | None = None,
+    srs_enabled: bool = False,
+    inherit_fsrs: bool = False,
+    inboxed: bool = False,
+    archived: bool = False,
+) -> Source:
     """Create a new source."""
-    # Extract fields for Source model (exclude srs_enabled and inherit_fsrs which are for FsrsState)
-    source_data = source.model_dump(exclude={"srs_enabled", "inherit_fsrs"})
-    new_source = Source(**source_data, user_id=user_id)
+    new_source = Source(
+        user_id=user_id,
+        title=title,
+        notes=notes,
+        parent_id=parent_id,
+        inboxed=inboxed,
+        archived=archived,
+    )
 
     # Create FsrsState if srs_enabled
-    if source.srs_enabled:
+    if srs_enabled:
         fsrs_state = FsrsState(srs_enabled=True)
 
         # Handle FSRS inheritance from parent
-        if source.inherit_fsrs and source.parent_id:
-            parent = await session.get(Source, source.parent_id)
+        if inherit_fsrs and parent_id:
+            parent = await session.get(Source, parent_id)
             if parent and parent.fsrs_state:
                 fsrs_state.inherited_stability = parent.fsrs_state.stability
                 fsrs_state.inherited_difficulty = parent.fsrs_state.difficulty
@@ -320,46 +278,84 @@ async def insert_source(
     return new_source
 
 
-@router.post("/sources/{parent_id}/children/", tags=["sources"])
-async def insert_child(
-    parent_id: int,
-    payload: SourceChildRelationshipCreate,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> SourceRelationshipResponse:
-    """Add an existing source as a child or create a new child source."""
-    # Verify parent exists
-    parent = await get_source_or_404(session, parent_id, user_id)
+async def get_source_children(
+    session: AsyncSession, source_id: int, user_id: str
+) -> list[Source]:
+    """Get all children of a source."""
+    # Verify source exists and belongs to user
+    await get_source(session, source_id, user_id)
 
-    # Resolve or create child source
-    if payload.child_id is not None:
-        child = await get_source_or_404(session, payload.child_id, user_id)
+    # Query children
+    stmt = (
+        select(Source)
+        .where(Source.parent_id == source_id, Source.user_id == user_id)
+        .options(selectinload(Source.fsrs_state))
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def get_source_topics(
+    session: AsyncSession, source_id: int, user_id: str
+) -> list[Topic]:
+    """Get all topics that this source covers."""
+    # Verify source exists and belongs to user
+    await get_source(session, source_id, user_id)
+
+    # Query topics via junction table
+    stmt = (
+        select(Topic)
+        .join(t_source_topics, Topic.id == t_source_topics.c.topic_id)
+        .where(t_source_topics.c.source_id == source_id, Topic.user_id == user_id)
+        .options(selectinload(Topic.fsrs_state))
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def add_child(
+    session: AsyncSession,
+    user_id: str,
+    parent_id: int,
+    *,
+    child_id: int | None = None,
+    child_title: str | None = None,
+    child_notes: str | None = None,
+    child_srs_enabled: bool = False,
+    child_inherit_fsrs: bool = False,
+) -> tuple[Source, Source]:
+    """Add or create a child source. Returns (parent, child)."""
+    # Verify parent exists
+    parent = await get_source(session, parent_id, user_id)
+
+    if child_id is not None:
+        child = await get_source(session, child_id, user_id)
 
         # Check for cycles: child cannot already be an ancestor of parent
-        if await is_source_descendant_of(session, parent_id, payload.child_id):
-            raise HTTPException(
-                status_code=409,
-                detail="Cannot add ancestor as child: would create cycle",
-            )
+        if await is_descendant_of(session, parent_id, child_id):
+            raise CycleDetectedError("sources")
 
         # Check if already a child
         if child.parent_id == parent_id:
-            raise HTTPException(status_code=409, detail="Source is already a child")
+            raise AlreadyExistsError("Source is already a child")
 
         # Set parent
         child.parent_id = parent_id
-        child_id = payload.child_id
+        result_child_id = child_id
     else:
         # Create new source from inline data
-        assert payload.child is not None
-        child_data = payload.child.model_dump(exclude={"srs_enabled", "inherit_fsrs"})
-        child_data["parent_id"] = parent_id
-        new_child = Source(**child_data, user_id=user_id)
+        assert child_title is not None
+        new_child = Source(
+            user_id=user_id,
+            title=child_title,
+            notes=child_notes or "",
+            parent_id=parent_id,
+        )
 
         # Handle FsrsState creation
-        if payload.child.srs_enabled:
+        if child_srs_enabled:
             fsrs_state = FsrsState(srs_enabled=True)
-            if payload.child.inherit_fsrs and parent.fsrs_state:
+            if child_inherit_fsrs and parent.fsrs_state:
                 fsrs_state.inherited_stability = parent.fsrs_state.stability
                 fsrs_state.inherited_difficulty = parent.fsrs_state.difficulty
                 fsrs_state.inherited_state = parent.fsrs_state.state
@@ -371,30 +367,26 @@ async def insert_child(
 
         session.add(new_child)
         await session.flush()
-        child_id = new_child.id
+        result_child_id = new_child.id
 
     await session.commit()
 
     # Load both with relationships
     parent_source = await load_source_with_relationships(session, parent_id, user_id)
-    child_source = await load_source_with_relationships(session, child_id, user_id)
+    child_source = await load_source_with_relationships(session, result_child_id, user_id)
 
-    return SourceRelationshipResponse(parent=parent_source, child=child_source)
+    return parent_source, child_source
 
 
-@router.delete("/sources/{parent_id}/children/{child_id}/", tags=["sources"])
-async def delete_child(
-    parent_id: int,
-    child_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> SourceDetailRead:
-    """Remove a child from a parent (sets child's parent_id to null)."""
-    await get_source_or_404(session, parent_id, user_id)  # Verify parent exists
-    child = await get_source_or_404(session, child_id, user_id)
+async def remove_child(
+    session: AsyncSession, parent_id: int, child_id: int, user_id: str
+) -> Source:
+    """Remove a child from a parent (sets child's parent_id to null). Returns parent."""
+    await get_source(session, parent_id, user_id)  # Verify parent exists
+    child = await get_source(session, child_id, user_id)
 
     if child.parent_id != parent_id:
-        raise HTTPException(status_code=404, detail="Child relationship not found")
+        raise NotFoundError("Child relationship")
 
     # Remove parent reference (orphan the child)
     child.parent_id = None
@@ -403,30 +395,26 @@ async def delete_child(
     return await load_source_with_relationships(session, parent_id, user_id)
 
 
-@router.post("/sources/{source_id}/topics/", tags=["sources"])
 async def add_source_topic(
-    source_id: int,
-    payload: SourceTopicAdd,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> SourceTopicResponse:
-    """Add a topic that this source covers."""
-    source = await get_source_or_404(session, source_id, user_id)
+    session: AsyncSession, source_id: int, topic_id: int, user_id: str
+) -> tuple[Source, Topic]:
+    """Add a topic that this source covers. Returns (source, topic)."""
+    source = await get_source(session, source_id, user_id)
 
     # Verify topic exists and belongs to user
     topic_result = await session.execute(
         select(Topic)
-        .where(Topic.id == payload.topic_id, Topic.user_id == user_id)
+        .where(Topic.id == topic_id, Topic.user_id == user_id)
         .options(selectinload(Topic.fsrs_state))
     )
     topic = topic_result.scalar_one_or_none()
     if not topic:
-        raise HTTPException(status_code=404, detail="Topic not found")
+        raise NotFoundError("Topic", topic_id)
 
     # Insert relationship
     stmt = insert(t_source_topics).values(
         source_id=source_id,
-        topic_id=payload.topic_id,
+        topic_id=topic_id,
         inserted_at=datetime.now(dt_timezone.utc),
         updated_at=datetime.now(dt_timezone.utc),
     )
@@ -435,24 +423,20 @@ async def add_source_topic(
         await session.commit()
     except IntegrityError:
         await session.rollback()
-        raise HTTPException(status_code=400, detail="Source already covers this topic")
+        raise AlreadyExistsError("Source already covers this topic")
 
     # Refresh source to get updated counts
     await session.refresh(source)
 
-    return SourceTopicResponse(source=source, topic=topic)
+    return source, topic
 
 
-@router.delete("/sources/{source_id}/topics/{topic_id}/", tags=["sources"])
 async def remove_source_topic(
-    source_id: int,
-    topic_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
+    session: AsyncSession, source_id: int, topic_id: int, user_id: str
 ) -> None:
     """Remove a topic that this source covers."""
     # Verify source belongs to user
-    await get_source_or_404(session, source_id, user_id)
+    await get_source(session, source_id, user_id)
 
     stmt = delete(t_source_topics).where(
         t_source_topics.c.source_id == source_id,
@@ -462,61 +446,68 @@ async def remove_source_topic(
     await session.commit()
 
     if result.rowcount == 0:
-        raise HTTPException(
-            status_code=404, detail="Source-topic relationship not found"
-        )
+        raise NotFoundError("Source-topic relationship")
 
 
-@router.patch("/sources/{source_id}/", tags=["sources"])
 async def update_source(
-    source_id: int, payload: SourceUpdate, session: SessionDep, user_id: UserIdDep
-) -> SourceDetailRead:
+    session: AsyncSession,
+    source_id: int,
+    user_id: str,
+    *,
+    title: str | None = None,
+    notes: str | None = None,
+    parent_id: int | None = ...,  # Use ... as sentinel to distinguish from None
+    srs_enabled: bool | None = None,
+    inboxed: bool | None = None,
+    archived: bool | None = None,
+) -> Source:
     """Update a source using PATCH semantics."""
-    source = await get_source_or_404(session, source_id, user_id)
-
-    update_data = payload.model_dump(exclude_unset=True)
+    source = await get_source(session, source_id, user_id)
 
     # Handle parent_id change with cycle detection
-    if "parent_id" in update_data:
-        new_parent_id = update_data["parent_id"]
-        if new_parent_id is not None:
+    if parent_id is not ...:
+        if parent_id is not None:
             # Verify new parent exists
-            await get_source_or_404(session, new_parent_id, user_id)
+            await get_source(session, parent_id, user_id)
             # Check for cycles: new parent cannot be a descendant of this source
-            if await is_source_descendant_of(session, new_parent_id, source_id):
-                raise HTTPException(409, "Cannot set parent: would create cycle")
-        source.parent_id = new_parent_id
-        del update_data["parent_id"]
+            if await is_descendant_of(session, parent_id, source_id):
+                raise CycleDetectedError("sources")
+        source.parent_id = parent_id
 
     # Handle srs_enabled toggle
-    if "srs_enabled" in update_data:
-        if update_data["srs_enabled"] and source.fsrs_state_id is None:
+    if srs_enabled is not None:
+        if srs_enabled and source.fsrs_state_id is None:
             # Create fsrs_state
             fsrs_state = FsrsState(srs_enabled=True)
             session.add(fsrs_state)
             await session.flush()
             source.fsrs_state_id = fsrs_state.id
-        elif not update_data["srs_enabled"] and source.fsrs_state:
+        elif not srs_enabled and source.fsrs_state:
             source.fsrs_state.srs_enabled = False
-        del update_data["srs_enabled"]
 
     # Apply remaining updates
-    for key, value in update_data.items():
-        setattr(source, key, value)
+    if title is not None:
+        source.title = title
+    if notes is not None:
+        source.notes = notes
+    if inboxed is not None:
+        source.inboxed = inboxed
+    if archived is not None:
+        source.archived = archived
 
     await session.commit()
     return await load_source_with_relationships(session, source_id, user_id)
 
 
-@router.delete("/sources/{source_id}/", tags=["sources"])
 async def delete_source(
+    session: AsyncSession,
     source_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-    handle_children_by: ChildHandlingStrategy | None = Query(default=None),
-):
+    user_id: str,
+    *,
+    handle_children_by: ChildHandlingStrategy | None = None,
+) -> None:
     """Delete a source. If source has children, must specify handle_children_by strategy."""
-    source = await get_source_or_404(session, source_id, user_id)
+    source = await get_source(session, source_id, user_id)
 
     # Check if source has children
     children_count = await session.scalar(
@@ -525,10 +516,7 @@ async def delete_source(
 
     if children_count > 0:
         if handle_children_by is None:
-            raise HTTPException(
-                status_code=409,
-                detail=f"Source has {children_count} children. Specify handle_children_by: delete, orphan, or reparent",
-            )
+            raise HasChildrenError("Source", children_count)
 
         if handle_children_by == ChildHandlingStrategy.DELETE:
             # Recursively delete all descendants using ltree
@@ -548,9 +536,8 @@ async def delete_source(
             )
         elif handle_children_by == ChildHandlingStrategy.REPARENT:
             if source.parent_id is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Cannot reparent: source has no parent (is a root source)",
+                raise BadRequestError(
+                    "Cannot reparent: source has no parent (is a root source)"
                 )
             # Set children's parent_id to grandparent
             await session.execute(
