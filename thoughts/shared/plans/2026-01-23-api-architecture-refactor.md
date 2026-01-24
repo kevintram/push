@@ -620,14 +620,14 @@ rm apps/api/app/routers/topics.py
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `uv run pytest tests/topics/` - Topics tests pass
-- [ ] `uv run pytest` - All tests pass
-- [ ] `uv run ruff check` - No lint errors
+- [x] `uv run pytest tests/topics/` - Topics tests pass
+- [x] `uv run pytest` - All tests pass
+- [x] `uv run ruff check` - No lint errors
 
 #### Manual Verification:
-- [ ] Router is thin (< 150 lines)
-- [ ] Service contains all business logic + data access
-- [ ] Tests are in `tests/topics/`
+- [x] Router is thin (< 150 lines)
+- [x] Service contains all business logic + data access
+- [x] Tests are in `tests/topics/`
 
 ---
 
