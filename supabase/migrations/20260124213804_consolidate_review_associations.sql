@@ -6,6 +6,7 @@
 -- ============================================================================
 ALTER TABLE reviews ADD COLUMN source_id BIGINT REFERENCES sources(id) ON DELETE CASCADE;
 CREATE INDEX idx_reviews_source_id ON reviews(source_id);
+CREATE INDEX idx_reviews_topic_id ON reviews(topic_id);
 
 -- ============================================================================
 -- STEP 2: MIGRATE DATA FROM SOURCE_REVIEWS

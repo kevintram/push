@@ -221,8 +221,8 @@ async def get_review(session: AsyncSession, review_id: int, user_id: str) -> Rev
         select(Review)
         .where(Review.id == review_id, Review.user_id == user_id)
         .options(
-            selectinload(Review.topic),
-            selectinload(Review.source),
+            selectinload(Review.topic).selectinload(Topic.fsrs_state),
+            selectinload(Review.source).selectinload(Source.fsrs_state),
             selectinload(Review.review_session),
         )
     )
@@ -335,7 +335,9 @@ async def create_review(
     if is_topic_review:
         if topic_id is not None:
             topic_result = await session.execute(
-                select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+                select(Topic)
+                .where(Topic.id == topic_id, Topic.user_id == user_id)
+                .options(selectinload(Topic.fsrs_state))
             )
             topic = topic_result.scalar_one_or_none()
             if not topic:
@@ -360,7 +362,9 @@ async def create_review(
     else:
         if source_id is not None:
             source_result = await session.execute(
-                select(Source).where(Source.id == source_id, Source.user_id == user_id)
+                select(Source)
+                .where(Source.id == source_id, Source.user_id == user_id)
+                .options(selectinload(Source.fsrs_state))
             )
             source = source_result.scalar_one_or_none()
             if not source:
