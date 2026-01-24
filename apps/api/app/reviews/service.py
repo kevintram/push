@@ -50,7 +50,7 @@ def map_fsrs_state_to_db(state: FSRSState) -> str:
     return mapping[state]
 
 
-def run_fsrs(
+def update_fsrs(
     fsrs_state: FsrsState,
     reviews: list[Review],
     last_before_review: Review | None,
@@ -161,6 +161,55 @@ def run_fsrs(
     fsrs_state.difficulty = current_card.difficulty
     fsrs_state.state = map_fsrs_state_to_db(current_card.state)
     fsrs_state.step = current_card.step
+
+
+async def update_entity_fsrs(
+    session: AsyncSession,
+    entity: Topic | Source,
+    starting_from: date,
+) -> None:
+    """Update FSRS state for an entity from a given date forward.
+
+    Fetches all completed reviews from starting_from onward, finds the prior
+    review state, and runs FSRS to recalculate. No-op if entity has no fsrs_state.
+    """
+    if entity.fsrs_state is None:
+        return
+
+    # Determine filter based on entity type
+    if isinstance(entity, Topic):
+        entity_filter = Review.topic_id == entity.id
+    else:
+        entity_filter = Review.source_id == entity.id
+
+    # Fetch completed reviews from starting_from onward
+    reviews_result = await session.execute(
+        select(Review)
+        .where(
+            entity_filter,
+            Review.user_id == entity.user_id,
+            Review.completed_at.isnot(None),
+            Review.completed_at >= starting_from,
+        )
+        .order_by(Review.completed_at.asc())
+    )
+    reviews_to_replay = list(reviews_result.scalars().all())
+
+    # Find last review BEFORE starting_from
+    before_result = await session.execute(
+        select(Review)
+        .where(
+            entity_filter,
+            Review.user_id == entity.user_id,
+            Review.completed_at.isnot(None),
+            Review.completed_at < starting_from,
+        )
+        .order_by(Review.completed_at.desc())
+        .limit(1)
+    )
+    last_before = before_result.scalar_one_or_none()
+
+    update_fsrs(entity.fsrs_state, reviews_to_replay, last_before)
 
 
 # --- Review Operations ---
@@ -277,7 +326,6 @@ async def create_review(
     """
     # Determine if this is a topic or source review
     is_topic_review = topic_id is not None or topic_data is not None
-    is_source_review = source_id is not None or source_data is not None
 
     # Resolve or create the target entity (Topic or Source)
     topic: Topic | None = None
@@ -420,68 +468,8 @@ async def create_review(
         entity_for_fsrs.fsrs_state = fsrs_state
 
     # Run FSRS for this review and any subsequent reviews
-    if is_topic_review and topic:
-        # Fetch completed reviews from completed_at onward
-        reviews_result = await session.execute(
-            select(Review)
-            .where(
-                Review.topic_id == topic.id,
-                Review.user_id == user_id,
-                Review.completed_at.isnot(None),
-                Review.completed_at >= completed_at,
-            )
-            .order_by(Review.completed_at.asc())
-        )
-        reviews_to_replay = list(reviews_result.scalars().all())
-
-        # Find the last review BEFORE completed_at
-        before_review_result = await session.execute(
-            select(Review)
-            .where(
-                Review.topic_id == topic.id,
-                Review.user_id == user_id,
-                Review.completed_at.isnot(None),
-                Review.completed_at < completed_at,
-            )
-            .order_by(Review.completed_at.desc())
-            .limit(1)
-        )
-        last_before_review = before_review_result.scalar_one_or_none()
-
-        if entity_for_fsrs.fsrs_state is not None:
-            run_fsrs(entity_for_fsrs.fsrs_state, reviews_to_replay, last_before_review)
-            await session.flush()
-    elif is_source_review and source:
-        # Fetch completed reviews from completed_at onward
-        reviews_result = await session.execute(
-            select(Review)
-            .where(
-                Review.source_id == source.id,
-                Review.user_id == user_id,
-                Review.completed_at.isnot(None),
-                Review.completed_at >= completed_at,
-            )
-            .order_by(Review.completed_at.asc())
-        )
-        reviews_to_replay = list(reviews_result.scalars().all())
-
-        # Find the last review BEFORE completed_at
-        before_review_result = await session.execute(
-            select(Review)
-            .where(
-                Review.source_id == source.id,
-                Review.user_id == user_id,
-                Review.completed_at.isnot(None),
-                Review.completed_at < completed_at,
-            )
-            .order_by(Review.completed_at.desc())
-            .limit(1)
-        )
-        last_before_review = before_review_result.scalar_one_or_none()
-
-        if entity_for_fsrs.fsrs_state is not None:
-            run_fsrs(entity_for_fsrs.fsrs_state, reviews_to_replay, last_before_review)
-            await session.flush()
+    await update_entity_fsrs(session, entity_for_fsrs, completed_at)
+    await session.flush()
 
     # Re-query to get fresh data
     review_result = await session.execute(
@@ -565,68 +553,10 @@ async def update_review(
     await session.flush()
 
     # Run FSRS from this review's date to calculate this review and recalculate subsequent reviews
-    if is_source_review and source:
-        # Fetch completed reviews from new_completed_at onward
-        reviews_result = await session.execute(
-            select(Review)
-            .where(
-                Review.source_id == source.id,
-                Review.user_id == user_id,
-                Review.completed_at.isnot(None),
-                Review.completed_at >= new_completed_at,
-            )
-            .order_by(Review.completed_at.asc())
-        )
-        reviews_to_replay = list(reviews_result.scalars().all())
-
-        # Find the last review BEFORE new_completed_at
-        before_review_result = await session.execute(
-            select(Review)
-            .where(
-                Review.source_id == source.id,
-                Review.user_id == user_id,
-                Review.completed_at.isnot(None),
-                Review.completed_at < new_completed_at,
-            )
-            .order_by(Review.completed_at.desc())
-            .limit(1)
-        )
-        last_before_review = before_review_result.scalar_one_or_none()
-
-        if source.fsrs_state is not None:
-            run_fsrs(source.fsrs_state, reviews_to_replay, last_before_review)
-            await session.flush()
-    elif topic:
-        # Fetch completed reviews from new_completed_at onward
-        reviews_result = await session.execute(
-            select(Review)
-            .where(
-                Review.topic_id == topic.id,
-                Review.user_id == user_id,
-                Review.completed_at.isnot(None),
-                Review.completed_at >= new_completed_at,
-            )
-            .order_by(Review.completed_at.asc())
-        )
-        reviews_to_replay = list(reviews_result.scalars().all())
-
-        # Find the last review BEFORE new_completed_at
-        before_review_result = await session.execute(
-            select(Review)
-            .where(
-                Review.topic_id == topic.id,
-                Review.user_id == user_id,
-                Review.completed_at.isnot(None),
-                Review.completed_at < new_completed_at,
-            )
-            .order_by(Review.completed_at.desc())
-            .limit(1)
-        )
-        last_before_review = before_review_result.scalar_one_or_none()
-
-        if topic.fsrs_state is not None:
-            run_fsrs(topic.fsrs_state, reviews_to_replay, last_before_review)
-            await session.flush()
+    entity = source if is_source_review else topic
+    if entity:
+        await update_entity_fsrs(session, entity, new_completed_at)
+        await session.flush()
 
     review_result = await session.execute(
         select(Review)
@@ -660,65 +590,7 @@ async def delete_review(
 
     # Only replay if review was completed
     if completed_at is not None:
-        if source is not None:
-            # Fetch completed reviews from completed_at onward
-            reviews_result = await session.execute(
-                select(Review)
-                .where(
-                    Review.source_id == source.id,
-                    Review.user_id == user_id,
-                    Review.completed_at.isnot(None),
-                    Review.completed_at >= completed_at,
-                )
-                .order_by(Review.completed_at.asc())
-            )
-            reviews_to_replay = list(reviews_result.scalars().all())
-
-            # Find the last review BEFORE completed_at
-            before_review_result = await session.execute(
-                select(Review)
-                .where(
-                    Review.source_id == source.id,
-                    Review.user_id == user_id,
-                    Review.completed_at.isnot(None),
-                    Review.completed_at < completed_at,
-                )
-                .order_by(Review.completed_at.desc())
-                .limit(1)
-            )
-            last_before_review = before_review_result.scalar_one_or_none()
-
-            if source.fsrs_state is not None:
-                run_fsrs(source.fsrs_state, reviews_to_replay, last_before_review)
-                await session.flush()
-        elif topic is not None:
-            # Fetch completed reviews from completed_at onward
-            reviews_result = await session.execute(
-                select(Review)
-                .where(
-                    Review.topic_id == topic.id,
-                    Review.user_id == user_id,
-                    Review.completed_at.isnot(None),
-                    Review.completed_at >= completed_at,
-                )
-                .order_by(Review.completed_at.asc())
-            )
-            reviews_to_replay = list(reviews_result.scalars().all())
-
-            # Find the last review BEFORE completed_at
-            before_review_result = await session.execute(
-                select(Review)
-                .where(
-                    Review.topic_id == topic.id,
-                    Review.user_id == user_id,
-                    Review.completed_at.isnot(None),
-                    Review.completed_at < completed_at,
-                )
-                .order_by(Review.completed_at.desc())
-                .limit(1)
-            )
-            last_before_review = before_review_result.scalar_one_or_none()
-
-            if topic.fsrs_state is not None:
-                run_fsrs(topic.fsrs_state, reviews_to_replay, last_before_review)
-                await session.flush()
+        entity = source if source is not None else topic
+        if entity:
+            await update_entity_fsrs(session, entity, completed_at)
+            await session.flush()

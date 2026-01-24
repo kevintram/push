@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from app.exceptions import BadRequestError, NotFoundError
 from app.models import Review, ReviewSession, Topic
-from app.reviews.service import run_fsrs
+from app.reviews.service import update_entity_fsrs
 
 
 async def get_review_session(
@@ -200,38 +200,7 @@ async def update_review_session(
         #       thus, we must replay FSRS for them starting from earliest_date
         earliest_date = min(old_completed_at or date.max, new_completed_at or date.max)
         for topic in affected_topics:
-            if topic.fsrs_state is None:
-                continue
-
-            # Fetch completed reviews from earliest_date onward
-            reviews_result = await session.execute(
-                select(Review)
-                .where(
-                    Review.topic_id == topic.id,
-                    Review.user_id == user_id,
-                    Review.completed_at.isnot(None),
-                    Review.completed_at >= earliest_date,
-                )
-                .order_by(Review.completed_at.asc())
-            )
-            reviews_to_replay = list(reviews_result.scalars().all())
-
-            # Find the last review BEFORE earliest_date
-            before_review_result = await session.execute(
-                select(Review)
-                .where(
-                    Review.topic_id == topic.id,
-                    Review.user_id == user_id,
-                    Review.completed_at.isnot(None),
-                    Review.completed_at < earliest_date,
-                )
-                .order_by(Review.completed_at.desc())
-                .limit(1)
-            )
-            last_before_review = before_review_result.scalar_one_or_none()
-
-            run_fsrs(topic.fsrs_state, reviews_to_replay, last_before_review)
-
+            await update_entity_fsrs(session, topic, earliest_date)
         await session.flush()
 
     # Return latest results
@@ -300,36 +269,5 @@ async def delete_review_session(
     # Only replay if the review session was completed (had a completion date)
     if completed_at and affected_topics:
         for topic in affected_topics:
-            if topic.fsrs_state is None:
-                continue
-
-            # Fetch completed reviews from completed_at onward
-            reviews_result = await session.execute(
-                select(Review)
-                .where(
-                    Review.topic_id == topic.id,
-                    Review.user_id == user_id,
-                    Review.completed_at.isnot(None),
-                    Review.completed_at >= completed_at,
-                )
-                .order_by(Review.completed_at.asc())
-            )
-            reviews_to_replay = list(reviews_result.scalars().all())
-
-            # Find the last review BEFORE completed_at
-            before_review_result = await session.execute(
-                select(Review)
-                .where(
-                    Review.topic_id == topic.id,
-                    Review.user_id == user_id,
-                    Review.completed_at.isnot(None),
-                    Review.completed_at < completed_at,
-                )
-                .order_by(Review.completed_at.desc())
-                .limit(1)
-            )
-            last_before_review = before_review_result.scalar_one_or_none()
-
-            run_fsrs(topic.fsrs_state, reviews_to_replay, last_before_review)
-
+            await update_entity_fsrs(session, topic, completed_at)
         await session.flush()
