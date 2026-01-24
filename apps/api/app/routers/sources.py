@@ -334,7 +334,7 @@ async def insert_child(
         # Check for cycles: child cannot already be an ancestor of parent
         if await is_source_descendant_of(session, parent_id, payload.child_id):
             raise HTTPException(
-                status_code=400,
+                status_code=409,
                 detail="Cannot add ancestor as child: would create cycle",
             )
 

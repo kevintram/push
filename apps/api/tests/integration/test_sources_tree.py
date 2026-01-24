@@ -201,7 +201,7 @@ class TestSourceCycleDetection:
             json={"child_id": grandparent.id},
         )
 
-        assert response.status_code == 400
+        assert response.status_code == 409
         assert "cycle" in response.json()["detail"].lower()
 
     async def test_can_reparent_to_non_descendant(
