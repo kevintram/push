@@ -85,7 +85,7 @@ async def create_review_session(
     )
 
 
-@router.post("/{review_session_id}")
+@router.post("/{review_session_id}/")
 async def update_review_session(
     review_session_id: int,
     review_session: ReviewSessionUpdate,
@@ -116,7 +116,7 @@ async def read_topics_for_review_session(
     )
 
 
-@router.delete("/{review_session_id}")
+@router.delete("/{review_session_id}/")
 async def delete_review_session(
     review_session_id: int,
     session: SessionDep,
