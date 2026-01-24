@@ -105,11 +105,17 @@ async def search_sources(
 
     if addable_as_parent_to is not None:
         # For tree structure: exclude self and all descendants (to prevent cycles)
+        # Using ltree: find all sources where target.path <@ candidate.path (target is descendant of candidate)
         descendants_subq = select(Source.id).where(
             Source.user_id == user_id,
-            text(
-                "(SELECT path FROM sources WHERE id = :parent_candidate_id) <@ sources.path"
-            ).bindparams(parent_candidate_id=addable_as_parent_to),
+            text("""
+                EXISTS (
+                    SELECT 1 FROM sources candidate, sources target
+                    WHERE candidate.id = :parent_candidate_id
+                      AND target.id = sources.id
+                      AND target.path <@ candidate.path
+                )
+            """).bindparams(parent_candidate_id=addable_as_parent_to),
         )
         stmt = stmt.where(Source.id.notin_(descendants_subq))
 
@@ -124,11 +130,17 @@ async def search_sources(
 
     if addable_as_child_to is not None:
         # For tree structure: exclude self and all ancestors (to prevent cycles)
+        # Using ltree: find all sources where candidate.path <@ target.path (candidate is descendant of target)
         ancestors_subq = select(Source.id).where(
             Source.user_id == user_id,
-            text(
-                "sources.path <@ (SELECT path FROM sources WHERE id = :child_candidate_id)"
-            ).bindparams(child_candidate_id=addable_as_child_to),
+            text("""
+                EXISTS (
+                    SELECT 1 FROM sources candidate, sources target
+                    WHERE candidate.id = :child_candidate_id
+                      AND target.id = sources.id
+                      AND candidate.path <@ target.path
+                )
+            """).bindparams(child_candidate_id=addable_as_child_to),
         )
         stmt = stmt.where(Source.id.notin_(ancestors_subq))
 

@@ -364,7 +364,7 @@ class TestSourceTreeFiltering:
         """
         grandparent = await create_test_source(title="Grandparent")
         parent = await create_test_source(title="Parent", parent_id=grandparent.id)
-        await create_test_source(title="Child", parent_id=parent.id)
+        child = await create_test_source(title="Child", parent_id=parent.id)
         unrelated = await create_test_source(title="Unrelated")
 
         response = await test_client.get(
@@ -381,6 +381,8 @@ class TestSourceTreeFiltering:
         assert parent.id not in source_ids
         # Grandparent is excluded (current parent)
         assert grandparent.id not in source_ids
+        # Child is excluded (descendant - would create cycle if set as parent)
+        assert child.id not in source_ids
 
     async def test_addable_as_child_excludes_self_and_current_children(
         self,

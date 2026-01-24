@@ -358,7 +358,7 @@ class TestTopicTreeFiltering:
         """
         grandparent = await create_test_topic(name="Grandparent")
         parent = await create_test_topic(name="Parent", parent_id=grandparent.id)
-        await create_test_topic(name="Child", parent_id=parent.id)
+        child = await create_test_topic(name="Child", parent_id=parent.id)
         unrelated = await create_test_topic(name="Unrelated")
 
         response = await test_client.get(
@@ -375,6 +375,8 @@ class TestTopicTreeFiltering:
         assert parent.id not in topic_ids
         # Grandparent is excluded (current parent)
         assert grandparent.id not in topic_ids
+        # Child is excluded (descendant - would create cycle if set as parent)
+        assert child.id not in topic_ids
 
     async def test_addable_as_child_excludes_self_and_current_children(
         self,
