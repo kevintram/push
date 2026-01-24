@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a FastAPI application using Python 3.12+ and managed with `uv` (Python package manager). The application follows FastAPI's modular architecture pattern with routers, dependencies, and internal modules.
+This is a FastAPI application using Python 3.12+ and managed with `uv` (Python package manager). The application follows a domain-based architecture with service layers, organizing code by feature (topics, sources, reviews, auth, admin) rather than by file type.
 
 ## Development Commands
 
@@ -33,7 +33,17 @@ uv run ruff format          # Run ruff formatting
 ## Architecture
 
 ### Application Structure
-- **`app/main.py`**: Main FastAPI application entry point. Includes routers and global dependencies.
-- **`app/dependencies.py`**: Shared dependency functions used across the application (e.g., authentication tokens).
-- **`app/routers/`**: Feature-based API route modules (users, items).
-- **`app/internal/`**: Internal/admin-only routes with additional security.
+- **`app/main.py`**: Main FastAPI application entry point
+- **`app/config.py`**: Global configuration with Pydantic Settings
+- **`app/database.py`**: Database connection setup
+- **`app/dependencies.py`**: Shared dependencies (SessionDep)
+- **`app/exceptions.py`**: Domain exception base classes (pure Python, not HTTPException)
+- **`app/exception_handlers.py`**: FastAPI handlers that translate domain exceptions to HTTP responses
+- **`app/constants.py`**: Shared constants (ChildHandlingStrategy)
+- **`app/models/`**: SQLAlchemy ORM models (shared)
+- **`app/schemas/`**: Pydantic validation schemas (shared)
+
+### Domain Modules
+Each domain follows this structure:
+- `router.py` - Thin HTTP handlers
+- `service.py` - Business logic + data access
