@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from app.exceptions import BadRequestError, NotFoundError
 from app.models import Review, ReviewSession, Topic
-from app.reviews.service import replay_reviews
+from app.reviews.service import run_fsrs
 
 
 async def get_review_session(
@@ -230,7 +230,7 @@ async def update_review_session(
             )
             last_before_review = before_review_result.scalar_one_or_none()
 
-            replay_reviews(topic.fsrs_state, reviews_to_replay, last_before_review)
+            run_fsrs(topic.fsrs_state, reviews_to_replay, last_before_review)
 
         await session.flush()
 
@@ -330,6 +330,6 @@ async def delete_review_session(
             )
             last_before_review = before_review_result.scalar_one_or_none()
 
-            replay_reviews(topic.fsrs_state, reviews_to_replay, last_before_review)
+            run_fsrs(topic.fsrs_state, reviews_to_replay, last_before_review)
 
         await session.flush()
