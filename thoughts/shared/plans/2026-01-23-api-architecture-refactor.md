@@ -457,13 +457,13 @@ rg "from app.routers.sources import.*ChildHandlingStrategy" apps/api/tests/
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `uv run pytest` - All tests pass
-- [ ] `uv run ruff check` - No lint errors
+- [x] `uv run pytest` - All tests pass
+- [x] `uv run ruff check` - No lint errors
 
 #### Manual Verification:
-- [ ] Exception classes are pure Python (not HTTPException)
-- [ ] Exception handlers properly translate to HTTP responses
-- [ ] Constants consolidated in constants.py
+- [x] Exception classes are pure Python (not HTTPException)
+- [x] Exception handlers properly translate to HTTP responses
+- [x] Constants consolidated in constants.py
 
 ---
 

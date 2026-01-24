@@ -1,13 +1,13 @@
-from enum import Enum
-from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, timezone as dt_timezone
-
-from sqlalchemy import or_, select, update, delete, desc, insert, func, text
-from sqlalchemy.orm import selectinload
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
 from typing import Literal
 
+from fastapi import APIRouter, HTTPException, Query
+from sqlalchemy import delete, desc, func, insert, or_, select, text, update
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.constants import ChildHandlingStrategy
 from app.dependencies import SessionDep, UserIdDep
 from app.models import (
     Topic,
@@ -33,14 +33,6 @@ from app.schemas import (
 )
 
 router = APIRouter()
-
-
-class ChildHandlingStrategy(str, Enum):
-    """Strategy for handling children when deleting a topic."""
-
-    DELETE = "delete"
-    ORPHAN = "orphan"
-    REPARENT = "reparent"
 
 
 async def is_descendant_of(

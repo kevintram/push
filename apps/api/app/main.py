@@ -1,12 +1,16 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import get_settings
+from app.exception_handlers import register_exception_handlers
+
 from .dependencies import get_token_header
 from .internal import admin
-from .routers import topics, review_sessions, login, reviews, review_entries, sources
-from app.config import get_settings
+from .routers import login, review_entries, review_sessions, reviews, sources, topics
 
 app = FastAPI()
+
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
