@@ -204,14 +204,7 @@ VALUES
 SELECT setval('reviews_id_seq', (SELECT MAX(id) FROM reviews));
 
 -- ============================================================================
--- TOPIC_REVIEWS (association table for polymorphic reviews)
--- ============================================================================
--- Populate topic_reviews from existing reviews
-INSERT INTO topic_reviews (review_id, topic_id)
-SELECT id, topic_id FROM reviews WHERE topic_id IS NOT NULL;
-
--- ============================================================================
--- SOURCES (Phase 2)
+-- SOURCES
 -- ============================================================================
 -- Sample sources representing learning materials
 

@@ -14,7 +14,6 @@ from sqlalchemy.orm import selectinload
 
 from app.exceptions import AlreadyExistsError, NotFoundError
 from app.models import FsrsState, Review, ReviewSession, Source, Topic
-from app.models.sources import t_source_reviews
 
 
 # --- FSRS Helpers (pure functions, kept here for locality) ---
@@ -211,8 +210,7 @@ async def list_reviews(
             ReviewSession.description,
         )
         .outerjoin(Topic, Review.topic_id == Topic.id)
-        .outerjoin(t_source_reviews, Review.id == t_source_reviews.c.review_id)
-        .outerjoin(Source, t_source_reviews.c.source_id == Source.id)
+        .outerjoin(Source, Review.source_id == Source.id)
         .outerjoin(ReviewSession, Review.review_session_id == ReviewSession.id)
         .where(Review.user_id == user_id)
         .order_by(
@@ -229,7 +227,7 @@ async def list_reviews(
         stmt = stmt.where(Review.topic_id == topic_id)
 
     if source_id is not None:
-        stmt = stmt.where(t_source_reviews.c.source_id == source_id)
+        stmt = stmt.where(Review.source_id == source_id)
 
     if effective_date_before is not None:
         stmt = stmt.where(Review.effective_date <= effective_date_before)
@@ -368,6 +366,7 @@ async def create_review(
         new_review = Review(
             review_session_id=resolved_review_session_id,
             topic_id=topic.id if topic else None,
+            source_id=source.id if source else None,
             user_id=user_id,
             description=description,
             scheduled_at=scheduled_at,
@@ -379,15 +378,6 @@ async def create_review(
             await session.flush()
         except IntegrityError:
             raise AlreadyExistsError("Review already exists")
-
-        # For source reviews, create the source_reviews association
-        if is_source_review and source:
-            await session.execute(
-                t_source_reviews.insert().values(
-                    review_id=new_review.id, source_id=source.id
-                )
-            )
-            await session.flush()
 
         # Re-query to get fresh data
         review_result = await session.execute(
@@ -407,6 +397,7 @@ async def create_review(
     new_review = Review(
         review_session_id=resolved_review_session_id,
         topic_id=topic.id if topic else None,
+        source_id=source.id if source else None,
         user_id=user_id,
         description=description,
         scheduled_at=scheduled_at,
@@ -419,15 +410,6 @@ async def create_review(
         await session.flush()
     except IntegrityError:
         raise AlreadyExistsError("Review already exists")
-
-    # For source reviews, create the source_reviews association
-    if is_source_review and source:
-        await session.execute(
-            t_source_reviews.insert().values(
-                review_id=new_review.id, source_id=source.id
-            )
-        )
-        await session.flush()
 
     # Ensure entity has fsrs_state before running FSRS
     if entity_for_fsrs.fsrs_state is None:
@@ -467,17 +449,14 @@ async def create_review(
         last_before_review = before_review_result.scalar_one_or_none()
 
         if entity_for_fsrs.fsrs_state is not None:
-            run_fsrs(
-                entity_for_fsrs.fsrs_state, reviews_to_replay, last_before_review
-            )
+            run_fsrs(entity_for_fsrs.fsrs_state, reviews_to_replay, last_before_review)
             await session.flush()
     elif is_source_review and source:
-        # Fetch completed reviews from completed_at onward (via source_reviews)
+        # Fetch completed reviews from completed_at onward
         reviews_result = await session.execute(
             select(Review)
-            .join(t_source_reviews, Review.id == t_source_reviews.c.review_id)
             .where(
-                t_source_reviews.c.source_id == source.id,
+                Review.source_id == source.id,
                 Review.user_id == user_id,
                 Review.completed_at.isnot(None),
                 Review.completed_at >= completed_at,
@@ -489,9 +468,8 @@ async def create_review(
         # Find the last review BEFORE completed_at
         before_review_result = await session.execute(
             select(Review)
-            .join(t_source_reviews, Review.id == t_source_reviews.c.review_id)
             .where(
-                t_source_reviews.c.source_id == source.id,
+                Review.source_id == source.id,
                 Review.user_id == user_id,
                 Review.completed_at.isnot(None),
                 Review.completed_at < completed_at,
@@ -502,9 +480,7 @@ async def create_review(
         last_before_review = before_review_result.scalar_one_or_none()
 
         if entity_for_fsrs.fsrs_state is not None:
-            run_fsrs(
-                entity_for_fsrs.fsrs_state, reviews_to_replay, last_before_review
-            )
+            run_fsrs(entity_for_fsrs.fsrs_state, reviews_to_replay, last_before_review)
             await session.flush()
 
     # Re-query to get fresh data
@@ -590,12 +566,11 @@ async def update_review(
 
     # Run FSRS from this review's date to calculate this review and recalculate subsequent reviews
     if is_source_review and source:
-        # Fetch completed reviews from new_completed_at onward (via source_reviews)
+        # Fetch completed reviews from new_completed_at onward
         reviews_result = await session.execute(
             select(Review)
-            .join(t_source_reviews, Review.id == t_source_reviews.c.review_id)
             .where(
-                t_source_reviews.c.source_id == source.id,
+                Review.source_id == source.id,
                 Review.user_id == user_id,
                 Review.completed_at.isnot(None),
                 Review.completed_at >= new_completed_at,
@@ -607,9 +582,8 @@ async def update_review(
         # Find the last review BEFORE new_completed_at
         before_review_result = await session.execute(
             select(Review)
-            .join(t_source_reviews, Review.id == t_source_reviews.c.review_id)
             .where(
-                t_source_reviews.c.source_id == source.id,
+                Review.source_id == source.id,
                 Review.user_id == user_id,
                 Review.completed_at.isnot(None),
                 Review.completed_at < new_completed_at,
@@ -680,19 +654,18 @@ async def delete_review(
     source = review.source
     completed_at = review.completed_at
 
-    # Delete the review (cascade will handle source_reviews association)
+    # Delete the review
     await session.delete(review)
     await session.flush()
 
     # Only replay if review was completed
     if completed_at is not None:
         if source is not None:
-            # Fetch completed reviews from completed_at onward (via source_reviews)
+            # Fetch completed reviews from completed_at onward
             reviews_result = await session.execute(
                 select(Review)
-                .join(t_source_reviews, Review.id == t_source_reviews.c.review_id)
                 .where(
-                    t_source_reviews.c.source_id == source.id,
+                    Review.source_id == source.id,
                     Review.user_id == user_id,
                     Review.completed_at.isnot(None),
                     Review.completed_at >= completed_at,
@@ -704,9 +677,8 @@ async def delete_review(
             # Find the last review BEFORE completed_at
             before_review_result = await session.execute(
                 select(Review)
-                .join(t_source_reviews, Review.id == t_source_reviews.c.review_id)
                 .where(
-                    t_source_reviews.c.source_id == source.id,
+                    Review.source_id == source.id,
                     Review.user_id == user_id,
                     Review.completed_at.isnot(None),
                     Review.completed_at < completed_at,
