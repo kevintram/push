@@ -6,11 +6,18 @@ import type {
 	SourceTopicResponse
 } from './source.types'
 
+// Related entities are full Topic or Source objects with entity_type discriminator.
+// We use v.any() here because the backend returns full objects, and trying to
+// define a schema that matches RelatedEntityItem exactly is complex due to
+// circular dependencies between Topic and Source schemas.
+// The runtime data is validated by the backend; this just allows passthrough.
+
 // Base fields shared by all source schemas
 const sourceBaseFields = {
 	id: v.number(),
 	title: v.string(),
 	notes: v.string(),
+	entity_type: v.optional(v.literal('source')),
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	parent_id: v.nullable(v.number()),
@@ -36,7 +43,10 @@ const sourceBaseFields = {
 	days_until_threshold: v.nullable(v.number()),
 	// Relationship counts
 	children_count: v.optional(v.number(), 0),
-	topics_count: v.optional(v.number(), 0)
+	topics_count: v.optional(v.number(), 0),
+	related_outgoing_count: v.optional(v.number(), 0),
+	related_incoming_count: v.optional(v.number(), 0),
+	prerequisites_count: v.optional(v.number(), 0)
 } as const
 
 /**
@@ -66,7 +76,9 @@ export const SourceSchema: v.GenericSchema<Source> = v.object({
 		v.array(v.lazy((): v.GenericSchema<Source> => SourceSchema)),
 		[]
 	),
-	topics: v.optional(v.array(v.lazy(() => TopicSchemaBase)), [])
+	topics: v.optional(v.array(v.lazy(() => TopicSchemaBase)), []),
+	related_outgoing: v.optional(v.array(v.any()), []),
+	related_incoming: v.optional(v.array(v.any()), [])
 })
 
 export const SourceRelationshipResponseSchema: v.GenericSchema<SourceRelationshipResponse> =

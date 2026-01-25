@@ -1,4 +1,7 @@
-import type { Topic } from '~/features/topics/types/topic.types'
+import type {
+	RelatedEntityItem,
+	Topic
+} from '~/features/topics/types/topic.types'
 import type { LearningState } from '~/models/learning-state.types'
 
 export type RetrievabilityBucket = 'LATE' | 'ON_TIME' | 'EARLY'
@@ -7,6 +10,7 @@ export type Source = {
 	id: number
 	title: string
 	notes: string
+	entity_type?: 'source' // Discriminator for related entities
 	inserted_at: string
 	updated_at: string
 	parent_id: number | null
@@ -40,6 +44,8 @@ export type Source = {
 	parent?: Source | null
 	children?: Array<Source>
 	topics?: Array<Topic>
+	related_outgoing?: Array<RelatedEntityItem>
+	related_incoming?: Array<RelatedEntityItem>
 }
 
 export type SourceRelationshipResponse = {

@@ -580,8 +580,11 @@ async def get_source_related_entities(
 
     Returns:
         Tuple of (outgoing_relations, incoming_relations) where each item is a dict
-        with entity_type, id, name (for topics), and title (for sources).
+        containing full entity data with an entity_type discriminator.
     """
+    from app.schemas.sources import SourceSummaryRead
+    from app.schemas.topics import TopicSummaryRead
+
     # First verify the source exists and belongs to user
     await get_source(session, source_id, user_id)
 
@@ -590,8 +593,8 @@ async def get_source_related_entities(
         select(EntityRelation)
         .where(EntityRelation.from_source_id == source_id)
         .options(
-            selectinload(EntityRelation.to_topic),
-            selectinload(EntityRelation.to_source),
+            selectinload(EntityRelation.to_topic).selectinload(Topic.fsrs_state),
+            selectinload(EntityRelation.to_source).selectinload(Source.fsrs_state),
         )
     )
     outgoing_result = await session.execute(outgoing_stmt)
@@ -602,33 +605,25 @@ async def get_source_related_entities(
         if rel.to_topic_id:
             # Verify topic belongs to user
             if rel.to_topic and rel.to_topic.user_id == user_id:
-                outgoing.append(
-                    {
-                        "entity_type": "topic",
-                        "id": rel.to_topic.id,
-                        "name": rel.to_topic.name,
-                        "title": None,
-                    }
-                )
+                topic_data = TopicSummaryRead.model_validate(rel.to_topic).model_dump()
+                topic_data["entity_type"] = "topic"
+                outgoing.append(topic_data)
         elif rel.to_source_id:
             # Verify source belongs to user
             if rel.to_source and rel.to_source.user_id == user_id:
-                outgoing.append(
-                    {
-                        "entity_type": "source",
-                        "id": rel.to_source.id,
-                        "name": None,
-                        "title": rel.to_source.title,
-                    }
-                )
+                source_data = SourceSummaryRead.model_validate(
+                    rel.to_source
+                ).model_dump()
+                source_data["entity_type"] = "source"
+                outgoing.append(source_data)
 
     # Fetch incoming relations (from other entities to this source)
     incoming_stmt = (
         select(EntityRelation)
         .where(EntityRelation.to_source_id == source_id)
         .options(
-            selectinload(EntityRelation.from_topic),
-            selectinload(EntityRelation.from_source),
+            selectinload(EntityRelation.from_topic).selectinload(Topic.fsrs_state),
+            selectinload(EntityRelation.from_source).selectinload(Source.fsrs_state),
         )
     )
     incoming_result = await session.execute(incoming_stmt)
@@ -638,24 +633,16 @@ async def get_source_related_entities(
     for rel in incoming_relations:
         if rel.from_topic_id:
             if rel.from_topic and rel.from_topic.user_id == user_id:
-                incoming.append(
-                    {
-                        "entity_type": "topic",
-                        "id": rel.from_topic.id,
-                        "name": rel.from_topic.name,
-                        "title": None,
-                    }
-                )
+                topic_data = TopicSummaryRead.model_validate(rel.from_topic).model_dump()
+                topic_data["entity_type"] = "topic"
+                incoming.append(topic_data)
         elif rel.from_source_id:
             if rel.from_source and rel.from_source.user_id == user_id:
-                incoming.append(
-                    {
-                        "entity_type": "source",
-                        "id": rel.from_source.id,
-                        "name": None,
-                        "title": rel.from_source.title,
-                    }
-                )
+                source_data = SourceSummaryRead.model_validate(
+                    rel.from_source
+                ).model_dump()
+                source_data["entity_type"] = "source"
+                incoming.append(source_data)
 
     return outgoing, incoming
 

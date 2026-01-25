@@ -7,11 +7,18 @@ import type {
 } from './topic.types'
 import { RelationshipDirection } from './topic.types'
 
+// Related entities are full Topic or Source objects with entity_type discriminator.
+// We use v.any() here because the backend returns full objects, and trying to
+// define a schema that matches RelatedEntityItem exactly is complex due to
+// circular dependencies between Topic and Source schemas.
+// The runtime data is validated by the backend; this just allows passthrough.
+
 // Base fields shared by all topic schemas
 const topicBaseFields = {
 	id: v.number(),
 	name: v.string(),
 	notes: v.string(),
+	entity_type: v.optional(v.literal('topic')),
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	parent_id: v.nullable(v.number()),
@@ -56,18 +63,8 @@ export const TopicSchemaBase: v.GenericSchema<Omit<Topic, 'sources'>> =
 			),
 			[]
 		),
-		related_outgoing: v.optional(
-			v.array(
-				v.lazy((): v.GenericSchema<Omit<Topic, 'sources'>> => TopicSchemaBase)
-			),
-			[]
-		),
-		related_incoming: v.optional(
-			v.array(
-				v.lazy((): v.GenericSchema<Omit<Topic, 'sources'>> => TopicSchemaBase)
-			),
-			[]
-		)
+		related_outgoing: v.optional(v.array(v.any()), []),
+		related_incoming: v.optional(v.array(v.any()), [])
 	})
 
 export const TopicSchema: v.GenericSchema<Topic> = v.object({
@@ -78,14 +75,8 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 		v.array(v.lazy((): v.GenericSchema<Topic> => TopicSchema)),
 		[]
 	),
-	related_outgoing: v.optional(
-		v.array(v.lazy((): v.GenericSchema<Topic> => TopicSchema)),
-		[]
-	),
-	related_incoming: v.optional(
-		v.array(v.lazy((): v.GenericSchema<Topic> => TopicSchema)),
-		[]
-	),
+	related_outgoing: v.optional(v.array(v.any()), []),
+	related_incoming: v.optional(v.array(v.any()), []),
 	sources: v.optional(v.array(v.lazy(() => SourceSchemaBase)), [])
 })
 

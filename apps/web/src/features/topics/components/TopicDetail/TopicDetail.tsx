@@ -66,14 +66,6 @@ interface TopicDetailProps {
 		onClick: () => void
 	) => ReactNode
 	/**
-	 * Custom card renderer for related panel.
-	 */
-	renderRelatedCard?: (
-		topic: Topic,
-		onRemove: () => void,
-		onClick: () => void
-	) => ReactNode
-	/**
 	 * Custom card renderer for sources panel.
 	 */
 	renderSourceCard?: (source: Source, onClick: () => void) => ReactNode
@@ -93,7 +85,6 @@ export function TopicDetail({
 	onTopicNavigate,
 	onSourceNavigate,
 	renderChildCard,
-	renderRelatedCard,
 	renderSourceCard,
 	className
 }: TopicDetailProps) {
@@ -275,10 +266,9 @@ export function TopicDetail({
 						</div>
 						<div className='mt-4'>
 							<TopicRelatedPanel
-								getScrollElement={() => scrollContainerRef.current}
 								onRelatedSelect={onTopicNavigate}
+								onSourceSelect={onSourceNavigate}
 								related={mergedRelated}
-								renderCard={renderRelatedCard}
 								srsSource={srsSource}
 								topicId={topic.id}
 							/>

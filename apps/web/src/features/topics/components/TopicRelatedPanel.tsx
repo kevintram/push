@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query'
 import {
 	ChevronDown,
 	Link,
@@ -7,8 +6,14 @@ import {
 	Search,
 	SquarePen
 } from 'lucide-react'
-import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import {
+	EntityCard,
+	type EntityItem,
+	estimateEntitySize,
+	getEntityKey
+} from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import {
@@ -19,27 +24,22 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
-import { useDeleteTopicOtherRelationship } from '../api/deleteTopicOtherRelationship'
-import { topicKeys } from '../api/queryKeys'
-import { RelationshipDirection, type Topic } from '../types/topic.types'
+import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
+import { EntityType } from '~/models/entity-relations.types'
+import { useAddTopicEntityRelation } from '../api/addTopicEntityRelation'
+import { useRemoveTopicEntityRelation } from '../api/removeTopicEntityRelation'
+import type { RelatedEntityItem } from '../types/topic.types'
 import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { AddTopicDialog, type SrsSource } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
-import { TopicCard } from './TopicCard'
-
-const MIN_WIDTH = 280
-const MIN_HEIGHT = 96
-
-type ListItem = { type: 'related'; topic: Topic }
 
 interface TopicRelatedPanelProps {
 	topicId: number | undefined
 	/**
-	 * Related topics from the single getTopic fetch (merged incoming + outgoing with direction).
+	 * Related entities from the single getTopic fetch (merged incoming + outgoing with direction).
 	 * When provided, the panel uses this directly instead of making a separate API call.
 	 */
-	related?: Array<Topic>
+	related?: Array<RelatedEntityItem>
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	/**
@@ -52,28 +52,19 @@ interface TopicRelatedPanelProps {
 	 */
 	onRelatedSelect?: (topicId: number) => void
 	/**
-	 * Custom card renderer. If not provided, uses default TopicCard.
-	 * @param topic - The related topic to render
-	 * @param onRemove - Callback to remove the relationship
-	 * @param onClick - Callback when the card is clicked
+	 * Called when a related source is selected/clicked.
+	 * If not provided, defaults to opening the source dialog.
 	 */
-	renderCard?: (
-		topic: Topic,
-		onRemove: () => void,
-		onClick: () => void
-	) => ReactNode
+	onSourceSelect?: (sourceId: number) => void
 }
 
 export function TopicRelatedPanel({
 	topicId,
 	related: relatedProp,
-	getScrollElement,
-	scrollMargin,
 	srsSource,
 	onRelatedSelect,
-	renderCard
+	onSourceSelect
 }: TopicRelatedPanelProps) {
-	const queryClient = useQueryClient()
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
@@ -82,12 +73,22 @@ export function TopicRelatedPanel({
 	// Use prop directly - related comes from the single getTopic fetch (merged incoming + outgoing)
 	const related = relatedProp ?? []
 
-	const deleteRelationship = useDeleteTopicOtherRelationship()
-	const createRelationship = useCreateTopicOtherRelationship()
+	const addRelation = useAddTopicEntityRelation()
+	const removeRelation = useRemoveTopicEntityRelation()
 
-	const isCreating = createRelationship.isPending
+	const isCreating = addRelation.isPending
 
-	// Determine navigation behavior
+	// Convert RelatedEntityItem to EntityItem for EntityCard/MasonryLayout
+	const entityItems = useMemo<Array<EntityItem>>(() => {
+		return related.map((item): EntityItem => {
+			if (item.entity_type === 'topic') {
+				return { type: 'topic', item }
+			}
+			return { type: 'source', item }
+		})
+	}, [related])
+
+	// Handle navigation for topics
 	const handleRelatedSelect = useCallback(
 		(relatedTopicId: number) => {
 			if (onRelatedSelect) {
@@ -99,120 +100,88 @@ export function TopicRelatedPanel({
 		[onRelatedSelect, openTopicDialog]
 	)
 
-	const handleAdd = useCallback(
-		async (topic: Topic) => {
-			if (!topicId) return
+	// Handle navigation for sources
+	const handleSourceSelect = useCallback(
+		(sourceId: number) => {
+			if (onSourceSelect) {
+				onSourceSelect(sourceId)
+			}
+		},
+		[onSourceSelect]
+	)
 
-			await createRelationship.mutateAsync({
-				fromTopicId: topicId,
-				data: { to_topic_id: topic.id }
+	// Handle adding a topic relation (from AddRelationshipDialog which only searches topics)
+	const handleAddTopic = useCallback(
+		async (topic: { id: number }) => {
+			if (!topicId) return
+			await addRelation.mutateAsync({
+				topicId,
+				data: {
+					to_entity_type: EntityType.Topic,
+					to_entity_id: topic.id
+				}
 			})
 		},
-		[topicId, createRelationship]
+		[topicId, addRelation]
 	)
 
-	const handleTopicUpdateSuccess = useCallback(
-		(updatedTopic: Topic) => {
-			queryClient.setQueryData(
-				topicKeys.related(topicId!),
-				(old: Array<Topic>) => {
-					return old.map(topic => {
-						if (topic.id === updatedTopic.id) {
-							return updatedTopic
-						}
-						return topic
-					})
-				}
-			)
+	const handleEntityClick = useCallback(
+		(entity: EntityItem) => {
+			if (entity.type === 'topic') {
+				handleRelatedSelect(entity.item.id)
+			} else if (entity.type === 'source') {
+				handleSourceSelect(entity.item.id)
+			}
 		},
-		[queryClient, topicId]
+		[handleRelatedSelect, handleSourceSelect]
 	)
-
-	// Map related topics into array
-	const items = useMemo<Array<ListItem>>(
-		() => related.map(topic => ({ type: 'related' as const, topic })),
-		[related]
-	)
-
-	const estimateItemSize = useCallback((item: ListItem) => {
-		// Estimate height based on topic name and notes length
-		const { topic } = item
-		const baseHeight = 80
-		const lineHeight = 10
-		const numCharsPerLine = 30
-		const newLine = 10
-
-		const nameHeight =
-			Math.floor(topic.name.length / numCharsPerLine) * lineHeight
-		const notesHeight =
-			Math.floor(topic.notes.length / numCharsPerLine) * lineHeight
-
-		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
-
-		return Math.max(calculatedHeight, MIN_HEIGHT)
-	}, [])
 
 	const renderItem = useCallback(
-		(item: ListItem) => {
-			const handleRemoveRelationship = () => {
-				if (!topicId) return
+		(entity: EntityItem) => {
+			// Get the original related item for remove action
+			const originalItem = related.find(
+				r => r.entity_type === entity.type && r.id === entity.item.id
+			)
 
-				const { id: relatedTopicId, relationship_direction } = item.topic
-
-				// Default to 'outgoing' logic if direction is missing or 'outgoing'
-				// If relationship is 'outgoing', it means Current(from) -> Related(to)
-				// If relationship is 'incoming', it means Related(from) -> Current(to)
-				if (relationship_direction === RelationshipDirection.Incoming) {
-					deleteRelationship.mutate({
-						fromTopicId: relatedTopicId,
-						toTopicId: topicId
-					})
-				} else {
-					deleteRelationship.mutate({
-						fromTopicId: topicId,
-						toTopicId: relatedTopicId
-					})
-				}
+			const handleRemove = () => {
+				if (!(topicId && originalItem)) return
+				removeRelation.mutate({
+					topicId,
+					entityType: originalItem.entity_type as EntityType,
+					entityId: originalItem.id
+				})
 			}
 
-			const handleClick = () => {
-				handleRelatedSelect(item.topic.id)
+			let headerRight: React.ReactNode
+			if (entity.type === 'topic') {
+				headerRight = (
+					<TopicActionMenu
+						onRemoveRelationship={handleRemove}
+						removeRelationshipText='Remove Relationship'
+						topic={entity.item}
+					/>
+				)
+			} else if (entity.type === 'source') {
+				headerRight = (
+					<SourceActionMenu
+						onRemoveRelationship={handleRemove}
+						removeRelationshipText='Remove Relationship'
+						source={entity.item}
+					/>
+				)
 			}
 
-			// Use custom renderer if provided
-			if (renderCard) {
-				return renderCard(item.topic, handleRemoveRelationship, handleClick)
-			}
-
-			// Default card rendering
 			return (
-				<TopicCard
-					headerRight={
-						<TopicActionMenu
-							onRemoveRelationship={handleRemoveRelationship}
-							onTopicUpdateSuccess={handleTopicUpdateSuccess}
-							removeRelationshipText='Remove as related'
-							topic={item.topic}
-						/>
-					}
-					minHeight={MIN_HEIGHT}
-					onTopicClick={() => handleClick()}
-					topic={item.topic}
+				<EntityCard
+					entity={entity}
+					headerRight={headerRight}
+					minHeight={96}
+					onEntityClick={handleEntityClick}
 				/>
 			)
 		},
-		[
-			deleteRelationship,
-			topicId,
-			handleRelatedSelect,
-			renderCard,
-			handleTopicUpdateSuccess
-		]
+		[handleEntityClick, topicId, related, removeRelation]
 	)
-
-	const getItemKey = useCallback((item: ListItem, _index: number) => {
-		return item.topic.id
-	}, [])
 
 	return (
 		<div className='flex flex-col'>
@@ -233,11 +202,11 @@ export function TopicRelatedPanel({
 						<DropdownMenuContent align='start'>
 							<DropdownMenuItem onClick={() => setShowAddTopicDialog(true)}>
 								<SquarePen className='h-4 w-4' />
-								Create New
+								Create New Topic
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
 								<Search className='h-4 w-4' />
-								Search
+								Search Topics
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -250,7 +219,7 @@ export function TopicRelatedPanel({
 					>
 						<Link className='h-4 w-4' />
 						<span className='font-medium text-md text-muted-foreground'>
-							Other related topics ({related.length})
+							Related ({related.length})
 						</span>
 						<ChevronDown
 							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
@@ -259,17 +228,21 @@ export function TopicRelatedPanel({
 				}
 			/>
 			{!isCollapsed && (
-				<div className='flex-1 py-6'>
-					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						gap={16}
-						getItemKey={getItemKey}
-						getScrollElement={getScrollElement}
-						items={items}
-						minItemWidth={MIN_WIDTH}
-						renderItem={renderItem}
-						scrollMargin={scrollMargin}
-					/>
+				<div className='py-4'>
+					{entityItems.length === 0 ? (
+						<p className='py-2 text-muted-foreground text-sm'>
+							No related items
+						</p>
+					) : (
+						<MasonryLayout
+							estimateItemSize={estimateEntitySize}
+							gap={16}
+							getItemKey={getEntityKey}
+							items={entityItems}
+							minItemWidth={280}
+							renderItem={renderItem}
+						/>
+					)}
 				</div>
 			)}
 
@@ -280,7 +253,7 @@ export function TopicRelatedPanel({
 					setShowAddTopicDialog(true)
 				}}
 				onOpenChange={setShowCreateDialog}
-				onSelected={handleAdd}
+				onSelected={handleAddTopic}
 				open={showCreateDialog}
 				relationshipType='related'
 				topicId={topicId}

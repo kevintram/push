@@ -10,6 +10,13 @@ export type EntityRelationCreate = {
 	to_entity_id: number
 }
 
+export type RelatedEntity = {
+	entity_type: EntityType
+	id: number
+	name: string | null // topic.name
+	title: string | null // source.title
+}
+
 export type PrerequisiteTopicRead = {
 	id: number
 	name: string
