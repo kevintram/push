@@ -85,7 +85,6 @@ export type UpdateReviewInput = {
 }
 
 export type GetReviewSessionsFilters = {
-	topicId?: number
 	effectiveDateBefore?: string
 	effectiveDateAfter?: string
 	scheduled?: boolean

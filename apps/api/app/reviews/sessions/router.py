@@ -12,7 +12,6 @@ from app.schemas import (
     ReviewSessionRead,
     ReviewSessionReadWithReviews,
     ReviewSessionUpdate,
-    TopicRead,
 )
 
 router = APIRouter(prefix="/review-sessions", tags=["review-sessions"])
@@ -32,7 +31,6 @@ async def read_recent_review_sessions(
 async def read_review_sessions(
     session: SessionDep,
     user_id: UserIdDep,
-    topic_id: int | None = None,
     effective_date_before: str | None = None,
     effective_date_after: str | None = None,
     completed: bool | None = None,
@@ -50,7 +48,6 @@ async def read_review_sessions(
     return await service.list_review_sessions(
         session,
         user_id,
-        topic_id=topic_id,
         effective_date_before=date_before,
         effective_date_after=date_after,
         completed=completed,
@@ -101,18 +98,6 @@ async def update_review_session(
         review_session_id,
         user_id,
         update_values=update_values,
-    )
-
-
-@router.get("/{review_session_id}/topics/")
-async def read_topics_for_review_session(
-    review_session_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> list[TopicRead]:
-    """Get all topics that are part of a review session."""
-    return await service.get_topics_for_review_session(
-        session, review_session_id, user_id
     )
 
 

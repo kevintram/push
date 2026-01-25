@@ -33,7 +33,7 @@ from sqlalchemy.orm import selectinload
 from app.main import app
 from app.database import get_db
 from app.auth.dependencies import get_user_id
-from app.models import Topic, Source, FsrsState
+from app.models import Topic, Source, FsrsState, Review, ReviewSession
 
 
 def filter_migration_sql(sql: str) -> str:
@@ -323,3 +323,79 @@ def create_test_source(db_session: AsyncSession, mock_user_id: str):
         return result.scalar_one()
 
     return _create_source
+
+
+@pytest.fixture
+def create_test_review(db_session: AsyncSession, mock_user_id: str, create_test_topic):
+    """Factory fixture to create reviews in the test database.
+
+    Usage:
+        review = await create_test_review()
+        review = await create_test_review(topic_id=topic.id, rating="good")
+        review = await create_test_review(source_id=source.id)
+    """
+    from datetime import date
+
+    async def _create_review(
+        topic_id: int | None = None,
+        source_id: int | None = None,
+        review_session_id: int | None = None,
+        scheduled_at: date | None = None,
+        completed_at: date | None = None,
+        rating: str | None = None,
+        user_id: str | None = None,
+    ) -> Review:
+        # Use mock_user_id as default if not specified
+        actual_user_id = user_id if user_id is not None else mock_user_id
+
+        # Create topic if neither topic_id nor source_id provided
+        if topic_id is None and source_id is None:
+            topic = await create_test_topic()
+            topic_id = topic.id
+
+        review = Review(
+            user_id=actual_user_id,
+            topic_id=topic_id,
+            source_id=source_id,
+            review_session_id=review_session_id,
+            scheduled_at=scheduled_at or date.today(),
+            completed_at=completed_at,
+            rating=rating,
+        )
+        db_session.add(review)
+        await db_session.flush()
+        return review
+
+    return _create_review
+
+
+@pytest.fixture
+def create_test_review_session(db_session: AsyncSession, mock_user_id: str):
+    """Factory fixture to create review sessions in the test database.
+
+    Usage:
+        session = await create_test_review_session()
+        session = await create_test_review_session(description="Study Session")
+    """
+    from datetime import date
+
+    async def _create_session(
+        description: str = "Test Session",
+        notes: str = "",
+        scheduled_at: date | None = None,
+        completed_at: date | None = None,
+        user_id: str | None = None,
+    ) -> ReviewSession:
+        actual_user_id = user_id if user_id is not None else mock_user_id
+        session = ReviewSession(
+            user_id=actual_user_id,
+            description=description,
+            notes=notes,
+            scheduled_at=scheduled_at,
+            completed_at=completed_at,
+        )
+        db_session.add(session)
+        await db_session.flush()
+        return session
+
+    return _create_session
