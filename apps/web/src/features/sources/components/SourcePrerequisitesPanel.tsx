@@ -1,18 +1,13 @@
 import { ChevronDown, ListChecks, Loader2, Plus, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import type { SourcePrerequisiteRead } from '~/models/entity-relations.types'
 import { EntityType } from '~/models/entity-relations.types'
 import { useAddSourcePrerequisite } from '../api/addSourcePrerequisite'
-import { useRemoveSourcePrerequisite } from '../api/removeSourcePrerequisite'
 import { useSourcePrerequisites } from '../api/getSourcePrerequisites'
+import { useRemoveSourcePrerequisite } from '../api/removeSourcePrerequisite'
+import { AddPrerequisiteDialog } from './AddPrerequisiteDialog'
 
 interface SourcePrerequisitesPanelProps {
 	sourceId: number | undefined
@@ -26,13 +21,29 @@ export function SourcePrerequisitesPanel({
 	onSourceNavigate
 }: SourcePrerequisitesPanelProps) {
 	const [isCollapsed, setIsCollapsed] = useState(false)
+	const [showAddDialog, setShowAddDialog] = useState(false)
 
-	const { data: prerequisites = [], isLoading } = useSourcePrerequisites(sourceId)
+	const { data: prerequisites = [], isLoading } =
+		useSourcePrerequisites(sourceId)
 	const addPrerequisite = useAddSourcePrerequisite()
 	const removePrerequisite = useRemoveSourcePrerequisite()
 
 	const isAdding = addPrerequisite.isPending
 	const isRemoving = removePrerequisite.isPending
+
+	const handleAddPrerequisite = useCallback(
+		(entityType: EntityType, entityId: number) => {
+			if (!sourceId) return
+			addPrerequisite.mutate({
+				sourceId,
+				data: {
+					prereq_entity_type: entityType,
+					prereq_entity_id: entityId
+				}
+			})
+		},
+		[sourceId, addPrerequisite]
+	)
 
 	const handleRemove = useCallback(
 		(prereq: SourcePrerequisiteRead) => {
@@ -86,27 +97,20 @@ export function SourcePrerequisitesPanel({
 		<div className='flex flex-col'>
 			<TopicPanelHeader
 				actions={
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true} disabled={isAdding}>
-							<Button className='gap-1' size='sm' variant='secondary'>
-								{isAdding ? (
-									<Loader2 className='h-4 w-4 animate-spin' />
-								) : (
-									<Plus className='h-4 w-4' />
-								)}
-								Add
-								<ChevronDown className='h-4 w-4' />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='start'>
-							<DropdownMenuItem disabled={true}>
-								Search Topics (coming soon)
-							</DropdownMenuItem>
-							<DropdownMenuItem disabled={true}>
-								Search Sources (coming soon)
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<Button
+						className='gap-1'
+						disabled={isAdding}
+						onClick={() => setShowAddDialog(true)}
+						size='sm'
+						variant='secondary'
+					>
+						{isAdding ? (
+							<Loader2 className='h-4 w-4 animate-spin' />
+						) : (
+							<Plus className='h-4 w-4' />
+						)}
+						Add
+					</Button>
 				}
 				label={
 					<Button
@@ -132,24 +136,24 @@ export function SourcePrerequisitesPanel({
 						</div>
 					)}
 					{!isLoading && prerequisites.length === 0 && (
-						<p className='text-sm text-muted-foreground py-2'>
+						<p className='py-2 text-muted-foreground text-sm'>
 							No prerequisites defined
 						</p>
 					)}
 					{prerequisites.map(prereq => (
 						<div
-							key={prereq.id}
 							className='flex items-center justify-between rounded-md border border-border bg-card p-3'
+							key={prereq.id}
 						>
 							<button
 								className='flex-1 text-left'
 								onClick={() => handleClick(prereq)}
 								type='button'
 							>
-								<span className='text-sm font-medium'>
+								<span className='font-medium text-sm'>
 									{getPrereqLabel(prereq)}
 								</span>
-								<span className='ml-2 text-xs text-muted-foreground'>
+								<span className='ml-2 text-muted-foreground text-xs'>
 									({getPrereqType(prereq)})
 								</span>
 							</button>
@@ -166,6 +170,14 @@ export function SourcePrerequisitesPanel({
 					))}
 				</div>
 			)}
+
+			<AddPrerequisiteDialog
+				isAdding={isAdding}
+				onOpenChange={setShowAddDialog}
+				onSelected={handleAddPrerequisite}
+				open={showAddDialog}
+				sourceId={sourceId}
+			/>
 		</div>
 	)
 }

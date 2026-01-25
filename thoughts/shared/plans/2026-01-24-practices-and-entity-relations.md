@@ -2854,35 +2854,35 @@ Create panel for managing source prerequisites.
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Command: `cd apps/api && uv run pytest tests/entity_relations/` - All entity relation tests pass
-- [ ] Command: `cd apps/api && uv run pytest tests/` - All existing tests still pass (no regressions)
-- [ ] Command: `cd apps/api && uv run ruff check --fix && uv run ruff format` - No lint errors
-- [ ] Command: `cd apps/web && pnpm test:ci`
-- [ ] Command: `cd apps/web && pnpm lint`
-- [ ] Command: `cd apps/web && pnpm build`
+- [x] Command: `cd apps/api && uv run pytest tests/entity_relations/` - All entity relation tests pass
+- [x] Command: `cd apps/api && uv run pytest tests/` - All existing tests still pass (no regressions)
+- [x] Command: `cd apps/api && uv run ruff check --fix && uv run ruff format` - No lint errors
+- [x] Command: `cd apps/web && pnpm test:ci`
+- [x] Command: `cd apps/web && pnpm lint`
+- [x] Command: `cd apps/web && pnpm build`
 
 #### Test Coverage (Phase 4):
 The following test scenarios MUST pass before proceeding:
-- [ ] Topic → Topic relations: add, remove, no self-relation, no duplicates
-- [ ] Topic → Source relations: add, remove
-- [ ] Source → Topic relations: add, remove
-- [ ] Source → Source relations: add, remove, no self-relation
-- [ ] Source prerequisites (topic): add, remove, list, no duplicates
-- [ ] Source prerequisites (source): add, remove, no self-prerequisite
-- [ ] Multiple prerequisites per source
-- [ ] Cascade deletion: relations removed when entities deleted
-- [ ] Migration: existing topic_other_relations data preserved
+- [x] Topic → Topic relations: add, remove, no self-relation, no duplicates
+- [x] Topic → Source relations: add, remove
+- [x] Source → Topic relations: add, remove
+- [x] Source → Source relations: add, remove, no self-relation
+- [x] Source prerequisites (topic): add, remove, list, no duplicates
+- [x] Source prerequisites (source): add, remove, no self-prerequisite
+- [x] Multiple prerequisites per source
+- [x] Cascade deletion: relations removed when entities deleted
+- [x] Migration: existing topic_other_relations data preserved
 
 #### Claude in Chrome E2E Testing:
 After automated verification passes, use Claude in Chrome to manually verify:
-- [ ] Topic → Topic relations: add, view in related panel, remove (existing functionality preserved)
-- [ ] Topic → Source relations: add source as related, view in panel, remove
-- [ ] Source → Topic relations: add topic as related, view in panel, remove
-- [ ] Source → Source relations: add source as related, view in panel, remove
-- [ ] Source prerequisites (topic): add topic prereq, view in prerequisites panel, remove
-- [ ] Source prerequisites (source): add source prereq, view in panel, remove
-- [ ] Related panel UI: correctly distinguishes topics vs sources (different icons/labels)
-- [ ] Prerequisites panel: visible on source detail page, shows both topic and source prereqs
+- [x] Topic → Topic relations: add, view in related panel, remove (existing functionality preserved)
+- [ ] Topic → Source relations: add source as related, view in panel, remove (API works, frontend TopicRelatedPanel not updated)
+- [ ] Source → Topic relations: add topic as related, view in panel, remove (API works, frontend SourceRelatedPanel not created)
+- [ ] Source → Source relations: add source as related, view in panel, remove (API works, frontend SourceRelatedPanel not created)
+- [x] Source prerequisites (topic): add topic prereq, view in prerequisites panel, remove
+- [x] Source prerequisites (source): add source prereq, view in panel, remove
+- [ ] Related panel UI: correctly distinguishes topics vs sources (different icons/labels) (Prerequisites panel shows type labels)
+- [x] Prerequisites panel: visible on source detail page, shows both topic and source prereqs
 
 ---
 

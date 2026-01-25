@@ -5,7 +5,7 @@ import { sourceKeys } from './queryKeys'
 
 export async function getSourcePrerequisites(
 	sourceId: number
-): Promise<SourcePrerequisiteRead[]> {
+): Promise<Array<SourcePrerequisiteRead>> {
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/sources/${sourceId}/prerequisites/`
 	)
