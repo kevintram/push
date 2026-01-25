@@ -109,7 +109,8 @@ export function PracticeCard({
 		[updatePractice, practice.id, practice.srs_enabled]
 	)
 
-	const totalRelations = (practice.topics_count ?? 0) + (practice.sources_count ?? 0)
+	const totalRelations =
+		(practice.topics_count ?? 0) + (practice.sources_count ?? 0)
 
 	return (
 		<Card
@@ -197,7 +198,7 @@ export function PracticeCard({
 						)}
 						{/* Answer as secondary text */}
 						{highlightedAnswer && (
-							<p className='break-word line-clamp-[8] text-sm text-muted-foreground [overflow-wrap:anywhere]'>
+							<p className='break-word line-clamp-[8] text-muted-foreground text-sm [overflow-wrap:anywhere]'>
 								{highlightedAnswer}
 							</p>
 						)}
@@ -276,8 +277,10 @@ export function PracticeCard({
 						</div>
 					</TooltipTrigger>
 					<TooltipContent side='top'>
-						{practice.topics_count ?? 0} topic{(practice.topics_count ?? 0) !== 1 ? 's' : ''},{' '}
-						{practice.sources_count ?? 0} source{(practice.sources_count ?? 0) !== 1 ? 's' : ''}
+						{practice.topics_count ?? 0} topic
+						{(practice.topics_count ?? 0) !== 1 ? 's' : ''},{' '}
+						{practice.sources_count ?? 0} source
+						{(practice.sources_count ?? 0) !== 1 ? 's' : ''}
 					</TooltipContent>
 				</Tooltip>
 			</CardFooter>

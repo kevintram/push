@@ -3,6 +3,7 @@
 // External libraries
 import { useNavigate } from '@tanstack/react-router'
 import {
+	Dumbbell,
 	FileText,
 	ListChecks,
 	Loader2,
@@ -27,6 +28,7 @@ import {
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
 
 // Feature hooks
+import { AddPracticeDialog } from '~/features/practices/components/AddPracticeDialog'
 import { useCreateReviewSession } from '~/features/reviews/api/createReviewSession'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
@@ -41,6 +43,8 @@ export function CreateButton() {
 	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 	// State for AddSourceDialog
 	const [isAddSourceDialogOpen, setIsAddSourceDialogOpen] = useState(false)
+	// State for AddPracticeDialog
+	const [isAddPracticeDialogOpen, setIsAddPracticeDialogOpen] = useState(false)
 
 	const isLoading = isCreatingReview
 
@@ -116,6 +120,13 @@ export function CreateButton() {
 					<FileText />
 					<span>New source</span>
 				</DropdownMenuItem>
+				<DropdownMenuItem
+					disabled={isLoading}
+					onClick={() => setIsAddPracticeDialogOpen(true)}
+				>
+					<Dumbbell />
+					<span>New practice</span>
+				</DropdownMenuItem>
 			</DropdownMenuContent>
 
 			<AddTopicDialog
@@ -152,6 +163,24 @@ export function CreateButton() {
 					})
 				}}
 				open={isAddSourceDialogOpen}
+			/>
+
+			<AddPracticeDialog
+				context={{ type: 'standalone' }}
+				onOpenChange={setIsAddPracticeDialogOpen}
+				onSuccess={practiceId => {
+					toast('Practice created', {
+						action: {
+							label: 'Open',
+							onClick: () =>
+								navigate({
+									to: '/practices/$practiceId',
+									params: { practiceId: practiceId.toString() }
+								})
+						}
+					})
+				}}
+				open={isAddPracticeDialogOpen}
 			/>
 		</DropdownMenu>
 	)

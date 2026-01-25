@@ -33,6 +33,8 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { Skeleton } from '~/components/ui/Skeleton'
+import { usePractices } from '~/features/practices/api/getPractices'
+import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import {
 	useSoonReviewEntries,
 	useTodayReviewEntries
@@ -41,8 +43,6 @@ import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { ReviewEntry } from '~/features/reviews/components/ReviewSection'
 import { ReviewSessionItem } from '~/features/reviews/components/ReviewSessionItem'
-import { usePractices } from '~/features/practices/api/getPractices'
-import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { useSources } from '~/features/sources/api/getSources'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
