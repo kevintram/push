@@ -1,1 +1,1 @@
-// Practice components will be added here
+export { PracticeCard } from './PracticeCard'
