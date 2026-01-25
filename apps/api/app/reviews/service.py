@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.exceptions import AlreadyExistsError, NotFoundError
-from app.models import FsrsState, Review, ReviewSession, Source, Topic
+from app.models import FsrsState, Practice, Review, ReviewSession, Source, Topic
 
 
 # --- FSRS Helpers (pure functions, kept here for locality) ---
@@ -165,7 +165,7 @@ def update_fsrs(
 
 async def update_entity_fsrs(
     session: AsyncSession,
-    entity: Topic | Source,
+    entity: Topic | Source | Practice,
     starting_from: date,
 ) -> None:
     """Update FSRS state for an entity from a given date forward.
@@ -179,8 +179,10 @@ async def update_entity_fsrs(
     # Determine filter based on entity type
     if isinstance(entity, Topic):
         entity_filter = Review.topic_id == entity.id
-    else:
+    elif isinstance(entity, Source):
         entity_filter = Review.source_id == entity.id
+    else:
+        entity_filter = Review.practice_id == entity.id
 
     # Fetch completed reviews from starting_from onward
     reviews_result = await session.execute(
@@ -223,6 +225,7 @@ async def get_review(session: AsyncSession, review_id: int, user_id: str) -> Rev
         .options(
             selectinload(Review.topic).selectinload(Topic.fsrs_state),
             selectinload(Review.source).selectinload(Source.fsrs_state),
+            selectinload(Review.practice).selectinload(Practice.fsrs_state),
             selectinload(Review.review_session),
         )
     )
@@ -240,6 +243,7 @@ async def list_reviews(
     review_session_id: int | None = None,
     topic_id: int | None = None,
     source_id: int | None = None,
+    practice_id: int | None = None,
     effective_date_before: date | None = None,
     effective_date_after: date | None = None,
     completed: bool | None = None,
@@ -255,11 +259,15 @@ async def list_reviews(
             Source.id,
             Source.title,
             Source.notes,
+            Practice.id,
+            Practice.prompt,
+            Practice.answer,
             ReviewSession.id,
             ReviewSession.description,
         )
         .outerjoin(Topic, Review.topic_id == Topic.id)
         .outerjoin(Source, Review.source_id == Source.id)
+        .outerjoin(Practice, Review.practice_id == Practice.id)
         .outerjoin(ReviewSession, Review.review_session_id == ReviewSession.id)
         .where(Review.user_id == user_id)
         .order_by(
@@ -277,6 +285,9 @@ async def list_reviews(
 
     if source_id is not None:
         stmt = stmt.where(Review.source_id == source_id)
+
+    if practice_id is not None:
+        stmt = stmt.where(Review.practice_id == practice_id)
 
     if effective_date_before is not None:
         stmt = stmt.where(Review.effective_date <= effective_date_before)
@@ -308,6 +319,8 @@ async def create_review(
     topic_data: dict | None = None,
     source_id: int | None = None,
     source_data: dict | None = None,
+    practice_id: int | None = None,
+    practice_data: dict | None = None,
     review_session_id: int | None = None,
     review_session_data: dict | None = None,
     description: str | None = None,
@@ -315,22 +328,26 @@ async def create_review(
     completed_at: date | None = None,
     rating: str | None = None,
 ) -> Review:
-    """Create a new review for a topic or source.
+    """Create a new review for a topic, source, or practice.
 
     Supports creating and linking entities in any combination:
     - For topic reviews: provide topic_id or topic_data (inline creation)
     - For source reviews: provide source_id or source_data (inline creation)
+    - For practice reviews: provide practice_id or practice_data (inline creation)
     - Optionally link to a review session via review_session_id or review_session_data
 
     Raises AlreadyExistsError if review already exists.
     """
-    # Determine if this is a topic or source review
+    # Determine entity type
     is_topic_review = topic_id is not None or topic_data is not None
+    is_source_review = source_id is not None or source_data is not None
+    is_practice_review = practice_id is not None or practice_data is not None
 
-    # Resolve or create the target entity (Topic or Source)
+    # Resolve or create the target entity
     topic: Topic | None = None
     source: Source | None = None
-    entity_for_fsrs: Topic | Source  # The entity whose FSRS state we'll use
+    practice: Practice | None = None
+    entity_for_fsrs: Topic | Source | Practice
 
     if is_topic_review:
         if topic_id is not None:
@@ -359,7 +376,7 @@ async def create_review(
             session.add(topic)
             await session.flush()
         entity_for_fsrs = topic
-    else:
+    elif is_source_review:
         if source_id is not None:
             source_result = await session.execute(
                 select(Source)
@@ -386,6 +403,35 @@ async def create_review(
             session.add(source)
             await session.flush()
         entity_for_fsrs = source
+    elif is_practice_review:
+        if practice_id is not None:
+            practice_result = await session.execute(
+                select(Practice)
+                .where(Practice.id == practice_id, Practice.user_id == user_id)
+                .options(selectinload(Practice.fsrs_state))
+            )
+            practice = practice_result.scalar_one_or_none()
+            if not practice:
+                raise NotFoundError("Practice", practice_id)
+        else:
+            assert practice_data is not None
+            practice = Practice(
+                prompt=practice_data.get("prompt", ""),
+                answer=practice_data.get("answer", ""),
+                user_id=user_id,
+            )
+
+            if practice_data.get("srs_enabled"):
+                fsrs_state = FsrsState(srs_enabled=True)
+                session.add(fsrs_state)
+                await session.flush()
+                practice.fsrs_state_id = fsrs_state.id
+
+            session.add(practice)
+            await session.flush()
+        entity_for_fsrs = practice
+    else:
+        raise ValueError("Must provide topic, source, or practice for review")
 
     # Resolve or create Review Session (optional - can be None)
     resolved_review_session_id: int | None = None
@@ -419,6 +465,7 @@ async def create_review(
             review_session_id=resolved_review_session_id,
             topic_id=topic.id if topic else None,
             source_id=source.id if source else None,
+            practice_id=practice.id if practice else None,
             user_id=user_id,
             description=description,
             scheduled_at=scheduled_at,
@@ -438,6 +485,7 @@ async def create_review(
             .options(
                 selectinload(Review.topic),
                 selectinload(Review.source),
+                selectinload(Review.practice),
                 selectinload(Review.review_session),
             )
         )
@@ -450,6 +498,7 @@ async def create_review(
         review_session_id=resolved_review_session_id,
         topic_id=topic.id if topic else None,
         source_id=source.id if source else None,
+        practice_id=practice.id if practice else None,
         user_id=user_id,
         description=description,
         scheduled_at=scheduled_at,
@@ -482,6 +531,7 @@ async def create_review(
         .options(
             selectinload(Review.topic),
             selectinload(Review.source),
+            selectinload(Review.practice),
             selectinload(Review.review_session),
         )
     )
@@ -505,13 +555,13 @@ async def update_review(
 
     Uses PATCH semantics - only updates fields in fields_set.
     """
-    # Fetch the existing review with both topic and source relationships
+    # Fetch the existing review with topic, source, and practice relationships
     existing_review = await get_review(session, review_id, user_id)
 
-    # Determine if this is a topic or source review
-    is_source_review = existing_review.source is not None
+    # Determine entity type
     topic = existing_review.topic
     source = existing_review.source
+    practice = existing_review.practice
 
     # Update simple fields
     if "description" in fields_set and description is not None:
@@ -545,6 +595,7 @@ async def update_review(
             .options(
                 selectinload(Review.topic),
                 selectinload(Review.source),
+                selectinload(Review.practice),
                 selectinload(Review.review_session),
             )
         )
@@ -557,7 +608,14 @@ async def update_review(
     await session.flush()
 
     # Run FSRS from this review's date to calculate this review and recalculate subsequent reviews
-    entity = source if is_source_review else topic
+    entity: Topic | Source | Practice | None = None
+    if practice is not None:
+        entity = practice
+    elif source is not None:
+        entity = source
+    elif topic is not None:
+        entity = topic
+
     if entity:
         await update_entity_fsrs(session, entity, new_completed_at)
         await session.flush()
@@ -568,6 +626,7 @@ async def update_review(
         .options(
             selectinload(Review.topic),
             selectinload(Review.source),
+            selectinload(Review.practice),
             selectinload(Review.review_session),
         )
     )
@@ -579,13 +638,14 @@ async def delete_review(
     review_id: int,
     user_id: str,
 ) -> None:
-    """Delete a review and restore entity (topic or source) to its before state."""
-    # Fetch the review with both topic and source relationships
+    """Delete a review and restore entity (topic, source, or practice) to its before state."""
+    # Fetch the review with topic, source, and practice relationships
     review = await get_review(session, review_id, user_id)
 
     # Capture entity and info before deletion
     topic = review.topic
     source = review.source
+    practice = review.practice
     completed_at = review.completed_at
 
     # Delete the review
@@ -594,7 +654,14 @@ async def delete_review(
 
     # Only replay if review was completed
     if completed_at is not None:
-        entity = source if source is not None else topic
+        entity: Topic | Source | Practice | None = None
+        if practice is not None:
+            entity = practice
+        elif source is not None:
+            entity = source
+        elif topic is not None:
+            entity = topic
+
         if entity:
             await update_entity_fsrs(session, entity, completed_at)
             await session.flush()

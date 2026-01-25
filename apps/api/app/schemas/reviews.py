@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 if TYPE_CHECKING:
     from app.schemas.topics import TopicRead, TopicCreate
     from app.schemas.sources import SourceRead, SourceCreate
+    from app.schemas.practices import PracticeRead, PracticeCreate
     from app.schemas.review_sessions import ReviewSessionCreate
 
 
@@ -22,15 +23,16 @@ class ReviewBase(BaseModel):
 
 
 class ReviewRead(ReviewBase):
-    """Review read schema - supports polymorphic reviews (topic or source)."""
+    """Review read schema - supports polymorphic reviews (topic, source, or practice)."""
 
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     review_session_id: int | None
-    # Polymorphic: one of topic_id or source_id will be set (via association tables)
+    # Polymorphic: exactly one of topic_id, source_id, or practice_id will be set
     topic_id: int | None = None
     source_id: int | None = None
+    practice_id: int | None = None
     inserted_at: datetime
     updated_at: datetime
     effective_date: date | None = None
@@ -73,14 +75,23 @@ class SourceSummary(BaseModel):
     notes: str
 
 
+class PracticeSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    prompt: str
+    answer: str
+
+
 class ReviewListItem(ReviewRead):
-    """Review list item with embedded topic or source summary."""
+    """Review list item with embedded topic, source, or practice summary."""
 
     model_config = ConfigDict(from_attributes=True)
 
     review_session: ReviewSessionSummary | None
     topic: TopicSummary | None = None
     source: SourceSummary | None = None
+    practice: PracticeSummary | None = None
 
 
 class ReviewWithTopic(ReviewRead):
@@ -101,8 +112,17 @@ class ReviewWithSource(ReviewRead):
     review_session: ReviewSessionSummary | None
 
 
+class ReviewWithPractice(ReviewRead):
+    """Review with full practice details (for practice reviews)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    practice: "PracticeRead"
+    review_session: ReviewSessionSummary | None
+
+
 class ReviewCreate(BaseModel):
-    """Create a new review for a topic or source (polymorphic)."""
+    """Create a new review for a topic, source, or practice (polymorphic)."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -110,11 +130,13 @@ class ReviewCreate(BaseModel):
     scheduled_at: date | None = None
     completed_at: date | None = None
 
-    # Polymorphic: provide exactly one of topic_id, topic, source_id, or source
+    # Polymorphic: provide exactly one entity reference
     topic_id: int | None = None
     topic: "TopicCreate | None" = None
     source_id: int | None = None
     source: "SourceCreate | None" = None
+    practice_id: int | None = None
+    practice: "PracticeCreate | None" = None
 
     # Mutually exclusive: provide review_session_id OR review_session (not both)
     review_session_id: int | None = None
@@ -124,16 +146,18 @@ class ReviewCreate(BaseModel):
 
     @model_validator(mode="after")
     def validate_mutually_exclusive_fields(self) -> "ReviewCreate":
-        # Validate polymorphic target (exactly one of topic_id, topic, source_id, source)
+        # Validate polymorphic target (exactly one entity reference)
         targets = [
             self.topic_id is not None,
             self.topic is not None,
             self.source_id is not None,
             self.source is not None,
+            self.practice_id is not None,
+            self.practice is not None,
         ]
         if sum(targets) != 1:
             raise ValueError(
-                "Must provide exactly one of: topic_id, topic, source_id, or source"
+                "Must provide exactly one of: topic_id, topic, source_id, source, practice_id, or practice"
             )
 
         # Validate review session fields (both can be None - session is optional)
