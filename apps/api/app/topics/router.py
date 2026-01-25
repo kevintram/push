@@ -79,17 +79,14 @@ async def read_topic(
 ) -> TopicDetailRead:
     topic = await service.load_topic_with_relationships(session, topic_id, user_id)
 
-    # Fetch related topics and add them to the response
-    outgoing, incoming = await service.get_topic_related(session, topic_id, user_id)
+    # Fetch related entities (topics AND sources) and add them to the response
+    outgoing, incoming = await service.get_topic_related_entities(
+        session, topic_id, user_id
+    )
 
-    # Convert to schema and add direction
     topic_data = TopicDetailRead.model_validate(topic).model_dump()
-    topic_data["related_outgoing"] = [
-        TopicSummaryRead.model_validate(t).model_dump() for t in outgoing
-    ]
-    topic_data["related_incoming"] = [
-        TopicSummaryRead.model_validate(t).model_dump() for t in incoming
-    ]
+    topic_data["related_outgoing"] = outgoing
+    topic_data["related_incoming"] = incoming
 
     return TopicDetailRead(**topic_data)
 

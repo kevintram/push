@@ -573,6 +573,93 @@ async def delete_source(
 # ===== Entity Relations =====
 
 
+async def get_source_related_entities(
+    session: AsyncSession, source_id: int, user_id: str
+) -> tuple[list[dict], list[dict]]:
+    """Get outgoing and incoming entity relations for a source.
+
+    Returns:
+        Tuple of (outgoing_relations, incoming_relations) where each item is a dict
+        with entity_type, id, name (for topics), and title (for sources).
+    """
+    # First verify the source exists and belongs to user
+    await get_source(session, source_id, user_id)
+
+    # Fetch outgoing relations (from this source to other entities)
+    outgoing_stmt = (
+        select(EntityRelation)
+        .where(EntityRelation.from_source_id == source_id)
+        .options(
+            selectinload(EntityRelation.to_topic),
+            selectinload(EntityRelation.to_source),
+        )
+    )
+    outgoing_result = await session.execute(outgoing_stmt)
+    outgoing_relations = outgoing_result.scalars().all()
+
+    outgoing = []
+    for rel in outgoing_relations:
+        if rel.to_topic_id:
+            # Verify topic belongs to user
+            if rel.to_topic and rel.to_topic.user_id == user_id:
+                outgoing.append(
+                    {
+                        "entity_type": "topic",
+                        "id": rel.to_topic.id,
+                        "name": rel.to_topic.name,
+                        "title": None,
+                    }
+                )
+        elif rel.to_source_id:
+            # Verify source belongs to user
+            if rel.to_source and rel.to_source.user_id == user_id:
+                outgoing.append(
+                    {
+                        "entity_type": "source",
+                        "id": rel.to_source.id,
+                        "name": None,
+                        "title": rel.to_source.title,
+                    }
+                )
+
+    # Fetch incoming relations (from other entities to this source)
+    incoming_stmt = (
+        select(EntityRelation)
+        .where(EntityRelation.to_source_id == source_id)
+        .options(
+            selectinload(EntityRelation.from_topic),
+            selectinload(EntityRelation.from_source),
+        )
+    )
+    incoming_result = await session.execute(incoming_stmt)
+    incoming_relations = incoming_result.scalars().all()
+
+    incoming = []
+    for rel in incoming_relations:
+        if rel.from_topic_id:
+            if rel.from_topic and rel.from_topic.user_id == user_id:
+                incoming.append(
+                    {
+                        "entity_type": "topic",
+                        "id": rel.from_topic.id,
+                        "name": rel.from_topic.name,
+                        "title": None,
+                    }
+                )
+        elif rel.from_source_id:
+            if rel.from_source and rel.from_source.user_id == user_id:
+                incoming.append(
+                    {
+                        "entity_type": "source",
+                        "id": rel.from_source.id,
+                        "name": None,
+                        "title": rel.from_source.title,
+                    }
+                )
+
+    return outgoing, incoming
+
+
 async def add_related_entity_to_source(
     session: AsyncSession,
     source_id: int,

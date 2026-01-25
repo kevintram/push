@@ -75,7 +75,18 @@ async def read_sources(
 async def read_source(
     session: SessionDep, user_id: UserIdDep, source_id: int
 ) -> SourceDetailRead:
-    return await service.load_source_with_relationships(session, source_id, user_id)
+    source = await service.load_source_with_relationships(session, source_id, user_id)
+
+    # Fetch related entities and add them to the response
+    outgoing, incoming = await service.get_source_related_entities(
+        session, source_id, user_id
+    )
+
+    source_data = SourceDetailRead.model_validate(source).model_dump()
+    source_data["related_outgoing"] = outgoing
+    source_data["related_incoming"] = incoming
+
+    return SourceDetailRead(**source_data)
 
 
 @router.get("/{source_id}/children/")
