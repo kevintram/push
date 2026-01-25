@@ -13,10 +13,10 @@ CREATE TABLE entity_relations (
   CONSTRAINT exactly_one_from CHECK (num_nonnulls(from_topic_id, from_source_id) = 1),
   -- Exactly one 'to' entity
   CONSTRAINT exactly_one_to CHECK (num_nonnulls(to_topic_id, to_source_id) = 1),
-  -- No self-relations for same entity type
+  -- No self-relations for same entity type (only checked when both are NOT NULL)
   CONSTRAINT no_self_relation CHECK (
-    from_topic_id IS DISTINCT FROM to_topic_id
-    AND from_source_id IS DISTINCT FROM to_source_id
+    (from_topic_id IS NULL OR to_topic_id IS NULL OR from_topic_id <> to_topic_id)
+    AND (from_source_id IS NULL OR to_source_id IS NULL OR from_source_id <> to_source_id)
   ),
   -- Unique relation (nulls handled correctly)
   CONSTRAINT unique_relation UNIQUE NULLS NOT DISTINCT (from_topic_id, from_source_id, to_topic_id, to_source_id)

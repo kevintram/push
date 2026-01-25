@@ -52,7 +52,9 @@ class SourcePrerequisiteRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    prereq_entity: RelatedEntityRead
+    source_id: int
+    prereq_topic_id: int | None = None
+    prereq_source_id: int | None = None
 
 
 class SourcePrerequisiteCreate(BaseModel):
