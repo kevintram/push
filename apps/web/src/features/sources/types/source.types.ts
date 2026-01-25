@@ -33,6 +33,9 @@ export type Source = {
 	// Relationship counts
 	children_count?: number
 	topics_count?: number
+	related_outgoing_count?: number
+	related_incoming_count?: number
+	prerequisites_count?: number
 	// Relationships (loaded conditionally)
 	parent?: Source | null
 	children?: Array<Source>
