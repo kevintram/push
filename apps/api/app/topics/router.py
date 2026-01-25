@@ -77,7 +77,21 @@ async def read_topics(
 async def read_topic(
     session: SessionDep, user_id: UserIdDep, topic_id: int
 ) -> TopicDetailRead:
-    return await service.load_topic_with_relationships(session, topic_id, user_id)
+    topic = await service.load_topic_with_relationships(session, topic_id, user_id)
+
+    # Fetch related topics and add them to the response
+    outgoing, incoming = await service.get_topic_related(session, topic_id, user_id)
+
+    # Convert to schema and add direction
+    topic_data = TopicDetailRead.model_validate(topic).model_dump()
+    topic_data["related_outgoing"] = [
+        TopicSummaryRead.model_validate(t).model_dump() for t in outgoing
+    ]
+    topic_data["related_incoming"] = [
+        TopicSummaryRead.model_validate(t).model_dump() for t in incoming
+    ]
+
+    return TopicDetailRead(**topic_data)
 
 
 @router.get("/{topic_id}/children/")
