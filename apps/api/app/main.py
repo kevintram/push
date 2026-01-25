@@ -6,6 +6,7 @@ from app.exception_handlers import register_exception_handlers
 from app.admin.dependencies import get_token_header
 from app.topics.router import router as topics_router
 from app.sources.router import router as sources_router
+from app.practices.router import router as practices_router
 from app.reviews.router import router as reviews_router
 from app.reviews.entries.router import router as review_entries_router
 from app.reviews.sessions.router import router as review_sessions_router
@@ -26,6 +27,7 @@ app.add_middleware(
 
 app.include_router(topics_router)
 app.include_router(sources_router)
+app.include_router(practices_router)
 app.include_router(reviews_router)
 app.include_router(review_entries_router)
 app.include_router(review_sessions_router)

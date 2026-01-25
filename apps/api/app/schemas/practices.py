@@ -1,0 +1,132 @@
+from __future__ import annotations
+
+from datetime import datetime, date
+from typing import TYPE_CHECKING
+
+from pydantic import BaseModel, ConfigDict
+
+from app.schemas.topics import RetrievabilityBucket
+
+if TYPE_CHECKING:
+    from app.schemas.sources import SourceSummaryRead
+    from app.schemas.topics import TopicSummaryRead
+
+
+class PracticeBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    prompt: str = ""
+    answer: str = ""
+    archived: bool = False
+    inboxed: bool = False
+
+
+class PracticeRead(PracticeBase):
+    """Practice read schema with FSRS fields flattened from fsrs_state relationship."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    fsrs_state_id: int | None = None
+    inserted_at: datetime
+    updated_at: datetime
+
+    # FSRS fields (from joined fsrs_state via properties on Practice model)
+    stability: float | None = None
+    difficulty: float | None = None
+    state: str = "LEARNING"
+    step: int | None = None
+    srs_enabled: bool = False
+    last_reviewed_at: date | None = None
+
+    # Inherited fields
+    inherited_stability: float | None = None
+    inherited_difficulty: float | None = None
+    inherited_state: str | None = None
+    inherited_step: int | None = None
+    inherited_last_review: date | None = None
+
+    # Computed
+    retrievability: float | None = None
+    bucket: RetrievabilityBucket | None = None
+    days_until_threshold: int | None = None
+
+
+class PracticeSummaryRead(PracticeRead):
+    """Practice with relationship counts for list views."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    topics_count: int = 0
+    sources_count: int = 0
+
+
+class PracticeDetailRead(PracticeSummaryRead):
+    """Practice with full relationships loaded for detail views."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    topics: list["TopicSummaryRead"] = []
+    sources: list["SourceSummaryRead"] = []
+
+
+class PracticeCreate(BaseModel):
+    """Create a new practice."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    prompt: str = ""
+    answer: str = ""
+    archived: bool = False
+    inboxed: bool = False
+    srs_enabled: bool = False
+
+
+class PracticeUpdate(BaseModel):
+    """Update an existing practice."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    prompt: str | None = None
+    answer: str | None = None
+    archived: bool | None = None
+    inboxed: bool | None = None
+    srs_enabled: bool | None = None
+
+
+class PracticeTopicAdd(BaseModel):
+    """Add a topic that this practice assesses."""
+
+    topic_id: int
+
+
+class PracticeSourceAdd(BaseModel):
+    """Add a source that this practice assesses."""
+
+    source_id: int
+
+
+class PracticeTopicResponse(BaseModel):
+    """Response when adding a topic to a practice."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    practice: PracticeSummaryRead
+    topic: "TopicSummaryRead"
+
+
+class PracticeSourceResponse(BaseModel):
+    """Response when adding a source to a practice."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    practice: PracticeSummaryRead
+    source: "SourceSummaryRead"
+
+
+# Import for forward references
+from app.schemas.topics import TopicSummaryRead  # noqa: E402
+from app.schemas.sources import SourceSummaryRead  # noqa: E402
+
+PracticeDetailRead.model_rebuild()
+PracticeTopicResponse.model_rebuild()
+PracticeSourceResponse.model_rebuild()
