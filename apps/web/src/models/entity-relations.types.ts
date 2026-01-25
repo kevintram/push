@@ -10,11 +10,23 @@ export type EntityRelationCreate = {
 	to_entity_id: number
 }
 
+export type PrerequisiteTopicRead = {
+	id: number
+	name: string
+}
+
+export type PrerequisiteSourceRead = {
+	id: number
+	title: string
+}
+
 export type SourcePrerequisiteRead = {
 	id: number
 	source_id: number
 	prereq_topic_id: number | null
 	prereq_source_id: number | null
+	prereq_topic: PrerequisiteTopicRead | null
+	prereq_source: PrerequisiteSourceRead | null
 }
 
 export type SourcePrerequisiteCreate = {

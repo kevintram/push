@@ -12,6 +12,7 @@ import { useSourceMetrics } from '../../hooks/useSourceMetrics'
 import { SourceContext } from '../../stores/SelectedSourceContext'
 import type { Source } from '../../types/source.types'
 import { SourceChildrenPanel } from '../SourceChildrenPanel'
+import { SourcePrerequisitesPanel } from '../SourcePrerequisitesPanel'
 import { SourceTopicsPanel } from '../SourceTopicsPanel'
 import { SourceDetailHeader } from './SourceDetailHeader'
 import { SourceDetailSkeleton } from './SourceDetailSkeleton'
@@ -250,6 +251,13 @@ export function SourceDetail({
 								renderCard={renderTopicCard}
 								sourceId={source.id}
 								topics={source.topics}
+							/>
+						</div>
+						<div className='mt-4'>
+							<SourcePrerequisitesPanel
+								onSourceNavigate={onSourceNavigate}
+								onTopicNavigate={onTopicNavigate}
+								sourceId={source.id}
 							/>
 						</div>
 					</div>

@@ -46,6 +46,24 @@ class EntityRelationCreate(BaseModel):
         return self
 
 
+class PrerequisiteTopicRead(BaseModel):
+    """Minimal topic info for prerequisite display."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+
+
+class PrerequisiteSourceRead(BaseModel):
+    """Minimal source info for prerequisite display."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+
+
 class SourcePrerequisiteRead(BaseModel):
     """A prerequisite for a source."""
 
@@ -55,6 +73,8 @@ class SourcePrerequisiteRead(BaseModel):
     source_id: int
     prereq_topic_id: int | None = None
     prereq_source_id: int | None = None
+    prereq_topic: PrerequisiteTopicRead | None = None
+    prereq_source: PrerequisiteSourceRead | None = None
 
 
 class SourcePrerequisiteCreate(BaseModel):

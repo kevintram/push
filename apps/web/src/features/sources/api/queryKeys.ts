@@ -19,5 +19,7 @@ export const sourceKeys = {
 	children: (sourceId: number) =>
 		[...sourceKeys.byId(sourceId), 'children'] as const,
 	topics: (sourceId: number) =>
-		[...sourceKeys.byId(sourceId), 'topics'] as const
+		[...sourceKeys.byId(sourceId), 'topics'] as const,
+	prerequisites: (sourceId: number) =>
+		[...sourceKeys.byId(sourceId), 'prerequisites'] as const
 }
