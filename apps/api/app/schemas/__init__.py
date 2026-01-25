@@ -1,3 +1,11 @@
+from app.schemas.entity_relations import (
+    EntityRelationCreate,
+    EntityRelationRead,
+    EntityType,
+    RelatedEntityRead,
+    SourcePrerequisiteCreate,
+    SourcePrerequisiteRead,
+)
 from app.schemas.practices import (
     PracticeBase,
     PracticeCreate,
@@ -95,6 +103,12 @@ PracticeTopicResponse.model_rebuild()
 PracticeSourceResponse.model_rebuild()
 
 __all__ = [
+    "EntityRelationCreate",
+    "EntityRelationRead",
+    "EntityType",
+    "RelatedEntityRead",
+    "SourcePrerequisiteCreate",
+    "SourcePrerequisiteRead",
     "PracticeBase",
     "PracticeCreate",
     "PracticeDetailRead",

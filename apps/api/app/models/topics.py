@@ -5,10 +5,8 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     BigInteger,
-    Column,
     ForeignKey,
     Identity,
-    Table,
     func,
     select,
     String,
@@ -27,42 +25,10 @@ from app.utils.retrievability import (
 )
 
 if TYPE_CHECKING:
+    from app.models.entity_relations import EntityRelation
     from app.models.fsrs_state import FsrsState
     from app.models.reviews import Review
     from app.models.sources import Source
-
-
-# Define junction tables first so they can be referenced in column_property
-t_topic_other_relations = Table(
-    "topic_other_relations",
-    Base.metadata,
-    Column(
-        "from_topic_id",
-        BigInteger,
-        ForeignKey("topics.id", ondelete="CASCADE"),
-        primary_key=True,
-        nullable=False,
-    ),
-    Column(
-        "to_topic_id",
-        BigInteger,
-        ForeignKey("topics.id", ondelete="CASCADE"),
-        primary_key=True,
-        nullable=False,
-    ),
-    Column(
-        "inserted_at",
-        TIMESTAMP(timezone=True),
-        nullable=False,
-        server_default=text("timezone('utc'::text, now())"),
-    ),
-    Column(
-        "updated_at",
-        TIMESTAMP(timezone=True),
-        nullable=False,
-        server_default=text("timezone('utc'::text, now())"),
-    ),
-)
 
 
 class Topic(Base):
@@ -116,19 +82,16 @@ class Topic(Base):
     fsrs_state: Mapped["FsrsState | None"] = relationship("FsrsState", lazy="joined")
     reviews: Mapped[list["Review"]] = relationship(back_populates="topic")
 
-    # Related topics (non-hierarchical)
-    related_outgoing: Mapped[list["Topic"]] = relationship(
-        "Topic",
-        secondary=t_topic_other_relations,
-        primaryjoin=lambda: Topic.id == t_topic_other_relations.c.from_topic_id,
-        secondaryjoin=lambda: t_topic_other_relations.c.to_topic_id == Topic.id,
+    # Entity relations (unified, replacing topic_other_relations)
+    # These are used by the service layer to load related entities
+    related_outgoing_relations: Mapped[list["EntityRelation"]] = relationship(
+        "EntityRelation",
+        foreign_keys="EntityRelation.from_topic_id",
         viewonly=True,
     )
-    related_incoming: Mapped[list["Topic"]] = relationship(
-        "Topic",
-        secondary=t_topic_other_relations,
-        primaryjoin=lambda: Topic.id == t_topic_other_relations.c.to_topic_id,
-        secondaryjoin=lambda: t_topic_other_relations.c.from_topic_id == Topic.id,
+    related_incoming_relations: Mapped[list["EntityRelation"]] = relationship(
+        "EntityRelation",
+        foreign_keys="EntityRelation.to_topic_id",
         viewonly=True,
     )
 
@@ -233,25 +196,25 @@ Topic.children_count = column_property(
     .scalar_subquery()
 )
 
+# Import for count column properties (after class to avoid circular import)
+from app.models.entity_relations import EntityRelation  # noqa: E402
+from app.models.sources import t_source_topics  # noqa: E402
+
 Topic.related_outgoing_count = column_property(
     select(func.count())
-    .select_from(t_topic_other_relations)
-    .where(t_topic_other_relations.c.from_topic_id == Topic.id)
+    .select_from(EntityRelation)
+    .where(EntityRelation.from_topic_id == Topic.id)
     .correlate(Topic)
     .scalar_subquery()
 )
 
 Topic.related_incoming_count = column_property(
     select(func.count())
-    .select_from(t_topic_other_relations)
-    .where(t_topic_other_relations.c.to_topic_id == Topic.id)
+    .select_from(EntityRelation)
+    .where(EntityRelation.to_topic_id == Topic.id)
     .correlate(Topic)
     .scalar_subquery()
 )
-
-# Import source_topics table for sources_count (Phase 2)
-# Done here to avoid circular import at module level
-from app.models.sources import t_source_topics  # noqa: E402
 
 Topic.sources_count = column_property(
     select(func.count())

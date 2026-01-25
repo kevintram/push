@@ -1,9 +1,8 @@
 """Topic business logic and data access."""
 
-from datetime import datetime, timezone as dt_timezone
 from typing import Literal
 
-from sqlalchemy import delete, desc, func, insert, or_, select, text, update
+from sqlalchemy import delete, desc, func, or_, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -18,12 +17,12 @@ from app.exceptions import (
     SelfReferenceError,
 )
 from app.models import (
+    EntityRelation,
     FsrsState,
     Review,
     ReviewSession,
     Source,
     Topic,
-    t_topic_other_relations,
 )
 
 
@@ -62,15 +61,17 @@ async def is_descendant_of(
 async def load_topic_with_relationships(
     session: AsyncSession, topic_id: int, user_id: str
 ) -> Topic:
-    """Load a topic with parent, children, related, and sources relationships."""
+    """Load a topic with parent, children, and sources relationships.
+
+    Note: related_outgoing and related_incoming are now fetched separately
+    via get_topic_related() since they use the entity_relations table.
+    """
     stmt = (
         select(Topic)
         .where(Topic.id == topic_id, Topic.user_id == user_id)
         .options(
             selectinload(Topic.parent).selectinload(Topic.fsrs_state),
             selectinload(Topic.children).selectinload(Topic.fsrs_state),
-            selectinload(Topic.related_outgoing).selectinload(Topic.fsrs_state),
-            selectinload(Topic.related_incoming).selectinload(Topic.fsrs_state),
             selectinload(Topic.sources).selectinload(Source.fsrs_state),
             selectinload(Topic.fsrs_state),
         )
@@ -100,12 +101,14 @@ async def search_topics(
         # 1. Exclude the topic itself
         stmt = stmt.where(Topic.id != addable_as_related_to)
 
-        # 2. Exclude already related topics (bidirectional)
-        outgoing = select(t_topic_other_relations.c.to_topic_id).where(
-            t_topic_other_relations.c.from_topic_id == addable_as_related_to
+        # 2. Exclude already related topics (bidirectional) using entity_relations
+        outgoing = select(EntityRelation.to_topic_id).where(
+            EntityRelation.from_topic_id == addable_as_related_to,
+            EntityRelation.to_topic_id.isnot(None),
         )
-        incoming = select(t_topic_other_relations.c.from_topic_id).where(
-            t_topic_other_relations.c.to_topic_id == addable_as_related_to
+        incoming = select(EntityRelation.from_topic_id).where(
+            EntityRelation.to_topic_id == addable_as_related_to,
+            EntityRelation.from_topic_id.isnot(None),
         )
         already_related = outgoing.union(incoming)
 
@@ -412,18 +415,21 @@ async def remove_child(
 async def get_topic_related(
     session: AsyncSession, topic_id: int, user_id: str
 ) -> tuple[list[Topic], list[Topic]]:
-    """Get all topics related to this topic. Returns (outgoing, incoming)."""
+    """Get all topics related to this topic. Returns (outgoing, incoming).
+
+    Note: This returns only topic↔topic relations for backward compatibility.
+    For full entity relations including sources, use get_topic_entity_relations.
+    """
     # First verify the topic exists and belongs to user
     await get_topic(session, topic_id, user_id)
 
     # Fetch outgoing (where this topic is 'from', related topic is 'to')
     outgoing_stmt = (
         select(Topic)
-        .join(
-            t_topic_other_relations, Topic.id == t_topic_other_relations.c.to_topic_id
-        )
+        .join(EntityRelation, Topic.id == EntityRelation.to_topic_id)
         .where(
-            t_topic_other_relations.c.from_topic_id == topic_id,
+            EntityRelation.from_topic_id == topic_id,
+            EntityRelation.to_topic_id.isnot(None),
             Topic.user_id == user_id,
         )
         .options(selectinload(Topic.fsrs_state))
@@ -432,11 +438,11 @@ async def get_topic_related(
     # Fetch incoming (where this topic is 'to', related topic is 'from')
     incoming_stmt = (
         select(Topic)
-        .join(
-            t_topic_other_relations, Topic.id == t_topic_other_relations.c.from_topic_id
-        )
+        .join(EntityRelation, Topic.id == EntityRelation.from_topic_id)
         .where(
-            t_topic_other_relations.c.to_topic_id == topic_id, Topic.user_id == user_id
+            EntityRelation.to_topic_id == topic_id,
+            EntityRelation.from_topic_id.isnot(None),
+            Topic.user_id == user_id,
         )
         .options(selectinload(Topic.fsrs_state))
     )
@@ -491,15 +497,13 @@ async def create_topic_relationship(
     if from_topic_id == resolved_to_topic_id:
         raise SelfReferenceError("topic")
 
-    # Insert relationship
-    stmt = insert(t_topic_other_relations).values(
+    # Insert relationship using entity_relations table
+    relation = EntityRelation(
         from_topic_id=from_topic_id,
         to_topic_id=resolved_to_topic_id,
-        inserted_at=datetime.now(dt_timezone.utc),
-        updated_at=datetime.now(dt_timezone.utc),
     )
+    session.add(relation)
     try:
-        await session.execute(stmt)
         await session.commit()
     except IntegrityError:
         await session.rollback()
@@ -528,10 +532,89 @@ async def delete_topic_relationship(
     # Verify from_topic belongs to user
     await get_topic(session, from_topic_id, user_id)
 
-    stmt = delete(t_topic_other_relations).where(
-        t_topic_other_relations.c.from_topic_id == from_topic_id,
-        t_topic_other_relations.c.to_topic_id == to_topic_id,
+    stmt = delete(EntityRelation).where(
+        EntityRelation.from_topic_id == from_topic_id,
+        EntityRelation.to_topic_id == to_topic_id,
     )
+    result = await session.execute(stmt)
+    await session.commit()
+
+    if result.rowcount == 0:
+        raise NotFoundError("Relationship")
+
+
+async def add_related_entity_to_topic(
+    session: AsyncSession,
+    topic_id: int,
+    user_id: str,
+    *,
+    to_entity_type: str,
+    to_entity_id: int,
+) -> None:
+    """Add a related entity (topic or source) to this topic."""
+    # Verify topic exists and belongs to user
+    await get_topic(session, topic_id, user_id)
+
+    if to_entity_type == "topic":
+        # Verify target topic exists and belongs to user
+        await get_topic(session, to_entity_id, user_id)
+
+        # Check for self-reference
+        if topic_id == to_entity_id:
+            raise SelfReferenceError("topic")
+
+        relation = EntityRelation(
+            from_topic_id=topic_id,
+            to_topic_id=to_entity_id,
+        )
+    elif to_entity_type == "source":
+        # Verify source exists and belongs to user
+        source_result = await session.execute(
+            select(Source).where(Source.id == to_entity_id, Source.user_id == user_id)
+        )
+        if not source_result.scalar_one_or_none():
+            raise NotFoundError("Source", to_entity_id)
+
+        relation = EntityRelation(
+            from_topic_id=topic_id,
+            to_source_id=to_entity_id,
+        )
+    else:
+        raise BadRequestError(f"Invalid entity_type: {to_entity_type}")
+
+    session.add(relation)
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise AlreadyExistsError("Relationship already exists")
+
+
+async def remove_related_entity_from_topic(
+    session: AsyncSession,
+    topic_id: int,
+    user_id: str,
+    *,
+    entity_type: str,
+    entity_id: int,
+) -> None:
+    """Remove a related entity (topic or source) from this topic."""
+    # Verify topic exists and belongs to user
+    await get_topic(session, topic_id, user_id)
+
+    if entity_type == "topic":
+        stmt = delete(EntityRelation).where(
+            EntityRelation.from_topic_id == topic_id,
+            EntityRelation.to_topic_id == entity_id,
+        )
+    elif entity_type == "source":
+        stmt = delete(EntityRelation).where(
+            EntityRelation.from_topic_id == topic_id,
+            EntityRelation.to_source_id == entity_id,
+        )
+    else:
+        raise BadRequestError(f"Invalid entity_type: {entity_type}")
+
     result = await session.execute(stmt)
     await session.commit()
 

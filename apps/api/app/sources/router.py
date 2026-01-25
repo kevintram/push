@@ -8,9 +8,12 @@ from app.constants import ChildHandlingStrategy
 from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
 from app.schemas import (
+    EntityRelationCreate,
     SourceChildRelationshipCreate,
     SourceCreate,
     SourceDetailRead,
+    SourcePrerequisiteCreate,
+    SourcePrerequisiteRead,
     SourceRead,
     SourceRelationshipResponse,
     SourceSummaryRead,
@@ -154,6 +157,86 @@ async def remove_source_topic(
     user_id: UserIdDep,
 ) -> None:
     await service.remove_source_topic(session, source_id, topic_id, user_id)
+
+
+@router.post("/{source_id}/entity-relations/")
+async def add_entity_relation_to_source(
+    source_id: int,
+    payload: EntityRelationCreate,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> None:
+    """Add a related entity (topic or source) to this source."""
+    await service.add_related_entity_to_source(
+        session,
+        source_id,
+        user_id,
+        to_entity_type=payload.to_entity_type.value,
+        to_entity_id=payload.to_entity_id,
+    )
+
+
+@router.delete("/{source_id}/entity-relations/{entity_type}/{entity_id}/")
+async def remove_entity_relation_from_source(
+    source_id: int,
+    entity_type: str,
+    entity_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> None:
+    """Remove a related entity (topic or source) from this source."""
+    await service.remove_related_entity_from_source(
+        session,
+        source_id,
+        user_id,
+        entity_type=entity_type,
+        entity_id=entity_id,
+    )
+
+
+@router.get("/{source_id}/prerequisites/")
+async def read_source_prerequisites(
+    source_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> list[SourcePrerequisiteRead]:
+    """Get all prerequisites for a source."""
+    return await service.get_source_prerequisites(session, source_id, user_id)
+
+
+@router.post("/{source_id}/prerequisites/")
+async def add_source_prerequisite(
+    source_id: int,
+    payload: SourcePrerequisiteCreate,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> None:
+    """Add a prerequisite (topic or source) to this source."""
+    await service.add_source_prerequisite(
+        session,
+        source_id,
+        user_id,
+        prereq_entity_type=payload.prereq_entity_type.value,
+        prereq_entity_id=payload.prereq_entity_id,
+    )
+
+
+@router.delete("/{source_id}/prerequisites/{entity_type}/{entity_id}/")
+async def remove_source_prerequisite(
+    source_id: int,
+    entity_type: str,
+    entity_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> None:
+    """Remove a prerequisite (topic or source) from this source."""
+    await service.remove_source_prerequisite(
+        session,
+        source_id,
+        user_id,
+        entity_type=entity_type,
+        entity_id=entity_id,
+    )
 
 
 @router.patch("/{source_id}/")
