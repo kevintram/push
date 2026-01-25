@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
-import { practiceKeys } from './queryKeys'
 
 export type DeletePracticeInput = {
 	practiceId: number
