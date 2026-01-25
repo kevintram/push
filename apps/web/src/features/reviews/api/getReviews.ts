@@ -20,6 +20,10 @@ export async function getReviews(filters?: GetReviewsFilters) {
 		params.append('source_id', filters.sourceId.toString())
 	}
 
+	if (filters?.practiceId !== undefined) {
+		params.append('practice_id', filters.practiceId.toString())
+	}
+
 	if (filters?.effectiveDateBefore !== undefined) {
 		params.append('effective_date_before', filters.effectiveDateBefore)
 	}
@@ -77,6 +81,14 @@ export function useReviewsBySource(sourceId: number | undefined) {
 		queryKey: reviewKeys.list({ sourceId }),
 		queryFn: () => getReviews({ sourceId }),
 		enabled: sourceId !== undefined
+	})
+}
+
+export function useReviewsByPractice(practiceId: number | undefined) {
+	return useQuery({
+		queryKey: reviewKeys.list({ practiceId }),
+		queryFn: () => getReviews({ practiceId }),
+		enabled: practiceId !== undefined
 	})
 }
 

@@ -140,6 +140,7 @@ export type GetReviewsFilters = {
 	reviewSessionId?: number
 	topicId?: number
 	sourceId?: number
+	practiceId?: number
 	effectiveDateBefore?: string
 	effectiveDateAfter?: string
 	scheduled?: boolean
