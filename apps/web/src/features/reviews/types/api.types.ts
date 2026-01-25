@@ -1,3 +1,4 @@
+import type { PracticeCreate } from '~/features/practices/types/practice.types'
 import type { LearningState } from '~/models/learning-state.types'
 import type { Rating, ReviewEntry, ReviewSession } from './review.types'
 
@@ -45,10 +46,54 @@ export type CreateReviewPayload = {
 	scheduled_at?: string | null
 	completed_at?: string | null
 } & (
-	| { topic_id: number; topic?: never; source_id?: never; source?: never }
-	| { topic: TopicCreate; topic_id?: never; source_id?: never; source?: never }
-	| { source_id: number; source?: never; topic_id?: never; topic?: never }
-	| { source: SourceCreate; source_id?: never; topic_id?: never; topic?: never }
+	| {
+			topic_id: number
+			topic?: never
+			source_id?: never
+			source?: never
+			practice_id?: never
+			practice?: never
+	  }
+	| {
+			topic: TopicCreate
+			topic_id?: never
+			source_id?: never
+			source?: never
+			practice_id?: never
+			practice?: never
+	  }
+	| {
+			source_id: number
+			source?: never
+			topic_id?: never
+			topic?: never
+			practice_id?: never
+			practice?: never
+	  }
+	| {
+			source: SourceCreate
+			source_id?: never
+			topic_id?: never
+			topic?: never
+			practice_id?: never
+			practice?: never
+	  }
+	| {
+			practice_id: number
+			practice?: never
+			topic_id?: never
+			topic?: never
+			source_id?: never
+			source?: never
+	  }
+	| {
+			practice: PracticeCreate
+			practice_id?: never
+			topic_id?: never
+			topic?: never
+			source_id?: never
+			source?: never
+	  }
 ) &
 	(
 		| { review_session_id: number; review_session?: never }
