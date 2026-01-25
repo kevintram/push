@@ -33,7 +33,7 @@ from sqlalchemy.orm import selectinload
 from app.main import app
 from app.database import get_db
 from app.auth.dependencies import get_user_id
-from app.models import Topic, Source, FsrsState, Review, ReviewSession
+from app.models import Topic, Source, Practice, FsrsState, Review, ReviewSession
 
 
 def filter_migration_sql(sql: str) -> str:
@@ -367,6 +367,64 @@ def create_test_review(db_session: AsyncSession, mock_user_id: str, create_test_
         return review
 
     return _create_review
+
+
+@pytest.fixture
+def create_test_practice(db_session: AsyncSession, mock_user_id: str):
+    """Factory fixture to create practices in the test database.
+
+    Usage:
+        practice = await create_test_practice(prompt="What is X?")
+        practice = await create_test_practice(user_id="other-user", srs_enabled=False)
+    """
+
+    async def _create_practice(
+        user_id: str | None = None,
+        prompt: str = "Test Prompt",
+        answer: str = "Test Answer",
+        srs_enabled: bool = True,
+        inboxed: bool = False,
+        archived: bool = False,
+        initial_stability: float | None = None,
+        initial_difficulty: float | None = None,
+        initial_state: str = "LEARNING",
+        initial_step: int | None = 0,
+    ) -> Practice:
+        # Use mock_user_id as default if not specified
+        actual_user_id = user_id if user_id is not None else mock_user_id
+
+        fsrs_state = None
+        if srs_enabled:
+            fsrs_state = FsrsState(
+                srs_enabled=True,
+                stability=initial_stability,
+                difficulty=initial_difficulty,
+                state=initial_state,
+                step=initial_step,
+            )
+            db_session.add(fsrs_state)
+            await db_session.flush()
+
+        practice = Practice(
+            user_id=actual_user_id,
+            prompt=prompt,
+            answer=answer,
+            inboxed=inboxed,
+            archived=archived,
+            fsrs_state_id=fsrs_state.id if fsrs_state else None,
+        )
+        db_session.add(practice)
+        await db_session.flush()
+
+        # Re-fetch to load relationships
+        result = await db_session.execute(
+            select(Practice)
+            .where(Practice.id == practice.id)
+            .options(selectinload(Practice.fsrs_state))
+        )
+        return result.scalar_one()
+
+    return _create_practice
 
 
 @pytest.fixture
