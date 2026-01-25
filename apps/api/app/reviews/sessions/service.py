@@ -51,8 +51,6 @@ async def list_review_sessions(
     session: AsyncSession,
     user_id: str,
     *,
-    topic_id: int | None = None,
-    source_id: int | None = None,
     effective_date_before: date | None = None,
     effective_date_after: date | None = None,
     completed: bool | None = None,
@@ -72,12 +70,6 @@ async def list_review_sessions(
             selectinload(ReviewSession.reviews).selectinload(Review.source),
         )
     )
-
-    if topic_id is not None:
-        stmt = stmt.where(ReviewSession.reviews.any(Review.topic_id == topic_id))
-
-    if source_id is not None:
-        stmt = stmt.where(ReviewSession.reviews.any(Review.source_id == source_id))
 
     if effective_date_before is not None:
         stmt = stmt.where(ReviewSession.effective_date <= effective_date_before)
