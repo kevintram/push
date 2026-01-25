@@ -16,7 +16,7 @@ from app.exceptions import (
     HasChildrenError,
     NotFoundError,
 )
-from app.models import FsrsState, Review, Source, Topic, t_source_topics
+from app.models import FsrsState, Source, Topic, t_source_topics
 
 
 async def get_source(session: AsyncSession, source_id: int, user_id: str) -> Source:
