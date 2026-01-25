@@ -21,6 +21,8 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { Toggle } from '~/components/ui/Toggle'
+import { usePractices } from '~/features/practices/api/getPractices'
+import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { useSources } from '~/features/sources/api/getSources'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
@@ -31,7 +33,8 @@ export function MyLibraryPage() {
 	const navigate = useNavigate()
 	const [activeFilters, setActiveFilters] = useState<Array<EntityType>>([
 		'topic',
-		'source'
+		'source',
+		'practice'
 	])
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
@@ -50,7 +53,13 @@ export function MyLibraryPage() {
 		inboxed: false
 	})
 
-	const isLoading = isLoadingTopics || isLoadingSources
+	// Fetch practices (non-archived, non-inboxed)
+	const { data: practices = [], isLoading: isLoadingPractices } = usePractices({
+		archived: false,
+		inboxed: false
+	})
+
+	const isLoading = isLoadingTopics || isLoadingSources || isLoadingPractices
 
 	// Combine and filter entities based on active filters
 	const libraryItems = useMemo<Array<EntityItem>>(() => {
@@ -66,13 +75,20 @@ export function MyLibraryPage() {
 				...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
 			)
 		}
+		if (activeFilters.includes('practice')) {
+			items.push(
+				...(practices ?? []).map(
+					(item): EntityItem => ({ type: 'practice', item })
+				)
+			)
+		}
 
 		return items.sort(
 			(a, b) =>
 				new Date(b.item.updated_at).getTime() -
 				new Date(a.item.updated_at).getTime()
 		)
-	}, [topics, sources, activeFilters])
+	}, [topics, sources, practices, activeFilters])
 
 	const handleCreateTopic = useCallback(async () => {
 		const newTopic = await createTopic({
@@ -87,16 +103,25 @@ export function MyLibraryPage() {
 
 	const handleEntityClick = useCallback(
 		(entity: EntityItem) => {
-			if (entity.type === 'topic') {
-				navigate({
-					to: '/topics/$topicId',
-					params: { topicId: entity.item.id.toString() }
-				})
-			} else {
-				navigate({
-					to: '/sources/$sourceId',
-					params: { sourceId: entity.item.id.toString() }
-				})
+			switch (entity.type) {
+				case 'topic':
+					navigate({
+						to: '/topics/$topicId',
+						params: { topicId: entity.item.id.toString() }
+					})
+					break
+				case 'source':
+					navigate({
+						to: '/sources/$sourceId',
+						params: { sourceId: entity.item.id.toString() }
+					})
+					break
+				case 'practice':
+					navigate({
+						to: '/practices/$practiceId',
+						params: { practiceId: entity.item.id.toString() }
+					})
+					break
 			}
 		},
 		[navigate]
@@ -157,6 +182,14 @@ function EntityTypeFilter({
 			>
 				Sources
 			</Toggle>
+			<Toggle
+				onPressedChange={() => onToggle('practice')}
+				pressed={activeFilters.includes('practice')}
+				size='sm'
+				variant='outline'
+			>
+				Practices
+			</Toggle>
 		</div>
 	)
 }
@@ -175,20 +208,28 @@ function LibraryList({
 	isCreatingTopic: boolean
 }) {
 	const renderItem = useCallback(
-		(entity: EntityItem) => (
-			<EntityCard
-				entity={entity}
-				headerRight={
-					entity.type === 'topic' ? (
-						<TopicActionMenu topic={entity.item} />
-					) : (
-						<SourceActionMenu source={entity.item} />
-					)
-				}
-				minHeight={96}
-				onEntityClick={onEntityClick}
-			/>
-		),
+		(entity: EntityItem) => {
+			let headerRight: React.ReactNode
+			switch (entity.type) {
+				case 'topic':
+					headerRight = <TopicActionMenu topic={entity.item} />
+					break
+				case 'source':
+					headerRight = <SourceActionMenu source={entity.item} />
+					break
+				case 'practice':
+					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+			}
+			return (
+				<EntityCard
+					entity={entity}
+					headerRight={headerRight}
+					minHeight={96}
+					onEntityClick={onEntityClick}
+				/>
+			)
+		},
 		[onEntityClick]
 	)
 

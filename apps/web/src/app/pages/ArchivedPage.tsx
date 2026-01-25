@@ -17,6 +17,8 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
+import { usePractices } from '~/features/practices/api/getPractices'
+import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { useSources } from '~/features/sources/api/getSources'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { useTopics } from '~/features/topics/api/getTopics'
@@ -25,7 +27,7 @@ import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 export function ArchivedPage() {
 	const navigate = useNavigate()
 
-	// Fetch archived topics and sources sorted by most recently updated
+	// Fetch archived topics, sources, and practices sorted by most recently updated
 	const { data: topics = [], isLoading: isLoadingTopics } = useTopics({
 		archived: true,
 		order: 'desc'
@@ -34,34 +36,50 @@ export function ArchivedPage() {
 		archived: true,
 		order: 'desc'
 	})
+	const { data: practices = [], isLoading: isLoadingPractices } = usePractices({
+		archived: true,
+		order: 'desc'
+	})
 
-	const isLoading = isLoadingTopics || isLoadingSources
+	const isLoading = isLoadingTopics || isLoadingSources || isLoadingPractices
 
-	// Combine topics and sources, sorted by updated_at descending
+	// Combine topics, sources, and practices, sorted by updated_at descending
 	const archivedItems = useMemo<Array<EntityItem>>(() => {
 		const items: Array<EntityItem> = [
 			...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item })),
-			...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
+			...(sources ?? []).map((item): EntityItem => ({ type: 'source', item })),
+			...(practices ?? []).map(
+				(item): EntityItem => ({ type: 'practice', item })
+			)
 		]
 		return items.sort(
 			(a, b) =>
 				new Date(b.item.updated_at).getTime() -
 				new Date(a.item.updated_at).getTime()
 		)
-	}, [topics, sources])
+	}, [topics, sources, practices])
 
 	const handleEntityClick = useCallback(
 		(entity: EntityItem) => {
-			if (entity.type === 'topic') {
-				navigate({
-					to: '/topics/$topicId',
-					params: { topicId: entity.item.id.toString() }
-				})
-			} else {
-				navigate({
-					to: '/sources/$sourceId',
-					params: { sourceId: entity.item.id.toString() }
-				})
+			switch (entity.type) {
+				case 'topic':
+					navigate({
+						to: '/topics/$topicId',
+						params: { topicId: entity.item.id.toString() }
+					})
+					break
+				case 'source':
+					navigate({
+						to: '/sources/$sourceId',
+						params: { sourceId: entity.item.id.toString() }
+					})
+					break
+				case 'practice':
+					navigate({
+						to: '/practices/$practiceId',
+						params: { practiceId: entity.item.id.toString() }
+					})
+					break
 			}
 		},
 		[navigate]
@@ -89,20 +107,28 @@ function ArchivedList({
 	isLoading: boolean
 }) {
 	const renderItem = useCallback(
-		(entity: EntityItem) => (
-			<EntityCard
-				entity={entity}
-				headerRight={
-					entity.type === 'topic' ? (
-						<TopicActionMenu topic={entity.item} />
-					) : (
-						<SourceActionMenu source={entity.item} />
-					)
-				}
-				minHeight={96}
-				onEntityClick={onEntityClick}
-			/>
-		),
+		(entity: EntityItem) => {
+			let headerRight: React.ReactNode
+			switch (entity.type) {
+				case 'topic':
+					headerRight = <TopicActionMenu topic={entity.item} />
+					break
+				case 'source':
+					headerRight = <SourceActionMenu source={entity.item} />
+					break
+				case 'practice':
+					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+			}
+			return (
+				<EntityCard
+					entity={entity}
+					headerRight={headerRight}
+					minHeight={96}
+					onEntityClick={onEntityClick}
+				/>
+			)
+		},
 		[onEntityClick]
 	)
 

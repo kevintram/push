@@ -1,14 +1,17 @@
 import type { ReactNode } from 'react'
+import { PracticeCard } from '~/features/practices/components/PracticeCard'
+import type { Practice } from '~/features/practices/types/practice.types'
 import { SourceCard } from '~/features/sources/components/SourceCard'
 import type { Source } from '~/features/sources/types/source.types'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 
-export type EntityType = 'topic' | 'source'
+export type EntityType = 'topic' | 'source' | 'practice'
 
 export type EntityItem =
 	| { type: 'topic'; item: Topic }
 	| { type: 'source'; item: Source }
+	| { type: 'practice'; item: Practice }
 
 interface EntityCardProps {
 	entity: EntityItem
@@ -58,6 +61,21 @@ export function EntityCard({
 					source={entity.item}
 				/>
 			)
+		case 'practice':
+			return (
+				<PracticeCard
+					headerRight={headerRight}
+					minHeight={minHeight}
+					onPracticeClick={
+						onEntityClick
+							? () => onEntityClick({ type: 'practice', item: entity.item })
+							: undefined
+					}
+					practice={entity.item}
+					searchQuery={searchQuery}
+					showLeavingSoon={showLeavingSoon}
+				/>
+			)
 		default: {
 			const _exhaustiveCheck: never = entity
 			return _exhaustiveCheck
@@ -81,6 +99,8 @@ export function getEntityTitle(entity: EntityItem): string {
 			return entity.item.name || 'Untitled Topic'
 		case 'source':
 			return entity.item.title || 'Untitled Source'
+		case 'practice':
+			return entity.item.prompt || 'Untitled Practice'
 		default: {
 			const _exhaustiveCheck: never = entity
 			return _exhaustiveCheck
@@ -92,7 +112,17 @@ export function getEntityTitle(entity: EntityItem): string {
  * Get the notes/description for an entity
  */
 export function getEntityNotes(entity: EntityItem): string {
-	return entity.item.notes || ''
+	switch (entity.type) {
+		case 'topic':
+		case 'source':
+			return entity.item.notes || ''
+		case 'practice':
+			return entity.item.answer || ''
+		default: {
+			const _exhaustiveCheck: never = entity
+			return _exhaustiveCheck
+		}
+	}
 }
 
 /**

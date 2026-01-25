@@ -19,6 +19,8 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
+import { usePractices } from '~/features/practices/api/getPractices'
+import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { useSources } from '~/features/sources/api/getSources'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
@@ -37,12 +39,16 @@ export function InboxPage() {
 		inboxed: true,
 		archived: false
 	})
+	const { data: inboxPractices, isLoading: isLoadingPractices } = usePractices({
+		inboxed: true,
+		archived: false
+	})
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 
-	const isLoading = isLoadingTopics || isLoadingSources
+	const isLoading = isLoadingTopics || isLoadingSources || isLoadingPractices
 
-	// Combine topics and sources, sorted by updated_at descending
+	// Combine topics, sources, and practices, sorted by updated_at descending
 	const inboxItems = useMemo<Array<EntityItem>>(() => {
 		const items: Array<EntityItem> = [
 			...(inboxTopics ?? []).map(
@@ -50,6 +56,9 @@ export function InboxPage() {
 			),
 			...(inboxSources ?? []).map(
 				(item): EntityItem => ({ type: 'source', item })
+			),
+			...(inboxPractices ?? []).map(
+				(item): EntityItem => ({ type: 'practice', item })
 			)
 		]
 		return items.sort(
@@ -57,20 +66,29 @@ export function InboxPage() {
 				new Date(b.item.updated_at).getTime() -
 				new Date(a.item.updated_at).getTime()
 		)
-	}, [inboxTopics, inboxSources])
+	}, [inboxTopics, inboxSources, inboxPractices])
 
 	const handleEntitySelect = useCallback(
 		(entity: EntityItem) => {
-			if (entity.type === 'topic') {
-				navigate({
-					to: '/topics/$topicId',
-					params: { topicId: entity.item.id.toString() }
-				})
-			} else {
-				navigate({
-					to: '/sources/$sourceId',
-					params: { sourceId: entity.item.id.toString() }
-				})
+			switch (entity.type) {
+				case 'topic':
+					navigate({
+						to: '/topics/$topicId',
+						params: { topicId: entity.item.id.toString() }
+					})
+					break
+				case 'source':
+					navigate({
+						to: '/sources/$sourceId',
+						params: { sourceId: entity.item.id.toString() }
+					})
+					break
+				case 'practice':
+					navigate({
+						to: '/practices/$practiceId',
+						params: { practiceId: entity.item.id.toString() }
+					})
+					break
 			}
 		},
 		[navigate]
@@ -122,19 +140,27 @@ function InboxList({
 	isCreatingTopic: boolean
 }) {
 	const renderItem = useCallback(
-		(entity: EntityItem) => (
-			<EntityCard
-				entity={entity}
-				headerRight={
-					entity.type === 'topic' ? (
-						<TopicActionMenu topic={entity.item} />
-					) : (
-						<SourceActionMenu source={entity.item} />
-					)
-				}
-				onEntityClick={onEntitySelect}
-			/>
-		),
+		(entity: EntityItem) => {
+			let headerRight: React.ReactNode
+			switch (entity.type) {
+				case 'topic':
+					headerRight = <TopicActionMenu topic={entity.item} />
+					break
+				case 'source':
+					headerRight = <SourceActionMenu source={entity.item} />
+					break
+				case 'practice':
+					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+			}
+			return (
+				<EntityCard
+					entity={entity}
+					headerRight={headerRight}
+					onEntityClick={onEntitySelect}
+				/>
+			)
+		},
 		[onEntitySelect]
 	)
 

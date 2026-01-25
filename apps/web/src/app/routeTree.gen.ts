@@ -18,6 +18,7 @@ import { Route as MainTodayRouteImport } from './routes/_main/today'
 import { Route as MainSourcesRouteImport } from './routes/_main/sources'
 import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
+import { Route as MainPracticesRouteImport } from './routes/_main/practices'
 import { Route as MainMyTopicsRouteImport } from './routes/_main/my-topics'
 import { Route as MainMyLibraryRouteImport } from './routes/_main/my-library'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
@@ -27,6 +28,7 @@ import { Route as MainArchivedRouteImport } from './routes/_main/archived'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
 import { Route as MainSourcesSourceIdRouteImport } from './routes/_main/sources_.$sourceId'
 import { Route as MainReviewSessionReviewSessionIdRouteImport } from './routes/_main/review-session.$reviewSessionId'
+import { Route as MainPracticesPracticeIdRouteImport } from './routes/_main/practices_.$practiceId'
 
 const MainRoute = MainRouteImport.update({
   id: '/_main',
@@ -70,6 +72,11 @@ const MainReviewRoute = MainReviewRouteImport.update({
 const MainRecentRoute = MainRecentRouteImport.update({
   id: '/recent',
   path: '/recent',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainPracticesRoute = MainPracticesRouteImport.update({
+  id: '/practices',
+  path: '/practices',
   getParentRoute: () => MainRoute,
 } as any)
 const MainMyTopicsRoute = MainMyTopicsRouteImport.update({
@@ -118,6 +125,11 @@ const MainReviewSessionReviewSessionIdRoute =
     path: '/review-session/$reviewSessionId',
     getParentRoute: () => MainRoute,
   } as any)
+const MainPracticesPracticeIdRoute = MainPracticesPracticeIdRouteImport.update({
+  id: '/practices_/$practiceId',
+  path: '/practices/$practiceId',
+  getParentRoute: () => MainRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/archived': typeof MainArchivedRoute
@@ -126,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
   '/my-topics': typeof MainMyTopicsRoute
+  '/practices': typeof MainPracticesRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
   '/sources': typeof MainSourcesRoute
@@ -134,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/unscheduled': typeof MainUnscheduledRoute
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
+  '/practices/$practiceId': typeof MainPracticesPracticeIdRoute
   '/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
   '/sources/$sourceId': typeof MainSourcesSourceIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
@@ -145,6 +159,7 @@ export interface FileRoutesByTo {
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
   '/my-topics': typeof MainMyTopicsRoute
+  '/practices': typeof MainPracticesRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
   '/sources': typeof MainSourcesRoute
@@ -153,6 +168,7 @@ export interface FileRoutesByTo {
   '/unscheduled': typeof MainUnscheduledRoute
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
+  '/practices/$practiceId': typeof MainPracticesPracticeIdRoute
   '/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
   '/sources/$sourceId': typeof MainSourcesSourceIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
@@ -166,6 +182,7 @@ export interface FileRoutesById {
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/my-library': typeof MainMyLibraryRoute
   '/_main/my-topics': typeof MainMyTopicsRoute
+  '/_main/practices': typeof MainPracticesRoute
   '/_main/recent': typeof MainRecentRoute
   '/_main/review': typeof MainReviewRoute
   '/_main/sources': typeof MainSourcesRoute
@@ -174,6 +191,7 @@ export interface FileRoutesById {
   '/_main/unscheduled': typeof MainUnscheduledRoute
   '/_main/upcoming': typeof MainUpcomingRoute
   '/_main/': typeof MainIndexRoute
+  '/_main/practices_/$practiceId': typeof MainPracticesPracticeIdRoute
   '/_main/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
   '/_main/sources_/$sourceId': typeof MainSourcesSourceIdRoute
   '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
@@ -187,6 +205,7 @@ export interface FileRouteTypes {
     | '/logbook'
     | '/my-library'
     | '/my-topics'
+    | '/practices'
     | '/recent'
     | '/review'
     | '/sources'
@@ -195,6 +214,7 @@ export interface FileRouteTypes {
     | '/unscheduled'
     | '/upcoming'
     | '/'
+    | '/practices/$practiceId'
     | '/review-session/$reviewSessionId'
     | '/sources/$sourceId'
     | '/topics/$topicId'
@@ -206,6 +226,7 @@ export interface FileRouteTypes {
     | '/logbook'
     | '/my-library'
     | '/my-topics'
+    | '/practices'
     | '/recent'
     | '/review'
     | '/sources'
@@ -214,6 +235,7 @@ export interface FileRouteTypes {
     | '/unscheduled'
     | '/upcoming'
     | '/'
+    | '/practices/$practiceId'
     | '/review-session/$reviewSessionId'
     | '/sources/$sourceId'
     | '/topics/$topicId'
@@ -226,6 +248,7 @@ export interface FileRouteTypes {
     | '/_main/logbook'
     | '/_main/my-library'
     | '/_main/my-topics'
+    | '/_main/practices'
     | '/_main/recent'
     | '/_main/review'
     | '/_main/sources'
@@ -234,6 +257,7 @@ export interface FileRouteTypes {
     | '/_main/unscheduled'
     | '/_main/upcoming'
     | '/_main/'
+    | '/_main/practices_/$practiceId'
     | '/_main/review-session/$reviewSessionId'
     | '/_main/sources_/$sourceId'
     | '/_main/topics_/$topicId'
@@ -308,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainRecentRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/practices': {
+      id: '/_main/practices'
+      path: '/practices'
+      fullPath: '/practices'
+      preLoaderRoute: typeof MainPracticesRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/_main/my-topics': {
       id: '/_main/my-topics'
       path: '/my-topics'
@@ -371,6 +402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainReviewSessionReviewSessionIdRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/practices_/$practiceId': {
+      id: '/_main/practices_/$practiceId'
+      path: '/practices/$practiceId'
+      fullPath: '/practices/$practiceId'
+      preLoaderRoute: typeof MainPracticesPracticeIdRouteImport
+      parentRoute: typeof MainRoute
+    }
   }
 }
 
@@ -381,6 +419,7 @@ interface MainRouteChildren {
   MainLogbookRoute: typeof MainLogbookRoute
   MainMyLibraryRoute: typeof MainMyLibraryRoute
   MainMyTopicsRoute: typeof MainMyTopicsRoute
+  MainPracticesRoute: typeof MainPracticesRoute
   MainRecentRoute: typeof MainRecentRoute
   MainReviewRoute: typeof MainReviewRoute
   MainSourcesRoute: typeof MainSourcesRoute
@@ -389,6 +428,7 @@ interface MainRouteChildren {
   MainUnscheduledRoute: typeof MainUnscheduledRoute
   MainUpcomingRoute: typeof MainUpcomingRoute
   MainIndexRoute: typeof MainIndexRoute
+  MainPracticesPracticeIdRoute: typeof MainPracticesPracticeIdRoute
   MainReviewSessionReviewSessionIdRoute: typeof MainReviewSessionReviewSessionIdRoute
   MainSourcesSourceIdRoute: typeof MainSourcesSourceIdRoute
   MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRoute
@@ -401,6 +441,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainLogbookRoute: MainLogbookRoute,
   MainMyLibraryRoute: MainMyLibraryRoute,
   MainMyTopicsRoute: MainMyTopicsRoute,
+  MainPracticesRoute: MainPracticesRoute,
   MainRecentRoute: MainRecentRoute,
   MainReviewRoute: MainReviewRoute,
   MainSourcesRoute: MainSourcesRoute,
@@ -409,6 +450,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainUnscheduledRoute: MainUnscheduledRoute,
   MainUpcomingRoute: MainUpcomingRoute,
   MainIndexRoute: MainIndexRoute,
+  MainPracticesPracticeIdRoute: MainPracticesPracticeIdRoute,
   MainReviewSessionReviewSessionIdRoute: MainReviewSessionReviewSessionIdRoute,
   MainSourcesSourceIdRoute: MainSourcesSourceIdRoute,
   MainTopicsTopicIdRoute: MainTopicsTopicIdRoute,
