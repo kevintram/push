@@ -22,11 +22,13 @@ import type {
 	Rating,
 	ReviewListItem
 } from '~/features/reviews/types/review.types'
-import type { LearnableBase } from '~/models/learnable.types'
 
-type EntityType = 'topic' | 'source'
+type EntityType = 'topic' | 'source' | 'practice'
 
-interface LearnableReviewsSidebarProps<T extends LearnableBase> {
+/** Minimal entity type required by the sidebar - just needs an id */
+type EntityWithId = { id: number }
+
+interface LearnableReviewsSidebarProps<T extends EntityWithId> {
 	entity: T | null | undefined
 	entityType: EntityType
 	readonly?: boolean
@@ -34,19 +36,17 @@ interface LearnableReviewsSidebarProps<T extends LearnableBase> {
 	sidebarClassName?: string
 }
 
-export function LearnableReviewsSidebar<T extends LearnableBase>({
+export function LearnableReviewsSidebar<T extends EntityWithId>({
 	entity,
 	entityType,
 	readonly = false,
 	sidebarClassName = ''
 }: LearnableReviewsSidebarProps<T>) {
-	const filters = useMemo(
-		() =>
-			entityType === 'topic'
-				? { topicId: entity?.id }
-				: { sourceId: entity?.id },
-		[entityType, entity?.id]
-	)
+	const filters = useMemo(() => {
+		if (entityType === 'topic') return { topicId: entity?.id }
+		if (entityType === 'source') return { sourceId: entity?.id }
+		return { practiceId: entity?.id }
+	}, [entityType, entity?.id])
 	const { data: reviews = [], isLoading } = useReviews(
 		entity?.id !== undefined ? filters : undefined
 	)
@@ -90,9 +90,13 @@ export function LearnableReviewsSidebar<T extends LearnableBase>({
 	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
 			if (!entity) {
-				throw new Error(
-					`${entityType === 'topic' ? 'Topic' : 'Source'} not found`
-				)
+				const entityName =
+					entityType === 'topic'
+						? 'Topic'
+						: entityType === 'source'
+							? 'Source'
+							: 'Practice'
+				throw new Error(`${entityName} not found`)
 			}
 
 			const basePayload = {
@@ -102,12 +106,23 @@ export function LearnableReviewsSidebar<T extends LearnableBase>({
 				completed_at: completedAt
 			}
 
-			const payload =
-				entityType === 'topic'
-					? { ...basePayload, topic_id: entity.id }
-					: { ...basePayload, source_id: entity.id }
-
-			const review = await createReviewMutation.mutateAsync(payload)
+			let review
+			if (entityType === 'topic') {
+				review = await createReviewMutation.mutateAsync({
+					...basePayload,
+					topic_id: entity.id
+				})
+			} else if (entityType === 'source') {
+				review = await createReviewMutation.mutateAsync({
+					...basePayload,
+					source_id: entity.id
+				})
+			} else {
+				review = await createReviewMutation.mutateAsync({
+					...basePayload,
+					practice_id: entity.id
+				})
+			}
 
 			// Open the review dialog with the newly created review
 			setSelectedReviewId(review.id)

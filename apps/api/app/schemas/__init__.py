@@ -1,3 +1,15 @@
+from app.schemas.practices import (
+    PracticeBase,
+    PracticeCreate,
+    PracticeDetailRead,
+    PracticeRead,
+    PracticeSourceAdd,
+    PracticeSourceResponse,
+    PracticeSummaryRead,
+    PracticeTopicAdd,
+    PracticeTopicResponse,
+    PracticeUpdate,
+)
 from app.schemas.review_sessions import (
     ReviewSessionBase,
     ReviewSessionCreate,
@@ -41,6 +53,8 @@ from app.schemas.reviews import (
     SourceSummary,
     ReviewWithTopic,
     ReviewWithSource,
+    ReviewWithPractice,
+    PracticeSummary,
     ReviewCreate,
     ReviewUpdate,
 )
@@ -67,14 +81,31 @@ ReviewWithTopic.model_rebuild()
 ReviewCreate.model_rebuild()
 ReviewUpdate.model_rebuild()
 ReviewWithSource.model_rebuild()
+ReviewWithPractice.model_rebuild()
 TopicRelatedRead.model_rebuild()
 SourceRead.model_rebuild()
 SourceSummaryRead.model_rebuild()
 SourceDetailRead.model_rebuild()
 SourceRelationshipResponse.model_rebuild()
 SourceTopicResponse.model_rebuild()
+PracticeRead.model_rebuild()
+PracticeSummaryRead.model_rebuild()
+PracticeDetailRead.model_rebuild()
+PracticeTopicResponse.model_rebuild()
+PracticeSourceResponse.model_rebuild()
 
 __all__ = [
+    "PracticeBase",
+    "PracticeCreate",
+    "PracticeDetailRead",
+    "PracticeRead",
+    "PracticeSourceAdd",
+    "PracticeSourceResponse",
+    "PracticeSummary",
+    "PracticeSummaryRead",
+    "PracticeTopicAdd",
+    "PracticeTopicResponse",
+    "PracticeUpdate",
     "ReviewSessionBase",
     "ReviewSessionCreate",
     "ReviewSessionRead",
@@ -99,6 +130,7 @@ __all__ = [
     "SourceSummary",
     "ReviewWithTopic",
     "ReviewWithSource",
+    "ReviewWithPractice",
     "ReviewCreate",
     "ReviewUpdate",
     "TopicRelatedRead",

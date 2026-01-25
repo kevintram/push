@@ -33,6 +33,8 @@ import {
 	EmptyTitle
 } from '~/components/ui/Empty'
 import { Skeleton } from '~/components/ui/Skeleton'
+import { usePractices } from '~/features/practices/api/getPractices'
+import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import {
 	useSoonReviewEntries,
 	useTodayReviewEntries
@@ -764,14 +766,21 @@ function HomeRecentCard() {
 		order: 'desc',
 		limit: RECENT_LIMIT
 	})
+	const { data: practices = [], isLoading: isLoadingPractices } = usePractices({
+		order: 'desc',
+		limit: RECENT_LIMIT
+	})
 
-	const isLoading = isLoadingTopics || isLoadingSources
+	const isLoading = isLoadingTopics || isLoadingSources || isLoadingPractices
 
-	// Combine topics and sources, sorted by updated_at descending, limited to 10
+	// Combine topics, sources, and practices, sorted by updated_at descending, limited to 10
 	const recentItems = useMemo<Array<EntityItem>>(() => {
 		const items: Array<EntityItem> = [
 			...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item })),
-			...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
+			...(sources ?? []).map((item): EntityItem => ({ type: 'source', item })),
+			...(practices ?? []).map(
+				(item): EntityItem => ({ type: 'practice', item })
+			)
 		]
 		return items
 			.sort(
@@ -780,40 +789,57 @@ function HomeRecentCard() {
 					new Date(a.item.updated_at).getTime()
 			)
 			.slice(0, RECENT_LIMIT)
-	}, [topics, sources])
+	}, [topics, sources, practices])
 
 	const handleEntityClick = useCallback(
 		(entity: EntityItem) => {
-			if (entity.type === 'topic') {
-				navigate({
-					to: '/topics/$topicId',
-					params: { topicId: entity.item.id.toString() }
-				})
-			} else {
-				navigate({
-					to: '/sources/$sourceId',
-					params: { sourceId: entity.item.id.toString() }
-				})
+			switch (entity.type) {
+				case 'topic':
+					navigate({
+						to: '/topics/$topicId',
+						params: { topicId: entity.item.id.toString() }
+					})
+					break
+				case 'source':
+					navigate({
+						to: '/sources/$sourceId',
+						params: { sourceId: entity.item.id.toString() }
+					})
+					break
+				case 'practice':
+					navigate({
+						to: '/practices/$practiceId',
+						params: { practiceId: entity.item.id.toString() }
+					})
+					break
 			}
 		},
 		[navigate]
 	)
 
 	const renderItem = useCallback(
-		(entity: EntityItem) => (
-			<EntityCard
-				entity={entity}
-				headerRight={
-					entity.type === 'topic' ? (
-						<TopicActionMenu topic={entity.item} />
-					) : (
-						<SourceActionMenu source={entity.item} />
-					)
-				}
-				minHeight={96}
-				onEntityClick={handleEntityClick}
-			/>
-		),
+		(entity: EntityItem) => {
+			let headerRight: React.ReactNode
+			switch (entity.type) {
+				case 'topic':
+					headerRight = <TopicActionMenu topic={entity.item} />
+					break
+				case 'source':
+					headerRight = <SourceActionMenu source={entity.item} />
+					break
+				case 'practice':
+					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+			}
+			return (
+				<EntityCard
+					entity={entity}
+					headerRight={headerRight}
+					minHeight={96}
+					onEntityClick={handleEntityClick}
+				/>
+			)
+		},
 		[handleEntityClick]
 	)
 

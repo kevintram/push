@@ -1,3 +1,5 @@
+import type { Practice } from '~/features/practices/types/practice.types'
+import type { Source } from '~/features/sources/types/source.types'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { LearningState } from '~/models/learning-state.types'
 
@@ -6,7 +8,10 @@ export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 export type Review = {
 	id: number
 	review_session_id: number | null
+	// Polymorphic entity references (exactly one will be set)
 	topic_id: number | null
+	source_id: number | null
+	practice_id: number | null
 	rating: Rating | null
 
 	description: string
@@ -17,20 +22,23 @@ export type Review = {
 
 	inserted_at: string
 	updated_at: string
+	// Polymorphic entity relationships
 	topic?: Topic | null
+	source?: Source | null
+	practice?: Practice | null
 	review_session: {
 		id: number
 		description: string | null
 	} | null
 
-	// Topic FSRS state before review
+	// Entity FSRS state before review
 	stability_before: number | null
 	difficulty_before: number | null
 	state_before: LearningState | null
 	step_before: number | null
 	due_before: string | null
 
-	// Topic FSRS state after review
+	// Entity FSRS state after review
 	stability_after: number | null
 	difficulty_after: number | null
 	state_after: LearningState | null
@@ -41,7 +49,10 @@ export type Review = {
 export type ReviewListItem = {
 	id: number
 	review_session_id: number | null
+	// Polymorphic entity references (exactly one will be set)
 	topic_id: number | null
+	source_id: number | null
+	practice_id: number | null
 	rating: Rating | null
 
 	description: string
@@ -57,20 +68,31 @@ export type ReviewListItem = {
 		id: number
 		description: string | null
 	} | null
+	// Polymorphic entity summaries
 	topic?: {
 		id: number
 		name: string
 		notes: string
 	} | null
+	source?: {
+		id: number
+		title: string
+		notes: string
+	} | null
+	practice?: {
+		id: number
+		prompt: string
+		answer: string
+	} | null
 
-	// Topic FSRS state before review
+	// Entity FSRS state before review
 	stability_before: number | null
 	difficulty_before: number | null
 	state_before: LearningState | null
 	step_before: number | null
 	due_before: string | null
 
-	// Topic FSRS state after review
+	// Entity FSRS state after review
 	stability_after: number | null
 	difficulty_after: number | null
 	state_after: LearningState | null

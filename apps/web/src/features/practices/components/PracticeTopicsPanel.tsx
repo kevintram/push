@@ -1,0 +1,190 @@
+import { useQueryClient } from '@tanstack/react-query'
+import { BookOpen, ChevronDown, Loader2, Plus, Search } from 'lucide-react'
+import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { LearnablePanel } from '~/components/LearnablePanel'
+import { Button } from '~/components/ui/Button'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
+import { TopicCard } from '~/features/topics/components/TopicCard'
+import type { Topic } from '~/features/topics/types/topic.types'
+import { useAddPracticeTopic } from '../api/addPracticeTopic'
+import { practiceKeys } from '../api/queryKeys'
+import { useRemovePracticeTopic } from '../api/removePracticeTopic'
+import { AddTopicToPracticeDialog } from './AddTopicToPracticeDialog'
+
+const MIN_HEIGHT = 96
+
+interface PracticeTopicsPanelProps {
+	practiceId: number | undefined
+	topics?: Array<Topic>
+	getScrollElement?: () => HTMLDivElement | null
+	scrollMargin?: number
+	onTopicSelect?: (topicId: number) => void
+	renderCard?: (
+		topic: Topic,
+		onRemove: () => void,
+		onClick: () => void
+	) => ReactNode
+}
+
+export function PracticeTopicsPanel({
+	practiceId,
+	topics: topicsProp,
+	getScrollElement,
+	scrollMargin,
+	onTopicSelect,
+	renderCard
+}: PracticeTopicsPanelProps) {
+	const queryClient = useQueryClient()
+	const [showSearchDialog, setShowSearchDialog] = useState(false)
+
+	const topics = topicsProp ?? []
+
+	const addPracticeTopic = useAddPracticeTopic()
+	const removePracticeTopic = useRemovePracticeTopic()
+
+	const isAdding = addPracticeTopic.isPending
+
+	const handleAdd = useCallback(
+		async (topic: Topic) => {
+			if (!practiceId) return
+
+			await addPracticeTopic.mutateAsync({
+				practiceId,
+				topicId: topic.id
+			})
+		},
+		[practiceId, addPracticeTopic]
+	)
+
+	const handleTopicUpdateSuccess = useCallback(
+		(updatedTopic: Topic) => {
+			queryClient.setQueryData(
+				practiceKeys.detail(practiceId!),
+				(old: { topics?: Array<Topic> } | undefined) => {
+					if (!old) return old
+					return {
+						...old,
+						topics:
+							old.topics?.map(topic =>
+								topic.id === updatedTopic.id ? updatedTopic : topic
+							) ?? []
+					}
+				}
+			)
+		},
+		[queryClient, practiceId]
+	)
+
+	const existingTopicIds = useMemo(() => topics.map(t => t.id), [topics])
+
+	const estimateItemSize = useCallback((topic: Topic) => {
+		const baseHeight = 80
+		const lineHeight = 10
+		const numCharsPerLine = 30
+		const newLine = 10
+
+		const nameHeight =
+			Math.floor((topic.name?.length ?? 0) / numCharsPerLine) * lineHeight
+		const notesHeight =
+			Math.floor((topic.notes?.length ?? 0) / numCharsPerLine) * lineHeight
+
+		return baseHeight + nameHeight + newLine + notesHeight
+	}, [])
+
+	const renderItem = useCallback(
+		(topic: Topic) => {
+			const handleRemoveRelationship = () => {
+				if (!practiceId) return
+				removePracticeTopic.mutate({
+					practiceId,
+					topicId: topic.id
+				})
+			}
+
+			const handleClick = () => {
+				onTopicSelect?.(topic.id)
+			}
+
+			if (renderCard) {
+				return renderCard(topic, handleRemoveRelationship, handleClick)
+			}
+
+			return (
+				<TopicCard
+					headerRight={
+						<TopicActionMenu
+							onRemoveRelationship={handleRemoveRelationship}
+							onTopicUpdateSuccess={handleTopicUpdateSuccess}
+							removeRelationshipText='Remove from Practice'
+							topic={topic}
+						/>
+					}
+					minHeight={MIN_HEIGHT}
+					onTopicClick={handleClick}
+					topic={topic}
+				/>
+			)
+		},
+		[
+			onTopicSelect,
+			renderCard,
+			handleTopicUpdateSuccess,
+			practiceId,
+			removePracticeTopic
+		]
+	)
+
+	const getItemKey = useCallback((topic: Topic) => topic.id, [])
+
+	const actions = (
+		<>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild={true} disabled={isAdding}>
+					<Button className='gap-1' size='sm' variant='secondary'>
+						{isAdding ? (
+							<Loader2 className='h-4 w-4 animate-spin' />
+						) : (
+							<Plus className='h-4 w-4' />
+						)}
+						Add
+						<ChevronDown className='h-4 w-4' />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align='start'>
+					<DropdownMenuItem onClick={() => setShowSearchDialog(true)}>
+						<Search className='h-4 w-4' />
+						Search
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			<AddTopicToPracticeDialog
+				existingTopicIds={existingTopicIds}
+				isCreating={isAdding}
+				onOpenChange={setShowSearchDialog}
+				onSelected={handleAdd}
+				open={showSearchDialog}
+			/>
+		</>
+	)
+
+	return (
+		<LearnablePanel
+			actions={actions}
+			estimateItemSize={estimateItemSize}
+			getItemKey={getItemKey}
+			getScrollElement={getScrollElement}
+			icon={BookOpen}
+			items={topics}
+			label='Related Topics'
+			renderItem={renderItem}
+			scrollMargin={scrollMargin}
+		/>
+	)
+}
