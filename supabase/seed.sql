@@ -125,15 +125,6 @@ VALUES
 SELECT setval('topics_id_seq', (SELECT MAX(id) FROM topics));
 
 -- ============================================================================
--- TOPIC OTHER RELATIONS (non-hierarchical)
--- ============================================================================
-INSERT INTO topic_other_relations (from_topic_id, to_topic_id) VALUES
-  (12, 13),  -- Generics relates to Type Guards (both advanced TS)
-  (17, 19),  -- Linear Algebra relates to Probability (math foundations)
-  (8, 10),   -- Python relates to SQL (data work)
-  (15, 7);   -- React Hooks relates to TypeScript (typed hooks)
-
--- ============================================================================
 -- REVIEW SESSIONS
 -- ============================================================================
 INSERT INTO review_sessions (id, user_id, description, scheduled_at, completed_at, inserted_at, updated_at)
@@ -285,3 +276,30 @@ INSERT INTO source_topics (source_id, topic_id) VALUES
   -- Algorithm Design Manual covered Math topics (archived)
   (7, 2),   -- Algorithm Design Manual covers Mathematics
   (7, 17);  -- Algorithm Design Manual covers Linear Algebra
+
+-- ============================================================================
+-- ENTITY RELATIONS (non-hierarchical relations between entities)
+-- ============================================================================
+-- Topic → Topic relations
+INSERT INTO entity_relations (from_topic_id, to_topic_id) VALUES
+  (12, 13),  -- Generics relates to Type Guards (both advanced TS)
+  (17, 19),  -- Linear Algebra relates to Probability (math foundations)
+  (8, 10),   -- Python relates to SQL (data work)
+  (15, 7);   -- React Hooks relates to TypeScript (typed hooks)
+
+-- Topic → Source relations
+INSERT INTO entity_relations (from_topic_id, to_source_id) VALUES
+  (7, 1);    -- TypeScript topic relates to Effective TypeScript book
+
+-- Source → Topic relations
+INSERT INTO entity_relations (from_source_id, to_topic_id) VALUES
+  (4, 15);   -- React Documentation relates to React Hooks topic
+
+-- ============================================================================
+-- SOURCE PREREQUISITES
+-- ============================================================================
+INSERT INTO source_prerequisites (source_id, prereq_topic_id) VALUES
+  (3, 7);    -- Chapter 2 requires TypeScript knowledge
+
+INSERT INTO source_prerequisites (source_id, prereq_source_id) VALUES
+  (3, 2);    -- Chapter 2 requires Chapter 1
