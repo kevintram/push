@@ -27,8 +27,10 @@ from app.utils.retrievability import (
 )
 
 if TYPE_CHECKING:
+    from app.models.entity_relations import EntityRelation
     from app.models.fsrs_state import FsrsState
     from app.models.reviews import Review
+    from app.models.source_prerequisites import SourcePrerequisite
     from app.models.topics import Topic
 
 
@@ -124,6 +126,25 @@ class Source(Base):
     )
 
     reviews: Mapped[list["Review"]] = relationship("Review", back_populates="source")
+
+    # Entity relations (unified, for related topics/sources)
+    related_outgoing_relations: Mapped[list["EntityRelation"]] = relationship(
+        "EntityRelation",
+        foreign_keys="EntityRelation.from_source_id",
+        viewonly=True,
+    )
+    related_incoming_relations: Mapped[list["EntityRelation"]] = relationship(
+        "EntityRelation",
+        foreign_keys="EntityRelation.to_source_id",
+        viewonly=True,
+    )
+
+    # Prerequisites (what must be learned before this source)
+    prerequisites: Mapped[list["SourcePrerequisite"]] = relationship(
+        "SourcePrerequisite",
+        foreign_keys="SourcePrerequisite.source_id",
+        viewonly=True,
+    )
 
     # Computed property for retrievability
     @hybrid_property
@@ -221,6 +242,34 @@ Source.topics_count = column_property(
     select(func.count())
     .select_from(t_source_topics)
     .where(t_source_topics.c.source_id == Source.id)
+    .correlate(Source)
+    .scalar_subquery()
+)
+
+# Import for count column properties (after class to avoid circular import)
+from app.models.entity_relations import EntityRelation  # noqa: E402
+from app.models.source_prerequisites import SourcePrerequisite  # noqa: E402
+
+Source.related_outgoing_count = column_property(
+    select(func.count())
+    .select_from(EntityRelation)
+    .where(EntityRelation.from_source_id == Source.id)
+    .correlate(Source)
+    .scalar_subquery()
+)
+
+Source.related_incoming_count = column_property(
+    select(func.count())
+    .select_from(EntityRelation)
+    .where(EntityRelation.to_source_id == Source.id)
+    .correlate(Source)
+    .scalar_subquery()
+)
+
+Source.prerequisites_count = column_property(
+    select(func.count())
+    .select_from(SourcePrerequisite)
+    .where(SourcePrerequisite.source_id == Source.id)
     .correlate(Source)
     .scalar_subquery()
 )

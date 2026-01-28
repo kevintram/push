@@ -4,6 +4,7 @@ from datetime import datetime, date
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
+from app.schemas.entity_relations import RelatedEntityRead
 from app.schemas.topics import RetrievabilityBucket, TopicSummaryRead
 
 
@@ -65,6 +66,8 @@ class SourceDetailRead(SourceSummaryRead):
     parent: SourceSummaryRead | None = None
     children: list[SourceSummaryRead] = []
     topics: list[TopicSummaryRead] = []
+    related_outgoing: list[RelatedEntityRead] = []
+    related_incoming: list[RelatedEntityRead] = []
 
 
 class SourceCreate(BaseModel):

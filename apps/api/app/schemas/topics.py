@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
+from app.schemas.entity_relations import RelatedEntityRead
+
 if TYPE_CHECKING:
     from app.schemas.sources import SourceSummaryRead
 
@@ -75,8 +77,8 @@ class TopicDetailRead(TopicSummaryRead):
 
     parent: TopicSummaryRead | None = None
     children: list[TopicSummaryRead] = []
-    related_outgoing: list[TopicSummaryRead] = []
-    related_incoming: list[TopicSummaryRead] = []
+    related_outgoing: list[RelatedEntityRead] = []
+    related_incoming: list[RelatedEntityRead] = []
     sources: list["SourceSummaryRead"] = []
 
 

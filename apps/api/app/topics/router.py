@@ -8,6 +8,7 @@ from app.constants import ChildHandlingStrategy
 from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
 from app.schemas import (
+    EntityRelationCreate,
     RelationshipDirection,
     ReviewSessionReadWithReviews,
     TopicChildRelationshipCreate,
@@ -76,7 +77,18 @@ async def read_topics(
 async def read_topic(
     session: SessionDep, user_id: UserIdDep, topic_id: int
 ) -> TopicDetailRead:
-    return await service.load_topic_with_relationships(session, topic_id, user_id)
+    topic = await service.load_topic_with_relationships(session, topic_id, user_id)
+
+    # Fetch related entities (topics AND sources) and add them to the response
+    outgoing, incoming = await service.get_topic_related_entities(
+        session, topic_id, user_id
+    )
+
+    topic_data = TopicDetailRead.model_validate(topic).model_dump()
+    topic_data["related_outgoing"] = outgoing
+    topic_data["related_incoming"] = incoming
+
+    return TopicDetailRead(**topic_data)
 
 
 @router.get("/{topic_id}/children/")
@@ -184,8 +196,44 @@ async def delete_topic_other_relationship(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> None:
+    """Delete a topic-to-topic relationship (legacy endpoint for backward compatibility)."""
     await service.delete_topic_relationship(
         session, from_topic_id, to_topic_id, user_id
+    )
+
+
+@router.post("/{topic_id}/entity-relations/")
+async def add_entity_relation_to_topic(
+    topic_id: int,
+    payload: EntityRelationCreate,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> None:
+    """Add a related entity (topic or source) to this topic."""
+    await service.add_related_entity_to_topic(
+        session,
+        topic_id,
+        user_id,
+        to_entity_type=payload.to_entity_type.value,
+        to_entity_id=payload.to_entity_id,
+    )
+
+
+@router.delete("/{topic_id}/entity-relations/{entity_type}/{entity_id}/")
+async def remove_entity_relation_from_topic(
+    topic_id: int,
+    entity_type: str,
+    entity_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> None:
+    """Remove a related entity (topic or source) from this topic."""
+    await service.remove_related_entity_from_topic(
+        session,
+        topic_id,
+        user_id,
+        entity_type=entity_type,
+        entity_id=entity_id,
     )
 
 

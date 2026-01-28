@@ -1,6 +1,11 @@
 import type { Source } from '~/features/sources/types/source.types'
 import type { LearningState } from '~/models/learning-state.types'
 
+// A related entity can be either a full Topic or Source with entity_type discriminator
+export type RelatedEntityItem =
+	| (Topic & { entity_type: 'topic' })
+	| (Source & { entity_type: 'source' })
+
 export const RelationshipDirection = {
 	Outgoing: 'outgoing',
 	Incoming: 'incoming'
@@ -15,6 +20,7 @@ export type Topic = {
 	id: number
 	name: string
 	notes: string
+	entity_type?: 'topic' // Discriminator for related entities
 	inserted_at: string
 	updated_at: string
 	parent_id: number | null
@@ -41,8 +47,8 @@ export type Topic = {
 	related_incoming_count?: number
 	parent?: Topic | null
 	children?: Array<Topic>
-	related_outgoing?: Array<Topic>
-	related_incoming?: Array<Topic>
+	related_outgoing?: Array<RelatedEntityItem>
+	related_incoming?: Array<RelatedEntityItem>
 	sources?: Array<Source>
 	relationship_direction?: RelationshipDirection
 }

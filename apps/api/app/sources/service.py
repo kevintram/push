@@ -15,8 +15,16 @@ from app.exceptions import (
     CycleDetectedError,
     HasChildrenError,
     NotFoundError,
+    SelfReferenceError,
 )
-from app.models import FsrsState, Source, Topic, t_source_topics
+from app.models import (
+    EntityRelation,
+    FsrsState,
+    Source,
+    SourcePrerequisite,
+    Topic,
+    t_source_topics,
+)
 
 
 async def get_source(session: AsyncSession, source_id: int, user_id: str) -> Source:
@@ -560,3 +568,266 @@ async def delete_source(
         )
 
     await session.commit()
+
+
+# ===== Entity Relations =====
+
+
+async def get_source_related_entities(
+    session: AsyncSession, source_id: int, user_id: str
+) -> tuple[list[dict], list[dict]]:
+    """Get outgoing and incoming entity relations for a source.
+
+    Returns:
+        Tuple of (outgoing_relations, incoming_relations) where each item is a dict
+        containing full entity data with an entity_type discriminator.
+    """
+    from app.schemas.sources import SourceSummaryRead
+    from app.schemas.topics import TopicSummaryRead
+
+    # First verify the source exists and belongs to user
+    await get_source(session, source_id, user_id)
+
+    # Fetch outgoing relations (from this source to other entities)
+    outgoing_stmt = (
+        select(EntityRelation)
+        .where(EntityRelation.from_source_id == source_id)
+        .options(
+            selectinload(EntityRelation.to_topic).selectinload(Topic.fsrs_state),
+            selectinload(EntityRelation.to_source).selectinload(Source.fsrs_state),
+        )
+    )
+    outgoing_result = await session.execute(outgoing_stmt)
+    outgoing_relations = outgoing_result.scalars().all()
+
+    outgoing = []
+    for rel in outgoing_relations:
+        if rel.to_topic_id:
+            # Verify topic belongs to user
+            if rel.to_topic and rel.to_topic.user_id == user_id:
+                topic_data = TopicSummaryRead.model_validate(rel.to_topic).model_dump()
+                topic_data["entity_type"] = "topic"
+                outgoing.append(topic_data)
+        elif rel.to_source_id:
+            # Verify source belongs to user
+            if rel.to_source and rel.to_source.user_id == user_id:
+                source_data = SourceSummaryRead.model_validate(
+                    rel.to_source
+                ).model_dump()
+                source_data["entity_type"] = "source"
+                outgoing.append(source_data)
+
+    # Fetch incoming relations (from other entities to this source)
+    incoming_stmt = (
+        select(EntityRelation)
+        .where(EntityRelation.to_source_id == source_id)
+        .options(
+            selectinload(EntityRelation.from_topic).selectinload(Topic.fsrs_state),
+            selectinload(EntityRelation.from_source).selectinload(Source.fsrs_state),
+        )
+    )
+    incoming_result = await session.execute(incoming_stmt)
+    incoming_relations = incoming_result.scalars().all()
+
+    incoming = []
+    for rel in incoming_relations:
+        if rel.from_topic_id:
+            if rel.from_topic and rel.from_topic.user_id == user_id:
+                topic_data = TopicSummaryRead.model_validate(
+                    rel.from_topic
+                ).model_dump()
+                topic_data["entity_type"] = "topic"
+                incoming.append(topic_data)
+        elif rel.from_source_id:
+            if rel.from_source and rel.from_source.user_id == user_id:
+                source_data = SourceSummaryRead.model_validate(
+                    rel.from_source
+                ).model_dump()
+                source_data["entity_type"] = "source"
+                incoming.append(source_data)
+
+    return outgoing, incoming
+
+
+async def add_related_entity_to_source(
+    session: AsyncSession,
+    source_id: int,
+    user_id: str,
+    *,
+    to_entity_type: str,
+    to_entity_id: int,
+) -> None:
+    """Add a related entity (topic or source) to this source."""
+    # Verify source exists and belongs to user
+    await get_source(session, source_id, user_id)
+
+    if to_entity_type == "topic":
+        # Verify target topic exists and belongs to user
+        topic_result = await session.execute(
+            select(Topic).where(Topic.id == to_entity_id, Topic.user_id == user_id)
+        )
+        if not topic_result.scalar_one_or_none():
+            raise NotFoundError("Topic", to_entity_id)
+
+        relation = EntityRelation(
+            from_source_id=source_id,
+            to_topic_id=to_entity_id,
+        )
+    elif to_entity_type == "source":
+        # Verify target source exists and belongs to user
+        await get_source(session, to_entity_id, user_id)
+
+        # Check for self-reference
+        if source_id == to_entity_id:
+            raise SelfReferenceError("source")
+
+        relation = EntityRelation(
+            from_source_id=source_id,
+            to_source_id=to_entity_id,
+        )
+    else:
+        raise BadRequestError(f"Invalid entity_type: {to_entity_type}")
+
+    session.add(relation)
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise AlreadyExistsError("Relationship already exists")
+
+
+async def remove_related_entity_from_source(
+    session: AsyncSession,
+    source_id: int,
+    user_id: str,
+    *,
+    entity_type: str,
+    entity_id: int,
+) -> None:
+    """Remove a related entity (topic or source) from this source."""
+    # Verify source exists and belongs to user
+    await get_source(session, source_id, user_id)
+
+    if entity_type == "topic":
+        stmt = delete(EntityRelation).where(
+            EntityRelation.from_source_id == source_id,
+            EntityRelation.to_topic_id == entity_id,
+        )
+    elif entity_type == "source":
+        stmt = delete(EntityRelation).where(
+            EntityRelation.from_source_id == source_id,
+            EntityRelation.to_source_id == entity_id,
+        )
+    else:
+        raise BadRequestError(f"Invalid entity_type: {entity_type}")
+
+    result = await session.execute(stmt)
+    await session.commit()
+
+    if result.rowcount == 0:
+        raise NotFoundError("Relationship")
+
+
+# ===== Source Prerequisites =====
+
+
+async def get_source_prerequisites(
+    session: AsyncSession, source_id: int, user_id: str
+) -> list[SourcePrerequisite]:
+    """Get all prerequisites for this source."""
+    # Verify source exists and belongs to user
+    await get_source(session, source_id, user_id)
+
+    stmt = (
+        select(SourcePrerequisite)
+        .where(SourcePrerequisite.source_id == source_id)
+        .options(
+            selectinload(SourcePrerequisite.prereq_topic).selectinload(
+                Topic.fsrs_state
+            ),
+            selectinload(SourcePrerequisite.prereq_source).selectinload(
+                Source.fsrs_state
+            ),
+        )
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def add_source_prerequisite(
+    session: AsyncSession,
+    source_id: int,
+    user_id: str,
+    *,
+    prereq_entity_type: str,
+    prereq_entity_id: int,
+) -> None:
+    """Add a prerequisite (topic or source) to this source."""
+    # Verify source exists and belongs to user
+    await get_source(session, source_id, user_id)
+
+    if prereq_entity_type == "topic":
+        # Verify target topic exists and belongs to user
+        topic_result = await session.execute(
+            select(Topic).where(Topic.id == prereq_entity_id, Topic.user_id == user_id)
+        )
+        if not topic_result.scalar_one_or_none():
+            raise NotFoundError("Topic", prereq_entity_id)
+
+        prereq = SourcePrerequisite(
+            source_id=source_id,
+            prereq_topic_id=prereq_entity_id,
+        )
+    elif prereq_entity_type == "source":
+        # Verify target source exists and belongs to user
+        await get_source(session, prereq_entity_id, user_id)
+
+        # Check for self-reference
+        if source_id == prereq_entity_id:
+            raise SelfReferenceError("source")
+
+        prereq = SourcePrerequisite(
+            source_id=source_id,
+            prereq_source_id=prereq_entity_id,
+        )
+    else:
+        raise BadRequestError(f"Invalid prereq_entity_type: {prereq_entity_type}")
+
+    session.add(prereq)
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise AlreadyExistsError("Prerequisite already exists")
+
+
+async def remove_source_prerequisite(
+    session: AsyncSession,
+    source_id: int,
+    user_id: str,
+    *,
+    entity_type: str,
+    entity_id: int,
+) -> None:
+    """Remove a prerequisite from this source."""
+    # Verify source exists and belongs to user
+    await get_source(session, source_id, user_id)
+
+    if entity_type == "topic":
+        stmt = delete(SourcePrerequisite).where(
+            SourcePrerequisite.source_id == source_id,
+            SourcePrerequisite.prereq_topic_id == entity_id,
+        )
+    elif entity_type == "source":
+        stmt = delete(SourcePrerequisite).where(
+            SourcePrerequisite.source_id == source_id,
+            SourcePrerequisite.prereq_source_id == entity_id,
+        )
+    else:
+        raise BadRequestError(f"Invalid entity_type: {entity_type}")
+
+    result = await session.execute(stmt)
+    await session.commit()
+
+    if result.rowcount == 0:
+        raise NotFoundError("Prerequisite")
