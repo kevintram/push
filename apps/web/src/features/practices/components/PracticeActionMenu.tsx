@@ -1,6 +1,7 @@
 import {
 	Archive,
 	ArchiveRestore,
+	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
 	SquareCheck,
@@ -26,6 +27,8 @@ interface PracticeActionMenuProps {
 	onDelete?: () => void
 	trigger?: React.ReactNode
 	onPracticeUpdateSuccess?: (practice: Practice) => Promise<unknown> | unknown
+	onRemoveRelationship?: () => void
+	removeRelationshipText?: string
 }
 
 export function PracticeActionMenu({
@@ -33,7 +36,9 @@ export function PracticeActionMenu({
 	children,
 	onDelete,
 	trigger,
-	onPracticeUpdateSuccess
+	onPracticeUpdateSuccess,
+	onRemoveRelationship,
+	removeRelationshipText = 'Remove'
 }: PracticeActionMenuProps) {
 	const deletePracticeMutation = useDeletePractice()
 	const updatePracticeMutation = useUpdatePractice(onPracticeUpdateSuccess)
@@ -138,6 +143,17 @@ export function PracticeActionMenu({
 					)}
 				</DropdownMenuItem>
 				{children}
+				{onRemoveRelationship && (
+					<DropdownMenuItem
+						onClick={e => {
+							e.stopPropagation()
+							onRemoveRelationship()
+						}}
+					>
+						<GitPullRequestClosed className='mr-2 h-4 w-4' />
+						{removeRelationshipText}
+					</DropdownMenuItem>
+				)}
 				<DropdownMenuItem onClick={handleDeletePractice} variant='destructive'>
 					<Trash2 className='mr-2 h-4 w-4' />
 					Delete
