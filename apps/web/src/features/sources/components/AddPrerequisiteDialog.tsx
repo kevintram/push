@@ -24,7 +24,8 @@ import { SourceCard } from './SourceCard'
 interface AddPrerequisiteDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	sourceId: number | undefined
+	sourceId?: number | undefined
+	topicId?: number | undefined
 	onSelected?: (entityType: EntityType, entityId: number) => void
 	isAdding?: boolean
 }
@@ -33,6 +34,7 @@ export function AddPrerequisiteDialog({
 	open,
 	onOpenChange,
 	sourceId,
+	topicId,
 	onSelected
 }: AddPrerequisiteDialogProps) {
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -58,6 +60,12 @@ export function AddPrerequisiteDialog({
 	const filteredSourceResults = useMemo(
 		() => sourceResults.filter(s => s.id !== sourceId),
 		[sourceResults, sourceId]
+	)
+
+	// Filter out the current topic from results
+	const filteredTopicResults = useMemo(
+		() => topicResults.filter(t => t.id !== topicId),
+		[topicResults, topicId]
 	)
 
 	useEffect(() => {
@@ -143,7 +151,8 @@ export function AddPrerequisiteDialog({
 		return Math.max(MIN_HEIGHT, 80 + (titleLines - 1) * 20 + notesLines * 20)
 	}, [])
 
-	const results = searchType === 'topic' ? topicResults : filteredSourceResults
+	const results =
+		searchType === 'topic' ? filteredTopicResults : filteredSourceResults
 	const isLoading = searchType === 'topic' ? isLoadingTopics : isLoadingSources
 
 	return (

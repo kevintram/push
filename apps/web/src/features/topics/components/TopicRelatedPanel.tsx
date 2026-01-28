@@ -24,6 +24,7 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { AddPrerequisiteDialog } from '~/features/sources/components/AddPrerequisiteDialog'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { EntityType } from '~/models/entity-relations.types'
 import { useAddTopicEntityRelation } from '../api/addTopicEntityRelation'
@@ -67,6 +68,7 @@ export function TopicRelatedPanel({
 }: TopicRelatedPanelProps) {
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
+	const [showAddEntityDialog, setShowAddEntityDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
@@ -119,6 +121,21 @@ export function TopicRelatedPanel({
 				data: {
 					to_entity_type: EntityType.Topic,
 					to_entity_id: topic.id
+				}
+			})
+		},
+		[topicId, addRelation]
+	)
+
+	// Handle adding any entity type (from AddPrerequisiteDialog)
+	const handleAddEntity = useCallback(
+		async (entityType: EntityType, entityId: number) => {
+			if (!topicId) return
+			await addRelation.mutateAsync({
+				topicId,
+				data: {
+					to_entity_type: entityType,
+					to_entity_id: entityId
 				}
 			})
 		},
@@ -208,6 +225,10 @@ export function TopicRelatedPanel({
 								<Search className='h-4 w-4' />
 								Search Topics
 							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setShowAddEntityDialog(true)}>
+								<Search className='h-4 w-4' />
+								Search Sources
+							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
 				}
@@ -278,6 +299,14 @@ export function TopicRelatedPanel({
 					open={showAddTopicDialog}
 				/>
 			)}
+
+			<AddPrerequisiteDialog
+				isAdding={isCreating}
+				onOpenChange={setShowAddEntityDialog}
+				onSelected={handleAddEntity}
+				open={showAddEntityDialog}
+				topicId={topicId}
+			/>
 		</div>
 	)
 }
