@@ -279,6 +279,7 @@ export function TopicDetail({
 								onSourceSelect={onSourceNavigate}
 								renderCard={renderSourceCard}
 								sources={topic.sources}
+								topicId={topic.id}
 							/>
 						</div>
 					</div>

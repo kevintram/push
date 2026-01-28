@@ -514,7 +514,9 @@ async def get_topic_related_entities(
     for rel in incoming_relations:
         if rel.from_topic_id:
             if rel.from_topic and rel.from_topic.user_id == user_id:
-                topic_data = TopicSummaryRead.model_validate(rel.from_topic).model_dump()
+                topic_data = TopicSummaryRead.model_validate(
+                    rel.from_topic
+                ).model_dump()
                 topic_data["entity_type"] = "topic"
                 incoming.append(topic_data)
         elif rel.from_source_id:
