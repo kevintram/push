@@ -143,7 +143,6 @@ export function TopicSourcesPanel({
 			estimateItemSize={estimateItemSize}
 			getItemKey={getItemKey}
 			getScrollElement={getScrollElement}
-			hideWhenEmpty={true}
 			icon={BookMarked}
 			items={sources}
 			label='Sources'

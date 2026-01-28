@@ -198,7 +198,6 @@ export function SourcePracticesPanel({
 			estimateItemSize={estimateItemSize}
 			getItemKey={getItemKey}
 			getScrollElement={getScrollElement}
-			hideWhenEmpty={false}
 			icon={Dumbbell}
 			items={practices}
 			label='Practices'

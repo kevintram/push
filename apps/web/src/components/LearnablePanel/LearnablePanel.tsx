@@ -29,8 +29,6 @@ interface LearnablePanelProps<T> {
 	getScrollElement?: () => HTMLDivElement | null
 	/** Scroll margin for virtualization */
 	scrollMargin?: number
-	/** Hide the panel when there are no items. Defaults to false. */
-	hideWhenEmpty?: boolean
 }
 
 export function LearnablePanel<T>({
@@ -43,8 +41,7 @@ export function LearnablePanel<T>({
 	estimateItemSize,
 	getItemKey,
 	getScrollElement,
-	scrollMargin,
-	hideWhenEmpty = false
+	scrollMargin
 }: LearnablePanelProps<T>) {
 	const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
 
@@ -62,11 +59,6 @@ export function LearnablePanel<T>({
 		},
 		[getItemKey]
 	)
-
-	// Hide panel if empty and hideWhenEmpty is true
-	if (hideWhenEmpty && items.length === 0) {
-		return null
-	}
 
 	return (
 		<div className='flex flex-col'>
