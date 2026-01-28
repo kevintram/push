@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 from app.schemas.entity_relations import RelatedEntityRead
 
 if TYPE_CHECKING:
+    from app.schemas.practices import PracticeSummaryRead
     from app.schemas.sources import SourceSummaryRead
 
 
@@ -80,6 +81,7 @@ class TopicDetailRead(TopicSummaryRead):
     related_outgoing: list[RelatedEntityRead] = []
     related_incoming: list[RelatedEntityRead] = []
     sources: list["SourceSummaryRead"] = []
+    practices: list["PracticeSummaryRead"] = []
 
 
 class RelationshipDirection(str, Enum):
@@ -192,3 +194,9 @@ class TopicOtherRelationshipResponse(BaseModel):
 
     from_topic: TopicRead
     to_topic: TopicRead
+
+
+class TopicPracticeAdd(BaseModel):
+    """Add a practice to this topic."""
+
+    practice_id: int

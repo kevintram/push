@@ -11,6 +11,7 @@ from app.constants import ChildHandlingStrategy
 from app.exceptions import (
     AlreadyExistsError,
     BadRequestError,
+    ConflictError,
     CycleDetectedError,
     HasChildrenError,
     NotFoundError,
@@ -19,10 +20,12 @@ from app.exceptions import (
 from app.models import (
     EntityRelation,
     FsrsState,
+    Practice,
     Review,
     ReviewSession,
     Source,
     Topic,
+    t_practice_topics,
 )
 
 
@@ -61,7 +64,7 @@ async def is_descendant_of(
 async def load_topic_with_relationships(
     session: AsyncSession, topic_id: int, user_id: str
 ) -> Topic:
-    """Load a topic with parent, children, and sources relationships.
+    """Load a topic with parent, children, sources, and practices relationships.
 
     Note: related_outgoing and related_incoming are now fetched separately
     via get_topic_related() since they use the entity_relations table.
@@ -73,6 +76,7 @@ async def load_topic_with_relationships(
             selectinload(Topic.parent).selectinload(Topic.fsrs_state),
             selectinload(Topic.children).selectinload(Topic.fsrs_state),
             selectinload(Topic.sources).selectinload(Source.fsrs_state),
+            selectinload(Topic.practices).selectinload(Practice.fsrs_state),
             selectinload(Topic.fsrs_state),
         )
     )
@@ -815,4 +819,70 @@ async def delete_topic(
             delete(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
         )
 
+    await session.commit()
+
+
+# ===== Topic Practices =====
+
+
+async def get_topic_practices(
+    session: AsyncSession, topic_id: int, user_id: str
+) -> list[Practice]:
+    """Get all practices linked to a topic."""
+    await get_topic(session, topic_id, user_id)
+    stmt = (
+        select(Practice)
+        .join(t_practice_topics, Practice.id == t_practice_topics.c.practice_id)
+        .where(t_practice_topics.c.topic_id == topic_id)
+        .options(selectinload(Practice.fsrs_state))
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def add_practice_to_topic(
+    session: AsyncSession, topic_id: int, practice_id: int, user_id: str
+) -> None:
+    """Link a practice to a topic."""
+    # Verify topic exists and belongs to user
+    await get_topic(session, topic_id, user_id)
+
+    # Verify practice exists and belongs to user
+    stmt = select(Practice).where(
+        Practice.id == practice_id, Practice.user_id == user_id
+    )
+    result = await session.execute(stmt)
+    practice = result.scalar_one_or_none()
+    if practice is None:
+        raise NotFoundError("Practice", practice_id)
+
+    # Check if already linked
+    stmt = select(t_practice_topics).where(
+        t_practice_topics.c.topic_id == topic_id,
+        t_practice_topics.c.practice_id == practice_id,
+    )
+    result = await session.execute(stmt)
+    if result.first() is not None:
+        raise ConflictError("Practice is already linked to this topic")
+
+    await session.execute(
+        t_practice_topics.insert().values(topic_id=topic_id, practice_id=practice_id)
+    )
+    await session.commit()
+
+
+async def remove_practice_from_topic(
+    session: AsyncSession, topic_id: int, practice_id: int, user_id: str
+) -> None:
+    """Remove a practice link from a topic."""
+    await get_topic(session, topic_id, user_id)
+
+    result = await session.execute(
+        delete(t_practice_topics).where(
+            t_practice_topics.c.topic_id == topic_id,
+            t_practice_topics.c.practice_id == practice_id,
+        )
+    )
+    if result.rowcount == 0:
+        raise NotFoundError("Topic-Practice link", practice_id)
     await session.commit()

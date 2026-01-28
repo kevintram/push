@@ -12,6 +12,7 @@ from app.constants import ChildHandlingStrategy
 from app.exceptions import (
     AlreadyExistsError,
     BadRequestError,
+    ConflictError,
     CycleDetectedError,
     HasChildrenError,
     NotFoundError,
@@ -20,9 +21,11 @@ from app.exceptions import (
 from app.models import (
     EntityRelation,
     FsrsState,
+    Practice,
     Source,
     SourcePrerequisite,
     Topic,
+    t_practice_sources,
     t_source_topics,
 )
 
@@ -62,7 +65,7 @@ async def is_descendant_of(
 async def load_source_with_relationships(
     session: AsyncSession, source_id: int, user_id: str
 ) -> Source:
-    """Load a source with parent, children, and topics relationships."""
+    """Load a source with parent, children, topics, and practices relationships."""
     stmt = (
         select(Source)
         .where(Source.id == source_id, Source.user_id == user_id)
@@ -70,6 +73,7 @@ async def load_source_with_relationships(
             selectinload(Source.parent).selectinload(Source.fsrs_state),
             selectinload(Source.children).selectinload(Source.fsrs_state),
             selectinload(Source.topics).selectinload(Topic.fsrs_state),
+            selectinload(Source.practices).selectinload(Practice.fsrs_state),
             selectinload(Source.fsrs_state),
         )
     )
@@ -831,3 +835,69 @@ async def remove_source_prerequisite(
 
     if result.rowcount == 0:
         raise NotFoundError("Prerequisite")
+
+
+# ===== Source Practices =====
+
+
+async def get_source_practices(
+    session: AsyncSession, source_id: int, user_id: str
+) -> list[Practice]:
+    """Get all practices linked to a source."""
+    await get_source(session, source_id, user_id)
+    stmt = (
+        select(Practice)
+        .join(t_practice_sources, Practice.id == t_practice_sources.c.practice_id)
+        .where(t_practice_sources.c.source_id == source_id)
+        .options(selectinload(Practice.fsrs_state))
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def add_practice_to_source(
+    session: AsyncSession, source_id: int, practice_id: int, user_id: str
+) -> None:
+    """Link a practice to a source."""
+    # Verify source exists and belongs to user
+    await get_source(session, source_id, user_id)
+
+    # Verify practice exists and belongs to user
+    stmt = select(Practice).where(
+        Practice.id == practice_id, Practice.user_id == user_id
+    )
+    result = await session.execute(stmt)
+    practice = result.scalar_one_or_none()
+    if practice is None:
+        raise NotFoundError("Practice", practice_id)
+
+    # Check if already linked
+    stmt = select(t_practice_sources).where(
+        t_practice_sources.c.source_id == source_id,
+        t_practice_sources.c.practice_id == practice_id,
+    )
+    result = await session.execute(stmt)
+    if result.first() is not None:
+        raise ConflictError("Practice is already linked to this source")
+
+    await session.execute(
+        t_practice_sources.insert().values(source_id=source_id, practice_id=practice_id)
+    )
+    await session.commit()
+
+
+async def remove_practice_from_source(
+    session: AsyncSession, source_id: int, practice_id: int, user_id: str
+) -> None:
+    """Remove a practice link from a source."""
+    await get_source(session, source_id, user_id)
+
+    result = await session.execute(
+        delete(t_practice_sources).where(
+            t_practice_sources.c.source_id == source_id,
+            t_practice_sources.c.practice_id == practice_id,
+        )
+    )
+    if result.rowcount == 0:
+        raise NotFoundError("Source-Practice link", practice_id)
+    await session.commit()

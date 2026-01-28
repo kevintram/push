@@ -273,3 +273,20 @@ Source.prerequisites_count = column_property(
     .correlate(Source)
     .scalar_subquery()
 )
+
+# Import for practices relationship (after class to avoid circular import)
+from app.models.practices import t_practice_sources  # noqa: E402
+
+Source.practices = relationship(
+    "Practice",
+    secondary="practice_sources",
+    viewonly=True,
+)
+
+Source.practices_count = column_property(
+    select(func.count())
+    .select_from(t_practice_sources)
+    .where(t_practice_sources.c.source_id == Source.id)
+    .correlate(Source)
+    .scalar_subquery()
+)

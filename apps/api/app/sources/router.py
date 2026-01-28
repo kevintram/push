@@ -9,9 +9,11 @@ from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
 from app.schemas import (
     EntityRelationCreate,
+    PracticeSummaryRead,
     SourceChildRelationshipCreate,
     SourceCreate,
     SourceDetailRead,
+    SourcePracticeAdd,
     SourcePrerequisiteCreate,
     SourcePrerequisiteRead,
     SourceRead,
@@ -248,6 +250,39 @@ async def remove_source_prerequisite(
         entity_type=entity_type,
         entity_id=entity_id,
     )
+
+
+@router.get("/{source_id}/practices/")
+async def get_source_practices(
+    session: SessionDep,
+    user_id: UserIdDep,
+    source_id: int,
+) -> list[PracticeSummaryRead]:
+    """Get all practices linked to a source."""
+    practices = await service.get_source_practices(session, source_id, user_id)
+    return [PracticeSummaryRead.model_validate(p) for p in practices]
+
+
+@router.post("/{source_id}/practices/", status_code=201)
+async def add_practice_to_source(
+    session: SessionDep,
+    user_id: UserIdDep,
+    source_id: int,
+    data: SourcePracticeAdd,
+) -> None:
+    """Link a practice to a source."""
+    await service.add_practice_to_source(session, source_id, data.practice_id, user_id)
+
+
+@router.delete("/{source_id}/practices/{practice_id}/", status_code=204)
+async def remove_practice_from_source(
+    session: SessionDep,
+    user_id: UserIdDep,
+    source_id: int,
+    practice_id: int,
+) -> None:
+    """Remove a practice link from a source."""
+    await service.remove_practice_from_source(session, source_id, practice_id, user_id)
 
 
 @router.patch("/{source_id}/")

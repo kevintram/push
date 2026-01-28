@@ -38,5 +38,7 @@ export const sourceKeys = {
 	topics: (sourceId: number) =>
 		[...sourceKeys.byId(sourceId), 'topics'] as const,
 	prerequisites: (sourceId: number) =>
-		[...sourceKeys.byId(sourceId), 'prerequisites'] as const
+		[...sourceKeys.byId(sourceId), 'prerequisites'] as const,
+	practices: (sourceId: number) =>
+		[...sourceKeys.byId(sourceId), 'practices'] as const
 }

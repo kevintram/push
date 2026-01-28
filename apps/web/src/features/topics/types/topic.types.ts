@@ -1,3 +1,4 @@
+import type { Practice } from '~/features/practices/types/practice.types'
 import type { Source } from '~/features/sources/types/source.types'
 import type { LearningState } from '~/models/learning-state.types'
 
@@ -50,6 +51,7 @@ export type Topic = {
 	related_outgoing?: Array<RelatedEntityItem>
 	related_incoming?: Array<RelatedEntityItem>
 	sources?: Array<Source>
+	practices?: Array<Practice>
 	relationship_direction?: RelationshipDirection
 }
 

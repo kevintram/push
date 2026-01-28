@@ -223,3 +223,20 @@ Topic.sources_count = column_property(
     .correlate(Topic)
     .scalar_subquery()
 )
+
+# Import for practices relationship (after class to avoid circular import)
+from app.models.practices import t_practice_topics  # noqa: E402
+
+Topic.practices = relationship(
+    "Practice",
+    secondary="practice_topics",
+    viewonly=True,
+)
+
+Topic.practices_count = column_property(
+    select(func.count())
+    .select_from(t_practice_topics)
+    .where(t_practice_topics.c.topic_id == Topic.id)
+    .correlate(Topic)
+    .scalar_subquery()
+)

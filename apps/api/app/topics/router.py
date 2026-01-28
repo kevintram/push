@@ -9,6 +9,7 @@ from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
 from app.schemas import (
     EntityRelationCreate,
+    PracticeSummaryRead,
     RelationshipDirection,
     ReviewSessionReadWithReviews,
     TopicChildRelationshipCreate,
@@ -16,6 +17,7 @@ from app.schemas import (
     TopicDetailRead,
     TopicOtherRelationshipCreate,
     TopicOtherRelationshipResponse,
+    TopicPracticeAdd,
     TopicRead,
     TopicRelatedRead,
     TopicRelationshipResponse,
@@ -235,6 +237,39 @@ async def remove_entity_relation_from_topic(
         entity_type=entity_type,
         entity_id=entity_id,
     )
+
+
+@router.get("/{topic_id}/practices/")
+async def get_topic_practices(
+    session: SessionDep,
+    user_id: UserIdDep,
+    topic_id: int,
+) -> list[PracticeSummaryRead]:
+    """Get all practices linked to a topic."""
+    practices = await service.get_topic_practices(session, topic_id, user_id)
+    return [PracticeSummaryRead.model_validate(p) for p in practices]
+
+
+@router.post("/{topic_id}/practices/", status_code=201)
+async def add_practice_to_topic(
+    session: SessionDep,
+    user_id: UserIdDep,
+    topic_id: int,
+    data: TopicPracticeAdd,
+) -> None:
+    """Link a practice to a topic."""
+    await service.add_practice_to_topic(session, topic_id, data.practice_id, user_id)
+
+
+@router.delete("/{topic_id}/practices/{practice_id}/", status_code=204)
+async def remove_practice_from_topic(
+    session: SessionDep,
+    user_id: UserIdDep,
+    topic_id: int,
+    practice_id: int,
+) -> None:
+    """Remove a practice link from a topic."""
+    await service.remove_practice_from_topic(session, topic_id, practice_id, user_id)
 
 
 @router.get("/{topic_id}/review-sessions/")
