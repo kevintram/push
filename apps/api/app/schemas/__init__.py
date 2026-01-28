@@ -37,6 +37,7 @@ from app.schemas.sources import (
     SourceRelationshipResponse,
     SourceTopicAdd,
     SourceTopicResponse,
+    SourcePracticeAdd,
 )
 from app.schemas.topics import (
     TopicRead,
@@ -51,6 +52,7 @@ from app.schemas.topics import (
     TopicOtherRelationshipResponse,
     TopicRelatedRead,
     RelationshipDirection,
+    TopicPracticeAdd,
 )
 from app.schemas.reviews import (
     ReviewBase,
@@ -162,4 +164,6 @@ __all__ = [
     "SourceRelationshipResponse",
     "SourceTopicAdd",
     "SourceTopicResponse",
+    "SourcePracticeAdd",
+    "TopicPracticeAdd",
 ]
