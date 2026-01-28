@@ -1,3 +1,4 @@
+import type { Practice } from '~/features/practices/types/practice.types'
 import type {
 	RelatedEntityItem,
 	Topic
@@ -44,6 +45,7 @@ export type Source = {
 	parent?: Source | null
 	children?: Array<Source>
 	topics?: Array<Topic>
+	practices?: Array<Practice>
 	related_outgoing?: Array<RelatedEntityItem>
 	related_incoming?: Array<RelatedEntityItem>
 }

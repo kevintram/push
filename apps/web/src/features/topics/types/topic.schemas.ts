@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import { PracticeSchemaBase } from '~/features/practices/types/practice.schemas'
 import { SourceSchemaBase } from '~/features/sources/types/source.schemas'
 import type {
 	Topic,
@@ -77,7 +78,8 @@ export const TopicSchema: v.GenericSchema<Topic> = v.object({
 	),
 	related_outgoing: v.optional(v.array(v.any()), []),
 	related_incoming: v.optional(v.array(v.any()), []),
-	sources: v.optional(v.array(v.lazy(() => SourceSchemaBase)), [])
+	sources: v.optional(v.array(v.lazy(() => SourceSchemaBase)), []),
+	practices: v.optional(v.array(v.lazy(() => PracticeSchemaBase)), [])
 })
 
 export const TopicRelationshipResponseSchema: v.GenericSchema<TopicRelationshipResponse> =

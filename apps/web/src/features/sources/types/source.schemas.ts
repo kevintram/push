@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+import { PracticeSchemaBase } from '~/features/practices/types/practice.schemas'
 import { TopicSchemaBase } from '~/features/topics/types/topic.schemas'
 import type {
 	Source,
@@ -77,6 +78,7 @@ export const SourceSchema: v.GenericSchema<Source> = v.object({
 		[]
 	),
 	topics: v.optional(v.array(v.lazy(() => TopicSchemaBase)), []),
+	practices: v.optional(v.array(v.lazy(() => PracticeSchemaBase)), []),
 	related_outgoing: v.optional(v.array(v.any()), []),
 	related_incoming: v.optional(v.array(v.any()), [])
 })

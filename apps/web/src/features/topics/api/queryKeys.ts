@@ -30,5 +30,7 @@ export const topicKeys = {
 			}
 		}
 		return key
-	}
+	},
+	practices: (topicId: number) =>
+		[...topicKeys.byId(topicId), 'practices'] as const
 }
