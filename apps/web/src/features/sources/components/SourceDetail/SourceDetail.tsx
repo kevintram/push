@@ -12,6 +12,7 @@ import { useSourceMetrics } from '../../hooks/useSourceMetrics'
 import { SourceContext } from '../../stores/SelectedSourceContext'
 import type { Source } from '../../types/source.types'
 import { SourceChildrenPanel } from '../SourceChildrenPanel'
+import { SourcePracticesPanel } from '../SourcePracticesPanel'
 import { SourcePrerequisitesPanel } from '../SourcePrerequisitesPanel'
 import { SourceRelatedPanel } from '../SourceRelatedPanel'
 import { SourceTopicsPanel } from '../SourceTopicsPanel'
@@ -58,6 +59,11 @@ interface SourceDetailProps {
 	 */
 	onTopicNavigate?: (topicId: number) => void
 	/**
+	 * Callback when navigating to a practice (practice click in practices panel).
+	 * If not provided, uses default dialog behavior.
+	 */
+	onPracticeNavigate?: (practiceId: number) => void
+	/**
 	 * Custom card renderer for children panel.
 	 */
 	renderChildCard?: (
@@ -88,6 +94,7 @@ export function SourceDetail({
 	onDelete,
 	onSourceNavigate,
 	onTopicNavigate,
+	onPracticeNavigate,
 	renderChildCard,
 	renderTopicCard,
 	className
@@ -252,6 +259,14 @@ export function SourceDetail({
 								renderCard={renderTopicCard}
 								sourceId={source.id}
 								topics={source.topics}
+							/>
+						</div>
+						<div className='mt-4'>
+							<SourcePracticesPanel
+								getScrollElement={() => scrollContainerRef.current}
+								onPracticeSelect={onPracticeNavigate}
+								practices={source.practices}
+								sourceId={source.id}
 							/>
 						</div>
 						<div className='mt-4'>

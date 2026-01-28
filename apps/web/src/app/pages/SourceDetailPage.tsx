@@ -59,6 +59,16 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 		[navigate]
 	)
 
+	const handlePracticeNavigate = useCallback(
+		(practiceId: number) => {
+			navigate({
+				to: '/practices/$practiceId',
+				params: { practiceId: practiceId.toString() }
+			})
+		},
+		[navigate]
+	)
+
 	const contextValue = useMemo(
 		() => ({
 			source,
@@ -74,6 +84,7 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
 				onDelete={handleDelete}
+				onPracticeNavigate={handlePracticeNavigate}
 				onSourceNavigate={handleSourceNavigate}
 				onTopicNavigate={handleTopicNavigate}
 			/>

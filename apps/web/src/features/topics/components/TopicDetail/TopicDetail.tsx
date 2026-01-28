@@ -13,6 +13,7 @@ import { TopicContext } from '../../stores/SelectedTopicContext'
 import { RelationshipDirection, type Topic } from '../../types/topic.types'
 import type { SrsSource } from '../AddTopicDialog'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
+import { TopicPracticesPanel } from '../TopicPracticesPanel'
 import { TopicRelatedPanel } from '../TopicRelatedPanel'
 import { TopicSourcesPanel } from '../TopicSourcesPanel'
 import { ReviewsSidebar } from './ReviewSidebar'
@@ -58,6 +59,11 @@ interface TopicDetailProps {
 	 */
 	onSourceNavigate?: (sourceId: number) => void
 	/**
+	 * Callback when navigating to a practice (practice click in practices panel).
+	 * If not provided, uses default dialog behavior.
+	 */
+	onPracticeNavigate?: (practiceId: number) => void
+	/**
 	 * Custom card renderer for children panel.
 	 */
 	renderChildCard?: (
@@ -84,6 +90,7 @@ export function TopicDetail({
 	onDelete,
 	onTopicNavigate,
 	onSourceNavigate,
+	onPracticeNavigate,
 	renderChildCard,
 	renderSourceCard,
 	className
@@ -279,6 +286,14 @@ export function TopicDetail({
 								onSourceSelect={onSourceNavigate}
 								renderCard={renderSourceCard}
 								sources={topic.sources}
+								topicId={topic.id}
+							/>
+						</div>
+						<div className='mt-4'>
+							<TopicPracticesPanel
+								getScrollElement={() => scrollContainerRef.current}
+								onPracticeSelect={onPracticeNavigate}
+								practices={topic.practices}
 								topicId={topic.id}
 							/>
 						</div>
