@@ -5,6 +5,7 @@ from datetime import datetime, date
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from app.schemas.entity_relations import RelatedEntityRead
+from app.schemas.practices import PracticeSummaryRead
 from app.schemas.topics import RetrievabilityBucket, TopicSummaryRead
 
 
@@ -68,6 +69,7 @@ class SourceDetailRead(SourceSummaryRead):
     topics: list[TopicSummaryRead] = []
     related_outgoing: list[RelatedEntityRead] = []
     related_incoming: list[RelatedEntityRead] = []
+    practices: list[PracticeSummaryRead] = []
 
 
 class SourceCreate(BaseModel):
@@ -139,3 +141,9 @@ class SourceTopicResponse(BaseModel):
 
     source: SourceSummaryRead
     topic: TopicSummaryRead
+
+
+class SourcePracticeAdd(BaseModel):
+    """Add a practice to this source."""
+
+    practice_id: int
