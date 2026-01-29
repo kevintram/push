@@ -7,6 +7,8 @@ from fastapi import APIRouter
 from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
 from app.schemas import (
+    ConvertPracticeToSourceResponse,
+    ConvertPracticeToTopicResponse,
     PracticeCreate,
     PracticeDetailRead,
     PracticeSummaryRead,
@@ -129,6 +131,28 @@ async def remove_practice_source(
     user_id: UserIdDep,
 ) -> None:
     await service.remove_practice_source(session, practice_id, source_id, user_id)
+
+
+@router.post("/{practice_id}/convert-to-topic/")
+async def convert_practice_to_topic_endpoint(
+    practice_id: int, session: SessionDep, user_id: UserIdDep
+) -> ConvertPracticeToTopicResponse:
+    """Convert a practice to a topic."""
+    new_topic_id = await service.convert_practice_to_topic(
+        session, practice_id, user_id
+    )
+    return ConvertPracticeToTopicResponse(topic_id=new_topic_id)
+
+
+@router.post("/{practice_id}/convert-to-source/")
+async def convert_practice_to_source_endpoint(
+    practice_id: int, session: SessionDep, user_id: UserIdDep
+) -> ConvertPracticeToSourceResponse:
+    """Convert a practice to a source."""
+    new_source_id = await service.convert_practice_to_source(
+        session, practice_id, user_id
+    )
+    return ConvertPracticeToSourceResponse(source_id=new_source_id)
 
 
 @router.patch("/{practice_id}/")

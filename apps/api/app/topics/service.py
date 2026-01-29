@@ -927,9 +927,19 @@ async def check_topic_convertible_to_practice(
 
     Returns (can_convert, error_reason).
     Fails if topic has:
+    - Children
     - Linked practices (practice_topics)
     - Sources covering it (source_topics)
     """
+    # Check for children
+    children_count = await session.execute(
+        select(func.count())
+        .select_from(Topic)
+        .where(Topic.parent_id == topic_id, Topic.user_id == user_id)
+    )
+    if children_count.scalar() > 0:
+        return False, "topic has children"
+
     # Check for linked practices
     practices_result = await session.execute(
         select(func.count())

@@ -3,19 +3,22 @@
 from datetime import datetime, timezone as dt_timezone
 from typing import Literal
 
-from sqlalchemy import delete, desc, insert, select
+from sqlalchemy import delete, desc, insert, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.exceptions import AlreadyExistsError, NotFoundError
 from app.models import (
+    EntityRelation,
     FsrsState,
     Practice,
+    Review,
     Source,
     Topic,
     t_practice_sources,
     t_practice_topics,
+    t_source_topics,
 )
 
 
@@ -392,3 +395,186 @@ async def remove_practice_source(
 
     if result.rowcount == 0:
         raise NotFoundError("Practice-source relationship")
+
+
+# ===== Practice Conversions =====
+
+
+async def convert_practice_to_topic(
+    session: AsyncSession, practice_id: int, user_id: str
+) -> int:
+    """Convert a practice to a topic.
+
+    Returns the new topic ID.
+
+    Transformation:
+    - Practice prompt -> Topic name
+    - Practice answer -> Topic notes
+    - Practice FSRS state -> New Topic FSRS state (core 6 fields)
+    - Practice flags -> Topic flags
+    - practice_sources -> source_topics (sources now cover new topic)
+    - practice_topics -> entity_relations (new topic related to each)
+    - Reviews migrated
+
+    No blocking conditions.
+    """
+    # 1. Load practice with relationships
+    practice = await load_practice_with_relationships(session, practice_id, user_id)
+
+    # 2. Create new FSRS state if needed
+    new_fsrs_state_id = None
+    if practice.fsrs_state:
+        new_fsrs = FsrsState(
+            srs_enabled=practice.fsrs_state.srs_enabled,
+            stability=practice.fsrs_state.stability,
+            difficulty=practice.fsrs_state.difficulty,
+            state=practice.fsrs_state.state,
+            step=practice.fsrs_state.step,
+            last_reviewed_at=practice.fsrs_state.last_reviewed_at,
+        )
+        session.add(new_fsrs)
+        await session.flush()
+        new_fsrs_state_id = new_fsrs.id
+
+    # 3. Create topic
+    new_topic = Topic(
+        user_id=user_id,
+        name=practice.prompt,
+        notes=practice.answer,
+        fsrs_state_id=new_fsrs_state_id,
+        archived=practice.archived,
+        inboxed=practice.inboxed,
+    )
+    session.add(new_topic)
+    await session.flush()
+
+    # 4. Migrate reviews
+    await session.execute(
+        update(Review)
+        .where(Review.practice_id == practice_id)
+        .values(topic_id=new_topic.id, practice_id=None)
+    )
+
+    # 5. Migrate practice_sources -> source_topics (sources now cover new topic)
+    ps_result = await session.execute(
+        select(t_practice_sources.c.source_id).where(
+            t_practice_sources.c.practice_id == practice_id
+        )
+    )
+    for row in ps_result:
+        await session.execute(
+            t_source_topics.insert().values(
+                source_id=row[0],
+                topic_id=new_topic.id,
+            )
+        )
+
+    # 6. Migrate practice_topics -> entity_relations (new topic related to each)
+    pt_result = await session.execute(
+        select(t_practice_topics.c.topic_id).where(
+            t_practice_topics.c.practice_id == practice_id
+        )
+    )
+    for row in pt_result:
+        new_rel = EntityRelation(
+            from_topic_id=new_topic.id,
+            to_topic_id=row[0],
+        )
+        session.add(new_rel)
+
+    # 7. Delete original practice
+    await session.delete(practice)
+
+    await session.commit()
+
+    return new_topic.id
+
+
+async def convert_practice_to_source(
+    session: AsyncSession, practice_id: int, user_id: str
+) -> int:
+    """Convert a practice to a source.
+
+    Returns the new source ID.
+
+    Transformation:
+    - Practice prompt -> Source title
+    - Practice answer -> Source notes
+    - Practice FSRS state -> New Source FSRS state (core 6 fields)
+    - Practice flags -> Source flags
+    - practice_topics -> source_topics (new source covers those topics)
+    - practice_sources -> entity_relations (new source related to each linked source)
+    - Reviews migrated
+
+    No blocking conditions.
+    """
+    # 1. Load practice with relationships
+    practice = await load_practice_with_relationships(session, practice_id, user_id)
+
+    # 2. Create new FSRS state if needed
+    new_fsrs_state_id = None
+    if practice.fsrs_state:
+        new_fsrs = FsrsState(
+            srs_enabled=practice.fsrs_state.srs_enabled,
+            stability=practice.fsrs_state.stability,
+            difficulty=practice.fsrs_state.difficulty,
+            state=practice.fsrs_state.state,
+            step=practice.fsrs_state.step,
+            last_reviewed_at=practice.fsrs_state.last_reviewed_at,
+        )
+        session.add(new_fsrs)
+        await session.flush()
+        new_fsrs_state_id = new_fsrs.id
+
+    # 3. Create source
+    new_source = Source(
+        user_id=user_id,
+        title=practice.prompt,
+        notes=practice.answer,
+        fsrs_state_id=new_fsrs_state_id,
+        archived=practice.archived,
+        inboxed=practice.inboxed,
+    )
+    session.add(new_source)
+    await session.flush()
+
+    # 4. Migrate reviews
+    await session.execute(
+        update(Review)
+        .where(Review.practice_id == practice_id)
+        .values(source_id=new_source.id, practice_id=None)
+    )
+
+    # 5. Migrate practice_topics -> source_topics (new source covers those topics)
+    pt_result = await session.execute(
+        select(t_practice_topics.c.topic_id).where(
+            t_practice_topics.c.practice_id == practice_id
+        )
+    )
+    for row in pt_result:
+        await session.execute(
+            t_source_topics.insert().values(
+                source_id=new_source.id,
+                topic_id=row[0],
+            )
+        )
+
+    # 6. Migrate practice_sources -> entity_relations (new source related to each)
+    ps_result = await session.execute(
+        select(t_practice_sources.c.source_id).where(
+            t_practice_sources.c.practice_id == practice_id
+        )
+    )
+    for row in ps_result:
+        new_rel = EntityRelation(
+            from_source_id=new_source.id,
+            to_source_id=row[0],
+        )
+        session.add(new_rel)
+
+    # 7. Delete original practice
+    await session.delete(practice)
+
+    await session.commit()
+
+    return new_source.id

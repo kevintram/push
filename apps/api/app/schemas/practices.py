@@ -123,6 +123,18 @@ class PracticeSourceResponse(BaseModel):
     source: "SourceSummaryRead"
 
 
+class ConvertPracticeToTopicResponse(BaseModel):
+    """Response from converting a practice to a topic."""
+
+    topic_id: int
+
+
+class ConvertPracticeToSourceResponse(BaseModel):
+    """Response from converting a practice to a source."""
+
+    source_id: int
+
+
 # Import for forward references
 from app.schemas.topics import TopicSummaryRead  # noqa: E402
 from app.schemas.sources import SourceSummaryRead  # noqa: E402

@@ -6,9 +6,9 @@ Expand entity conversion from 2 paths (Topic→Source, Topic→Practice) to all 
 
 ---
 
-## Phase 1: Backend — Fix + New Conversion Logic
+## Phase 1: Backend — Fix + New Conversion Logic ✅ COMPLETED
 
-### 1A. Fix Topic→Practice children block
+### 1A. Fix Topic→Practice children block ✅
 
 **File:** `apps/api/app/topics/service.py`
 
@@ -23,7 +23,7 @@ if children_count.scalar() > 0:
     return False, "topic has children"
 ```
 
-### 1B. Source → Topic conversion
+### 1B. Source → Topic conversion ✅
 
 **File:** `apps/api/app/sources/service.py`
 
@@ -36,7 +36,7 @@ Add `convert_source_to_topic()` — mirrors existing `convert_topic_to_source()`
 - **Blocking:** None
 - Delete originals children-first, single commit
 
-### 1C. Source → Practice conversion
+### 1C. Source → Practice conversion ✅
 
 **File:** `apps/api/app/sources/service.py`
 
@@ -48,7 +48,7 @@ Add `check_source_convertible_to_practice()` and `convert_source_to_practice()`:
 - **Lost:** entity relations, prerequisites, `practice_sources` entries (cascade)
 - **Blocked if:** has children
 
-### 1D. Practice → Topic conversion
+### 1D. Practice → Topic conversion ✅
 
 **File:** `apps/api/app/practices/service.py`
 
@@ -59,7 +59,7 @@ Add `convert_practice_to_topic()`:
 - **Migrates:** reviews (`practice_id`→`topic_id`), `practice_sources` → `source_topics` (sources now cover new topic), `practice_topics` → `entity_relations` (new topic related to each)
 - **Blocking:** None
 
-### 1E. Practice → Source conversion
+### 1E. Practice → Source conversion ✅
 
 **File:** `apps/api/app/practices/service.py`
 
@@ -70,7 +70,7 @@ Add `convert_practice_to_source()`:
 - **Migrates:** reviews (`practice_id`→`source_id`), `practice_topics` → `source_topics` (new source covers those topics), `practice_sources` → `entity_relations` (new source related to each linked source)
 - **Blocking:** None
 
-### 1F. Router endpoints
+### 1F. Router endpoints ✅
 
 **File:** `apps/api/app/sources/router.py`
 - `POST /{source_id}/convert-to-topic/` → `ConvertSourceToTopicResponse`
@@ -80,7 +80,7 @@ Add `convert_practice_to_source()`:
 - `POST /{practice_id}/convert-to-topic/` → `ConvertPracticeToTopicResponse`
 - `POST /{practice_id}/convert-to-source/` → `ConvertPracticeToSourceResponse`
 
-### 1G. Response schemas
+### 1G. Response schemas ✅
 
 **File:** `apps/api/app/schemas/sources.py` — add `ConvertSourceToTopicResponse`, `ConvertSourceToPracticeResponse`
 
@@ -88,7 +88,7 @@ Add `convert_practice_to_source()`:
 
 **File:** `apps/api/app/schemas/__init__.py` — export new schemas
 
-### Verify Phase 1
+### Verify Phase 1 ✅
 ```bash
 cd apps/api && uv run ruff check --fix && uv run ruff format
 cd apps/api && uv run pytest tests/topics/test_conversion.py -v
@@ -96,35 +96,37 @@ cd apps/api && uv run pytest tests/topics/test_conversion.py -v
 
 ---
 
-## Phase 2: Backend Tests
+## Phase 2: Backend Tests ✅ COMPLETED
 
-### 2A. Source conversion tests
+### 2A. Source conversion tests ✅
 
-**Create:** `apps/api/tests/sources/test_conversion.py`
+**Created:** `apps/api/tests/sources/test_conversion.py`
 
-**TestConvertSourceToTopic:** simple source, flags, children (subtree), FSRS state, practices, reviews, entity relations, source_topics→entity_relations, prerequisites→entity_relations, not found (404)
+**TestConvertSourceToTopic (9 tests):** simple source, flags, children (subtree), FSRS state, practices, reviews, entity relations, source_topics→entity_relations, prerequisites→entity_relations, not found (404)
 
-**TestConvertSourceToPractice:** simple source, flags, FSRS, reviews, source_topics→practice_topics, blocked by children (409), not found (404)
+**TestConvertSourceToPractice (6 tests):** simple source, flags, FSRS, reviews, source_topics→practice_topics, blocked by children (409), not found (404)
 
-### 2B. Practice conversion tests
+### 2B. Practice conversion tests ✅
 
-**Create:** `apps/api/tests/practices/test_conversion.py`
+**Created:** `apps/api/tests/practices/test_conversion.py`
 
-**TestConvertPracticeToTopic:** simple practice, flags, FSRS, reviews, practice_sources→source_topics, practice_topics→entity_relations, not found (404)
+**TestConvertPracticeToTopic (6 tests):** simple practice, flags, FSRS, reviews, practice_sources→source_topics, practice_topics→entity_relations, not found (404)
 
-**TestConvertPracticeToSource:** simple practice, flags, FSRS, reviews, practice_topics→source_topics, practice_sources→entity_relations, not found (404)
+**TestConvertPracticeToSource (6 tests):** simple practice, flags, FSRS, reviews, practice_topics→source_topics, practice_sources→entity_relations, not found (404)
 
-### 2C. Fix existing children test
+### 2C. Fix existing children test ✅
 
 **File:** `apps/api/tests/topics/test_conversion.py`
 
-Update `test_convert_topic_with_children_blocked` to assert 409 with `"children"` in detail.
+Updated `test_convert_topic_with_children_blocked` to assert 409 with `"children"` in detail.
 
-### Verify Phase 2
+### Verify Phase 2 ✅
 ```bash
 cd apps/api && uv run pytest tests/ -v
 cd apps/api && uv run ruff check --fix && uv run ruff format
 ```
+
+**Result:** All 168 tests pass
 
 ---
 

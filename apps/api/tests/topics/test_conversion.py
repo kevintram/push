@@ -347,23 +347,11 @@ class TestConvertTopicToPractice:
     async def test_convert_topic_with_children_blocked(
         self, test_client: AsyncClient, create_test_topic
     ):
-        """Topic with children cannot be converted to practice (children would be orphaned)."""
+        """Topic with children cannot be converted to practice."""
         parent = await create_test_topic(name="Parent")
         await create_test_topic(name="Child", parent_id=parent.id)
 
-        # This should work - convert_topic_to_practice doesn't have a children restriction
-        # The parent relationship is preserved via practice_topics
         response = await test_client.post(f"/topics/{parent.id}/convert-to-practice/")
 
-        # According to the plan, topics with children CAN be converted to practice
-        # The children become orphaned (their parent is deleted)
-        # But check if the implementation allows this - it might not!
-        # Looking at the service code, there's no explicit check for children
-        # Let's verify what happens
-        if response.status_code == 200:
-            # If it succeeds, verify the practice was created
-            practice_id = response.json()["practice_id"]
-            practice_response = await test_client.get(f"/practices/{practice_id}/")
-            assert practice_response.status_code == 200
-        # Note: If there's a foreign key constraint preventing deletion of topics with children,
-        # the test would need to be adjusted
+        assert response.status_code == 409
+        assert "children" in response.json()["detail"].lower()
