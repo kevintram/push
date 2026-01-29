@@ -124,6 +124,22 @@ export function ReviewDialog({
 		return 'text-muted-foreground'
 	}, [review?.stability_after, review?.stability_before])
 
+	// Helper to get the entity type label for display
+	const getEntityTypeLabel = useCallback((): string => {
+		if (review?.topic_id) return 'Topic'
+		if (review?.source_id) return 'Source'
+		if (review?.practice_id) return 'Practice'
+		return ''
+	}, [review?.topic_id, review?.source_id, review?.practice_id])
+
+	// Helper to get the entity name for display
+	const getEntityName = useCallback((): string => {
+		if (review?.topic) return review.topic.name
+		if (review?.source) return review.source.title
+		if (review?.practice) return review.practice.prompt
+		return 'Unknown'
+	}, [review?.topic, review?.source, review?.practice])
+
 	const handleStatusChange = useCallback(
 		(status: ReviewRatingState) => {
 			if (!review?.id) return
@@ -176,13 +192,24 @@ export function ReviewDialog({
 
 	const navigate = useNavigate()
 
-	const handleTopicClick = useCallback(() => {
-		if (!review?.topic_id) return
-		navigate({
-			to: '/topics/$topicId',
-			params: { topicId: review.topic_id.toString() }
-		})
-	}, [navigate, review?.topic_id])
+	const handleEntityClick = useCallback(() => {
+		if (review?.topic_id) {
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: review.topic_id.toString() }
+			})
+		} else if (review?.source_id) {
+			navigate({
+				to: '/sources/$sourceId',
+				params: { sourceId: review.source_id.toString() }
+			})
+		} else if (review?.practice_id) {
+			navigate({
+				to: '/practices/$practiceId',
+				params: { practiceId: review.practice_id.toString() }
+			})
+		}
+	}, [navigate, review?.topic_id, review?.source_id, review?.practice_id])
 
 	const handleSessionClick = useCallback(() => {
 		if (!review?.review_session) return
@@ -348,20 +375,18 @@ export function ReviewDialog({
 										/>
 									</div>
 
-									{/* Topic Link */}
+									{/* Entity Link */}
 									<div className='flex min-h-8 items-center gap-2'>
 										<span className='w-16 flex-shrink-0 text-muted-foreground text-xs'>
-											Topic
+											{getEntityTypeLabel()}
 										</span>
 										<Button
 											className='min-w-0 flex-1 justify-start px-2'
-											onClick={handleTopicClick}
+											onClick={handleEntityClick}
 											size='sm'
 											variant='ghost'
 										>
-											<span className='truncate'>
-												{review.topic?.name || 'Unknown'}
-											</span>
+											<span className='truncate'>{getEntityName()}</span>
 										</Button>
 									</div>
 

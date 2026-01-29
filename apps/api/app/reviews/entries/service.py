@@ -32,7 +32,11 @@ async def list_review_entries(
     sessions_stmt = (
         select(ReviewSession)
         .where(ReviewSession.user_id == user_id)
-        .options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
+        .options(
+            selectinload(ReviewSession.reviews).selectinload(Review.topic),
+            selectinload(ReviewSession.reviews).selectinload(Review.source),
+            selectinload(ReviewSession.reviews).selectinload(Review.practice),
+        )
     )
 
     if topic_id is not None:
