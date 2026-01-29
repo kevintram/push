@@ -3,6 +3,7 @@ import { practiceKeys } from '~/features/practices/api/queryKeys'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { sourceKeys } from '~/features/sources/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
+import { ConversionError } from '~/utils/ConversionError'
 import { topicKeys } from './queryKeys'
 
 export type ConvertTopicToSourceInput = {
@@ -11,16 +12,6 @@ export type ConvertTopicToSourceInput = {
 
 export type ConvertTopicToSourceResponse = {
 	source_id: number
-}
-
-export class ConversionError extends Error {
-	statusCode: number
-
-	constructor(message: string, statusCode: number) {
-		super(message)
-		this.name = 'ConversionError'
-		this.statusCode = statusCode
-	}
 }
 
 export async function convertTopicToSource(
