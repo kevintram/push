@@ -1,13 +1,16 @@
+import { useNavigate } from '@tanstack/react-router'
 import {
 	Archive,
 	ArchiveRestore,
 	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
+	RefreshCw,
 	SquareCheck,
 	Trash2
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -17,6 +20,11 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
+import {
+	ConversionError,
+	useConvertTopicToPractice
+} from '~/features/topics/api/convertTopicToPractice'
+import { useConvertTopicToSource } from '~/features/topics/api/convertTopicToSource'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { DeleteTopicDialog } from '~/features/topics/components/DeleteTopicDialog'
@@ -42,10 +50,13 @@ export function TopicActionMenu({
 	onTopicUpdateSuccess
 }: TopicActionMenuProps) {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+	const navigate = useNavigate()
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
+	const convertToSourceMutation = useConvertTopicToSource()
+	const convertToPracticeMutation = useConvertTopicToPractice()
 
 	const hasChildren = (topic.children_count ?? 0) > 0
 
@@ -97,6 +108,50 @@ export function TopicActionMenu({
 			openReviewDialog(review.id)
 		},
 		[createReviewMutation, topic.id, openReviewDialog]
+	)
+
+	const handleConvertToSource = useCallback(
+		async (e: React.MouseEvent) => {
+			e.stopPropagation()
+			try {
+				const result = await convertToSourceMutation.mutateAsync({
+					topicId: topic.id
+				})
+				navigate({
+					to: '/sources/$sourceId',
+					params: { sourceId: String(result.source_id) }
+				})
+			} catch (error) {
+				if (error instanceof ConversionError) {
+					toast.error(error.message)
+				} else {
+					toast.error('Failed to convert topic to source')
+				}
+			}
+		},
+		[convertToSourceMutation, topic.id, navigate]
+	)
+
+	const handleConvertToPractice = useCallback(
+		async (e: React.MouseEvent) => {
+			e.stopPropagation()
+			try {
+				const result = await convertToPracticeMutation.mutateAsync({
+					topicId: topic.id
+				})
+				navigate({
+					to: '/practices/$practiceId',
+					params: { practiceId: String(result.practice_id) }
+				})
+			} catch (error) {
+				if (error instanceof ConversionError) {
+					toast.error(error.message)
+				} else {
+					toast.error('Failed to convert topic to practice')
+				}
+			}
+		},
+		[convertToPracticeMutation, topic.id, navigate]
 	)
 
 	return (
@@ -159,6 +214,20 @@ export function TopicActionMenu({
 							{removeRelationshipText}
 						</DropdownMenuItem>
 					)}
+					<DropdownMenuItem
+						disabled={convertToSourceMutation.isPending}
+						onClick={handleConvertToSource}
+					>
+						<RefreshCw className='mr-2 h-4 w-4' />
+						Convert to Source
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						disabled={convertToPracticeMutation.isPending}
+						onClick={handleConvertToPractice}
+					>
+						<RefreshCw className='mr-2 h-4 w-4' />
+						Convert to Practice
+					</DropdownMenuItem>
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()

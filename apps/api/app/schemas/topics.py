@@ -200,3 +200,15 @@ class TopicPracticeAdd(BaseModel):
     """Add a practice to this topic."""
 
     practice_id: int
+
+
+class ConvertToSourceResponse(BaseModel):
+    """Response from converting a topic to a source."""
+
+    source_id: int
+
+
+class ConvertToPracticeResponse(BaseModel):
+    """Response from converting a topic to a practice."""
+
+    practice_id: int

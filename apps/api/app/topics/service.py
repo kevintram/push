@@ -12,6 +12,7 @@ from app.exceptions import (
     AlreadyExistsError,
     BadRequestError,
     ConflictError,
+    ConversionBlockedError,
     CycleDetectedError,
     HasChildrenError,
     NotFoundError,
@@ -25,7 +26,9 @@ from app.models import (
     ReviewSession,
     Source,
     Topic,
+    t_practice_sources,
     t_practice_topics,
+    t_source_topics,
 )
 
 
@@ -886,3 +889,326 @@ async def remove_practice_from_topic(
     if result.rowcount == 0:
         raise NotFoundError("Topic-Practice link", practice_id)
     await session.commit()
+
+
+# ===== Topic Conversions =====
+
+
+async def check_topic_convertible_to_source(
+    session: AsyncSession, topic_id: int, user_id: str
+) -> tuple[bool, str | None]:
+    """Check if a topic (and its subtree) can be converted to a source.
+
+    Returns (can_convert, error_reason).
+    Fails if any topic in subtree has sources covering it (via source_topics).
+    """
+    # Check if any topic in the subtree has covering sources
+    result = await session.execute(
+        text("""
+            SELECT COUNT(*) FROM source_topics st
+            JOIN topics t ON t.id = st.topic_id
+            WHERE t.user_id = :user_id
+              AND t.path <@ (SELECT path FROM topics WHERE id = :root_id AND user_id = :user_id)
+        """),
+        {"root_id": topic_id, "user_id": user_id},
+    )
+    covering_count = result.scalar()
+
+    if covering_count > 0:
+        return False, "topic or its children have sources covering them"
+
+    return True, None
+
+
+async def check_topic_convertible_to_practice(
+    session: AsyncSession, topic_id: int, user_id: str
+) -> tuple[bool, str | None]:
+    """Check if a topic can be converted to a practice.
+
+    Returns (can_convert, error_reason).
+    Fails if topic has:
+    - Linked practices (practice_topics)
+    - Sources covering it (source_topics)
+    """
+    # Check for linked practices
+    practices_result = await session.execute(
+        select(func.count())
+        .select_from(t_practice_topics)
+        .where(t_practice_topics.c.topic_id == topic_id)
+    )
+    practice_count = practices_result.scalar()
+    if practice_count > 0:
+        return False, "topic has linked practices"
+
+    # Check for covering sources
+    sources_result = await session.execute(
+        select(func.count())
+        .select_from(t_source_topics)
+        .where(t_source_topics.c.topic_id == topic_id)
+    )
+    source_count = sources_result.scalar()
+    if source_count > 0:
+        return False, "topic has sources covering it"
+
+    return True, None
+
+
+async def convert_topic_to_source(
+    session: AsyncSession, topic_id: int, user_id: str
+) -> int:
+    """Convert a topic (and its subtree) to a source hierarchy.
+
+    Returns the new root source ID.
+
+    Transformation:
+    - Topic name -> Source title
+    - Topic notes -> Source notes
+    - Topic FSRS state -> New Source FSRS state
+    - Topic flags -> Source flags
+    - Child topics -> Child sources (recursive)
+    - Entity relations -> Entity relations (from_source_id/to_source_id)
+    - Linked practices -> practice_sources entries
+
+    Raises ConversionBlockedError if any subtree topic has covering sources.
+    """
+    # 1. Verify topic exists
+    await get_topic(session, topic_id, user_id)
+
+    # 2. Check convertibility (recursive check for covering sources)
+    can_convert, reason = await check_topic_convertible_to_source(
+        session, topic_id, user_id
+    )
+    if not can_convert:
+        raise ConversionBlockedError(reason)
+
+    # 3. Get all topics in subtree (using ltree path)
+    subtree_stmt = (
+        select(Topic)
+        .where(
+            Topic.user_id == user_id,
+            text(
+                "topics.path <@ (SELECT path FROM topics WHERE id = :root_id)"
+            ).bindparams(root_id=topic_id),
+        )
+        .options(
+            selectinload(Topic.fsrs_state),
+            selectinload(Topic.practices),
+        )
+    )
+    result = await session.execute(subtree_stmt)
+    all_topics = list(result.scalars().all())
+
+    # 4. Build topic_id -> new_source mapping
+    topic_to_source: dict[int, Source] = {}
+
+    # Sort by path length to process parents before children
+    all_topics.sort(key=lambda t: len(t.path or ""))
+
+    for topic in all_topics:
+        # Create new FSRS state if topic had one
+        new_fsrs_state_id = None
+        if topic.fsrs_state:
+            new_fsrs = FsrsState(
+                srs_enabled=topic.fsrs_state.srs_enabled,
+                stability=topic.fsrs_state.stability,
+                difficulty=topic.fsrs_state.difficulty,
+                state=topic.fsrs_state.state,
+                step=topic.fsrs_state.step,
+                last_reviewed_at=topic.fsrs_state.last_reviewed_at,
+                inherited_stability=topic.fsrs_state.inherited_stability,
+                inherited_difficulty=topic.fsrs_state.inherited_difficulty,
+                inherited_state=topic.fsrs_state.inherited_state,
+                inherited_step=topic.fsrs_state.inherited_step,
+                inherited_last_review=topic.fsrs_state.inherited_last_review,
+            )
+            session.add(new_fsrs)
+            await session.flush()
+            new_fsrs_state_id = new_fsrs.id
+
+        # Determine parent source ID
+        parent_source_id = None
+        if topic.parent_id and topic.parent_id in topic_to_source:
+            parent_source_id = topic_to_source[topic.parent_id].id
+
+        # Create source
+        new_source = Source(
+            user_id=user_id,
+            title=topic.name,
+            notes=topic.notes,
+            parent_id=parent_source_id,
+            fsrs_state_id=new_fsrs_state_id,
+            archived=topic.archived,
+            inboxed=topic.inboxed,
+        )
+        session.add(new_source)
+        await session.flush()
+
+        topic_to_source[topic.id] = new_source
+
+        # Migrate practices to new source
+        for practice in topic.practices:
+            await session.execute(
+                t_practice_sources.insert().values(
+                    practice_id=practice.id,
+                    source_id=new_source.id,
+                )
+            )
+
+        # Migrate reviews from topic to new source
+        await session.execute(
+            update(Review)
+            .where(Review.topic_id == topic.id)
+            .values(source_id=new_source.id, topic_id=None)
+        )
+
+    # 5. Migrate entity relations
+    for topic in all_topics:
+        new_source = topic_to_source[topic.id]
+
+        # Get outgoing relations (from this topic)
+        outgoing = await session.execute(
+            select(EntityRelation).where(EntityRelation.from_topic_id == topic.id)
+        )
+        for rel in outgoing.scalars():
+            # Create new relation from source
+            # Handle to_topic_id -> to_source_id if that topic was also converted
+            new_to_source_id = None
+            new_to_topic_id = rel.to_topic_id
+
+            if rel.to_topic_id and rel.to_topic_id in topic_to_source:
+                # Target topic was also converted, point to new source
+                new_to_source_id = topic_to_source[rel.to_topic_id].id
+                new_to_topic_id = None
+
+            new_rel = EntityRelation(
+                from_source_id=new_source.id,
+                to_topic_id=new_to_topic_id,
+                to_source_id=new_to_source_id if new_to_source_id else rel.to_source_id,
+            )
+            session.add(new_rel)
+
+        # Get incoming relations (to this topic)
+        incoming = await session.execute(
+            select(EntityRelation).where(EntityRelation.to_topic_id == topic.id)
+        )
+        for rel in incoming.scalars():
+            # Skip if from_topic is in our subtree (will be handled by outgoing)
+            if rel.from_topic_id and rel.from_topic_id in topic_to_source:
+                continue
+
+            # Create new relation pointing to source
+            new_rel = EntityRelation(
+                from_topic_id=rel.from_topic_id,
+                from_source_id=rel.from_source_id,
+                to_source_id=new_source.id,
+            )
+            session.add(new_rel)
+
+    # 6. Delete original topics (cascade will clean up old relations)
+    # Delete in reverse order (children first) to respect FK constraints
+    all_topics.sort(key=lambda t: len(t.path or ""), reverse=True)
+    for topic in all_topics:
+        await session.delete(topic)
+
+    await session.commit()
+
+    return topic_to_source[topic_id].id
+
+
+async def convert_topic_to_practice(
+    session: AsyncSession, topic_id: int, user_id: str
+) -> int:
+    """Convert a topic to a practice.
+
+    Returns the new practice ID.
+
+    Transformation:
+    - Topic name -> Practice prompt
+    - Topic notes -> Practice answer
+    - Topic FSRS state -> New Practice FSRS state
+    - Topic flags -> Practice flags
+    - Parent topics -> practice_topics entries
+    - Related topics -> practice_topics entries
+
+    Raises ConversionBlockedError if topic has practices or covering sources.
+    """
+    # 1. Verify topic exists and load relationships
+    topic = await load_topic_with_relationships(session, topic_id, user_id)
+
+    # 2. Check convertibility
+    can_convert, reason = await check_topic_convertible_to_practice(
+        session, topic_id, user_id
+    )
+    if not can_convert:
+        raise ConversionBlockedError(reason)
+
+    # 3. Create new FSRS state if needed
+    new_fsrs_state_id = None
+    if topic.fsrs_state:
+        new_fsrs = FsrsState(
+            srs_enabled=topic.fsrs_state.srs_enabled,
+            stability=topic.fsrs_state.stability,
+            difficulty=topic.fsrs_state.difficulty,
+            state=topic.fsrs_state.state,
+            step=topic.fsrs_state.step,
+            last_reviewed_at=topic.fsrs_state.last_reviewed_at,
+        )
+        session.add(new_fsrs)
+        await session.flush()
+        new_fsrs_state_id = new_fsrs.id
+
+    # 4. Create practice
+    new_practice = Practice(
+        user_id=user_id,
+        prompt=topic.name,
+        answer=topic.notes,
+        fsrs_state_id=new_fsrs_state_id,
+        archived=topic.archived,
+        inboxed=topic.inboxed,
+    )
+    session.add(new_practice)
+    await session.flush()
+
+    # Migrate reviews from topic to new practice
+    await session.execute(
+        update(Review)
+        .where(Review.topic_id == topic_id)
+        .values(practice_id=new_practice.id, topic_id=None)
+    )
+
+    # 5. Collect associated topics (parents + related topics)
+    associated_topic_ids: set[int] = set()
+
+    # Add parent topics (walk up the tree)
+    current = topic
+    while current.parent_id:
+        associated_topic_ids.add(current.parent_id)
+        parent_result = await session.execute(
+            select(Topic).where(Topic.id == current.parent_id, Topic.user_id == user_id)
+        )
+        current = parent_result.scalar_one_or_none()
+        if not current:
+            break
+
+    # Add related topics (both directions, but only topics)
+    outgoing, incoming = await get_topic_related(session, topic_id, user_id)
+    for related_topic in outgoing:
+        associated_topic_ids.add(related_topic.id)
+    for related_topic in incoming:
+        associated_topic_ids.add(related_topic.id)
+
+    # 6. Create practice_topics entries
+    for assoc_topic_id in associated_topic_ids:
+        await session.execute(
+            t_practice_topics.insert().values(
+                practice_id=new_practice.id,
+                topic_id=assoc_topic_id,
+            )
+        )
+
+    # 7. Delete original topic
+    await session.delete(topic)
+
+    await session.commit()
+
+    return new_practice.id

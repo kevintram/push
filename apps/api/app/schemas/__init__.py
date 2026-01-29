@@ -40,6 +40,8 @@ from app.schemas.sources import (
     SourcePracticeAdd,
 )
 from app.schemas.topics import (
+    ConvertToPracticeResponse,
+    ConvertToSourceResponse,
     TopicRead,
     TopicCreate,
     TopicUpdate,
@@ -105,6 +107,8 @@ PracticeTopicResponse.model_rebuild()
 PracticeSourceResponse.model_rebuild()
 
 __all__ = [
+    "ConvertToPracticeResponse",
+    "ConvertToSourceResponse",
     "EntityRelationCreate",
     "EntityRelationRead",
     "EntityType",
