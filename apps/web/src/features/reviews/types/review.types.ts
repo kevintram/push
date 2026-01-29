@@ -109,7 +109,7 @@ export type ReviewSession = {
 	updated_at: string
 	description: string
 	notes: string
-	reviews?: Array<Review>
+	reviews?: Array<ReviewListItem>
 }
 
 // Discriminated union types for unified review entries endpoint

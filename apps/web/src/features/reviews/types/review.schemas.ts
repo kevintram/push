@@ -131,7 +131,7 @@ export const ReviewSessionSchema: v.GenericSchema<ReviewSession> = v.object({
 	updated_at: v.string(),
 	description: v.string(),
 	notes: v.string(),
-	reviews: v.optional(v.array(v.lazy(() => ReviewSchema)), [])
+	reviews: v.optional(v.array(v.lazy(() => ReviewListItemSchema)), [])
 })
 
 // Discriminated union schemas for unified review entries endpoint
