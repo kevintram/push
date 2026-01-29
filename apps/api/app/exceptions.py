@@ -76,6 +76,13 @@ class HasDependentsError(ConflictError):
         )
 
 
+class ConversionBlockedError(ConflictError):
+    """Conversion is blocked due to incompatible relationships."""
+
+    def __init__(self, reason: str):
+        super().__init__(f"Cannot convert: {reason}")
+
+
 # --- 400 Bad Request ---
 
 

@@ -8,6 +8,8 @@ from app.constants import ChildHandlingStrategy
 from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
 from app.schemas import (
+    ConvertToPracticeResponse,
+    ConvertToSourceResponse,
     EntityRelationCreate,
     PracticeSummaryRead,
     RelationshipDirection,
@@ -315,3 +317,35 @@ async def delete_topic(
     await service.delete_topic(
         session, topic_id, user_id, handle_children_by=handle_children_by
     )
+
+
+@router.post("/{topic_id}/convert-to-source/")
+async def convert_topic_to_source_endpoint(
+    topic_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> ConvertToSourceResponse:
+    """Convert a topic and its subtree to sources.
+
+    Returns the new root source ID.
+    Fails with 409 if any topic in subtree has sources covering it.
+    """
+    new_source_id = await service.convert_topic_to_source(session, topic_id, user_id)
+    return ConvertToSourceResponse(source_id=new_source_id)
+
+
+@router.post("/{topic_id}/convert-to-practice/")
+async def convert_topic_to_practice_endpoint(
+    topic_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> ConvertToPracticeResponse:
+    """Convert a topic to a practice.
+
+    Returns the new practice ID.
+    Fails with 409 if topic has practices or sources covering it.
+    """
+    new_practice_id = await service.convert_topic_to_practice(
+        session, topic_id, user_id
+    )
+    return ConvertToPracticeResponse(practice_id=new_practice_id)
