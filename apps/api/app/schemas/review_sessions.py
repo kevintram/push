@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
-    from app.schemas.reviews import ReviewWithTopic
+    from app.schemas.reviews import ReviewListItem
 
 
 class ReviewSessionBase(BaseModel):
@@ -29,7 +29,7 @@ class ReviewSessionRead(ReviewSessionBase):
 
 class ReviewSessionReadWithReviews(ReviewSessionRead):
     model_config = ConfigDict(from_attributes=True)
-    reviews: list["ReviewWithTopic"]
+    reviews: list["ReviewListItem"]
 
 
 class ReviewSessionCreate(ReviewSessionBase):
