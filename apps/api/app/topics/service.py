@@ -1054,6 +1054,13 @@ async def convert_topic_to_source(
                 )
             )
 
+        # Migrate reviews from topic to new source
+        await session.execute(
+            update(Review)
+            .where(Review.topic_id == topic.id)
+            .values(source_id=new_source.id, topic_id=None)
+        )
+
     # 5. Migrate entity relations
     for topic in all_topics:
         new_source = topic_to_source[topic.id]
@@ -1161,6 +1168,13 @@ async def convert_topic_to_practice(
     )
     session.add(new_practice)
     await session.flush()
+
+    # Migrate reviews from topic to new practice
+    await session.execute(
+        update(Review)
+        .where(Review.topic_id == topic_id)
+        .values(practice_id=new_practice.id, topic_id=None)
+    )
 
     # 5. Collect associated topics (parents + related topics)
     associated_topic_ids: set[int] = set()

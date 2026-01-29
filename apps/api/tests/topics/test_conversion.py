@@ -110,6 +110,34 @@ class TestConvertTopicToSource:
         )
         assert result.first() is not None
 
+    async def test_convert_topic_with_reviews(
+        self, test_client: AsyncClient, create_test_topic
+    ):
+        """Reviews linked to topic are migrated to new source."""
+        topic = await create_test_topic(name="Test Topic", notes="Some notes")
+
+        # Create a review for the topic
+        review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": topic.id,
+                "completed_at": "2024-01-15",
+            },
+        )
+        assert review_response.status_code == 200
+        review_id = review_response.json()["id"]
+
+        response = await test_client.post(f"/topics/{topic.id}/convert-to-source/")
+        assert response.status_code == 200
+        new_source_id = response.json()["source_id"]
+
+        # Verify review was migrated to new source
+        reviews_response = await test_client.get(f"/reviews/?source_id={new_source_id}")
+        assert reviews_response.status_code == 200
+        reviews = reviews_response.json()
+        assert len(reviews) == 1
+        assert reviews[0]["id"] == review_id
+
     async def test_convert_blocked_by_covering_source(
         self, test_client: AsyncClient, create_test_topic, create_test_source
     ):
@@ -246,6 +274,36 @@ class TestConvertTopicToPractice:
         )
         topic_ids = [row[0] for row in result.fetchall()]
         assert related1.id in topic_ids
+
+    async def test_convert_topic_with_reviews(
+        self, test_client: AsyncClient, create_test_topic
+    ):
+        """Reviews linked to topic are migrated to new practice."""
+        topic = await create_test_topic(name="Test Topic", notes="Some notes")
+
+        # Create a review for the topic
+        review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": topic.id,
+                "completed_at": "2024-01-15",
+            },
+        )
+        assert review_response.status_code == 200
+        review_id = review_response.json()["id"]
+
+        response = await test_client.post(f"/topics/{topic.id}/convert-to-practice/")
+        assert response.status_code == 200
+        new_practice_id = response.json()["practice_id"]
+
+        # Verify review was migrated to new practice
+        reviews_response = await test_client.get(
+            f"/reviews/?practice_id={new_practice_id}"
+        )
+        assert reviews_response.status_code == 200
+        reviews = reviews_response.json()
+        assert len(reviews) == 1
+        assert reviews[0]["id"] == review_id
 
     async def test_convert_blocked_by_existing_practices(
         self, test_client: AsyncClient, create_test_topic, create_test_practice
