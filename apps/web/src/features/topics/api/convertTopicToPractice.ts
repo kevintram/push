@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { practiceKeys } from '~/features/practices/api/queryKeys'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
+import { ConversionError } from '~/utils/ConversionError'
 import { topicKeys } from './queryKeys'
 
 export type ConvertTopicToPracticeInput = {
@@ -10,16 +11,6 @@ export type ConvertTopicToPracticeInput = {
 
 export type ConvertTopicToPracticeResponse = {
 	practice_id: number
-}
-
-export class ConversionError extends Error {
-	statusCode: number
-
-	constructor(message: string, statusCode: number) {
-		super(message)
-		this.name = 'ConversionError'
-		this.statusCode = statusCode
-	}
 }
 
 export async function convertTopicToPractice(

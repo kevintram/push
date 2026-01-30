@@ -8,6 +8,8 @@ from app.constants import ChildHandlingStrategy
 from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
 from app.schemas import (
+    ConvertSourceToPracticeResponse,
+    ConvertSourceToTopicResponse,
     EntityRelationCreate,
     PracticeSummaryRead,
     SourceChildRelationshipCreate,
@@ -283,6 +285,26 @@ async def remove_practice_from_source(
 ) -> None:
     """Remove a practice link from a source."""
     await service.remove_practice_from_source(session, source_id, practice_id, user_id)
+
+
+@router.post("/{source_id}/convert-to-topic/")
+async def convert_source_to_topic_endpoint(
+    source_id: int, session: SessionDep, user_id: UserIdDep
+) -> ConvertSourceToTopicResponse:
+    """Convert a source (and its subtree) to a topic hierarchy."""
+    new_topic_id = await service.convert_source_to_topic(session, source_id, user_id)
+    return ConvertSourceToTopicResponse(topic_id=new_topic_id)
+
+
+@router.post("/{source_id}/convert-to-practice/")
+async def convert_source_to_practice_endpoint(
+    source_id: int, session: SessionDep, user_id: UserIdDep
+) -> ConvertSourceToPracticeResponse:
+    """Convert a source to a practice."""
+    new_practice_id = await service.convert_source_to_practice(
+        session, source_id, user_id
+    )
+    return ConvertSourceToPracticeResponse(practice_id=new_practice_id)
 
 
 @router.patch("/{source_id}/")

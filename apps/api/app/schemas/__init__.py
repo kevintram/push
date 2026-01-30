@@ -7,6 +7,8 @@ from app.schemas.entity_relations import (
     SourcePrerequisiteRead,
 )
 from app.schemas.practices import (
+    ConvertPracticeToSourceResponse,
+    ConvertPracticeToTopicResponse,
     PracticeBase,
     PracticeCreate,
     PracticeDetailRead,
@@ -27,6 +29,8 @@ from app.schemas.review_sessions import (
     ReviewSessionReadWithReviews,
 )
 from app.schemas.sources import (
+    ConvertSourceToPracticeResponse,
+    ConvertSourceToTopicResponse,
     SourceBase,
     SourceRead,
     SourceCreate,
@@ -107,6 +111,10 @@ PracticeTopicResponse.model_rebuild()
 PracticeSourceResponse.model_rebuild()
 
 __all__ = [
+    "ConvertPracticeToSourceResponse",
+    "ConvertPracticeToTopicResponse",
+    "ConvertSourceToPracticeResponse",
+    "ConvertSourceToTopicResponse",
     "ConvertToPracticeResponse",
     "ConvertToSourceResponse",
     "EntityRelationCreate",

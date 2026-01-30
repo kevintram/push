@@ -57,6 +57,10 @@ class SourceSummaryRead(SourceRead):
 
     children_count: int = 0
     topics_count: int = 0
+    related_outgoing_count: int = 0
+    related_incoming_count: int = 0
+    prerequisites_count: int = 0
+    practices_count: int = 0
 
 
 class SourceDetailRead(SourceSummaryRead):
@@ -145,5 +149,17 @@ class SourceTopicResponse(BaseModel):
 
 class SourcePracticeAdd(BaseModel):
     """Add a practice to this source."""
+
+    practice_id: int
+
+
+class ConvertSourceToTopicResponse(BaseModel):
+    """Response from converting a source to a topic."""
+
+    topic_id: int
+
+
+class ConvertSourceToPracticeResponse(BaseModel):
+    """Response from converting a source to a practice."""
 
     practice_id: int

@@ -13,6 +13,7 @@ from app.exceptions import (
     AlreadyExistsError,
     BadRequestError,
     ConflictError,
+    ConversionBlockedError,
     CycleDetectedError,
     HasChildrenError,
     NotFoundError,
@@ -22,10 +23,12 @@ from app.models import (
     EntityRelation,
     FsrsState,
     Practice,
+    Review,
     Source,
     SourcePrerequisite,
     Topic,
     t_practice_sources,
+    t_practice_topics,
     t_source_topics,
 )
 
@@ -901,3 +904,303 @@ async def remove_practice_from_source(
     if result.rowcount == 0:
         raise NotFoundError("Source-Practice link", practice_id)
     await session.commit()
+
+
+# ===== Source Conversions =====
+
+
+async def check_source_convertible_to_practice(
+    session: AsyncSession, source_id: int, user_id: str
+) -> tuple[bool, str | None]:
+    """Check if a source can be converted to a practice.
+
+    Returns (can_convert, error_reason).
+    Fails if source has children.
+    """
+    children_count = await session.execute(
+        select(func.count())
+        .select_from(Source)
+        .where(Source.parent_id == source_id, Source.user_id == user_id)
+    )
+    if children_count.scalar() > 0:
+        return False, "source has children"
+
+    return True, None
+
+
+async def convert_source_to_topic(
+    session: AsyncSession, source_id: int, user_id: str
+) -> int:
+    """Convert a source (and its subtree) to a topic hierarchy.
+
+    Returns the new root topic ID.
+
+    Transformation:
+    - Source title -> Topic name
+    - Source notes -> Topic notes
+    - Source FSRS state -> New Topic FSRS state (all 11 fields)
+    - Source flags -> Topic flags
+    - Child sources -> Child topics (recursive)
+    - Entity relations -> Entity relations (from_topic_id/to_topic_id)
+    - Linked practices -> practice_topics entries
+    - source_topics -> entity_relations (new topic related to covered topics)
+    - source_prerequisites -> entity_relations
+
+    No blocking conditions.
+    """
+    # 1. Verify source exists
+    await get_source(session, source_id, user_id)
+
+    # 2. Get all sources in subtree (using ltree path)
+    subtree_stmt = (
+        select(Source)
+        .where(
+            Source.user_id == user_id,
+            text(
+                "sources.path <@ (SELECT path FROM sources WHERE id = :root_id)"
+            ).bindparams(root_id=source_id),
+        )
+        .options(
+            selectinload(Source.fsrs_state),
+            selectinload(Source.practices),
+        )
+    )
+    result = await session.execute(subtree_stmt)
+    all_sources = list(result.scalars().all())
+
+    # 3. Build source_id -> new_topic mapping
+    source_to_topic: dict[int, Topic] = {}
+
+    # Sort by path length to process parents before children
+    all_sources.sort(key=lambda s: len(s.path or ""))
+
+    for source in all_sources:
+        # Create new FSRS state if source had one
+        new_fsrs_state_id = None
+        if source.fsrs_state:
+            new_fsrs = FsrsState(
+                srs_enabled=source.fsrs_state.srs_enabled,
+                stability=source.fsrs_state.stability,
+                difficulty=source.fsrs_state.difficulty,
+                state=source.fsrs_state.state,
+                step=source.fsrs_state.step,
+                last_reviewed_at=source.fsrs_state.last_reviewed_at,
+                inherited_stability=source.fsrs_state.inherited_stability,
+                inherited_difficulty=source.fsrs_state.inherited_difficulty,
+                inherited_state=source.fsrs_state.inherited_state,
+                inherited_step=source.fsrs_state.inherited_step,
+                inherited_last_review=source.fsrs_state.inherited_last_review,
+            )
+            session.add(new_fsrs)
+            await session.flush()
+            new_fsrs_state_id = new_fsrs.id
+
+        # Determine parent topic ID
+        parent_topic_id = None
+        if source.parent_id and source.parent_id in source_to_topic:
+            parent_topic_id = source_to_topic[source.parent_id].id
+
+        # Create topic
+        new_topic = Topic(
+            user_id=user_id,
+            name=source.title,
+            notes=source.notes,
+            parent_id=parent_topic_id,
+            fsrs_state_id=new_fsrs_state_id,
+            archived=source.archived,
+            inboxed=source.inboxed,
+        )
+        session.add(new_topic)
+        await session.flush()
+
+        source_to_topic[source.id] = new_topic
+
+        # Migrate practices to new topic
+        for practice in source.practices:
+            await session.execute(
+                t_practice_topics.insert().values(
+                    practice_id=practice.id,
+                    topic_id=new_topic.id,
+                )
+            )
+
+        # Migrate reviews from source to new topic
+        await session.execute(
+            update(Review)
+            .where(Review.source_id == source.id)
+            .values(topic_id=new_topic.id, source_id=None)
+        )
+
+    # 4. Migrate entity relations
+    for source in all_sources:
+        new_topic = source_to_topic[source.id]
+
+        # Get outgoing relations (from this source)
+        outgoing = await session.execute(
+            select(EntityRelation).where(EntityRelation.from_source_id == source.id)
+        )
+        for rel in outgoing.scalars():
+            new_to_topic_id = rel.to_topic_id
+            new_to_source_id = rel.to_source_id
+
+            if rel.to_source_id and rel.to_source_id in source_to_topic:
+                # Target source was also converted, point to new topic
+                new_to_topic_id = source_to_topic[rel.to_source_id].id
+                new_to_source_id = None
+
+            new_rel = EntityRelation(
+                from_topic_id=new_topic.id,
+                to_topic_id=new_to_topic_id,
+                to_source_id=new_to_source_id,
+            )
+            session.add(new_rel)
+
+        # Get incoming relations (to this source)
+        incoming = await session.execute(
+            select(EntityRelation).where(EntityRelation.to_source_id == source.id)
+        )
+        for rel in incoming.scalars():
+            # Skip if from_source is in our subtree (will be handled by outgoing)
+            if rel.from_source_id and rel.from_source_id in source_to_topic:
+                continue
+
+            new_rel = EntityRelation(
+                from_topic_id=rel.from_topic_id,
+                from_source_id=rel.from_source_id,
+                to_topic_id=new_topic.id,
+            )
+            session.add(new_rel)
+
+    # 5. Migrate source_topics -> entity_relations
+    for source in all_sources:
+        new_topic = source_to_topic[source.id]
+
+        st_result = await session.execute(
+            select(t_source_topics.c.topic_id).where(
+                t_source_topics.c.source_id == source.id
+            )
+        )
+        for row in st_result:
+            covered_topic_id = row[0]
+            new_rel = EntityRelation(
+                from_topic_id=new_topic.id,
+                to_topic_id=covered_topic_id,
+            )
+            session.add(new_rel)
+
+    # 6. Migrate source_prerequisites -> entity_relations
+    for source in all_sources:
+        new_topic = source_to_topic[source.id]
+
+        prereqs = await session.execute(
+            select(SourcePrerequisite).where(SourcePrerequisite.source_id == source.id)
+        )
+        for prereq in prereqs.scalars():
+            to_topic_id = prereq.prereq_topic_id
+            to_source_id = prereq.prereq_source_id
+
+            # If prereq points to a source in the subtree, point to new topic
+            if prereq.prereq_source_id and prereq.prereq_source_id in source_to_topic:
+                to_topic_id = source_to_topic[prereq.prereq_source_id].id
+                to_source_id = None
+
+            new_rel = EntityRelation(
+                from_topic_id=new_topic.id,
+                to_topic_id=to_topic_id,
+                to_source_id=to_source_id,
+            )
+            session.add(new_rel)
+
+    # 7. Delete original sources (cascade will clean up old relations)
+    # Delete in reverse order (children first) to respect FK constraints
+    all_sources.sort(key=lambda s: len(s.path or ""), reverse=True)
+    for source in all_sources:
+        await session.delete(source)
+
+    await session.commit()
+
+    return source_to_topic[source_id].id
+
+
+async def convert_source_to_practice(
+    session: AsyncSession, source_id: int, user_id: str
+) -> int:
+    """Convert a source to a practice.
+
+    Returns the new practice ID.
+
+    Transformation:
+    - Source title -> Practice prompt
+    - Source notes -> Practice answer
+    - Source FSRS state -> New Practice FSRS state (core 6 fields)
+    - Source flags -> Practice flags
+    - source_topics -> practice_topics
+    - Reviews migrated
+
+    Lost: entity relations, prerequisites, practice_sources entries
+    Blocked if: has children
+    """
+    # 1. Verify source exists and load relationships
+    source = await load_source_with_relationships(session, source_id, user_id)
+
+    # 2. Check convertibility
+    can_convert, reason = await check_source_convertible_to_practice(
+        session, source_id, user_id
+    )
+    if not can_convert:
+        raise ConversionBlockedError(reason)
+
+    # 3. Create new FSRS state if needed
+    new_fsrs_state_id = None
+    if source.fsrs_state:
+        new_fsrs = FsrsState(
+            srs_enabled=source.fsrs_state.srs_enabled,
+            stability=source.fsrs_state.stability,
+            difficulty=source.fsrs_state.difficulty,
+            state=source.fsrs_state.state,
+            step=source.fsrs_state.step,
+            last_reviewed_at=source.fsrs_state.last_reviewed_at,
+        )
+        session.add(new_fsrs)
+        await session.flush()
+        new_fsrs_state_id = new_fsrs.id
+
+    # 4. Create practice
+    new_practice = Practice(
+        user_id=user_id,
+        prompt=source.title,
+        answer=source.notes,
+        fsrs_state_id=new_fsrs_state_id,
+        archived=source.archived,
+        inboxed=source.inboxed,
+    )
+    session.add(new_practice)
+    await session.flush()
+
+    # 5. Migrate reviews
+    await session.execute(
+        update(Review)
+        .where(Review.source_id == source_id)
+        .values(practice_id=new_practice.id, source_id=None)
+    )
+
+    # 6. Migrate source_topics -> practice_topics
+    st_result = await session.execute(
+        select(t_source_topics.c.topic_id).where(
+            t_source_topics.c.source_id == source_id
+        )
+    )
+    for row in st_result:
+        await session.execute(
+            t_practice_topics.insert().values(
+                practice_id=new_practice.id,
+                topic_id=row[0],
+            )
+        )
+
+    # 7. Delete original source
+    await session.delete(source)
+
+    await session.commit()
+
+    return new_practice.id

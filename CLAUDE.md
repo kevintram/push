@@ -65,12 +65,15 @@ fix(api): handle non-existent user edge case
 chore: update root .gitignore
 ```
 ## Worktree and Environment Files
+
 We often use git worktrees for parallel development. 
 
 When using a worktree, environment files are stored in the parent directoy (`../`) and symlinked into every worktree (`apps/api/.env`, `apps/web/.env.local`). See `add-worktree.sh` for details. 
 
 ## Development Conventions
+
 ### TODO Annotations
+
 We use a priority-based TODO annotation system throughout the codebase:
 
 - `TODO(0)`: Critical - never merge
@@ -79,3 +82,7 @@ We use a priority-based TODO annotation system throughout the codebase:
 - `TODO(3)`: Low - polish, tests, documentation
 - `TODO(4)`: Questions/investigations needed
 - `PERF`: Performance optimization opportunities
+
+## Note:
+
+The API is authenticated using cookies and thus cannot be hit directly. You must proceed through the browser.

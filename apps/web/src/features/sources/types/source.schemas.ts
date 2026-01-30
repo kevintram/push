@@ -47,7 +47,8 @@ const sourceBaseFields = {
 	topics_count: v.optional(v.number(), 0),
 	related_outgoing_count: v.optional(v.number(), 0),
 	related_incoming_count: v.optional(v.number(), 0),
-	prerequisites_count: v.optional(v.number(), 0)
+	prerequisites_count: v.optional(v.number(), 0),
+	practices_count: v.optional(v.number(), 0)
 } as const
 
 /**

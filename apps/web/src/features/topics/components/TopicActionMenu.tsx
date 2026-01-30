@@ -9,8 +9,8 @@ import {
 	SquareCheck,
 	Trash2
 } from 'lucide-react'
-import { useCallback, useState } from 'react'
-import { toast } from 'sonner'
+import { useCallback, useMemo, useState } from 'react'
+import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
@@ -20,15 +20,17 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
-import {
-	ConversionError,
-	useConvertTopicToPractice
-} from '~/features/topics/api/convertTopicToPractice'
+import { useConvertTopicToPractice } from '~/features/topics/api/convertTopicToPractice'
 import { useConvertTopicToSource } from '~/features/topics/api/convertTopicToSource'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { DeleteTopicDialog } from '~/features/topics/components/DeleteTopicDialog'
 import type { Topic } from '~/features/topics/types/topic.types'
+import { ConversionError } from '~/utils/ConversionError'
+import {
+	getTopicToPracticePreview,
+	getTopicToSourcePreview
+} from '~/utils/conversionPreview'
 
 interface TopicActionMenuProps {
 	topic: Topic
@@ -50,6 +52,14 @@ export function TopicActionMenu({
 	onTopicUpdateSuccess
 }: TopicActionMenuProps) {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
+	const [convertToPracticeOpen, setConvertToPracticeOpen] = useState(false)
+	const [convertToSourceError, setConvertToSourceError] = useState<
+		string | null
+	>(null)
+	const [convertToPracticeError, setConvertToPracticeError] = useState<
+		string | null
+	>(null)
 	const navigate = useNavigate()
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
@@ -59,6 +69,12 @@ export function TopicActionMenu({
 	const convertToPracticeMutation = useConvertTopicToPractice()
 
 	const hasChildren = (topic.children_count ?? 0) > 0
+
+	const toSourcePreview = useMemo(() => getTopicToSourcePreview(topic), [topic])
+	const toPracticePreview = useMemo(
+		() => getTopicToPracticePreview(topic),
+		[topic]
+	)
 
 	const handleDeleteTopic = useCallback(() => {
 		if (hasChildren) {
@@ -110,49 +126,43 @@ export function TopicActionMenu({
 		[createReviewMutation, topic.id, openReviewDialog]
 	)
 
-	const handleConvertToSource = useCallback(
-		async (e: React.MouseEvent) => {
-			e.stopPropagation()
-			try {
-				const result = await convertToSourceMutation.mutateAsync({
-					topicId: topic.id
-				})
-				navigate({
-					to: '/sources/$sourceId',
-					params: { sourceId: String(result.source_id) }
-				})
-			} catch (error) {
-				if (error instanceof ConversionError) {
-					toast.error(error.message)
-				} else {
-					toast.error('Failed to convert topic to source')
-				}
+	const handleConfirmConvertToSource = useCallback(async () => {
+		try {
+			const result = await convertToSourceMutation.mutateAsync({
+				topicId: topic.id
+			})
+			setConvertToSourceOpen(false)
+			navigate({
+				to: '/sources/$sourceId',
+				params: { sourceId: String(result.source_id) }
+			})
+		} catch (error) {
+			if (error instanceof ConversionError) {
+				setConvertToSourceError(error.message)
+			} else {
+				setConvertToSourceError('Failed to convert topic to source')
 			}
-		},
-		[convertToSourceMutation, topic.id, navigate]
-	)
+		}
+	}, [convertToSourceMutation, topic.id, navigate])
 
-	const handleConvertToPractice = useCallback(
-		async (e: React.MouseEvent) => {
-			e.stopPropagation()
-			try {
-				const result = await convertToPracticeMutation.mutateAsync({
-					topicId: topic.id
-				})
-				navigate({
-					to: '/practices/$practiceId',
-					params: { practiceId: String(result.practice_id) }
-				})
-			} catch (error) {
-				if (error instanceof ConversionError) {
-					toast.error(error.message)
-				} else {
-					toast.error('Failed to convert topic to practice')
-				}
+	const handleConfirmConvertToPractice = useCallback(async () => {
+		try {
+			const result = await convertToPracticeMutation.mutateAsync({
+				topicId: topic.id
+			})
+			setConvertToPracticeOpen(false)
+			navigate({
+				to: '/practices/$practiceId',
+				params: { practiceId: String(result.practice_id) }
+			})
+		} catch (error) {
+			if (error instanceof ConversionError) {
+				setConvertToPracticeError(error.message)
+			} else {
+				setConvertToPracticeError('Failed to convert topic to practice')
 			}
-		},
-		[convertToPracticeMutation, topic.id, navigate]
-	)
+		}
+	}, [convertToPracticeMutation, topic.id, navigate])
 
 	return (
 		<>
@@ -215,15 +225,19 @@ export function TopicActionMenu({
 						</DropdownMenuItem>
 					)}
 					<DropdownMenuItem
-						disabled={convertToSourceMutation.isPending}
-						onClick={handleConvertToSource}
+						onClick={e => {
+							e.stopPropagation()
+							setConvertToSourceOpen(true)
+						}}
 					>
 						<RefreshCw className='mr-2 h-4 w-4' />
 						Convert to Source
 					</DropdownMenuItem>
 					<DropdownMenuItem
-						disabled={convertToPracticeMutation.isPending}
-						onClick={handleConvertToPractice}
+						onClick={e => {
+							e.stopPropagation()
+							setConvertToPracticeOpen(true)
+						}}
 					>
 						<RefreshCw className='mr-2 h-4 w-4' />
 						Convert to Practice
@@ -246,6 +260,38 @@ export function TopicActionMenu({
 				onSuccess={onDelete}
 				open={deleteDialogOpen}
 				topic={topic}
+			/>
+
+			<ConversionConfirmationDialog
+				blockers={toSourcePreview.blockers}
+				entityName={topic.name}
+				error={convertToSourceError}
+				isPending={convertToSourceMutation.isPending}
+				lost={toSourcePreview.lost}
+				migrated={toSourcePreview.migrated}
+				onConfirm={handleConfirmConvertToSource}
+				onOpenChange={open => {
+					setConvertToSourceOpen(open)
+					if (!open) setConvertToSourceError(null)
+				}}
+				open={convertToSourceOpen}
+				targetEntityType='Source'
+			/>
+
+			<ConversionConfirmationDialog
+				blockers={toPracticePreview.blockers}
+				entityName={topic.name}
+				error={convertToPracticeError}
+				isPending={convertToPracticeMutation.isPending}
+				lost={toPracticePreview.lost}
+				migrated={toPracticePreview.migrated}
+				onConfirm={handleConfirmConvertToPractice}
+				onOpenChange={open => {
+					setConvertToPracticeOpen(open)
+					if (!open) setConvertToPracticeError(null)
+				}}
+				open={convertToPracticeOpen}
+				targetEntityType='Practice'
 			/>
 		</>
 	)
