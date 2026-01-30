@@ -62,6 +62,7 @@ export function getSourceToTopicPreview(source: Source): ConversionPreview {
 	const childrenCount = source.children_count ?? 0
 	const topicsCount = source.topics_count ?? 0
 	const prerequisitesCount = source.prerequisites_count ?? 0
+	const practicesCount = source.practices_count ?? 0
 	const relationsCount =
 		(source.related_outgoing_count ?? 0) + (source.related_incoming_count ?? 0)
 
@@ -78,6 +79,8 @@ export function getSourceToTopicPreview(source: Source): ConversionPreview {
 			label: 'Prerequisites \u2192 entity relations',
 			count: prerequisitesCount
 		})
+	if (practicesCount > 0)
+		migrated.push({ label: 'Linked practices', count: practicesCount })
 	if (relationsCount > 0)
 		migrated.push({ label: 'Entity relations', count: relationsCount })
 
