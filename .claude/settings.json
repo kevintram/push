@@ -3,7 +3,8 @@
     "allow": [
       "Bash(uv run pytest:*)",
       "Bash(uv run ruff format:*)",
-      "Bash(uv run ruff:*)"
+      "Bash(uv run ruff:*)",
+      "Bash(pnpm:*)"
     ]
   }
 }
