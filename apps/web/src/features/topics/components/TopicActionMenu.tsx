@@ -10,7 +10,6 @@ import {
 	Trash2
 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { toast } from 'sonner'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { Button } from '~/components/ui/Button'
 import {
@@ -55,6 +54,12 @@ export function TopicActionMenu({
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
 	const [convertToPracticeOpen, setConvertToPracticeOpen] = useState(false)
+	const [convertToSourceError, setConvertToSourceError] = useState<
+		string | null
+	>(null)
+	const [convertToPracticeError, setConvertToPracticeError] = useState<
+		string | null
+	>(null)
 	const navigate = useNavigate()
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
@@ -133,9 +138,9 @@ export function TopicActionMenu({
 			})
 		} catch (error) {
 			if (error instanceof ConversionError) {
-				toast.error(error.message)
+				setConvertToSourceError(error.message)
 			} else {
-				toast.error('Failed to convert topic to source')
+				setConvertToSourceError('Failed to convert topic to source')
 			}
 		}
 	}, [convertToSourceMutation, topic.id, navigate])
@@ -152,9 +157,9 @@ export function TopicActionMenu({
 			})
 		} catch (error) {
 			if (error instanceof ConversionError) {
-				toast.error(error.message)
+				setConvertToPracticeError(error.message)
 			} else {
-				toast.error('Failed to convert topic to practice')
+				setConvertToPracticeError('Failed to convert topic to practice')
 			}
 		}
 	}, [convertToPracticeMutation, topic.id, navigate])
@@ -260,11 +265,15 @@ export function TopicActionMenu({
 			<ConversionConfirmationDialog
 				blockers={toSourcePreview.blockers}
 				entityName={topic.name}
+				error={convertToSourceError}
 				isPending={convertToSourceMutation.isPending}
 				lost={toSourcePreview.lost}
 				migrated={toSourcePreview.migrated}
 				onConfirm={handleConfirmConvertToSource}
-				onOpenChange={setConvertToSourceOpen}
+				onOpenChange={open => {
+					setConvertToSourceOpen(open)
+					if (!open) setConvertToSourceError(null)
+				}}
 				open={convertToSourceOpen}
 				targetEntityType='Source'
 			/>
@@ -272,11 +281,15 @@ export function TopicActionMenu({
 			<ConversionConfirmationDialog
 				blockers={toPracticePreview.blockers}
 				entityName={topic.name}
+				error={convertToPracticeError}
 				isPending={convertToPracticeMutation.isPending}
 				lost={toPracticePreview.lost}
 				migrated={toPracticePreview.migrated}
 				onConfirm={handleConfirmConvertToPractice}
-				onOpenChange={setConvertToPracticeOpen}
+				onOpenChange={open => {
+					setConvertToPracticeOpen(open)
+					if (!open) setConvertToPracticeError(null)
+				}}
 				open={convertToPracticeOpen}
 				targetEntityType='Practice'
 			/>

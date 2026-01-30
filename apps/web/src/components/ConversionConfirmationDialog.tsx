@@ -19,6 +19,7 @@ interface ConversionConfirmationDialogProps {
 	migrated: Array<{ label: string; count: number }>
 	lost: Array<string>
 	blockers: Array<string>
+	error?: string | null
 }
 
 export function ConversionConfirmationDialog({
@@ -30,7 +31,8 @@ export function ConversionConfirmationDialog({
 	entityName,
 	migrated,
 	lost,
-	blockers
+	blockers,
+	error
 }: ConversionConfirmationDialogProps) {
 	const isBlocked = blockers.length > 0
 	const visibleMigrated = migrated.filter(item => item.count > 0)
@@ -100,6 +102,13 @@ export function ConversionConfirmationDialog({
 									</li>
 								))}
 							</ul>
+						</div>
+					)}
+
+					{error && (
+						<div className='flex items-center gap-2 text-red-600 text-sm dark:text-red-400'>
+							<XCircle className='h-4 w-4 shrink-0' />
+							{error}
 						</div>
 					)}
 				</div>

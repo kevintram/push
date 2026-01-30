@@ -131,6 +131,7 @@ export function PracticeActionMenu({
 				params: { topicId: String(result.topic_id) }
 			})
 		} catch (error) {
+			setConvertToTopicOpen(false)
 			if (error instanceof ConversionError) {
 				toast.error(error.message)
 			} else {
@@ -150,6 +151,7 @@ export function PracticeActionMenu({
 				params: { sourceId: String(result.source_id) }
 			})
 		} catch (error) {
+			setConvertToSourceOpen(false)
 			if (error instanceof ConversionError) {
 				toast.error(error.message)
 			} else {

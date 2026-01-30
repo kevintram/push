@@ -8,20 +8,30 @@ export type ConversionPreview = {
 	blockers: Array<string>
 }
 
+function hasSubtreeCoveringSources(topic: Topic): boolean {
+	if ((topic.sources_count ?? 0) > 0) return true
+	if (topic.children) {
+		for (const child of topic.children) {
+			if (hasSubtreeCoveringSources(child)) return true
+		}
+	}
+	return false
+}
+
 export function getTopicToSourcePreview(topic: Topic): ConversionPreview {
 	const childrenCount = topic.children_count ?? 0
 	const relationsCount =
 		(topic.related_outgoing_count ?? 0) + (topic.related_incoming_count ?? 0)
-	const sourcesCount = topic.sources_count ?? 0
 
 	const migrated: ConversionPreview['migrated'] = []
 	if (childrenCount > 0)
-		migrated.push({ label: 'Children (subtree)', count: childrenCount })
+		migrated.push({ label: 'Children', count: childrenCount })
 	if (relationsCount > 0)
 		migrated.push({ label: 'Entity relations', count: relationsCount })
 
 	const blockers: Array<string> = []
-	if (sourcesCount > 0) blockers.push('Topic has covering sources')
+	if (hasSubtreeCoveringSources(topic))
+		blockers.push('Topic or its children have covering sources')
 
 	return { migrated, lost: [], blockers }
 }
@@ -53,7 +63,7 @@ export function getSourceToTopicPreview(source: Source): ConversionPreview {
 
 	const migrated: ConversionPreview['migrated'] = []
 	if (childrenCount > 0)
-		migrated.push({ label: 'Children (subtree)', count: childrenCount })
+		migrated.push({ label: 'Children', count: childrenCount })
 	if (topicsCount > 0)
 		migrated.push({
 			label: 'Covering topics \u2192 entity relations',
