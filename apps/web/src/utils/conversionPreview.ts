@@ -43,15 +43,19 @@ export function getTopicToPracticePreview(topic: Topic): ConversionPreview {
 	const relationsCount =
 		(topic.related_outgoing_count ?? 0) + (topic.related_incoming_count ?? 0)
 
-	const lost: Array<string> = []
-	if (relationsCount > 0) lost.push('Entity relations')
+	const migrated: ConversionPreview['migrated'] = []
+	if (relationsCount > 0)
+		migrated.push({
+			label: 'Entity relations → linked topics',
+			count: relationsCount
+		})
 
 	const blockers: Array<string> = []
 	if (childrenCount > 0) blockers.push('Topic has children')
 	if (sourcesCount > 0) blockers.push('Topic has covering sources')
 	if (practicesCount > 0) blockers.push('Topic has linked practices')
 
-	return { migrated: [], lost, blockers }
+	return { migrated, lost: [], blockers }
 }
 
 export function getSourceToTopicPreview(source: Source): ConversionPreview {
