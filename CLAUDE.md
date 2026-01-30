@@ -82,3 +82,7 @@ We use a priority-based TODO annotation system throughout the codebase:
 - `TODO(3)`: Low - polish, tests, documentation
 - `TODO(4)`: Questions/investigations needed
 - `PERF`: Performance optimization opportunities
+
+## Note:
+
+The API is authenticated using cookies and thus cannot be hit directly. You must proceed through the browser.
