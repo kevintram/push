@@ -57,6 +57,10 @@ class SourceSummaryRead(SourceRead):
 
     children_count: int = 0
     topics_count: int = 0
+    related_outgoing_count: int = 0
+    related_incoming_count: int = 0
+    prerequisites_count: int = 0
+    practices_count: int = 0
 
 
 class SourceDetailRead(SourceSummaryRead):
