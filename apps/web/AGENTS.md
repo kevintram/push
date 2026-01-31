@@ -1,4 +1,6 @@
-# Repository Guidelines
+# AGENTS.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Architecture
 
@@ -17,7 +19,7 @@ This is a React application built with modern tooling focused on topic-based lea
 - **Mocking**: MSW (Mock Service Worker)
 
 ## Development Commands
-- Please see the package.json file for all the latest command scripts. 
+- Please see the package.json file for all the latest command scripts.
 
 For for your convience, these are the commands of writing this:
 - `pnpm dev` - Start development server with hot reload
