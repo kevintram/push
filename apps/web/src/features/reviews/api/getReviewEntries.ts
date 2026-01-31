@@ -15,6 +15,17 @@ import { ReviewEntrySchema } from '../types/review.schemas'
 import type { ReviewEntry } from '../types/review.types'
 import { reviewEntryKeys } from './queryKeys'
 
+const sortReviewEntriesByEffectiveDateDesc = (
+	entries: Array<ReviewEntry>
+): Array<ReviewEntry> => {
+	return [...entries].sort((a, b) => {
+		if (a.effective_date === b.effective_date) return 0
+		if (a.effective_date === null) return 1
+		if (b.effective_date === null) return -1
+		return a.effective_date < b.effective_date ? 1 : -1
+	})
+}
+
 export async function getReviewEntries(filters?: GetReviewEntriesFilters) {
 	const params = new URLSearchParams()
 
@@ -145,6 +156,21 @@ export function useTodayReviewEntries() {
 	}
 }
 
+export function useMergedTodayReviewEntries() {
+	const { sections, isLoading, error } = useTodayReviewEntries()
+
+	const entries = useMemo(() => {
+		const merged = sections.flatMap(section => section.entries)
+		return sortReviewEntriesByEffectiveDateDesc(merged)
+	}, [sections])
+
+	return {
+		entries,
+		isLoading,
+		error
+	}
+}
+
 type SoonSectionDefinition = {
 	id: 'tomorrow' | 'nextSevenDays'
 	label: string
@@ -259,6 +285,32 @@ export function useSoonReviewEntries() {
 	}
 }
 
+export function useUpcomingReviewEntries() {
+	const tomorrow = useMemo(() => dayjs().add(1, 'day').format('YYYY-MM-DD'), [])
+
+	const query = useQuery({
+		queryKey: reviewEntryKeys.list({
+			effectiveDateAfter: tomorrow,
+			sort: 'desc'
+		}),
+		queryFn: () =>
+			getReviewEntries({
+				effectiveDateAfter: tomorrow,
+				sort: 'desc'
+			})
+	})
+
+	const entries = useMemo(() => {
+		return sortReviewEntriesByEffectiveDateDesc(query.data ?? [])
+	}, [query.data])
+
+	return {
+		entries,
+		isLoading: query.isLoading,
+		error: query.error
+	}
+}
+
 type UnscheduledSectionDefinition = {
 	id: 'unscheduled'
 	label: string
@@ -275,8 +327,13 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 
 export function useUnscheduledReviewEntries() {
 	const query = useQuery({
-		queryKey: reviewEntryKeys.list({ scheduled: false, completed: false }),
-		queryFn: () => getReviewEntries({ scheduled: false, completed: false })
+		queryKey: reviewEntryKeys.list({
+			scheduled: false,
+			completed: false,
+			sort: 'desc'
+		}),
+		queryFn: () =>
+			getReviewEntries({ scheduled: false, completed: false, sort: 'desc' })
 	})
 
 	const section: UnscheduledEntrySection = {
