@@ -23,7 +23,6 @@ import { Route as MainMyTopicsRouteImport } from './routes/_main/my-topics'
 import { Route as MainMyLibraryRouteImport } from './routes/_main/my-library'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainInboxRouteImport } from './routes/_main/inbox'
-import { Route as MainHomeRouteImport } from './routes/_main/home'
 import { Route as MainArchivedRouteImport } from './routes/_main/archived'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
 import { Route as MainSourcesSourceIdRouteImport } from './routes/_main/sources_.$sourceId'
@@ -99,11 +98,6 @@ const MainInboxRoute = MainInboxRouteImport.update({
   path: '/inbox',
   getParentRoute: () => MainRoute,
 } as any)
-const MainHomeRoute = MainHomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => MainRoute,
-} as any)
 const MainArchivedRoute = MainArchivedRouteImport.update({
   id: '/archived',
   path: '/archived',
@@ -133,7 +127,6 @@ const MainPracticesPracticeIdRoute = MainPracticesPracticeIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/archived': typeof MainArchivedRoute
-  '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
@@ -154,7 +147,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/archived': typeof MainArchivedRoute
-  '/home': typeof MainHomeRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
@@ -177,7 +169,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_main': typeof MainRouteWithChildren
   '/_main/archived': typeof MainArchivedRoute
-  '/_main/home': typeof MainHomeRoute
   '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/my-library': typeof MainMyLibraryRoute
@@ -200,7 +191,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/archived'
-    | '/home'
     | '/inbox'
     | '/logbook'
     | '/my-library'
@@ -221,7 +211,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/archived'
-    | '/home'
     | '/inbox'
     | '/logbook'
     | '/my-library'
@@ -243,7 +232,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_main'
     | '/_main/archived'
-    | '/_main/home'
     | '/_main/inbox'
     | '/_main/logbook'
     | '/_main/my-library'
@@ -367,13 +355,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainInboxRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/home': {
-      id: '/_main/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof MainHomeRouteImport
-      parentRoute: typeof MainRoute
-    }
     '/_main/archived': {
       id: '/_main/archived'
       path: '/archived'
@@ -414,7 +395,6 @@ declare module '@tanstack/react-router' {
 
 interface MainRouteChildren {
   MainArchivedRoute: typeof MainArchivedRoute
-  MainHomeRoute: typeof MainHomeRoute
   MainInboxRoute: typeof MainInboxRoute
   MainLogbookRoute: typeof MainLogbookRoute
   MainMyLibraryRoute: typeof MainMyLibraryRoute
@@ -436,7 +416,6 @@ interface MainRouteChildren {
 
 const MainRouteChildren: MainRouteChildren = {
   MainArchivedRoute: MainArchivedRoute,
-  MainHomeRoute: MainHomeRoute,
   MainInboxRoute: MainInboxRoute,
   MainLogbookRoute: MainLogbookRoute,
   MainMyLibraryRoute: MainMyLibraryRoute,

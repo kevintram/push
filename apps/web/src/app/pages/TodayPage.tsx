@@ -10,12 +10,12 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { useTodayReviewEntries } from '~/features/reviews/api/getReviewEntries'
+import { useMergedTodayReviewEntries } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 
 export function TodayPage() {
-	const { sections, isLoading } = useTodayReviewEntries()
+	const { entries, isLoading } = useMergedTodayReviewEntries()
 	const {
 		handleSessionClick,
 		handleReviewClick,
@@ -24,9 +24,13 @@ export function TodayPage() {
 	} = useReviewSessionPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
-	const allSectionsEmpty = sections.every(
-		section => section.entries.length === 0
-	)
+	const allSectionsEmpty = entries.length === 0
+
+	const mergedSection = {
+		id: 'today',
+		label: 'Today',
+		entries
+	}
 
 	if (isLoading) {
 		return (
@@ -62,19 +66,15 @@ export function TodayPage() {
 		<PageLayout>
 			<PageLayout.Header icon={Star} title='Today' />
 			<PageLayout.Content>
-				{sections.map(section => (
-					<ReviewSection
-						entries={section.entries}
-						headingClassName={section.headingClassName}
-						id={section.id}
-						isCollapsed={collapsedSections[section.id] ?? false}
-						key={section.id}
-						label={section.label}
-						onReviewClick={handleReviewClick}
-						onSessionClick={handleSessionClick}
-						onToggleCollapse={toggleSection}
-					/>
-				))}
+				<ReviewSection
+					entries={mergedSection.entries}
+					id={mergedSection.id}
+					isCollapsed={collapsedSections[mergedSection.id] ?? false}
+					label={mergedSection.label}
+					onReviewClick={handleReviewClick}
+					onSessionClick={handleSessionClick}
+					onToggleCollapse={toggleSection}
+				/>
 			</PageLayout.Content>
 			<ReviewDialog
 				onOpenChange={open => {

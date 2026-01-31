@@ -3,16 +3,12 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
 	BookOpen,
-	Calendar,
-	CircleDashed,
 	History,
-	Home,
 	Inbox,
 	Library,
 	ListChecks,
 	PanelLeft,
-	Settings,
-	Star
+	Settings
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -26,7 +22,6 @@ import {
 	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupContent,
-	SidebarGroupLabel,
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuBadge,
@@ -44,39 +39,12 @@ export function AppSidebar() {
 	const { data: inboxTopics } = useTopics({ inboxed: true, archived: false })
 	const inboxCount = inboxTopics?.length ?? 0
 
-	const topItems = [
-		{
-			title: 'Home',
-			url: '/home',
-			icon: Home,
-			isActive: (pathname: string) => pathname === '/home'
-		},
+	const reviewItems = [
 		{
 			title: 'Review',
 			url: '/review',
 			icon: BookOpen,
 			isActive: (pathname: string) => pathname === '/review'
-		}
-	]
-
-	const scheduleItems = [
-		{
-			title: 'Today',
-			url: '/today',
-			icon: Star,
-			isActive: (pathname: string) => pathname === '/today'
-		},
-		{
-			title: 'Upcoming',
-			url: '/upcoming',
-			icon: Calendar,
-			isActive: (pathname: string) => pathname === '/upcoming'
-		},
-		{
-			title: 'Unscheduled',
-			url: '/unscheduled',
-			icon: CircleDashed,
-			isActive: (pathname: string) => pathname === '/unscheduled'
 		}
 	]
 
@@ -88,16 +56,25 @@ export function AppSidebar() {
 			isActive: (pathname: string) => pathname === '/inbox'
 		},
 		{
-			title: 'My Library',
-			url: '/my-library',
-			icon: Library,
-			isActive: (pathname: string) => pathname === '/my-library'
-		},
-		{
 			title: 'Recent',
 			url: '/recent',
 			icon: History,
 			isActive: (pathname: string) => pathname === '/recent'
+		},
+		{
+			title: 'My Library',
+			url: '/my-library',
+			icon: Library,
+			isActive: (pathname: string) => pathname === '/my-library'
+		}
+	]
+
+	const archiveItems = [
+		{
+			title: 'Logbook',
+			url: '/logbook',
+			icon: ListChecks,
+			isActive: (pathname: string) => pathname === '/logbook'
 		},
 		{
 			title: 'Archived',
@@ -137,7 +114,7 @@ export function AppSidebar() {
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{topItems.map(item => {
+							{reviewItems.map(item => {
 								const isActive = item.isActive(location.pathname)
 								return (
 									<SidebarMenuItem key={item.title}>
@@ -159,32 +136,6 @@ export function AppSidebar() {
 				</SidebarGroup>
 
 				<SidebarGroup>
-					<SidebarGroupLabel>Schedule</SidebarGroupLabel>
-					<SidebarGroupContent>
-						<SidebarMenu>
-							{scheduleItems.map(item => {
-								const isActive = item.isActive(location.pathname)
-								return (
-									<SidebarMenuItem key={item.title}>
-										<SidebarMenuButton
-											asChild={true}
-											isActive={isActive}
-											tooltip={item.title}
-										>
-											<Link to={item.url}>
-												<item.icon />
-												<span>{item.title}</span>
-											</Link>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
-								)
-							})}
-						</SidebarMenu>
-					</SidebarGroupContent>
-				</SidebarGroup>
-
-				<SidebarGroup>
-					<SidebarGroupLabel>Library</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu>
 							{libraryItems.map(item => {
@@ -212,22 +163,26 @@ export function AppSidebar() {
 					</SidebarGroupContent>
 				</SidebarGroup>
 
-				{/* Logbook at the bottom of the content area */}
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							<SidebarMenuItem>
-								<SidebarMenuButton
-									asChild={true}
-									isActive={location.pathname === '/logbook'}
-									tooltip='Logbook'
-								>
-									<Link to='/logbook'>
-										<ListChecks />
-										<span>Logbook</span>
-									</Link>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
+							{archiveItems.map(item => {
+								const isActive = item.isActive(location.pathname)
+								return (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton
+											asChild={true}
+											isActive={isActive}
+											tooltip={item.title}
+										>
+											<Link to={item.url}>
+												<item.icon />
+												<span>{item.title}</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								)
+							})}
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>
