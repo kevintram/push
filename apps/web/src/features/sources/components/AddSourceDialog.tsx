@@ -18,14 +18,22 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
+import { useAddPracticeSource } from '~/features/practices/api/addPracticeSource'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import {
 	ReviewRatingCheckbox,
 	type ReviewRatingState
 } from '~/features/reviews/components/ReviewRatingCheckbox'
 import { SessionPickerPopover } from '~/features/reviews/components/SessionPickerPopover'
+import { useAddTopicEntityRelation } from '~/features/topics/api/addTopicEntityRelation'
+import { useAddTopicSource } from '~/features/topics/api/addTopicSource'
+import { EntityType } from '~/models/entity-relations.types'
 import type { LearningState } from '~/models/learning-state.types'
+import { useAddSourceChild } from '../api/addSourceChild'
+import { useAddSourceEntityRelation } from '../api/addSourceEntityRelation'
+import { useAddSourcePrerequisite } from '../api/addSourcePrerequisite'
 import { useCreateSource } from '../api/createSource'
+import { useSetSourceParent } from '../api/setSourceParent'
 
 /**
  * SRS fields that can be inherited from a parent source.
@@ -41,6 +49,12 @@ export type SrsSource = {
 export type AddSourceDialogContext =
 	| { type: 'standalone' }
 	| { type: 'child'; parentSourceId: number; srsSource?: SrsSource | null }
+	| { type: 'parent'; childSourceId: number }
+	| { type: 'topic'; topicId: number }
+	| { type: 'practice'; practiceId: number }
+	| { type: 'topicRelated'; topicId: number }
+	| { type: 'sourceRelated'; sourceId: number }
+	| { type: 'sourcePrerequisite'; sourceId: number }
 
 interface AddSourceDialogProps {
 	open: boolean
@@ -82,10 +96,37 @@ export function AddSourceDialog({
 	// Mutations
 	const { mutateAsync: createSource, isPending: isCreatingSource } =
 		useCreateSource()
+	const { mutateAsync: addSourceChild, isPending: isAddingChild } =
+		useAddSourceChild()
+	const { mutateAsync: setSourceParent, isPending: isSettingParent } =
+		useSetSourceParent()
+	const { mutateAsync: addTopicSource, isPending: isAddingTopicSource } =
+		useAddTopicSource()
+	const {
+		mutateAsync: addTopicSourceRelation,
+		isPending: isAddingTopicRelation
+	} = useAddTopicEntityRelation()
+	const { mutateAsync: addPracticeSource, isPending: isAddingPracticeSource } =
+		useAddPracticeSource()
+	const { mutateAsync: addSourceRelation, isPending: isAddingSourceRelation } =
+		useAddSourceEntityRelation()
+	const {
+		mutateAsync: addSourcePrerequisite,
+		isPending: isAddingSourcePrerequisite
+	} = useAddSourcePrerequisite()
 	const { mutateAsync: createReview, isPending: isCreatingReview } =
 		useCreateReview()
 
-	const isPending = isCreatingSource || isCreatingReview
+	const isPending =
+		isCreatingSource ||
+		isAddingChild ||
+		isSettingParent ||
+		isAddingTopicSource ||
+		isAddingTopicRelation ||
+		isAddingPracticeSource ||
+		isAddingSourceRelation ||
+		isAddingSourcePrerequisite ||
+		isCreatingReview
 
 	// Extract SRS source from context if available
 	const srsSource = useMemo(() => {
@@ -140,6 +181,8 @@ export function AddSourceDialog({
 	// Create source handler
 	const handleCreate = useCallback(async () => {
 		try {
+			let newSourceId: number | undefined
+
 			// Build source data - inherit all SRS fields when toggle is on
 			const shouldInherit = inheritStability && srsSource !== null
 
@@ -149,16 +192,69 @@ export function AddSourceDialog({
 				archived: false,
 				inboxed,
 				srs_enabled: srsEnabled,
-				parent_id: context.type === 'child' ? context.parentSourceId : null,
 				inherit_fsrs: shouldInherit
 			}
 
-			const source = await createSource(sourceData)
+			if (context.type === 'standalone') {
+				const source = await createSource({
+					...sourceData,
+					parent_id: null
+				})
+				newSourceId = source.id
+			} else if (context.type === 'child') {
+				const response = await addSourceChild({
+					parentId: context.parentSourceId,
+					data: { child: sourceData }
+				})
+				newSourceId = response.child.id
+			} else if (context.type === 'parent') {
+				const response = await setSourceParent({
+					sourceId: context.childSourceId,
+					parent: sourceData
+				})
+				newSourceId = response.parent.id
+			} else if (context.type === 'topic') {
+				const response = await addTopicSource({
+					topicId: context.topicId,
+					source: sourceData
+				})
+				newSourceId = response.source.id
+			} else if (context.type === 'practice') {
+				const response = await addPracticeSource({
+					practiceId: context.practiceId,
+					source: sourceData
+				})
+				newSourceId = response.source.id
+			} else if (context.type === 'topicRelated') {
+				await addTopicSourceRelation({
+					topicId: context.topicId,
+					data: {
+						to_entity_type: EntityType.Source,
+						to_source: sourceData
+					}
+				})
+			} else if (context.type === 'sourceRelated') {
+				await addSourceRelation({
+					sourceId: context.sourceId,
+					data: {
+						to_entity_type: EntityType.Source,
+						to_source: sourceData
+					}
+				})
+			} else if (context.type === 'sourcePrerequisite') {
+				await addSourcePrerequisite({
+					sourceId: context.sourceId,
+					data: {
+						prereq_entity_type: EntityType.Source,
+						prereq_source: sourceData
+					}
+				})
+			}
 
 			// Create review if review section was used and rating was set
-			if (showReview && reviewRating !== 'uncompleted') {
+			if (newSourceId && showReview && reviewRating !== 'uncompleted') {
 				const basePayload = {
-					source_id: source.id,
+					source_id: newSourceId,
 					rating: reviewRating,
 					description: reviewDescription.trim(),
 					notes: reviewNotes.trim(),
@@ -176,7 +272,9 @@ export function AddSourceDialog({
 			}
 
 			// Call success callback
-			onSuccess?.(source.id)
+			if (newSourceId) {
+				onSuccess?.(newSourceId)
+			}
 
 			// Handle create more vs close
 			if (createMore) {
@@ -200,6 +298,13 @@ export function AddSourceDialog({
 		srsSource,
 		inheritStability,
 		createSource,
+		addSourceChild,
+		setSourceParent,
+		addTopicSource,
+		addTopicSourceRelation,
+		addPracticeSource,
+		addSourceRelation,
+		addSourcePrerequisite,
 		showReview,
 		reviewRating,
 		reviewDescription,

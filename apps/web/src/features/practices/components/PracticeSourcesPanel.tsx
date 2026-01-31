@@ -1,21 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, FileText, Loader2, Plus, Search } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { LearnablePanel } from '~/components/LearnablePanel'
-import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
+import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
+import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { SourceCard } from '~/features/sources/components/SourceCard'
 import type { Source } from '~/features/sources/types/source.types'
 import { useAddPracticeSource } from '../api/addPracticeSource'
 import { practiceKeys } from '../api/queryKeys'
 import { useRemovePracticeSource } from '../api/removePracticeSource'
-import { AddSourceToPracticeDialog } from './AddSourceToPracticeDialog'
 
 const MIN_HEIGHT = 96
 
@@ -42,6 +37,7 @@ export function PracticeSourcesPanel({
 }: PracticeSourcesPanelProps) {
 	const queryClient = useQueryClient()
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
+	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
 	const sources = sourcesProp ?? []
 
@@ -144,32 +140,35 @@ export function PracticeSourcesPanel({
 
 	const actions = (
 		<>
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild={true} disabled={isAdding}>
-					<Button className='gap-1' size='sm' variant='secondary'>
-						{isAdding ? (
-							<Loader2 className='h-4 w-4 animate-spin' />
-						) : (
-							<Plus className='h-4 w-4' />
-						)}
-						Add
-						<ChevronDown className='h-4 w-4' />
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align='start'>
-					<DropdownMenuItem onClick={() => setShowSearchDialog(true)}>
-						<Search className='h-4 w-4' />
-						Search
-					</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
-
-			<AddSourceToPracticeDialog
-				existingSourceIds={existingSourceIds}
-				onOpenChange={setShowSearchDialog}
-				onSelected={handleAdd}
-				open={showSearchDialog}
+			<AddEntityMenu
+				createItems={[
+					{
+						label: 'Create Source',
+						onSelect: () => setShowCreateDialog(true)
+					}
+				]}
+				isLoading={isAdding}
+				onSearch={() => setShowSearchDialog(true)}
+				searchLabel='Search Sources'
 			/>
+
+			<EntitySearchDialog
+				defaultType='source'
+				entityTypes={['source']}
+				existingIds={{ source: existingSourceIds }}
+				onOpenChange={setShowSearchDialog}
+				onSelected={(_type, source) => handleAdd(source as Source)}
+				open={showSearchDialog}
+				title='Search sources'
+			/>
+
+			{practiceId && (
+				<AddSourceDialog
+					context={{ type: 'practice', practiceId }}
+					onOpenChange={setShowCreateDialog}
+					open={showCreateDialog}
+				/>
+			)}
 		</>
 	)
 

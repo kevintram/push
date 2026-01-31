@@ -1,13 +1,16 @@
-import { ChevronDown, ListChecks, Loader2, Plus, X } from 'lucide-react'
+import { ChevronDown, ListChecks, Loader2, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
+import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
+import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
+import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import type { SourcePrerequisiteRead } from '~/models/entity-relations.types'
 import { EntityType } from '~/models/entity-relations.types'
 import { useAddSourcePrerequisite } from '../api/addSourcePrerequisite'
 import { useSourcePrerequisites } from '../api/getSourcePrerequisites'
 import { useRemoveSourcePrerequisite } from '../api/removeSourcePrerequisite'
-import { AddPrerequisiteDialog } from './AddPrerequisiteDialog'
 
 interface SourcePrerequisitesPanelProps {
 	sourceId: number | undefined
@@ -21,7 +24,9 @@ export function SourcePrerequisitesPanel({
 	onSourceNavigate
 }: SourcePrerequisitesPanelProps) {
 	const [isCollapsed, setIsCollapsed] = useState(false)
-	const [showAddDialog, setShowAddDialog] = useState(false)
+	const [showSearchDialog, setShowSearchDialog] = useState(false)
+	const [showCreateTopicDialog, setShowCreateTopicDialog] = useState(false)
+	const [showCreateSourceDialog, setShowCreateSourceDialog] = useState(false)
 
 	const { data: prerequisites = [], isLoading } =
 		useSourcePrerequisites(sourceId)
@@ -97,20 +102,21 @@ export function SourcePrerequisitesPanel({
 		<div className='flex flex-col'>
 			<TopicPanelHeader
 				actions={
-					<Button
-						className='gap-1'
-						disabled={isAdding}
-						onClick={() => setShowAddDialog(true)}
-						size='sm'
-						variant='secondary'
-					>
-						{isAdding ? (
-							<Loader2 className='h-4 w-4 animate-spin' />
-						) : (
-							<Plus className='h-4 w-4' />
-						)}
-						Add
-					</Button>
+					<AddEntityMenu
+						createItems={[
+							{
+								label: 'Create Topic',
+								onSelect: () => setShowCreateTopicDialog(true)
+							},
+							{
+								label: 'Create Source',
+								onSelect: () => setShowCreateSourceDialog(true)
+							}
+						]}
+						isLoading={isAdding}
+						onSearch={() => setShowSearchDialog(true)}
+						searchLabel='Search'
+					/>
 				}
 				label={
 					<Button
@@ -171,13 +177,35 @@ export function SourcePrerequisitesPanel({
 				</div>
 			)}
 
-			<AddPrerequisiteDialog
-				isAdding={isAdding}
-				onOpenChange={setShowAddDialog}
-				onSelected={handleAddPrerequisite}
-				open={showAddDialog}
-				sourceId={sourceId}
-			/>
+			{sourceId && (
+				<EntitySearchDialog
+					entityTypes={['topic', 'source']}
+					onOpenChange={setShowSearchDialog}
+					onSelected={(entityType, entity) => {
+						if (entityType === 'topic' || entityType === 'source') {
+							handleAddPrerequisite(entityType, entity.id)
+						}
+					}}
+					open={showSearchDialog}
+					title='Search prerequisites'
+				/>
+			)}
+
+			{sourceId && (
+				<AddTopicDialog
+					context={{ type: 'sourcePrerequisite', sourceId }}
+					onOpenChange={setShowCreateTopicDialog}
+					open={showCreateTopicDialog}
+				/>
+			)}
+
+			{sourceId && (
+				<AddSourceDialog
+					context={{ type: 'sourcePrerequisite', sourceId }}
+					onOpenChange={setShowCreateSourceDialog}
+					open={showCreateSourceDialog}
+				/>
+			)}
 		</div>
 	)
 }

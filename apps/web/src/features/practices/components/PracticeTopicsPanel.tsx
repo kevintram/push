@@ -1,21 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { BookOpen, ChevronDown, Loader2, Plus, Search } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { LearnablePanel } from '~/components/LearnablePanel'
-import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
+import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
+import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { useAddPracticeTopic } from '../api/addPracticeTopic'
 import { practiceKeys } from '../api/queryKeys'
 import { useRemovePracticeTopic } from '../api/removePracticeTopic'
-import { AddTopicToPracticeDialog } from './AddTopicToPracticeDialog'
 
 const MIN_HEIGHT = 96
 
@@ -42,6 +37,7 @@ export function PracticeTopicsPanel({
 }: PracticeTopicsPanelProps) {
 	const queryClient = useQueryClient()
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
+	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
 	const topics = topicsProp ?? []
 
@@ -144,33 +140,35 @@ export function PracticeTopicsPanel({
 
 	const actions = (
 		<>
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild={true} disabled={isAdding}>
-					<Button className='gap-1' size='sm' variant='secondary'>
-						{isAdding ? (
-							<Loader2 className='h-4 w-4 animate-spin' />
-						) : (
-							<Plus className='h-4 w-4' />
-						)}
-						Add
-						<ChevronDown className='h-4 w-4' />
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align='start'>
-					<DropdownMenuItem onClick={() => setShowSearchDialog(true)}>
-						<Search className='h-4 w-4' />
-						Search
-					</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
-
-			<AddTopicToPracticeDialog
-				existingTopicIds={existingTopicIds}
-				isCreating={isAdding}
-				onOpenChange={setShowSearchDialog}
-				onSelected={handleAdd}
-				open={showSearchDialog}
+			<AddEntityMenu
+				createItems={[
+					{
+						label: 'Create Topic',
+						onSelect: () => setShowCreateDialog(true)
+					}
+				]}
+				isLoading={isAdding}
+				onSearch={() => setShowSearchDialog(true)}
+				searchLabel='Search Topics'
 			/>
+
+			<EntitySearchDialog
+				defaultType='topic'
+				entityTypes={['topic']}
+				existingIds={{ topic: existingTopicIds }}
+				onOpenChange={setShowSearchDialog}
+				onSelected={(_type, topic) => handleAdd(topic as Topic)}
+				open={showSearchDialog}
+				title='Search topics'
+			/>
+
+			{practiceId && (
+				<AddTopicDialog
+					context={{ type: 'practice', practiceId }}
+					onOpenChange={setShowCreateDialog}
+					open={showCreateDialog}
+				/>
+			)}
 		</>
 	)
 

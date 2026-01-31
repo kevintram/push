@@ -10,6 +10,20 @@ import { practiceKeys } from './queryKeys'
 export async function addPracticeTopic(
 	input: AddPracticeTopicInput
 ): Promise<PracticeTopicResponse> {
+	const body =
+		'topicId' in input
+			? { topic_id: input.topicId }
+			: {
+					topic: {
+						name: input.topic.name,
+						notes: input.topic.notes,
+						archived: input.topic.archived,
+						inboxed: input.topic.inboxed,
+						srs_enabled: input.topic.srs_enabled,
+						inherit_fsrs: input.topic.inherit_fsrs
+					}
+				}
+
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/practices/${input.practiceId}/topics/`,
 		{
@@ -17,7 +31,7 @@ export async function addPracticeTopic(
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ topic_id: input.topicId })
+			body: JSON.stringify(body)
 		}
 	)
 
@@ -42,13 +56,18 @@ export function useAddPracticeTopic() {
 	return useMutation({
 		mutationFn: addPracticeTopic,
 		onSuccess: async (_, input) => {
+			const topicId = 'topicId' in input ? input.topicId : undefined
 			await Promise.all([
 				queryClient.invalidateQueries({
 					queryKey: practiceKeys.byId(input.practiceId)
 				}),
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(input.topicId)
-				})
+				topicId
+					? queryClient.invalidateQueries({
+							queryKey: topicKeys.byId(topicId)
+						})
+					: queryClient.invalidateQueries({
+							queryKey: topicKeys.all
+						})
 			])
 		}
 	})

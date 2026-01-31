@@ -24,9 +24,14 @@ import {
 	type ReviewRatingState
 } from '~/features/reviews/components/ReviewRatingCheckbox'
 import { SessionPickerPopover } from '~/features/reviews/components/SessionPickerPopover'
+import { useAddSourcePractice } from '~/features/sources/api/addSourcePractice'
+import { useAddTopicPractice } from '~/features/topics/api/addTopicPractice'
 import { useCreatePractice } from '../api/createPractice'
 
-export type AddPracticeDialogContext = { type: 'standalone' }
+export type AddPracticeDialogContext =
+	| { type: 'standalone' }
+	| { type: 'topic'; topicId: number }
+	| { type: 'source'; sourceId: number }
 
 interface AddPracticeDialogProps {
 	open: boolean
@@ -38,7 +43,7 @@ interface AddPracticeDialogProps {
 export function AddPracticeDialog({
 	open,
 	onOpenChange,
-	context: _context = { type: 'standalone' },
+	context = { type: 'standalone' },
 	onSuccess
 }: AddPracticeDialogProps) {
 	// Practice fields
@@ -67,10 +72,18 @@ export function AddPracticeDialog({
 	// Mutations
 	const { mutateAsync: createPractice, isPending: isCreatingPractice } =
 		useCreatePractice()
+	const { mutateAsync: addTopicPractice, isPending: isAddingTopicPractice } =
+		useAddTopicPractice()
+	const { mutateAsync: addSourcePractice, isPending: isAddingSourcePractice } =
+		useAddSourcePractice()
 	const { mutateAsync: createReview, isPending: isCreatingReview } =
 		useCreateReview()
 
-	const isPending = isCreatingPractice || isCreatingReview
+	const isPending =
+		isCreatingPractice ||
+		isAddingTopicPractice ||
+		isAddingSourcePractice ||
+		isCreatingReview
 
 	// Focus prompt field on open
 	useEffect(() => {
@@ -116,6 +129,8 @@ export function AddPracticeDialog({
 	// Create practice handler
 	const handleCreate = useCallback(async () => {
 		try {
+			let newPracticeId: number | undefined
+
 			const practiceData = {
 				prompt: prompt.trim(),
 				answer: answer.trim(),
@@ -124,12 +139,25 @@ export function AddPracticeDialog({
 				srs_enabled: srsEnabled
 			}
 
-			const practice = await createPractice(practiceData)
+			if (context.type === 'standalone') {
+				const practice = await createPractice(practiceData)
+				newPracticeId = practice.id
+			} else if (context.type === 'topic') {
+				await addTopicPractice({
+					topicId: context.topicId,
+					practice: practiceData
+				})
+			} else if (context.type === 'source') {
+				await addSourcePractice({
+					sourceId: context.sourceId,
+					practice: practiceData
+				})
+			}
 
 			// Create review if review section was used and rating was set
-			if (showReview && reviewRating !== 'uncompleted') {
+			if (newPracticeId && showReview && reviewRating !== 'uncompleted') {
 				const basePayload = {
-					practice_id: practice.id,
+					practice_id: newPracticeId,
 					rating: reviewRating,
 					description: reviewDescription.trim(),
 					notes: reviewNotes.trim(),
@@ -147,7 +175,9 @@ export function AddPracticeDialog({
 			}
 
 			// Call success callback
-			onSuccess?.(practice.id)
+			if (newPracticeId) {
+				onSuccess?.(newPracticeId)
+			}
 
 			// Handle create more vs close
 			if (createMore) {
@@ -167,7 +197,10 @@ export function AddPracticeDialog({
 		answer,
 		inboxed,
 		srsEnabled,
+		context,
 		createPractice,
+		addTopicPractice,
+		addSourcePractice,
 		showReview,
 		reviewRating,
 		reviewDescription,

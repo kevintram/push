@@ -29,20 +29,44 @@ export type UpdatePracticeInput = {
 	srs_enabled?: boolean
 }
 
-export type AddPracticeTopicInput = {
-	practiceId: number
-	topicId: number
-}
+export type AddPracticeTopicInput =
+	| {
+			practiceId: number
+			topicId: number
+	  }
+	| {
+			practiceId: number
+			topic: {
+				name: string
+				notes: string
+				archived: boolean
+				inboxed: boolean
+				srs_enabled?: boolean
+				inherit_fsrs?: boolean
+			}
+	  }
 
 export type RemovePracticeTopicInput = {
 	practiceId: number
 	topicId: number
 }
 
-export type AddPracticeSourceInput = {
-	practiceId: number
-	sourceId: number
-}
+export type AddPracticeSourceInput =
+	| {
+			practiceId: number
+			sourceId: number
+	  }
+	| {
+			practiceId: number
+			source: {
+				title: string
+				notes: string
+				archived: boolean
+				inboxed: boolean
+				srs_enabled?: boolean
+				inherit_fsrs?: boolean
+			}
+	  }
 
 export type RemovePracticeSourceInput = {
 	practiceId: number

@@ -1,4 +1,4 @@
-import { ChevronDown, Link, Loader2, Plus } from 'lucide-react'
+import { ChevronDown, Link } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import {
 	EntityCard,
@@ -7,14 +7,17 @@ import {
 	getEntityKey
 } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
+import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
+import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
+import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import type { RelatedEntityItem } from '~/features/topics/types/topic.types'
 import type { EntityType } from '~/models/entity-relations.types'
 import { useAddSourceEntityRelation } from '../api/addSourceEntityRelation'
 import { useRemoveSourceEntityRelation } from '../api/removeSourceEntityRelation'
-import { AddPrerequisiteDialog } from './AddPrerequisiteDialog'
 import { SourceActionMenu } from './SourceActionMenu'
 
 interface SourceRelatedPanelProps {
@@ -33,7 +36,9 @@ export function SourceRelatedPanel({
 	onSourceNavigate
 }: SourceRelatedPanelProps) {
 	const [isCollapsed, setIsCollapsed] = useState(false)
-	const [showAddDialog, setShowAddDialog] = useState(false)
+	const [showSearchDialog, setShowSearchDialog] = useState(false)
+	const [showCreateTopicDialog, setShowCreateTopicDialog] = useState(false)
+	const [showCreateSourceDialog, setShowCreateSourceDialog] = useState(false)
 
 	const addRelation = useAddSourceEntityRelation()
 	const removeRelation = useRemoveSourceEntityRelation()
@@ -153,20 +158,21 @@ export function SourceRelatedPanel({
 		<div className='flex flex-col'>
 			<TopicPanelHeader
 				actions={
-					<Button
-						className='gap-1'
-						disabled={isAdding}
-						onClick={() => setShowAddDialog(true)}
-						size='sm'
-						variant='secondary'
-					>
-						{isAdding ? (
-							<Loader2 className='h-4 w-4 animate-spin' />
-						) : (
-							<Plus className='h-4 w-4' />
-						)}
-						Add
-					</Button>
+					<AddEntityMenu
+						createItems={[
+							{
+								label: 'Create Topic',
+								onSelect: () => setShowCreateTopicDialog(true)
+							},
+							{
+								label: 'Create Source',
+								onSelect: () => setShowCreateSourceDialog(true)
+							}
+						]}
+						isLoading={isAdding}
+						onSearch={() => setShowSearchDialog(true)}
+						searchLabel='Search'
+					/>
 				}
 				label={
 					<Button
@@ -203,13 +209,35 @@ export function SourceRelatedPanel({
 				</div>
 			)}
 
-			<AddPrerequisiteDialog
-				isAdding={isAdding}
-				onOpenChange={setShowAddDialog}
-				onSelected={handleAdd}
-				open={showAddDialog}
-				sourceId={sourceId}
-			/>
+			{sourceId && (
+				<EntitySearchDialog
+					entityTypes={['topic', 'source']}
+					onOpenChange={setShowSearchDialog}
+					onSelected={(entityType, entity) => {
+						if (entityType === 'topic' || entityType === 'source') {
+							handleAdd(entityType, entity.id)
+						}
+					}}
+					open={showSearchDialog}
+					title='Search related entities'
+				/>
+			)}
+
+			{sourceId && (
+				<AddTopicDialog
+					context={{ type: 'sourceRelated', sourceId }}
+					onOpenChange={setShowCreateTopicDialog}
+					open={showCreateTopicDialog}
+				/>
+			)}
+
+			{sourceId && (
+				<AddSourceDialog
+					context={{ type: 'sourceRelated', sourceId }}
+					onOpenChange={setShowCreateSourceDialog}
+					open={showCreateSourceDialog}
+				/>
+			)}
 		</div>
 	)
 }
