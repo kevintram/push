@@ -347,6 +347,8 @@ async def add_child(
     child_notes: str | None = None,
     child_srs_enabled: bool = False,
     child_inherit_fsrs: bool = False,
+    child_inboxed: bool = False,
+    child_archived: bool = False,
 ) -> tuple[Topic, Topic]:
     """Add or create a child topic. Returns (parent, child)."""
     # Verify parent exists
@@ -368,12 +370,13 @@ async def add_child(
         result_child_id = child_id
     else:
         # Create new topic from inline data
-        assert child_name is not None
         new_child = Topic(
             user_id=user_id,
             name=child_name,
             notes=child_notes or "",
             parent_id=parent_id,
+            inboxed=child_inboxed,
+            archived=child_archived,
         )
 
         # Handle FsrsState creation
@@ -399,6 +402,40 @@ async def add_child(
     parent_topic = await load_topic_with_relationships(session, parent_id, user_id)
     child_topic = await load_topic_with_relationships(session, result_child_id, user_id)
 
+    return parent_topic, child_topic
+
+
+async def set_topic_parent(
+    session: AsyncSession,
+    user_id: str,
+    topic_id: int,
+    *,
+    parent_id: int | None = None,
+    parent_data: dict | None = None,
+) -> tuple[Topic, Topic]:
+    """Set or replace the parent of a topic. Returns (parent, child)."""
+    if parent_id is None and parent_data is None:
+        raise BadRequestError("Must provide either parent_id or parent data")
+
+    resolved_parent_id = parent_id
+    if parent_data is not None:
+        new_parent = await create_topic(session, user_id, **parent_data)
+        resolved_parent_id = new_parent.id
+
+    if resolved_parent_id == topic_id:
+        raise SelfReferenceError("topic")
+
+    await update_topic(
+        session,
+        topic_id,
+        user_id,
+        parent_id=resolved_parent_id,
+    )
+
+    parent_topic = await load_topic_with_relationships(
+        session, resolved_parent_id, user_id
+    )
+    child_topic = await load_topic_with_relationships(session, topic_id, user_id)
     return parent_topic, child_topic
 
 
@@ -543,9 +580,7 @@ async def create_topic_relationship(
     from_topic_id: int,
     *,
     to_topic_id: int | None = None,
-    to_topic_name: str | None = None,
-    to_topic_notes: str | None = None,
-    to_topic_srs_enabled: bool = False,
+    to_topic_data: dict | None = None,
 ) -> tuple[Topic, Topic]:
     """Create a directional relationship from one topic to another. Returns (from_topic, to_topic)."""
     # Verify from_topic exists and belongs to user
@@ -556,22 +591,7 @@ async def create_topic_relationship(
         resolved_to_topic_id = to_topic_id
         await get_topic(session, to_topic_id, user_id)  # Verify to_topic exists
     else:
-        # Create new topic from inline data
-        assert to_topic_name is not None
-        new_to_topic = Topic(
-            user_id=user_id,
-            name=to_topic_name,
-            notes=to_topic_notes or "",
-        )
-
-        if to_topic_srs_enabled:
-            fsrs_state = FsrsState(srs_enabled=True)
-            session.add(fsrs_state)
-            await session.flush()
-            new_to_topic.fsrs_state_id = fsrs_state.id
-
-        session.add(new_to_topic)
-        await session.flush()
+        new_to_topic = await create_topic(session, user_id, **to_topic_data)
         resolved_to_topic_id = new_to_topic.id
 
     # Check for self-reference
@@ -630,15 +650,21 @@ async def add_related_entity_to_topic(
     user_id: str,
     *,
     to_entity_type: str,
-    to_entity_id: int,
+    to_entity_id: int | None,
+    to_topic_data: dict | None = None,
+    to_source_data: dict | None = None,
 ) -> None:
     """Add a related entity (topic or source) to this topic."""
     # Verify topic exists and belongs to user
     await get_topic(session, topic_id, user_id)
 
     if to_entity_type == "topic":
-        # Verify target topic exists and belongs to user
-        await get_topic(session, to_entity_id, user_id)
+        if to_entity_id is None:
+            new_topic = await create_topic(session, user_id, **to_topic_data)
+            to_entity_id = new_topic.id
+        else:
+            # Verify target topic exists and belongs to user
+            await get_topic(session, to_entity_id, user_id)
 
         # Check for self-reference
         if topic_id == to_entity_id:
@@ -649,12 +675,20 @@ async def add_related_entity_to_topic(
             to_topic_id=to_entity_id,
         )
     elif to_entity_type == "source":
-        # Verify source exists and belongs to user
-        source_result = await session.execute(
-            select(Source).where(Source.id == to_entity_id, Source.user_id == user_id)
-        )
-        if not source_result.scalar_one_or_none():
-            raise NotFoundError("Source", to_entity_id)
+        if to_entity_id is None:
+            from app.sources.service import create_source
+
+            new_source = await create_source(session, user_id, **to_source_data)
+            to_entity_id = new_source.id
+        else:
+            # Verify source exists and belongs to user
+            source_result = await session.execute(
+                select(Source).where(
+                    Source.id == to_entity_id, Source.user_id == user_id
+                )
+            )
+            if not source_result.scalar_one_or_none():
+                raise NotFoundError("Source", to_entity_id)
 
         relation = EntityRelation(
             from_topic_id=topic_id,
@@ -844,20 +878,31 @@ async def get_topic_practices(
 
 
 async def add_practice_to_topic(
-    session: AsyncSession, topic_id: int, practice_id: int, user_id: str
+    session: AsyncSession,
+    topic_id: int,
+    user_id: str,
+    *,
+    practice_id: int | None = None,
+    practice_data: dict | None = None,
 ) -> None:
     """Link a practice to a topic."""
     # Verify topic exists and belongs to user
     await get_topic(session, topic_id, user_id)
 
-    # Verify practice exists and belongs to user
-    stmt = select(Practice).where(
-        Practice.id == practice_id, Practice.user_id == user_id
-    )
-    result = await session.execute(stmt)
-    practice = result.scalar_one_or_none()
-    if practice is None:
-        raise NotFoundError("Practice", practice_id)
+    if practice_id is None:
+        from app.practices.service import create_practice
+
+        practice = await create_practice(session, user_id, **practice_data)
+        practice_id = practice.id
+    else:
+        # Verify practice exists and belongs to user
+        stmt = select(Practice).where(
+            Practice.id == practice_id, Practice.user_id == user_id
+        )
+        result = await session.execute(stmt)
+        practice = result.scalar_one_or_none()
+        if practice is None:
+            raise NotFoundError("Practice", practice_id)
 
     # Check if already linked
     stmt = select(t_practice_topics).where(

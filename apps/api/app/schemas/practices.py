@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, date
 from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from app.schemas.topics import RetrievabilityBucket
 
@@ -65,8 +65,8 @@ class PracticeDetailRead(PracticeSummaryRead):
 
     model_config = ConfigDict(from_attributes=True)
 
-    topics: list["TopicSummaryRead"] = []
-    sources: list["SourceSummaryRead"] = []
+    topics: list[TopicSummaryRead] = []
+    sources: list[SourceSummaryRead] = []
 
 
 class PracticeCreate(BaseModel):
@@ -96,13 +96,31 @@ class PracticeUpdate(BaseModel):
 class PracticeTopicAdd(BaseModel):
     """Add a topic that this practice assesses."""
 
-    topic_id: int
+    topic_id: int | None = None
+    topic: TopicCreate | None = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "PracticeTopicAdd":
+        if self.topic_id is not None and self.topic is not None:
+            raise ValueError("Cannot provide both topic_id and topic")
+        if self.topic_id is None and self.topic is None:
+            raise ValueError("Must provide either topic_id or topic")
+        return self
 
 
 class PracticeSourceAdd(BaseModel):
     """Add a source that this practice assesses."""
 
-    source_id: int
+    source_id: int | None = None
+    source: SourceCreate | None = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "PracticeSourceAdd":
+        if self.source_id is not None and self.source is not None:
+            raise ValueError("Cannot provide both source_id and source")
+        if self.source_id is None and self.source is None:
+            raise ValueError("Must provide either source_id or source")
+        return self
 
 
 class PracticeTopicResponse(BaseModel):
@@ -111,7 +129,7 @@ class PracticeTopicResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     practice: PracticeSummaryRead
-    topic: "TopicSummaryRead"
+    topic: TopicSummaryRead
 
 
 class PracticeSourceResponse(BaseModel):
@@ -120,7 +138,7 @@ class PracticeSourceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     practice: PracticeSummaryRead
-    source: "SourceSummaryRead"
+    source: SourceSummaryRead
 
 
 class ConvertPracticeToTopicResponse(BaseModel):
@@ -136,9 +154,11 @@ class ConvertPracticeToSourceResponse(BaseModel):
 
 
 # Import for forward references
-from app.schemas.topics import TopicSummaryRead  # noqa: E402
-from app.schemas.sources import SourceSummaryRead  # noqa: E402
+from app.schemas.topics import TopicSummaryRead, TopicCreate  # noqa: E402
+from app.schemas.sources import SourceSummaryRead, SourceCreate  # noqa: E402
 
 PracticeDetailRead.model_rebuild()
 PracticeTopicResponse.model_rebuild()
 PracticeSourceResponse.model_rebuild()
+PracticeTopicAdd.model_rebuild()
+PracticeSourceAdd.model_rebuild()

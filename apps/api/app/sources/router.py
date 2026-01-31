@@ -15,6 +15,7 @@ from app.schemas import (
     SourceChildRelationshipCreate,
     SourceCreate,
     SourceDetailRead,
+    SourceParentRelationshipCreate,
     SourcePracticeAdd,
     SourcePrerequisiteCreate,
     SourcePrerequisiteRead,
@@ -127,7 +128,6 @@ async def insert_child(
             session, user_id, parent_id, child_id=payload.child_id
         )
     else:
-        assert payload.child is not None
         child_data = payload.child.model_dump()
         parent, child = await service.add_child(
             session,
@@ -137,6 +137,27 @@ async def insert_child(
             child_notes=child_data.get("notes"),
             child_srs_enabled=child_data.get("srs_enabled", False),
             child_inherit_fsrs=child_data.get("inherit_fsrs", False),
+            child_inboxed=child_data.get("inboxed", False),
+            child_archived=child_data.get("archived", False),
+        )
+    return SourceRelationshipResponse(parent=parent, child=child)
+
+
+@router.post("/{source_id}/parent/")
+async def set_parent(
+    source_id: int,
+    payload: SourceParentRelationshipCreate,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> SourceRelationshipResponse:
+    if payload.parent_id is not None:
+        parent, child = await service.set_source_parent(
+            session, user_id, source_id, parent_id=payload.parent_id
+        )
+    else:
+        parent_data = payload.parent.model_dump()
+        parent, child = await service.set_source_parent(
+            session, user_id, source_id, parent_data=parent_data
         )
     return SourceRelationshipResponse(parent=parent, child=child)
 
@@ -158,9 +179,14 @@ async def add_source_topic(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> SourceTopicResponse:
-    source, topic = await service.add_source_topic(
-        session, source_id, payload.topic_id, user_id
-    )
+    if payload.topic_id is not None:
+        source, topic = await service.add_source_topic(
+            session, user_id, source_id=source_id, topic_id=payload.topic_id
+        )
+    else:
+        source, topic = await service.add_source_topic(
+            session, user_id, source_id=source_id, topic_data=payload.topic.model_dump()
+        )
     return SourceTopicResponse(source=source, topic=topic)
 
 
@@ -188,6 +214,8 @@ async def add_entity_relation_to_source(
         user_id,
         to_entity_type=payload.to_entity_type.value,
         to_entity_id=payload.to_entity_id,
+        to_topic_data=payload.to_topic.model_dump() if payload.to_topic else None,
+        to_source_data=payload.to_source.model_dump() if payload.to_source else None,
     )
 
 
@@ -233,6 +261,12 @@ async def add_source_prerequisite(
         user_id,
         prereq_entity_type=payload.prereq_entity_type.value,
         prereq_entity_id=payload.prereq_entity_id,
+        prereq_topic_data=payload.prereq_topic.model_dump()
+        if payload.prereq_topic
+        else None,
+        prereq_source_data=payload.prereq_source.model_dump()
+        if payload.prereq_source
+        else None,
     )
 
 
@@ -273,7 +307,17 @@ async def add_practice_to_source(
     data: SourcePracticeAdd,
 ) -> None:
     """Link a practice to a source."""
-    await service.add_practice_to_source(session, source_id, data.practice_id, user_id)
+    if data.practice_id is not None:
+        await service.add_practice_to_source(
+            session, source_id, user_id, practice_id=data.practice_id
+        )
+    else:
+        await service.add_practice_to_source(
+            session,
+            source_id,
+            user_id,
+            practice_data=data.practice.model_dump(),
+        )
 
 
 @router.delete("/{source_id}/practices/{practice_id}/", status_code=204)

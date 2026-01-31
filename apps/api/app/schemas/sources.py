@@ -2,11 +2,17 @@ from __future__ import annotations
 
 from datetime import datetime, date
 
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from app.schemas.entity_relations import RelatedEntityRead
 from app.schemas.practices import PracticeSummaryRead
 from app.schemas.topics import RetrievabilityBucket, TopicSummaryRead
+
+if TYPE_CHECKING:
+    from app.schemas.practices import PracticeCreate
+    from app.schemas.topics import TopicCreate
 
 
 class SourceBase(BaseModel):
@@ -112,6 +118,21 @@ class SourceChildRelationshipCreate(BaseModel):
         return self
 
 
+class SourceParentRelationshipCreate(BaseModel):
+    """Create a parent relationship - supports both existing and inline creation."""
+
+    parent_id: int | None = None
+    parent: SourceCreate | None = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "SourceParentRelationshipCreate":
+        if self.parent_id is not None and self.parent is not None:
+            raise ValueError("Cannot provide both parent_id and parent")
+        if self.parent_id is None and self.parent is None:
+            raise ValueError("Must provide either parent_id or parent")
+        return self
+
+
 class SourceRelationshipResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -135,7 +156,16 @@ class SourceUpdate(BaseModel):
 class SourceTopicAdd(BaseModel):
     """Add a topic that this source covers."""
 
-    topic_id: int
+    topic_id: int | None = None
+    topic: TopicCreate | None = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "SourceTopicAdd":
+        if self.topic_id is not None and self.topic is not None:
+            raise ValueError("Cannot provide both topic_id and topic")
+        if self.topic_id is None and self.topic is None:
+            raise ValueError("Must provide either topic_id or topic")
+        return self
 
 
 class SourceTopicResponse(BaseModel):
@@ -150,7 +180,16 @@ class SourceTopicResponse(BaseModel):
 class SourcePracticeAdd(BaseModel):
     """Add a practice to this source."""
 
-    practice_id: int
+    practice_id: int | None = None
+    practice: PracticeCreate | None = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "SourcePracticeAdd":
+        if self.practice_id is not None and self.practice is not None:
+            raise ValueError("Cannot provide both practice_id and practice")
+        if self.practice_id is None and self.practice is None:
+            raise ValueError("Must provide either practice_id or practice")
+        return self
 
 
 class ConvertSourceToTopicResponse(BaseModel):

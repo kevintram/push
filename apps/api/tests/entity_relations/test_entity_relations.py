@@ -112,6 +112,64 @@ class TestTopicEntityRelations:
 
         assert response.status_code == 400
 
+    async def test_add_topic_relation_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+        db_session: AsyncSession,
+    ):
+        """Should create a topic inline and relate it to an existing topic."""
+        topic = await create_test_topic(name="From Topic")
+
+        response = await test_client.post(
+            f"/topics/{topic.id}/entity-relations/",
+            json={
+                "to_entity_type": "topic",
+                "to_topic": {"name": "Inline Related Topic"},
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify relation exists with newly created topic
+        result = await db_session.execute(
+            select(EntityRelation).where(
+                EntityRelation.from_topic_id == topic.id,
+                EntityRelation.to_topic_id.isnot(None),
+            )
+        )
+        relation = result.scalar_one_or_none()
+        assert relation is not None
+
+    async def test_add_source_relation_to_topic_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+        db_session: AsyncSession,
+    ):
+        """Should create a source inline and relate it to an existing topic."""
+        topic = await create_test_topic(name="Topic")
+
+        response = await test_client.post(
+            f"/topics/{topic.id}/entity-relations/",
+            json={
+                "to_entity_type": "source",
+                "to_source": {"title": "Inline Related Source"},
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify relation exists with newly created source
+        result = await db_session.execute(
+            select(EntityRelation).where(
+                EntityRelation.from_topic_id == topic.id,
+                EntityRelation.to_source_id.isnot(None),
+            )
+        )
+        relation = result.scalar_one_or_none()
+        assert relation is not None
+
     async def test_topic_relation_not_found(
         self,
         test_client: AsyncClient,
@@ -218,6 +276,64 @@ class TestSourceEntityRelations:
         relation = result.scalar_one_or_none()
         assert relation is None
 
+    async def test_add_topic_relation_to_source_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+        db_session: AsyncSession,
+    ):
+        """Should create a topic inline and relate it to an existing source."""
+        source = await create_test_source(title="Source")
+
+        response = await test_client.post(
+            f"/sources/{source.id}/entity-relations/",
+            json={
+                "to_entity_type": "topic",
+                "to_topic": {"name": "Inline Related Topic"},
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify relation exists with newly created topic
+        result = await db_session.execute(
+            select(EntityRelation).where(
+                EntityRelation.from_source_id == source.id,
+                EntityRelation.to_topic_id.isnot(None),
+            )
+        )
+        relation = result.scalar_one_or_none()
+        assert relation is not None
+
+    async def test_add_source_relation_to_source_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+        db_session: AsyncSession,
+    ):
+        """Should create a source inline and relate it to an existing source."""
+        source = await create_test_source(title="From Source")
+
+        response = await test_client.post(
+            f"/sources/{source.id}/entity-relations/",
+            json={
+                "to_entity_type": "source",
+                "to_source": {"title": "Inline Related Source"},
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify relation exists with newly created source
+        result = await db_session.execute(
+            select(EntityRelation).where(
+                EntityRelation.from_source_id == source.id,
+                EntityRelation.to_source_id.isnot(None),
+            )
+        )
+        relation = result.scalar_one_or_none()
+        assert relation is not None
+
     async def test_cannot_relate_source_to_self(
         self,
         test_client: AsyncClient,
@@ -287,6 +403,35 @@ class TestSourcePrerequisites:
             select(SourcePrerequisite).where(
                 SourcePrerequisite.source_id == advanced_source.id,
                 SourcePrerequisite.prereq_source_id == prereq_source.id,
+            )
+        )
+        prereq = result.scalar_one_or_none()
+        assert prereq is not None
+
+    async def test_add_prerequisite_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+        db_session: AsyncSession,
+    ):
+        """Should create a source inline and add it as a prerequisite."""
+        source = await create_test_source(title="Advanced Source")
+
+        response = await test_client.post(
+            f"/sources/{source.id}/prerequisites/",
+            json={
+                "prereq_entity_type": "source",
+                "prereq_source": {"title": "Inline Prerequisite"},
+            },
+        )
+
+        assert response.status_code == 200
+
+        # Verify prerequisite exists with newly created source
+        result = await db_session.execute(
+            select(SourcePrerequisite).where(
+                SourcePrerequisite.source_id == source.id,
+                SourcePrerequisite.prereq_source_id.isnot(None),
             )
         )
         prereq = result.scalar_one_or_none()

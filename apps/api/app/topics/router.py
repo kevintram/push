@@ -14,15 +14,18 @@ from app.schemas import (
     PracticeSummaryRead,
     RelationshipDirection,
     ReviewSessionReadWithReviews,
+    SourceTopicResponse,
     TopicChildRelationshipCreate,
     TopicCreate,
     TopicDetailRead,
     TopicOtherRelationshipCreate,
     TopicOtherRelationshipResponse,
+    TopicParentRelationshipCreate,
     TopicPracticeAdd,
     TopicRead,
     TopicRelatedRead,
     TopicRelationshipResponse,
+    TopicSourceAdd,
     TopicSummaryRead,
     TopicUpdate,
 )
@@ -144,7 +147,6 @@ async def insert_child(
             session, user_id, parent_id, child_id=payload.child_id
         )
     else:
-        assert payload.child is not None
         child_data = payload.child.model_dump()
         parent, child = await service.add_child(
             session,
@@ -154,6 +156,27 @@ async def insert_child(
             child_notes=child_data.get("notes"),
             child_srs_enabled=child_data.get("srs_enabled", False),
             child_inherit_fsrs=child_data.get("inherit_fsrs", False),
+            child_inboxed=child_data.get("inboxed", False),
+            child_archived=child_data.get("archived", False),
+        )
+    return TopicRelationshipResponse(parent=parent, child=child)
+
+
+@router.post("/{topic_id}/parent/")
+async def set_parent(
+    topic_id: int,
+    payload: TopicParentRelationshipCreate,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> TopicRelationshipResponse:
+    if payload.parent_id is not None:
+        parent, child = await service.set_topic_parent(
+            session, user_id, topic_id, parent_id=payload.parent_id
+        )
+    else:
+        parent_data = payload.parent.model_dump()
+        parent, child = await service.set_topic_parent(
+            session, user_id, topic_id, parent_data=parent_data
         )
     return TopicRelationshipResponse(parent=parent, child=child)
 
@@ -180,15 +203,12 @@ async def create_topic_other_relationship(
             session, user_id, from_topic_id, to_topic_id=relationship.to_topic_id
         )
     else:
-        assert relationship.to_topic is not None
         to_topic_data = relationship.to_topic.model_dump()
         from_topic, to_topic = await service.create_topic_relationship(
             session,
             user_id,
             from_topic_id,
-            to_topic_name=to_topic_data.get("name"),
-            to_topic_notes=to_topic_data.get("notes"),
-            to_topic_srs_enabled=to_topic_data.get("srs_enabled", False),
+            to_topic_data=to_topic_data,
         )
     return TopicOtherRelationshipResponse(from_topic=from_topic, to_topic=to_topic)
 
@@ -220,6 +240,8 @@ async def add_entity_relation_to_topic(
         user_id,
         to_entity_type=payload.to_entity_type.value,
         to_entity_id=payload.to_entity_id,
+        to_topic_data=payload.to_topic.model_dump() if payload.to_topic else None,
+        to_source_data=payload.to_source.model_dump() if payload.to_source else None,
     )
 
 
@@ -260,7 +282,17 @@ async def add_practice_to_topic(
     data: TopicPracticeAdd,
 ) -> None:
     """Link a practice to a topic."""
-    await service.add_practice_to_topic(session, topic_id, data.practice_id, user_id)
+    if data.practice_id is not None:
+        await service.add_practice_to_topic(
+            session, topic_id, user_id, practice_id=data.practice_id
+        )
+    else:
+        await service.add_practice_to_topic(
+            session,
+            topic_id,
+            user_id,
+            practice_data=data.practice.model_dump(),
+        )
 
 
 @router.delete("/{topic_id}/practices/{practice_id}/", status_code=204)
@@ -272,6 +304,26 @@ async def remove_practice_from_topic(
 ) -> None:
     """Remove a practice link from a topic."""
     await service.remove_practice_from_topic(session, topic_id, practice_id, user_id)
+
+
+@router.post("/{topic_id}/sources/", status_code=201)
+async def add_source_to_topic(
+    session: SessionDep,
+    user_id: UserIdDep,
+    topic_id: int,
+    data: TopicSourceAdd,
+) -> SourceTopicResponse:
+    from app.sources.service import add_source_topic
+
+    if data.source_id is not None:
+        source, topic = await add_source_topic(
+            session, user_id, source_id=data.source_id, topic_id=topic_id
+        )
+    else:
+        source, topic = await add_source_topic(
+            session, user_id, source_data=data.source.model_dump(), topic_id=topic_id
+        )
+    return SourceTopicResponse(source=source, topic=topic)
 
 
 @router.get("/{topic_id}/review-sessions/")

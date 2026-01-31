@@ -94,9 +94,14 @@ async def add_practice_topic(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> PracticeTopicResponse:
-    practice, topic = await service.add_practice_topic(
-        session, practice_id, payload.topic_id, user_id
-    )
+    if payload.topic_id is not None:
+        practice, topic = await service.add_practice_topic(
+            session, practice_id, user_id, topic_id=payload.topic_id
+        )
+    else:
+        practice, topic = await service.add_practice_topic(
+            session, practice_id, user_id, topic_data=payload.topic.model_dump()
+        )
     return PracticeTopicResponse(practice=practice, topic=topic)
 
 
@@ -117,9 +122,14 @@ async def add_practice_source(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> PracticeSourceResponse:
-    practice, source = await service.add_practice_source(
-        session, practice_id, payload.source_id, user_id
-    )
+    if payload.source_id is not None:
+        practice, source = await service.add_practice_source(
+            session, practice_id, user_id, source_id=payload.source_id
+        )
+    else:
+        practice, source = await service.add_practice_source(
+            session, practice_id, user_id, source_data=payload.source.model_dump()
+        )
     return PracticeSourceResponse(practice=practice, source=source)
 
 

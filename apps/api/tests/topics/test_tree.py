@@ -125,6 +125,61 @@ class TestTopicTreeBasics:
         assert data["child"]["name"] == "New Child"
         assert data["child"]["parent_id"] == parent.id
 
+    async def test_set_parent_with_existing_topic(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+    ):
+        """POST /topics/{id}/parent/ with existing topic as parent."""
+        child = await create_test_topic(name="Child")
+        parent = await create_test_topic(name="Parent")
+
+        response = await test_client.post(
+            f"/topics/{child.id}/parent/",
+            json={"parent_id": parent.id},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["parent"]["id"] == parent.id
+        assert data["child"]["id"] == child.id
+        assert data["child"]["parent_id"] == parent.id
+
+    async def test_set_parent_with_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+    ):
+        """POST /topics/{id}/parent/ with inline parent creation."""
+        child = await create_test_topic(name="Child")
+
+        response = await test_client.post(
+            f"/topics/{child.id}/parent/",
+            json={"parent": {"name": "New Parent"}},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["parent"]["name"] == "New Parent"
+        assert data["parent"]["id"] is not None
+        assert data["child"]["id"] == child.id
+        assert data["child"]["parent_id"] == data["parent"]["id"]
+
+    async def test_set_parent_self_reference_rejected(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+    ):
+        """POST /topics/{id}/parent/ with self as parent should fail."""
+        topic = await create_test_topic(name="Topic")
+
+        response = await test_client.post(
+            f"/topics/{topic.id}/parent/",
+            json={"parent_id": topic.id},
+        )
+
+        assert response.status_code == 400
+
     async def test_remove_child_from_parent(
         self,
         test_client: AsyncClient,
@@ -409,3 +464,94 @@ class TestTopicTreeFiltering:
         assert parent.id not in topic_ids
         # Child is excluded (already a child)
         assert child.id not in topic_ids
+
+
+class TestTopicInlineCreate:
+    """Tests for inline entity creation on topic endpoints."""
+
+    async def test_add_practice_to_topic_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+    ):
+        """POST /topics/{id}/practices/ with inline practice creation."""
+        topic = await create_test_topic(name="Topic")
+
+        response = await test_client.post(
+            f"/topics/{topic.id}/practices/",
+            json={"practice": {"prompt": "Inline Practice", "answer": "Answer"}},
+        )
+
+        assert response.status_code == 201
+
+        # Verify practice was created and linked
+        get_response = await test_client.get(f"/topics/{topic.id}/practices/")
+        assert get_response.status_code == 200
+        practices = get_response.json()
+        assert len(practices) == 1
+        assert practices[0]["prompt"] == "Inline Practice"
+
+    async def test_add_source_to_topic_with_existing_id(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+        create_test_source,
+    ):
+        """POST /topics/{id}/sources/ with existing source_id."""
+        topic = await create_test_topic(name="Topic")
+        source = await create_test_source(title="Existing Source")
+
+        response = await test_client.post(
+            f"/topics/{topic.id}/sources/",
+            json={"source_id": source.id},
+        )
+
+        assert response.status_code == 201
+        data = response.json()
+        assert data["topic"]["id"] == topic.id
+        assert data["source"]["id"] == source.id
+
+    async def test_add_source_to_topic_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+    ):
+        """POST /topics/{id}/sources/ with inline source creation."""
+        topic = await create_test_topic(name="Topic")
+
+        response = await test_client.post(
+            f"/topics/{topic.id}/sources/",
+            json={"source": {"title": "Inline Source"}},
+        )
+
+        assert response.status_code == 201
+        data = response.json()
+        assert data["topic"]["id"] == topic.id
+        assert data["source"]["title"] == "Inline Source"
+        assert data["source"]["id"] is not None
+
+    async def test_add_child_with_inboxed_and_archived(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+    ):
+        """POST /topics/{id}/children/ inline creation respects inboxed/archived."""
+        parent = await create_test_topic(name="Parent")
+
+        response = await test_client.post(
+            f"/topics/{parent.id}/children/",
+            json={
+                "child": {
+                    "name": "Inboxed Child",
+                    "inboxed": True,
+                    "archived": True,
+                },
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["child"]["name"] == "Inboxed Child"
+        assert data["child"]["inboxed"] is True
+        assert data["child"]["archived"] is True
+        assert data["child"]["parent_id"] == parent.id
