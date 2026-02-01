@@ -139,10 +139,15 @@ export function InboxPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={Inbox} title='Inbox'>
-				<span className='font-semibold text-muted-foreground text-xl'>
-					({inboxCountLabel})
-				</span>
+			<PageLayout.Header
+				icon={Inbox}
+				title='Inbox'
+				titleExtra={
+					<span className='font-semibold text-muted-foreground text-xl'>
+						{inboxCountLabel}
+					</span>
+				}
+			>
 				<EntityTypeFilter
 					activeFilters={activeFilters}
 					onAllClick={handleAllClick}
