@@ -6,13 +6,7 @@ import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle
-} from '~/components/ui/Card'
+import { Card, CardContent, CardFooter } from '~/components/ui/Card'
 import {
 	Empty,
 	EmptyHeader,
@@ -22,9 +16,9 @@ import {
 import { Skeleton } from '~/components/ui/Skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import {
-	useMergedTodayReviewEntries,
-	useUnscheduledReviewEntries,
-	useUpcomingReviewEntries
+	useTodaySchedulePreview,
+	useUnscheduledReviewEntriesPreview,
+	useUpcomingReviewEntriesPreview
 } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
@@ -61,12 +55,21 @@ export function ReviewPage() {
 		srsEnabled: true,
 		archived: false
 	})
-	const { entries: todayEntries, isLoading: todayLoading } =
-		useMergedTodayReviewEntries()
-	const { entries: upcomingEntries, isLoading: upcomingLoading } =
-		useUpcomingReviewEntries()
-	const { section: unscheduledSection, isLoading: unscheduledLoading } =
-		useUnscheduledReviewEntries()
+	const {
+		entries: todayEntries,
+		totalCount: todayTotalCount,
+		isLoading: todayLoading
+	} = useTodaySchedulePreview(SCHEDULE_PREVIEW_LIMIT)
+	const {
+		entries: upcomingEntries,
+		totalCount: upcomingTotalCount,
+		isLoading: upcomingLoading
+	} = useUpcomingReviewEntriesPreview(SCHEDULE_PREVIEW_LIMIT)
+	const {
+		entries: unscheduledEntries,
+		totalCount: unscheduledTotalCount,
+		isLoading: unscheduledLoading
+	} = useUnscheduledReviewEntriesPreview(SCHEDULE_PREVIEW_LIMIT)
 
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
@@ -141,7 +144,7 @@ export function ReviewPage() {
 				value: 'today',
 				label: 'Today',
 				viewAllTo: '/today',
-				totalCount: todayEntries.length,
+				totalCount: todayTotalCount,
 				entries: todayEntries.slice(0, SCHEDULE_PREVIEW_LIMIT),
 				isLoading: todayLoading,
 				emptyText: 'Nothing scheduled for today.'
@@ -150,7 +153,7 @@ export function ReviewPage() {
 				value: 'upcoming',
 				label: 'Upcoming',
 				viewAllTo: '/upcoming',
-				totalCount: upcomingEntries.length,
+				totalCount: upcomingTotalCount,
 				entries: upcomingEntries.slice(0, SCHEDULE_PREVIEW_LIMIT),
 				isLoading: upcomingLoading,
 				emptyText: 'No upcoming reviews.'
@@ -159,8 +162,8 @@ export function ReviewPage() {
 				value: 'unscheduled',
 				label: 'Unscheduled',
 				viewAllTo: '/unscheduled',
-				totalCount: unscheduledSection.entries.length,
-				entries: unscheduledSection.entries.slice(0, SCHEDULE_PREVIEW_LIMIT),
+				totalCount: unscheduledTotalCount,
+				entries: unscheduledEntries.slice(0, SCHEDULE_PREVIEW_LIMIT),
 				isLoading: unscheduledLoading,
 				emptyText: 'No unscheduled reviews.'
 			}
@@ -168,10 +171,13 @@ export function ReviewPage() {
 		[
 			todayEntries,
 			todayLoading,
+			todayTotalCount,
 			upcomingEntries,
 			upcomingLoading,
-			unscheduledSection.entries,
-			unscheduledLoading
+			upcomingTotalCount,
+			unscheduledEntries,
+			unscheduledLoading,
+			unscheduledTotalCount
 		]
 	)
 
@@ -271,73 +277,73 @@ function ScheduleCard({
 	const activeConfig = tabs[activeTab]
 
 	return (
-		<Card className='gap-3'>
-			<CardHeader className='pb-0'>
-				<CardTitle>Schedule</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<Tabs
-					onValueChange={value => setActiveTab(value as keyof typeof tabs)}
-					value={activeTab}
-				>
-					<TabsList className='w-fit'>
-						<TabsTrigger value={tabs.today.value}>
-							{tabs.today.label} <span>{tabs.today.totalCount}</span>
-						</TabsTrigger>
-						<TabsTrigger value={tabs.upcoming.value}>
-							{tabs.upcoming.label} <span>{tabs.upcoming.totalCount}</span>
-						</TabsTrigger>
-						<TabsTrigger value={tabs.unscheduled.value}>
-							{tabs.unscheduled.label}{' '}
-							<span>{tabs.unscheduled.totalCount}</span>
-						</TabsTrigger>
-					</TabsList>
-
-					<TabsContent value={tabs.today.value}>
-						<ScheduleTabContent
-							emptyText={tabs.today.emptyText}
-							entries={tabs.today.entries}
-							isLoading={tabs.today.isLoading}
-							onReviewClick={onReviewClick}
-							onSessionClick={onSessionClick}
-						/>
-					</TabsContent>
-					<TabsContent value={tabs.upcoming.value}>
-						<ScheduleTabContent
-							emptyText={tabs.upcoming.emptyText}
-							entries={tabs.upcoming.entries}
-							isLoading={tabs.upcoming.isLoading}
-							onReviewClick={onReviewClick}
-							onSessionClick={onSessionClick}
-						/>
-					</TabsContent>
-					<TabsContent value={tabs.unscheduled.value}>
-						<ScheduleTabContent
-							emptyText={tabs.unscheduled.emptyText}
-							entries={tabs.unscheduled.entries}
-							isLoading={tabs.unscheduled.isLoading}
-							onReviewClick={onReviewClick}
-							onSessionClick={onSessionClick}
-						/>
-					</TabsContent>
-				</Tabs>
-			</CardContent>
-			{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
-				<CardFooter className='justify-center pt-0'>
-					<Button
-						asChild={true}
-						className='gap-1 text-muted-foreground hover:text-primary'
-						size='sm'
-						variant='ghost'
+		<div className='flex flex-col gap-1'>
+			<h2 className='font-bold text-xl'>Schedule</h2>
+			<Card className='gap-2'>
+				<CardContent>
+					<Tabs
+						onValueChange={value => setActiveTab(value as keyof typeof tabs)}
+						value={activeTab}
 					>
-						<Link to={activeConfig.viewAllTo}>
-							View all
-							<ArrowUpRight className='h-4 w-4' />
-						</Link>
-					</Button>
-				</CardFooter>
-			)}
-		</Card>
+						<TabsList className='w-fit'>
+							<TabsTrigger value={tabs.today.value}>
+								{tabs.today.label} <span>{tabs.today.totalCount}</span>
+							</TabsTrigger>
+							<TabsTrigger value={tabs.upcoming.value}>
+								{tabs.upcoming.label} <span>{tabs.upcoming.totalCount}</span>
+							</TabsTrigger>
+							<TabsTrigger value={tabs.unscheduled.value}>
+								{tabs.unscheduled.label}{' '}
+								<span>{tabs.unscheduled.totalCount}</span>
+							</TabsTrigger>
+						</TabsList>
+
+						<TabsContent value={tabs.today.value}>
+							<ScheduleTabContent
+								emptyText={tabs.today.emptyText}
+								entries={tabs.today.entries}
+								isLoading={tabs.today.isLoading}
+								onReviewClick={onReviewClick}
+								onSessionClick={onSessionClick}
+							/>
+						</TabsContent>
+						<TabsContent value={tabs.upcoming.value}>
+							<ScheduleTabContent
+								emptyText={tabs.upcoming.emptyText}
+								entries={tabs.upcoming.entries}
+								isLoading={tabs.upcoming.isLoading}
+								onReviewClick={onReviewClick}
+								onSessionClick={onSessionClick}
+							/>
+						</TabsContent>
+						<TabsContent value={tabs.unscheduled.value}>
+							<ScheduleTabContent
+								emptyText={tabs.unscheduled.emptyText}
+								entries={tabs.unscheduled.entries}
+								isLoading={tabs.unscheduled.isLoading}
+								onReviewClick={onReviewClick}
+								onSessionClick={onSessionClick}
+							/>
+						</TabsContent>
+					</Tabs>
+				</CardContent>
+				{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
+					<CardFooter className='justify-center pt-0'>
+						<Button
+							asChild={true}
+							className='gap-1 text-muted-foreground hover:text-primary'
+							size='sm'
+							variant='ghost'
+						>
+							<Link to={activeConfig.viewAllTo}>
+								View all
+								<ArrowUpRight className='h-4 w-4' />
+							</Link>
+						</Button>
+					</CardFooter>
+				)}
+			</Card>
+		</div>
 	)
 }
 

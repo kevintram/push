@@ -153,3 +153,11 @@ export const ReviewEntrySchema: v.GenericSchema<ReviewEntry> = v.union([
 	ReviewEntrySessionSchema,
 	ReviewEntryReviewSchema
 ])
+
+export const ReviewEntriesResponseSchema: v.GenericSchema<{
+	entries: Array<ReviewEntry>
+	total: number
+}> = v.object({
+	entries: v.array(ReviewEntrySchema),
+	total: v.number()
+})

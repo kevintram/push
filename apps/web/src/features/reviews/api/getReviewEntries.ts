@@ -11,8 +11,11 @@ import type {
 	TodayEntrySection,
 	UnscheduledEntrySection
 } from '../types/api.types'
-import { ReviewEntrySchema } from '../types/review.schemas'
-import type { ReviewEntry } from '../types/review.types'
+import {
+	ReviewEntriesResponseSchema,
+	ReviewEntrySchema
+} from '../types/review.schemas'
+import type { ReviewEntriesResponse, ReviewEntry } from '../types/review.types'
 import { reviewEntryKeys } from './queryKeys'
 
 const sortReviewEntriesByEffectiveDateDesc = (
@@ -26,7 +29,10 @@ const sortReviewEntriesByEffectiveDateDesc = (
 	})
 }
 
-export async function getReviewEntries(filters?: GetReviewEntriesFilters) {
+const buildReviewEntriesParams = (
+	filters?: GetReviewEntriesFilters,
+	includeCount = false
+) => {
 	const params = new URLSearchParams()
 
 	if (filters?.topicId !== undefined) {
@@ -53,6 +59,20 @@ export async function getReviewEntries(filters?: GetReviewEntriesFilters) {
 		params.append('sort', filters.sort)
 	}
 
+	if (filters?.limit !== undefined) {
+		params.append('limit', String(filters.limit))
+	}
+
+	if (includeCount) {
+		params.append('include_count', 'true')
+	}
+
+	return params
+}
+
+export async function getReviewEntries(filters?: GetReviewEntriesFilters) {
+	const params = buildReviewEntriesParams(filters)
+
 	const url = `${import.meta.env.VITE_API_URL}/review-entries/${params.toString() ? `?${params.toString()}` : ''}`
 
 	const response = await apiFetch(url, {
@@ -66,6 +86,32 @@ export async function getReviewEntries(filters?: GetReviewEntriesFilters) {
 	const data = await response.json()
 	try {
 		return v.parse(v.array(ReviewEntrySchema), data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
+}
+
+export async function getReviewEntriesWithCount(
+	filters?: GetReviewEntriesFilters
+): Promise<ReviewEntriesResponse> {
+	const params = buildReviewEntriesParams(filters, true)
+
+	const url = `${import.meta.env.VITE_API_URL}/review-entries/${params.toString() ? `?${params.toString()}` : ''}`
+
+	const response = await apiFetch(url, {
+		method: 'GET'
+	})
+
+	if (!response.ok) {
+		throw new Error(`API request failed: ${response.status}`)
+	}
+
+	const data = await response.json()
+	try {
+		return v.parse(ReviewEntriesResponseSchema, data)
 	} catch (error) {
 		if (v.isValiError(error)) {
 			throw new Error(`Validation failed: ${error.message}`)
@@ -168,6 +214,65 @@ export function useMergedTodayReviewEntries() {
 		entries,
 		isLoading,
 		error
+	}
+}
+
+export function useTodaySchedulePreview(limit: number) {
+	const todayDateStr = useMemo(() => dayjs().format('YYYY-MM-DD'), [])
+	const yesterdayDateStr = useMemo(
+		() => dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
+		[]
+	)
+
+	const overdueQuery = useQuery({
+		queryKey: reviewEntryKeys.list({
+			effectiveDateBefore: yesterdayDateStr,
+			completed: false,
+			sort: 'desc',
+			limit,
+			includeCount: true
+		}),
+		queryFn: () =>
+			getReviewEntriesWithCount({
+				effectiveDateBefore: yesterdayDateStr,
+				completed: false,
+				sort: 'desc',
+				limit,
+				includeCount: true
+			})
+	})
+
+	const todayQuery = useQuery({
+		queryKey: reviewEntryKeys.list({
+			effectiveDateAfter: todayDateStr,
+			effectiveDateBefore: todayDateStr,
+			sort: 'desc',
+			limit,
+			includeCount: true
+		}),
+		queryFn: () =>
+			getReviewEntriesWithCount({
+				effectiveDateAfter: todayDateStr,
+				effectiveDateBefore: todayDateStr,
+				sort: 'desc',
+				limit,
+				includeCount: true
+			})
+	})
+
+	const entries = useMemo(() => {
+		const merged = [
+			...(overdueQuery.data?.entries ?? []),
+			...(todayQuery.data?.entries ?? [])
+		]
+		return sortReviewEntriesByEffectiveDateDesc(merged).slice(0, limit)
+	}, [limit, overdueQuery.data?.entries, todayQuery.data?.entries])
+
+	return {
+		entries,
+		totalCount: (overdueQuery.data?.total ?? 0) + (todayQuery.data?.total ?? 0),
+		isLoading: overdueQuery.isLoading || todayQuery.isLoading,
+		error: overdueQuery.error ?? todayQuery.error
 	}
 }
 
@@ -311,6 +416,37 @@ export function useUpcomingReviewEntries() {
 	}
 }
 
+export function useUpcomingReviewEntriesPreview(limit: number) {
+	const tomorrow = useMemo(() => dayjs().add(1, 'day').format('YYYY-MM-DD'), [])
+
+	const query = useQuery({
+		queryKey: reviewEntryKeys.list({
+			effectiveDateAfter: tomorrow,
+			sort: 'desc',
+			limit,
+			includeCount: true
+		}),
+		queryFn: () =>
+			getReviewEntriesWithCount({
+				effectiveDateAfter: tomorrow,
+				sort: 'desc',
+				limit,
+				includeCount: true
+			})
+	})
+
+	const entries = useMemo(() => {
+		return sortReviewEntriesByEffectiveDateDesc(query.data?.entries ?? [])
+	}, [query.data?.entries])
+
+	return {
+		entries,
+		totalCount: query.data?.total ?? 0,
+		isLoading: query.isLoading,
+		error: query.error
+	}
+}
+
 type UnscheduledSectionDefinition = {
 	id: 'unscheduled'
 	label: string
@@ -343,6 +479,37 @@ export function useUnscheduledReviewEntries() {
 
 	return {
 		section,
+		isLoading: query.isLoading,
+		error: query.error
+	}
+}
+
+export function useUnscheduledReviewEntriesPreview(limit: number) {
+	const query = useQuery({
+		queryKey: reviewEntryKeys.list({
+			scheduled: false,
+			completed: false,
+			sort: 'desc',
+			limit,
+			includeCount: true
+		}),
+		queryFn: () =>
+			getReviewEntriesWithCount({
+				scheduled: false,
+				completed: false,
+				sort: 'desc',
+				limit,
+				includeCount: true
+			})
+	})
+
+	const entries = useMemo(() => {
+		return sortReviewEntriesByEffectiveDateDesc(query.data?.entries ?? [])
+	}, [query.data?.entries])
+
+	return {
+		entries,
+		totalCount: query.data?.total ?? 0,
 		isLoading: query.isLoading,
 		error: query.error
 	}

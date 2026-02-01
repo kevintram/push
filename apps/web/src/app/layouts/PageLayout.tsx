@@ -9,6 +9,7 @@ interface PageLayoutProps {
 interface PageLayoutHeaderProps {
 	title: string
 	icon?: LucideIcon
+	titleExtra?: ReactNode
 	children?: ReactNode
 }
 
@@ -20,6 +21,7 @@ interface PageLayoutContentProps {
 function PageLayoutHeader({
 	title,
 	icon: Icon,
+	titleExtra,
 	children
 }: PageLayoutHeaderProps) {
 	return (
@@ -28,6 +30,7 @@ function PageLayoutHeader({
 				<h1 className='flex items-center gap-2 font-bold text-xl'>
 					{Icon && <Icon className='h-5 w-5' />}
 					{title}
+					{titleExtra}
 				</h1>
 			</div>
 			{children}

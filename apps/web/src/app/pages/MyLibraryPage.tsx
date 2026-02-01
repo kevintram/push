@@ -10,6 +10,7 @@ import {
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
+import { EntityTypeFilter } from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -20,7 +21,6 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { Toggle } from '~/components/ui/Toggle'
 import { usePractices } from '~/features/practices/api/getPractices'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { useSources } from '~/features/sources/api/getSources'
@@ -31,11 +31,7 @@ import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 
 export function MyLibraryPage() {
 	const navigate = useNavigate()
-	const [activeFilters, setActiveFilters] = useState<Array<EntityType>>([
-		'topic',
-		'source',
-		'practice'
-	])
+	const [activeFilters, setActiveFilters] = useState<Array<EntityType>>([])
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 
@@ -64,18 +60,19 @@ export function MyLibraryPage() {
 	// Combine and filter entities based on active filters
 	const libraryItems = useMemo<Array<EntityItem>>(() => {
 		const items: Array<EntityItem> = []
+		const showAll = activeFilters.length === 0
 
-		if (activeFilters.includes('topic')) {
+		if (showAll || activeFilters.includes('topic')) {
 			items.push(
 				...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item }))
 			)
 		}
-		if (activeFilters.includes('source')) {
+		if (showAll || activeFilters.includes('source')) {
 			items.push(
 				...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
 			)
 		}
-		if (activeFilters.includes('practice')) {
+		if (showAll || activeFilters.includes('practice')) {
 			items.push(
 				...(practices ?? []).map(
 					(item): EntityItem => ({ type: 'practice', item })
@@ -130,12 +127,14 @@ export function MyLibraryPage() {
 	const toggleFilter = useCallback((filter: EntityType) => {
 		setActiveFilters(prev => {
 			if (prev.includes(filter)) {
-				// Don't allow removing the last filter
-				if (prev.length === 1) return prev
 				return prev.filter(f => f !== filter)
 			}
 			return [...prev, filter]
 		})
+	}, [])
+
+	const handleAllClick = useCallback(() => {
+		setActiveFilters([])
 	}, [])
 
 	return (
@@ -143,6 +142,7 @@ export function MyLibraryPage() {
 			<PageLayout.Header icon={Library} title='My Library'>
 				<EntityTypeFilter
 					activeFilters={activeFilters}
+					onAllClick={handleAllClick}
 					onToggle={toggleFilter}
 				/>
 			</PageLayout.Header>
@@ -154,43 +154,6 @@ export function MyLibraryPage() {
 				onEntityClick={handleEntityClick}
 			/>
 		</PageLayout>
-	)
-}
-
-function EntityTypeFilter({
-	activeFilters,
-	onToggle
-}: {
-	activeFilters: Array<EntityType>
-	onToggle: (filter: EntityType) => void
-}) {
-	return (
-		<div className='flex items-center gap-2'>
-			<Toggle
-				onPressedChange={() => onToggle('topic')}
-				pressed={activeFilters.includes('topic')}
-				size='sm'
-				variant='outline'
-			>
-				Topics
-			</Toggle>
-			<Toggle
-				onPressedChange={() => onToggle('source')}
-				pressed={activeFilters.includes('source')}
-				size='sm'
-				variant='outline'
-			>
-				Sources
-			</Toggle>
-			<Toggle
-				onPressedChange={() => onToggle('practice')}
-				pressed={activeFilters.includes('practice')}
-				size='sm'
-				variant='outline'
-			>
-				Practices
-			</Toggle>
-		</div>
 	)
 }
 
