@@ -6,13 +6,7 @@ import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle
-} from '~/components/ui/Card'
+import { Card, CardContent, CardFooter } from '~/components/ui/Card'
 import {
 	Empty,
 	EmptyHeader,
@@ -283,11 +277,10 @@ function ScheduleCard({
 	const activeConfig = tabs[activeTab]
 
 	return (
-		<Card className='gap-3'>
-			<CardHeader className='pb-0'>
-				<CardTitle>Schedule</CardTitle>
-			</CardHeader>
-			<CardContent>
+		<div className='flex flex-col gap-1'>
+			<h2 className='text-xl font-bold'>Schedule</h2>
+			<Card className='gap-2'>
+				<CardContent>
 				<Tabs
 					onValueChange={value => setActiveTab(value as keyof typeof tabs)}
 					value={activeTab}
@@ -349,7 +342,8 @@ function ScheduleCard({
 					</Button>
 				</CardFooter>
 			)}
-		</Card>
+			</Card>
+		</div>
 	)
 }
 
