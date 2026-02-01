@@ -141,6 +141,7 @@ export function ReviewPage() {
 				value: 'today',
 				label: 'Today',
 				viewAllTo: '/today',
+				totalCount: todayEntries.length,
 				entries: todayEntries.slice(0, SCHEDULE_PREVIEW_LIMIT),
 				isLoading: todayLoading,
 				emptyText: 'Nothing scheduled for today.'
@@ -149,6 +150,7 @@ export function ReviewPage() {
 				value: 'upcoming',
 				label: 'Upcoming',
 				viewAllTo: '/upcoming',
+				totalCount: upcomingEntries.length,
 				entries: upcomingEntries.slice(0, SCHEDULE_PREVIEW_LIMIT),
 				isLoading: upcomingLoading,
 				emptyText: 'No upcoming reviews.'
@@ -157,6 +159,7 @@ export function ReviewPage() {
 				value: 'unscheduled',
 				label: 'Unscheduled',
 				viewAllTo: '/unscheduled',
+				totalCount: unscheduledSection.entries.length,
 				entries: unscheduledSection.entries.slice(0, SCHEDULE_PREVIEW_LIMIT),
 				isLoading: unscheduledLoading,
 				emptyText: 'No unscheduled reviews.'
@@ -255,6 +258,7 @@ function ScheduleCard({
 			value: string
 			label: string
 			viewAllTo: string
+			totalCount: number
 			entries: Array<ReviewEntry>
 			isLoading: boolean
 			emptyText: string
@@ -278,13 +282,14 @@ function ScheduleCard({
 				>
 					<TabsList className='w-fit'>
 						<TabsTrigger value={tabs.today.value}>
-							{tabs.today.label}
+							{tabs.today.label} <span>{tabs.today.totalCount}</span>
 						</TabsTrigger>
 						<TabsTrigger value={tabs.upcoming.value}>
-							{tabs.upcoming.label}
+							{tabs.upcoming.label} <span>{tabs.upcoming.totalCount}</span>
 						</TabsTrigger>
 						<TabsTrigger value={tabs.unscheduled.value}>
-							{tabs.unscheduled.label}
+							{tabs.unscheduled.label}{' '}
+							<span>{tabs.unscheduled.totalCount}</span>
 						</TabsTrigger>
 					</TabsList>
 
@@ -317,19 +322,21 @@ function ScheduleCard({
 					</TabsContent>
 				</Tabs>
 			</CardContent>
-			<CardFooter className='justify-center pt-0'>
-				<Button
-					asChild={true}
-					className='gap-1 text-muted-foreground hover:text-primary'
-					size='sm'
-					variant='ghost'
-				>
-					<Link to={activeConfig.viewAllTo}>
-						View all
-						<ArrowUpRight className='h-4 w-4' />
-					</Link>
-				</Button>
-			</CardFooter>
+			{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
+				<CardFooter className='justify-center pt-0'>
+					<Button
+						asChild={true}
+						className='gap-1 text-muted-foreground hover:text-primary'
+						size='sm'
+						variant='ghost'
+					>
+						<Link to={activeConfig.viewAllTo}>
+							View all
+							<ArrowUpRight className='h-4 w-4' />
+						</Link>
+					</Button>
+				</CardFooter>
+			)}
 		</Card>
 	)
 }
