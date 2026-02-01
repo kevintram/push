@@ -109,6 +109,33 @@ set_env_var() {
     ' "$file" > "$tmpfile"
     mv "$tmpfile" "$file"
 }
+
+# Ensure an /etc/hosts entry exists for the worktree hosts
+ensure_hosts_entry() {
+    local api_host="$1"
+    local web_host="$2"
+    local hosts_file="/etc/hosts"
+    local entry="127.0.0.1 ${api_host} ${web_host}"
+    local needs_add=0
+
+    if ! grep -qE "[[:space:]]${api_host}([[:space:]]|$)" "$hosts_file"; then
+        needs_add=1
+    fi
+    if ! grep -qE "[[:space:]]${web_host}([[:space:]]|$)" "$hosts_file"; then
+        needs_add=1
+    fi
+
+    if [ "$needs_add" -eq 1 ]; then
+        echo "🔧 Adding /etc/hosts entry..."
+        if [ -w "$hosts_file" ]; then
+            printf '\n%s\n' "$entry" >> "$hosts_file"
+        else
+            sudo sh -c "printf '\n%s\n' \"$entry\" >> \"$hosts_file\""
+        fi
+    else
+        echo "ℹ️  /etc/hosts already has ${api_host} and ${web_host}"
+    fi
+}
 # Create directory name by replacing slashes with dashes
 DIR_NAME="${BRANCH_NAME//\//-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -311,6 +338,8 @@ API_PORT=$((BASE_API_PORT + slot))
 WEB_PORT=$((BASE_WEB_PORT + slot))
 API_URL="http://${API_HOST}:${API_PORT}"
 APP_URL="http://${WEB_HOST}:${WEB_PORT}"
+
+ensure_hosts_entry "$API_HOST" "$WEB_HOST"
 
 # Copy and customize web env
 if [ -f "$PARENT_DIR/web.env.local" ]; then
