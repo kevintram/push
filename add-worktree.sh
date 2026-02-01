@@ -73,17 +73,6 @@ check_divergence() {
     fi
 }
 
-# Check if a slot is already in use
-slot_in_use() {
-    local slot="$1"
-    for used in $USED_SLOTS; do
-        if [ "$used" = "$slot" ]; then
-            return 0
-        fi
-    done
-    return 1
-}
-
 # Extract port from a URL string
 extract_port() {
     echo "$1" | sed -nE 's#.*:([0-9]+).*#\1#p'
@@ -103,6 +92,58 @@ set_env_var() {
         END { if (!found) print key"="val }
     ' "$file" > "$tmpfile"
     mv "$tmpfile" "$file"
+}
+
+# Get or assign a worktree slot from the master TOML file
+get_or_assign_slot() {
+    local slots_file="$1"
+    local key="$2"
+    local max_slot="$3"
+
+    python3 - "$slots_file" "$key" "$max_slot" <<'PY'
+import os
+import sys
+
+slots_file = sys.argv[1]
+key = sys.argv[2]
+max_slot = int(sys.argv[3])
+
+try:
+    import tomllib  # Python 3.11+
+except Exception:
+    print("ERROR_NO_TOMLLIB")
+    sys.exit(2)
+
+data = {}
+if os.path.exists(slots_file):
+    with open(slots_file, "rb") as f:
+        data = tomllib.load(f) or {}
+
+worktrees = data.get("worktrees", {})
+
+def write_file(mapping):
+    os.makedirs(os.path.dirname(slots_file), exist_ok=True)
+    with open(slots_file, "w", encoding="utf-8") as f:
+        f.write("[worktrees]\n")
+        for k in sorted(mapping):
+            escaped = str(k).replace("\\", "\\\\").replace("\"", "\\\"")
+            f.write(f"\"{escaped}\" = {int(mapping[k])}\n")
+
+if key in worktrees:
+    print(int(worktrees[key]))
+    sys.exit(0)
+
+used = {int(v) for v in worktrees.values()}
+slot = next((s for s in range(max_slot + 1) if s not in used), None)
+if slot is None:
+    print("ERROR_NO_SLOT")
+    sys.exit(3)
+
+worktrees[key] = slot
+data["worktrees"] = worktrees
+write_file(worktrees)
+print(slot)
+PY
 }
 
 # Create directory name by replacing slashes with dashes
@@ -274,30 +315,15 @@ cd "$NEW_WORKTREE"
 BASE_API_PORT=8000
 BASE_WEB_PORT=5173
 MAX_SLOT=15
-USED_SLOTS=""
+SLOTS_FILE="$PARENT_DIR/worktree-slots.toml"
+slot=$(get_or_assign_slot "$SLOTS_FILE" "$BRANCH_NAME" "$MAX_SLOT")
 
-# Collect used API ports to avoid collisions
-for env_file in "$PARENT_DIR"/*/apps/api/.env; do
-    if [ -f "$env_file" ]; then
-        api_url=$(grep -E '^API_URL=' "$env_file" | head -1 | cut -d= -f2- | tr -d '"')
-        if [ -n "$api_url" ]; then
-            port=$(extract_port "$api_url")
-            if [ -n "$port" ]; then
-                slot=$((port - BASE_API_PORT))
-                if [ "$slot" -ge 0 ] && [ "$slot" -le "$MAX_SLOT" ] && ! slot_in_use "$slot"; then
-                    USED_SLOTS="$USED_SLOTS $slot"
-                fi
-            fi
-        fi
-    fi
-done
+if [ "$slot" = "ERROR_NO_TOMLLIB" ]; then
+    echo "❌ Python tomllib not available. Please use Python 3.11+."
+    exit 1
+fi
 
-slot=0
-while slot_in_use "$slot"; do
-    slot=$((slot + 1))
-done
-
-if [ "$slot" -gt "$MAX_SLOT" ]; then
+if [ "$slot" = "ERROR_NO_SLOT" ]; then
     echo "❌ No available port slots (0-$MAX_SLOT)."
     echo "   Free a slot or increase MAX_SLOT in add-worktree.sh."
     exit 1
@@ -316,7 +342,7 @@ WEB_PORT=${WEB_PORT}
 API_URL=${API_URL}
 APP_URL=${APP_URL}
 EOF
-echo "✅ Created .worktree.env"
+echo "✅ Created .worktree.env (slot ${slot})"
 
 # Copy and customize web env
 if [ -f "$PARENT_DIR/web.env.local" ]; then
