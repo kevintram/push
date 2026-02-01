@@ -278,70 +278,70 @@ function ScheduleCard({
 
 	return (
 		<div className='flex flex-col gap-1'>
-			<h2 className='text-xl font-bold'>Schedule</h2>
+			<h2 className='font-bold text-xl'>Schedule</h2>
 			<Card className='gap-2'>
 				<CardContent>
-				<Tabs
-					onValueChange={value => setActiveTab(value as keyof typeof tabs)}
-					value={activeTab}
-				>
-					<TabsList className='w-fit'>
-						<TabsTrigger value={tabs.today.value}>
-							{tabs.today.label} <span>{tabs.today.totalCount}</span>
-						</TabsTrigger>
-						<TabsTrigger value={tabs.upcoming.value}>
-							{tabs.upcoming.label} <span>{tabs.upcoming.totalCount}</span>
-						</TabsTrigger>
-						<TabsTrigger value={tabs.unscheduled.value}>
-							{tabs.unscheduled.label}{' '}
-							<span>{tabs.unscheduled.totalCount}</span>
-						</TabsTrigger>
-					</TabsList>
-
-					<TabsContent value={tabs.today.value}>
-						<ScheduleTabContent
-							emptyText={tabs.today.emptyText}
-							entries={tabs.today.entries}
-							isLoading={tabs.today.isLoading}
-							onReviewClick={onReviewClick}
-							onSessionClick={onSessionClick}
-						/>
-					</TabsContent>
-					<TabsContent value={tabs.upcoming.value}>
-						<ScheduleTabContent
-							emptyText={tabs.upcoming.emptyText}
-							entries={tabs.upcoming.entries}
-							isLoading={tabs.upcoming.isLoading}
-							onReviewClick={onReviewClick}
-							onSessionClick={onSessionClick}
-						/>
-					</TabsContent>
-					<TabsContent value={tabs.unscheduled.value}>
-						<ScheduleTabContent
-							emptyText={tabs.unscheduled.emptyText}
-							entries={tabs.unscheduled.entries}
-							isLoading={tabs.unscheduled.isLoading}
-							onReviewClick={onReviewClick}
-							onSessionClick={onSessionClick}
-						/>
-					</TabsContent>
-				</Tabs>
-			</CardContent>
-			{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
-				<CardFooter className='justify-center pt-0'>
-					<Button
-						asChild={true}
-						className='gap-1 text-muted-foreground hover:text-primary'
-						size='sm'
-						variant='ghost'
+					<Tabs
+						onValueChange={value => setActiveTab(value as keyof typeof tabs)}
+						value={activeTab}
 					>
-						<Link to={activeConfig.viewAllTo}>
-							View all
-							<ArrowUpRight className='h-4 w-4' />
-						</Link>
-					</Button>
-				</CardFooter>
-			)}
+						<TabsList className='w-fit'>
+							<TabsTrigger value={tabs.today.value}>
+								{tabs.today.label} <span>{tabs.today.totalCount}</span>
+							</TabsTrigger>
+							<TabsTrigger value={tabs.upcoming.value}>
+								{tabs.upcoming.label} <span>{tabs.upcoming.totalCount}</span>
+							</TabsTrigger>
+							<TabsTrigger value={tabs.unscheduled.value}>
+								{tabs.unscheduled.label}{' '}
+								<span>{tabs.unscheduled.totalCount}</span>
+							</TabsTrigger>
+						</TabsList>
+
+						<TabsContent value={tabs.today.value}>
+							<ScheduleTabContent
+								emptyText={tabs.today.emptyText}
+								entries={tabs.today.entries}
+								isLoading={tabs.today.isLoading}
+								onReviewClick={onReviewClick}
+								onSessionClick={onSessionClick}
+							/>
+						</TabsContent>
+						<TabsContent value={tabs.upcoming.value}>
+							<ScheduleTabContent
+								emptyText={tabs.upcoming.emptyText}
+								entries={tabs.upcoming.entries}
+								isLoading={tabs.upcoming.isLoading}
+								onReviewClick={onReviewClick}
+								onSessionClick={onSessionClick}
+							/>
+						</TabsContent>
+						<TabsContent value={tabs.unscheduled.value}>
+							<ScheduleTabContent
+								emptyText={tabs.unscheduled.emptyText}
+								entries={tabs.unscheduled.entries}
+								isLoading={tabs.unscheduled.isLoading}
+								onReviewClick={onReviewClick}
+								onSessionClick={onSessionClick}
+							/>
+						</TabsContent>
+					</Tabs>
+				</CardContent>
+				{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
+					<CardFooter className='justify-center pt-0'>
+						<Button
+							asChild={true}
+							className='gap-1 text-muted-foreground hover:text-primary'
+							size='sm'
+							variant='ghost'
+						>
+							<Link to={activeConfig.viewAllTo}>
+								View all
+								<ArrowUpRight className='h-4 w-4' />
+							</Link>
+						</Button>
+					</CardFooter>
+				)}
 			</Card>
 		</div>
 	)

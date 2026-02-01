@@ -1,13 +1,15 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Archive } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	EntityCard,
 	type EntityItem,
+	type EntityType,
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
+import { EntityTypeFilter } from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -26,6 +28,7 @@ import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 
 export function ArchivedPage() {
 	const navigate = useNavigate()
+	const [activeFilters, setActiveFilters] = useState<Array<EntityType>>([])
 
 	// Fetch archived topics, sources, and practices sorted by most recently updated
 	const { data: topics = [], isLoading: isLoadingTopics } = useTopics({
@@ -43,21 +46,35 @@ export function ArchivedPage() {
 
 	const isLoading = isLoadingTopics || isLoadingSources || isLoadingPractices
 
-	// Combine topics, sources, and practices, sorted by updated_at descending
+	// Combine and filter entities based on active filters
 	const archivedItems = useMemo<Array<EntityItem>>(() => {
-		const items: Array<EntityItem> = [
-			...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item })),
-			...(sources ?? []).map((item): EntityItem => ({ type: 'source', item })),
-			...(practices ?? []).map(
-				(item): EntityItem => ({ type: 'practice', item })
+		const items: Array<EntityItem> = []
+		const showAll = activeFilters.length === 0
+
+		if (showAll || activeFilters.includes('topic')) {
+			items.push(
+				...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item }))
 			)
-		]
+		}
+		if (showAll || activeFilters.includes('source')) {
+			items.push(
+				...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
+			)
+		}
+		if (showAll || activeFilters.includes('practice')) {
+			items.push(
+				...(practices ?? []).map(
+					(item): EntityItem => ({ type: 'practice', item })
+				)
+			)
+		}
+
 		return items.sort(
 			(a, b) =>
 				new Date(b.item.updated_at).getTime() -
 				new Date(a.item.updated_at).getTime()
 		)
-	}, [topics, sources, practices])
+	}, [topics, sources, practices, activeFilters])
 
 	const handleEntityClick = useCallback(
 		(entity: EntityItem) => {
@@ -85,9 +102,28 @@ export function ArchivedPage() {
 		[navigate]
 	)
 
+	const toggleFilter = useCallback((filter: EntityType) => {
+		setActiveFilters(prev => {
+			if (prev.includes(filter)) {
+				return prev.filter(f => f !== filter)
+			}
+			return [...prev, filter]
+		})
+	}, [])
+
+	const handleAllClick = useCallback(() => {
+		setActiveFilters([])
+	}, [])
+
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={Archive} title='Archived' />
+			<PageLayout.Header icon={Archive} title='Archived'>
+				<EntityTypeFilter
+					activeFilters={activeFilters}
+					onAllClick={handleAllClick}
+					onToggle={toggleFilter}
+				/>
+			</PageLayout.Header>
 			<ArchivedList
 				isLoading={isLoading}
 				items={archivedItems}
