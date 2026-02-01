@@ -17,7 +17,9 @@ uv add <package>    # add dependency
 ### Running the Application
 ```bash
 uv run fastapi dev --host localhost  # Start dev server with auto-reload
+./run.sh                             # Worktree dev server (assigned port)
 ```
+Worktrees: use `apps/api/run.sh` from the worktree. It reads `/.worktree.env` and runs on the assigned port.
 
 ### Test
 ```bash

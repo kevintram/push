@@ -20,6 +20,7 @@ The application uses Supabase as a managed postgres database. Configuration, mig
 ```bash
 uv sync                                 # Install dependencies
 uv run fastapi dev --host localhost     # Start dev server with auto-reload
+./run.sh            # Start dev server with worktree port (see ## Worktree and Environment Files)
 uv run pytest                           # Run tests
 uv run ruff check --fix                 # Run ruff auto-fix lint issues
 uv run ruff format                      # Run ruff formatting
@@ -30,6 +31,7 @@ Note: When using worktrees, run `apps/api/run.sh` from the worktree to use the a
 ```bash
 pnpm install        # Install dependencies
 pnpm run dev        # Start dev server
+./run.sh            # Start dev server with worktree port (see ## Worktree and Environment Files)
 pnpm run test       # Run tests in watch mode
 pnpm run lint       # Run tsc and biome lint
 pnpm run validate   # Run full validation pipeline
@@ -70,7 +72,17 @@ chore: update root .gitignore
 
 We often use git worktrees for parallel development. 
 
-When using a worktree, environment templates are stored in the parent directory (`../`). `add-worktree.sh` copies them into each worktree (`apps/api/.env`, `apps/web/.env.local`) and customizes URLs/ports per worktree. See `add-worktree.sh` for details. 
+When using a worktree:
+
+- Slot assignments live in `../worktree-slots.toml` (mapped by branch name).
+- Ports are derived from the slot: API `8000 + slot`, Web `5173 + slot` (slots `0–15`).
+- `add-worktree.sh` copies env templates from the parent directory into each worktree:
+  - `apps/api/.env`
+  - `apps/web/.env.local`
+  and sets `API_URL`, `APP_URL`, `CORS_ALLOWED_ORIGINS`, and `VITE_API_URL`.
+- A `.worktree.env` file is created in the worktree root with the assigned ports/URLs.
+- `apps/api/run.sh` and `apps/web/run.sh` are generated to start each server on the assigned port.
+- `remove-worktree.sh` removes the worktree and clears its slot assignment.
 
 ## Development Conventions
 

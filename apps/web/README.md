@@ -1,3 +1,11 @@
 # 3gulp
 
 A learning app that treats more cognitive science principles/techniques than just [SRS](https://en.wikipedia.org/wiki/Spaced_repetition) and [active recall](https://en.wikipedia.org/wiki/Recall_test) as first-class citizens. We consider the following ideas from cognitive science: [scaffolding](https://en.wikipedia.org/wiki/Instructional_scaffolding), [the variability effect](<https://www.cell.com/trends/cognitive-sciences/abstract/S1364-6613(22)00065-1>), [encoding](<https://en.wikipedia.org/wiki/Encoding_(memory)>), [interleaving](https://carlhendrick.substack.com/p/interleaving-a-short-guide), [the expertise reversal effect](https://en.wikipedia.org/wiki/Expertise_reversal_effect), and more.
+
+## Worktrees
+
+In worktrees, use the generated script so the correct port is used:
+```bash
+./run.sh
+```
+The worktree setup sets `VITE_API_URL` and the web port via `.worktree.env`.
