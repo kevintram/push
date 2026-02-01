@@ -6,10 +6,7 @@ import type {
 	CreateParentRelationshipInput,
 	CreateRelationshipInput
 } from '../types/api.types'
-import {
-	TopicRelationshipResponseSchema,
-	TopicSchema
-} from '../types/topic.schemas'
+import { TopicRelationshipResponseSchema } from '../types/topic.schemas'
 import type { TopicRelationshipResponse } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
@@ -59,61 +56,42 @@ export async function createChildRelationship(
 export async function createParentRelationship(
 	input: CreateParentRelationshipInput
 ): Promise<TopicRelationshipResponse> {
-	let parentId: number
+	const body =
+		'parentId' in input
+			? { parent_id: input.parentId }
+			: {
+					parent: {
+						name: input.parent.name,
+						notes: input.parent.notes,
+						archived: input.parent.archived,
+						inboxed: input.parent.inboxed,
+						srs_enabled: input.parent.srs_enabled,
+						inherit_fsrs: input.parent.inherit_fsrs
+					}
+				}
 
-	// If existing parentId provided, use it; otherwise create inline parent
-	if ('parentId' in input) {
-		parentId = input.parentId
-	} else {
-		const createResponse = await apiFetch(
-			`${import.meta.env.VITE_API_URL}/topics/`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					name: input.parent.name,
-					notes: input.parent.notes,
-					archived: input.parent.archived,
-					inboxed: input.parent.inboxed,
-					srs_enabled: input.parent.srs_enabled,
-					inherit_fsrs: input.parent.inherit_fsrs
-				})
-			}
-		)
-		if (!createResponse.ok) {
-			throw new Error(`API request failed: ${createResponse.status}`)
-		}
-		const newParent = v.parse(TopicSchema, await createResponse.json())
-		parentId = newParent.id
-	}
-
-	// Update the child to set parent_id via PATCH
-	const patchResponse = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/${input.childId}/`,
+	const response = await apiFetch(
+		`${import.meta.env.VITE_API_URL}/topics/${input.childId}/parent/`,
 		{
-			method: 'PATCH',
+			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ parent_id: parentId })
+			body: JSON.stringify(body)
 		}
 	)
 
-	if (!patchResponse.ok) {
-		throw new Error(`API request failed: ${patchResponse.status}`)
+	if (!response.ok) {
+		throw new Error(`API request failed: ${response.status}`)
 	}
 
-	const updatedChild = v.parse(TopicSchema, await patchResponse.json())
-
-	// Fetch the parent to return the relationship response
-	const parentResponse = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/${parentId}/`,
-		{ method: 'GET' }
-	)
-	if (!parentResponse.ok) {
-		throw new Error(`API request failed: ${parentResponse.status}`)
+	const data = await response.json()
+	try {
+		return v.parse(TopicRelationshipResponseSchema, data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
 	}
-	const parent = v.parse(TopicSchema, await parentResponse.json())
-
-	return { parent, child: updatedChild }
 }
 
 export function useCreateRelationship() {
@@ -143,6 +121,28 @@ export function useCreateRelationship() {
 			const childId = data.child.id
 
 			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: topicKeys.detail(parentId)
+				}),
+				queryClient.invalidateQueries({
+					queryKey: topicKeys.detail(childId)
+				})
+			])
+		}
+	})
+}
+
+export function useSetTopicParent() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: (input: CreateParentRelationshipInput) =>
+			createParentRelationship(input),
+		onSuccess: async data => {
+			const parentId = data.parent.id
+			const childId = data.child.id
+
 			await Promise.all([
 				queryClient.invalidateQueries({
 					queryKey: topicKeys.detail(parentId)

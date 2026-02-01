@@ -235,6 +235,25 @@ class TestPracticeTopicAssociations:
         assert get_response.status_code == 200
         assert len(get_response.json()) == 0
 
+    async def test_add_topic_to_practice_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_practice,
+    ):
+        """Should create a new topic inline and add it to the practice."""
+        practice = await create_test_practice(prompt="Test Practice")
+
+        response = await test_client.post(
+            f"/practices/{practice.id}/topics/",
+            json={"topic": {"name": "Inline Topic"}},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["practice"]["id"] == practice.id
+        assert data["topic"]["name"] == "Inline Topic"
+        assert data["topic"]["id"] is not None
+
     async def test_add_duplicate_topic_fails(
         self,
         test_client: AsyncClient,
@@ -282,6 +301,25 @@ class TestPracticeSourceAssociations:
         data = response.json()
         assert data["practice"]["id"] == practice.id
         assert data["source"]["id"] == source.id
+
+    async def test_add_source_to_practice_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_practice,
+    ):
+        """Should create a new source inline and add it to the practice."""
+        practice = await create_test_practice(prompt="Test Practice")
+
+        response = await test_client.post(
+            f"/practices/{practice.id}/sources/",
+            json={"source": {"title": "Inline Source"}},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["practice"]["id"] == practice.id
+        assert data["source"]["title"] == "Inline Source"
+        assert data["source"]["id"] is not None
 
     async def test_get_practice_sources(
         self,

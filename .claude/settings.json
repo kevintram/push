@@ -4,7 +4,13 @@
       "Bash(uv run pytest:*)",
       "Bash(uv run ruff format:*)",
       "Bash(uv run ruff:*)",
-      "Bash(pnpm:*)"
+      "Bash(pnpm:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(git show:*)"
     ]
+  },
+  "enabledPlugins": {
+    "playwright-cli@playwright-cli": true
   }
 }

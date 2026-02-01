@@ -1,4 +1,4 @@
-import { FileText, User2 } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import type { ReactNode } from 'react'
 import {
 	Tooltip,
@@ -6,6 +6,7 @@ import {
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
 import type { Source } from '../../types/source.types'
+import { SourceParentsPanel } from '../SourceParentsPanel'
 
 interface SourceDetailHeaderProps {
 	source: Source
@@ -45,32 +46,12 @@ export function SourceDetailHeader({
 							</TooltipTrigger>
 							<TooltipContent side='bottom'>This is a Source</TooltipContent>
 						</Tooltip>
-						{/* Parent indicator */}
-						{source.parent && (
-							<>
-								<span className='text-muted-foreground'>→</span>
-								<Tooltip>
-									<TooltipTrigger asChild={true}>
-										<button
-											className='flex items-center gap-1 text-muted-foreground text-xs hover:text-foreground'
-											onClick={() =>
-												source.parent && onParentSelect?.(source.parent.id)
-											}
-											type='button'
-										>
-											<User2 className='h-3 w-3' />
-											<span className='max-w-32 truncate'>
-												{source.parent.title || 'Untitled'}
-											</span>
-										</button>
-									</TooltipTrigger>
-									<TooltipContent side='bottom'>
-										Parent: {source.parent.title || 'Untitled'}
-									</TooltipContent>
-								</Tooltip>
-							</>
-						)}
 					</div>
+					<SourceParentsPanel
+						onParentSelect={onParentSelect}
+						parent={source.parent}
+						sourceId={source.id}
+					/>
 				</div>
 
 				{afterActions && (

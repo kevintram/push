@@ -1,16 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Baby, ChevronDown, Plus, Search, SquarePen } from 'lucide-react'
+import { Baby, ChevronDown } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
+import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
+import { useAddSourceChild } from '../api/addSourceChild'
 import { sourceKeys } from '../api/queryKeys'
 import type { Source } from '../types/source.types'
 import {
@@ -73,6 +70,8 @@ export function SourceChildrenPanel({
 	const queryClient = useQueryClient()
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+	const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false)
+	const addSourceChild = useAddSourceChild()
 
 	// Build dialog context for creating a child source
 	const addDialogContext: AddSourceDialogContext | undefined = useMemo(() => {
@@ -93,6 +92,17 @@ export function SourceChildrenPanel({
 			onChildCreated?.(newSourceId)
 		},
 		[queryClient, sourceId, onChildCreated]
+	)
+
+	const handleExistingChildSelected = useCallback(
+		(child: Source) => {
+			if (sourceId === undefined) return
+			addSourceChild.mutate({
+				parentId: sourceId,
+				data: { child_id: child.id }
+			})
+		},
+		[sourceId, addSourceChild]
 	)
 
 	// Use prop directly - children comes from the single getSource fetch
@@ -194,25 +204,17 @@ export function SourceChildrenPanel({
 		<div className='flex flex-col'>
 			<TopicPanelHeader
 				actions={
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true}>
-							<Button className='gap-1' size='sm' variant='secondary'>
-								<Plus className='h-4 w-4' />
-								Add
-								<ChevronDown className='h-4 w-4' />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='start'>
-							<DropdownMenuItem onSelect={() => setIsAddDialogOpen(true)}>
-								<SquarePen className='h-4 w-4' />
-								Create New
-							</DropdownMenuItem>
-							<DropdownMenuItem disabled={true}>
-								<Search className='h-4 w-4' />
-								Search
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<AddEntityMenu
+						createItems={[
+							{
+								label: 'Create Source',
+								onSelect: () => setIsAddDialogOpen(true)
+							}
+						]}
+						isLoading={addSourceChild.isPending}
+						onSearch={() => setIsSearchDialogOpen(true)}
+						searchLabel='Search Sources'
+					/>
 				}
 				label={
 					<Button
@@ -243,6 +245,25 @@ export function SourceChildrenPanel({
 						scrollMargin={scrollMargin}
 					/>
 				</div>
+			)}
+
+			{sourceId !== undefined && (
+				<EntitySearchDialog
+					defaultType='source'
+					entityTypes={['source']}
+					existingIds={{
+						source: children.map(child => child.id)
+					}}
+					onOpenChange={setIsSearchDialogOpen}
+					onSelected={(_type, source) =>
+						handleExistingChildSelected(source as Source)
+					}
+					open={isSearchDialogOpen}
+					sourceSearchParams={{
+						addableAsChildTo: sourceId
+					}}
+					title='Search child sources'
+				/>
 			)}
 
 			{/* Add Child Source Dialog */}

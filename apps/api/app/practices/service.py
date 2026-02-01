@@ -270,20 +270,31 @@ async def get_practice_topics(
 
 
 async def add_practice_topic(
-    session: AsyncSession, practice_id: int, topic_id: int, user_id: str
+    session: AsyncSession,
+    practice_id: int,
+    user_id: str,
+    *,
+    topic_id: int | None = None,
+    topic_data: dict | None = None,
 ) -> tuple[Practice, Topic]:
     """Add a topic that this practice assesses. Returns (practice, topic)."""
     practice = await get_practice(session, practice_id, user_id)
 
-    # Verify topic exists and belongs to user
-    topic_result = await session.execute(
-        select(Topic)
-        .where(Topic.id == topic_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.fsrs_state))
-    )
-    topic = topic_result.scalar_one_or_none()
-    if not topic:
-        raise NotFoundError("Topic", topic_id)
+    if topic_id is None:
+        from app.topics.service import create_topic
+
+        topic = await create_topic(session, user_id, **topic_data)
+        topic_id = topic.id
+    else:
+        # Verify topic exists and belongs to user
+        topic_result = await session.execute(
+            select(Topic)
+            .where(Topic.id == topic_id, Topic.user_id == user_id)
+            .options(selectinload(Topic.fsrs_state))
+        )
+        topic = topic_result.scalar_one_or_none()
+        if not topic:
+            raise NotFoundError("Topic", topic_id)
 
     # Insert relationship
     stmt = insert(t_practice_topics).values(
@@ -344,20 +355,31 @@ async def get_practice_sources(
 
 
 async def add_practice_source(
-    session: AsyncSession, practice_id: int, source_id: int, user_id: str
+    session: AsyncSession,
+    practice_id: int,
+    user_id: str,
+    *,
+    source_id: int | None = None,
+    source_data: dict | None = None,
 ) -> tuple[Practice, Source]:
     """Add a source that this practice assesses. Returns (practice, source)."""
     practice = await get_practice(session, practice_id, user_id)
 
-    # Verify source exists and belongs to user
-    source_result = await session.execute(
-        select(Source)
-        .where(Source.id == source_id, Source.user_id == user_id)
-        .options(selectinload(Source.fsrs_state))
-    )
-    source = source_result.scalar_one_or_none()
-    if not source:
-        raise NotFoundError("Source", source_id)
+    if source_id is None:
+        from app.sources.service import create_source
+
+        source = await create_source(session, user_id, **source_data)
+        source_id = source.id
+    else:
+        # Verify source exists and belongs to user
+        source_result = await session.execute(
+            select(Source)
+            .where(Source.id == source_id, Source.user_id == user_id)
+            .options(selectinload(Source.fsrs_state))
+        )
+        source = source_result.scalar_one_or_none()
+        if not source:
+            raise NotFoundError("Source", source_id)
 
     # Insert relationship
     stmt = insert(t_practice_sources).values(

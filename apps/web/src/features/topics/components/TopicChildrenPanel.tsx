@@ -1,29 +1,17 @@
 import { useQueryClient } from '@tanstack/react-query'
-import {
-	Baby,
-	ChevronDown,
-	Loader2,
-	Plus,
-	Search,
-	SquarePen
-} from 'lucide-react'
+import { Baby, ChevronDown } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
+import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
-import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { AddTopicDialog, type SrsSource } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
@@ -74,7 +62,7 @@ export function TopicChildrenPanel({
 	renderCard
 }: TopicChildrenPanelProps) {
 	const queryClient = useQueryClient()
-	const [showCreateDialog, setShowCreateDialog] = useState(false)
+	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
@@ -205,29 +193,17 @@ export function TopicChildrenPanel({
 		<div className='flex flex-col'>
 			<TopicPanelHeader
 				actions={
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
-							<Button className='gap-1' size='sm' variant='secondary'>
-								{isCreating ? (
-									<Loader2 className='h-4 w-4 animate-spin' />
-								) : (
-									<Plus className='h-4 w-4' />
-								)}
-								Add
-								<ChevronDown className='h-4 w-4' />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='start'>
-							<DropdownMenuItem onClick={() => setShowAddTopicDialog(true)}>
-								<SquarePen className='h-4 w-4' />
-								Create New
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
-								<Search className='h-4 w-4' />
-								Search
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<AddEntityMenu
+						createItems={[
+							{
+								label: 'Create Topic',
+								onSelect: () => setShowAddTopicDialog(true)
+							}
+						]}
+						isLoading={isCreating}
+						onSearch={() => setShowSearchDialog(true)}
+						searchLabel='Search Topics'
+					/>
 				}
 				label={
 					<Button
@@ -260,18 +236,22 @@ export function TopicChildrenPanel({
 				</div>
 			)}
 
-			<AddRelationshipDialog
-				isCreating={isCreating}
-				onCreateNew={() => {
-					setShowCreateDialog(false)
-					setShowAddTopicDialog(true)
-				}}
-				onOpenChange={setShowCreateDialog}
-				onSelected={handleAddTopic}
-				open={showCreateDialog}
-				relationshipType='child'
-				topicId={topicId}
-			/>
+			{topicId && (
+				<EntitySearchDialog
+					defaultType='topic'
+					entityTypes={['topic']}
+					existingIds={{
+						topic: children.map(child => child.id)
+					}}
+					onOpenChange={setShowSearchDialog}
+					onSelected={(_type, topic) => handleAddTopic(topic as Topic)}
+					open={showSearchDialog}
+					title='Search child topics'
+					topicSearchParams={{
+						addableAsChildTo: topicId
+					}}
+				/>
+			)}
 
 			{topicId && (
 				<AddTopicDialog

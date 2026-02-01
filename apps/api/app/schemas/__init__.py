@@ -38,6 +38,7 @@ from app.schemas.sources import (
     SourceSummaryRead,
     SourceDetailRead,
     SourceChildRelationshipCreate,
+    SourceParentRelationshipCreate,
     SourceRelationshipResponse,
     SourceTopicAdd,
     SourceTopicResponse,
@@ -59,6 +60,7 @@ from app.schemas.topics import (
     TopicRelatedRead,
     RelationshipDirection,
     TopicPracticeAdd,
+    TopicSourceAdd,
 )
 from app.schemas.reviews import (
     ReviewBase,
@@ -99,16 +101,23 @@ ReviewUpdate.model_rebuild()
 ReviewWithSource.model_rebuild()
 ReviewWithPractice.model_rebuild()
 TopicRelatedRead.model_rebuild()
+EntityRelationCreate.model_rebuild()
+SourcePrerequisiteCreate.model_rebuild()
 SourceRead.model_rebuild()
 SourceSummaryRead.model_rebuild()
 SourceDetailRead.model_rebuild()
 SourceRelationshipResponse.model_rebuild()
 SourceTopicResponse.model_rebuild()
+SourceTopicAdd.model_rebuild()
+SourcePracticeAdd.model_rebuild()
+SourceParentRelationshipCreate.model_rebuild()
 PracticeRead.model_rebuild()
 PracticeSummaryRead.model_rebuild()
 PracticeDetailRead.model_rebuild()
 PracticeTopicResponse.model_rebuild()
 PracticeSourceResponse.model_rebuild()
+TopicPracticeAdd.model_rebuild()
+TopicSourceAdd.model_rebuild()
 
 __all__ = [
     "ConvertPracticeToSourceResponse",
@@ -173,9 +182,11 @@ __all__ = [
     "SourceSummaryRead",
     "SourceDetailRead",
     "SourceChildRelationshipCreate",
+    "SourceParentRelationshipCreate",
     "SourceRelationshipResponse",
     "SourceTopicAdd",
     "SourceTopicResponse",
     "SourcePracticeAdd",
     "TopicPracticeAdd",
+    "TopicSourceAdd",
 ]

@@ -17,12 +17,17 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
+import { useAddPracticeTopic } from '~/features/practices/api/addPracticeTopic'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import {
 	ReviewRatingCheckbox,
 	type ReviewRatingState
 } from '~/features/reviews/components/ReviewRatingCheckbox'
 import { SessionPickerPopover } from '~/features/reviews/components/SessionPickerPopover'
+import { useAddSourceEntityRelation } from '~/features/sources/api/addSourceEntityRelation'
+import { useAddSourcePrerequisite } from '~/features/sources/api/addSourcePrerequisite'
+import { useAddSourceTopic } from '~/features/sources/api/addSourceTopic'
+import { EntityType } from '~/models/entity-relations.types'
 import type { LearningState } from '~/models/learning-state.types'
 import { useCreateTopic } from '../api/createTopic'
 import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
@@ -44,6 +49,10 @@ export type AddTopicDialogContext =
 	| { type: 'child'; parentTopicId: number; srsSource?: SrsSource | null }
 	| { type: 'parent'; childTopicId: number }
 	| { type: 'related'; fromTopicId: number; srsSource?: SrsSource | null }
+	| { type: 'source'; sourceId: number }
+	| { type: 'practice'; practiceId: number }
+	| { type: 'sourcePrerequisite'; sourceId: number }
+	| { type: 'sourceRelated'; sourceId: number }
 
 interface AddTopicDialogProps {
 	open: boolean
@@ -91,6 +100,16 @@ export function AddTopicDialog({
 		mutateAsync: createOtherRelationship,
 		isPending: isCreatingOtherRelationship
 	} = useCreateTopicOtherRelationship()
+	const { mutateAsync: addSourceTopic, isPending: isAddingSourceTopic } =
+		useAddSourceTopic()
+	const { mutateAsync: addPracticeTopic, isPending: isAddingPracticeTopic } =
+		useAddPracticeTopic()
+	const {
+		mutateAsync: addSourcePrerequisite,
+		isPending: isAddingSourcePrerequisite
+	} = useAddSourcePrerequisite()
+	const { mutateAsync: addSourceRelation, isPending: isAddingSourceRelation } =
+		useAddSourceEntityRelation()
 	const { mutateAsync: createReview, isPending: isCreatingReview } =
 		useCreateReview()
 
@@ -98,6 +117,10 @@ export function AddTopicDialog({
 		isCreatingTopic ||
 		isCreatingRelationship ||
 		isCreatingOtherRelationship ||
+		isAddingSourceTopic ||
+		isAddingPracticeTopic ||
+		isAddingSourcePrerequisite ||
+		isAddingSourceRelation ||
 		isCreatingReview
 
 	// Extract SRS source from context if available
@@ -153,7 +176,7 @@ export function AddTopicDialog({
 	// Create topic handler
 	const handleCreate = useCallback(async () => {
 		try {
-			let newTopicId: number
+			let newTopicId: number | undefined
 
 			// Build topic data - inherit all SRS fields when toggle is on
 			const shouldInherit = inheritStability && srsSource !== null
@@ -193,17 +216,44 @@ export function AddTopicDialog({
 					parentData: topicData
 				})
 				newTopicId = response.parent.id
-			} else {
-				// context.type === 'related'
+			} else if (context.type === 'related') {
 				const response = await createOtherRelationship({
 					fromTopicId: context.fromTopicId,
 					data: { to_topic: topicData }
 				})
 				newTopicId = response.to_topic.id
+			} else if (context.type === 'source') {
+				const response = await addSourceTopic({
+					sourceId: context.sourceId,
+					data: { topic: topicData }
+				})
+				newTopicId = response.topic.id
+			} else if (context.type === 'practice') {
+				const response = await addPracticeTopic({
+					practiceId: context.practiceId,
+					topic: topicData
+				})
+				newTopicId = response.topic.id
+			} else if (context.type === 'sourcePrerequisite') {
+				await addSourcePrerequisite({
+					sourceId: context.sourceId,
+					data: {
+						prereq_entity_type: EntityType.Topic,
+						prereq_topic: topicData
+					}
+				})
+			} else if (context.type === 'sourceRelated') {
+				await addSourceRelation({
+					sourceId: context.sourceId,
+					data: {
+						to_entity_type: EntityType.Topic,
+						to_topic: topicData
+					}
+				})
 			}
 
 			// Create review if review section was used and rating was set
-			if (showReview && reviewRating !== 'uncompleted') {
+			if (newTopicId && showReview && reviewRating !== 'uncompleted') {
 				const basePayload = {
 					topic_id: newTopicId,
 					rating: reviewRating,
@@ -223,7 +273,9 @@ export function AddTopicDialog({
 			}
 
 			// Call success callback
-			onSuccess?.(newTopicId)
+			if (newTopicId) {
+				onSuccess?.(newTopicId)
+			}
 
 			// Handle create more vs close
 			if (createMore) {
@@ -247,6 +299,10 @@ export function AddTopicDialog({
 		createTopic,
 		createRelationship,
 		createOtherRelationship,
+		addSourceTopic,
+		addPracticeTopic,
+		addSourcePrerequisite,
+		addSourceRelation,
 		showReview,
 		reviewRating,
 		reviewDescription,

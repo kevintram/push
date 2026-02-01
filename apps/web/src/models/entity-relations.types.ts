@@ -7,7 +7,23 @@ export type EntityType = (typeof EntityType)[keyof typeof EntityType]
 
 export type EntityRelationCreate = {
 	to_entity_type: EntityType
-	to_entity_id: number
+	to_entity_id?: number
+	to_topic?: {
+		name: string
+		notes: string
+		archived: boolean
+		inboxed: boolean
+		srs_enabled?: boolean
+		inherit_fsrs?: boolean
+	}
+	to_source?: {
+		title: string
+		notes: string
+		archived: boolean
+		inboxed: boolean
+		srs_enabled?: boolean
+		inherit_fsrs?: boolean
+	}
 }
 
 export type RelatedEntity = {
@@ -38,5 +54,21 @@ export type SourcePrerequisiteRead = {
 
 export type SourcePrerequisiteCreate = {
 	prereq_entity_type: EntityType
-	prereq_entity_id: number
+	prereq_entity_id?: number
+	prereq_topic?: {
+		name: string
+		notes: string
+		archived: boolean
+		inboxed: boolean
+		srs_enabled?: boolean
+		inherit_fsrs?: boolean
+	}
+	prereq_source?: {
+		title: string
+		notes: string
+		archived: boolean
+		inboxed: boolean
+		srs_enabled?: boolean
+		inherit_fsrs?: boolean
+	}
 }

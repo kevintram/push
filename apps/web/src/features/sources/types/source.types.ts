@@ -86,5 +86,13 @@ export type SourceChildRelationshipCreate = {
 }
 
 export type SourceTopicAdd = {
-	topic_id: number
+	topic_id?: number
+	topic?: {
+		name: string
+		notes: string
+		archived: boolean
+		inboxed: boolean
+		srs_enabled?: boolean
+		inherit_fsrs?: boolean
+	}
 }

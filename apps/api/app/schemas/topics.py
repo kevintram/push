@@ -10,6 +10,8 @@ from app.schemas.entity_relations import RelatedEntityRead
 
 if TYPE_CHECKING:
     from app.schemas.practices import PracticeSummaryRead
+    from app.schemas.practices import PracticeCreate
+    from app.schemas.sources import SourceCreate
     from app.schemas.sources import SourceSummaryRead
 
 
@@ -80,8 +82,8 @@ class TopicDetailRead(TopicSummaryRead):
     children: list[TopicSummaryRead] = []
     related_outgoing: list[RelatedEntityRead] = []
     related_incoming: list[RelatedEntityRead] = []
-    sources: list["SourceSummaryRead"] = []
-    practices: list["PracticeSummaryRead"] = []
+    sources: list[SourceSummaryRead] = []
+    practices: list[PracticeSummaryRead] = []
 
 
 class RelationshipDirection(str, Enum):
@@ -199,7 +201,31 @@ class TopicOtherRelationshipResponse(BaseModel):
 class TopicPracticeAdd(BaseModel):
     """Add a practice to this topic."""
 
-    practice_id: int
+    practice_id: int | None = None
+    practice: PracticeCreate | None = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "TopicPracticeAdd":
+        if self.practice_id is not None and self.practice is not None:
+            raise ValueError("Cannot provide both practice_id and practice")
+        if self.practice_id is None and self.practice is None:
+            raise ValueError("Must provide either practice_id or practice")
+        return self
+
+
+class TopicSourceAdd(BaseModel):
+    """Add a source covering this topic."""
+
+    source_id: int | None = None
+    source: SourceCreate | None = None
+
+    @model_validator(mode="after")
+    def validate_mutually_exclusive_fields(self) -> "TopicSourceAdd":
+        if self.source_id is not None and self.source is not None:
+            raise ValueError("Cannot provide both source_id and source")
+        if self.source_id is None and self.source is None:
+            raise ValueError("Must provide either source_id or source")
+        return self
 
 
 class ConvertToSourceResponse(BaseModel):

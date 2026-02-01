@@ -1,11 +1,4 @@
-import {
-	ChevronDown,
-	Link,
-	Loader2,
-	Plus,
-	Search,
-	SquarePen
-} from 'lucide-react'
+import { ChevronDown, Link } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -15,22 +8,17 @@ import {
 	getEntityKey
 } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
+import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { AddPrerequisiteDialog } from '~/features/sources/components/AddPrerequisiteDialog'
+import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { EntityType } from '~/models/entity-relations.types'
 import { useAddTopicEntityRelation } from '../api/addTopicEntityRelation'
 import { useRemoveTopicEntityRelation } from '../api/removeTopicEntityRelation'
 import type { RelatedEntityItem } from '../types/topic.types'
-import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { AddTopicDialog, type SrsSource } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 
@@ -66,9 +54,9 @@ export function TopicRelatedPanel({
 	onRelatedSelect,
 	onSourceSelect
 }: TopicRelatedPanelProps) {
-	const [showCreateDialog, setShowCreateDialog] = useState(false)
+	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
-	const [showAddEntityDialog, setShowAddEntityDialog] = useState(false)
+	const [showAddSourceDialog, setShowAddSourceDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 
@@ -127,15 +115,14 @@ export function TopicRelatedPanel({
 		[topicId, addRelation]
 	)
 
-	// Handle adding any entity type (from AddPrerequisiteDialog)
-	const handleAddEntity = useCallback(
-		async (entityType: EntityType, entityId: number) => {
+	const handleAddSource = useCallback(
+		async (source: { id: number }) => {
 			if (!topicId) return
 			await addRelation.mutateAsync({
 				topicId,
 				data: {
-					to_entity_type: entityType,
-					to_entity_id: entityId
+					to_entity_type: EntityType.Source,
+					to_entity_id: source.id
 				}
 			})
 		},
@@ -151,6 +138,16 @@ export function TopicRelatedPanel({
 			}
 		},
 		[handleRelatedSelect, handleSourceSelect]
+	)
+
+	const existingTopicIds = useMemo(
+		() => related.filter(r => r.entity_type === 'topic').map(r => r.id),
+		[related]
+	)
+
+	const existingSourceIds = useMemo(
+		() => related.filter(r => r.entity_type === 'source').map(r => r.id),
+		[related]
 	)
 
 	const renderItem = useCallback(
@@ -204,33 +201,21 @@ export function TopicRelatedPanel({
 		<div className='flex flex-col'>
 			<TopicPanelHeader
 				actions={
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
-							<Button className='gap-1' size='sm' variant='secondary'>
-								{isCreating ? (
-									<Loader2 className='h-4 w-4 animate-spin' />
-								) : (
-									<Plus className='h-4 w-4' />
-								)}
-								Add
-								<ChevronDown className='h-4 w-4' />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='start'>
-							<DropdownMenuItem onClick={() => setShowAddTopicDialog(true)}>
-								<SquarePen className='h-4 w-4' />
-								Create New Topic
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
-								<Search className='h-4 w-4' />
-								Search Topics
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => setShowAddEntityDialog(true)}>
-								<Search className='h-4 w-4' />
-								Search Sources
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<AddEntityMenu
+						createItems={[
+							{
+								label: 'Create Topic',
+								onSelect: () => setShowAddTopicDialog(true)
+							},
+							{
+								label: 'Create Source',
+								onSelect: () => setShowAddSourceDialog(true)
+							}
+						]}
+						isLoading={isCreating}
+						onSearch={() => setShowSearchDialog(true)}
+						searchLabel='Search'
+					/>
 				}
 				label={
 					<Button
@@ -267,18 +252,28 @@ export function TopicRelatedPanel({
 				</div>
 			)}
 
-			<AddRelationshipDialog
-				isCreating={isCreating}
-				onCreateNew={() => {
-					setShowCreateDialog(false)
-					setShowAddTopicDialog(true)
-				}}
-				onOpenChange={setShowCreateDialog}
-				onSelected={handleAddTopic}
-				open={showCreateDialog}
-				relationshipType='related'
-				topicId={topicId}
-			/>
+			{topicId && (
+				<EntitySearchDialog
+					entityTypes={['topic', 'source']}
+					existingIds={{
+						topic: existingTopicIds,
+						source: existingSourceIds
+					}}
+					onOpenChange={setShowSearchDialog}
+					onSelected={(entityType, entity) => {
+						if (entityType === 'topic') {
+							handleAddTopic(entity as { id: number })
+						} else {
+							handleAddSource(entity as { id: number })
+						}
+					}}
+					open={showSearchDialog}
+					title='Search related entities'
+					topicSearchParams={{
+						addableAsRelatedTo: topicId
+					}}
+				/>
+			)}
 
 			{topicId && (
 				<AddTopicDialog
@@ -300,13 +295,13 @@ export function TopicRelatedPanel({
 				/>
 			)}
 
-			<AddPrerequisiteDialog
-				isAdding={isCreating}
-				onOpenChange={setShowAddEntityDialog}
-				onSelected={handleAddEntity}
-				open={showAddEntityDialog}
-				topicId={topicId}
-			/>
+			{topicId && (
+				<AddSourceDialog
+					context={{ type: 'topicRelated', topicId }}
+					onOpenChange={setShowAddSourceDialog}
+					open={showAddSourceDialog}
+				/>
+			)}
 		</div>
 	)
 }

@@ -125,6 +125,61 @@ class TestSourceTreeBasics:
         assert data["child"]["title"] == "New Child"
         assert data["child"]["parent_id"] == parent.id
 
+    async def test_set_parent_with_existing_source(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+    ):
+        """POST /sources/{id}/parent/ with existing source as parent."""
+        child = await create_test_source(title="Child")
+        parent = await create_test_source(title="Parent")
+
+        response = await test_client.post(
+            f"/sources/{child.id}/parent/",
+            json={"parent_id": parent.id},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["parent"]["id"] == parent.id
+        assert data["child"]["id"] == child.id
+        assert data["child"]["parent_id"] == parent.id
+
+    async def test_set_parent_with_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+    ):
+        """POST /sources/{id}/parent/ with inline parent creation."""
+        child = await create_test_source(title="Child")
+
+        response = await test_client.post(
+            f"/sources/{child.id}/parent/",
+            json={"parent": {"title": "New Parent"}},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["parent"]["title"] == "New Parent"
+        assert data["parent"]["id"] is not None
+        assert data["child"]["id"] == child.id
+        assert data["child"]["parent_id"] == data["parent"]["id"]
+
+    async def test_set_parent_self_reference_rejected(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+    ):
+        """POST /sources/{id}/parent/ with self as parent should fail."""
+        source = await create_test_source(title="Source")
+
+        response = await test_client.post(
+            f"/sources/{source.id}/parent/",
+            json={"parent_id": source.id},
+        )
+
+        assert response.status_code == 400
+
     async def test_remove_child_from_parent(
         self,
         test_client: AsyncClient,
@@ -415,3 +470,74 @@ class TestSourceTreeFiltering:
         assert parent.id not in source_ids
         # Child is excluded (already a child)
         assert child.id not in source_ids
+
+
+class TestSourceInlineCreate:
+    """Tests for inline entity creation on source endpoints."""
+
+    async def test_add_topic_to_source_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+    ):
+        """POST /sources/{id}/topics/ with inline topic creation."""
+        source = await create_test_source(title="Source")
+
+        response = await test_client.post(
+            f"/sources/{source.id}/topics/",
+            json={"topic": {"name": "Inline Topic"}},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["source"]["id"] == source.id
+        assert data["topic"]["name"] == "Inline Topic"
+        assert data["topic"]["id"] is not None
+
+    async def test_add_practice_to_source_inline_create(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+    ):
+        """POST /sources/{id}/practices/ with inline practice creation."""
+        source = await create_test_source(title="Source")
+
+        response = await test_client.post(
+            f"/sources/{source.id}/practices/",
+            json={"practice": {"prompt": "Inline Practice", "answer": "Answer"}},
+        )
+
+        assert response.status_code == 201
+
+        # Verify practice was created and linked
+        get_response = await test_client.get(f"/sources/{source.id}/practices/")
+        assert get_response.status_code == 200
+        practices = get_response.json()
+        assert len(practices) == 1
+        assert practices[0]["prompt"] == "Inline Practice"
+
+    async def test_add_child_with_inboxed_and_archived(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+    ):
+        """POST /sources/{id}/children/ inline creation respects inboxed/archived."""
+        parent = await create_test_source(title="Parent")
+
+        response = await test_client.post(
+            f"/sources/{parent.id}/children/",
+            json={
+                "child": {
+                    "title": "Inboxed Child",
+                    "inboxed": True,
+                    "archived": True,
+                },
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["child"]["title"] == "Inboxed Child"
+        assert data["child"]["inboxed"] is True
+        assert data["child"]["archived"] is True
+        assert data["child"]["parent_id"] == parent.id

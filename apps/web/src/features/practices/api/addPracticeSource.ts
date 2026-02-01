@@ -10,6 +10,20 @@ import { practiceKeys } from './queryKeys'
 export async function addPracticeSource(
 	input: AddPracticeSourceInput
 ): Promise<PracticeSourceResponse> {
+	const body =
+		'sourceId' in input
+			? { source_id: input.sourceId }
+			: {
+					source: {
+						title: input.source.title,
+						notes: input.source.notes,
+						archived: input.source.archived,
+						inboxed: input.source.inboxed,
+						srs_enabled: input.source.srs_enabled,
+						inherit_fsrs: input.source.inherit_fsrs
+					}
+				}
+
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/practices/${input.practiceId}/sources/`,
 		{
@@ -17,7 +31,7 @@ export async function addPracticeSource(
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ source_id: input.sourceId })
+			body: JSON.stringify(body)
 		}
 	)
 
@@ -42,13 +56,18 @@ export function useAddPracticeSource() {
 	return useMutation({
 		mutationFn: addPracticeSource,
 		onSuccess: async (_, input) => {
+			const sourceId = 'sourceId' in input ? input.sourceId : undefined
 			await Promise.all([
 				queryClient.invalidateQueries({
 					queryKey: practiceKeys.byId(input.practiceId)
 				}),
-				queryClient.invalidateQueries({
-					queryKey: sourceKeys.byId(input.sourceId)
-				})
+				sourceId
+					? queryClient.invalidateQueries({
+							queryKey: sourceKeys.byId(sourceId)
+						})
+					: queryClient.invalidateQueries({
+							queryKey: sourceKeys.all
+						})
 			])
 		}
 	})

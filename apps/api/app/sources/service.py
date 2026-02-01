@@ -338,6 +338,8 @@ async def add_child(
     child_notes: str | None = None,
     child_srs_enabled: bool = False,
     child_inherit_fsrs: bool = False,
+    child_inboxed: bool = False,
+    child_archived: bool = False,
 ) -> tuple[Source, Source]:
     """Add or create a child source. Returns (parent, child)."""
     # Verify parent exists
@@ -359,12 +361,13 @@ async def add_child(
         result_child_id = child_id
     else:
         # Create new source from inline data
-        assert child_title is not None
         new_child = Source(
             user_id=user_id,
             title=child_title,
             notes=child_notes or "",
             parent_id=parent_id,
+            inboxed=child_inboxed,
+            archived=child_archived,
         )
 
         # Handle FsrsState creation
@@ -395,6 +398,40 @@ async def add_child(
     return parent_source, child_source
 
 
+async def set_source_parent(
+    session: AsyncSession,
+    user_id: str,
+    source_id: int,
+    *,
+    parent_id: int | None = None,
+    parent_data: dict | None = None,
+) -> tuple[Source, Source]:
+    """Set or replace the parent of a source. Returns (parent, child)."""
+    if parent_id is None and parent_data is None:
+        raise BadRequestError("Must provide either parent_id or parent data")
+
+    resolved_parent_id = parent_id
+    if parent_data is not None:
+        new_parent = await create_source(session, user_id, **parent_data)
+        resolved_parent_id = new_parent.id
+
+    if resolved_parent_id == source_id:
+        raise SelfReferenceError("source")
+
+    await update_source(
+        session,
+        source_id,
+        user_id,
+        parent_id=resolved_parent_id,
+    )
+
+    parent_source = await load_source_with_relationships(
+        session, resolved_parent_id, user_id
+    )
+    child_source = await load_source_with_relationships(session, source_id, user_id)
+    return parent_source, child_source
+
+
 async def remove_child(
     session: AsyncSession, parent_id: int, child_id: int, user_id: str
 ) -> Source:
@@ -413,20 +450,45 @@ async def remove_child(
 
 
 async def add_source_topic(
-    session: AsyncSession, source_id: int, topic_id: int, user_id: str
+    session: AsyncSession,
+    user_id: str,
+    *,
+    source_id: int | None = None,
+    source_data: dict | None = None,
+    topic_id: int | None = None,
+    topic_data: dict | None = None,
 ) -> tuple[Source, Topic]:
-    """Add a topic that this source covers. Returns (source, topic)."""
-    source = await get_source(session, source_id, user_id)
+    """Link a source and topic. Supports inline creation of either side.
 
-    # Verify topic exists and belongs to user
-    topic_result = await session.execute(
-        select(Topic)
-        .where(Topic.id == topic_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.fsrs_state))
-    )
-    topic = topic_result.scalar_one_or_none()
-    if not topic:
-        raise NotFoundError("Topic", topic_id)
+    Returns (source, topic).
+    """
+    # Resolve source
+    if source_id is None and source_data is not None:
+        source = await create_source(session, user_id, **source_data)
+        source_id = source.id
+    elif source_id is not None:
+        source = await get_source(session, source_id, user_id)
+    else:
+        raise BadRequestError("Must provide either source_id or source data")
+
+    # Resolve topic
+    if topic_id is None and topic_data is not None:
+        from app.topics.service import create_topic
+
+        topic = await create_topic(session, user_id, **topic_data)
+        topic_id = topic.id
+    elif topic_id is not None:
+        # Verify topic exists and belongs to user
+        topic_result = await session.execute(
+            select(Topic)
+            .where(Topic.id == topic_id, Topic.user_id == user_id)
+            .options(selectinload(Topic.fsrs_state))
+        )
+        topic = topic_result.scalar_one_or_none()
+        if not topic:
+            raise NotFoundError("Topic", topic_id)
+    else:
+        raise BadRequestError("Must provide either topic_id or topic data")
 
     # Insert relationship
     stmt = insert(t_source_topics).values(
@@ -442,7 +504,6 @@ async def add_source_topic(
         await session.rollback()
         raise AlreadyExistsError("Source already covers this topic")
 
-    # Refresh source to get updated counts
     await session.refresh(source)
 
     return source, topic
@@ -662,27 +723,39 @@ async def add_related_entity_to_source(
     user_id: str,
     *,
     to_entity_type: str,
-    to_entity_id: int,
+    to_entity_id: int | None,
+    to_topic_data: dict | None = None,
+    to_source_data: dict | None = None,
 ) -> None:
     """Add a related entity (topic or source) to this source."""
     # Verify source exists and belongs to user
     await get_source(session, source_id, user_id)
 
     if to_entity_type == "topic":
-        # Verify target topic exists and belongs to user
-        topic_result = await session.execute(
-            select(Topic).where(Topic.id == to_entity_id, Topic.user_id == user_id)
-        )
-        if not topic_result.scalar_one_or_none():
-            raise NotFoundError("Topic", to_entity_id)
+        if to_entity_id is None:
+            from app.topics.service import create_topic
+
+            new_topic = await create_topic(session, user_id, **to_topic_data)
+            to_entity_id = new_topic.id
+        else:
+            # Verify target topic exists and belongs to user
+            topic_result = await session.execute(
+                select(Topic).where(Topic.id == to_entity_id, Topic.user_id == user_id)
+            )
+            if not topic_result.scalar_one_or_none():
+                raise NotFoundError("Topic", to_entity_id)
 
         relation = EntityRelation(
             from_source_id=source_id,
             to_topic_id=to_entity_id,
         )
     elif to_entity_type == "source":
-        # Verify target source exists and belongs to user
-        await get_source(session, to_entity_id, user_id)
+        if to_entity_id is None:
+            new_source = await create_source(session, user_id, **to_source_data)
+            to_entity_id = new_source.id
+        else:
+            # Verify target source exists and belongs to user
+            await get_source(session, to_entity_id, user_id)
 
         # Check for self-reference
         if source_id == to_entity_id:
@@ -767,27 +840,41 @@ async def add_source_prerequisite(
     user_id: str,
     *,
     prereq_entity_type: str,
-    prereq_entity_id: int,
+    prereq_entity_id: int | None,
+    prereq_topic_data: dict | None = None,
+    prereq_source_data: dict | None = None,
 ) -> None:
     """Add a prerequisite (topic or source) to this source."""
     # Verify source exists and belongs to user
     await get_source(session, source_id, user_id)
 
     if prereq_entity_type == "topic":
-        # Verify target topic exists and belongs to user
-        topic_result = await session.execute(
-            select(Topic).where(Topic.id == prereq_entity_id, Topic.user_id == user_id)
-        )
-        if not topic_result.scalar_one_or_none():
-            raise NotFoundError("Topic", prereq_entity_id)
+        if prereq_entity_id is None:
+            from app.topics.service import create_topic
+
+            new_topic = await create_topic(session, user_id, **prereq_topic_data)
+            prereq_entity_id = new_topic.id
+        else:
+            # Verify target topic exists and belongs to user
+            topic_result = await session.execute(
+                select(Topic).where(
+                    Topic.id == prereq_entity_id, Topic.user_id == user_id
+                )
+            )
+            if not topic_result.scalar_one_or_none():
+                raise NotFoundError("Topic", prereq_entity_id)
 
         prereq = SourcePrerequisite(
             source_id=source_id,
             prereq_topic_id=prereq_entity_id,
         )
     elif prereq_entity_type == "source":
-        # Verify target source exists and belongs to user
-        await get_source(session, prereq_entity_id, user_id)
+        if prereq_entity_id is None:
+            new_source = await create_source(session, user_id, **prereq_source_data)
+            prereq_entity_id = new_source.id
+        else:
+            # Verify target source exists and belongs to user
+            await get_source(session, prereq_entity_id, user_id)
 
         # Check for self-reference
         if source_id == prereq_entity_id:
@@ -859,20 +946,31 @@ async def get_source_practices(
 
 
 async def add_practice_to_source(
-    session: AsyncSession, source_id: int, practice_id: int, user_id: str
+    session: AsyncSession,
+    source_id: int,
+    user_id: str,
+    *,
+    practice_id: int | None = None,
+    practice_data: dict | None = None,
 ) -> None:
     """Link a practice to a source."""
     # Verify source exists and belongs to user
     await get_source(session, source_id, user_id)
 
-    # Verify practice exists and belongs to user
-    stmt = select(Practice).where(
-        Practice.id == practice_id, Practice.user_id == user_id
-    )
-    result = await session.execute(stmt)
-    practice = result.scalar_one_or_none()
-    if practice is None:
-        raise NotFoundError("Practice", practice_id)
+    if practice_id is None:
+        from app.practices.service import create_practice
+
+        practice = await create_practice(session, user_id, **practice_data)
+        practice_id = practice.id
+    else:
+        # Verify practice exists and belongs to user
+        stmt = select(Practice).where(
+            Practice.id == practice_id, Practice.user_id == user_id
+        )
+        result = await session.execute(stmt)
+        practice = result.scalar_one_or_none()
+        if practice is None:
+            raise NotFoundError("Practice", practice_id)
 
     # Check if already linked
     stmt = select(t_practice_sources).where(

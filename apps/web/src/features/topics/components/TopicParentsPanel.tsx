@@ -1,27 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
-import {
-	ChevronDown,
-	Loader2,
-	Plus,
-	Search,
-	SquarePen,
-	User2
-} from 'lucide-react'
+import { User2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
-import { Badge } from '~/components/ui/Badge'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
+import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
-import { useCreateRelationship } from '../api/createTopicRelationship'
+import { useSetTopicParent } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import type { Topic } from '../types/topic.types'
 import { prefetchTopicRelations } from '../utils/prefetchTopicRelations'
-import { AddRelationshipDialog } from './AddRelationshipDialog'
 import { AddTopicDialog } from './AddTopicDialog'
 import { TopicBadge } from './TopicBadge'
 
@@ -44,7 +31,7 @@ export function TopicParentsPanel({
 	parent: parentProp,
 	onParentSelect
 }: TopicParentsPanelProps) {
-	const [showCreateDialog, setShowCreateDialog] = useState(false)
+	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 	const { openTopicDialog } = useReviewTopicDialog()
 	const queryClient = useQueryClient()
@@ -54,9 +41,9 @@ export function TopicParentsPanel({
 	const hasParent = parent !== null
 
 	const deleteRelationship = useDeleteRelationship()
-	const createRelationship = useCreateRelationship()
+	const setParent = useSetTopicParent()
 
-	const isCreating = createRelationship.isPending
+	const isCreating = setParent.isPending
 
 	// Determine navigation behavior
 	const handleParentSelect = useCallback(
@@ -74,12 +61,12 @@ export function TopicParentsPanel({
 		async (topic: Topic) => {
 			if (!topicId) return
 
-			await createRelationship.mutateAsync({
-				parent: topic.id,
-				child: topicId
+			await setParent.mutateAsync({
+				parentId: topic.id,
+				childId: topicId
 			})
 		},
-		[topicId, createRelationship]
+		[topicId, setParent]
 	)
 
 	const handleParentMouseEnter = useCallback(
@@ -113,50 +100,37 @@ export function TopicParentsPanel({
 						}}
 					/>
 				) : null}
-				{/* Only show add button if no parent exists */}
-				{!hasParent && (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild={true} disabled={isCreating}>
-							<Badge
-								className='cursor-pointer items-center gap-1 py-1 hover:bg-muted/50'
-								variant='secondary'
-							>
-								{isCreating ? (
-									<Loader2 className='h-3 w-3 animate-spin' />
-								) : (
-									<>
-										<Plus className='h-3 w-3' />
-										<ChevronDown className='h-3 w-3' />
-									</>
-								)}
-							</Badge>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='start'>
-							<DropdownMenuItem onClick={() => setShowAddTopicDialog(true)}>
-								<SquarePen className='h-4 w-4' />
-								Create New
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => setShowCreateDialog(true)}>
-								<Search className='h-4 w-4' />
-								Search
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+				{topicId && (
+					<AddEntityMenu
+						createItems={[
+							{
+								label: 'Create Topic',
+								onSelect: () => setShowAddTopicDialog(true)
+							}
+						]}
+						isLoading={isCreating}
+						onSearch={() => setShowSearchDialog(true)}
+						searchLabel='Search Topics'
+					/>
 				)}
 			</div>
 
-			<AddRelationshipDialog
-				isCreating={isCreating}
-				onCreateNew={() => {
-					setShowCreateDialog(false)
-					setShowAddTopicDialog(true)
-				}}
-				onOpenChange={setShowCreateDialog}
-				onSelected={handleAdd}
-				open={showCreateDialog}
-				relationshipType='parent'
-				topicId={topicId}
-			/>
+			{topicId && (
+				<EntitySearchDialog
+					defaultType='topic'
+					entityTypes={['topic']}
+					existingIds={{
+						topic: parent ? [parent.id] : []
+					}}
+					onOpenChange={setShowSearchDialog}
+					onSelected={(_type, topic) => handleAdd(topic as Topic)}
+					open={showSearchDialog}
+					title='Search parent topics'
+					topicSearchParams={{
+						addableAsParentTo: topicId
+					}}
+				/>
+			)}
 
 			{topicId && (
 				<AddTopicDialog

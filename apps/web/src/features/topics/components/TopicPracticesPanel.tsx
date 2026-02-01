@@ -1,21 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, Dumbbell, Loader2, Plus, Search } from 'lucide-react'
+import { Dumbbell } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { LearnablePanel } from '~/components/LearnablePanel'
-import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
+import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
+import { AddPracticeDialog } from '~/features/practices/components/AddPracticeDialog'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { PracticeCard } from '~/features/practices/components/PracticeCard'
 import type { Practice } from '~/features/practices/types/practice.types'
 import { useAddTopicPractice } from '../api/addTopicPractice'
 import { topicKeys } from '../api/queryKeys'
 import { useRemoveTopicPractice } from '../api/removeTopicPractice'
-import { AddPracticeToTopicDialog } from './AddPracticeToTopicDialog'
 
 const MIN_HEIGHT = 96
 
@@ -55,6 +50,7 @@ export function TopicPracticesPanel({
 }: TopicPracticesPanelProps) {
 	const queryClient = useQueryClient()
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
+	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
 	// Use prop directly - practices comes from the single getTopic fetch
 	const practices = practicesProp ?? []
@@ -163,32 +159,35 @@ export function TopicPracticesPanel({
 
 	const actions = topicId ? (
 		<>
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild={true} disabled={isAdding}>
-					<Button className='gap-1' size='sm' variant='secondary'>
-						{isAdding ? (
-							<Loader2 className='h-4 w-4 animate-spin' />
-						) : (
-							<Plus className='h-4 w-4' />
-						)}
-						Add
-						<ChevronDown className='h-4 w-4' />
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align='start'>
-					<DropdownMenuItem onClick={() => setShowSearchDialog(true)}>
-						<Search className='h-4 w-4' />
-						Search Practices
-					</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
-
-			<AddPracticeToTopicDialog
-				existingPracticeIds={existingPracticeIds}
-				onOpenChange={setShowSearchDialog}
-				onSelected={handleAdd}
-				open={showSearchDialog}
+			<AddEntityMenu
+				createItems={[
+					{
+						label: 'Create Practice',
+						onSelect: () => setShowCreateDialog(true)
+					}
+				]}
+				isLoading={isAdding}
+				onSearch={() => setShowSearchDialog(true)}
+				searchLabel='Search Practices'
 			/>
+
+			<EntitySearchDialog
+				defaultType='practice'
+				entityTypes={['practice']}
+				existingIds={{ practice: existingPracticeIds }}
+				onOpenChange={setShowSearchDialog}
+				onSelected={(_type, practice) => handleAdd(practice as Practice)}
+				open={showSearchDialog}
+				title='Search practices'
+			/>
+
+			{topicId && (
+				<AddPracticeDialog
+					context={{ type: 'topic', topicId }}
+					onOpenChange={setShowCreateDialog}
+					open={showCreateDialog}
+				/>
+			)}
 		</>
 	) : undefined
 
