@@ -10,6 +10,7 @@ from app.dependencies import SessionDep
 from app.reviews.entries import service
 from app.schemas import ReviewListItem, ReviewRead, ReviewSessionReadWithReviews
 from app.schemas.review_entries import (
+    ReviewEntriesResponse,
     ReviewEntry,
     ReviewEntryReview,
     ReviewEntrySession,
@@ -28,7 +29,9 @@ async def read_review_entries(
     completed: bool | None = None,
     scheduled: bool | None = None,
     sort: Literal["asc", "desc"] = "asc",
-) -> list[ReviewEntry]:
+    limit: int | None = None,
+    include_count: bool = False,
+) -> list[ReviewEntry] | ReviewEntriesResponse:
     """Get unified list of reviews and review sessions, sorted by effective_date.
 
     Returns all reviews and all review sessions as separate entries in a
@@ -55,6 +58,7 @@ async def read_review_entries(
         completed=completed,
         scheduled=scheduled,
         sort=sort,
+        limit=limit,
     )
 
     entries: list[ReviewEntry] = []
@@ -109,5 +113,20 @@ async def read_review_entries(
             key=lambda e: (e.effective_date is None, e.effective_date),
             reverse=True,
         )
+
+    if limit is not None:
+        entries = entries[:limit]
+
+    if include_count:
+        total = await service.count_review_entries(
+            session,
+            user_id,
+            topic_id=topic_id,
+            effective_date_before=date_before,
+            effective_date_after=date_after,
+            completed=completed,
+            scheduled=scheduled,
+        )
+        return ReviewEntriesResponse(entries=entries, total=total)
 
     return entries

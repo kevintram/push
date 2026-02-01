@@ -154,6 +154,8 @@ export type GetReviewEntriesFilters = {
 	scheduled?: boolean
 	completed?: boolean
 	sort?: 'asc' | 'desc'
+	limit?: number
+	includeCount?: boolean
 }
 
 export type TodaySectionKey = 'overdue' | 'today'

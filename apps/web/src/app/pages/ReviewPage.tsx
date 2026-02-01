@@ -22,9 +22,9 @@ import {
 import { Skeleton } from '~/components/ui/Skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import {
-	useMergedTodayReviewEntries,
-	useUnscheduledReviewEntries,
-	useUpcomingReviewEntries
+	useTodaySchedulePreview,
+	useUnscheduledReviewEntriesPreview,
+	useUpcomingReviewEntriesPreview
 } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
@@ -61,12 +61,21 @@ export function ReviewPage() {
 		srsEnabled: true,
 		archived: false
 	})
-	const { entries: todayEntries, isLoading: todayLoading } =
-		useMergedTodayReviewEntries()
-	const { entries: upcomingEntries, isLoading: upcomingLoading } =
-		useUpcomingReviewEntries()
-	const { section: unscheduledSection, isLoading: unscheduledLoading } =
-		useUnscheduledReviewEntries()
+	const {
+		entries: todayEntries,
+		totalCount: todayTotalCount,
+		isLoading: todayLoading
+	} = useTodaySchedulePreview(SCHEDULE_PREVIEW_LIMIT)
+	const {
+		entries: upcomingEntries,
+		totalCount: upcomingTotalCount,
+		isLoading: upcomingLoading
+	} = useUpcomingReviewEntriesPreview(SCHEDULE_PREVIEW_LIMIT)
+	const {
+		entries: unscheduledEntries,
+		totalCount: unscheduledTotalCount,
+		isLoading: unscheduledLoading
+	} = useUnscheduledReviewEntriesPreview(SCHEDULE_PREVIEW_LIMIT)
 
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
@@ -141,7 +150,7 @@ export function ReviewPage() {
 				value: 'today',
 				label: 'Today',
 				viewAllTo: '/today',
-				totalCount: todayEntries.length,
+				totalCount: todayTotalCount,
 				entries: todayEntries.slice(0, SCHEDULE_PREVIEW_LIMIT),
 				isLoading: todayLoading,
 				emptyText: 'Nothing scheduled for today.'
@@ -150,7 +159,7 @@ export function ReviewPage() {
 				value: 'upcoming',
 				label: 'Upcoming',
 				viewAllTo: '/upcoming',
-				totalCount: upcomingEntries.length,
+				totalCount: upcomingTotalCount,
 				entries: upcomingEntries.slice(0, SCHEDULE_PREVIEW_LIMIT),
 				isLoading: upcomingLoading,
 				emptyText: 'No upcoming reviews.'
@@ -159,8 +168,8 @@ export function ReviewPage() {
 				value: 'unscheduled',
 				label: 'Unscheduled',
 				viewAllTo: '/unscheduled',
-				totalCount: unscheduledSection.entries.length,
-				entries: unscheduledSection.entries.slice(0, SCHEDULE_PREVIEW_LIMIT),
+				totalCount: unscheduledTotalCount,
+				entries: unscheduledEntries.slice(0, SCHEDULE_PREVIEW_LIMIT),
 				isLoading: unscheduledLoading,
 				emptyText: 'No unscheduled reviews.'
 			}
@@ -168,10 +177,13 @@ export function ReviewPage() {
 		[
 			todayEntries,
 			todayLoading,
+			todayTotalCount,
 			upcomingEntries,
 			upcomingLoading,
-			unscheduledSection.entries,
-			unscheduledLoading
+			upcomingTotalCount,
+			unscheduledEntries,
+			unscheduledLoading,
+			unscheduledTotalCount
 		]
 	)
 

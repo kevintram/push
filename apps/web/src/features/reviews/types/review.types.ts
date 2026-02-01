@@ -126,3 +126,8 @@ export type ReviewEntryReview = {
 }
 
 export type ReviewEntry = ReviewEntrySession | ReviewEntryReview
+
+export type ReviewEntriesResponse = {
+	entries: Array<ReviewEntry>
+	total: number
+}

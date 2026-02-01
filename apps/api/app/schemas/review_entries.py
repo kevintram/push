@@ -30,3 +30,10 @@ class ReviewEntryReview(BaseModel):
 
 
 ReviewEntry = Union[ReviewEntrySession, ReviewEntryReview]
+
+
+class ReviewEntriesResponse(BaseModel):
+    """Response wrapper for review entries with total count."""
+
+    entries: list[ReviewEntry]
+    total: int
