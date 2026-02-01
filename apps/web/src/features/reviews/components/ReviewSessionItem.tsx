@@ -147,7 +147,7 @@ export function ReviewSessionItem({
 	}, [isOverdueValue, relativeDate.text])
 
 	return (
-		<Card className='rounded-none border-0 border-b bg-transparent shadow-none'>
+		<Card className='rounded-none border-0 bg-transparent shadow-none'>
 			<CardContent
 				className={cn(
 					'rounded-md py-2',
