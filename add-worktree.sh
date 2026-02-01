@@ -356,7 +356,7 @@ if [ -f "$PARENT_DIR/api.env.local" ]; then
     set_env_var "$NEW_WORKTREE/apps/api/.env" "APP_URL" "$APP_URL"
     set_env_var "$NEW_WORKTREE/apps/api/.env" "API_URL" "$API_URL"
     set_env_var "$NEW_WORKTREE/apps/api/.env" "DOMAIN" "$API_HOST"
-    set_env_var "$NEW_WORKTREE/apps/api/.env" "CORS_ALLOWED_ORIGINS" "\"$APP_URL\""
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "CORS_ALLOWED_ORIGINS" "$APP_URL"
     echo "✅ Created apps/api/.env"
 else
     echo "⚠️  api.env.local not found in parent directory"
@@ -410,9 +410,6 @@ echo ""
 echo "Web:"
 echo "  cd ${WORKTREE_DIR}/apps/web"
 echo "  pnpm run dev -- --host ${WEB_HOST} --port ${WEB_PORT}"
-echo ""
-echo "Hosts file entry:"
-echo "  127.0.0.1 ${API_HOST} ${WEB_HOST}"
 EOF
 
 chmod +x "$PRINT_SCRIPT"
