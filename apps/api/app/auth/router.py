@@ -36,13 +36,14 @@ def callback(code: str):
 
         resp = RedirectResponse(url=settings.APP_URL, status_code=status.HTTP_302_FOUND)
 
+        same_site = "none" if settings.ENV != "prod" else "lax"
         resp.set_cookie(
             settings.WORKOS_COOKIE_NAME,
             value=auth_response.sealed_session,
             secure=True if settings.ENV == "prod" else False,
             httponly=True,
             domain=settings.DOMAIN if settings.ENV == "prod" else None,
-            samesite="lax",
+            samesite=same_site,
         )
 
         return resp

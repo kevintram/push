@@ -332,8 +332,8 @@ if [ -z "$SAFE_NAME" ]; then
     SAFE_NAME="worktree"
 fi
 
-API_HOST="api.${SAFE_NAME}.local"
-WEB_HOST="web.${SAFE_NAME}.local"
+API_HOST="api-${SAFE_NAME}.local.com"
+WEB_HOST="web-${SAFE_NAME}.local.com"
 API_PORT=$((BASE_API_PORT + slot))
 WEB_PORT=$((BASE_WEB_PORT + slot))
 API_URL="http://${API_HOST}:${API_PORT}"

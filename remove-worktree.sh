@@ -89,8 +89,8 @@ if [ -z "$SAFE_NAME" ]; then
     SAFE_NAME="worktree"
 fi
 
-API_HOST="api.${SAFE_NAME}.local"
-WEB_HOST="web.${SAFE_NAME}.local"
+API_HOST="api-${SAFE_NAME}.local.com"
+WEB_HOST="web-${SAFE_NAME}.local.com"
 
 remove_hosts_entry "$API_HOST" "$WEB_HOST"
 
