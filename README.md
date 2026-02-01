@@ -23,7 +23,6 @@ Each app is independent and uses its own package manager:
 ### Web App (`apps/web/`)
 - **Tech**: React 19, TypeScript, Vite, TanStack Router
 - **Package Manager**: pnpm
-- **Commands**: See `apps/web/CLAUDE.md` for details
 ```bash
 cd apps/web
 pnpm install
@@ -42,7 +41,6 @@ pnpm dev
 ### API (`apps/api/`)
 - **Tech**: FastAPI, Python 3.12+
 - **Package Manager**: uv
-- **Commands**: See `apps/api/CLAUDE.md` for details
 ```bash
 cd apps/api
 uv sync
@@ -72,6 +70,38 @@ Each application maintains its own:
 - Build configuration
 - Development workflow
 - Documentation (see respective CLAUDE.md files)
+
+## Worktrees
+
+We have a system for using git worktrees for parallel development. The workflow is automated by `add-worktree.sh` and a shared slot map:
+
+- **Slot map**: `../worktree-slots.toml` (one level above the worktree). Format:
+  ```
+  [worktrees]
+  "feat/search" = 0
+  "fix/auth" = 1
+  ```
+- **Ports**: API uses `8000 + slot`, Web uses `5173 + slot` (slots `0–15` by default).
+- **Per-worktree env**: `add-worktree.sh` copies templates (`../api.env.local`, `../web.env.local`) into:
+  - `apps/api/.env`
+  - `apps/web/.env.local`
+  and fills `API_URL`, `APP_URL`, `CORS_ALLOWED_ORIGINS`, and `VITE_API_URL` with the assigned ports.
+- **Worktree config**: `./.worktree.env` is created in each worktree:
+  ```
+  WORKTREE_SLOT=0
+  API_PORT=8000
+  WEB_PORT=5173
+  API_URL=http://localhost:8000
+  APP_URL=http://localhost:5173
+  ```
+- **Run scripts** (generated per worktree):
+  - `apps/api/run.sh` uses the assigned API port.
+  - `apps/web/run.sh` uses the assigned Web port.
+- **Removal**: `remove-worktree.sh` removes the worktree and deletes its slot assignment from `worktree-slots.toml`.
+
+### WorkOS redirect URIs (finite list)
+Because we use `localhost` with fixed ports, whitelist the callback URLs for the slot range:
+`http://localhost:8000/callback` through `http://localhost:8015/callback`.
 
 ## Commit Guidelines
 

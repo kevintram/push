@@ -72,6 +72,80 @@ check_divergence() {
         echo "diverged"
     fi
 }
+
+# Extract port from a URL string
+extract_port() {
+    echo "$1" | sed -nE 's#.*:([0-9]+).*#\1#p'
+}
+
+# Update or append KEY=VALUE in a .env-style file
+set_env_var() {
+    local file="$1"
+    local key="$2"
+    local value="$3"
+    local tmpfile
+    tmpfile="$(mktemp)"
+    awk -v key="$key" -v val="$value" '
+        BEGIN { found = 0 }
+        $0 ~ "^"key"=" { print key"="val; found = 1; next }
+        { print }
+        END { if (!found) print key"="val }
+    ' "$file" > "$tmpfile"
+    mv "$tmpfile" "$file"
+}
+
+# Get or assign a worktree slot from the master TOML file
+get_or_assign_slot() {
+    local slots_file="$1"
+    local key="$2"
+    local max_slot="$3"
+
+    python3 - "$slots_file" "$key" "$max_slot" <<'PY'
+import os
+import sys
+
+slots_file = sys.argv[1]
+key = sys.argv[2]
+max_slot = int(sys.argv[3])
+
+try:
+    import tomllib  # Python 3.11+
+except Exception:
+    print("ERROR_NO_TOMLLIB")
+    sys.exit(2)
+
+data = {}
+if os.path.exists(slots_file):
+    with open(slots_file, "rb") as f:
+        data = tomllib.load(f) or {}
+
+worktrees = data.get("worktrees", {})
+
+def write_file(mapping):
+    os.makedirs(os.path.dirname(slots_file), exist_ok=True)
+    with open(slots_file, "w", encoding="utf-8") as f:
+        f.write("[worktrees]\n")
+        for k in sorted(mapping):
+            escaped = str(k).replace("\\", "\\\\").replace("\"", "\\\"")
+            f.write(f"\"{escaped}\" = {int(mapping[k])}\n")
+
+if key in worktrees:
+    print(int(worktrees[key]))
+    sys.exit(0)
+
+used = {int(v) for v in worktrees.values()}
+slot = next((s for s in range(max_slot + 1) if s not in used), None)
+if slot is None:
+    print("ERROR_NO_SLOT")
+    sys.exit(3)
+
+worktrees[key] = slot
+data["worktrees"] = worktrees
+write_file(worktrees)
+print(slot)
+PY
+}
+
 # Create directory name by replacing slashes with dashes
 DIR_NAME="${BRANCH_NAME//\//-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -235,24 +309,137 @@ else
     fi
 fi
 
-echo "🔗 Creating symlinks to env files..."
+echo "🧩 Creating per-worktree env files..."
 cd "$NEW_WORKTREE"
 
-# Symlink web env
+BASE_API_PORT=8000
+BASE_WEB_PORT=5173
+MAX_SLOT=15
+SLOTS_FILE="$PARENT_DIR/worktree-slots.toml"
+slot=$(get_or_assign_slot "$SLOTS_FILE" "$BRANCH_NAME" "$MAX_SLOT")
+
+if [ "$slot" = "ERROR_NO_TOMLLIB" ]; then
+    echo "❌ Python tomllib not available. Please use Python 3.11+."
+    exit 1
+fi
+
+if [ "$slot" = "ERROR_NO_SLOT" ]; then
+    echo "❌ No available port slots (0-$MAX_SLOT)."
+    echo "   Free a slot or increase MAX_SLOT in add-worktree.sh."
+    exit 1
+fi
+
+API_PORT=$((BASE_API_PORT + slot))
+WEB_PORT=$((BASE_WEB_PORT + slot))
+API_URL="http://localhost:${API_PORT}"
+APP_URL="http://localhost:${WEB_PORT}"
+
+WORKTREE_ENV="$NEW_WORKTREE/.worktree.env"
+cat > "$WORKTREE_ENV" <<EOF
+WORKTREE_SLOT=${slot}
+API_PORT=${API_PORT}
+WEB_PORT=${WEB_PORT}
+API_URL=${API_URL}
+APP_URL=${APP_URL}
+EOF
+echo "✅ Created .worktree.env (slot ${slot})"
+
+# Copy and customize web env
 if [ -f "$PARENT_DIR/web.env.local" ]; then
-    ln -sf "$PARENT_DIR/web.env.local" "$NEW_WORKTREE/apps/web/.env.local"
-    echo "✅ Linked web.env.local"
+    cp "$PARENT_DIR/web.env.local" "$NEW_WORKTREE/apps/web/.env.local"
+    set_env_var "$NEW_WORKTREE/apps/web/.env.local" "VITE_API_URL" "$API_URL"
+    echo "✅ Created apps/web/.env.local"
 else
     echo "⚠️  web.env.local not found in parent directory"
 fi
 
-# Symlink api env
+# Copy and customize api env
 if [ -f "$PARENT_DIR/api.env.local" ]; then
-    ln -sf "$PARENT_DIR/api.env.local" "$NEW_WORKTREE/apps/api/.env"
-    echo "✅ Linked api.env.local"
+    cp "$PARENT_DIR/api.env.local" "$NEW_WORKTREE/apps/api/.env"
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "APP_URL" "$APP_URL"
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "API_URL" "$API_URL"
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "DOMAIN" "localhost"
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "CORS_ALLOWED_ORIGINS" "$APP_URL"
+    echo "✅ Created apps/api/.env"
 else
     echo "⚠️  api.env.local not found in parent directory"
 fi
+
+# Create helper scripts to run API and web with worktree ports
+API_RUN_SCRIPT="$NEW_WORKTREE/apps/api/run.sh"
+cat > "$API_RUN_SCRIPT" <<'EOF'
+#!/bin/bash
+
+set -e
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
+CONFIG_ENV="$ROOT_DIR/.worktree.env"
+API_ENV="$APP_DIR/.env"
+
+read_var() {
+    local file="$1"
+    local key="$2"
+    if [ ! -f "$file" ]; then
+        return 1
+    fi
+    grep -E "^${key}=" "$file" | head -1 | cut -d= -f2- | tr -d '"'
+}
+
+API_PORT=$(read_var "$CONFIG_ENV" "API_PORT")
+if [ -z "$API_PORT" ]; then
+    API_URL=$(read_var "$API_ENV" "API_URL")
+    if [ -n "$API_URL" ]; then
+        API_PORT=$(echo "$API_URL" | sed -nE 's#.*:([0-9]+).*#\1#p')
+    fi
+fi
+
+if [ -z "$API_PORT" ]; then
+    echo "Missing API_PORT. Check $CONFIG_ENV or $API_ENV."
+    exit 1
+fi
+
+uv run fastapi dev --host 127.0.0.1 --port "$API_PORT"
+EOF
+
+WEB_RUN_SCRIPT="$NEW_WORKTREE/apps/web/run.sh"
+cat > "$WEB_RUN_SCRIPT" <<'EOF'
+#!/bin/bash
+
+set -e
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
+CONFIG_ENV="$ROOT_DIR/.worktree.env"
+API_ENV="$ROOT_DIR/apps/api/.env"
+
+read_var() {
+    local file="$1"
+    local key="$2"
+    if [ ! -f "$file" ]; then
+        return 1
+    fi
+    grep -E "^${key}=" "$file" | head -1 | cut -d= -f2- | tr -d '"'
+}
+
+WEB_PORT=$(read_var "$CONFIG_ENV" "WEB_PORT")
+if [ -z "$WEB_PORT" ]; then
+    APP_URL=$(read_var "$API_ENV" "APP_URL")
+    if [ -n "$APP_URL" ]; then
+        WEB_PORT=$(echo "$APP_URL" | sed -nE 's#.*:([0-9]+).*#\1#p')
+    fi
+fi
+
+if [ -z "$WEB_PORT" ]; then
+    echo "Missing WEB_PORT. Check $CONFIG_ENV or $API_ENV."
+    exit 1
+fi
+
+pnpm exec vite --host 127.0.0.1 --port "$WEB_PORT" --strictPort --open
+EOF
+
+chmod +x "$API_RUN_SCRIPT" "$WEB_RUN_SCRIPT"
+echo "✅ Created apps/api/run.sh and apps/web/run.sh"
 
 echo "📦 Installing dependencies..."
 

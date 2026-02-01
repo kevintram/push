@@ -23,6 +23,7 @@ This is a React application built with modern tooling focused on topic-based lea
 
 For for your convience, these are the commands of writing this:
 - `pnpm dev` - Start development server with hot reload
+- `./run.sh` - Worktree dev server (assigned port)
 - `pnpm build` - Build for production (output to `dist/`)
 - `pnpm preview` - Preview production build locally
 - `pnpm test` - Run unit/integration tests in watch mode
@@ -34,6 +35,8 @@ For for your convience, these are the commands of writing this:
 - `pnpm lint` - Run all linting (TypeScript + Biome)
 - `pnpm format` - Format code with Biome
 - `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
+
+Worktrees: use `apps/web/run.sh` from the worktree. It reads `/.worktree.env` and runs on the assigned port.
 
 ## Project Structure
 

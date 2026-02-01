@@ -29,7 +29,15 @@ Start the development server with auto-reload:
 uv run fastapi dev --host localhost
 ```
 
-The API will be available at `http://localhost:8000`.
+The API will be available at `http://localhost:8000` (or the assigned port in a worktree).
+
+### Worktrees
+
+In worktrees, use the generated script so the correct port is used:
+```bash
+./run.sh
+```
+The port and URLs come from the worktree’s `.worktree.env`.
 
 ### API Documentation
 
