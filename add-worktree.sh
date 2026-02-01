@@ -73,11 +73,6 @@ check_divergence() {
     fi
 }
 
-# Sanitize a string for use in hostnames (lowercase, alnum + dash)
-sanitize_hostname() {
-    echo "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
-}
-
 # Check if a slot is already in use
 slot_in_use() {
     local slot="$1"
@@ -110,32 +105,6 @@ set_env_var() {
     mv "$tmpfile" "$file"
 }
 
-# Ensure an /etc/hosts entry exists for the worktree hosts
-ensure_hosts_entry() {
-    local api_host="$1"
-    local web_host="$2"
-    local hosts_file="/etc/hosts"
-    local entry="127.0.0.1 ${api_host} ${web_host}"
-    local needs_add=0
-
-    if ! grep -qE "[[:space:]]${api_host}([[:space:]]|$)" "$hosts_file"; then
-        needs_add=1
-    fi
-    if ! grep -qE "[[:space:]]${web_host}([[:space:]]|$)" "$hosts_file"; then
-        needs_add=1
-    fi
-
-    if [ "$needs_add" -eq 1 ]; then
-        echo "🔧 Adding /etc/hosts entry..."
-        if [ -w "$hosts_file" ]; then
-            printf '\n%s\n' "$entry" >> "$hosts_file"
-        else
-            sudo sh -c "printf '\n%s\n' \"$entry\" >> \"$hosts_file\""
-        fi
-    else
-        echo "ℹ️  /etc/hosts already has ${api_host} and ${web_host}"
-    fi
-}
 # Create directory name by replacing slashes with dashes
 DIR_NAME="${BRANCH_NAME//\//-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -304,6 +273,7 @@ cd "$NEW_WORKTREE"
 
 BASE_API_PORT=8000
 BASE_WEB_PORT=5173
+MAX_SLOT=15
 USED_SLOTS=""
 
 # Collect used API ports to avoid collisions
@@ -314,7 +284,7 @@ for env_file in "$PARENT_DIR"/*/apps/api/.env; do
             port=$(extract_port "$api_url")
             if [ -n "$port" ]; then
                 slot=$((port - BASE_API_PORT))
-                if [ "$slot" -ge 0 ] && ! slot_in_use "$slot"; then
+                if [ "$slot" -ge 0 ] && [ "$slot" -le "$MAX_SLOT" ] && ! slot_in_use "$slot"; then
                     USED_SLOTS="$USED_SLOTS $slot"
                 fi
             fi
@@ -327,19 +297,26 @@ while slot_in_use "$slot"; do
     slot=$((slot + 1))
 done
 
-SAFE_NAME="$(sanitize_hostname "$DIR_NAME")"
-if [ -z "$SAFE_NAME" ]; then
-    SAFE_NAME="worktree"
+if [ "$slot" -gt "$MAX_SLOT" ]; then
+    echo "❌ No available port slots (0-$MAX_SLOT)."
+    echo "   Free a slot or increase MAX_SLOT in add-worktree.sh."
+    exit 1
 fi
 
-API_HOST="api-${SAFE_NAME}.local.com"
-WEB_HOST="web-${SAFE_NAME}.local.com"
 API_PORT=$((BASE_API_PORT + slot))
 WEB_PORT=$((BASE_WEB_PORT + slot))
-API_URL="http://${API_HOST}:${API_PORT}"
-APP_URL="http://${WEB_HOST}:${WEB_PORT}"
+API_URL="http://localhost:${API_PORT}"
+APP_URL="http://localhost:${WEB_PORT}"
 
-ensure_hosts_entry "$API_HOST" "$WEB_HOST"
+WORKTREE_ENV="$NEW_WORKTREE/.worktree.env"
+cat > "$WORKTREE_ENV" <<EOF
+WORKTREE_SLOT=${slot}
+API_PORT=${API_PORT}
+WEB_PORT=${WEB_PORT}
+API_URL=${API_URL}
+APP_URL=${APP_URL}
+EOF
+echo "✅ Created .worktree.env"
 
 # Copy and customize web env
 if [ -f "$PARENT_DIR/web.env.local" ]; then
@@ -355,7 +332,7 @@ if [ -f "$PARENT_DIR/api.env.local" ]; then
     cp "$PARENT_DIR/api.env.local" "$NEW_WORKTREE/apps/api/.env"
     set_env_var "$NEW_WORKTREE/apps/api/.env" "APP_URL" "$APP_URL"
     set_env_var "$NEW_WORKTREE/apps/api/.env" "API_URL" "$API_URL"
-    set_env_var "$NEW_WORKTREE/apps/api/.env" "DOMAIN" "$API_HOST"
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "DOMAIN" "localhost"
     set_env_var "$NEW_WORKTREE/apps/api/.env" "CORS_ALLOWED_ORIGINS" "$APP_URL"
     echo "✅ Created apps/api/.env"
 else
@@ -370,8 +347,8 @@ cat > "$PRINT_SCRIPT" <<'EOF'
 set -e
 
 WORKTREE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_ENV="$WORKTREE_DIR/.worktree.env"
 API_ENV="$WORKTREE_DIR/apps/api/.env"
-WEB_ENV="$WORKTREE_DIR/apps/web/.env.local"
 
 read_var() {
     local file="$1"
@@ -382,34 +359,41 @@ read_var() {
     grep -E "^${key}=" "$file" | head -1 | cut -d= -f2- | tr -d '"'
 }
 
-API_URL=$(read_var "$API_ENV" "API_URL")
-APP_URL=$(read_var "$API_ENV" "APP_URL")
+API_URL=$(read_var "$CONFIG_ENV" "API_URL")
+APP_URL=$(read_var "$CONFIG_ENV" "APP_URL")
+
+if [ -z "$API_URL" ]; then
+    API_URL=$(read_var "$API_ENV" "API_URL")
+fi
+if [ -z "$APP_URL" ]; then
+    APP_URL=$(read_var "$API_ENV" "APP_URL")
+fi
 
 if [ -z "$API_URL" ] || [ -z "$APP_URL" ]; then
     echo "Missing API_URL or APP_URL in $API_ENV"
     exit 1
 fi
 
-extract_host() {
-    echo "$1" | sed -E 's#^https?://([^:/]+).*#\1#'
-}
-
 extract_port() {
     echo "$1" | sed -nE 's#.*:([0-9]+).*#\1#p'
 }
 
-API_HOST=$(extract_host "$API_URL")
-WEB_HOST=$(extract_host "$APP_URL")
-API_PORT=$(extract_port "$API_URL")
-WEB_PORT=$(extract_port "$APP_URL")
+API_PORT=$(read_var "$CONFIG_ENV" "API_PORT")
+WEB_PORT=$(read_var "$CONFIG_ENV" "WEB_PORT")
+if [ -z "$API_PORT" ]; then
+    API_PORT=$(extract_port "$API_URL")
+fi
+if [ -z "$WEB_PORT" ]; then
+    WEB_PORT=$(extract_port "$APP_URL")
+fi
 
 echo "API:"
 echo "  cd ${WORKTREE_DIR}/apps/api"
-echo "  uv run fastapi dev --host ${API_HOST} --port ${API_PORT}"
+echo "  uv run fastapi dev --host 127.0.0.1 --port ${API_PORT}"
 echo ""
 echo "Web:"
 echo "  cd ${WORKTREE_DIR}/apps/web"
-echo "  pnpm exec vite --host ${WEB_HOST} --port ${WEB_PORT} --strictPort"
+echo "  pnpm exec vite --host 127.0.0.1 --port ${WEB_PORT} --strictPort"
 echo ""
 echo "URLs:"
 echo "  Web: ${APP_URL}"

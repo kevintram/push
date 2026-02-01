@@ -42,14 +42,13 @@ async def get_user_id(
                     detail="Authentication failed",
                 )
 
-            same_site = "none" if settings.ENV != "prod" else "lax"
             response.set_cookie(
                 settings.WORKOS_COOKIE_NAME,
                 value=result.sealed_session,
                 secure=True if settings.ENV == "prod" else False,
                 httponly=True,
                 domain=settings.DOMAIN if settings.ENV == "prod" else None,
-                samesite=same_site,
+                samesite="lax",
             )
             return result.user.id
         except HTTPException:

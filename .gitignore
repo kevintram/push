@@ -3,6 +3,7 @@
 
 # Worktree helpers
 print-run-cmds.sh
+.worktree.env
 
 # IDEs
 .idea/
