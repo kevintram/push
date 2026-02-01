@@ -332,8 +332,8 @@ if [ -z "$SAFE_NAME" ]; then
     SAFE_NAME="worktree"
 fi
 
-API_HOST="api-${SAFE_NAME}.local"
-WEB_HOST="web-${SAFE_NAME}.local"
+API_HOST="api.${SAFE_NAME}.local"
+WEB_HOST="web.${SAFE_NAME}.local"
 API_PORT=$((BASE_API_PORT + slot))
 WEB_PORT=$((BASE_WEB_PORT + slot))
 API_URL="http://${API_HOST}:${API_PORT}"
@@ -398,18 +398,16 @@ extract_port() {
     echo "$1" | sed -nE 's#.*:([0-9]+).*#\1#p'
 }
 
-API_HOST=$(extract_host "$API_URL")
 API_PORT=$(extract_port "$API_URL")
-WEB_HOST=$(extract_host "$APP_URL")
 WEB_PORT=$(extract_port "$APP_URL")
 
 echo "API:"
 echo "  cd ${WORKTREE_DIR}/apps/api"
-echo "  uv run fastapi dev --host ${API_HOST} --port ${API_PORT}"
+echo "  uv run fastapi dev --host 127.0.0.1 --port ${API_PORT}"
 echo ""
 echo "Web:"
 echo "  cd ${WORKTREE_DIR}/apps/web"
-echo "  pnpm run dev -- --host ${WEB_HOST} --port ${WEB_PORT}"
+echo "  pnpm run dev -- --host 127.0.0.1 --port ${WEB_PORT}"
 EOF
 
 chmod +x "$PRINT_SCRIPT"
