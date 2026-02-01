@@ -4,6 +4,8 @@
 # Worktree helpers
 print-run-cmds.sh
 .worktree.env
+/apps/api/run.sh
+/apps/web/run.sh
 
 # IDEs
 .idea/

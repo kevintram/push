@@ -365,16 +365,17 @@ else
     echo "⚠️  api.env.local not found in parent directory"
 fi
 
-# Create a helper script to print run commands
-PRINT_SCRIPT="$NEW_WORKTREE/print-run-cmds.sh"
-cat > "$PRINT_SCRIPT" <<'EOF'
+# Create helper scripts to run API and web with worktree ports
+API_RUN_SCRIPT="$NEW_WORKTREE/apps/api/run.sh"
+cat > "$API_RUN_SCRIPT" <<'EOF'
 #!/bin/bash
 
 set -e
 
-WORKTREE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_ENV="$WORKTREE_DIR/.worktree.env"
-API_ENV="$WORKTREE_DIR/apps/api/.env"
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
+CONFIG_ENV="$ROOT_DIR/.worktree.env"
+API_ENV="$APP_DIR/.env"
 
 read_var() {
     local file="$1"
@@ -385,50 +386,60 @@ read_var() {
     grep -E "^${key}=" "$file" | head -1 | cut -d= -f2- | tr -d '"'
 }
 
-API_URL=$(read_var "$CONFIG_ENV" "API_URL")
-APP_URL=$(read_var "$CONFIG_ENV" "APP_URL")
-
-if [ -z "$API_URL" ]; then
+API_PORT=$(read_var "$CONFIG_ENV" "API_PORT")
+if [ -z "$API_PORT" ]; then
     API_URL=$(read_var "$API_ENV" "API_URL")
-fi
-if [ -z "$APP_URL" ]; then
-    APP_URL=$(read_var "$API_ENV" "APP_URL")
+    if [ -n "$API_URL" ]; then
+        API_PORT=$(echo "$API_URL" | sed -nE 's#.*:([0-9]+).*#\1#p')
+    fi
 fi
 
-if [ -z "$API_URL" ] || [ -z "$APP_URL" ]; then
-    echo "Missing API_URL or APP_URL in $API_ENV"
+if [ -z "$API_PORT" ]; then
+    echo "Missing API_PORT. Check $CONFIG_ENV or $API_ENV."
     exit 1
 fi
 
-extract_port() {
-    echo "$1" | sed -nE 's#.*:([0-9]+).*#\1#p'
-}
-
-API_PORT=$(read_var "$CONFIG_ENV" "API_PORT")
-WEB_PORT=$(read_var "$CONFIG_ENV" "WEB_PORT")
-if [ -z "$API_PORT" ]; then
-    API_PORT=$(extract_port "$API_URL")
-fi
-if [ -z "$WEB_PORT" ]; then
-    WEB_PORT=$(extract_port "$APP_URL")
-fi
-
-echo "API:"
-echo "  cd ${WORKTREE_DIR}/apps/api"
-echo "  uv run fastapi dev --host 127.0.0.1 --port ${API_PORT}"
-echo ""
-echo "Web:"
-echo "  cd ${WORKTREE_DIR}/apps/web"
-echo "  pnpm exec vite --host 127.0.0.1 --port ${WEB_PORT} --strictPort"
-echo ""
-echo "URLs:"
-echo "  Web: ${APP_URL}"
-echo "  API: ${API_URL}"
-echo "  Open: open ${APP_URL}"
+uv run fastapi dev --host 127.0.0.1 --port "$API_PORT"
 EOF
 
-chmod +x "$PRINT_SCRIPT"
-echo "✅ Created print-run-cmds.sh"
+WEB_RUN_SCRIPT="$NEW_WORKTREE/apps/web/run.sh"
+cat > "$WEB_RUN_SCRIPT" <<'EOF'
+#!/bin/bash
+
+set -e
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
+CONFIG_ENV="$ROOT_DIR/.worktree.env"
+API_ENV="$ROOT_DIR/apps/api/.env"
+
+read_var() {
+    local file="$1"
+    local key="$2"
+    if [ ! -f "$file" ]; then
+        return 1
+    fi
+    grep -E "^${key}=" "$file" | head -1 | cut -d= -f2- | tr -d '"'
+}
+
+WEB_PORT=$(read_var "$CONFIG_ENV" "WEB_PORT")
+if [ -z "$WEB_PORT" ]; then
+    APP_URL=$(read_var "$API_ENV" "APP_URL")
+    if [ -n "$APP_URL" ]; then
+        WEB_PORT=$(echo "$APP_URL" | sed -nE 's#.*:([0-9]+).*#\1#p')
+    fi
+fi
+
+if [ -z "$WEB_PORT" ]; then
+    echo "Missing WEB_PORT. Check $CONFIG_ENV or $API_ENV."
+    exit 1
+fi
+
+pnpm exec vite --host 127.0.0.1 --port "$WEB_PORT" --strictPort
+EOF
+
+chmod +x "$API_RUN_SCRIPT" "$WEB_RUN_SCRIPT"
+echo "✅ Created apps/api/run.sh and apps/web/run.sh"
 
 echo "📦 Installing dependencies..."
 

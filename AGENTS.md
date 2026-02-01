@@ -24,7 +24,7 @@ uv run pytest                           # Run tests
 uv run ruff check --fix                 # Run ruff auto-fix lint issues
 uv run ruff format                      # Run ruff formatting
 ```
-Note: When using worktrees, run `./print-run-cmds.sh` at the worktree root to get the correct host/port for the API.
+Note: When using worktrees, run `apps/api/run.sh` from the worktree to use the assigned port.
 
 ### Web App (`apps/web/`)
 ```bash
@@ -34,7 +34,7 @@ pnpm run test       # Run tests in watch mode
 pnpm run lint       # Run tsc and biome lint
 pnpm run validate   # Run full validation pipeline
 ```
-Note: When using worktrees, run `./print-run-cmds.sh` at the worktree root to get the correct host/port and API URL.
+Note: When using worktrees, run `apps/web/run.sh` from the worktree to use the assigned port.
 
 ### Landing page (`apps/site/`)
 ```bash
