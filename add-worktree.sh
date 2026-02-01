@@ -435,7 +435,7 @@ if [ -z "$WEB_PORT" ]; then
     exit 1
 fi
 
-pnpm exec vite --host 127.0.0.1 --port "$WEB_PORT" --strictPort
+pnpm exec vite --host 127.0.0.1 --port "$WEB_PORT" --strictPort --open
 EOF
 
 chmod +x "$API_RUN_SCRIPT" "$WEB_RUN_SCRIPT"
