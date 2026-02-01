@@ -1,6 +1,9 @@
 # macOS
 .DS_Store
 
+# Worktree helpers
+print-run-cmds.sh
+
 # IDEs
 .idea/
 .vscode/
