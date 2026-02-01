@@ -68,7 +68,7 @@ chore: update root .gitignore
 
 We often use git worktrees for parallel development. 
 
-When using a worktree, environment files are stored in the parent directoy (`../`) and symlinked into every worktree (`apps/api/.env`, `apps/web/.env.local`). See `add-worktree.sh` for details. 
+When using a worktree, environment templates are stored in the parent directory (`../`). `add-worktree.sh` copies them into each worktree (`apps/api/.env`, `apps/web/.env.local`) and customizes URLs/ports per worktree. See `add-worktree.sh` for details. 
 
 ## Development Conventions
 

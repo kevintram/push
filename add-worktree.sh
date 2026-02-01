@@ -72,6 +72,43 @@ check_divergence() {
         echo "diverged"
     fi
 }
+
+# Sanitize a string for use in hostnames (lowercase, alnum + dash)
+sanitize_hostname() {
+    echo "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
+}
+
+# Check if a slot is already in use
+slot_in_use() {
+    local slot="$1"
+    for used in $USED_SLOTS; do
+        if [ "$used" = "$slot" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Extract port from a URL string
+extract_port() {
+    echo "$1" | sed -nE 's#.*:([0-9]+).*#\1#p'
+}
+
+# Update or append KEY=VALUE in a .env-style file
+set_env_var() {
+    local file="$1"
+    local key="$2"
+    local value="$3"
+    local tmpfile
+    tmpfile="$(mktemp)"
+    awk -v key="$key" -v val="$value" '
+        BEGIN { found = 0 }
+        $0 ~ "^"key"=" { print key"="val; found = 1; next }
+        { print }
+        END { if (!found) print key"="val }
+    ' "$file" > "$tmpfile"
+    mv "$tmpfile" "$file"
+}
 # Create directory name by replacing slashes with dashes
 DIR_NAME="${BRANCH_NAME//\//-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -235,24 +272,122 @@ else
     fi
 fi
 
-echo "🔗 Creating symlinks to env files..."
+echo "🧩 Creating per-worktree env files..."
 cd "$NEW_WORKTREE"
 
-# Symlink web env
+BASE_API_PORT=8000
+BASE_WEB_PORT=5173
+USED_SLOTS=""
+
+# Collect used API ports to avoid collisions
+for env_file in "$PARENT_DIR"/*/apps/api/.env; do
+    if [ -f "$env_file" ]; then
+        api_url=$(grep -E '^API_URL=' "$env_file" | head -1 | cut -d= -f2- | tr -d '"')
+        if [ -n "$api_url" ]; then
+            port=$(extract_port "$api_url")
+            if [ -n "$port" ]; then
+                slot=$((port - BASE_API_PORT))
+                if [ "$slot" -ge 0 ] && ! slot_in_use "$slot"; then
+                    USED_SLOTS="$USED_SLOTS $slot"
+                fi
+            fi
+        fi
+    fi
+done
+
+slot=0
+while slot_in_use "$slot"; do
+    slot=$((slot + 1))
+done
+
+SAFE_NAME="$(sanitize_hostname "$DIR_NAME")"
+if [ -z "$SAFE_NAME" ]; then
+    SAFE_NAME="worktree"
+fi
+
+API_HOST="api-${SAFE_NAME}.local"
+WEB_HOST="web-${SAFE_NAME}.local"
+API_PORT=$((BASE_API_PORT + slot))
+WEB_PORT=$((BASE_WEB_PORT + slot))
+API_URL="http://${API_HOST}:${API_PORT}"
+APP_URL="http://${WEB_HOST}:${WEB_PORT}"
+
+# Copy and customize web env
 if [ -f "$PARENT_DIR/web.env.local" ]; then
-    ln -sf "$PARENT_DIR/web.env.local" "$NEW_WORKTREE/apps/web/.env.local"
-    echo "✅ Linked web.env.local"
+    cp "$PARENT_DIR/web.env.local" "$NEW_WORKTREE/apps/web/.env.local"
+    set_env_var "$NEW_WORKTREE/apps/web/.env.local" "VITE_API_URL" "$API_URL"
+    echo "✅ Created apps/web/.env.local"
 else
     echo "⚠️  web.env.local not found in parent directory"
 fi
 
-# Symlink api env
+# Copy and customize api env
 if [ -f "$PARENT_DIR/api.env.local" ]; then
-    ln -sf "$PARENT_DIR/api.env.local" "$NEW_WORKTREE/apps/api/.env"
-    echo "✅ Linked api.env.local"
+    cp "$PARENT_DIR/api.env.local" "$NEW_WORKTREE/apps/api/.env"
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "APP_URL" "$APP_URL"
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "API_URL" "$API_URL"
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "DOMAIN" "$API_HOST"
+    set_env_var "$NEW_WORKTREE/apps/api/.env" "CORS_ALLOWED_ORIGINS" "\"$APP_URL\""
+    echo "✅ Created apps/api/.env"
 else
     echo "⚠️  api.env.local not found in parent directory"
 fi
+
+# Create a helper script to print run commands
+PRINT_SCRIPT="$NEW_WORKTREE/print-run-cmds.sh"
+cat > "$PRINT_SCRIPT" <<'EOF'
+#!/bin/bash
+
+set -e
+
+WORKTREE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+API_ENV="$WORKTREE_DIR/apps/api/.env"
+WEB_ENV="$WORKTREE_DIR/apps/web/.env.local"
+
+read_var() {
+    local file="$1"
+    local key="$2"
+    if [ ! -f "$file" ]; then
+        return 1
+    fi
+    grep -E "^${key}=" "$file" | head -1 | cut -d= -f2- | tr -d '"'
+}
+
+API_URL=$(read_var "$API_ENV" "API_URL")
+APP_URL=$(read_var "$API_ENV" "APP_URL")
+
+if [ -z "$API_URL" ] || [ -z "$APP_URL" ]; then
+    echo "Missing API_URL or APP_URL in $API_ENV"
+    exit 1
+fi
+
+extract_host() {
+    echo "$1" | sed -E 's#^https?://([^:/]+).*#\1#'
+}
+
+extract_port() {
+    echo "$1" | sed -nE 's#.*:([0-9]+).*#\1#p'
+}
+
+API_HOST=$(extract_host "$API_URL")
+API_PORT=$(extract_port "$API_URL")
+WEB_HOST=$(extract_host "$APP_URL")
+WEB_PORT=$(extract_port "$APP_URL")
+
+echo "API:"
+echo "  cd ${WORKTREE_DIR}/apps/api"
+echo "  uv run fastapi dev --host ${API_HOST} --port ${API_PORT}"
+echo ""
+echo "Web:"
+echo "  cd ${WORKTREE_DIR}/apps/web"
+echo "  pnpm run dev -- --host ${WEB_HOST} --port ${WEB_PORT}"
+echo ""
+echo "Hosts file entry:"
+echo "  127.0.0.1 ${API_HOST} ${WEB_HOST}"
+EOF
+
+chmod +x "$PRINT_SCRIPT"
+echo "✅ Created print-run-cmds.sh"
 
 echo "📦 Installing dependencies..."
 
