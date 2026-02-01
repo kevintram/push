@@ -408,6 +408,11 @@ echo ""
 echo "Web:"
 echo "  cd ${WORKTREE_DIR}/apps/web"
 echo "  pnpm run dev -- --host 127.0.0.1 --port ${WEB_PORT}"
+echo ""
+echo "URLs:"
+echo "  Web: ${APP_URL}"
+echo "  API: ${API_URL}"
+echo "  Open: open ${APP_URL}"
 EOF
 
 chmod +x "$PRINT_SCRIPT"
