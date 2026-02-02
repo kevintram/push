@@ -1,12 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, use, useCallback, useMemo } from 'react'
+
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Source } from '~/features/sources/types/source.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import { useFsrsState } from '~/hooks/useFsrsState'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
-import type { FsrsState } from '~/models/learnable.types'
 import { topicKeys } from '../../api/queryKeys'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { useTopicMetrics } from '../../hooks/useTopicMetrics'
@@ -174,24 +175,7 @@ export function TopicDetail({
 
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
 
-	// Create SRS source for inheritance options
-	const srsSource = useMemo((): FsrsState | null => {
-		if (!topic || topic.fsrs_state_id == null) return null
-		return {
-			stability: topic.stability,
-			difficulty: topic.difficulty,
-			state: topic.state,
-			step: topic.step,
-			lastReviewedAt: topic.last_reviewed_at
-		}
-	}, [
-		topic?.fsrs_state_id,
-		topic?.stability,
-		topic?.difficulty,
-		topic?.state,
-		topic?.step,
-		topic?.last_reviewed_at
-	])
+	const srsSource = useFsrsState(topic)
 
 	// Merge related topics from outgoing and incoming with direction metadata
 	const mergedRelated = useMemo(() => {

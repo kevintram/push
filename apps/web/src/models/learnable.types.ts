@@ -13,6 +13,8 @@ export type FsrsState = {
 	lastReviewedAt: string | null
 }
 
+export type InheritOptions = { fsrsState?: FsrsState | null }
+
 /**
  * Shared FSRS fields required for metrics calculations.
  * Used by useLearnableMetrics hook.

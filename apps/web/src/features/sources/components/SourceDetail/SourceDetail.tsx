@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useMemo } from 'react'
+import { type ReactNode, use, useCallback } from 'react'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import { useFsrsState } from '~/hooks/useFsrsState'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
-import type { FsrsState } from '~/models/learnable.types'
 import { sourceKeys } from '../../api/queryKeys'
 import { useUpdateSource } from '../../api/updateSource'
 import { useSourceMetrics } from '../../hooks/useSourceMetrics'
@@ -182,23 +182,7 @@ export function SourceDetail({
 
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
 
-	const srsSource = useMemo((): FsrsState | null => {
-		if (!source || source.fsrs_state_id == null) return null
-		return {
-			stability: source.stability,
-			difficulty: source.difficulty,
-			state: source.state,
-			step: source.step,
-			lastReviewedAt: source.last_reviewed_at
-		}
-	}, [
-		source?.fsrs_state_id,
-		source?.stability,
-		source?.difficulty,
-		source?.state,
-		source?.step,
-		source?.last_reviewed_at
-	])
+	const srsSource = useFsrsState(source)
 
 	if (isLoading || !source) {
 		return <SourceDetailSkeleton />

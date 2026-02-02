@@ -28,7 +28,7 @@ import { useAddSourceEntityRelation } from '~/features/sources/api/addSourceEnti
 import { useAddSourcePrerequisite } from '~/features/sources/api/addSourcePrerequisite'
 import { useAddSourceTopic } from '~/features/sources/api/addSourceTopic'
 import { EntityType } from '~/models/entity-relations.types'
-import type { FsrsState } from '~/models/learnable.types'
+import type { InheritOptions } from '~/models/learnable.types'
 import { useCreateTopic } from '../api/createTopic'
 import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
 import { useCreateRelationship } from '../api/createTopicRelationship'
@@ -42,8 +42,6 @@ export type TopicRelationship =
 	| { kind: 'practice'; practiceId: number }
 	| { kind: 'sourcePrerequisite'; sourceId: number }
 	| { kind: 'sourceRelated'; sourceId: number }
-
-export type InheritOptions = { fsrsState?: FsrsState | null }
 
 interface AddTopicDialogProps {
 	open: boolean

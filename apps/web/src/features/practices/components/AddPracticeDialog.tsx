@@ -26,15 +26,13 @@ import {
 import { SessionPickerPopover } from '~/features/reviews/components/SessionPickerPopover'
 import { useAddSourcePractice } from '~/features/sources/api/addSourcePractice'
 import { useAddTopicPractice } from '~/features/topics/api/addTopicPractice'
-import type { FsrsState } from '~/models/learnable.types'
+import type { InheritOptions } from '~/models/learnable.types'
 import { useCreatePractice } from '../api/createPractice'
 
 export type PracticeRelationship =
 	| { kind: 'standalone' }
 	| { kind: 'topic'; topicId: number }
 	| { kind: 'source'; sourceId: number }
-
-export type InheritOptions = { fsrsState?: FsrsState | null }
 
 interface AddPracticeDialogProps {
 	open: boolean

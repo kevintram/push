@@ -70,8 +70,7 @@ export function SourceChildrenPanel({
 	const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false)
 	const addSourceChild = useAddSourceChild()
 
-	const inherit =
-		inheritFsrsState != null ? { fsrsState: inheritFsrsState } : undefined
+	const inherit = inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
 
 	const handleChildCreated = useCallback(
 		(newSourceId: number) => {

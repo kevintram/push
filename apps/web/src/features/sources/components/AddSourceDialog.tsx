@@ -28,7 +28,7 @@ import { SessionPickerPopover } from '~/features/reviews/components/SessionPicke
 import { useAddTopicEntityRelation } from '~/features/topics/api/addTopicEntityRelation'
 import { useAddTopicSource } from '~/features/topics/api/addTopicSource'
 import { EntityType } from '~/models/entity-relations.types'
-import type { FsrsState } from '~/models/learnable.types'
+import type { InheritOptions } from '~/models/learnable.types'
 import { useAddSourceChild } from '../api/addSourceChild'
 import { useAddSourceEntityRelation } from '../api/addSourceEntityRelation'
 import { useAddSourcePrerequisite } from '../api/addSourcePrerequisite'
@@ -44,8 +44,6 @@ export type SourceRelationship =
 	| { kind: 'topicRelated'; topicId: number }
 	| { kind: 'sourceRelated'; sourceId: number }
 	| { kind: 'sourcePrerequisite'; sourceId: number }
-
-export type InheritOptions = { fsrsState?: FsrsState | null }
 
 interface AddSourceDialogProps {
 	open: boolean
