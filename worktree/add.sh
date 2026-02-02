@@ -78,22 +78,6 @@ extract_port() {
     echo "$1" | sed -nE 's#.*:([0-9]+).*#\1#p'
 }
 
-# Update or append KEY=VALUE in a .env-style file
-set_env_var() {
-    local file="$1"
-    local key="$2"
-    local value="$3"
-    local tmpfile
-    tmpfile="$(mktemp)"
-    awk -v key="$key" -v val="$value" '
-        BEGIN { found = 0 }
-        $0 ~ "^"key"=" { print key"="val; found = 1; next }
-        { print }
-        END { if (!found) print key"="val }
-    ' "$file" > "$tmpfile"
-    mv "$tmpfile" "$file"
-}
-
 # Read KEY=VALUE from a .env-style file
 read_env_var() {
     local file="$1"
@@ -282,44 +266,13 @@ fi
 bash "$GEN_SCRIPT"
 
 slot=$(read_env_var "$WORKTREE_ENV" "WORKTREE_SLOT")
-API_URL=$(read_env_var "$WORKTREE_ENV" "API_URL")
-APP_URL=$(read_env_var "$WORKTREE_ENV" "APP_URL")
 
-if [ -z "$slot" ] || [ -z "$API_URL" ] || [ -z "$APP_URL" ]; then
-    echo "ERROR: Missing values in $WORKTREE_ENV."
+if [ -z "$slot" ]; then
+    echo "ERROR: Missing WORKTREE_SLOT in $WORKTREE_ENV."
     exit 1
 fi
 
 echo "Generated .worktree.env (slot ${slot})"
-
-# Copy and customize web env
-if [ -f "$PARENT_DIR/web.env.local" ]; then
-    cp "$PARENT_DIR/web.env.local" "$NEW_WORKTREE/apps/web/.env.local"
-    set_env_var "$NEW_WORKTREE/apps/web/.env.local" "VITE_API_URL" "$API_URL"
-    echo "✅ Created apps/web/.env.local"
-else
-    echo "⚠️  web.env.local not found in parent directory"
-fi
-
-# Copy and customize api env
-if [ -f "$PARENT_DIR/api.env.local" ]; then
-    cp "$PARENT_DIR/api.env.local" "$NEW_WORKTREE/apps/api/.env"
-    set_env_var "$NEW_WORKTREE/apps/api/.env" "APP_URL" "$APP_URL"
-    set_env_var "$NEW_WORKTREE/apps/api/.env" "API_URL" "$API_URL"
-    set_env_var "$NEW_WORKTREE/apps/api/.env" "DOMAIN" "localhost"
-    set_env_var "$NEW_WORKTREE/apps/api/.env" "CORS_ALLOWED_ORIGINS" "$APP_URL"
-    echo "✅ Created apps/api/.env"
-else
-    echo "⚠️  api.env.local not found in parent directory"
-fi
-
-# Copy root env (test user credentials)
-if [ -f "$PARENT_DIR/root.env.local" ]; then
-    cp "$PARENT_DIR/root.env.local" "$NEW_WORKTREE/.env"
-    echo "✅ Created .env"
-else
-    echo "⚠️  root.env.local not found in parent directory"
-fi
 
 # Create helper scripts to run API and web with worktree ports
 API_RUN_SCRIPT="$NEW_WORKTREE/apps/api/run.sh"

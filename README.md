@@ -77,10 +77,9 @@ Git worktrees enable parallel development with isolated ports. Each worktree get
 
 - **Setup** (`worktree/add.sh`):
   1. Claims a slot in `worktree-slots.toml`
-  2. Generates `.worktree.env` (via `worktree/gen-env.sh`)
-  3. Copies env templates (`../api.env.local`, `../web.env.local`) into `apps/api/.env` and `apps/web/.env.local`
-  4. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
-- **Dev servers**: Use `apps/api/run.sh` and `apps/web/run.sh` to start on assigned ports (refreshes `.worktree.env` on each run).
+  2. Generates all environment files via `worktree/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, and `apps/web/.env.local`
+  3. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
+- **Dev servers**: Use `apps/api/run.sh` and `apps/web/run.sh` to start on assigned ports (runs `gen-env.sh` to refresh env files and recreate any missing ones).
 - **Teardown**: `worktree/remove.sh` removes the worktree and frees its slot.
 
 ### WorkOS redirect URIs

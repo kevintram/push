@@ -9,4 +9,4 @@ In worktrees, use the generated script so the correct port is used:
 ./run.sh
 ```
 The worktree setup sets `VITE_API_URL` and the web port via `.worktree.env`.
-That file is refreshed by `worktree/gen-env.sh`.
+All env files are managed by `worktree/gen-env.sh`, which also recreates missing ones from templates.
