@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
-import { Inbox, Plus, RotateCcw, SquareStack } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Anvil, Inbox, Plus, RotateCcw, SquareStack } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/Button'
 import {
@@ -26,24 +26,29 @@ import {
 import { SessionPickerPopover } from '~/features/reviews/components/SessionPickerPopover'
 import { useAddSourcePractice } from '~/features/sources/api/addSourcePractice'
 import { useAddTopicPractice } from '~/features/topics/api/addTopicPractice'
+import type { FsrsState } from '~/models/learnable.types'
 import { useCreatePractice } from '../api/createPractice'
 
-export type AddPracticeDialogContext =
-	| { type: 'standalone' }
-	| { type: 'topic'; topicId: number }
-	| { type: 'source'; sourceId: number }
+export type PracticeRelationship =
+	| { kind: 'standalone' }
+	| { kind: 'topic'; topicId: number }
+	| { kind: 'source'; sourceId: number }
+
+export type InheritOptions = { fsrsState?: FsrsState | null }
 
 interface AddPracticeDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	context?: AddPracticeDialogContext
+	relationship?: PracticeRelationship
+	inherit?: InheritOptions
 	onSuccess?: (practiceId: number) => void
 }
 
 export function AddPracticeDialog({
 	open,
 	onOpenChange,
-	context = { type: 'standalone' },
+	relationship = { kind: 'standalone' },
+	inherit,
 	onSuccess
 }: AddPracticeDialogProps) {
 	// Practice fields
@@ -61,6 +66,7 @@ export function AddPracticeDialog({
 
 	// Toggle states
 	const [inboxed, setInboxed] = useState(false)
+	const [inheritFsrs, setInheritFsrs] = useState(false)
 	const [srsEnabled, setSrsEnabled] = useState(false)
 
 	// Footer state
@@ -84,6 +90,12 @@ export function AddPracticeDialog({
 		isAddingTopicPractice ||
 		isAddingSourcePractice ||
 		isCreatingReview
+
+	const srsSource = useMemo(
+		() => inherit?.fsrsState ?? null,
+		[inherit?.fsrsState]
+	)
+	const hasInheritFsrs = srsSource !== null
 
 	// Focus prompt field on open
 	useEffect(() => {
@@ -109,8 +121,9 @@ export function AddPracticeDialog({
 	// Reset toggle fields to defaults
 	const resetToggleFields = useCallback(() => {
 		setInboxed(false)
+		setInheritFsrs(hasInheritFsrs)
 		setSrsEnabled(false)
-	}, [])
+	}, [hasInheritFsrs])
 
 	// Reset all fields when dialog opens
 	useEffect(() => {
@@ -131,25 +144,28 @@ export function AddPracticeDialog({
 		try {
 			let newPracticeId: number | undefined
 
+			const shouldInherit = inheritFsrs && srsSource !== null
+
 			const practiceData = {
 				prompt: prompt.trim(),
 				answer: answer.trim(),
 				archived: false,
 				inboxed,
-				srs_enabled: srsEnabled
+				srs_enabled: srsEnabled,
+				inherit_fsrs: shouldInherit
 			}
 
-			if (context.type === 'standalone') {
+			if (relationship.kind === 'standalone') {
 				const practice = await createPractice(practiceData)
 				newPracticeId = practice.id
-			} else if (context.type === 'topic') {
+			} else if (relationship.kind === 'topic') {
 				await addTopicPractice({
-					topicId: context.topicId,
+					topicId: relationship.topicId,
 					practice: practiceData
 				})
-			} else if (context.type === 'source') {
+			} else if (relationship.kind === 'source') {
 				await addSourcePractice({
-					sourceId: context.sourceId,
+					sourceId: relationship.sourceId,
 					practice: practiceData
 				})
 			}
@@ -197,7 +213,9 @@ export function AddPracticeDialog({
 		answer,
 		inboxed,
 		srsEnabled,
-		context,
+		relationship,
+		srsSource,
+		inheritFsrs,
 		createPractice,
 		addTopicPractice,
 		addSourcePractice,
@@ -317,6 +335,29 @@ export function AddPracticeDialog({
 							</TooltipTrigger>
 							<TooltipContent>Add to inbox</TooltipContent>
 						</Tooltip>
+
+						{/* Inherit SRS Toggle (when available) */}
+						{hasInheritFsrs && (
+							<Tooltip>
+								<TooltipTrigger asChild={true}>
+									<span>
+										<Toggle
+											aria-label='Inherit SRS state'
+											onPressedChange={setInheritFsrs}
+											pressed={inheritFsrs}
+											size='sm'
+											variant='outline'
+										>
+											<Anvil className='h-4 w-4' />
+											<span className='ml-1 text-xs'>Inherit SRS</span>
+										</Toggle>
+									</span>
+								</TooltipTrigger>
+								<TooltipContent>
+									Inherit SRS state from source entity
+								</TooltipContent>
+							</Tooltip>
+						)}
 
 						{/* Show When Due Switch */}
 						<div className='flex items-center gap-1.5 rounded-md border px-2 py-1'>

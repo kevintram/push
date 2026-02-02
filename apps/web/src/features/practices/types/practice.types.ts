@@ -54,6 +54,7 @@ export type PracticeCreate = {
 	archived?: boolean
 	inboxed?: boolean
 	srs_enabled?: boolean
+	inherit_fsrs?: boolean
 }
 
 export type PracticeUpdate = {

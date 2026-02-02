@@ -3,6 +3,17 @@ import type { LearningState } from './learning-state.types'
 export type RetrievabilityBucket = 'LATE' | 'ON_TIME' | 'EARLY'
 
 /**
+ * Thin FSRS state projection used for inheritance decisions.
+ */
+export type FsrsState = {
+	stability: number | null
+	difficulty: number | null
+	state: LearningState | null
+	step: number | null
+	lastReviewedAt: string | null
+}
+
+/**
  * Shared FSRS fields required for metrics calculations.
  * Used by useLearnableMetrics hook.
  */
