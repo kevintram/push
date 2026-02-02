@@ -3,7 +3,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
 	BookOpen,
-	History,
+	Clock,
 	Inbox,
 	Library,
 	ListChecks,
@@ -58,7 +58,7 @@ export function AppSidebar() {
 		{
 			title: 'Recent',
 			url: '/recent',
-			icon: History,
+			icon: Clock,
 			isActive: (pathname: string) => pathname === '/recent'
 		},
 		{
