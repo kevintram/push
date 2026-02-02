@@ -313,6 +313,14 @@ else
     echo "⚠️  api.env.local not found in parent directory"
 fi
 
+# Copy root env (test user credentials)
+if [ -f "$PARENT_DIR/root.env.local" ]; then
+    cp "$PARENT_DIR/root.env.local" "$NEW_WORKTREE/.env"
+    echo "✅ Created .env"
+else
+    echo "⚠️  root.env.local not found in parent directory"
+fi
+
 # Create helper scripts to run API and web with worktree ports
 API_RUN_SCRIPT="$NEW_WORKTREE/apps/api/run.sh"
 cat > "$API_RUN_SCRIPT" <<'EOF'
