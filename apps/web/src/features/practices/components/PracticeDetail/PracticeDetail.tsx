@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback } from 'react'
+import { type ReactNode, use, useCallback, useMemo } from 'react'
 import { LearnableProperties } from '~/components/LearnableProperties'
 import { LearnableReviewsSidebar } from '~/components/LearnableReviewsSidebar'
 import { LearnableStatus } from '~/components/LearnableStatus'
@@ -9,6 +9,7 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
+import type { FsrsState } from '~/models/learnable.types'
 import { practiceKeys } from '../../api/queryKeys'
 import { useUpdatePractice } from '../../api/updatePractice'
 import { PracticeContext } from '../../stores/SelectedPracticeContext'
@@ -139,6 +140,24 @@ export function PracticeDetail({
 	// Compute metrics for FSRS display using the hook
 	const metrics = useLearnableMetrics(practice ?? null)
 
+	const srsSource = useMemo((): FsrsState | null => {
+		if (!practice || practice.fsrs_state_id == null) return null
+		return {
+			stability: practice.stability,
+			difficulty: practice.difficulty,
+			state: practice.state,
+			step: practice.step,
+			lastReviewedAt: practice.last_reviewed_at
+		}
+	}, [
+		practice?.fsrs_state_id,
+		practice?.stability,
+		practice?.difficulty,
+		practice?.state,
+		practice?.step,
+		practice?.last_reviewed_at
+	])
+
 	if (isLoading || !practice) {
 		return <PracticeDetailSkeleton />
 	}
@@ -212,6 +231,7 @@ export function PracticeDetail({
 						<div className='mt-4'>
 							<PracticeTopicsPanel
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onTopicSelect={onTopicNavigate}
 								practiceId={practice.id}
 								topics={practice.topics}
@@ -222,6 +242,7 @@ export function PracticeDetail({
 						<div className='mt-4'>
 							<PracticeSourcesPanel
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onSourceSelect={onSourceNavigate}
 								practiceId={practice.id}
 								sources={practice.sources}

@@ -8,6 +8,7 @@ import { AddPracticeDialog } from '~/features/practices/components/AddPracticeDi
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { PracticeCard } from '~/features/practices/components/PracticeCard'
 import type { Practice } from '~/features/practices/types/practice.types'
+import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourcePractice } from '../api/addSourcePractice'
 import { sourceKeys } from '../api/queryKeys'
 import { useRemoveSourcePractice } from '../api/removeSourcePractice'
@@ -28,6 +29,10 @@ interface SourcePracticesPanelProps {
 	 */
 	onPracticeSelect?: (practiceId: number) => void
 	/**
+	 * FSRS state to pass for inheritance when creating practices.
+	 */
+	inheritFsrsState?: FsrsState | null
+	/**
 	 * Custom card renderer. If not provided, uses default PracticeCard.
 	 * @param practice - The practice to render
 	 * @param onRemove - Callback to remove the relationship
@@ -46,7 +51,8 @@ export function SourcePracticesPanel({
 	getScrollElement,
 	scrollMargin,
 	onPracticeSelect,
-	renderCard
+	renderCard,
+	inheritFsrsState
 }: SourcePracticesPanelProps) {
 	const queryClient = useQueryClient()
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
@@ -183,9 +189,12 @@ export function SourcePracticesPanel({
 
 			{sourceId && (
 				<AddPracticeDialog
-					context={{ type: 'source', sourceId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowCreateDialog}
 					open={showCreateDialog}
+					relationship={{ kind: 'source', sourceId }}
 				/>
 			)}
 		</>

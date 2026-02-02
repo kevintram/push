@@ -130,7 +130,6 @@ export function CreateButton() {
 			</DropdownMenuContent>
 
 			<AddTopicDialog
-				context={{ type: 'standalone' }}
 				onOpenChange={setIsAddTopicDialogOpen}
 				onSuccess={topicId => {
 					toast('Topic created', {
@@ -145,10 +144,10 @@ export function CreateButton() {
 					})
 				}}
 				open={isAddTopicDialogOpen}
+				relationship={{ kind: 'standalone' }}
 			/>
 
 			<AddSourceDialog
-				context={{ type: 'standalone' }}
 				onOpenChange={setIsAddSourceDialogOpen}
 				onSuccess={sourceId => {
 					toast('Source created', {
@@ -163,10 +162,10 @@ export function CreateButton() {
 					})
 				}}
 				open={isAddSourceDialogOpen}
+				relationship={{ kind: 'standalone' }}
 			/>
 
 			<AddPracticeDialog
-				context={{ type: 'standalone' }}
 				onOpenChange={setIsAddPracticeDialogOpen}
 				onSuccess={practiceId => {
 					toast('Practice created', {
@@ -181,6 +180,7 @@ export function CreateButton() {
 					})
 				}}
 				open={isAddPracticeDialogOpen}
+				relationship={{ kind: 'standalone' }}
 			/>
 		</DropdownMenu>
 	)

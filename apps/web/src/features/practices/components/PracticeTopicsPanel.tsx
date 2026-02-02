@@ -8,6 +8,7 @@ import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
+import type { FsrsState } from '~/models/learnable.types'
 import { useAddPracticeTopic } from '../api/addPracticeTopic'
 import { practiceKeys } from '../api/queryKeys'
 import { useRemovePracticeTopic } from '../api/removePracticeTopic'
@@ -19,6 +20,7 @@ interface PracticeTopicsPanelProps {
 	topics?: Array<Topic>
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
+	inheritFsrsState?: FsrsState | null
 	onTopicSelect?: (topicId: number) => void
 	renderCard?: (
 		topic: Topic,
@@ -32,6 +34,7 @@ export function PracticeTopicsPanel({
 	topics: topicsProp,
 	getScrollElement,
 	scrollMargin,
+	inheritFsrsState,
 	onTopicSelect,
 	renderCard
 }: PracticeTopicsPanelProps) {
@@ -164,9 +167,12 @@ export function PracticeTopicsPanel({
 
 			{practiceId && (
 				<AddTopicDialog
-					context={{ type: 'practice', practiceId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowCreateDialog}
 					open={showCreateDialog}
+					relationship={{ kind: 'practice', practiceId }}
 				/>
 			)}
 		</>

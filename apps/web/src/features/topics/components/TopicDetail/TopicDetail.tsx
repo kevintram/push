@@ -6,12 +6,12 @@ import type { Source } from '~/features/sources/types/source.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
+import type { FsrsState } from '~/models/learnable.types'
 import { topicKeys } from '../../api/queryKeys'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { useTopicMetrics } from '../../hooks/useTopicMetrics'
 import { TopicContext } from '../../stores/SelectedTopicContext'
 import { RelationshipDirection, type Topic } from '../../types/topic.types'
-import type { SrsSource } from '../AddTopicDialog'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
 import { TopicPracticesPanel } from '../TopicPracticesPanel'
 import { TopicRelatedPanel } from '../TopicRelatedPanel'
@@ -174,9 +174,9 @@ export function TopicDetail({
 
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
 
-	// Create SRS source for child/related panels
-	const srsSource = useMemo((): SrsSource | null => {
-		if (!topic || topic.stability == null) return null
+	// Create SRS source for inheritance options
+	const srsSource = useMemo((): FsrsState | null => {
+		if (!topic || topic.fsrs_state_id == null) return null
 		return {
 			stability: topic.stability,
 			difficulty: topic.difficulty,
@@ -185,6 +185,7 @@ export function TopicDetail({
 			lastReviewedAt: topic.last_reviewed_at
 		}
 	}, [
+		topic?.fsrs_state_id,
 		topic?.stability,
 		topic?.difficulty,
 		topic?.state,
@@ -265,24 +266,25 @@ export function TopicDetail({
 							<TopicChildrenPanel
 								children={topic.children}
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onChildSelect={onTopicNavigate}
 								renderCard={renderChildCard}
-								srsSource={srsSource}
 								topicId={topic.id}
 							/>
 						</div>
 						<div className='mt-4'>
 							<TopicRelatedPanel
+								inheritFsrsState={srsSource}
 								onRelatedSelect={onTopicNavigate}
 								onSourceSelect={onSourceNavigate}
 								related={mergedRelated}
-								srsSource={srsSource}
 								topicId={topic.id}
 							/>
 						</div>
 						<div className='mt-4'>
 							<TopicSourcesPanel
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onSourceSelect={onSourceNavigate}
 								renderCard={renderSourceCard}
 								sources={topic.sources}
@@ -292,6 +294,7 @@ export function TopicDetail({
 						<div className='mt-4'>
 							<TopicPracticesPanel
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onPracticeSelect={onPracticeNavigate}
 								practices={topic.practices}
 								topicId={topic.id}

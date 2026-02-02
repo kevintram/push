@@ -16,6 +16,7 @@ import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import type { RelatedEntityItem } from '~/features/topics/types/topic.types'
 import type { EntityType } from '~/models/entity-relations.types'
+import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceEntityRelation } from '../api/addSourceEntityRelation'
 import { useRemoveSourceEntityRelation } from '../api/removeSourceEntityRelation'
 import { SourceActionMenu } from './SourceActionMenu'
@@ -24,6 +25,7 @@ interface SourceRelatedPanelProps {
 	sourceId: number | undefined
 	relatedOutgoing?: Array<RelatedEntityItem>
 	relatedIncoming?: Array<RelatedEntityItem>
+	inheritFsrsState?: FsrsState | null
 	onTopicNavigate?: (topicId: number) => void
 	onSourceNavigate?: (sourceId: number) => void
 }
@@ -32,6 +34,7 @@ export function SourceRelatedPanel({
 	sourceId,
 	relatedOutgoing = [],
 	relatedIncoming = [],
+	inheritFsrsState,
 	onTopicNavigate,
 	onSourceNavigate
 }: SourceRelatedPanelProps) {
@@ -225,17 +228,23 @@ export function SourceRelatedPanel({
 
 			{sourceId && (
 				<AddTopicDialog
-					context={{ type: 'sourceRelated', sourceId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowCreateTopicDialog}
 					open={showCreateTopicDialog}
+					relationship={{ kind: 'sourceRelated', sourceId }}
 				/>
 			)}
 
 			{sourceId && (
 				<AddSourceDialog
-					context={{ type: 'sourceRelated', sourceId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowCreateSourceDialog}
 					open={showCreateSourceDialog}
+					relationship={{ kind: 'sourceRelated', sourceId }}
 				/>
 			)}
 		</div>

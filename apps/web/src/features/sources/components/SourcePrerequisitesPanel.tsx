@@ -8,18 +8,21 @@ import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import type { SourcePrerequisiteRead } from '~/models/entity-relations.types'
 import { EntityType } from '~/models/entity-relations.types'
+import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourcePrerequisite } from '../api/addSourcePrerequisite'
 import { useSourcePrerequisites } from '../api/getSourcePrerequisites'
 import { useRemoveSourcePrerequisite } from '../api/removeSourcePrerequisite'
 
 interface SourcePrerequisitesPanelProps {
 	sourceId: number | undefined
+	inheritFsrsState?: FsrsState | null
 	onTopicNavigate?: (topicId: number) => void
 	onSourceNavigate?: (sourceId: number) => void
 }
 
 export function SourcePrerequisitesPanel({
 	sourceId,
+	inheritFsrsState,
 	onTopicNavigate,
 	onSourceNavigate
 }: SourcePrerequisitesPanelProps) {
@@ -193,17 +196,23 @@ export function SourcePrerequisitesPanel({
 
 			{sourceId && (
 				<AddTopicDialog
-					context={{ type: 'sourcePrerequisite', sourceId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowCreateTopicDialog}
 					open={showCreateTopicDialog}
+					relationship={{ kind: 'sourcePrerequisite', sourceId }}
 				/>
 			)}
 
 			{sourceId && (
 				<AddSourceDialog
-					context={{ type: 'sourcePrerequisite', sourceId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowCreateSourceDialog}
 					open={showCreateSourceDialog}
+					relationship={{ kind: 'sourcePrerequisite', sourceId }}
 				/>
 			)}
 		</div>

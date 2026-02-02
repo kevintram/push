@@ -7,14 +7,11 @@ import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
+import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceChild } from '../api/addSourceChild'
 import { sourceKeys } from '../api/queryKeys'
 import type { Source } from '../types/source.types'
-import {
-	AddSourceDialog,
-	type AddSourceDialogContext,
-	type SrsSource
-} from './AddSourceDialog'
+import { AddSourceDialog } from './AddSourceDialog'
 import { SourceActionMenu } from './SourceActionMenu'
 import { SourceCard } from './SourceCard'
 
@@ -33,7 +30,7 @@ interface SourceChildrenPanelProps {
 	/**
 	 * Parent source's SRS data for inheritance when creating children.
 	 */
-	parentSrsSource?: SrsSource | null
+	inheritFsrsState?: FsrsState | null
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	/**
@@ -60,7 +57,7 @@ interface SourceChildrenPanelProps {
 export function SourceChildrenPanel({
 	sourceId,
 	children: childrenProp,
-	parentSrsSource,
+	inheritFsrsState,
 	getScrollElement,
 	scrollMargin,
 	onChildSelect,
@@ -73,15 +70,8 @@ export function SourceChildrenPanel({
 	const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false)
 	const addSourceChild = useAddSourceChild()
 
-	// Build dialog context for creating a child source
-	const addDialogContext: AddSourceDialogContext | undefined = useMemo(() => {
-		if (sourceId === undefined) return
-		return {
-			type: 'child',
-			parentSourceId: sourceId,
-			srsSource: parentSrsSource
-		}
-	}, [sourceId, parentSrsSource])
+	const inherit =
+		inheritFsrsState != null ? { fsrsState: inheritFsrsState } : undefined
 
 	const handleChildCreated = useCallback(
 		(newSourceId: number) => {
@@ -267,12 +257,13 @@ export function SourceChildrenPanel({
 			)}
 
 			{/* Add Child Source Dialog */}
-			{addDialogContext && (
+			{sourceId !== undefined && (
 				<AddSourceDialog
-					context={addDialogContext}
+					inherit={inherit}
 					onOpenChange={setIsAddDialogOpen}
 					onSuccess={handleChildCreated}
 					open={isAddDialogOpen}
+					relationship={{ kind: 'child', parentSourceId: sourceId }}
 				/>
 			)}
 		</div>

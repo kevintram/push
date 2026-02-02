@@ -7,6 +7,7 @@ import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { SourceCard } from '~/features/sources/components/SourceCard'
 import type { Source } from '~/features/sources/types/source.types'
+import type { FsrsState } from '~/models/learnable.types'
 import { useAddTopicSource } from '../api/addTopicSource'
 
 const MIN_HEIGHT = 96
@@ -25,6 +26,10 @@ interface TopicSourcesPanelProps {
 	 */
 	onSourceSelect?: (sourceId: number) => void
 	/**
+	 * FSRS state to pass for inheritance when creating sources.
+	 */
+	inheritFsrsState?: FsrsState | null
+	/**
 	 * Custom card renderer. If not provided, uses default SourceCard.
 	 * @param source - The source to render
 	 * @param onClick - Callback when the card is clicked
@@ -38,7 +43,8 @@ export function TopicSourcesPanel({
 	getScrollElement,
 	scrollMargin,
 	onSourceSelect,
-	renderCard
+	renderCard,
+	inheritFsrsState
 }: TopicSourcesPanelProps) {
 	const [showAddDialog, setShowAddDialog] = useState(false)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
@@ -130,9 +136,12 @@ export function TopicSourcesPanel({
 
 			{topicId && (
 				<AddSourceDialog
-					context={{ type: 'topic', topicId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowCreateDialog}
 					open={showCreateDialog}
+					relationship={{ kind: 'topic', topicId }}
 				/>
 			)}
 		</>
