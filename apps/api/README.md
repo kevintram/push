@@ -38,6 +38,7 @@ In worktrees, use the generated script so the correct port is used:
 ./run.sh
 ```
 The port and URLs come from the worktree’s `.worktree.env`.
+That file is refreshed by `worktree/gen-worktree-env.sh`.
 
 ### API Documentation
 

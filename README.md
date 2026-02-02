@@ -73,35 +73,18 @@ Each application maintains its own:
 
 ## Worktrees
 
-We have a system for using git worktrees for parallel development. The workflow is automated by `add-worktree.sh` and a shared slot map:
+Git worktrees enable parallel development with isolated ports. Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`).
 
-- **Slot map**: `../worktree-slots.toml` (one level above the worktree). Format:
-  ```
-  [worktrees]
-  "feat/search" = 0
-  "fix/auth" = 1
-  ```
-- **Ports**: API uses `8000 + slot`, Web uses `5173 + slot` (slots `0–15` by default).
-- **Per-worktree env**: `add-worktree.sh` copies templates (`../api.env.local`, `../web.env.local`) into:
-  - `apps/api/.env`
-  - `apps/web/.env.local`
-  and fills `API_URL`, `APP_URL`, `CORS_ALLOWED_ORIGINS`, and `VITE_API_URL` with the assigned ports.
-- **Worktree config**: `./.worktree.env` is created in each worktree:
-  ```
-  WORKTREE_SLOT=0
-  API_PORT=8000
-  WEB_PORT=5173
-  API_URL=http://localhost:8000
-  APP_URL=http://localhost:5173
-  ```
-- **Run scripts** (generated per worktree):
-  - `apps/api/run.sh` uses the assigned API port.
-  - `apps/web/run.sh` uses the assigned Web port.
-- **Removal**: `remove-worktree.sh` removes the worktree and deletes its slot assignment from `worktree-slots.toml`.
+- **Setup** (`worktree/add-worktree.sh`):
+  1. Claims a slot in `worktree-slots.toml`
+  2. Generates `.worktree.env` (via `worktree/gen-worktree-env.sh`)
+  3. Copies env templates (`../api.env.local`, `../web.env.local`) into `apps/api/.env` and `apps/web/.env.local`
+  4. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
+- **Dev servers**: Use `apps/api/run.sh` and `apps/web/run.sh` to start on assigned ports (refreshes `.worktree.env` on each run).
+- **Teardown**: `worktree/remove-worktree.sh` removes the worktree and frees its slot.
 
-### WorkOS redirect URIs (finite list)
-Because we use `localhost` with fixed ports, whitelist the callback URLs for the slot range:
-`http://localhost:8000/callback` through `http://localhost:8015/callback`.
+### WorkOS redirect URIs
+Whitelist `http://localhost:8000/callback` through `http://localhost:8015/callback` for the slot range.
 
 ## Commit Guidelines
 

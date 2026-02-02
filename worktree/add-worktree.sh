@@ -94,63 +94,22 @@ set_env_var() {
     mv "$tmpfile" "$file"
 }
 
-# Get or assign a worktree slot from the master TOML file
-get_or_assign_slot() {
-    local slots_file="$1"
+# Read KEY=VALUE from a .env-style file
+read_env_var() {
+    local file="$1"
     local key="$2"
-    local max_slot="$3"
-
-    python3 - "$slots_file" "$key" "$max_slot" <<'PY'
-import os
-import sys
-
-slots_file = sys.argv[1]
-key = sys.argv[2]
-max_slot = int(sys.argv[3])
-
-try:
-    import tomllib  # Python 3.11+
-except Exception:
-    print("ERROR_NO_TOMLLIB")
-    sys.exit(2)
-
-data = {}
-if os.path.exists(slots_file):
-    with open(slots_file, "rb") as f:
-        data = tomllib.load(f) or {}
-
-worktrees = data.get("worktrees", {})
-
-def write_file(mapping):
-    os.makedirs(os.path.dirname(slots_file), exist_ok=True)
-    with open(slots_file, "w", encoding="utf-8") as f:
-        f.write("[worktrees]\n")
-        for k in sorted(mapping):
-            escaped = str(k).replace("\\", "\\\\").replace("\"", "\\\"")
-            f.write(f"\"{escaped}\" = {int(mapping[k])}\n")
-
-if key in worktrees:
-    print(int(worktrees[key]))
-    sys.exit(0)
-
-used = {int(v) for v in worktrees.values()}
-slot = next((s for s in range(max_slot + 1) if s not in used), None)
-if slot is None:
-    print("ERROR_NO_SLOT")
-    sys.exit(3)
-
-worktrees[key] = slot
-data["worktrees"] = worktrees
-write_file(worktrees)
-print(slot)
-PY
+    if [ ! -f "$file" ]; then
+        return 1
+    fi
+    grep -E "^${key}=" "$file" | head -1 | cut -d= -f2- | tr -d '"'
 }
 
 # Create directory name by replacing slashes with dashes
 DIR_NAME="${BRANCH_NAME//\//-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT_DIR="$(dirname "$SCRIPT_DIR")"
-CURRENT_WORKTREE="$SCRIPT_DIR"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+PARENT_DIR="$(cd "$ROOT_DIR/.." && pwd)"
+CURRENT_WORKTREE="$ROOT_DIR"
 NEW_WORKTREE="$PARENT_DIR/$DIR_NAME"
 
 # Get the current branch name
@@ -312,37 +271,26 @@ fi
 echo "🧩 Creating per-worktree env files..."
 cd "$NEW_WORKTREE"
 
-BASE_API_PORT=8000
-BASE_WEB_PORT=5173
-MAX_SLOT=15
-SLOTS_FILE="$PARENT_DIR/worktree-slots.toml"
-slot=$(get_or_assign_slot "$SLOTS_FILE" "$BRANCH_NAME" "$MAX_SLOT")
-
-if [ "$slot" = "ERROR_NO_TOMLLIB" ]; then
-    echo "❌ Python tomllib not available. Please use Python 3.11+."
-    exit 1
-fi
-
-if [ "$slot" = "ERROR_NO_SLOT" ]; then
-    echo "❌ No available port slots (0-$MAX_SLOT)."
-    echo "   Free a slot or increase MAX_SLOT in add-worktree.sh."
-    exit 1
-fi
-
-API_PORT=$((BASE_API_PORT + slot))
-WEB_PORT=$((BASE_WEB_PORT + slot))
-API_URL="http://localhost:${API_PORT}"
-APP_URL="http://localhost:${WEB_PORT}"
-
 WORKTREE_ENV="$NEW_WORKTREE/.worktree.env"
-cat > "$WORKTREE_ENV" <<EOF
-WORKTREE_SLOT=${slot}
-API_PORT=${API_PORT}
-WEB_PORT=${WEB_PORT}
-API_URL=${API_URL}
-APP_URL=${APP_URL}
-EOF
-echo "✅ Created .worktree.env (slot ${slot})"
+GEN_SCRIPT="$NEW_WORKTREE/worktree/gen-worktree-env.sh"
+
+if [ ! -f "$GEN_SCRIPT" ]; then
+    echo "ERROR: Missing generator script: $GEN_SCRIPT"
+    exit 1
+fi
+
+bash "$GEN_SCRIPT"
+
+slot=$(read_env_var "$WORKTREE_ENV" "WORKTREE_SLOT")
+API_URL=$(read_env_var "$WORKTREE_ENV" "API_URL")
+APP_URL=$(read_env_var "$WORKTREE_ENV" "APP_URL")
+
+if [ -z "$slot" ] || [ -z "$API_URL" ] || [ -z "$APP_URL" ]; then
+    echo "ERROR: Missing values in $WORKTREE_ENV."
+    exit 1
+fi
+
+echo "Generated .worktree.env (slot ${slot})"
 
 # Copy and customize web env
 if [ -f "$PARENT_DIR/web.env.local" ]; then
@@ -374,8 +322,16 @@ set -e
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
+GEN_SCRIPT="$ROOT_DIR/worktree/gen-worktree-env.sh"
 CONFIG_ENV="$ROOT_DIR/.worktree.env"
 API_ENV="$APP_DIR/.env"
+
+if [ ! -f "$GEN_SCRIPT" ]; then
+    echo "Missing generator script: $GEN_SCRIPT."
+    exit 1
+fi
+
+bash "$GEN_SCRIPT"
 
 read_var() {
     local file="$1"
@@ -410,8 +366,16 @@ set -e
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
+GEN_SCRIPT="$ROOT_DIR/worktree/gen-worktree-env.sh"
 CONFIG_ENV="$ROOT_DIR/.worktree.env"
 API_ENV="$ROOT_DIR/apps/api/.env"
+
+if [ ! -f "$GEN_SCRIPT" ]; then
+    echo "Missing generator script: $GEN_SCRIPT."
+    exit 1
+fi
+
+bash "$GEN_SCRIPT"
 
 read_var() {
     local file="$1"
