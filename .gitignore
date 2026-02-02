@@ -80,3 +80,4 @@ py-fsrs/
 
 # claude code
 ./claude/settings.local.json
+.playwright-cli/

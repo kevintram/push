@@ -4,6 +4,7 @@ import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import { useFsrsState } from '~/hooks/useFsrsState'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
 import { sourceKeys } from '../../api/queryKeys'
@@ -181,6 +182,8 @@ export function SourceDetail({
 
 	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
 
+	const srsSource = useFsrsState(source)
+
 	if (isLoading || !source) {
 		return <SourceDetailSkeleton />
 	}
@@ -240,14 +243,8 @@ export function SourceDetail({
 							<SourceChildrenPanel
 								children={source.children}
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onChildSelect={onSourceNavigate}
-								parentSrsSource={{
-									stability: source.stability,
-									difficulty: source.difficulty,
-									state: source.state,
-									step: source.step,
-									lastReviewedAt: source.last_reviewed_at
-								}}
 								renderCard={renderChildCard}
 								sourceId={source.id}
 							/>
@@ -255,6 +252,7 @@ export function SourceDetail({
 						<div className='mt-4'>
 							<SourceTopicsPanel
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onTopicSelect={onTopicNavigate}
 								renderCard={renderTopicCard}
 								sourceId={source.id}
@@ -264,6 +262,7 @@ export function SourceDetail({
 						<div className='mt-4'>
 							<SourcePracticesPanel
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onPracticeSelect={onPracticeNavigate}
 								practices={source.practices}
 								sourceId={source.id}
@@ -271,6 +270,7 @@ export function SourceDetail({
 						</div>
 						<div className='mt-4'>
 							<SourcePrerequisitesPanel
+								inheritFsrsState={srsSource}
 								onSourceNavigate={onSourceNavigate}
 								onTopicNavigate={onTopicNavigate}
 								sourceId={source.id}
@@ -278,6 +278,7 @@ export function SourceDetail({
 						</div>
 						<div className='mt-4'>
 							<SourceRelatedPanel
+								inheritFsrsState={srsSource}
 								onSourceNavigate={onSourceNavigate}
 								onTopicNavigate={onTopicNavigate}
 								relatedIncoming={source.related_incoming}

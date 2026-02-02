@@ -8,11 +8,12 @@ import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import type { FsrsState } from '~/models/learnable.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
-import { AddTopicDialog, type SrsSource } from './AddTopicDialog'
+import { AddTopicDialog } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
 
@@ -33,7 +34,7 @@ interface TopicChildrenPanelProps {
 	/**
 	 * Parent topic's SRS fields for the "inherit SRS" option.
 	 */
-	srsSource?: SrsSource | null
+	inheritFsrsState?: FsrsState | null
 	/**
 	 * Called when a child is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
@@ -57,7 +58,7 @@ export function TopicChildrenPanel({
 	children: childrenProp,
 	getScrollElement,
 	scrollMargin,
-	srsSource,
+	inheritFsrsState,
 	onChildSelect,
 	renderCard
 }: TopicChildrenPanelProps) {
@@ -255,11 +256,9 @@ export function TopicChildrenPanel({
 
 			{topicId && (
 				<AddTopicDialog
-					context={{
-						type: 'child',
-						parentTopicId: topicId,
-						srsSource
-					}}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowAddTopicDialog}
 					onSuccess={newTopicId => {
 						toast('Topic created', {
@@ -270,6 +269,10 @@ export function TopicChildrenPanel({
 						})
 					}}
 					open={showAddTopicDialog}
+					relationship={{
+						kind: 'child',
+						parentTopicId: topicId
+					}}
 				/>
 			)}
 		</div>

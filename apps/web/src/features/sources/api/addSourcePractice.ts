@@ -16,6 +16,7 @@ export type AddSourcePracticeInput =
 				archived: boolean
 				inboxed: boolean
 				srs_enabled?: boolean
+				inherit_fsrs?: boolean
 			}
 	  }
 
@@ -31,7 +32,8 @@ export async function addSourcePractice(
 						answer: input.practice.answer,
 						archived: input.practice.archived,
 						inboxed: input.practice.inboxed,
-						srs_enabled: input.practice.srs_enabled
+						srs_enabled: input.practice.srs_enabled,
+						inherit_fsrs: input.practice.inherit_fsrs
 					}
 				}
 

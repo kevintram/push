@@ -109,9 +109,9 @@ export function SourceParentsPanel({
 
 			{sourceId && (
 				<AddSourceDialog
-					context={{ type: 'parent', childSourceId: sourceId }}
 					onOpenChange={setShowCreateDialog}
 					open={showCreateDialog}
+					relationship={{ kind: 'parent', childSourceId: sourceId }}
 				/>
 			)}
 		</>

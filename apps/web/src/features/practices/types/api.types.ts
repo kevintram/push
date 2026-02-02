@@ -18,6 +18,7 @@ export type CreatePracticeInput = {
 	archived?: boolean
 	inboxed?: boolean
 	srs_enabled?: boolean
+	inherit_fsrs?: boolean
 }
 
 export type UpdatePracticeInput = {

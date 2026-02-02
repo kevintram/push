@@ -16,10 +16,11 @@ import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDia
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { EntityType } from '~/models/entity-relations.types'
+import type { FsrsState } from '~/models/learnable.types'
 import { useAddTopicEntityRelation } from '../api/addTopicEntityRelation'
 import { useRemoveTopicEntityRelation } from '../api/removeTopicEntityRelation'
 import type { RelatedEntityItem } from '../types/topic.types'
-import { AddTopicDialog, type SrsSource } from './AddTopicDialog'
+import { AddTopicDialog } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 
 interface TopicRelatedPanelProps {
@@ -34,7 +35,7 @@ interface TopicRelatedPanelProps {
 	/**
 	 * Source topic's SRS fields for the "inherit SRS" option.
 	 */
-	srsSource?: SrsSource | null
+	inheritFsrsState?: FsrsState | null
 	/**
 	 * Called when a related topic is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
@@ -50,7 +51,7 @@ interface TopicRelatedPanelProps {
 export function TopicRelatedPanel({
 	topicId,
 	related: relatedProp,
-	srsSource,
+	inheritFsrsState,
 	onRelatedSelect,
 	onSourceSelect
 }: TopicRelatedPanelProps) {
@@ -277,11 +278,9 @@ export function TopicRelatedPanel({
 
 			{topicId && (
 				<AddTopicDialog
-					context={{
-						type: 'related',
-						fromTopicId: topicId,
-						srsSource
-					}}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowAddTopicDialog}
 					onSuccess={newTopicId => {
 						toast('Topic created', {
@@ -292,14 +291,21 @@ export function TopicRelatedPanel({
 						})
 					}}
 					open={showAddTopicDialog}
+					relationship={{
+						kind: 'related',
+						fromTopicId: topicId
+					}}
 				/>
 			)}
 
 			{topicId && (
 				<AddSourceDialog
-					context={{ type: 'topicRelated', topicId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowAddSourceDialog}
 					open={showAddSourceDialog}
+					relationship={{ kind: 'topicRelated', topicId }}
 				/>
 			)}
 		</div>

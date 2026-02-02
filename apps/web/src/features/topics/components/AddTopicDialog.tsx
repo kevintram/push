@@ -28,43 +28,34 @@ import { useAddSourceEntityRelation } from '~/features/sources/api/addSourceEnti
 import { useAddSourcePrerequisite } from '~/features/sources/api/addSourcePrerequisite'
 import { useAddSourceTopic } from '~/features/sources/api/addSourceTopic'
 import { EntityType } from '~/models/entity-relations.types'
-import type { LearningState } from '~/models/learning-state.types'
+import type { InheritOptions } from '~/models/learnable.types'
 import { useCreateTopic } from '../api/createTopic'
 import { useCreateTopicOtherRelationship } from '../api/createTopicOtherRelationship'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 
-/**
- * SRS fields that can be inherited from a source topic.
- */
-export type SrsSource = {
-	stability: number | null
-	difficulty: number | null
-	state: LearningState | null
-	step: number | null
-	lastReviewedAt: string | null
-}
-
-export type AddTopicDialogContext =
-	| { type: 'standalone' }
-	| { type: 'child'; parentTopicId: number; srsSource?: SrsSource | null }
-	| { type: 'parent'; childTopicId: number }
-	| { type: 'related'; fromTopicId: number; srsSource?: SrsSource | null }
-	| { type: 'source'; sourceId: number }
-	| { type: 'practice'; practiceId: number }
-	| { type: 'sourcePrerequisite'; sourceId: number }
-	| { type: 'sourceRelated'; sourceId: number }
+export type TopicRelationship =
+	| { kind: 'standalone' }
+	| { kind: 'child'; parentTopicId: number }
+	| { kind: 'parent'; childTopicId: number }
+	| { kind: 'related'; fromTopicId: number }
+	| { kind: 'source'; sourceId: number }
+	| { kind: 'practice'; practiceId: number }
+	| { kind: 'sourcePrerequisite'; sourceId: number }
+	| { kind: 'sourceRelated'; sourceId: number }
 
 interface AddTopicDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	context?: AddTopicDialogContext
+	relationship?: TopicRelationship
+	inherit?: InheritOptions
 	onSuccess?: (topicId: number) => void
 }
 
 export function AddTopicDialog({
 	open,
 	onOpenChange,
-	context = { type: 'standalone' },
+	relationship = { kind: 'standalone' },
+	inherit,
 	onSuccess
 }: AddTopicDialogProps) {
 	// Topic fields
@@ -82,7 +73,7 @@ export function AddTopicDialog({
 
 	// Toggle states
 	const [inboxed, setInboxed] = useState(false)
-	const [inheritStability, setInheritStability] = useState(false)
+	const [inheritFsrs, setInheritFsrs] = useState(false)
 	const [srsEnabled, setSrsEnabled] = useState(false)
 
 	// Footer state
@@ -123,13 +114,11 @@ export function AddTopicDialog({
 		isAddingSourceRelation ||
 		isCreatingReview
 
-	// Extract SRS source from context if available
-	const srsSource = useMemo(() => {
-		if (context.type === 'child' || context.type === 'related') {
-			return context.srsSource ?? null
-		}
-		return null
-	}, [context])
+	const srsSource = useMemo(
+		() => inherit?.fsrsState ?? null,
+		[inherit?.fsrsState]
+	)
+	const hasInheritFsrs = srsSource !== null
 
 	// Focus name field on open
 	useEffect(() => {
@@ -155,9 +144,9 @@ export function AddTopicDialog({
 	// Reset toggle fields to defaults
 	const resetToggleFields = useCallback(() => {
 		setInboxed(false)
-		setInheritStability(false)
+		setInheritFsrs(hasInheritFsrs)
 		setSrsEnabled(false)
-	}, [])
+	}, [hasInheritFsrs])
 
 	// Reset all fields when dialog opens
 	useEffect(() => {
@@ -179,7 +168,7 @@ export function AddTopicDialog({
 			let newTopicId: number | undefined
 
 			// Build topic data - inherit all SRS fields when toggle is on
-			const shouldInherit = inheritStability && srsSource !== null
+			const shouldInherit = inheritFsrs && srsSource !== null
 
 			const topicData = {
 				name: name.trim(),
@@ -187,64 +176,54 @@ export function AddTopicDialog({
 				archived: false,
 				inboxed,
 				srs_enabled: srsEnabled,
-				// Only inherit SRS state when toggle is on and we have source
-				stability: shouldInherit ? srsSource.stability : null,
-				difficulty: shouldInherit ? srsSource.difficulty : null,
-				state: shouldInherit ? (srsSource.state ?? 'LEARNING') : 'LEARNING',
-				step: shouldInherit ? srsSource.step : null,
-				// Set inherited fields so FSRS replay knows the starting point
-				inherited_stability: shouldInherit ? srsSource.stability : null,
-				inherited_difficulty: shouldInherit ? srsSource.difficulty : null,
-				inherited_state: shouldInherit ? srsSource.state : null,
-				inherited_step: shouldInherit ? srsSource.step : null,
-				inherited_last_review: shouldInherit ? srsSource.lastReviewedAt : null
+				inherit_fsrs: shouldInherit
 			}
 
 			// Create topic based on context
-			if (context.type === 'standalone') {
+			if (relationship.kind === 'standalone') {
 				const topic = await createTopic(topicData)
 				newTopicId = topic.id
-			} else if (context.type === 'child') {
+			} else if (relationship.kind === 'child') {
 				const response = await createRelationship({
-					parent: context.parentTopicId,
+					parent: relationship.parentTopicId,
 					childData: topicData
 				})
 				newTopicId = response.child.id
-			} else if (context.type === 'parent') {
+			} else if (relationship.kind === 'parent') {
 				const response = await createRelationship({
-					child: context.childTopicId,
+					child: relationship.childTopicId,
 					parentData: topicData
 				})
 				newTopicId = response.parent.id
-			} else if (context.type === 'related') {
+			} else if (relationship.kind === 'related') {
 				const response = await createOtherRelationship({
-					fromTopicId: context.fromTopicId,
+					fromTopicId: relationship.fromTopicId,
 					data: { to_topic: topicData }
 				})
 				newTopicId = response.to_topic.id
-			} else if (context.type === 'source') {
+			} else if (relationship.kind === 'source') {
 				const response = await addSourceTopic({
-					sourceId: context.sourceId,
+					sourceId: relationship.sourceId,
 					data: { topic: topicData }
 				})
 				newTopicId = response.topic.id
-			} else if (context.type === 'practice') {
+			} else if (relationship.kind === 'practice') {
 				const response = await addPracticeTopic({
-					practiceId: context.practiceId,
+					practiceId: relationship.practiceId,
 					topic: topicData
 				})
 				newTopicId = response.topic.id
-			} else if (context.type === 'sourcePrerequisite') {
+			} else if (relationship.kind === 'sourcePrerequisite') {
 				await addSourcePrerequisite({
-					sourceId: context.sourceId,
+					sourceId: relationship.sourceId,
 					data: {
 						prereq_entity_type: EntityType.Topic,
 						prereq_topic: topicData
 					}
 				})
-			} else if (context.type === 'sourceRelated') {
+			} else if (relationship.kind === 'sourceRelated') {
 				await addSourceRelation({
-					sourceId: context.sourceId,
+					sourceId: relationship.sourceId,
 					data: {
 						to_entity_type: EntityType.Topic,
 						to_topic: topicData
@@ -293,9 +272,9 @@ export function AddTopicDialog({
 		notes,
 		inboxed,
 		srsEnabled,
-		context,
+		relationship,
 		srsSource,
-		inheritStability,
+		inheritFsrs,
 		createTopic,
 		createRelationship,
 		createOtherRelationship,
@@ -420,15 +399,15 @@ export function AddTopicDialog({
 							<TooltipContent>Add to inbox</TooltipContent>
 						</Tooltip>
 
-						{/* Inherit SRS Toggle (for child/related context with source stability) */}
-						{srsSource !== null && (
+						{/* Inherit SRS Toggle (when available) */}
+						{hasInheritFsrs && (
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
 									<span>
 										<Toggle
 											aria-label='Inherit SRS state'
-											onPressedChange={setInheritStability}
-											pressed={inheritStability}
+											onPressedChange={setInheritFsrs}
+											pressed={inheritFsrs}
 											size='sm'
 											variant='outline'
 										>
@@ -438,7 +417,7 @@ export function AddTopicDialog({
 									</span>
 								</TooltipTrigger>
 								<TooltipContent>
-									Inherit SRS state from source topic
+									Inherit SRS state from source entity
 								</TooltipContent>
 							</Tooltip>
 						)}

@@ -28,45 +28,36 @@ import { SessionPickerPopover } from '~/features/reviews/components/SessionPicke
 import { useAddTopicEntityRelation } from '~/features/topics/api/addTopicEntityRelation'
 import { useAddTopicSource } from '~/features/topics/api/addTopicSource'
 import { EntityType } from '~/models/entity-relations.types'
-import type { LearningState } from '~/models/learning-state.types'
+import type { InheritOptions } from '~/models/learnable.types'
 import { useAddSourceChild } from '../api/addSourceChild'
 import { useAddSourceEntityRelation } from '../api/addSourceEntityRelation'
 import { useAddSourcePrerequisite } from '../api/addSourcePrerequisite'
 import { useCreateSource } from '../api/createSource'
 import { useSetSourceParent } from '../api/setSourceParent'
 
-/**
- * SRS fields that can be inherited from a parent source.
- */
-export type SrsSource = {
-	stability: number | null
-	difficulty: number | null
-	state: LearningState | null
-	step: number | null
-	lastReviewedAt: string | null
-}
-
-export type AddSourceDialogContext =
-	| { type: 'standalone' }
-	| { type: 'child'; parentSourceId: number; srsSource?: SrsSource | null }
-	| { type: 'parent'; childSourceId: number }
-	| { type: 'topic'; topicId: number }
-	| { type: 'practice'; practiceId: number }
-	| { type: 'topicRelated'; topicId: number }
-	| { type: 'sourceRelated'; sourceId: number }
-	| { type: 'sourcePrerequisite'; sourceId: number }
+export type SourceRelationship =
+	| { kind: 'standalone' }
+	| { kind: 'child'; parentSourceId: number }
+	| { kind: 'parent'; childSourceId: number }
+	| { kind: 'topic'; topicId: number }
+	| { kind: 'practice'; practiceId: number }
+	| { kind: 'topicRelated'; topicId: number }
+	| { kind: 'sourceRelated'; sourceId: number }
+	| { kind: 'sourcePrerequisite'; sourceId: number }
 
 interface AddSourceDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
-	context?: AddSourceDialogContext
+	relationship?: SourceRelationship
+	inherit?: InheritOptions
 	onSuccess?: (sourceId: number) => void
 }
 
 export function AddSourceDialog({
 	open,
 	onOpenChange,
-	context = { type: 'standalone' },
+	relationship = { kind: 'standalone' },
+	inherit,
 	onSuccess
 }: AddSourceDialogProps) {
 	// Source fields
@@ -84,7 +75,7 @@ export function AddSourceDialog({
 
 	// Toggle states
 	const [inboxed, setInboxed] = useState(false)
-	const [inheritStability, setInheritStability] = useState(false)
+	const [inheritFsrs, setInheritFsrs] = useState(false)
 	const [srsEnabled, setSrsEnabled] = useState(false)
 
 	// Footer state
@@ -128,13 +119,11 @@ export function AddSourceDialog({
 		isAddingSourcePrerequisite ||
 		isCreatingReview
 
-	// Extract SRS source from context if available
-	const srsSource = useMemo(() => {
-		if (context.type === 'child') {
-			return context.srsSource ?? null
-		}
-		return null
-	}, [context])
+	const srsSource = useMemo(
+		() => inherit?.fsrsState ?? null,
+		[inherit?.fsrsState]
+	)
+	const hasInheritFsrs = srsSource !== null
 
 	// Focus title field on open
 	useEffect(() => {
@@ -160,9 +149,9 @@ export function AddSourceDialog({
 	// Reset toggle fields to defaults
 	const resetToggleFields = useCallback(() => {
 		setInboxed(false)
-		setInheritStability(false)
+		setInheritFsrs(hasInheritFsrs)
 		setSrsEnabled(false)
-	}, [])
+	}, [hasInheritFsrs])
 
 	// Reset all fields when dialog opens
 	useEffect(() => {
@@ -184,7 +173,7 @@ export function AddSourceDialog({
 			let newSourceId: number | undefined
 
 			// Build source data - inherit all SRS fields when toggle is on
-			const shouldInherit = inheritStability && srsSource !== null
+			const shouldInherit = inheritFsrs && srsSource !== null
 
 			const sourceData = {
 				title: title.trim(),
@@ -195,55 +184,55 @@ export function AddSourceDialog({
 				inherit_fsrs: shouldInherit
 			}
 
-			if (context.type === 'standalone') {
+			if (relationship.kind === 'standalone') {
 				const source = await createSource({
 					...sourceData,
 					parent_id: null
 				})
 				newSourceId = source.id
-			} else if (context.type === 'child') {
+			} else if (relationship.kind === 'child') {
 				const response = await addSourceChild({
-					parentId: context.parentSourceId,
+					parentId: relationship.parentSourceId,
 					data: { child: sourceData }
 				})
 				newSourceId = response.child.id
-			} else if (context.type === 'parent') {
+			} else if (relationship.kind === 'parent') {
 				const response = await setSourceParent({
-					sourceId: context.childSourceId,
+					sourceId: relationship.childSourceId,
 					parent: sourceData
 				})
 				newSourceId = response.parent.id
-			} else if (context.type === 'topic') {
+			} else if (relationship.kind === 'topic') {
 				const response = await addTopicSource({
-					topicId: context.topicId,
+					topicId: relationship.topicId,
 					source: sourceData
 				})
 				newSourceId = response.source.id
-			} else if (context.type === 'practice') {
+			} else if (relationship.kind === 'practice') {
 				const response = await addPracticeSource({
-					practiceId: context.practiceId,
+					practiceId: relationship.practiceId,
 					source: sourceData
 				})
 				newSourceId = response.source.id
-			} else if (context.type === 'topicRelated') {
+			} else if (relationship.kind === 'topicRelated') {
 				await addTopicSourceRelation({
-					topicId: context.topicId,
+					topicId: relationship.topicId,
 					data: {
 						to_entity_type: EntityType.Source,
 						to_source: sourceData
 					}
 				})
-			} else if (context.type === 'sourceRelated') {
+			} else if (relationship.kind === 'sourceRelated') {
 				await addSourceRelation({
-					sourceId: context.sourceId,
+					sourceId: relationship.sourceId,
 					data: {
 						to_entity_type: EntityType.Source,
 						to_source: sourceData
 					}
 				})
-			} else if (context.type === 'sourcePrerequisite') {
+			} else if (relationship.kind === 'sourcePrerequisite') {
 				await addSourcePrerequisite({
-					sourceId: context.sourceId,
+					sourceId: relationship.sourceId,
 					data: {
 						prereq_entity_type: EntityType.Source,
 						prereq_source: sourceData
@@ -294,9 +283,9 @@ export function AddSourceDialog({
 		notes,
 		inboxed,
 		srsEnabled,
-		context,
+		relationship,
 		srsSource,
-		inheritStability,
+		inheritFsrs,
 		createSource,
 		addSourceChild,
 		setSourceParent,
@@ -422,15 +411,15 @@ export function AddSourceDialog({
 							<TooltipContent>Add to inbox</TooltipContent>
 						</Tooltip>
 
-						{/* Inherit SRS Toggle (for child context with source stability) */}
-						{srsSource !== null && (
+						{/* Inherit SRS Toggle (when available) */}
+						{hasInheritFsrs && (
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
 									<span>
 										<Toggle
 											aria-label='Inherit SRS state'
-											onPressedChange={setInheritStability}
-											pressed={inheritStability}
+											onPressedChange={setInheritFsrs}
+											pressed={inheritFsrs}
 											size='sm'
 											variant='outline'
 										>
@@ -440,7 +429,7 @@ export function AddSourceDialog({
 									</span>
 								</TooltipTrigger>
 								<TooltipContent>
-									Inherit SRS state from parent source
+									Inherit SRS state from source entity
 								</TooltipContent>
 							</Tooltip>
 						)}

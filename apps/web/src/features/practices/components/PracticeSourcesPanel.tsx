@@ -8,6 +8,7 @@ import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { SourceCard } from '~/features/sources/components/SourceCard'
 import type { Source } from '~/features/sources/types/source.types'
+import type { FsrsState } from '~/models/learnable.types'
 import { useAddPracticeSource } from '../api/addPracticeSource'
 import { practiceKeys } from '../api/queryKeys'
 import { useRemovePracticeSource } from '../api/removePracticeSource'
@@ -19,6 +20,7 @@ interface PracticeSourcesPanelProps {
 	sources?: Array<Source>
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
+	inheritFsrsState?: FsrsState | null
 	onSourceSelect?: (sourceId: number) => void
 	renderCard?: (
 		source: Source,
@@ -32,6 +34,7 @@ export function PracticeSourcesPanel({
 	sources: sourcesProp,
 	getScrollElement,
 	scrollMargin,
+	inheritFsrsState,
 	onSourceSelect,
 	renderCard
 }: PracticeSourcesPanelProps) {
@@ -164,9 +167,12 @@ export function PracticeSourcesPanel({
 
 			{practiceId && (
 				<AddSourceDialog
-					context={{ type: 'practice', practiceId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowCreateDialog}
 					open={showCreateDialog}
+					relationship={{ kind: 'practice', practiceId }}
 				/>
 			)}
 		</>

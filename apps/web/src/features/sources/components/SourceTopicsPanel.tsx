@@ -8,6 +8,7 @@ import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
+import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceTopic } from '../api/addSourceTopic'
 import { sourceKeys } from '../api/queryKeys'
 import { useRemoveSourceTopic } from '../api/removeSourceTopic'
@@ -28,6 +29,10 @@ interface SourceTopicsPanelProps {
 	 */
 	onTopicSelect?: (topicId: number) => void
 	/**
+	 * FSRS state to pass for inheritance when creating topics.
+	 */
+	inheritFsrsState?: FsrsState | null
+	/**
 	 * Custom card renderer. If not provided, uses default TopicCard.
 	 * @param topic - The topic to render
 	 * @param onRemove - Callback to remove the relationship
@@ -46,7 +51,8 @@ export function SourceTopicsPanel({
 	getScrollElement,
 	scrollMargin,
 	onTopicSelect,
-	renderCard
+	renderCard,
+	inheritFsrsState
 }: SourceTopicsPanelProps) {
 	const queryClient = useQueryClient()
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
@@ -180,9 +186,12 @@ export function SourceTopicsPanel({
 
 			{sourceId !== undefined && (
 				<AddTopicDialog
-					context={{ type: 'source', sourceId }}
+					inherit={
+						inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
+					}
 					onOpenChange={setShowCreateDialog}
 					open={showCreateDialog}
+					relationship={{ kind: 'source', sourceId }}
 				/>
 			)}
 		</>

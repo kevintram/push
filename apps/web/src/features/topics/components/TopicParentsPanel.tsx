@@ -134,10 +134,6 @@ export function TopicParentsPanel({
 
 			{topicId && (
 				<AddTopicDialog
-					context={{
-						type: 'parent',
-						childTopicId: topicId
-					}}
 					onOpenChange={setShowAddTopicDialog}
 					onSuccess={newTopicId => {
 						toast('Topic created', {
@@ -148,6 +144,10 @@ export function TopicParentsPanel({
 						})
 					}}
 					open={showAddTopicDialog}
+					relationship={{
+						kind: 'parent',
+						childTopicId: topicId
+					}}
 				/>
 			)}
 		</>

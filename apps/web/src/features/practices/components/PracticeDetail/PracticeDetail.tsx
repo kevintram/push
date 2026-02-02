@@ -6,6 +6,7 @@ import { LearnableStatus } from '~/components/LearnableStatus'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import { useFsrsState } from '~/hooks/useFsrsState'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
@@ -139,6 +140,8 @@ export function PracticeDetail({
 	// Compute metrics for FSRS display using the hook
 	const metrics = useLearnableMetrics(practice ?? null)
 
+	const srsSource = useFsrsState(practice)
+
 	if (isLoading || !practice) {
 		return <PracticeDetailSkeleton />
 	}
@@ -212,6 +215,7 @@ export function PracticeDetail({
 						<div className='mt-4'>
 							<PracticeTopicsPanel
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onTopicSelect={onTopicNavigate}
 								practiceId={practice.id}
 								topics={practice.topics}
@@ -222,6 +226,7 @@ export function PracticeDetail({
 						<div className='mt-4'>
 							<PracticeSourcesPanel
 								getScrollElement={() => scrollContainerRef.current}
+								inheritFsrsState={srsSource}
 								onSourceSelect={onSourceNavigate}
 								practiceId={practice.id}
 								sources={practice.sources}
