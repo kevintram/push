@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import Source
+from app.models import Practice, Source, Topic
 
 
 class TestSourcesEndpoints:
@@ -299,3 +299,104 @@ class TestInheritFsrs:
         assert review_data["stability_before"] is None
         assert review_data["difficulty_before"] is None
         assert review_data["state_before"] == "LEARNING"
+
+
+class TestCrossEntityInheritFsrs:
+    """Tests for inherit_fsrs when creating cross-entity relationships from sources."""
+
+    async def test_source_to_topic_inherit_fsrs(
+        self,
+        test_client: AsyncClient,
+        db_session: AsyncSession,
+        create_test_source,
+    ):
+        source = await create_test_source(
+            title="Source Topic Parent",
+            initial_stability=3.3,
+            initial_difficulty=2.2,
+            initial_state="REVIEW",
+            initial_step=1,
+        )
+
+        response = await test_client.post(
+            f"/sources/{source.id}/topics/",
+            json={
+                "topic": {
+                    "name": "Inherited Topic",
+                    "notes": "",
+                    "archived": False,
+                    "inboxed": False,
+                    "srs_enabled": False,
+                    "inherit_fsrs": True,
+                }
+            },
+        )
+
+        assert response.status_code == 200
+        topic_id = response.json()["topic"]["id"]
+
+        result = await db_session.execute(
+            select(Topic)
+            .where(Topic.id == topic_id)
+            .options(selectinload(Topic.fsrs_state))
+        )
+        topic = result.scalar_one()
+
+        assert topic.fsrs_state is not None
+        assert topic.fsrs_state.srs_enabled is False
+        assert topic.fsrs_state.inherited_stability == pytest.approx(
+            source.fsrs_state.stability
+        )
+        assert topic.fsrs_state.inherited_difficulty == pytest.approx(
+            source.fsrs_state.difficulty
+        )
+        assert topic.fsrs_state.inherited_state == source.fsrs_state.state
+
+    async def test_source_to_practice_inherit_fsrs(
+        self,
+        test_client: AsyncClient,
+        db_session: AsyncSession,
+        create_test_source,
+        mock_user_id: str,
+    ):
+        source = await create_test_source(
+            title="Source Practice Parent",
+            initial_stability=2.1,
+            initial_difficulty=1.9,
+            initial_state="REVIEW",
+            initial_step=2,
+        )
+
+        prompt = "Inherited Practice From Source"
+        response = await test_client.post(
+            f"/sources/{source.id}/practices/",
+            json={
+                "practice": {
+                    "prompt": prompt,
+                    "answer": "Answer",
+                    "archived": False,
+                    "inboxed": False,
+                    "srs_enabled": False,
+                    "inherit_fsrs": True,
+                }
+            },
+        )
+
+        assert response.status_code == 201
+
+        result = await db_session.execute(
+            select(Practice)
+            .where(Practice.prompt == prompt, Practice.user_id == mock_user_id)
+            .options(selectinload(Practice.fsrs_state))
+        )
+        practice = result.scalar_one()
+
+        assert practice.fsrs_state is not None
+        assert practice.fsrs_state.srs_enabled is False
+        assert practice.fsrs_state.inherited_stability == pytest.approx(
+            source.fsrs_state.stability
+        )
+        assert practice.fsrs_state.inherited_difficulty == pytest.approx(
+            source.fsrs_state.difficulty
+        )
+        assert practice.fsrs_state.inherited_state == source.fsrs_state.state
