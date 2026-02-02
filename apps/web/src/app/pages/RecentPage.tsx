@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { History } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
@@ -121,7 +121,7 @@ export function RecentPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={History} title='Recent'>
+			<PageLayout.Header icon={Clock} title='Recent'>
 				<EntityTypeFilter
 					activeFilters={activeFilters}
 					onAllClick={handleAllClick}
@@ -182,7 +182,7 @@ function RecentList({
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<History />
+							<Clock />
 						</EmptyMedia>
 						<EmptyTitle>No recent items</EmptyTitle>
 						<EmptyDescription>

@@ -5,7 +5,7 @@ import {
 	Calendar,
 	ChevronDown,
 	ChevronRight,
-	History,
+	Clock,
 	Home,
 	Inbox,
 	Star
@@ -846,7 +846,7 @@ function HomeRecentCard() {
 	return (
 		<Card className='flex min-h-56 flex-col'>
 			<CardHeader>
-				<CardHeaderLink icon={History} title='Recent' to='/recent' />
+				<CardHeaderLink icon={Clock} title='Recent' to='/recent' />
 			</CardHeader>
 			<CardContent className='flex flex-1 flex-col'>
 				<RecentCardContent
@@ -873,7 +873,7 @@ function RecentCardContent({
 	}
 
 	if (items.length === 0) {
-		return <CardEmptyState icon={History} title='No recent items' />
+		return <CardEmptyState icon={Clock} title='No recent items' />
 	}
 
 	return (
