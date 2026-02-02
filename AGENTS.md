@@ -74,10 +74,18 @@ Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`
 
 - **Setup** (`worktree/add.sh`):
   1. Claims a slot in `worktree-slots.toml`
-  2. Generates environment files: `.worktree.env` (via `worktree/gen-env.sh`), `apps/api/.env`, and `apps/web/.env.local`
+  2. Generates environment files: `.worktree.env` (via `worktree/gen-env.sh`), `.env`, `apps/api/.env`, and `apps/web/.env.local`
   3. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
 - **Dev servers**: Run `apps/api/run.sh` or `apps/web/run.sh` to start on the assigned port (refreshes `.worktree.env` on each run).
 - **Teardown**: `worktree/remove.sh` removes the worktree and frees its slot.
+
+## E2E Validation
+
+Please use the playwright-cli skill to perform E2E validations using your own dedicated session to prevent conflicts. 
+
+Please authenticated with the test user account (see `.env`).
+
+Please clean up your session when you are finished testing. 
 
 ## Development Conventions
 
