@@ -72,12 +72,12 @@ chore: update root .gitignore
 
 Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`).
 
-- **Setup** (`worktree/add-worktree.sh`):
+- **Setup** (`worktree/add.sh`):
   1. Claims a slot in `worktree-slots.toml`
-  2. Generates environment files: `.worktree.env` (via `worktree/gen-worktree-env.sh`), `apps/api/.env`, and `apps/web/.env.local`
+  2. Generates environment files: `.worktree.env` (via `worktree/gen-env.sh`), `apps/api/.env`, and `apps/web/.env.local`
   3. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
 - **Dev servers**: Run `apps/api/run.sh` or `apps/web/run.sh` to start on the assigned port (refreshes `.worktree.env` on each run).
-- **Teardown**: `worktree/remove-worktree.sh` removes the worktree and frees its slot.
+- **Teardown**: `worktree/remove.sh` removes the worktree and frees its slot.
 
 ## Development Conventions
 

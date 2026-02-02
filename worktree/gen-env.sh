@@ -79,7 +79,7 @@ fi
 
 if [ "$slot" = "ERROR_NO_SLOT" ]; then
     echo "ERROR: No available port slots (0-$MAX_SLOT)."
-    echo "   Free a slot or increase MAX_SLOT in worktree/gen-worktree-env.sh."
+    echo "   Free a slot or increase MAX_SLOT in worktree/gen-env.sh."
     exit 1
 fi
 
