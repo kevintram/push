@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to create a new git worktree from current branch for the monorepo
-# Usage: ./add-worktree.sh [-e|--existing] <branch-name>
+# Usage: ./add.sh [-e|--existing] <branch-name>
 
 set -e
 
@@ -272,7 +272,7 @@ echo "🧩 Creating per-worktree env files..."
 cd "$NEW_WORKTREE"
 
 WORKTREE_ENV="$NEW_WORKTREE/.worktree.env"
-GEN_SCRIPT="$NEW_WORKTREE/worktree/gen-worktree-env.sh"
+GEN_SCRIPT="$NEW_WORKTREE/worktree/gen-env.sh"
 
 if [ ! -f "$GEN_SCRIPT" ]; then
     echo "ERROR: Missing generator script: $GEN_SCRIPT"
@@ -322,7 +322,7 @@ set -e
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
-GEN_SCRIPT="$ROOT_DIR/worktree/gen-worktree-env.sh"
+GEN_SCRIPT="$ROOT_DIR/worktree/gen-env.sh"
 CONFIG_ENV="$ROOT_DIR/.worktree.env"
 API_ENV="$APP_DIR/.env"
 
@@ -355,7 +355,7 @@ if [ -z "$API_PORT" ]; then
     exit 1
 fi
 
-uv run fastapi dev --host 127.0.0.1 --port "$API_PORT"
+uv run fastapi dev --host localhost --port "$API_PORT"
 EOF
 
 WEB_RUN_SCRIPT="$NEW_WORKTREE/apps/web/run.sh"
@@ -366,7 +366,7 @@ set -e
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
-GEN_SCRIPT="$ROOT_DIR/worktree/gen-worktree-env.sh"
+GEN_SCRIPT="$ROOT_DIR/worktree/gen-env.sh"
 CONFIG_ENV="$ROOT_DIR/.worktree.env"
 API_ENV="$ROOT_DIR/apps/api/.env"
 
@@ -399,7 +399,7 @@ if [ -z "$WEB_PORT" ]; then
     exit 1
 fi
 
-pnpm exec vite --host 127.0.0.1 --port "$WEB_PORT" --strictPort --open
+pnpm exec vite --host localhost --port "$WEB_PORT" --strictPort --open
 EOF
 
 chmod +x "$API_RUN_SCRIPT" "$WEB_RUN_SCRIPT"

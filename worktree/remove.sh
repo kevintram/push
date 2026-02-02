@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to remove a git worktree and clear slot assignment
-# Usage: ./remove-worktree.sh [-f|--force] <branch-name>
+# Usage: ./remove.sh [-f|--force] <branch-name>
 
 set -e
 

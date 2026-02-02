@@ -36,7 +36,7 @@ For for your convience, these are the commands of writing this:
 - `pnpm format` - Format code with Biome
 - `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
 
-Worktrees: use `apps/web/run.sh` from the worktree. It refreshes `/.worktree.env` via `worktree/gen-worktree-env.sh` and runs on the assigned port.
+Worktrees: use `apps/web/run.sh` from the worktree. It refreshes `/.worktree.env` via `worktree/gen-env.sh` and runs on the assigned port.
 
 ## Project Structure
 
