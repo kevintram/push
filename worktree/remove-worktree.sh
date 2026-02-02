@@ -42,7 +42,8 @@ fi
 
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PARENT_DIR="$(dirname "$SCRIPT_DIR")"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+PARENT_DIR="$(cd "$ROOT_DIR/.." && pwd)"
 SLOTS_FILE="$PARENT_DIR/worktree-slots.toml"
 DIR_NAME="${BRANCH_NAME//\//-}"
 TARGET_WORKTREE="$PARENT_DIR/$DIR_NAME"
@@ -84,7 +85,7 @@ with open(slots_file, "w", encoding="utf-8") as f:
 PY
 }
 
-if [ "$TARGET_WORKTREE" = "$SCRIPT_DIR" ]; then
+if [ "$TARGET_WORKTREE" = "$ROOT_DIR" ]; then
     echo "❌ Refusing to remove the current worktree. Run this from another worktree."
     exit 1
 fi

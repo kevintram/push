@@ -70,19 +70,14 @@ chore: update root .gitignore
 ```
 ## Worktree and Environment Files
 
-We often use git worktrees for parallel development. 
+Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`).
 
-When using a worktree:
-
-- Slot assignments live in `../worktree-slots.toml` (mapped by branch name).
-- Ports are derived from the slot: API `8000 + slot`, Web `5173 + slot` (slots `0–15`).
-- `add-worktree.sh` copies env templates from the parent directory into each worktree:
-  - `apps/api/.env`
-  - `apps/web/.env.local`
-  and sets `API_URL`, `APP_URL`, `CORS_ALLOWED_ORIGINS`, and `VITE_API_URL`.
-- A `.worktree.env` file is created in the worktree root with the assigned ports/URLs.
-- `apps/api/run.sh` and `apps/web/run.sh` are generated to start each server on the assigned port.
-- `remove-worktree.sh` removes the worktree and clears its slot assignment.
+- **Setup** (`worktree/add-worktree.sh`):
+  1. Claims a slot in `worktree-slots.toml`
+  2. Generates environment files: `.worktree.env` (via `worktree/gen-worktree-env.sh`), `apps/api/.env`, and `apps/web/.env.local`
+  3. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
+- **Dev servers**: Run `apps/api/run.sh` or `apps/web/run.sh` to start on the assigned port (refreshes `.worktree.env` on each run).
+- **Teardown**: `worktree/remove-worktree.sh` removes the worktree and frees its slot.
 
 ## Development Conventions
 
