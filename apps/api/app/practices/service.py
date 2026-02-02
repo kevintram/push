@@ -20,6 +20,7 @@ from app.models import (
     t_practice_topics,
     t_source_topics,
 )
+from app.utils.fsrs import apply_inherited_fsrs
 
 
 async def get_practice(
@@ -175,6 +176,8 @@ async def create_practice(
     prompt: str = "",
     answer: str = "",
     srs_enabled: bool = False,
+    inherit_fsrs: bool = False,
+    inherit_fsrs_from: FsrsState | None = None,
     inboxed: bool = False,
     archived: bool = False,
 ) -> Practice:
@@ -187,9 +190,11 @@ async def create_practice(
         archived=archived,
     )
 
-    # Create FsrsState if srs_enabled
-    if srs_enabled:
-        fsrs_state = FsrsState(srs_enabled=True)
+    # Create FsrsState if srs_enabled or inherit_fsrs
+    if srs_enabled or inherit_fsrs:
+        fsrs_state = FsrsState(srs_enabled=srs_enabled)
+        if inherit_fsrs and inherit_fsrs_from is not None:
+            apply_inherited_fsrs(fsrs_state, inherit_fsrs_from)
         session.add(fsrs_state)
         await session.flush()
         new_practice.fsrs_state_id = fsrs_state.id
@@ -283,7 +288,14 @@ async def add_practice_topic(
     if topic_id is None:
         from app.topics.service import create_topic
 
-        topic = await create_topic(session, user_id, **topic_data)
+        inherit_fsrs = bool(topic_data and topic_data.pop("inherit_fsrs", False))
+        topic = await create_topic(
+            session,
+            user_id,
+            inherit_fsrs=inherit_fsrs,
+            inherit_fsrs_from=practice.fsrs_state if inherit_fsrs else None,
+            **(topic_data or {}),
+        )
         topic_id = topic.id
     else:
         # Verify topic exists and belongs to user
@@ -368,7 +380,14 @@ async def add_practice_source(
     if source_id is None:
         from app.sources.service import create_source
 
-        source = await create_source(session, user_id, **source_data)
+        inherit_fsrs = bool(source_data and source_data.pop("inherit_fsrs", False))
+        source = await create_source(
+            session,
+            user_id,
+            inherit_fsrs=inherit_fsrs,
+            inherit_fsrs_from=practice.fsrs_state if inherit_fsrs else None,
+            **(source_data or {}),
+        )
         source_id = source.id
     else:
         # Verify source exists and belongs to user

@@ -79,6 +79,7 @@ class PracticeCreate(BaseModel):
     archived: bool = False
     inboxed: bool = False
     srs_enabled: bool = False
+    inherit_fsrs: bool = False
 
 
 class PracticeUpdate(BaseModel):

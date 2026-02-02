@@ -31,6 +31,7 @@ from app.models import (
     t_practice_topics,
     t_source_topics,
 )
+from app.utils.fsrs import apply_inherited_fsrs
 
 
 async def get_source(session: AsyncSession, source_id: int, user_id: str) -> Source:
@@ -255,6 +256,7 @@ async def create_source(
     parent_id: int | None = None,
     srs_enabled: bool = False,
     inherit_fsrs: bool = False,
+    inherit_fsrs_from: FsrsState | None = None,
     inboxed: bool = False,
     archived: bool = False,
 ) -> Source:
@@ -268,19 +270,18 @@ async def create_source(
         archived=archived,
     )
 
-    # Create FsrsState if srs_enabled
-    if srs_enabled:
-        fsrs_state = FsrsState(srs_enabled=True)
+    # Create FsrsState if srs_enabled or inherit_fsrs
+    if srs_enabled or inherit_fsrs:
+        fsrs_state = FsrsState(srs_enabled=srs_enabled)
 
-        # Handle FSRS inheritance from parent
-        if inherit_fsrs and parent_id:
-            parent = await session.get(Source, parent_id)
-            if parent and parent.fsrs_state:
-                fsrs_state.inherited_stability = parent.fsrs_state.stability
-                fsrs_state.inherited_difficulty = parent.fsrs_state.difficulty
-                fsrs_state.inherited_state = parent.fsrs_state.state
-                fsrs_state.inherited_step = parent.fsrs_state.step
-                fsrs_state.inherited_last_review = parent.fsrs_state.last_reviewed_at
+        if inherit_fsrs:
+            source_fsrs = inherit_fsrs_from
+            if source_fsrs is None and parent_id:
+                parent = await session.get(Source, parent_id)
+                if parent and parent.fsrs_state:
+                    source_fsrs = parent.fsrs_state
+            if source_fsrs is not None:
+                apply_inherited_fsrs(fsrs_state, source_fsrs)
 
         session.add(fsrs_state)
         await session.flush()
@@ -371,14 +372,10 @@ async def add_child(
         )
 
         # Handle FsrsState creation
-        if child_srs_enabled:
-            fsrs_state = FsrsState(srs_enabled=True)
+        if child_srs_enabled or child_inherit_fsrs:
+            fsrs_state = FsrsState(srs_enabled=child_srs_enabled)
             if child_inherit_fsrs and parent.fsrs_state:
-                fsrs_state.inherited_stability = parent.fsrs_state.stability
-                fsrs_state.inherited_difficulty = parent.fsrs_state.difficulty
-                fsrs_state.inherited_state = parent.fsrs_state.state
-                fsrs_state.inherited_step = parent.fsrs_state.step
-                fsrs_state.inherited_last_review = parent.fsrs_state.last_reviewed_at
+                apply_inherited_fsrs(fsrs_state, parent.fsrs_state)
             session.add(fsrs_state)
             await session.flush()
             new_child.fsrs_state_id = fsrs_state.id
@@ -462,23 +459,13 @@ async def add_source_topic(
 
     Returns (source, topic).
     """
-    # Resolve source
-    if source_id is None and source_data is not None:
-        source = await create_source(session, user_id, **source_data)
-        source_id = source.id
-    elif source_id is not None:
+    source: Source | None = None
+    topic: Topic | None = None
+
+    if source_id is not None:
         source = await get_source(session, source_id, user_id)
-    else:
-        raise BadRequestError("Must provide either source_id or source data")
 
-    # Resolve topic
-    if topic_id is None and topic_data is not None:
-        from app.topics.service import create_topic
-
-        topic = await create_topic(session, user_id, **topic_data)
-        topic_id = topic.id
-    elif topic_id is not None:
-        # Verify topic exists and belongs to user
+    if topic_id is not None:
         topic_result = await session.execute(
             select(Topic)
             .where(Topic.id == topic_id, Topic.user_id == user_id)
@@ -487,7 +474,38 @@ async def add_source_topic(
         topic = topic_result.scalar_one_or_none()
         if not topic:
             raise NotFoundError("Topic", topic_id)
-    else:
+
+    if source is None and source_data is not None:
+        inherit_fsrs = (
+            bool(source_data.pop("inherit_fsrs", False)) if source_data else False
+        )
+        source = await create_source(
+            session,
+            user_id,
+            inherit_fsrs=inherit_fsrs,
+            inherit_fsrs_from=topic.fsrs_state if inherit_fsrs and topic else None,
+            **source_data,
+        )
+        source_id = source.id
+
+    if topic is None and topic_data is not None:
+        from app.topics.service import create_topic
+
+        inherit_fsrs = (
+            bool(topic_data.pop("inherit_fsrs", False)) if topic_data else False
+        )
+        topic = await create_topic(
+            session,
+            user_id,
+            inherit_fsrs=inherit_fsrs,
+            inherit_fsrs_from=source.fsrs_state if inherit_fsrs and source else None,
+            **topic_data,
+        )
+        topic_id = topic.id
+
+    if source is None:
+        raise BadRequestError("Must provide either source_id or source data")
+    if topic is None:
         raise BadRequestError("Must provide either topic_id or topic data")
 
     # Insert relationship
@@ -729,13 +747,22 @@ async def add_related_entity_to_source(
 ) -> None:
     """Add a related entity (topic or source) to this source."""
     # Verify source exists and belongs to user
-    await get_source(session, source_id, user_id)
+    source = await get_source(session, source_id, user_id)
 
     if to_entity_type == "topic":
         if to_entity_id is None:
             from app.topics.service import create_topic
 
-            new_topic = await create_topic(session, user_id, **to_topic_data)
+            inherit_fsrs = bool(
+                to_topic_data and to_topic_data.pop("inherit_fsrs", False)
+            )
+            new_topic = await create_topic(
+                session,
+                user_id,
+                inherit_fsrs=inherit_fsrs,
+                inherit_fsrs_from=source.fsrs_state if inherit_fsrs else None,
+                **(to_topic_data or {}),
+            )
             to_entity_id = new_topic.id
         else:
             # Verify target topic exists and belongs to user
@@ -751,7 +778,16 @@ async def add_related_entity_to_source(
         )
     elif to_entity_type == "source":
         if to_entity_id is None:
-            new_source = await create_source(session, user_id, **to_source_data)
+            inherit_fsrs = bool(
+                to_source_data and to_source_data.pop("inherit_fsrs", False)
+            )
+            new_source = await create_source(
+                session,
+                user_id,
+                inherit_fsrs=inherit_fsrs,
+                inherit_fsrs_from=source.fsrs_state if inherit_fsrs else None,
+                **(to_source_data or {}),
+            )
             to_entity_id = new_source.id
         else:
             # Verify target source exists and belongs to user
@@ -846,13 +882,22 @@ async def add_source_prerequisite(
 ) -> None:
     """Add a prerequisite (topic or source) to this source."""
     # Verify source exists and belongs to user
-    await get_source(session, source_id, user_id)
+    source = await get_source(session, source_id, user_id)
 
     if prereq_entity_type == "topic":
         if prereq_entity_id is None:
             from app.topics.service import create_topic
 
-            new_topic = await create_topic(session, user_id, **prereq_topic_data)
+            inherit_fsrs = bool(
+                prereq_topic_data and prereq_topic_data.pop("inherit_fsrs", False)
+            )
+            new_topic = await create_topic(
+                session,
+                user_id,
+                inherit_fsrs=inherit_fsrs,
+                inherit_fsrs_from=source.fsrs_state if inherit_fsrs else None,
+                **(prereq_topic_data or {}),
+            )
             prereq_entity_id = new_topic.id
         else:
             # Verify target topic exists and belongs to user
@@ -870,7 +915,16 @@ async def add_source_prerequisite(
         )
     elif prereq_entity_type == "source":
         if prereq_entity_id is None:
-            new_source = await create_source(session, user_id, **prereq_source_data)
+            inherit_fsrs = bool(
+                prereq_source_data and prereq_source_data.pop("inherit_fsrs", False)
+            )
+            new_source = await create_source(
+                session,
+                user_id,
+                inherit_fsrs=inherit_fsrs,
+                inherit_fsrs_from=source.fsrs_state if inherit_fsrs else None,
+                **(prereq_source_data or {}),
+            )
             prereq_entity_id = new_source.id
         else:
             # Verify target source exists and belongs to user
@@ -955,12 +1009,19 @@ async def add_practice_to_source(
 ) -> None:
     """Link a practice to a source."""
     # Verify source exists and belongs to user
-    await get_source(session, source_id, user_id)
+    source = await get_source(session, source_id, user_id)
 
     if practice_id is None:
         from app.practices.service import create_practice
 
-        practice = await create_practice(session, user_id, **practice_data)
+        inherit_fsrs = bool(practice_data and practice_data.pop("inherit_fsrs", False))
+        practice = await create_practice(
+            session,
+            user_id,
+            inherit_fsrs=inherit_fsrs,
+            inherit_fsrs_from=source.fsrs_state if inherit_fsrs else None,
+            **(practice_data or {}),
+        )
         practice_id = practice.id
     else:
         # Verify practice exists and belongs to user
