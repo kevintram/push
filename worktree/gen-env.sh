@@ -104,3 +104,67 @@ EOF
 if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
     echo "Updated .worktree.env (slot ${slot})"
 fi
+
+# Update or append KEY=VALUE in a .env-style file
+set_env_var() {
+    local file="$1"
+    local key="$2"
+    local value="$3"
+    local tmpfile
+    tmpfile="$(mktemp)"
+    awk -v key="$key" -v val="$value" '
+        BEGIN { found = 0 }
+        $0 ~ "^"key"=" { print key"="val; found = 1; next }
+        { print }
+        END { if (!found) print key"="val }
+    ' "$file" > "$tmpfile"
+    mv "$tmpfile" "$file"
+}
+
+# Create or update apps/api/.env
+API_ENV="$ROOT_DIR/apps/api/.env"
+if [ ! -f "$API_ENV" ]; then
+    if [ -f "$PARENT_DIR/api.env.local" ]; then
+        cp "$PARENT_DIR/api.env.local" "$API_ENV"
+        echo "Created apps/api/.env"
+    else
+        echo "WARNING: Template api.env.local not found in $PARENT_DIR and apps/api/.env does not exist"
+    fi
+fi
+if [ -f "$API_ENV" ]; then
+    set_env_var "$API_ENV" "APP_URL" "$APP_URL"
+    set_env_var "$API_ENV" "API_URL" "$API_URL"
+    set_env_var "$API_ENV" "DOMAIN" "localhost"
+    set_env_var "$API_ENV" "CORS_ALLOWED_ORIGINS" "$APP_URL"
+    if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
+        echo "Updated apps/api/.env"
+    fi
+fi
+
+# Create or update apps/web/.env.local
+WEB_ENV="$ROOT_DIR/apps/web/.env.local"
+if [ ! -f "$WEB_ENV" ]; then
+    if [ -f "$PARENT_DIR/web.env.local" ]; then
+        cp "$PARENT_DIR/web.env.local" "$WEB_ENV"
+        echo "Created apps/web/.env.local"
+    else
+        echo "WARNING: Template web.env.local not found in $PARENT_DIR and apps/web/.env.local does not exist"
+    fi
+fi
+if [ -f "$WEB_ENV" ]; then
+    set_env_var "$WEB_ENV" "VITE_API_URL" "$API_URL"
+    if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
+        echo "Updated apps/web/.env.local"
+    fi
+fi
+
+# Create root .env if missing (test user credentials, no vars to update)
+ROOT_ENV="$ROOT_DIR/.env"
+if [ ! -f "$ROOT_ENV" ]; then
+    if [ -f "$PARENT_DIR/root.env.local" ]; then
+        cp "$PARENT_DIR/root.env.local" "$ROOT_ENV"
+        echo "Created .env"
+    else
+        echo "WARNING: Template root.env.local not found in $PARENT_DIR and .env does not exist"
+    fi
+fi

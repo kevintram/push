@@ -74,9 +74,9 @@ Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`
 
 - **Setup** (`worktree/add.sh`):
   1. Claims a slot in `worktree-slots.toml`
-  2. Generates environment files: `.worktree.env` (via `worktree/gen-env.sh`), `.env`, `apps/api/.env`, and `apps/web/.env.local`
+  2. Generates all environment files via `worktree/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, and `apps/web/.env.local`
   3. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
-- **Dev servers**: Run `apps/api/run.sh` or `apps/web/run.sh` to start on the assigned port (refreshes `.worktree.env` on each run).
+- **Dev servers**: Run `apps/api/run.sh` or `apps/web/run.sh` to start on the assigned port (runs `gen-env.sh` to refresh env files and recreate any missing ones).
 - **Teardown**: `worktree/remove.sh` removes the worktree and frees its slot.
 
 ## E2E Validation
