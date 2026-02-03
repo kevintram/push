@@ -43,7 +43,7 @@ export function SearchResultsContainer<T>({
 	gap = 12,
 	minItemWidth = MIN_CARD_WIDTH,
 	animate = true,
-	emptyMessage = 'No topics found',
+	emptyMessage = 'No results found',
 	loadingMessage,
 	recentLabel = 'Recent'
 }: SearchResultsContainerProps<T>) {
@@ -55,7 +55,7 @@ export function SearchResultsContainer<T>({
 
 	const defaultLoadingMessage = hasQuery
 		? 'Searching...'
-		: 'Loading recent topics...'
+		: 'Loading recent items...'
 
 	const content = (
 		<>
@@ -70,7 +70,7 @@ export function SearchResultsContainer<T>({
 			{/* No Results - With Query */}
 			{showNoResultsWithQuery && (
 				<div className='flex items-center justify-center py-8 text-muted-foreground'>
-					No topics found for "{searchQuery}"
+					No results found for "{searchQuery}"
 				</div>
 			)}
 
