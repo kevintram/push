@@ -81,6 +81,7 @@ from app.schemas.review_entries import (
     ReviewEntryReview,
     ReviewEntry,
 )
+from app.schemas.search import SearchResultItem
 
 # Rebuild models to resolve forward references
 ReviewSessionReadWithReviews.model_rebuild()
@@ -118,6 +119,7 @@ PracticeTopicResponse.model_rebuild()
 PracticeSourceResponse.model_rebuild()
 TopicPracticeAdd.model_rebuild()
 TopicSourceAdd.model_rebuild()
+SearchResultItem.model_rebuild()
 
 __all__ = [
     "ConvertPracticeToSourceResponse",
@@ -189,4 +191,5 @@ __all__ = [
     "SourcePracticeAdd",
     "TopicPracticeAdd",
     "TopicSourceAdd",
+    "SearchResultItem",
 ]

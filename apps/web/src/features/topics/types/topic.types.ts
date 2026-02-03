@@ -24,6 +24,7 @@ export type Topic = {
 	entity_type?: 'topic' // Discriminator for related entities
 	inserted_at: string
 	updated_at: string
+	recent_activity_at?: string | null
 	parent_id: number | null
 	fsrs_state_id: number | null
 	stability: number | null

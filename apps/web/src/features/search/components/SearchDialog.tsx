@@ -3,9 +3,16 @@ import {
 	useCallback,
 	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState
 } from 'react'
+import {
+	EntityCard,
+	type EntityItem,
+	estimateEntitySize,
+	getEntityKey
+} from '~/components/EntityCard'
 import { MIN_HEIGHT } from '~/components/search/constants'
 import { SearchInput } from '~/components/search/SearchInput'
 import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
@@ -15,10 +22,10 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/Dialog'
-import { useSearchTopics } from '~/features/topics/api/searchTopics'
+import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
+import { useSearchAll } from '~/features/search/api/searchAll'
+import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
-import { TopicCard } from '~/features/topics/components/TopicCard'
-import type { Topic } from '~/features/topics/types/topic.types'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 
 interface SearchDialogProps {
@@ -43,11 +50,27 @@ export function SearchDialog({
 	const trimmedQuery = debouncedQuery.trim()
 	const hasQuery = trimmedQuery.length > 0
 
-	const { data: results = [], isLoading } = useSearchTopics({
-		query: trimmedQuery || undefined,
-		limit: 10,
-		enabled: open
-	})
+	const { data: searchResults = [], isLoading } = useSearchAll(
+		{ query: trimmedQuery || undefined, limit: 10 },
+		{ enabled: open }
+	)
+
+	const results = useMemo<Array<EntityItem>>(() => {
+		return searchResults.map((result): EntityItem => {
+			switch (result.entity_type) {
+				case 'topic':
+					return { type: 'topic', item: result.topic }
+				case 'source':
+					return { type: 'source', item: result.source }
+				case 'practice':
+					return { type: 'practice', item: result.practice }
+				default: {
+					const _exhaustiveCheck: never = result
+					return _exhaustiveCheck
+				}
+			}
+		})
+	}, [searchResults])
 
 	useEffect(() => {
 		if (open) {
@@ -73,12 +96,28 @@ export function SearchDialog({
 		return () => window.removeEventListener('resize', updateGap)
 	}, [])
 
-	const handleTopicSelect = useCallback(
-		(topic: Topic) => {
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: topic.id.toString() }
-			})
+	const handleEntitySelect = useCallback(
+		(entity: EntityItem) => {
+			switch (entity.type) {
+				case 'topic':
+					navigate({
+						to: '/topics/$topicId',
+						params: { topicId: entity.item.id.toString() }
+					})
+					break
+				case 'source':
+					navigate({
+						to: '/sources/$sourceId',
+						params: { sourceId: entity.item.id.toString() }
+					})
+					break
+				case 'practice':
+					navigate({
+						to: '/practices/$practiceId',
+						params: { practiceId: entity.item.id.toString() }
+					})
+					break
+			}
 			onOpenChange(false)
 		},
 		[navigate, onOpenChange]
@@ -86,7 +125,7 @@ export function SearchDialog({
 
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent<HTMLInputElement>) => {
-			if (!hasQuery || results.length === 0) return
+			if (results.length === 0) return
 
 			if (e.key === 'ArrowDown') {
 				e.preventDefault()
@@ -97,13 +136,13 @@ export function SearchDialog({
 			} else if (e.key === 'Enter') {
 				e.preventDefault()
 				if (results[selectedIndex]) {
-					handleTopicSelect(results[selectedIndex])
+					handleEntitySelect(results[selectedIndex])
 				}
 			} else if (e.key === 'Escape') {
 				onOpenChange(false)
 			}
 		},
-		[hasQuery, results, selectedIndex, handleTopicSelect, onOpenChange]
+		[results, selectedIndex, handleEntitySelect, onOpenChange]
 	)
 
 	const handleSearchChange = useCallback(
@@ -118,16 +157,30 @@ export function SearchDialog({
 	}, [setQuery])
 
 	const renderItem = useCallback(
-		(topic: Topic) => (
-			<TopicCard
-				headerRight={<TopicActionMenu topic={topic} />}
-				minHeight={MIN_HEIGHT}
-				onTopicClick={handleTopicSelect}
-				searchQuery={debouncedQuery}
-				topic={topic}
-			/>
-		),
-		[handleTopicSelect, debouncedQuery]
+		(entity: EntityItem) => {
+			let headerRight: React.ReactNode
+			switch (entity.type) {
+				case 'topic':
+					headerRight = <TopicActionMenu topic={entity.item} />
+					break
+				case 'source':
+					headerRight = <SourceActionMenu source={entity.item} />
+					break
+				case 'practice':
+					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+			}
+			return (
+				<EntityCard
+					entity={entity}
+					headerRight={headerRight}
+					minHeight={MIN_HEIGHT}
+					onEntityClick={handleEntitySelect}
+					searchQuery={debouncedQuery}
+				/>
+			)
+		},
+		[handleEntitySelect, debouncedQuery]
 	)
 
 	return (
@@ -137,13 +190,14 @@ export function SearchDialog({
 				showCloseButton={false}
 			>
 				<DialogHeader className='px-2 pt-2 pb-0 sm:px-4'>
-					<DialogTitle className='sr-only'>Search topics</DialogTitle>
+					<DialogTitle className='sr-only'>Search</DialogTitle>
 					<SearchInput
 						inputClassName='px-8 text-base sm:px-10 sm:text-lg'
 						inputRef={inputRef}
 						onChange={handleSearchChange}
 						onClear={handleClear}
 						onKeyDown={handleKeyDown}
+						placeholder='Search...'
 						value={query}
 					/>
 				</DialogHeader>
@@ -151,18 +205,9 @@ export function SearchDialog({
 				<div className='scrollbar-track-transparent max-h-192 min-h-80 overflow-y-auto p-2 pt-0 sm:p-4'>
 					<SearchResultsContainer
 						animate={false}
-						estimateItemSize={topic => {
-							const nameLines = Math.ceil((topic.name?.length || 8) / 40)
-							const notesLines = topic.notes
-								? Math.min(2, Math.ceil(topic.notes.length / 40))
-								: 0
-							return Math.max(
-								MIN_HEIGHT,
-								80 + (nameLines - 1) * 20 + notesLines * 20
-							)
-						}}
+						estimateItemSize={estimateEntitySize}
 						gap={gap}
-						getItemKey={topic => topic.id}
+						getItemKey={getEntityKey}
 						hasQuery={hasQuery}
 						isLoading={isLoading}
 						renderItem={renderItem}

@@ -23,6 +23,10 @@ export async function getPractices(
 		searchParams.append('order', params.order)
 	}
 
+	if (params.orderBy !== undefined) {
+		searchParams.append('order_by', params.orderBy)
+	}
+
 	if (params.limit !== undefined) {
 		searchParams.append('limit', String(params.limit))
 	}

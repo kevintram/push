@@ -66,6 +66,7 @@ async def read_topics(
     srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
+    order_by: Literal["updated_at", "recent_activity"] = "updated_at",
 ) -> list[TopicSummaryRead]:
     return await service.list_topics(
         session,
@@ -77,6 +78,7 @@ async def read_topics(
         srs_enabled=srs_enabled,
         limit=limit,
         order=order,
+        order_by=order_by,
     )
 
 

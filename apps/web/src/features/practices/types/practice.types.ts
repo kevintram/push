@@ -10,6 +10,7 @@ export type Practice = {
 	answer: string
 	inserted_at: string
 	updated_at: string
+	recent_activity_at?: string | null
 	fsrs_state_id: number | null
 	archived: boolean
 	inboxed: boolean

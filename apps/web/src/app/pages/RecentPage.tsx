@@ -19,11 +19,9 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { usePractices } from '~/features/practices/api/getPractices'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
-import { useSources } from '~/features/sources/api/getSources'
+import { useSearchAll } from '~/features/search/api/searchAll'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
-import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 
 const RECENT_LIMIT = 50
@@ -32,53 +30,31 @@ export function RecentPage() {
 	const navigate = useNavigate()
 	const [activeFilters, setActiveFilters] = useState<Array<EntityType>>([])
 
-	// Fetch 50 most recent topics, sources, and practices
-	const { data: topics = [], isLoading: isLoadingTopics } = useTopics({
-		order: 'desc',
-		limit: RECENT_LIMIT
-	})
-	const { data: sources = [], isLoading: isLoadingSources } = useSources({
-		order: 'desc',
-		limit: RECENT_LIMIT
-	})
-	const { data: practices = [], isLoading: isLoadingPractices } = usePractices({
-		order: 'desc',
-		limit: RECENT_LIMIT
+	const entityTypes =
+		activeFilters.length > 0 ? activeFilters.join(',') : undefined
+
+	const { data: searchResults = [], isLoading } = useSearchAll({
+		limit: RECENT_LIMIT,
+		entityTypes
 	})
 
-	const isLoading = isLoadingTopics || isLoadingSources || isLoadingPractices
-
-	// Combine and filter entities based on active filters, limited to 50
+	// Map SearchResultItem[] to EntityItem[]
 	const recentItems = useMemo<Array<EntityItem>>(() => {
-		const items: Array<EntityItem> = []
-		const showAll = activeFilters.length === 0
-
-		if (showAll || activeFilters.includes('topic')) {
-			items.push(
-				...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item }))
-			)
-		}
-		if (showAll || activeFilters.includes('source')) {
-			items.push(
-				...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
-			)
-		}
-		if (showAll || activeFilters.includes('practice')) {
-			items.push(
-				...(practices ?? []).map(
-					(item): EntityItem => ({ type: 'practice', item })
-				)
-			)
-		}
-
-		return items
-			.sort(
-				(a, b) =>
-					new Date(b.item.updated_at).getTime() -
-					new Date(a.item.updated_at).getTime()
-			)
-			.slice(0, RECENT_LIMIT)
-	}, [topics, sources, practices, activeFilters])
+		return searchResults.map((result): EntityItem => {
+			switch (result.entity_type) {
+				case 'topic':
+					return { type: 'topic', item: result.topic }
+				case 'source':
+					return { type: 'source', item: result.source }
+				case 'practice':
+					return { type: 'practice', item: result.practice }
+				default: {
+					const _exhaustiveCheck: never = result
+					return _exhaustiveCheck
+				}
+			}
+		})
+	}, [searchResults])
 
 	const handleEntityClick = useCallback(
 		(entity: EntityItem) => {
@@ -186,7 +162,7 @@ function RecentList({
 						</EmptyMedia>
 						<EmptyTitle>No recent items</EmptyTitle>
 						<EmptyDescription>
-							See your most recently edited topics and sources
+							See your most recently edited or reviewed items
 						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
