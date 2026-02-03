@@ -7,7 +7,8 @@
       "Bash(pnpm:*)",
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
-      "Bash(git show:*)"
+      "Bash(git show:*)",
+      "Bash(playwright-cli:*)"
     ]
   },
   "enabledPlugins": {
