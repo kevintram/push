@@ -13,6 +13,10 @@ import {
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MIN_HEIGHT } from '~/components/search/constants'
 import { SearchInput } from '~/components/search/SearchInput'
 import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
@@ -44,6 +48,7 @@ export function SearchDialog({
 	const navigate = useNavigate()
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [selectedIndex, setSelectedIndex] = useState(0)
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 	const [gap, setGap] = useState(12)
 
 	const debouncedQuery = useDebouncedValue(query, 300)
@@ -51,7 +56,11 @@ export function SearchDialog({
 	const hasQuery = trimmedQuery.length > 0
 
 	const { data: searchResults = [], isLoading } = useSearchAll(
-		{ query: trimmedQuery || undefined, limit: 10 },
+		{
+			query: trimmedQuery || undefined,
+			limit: 10,
+			entityTypes: activeFilter === 'all' ? undefined : activeFilter
+		},
 		{ enabled: open }
 	)
 
@@ -189,7 +198,7 @@ export function SearchDialog({
 				className='-translate-x-1/2 fixed top-0 left-1/2 w-full translate-y-0 p-0 md:max-w-2xl lg:max-w-4xl xl:max-w-5xl'
 				showCloseButton={false}
 			>
-				<DialogHeader className='px-2 pt-2 pb-0 sm:px-4'>
+				<DialogHeader className='space-y-2 px-2 pt-2 pb-0 sm:px-4'>
 					<DialogTitle className='sr-only'>Search</DialogTitle>
 					<SearchInput
 						inputClassName='px-8 text-base sm:px-10 sm:text-lg'
@@ -199,6 +208,10 @@ export function SearchDialog({
 						onKeyDown={handleKeyDown}
 						placeholder='Search...'
 						value={query}
+					/>
+					<EntityTypeFilter
+						activeFilter={activeFilter}
+						onFilterChange={setActiveFilter}
 					/>
 				</DialogHeader>
 
