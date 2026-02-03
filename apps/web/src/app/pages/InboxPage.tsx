@@ -123,12 +123,7 @@ export function InboxPage() {
 	}, [createTopic, navigate])
 
 	const toggleFilter = useCallback((filter: EntityType) => {
-		setActiveFilters(prev => {
-			if (prev.includes(filter)) {
-				return prev.filter(f => f !== filter)
-			}
-			return [...prev, filter]
-		})
+		setActiveFilters([filter])
 	}, [])
 
 	const handleAllClick = useCallback(() => {

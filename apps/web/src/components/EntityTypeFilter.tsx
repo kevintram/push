@@ -16,19 +16,22 @@ export function EntityTypeFilter({
 	onAllClick: () => void
 	onToggle: (filter: EntityType) => void
 }) {
+	const isAllActive = activeFilters.length === 0
 	return (
 		<div className='flex items-center gap-2'>
 			<Badge
 				className='cursor-pointer'
-				onClick={onAllClick}
+				onClick={() => {
+					if (!isAllActive) onAllClick()
+				}}
 				onKeyDown={e => {
 					if (e.key === 'Enter' || e.key === ' ') {
 						e.preventDefault()
-						onAllClick()
+						if (!isAllActive) onAllClick()
 					}
 				}}
 				tabIndex={0}
-				variant={activeFilters.length === 0 ? 'default' : 'outline'}
+				variant={isAllActive ? 'default' : 'outline'}
 			>
 				All
 			</Badge>
@@ -38,11 +41,13 @@ export function EntityTypeFilter({
 					<Badge
 						className='cursor-pointer'
 						key={badge.id}
-						onClick={() => onToggle(badge.id)}
+						onClick={() => {
+							if (!isActive) onToggle(badge.id)
+						}}
 						onKeyDown={e => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault()
-								onToggle(badge.id)
+								if (!isActive) onToggle(badge.id)
 							}
 						}}
 						tabIndex={0}
