@@ -5,11 +5,13 @@ import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	EntityCard,
 	type EntityItem,
-	type EntityType,
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
-import { EntityTypeFilter } from '~/components/EntityTypeFilter'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -28,14 +30,11 @@ const RECENT_LIMIT = 50
 
 export function RecentPage() {
 	const navigate = useNavigate()
-	const [activeFilters, setActiveFilters] = useState<Array<EntityType>>([])
-
-	const entityTypes =
-		activeFilters.length > 0 ? activeFilters.join(',') : undefined
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 
 	const { data: searchResults = [], isLoading } = useSearchAll({
 		limit: RECENT_LIMIT,
-		entityTypes
+		entityTypes: activeFilter === 'all' ? undefined : activeFilter
 	})
 
 	// Map SearchResultItem[] to EntityItem[]
@@ -82,26 +81,12 @@ export function RecentPage() {
 		[navigate]
 	)
 
-	const toggleFilter = useCallback((filter: EntityType) => {
-		setActiveFilters(prev => {
-			if (prev.includes(filter)) {
-				return prev.filter(f => f !== filter)
-			}
-			return [...prev, filter]
-		})
-	}, [])
-
-	const handleAllClick = useCallback(() => {
-		setActiveFilters([])
-	}, [])
-
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={Clock} title='Recent'>
 				<EntityTypeFilter
-					activeFilters={activeFilters}
-					onAllClick={handleAllClick}
-					onToggle={toggleFilter}
+					activeFilter={activeFilter}
+					onFilterChange={setActiveFilter}
 				/>
 			</PageLayout.Header>
 			<RecentList

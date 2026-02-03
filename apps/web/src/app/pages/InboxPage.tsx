@@ -6,11 +6,13 @@ import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicB
 import {
 	EntityCard,
 	type EntityItem,
-	type EntityType,
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
-import { EntityTypeFilter } from '~/components/EntityTypeFilter'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -33,7 +35,7 @@ const MIN_CARD_WIDTH = 280
 
 export function InboxPage() {
 	const navigate = useNavigate()
-	const [activeFilters, setActiveFilters] = useState<Array<EntityType>>([])
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 	const { data: inboxTopics, isLoading: isLoadingTopics } = useTopics({
 		inboxed: true,
 		archived: false
@@ -51,26 +53,25 @@ export function InboxPage() {
 
 	const isLoading = isLoadingTopics || isLoadingSources || isLoadingPractices
 
-	// Combine and filter entities based on active filters
+	// Combine and filter entities based on active filter
 	const inboxItems = useMemo<Array<EntityItem>>(() => {
 		const items: Array<EntityItem> = []
-		const showAll = activeFilters.length === 0
 
-		if (showAll || activeFilters.includes('topic')) {
+		if (activeFilter === 'all' || activeFilter === 'topic') {
 			items.push(
 				...(inboxTopics ?? []).map(
 					(item): EntityItem => ({ type: 'topic', item })
 				)
 			)
 		}
-		if (showAll || activeFilters.includes('source')) {
+		if (activeFilter === 'all' || activeFilter === 'source') {
 			items.push(
 				...(inboxSources ?? []).map(
 					(item): EntityItem => ({ type: 'source', item })
 				)
 			)
 		}
-		if (showAll || activeFilters.includes('practice')) {
+		if (activeFilter === 'all' || activeFilter === 'practice') {
 			items.push(
 				...(inboxPractices ?? []).map(
 					(item): EntityItem => ({ type: 'practice', item })
@@ -83,7 +84,7 @@ export function InboxPage() {
 				new Date(b.item.updated_at).getTime() -
 				new Date(a.item.updated_at).getTime()
 		)
-	}, [inboxTopics, inboxSources, inboxPractices, activeFilters])
+	}, [inboxTopics, inboxSources, inboxPractices, activeFilter])
 
 	const handleEntitySelect = useCallback(
 		(entity: EntityItem) => {
@@ -122,19 +123,6 @@ export function InboxPage() {
 		})
 	}, [createTopic, navigate])
 
-	const toggleFilter = useCallback((filter: EntityType) => {
-		setActiveFilters(prev => {
-			if (prev.includes(filter)) {
-				return prev.filter(f => f !== filter)
-			}
-			return [...prev, filter]
-		})
-	}, [])
-
-	const handleAllClick = useCallback(() => {
-		setActiveFilters([])
-	}, [])
-
 	const inboxCountLabel = isLoading ? '...' : inboxItems.length
 
 	return (
@@ -149,9 +137,8 @@ export function InboxPage() {
 				}
 			>
 				<EntityTypeFilter
-					activeFilters={activeFilters}
-					onAllClick={handleAllClick}
-					onToggle={toggleFilter}
+					activeFilter={activeFilter}
+					onFilterChange={setActiveFilter}
 				/>
 			</PageLayout.Header>
 
