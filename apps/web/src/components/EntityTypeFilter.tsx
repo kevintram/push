@@ -1,6 +1,8 @@
 import type { EntityType } from '~/components/EntityCard'
 import { Badge } from '~/components/ui/Badge'
 
+export type EntityTypeFilterValue = 'all' | EntityType
+
 const ENTITY_FILTER_BADGES: Array<{ id: EntityType; label: string }> = [
 	{ id: 'topic', label: 'Topics' },
 	{ id: 'source', label: 'Sources' },
@@ -11,21 +13,21 @@ export function EntityTypeFilter({
 	activeFilter,
 	onFilterChange
 }: {
-	activeFilter: EntityType | null
-	onFilterChange: (filter: EntityType | null) => void
+	activeFilter: EntityTypeFilterValue
+	onFilterChange: (filter: EntityTypeFilterValue) => void
 }) {
-	const isAllActive = activeFilter === null
+	const isAllActive = activeFilter === 'all'
 	return (
 		<div className='flex items-center gap-2'>
 			<Badge
 				className='cursor-pointer'
 				onClick={() => {
-					if (!isAllActive) onFilterChange(null)
+					if (!isAllActive) onFilterChange('all')
 				}}
 				onKeyDown={e => {
 					if (e.key === 'Enter' || e.key === ' ') {
 						e.preventDefault()
-						if (!isAllActive) onFilterChange(null)
+						if (!isAllActive) onFilterChange('all')
 					}
 				}}
 				tabIndex={0}

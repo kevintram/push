@@ -6,11 +6,13 @@ import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicB
 import {
 	EntityCard,
 	type EntityItem,
-	type EntityType,
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
-import { EntityTypeFilter } from '~/components/EntityTypeFilter'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -31,7 +33,7 @@ import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 
 export function MyLibraryPage() {
 	const navigate = useNavigate()
-	const [activeFilter, setActiveFilter] = useState<EntityType | null>(null)
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 
@@ -61,17 +63,17 @@ export function MyLibraryPage() {
 	const libraryItems = useMemo<Array<EntityItem>>(() => {
 		const items: Array<EntityItem> = []
 
-		if (activeFilter === null || activeFilter === 'topic') {
+		if (activeFilter === 'all' || activeFilter === 'topic') {
 			items.push(
 				...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item }))
 			)
 		}
-		if (activeFilter === null || activeFilter === 'source') {
+		if (activeFilter === 'all' || activeFilter === 'source') {
 			items.push(
 				...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
 			)
 		}
-		if (activeFilter === null || activeFilter === 'practice') {
+		if (activeFilter === 'all' || activeFilter === 'practice') {
 			items.push(
 				...(practices ?? []).map(
 					(item): EntityItem => ({ type: 'practice', item })

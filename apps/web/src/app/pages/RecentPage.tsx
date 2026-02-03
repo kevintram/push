@@ -5,11 +5,13 @@ import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	EntityCard,
 	type EntityItem,
-	type EntityType,
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
-import { EntityTypeFilter } from '~/components/EntityTypeFilter'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -28,11 +30,11 @@ const RECENT_LIMIT = 50
 
 export function RecentPage() {
 	const navigate = useNavigate()
-	const [activeFilter, setActiveFilter] = useState<EntityType | null>(null)
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 
 	const { data: searchResults = [], isLoading } = useSearchAll({
 		limit: RECENT_LIMIT,
-		entityTypes: activeFilter ?? undefined
+		entityTypes: activeFilter === 'all' ? undefined : activeFilter
 	})
 
 	// Map SearchResultItem[] to EntityItem[]

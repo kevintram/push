@@ -6,11 +6,13 @@ import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicB
 import {
 	EntityCard,
 	type EntityItem,
-	type EntityType,
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
-import { EntityTypeFilter } from '~/components/EntityTypeFilter'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
@@ -33,7 +35,7 @@ const MIN_CARD_WIDTH = 280
 
 export function InboxPage() {
 	const navigate = useNavigate()
-	const [activeFilter, setActiveFilter] = useState<EntityType | null>(null)
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 	const { data: inboxTopics, isLoading: isLoadingTopics } = useTopics({
 		inboxed: true,
 		archived: false
@@ -55,21 +57,21 @@ export function InboxPage() {
 	const inboxItems = useMemo<Array<EntityItem>>(() => {
 		const items: Array<EntityItem> = []
 
-		if (activeFilter === null || activeFilter === 'topic') {
+		if (activeFilter === 'all' || activeFilter === 'topic') {
 			items.push(
 				...(inboxTopics ?? []).map(
 					(item): EntityItem => ({ type: 'topic', item })
 				)
 			)
 		}
-		if (activeFilter === null || activeFilter === 'source') {
+		if (activeFilter === 'all' || activeFilter === 'source') {
 			items.push(
 				...(inboxSources ?? []).map(
 					(item): EntityItem => ({ type: 'source', item })
 				)
 			)
 		}
-		if (activeFilter === null || activeFilter === 'practice') {
+		if (activeFilter === 'all' || activeFilter === 'practice') {
 			items.push(
 				...(inboxPractices ?? []).map(
 					(item): EntityItem => ({ type: 'practice', item })
