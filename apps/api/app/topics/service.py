@@ -2,10 +2,11 @@
 
 from typing import Literal
 
-from sqlalchemy import delete, desc, func, or_, select, text, update
+from sqlalchemy import cast, delete, desc, func, or_, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy.types import TIMESTAMP
 
 from app.constants import ChildHandlingStrategy
 from app.exceptions import (
@@ -191,6 +192,7 @@ async def list_topics(
     session: AsyncSession,
     user_id: str,
     *,
+    query: str | None = None,
     inboxed: bool | None = None,
     archived: bool | None = None,
     root: bool | None = None,
@@ -198,15 +200,43 @@ async def list_topics(
     srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
+    order_by: Literal["updated_at", "recent_activity"] = "updated_at",
 ) -> list[Topic]:
     """List topics with optional filters."""
     stmt = select(Topic).where(Topic.user_id == user_id)
 
+    # Text search filter
+    if query:
+        like_pattern = f"%{query.strip()}%"
+        stmt = stmt.where(
+            or_(
+                Topic.name.ilike(like_pattern),
+                Topic.notes.ilike(like_pattern),
+            )
+        )
+
     # Apply ordering
-    if order == "desc":
-        stmt = stmt.order_by(desc(Topic.updated_at))
+    recent_activity = None
+    if order_by == "recent_activity":
+        last_reviewed_at = (
+            select(FsrsState.last_reviewed_at)
+            .where(FsrsState.id == Topic.fsrs_state_id)
+            .scalar_subquery()
+        )
+        last_reviewed_ts = cast(last_reviewed_at, TIMESTAMP(timezone=True))
+        recent_activity = func.greatest(
+            Topic.updated_at,
+            func.coalesce(last_reviewed_ts, Topic.updated_at),
+        )
+        if order == "desc":
+            stmt = stmt.order_by(desc(recent_activity))
+        else:
+            stmt = stmt.order_by(recent_activity)
     else:
-        stmt = stmt.order_by(Topic.updated_at)
+        if order == "desc":
+            stmt = stmt.order_by(desc(Topic.updated_at))
+        else:
+            stmt = stmt.order_by(Topic.updated_at)
     if inboxed is not None:
         stmt = stmt.where(Topic.inboxed == inboxed)
     if archived is not None:
@@ -270,7 +300,17 @@ async def list_topics(
     if limit is not None:
         stmt = stmt.limit(limit)
 
+    if recent_activity is not None:
+        stmt = stmt.add_columns(recent_activity.label("recent_activity_at"))
+
     result = await session.execute(stmt)
+    if recent_activity is not None:
+        topics: list[Topic] = []
+        for topic, activity_at in result.all():
+            topic.recent_activity_at = activity_at
+            topics.append(topic)
+        return topics
+
     return list(result.scalars().unique().all())
 
 

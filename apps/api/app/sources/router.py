@@ -62,6 +62,7 @@ async def read_sources(
     srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
+    order_by: Literal["updated_at", "recent_activity"] = "updated_at",
 ) -> list[SourceSummaryRead]:
     return await service.list_sources(
         session,
@@ -73,6 +74,7 @@ async def read_sources(
         srs_enabled=srs_enabled,
         limit=limit,
         order=order,
+        order_by=order_by,
     )
 
 

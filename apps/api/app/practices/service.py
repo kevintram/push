@@ -3,10 +3,11 @@
 from datetime import datetime, timezone as dt_timezone
 from typing import Literal
 
-from sqlalchemy import delete, desc, insert, select, update
+from sqlalchemy import cast, delete, desc, func, insert, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy.types import TIMESTAMP
 
 from app.exceptions import AlreadyExistsError, NotFoundError
 from app.models import (
@@ -94,21 +95,48 @@ async def list_practices(
     session: AsyncSession,
     user_id: str,
     *,
+    query: str | None = None,
     inboxed: bool | None = None,
     archived: bool | None = None,
     has_stability: bool | None = None,
     srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
+    order_by: Literal["updated_at", "recent_activity"] = "updated_at",
 ) -> list[Practice]:
     """List practices with optional filters."""
     stmt = select(Practice).where(Practice.user_id == user_id)
 
+    # Text search filter
+    if query:
+        like_pattern = f"%{query.strip()}%"
+        stmt = stmt.where(
+            (Practice.prompt.ilike(like_pattern))
+            | (Practice.answer.ilike(like_pattern))
+        )
+
     # Apply ordering
-    if order == "desc":
-        stmt = stmt.order_by(desc(Practice.updated_at))
+    recent_activity = None
+    if order_by == "recent_activity":
+        last_reviewed_at = (
+            select(FsrsState.last_reviewed_at)
+            .where(FsrsState.id == Practice.fsrs_state_id)
+            .scalar_subquery()
+        )
+        last_reviewed_ts = cast(last_reviewed_at, TIMESTAMP(timezone=True))
+        recent_activity = func.greatest(
+            Practice.updated_at,
+            func.coalesce(last_reviewed_ts, Practice.updated_at),
+        )
+        if order == "desc":
+            stmt = stmt.order_by(desc(recent_activity))
+        else:
+            stmt = stmt.order_by(recent_activity)
     else:
-        stmt = stmt.order_by(Practice.updated_at)
+        if order == "desc":
+            stmt = stmt.order_by(desc(Practice.updated_at))
+        else:
+            stmt = stmt.order_by(Practice.updated_at)
 
     if inboxed is not None:
         stmt = stmt.where(Practice.inboxed == inboxed)
@@ -165,7 +193,17 @@ async def list_practices(
     if limit is not None:
         stmt = stmt.limit(limit)
 
+    if recent_activity is not None:
+        stmt = stmt.add_columns(recent_activity.label("recent_activity_at"))
+
     result = await session.execute(stmt)
+    if recent_activity is not None:
+        practices: list[Practice] = []
+        for practice, activity_at in result.all():
+            practice.recent_activity_at = activity_at
+            practices.append(practice)
+        return practices
+
     return list(result.scalars().unique().all())
 
 

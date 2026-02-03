@@ -29,6 +29,7 @@ class PracticeRead(PracticeBase):
     fsrs_state_id: int | None = None
     inserted_at: datetime
     updated_at: datetime
+    recent_activity_at: datetime | None = None
 
     # FSRS fields (from joined fsrs_state via properties on Practice model)
     stability: float | None = None

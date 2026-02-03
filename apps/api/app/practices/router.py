@@ -45,6 +45,7 @@ async def read_practices(
     srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
+    order_by: Literal["updated_at", "recent_activity"] = "updated_at",
 ) -> list[PracticeSummaryRead]:
     return await service.list_practices(
         session,
@@ -55,6 +56,7 @@ async def read_practices(
         srs_enabled=srs_enabled,
         limit=limit,
         order=order,
+        order_by=order_by,
     )
 
 
