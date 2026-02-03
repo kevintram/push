@@ -12,6 +12,7 @@ from app.reviews.entries.router import router as review_entries_router
 from app.reviews.sessions.router import router as review_sessions_router
 from app.auth.router import router as auth_router
 from app.admin.router import router as admin_router
+from app.search.router import router as search_router
 
 app = FastAPI()
 
@@ -31,6 +32,7 @@ app.include_router(practices_router)
 app.include_router(reviews_router)
 app.include_router(review_entries_router)
 app.include_router(review_sessions_router)
+app.include_router(search_router)
 app.include_router(auth_router)
 app.include_router(
     admin_router,
