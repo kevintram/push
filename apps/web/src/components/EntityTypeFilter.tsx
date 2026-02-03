@@ -8,26 +8,24 @@ const ENTITY_FILTER_BADGES: Array<{ id: EntityType; label: string }> = [
 ]
 
 export function EntityTypeFilter({
-	activeFilters,
-	onAllClick,
-	onToggle
+	activeFilter,
+	onFilterChange
 }: {
-	activeFilters: Array<EntityType>
-	onAllClick: () => void
-	onToggle: (filter: EntityType) => void
+	activeFilter: EntityType | null
+	onFilterChange: (filter: EntityType | null) => void
 }) {
-	const isAllActive = activeFilters.length === 0
+	const isAllActive = activeFilter === null
 	return (
 		<div className='flex items-center gap-2'>
 			<Badge
 				className='cursor-pointer'
 				onClick={() => {
-					if (!isAllActive) onAllClick()
+					if (!isAllActive) onFilterChange(null)
 				}}
 				onKeyDown={e => {
 					if (e.key === 'Enter' || e.key === ' ') {
 						e.preventDefault()
-						if (!isAllActive) onAllClick()
+						if (!isAllActive) onFilterChange(null)
 					}
 				}}
 				tabIndex={0}
@@ -36,18 +34,18 @@ export function EntityTypeFilter({
 				All
 			</Badge>
 			{ENTITY_FILTER_BADGES.map(badge => {
-				const isActive = activeFilters.includes(badge.id)
+				const isActive = activeFilter === badge.id
 				return (
 					<Badge
 						className='cursor-pointer'
 						key={badge.id}
 						onClick={() => {
-							if (!isActive) onToggle(badge.id)
+							if (!isActive) onFilterChange(badge.id)
 						}}
 						onKeyDown={e => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault()
-								if (!isActive) onToggle(badge.id)
+								if (!isActive) onFilterChange(badge.id)
 							}
 						}}
 						tabIndex={0}

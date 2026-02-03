@@ -31,7 +31,7 @@ import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 
 export function MyLibraryPage() {
 	const navigate = useNavigate()
-	const [activeFilters, setActiveFilters] = useState<Array<EntityType>>([])
+	const [activeFilter, setActiveFilter] = useState<EntityType | null>(null)
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 
@@ -57,22 +57,21 @@ export function MyLibraryPage() {
 
 	const isLoading = isLoadingTopics || isLoadingSources || isLoadingPractices
 
-	// Combine and filter entities based on active filters
+	// Combine and filter entities based on active filter
 	const libraryItems = useMemo<Array<EntityItem>>(() => {
 		const items: Array<EntityItem> = []
-		const showAll = activeFilters.length === 0
 
-		if (showAll || activeFilters.includes('topic')) {
+		if (activeFilter === null || activeFilter === 'topic') {
 			items.push(
 				...(topics ?? []).map((item): EntityItem => ({ type: 'topic', item }))
 			)
 		}
-		if (showAll || activeFilters.includes('source')) {
+		if (activeFilter === null || activeFilter === 'source') {
 			items.push(
 				...(sources ?? []).map((item): EntityItem => ({ type: 'source', item }))
 			)
 		}
-		if (showAll || activeFilters.includes('practice')) {
+		if (activeFilter === null || activeFilter === 'practice') {
 			items.push(
 				...(practices ?? []).map(
 					(item): EntityItem => ({ type: 'practice', item })
@@ -85,7 +84,7 @@ export function MyLibraryPage() {
 				new Date(b.item.updated_at).getTime() -
 				new Date(a.item.updated_at).getTime()
 		)
-	}, [topics, sources, practices, activeFilters])
+	}, [topics, sources, practices, activeFilter])
 
 	const handleCreateTopic = useCallback(async () => {
 		const newTopic = await createTopic({
@@ -124,21 +123,12 @@ export function MyLibraryPage() {
 		[navigate]
 	)
 
-	const toggleFilter = useCallback((filter: EntityType) => {
-		setActiveFilters([filter])
-	}, [])
-
-	const handleAllClick = useCallback(() => {
-		setActiveFilters([])
-	}, [])
-
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={Library} title='My Library'>
 				<EntityTypeFilter
-					activeFilters={activeFilters}
-					onAllClick={handleAllClick}
-					onToggle={toggleFilter}
+					activeFilter={activeFilter}
+					onFilterChange={setActiveFilter}
 				/>
 			</PageLayout.Header>
 			<LibraryList
