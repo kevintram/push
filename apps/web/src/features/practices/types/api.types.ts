@@ -4,6 +4,7 @@ export type GetPracticesParams = {
 	srsEnabled?: boolean
 	hasStability?: boolean
 	order?: 'desc' | 'asc'
+	orderBy?: 'updated_at' | 'recent_activity'
 	limit?: number
 }
 

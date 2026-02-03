@@ -6,6 +6,7 @@ export type GetTopicsParams = {
 	archived?: boolean
 	srsEnabled?: boolean
 	order?: 'desc' | 'asc'
+	orderBy?: 'updated_at' | 'recent_activity'
 	limit?: number
 	hasStability?: boolean
 	scheduled?: boolean

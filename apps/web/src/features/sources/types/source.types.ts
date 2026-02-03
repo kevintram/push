@@ -14,6 +14,7 @@ export type Source = {
 	entity_type?: 'source' // Discriminator for related entities
 	inserted_at: string
 	updated_at: string
+	recent_activity_at?: string | null
 	parent_id: number | null
 	fsrs_state_id: number | null
 	archived: boolean

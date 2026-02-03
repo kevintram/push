@@ -14,6 +14,7 @@ const practiceBaseFields = {
 	answer: v.string(),
 	inserted_at: v.string(),
 	updated_at: v.string(),
+	recent_activity_at: v.optional(v.nullable(v.string())),
 	fsrs_state_id: v.nullable(v.number()),
 	archived: v.boolean(),
 	inboxed: v.boolean(),

@@ -21,6 +21,7 @@ const sourceBaseFields = {
 	entity_type: v.optional(v.literal('source')),
 	inserted_at: v.string(),
 	updated_at: v.string(),
+	recent_activity_at: v.optional(v.nullable(v.string())),
 	parent_id: v.nullable(v.number()),
 	fsrs_state_id: v.nullable(v.number()),
 	archived: v.boolean(),
