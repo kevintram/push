@@ -20,7 +20,7 @@ export function EntityTypeFilter({
 	return (
 		<div className='flex items-center gap-2'>
 			<Badge
-				className='cursor-pointer'
+				className={isAllActive ? 'cursor-default' : 'cursor-pointer'}
 				onClick={() => {
 					if (!isAllActive) onFilterChange('all')
 				}}
@@ -39,7 +39,7 @@ export function EntityTypeFilter({
 				const isActive = activeFilter === badge.id
 				return (
 					<Badge
-						className='cursor-pointer'
+						className={isActive ? 'cursor-default' : 'cursor-pointer'}
 						key={badge.id}
 						onClick={() => {
 							if (!isActive) onFilterChange(badge.id)
