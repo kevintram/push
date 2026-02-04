@@ -1244,7 +1244,7 @@ async def convert_topic_to_practice(
     - Topic notes -> Practice answer
     - Topic FSRS state -> New Practice FSRS state
     - Topic flags -> Practice flags
-    - Parent topics -> practice_topics entries
+    - Direct parent topic -> practice_topics entry
     - Related topics -> practice_topics entries
 
     Raises ConversionBlockedError if topic has practices or covering sources.
@@ -1293,19 +1293,12 @@ async def convert_topic_to_practice(
         .values(practice_id=new_practice.id, topic_id=None)
     )
 
-    # 5. Collect associated topics (parents + related topics)
+    # 5. Collect associated topics (direct parent + related topics)
     associated_topic_ids: set[int] = set()
 
-    # Add parent topics (walk up the tree)
-    current = topic
-    while current.parent_id:
-        associated_topic_ids.add(current.parent_id)
-        parent_result = await session.execute(
-            select(Topic).where(Topic.id == current.parent_id, Topic.user_id == user_id)
-        )
-        current = parent_result.scalar_one_or_none()
-        if not current:
-            break
+    # Add direct parent topic only
+    if topic.parent_id:
+        associated_topic_ids.add(topic.parent_id)
 
     # Add related topics (both directions, but only topics)
     outgoing, incoming = await get_topic_related(session, topic_id, user_id)
