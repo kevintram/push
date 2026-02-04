@@ -7,7 +7,7 @@ import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useTopicDialog } from '~/features/dialogs/hooks/useTopicDialog'
 import type { FsrsState } from '~/models/learnable.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
@@ -66,7 +66,7 @@ export function TopicChildrenPanel({
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
-	const { openTopicDialog } = useReviewTopicDialog()
+	const { openTopicDialog } = useTopicDialog()
 
 	// Use prop directly - children comes from the single getTopic fetch
 	const children = childrenProp ?? []

@@ -3,14 +3,14 @@ import { Maximize2 } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useTopicDialog } from '~/features/dialogs/hooks/useTopicDialog'
 import { useTopicWithRelationships } from '../api/getTopic'
 import { TopicContext } from '../stores/SelectedTopicContext'
 import { TopicDetail } from './TopicDetail/TopicDetail'
 
 export function TopicDialog() {
 	const { topicDialogState, closeTopicDialog, maximizeTopicDialog } =
-		useReviewTopicDialog()
+		useTopicDialog()
 	const { isOpen, topicId: selectedTopicId } = topicDialogState
 	const navigate = useNavigate()
 	const { topic, isLoading } = useTopicWithRelationships(selectedTopicId)

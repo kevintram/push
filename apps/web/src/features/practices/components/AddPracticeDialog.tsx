@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Anvil, Inbox, Plus, RotateCcw, SquareStack } from 'lucide-react'
+import { Anvil, Inbox, Plus, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/Button'
@@ -23,7 +23,6 @@ import {
 	ReviewRatingCheckbox,
 	type ReviewRatingState
 } from '~/features/reviews/components/ReviewRatingCheckbox'
-import { SessionPickerPopover } from '~/features/reviews/components/SessionPickerPopover'
 import { useAddSourcePractice } from '~/features/sources/api/addSourcePractice'
 import { useAddTopicPractice } from '~/features/topics/api/addTopicPractice'
 import type { InheritOptions } from '~/models/learnable.types'
@@ -59,8 +58,6 @@ export function AddPracticeDialog({
 		useState<ReviewRatingState>('uncompleted')
 	const [reviewDescription, setReviewDescription] = useState('')
 	const [reviewNotes, setReviewNotes] = useState('')
-	const [reviewSessionId, setReviewSessionId] = useState<number | null>(null)
-	const [isSessionPopoverOpen, setIsSessionPopoverOpen] = useState(false)
 
 	// Toggle states
 	const [inboxed, setInboxed] = useState(false)
@@ -113,7 +110,6 @@ export function AddPracticeDialog({
 		setReviewRating('uncompleted')
 		setReviewDescription('')
 		setReviewNotes('')
-		setReviewSessionId(null)
 	}, [])
 
 	// Reset toggle fields to defaults
@@ -177,15 +173,7 @@ export function AddPracticeDialog({
 					notes: reviewNotes.trim(),
 					completed_at: dayjs().format('YYYY-MM-DD')
 				} as const
-
-				if (reviewSessionId != null) {
-					await createReview({
-						...basePayload,
-						review_session_id: reviewSessionId
-					})
-				} else {
-					await createReview(basePayload)
-				}
+				await createReview(basePayload)
 			}
 
 			// Call success callback
@@ -221,7 +209,6 @@ export function AddPracticeDialog({
 		reviewRating,
 		reviewDescription,
 		reviewNotes,
-		reviewSessionId,
 		createReview,
 		onSuccess,
 		createMore,
@@ -281,25 +268,6 @@ export function AddPracticeDialog({
 										value={reviewNotes}
 									/>
 								</div>
-								<SessionPickerPopover
-									allowCreate={false}
-									isOpen={isSessionPopoverOpen}
-									onOpenChange={setIsSessionPopoverOpen}
-									onSessionChange={setReviewSessionId}
-									selectedSessionId={reviewSessionId}
-									trigger={
-										<Button
-											className='h-8 flex-shrink-0 gap-1 px-2'
-											size='sm'
-											variant='ghost'
-										>
-											<SquareStack className='h-4 w-4' />
-											<span className='max-w-[80px] truncate text-xs'>
-												{reviewSessionId ? 'Session' : 'No session'}
-											</span>
-										</Button>
-									}
-								/>
 							</div>
 						</div>
 					) : (

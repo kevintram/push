@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useTopicDialog } from '~/features/dialogs/hooks/useTopicDialog'
 import { useSetTopicParent } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
 import type { Topic } from '../types/topic.types'
@@ -33,7 +33,7 @@ export function TopicParentsPanel({
 }: TopicParentsPanelProps) {
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
-	const { openTopicDialog } = useReviewTopicDialog()
+	const { openTopicDialog } = useTopicDialog()
 	const queryClient = useQueryClient()
 
 	// Use prop directly - parent comes from the single getTopic fetch

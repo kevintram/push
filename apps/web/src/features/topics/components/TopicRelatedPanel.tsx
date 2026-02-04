@@ -12,7 +12,7 @@ import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
-import { useReviewTopicDialog } from '~/features/dialogs/hooks/useReviewTopicDialog'
+import { useTopicDialog } from '~/features/dialogs/hooks/useTopicDialog'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { EntityType } from '~/models/entity-relations.types'
@@ -59,7 +59,7 @@ export function TopicRelatedPanel({
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 	const [showAddSourceDialog, setShowAddSourceDialog] = useState(false)
 	const [isCollapsed, setIsCollapsed] = useState(false)
-	const { openTopicDialog } = useReviewTopicDialog()
+	const { openTopicDialog } = useTopicDialog()
 
 	// Use prop directly - related comes from the single getTopic fetch (merged incoming + outgoing)
 	const related = relatedProp ?? []
