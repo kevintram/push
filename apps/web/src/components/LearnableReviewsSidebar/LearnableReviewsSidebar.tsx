@@ -244,20 +244,15 @@ export function LearnableReviewsSidebar<T extends EntityWithId>({
 						{/* Scheduled Reviews Section */}
 						{scheduledReviews.length > 0 && (
 							<div className='flex flex-col'>
-								<div className='flex flex-row items-center gap-2 pt-6'>
-									<h2 className='font-semibold text-sm'>Scheduled</h2>
-								</div>
-								<div className='flex flex-col'>
-									{scheduledReviews.map(entry => (
-										<ReviewItem
-											entry={entry}
-											key={entry.id}
-											onReviewClick={handleReviewClick}
-											readonly={readonly}
-											variant='session'
-										/>
-									))}
-								</div>
+								{scheduledReviews.map(entry => (
+									<ReviewItem
+										entry={entry}
+										key={entry.id}
+										onReviewClick={handleReviewClick}
+										readonly={readonly}
+										variant='session'
+									/>
+								))}
 							</div>
 						)}
 					</>
