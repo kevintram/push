@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import {
 	Archive,
 	ArchiveRestore,
@@ -26,6 +25,7 @@ import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { DeleteTopicDialog } from '~/features/topics/components/DeleteTopicDialog'
 import type { Topic } from '~/features/topics/types/topic.types'
+import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { ConversionError } from '~/utils/ConversionError'
 import {
 	getTopicToPracticePreview,
@@ -35,6 +35,7 @@ import { localDateString } from '~/utils/date'
 
 interface TopicActionMenuProps {
 	topic: Topic
+	onConvertSuccess?: OnConversionSuccess
 	onRemoveRelationship?: () => void
 	removeRelationshipText?: string
 	children?: React.ReactNode
@@ -45,6 +46,7 @@ interface TopicActionMenuProps {
 
 export function TopicActionMenu({
 	topic,
+	onConvertSuccess,
 	onRemoveRelationship,
 	removeRelationshipText = 'Remove as Child',
 	children,
@@ -61,7 +63,6 @@ export function TopicActionMenu({
 	const [convertToPracticeError, setConvertToPracticeError] = useState<
 		string | null
 	>(null)
-	const navigate = useNavigate()
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
 	const createReviewMutation = useCreateReview()
@@ -133,10 +134,7 @@ export function TopicActionMenu({
 				topicId: topic.id
 			})
 			setConvertToSourceOpen(false)
-			navigate({
-				to: '/sources/$sourceId',
-				params: { sourceId: String(result.source_id) }
-			})
+			onConvertSuccess?.('source', result.source_id)
 		} catch (error) {
 			if (error instanceof ConversionError) {
 				setConvertToSourceError(error.message)
@@ -144,7 +142,7 @@ export function TopicActionMenu({
 				setConvertToSourceError('Failed to convert topic to source')
 			}
 		}
-	}, [convertToSourceMutation, topic.id, navigate])
+	}, [convertToSourceMutation, topic.id, onConvertSuccess])
 
 	const handleConfirmConvertToPractice = useCallback(async () => {
 		try {
@@ -152,10 +150,7 @@ export function TopicActionMenu({
 				topicId: topic.id
 			})
 			setConvertToPracticeOpen(false)
-			navigate({
-				to: '/practices/$practiceId',
-				params: { practiceId: String(result.practice_id) }
-			})
+			onConvertSuccess?.('practice', result.practice_id)
 		} catch (error) {
 			if (error instanceof ConversionError) {
 				setConvertToPracticeError(error.message)
@@ -163,7 +158,7 @@ export function TopicActionMenu({
 				setConvertToPracticeError('Failed to convert topic to practice')
 			}
 		}
-	}, [convertToPracticeMutation, topic.id, navigate])
+	}, [convertToPracticeMutation, topic.id, onConvertSuccess])
 
 	return (
 		<>

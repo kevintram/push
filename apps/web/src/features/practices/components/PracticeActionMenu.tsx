@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import {
 	Archive,
 	ArchiveRestore,
@@ -23,6 +22,7 @@ import { useConvertPracticeToSource } from '~/features/practices/api/convertPrac
 import { useConvertPracticeToTopic } from '~/features/practices/api/convertPracticeToTopic'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
+import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { ConversionError } from '~/utils/ConversionError'
 import {
 	getPracticeToSourcePreview,
@@ -35,6 +35,7 @@ import type { Practice } from '../types/practice.types'
 
 interface PracticeActionMenuProps {
 	practice: Practice
+	onConvertSuccess?: OnConversionSuccess
 	children?: React.ReactNode
 	onDelete?: () => void
 	trigger?: React.ReactNode
@@ -45,6 +46,7 @@ interface PracticeActionMenuProps {
 
 export function PracticeActionMenu({
 	practice,
+	onConvertSuccess,
 	children,
 	onDelete,
 	trigger,
@@ -54,7 +56,6 @@ export function PracticeActionMenu({
 }: PracticeActionMenuProps) {
 	const [convertToTopicOpen, setConvertToTopicOpen] = useState(false)
 	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
-	const navigate = useNavigate()
 	const deletePracticeMutation = useDeletePractice()
 	const updatePracticeMutation = useUpdatePractice(onPracticeUpdateSuccess)
 	const createReviewMutation = useCreateReview()
@@ -127,10 +128,7 @@ export function PracticeActionMenu({
 				practiceId: practice.id
 			})
 			setConvertToTopicOpen(false)
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: String(result.topic_id) }
-			})
+			onConvertSuccess?.('topic', result.topic_id)
 		} catch (error) {
 			setConvertToTopicOpen(false)
 			if (error instanceof ConversionError) {
@@ -139,7 +137,7 @@ export function PracticeActionMenu({
 				toast.error('Failed to convert practice to topic')
 			}
 		}
-	}, [convertToTopicMutation, practice.id, navigate])
+	}, [convertToTopicMutation, practice.id, onConvertSuccess])
 
 	const handleConfirmConvertToSource = useCallback(async () => {
 		try {
@@ -147,10 +145,7 @@ export function PracticeActionMenu({
 				practiceId: practice.id
 			})
 			setConvertToSourceOpen(false)
-			navigate({
-				to: '/sources/$sourceId',
-				params: { sourceId: String(result.source_id) }
-			})
+			onConvertSuccess?.('source', result.source_id)
 		} catch (error) {
 			setConvertToSourceOpen(false)
 			if (error instanceof ConversionError) {
@@ -159,7 +154,7 @@ export function PracticeActionMenu({
 				toast.error('Failed to convert practice to source')
 			}
 		}
-	}, [convertToSourceMutation, practice.id, navigate])
+	}, [convertToSourceMutation, practice.id, onConvertSuccess])
 
 	return (
 		<>

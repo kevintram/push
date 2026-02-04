@@ -6,6 +6,7 @@ import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
+import { useConversionNavigate } from '~/hooks/useConversionNavigate'
 
 interface TopicDetailPageProps {
 	topicId: string
@@ -30,6 +31,7 @@ function BrowserNavigationButtons() {
 export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
 	const navigate = useNavigate()
 	const router = useRouter()
+	const handleConvertSuccess = useConversionNavigate()
 
 	const { topic, isLoading } = useTopicWithRelationships(
 		Number.parseInt(topicId, 10)
@@ -83,6 +85,7 @@ export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
 				className='mx-auto max-w-5xl'
 				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
+				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}
 				onPracticeNavigate={handlePracticeNavigate}
 				onSourceNavigate={handleSourceNavigate}

@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'react'
 import { LearnableTitleSection } from '~/components/LearnableTitleSection'
+import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import type { Source } from '../../types/source.types'
 import { SourceActionMenu } from '../SourceActionMenu'
 
@@ -10,6 +11,7 @@ interface SourceTitleSectionProps {
 	onSrsToggle: (pressed: boolean) => void
 	isUpdating: boolean
 	sidebarReadonly: boolean
+	onConvertSuccess?: OnConversionSuccess
 	onDelete?: () => void | Promise<void>
 	onSourceUpdateSuccess: (source: Source) => void
 }
@@ -21,6 +23,7 @@ export function SourceTitleSection({
 	onSrsToggle,
 	isUpdating,
 	sidebarReadonly,
+	onConvertSuccess,
 	onDelete,
 	onSourceUpdateSuccess
 }: SourceTitleSectionProps) {
@@ -32,6 +35,7 @@ export function SourceTitleSection({
 			onTitleChange={onTitleChange}
 			renderActionMenu={trigger => (
 				<SourceActionMenu
+					onConvertSuccess={onConvertSuccess}
 					onDelete={onDelete}
 					onSourceUpdateSuccess={onSourceUpdateSuccess}
 					source={source}
