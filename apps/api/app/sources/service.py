@@ -1244,12 +1244,12 @@ async def convert_source_to_topic(
                 new_to_topic_id = source_to_topic[rel.to_source_id].id
                 new_to_source_id = None
 
-            new_rel = EntityRelation(
+            await EntityRelation.insert_or_ignore(
+                session,
                 from_topic_id=new_topic.id,
                 to_topic_id=new_to_topic_id,
                 to_source_id=new_to_source_id,
             )
-            session.add(new_rel)
 
         # Get incoming relations (to this source)
         incoming = await session.execute(
@@ -1260,12 +1260,12 @@ async def convert_source_to_topic(
             if rel.from_source_id and rel.from_source_id in source_to_topic:
                 continue
 
-            new_rel = EntityRelation(
+            await EntityRelation.insert_or_ignore(
+                session,
                 from_topic_id=rel.from_topic_id,
                 from_source_id=rel.from_source_id,
                 to_topic_id=new_topic.id,
             )
-            session.add(new_rel)
 
     # 5. Migrate source_topics -> entity_relations
     for source in all_sources:
@@ -1278,11 +1278,11 @@ async def convert_source_to_topic(
         )
         for row in st_result:
             covered_topic_id = row[0]
-            new_rel = EntityRelation(
+            await EntityRelation.insert_or_ignore(
+                session,
                 from_topic_id=new_topic.id,
                 to_topic_id=covered_topic_id,
             )
-            session.add(new_rel)
 
     # 6. Migrate source_prerequisites -> entity_relations
     for source in all_sources:
@@ -1300,12 +1300,12 @@ async def convert_source_to_topic(
                 to_topic_id = source_to_topic[prereq.prereq_source_id].id
                 to_source_id = None
 
-            new_rel = EntityRelation(
+            await EntityRelation.insert_or_ignore(
+                session,
                 from_topic_id=new_topic.id,
                 to_topic_id=to_topic_id,
                 to_source_id=to_source_id,
             )
-            session.add(new_rel)
 
     # 7. Delete original sources (cascade will clean up old relations)
     # Delete in reverse order (children first) to respect FK constraints

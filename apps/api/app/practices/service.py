@@ -11,7 +11,6 @@ from sqlalchemy.types import TIMESTAMP
 
 from app.exceptions import AlreadyExistsError, NotFoundError
 from app.models import (
-    EntityRelation,
     FsrsState,
     Practice,
     Review,
@@ -21,6 +20,7 @@ from app.models import (
     t_practice_topics,
     t_source_topics,
 )
+from app.models.entity_relations import EntityRelation
 from app.utils.fsrs import apply_inherited_fsrs
 
 
@@ -555,11 +555,11 @@ async def convert_practice_to_topic(
         )
     )
     for row in pt_result:
-        new_rel = EntityRelation(
+        await EntityRelation.insert_or_ignore(
+            session,
             from_topic_id=new_topic.id,
             to_topic_id=row[0],
         )
-        session.add(new_rel)
 
     # 7. Delete original practice
     await session.delete(practice)
@@ -645,11 +645,11 @@ async def convert_practice_to_source(
         )
     )
     for row in ps_result:
-        new_rel = EntityRelation(
+        await EntityRelation.insert_or_ignore(
+            session,
             from_source_id=new_source.id,
             to_source_id=row[0],
         )
-        session.add(new_rel)
 
     # 7. Delete original practice
     await session.delete(practice)
