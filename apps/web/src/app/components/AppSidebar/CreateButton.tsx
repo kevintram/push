@@ -32,6 +32,7 @@ import { AddPracticeDialog } from '~/features/practices/components/AddPracticeDi
 import { useCreateReviewSession } from '~/features/reviews/api/createReviewSession'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
+import { localDateString } from '~/utils/date'
 
 export function CreateButton() {
 	// Hooks
@@ -49,7 +50,7 @@ export function CreateButton() {
 	const isLoading = isCreatingReview
 
 	const handleLogReviewNow = useCallback(async () => {
-		const today = new Date().toISOString().split('T')[0]
+		const today = localDateString()
 		const review = await createReview({
 			description: '',
 			scheduledAt: null,
