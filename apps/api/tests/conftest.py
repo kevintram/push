@@ -423,4 +423,3 @@ def create_test_practice(db_session: AsyncSession, mock_user_id: str):
         return result.scalar_one()
 
     return _create_practice
-
