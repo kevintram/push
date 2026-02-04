@@ -31,6 +31,7 @@ import {
 	getSourceToPracticePreview,
 	getSourceToTopicPreview
 } from '~/utils/conversionPreview'
+import { localDateString } from '~/utils/date'
 
 interface SourceActionMenuProps {
 	source: Source
@@ -110,7 +111,7 @@ export function SourceActionMenu({
 	const handleLogNow = useCallback(
 		async (e: React.MouseEvent) => {
 			e.stopPropagation()
-			const today = new Date().toISOString().split('T')[0] ?? ''
+			const today = localDateString()
 			const review = await createReviewMutation.mutateAsync({
 				source_id: source.id,
 				rating: 'good',

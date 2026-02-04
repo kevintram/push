@@ -113,10 +113,10 @@ export function ReviewItem({
 			updateReviewMutation.mutateAsync({
 				id: entry.id,
 				rating: status,
-				completed_at: dayjs().format('YYYY-MM-DD')
+				completed_at: entry.completed_at ?? dayjs().format('YYYY-MM-DD')
 			})
 		},
-		[entry.id, updateReviewMutation]
+		[entry.id, entry.completed_at, updateReviewMutation]
 	)
 
 	const handleDateSave = useCallback(

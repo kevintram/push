@@ -28,6 +28,7 @@ import {
 	getPracticeToSourcePreview,
 	getPracticeToTopicPreview
 } from '~/utils/conversionPreview'
+import { localDateString } from '~/utils/date'
 import { useDeletePractice } from '../api/deletePractice'
 import { useUpdatePractice } from '../api/updatePractice'
 import type { Practice } from '../types/practice.types'
@@ -107,7 +108,7 @@ export function PracticeActionMenu({
 	const handleLogNow = useCallback(
 		async (e: React.MouseEvent) => {
 			e.stopPropagation()
-			const today = new Date().toISOString().split('T')[0] ?? ''
+			const today = localDateString()
 			const review = await createReviewMutation.mutateAsync({
 				practice_id: practice.id,
 				rating: 'good',

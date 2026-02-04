@@ -22,6 +22,7 @@ import type {
 	Rating,
 	ReviewListItem
 } from '~/features/reviews/types/review.types'
+import { localDateString } from '~/utils/date'
 
 type EntityType = 'topic' | 'source' | 'practice'
 
@@ -132,7 +133,7 @@ export function LearnableReviewsSidebar<T extends EntityWithId>({
 	)
 
 	const handleLogReviewNow = useCallback(async () => {
-		const today = new Date().toISOString().split('T')[0] ?? '' // YYYY-MM-DD format
+		const today = localDateString()
 		await createReview(today, 'good')
 	}, [createReview])
 
