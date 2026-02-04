@@ -228,7 +228,7 @@ class TestConvertTopicToPractice:
     async def test_convert_topic_with_parents(
         self, test_client: AsyncClient, create_test_topic, db_session: AsyncSession
     ):
-        """Parent topics become associated topics of the new practice."""
+        """Only the direct parent becomes an associated topic of the new practice."""
         grandparent = await create_test_topic(name="Grandparent")
         parent = await create_test_topic(name="Parent", parent_id=grandparent.id)
         topic = await create_test_topic(name="Topic", parent_id=parent.id)
@@ -238,15 +238,15 @@ class TestConvertTopicToPractice:
         assert response.status_code == 200
         practice_id = response.json()["practice_id"]
 
-        # Verify parent topics are associated via practice_topics
+        # Verify only direct parent is associated via practice_topics
         result = await db_session.execute(
             select(t_practice_topics.c.topic_id).where(
                 t_practice_topics.c.practice_id == practice_id
             )
         )
         topic_ids = [row[0] for row in result.fetchall()]
-        assert grandparent.id in topic_ids
         assert parent.id in topic_ids
+        assert grandparent.id not in topic_ids
 
     async def test_convert_topic_with_related_topics(
         self, test_client: AsyncClient, create_test_topic, db_session: AsyncSession
