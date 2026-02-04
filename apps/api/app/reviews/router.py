@@ -24,7 +24,6 @@ router = APIRouter(prefix="/reviews", tags=["reviews"])
 async def read_reviews(
     session: SessionDep,
     user_id: UserIdDep,
-    review_session_id: int | None = None,
     topic_id: int | None = None,
     source_id: int | None = None,
     practice_id: int | None = None,
@@ -48,7 +47,6 @@ async def read_reviews(
     results = await service.list_reviews(
         session,
         user_id,
-        review_session_id=review_session_id,
         topic_id=topic_id,
         source_id=source_id,
         practice_id=practice_id,
@@ -70,8 +68,6 @@ async def read_reviews(
         row_practice_id,
         practice_prompt,
         practice_answer,
-        row_review_session_id,
-        review_session_description,
     ) in results:
         review_data = ReviewRead.model_validate(review).model_dump()
 
@@ -105,11 +101,6 @@ async def read_reviews(
             else None
         )
 
-        review_data["review_session"] = (
-            {"id": row_review_session_id, "description": review_session_description}
-            if row_review_session_id is not None
-            else None
-        )
         items.append(ReviewListItem(**review_data))
     return items
 
@@ -143,7 +134,6 @@ async def create_review(
     - For topic reviews: provide topic_id or topic (inline creation)
     - For source reviews: provide source_id or source (inline creation)
     - For practice reviews: provide practice_id or practice (inline creation)
-    - Optionally link to a review session via review_session_id or review_session
     """
     # Convert Pydantic models to dicts for service layer
     topic_data = None
@@ -165,10 +155,6 @@ async def create_review(
         practice_data = review_create.practice.model_dump(exclude={"srs_enabled"})
         practice_data["srs_enabled"] = review_create.practice.srs_enabled
 
-    review_session_data = None
-    if review_create.review_session is not None:
-        review_session_data = review_create.review_session.model_dump()
-
     review = await service.create_review(
         session,
         user_id,
@@ -178,8 +164,6 @@ async def create_review(
         source_data=source_data,
         practice_id=review_create.practice_id,
         practice_data=practice_data,
-        review_session_id=review_create.review_session_id,
-        review_session_data=review_session_data,
         description=review_create.description,
         scheduled_at=review_create.scheduled_at,
         completed_at=review_create.completed_at,
@@ -213,7 +197,6 @@ async def update_review(
         scheduled_at=review_update.scheduled_at,
         completed_at=review_update.completed_at,
         rating=review_update.rating,
-        review_session_id=review_update.review_session_id,
         fields_set=fields_set,
     )
 

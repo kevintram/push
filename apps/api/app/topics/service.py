@@ -24,7 +24,6 @@ from app.models import (
     FsrsState,
     Practice,
     Review,
-    ReviewSession,
     Source,
     Topic,
     t_practice_sources,
@@ -790,19 +789,6 @@ async def remove_related_entity_from_topic(
 
     if result.rowcount == 0:
         raise NotFoundError("Relationship")
-
-
-async def get_review_sessions_for_topic(
-    session: AsyncSession, topic_id: int, user_id: str
-) -> list[ReviewSession]:
-    """Get all review sessions that include this topic."""
-    stmt = select(ReviewSession).where(
-        ReviewSession.reviews.any(Review.topic_id == topic_id),
-        ReviewSession.user_id == user_id,
-    )
-    stmt = stmt.options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
 
 
 async def update_topic(

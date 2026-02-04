@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.exceptions import AlreadyExistsError, NotFoundError
-from app.models import FsrsState, Practice, Review, ReviewSession, Source, Topic
+from app.models import FsrsState, Practice, Review, Source, Topic
 
 
 # --- FSRS Helpers (pure functions, kept here for locality) ---
@@ -226,7 +226,6 @@ async def get_review(session: AsyncSession, review_id: int, user_id: str) -> Rev
             selectinload(Review.topic).selectinload(Topic.fsrs_state),
             selectinload(Review.source).selectinload(Source.fsrs_state),
             selectinload(Review.practice).selectinload(Practice.fsrs_state),
-            selectinload(Review.review_session),
         )
     )
     result = await session.execute(stmt)
@@ -240,7 +239,6 @@ async def list_reviews(
     session: AsyncSession,
     user_id: str,
     *,
-    review_session_id: int | None = None,
     topic_id: int | None = None,
     source_id: int | None = None,
     practice_id: int | None = None,
@@ -262,13 +260,10 @@ async def list_reviews(
             Practice.id,
             Practice.prompt,
             Practice.answer,
-            ReviewSession.id,
-            ReviewSession.description,
         )
         .outerjoin(Topic, Review.topic_id == Topic.id)
         .outerjoin(Source, Review.source_id == Source.id)
         .outerjoin(Practice, Review.practice_id == Practice.id)
-        .outerjoin(ReviewSession, Review.review_session_id == ReviewSession.id)
         .where(Review.user_id == user_id)
         .order_by(
             Review.completed_at.asc().nulls_first(),
@@ -276,9 +271,6 @@ async def list_reviews(
             Review.id.asc(),
         )
     )
-
-    if review_session_id is not None:
-        stmt = stmt.where(Review.review_session_id == review_session_id)
 
     if topic_id is not None:
         stmt = stmt.where(Review.topic_id == topic_id)
@@ -321,8 +313,6 @@ async def create_review(
     source_data: dict | None = None,
     practice_id: int | None = None,
     practice_data: dict | None = None,
-    review_session_id: int | None = None,
-    review_session_data: dict | None = None,
     description: str | None = None,
     scheduled_at: date | None = None,
     completed_at: date | None = None,
@@ -334,8 +324,6 @@ async def create_review(
     - For topic reviews: provide topic_id or topic_data (inline creation)
     - For source reviews: provide source_id or source_data (inline creation)
     - For practice reviews: provide practice_id or practice_data (inline creation)
-    - Optionally link to a review session via review_session_id or review_session_data
-
     Raises AlreadyExistsError if review already exists.
     """
     # Determine entity type
@@ -433,36 +421,10 @@ async def create_review(
     else:
         raise ValueError("Must provide topic, source, or practice for review")
 
-    # Resolve or create Review Session (optional - can be None)
-    resolved_review_session_id: int | None = None
-    if review_session_id is not None:
-        session_result = await session.execute(
-            select(ReviewSession).where(
-                ReviewSession.id == review_session_id,
-                ReviewSession.user_id == user_id,
-            )
-        )
-        review_session = session_result.scalar_one_or_none()
-        if not review_session:
-            raise NotFoundError("Review Session", review_session_id)
-        resolved_review_session_id = review_session.id
-    elif review_session_data is not None:
-        review_session = ReviewSession(
-            description=review_session_data.get("description"),
-            notes=review_session_data.get("notes"),
-            scheduled_at=review_session_data.get("scheduled_at"),
-            completed_at=review_session_data.get("completed_at"),
-            user_id=user_id,
-        )
-        session.add(review_session)
-        await session.flush()
-        resolved_review_session_id = review_session.id
-
     # Check if review is completed - only run FSRS if it is
     if completed_at is None:
         # Review not completed yet - create review without FSRS or rating
         new_review = Review(
-            review_session_id=resolved_review_session_id,
             topic_id=topic.id if topic else None,
             source_id=source.id if source else None,
             practice_id=practice.id if practice else None,
@@ -486,7 +448,6 @@ async def create_review(
                 selectinload(Review.topic),
                 selectinload(Review.source),
                 selectinload(Review.practice),
-                selectinload(Review.review_session),
             )
         )
         return review_result.scalar_one()
@@ -495,7 +456,6 @@ async def create_review(
     rating_value = rating or "good"
 
     new_review = Review(
-        review_session_id=resolved_review_session_id,
         topic_id=topic.id if topic else None,
         source_id=source.id if source else None,
         practice_id=practice.id if practice else None,
@@ -532,7 +492,6 @@ async def create_review(
             selectinload(Review.topic),
             selectinload(Review.source),
             selectinload(Review.practice),
-            selectinload(Review.review_session),
         )
     )
     return review_result.scalar_one()
@@ -548,7 +507,6 @@ async def update_review(
     scheduled_at: date | None = ...,  # Use ... as sentinel
     completed_at: date | None = ...,  # Use ... as sentinel
     rating: str | None = None,
-    review_session_id: int | None = ...,  # Use ... as sentinel
     fields_set: set[str],
 ) -> Review:
     """Update a review's rating/completion and recalculate FSRS state.
@@ -570,8 +528,6 @@ async def update_review(
         existing_review.notes = notes
     if "scheduled_at" in fields_set:
         existing_review.scheduled_at = scheduled_at
-    if "review_session_id" in fields_set:
-        existing_review.review_session_id = review_session_id
 
     # Check if review is completed - only run FSRS if it is
     new_completed_at = (
@@ -596,7 +552,6 @@ async def update_review(
                 selectinload(Review.topic),
                 selectinload(Review.source),
                 selectinload(Review.practice),
-                selectinload(Review.review_session),
             )
         )
         return review_result.scalar_one()
@@ -627,7 +582,6 @@ async def update_review(
             selectinload(Review.topic),
             selectinload(Review.source),
             selectinload(Review.practice),
-            selectinload(Review.review_session),
         )
     )
     return review_result.scalar_one()

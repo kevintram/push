@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from app.schemas.topics import TopicRead, TopicCreate
     from app.schemas.sources import SourceRead, SourceCreate
     from app.schemas.practices import PracticeRead, PracticeCreate
-    from app.schemas.review_sessions import ReviewSessionCreate
 
 
 class ReviewBase(BaseModel):
@@ -28,7 +27,6 @@ class ReviewRead(ReviewBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    review_session_id: int | None
     # Polymorphic: exactly one of topic_id, source_id, or practice_id will be set
     topic_id: int | None = None
     source_id: int | None = None
@@ -50,13 +48,6 @@ class ReviewRead(ReviewBase):
     state_after: str | None
     step_after: int | None
     due_after: date | None
-
-
-class ReviewSessionSummary(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    description: str | None = None
 
 
 class TopicSummary(BaseModel):
@@ -88,7 +79,6 @@ class ReviewListItem(ReviewRead):
 
     model_config = ConfigDict(from_attributes=True)
 
-    review_session: ReviewSessionSummary | None
     topic: TopicSummary | None = None
     source: SourceSummary | None = None
     practice: PracticeSummary | None = None
@@ -100,7 +90,6 @@ class ReviewWithTopic(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 
     topic: "TopicRead"
-    review_session: ReviewSessionSummary | None
 
 
 class ReviewWithSource(ReviewRead):
@@ -109,7 +98,6 @@ class ReviewWithSource(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 
     source: "SourceRead"
-    review_session: ReviewSessionSummary | None
 
 
 class ReviewWithPractice(ReviewRead):
@@ -118,7 +106,6 @@ class ReviewWithPractice(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 
     practice: "PracticeRead"
-    review_session: ReviewSessionSummary | None
 
 
 class ReviewCreate(BaseModel):
@@ -138,10 +125,6 @@ class ReviewCreate(BaseModel):
     practice_id: int | None = None
     practice: "PracticeCreate | None" = None
 
-    # Mutually exclusive: provide review_session_id OR review_session (not both)
-    review_session_id: int | None = None
-    review_session: "ReviewSessionCreate | None" = None
-
     rating: str | None = None
 
     @model_validator(mode="after")
@@ -160,10 +143,6 @@ class ReviewCreate(BaseModel):
                 "Must provide exactly one of: topic_id, topic, source_id, source, practice_id, or practice"
             )
 
-        # Validate review session fields (both can be None - session is optional)
-        if self.review_session_id is not None and self.review_session is not None:
-            raise ValueError("Cannot provide both review_session_id and review_session")
-
         return self
 
 
@@ -175,4 +154,3 @@ class ReviewUpdate(BaseModel):
     notes: str | None = None
     scheduled_at: date | None = None
     completed_at: date | None = None
-    review_session_id: int | None = None

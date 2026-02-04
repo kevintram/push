@@ -8,10 +8,6 @@ import { reviewKeys } from './queryKeys'
 export async function getReviews(filters?: GetReviewsFilters) {
 	const params = new URLSearchParams()
 
-	if (filters?.reviewSessionId !== undefined) {
-		params.append('review_session_id', filters.reviewSessionId.toString())
-	}
-
 	if (filters?.topicId !== undefined) {
 		params.append('topic_id', filters.topicId.toString())
 	}

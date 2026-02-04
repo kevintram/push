@@ -1,123 +1,26 @@
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import * as v from 'valibot'
-import { apiFetch } from '~/utils/apiFetch'
 import type {
 	FutureEntrySection,
-	GetReviewEntriesFilters,
 	LogbookEntrySection,
 	SoonEntrySection,
 	TodayEntrySection,
 	UnscheduledEntrySection
 } from '../types/api.types'
-import {
-	ReviewEntriesResponseSchema,
-	ReviewEntrySchema
-} from '../types/review.schemas'
-import type { ReviewEntriesResponse, ReviewEntry } from '../types/review.types'
-import { reviewEntryKeys } from './queryKeys'
+import type { ReviewListItem } from '../types/review.types'
+import { getReviews } from './getReviews'
+import { reviewKeys } from './queryKeys'
 
-const sortReviewEntriesByEffectiveDateDesc = (
-	entries: Array<ReviewEntry>
-): Array<ReviewEntry> => {
+const sortReviewsByEffectiveDateDesc = (
+	entries: Array<ReviewListItem>
+): Array<ReviewListItem> => {
 	return [...entries].sort((a, b) => {
 		if (a.effective_date === b.effective_date) return 0
 		if (a.effective_date === null) return 1
 		if (b.effective_date === null) return -1
 		return a.effective_date < b.effective_date ? 1 : -1
 	})
-}
-
-const buildReviewEntriesParams = (
-	filters?: GetReviewEntriesFilters,
-	includeCount = false
-) => {
-	const params = new URLSearchParams()
-
-	if (filters?.topicId !== undefined) {
-		params.append('topic_id', filters.topicId.toString())
-	}
-
-	if (filters?.effectiveDateBefore !== undefined) {
-		params.append('effective_date_before', filters.effectiveDateBefore)
-	}
-
-	if (filters?.effectiveDateAfter !== undefined) {
-		params.append('effective_date_after', filters.effectiveDateAfter)
-	}
-
-	if (filters?.scheduled !== undefined) {
-		params.append('scheduled', String(filters.scheduled))
-	}
-
-	if (filters?.completed !== undefined) {
-		params.append('completed', String(filters.completed))
-	}
-
-	if (filters?.sort !== undefined) {
-		params.append('sort', filters.sort)
-	}
-
-	if (filters?.limit !== undefined) {
-		params.append('limit', String(filters.limit))
-	}
-
-	if (includeCount) {
-		params.append('include_count', 'true')
-	}
-
-	return params
-}
-
-export async function getReviewEntries(filters?: GetReviewEntriesFilters) {
-	const params = buildReviewEntriesParams(filters)
-
-	const url = `${import.meta.env.VITE_API_URL}/review-entries/${params.toString() ? `?${params.toString()}` : ''}`
-
-	const response = await apiFetch(url, {
-		method: 'GET'
-	})
-
-	if (!response.ok) {
-		throw new Error(`API request failed: ${response.status}`)
-	}
-
-	const data = await response.json()
-	try {
-		return v.parse(v.array(ReviewEntrySchema), data)
-	} catch (error) {
-		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`)
-		}
-		throw error
-	}
-}
-
-export async function getReviewEntriesWithCount(
-	filters?: GetReviewEntriesFilters
-): Promise<ReviewEntriesResponse> {
-	const params = buildReviewEntriesParams(filters, true)
-
-	const url = `${import.meta.env.VITE_API_URL}/review-entries/${params.toString() ? `?${params.toString()}` : ''}`
-
-	const response = await apiFetch(url, {
-		method: 'GET'
-	})
-
-	if (!response.ok) {
-		throw new Error(`API request failed: ${response.status}`)
-	}
-
-	const data = await response.json()
-	try {
-		return v.parse(ReviewEntriesResponseSchema, data)
-	} catch (error) {
-		if (v.isValiError(error)) {
-			throw new Error(`Validation failed: ${error.message}`)
-		}
-		throw error
-	}
 }
 
 type TodaySectionDefinition = {
@@ -145,10 +48,8 @@ export function useTodayReviewEntries() {
 	const tomorrow = useMemo(() => dayjs().add(1, 'day').format('YYYY-MM-DD'), [])
 
 	const query = useQuery({
-		queryKey: reviewEntryKeys.list({ effectiveDateBefore: tomorrow }),
-		queryFn: () => {
-			return getReviewEntries({ effectiveDateBefore: tomorrow })
-		}
+		queryKey: reviewKeys.list({ effectiveDateBefore: tomorrow }),
+		queryFn: () => getReviews({ effectiveDateBefore: tomorrow })
 	})
 
 	const todayDateStr = useMemo(() => {
@@ -159,12 +60,12 @@ export function useTodayReviewEntries() {
 		if (!query.data) {
 			return TODAY_SECTION_DEFINITIONS.map(def => ({
 				...def,
-				entries: [] as Array<ReviewEntry>
+				entries: [] as Array<ReviewListItem>
 			}))
 		}
 
-		const overdueList: Array<ReviewEntry> = []
-		const todayList: Array<ReviewEntry> = []
+		const overdueList: Array<ReviewListItem> = []
+		const todayList: Array<ReviewListItem> = []
 
 		for (const entry of query.data) {
 			if (entry.effective_date === null) {
@@ -178,7 +79,7 @@ export function useTodayReviewEntries() {
 			}
 			// Overdue: ONLY incomplete entries with effective_date before today
 			else if (
-				entry.data.completed_at === null &&
+				entry.completed_at === null &&
 				entry.effective_date < todayDateStr
 			) {
 				overdueList.push(entry)
@@ -207,7 +108,7 @@ export function useMergedTodayReviewEntries() {
 
 	const entries = useMemo(() => {
 		const merged = sections.flatMap(section => section.entries)
-		return sortReviewEntriesByEffectiveDateDesc(merged)
+		return sortReviewsByEffectiveDateDesc(merged)
 	}, [sections])
 
 	return {
@@ -225,52 +126,38 @@ export function useTodaySchedulePreview(limit: number) {
 	)
 
 	const overdueQuery = useQuery({
-		queryKey: reviewEntryKeys.list({
+		queryKey: reviewKeys.list({
 			effectiveDateBefore: yesterdayDateStr,
-			completed: false,
-			sort: 'desc',
-			limit,
-			includeCount: true
+			completed: false
 		}),
 		queryFn: () =>
-			getReviewEntriesWithCount({
+			getReviews({
 				effectiveDateBefore: yesterdayDateStr,
-				completed: false,
-				sort: 'desc',
-				limit,
-				includeCount: true
+				completed: false
 			})
 	})
 
 	const todayQuery = useQuery({
-		queryKey: reviewEntryKeys.list({
+		queryKey: reviewKeys.list({
 			effectiveDateAfter: todayDateStr,
-			effectiveDateBefore: todayDateStr,
-			sort: 'desc',
-			limit,
-			includeCount: true
+			effectiveDateBefore: todayDateStr
 		}),
 		queryFn: () =>
-			getReviewEntriesWithCount({
+			getReviews({
 				effectiveDateAfter: todayDateStr,
-				effectiveDateBefore: todayDateStr,
-				sort: 'desc',
-				limit,
-				includeCount: true
+				effectiveDateBefore: todayDateStr
 			})
 	})
 
 	const entries = useMemo(() => {
-		const merged = [
-			...(overdueQuery.data?.entries ?? []),
-			...(todayQuery.data?.entries ?? [])
-		]
-		return sortReviewEntriesByEffectiveDateDesc(merged).slice(0, limit)
-	}, [limit, overdueQuery.data?.entries, todayQuery.data?.entries])
+		const merged = [...(overdueQuery.data ?? []), ...(todayQuery.data ?? [])]
+		return sortReviewsByEffectiveDateDesc(merged).slice(0, limit)
+	}, [limit, overdueQuery.data, todayQuery.data])
 
 	return {
 		entries,
-		totalCount: (overdueQuery.data?.total ?? 0) + (todayQuery.data?.total ?? 0),
+		totalCount:
+			(overdueQuery.data?.length ?? 0) + (todayQuery.data?.length ?? 0),
 		isLoading: overdueQuery.isLoading || todayQuery.isLoading,
 		error: overdueQuery.error ?? todayQuery.error
 	}
@@ -304,16 +191,15 @@ export function useSoonReviewEntries() {
 	)
 
 	const query = useQuery({
-		queryKey: reviewEntryKeys.list({
+		queryKey: reviewKeys.list({
 			effectiveDateAfter: tomorrow,
 			effectiveDateBefore: nextWeekDate
 		}),
-		queryFn: () => {
-			return getReviewEntries({
+		queryFn: () =>
+			getReviews({
 				effectiveDateAfter: tomorrow,
 				effectiveDateBefore: nextWeekDate
 			})
-		}
 	})
 
 	// Centralized date boundary calculations
@@ -347,12 +233,12 @@ export function useSoonReviewEntries() {
 		if (!query.data) {
 			return SOON_SECTION_DEFINITIONS.map(def => ({
 				...def,
-				entries: [] as Array<ReviewEntry>
+				entries: [] as Array<ReviewListItem>
 			}))
 		}
 
-		const tomorrowList: Array<ReviewEntry> = []
-		const nextSevenDaysList: Array<ReviewEntry> = []
+		const tomorrowList: Array<ReviewListItem> = []
+		const nextSevenDaysList: Array<ReviewListItem> = []
 
 		for (const entry of query.data) {
 			if (entry.effective_date === null) {
@@ -394,19 +280,17 @@ export function useUpcomingReviewEntries() {
 	const tomorrow = useMemo(() => dayjs().add(1, 'day').format('YYYY-MM-DD'), [])
 
 	const query = useQuery({
-		queryKey: reviewEntryKeys.list({
-			effectiveDateAfter: tomorrow,
-			sort: 'desc'
+		queryKey: reviewKeys.list({
+			effectiveDateAfter: tomorrow
 		}),
 		queryFn: () =>
-			getReviewEntries({
-				effectiveDateAfter: tomorrow,
-				sort: 'desc'
+			getReviews({
+				effectiveDateAfter: tomorrow
 			})
 	})
 
 	const entries = useMemo(() => {
-		return sortReviewEntriesByEffectiveDateDesc(query.data ?? [])
+		return sortReviewsByEffectiveDateDesc(query.data ?? [])
 	}, [query.data])
 
 	return {
@@ -420,28 +304,22 @@ export function useUpcomingReviewEntriesPreview(limit: number) {
 	const tomorrow = useMemo(() => dayjs().add(1, 'day').format('YYYY-MM-DD'), [])
 
 	const query = useQuery({
-		queryKey: reviewEntryKeys.list({
-			effectiveDateAfter: tomorrow,
-			sort: 'desc',
-			limit,
-			includeCount: true
+		queryKey: reviewKeys.list({
+			effectiveDateAfter: tomorrow
 		}),
 		queryFn: () =>
-			getReviewEntriesWithCount({
-				effectiveDateAfter: tomorrow,
-				sort: 'desc',
-				limit,
-				includeCount: true
+			getReviews({
+				effectiveDateAfter: tomorrow
 			})
 	})
 
 	const entries = useMemo(() => {
-		return sortReviewEntriesByEffectiveDateDesc(query.data?.entries ?? [])
-	}, [query.data?.entries])
+		return sortReviewsByEffectiveDateDesc(query.data ?? []).slice(0, limit)
+	}, [limit, query.data])
 
 	return {
 		entries,
-		totalCount: query.data?.total ?? 0,
+		totalCount: query.data?.length ?? 0,
 		isLoading: query.isLoading,
 		error: query.error
 	}
@@ -463,13 +341,11 @@ const UNSCHEDULED_SECTION_DEFINITION: UnscheduledSectionDefinition = {
 
 export function useUnscheduledReviewEntries() {
 	const query = useQuery({
-		queryKey: reviewEntryKeys.list({
+		queryKey: reviewKeys.list({
 			scheduled: false,
-			completed: false,
-			sort: 'desc'
+			completed: false
 		}),
-		queryFn: () =>
-			getReviewEntries({ scheduled: false, completed: false, sort: 'desc' })
+		queryFn: () => getReviews({ scheduled: false, completed: false })
 	})
 
 	const section: UnscheduledEntrySection = {
@@ -486,30 +362,20 @@ export function useUnscheduledReviewEntries() {
 
 export function useUnscheduledReviewEntriesPreview(limit: number) {
 	const query = useQuery({
-		queryKey: reviewEntryKeys.list({
+		queryKey: reviewKeys.list({
 			scheduled: false,
-			completed: false,
-			sort: 'desc',
-			limit,
-			includeCount: true
+			completed: false
 		}),
-		queryFn: () =>
-			getReviewEntriesWithCount({
-				scheduled: false,
-				completed: false,
-				sort: 'desc',
-				limit,
-				includeCount: true
-			})
+		queryFn: () => getReviews({ scheduled: false, completed: false })
 	})
 
 	const entries = useMemo(() => {
-		return sortReviewEntriesByEffectiveDateDesc(query.data?.entries ?? [])
-	}, [query.data?.entries])
+		return sortReviewsByEffectiveDateDesc(query.data ?? []).slice(0, limit)
+	}, [limit, query.data])
 
 	return {
 		entries,
-		totalCount: query.data?.total ?? 0,
+		totalCount: query.data?.length ?? 0,
 		isLoading: query.isLoading,
 		error: query.error
 	}
@@ -522,16 +388,15 @@ export function useFutureReviewEntries(options?: { enabled?: boolean }) {
 	)
 
 	const query = useQuery({
-		queryKey: reviewEntryKeys.list({
+		queryKey: reviewKeys.list({
 			effectiveDateAfter: futureStartDate,
 			completed: false
 		}),
-		queryFn: () => {
-			return getReviewEntries({
+		queryFn: () =>
+			getReviews({
 				effectiveDateAfter: futureStartDate,
 				completed: false
-			})
-		},
+			}),
 		enabled: options?.enabled ?? true
 	})
 
@@ -541,7 +406,7 @@ export function useFutureReviewEntries(options?: { enabled?: boolean }) {
 			return []
 		}
 
-		const monthlyGroups = new Map<string, Array<ReviewEntry>>()
+		const monthlyGroups = new Map<string, Array<ReviewListItem>>()
 
 		for (const entry of query.data) {
 			const effectiveDate = entry.effective_date
@@ -592,18 +457,15 @@ export function useLogbookReviewEntries() {
 	)
 
 	const query = useQuery({
-		queryKey: reviewEntryKeys.list({
+		queryKey: reviewKeys.list({
 			effectiveDateBefore: yesterday,
-			completed: true,
-			sort: 'desc'
+			completed: true
 		}),
-		queryFn: () => {
-			return getReviewEntries({
+		queryFn: () =>
+			getReviews({
 				effectiveDateBefore: yesterday,
-				completed: true,
-				sort: 'desc'
+				completed: true
 			})
-		}
 	})
 
 	// Group entries into Yesterday, Last Week, and Monthly sections
@@ -624,9 +486,9 @@ export function useLogbookReviewEntries() {
 		const twoDaysAgoDateStr = twoDaysAgo.format('YYYY-MM-DD')
 
 		// Categorize entries
-		const yesterdayEntries: Array<ReviewEntry> = []
-		const lastWeekEntries: Array<ReviewEntry> = []
-		const monthlyGroups = new Map<string, Array<ReviewEntry>>()
+		const yesterdayEntries: Array<ReviewListItem> = []
+		const lastWeekEntries: Array<ReviewListItem> = []
+		const monthlyGroups = new Map<string, Array<ReviewListItem>>()
 
 		for (const entry of query.data) {
 			const effectiveDate = entry.effective_date

@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { Toaster } from '~/components/ui/sonner'
-import { ReviewSessionTopicDialogProvider } from '~/features/dialogs/providers/ReviewSessionTopicDialogProvider'
+import { TopicDialogProvider } from '~/features/dialogs/providers/TopicDialogProvider'
 import { ReviewDialogProvider } from '~/features/reviews/providers/ReviewDialogProvider'
 
 function renderError({ error }: FallbackProps) {
@@ -13,14 +13,14 @@ function renderError({ error }: FallbackProps) {
 export const Route = createRootRoute({
 	component: () => (
 		<ErrorBoundary fallbackRender={renderError}>
-			<ReviewSessionTopicDialogProvider>
+			<TopicDialogProvider>
 				<ReviewDialogProvider>
 					<Suspense fallback={<LoadingOrError />}>
 						<Outlet />
 					</Suspense>
 					<Toaster />
 				</ReviewDialogProvider>
-			</ReviewSessionTopicDialogProvider>
+			</TopicDialogProvider>
 		</ErrorBoundary>
 	)
 })

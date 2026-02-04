@@ -1,7 +1,7 @@
 import { Calendar } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
-import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
+import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { Button } from '~/components/ui/Button'
@@ -18,10 +18,8 @@ import {
 	useTodayReviewEntries
 } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
-import {
-	type ReviewEntry,
-	ReviewSection
-} from '~/features/reviews/components/ReviewSection'
+import { ReviewSection } from '~/features/reviews/components/ReviewSection'
+import type { ReviewListItem } from '~/features/reviews/types/review.types'
 export function UpcomingPage() {
 	const [showFuture, setShowFuture] = useState(false)
 
@@ -56,21 +54,17 @@ export function UpcomingPage() {
 		}
 	}, [soonReviewSections])
 
-	const {
-		handleSessionClick,
-		handleReviewClick,
-		selectedReviewId,
-		closeReviewDialog
-	} = useReviewSessionPageHandlers()
+	const { handleReviewClick, selectedReviewId, closeReviewDialog } =
+		useReviewPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
-	// Combine all sections (entries are already in ReviewEntry format from the hooks)
+	// Combine all sections (entries are normalized review items)
 	const allSections = useMemo(() => {
 		type NormalizedSection = {
 			id: string
 			label: string
 			headingClassName?: string
-			entries: Array<ReviewEntry>
+			entries: Array<ReviewListItem>
 		}
 
 		const sections: Array<NormalizedSection> = []
@@ -134,7 +128,6 @@ export function UpcomingPage() {
 				isInitialLoading={isInitialLoading}
 				isMonthlyLoading={futureReviewsLoading}
 				onReviewClick={handleReviewClick}
-				onSessionClick={handleSessionClick}
 				onShowMore={() => setShowFuture(true)}
 				onToggleCollapse={toggleSection}
 				showFuture={showFuture}
@@ -157,7 +150,6 @@ function UpcomingList({
 	isInitialLoading,
 	isMonthlyLoading,
 	onReviewClick,
-	onSessionClick,
 	onShowMore,
 	onToggleCollapse,
 	showFuture
@@ -166,14 +158,13 @@ function UpcomingList({
 		id: string
 		label: string
 		headingClassName?: string
-		entries: Array<ReviewEntry>
+		entries: Array<ReviewListItem>
 	}>
 	allSectionsEmpty: boolean
 	collapsedSections: Record<string, boolean>
 	isInitialLoading: boolean
 	isMonthlyLoading: boolean
 	onReviewClick: (reviewId: number) => void
-	onSessionClick: (sessionId: number) => void
 	onShowMore: () => void
 	onToggleCollapse: (sectionId: string) => void
 	showFuture: boolean
@@ -209,7 +200,6 @@ function UpcomingList({
 					key={section.id}
 					label={section.label}
 					onReviewClick={onReviewClick}
-					onSessionClick={onSessionClick}
 					onToggleCollapse={onToggleCollapse}
 				/>
 			))}
