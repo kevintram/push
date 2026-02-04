@@ -4,7 +4,6 @@ import {
 	Anvil,
 	CalendarIcon,
 	MoreHorizontal,
-	SquareStack,
 	StickyNote,
 	Trash
 } from 'lucide-react'
@@ -64,7 +63,7 @@ interface ReviewItemProps {
 	entry: ReviewListItem
 	onReviewClick?: (reviewId: number) => void
 	readonly?: boolean
-	variant?: 'default' | 'session' | 'topic'
+	variant?: 'default' | 'topic'
 }
 
 export function ReviewItem({
@@ -156,18 +155,6 @@ export function ReviewItem({
 		}
 	}, [entry.id, onReviewClick, readonly])
 
-	const handleSessionClick = useCallback(
-		(event: React.MouseEvent) => {
-			event.stopPropagation()
-			if (!entry.review_session) return
-			navigate({
-				to: '/review-session/$reviewSessionId',
-				params: { reviewSessionId: entry.review_session.id.toString() }
-			})
-		},
-		[navigate, entry.review_session]
-	)
-
 	const handleTopicClick = useCallback(
 		(event: React.MouseEvent) => {
 			event.stopPropagation()
@@ -191,10 +178,6 @@ export function ReviewItem({
 
 	const relativeDate = formatRelativeDate(effectiveDate)
 
-	const sessionDisplayText = entry.review_session
-		? entry.review_session.description?.trim() || 'no description'
-		: 'No session'
-
 	const dateButtonColorClass = cn(
 		isOverdueValue && 'text-red-600 dark:text-red-400',
 		!isOverdueValue &&
@@ -206,8 +189,7 @@ export function ReviewItem({
 	// Determine if we're actually rendering topic or session content
 	const showingTopic =
 		(variant === 'default' || variant === 'topic') && entry.topic?.name
-	const showingSession = variant === 'default' || variant === 'session'
-	const showingTopicOrSession = showingTopic || showingSession
+	const showingTopicOrSession = showingTopic
 
 	return (
 		<Card className='rounded-none border-0 bg-transparent shadow-none'>
@@ -309,19 +291,6 @@ export function ReviewItem({
 							>
 								<StickyNote className='h-3 w-3' />
 								<span>{entry.topic.name}</span>
-							</Button>
-						)}
-						{variant === 'default' && <span>⋅</span>}
-						{(variant === 'default' || variant === 'session') && (
-							<Button
-								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-								disabled={!entry.review_session}
-								onClick={handleSessionClick}
-								size='sm'
-								variant='link'
-							>
-								<SquareStack className='h-3 w-3' />
-								<span>{sessionDisplayText}</span>
 							</Button>
 						)}
 						{hasStability && (

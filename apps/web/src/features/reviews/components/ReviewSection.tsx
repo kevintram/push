@@ -1,21 +1,15 @@
 import { ChevronDown } from 'lucide-react'
 import { Button } from '~/components/ui/Button'
-import type { ReviewListItem, ReviewSession } from '../types/review.types'
+import type { ReviewListItem } from '../types/review.types'
 import { ReviewItem } from './ReviewItem'
-import { ReviewSessionItem } from './ReviewSessionItem'
-
-export type ReviewEntry =
-	| { type: 'session'; data: ReviewSession }
-	| { type: 'review'; data: ReviewListItem }
 
 type ReviewSectionProps = {
 	id: string
 	label: string
 	headingClassName?: string
-	entries: Array<ReviewEntry>
+	entries: Array<ReviewListItem>
 	isCollapsed: boolean
 	onToggleCollapse: (sectionId: string) => void
-	onSessionClick: (sessionId: number) => void
 	onReviewClick: (reviewId: number) => void
 }
 
@@ -26,7 +20,6 @@ export function ReviewSection({
 	entries,
 	isCollapsed,
 	onToggleCollapse,
-	onSessionClick,
 	onReviewClick
 }: ReviewSectionProps) {
 	return (
@@ -51,25 +44,14 @@ export function ReviewSection({
 				<div className='mt-2 mb-10 ml-5 border-border border-l-2 pl-2'>
 					{entries.length > 0 ? (
 						<div className='px-4'>
-							{entries.map(entry => {
-								if (entry.type === 'session') {
-									return (
-										<ReviewSessionItem
-											entry={entry.data}
-											key={`session-${entry.data.id}`}
-											onReviewClick={onSessionClick}
-										/>
-									)
-								}
-								return (
-									<ReviewItem
-										entry={entry.data}
-										key={`review-${entry.data.id}`}
-										onReviewClick={onReviewClick}
-										variant='default'
-									/>
-								)
-							})}
+							{entries.map(entry => (
+								<ReviewItem
+									entry={entry}
+									key={`review-${entry.id}`}
+									onReviewClick={onReviewClick}
+									variant='default'
+								/>
+							))}
 						</div>
 					) : (
 						<p className='px-4 text-muted-foreground text-sm italic'>

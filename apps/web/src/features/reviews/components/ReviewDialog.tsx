@@ -1,9 +1,15 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { Anvil, CalendarIcon, ExternalLink, SquareStack, X } from 'lucide-react'
+import { Anvil, CalendarIcon, MoreHorizontal, X } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import {
 	Sidebar,
 	SidebarHeader,
@@ -24,8 +30,6 @@ import {
 	ReviewRatingCheckbox,
 	type ReviewRatingState
 } from './ReviewRatingCheckbox'
-import { ReviewSessionDetailHeader } from './ReviewSessionDetail/ReviewSessionDetailHeader'
-import { SessionPickerPopover } from './SessionPickerPopover'
 
 interface ReviewDialogProps {
 	reviewId: number | null
@@ -44,7 +48,6 @@ export function ReviewDialog({
 	const deleteReviewMutation = useDeleteReview()
 
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
-	const [isSessionPopoverOpen, setIsSessionPopoverOpen] = useState(false)
 
 	// Computed date values
 	const selectedDate = (() => {
@@ -211,38 +214,16 @@ export function ReviewDialog({
 		}
 	}, [navigate, review?.topic_id, review?.source_id, review?.practice_id])
 
-	const handleSessionClick = useCallback(() => {
-		if (!review?.review_session) return
-		navigate({
-			to: '/review-session/$reviewSessionId',
-			params: { reviewSessionId: review.review_session.id.toString() }
-		})
-	}, [navigate, review?.review_session])
-
-	const handleSessionChange = useCallback(
-		(sessionId: number | null) => {
-			if (review?.id) {
-				updateReviewMutation.mutateAsync({
-					id: review.id,
-					review_session_id: sessionId
-				})
-			}
-		},
-		[review?.id, updateReviewMutation]
-	)
-
 	const headerActions = useMemo(
 		() => (
-			<>
-				<Button
-					className='h-6 w-6 p-0 text-muted-foreground'
-					onClick={() => onOpenChange(false)}
-					size='sm'
-					variant='ghost'
-				>
-					<X className='h-4 w-4' />
-				</Button>
-			</>
+			<Button
+				className='h-6 w-6 p-0 text-muted-foreground'
+				onClick={() => onOpenChange(false)}
+				size='sm'
+				variant='ghost'
+			>
+				<X className='h-4 w-4' />
+			</Button>
 		),
 		[onOpenChange]
 	)
@@ -312,11 +293,31 @@ export function ReviewDialog({
 					enableKeyboardShortcut={false}
 				>
 					<div className='flex h-full min-h-0 flex-col'>
-						<div className='border-b'>
-							<ReviewSessionDetailHeader
-								headerAfterActions={headerActions}
-								onDelete={handleDelete}
-							/>
+						<div className='flex items-center justify-between border-b px-2 py-1'>
+							<div className='flex-1' />
+							<div className='flex items-center gap-2'>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild={true}>
+										<Button
+											className='h-6 w-6 p-0'
+											size='sm'
+											title='More options'
+											variant='ghost'
+										>
+											<MoreHorizontal className='h-4 w-4' />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent>
+										<DropdownMenuItem
+											onClick={handleDelete}
+											variant='destructive'
+										>
+											Delete
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+								{headerActions}
+							</div>
 						</div>
 
 						<SidebarHolder className='flex min-h-0 flex-1'>
@@ -388,45 +389,6 @@ export function ReviewDialog({
 										>
 											<span className='truncate'>{getEntityName()}</span>
 										</Button>
-									</div>
-
-									{/* Session Picker */}
-									<div className='flex min-h-8 items-center gap-2'>
-										<span className='w-16 flex-shrink-0 text-muted-foreground text-xs'>
-											Session
-										</span>
-										<SessionPickerPopover
-											isOpen={isSessionPopoverOpen}
-											onOpenChange={setIsSessionPopoverOpen}
-											onSessionChange={handleSessionChange}
-											selectedSessionId={review.review_session_id}
-											trigger={
-												<Button
-													className='min-w-0 flex-1 justify-start px-2'
-													size='sm'
-													variant='ghost'
-												>
-													<SquareStack className='h-4 w-4 flex-shrink-0' />
-													<span className='truncate'>
-														{review.review_session
-															? review.review_session.description?.trim() ||
-																'No description'
-															: 'No session'}
-													</span>
-												</Button>
-											}
-										/>
-										{review.review_session && (
-											<Button
-												className='h-6 w-6 flex-shrink-0 p-0'
-												onClick={handleSessionClick}
-												size='sm'
-												title='Go to session'
-												variant='ghost'
-											>
-												<ExternalLink className='h-3 w-3' />
-											</Button>
-										)}
 									</div>
 
 									{/* Stability */}
