@@ -6,6 +6,7 @@ import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { usePracticeWithRelationships } from '~/features/practices/api/getPractice'
 import { PracticeDetail } from '~/features/practices/components/PracticeDetail/PracticeDetail'
 import { PracticeContext } from '~/features/practices/stores/SelectedPracticeContext'
+import { useConversionNavigate } from '~/hooks/useConversionNavigate'
 
 interface PracticeDetailPageProps {
 	practiceId: string
@@ -30,6 +31,7 @@ function BrowserNavigationButtons() {
 export function PracticeDetailPage({ practiceId }: PracticeDetailPageProps) {
 	const navigate = useNavigate()
 	const router = useRouter()
+	const handleConvertSuccess = useConversionNavigate()
 
 	const { practice, isLoading } = usePracticeWithRelationships(
 		Number.parseInt(practiceId, 10)
@@ -73,6 +75,7 @@ export function PracticeDetailPage({ practiceId }: PracticeDetailPageProps) {
 				className='mx-auto max-w-5xl'
 				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
+				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}
 				onSourceNavigate={handleSourceNavigate}
 				onTopicNavigate={handleTopicNavigate}

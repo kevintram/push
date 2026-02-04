@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'react'
 import { LearnableTitleSection } from '~/components/LearnableTitleSection'
+import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import type { Topic } from '../../types/topic.types'
 import { TopicActionMenu } from '../TopicActionMenu'
 
@@ -10,6 +11,7 @@ interface TopicTitleSectionProps {
 	onSrsToggle: (pressed: boolean) => void
 	isUpdating: boolean
 	sidebarReadonly: boolean
+	onConvertSuccess?: OnConversionSuccess
 	onDelete?: () => void | Promise<void>
 	onTopicUpdateSuccess: (topic: Topic) => void
 }
@@ -21,6 +23,7 @@ export function TopicTitleSection({
 	onSrsToggle,
 	isUpdating,
 	sidebarReadonly,
+	onConvertSuccess,
 	onDelete,
 	onTopicUpdateSuccess
 }: TopicTitleSectionProps) {
@@ -32,6 +35,7 @@ export function TopicTitleSection({
 			onTitleChange={onTitleChange}
 			renderActionMenu={trigger => (
 				<TopicActionMenu
+					onConvertSuccess={onConvertSuccess}
 					onDelete={onDelete}
 					onTopicUpdateSuccess={onTopicUpdateSuccess}
 					topic={topic}

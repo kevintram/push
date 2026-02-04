@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, ForeignKey, Identity, text
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TIMESTAMP
 
@@ -54,3 +56,26 @@ class EntityRelation(Base):
     to_source: Mapped["Source | None"] = relationship(
         "Source", foreign_keys=[to_source_id]
     )
+
+    @classmethod
+    async def insert_or_ignore(
+        cls,
+        session: AsyncSession,
+        *,
+        from_topic_id: int | None = None,
+        from_source_id: int | None = None,
+        to_topic_id: int | None = None,
+        to_source_id: int | None = None,
+    ) -> None:
+        """Insert an entity relation, ignoring duplicates."""
+        stmt = (
+            insert(cls)
+            .values(
+                from_topic_id=from_topic_id,
+                from_source_id=from_source_id,
+                to_topic_id=to_topic_id,
+                to_source_id=to_source_id,
+            )
+            .on_conflict_do_nothing(constraint="unique_relation")
+        )
+        await session.execute(stmt)

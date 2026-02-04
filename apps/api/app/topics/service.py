@@ -1183,12 +1183,12 @@ async def convert_topic_to_source(
                 new_to_source_id = topic_to_source[rel.to_topic_id].id
                 new_to_topic_id = None
 
-            new_rel = EntityRelation(
+            await EntityRelation.insert_or_ignore(
+                session,
                 from_source_id=new_source.id,
                 to_topic_id=new_to_topic_id,
                 to_source_id=new_to_source_id if new_to_source_id else rel.to_source_id,
             )
-            session.add(new_rel)
 
         # Get incoming relations (to this topic)
         incoming = await session.execute(
@@ -1200,12 +1200,12 @@ async def convert_topic_to_source(
                 continue
 
             # Create new relation pointing to source
-            new_rel = EntityRelation(
+            await EntityRelation.insert_or_ignore(
+                session,
                 from_topic_id=rel.from_topic_id,
                 from_source_id=rel.from_source_id,
                 to_source_id=new_source.id,
             )
-            session.add(new_rel)
 
     # 6. Delete original topics (cascade will clean up old relations)
     # Delete in reverse order (children first) to respect FK constraints
