@@ -53,22 +53,7 @@ function getDateLabel(date: Date, today: Date): string {
 	const daysDiff = Math.floor(
 		(today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
 	)
-	if (daysDiff < 7) {
-		return date.toLocaleDateString(undefined, { weekday: 'long' })
-	}
-
-	if (date.getFullYear() === today.getFullYear()) {
-		return date.toLocaleDateString(undefined, {
-			month: 'long',
-			day: 'numeric'
-		})
-	}
-
-	return date.toLocaleDateString(undefined, {
-		month: 'long',
-		day: 'numeric',
-		year: 'numeric'
-	})
+	return `${daysDiff}d ago`
 }
 
 function groupByDate(
