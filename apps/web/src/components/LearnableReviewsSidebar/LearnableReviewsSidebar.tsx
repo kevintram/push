@@ -67,8 +67,8 @@ export function LearnableReviewsSidebar<T extends EntityWithId>({
 
 		scheduled.sort((a, b) => {
 			return (
-				new Date(a.effective_date!).getTime() -
-				new Date(b.effective_date!).getTime()
+				new Date(b.effective_date!).getTime() -
+				new Date(a.effective_date!).getTime()
 			)
 		})
 
@@ -226,10 +226,10 @@ export function LearnableReviewsSidebar<T extends EntityWithId>({
 					</div>
 				) : (
 					<>
-						{/* Scheduled Reviews Section */}
-						{scheduledReviews.length > 0 && (
+						{/* Unscheduled Reviews Section */}
+						{unscheduledReviews.length > 0 && (
 							<div className='flex flex-col'>
-								{scheduledReviews.map(entry => (
+								{unscheduledReviews.map(entry => (
 									<ReviewItem
 										entry={entry}
 										key={entry.id}
@@ -241,14 +241,14 @@ export function LearnableReviewsSidebar<T extends EntityWithId>({
 							</div>
 						)}
 
-						{/* Unscheduled Reviews Section */}
-						{unscheduledReviews.length > 0 && (
+						{/* Scheduled Reviews Section */}
+						{scheduledReviews.length > 0 && (
 							<div className='flex flex-col'>
 								<div className='flex flex-row items-center gap-2 pt-6'>
-									<h2 className='font-semibold text-sm'>Unscheduled</h2>
+									<h2 className='font-semibold text-sm'>Scheduled</h2>
 								</div>
 								<div className='flex flex-col'>
-									{unscheduledReviews.map(entry => (
+									{scheduledReviews.map(entry => (
 										<ReviewItem
 											entry={entry}
 											key={entry.id}
