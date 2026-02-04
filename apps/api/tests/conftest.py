@@ -33,7 +33,7 @@ from sqlalchemy.orm import selectinload
 from app.main import app
 from app.database import get_db
 from app.auth.dependencies import get_user_id
-from app.models import Topic, Source, Practice, FsrsState, Review, ReviewSession
+from app.models import Topic, Source, Practice, FsrsState, Review
 
 
 def filter_migration_sql(sql: str) -> str:
@@ -339,7 +339,6 @@ def create_test_review(db_session: AsyncSession, mock_user_id: str, create_test_
     async def _create_review(
         topic_id: int | None = None,
         source_id: int | None = None,
-        review_session_id: int | None = None,
         scheduled_at: date | None = None,
         completed_at: date | None = None,
         rating: str | None = None,
@@ -357,7 +356,6 @@ def create_test_review(db_session: AsyncSession, mock_user_id: str, create_test_
             user_id=actual_user_id,
             topic_id=topic_id,
             source_id=source_id,
-            review_session_id=review_session_id,
             scheduled_at=scheduled_at or date.today(),
             completed_at=completed_at,
             rating=rating,
@@ -426,34 +424,3 @@ def create_test_practice(db_session: AsyncSession, mock_user_id: str):
 
     return _create_practice
 
-
-@pytest.fixture
-def create_test_review_session(db_session: AsyncSession, mock_user_id: str):
-    """Factory fixture to create review sessions in the test database.
-
-    Usage:
-        session = await create_test_review_session()
-        session = await create_test_review_session(description="Study Session")
-    """
-    from datetime import date
-
-    async def _create_session(
-        description: str = "Test Session",
-        notes: str = "",
-        scheduled_at: date | None = None,
-        completed_at: date | None = None,
-        user_id: str | None = None,
-    ) -> ReviewSession:
-        actual_user_id = user_id if user_id is not None else mock_user_id
-        session = ReviewSession(
-            user_id=actual_user_id,
-            description=description,
-            notes=notes,
-            scheduled_at=scheduled_at,
-            completed_at=completed_at,
-        )
-        db_session.add(session)
-        await db_session.flush()
-        return session
-
-    return _create_session

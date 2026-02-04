@@ -21,7 +21,6 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.practices import Practice
-    from app.models.review_sessions import ReviewSession
     from app.models.sources import Source
     from app.models.topics import Topic
 
@@ -30,9 +29,6 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
-    review_session_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey("review_sessions.id"), nullable=True
-    )
     # Exactly one of topic_id, source_id, or practice_id must be set (enforced by CHECK constraint)
     topic_id: Mapped[int | None] = mapped_column(
         BigInteger, ForeignKey("topics.id", ondelete="CASCADE"), nullable=True
@@ -93,9 +89,6 @@ class Review(Base):
     due_after: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     # Relationships
-    review_session: Mapped["ReviewSession | None"] = relationship(
-        back_populates="reviews"
-    )
     topic: Mapped["Topic | None"] = relationship(back_populates="reviews")
     source: Mapped["Source | None"] = relationship(back_populates="reviews")
     practice: Mapped["Practice | None"] = relationship(back_populates="reviews")

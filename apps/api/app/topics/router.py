@@ -13,7 +13,6 @@ from app.schemas import (
     EntityRelationCreate,
     PracticeSummaryRead,
     RelationshipDirection,
-    ReviewSessionReadWithReviews,
     SourceTopicResponse,
     TopicChildRelationshipCreate,
     TopicCreate,
@@ -326,15 +325,6 @@ async def add_source_to_topic(
             session, user_id, source_data=data.source.model_dump(), topic_id=topic_id
         )
     return SourceTopicResponse(source=source, topic=topic)
-
-
-@router.get("/{topic_id}/review-sessions/")
-async def read_review_sessions_for_topic(
-    topic_id: int,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> list[ReviewSessionReadWithReviews]:
-    return await service.get_review_sessions_for_topic(session, topic_id, user_id)
 
 
 @router.patch("/{topic_id}/")
