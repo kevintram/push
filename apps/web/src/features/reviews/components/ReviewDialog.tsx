@@ -154,10 +154,10 @@ export function ReviewDialog({
 			updateReviewMutation.mutateAsync({
 				id: review.id,
 				rating: status,
-				completed_at: dayjs().format('YYYY-MM-DD')
+				completed_at: review.completed_at ?? dayjs().format('YYYY-MM-DD')
 			})
 		},
-		[review?.id, updateReviewMutation]
+		[review?.id, review?.completed_at, updateReviewMutation]
 	)
 
 	const handleDateChange = useCallback(
