@@ -1,6 +1,6 @@
 import { CircleDashed } from 'lucide-react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
-import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
+import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
@@ -12,21 +12,15 @@ import {
 } from '~/components/ui/Empty'
 import { useUnscheduledReviewEntries } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
-import {
-	type ReviewEntry,
-	ReviewSection
-} from '~/features/reviews/components/ReviewSection'
+import { ReviewSection } from '~/features/reviews/components/ReviewSection'
+import type { ReviewListItem } from '~/features/reviews/types/review.types'
 
 export function UnscheduledPage() {
 	const { section: reviewSection, isLoading: reviewsLoading } =
 		useUnscheduledReviewEntries()
 
-	const {
-		handleSessionClick,
-		handleReviewClick,
-		selectedReviewId,
-		closeReviewDialog
-	} = useReviewSessionPageHandlers()
+	const { handleReviewClick, selectedReviewId, closeReviewDialog } =
+		useReviewPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	const isSectionCollapsed = collapsedSections.unscheduled ?? false
@@ -40,7 +34,6 @@ export function UnscheduledPage() {
 				isLoading={reviewsLoading}
 				isSectionCollapsed={isSectionCollapsed}
 				onReviewClick={handleReviewClick}
-				onSessionClick={handleSessionClick}
 				onToggleCollapse={toggleSection}
 				reviewSection={reviewSection}
 			/>
@@ -60,7 +53,6 @@ function UnscheduledList({
 	isLoading,
 	isSectionCollapsed,
 	onReviewClick,
-	onSessionClick,
 	onToggleCollapse,
 	reviewSection
 }: {
@@ -68,12 +60,11 @@ function UnscheduledList({
 	isLoading: boolean
 	isSectionCollapsed: boolean
 	onReviewClick: (reviewId: number) => void
-	onSessionClick: (sessionId: number) => void
 	onToggleCollapse: (sectionId: string) => void
 	reviewSection: {
 		headingClassName?: string
 		label: string
-		entries: Array<ReviewEntry>
+		entries: Array<ReviewListItem>
 	}
 }) {
 	if (isLoading) {
@@ -108,7 +99,6 @@ function UnscheduledList({
 					isCollapsed={isSectionCollapsed}
 					label={reviewSection.label}
 					onReviewClick={onReviewClick}
-					onSessionClick={onSessionClick}
 					onToggleCollapse={onToggleCollapse}
 				/>
 			</div>

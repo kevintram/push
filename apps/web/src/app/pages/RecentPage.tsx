@@ -145,6 +145,8 @@ export function RecentPage() {
 						params: { practiceId: entity.item.id.toString() }
 					})
 					break
+				default:
+					break
 			}
 		},
 		[navigate]
@@ -246,6 +248,8 @@ function RecentSection({
 					break
 				case 'practice':
 					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+				default:
 					break
 			}
 			return (

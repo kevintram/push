@@ -1,7 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowUpRight, BookOpen, ChevronDown } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
-import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
+import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
@@ -22,8 +22,7 @@ import {
 } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import { ReviewSessionItem } from '~/features/reviews/components/ReviewSessionItem'
-import type { ReviewEntry } from '~/features/reviews/types/review.types'
+import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { TopicCard } from '~/features/topics/components/TopicCard'
@@ -44,12 +43,8 @@ const SCHEDULE_PREVIEW_LIMIT = 3
 
 export function ReviewPage() {
 	const navigate = useNavigate()
-	const {
-		handleSessionClick,
-		handleReviewClick,
-		selectedReviewId,
-		closeReviewDialog
-	} = useReviewSessionPageHandlers()
+	const { handleReviewClick, selectedReviewId, closeReviewDialog } =
+		useReviewPageHandlers()
 	const { data: topics, isLoading } = useTopics({
 		hasStability: true,
 		srsEnabled: true,
@@ -138,6 +133,28 @@ export function ReviewPage() {
 	const isEmpty =
 		!isLoading && bucketSections.every(section => section.topics.length === 0)
 
+	let reviewTopicsContent: ReactNode = null
+	if (isLoading) {
+		reviewTopicsContent = <ReviewTopicsSkeleton />
+	} else if (isEmpty) {
+		reviewTopicsContent = <ReviewTopicsEmpty />
+	} else {
+		reviewTopicsContent = bucketSections
+			.filter(section => section.topics.length > 0)
+			.map(section => (
+				<ReadinessSection
+					headingClassName={section.headingClassName}
+					id={section.id}
+					isCollapsed={collapsedSections[section.id] ?? false}
+					key={section.id}
+					label={section.label}
+					onToggleCollapse={toggleSection}
+					onTopicClick={handleTopicClick}
+					topics={section.topics}
+				/>
+			))
+	}
+
 	const scheduleTabs = useMemo(
 		() => ({
 			today: {
@@ -186,32 +203,9 @@ export function ReviewPage() {
 			<PageLayout.Header icon={BookOpen} title='Review' />
 			<PageLayout.Content className='max-w-screen'>
 				<div className='flex flex-col gap-8'>
-					<ScheduleCard
-						onReviewClick={handleReviewClick}
-						onSessionClick={handleSessionClick}
-						tabs={scheduleTabs}
-					/>
+					<ScheduleCard onReviewClick={handleReviewClick} tabs={scheduleTabs} />
 
-					{isLoading ? (
-						<ReviewTopicsSkeleton />
-					) : isEmpty ? (
-						<ReviewTopicsEmpty />
-					) : (
-						bucketSections
-							.filter(section => section.topics.length > 0)
-							.map(section => (
-								<ReadinessSection
-									headingClassName={section.headingClassName}
-									id={section.id}
-									isCollapsed={collapsedSections[section.id] ?? false}
-									key={section.id}
-									label={section.label}
-									onToggleCollapse={toggleSection}
-									onTopicClick={handleTopicClick}
-									topics={section.topics}
-								/>
-							))
-					)}
+					{reviewTopicsContent}
 				</div>
 			</PageLayout.Content>
 			<ReviewDialog
@@ -255,7 +249,6 @@ function ReviewTopicsEmpty() {
 
 function ScheduleCard({
 	tabs,
-	onSessionClick,
 	onReviewClick
 }: {
 	tabs: Record<
@@ -265,12 +258,11 @@ function ScheduleCard({
 			label: string
 			viewAllTo: string
 			totalCount: number
-			entries: Array<ReviewEntry>
+			entries: Array<ReviewListItem>
 			isLoading: boolean
 			emptyText: string
 		}
 	>
-	onSessionClick: (sessionId: number) => void
 	onReviewClick: (reviewId: number) => void
 }) {
 	const [activeTab, setActiveTab] = useState<keyof typeof tabs>('today')
@@ -304,7 +296,6 @@ function ScheduleCard({
 								entries={tabs.today.entries}
 								isLoading={tabs.today.isLoading}
 								onReviewClick={onReviewClick}
-								onSessionClick={onSessionClick}
 							/>
 						</TabsContent>
 						<TabsContent value={tabs.upcoming.value}>
@@ -313,7 +304,6 @@ function ScheduleCard({
 								entries={tabs.upcoming.entries}
 								isLoading={tabs.upcoming.isLoading}
 								onReviewClick={onReviewClick}
-								onSessionClick={onSessionClick}
 							/>
 						</TabsContent>
 						<TabsContent value={tabs.unscheduled.value}>
@@ -322,7 +312,6 @@ function ScheduleCard({
 								entries={tabs.unscheduled.entries}
 								isLoading={tabs.unscheduled.isLoading}
 								onReviewClick={onReviewClick}
-								onSessionClick={onSessionClick}
 							/>
 						</TabsContent>
 					</Tabs>
@@ -351,57 +340,43 @@ function ScheduleTabContent({
 	entries,
 	isLoading,
 	emptyText,
-	onSessionClick,
 	onReviewClick
 }: {
-	entries: Array<ReviewEntry>
+	entries: Array<ReviewListItem>
 	isLoading: boolean
 	emptyText: string
-	onSessionClick: (sessionId: number) => void
 	onReviewClick: (reviewId: number) => void
 }) {
-	return (
-		<div className='space-y-3'>
-			{isLoading ? (
-				<ScheduleEntriesSkeleton />
-			) : entries.length === 0 ? (
-				<p className='text-muted-foreground text-sm italic'>{emptyText}</p>
-			) : (
-				<ScheduleEntriesList
-					entries={entries}
-					onReviewClick={onReviewClick}
-					onSessionClick={onSessionClick}
-				/>
-			)}
-		</div>
-	)
+	let content: React.ReactNode
+	if (isLoading) {
+		content = <ScheduleEntriesSkeleton />
+	} else if (entries.length === 0) {
+		content = (
+			<p className='text-muted-foreground text-sm italic'>{emptyText}</p>
+		)
+	} else {
+		content = (
+			<ScheduleEntriesList entries={entries} onReviewClick={onReviewClick} />
+		)
+	}
+
+	return <div className='space-y-3'>{content}</div>
 }
 
 function ScheduleEntriesList({
 	entries,
-	onSessionClick,
 	onReviewClick
 }: {
-	entries: Array<ReviewEntry>
-	onSessionClick: (sessionId: number) => void
+	entries: Array<ReviewListItem>
 	onReviewClick: (reviewId: number) => void
 }) {
 	return (
 		<div className='flex flex-col'>
 			{entries.map(entry => {
-				if (entry.type === 'session') {
-					return (
-						<ReviewSessionItem
-							entry={entry.data}
-							key={`session-${entry.data.id}`}
-							onReviewClick={onSessionClick}
-						/>
-					)
-				}
 				return (
 					<ReviewItem
-						entry={entry.data}
-						key={`review-${entry.data.id}`}
+						entry={entry}
+						key={`review-${entry.id}`}
 						onReviewClick={onReviewClick}
 						variant='default'
 					/>

@@ -98,6 +98,8 @@ export function ArchivedPage() {
 						params: { practiceId: entity.item.id.toString() }
 					})
 					break
+				default:
+					break
 			}
 		},
 		[navigate]
@@ -141,6 +143,8 @@ function ArchivedList({
 					break
 				case 'practice':
 					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+				default:
 					break
 			}
 			return (

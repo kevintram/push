@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
-import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
+import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
@@ -16,12 +16,8 @@ import { ReviewSection } from '~/features/reviews/components/ReviewSection'
 
 export function TodayPage() {
 	const { entries, isLoading } = useMergedTodayReviewEntries()
-	const {
-		handleSessionClick,
-		handleReviewClick,
-		selectedReviewId,
-		closeReviewDialog
-	} = useReviewSessionPageHandlers()
+	const { handleReviewClick, selectedReviewId, closeReviewDialog } =
+		useReviewPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	const allSectionsEmpty = entries.length === 0
@@ -72,7 +68,6 @@ export function TodayPage() {
 					isCollapsed={collapsedSections[mergedSection.id] ?? false}
 					label={mergedSection.label}
 					onReviewClick={handleReviewClick}
-					onSessionClick={handleSessionClick}
 					onToggleCollapse={toggleSection}
 				/>
 			</PageLayout.Content>
