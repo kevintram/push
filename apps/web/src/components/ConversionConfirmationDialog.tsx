@@ -39,7 +39,11 @@ export function ConversionConfirmationDialog({
 
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent>
+			{/* Stop propagation so clicks don't reach parent clickable elements (e.g. entity cards in list views) */}
+			<DialogContent
+				onClick={event => event.stopPropagation()}
+				onPointerDown={event => event.stopPropagation()}
+			>
 				<DialogHeader>
 					<DialogTitle>Convert to {targetEntityType}?</DialogTitle>
 					<DialogDescription>
