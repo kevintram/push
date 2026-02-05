@@ -67,3 +67,11 @@ export const reviewEntryKeys = {
 		return key
 	}
 }
+
+export const reviewQueueKeys = {
+	all: ['review-queue'] as const,
+	list: (limit?: number) =>
+		limit === undefined
+			? [...reviewQueueKeys.all, 'list']
+			: [...reviewQueueKeys.all, 'list', limit]
+}
