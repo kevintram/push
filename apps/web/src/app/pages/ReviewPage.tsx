@@ -13,6 +13,7 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter } from '~/components/ui/Card'
+import { CountBadge } from '~/components/ui/CountBadge'
 import {
 	Empty,
 	EmptyHeader,
@@ -243,14 +244,15 @@ function ScheduleCard({
 				<div className='flex items-center justify-between gap-4'>
 					<TabsList className='w-fit'>
 						<TabsTrigger value={tabs.today.value}>
-							{tabs.today.label} <span>{tabs.today.totalCount}</span>
+							{tabs.today.label} <CountBadge count={tabs.today.totalCount} />
 						</TabsTrigger>
 						<TabsTrigger value={tabs.upcoming.value}>
-							{tabs.upcoming.label} <span>{tabs.upcoming.totalCount}</span>
+							{tabs.upcoming.label}{' '}
+							<CountBadge count={tabs.upcoming.totalCount} />
 						</TabsTrigger>
 						<TabsTrigger value={tabs.unscheduled.value}>
 							{tabs.unscheduled.label}{' '}
-							<span>{tabs.unscheduled.totalCount}</span>
+							<CountBadge count={tabs.unscheduled.totalCount} />
 						</TabsTrigger>
 					</TabsList>
 					<Button

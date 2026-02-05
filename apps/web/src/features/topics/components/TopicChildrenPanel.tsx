@@ -6,6 +6,7 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
+import { CountBadge } from '~/components/ui/CountBadge'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useTopicDialog } from '~/features/dialogs/hooks/useTopicDialog'
 import type { FsrsState } from '~/models/learnable.types'
@@ -214,8 +215,9 @@ export function TopicChildrenPanel({
 					>
 						<Baby className='h-4 w-4' />
 						<span className='font-medium text-muted-foreground text-sm'>
-							Child topics ({children.length})
+							Child topics
 						</span>
+						<CountBadge count={children.length} />
 						<ChevronDown
 							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
 						/>
