@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Anvil, Inbox, Plus, RotateCcw } from 'lucide-react'
+import { Anvil, Inbox, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import {
@@ -19,10 +19,8 @@ import {
 } from '~/components/ui/Tooltip'
 import { useAddPracticeTopic } from '~/features/practices/api/addPracticeTopic'
 import { useCreateReview } from '~/features/reviews/api/createReview'
-import {
-	ReviewRatingCheckbox,
-	type ReviewRatingState
-} from '~/features/reviews/components/ReviewRatingCheckbox'
+import { ReviewPreview } from '~/features/reviews/components/ReviewPreview'
+import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'
 import { useAddSourceEntityRelation } from '~/features/sources/api/addSourceEntityRelation'
 import { useAddSourcePrerequisite } from '~/features/sources/api/addSourcePrerequisite'
 import { useAddSourceTopic } from '~/features/sources/api/addSourceTopic'
@@ -67,6 +65,7 @@ export function AddTopicDialog({
 		useState<ReviewRatingState>('uncompleted')
 	const [reviewDescription, setReviewDescription] = useState('')
 	const [reviewNotes, setReviewNotes] = useState('')
+	const [reviewDate, setReviewDate] = useState<Date | null>(() => new Date())
 
 	// Toggle states
 	const [inboxed, setInboxed] = useState(false)
@@ -135,6 +134,7 @@ export function AddTopicDialog({
 		setReviewRating('uncompleted')
 		setReviewDescription('')
 		setReviewNotes('')
+		setReviewDate(new Date())
 	}, [])
 
 	// Reset toggle fields to defaults
@@ -152,11 +152,6 @@ export function AddTopicDialog({
 			setCreateMore(false)
 		}
 	}, [open, resetContentFields, resetToggleFields])
-
-	// Handle rating change - set completed_at when rating is set
-	const handleRatingChange = useCallback((newRating: ReviewRatingState) => {
-		setReviewRating(newRating)
-	}, [])
 
 	// Create topic handler
 	const handleCreate = useCallback(async () => {
@@ -234,7 +229,9 @@ export function AddTopicDialog({
 					rating: reviewRating,
 					description: reviewDescription.trim(),
 					notes: reviewNotes.trim(),
-					completed_at: dayjs().format('YYYY-MM-DD')
+					completed_at: reviewDate
+						? dayjs(reviewDate).format('YYYY-MM-DD')
+						: dayjs().format('YYYY-MM-DD')
 				} as const
 				await createReview(basePayload)
 			}
@@ -274,6 +271,7 @@ export function AddTopicDialog({
 		reviewRating,
 		reviewDescription,
 		reviewNotes,
+		reviewDate,
 		createReview,
 		onSuccess,
 		createMore,
@@ -309,43 +307,18 @@ export function AddTopicDialog({
 					</div>
 
 					{/* Add First Review Section */}
-					{showReview ? (
-						<div className='rounded-lg border p-3'>
-							<div className='flex items-start gap-3'>
-								<ReviewRatingCheckbox
-									className='translate-y-0.5'
-									onChange={handleRatingChange}
-									value={reviewRating}
-								/>
-								<div className='flex min-w-0 flex-1 flex-col gap-2'>
-									<Textarea
-										className='!bg-transparent m-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
-										onChange={e => setReviewDescription(e.target.value)}
-										placeholder='Description'
-										spellCheck={false}
-										value={reviewDescription}
-									/>
-									<Textarea
-										className='!bg-transparent m-0 resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-										onChange={e => setReviewNotes(e.target.value)}
-										placeholder='Notes'
-										spellCheck={false}
-										value={reviewNotes}
-									/>
-								</div>
-							</div>
-						</div>
-					) : (
-						<Button
-							className='w-fit'
-							onClick={() => setShowReview(true)}
-							size='sm'
-							variant='outline'
-						>
-							<Plus className='h-4 w-4' />
-							Add first review
-						</Button>
-					)}
+					<ReviewPreview
+						date={reviewDate}
+						description={reviewDescription}
+						notes={reviewNotes}
+						onDateChange={setReviewDate}
+						onDescriptionChange={setReviewDescription}
+						onNotesChange={setReviewNotes}
+						onRatingChange={setReviewRating}
+						onShowChange={setShowReview}
+						rating={reviewRating}
+						show={showReview}
+					/>
 
 					{/* Bottom Controls */}
 					<div className='flex flex-wrap items-center gap-2 border-t pt-4'>
