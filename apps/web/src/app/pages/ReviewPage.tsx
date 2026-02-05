@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { ArrowUpRight, BookOpen } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
@@ -34,13 +34,13 @@ import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
+import { useEntityNavigation } from '~/hooks/useEntityNavigation'
 import type { FreshnessTier } from '~/models/learnable.types'
 import { getFreshnessTierColor } from '~/utils/retrievability'
 
 const SCHEDULE_PREVIEW_LIMIT = 3
 
 export function ReviewPage() {
-	const navigate = useNavigate()
 	const { handleReviewClick, selectedReviewId, closeReviewDialog } =
 		useReviewPageHandlers()
 	const { data: reviewQueue = [], isLoading: isQueueLoading } = useReviewQueue()
@@ -102,31 +102,7 @@ export function ReviewPage() {
 
 	const isQueueEmpty = !isQueueLoading && queueItems.length === 0
 
-	const handleEntityClick = useCallback(
-		(entity: EntityItem) => {
-			switch (entity.type) {
-				case 'topic':
-					navigate({
-						to: '/topics/$topicId',
-						params: { topicId: entity.item.id.toString() }
-					})
-					break
-				case 'source':
-					navigate({
-						to: '/sources/$sourceId',
-						params: { sourceId: entity.item.id.toString() }
-					})
-					break
-				case 'practice':
-					navigate({
-						to: '/practices/$practiceId',
-						params: { practiceId: entity.item.id.toString() }
-					})
-					break
-			}
-		},
-		[navigate]
-	)
+	const handleEntityClick = useEntityNavigation()
 
 	const scheduleTabs = useMemo(
 		() => ({
