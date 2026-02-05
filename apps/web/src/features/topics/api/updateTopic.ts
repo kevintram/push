@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
+import { searchKeys } from '~/features/search/api/searchAll'
 import { apiFetch } from '~/utils/apiFetch'
 import type { UpdateTopicInput } from '../types/api.types'
 import { TopicSchema } from '../types/topic.schemas'
@@ -52,6 +53,9 @@ export function useUpdateTopic(
 				})
 				queryClient.invalidateQueries({
 					queryKey: reviewKeys.all
+				})
+				queryClient.invalidateQueries({
+					queryKey: searchKeys.all
 				})
 			}
 		}
