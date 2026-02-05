@@ -1,6 +1,6 @@
 import { ListChecks } from 'lucide-react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
-import { useReviewSessionPageHandlers } from '~/app/hooks/useReviewSessionPageHandlers'
+import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
@@ -12,20 +12,14 @@ import {
 } from '~/components/ui/Empty'
 import { useLogbookReviewEntries } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
-import {
-	type ReviewEntry,
-	ReviewSection
-} from '~/features/reviews/components/ReviewSection'
+import { ReviewSection } from '~/features/reviews/components/ReviewSection'
+import type { ReviewListItem } from '~/features/reviews/types/review.types'
 
 export function LogbookPage() {
 	const { sections, isLoading } = useLogbookReviewEntries()
 
-	const {
-		handleSessionClick,
-		handleReviewClick,
-		selectedReviewId,
-		closeReviewDialog
-	} = useReviewSessionPageHandlers()
+	const { handleReviewClick, selectedReviewId, closeReviewDialog } =
+		useReviewPageHandlers()
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	return (
@@ -35,7 +29,6 @@ export function LogbookPage() {
 				collapsedSections={collapsedSections}
 				isLoading={isLoading}
 				onReviewClick={handleReviewClick}
-				onSessionClick={handleSessionClick}
 				onToggleCollapse={toggleSection}
 				sections={sections}
 			/>
@@ -54,19 +47,17 @@ function LogbookList({
 	collapsedSections,
 	isLoading,
 	onReviewClick,
-	onSessionClick,
 	onToggleCollapse,
 	sections
 }: {
 	collapsedSections: Record<string, boolean>
 	isLoading: boolean
 	onReviewClick: (reviewId: number) => void
-	onSessionClick: (sessionId: number) => void
 	onToggleCollapse: (sectionId: string) => void
 	sections: Array<{
 		id: string
 		label: string
-		entries: Array<ReviewEntry>
+		entries: Array<ReviewListItem>
 	}>
 }) {
 	if (isLoading) {
@@ -101,7 +92,6 @@ function LogbookList({
 					key={section.id}
 					label={section.label}
 					onReviewClick={onReviewClick}
-					onSessionClick={onSessionClick}
 					onToggleCollapse={onToggleCollapse}
 				/>
 			))}

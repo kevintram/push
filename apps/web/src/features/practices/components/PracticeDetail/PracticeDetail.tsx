@@ -6,6 +6,7 @@ import { LearnableStatus } from '~/components/LearnableStatus'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
@@ -38,6 +39,10 @@ interface PracticeDetailProps {
 	 */
 	headerAfterActions?: ReactNode
 	/**
+	 * Callback when the practice is successfully converted to another entity type.
+	 */
+	onConvertSuccess?: OnConversionSuccess
+	/**
 	 * Callback when the practice is deleted.
 	 */
 	onDelete?: () => void | Promise<void>
@@ -62,6 +67,7 @@ export function PracticeDetail({
 	isLoading: isLoadingProp,
 	headerBeforeActions,
 	headerAfterActions,
+	onConvertSuccess,
 	onDelete,
 	onTopicNavigate,
 	onSourceNavigate,
@@ -185,6 +191,7 @@ export function PracticeDetail({
 								/>
 							</div>
 							<PracticeActionMenu
+								onConvertSuccess={onConvertSuccess}
 								onDelete={onDelete}
 								onPracticeUpdateSuccess={handlePracticeUpdateSuccess}
 								practice={practice}

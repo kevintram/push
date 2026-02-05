@@ -120,6 +120,8 @@ export function MyLibraryPage() {
 						params: { practiceId: entity.item.id.toString() }
 					})
 					break
+				default:
+					break
 			}
 		},
 		[navigate]
@@ -169,6 +171,8 @@ function LibraryList({
 					break
 				case 'practice':
 					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+				default:
 					break
 			}
 			return (

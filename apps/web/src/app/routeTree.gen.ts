@@ -26,7 +26,6 @@ import { Route as MainInboxRouteImport } from './routes/_main/inbox'
 import { Route as MainArchivedRouteImport } from './routes/_main/archived'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
 import { Route as MainSourcesSourceIdRouteImport } from './routes/_main/sources_.$sourceId'
-import { Route as MainReviewSessionReviewSessionIdRouteImport } from './routes/_main/review-session.$reviewSessionId'
 import { Route as MainPracticesPracticeIdRouteImport } from './routes/_main/practices_.$practiceId'
 
 const MainRoute = MainRouteImport.update({
@@ -113,12 +112,6 @@ const MainSourcesSourceIdRoute = MainSourcesSourceIdRouteImport.update({
   path: '/sources/$sourceId',
   getParentRoute: () => MainRoute,
 } as any)
-const MainReviewSessionReviewSessionIdRoute =
-  MainReviewSessionReviewSessionIdRouteImport.update({
-    id: '/review-session/$reviewSessionId',
-    path: '/review-session/$reviewSessionId',
-    getParentRoute: () => MainRoute,
-  } as any)
 const MainPracticesPracticeIdRoute = MainPracticesPracticeIdRouteImport.update({
   id: '/practices_/$practiceId',
   path: '/practices/$practiceId',
@@ -141,7 +134,6 @@ export interface FileRoutesByFullPath {
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/practices/$practiceId': typeof MainPracticesPracticeIdRoute
-  '/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
   '/sources/$sourceId': typeof MainSourcesSourceIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
 }
@@ -161,7 +153,6 @@ export interface FileRoutesByTo {
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/practices/$practiceId': typeof MainPracticesPracticeIdRoute
-  '/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
   '/sources/$sourceId': typeof MainSourcesSourceIdRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
 }
@@ -183,7 +174,6 @@ export interface FileRoutesById {
   '/_main/upcoming': typeof MainUpcomingRoute
   '/_main/': typeof MainIndexRoute
   '/_main/practices_/$practiceId': typeof MainPracticesPracticeIdRoute
-  '/_main/review-session/$reviewSessionId': typeof MainReviewSessionReviewSessionIdRoute
   '/_main/sources_/$sourceId': typeof MainSourcesSourceIdRoute
   '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
 }
@@ -205,7 +195,6 @@ export interface FileRouteTypes {
     | '/upcoming'
     | '/'
     | '/practices/$practiceId'
-    | '/review-session/$reviewSessionId'
     | '/sources/$sourceId'
     | '/topics/$topicId'
   fileRoutesByTo: FileRoutesByTo
@@ -225,7 +214,6 @@ export interface FileRouteTypes {
     | '/upcoming'
     | '/'
     | '/practices/$practiceId'
-    | '/review-session/$reviewSessionId'
     | '/sources/$sourceId'
     | '/topics/$topicId'
   id:
@@ -246,7 +234,6 @@ export interface FileRouteTypes {
     | '/_main/upcoming'
     | '/_main/'
     | '/_main/practices_/$practiceId'
-    | '/_main/review-session/$reviewSessionId'
     | '/_main/sources_/$sourceId'
     | '/_main/topics_/$topicId'
   fileRoutesById: FileRoutesById
@@ -376,13 +363,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainSourcesSourceIdRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/review-session/$reviewSessionId': {
-      id: '/_main/review-session/$reviewSessionId'
-      path: '/review-session/$reviewSessionId'
-      fullPath: '/review-session/$reviewSessionId'
-      preLoaderRoute: typeof MainReviewSessionReviewSessionIdRouteImport
-      parentRoute: typeof MainRoute
-    }
     '/_main/practices_/$practiceId': {
       id: '/_main/practices_/$practiceId'
       path: '/practices/$practiceId'
@@ -409,7 +389,6 @@ interface MainRouteChildren {
   MainUpcomingRoute: typeof MainUpcomingRoute
   MainIndexRoute: typeof MainIndexRoute
   MainPracticesPracticeIdRoute: typeof MainPracticesPracticeIdRoute
-  MainReviewSessionReviewSessionIdRoute: typeof MainReviewSessionReviewSessionIdRoute
   MainSourcesSourceIdRoute: typeof MainSourcesSourceIdRoute
   MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRoute
 }
@@ -430,7 +409,6 @@ const MainRouteChildren: MainRouteChildren = {
   MainUpcomingRoute: MainUpcomingRoute,
   MainIndexRoute: MainIndexRoute,
   MainPracticesPracticeIdRoute: MainPracticesPracticeIdRoute,
-  MainReviewSessionReviewSessionIdRoute: MainReviewSessionReviewSessionIdRoute,
   MainSourcesSourceIdRoute: MainSourcesSourceIdRoute,
   MainTopicsTopicIdRoute: MainTopicsTopicIdRoute,
 }

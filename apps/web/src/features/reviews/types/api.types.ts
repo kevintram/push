@@ -1,13 +1,6 @@
 import type { PracticeCreate } from '~/features/practices/types/practice.types'
 import type { LearningState } from '~/models/learning-state.types'
-import type { Rating, ReviewEntry, ReviewSession } from './review.types'
-
-export type CreateReviewSessionInput = {
-	description: string
-	notes?: string
-	scheduledAt?: string | null
-	completedAt?: string | null
-}
+import type { Rating, ReviewListItem } from './review.types'
 
 export type TopicCreate = {
 	name: string
@@ -20,13 +13,6 @@ export type TopicCreate = {
 	step?: number | null
 	due?: string | null
 	srs_enabled?: boolean
-}
-
-export type ReviewSessionCreate = {
-	description: string
-	notes: string
-	scheduled_at?: string | null
-	completed_at?: string | null
 }
 
 export type SourceCreate = {
@@ -94,30 +80,7 @@ export type CreateReviewPayload = {
 			source_id?: never
 			source?: never
 	  }
-) &
-	(
-		| { review_session_id: number; review_session?: never }
-		| { review_session: ReviewSessionCreate; review_session_id?: never }
-		| { review_session_id?: never; review_session?: never }
-	)
-
-export type CreateTopicWithReviewInput = {
-	name?: string
-	notes?: string
-	stability?: number | null
-	difficulty?: number | null
-	state?: 'LEARNING' | 'REVIEW' | 'RELEARNING'
-	archived?: boolean
-	inboxed?: boolean
-}
-
-export type UpdateReviewSessionInput = {
-	id: number
-	description?: string
-	notes?: string
-	scheduled_at?: string | null
-	completed_at?: string | null
-}
+)
 
 export type UpdateReviewInput = {
 	id: number
@@ -126,18 +89,9 @@ export type UpdateReviewInput = {
 	notes?: string
 	scheduled_at?: string | null
 	completed_at?: string | null
-	review_session_id?: number | null
-}
-
-export type GetReviewSessionsFilters = {
-	effectiveDateBefore?: string
-	effectiveDateAfter?: string
-	scheduled?: boolean
-	completed?: boolean
 }
 
 export type GetReviewsFilters = {
-	reviewSessionId?: number
 	topicId?: number
 	sourceId?: number
 	practiceId?: number
@@ -145,17 +99,6 @@ export type GetReviewsFilters = {
 	effectiveDateAfter?: string
 	scheduled?: boolean
 	completed?: boolean
-}
-
-export type GetReviewEntriesFilters = {
-	topicId?: number
-	effectiveDateBefore?: string
-	effectiveDateAfter?: string
-	scheduled?: boolean
-	completed?: boolean
-	sort?: 'asc' | 'desc'
-	limit?: number
-	includeCount?: boolean
 }
 
 export type TodaySectionKey = 'overdue' | 'today'
@@ -186,22 +129,21 @@ export type UnscheduledSectionDefinition = {
 export type FutureSection = {
 	id: string
 	label: string
-	entries: Array<ReviewSession>
+	entries: Array<ReviewListItem>
 }
 
 export type LogbookSection = {
 	id: string
 	label: string
-	entries: Array<ReviewSession>
+	entries: Array<ReviewListItem>
 }
 
-// Entry-based section types for unified review entries endpoint
 export type TodayEntrySection = {
 	id: TodaySectionKey
 	label: string
 	headingClassName?: string
 	emptyMessage: string
-	entries: Array<ReviewEntry>
+	entries: Array<ReviewListItem>
 }
 
 export type SoonEntrySection = {
@@ -209,7 +151,7 @@ export type SoonEntrySection = {
 	label: string
 	headingClassName?: string
 	emptyMessage: string
-	entries: Array<ReviewEntry>
+	entries: Array<ReviewListItem>
 }
 
 export type UnscheduledEntrySection = {
@@ -217,17 +159,17 @@ export type UnscheduledEntrySection = {
 	label: string
 	headingClassName?: string
 	emptyMessage: string
-	entries: Array<ReviewEntry>
+	entries: Array<ReviewListItem>
 }
 
 export type FutureEntrySection = {
 	id: string
 	label: string
-	entries: Array<ReviewEntry>
+	entries: Array<ReviewListItem>
 }
 
 export type LogbookEntrySection = {
 	id: string
 	label: string
-	entries: Array<ReviewEntry>
+	entries: Array<ReviewListItem>
 }

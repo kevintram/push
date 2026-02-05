@@ -236,7 +236,7 @@ export function LearnableReviewsSidebar<T extends EntityWithId>({
 										key={entry.id}
 										onReviewClick={handleReviewClick}
 										readonly={readonly}
-										variant='session'
+										variant='default'
 									/>
 								))}
 							</div>
@@ -251,7 +251,7 @@ export function LearnableReviewsSidebar<T extends EntityWithId>({
 										key={entry.id}
 										onReviewClick={handleReviewClick}
 										readonly={readonly}
-										variant='session'
+										variant='default'
 									/>
 								))}
 							</div>

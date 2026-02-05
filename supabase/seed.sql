@@ -125,71 +125,37 @@ VALUES
 SELECT setval('topics_id_seq', (SELECT MAX(id) FROM topics));
 
 -- ============================================================================
--- REVIEW SESSIONS
--- ============================================================================
-INSERT INTO review_sessions (id, user_id, description, scheduled_at, completed_at, inserted_at, updated_at)
-OVERRIDING SYSTEM VALUE
-VALUES
-  -- Completed sessions (ids 1-3)
-  (1, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Morning TypeScript review - focused on generics', '2026-01-16', '2026-01-16', NOW() - INTERVAL '1 day', NOW()),
-  (2, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish practice - verb conjugations', '2026-01-17', '2026-01-17', NOW() - INTERVAL '12 hours', NOW()),
-  (3, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Programming catch-up - multiple topics', '2026-01-15', '2026-01-15', NOW() - INTERVAL '2 days', NOW()),
-
-  -- Scheduled but not completed (ids 4-5)
-  (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Math review - linear algebra and probability', '2026-01-18', NULL, NOW() - INTERVAL '1 day', NOW()),
-  (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React deep dive - server components focus', '2026-01-20', NULL, NOW() - INTERVAL '6 hours', NOW());
-
--- Reset sequence (sequence keeps original name 'reviews_id_seq' even after table rename)
-SELECT setval('reviews_id_seq', (SELECT MAX(id) FROM review_sessions));
-
--- ============================================================================
 -- REVIEWS
 -- ============================================================================
 -- Note: Reviews still use topic_id directly (this is updated to use topic_reviews association in the migration)
--- Review session IDs: 1=TS review, 2=Spanish, 3=Programming, 4=Math, 5=React
-
--- Reviews from session 1 (TypeScript review - completed)
-INSERT INTO reviews (id, user_id, topic_id, review_session_id, description, notes, scheduled_at, completed_at, rating, stability_before, difficulty_before, state_before, step_before, stability_after, difficulty_after, state_after, step_after, inserted_at, updated_at)
+INSERT INTO reviews (id, user_id, topic_id, description, notes, scheduled_at, completed_at, rating, stability_before, difficulty_before, state_before, step_before, stability_after, difficulty_after, state_after, step_after, inserted_at, updated_at)
 OVERRIDING SYSTEM VALUE
 VALUES
-  (1, 'user_01KGG4R8HZAV513662YE3DJ0A9', 12, 1, 'Generic constraints practice', 'Still tricky with conditional types', '2026-01-16', '2026-01-16', 'hard', 3.0, 6.0, 'LEARNING', 1, 4.0, 6.5, 'LEARNING', 2, NOW() - INTERVAL '1 day', NOW()),
-  (2, 'user_01KGG4R8HZAV513662YE3DJ0A9', 13, 1, 'Type guard examples', 'Good recall', '2026-01-16', '2026-01-16', 'good', 12.0, 5.2, 'REVIEW', 0, 15.0, 5.0, 'REVIEW', 0, NOW() - INTERVAL '1 day', NOW()),
-  (3, 'user_01KGG4R8HZAV513662YE3DJ0A9', 14, 1, 'Utility types quiz', 'Forgot Omit vs Exclude', '2026-01-16', '2026-01-16', 'miss', 10.0, 6.5, 'REVIEW', 0, 2.0, 7.0, 'RELEARNING', 1, NOW() - INTERVAL '1 day', NOW()),
-
-  -- Reviews from session 2 (Spanish practice - completed)
-  (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 20, 2, 'Vocabulary flashcards', '50 new words', '2026-01-17', '2026-01-17', 'good', 3.0, 4.8, 'LEARNING', 1, 4.0, 4.5, 'LEARNING', 2, NOW() - INTERVAL '12 hours', NOW()),
-  (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 21, 2, 'Conjugation drills', 'Present tense solid', '2026-01-17', '2026-01-17', 'good', 2.5, 6.2, 'LEARNING', 2, 3.0, 6.0, 'LEARNING', 3, NOW() - INTERVAL '12 hours', NOW()),
-  (6, 'user_01KGG4R8HZAV513662YE3DJ0A9', 22, 2, 'Ser vs Estar exercises', 'Context clues helping', '2026-01-17', '2026-01-17', 'hard', 1.5, 7.2, 'LEARNING', 3, 2.0, 7.0, 'LEARNING', 4, NOW() - INTERVAL '12 hours', NOW()),
-
-  -- Reviews from session 3 (Programming catch-up - completed)
-  (7, 'user_01KGG4R8HZAV513662YE3DJ0A9', 10, 3, 'SQL joins review', 'LEFT vs INNER joins', '2026-01-15', '2026-01-15', 'good', 6.0, 5.2, 'LEARNING', 0, 8.0, 5.0, 'LEARNING', 1, NOW() - INTERVAL '2 days', NOW()),
-  (8, 'user_01KGG4R8HZAV513662YE3DJ0A9', 9, 3, 'React rendering', 'Virtual DOM concepts', '2026-01-15', '2026-01-15', 'easy', 15.0, 4.8, 'REVIEW', 0, 20.0, 4.5, 'REVIEW', 0, NOW() - INTERVAL '2 days', NOW()),
-  (9, 'user_01KGG4R8HZAV513662YE3DJ0A9', 15, 3, 'useEffect cleanup', 'Dependencies array', '2026-01-15', '2026-01-15', 'good', 14.0, 4.2, 'REVIEW', 0, 18.0, 4.0, 'REVIEW', 0, NOW() - INTERVAL '2 days', NOW()),
-
-  -- Reviews for session 4 (Math review - scheduled, not completed)
-  (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 17, 4, 'Matrix operations', '', '2026-01-18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW() - INTERVAL '1 day', NOW()),
-  (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 19, 4, 'Bayes theorem', '', '2026-01-18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW() - INTERVAL '1 day', NOW()),
-
-  -- Reviews for session 5 (React deep dive - scheduled, not completed)
-  (12, 'user_01KGG4R8HZAV513662YE3DJ0A9', 16, 5, 'RSC streaming patterns', '', '2026-01-20', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW() - INTERVAL '6 hours', NOW()),
-
-  -- Standalone reviews (not part of a session)
-  -- Historical completed reviews
-  (13, 'user_01KGG4R8HZAV513662YE3DJ0A9', 7, NULL, 'TypeScript basics', 'Type annotations', '2026-01-14', '2026-01-14', 'easy', 20.0, 3.2, 'REVIEW', 0, 25.0, 3.0, 'REVIEW', 0, NOW() - INTERVAL '3 days', NOW()),
-  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 8, NULL, 'Python comprehensions', 'List and dict comprehensions', '2026-01-12', '2026-01-12', 'good', 35.0, 2.7, 'REVIEW', 0, 40.0, 2.5, 'REVIEW', 0, NOW() - INTERVAL '5 days', NOW()),
-  (15, 'user_01KGG4R8HZAV513662YE3DJ0A9', 11, NULL, 'Git rebasing', 'Interactive rebase', '2026-01-01', '2026-01-01', 'good', 55.0, 2.2, 'REVIEW', 0, 60.0, 2.0, 'REVIEW', 0, NOW() - INTERVAL '16 days', NOW()),
-  (16, 'user_01KGG4R8HZAV513662YE3DJ0A9', 1, NULL, 'Programming overview', 'Big picture review', '2026-01-15', '2026-01-15', 'easy', 40.0, 3.7, 'REVIEW', 0, 45.0, 3.5, 'REVIEW', 0, NOW() - INTERVAL '2 days', NOW()),
-  (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 18, NULL, 'Integration techniques', 'U-substitution', '2026-01-05', '2026-01-05', 'hard', 30.0, 6.2, 'REVIEW', 0, 35.0, 6.0, 'REVIEW', 0, NOW() - INTERVAL '12 days', NOW()),
-  (18, 'user_01KGG4R8HZAV513662YE3DJ0A9', 17, NULL, 'Eigenvalues', 'Computation and meaning', '2026-01-08', '2026-01-08', 'good', 22.0, 5.7, 'REVIEW', 0, 25.0, 5.5, 'REVIEW', 0, NOW() - INTERVAL '9 days', NOW()),
-  (19, 'user_01KGG4R8HZAV513662YE3DJ0A9', 2, NULL, 'Math foundations', 'Number theory basics', '2026-01-10', '2026-01-10', 'good', 27.0, 4.2, 'REVIEW', 0, 30.0, 4.0, 'REVIEW', 0, NOW() - INTERVAL '7 days', NOW()),
-  (20, 'user_01KGG4R8HZAV513662YE3DJ0A9', 3, NULL, 'Spanish listening', 'Podcast comprehension', '2026-01-16', '2026-01-16', 'hard', 4.0, 5.8, 'LEARNING', 1, 5.0, 5.5, 'LEARNING', 2, NOW() - INTERVAL '1 day', NOW()),
-  (21, 'user_01KGG4R8HZAV513662YE3DJ0A9', 19, NULL, 'Probability distributions', 'Normal and binomial', '2026-01-14', '2026-01-14', 'good', 5.0, 6.7, 'LEARNING', 1, 6.0, 6.5, 'LEARNING', 2, NOW() - INTERVAL '3 days', NOW()),
-  (22, 'user_01KGG4R8HZAV513662YE3DJ0A9', 16, NULL, 'RSC basics', 'Server vs client components', '2026-01-16', '2026-01-16', 'hard', 2.0, 7.8, 'LEARNING', 2, 3.0, 7.5, 'LEARNING', 3, NOW() - INTERVAL '1 day', NOW()),
-
-  -- Future scheduled reviews (standalone)
-  (23, 'user_01KGG4R8HZAV513662YE3DJ0A9', 12, NULL, 'Generic inference', '', '2026-01-19', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW(), NOW()),
-  (24, 'user_01KGG4R8HZAV513662YE3DJ0A9', 14, NULL, 'Utility types retry', '', '2026-01-18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW(), NOW()),
-  (25, 'user_01KGG4R8HZAV513662YE3DJ0A9', 22, NULL, 'Ser vs Estar practice', '', '2026-01-19', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW(), NOW());
+  (1, 'user_01KGG4R8HZAV513662YE3DJ0A9', 12, 'Generic constraints practice', 'Still tricky with conditional types', '2026-01-16', '2026-01-16', 'hard', 3.0, 6.0, 'LEARNING', 1, 4.0, 6.5, 'LEARNING', 2, NOW() - INTERVAL '1 day', NOW()),
+  (2, 'user_01KGG4R8HZAV513662YE3DJ0A9', 13, 'Type guard examples', 'Good recall', '2026-01-16', '2026-01-16', 'good', 12.0, 5.2, 'REVIEW', 0, 15.0, 5.0, 'REVIEW', 0, NOW() - INTERVAL '1 day', NOW()),
+  (3, 'user_01KGG4R8HZAV513662YE3DJ0A9', 14, 'Utility types quiz', 'Forgot Omit vs Exclude', '2026-01-16', '2026-01-16', 'miss', 10.0, 6.5, 'REVIEW', 0, 2.0, 7.0, 'RELEARNING', 1, NOW() - INTERVAL '1 day', NOW()),
+  (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 20, 'Vocabulary flashcards', '50 new words', '2026-01-17', '2026-01-17', 'good', 3.0, 4.8, 'LEARNING', 1, 4.0, 4.5, 'LEARNING', 2, NOW() - INTERVAL '12 hours', NOW()),
+  (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 21, 'Conjugation drills', 'Present tense solid', '2026-01-17', '2026-01-17', 'good', 2.5, 6.2, 'LEARNING', 2, 3.0, 6.0, 'LEARNING', 3, NOW() - INTERVAL '12 hours', NOW()),
+  (6, 'user_01KGG4R8HZAV513662YE3DJ0A9', 22, 'Ser vs Estar exercises', 'Context clues helping', '2026-01-17', '2026-01-17', 'hard', 1.5, 7.2, 'LEARNING', 3, 2.0, 7.0, 'LEARNING', 4, NOW() - INTERVAL '12 hours', NOW()),
+  (7, 'user_01KGG4R8HZAV513662YE3DJ0A9', 10, 'SQL joins review', 'LEFT vs INNER joins', '2026-01-15', '2026-01-15', 'good', 6.0, 5.2, 'LEARNING', 0, 8.0, 5.0, 'LEARNING', 1, NOW() - INTERVAL '2 days', NOW()),
+  (8, 'user_01KGG4R8HZAV513662YE3DJ0A9', 9, 'React rendering', 'Virtual DOM concepts', '2026-01-15', '2026-01-15', 'easy', 15.0, 4.8, 'REVIEW', 0, 20.0, 4.5, 'REVIEW', 0, NOW() - INTERVAL '2 days', NOW()),
+  (9, 'user_01KGG4R8HZAV513662YE3DJ0A9', 15, 'useEffect cleanup', 'Dependencies array', '2026-01-15', '2026-01-15', 'good', 14.0, 4.2, 'REVIEW', 0, 18.0, 4.0, 'REVIEW', 0, NOW() - INTERVAL '2 days', NOW()),
+  (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 17, 'Matrix operations', '', '2026-01-18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW() - INTERVAL '1 day', NOW()),
+  (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 19, 'Bayes theorem', '', '2026-01-18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW() - INTERVAL '1 day', NOW()),
+  (12, 'user_01KGG4R8HZAV513662YE3DJ0A9', 16, 'RSC streaming patterns', '', '2026-01-20', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW() - INTERVAL '6 hours', NOW()),
+  (13, 'user_01KGG4R8HZAV513662YE3DJ0A9', 7, 'TypeScript basics', 'Type annotations', '2026-01-14', '2026-01-14', 'easy', 20.0, 3.2, 'REVIEW', 0, 25.0, 3.0, 'REVIEW', 0, NOW() - INTERVAL '3 days', NOW()),
+  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 8, 'Python comprehensions', 'List and dict comprehensions', '2026-01-12', '2026-01-12', 'good', 35.0, 2.7, 'REVIEW', 0, 40.0, 2.5, 'REVIEW', 0, NOW() - INTERVAL '5 days', NOW()),
+  (15, 'user_01KGG4R8HZAV513662YE3DJ0A9', 11, 'Git rebasing', 'Interactive rebase', '2026-01-01', '2026-01-01', 'good', 55.0, 2.2, 'REVIEW', 0, 60.0, 2.0, 'REVIEW', 0, NOW() - INTERVAL '16 days', NOW()),
+  (16, 'user_01KGG4R8HZAV513662YE3DJ0A9', 1, 'Programming overview', 'Big picture review', '2026-01-15', '2026-01-15', 'easy', 40.0, 3.7, 'REVIEW', 0, 45.0, 3.5, 'REVIEW', 0, NOW() - INTERVAL '2 days', NOW()),
+  (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 18, 'Integration techniques', 'U-substitution', '2026-01-05', '2026-01-05', 'hard', 30.0, 6.2, 'REVIEW', 0, 35.0, 6.0, 'REVIEW', 0, NOW() - INTERVAL '12 days', NOW()),
+  (18, 'user_01KGG4R8HZAV513662YE3DJ0A9', 17, 'Eigenvalues', 'Computation and meaning', '2026-01-08', '2026-01-08', 'good', 22.0, 5.7, 'REVIEW', 0, 25.0, 5.5, 'REVIEW', 0, NOW() - INTERVAL '9 days', NOW()),
+  (19, 'user_01KGG4R8HZAV513662YE3DJ0A9', 2, 'Math foundations', 'Number theory basics', '2026-01-10', '2026-01-10', 'good', 27.0, 4.2, 'REVIEW', 0, 30.0, 4.0, 'REVIEW', 0, NOW() - INTERVAL '7 days', NOW()),
+  (20, 'user_01KGG4R8HZAV513662YE3DJ0A9', 3, 'Spanish listening', 'Podcast comprehension', '2026-01-16', '2026-01-16', 'hard', 4.0, 5.8, 'LEARNING', 1, 5.0, 5.5, 'LEARNING', 2, NOW() - INTERVAL '1 day', NOW()),
+  (21, 'user_01KGG4R8HZAV513662YE3DJ0A9', 19, 'Probability distributions', 'Normal and binomial', '2026-01-14', '2026-01-14', 'good', 5.0, 6.7, 'LEARNING', 1, 6.0, 6.5, 'LEARNING', 2, NOW() - INTERVAL '3 days', NOW()),
+  (22, 'user_01KGG4R8HZAV513662YE3DJ0A9', 16, 'RSC basics', 'Server vs client components', '2026-01-16', '2026-01-16', 'hard', 2.0, 7.8, 'LEARNING', 2, 3.0, 7.5, 'LEARNING', 3, NOW() - INTERVAL '1 day', NOW()),
+  (23, 'user_01KGG4R8HZAV513662YE3DJ0A9', 12, 'Generic inference', '', '2026-01-19', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW(), NOW()),
+  (24, 'user_01KGG4R8HZAV513662YE3DJ0A9', 14, 'Utility types retry', '', '2026-01-18', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW(), NOW()),
+  (25, 'user_01KGG4R8HZAV513662YE3DJ0A9', 22, 'Ser vs Estar practice', '', '2026-01-19', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NOW(), NOW());
 
 -- Reset sequence
 SELECT setval('reviews_id_seq', (SELECT MAX(id) FROM reviews));

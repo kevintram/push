@@ -6,6 +6,7 @@ import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { useSourceWithRelationships } from '~/features/sources/api/getSource'
 import { SourceDetail } from '~/features/sources/components/SourceDetail/SourceDetail'
 import { SourceContext } from '~/features/sources/stores/SelectedSourceContext'
+import { useConversionNavigate } from '~/hooks/useConversionNavigate'
 
 interface SourceDetailPageProps {
 	sourceId: string
@@ -30,6 +31,7 @@ function BrowserNavigationButtons() {
 export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 	const navigate = useNavigate()
 	const router = useRouter()
+	const handleConvertSuccess = useConversionNavigate()
 
 	const { source, isLoading } = useSourceWithRelationships(
 		Number.parseInt(sourceId, 10)
@@ -83,6 +85,7 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 				className='mx-auto max-w-5xl'
 				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
+				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}
 				onPracticeNavigate={handlePracticeNavigate}
 				onSourceNavigate={handleSourceNavigate}

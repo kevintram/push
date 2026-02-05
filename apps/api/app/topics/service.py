@@ -24,7 +24,6 @@ from app.models import (
     FsrsState,
     Practice,
     Review,
-    ReviewSession,
     Source,
     Topic,
     t_practice_sources,
@@ -792,19 +791,6 @@ async def remove_related_entity_from_topic(
         raise NotFoundError("Relationship")
 
 
-async def get_review_sessions_for_topic(
-    session: AsyncSession, topic_id: int, user_id: str
-) -> list[ReviewSession]:
-    """Get all review sessions that include this topic."""
-    stmt = select(ReviewSession).where(
-        ReviewSession.reviews.any(Review.topic_id == topic_id),
-        ReviewSession.user_id == user_id,
-    )
-    stmt = stmt.options(selectinload(ReviewSession.reviews).selectinload(Review.topic))
-    result = await session.execute(stmt)
-    return list(result.scalars().all())
-
-
 async def update_topic(
     session: AsyncSession,
     topic_id: int,
@@ -1197,12 +1183,12 @@ async def convert_topic_to_source(
                 new_to_source_id = topic_to_source[rel.to_topic_id].id
                 new_to_topic_id = None
 
-            new_rel = EntityRelation(
+            await EntityRelation.insert_or_ignore(
+                session,
                 from_source_id=new_source.id,
                 to_topic_id=new_to_topic_id,
                 to_source_id=new_to_source_id if new_to_source_id else rel.to_source_id,
             )
-            session.add(new_rel)
 
         # Get incoming relations (to this topic)
         incoming = await session.execute(
@@ -1214,12 +1200,12 @@ async def convert_topic_to_source(
                 continue
 
             # Create new relation pointing to source
-            new_rel = EntityRelation(
+            await EntityRelation.insert_or_ignore(
+                session,
                 from_topic_id=rel.from_topic_id,
                 from_source_id=rel.from_source_id,
                 to_source_id=new_source.id,
             )
-            session.add(new_rel)
 
     # 6. Delete original topics (cascade will clean up old relations)
     # Delete in reverse order (children first) to respect FK constraints

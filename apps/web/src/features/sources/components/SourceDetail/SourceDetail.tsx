@@ -4,6 +4,7 @@ import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
@@ -45,6 +46,10 @@ interface SourceDetailProps {
 	 * Whether the sidebar should be readonly. Defaults to false.
 	 */
 	sidebarReadonly?: boolean
+	/**
+	 * Callback when the source is successfully converted to another entity type.
+	 */
+	onConvertSuccess?: OnConversionSuccess
 	/**
 	 * Callback when the source is deleted.
 	 */
@@ -92,6 +97,7 @@ export function SourceDetail({
 	headerBeforeActions,
 	headerAfterActions,
 	sidebarReadonly = false,
+	onConvertSuccess,
 	onDelete,
 	onSourceNavigate,
 	onTopicNavigate,
@@ -217,6 +223,7 @@ export function SourceDetail({
 						/>
 						<SourceTitleSection
 							isUpdating={isUpdatingSource}
+							onConvertSuccess={onConvertSuccess}
 							onDelete={onDelete}
 							onSourceUpdateSuccess={handleSourceUpdateSuccess}
 							onSrsToggle={handleSrsToggle}

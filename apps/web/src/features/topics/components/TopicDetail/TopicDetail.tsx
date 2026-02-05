@@ -5,6 +5,7 @@ import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Source } from '~/features/sources/types/source.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
@@ -45,6 +46,10 @@ interface TopicDetailProps {
 	 * Whether the sidebar should be readonly. Defaults to false.
 	 */
 	sidebarReadonly?: boolean
+	/**
+	 * Callback when the topic is successfully converted to another entity type.
+	 */
+	onConvertSuccess?: OnConversionSuccess
 	/**
 	 * Callback when the topic is deleted.
 	 */
@@ -88,6 +93,7 @@ export function TopicDetail({
 	headerBeforeActions,
 	headerAfterActions,
 	sidebarReadonly = false,
+	onConvertSuccess,
 	onDelete,
 	onTopicNavigate,
 	onSourceNavigate,
@@ -224,6 +230,7 @@ export function TopicDetail({
 						/>
 						<TopicTitleSection
 							isUpdating={isUpdatingTopic}
+							onConvertSuccess={onConvertSuccess}
 							onDelete={onDelete}
 							onSrsToggle={handleSrsToggle}
 							onTitleChange={onNameChange}

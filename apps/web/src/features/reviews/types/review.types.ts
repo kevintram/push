@@ -7,7 +7,6 @@ export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 
 export type Review = {
 	id: number
-	review_session_id: number | null
 	// Polymorphic entity references (exactly one will be set)
 	topic_id: number | null
 	source_id: number | null
@@ -26,10 +25,6 @@ export type Review = {
 	topic?: Topic | null
 	source?: Source | null
 	practice?: Practice | null
-	review_session: {
-		id: number
-		description: string | null
-	} | null
 
 	// Entity FSRS state before review
 	stability_before: number | null
@@ -48,7 +43,6 @@ export type Review = {
 
 export type ReviewListItem = {
 	id: number
-	review_session_id: number | null
 	// Polymorphic entity references (exactly one will be set)
 	topic_id: number | null
 	source_id: number | null
@@ -63,11 +57,6 @@ export type ReviewListItem = {
 
 	inserted_at: string
 	updated_at: string
-
-	review_session: {
-		id: number
-		description: string | null
-	} | null
 	// Polymorphic entity summaries
 	topic?: {
 		id: number
@@ -98,36 +87,4 @@ export type ReviewListItem = {
 	state_after: LearningState | null
 	step_after: number | null
 	due_after: string | null
-}
-
-export type ReviewSession = {
-	id: number
-	scheduled_at: string | null
-	completed_at: string | null
-	effective_date: string | null
-	inserted_at: string
-	updated_at: string
-	description: string
-	notes: string
-	reviews?: Array<ReviewListItem>
-}
-
-// Discriminated union types for unified review entries endpoint
-export type ReviewEntrySession = {
-	type: 'session'
-	effective_date: string | null
-	data: ReviewSession
-}
-
-export type ReviewEntryReview = {
-	type: 'review'
-	effective_date: string | null
-	data: ReviewListItem
-}
-
-export type ReviewEntry = ReviewEntrySession | ReviewEntryReview
-
-export type ReviewEntriesResponse = {
-	entries: Array<ReviewEntry>
-	total: number
 }
