@@ -27,8 +27,8 @@ import { PracticeActionMenu } from '~/features/practices/components/PracticeActi
 import { useSearchAll } from '~/features/search/api/searchAll'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
-import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { useEntityNavigation } from '~/hooks/useEntityNavigation'
 
 const MIN_CARD_WIDTH = 280
