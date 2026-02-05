@@ -1,15 +1,19 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Inbox } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import type { EntityItem } from '~/components/EntityCard'
-import { EntityCardSection } from '~/components/EntityCardSection'
+import {
+	EntityCard,
+	type EntityItem,
+	estimateEntitySize,
+	getEntityKey
+} from '~/components/EntityCard'
 import {
 	EntityTypeFilter,
 	type EntityTypeFilterValue
 } from '~/components/EntityTypeFilter'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
 	Empty,
@@ -19,14 +23,32 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
+import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { useSearchAll } from '~/features/search/api/searchAll'
+import type { SearchResultItem } from '~/features/search/types/search.types'
+import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useEntityNavigation } from '~/hooks/useEntityNavigation'
-import {
-	type DateSection,
-	groupByDate,
-	toEntityEntries
-} from '~/utils/groupByDate'
+
+const MIN_CARD_WIDTH = 280
+
+function toEntityItems(results: Array<SearchResultItem>): Array<EntityItem> {
+	return results.map(result => {
+		switch (result.entity_type) {
+			case 'topic':
+				return { type: 'topic', item: result.topic }
+			case 'source':
+				return { type: 'source', item: result.source }
+			case 'practice':
+				return { type: 'practice', item: result.practice }
+			default: {
+				const _exhaustiveCheck: never = result
+				return _exhaustiveCheck
+			}
+		}
+	})
+}
 
 export function InboxPage() {
 	const navigate = useNavigate()
@@ -42,8 +64,8 @@ export function InboxPage() {
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 
-	const dateSections = useMemo<Array<DateSection>>(
-		() => groupByDate(toEntityEntries(searchResults)),
+	const entityItems = useMemo(
+		() => toEntityItems(searchResults),
 		[searchResults]
 	)
 
@@ -80,34 +102,60 @@ export function InboxPage() {
 			<InboxList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
+				items={entityItems}
 				onCreateInboxTopic={handleCreateInboxTopic}
 				onEntitySelect={handleEntitySelect}
-				sections={dateSections}
 			/>
 		</PageLayout>
 	)
 }
 
 function InboxList({
-	sections,
+	items,
 	onEntitySelect,
 	onCreateInboxTopic,
 	isLoading,
 	isCreatingTopic
 }: {
-	sections: Array<DateSection>
+	items: Array<EntityItem>
 	onEntitySelect: (entity: EntityItem) => void
 	onCreateInboxTopic: () => void
 	isLoading: boolean
 	isCreatingTopic: boolean
 }) {
-	const { collapsedSections, toggleSection } = useSectionCollapse()
+	const renderItem = useCallback(
+		(entity: EntityItem) => {
+			let headerRight: React.ReactNode
+			switch (entity.type) {
+				case 'topic':
+					headerRight = <TopicActionMenu topic={entity.item} />
+					break
+				case 'source':
+					headerRight = <SourceActionMenu source={entity.item} />
+					break
+				case 'practice':
+					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+				default:
+					break
+			}
+			return (
+				<EntityCard
+					entity={entity}
+					headerRight={headerRight}
+					minHeight={96}
+					onEntityClick={onEntitySelect}
+				/>
+			)
+		},
+		[onEntitySelect]
+	)
 
 	if (isLoading) {
 		return <MasonryLayoutSkeleton />
 	}
 
-	if (sections.length === 0) {
+	if (items.length === 0) {
 		return (
 			<PageLayout.Content>
 				<Empty>
@@ -135,19 +183,13 @@ function InboxList({
 
 	return (
 		<PageLayout.Content className='max-w-screen p-6'>
-			<div className='flex flex-col gap-2'>
-				{sections.map(section => (
-					<EntityCardSection
-						id={section.id}
-						isCollapsed={collapsedSections[section.id] ?? false}
-						items={section.items}
-						key={section.id}
-						label={section.label}
-						onEntityClick={onEntitySelect}
-						onToggleCollapse={toggleSection}
-					/>
-				))}
-			</div>
+			<MasonryLayout
+				estimateItemSize={estimateEntitySize}
+				getItemKey={getEntityKey}
+				items={items}
+				minItemWidth={MIN_CARD_WIDTH}
+				renderItem={renderItem}
+			/>
 		</PageLayout.Content>
 	)
 }
