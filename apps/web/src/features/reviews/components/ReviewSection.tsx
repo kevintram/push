@@ -32,7 +32,7 @@ export function ReviewSection({
 				>
 					<h2 className={`font-bold text-xl ${headingClassName ?? ''}`.trim()}>
 						{label}{' '}
-						<span className='text-muted-foreground'>({entries.length})</span>
+						<span className='text-muted-foreground'>{entries.length}</span>
 					</h2>
 					<ChevronDown
 						className={`h-5 w-5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}

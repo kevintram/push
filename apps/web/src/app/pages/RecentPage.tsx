@@ -274,7 +274,7 @@ function RecentSection({
 				>
 					<h2 className='font-bold text-xl'>
 						{label}{' '}
-						<span className='text-muted-foreground'>({items.length})</span>
+						<span className='text-muted-foreground'>{items.length}</span>
 					</h2>
 					<ChevronDown
 						className={`h-5 w-5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
