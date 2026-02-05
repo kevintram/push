@@ -41,8 +41,10 @@ const sourceBaseFields = {
 	inherited_last_review: v.nullable(v.string()),
 	// Computed fields
 	retrievability: v.nullable(v.number()),
-	bucket: v.nullable(v.picklist(['LATE', 'ON_TIME', 'EARLY'])),
-	days_until_threshold: v.nullable(v.number()),
+	freshness_tier: v.nullable(
+		v.picklist(['Fresh', 'Fine', 'Hazy', 'Forgotten'])
+	),
+	days_until_next_tier: v.nullable(v.number()),
 	// Relationship counts
 	children_count: v.optional(v.number(), 0),
 	topics_count: v.optional(v.number(), 0),
