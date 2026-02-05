@@ -1,87 +1,69 @@
 import { useMemo } from 'react'
 import type { LearnableMetricsInput } from '~/models/learnable.types'
-import type { RetrievabilityBucket } from '~/utils/retrievability'
 import {
-	calculateDaysSinceLate,
 	formatRetrievability,
-	getRetrievabilityBucket,
-	getThresholdCrossingInfo
+	getFreshnessTierColor
 } from '~/utils/retrievability'
 
-export interface BucketInfo {
-	label: 'Early' | 'Ready' | 'Late' | '—'
-	days: number | null
-	suffix: 'left' | 'ago' | null
+export interface FreshnessTierInfo {
+	label: 'Fresh' | 'Fine' | 'Hazy' | 'Forgotten' | '—'
 	tooltip: string | null
 }
 
 export interface LearnableMetrics {
-	bucketInfo: BucketInfo
-	thresholdInfo: { daysUntil: number; nextBucket: RetrievabilityBucket } | null
+	freshnessTierInfo: FreshnessTierInfo
+	freshnessTierColor: string
 	retrievabilityDisplay: string | null
 	stabilityText: string
 	stabilityTooltipText: string
 	isUnreviewed: boolean
 	isLeavingSoon: boolean
+	leavingSoonLabel: string | null
+	leavingSoonTooltip: string | null
+	daysUntilNextTier: number | null
 }
 
 export function useLearnableMetrics(
 	learnable: LearnableMetricsInput | null
 ): LearnableMetrics {
 	const retrievability = learnable?.retrievability ?? null
+	const freshnessTier = learnable?.freshness_tier ?? null
+	const daysUntilNextTier = learnable?.days_until_next_tier ?? null
 	const stability = learnable?.stability ?? null
 	const lastReviewedAt = learnable?.last_reviewed_at ?? null
 	const inheritedStability = learnable?.inherited_stability ?? null
-
-	const thresholdInfo = useMemo(
-		() => getThresholdCrossingInfo(retrievability, stability, lastReviewedAt),
-		[retrievability, stability, lastReviewedAt]
-	)
-
-	const bucketInfo = useMemo((): BucketInfo => {
-		if (retrievability === null) {
-			return { label: '—', days: null, suffix: null, tooltip: null }
-		}
-
-		const bucket = getRetrievabilityBucket(retrievability)
-
-		switch (bucket) {
-			case 'early': {
-				const days = thresholdInfo?.daysUntil ?? 0
-				return {
-					label: 'Early',
-					days,
-					suffix: 'left',
-					tooltip: `A little early to review, ${days} ${days === 1 ? 'day' : 'days'} until ready`
-				}
-			}
-			case 'onTime': {
-				const days = thresholdInfo?.daysUntil ?? 0
-				return {
-					label: 'Ready',
-					days,
-					suffix: 'left',
-					tooltip: `Ready to review, ${days} ${days === 1 ? 'day' : 'days'} until late`
-				}
-			}
-			case 'late': {
-				const days = calculateDaysSinceLate(stability, lastReviewedAt)
-				return {
-					label: 'Late',
-					days,
-					suffix: 'ago',
-					tooltip: `${days} ${days === 1 ? 'day' : 'days'} late, ready for a risky review`
-				}
-			}
-			default:
-				return bucket satisfies never
-		}
-	}, [retrievability, stability, lastReviewedAt, thresholdInfo])
+	const srsEnabled = learnable?.srs_enabled ?? true
 
 	const retrievabilityDisplay = useMemo(() => {
 		if (retrievability === null) return null
 		return formatRetrievability(retrievability)
 	}, [retrievability])
+
+	const freshnessTierInfo = useMemo((): FreshnessTierInfo => {
+		if (freshnessTier === null) {
+			return { label: '—', tooltip: null }
+		}
+
+		const tooltip =
+			retrievabilityDisplay !== null
+				? `Retrievability: ${retrievabilityDisplay}`
+				: 'Complete a review to calculate retrievability.'
+
+		return { label: freshnessTier, tooltip }
+	}, [freshnessTier, retrievabilityDisplay])
+
+	const leavingSoonLabel = useMemo(() => {
+		if (freshnessTier === 'Fine') return 'Hazy soon'
+		if (freshnessTier === 'Hazy') return 'Forgotten soon'
+		return null
+	}, [freshnessTier])
+
+	const leavingSoonTooltip = useMemo(() => {
+		if (daysUntilNextTier === null || leavingSoonLabel === null) return null
+		const nextTier = freshnessTier === 'Fine' ? 'Hazy' : 'Forgotten'
+		const days = Math.max(0, daysUntilNextTier)
+		return `${days} ${days === 1 ? 'day' : 'days'} until ${nextTier}`
+	}, [daysUntilNextTier, leavingSoonLabel, freshnessTier])
 
 	const stabilityText = useMemo(() => {
 		if (stability === null) return '—'
@@ -103,16 +85,26 @@ export function useLearnableMetrics(
 	}, [retrievability, lastReviewedAt, inheritedStability])
 
 	const isLeavingSoon = useMemo(() => {
-		return thresholdInfo !== null && thresholdInfo.daysUntil <= 7
-	}, [thresholdInfo])
+		if (daysUntilNextTier === null) return false
+		if (freshnessTier !== 'Fine' && freshnessTier !== 'Hazy') return false
+		return daysUntilNextTier >= 0 && daysUntilNextTier <= 4
+	}, [daysUntilNextTier, freshnessTier])
+
+	const freshnessTierColor = useMemo(
+		() => getFreshnessTierColor(freshnessTier, srsEnabled),
+		[freshnessTier, srsEnabled]
+	)
 
 	return {
-		bucketInfo,
-		thresholdInfo,
+		freshnessTierInfo,
+		freshnessTierColor,
 		retrievabilityDisplay,
 		stabilityText,
 		stabilityTooltipText,
 		isUnreviewed,
-		isLeavingSoon
+		isLeavingSoon,
+		leavingSoonLabel,
+		leavingSoonTooltip,
+		daysUntilNextTier
 	}
 }
