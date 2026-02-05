@@ -4,7 +4,6 @@ import {
 	Baby,
 	BookOpen,
 	Brain,
-	Calendar,
 	FileText,
 	Inbox,
 	Sparkles,
@@ -20,9 +19,12 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/Tooltip'
-import type { BucketInfo, LearnableMetrics } from '~/hooks/useLearnableMetrics'
+import type { LearnableMetrics } from '~/hooks/useLearnableMetrics'
 import type { LearnableBase } from '~/models/learnable.types'
-import { formatRelativeDate } from '~/utils/formatRelativeDate'
+import {
+	formatAbsoluteDate,
+	formatRelativeDate
+} from '~/utils/formatRelativeDate'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
 const MIN_HEIGHT = 96
@@ -30,23 +32,22 @@ const MIN_HEIGHT = 96
 export interface LearnableCardConfig<T extends LearnableBase> {
 	/** Get the primary text to display (name/title) */
 	getPrimaryText: (entity: T) => string
+	/** Get the secondary text to display (notes/answer) */
+	getSecondaryText: (entity: T) => string | null
 	/** Whether to show a type badge in the header */
 	showTypeBadge: boolean
 	/** Label for the type badge (e.g., "Source") */
 	typeBadgeLabel?: string
-	/** Format children count for tooltip (e.g., "1 child source" vs "1 child") */
-	getChildrenLabel: (count: number) => string
+	/** Get the relations count for display */
+	getRelationsCount: (entity: T) => number
+	/** Format relations count for tooltip (e.g., "1 child" vs "1 relation") */
+	getRelationsLabel: (count: number) => string
 	/** The update mutation function */
 	onSrsToggle: (id: number, newValue: boolean) => void
 	/** Whether the mutation is pending */
 	isUpdating: boolean
 	/** Prefetch entity data on hover */
 	onPrefetch: (queryClient: QueryClient, entity: T) => void
-	/** Get the "leaving soon" tooltip text */
-	getLeavingSoonTooltip: (
-		daysUntil: number,
-		bucketLabel: BucketInfo['label']
-	) => string
 }
 
 export interface LearnableCardBaseProps<T extends LearnableBase> {
@@ -73,11 +74,12 @@ export function LearnableCardBase<T extends LearnableBase>({
 	showLeavingSoon = false
 }: LearnableCardBaseProps<T>) {
 	const {
-		bucketInfo,
+		freshnessTierInfo,
+		freshnessTierColor,
 		isUnreviewed,
 		isLeavingSoon,
-		retrievabilityDisplay,
-		thresholdInfo
+		leavingSoonLabel,
+		leavingSoonTooltip
 	} = metrics
 
 	const lastReviewed = useMemo(
@@ -86,6 +88,10 @@ export function LearnableCardBase<T extends LearnableBase>({
 				includeFuture: false,
 				nullLabel: 'never'
 			}),
+		[entity.last_reviewed_at]
+	)
+	const lastReviewedDate = useMemo(
+		() => formatAbsoluteDate(entity.last_reviewed_at),
 		[entity.last_reviewed_at]
 	)
 
@@ -97,11 +103,12 @@ export function LearnableCardBase<T extends LearnableBase>({
 		return highlightText({ text: primaryText, query: searchQuery })
 	}, [primaryText, searchQuery])
 
-	const highlightedNotes = useMemo(() => {
-		if (!entity.notes) return null
-		if (!searchQuery?.trim()) return entity.notes
-		return truncateWithHighlight(entity.notes, searchQuery, 200)
-	}, [entity.notes, searchQuery])
+	const secondaryText = config.getSecondaryText(entity)
+	const highlightedSecondary = useMemo(() => {
+		if (!secondaryText) return null
+		if (!searchQuery?.trim()) return secondaryText
+		return truncateWithHighlight(secondaryText, searchQuery, 200)
+	}, [secondaryText, searchQuery])
 
 	const handleActivate = useCallback(() => {
 		onEntityClick?.(entity)
@@ -140,17 +147,19 @@ export function LearnableCardBase<T extends LearnableBase>({
 			tabIndex={0}
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
-				<Tooltip>
-					<TooltipTrigger asChild={true}>
-						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-							<User2 className='h-3 w-3' />
-							<span>{entity.parent_id ? 1 : 0}</span>
-						</div>
-					</TooltipTrigger>
-					<TooltipContent side='top'>
-						{entity.parent_id ? '1 parent' : '0 parents'}
-					</TooltipContent>
-				</Tooltip>
+				{'parent_id' in entity && (
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+								<User2 className='h-3 w-3' />
+								<span>{entity.parent_id ? 1 : 0}</span>
+							</div>
+						</TooltipTrigger>
+						<TooltipContent side='top'>
+							{entity.parent_id ? '1 parent' : '0 parents'}
+						</TooltipContent>
+					</Tooltip>
+				)}
 				{config.showTypeBadge && config.typeBadgeLabel && (
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
@@ -166,19 +175,21 @@ export function LearnableCardBase<T extends LearnableBase>({
 				)}
 				<div className='flex-1' />
 				{/* Leaving soon badge */}
-				{showLeavingSoon && isLeavingSoon && thresholdInfo && (
+				{showLeavingSoon && isLeavingSoon && leavingSoonLabel && (
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
-							<Badge className='h-5 text-xs' variant='destructive'>
-								leaving soon
+							<Badge
+								className='h-5 text-xs'
+								variant={
+									leavingSoonLabel === 'Hazy soon' ? 'warning' : 'destructive'
+								}
+							>
+								{leavingSoonLabel}
 							</Badge>
 						</TooltipTrigger>
-						<TooltipContent side='top'>
-							{config.getLeavingSoonTooltip(
-								thresholdInfo.daysUntil,
-								bucketInfo.label
-							)}
-						</TooltipContent>
+						{leavingSoonTooltip && (
+							<TooltipContent side='top'>{leavingSoonTooltip}</TooltipContent>
+						)}
 					</Tooltip>
 				)}
 				{/* SRS toggle */}
@@ -227,9 +238,9 @@ export function LearnableCardBase<T extends LearnableBase>({
 								{highlightedPrimary}
 							</h3>
 						)}
-						{highlightedNotes && (
+						{highlightedSecondary && (
 							<p className='break-word line-clamp-[8] text-sm [overflow-wrap:anywhere]'>
-								{highlightedNotes}
+								{highlightedSecondary}
 							</p>
 						)}
 					</div>
@@ -245,69 +256,47 @@ export function LearnableCardBase<T extends LearnableBase>({
 					</div>
 				) : (
 					<>
-						{/* Bucket with tooltip */}
-						{bucketInfo.tooltip ? (
+						{/* Freshness tier with tooltip */}
+						{freshnessTierInfo.tooltip ? (
 							<Tooltip>
 								<TooltipTrigger asChild={true}>
-									<div className='flex items-center gap-1'>
-										<BookOpen className='h-3 w-3' />
-										<span>
-											{bucketInfo.label}
-											{bucketInfo.days !== null &&
-												bucketInfo.suffix === 'ago' &&
-												` (${bucketInfo.days}d ${bucketInfo.suffix})`}
-										</span>
+									<div
+										className={`flex items-center gap-1 font-semibold ${freshnessTierColor}`}
+									>
+										<Brain className='h-3 w-3' />
+										<span>{freshnessTierInfo.label}</span>
 									</div>
 								</TooltipTrigger>
-								<TooltipContent side='top'>{bucketInfo.tooltip}</TooltipContent>
+								<TooltipContent side='top'>
+									{freshnessTierInfo.tooltip}
+								</TooltipContent>
 							</Tooltip>
 						) : (
-							<span>{bucketInfo.label}</span>
-						)}
-						{/* Retrievability */}
-						{retrievabilityDisplay && (
-							<>
-								<span>·</span>
-								<Tooltip>
-									<TooltipTrigger asChild={true}>
-										<div className='flex items-center gap-1'>
-											<Brain className='h-3 w-3' />
-											<span>{retrievabilityDisplay}</span>
-										</div>
-									</TooltipTrigger>
-									<TooltipContent side='top'>
-										{retrievabilityDisplay} chance of successfully recalling
-										today
-									</TooltipContent>
-								</Tooltip>
-							</>
+							<span className={`font-semibold ${freshnessTierColor}`}>
+								{freshnessTierInfo.label}
+							</span>
 						)}
 						{/* Last reviewed */}
 						<span>·</span>
 						<Tooltip>
 							<TooltipTrigger asChild={true}>
-								<div className='flex items-center gap-1'>
-									<Calendar className='h-3 w-3' />
-									<span>{lastReviewed.text}</span>
-								</div>
+								<span className='font-semibold'>{`Reviewed ${lastReviewed.text}`}</span>
 							</TooltipTrigger>
-							<TooltipContent side='top'>
-								Last reviewed {lastReviewed.tooltipText}
-							</TooltipContent>
+							<TooltipContent side='top'>{lastReviewedDate}</TooltipContent>
 						</Tooltip>
 					</>
 				)}
 				<div className='flex-1' />
-				{/* Children count */}
+				{/* Relations count */}
 				<Tooltip>
 					<TooltipTrigger asChild={true}>
 						<div className='flex items-center gap-1'>
 							<Baby className='h-3 w-3' />
-							<span>{entity.children_count ?? 0}</span>
+							<span>{config.getRelationsCount(entity)}</span>
 						</div>
 					</TooltipTrigger>
 					<TooltipContent side='top'>
-						{config.getChildrenLabel(entity.children_count ?? 0)}
+						{config.getRelationsLabel(config.getRelationsCount(entity))}
 					</TooltipContent>
 				</Tooltip>
 			</CardFooter>

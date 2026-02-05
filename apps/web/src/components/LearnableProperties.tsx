@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Anvil, BookOpen, Brain, Sparkles } from 'lucide-react'
+import { Anvil, Brain, Sparkles } from 'lucide-react'
 import {
 	Tooltip,
 	TooltipContent,
@@ -20,8 +20,8 @@ export function LearnableProperties({
 }: LearnablePropertiesProps) {
 	const {
 		isUnreviewed,
-		bucketInfo,
-		retrievabilityDisplay,
+		freshnessTierInfo,
+		freshnessTierColor,
 		stabilityText,
 		stabilityTooltipText
 	} = metrics
@@ -38,33 +38,14 @@ export function LearnableProperties({
 					{/* Bucket status */}
 					<Tooltip>
 						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
-								<BookOpen className='h-3 w-3' />
-								<span>
-									{bucketInfo.label}
-									{bucketInfo.days !== null &&
-										bucketInfo.suffix === 'ago' &&
-										` (${bucketInfo.days}d ${bucketInfo.suffix})`}
-								</span>
-							</div>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>
-							{bucketInfo.tooltip ?? 'Complete a review to see status'}
-						</TooltipContent>
-					</Tooltip>
-					<span>⋅</span>
-					{/* Retrievability */}
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
+							<div className={`flex items-center gap-1 ${freshnessTierColor}`}>
 								<Brain className='h-3 w-3' />
-								<span>{retrievabilityDisplay ?? '—'}</span>
+								<span>{freshnessTierInfo.label}</span>
 							</div>
 						</TooltipTrigger>
 						<TooltipContent side='bottom'>
-							{retrievabilityDisplay
-								? `${retrievabilityDisplay} chance of successfully recalling today`
-								: 'Complete a review to calculate retrievability'}
+							{freshnessTierInfo.tooltip ??
+								'Complete a review to see freshness tier'}
 						</TooltipContent>
 					</Tooltip>
 					<span>⋅</span>
