@@ -1,6 +1,6 @@
 import type { LearningState } from './learning-state.types'
 
-export type RetrievabilityBucket = 'LATE' | 'ON_TIME' | 'EARLY'
+export type FreshnessTier = 'Fresh' | 'Fine' | 'Hazy' | 'Forgotten'
 
 /**
  * Thin FSRS state projection used for inheritance decisions.
@@ -21,21 +21,24 @@ export type InheritOptions = { fsrsState?: FsrsState | null }
  */
 export type LearnableMetricsInput = {
 	retrievability: number | null
+	freshness_tier: FreshnessTier | null
+	days_until_next_tier: number | null
 	stability: number | null
 	last_reviewed_at: string | null
 	inherited_stability: number | null
+	srs_enabled: boolean | null
 }
 
 /**
- * Base fields shared by all learnable items (topics and sources).
- * This captures the common shape of both entities for shared abstractions.
+ * Base fields shared by all learnable items (topics, sources, and practices).
+ * This captures the common shape of all entities for shared abstractions.
  */
 export type LearnableBase = {
 	id: number
-	notes: string
+	notes?: string
 	inserted_at: string
 	updated_at: string
-	parent_id: number | null
+	parent_id?: number | null
 	archived: boolean
 	inboxed: boolean
 	// FSRS fields
@@ -53,7 +56,7 @@ export type LearnableBase = {
 	inherited_last_review: string | null
 	// Computed
 	retrievability: number | null
-	bucket: RetrievabilityBucket | null
-	days_until_threshold: number | null
+	freshness_tier: FreshnessTier | null
+	days_until_next_tier: number | null
 	children_count?: number
 }

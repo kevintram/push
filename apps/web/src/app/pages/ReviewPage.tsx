@@ -1,10 +1,16 @@
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ArrowUpRight, BookOpen, ChevronDown } from 'lucide-react'
+import { ArrowUpRight, BookOpen } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
-import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import {
+	EntityCard,
+	type EntityItem,
+	estimateEntitySize,
+	getEntityKey
+} from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { Button } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter } from '~/components/ui/Card'
 import {
@@ -15,29 +21,20 @@ import {
 } from '~/components/ui/Empty'
 import { Skeleton } from '~/components/ui/Skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import {
 	useTodaySchedulePreview,
 	useUnscheduledReviewEntriesPreview,
 	useUpcomingReviewEntriesPreview
 } from '~/features/reviews/api/getReviewEntries'
+import { useReviewQueue } from '~/features/reviews/api/getReviewQueue'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { ReviewListItem } from '~/features/reviews/types/review.types'
-import { useTopics } from '~/features/topics/api/getTopics'
+import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
-import { TopicCard } from '~/features/topics/components/TopicCard'
-import type { Topic } from '~/features/topics/types/topic.types'
-import {
-	getRetrievabilityBucket,
-	type RetrievabilityBucket
-} from '~/utils/retrievability'
-
-type BucketSection = {
-	id: RetrievabilityBucket
-	label: string
-	headingClassName: string
-	topics: Array<Topic>
-}
+import type { FreshnessTier } from '~/models/learnable.types'
+import { getFreshnessTierColor } from '~/utils/retrievability'
 
 const SCHEDULE_PREVIEW_LIMIT = 3
 
@@ -45,11 +42,7 @@ export function ReviewPage() {
 	const navigate = useNavigate()
 	const { handleReviewClick, selectedReviewId, closeReviewDialog } =
 		useReviewPageHandlers()
-	const { data: topics, isLoading } = useTopics({
-		hasStability: true,
-		srsEnabled: true,
-		archived: false
-	})
+	const { data: reviewQueue = [], isLoading: isQueueLoading } = useReviewQueue()
 	const {
 		entries: todayEntries,
 		totalCount: todayTotalCount,
@@ -65,95 +58,74 @@ export function ReviewPage() {
 		totalCount: unscheduledTotalCount,
 		isLoading: unscheduledLoading
 	} = useUnscheduledReviewEntriesPreview(SCHEDULE_PREVIEW_LIMIT)
+	const queueItems = useMemo<Array<EntityItem>>(() => {
+		const items: Array<EntityItem> = []
+		for (const entry of reviewQueue) {
+			if (entry.entity_type === 'topic' && entry.topic) {
+				items.push({ type: 'topic', item: entry.topic })
+				continue
+			}
+			if (entry.entity_type === 'source' && entry.source) {
+				items.push({ type: 'source', item: entry.source })
+				continue
+			}
+			if (entry.entity_type === 'practice' && entry.practice) {
+				items.push({ type: 'practice', item: entry.practice })
+			}
+		}
+		return items
+	}, [reviewQueue])
 
-	const { collapsedSections, toggleSection } = useSectionCollapse()
+	const tierGroups = useMemo(() => {
+		const order: Array<FreshnessTier> = ['Forgotten', 'Hazy', 'Fine', 'Fresh']
+		const groups = new Map<FreshnessTier, Array<EntityItem>>(
+			order.map(tier => [tier, []])
+		)
 
-	// Group topics by retrievability bucket
-	const bucketSections = useMemo((): Array<BucketSection> => {
-		const late: Array<Topic> = []
-		const onTime: Array<Topic> = []
-		const early: Array<Topic> = []
-
-		for (const topic of topics ?? []) {
-			if (topic.retrievability === null) continue
-
-			const bucket = getRetrievabilityBucket(topic.retrievability)
-			switch (bucket) {
-				case 'late':
-					late.push(topic)
-					break
-				case 'onTime':
-					onTime.push(topic)
-					break
-				case 'early':
-					early.push(topic)
-					break
-				default:
-					bucket satisfies never
+		for (const item of queueItems) {
+			const tier = item.item.freshness_tier ?? 'Forgotten'
+			const bucket = groups.get(tier)
+			if (bucket) {
+				bucket.push(item)
 			}
 		}
 
-		// Sort each bucket by retrievability (lowest first - topics closest to leaving bucket)
-		late.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
-		onTime.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
-		early.sort((a, b) => (a.retrievability ?? 0) - (b.retrievability ?? 0))
+		return order
+			.map(tier => ({
+				tier,
+				label: tier,
+				items: groups.get(tier) ?? []
+			}))
+			.filter(group => group.items.length > 0)
+	}, [queueItems])
 
-		return [
-			{
-				id: 'late',
-				label: 'Late',
-				headingClassName: 'text-red-600 dark:text-red-400',
-				topics: late
-			},
-			{
-				id: 'onTime',
-				label: 'Ready',
-				headingClassName: 'text-blue-600 dark:text-blue-400',
-				topics: onTime
-			},
-			{
-				id: 'early',
-				label: 'Early',
-				headingClassName: 'text-green-600 dark:text-green-400',
-				topics: early
+	const isQueueEmpty = !isQueueLoading && queueItems.length === 0
+
+	const handleEntityClick = useCallback(
+		(entity: EntityItem) => {
+			switch (entity.type) {
+				case 'topic':
+					navigate({
+						to: '/topics/$topicId',
+						params: { topicId: entity.item.id.toString() }
+					})
+					break
+				case 'source':
+					navigate({
+						to: '/sources/$sourceId',
+						params: { sourceId: entity.item.id.toString() }
+					})
+					break
+				case 'practice':
+					navigate({
+						to: '/practices/$practiceId',
+						params: { practiceId: entity.item.id.toString() }
+					})
+					break
 			}
-		]
-	}, [topics])
-
-	const handleTopicClick = useCallback(
-		(topic: Topic) => {
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: topic.id.toString() }
-			})
 		},
 		[navigate]
 	)
-
-	const isEmpty =
-		!isLoading && bucketSections.every(section => section.topics.length === 0)
-
-	let reviewTopicsContent: ReactNode = null
-	if (isLoading) {
-		reviewTopicsContent = <ReviewTopicsSkeleton />
-	} else if (isEmpty) {
-		reviewTopicsContent = <ReviewTopicsEmpty />
-	} else {
-		reviewTopicsContent = bucketSections
-			.filter(section => section.topics.length > 0)
-			.map(section => (
-				<ReadinessSection
-					headingClassName={section.headingClassName}
-					id={section.id}
-					isCollapsed={collapsedSections[section.id] ?? false}
-					key={section.id}
-					label={section.label}
-					onToggleCollapse={toggleSection}
-					onTopicClick={handleTopicClick}
-					topics={section.topics}
-				/>
-			))
-	}
 
 	const scheduleTabs = useMemo(
 		() => ({
@@ -205,7 +177,16 @@ export function ReviewPage() {
 				<div className='flex flex-col gap-8'>
 					<ScheduleCard onReviewClick={handleReviewClick} tabs={scheduleTabs} />
 
-					{reviewTopicsContent}
+					{isQueueLoading ? (
+						<MasonryLayoutSkeleton />
+					) : isQueueEmpty ? (
+						<ReviewQueueEmpty />
+					) : (
+						<ReviewQueueGroupedList
+							groups={tierGroups}
+							onEntityClick={handleEntityClick}
+						/>
+					)}
 				</div>
 			</PageLayout.Content>
 			<ReviewDialog
@@ -219,29 +200,14 @@ export function ReviewPage() {
 	)
 }
 
-function ReviewTopicsSkeleton() {
-	return (
-		<div className='flex flex-col gap-6'>
-			{[1, 2, 3].map(i => (
-				<div className='flex flex-col gap-4' key={i}>
-					<Skeleton className='h-8 w-32' />
-					<div className='ml-5 border-border border-l-2 pl-2'>
-						<Skeleton className='h-32 w-full' />
-					</div>
-				</div>
-			))}
-		</div>
-	)
-}
-
-function ReviewTopicsEmpty() {
+function ReviewQueueEmpty() {
 	return (
 		<Empty>
 			<EmptyHeader>
 				<EmptyMedia variant='icon'>
 					<BookOpen />
 				</EmptyMedia>
-				<EmptyTitle>See topics up for review</EmptyTitle>
+				<EmptyTitle>See items up for review</EmptyTitle>
 			</EmptyHeader>
 		</Empty>
 	)
@@ -269,27 +235,39 @@ function ScheduleCard({
 	const activeConfig = tabs[activeTab]
 
 	return (
-		<div className='flex flex-col gap-1'>
-			<h2 className='font-bold text-xl'>Schedule</h2>
-			<Card className='gap-2'>
-				<CardContent>
-					<Tabs
-						onValueChange={value => setActiveTab(value as keyof typeof tabs)}
-						value={activeTab}
+		<div className='flex flex-col gap-2'>
+			<Tabs
+				onValueChange={value => setActiveTab(value as keyof typeof tabs)}
+				value={activeTab}
+			>
+				<div className='flex items-center justify-between gap-4'>
+					<TabsList className='w-fit'>
+						<TabsTrigger value={tabs.today.value}>
+							{tabs.today.label} <span>{tabs.today.totalCount}</span>
+						</TabsTrigger>
+						<TabsTrigger value={tabs.upcoming.value}>
+							{tabs.upcoming.label} <span>{tabs.upcoming.totalCount}</span>
+						</TabsTrigger>
+						<TabsTrigger value={tabs.unscheduled.value}>
+							{tabs.unscheduled.label}{' '}
+							<span>{tabs.unscheduled.totalCount}</span>
+						</TabsTrigger>
+					</TabsList>
+					<Button
+						asChild={true}
+						className='gap-1 text-muted-foreground hover:text-primary'
+						size='sm'
+						variant='link'
 					>
-						<TabsList className='w-fit'>
-							<TabsTrigger value={tabs.today.value}>
-								{tabs.today.label} <span>{tabs.today.totalCount}</span>
-							</TabsTrigger>
-							<TabsTrigger value={tabs.upcoming.value}>
-								{tabs.upcoming.label} <span>{tabs.upcoming.totalCount}</span>
-							</TabsTrigger>
-							<TabsTrigger value={tabs.unscheduled.value}>
-								{tabs.unscheduled.label}{' '}
-								<span>{tabs.unscheduled.totalCount}</span>
-							</TabsTrigger>
-						</TabsList>
+						<Link to='/logbook'>
+							Logbook
+							<ArrowUpRight className='h-4 w-4' />
+						</Link>
+					</Button>
+				</div>
 
+				<Card className='gap-2'>
+					<CardContent>
 						<TabsContent value={tabs.today.value}>
 							<ScheduleTabContent
 								emptyText={tabs.today.emptyText}
@@ -314,24 +292,24 @@ function ScheduleCard({
 								onReviewClick={onReviewClick}
 							/>
 						</TabsContent>
-					</Tabs>
-				</CardContent>
-				{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
-					<CardFooter className='justify-center pt-0'>
-						<Button
-							asChild={true}
-							className='gap-1 text-muted-foreground hover:text-primary'
-							size='sm'
-							variant='ghost'
-						>
-							<Link to={activeConfig.viewAllTo}>
-								View all
-								<ArrowUpRight className='h-4 w-4' />
-							</Link>
-						</Button>
-					</CardFooter>
-				)}
-			</Card>
+					</CardContent>
+					{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
+						<CardFooter className='justify-center pt-0'>
+							<Button
+								asChild={true}
+								className='gap-1 text-muted-foreground hover:text-primary'
+								size='sm'
+								variant='ghost'
+							>
+								<Link to={activeConfig.viewAllTo}>
+									View all
+									<ArrowUpRight className='h-4 w-4' />
+								</Link>
+							</Button>
+						</CardFooter>
+					)}
+				</Card>
+			</Tabs>
 		</div>
 	)
 }
@@ -396,74 +374,73 @@ function ScheduleEntriesSkeleton() {
 	)
 }
 
-function ReadinessSection({
-	id,
-	label,
-	headingClassName,
-	topics,
-	isCollapsed,
-	onToggleCollapse,
-	onTopicClick
+function ReviewQueueGroupedList({
+	groups,
+	onEntityClick
 }: {
-	id: string
-	label: string
-	headingClassName: string
-	topics: Array<Topic>
-	isCollapsed: boolean
-	onToggleCollapse: (sectionId: string) => void
-	onTopicClick: (topic: Topic) => void
+	groups: Array<{
+		tier: FreshnessTier
+		label: string
+		items: Array<EntityItem>
+	}>
+	onEntityClick: (entity: EntityItem) => void
 }) {
-	const estimateItemSize = useCallback((topic: Topic) => {
-		// Base height + name height + notes height
-		let height = 96
-		if (topic.name) height += Math.min(topic.name.length / 30, 3) * 24
-		if (topic.notes) height += Math.min(topic.notes.length / 50, 4) * 20
-		return height
-	}, [])
-
 	const renderItem = useCallback(
-		(topic: Topic) => (
-			<TopicCard
-				headerRight={<TopicActionMenu topic={topic} />}
-				onTopicClick={onTopicClick}
-				showLeavingSoon={true}
-				topic={topic}
-			/>
-		),
-		[onTopicClick]
+		(entity: EntityItem) => {
+			let headerRight: ReactNode
+			switch (entity.type) {
+				case 'topic':
+					headerRight = <TopicActionMenu topic={entity.item} />
+					break
+				case 'source':
+					headerRight = <SourceActionMenu source={entity.item} />
+					break
+				case 'practice':
+					headerRight = <PracticeActionMenu practice={entity.item} />
+					break
+			}
+			return (
+				<EntityCard
+					entity={entity}
+					headerRight={headerRight}
+					minHeight={96}
+					onEntityClick={onEntityClick}
+					showLeavingSoon={true}
+				/>
+			)
+		},
+		[onEntityClick]
 	)
 
-	const getItemKey = useCallback((topic: Topic) => topic.id, [])
-
 	return (
-		<div className='mb-2'>
-			<div className='flex items-center justify-between'>
-				<Button
-					className='flex items-center gap-2 p-0'
-					onClick={() => onToggleCollapse(id)}
-					variant='ghost'
-				>
-					<h2 className={`font-bold text-xl ${headingClassName}`.trim()}>
-						{label}{' '}
-						<span className='text-muted-foreground'>({topics.length})</span>
-					</h2>
-					<ChevronDown
-						className={`h-5 w-5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-					/>
-				</Button>
-			</div>
-
-			{!isCollapsed && (
-				<div className='mt-2 mb-10 ml-5'>
+		<div className='space-y-8'>
+			{groups.map(group => (
+				<div className='space-y-3' key={group.tier}>
+					<div>
+						<h3
+							className={`font-bold text-xl ${getFreshnessTierColor(
+								group.tier,
+								true
+							)}`}
+						>
+							{group.label}
+						</h3>
+						{group.tier === 'Fine' && (
+							<span className='font-semibold text-muted-foreground text-xs'>
+								The best time to review!
+							</span>
+						)}
+					</div>
 					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						getItemKey={getItemKey}
-						items={topics}
+						estimateItemSize={estimateEntitySize}
+						gap={16}
+						getItemKey={getEntityKey}
+						items={group.items}
 						minItemWidth={280}
 						renderItem={renderItem}
 					/>
 				</div>
-			)}
+			))}
 		</div>
 	)
 }

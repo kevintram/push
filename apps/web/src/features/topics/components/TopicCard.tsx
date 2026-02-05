@@ -8,7 +8,6 @@ import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { useTopicMetrics } from '~/features/topics/hooks/useTopicMetrics'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { prefetchTopicRelations } from '~/features/topics/utils/prefetchTopicRelations'
-import type { BucketInfo } from '~/hooks/useLearnableMetrics'
 
 const MIN_HEIGHT = 96
 
@@ -37,19 +36,14 @@ export function TopicCard({
 	const config = useMemo(
 		(): LearnableCardConfig<Topic> => ({
 			getPrimaryText: t => t.name,
+			getSecondaryText: t => t.notes,
 			showTypeBadge: false,
-			getChildrenLabel: count =>
+			getRelationsCount: t => t.children_count ?? 0,
+			getRelationsLabel: count =>
 				count === 1 ? '1 child' : `${count} children`,
 			onSrsToggle: (id, newValue) => updateTopic({ id, srs_enabled: newValue }),
 			isUpdating: isUpdatingTopic,
-			onPrefetch: (qc, t) => prefetchTopicRelations(qc, t),
-			getLeavingSoonTooltip: (
-				daysUntil: number,
-				bucketLabel: BucketInfo['label']
-			) =>
-				daysUntil === 1
-					? `1 day until ${bucketLabel === 'Early' ? 'ready' : 'late'}`
-					: `${daysUntil} days until ${bucketLabel === 'Early' ? 'ready' : 'late'}`
+			onPrefetch: (qc, t) => prefetchTopicRelations(qc, t)
 		}),
 		[updateTopic, isUpdatingTopic]
 	)

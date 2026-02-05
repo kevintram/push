@@ -1,5 +1,6 @@
 import type { Practice } from '~/features/practices/types/practice.types'
 import type { Source } from '~/features/sources/types/source.types'
+import type { FreshnessTier } from '~/models/learnable.types'
 import type { LearningState } from '~/models/learning-state.types'
 
 // A related entity can be either a full Topic or Source with entity_type discriminator
@@ -14,8 +15,6 @@ export const RelationshipDirection = {
 
 export type RelationshipDirection =
 	(typeof RelationshipDirection)[keyof typeof RelationshipDirection]
-
-export type RetrievabilityBucket = 'LATE' | 'ON_TIME' | 'EARLY'
 
 export type Topic = {
 	id: number
@@ -41,8 +40,8 @@ export type Topic = {
 	last_reviewed_at: string | null
 	srs_enabled: boolean
 	retrievability: number | null
-	bucket: RetrievabilityBucket | null
-	days_until_threshold: number | null
+	freshness_tier: FreshnessTier | null
+	days_until_next_tier: number | null
 	children_count?: number
 	sources_count?: number
 	related_outgoing_count?: number

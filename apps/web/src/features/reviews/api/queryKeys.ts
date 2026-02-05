@@ -20,3 +20,11 @@ export const reviewKeys = {
 	},
 	detail: (reviewId: number) => [...reviewKeys.all, reviewId] as const
 }
+
+export const reviewQueueKeys = {
+	all: ['review-queue'] as const,
+	list: (limit?: number) =>
+		limit === undefined
+			? [...reviewQueueKeys.all, 'list']
+			: [...reviewQueueKeys.all, 'list', limit]
+}

@@ -39,8 +39,10 @@ const topicBaseFields = {
 	last_reviewed_at: v.nullable(v.string()),
 	srs_enabled: v.boolean(),
 	retrievability: v.nullable(v.number()),
-	bucket: v.nullable(v.picklist(['LATE', 'ON_TIME', 'EARLY'])),
-	days_until_threshold: v.nullable(v.number()),
+	freshness_tier: v.nullable(
+		v.picklist(['Fresh', 'Fine', 'Hazy', 'Forgotten'])
+	),
+	days_until_next_tier: v.nullable(v.number()),
 	children_count: v.optional(v.number(), 0),
 	sources_count: v.optional(v.number(), 0),
 	related_outgoing_count: v.optional(v.number(), 0),

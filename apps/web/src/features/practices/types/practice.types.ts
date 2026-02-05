@@ -1,8 +1,7 @@
 import type { Source } from '~/features/sources/types/source.types'
 import type { Topic } from '~/features/topics/types/topic.types'
+import type { FreshnessTier } from '~/models/learnable.types'
 import type { LearningState } from '~/models/learning-state.types'
-
-export type RetrievabilityBucket = 'LATE' | 'ON_TIME' | 'EARLY'
 
 export type Practice = {
 	id: number
@@ -29,8 +28,8 @@ export type Practice = {
 	inherited_last_review: string | null
 	// Computed fields
 	retrievability: number | null
-	bucket: RetrievabilityBucket | null
-	days_until_threshold: number | null
+	freshness_tier: FreshnessTier | null
+	days_until_next_tier: number | null
 	// Relationship counts
 	topics_count?: number
 	sources_count?: number

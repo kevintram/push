@@ -4,7 +4,6 @@ import {
 	LearnableCardBase,
 	type LearnableCardConfig
 } from '~/components/LearnableCard'
-import type { BucketInfo } from '~/hooks/useLearnableMetrics'
 import { sourceKeys } from '../api/queryKeys'
 import { useUpdateSource } from '../api/updateSource'
 import { useSourceMetrics } from '../hooks/useSourceMetrics'
@@ -38,9 +37,11 @@ export function SourceCard({
 	const config = useMemo(
 		(): LearnableCardConfig<Source> => ({
 			getPrimaryText: s => s.title,
+			getSecondaryText: s => s.notes,
 			showTypeBadge: true,
 			typeBadgeLabel: 'Source',
-			getChildrenLabel: count =>
+			getRelationsCount: s => s.children_count ?? 0,
+			getRelationsLabel: count =>
 				count === 1 ? '1 child source' : `${count} child sources`,
 			onSrsToggle: (id, newValue) =>
 				updateSource({ id, srs_enabled: newValue }),
@@ -50,14 +51,7 @@ export function SourceCard({
 					queryKey: sourceKeys.detail(s.id),
 					staleTime: 30_000
 				})
-			},
-			getLeavingSoonTooltip: (
-				daysUntil: number,
-				bucketLabel: BucketInfo['label']
-			) =>
-				daysUntil === 1
-					? `1 day until ${bucketLabel === 'Early' ? 'ready' : 'late'}`
-					: `${daysUntil} days until ${bucketLabel === 'Early' ? 'ready' : 'late'}`
+			}
 		}),
 		[updateSource, isUpdatingSource]
 	)

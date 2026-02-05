@@ -1,5 +1,16 @@
 import dayjs from 'dayjs'
 
+/**
+ * Formats a date as an absolute date string (e.g., "January 5, 2025").
+ */
+export function formatAbsoluteDate(
+	date: Date | string | null,
+	fallback = 'never'
+): string {
+	if (!date) return fallback
+	return dayjs(date).format('MMMM D, YYYY')
+}
+
 interface FormatRelativeDateOptions {
 	/**
 	 * Whether to include future dates (Tomorrow, in 5d)

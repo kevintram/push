@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 from app.schemas.entity_relations import RelatedEntityRead
 from app.schemas.practices import PracticeSummaryRead
-from app.schemas.topics import RetrievabilityBucket, TopicSummaryRead
+from app.schemas.topics import FreshnessTier, TopicSummaryRead
 
 if TYPE_CHECKING:
     from app.schemas.practices import PracticeCreate
@@ -53,8 +53,8 @@ class SourceRead(SourceBase):
 
     # Computed
     retrievability: float | None = None
-    bucket: RetrievabilityBucket | None = None
-    days_until_threshold: int | None = None
+    freshness_tier: FreshnessTier | None = None
+    days_until_next_tier: int | None = None
 
 
 class SourceSummaryRead(SourceRead):
