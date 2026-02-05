@@ -22,6 +22,14 @@ export async function searchAll(
 		searchParams.append('entity_types', params.entityTypes)
 	}
 
+	if (params.inboxed !== undefined) {
+		searchParams.append('inboxed', String(params.inboxed))
+	}
+
+	if (params.archived !== undefined) {
+		searchParams.append('archived', String(params.archived))
+	}
+
 	if (params.limit !== undefined) {
 		searchParams.append('limit', String(params.limit))
 	}

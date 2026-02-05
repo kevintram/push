@@ -30,9 +30,11 @@ import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
+import { useEntityNavigation } from '~/hooks/useEntityNavigation'
 
 export function MyLibraryPage() {
 	const navigate = useNavigate()
+	const handleEntityClick = useEntityNavigation()
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
@@ -98,34 +100,6 @@ export function MyLibraryPage() {
 			params: { topicId: newTopic.id.toString() }
 		})
 	}, [createTopic, navigate])
-
-	const handleEntityClick = useCallback(
-		(entity: EntityItem) => {
-			switch (entity.type) {
-				case 'topic':
-					navigate({
-						to: '/topics/$topicId',
-						params: { topicId: entity.item.id.toString() }
-					})
-					break
-				case 'source':
-					navigate({
-						to: '/sources/$sourceId',
-						params: { sourceId: entity.item.id.toString() }
-					})
-					break
-				case 'practice':
-					navigate({
-						to: '/practices/$practiceId',
-						params: { practiceId: entity.item.id.toString() }
-					})
-					break
-				default:
-					break
-			}
-		},
-		[navigate]
-	)
 
 	return (
 		<PageLayout>

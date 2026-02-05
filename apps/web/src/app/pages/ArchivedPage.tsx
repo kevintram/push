@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import { Archive } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
@@ -27,9 +26,10 @@ import { useSources } from '~/features/sources/api/getSources'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
+import { useEntityNavigation } from '~/hooks/useEntityNavigation'
 
 export function ArchivedPage() {
-	const navigate = useNavigate()
+	const handleEntityClick = useEntityNavigation()
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 
 	// Fetch archived topics, sources, and practices sorted by most recently updated
@@ -76,34 +76,6 @@ export function ArchivedPage() {
 				new Date(a.item.updated_at).getTime()
 		)
 	}, [topics, sources, practices, activeFilter])
-
-	const handleEntityClick = useCallback(
-		(entity: EntityItem) => {
-			switch (entity.type) {
-				case 'topic':
-					navigate({
-						to: '/topics/$topicId',
-						params: { topicId: entity.item.id.toString() }
-					})
-					break
-				case 'source':
-					navigate({
-						to: '/sources/$sourceId',
-						params: { sourceId: entity.item.id.toString() }
-					})
-					break
-				case 'practice':
-					navigate({
-						to: '/practices/$practiceId',
-						params: { practiceId: entity.item.id.toString() }
-					})
-					break
-				default:
-					break
-			}
-		},
-		[navigate]
-	)
 
 	return (
 		<PageLayout>

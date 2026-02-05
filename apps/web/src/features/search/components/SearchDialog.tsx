@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import {
 	useCallback,
 	useEffect,
@@ -31,6 +30,7 @@ import { useSearchAll } from '~/features/search/api/searchAll'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
+import { useEntityNavigation } from '~/hooks/useEntityNavigation'
 
 interface SearchDialogProps {
 	open: boolean
@@ -45,7 +45,7 @@ export function SearchDialog({
 	query,
 	setQuery
 }: SearchDialogProps) {
-	const navigate = useNavigate()
+	const navigateToEntity = useEntityNavigation()
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [selectedIndex, setSelectedIndex] = useState(0)
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
@@ -107,29 +107,10 @@ export function SearchDialog({
 
 	const handleEntitySelect = useCallback(
 		(entity: EntityItem) => {
-			switch (entity.type) {
-				case 'topic':
-					navigate({
-						to: '/topics/$topicId',
-						params: { topicId: entity.item.id.toString() }
-					})
-					break
-				case 'source':
-					navigate({
-						to: '/sources/$sourceId',
-						params: { sourceId: entity.item.id.toString() }
-					})
-					break
-				case 'practice':
-					navigate({
-						to: '/practices/$practiceId',
-						params: { practiceId: entity.item.id.toString() }
-					})
-					break
-			}
+			navigateToEntity(entity)
 			onOpenChange(false)
 		},
-		[navigate, onOpenChange]
+		[navigateToEntity, onOpenChange]
 	)
 
 	const handleKeyDown = useCallback(

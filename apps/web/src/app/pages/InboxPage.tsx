@@ -1,19 +1,15 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Inbox } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import {
-	EntityCard,
-	type EntityItem,
-	estimateEntitySize,
-	getEntityKey
-} from '~/components/EntityCard'
+import type { EntityItem } from '~/components/EntityCard'
+import { EntityCardSection } from '~/components/EntityCardSection'
 import {
 	EntityTypeFilter,
 	type EntityTypeFilterValue
 } from '~/components/EntityTypeFilter'
-import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import {
 	Empty,
@@ -23,95 +19,32 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
-import { usePractices } from '~/features/practices/api/getPractices'
-import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
-import { useSources } from '~/features/sources/api/getSources'
-import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
+import { useSearchAll } from '~/features/search/api/searchAll'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
-import { useTopics } from '~/features/topics/api/getTopics'
-import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
-
-const MIN_CARD_WIDTH = 280
+import { useEntityNavigation } from '~/hooks/useEntityNavigation'
+import {
+	type DateSection,
+	groupByDate,
+	toEntityEntries
+} from '~/utils/groupByDate'
 
 export function InboxPage() {
 	const navigate = useNavigate()
+	const handleEntitySelect = useEntityNavigation()
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
-	const { data: inboxTopics, isLoading: isLoadingTopics } = useTopics({
+
+	const { data: searchResults = [], isLoading } = useSearchAll({
 		inboxed: true,
-		archived: false
+		archived: false,
+		entityTypes: activeFilter === 'all' ? undefined : activeFilter
 	})
-	const { data: inboxSources, isLoading: isLoadingSources } = useSources({
-		inboxed: true,
-		archived: false
-	})
-	const { data: inboxPractices, isLoading: isLoadingPractices } = usePractices({
-		inboxed: true,
-		archived: false
-	})
+
 	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
 		useCreateTopic()
 
-	const isLoading = isLoadingTopics || isLoadingSources || isLoadingPractices
-
-	// Combine and filter entities based on active filter
-	const inboxItems = useMemo<Array<EntityItem>>(() => {
-		const items: Array<EntityItem> = []
-
-		if (activeFilter === 'all' || activeFilter === 'topic') {
-			items.push(
-				...(inboxTopics ?? []).map(
-					(item): EntityItem => ({ type: 'topic', item })
-				)
-			)
-		}
-		if (activeFilter === 'all' || activeFilter === 'source') {
-			items.push(
-				...(inboxSources ?? []).map(
-					(item): EntityItem => ({ type: 'source', item })
-				)
-			)
-		}
-		if (activeFilter === 'all' || activeFilter === 'practice') {
-			items.push(
-				...(inboxPractices ?? []).map(
-					(item): EntityItem => ({ type: 'practice', item })
-				)
-			)
-		}
-
-		return items.sort(
-			(a, b) =>
-				new Date(b.item.updated_at).getTime() -
-				new Date(a.item.updated_at).getTime()
-		)
-	}, [inboxTopics, inboxSources, inboxPractices, activeFilter])
-
-	const handleEntitySelect = useCallback(
-		(entity: EntityItem) => {
-			switch (entity.type) {
-				case 'topic':
-					navigate({
-						to: '/topics/$topicId',
-						params: { topicId: entity.item.id.toString() }
-					})
-					break
-				case 'source':
-					navigate({
-						to: '/sources/$sourceId',
-						params: { sourceId: entity.item.id.toString() }
-					})
-					break
-				case 'practice':
-					navigate({
-						to: '/practices/$practiceId',
-						params: { practiceId: entity.item.id.toString() }
-					})
-					break
-				default:
-					break
-			}
-		},
-		[navigate]
+	const dateSections = useMemo<Array<DateSection>>(
+		() => groupByDate(toEntityEntries(searchResults)),
+		[searchResults]
 	)
 
 	const handleCreateInboxTopic = useCallback(async () => {
@@ -125,7 +58,7 @@ export function InboxPage() {
 		})
 	}, [createTopic, navigate])
 
-	const inboxCountLabel = isLoading ? '...' : inboxItems.length
+	const inboxCountLabel = isLoading ? '...' : searchResults.length
 
 	return (
 		<PageLayout>
@@ -147,59 +80,34 @@ export function InboxPage() {
 			<InboxList
 				isCreatingTopic={isCreatingTopic}
 				isLoading={isLoading}
-				items={inboxItems}
 				onCreateInboxTopic={handleCreateInboxTopic}
 				onEntitySelect={handleEntitySelect}
+				sections={dateSections}
 			/>
 		</PageLayout>
 	)
 }
 
 function InboxList({
-	items,
+	sections,
 	onEntitySelect,
 	onCreateInboxTopic,
 	isLoading,
 	isCreatingTopic
 }: {
-	items: Array<EntityItem>
+	sections: Array<DateSection>
 	onEntitySelect: (entity: EntityItem) => void
 	onCreateInboxTopic: () => void
 	isLoading: boolean
 	isCreatingTopic: boolean
 }) {
-	const renderItem = useCallback(
-		(entity: EntityItem) => {
-			let headerRight: React.ReactNode
-			switch (entity.type) {
-				case 'topic':
-					headerRight = <TopicActionMenu topic={entity.item} />
-					break
-				case 'source':
-					headerRight = <SourceActionMenu source={entity.item} />
-					break
-				case 'practice':
-					headerRight = <PracticeActionMenu practice={entity.item} />
-					break
-				default:
-					break
-			}
-			return (
-				<EntityCard
-					entity={entity}
-					headerRight={headerRight}
-					onEntityClick={onEntitySelect}
-				/>
-			)
-		},
-		[onEntitySelect]
-	)
+	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	if (isLoading) {
 		return <MasonryLayoutSkeleton />
 	}
 
-	if (items.length === 0) {
+	if (sections.length === 0) {
 		return (
 			<PageLayout.Content>
 				<Empty>
@@ -227,15 +135,19 @@ function InboxList({
 
 	return (
 		<PageLayout.Content className='max-w-screen p-6'>
-			<MasonryLayout
-				estimateItemSize={estimateEntitySize}
-				gap={16}
-				getItemKey={getEntityKey}
-				items={items}
-				minItemWidth={MIN_CARD_WIDTH}
-				overscan={6}
-				renderItem={renderItem}
-			/>
+			<div className='flex flex-col gap-2'>
+				{sections.map(section => (
+					<EntityCardSection
+						id={section.id}
+						isCollapsed={collapsedSections[section.id] ?? false}
+						items={section.items}
+						key={section.id}
+						label={section.label}
+						onEntityClick={onEntitySelect}
+						onToggleCollapse={toggleSection}
+					/>
+				))}
+			</div>
 		</PageLayout.Content>
 	)
 }
