@@ -19,7 +19,6 @@ import { SidebarMenuButton } from '~/components/ui/Sidebar'
 import { AddPracticeDialog } from '~/features/practices/components/AddPracticeDialog'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
-import { localDateString } from '~/utils/date'
 
 export function CreateButton() {
 	// Hooks

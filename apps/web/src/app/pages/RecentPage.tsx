@@ -16,6 +16,7 @@ import {
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { Button } from '~/components/ui/Button'
+import { CountBadge } from '~/components/ui/CountBadge'
 import {
 	Empty,
 	EmptyDescription,
@@ -272,9 +273,8 @@ function RecentSection({
 					onClick={() => onToggleCollapse(id)}
 					variant='ghost'
 				>
-					<h2 className='font-bold text-xl'>
-						{label}{' '}
-						<span className='text-muted-foreground'>{items.length}</span>
+					<h2 className='flex items-center gap-2 font-bold text-xl'>
+						{label} <CountBadge count={items.length} />
 					</h2>
 					<ChevronDown
 						className={`h-5 w-5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}

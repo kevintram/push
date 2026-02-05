@@ -11,6 +11,7 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
+import { CountBadge } from '~/components/ui/CountBadge'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { useTopicDialog } from '~/features/dialogs/hooks/useTopicDialog'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
@@ -226,8 +227,9 @@ export function TopicRelatedPanel({
 					>
 						<Link className='h-4 w-4' />
 						<span className='font-medium text-md text-muted-foreground'>
-							Related ({related.length})
+							Related
 						</span>
+						<CountBadge count={related.length} />
 						<ChevronDown
 							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
 						/>

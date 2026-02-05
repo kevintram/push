@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide-react'
 import { type ReactNode, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
+import { CountBadge } from '~/components/ui/CountBadge'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 
 const MIN_WIDTH = 280
@@ -72,8 +73,9 @@ export function LearnablePanel<T>({
 					>
 						<Icon className='h-4 w-4' />
 						<span className='font-medium text-muted-foreground text-sm'>
-							{label} ({items.length})
+							{label}
 						</span>
+						<CountBadge count={items.length} />
 						<ChevronDown
 							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
 						/>

@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import { Button } from '~/components/ui/Button'
+import { CountBadge } from '~/components/ui/CountBadge'
 import type { ReviewListItem } from '../types/review.types'
 import { ReviewItem } from './ReviewItem'
 
@@ -30,9 +31,10 @@ export function ReviewSection({
 					onClick={() => onToggleCollapse(id)}
 					variant='ghost'
 				>
-					<h2 className={`font-bold text-xl ${headingClassName ?? ''}`.trim()}>
-						{label}{' '}
-						<span className='text-muted-foreground'>{entries.length}</span>
+					<h2
+						className={`flex items-center gap-2 font-bold text-xl ${headingClassName ?? ''}`.trim()}
+					>
+						{label} <CountBadge count={entries.length} />
 					</h2>
 					<ChevronDown
 						className={`h-5 w-5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
