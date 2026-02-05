@@ -15,10 +15,11 @@ if TYPE_CHECKING:
     from app.schemas.sources import SourceSummaryRead
 
 
-class RetrievabilityBucket(str, Enum):
-    LATE = "LATE"
-    ON_TIME = "ON_TIME"
-    EARLY = "EARLY"
+class FreshnessTier(str, Enum):
+    FRESH = "Fresh"
+    FINE = "Fine"
+    HAZY = "Hazy"
+    FORGOTTEN = "Forgotten"
 
 
 class TopicBase(BaseModel):
@@ -59,8 +60,8 @@ class TopicRead(TopicBase):
 
     # Computed
     retrievability: float | None = None
-    bucket: RetrievabilityBucket | None = None
-    days_until_threshold: int | None = None
+    freshness_tier: FreshnessTier | None = None
+    days_until_next_tier: int | None = None
 
 
 class TopicSummaryRead(TopicRead):
