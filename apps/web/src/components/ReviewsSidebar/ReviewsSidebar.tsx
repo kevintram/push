@@ -1,12 +1,6 @@
-import { Loader2, Plus, Square, SquareCheck } from 'lucide-react'
+import { ChevronDown, Loader2, Plus } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/Button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import { Skeleton } from '~/components/ui/Skeleton'
 import {
@@ -16,8 +10,10 @@ import {
 } from '~/components/ui/Tooltip'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviews } from '~/features/reviews/api/getReviews'
+import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
+import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'
 import type {
 	Rating,
 	ReviewListItem
@@ -29,7 +25,7 @@ type EntityType = 'topic' | 'source' | 'practice'
 /** Minimal entity type required by the sidebar - just needs an id */
 type EntityWithId = { id: number }
 
-interface LearnableReviewsSidebarProps<T extends EntityWithId> {
+interface ReviewsSidebarProps<T extends EntityWithId> {
 	entity: T | null | undefined
 	entityType: EntityType
 	readonly?: boolean
@@ -37,12 +33,12 @@ interface LearnableReviewsSidebarProps<T extends EntityWithId> {
 	sidebarClassName?: string
 }
 
-export function LearnableReviewsSidebar<T extends EntityWithId>({
+export function ReviewsSidebar<T extends EntityWithId>({
 	entity,
 	entityType,
 	readonly = false,
 	sidebarClassName = ''
-}: LearnableReviewsSidebarProps<T>) {
+}: ReviewsSidebarProps<T>) {
 	const filters = useMemo(() => {
 		if (entityType === 'topic') return { topicId: entity?.id }
 		if (entityType === 'source') return { sourceId: entity?.id }
@@ -132,14 +128,16 @@ export function LearnableReviewsSidebar<T extends EntityWithId>({
 		[entity, entityType, createReviewMutation]
 	)
 
-	const handleLogReviewNow = useCallback(async () => {
-		const today = localDateString()
-		await createReview(today, 'good')
-	}, [createReview])
-
-	const handleNewReviewForLater = useCallback(async () => {
-		await createReview(null, null)
-	}, [createReview])
+	const handleRatingSelect = useCallback(
+		async (ratingState: ReviewRatingState) => {
+			if (ratingState === 'uncompleted') {
+				await createReview(null, null)
+			} else {
+				await createReview(localDateString(), ratingState)
+			}
+		},
+		[createReview]
+	)
 
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
@@ -161,46 +159,32 @@ export function LearnableReviewsSidebar<T extends EntityWithId>({
 				<div className='flex flex-row items-center justify-between'>
 					<h1 className='font-semibold text-lg'>Reviews</h1>
 					{!readonly && (
-						<DropdownMenu>
-							<Tooltip>
-								<TooltipTrigger asChild={true}>
-									<DropdownMenuTrigger asChild={true}>
+						<Tooltip>
+							<RatingDropdown
+								align='end'
+								onSelect={handleRatingSelect}
+								trigger={
+									<TooltipTrigger asChild={true}>
 										<Button
 											disabled={isCreatingReview}
 											size='sm'
-											variant='ghost'
+											variant='secondary'
 										>
 											{isCreatingReview ? (
 												<Loader2 className='animate-spin' />
 											) : (
 												<Plus />
 											)}
+											Add
+											<ChevronDown />
 										</Button>
-									</DropdownMenuTrigger>
-								</TooltipTrigger>
-								<TooltipContent>
-									{isCreatingReview
-										? 'Creating review...'
-										: 'Create new review'}
-								</TooltipContent>
-							</Tooltip>
-							<DropdownMenuContent align='end'>
-								<DropdownMenuItem
-									disabled={isCreatingReview}
-									onClick={handleLogReviewNow}
-								>
-									<SquareCheck />
-									Log review now
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									disabled={isCreatingReview}
-									onClick={handleNewReviewForLater}
-								>
-									<Square />
-									For later
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+									</TooltipTrigger>
+								}
+							/>
+							<TooltipContent>
+								{isCreatingReview ? 'Creating review...' : 'Create new review'}
+							</TooltipContent>
+						</Tooltip>
 					)}
 				</div>
 			</SidebarHeader>

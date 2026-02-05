@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, use, useCallback } from 'react'
 import { LearnableProperties } from '~/components/LearnableProperties'
-import { LearnableReviewsSidebar } from '~/components/LearnableReviewsSidebar'
 import { LearnableStatus } from '~/components/LearnableStatus'
+import { ReviewsSidebar } from '~/components/ReviewsSidebar'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -242,7 +242,7 @@ export function PracticeDetail({
 					</div>
 
 					{/* Reviews Sidebar */}
-					<LearnableReviewsSidebar entity={practice} entityType='practice' />
+					<ReviewsSidebar entity={practice} entityType='practice' />
 				</SidebarHolder>
 			</div>
 		</SidebarProvider>

@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, use, useCallback } from 'react'
+import { ReviewsSidebar } from '~/components/ReviewsSidebar'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -21,7 +22,6 @@ import { SourceTopicsPanel } from '../SourceTopicsPanel'
 import { SourceDetailHeader } from './SourceDetailHeader'
 import { SourceDetailSkeleton } from './SourceDetailSkeleton'
 import { SourceProperties } from './SourceProperties'
-import { SourceReviewsSidebar } from './SourceReviewsSidebar'
 import { SourceStatus } from './SourceStatus'
 import { SourceTitleSection } from './SourceTitleSection'
 
@@ -294,7 +294,11 @@ export function SourceDetail({
 							/>
 						</div>
 					</div>
-					<SourceReviewsSidebar readonly={sidebarReadonly} />
+					<ReviewsSidebar
+						entity={source}
+						entityType='source'
+						readonly={sidebarReadonly}
+					/>
 				</SidebarHolder>
 			</div>
 		</SidebarProvider>
