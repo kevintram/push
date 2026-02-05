@@ -29,7 +29,7 @@ type EntityType = 'topic' | 'source' | 'practice'
 /** Minimal entity type required by the sidebar - just needs an id */
 type EntityWithId = { id: number }
 
-interface LearnableReviewsSidebarProps<T extends EntityWithId> {
+interface ReviewsSidebarProps<T extends EntityWithId> {
 	entity: T | null | undefined
 	entityType: EntityType
 	readonly?: boolean
@@ -37,12 +37,12 @@ interface LearnableReviewsSidebarProps<T extends EntityWithId> {
 	sidebarClassName?: string
 }
 
-export function LearnableReviewsSidebar<T extends EntityWithId>({
+export function ReviewsSidebar<T extends EntityWithId>({
 	entity,
 	entityType,
 	readonly = false,
 	sidebarClassName = ''
-}: LearnableReviewsSidebarProps<T>) {
+}: ReviewsSidebarProps<T>) {
 	const filters = useMemo(() => {
 		if (entityType === 'topic') return { topicId: entity?.id }
 		if (entityType === 'source') return { sourceId: entity?.id }
