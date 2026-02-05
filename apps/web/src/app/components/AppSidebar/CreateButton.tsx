@@ -2,7 +2,7 @@
 
 // External libraries
 import { useNavigate } from '@tanstack/react-router'
-import { Dumbbell, FileText, Plus, SquarePen } from 'lucide-react'
+import { FileText, Plus, SquarePen } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -16,7 +16,6 @@ import {
 import { SidebarMenuButton } from '~/components/ui/Sidebar'
 
 // Feature hooks
-import { AddPracticeDialog } from '~/features/practices/components/AddPracticeDialog'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 
@@ -28,9 +27,6 @@ export function CreateButton() {
 	const [isAddTopicDialogOpen, setIsAddTopicDialogOpen] = useState(false)
 	// State for AddSourceDialog
 	const [isAddSourceDialogOpen, setIsAddSourceDialogOpen] = useState(false)
-	// State for AddPracticeDialog
-	const [isAddPracticeDialogOpen, setIsAddPracticeDialogOpen] = useState(false)
-
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild={true}>
@@ -50,10 +46,6 @@ export function CreateButton() {
 				<DropdownMenuItem onClick={() => setIsAddSourceDialogOpen(true)}>
 					<FileText />
 					<span>New source</span>
-				</DropdownMenuItem>
-				<DropdownMenuItem onClick={() => setIsAddPracticeDialogOpen(true)}>
-					<Dumbbell />
-					<span>New practice</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 
@@ -90,24 +82,6 @@ export function CreateButton() {
 					})
 				}}
 				open={isAddSourceDialogOpen}
-				relationship={{ kind: 'standalone' }}
-			/>
-
-			<AddPracticeDialog
-				onOpenChange={setIsAddPracticeDialogOpen}
-				onSuccess={practiceId => {
-					toast('Practice created', {
-						action: {
-							label: 'Open',
-							onClick: () =>
-								navigate({
-									to: '/practices/$practiceId',
-									params: { practiceId: practiceId.toString() }
-								})
-						}
-					})
-				}}
-				open={isAddPracticeDialogOpen}
 				relationship={{ kind: 'standalone' }}
 			/>
 		</DropdownMenu>
