@@ -1,5 +1,11 @@
 import { ChevronDown, Link } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import {
+	useCallback,
+	useInsertionEffect,
+	useMemo,
+	useRef,
+	useState
+} from 'react'
 import {
 	EntityCard,
 	type EntityItem,
@@ -26,6 +32,8 @@ interface SourceRelatedPanelProps {
 	sourceId: number | undefined
 	relatedOutgoing?: Array<RelatedEntityItem>
 	relatedIncoming?: Array<RelatedEntityItem>
+	getScrollElement?: () => HTMLDivElement | null
+	scrollMargin?: number
 	inheritFsrsState?: FsrsState | null
 	onTopicNavigate?: (topicId: number) => void
 	onSourceNavigate?: (sourceId: number) => void
@@ -35,6 +43,8 @@ export function SourceRelatedPanel({
 	sourceId,
 	relatedOutgoing = [],
 	relatedIncoming = [],
+	getScrollElement,
+	scrollMargin,
 	inheritFsrsState,
 	onTopicNavigate,
 	onSourceNavigate
@@ -50,13 +60,21 @@ export function SourceRelatedPanel({
 	const isAdding = addRelation.isPending
 
 	// Merge outgoing and incoming for display
-	const allRelated = useMemo(
-		() => [
+	const allRelated = useMemo(() => {
+		const merged = [
 			...relatedOutgoing.map(r => ({ ...r, direction: 'outgoing' as const })),
 			...relatedIncoming.map(r => ({ ...r, direction: 'incoming' as const }))
-		],
-		[relatedOutgoing, relatedIncoming]
-	)
+		]
+		const seen = new Set<string>()
+
+		// Keep first occurrence (outgoing first) so each entity appears once.
+		return merged.filter(entity => {
+			const key = `${entity.entity_type}-${entity.id}`
+			if (seen.has(key)) return false
+			seen.add(key)
+			return true
+		})
+	}, [relatedOutgoing, relatedIncoming])
 
 	// Convert to EntityItem format for EntityCard/MasonryLayout
 	const entityItems = useMemo<Array<EntityItem>>(() => {
@@ -111,16 +129,23 @@ export function SourceRelatedPanel({
 		[handleTopicNavigate, handleSourceNavigate]
 	)
 
+	const allRelatedRef = useRef(allRelated)
+	useInsertionEffect(() => {
+		allRelatedRef.current = allRelated
+	}, [allRelated])
+	const removeRelationRef = useRef(removeRelation)
+	useInsertionEffect(() => {
+		removeRelationRef.current = removeRelation
+	}, [removeRelation])
+
 	const renderItem = useCallback(
 		(entity: EntityItem) => {
-			// Get the original related item for remove action
-			const originalItem = allRelated.find(
-				r => r.entity_type === entity.type && r.id === entity.item.id
-			)
-
 			const handleRemove = () => {
+				const originalItem = allRelatedRef.current.find(
+					r => r.entity_type === entity.type && r.id === entity.item.id
+				)
 				if (!(sourceId && originalItem)) return
-				removeRelation.mutate({
+				removeRelationRef.current.mutate({
 					sourceId,
 					entityType: originalItem.entity_type as EntityType,
 					entityId: originalItem.id
@@ -155,7 +180,7 @@ export function SourceRelatedPanel({
 				/>
 			)
 		},
-		[handleEntityClick, sourceId, allRelated, removeRelation]
+		[handleEntityClick, sourceId]
 	)
 
 	return (
@@ -206,9 +231,11 @@ export function SourceRelatedPanel({
 							estimateItemSize={estimateEntitySize}
 							gap={16}
 							getItemKey={getEntityKey}
+							getScrollElement={getScrollElement}
 							items={entityItems}
 							minItemWidth={280}
 							renderItem={renderItem}
+							scrollMargin={scrollMargin}
 						/>
 					)}
 				</div>

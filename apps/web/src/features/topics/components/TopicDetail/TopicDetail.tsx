@@ -183,19 +183,29 @@ export function TopicDetail({
 
 	const srsSource = useFsrsState(topic)
 
+	const relatedOutgoing = topic?.related_outgoing
+	const relatedIncoming = topic?.related_incoming
+
 	// Merge related topics from outgoing and incoming with direction metadata
 	const mergedRelated = useMemo(() => {
-		if (!topic) return []
-		const outgoing = (topic.related_outgoing ?? []).map(t => ({
-			...t,
+		const outgoing = (relatedOutgoing ?? []).map(entity => ({
+			...entity,
 			relationship_direction: RelationshipDirection.Outgoing
 		}))
-		const incoming = (topic.related_incoming ?? []).map(t => ({
-			...t,
+		const incoming = (relatedIncoming ?? []).map(entity => ({
+			...entity,
 			relationship_direction: RelationshipDirection.Incoming
 		}))
-		return [...outgoing, ...incoming]
-	}, [topic?.related_outgoing, topic?.related_incoming])
+		const seen = new Set<string>()
+
+		// Keep first occurrence (outgoing first) so each entity appears once.
+		return [...outgoing, ...incoming].filter(entity => {
+			const key = `${entity.entity_type}-${entity.id}`
+			if (seen.has(key)) return false
+			seen.add(key)
+			return true
+		})
+	}, [relatedOutgoing, relatedIncoming])
 
 	if (isLoading || !topic) {
 		return <TopicDetailSkeleton />
@@ -265,6 +275,7 @@ export function TopicDetail({
 						</div>
 						<div className='mt-4'>
 							<TopicRelatedPanel
+								getScrollElement={() => scrollContainerRef.current}
 								inheritFsrsState={srsSource}
 								onRelatedSelect={onTopicNavigate}
 								onSourceSelect={onSourceNavigate}
