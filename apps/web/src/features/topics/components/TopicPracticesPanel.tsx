@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Dumbbell } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { estimateCardSize } from '~/components/EntityCard'
 import { LearnablePanel } from '~/components/LearnablePanel'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
@@ -102,19 +103,11 @@ export function TopicPracticesPanel({
 		[practices]
 	)
 
-	const estimateItemSize = useCallback((practice: Practice) => {
-		const baseHeight = 80
-		const lineHeight = 10
-		const numCharsPerLine = 30
-		const newLine = 10
-
-		const promptHeight =
-			Math.floor((practice.prompt?.length ?? 0) / numCharsPerLine) * lineHeight
-		const answerHeight =
-			Math.floor((practice.answer?.length ?? 0) / numCharsPerLine) * lineHeight
-
-		return baseHeight + promptHeight + newLine + answerHeight
-	}, [])
+	const estimateItemSize = useCallback(
+		(practice: Practice, _index: number, laneWidth: number) =>
+			estimateCardSize(practice.prompt ?? '', practice.answer ?? '', laneWidth),
+		[]
+	)
 
 	const renderItem = useCallback(
 		(practice: Practice) => {

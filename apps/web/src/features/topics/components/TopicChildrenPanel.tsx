@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Baby, ChevronDown } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { estimateCardSize } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
@@ -124,23 +125,11 @@ export function TopicChildrenPanel({
 		[children]
 	)
 
-	const estimateItemSize = useCallback((item: ListItem) => {
-		// Estimate height based on topic name and notes length
-		const { child } = item
-		const baseHeight = 80
-		const lineHeight = 10
-		const numCharsPerLine = 30
-		const newLine = 10
-
-		const nameHeight =
-			Math.floor(child.name.length / numCharsPerLine) * lineHeight
-		const notesHeight =
-			Math.floor(child.notes.length / numCharsPerLine) * lineHeight
-
-		const calculatedHeight = baseHeight + nameHeight + newLine + notesHeight
-
-		return Math.max(calculatedHeight, MIN_HEIGHT)
-	}, [])
+	const estimateItemSize = useCallback(
+		(item: ListItem, _index: number, laneWidth: number) =>
+			estimateCardSize(item.child.name, item.child.notes, laneWidth),
+		[]
+	)
 
 	const renderItem = useCallback(
 		(item: ListItem) => {
