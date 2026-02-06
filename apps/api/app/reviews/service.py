@@ -15,6 +15,8 @@ from sqlalchemy.orm import selectinload
 from app.exceptions import AlreadyExistsError, NotFoundError
 from app.models import FsrsState, Practice, Review, Source, Topic
 
+ReviewEntity = Topic | Source | Practice
+
 
 # --- FSRS Helpers (pure functions, kept here for locality) ---
 
@@ -212,6 +214,136 @@ async def update_entity_fsrs(
     last_before = before_result.scalar_one_or_none()
 
     update_fsrs(entity.fsrs_state, reviews_to_replay, last_before)
+    if reviews_to_replay:
+        entity.fsrs_state.last_reviewed_at = reviews_to_replay[-1].completed_at
+    elif last_before is not None:
+        entity.fsrs_state.last_reviewed_at = last_before.completed_at
+    else:
+        entity.fsrs_state.last_reviewed_at = None
+
+
+def get_review_entity(review: Review) -> ReviewEntity | None:
+    """Return the linked entity for a review, if any."""
+    if review.practice is not None:
+        return review.practice
+    if review.source is not None:
+        return review.source
+    if review.topic is not None:
+        return review.topic
+    return None
+
+
+def _clear_fsrs_fields(review: Review) -> None:
+    """Clear all FSRS before/after fields on a review."""
+    review.stability_before = None
+    review.difficulty_before = None
+    review.state_before = None
+    review.step_before = None
+    review.due_before = None
+    review.stability_after = None
+    review.difficulty_after = None
+    review.state_after = None
+    review.step_after = None
+    review.due_after = None
+
+
+async def _reload_review(session: AsyncSession, review_id: int) -> Review:
+    """Re-query a review with all entity relationships loaded."""
+    result = await session.execute(
+        select(Review)
+        .where(Review.id == review_id)
+        .options(
+            selectinload(Review.topic),
+            selectinload(Review.source),
+            selectinload(Review.practice),
+        )
+    )
+    return result.scalar_one()
+
+
+_ENTITY_TYPES: list[tuple[str, type[ReviewEntity], str]] = [
+    ("topic_id", Topic, "Topic"),
+    ("source_id", Source, "Source"),
+    ("practice_id", Practice, "Practice"),
+]
+
+
+async def _resolve_entity_change(
+    session: AsyncSession,
+    review: Review,
+    user_id: str,
+    fields_set: set[str],
+    *,
+    topic_id: int | None,
+    source_id: int | None,
+    practice_id: int | None,
+) -> ReviewEntity | None:
+    """Resolve entity reassignment for a review update.
+
+    Applies PATCH semantics: merges provided IDs with existing review values,
+    clears siblings when a non-null ID is set, fetches the entity,
+    and updates the review's foreign keys and relationships.
+    """
+    # PATCH semantics: for each entity FK, use the caller's value if explicitly
+    # provided, otherwise keep the existing value from the current review.
+    incoming = {
+        "topic_id": topic_id,
+        "source_id": source_id,
+        "practice_id": practice_id,
+    }
+    resolved_ids: dict[str, int | None] = {
+        f: incoming[f] if f in fields_set else getattr(review, f) for f in incoming
+    }
+
+    # A non-null reassignment clears siblings
+    reassigned: list[str] = [
+        f for f in incoming if f in fields_set and incoming[f] is not None
+    ]
+    if len(reassigned) > 1:
+        raise ValueError("At most one of topic_id, source_id, practice_id may be set")
+    if reassigned:
+        for f in resolved_ids:
+            if f != reassigned[0]:
+                resolved_ids[f] = None
+
+    # Update review FKs
+    review.topic_id = resolved_ids["topic_id"]
+    review.source_id = resolved_ids["source_id"]
+    review.practice_id = resolved_ids["practice_id"]
+
+    # Fetch the linked entity (if any)
+    entity: ReviewEntity | None = None
+    for field, model, name in _ENTITY_TYPES:
+        eid = resolved_ids[field]
+        if eid is not None:
+            result = await session.execute(
+                select(model)
+                .where(model.id == eid, model.user_id == user_id)
+                .options(selectinload(model.fsrs_state))
+            )
+            entity = result.scalar_one_or_none()
+            if not entity:
+                raise NotFoundError(name, eid)
+            break
+
+    # Update review relationships
+    review.topic = entity if isinstance(entity, Topic) else None
+    review.source = entity if isinstance(entity, Source) else None
+    review.practice = entity if isinstance(entity, Practice) else None
+
+    return entity
+
+
+async def ensure_entity_fsrs_state(session: AsyncSession, entity: ReviewEntity) -> None:
+    """Create an FSRS state row for an entity if one does not exist yet."""
+    if entity.fsrs_state is not None:
+        return
+
+    fsrs_state = FsrsState(srs_enabled=True)
+    session.add(fsrs_state)
+    await session.flush()
+    entity.fsrs_state_id = fsrs_state.id
+    entity.fsrs_state = fsrs_state
 
 
 # --- Review Operations ---
@@ -318,12 +450,13 @@ async def create_review(
     completed_at: date | None = None,
     rating: str | None = None,
 ) -> Review:
-    """Create a new review for a topic, source, or practice.
+    """Create a new review, optionally linked to a topic, source, or practice.
 
     Supports creating and linking entities in any combination:
     - For topic reviews: provide topic_id or topic_data (inline creation)
     - For source reviews: provide source_id or source_data (inline creation)
     - For practice reviews: provide practice_id or practice_data (inline creation)
+    - For entity-less reviews: omit all entity fields
     Raises AlreadyExistsError if review already exists.
     """
     # Determine entity type
@@ -335,7 +468,7 @@ async def create_review(
     topic: Topic | None = None
     source: Source | None = None
     practice: Practice | None = None
-    entity_for_fsrs: Topic | Source | Practice
+    entity_for_fsrs: Topic | Source | Practice | None = None
 
     if is_topic_review:
         if topic_id is not None:
@@ -418,8 +551,6 @@ async def create_review(
             session.add(practice)
             await session.flush()
         entity_for_fsrs = practice
-    else:
-        raise ValueError("Must provide topic, source, or practice for review")
 
     # Check if review is completed - only run FSRS if it is
     if completed_at is None:
@@ -440,17 +571,7 @@ async def create_review(
         except IntegrityError:
             raise AlreadyExistsError("Review already exists")
 
-        # Re-query to get fresh data
-        review_result = await session.execute(
-            select(Review)
-            .where(Review.id == new_review.id)
-            .options(
-                selectinload(Review.topic),
-                selectinload(Review.source),
-                selectinload(Review.practice),
-            )
-        )
-        return review_result.scalar_one()
+        return await _reload_review(session, new_review.id)
 
     # Review is completed - create with rating, let run_fsrs set FSRS fields
     rating_value = rating or "good"
@@ -473,28 +594,19 @@ async def create_review(
         raise AlreadyExistsError("Review already exists")
 
     # Ensure entity has fsrs_state before running FSRS
-    if entity_for_fsrs.fsrs_state is None:
-        fsrs_state = FsrsState(srs_enabled=True)
-        session.add(fsrs_state)
+    if entity_for_fsrs is not None:
+        if entity_for_fsrs.fsrs_state is None:
+            fsrs_state = FsrsState(srs_enabled=True)
+            session.add(fsrs_state)
+            await session.flush()
+            entity_for_fsrs.fsrs_state_id = fsrs_state.id
+            entity_for_fsrs.fsrs_state = fsrs_state
+
+        # Run FSRS for this review and any subsequent reviews
+        await update_entity_fsrs(session, entity_for_fsrs, completed_at)
         await session.flush()
-        entity_for_fsrs.fsrs_state_id = fsrs_state.id
-        entity_for_fsrs.fsrs_state = fsrs_state
 
-    # Run FSRS for this review and any subsequent reviews
-    await update_entity_fsrs(session, entity_for_fsrs, completed_at)
-    await session.flush()
-
-    # Re-query to get fresh data
-    review_result = await session.execute(
-        select(Review)
-        .where(Review.id == new_review.id)
-        .options(
-            selectinload(Review.topic),
-            selectinload(Review.source),
-            selectinload(Review.practice),
-        )
-    )
-    return review_result.scalar_one()
+    return await _reload_review(session, new_review.id)
 
 
 async def update_review(
@@ -507,21 +619,20 @@ async def update_review(
     scheduled_at: date | None = ...,  # Use ... as sentinel
     completed_at: date | None = ...,  # Use ... as sentinel
     rating: str | None = None,
+    topic_id: int | None = None,
+    source_id: int | None = None,
+    practice_id: int | None = None,
     fields_set: set[str],
 ) -> Review:
     """Update a review's rating/completion and recalculate FSRS state.
 
     Uses PATCH semantics - only updates fields in fields_set.
     """
-    # Fetch the existing review with topic, source, and practice relationships
     existing_review = await get_review(session, review_id, user_id)
+    old_completed_at = existing_review.completed_at
+    old_entity = get_review_entity(existing_review)
 
-    # Determine entity type
-    topic = existing_review.topic
-    source = existing_review.source
-    practice = existing_review.practice
-
-    # Update simple fields
+    # --- Update scalar fields ---
     if "description" in fields_set and description is not None:
         existing_review.description = description
     if "notes" in fields_set and notes is not None:
@@ -529,62 +640,60 @@ async def update_review(
     if "scheduled_at" in fields_set:
         existing_review.scheduled_at = scheduled_at
 
-    # Check if review is completed - only run FSRS if it is
+    # --- Check and do entity reassignment ---
+    new_entity = old_entity
+    entity_changed = False
+    if {"topic_id", "source_id", "practice_id"} & fields_set:
+        new_entity = await _resolve_entity_change(
+            session,
+            existing_review,
+            user_id,
+            fields_set,
+            topic_id=topic_id,
+            source_id=source_id,
+            practice_id=practice_id,
+        )
+        entity_changed = not (
+            old_entity is not None
+            and new_entity is not None
+            and type(old_entity) is type(new_entity)
+            and old_entity.id == new_entity.id
+        )
+        await session.flush()
+
+    # --- Completion & rating ---
     new_completed_at = (
         completed_at if "completed_at" in fields_set else existing_review.completed_at
     )
-
-    completed_at_changed = existing_review.completed_at != new_completed_at
-    if completed_at_changed:
+    if existing_review.completed_at != new_completed_at:
         existing_review.completed_at = new_completed_at
 
-    if new_completed_at is None:
-        # Review not completed yet - only update rating/desc, skip FSRS
-        if "rating" in fields_set:
-            existing_review.rating = rating
-
-        await session.flush()
-
-        review_result = await session.execute(
-            select(Review)
-            .where(Review.id == review_id)
-            .options(
-                selectinload(Review.topic),
-                selectinload(Review.source),
-                selectinload(Review.practice),
-            )
-        )
-        return review_result.scalar_one()
-
-    # Review is completed - update rating and let run_fsrs handle FSRS calculations
-    rating_value = rating or existing_review.rating or "good"
-    existing_review.rating = rating_value
+    if new_completed_at is not None:
+        existing_review.rating = rating or existing_review.rating or "good"
+    elif "rating" in fields_set:
+        existing_review.rating = rating
 
     await session.flush()
 
-    # Run FSRS from this review's date to calculate this review and recalculate subsequent reviews
-    entity: Topic | Source | Practice | None = None
-    if practice is not None:
-        entity = practice
-    elif source is not None:
-        entity = source
-    elif topic is not None:
-        entity = topic
+    # --- FSRS recalculation ---
+    if new_completed_at is None:
+        _clear_fsrs_fields(existing_review)
+        if old_completed_at is not None and old_entity is not None:
+            await update_entity_fsrs(session, old_entity, old_completed_at)
+    elif entity_changed:
+        if old_entity is not None:
+            replay_start = old_completed_at or new_completed_at
+            await update_entity_fsrs(session, old_entity, replay_start)
+        if new_entity is not None:
+            await ensure_entity_fsrs_state(session, new_entity)
+            await update_entity_fsrs(session, new_entity, new_completed_at)
+        else:
+            _clear_fsrs_fields(existing_review)
+    elif new_entity is not None:
+        await update_entity_fsrs(session, new_entity, new_completed_at)
 
-    if entity:
-        await update_entity_fsrs(session, entity, new_completed_at)
-        await session.flush()
-
-    review_result = await session.execute(
-        select(Review)
-        .where(Review.id == review_id)
-        .options(
-            selectinload(Review.topic),
-            selectinload(Review.source),
-            selectinload(Review.practice),
-        )
-    )
-    return review_result.scalar_one()
+    await session.flush()
+    return await _reload_review(session, existing_review.id)
 
 
 async def delete_review(

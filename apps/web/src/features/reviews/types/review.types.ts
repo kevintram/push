@@ -7,7 +7,7 @@ export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 
 export type Review = {
 	id: number
-	// Polymorphic entity references (exactly one will be set)
+	// Polymorphic entity references (at most one will be set)
 	topic_id: number | null
 	source_id: number | null
 	practice_id: number | null
@@ -43,7 +43,7 @@ export type Review = {
 
 export type ReviewListItem = {
 	id: number
-	// Polymorphic entity references (exactly one will be set)
+	// Polymorphic entity references (at most one will be set)
 	topic_id: number | null
 	source_id: number | null
 	practice_id: number | null

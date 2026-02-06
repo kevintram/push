@@ -37,13 +37,15 @@ interface SearchDialogProps {
 	onOpenChange: (open: boolean) => void
 	query: string
 	setQuery: (query: string) => void
+	onSelectEntity?: (entity: EntityItem) => void
 }
 
 export function SearchDialog({
 	open,
 	onOpenChange,
 	query,
-	setQuery
+	setQuery,
+	onSelectEntity
 }: SearchDialogProps) {
 	const navigateToEntity = useEntityNavigation()
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -107,10 +109,15 @@ export function SearchDialog({
 
 	const handleEntitySelect = useCallback(
 		(entity: EntityItem) => {
+			if (onSelectEntity) {
+				onSelectEntity(entity)
+				onOpenChange(false)
+				return
+			}
 			navigateToEntity(entity)
 			onOpenChange(false)
 		},
-		[navigateToEntity, onOpenChange]
+		[navigateToEntity, onOpenChange, onSelectEntity]
 	)
 
 	const handleKeyDown = useCallback(
@@ -176,10 +183,10 @@ export function SearchDialog({
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent
-				className='-translate-x-1/2 fixed top-0 left-1/2 w-full translate-y-0 p-0 md:max-w-2xl lg:max-w-4xl xl:max-w-5xl'
+				className='-translate-x-1/2 -translate-y-1/2 fixed top-1/3 left-1/2 w-full p-0 md:max-w-2xl lg:max-w-4xl xl:max-w-5xl'
 				showCloseButton={false}
 			>
-				<DialogHeader className='space-y-2 px-2 pt-2 pb-0 sm:px-4'>
+				<DialogHeader className='space-y-2 px-5 pt-5 pb-1 sm:px-6'>
 					<DialogTitle className='sr-only'>Search</DialogTitle>
 					<SearchInput
 						inputClassName='px-8 text-base sm:px-10 sm:text-lg'
@@ -196,7 +203,7 @@ export function SearchDialog({
 					/>
 				</DialogHeader>
 
-				<div className='scrollbar-track-transparent max-h-192 min-h-80 overflow-y-auto p-2 pt-0 sm:p-4'>
+				<div className='scrollbar-track-transparent max-h-144 min-h-64 overflow-y-auto px-5 pt-0 pb-5 sm:px-6 sm:pb-6'>
 					<SearchResultsContainer
 						animate={false}
 						estimateItemSize={estimateEntitySize}

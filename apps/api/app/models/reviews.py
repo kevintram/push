@@ -29,7 +29,7 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
-    # Exactly one of topic_id, source_id, or practice_id must be set (enforced by CHECK constraint)
+    # At most one of topic_id, source_id, or practice_id must be set (enforced by CHECK constraint)
     topic_id: Mapped[int | None] = mapped_column(
         BigInteger, ForeignKey("topics.id", ondelete="CASCADE"), nullable=True
     )

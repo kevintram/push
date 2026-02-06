@@ -80,6 +80,14 @@ export type CreateReviewPayload = {
 			source_id?: never
 			source?: never
 	  }
+	| {
+			topic_id?: never
+			topic?: never
+			source_id?: never
+			source?: never
+			practice_id?: never
+			practice?: never
+	  }
 )
 
 export type UpdateReviewInput = {
@@ -89,6 +97,9 @@ export type UpdateReviewInput = {
 	notes?: string
 	scheduled_at?: string | null
 	completed_at?: string | null
+	topic_id?: number | null
+	source_id?: number | null
+	practice_id?: number | null
 }
 
 export type GetReviewsFilters = {
