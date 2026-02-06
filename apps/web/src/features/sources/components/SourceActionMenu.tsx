@@ -4,7 +4,6 @@ import {
 	Inbox,
 	MoreHorizontal,
 	RefreshCw,
-	SquareCheck,
 	Trash2
 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
@@ -15,10 +14,9 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { useCreateReview } from '~/features/reviews/api/createReview'
-import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import { useConvertSourceToPractice } from '~/features/sources/api/convertSourceToPractice'
 import { useConvertSourceToTopic } from '~/features/sources/api/convertSourceToTopic'
 import { useDeleteSource } from '~/features/sources/api/deleteSource'
@@ -31,7 +29,6 @@ import {
 	getSourceToPracticePreview,
 	getSourceToTopicPreview
 } from '~/utils/conversionPreview'
-import { localDateString } from '~/utils/date'
 
 interface SourceActionMenuProps {
 	source: Source
@@ -59,8 +56,6 @@ export function SourceActionMenu({
 	const [convertToPracticeOpen, setConvertToPracticeOpen] = useState(false)
 	const deleteSourceMutation = useDeleteSource()
 	const updateSourceMutation = useUpdateSource(onSourceUpdateSuccess)
-	const createReviewMutation = useCreateReview()
-	const { openReviewDialog } = useReviewDialog()
 	const convertToTopicMutation = useConvertSourceToTopic()
 	const convertToPracticeMutation = useConvertSourceToPractice()
 
@@ -107,22 +102,6 @@ export function SourceActionMenu({
 			})
 		},
 		[updateSourceMutation, source.id, source.inboxed]
-	)
-
-	const handleLogNow = useCallback(
-		async (e: React.MouseEvent) => {
-			e.stopPropagation()
-			const today = localDateString()
-			const review = await createReviewMutation.mutateAsync({
-				source_id: source.id,
-				rating: 'good',
-				description: '',
-				scheduled_at: null,
-				completed_at: today
-			})
-			openReviewDialog(review.id)
-		},
-		[createReviewMutation, source.id, openReviewDialog]
 	)
 
 	const handleConfirmConvertToTopic = useCallback(async () => {
@@ -174,13 +153,6 @@ export function SourceActionMenu({
 					)}
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-					<DropdownMenuItem
-						disabled={createReviewMutation.isPending}
-						onClick={handleLogNow}
-					>
-						<SquareCheck className='mr-2 h-4 w-4' />
-						Log now
-					</DropdownMenuItem>
 					<DropdownMenuItem onClick={handleInboxToggle}>
 						{source.inboxed ? (
 							<>
@@ -207,17 +179,7 @@ export function SourceActionMenu({
 							</>
 						)}
 					</DropdownMenuItem>
-					{children}
-					{onRemoveRelationship && (
-						<DropdownMenuItem
-							onClick={e => {
-								e.stopPropagation()
-								onRemoveRelationship()
-							}}
-						>
-							{removeRelationshipText}
-						</DropdownMenuItem>
-					)}
+					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()
@@ -236,6 +198,18 @@ export function SourceActionMenu({
 						<RefreshCw className='mr-2 h-4 w-4' />
 						Convert to Practice
 					</DropdownMenuItem>
+					{children}
+					{onRemoveRelationship && (
+						<DropdownMenuItem
+							onClick={e => {
+								e.stopPropagation()
+								onRemoveRelationship()
+							}}
+						>
+							{removeRelationshipText}
+						</DropdownMenuItem>
+					)}
+					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()
