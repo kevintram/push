@@ -45,9 +45,7 @@ function MasonryLayoutInner<T>({
 	itemsRef.current = items
 	const lastEstimateRef = useRef(96)
 	const warnedMissingKeyRef = useRef(false)
-	const prevLayoutRef = useRef<{ numLanes: number; laneWidth: number } | null>(
-		null
-	)
+	const prevLayoutRef = useRef<{ numLanes: number } | null>(null)
 
 	const numLanes = useMemo(
 		() =>
@@ -117,18 +115,18 @@ function MasonryLayoutInner<T>({
 		if (!hasMeasuredWidth) return
 
 		if (prevLayoutRef.current == null) {
-			prevLayoutRef.current = { numLanes, laneWidth }
+			prevLayoutRef.current = { numLanes }
 			return
 		}
 
-		if (
-			prevLayoutRef.current.numLanes !== numLanes ||
-			prevLayoutRef.current.laneWidth !== laneWidth
-		) {
-			prevLayoutRef.current = { numLanes, laneWidth }
+		// Only reset cached sizes when lane count changes.
+		// Width jitter with stable lane count (e.g. scrollbar appearance) is
+		// handled by ResizeObserver and should not clear measurements.
+		if (prevLayoutRef.current.numLanes !== numLanes) {
+			prevLayoutRef.current = { numLanes }
 			virtualizer.measure()
 		}
-	}, [virtualizer, numLanes, laneWidth, hasMeasuredWidth])
+	}, [virtualizer, numLanes, hasMeasuredWidth])
 
 	// Compute scrollMargin via bounding rects (layout-independent)
 	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally retrigger this setup when list shape changes can shift vertical offsets.

@@ -269,3 +269,198 @@ INSERT INTO source_prerequisites (source_id, prereq_topic_id) VALUES
 
 INSERT INTO source_prerequisites (source_id, prereq_source_id) VALUES
   (3, 2);    -- Chapter 2 requires Chapter 1
+
+-- ============================================================================
+-- ADDITIONAL ROOT TOPICS (to fill MyLibraryPage)
+-- ============================================================================
+
+-- FSRS states for new root topics (IDs 24-53)
+INSERT INTO fsrs_states (id, stability, difficulty, state, step, last_reviewed_at, srs_enabled, inherited_stability, inherited_difficulty, inherited_state, inherited_step, inherited_last_review)
+OVERRIDING SYSTEM VALUE
+VALUES
+  (24, 35.0, 3.0, 'REVIEW', 0, '2026-01-12', true, NULL, NULL, NULL, NULL, NULL),
+  (25, 20.0, 4.5, 'REVIEW', 0, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
+  (26, 15.0, 5.0, 'REVIEW', 0, '2026-01-10', true, NULL, NULL, NULL, NULL, NULL),
+  (27, 50.0, 2.5, 'REVIEW', 0, '2026-01-15', true, NULL, NULL, NULL, NULL, NULL),
+  (28, 45.0, 3.0, 'REVIEW', 0, '2026-01-13', true, NULL, NULL, NULL, NULL, NULL),
+  (29, 10.0, 6.0, 'LEARNING', 2, '2026-01-16', true, NULL, NULL, NULL, NULL, NULL),
+  (30, 22.0, 4.0, 'REVIEW', 0, '2026-01-11', true, NULL, NULL, NULL, NULL, NULL),
+  (31, 18.0, 5.5, 'REVIEW', 0, '2026-01-09', true, NULL, NULL, NULL, NULL, NULL),
+  (32, 8.0, 6.0, 'LEARNING', 1, '2026-01-15', true, NULL, NULL, NULL, NULL, NULL),
+  (33, 12.0, 4.5, 'REVIEW', 0, '2026-01-13', true, NULL, NULL, NULL, NULL, NULL),
+  (34, 5.0, 7.0, 'LEARNING', 3, '2026-01-17', true, NULL, NULL, NULL, NULL, NULL),
+  (35, 6.0, 6.5, 'LEARNING', 2, '2026-01-16', true, NULL, NULL, NULL, NULL, NULL),
+  (36, 40.0, 3.5, 'REVIEW', 0, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
+  (37, 55.0, 2.0, 'REVIEW', 0, '2026-01-08', true, NULL, NULL, NULL, NULL, NULL),
+  (38, 28.0, 4.0, 'REVIEW', 0, '2026-01-12', true, NULL, NULL, NULL, NULL, NULL),
+  (39, 14.0, 5.0, 'REVIEW', 0, '2026-01-15', true, NULL, NULL, NULL, NULL, NULL),
+  (40, 32.0, 3.5, 'REVIEW', 0, '2026-01-10', true, NULL, NULL, NULL, NULL, NULL),
+  (41, 7.0, 6.5, 'LEARNING', 2, '2026-01-16', true, NULL, NULL, NULL, NULL, NULL),
+  (42, 3.0, 7.5, 'LEARNING', 3, '2026-01-17', true, NULL, NULL, NULL, NULL, NULL),
+  (43, 30.0, 4.0, 'REVIEW', 0, '2026-01-11', true, NULL, NULL, NULL, NULL, NULL),
+  (44, 25.0, 5.0, 'REVIEW', 0, '2026-01-09', true, NULL, NULL, NULL, NULL, NULL),
+  (45, 20.0, 5.5, 'REVIEW', 0, '2026-01-07', true, NULL, NULL, NULL, NULL, NULL),
+  (46, 16.0, 4.5, 'REVIEW', 0, '2026-01-13', true, NULL, NULL, NULL, NULL, NULL),
+  (47, 10.0, 6.0, 'LEARNING', 1, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
+  (48, 9.0, 5.5, 'LEARNING', 1, '2026-01-15', true, NULL, NULL, NULL, NULL, NULL),
+  (49, 12.0, 4.0, 'REVIEW', 0, '2026-01-12', true, NULL, NULL, NULL, NULL, NULL),
+  (50, 8.0, 5.0, 'LEARNING', 1, '2026-01-16', true, NULL, NULL, NULL, NULL, NULL),
+  (51, 18.0, 4.5, 'REVIEW', 0, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
+  (52, 22.0, 3.5, 'REVIEW', 0, '2026-01-11', true, NULL, NULL, NULL, NULL, NULL),
+  (53, 4.0, 6.0, 'LEARNING', 2, '2026-01-17', true, NULL, NULL, NULL, NULL, NULL);
+
+SELECT setval('fsrs_states_id_seq', (SELECT MAX(id) FROM fsrs_states));
+
+INSERT INTO topics (id, user_id, name, notes, parent_id, path, fsrs_state_id, archived, inboxed, inserted_at, updated_at)
+OVERRIDING SYSTEM VALUE
+VALUES
+  (24, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Machine Learning', 'Neural networks, training, and model evaluation', NULL, '24', 24, false, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '2 days'),
+  (25, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Docker', 'Containers, images, and Docker Compose', NULL, '25', 25, false, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '3 days'),
+  (26, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'AWS Cloud', 'EC2, S3, Lambda, and cloud architecture', NULL, '26', 26, false, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '5 days'),
+  (27, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Data Structures', 'Arrays, trees, graphs, hash maps', NULL, '27', 27, false, false, NOW() - INTERVAL '70 days', NOW() - INTERVAL '1 day'),
+  (28, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Algorithms', 'Sorting, searching, dynamic programming', NULL, '28', 28, false, false, NOW() - INTERVAL '65 days', NOW() - INTERVAL '4 days'),
+  (29, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'System Design', 'Distributed systems and architecture patterns', NULL, '29', 29, false, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
+  (30, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Networking', 'TCP/IP, HTTP, DNS, and protocols', NULL, '30', 30, false, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '6 days'),
+  (31, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Operating Systems', 'Processes, memory, file systems', NULL, '31', 31, false, false, NOW() - INTERVAL '45 days', NOW() - INTERVAL '8 days'),
+  (32, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Cybersecurity', 'Network security, encryption, OWASP', NULL, '32', 32, false, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '2 days'),
+  (33, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'DevOps', 'CI/CD pipelines and infrastructure as code', NULL, '33', 33, false, false, NOW() - INTERVAL '30 days', NOW() - INTERVAL '4 days'),
+  (34, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Rust', 'Ownership, borrowing, and systems programming', NULL, '34', 34, false, false, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 day'),
+  (35, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Go', 'Goroutines, channels, and Go idioms', NULL, '35', 35, false, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '1 day'),
+  (36, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'C++', 'Modern C++ features and memory management', NULL, '36', 36, false, false, NOW() - INTERVAL '80 days', NOW() - INTERVAL '3 days'),
+  (37, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Java', 'JVM, Spring Boot, and enterprise patterns', NULL, '37', 37, false, false, NOW() - INTERVAL '90 days', NOW() - INTERVAL '9 days'),
+  (38, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Design Patterns', 'GoF patterns and modern alternatives', NULL, '38', 38, false, false, NOW() - INTERVAL '60 days', NOW() - INTERVAL '5 days'),
+  (39, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Microservices', 'Service mesh, event-driven architecture', NULL, '39', 39, false, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '2 days'),
+  (40, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Database Design', 'Normalization, indexing, query optimization', NULL, '40', 40, false, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '7 days'),
+  (41, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Computer Vision', 'Image recognition, CNNs, OpenCV', NULL, '41', 41, false, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '1 day'),
+  (42, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Natural Language Processing', 'Transformers, embeddings, text classification', NULL, '42', 42, false, false, NOW() - INTERVAL '14 days', NOW() - INTERVAL '1 day'),
+  (43, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Statistics', 'Hypothesis testing, regression, Bayesian methods', NULL, '43', 43, false, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '6 days'),
+  (44, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Physics', 'Classical mechanics and electromagnetism', NULL, '44', 44, false, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '8 days'),
+  (45, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chemistry', 'Organic chemistry and molecular structures', NULL, '45', 45, false, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '10 days'),
+  (46, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Economics', 'Micro and macroeconomics fundamentals', NULL, '46', 46, false, false, NOW() - INTERVAL '30 days', NOW() - INTERVAL '4 days'),
+  (47, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Philosophy', 'Logic, ethics, and epistemology', NULL, '47', 47, false, false, NOW() - INTERVAL '22 days', NOW() - INTERVAL '3 days'),
+  (48, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Music Theory', 'Scales, chords, harmony, and composition', NULL, '48', 48, false, false, NOW() - INTERVAL '16 days', NOW() - INTERVAL '2 days'),
+  (49, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Creative Writing', 'Fiction techniques, character development', NULL, '49', 49, false, false, NOW() - INTERVAL '28 days', NOW() - INTERVAL '5 days'),
+  (50, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Public Speaking', 'Presentation skills and rhetoric', NULL, '50', 50, false, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
+  (51, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'UI/UX Design', 'User research, wireframing, design systems', NULL, '51', 51, false, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '3 days'),
+  (52, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Project Management', 'Agile, Scrum, and team coordination', NULL, '52', 52, false, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '6 days'),
+  (53, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Japanese', 'Hiragana, katakana, kanji, and grammar', NULL, '53', 53, false, false, NOW() - INTERVAL '8 days', NOW() - INTERVAL '1 day');
+
+SELECT setval('topics_id_seq', (SELECT MAX(id) FROM topics));
+
+-- ============================================================================
+-- ADDITIONAL ROOT SOURCES (to fill MyLibraryPage)
+-- ============================================================================
+
+INSERT INTO fsrs_states (id, stability, difficulty, state, step, last_reviewed_at, srs_enabled, inherited_stability, inherited_difficulty, inherited_state, inherited_step, inherited_last_review)
+OVERRIDING SYSTEM VALUE
+VALUES
+  (107, 40.0, 3.0, 'REVIEW', 0, '2026-01-12', true, NULL, NULL, NULL, NULL, NULL),
+  (108, 20.0, 5.0, 'REVIEW', 0, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
+  (109, 55.0, 2.5, 'REVIEW', 0, '2026-01-08', true, NULL, NULL, NULL, NULL, NULL),
+  (110, 35.0, 4.0, 'REVIEW', 0, '2026-01-10', true, NULL, NULL, NULL, NULL, NULL),
+  (111, 30.0, 4.5, 'REVIEW', 0, '2026-01-11', true, NULL, NULL, NULL, NULL, NULL),
+  (112, 18.0, 5.5, 'REVIEW', 0, '2026-01-13', true, NULL, NULL, NULL, NULL, NULL),
+  (113, 25.0, 3.5, 'REVIEW', 0, '2026-01-15', true, NULL, NULL, NULL, NULL, NULL),
+  (114, 10.0, 6.0, 'LEARNING', 2, '2026-01-16', true, NULL, NULL, NULL, NULL, NULL),
+  (115, 8.0, 6.5, 'LEARNING', 1, '2026-01-15', true, NULL, NULL, NULL, NULL, NULL),
+  (116, 6.0, 7.0, 'LEARNING', 2, '2026-01-17', true, NULL, NULL, NULL, NULL, NULL),
+  (117, 45.0, 3.0, 'REVIEW', 0, '2026-01-09', true, NULL, NULL, NULL, NULL, NULL),
+  (118, 12.0, 5.0, 'REVIEW', 0, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
+  (119, 15.0, 4.5, 'REVIEW', 0, '2026-01-12', true, NULL, NULL, NULL, NULL, NULL),
+  (120, 28.0, 3.5, 'REVIEW', 0, '2026-01-10', true, NULL, NULL, NULL, NULL, NULL),
+  (121, 22.0, 4.0, 'REVIEW', 0, '2026-01-13', true, NULL, NULL, NULL, NULL, NULL);
+
+SELECT setval('fsrs_states_id_seq', (SELECT MAX(id) FROM fsrs_states));
+
+INSERT INTO sources (id, user_id, title, notes, parent_id, path, fsrs_state_id, archived, inboxed, inserted_at, updated_at)
+OVERRIDING SYSTEM VALUE
+VALUES
+  (8, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Clean Code', 'A Handbook of Agile Software Craftsmanship by Robert C. Martin', NULL, '8', 107, false, false, NOW() - INTERVAL '75 days', NOW() - INTERVAL '5 days'),
+  (9, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Designing Data-Intensive Applications', 'Martin Kleppmann - distributed systems and data storage', NULL, '9', 108, false, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '3 days'),
+  (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Pragmatic Programmer', 'David Thomas and Andrew Hunt - software craftsmanship', NULL, '10', 109, false, false, NOW() - INTERVAL '85 days', NOW() - INTERVAL '9 days'),
+  (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Structure and Interpretation of Computer Programs', 'Abelson and Sussman - CS fundamentals', NULL, '11', 110, false, false, NOW() - INTERVAL '60 days', NOW() - INTERVAL '7 days'),
+  (12, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Introduction to Algorithms (CLRS)', 'Cormen et al. - comprehensive algorithms reference', NULL, '12', 111, false, false, NOW() - INTERVAL '70 days', NOW() - INTERVAL '6 days'),
+  (13, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Operating Systems: Three Easy Pieces', 'Remzi Arpaci-Dusseau - virtualization, concurrency, persistence', NULL, '13', 112, false, false, NOW() - INTERVAL '45 days', NOW() - INTERVAL '4 days'),
+  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Computer Networking: A Top-Down Approach', 'Kurose and Ross - networking fundamentals', NULL, '14', 113, false, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '2 days'),
+  (15, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Deep Learning', 'Goodfellow, Bengio, Courville - neural networks and deep learning', NULL, '15', 114, false, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
+  (16, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Rust Programming Language', 'Official Rust book - ownership and systems programming', NULL, '16', 115, false, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '2 days'),
+  (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Go by Example', 'Hands-on introduction to Go with annotated examples', NULL, '17', 116, false, false, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 day'),
+  (18, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Head First Design Patterns', 'Freeman and Robson - design patterns with visual explanations', NULL, '18', 117, false, false, NOW() - INTERVAL '65 days', NOW() - INTERVAL '8 days'),
+  (19, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Art of Public Speaking', 'Stephen Lucas - presentation and communication skills', NULL, '19', 118, false, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '3 days'),
+  (20, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Music Theory for Beginners', 'Leonard Vogler - fundamentals of music theory', NULL, '20', 119, false, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '5 days'),
+  (21, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'MDN Web Docs', 'Mozilla Developer Network - web platform reference', NULL, '21', 120, false, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '7 days'),
+  (22, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Kubernetes Documentation', 'Official Kubernetes docs - container orchestration', NULL, '22', 121, false, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '2 days');
+
+SELECT setval('sources_id_seq', (SELECT MAX(id) FROM sources));
+
+-- Link new sources to relevant topics
+INSERT INTO source_topics (source_id, topic_id) VALUES
+  (8, 38),   -- Clean Code covers Design Patterns
+  (9, 29),   -- DDIA covers System Design
+  (9, 40),   -- DDIA covers Database Design
+  (10, 38),  -- Pragmatic Programmer covers Design Patterns
+  (11, 27),  -- SICP covers Data Structures
+  (11, 28),  -- SICP covers Algorithms
+  (12, 28),  -- CLRS covers Algorithms
+  (12, 27),  -- CLRS covers Data Structures
+  (13, 31),  -- OSTEP covers Operating Systems
+  (14, 30),  -- Networking book covers Networking
+  (15, 24),  -- Deep Learning covers Machine Learning
+  (15, 41),  -- Deep Learning covers Computer Vision
+  (15, 42),  -- Deep Learning covers NLP
+  (16, 34),  -- Rust book covers Rust
+  (17, 35),  -- Go by Example covers Go
+  (18, 38),  -- Head First covers Design Patterns
+  (19, 50),  -- Art of Public Speaking covers Public Speaking
+  (20, 48),  -- Music Theory book covers Music Theory
+  (21, 7),   -- MDN covers TypeScript (web docs)
+  (22, 25);  -- K8s docs covers Docker (container tech)
+
+-- ============================================================================
+-- PRACTICES (to fill MyLibraryPage)
+-- ============================================================================
+
+INSERT INTO fsrs_states (id, stability, difficulty, state, step, last_reviewed_at, srs_enabled, inherited_stability, inherited_difficulty, inherited_state, inherited_step, inherited_last_review)
+OVERRIDING SYSTEM VALUE
+VALUES
+  (200, 30.0, 3.5, 'REVIEW', 0, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
+  (201, 15.0, 5.0, 'REVIEW', 0, '2026-01-15', true, NULL, NULL, NULL, NULL, NULL),
+  (202, 25.0, 4.0, 'REVIEW', 0, '2026-01-12', true, NULL, NULL, NULL, NULL, NULL),
+  (203, 20.0, 4.5, 'REVIEW', 0, '2026-01-13', true, NULL, NULL, NULL, NULL, NULL),
+  (204, 10.0, 5.5, 'LEARNING', 1, '2026-01-16', true, NULL, NULL, NULL, NULL, NULL),
+  (205, 35.0, 3.0, 'REVIEW', 0, '2026-01-11', true, NULL, NULL, NULL, NULL, NULL),
+  (206, 8.0, 6.0, 'LEARNING', 2, '2026-01-17', true, NULL, NULL, NULL, NULL, NULL),
+  (207, 40.0, 2.5, 'REVIEW', 0, '2026-01-10', true, NULL, NULL, NULL, NULL, NULL),
+  (208, 12.0, 5.0, 'REVIEW', 0, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
+  (209, 5.0, 6.5, 'LEARNING', 2, '2026-01-16', true, NULL, NULL, NULL, NULL, NULL);
+
+SELECT setval('fsrs_states_id_seq', (SELECT MAX(id) FROM fsrs_states));
+
+INSERT INTO practices (id, user_id, prompt, answer, fsrs_state_id, archived, inboxed, inserted_at, updated_at)
+OVERRIDING SYSTEM VALUE
+VALUES
+  (1, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is the time complexity of binary search?', 'O(log n) - halves the search space each iteration', 200, false, false, NOW() - INTERVAL '30 days', NOW() - INTERVAL '3 days'),
+  (2, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Explain the difference between a stack and a queue', 'Stack: LIFO (Last In First Out). Queue: FIFO (First In First Out).', 201, false, false, NOW() - INTERVAL '28 days', NOW() - INTERVAL '2 days'),
+  (3, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What are the SOLID principles?', 'Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion', 202, false, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '5 days'),
+  (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Describe the observer pattern', 'A subject maintains a list of dependents (observers) and notifies them of state changes automatically.', 203, false, false, NOW() - INTERVAL '22 days', NOW() - INTERVAL '4 days'),
+  (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is a closure in JavaScript?', 'A function that retains access to its lexical scope even when executed outside that scope.', 204, false, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '1 day'),
+  (6, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Explain TCP vs UDP', 'TCP: reliable, ordered, connection-oriented. UDP: unreliable, unordered, connectionless, lower latency.', 205, false, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '6 days'),
+  (7, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is the CAP theorem?', 'A distributed system can only guarantee two of three: Consistency, Availability, Partition tolerance.', 206, false, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '1 day'),
+  (8, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'How does Git use a directed acyclic graph?', 'Each commit points to its parent(s), forming a DAG. Branches are pointers to commits, merges create nodes with multiple parents.', 207, false, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '7 days'),
+  (9, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is dependency injection?', 'A design pattern where dependencies are provided to a class rather than created internally, enabling loose coupling and testability.', 208, false, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '3 days'),
+  (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Explain the difference between a process and a thread', 'Process: independent execution unit with own memory space. Thread: lightweight unit within a process sharing its memory space.', 209, false, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '2 days');
+
+SELECT setval('practices_id_seq', (SELECT MAX(id) FROM practices));
+
+-- Link practices to topics
+INSERT INTO practice_topics (practice_id, topic_id) VALUES
+  (1, 28),   -- Binary search → Algorithms
+  (2, 27),   -- Stack vs Queue → Data Structures
+  (3, 38),   -- SOLID → Design Patterns
+  (4, 38),   -- Observer → Design Patterns
+  (5, 7),    -- Closures → TypeScript
+  (6, 30),   -- TCP vs UDP → Networking
+  (7, 29),   -- CAP theorem → System Design
+  (8, 11),   -- Git DAG → Git
+  (9, 38),   -- DI → Design Patterns
+  (10, 31);  -- Process vs Thread → Operating Systems
