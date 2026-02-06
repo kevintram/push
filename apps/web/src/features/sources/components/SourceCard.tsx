@@ -36,6 +36,7 @@ export function SourceCard({
 
 	const config = useMemo(
 		(): LearnableCardConfig<Source> => ({
+			entityType: 'source',
 			getPrimaryText: s => s.title,
 			getSecondaryText: s => s.notes,
 			showTypeBadge: true,

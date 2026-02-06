@@ -30,6 +30,8 @@ import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 const MIN_HEIGHT = 96
 
 export interface LearnableCardConfig<T extends LearnableBase> {
+	/** The entity type for review creation */
+	entityType: 'topic' | 'source' | 'practice'
 	/** Get the primary text to display (name/title) */
 	getPrimaryText: (entity: T) => string
 	/** Get the secondary text to display (notes/answer) */

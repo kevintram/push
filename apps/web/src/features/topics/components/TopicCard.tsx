@@ -35,6 +35,7 @@ export function TopicCard({
 
 	const config = useMemo(
 		(): LearnableCardConfig<Topic> => ({
+			entityType: 'topic',
 			getPrimaryText: t => t.name,
 			getSecondaryText: t => t.notes,
 			showTypeBadge: false,
