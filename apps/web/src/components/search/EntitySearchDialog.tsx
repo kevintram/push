@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { estimateEntitySize } from '~/components/EntityCard'
 import { MIN_HEIGHT } from '~/components/search/constants'
 import { SearchInput } from '~/components/search/SearchInput'
 import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
@@ -44,6 +45,10 @@ type EntitySearchDialogProps = {
 	title?: string
 }
 
+function getId(item: { id: number }) {
+	return item.id
+}
+
 const ENTITY_LABELS: Record<EntityType, string> = {
 	topic: 'Topics',
 	source: 'Sources',
@@ -64,6 +69,8 @@ export function EntitySearchDialog({
 	title = 'Search'
 }: EntitySearchDialogProps) {
 	const inputRef = useRef<HTMLInputElement>(null)
+	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
 	const [query, setQuery] = useState('')
 	const initialType: EntityType =
 		defaultType && entityTypes.includes(defaultType)
@@ -208,29 +215,27 @@ export function EntitySearchDialog({
 		[handleSelect, debouncedQuery]
 	)
 
-	const estimateTopicSize = useCallback((topic: Topic) => {
-		const nameLines = Math.ceil((topic.name?.length || 8) / 40)
-		const notesLines = topic.notes
-			? Math.min(2, Math.ceil(topic.notes.length / 40))
-			: 0
-		return Math.max(MIN_HEIGHT, 80 + (nameLines - 1) * 20 + notesLines * 20)
-	}, [])
+	const estimateTopicSize = useCallback(
+		(topic: Topic, index: number, laneWidth: number) =>
+			estimateEntitySize({ type: 'topic', item: topic }, index, laneWidth),
+		[]
+	)
 
-	const estimateSourceSize = useCallback((source: Source) => {
-		const titleLines = Math.ceil((source.title?.length || 8) / 40)
-		const notesLines = source.notes
-			? Math.min(2, Math.ceil(source.notes.length / 40))
-			: 0
-		return Math.max(MIN_HEIGHT, 80 + (titleLines - 1) * 20 + notesLines * 20)
-	}, [])
+	const estimateSourceSize = useCallback(
+		(source: Source, index: number, laneWidth: number) =>
+			estimateEntitySize({ type: 'source', item: source }, index, laneWidth),
+		[]
+	)
 
-	const estimatePracticeSize = useCallback((practice: Practice) => {
-		const promptLines = Math.ceil((practice.prompt?.length || 8) / 40)
-		const answerLines = practice.answer
-			? Math.min(2, Math.ceil(practice.answer.length / 40))
-			: 0
-		return Math.max(MIN_HEIGHT, 80 + (promptLines - 1) * 20 + answerLines * 20)
-	}, [])
+	const estimatePracticeSize = useCallback(
+		(practice: Practice, index: number, laneWidth: number) =>
+			estimateEntitySize(
+				{ type: 'practice', item: practice },
+				index,
+				laneWidth
+			),
+		[]
+	)
 
 	const resultsByType: Record<
 		EntityType,
@@ -287,12 +292,16 @@ export function EntitySearchDialog({
 					</div>
 				</DialogHeader>
 
-				<div className='scrollbar-track-transparent flex-1 overflow-y-auto p-3 pt-0 md:p-4'>
+				<div
+					className='scrollbar-track-transparent flex-1 overflow-y-auto p-3 pt-0 md:p-4'
+					ref={scrollContainerRef}
+				>
 					{searchType === 'topic' && (
 						<SearchResultsContainer
 							animate={false}
 							estimateItemSize={estimateTopicSize}
-							getItemKey={(topic: Topic) => topic.id}
+							getItemKey={getId}
+							getScrollElement={getScrollElement}
 							hasQuery={Boolean(debouncedQuery.trim())}
 							isLoading={isLoading}
 							renderItem={renderTopicItem}
@@ -304,7 +313,8 @@ export function EntitySearchDialog({
 						<SearchResultsContainer
 							animate={false}
 							estimateItemSize={estimateSourceSize}
-							getItemKey={(source: Source) => source.id}
+							getItemKey={getId}
+							getScrollElement={getScrollElement}
 							hasQuery={Boolean(debouncedQuery.trim())}
 							isLoading={isLoading}
 							renderItem={renderSourceItem}
@@ -316,7 +326,8 @@ export function EntitySearchDialog({
 						<SearchResultsContainer
 							animate={false}
 							estimateItemSize={estimatePracticeSize}
-							getItemKey={(practice: Practice) => practice.id}
+							getItemKey={getId}
+							getScrollElement={getScrollElement}
 							hasQuery={Boolean(debouncedQuery.trim())}
 							isLoading={isLoading}
 							renderItem={renderPracticeItem}

@@ -13,11 +13,13 @@ interface SearchResultsContainerProps<T> {
 	/** The search results */
 	results: Array<T>
 	/** Function to render each result item */
-	renderItem: (item: T) => ReactNode
+	renderItem: (item: T, index: number, laneWidth: number) => ReactNode
 	/** Function to estimate the height of each item */
-	estimateItemSize: (item: T) => number
+	estimateItemSize: (item: T, index: number, laneWidth: number) => number
 	/** Function to get a unique key for each item */
 	getItemKey: (item: T) => number | string
+	/** Scroll container element getter for virtualization */
+	getScrollElement?: () => HTMLDivElement | null
 	/** Gap between items in the masonry layout */
 	gap?: number
 	/** Minimum width of each card */
@@ -40,7 +42,8 @@ export function SearchResultsContainer<T>({
 	renderItem,
 	estimateItemSize,
 	getItemKey,
-	gap = 12,
+	getScrollElement,
+	gap = 16,
 	minItemWidth = MIN_CARD_WIDTH,
 	animate = true,
 	emptyMessage = 'No results found',
@@ -98,6 +101,7 @@ export function SearchResultsContainer<T>({
 					estimateItemSize={estimateItemSize}
 					gap={gap}
 					getItemKey={getItemKey}
+					getScrollElement={getScrollElement}
 					items={results}
 					minItemWidth={minItemWidth}
 					renderItem={renderItem}

@@ -47,6 +47,8 @@ export function SearchDialog({
 }: SearchDialogProps) {
 	const navigateToEntity = useEntityNavigation()
 	const inputRef = useRef<HTMLInputElement>(null)
+	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
 	const [selectedIndex, setSelectedIndex] = useState(0)
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 	const [gap, setGap] = useState(12)
@@ -196,12 +198,16 @@ export function SearchDialog({
 					/>
 				</DialogHeader>
 
-				<div className='scrollbar-track-transparent max-h-192 min-h-80 overflow-y-auto p-2 pt-0 sm:p-4'>
+				<div
+					className='scrollbar-track-transparent max-h-192 min-h-80 overflow-y-auto p-2 pt-0 sm:p-4'
+					ref={scrollContainerRef}
+				>
 					<SearchResultsContainer
 						animate={false}
 						estimateItemSize={estimateEntitySize}
 						gap={gap}
 						getItemKey={getEntityKey}
+						getScrollElement={getScrollElement}
 						hasQuery={hasQuery}
 						isLoading={isLoading}
 						renderItem={renderItem}
