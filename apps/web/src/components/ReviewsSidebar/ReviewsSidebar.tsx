@@ -167,7 +167,7 @@ export function ReviewsSidebar<T extends EntityWithId>({
 									<TooltipTrigger asChild={true}>
 										<Button
 											disabled={isCreatingReview}
-											size='sm'
+											size='xs'
 											variant='secondary'
 										>
 											{isCreatingReview ? (
