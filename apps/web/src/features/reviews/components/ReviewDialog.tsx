@@ -1,7 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { Anvil, CalendarIcon, MoreHorizontal, X } from 'lucide-react'
+import { Anvil, CalendarIcon, Link, MoreHorizontal, X } from 'lucide-react'
+import type { MouseEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
+import type { EntityItem } from '~/components/EntityCard'
 import { Button } from '~/components/ui/Button'
 import { Dialog, DialogContent } from '~/components/ui/Dialog'
 import {
@@ -10,14 +12,9 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import {
-	Sidebar,
-	SidebarHeader,
-	SidebarHolder,
-	SidebarProvider
-} from '~/components/ui/Sidebar'
 import { Skeleton } from '~/components/ui/Skeleton'
 import { Textarea } from '~/components/ui/Textarea'
+import { SearchDialog } from '~/features/search/components/SearchDialog'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
@@ -25,6 +22,7 @@ import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReview } from '../api/deleteReview'
 import { useReview } from '../api/getReviews'
 import { useUpdateReview } from '../api/updateReview'
+import type { UpdateReviewInput } from '../types/api.types'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import {
 	ReviewRatingCheckbox,
@@ -48,6 +46,8 @@ export function ReviewDialog({
 	const deleteReviewMutation = useDeleteReview()
 
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
+	const [isSearchOpen, setIsSearchOpen] = useState(false)
+	const [searchQuery, setSearchQuery] = useState('')
 
 	// Computed date values
 	const selectedDate = (() => {
@@ -76,7 +76,7 @@ export function ReviewDialog({
 	const updateDescriptionMutation = useCallback(
 		(newDescription: string) => {
 			if (review?.id) {
-				updateReviewMutation.mutateAsync({
+				updateReviewMutation.mutate({
 					id: review.id,
 					description: newDescription
 				})
@@ -94,7 +94,7 @@ export function ReviewDialog({
 	const updateNotesMutation = useCallback(
 		(newNotes: string) => {
 			if (review?.id) {
-				updateReviewMutation.mutateAsync({
+				updateReviewMutation.mutate({
 					id: review.id,
 					notes: newNotes
 				})
@@ -114,6 +114,14 @@ export function ReviewDialog({
 		return review.rating ?? 'good'
 	}, [review?.completed_at, review?.rating])
 
+	const hasEntity = useMemo(
+		() =>
+			review?.topic_id != null ||
+			review?.source_id != null ||
+			review?.practice_id != null,
+		[review?.topic_id, review?.source_id, review?.practice_id]
+	)
+
 	const stabilityChangeColorClass = useMemo(() => {
 		if (review?.stability_after == null || review?.stability_before == null) {
 			return ''
@@ -126,6 +134,14 @@ export function ReviewDialog({
 		}
 		return 'text-muted-foreground'
 	}, [review?.stability_after, review?.stability_before])
+	const hasStability =
+		review?.stability_after != null && review?.stability_before != null
+	const stabilityAfterRounded = hasStability
+		? Math.round(review.stability_after ?? 0)
+		: 0
+	const stabilityDeltaRounded = hasStability
+		? Math.round((review.stability_after ?? 0) - (review.stability_before ?? 0))
+		: 0
 
 	// Helper to get the entity type label for display
 	const getEntityTypeLabel = useCallback((): string => {
@@ -147,14 +163,14 @@ export function ReviewDialog({
 		(status: ReviewRatingState) => {
 			if (!review?.id) return
 			if (status === 'uncompleted') {
-				updateReviewMutation.mutateAsync({
+				updateReviewMutation.mutate({
 					id: review.id,
 					rating: null,
 					completed_at: null
 				})
 				return
 			}
-			updateReviewMutation.mutateAsync({
+			updateReviewMutation.mutate({
 				id: review.id,
 				rating: status,
 				completed_at: review.completed_at ?? dayjs().format('YYYY-MM-DD')
@@ -170,12 +186,12 @@ export function ReviewDialog({
 					? dayjs(newDate).format('YYYY-MM-DD')
 					: null
 				if (review.completed_at) {
-					updateReviewMutation.mutateAsync({
+					updateReviewMutation.mutate({
 						id: review.id,
 						completed_at: newDateString
 					})
 				} else {
-					updateReviewMutation.mutateAsync({
+					updateReviewMutation.mutate({
 						id: review.id,
 						scheduled_at: newDateString
 					})
@@ -196,6 +212,11 @@ export function ReviewDialog({
 	const navigate = useNavigate()
 
 	const handleEntityClick = useCallback(() => {
+		if (!review?.id) return
+		if (!hasEntity) {
+			setIsSearchOpen(true)
+			return
+		}
 		if (review?.topic_id) {
 			navigate({
 				to: '/topics/$topicId',
@@ -212,7 +233,71 @@ export function ReviewDialog({
 				params: { practiceId: review.practice_id.toString() }
 			})
 		}
-	}, [navigate, review?.topic_id, review?.source_id, review?.practice_id])
+	}, [
+		hasEntity,
+		navigate,
+		review?.id,
+		review?.topic_id,
+		review?.source_id,
+		review?.practice_id
+	])
+
+	const handleSearchOpenChange = useCallback((nextOpen: boolean) => {
+		setIsSearchOpen(nextOpen)
+		if (!nextOpen) {
+			setSearchQuery('')
+		}
+	}, [])
+
+	const handleDialogOpenChange = useCallback(
+		(nextOpen: boolean) => {
+			if (!nextOpen) {
+				setIsSearchOpen(false)
+				setSearchQuery('')
+			}
+			onOpenChange(nextOpen)
+		},
+		[onOpenChange]
+	)
+
+	const handleEntityRemove = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			event.stopPropagation()
+			if (!review?.id) return
+			const payload: UpdateReviewInput = { id: review.id }
+			if (review.topic_id != null) {
+				payload.topic_id = null
+			} else if (review.source_id != null) {
+				payload.source_id = null
+			} else if (review.practice_id != null) {
+				payload.practice_id = null
+			}
+			updateReviewMutation.mutate(payload)
+		},
+		[
+			review?.id,
+			review?.topic_id,
+			review?.source_id,
+			review?.practice_id,
+			updateReviewMutation
+		]
+	)
+
+	const handleEntitySelect = useCallback(
+		(entity: EntityItem) => {
+			if (!review?.id) return
+			const payload: UpdateReviewInput = { id: review.id }
+			if (entity.type === 'topic') {
+				payload.topic_id = entity.item.id
+			} else if (entity.type === 'source') {
+				payload.source_id = entity.item.id
+			} else {
+				payload.practice_id = entity.item.id
+			}
+			updateReviewMutation.mutate(payload)
+		},
+		[review?.id, updateReviewMutation]
+	)
 
 	const headerActions = useMemo(
 		() => (
@@ -230,48 +315,28 @@ export function ReviewDialog({
 
 	if (isLoading) {
 		return (
-			<Dialog onOpenChange={onOpenChange} open={open}>
+			<Dialog onOpenChange={handleDialogOpenChange} open={open}>
 				<DialogContent
-					className='h-full w-full p-0 md:max-h-[600px] md:max-w-[700px] lg:max-w-[900px]'
+					className='h-full w-full p-0 md:max-h-[400px] md:max-w-[540px] lg:max-w-[680px]'
 					showCloseButton={false}
 				>
-					<SidebarProvider
-						cookieName='sidebar:review-detail'
-						defaultOpen={true}
-						enableKeyboardShortcut={false}
-					>
-						<div className='flex h-full min-h-0 flex-col'>
-							<div className='border-b px-2 py-1'>
-								<Skeleton className='h-6 w-full' />
-							</div>
-							<SidebarHolder className='flex min-h-0 flex-1'>
-								<div className='flex flex-col gap-4 px-6 pb-6'>
-									<Skeleton className='h-10 w-full' />
-									<Skeleton className='h-32 w-full' />
-								</div>
-								<Sidebar className='border-l' side='right'>
-									<SidebarHeader className='flex flex-col gap-3 p-4'>
-										<div className='flex min-h-8 items-center gap-2'>
-											<Skeleton className='h-4 w-16' />
-											<Skeleton className='h-8 flex-1' />
-										</div>
-										<div className='flex min-h-8 items-center gap-2'>
-											<Skeleton className='h-4 w-16' />
-											<Skeleton className='h-8 flex-1' />
-										</div>
-										<div className='flex min-h-8 items-center gap-2'>
-											<Skeleton className='h-4 w-16' />
-											<Skeleton className='h-8 flex-1' />
-										</div>
-										<div className='flex min-h-8 items-center gap-2'>
-											<Skeleton className='h-4 w-16' />
-											<Skeleton className='h-8 flex-1' />
-										</div>
-									</SidebarHeader>
-								</Sidebar>
-							</SidebarHolder>
+					<div className='flex h-full min-h-0 flex-col'>
+						<div className='border-b px-2 py-1'>
+							<Skeleton className='h-6 w-full' />
 						</div>
-					</SidebarProvider>
+						<div className='flex flex-1 flex-col gap-4 px-4 py-4'>
+							<div className='grid grid-cols-[auto_1fr_auto] items-center gap-x-2'>
+								<Skeleton className='h-6 w-10' />
+								<Skeleton className='h-6 w-full' />
+								<Skeleton className='h-6 w-20' />
+								<Skeleton className='col-span-2 col-start-2 h-12 w-full' />
+							</div>
+							<div className='flex items-center gap-2'>
+								<Skeleton className='h-7 w-32' />
+								<Skeleton className='h-7 w-40' />
+							</div>
+						</div>
+					</div>
 				</DialogContent>
 			</Dialog>
 		)
@@ -282,15 +347,11 @@ export function ReviewDialog({
 	}
 
 	return (
-		<Dialog onOpenChange={onOpenChange} open={open}>
-			<DialogContent
-				className='h-full w-full p-0 md:max-h-[600px] md:max-w-[700px] lg:max-w-[900px]'
-				showCloseButton={false}
-			>
-				<SidebarProvider
-					cookieName='sidebar:review-detail'
-					defaultOpen={true}
-					enableKeyboardShortcut={false}
+		<>
+			<Dialog onOpenChange={handleDialogOpenChange} open={open}>
+				<DialogContent
+					className='h-full w-full p-0 md:max-h-[400px] md:max-w-[540px] lg:max-w-[680px]'
+					showCloseButton={false}
 				>
 					<div className='flex h-full min-h-0 flex-col'>
 						<div className='flex items-center justify-between border-b px-2 py-1'>
@@ -320,112 +381,103 @@ export function ReviewDialog({
 							</div>
 						</div>
 
-						<SidebarHolder className='flex min-h-0 flex-1'>
-							<div className='mt-4 flex h-full min-h-0 w-full min-w-0 gap-4 overflow-hidden px-4'>
+						<div className='flex min-h-0 flex-1 flex-col gap-4 px-4 py-4'>
+							<div className='grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-2'>
 								<ReviewRatingCheckbox
-									className={`translate-y-0.5 ${isOverdueValue ? 'border-red-600 dark:border-red-700 dark:bg-red-700' : ''}`}
+									className={
+										isOverdueValue
+											? 'border-red-600 dark:border-red-700 dark:bg-red-700'
+											: ''
+									}
 									disabled={isLoading || updateReviewMutation.isPending}
 									onChange={handleStatusChange}
 									value={reviewStatus}
 								/>
-								<div className='flex min-w-0 flex-1 flex-col'>
-									<Textarea
-										className='!bg-transparent m-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
-										onChange={onDescriptionChange}
-										placeholder='Description'
-										spellCheck={false}
-										value={description}
-									/>
-									<Textarea
-										className='!bg-transparent m-0 resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-										onChange={onNotesChange}
-										placeholder='Notes'
-										spellCheck={false}
-										value={notes}
-									/>
-								</div>
-							</div>
-							<Sidebar className='border-l' side='right'>
-								<SidebarHeader className='flex flex-col gap-3 p-4'>
-									{/* TODO: make the layout of these more durable, it's stinky rn */}
-									{/* Date Picker - MOVED FROM MAIN CONTENT */}
-									<div className='flex min-h-8 items-center gap-2'>
-										<span className='w-16 flex-shrink-0 text-muted-foreground text-xs'>
-											Date
-										</span>
-										<DatePickerDropdown
-											isOpen={isDatePopoverOpen}
-											onDateChange={handleDateChange}
-											onOpenChange={setIsDatePopoverOpen}
-											selectedDate={selectedDate}
-											trigger={
-												<Button
-													className={cn(
-														'min-w-0 flex-1 justify-start px-2',
-														isOverdueValue && 'text-red-600 dark:text-red-400',
-														relativeDate.text === 'Today' &&
-															'text-blue-600 dark:text-blue-400'
-													)}
-													size='sm'
-													variant='ghost'
-												>
-													<CalendarIcon className='h-4 w-4 flex-shrink-0' />
-													<span className='truncate'>{relativeDate.text}</span>
-												</Button>
-											}
-										/>
-									</div>
-
-									{/* Entity Link */}
-									<div className='flex min-h-8 items-center gap-2'>
-										<span className='w-16 flex-shrink-0 text-muted-foreground text-xs'>
-											{getEntityTypeLabel()}
-										</span>
+								<Textarea
+									className='!bg-transparent m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
+									onChange={onDescriptionChange}
+									placeholder='Description'
+									spellCheck={false}
+									value={description}
+								/>
+								<DatePickerDropdown
+									isOpen={isDatePopoverOpen}
+									onDateChange={handleDateChange}
+									onOpenChange={setIsDatePopoverOpen}
+									selectedDate={selectedDate}
+									trigger={
 										<Button
-											className='min-w-0 flex-1 justify-start px-2'
-											onClick={handleEntityClick}
+											className={cn(
+												'shrink-0 text-xs',
+												isOverdueValue && 'text-red-600 dark:text-red-400',
+												relativeDate.text === 'Today' &&
+													'text-blue-600 dark:text-blue-400'
+											)}
 											size='sm'
 											variant='ghost'
 										>
-											<span className='truncate'>{getEntityName()}</span>
+											<CalendarIcon className='h-3 w-3' />
+											{relativeDate.text}
 										</Button>
-									</div>
+									}
+								/>
+								<Textarea
+									className='!bg-transparent col-span-2 col-start-2 m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									onChange={onNotesChange}
+									placeholder='Notes'
+									spellCheck={false}
+									value={notes}
+								/>
+							</div>
 
-									{/* Stability */}
-									<div className='flex min-h-8 items-center gap-2'>
-										<span className='w-16 flex-shrink-0 text-muted-foreground text-xs'>
-											Stability
+							<div className='mt-auto flex flex-wrap items-center gap-2'>
+								<div className='inline-flex h-7 items-center rounded-md bg-secondary text-secondary-foreground'>
+									<button
+										className='flex items-center gap-1.5 px-2 text-sm'
+										disabled={updateReviewMutation.isPending}
+										onClick={handleEntityClick}
+										title={hasEntity ? getEntityTypeLabel() : 'Entity'}
+										type='button'
+									>
+										<Link className='h-3.5 w-3.5' />
+										<span className={cn(!hasEntity && 'text-muted-foreground')}>
+											{hasEntity ? getEntityName() : 'Entity'}
 										</span>
-										<div className='flex min-w-0 flex-1 items-center gap-2 px-2 text-sm'>
-											<Anvil className='h-4 w-4 flex-shrink-0' />
-											<span className='truncate'>
-												{review.stability_after != null
-													? `${Math.round(review.stability_after)}d`
-													: 'Not calculated'}
-											</span>
-											{review.stability_after != null &&
-												review.stability_before != null && (
-													<span
-														className={`${stabilityChangeColorClass} flex-shrink-0`}
-													>
-														(
-														{review.stability_after >= review.stability_before
-															? '+'
-															: ''}
-														{Math.round(
-															review.stability_after - review.stability_before
-														)}
-														)
-													</span>
-												)}
-										</div>
-									</div>
-								</SidebarHeader>
-							</Sidebar>
-						</SidebarHolder>
+									</button>
+									{hasEntity && (
+										<button
+											aria-label='Remove entity'
+											className='flex h-full items-center px-1.5 text-muted-foreground hover:text-foreground'
+											disabled={updateReviewMutation.isPending}
+											onClick={handleEntityRemove}
+											type='button'
+										>
+											<X className='h-3 w-3' />
+										</button>
+									)}
+								</div>
+								{hasStability && (
+									<Button className='h-7 px-2' size='sm' variant='secondary'>
+										<Anvil className='h-3.5 w-3.5' />
+										<span>Durability {stabilityAfterRounded}d</span>
+										<span className={stabilityChangeColorClass}>
+											({stabilityDeltaRounded >= 0 ? '+' : ''}
+											{stabilityDeltaRounded})
+										</span>
+									</Button>
+								)}
+							</div>
+						</div>
 					</div>
-				</SidebarProvider>
-			</DialogContent>
-		</Dialog>
+				</DialogContent>
+			</Dialog>
+			<SearchDialog
+				onOpenChange={handleSearchOpenChange}
+				onSelectEntity={handleEntitySelect}
+				open={isSearchOpen}
+				query={searchQuery}
+				setQuery={setSearchQuery}
+			/>
+		</>
 	)
 }

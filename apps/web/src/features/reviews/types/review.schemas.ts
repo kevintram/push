@@ -6,7 +6,7 @@ import type { Review, ReviewListItem } from './review.types'
 
 export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	id: v.number(),
-	// Polymorphic entity references (exactly one will be set)
+	// Polymorphic entity references (at most one will be set)
 	topic_id: v.nullable(v.number()),
 	source_id: v.nullable(v.number()),
 	practice_id: v.nullable(v.number()),
@@ -42,7 +42,7 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 
 export const ReviewListItemSchema: v.GenericSchema<ReviewListItem> = v.object({
 	id: v.number(),
-	// Polymorphic entity references (exactly one will be set)
+	// Polymorphic entity references (at most one will be set)
 	topic_id: v.nullable(v.number()),
 	source_id: v.nullable(v.number()),
 	practice_id: v.nullable(v.number()),
