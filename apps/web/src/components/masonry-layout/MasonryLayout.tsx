@@ -12,6 +12,8 @@ import {
 import { usePageScrollElement } from '~/app/layouts/PageLayout'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 
+const LANE_WIDTH_REMEASURE_THRESHOLD_PX = 5
+
 interface MasonryLayoutProps<T> {
 	items: Array<T>
 	renderItem: (item: T, index: number, laneWidth: number) => ReactNode
@@ -45,7 +47,10 @@ function MasonryLayoutInner<T>({
 	itemsRef.current = items
 	const lastEstimateRef = useRef(96)
 	const warnedMissingKeyRef = useRef(false)
-	const prevLayoutRef = useRef<{ numLanes: number } | null>(null)
+	const prevLayoutRef = useRef<{ numLanes: number; laneWidth: number } | null>(
+		null
+	)
+	const laneWidthRemeasureRafRef = useRef<number | null>(null)
 
 	const numLanes = useMemo(
 		() =>
@@ -111,22 +116,94 @@ function MasonryLayoutInner<T>({
 		getItemKey: virtualizerGetItemKey
 	})
 
+	const remeasureMountedItems = useCallback(() => {
+		if (laneWidthRemeasureRafRef.current != null) {
+			cancelAnimationFrame(laneWidthRemeasureRafRef.current)
+		}
+		laneWidthRemeasureRafRef.current = requestAnimationFrame(() => {
+			laneWidthRemeasureRafRef.current = null
+			const parentEl = parentRef.current
+			if (!parentEl) return
+			const mountedItems =
+				parentEl.querySelectorAll<HTMLElement>('[data-index]')
+			for (const itemEl of mountedItems) {
+				virtualizer.measureElement(itemEl)
+			}
+		})
+	}, [virtualizer])
+
+	const resetMeasurements = useCallback(() => {
+		virtualizer.measure()
+		remeasureMountedItems()
+	}, [virtualizer, remeasureMountedItems])
+
 	useLayoutEffect(() => {
 		if (!hasMeasuredWidth) return
 
 		if (prevLayoutRef.current == null) {
-			prevLayoutRef.current = { numLanes }
+			prevLayoutRef.current = { numLanes, laneWidth }
 			return
 		}
 
-		// Only reset cached sizes when lane count changes.
-		// Width jitter with stable lane count (e.g. scrollbar appearance) is
-		// handled by ResizeObserver and should not clear measurements.
-		if (prevLayoutRef.current.numLanes !== numLanes) {
-			prevLayoutRef.current = { numLanes }
-			virtualizer.measure()
+		const laneCountChanged = prevLayoutRef.current.numLanes !== numLanes
+		const laneWidthDelta = Math.abs(prevLayoutRef.current.laneWidth - laneWidth)
+
+		prevLayoutRef.current = { numLanes, laneWidth }
+
+		// Lane count changes require a full reset so items are redistributed across
+		// lanes right away.
+		if (laneCountChanged) {
+			resetMeasurements()
+			return
 		}
-	}, [virtualizer, numLanes, hasMeasuredWidth])
+
+		// For width-only changes (e.g. sidebar animation with stable lane count),
+		// keep cached measurements and just remeasure mounted items per frame.
+		// This avoids "estimate flash" while still updating card heights.
+		if (laneWidthDelta >= LANE_WIDTH_REMEASURE_THRESHOLD_PX) {
+			remeasureMountedItems()
+		}
+	}, [
+		resetMeasurements,
+		remeasureMountedItems,
+		numLanes,
+		laneWidth,
+		hasMeasuredWidth
+	])
+
+	useEffect(() => {
+		return () => {
+			if (laneWidthRemeasureRafRef.current != null) {
+				cancelAnimationFrame(laneWidthRemeasureRafRef.current)
+			}
+		}
+	}, [])
+
+	useEffect(() => {
+		const handleTransitionEnd = (event: TransitionEvent) => {
+			const target = event.target
+			if (!(target instanceof HTMLElement)) return
+			if (
+				event.propertyName !== 'width' &&
+				event.propertyName !== 'left' &&
+				event.propertyName !== 'right'
+			) {
+				return
+			}
+
+			const isSidebarTransitionTarget =
+				target.matches('[data-slot="sidebar-gap"]') ||
+				target.matches('[data-slot="sidebar-container"]')
+
+			if (!isSidebarTransitionTarget) return
+			resetMeasurements()
+		}
+
+		document.addEventListener('transitionend', handleTransitionEnd, true)
+		return () => {
+			document.removeEventListener('transitionend', handleTransitionEnd, true)
+		}
+	}, [resetMeasurements])
 
 	// Compute scrollMargin via bounding rects (layout-independent)
 	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally retrigger this setup when list shape changes can shift vertical offsets.
