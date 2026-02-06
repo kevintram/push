@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { createContext, useCallback, useContext, useRef } from 'react'
 import { cn } from '~/lib/utils'
 
 interface PageLayoutProps {
@@ -16,6 +17,14 @@ interface PageLayoutHeaderProps {
 interface PageLayoutContentProps {
 	children: ReactNode
 	className?: string
+}
+
+const PageLayoutScrollContext = createContext<
+	(() => HTMLDivElement | null) | null
+>(null)
+
+export function usePageScrollElement() {
+	return useContext(PageLayoutScrollContext)
 }
 
 function PageLayoutHeader({
@@ -47,10 +56,17 @@ function PageLayoutContent({ children, className }: PageLayoutContentProps) {
 }
 
 export function PageLayout({ children }: PageLayoutProps) {
+	const scrollRef = useRef<HTMLDivElement>(null)
+	const getScrollElement = useCallback(() => scrollRef.current, [])
+
 	return (
-		<div className='scrollbar-track-transparent relative h-full w-full'>
-			<div className='flex h-full flex-col overflow-auto'>{children}</div>
-		</div>
+		<PageLayoutScrollContext.Provider value={getScrollElement}>
+			<div className='scrollbar-track-transparent relative h-full w-full'>
+				<div className='flex h-full flex-col overflow-auto' ref={scrollRef}>
+					{children}
+				</div>
+			</div>
+		</PageLayoutScrollContext.Provider>
 	)
 }
 

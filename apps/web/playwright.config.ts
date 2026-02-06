@@ -1,5 +1,35 @@
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 import { defineConfig, devices } from '@playwright/test'
+
+const configDir = dirname(fileURLToPath(import.meta.url))
+const repoRoot = resolve(configDir, '..', '..')
+const worktreeEnvPath = resolve(repoRoot, '.worktree.env')
+const webPortPattern = /^WEB_PORT=(\d+)$/m
+
+function resolveWebPort() {
+	const envPort = Number.parseInt(process.env.WEB_PORT ?? '', 10)
+	if (Number.isFinite(envPort) && envPort > 0) {
+		return envPort
+	}
+
+	try {
+		const worktreeEnv = readFileSync(worktreeEnvPath, 'utf8')
+		const match = worktreeEnv.match(webPortPattern)
+		if (match?.[1]) {
+			return Number.parseInt(match[1], 10)
+		}
+	} catch {
+		// Fall back to default web port when .worktree.env is unavailable.
+	}
+
+	return 5173
+}
+
+const webPort = resolveWebPort()
+const webUrl = `http://localhost:${webPort}`
 
 export default defineConfig({
 	forbidOnly: !!process.env.CI,
@@ -18,13 +48,13 @@ export default defineConfig({
 	retries: process.env.CI ? 2 : 0,
 	testDir: './tests',
 	use: {
-		baseURL: 'http://localhost:5173',
+		baseURL: webUrl,
 		trace: 'on-first-retry'
 	},
 	webServer: {
-		command: 'pnpm dev',
+		command: `pnpm exec vite --host localhost --port ${webPort} --strictPort`,
 		reuseExistingServer: !process.env.CI,
-		url: 'http://localhost:5173'
+		url: webUrl
 	},
 	workers: process.env.CI ? 1 : undefined
 })

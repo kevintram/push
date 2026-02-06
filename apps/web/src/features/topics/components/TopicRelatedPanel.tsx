@@ -1,5 +1,11 @@
 import { ChevronDown, Link } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import {
+	useCallback,
+	useInsertionEffect,
+	useMemo,
+	useRef,
+	useState
+} from 'react'
 import { toast } from 'sonner'
 import {
 	EntityCard,
@@ -53,6 +59,8 @@ export function TopicRelatedPanel({
 	topicId,
 	related: relatedProp,
 	inheritFsrsState,
+	getScrollElement,
+	scrollMargin,
 	onRelatedSelect,
 	onSourceSelect
 }: TopicRelatedPanelProps) {
@@ -152,16 +160,23 @@ export function TopicRelatedPanel({
 		[related]
 	)
 
+	const relatedRef = useRef(related)
+	useInsertionEffect(() => {
+		relatedRef.current = related
+	}, [related])
+	const removeRelationRef = useRef(removeRelation)
+	useInsertionEffect(() => {
+		removeRelationRef.current = removeRelation
+	}, [removeRelation])
+
 	const renderItem = useCallback(
 		(entity: EntityItem) => {
-			// Get the original related item for remove action
-			const originalItem = related.find(
-				r => r.entity_type === entity.type && r.id === entity.item.id
-			)
-
 			const handleRemove = () => {
+				const originalItem = relatedRef.current.find(
+					r => r.entity_type === entity.type && r.id === entity.item.id
+				)
 				if (!(topicId && originalItem)) return
-				removeRelation.mutate({
+				removeRelationRef.current.mutate({
 					topicId,
 					entityType: originalItem.entity_type as EntityType,
 					entityId: originalItem.id
@@ -196,7 +211,7 @@ export function TopicRelatedPanel({
 				/>
 			)
 		},
-		[handleEntityClick, topicId, related, removeRelation]
+		[handleEntityClick, topicId]
 	)
 
 	return (
@@ -247,9 +262,11 @@ export function TopicRelatedPanel({
 							estimateItemSize={estimateEntitySize}
 							gap={16}
 							getItemKey={getEntityKey}
+							getScrollElement={getScrollElement}
 							items={entityItems}
 							minItemWidth={280}
 							renderItem={renderItem}
+							scrollMargin={scrollMargin}
 						/>
 					)}
 				</div>

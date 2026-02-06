@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { BookOpen } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { estimateCardSize } from '~/components/EntityCard'
 import { LearnablePanel } from '~/components/LearnablePanel'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
@@ -99,19 +100,11 @@ export function SourceTopicsPanel({
 
 	const existingTopicIds = useMemo(() => topics.map(t => t.id), [topics])
 
-	const estimateItemSize = useCallback((topic: Topic) => {
-		const baseHeight = 80
-		const lineHeight = 10
-		const numCharsPerLine = 30
-		const newLine = 10
-
-		const nameHeight =
-			Math.floor((topic.name?.length ?? 0) / numCharsPerLine) * lineHeight
-		const notesHeight =
-			Math.floor((topic.notes?.length ?? 0) / numCharsPerLine) * lineHeight
-
-		return baseHeight + nameHeight + newLine + notesHeight
-	}, [])
+	const estimateItemSize = useCallback(
+		(topic: Topic, _index: number, laneWidth: number) =>
+			estimateCardSize(topic.name ?? '', topic.notes ?? '', laneWidth),
+		[]
+	)
 
 	const renderItem = useCallback(
 		(topic: Topic) => {

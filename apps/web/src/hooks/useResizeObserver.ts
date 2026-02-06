@@ -13,6 +13,10 @@ const defaultState: ObserverRect = {
 	right: 0
 }
 
+type CallbackRefWithCurrent<T> = React.RefCallback<T> & {
+	readonly current: T | null
+}
+
 /**
  * Resize observer hook stolen from @mantine/hooks.
  * https://mantine.dev/hooks/use-resize-observer/
@@ -21,9 +25,22 @@ export function useResizeObserver<T extends HTMLElement = any>(
 	options?: ResizeObserverOptions
 ) {
 	const frameID = useRef(0)
-	const ref = useRef<T>(null)
-
+	const nodeRef = useRef<T | null>(null)
+	const [node, setNode] = useState<T | null>(null)
 	const [rect, setRect] = useState<ObserverRect>(defaultState)
+
+	// Stable callable ref with .current getter for backward compatibility
+	const ref = useMemo(() => {
+		const fn = ((el: T | null) => {
+			nodeRef.current = el
+			setNode(el)
+		}) as CallbackRefWithCurrent<T>
+		Object.defineProperty(fn, 'current', {
+			get: () => nodeRef.current,
+			configurable: true
+		})
+		return fn
+	}, [])
 
 	const observer = useMemo(
 		() =>
@@ -35,7 +52,7 @@ export function useResizeObserver<T extends HTMLElement = any>(
 							cancelAnimationFrame(frameID.current)
 
 							frameID.current = requestAnimationFrame(() => {
-								if (ref.current) {
+								if (nodeRef.current) {
 									const boxSize =
 										entry.borderBoxSize?.[0] || entry.contentBoxSize?.[0]
 									if (boxSize) {
@@ -64,8 +81,8 @@ export function useResizeObserver<T extends HTMLElement = any>(
 	)
 
 	useEffect(() => {
-		if (ref.current) {
-			observer?.observe(ref.current, options)
+		if (node) {
+			observer?.observe(node, options)
 		}
 
 		return () => {
@@ -75,7 +92,7 @@ export function useResizeObserver<T extends HTMLElement = any>(
 				cancelAnimationFrame(frameID.current)
 			}
 		}
-	}, [ref.current])
+	}, [node, observer, options])
 
 	return [ref, rect] as const
 }

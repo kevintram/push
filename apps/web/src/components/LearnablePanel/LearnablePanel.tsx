@@ -5,6 +5,7 @@ import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/Button'
 import { CountBadge } from '~/components/ui/CountBadge'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
+import { cn } from '~/lib/utils'
 
 const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
@@ -21,9 +22,9 @@ interface LearnablePanelProps<T> {
 	/** Actions to render in the header (e.g., Add dropdown) */
 	actions?: ReactNode
 	/** Render function for each item */
-	renderItem: (item: T) => ReactNode
+	renderItem: (item: T, index: number, laneWidth: number) => ReactNode
 	/** Estimate the height of an item for masonry layout */
-	estimateItemSize: (item: T) => number
+	estimateItemSize: (item: T, index: number, laneWidth: number) => number
 	/** Get a unique key for an item */
 	getItemKey: (item: T) => number | string
 	/** Scroll container element getter for virtualization */
@@ -47,8 +48,8 @@ export function LearnablePanel<T>({
 	const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
 
 	const wrappedEstimateItemSize = useCallback(
-		(item: T) => {
-			const calculated = estimateItemSize(item)
+		(item: T, index: number, laneWidth: number) => {
+			const calculated = estimateItemSize(item, index, laneWidth)
 			return Math.max(calculated, MIN_HEIGHT)
 		},
 		[estimateItemSize]
@@ -82,20 +83,26 @@ export function LearnablePanel<T>({
 					</Button>
 				}
 			/>
-			{!isCollapsed && (
-				<div className='flex-1 py-6'>
-					<MasonryLayout
-						estimateItemSize={wrappedEstimateItemSize}
-						gap={16}
-						getItemKey={wrappedGetItemKey}
-						getScrollElement={getScrollElement}
-						items={items}
-						minItemWidth={MIN_WIDTH}
-						renderItem={renderItem}
-						scrollMargin={scrollMargin}
-					/>
-				</div>
-			)}
+			<div
+				aria-hidden={isCollapsed}
+				className={cn(
+					'flex-1 transition-[height,opacity] duration-200',
+					isCollapsed
+						? 'invisible h-0 overflow-hidden py-0 opacity-0'
+						: 'visible py-6 opacity-100'
+				)}
+			>
+				<MasonryLayout
+					estimateItemSize={wrappedEstimateItemSize}
+					gap={16}
+					getItemKey={wrappedGetItemKey}
+					getScrollElement={getScrollElement}
+					items={items}
+					minItemWidth={MIN_WIDTH}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			</div>
 		</div>
 	)
 }

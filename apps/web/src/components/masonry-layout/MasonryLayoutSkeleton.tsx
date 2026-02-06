@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Skeleton } from '~/components/ui/Skeleton'
 
@@ -18,8 +18,8 @@ export function MasonryLayoutSkeleton({
 		[count]
 	)
 
-	const estimateItemSize = useMemo(
-		() => (_item: number, _index: number) => {
+	const estimateItemSize = useCallback(
+		(_item: number, _index: number, _laneWidth: number) => {
 			// Estimate height based on skeleton card structure:
 			// padding (16px top) + title (20px) + gap (12px) + line1 (16px) + gap (12px) + line2 (16px) + gap (12px) + button (32px) + padding (16px bottom)
 			return 140
@@ -27,8 +27,8 @@ export function MasonryLayoutSkeleton({
 		[]
 	)
 
-	const renderItem = useMemo(
-		() => (_item: number, _index: number) => (
+	const renderItem = useCallback(
+		(_item: number, _index: number, _laneWidth: number) => (
 			<div className='space-y-3 rounded-lg border p-4'>
 				<Skeleton className='h-5 w-3/4' />
 				<Skeleton className='h-4 w-5/6' />
@@ -41,10 +41,7 @@ export function MasonryLayoutSkeleton({
 		[]
 	)
 
-	const getItemKey = useMemo(
-		() => (_item: number, index: number) => `skeleton-${index}`,
-		[]
-	)
+	const getItemKey = useCallback((_item: number, index: number) => index, [])
 
 	return (
 		<div className='p-6'>

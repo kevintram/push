@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useMemo } from 'react'
+import { type ReactNode, use, useCallback, useMemo, useRef } from 'react'
 import { ReviewsSidebar } from '~/components/ReviewsSidebar'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
@@ -7,7 +7,6 @@ import type { Source } from '~/features/sources/types/source.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
-import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
 import { topicKeys } from '../../api/queryKeys'
 import { useUpdateTopic } from '../../api/updateTopic'
@@ -178,23 +177,34 @@ export function TopicDetail({
 		key: `topics-${topic?.id}`
 	})
 
-	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
+	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
 
 	const srsSource = useFsrsState(topic)
 
+	const relatedOutgoing = topic?.related_outgoing
+	const relatedIncoming = topic?.related_incoming
+
 	// Merge related topics from outgoing and incoming with direction metadata
 	const mergedRelated = useMemo(() => {
-		if (!topic) return []
-		const outgoing = (topic.related_outgoing ?? []).map(t => ({
-			...t,
+		const outgoing = (relatedOutgoing ?? []).map(entity => ({
+			...entity,
 			relationship_direction: RelationshipDirection.Outgoing
 		}))
-		const incoming = (topic.related_incoming ?? []).map(t => ({
-			...t,
+		const incoming = (relatedIncoming ?? []).map(entity => ({
+			...entity,
 			relationship_direction: RelationshipDirection.Incoming
 		}))
-		return [...outgoing, ...incoming]
-	}, [topic?.related_outgoing, topic?.related_incoming])
+		const seen = new Set<string>()
+
+		// Keep first occurrence (outgoing first) so each entity appears once.
+		return [...outgoing, ...incoming].filter(entity => {
+			const key = `${entity.entity_type}-${entity.id}`
+			if (seen.has(key)) return false
+			seen.add(key)
+			return true
+		})
+	}, [relatedOutgoing, relatedIncoming])
 
 	if (isLoading || !topic) {
 		return <TopicDetailSkeleton />
@@ -255,7 +265,7 @@ export function TopicDetail({
 						<div className='mt-4'>
 							<TopicChildrenPanel
 								children={topic.children}
-								getScrollElement={() => scrollContainerRef.current}
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onChildSelect={onTopicNavigate}
 								renderCard={renderChildCard}
@@ -264,6 +274,7 @@ export function TopicDetail({
 						</div>
 						<div className='mt-4'>
 							<TopicRelatedPanel
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onRelatedSelect={onTopicNavigate}
 								onSourceSelect={onSourceNavigate}
@@ -273,7 +284,7 @@ export function TopicDetail({
 						</div>
 						<div className='mt-4'>
 							<TopicSourcesPanel
-								getScrollElement={() => scrollContainerRef.current}
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onSourceSelect={onSourceNavigate}
 								renderCard={renderSourceCard}
@@ -283,7 +294,7 @@ export function TopicDetail({
 						</div>
 						<div className='mt-4'>
 							<TopicPracticesPanel
-								getScrollElement={() => scrollContainerRef.current}
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onPracticeSelect={onPracticeNavigate}
 								practices={topic.practices}

@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback } from 'react'
+import { type ReactNode, use, useCallback, useRef } from 'react'
 import { LearnableProperties } from '~/components/LearnableProperties'
 import { LearnableStatus } from '~/components/LearnableStatus'
 import { ReviewsSidebar } from '~/components/ReviewsSidebar'
@@ -9,7 +9,6 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
-import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
 import { practiceKeys } from '../../api/queryKeys'
 import { useUpdatePractice } from '../../api/updatePractice'
@@ -81,7 +80,8 @@ export function PracticeDetail({
 		isLoadingProp !== undefined ? isLoadingProp : contextValue.isLoading
 
 	const queryClient = useQueryClient()
-	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
+	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
 
 	const handlePracticeUpdateSuccess = useCallback(
 		(updatedPractice: Practice) => {
@@ -221,7 +221,7 @@ export function PracticeDetail({
 						{/* Topics Panel */}
 						<div className='mt-4'>
 							<PracticeTopicsPanel
-								getScrollElement={() => scrollContainerRef.current}
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onTopicSelect={onTopicNavigate}
 								practiceId={practice.id}
@@ -232,7 +232,7 @@ export function PracticeDetail({
 						{/* Sources Panel */}
 						<div className='mt-4'>
 							<PracticeSourcesPanel
-								getScrollElement={() => scrollContainerRef.current}
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onSourceSelect={onSourceNavigate}
 								practiceId={practice.id}

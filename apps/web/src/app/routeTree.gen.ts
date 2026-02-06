@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VirtualizationSmokeRouteImport } from './routes/virtualization-smoke'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
 import { Route as MainUpcomingRouteImport } from './routes/_main/upcoming'
@@ -28,6 +29,11 @@ import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$t
 import { Route as MainSourcesSourceIdRouteImport } from './routes/_main/sources_.$sourceId'
 import { Route as MainPracticesPracticeIdRouteImport } from './routes/_main/practices_.$practiceId'
 
+const VirtualizationSmokeRoute = VirtualizationSmokeRouteImport.update({
+  id: '/virtualization-smoke',
+  path: '/virtualization-smoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MainRoute = MainRouteImport.update({
   id: '/_main',
   getParentRoute: () => rootRouteImport,
@@ -119,6 +125,7 @@ const MainPracticesPracticeIdRoute = MainPracticesPracticeIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/virtualization-smoke': typeof VirtualizationSmokeRoute
   '/archived': typeof MainArchivedRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
 }
 export interface FileRoutesByTo {
+  '/virtualization-smoke': typeof VirtualizationSmokeRoute
   '/archived': typeof MainArchivedRoute
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
@@ -159,6 +167,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_main': typeof MainRouteWithChildren
+  '/virtualization-smoke': typeof VirtualizationSmokeRoute
   '/_main/archived': typeof MainArchivedRoute
   '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
@@ -180,6 +189,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/virtualization-smoke'
     | '/archived'
     | '/inbox'
     | '/logbook'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/topics/$topicId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/virtualization-smoke'
     | '/archived'
     | '/inbox'
     | '/logbook'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_main'
+    | '/virtualization-smoke'
     | '/_main/archived'
     | '/_main/inbox'
     | '/_main/logbook'
@@ -240,10 +252,18 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   MainRoute: typeof MainRouteWithChildren
+  VirtualizationSmokeRoute: typeof VirtualizationSmokeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/virtualization-smoke': {
+      id: '/virtualization-smoke'
+      path: '/virtualization-smoke'
+      fullPath: '/virtualization-smoke'
+      preLoaderRoute: typeof VirtualizationSmokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_main': {
       id: '/_main'
       path: ''
@@ -417,6 +437,7 @@ const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   MainRoute: MainRouteWithChildren,
+  VirtualizationSmokeRoute: VirtualizationSmokeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
