@@ -162,7 +162,7 @@ export function SourceActionMenu({
 						) : (
 							<>
 								<Inbox className='mr-2 h-4 w-4' />
-								Add to Inbox
+								Inbox
 							</>
 						)}
 					</DropdownMenuItem>
