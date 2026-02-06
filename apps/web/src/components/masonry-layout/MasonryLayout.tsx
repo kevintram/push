@@ -14,6 +14,24 @@ import { useResizeObserver } from '~/hooks/useResizeObserver'
 
 const LANE_WIDTH_REMEASURE_THRESHOLD_PX = 5
 
+// Lane-change reflow constants:
+// When the number of masonry lanes changes (e.g. a window resize crosses a
+// breakpoint), virtualizer.measure() clears its itemSizeCache. Until items are
+// re-measured from the DOM, the virtualizer falls back to estimateSize() which
+// is less accurate after major width changes (text reflows differently at
+// different widths). This causes temporary under-mounting and visible gaps.
+//
+// To fix this we run a short "reflow" phase:
+//  1. Temporarily increase overscan so more items are mounted immediately,
+//     giving the virtualizer more real DOM nodes to measure.
+//  2. Remeasure all mounted items every frame for a few frames, progressively
+//     replacing stale estimates with actual heights until the layout stabilizes.
+//
+// Trade-off: slightly more work for a few frames after lane-count changes.
+// The normal scrolling/resizing path is completely unaffected.
+const LANE_CHANGE_REFLOW_FRAMES = 6
+const LANE_CHANGE_OVERSCAN_MULTIPLIER = 12
+
 interface MasonryLayoutProps<T> {
 	items: Array<T>
 	renderItem: (item: T, index: number, laneWidth: number) => ReactNode
@@ -38,7 +56,6 @@ function MasonryLayoutInner<T>({
 	scrollMargin
 }: MasonryLayoutProps<T>) {
 	const [autoScrollMargin, setAutoScrollMargin] = useState(0)
-	// Issue 4: Split ResizeObserver from virtual container
 	const [widthRef, rect] = useResizeObserver<HTMLDivElement>()
 	const parentRef = useRef<HTMLDivElement>(null)
 	const pageGetScrollElement = usePageScrollElement()
@@ -51,6 +68,8 @@ function MasonryLayoutInner<T>({
 		null
 	)
 	const laneWidthRemeasureRafRef = useRef<number | null>(null)
+	const laneChangeReflowRafRef = useRef<number | null>(null)
+	const [isLaneReflowing, setIsLaneReflowing] = useState(false)
 
 	const numLanes = useMemo(
 		() =>
@@ -103,7 +122,14 @@ function MasonryLayoutInner<T>({
 		}
 	}, [getItemKey])
 
-	const resolvedOverscan = overscan ?? numLanes * 3
+	// During a lane-change reflow, temporarily inflate overscan so the
+	// virtualizer mounts enough items to fill the new layout. This gives
+	// the reflow tick loop (below) more DOM nodes to measure, which speeds
+	// up convergence from estimates → real heights.
+	const baseOverscan = overscan ?? numLanes * 3
+	const resolvedOverscan = isLaneReflowing
+		? Math.max(baseOverscan, numLanes * LANE_CHANGE_OVERSCAN_MULTIPLIER)
+		: baseOverscan
 
 	const virtualizer = useVirtualizer({
 		count: items.length,
@@ -116,26 +142,58 @@ function MasonryLayoutInner<T>({
 		getItemKey: virtualizerGetItemKey
 	})
 
+	// --- Measurement helpers ---
+	// These form a layered API for re-measuring virtualizer items:
+	//   measureMountedElements  – sync: measure all mounted [data-index] nodes
+	//   remeasureMountedItems   – async: debounced single-frame RAF wrapper
+	//   resetMeasurements       – clear virtualizer cache + remeasureMountedItems
+	//   runLaneReflow           – multi-frame RAF loop with boosted overscan
+
+	// Synchronously measure all mounted virtual items in the DOM.
+	const measureMountedElements = useCallback(() => {
+		const parentEl = parentRef.current
+		if (!parentEl) return
+		for (const el of parentEl.querySelectorAll<HTMLElement>('[data-index]')) {
+			virtualizer.measureElement(el)
+		}
+	}, [virtualizer])
+
+	// Debounced single-frame remeasure (used for width-only changes).
 	const remeasureMountedItems = useCallback(() => {
 		if (laneWidthRemeasureRafRef.current != null) {
 			cancelAnimationFrame(laneWidthRemeasureRafRef.current)
 		}
 		laneWidthRemeasureRafRef.current = requestAnimationFrame(() => {
 			laneWidthRemeasureRafRef.current = null
-			const parentEl = parentRef.current
-			if (!parentEl) return
-			const mountedItems =
-				parentEl.querySelectorAll<HTMLElement>('[data-index]')
-			for (const itemEl of mountedItems) {
-				virtualizer.measureElement(itemEl)
-			}
+			measureMountedElements()
 		})
-	}, [virtualizer])
+	}, [measureMountedElements])
 
-	const resetMeasurements = useCallback(() => {
-		virtualizer.measure()
-		remeasureMountedItems()
-	}, [virtualizer, remeasureMountedItems])
+	// Runs a multi-frame reflow after lane-count changes. Each animation frame:
+	//  1. Calls measureMountedElements() to replace estimate-based heights with
+	//     real DOM measurements. The first few passes may still see estimates
+	//     because React needs a render to mount newly-overscan'd items.
+	//  2. Schedules the next frame until LANE_CHANGE_REFLOW_FRAMES is exhausted.
+	// While active, isLaneReflowing=true keeps overscan inflated (see above)
+	// so the virtualizer mounts enough items to fill the wider/narrower layout.
+	const runLaneReflow = useCallback(() => {
+		if (laneChangeReflowRafRef.current != null) {
+			cancelAnimationFrame(laneChangeReflowRafRef.current)
+		}
+		setIsLaneReflowing(true)
+		let remaining = LANE_CHANGE_REFLOW_FRAMES
+
+		const tick = () => {
+			measureMountedElements()
+			if (--remaining <= 0) {
+				laneChangeReflowRafRef.current = null
+				setIsLaneReflowing(false)
+				return
+			}
+			laneChangeReflowRafRef.current = requestAnimationFrame(tick)
+		}
+		laneChangeReflowRafRef.current = requestAnimationFrame(tick)
+	}, [measureMountedElements])
 
 	useLayoutEffect(() => {
 		if (!hasMeasuredWidth) return
@@ -150,10 +208,13 @@ function MasonryLayoutInner<T>({
 
 		prevLayoutRef.current = { numLanes, laneWidth }
 
-		// Lane count changes require a full reset so items are redistributed across
-		// lanes right away.
+		// Lane count changed (e.g. 1 → 7 after widening the window).
+		// Clear the size cache so items fall back to estimateSize(), then start
+		// the multi-frame reflow which will progressively replace those estimates
+		// with real DOM heights over the next few frames.
 		if (laneCountChanged) {
-			resetMeasurements()
+			virtualizer.measure()
+			runLaneReflow()
 			return
 		}
 
@@ -164,7 +225,8 @@ function MasonryLayoutInner<T>({
 			remeasureMountedItems()
 		}
 	}, [
-		resetMeasurements,
+		virtualizer,
+		runLaneReflow,
 		remeasureMountedItems,
 		numLanes,
 		laneWidth,
@@ -175,6 +237,9 @@ function MasonryLayoutInner<T>({
 		return () => {
 			if (laneWidthRemeasureRafRef.current != null) {
 				cancelAnimationFrame(laneWidthRemeasureRafRef.current)
+			}
+			if (laneChangeReflowRafRef.current != null) {
+				cancelAnimationFrame(laneChangeReflowRafRef.current)
 			}
 		}
 	}, [])
@@ -196,14 +261,15 @@ function MasonryLayoutInner<T>({
 				target.matches('[data-slot="sidebar-container"]')
 
 			if (!isSidebarTransitionTarget) return
-			resetMeasurements()
+			virtualizer.measure()
+			remeasureMountedItems()
 		}
 
 		document.addEventListener('transitionend', handleTransitionEnd, true)
 		return () => {
 			document.removeEventListener('transitionend', handleTransitionEnd, true)
 		}
-	}, [resetMeasurements])
+	}, [virtualizer, remeasureMountedItems])
 
 	// Compute scrollMargin via bounding rects (layout-independent)
 	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally retrigger this setup when list shape changes can shift vertical offsets.
