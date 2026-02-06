@@ -27,7 +27,7 @@ class ReviewRead(ReviewBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    # Polymorphic: exactly one of topic_id, source_id, or practice_id will be set
+    # Polymorphic: at most one of topic_id, source_id, or practice_id will be set
     topic_id: int | None = None
     source_id: int | None = None
     practice_id: int | None = None
@@ -109,7 +109,7 @@ class ReviewWithPractice(ReviewRead):
 
 
 class ReviewCreate(BaseModel):
-    """Create a new review for a topic, source, or practice (polymorphic)."""
+    """Create a new review, optionally linked to a topic, source, or practice."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -117,7 +117,7 @@ class ReviewCreate(BaseModel):
     scheduled_at: date | None = None
     completed_at: date | None = None
 
-    # Polymorphic: provide exactly one entity reference
+    # Polymorphic: provide at most one entity reference
     topic_id: int | None = None
     topic: "TopicCreate | None" = None
     source_id: int | None = None
@@ -129,7 +129,7 @@ class ReviewCreate(BaseModel):
 
     @model_validator(mode="after")
     def validate_mutually_exclusive_fields(self) -> "ReviewCreate":
-        # Validate polymorphic target (exactly one entity reference)
+        # Validate polymorphic target (at most one entity reference)
         targets = [
             self.topic_id is not None,
             self.topic is not None,
@@ -138,9 +138,9 @@ class ReviewCreate(BaseModel):
             self.practice_id is not None,
             self.practice is not None,
         ]
-        if sum(targets) != 1:
+        if sum(targets) > 1:
             raise ValueError(
-                "Must provide exactly one of: topic_id, topic, source_id, source, practice_id, or practice"
+                "Must provide at most one of: topic_id, topic, source_id, source, practice_id, or practice"
             )
 
         return self
@@ -154,3 +154,19 @@ class ReviewUpdate(BaseModel):
     notes: str | None = None
     scheduled_at: date | None = None
     completed_at: date | None = None
+    topic_id: int | None = None
+    source_id: int | None = None
+    practice_id: int | None = None
+
+    @model_validator(mode="after")
+    def validate_entity_fields(self) -> "ReviewUpdate":
+        targets = [
+            self.topic_id is not None,
+            self.source_id is not None,
+            self.practice_id is not None,
+        ]
+        if sum(targets) > 1:
+            raise ValueError(
+                "At most one of topic_id, source_id, practice_id may be set"
+            )
+        return self

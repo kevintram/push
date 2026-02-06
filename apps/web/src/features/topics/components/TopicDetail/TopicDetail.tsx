@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, use, useCallback, useMemo, useRef } from 'react'
-
+import { ReviewsSidebar } from '~/components/ReviewsSidebar'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
 import type { Source } from '~/features/sources/types/source.types'
@@ -17,7 +17,6 @@ import { TopicChildrenPanel } from '../TopicChildrenPanel'
 import { TopicPracticesPanel } from '../TopicPracticesPanel'
 import { TopicRelatedPanel } from '../TopicRelatedPanel'
 import { TopicSourcesPanel } from '../TopicSourcesPanel'
-import { ReviewsSidebar } from './ReviewSidebar'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 import { TopicProperties } from './TopicProperties'
@@ -303,7 +302,12 @@ export function TopicDetail({
 							/>
 						</div>
 					</div>
-					<ReviewsSidebar readonly={sidebarReadonly} />
+					<ReviewsSidebar
+						entity={topic}
+						entityType='topic'
+						readonly={sidebarReadonly}
+						sidebarClassName='[&_[data-slot=sidebar-inner]]:bg-background'
+					/>
 				</SidebarHolder>
 			</div>
 		</SidebarProvider>

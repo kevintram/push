@@ -1,4 +1,3 @@
-export { ReviewsSidebar } from './ReviewSidebar'
 export { TopicDetail } from './TopicDetail'
 export { TopicDetailHeader } from './TopicDetailHeader'
 export { TopicDetailSkeleton } from './TopicDetailSkeleton'

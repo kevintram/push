@@ -110,7 +110,7 @@ async def read_review(
     session: SessionDep,
     user_id: UserIdDep,
     id: int,
-) -> ReviewWithTopic | ReviewWithSource | ReviewWithPractice:
+) -> ReviewWithTopic | ReviewWithSource | ReviewWithPractice | ReviewRead:
     """Get a specific review by id (polymorphic - topic, source, or practice)."""
     review = await service.get_review(session, id, user_id)
 
@@ -119,7 +119,9 @@ async def read_review(
         return ReviewWithPractice.model_validate(review)
     if review.source is not None:
         return ReviewWithSource.model_validate(review)
-    return ReviewWithTopic.model_validate(review)
+    if review.topic is not None:
+        return ReviewWithTopic.model_validate(review)
+    return ReviewRead.model_validate(review)
 
 
 @router.post("/")
@@ -127,13 +129,14 @@ async def create_review(
     review_create: ReviewCreate,
     session: SessionDep,
     user_id: UserIdDep,
-) -> ReviewWithTopic | ReviewWithSource | ReviewWithPractice:
-    """Create a new review for a topic, source, or practice (polymorphic).
+) -> ReviewWithTopic | ReviewWithSource | ReviewWithPractice | ReviewRead:
+    """Create a new review, optionally linked to a topic, source, or practice.
 
     Supports creating and linking entities in any combination:
     - For topic reviews: provide topic_id or topic (inline creation)
     - For source reviews: provide source_id or source (inline creation)
     - For practice reviews: provide practice_id or practice (inline creation)
+    - For entity-less reviews: omit all entity fields
     """
     # Convert Pydantic models to dicts for service layer
     topic_data = None
@@ -175,7 +178,9 @@ async def create_review(
         return ReviewWithPractice.model_validate(review)
     if review.source is not None:
         return ReviewWithSource.model_validate(review)
-    return ReviewWithTopic.model_validate(review)
+    if review.topic is not None:
+        return ReviewWithTopic.model_validate(review)
+    return ReviewRead.model_validate(review)
 
 
 @router.post("/{id}/")
@@ -184,7 +189,7 @@ async def update_review(
     review_update: ReviewUpdate,
     session: SessionDep,
     user_id: UserIdDep,
-) -> ReviewWithTopic | ReviewWithSource | ReviewWithPractice:
+) -> ReviewWithTopic | ReviewWithSource | ReviewWithPractice | ReviewRead:
     """Update a review's rating/completion and recalculate FSRS state (polymorphic)."""
     fields_set = review_update.model_fields_set
 
@@ -197,6 +202,9 @@ async def update_review(
         scheduled_at=review_update.scheduled_at,
         completed_at=review_update.completed_at,
         rating=review_update.rating,
+        topic_id=review_update.topic_id,
+        source_id=review_update.source_id,
+        practice_id=review_update.practice_id,
         fields_set=fields_set,
     )
 
@@ -205,7 +213,9 @@ async def update_review(
         return ReviewWithPractice.model_validate(review)
     if review.source is not None:
         return ReviewWithSource.model_validate(review)
-    return ReviewWithTopic.model_validate(review)
+    if review.topic is not None:
+        return ReviewWithTopic.model_validate(review)
+    return ReviewRead.model_validate(review)
 
 
 @router.delete("/{id}/")

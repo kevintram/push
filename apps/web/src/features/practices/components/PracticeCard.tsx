@@ -37,6 +37,7 @@ export function PracticeCard({
 
 	const config = useMemo(
 		(): LearnableCardConfig<Practice> => ({
+			entityType: 'practice',
 			getPrimaryText: p => p.prompt,
 			getSecondaryText: p => p.answer,
 			showTypeBadge: true,

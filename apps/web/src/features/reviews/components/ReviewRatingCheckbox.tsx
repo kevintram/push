@@ -1,16 +1,9 @@
 import { ChevronDown, Circle } from 'lucide-react'
 import type { ReactNode } from 'react'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuRadioGroup,
-	DropdownMenuRadioItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
 import { cn } from '~/lib/utils'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import type { Rating } from '../types/review.types'
+import { RatingDropdown } from './RatingDropdown'
 
 export type ReviewRatingState = 'uncompleted' | Rating
 
@@ -22,19 +15,20 @@ interface ReviewRatingDropdownProps {
 	invalid?: boolean
 }
 
-const ratingOptions: Array<{ value: ReviewRatingState; label: string }> = [
-	{ value: 'uncompleted', label: 'Uncompleted' },
-	{ value: 'miss', label: 'Miss' },
-	{ value: 'hard', label: 'Hard' },
-	{ value: 'good', label: 'Good' },
-	{ value: 'easy', label: 'Easy' }
-]
+export const ratingOptions: Array<{ value: ReviewRatingState; label: string }> =
+	[
+		{ value: 'uncompleted', label: 'Uncompleted' },
+		{ value: 'miss', label: 'Miss' },
+		{ value: 'hard', label: 'Hard' },
+		{ value: 'good', label: 'Good' },
+		{ value: 'easy', label: 'Easy' }
+	]
 
 function EmptyRatingIcon() {
 	return <Circle className='h-3 w-3' />
 }
 
-function getOptionIcon(option: ReviewRatingState): ReactNode {
+export function getOptionIcon(option: ReviewRatingState): ReactNode {
 	if (option === 'uncompleted') return <EmptyRatingIcon />
 	return getRatingIcon(option)
 }
@@ -47,8 +41,9 @@ export function ReviewRatingCheckbox({
 	invalid = false
 }: ReviewRatingDropdownProps) {
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild={true} disabled={disabled}>
+		<RatingDropdown
+			onSelect={onChange}
+			trigger={
 				<button
 					aria-label='Set review status'
 					className={cn(
@@ -73,31 +68,7 @@ export function ReviewRatingCheckbox({
 					</span>
 					<ChevronDown className='h-3 w-3 text-muted-foreground' />
 				</button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align='start' side='bottom' sideOffset={2}>
-				<DropdownMenuRadioGroup
-					onValueChange={nextValue => onChange(nextValue as ReviewRatingState)}
-					value={value}
-				>
-					{ratingOptions.map(option => (
-						<div key={option.value}>
-							<DropdownMenuRadioItem
-								onClick={event => event.stopPropagation()}
-								onSelect={event => event.stopPropagation()}
-								value={option.value}
-							>
-								<div className='flex w-full items-center text-muted-foreground'>
-									{getOptionIcon(option.value)}
-									<span className='ml-2 flex flex-1'>{option.label}</span>
-								</div>
-							</DropdownMenuRadioItem>
-							{option.value === 'uncompleted' ? (
-								<DropdownMenuSeparator />
-							) : null}
-						</div>
-					))}
-				</DropdownMenuRadioGroup>
-			</DropdownMenuContent>
-		</DropdownMenu>
+			}
+		/>
 	)
 }

@@ -1,1 +1,0 @@
-export { LearnableReviewsSidebar } from './LearnableReviewsSidebar'
