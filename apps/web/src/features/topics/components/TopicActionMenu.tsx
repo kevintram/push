@@ -5,7 +5,6 @@ import {
 	Inbox,
 	MoreHorizontal,
 	RefreshCw,
-	SquareCheck,
 	Trash2
 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
@@ -17,8 +16,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
-import { useCreateReview } from '~/features/reviews/api/createReview'
-import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import { useConvertTopicToPractice } from '~/features/topics/api/convertTopicToPractice'
 import { useConvertTopicToSource } from '~/features/topics/api/convertTopicToSource'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
@@ -31,7 +28,6 @@ import {
 	getTopicToPracticePreview,
 	getTopicToSourcePreview
 } from '~/utils/conversionPreview'
-import { localDateString } from '~/utils/date'
 
 interface TopicActionMenuProps {
 	topic: Topic
@@ -65,8 +61,6 @@ export function TopicActionMenu({
 	>(null)
 	const deleteTopicMutation = useDeleteTopic()
 	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
-	const createReviewMutation = useCreateReview()
-	const { openReviewDialog } = useReviewDialog()
 	const convertToSourceMutation = useConvertTopicToSource()
 	const convertToPracticeMutation = useConvertTopicToPractice()
 
@@ -110,22 +104,6 @@ export function TopicActionMenu({
 			})
 		},
 		[updateTopicMutation, topic.id, topic.inboxed]
-	)
-
-	const handleLogNow = useCallback(
-		async (e: React.MouseEvent) => {
-			e.stopPropagation()
-			const today = localDateString()
-			const review = await createReviewMutation.mutateAsync({
-				topic_id: topic.id,
-				rating: 'good',
-				description: '',
-				scheduled_at: null,
-				completed_at: today
-			})
-			openReviewDialog(review.id)
-		},
-		[createReviewMutation, topic.id, openReviewDialog]
 	)
 
 	const handleConfirmConvertToSource = useCallback(async () => {
@@ -175,13 +153,6 @@ export function TopicActionMenu({
 					)}
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-					<DropdownMenuItem
-						disabled={createReviewMutation.isPending}
-						onClick={handleLogNow}
-					>
-						<SquareCheck className='mr-2 h-4 w-4' />
-						Log now
-					</DropdownMenuItem>
 					<DropdownMenuItem onClick={handleInboxToggle}>
 						{topic.inboxed ? (
 							<>

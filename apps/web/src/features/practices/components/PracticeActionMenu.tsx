@@ -5,7 +5,6 @@ import {
 	Inbox,
 	MoreHorizontal,
 	RefreshCw,
-	SquareCheck,
 	Trash2
 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
@@ -20,15 +19,12 @@ import {
 } from '~/components/ui/DropdownMenu'
 import { useConvertPracticeToSource } from '~/features/practices/api/convertPracticeToSource'
 import { useConvertPracticeToTopic } from '~/features/practices/api/convertPracticeToTopic'
-import { useCreateReview } from '~/features/reviews/api/createReview'
-import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { ConversionError } from '~/utils/ConversionError'
 import {
 	getPracticeToSourcePreview,
 	getPracticeToTopicPreview
 } from '~/utils/conversionPreview'
-import { localDateString } from '~/utils/date'
 import { useDeletePractice } from '../api/deletePractice'
 import { useUpdatePractice } from '../api/updatePractice'
 import type { Practice } from '../types/practice.types'
@@ -58,8 +54,6 @@ export function PracticeActionMenu({
 	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
 	const deletePracticeMutation = useDeletePractice()
 	const updatePracticeMutation = useUpdatePractice(onPracticeUpdateSuccess)
-	const createReviewMutation = useCreateReview()
-	const { openReviewDialog } = useReviewDialog()
 	const convertToTopicMutation = useConvertPracticeToTopic()
 	const convertToSourceMutation = useConvertPracticeToSource()
 
@@ -104,22 +98,6 @@ export function PracticeActionMenu({
 			})
 		},
 		[updatePracticeMutation, practice.id, practice.inboxed]
-	)
-
-	const handleLogNow = useCallback(
-		async (e: React.MouseEvent) => {
-			e.stopPropagation()
-			const today = localDateString()
-			const review = await createReviewMutation.mutateAsync({
-				practice_id: practice.id,
-				rating: 'good',
-				description: '',
-				scheduled_at: null,
-				completed_at: today
-			})
-			openReviewDialog(review.id)
-		},
-		[createReviewMutation, practice.id, openReviewDialog]
 	)
 
 	const handleConfirmConvertToTopic = useCallback(async () => {
@@ -171,13 +149,6 @@ export function PracticeActionMenu({
 					)}
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-					<DropdownMenuItem
-						disabled={createReviewMutation.isPending}
-						onClick={handleLogNow}
-					>
-						<SquareCheck className='mr-2 h-4 w-4' />
-						Log now
-					</DropdownMenuItem>
 					<DropdownMenuItem onClick={handleInboxToggle}>
 						{practice.inboxed ? (
 							<>
