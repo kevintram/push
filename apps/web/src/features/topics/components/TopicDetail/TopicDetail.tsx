@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useMemo } from 'react'
+import { type ReactNode, use, useCallback, useMemo, useRef } from 'react'
 
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
@@ -7,7 +7,6 @@ import type { Source } from '~/features/sources/types/source.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
-import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
 import { topicKeys } from '../../api/queryKeys'
 import { useUpdateTopic } from '../../api/updateTopic'
@@ -179,7 +178,8 @@ export function TopicDetail({
 		key: `topics-${topic?.id}`
 	})
 
-	const [scrollContainerRef] = useResizeObserver<HTMLDivElement>()
+	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
 
 	const srsSource = useFsrsState(topic)
 
@@ -266,7 +266,7 @@ export function TopicDetail({
 						<div className='mt-4'>
 							<TopicChildrenPanel
 								children={topic.children}
-								getScrollElement={() => scrollContainerRef.current}
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onChildSelect={onTopicNavigate}
 								renderCard={renderChildCard}
@@ -275,7 +275,7 @@ export function TopicDetail({
 						</div>
 						<div className='mt-4'>
 							<TopicRelatedPanel
-								getScrollElement={() => scrollContainerRef.current}
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onRelatedSelect={onTopicNavigate}
 								onSourceSelect={onSourceNavigate}
@@ -285,7 +285,7 @@ export function TopicDetail({
 						</div>
 						<div className='mt-4'>
 							<TopicSourcesPanel
-								getScrollElement={() => scrollContainerRef.current}
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onSourceSelect={onSourceNavigate}
 								renderCard={renderSourceCard}
@@ -295,7 +295,7 @@ export function TopicDetail({
 						</div>
 						<div className='mt-4'>
 							<TopicPracticesPanel
-								getScrollElement={() => scrollContainerRef.current}
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onPracticeSelect={onPracticeNavigate}
 								practices={topic.practices}
