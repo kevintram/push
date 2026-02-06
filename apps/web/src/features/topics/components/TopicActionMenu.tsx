@@ -14,6 +14,7 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { useConvertTopicToPractice } from '~/features/topics/api/convertTopicToPractice'
@@ -179,18 +180,7 @@ export function TopicActionMenu({
 							</>
 						)}
 					</DropdownMenuItem>
-					{children}
-					{onRemoveRelationship && (
-						<DropdownMenuItem
-							onClick={e => {
-								e.stopPropagation()
-								onRemoveRelationship()
-							}}
-						>
-							<GitPullRequestClosed className='mr-2 h-4 w-4' />
-							{removeRelationshipText}
-						</DropdownMenuItem>
-					)}
+					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()
@@ -209,6 +199,19 @@ export function TopicActionMenu({
 						<RefreshCw className='mr-2 h-4 w-4' />
 						Convert to Practice
 					</DropdownMenuItem>
+					{children}
+					{onRemoveRelationship && (
+						<DropdownMenuItem
+							onClick={e => {
+								e.stopPropagation()
+								onRemoveRelationship()
+							}}
+						>
+							<GitPullRequestClosed className='mr-2 h-4 w-4' />
+							{removeRelationshipText}
+						</DropdownMenuItem>
+					)}
+					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()

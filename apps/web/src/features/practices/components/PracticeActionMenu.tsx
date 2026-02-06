@@ -15,6 +15,7 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { useConvertPracticeToSource } from '~/features/practices/api/convertPracticeToSource'
@@ -175,18 +176,7 @@ export function PracticeActionMenu({
 							</>
 						)}
 					</DropdownMenuItem>
-					{children}
-					{onRemoveRelationship && (
-						<DropdownMenuItem
-							onClick={e => {
-								e.stopPropagation()
-								onRemoveRelationship()
-							}}
-						>
-							<GitPullRequestClosed className='mr-2 h-4 w-4' />
-							{removeRelationshipText}
-						</DropdownMenuItem>
-					)}
+					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()
@@ -205,6 +195,19 @@ export function PracticeActionMenu({
 						<RefreshCw className='mr-2 h-4 w-4' />
 						Convert to Source
 					</DropdownMenuItem>
+					{children}
+					{onRemoveRelationship && (
+						<DropdownMenuItem
+							onClick={e => {
+								e.stopPropagation()
+								onRemoveRelationship()
+							}}
+						>
+							<GitPullRequestClosed className='mr-2 h-4 w-4' />
+							{removeRelationshipText}
+						</DropdownMenuItem>
+					)}
+					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={handleDeletePractice}
 						variant='destructive'
