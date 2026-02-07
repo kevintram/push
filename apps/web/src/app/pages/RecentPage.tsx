@@ -16,6 +16,7 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/Empty'
+import { Skeleton } from '~/components/ui/Skeleton'
 import { useSearchAll } from '~/features/search/api/searchAll'
 import { useEntityNavigation } from '~/hooks/useEntityNavigation'
 import {
@@ -69,7 +70,7 @@ function RecentList({
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	if (isLoading) {
-		return <MasonryLayoutSkeleton />
+		return <RecentPageSkeleton />
 	}
 
 	if (sections.length === 0) {
@@ -104,6 +105,38 @@ function RecentList({
 						onToggleCollapse={toggleSection}
 					/>
 				))}
+			</div>
+		</PageLayout.Content>
+	)
+}
+
+function RecentSectionSkeleton({ count }: { count: number }) {
+	return (
+		<div className='mb-2'>
+			{/* Section header: label + count badge + chevron */}
+			<div className='flex items-center justify-between'>
+				<div className='flex items-center gap-2'>
+					<Skeleton className='h-7 w-28' />
+					<Skeleton className='h-5 w-6 rounded-full' />
+					<Skeleton className='h-5 w-5' />
+				</div>
+			</div>
+
+			{/* Indented masonry grid */}
+			<div className='mt-2 mb-10 ml-5'>
+				<MasonryLayoutSkeleton count={count} />
+			</div>
+		</div>
+	)
+}
+
+function RecentPageSkeleton() {
+	return (
+		<PageLayout.Content className='max-w-screen p-6'>
+			<div className='flex flex-col gap-2'>
+				<RecentSectionSkeleton count={10} />
+				<RecentSectionSkeleton count={8} />
+				<RecentSectionSkeleton count={6} />
 			</div>
 		</PageLayout.Content>
 	)

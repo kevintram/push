@@ -132,7 +132,11 @@ function ArchivedList({
 	)
 
 	if (isLoading) {
-		return <MasonryLayoutSkeleton />
+		return (
+			<PageLayout.Content className='max-w-screen p-6'>
+				<MasonryLayoutSkeleton />
+			</PageLayout.Content>
+		)
 	}
 
 	if (items.length === 0) {
