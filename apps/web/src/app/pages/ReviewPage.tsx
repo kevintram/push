@@ -411,7 +411,7 @@ function ReviewQueueGroupedList({
 						)}
 						{group.tier === 'Hazy' && (
 							<span className='font-semibold text-muted-foreground text-xs'>
-								A fine time to review but you might have to some relearning.
+								A fine time to review, but there might be some relearning!
 							</span>
 						)}
 						{group.tier === 'Fine' && (
@@ -421,7 +421,7 @@ function ReviewQueueGroupedList({
 						)}
 						{group.tier === 'Fresh' && (
 							<span className='font-semibold text-muted-foreground text-xs'>
-								You could probably wait before reviewing these!
+								You could probably wait to review these!
 							</span>
 						)}
 					</div>
