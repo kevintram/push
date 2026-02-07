@@ -18,7 +18,7 @@ from app.schemas import (
     SourceParentRelationshipCreate,
     SourcePracticeAdd,
     SourcePrerequisiteCreate,
-    SourcePrerequisiteRead,
+    EntitySummaryRead,
     SourceRead,
     SourceRelationshipResponse,
     SourceSummaryRead,
@@ -244,8 +244,11 @@ async def read_source_prerequisites(
     source_id: int,
     session: SessionDep,
     user_id: UserIdDep,
-) -> list[SourcePrerequisiteRead]:
-    """Get all prerequisites for a source."""
+) -> list[EntitySummaryRead]:
+    """Get all prerequisites for a source.
+
+    Returns full entity summaries with entity_type discriminator.
+    """
     return await service.get_source_prerequisites(session, source_id, user_id)
 
 
