@@ -209,91 +209,90 @@ export function SourceDetail({
 				/>
 				<SidebarHolder className='flex min-h-0 flex-1'>
 					<div
-						className={cn(
-							'scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll px-6 py-4',
-							className
-						)}
+						className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'
 						ref={scrollContainerRef}
 					>
-						<SourceStatus
-							archived={source.archived}
-							inboxed={source.inboxed}
-							onArchiveToggle={handleArchiveToggle}
-							onInboxToggle={handleInboxToggle}
-						/>
-						<SourceTitleSection
-							isUpdating={isUpdatingSource}
-							onConvertSuccess={onConvertSuccess}
-							onDelete={onDelete}
-							onSourceUpdateSuccess={handleSourceUpdateSuccess}
-							onSrsToggle={handleSrsToggle}
-							onTitleChange={onTitleChange}
-							sidebarReadonly={sidebarReadonly}
-							source={source}
-							title={title}
-						/>
-						<div className='flex flex-col gap-1'>
-							<SourceProperties
-								insertedAt={source.inserted_at}
-								metrics={metrics}
-								updatedAt={source.updated_at}
+						<div className={cn('w-full px-6 py-4', className)}>
+							<SourceStatus
+								archived={source.archived}
+								inboxed={source.inboxed}
+								onArchiveToggle={handleArchiveToggle}
+								onInboxToggle={handleInboxToggle}
 							/>
-							<Textarea
-								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-								name='notes'
-								onChange={onNotesChange}
-								placeholder='Notes'
-								value={notes}
+							<SourceTitleSection
+								isUpdating={isUpdatingSource}
+								onConvertSuccess={onConvertSuccess}
+								onDelete={onDelete}
+								onSourceUpdateSuccess={handleSourceUpdateSuccess}
+								onSrsToggle={handleSrsToggle}
+								onTitleChange={onTitleChange}
+								sidebarReadonly={sidebarReadonly}
+								source={source}
+								title={title}
 							/>
-						</div>
-						<div className='mt-4'>
-							<SourceChildrenPanel
-								children={source.children}
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onChildSelect={onSourceNavigate}
-								renderCard={renderChildCard}
-								sourceId={source.id}
-							/>
-						</div>
-						<div className='mt-4'>
-							<SourceTopicsPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onTopicSelect={onTopicNavigate}
-								renderCard={renderTopicCard}
-								sourceId={source.id}
-								topics={source.topics}
-							/>
-						</div>
-						<div className='mt-4'>
-							<SourcePracticesPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onPracticeSelect={onPracticeNavigate}
-								practices={source.practices}
-								sourceId={source.id}
-							/>
-						</div>
-						<div className='mt-4'>
-							<SourcePrerequisitesPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onSourceNavigate={onSourceNavigate}
-								onTopicNavigate={onTopicNavigate}
-								sourceId={source.id}
-							/>
-						</div>
-						<div className='mt-4'>
-							<SourceRelatedPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onSourceNavigate={onSourceNavigate}
-								onTopicNavigate={onTopicNavigate}
-								relatedIncoming={source.related_incoming}
-								relatedOutgoing={source.related_outgoing}
-								sourceId={source.id}
-							/>
+							<div className='flex flex-col gap-1'>
+								<SourceProperties
+									insertedAt={source.inserted_at}
+									metrics={metrics}
+									updatedAt={source.updated_at}
+								/>
+								<Textarea
+									className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									name='notes'
+									onChange={onNotesChange}
+									placeholder='Notes'
+									value={notes}
+								/>
+							</div>
+							<div className='mt-4'>
+								<SourceChildrenPanel
+									children={source.children}
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onChildSelect={onSourceNavigate}
+									renderCard={renderChildCard}
+									sourceId={source.id}
+								/>
+							</div>
+							<div className='mt-4'>
+								<SourceTopicsPanel
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onTopicSelect={onTopicNavigate}
+									renderCard={renderTopicCard}
+									sourceId={source.id}
+									topics={source.topics}
+								/>
+							</div>
+							<div className='mt-4'>
+								<SourcePracticesPanel
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onPracticeSelect={onPracticeNavigate}
+									practices={source.practices}
+									sourceId={source.id}
+								/>
+							</div>
+							<div className='mt-4'>
+								<SourcePrerequisitesPanel
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onSourceNavigate={onSourceNavigate}
+									onTopicNavigate={onTopicNavigate}
+									sourceId={source.id}
+								/>
+							</div>
+							<div className='mt-4'>
+								<SourceRelatedPanel
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onSourceNavigate={onSourceNavigate}
+									onTopicNavigate={onTopicNavigate}
+									relatedIncoming={source.related_incoming}
+									relatedOutgoing={source.related_outgoing}
+									sourceId={source.id}
+								/>
+							</div>
 						</div>
 					</div>
 					<ReviewsSidebar

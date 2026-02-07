@@ -403,9 +403,25 @@ function ReviewQueueGroupedList({
 						>
 							{group.label}
 						</h3>
+						{group.tier === 'Forgotten' && (
+							<span className='font-semibold text-muted-foreground text-xs'>
+								You'll probably have some relearning to do but better late than
+								never!
+							</span>
+						)}
+						{group.tier === 'Hazy' && (
+							<span className='font-semibold text-muted-foreground text-xs'>
+								A fine time to review, but there might be some relearning!
+							</span>
+						)}
 						{group.tier === 'Fine' && (
 							<span className='font-semibold text-muted-foreground text-xs'>
 								The best time to review!
+							</span>
+						)}
+						{group.tier === 'Fresh' && (
+							<span className='font-semibold text-muted-foreground text-xs'>
+								You could probably wait to review these!
 							</span>
 						)}
 					</div>

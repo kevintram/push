@@ -225,81 +225,80 @@ export function TopicDetail({
 				/>
 				<SidebarHolder className='flex min-h-0 flex-1'>
 					<div
-						className={cn(
-							'scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll px-6 py-4',
-							className
-						)}
+						className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'
 						ref={scrollContainerRef}
 					>
-						<TopicStatus
-							archived={topic.archived}
-							inboxed={topic.inboxed}
-							onArchiveToggle={handleArchiveToggle}
-							onInboxToggle={handleInboxToggle}
-						/>
-						<TopicTitleSection
-							isUpdating={isUpdatingTopic}
-							onConvertSuccess={onConvertSuccess}
-							onDelete={onDelete}
-							onSrsToggle={handleSrsToggle}
-							onTitleChange={onNameChange}
-							onTopicUpdateSuccess={handleTopicUpdateSuccess}
-							sidebarReadonly={sidebarReadonly}
-							title={title}
-							topic={topic}
-						/>
-						<div className='flex flex-col gap-1'>
-							<TopicProperties
-								insertedAt={topic.inserted_at}
-								metrics={metrics}
-								updatedAt={topic.updated_at}
+						<div className={cn('w-full px-6 py-4', className)}>
+							<TopicStatus
+								archived={topic.archived}
+								inboxed={topic.inboxed}
+								onArchiveToggle={handleArchiveToggle}
+								onInboxToggle={handleInboxToggle}
 							/>
-							<Textarea
-								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-								name='notes'
-								onChange={onNotesChange}
-								placeholder='Notes'
-								value={notes}
+							<TopicTitleSection
+								isUpdating={isUpdatingTopic}
+								onConvertSuccess={onConvertSuccess}
+								onDelete={onDelete}
+								onSrsToggle={handleSrsToggle}
+								onTitleChange={onNameChange}
+								onTopicUpdateSuccess={handleTopicUpdateSuccess}
+								sidebarReadonly={sidebarReadonly}
+								title={title}
+								topic={topic}
 							/>
-						</div>
-						<div className='mt-4'>
-							<TopicChildrenPanel
-								children={topic.children}
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onChildSelect={onTopicNavigate}
-								renderCard={renderChildCard}
-								topicId={topic.id}
-							/>
-						</div>
-						<div className='mt-4'>
-							<TopicRelatedPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onRelatedSelect={onTopicNavigate}
-								onSourceSelect={onSourceNavigate}
-								related={mergedRelated}
-								topicId={topic.id}
-							/>
-						</div>
-						<div className='mt-4'>
-							<TopicSourcesPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onSourceSelect={onSourceNavigate}
-								renderCard={renderSourceCard}
-								sources={topic.sources}
-								topicId={topic.id}
-							/>
-						</div>
-						<div className='mt-4'>
-							<TopicPracticesPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onPracticeSelect={onPracticeNavigate}
-								practices={topic.practices}
-								topicId={topic.id}
-							/>
+							<div className='flex flex-col gap-1'>
+								<TopicProperties
+									insertedAt={topic.inserted_at}
+									metrics={metrics}
+									updatedAt={topic.updated_at}
+								/>
+								<Textarea
+									className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									name='notes'
+									onChange={onNotesChange}
+									placeholder='Notes'
+									value={notes}
+								/>
+							</div>
+							<div className='mt-4'>
+								<TopicChildrenPanel
+									children={topic.children}
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onChildSelect={onTopicNavigate}
+									renderCard={renderChildCard}
+									topicId={topic.id}
+								/>
+							</div>
+							<div className='mt-4'>
+								<TopicRelatedPanel
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onRelatedSelect={onTopicNavigate}
+									onSourceSelect={onSourceNavigate}
+									related={mergedRelated}
+									topicId={topic.id}
+								/>
+							</div>
+							<div className='mt-4'>
+								<TopicSourcesPanel
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onSourceSelect={onSourceNavigate}
+									renderCard={renderSourceCard}
+									sources={topic.sources}
+									topicId={topic.id}
+								/>
+							</div>
+							<div className='mt-4'>
+								<TopicPracticesPanel
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onPracticeSelect={onPracticeNavigate}
+									practices={topic.practices}
+									topicId={topic.id}
+								/>
+							</div>
 						</div>
 					</div>
 					<ReviewsSidebar

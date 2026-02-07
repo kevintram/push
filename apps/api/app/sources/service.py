@@ -1418,6 +1418,16 @@ async def convert_source_to_practice(
             )
         )
 
+    # 6b. Link new practice to parent source (if child source)
+    parent_id = source.parent_id
+    if parent_id is not None:
+        await session.execute(
+            t_practice_sources.insert().values(
+                practice_id=new_practice.id,
+                source_id=parent_id,
+            )
+        )
+
     # 7. Delete original source
     await session.delete(source)
 

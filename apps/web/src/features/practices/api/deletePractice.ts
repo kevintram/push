@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
+import { sourceKeys } from '~/features/sources/api/queryKeys'
+import { topicKeys } from '~/features/topics/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
 
 export type DeletePracticeInput = {
@@ -46,6 +48,13 @@ export function useDeletePractice() {
 			})
 			queryClient.invalidateQueries({
 				queryKey: reviewKeys.all
+			})
+			// Invalidate topics and sources that may contain the deleted practice
+			queryClient.invalidateQueries({
+				queryKey: topicKeys.all
+			})
+			queryClient.invalidateQueries({
+				queryKey: sourceKeys.all
 			})
 		}
 	})
