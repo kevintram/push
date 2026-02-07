@@ -197,7 +197,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 					await createReview(localDateString(), ratingState)
 				}
 			} catch {
-				// Mutation error handling is managed by TanStack Query
+				toast.error('Failed to create review')
 			}
 		},
 		[createReview, isCreatingReview]

@@ -132,10 +132,14 @@ export function ReviewsSidebar<T extends EntityWithId>({
 
 	const handleRatingSelect = useCallback(
 		async (ratingState: ReviewRatingState) => {
-			if (ratingState === 'uncompleted') {
-				await createReview(null, null)
-			} else {
-				await createReview(localDateString(), ratingState)
+			try {
+				if (ratingState === 'uncompleted') {
+					await createReview(null, null)
+				} else {
+					await createReview(localDateString(), ratingState)
+				}
+			} catch {
+				toast.error('Failed to create review')
 			}
 		},
 		[createReview]
