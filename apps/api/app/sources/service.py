@@ -1,7 +1,12 @@
 """Source business logic and data access."""
 
+from __future__ import annotations
+
 from datetime import datetime, timezone as dt_timezone
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from app.schemas.entity_summaries import SourceEntitySummary, TopicEntitySummary
 
 from sqlalchemy import cast, delete, desc, func, insert, select, text, update
 from sqlalchemy.exc import IntegrityError
@@ -886,14 +891,13 @@ async def remove_related_entity_from_source(
 
 async def get_source_prerequisites(
     session: AsyncSession, source_id: int, user_id: str
-) -> list[dict]:
+) -> list[TopicEntitySummary | SourceEntitySummary]:
     """Get all prerequisites for this source.
 
-    Returns a flat list of dicts containing full entity data with an
-    ``entity_type`` discriminator, matching the shape used by related entities.
+    Returns a flat list of full entity summaries with an ``entity_type``
+    discriminator, matching the shape used by related entities.
     """
-    from app.schemas.sources import SourceSummaryRead
-    from app.schemas.topics import TopicSummaryRead
+    from app.schemas.entity_summaries import SourceEntitySummary, TopicEntitySummary
 
     # Verify source exists and belongs to user
     await get_source(session, source_id, user_id)
@@ -913,22 +917,16 @@ async def get_source_prerequisites(
     result = await session.execute(stmt)
     prerequisites = list(result.scalars().all())
 
-    entities: list[dict] = []
+    entities: list[TopicEntitySummary | SourceEntitySummary] = []
     for prereq in prerequisites:
         if prereq.prereq_topic_id and prereq.prereq_topic:
             if prereq.prereq_topic.user_id == user_id:
-                topic_data = TopicSummaryRead.model_validate(
-                    prereq.prereq_topic
-                ).model_dump()
-                topic_data["entity_type"] = "topic"
-                entities.append(topic_data)
+                entities.append(TopicEntitySummary.model_validate(prereq.prereq_topic))
         elif prereq.prereq_source_id and prereq.prereq_source:
             if prereq.prereq_source.user_id == user_id:
-                source_data = SourceSummaryRead.model_validate(
-                    prereq.prereq_source
-                ).model_dump()
-                source_data["entity_type"] = "source"
-                entities.append(source_data)
+                entities.append(
+                    SourceEntitySummary.model_validate(prereq.prereq_source)
+                )
 
     return entities
 
