@@ -3,6 +3,8 @@ import dayjs from 'dayjs'
 import {
 	Anvil,
 	CalendarIcon,
+	Dumbbell,
+	FileText,
 	MoreHorizontal,
 	StickyNote,
 	Trash
@@ -167,6 +169,30 @@ export function ReviewItem({
 		[navigate, entry.topic]
 	)
 
+	const handleSourceClick = useCallback(
+		(event: React.MouseEvent) => {
+			event.stopPropagation()
+			if (!entry.source) return
+			navigate({
+				to: '/sources/$sourceId',
+				params: { sourceId: entry.source.id.toString() }
+			})
+		},
+		[navigate, entry.source]
+	)
+
+	const handlePracticeClick = useCallback(
+		(event: React.MouseEvent) => {
+			event.stopPropagation()
+			if (!entry.practice) return
+			navigate({
+				to: '/practices/$practiceId',
+				params: { practiceId: entry.practice.id.toString() }
+			})
+		},
+		[navigate, entry.practice]
+	)
+
 	const effectiveDate = entry.effective_date
 		? dayjs(entry.effective_date).toDate()
 		: null
@@ -186,10 +212,10 @@ export function ReviewItem({
 	)
 	const description = entry.description?.trim()
 
-	// Determine if we're actually rendering topic or session content
-	const showingTopic =
-		(variant === 'default' || variant === 'topic') && entry.topic?.name
-	const showingTopicOrSession = showingTopic
+	// Determine if we're actually rendering an entity link
+	const showingEntity =
+		(variant === 'default' || variant === 'topic') &&
+		(entry.topic?.name || entry.source?.title || entry.practice?.prompt)
 
 	return (
 		<Card className='rounded-none border-0 bg-transparent shadow-none'>
@@ -293,9 +319,32 @@ export function ReviewItem({
 								<span>{entry.topic.name}</span>
 							</Button>
 						)}
+						{(variant === 'default' || variant === 'topic') && entry.source && (
+							<Button
+								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
+								onClick={handleSourceClick}
+								size='sm'
+								variant='link'
+							>
+								<FileText className='h-3 w-3' />
+								<span>{entry.source.title}</span>
+							</Button>
+						)}
+						{(variant === 'default' || variant === 'topic') &&
+							entry.practice && (
+								<Button
+									className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
+									onClick={handlePracticeClick}
+									size='sm'
+									variant='link'
+								>
+									<Dumbbell className='h-3 w-3' />
+									<span>{entry.practice.prompt}</span>
+								</Button>
+							)}
 						{hasStability && (
 							<>
-								{showingTopicOrSession && <span>⋅</span>}
+								{showingEntity && <span>⋅</span>}
 								<div className='flex items-center'>
 									<Anvil className='mr-1 h-3 w-3' />
 									<span>{`${stabilityAfterRounded}d`}</span>
