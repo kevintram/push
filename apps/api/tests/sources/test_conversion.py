@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import EntityRelation, t_practice_topics
+from app.models import EntityRelation, t_practice_sources, t_practice_topics
 
 
 class TestConvertSourceToTopic:
@@ -335,6 +335,43 @@ class TestConvertSourceToPractice:
             )
         )
         assert result.first() is not None
+
+    async def test_convert_child_source_links_practice_to_parent(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+        db_session: AsyncSession,
+    ):
+        """Converting a child source links the new practice to the parent source."""
+        parent = await create_test_source(title="Parent Source")
+        child = await create_test_source(
+            title="Child Question", notes="Child Answer", parent_id=parent.id
+        )
+
+        response = await test_client.post(
+            f"/sources/{child.id}/convert-to-practice/"
+        )
+
+        assert response.status_code == 200
+        new_practice_id = response.json()["practice_id"]
+
+        # Verify practice is linked to parent source via practice_sources
+        result = await db_session.execute(
+            select(t_practice_sources).where(
+                t_practice_sources.c.practice_id == new_practice_id,
+                t_practice_sources.c.source_id == parent.id,
+            )
+        )
+        assert result.first() is not None
+
+        # Verify the practice appears in the parent source's practices list
+        parent_response = await test_client.get(
+            f"/sources/{parent.id}/practices/"
+        )
+        assert parent_response.status_code == 200
+        practices = parent_response.json()
+        practice_ids = [p["id"] for p in practices]
+        assert new_practice_id in practice_ids
 
     async def test_convert_blocked_by_children(
         self, test_client: AsyncClient, create_test_source
