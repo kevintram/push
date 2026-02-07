@@ -1,5 +1,6 @@
 import { ChevronDown, Loader2, Plus } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '~/components/ui/Button'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import { Skeleton } from '~/components/ui/Skeleton'
@@ -14,6 +15,7 @@ import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'
+import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type {
 	Rating,
 	ReviewListItem
@@ -83,6 +85,7 @@ export function ReviewsSidebar<T extends EntityWithId>({
 
 	const createReviewMutation = useCreateReview()
 	const isCreatingReview = createReviewMutation.isPending
+	const { openReviewDialog } = useReviewDialog()
 
 	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
@@ -121,11 +124,14 @@ export function ReviewsSidebar<T extends EntityWithId>({
 				})
 			}
 
-			// Open the review dialog with the newly created review
-			setSelectedReviewId(review.id)
-			setIsDialogOpen(true)
+			toast('Review created', {
+				action: {
+					label: 'Open',
+					onClick: () => openReviewDialog(review.id)
+				}
+			})
 		},
-		[entity, entityType, createReviewMutation]
+		[entity, entityType, createReviewMutation, openReviewDialog]
 	)
 
 	const handleRatingSelect = useCallback(
