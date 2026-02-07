@@ -3,7 +3,6 @@ import { practiceKeys } from '~/features/practices/api/queryKeys'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { topicKeys } from '~/features/topics/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
-import { sourceKeys } from './queryKeys'
 
 export type ChildHandlingStrategy = 'delete' | 'orphan' | 'reparent'
 
@@ -33,59 +32,39 @@ export async function deleteSource(input: DeleteSourceInput | number) {
 	}
 }
 
-type CachedRelationships = {
-	practiceIds: number[] | undefined
-	topicIds: number[] | undefined
-}
-
 export function useDeleteSource() {
 	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: deleteSource,
-		onMutate: (input): CachedRelationships => {
-			const sourceId = typeof input === 'number' ? input : input.sourceId
-			const cached = queryClient.getQueryData<{
-				practices?: Array<{ id: number }>
-				topics?: Array<{ id: number }>
-			}>(sourceKeys.detail(sourceId))
-			return {
-				practiceIds: cached?.practices?.map(p => p.id),
-				topicIds: cached?.topics?.map(t => t.id)
-			}
-		},
-		onSuccess: (_, input, context) => {
+		onSuccess: (_, input) => {
 			const sourceId = typeof input === 'number' ? input : input.sourceId
 			// Invalidate all source queries except the byId query for the deleted source
 			queryClient.invalidateQueries({
 				predicate: query => {
 					const queryKey = query.queryKey
+					// Check if it's a source query
 					if (queryKey[0] !== 'sources') return false
+
+					// Don't invalidate the byId query for the deleted source
+					// byId structure: ['sources', sourceId, ...]
 					if (queryKey.length >= 2 && queryKey[1] === sourceId) {
 						return false
 					}
+
 					return true
 				}
 			})
 			queryClient.invalidateQueries({
 				queryKey: reviewKeys.all
 			})
-			// Invalidate related practices/topics; fall back to broad invalidation
-			// if the detail cache wasn't populated
-			if (context.practiceIds) {
-				for (const id of context.practiceIds) {
-					queryClient.invalidateQueries({ queryKey: practiceKeys.byId(id) })
-				}
-			} else {
-				queryClient.invalidateQueries({ queryKey: practiceKeys.all })
-			}
-			if (context.topicIds) {
-				for (const id of context.topicIds) {
-					queryClient.invalidateQueries({ queryKey: topicKeys.byId(id) })
-				}
-			} else {
-				queryClient.invalidateQueries({ queryKey: topicKeys.all })
-			}
+			// Invalidate practices and topics that may contain the deleted source
+			queryClient.invalidateQueries({
+				queryKey: practiceKeys.all
+			})
+			queryClient.invalidateQueries({
+				queryKey: topicKeys.all
+			})
 		}
 	})
 }
