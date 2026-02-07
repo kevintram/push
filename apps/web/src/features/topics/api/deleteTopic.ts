@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { practiceKeys } from '~/features/practices/api/queryKeys'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
+import { sourceKeys } from '~/features/sources/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
 
 export type ChildHandlingStrategy = 'delete' | 'orphan' | 'reparent'
@@ -55,6 +57,13 @@ export function useDeleteTopic() {
 			})
 			queryClient.invalidateQueries({
 				queryKey: reviewKeys.all
+			})
+			// Invalidate practices and sources that may contain the deleted topic
+			queryClient.invalidateQueries({
+				queryKey: practiceKeys.all
+			})
+			queryClient.invalidateQueries({
+				queryKey: sourceKeys.all
 			})
 		}
 	})
