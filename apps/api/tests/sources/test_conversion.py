@@ -348,9 +348,7 @@ class TestConvertSourceToPractice:
             title="Child Question", notes="Child Answer", parent_id=parent.id
         )
 
-        response = await test_client.post(
-            f"/sources/{child.id}/convert-to-practice/"
-        )
+        response = await test_client.post(f"/sources/{child.id}/convert-to-practice/")
 
         assert response.status_code == 200
         new_practice_id = response.json()["practice_id"]
@@ -365,9 +363,7 @@ class TestConvertSourceToPractice:
         assert result.first() is not None
 
         # Verify the practice appears in the parent source's practices list
-        parent_response = await test_client.get(
-            f"/sources/{parent.id}/practices/"
-        )
+        parent_response = await test_client.get(f"/sources/{parent.id}/practices/")
         assert parent_response.status_code == 200
         practices = parent_response.json()
         practice_ids = [p["id"] for p in practices]
