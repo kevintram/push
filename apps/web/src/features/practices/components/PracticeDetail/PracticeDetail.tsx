@@ -165,79 +165,78 @@ export function PracticeDetail({
 				/>
 				<SidebarHolder className='flex min-h-0 flex-1'>
 					<div
-						className={cn(
-							'scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll px-6 py-4',
-							className
-						)}
+						className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'
 						ref={scrollContainerRef}
 					>
-						{/* Status badges */}
-						<LearnableStatus
-							archived={practice.archived}
-							inboxed={practice.inboxed}
-							onArchiveToggle={handleArchiveToggle}
-							onInboxToggle={handleInboxToggle}
-						/>
+						<div className={cn('w-full px-6 py-4', className)}>
+							{/* Status badges */}
+							<LearnableStatus
+								archived={practice.archived}
+								inboxed={practice.inboxed}
+								onArchiveToggle={handleArchiveToggle}
+								onInboxToggle={handleInboxToggle}
+							/>
 
-						{/* Prompt field with action menu */}
-						<div className='flex items-start gap-2'>
-							<div className='flex flex-1 flex-col gap-1'>
-								<Textarea
-									className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-									onChange={onPromptChange}
-									placeholder='Prompt'
-									spellCheck={false}
-									value={prompt}
+							{/* Prompt field with action menu */}
+							<div className='flex items-start gap-2'>
+								<div className='flex flex-1 flex-col gap-1'>
+									<Textarea
+										className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+										onChange={onPromptChange}
+										placeholder='Prompt'
+										spellCheck={false}
+										value={prompt}
+									/>
+								</div>
+								<PracticeActionMenu
+									onConvertSuccess={onConvertSuccess}
+									onDelete={onDelete}
+									onPracticeUpdateSuccess={handlePracticeUpdateSuccess}
+									practice={practice}
 								/>
 							</div>
-							<PracticeActionMenu
-								onConvertSuccess={onConvertSuccess}
-								onDelete={onDelete}
-								onPracticeUpdateSuccess={handlePracticeUpdateSuccess}
-								practice={practice}
-							/>
-						</div>
 
-						{/* Answer field */}
-						<div className='mt-4'>
-							<Textarea
-								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-								onChange={onAnswerChange}
-								placeholder='Answer'
-								spellCheck={false}
-								value={answer}
-							/>
-						</div>
+							{/* Answer field */}
+							<div className='mt-4'>
+								<Textarea
+									className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									onChange={onAnswerChange}
+									placeholder='Answer'
+									spellCheck={false}
+									value={answer}
+								/>
+							</div>
 
-						{/* Properties (timestamps, FSRS status) */}
-						<div className='mt-4'>
-							<LearnableProperties
-								insertedAt={practice.inserted_at}
-								metrics={metrics}
-								updatedAt={practice.updated_at}
-							/>
-						</div>
+							{/* Properties (timestamps, FSRS status) */}
+							<div className='mt-4'>
+								<LearnableProperties
+									insertedAt={practice.inserted_at}
+									metrics={metrics}
+									updatedAt={practice.updated_at}
+								/>
+							</div>
 
-						{/* Topics Panel */}
-						<div className='mt-4'>
-							<PracticeTopicsPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onTopicSelect={onTopicNavigate}
-								practiceId={practice.id}
-								topics={practice.topics}
-							/>
-						</div>
+							{/* Topics Panel */}
+							<div className='mt-4'>
+								<PracticeTopicsPanel
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onTopicSelect={onTopicNavigate}
+									practiceId={practice.id}
+									topics={practice.topics}
+								/>
+							</div>
 
-						{/* Sources Panel */}
-						<div className='mt-4'>
-							<PracticeSourcesPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onSourceSelect={onSourceNavigate}
-								practiceId={practice.id}
-								sources={practice.sources}
-							/>
+							{/* Sources Panel */}
+							<div className='mt-4'>
+								<PracticeSourcesPanel
+									getScrollElement={getScrollElement}
+									inheritFsrsState={srsSource}
+									onSourceSelect={onSourceNavigate}
+									practiceId={practice.id}
+									sources={practice.sources}
+								/>
+							</div>
 						</div>
 					</div>
 
