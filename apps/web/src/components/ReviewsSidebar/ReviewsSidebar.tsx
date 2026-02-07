@@ -1,5 +1,5 @@
 import { ChevronDown, Loader2, Plus } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/Button'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
@@ -12,7 +12,6 @@ import {
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviews } from '~/features/reviews/api/getReviews'
 import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
-import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
@@ -49,9 +48,6 @@ export function ReviewsSidebar<T extends EntityWithId>({
 	const { data: reviews = [], isLoading } = useReviews(
 		entity?.id !== undefined ? filters : undefined
 	)
-	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
-	const [isDialogOpen, setIsDialogOpen] = useState(false)
-
 	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
 		const scheduled: Array<ReviewListItem> = []
 		const unscheduled: Array<ReviewListItem> = []
@@ -148,10 +144,9 @@ export function ReviewsSidebar<T extends EntityWithId>({
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
 			if (readonly) return
-			setSelectedReviewId(reviewId)
-			setIsDialogOpen(true)
+			openReviewDialog(reviewId)
 		},
-		[readonly]
+		[readonly, openReviewDialog]
 	)
 
 	const baseSidebarClass = 'absolute border-l'
@@ -249,11 +244,6 @@ export function ReviewsSidebar<T extends EntityWithId>({
 					</>
 				)}
 			</SidebarContent>
-			<ReviewDialog
-				onOpenChange={setIsDialogOpen}
-				open={isDialogOpen}
-				reviewId={selectedReviewId}
-			/>
 		</Sidebar>
 	)
 }
