@@ -1,5 +1,18 @@
-import { ChevronDown, ListChecks, Loader2, X } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { ChevronDown, ListChecks } from 'lucide-react'
+import {
+	useCallback,
+	useInsertionEffect,
+	useMemo,
+	useRef,
+	useState
+} from 'react'
+import {
+	EntityCard,
+	type EntityItem,
+	estimateEntitySize,
+	getEntityKey
+} from '~/components/EntityCard'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { Button } from '~/components/ui/Button'
@@ -7,15 +20,18 @@ import { CountBadge } from '~/components/ui/CountBadge'
 import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
-import type { SourcePrerequisiteRead } from '~/models/entity-relations.types'
-import { EntityType } from '~/models/entity-relations.types'
+import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
+import type { EntityType } from '~/models/entity-relations.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourcePrerequisite } from '../api/addSourcePrerequisite'
 import { useSourcePrerequisites } from '../api/getSourcePrerequisites'
 import { useRemoveSourcePrerequisite } from '../api/removeSourcePrerequisite'
+import { SourceActionMenu } from './SourceActionMenu'
 
 interface SourcePrerequisitesPanelProps {
 	sourceId: number | undefined
+	getScrollElement?: () => HTMLDivElement | null
+	scrollMargin?: number
 	inheritFsrsState?: FsrsState | null
 	onTopicNavigate?: (topicId: number) => void
 	onSourceNavigate?: (sourceId: number) => void
@@ -23,6 +39,8 @@ interface SourcePrerequisitesPanelProps {
 
 export function SourcePrerequisitesPanel({
 	sourceId,
+	getScrollElement,
+	scrollMargin,
 	inheritFsrsState,
 	onTopicNavigate,
 	onSourceNavigate
@@ -38,7 +56,6 @@ export function SourcePrerequisitesPanel({
 	const removePrerequisite = useRemoveSourcePrerequisite()
 
 	const isAdding = addPrerequisite.isPending
-	const isRemoving = removePrerequisite.isPending
 
 	const handleAddPrerequisite = useCallback(
 		(entityType: EntityType, entityId: number) => {
@@ -54,53 +71,94 @@ export function SourcePrerequisitesPanel({
 		[sourceId, addPrerequisite]
 	)
 
-	const handleRemove = useCallback(
-		(prereq: SourcePrerequisiteRead) => {
-			if (!sourceId) return
-
-			if (prereq.prereq_topic_id) {
-				removePrerequisite.mutate({
-					sourceId,
-					entityType: EntityType.Topic,
-					entityId: prereq.prereq_topic_id
-				})
-			} else if (prereq.prereq_source_id) {
-				removePrerequisite.mutate({
-					sourceId,
-					entityType: EntityType.Source,
-					entityId: prereq.prereq_source_id
-				})
+	// Convert to EntityItem format for EntityCard/MasonryLayout
+	const entityItems = useMemo<Array<EntityItem>>(() => {
+		return prerequisites.map((item): EntityItem => {
+			if (item.entity_type === 'topic') {
+				return { type: 'topic', item }
 			}
+			return { type: 'source', item }
+		})
+	}, [prerequisites])
+
+	const handleTopicNavigate = useCallback(
+		(topicId: number) => {
+			onTopicNavigate?.(topicId)
 		},
-		[sourceId, removePrerequisite]
+		[onTopicNavigate]
 	)
 
-	const handleClick = useCallback(
-		(prereq: SourcePrerequisiteRead) => {
-			if (prereq.prereq_topic_id && onTopicNavigate) {
-				onTopicNavigate(prereq.prereq_topic_id)
-			} else if (prereq.prereq_source_id && onSourceNavigate) {
-				onSourceNavigate(prereq.prereq_source_id)
-			}
+	const handleSourceNavigate = useCallback(
+		(id: number) => {
+			onSourceNavigate?.(id)
 		},
-		[onTopicNavigate, onSourceNavigate]
+		[onSourceNavigate]
 	)
 
-	const getPrereqLabel = (prereq: SourcePrerequisiteRead): string => {
-		if (prereq.prereq_topic) {
-			return prereq.prereq_topic.name
-		}
-		if (prereq.prereq_source) {
-			return prereq.prereq_source.title
-		}
-		return 'Unknown'
-	}
+	const handleEntityClick = useCallback(
+		(entity: EntityItem) => {
+			if (entity.type === 'topic') {
+				handleTopicNavigate(entity.item.id)
+			} else if (entity.type === 'source') {
+				handleSourceNavigate(entity.item.id)
+			}
+		},
+		[handleTopicNavigate, handleSourceNavigate]
+	)
 
-	const getPrereqType = (prereq: SourcePrerequisiteRead): string => {
-		if (prereq.prereq_topic_id) return 'Topic'
-		if (prereq.prereq_source_id) return 'Source'
-		return ''
-	}
+	const prerequisitesRef = useRef(prerequisites)
+	useInsertionEffect(() => {
+		prerequisitesRef.current = prerequisites
+	}, [prerequisites])
+	const removePrerequisiteRef = useRef(removePrerequisite)
+	useInsertionEffect(() => {
+		removePrerequisiteRef.current = removePrerequisite
+	}, [removePrerequisite])
+
+	const renderItem = useCallback(
+		(entity: EntityItem) => {
+			const handleRemove = () => {
+				const originalItem = prerequisitesRef.current.find(
+					r => r.entity_type === entity.type && r.id === entity.item.id
+				)
+				if (!(sourceId && originalItem)) return
+				removePrerequisiteRef.current.mutate({
+					sourceId,
+					entityType: originalItem.entity_type as EntityType,
+					entityId: originalItem.id
+				})
+			}
+
+			let headerRight: React.ReactNode
+			if (entity.type === 'topic') {
+				headerRight = (
+					<TopicActionMenu
+						onRemoveRelationship={handleRemove}
+						removeRelationshipText='Remove Prerequisite'
+						topic={entity.item}
+					/>
+				)
+			} else if (entity.type === 'source') {
+				headerRight = (
+					<SourceActionMenu
+						onRemoveRelationship={handleRemove}
+						removeRelationshipText='Remove Prerequisite'
+						source={entity.item}
+					/>
+				)
+			}
+
+			return (
+				<EntityCard
+					entity={entity}
+					headerRight={headerRight}
+					minHeight={96}
+					onEntityClick={handleEntityClick}
+				/>
+			)
+		},
+		[handleEntityClick, sourceId]
+	)
 
 	return (
 		<div className='flex flex-col'>
@@ -140,45 +198,25 @@ export function SourcePrerequisitesPanel({
 				}
 			/>
 			{!isCollapsed && (
-				<div className='flex flex-col gap-2 py-4'>
-					{isLoading && (
-						<div className='flex items-center justify-center py-4'>
-							<Loader2 className='h-5 w-5 animate-spin text-muted-foreground' />
-						</div>
-					)}
-					{!isLoading && prerequisites.length === 0 && (
+				<div className='py-4'>
+					{isLoading ? (
+						<p className='py-2 text-muted-foreground text-sm'>Loading...</p>
+					) : entityItems.length === 0 ? (
 						<p className='py-2 text-muted-foreground text-sm'>
 							No prerequisites defined
 						</p>
+					) : (
+						<MasonryLayout
+							estimateItemSize={estimateEntitySize}
+							gap={16}
+							getItemKey={getEntityKey}
+							getScrollElement={getScrollElement}
+							items={entityItems}
+							minItemWidth={280}
+							renderItem={renderItem}
+							scrollMargin={scrollMargin}
+						/>
 					)}
-					{prerequisites.map(prereq => (
-						<div
-							className='flex items-center justify-between rounded-md border border-border bg-card p-3'
-							key={prereq.id}
-						>
-							<button
-								className='flex-1 text-left'
-								onClick={() => handleClick(prereq)}
-								type='button'
-							>
-								<span className='font-medium text-sm'>
-									{getPrereqLabel(prereq)}
-								</span>
-								<span className='ml-2 text-muted-foreground text-xs'>
-									({getPrereqType(prereq)})
-								</span>
-							</button>
-							<Button
-								className='h-6 w-6 p-0'
-								disabled={isRemoving}
-								onClick={() => handleRemove(prereq)}
-								size='sm'
-								variant='ghost'
-							>
-								<X className='h-4 w-4' />
-							</Button>
-						</div>
-					))}
 				</div>
 			)}
 

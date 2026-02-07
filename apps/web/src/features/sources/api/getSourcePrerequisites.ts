@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import type { SourcePrerequisiteRead } from '~/models/entity-relations.types'
+import type { RelatedEntityItem } from '~/features/topics/types/topic.types'
 import { apiFetch } from '~/utils/apiFetch'
 import { sourceKeys } from './queryKeys'
 
 export async function getSourcePrerequisites(
 	sourceId: number
-): Promise<Array<SourcePrerequisiteRead>> {
+): Promise<Array<RelatedEntityItem>> {
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/sources/${sourceId}/prerequisites/`
 	)

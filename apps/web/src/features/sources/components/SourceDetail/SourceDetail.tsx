@@ -277,6 +277,7 @@ export function SourceDetail({
 						</div>
 						<div className='mt-4'>
 							<SourcePrerequisitesPanel
+								getScrollElement={getScrollElement}
 								inheritFsrsState={srsSource}
 								onSourceNavigate={onSourceNavigate}
 								onTopicNavigate={onTopicNavigate}
