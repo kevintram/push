@@ -155,7 +155,7 @@ export function ReviewPage() {
 					<ScheduleCard onReviewClick={handleReviewClick} tabs={scheduleTabs} />
 
 					{isQueueLoading ? (
-						<MasonryLayoutSkeleton />
+						<ReviewQueueSkeleton />
 					) : isQueueEmpty ? (
 						<ReviewQueueEmpty />
 					) : (
@@ -419,6 +419,21 @@ function ReviewQueueGroupedList({
 					/>
 				</div>
 			))}
+		</div>
+	)
+}
+
+function ReviewQueueSkeleton() {
+	return (
+		<div className='space-y-8'>
+			<div className='space-y-3'>
+				<Skeleton className='h-7 w-24' />
+				<MasonryLayoutSkeleton count={8} />
+			</div>
+			<div className='space-y-3'>
+				<Skeleton className='h-7 w-16' />
+				<MasonryLayoutSkeleton count={6} />
+			</div>
 		</div>
 	)
 }
