@@ -1,5 +1,6 @@
 import { ChevronDown, Loader2, Plus } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
+import { toast } from 'sonner'
 import { Button } from '~/components/ui/Button'
 import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
 import { Skeleton } from '~/components/ui/Skeleton'
@@ -11,9 +12,9 @@ import {
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviews } from '~/features/reviews/api/getReviews'
 import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
-import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'
+import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type {
 	Rating,
 	ReviewListItem
@@ -47,9 +48,6 @@ export function ReviewsSidebar<T extends EntityWithId>({
 	const { data: reviews = [], isLoading } = useReviews(
 		entity?.id !== undefined ? filters : undefined
 	)
-	const [selectedReviewId, setSelectedReviewId] = useState<number | null>(null)
-	const [isDialogOpen, setIsDialogOpen] = useState(false)
-
 	const { scheduledReviews, unscheduledReviews } = useMemo(() => {
 		const scheduled: Array<ReviewListItem> = []
 		const unscheduled: Array<ReviewListItem> = []
@@ -83,6 +81,7 @@ export function ReviewsSidebar<T extends EntityWithId>({
 
 	const createReviewMutation = useCreateReview()
 	const isCreatingReview = createReviewMutation.isPending
+	const { openReviewDialog } = useReviewDialog()
 
 	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
@@ -121,19 +120,26 @@ export function ReviewsSidebar<T extends EntityWithId>({
 				})
 			}
 
-			// Open the review dialog with the newly created review
-			setSelectedReviewId(review.id)
-			setIsDialogOpen(true)
+			toast('Review created', {
+				action: {
+					label: 'Open',
+					onClick: () => openReviewDialog(review.id)
+				}
+			})
 		},
-		[entity, entityType, createReviewMutation]
+		[entity, entityType, createReviewMutation, openReviewDialog]
 	)
 
 	const handleRatingSelect = useCallback(
 		async (ratingState: ReviewRatingState) => {
-			if (ratingState === 'uncompleted') {
-				await createReview(null, null)
-			} else {
-				await createReview(localDateString(), ratingState)
+			try {
+				if (ratingState === 'uncompleted') {
+					await createReview(null, null)
+				} else {
+					await createReview(localDateString(), ratingState)
+				}
+			} catch {
+				toast.error('Failed to create review')
 			}
 		},
 		[createReview]
@@ -142,10 +148,9 @@ export function ReviewsSidebar<T extends EntityWithId>({
 	const handleReviewClick = useCallback(
 		(reviewId: number) => {
 			if (readonly) return
-			setSelectedReviewId(reviewId)
-			setIsDialogOpen(true)
+			openReviewDialog(reviewId)
 		},
-		[readonly]
+		[readonly, openReviewDialog]
 	)
 
 	const baseSidebarClass = 'absolute border-l'
@@ -243,11 +248,6 @@ export function ReviewsSidebar<T extends EntityWithId>({
 					</>
 				)}
 			</SidebarContent>
-			<ReviewDialog
-				onOpenChange={setIsDialogOpen}
-				open={isDialogOpen}
-				reviewId={selectedReviewId}
-			/>
 		</Sidebar>
 	)
 }
