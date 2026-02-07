@@ -2,8 +2,8 @@ import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
 	Anvil,
-	Brain,
 	CalendarIcon,
+	Dumbbell,
 	FileText,
 	MoreHorizontal,
 	StickyNote,
@@ -338,7 +338,7 @@ export function ReviewItem({
 									size='sm'
 									variant='link'
 								>
-									<Brain className='h-3 w-3' />
+									<Dumbbell className='h-3 w-3' />
 									<span>{entry.practice.prompt}</span>
 								</Button>
 							)}
