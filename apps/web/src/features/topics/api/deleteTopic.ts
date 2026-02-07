@@ -3,6 +3,7 @@ import { practiceKeys } from '~/features/practices/api/queryKeys'
 import { reviewKeys } from '~/features/reviews/api/queryKeys'
 import { sourceKeys } from '~/features/sources/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
+import { topicKeys } from './queryKeys'
 
 export type ChildHandlingStrategy = 'delete' | 'orphan' | 'reparent'
 
@@ -32,39 +33,59 @@ export async function deleteTopic(input: DeleteTopicInput | number) {
 	}
 }
 
+type CachedRelationships = {
+	practiceIds: number[] | undefined
+	sourceIds: number[] | undefined
+}
+
 export function useDeleteTopic() {
 	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: deleteTopic,
-		onSuccess: (_, input) => {
+		onMutate: (input): CachedRelationships => {
+			const topicId = typeof input === 'number' ? input : input.topicId
+			const cached = queryClient.getQueryData<{
+				practices?: Array<{ id: number }>
+				sources?: Array<{ id: number }>
+			}>(topicKeys.detail(topicId))
+			return {
+				practiceIds: cached?.practices?.map(p => p.id),
+				sourceIds: cached?.sources?.map(s => s.id)
+			}
+		},
+		onSuccess: (_, input, context) => {
 			const topicId = typeof input === 'number' ? input : input.topicId
 			// Invalidate all topic queries except the byId query for the deleted topic
 			queryClient.invalidateQueries({
 				predicate: query => {
 					const queryKey = query.queryKey
-					// Check if it's a topic query
 					if (queryKey[0] !== 'topics') return false
-
-					// Don't invalidate the byId query for the deleted topic
-					// byId structure: ['topics', topicId, ...]
 					if (queryKey.length >= 2 && queryKey[1] === topicId) {
 						return false
 					}
-
 					return true
 				}
 			})
 			queryClient.invalidateQueries({
 				queryKey: reviewKeys.all
 			})
-			// Invalidate practices and sources that may contain the deleted topic
-			queryClient.invalidateQueries({
-				queryKey: practiceKeys.all
-			})
-			queryClient.invalidateQueries({
-				queryKey: sourceKeys.all
-			})
+			// Invalidate related practices/sources; fall back to broad invalidation
+			// if the detail cache wasn't populated
+			if (context.practiceIds) {
+				for (const id of context.practiceIds) {
+					queryClient.invalidateQueries({ queryKey: practiceKeys.byId(id) })
+				}
+			} else {
+				queryClient.invalidateQueries({ queryKey: practiceKeys.all })
+			}
+			if (context.sourceIds) {
+				for (const id of context.sourceIds) {
+					queryClient.invalidateQueries({ queryKey: sourceKeys.byId(id) })
+				}
+			} else {
+				queryClient.invalidateQueries({ queryKey: sourceKeys.all })
+			}
 		}
 	})
 }
