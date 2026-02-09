@@ -1,13 +1,7 @@
-import { BookOpen, MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, Star } from 'lucide-react'
 import type { ChangeEvent, ReactNode } from 'react'
-import { BookOpenOff } from '~/components/icons'
 import { Button } from '~/components/ui/Button'
 import { Textarea } from '~/components/ui/Textarea'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger
-} from '~/components/ui/Tooltip'
 import type { LearnableBase } from '~/models/learnable.types'
 
 interface LearnableTitleSectionProps<T extends LearnableBase> {
@@ -48,23 +42,18 @@ export function LearnableTitleSection<T extends LearnableBase>({
 				value={title}
 			/>
 			<div className='flex items-center gap-2'>
-				<Tooltip>
-					<TooltipTrigger asChild={true}>
-						<Button
-							disabled={isUpdating || sidebarReadonly}
-							onClick={() => onSrsToggle(!(entity.srs_enabled ?? true))}
-							size='icon-sm'
-							variant='outline'
-						>
-							{(entity.srs_enabled ?? true) ? (
-								<BookOpen className='h-5 w-5 text-green-500' />
-							) : (
-								<BookOpenOff className='h-5 w-5 text-muted-foreground' />
-							)}
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent side='bottom'>Surface in review page</TooltipContent>
-				</Tooltip>
+				<Button
+					disabled={isUpdating || sidebarReadonly}
+					onClick={() => onSrsToggle(!(entity.srs_enabled ?? true))}
+					size='icon-sm'
+					variant='outline'
+				>
+					{(entity.srs_enabled ?? true) ? (
+						<Star className='h-5 w-5 fill-yellow-500 text-yellow-500' />
+					) : (
+						<Star className='h-5 w-5 text-muted-foreground' />
+					)}
+				</Button>
 				{renderActionMenu(actionMenuTrigger)}
 			</div>
 		</div>
