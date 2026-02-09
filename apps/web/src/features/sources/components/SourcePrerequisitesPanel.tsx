@@ -1,4 +1,3 @@
-import { ChevronDown, ListChecks } from 'lucide-react'
 import {
 	useCallback,
 	useInsertionEffect,
@@ -15,9 +14,6 @@ import {
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
-import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
@@ -45,7 +41,6 @@ export function SourcePrerequisitesPanel({
 	onTopicNavigate,
 	onSourceNavigate
 }: SourcePrerequisitesPanelProps) {
-	const [isCollapsed, setIsCollapsed] = useState(false)
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateTopicDialog, setShowCreateTopicDialog] = useState(false)
 	const [showCreateSourceDialog, setShowCreateSourceDialog] = useState(false)
@@ -71,7 +66,6 @@ export function SourcePrerequisitesPanel({
 		[sourceId, addPrerequisite]
 	)
 
-	// Convert to EntityItem format for EntityCard/MasonryLayout
 	const entityItems = useMemo<Array<EntityItem>>(() => {
 		return prerequisites.map((item): EntityItem => {
 			if (item.entity_type === 'topic') {
@@ -161,63 +155,42 @@ export function SourcePrerequisitesPanel({
 	)
 
 	return (
-		<div className='flex flex-col'>
-			<TopicPanelHeader
-				actions={
-					<AddEntityMenu
-						createItems={[
-							{
-								label: 'Create Topic',
-								onSelect: () => setShowCreateTopicDialog(true)
-							},
-							{
-								label: 'Create Source',
-								onSelect: () => setShowCreateSourceDialog(true)
-							}
-						]}
-						isLoading={isAdding}
-						onSearch={() => setShowSearchDialog(true)}
-						searchLabel='Search'
-					/>
-				}
-				label={
-					<Button
-						className='flex items-center gap-2 p-0'
-						onClick={() => setIsCollapsed(!isCollapsed)}
-						variant='ghost'
-					>
-						<ListChecks className='h-4 w-4' />
-						<span className='font-medium text-md text-muted-foreground'>
-							Prerequisites
-						</span>
-						<CountBadge count={prerequisites.length} />
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
-					</Button>
-				}
-			/>
-			{!isCollapsed && (
-				<div className='py-4'>
-					{isLoading ? (
-						<p className='py-2 text-muted-foreground text-sm'>Loading...</p>
-					) : entityItems.length === 0 ? (
-						<p className='py-2 text-muted-foreground text-sm'>
-							No prerequisites defined
-						</p>
-					) : (
-						<MasonryLayout
-							estimateItemSize={estimateEntitySize}
-							gap={16}
-							getItemKey={getEntityKey}
-							getScrollElement={getScrollElement}
-							items={entityItems}
-							minItemWidth={280}
-							renderItem={renderItem}
-							scrollMargin={scrollMargin}
-						/>
-					)}
-				</div>
+		<div className='flex flex-col gap-4'>
+			<div className='flex justify-end'>
+				<AddEntityMenu
+					createItems={[
+						{
+							label: 'Create Topic',
+							onSelect: () => setShowCreateTopicDialog(true)
+						},
+						{
+							label: 'Create Source',
+							onSelect: () => setShowCreateSourceDialog(true)
+						}
+					]}
+					isLoading={isAdding}
+					onSearch={() => setShowSearchDialog(true)}
+					searchLabel='Search'
+				/>
+			</div>
+
+			{isLoading ? (
+				<p className='py-2 text-muted-foreground text-sm'>Loading...</p>
+			) : entityItems.length === 0 ? (
+				<p className='py-2 text-muted-foreground text-sm'>
+					No prerequisites defined
+				</p>
+			) : (
+				<MasonryLayout
+					estimateItemSize={estimateEntitySize}
+					gap={16}
+					getItemKey={getEntityKey}
+					getScrollElement={getScrollElement}
+					items={entityItems}
+					minItemWidth={280}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
 			)}
 
 			{sourceId && (

@@ -1,4 +1,3 @@
-import { ChevronDown, Link } from 'lucide-react'
 import {
 	useCallback,
 	useInsertionEffect,
@@ -12,12 +11,13 @@ import {
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
-import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
@@ -49,17 +49,16 @@ export function SourceRelatedPanel({
 	onTopicNavigate,
 	onSourceNavigate
 }: SourceRelatedPanelProps) {
-	const [isCollapsed, setIsCollapsed] = useState(false)
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateTopicDialog, setShowCreateTopicDialog] = useState(false)
 	const [showCreateSourceDialog, setShowCreateSourceDialog] = useState(false)
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 
 	const addRelation = useAddSourceEntityRelation()
 	const removeRelation = useRemoveSourceEntityRelation()
 
 	const isAdding = addRelation.isPending
 
-	// Merge outgoing and incoming for display
 	const allRelated = useMemo(() => {
 		const merged = [
 			...relatedOutgoing.map(r => ({ ...r, direction: 'outgoing' as const })),
@@ -67,7 +66,6 @@ export function SourceRelatedPanel({
 		]
 		const seen = new Set<string>()
 
-		// Keep first occurrence (outgoing first) so each entity appears once.
 		return merged.filter(entity => {
 			const key = `${entity.entity_type}-${entity.id}`
 			if (seen.has(key)) return false
@@ -76,7 +74,6 @@ export function SourceRelatedPanel({
 		})
 	}, [relatedOutgoing, relatedIncoming])
 
-	// Convert to EntityItem format for EntityCard/MasonryLayout
 	const entityItems = useMemo<Array<EntityItem>>(() => {
 		return allRelated.map((item): EntityItem => {
 			if (item.entity_type === 'topic') {
@@ -85,6 +82,11 @@ export function SourceRelatedPanel({
 			return { type: 'source', item }
 		})
 	}, [allRelated])
+
+	const filteredEntityItems = useMemo(() => {
+		if (activeFilter === 'all') return entityItems
+		return entityItems.filter(entity => entity.type === activeFilter)
+	}, [activeFilter, entityItems])
 
 	const handleAdd = useCallback(
 		(entityType: EntityType, entityId: number) => {
@@ -102,18 +104,14 @@ export function SourceRelatedPanel({
 
 	const handleTopicNavigate = useCallback(
 		(topicId: number) => {
-			if (onTopicNavigate) {
-				onTopicNavigate(topicId)
-			}
+			onTopicNavigate?.(topicId)
 		},
 		[onTopicNavigate]
 	)
 
 	const handleSourceNavigate = useCallback(
 		(id: number) => {
-			if (onSourceNavigate) {
-				onSourceNavigate(id)
-			}
+			onSourceNavigate?.(id)
 		},
 		[onSourceNavigate]
 	)
@@ -184,61 +182,43 @@ export function SourceRelatedPanel({
 	)
 
 	return (
-		<div className='flex flex-col'>
-			<TopicPanelHeader
-				actions={
-					<AddEntityMenu
-						createItems={[
-							{
-								label: 'Create Topic',
-								onSelect: () => setShowCreateTopicDialog(true)
-							},
-							{
-								label: 'Create Source',
-								onSelect: () => setShowCreateSourceDialog(true)
-							}
-						]}
-						isLoading={isAdding}
-						onSearch={() => setShowSearchDialog(true)}
-						searchLabel='Search'
-					/>
-				}
-				label={
-					<Button
-						className='flex items-center gap-2 p-0'
-						onClick={() => setIsCollapsed(!isCollapsed)}
-						variant='ghost'
-					>
-						<Link className='h-4 w-4' />
-						<span className='font-medium text-md text-muted-foreground'>
-							Related
-						</span>
-						<CountBadge count={allRelated.length} />
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
-					</Button>
-				}
-			/>
-			{!isCollapsed && (
-				<div className='py-4'>
-					{entityItems.length === 0 ? (
-						<p className='py-2 text-muted-foreground text-sm'>
-							No related items
-						</p>
-					) : (
-						<MasonryLayout
-							estimateItemSize={estimateEntitySize}
-							gap={16}
-							getItemKey={getEntityKey}
-							getScrollElement={getScrollElement}
-							items={entityItems}
-							minItemWidth={280}
-							renderItem={renderItem}
-							scrollMargin={scrollMargin}
-						/>
-					)}
-				</div>
+		<div className='flex flex-col gap-4'>
+			<div className='flex items-center justify-between gap-2'>
+				<EntityTypeFilter
+					activeFilter={activeFilter}
+					allowedTypes={['topic', 'source']}
+					onFilterChange={setActiveFilter}
+				/>
+				<AddEntityMenu
+					createItems={[
+						{
+							label: 'Create Topic',
+							onSelect: () => setShowCreateTopicDialog(true)
+						},
+						{
+							label: 'Create Source',
+							onSelect: () => setShowCreateSourceDialog(true)
+						}
+					]}
+					isLoading={isAdding}
+					onSearch={() => setShowSearchDialog(true)}
+					searchLabel='Search'
+				/>
+			</div>
+
+			{filteredEntityItems.length === 0 ? (
+				<p className='py-2 text-muted-foreground text-sm'>No related items</p>
+			) : (
+				<MasonryLayout
+					estimateItemSize={estimateEntitySize}
+					gap={16}
+					getItemKey={getEntityKey}
+					getScrollElement={getScrollElement}
+					items={filteredEntityItems}
+					minItemWidth={280}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
 			)}
 
 			{sourceId && (

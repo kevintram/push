@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, use, useCallback, useRef } from 'react'
+import { DetailTabsShell } from '~/components/DetailTabs'
 import { ReviewsSidebar } from '~/components/ReviewsSidebar'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
@@ -244,53 +245,87 @@ export function SourceDetail({
 									value={notes}
 								/>
 							</div>
-							<div className='mt-4'>
-								<SourceChildrenPanel
-									children={source.children}
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onChildSelect={onSourceNavigate}
-									renderCard={renderChildCard}
-									sourceId={source.id}
-								/>
-							</div>
-							<div className='mt-4'>
-								<SourceTopicsPanel
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onTopicSelect={onTopicNavigate}
-									renderCard={renderTopicCard}
-									sourceId={source.id}
-									topics={source.topics}
-								/>
-							</div>
-							<div className='mt-4'>
-								<SourcePracticesPanel
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onPracticeSelect={onPracticeNavigate}
-									practices={source.practices}
-									sourceId={source.id}
-								/>
-							</div>
-							<div className='mt-4'>
-								<SourcePrerequisitesPanel
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onSourceNavigate={onSourceNavigate}
-									onTopicNavigate={onTopicNavigate}
-									sourceId={source.id}
-								/>
-							</div>
-							<div className='mt-4'>
-								<SourceRelatedPanel
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onSourceNavigate={onSourceNavigate}
-									onTopicNavigate={onTopicNavigate}
-									relatedIncoming={source.related_incoming}
-									relatedOutgoing={source.related_outgoing}
-									sourceId={source.id}
+							<div className='mt-6'>
+								<DetailTabsShell
+									defaultValue='children'
+									tabs={[
+										{
+											value: 'children',
+											label: 'Children',
+											count: source.children?.length ?? 0,
+											content: (
+												<SourceChildrenPanel
+													children={source.children}
+													getScrollElement={getScrollElement}
+													inheritFsrsState={srsSource}
+													onChildSelect={onSourceNavigate}
+													renderCard={renderChildCard}
+													sourceId={source.id}
+												/>
+											)
+										},
+										{
+											value: 'practice',
+											label: 'Practice',
+											count: source.practices?.length ?? 0,
+											content: (
+												<SourcePracticesPanel
+													getScrollElement={getScrollElement}
+													inheritFsrsState={srsSource}
+													onPracticeSelect={onPracticeNavigate}
+													practices={source.practices}
+													sourceId={source.id}
+												/>
+											)
+										},
+										{
+											value: 'topics',
+											label: 'Topics covered',
+											count: source.topics?.length ?? 0,
+											content: (
+												<SourceTopicsPanel
+													getScrollElement={getScrollElement}
+													inheritFsrsState={srsSource}
+													onTopicSelect={onTopicNavigate}
+													renderCard={renderTopicCard}
+													sourceId={source.id}
+													topics={source.topics}
+												/>
+											)
+										},
+										{
+											value: 'prerequisites',
+											label: 'Prerequisites',
+											count: source.prerequisites_count ?? 0,
+											content: (
+												<SourcePrerequisitesPanel
+													getScrollElement={getScrollElement}
+													inheritFsrsState={srsSource}
+													onSourceNavigate={onSourceNavigate}
+													onTopicNavigate={onTopicNavigate}
+													sourceId={source.id}
+												/>
+											)
+										},
+										{
+											value: 'related',
+											label: 'See also',
+											count:
+												(source.related_incoming?.length ?? 0) +
+												(source.related_outgoing?.length ?? 0),
+											content: (
+												<SourceRelatedPanel
+													getScrollElement={getScrollElement}
+													inheritFsrsState={srsSource}
+													onSourceNavigate={onSourceNavigate}
+													onTopicNavigate={onTopicNavigate}
+													relatedIncoming={source.related_incoming}
+													relatedOutgoing={source.related_outgoing}
+													sourceId={source.id}
+												/>
+											)
+										}
+									]}
 								/>
 							</div>
 						</div>
