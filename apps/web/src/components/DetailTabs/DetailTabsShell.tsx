@@ -31,10 +31,13 @@ export function DetailTabsShell({
 			defaultValue={resolvedDefaultValue}
 		>
 			<div className='w-full border-border border-b'>
-				<TabsList className='h-auto w-fit rounded-none bg-transparent p-0' variant='line'>
+				<TabsList
+					className='h-auto w-fit rounded-none bg-transparent p-0'
+					variant='line'
+				>
 					{tabs.map(tab => (
 						<TabsTrigger
-							className='h-10 !flex-none gap-2 rounded-none border-0 px-3 text-muted-foreground data-[state=active]:text-foreground group-data-[orientation=horizontal]/tabs:after:bottom-[-1px]'
+							className='!flex-none h-10 gap-2 rounded-none border-0 px-3 text-muted-foreground data-[state=active]:text-foreground group-data-[orientation=horizontal]/tabs:after:bottom-[-1px]'
 							key={tab.value}
 							value={tab.value}
 						>
