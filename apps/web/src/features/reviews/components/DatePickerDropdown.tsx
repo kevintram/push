@@ -1,3 +1,4 @@
+import { isValidElement } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Calendar } from '~/components/ui/Calendar'
 import {
@@ -29,6 +30,12 @@ export function DatePickerDropdown({
 	sideOffset = 0,
 	disabled = false
 }: DatePickerDropdownProps) {
+	const triggerElement = isValidElement(trigger) ? (
+		trigger
+	) : (
+		<span>{trigger}</span>
+	)
+
 	const handleDateSelect = (date: Date | undefined) => {
 		if (date) {
 			onDateChange(date)
@@ -57,9 +64,7 @@ export function DatePickerDropdown({
 			onOpenChange={disabled ? undefined : onOpenChange}
 			open={disabled ? false : isOpen}
 		>
-			<PopoverTrigger asChild={true} disabled={disabled}>
-				{trigger}
-			</PopoverTrigger>
+			<PopoverTrigger disabled={disabled} render={triggerElement} />
 			<PopoverContent
 				align={align}
 				className='w-auto p-4'

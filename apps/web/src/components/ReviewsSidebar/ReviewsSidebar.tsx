@@ -169,21 +169,23 @@ export function ReviewsSidebar<T extends EntityWithId>({
 								align='end'
 								onSelect={handleRatingSelect}
 								trigger={
-									<TooltipTrigger asChild={true}>
-										<Button
-											disabled={isCreatingReview}
-											size='xs'
-											variant='secondary'
-										>
-											{isCreatingReview ? (
-												<Loader2 className='animate-spin' />
-											) : (
-												<Plus />
-											)}
-											Add
-											<ChevronDown />
-										</Button>
-									</TooltipTrigger>
+									<TooltipTrigger
+										render={
+											<Button
+												disabled={isCreatingReview}
+												size='xs'
+												variant='secondary'
+											>
+												{isCreatingReview ? (
+													<Loader2 className='animate-spin' />
+												) : (
+													<Plus />
+												)}
+												Add
+												<ChevronDown />
+											</Button>
+										}
+									/>
 								}
 							/>
 							<TooltipContent>

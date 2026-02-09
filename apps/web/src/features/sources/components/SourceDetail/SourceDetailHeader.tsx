@@ -38,12 +38,14 @@ export function SourceDetailHeader({
 					<div className='flex items-center gap-2'>
 						{/* Type indicator */}
 						<Tooltip>
-							<TooltipTrigger asChild={true}>
-								<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-									<FileText className='h-3 w-3' />
-									<span>Source</span>
-								</div>
-							</TooltipTrigger>
+							<TooltipTrigger
+								render={
+									<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+										<FileText className='h-3 w-3' />
+										<span>Source</span>
+									</div>
+								}
+							/>
 							<TooltipContent side='bottom'>This is a Source</TooltipContent>
 						</Tooltip>
 					</div>

@@ -37,12 +37,16 @@ export function LearnableProperties({
 				<>
 					{/* Bucket status */}
 					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className={`flex items-center gap-1 ${freshnessTierColor}`}>
-								<Brain className='h-3 w-3' />
-								<span>{freshnessTierInfo.label}</span>
-							</div>
-						</TooltipTrigger>
+						<TooltipTrigger
+							render={
+								<div
+									className={`flex items-center gap-1 ${freshnessTierColor}`}
+								>
+									<Brain className='h-3 w-3' />
+									<span>{freshnessTierInfo.label}</span>
+								</div>
+							}
+						/>
 						<TooltipContent side='bottom'>
 							{freshnessTierInfo.tooltip ??
 								'Complete a review to see freshness tier'}
@@ -51,12 +55,14 @@ export function LearnableProperties({
 					<span>⋅</span>
 					{/* Stability */}
 					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1'>
-								<Anvil className='h-3 w-3' />
-								<span>{stabilityText}</span>
-							</div>
-						</TooltipTrigger>
+						<TooltipTrigger
+							render={
+								<div className='flex items-center gap-1'>
+									<Anvil className='h-3 w-3' />
+									<span>{stabilityText}</span>
+								</div>
+							}
+						/>
 						<TooltipContent side='bottom'>
 							Durable for {stabilityTooltipText} without review
 						</TooltipContent>
@@ -66,9 +72,9 @@ export function LearnableProperties({
 			<span>⋅</span>
 			{/* Edited date with edited AND created date in tooltip */}
 			<Tooltip>
-				<TooltipTrigger asChild={true}>
-					<span>{dayjs(updatedAt).format('MMM D, YYYY')}</span>
-				</TooltipTrigger>
+				<TooltipTrigger
+					render={<span>{dayjs(updatedAt).format('MMM D, YYYY')}</span>}
+				/>
 				<TooltipContent side='bottom'>
 					<div className='grid grid-cols-[auto_1fr] gap-x-2'>
 						<span>Edited:</span>
