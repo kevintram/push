@@ -49,20 +49,22 @@ export function LearnableTitleSection<T extends LearnableBase>({
 			/>
 			<div className='flex items-center gap-2'>
 				<Tooltip>
-					<TooltipTrigger asChild={true}>
-						<Button
-							disabled={isUpdating || sidebarReadonly}
-							onClick={() => onSrsToggle(!(entity.srs_enabled ?? true))}
-							size='icon-sm'
-							variant='outline'
-						>
-							{(entity.srs_enabled ?? true) ? (
-								<BookOpen className='h-5 w-5 text-green-500' />
-							) : (
-								<BookOpenOff className='h-5 w-5 text-muted-foreground' />
-							)}
-						</Button>
-					</TooltipTrigger>
+					<TooltipTrigger
+						render={
+							<Button
+								disabled={isUpdating || sidebarReadonly}
+								onClick={() => onSrsToggle(!(entity.srs_enabled ?? true))}
+								size='icon-sm'
+								variant='outline'
+							>
+								{(entity.srs_enabled ?? true) ? (
+									<BookOpen className='h-5 w-5 text-green-500' />
+								) : (
+									<BookOpenOff className='h-5 w-5 text-muted-foreground' />
+								)}
+							</Button>
+						}
+					/>
 					<TooltipContent side='bottom'>Surface in review page</TooltipContent>
 				</Tooltip>
 				{renderActionMenu(actionMenuTrigger)}

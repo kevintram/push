@@ -29,12 +29,14 @@ export function PracticeDetailHeader({
 					<div className='flex items-center gap-2'>
 						{/* Type indicator */}
 						<Tooltip>
-							<TooltipTrigger asChild={true}>
-								<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-									<Dumbbell className='h-3 w-3' />
-									<span>Practice</span>
-								</div>
-							</TooltipTrigger>
+							<TooltipTrigger
+								render={
+									<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+										<Dumbbell className='h-3 w-3' />
+										<span>Practice</span>
+									</div>
+								}
+							/>
 							<TooltipContent side='bottom'>This is a Practice</TooltipContent>
 						</Tooltip>
 					</div>

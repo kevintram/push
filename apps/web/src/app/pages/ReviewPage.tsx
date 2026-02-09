@@ -232,16 +232,16 @@ function ScheduleCard({
 						</TabsTrigger>
 					</TabsList>
 					<Button
-						asChild={true}
 						className='gap-1 text-muted-foreground hover:text-primary'
+						render={
+							<Link to='/logbook'>
+								Logbook
+								<ArrowUpRight className='h-4 w-4' />
+							</Link>
+						}
 						size='sm'
 						variant='link'
-					>
-						<Link to='/logbook'>
-							Logbook
-							<ArrowUpRight className='h-4 w-4' />
-						</Link>
-					</Button>
+					/>
 				</div>
 
 				<Card className='gap-2'>
@@ -274,16 +274,16 @@ function ScheduleCard({
 					{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
 						<CardFooter className='justify-center pt-0'>
 							<Button
-								asChild={true}
 								className='gap-1 text-muted-foreground hover:text-primary'
+								render={
+									<Link to={activeConfig.viewAllTo}>
+										View all
+										<ArrowUpRight className='h-4 w-4' />
+									</Link>
+								}
 								size='sm'
 								variant='ghost'
-							>
-								<Link to={activeConfig.viewAllTo}>
-									View all
-									<ArrowUpRight className='h-4 w-4' />
-								</Link>
-							</Button>
+							/>
 						</CardFooter>
 					)}
 				</Card>

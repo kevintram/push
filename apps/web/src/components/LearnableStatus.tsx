@@ -27,12 +27,14 @@ export function LearnableStatus({
 		<div className='-translate-x-2 flex flex-row'>
 			{archived && (
 				<Popover>
-					<PopoverTrigger asChild={true}>
-						<Button className='flex items-center' size='sm' variant='ghost'>
-							<Archive className='h-4 w-4 text-muted-foreground' />
-							<span className='text-muted-foreground text-xs'>Archived</span>
-						</Button>
-					</PopoverTrigger>
+					<PopoverTrigger
+						render={
+							<Button className='flex items-center' size='sm' variant='ghost'>
+								<Archive className='h-4 w-4 text-muted-foreground' />
+								<span className='text-muted-foreground text-xs'>Archived</span>
+							</Button>
+						}
+					/>
 					<PopoverContent className='w-auto p-2'>
 						<Button
 							className='w-full justify-start'
@@ -48,12 +50,14 @@ export function LearnableStatus({
 			)}
 			{inboxed && (
 				<Popover>
-					<PopoverTrigger asChild={true}>
-						<Button className='flex items-center' size='sm' variant='ghost'>
-							<Inbox className='h-4 w-4 text-muted-foreground' />
-							<span className='text-muted-foreground text-xs'>Inboxed</span>
-						</Button>
-					</PopoverTrigger>
+					<PopoverTrigger
+						render={
+							<Button className='flex items-center' size='sm' variant='ghost'>
+								<Inbox className='h-4 w-4 text-muted-foreground' />
+								<span className='text-muted-foreground text-xs'>Inboxed</span>
+							</Button>
+						}
+					/>
 					<PopoverContent className='w-auto p-2'>
 						<Button
 							className='w-full justify-start'

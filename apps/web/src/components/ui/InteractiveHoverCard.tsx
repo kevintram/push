@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useCallback, useRef, useState } from 'react'
+import { isValidElement, useCallback, useRef, useState } from 'react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './HoverCard'
 
 interface InteractiveHoverCardProps {
@@ -19,6 +19,11 @@ export function InteractiveHoverCard({
 }: InteractiveHoverCardProps) {
 	const [open, setOpen] = useState(false)
 	const clickedRef = useRef(false)
+	const triggerElement = isValidElement(children) ? (
+		children
+	) : (
+		<span>{children}</span>
+	)
 
 	const handleOpenChange = useCallback((newOpen: boolean) => {
 		if (!newOpen && clickedRef.current) {
@@ -39,9 +44,7 @@ export function InteractiveHoverCard({
 			open={open}
 			openDelay={openDelay}
 		>
-			<HoverCardTrigger asChild={true} onClick={handleClick}>
-				{children}
-			</HoverCardTrigger>
+			<HoverCardTrigger onClick={handleClick} render={triggerElement} />
 			<HoverCardContent className={contentClassName} side={side}>
 				{content}
 			</HoverCardContent>

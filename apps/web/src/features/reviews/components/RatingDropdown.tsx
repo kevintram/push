@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, isValidElement } from 'react'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -16,16 +16,27 @@ interface RatingDropdownProps {
 	onSelect: (value: ReviewRatingState) => void
 	trigger: React.ReactNode
 	align?: 'start' | 'center' | 'end'
+	nativeButton?: boolean
 }
 
 export function RatingDropdown({
 	onSelect,
 	trigger,
-	align = 'start'
+	align = 'start',
+	nativeButton = true
 }: RatingDropdownProps) {
+	const triggerElement = isValidElement(trigger) ? (
+		trigger
+	) : (
+		<span>{trigger}</span>
+	)
+
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild={true}>{trigger}</DropdownMenuTrigger>
+			<DropdownMenuTrigger
+				nativeButton={nativeButton}
+				render={triggerElement}
+			/>
 			<DropdownMenuContent align={align}>
 				{ratingOptions.map(option => (
 					<Fragment key={option.value}>

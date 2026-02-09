@@ -119,15 +119,15 @@ export function AppSidebar() {
 								return (
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
-											asChild={true}
 											isActive={isActive}
+											render={
+												<Link to={item.url}>
+													<item.icon />
+													<span>{item.title}</span>
+												</Link>
+											}
 											tooltip={item.title}
-										>
-											<Link to={item.url}>
-												<item.icon />
-												<span>{item.title}</span>
-											</Link>
-										</SidebarMenuButton>
+										/>
 									</SidebarMenuItem>
 								)
 							})}
@@ -144,15 +144,15 @@ export function AppSidebar() {
 								return (
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
-											asChild={true}
 											isActive={isActive}
+											render={
+												<Link to={item.url}>
+													<item.icon />
+													<span>{item.title}</span>
+												</Link>
+											}
 											tooltip={item.title}
-										>
-											<Link to={item.url}>
-												<item.icon />
-												<span>{item.title}</span>
-											</Link>
-										</SidebarMenuButton>
+										/>
 										{isInbox && inboxCount > 0 && (
 											<SidebarMenuBadge>{inboxCount}</SidebarMenuBadge>
 										)}
@@ -171,15 +171,15 @@ export function AppSidebar() {
 								return (
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
-											asChild={true}
 											isActive={isActive}
+											render={
+												<Link to={item.url}>
+													<item.icon />
+													<span>{item.title}</span>
+												</Link>
+											}
 											tooltip={item.title}
-										>
-											<Link to={item.url}>
-												<item.icon />
-												<span>{item.title}</span>
-											</Link>
-										</SidebarMenuButton>
+										/>
 									</SidebarMenuItem>
 								)
 							})}
@@ -201,15 +201,17 @@ export function AppSidebar() {
 					</SidebarMenuItem>
 					{import.meta.env.DEV && !import.meta.env.VITEST && (
 						<SidebarMenuItem>
-							<SidebarMenuButton asChild={true}>
-								<TanStackRouterDevtools
-									toggleButtonProps={{
-										style: {
-											position: 'static'
-										}
-									}}
-								/>
-							</SidebarMenuButton>
+							<SidebarMenuButton
+								render={
+									<TanStackRouterDevtools
+										toggleButtonProps={{
+											style: {
+												position: 'static'
+											}
+										}}
+									/>
+								}
+							/>
 						</SidebarMenuItem>
 					)}
 				</SidebarMenu>
