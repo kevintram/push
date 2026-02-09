@@ -1,7 +1,6 @@
-import { BookMarked } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { estimateCardSize } from '~/components/EntityCard'
-import { LearnablePanel } from '~/components/LearnablePanel'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
@@ -11,6 +10,7 @@ import type { Source } from '~/features/sources/types/source.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddTopicSource } from '../api/addTopicSource'
 
+const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 interface TopicSourcesPanelProps {
@@ -52,10 +52,7 @@ export function TopicSourcesPanel({
 	const addSourceMutation = useAddTopicSource()
 	const isAdding = addSourceMutation.isPending
 
-	// Use prop directly - sources comes from the single getTopic fetch
 	const sources = sourcesProp ?? []
-
-	// Get existing source IDs to filter from search
 	const existingSourceIds = useMemo(() => sources.map(s => s.id), [sources])
 
 	const handleAddSource = useCallback(
@@ -81,12 +78,10 @@ export function TopicSourcesPanel({
 				onSourceSelect?.(source.id)
 			}
 
-			// Use custom renderer if provided
 			if (renderCard) {
 				return renderCard(source, handleClick)
 			}
 
-			// Default card rendering (read-only - no remove button)
 			return (
 				<SourceCard
 					headerRight={<SourceActionMenu source={source} />}
@@ -99,21 +94,42 @@ export function TopicSourcesPanel({
 		[onSourceSelect, renderCard]
 	)
 
-	const getItemKey = useCallback((source: Source) => source.id, [])
+	const getItemKey = useCallback((source: Source, _index: number) => {
+		return source.id
+	}, [])
 
-	const actions = topicId ? (
-		<>
-			<AddEntityMenu
-				createItems={[
-					{
-						label: 'Create Source',
-						onSelect: () => setShowCreateDialog(true)
-					}
-				]}
-				isLoading={isAdding}
-				onSearch={() => setShowAddDialog(true)}
-				searchLabel='Search Sources'
-			/>
+	return (
+		<div className='flex flex-col gap-4'>
+			{topicId && (
+				<div className='flex justify-end'>
+					<AddEntityMenu
+						createItems={[
+							{
+								label: 'Create Source',
+								onSelect: () => setShowCreateDialog(true)
+							}
+						]}
+						isLoading={isAdding}
+						onSearch={() => setShowAddDialog(true)}
+						searchLabel='Search Sources'
+					/>
+				</div>
+			)}
+
+			{sources.length === 0 ? (
+				<p className='py-2 text-muted-foreground text-sm'>No sources</p>
+			) : (
+				<MasonryLayout
+					estimateItemSize={estimateItemSize}
+					gap={16}
+					getItemKey={getItemKey}
+					getScrollElement={getScrollElement}
+					items={sources}
+					minItemWidth={MIN_WIDTH}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			)}
 
 			{topicId && (
 				<EntitySearchDialog
@@ -137,20 +153,6 @@ export function TopicSourcesPanel({
 					relationship={{ kind: 'topic', topicId }}
 				/>
 			)}
-		</>
-	) : undefined
-
-	return (
-		<LearnablePanel
-			actions={actions}
-			estimateItemSize={estimateItemSize}
-			getItemKey={getItemKey}
-			getScrollElement={getScrollElement}
-			icon={BookMarked}
-			items={sources}
-			label='Sources'
-			renderItem={renderItem}
-			scrollMargin={scrollMargin}
-		/>
+		</div>
 	)
 }

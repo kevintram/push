@@ -1,8 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Dumbbell } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { estimateCardSize } from '~/components/EntityCard'
-import { LearnablePanel } from '~/components/LearnablePanel'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { AddPracticeDialog } from '~/features/practices/components/AddPracticeDialog'
@@ -14,6 +13,7 @@ import { useAddTopicPractice } from '../api/addTopicPractice'
 import { topicKeys } from '../api/queryKeys'
 import { useRemoveTopicPractice } from '../api/removeTopicPractice'
 
+const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 interface TopicPracticesPanelProps {
@@ -59,7 +59,6 @@ export function TopicPracticesPanel({
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
-	// Use prop directly - practices comes from the single getTopic fetch
 	const practices = practicesProp ?? []
 
 	const addTopicPractice = useAddTopicPractice()
@@ -123,12 +122,10 @@ export function TopicPracticesPanel({
 				onPracticeSelect?.(practice.id)
 			}
 
-			// Use custom renderer if provided
 			if (renderCard) {
 				return renderCard(practice, handleRemoveRelationship, handleClick)
 			}
 
-			// Default card rendering
 			return (
 				<PracticeCard
 					headerRight={
@@ -154,21 +151,42 @@ export function TopicPracticesPanel({
 		]
 	)
 
-	const getItemKey = useCallback((practice: Practice) => practice.id, [])
+	const getItemKey = useCallback((practice: Practice, _index: number) => {
+		return practice.id
+	}, [])
 
-	const actions = topicId ? (
-		<>
-			<AddEntityMenu
-				createItems={[
-					{
-						label: 'Create Practice',
-						onSelect: () => setShowCreateDialog(true)
-					}
-				]}
-				isLoading={isAdding}
-				onSearch={() => setShowSearchDialog(true)}
-				searchLabel='Search Practices'
-			/>
+	return (
+		<div className='flex flex-col gap-4'>
+			{topicId && (
+				<div className='flex justify-end'>
+					<AddEntityMenu
+						createItems={[
+							{
+								label: 'Create Practice',
+								onSelect: () => setShowCreateDialog(true)
+							}
+						]}
+						isLoading={isAdding}
+						onSearch={() => setShowSearchDialog(true)}
+						searchLabel='Search Practices'
+					/>
+				</div>
+			)}
+
+			{practices.length === 0 ? (
+				<p className='py-2 text-muted-foreground text-sm'>No practices</p>
+			) : (
+				<MasonryLayout
+					estimateItemSize={estimateItemSize}
+					gap={16}
+					getItemKey={getItemKey}
+					getScrollElement={getScrollElement}
+					items={practices}
+					minItemWidth={MIN_WIDTH}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			)}
 
 			<EntitySearchDialog
 				defaultType='practice'
@@ -190,20 +208,6 @@ export function TopicPracticesPanel({
 					relationship={{ kind: 'topic', topicId }}
 				/>
 			)}
-		</>
-	) : undefined
-
-	return (
-		<LearnablePanel
-			actions={actions}
-			estimateItemSize={estimateItemSize}
-			getItemKey={getItemKey}
-			getScrollElement={getScrollElement}
-			icon={Dumbbell}
-			items={practices}
-			label='Practices'
-			renderItem={renderItem}
-			scrollMargin={scrollMargin}
-		/>
+		</div>
 	)
 }

@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, use, useCallback, useMemo, useRef } from 'react'
+import { DetailTabsShell } from '~/components/DetailTabs'
 import { ReviewsSidebar } from '~/components/ReviewsSidebar'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
 import { Textarea } from '~/components/ui/Textarea'
@@ -260,43 +261,70 @@ export function TopicDetail({
 									value={notes}
 								/>
 							</div>
-							<div className='mt-4'>
-								<TopicChildrenPanel
-									children={topic.children}
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onChildSelect={onTopicNavigate}
-									renderCard={renderChildCard}
-									topicId={topic.id}
-								/>
-							</div>
-							<div className='mt-4'>
-								<TopicRelatedPanel
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onRelatedSelect={onTopicNavigate}
-									onSourceSelect={onSourceNavigate}
-									related={mergedRelated}
-									topicId={topic.id}
-								/>
-							</div>
-							<div className='mt-4'>
-								<TopicSourcesPanel
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onSourceSelect={onSourceNavigate}
-									renderCard={renderSourceCard}
-									sources={topic.sources}
-									topicId={topic.id}
-								/>
-							</div>
-							<div className='mt-4'>
-								<TopicPracticesPanel
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onPracticeSelect={onPracticeNavigate}
-									practices={topic.practices}
-									topicId={topic.id}
+							<div className='mt-6'>
+								<DetailTabsShell
+									defaultValue='children'
+									tabs={[
+										{
+											value: 'children',
+											label: 'Children',
+											count: topic.children?.length ?? 0,
+											content: (
+												<TopicChildrenPanel
+													children={topic.children}
+													getScrollElement={getScrollElement}
+													inheritFsrsState={srsSource}
+													onChildSelect={onTopicNavigate}
+													renderCard={renderChildCard}
+													topicId={topic.id}
+												/>
+											)
+										},
+										{
+											value: 'practice',
+											label: 'Practice',
+											count: topic.practices?.length ?? 0,
+											content: (
+												<TopicPracticesPanel
+													getScrollElement={getScrollElement}
+													inheritFsrsState={srsSource}
+													onPracticeSelect={onPracticeNavigate}
+													practices={topic.practices}
+													topicId={topic.id}
+												/>
+											)
+										},
+										{
+											value: 'sources',
+											label: 'Sources',
+											count: topic.sources?.length ?? 0,
+											content: (
+												<TopicSourcesPanel
+													getScrollElement={getScrollElement}
+													inheritFsrsState={srsSource}
+													onSourceSelect={onSourceNavigate}
+													renderCard={renderSourceCard}
+													sources={topic.sources}
+													topicId={topic.id}
+												/>
+											)
+										},
+										{
+											value: 'related',
+											label: 'See also',
+											count: mergedRelated.length,
+											content: (
+												<TopicRelatedPanel
+													getScrollElement={getScrollElement}
+													inheritFsrsState={srsSource}
+													onRelatedSelect={onTopicNavigate}
+													onSourceSelect={onSourceNavigate}
+													related={mergedRelated}
+													topicId={topic.id}
+												/>
+											)
+										}
+									]}
 								/>
 							</div>
 						</div>
