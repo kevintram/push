@@ -69,6 +69,7 @@ from app.schemas.reviews import (
 )
 from app.schemas.search import SearchResultItem
 from app.schemas.entity_summaries import (
+    EntityRelationsRead,
     EntitySummaryRead,
     SourceEntitySummary,
     TopicEntitySummary,
@@ -108,6 +109,7 @@ TopicSourceAdd.model_rebuild()
 SearchResultItem.model_rebuild()
 TopicEntitySummary.model_rebuild()
 SourceEntitySummary.model_rebuild()
+EntityRelationsRead.model_rebuild()
 
 __all__ = [
     "ConvertPracticeToSourceResponse",
@@ -171,6 +173,7 @@ __all__ = [
     "TopicSourceAdd",
     "SearchResultItem",
     "EntitySummaryRead",
+    "EntityRelationsRead",
     "TopicEntitySummary",
     "SourceEntitySummary",
 ]
