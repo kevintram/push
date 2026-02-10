@@ -1,14 +1,14 @@
 import dayjs from 'dayjs'
 
 /**
- * Formats a date as an absolute date string (e.g., "January 5, 2025").
+ * Formats a date as an absolute date string (e.g., "Jan 5, 2025").
  */
 export function formatAbsoluteDate(
 	date: Date | string | null,
 	fallback = 'never'
 ): string {
 	if (!date) return fallback
-	return dayjs(date).format('MMMM D, YYYY')
+	return dayjs(date).format('MMM D, YYYY')
 }
 
 interface FormatRelativeDateOptions {
