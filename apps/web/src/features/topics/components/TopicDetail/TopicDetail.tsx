@@ -1,5 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useMemo, useRef } from 'react'
+import {
+	type ReactNode,
+	use,
+	useCallback,
+	useEffect,
+	useRef,
+	useState
+} from 'react'
 import { DetailTabsShell } from '~/components/DetailTabs'
 import { ReviewsSidebar } from '~/components/ReviewsSidebar'
 import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
@@ -13,7 +20,7 @@ import { topicKeys } from '../../api/queryKeys'
 import { useUpdateTopic } from '../../api/updateTopic'
 import { useTopicMetrics } from '../../hooks/useTopicMetrics'
 import { TopicContext } from '../../stores/SelectedTopicContext'
-import { RelationshipDirection, type Topic } from '../../types/topic.types'
+import type { Topic } from '../../types/topic.types'
 import { TopicChildrenPanel } from '../TopicChildrenPanel'
 import { TopicPracticesPanel } from '../TopicPracticesPanel'
 import { TopicRelatedPanel } from '../TopicRelatedPanel'
@@ -23,6 +30,30 @@ import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 import { TopicProperties } from './TopicProperties'
 import { TopicStatus } from './TopicStatus'
 import { TopicTitleSection } from './TopicTitleSection'
+
+export type TopicDetailTab = 'children' | 'practice' | 'sources' | 'related'
+
+const DEFAULT_TOPIC_DETAIL_TAB: TopicDetailTab = 'children'
+
+function isTopicDetailTab(value: string): value is TopicDetailTab {
+	return (
+		value === 'children' ||
+		value === 'practice' ||
+		value === 'sources' ||
+		value === 'related'
+	)
+}
+
+function buildRequestedTopicTabs(
+	activeTab: TopicDetailTab
+): Record<TopicDetailTab, boolean> {
+	return {
+		children: activeTab === 'children',
+		practice: activeTab === 'practice',
+		sources: activeTab === 'sources',
+		related: activeTab === 'related'
+	}
+}
 
 interface TopicDetailProps {
 	/**
@@ -84,6 +115,14 @@ interface TopicDetailProps {
 	 * Optional className to apply to the scroll container
 	 */
 	className?: string
+	/**
+	 * Controlled active tab. Defaults to internal state when omitted.
+	 */
+	activeTab?: TopicDetailTab
+	/**
+	 * Called when tab selection changes.
+	 */
+	onTabChange?: (tab: TopicDetailTab) => void
 }
 
 export function TopicDetail({
@@ -99,7 +138,9 @@ export function TopicDetail({
 	onPracticeNavigate,
 	renderChildCard,
 	renderSourceCard,
-	className
+	className,
+	activeTab: activeTabProp,
+	onTabChange
 }: TopicDetailProps) {
 	// Get topic from context if not provided via props
 	const contextValue = use(TopicContext)
@@ -180,32 +221,53 @@ export function TopicDetail({
 
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
+	const isTabControlled = activeTabProp !== undefined
+	const [uncontrolledActiveTab, setUncontrolledActiveTab] =
+		useState<TopicDetailTab>(DEFAULT_TOPIC_DETAIL_TAB)
+	const activeTab = activeTabProp ?? uncontrolledActiveTab
+	const [requestedTabs, setRequestedTabs] = useState<
+		Record<TopicDetailTab, boolean>
+	>(() => buildRequestedTopicTabs(activeTab))
+	const [relatedCount, setRelatedCount] = useState<number | null>(null)
+	const handleTabChange = useCallback(
+		(value: string) => {
+			if (!isTopicDetailTab(value)) {
+				return
+			}
+			if (!isTabControlled) {
+				setUncontrolledActiveTab(value)
+			}
+			onTabChange?.(value)
+			setRequestedTabs(previous => {
+				if (previous[value]) return previous
+				return { ...previous, [value]: true }
+			})
+		},
+		[isTabControlled, onTabChange]
+	)
+	useEffect(() => {
+		const initialTab = isTabControlled
+			? (activeTabProp ?? DEFAULT_TOPIC_DETAIL_TAB)
+			: DEFAULT_TOPIC_DETAIL_TAB
+		if (!isTabControlled) {
+			setUncontrolledActiveTab(DEFAULT_TOPIC_DETAIL_TAB)
+		}
+		setRequestedTabs(buildRequestedTopicTabs(initialTab))
+	}, [topic?.id, isTabControlled, activeTabProp])
+	useEffect(() => {
+		setRelatedCount(null)
+	}, [topic?.id])
+	useEffect(() => {
+		setRequestedTabs(previous => {
+			if (previous[activeTab]) return previous
+			return { ...previous, [activeTab]: true }
+		})
+	}, [activeTab])
+	const displayedRelatedCount =
+		relatedCount ??
+		(topic?.related_outgoing_count ?? 0) + (topic?.related_incoming_count ?? 0)
 
 	const srsSource = useFsrsState(topic)
-
-	const relatedOutgoing = topic?.related_outgoing
-	const relatedIncoming = topic?.related_incoming
-
-	// Merge related topics from outgoing and incoming with direction metadata
-	const mergedRelated = useMemo(() => {
-		const outgoing = (relatedOutgoing ?? []).map(entity => ({
-			...entity,
-			relationship_direction: RelationshipDirection.Outgoing
-		}))
-		const incoming = (relatedIncoming ?? []).map(entity => ({
-			...entity,
-			relationship_direction: RelationshipDirection.Incoming
-		}))
-		const seen = new Set<string>()
-
-		// Keep first occurrence (outgoing first) so each entity appears once.
-		return [...outgoing, ...incoming].filter(entity => {
-			const key = `${entity.entity_type}-${entity.id}`
-			if (seen.has(key)) return false
-			seen.add(key)
-			return true
-		})
-	}, [relatedOutgoing, relatedIncoming])
 
 	if (isLoading || !topic) {
 		return <TopicDetailSkeleton />
@@ -264,67 +326,66 @@ export function TopicDetail({
 							<div className='mt-6'>
 								<DetailTabsShell
 									defaultValue='children'
+									onValueChange={handleTabChange}
 									tabs={[
 										{
 											value: 'children',
 											label: 'Children',
-											count: topic.children?.length ?? 0,
-											content: (
+											count: topic.children_count ?? 0,
+											content: requestedTabs.children ? (
 												<TopicChildrenPanel
-													children={topic.children}
 													getScrollElement={getScrollElement}
 													inheritFsrsState={srsSource}
 													onChildSelect={onTopicNavigate}
 													renderCard={renderChildCard}
 													topicId={topic.id}
 												/>
-											)
+											) : null
 										},
 										{
 											value: 'practice',
 											label: 'Practice',
-											count: topic.practices?.length ?? 0,
-											content: (
+											count: topic.practices_count ?? 0,
+											content: requestedTabs.practice ? (
 												<TopicPracticesPanel
 													getScrollElement={getScrollElement}
 													inheritFsrsState={srsSource}
 													onPracticeSelect={onPracticeNavigate}
-													practices={topic.practices}
 													topicId={topic.id}
 												/>
-											)
+											) : null
 										},
 										{
 											value: 'sources',
 											label: 'Sources',
-											count: topic.sources?.length ?? 0,
-											content: (
+											count: topic.sources_count ?? 0,
+											content: requestedTabs.sources ? (
 												<TopicSourcesPanel
 													getScrollElement={getScrollElement}
 													inheritFsrsState={srsSource}
 													onSourceSelect={onSourceNavigate}
 													renderCard={renderSourceCard}
-													sources={topic.sources}
 													topicId={topic.id}
 												/>
-											)
+											) : null
 										},
 										{
 											value: 'related',
 											label: 'See also',
-											count: mergedRelated.length,
-											content: (
+											count: displayedRelatedCount,
+											content: requestedTabs.related ? (
 												<TopicRelatedPanel
 													getScrollElement={getScrollElement}
 													inheritFsrsState={srsSource}
+													onCountChange={setRelatedCount}
 													onRelatedSelect={onTopicNavigate}
 													onSourceSelect={onSourceNavigate}
-													related={mergedRelated}
 													topicId={topic.id}
 												/>
-											)
+											) : null
 										}
 									]}
+									value={activeTab}
 								/>
 							</div>
 						</div>

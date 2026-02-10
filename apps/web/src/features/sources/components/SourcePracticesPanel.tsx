@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
@@ -10,6 +11,7 @@ import { PracticeCard } from '~/features/practices/components/PracticeCard'
 import type { Practice } from '~/features/practices/types/practice.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourcePractice } from '../api/addSourcePractice'
+import { useSourcePractices } from '../api/getSourcePractices'
 import { sourceKeys } from '../api/queryKeys'
 import { useRemoveSourcePractice } from '../api/removeSourcePractice'
 
@@ -56,7 +58,12 @@ export function SourcePracticesPanel({
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
-	const practices = practicesProp ?? []
+	const practicesQuery = useSourcePractices(sourceId, {
+		enabled: practicesProp === undefined
+	})
+	const practices = practicesProp ?? practicesQuery.data ?? []
+	const isLoading = practicesProp === undefined && practicesQuery.isPending
+	const isError = practicesProp === undefined && practicesQuery.isError
 
 	const addSourcePractice = useAddSourcePractice()
 	const removeSourcePractice = useRemoveSourcePractice()
@@ -78,16 +85,12 @@ export function SourcePracticesPanel({
 	const handlePracticeUpdateSuccess = useCallback(
 		(updatedPractice: Practice) => {
 			queryClient.setQueryData(
-				sourceKeys.detail(sourceId!),
-				(old: { practices?: Array<Practice> } | undefined) => {
+				sourceKeys.practices(sourceId!),
+				(old: Array<Practice> | undefined) => {
 					if (!old) return old
-					return {
-						...old,
-						practices:
-							old.practices?.map(practice =>
-								practice.id === updatedPractice.id ? updatedPractice : practice
-							) ?? []
-					}
+					return old.map(practice =>
+						practice.id === updatedPractice.id ? updatedPractice : practice
+					)
 				}
 			)
 		},
@@ -170,9 +173,19 @@ export function SourcePracticesPanel({
 				</div>
 			)}
 
-			{practices.length === 0 ? (
-				<p className='py-2 text-muted-foreground text-sm'>No practices</p>
-			) : (
+			<DetailTabPanelState
+				emptyMessage='No practices'
+				error={practicesQuery.error}
+				isEmpty={practices.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					practicesProp === undefined && practicesQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void practicesQuery.refetch()
+				}}
+			>
 				<MasonryLayout
 					estimateItemSize={estimateItemSize}
 					gap={16}
@@ -183,7 +196,7 @@ export function SourcePracticesPanel({
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>
-			)}
+			</DetailTabPanelState>
 
 			<EntitySearchDialog
 				defaultType='practice'

@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
@@ -10,6 +11,7 @@ import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceTopic } from '../api/addSourceTopic'
+import { useSourceTopics } from '../api/getSourceTopics'
 import { sourceKeys } from '../api/queryKeys'
 import { useRemoveSourceTopic } from '../api/removeSourceTopic'
 
@@ -56,7 +58,12 @@ export function SourceTopicsPanel({
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
-	const topics = topicsProp ?? []
+	const topicsQuery = useSourceTopics(sourceId, {
+		enabled: topicsProp === undefined
+	})
+	const topics = topicsProp ?? topicsQuery.data ?? []
+	const isLoading = topicsProp === undefined && topicsQuery.isPending
+	const isError = topicsProp === undefined && topicsQuery.isError
 
 	const addSourceTopic = useAddSourceTopic()
 	const removeSourceTopic = useRemoveSourceTopic()
@@ -165,9 +172,19 @@ export function SourceTopicsPanel({
 				/>
 			</div>
 
-			{topics.length === 0 ? (
-				<p className='py-2 text-muted-foreground text-sm'>No related topics</p>
-			) : (
+			<DetailTabPanelState
+				emptyMessage='No related topics'
+				error={topicsQuery.error}
+				isEmpty={topics.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					topicsProp === undefined && topicsQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void topicsQuery.refetch()
+				}}
+			>
 				<MasonryLayout
 					estimateItemSize={estimateItemSize}
 					gap={16}
@@ -178,7 +195,7 @@ export function SourceTopicsPanel({
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>
-			)}
+			</DetailTabPanelState>
 
 			<EntitySearchDialog
 				defaultType='topic'

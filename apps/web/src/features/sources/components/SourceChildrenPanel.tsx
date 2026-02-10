@@ -1,12 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceChild } from '../api/addSourceChild'
+import { useSourceChildren } from '../api/getSourceChildren'
 import { sourceKeys } from '../api/queryKeys'
 import type { Source } from '../types/source.types'
 import { AddSourceDialog } from './AddSourceDialog'
@@ -66,13 +68,16 @@ export function SourceChildrenPanel({
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 	const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false)
 	const addSourceChild = useAddSourceChild()
+	const childrenQuery = useSourceChildren(sourceId, {
+		enabled: childrenProp === undefined
+	})
 
 	const inherit = inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
 
 	const handleChildCreated = useCallback(
 		(newSourceId: number) => {
 			if (sourceId !== undefined) {
-				queryClient.invalidateQueries({ queryKey: sourceKeys.detail(sourceId) })
+				queryClient.invalidateQueries({ queryKey: sourceKeys.byId(sourceId) })
 			}
 			onChildCreated?.(newSourceId)
 		},
@@ -90,7 +95,9 @@ export function SourceChildrenPanel({
 		[sourceId, addSourceChild]
 	)
 
-	const children = childrenProp ?? []
+	const children = childrenProp ?? childrenQuery.data ?? []
+	const isLoading = childrenProp === undefined && childrenQuery.isPending
+	const isError = childrenProp === undefined && childrenQuery.isError
 
 	const handleChildSelect = useCallback(
 		(childSourceId: number) => {
@@ -188,9 +195,19 @@ export function SourceChildrenPanel({
 				</div>
 			)}
 
-			{items.length === 0 ? (
-				<p className='py-2 text-muted-foreground text-sm'>No child sources</p>
-			) : (
+			<DetailTabPanelState
+				emptyMessage='No child sources'
+				error={childrenQuery.error}
+				isEmpty={items.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					childrenProp === undefined && childrenQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void childrenQuery.refetch()
+				}}
+			>
 				<MasonryLayout
 					estimateItemSize={estimateItemSize}
 					gap={16}
@@ -201,7 +218,7 @@ export function SourceChildrenPanel({
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>
-			)}
+			</DetailTabPanelState>
 
 			{sourceId !== undefined && (
 				<EntitySearchDialog

@@ -1,4 +1,5 @@
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
@@ -9,6 +10,7 @@ import { SourceCard } from '~/features/sources/components/SourceCard'
 import type { Source } from '~/features/sources/types/source.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddTopicSource } from '../api/addTopicSource'
+import { useTopicSources } from '../api/getTopicSources'
 
 const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
@@ -52,7 +54,12 @@ export function TopicSourcesPanel({
 	const addSourceMutation = useAddTopicSource()
 	const isAdding = addSourceMutation.isPending
 
-	const sources = sourcesProp ?? []
+	const sourcesQuery = useTopicSources(topicId, {
+		enabled: sourcesProp === undefined
+	})
+	const sources = sourcesProp ?? sourcesQuery.data ?? []
+	const isLoading = sourcesProp === undefined && sourcesQuery.isPending
+	const isError = sourcesProp === undefined && sourcesQuery.isError
 	const existingSourceIds = useMemo(() => sources.map(s => s.id), [sources])
 
 	const handleAddSource = useCallback(
@@ -116,9 +123,19 @@ export function TopicSourcesPanel({
 				</div>
 			)}
 
-			{sources.length === 0 ? (
-				<p className='py-2 text-muted-foreground text-sm'>No sources</p>
-			) : (
+			<DetailTabPanelState
+				emptyMessage='No sources'
+				error={sourcesQuery.error}
+				isEmpty={sources.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					sourcesProp === undefined && sourcesQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void sourcesQuery.refetch()
+				}}
+			>
 				<MasonryLayout
 					estimateItemSize={estimateItemSize}
 					gap={16}
@@ -129,7 +146,7 @@ export function TopicSourcesPanel({
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>
-			)}
+			</DetailTabPanelState>
 
 			{topicId && (
 				<EntitySearchDialog

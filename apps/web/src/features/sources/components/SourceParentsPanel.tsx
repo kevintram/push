@@ -2,6 +2,7 @@ import { User2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
+import { useSourceWithRelationships } from '~/features/sources/api/getSource'
 import { useSetSourceParent } from '~/features/sources/api/setSourceParent'
 import { useUpdateSource } from '../api/updateSource'
 import type { Source } from '../types/source.types'
@@ -11,19 +12,24 @@ import { SourceBadge } from './SourceBadge'
 interface SourceParentsPanelProps {
 	sourceId: number | undefined
 	parent?: Source | null
+	parentId?: number | null
 	onParentSelect?: (sourceId: number) => void
 }
 
 export function SourceParentsPanel({
 	sourceId,
 	parent: parentProp,
+	parentId,
 	onParentSelect
 }: SourceParentsPanelProps) {
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
-	const parent = parentProp ?? null
-	const hasParent = parent !== null
+	const { source: fetchedParent } = useSourceWithRelationships(
+		parentId ?? undefined
+	)
+	const parent = parentProp !== undefined ? parentProp : fetchedParent
+	const hasParent = parent != null
 
 	const updateSource = useUpdateSource()
 	const setSourceParent = useSetSourceParent()

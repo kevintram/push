@@ -5,6 +5,7 @@ import {
 	useRef,
 	useState
 } from 'react'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import {
 	EntityCard,
 	type EntityItem,
@@ -45,8 +46,14 @@ export function SourcePrerequisitesPanel({
 	const [showCreateTopicDialog, setShowCreateTopicDialog] = useState(false)
 	const [showCreateSourceDialog, setShowCreateSourceDialog] = useState(false)
 
-	const { data: prerequisites = [], isLoading } =
-		useSourcePrerequisites(sourceId)
+	const {
+		data: prerequisites = [],
+		isLoading,
+		isError,
+		error,
+		isFetching,
+		refetch
+	} = useSourcePrerequisites(sourceId)
 	const addPrerequisite = useAddSourcePrerequisite()
 	const removePrerequisite = useRemoveSourcePrerequisite()
 
@@ -174,13 +181,17 @@ export function SourcePrerequisitesPanel({
 				/>
 			</div>
 
-			{isLoading ? (
-				<p className='py-2 text-muted-foreground text-sm'>Loading...</p>
-			) : entityItems.length === 0 ? (
-				<p className='py-2 text-muted-foreground text-sm'>
-					No prerequisites defined
-				</p>
-			) : (
+			<DetailTabPanelState
+				emptyMessage='No prerequisites defined'
+				error={error}
+				isEmpty={entityItems.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={isFetching && !isLoading}
+				onRetry={() => {
+					void refetch()
+				}}
+			>
 				<MasonryLayout
 					estimateItemSize={estimateEntitySize}
 					gap={16}
@@ -191,7 +202,7 @@ export function SourcePrerequisitesPanel({
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>
-			)}
+			</DetailTabPanelState>
 
 			{sourceId && (
 				<EntitySearchDialog

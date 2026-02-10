@@ -50,6 +50,7 @@ export function SourceDetailHeader({
 					<SourceParentsPanel
 						onParentSelect={onParentSelect}
 						parent={source.parent}
+						parentId={source.parent_id}
 						sourceId={source.id}
 					/>
 				</div>

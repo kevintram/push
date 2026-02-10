@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
@@ -10,6 +11,7 @@ import { PracticeCard } from '~/features/practices/components/PracticeCard'
 import type { Practice } from '~/features/practices/types/practice.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddTopicPractice } from '../api/addTopicPractice'
+import { useTopicPractices } from '../api/getTopicPractices'
 import { topicKeys } from '../api/queryKeys'
 import { useRemoveTopicPractice } from '../api/removeTopicPractice'
 
@@ -59,7 +61,12 @@ export function TopicPracticesPanel({
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
-	const practices = practicesProp ?? []
+	const practicesQuery = useTopicPractices(topicId, {
+		enabled: practicesProp === undefined
+	})
+	const practices = practicesProp ?? practicesQuery.data ?? []
+	const isLoading = practicesProp === undefined && practicesQuery.isPending
+	const isError = practicesProp === undefined && practicesQuery.isError
 
 	const addTopicPractice = useAddTopicPractice()
 	const removeTopicPractice = useRemoveTopicPractice()
@@ -81,16 +88,12 @@ export function TopicPracticesPanel({
 	const handlePracticeUpdateSuccess = useCallback(
 		(updatedPractice: Practice) => {
 			queryClient.setQueryData(
-				topicKeys.detail(topicId!),
-				(old: { practices?: Array<Practice> } | undefined) => {
+				topicKeys.practices(topicId!),
+				(old: Array<Practice> | undefined) => {
 					if (!old) return old
-					return {
-						...old,
-						practices:
-							old.practices?.map(practice =>
-								practice.id === updatedPractice.id ? updatedPractice : practice
-							) ?? []
-					}
+					return old.map(practice =>
+						practice.id === updatedPractice.id ? updatedPractice : practice
+					)
 				}
 			)
 		},
@@ -173,9 +176,19 @@ export function TopicPracticesPanel({
 				</div>
 			)}
 
-			{practices.length === 0 ? (
-				<p className='py-2 text-muted-foreground text-sm'>No practices</p>
-			) : (
+			<DetailTabPanelState
+				emptyMessage='No practices'
+				error={practicesQuery.error}
+				isEmpty={practices.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					practicesProp === undefined && practicesQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void practicesQuery.refetch()
+				}}
+			>
 				<MasonryLayout
 					estimateItemSize={estimateItemSize}
 					gap={16}
@@ -186,7 +199,7 @@ export function TopicPracticesPanel({
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>
-			)}
+			</DetailTabPanelState>
 
 			<EntitySearchDialog
 				defaultType='practice'

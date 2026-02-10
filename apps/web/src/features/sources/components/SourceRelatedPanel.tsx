@@ -1,10 +1,12 @@
 import {
 	useCallback,
+	useEffect,
 	useInsertionEffect,
 	useMemo,
 	useRef,
 	useState
 } from 'react'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import {
 	EntityCard,
 	type EntityItem,
@@ -25,6 +27,7 @@ import type { RelatedEntityItem } from '~/features/topics/types/topic.types'
 import type { EntityType } from '~/models/entity-relations.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceEntityRelation } from '../api/addSourceEntityRelation'
+import { useSourceEntityRelations } from '../api/getSourceEntityRelations'
 import { useRemoveSourceEntityRelation } from '../api/removeSourceEntityRelation'
 import { SourceActionMenu } from './SourceActionMenu'
 
@@ -32,6 +35,7 @@ interface SourceRelatedPanelProps {
 	sourceId: number | undefined
 	relatedOutgoing?: Array<RelatedEntityItem>
 	relatedIncoming?: Array<RelatedEntityItem>
+	onCountChange?: (count: number) => void
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	inheritFsrsState?: FsrsState | null
@@ -43,6 +47,7 @@ export function SourceRelatedPanel({
 	sourceId,
 	relatedOutgoing = [],
 	relatedIncoming = [],
+	onCountChange,
 	getScrollElement,
 	scrollMargin,
 	inheritFsrsState,
@@ -54,6 +59,27 @@ export function SourceRelatedPanel({
 	const [showCreateSourceDialog, setShowCreateSourceDialog] = useState(false)
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 
+	const relatedQuery = useSourceEntityRelations(sourceId, {
+		enabled: relatedOutgoing.length === 0 && relatedIncoming.length === 0
+	})
+
+	const outgoing =
+		relatedOutgoing.length > 0
+			? relatedOutgoing
+			: (relatedQuery.data?.outgoing ?? [])
+	const incoming =
+		relatedIncoming.length > 0
+			? relatedIncoming
+			: (relatedQuery.data?.incoming ?? [])
+	const isLoading =
+		relatedOutgoing.length === 0 &&
+		relatedIncoming.length === 0 &&
+		relatedQuery.isPending
+	const isError =
+		relatedOutgoing.length === 0 &&
+		relatedIncoming.length === 0 &&
+		relatedQuery.isError
+
 	const addRelation = useAddSourceEntityRelation()
 	const removeRelation = useRemoveSourceEntityRelation()
 
@@ -61,8 +87,8 @@ export function SourceRelatedPanel({
 
 	const allRelated = useMemo(() => {
 		const merged = [
-			...relatedOutgoing.map(r => ({ ...r, direction: 'outgoing' as const })),
-			...relatedIncoming.map(r => ({ ...r, direction: 'incoming' as const }))
+			...outgoing.map(r => ({ ...r, direction: 'outgoing' as const })),
+			...incoming.map(r => ({ ...r, direction: 'incoming' as const }))
 		]
 		const seen = new Set<string>()
 
@@ -72,7 +98,10 @@ export function SourceRelatedPanel({
 			seen.add(key)
 			return true
 		})
-	}, [relatedOutgoing, relatedIncoming])
+	}, [outgoing, incoming])
+	useEffect(() => {
+		onCountChange?.(allRelated.length)
+	}, [allRelated.length, onCountChange])
 
 	const entityItems = useMemo<Array<EntityItem>>(() => {
 		return allRelated.map((item): EntityItem => {
@@ -206,9 +235,22 @@ export function SourceRelatedPanel({
 				/>
 			</div>
 
-			{filteredEntityItems.length === 0 ? (
-				<p className='py-2 text-muted-foreground text-sm'>No related items</p>
-			) : (
+			<DetailTabPanelState
+				emptyMessage='No related items'
+				error={relatedQuery.error}
+				isEmpty={filteredEntityItems.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					relatedOutgoing.length === 0 &&
+					relatedIncoming.length === 0 &&
+					relatedQuery.isFetching &&
+					!isLoading
+				}
+				onRetry={() => {
+					void relatedQuery.refetch()
+				}}
+			>
 				<MasonryLayout
 					estimateItemSize={estimateEntitySize}
 					gap={16}
@@ -219,7 +261,7 @@ export function SourceRelatedPanel({
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>
-			)}
+			</DetailTabPanelState>
 
 			{sourceId && (
 				<EntitySearchDialog

@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
@@ -8,6 +9,7 @@ import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import type { FsrsState } from '~/models/learnable.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
+import { useTopicChildren } from '../api/getTopicChildren'
 import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
 import { AddTopicDialog } from './AddTopicDialog'
@@ -63,8 +65,12 @@ export function TopicChildrenPanel({
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 
-	// Use prop directly - children comes from the single getTopic fetch
-	const children = childrenProp ?? []
+	const childrenQuery = useTopicChildren(topicId, {
+		enabled: childrenProp === undefined
+	})
+	const children = childrenProp ?? childrenQuery.data ?? []
+	const isLoading = childrenProp === undefined && childrenQuery.isPending
+	const isError = childrenProp === undefined && childrenQuery.isError
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
@@ -183,9 +189,19 @@ export function TopicChildrenPanel({
 				</div>
 			)}
 
-			{items.length === 0 ? (
-				<p className='py-2 text-muted-foreground text-sm'>No child topics</p>
-			) : (
+			<DetailTabPanelState
+				emptyMessage='No child topics'
+				error={childrenQuery.error}
+				isEmpty={items.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					childrenProp === undefined && childrenQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void childrenQuery.refetch()
+				}}
+			>
 				<MasonryLayout
 					estimateItemSize={estimateItemSize}
 					gap={16}
@@ -196,7 +212,7 @@ export function TopicChildrenPanel({
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>
-			)}
+			</DetailTabPanelState>
 
 			{topicId && (
 				<EntitySearchDialog

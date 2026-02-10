@@ -32,6 +32,7 @@ export function TopicDetailHeader({
 					<TopicParentsPanel
 						onParentSelect={onParentSelect}
 						parent={topic.parent}
+						parentId={topic.parent_id}
 						topicId={topic.id}
 					/>
 				</div>
