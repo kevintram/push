@@ -28,6 +28,12 @@ import { Route as MainArchivedRouteImport } from './routes/_main/archived'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
 import { Route as MainSourcesSourceIdRouteImport } from './routes/_main/sources_.$sourceId'
 import { Route as MainPracticesPracticeIdRouteImport } from './routes/_main/practices_.$practiceId'
+import { Route as MainTopicsTopicIdIndexRouteImport } from './routes/_main/topics_.$topicId.index'
+import { Route as MainSourcesSourceIdIndexRouteImport } from './routes/_main/sources_.$sourceId.index'
+import { Route as MainPracticesPracticeIdIndexRouteImport } from './routes/_main/practices_.$practiceId.index'
+import { Route as MainTopicsTopicIdReviewsRouteImport } from './routes/_main/topics_.$topicId.reviews'
+import { Route as MainSourcesSourceIdReviewsRouteImport } from './routes/_main/sources_.$sourceId.reviews'
+import { Route as MainPracticesPracticeIdReviewsRouteImport } from './routes/_main/practices_.$practiceId.reviews'
 
 const VirtualizationSmokeRoute = VirtualizationSmokeRouteImport.update({
   id: '/virtualization-smoke',
@@ -123,6 +129,41 @@ const MainPracticesPracticeIdRoute = MainPracticesPracticeIdRouteImport.update({
   path: '/practices/$practiceId',
   getParentRoute: () => MainRoute,
 } as any)
+const MainTopicsTopicIdIndexRoute = MainTopicsTopicIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MainTopicsTopicIdRoute,
+} as any)
+const MainSourcesSourceIdIndexRoute =
+  MainSourcesSourceIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => MainSourcesSourceIdRoute,
+  } as any)
+const MainPracticesPracticeIdIndexRoute =
+  MainPracticesPracticeIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => MainPracticesPracticeIdRoute,
+  } as any)
+const MainTopicsTopicIdReviewsRoute =
+  MainTopicsTopicIdReviewsRouteImport.update({
+    id: '/reviews',
+    path: '/reviews',
+    getParentRoute: () => MainTopicsTopicIdRoute,
+  } as any)
+const MainSourcesSourceIdReviewsRoute =
+  MainSourcesSourceIdReviewsRouteImport.update({
+    id: '/reviews',
+    path: '/reviews',
+    getParentRoute: () => MainSourcesSourceIdRoute,
+  } as any)
+const MainPracticesPracticeIdReviewsRoute =
+  MainPracticesPracticeIdReviewsRouteImport.update({
+    id: '/reviews',
+    path: '/reviews',
+    getParentRoute: () => MainPracticesPracticeIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
@@ -140,9 +181,15 @@ export interface FileRoutesByFullPath {
   '/unscheduled': typeof MainUnscheduledRoute
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
-  '/practices/$practiceId': typeof MainPracticesPracticeIdRoute
-  '/sources/$sourceId': typeof MainSourcesSourceIdRoute
-  '/topics/$topicId': typeof MainTopicsTopicIdRoute
+  '/practices/$practiceId': typeof MainPracticesPracticeIdRouteWithChildren
+  '/sources/$sourceId': typeof MainSourcesSourceIdRouteWithChildren
+  '/topics/$topicId': typeof MainTopicsTopicIdRouteWithChildren
+  '/practices/$practiceId/reviews': typeof MainPracticesPracticeIdReviewsRoute
+  '/sources/$sourceId/reviews': typeof MainSourcesSourceIdReviewsRoute
+  '/topics/$topicId/reviews': typeof MainTopicsTopicIdReviewsRoute
+  '/practices/$practiceId/': typeof MainPracticesPracticeIdIndexRoute
+  '/sources/$sourceId/': typeof MainSourcesSourceIdIndexRoute
+  '/topics/$topicId/': typeof MainTopicsTopicIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
@@ -160,9 +207,12 @@ export interface FileRoutesByTo {
   '/unscheduled': typeof MainUnscheduledRoute
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
-  '/practices/$practiceId': typeof MainPracticesPracticeIdRoute
-  '/sources/$sourceId': typeof MainSourcesSourceIdRoute
-  '/topics/$topicId': typeof MainTopicsTopicIdRoute
+  '/practices/$practiceId/reviews': typeof MainPracticesPracticeIdReviewsRoute
+  '/sources/$sourceId/reviews': typeof MainSourcesSourceIdReviewsRoute
+  '/topics/$topicId/reviews': typeof MainTopicsTopicIdReviewsRoute
+  '/practices/$practiceId': typeof MainPracticesPracticeIdIndexRoute
+  '/sources/$sourceId': typeof MainSourcesSourceIdIndexRoute
+  '/topics/$topicId': typeof MainTopicsTopicIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -182,9 +232,15 @@ export interface FileRoutesById {
   '/_main/unscheduled': typeof MainUnscheduledRoute
   '/_main/upcoming': typeof MainUpcomingRoute
   '/_main/': typeof MainIndexRoute
-  '/_main/practices_/$practiceId': typeof MainPracticesPracticeIdRoute
-  '/_main/sources_/$sourceId': typeof MainSourcesSourceIdRoute
-  '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
+  '/_main/practices_/$practiceId': typeof MainPracticesPracticeIdRouteWithChildren
+  '/_main/sources_/$sourceId': typeof MainSourcesSourceIdRouteWithChildren
+  '/_main/topics_/$topicId': typeof MainTopicsTopicIdRouteWithChildren
+  '/_main/practices_/$practiceId/reviews': typeof MainPracticesPracticeIdReviewsRoute
+  '/_main/sources_/$sourceId/reviews': typeof MainSourcesSourceIdReviewsRoute
+  '/_main/topics_/$topicId/reviews': typeof MainTopicsTopicIdReviewsRoute
+  '/_main/practices_/$practiceId/': typeof MainPracticesPracticeIdIndexRoute
+  '/_main/sources_/$sourceId/': typeof MainSourcesSourceIdIndexRoute
+  '/_main/topics_/$topicId/': typeof MainTopicsTopicIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -207,6 +263,12 @@ export interface FileRouteTypes {
     | '/practices/$practiceId'
     | '/sources/$sourceId'
     | '/topics/$topicId'
+    | '/practices/$practiceId/reviews'
+    | '/sources/$sourceId/reviews'
+    | '/topics/$topicId/reviews'
+    | '/practices/$practiceId/'
+    | '/sources/$sourceId/'
+    | '/topics/$topicId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/virtualization-smoke'
@@ -224,6 +286,9 @@ export interface FileRouteTypes {
     | '/unscheduled'
     | '/upcoming'
     | '/'
+    | '/practices/$practiceId/reviews'
+    | '/sources/$sourceId/reviews'
+    | '/topics/$topicId/reviews'
     | '/practices/$practiceId'
     | '/sources/$sourceId'
     | '/topics/$topicId'
@@ -248,6 +313,12 @@ export interface FileRouteTypes {
     | '/_main/practices_/$practiceId'
     | '/_main/sources_/$sourceId'
     | '/_main/topics_/$topicId'
+    | '/_main/practices_/$practiceId/reviews'
+    | '/_main/sources_/$sourceId/reviews'
+    | '/_main/topics_/$topicId/reviews'
+    | '/_main/practices_/$practiceId/'
+    | '/_main/sources_/$sourceId/'
+    | '/_main/topics_/$topicId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -390,8 +461,92 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainPracticesPracticeIdRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/topics_/$topicId/': {
+      id: '/_main/topics_/$topicId/'
+      path: '/'
+      fullPath: '/topics/$topicId/'
+      preLoaderRoute: typeof MainTopicsTopicIdIndexRouteImport
+      parentRoute: typeof MainTopicsTopicIdRoute
+    }
+    '/_main/sources_/$sourceId/': {
+      id: '/_main/sources_/$sourceId/'
+      path: '/'
+      fullPath: '/sources/$sourceId/'
+      preLoaderRoute: typeof MainSourcesSourceIdIndexRouteImport
+      parentRoute: typeof MainSourcesSourceIdRoute
+    }
+    '/_main/practices_/$practiceId/': {
+      id: '/_main/practices_/$practiceId/'
+      path: '/'
+      fullPath: '/practices/$practiceId/'
+      preLoaderRoute: typeof MainPracticesPracticeIdIndexRouteImport
+      parentRoute: typeof MainPracticesPracticeIdRoute
+    }
+    '/_main/topics_/$topicId/reviews': {
+      id: '/_main/topics_/$topicId/reviews'
+      path: '/reviews'
+      fullPath: '/topics/$topicId/reviews'
+      preLoaderRoute: typeof MainTopicsTopicIdReviewsRouteImport
+      parentRoute: typeof MainTopicsTopicIdRoute
+    }
+    '/_main/sources_/$sourceId/reviews': {
+      id: '/_main/sources_/$sourceId/reviews'
+      path: '/reviews'
+      fullPath: '/sources/$sourceId/reviews'
+      preLoaderRoute: typeof MainSourcesSourceIdReviewsRouteImport
+      parentRoute: typeof MainSourcesSourceIdRoute
+    }
+    '/_main/practices_/$practiceId/reviews': {
+      id: '/_main/practices_/$practiceId/reviews'
+      path: '/reviews'
+      fullPath: '/practices/$practiceId/reviews'
+      preLoaderRoute: typeof MainPracticesPracticeIdReviewsRouteImport
+      parentRoute: typeof MainPracticesPracticeIdRoute
+    }
   }
 }
+
+interface MainPracticesPracticeIdRouteChildren {
+  MainPracticesPracticeIdReviewsRoute: typeof MainPracticesPracticeIdReviewsRoute
+  MainPracticesPracticeIdIndexRoute: typeof MainPracticesPracticeIdIndexRoute
+}
+
+const MainPracticesPracticeIdRouteChildren: MainPracticesPracticeIdRouteChildren =
+  {
+    MainPracticesPracticeIdReviewsRoute: MainPracticesPracticeIdReviewsRoute,
+    MainPracticesPracticeIdIndexRoute: MainPracticesPracticeIdIndexRoute,
+  }
+
+const MainPracticesPracticeIdRouteWithChildren =
+  MainPracticesPracticeIdRoute._addFileChildren(
+    MainPracticesPracticeIdRouteChildren,
+  )
+
+interface MainSourcesSourceIdRouteChildren {
+  MainSourcesSourceIdReviewsRoute: typeof MainSourcesSourceIdReviewsRoute
+  MainSourcesSourceIdIndexRoute: typeof MainSourcesSourceIdIndexRoute
+}
+
+const MainSourcesSourceIdRouteChildren: MainSourcesSourceIdRouteChildren = {
+  MainSourcesSourceIdReviewsRoute: MainSourcesSourceIdReviewsRoute,
+  MainSourcesSourceIdIndexRoute: MainSourcesSourceIdIndexRoute,
+}
+
+const MainSourcesSourceIdRouteWithChildren =
+  MainSourcesSourceIdRoute._addFileChildren(MainSourcesSourceIdRouteChildren)
+
+interface MainTopicsTopicIdRouteChildren {
+  MainTopicsTopicIdReviewsRoute: typeof MainTopicsTopicIdReviewsRoute
+  MainTopicsTopicIdIndexRoute: typeof MainTopicsTopicIdIndexRoute
+}
+
+const MainTopicsTopicIdRouteChildren: MainTopicsTopicIdRouteChildren = {
+  MainTopicsTopicIdReviewsRoute: MainTopicsTopicIdReviewsRoute,
+  MainTopicsTopicIdIndexRoute: MainTopicsTopicIdIndexRoute,
+}
+
+const MainTopicsTopicIdRouteWithChildren =
+  MainTopicsTopicIdRoute._addFileChildren(MainTopicsTopicIdRouteChildren)
 
 interface MainRouteChildren {
   MainArchivedRoute: typeof MainArchivedRoute
@@ -408,9 +563,9 @@ interface MainRouteChildren {
   MainUnscheduledRoute: typeof MainUnscheduledRoute
   MainUpcomingRoute: typeof MainUpcomingRoute
   MainIndexRoute: typeof MainIndexRoute
-  MainPracticesPracticeIdRoute: typeof MainPracticesPracticeIdRoute
-  MainSourcesSourceIdRoute: typeof MainSourcesSourceIdRoute
-  MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRoute
+  MainPracticesPracticeIdRoute: typeof MainPracticesPracticeIdRouteWithChildren
+  MainSourcesSourceIdRoute: typeof MainSourcesSourceIdRouteWithChildren
+  MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRouteWithChildren
 }
 
 const MainRouteChildren: MainRouteChildren = {
@@ -428,9 +583,9 @@ const MainRouteChildren: MainRouteChildren = {
   MainUnscheduledRoute: MainUnscheduledRoute,
   MainUpcomingRoute: MainUpcomingRoute,
   MainIndexRoute: MainIndexRoute,
-  MainPracticesPracticeIdRoute: MainPracticesPracticeIdRoute,
-  MainSourcesSourceIdRoute: MainSourcesSourceIdRoute,
-  MainTopicsTopicIdRoute: MainTopicsTopicIdRoute,
+  MainPracticesPracticeIdRoute: MainPracticesPracticeIdRouteWithChildren,
+  MainSourcesSourceIdRoute: MainSourcesSourceIdRouteWithChildren,
+  MainTopicsTopicIdRoute: MainTopicsTopicIdRouteWithChildren,
 }
 
 const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren)
