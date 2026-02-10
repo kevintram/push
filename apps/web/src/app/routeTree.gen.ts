@@ -28,6 +28,15 @@ import { Route as MainArchivedRouteImport } from './routes/_main/archived'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
 import { Route as MainSourcesSourceIdRouteImport } from './routes/_main/sources_.$sourceId'
 import { Route as MainPracticesPracticeIdRouteImport } from './routes/_main/practices_.$practiceId'
+import { Route as MainTopicsTopicIdIndexRouteImport } from './routes/_main/topics_.$topicId.index'
+import { Route as MainSourcesSourceIdIndexRouteImport } from './routes/_main/sources_.$sourceId.index'
+import { Route as MainTopicsTopicIdSourcesRouteImport } from './routes/_main/topics_.$topicId.sources'
+import { Route as MainTopicsTopicIdRelatedRouteImport } from './routes/_main/topics_.$topicId.related'
+import { Route as MainTopicsTopicIdPracticeRouteImport } from './routes/_main/topics_.$topicId.practice'
+import { Route as MainSourcesSourceIdTopicsRouteImport } from './routes/_main/sources_.$sourceId.topics'
+import { Route as MainSourcesSourceIdRelatedRouteImport } from './routes/_main/sources_.$sourceId.related'
+import { Route as MainSourcesSourceIdPrerequisitesRouteImport } from './routes/_main/sources_.$sourceId.prerequisites'
+import { Route as MainSourcesSourceIdPracticeRouteImport } from './routes/_main/sources_.$sourceId.practice'
 
 const VirtualizationSmokeRoute = VirtualizationSmokeRouteImport.update({
   id: '/virtualization-smoke',
@@ -123,6 +132,59 @@ const MainPracticesPracticeIdRoute = MainPracticesPracticeIdRouteImport.update({
   path: '/practices/$practiceId',
   getParentRoute: () => MainRoute,
 } as any)
+const MainTopicsTopicIdIndexRoute = MainTopicsTopicIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MainTopicsTopicIdRoute,
+} as any)
+const MainSourcesSourceIdIndexRoute =
+  MainSourcesSourceIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => MainSourcesSourceIdRoute,
+  } as any)
+const MainTopicsTopicIdSourcesRoute =
+  MainTopicsTopicIdSourcesRouteImport.update({
+    id: '/sources',
+    path: '/sources',
+    getParentRoute: () => MainTopicsTopicIdRoute,
+  } as any)
+const MainTopicsTopicIdRelatedRoute =
+  MainTopicsTopicIdRelatedRouteImport.update({
+    id: '/related',
+    path: '/related',
+    getParentRoute: () => MainTopicsTopicIdRoute,
+  } as any)
+const MainTopicsTopicIdPracticeRoute =
+  MainTopicsTopicIdPracticeRouteImport.update({
+    id: '/practice',
+    path: '/practice',
+    getParentRoute: () => MainTopicsTopicIdRoute,
+  } as any)
+const MainSourcesSourceIdTopicsRoute =
+  MainSourcesSourceIdTopicsRouteImport.update({
+    id: '/topics',
+    path: '/topics',
+    getParentRoute: () => MainSourcesSourceIdRoute,
+  } as any)
+const MainSourcesSourceIdRelatedRoute =
+  MainSourcesSourceIdRelatedRouteImport.update({
+    id: '/related',
+    path: '/related',
+    getParentRoute: () => MainSourcesSourceIdRoute,
+  } as any)
+const MainSourcesSourceIdPrerequisitesRoute =
+  MainSourcesSourceIdPrerequisitesRouteImport.update({
+    id: '/prerequisites',
+    path: '/prerequisites',
+    getParentRoute: () => MainSourcesSourceIdRoute,
+  } as any)
+const MainSourcesSourceIdPracticeRoute =
+  MainSourcesSourceIdPracticeRouteImport.update({
+    id: '/practice',
+    path: '/practice',
+    getParentRoute: () => MainSourcesSourceIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
@@ -141,8 +203,17 @@ export interface FileRoutesByFullPath {
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/practices/$practiceId': typeof MainPracticesPracticeIdRoute
-  '/sources/$sourceId': typeof MainSourcesSourceIdRoute
-  '/topics/$topicId': typeof MainTopicsTopicIdRoute
+  '/sources/$sourceId': typeof MainSourcesSourceIdRouteWithChildren
+  '/topics/$topicId': typeof MainTopicsTopicIdRouteWithChildren
+  '/sources/$sourceId/practice': typeof MainSourcesSourceIdPracticeRoute
+  '/sources/$sourceId/prerequisites': typeof MainSourcesSourceIdPrerequisitesRoute
+  '/sources/$sourceId/related': typeof MainSourcesSourceIdRelatedRoute
+  '/sources/$sourceId/topics': typeof MainSourcesSourceIdTopicsRoute
+  '/topics/$topicId/practice': typeof MainTopicsTopicIdPracticeRoute
+  '/topics/$topicId/related': typeof MainTopicsTopicIdRelatedRoute
+  '/topics/$topicId/sources': typeof MainTopicsTopicIdSourcesRoute
+  '/sources/$sourceId/': typeof MainSourcesSourceIdIndexRoute
+  '/topics/$topicId/': typeof MainTopicsTopicIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
@@ -161,8 +232,15 @@ export interface FileRoutesByTo {
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/practices/$practiceId': typeof MainPracticesPracticeIdRoute
-  '/sources/$sourceId': typeof MainSourcesSourceIdRoute
-  '/topics/$topicId': typeof MainTopicsTopicIdRoute
+  '/sources/$sourceId/practice': typeof MainSourcesSourceIdPracticeRoute
+  '/sources/$sourceId/prerequisites': typeof MainSourcesSourceIdPrerequisitesRoute
+  '/sources/$sourceId/related': typeof MainSourcesSourceIdRelatedRoute
+  '/sources/$sourceId/topics': typeof MainSourcesSourceIdTopicsRoute
+  '/topics/$topicId/practice': typeof MainTopicsTopicIdPracticeRoute
+  '/topics/$topicId/related': typeof MainTopicsTopicIdRelatedRoute
+  '/topics/$topicId/sources': typeof MainTopicsTopicIdSourcesRoute
+  '/sources/$sourceId': typeof MainSourcesSourceIdIndexRoute
+  '/topics/$topicId': typeof MainTopicsTopicIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -183,8 +261,17 @@ export interface FileRoutesById {
   '/_main/upcoming': typeof MainUpcomingRoute
   '/_main/': typeof MainIndexRoute
   '/_main/practices_/$practiceId': typeof MainPracticesPracticeIdRoute
-  '/_main/sources_/$sourceId': typeof MainSourcesSourceIdRoute
-  '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
+  '/_main/sources_/$sourceId': typeof MainSourcesSourceIdRouteWithChildren
+  '/_main/topics_/$topicId': typeof MainTopicsTopicIdRouteWithChildren
+  '/_main/sources_/$sourceId/practice': typeof MainSourcesSourceIdPracticeRoute
+  '/_main/sources_/$sourceId/prerequisites': typeof MainSourcesSourceIdPrerequisitesRoute
+  '/_main/sources_/$sourceId/related': typeof MainSourcesSourceIdRelatedRoute
+  '/_main/sources_/$sourceId/topics': typeof MainSourcesSourceIdTopicsRoute
+  '/_main/topics_/$topicId/practice': typeof MainTopicsTopicIdPracticeRoute
+  '/_main/topics_/$topicId/related': typeof MainTopicsTopicIdRelatedRoute
+  '/_main/topics_/$topicId/sources': typeof MainTopicsTopicIdSourcesRoute
+  '/_main/sources_/$sourceId/': typeof MainSourcesSourceIdIndexRoute
+  '/_main/topics_/$topicId/': typeof MainTopicsTopicIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -207,6 +294,15 @@ export interface FileRouteTypes {
     | '/practices/$practiceId'
     | '/sources/$sourceId'
     | '/topics/$topicId'
+    | '/sources/$sourceId/practice'
+    | '/sources/$sourceId/prerequisites'
+    | '/sources/$sourceId/related'
+    | '/sources/$sourceId/topics'
+    | '/topics/$topicId/practice'
+    | '/topics/$topicId/related'
+    | '/topics/$topicId/sources'
+    | '/sources/$sourceId/'
+    | '/topics/$topicId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/virtualization-smoke'
@@ -225,6 +321,13 @@ export interface FileRouteTypes {
     | '/upcoming'
     | '/'
     | '/practices/$practiceId'
+    | '/sources/$sourceId/practice'
+    | '/sources/$sourceId/prerequisites'
+    | '/sources/$sourceId/related'
+    | '/sources/$sourceId/topics'
+    | '/topics/$topicId/practice'
+    | '/topics/$topicId/related'
+    | '/topics/$topicId/sources'
     | '/sources/$sourceId'
     | '/topics/$topicId'
   id:
@@ -248,6 +351,15 @@ export interface FileRouteTypes {
     | '/_main/practices_/$practiceId'
     | '/_main/sources_/$sourceId'
     | '/_main/topics_/$topicId'
+    | '/_main/sources_/$sourceId/practice'
+    | '/_main/sources_/$sourceId/prerequisites'
+    | '/_main/sources_/$sourceId/related'
+    | '/_main/sources_/$sourceId/topics'
+    | '/_main/topics_/$topicId/practice'
+    | '/_main/topics_/$topicId/related'
+    | '/_main/topics_/$topicId/sources'
+    | '/_main/sources_/$sourceId/'
+    | '/_main/topics_/$topicId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -390,8 +502,107 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainPracticesPracticeIdRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/topics_/$topicId/': {
+      id: '/_main/topics_/$topicId/'
+      path: '/'
+      fullPath: '/topics/$topicId/'
+      preLoaderRoute: typeof MainTopicsTopicIdIndexRouteImport
+      parentRoute: typeof MainTopicsTopicIdRoute
+    }
+    '/_main/sources_/$sourceId/': {
+      id: '/_main/sources_/$sourceId/'
+      path: '/'
+      fullPath: '/sources/$sourceId/'
+      preLoaderRoute: typeof MainSourcesSourceIdIndexRouteImport
+      parentRoute: typeof MainSourcesSourceIdRoute
+    }
+    '/_main/topics_/$topicId/sources': {
+      id: '/_main/topics_/$topicId/sources'
+      path: '/sources'
+      fullPath: '/topics/$topicId/sources'
+      preLoaderRoute: typeof MainTopicsTopicIdSourcesRouteImport
+      parentRoute: typeof MainTopicsTopicIdRoute
+    }
+    '/_main/topics_/$topicId/related': {
+      id: '/_main/topics_/$topicId/related'
+      path: '/related'
+      fullPath: '/topics/$topicId/related'
+      preLoaderRoute: typeof MainTopicsTopicIdRelatedRouteImport
+      parentRoute: typeof MainTopicsTopicIdRoute
+    }
+    '/_main/topics_/$topicId/practice': {
+      id: '/_main/topics_/$topicId/practice'
+      path: '/practice'
+      fullPath: '/topics/$topicId/practice'
+      preLoaderRoute: typeof MainTopicsTopicIdPracticeRouteImport
+      parentRoute: typeof MainTopicsTopicIdRoute
+    }
+    '/_main/sources_/$sourceId/topics': {
+      id: '/_main/sources_/$sourceId/topics'
+      path: '/topics'
+      fullPath: '/sources/$sourceId/topics'
+      preLoaderRoute: typeof MainSourcesSourceIdTopicsRouteImport
+      parentRoute: typeof MainSourcesSourceIdRoute
+    }
+    '/_main/sources_/$sourceId/related': {
+      id: '/_main/sources_/$sourceId/related'
+      path: '/related'
+      fullPath: '/sources/$sourceId/related'
+      preLoaderRoute: typeof MainSourcesSourceIdRelatedRouteImport
+      parentRoute: typeof MainSourcesSourceIdRoute
+    }
+    '/_main/sources_/$sourceId/prerequisites': {
+      id: '/_main/sources_/$sourceId/prerequisites'
+      path: '/prerequisites'
+      fullPath: '/sources/$sourceId/prerequisites'
+      preLoaderRoute: typeof MainSourcesSourceIdPrerequisitesRouteImport
+      parentRoute: typeof MainSourcesSourceIdRoute
+    }
+    '/_main/sources_/$sourceId/practice': {
+      id: '/_main/sources_/$sourceId/practice'
+      path: '/practice'
+      fullPath: '/sources/$sourceId/practice'
+      preLoaderRoute: typeof MainSourcesSourceIdPracticeRouteImport
+      parentRoute: typeof MainSourcesSourceIdRoute
+    }
   }
 }
+
+interface MainSourcesSourceIdRouteChildren {
+  MainSourcesSourceIdPracticeRoute: typeof MainSourcesSourceIdPracticeRoute
+  MainSourcesSourceIdPrerequisitesRoute: typeof MainSourcesSourceIdPrerequisitesRoute
+  MainSourcesSourceIdRelatedRoute: typeof MainSourcesSourceIdRelatedRoute
+  MainSourcesSourceIdTopicsRoute: typeof MainSourcesSourceIdTopicsRoute
+  MainSourcesSourceIdIndexRoute: typeof MainSourcesSourceIdIndexRoute
+}
+
+const MainSourcesSourceIdRouteChildren: MainSourcesSourceIdRouteChildren = {
+  MainSourcesSourceIdPracticeRoute: MainSourcesSourceIdPracticeRoute,
+  MainSourcesSourceIdPrerequisitesRoute: MainSourcesSourceIdPrerequisitesRoute,
+  MainSourcesSourceIdRelatedRoute: MainSourcesSourceIdRelatedRoute,
+  MainSourcesSourceIdTopicsRoute: MainSourcesSourceIdTopicsRoute,
+  MainSourcesSourceIdIndexRoute: MainSourcesSourceIdIndexRoute,
+}
+
+const MainSourcesSourceIdRouteWithChildren =
+  MainSourcesSourceIdRoute._addFileChildren(MainSourcesSourceIdRouteChildren)
+
+interface MainTopicsTopicIdRouteChildren {
+  MainTopicsTopicIdPracticeRoute: typeof MainTopicsTopicIdPracticeRoute
+  MainTopicsTopicIdRelatedRoute: typeof MainTopicsTopicIdRelatedRoute
+  MainTopicsTopicIdSourcesRoute: typeof MainTopicsTopicIdSourcesRoute
+  MainTopicsTopicIdIndexRoute: typeof MainTopicsTopicIdIndexRoute
+}
+
+const MainTopicsTopicIdRouteChildren: MainTopicsTopicIdRouteChildren = {
+  MainTopicsTopicIdPracticeRoute: MainTopicsTopicIdPracticeRoute,
+  MainTopicsTopicIdRelatedRoute: MainTopicsTopicIdRelatedRoute,
+  MainTopicsTopicIdSourcesRoute: MainTopicsTopicIdSourcesRoute,
+  MainTopicsTopicIdIndexRoute: MainTopicsTopicIdIndexRoute,
+}
+
+const MainTopicsTopicIdRouteWithChildren =
+  MainTopicsTopicIdRoute._addFileChildren(MainTopicsTopicIdRouteChildren)
 
 interface MainRouteChildren {
   MainArchivedRoute: typeof MainArchivedRoute
@@ -409,8 +620,8 @@ interface MainRouteChildren {
   MainUpcomingRoute: typeof MainUpcomingRoute
   MainIndexRoute: typeof MainIndexRoute
   MainPracticesPracticeIdRoute: typeof MainPracticesPracticeIdRoute
-  MainSourcesSourceIdRoute: typeof MainSourcesSourceIdRoute
-  MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRoute
+  MainSourcesSourceIdRoute: typeof MainSourcesSourceIdRouteWithChildren
+  MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRouteWithChildren
 }
 
 const MainRouteChildren: MainRouteChildren = {
@@ -429,8 +640,8 @@ const MainRouteChildren: MainRouteChildren = {
   MainUpcomingRoute: MainUpcomingRoute,
   MainIndexRoute: MainIndexRoute,
   MainPracticesPracticeIdRoute: MainPracticesPracticeIdRoute,
-  MainSourcesSourceIdRoute: MainSourcesSourceIdRoute,
-  MainTopicsTopicIdRoute: MainTopicsTopicIdRoute,
+  MainSourcesSourceIdRoute: MainSourcesSourceIdRouteWithChildren,
+  MainTopicsTopicIdRoute: MainTopicsTopicIdRouteWithChildren,
 }
 
 const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren)
