@@ -27,13 +27,18 @@ export async function getTopicChildren(topicId: number) {
 	}
 }
 
-export function useTopicChildren(topicId: number | undefined) {
+export function useTopicChildren(
+	topicId: number | undefined,
+	options?: {
+		enabled?: boolean
+	}
+) {
 	return useQuery({
 		queryKey: topicKeys.children(topicId!),
 		queryFn: () => {
 			if (!topicId) throw new Error('Topic ID is required')
 			return getTopicChildren(topicId)
 		},
-		enabled: topicId !== undefined
+		enabled: topicId !== undefined && (options?.enabled ?? true)
 	})
 }

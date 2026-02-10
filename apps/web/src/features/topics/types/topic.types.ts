@@ -44,6 +44,7 @@ export type Topic = {
 	days_until_next_tier: number | null
 	children_count?: number
 	sources_count?: number
+	practices_count?: number
 	related_outgoing_count?: number
 	related_incoming_count?: number
 	parent?: Topic | null
