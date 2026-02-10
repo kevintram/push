@@ -39,6 +39,7 @@ interface TopicActionMenuProps {
 	onDelete?: () => void
 	trigger?: React.ReactNode
 	onTopicUpdateSuccess?: (topic: Topic) => Promise<unknown> | unknown
+	hideInboxArchive?: boolean
 }
 
 export function TopicActionMenu({
@@ -49,7 +50,8 @@ export function TopicActionMenu({
 	children,
 	onDelete,
 	trigger,
-	onTopicUpdateSuccess
+	onTopicUpdateSuccess,
+	hideInboxArchive = false
 }: TopicActionMenuProps) {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
@@ -154,33 +156,37 @@ export function TopicActionMenu({
 					)}
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-					<DropdownMenuItem onClick={handleInboxToggle}>
-						{topic.inboxed ? (
-							<>
-								<Inbox className='mr-2 h-4 w-4' />
-								Remove from Inbox
-							</>
-						) : (
-							<>
-								<Inbox className='mr-2 h-4 w-4' />
-								Inbox
-							</>
-						)}
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={handleArchiveToggle}>
-						{topic.archived ? (
-							<>
-								<ArchiveRestore className='mr-2 h-4 w-4' />
-								Unarchive
-							</>
-						) : (
-							<>
-								<Archive className='mr-2 h-4 w-4' />
-								Archive
-							</>
-						)}
-					</DropdownMenuItem>
-					<DropdownMenuSeparator />
+					{!hideInboxArchive && (
+						<>
+							<DropdownMenuItem onClick={handleInboxToggle}>
+								{topic.inboxed ? (
+									<>
+										<Inbox className='mr-2 h-4 w-4' />
+										Remove from Inbox
+									</>
+								) : (
+									<>
+										<Inbox className='mr-2 h-4 w-4' />
+										Inbox
+									</>
+								)}
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={handleArchiveToggle}>
+								{topic.archived ? (
+									<>
+										<ArchiveRestore className='mr-2 h-4 w-4' />
+										Unarchive
+									</>
+								) : (
+									<>
+										<Archive className='mr-2 h-4 w-4' />
+										Archive
+									</>
+								)}
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+						</>
+					)}
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()

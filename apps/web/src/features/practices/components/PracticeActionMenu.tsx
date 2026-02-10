@@ -39,6 +39,7 @@ interface PracticeActionMenuProps {
 	onPracticeUpdateSuccess?: (practice: Practice) => Promise<unknown> | unknown
 	onRemoveRelationship?: () => void
 	removeRelationshipText?: string
+	hideInboxArchive?: boolean
 }
 
 export function PracticeActionMenu({
@@ -49,7 +50,8 @@ export function PracticeActionMenu({
 	trigger,
 	onPracticeUpdateSuccess,
 	onRemoveRelationship,
-	removeRelationshipText = 'Remove'
+	removeRelationshipText = 'Remove',
+	hideInboxArchive = false
 }: PracticeActionMenuProps) {
 	const [convertToTopicOpen, setConvertToTopicOpen] = useState(false)
 	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
@@ -150,33 +152,37 @@ export function PracticeActionMenu({
 					)}
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-					<DropdownMenuItem onClick={handleInboxToggle}>
-						{practice.inboxed ? (
-							<>
-								<Inbox className='mr-2 h-4 w-4' />
-								Remove from Inbox
-							</>
-						) : (
-							<>
-								<Inbox className='mr-2 h-4 w-4' />
-								Inbox
-							</>
-						)}
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={handleArchiveToggle}>
-						{practice.archived ? (
-							<>
-								<ArchiveRestore className='mr-2 h-4 w-4' />
-								Unarchive
-							</>
-						) : (
-							<>
-								<Archive className='mr-2 h-4 w-4' />
-								Archive
-							</>
-						)}
-					</DropdownMenuItem>
-					<DropdownMenuSeparator />
+					{!hideInboxArchive && (
+						<>
+							<DropdownMenuItem onClick={handleInboxToggle}>
+								{practice.inboxed ? (
+									<>
+										<Inbox className='mr-2 h-4 w-4' />
+										Remove from Inbox
+									</>
+								) : (
+									<>
+										<Inbox className='mr-2 h-4 w-4' />
+										Inbox
+									</>
+								)}
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={handleArchiveToggle}>
+								{practice.archived ? (
+									<>
+										<ArchiveRestore className='mr-2 h-4 w-4' />
+										Unarchive
+									</>
+								) : (
+									<>
+										<Archive className='mr-2 h-4 w-4' />
+										Archive
+									</>
+								)}
+							</DropdownMenuItem>
+							<DropdownMenuSeparator />
+						</>
+					)}
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()
