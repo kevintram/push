@@ -1,7 +1,22 @@
 import type { ReactNode } from 'react'
+import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
+import { Button } from '~/components/ui/Button'
 import { CountBadge } from '~/components/ui/CountBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { cn } from '~/lib/utils'
+
+function TabErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+	return (
+		<div className='flex flex-col items-center gap-3 py-6 text-center'>
+			<p className='text-muted-foreground text-sm'>
+				{error?.message || 'Something went wrong loading this tab.'}
+			</p>
+			<Button onClick={resetErrorBoundary} size='sm' variant='outline'>
+				Retry
+			</Button>
+		</div>
+	)
+}
 
 export interface DetailTabDefinition {
 	value: string
@@ -13,12 +28,16 @@ export interface DetailTabDefinition {
 interface DetailTabsShellProps {
 	tabs: Array<DetailTabDefinition>
 	defaultValue?: string
+	value?: string
+	onValueChange?: (value: string) => void
 	className?: string
 }
 
 export function DetailTabsShell({
 	tabs,
 	defaultValue,
+	value,
+	onValueChange,
 	className
 }: DetailTabsShellProps) {
 	if (tabs.length === 0) return null
@@ -29,6 +48,8 @@ export function DetailTabsShell({
 		<Tabs
 			className={cn('gap-4', className)}
 			defaultValue={resolvedDefaultValue}
+			onValueChange={onValueChange}
+			value={value}
 		>
 			<div className='w-full border-border border-b'>
 				<TabsList
@@ -52,7 +73,9 @@ export function DetailTabsShell({
 			</div>
 			{tabs.map(tab => (
 				<TabsContent className='mt-0' key={tab.value} value={tab.value}>
-					{tab.content}
+					<ErrorBoundary FallbackComponent={TabErrorFallback}>
+						{tab.content}
+					</ErrorBoundary>
 				</TabsContent>
 			))}
 		</Tabs>
