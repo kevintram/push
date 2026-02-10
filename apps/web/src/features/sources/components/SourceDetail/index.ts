@@ -1,6 +1,4 @@
 export * from './SourceDetail'
-export * from './SourceDetailHeader'
+export * from './SourceDetailNavBar'
 export * from './SourceDetailSkeleton'
-export * from './SourceProperties'
 export * from './SourceStatus'
-export * from './SourceTitleSection'

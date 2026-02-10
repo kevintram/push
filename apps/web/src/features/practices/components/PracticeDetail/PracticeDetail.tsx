@@ -1,9 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, use, useCallback, useRef } from 'react'
-import { LearnableProperties } from '~/components/LearnableProperties'
-import { LearnableStatus } from '~/components/LearnableStatus'
-import { ReviewsSidebar } from '~/components/ReviewsSidebar'
-import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
+import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
 import { Textarea } from '~/components/ui/Textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
@@ -17,7 +14,7 @@ import type { Practice } from '../../types/practice.types'
 import { PracticeActionMenu } from '../PracticeActionMenu'
 import { PracticeSourcesPanel } from '../PracticeSourcesPanel'
 import { PracticeTopicsPanel } from '../PracticeTopicsPanel'
-import { PracticeDetailHeader } from './PracticeDetailHeader'
+import { PracticeDetailNavBar } from './PracticeDetailNavBar'
 import { PracticeDetailSkeleton } from './PracticeDetailSkeleton'
 
 interface PracticeDetailProps {
@@ -115,6 +112,17 @@ export function PracticeDetail({
 		}
 	}, [updatePractice, practice?.id, practice?.inboxed])
 
+	const handleSrsToggle = useCallback(
+		async (pressed: boolean) => {
+			if (!practice?.id) return
+			await updatePractice({
+				id: practice.id,
+				srs_enabled: pressed
+			})
+		},
+		[updatePractice, practice?.id]
+	)
+
 	const updatePrompt = useCallback(
 		(newPrompt: string) => {
 			if (!practice?.id) return
@@ -153,97 +161,81 @@ export function PracticeDetail({
 	}
 
 	return (
-		<SidebarProvider
-			cookieName='sidebar:practice-detail'
-			defaultOpen={true}
-			enableKeyboardShortcut={false}
-		>
-			<div className='flex h-full min-h-0 flex-col'>
-				<PracticeDetailHeader
-					afterActions={headerAfterActions}
-					headerBeforeActions={headerBeforeActions}
-				/>
-				<SidebarHolder className='flex min-h-0 flex-1'>
-					<div
-						className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'
-						ref={scrollContainerRef}
-					>
-						<div className={cn('w-full px-6 py-4', className)}>
-							{/* Status badges */}
-							<LearnableStatus
-								archived={practice.archived}
-								inboxed={practice.inboxed}
-								onArchiveToggle={handleArchiveToggle}
-								onInboxToggle={handleInboxToggle}
-							/>
-
-							{/* Prompt field with action menu */}
-							<div className='flex items-start gap-2'>
-								<div className='flex flex-1 flex-col gap-1'>
-									<Textarea
-										className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-										onChange={onPromptChange}
-										placeholder='Prompt'
-										spellCheck={false}
-										value={prompt}
-									/>
-								</div>
+		<div className='flex h-full min-h-0 flex-col'>
+			<PracticeDetailNavBar
+				afterActions={headerAfterActions}
+				headerBeforeActions={headerBeforeActions}
+			/>
+			<div className='flex min-h-0 flex-1'>
+				<div
+					className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'
+					ref={scrollContainerRef}
+				>
+					<div className={cn('w-full px-6 pt-2 pb-4', className)}>
+						<LearnableDetailHeader
+							archived={practice.archived}
+							createdAt={practice.inserted_at}
+							entityId={practice.id}
+							entityLabel='Practice'
+							entityType='practice'
+							inboxed={practice.inboxed}
+							isUpdating={false}
+							metrics={metrics}
+							onArchiveToggle={handleArchiveToggle}
+							onInboxToggle={handleInboxToggle}
+							onSrsToggle={handleSrsToggle}
+							onTitleChange={onPromptChange}
+							renderActionMenu={trigger => (
 								<PracticeActionMenu
+									hideInboxArchive={true}
 									onConvertSuccess={onConvertSuccess}
 									onDelete={onDelete}
 									onPracticeUpdateSuccess={handlePracticeUpdateSuccess}
 									practice={practice}
+									trigger={trigger}
 								/>
-							</div>
+							)}
+							srsEnabled={practice.srs_enabled}
+							title={prompt}
+							titlePlaceholder='Prompt'
+							updatedAt={practice.updated_at}
+						/>
 
-							{/* Answer field */}
-							<div className='mt-4'>
-								<Textarea
-									className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-									onChange={onAnswerChange}
-									placeholder='Answer'
-									spellCheck={false}
-									value={answer}
-								/>
-							</div>
+						{/* Answer field */}
+						<div className='mt-4'>
+							<Textarea
+								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+								onChange={onAnswerChange}
+								placeholder='Answer'
+								spellCheck={false}
+								value={answer}
+							/>
+						</div>
 
-							{/* Properties (timestamps, FSRS status) */}
-							<div className='mt-4'>
-								<LearnableProperties
-									insertedAt={practice.inserted_at}
-									metrics={metrics}
-									updatedAt={practice.updated_at}
-								/>
-							</div>
+						{/* Topics Panel */}
+						<div className='mt-4'>
+							<PracticeTopicsPanel
+								getScrollElement={getScrollElement}
+								inheritFsrsState={srsSource}
+								onTopicSelect={onTopicNavigate}
+								practiceId={practice.id}
+								topics={practice.topics}
+							/>
+						</div>
 
-							{/* Topics Panel */}
-							<div className='mt-4'>
-								<PracticeTopicsPanel
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onTopicSelect={onTopicNavigate}
-									practiceId={practice.id}
-									topics={practice.topics}
-								/>
-							</div>
-
-							{/* Sources Panel */}
-							<div className='mt-4'>
-								<PracticeSourcesPanel
-									getScrollElement={getScrollElement}
-									inheritFsrsState={srsSource}
-									onSourceSelect={onSourceNavigate}
-									practiceId={practice.id}
-									sources={practice.sources}
-								/>
-							</div>
+						{/* Sources Panel */}
+						<div className='mt-4'>
+							<PracticeSourcesPanel
+								getScrollElement={getScrollElement}
+								inheritFsrsState={srsSource}
+								onSourceSelect={onSourceNavigate}
+								practiceId={practice.id}
+								sources={practice.sources}
+							/>
 						</div>
 					</div>
-
-					{/* Reviews Sidebar */}
-					<ReviewsSidebar entity={practice} entityType='practice' />
-				</SidebarHolder>
+				</div>
 			</div>
-		</SidebarProvider>
+		</div>
 	)
 }

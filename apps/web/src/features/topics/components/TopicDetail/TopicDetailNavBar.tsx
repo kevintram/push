@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { Topic } from '../../types/topic.types'
 import { TopicParentsPanel } from '../TopicParentsPanel'
 
-interface TopicDetailHeaderProps {
+interface TopicDetailNavBarProps {
 	topic: Topic
 	/**
 	 * Content to render in the left section before the parents panel (e.g., navigation buttons)
@@ -18,12 +18,12 @@ interface TopicDetailHeaderProps {
 	onParentSelect?: (topicId: number) => void
 }
 
-export function TopicDetailHeader({
+export function TopicDetailNavBar({
 	topic,
 	headerBeforeActions,
 	afterActions,
 	onParentSelect
-}: TopicDetailHeaderProps) {
+}: TopicDetailNavBarProps) {
 	return (
 		<div className='sticky top-0 z-10 w-full border-b'>
 			<div className='flex items-center justify-between gap-4 px-2 py-1'>

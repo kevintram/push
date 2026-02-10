@@ -2,7 +2,6 @@ import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
-import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { usePracticeWithRelationships } from '~/features/practices/api/getPractice'
 import { PracticeDetail } from '~/features/practices/components/PracticeDetail/PracticeDetail'
 import { PracticeContext } from '~/features/practices/stores/SelectedPracticeContext'
@@ -73,7 +72,6 @@ export function PracticeDetailPage({ practiceId }: PracticeDetailPageProps) {
 		<PracticeContext value={contextValue}>
 			<PracticeDetail
 				className='mx-auto max-w-5xl'
-				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
 				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}
