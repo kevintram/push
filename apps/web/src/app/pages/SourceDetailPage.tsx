@@ -4,12 +4,16 @@ import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { useSourceWithRelationships } from '~/features/sources/api/getSource'
-import { SourceDetail } from '~/features/sources/components/SourceDetail/SourceDetail'
+import {
+	SourceDetail,
+	type SourceDetailTab
+} from '~/features/sources/components/SourceDetail/SourceDetail'
 import { SourceContext } from '~/features/sources/stores/SelectedSourceContext'
 import { useConversionNavigate } from '~/hooks/useConversionNavigate'
 
 interface SourceDetailPageProps {
 	sourceId: string
+	activeTab?: SourceDetailTab
 }
 
 function BrowserNavigationButtons() {
@@ -28,7 +32,10 @@ function BrowserNavigationButtons() {
 	)
 }
 
-export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
+export function SourceDetailPage({
+	sourceId,
+	activeTab = 'children'
+}: SourceDetailPageProps) {
 	const navigate = useNavigate()
 	const router = useRouter()
 	const handleConvertSuccess = useConversionNavigate()
@@ -71,6 +78,50 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 		[navigate]
 	)
 
+	const handleTabChange = useCallback(
+		(nextTab: SourceDetailTab) => {
+			if (nextTab === activeTab) return
+			if (nextTab === 'children') {
+				navigate({
+					replace: true,
+					to: '/sources/$sourceId',
+					params: { sourceId }
+				})
+				return
+			}
+			if (nextTab === 'practice') {
+				navigate({
+					replace: true,
+					to: '/sources/$sourceId/practice',
+					params: { sourceId }
+				})
+				return
+			}
+			if (nextTab === 'topics') {
+				navigate({
+					replace: true,
+					to: '/sources/$sourceId/topics',
+					params: { sourceId }
+				})
+				return
+			}
+			if (nextTab === 'prerequisites') {
+				navigate({
+					replace: true,
+					to: '/sources/$sourceId/prerequisites',
+					params: { sourceId }
+				})
+				return
+			}
+			navigate({
+				replace: true,
+				to: '/sources/$sourceId/related',
+				params: { sourceId }
+			})
+		},
+		[activeTab, navigate, sourceId]
+	)
+
 	const contextValue = useMemo(
 		() => ({
 			source,
@@ -82,6 +133,7 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 	return (
 		<SourceContext value={contextValue}>
 			<SourceDetail
+				activeTab={activeTab}
 				className='mx-auto max-w-5xl'
 				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
@@ -89,6 +141,7 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 				onDelete={handleDelete}
 				onPracticeNavigate={handlePracticeNavigate}
 				onSourceNavigate={handleSourceNavigate}
+				onTabChange={handleTabChange}
 				onTopicNavigate={handleTopicNavigate}
 			/>
 		</SourceContext>
