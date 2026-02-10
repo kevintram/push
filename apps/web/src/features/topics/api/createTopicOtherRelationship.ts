@@ -56,10 +56,10 @@ export function useCreateTopicOtherRelationship() {
 			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
 			await Promise.all([
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.detail(fromTopicId)
+					queryKey: topicKeys.byId(fromTopicId)
 				}),
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.detail(toTopicId)
+					queryKey: topicKeys.byId(toTopicId)
 				})
 			])
 		}

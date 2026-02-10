@@ -35,7 +35,7 @@ export function useRemoveTopicEntityRelation() {
 		}) => removeTopicEntityRelation(topicId, entityType, entityId),
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
-				queryKey: topicKeys.detail(variables.topicId)
+				queryKey: topicKeys.byId(variables.topicId)
 			})
 		}
 	})

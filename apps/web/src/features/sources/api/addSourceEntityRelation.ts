@@ -36,7 +36,7 @@ export function useAddSourceEntityRelation() {
 		}) => addSourceEntityRelation(sourceId, data),
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
-				queryKey: sourceKeys.detail(variables.sourceId)
+				queryKey: sourceKeys.byId(variables.sourceId)
 			})
 		}
 	})

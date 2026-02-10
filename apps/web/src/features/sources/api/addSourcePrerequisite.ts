@@ -35,9 +35,14 @@ export function useAddSourcePrerequisite() {
 			data: SourcePrerequisiteCreate
 		}) => addSourcePrerequisite(sourceId, data),
 		onSuccess: async (_data, variables) => {
-			await queryClient.invalidateQueries({
-				queryKey: sourceKeys.prerequisites(variables.sourceId)
-			})
+			await Promise.all([
+				queryClient.invalidateQueries({
+					queryKey: sourceKeys.prerequisites(variables.sourceId)
+				}),
+				queryClient.invalidateQueries({
+					queryKey: sourceKeys.byId(variables.sourceId)
+				})
+			])
 		}
 	})
 }

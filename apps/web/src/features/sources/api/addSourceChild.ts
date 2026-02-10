@@ -50,10 +50,10 @@ export function useAddSourceChild() {
 		onSuccess: async response => {
 			await Promise.all([
 				queryClient.invalidateQueries({
-					queryKey: sourceKeys.detail(response.parent.id)
+					queryKey: sourceKeys.byId(response.parent.id)
 				}),
 				queryClient.invalidateQueries({
-					queryKey: sourceKeys.detail(response.child.id)
+					queryKey: sourceKeys.byId(response.child.id)
 				})
 			])
 		}

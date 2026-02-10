@@ -74,11 +74,11 @@ export function useAddTopicSource() {
 				'sourceId' in variables ? variables.sourceId : response.source.id
 			await Promise.all([
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.detail(variables.topicId)
+					queryKey: topicKeys.byId(variables.topicId)
 				}),
 				sourceId
 					? queryClient.invalidateQueries({
-							queryKey: sourceKeys.detail(sourceId)
+							queryKey: sourceKeys.byId(sourceId)
 						})
 					: queryClient.invalidateQueries({
 							queryKey: sourceKeys.all
