@@ -86,14 +86,14 @@ export function SourceParentsPanel({
 						buttonSize='xs'
 						createItems={[
 							{
-								label: 'Create Source',
+								label: 'Create',
 								onSelect: () => setShowCreateDialog(true)
 							}
 						]}
 						disabled={!sourceId}
 						isLoading={isUpdating}
 						onSearch={() => setShowSearchDialog(true)}
-						searchLabel='Search Sources'
+						searchLabel='Search'
 					/>
 				)}
 			</div>

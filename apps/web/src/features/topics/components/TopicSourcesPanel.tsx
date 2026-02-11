@@ -112,13 +112,13 @@ export function TopicSourcesPanel({
 					<AddEntityMenu
 						createItems={[
 							{
-								label: 'Create Source',
+								label: 'Create',
 								onSelect: () => setShowCreateDialog(true)
 							}
 						]}
 						isLoading={isAdding}
 						onSearch={() => setShowAddDialog(true)}
-						searchLabel='Search Sources'
+						searchLabel='Search'
 					/>
 				</div>
 			)}

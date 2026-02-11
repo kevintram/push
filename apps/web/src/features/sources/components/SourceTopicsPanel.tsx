@@ -162,13 +162,13 @@ export function SourceTopicsPanel({
 				<AddEntityMenu
 					createItems={[
 						{
-							label: 'Create Topic',
+							label: 'Create',
 							onSelect: () => setShowCreateDialog(true)
 						}
 					]}
 					isLoading={isAdding}
 					onSearch={() => setShowSearchDialog(true)}
-					searchLabel='Search Topics'
+					searchLabel='Search'
 				/>
 			</div>
 

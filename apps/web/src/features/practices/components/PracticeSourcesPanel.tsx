@@ -139,13 +139,13 @@ export function PracticeSourcesPanel({
 			<AddEntityMenu
 				createItems={[
 					{
-						label: 'Create Source',
+						label: 'Create',
 						onSelect: () => setShowCreateDialog(true)
 					}
 				]}
 				isLoading={isAdding}
 				onSearch={() => setShowSearchDialog(true)}
-				searchLabel='Search Sources'
+				searchLabel='Search'
 			/>
 
 			<EntitySearchDialog

@@ -232,11 +232,11 @@ export function PracticeRelatedPanel({
 				<AddEntityMenu
 					createItems={[
 						{
-							label: 'Create Topic',
+							label: 'Topic',
 							onSelect: () => setShowCreateTopicDialog(true)
 						},
 						{
-							label: 'Create Source',
+							label: 'Source',
 							onSelect: () => setShowCreateSourceDialog(true)
 						}
 					]}
@@ -246,9 +246,7 @@ export function PracticeRelatedPanel({
 				/>
 			</div>
 
-			{filteredItems.length === 0 ? (
-				<p className='py-2 text-muted-foreground text-sm'>No related items</p>
-			) : (
+			{filteredItems.length > 0 && (
 				<MasonryLayout
 					estimateItemSize={estimateEntitySize}
 					gap={16}

@@ -244,11 +244,11 @@ export function TopicRelatedPanel({
 				<AddEntityMenu
 					createItems={[
 						{
-							label: 'Create Topic',
+							label: 'Topic',
 							onSelect: () => setShowAddTopicDialog(true)
 						},
 						{
-							label: 'Create Source',
+							label: 'Source',
 							onSelect: () => setShowAddSourceDialog(true)
 						}
 					]}

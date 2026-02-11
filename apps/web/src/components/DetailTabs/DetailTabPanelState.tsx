@@ -9,7 +9,7 @@ interface DetailTabPanelStateProps {
 	isEmpty: boolean
 	error?: unknown
 	onRetry?: () => void
-	emptyMessage: string
+	emptyMessage?: string
 	isRefreshing?: boolean
 	children: ReactNode
 }
@@ -27,7 +27,6 @@ export function DetailTabPanelState({
 	isEmpty,
 	error,
 	onRetry,
-	emptyMessage,
 	isRefreshing = false,
 	children
 }: DetailTabPanelStateProps) {
@@ -57,7 +56,7 @@ export function DetailTabPanelState({
 	}
 
 	if (isEmpty) {
-		return <p className='py-2 text-muted-foreground text-sm'>{emptyMessage}</p>
+		return null
 	}
 
 	return (
