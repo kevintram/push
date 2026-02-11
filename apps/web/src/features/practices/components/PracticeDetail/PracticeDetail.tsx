@@ -1,12 +1,27 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useRef } from 'react'
+import { type ReactNode, use, useCallback, useMemo, useRef, useState } from 'react'
+import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { Textarea } from '~/components/ui/Textarea'
+import { useConvertPracticeToSource } from '~/features/practices/api/convertPracticeToSource'
+import { useConvertPracticeToTopic } from '~/features/practices/api/convertPracticeToTopic'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { cn } from '~/lib/utils'
+import { ConversionError } from '~/utils/ConversionError'
+import {
+	getPracticeToSourcePreview,
+	getPracticeToTopicPreview
+} from '~/utils/conversionPreview'
 import { practiceKeys } from '../../api/queryKeys'
 import { useUpdatePractice } from '../../api/updatePractice'
 import { PracticeContext } from '../../stores/SelectedPracticeContext'
@@ -16,6 +31,119 @@ import { PracticeSourcesPanel } from '../PracticeSourcesPanel'
 import { PracticeTopicsPanel } from '../PracticeTopicsPanel'
 import { PracticeDetailNavBar } from './PracticeDetailNavBar'
 import { PracticeDetailSkeleton } from './PracticeDetailSkeleton'
+
+interface PracticeTypeChangeMenuProps {
+	practice: Practice
+	onConvertSuccess?: OnConversionSuccess
+	trigger: ReactNode
+}
+
+function PracticeTypeChangeMenu({
+	practice,
+	onConvertSuccess,
+	trigger
+}: PracticeTypeChangeMenuProps) {
+	const [convertToTopicOpen, setConvertToTopicOpen] = useState(false)
+	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
+	const [convertToTopicError, setConvertToTopicError] = useState<string | null>(
+		null
+	)
+	const [convertToSourceError, setConvertToSourceError] = useState<
+		string | null
+	>(null)
+	const convertToTopicMutation = useConvertPracticeToTopic()
+	const convertToSourceMutation = useConvertPracticeToSource()
+
+	const toTopicPreview = useMemo(
+		() => getPracticeToTopicPreview(practice),
+		[practice]
+	)
+	const toSourcePreview = useMemo(
+		() => getPracticeToSourcePreview(practice),
+		[practice]
+	)
+
+	const handleConfirmConvertToTopic = useCallback(async () => {
+		try {
+			const result = await convertToTopicMutation.mutateAsync({
+				practiceId: practice.id
+			})
+			setConvertToTopicOpen(false)
+			onConvertSuccess?.('topic', result.topic_id)
+		} catch (error) {
+			if (error instanceof ConversionError) {
+				setConvertToTopicError(error.message)
+			} else {
+				setConvertToTopicError('Failed to convert practice to topic')
+			}
+		}
+	}, [convertToTopicMutation, practice.id, onConvertSuccess])
+
+	const handleConfirmConvertToSource = useCallback(async () => {
+		try {
+			const result = await convertToSourceMutation.mutateAsync({
+				practiceId: practice.id
+			})
+			setConvertToSourceOpen(false)
+			onConvertSuccess?.('source', result.source_id)
+		} catch (error) {
+			if (error instanceof ConversionError) {
+				setConvertToSourceError(error.message)
+			} else {
+				setConvertToSourceError('Failed to convert practice to source')
+			}
+		}
+	}, [convertToSourceMutation, practice.id, onConvertSuccess])
+
+	return (
+		<>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild={true}>{trigger}</DropdownMenuTrigger>
+				<DropdownMenuContent align='start' side='bottom' sideOffset={4}>
+					<DropdownMenuLabel>Change type</DropdownMenuLabel>
+					<DropdownMenuItem onClick={() => setConvertToTopicOpen(true)}>
+						Topic
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => setConvertToSourceOpen(true)}>
+						Source
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			<ConversionConfirmationDialog
+				blockers={toTopicPreview.blockers}
+				entityName={practice.prompt}
+				error={convertToTopicError}
+				isPending={convertToTopicMutation.isPending}
+				lost={toTopicPreview.lost}
+				migrated={toTopicPreview.migrated}
+				onConfirm={handleConfirmConvertToTopic}
+				onOpenChange={open => {
+					setConvertToTopicOpen(open)
+					if (!open) setConvertToTopicError(null)
+				}}
+				open={convertToTopicOpen}
+				targetEntityType='Topic'
+			/>
+
+			<ConversionConfirmationDialog
+				blockers={toSourcePreview.blockers}
+				entityName={practice.prompt}
+				error={convertToSourceError}
+				isPending={convertToSourceMutation.isPending}
+				lost={toSourcePreview.lost}
+				migrated={toSourcePreview.migrated}
+				onConfirm={handleConfirmConvertToSource}
+				onOpenChange={open => {
+					setConvertToSourceOpen(open)
+					if (!open) setConvertToSourceError(null)
+				}}
+				open={convertToSourceOpen}
+				targetEntityType='Source'
+			/>
+		</>
+	)
+}
 
 interface PracticeDetailProps {
 	/**
@@ -185,6 +313,13 @@ export function PracticeDetail({
 							onInboxToggle={handleInboxToggle}
 							onSrsToggle={handleSrsToggle}
 							onTitleChange={onPromptChange}
+							renderTypeChangeMenu={trigger => (
+								<PracticeTypeChangeMenu
+									onConvertSuccess={onConvertSuccess}
+									practice={practice}
+									trigger={trigger}
+								/>
+							)}
 							renderActionMenu={trigger => (
 								<PracticeActionMenu
 									hideInboxArchive={true}
