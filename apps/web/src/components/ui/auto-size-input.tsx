@@ -3,10 +3,10 @@ import React, {
 	forwardRef,
 	useLayoutEffect,
 	useRef
-} from 'react'
-import { cn } from '~/lib/utils'
+} from "react"
+import { cn } from "~/lib/utils"
 
-interface AutoSizeInputProps extends ComponentProps<'input'> {
+interface AutoSizeInputProps extends ComponentProps<"input"> {
 	value: string
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 	className?: string
@@ -20,7 +20,7 @@ export const AutoSizeInput = forwardRef<HTMLInputElement, AutoSizeInputProps>(
 		// Combine refs to support both internal and forwarded refs
 		const combinedRef = (element: HTMLInputElement | null) => {
 			inputRef.current = element
-			if (typeof ref === 'function') {
+			if (typeof ref === "function") {
 				ref(element)
 			} else if (ref) {
 				ref.current = element
@@ -38,7 +38,7 @@ export const AutoSizeInput = forwardRef<HTMLInputElement, AutoSizeInputProps>(
 			<div className='relative flex items-center'>
 				<input
 					{...props}
-					className={cn('border-0 bg-transparent p-0 outline-none', className)}
+					className={cn("border-0 bg-transparent p-0 outline-none", className)}
 					onChange={onChange}
 					ref={combinedRef}
 					value={value}
@@ -47,11 +47,11 @@ export const AutoSizeInput = forwardRef<HTMLInputElement, AutoSizeInputProps>(
 					className='pointer-events-none invisible absolute whitespace-pre'
 					ref={spanRef}
 				>
-					{value || props.placeholder || ''}
+					{value || props.placeholder || ""}
 				</span>
 			</div>
 		)
 	}
 )
 
-AutoSizeInput.displayName = 'AutoSizeInput'
+AutoSizeInput.displayName = "AutoSizeInput"

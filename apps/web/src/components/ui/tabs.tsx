@@ -1,44 +1,45 @@
-import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
-import { cva, type VariantProps } from 'class-variance-authority'
+import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
+import { cva, type VariantProps } from "class-variance-authority"
 
-import { cn } from '~/lib/utils'
+import { cn } from "~/lib/utils"
 
 function Tabs({
 	className,
-	orientation = 'horizontal',
+	orientation = "horizontal",
 	...props
 }: TabsPrimitive.Root.Props) {
 	return (
 		<TabsPrimitive.Root
 			className={cn(
-				'group/tabs flex gap-2 data-horizontal:flex-col',
+				"group/tabs flex flex-col gap-2 data-[orientation=vertical]:flex-row",
 				className
 			)}
 			data-orientation={orientation}
 			data-slot='tabs'
+			orientation={orientation}
 			{...props}
 		/>
 	)
 }
 
 const tabsListVariants = cva(
-	'rounded-lg p-[3px] group-data-horizontal/tabs:h-9 data-[variant=line]:rounded-none group/tabs-list text-muted-foreground inline-flex w-fit items-center justify-center group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col',
+	"group/tabs-list text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px] data-[orientation=vertical]:h-fit data-[orientation=vertical]:flex-col",
 	{
 		variants: {
 			variant: {
-				default: 'bg-muted',
-				line: 'gap-1 bg-transparent'
+				default: "bg-muted",
+				line: "h-auto w-full justify-start gap-1 rounded-none border-border border-b bg-transparent p-0"
 			}
 		},
 		defaultVariants: {
-			variant: 'default'
+			variant: "default"
 		}
 	}
 )
 
 function TabsList({
 	className,
-	variant = 'default',
+	variant = "default",
 	...props
 }: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) {
 	return (
@@ -55,10 +56,8 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
 	return (
 		<TabsPrimitive.Tab
 			className={cn(
-				"relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-transparent px-2 py-1 font-medium text-foreground/60 text-sm transition-all hover:text-foreground focus-visible:border-ring focus-visible:outline-1 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none dark:text-muted-foreground dark:hover:text-foreground [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-				'group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent',
-				'data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground',
-				'group-data-vertical/tabs:after:-right-1 after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-vertical/tabs:after:inset-y-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100',
+				"inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-transparent px-2 py-1 font-medium text-foreground text-sm transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-1 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 data-[orientation=vertical]:w-full data-[orientation=vertical]:justify-start data-active:bg-background data-active:shadow-sm dark:text-muted-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground [&_svg:not([class*=size])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				"group-data-[variant=line]/tabs-list:relative group-data-[variant=line]/tabs-list:h-10 group-data-[variant=line]/tabs-list:flex-none group-data-[variant=line]/tabs-list:rounded-none group-data-[variant=line]/tabs-list:border-0 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:px-3 group-data-[variant=line]/tabs-list:py-0 group-data-[variant=line]/tabs-list:text-muted-foreground group-data-[variant=line]/tabs-list:data-active:bg-transparent group-data-[variant=line]/tabs-list:data-active:text-foreground group-data-[variant=line]/tabs-list:data-active:shadow-none group-data-[variant=line]/tabs-list:after:absolute group-data-[variant=line]/tabs-list:after:bottom-[-1px] group-data-[variant=line]/tabs-list:after:left-0 group-data-[variant=line]/tabs-list:after:h-0.5 group-data-[variant=line]/tabs-list:after:w-full group-data-[variant=line]/tabs-list:after:bg-foreground group-data-[variant=line]/tabs-list:after:opacity-0 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
 				className
 			)}
 			data-slot='tabs-trigger'
@@ -70,7 +69,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
 function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
 	return (
 		<TabsPrimitive.Panel
-			className={cn('flex-1 text-sm outline-none', className)}
+			className={cn("flex-1 text-sm outline-none", className)}
 			data-slot='tabs-content'
 			{...props}
 		/>

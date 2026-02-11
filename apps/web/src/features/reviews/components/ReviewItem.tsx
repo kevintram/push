@@ -292,12 +292,7 @@ export function ReviewItem({
 										</Button>
 									}
 								/>
-								<DropdownMenuContent
-									align='end'
-									avoidCollisions={true}
-									side='bottom'
-									sideOffset={4}
-								>
+								<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
 									<DropdownMenuItem
 										onClick={e => {
 											e.stopPropagation()

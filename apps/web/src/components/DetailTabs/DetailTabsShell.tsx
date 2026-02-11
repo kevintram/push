@@ -51,26 +51,14 @@ export function DetailTabsShell({
 			onValueChange={onValueChange}
 			value={value}
 		>
-			<div className='w-full border-border border-b'>
-				<TabsList
-					className='h-auto w-fit rounded-none bg-transparent p-0'
-					variant='line'
-				>
-					{tabs.map(tab => (
-						<TabsTrigger
-							className='!flex-none h-10 gap-2 rounded-none border-0 px-3 text-muted-foreground data-[state=active]:text-foreground group-data-[orientation=horizontal]/tabs:after:bottom-[-1px]'
-							key={tab.value}
-							value={tab.value}
-						>
-							<span>{tab.label}</span>
-							<CountBadge
-								className='h-4 min-w-4 text-[10px]'
-								count={tab.count}
-							/>
-						</TabsTrigger>
-					))}
-				</TabsList>
-			</div>
+			<TabsList variant='line'>
+				{tabs.map(tab => (
+					<TabsTrigger className='gap-2' key={tab.value} value={tab.value}>
+						<span>{tab.label}</span>
+						<CountBadge className='h-4 min-w-4 text-[10px]' count={tab.count} />
+					</TabsTrigger>
+				))}
+			</TabsList>
 			{tabs.map(tab => (
 				<TabsContent className='mt-0' key={tab.value} value={tab.value}>
 					<ErrorBoundary FallbackComponent={TabErrorFallback}>
