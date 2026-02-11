@@ -1,5 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useMemo, useRef, useState } from 'react'
+import {
+	type ReactElement,
+	type ReactNode,
+	use,
+	useCallback,
+	useMemo,
+	useRef,
+	useState
+} from 'react'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
 import {
@@ -38,7 +46,7 @@ import { TopicDetailSkeleton } from './TopicDetailSkeleton'
 interface TopicTypeChangeMenuProps {
 	topic: Topic
 	onConvertSuccess?: OnConversionSuccess
-	trigger: ReactNode
+	trigger: ReactElement
 }
 
 function TopicTypeChangeMenu({
@@ -48,9 +56,9 @@ function TopicTypeChangeMenu({
 }: TopicTypeChangeMenuProps) {
 	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
 	const [convertToPracticeOpen, setConvertToPracticeOpen] = useState(false)
-	const [convertToSourceError, setConvertToSourceError] = useState<string | null>(
-		null
-	)
+	const [convertToSourceError, setConvertToSourceError] = useState<
+		string | null
+	>(null)
 	const [convertToPracticeError, setConvertToPracticeError] = useState<
 		string | null
 	>(null)
@@ -98,7 +106,7 @@ function TopicTypeChangeMenu({
 	return (
 		<>
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild={true}>{trigger}</DropdownMenuTrigger>
+				<DropdownMenuTrigger render={trigger} />
 				<DropdownMenuContent align='start' side='bottom' sideOffset={4}>
 					<DropdownMenuLabel>Change type</DropdownMenuLabel>
 					<DropdownMenuItem onClick={() => setConvertToSourceOpen(true)}>
@@ -360,19 +368,19 @@ export function TopicDetail({
 							onSrsToggle={handleSrsToggle}
 							onTitleChange={onNameChange}
 							readonly={sidebarReadonly}
-							renderTypeChangeMenu={trigger => (
-								<TopicTypeChangeMenu
-									onConvertSuccess={onConvertSuccess}
-									topic={topic}
-									trigger={trigger}
-								/>
-							)}
 							renderActionMenu={trigger => (
 								<TopicActionMenu
 									hideInboxArchive={true}
 									onConvertSuccess={onConvertSuccess}
 									onDelete={onDelete}
 									onTopicUpdateSuccess={handleTopicUpdateSuccess}
+									topic={topic}
+									trigger={trigger}
+								/>
+							)}
+							renderTypeChangeMenu={trigger => (
+								<TopicTypeChangeMenu
+									onConvertSuccess={onConvertSuccess}
 									topic={topic}
 									trigger={trigger}
 								/>

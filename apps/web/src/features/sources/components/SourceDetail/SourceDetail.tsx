@@ -1,5 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useMemo, useRef, useState } from 'react'
+import {
+	type ReactElement,
+	type ReactNode,
+	use,
+	useCallback,
+	useMemo,
+	useRef,
+	useState
+} from 'react'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
 import {
@@ -39,7 +47,7 @@ import { SourceDetailSkeleton } from './SourceDetailSkeleton'
 interface SourceTypeChangeMenuProps {
 	source: Source
 	onConvertSuccess?: OnConversionSuccess
-	trigger: ReactNode
+	trigger: ReactElement
 }
 
 function SourceTypeChangeMenu({
@@ -58,7 +66,10 @@ function SourceTypeChangeMenu({
 	const convertToTopicMutation = useConvertSourceToTopic()
 	const convertToPracticeMutation = useConvertSourceToPractice()
 
-	const toTopicPreview = useMemo(() => getSourceToTopicPreview(source), [source])
+	const toTopicPreview = useMemo(
+		() => getSourceToTopicPreview(source),
+		[source]
+	)
 	const toPracticePreview = useMemo(
 		() => getSourceToPracticePreview(source),
 		[source]
@@ -99,7 +110,7 @@ function SourceTypeChangeMenu({
 	return (
 		<>
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild={true}>{trigger}</DropdownMenuTrigger>
+				<DropdownMenuTrigger render={trigger} />
 				<DropdownMenuContent align='start' side='bottom' sideOffset={4}>
 					<DropdownMenuLabel>Change type</DropdownMenuLabel>
 					<DropdownMenuItem onClick={() => setConvertToTopicOpen(true)}>
@@ -344,19 +355,19 @@ export function SourceDetail({
 							onSrsToggle={handleSrsToggle}
 							onTitleChange={onTitleChange}
 							readonly={sidebarReadonly}
-							renderTypeChangeMenu={trigger => (
-								<SourceTypeChangeMenu
-									onConvertSuccess={onConvertSuccess}
-									source={source}
-									trigger={trigger}
-								/>
-							)}
 							renderActionMenu={trigger => (
 								<SourceActionMenu
 									hideInboxArchive={true}
 									onConvertSuccess={onConvertSuccess}
 									onDelete={onDelete}
 									onSourceUpdateSuccess={handleSourceUpdateSuccess}
+									source={source}
+									trigger={trigger}
+								/>
+							)}
+							renderTypeChangeMenu={trigger => (
+								<SourceTypeChangeMenu
+									onConvertSuccess={onConvertSuccess}
 									source={source}
 									trigger={trigger}
 								/>

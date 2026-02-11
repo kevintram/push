@@ -1,5 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useMemo, useRef, useState } from 'react'
+import {
+	type ReactElement,
+	type ReactNode,
+	use,
+	useCallback,
+	useMemo,
+	useRef,
+	useState
+} from 'react'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
 import {
@@ -35,7 +43,7 @@ import { PracticeDetailSkeleton } from './PracticeDetailSkeleton'
 interface PracticeTypeChangeMenuProps {
 	practice: Practice
 	onConvertSuccess?: OnConversionSuccess
-	trigger: ReactNode
+	trigger: ReactElement
 }
 
 function PracticeTypeChangeMenu({
@@ -98,7 +106,7 @@ function PracticeTypeChangeMenu({
 	return (
 		<>
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild={true}>{trigger}</DropdownMenuTrigger>
+				<DropdownMenuTrigger render={trigger} />
 				<DropdownMenuContent align='start' side='bottom' sideOffset={4}>
 					<DropdownMenuLabel>Change type</DropdownMenuLabel>
 					<DropdownMenuItem onClick={() => setConvertToTopicOpen(true)}>
@@ -313,19 +321,19 @@ export function PracticeDetail({
 							onInboxToggle={handleInboxToggle}
 							onSrsToggle={handleSrsToggle}
 							onTitleChange={onPromptChange}
-							renderTypeChangeMenu={trigger => (
-								<PracticeTypeChangeMenu
-									onConvertSuccess={onConvertSuccess}
-									practice={practice}
-									trigger={trigger}
-								/>
-							)}
 							renderActionMenu={trigger => (
 								<PracticeActionMenu
 									hideInboxArchive={true}
 									onConvertSuccess={onConvertSuccess}
 									onDelete={onDelete}
 									onPracticeUpdateSuccess={handlePracticeUpdateSuccess}
+									practice={practice}
+									trigger={trigger}
+								/>
+							)}
+							renderTypeChangeMenu={trigger => (
+								<PracticeTypeChangeMenu
+									onConvertSuccess={onConvertSuccess}
 									practice={practice}
 									trigger={trigger}
 								/>

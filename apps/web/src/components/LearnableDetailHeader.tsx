@@ -11,7 +11,13 @@ import {
 	Sparkles,
 	Star
 } from 'lucide-react'
-import { type ChangeEvent, type ReactNode, useCallback, useMemo } from 'react'
+import {
+	type ChangeEvent,
+	type ReactElement,
+	type ReactNode,
+	useCallback,
+	useMemo
+} from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/Button'
 import { ButtonGroup, ButtonGroupSeparator } from '~/components/ui/ButtonGroup'
@@ -61,7 +67,7 @@ interface LearnableDetailHeaderProps {
 	onInboxToggle: () => void
 	isUpdating: boolean
 	readonly?: boolean
-	renderTypeChangeMenu?: (trigger: ReactNode) => ReactNode
+	renderTypeChangeMenu?: (trigger: ReactElement) => ReactNode
 	renderActionMenu: (trigger: ReactNode) => ReactNode
 }
 
@@ -130,7 +136,6 @@ export function LearnableDetailHeader({
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
 	const isCreatingReview = createReviewMutation.isPending
-
 
 	const latestCompletedReview = useMemo(
 		() => getLatestCompletedReview(reviews),
@@ -261,14 +266,16 @@ export function LearnableDetailHeader({
 		<div>
 			{/* Properties Row 1 */}
 			<div className='flex flex-wrap items-center justify-between gap-x-1 font-semibold text-muted-foreground text-sm'>
-				{renderTypeChangeMenu
-					? renderTypeChangeMenu(typeMenuTrigger)
-					: <span>{entityLabel}</span>}
+				{renderTypeChangeMenu ? (
+					renderTypeChangeMenu(typeMenuTrigger)
+				) : (
+					<span>{entityLabel}</span>
+				)}
 				<div className='flex flex-wrap items-center gap-2'>
 					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<span>Edited {formatRelativeDate(updatedAt).text}</span>
-						</TooltipTrigger>
+						<TooltipTrigger
+							render={<span>Edited {formatRelativeDate(updatedAt).text}</span>}
+						/>
 						<TooltipContent side='bottom'>
 							{dayjs(updatedAt).format('MMM D, YYYY')}
 						</TooltipContent>
@@ -277,9 +284,9 @@ export function LearnableDetailHeader({
 						·
 					</span>
 					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<span>Created {formatRelativeDate(createdAt).text}</span>
-						</TooltipTrigger>
+						<TooltipTrigger
+							render={<span>Created {formatRelativeDate(createdAt).text}</span>}
+						/>
 						<TooltipContent side='bottom'>
 							{dayjs(createdAt).format('MMM D, YYYY')}
 						</TooltipContent>
@@ -298,34 +305,37 @@ export function LearnableDetailHeader({
 
 			{/* Properties Row 2 */}
 			<div className='flex flex-wrap items-center gap-2 text-sm'>
-					{isUnreviewed ? (
-						<div className='flex items-center gap-1.5 font-semibold text-muted-foreground'>
-							<Sparkles className='h-4 w-4' />
-							<span>Unreviewed</span>
-						</div>
-					) : (
-						<>
-							<Tooltip>
-								<TooltipTrigger asChild={true}>
+				{isUnreviewed ? (
+					<div className='flex items-center gap-1.5 font-semibold text-muted-foreground'>
+						<Sparkles className='h-4 w-4' />
+						<span>Unreviewed</span>
+					</div>
+				) : (
+					<>
+						<Tooltip>
+							<TooltipTrigger
+								render={
 									<div
 										className={`flex items-center gap-1.5 font-semibold ${freshnessTierColor}`}
 									>
 										<Brain className='h-4 w-4' />
 										<span>{freshnessTierInfo.label}</span>
 									</div>
-								</TooltipTrigger>
-								<TooltipContent side='bottom'>
-									{freshnessTierInfo.tooltip ??
-										'Complete a review to see freshness tier'}
-								</TooltipContent>
-							</Tooltip>
-							{latestCompletedReview && (
-								<>
-									<span aria-hidden={true} className='font-bold'>
-										·
-									</span>
-									<Tooltip>
-										<TooltipTrigger asChild={true}>
+								}
+							/>
+							<TooltipContent side='bottom'>
+								{freshnessTierInfo.tooltip ??
+									'Complete a review to see freshness tier'}
+							</TooltipContent>
+						</Tooltip>
+						{latestCompletedReview && (
+							<>
+								<span aria-hidden={true} className='font-bold'>
+									·
+								</span>
+								<Tooltip>
+									<TooltipTrigger
+										render={
 											<Button
 												className='h-auto gap-1 p-0 font-semibold text-muted-foreground text-sm'
 												disabled={readonly}
@@ -345,28 +355,31 @@ export function LearnableDetailHeader({
 													</span>
 												) : null}
 											</Button>
-										</TooltipTrigger>
-										<TooltipContent side='bottom'>
-											{formatAbsoluteDate(latestCompletedReview.completed_at)}
-										</TooltipContent>
-									</Tooltip>
-								</>
-							)}
-							<span aria-hidden={true} className='font-bold'>
-								·
-							</span>
-							<Tooltip>
-								<TooltipTrigger asChild={true}>
+										}
+									/>
+									<TooltipContent side='bottom'>
+										{formatAbsoluteDate(latestCompletedReview.completed_at)}
+									</TooltipContent>
+								</Tooltip>
+							</>
+						)}
+						<span aria-hidden={true} className='font-bold'>
+							·
+						</span>
+						<Tooltip>
+							<TooltipTrigger
+								render={
 									<span className='whitespace-nowrap font-semibold text-muted-foreground text-sm'>
 										{stabilityText} durability
 									</span>
-								</TooltipTrigger>
-								<TooltipContent side='bottom'>
-									Durable for {stabilityTooltipText} without review
-								</TooltipContent>
-							</Tooltip>
-						</>
-					)}
+								}
+							/>
+							<TooltipContent side='bottom'>
+								Durable for {stabilityTooltipText} without review
+							</TooltipContent>
+						</Tooltip>
+					</>
+				)}
 			</div>
 
 			{/* Actions row */}
@@ -389,13 +402,13 @@ export function LearnableDetailHeader({
 					</Button>
 					<ButtonGroup>
 						<Button
-						className='rounded-full'
-						disabled={readonly}
-						onClick={handleNavigateToReviews}
-						size='sm'
-					>
-						<span>Reviews</span>
-					</Button>
+							className='rounded-full'
+							disabled={readonly}
+							onClick={handleNavigateToReviews}
+							size='sm'
+						>
+							<span>Reviews</span>
+						</Button>
 						<ButtonGroupSeparator />
 						<RatingDropdown
 							align='end'
