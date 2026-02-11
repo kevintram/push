@@ -9,6 +9,10 @@ import {
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { buttonVariants } from '~/components/ui/button'
@@ -44,6 +48,7 @@ const SCHEDULE_PREVIEW_LIMIT = 3
 export function ReviewPage() {
 	const { handleReviewClick, selectedReviewId, closeReviewDialog } =
 		useReviewPageHandlers()
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 	const { data: reviewQueue = [], isLoading: isQueueLoading } = useReviewQueue()
 	const {
 		entries: todayEntries,
@@ -75,8 +80,11 @@ export function ReviewPage() {
 				items.push({ type: 'practice', item: entry.practice })
 			}
 		}
+		if (activeFilter !== 'all') {
+			return items.filter(item => item.type === activeFilter)
+		}
 		return items
-	}, [reviewQueue])
+	}, [reviewQueue, activeFilter])
 
 	const tierGroups = useMemo(() => {
 		const order: Array<FreshnessTier> = ['Forgotten', 'Hazy', 'Fine', 'Fresh']
@@ -156,10 +164,16 @@ export function ReviewPage() {
 					<ScheduleCard onReviewClick={handleReviewClick} tabs={scheduleTabs} />
 
 					<div className='space-y-4'>
-						<h2 className='flex items-center gap-2 font-bold text-2xl'>
-							<Star className='h-6 w-6 fill-yellow-500 text-yellow-500' />
-							The Queue
-						</h2>
+						<div className='flex flex-col gap-2'>
+							<h2 className='flex items-center gap-2 font-bold text-2xl'>
+								<Star className='h-6 w-6 fill-yellow-500 text-yellow-500' />
+								The Queue
+							</h2>
+							<EntityTypeFilter
+								activeFilter={activeFilter}
+								onFilterChange={setActiveFilter}
+							/>
+						</div>
 						{isQueueLoading ? (
 							<ReviewQueueSkeleton />
 						) : isQueueEmpty ? (
