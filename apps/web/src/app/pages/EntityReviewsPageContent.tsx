@@ -54,8 +54,8 @@ function splitReviews(reviews: Array<ReviewListItem>) {
 
 	upcoming.sort((a, b) => {
 		return (
-			new Date(b.effective_date ?? 0).getTime() -
-			new Date(a.effective_date ?? 0).getTime()
+			new Date(a.effective_date ?? 0).getTime() -
+			new Date(b.effective_date ?? 0).getTime()
 		)
 	})
 	uncompletedUnscheduled.sort((a, b) => {
