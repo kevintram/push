@@ -22,7 +22,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
-} from '~/components/ui/Empty'
+} from '~/components/ui/empty'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { useSearchAll } from '~/features/search/api/searchAll'
 import type { SearchResultItem } from '~/features/search/types/search.types'

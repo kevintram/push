@@ -1,6 +1,6 @@
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { SidebarMenuButton, SidebarMenuItem } from '~/components/ui/Sidebar'
+import { SidebarMenuButton, SidebarMenuItem } from '~/components/ui/sidebar'
 import { SearchDialog } from '~/features/search/components/SearchDialog'
 
 export function SidebarSearch() {

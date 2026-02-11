@@ -1,5 +1,5 @@
-import { SidebarProvider } from '~/components/ui/Sidebar'
-import { Skeleton } from '~/components/ui/Skeleton'
+import { SidebarProvider } from '~/components/ui/sidebar'
+import { Skeleton } from '~/components/ui/skeleton'
 
 export function TopicDetailSkeleton() {
 	return (

@@ -9,7 +9,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
-} from '~/components/ui/Empty'
+} from '~/components/ui/empty'
 import { useUnscheduledReviewEntries } from '~/features/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
 import { ReviewSection } from '~/features/reviews/components/ReviewSection'

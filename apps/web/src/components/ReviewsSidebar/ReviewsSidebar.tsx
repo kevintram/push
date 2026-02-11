@@ -1,14 +1,14 @@
 import { ChevronDown, Loader2, Plus } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
-import { Button } from '~/components/ui/Button'
-import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/Sidebar'
-import { Skeleton } from '~/components/ui/Skeleton'
+import { Button } from '~/components/ui/button'
+import { Sidebar, SidebarContent, SidebarHeader } from '~/components/ui/sidebar'
+import { Skeleton } from '~/components/ui/skeleton'
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger
-} from '~/components/ui/Tooltip'
+} from '~/components/ui/tooltip'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviews } from '~/features/reviews/api/getReviews'
 import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'

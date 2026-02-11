@@ -22,7 +22,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
-} from '~/components/ui/Empty'
+} from '~/components/ui/empty'
 import { usePractices } from '~/features/practices/api/getPractices'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { useSources } from '~/features/sources/api/getSources'

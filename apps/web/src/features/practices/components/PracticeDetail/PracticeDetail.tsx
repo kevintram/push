@@ -16,8 +16,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
-import { Textarea } from '~/components/ui/Textarea'
+} from '~/components/ui/dropdown-menu'
+import { Textarea } from '~/components/ui/textarea'
 import { useConvertPracticeToSource } from '~/features/practices/api/convertPracticeToSource'
 import { useConvertPracticeToTopic } from '~/features/practices/api/convertPracticeToTopic'
 import { useAutoSave } from '~/hooks/useAutoSave'

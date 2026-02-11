@@ -24,7 +24,7 @@ import {
 	DialogContent,
 	DialogHeader,
 	DialogTitle
-} from '~/components/ui/Dialog'
+} from '~/components/ui/dialog'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { useSearchAll } from '~/features/search/api/searchAll'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'

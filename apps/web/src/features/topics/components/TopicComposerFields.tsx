@@ -1,5 +1,5 @@
 import type { MutableRefObject } from 'react'
-import { Textarea } from '~/components/ui/Textarea'
+import { Textarea } from '~/components/ui/textarea'
 import { cn } from '~/lib/utils'
 
 interface TopicComposerFieldsProps {

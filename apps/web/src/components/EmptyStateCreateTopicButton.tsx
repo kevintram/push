@@ -1,10 +1,10 @@
 import { SquarePen } from 'lucide-react'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	HoverCard,
 	HoverCardContent,
 	HoverCardTrigger
-} from '~/components/ui/HoverCard'
+} from '~/components/ui/hover-card'
 
 interface CreateTopicButtonProps {
 	disabled?: boolean

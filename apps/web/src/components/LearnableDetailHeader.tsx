@@ -19,15 +19,15 @@ import {
 	useMemo
 } from 'react'
 import { toast } from 'sonner'
-import { Button } from '~/components/ui/Button'
-import { ButtonGroup, ButtonGroupSeparator } from '~/components/ui/ButtonGroup'
-import { Textarea } from '~/components/ui/Textarea'
-import { Toggle } from '~/components/ui/Toggle'
+import { Button } from '~/components/ui/button'
+import { ButtonGroup, ButtonGroupSeparator } from '~/components/ui/button-group'
+import { Textarea } from '~/components/ui/textarea'
+import { Toggle } from '~/components/ui/toggle'
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger
-} from '~/components/ui/Tooltip'
+} from '~/components/ui/tooltip'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviews } from '~/features/reviews/api/getReviews'
 import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'

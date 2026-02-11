@@ -1,7 +1,7 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import {
 	TopicDetail,

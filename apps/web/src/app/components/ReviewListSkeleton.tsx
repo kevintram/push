@@ -1,5 +1,5 @@
 import { PageLayout } from '~/app/layouts/PageLayout'
-import { Skeleton } from '~/components/ui/Skeleton'
+import { Skeleton } from '~/components/ui/skeleton'
 
 function ReviewItemSkeleton() {
 	return (

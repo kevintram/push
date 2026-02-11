@@ -4,7 +4,7 @@ import {
 	SIDEBAR_COOKIE_NAME,
 	SidebarHolder,
 	SidebarProvider
-} from '~/components/ui/Sidebar'
+} from '~/components/ui/sidebar'
 
 export const Route = createFileRoute('/_main')({
 	component: MainLayout

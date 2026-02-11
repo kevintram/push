@@ -1,5 +1,5 @@
 import type { EntityType } from '~/components/EntityCard'
-import { Badge } from '~/components/ui/Badge'
+import { Badge } from '~/components/ui/badge'
 
 export type EntityTypeFilterValue = 'all' | EntityType
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { isValidElement, useCallback, useRef, useState } from 'react'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from './HoverCard'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card'
 
 interface InteractiveHoverCardProps {
 	children: ReactNode

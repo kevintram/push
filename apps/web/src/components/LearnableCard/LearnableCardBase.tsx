@@ -14,13 +14,13 @@ import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { SquarePlusBottomRight } from '~/components/icons'
-import { Badge } from '~/components/ui/Badge'
-import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
+import { Badge } from '~/components/ui/badge'
+import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger
-} from '~/components/ui/Tooltip'
+} from '~/components/ui/tooltip'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
 import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'

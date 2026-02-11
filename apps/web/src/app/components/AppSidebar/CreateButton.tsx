@@ -12,8 +12,8 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
-import { SidebarMenuButton } from '~/components/ui/Sidebar'
+} from '~/components/ui/dropdown-menu'
+import { SidebarMenuButton } from '~/components/ui/sidebar'
 
 // Feature hooks
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'

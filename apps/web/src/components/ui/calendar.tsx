@@ -1,3 +1,5 @@
+'use client'
+
 import {
 	ChevronDownIcon,
 	ChevronLeftIcon,
@@ -10,7 +12,7 @@ import {
 	getDefaultClassNames,
 	type Locale
 } from 'react-day-picker'
-import { Button, buttonVariants } from '~/components/ui/Button'
+import { Button, buttonVariants } from '~/components/ui/button'
 import { cn } from '~/lib/utils'
 
 function Calendar({
@@ -215,7 +217,6 @@ function CalendarDayButton({
 				!modifiers.range_end &&
 				!modifiers.range_middle
 			}
-			ref={ref}
 			size='icon'
 			variant='ghost'
 			{...props}
