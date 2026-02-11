@@ -87,7 +87,7 @@ export function TopicParentsPanel({
 				<div className='flex items-center gap-2'>
 					<User2 className='h-4 w-4' />
 					<span className='font-medium text-muted-foreground text-xs'>
-						Parent topics ({hasParent ? 1 : 0})
+						Parent topics
 					</span>
 				</div>
 				{parent ? (
@@ -107,6 +107,8 @@ export function TopicParentsPanel({
 				) : null}
 				{topicId && !hasParent && (
 					<AddEntityMenu
+						buttonClassName='rounded-full'
+						buttonSize='xs'
 						createItems={[
 							{
 								label: 'Create Topic',
