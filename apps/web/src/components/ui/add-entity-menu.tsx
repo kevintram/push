@@ -43,7 +43,7 @@ export function AddEntityMenu({
 	searchLabel = "Search",
 	onSearch,
 	createItems,
-	createLabel = "Create new",
+	createLabel = "Create",
 	buttonSize = "sm",
 	buttonClassName
 }: AddEntityMenuProps) {
