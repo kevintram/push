@@ -10,19 +10,19 @@ import {
 	Trash
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { Button } from '~/components/ui/Button'
-import { Card, CardContent } from '~/components/ui/Card'
+import { Button } from '~/components/ui/button'
+import { Card, CardContent } from '~/components/ui/card'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+} from '~/components/ui/dropdown-menu'
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger
-} from '~/components/ui/Tooltip'
+} from '~/components/ui/tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'

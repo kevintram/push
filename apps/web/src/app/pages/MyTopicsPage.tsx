@@ -12,7 +12,7 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
-} from '~/components/ui/Empty'
+} from '~/components/ui/empty'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { useTopicsList } from '~/features/topics/hooks/useTopicsList'

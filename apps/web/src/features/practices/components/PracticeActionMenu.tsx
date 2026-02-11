@@ -9,7 +9,7 @@ import {
 import { isValidElement, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -19,7 +19,7 @@ import {
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+} from '~/components/ui/dropdown-menu'
 import { useConvertPracticeToSource } from '~/features/practices/api/convertPracticeToSource'
 import { useConvertPracticeToTopic } from '~/features/practices/api/convertPracticeToTopic'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'

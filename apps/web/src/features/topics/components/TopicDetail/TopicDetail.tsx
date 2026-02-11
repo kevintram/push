@@ -18,8 +18,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
-import { Textarea } from '~/components/ui/Textarea'
+} from '~/components/ui/dropdown-menu'
+import { Textarea } from '~/components/ui/textarea'
 import type { Source } from '~/features/sources/types/source.types'
 import { useConvertTopicToPractice } from '~/features/topics/api/convertTopicToPractice'
 import { useConvertTopicToSource } from '~/features/topics/api/convertTopicToSource'

@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
+import { Button } from '~/components/ui/button'
+import { CountBadge } from '~/components/ui/count-badge'
 import type { ReviewListItem } from '../types/review.types'
 import { ReviewItem } from './ReviewItem'
 

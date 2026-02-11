@@ -8,7 +8,7 @@ import {
 import { isValidElement, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -18,7 +18,7 @@ import {
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+} from '~/components/ui/dropdown-menu'
 import { useConvertSourceToPractice } from '~/features/sources/api/convertSourceToPractice'
 import { useConvertSourceToTopic } from '~/features/sources/api/convertSourceToTopic'
 import { useDeleteSource } from '~/features/sources/api/deleteSource'

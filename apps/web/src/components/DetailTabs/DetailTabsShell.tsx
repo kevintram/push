@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
+import { Button } from '~/components/ui/button'
+import { CountBadge } from '~/components/ui/count-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { cn } from '~/lib/utils'
 

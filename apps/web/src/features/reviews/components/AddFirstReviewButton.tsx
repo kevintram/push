@@ -1,5 +1,5 @@
 import { ChevronDown, Plus } from 'lucide-react'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import { RatingDropdown } from './RatingDropdown'
 import type { ReviewRatingState } from './ReviewRatingCheckbox'
 

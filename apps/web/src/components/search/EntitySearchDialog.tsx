@@ -3,13 +3,13 @@ import { estimateEntitySize } from '~/components/EntityCard'
 import { MIN_HEIGHT } from '~/components/search/constants'
 import { SearchInput } from '~/components/search/SearchInput'
 import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle
-} from '~/components/ui/Dialog'
+} from '~/components/ui/dialog'
 import { useSearchPractices } from '~/features/practices/api/searchPractices'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { PracticeCard } from '~/features/practices/components/PracticeCard'

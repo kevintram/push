@@ -1,10 +1,10 @@
 import { Archive, ArchiveX, Inbox, X } from 'lucide-react'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger
-} from '~/components/ui/Popover'
+} from '~/components/ui/popover'
 
 interface LearnableStatusProps {
 	archived: boolean

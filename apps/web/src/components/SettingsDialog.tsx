@@ -1,11 +1,11 @@
 import { LogOut, Monitor, Moon, Sun } from 'lucide-react'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle
-} from '~/components/ui/Dialog'
+} from '~/components/ui/dialog'
 import { useTheme } from '~/stores/ThemeContext'
 
 const THEME_OPTIONS = [

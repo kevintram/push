@@ -1,7 +1,7 @@
 import { useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { LoadingOrError } from '~/components/LoadingOrError'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import { usePracticeWithRelationships } from '~/features/practices/api/getPractice'
 import { PracticeDetailNavBar } from '~/features/practices/components/PracticeDetail/PracticeDetailNavBar'
 import { EntityReviewsPageContent } from './EntityReviewsPageContent'

@@ -9,7 +9,7 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle
-} from '~/components/ui/Dialog'
+} from '~/components/ui/dialog'
 import { InputGroup, InputGroupAddon } from '~/components/ui/input-group'
 import { cn } from '~/lib/utils'
 

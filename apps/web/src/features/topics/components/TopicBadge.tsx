@@ -1,12 +1,12 @@
 import { X } from 'lucide-react'
-import { Badge } from '~/components/ui/Badge'
-import { Button } from '~/components/ui/Button'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger
-} from '~/components/ui/Tooltip'
+} from '~/components/ui/tooltip'
 import type { Rating } from '~/features/reviews/types/review.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 

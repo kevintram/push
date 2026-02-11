@@ -4,16 +4,16 @@ import { Anvil, CalendarIcon, Link, MoreHorizontal, X } from 'lucide-react'
 import type { MouseEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import type { EntityItem } from '~/components/EntityCard'
-import { Button } from '~/components/ui/Button'
-import { Dialog, DialogContent } from '~/components/ui/Dialog'
+import { Button } from '~/components/ui/button'
+import { Dialog, DialogContent } from '~/components/ui/dialog'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
-import { Skeleton } from '~/components/ui/Skeleton'
-import { Textarea } from '~/components/ui/Textarea'
+} from '~/components/ui/dropdown-menu'
+import { Skeleton } from '~/components/ui/skeleton'
+import { Textarea } from '~/components/ui/textarea'
 import { SearchDialog } from '~/features/search/components/SearchDialog'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'

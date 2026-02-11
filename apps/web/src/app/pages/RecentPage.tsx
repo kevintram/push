@@ -15,8 +15,8 @@ import {
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
-} from '~/components/ui/Empty'
-import { Skeleton } from '~/components/ui/Skeleton'
+} from '~/components/ui/empty'
+import { Skeleton } from '~/components/ui/skeleton'
 import { useSearchAll } from '~/features/search/api/searchAll'
 import { useEntityNavigation } from '~/hooks/useEntityNavigation'
 import {

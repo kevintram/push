@@ -15,7 +15,7 @@ import { useState } from 'react'
 import { CreateButton } from '~/app/components/AppSidebar/CreateButton'
 import { SidebarSearch } from '~/app/components/AppSidebar/SidebarSearch'
 import { SettingsDialog } from '~/components/SettingsDialog'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	Sidebar,
 	SidebarContent,
@@ -28,7 +28,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	useSidebar
-} from '~/components/ui/Sidebar'
+} from '~/components/ui/sidebar'
 import { useTopics } from '~/features/topics/api/getTopics'
 
 export function AppSidebar() {

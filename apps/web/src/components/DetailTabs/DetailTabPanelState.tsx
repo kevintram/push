@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Button } from '~/components/ui/Button'
-import { Skeleton } from '~/components/ui/Skeleton'
+import { Button } from '~/components/ui/button'
+import { Skeleton } from '~/components/ui/skeleton'
 
 interface DetailTabPanelStateProps {
 	isLoading: boolean

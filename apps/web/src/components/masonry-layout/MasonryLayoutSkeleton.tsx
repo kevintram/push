@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { Skeleton } from '~/components/ui/Skeleton'
+import { Skeleton } from '~/components/ui/skeleton'
 
 interface MasonryLayoutSkeletonProps {
 	count?: number

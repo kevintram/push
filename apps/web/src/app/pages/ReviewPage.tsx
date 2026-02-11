@@ -11,16 +11,16 @@ import {
 } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { buttonVariants } from '~/components/ui/Button'
-import { Card, CardContent, CardFooter } from '~/components/ui/Card'
-import { CountBadge } from '~/components/ui/CountBadge'
+import { buttonVariants } from '~/components/ui/button'
+import { Card, CardContent, CardFooter } from '~/components/ui/card'
+import { CountBadge } from '~/components/ui/count-badge'
 import {
 	Empty,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
-} from '~/components/ui/Empty'
-import { Skeleton } from '~/components/ui/Skeleton'
+} from '~/components/ui/empty'
+import { Skeleton } from '~/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import {
@@ -221,7 +221,9 @@ function ScheduleCard({
 	return (
 		<div className='flex flex-col gap-2'>
 			<Tabs
-				onValueChange={value => setActiveTab(value as keyof typeof tabs)}
+				onValueChange={(value: string) =>
+					setActiveTab(value as keyof typeof tabs)
+				}
 				value={activeTab}
 			>
 				<div className='flex items-center justify-between gap-4'>

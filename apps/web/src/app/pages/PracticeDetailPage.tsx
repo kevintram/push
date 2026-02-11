@@ -1,7 +1,7 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import { usePracticeWithRelationships } from '~/features/practices/api/getPractice'
 import { PracticeDetail } from '~/features/practices/components/PracticeDetail/PracticeDetail'
 import { PracticeContext } from '~/features/practices/stores/SelectedPracticeContext'

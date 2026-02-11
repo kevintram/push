@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { ChevronDown, Loader2, Plus, Search, SquarePen } from 'lucide-react'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -9,7 +9,7 @@ import {
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+} from '~/components/ui/dropdown-menu'
 
 type AddEntityMenuItem = {
 	label: string

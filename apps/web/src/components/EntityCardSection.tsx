@@ -7,8 +7,8 @@ import {
 	getEntityKey
 } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
+import { Button } from '~/components/ui/button'
+import { CountBadge } from '~/components/ui/count-badge'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'

@@ -14,7 +14,7 @@ import {
 } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
-import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
+import { AddEntityMenu } from '~/components/ui/add-entity-menu'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'

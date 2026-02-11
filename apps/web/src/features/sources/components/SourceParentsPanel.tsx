@@ -1,7 +1,7 @@
 import { User2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
-import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
+import { AddEntityMenu } from '~/components/ui/add-entity-menu'
 import { useSourceWithRelationships } from '~/features/sources/api/getSource'
 import { useSetSourceParent } from '~/features/sources/api/setSourceParent'
 import { useUpdateSource } from '../api/updateSource'

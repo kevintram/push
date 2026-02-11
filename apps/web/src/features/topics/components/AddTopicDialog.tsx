@@ -1,22 +1,22 @@
 import dayjs from 'dayjs'
 import { Anvil, Inbox, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	Dialog,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle
-} from '~/components/ui/Dialog'
-import { Switch } from '~/components/ui/Switch'
-import { Textarea } from '~/components/ui/Textarea'
-import { Toggle } from '~/components/ui/Toggle'
+} from '~/components/ui/dialog'
+import { Switch } from '~/components/ui/switch'
+import { Textarea } from '~/components/ui/textarea'
+import { Toggle } from '~/components/ui/toggle'
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger
-} from '~/components/ui/Tooltip'
+} from '~/components/ui/tooltip'
 import { useAddPracticeTopic } from '~/features/practices/api/addPracticeTopic'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { ReviewPreview } from '~/features/reviews/components/ReviewPreview'

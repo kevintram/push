@@ -12,7 +12,7 @@ import {
 } from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
-import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
+import { AddEntityMenu } from '~/components/ui/add-entity-menu'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import type { Source } from '~/features/sources/types/source.types'

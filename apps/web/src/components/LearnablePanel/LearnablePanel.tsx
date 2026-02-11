@@ -2,9 +2,9 @@ import type { LucideIcon } from 'lucide-react'
 import { ChevronDown } from 'lucide-react'
 import { type ReactNode, useCallback, useState } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
-import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
+import { Button } from '~/components/ui/button'
+import { CountBadge } from '~/components/ui/count-badge'
+import { TopicPanelHeader } from '~/components/ui/topic-panel-header'
 import { cn } from '~/lib/utils'
 
 const MIN_WIDTH = 280

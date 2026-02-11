@@ -4,14 +4,14 @@ import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	Empty,
 	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle
-} from '~/components/ui/Empty'
+} from '~/components/ui/empty'
 import {
 	useFutureReviewEntries,
 	useSoonReviewEntries,

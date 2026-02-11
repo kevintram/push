@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { isValidElement, useCallback, useMemo, useState } from 'react'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
-import { Button } from '~/components/ui/Button'
+import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -18,7 +18,7 @@ import {
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
-} from '~/components/ui/DropdownMenu'
+} from '~/components/ui/dropdown-menu'
 import { useConvertTopicToPractice } from '~/features/topics/api/convertTopicToPractice'
 import { useConvertTopicToSource } from '~/features/topics/api/convertTopicToSource'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
