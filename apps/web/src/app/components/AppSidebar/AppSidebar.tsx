@@ -120,14 +120,12 @@ export function AppSidebar() {
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
 											isActive={isActive}
-											render={
-												<Link to={item.url}>
-													<item.icon />
-													<span>{item.title}</span>
-												</Link>
-											}
+											render={<Link to={item.url} />}
 											tooltip={item.title}
-										/>
+										>
+											<item.icon />
+											<span>{item.title}</span>
+										</SidebarMenuButton>
 									</SidebarMenuItem>
 								)
 							})}
@@ -145,14 +143,12 @@ export function AppSidebar() {
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
 											isActive={isActive}
-											render={
-												<Link to={item.url}>
-													<item.icon />
-													<span>{item.title}</span>
-												</Link>
-											}
+											render={<Link to={item.url} />}
 											tooltip={item.title}
-										/>
+										>
+											<item.icon />
+											<span>{item.title}</span>
+										</SidebarMenuButton>
 										{isInbox && inboxCount > 0 && (
 											<SidebarMenuBadge>{inboxCount}</SidebarMenuBadge>
 										)}
@@ -172,14 +168,12 @@ export function AppSidebar() {
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
 											isActive={isActive}
-											render={
-												<Link to={item.url}>
-													<item.icon />
-													<span>{item.title}</span>
-												</Link>
-											}
+											render={<Link to={item.url} />}
 											tooltip={item.title}
-										/>
+										>
+											<item.icon />
+											<span>{item.title}</span>
+										</SidebarMenuButton>
 									</SidebarMenuItem>
 								)
 							})}

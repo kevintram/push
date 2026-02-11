@@ -1,20 +1,18 @@
-'use client'
+import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
 
-import { Switch as SwitchPrimitive } from '@base-ui/react/switch'
-
-import { cn } from '~/lib/utils'
+import { cn } from "~/lib/utils"
 
 function Switch({
 	className,
-	size = 'md',
+	size = "default",
 	...props
 }: SwitchPrimitive.Root.Props & {
-	size?: 'xs' | 'sm' | 'md' | 'default'
+	size?: "xs" | "sm" | "default"
 }) {
 	return (
 		<SwitchPrimitive.Root
 			className={cn(
-				'peer group/switch after:-inset-x-3 after:-inset-y-2 relative inline-flex shrink-0 items-center rounded-full border border-transparent shadow-xs outline-none transition-all after:absolute focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[size=default]:h-[18.4px] data-[size=md]:h-[18.4px] data-[size=sm]:h-[16.64px] data-[size=xs]:h-[14.72px] data-[size=default]:w-[32px] data-[size=md]:w-[32px] data-[size=sm]:w-[28px] data-[size=xs]:w-[24px] data-disabled:cursor-not-allowed data-checked:bg-primary data-unchecked:bg-input data-disabled:opacity-50 dark:data-unchecked:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
+				"peer group/switch after:-inset-x-3 after:-inset-y-2 relative inline-flex shrink-0 items-center rounded-full border border-transparent shadow-xs outline-none transition-all after:absolute focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[size=default]:h-[18.4px] data-[size=sm]:h-[14px] data-[size=xs]:h-[12px] data-[size=default]:w-[32px] data-[size=sm]:w-[24px] data-[size=xs]:w-[20px] data-disabled:cursor-not-allowed data-checked:bg-primary data-unchecked:bg-input data-disabled:opacity-50 dark:data-unchecked:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
 				className
 			)}
 			data-size={size}
@@ -22,7 +20,7 @@ function Switch({
 			{...props}
 		>
 			<SwitchPrimitive.Thumb
-				className='pointer-events-none block rounded-full bg-background ring-0 transition-transform group-data-[size=default]/switch:size-4 group-data-[size=md]/switch:size-4 group-data-[size=sm]/switch:size-[0.9rem] group-data-[size=xs]/switch:size-[0.8rem] group-data-[size=default]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=md]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=md]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=sm]/switch:data-unchecked:translate-x-0 group-data-[size=xs]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=xs]/switch:data-unchecked:translate-x-0 dark:data-checked:bg-primary-foreground dark:data-unchecked:bg-foreground'
+				className='pointer-events-none block rounded-full bg-background ring-0 transition-transform group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 group-data-[size=xs]/switch:size-2.5 group-data-[size=default]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=sm]/switch:data-unchecked:translate-x-0 group-data-[size=xs]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=xs]/switch:data-unchecked:translate-x-0 dark:data-checked:bg-primary-foreground dark:data-unchecked:bg-foreground'
 				data-slot='switch-thumb'
 			/>
 		</SwitchPrimitive.Root>

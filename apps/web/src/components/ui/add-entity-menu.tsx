@@ -1,6 +1,6 @@
-import type { LucideIcon } from 'lucide-react'
-import { ChevronDown, Loader2, Plus, Search, SquarePen } from 'lucide-react'
-import { Button } from '~/components/ui/button'
+import type { LucideIcon } from "lucide-react"
+import { ChevronDown, Loader2, Plus, Search, SquarePen } from "lucide-react"
+import { Button } from "~/components/ui/button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -9,8 +9,8 @@ import {
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
-} from '~/components/ui/dropdown-menu'
-import { cn } from '~/lib/utils'
+} from "~/components/ui/dropdown-menu"
+import { cn } from "~/lib/utils"
 
 type AddEntityMenuItem = {
 	label: string
@@ -26,25 +26,25 @@ interface AddEntityMenuProps {
 	createItems: Array<AddEntityMenuItem>
 	createLabel?: string
 	buttonSize?:
-		| 'default'
-		| 'xs'
-		| 'sm'
-		| 'lg'
-		| 'icon'
-		| 'icon-xs'
-		| 'icon-sm'
-		| 'icon-lg'
+		| "default"
+		| "xs"
+		| "sm"
+		| "lg"
+		| "icon"
+		| "icon-xs"
+		| "icon-sm"
+		| "icon-lg"
 	buttonClassName?: string
 }
 
 export function AddEntityMenu({
 	disabled = false,
 	isLoading = false,
-	searchLabel = 'Search',
+	searchLabel = "Search",
 	onSearch,
 	createItems,
-	createLabel = 'Create new',
-	buttonSize = 'sm',
+	createLabel = "Create new",
+	buttonSize = "sm",
 	buttonClassName
 }: AddEntityMenuProps) {
 	const singleCreateItem = createItems.length === 1 ? createItems[0] : null
@@ -55,7 +55,7 @@ export function AddEntityMenu({
 				disabled={disabled || isLoading}
 				render={
 					<Button
-						className={cn('gap-1', buttonClassName)}
+						className={cn("gap-1", buttonClassName)}
 						size={buttonSize}
 						variant='secondary'
 					>
