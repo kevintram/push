@@ -10,6 +10,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
 } from "~/components/ui/dropdown-menu"
+import { cn } from "~/lib/utils"
 
 type AddEntityMenuItem = {
 	label: string
@@ -24,6 +25,16 @@ interface AddEntityMenuProps {
 	onSearch: () => void
 	createItems: Array<AddEntityMenuItem>
 	createLabel?: string
+	buttonSize?:
+		| "default"
+		| "xs"
+		| "sm"
+		| "lg"
+		| "icon"
+		| "icon-xs"
+		| "icon-sm"
+		| "icon-lg"
+	buttonClassName?: string
 }
 
 export function AddEntityMenu({
@@ -32,7 +43,9 @@ export function AddEntityMenu({
 	searchLabel = "Search",
 	onSearch,
 	createItems,
-	createLabel = "Create new"
+	createLabel = "Create new",
+	buttonSize = "sm",
+	buttonClassName
 }: AddEntityMenuProps) {
 	const singleCreateItem = createItems.length === 1 ? createItems[0] : null
 
@@ -41,7 +54,11 @@ export function AddEntityMenu({
 			<DropdownMenuTrigger
 				disabled={disabled || isLoading}
 				render={
-					<Button className='gap-1' size='sm' variant='secondary'>
+					<Button
+						className={cn("gap-1", buttonClassName)}
+						size={buttonSize}
+						variant='secondary'
+					>
 						{isLoading ? (
 							<Loader2 className='h-4 w-4 animate-spin' />
 						) : (

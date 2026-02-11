@@ -69,7 +69,7 @@ export function SourceParentsPanel({
 				<div className='flex items-center gap-2'>
 					<User2 className='h-4 w-4' />
 					<span className='font-medium text-muted-foreground text-xs'>
-						Parent sources ({hasParent ? 1 : 0})
+						Parent sources
 					</span>
 				</div>
 				{parent ? (
@@ -82,6 +82,8 @@ export function SourceParentsPanel({
 				) : null}
 				{sourceId && !hasParent && (
 					<AddEntityMenu
+						buttonClassName='rounded-full'
+						buttonSize='xs'
 						createItems={[
 							{
 								label: 'Create Source',
