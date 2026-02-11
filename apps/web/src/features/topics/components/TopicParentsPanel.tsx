@@ -105,7 +105,7 @@ export function TopicParentsPanel({
 						}}
 					/>
 				) : null}
-				{topicId && (
+				{topicId && !hasParent && (
 					<AddEntityMenu
 						createItems={[
 							{

@@ -80,7 +80,7 @@ export function SourceParentsPanel({
 						title={parent.title}
 					/>
 				) : null}
-				{sourceId && (
+				{sourceId && !hasParent && (
 					<AddEntityMenu
 						createItems={[
 							{
