@@ -15,6 +15,7 @@ import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuTrigger
@@ -114,13 +115,15 @@ function SourceTypeChangeMenu({
 			<DropdownMenu>
 				<DropdownMenuTrigger render={trigger} />
 				<DropdownMenuContent align='start' side='bottom' sideOffset={4}>
-					<DropdownMenuLabel>Change type</DropdownMenuLabel>
-					<DropdownMenuItem onClick={() => setConvertToTopicOpen(true)}>
-						Topic
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => setConvertToPracticeOpen(true)}>
-						Practice
-					</DropdownMenuItem>
+					<DropdownMenuGroup>
+						<DropdownMenuLabel>Change type</DropdownMenuLabel>
+						<DropdownMenuItem onClick={() => setConvertToTopicOpen(true)}>
+							Topic
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => setConvertToPracticeOpen(true)}>
+							Practice
+						</DropdownMenuItem>
+					</DropdownMenuGroup>
 				</DropdownMenuContent>
 			</DropdownMenu>
 
