@@ -1,7 +1,6 @@
-import { BookOpen, ChevronDown, Loader2, Plus } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { ChevronDown, Loader2, Plus } from 'lucide-react'
+import { type ReactNode, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '~/app/layouts/PageLayout'
 import { Button } from '~/components/ui/Button'
 import { Skeleton } from '~/components/ui/Skeleton'
 import { useCreateReview } from '~/features/reviews/api/createReview'
@@ -22,8 +21,7 @@ type EntityType = 'topic' | 'source' | 'practice'
 interface EntityReviewsPageContentProps {
 	entityId: number
 	entityType: EntityType
-	entityName: string
-	onBack: () => void
+	navbar: ReactNode
 }
 
 function toReviewFilters(
@@ -66,8 +64,7 @@ function splitReviews(reviews: Array<ReviewListItem>) {
 export function EntityReviewsPageContent({
 	entityId,
 	entityType,
-	entityName,
-	onBack
+	navbar
 }: EntityReviewsPageContentProps) {
 	const filters = useMemo(
 		() => toReviewFilters(entityType, entityId),
@@ -136,90 +133,70 @@ export function EntityReviewsPageContent({
 	)
 
 	return (
-		<PageLayout>
-			<PageLayout.Header icon={BookOpen} title='Reviews'>
-				<div className='flex flex-wrap items-center justify-between gap-2'>
-					<div className='min-w-0'>
-						<p className='truncate text-muted-foreground text-sm'>
-							{entityName}
-						</p>
-					</div>
-					<div className='flex items-center gap-2'>
-						<Button onClick={onBack} size='sm' variant='ghost'>
-							Back
-						</Button>
-						<RatingDropdown
-							align='end'
-							onSelect={handleRatingSelect}
-							trigger={
-								<Button disabled={isCreatingReview} size='sm' variant='outline'>
-									{isCreatingReview ? (
-										<Loader2 className='animate-spin' />
-									) : (
-										<Plus />
-									)}
-									Add
-									<ChevronDown />
-								</Button>
-							}
-						/>
+		<div className='flex h-full min-h-0 flex-col'>
+			{navbar}
+			<div className='flex min-h-0 flex-1'>
+				<div className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'>
+					<div className='mx-auto w-full max-w-5xl px-6 pt-2 pb-4'>
+						<div className='mb-4 flex items-center justify-end'>
+							<RatingDropdown
+								align='end'
+								onSelect={handleRatingSelect}
+								trigger={
+									<Button
+										disabled={isCreatingReview}
+										size='sm'
+										variant='outline'
+									>
+										{isCreatingReview ? (
+											<Loader2 className='animate-spin' />
+										) : (
+											<Plus />
+										)}
+										Add
+										<ChevronDown />
+									</Button>
+								}
+							/>
+						</div>
+						{isLoading ? (
+							<div className='flex flex-col gap-2'>
+								<Skeleton className='h-20 w-full' />
+								<Skeleton className='h-20 w-full' />
+								<Skeleton className='h-20 w-full' />
+							</div>
+						) : (
+							<div className='flex flex-col gap-10'>
+								{unscheduledReviews.length > 0 && (
+									<div>
+										{unscheduledReviews.map(entry => (
+											<ReviewItem
+												entry={entry}
+												key={entry.id}
+												onReviewClick={openReviewDialog}
+												variant='default'
+											/>
+										))}
+									</div>
+								)}
+								{scheduledReviews.length > 0 && (
+									<div>
+										<h2 className='mb-3 font-bold text-2xl'>Scheduled</h2>
+										{scheduledReviews.map(entry => (
+											<ReviewItem
+												entry={entry}
+												key={entry.id}
+												onReviewClick={openReviewDialog}
+												variant='default'
+											/>
+										))}
+									</div>
+								)}
+							</div>
+						)}
 					</div>
 				</div>
-			</PageLayout.Header>
-			<PageLayout.Content>
-				{isLoading ? (
-					<div className='flex flex-col gap-2'>
-						<Skeleton className='h-20 w-full' />
-						<Skeleton className='h-20 w-full' />
-						<Skeleton className='h-20 w-full' />
-					</div>
-				) : (
-					<div className='space-y-6'>
-						<div>
-							<h2 className='mb-2 font-semibold text-sm'>
-								Unscheduled ({unscheduledReviews.length})
-							</h2>
-							{unscheduledReviews.length === 0 ? (
-								<p className='text-muted-foreground text-sm italic'>
-									No unscheduled reviews.
-								</p>
-							) : (
-								<div>
-									{unscheduledReviews.map(entry => (
-										<ReviewItem
-											entry={entry}
-											key={entry.id}
-											onReviewClick={openReviewDialog}
-											variant='default'
-										/>
-									))}
-								</div>
-							)}
-						</div>
-						<div>
-							<h2 className='mb-2 font-semibold text-sm'>
-								Scheduled ({scheduledReviews.length})
-							</h2>
-							{scheduledReviews.length === 0 ? (
-								<p className='text-muted-foreground text-sm italic'>
-									No scheduled reviews.
-								</p>
-							) : (
-								<div>
-									{scheduledReviews.map(entry => (
-										<ReviewItem
-											entry={entry}
-											key={entry.id}
-											onReviewClick={openReviewDialog}
-											variant='default'
-										/>
-									))}
-								</div>
-							)}
-						</div>
-					</div>
-				)}
-			</PageLayout.Content>
-		</PageLayout>
+			</div>
+		</div>
 	)
 }
