@@ -274,7 +274,11 @@ export function LearnableDetailHeader({
 				<div className='flex flex-wrap items-center gap-2'>
 					<Tooltip>
 						<TooltipTrigger
-							render={<span>Edited {formatRelativeDate(updatedAt).text}</span>}
+							render={
+								<span>
+									Edited {formatRelativeDate(updatedAt).text.toLowerCase()}
+								</span>
+							}
 						/>
 						<TooltipContent side='bottom'>
 							{dayjs(updatedAt).format('MMM D, YYYY')}
@@ -285,7 +289,11 @@ export function LearnableDetailHeader({
 					</span>
 					<Tooltip>
 						<TooltipTrigger
-							render={<span>Created {formatRelativeDate(createdAt).text}</span>}
+							render={
+								<span>
+									Created {formatRelativeDate(createdAt).text.toLowerCase()}
+								</span>
+							}
 						/>
 						<TooltipContent side='bottom'>
 							{dayjs(createdAt).format('MMM D, YYYY')}
