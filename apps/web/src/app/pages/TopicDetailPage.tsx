@@ -2,7 +2,6 @@ import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
-import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import {
 	TopicDetail,
@@ -127,7 +126,6 @@ export function TopicDetailPage({
 			<TopicDetail
 				activeTab={activeTab}
 				className='mx-auto max-w-5xl'
-				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
 				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}

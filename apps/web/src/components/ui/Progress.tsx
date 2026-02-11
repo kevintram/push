@@ -1,20 +1,81 @@
+import { Progress as ProgressPrimitive } from '@base-ui/react/progress'
+
 import { cn } from '~/lib/utils'
 
-interface ProgressProps {
-	value: number
-	max?: number
-	className?: string
+function Progress({
+	className,
+	children,
+	value,
+	...props
+}: ProgressPrimitive.Root.Props) {
+	return (
+		<ProgressPrimitive.Root
+			className={cn('flex flex-wrap gap-3', className)}
+			data-slot='progress'
+			value={value}
+			{...props}
+		>
+			{children}
+			<ProgressTrack>
+				<ProgressIndicator />
+			</ProgressTrack>
+		</ProgressPrimitive.Root>
+	)
 }
 
-export function Progress({ value, max = 100, className }: ProgressProps) {
-	const percentage = Math.min((value / max) * 100, 100)
-
+function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
 	return (
-		<div className={cn('h-2 w-24 rounded-full bg-muted', className)}>
-			<div
-				className='h-full rounded-full bg-primary transition-all duration-300 ease-in-out'
-				style={{ width: `${percentage}%` }}
-			/>
-		</div>
+		<ProgressPrimitive.Track
+			className={cn(
+				'relative flex h-1.5 w-full items-center overflow-x-hidden rounded-full bg-muted',
+				className
+			)}
+			data-slot='progress-track'
+			{...props}
+		/>
 	)
+}
+
+function ProgressIndicator({
+	className,
+	...props
+}: ProgressPrimitive.Indicator.Props) {
+	return (
+		<ProgressPrimitive.Indicator
+			className={cn('h-full bg-primary transition-all', className)}
+			data-slot='progress-indicator'
+			{...props}
+		/>
+	)
+}
+
+function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
+	return (
+		<ProgressPrimitive.Label
+			className={cn('font-medium text-sm', className)}
+			data-slot='progress-label'
+			{...props}
+		/>
+	)
+}
+
+function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
+	return (
+		<ProgressPrimitive.Value
+			className={cn(
+				'ml-auto text-muted-foreground text-sm tabular-nums',
+				className
+			)}
+			data-slot='progress-value'
+			{...props}
+		/>
+	)
+}
+
+export {
+	Progress,
+	ProgressTrack,
+	ProgressIndicator,
+	ProgressLabel,
+	ProgressValue
 }

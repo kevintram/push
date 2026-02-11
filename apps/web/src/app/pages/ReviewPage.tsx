@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { ArrowUpRight, BookOpen } from 'lucide-react'
+import { ArrowUpRight, BookOpen, Star } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { PageLayout } from '~/app/layouts/PageLayout'
@@ -11,7 +11,7 @@ import {
 } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { Button } from '~/components/ui/Button'
+import { buttonVariants } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter } from '~/components/ui/Card'
 import { CountBadge } from '~/components/ui/CountBadge'
 import {
@@ -35,6 +35,7 @@ import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { useEntityNavigation } from '~/hooks/useEntityNavigation'
+import { cn } from '~/lib/utils'
 import type { FreshnessTier } from '~/models/learnable.types'
 import { getFreshnessTierColor } from '~/utils/retrievability'
 
@@ -154,16 +155,22 @@ export function ReviewPage() {
 				<div className='flex flex-col gap-8'>
 					<ScheduleCard onReviewClick={handleReviewClick} tabs={scheduleTabs} />
 
-					{isQueueLoading ? (
-						<ReviewQueueSkeleton />
-					) : isQueueEmpty ? (
-						<ReviewQueueEmpty />
-					) : (
-						<ReviewQueueGroupedList
-							groups={tierGroups}
-							onEntityClick={handleEntityClick}
-						/>
-					)}
+					<div className='space-y-4'>
+						<h2 className='flex items-center gap-2 font-bold text-2xl'>
+							<Star className='h-6 w-6 fill-yellow-500 text-yellow-500' />
+							The Queue
+						</h2>
+						{isQueueLoading ? (
+							<ReviewQueueSkeleton />
+						) : isQueueEmpty ? (
+							<ReviewQueueEmpty />
+						) : (
+							<ReviewQueueGroupedList
+								groups={tierGroups}
+								onEntityClick={handleEntityClick}
+							/>
+						)}
+					</div>
 				</div>
 			</PageLayout.Content>
 			<ReviewDialog
@@ -231,17 +238,16 @@ function ScheduleCard({
 							<CountBadge count={tabs.unscheduled.totalCount} />
 						</TabsTrigger>
 					</TabsList>
-					<Button
-						asChild={true}
-						className='gap-1 text-muted-foreground hover:text-primary'
-						size='sm'
-						variant='link'
+					<Link
+						className={cn(
+							buttonVariants({ size: 'sm', variant: 'link' }),
+							'gap-1 text-muted-foreground hover:text-primary'
+						)}
+						to='/logbook'
 					>
-						<Link to='/logbook'>
-							Logbook
-							<ArrowUpRight className='h-4 w-4' />
-						</Link>
-					</Button>
+						Logbook
+						<ArrowUpRight className='h-4 w-4' />
+					</Link>
 				</div>
 
 				<Card className='gap-2'>
@@ -273,17 +279,16 @@ function ScheduleCard({
 					</CardContent>
 					{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
 						<CardFooter className='justify-center pt-0'>
-							<Button
-								asChild={true}
-								className='gap-1 text-muted-foreground hover:text-primary'
-								size='sm'
-								variant='ghost'
+							<Link
+								className={cn(
+									buttonVariants({ size: 'sm', variant: 'ghost' }),
+									'gap-1 text-muted-foreground hover:text-primary'
+								)}
+								to={activeConfig.viewAllTo}
 							>
-								<Link to={activeConfig.viewAllTo}>
-									View all
-									<ArrowUpRight className='h-4 w-4' />
-								</Link>
-							</Button>
+								View all
+								<ArrowUpRight className='h-4 w-4' />
+							</Link>
 						</CardFooter>
 					)}
 				</Card>

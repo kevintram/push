@@ -1,44 +1,28 @@
-import * as SwitchPrimitive from '@radix-ui/react-switch'
-import type * as React from 'react'
+'use client'
+
+import { Switch as SwitchPrimitive } from '@base-ui/react/switch'
 
 import { cn } from '~/lib/utils'
 
-const switchSizes = {
-	xs: {
-		root: 'h-[0.92rem] w-6',
-		thumb: 'size-[0.8rem]'
-	},
-	sm: {
-		root: 'h-[1.04rem] w-7',
-		thumb: 'size-[0.9rem]'
-	},
-	md: {
-		root: 'h-[1.15rem] w-8',
-		thumb: 'size-4'
-	}
-}
-
-interface SwitchProps
-	extends React.ComponentProps<typeof SwitchPrimitive.Root> {
-	size?: 'xs' | 'sm' | 'md'
-}
-
-function Switch({ className, size = 'md', ...props }: SwitchProps) {
+function Switch({
+	className,
+	size = 'md',
+	...props
+}: SwitchPrimitive.Root.Props & {
+	size?: 'xs' | 'sm' | 'md' | 'default'
+}) {
 	return (
 		<SwitchPrimitive.Root
 			className={cn(
-				'peer inline-flex shrink-0 items-center rounded-full border border-transparent shadow-xs outline-none transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-green-400 data-[state=unchecked]:bg-input dark:data-[state=unchecked]:bg-input/80',
-				switchSizes[size].root,
+				'peer group/switch after:-inset-x-3 after:-inset-y-2 relative inline-flex shrink-0 items-center rounded-full border border-transparent shadow-xs outline-none transition-all after:absolute focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-[size=default]:h-[18.4px] data-[size=md]:h-[18.4px] data-[size=sm]:h-[16.64px] data-[size=xs]:h-[14.72px] data-[size=default]:w-[32px] data-[size=md]:w-[32px] data-[size=sm]:w-[28px] data-[size=xs]:w-[24px] data-disabled:cursor-not-allowed data-checked:bg-primary data-unchecked:bg-input data-disabled:opacity-50 dark:data-unchecked:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
 				className
 			)}
+			data-size={size}
 			data-slot='switch'
 			{...props}
 		>
 			<SwitchPrimitive.Thumb
-				className={cn(
-					'pointer-events-none block rounded-full bg-background ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0 dark:bg-foreground',
-					switchSizes[size].thumb
-				)}
+				className='pointer-events-none block rounded-full bg-background ring-0 transition-transform group-data-[size=default]/switch:size-4 group-data-[size=md]/switch:size-4 group-data-[size=sm]/switch:size-[0.9rem] group-data-[size=xs]/switch:size-[0.8rem] group-data-[size=default]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=md]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=md]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=sm]/switch:data-unchecked:translate-x-0 group-data-[size=xs]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=xs]/switch:data-unchecked:translate-x-0 dark:data-checked:bg-primary-foreground dark:data-unchecked:bg-foreground'
 				data-slot='switch-thumb'
 			/>
 		</SwitchPrimitive.Root>

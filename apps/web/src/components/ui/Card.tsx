@@ -2,13 +2,18 @@ import type * as React from 'react'
 
 import { cn } from '~/lib/utils'
 
-function Card({ className, ...props }: React.ComponentProps<'div'>) {
+function Card({
+	className,
+	size = 'default',
+	...props
+}: React.ComponentProps<'div'> & { size?: 'default' | 'sm' }) {
 	return (
 		<div
 			className={cn(
 				'flex flex-col gap-2 rounded-xl border bg-card py-3 text-card-foreground shadow-sm',
 				className
 			)}
+			data-size={size}
 			data-slot='card'
 			{...props}
 		/>
@@ -19,7 +24,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
 	return (
 		<div
 			className={cn(
-				'@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6',
+				'@container/card-header grid auto-rows-min items-start gap-1 px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-6',
 				className
 			)}
 			data-slot='card-header'
@@ -31,7 +36,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
 function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
 	return (
 		<div
-			className={cn('font-semibold leading-none', className)}
+			className={cn('font-medium leading-none', className)}
 			data-slot='card-title'
 			{...props}
 		/>
@@ -64,7 +69,7 @@ function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
 function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
 	return (
 		<div
-			className={cn('flex-1 px-3', className)}
+			className={cn('px-3', className)}
 			data-slot='card-content'
 			{...props}
 		/>

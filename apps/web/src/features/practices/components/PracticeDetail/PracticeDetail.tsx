@@ -1,24 +1,157 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { type ReactNode, use, useCallback, useRef } from 'react'
-import { DetailTabsShell } from '~/components/DetailTabs'
-import { LearnableProperties } from '~/components/LearnableProperties'
-import { LearnableStatus } from '~/components/LearnableStatus'
-import { ReviewsSidebar } from '~/components/ReviewsSidebar'
-import { SidebarHolder, SidebarProvider } from '~/components/ui/Sidebar'
+import {
+	type ReactElement,
+	type ReactNode,
+	use,
+	useCallback,
+	useMemo,
+	useRef,
+	useState
+} from 'react'
+import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
+import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuTrigger
+} from '~/components/ui/DropdownMenu'
 import { Textarea } from '~/components/ui/Textarea'
+import { useConvertPracticeToSource } from '~/features/practices/api/convertPracticeToSource'
+import { useConvertPracticeToTopic } from '~/features/practices/api/convertPracticeToTopic'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { cn } from '~/lib/utils'
+import { ConversionError } from '~/utils/ConversionError'
+import {
+	getPracticeToSourcePreview,
+	getPracticeToTopicPreview
+} from '~/utils/conversionPreview'
 import { practiceKeys } from '../../api/queryKeys'
 import { useUpdatePractice } from '../../api/updatePractice'
 import { PracticeContext } from '../../stores/SelectedPracticeContext'
 import type { Practice } from '../../types/practice.types'
 import { PracticeActionMenu } from '../PracticeActionMenu'
-import { PracticeRelatedPanel } from '../PracticeRelatedPanel'
-import { PracticeDetailHeader } from './PracticeDetailHeader'
+import { PracticeSourcesPanel } from '../PracticeSourcesPanel'
+import { PracticeTopicsPanel } from '../PracticeTopicsPanel'
+import { PracticeDetailNavBar } from './PracticeDetailNavBar'
 import { PracticeDetailSkeleton } from './PracticeDetailSkeleton'
+
+interface PracticeTypeChangeMenuProps {
+	practice: Practice
+	onConvertSuccess?: OnConversionSuccess
+	trigger: ReactElement
+}
+
+function PracticeTypeChangeMenu({
+	practice,
+	onConvertSuccess,
+	trigger
+}: PracticeTypeChangeMenuProps) {
+	const [convertToTopicOpen, setConvertToTopicOpen] = useState(false)
+	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
+	const [convertToTopicError, setConvertToTopicError] = useState<string | null>(
+		null
+	)
+	const [convertToSourceError, setConvertToSourceError] = useState<
+		string | null
+	>(null)
+	const convertToTopicMutation = useConvertPracticeToTopic()
+	const convertToSourceMutation = useConvertPracticeToSource()
+
+	const toTopicPreview = useMemo(
+		() => getPracticeToTopicPreview(practice),
+		[practice]
+	)
+	const toSourcePreview = useMemo(
+		() => getPracticeToSourcePreview(practice),
+		[practice]
+	)
+
+	const handleConfirmConvertToTopic = useCallback(async () => {
+		try {
+			const result = await convertToTopicMutation.mutateAsync({
+				practiceId: practice.id
+			})
+			setConvertToTopicOpen(false)
+			onConvertSuccess?.('topic', result.topic_id)
+		} catch (error) {
+			if (error instanceof ConversionError) {
+				setConvertToTopicError(error.message)
+			} else {
+				setConvertToTopicError('Failed to convert practice to topic')
+			}
+		}
+	}, [convertToTopicMutation, practice.id, onConvertSuccess])
+
+	const handleConfirmConvertToSource = useCallback(async () => {
+		try {
+			const result = await convertToSourceMutation.mutateAsync({
+				practiceId: practice.id
+			})
+			setConvertToSourceOpen(false)
+			onConvertSuccess?.('source', result.source_id)
+		} catch (error) {
+			if (error instanceof ConversionError) {
+				setConvertToSourceError(error.message)
+			} else {
+				setConvertToSourceError('Failed to convert practice to source')
+			}
+		}
+	}, [convertToSourceMutation, practice.id, onConvertSuccess])
+
+	return (
+		<>
+			<DropdownMenu>
+				<DropdownMenuTrigger render={trigger} />
+				<DropdownMenuContent align='start' side='bottom' sideOffset={4}>
+					<DropdownMenuLabel>Change type</DropdownMenuLabel>
+					<DropdownMenuItem onClick={() => setConvertToTopicOpen(true)}>
+						Topic
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => setConvertToSourceOpen(true)}>
+						Source
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			<ConversionConfirmationDialog
+				blockers={toTopicPreview.blockers}
+				entityName={practice.prompt}
+				error={convertToTopicError}
+				isPending={convertToTopicMutation.isPending}
+				lost={toTopicPreview.lost}
+				migrated={toTopicPreview.migrated}
+				onConfirm={handleConfirmConvertToTopic}
+				onOpenChange={open => {
+					setConvertToTopicOpen(open)
+					if (!open) setConvertToTopicError(null)
+				}}
+				open={convertToTopicOpen}
+				targetEntityType='Topic'
+			/>
+
+			<ConversionConfirmationDialog
+				blockers={toSourcePreview.blockers}
+				entityName={practice.prompt}
+				error={convertToSourceError}
+				isPending={convertToSourceMutation.isPending}
+				lost={toSourcePreview.lost}
+				migrated={toSourcePreview.migrated}
+				onConfirm={handleConfirmConvertToSource}
+				onOpenChange={open => {
+					setConvertToSourceOpen(open)
+					if (!open) setConvertToSourceError(null)
+				}}
+				open={convertToSourceOpen}
+				targetEntityType='Source'
+			/>
+		</>
+	)
+}
 
 interface PracticeDetailProps {
 	/**
@@ -115,6 +248,17 @@ export function PracticeDetail({
 		}
 	}, [updatePractice, practice?.id, practice?.inboxed])
 
+	const handleSrsToggle = useCallback(
+		async (pressed: boolean) => {
+			if (!practice?.id) return
+			await updatePractice({
+				id: practice.id,
+				srs_enabled: pressed
+			})
+		},
+		[updatePractice, practice?.id]
+	)
+
 	const updatePrompt = useCallback(
 		(newPrompt: string) => {
 			if (!practice?.id) return
@@ -153,101 +297,88 @@ export function PracticeDetail({
 	}
 
 	return (
-		<SidebarProvider
-			cookieName='sidebar:practice-detail'
-			defaultOpen={true}
-			enableKeyboardShortcut={false}
-		>
-			<div className='flex h-full min-h-0 flex-col'>
-				<PracticeDetailHeader
-					afterActions={headerAfterActions}
-					headerBeforeActions={headerBeforeActions}
-				/>
-				<SidebarHolder className='flex min-h-0 flex-1'>
-					<div
-						className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'
-						ref={scrollContainerRef}
-					>
-						<div className={cn('w-full px-6 py-4', className)}>
-							{/* Status badges */}
-							<LearnableStatus
-								archived={practice.archived}
-								inboxed={practice.inboxed}
-								onArchiveToggle={handleArchiveToggle}
-								onInboxToggle={handleInboxToggle}
-							/>
-
-							{/* Prompt field with action menu */}
-							<div className='flex items-start gap-2'>
-								<div className='flex flex-1 flex-col gap-1'>
-									<Textarea
-										className='!bg-transparent break-word !text-xl m-0 min-h-0 w-full resize-none overflow-hidden rounded-none border-none p-0 font-semibold shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-										onChange={onPromptChange}
-										placeholder='Prompt'
-										spellCheck={false}
-										value={prompt}
-									/>
-								</div>
+		<div className='flex h-full min-h-0 flex-col'>
+			<PracticeDetailNavBar
+				afterActions={headerAfterActions}
+				headerBeforeActions={headerBeforeActions}
+			/>
+			<div className='flex min-h-0 flex-1'>
+				<div
+					className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'
+					ref={scrollContainerRef}
+				>
+					<div className={cn('w-full px-6 pt-2 pb-4', className)}>
+						<LearnableDetailHeader
+							archived={practice.archived}
+							createdAt={practice.inserted_at}
+							entityId={practice.id}
+							entityLabel='Practice'
+							entityType='practice'
+							inboxed={practice.inboxed}
+							isUpdating={false}
+							metrics={metrics}
+							onArchiveToggle={handleArchiveToggle}
+							onInboxToggle={handleInboxToggle}
+							onSrsToggle={handleSrsToggle}
+							onTitleChange={onPromptChange}
+							renderActionMenu={trigger => (
 								<PracticeActionMenu
+									hideInboxArchive={true}
 									onConvertSuccess={onConvertSuccess}
 									onDelete={onDelete}
 									onPracticeUpdateSuccess={handlePracticeUpdateSuccess}
 									practice={practice}
+									trigger={trigger}
 								/>
-							</div>
+							)}
+							renderTypeChangeMenu={trigger => (
+								<PracticeTypeChangeMenu
+									onConvertSuccess={onConvertSuccess}
+									practice={practice}
+									trigger={trigger}
+								/>
+							)}
+							srsEnabled={practice.srs_enabled}
+							title={prompt}
+							titlePlaceholder='Prompt'
+							updatedAt={practice.updated_at}
+						/>
 
-							{/* Answer field */}
-							<div className='mt-4'>
-								<Textarea
-									className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-									onChange={onAnswerChange}
-									placeholder='Answer'
-									spellCheck={false}
-									value={answer}
-								/>
-							</div>
+						{/* Answer field */}
+						<div className='mt-4'>
+							<Textarea
+								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+								onChange={onAnswerChange}
+								placeholder='Answer'
+								spellCheck={false}
+								value={answer}
+							/>
+						</div>
 
-							{/* Properties (timestamps, FSRS status) */}
-							<div className='mt-4'>
-								<LearnableProperties
-									insertedAt={practice.inserted_at}
-									metrics={metrics}
-									updatedAt={practice.updated_at}
-								/>
-							</div>
+						{/* Topics Panel */}
+						<div className='mt-4'>
+							<PracticeTopicsPanel
+								getScrollElement={getScrollElement}
+								inheritFsrsState={srsSource}
+								onTopicSelect={onTopicNavigate}
+								practiceId={practice.id}
+								topics={practice.topics}
+							/>
+						</div>
 
-							<div className='mt-6'>
-								<DetailTabsShell
-									defaultValue='related'
-									tabs={[
-										{
-											value: 'related',
-											label: 'Related',
-											count:
-												(practice.topics?.length ?? 0) +
-												(practice.sources?.length ?? 0),
-											content: (
-												<PracticeRelatedPanel
-													getScrollElement={getScrollElement}
-													inheritFsrsState={srsSource}
-													onSourceSelect={onSourceNavigate}
-													onTopicSelect={onTopicNavigate}
-													practiceId={practice.id}
-													sources={practice.sources}
-													topics={practice.topics}
-												/>
-											)
-										}
-									]}
-								/>
-							</div>
+						{/* Sources Panel */}
+						<div className='mt-4'>
+							<PracticeSourcesPanel
+								getScrollElement={getScrollElement}
+								inheritFsrsState={srsSource}
+								onSourceSelect={onSourceNavigate}
+								practiceId={practice.id}
+								sources={practice.sources}
+							/>
 						</div>
 					</div>
-
-					{/* Reviews Sidebar */}
-					<ReviewsSidebar entity={practice} entityType='practice' />
-				</SidebarHolder>
+				</div>
 			</div>
-		</SidebarProvider>
+		</div>
 	)
 }

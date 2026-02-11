@@ -2,7 +2,6 @@ import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
-import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { useSourceWithRelationships } from '~/features/sources/api/getSource'
 import {
 	SourceDetail,
@@ -135,7 +134,6 @@ export function SourceDetailPage({
 			<SourceDetail
 				activeTab={activeTab}
 				className='mx-auto max-w-5xl'
-				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
 				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}

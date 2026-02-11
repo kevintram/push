@@ -29,15 +29,17 @@ export function CreateButton() {
 	const [isAddSourceDialogOpen, setIsAddSourceDialogOpen] = useState(false)
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild={true}>
-				<SidebarMenuButton
-					className='bg-primary text-primary-foreground hover:bg-primary/90'
-					tooltip='Create new...'
-				>
-					<Plus className='' />
-					<span>Create</span>
-				</SidebarMenuButton>
-			</DropdownMenuTrigger>
+			<DropdownMenuTrigger
+				render={
+					<SidebarMenuButton
+						className='bg-primary text-primary-foreground hover:bg-primary/90'
+						tooltip='Create new...'
+					>
+						<Plus className='' />
+						<span>Create</span>
+					</SidebarMenuButton>
+				}
+			/>
 			<DropdownMenuContent align='start' side='right'>
 				<DropdownMenuItem onClick={() => setIsAddTopicDialogOpen(true)}>
 					<SquarePen />

@@ -4,17 +4,19 @@ import {
 	GitPullRequestClosed,
 	Inbox,
 	MoreHorizontal,
-	RefreshCw,
 	Trash2
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { isValidElement, useCallback, useMemo, useState } from 'react'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { Button } from '~/components/ui/Button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuSeparator,
+	DropdownMenuLabel,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
 } from '~/components/ui/DropdownMenu'
 import { useConvertTopicToPractice } from '~/features/topics/api/convertTopicToPractice'
@@ -40,6 +42,8 @@ interface TopicActionMenuProps {
 	onDelete?: () => void
 	trigger?: React.ReactNode
 	onTopicUpdateSuccess?: (topic: Topic) => Promise<unknown> | unknown
+	hideInboxArchive?: boolean
+	convertOnly?: boolean
 }
 
 export function TopicActionMenu({
@@ -50,8 +54,11 @@ export function TopicActionMenu({
 	children,
 	onDelete,
 	trigger,
-	onTopicUpdateSuccess
+	onTopicUpdateSuccess,
+	hideInboxArchive = false,
+	convertOnly = false
 }: TopicActionMenuProps) {
+	const triggerElement = isValidElement(trigger) ? trigger : undefined
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
 	const [convertToPracticeOpen, setConvertToPracticeOpen] = useState(false)
@@ -167,63 +174,95 @@ export function TopicActionMenu({
 	return (
 		<>
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild={true}>
-					{trigger ?? (
-						<Button
-							className='h-5 w-5 p-0'
-							onClick={e => e.stopPropagation()}
-							variant='ghost'
-						>
-							<MoreHorizontal className='h-3 w-3' />
-						</Button>
-					)}
-				</DropdownMenuTrigger>
+				<DropdownMenuTrigger
+					render={
+						triggerElement ?? (
+							<Button
+								className='h-5 w-5 p-0'
+								onClick={e => e.stopPropagation()}
+								variant='ghost'
+							>
+								<MoreHorizontal className='h-3 w-3' />
+							</Button>
+						)
+					}
+				/>
 				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-					<DropdownMenuItem onClick={handleInboxToggle}>
-						{topic.inboxed ? (
-							<>
-								<Inbox className='mr-2 h-4 w-4' />
-								Remove from Inbox
-							</>
-						) : (
-							<>
-								<Inbox className='mr-2 h-4 w-4' />
-								Inbox
-							</>
-						)}
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={handleArchiveToggle}>
-						{topic.archived ? (
-							<>
-								<ArchiveRestore className='mr-2 h-4 w-4' />
-								Unarchive
-							</>
-						) : (
-							<>
-								<Archive className='mr-2 h-4 w-4' />
-								Archive
-							</>
-						)}
-					</DropdownMenuItem>
-					<DropdownMenuSeparator />
-					<DropdownMenuItem
-						onClick={e => {
-							e.stopPropagation()
-							setConvertToSourceOpen(true)
-						}}
-					>
-						<RefreshCw className='mr-2 h-4 w-4' />
-						Convert to Source
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						onClick={e => {
-							e.stopPropagation()
-							setConvertToPracticeOpen(true)
-						}}
-					>
-						<RefreshCw className='mr-2 h-4 w-4' />
-						Convert to Practice
-					</DropdownMenuItem>
+					{convertOnly ? (
+						<>
+							<DropdownMenuLabel>Change type</DropdownMenuLabel>
+							<DropdownMenuItem
+								onClick={e => {
+									e.stopPropagation()
+									setConvertToSourceOpen(true)
+								}}
+							>
+								Source
+							</DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={e => {
+									e.stopPropagation()
+									setConvertToPracticeOpen(true)
+								}}
+							>
+								Practice
+							</DropdownMenuItem>
+						</>
+					) : (
+						<>
+							{!hideInboxArchive && (
+								<>
+									<DropdownMenuItem onClick={handleInboxToggle}>
+										{topic.inboxed ? (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Remove from Inbox
+											</>
+										) : (
+											<>
+												<Inbox className='mr-2 h-4 w-4' />
+												Inbox
+											</>
+										)}
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={handleArchiveToggle}>
+										{topic.archived ? (
+											<>
+												<ArchiveRestore className='mr-2 h-4 w-4' />
+												Unarchive
+											</>
+										) : (
+											<>
+												<Archive className='mr-2 h-4 w-4' />
+												Archive
+											</>
+										)}
+									</DropdownMenuItem>
+								</>
+							)}
+							<DropdownMenuSub>
+								<DropdownMenuSubTrigger>Convert</DropdownMenuSubTrigger>
+								<DropdownMenuSubContent>
+									<DropdownMenuItem
+										onClick={e => {
+											e.stopPropagation()
+											setConvertToSourceOpen(true)
+										}}
+									>
+										Source
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={e => {
+											e.stopPropagation()
+											setConvertToPracticeOpen(true)
+										}}
+									>
+										Practice
+									</DropdownMenuItem>
+								</DropdownMenuSubContent>
+							</DropdownMenuSub>
+						</>
+					)}
 					{children}
 					{onRemoveRelationship && (
 						<DropdownMenuItem
@@ -236,7 +275,6 @@ export function TopicActionMenu({
 							{removeRelationshipText}
 						</DropdownMenuItem>
 					)}
-					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={e => {
 							e.stopPropagation()
