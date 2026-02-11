@@ -259,25 +259,45 @@ export function LearnableDetailHeader({
 
 	return (
 		<div>
-			{/* Entity Type */}
-			<div className='flex flex-wrap gap-x-1 font-semibold text-muted-foreground text-sm'>
+			{/* Properties Row 1 */}
+			<div className='flex flex-wrap items-center justify-between gap-x-1 font-semibold text-muted-foreground text-sm'>
 				{renderTypeChangeMenu
 					? renderTypeChangeMenu(typeMenuTrigger)
 					: <span>{entityLabel}</span>}
+				<div className='flex flex-wrap items-center gap-2'>
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<span>Edited {formatRelativeDate(updatedAt).text}</span>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>
+							{dayjs(updatedAt).format('MMM D, YYYY')}
+						</TooltipContent>
+					</Tooltip>
+					<span aria-hidden={true} className='font-bold'>
+						·
+					</span>
+					<Tooltip>
+						<TooltipTrigger asChild={true}>
+							<span>Created {formatRelativeDate(createdAt).text}</span>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>
+							{dayjs(createdAt).format('MMM D, YYYY')}
+						</TooltipContent>
+					</Tooltip>
+				</div>
 			</div>
 
 			{/* Title row */}
 			<Textarea
-				className='!bg-transparent !text-2xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none px-0 py-1 font-semibold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+				className='!bg-transparent !text-2xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-semibold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 				onChange={onTitleChange}
 				placeholder={titlePlaceholder}
 				spellCheck={false}
 				value={title}
 			/>
 
-			{/* Properties row */}
-			<div className='flex flex-wrap items-center justify-between gap-2 text-sm'>
-				<div className='flex flex-wrap items-center gap-2'>
+			{/* Properties Row 2 */}
+			<div className='flex flex-wrap items-center gap-2 text-sm'>
 					{isUnreviewed ? (
 						<div className='flex items-center gap-1.5 font-semibold text-muted-foreground'>
 							<Sparkles className='h-4 w-4' />
@@ -327,7 +347,6 @@ export function LearnableDetailHeader({
 											</Button>
 										</TooltipTrigger>
 										<TooltipContent side='bottom'>
-											Last reviewed{' '}
 											{formatAbsoluteDate(latestCompletedReview.completed_at)}
 										</TooltipContent>
 									</Tooltip>
@@ -348,28 +367,6 @@ export function LearnableDetailHeader({
 							</Tooltip>
 						</>
 					)}
-				</div>
-				<div className='flex flex-wrap items-center gap-2 font-semibold text-muted-foreground'>
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<span>Edited {formatRelativeDate(updatedAt).text}</span>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>
-							{dayjs(updatedAt).format('MMM D, YYYY')}
-						</TooltipContent>
-					</Tooltip>
-					<span aria-hidden={true} className='font-bold'>
-						·
-					</span>
-					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<span>Created {formatRelativeDate(createdAt).text}</span>
-						</TooltipTrigger>
-						<TooltipContent side='bottom'>
-							{dayjs(createdAt).format('MMM D, YYYY')}
-						</TooltipContent>
-					</Tooltip>
-				</div>
 			</div>
 
 			{/* Actions row */}
