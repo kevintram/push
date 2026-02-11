@@ -1,6 +1,6 @@
-import type { LucideIcon } from 'lucide-react'
-import { ChevronDown, Loader2, Plus, Search, SquarePen } from 'lucide-react'
-import { Button } from '~/components/ui/button'
+import type { LucideIcon } from "lucide-react"
+import { ChevronDown, Loader2, Plus, Search, SquarePen } from "lucide-react"
+import { Button } from "~/components/ui/button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -9,7 +9,7 @@ import {
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
-} from '~/components/ui/dropdown-menu'
+} from "~/components/ui/dropdown-menu"
 
 type AddEntityMenuItem = {
 	label: string
@@ -29,10 +29,10 @@ interface AddEntityMenuProps {
 export function AddEntityMenu({
 	disabled = false,
 	isLoading = false,
-	searchLabel = 'Search',
+	searchLabel = "Search",
 	onSearch,
 	createItems,
-	createLabel = 'Create new'
+	createLabel = "Create new"
 }: AddEntityMenuProps) {
 	const singleCreateItem = createItems.length === 1 ? createItems[0] : null
 

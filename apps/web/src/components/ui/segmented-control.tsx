@@ -1,5 +1,5 @@
-import React from 'react'
-import { cn } from '~/lib/utils'
+import React from "react"
+import { cn } from "~/lib/utils"
 
 interface SegmentedControlProps {
 	value?: string
@@ -14,7 +14,7 @@ interface SegmentedControlItemProps {
 	className?: string
 	children: React.ReactNode
 	onClick?: () => void
-	'data-active'?: boolean
+	"data-active"?: boolean
 }
 
 function SegmentedControl({
@@ -28,7 +28,7 @@ function SegmentedControl({
 	return (
 		<div
 			className={cn(
-				'inline-flex h-9 w-fit items-center justify-center rounded-lg bg-muted p-[3px] text-muted-foreground',
+				"inline-flex h-9 w-fit items-center justify-center rounded-lg bg-muted p-[3px] text-muted-foreground",
 				className
 			)}
 			{...props}
@@ -39,17 +39,17 @@ function SegmentedControl({
 					const isFirst = index === 0
 					const isLast = index === React.Children.count(children) - 1
 
-					let roundedClasses = 'rounded-md'
-					let shadowClasses = 'data-[active=true]:shadow-sm'
+					let roundedClasses = "rounded-md"
+					let shadowClasses = "data-[active=true]:shadow-sm"
 
 					if (allActive) {
-						shadowClasses = '' // Remove shadow when all active
+						shadowClasses = "" // Remove shadow when all active
 						if (isFirst) {
-							roundedClasses = 'rounded-l-md rounded-r-none'
+							roundedClasses = "rounded-l-md rounded-r-none"
 						} else if (isLast) {
-							roundedClasses = 'rounded-r-md rounded-l-none'
+							roundedClasses = "rounded-r-md rounded-l-none"
 						} else {
-							roundedClasses = 'rounded-none'
+							roundedClasses = "rounded-none"
 						}
 					}
 
@@ -65,7 +65,7 @@ function SegmentedControl({
 							shadowClasses,
 							child.props.className
 						),
-						'data-active': isActive
+						"data-active": isActive
 					})
 				}
 				return child
