@@ -1,7 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { ChevronDown, Loader2, Plus, Search, SquarePen } from 'lucide-react'
 import { Button } from '~/components/ui/button'
-import { cn } from '~/lib/utils'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -11,6 +10,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
+import { cn } from '~/lib/utils'
 
 type AddEntityMenuItem = {
 	label: string
@@ -25,7 +25,15 @@ interface AddEntityMenuProps {
 	onSearch: () => void
 	createItems: Array<AddEntityMenuItem>
 	createLabel?: string
-	buttonSize?: 'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg'
+	buttonSize?:
+		| 'default'
+		| 'xs'
+		| 'sm'
+		| 'lg'
+		| 'icon'
+		| 'icon-xs'
+		| 'icon-sm'
+		| 'icon-lg'
 	buttonClassName?: string
 }
 
@@ -46,7 +54,11 @@ export function AddEntityMenu({
 			<DropdownMenuTrigger
 				disabled={disabled || isLoading}
 				render={
-					<Button className={cn('gap-1', buttonClassName)} size={buttonSize} variant='secondary'>
+					<Button
+						className={cn('gap-1', buttonClassName)}
+						size={buttonSize}
+						variant='secondary'
+					>
 						{isLoading ? (
 							<Loader2 className='h-4 w-4 animate-spin' />
 						) : (
