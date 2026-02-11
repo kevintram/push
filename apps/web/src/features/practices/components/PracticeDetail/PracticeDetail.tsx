@@ -13,6 +13,7 @@ import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuTrigger
@@ -108,13 +109,15 @@ function PracticeTypeChangeMenu({
 			<DropdownMenu>
 				<DropdownMenuTrigger render={trigger} />
 				<DropdownMenuContent align='start' side='bottom' sideOffset={4}>
-					<DropdownMenuLabel>Change type</DropdownMenuLabel>
-					<DropdownMenuItem onClick={() => setConvertToTopicOpen(true)}>
-						Topic
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => setConvertToSourceOpen(true)}>
-						Source
-					</DropdownMenuItem>
+					<DropdownMenuGroup>
+						<DropdownMenuLabel>Change type</DropdownMenuLabel>
+						<DropdownMenuItem onClick={() => setConvertToTopicOpen(true)}>
+							Topic
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => setConvertToSourceOpen(true)}>
+							Source
+						</DropdownMenuItem>
+					</DropdownMenuGroup>
 				</DropdownMenuContent>
 			</DropdownMenu>
 

@@ -12,6 +12,7 @@ import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSub,
@@ -189,7 +190,7 @@ export function TopicActionMenu({
 				/>
 				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
 					{convertOnly ? (
-						<>
+						<DropdownMenuGroup>
 							<DropdownMenuLabel>Change type</DropdownMenuLabel>
 							<DropdownMenuItem
 								onClick={e => {
@@ -207,7 +208,7 @@ export function TopicActionMenu({
 							>
 								Practice
 							</DropdownMenuItem>
-						</>
+						</DropdownMenuGroup>
 					) : (
 						<>
 							{!hideInboxArchive && (
