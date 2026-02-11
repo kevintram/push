@@ -216,12 +216,14 @@ export function LearnableCardBase<T extends LearnableBase>({
 			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
 				{'parent_id' in entity && (
 					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-								<User2 className='h-3 w-3' />
-								<span>{entity.parent_id ? 1 : 0}</span>
-							</div>
-						</TooltipTrigger>
+						<TooltipTrigger
+							render={
+								<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+									<User2 className='h-3 w-3' />
+									<span>{entity.parent_id ? 1 : 0}</span>
+								</div>
+							}
+						/>
 						<TooltipContent side='top'>
 							{entity.parent_id ? '1 parent' : '0 parents'}
 						</TooltipContent>
@@ -229,12 +231,14 @@ export function LearnableCardBase<T extends LearnableBase>({
 				)}
 				{config.showTypeBadge && config.typeBadgeLabel && (
 					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-								<FileText className='h-3 w-3' />
-								<span>{config.typeBadgeLabel}</span>
-							</div>
-						</TooltipTrigger>
+						<TooltipTrigger
+							render={
+								<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+									<FileText className='h-3 w-3' />
+									<span>{config.typeBadgeLabel}</span>
+								</div>
+							}
+						/>
 						<TooltipContent side='top'>
 							This is a {config.typeBadgeLabel}
 						</TooltipContent>
@@ -244,16 +248,18 @@ export function LearnableCardBase<T extends LearnableBase>({
 				{/* Leaving soon badge */}
 				{showLeavingSoon && isLeavingSoon && leavingSoonLabel && (
 					<Tooltip>
-						<TooltipTrigger asChild={true}>
-							<Badge
-								className='h-5 text-xs'
-								variant={
-									leavingSoonLabel === 'Hazy soon' ? 'warning' : 'destructive'
-								}
-							>
-								{leavingSoonLabel}
-							</Badge>
-						</TooltipTrigger>
+						<TooltipTrigger
+							render={
+								<Badge
+									className='h-5 text-xs'
+									variant={
+										leavingSoonLabel === 'Hazy soon' ? 'warning' : 'destructive'
+									}
+								>
+									{leavingSoonLabel}
+								</Badge>
+							}
+						/>
 						{leavingSoonTooltip && (
 							<TooltipContent side='top'>{leavingSoonTooltip}</TooltipContent>
 						)}
@@ -263,23 +269,28 @@ export function LearnableCardBase<T extends LearnableBase>({
 				<Tooltip>
 					<RatingDropdown
 						align='end'
+						nativeButton={false}
 						onSelect={handleRatingSelect}
 						trigger={
-							<TooltipTrigger asChild={true}>
-								<div
-									aria-label='Add review'
-									className={isCreatingReview ? 'opacity-50' : 'cursor-pointer'}
-									onClick={e => e.stopPropagation()}
-									onKeyDown={e => e.stopPropagation()}
-									role='button'
-								>
-									{isCreatingReview ? (
-										<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
-									) : (
-										<SquarePlusBottomRight className='h-4 w-4 text-muted-foreground' />
-									)}
-								</div>
-							</TooltipTrigger>
+							<TooltipTrigger
+								render={
+									<div
+										aria-label='Add review'
+										className={
+											isCreatingReview ? 'opacity-50' : 'cursor-pointer'
+										}
+										onClick={e => e.stopPropagation()}
+										onKeyDown={e => e.stopPropagation()}
+										role='button'
+									>
+										{isCreatingReview ? (
+											<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
+										) : (
+											<SquarePlusBottomRight className='h-4 w-4 text-muted-foreground' />
+										)}
+									</div>
+								}
+							/>
 						}
 					/>
 					<TooltipContent side='top'>Add review</TooltipContent>
@@ -346,14 +357,16 @@ export function LearnableCardBase<T extends LearnableBase>({
 						{/* Freshness tier with tooltip */}
 						{freshnessTierInfo.tooltip ? (
 							<Tooltip>
-								<TooltipTrigger asChild={true}>
-									<div
-										className={`flex items-center gap-1 font-semibold ${freshnessTierColor}`}
-									>
-										<Brain className='h-3 w-3' />
-										<span>{freshnessTierInfo.label}</span>
-									</div>
-								</TooltipTrigger>
+								<TooltipTrigger
+									render={
+										<div
+											className={`flex items-center gap-1 font-semibold ${freshnessTierColor}`}
+										>
+											<Brain className='h-3 w-3' />
+											<span>{freshnessTierInfo.label}</span>
+										</div>
+									}
+								/>
 								<TooltipContent side='top'>
 									{freshnessTierInfo.tooltip}
 								</TooltipContent>
@@ -366,9 +379,11 @@ export function LearnableCardBase<T extends LearnableBase>({
 						{/* Last reviewed */}
 						<span>·</span>
 						<Tooltip>
-							<TooltipTrigger asChild={true}>
-								<span className='font-semibold'>{`Reviewed ${lastReviewed.text}`}</span>
-							</TooltipTrigger>
+							<TooltipTrigger
+								render={
+									<span className='font-semibold'>{`Reviewed ${lastReviewed.text}`}</span>
+								}
+							/>
 							<TooltipContent side='top'>{lastReviewedDate}</TooltipContent>
 						</Tooltip>
 					</>
@@ -376,12 +391,14 @@ export function LearnableCardBase<T extends LearnableBase>({
 				<div className='flex-1' />
 				{/* Relations count */}
 				<Tooltip>
-					<TooltipTrigger asChild={true}>
-						<div className='flex items-center gap-1'>
-							<Baby className='h-3 w-3' />
-							<span>{config.getRelationsCount(entity)}</span>
-						</div>
-					</TooltipTrigger>
+					<TooltipTrigger
+						render={
+							<div className='flex items-center gap-1'>
+								<Baby className='h-3 w-3' />
+								<span>{config.getRelationsCount(entity)}</span>
+							</div>
+						}
+					/>
 					<TooltipContent side='top'>
 						{config.getRelationsLabel(config.getRelationsCount(entity))}
 					</TooltipContent>

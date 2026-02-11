@@ -1,6 +1,5 @@
-import { Slot } from '@radix-ui/react-slot'
+import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
-import type * as React from 'react'
 
 import { cn } from '~/lib/utils'
 
@@ -12,6 +11,8 @@ const buttonVariants = cva(
 				default: 'bg-primary text-primary-foreground hover:bg-primary/90',
 				destructive:
 					'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
+				warning:
+					'bg-amber-500 text-amber-950 hover:bg-amber-500/90 focus-visible:ring-amber-500/30 dark:bg-amber-400 dark:text-amber-950',
 				outline:
 					'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
 				secondary:
@@ -38,24 +39,26 @@ const buttonVariants = cva(
 	}
 )
 
+type ButtonProps = ButtonPrimitive.Props & VariantProps<typeof buttonVariants>
+
 function Button({
 	className,
 	variant = 'default',
 	size = 'default',
-	asChild = false,
+	nativeButton,
+	render,
 	...props
-}: React.ComponentProps<'button'> &
-	VariantProps<typeof buttonVariants> & {
-		asChild?: boolean
-	}) {
-	const Comp = asChild ? Slot : 'button'
+}: ButtonProps) {
+	const resolvedNativeButton = nativeButton ?? !render
 
 	return (
-		<Comp
+		<ButtonPrimitive
 			className={cn(buttonVariants({ variant, size, className }))}
 			data-size={size}
 			data-slot='button'
 			data-variant={variant}
+			nativeButton={resolvedNativeButton}
+			render={render}
 			{...props}
 		/>
 	)

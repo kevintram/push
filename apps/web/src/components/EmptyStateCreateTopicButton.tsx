@@ -32,7 +32,7 @@ export function EmptyStateCreateTopicButton({
 
 	return (
 		<HoverCard openDelay={300}>
-			<HoverCardTrigger asChild={true}>{button}</HoverCardTrigger>
+			<HoverCardTrigger render={button} />
 			<HoverCardContent className='text-center'>
 				<p className='font-medium text-sm'>
 					Topics are anything you want to learn or remember.

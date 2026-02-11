@@ -251,24 +251,26 @@ export function ReviewItem({
 								onOpenChange={setIsDatePopoverOpen}
 								selectedDate={selectedDate}
 								trigger={
-									<TooltipTrigger asChild={true}>
-										<Button
-											className={cn(
-												'text-xs',
-												readonly
-													? 'cursor-default opacity-50'
-													: 'hover:bg-muted/50',
-												dateButtonColorClass
-											)}
-											disabled={readonly}
-											onClick={e => e.stopPropagation()}
-											size='sm'
-											variant='ghost'
-										>
-											<CalendarIcon className='h-3 w-3' />
-											{relativeDate.text}
-										</Button>
-									</TooltipTrigger>
+									<TooltipTrigger
+										render={
+											<Button
+												className={cn(
+													'text-xs',
+													readonly
+														? 'cursor-default opacity-50'
+														: 'hover:bg-muted/50',
+													dateButtonColorClass
+												)}
+												disabled={readonly}
+												onClick={e => e.stopPropagation()}
+												size='sm'
+												variant='ghost'
+											>
+												<CalendarIcon className='h-3 w-3' />
+												{relativeDate.text}
+											</Button>
+										}
+									/>
 								}
 							/>
 							<TooltipContent>
@@ -277,17 +279,19 @@ export function ReviewItem({
 						</Tooltip>
 						{!readonly && (
 							<DropdownMenu>
-								<DropdownMenuTrigger asChild={true}>
-									<Button
-										className='h-6 w-6 p-0'
-										onClick={e => e.stopPropagation()}
-										size='sm'
-										title='More options'
-										variant='ghost'
-									>
-										<MoreHorizontal className='h-3 w-3' />
-									</Button>
-								</DropdownMenuTrigger>
+								<DropdownMenuTrigger
+									render={
+										<Button
+											className='h-6 w-6 p-0'
+											onClick={e => e.stopPropagation()}
+											size='sm'
+											title='More options'
+											variant='ghost'
+										>
+											<MoreHorizontal className='h-3 w-3' />
+										</Button>
+									}
+								/>
 								<DropdownMenuContent
 									align='end'
 									avoidCollisions={true}

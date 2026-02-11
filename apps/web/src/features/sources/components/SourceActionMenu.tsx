@@ -5,7 +5,7 @@ import {
 	MoreHorizontal,
 	Trash2
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { isValidElement, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { Button } from '~/components/ui/Button'
@@ -57,6 +57,7 @@ export function SourceActionMenu({
 	hideInboxArchive = false,
 	convertOnly = false
 }: SourceActionMenuProps) {
+	const triggerElement = isValidElement(trigger) ? trigger : undefined
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const [convertToTopicOpen, setConvertToTopicOpen] = useState(false)
 	const [convertToPracticeOpen, setConvertToPracticeOpen] = useState(false)
@@ -147,17 +148,19 @@ export function SourceActionMenu({
 	return (
 		<>
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild={true}>
-					{trigger ?? (
-						<Button
-							className='h-5 w-5 p-0'
-							onClick={e => e.stopPropagation()}
-							variant='ghost'
-						>
-							<MoreHorizontal className='h-3 w-3' />
-						</Button>
-					)}
-				</DropdownMenuTrigger>
+				<DropdownMenuTrigger
+					render={
+						triggerElement ?? (
+							<Button
+								className='h-5 w-5 p-0'
+								onClick={e => e.stopPropagation()}
+								variant='ghost'
+							>
+								<MoreHorizontal className='h-3 w-3' />
+							</Button>
+						)
+					}
+				/>
 				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
 					{convertOnly ? (
 						<>

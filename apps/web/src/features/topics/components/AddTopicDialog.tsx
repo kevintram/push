@@ -324,39 +324,43 @@ export function AddTopicDialog({
 					<div className='flex flex-wrap items-center gap-2 border-t pt-4'>
 						{/* Inbox Toggle */}
 						<Tooltip>
-							<TooltipTrigger asChild={true}>
-								<span>
-									<Toggle
-										aria-label='Add to inbox'
-										onPressedChange={setInboxed}
-										pressed={inboxed}
-										size='sm'
-										variant='outline'
-									>
-										<Inbox className='h-4 w-4' />
-									</Toggle>
-								</span>
-							</TooltipTrigger>
+							<TooltipTrigger
+								render={
+									<span>
+										<Toggle
+											aria-label='Add to inbox'
+											onPressedChange={setInboxed}
+											pressed={inboxed}
+											size='sm'
+											variant='outline'
+										>
+											<Inbox className='h-4 w-4' />
+										</Toggle>
+									</span>
+								}
+							/>
 							<TooltipContent>Add to inbox</TooltipContent>
 						</Tooltip>
 
 						{/* Inherit SRS Toggle (when available) */}
 						{hasInheritFsrs && (
 							<Tooltip>
-								<TooltipTrigger asChild={true}>
-									<span>
-										<Toggle
-											aria-label='Inherit SRS state'
-											onPressedChange={setInheritFsrs}
-											pressed={inheritFsrs}
-											size='sm'
-											variant='outline'
-										>
-											<Anvil className='h-4 w-4' />
-											<span className='ml-1 text-xs'>Inherit SRS</span>
-										</Toggle>
-									</span>
-								</TooltipTrigger>
+								<TooltipTrigger
+									render={
+										<span>
+											<Toggle
+												aria-label='Inherit SRS state'
+												onPressedChange={setInheritFsrs}
+												pressed={inheritFsrs}
+												size='sm'
+												variant='outline'
+											>
+												<Anvil className='h-4 w-4' />
+												<span className='ml-1 text-xs'>Inherit SRS</span>
+											</Toggle>
+										</span>
+									}
+								/>
 								<TooltipContent>
 									Inherit SRS state from source entity
 								</TooltipContent>
@@ -375,11 +379,13 @@ export function AddTopicDialog({
 
 						{/* Reset Button */}
 						<Tooltip>
-							<TooltipTrigger asChild={true}>
-								<Button onClick={resetToggleFields} size='sm' variant='ghost'>
-									<RotateCcw className='h-4 w-4' />
-								</Button>
-							</TooltipTrigger>
+							<TooltipTrigger
+								render={
+									<Button onClick={resetToggleFields} size='sm' variant='ghost'>
+										<RotateCcw className='h-4 w-4' />
+									</Button>
+								}
+							/>
 							<TooltipContent>Reset options to defaults</TooltipContent>
 						</Tooltip>
 					</div>

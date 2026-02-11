@@ -358,16 +358,18 @@ export function ReviewDialog({
 							<div className='flex-1' />
 							<div className='flex items-center gap-2'>
 								<DropdownMenu>
-									<DropdownMenuTrigger asChild={true}>
-										<Button
-											className='h-6 w-6 p-0'
-											size='sm'
-											title='More options'
-											variant='ghost'
-										>
-											<MoreHorizontal className='h-4 w-4' />
-										</Button>
-									</DropdownMenuTrigger>
+									<DropdownMenuTrigger
+										render={
+											<Button
+												className='h-6 w-6 p-0'
+												size='sm'
+												title='More options'
+												variant='ghost'
+											>
+												<MoreHorizontal className='h-4 w-4' />
+											</Button>
+										}
+									/>
 									<DropdownMenuContent>
 										<DropdownMenuItem
 											onClick={handleDelete}

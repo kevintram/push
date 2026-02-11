@@ -11,7 +11,7 @@ import {
 } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
-import { Button } from '~/components/ui/Button'
+import { buttonVariants } from '~/components/ui/Button'
 import { Card, CardContent, CardFooter } from '~/components/ui/Card'
 import { CountBadge } from '~/components/ui/CountBadge'
 import {
@@ -35,6 +35,7 @@ import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { useEntityNavigation } from '~/hooks/useEntityNavigation'
+import { cn } from '~/lib/utils'
 import type { FreshnessTier } from '~/models/learnable.types'
 import { getFreshnessTierColor } from '~/utils/retrievability'
 
@@ -237,17 +238,16 @@ function ScheduleCard({
 							<CountBadge count={tabs.unscheduled.totalCount} />
 						</TabsTrigger>
 					</TabsList>
-					<Button
-						asChild={true}
-						className='gap-1 text-muted-foreground hover:text-primary'
-						size='sm'
-						variant='link'
+					<Link
+						className={cn(
+							buttonVariants({ size: 'sm', variant: 'link' }),
+							'gap-1 text-muted-foreground hover:text-primary'
+						)}
+						to='/logbook'
 					>
-						<Link to='/logbook'>
-							Logbook
-							<ArrowUpRight className='h-4 w-4' />
-						</Link>
-					</Button>
+						Logbook
+						<ArrowUpRight className='h-4 w-4' />
+					</Link>
 				</div>
 
 				<Card className='gap-2'>
@@ -279,17 +279,16 @@ function ScheduleCard({
 					</CardContent>
 					{activeConfig.totalCount > SCHEDULE_PREVIEW_LIMIT && (
 						<CardFooter className='justify-center pt-0'>
-							<Button
-								asChild={true}
-								className='gap-1 text-muted-foreground hover:text-primary'
-								size='sm'
-								variant='ghost'
+							<Link
+								className={cn(
+									buttonVariants({ size: 'sm', variant: 'ghost' }),
+									'gap-1 text-muted-foreground hover:text-primary'
+								)}
+								to={activeConfig.viewAllTo}
 							>
-								<Link to={activeConfig.viewAllTo}>
-									View all
-									<ArrowUpRight className='h-4 w-4' />
-								</Link>
-							</Button>
+								View all
+								<ArrowUpRight className='h-4 w-4' />
+							</Link>
 						</CardFooter>
 					)}
 				</Card>

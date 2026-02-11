@@ -38,17 +38,20 @@ export function AddEntityMenu({
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild={true} disabled={disabled || isLoading}>
-				<Button className='gap-1' size='sm' variant='secondary'>
-					{isLoading ? (
-						<Loader2 className='h-4 w-4 animate-spin' />
-					) : (
-						<Plus className='h-4 w-4' />
-					)}
-					Add
-					<ChevronDown className='h-4 w-4' />
-				</Button>
-			</DropdownMenuTrigger>
+			<DropdownMenuTrigger
+				disabled={disabled || isLoading}
+				render={
+					<Button className='gap-1' size='sm' variant='secondary'>
+						{isLoading ? (
+							<Loader2 className='h-4 w-4 animate-spin' />
+						) : (
+							<Plus className='h-4 w-4' />
+						)}
+						Add
+						<ChevronDown className='h-4 w-4' />
+					</Button>
+				}
+			/>
 			<DropdownMenuContent align='start'>
 				{singleCreateItem ? (
 					<DropdownMenuItem onClick={singleCreateItem.onSelect}>

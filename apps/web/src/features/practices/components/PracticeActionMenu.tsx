@@ -6,7 +6,7 @@ import {
 	MoreHorizontal,
 	Trash2
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { isValidElement, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { Button } from '~/components/ui/Button'
@@ -57,6 +57,7 @@ export function PracticeActionMenu({
 	hideInboxArchive = false,
 	convertOnly = false
 }: PracticeActionMenuProps) {
+	const triggerElement = isValidElement(trigger) ? trigger : undefined
 	const [convertToTopicOpen, setConvertToTopicOpen] = useState(false)
 	const [convertToSourceOpen, setConvertToSourceOpen] = useState(false)
 	const deletePracticeMutation = useDeletePractice()
@@ -144,17 +145,19 @@ export function PracticeActionMenu({
 	return (
 		<>
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild={true}>
-					{trigger ?? (
-						<Button
-							className='h-5 w-5 p-0'
-							onClick={e => e.stopPropagation()}
-							variant='ghost'
-						>
-							<MoreHorizontal className='h-3 w-3' />
-						</Button>
-					)}
-				</DropdownMenuTrigger>
+				<DropdownMenuTrigger
+					render={
+						triggerElement ?? (
+							<Button
+								className='h-5 w-5 p-0'
+								onClick={e => e.stopPropagation()}
+								variant='ghost'
+							>
+								<MoreHorizontal className='h-3 w-3' />
+							</Button>
+						)
+					}
+				/>
 				<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
 					{convertOnly ? (
 						<>
