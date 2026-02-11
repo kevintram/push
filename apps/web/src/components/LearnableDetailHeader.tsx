@@ -2,7 +2,6 @@ import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
 	Archive,
-	BookOpen,
 	Brain,
 	ChevronDown,
 	Inbox,
@@ -16,7 +15,6 @@ import { type ChangeEvent, type ReactNode, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/Button'
 import { ButtonGroup, ButtonGroupSeparator } from '~/components/ui/ButtonGroup'
-import { CountBadge } from '~/components/ui/CountBadge'
 import { Textarea } from '~/components/ui/Textarea'
 import { Toggle } from '~/components/ui/Toggle'
 import {
@@ -63,6 +61,7 @@ interface LearnableDetailHeaderProps {
 	onInboxToggle: () => void
 	isUpdating: boolean
 	readonly?: boolean
+	renderTypeChangeMenu?: (trigger: ReactNode) => ReactNode
 	renderActionMenu: (trigger: ReactNode) => ReactNode
 }
 
@@ -119,6 +118,7 @@ export function LearnableDetailHeader({
 	onInboxToggle,
 	isUpdating,
 	readonly = false,
+	renderTypeChangeMenu,
 	renderActionMenu
 }: LearnableDetailHeaderProps) {
 	const navigate = useNavigate()
@@ -131,10 +131,6 @@ export function LearnableDetailHeader({
 	const { openReviewDialog } = useReviewDialog()
 	const isCreatingReview = createReviewMutation.isPending
 
-	const plannedCount = useMemo(
-		() => reviews.filter(review => !review.completed_at).length,
-		[reviews]
-	)
 
 	const latestCompletedReview = useMemo(
 		() => getLatestCompletedReview(reviews),
@@ -250,11 +246,24 @@ export function LearnableDetailHeader({
 		</Button>
 	)
 
+	const typeMenuTrigger = (
+		<Button
+			className='-ml-2 h-7 rounded-md px-2 font-semibold text-muted-foreground text-sm'
+			disabled={readonly}
+			size='sm'
+			variant='ghost'
+		>
+			<span>{entityLabel}</span>
+		</Button>
+	)
+
 	return (
 		<div>
 			{/* Entity Type */}
 			<div className='flex flex-wrap gap-x-1 font-semibold text-muted-foreground text-sm'>
-				<span>{entityLabel}</span>
+				{renderTypeChangeMenu
+					? renderTypeChangeMenu(typeMenuTrigger)
+					: <span>{entityLabel}</span>}
 			</div>
 
 			{/* Title row */}
@@ -382,41 +391,14 @@ export function LearnableDetailHeader({
 						/>
 					</Button>
 					<ButtonGroup>
-						{plannedCount > 0 ? (
-							<Tooltip>
-								<TooltipTrigger asChild={true}>
-									<Button
-										className='rounded-full'
-										disabled={readonly}
-										onClick={handleNavigateToReviews}
-										size='sm'
-									>
-										<BookOpen className='h-4 w-4' />
-										<span>Reviews</span>
-										{plannedCount > 0 && (
-											<CountBadge
-												className='bg-primary-foreground/15 text-primary-foreground'
-												count={plannedCount}
-											/>
-										)}
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent>
-									{plannedCount} uncompleted{' '}
-									{plannedCount === 1 ? 'review' : 'reviews'}
-								</TooltipContent>
-							</Tooltip>
-						) : (
-							<Button
-								className='rounded-full'
-								disabled={readonly}
-								onClick={handleNavigateToReviews}
-								size='sm'
-							>
-								<BookOpen className='h-4 w-4' />
-								<span>Reviews</span>
-							</Button>
-						)}
+						<Button
+						className='rounded-full'
+						disabled={readonly}
+						onClick={handleNavigateToReviews}
+						size='sm'
+					>
+						<span>Reviews</span>
+					</Button>
 						<ButtonGroupSeparator />
 						<RatingDropdown
 							align='end'
