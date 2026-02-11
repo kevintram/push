@@ -377,6 +377,22 @@ async def get_topic_children(
     return list(result.scalars().all())
 
 
+async def get_topic_sources(
+    session: AsyncSession, topic_id: int, user_id: str
+) -> list[Source]:
+    """Get all sources that cover a topic."""
+    await get_topic(session, topic_id, user_id)
+
+    stmt = (
+        select(Source)
+        .join(t_source_topics, Source.id == t_source_topics.c.source_id)
+        .where(t_source_topics.c.topic_id == topic_id, Source.user_id == user_id)
+        .options(selectinload(Source.fsrs_state))
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
+
+
 async def add_child(
     session: AsyncSession,
     user_id: str,

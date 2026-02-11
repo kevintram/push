@@ -4,11 +4,13 @@ import {
 	type ReactNode,
 	use,
 	useCallback,
+	useEffect,
 	useMemo,
 	useRef,
 	useState
 } from 'react'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
+import { DetailTabsShell } from '~/components/DetailTabs'
 import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
 import {
 	DropdownMenu,
@@ -157,6 +159,37 @@ function SourceTypeChangeMenu({
 	)
 }
 
+export type SourceDetailTab =
+	| 'children'
+	| 'practice'
+	| 'topics'
+	| 'prerequisites'
+	| 'related'
+
+const DEFAULT_SOURCE_DETAIL_TAB: SourceDetailTab = 'children'
+
+function isSourceDetailTab(value: string): value is SourceDetailTab {
+	return (
+		value === 'children' ||
+		value === 'practice' ||
+		value === 'topics' ||
+		value === 'prerequisites' ||
+		value === 'related'
+	)
+}
+
+function buildRequestedSourceTabs(
+	activeTab: SourceDetailTab
+): Record<SourceDetailTab, boolean> {
+	return {
+		children: activeTab === 'children',
+		practice: activeTab === 'practice',
+		topics: activeTab === 'topics',
+		prerequisites: activeTab === 'prerequisites',
+		related: activeTab === 'related'
+	}
+}
+
 interface SourceDetailProps {
 	/**
 	 * The source to display. If not provided, reads from SourceContext.
@@ -221,6 +254,14 @@ interface SourceDetailProps {
 	 * Optional className to apply to the scroll container
 	 */
 	className?: string
+	/**
+	 * Controlled active tab. Defaults to internal state when omitted.
+	 */
+	activeTab?: SourceDetailTab
+	/**
+	 * Called when tab selection changes.
+	 */
+	onTabChange?: (tab: SourceDetailTab) => void
 }
 
 export function SourceDetail({
@@ -236,7 +277,9 @@ export function SourceDetail({
 	onPracticeNavigate,
 	renderChildCard,
 	renderTopicCard,
-	className
+	className,
+	activeTab: activeTabProp,
+	onTabChange
 }: SourceDetailProps) {
 	// Get source from context if not provided via props
 	const contextValue = use(SourceContext)
@@ -320,6 +363,52 @@ export function SourceDetail({
 
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
+	const isTabControlled = activeTabProp !== undefined
+	const [uncontrolledActiveTab, setUncontrolledActiveTab] =
+		useState<SourceDetailTab>(DEFAULT_SOURCE_DETAIL_TAB)
+	const activeTab = activeTabProp ?? uncontrolledActiveTab
+	const [requestedTabs, setRequestedTabs] = useState<
+		Record<SourceDetailTab, boolean>
+	>(() => buildRequestedSourceTabs(activeTab))
+	const [relatedCount, setRelatedCount] = useState<number | null>(null)
+	const handleTabChange = useCallback(
+		(value: string) => {
+			if (!isSourceDetailTab(value)) {
+				return
+			}
+			if (!isTabControlled) {
+				setUncontrolledActiveTab(value)
+			}
+			onTabChange?.(value)
+			setRequestedTabs(previous => {
+				if (previous[value]) return previous
+				return { ...previous, [value]: true }
+			})
+		},
+		[isTabControlled, onTabChange]
+	)
+	useEffect(() => {
+		const initialTab = isTabControlled
+			? (activeTabProp ?? DEFAULT_SOURCE_DETAIL_TAB)
+			: DEFAULT_SOURCE_DETAIL_TAB
+		if (!isTabControlled) {
+			setUncontrolledActiveTab(DEFAULT_SOURCE_DETAIL_TAB)
+		}
+		setRequestedTabs(buildRequestedSourceTabs(initialTab))
+	}, [source?.id, isTabControlled, activeTabProp])
+	useEffect(() => {
+		setRelatedCount(null)
+	}, [source?.id])
+	useEffect(() => {
+		setRequestedTabs(previous => {
+			if (previous[activeTab]) return previous
+			return { ...previous, [activeTab]: true }
+		})
+	}, [activeTab])
+	const displayedRelatedCount =
+		relatedCount ??
+		(source?.related_incoming_count ?? 0) +
+			(source?.related_outgoing_count ?? 0)
 
 	const srsSource = useFsrsState(source)
 
@@ -383,53 +472,83 @@ export function SourceDetail({
 							placeholder='Notes'
 							value={notes}
 						/>
-						<div className='mt-4'>
-							<SourceChildrenPanel
-								children={source.children}
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onChildSelect={onSourceNavigate}
-								renderCard={renderChildCard}
-								sourceId={source.id}
-							/>
-						</div>
-						<div className='mt-4'>
-							<SourceTopicsPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onTopicSelect={onTopicNavigate}
-								renderCard={renderTopicCard}
-								sourceId={source.id}
-								topics={source.topics}
-							/>
-						</div>
-						<div className='mt-4'>
-							<SourcePracticesPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onPracticeSelect={onPracticeNavigate}
-								practices={source.practices}
-								sourceId={source.id}
-							/>
-						</div>
-						<div className='mt-4'>
-							<SourcePrerequisitesPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onSourceNavigate={onSourceNavigate}
-								onTopicNavigate={onTopicNavigate}
-								sourceId={source.id}
-							/>
-						</div>
-						<div className='mt-4'>
-							<SourceRelatedPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onSourceNavigate={onSourceNavigate}
-								onTopicNavigate={onTopicNavigate}
-								relatedIncoming={source.related_incoming}
-								relatedOutgoing={source.related_outgoing}
-								sourceId={source.id}
+						<div className='mt-6'>
+							<DetailTabsShell
+								defaultValue='children'
+								onValueChange={handleTabChange}
+								tabs={[
+									{
+										value: 'children',
+										label: 'Children',
+										count: source.children_count ?? 0,
+										content: requestedTabs.children ? (
+											<SourceChildrenPanel
+												getScrollElement={getScrollElement}
+												inheritFsrsState={srsSource}
+												onChildSelect={onSourceNavigate}
+												renderCard={renderChildCard}
+												sourceId={source.id}
+											/>
+										) : null
+									},
+									{
+										value: 'practice',
+										label: 'Practice',
+										count: source.practices_count ?? 0,
+										content: requestedTabs.practice ? (
+											<SourcePracticesPanel
+												getScrollElement={getScrollElement}
+												inheritFsrsState={srsSource}
+												onPracticeSelect={onPracticeNavigate}
+												sourceId={source.id}
+											/>
+										) : null
+									},
+									{
+										value: 'topics',
+										label: 'Topics covered',
+										count: source.topics_count ?? 0,
+										content: requestedTabs.topics ? (
+											<SourceTopicsPanel
+												getScrollElement={getScrollElement}
+												inheritFsrsState={srsSource}
+												onTopicSelect={onTopicNavigate}
+												renderCard={renderTopicCard}
+												sourceId={source.id}
+											/>
+										) : null
+									},
+									{
+										value: 'prerequisites',
+										label: 'Prerequisites',
+										count: source.prerequisites_count ?? 0,
+										content: requestedTabs.prerequisites ? (
+											<SourcePrerequisitesPanel
+												getScrollElement={getScrollElement}
+												inheritFsrsState={srsSource}
+												onSourceNavigate={onSourceNavigate}
+												onTopicNavigate={onTopicNavigate}
+												sourceId={source.id}
+											/>
+										) : null
+									},
+									{
+										value: 'related',
+										label: 'See also',
+										count: displayedRelatedCount,
+										content: requestedTabs.related ? (
+											<SourceRelatedPanel
+												getScrollElement={getScrollElement}
+												inheritFsrsState={srsSource}
+												onCountChange={setRelatedCount}
+												onSourceNavigate={onSourceNavigate}
+												onTopicNavigate={onTopicNavigate}
+												sourceId={source.id}
+											/>
+										) : null
+									}
+								]}
+								value={activeTab}
 							/>
 						</div>
 					</div>

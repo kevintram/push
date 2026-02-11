@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { BookOpen } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
-import { LearnablePanel } from '~/components/LearnablePanel'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
@@ -11,9 +11,11 @@ import { TopicCard } from '~/features/topics/components/TopicCard'
 import type { Topic } from '~/features/topics/types/topic.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceTopic } from '../api/addSourceTopic'
+import { useSourceTopics } from '../api/getSourceTopics'
 import { sourceKeys } from '../api/queryKeys'
 import { useRemoveSourceTopic } from '../api/removeSourceTopic'
 
+const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 interface SourceTopicsPanelProps {
@@ -35,9 +37,6 @@ interface SourceTopicsPanelProps {
 	inheritFsrsState?: FsrsState | null
 	/**
 	 * Custom card renderer. If not provided, uses default TopicCard.
-	 * @param topic - The topic to render
-	 * @param onRemove - Callback to remove the relationship
-	 * @param onClick - Callback when the card is clicked
 	 */
 	renderCard?: (
 		topic: Topic,
@@ -59,8 +58,12 @@ export function SourceTopicsPanel({
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
-	// Use prop directly - topics comes from the single getSource fetch
-	const topics = topicsProp ?? []
+	const topicsQuery = useSourceTopics(sourceId, {
+		enabled: topicsProp === undefined
+	})
+	const topics = topicsProp ?? topicsQuery.data ?? []
+	const isLoading = topicsProp === undefined && topicsQuery.isPending
+	const isError = topicsProp === undefined && topicsQuery.isError
 
 	const addSourceTopic = useAddSourceTopic()
 	const removeSourceTopic = useRemoveSourceTopic()
@@ -120,12 +123,10 @@ export function SourceTopicsPanel({
 				onTopicSelect?.(topic.id)
 			}
 
-			// Use custom renderer if provided
 			if (renderCard) {
 				return renderCard(topic, handleRemoveRelationship, handleClick)
 			}
 
-			// Default card rendering
 			return (
 				<TopicCard
 					headerRight={
@@ -151,21 +152,50 @@ export function SourceTopicsPanel({
 		]
 	)
 
-	const getItemKey = useCallback((topic: Topic) => topic.id, [])
+	const getItemKey = useCallback((topic: Topic, _index: number) => {
+		return topic.id
+	}, [])
 
-	const actions = (
-		<>
-			<AddEntityMenu
-				createItems={[
-					{
-						label: 'Create Topic',
-						onSelect: () => setShowCreateDialog(true)
-					}
-				]}
-				isLoading={isAdding}
-				onSearch={() => setShowSearchDialog(true)}
-				searchLabel='Search Topics'
-			/>
+	return (
+		<div className='flex flex-col gap-4'>
+			<div className='flex justify-end'>
+				<AddEntityMenu
+					createItems={[
+						{
+							label: 'Create Topic',
+							onSelect: () => setShowCreateDialog(true)
+						}
+					]}
+					isLoading={isAdding}
+					onSearch={() => setShowSearchDialog(true)}
+					searchLabel='Search Topics'
+				/>
+			</div>
+
+			<DetailTabPanelState
+				emptyMessage='No related topics'
+				error={topicsQuery.error}
+				isEmpty={topics.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					topicsProp === undefined && topicsQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void topicsQuery.refetch()
+				}}
+			>
+				<MasonryLayout
+					estimateItemSize={estimateItemSize}
+					gap={16}
+					getItemKey={getItemKey}
+					getScrollElement={getScrollElement}
+					items={topics}
+					minItemWidth={MIN_WIDTH}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			</DetailTabPanelState>
 
 			<EntitySearchDialog
 				defaultType='topic'
@@ -187,20 +217,6 @@ export function SourceTopicsPanel({
 					relationship={{ kind: 'source', sourceId }}
 				/>
 			)}
-		</>
-	)
-
-	return (
-		<LearnablePanel
-			actions={actions}
-			estimateItemSize={estimateItemSize}
-			getItemKey={getItemKey}
-			getScrollElement={getScrollElement}
-			icon={BookOpen}
-			items={topics}
-			label='Topics covered'
-			renderItem={renderItem}
-			scrollMargin={scrollMargin}
-		/>
+		</div>
 	)
 }

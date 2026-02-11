@@ -7,6 +7,7 @@ import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { useTopicDialog } from '~/features/dialogs/hooks/useTopicDialog'
 import { useSetTopicParent } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
+import { useTopicWithRelationships } from '../api/getTopic'
 import type { Topic } from '../types/topic.types'
 import { prefetchTopicRelations } from '../utils/prefetchTopicRelations'
 import { AddTopicDialog } from './AddTopicDialog'
@@ -19,6 +20,7 @@ interface TopicParentsPanelProps {
 	 * When provided, the panel uses this directly instead of making a separate API call.
 	 */
 	parent?: Topic | null
+	parentId?: number | null
 	/**
 	 * Called when a parent is selected/clicked.
 	 * If not provided, defaults to opening the topic dialog.
@@ -29,6 +31,7 @@ interface TopicParentsPanelProps {
 export function TopicParentsPanel({
 	topicId,
 	parent: parentProp,
+	parentId,
 	onParentSelect
 }: TopicParentsPanelProps) {
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
@@ -36,9 +39,11 @@ export function TopicParentsPanel({
 	const { openTopicDialog } = useTopicDialog()
 	const queryClient = useQueryClient()
 
-	// Use prop directly - parent comes from the single getTopic fetch
-	const parent = parentProp ?? null
-	const hasParent = parent !== null
+	const { topic: fetchedParent } = useTopicWithRelationships(
+		parentId ?? undefined
+	)
+	const parent = parentProp !== undefined ? parentProp : fetchedParent
+	const hasParent = parent != null
 
 	const deleteRelationship = useDeleteRelationship()
 	const setParent = useSetTopicParent()

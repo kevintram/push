@@ -35,7 +35,7 @@ export function useRemoveSourceEntityRelation() {
 		}) => removeSourceEntityRelation(sourceId, entityType, entityId),
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
-				queryKey: sourceKeys.detail(variables.sourceId)
+				queryKey: sourceKeys.byId(variables.sourceId)
 			})
 		}
 	})

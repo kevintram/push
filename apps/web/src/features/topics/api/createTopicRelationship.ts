@@ -123,10 +123,10 @@ export function useCreateRelationship() {
 			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
 			await Promise.all([
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.detail(parentId)
+					queryKey: topicKeys.byId(parentId)
 				}),
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.detail(childId)
+					queryKey: topicKeys.byId(childId)
 				})
 			])
 		}
@@ -145,10 +145,10 @@ export function useSetTopicParent() {
 
 			await Promise.all([
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.detail(parentId)
+					queryKey: topicKeys.byId(parentId)
 				}),
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.detail(childId)
+					queryKey: topicKeys.byId(childId)
 				})
 			])
 		}

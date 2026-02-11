@@ -1,18 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Baby, ChevronDown } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
-import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
-import { useTopicDialog } from '~/features/dialogs/hooks/useTopicDialog'
 import type { FsrsState } from '~/models/learnable.types'
 import { useCreateRelationship } from '../api/createTopicRelationship'
 import { useDeleteRelationship } from '../api/deleteTopicRelationship'
+import { useTopicChildren } from '../api/getTopicChildren'
 import { topicKeys } from '../api/queryKeys'
 import type { Topic } from '../types/topic.types'
 import { AddTopicDialog } from './AddTopicDialog'
@@ -67,27 +64,24 @@ export function TopicChildrenPanel({
 	const queryClient = useQueryClient()
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
-	const [isCollapsed, setIsCollapsed] = useState(false)
-	const { openTopicDialog } = useTopicDialog()
 
-	// Use prop directly - children comes from the single getTopic fetch
-	const children = childrenProp ?? []
+	const childrenQuery = useTopicChildren(topicId, {
+		enabled: childrenProp === undefined
+	})
+	const children = childrenProp ?? childrenQuery.data ?? []
+	const isLoading = childrenProp === undefined && childrenQuery.isPending
+	const isError = childrenProp === undefined && childrenQuery.isError
 
 	const deleteRelationship = useDeleteRelationship()
 	const createRelationship = useCreateRelationship()
 
 	const isCreating = createRelationship.isPending
 
-	// Determine navigation behavior
 	const handleChildSelect = useCallback(
 		(childTopicId: number) => {
-			if (onChildSelect) {
-				onChildSelect(childTopicId)
-			} else {
-				openTopicDialog(childTopicId)
-			}
+			onChildSelect?.(childTopicId)
 		},
-		[onChildSelect, openTopicDialog]
+		[onChildSelect]
 	)
 
 	const handleAddTopic = useCallback(
@@ -119,7 +113,6 @@ export function TopicChildrenPanel({
 		[queryClient, topicId]
 	)
 
-	// Map children into array
 	const items = useMemo<Array<ListItem>>(
 		() => children.map(child => ({ type: 'child' as const, child })),
 		[children]
@@ -145,12 +138,10 @@ export function TopicChildrenPanel({
 				handleChildSelect(item.child.id)
 			}
 
-			// Use custom renderer if provided
 			if (renderCard) {
 				return renderCard(item.child, handleRemoveRelationship, handleClick)
 			}
 
-			// Default card rendering
 			return (
 				<TopicCard
 					headerRight={
@@ -181,9 +172,9 @@ export function TopicChildrenPanel({
 	}, [])
 
 	return (
-		<div className='flex flex-col'>
-			<TopicPanelHeader
-				actions={
+		<div className='flex flex-col gap-4'>
+			{topicId && (
+				<div className='flex justify-end'>
 					<AddEntityMenu
 						createItems={[
 							{
@@ -195,38 +186,33 @@ export function TopicChildrenPanel({
 						onSearch={() => setShowSearchDialog(true)}
 						searchLabel='Search Topics'
 					/>
-				}
-				label={
-					<Button
-						className='flex items-center gap-2 p-0'
-						onClick={() => setIsCollapsed(!isCollapsed)}
-						variant='ghost'
-					>
-						<Baby className='h-4 w-4' />
-						<span className='font-medium text-muted-foreground text-sm'>
-							Child topics
-						</span>
-						<CountBadge count={children.length} />
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
-					</Button>
-				}
-			/>
-			{!isCollapsed && (
-				<div className='flex-1 py-6'>
-					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						gap={16}
-						getItemKey={getItemKey}
-						getScrollElement={getScrollElement}
-						items={items}
-						minItemWidth={MIN_WIDTH}
-						renderItem={renderItem}
-						scrollMargin={scrollMargin}
-					/>
 				</div>
 			)}
+
+			<DetailTabPanelState
+				emptyMessage='No child topics'
+				error={childrenQuery.error}
+				isEmpty={items.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					childrenProp === undefined && childrenQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void childrenQuery.refetch()
+				}}
+			>
+				<MasonryLayout
+					estimateItemSize={estimateItemSize}
+					gap={16}
+					getItemKey={getItemKey}
+					getScrollElement={getScrollElement}
+					items={items}
+					minItemWidth={MIN_WIDTH}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			</DetailTabPanelState>
 
 			{topicId && (
 				<EntitySearchDialog

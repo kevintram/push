@@ -10,10 +10,12 @@ from app.dependencies import SessionDep
 from app.schemas import (
     ConvertToPracticeResponse,
     ConvertToSourceResponse,
+    EntityRelationsRead,
     EntityRelationCreate,
     PracticeSummaryRead,
     RelationshipDirection,
     SourceTopicResponse,
+    SourceSummaryRead,
     TopicChildRelationshipCreate,
     TopicCreate,
     TopicDetailRead,
@@ -84,19 +86,10 @@ async def read_topics(
 @router.get("/{topic_id}/")
 async def read_topic(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> TopicDetailRead:
-    topic = await service.load_topic_with_relationships(session, topic_id, user_id)
-
-    # Fetch related entities (topics AND sources) and add them to the response
-    outgoing, incoming = await service.get_topic_related_entities(
-        session, topic_id, user_id
+) -> TopicSummaryRead:
+    return TopicSummaryRead.model_validate(
+        await service.get_topic(session, topic_id, user_id)
     )
-
-    topic_data = TopicDetailRead.model_validate(topic).model_dump()
-    topic_data["related_outgoing"] = outgoing
-    topic_data["related_incoming"] = incoming
-
-    return TopicDetailRead(**topic_data)
 
 
 @router.get("/{topic_id}/children/")
@@ -104,6 +97,23 @@ async def read_topic_children(
     session: SessionDep, user_id: UserIdDep, topic_id: int
 ) -> list[TopicSummaryRead]:
     return await service.get_topic_children(session, topic_id, user_id)
+
+
+@router.get("/{topic_id}/sources/")
+async def read_topic_sources(
+    session: SessionDep, user_id: UserIdDep, topic_id: int
+) -> list[SourceSummaryRead]:
+    return await service.get_topic_sources(session, topic_id, user_id)
+
+
+@router.get("/{topic_id}/entity-relations/")
+async def read_topic_entity_relations(
+    session: SessionDep, user_id: UserIdDep, topic_id: int
+) -> EntityRelationsRead:
+    outgoing, incoming = await service.get_topic_related_entities(
+        session, topic_id, user_id
+    )
+    return EntityRelationsRead(outgoing=outgoing, incoming=incoming)
 
 
 @router.get("/{topic_id}/related/")

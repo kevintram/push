@@ -16,10 +16,33 @@ export function TopicDetailSkeleton() {
 						</div>
 					</div>
 				</div>
-				<div className='min-h-0 flex-1 px-6 py-4'>
-					<div className='pb-4'>
-						<Skeleton className='mb-1 h-12 w-full max-w-xl' />
-						<Skeleton className='h-24 w-full max-w-2xl' />
+				<div className='w-full px-6 py-4'>
+					{/* Title skeleton */}
+					<Skeleton className='h-8 w-3/4' />
+					{/* Properties + notes skeleton */}
+					<div className='mt-2 flex flex-col gap-1'>
+						<div className='flex gap-2'>
+							<Skeleton className='h-4 w-20' />
+							<Skeleton className='h-4 w-20' />
+							<Skeleton className='h-4 w-20' />
+						</div>
+						<Skeleton className='h-12 w-full' />
+					</div>
+					{/* Tab bar skeleton */}
+					<div className='mt-6'>
+						<div className='w-full border-border border-b'>
+							<div className='flex gap-0 p-0'>
+								<Skeleton className='h-10 w-20 rounded-none' />
+								<Skeleton className='h-10 w-20 rounded-none' />
+								<Skeleton className='h-10 w-20 rounded-none' />
+								<Skeleton className='h-10 w-20 rounded-none' />
+							</div>
+						</div>
+						{/* Tab content skeleton */}
+						<div className='mt-4 grid gap-4'>
+							<Skeleton className='h-24 w-full' />
+							<Skeleton className='h-24 w-full' />
+						</div>
 					</div>
 				</div>
 			</div>

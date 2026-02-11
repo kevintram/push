@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import { TopicSchema } from '../types/topic.schemas'
-import type { Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 export async function getTopic(topicId: number) {
@@ -29,24 +27,12 @@ export async function getTopic(topicId: number) {
 	}
 }
 
-/**
- * Hook to fetch a topic with its direct parents and children (depth = 1 only)
- */
 export function useTopicWithRelationships(topicId: number | undefined) {
-	const { data: topicData, isLoading } = useQuery({
+	const { data: topic, isLoading } = useQuery({
 		queryKey: topicKeys.detail(topicId!),
 		queryFn: () => getTopic(topicId!),
 		enabled: topicId !== undefined
 	})
-
-	const topic: Topic | undefined = useMemo(() => {
-		if (!topicData) return
-
-		return {
-			...topicData,
-			children: topicData.children ?? []
-		}
-	}, [topicData])
 
 	return { topic, isLoading }
 }

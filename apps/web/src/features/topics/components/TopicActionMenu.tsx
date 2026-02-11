@@ -22,6 +22,7 @@ import {
 import { useConvertTopicToPractice } from '~/features/topics/api/convertTopicToPractice'
 import { useConvertTopicToSource } from '~/features/topics/api/convertTopicToSource'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
+import { useTopicChildren } from '~/features/topics/api/getTopicChildren'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { DeleteTopicDialog } from '~/features/topics/components/DeleteTopicDialog'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -71,10 +72,34 @@ export function TopicActionMenu({
 	const updateTopicMutation = useUpdateTopic(onTopicUpdateSuccess)
 	const convertToSourceMutation = useConvertTopicToSource()
 	const convertToPracticeMutation = useConvertTopicToPractice()
+	const topicChildrenQuery = useTopicChildren(topic.id, {
+		enabled: convertToSourceOpen
+	})
 
 	const hasChildren = (topic.children_count ?? 0) > 0
 
-	const toSourcePreview = useMemo(() => getTopicToSourcePreview(topic), [topic])
+	const toSourcePreview = useMemo(() => {
+		const preview = getTopicToSourcePreview(topic, {
+			childTopics: topicChildrenQuery.data
+		})
+		const isCheckingChildCoverage =
+			convertToSourceOpen &&
+			(topic.children_count ?? 0) > 0 &&
+			topicChildrenQuery.isPending
+		if (!isCheckingChildCoverage) return preview
+		return {
+			...preview,
+			blockers: [
+				...preview.blockers,
+				'Checking child topics for covering sources'
+			]
+		}
+	}, [
+		topic,
+		topicChildrenQuery.data,
+		topicChildrenQuery.isPending,
+		convertToSourceOpen
+	])
 	const toPracticePreview = useMemo(
 		() => getTopicToPracticePreview(topic),
 		[topic]

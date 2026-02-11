@@ -3,12 +3,16 @@ import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
-import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
+import {
+	TopicDetail,
+	type TopicDetailTab
+} from '~/features/topics/components/TopicDetail/TopicDetail'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
 import { useConversionNavigate } from '~/hooks/useConversionNavigate'
 
 interface TopicDetailPageProps {
 	topicId: string
+	activeTab?: TopicDetailTab
 }
 
 function BrowserNavigationButtons() {
@@ -27,7 +31,10 @@ function BrowserNavigationButtons() {
 	)
 }
 
-export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
+export function TopicDetailPage({
+	topicId,
+	activeTab = 'children'
+}: TopicDetailPageProps) {
 	const navigate = useNavigate()
 	const router = useRouter()
 	const handleConvertSuccess = useConversionNavigate()
@@ -70,6 +77,42 @@ export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
 		[navigate]
 	)
 
+	const handleTabChange = useCallback(
+		(nextTab: TopicDetailTab) => {
+			if (nextTab === activeTab) return
+			if (nextTab === 'children') {
+				navigate({
+					replace: true,
+					to: '/topics/$topicId',
+					params: { topicId }
+				})
+				return
+			}
+			if (nextTab === 'practice') {
+				navigate({
+					replace: true,
+					to: '/topics/$topicId/practice',
+					params: { topicId }
+				})
+				return
+			}
+			if (nextTab === 'sources') {
+				navigate({
+					replace: true,
+					to: '/topics/$topicId/sources',
+					params: { topicId }
+				})
+				return
+			}
+			navigate({
+				replace: true,
+				to: '/topics/$topicId/related',
+				params: { topicId }
+			})
+		},
+		[activeTab, navigate, topicId]
+	)
+
 	const contextValue = useMemo(
 		() => ({
 			topic,
@@ -81,12 +124,14 @@ export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
 	return (
 		<TopicContext value={contextValue}>
 			<TopicDetail
+				activeTab={activeTab}
 				className='mx-auto max-w-5xl'
 				headerBeforeActions={<BrowserNavigationButtons />}
 				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}
 				onPracticeNavigate={handlePracticeNavigate}
 				onSourceNavigate={handleSourceNavigate}
+				onTabChange={handleTabChange}
 				onTopicNavigate={handleTopicNavigate}
 			/>
 		</TopicContext>

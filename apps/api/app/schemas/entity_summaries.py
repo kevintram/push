@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal, Union
 
-from pydantic import ConfigDict, Discriminator
+from pydantic import BaseModel, ConfigDict, Discriminator, Field
 
 from app.schemas.sources import SourceSummaryRead
 from app.schemas.topics import TopicSummaryRead
@@ -35,3 +35,10 @@ EntitySummaryRead = Annotated[
     Union[TopicEntitySummary, SourceEntitySummary],
     Discriminator("entity_type"),
 ]
+
+
+class EntityRelationsRead(BaseModel):
+    """Outgoing and incoming entity summaries for relation tabs."""
+
+    outgoing: list[EntitySummaryRead] = Field(default_factory=list)
+    incoming: list[EntitySummaryRead] = Field(default_factory=list)

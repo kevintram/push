@@ -1,30 +1,32 @@
-import { ChevronDown, Link } from 'lucide-react'
 import {
 	useCallback,
+	useEffect,
 	useInsertionEffect,
 	useMemo,
 	useRef,
 	useState
 } from 'react'
 import { toast } from 'sonner'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import {
 	EntityCard,
 	type EntityItem,
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
-import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
-import { useTopicDialog } from '~/features/dialogs/hooks/useTopicDialog'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { EntityType } from '~/models/entity-relations.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddTopicEntityRelation } from '../api/addTopicEntityRelation'
+import { useTopicEntityRelations } from '../api/getTopicEntityRelations'
 import { useRemoveTopicEntityRelation } from '../api/removeTopicEntityRelation'
 import type { RelatedEntityItem } from '../types/topic.types'
 import { AddTopicDialog } from './AddTopicDialog'
@@ -37,6 +39,7 @@ interface TopicRelatedPanelProps {
 	 * When provided, the panel uses this directly instead of making a separate API call.
 	 */
 	related?: Array<RelatedEntityItem>
+	onCountChange?: (count: number) => void
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	/**
@@ -58,6 +61,7 @@ interface TopicRelatedPanelProps {
 export function TopicRelatedPanel({
 	topicId,
 	related: relatedProp,
+	onCountChange,
 	inheritFsrsState,
 	getScrollElement,
 	scrollMargin,
@@ -67,18 +71,37 @@ export function TopicRelatedPanel({
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showAddTopicDialog, setShowAddTopicDialog] = useState(false)
 	const [showAddSourceDialog, setShowAddSourceDialog] = useState(false)
-	const [isCollapsed, setIsCollapsed] = useState(false)
-	const { openTopicDialog } = useTopicDialog()
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 
-	// Use prop directly - related comes from the single getTopic fetch (merged incoming + outgoing)
-	const related = relatedProp ?? []
+	const relatedQuery = useTopicEntityRelations(topicId, {
+		enabled: relatedProp === undefined
+	})
+
+	const related = useMemo(() => {
+		if (relatedProp) return relatedProp
+		const fromQuery = [
+			...(relatedQuery.data?.outgoing ?? []),
+			...(relatedQuery.data?.incoming ?? [])
+		]
+		const seen = new Set<string>()
+		return fromQuery.filter(entity => {
+			const key = `${entity.entity_type}-${entity.id}`
+			if (seen.has(key)) return false
+			seen.add(key)
+			return true
+		})
+	}, [relatedProp, relatedQuery.data])
+	useEffect(() => {
+		onCountChange?.(related.length)
+	}, [related.length, onCountChange])
+	const isLoading = relatedProp === undefined && relatedQuery.isPending
+	const isError = relatedProp === undefined && relatedQuery.isError
 
 	const addRelation = useAddTopicEntityRelation()
 	const removeRelation = useRemoveTopicEntityRelation()
 
 	const isCreating = addRelation.isPending
 
-	// Convert RelatedEntityItem to EntityItem for EntityCard/MasonryLayout
 	const entityItems = useMemo<Array<EntityItem>>(() => {
 		return related.map((item): EntityItem => {
 			if (item.entity_type === 'topic') {
@@ -88,29 +111,25 @@ export function TopicRelatedPanel({
 		})
 	}, [related])
 
-	// Handle navigation for topics
+	const filteredEntityItems = useMemo(() => {
+		if (activeFilter === 'all') return entityItems
+		return entityItems.filter(entity => entity.type === activeFilter)
+	}, [activeFilter, entityItems])
+
 	const handleRelatedSelect = useCallback(
 		(relatedTopicId: number) => {
-			if (onRelatedSelect) {
-				onRelatedSelect(relatedTopicId)
-			} else {
-				openTopicDialog(relatedTopicId)
-			}
+			onRelatedSelect?.(relatedTopicId)
 		},
-		[onRelatedSelect, openTopicDialog]
+		[onRelatedSelect]
 	)
 
-	// Handle navigation for sources
 	const handleSourceSelect = useCallback(
 		(sourceId: number) => {
-			if (onSourceSelect) {
-				onSourceSelect(sourceId)
-			}
+			onSourceSelect?.(sourceId)
 		},
 		[onSourceSelect]
 	)
 
-	// Handle adding a topic relation (from AddRelationshipDialog which only searches topics)
 	const handleAddTopic = useCallback(
 		async (topic: { id: number }) => {
 			if (!topicId) return
@@ -215,62 +234,54 @@ export function TopicRelatedPanel({
 	)
 
 	return (
-		<div className='flex flex-col'>
-			<TopicPanelHeader
-				actions={
-					<AddEntityMenu
-						createItems={[
-							{
-								label: 'Create Topic',
-								onSelect: () => setShowAddTopicDialog(true)
-							},
-							{
-								label: 'Create Source',
-								onSelect: () => setShowAddSourceDialog(true)
-							}
-						]}
-						isLoading={isCreating}
-						onSearch={() => setShowSearchDialog(true)}
-						searchLabel='Search'
-					/>
+		<div className='flex flex-col gap-4'>
+			<div className='flex items-center justify-between gap-2'>
+				<EntityTypeFilter
+					activeFilter={activeFilter}
+					allowedTypes={['topic', 'source']}
+					onFilterChange={setActiveFilter}
+				/>
+				<AddEntityMenu
+					createItems={[
+						{
+							label: 'Create Topic',
+							onSelect: () => setShowAddTopicDialog(true)
+						},
+						{
+							label: 'Create Source',
+							onSelect: () => setShowAddSourceDialog(true)
+						}
+					]}
+					isLoading={isCreating}
+					onSearch={() => setShowSearchDialog(true)}
+					searchLabel='Search'
+				/>
+			</div>
+
+			<DetailTabPanelState
+				emptyMessage='No related items'
+				error={relatedQuery.error}
+				isEmpty={filteredEntityItems.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					relatedProp === undefined && relatedQuery.isFetching && !isLoading
 				}
-				label={
-					<Button
-						className='flex items-center gap-2 p-0'
-						onClick={() => setIsCollapsed(!isCollapsed)}
-						variant='ghost'
-					>
-						<Link className='h-4 w-4' />
-						<span className='font-medium text-md text-muted-foreground'>
-							Related
-						</span>
-						<CountBadge count={related.length} />
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
-					</Button>
-				}
-			/>
-			{!isCollapsed && (
-				<div className='py-4'>
-					{entityItems.length === 0 ? (
-						<p className='py-2 text-muted-foreground text-sm'>
-							No related items
-						</p>
-					) : (
-						<MasonryLayout
-							estimateItemSize={estimateEntitySize}
-							gap={16}
-							getItemKey={getEntityKey}
-							getScrollElement={getScrollElement}
-							items={entityItems}
-							minItemWidth={280}
-							renderItem={renderItem}
-							scrollMargin={scrollMargin}
-						/>
-					)}
-				</div>
-			)}
+				onRetry={() => {
+					void relatedQuery.refetch()
+				}}
+			>
+				<MasonryLayout
+					estimateItemSize={estimateEntitySize}
+					gap={16}
+					getItemKey={getEntityKey}
+					getScrollElement={getScrollElement}
+					items={filteredEntityItems}
+					minItemWidth={280}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			</DetailTabPanelState>
 
 			{topicId && (
 				<EntitySearchDialog

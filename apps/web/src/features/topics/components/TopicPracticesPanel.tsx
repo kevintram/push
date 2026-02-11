@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Dumbbell } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
-import { LearnablePanel } from '~/components/LearnablePanel'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
 import { AddPracticeDialog } from '~/features/practices/components/AddPracticeDialog'
@@ -11,9 +11,11 @@ import { PracticeCard } from '~/features/practices/components/PracticeCard'
 import type { Practice } from '~/features/practices/types/practice.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddTopicPractice } from '../api/addTopicPractice'
+import { useTopicPractices } from '../api/getTopicPractices'
 import { topicKeys } from '../api/queryKeys'
 import { useRemoveTopicPractice } from '../api/removeTopicPractice'
 
+const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 interface TopicPracticesPanelProps {
@@ -59,8 +61,12 @@ export function TopicPracticesPanel({
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateDialog, setShowCreateDialog] = useState(false)
 
-	// Use prop directly - practices comes from the single getTopic fetch
-	const practices = practicesProp ?? []
+	const practicesQuery = useTopicPractices(topicId, {
+		enabled: practicesProp === undefined
+	})
+	const practices = practicesProp ?? practicesQuery.data ?? []
+	const isLoading = practicesProp === undefined && practicesQuery.isPending
+	const isError = practicesProp === undefined && practicesQuery.isError
 
 	const addTopicPractice = useAddTopicPractice()
 	const removeTopicPractice = useRemoveTopicPractice()
@@ -82,16 +88,12 @@ export function TopicPracticesPanel({
 	const handlePracticeUpdateSuccess = useCallback(
 		(updatedPractice: Practice) => {
 			queryClient.setQueryData(
-				topicKeys.detail(topicId!),
-				(old: { practices?: Array<Practice> } | undefined) => {
+				topicKeys.practices(topicId!),
+				(old: Array<Practice> | undefined) => {
 					if (!old) return old
-					return {
-						...old,
-						practices:
-							old.practices?.map(practice =>
-								practice.id === updatedPractice.id ? updatedPractice : practice
-							) ?? []
-					}
+					return old.map(practice =>
+						practice.id === updatedPractice.id ? updatedPractice : practice
+					)
 				}
 			)
 		},
@@ -123,12 +125,10 @@ export function TopicPracticesPanel({
 				onPracticeSelect?.(practice.id)
 			}
 
-			// Use custom renderer if provided
 			if (renderCard) {
 				return renderCard(practice, handleRemoveRelationship, handleClick)
 			}
 
-			// Default card rendering
 			return (
 				<PracticeCard
 					headerRight={
@@ -154,21 +154,52 @@ export function TopicPracticesPanel({
 		]
 	)
 
-	const getItemKey = useCallback((practice: Practice) => practice.id, [])
+	const getItemKey = useCallback((practice: Practice, _index: number) => {
+		return practice.id
+	}, [])
 
-	const actions = topicId ? (
-		<>
-			<AddEntityMenu
-				createItems={[
-					{
-						label: 'Create Practice',
-						onSelect: () => setShowCreateDialog(true)
-					}
-				]}
-				isLoading={isAdding}
-				onSearch={() => setShowSearchDialog(true)}
-				searchLabel='Search Practices'
-			/>
+	return (
+		<div className='flex flex-col gap-4'>
+			{topicId && (
+				<div className='flex justify-end'>
+					<AddEntityMenu
+						createItems={[
+							{
+								label: 'Create Practice',
+								onSelect: () => setShowCreateDialog(true)
+							}
+						]}
+						isLoading={isAdding}
+						onSearch={() => setShowSearchDialog(true)}
+						searchLabel='Search Practices'
+					/>
+				</div>
+			)}
+
+			<DetailTabPanelState
+				emptyMessage='No practices'
+				error={practicesQuery.error}
+				isEmpty={practices.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					practicesProp === undefined && practicesQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void practicesQuery.refetch()
+				}}
+			>
+				<MasonryLayout
+					estimateItemSize={estimateItemSize}
+					gap={16}
+					getItemKey={getItemKey}
+					getScrollElement={getScrollElement}
+					items={practices}
+					minItemWidth={MIN_WIDTH}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			</DetailTabPanelState>
 
 			<EntitySearchDialog
 				defaultType='practice'
@@ -190,20 +221,6 @@ export function TopicPracticesPanel({
 					relationship={{ kind: 'topic', topicId }}
 				/>
 			)}
-		</>
-	) : undefined
-
-	return (
-		<LearnablePanel
-			actions={actions}
-			estimateItemSize={estimateItemSize}
-			getItemKey={getItemKey}
-			getScrollElement={getScrollElement}
-			icon={Dumbbell}
-			items={practices}
-			label='Practices'
-			renderItem={renderItem}
-			scrollMargin={scrollMargin}
-		/>
+		</div>
 	)
 }

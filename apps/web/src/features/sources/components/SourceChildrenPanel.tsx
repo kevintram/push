@@ -1,16 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Baby, ChevronDown } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import { estimateCardSize } from '~/components/EntityCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
-import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceChild } from '../api/addSourceChild'
+import { useSourceChildren } from '../api/getSourceChildren'
 import { sourceKeys } from '../api/queryKeys'
 import type { Source } from '../types/source.types'
 import { AddSourceDialog } from './AddSourceDialog'
@@ -67,18 +65,19 @@ export function SourceChildrenPanel({
 	renderCard
 }: SourceChildrenPanelProps) {
 	const queryClient = useQueryClient()
-	const [isCollapsed, setIsCollapsed] = useState(false)
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 	const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false)
 	const addSourceChild = useAddSourceChild()
+	const childrenQuery = useSourceChildren(sourceId, {
+		enabled: childrenProp === undefined
+	})
 
 	const inherit = inheritFsrsState ? { fsrsState: inheritFsrsState } : undefined
 
 	const handleChildCreated = useCallback(
 		(newSourceId: number) => {
-			// Invalidate the parent source to refresh children list
 			if (sourceId !== undefined) {
-				queryClient.invalidateQueries({ queryKey: sourceKeys.detail(sourceId) })
+				queryClient.invalidateQueries({ queryKey: sourceKeys.byId(sourceId) })
 			}
 			onChildCreated?.(newSourceId)
 		},
@@ -96,10 +95,10 @@ export function SourceChildrenPanel({
 		[sourceId, addSourceChild]
 	)
 
-	// Use prop directly - children comes from the single getSource fetch
-	const children = childrenProp ?? []
+	const children = childrenProp ?? childrenQuery.data ?? []
+	const isLoading = childrenProp === undefined && childrenQuery.isPending
+	const isError = childrenProp === undefined && childrenQuery.isError
 
-	// Determine navigation behavior
 	const handleChildSelect = useCallback(
 		(childSourceId: number) => {
 			onChildSelect?.(childSourceId)
@@ -126,7 +125,6 @@ export function SourceChildrenPanel({
 		[queryClient, sourceId]
 	)
 
-	// Map children into array
 	const items = useMemo<Array<ListItem>>(
 		() => children.map(child => ({ type: 'child' as const, child })),
 		[children]
@@ -145,8 +143,6 @@ export function SourceChildrenPanel({
 	const renderItem = useCallback(
 		(item: ListItem) => {
 			const handleRemoveRelationship = () => {
-				// For now, removing parent-child is not implemented
-				// This would require an API endpoint to remove the relationship
 				toast.info('Remove child relationship not yet implemented')
 			}
 
@@ -154,12 +150,10 @@ export function SourceChildrenPanel({
 				handleChildSelect(item.child.id)
 			}
 
-			// Use custom renderer if provided
 			if (renderCard) {
 				return renderCard(item.child, handleRemoveRelationship, handleClick)
 			}
 
-			// Default card rendering
 			return (
 				<SourceCard
 					headerRight={
@@ -184,9 +178,9 @@ export function SourceChildrenPanel({
 	}, [])
 
 	return (
-		<div className='flex flex-col'>
-			<TopicPanelHeader
-				actions={
+		<div className='flex flex-col gap-4'>
+			{sourceId !== undefined && (
+				<div className='flex justify-end'>
 					<AddEntityMenu
 						createItems={[
 							{
@@ -198,38 +192,33 @@ export function SourceChildrenPanel({
 						onSearch={() => setIsSearchDialogOpen(true)}
 						searchLabel='Search Sources'
 					/>
-				}
-				label={
-					<Button
-						className='flex items-center gap-2 p-0'
-						onClick={() => setIsCollapsed(!isCollapsed)}
-						variant='ghost'
-					>
-						<Baby className='h-4 w-4' />
-						<span className='font-medium text-muted-foreground text-sm'>
-							Child sources
-						</span>
-						<CountBadge count={children.length} />
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
-					</Button>
-				}
-			/>
-			{!isCollapsed && (
-				<div className='flex-1 py-6'>
-					<MasonryLayout
-						estimateItemSize={estimateItemSize}
-						gap={16}
-						getItemKey={getItemKey}
-						getScrollElement={getScrollElement}
-						items={items}
-						minItemWidth={MIN_WIDTH}
-						renderItem={renderItem}
-						scrollMargin={scrollMargin}
-					/>
 				</div>
 			)}
+
+			<DetailTabPanelState
+				emptyMessage='No child sources'
+				error={childrenQuery.error}
+				isEmpty={items.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					childrenProp === undefined && childrenQuery.isFetching && !isLoading
+				}
+				onRetry={() => {
+					void childrenQuery.refetch()
+				}}
+			>
+				<MasonryLayout
+					estimateItemSize={estimateItemSize}
+					gap={16}
+					getItemKey={getItemKey}
+					getScrollElement={getScrollElement}
+					items={items}
+					minItemWidth={MIN_WIDTH}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			</DetailTabPanelState>
 
 			{sourceId !== undefined && (
 				<EntitySearchDialog
@@ -250,7 +239,6 @@ export function SourceChildrenPanel({
 				/>
 			)}
 
-			{/* Add Child Source Dialog */}
 			{sourceId !== undefined && (
 				<AddSourceDialog
 					inherit={inherit}

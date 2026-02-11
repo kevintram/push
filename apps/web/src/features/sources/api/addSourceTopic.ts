@@ -55,10 +55,10 @@ export function useAddSourceTopic() {
 			// Also invalidate topic detail so the sources list refreshes
 			await Promise.all([
 				queryClient.invalidateQueries({
-					queryKey: sourceKeys.detail(sourceId)
+					queryKey: sourceKeys.byId(sourceId)
 				}),
 				queryClient.invalidateQueries({
-					queryKey: topicKeys.detail(topicId)
+					queryKey: topicKeys.byId(topicId)
 				})
 			])
 		}

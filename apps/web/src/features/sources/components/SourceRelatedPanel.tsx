@@ -1,23 +1,25 @@
-import { ChevronDown, Link } from 'lucide-react'
 import {
 	useCallback,
+	useEffect,
 	useInsertionEffect,
 	useMemo,
 	useRef,
 	useState
 } from 'react'
+import { DetailTabPanelState } from '~/components/DetailTabs'
 import {
 	EntityCard,
 	type EntityItem,
 	estimateEntitySize,
 	getEntityKey
 } from '~/components/EntityCard'
+import {
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { EntitySearchDialog } from '~/components/search/EntitySearchDialog'
 import { AddEntityMenu } from '~/components/ui/AddEntityMenu'
-import { Button } from '~/components/ui/Button'
-import { CountBadge } from '~/components/ui/CountBadge'
-import { TopicPanelHeader } from '~/components/ui/TopicPanelHeader'
 import { AddSourceDialog } from '~/features/sources/components/AddSourceDialog'
 import { AddTopicDialog } from '~/features/topics/components/AddTopicDialog'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
@@ -25,6 +27,7 @@ import type { RelatedEntityItem } from '~/features/topics/types/topic.types'
 import type { EntityType } from '~/models/entity-relations.types'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceEntityRelation } from '../api/addSourceEntityRelation'
+import { useSourceEntityRelations } from '../api/getSourceEntityRelations'
 import { useRemoveSourceEntityRelation } from '../api/removeSourceEntityRelation'
 import { SourceActionMenu } from './SourceActionMenu'
 
@@ -32,6 +35,7 @@ interface SourceRelatedPanelProps {
 	sourceId: number | undefined
 	relatedOutgoing?: Array<RelatedEntityItem>
 	relatedIncoming?: Array<RelatedEntityItem>
+	onCountChange?: (count: number) => void
 	getScrollElement?: () => HTMLDivElement | null
 	scrollMargin?: number
 	inheritFsrsState?: FsrsState | null
@@ -43,40 +47,62 @@ export function SourceRelatedPanel({
 	sourceId,
 	relatedOutgoing = [],
 	relatedIncoming = [],
+	onCountChange,
 	getScrollElement,
 	scrollMargin,
 	inheritFsrsState,
 	onTopicNavigate,
 	onSourceNavigate
 }: SourceRelatedPanelProps) {
-	const [isCollapsed, setIsCollapsed] = useState(false)
 	const [showSearchDialog, setShowSearchDialog] = useState(false)
 	const [showCreateTopicDialog, setShowCreateTopicDialog] = useState(false)
 	const [showCreateSourceDialog, setShowCreateSourceDialog] = useState(false)
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
+
+	const relatedQuery = useSourceEntityRelations(sourceId, {
+		enabled: relatedOutgoing.length === 0 && relatedIncoming.length === 0
+	})
+
+	const outgoing =
+		relatedOutgoing.length > 0
+			? relatedOutgoing
+			: (relatedQuery.data?.outgoing ?? [])
+	const incoming =
+		relatedIncoming.length > 0
+			? relatedIncoming
+			: (relatedQuery.data?.incoming ?? [])
+	const isLoading =
+		relatedOutgoing.length === 0 &&
+		relatedIncoming.length === 0 &&
+		relatedQuery.isPending
+	const isError =
+		relatedOutgoing.length === 0 &&
+		relatedIncoming.length === 0 &&
+		relatedQuery.isError
 
 	const addRelation = useAddSourceEntityRelation()
 	const removeRelation = useRemoveSourceEntityRelation()
 
 	const isAdding = addRelation.isPending
 
-	// Merge outgoing and incoming for display
 	const allRelated = useMemo(() => {
 		const merged = [
-			...relatedOutgoing.map(r => ({ ...r, direction: 'outgoing' as const })),
-			...relatedIncoming.map(r => ({ ...r, direction: 'incoming' as const }))
+			...outgoing.map(r => ({ ...r, direction: 'outgoing' as const })),
+			...incoming.map(r => ({ ...r, direction: 'incoming' as const }))
 		]
 		const seen = new Set<string>()
 
-		// Keep first occurrence (outgoing first) so each entity appears once.
 		return merged.filter(entity => {
 			const key = `${entity.entity_type}-${entity.id}`
 			if (seen.has(key)) return false
 			seen.add(key)
 			return true
 		})
-	}, [relatedOutgoing, relatedIncoming])
+	}, [outgoing, incoming])
+	useEffect(() => {
+		onCountChange?.(allRelated.length)
+	}, [allRelated.length, onCountChange])
 
-	// Convert to EntityItem format for EntityCard/MasonryLayout
 	const entityItems = useMemo<Array<EntityItem>>(() => {
 		return allRelated.map((item): EntityItem => {
 			if (item.entity_type === 'topic') {
@@ -85,6 +111,11 @@ export function SourceRelatedPanel({
 			return { type: 'source', item }
 		})
 	}, [allRelated])
+
+	const filteredEntityItems = useMemo(() => {
+		if (activeFilter === 'all') return entityItems
+		return entityItems.filter(entity => entity.type === activeFilter)
+	}, [activeFilter, entityItems])
 
 	const handleAdd = useCallback(
 		(entityType: EntityType, entityId: number) => {
@@ -102,18 +133,14 @@ export function SourceRelatedPanel({
 
 	const handleTopicNavigate = useCallback(
 		(topicId: number) => {
-			if (onTopicNavigate) {
-				onTopicNavigate(topicId)
-			}
+			onTopicNavigate?.(topicId)
 		},
 		[onTopicNavigate]
 	)
 
 	const handleSourceNavigate = useCallback(
 		(id: number) => {
-			if (onSourceNavigate) {
-				onSourceNavigate(id)
-			}
+			onSourceNavigate?.(id)
 		},
 		[onSourceNavigate]
 	)
@@ -184,62 +211,57 @@ export function SourceRelatedPanel({
 	)
 
 	return (
-		<div className='flex flex-col'>
-			<TopicPanelHeader
-				actions={
-					<AddEntityMenu
-						createItems={[
-							{
-								label: 'Create Topic',
-								onSelect: () => setShowCreateTopicDialog(true)
-							},
-							{
-								label: 'Create Source',
-								onSelect: () => setShowCreateSourceDialog(true)
-							}
-						]}
-						isLoading={isAdding}
-						onSearch={() => setShowSearchDialog(true)}
-						searchLabel='Search'
-					/>
+		<div className='flex flex-col gap-4'>
+			<div className='flex items-center justify-between gap-2'>
+				<EntityTypeFilter
+					activeFilter={activeFilter}
+					allowedTypes={['topic', 'source']}
+					onFilterChange={setActiveFilter}
+				/>
+				<AddEntityMenu
+					createItems={[
+						{
+							label: 'Create Topic',
+							onSelect: () => setShowCreateTopicDialog(true)
+						},
+						{
+							label: 'Create Source',
+							onSelect: () => setShowCreateSourceDialog(true)
+						}
+					]}
+					isLoading={isAdding}
+					onSearch={() => setShowSearchDialog(true)}
+					searchLabel='Search'
+				/>
+			</div>
+
+			<DetailTabPanelState
+				emptyMessage='No related items'
+				error={relatedQuery.error}
+				isEmpty={filteredEntityItems.length === 0}
+				isError={isError}
+				isLoading={isLoading}
+				isRefreshing={
+					relatedOutgoing.length === 0 &&
+					relatedIncoming.length === 0 &&
+					relatedQuery.isFetching &&
+					!isLoading
 				}
-				label={
-					<Button
-						className='flex items-center gap-2 p-0'
-						onClick={() => setIsCollapsed(!isCollapsed)}
-						variant='ghost'
-					>
-						<Link className='h-4 w-4' />
-						<span className='font-medium text-md text-muted-foreground'>
-							Related
-						</span>
-						<CountBadge count={allRelated.length} />
-						<ChevronDown
-							className={`h-4 w-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`}
-						/>
-					</Button>
-				}
-			/>
-			{!isCollapsed && (
-				<div className='py-4'>
-					{entityItems.length === 0 ? (
-						<p className='py-2 text-muted-foreground text-sm'>
-							No related items
-						</p>
-					) : (
-						<MasonryLayout
-							estimateItemSize={estimateEntitySize}
-							gap={16}
-							getItemKey={getEntityKey}
-							getScrollElement={getScrollElement}
-							items={entityItems}
-							minItemWidth={280}
-							renderItem={renderItem}
-							scrollMargin={scrollMargin}
-						/>
-					)}
-				</div>
-			)}
+				onRetry={() => {
+					void relatedQuery.refetch()
+				}}
+			>
+				<MasonryLayout
+					estimateItemSize={estimateEntitySize}
+					gap={16}
+					getItemKey={getEntityKey}
+					getScrollElement={getScrollElement}
+					items={filteredEntityItems}
+					minItemWidth={280}
+					renderItem={renderItem}
+					scrollMargin={scrollMargin}
+				/>
+			</DetailTabPanelState>
 
 			{sourceId && (
 				<EntitySearchDialog

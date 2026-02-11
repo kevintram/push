@@ -45,6 +45,7 @@ const topicBaseFields = {
 	days_until_next_tier: v.nullable(v.number()),
 	children_count: v.optional(v.number(), 0),
 	sources_count: v.optional(v.number(), 0),
+	practices_count: v.optional(v.number(), 0),
 	related_outgoing_count: v.optional(v.number(), 0),
 	related_incoming_count: v.optional(v.number(), 0),
 	relationship_direction: v.optional(v.enum_(RelationshipDirection))

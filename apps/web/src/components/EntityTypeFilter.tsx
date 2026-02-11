@@ -3,18 +3,20 @@ import { Badge } from '~/components/ui/Badge'
 
 export type EntityTypeFilterValue = 'all' | EntityType
 
-const ENTITY_FILTER_BADGES: Array<{ id: EntityType; label: string }> = [
-	{ id: 'topic', label: 'Topics' },
-	{ id: 'source', label: 'Sources' },
-	{ id: 'practice', label: 'Practices' }
-]
+const ENTITY_FILTER_BADGES: Record<EntityType, string> = {
+	topic: 'Topics',
+	source: 'Sources',
+	practice: 'Practices'
+}
 
 export function EntityTypeFilter({
 	activeFilter,
-	onFilterChange
+	onFilterChange,
+	allowedTypes = ['topic', 'source', 'practice']
 }: {
 	activeFilter: EntityTypeFilterValue
 	onFilterChange: (filter: EntityTypeFilterValue) => void
+	allowedTypes?: Array<EntityType>
 }) {
 	const isAllActive = activeFilter === 'all'
 	return (
@@ -35,25 +37,25 @@ export function EntityTypeFilter({
 			>
 				All
 			</Badge>
-			{ENTITY_FILTER_BADGES.map(badge => {
-				const isActive = activeFilter === badge.id
+			{allowedTypes.map(type => {
+				const isActive = activeFilter === type
 				return (
 					<Badge
 						className='cursor-pointer'
-						key={badge.id}
+						key={type}
 						onClick={() => {
-							if (!isActive) onFilterChange(badge.id)
+							if (!isActive) onFilterChange(type)
 						}}
 						onKeyDown={e => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault()
-								if (!isActive) onFilterChange(badge.id)
+								if (!isActive) onFilterChange(type)
 							}
 						}}
 						tabIndex={0}
 						variant={isActive ? 'default' : 'outline'}
 					>
-						{badge.label}
+						{ENTITY_FILTER_BADGES[type]}
 					</Badge>
 				)
 			})}

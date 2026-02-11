@@ -10,6 +10,7 @@ from app.dependencies import SessionDep
 from app.schemas import (
     ConvertSourceToPracticeResponse,
     ConvertSourceToTopicResponse,
+    EntityRelationsRead,
     EntityRelationCreate,
     PracticeSummaryRead,
     SourceChildRelationshipCreate,
@@ -81,19 +82,10 @@ async def read_sources(
 @router.get("/{source_id}/")
 async def read_source(
     session: SessionDep, user_id: UserIdDep, source_id: int
-) -> SourceDetailRead:
-    source = await service.load_source_with_relationships(session, source_id, user_id)
-
-    # Fetch related entities and add them to the response
-    outgoing, incoming = await service.get_source_related_entities(
-        session, source_id, user_id
+) -> SourceSummaryRead:
+    return SourceSummaryRead.model_validate(
+        await service.get_source(session, source_id, user_id)
     )
-
-    source_data = SourceDetailRead.model_validate(source).model_dump()
-    source_data["related_outgoing"] = outgoing
-    source_data["related_incoming"] = incoming
-
-    return SourceDetailRead(**source_data)
 
 
 @router.get("/{source_id}/children/")
@@ -237,6 +229,18 @@ async def remove_entity_relation_from_source(
         entity_type=entity_type,
         entity_id=entity_id,
     )
+
+
+@router.get("/{source_id}/entity-relations/")
+async def read_source_entity_relations(
+    source_id: int,
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> EntityRelationsRead:
+    outgoing, incoming = await service.get_source_related_entities(
+        session, source_id, user_id
+    )
+    return EntityRelationsRead(outgoing=outgoing, incoming=incoming)
 
 
 @router.get("/{source_id}/prerequisites/")

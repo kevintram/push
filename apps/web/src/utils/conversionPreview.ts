@@ -18,10 +18,16 @@ function hasSubtreeCoveringSources(topic: Topic): boolean {
 	return false
 }
 
-export function getTopicToSourcePreview(topic: Topic): ConversionPreview {
+export function getTopicToSourcePreview(
+	topic: Topic,
+	options?: {
+		childTopics?: Array<Topic>
+	}
+): ConversionPreview {
 	const childrenCount = topic.children_count ?? 0
 	const relationsCount =
 		(topic.related_outgoing_count ?? 0) + (topic.related_incoming_count ?? 0)
+	const childTopics = options?.childTopics ?? topic.children
 
 	const migrated: ConversionPreview['migrated'] = []
 	if (childrenCount > 0)
@@ -30,7 +36,10 @@ export function getTopicToSourcePreview(topic: Topic): ConversionPreview {
 		migrated.push({ label: 'Entity relations', count: relationsCount })
 
 	const blockers: Array<string> = []
-	if (hasSubtreeCoveringSources(topic))
+	if (
+		(topic.sources_count ?? 0) > 0 ||
+		(childTopics ?? []).some(child => hasSubtreeCoveringSources(child))
+	)
 		blockers.push('Topic or its children have covering sources')
 
 	return { migrated, lost: [], blockers }
@@ -39,7 +48,7 @@ export function getTopicToSourcePreview(topic: Topic): ConversionPreview {
 export function getTopicToPracticePreview(topic: Topic): ConversionPreview {
 	const childrenCount = topic.children_count ?? 0
 	const sourcesCount = topic.sources_count ?? 0
-	const practicesCount = topic.practices?.length ?? 0
+	const practicesCount = topic.practices_count ?? 0
 	const relationsCount =
 		(topic.related_outgoing_count ?? 0) + (topic.related_incoming_count ?? 0)
 

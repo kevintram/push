@@ -17,10 +17,15 @@ export async function getSourcePrerequisites(
 	return response.json()
 }
 
-export function useSourcePrerequisites(sourceId: number | undefined) {
+export function useSourcePrerequisites(
+	sourceId: number | undefined,
+	options?: {
+		enabled?: boolean
+	}
+) {
 	return useQuery({
 		queryKey: sourceKeys.prerequisites(sourceId ?? 0),
 		queryFn: () => getSourcePrerequisites(sourceId!),
-		enabled: sourceId !== undefined
+		enabled: sourceId !== undefined && (options?.enabled ?? true)
 	})
 }

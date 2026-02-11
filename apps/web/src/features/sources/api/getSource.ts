@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import { SourceSchema } from '../types/source.schemas'
-import type { Source } from '../types/source.types'
 import { sourceKeys } from './queryKeys'
 
 export async function getSource(sourceId: number) {
@@ -29,25 +27,12 @@ export async function getSource(sourceId: number) {
 	}
 }
 
-/**
- * Hook to fetch a source with its direct children and topics (depth = 1 only)
- */
 export function useSourceWithRelationships(sourceId: number | undefined) {
-	const { data: sourceData, isLoading } = useQuery({
+	const { data: source, isLoading } = useQuery({
 		queryKey: sourceKeys.detail(sourceId!),
 		queryFn: () => getSource(sourceId!),
 		enabled: sourceId !== undefined
 	})
-
-	const source: Source | undefined = useMemo(() => {
-		if (!sourceData) return
-
-		return {
-			...sourceData,
-			children: sourceData.children ?? [],
-			topics: sourceData.topics ?? []
-		}
-	}, [sourceData])
 
 	return { source, isLoading }
 }

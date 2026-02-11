@@ -36,7 +36,7 @@ export function useAddTopicEntityRelation() {
 		}) => addTopicEntityRelation(topicId, data),
 		onSuccess: async (_data, variables) => {
 			await queryClient.invalidateQueries({
-				queryKey: topicKeys.detail(variables.topicId)
+				queryKey: topicKeys.byId(variables.topicId)
 			})
 		}
 	})

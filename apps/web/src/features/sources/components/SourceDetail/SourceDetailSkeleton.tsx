@@ -1,36 +1,43 @@
+import { SidebarProvider } from '~/components/ui/Sidebar'
 import { Skeleton } from '~/components/ui/Skeleton'
 
 export function SourceDetailSkeleton() {
 	return (
-		<div className='flex h-full flex-col'>
-			{/* Header skeleton */}
-			<div className='sticky top-0 z-10 w-full border-b'>
-				<div className='flex items-center justify-between gap-4 px-2 py-1'>
-					<div className='flex min-w-0 flex-1 items-center gap-4'>
-						<Skeleton className='h-6 w-32' />
+		<SidebarProvider defaultOpen={true}>
+			<div className='flex h-full min-h-0 flex-col'>
+				{/* Header skeleton */}
+				<div className='sticky top-0 z-10 w-full border-b'>
+					<div className='flex items-center justify-between gap-4 px-2 py-1'>
+						<div className='flex min-w-0 flex-1 items-center gap-4'>
+							<Skeleton className='h-6 w-32' />
+						</div>
 					</div>
 				</div>
-			</div>
-
-			{/* Content skeleton */}
-			<div className='flex min-h-0 flex-1 px-6 py-4'>
-				<div className='flex w-full flex-col gap-4'>
+				{/* Content skeleton */}
+				<div className='w-full px-6 py-4'>
 					{/* Title skeleton */}
 					<Skeleton className='h-8 w-3/4' />
-
-					{/* Properties skeleton */}
-					<div className='flex gap-2'>
-						<Skeleton className='h-4 w-20' />
-						<Skeleton className='h-4 w-20' />
-						<Skeleton className='h-4 w-20' />
+					{/* Properties + notes skeleton */}
+					<div className='mt-2 flex flex-col gap-1'>
+						<div className='flex gap-2'>
+							<Skeleton className='h-4 w-20' />
+							<Skeleton className='h-4 w-20' />
+							<Skeleton className='h-4 w-20' />
+						</div>
+						<Skeleton className='h-12 w-full' />
 					</div>
-
-					{/* Notes skeleton */}
-					<Skeleton className='h-24 w-full' />
-
-					{/* Children panel skeleton */}
-					<div className='mt-4'>
-						<Skeleton className='h-6 w-32' />
+					{/* Tab bar skeleton */}
+					<div className='mt-6'>
+						<div className='w-full border-border border-b'>
+							<div className='flex gap-0 p-0'>
+								<Skeleton className='h-10 w-20 rounded-none' />
+								<Skeleton className='h-10 w-20 rounded-none' />
+								<Skeleton className='h-10 w-24 rounded-none' />
+								<Skeleton className='h-10 w-24 rounded-none' />
+								<Skeleton className='h-10 w-20 rounded-none' />
+							</div>
+						</div>
+						{/* Tab content skeleton */}
 						<div className='mt-4 grid gap-4'>
 							<Skeleton className='h-24 w-full' />
 							<Skeleton className='h-24 w-full' />
@@ -38,6 +45,6 @@ export function SourceDetailSkeleton() {
 					</div>
 				</div>
 			</div>
-		</div>
+		</SidebarProvider>
 	)
 }
