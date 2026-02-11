@@ -162,13 +162,13 @@ export function SourcePracticesPanel({
 					<AddEntityMenu
 						createItems={[
 							{
-								label: 'Create Practice',
+								label: 'Create',
 								onSelect: () => setShowCreateDialog(true)
 							}
 						]}
 						isLoading={isAdding}
 						onSearch={() => setShowSearchDialog(true)}
-						searchLabel='Search Practices'
+						searchLabel='Search'
 					/>
 				</div>
 			)}

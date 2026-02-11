@@ -184,13 +184,13 @@ export function SourceChildrenPanel({
 					<AddEntityMenu
 						createItems={[
 							{
-								label: 'Create Source',
+								label: 'Create',
 								onSelect: () => setIsAddDialogOpen(true)
 							}
 						]}
 						isLoading={addSourceChild.isPending}
 						onSearch={() => setIsSearchDialogOpen(true)}
-						searchLabel='Search Sources'
+						searchLabel='Search'
 					/>
 				</div>
 			)}

@@ -111,13 +111,13 @@ export function TopicParentsPanel({
 						buttonSize='xs'
 						createItems={[
 							{
-								label: 'Create Topic',
+								label: 'Create',
 								onSelect: () => setShowAddTopicDialog(true)
 							}
 						]}
 						isLoading={isCreating}
 						onSearch={() => setShowSearchDialog(true)}
-						searchLabel='Search Topics'
+						searchLabel='Search'
 					/>
 				)}
 			</div>
