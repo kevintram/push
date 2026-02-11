@@ -13,6 +13,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
 	return (
 		<Sonner
+			position='top-center'
 			className='toaster group'
 			icons={{
 				success: <CircleCheckIcon className='size-4' />,
