@@ -2,7 +2,6 @@ import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
-import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import { TopicDetail } from '~/features/topics/components/TopicDetail/TopicDetail'
 import { TopicContext } from '~/features/topics/stores/SelectedTopicContext'
@@ -83,7 +82,6 @@ export function TopicDetailPage({ topicId }: TopicDetailPageProps) {
 		<TopicContext value={contextValue}>
 			<TopicDetail
 				className='mx-auto max-w-5xl'
-				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
 				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}

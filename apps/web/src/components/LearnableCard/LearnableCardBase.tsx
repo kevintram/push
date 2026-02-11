@@ -2,18 +2,18 @@ import type { QueryClient } from '@tanstack/react-query'
 import {
 	Archive,
 	Baby,
-	BookOpen,
 	Brain,
 	FileText,
 	Inbox,
 	Loader2,
 	Sparkles,
+	Star,
 	User2
 } from 'lucide-react'
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
-import { BookOpenOff, SquarePlusBottomRight } from '~/components/icons'
+import { SquarePlusBottomRight } from '~/components/icons'
 import { Badge } from '~/components/ui/Badge'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/Card'
 import {
@@ -296,24 +296,17 @@ export function LearnableCardBase<T extends LearnableBase>({
 					<TooltipContent side='top'>Add review</TooltipContent>
 				</Tooltip>
 				{/* SRS toggle */}
-				<Tooltip>
-					<TooltipTrigger
-						render={
-							<div
-								className={config.isUpdating ? 'opacity-50' : 'cursor-pointer'}
-								onClick={handleSrsToggle}
-								onKeyDown={e => e.stopPropagation()}
-							>
-								{(entity.srs_enabled ?? true) ? (
-									<BookOpen className='h-4 w-4 text-green-500' />
-								) : (
-									<BookOpenOff className='h-4 w-4 text-muted-foreground' />
-								)}
-							</div>
-						}
-					/>
-					<TooltipContent side='top'>Surface in review page</TooltipContent>
-				</Tooltip>
+				<div
+					className={config.isUpdating ? 'opacity-50' : 'cursor-pointer'}
+					onClick={handleSrsToggle}
+					onKeyDown={e => e.stopPropagation()}
+				>
+					{(entity.srs_enabled ?? true) ? (
+						<Star className='h-4 w-4 fill-yellow-500 text-yellow-500' />
+					) : (
+						<Star className='h-4 w-4 text-muted-foreground' />
+					)}
+				</div>
 				<div className='flex items-center gap-1'>{headerRight}</div>
 			</CardHeader>
 

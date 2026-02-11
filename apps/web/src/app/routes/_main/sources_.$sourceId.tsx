@@ -1,11 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { SourceDetailPage } from '~/app/pages/SourceDetailPage'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_main/sources_/$sourceId')({
 	component: RouteComponent
 })
 
 function RouteComponent() {
-	const { sourceId } = Route.useParams()
-	return <SourceDetailPage sourceId={sourceId} />
+	return <Outlet />
 }

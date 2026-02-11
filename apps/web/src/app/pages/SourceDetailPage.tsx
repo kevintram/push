@@ -2,7 +2,6 @@ import { useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { Button } from '~/components/ui/Button'
-import { SidebarTrigger } from '~/components/ui/Sidebar'
 import { useSourceWithRelationships } from '~/features/sources/api/getSource'
 import { SourceDetail } from '~/features/sources/components/SourceDetail/SourceDetail'
 import { SourceContext } from '~/features/sources/stores/SelectedSourceContext'
@@ -83,7 +82,6 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
 		<SourceContext value={contextValue}>
 			<SourceDetail
 				className='mx-auto max-w-5xl'
-				headerAfterActions={<SidebarTrigger />}
 				headerBeforeActions={<BrowserNavigationButtons />}
 				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}
