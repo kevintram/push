@@ -34,30 +34,44 @@ function toReviewFilters(
 }
 
 function splitReviews(reviews: Array<ReviewListItem>) {
-	const scheduled: Array<ReviewListItem> = []
-	const unscheduled: Array<ReviewListItem> = []
+	const uncompletedUnscheduled: Array<ReviewListItem> = []
+	const upcoming: Array<ReviewListItem> = []
+	const completed: Array<ReviewListItem> = []
 
 	for (const review of reviews) {
-		if (review.effective_date) {
-			scheduled.push(review)
-		} else {
-			unscheduled.push(review)
+		if (review.completed_at) {
+			completed.push(review)
+			continue
 		}
+
+		if (review.scheduled_at || review.effective_date) {
+			upcoming.push(review)
+			continue
+		}
+
+		uncompletedUnscheduled.push(review)
 	}
 
-	scheduled.sort((a, b) => {
+	upcoming.sort((a, b) => {
 		return (
 			new Date(b.effective_date ?? 0).getTime() -
 			new Date(a.effective_date ?? 0).getTime()
 		)
 	})
-	unscheduled.sort((a, b) => {
+	uncompletedUnscheduled.sort((a, b) => {
 		return new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
+	})
+	completed.sort((a, b) => {
+		return (
+			new Date(b.completed_at ?? b.effective_date ?? 0).getTime() -
+			new Date(a.completed_at ?? a.effective_date ?? 0).getTime()
+		)
 	})
 
 	return {
-		scheduledReviews: scheduled,
-		unscheduledReviews: unscheduled
+		uncompletedUnscheduledReviews: uncompletedUnscheduled,
+		upcomingReviews: upcoming,
+		completedReviews: completed
 	}
 }
 
@@ -71,10 +85,8 @@ export function EntityReviewsPageContent({
 		[entityType, entityId]
 	)
 	const { data: reviews = [], isLoading } = useReviews(filters)
-	const { scheduledReviews, unscheduledReviews } = useMemo(
-		() => splitReviews(reviews),
-		[reviews]
-	)
+	const { uncompletedUnscheduledReviews, upcomingReviews, completedReviews } =
+		useMemo(() => splitReviews(reviews), [reviews])
 
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
@@ -167,9 +179,9 @@ export function EntityReviewsPageContent({
 							</div>
 						) : (
 							<div className='flex flex-col gap-10'>
-								{unscheduledReviews.length > 0 && (
+								{uncompletedUnscheduledReviews.length > 0 && (
 									<div>
-										{unscheduledReviews.map(entry => (
+										{uncompletedUnscheduledReviews.map(entry => (
 											<ReviewItem
 												entry={entry}
 												key={entry.id}
@@ -179,10 +191,23 @@ export function EntityReviewsPageContent({
 										))}
 									</div>
 								)}
-								{scheduledReviews.length > 0 && (
+								{upcomingReviews.length > 0 && (
 									<div>
-										<h2 className='mb-3 font-bold text-2xl'>Scheduled</h2>
-										{scheduledReviews.map(entry => (
+										<h2 className='mb-3 font-bold text-2xl'>Upcoming</h2>
+										{upcomingReviews.map(entry => (
+											<ReviewItem
+												entry={entry}
+												key={entry.id}
+												onReviewClick={openReviewDialog}
+												variant='default'
+											/>
+										))}
+									</div>
+								)}
+								{completedReviews.length > 0 && (
+									<div>
+										<h2 className='mb-3 font-bold text-2xl'>Completed</h2>
+										{completedReviews.map(entry => (
 											<ReviewItem
 												entry={entry}
 												key={entry.id}
