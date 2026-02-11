@@ -1,6 +1,9 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useRouter } from '@tanstack/react-router'
+import { ArrowLeft } from 'lucide-react'
 import { LoadingOrError } from '~/components/LoadingOrError'
+import { Button } from '~/components/ui/Button'
 import { usePracticeWithRelationships } from '~/features/practices/api/getPractice'
+import { PracticeDetailNavBar } from '~/features/practices/components/PracticeDetail/PracticeDetailNavBar'
 import { EntityReviewsPageContent } from './EntityReviewsPageContent'
 
 interface PracticeReviewsPageProps {
@@ -8,7 +11,7 @@ interface PracticeReviewsPageProps {
 }
 
 export function PracticeReviewsPage({ practiceId }: PracticeReviewsPageProps) {
-	const navigate = useNavigate()
+	const router = useRouter()
 	const parsedPracticeId = Number.parseInt(practiceId, 10)
 	const { practice, isLoading } = usePracticeWithRelationships(parsedPracticeId)
 
@@ -23,13 +26,23 @@ export function PracticeReviewsPage({ practiceId }: PracticeReviewsPageProps) {
 	return (
 		<EntityReviewsPageContent
 			entityId={practice.id}
-			entityName={practice.prompt}
 			entityType='practice'
-			onBack={() =>
-				navigate({
-					to: '/practices/$practiceId',
-					params: { practiceId }
-				})
+			navbar={
+				<PracticeDetailNavBar
+					activeTab='reviews'
+					headerBeforeActions={
+						<Button
+							className='h-6 w-6 p-0'
+							onClick={() => router.history.back()}
+							size='sm'
+							title='Go back'
+							variant='ghost'
+						>
+							<ArrowLeft className='h-4 w-4' />
+						</Button>
+					}
+					practiceId={practice.id}
+				/>
 			}
 		/>
 	)
