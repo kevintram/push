@@ -14,6 +14,7 @@ import type {
 	Rating,
 	ReviewListItem
 } from '~/features/reviews/types/review.types'
+import { getReviewCreatedToastDescription } from '~/features/reviews/utils/reviewToastDescription'
 import { localDateString } from '~/utils/date'
 
 type EntityType = 'topic' | 'source' | 'practice'
@@ -150,6 +151,7 @@ export function EntityReviewsPageContent({
 						: await createReview(localDateString(), ratingState)
 
 				toast('Review created', {
+					description: getReviewCreatedToastDescription(review),
 					action: {
 						label: 'Open',
 						onClick: () => openReviewDialog(review.id)
