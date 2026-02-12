@@ -61,7 +61,7 @@ export function TopicBadge({
 							</Badge>
 						}
 					/>
-					<TooltipContent className='max-w-72' side='bottom'>
+					<TooltipContent className='max-w-72'>
 						{name && (
 							<h3 className='break-word font-semibold [overflow-wrap:anywhere]'>
 								{name}

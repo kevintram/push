@@ -55,7 +55,7 @@ export function SourceBadge({
 							</Badge>
 						}
 					/>
-					<TooltipContent className='max-w-72' side='bottom'>
+					<TooltipContent className='max-w-72'>
 						{title && (
 							<h3 className='break-word font-semibold [overflow-wrap:anywhere]'>
 								{title}
