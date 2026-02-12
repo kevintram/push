@@ -465,3 +465,65 @@ INSERT INTO practice_topics (practice_id, topic_id) VALUES
   (9, 38),   -- DI → Design Patterns
   (10, 31);  -- Process vs Thread → Operating Systems
 
+-- ============================================================================
+-- REVIEW BACKFILL (seed consistency)
+-- ============================================================================
+-- Ensure any entity with a reviewed FSRS state has at least one completed review
+-- so computed last_review_rating is populated in list payloads.
+
+INSERT INTO reviews (user_id, topic_id, description, notes, scheduled_at, completed_at, rating)
+SELECT
+  t.user_id,
+  t.id,
+  'Seeded historical review',
+  '',
+  fs.last_reviewed_at,
+  fs.last_reviewed_at,
+  'good'
+FROM topics t
+JOIN fsrs_states fs ON fs.id = t.fsrs_state_id
+WHERE fs.last_reviewed_at IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1
+    FROM reviews r
+    WHERE r.topic_id = t.id
+      AND r.completed_at IS NOT NULL
+  );
+
+INSERT INTO reviews (user_id, source_id, description, notes, scheduled_at, completed_at, rating)
+SELECT
+  s.user_id,
+  s.id,
+  'Seeded historical review',
+  '',
+  fs.last_reviewed_at,
+  fs.last_reviewed_at,
+  'good'
+FROM sources s
+JOIN fsrs_states fs ON fs.id = s.fsrs_state_id
+WHERE fs.last_reviewed_at IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1
+    FROM reviews r
+    WHERE r.source_id = s.id
+      AND r.completed_at IS NOT NULL
+  );
+
+INSERT INTO reviews (user_id, practice_id, description, notes, scheduled_at, completed_at, rating)
+SELECT
+  p.user_id,
+  p.id,
+  'Seeded historical review',
+  '',
+  fs.last_reviewed_at,
+  fs.last_reviewed_at,
+  'good'
+FROM practices p
+JOIN fsrs_states fs ON fs.id = p.fsrs_state_id
+WHERE fs.last_reviewed_at IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1
+    FROM reviews r
+    WHERE r.practice_id = p.id
+      AND r.completed_at IS NOT NULL
+  );
