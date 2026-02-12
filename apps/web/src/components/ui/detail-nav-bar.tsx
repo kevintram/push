@@ -35,39 +35,35 @@ export function DetailNavBar({
 	)
 
 	return (
-		<div className='sticky top-0 z-10 w-full border-b py-1'>
-			<div className='grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-2 py-1'>
-				<div className='flex min-w-0 items-center gap-4'>{leftContent}</div>
+		<div className='sticky top-0 z-10 grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-b px-2 py-1'>
+			<div className='flex min-w-0 items-center gap-4'>{leftContent}</div>
 
-				<Tabs onValueChange={handleValueChange} value={activeTab}>
-					<TabsList className='h-8'>
-						<TabsTrigger value='home'>Home</TabsTrigger>
-						<TabsTrigger value='reviews'>
-							<span className='flex items-center gap-1.5'>
-								Reviews
-								{unscheduledCount > 0 && (
-									<CountBadge count={unscheduledCount} />
-								)}
-								{overdueCount > 0 && (
-									<CountBadge
-										className='bg-red-600 text-white dark:bg-red-400'
-										count={overdueCount}
-									/>
-								)}
-								{dueTodayCount > 0 && (
-									<CountBadge
-										className='bg-transparent text-blue-600 dark:text-blue-400'
-										count={dueTodayCount}
-									/>
-								)}
-							</span>
-						</TabsTrigger>
-					</TabsList>
-				</Tabs>
+			<Tabs onValueChange={handleValueChange} value={activeTab}>
+				<TabsList className='h-8'>
+					<TabsTrigger value='home'>Home</TabsTrigger>
+					<TabsTrigger value='reviews'>
+						<span className='flex items-center gap-1.5'>
+							Reviews
+							{unscheduledCount > 0 && <CountBadge count={unscheduledCount} />}
+							{overdueCount > 0 && (
+								<CountBadge
+									className='bg-red-600 text-white dark:bg-red-400'
+									count={overdueCount}
+								/>
+							)}
+							{dueTodayCount > 0 && (
+								<CountBadge
+									className='bg-transparent text-blue-600 dark:text-blue-400'
+									count={dueTodayCount}
+								/>
+							)}
+						</span>
+					</TabsTrigger>
+				</TabsList>
+			</Tabs>
 
-				<div className='flex min-w-0 items-center justify-end gap-2'>
-					{afterActions}
-				</div>
+			<div className='flex min-w-0 items-center justify-end gap-2'>
+				{afterActions}
 			</div>
 		</div>
 	)
