@@ -49,6 +49,8 @@ export interface LearnableCardConfig<T extends LearnableBase> {
 	showTypeBadge: boolean
 	/** Label for the type badge (e.g., "Source") */
 	typeBadgeLabel?: string
+	/** Get the parent display label (name/title or notes) */
+	getParentLabel?: (entity: T) => string | null
 	/** Get the relations count for display */
 	getRelationsCount: (entity: T) => number
 	/** Format relations count for tooltip (e.g., "1 child" vs "1 relation") */
@@ -215,18 +217,20 @@ export function LearnableCardBase<T extends LearnableBase>({
 			tabIndex={0}
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-center justify-between gap-2'>
-				{'parent_id' in entity && (
+				{'parent_id' in entity && entity.parent_id && (
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-									<User2 className='h-3 w-3' />
-									<span>{entity.parent_id ? 1 : 0}</span>
+								<div className='flex min-w-0 items-center gap-1 text-muted-foreground text-xs'>
+									<User2 className='h-3 w-3 shrink-0' />
+									<span className='truncate'>
+										{config.getParentLabel?.(entity) ?? entity.parent_id}
+									</span>
 								</div>
 							}
 						/>
 						<TooltipContent side='top'>
-							{entity.parent_id ? '1 parent' : '0 parents'}
+							{config.getParentLabel?.(entity) ?? `Parent #${entity.parent_id}`}
 						</TooltipContent>
 					</Tooltip>
 				)}

@@ -41,6 +41,7 @@ export function SourceCard({
 			getSecondaryText: s => s.notes,
 			showTypeBadge: true,
 			typeBadgeLabel: 'Source',
+			getParentLabel: s => s.parent?.title || s.parent?.notes || null,
 			getRelationsCount: s => s.children_count ?? 0,
 			getRelationsLabel: count =>
 				count === 1 ? '1 child source' : `${count} child sources`,
