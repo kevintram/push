@@ -37,6 +37,7 @@ import type {
 	Rating,
 	ReviewListItem
 } from '~/features/reviews/types/review.types'
+import { getReviewCreatedToastDescription } from '~/features/reviews/utils/reviewToastDescription'
 import type { LearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { cn } from '~/lib/utils'
 import { localDateString } from '~/utils/date'
@@ -195,6 +196,7 @@ export function LearnableDetailHeader({
 						: await createReview(localDateString(), ratingState)
 
 				toast('Review created', {
+					description: getReviewCreatedToastDescription(review),
 					action: {
 						label: 'Open',
 						onClick: () => openReviewDialog(review.id)

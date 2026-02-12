@@ -28,6 +28,7 @@ import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
 import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type { Rating } from '~/features/reviews/types/review.types'
+import { getReviewCreatedToastDescription } from '~/features/reviews/utils/reviewToastDescription'
 import type { LearnableMetrics } from '~/hooks/useLearnableMetrics'
 import type { LearnableBase } from '~/models/learnable.types'
 import { localDateString } from '~/utils/date'
@@ -180,6 +181,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 			})
 
 			toast('Review created', {
+				description: getReviewCreatedToastDescription(review),
 				action: {
 					label: 'Open',
 					onClick: () => openReviewDialog(review.id)
