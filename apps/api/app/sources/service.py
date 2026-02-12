@@ -47,6 +47,7 @@ async def get_source(session: AsyncSession, source_id: int, user_id: str) -> Sou
         .where(Source.id == source_id, Source.user_id == user_id)
         .options(
             selectinload(Source.parent).selectinload(Source.fsrs_state),
+            selectinload(Source.fsrs_state),
         )
     )
     result = await session.execute(stmt)
@@ -87,6 +88,9 @@ async def load_source_with_relationships(
         .where(Source.id == source_id, Source.user_id == user_id)
         .options(
             selectinload(Source.parent).selectinload(Source.fsrs_state),
+            selectinload(Source.parent)
+            .selectinload(Source.parent)
+            .selectinload(Source.fsrs_state),
             selectinload(Source.children)
             .selectinload(Source.parent)
             .selectinload(Source.fsrs_state),
@@ -649,8 +653,8 @@ async def update_source(
             session.add(fsrs_state)
             await session.flush()
             source.fsrs_state_id = fsrs_state.id
-        elif not srs_enabled and source.fsrs_state:
-            source.fsrs_state.srs_enabled = False
+        elif source.fsrs_state:
+            source.fsrs_state.srs_enabled = srs_enabled
 
     # Apply remaining updates
     if title is not None:

@@ -57,7 +57,7 @@ export function AddEntityMenu({
 					<Button
 						className={cn("gap-1", buttonClassName)}
 						size={buttonSize}
-						variant='secondary'
+						variant='outline'
 					>
 						{isLoading ? (
 							<Loader2 className='h-4 w-4 animate-spin' />

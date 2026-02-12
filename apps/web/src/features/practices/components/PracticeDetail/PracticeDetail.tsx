@@ -166,10 +166,6 @@ interface PracticeDetailProps {
 	 */
 	isLoading?: boolean
 	/**
-	 * Content to render in the left section before the type indicator (e.g., navigation buttons).
-	 */
-	headerBeforeActions?: ReactNode
-	/**
 	 * Content to render on the right side of the header (e.g., close/minimize buttons).
 	 */
 	headerAfterActions?: ReactNode
@@ -200,7 +196,6 @@ interface PracticeDetailProps {
 export function PracticeDetail({
 	practice: practiceProp,
 	isLoading: isLoadingProp,
-	headerBeforeActions,
 	headerAfterActions,
 	onConvertSuccess,
 	onDelete,
@@ -301,10 +296,7 @@ export function PracticeDetail({
 
 	return (
 		<div className='flex h-full min-h-0 flex-col'>
-			<PracticeDetailNavBar
-				afterActions={headerAfterActions}
-				headerBeforeActions={headerBeforeActions}
-			/>
+			<PracticeDetailNavBar afterActions={headerAfterActions} />
 			<div className='flex min-h-0 flex-1'>
 				<div
 					className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'

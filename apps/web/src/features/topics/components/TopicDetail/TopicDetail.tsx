@@ -192,10 +192,6 @@ interface TopicDetailProps {
 	 */
 	isLoading?: boolean
 	/**
-	 * Content to render in the left section before the parents panel (e.g., navigation buttons).
-	 */
-	headerBeforeActions?: ReactNode
-	/**
 	 * Content to render on the right side of the header (e.g., close/minimize buttons).
 	 */
 	headerAfterActions?: ReactNode
@@ -255,7 +251,6 @@ interface TopicDetailProps {
 export function TopicDetail({
 	topic: topicProp,
 	isLoading: isLoadingProp,
-	headerBeforeActions,
 	headerAfterActions,
 	sidebarReadonly = false,
 	onConvertSuccess,
@@ -404,7 +399,6 @@ export function TopicDetail({
 		<div className='flex h-full min-h-0 flex-col'>
 			<TopicDetailNavBar
 				afterActions={headerAfterActions}
-				headerBeforeActions={headerBeforeActions}
 				onParentSelect={onTopicNavigate}
 				topic={topic}
 			/>
