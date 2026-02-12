@@ -27,8 +27,8 @@ export function SourceBadge({
 
 	return (
 		<div className='group/badge relative'>
-			<TooltipProvider>
-				<Tooltip delayDuration={700}>
+			<TooltipProvider delay={700}>
+				<Tooltip>
 					<TooltipTrigger
 						render={
 							<Badge
