@@ -50,6 +50,7 @@ class TopicRead(TopicBase):
     step: int | None = None
     srs_enabled: bool = False
     last_reviewed_at: date | None = None
+    last_review_rating: str | None = None
 
     # Inherited fields
     inherited_stability: float | None = None
