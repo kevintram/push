@@ -490,7 +490,7 @@ export function TopicDetail({
 									},
 									{
 										value: 'sources',
-										label: 'Sources',
+										label: 'Teaching sources',
 										count: topic.sources_count ?? 0,
 										content: requestedTabs.sources ? (
 											<TopicSourcesPanel
