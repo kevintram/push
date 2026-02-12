@@ -407,7 +407,7 @@ export function TopicDetail({
 					className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'
 					ref={scrollContainerRef}
 				>
-					<div className={cn('w-full px-6 pt-2 pb-4', className)}>
+					<div className={cn('w-full px-6 pt-6 pb-4', className)}>
 						<LearnableDetailHeader
 							archived={topic.archived}
 							createdAt={topic.inserted_at}
