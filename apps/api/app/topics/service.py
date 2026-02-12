@@ -40,6 +40,7 @@ async def get_topic(session: AsyncSession, topic_id: int, user_id: str) -> Topic
         .where(Topic.id == topic_id, Topic.user_id == user_id)
         .options(
             selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+            selectinload(Topic.fsrs_state),
         )
     )
     result = await session.execute(stmt)
@@ -84,6 +85,9 @@ async def load_topic_with_relationships(
         .where(Topic.id == topic_id, Topic.user_id == user_id)
         .options(
             selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+            selectinload(Topic.parent)
+            .selectinload(Topic.parent)
+            .selectinload(Topic.fsrs_state),
             selectinload(Topic.children)
             .selectinload(Topic.parent)
             .selectinload(Topic.fsrs_state),
