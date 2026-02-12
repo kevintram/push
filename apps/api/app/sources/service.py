@@ -169,7 +169,10 @@ async def search_sources(
 
     limit = max(1, min(limit, 50))
     stmt = stmt.limit(limit)
-    stmt = stmt.options(selectinload(Source.fsrs_state))
+    stmt = stmt.options(
+        selectinload(Source.parent).selectinload(Source.fsrs_state),
+        selectinload(Source.fsrs_state),
+    )
 
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -275,7 +278,10 @@ async def list_sources(
                 .exists()
             )
 
-    stmt = stmt.options(selectinload(Source.fsrs_state))
+    stmt = stmt.options(
+        selectinload(Source.parent).selectinload(Source.fsrs_state),
+        selectinload(Source.fsrs_state),
+    )
 
     # Apply limit if provided
     if limit is not None:
