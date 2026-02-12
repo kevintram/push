@@ -482,7 +482,7 @@ export function SourceDetail({
 								tabs={[
 									{
 										value: 'children',
-										label: 'Children',
+										label: 'Contents',
 										count: source.children_count ?? 0,
 										content: requestedTabs.children ? (
 											<SourceChildrenPanel
