@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import {
+	Anvil,
 	Archive,
 	Brain,
 	ChevronDown,
@@ -250,7 +251,7 @@ export function LearnableDetailHeader({
 						<TooltipTrigger
 							render={<span>Edited {formatRelativeDate(updatedAt).text}</span>}
 						/>
-						<TooltipContent side='bottom'>
+						<TooltipContent>
 							{dayjs(updatedAt).format('MMM D, YYYY')}
 						</TooltipContent>
 					</Tooltip>
@@ -261,7 +262,7 @@ export function LearnableDetailHeader({
 						<TooltipTrigger
 							render={<span>Created {formatRelativeDate(createdAt).text}</span>}
 						/>
-						<TooltipContent side='bottom'>
+						<TooltipContent>
 							{dayjs(createdAt).format('MMM D, YYYY')}
 						</TooltipContent>
 					</Tooltip>
@@ -297,7 +298,7 @@ export function LearnableDetailHeader({
 									</div>
 								}
 							/>
-							<TooltipContent side='bottom'>
+							<TooltipContent>
 								{freshnessTierInfo.tooltip ??
 									'Complete a review to see freshness tier'}
 							</TooltipContent>
@@ -331,7 +332,7 @@ export function LearnableDetailHeader({
 											</Button>
 										}
 									/>
-									<TooltipContent side='bottom'>
+									<TooltipContent>
 										{formatAbsoluteDate(latestCompletedReview.completed_at)}
 									</TooltipContent>
 								</Tooltip>
@@ -343,12 +344,13 @@ export function LearnableDetailHeader({
 						<Tooltip>
 							<TooltipTrigger
 								render={
-									<span className='whitespace-nowrap font-semibold text-muted-foreground text-sm'>
-										{stabilityText} durability
-									</span>
+									<div className='flex items-center gap-1.5 font-semibold text-muted-foreground'>
+										<Anvil className='h-4 w-4' />
+										<span>{stabilityText} durability</span>
+									</div>
 								}
 							/>
-							<TooltipContent side='bottom'>
+							<TooltipContent>
 								Durable for {stabilityTooltipText} without review
 							</TooltipContent>
 						</Tooltip>
@@ -396,38 +398,48 @@ export function LearnableDetailHeader({
 								/>
 							</Button>
 						</TooltipTrigger>
-						<TooltipContent side='bottom'>Show in review queue</TooltipContent>
+						<TooltipContent>Show in review queue</TooltipContent>
 					</Tooltip>
 				</div>
 				<div className='flex items-center gap-2'>
-					<Toggle
-						aria-label={inboxed ? 'Remove from inbox' : 'Add to inbox'}
-						className={cn(
-							'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
-							'data-[state=on]:bg-muted data-[state=on]:text-foreground'
-						)}
-						disabled={isUpdating || readonly}
-						onPressedChange={onInboxToggle}
-						pressed={inboxed}
-						size='sm'
-						variant='outline'
-					>
-						<Inbox className='h-4 w-4' />
-					</Toggle>
-					<Toggle
-						aria-label={archived ? 'Unarchive' : 'Archive'}
-						className={cn(
-							'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
-							'data-[state=on]:bg-muted data-[state=on]:text-foreground'
-						)}
-						disabled={isUpdating || readonly}
-						onPressedChange={onArchiveToggle}
-						pressed={archived}
-						size='sm'
-						variant='outline'
-					>
-						<Archive className='h-4 w-4' />
-					</Toggle>
+					<Tooltip>
+						<TooltipTrigger render={<span className='inline-flex' />}>
+							<Toggle
+								aria-label={inboxed ? 'Remove from inbox' : 'Add to inbox'}
+								className={cn(
+									'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
+									'data-[state=on]:bg-muted data-[state=on]:text-foreground'
+								)}
+								disabled={isUpdating || readonly}
+								onPressedChange={onInboxToggle}
+								pressed={inboxed}
+								size='sm'
+								variant='outline'
+							>
+								<Inbox className='h-4 w-4' />
+							</Toggle>
+						</TooltipTrigger>
+						<TooltipContent>Inbox</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger render={<span className='inline-flex' />}>
+							<Toggle
+								aria-label={archived ? 'Unarchive' : 'Archive'}
+								className={cn(
+									'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
+									'data-[state=on]:bg-muted data-[state=on]:text-foreground'
+								)}
+								disabled={isUpdating || readonly}
+								onPressedChange={onArchiveToggle}
+								pressed={archived}
+								size='sm'
+								variant='outline'
+							>
+								<Archive className='h-4 w-4' />
+							</Toggle>
+						</TooltipTrigger>
+						<TooltipContent>Archive</TooltipContent>
+					</Tooltip>
 					{renderActionMenu(actionMenuTrigger)}
 				</div>
 			</div>
