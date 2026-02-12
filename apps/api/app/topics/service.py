@@ -35,7 +35,13 @@ from app.utils.fsrs import apply_inherited_fsrs
 
 async def get_topic(session: AsyncSession, topic_id: int, user_id: str) -> Topic:
     """Get a topic or raise NotFoundError."""
-    stmt = select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+    stmt = (
+        select(Topic)
+        .where(Topic.id == topic_id, Topic.user_id == user_id)
+        .options(
+            selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+        )
+    )
     result = await session.execute(stmt)
     topic = result.scalar_one_or_none()
     if not topic:
