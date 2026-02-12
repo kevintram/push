@@ -4,7 +4,6 @@ import {
 	Baby,
 	Brain,
 	ChevronDown,
-	FileText,
 	Inbox,
 	Loader2,
 	Plus,
@@ -231,22 +230,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 						</TooltipContent>
 					</Tooltip>
 				)}
-				{config.showTypeBadge && config.typeBadgeLabel && (
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-									<FileText className='h-3 w-3' />
-									<span>{config.typeBadgeLabel}</span>
-								</div>
-							}
-						/>
-						<TooltipContent side='top'>
-							This is a {config.typeBadgeLabel}
-						</TooltipContent>
-					</Tooltip>
-				)}
-				<div className='flex-1' />
+					<div className='flex-1' />
 				{/* Leaving soon badge */}
 				{showLeavingSoon && isLeavingSoon && leavingSoonLabel && (
 					<Tooltip>
@@ -278,7 +262,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 							onClick={e => e.stopPropagation()}
 							onKeyDown={e => e.stopPropagation()}
 							size='xs'
-							variant='secondary'
+							variant='tertiary'
 						>
 							{isCreatingReview ? (
 								<Loader2 className='h-3 w-3 animate-spin' />
@@ -307,19 +291,26 @@ export function LearnableCardBase<T extends LearnableBase>({
 
 			<CardContent className='mb-3 flex flex-1 flex-col gap-3'>
 				<div className='flex flex-col gap-1'>
-					{/* Inbox/Archive indicators */}
-					{(entity.inboxed || entity.archived) && (
-						<div className='flex items-center gap-2 text-muted-foreground text-xs'>
+					{/* Type / Inbox / Archive indicators */}
+					{(config.typeBadgeLabel || entity.inboxed || entity.archived) && (
+						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+							{config.typeBadgeLabel && (
+								<span>{config.typeBadgeLabel}</span>
+							)}
+							{config.typeBadgeLabel && entity.inboxed && <span className='font-bold'>·</span>}
 							{entity.inboxed && (
 								<div className='flex items-center gap-1'>
 									<Inbox className='h-3 w-3' />
-									<span>Inboxed</span>
+									<span>Inbox</span>
 								</div>
+							)}
+							{(config.typeBadgeLabel || entity.inboxed) && entity.archived && (
+								<span className='font-bold'>·</span>
 							)}
 							{entity.archived && (
 								<div className='flex items-center gap-1'>
 									<Archive className='h-3 w-3' />
-									<span>Archived</span>
+									<span>Archive</span>
 								</div>
 							)}
 						</div>
@@ -372,7 +363,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 							</span>
 						)}
 						{/* Last reviewed */}
-						<span>·</span>
+						<span className='font-bold'>·</span>
 						<Tooltip>
 							<TooltipTrigger
 								render={
