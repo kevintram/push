@@ -2,7 +2,7 @@ import { ChevronDown, Loader2, Plus } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
-import { Skeleton } from '~/components/ui/skeleton'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviews } from '~/features/reviews/api/getReviews'
 import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
@@ -172,11 +172,7 @@ export function EntityReviewsPageContent({
 							/>
 						</div>
 						{isLoading ? (
-							<div className='flex flex-col gap-2'>
-								<Skeleton className='h-20 w-full' />
-								<Skeleton className='h-20 w-full' />
-								<Skeleton className='h-20 w-full' />
-							</div>
+							<LoadingSpinner containerClassName='min-h-56' />
 						) : (
 							<div className='flex flex-col gap-10'>
 								{uncompletedUnscheduledReviews.length > 0 && (

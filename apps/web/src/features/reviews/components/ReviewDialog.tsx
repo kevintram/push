@@ -12,7 +12,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
-import { Skeleton } from '~/components/ui/skeleton'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Textarea } from '~/components/ui/textarea'
 import { SearchDialog } from '~/features/search/components/SearchDialog'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
@@ -320,23 +320,7 @@ export function ReviewDialog({
 					className='h-full w-full p-0 md:max-h-[400px] md:max-w-[540px] lg:max-w-[680px]'
 					showCloseButton={false}
 				>
-					<div className='flex h-full min-h-0 flex-col'>
-						<div className='border-b px-2 py-1'>
-							<Skeleton className='h-6 w-full' />
-						</div>
-						<div className='flex flex-1 flex-col gap-4 px-4 py-4'>
-							<div className='grid grid-cols-[auto_1fr_auto] items-center gap-x-2'>
-								<Skeleton className='h-6 w-10' />
-								<Skeleton className='h-6 w-full' />
-								<Skeleton className='h-6 w-20' />
-								<Skeleton className='col-span-2 col-start-2 h-12 w-full' />
-							</div>
-							<div className='flex items-center gap-2'>
-								<Skeleton className='h-7 w-32' />
-								<Skeleton className='h-7 w-40' />
-							</div>
-						</div>
-					</div>
+					<LoadingSpinner containerClassName='h-full min-h-48' />
 				</DialogContent>
 			</Dialog>
 		)
