@@ -1,6 +1,6 @@
 import type { Practice } from '~/features/practices/types/practice.types'
 import type { Source } from '~/features/sources/types/source.types'
-import type { FreshnessTier } from '~/models/learnable.types'
+import type { FreshnessTier, ReviewRating } from '~/models/learnable.types'
 import type { LearningState } from '~/models/learning-state.types'
 
 // A related entity can be either a full Topic or Source with entity_type discriminator
@@ -38,6 +38,7 @@ export type Topic = {
 	archived: boolean
 	inboxed: boolean
 	last_reviewed_at: string | null
+	last_review_rating: ReviewRating | null
 	srs_enabled: boolean
 	retrievability: number | null
 	freshness_tier: FreshnessTier | null

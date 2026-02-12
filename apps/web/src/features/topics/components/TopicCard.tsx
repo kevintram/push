@@ -38,7 +38,9 @@ export function TopicCard({
 			entityType: 'topic',
 			getPrimaryText: t => t.name,
 			getSecondaryText: t => t.notes,
-			showTypeBadge: false,
+			showTypeBadge: true,
+			typeBadgeLabel: 'Topic',
+			getParentLabel: t => t.parent?.name || t.parent?.notes || null,
 			getRelationsCount: t => t.children_count ?? 0,
 			getRelationsLabel: count =>
 				count === 1 ? '1 child' : `${count} children`,

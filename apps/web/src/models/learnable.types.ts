@@ -1,6 +1,7 @@
 import type { LearningState } from './learning-state.types'
 
 export type FreshnessTier = 'Fresh' | 'Fine' | 'Hazy' | 'Forgotten'
+export type ReviewRating = 'miss' | 'hard' | 'good' | 'easy'
 
 /**
  * Thin FSRS state projection used for inheritance decisions.
@@ -48,6 +49,7 @@ export type LearnableBase = {
 	step: number | null
 	srs_enabled: boolean
 	last_reviewed_at: string | null
+	last_review_rating: ReviewRating | null
 	// Inherited FSRS
 	inherited_stability: number | null
 	inherited_difficulty: number | null

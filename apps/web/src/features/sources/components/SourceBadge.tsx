@@ -27,8 +27,8 @@ export function SourceBadge({
 
 	return (
 		<div className='group/badge relative'>
-			<TooltipProvider>
-				<Tooltip delayDuration={700}>
+			<TooltipProvider delay={700}>
+				<Tooltip>
 					<TooltipTrigger
 						render={
 							<Badge
@@ -55,7 +55,7 @@ export function SourceBadge({
 							</Badge>
 						}
 					/>
-					<TooltipContent className='max-w-72' side='bottom'>
+					<TooltipContent className='max-w-72'>
 						{title && (
 							<h3 className='break-word font-semibold [overflow-wrap:anywhere]'>
 								{title}

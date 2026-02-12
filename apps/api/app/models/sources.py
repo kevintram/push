@@ -245,7 +245,20 @@ Source.topics_count = column_property(
 
 # Import for count column properties (after class to avoid circular import)
 from app.models.entity_relations import EntityRelation  # noqa: E402
+from app.models.reviews import Review  # noqa: E402
 from app.models.source_prerequisites import SourcePrerequisite  # noqa: E402
+
+Source.last_review_rating = column_property(
+    select(Review.rating)
+    .where(
+        Review.source_id == Source.id,
+        Review.completed_at.isnot(None),
+    )
+    .order_by(Review.completed_at.desc(), Review.id.desc())
+    .limit(1)
+    .correlate(Source)
+    .scalar_subquery()
+)
 
 Source.related_outgoing_count = column_property(
     select(func.count())

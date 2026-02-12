@@ -3,7 +3,7 @@ import type {
 	RelatedEntityItem,
 	Topic
 } from '~/features/topics/types/topic.types'
-import type { FreshnessTier } from '~/models/learnable.types'
+import type { FreshnessTier, ReviewRating } from '~/models/learnable.types'
 import type { LearningState } from '~/models/learning-state.types'
 
 export type Source = {
@@ -25,6 +25,7 @@ export type Source = {
 	step: number | null
 	srs_enabled: boolean
 	last_reviewed_at: string | null
+	last_review_rating: ReviewRating | null
 	// Inherited FSRS fields
 	inherited_stability: number | null
 	inherited_difficulty: number | null
