@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { TooltipProvider } from '~/components/ui/tooltip'
 import { ThemeProvider } from '~/stores/ThemeContext'
 import './global.css'
 import { routeTree } from './app/routeTree.gen'
@@ -48,8 +49,10 @@ enableMocking()
 				<StrictMode>
 					<ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
 						<QueryClientProvider client={queryClient}>
-							<ReactQueryDevtools initialIsOpen={false} />
-							<RouterProvider router={router} />
+							<TooltipProvider delay={200}>
+								<ReactQueryDevtools initialIsOpen={false} />
+								<RouterProvider router={router} />
+							</TooltipProvider>
 						</QueryClientProvider>
 					</ThemeProvider>
 				</StrictMode>
