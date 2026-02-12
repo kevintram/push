@@ -270,7 +270,7 @@ export function LearnableDetailHeader({
 
 			{/* Title row */}
 			<Textarea
-				className='!bg-transparent !text-2xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-semibold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+				className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 				onChange={onTitleChange}
 				placeholder={titlePlaceholder}
 				spellCheck={false}
@@ -357,7 +357,7 @@ export function LearnableDetailHeader({
 			</div>
 
 			{/* Actions row */}
-			<div className='my-2 flex flex-wrap items-center justify-between border-y-1 py-2'>
+			<div className='my-3 flex flex-wrap items-center justify-between border-y-1 py-2'>
 				<div className='flex items-center gap-2'>
 					<RatingDropdown
 						align='end'
