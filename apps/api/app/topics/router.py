@@ -86,9 +86,9 @@ async def read_topics(
 @router.get("/{topic_id}/")
 async def read_topic(
     session: SessionDep, user_id: UserIdDep, topic_id: int
-) -> TopicSummaryRead:
-    return TopicSummaryRead.model_validate(
-        await service.get_topic(session, topic_id, user_id)
+) -> TopicDetailRead:
+    return TopicDetailRead.model_validate(
+        await service.load_topic_with_relationships(session, topic_id, user_id)
     )
 
 
