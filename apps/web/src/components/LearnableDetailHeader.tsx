@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
 	Archive,
@@ -20,7 +19,6 @@ import {
 } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
-import { ButtonGroup, ButtonGroupSeparator } from '~/components/ui/button-group'
 import { Textarea } from '~/components/ui/textarea'
 import { Toggle } from '~/components/ui/toggle'
 import {
@@ -127,7 +125,6 @@ export function LearnableDetailHeader({
 	renderTypeChangeMenu,
 	renderActionMenu
 }: LearnableDetailHeaderProps) {
-	const navigate = useNavigate()
 	const filters = useMemo(
 		() => toReviewFilters(entityType, entityId),
 		[entityType, entityId]
@@ -150,29 +147,6 @@ export function LearnableDetailHeader({
 			nullLabel: 'never'
 		}
 	).text
-
-	const handleNavigateToReviews = useCallback(() => {
-		if (entityType === 'topic') {
-			navigate({
-				to: '/topics/$topicId/reviews',
-				params: { topicId: entityId.toString() }
-			})
-			return
-		}
-
-		if (entityType === 'source') {
-			navigate({
-				to: '/sources/$sourceId/reviews',
-				params: { sourceId: entityId.toString() }
-			})
-			return
-		}
-
-		navigate({
-			to: '/practices/$practiceId/reviews',
-			params: { practiceId: entityId.toString() }
-		})
-	}, [entityType, entityId, navigate])
 
 	const handleOpenLastReview = useCallback(() => {
 		if (latestCompletedReview?.id) {
@@ -385,50 +359,45 @@ export function LearnableDetailHeader({
 			{/* Actions row */}
 			<div className='my-2 flex flex-wrap items-center justify-between border-y-1 py-2'>
 				<div className='flex items-center gap-2'>
-					<Button
-						className='rounded-full'
-						disabled={readonly}
-						onClick={() => onSrsToggle(!srsEnabled)}
-						size='icon-sm'
-						variant='outline'
-					>
-						<Star
-							className={
-								srsEnabled
-									? 'h-4 w-4 fill-yellow-500 text-yellow-500'
-									: 'h-4 w-4 text-muted-foreground'
-							}
-						/>
-					</Button>
-					<ButtonGroup>
-						<Button
-							className='rounded-full'
-							disabled={readonly}
-							onClick={handleNavigateToReviews}
-							size='sm'
-						>
-							<span>Reviews</span>
-						</Button>
-						<ButtonGroupSeparator />
-						<RatingDropdown
-							align='end'
-							onSelect={handleRatingSelect}
-							trigger={
-								<Button
-									className='rounded-full'
-									disabled={readonly || isCreatingReview}
-									size='sm'
-								>
-									{isCreatingReview ? (
-										<Loader2 className='h-4 w-4 animate-spin' />
-									) : (
-										<Plus className='h-4 w-4' />
-									)}
-									<ChevronDown className='h-4 w-4' />
-								</Button>
-							}
-						/>
-					</ButtonGroup>
+					<RatingDropdown
+						align='end'
+						onSelect={handleRatingSelect}
+						trigger={
+							<Button
+								className='rounded-full'
+								disabled={readonly || isCreatingReview}
+								size='sm'
+							>
+								{isCreatingReview ? (
+									<Loader2 className='h-4 w-4 animate-spin' />
+								) : (
+									<Plus className='h-4 w-4' />
+								)}
+								<span>Review</span>
+								<ChevronDown className='h-4 w-4' />
+							</Button>
+						}
+					/>
+					<Tooltip>
+						<TooltipTrigger render={<span className='inline-flex' />}>
+							<Button
+								className='rounded-full'
+								disabled={readonly}
+								onClick={() => onSrsToggle(!srsEnabled)}
+								size='icon-sm'
+								variant='outline'
+							>
+								<Star
+									className={
+										srsEnabled
+											? 'h-4 w-4 fill-yellow-500 text-yellow-500'
+											: 'h-4 w-4 text-muted-foreground'
+									}
+								/>
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent side='bottom'>Show in review queue</TooltipContent>
+					</Tooltip>
 				</div>
 				<div className='flex items-center gap-2'>
 					<Toggle
