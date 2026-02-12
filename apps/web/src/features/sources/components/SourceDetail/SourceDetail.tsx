@@ -509,7 +509,7 @@ export function SourceDetail({
 									},
 									{
 										value: 'topics',
-										label: 'Covered topics',
+										label: 'Covered Topics',
 										count: source.topics_count ?? 0,
 										content: requestedTabs.topics ? (
 											<SourceTopicsPanel
