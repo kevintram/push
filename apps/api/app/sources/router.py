@@ -82,9 +82,9 @@ async def read_sources(
 @router.get("/{source_id}/")
 async def read_source(
     session: SessionDep, user_id: UserIdDep, source_id: int
-) -> SourceDetailRead:
-    return SourceDetailRead.model_validate(
-        await service.load_source_with_relationships(session, source_id, user_id)
+) -> SourceSummaryRead:
+    return SourceSummaryRead.model_validate(
+        await service.get_source(session, source_id, user_id)
     )
 
 

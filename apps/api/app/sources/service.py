@@ -42,7 +42,13 @@ from app.utils.fsrs import apply_inherited_fsrs
 
 async def get_source(session: AsyncSession, source_id: int, user_id: str) -> Source:
     """Get a source or raise NotFoundError."""
-    stmt = select(Source).where(Source.id == source_id, Source.user_id == user_id)
+    stmt = (
+        select(Source)
+        .where(Source.id == source_id, Source.user_id == user_id)
+        .options(
+            selectinload(Source.parent).selectinload(Source.fsrs_state),
+        )
+    )
     result = await session.execute(stmt)
     source = result.scalar_one_or_none()
     if not source:

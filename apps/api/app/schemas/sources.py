@@ -62,6 +62,7 @@ class SourceSummaryRead(SourceRead):
 
     model_config = ConfigDict(from_attributes=True)
 
+    parent: SourceRead | None = None
     children_count: int = 0
     topics_count: int = 0
     related_outgoing_count: int = 0
