@@ -48,7 +48,13 @@ async def load_practice_with_relationships(
         select(Practice)
         .where(Practice.id == practice_id, Practice.user_id == user_id)
         .options(
+            selectinload(Practice.topics)
+            .selectinload(Topic.parent)
+            .selectinload(Topic.fsrs_state),
             selectinload(Practice.topics).selectinload(Topic.fsrs_state),
+            selectinload(Practice.sources)
+            .selectinload(Source.parent)
+            .selectinload(Source.fsrs_state),
             selectinload(Practice.sources).selectinload(Source.fsrs_state),
             selectinload(Practice.fsrs_state),
         )
@@ -306,7 +312,10 @@ async def get_practice_topics(
         select(Topic)
         .join(t_practice_topics, Topic.id == t_practice_topics.c.topic_id)
         .where(t_practice_topics.c.practice_id == practice_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.fsrs_state))
+        .options(
+            selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+            selectinload(Topic.fsrs_state),
+        )
     )
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -340,7 +349,10 @@ async def add_practice_topic(
         topic_result = await session.execute(
             select(Topic)
             .where(Topic.id == topic_id, Topic.user_id == user_id)
-            .options(selectinload(Topic.fsrs_state))
+            .options(
+                selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+                selectinload(Topic.fsrs_state),
+            )
         )
         topic = topic_result.scalar_one_or_none()
         if not topic:
@@ -363,6 +375,9 @@ async def add_practice_topic(
     # Refresh practice to get updated counts
     await session.refresh(practice)
 
+    from app.topics.service import get_topic
+
+    topic = await get_topic(session, topic.id, user_id)
     return practice, topic
 
 
@@ -398,7 +413,10 @@ async def get_practice_sources(
         .where(
             t_practice_sources.c.practice_id == practice_id, Source.user_id == user_id
         )
-        .options(selectinload(Source.fsrs_state))
+        .options(
+            selectinload(Source.parent).selectinload(Source.fsrs_state),
+            selectinload(Source.fsrs_state),
+        )
     )
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -432,7 +450,10 @@ async def add_practice_source(
         source_result = await session.execute(
             select(Source)
             .where(Source.id == source_id, Source.user_id == user_id)
-            .options(selectinload(Source.fsrs_state))
+            .options(
+                selectinload(Source.parent).selectinload(Source.fsrs_state),
+                selectinload(Source.fsrs_state),
+            )
         )
         source = source_result.scalar_one_or_none()
         if not source:
@@ -455,6 +476,9 @@ async def add_practice_source(
     # Refresh practice to get updated counts
     await session.refresh(practice)
 
+    from app.sources.service import get_source
+
+    source = await get_source(session, source.id, user_id)
     return practice, source
 
 

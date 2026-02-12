@@ -84,7 +84,13 @@ async def load_topic_with_relationships(
         .where(Topic.id == topic_id, Topic.user_id == user_id)
         .options(
             selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+            selectinload(Topic.children)
+            .selectinload(Topic.parent)
+            .selectinload(Topic.fsrs_state),
             selectinload(Topic.children).selectinload(Topic.fsrs_state),
+            selectinload(Topic.sources)
+            .selectinload(Source.parent)
+            .selectinload(Source.fsrs_state),
             selectinload(Topic.sources).selectinload(Source.fsrs_state),
             selectinload(Topic.practices).selectinload(Practice.fsrs_state),
             selectinload(Topic.fsrs_state),
@@ -383,7 +389,10 @@ async def get_topic_children(
     stmt = (
         select(Topic)
         .where(Topic.parent_id == topic_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.fsrs_state))
+        .options(
+            selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+            selectinload(Topic.fsrs_state),
+        )
     )
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -399,7 +408,10 @@ async def get_topic_sources(
         select(Source)
         .join(t_source_topics, Source.id == t_source_topics.c.source_id)
         .where(t_source_topics.c.topic_id == topic_id, Source.user_id == user_id)
-        .options(selectinload(Source.fsrs_state))
+        .options(
+            selectinload(Source.parent).selectinload(Source.fsrs_state),
+            selectinload(Source.fsrs_state),
+        )
     )
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -584,7 +596,13 @@ async def get_topic_related_entities(
         select(EntityRelation)
         .where(EntityRelation.from_topic_id == topic_id)
         .options(
+            selectinload(EntityRelation.to_topic)
+            .selectinload(Topic.parent)
+            .selectinload(Topic.fsrs_state),
             selectinload(EntityRelation.to_topic).selectinload(Topic.fsrs_state),
+            selectinload(EntityRelation.to_source)
+            .selectinload(Source.parent)
+            .selectinload(Source.fsrs_state),
             selectinload(EntityRelation.to_source).selectinload(Source.fsrs_state),
         )
     )
@@ -611,7 +629,13 @@ async def get_topic_related_entities(
         select(EntityRelation)
         .where(EntityRelation.to_topic_id == topic_id)
         .options(
+            selectinload(EntityRelation.from_topic)
+            .selectinload(Topic.parent)
+            .selectinload(Topic.fsrs_state),
             selectinload(EntityRelation.from_topic).selectinload(Topic.fsrs_state),
+            selectinload(EntityRelation.from_source)
+            .selectinload(Source.parent)
+            .selectinload(Source.fsrs_state),
             selectinload(EntityRelation.from_source).selectinload(Source.fsrs_state),
         )
     )
