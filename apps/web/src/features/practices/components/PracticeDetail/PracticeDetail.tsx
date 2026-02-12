@@ -9,6 +9,7 @@ import {
 	useState
 } from 'react'
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
+import { DetailTabsShell } from '~/components/DetailTabs'
 import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
 import {
 	DropdownMenu,
@@ -36,8 +37,7 @@ import { useUpdatePractice } from '../../api/updatePractice'
 import { PracticeContext } from '../../stores/SelectedPracticeContext'
 import type { Practice } from '../../types/practice.types'
 import { PracticeActionMenu } from '../PracticeActionMenu'
-import { PracticeSourcesPanel } from '../PracticeSourcesPanel'
-import { PracticeTopicsPanel } from '../PracticeTopicsPanel'
+import { PracticeRelatedPanel } from '../PracticeRelatedPanel'
 import { PracticeDetailNavBar } from './PracticeDetailNavBar'
 import { PracticeDetailSkeleton } from './PracticeDetailSkeleton'
 
@@ -358,25 +358,29 @@ export function PracticeDetail({
 							/>
 						</div>
 
-						{/* Topics Panel */}
-						<div className='mt-4'>
-							<PracticeTopicsPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onTopicSelect={onTopicNavigate}
-								practiceId={practice.id}
-								topics={practice.topics}
-							/>
-						</div>
-
-						{/* Sources Panel */}
-						<div className='mt-4'>
-							<PracticeSourcesPanel
-								getScrollElement={getScrollElement}
-								inheritFsrsState={srsSource}
-								onSourceSelect={onSourceNavigate}
-								practiceId={practice.id}
-								sources={practice.sources}
+						<div className='mt-6'>
+							<DetailTabsShell
+								defaultValue='related'
+								tabs={[
+									{
+										value: 'related',
+										label: 'Related',
+										count:
+											(practice.topics?.length ?? 0) +
+											(practice.sources?.length ?? 0),
+										content: (
+											<PracticeRelatedPanel
+												getScrollElement={getScrollElement}
+												inheritFsrsState={srsSource}
+												onSourceSelect={onSourceNavigate}
+												onTopicSelect={onTopicNavigate}
+												practiceId={practice.id}
+												sources={practice.sources}
+												topics={practice.topics}
+											/>
+										)
+									}
+								]}
 							/>
 						</div>
 					</div>
