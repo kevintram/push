@@ -217,20 +217,24 @@ export function LearnableCardBase<T extends LearnableBase>({
 			tabIndex={0}
 		>
 			<CardHeader className='-top-1 -left-1 relative flex items-center justify-between gap-2 mb-1'>
-				{'parent_id' in entity && entity.parent_id && (
+				{'parent_id' in entity && (
 					<Tooltip>
 						<TooltipTrigger
 							render={
 								<div className='flex min-w-0 items-center gap-1 text-muted-foreground text-xs font-semibold'>
 									<User2 className='h-3 w-3 shrink-0' />
 									<span className='truncate'>
-										{config.getParentLabel?.(entity) ?? entity.parent_id}
+										{entity.parent_id
+											? (config.getParentLabel?.(entity) ?? entity.parent_id)
+											: 'None'}
 									</span>
 								</div>
 							}
 						/>
 						<TooltipContent side='top'>
-							{config.getParentLabel?.(entity) ?? `Parent #${entity.parent_id}`}
+							{entity.parent_id
+								? (config.getParentLabel?.(entity) ?? `Parent #${entity.parent_id}`)
+								: 'No parent'}
 						</TooltipContent>
 					</Tooltip>
 				)}
