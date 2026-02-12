@@ -1,8 +1,6 @@
-import { useNavigate, useRouter } from '@tanstack/react-router'
-import { ArrowLeft } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
 import { useCallback } from 'react'
 import { LoadingOrError } from '~/components/LoadingOrError'
-import { Button } from '~/components/ui/button'
 import { useTopicWithRelationships } from '~/features/topics/api/getTopic'
 import { TopicDetailNavBar } from '~/features/topics/components/TopicDetail/TopicDetailNavBar'
 import { EntityReviewsPageContent } from './EntityReviewsPageContent'
@@ -13,7 +11,6 @@ interface TopicReviewsPageProps {
 
 export function TopicReviewsPage({ topicId }: TopicReviewsPageProps) {
 	const navigate = useNavigate()
-	const router = useRouter()
 	const parsedTopicId = Number.parseInt(topicId, 10)
 	const { topic, isLoading } = useTopicWithRelationships(parsedTopicId)
 
@@ -42,17 +39,6 @@ export function TopicReviewsPage({ topicId }: TopicReviewsPageProps) {
 			navbar={
 				<TopicDetailNavBar
 					activeTab='reviews'
-					headerBeforeActions={
-						<Button
-							className='h-6 w-6 p-0'
-							onClick={() => router.history.back()}
-							size='sm'
-							title='Go back'
-							variant='ghost'
-						>
-							<ArrowLeft className='h-4 w-4' />
-						</Button>
-					}
 					onParentSelect={handleTopicNavigate}
 					topic={topic}
 				/>

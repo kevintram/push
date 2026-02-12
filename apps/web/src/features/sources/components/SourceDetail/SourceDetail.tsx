@@ -203,10 +203,6 @@ interface SourceDetailProps {
 	 */
 	isLoading?: boolean
 	/**
-	 * Content to render in the left section before the parent indicator (e.g., navigation buttons).
-	 */
-	headerBeforeActions?: ReactNode
-	/**
 	 * Content to render on the right side of the header (e.g., close/minimize buttons).
 	 */
 	headerAfterActions?: ReactNode
@@ -270,7 +266,6 @@ interface SourceDetailProps {
 export function SourceDetail({
 	source: sourceProp,
 	isLoading: isLoadingProp,
-	headerBeforeActions,
 	headerAfterActions,
 	sidebarReadonly = false,
 	onConvertSuccess,
@@ -423,7 +418,6 @@ export function SourceDetail({
 		<div className='flex h-full min-h-0 flex-col'>
 			<SourceDetailNavBar
 				afterActions={headerAfterActions}
-				headerBeforeActions={headerBeforeActions}
 				onParentSelect={onSourceNavigate}
 				source={source}
 			/>

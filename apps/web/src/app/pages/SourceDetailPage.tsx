@@ -1,7 +1,5 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
-import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import { Button } from '~/components/ui/button'
 import { useSourceWithRelationships } from '~/features/sources/api/getSource'
 import {
 	SourceDetail,
@@ -13,22 +11,6 @@ import { useConversionNavigate } from '~/hooks/useConversionNavigate'
 interface SourceDetailPageProps {
 	sourceId: string
 	activeTab?: SourceDetailTab
-}
-
-function BrowserNavigationButtons() {
-	const router = useRouter()
-
-	return (
-		<Button
-			className='h-6 w-6 p-0'
-			onClick={() => router.history.back()}
-			size='sm'
-			title='Go back'
-			variant='ghost'
-		>
-			<ArrowLeft className='h-4 w-4' />
-		</Button>
-	)
 }
 
 export function SourceDetailPage({
@@ -134,7 +116,6 @@ export function SourceDetailPage({
 			<SourceDetail
 				activeTab={activeTab}
 				className='mx-auto max-w-5xl'
-				headerBeforeActions={<BrowserNavigationButtons />}
 				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}
 				onPracticeNavigate={handlePracticeNavigate}
