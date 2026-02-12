@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import {
+	Anvil,
 	Archive,
 	Baby,
 	Brain,
@@ -92,7 +93,9 @@ export function LearnableCardBase<T extends LearnableBase>({
 		isUnreviewed,
 		isLeavingSoon,
 		leavingSoonLabel,
-		leavingSoonTooltip
+		leavingSoonTooltip,
+		stabilityText,
+		stabilityTooltipText
 	} = metrics
 
 	const lastReviewed = useMemo(
@@ -216,12 +219,12 @@ export function LearnableCardBase<T extends LearnableBase>({
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardHeader className='-top-1 -left-1 relative flex items-center justify-between gap-2 mb-1'>
+			<CardHeader className='-top-1 -left-1 relative mb-1 flex items-center justify-between gap-2'>
 				{'parent_id' in entity && (
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<div className='flex min-w-0 items-center gap-1 text-muted-foreground text-xs font-semibold'>
+								<div className='flex min-w-0 items-center gap-1 font-semibold text-muted-foreground text-xs'>
 									<User2 className='h-3 w-3 shrink-0' />
 									<span className='truncate'>
 										{entity.parent_id
@@ -231,14 +234,15 @@ export function LearnableCardBase<T extends LearnableBase>({
 								</div>
 							}
 						/>
-						<TooltipContent side='top'>
+						<TooltipContent>
 							{entity.parent_id
-								? (config.getParentLabel?.(entity) ?? `Parent #${entity.parent_id}`)
+								? (config.getParentLabel?.(entity) ??
+									`Parent #${entity.parent_id}`)
 								: 'No parent'}
 						</TooltipContent>
 					</Tooltip>
 				)}
-					<div className='flex-1' />
+				<div className='flex-1' />
 				{/* Leaving soon badge */}
 				{showLeavingSoon && isLeavingSoon && leavingSoonLabel && (
 					<Tooltip>
@@ -255,7 +259,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 							}
 						/>
 						{leavingSoonTooltip && (
-							<TooltipContent side='top'>{leavingSoonTooltip}</TooltipContent>
+							<TooltipContent>{leavingSoonTooltip}</TooltipContent>
 						)}
 					</Tooltip>
 				)}
@@ -302,10 +306,10 @@ export function LearnableCardBase<T extends LearnableBase>({
 					{/* Type / Inbox / Archive indicators */}
 					{(config.typeBadgeLabel || entity.inboxed || entity.archived) && (
 						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-							{config.typeBadgeLabel && (
-								<span>{config.typeBadgeLabel}</span>
+							{config.typeBadgeLabel && <span>{config.typeBadgeLabel}</span>}
+							{config.typeBadgeLabel && entity.inboxed && (
+								<span className='font-bold'>·</span>
 							)}
-							{config.typeBadgeLabel && entity.inboxed && <span className='font-bold'>·</span>}
 							{entity.inboxed && (
 								<div className='flex items-center gap-1'>
 									<Inbox className='h-3 w-3' />
@@ -361,9 +365,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 										</div>
 									}
 								/>
-								<TooltipContent side='top'>
-									{freshnessTierInfo.tooltip}
-								</TooltipContent>
+								<TooltipContent>{freshnessTierInfo.tooltip}</TooltipContent>
 							</Tooltip>
 						) : (
 							<span className={`font-semibold ${freshnessTierColor}`}>
@@ -375,10 +377,27 @@ export function LearnableCardBase<T extends LearnableBase>({
 						<Tooltip>
 							<TooltipTrigger
 								render={
-									<span className='font-semibold'>{`Reviewed ${lastReviewed.text}`}</span>
+									<span className='font-semibold'>
+										{`Reviewed ${lastReviewed.text}`}
+									</span>
 								}
 							/>
-							<TooltipContent side='top'>{lastReviewedDate}</TooltipContent>
+							<TooltipContent>{lastReviewedDate}</TooltipContent>
+						</Tooltip>
+						{/* Durability */}
+						<span className='font-bold'>·</span>
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<div className='flex items-center gap-1 font-semibold text-muted-foreground'>
+										<Anvil className='h-3 w-3' />
+										<span>{stabilityText}</span>
+									</div>
+								}
+							/>
+							<TooltipContent>
+								Durable for {stabilityTooltipText} without review
+							</TooltipContent>
 						</Tooltip>
 					</>
 				)}
@@ -393,7 +412,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 							</div>
 						}
 					/>
-					<TooltipContent side='top'>
+					<TooltipContent>
 						{config.getRelationsLabel(config.getRelationsCount(entity))}
 					</TooltipContent>
 				</Tooltip>
