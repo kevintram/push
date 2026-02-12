@@ -504,7 +504,7 @@ export function TopicDetail({
 									},
 									{
 										value: 'related',
-										label: 'See also',
+										label: 'Related',
 										count: displayedRelatedCount,
 										content: requestedTabs.related ? (
 											<TopicRelatedPanel
