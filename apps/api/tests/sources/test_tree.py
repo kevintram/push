@@ -541,3 +541,18 @@ class TestSourceInlineCreate:
         assert data["child"]["inboxed"] is True
         assert data["child"]["archived"] is True
         assert data["child"]["parent_id"] == parent.id
+
+
+class TestSourceChildrenIncludeParent:
+    async def test_source_children_include_parent(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+    ):
+        parent = await create_test_source(title="Source Parent")
+        child = await create_test_source(title="Source Child", parent_id=parent.id)
+
+        response = await test_client.get(f"/sources/{parent.id}/children/")
+        assert response.status_code == 200
+        child_payload = next(item for item in response.json() if item["id"] == child.id)
+        assert child_payload["parent"]["id"] == parent.id

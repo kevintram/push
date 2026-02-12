@@ -484,6 +484,53 @@ class TestPracticeSourceAssociations:
         assert len(get_response.json()) == 0
 
 
+class TestPracticeAssociationEndpointsIncludeParent:
+    async def test_practice_association_endpoints_include_parent(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+        create_test_source,
+        create_test_practice,
+    ):
+        topic_parent = await create_test_topic(name="Topic Parent")
+        topic_child = await create_test_topic(
+            name="Topic Child", parent_id=topic_parent.id
+        )
+        source_parent = await create_test_source(title="Source Parent")
+        source_child = await create_test_source(
+            title="Source Child", parent_id=source_parent.id
+        )
+        practice = await create_test_practice(prompt="Practice")
+
+        add_topic = await test_client.post(
+            f"/practices/{practice.id}/topics/",
+            json={"topic_id": topic_child.id},
+        )
+        assert add_topic.status_code == 200
+        assert add_topic.json()["topic"]["parent"]["id"] == topic_parent.id
+
+        add_source = await test_client.post(
+            f"/practices/{practice.id}/sources/",
+            json={"source_id": source_child.id},
+        )
+        assert add_source.status_code == 200
+        assert add_source.json()["source"]["parent"]["id"] == source_parent.id
+
+        list_topics = await test_client.get(f"/practices/{practice.id}/topics/")
+        assert list_topics.status_code == 200
+        assert list_topics.json()[0]["parent"]["id"] == topic_parent.id
+
+        list_sources = await test_client.get(f"/practices/{practice.id}/sources/")
+        assert list_sources.status_code == 200
+        assert list_sources.json()[0]["parent"]["id"] == source_parent.id
+
+        detail = await test_client.get(f"/practices/{practice.id}/")
+        assert detail.status_code == 200
+        detail_payload = detail.json()
+        assert detail_payload["topics"][0]["parent"]["id"] == topic_parent.id
+        assert detail_payload["sources"][0]["parent"]["id"] == source_parent.id
+
+
 class TestPracticeReviews:
     """Tests for practice reviews."""
 

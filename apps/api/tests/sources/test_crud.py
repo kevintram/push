@@ -352,6 +352,38 @@ class TestCrossEntityInheritFsrs:
         )
         assert topic.fsrs_state.inherited_state == source.fsrs_state.state
 
+    async def test_topic_source_association_endpoints_include_parent(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+        create_test_source,
+    ):
+        topic_parent = await create_test_topic(name="Topic Parent")
+        topic_child = await create_test_topic(
+            name="Topic Child", parent_id=topic_parent.id
+        )
+        source_parent = await create_test_source(title="Source Parent")
+        source_child = await create_test_source(
+            title="Source Child", parent_id=source_parent.id
+        )
+
+        link_response = await test_client.post(
+            f"/sources/{source_child.id}/topics/",
+            json={"topic_id": topic_child.id},
+        )
+        assert link_response.status_code == 200
+        link_payload = link_response.json()
+        assert link_payload["topic"]["parent"]["id"] == topic_parent.id
+        assert link_payload["source"]["parent"]["id"] == source_parent.id
+
+        topic_sources = await test_client.get(f"/topics/{topic_child.id}/sources/")
+        assert topic_sources.status_code == 200
+        assert topic_sources.json()[0]["parent"]["id"] == source_parent.id
+
+        source_topics = await test_client.get(f"/sources/{source_child.id}/topics/")
+        assert source_topics.status_code == 200
+        assert source_topics.json()[0]["parent"]["id"] == topic_parent.id
+
     async def test_source_to_practice_inherit_fsrs(
         self,
         test_client: AsyncClient,

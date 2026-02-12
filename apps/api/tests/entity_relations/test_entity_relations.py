@@ -498,6 +498,101 @@ class TestSourcePrerequisites:
         prereq = result.scalar_one_or_none()
         assert prereq is None
 
+    async def test_entity_relation_and_prerequisite_endpoints_include_parent(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+        create_test_source,
+    ):
+        topic_parent = await create_test_topic(name="Topic Parent")
+        topic_child = await create_test_topic(
+            name="Topic Child", parent_id=topic_parent.id
+        )
+        source_parent = await create_test_source(title="Source Parent")
+        source_child = await create_test_source(
+            title="Source Child", parent_id=source_parent.id
+        )
+
+        root_topic = await create_test_topic(name="Root Topic")
+        root_source = await create_test_source(title="Root Source")
+
+        rel_topic_to_topic = await test_client.post(
+            f"/topics/{root_topic.id}/entity-relations/",
+            json={"to_entity_type": "topic", "to_entity_id": topic_child.id},
+        )
+        assert rel_topic_to_topic.status_code == 200
+
+        rel_topic_to_source = await test_client.post(
+            f"/topics/{root_topic.id}/entity-relations/",
+            json={"to_entity_type": "source", "to_entity_id": source_child.id},
+        )
+        assert rel_topic_to_source.status_code == 200
+
+        topic_relations = await test_client.get(
+            f"/topics/{root_topic.id}/entity-relations/"
+        )
+        assert topic_relations.status_code == 200
+        topic_outgoing = topic_relations.json()["outgoing"]
+        outgoing_topic = next(
+            item for item in topic_outgoing if item["entity_type"] == "topic"
+        )
+        outgoing_source = next(
+            item for item in topic_outgoing if item["entity_type"] == "source"
+        )
+        assert outgoing_topic["parent"]["id"] == topic_parent.id
+        assert outgoing_source["parent"]["id"] == source_parent.id
+
+        rel_source_to_topic = await test_client.post(
+            f"/sources/{root_source.id}/entity-relations/",
+            json={"to_entity_type": "topic", "to_entity_id": topic_child.id},
+        )
+        assert rel_source_to_topic.status_code == 200
+
+        rel_source_to_source = await test_client.post(
+            f"/sources/{root_source.id}/entity-relations/",
+            json={"to_entity_type": "source", "to_entity_id": source_child.id},
+        )
+        assert rel_source_to_source.status_code == 200
+
+        source_relations = await test_client.get(
+            f"/sources/{root_source.id}/entity-relations/"
+        )
+        assert source_relations.status_code == 200
+        source_outgoing = source_relations.json()["outgoing"]
+        outgoing_topic = next(
+            item for item in source_outgoing if item["entity_type"] == "topic"
+        )
+        outgoing_source = next(
+            item for item in source_outgoing if item["entity_type"] == "source"
+        )
+        assert outgoing_topic["parent"]["id"] == topic_parent.id
+        assert outgoing_source["parent"]["id"] == source_parent.id
+
+        add_topic_prereq = await test_client.post(
+            f"/sources/{root_source.id}/prerequisites/",
+            json={"prereq_entity_type": "topic", "prereq_entity_id": topic_child.id},
+        )
+        assert add_topic_prereq.status_code == 200
+
+        add_source_prereq = await test_client.post(
+            f"/sources/{root_source.id}/prerequisites/",
+            json={"prereq_entity_type": "source", "prereq_entity_id": source_child.id},
+        )
+        assert add_source_prereq.status_code == 200
+
+        prerequisites = await test_client.get(
+            f"/sources/{root_source.id}/prerequisites/"
+        )
+        assert prerequisites.status_code == 200
+        prereq_topic = next(
+            item for item in prerequisites.json() if item["entity_type"] == "topic"
+        )
+        prereq_source = next(
+            item for item in prerequisites.json() if item["entity_type"] == "source"
+        )
+        assert prereq_topic["parent"]["id"] == topic_parent.id
+        assert prereq_source["parent"]["id"] == source_parent.id
+
     async def test_cannot_add_self_as_prerequisite(
         self,
         test_client: AsyncClient,

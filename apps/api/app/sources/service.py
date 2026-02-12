@@ -87,7 +87,13 @@ async def load_source_with_relationships(
         .where(Source.id == source_id, Source.user_id == user_id)
         .options(
             selectinload(Source.parent).selectinload(Source.fsrs_state),
+            selectinload(Source.children)
+            .selectinload(Source.parent)
+            .selectinload(Source.fsrs_state),
             selectinload(Source.children).selectinload(Source.fsrs_state),
+            selectinload(Source.topics)
+            .selectinload(Topic.parent)
+            .selectinload(Topic.fsrs_state),
             selectinload(Source.topics).selectinload(Topic.fsrs_state),
             selectinload(Source.practices).selectinload(Practice.fsrs_state),
             selectinload(Source.fsrs_state),
@@ -359,7 +365,10 @@ async def get_source_children(
     stmt = (
         select(Source)
         .where(Source.parent_id == source_id, Source.user_id == user_id)
-        .options(selectinload(Source.fsrs_state))
+        .options(
+            selectinload(Source.parent).selectinload(Source.fsrs_state),
+            selectinload(Source.fsrs_state),
+        )
     )
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -377,7 +386,10 @@ async def get_source_topics(
         select(Topic)
         .join(t_source_topics, Topic.id == t_source_topics.c.topic_id)
         .where(t_source_topics.c.source_id == source_id, Topic.user_id == user_id)
-        .options(selectinload(Topic.fsrs_state))
+        .options(
+            selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+            selectinload(Topic.fsrs_state),
+        )
     )
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -523,7 +535,10 @@ async def add_source_topic(
         topic_result = await session.execute(
             select(Topic)
             .where(Topic.id == topic_id, Topic.user_id == user_id)
-            .options(selectinload(Topic.fsrs_state))
+            .options(
+                selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+                selectinload(Topic.fsrs_state),
+            )
         )
         topic = topic_result.scalar_one_or_none()
         if not topic:
@@ -576,8 +591,10 @@ async def add_source_topic(
         await session.rollback()
         raise AlreadyExistsError("Source already covers this topic")
 
-    await session.refresh(source)
+    source = await get_source(session, source.id, user_id)
+    from app.topics.service import get_topic
 
+    topic = await get_topic(session, topic.id, user_id)
     return source, topic
 
 
@@ -733,7 +750,13 @@ async def get_source_related_entities(
         select(EntityRelation)
         .where(EntityRelation.from_source_id == source_id)
         .options(
+            selectinload(EntityRelation.to_topic)
+            .selectinload(Topic.parent)
+            .selectinload(Topic.fsrs_state),
             selectinload(EntityRelation.to_topic).selectinload(Topic.fsrs_state),
+            selectinload(EntityRelation.to_source)
+            .selectinload(Source.parent)
+            .selectinload(Source.fsrs_state),
             selectinload(EntityRelation.to_source).selectinload(Source.fsrs_state),
         )
     )
@@ -762,7 +785,13 @@ async def get_source_related_entities(
         select(EntityRelation)
         .where(EntityRelation.to_source_id == source_id)
         .options(
+            selectinload(EntityRelation.from_topic)
+            .selectinload(Topic.parent)
+            .selectinload(Topic.fsrs_state),
             selectinload(EntityRelation.from_topic).selectinload(Topic.fsrs_state),
+            selectinload(EntityRelation.from_source)
+            .selectinload(Source.parent)
+            .selectinload(Source.fsrs_state),
             selectinload(EntityRelation.from_source).selectinload(Source.fsrs_state),
         )
     )
@@ -918,9 +947,15 @@ async def get_source_prerequisites(
         select(SourcePrerequisite)
         .where(SourcePrerequisite.source_id == source_id)
         .options(
+            selectinload(SourcePrerequisite.prereq_topic)
+            .selectinload(Topic.parent)
+            .selectinload(Topic.fsrs_state),
             selectinload(SourcePrerequisite.prereq_topic).selectinload(
                 Topic.fsrs_state
             ),
+            selectinload(SourcePrerequisite.prereq_source)
+            .selectinload(Source.parent)
+            .selectinload(Source.fsrs_state),
             selectinload(SourcePrerequisite.prereq_source).selectinload(
                 Source.fsrs_state
             ),
