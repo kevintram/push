@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '~/components/ui/button'
-import { Skeleton } from '~/components/ui/skeleton'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
 
 interface DetailTabPanelStateProps {
 	isLoading: boolean
@@ -31,13 +31,7 @@ export function DetailTabPanelState({
 	children
 }: DetailTabPanelStateProps) {
 	if (isLoading) {
-		return (
-			<div className='space-y-3 py-2'>
-				<Skeleton className='h-24 w-full' />
-				<Skeleton className='h-24 w-full' />
-				<Skeleton className='h-24 w-full' />
-			</div>
-		)
+		return <LoadingSpinner containerClassName='min-h-40 py-2' />
 	}
 
 	if (isError) {

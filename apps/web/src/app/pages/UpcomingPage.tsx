@@ -1,4 +1,4 @@
-import { Calendar } from 'lucide-react'
+import { Calendar, Loader2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
@@ -212,7 +212,14 @@ function UpcomingList({
 						onClick={onShowMore}
 						variant='outline'
 					>
-						{isMonthlyLoading ? 'Loading...' : 'Show More'}
+						{isMonthlyLoading ? (
+							<>
+								<Loader2 className='h-4 w-4 animate-spin' />
+								Loading
+							</>
+						) : (
+							'Show More'
+						)}
 					</Button>
 				</div>
 			)}

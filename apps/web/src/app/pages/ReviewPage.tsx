@@ -14,7 +14,6 @@ import {
 	type EntityTypeFilterValue
 } from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { buttonVariants } from '~/components/ui/button'
 import { Card, CardContent, CardFooter } from '~/components/ui/card'
 import { CountBadge } from '~/components/ui/count-badge'
@@ -24,7 +23,7 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/empty'
-import { Skeleton } from '~/components/ui/skeleton'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
 import {
@@ -364,13 +363,7 @@ function ScheduleEntriesList({
 }
 
 function ScheduleEntriesSkeleton() {
-	return (
-		<div className='space-y-2'>
-			<Skeleton className='h-12 w-full' />
-			<Skeleton className='h-12 w-full' />
-			<Skeleton className='h-12 w-full' />
-		</div>
-	)
+	return <LoadingSpinner containerClassName='min-h-28 py-2' />
 }
 
 function ReviewQueueGroupedList({
@@ -461,16 +454,5 @@ function ReviewQueueGroupedList({
 }
 
 function ReviewQueueSkeleton() {
-	return (
-		<div className='space-y-8'>
-			<div className='space-y-3'>
-				<Skeleton className='h-7 w-24' />
-				<MasonryLayoutSkeleton count={8} />
-			</div>
-			<div className='space-y-3'>
-				<Skeleton className='h-7 w-16' />
-				<MasonryLayoutSkeleton count={6} />
-			</div>
-		</div>
-	)
+	return <LoadingSpinner containerClassName='min-h-64' />
 }
