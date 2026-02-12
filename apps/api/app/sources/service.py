@@ -649,8 +649,8 @@ async def update_source(
             session.add(fsrs_state)
             await session.flush()
             source.fsrs_state_id = fsrs_state.id
-        elif not srs_enabled and source.fsrs_state:
-            source.fsrs_state.srs_enabled = False
+        elif source.fsrs_state:
+            source.fsrs_state.srs_enabled = srs_enabled
 
     # Apply remaining updates
     if title is not None:

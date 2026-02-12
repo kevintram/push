@@ -876,8 +876,8 @@ async def update_topic(
             session.add(fsrs_state)
             await session.flush()
             topic.fsrs_state_id = fsrs_state.id
-        elif not srs_enabled and topic.fsrs_state:
-            topic.fsrs_state.srs_enabled = False
+        elif topic.fsrs_state:
+            topic.fsrs_state.srs_enabled = srs_enabled
 
     # Apply remaining updates
     if name is not None:

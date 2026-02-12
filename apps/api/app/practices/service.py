@@ -272,8 +272,8 @@ async def update_practice(
             session.add(fsrs_state)
             await session.flush()
             practice.fsrs_state_id = fsrs_state.id
-        elif not srs_enabled and practice.fsrs_state:
-            practice.fsrs_state.srs_enabled = False
+        elif practice.fsrs_state:
+            practice.fsrs_state.srs_enabled = srs_enabled
 
     # Apply remaining updates
     if prompt is not None:
