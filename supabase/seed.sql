@@ -464,3 +464,4 @@ INSERT INTO practice_topics (practice_id, topic_id) VALUES
   (8, 11),   -- Git DAG → Git
   (9, 38),   -- DI → Design Patterns
   (10, 31);  -- Process vs Thread → Operating Systems
+
