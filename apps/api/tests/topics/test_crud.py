@@ -39,6 +39,7 @@ class TestTopicsEndpoints:
         topics = response.json()
         assert len(topics) == 1
         assert topics[0]["name"] == "My Test Topic"
+        assert topics[0]["last_review_rating"] is None
 
     async def test_create_topic_success(
         self,
