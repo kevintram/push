@@ -35,6 +35,7 @@ import {
 	formatAbsoluteDate,
 	formatRelativeDate
 } from '~/utils/formatRelativeDate'
+import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
 const MIN_HEIGHT = 96
@@ -377,8 +378,13 @@ export function LearnableCardBase<T extends LearnableBase>({
 						<Tooltip>
 							<TooltipTrigger
 								render={
-									<span className='font-semibold'>
-										{`Reviewed ${lastReviewed.text}`}
+									<span className='flex items-center gap-1 font-semibold'>
+										<span>{`Reviewed ${lastReviewed.text}`}</span>
+										{entity.last_review_rating ? (
+											<span className='flex size-4 shrink-0 items-center justify-center rounded-full border border-muted-foreground text-muted-foreground'>
+												{getRatingIcon(entity.last_review_rating)}
+											</span>
+										) : null}
 									</span>
 								}
 							/>
