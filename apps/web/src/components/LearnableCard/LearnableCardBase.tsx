@@ -208,7 +208,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 
 	return (
 		<Card
-			className='max-h-96 cursor-pointer overflow-hidden transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+			className='max-h-96 cursor-pointer gap-0 overflow-hidden transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 			onClick={handleActivate}
 			onKeyDown={handleKeyDown}
 			onMouseEnter={handleMouseEnter}
@@ -216,12 +216,12 @@ export function LearnableCardBase<T extends LearnableBase>({
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardHeader className='-top-1 -left-1 relative flex items-center justify-between gap-2'>
+			<CardHeader className='-top-1 -left-1 relative flex items-center justify-between gap-2 mb-1'>
 				{'parent_id' in entity && entity.parent_id && (
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<div className='flex min-w-0 items-center gap-1 text-muted-foreground text-xs'>
+								<div className='flex min-w-0 items-center gap-1 text-muted-foreground text-xs font-semibold'>
 									<User2 className='h-3 w-3 shrink-0' />
 									<span className='truncate'>
 										{config.getParentLabel?.(entity) ?? entity.parent_id}
