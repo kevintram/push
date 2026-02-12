@@ -463,7 +463,7 @@ export function TopicDetail({
 								tabs={[
 									{
 										value: 'children',
-										label: 'Contents',
+										label: 'Subtopics',
 										count: topic.children_count ?? 0,
 										content: requestedTabs.children ? (
 											<TopicChildrenPanel
@@ -504,7 +504,7 @@ export function TopicDetail({
 									},
 									{
 										value: 'related',
-										label: 'See also',
+										label: 'Related',
 										count: displayedRelatedCount,
 										content: requestedTabs.related ? (
 											<TopicRelatedPanel

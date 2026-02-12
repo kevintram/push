@@ -537,7 +537,7 @@ export function SourceDetail({
 									},
 									{
 										value: 'related',
-										label: 'See also',
+										label: 'Related',
 										count: displayedRelatedCount,
 										content: requestedTabs.related ? (
 											<SourceRelatedPanel
