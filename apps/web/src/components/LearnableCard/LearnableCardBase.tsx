@@ -3,9 +3,11 @@ import {
 	Archive,
 	Baby,
 	Brain,
+	ChevronDown,
 	FileText,
 	Inbox,
 	Loader2,
+	Plus,
 	Sparkles,
 	Star,
 	User2
@@ -13,8 +15,8 @@ import {
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
-import { SquarePlusBottomRight } from '~/components/icons'
 import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import {
 	Tooltip,
@@ -213,7 +215,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
+			<CardHeader className='-top-1 -left-1 relative flex items-center justify-between gap-2'>
 				{'parent_id' in entity && (
 					<Tooltip>
 						<TooltipTrigger
@@ -266,35 +268,28 @@ export function LearnableCardBase<T extends LearnableBase>({
 					</Tooltip>
 				)}
 				{/* Add review */}
-				<Tooltip>
-					<RatingDropdown
-						align='end'
-						nativeButton={false}
-						onSelect={handleRatingSelect}
-						trigger={
-							<TooltipTrigger
-								render={
-									<div
-										aria-label='Add review'
-										className={
-											isCreatingReview ? 'opacity-50' : 'cursor-pointer'
-										}
-										onClick={e => e.stopPropagation()}
-										onKeyDown={e => e.stopPropagation()}
-										role='button'
-									>
-										{isCreatingReview ? (
-											<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
-										) : (
-											<SquarePlusBottomRight className='h-4 w-4 text-muted-foreground' />
-										)}
-									</div>
-								}
-							/>
-						}
-					/>
-					<TooltipContent side='top'>Add review</TooltipContent>
-				</Tooltip>
+				<RatingDropdown
+					align='end'
+					onSelect={handleRatingSelect}
+					trigger={
+						<Button
+							className='rounded-full'
+							disabled={isCreatingReview}
+							onClick={e => e.stopPropagation()}
+							onKeyDown={e => e.stopPropagation()}
+							size='xs'
+							variant='secondary'
+						>
+							{isCreatingReview ? (
+								<Loader2 className='h-3 w-3 animate-spin' />
+							) : (
+								<Plus className='h-3 w-3' />
+							)}
+							<span>Review</span>
+							<ChevronDown className='h-3 w-3' />
+						</Button>
+					}
+				/>
 				{/* SRS toggle */}
 				<div
 					className={config.isUpdating ? 'opacity-50' : 'cursor-pointer'}
