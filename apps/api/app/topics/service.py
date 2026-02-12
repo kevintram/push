@@ -187,7 +187,10 @@ async def search_topics(
 
     limit = max(1, min(limit, 50))
     stmt = stmt.limit(limit)
-    stmt = stmt.options(selectinload(Topic.fsrs_state))
+    stmt = stmt.options(
+        selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+        selectinload(Topic.fsrs_state),
+    )
 
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -299,7 +302,10 @@ async def list_topics(
                 )
             )
 
-    stmt = stmt.options(selectinload(Topic.fsrs_state))
+    stmt = stmt.options(
+        selectinload(Topic.parent).selectinload(Topic.fsrs_state),
+        selectinload(Topic.fsrs_state),
+    )
 
     # Apply limit if provided
     if limit is not None:
