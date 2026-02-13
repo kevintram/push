@@ -8,7 +8,7 @@ This is a React application built with modern tooling focused on topic-based lea
 - **Frontend**: React 19 with TypeScript
 - **Routing**: TanStack Router (file-based routing with type safety)
 - **Styling**: Tailwind CSS v4
-- **Component Library**: shadcn/ui
+- **Component Library**: shadcn/ui w/ Base UI components (see https://ui.shadcn.com/docs/changelog/2026-01-base-ui)
 - **Data Fetching**: TanStack Query with React Query
 - **Backend**: FastAPI (Python) for data access and business logic
 - **Date Handling**: Day.js for all date parsing, formatting, and manipulation
