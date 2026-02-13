@@ -1,6 +1,6 @@
-import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
+	Anvil,
 	Archive,
 	Brain,
 	ChevronDown,
@@ -20,7 +20,6 @@ import {
 } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
-import { ButtonGroup, ButtonGroupSeparator } from '~/components/ui/button-group'
 import { Textarea } from '~/components/ui/textarea'
 import { Toggle } from '~/components/ui/toggle'
 import {
@@ -38,6 +37,7 @@ import type {
 	Rating,
 	ReviewListItem
 } from '~/features/reviews/types/review.types'
+import { getReviewCreatedToastDescription } from '~/features/reviews/utils/reviewToastDescription'
 import type { LearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { cn } from '~/lib/utils'
 import { localDateString } from '~/utils/date'
@@ -127,7 +127,6 @@ export function LearnableDetailHeader({
 	renderTypeChangeMenu,
 	renderActionMenu
 }: LearnableDetailHeaderProps) {
-	const navigate = useNavigate()
 	const filters = useMemo(
 		() => toReviewFilters(entityType, entityId),
 		[entityType, entityId]
@@ -150,29 +149,6 @@ export function LearnableDetailHeader({
 			nullLabel: 'never'
 		}
 	).text
-
-	const handleNavigateToReviews = useCallback(() => {
-		if (entityType === 'topic') {
-			navigate({
-				to: '/topics/$topicId/reviews',
-				params: { topicId: entityId.toString() }
-			})
-			return
-		}
-
-		if (entityType === 'source') {
-			navigate({
-				to: '/sources/$sourceId/reviews',
-				params: { sourceId: entityId.toString() }
-			})
-			return
-		}
-
-		navigate({
-			to: '/practices/$practiceId/reviews',
-			params: { practiceId: entityId.toString() }
-		})
-	}, [entityType, entityId, navigate])
 
 	const handleOpenLastReview = useCallback(() => {
 		if (latestCompletedReview?.id) {
@@ -220,6 +196,7 @@ export function LearnableDetailHeader({
 						: await createReview(localDateString(), ratingState)
 
 				toast('Review created', {
+					description: getReviewCreatedToastDescription(review),
 					action: {
 						label: 'Open',
 						onClick: () => openReviewDialog(review.id)
@@ -276,7 +253,7 @@ export function LearnableDetailHeader({
 						<TooltipTrigger
 							render={<span>Edited {formatRelativeDate(updatedAt).text}</span>}
 						/>
-						<TooltipContent side='bottom'>
+						<TooltipContent>
 							{dayjs(updatedAt).format('MMM D, YYYY')}
 						</TooltipContent>
 					</Tooltip>
@@ -287,7 +264,7 @@ export function LearnableDetailHeader({
 						<TooltipTrigger
 							render={<span>Created {formatRelativeDate(createdAt).text}</span>}
 						/>
-						<TooltipContent side='bottom'>
+						<TooltipContent>
 							{dayjs(createdAt).format('MMM D, YYYY')}
 						</TooltipContent>
 					</Tooltip>
@@ -296,7 +273,7 @@ export function LearnableDetailHeader({
 
 			{/* Title row */}
 			<Textarea
-				className='!bg-transparent !text-2xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-semibold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+				className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 				onChange={onTitleChange}
 				placeholder={titlePlaceholder}
 				spellCheck={false}
@@ -323,7 +300,7 @@ export function LearnableDetailHeader({
 									</div>
 								}
 							/>
-							<TooltipContent side='bottom'>
+							<TooltipContent>
 								{freshnessTierInfo.tooltip ??
 									'Complete a review to see freshness tier'}
 							</TooltipContent>
@@ -357,7 +334,7 @@ export function LearnableDetailHeader({
 											</Button>
 										}
 									/>
-									<TooltipContent side='bottom'>
+									<TooltipContent>
 										{formatAbsoluteDate(latestCompletedReview.completed_at)}
 									</TooltipContent>
 								</Tooltip>
@@ -369,12 +346,13 @@ export function LearnableDetailHeader({
 						<Tooltip>
 							<TooltipTrigger
 								render={
-									<span className='whitespace-nowrap font-semibold text-muted-foreground text-sm'>
-										{stabilityText} durability
-									</span>
+									<div className='flex items-center gap-1.5 font-semibold text-muted-foreground'>
+										<Anvil className='h-4 w-4' />
+										<span>{stabilityText} durability</span>
+									</div>
 								}
 							/>
-							<TooltipContent side='bottom'>
+							<TooltipContent>
 								Durable for {stabilityTooltipText} without review
 							</TooltipContent>
 						</Tooltip>
@@ -383,82 +361,87 @@ export function LearnableDetailHeader({
 			</div>
 
 			{/* Actions row */}
-			<div className='my-2 flex flex-wrap items-center justify-between border-y-1 py-2'>
+			<div className='my-3 flex flex-wrap items-center justify-between border-y-1 py-2'>
 				<div className='flex items-center gap-2'>
-					<Button
-						className='rounded-full'
-						disabled={readonly}
-						onClick={() => onSrsToggle(!srsEnabled)}
-						size='icon-sm'
-						variant='outline'
-					>
-						<Star
-							className={
-								srsEnabled
-									? 'h-4 w-4 fill-yellow-500 text-yellow-500'
-									: 'h-4 w-4 text-muted-foreground'
-							}
-						/>
-					</Button>
-					<ButtonGroup>
-						<Button
-							className='rounded-full'
-							disabled={readonly}
-							onClick={handleNavigateToReviews}
-							size='sm'
-						>
-							<span>Reviews</span>
-						</Button>
-						<ButtonGroupSeparator />
-						<RatingDropdown
-							align='end'
-							onSelect={handleRatingSelect}
-							trigger={
-								<Button
-									className='rounded-full'
-									disabled={readonly || isCreatingReview}
-									size='sm'
-								>
-									{isCreatingReview ? (
-										<Loader2 className='h-4 w-4 animate-spin' />
-									) : (
-										<Plus className='h-4 w-4' />
-									)}
-									<ChevronDown className='h-4 w-4' />
-								</Button>
-							}
-						/>
-					</ButtonGroup>
+					<RatingDropdown
+						align='end'
+						onSelect={handleRatingSelect}
+						trigger={
+							<Button
+								className='rounded-full'
+								disabled={readonly || isCreatingReview}
+								size='sm'
+							>
+								{isCreatingReview ? (
+									<Loader2 className='h-4 w-4 animate-spin' />
+								) : (
+									<Plus className='h-4 w-4' />
+								)}
+								<span>Review</span>
+								<ChevronDown className='h-4 w-4' />
+							</Button>
+						}
+					/>
+					<Tooltip>
+						<TooltipTrigger render={<span className='inline-flex' />}>
+							<Button
+								className='rounded-full'
+								disabled={readonly}
+								onClick={() => onSrsToggle(!srsEnabled)}
+								size='icon-sm'
+								variant='outline'
+							>
+								<Star
+									className={
+										srsEnabled
+											? 'h-4 w-4 fill-yellow-500 text-yellow-500'
+											: 'h-4 w-4 text-muted-foreground'
+									}
+								/>
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>Show in review queue</TooltipContent>
+					</Tooltip>
 				</div>
 				<div className='flex items-center gap-2'>
-					<Toggle
-						aria-label={inboxed ? 'Remove from inbox' : 'Add to inbox'}
-						className={cn(
-							'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
-							'data-[state=on]:bg-muted data-[state=on]:text-foreground'
-						)}
-						disabled={isUpdating || readonly}
-						onPressedChange={onInboxToggle}
-						pressed={inboxed}
-						size='sm'
-						variant='outline'
-					>
-						<Inbox className='h-4 w-4' />
-					</Toggle>
-					<Toggle
-						aria-label={archived ? 'Unarchive' : 'Archive'}
-						className={cn(
-							'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
-							'data-[state=on]:bg-muted data-[state=on]:text-foreground'
-						)}
-						disabled={isUpdating || readonly}
-						onPressedChange={onArchiveToggle}
-						pressed={archived}
-						size='sm'
-						variant='outline'
-					>
-						<Archive className='h-4 w-4' />
-					</Toggle>
+					<Tooltip>
+						<TooltipTrigger render={<span className='inline-flex' />}>
+							<Toggle
+								aria-label={inboxed ? 'Remove from inbox' : 'Add to inbox'}
+								className={cn(
+									'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
+									'data-[state=on]:bg-muted data-[state=on]:text-foreground'
+								)}
+								disabled={isUpdating || readonly}
+								onPressedChange={onInboxToggle}
+								pressed={inboxed}
+								size='sm'
+								variant='outline'
+							>
+								<Inbox className='h-4 w-4' />
+							</Toggle>
+						</TooltipTrigger>
+						<TooltipContent>Inbox</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger render={<span className='inline-flex' />}>
+							<Toggle
+								aria-label={archived ? 'Unarchive' : 'Archive'}
+								className={cn(
+									'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
+									'data-[state=on]:bg-muted data-[state=on]:text-foreground'
+								)}
+								disabled={isUpdating || readonly}
+								onPressedChange={onArchiveToggle}
+								pressed={archived}
+								size='sm'
+								variant='outline'
+							>
+								<Archive className='h-4 w-4' />
+							</Toggle>
+						</TooltipTrigger>
+						<TooltipContent>Archive</TooltipContent>
+					</Tooltip>
 					{renderActionMenu(actionMenuTrigger)}
 				</div>
 			</div>

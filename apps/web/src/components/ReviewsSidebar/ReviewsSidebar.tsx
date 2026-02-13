@@ -19,6 +19,7 @@ import type {
 	Rating,
 	ReviewListItem
 } from '~/features/reviews/types/review.types'
+import { getReviewCreatedToastDescription } from '~/features/reviews/utils/reviewToastDescription'
 import { localDateString } from '~/utils/date'
 
 type EntityType = 'topic' | 'source' | 'practice'
@@ -121,6 +122,7 @@ export function ReviewsSidebar<T extends EntityWithId>({
 			}
 
 			toast('Review created', {
+				description: getReviewCreatedToastDescription(review),
 				action: {
 					label: 'Open',
 					onClick: () => openReviewDialog(review.id)

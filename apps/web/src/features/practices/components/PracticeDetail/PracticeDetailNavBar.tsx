@@ -1,15 +1,12 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { type ReactNode, useCallback } from 'react'
-import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { DetailNavBar, type DetailNavTab } from '~/components/ui/detail-nav-bar'
+import { useDetailReviewCounts } from '~/features/reviews/hooks/useDetailReviewCounts'
 
-type PracticeDetailTab = 'home' | 'reviews'
+type PracticeDetailTab = DetailNavTab
 
 interface PracticeDetailNavBarProps {
 	practiceId?: number
-	/**
-	 * Content to render in the left section (e.g., navigation buttons)
-	 */
-	headerBeforeActions?: ReactNode
 	/**
 	 * Content to render on the right side (e.g., close/minimize buttons)
 	 */
@@ -19,7 +16,6 @@ interface PracticeDetailNavBarProps {
 
 export function PracticeDetailNavBar({
 	practiceId,
-	headerBeforeActions,
 	afterActions,
 	activeTab = 'home'
 }: PracticeDetailNavBarProps) {
@@ -30,9 +26,14 @@ export function PracticeDetailNavBar({
 			? Number.parseInt(params.practiceId, 10)
 			: Number.NaN
 	const resolvedPracticeId = practiceId ?? routePracticeId
+	const hasValidId = Number.isFinite(resolvedPracticeId)
+	const { unscheduledCount, overdueCount, dueTodayCount } =
+		useDetailReviewCounts(
+			hasValidId ? { practiceId: resolvedPracticeId } : undefined
+		)
 
 	const handleTabChange = useCallback(
-		(value: string) => {
+		(value: DetailNavTab) => {
 			if (value === activeTab) return
 			if (!Number.isFinite(resolvedPracticeId)) return
 
@@ -53,24 +54,13 @@ export function PracticeDetailNavBar({
 	)
 
 	return (
-		<div className='sticky top-0 z-10 w-full border-b'>
-			<div className='flex items-center justify-between gap-4 px-2 py-1'>
-				<div className='flex min-w-0 flex-1 items-center gap-4'>
-					{headerBeforeActions}
-				</div>
-
-				<div className='flex items-center gap-2'>
-					<Tabs onValueChange={handleTabChange} value={activeTab}>
-						<TabsList className='h-8'>
-							<TabsTrigger value='home'>Home</TabsTrigger>
-							<TabsTrigger value='reviews'>Reviews</TabsTrigger>
-						</TabsList>
-					</Tabs>
-					{afterActions && (
-						<div className='flex items-center gap-2'>{afterActions}</div>
-					)}
-				</div>
-			</div>
-		</div>
+		<DetailNavBar
+			activeTab={activeTab}
+			afterActions={afterActions}
+			dueTodayCount={dueTodayCount}
+			onTabChange={handleTabChange}
+			overdueCount={overdueCount}
+			unscheduledCount={unscheduledCount}
+		/>
 	)
 }

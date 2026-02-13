@@ -39,6 +39,7 @@ class TestSourcesEndpoints:
         sources = response.json()
         assert len(sources) == 1
         assert sources[0]["title"] == "My Test Source"
+        assert sources[0]["last_review_rating"] is None
 
     async def test_create_source_success(
         self,

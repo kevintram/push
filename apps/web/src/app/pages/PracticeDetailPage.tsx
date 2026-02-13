@@ -1,7 +1,5 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
-import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
-import { Button } from '~/components/ui/button'
 import { usePracticeWithRelationships } from '~/features/practices/api/getPractice'
 import { PracticeDetail } from '~/features/practices/components/PracticeDetail/PracticeDetail'
 import { PracticeContext } from '~/features/practices/stores/SelectedPracticeContext'
@@ -9,22 +7,6 @@ import { useConversionNavigate } from '~/hooks/useConversionNavigate'
 
 interface PracticeDetailPageProps {
 	practiceId: string
-}
-
-function BrowserNavigationButtons() {
-	const router = useRouter()
-
-	return (
-		<Button
-			className='h-6 w-6 p-0'
-			onClick={() => router.history.back()}
-			size='sm'
-			title='Go back'
-			variant='ghost'
-		>
-			<ArrowLeft className='h-4 w-4' />
-		</Button>
-	)
 }
 
 export function PracticeDetailPage({ practiceId }: PracticeDetailPageProps) {
@@ -72,7 +54,6 @@ export function PracticeDetailPage({ practiceId }: PracticeDetailPageProps) {
 		<PracticeContext value={contextValue}>
 			<PracticeDetail
 				className='mx-auto max-w-5xl'
-				headerBeforeActions={<BrowserNavigationButtons />}
 				onConvertSuccess={handleConvertSuccess}
 				onDelete={handleDelete}
 				onSourceNavigate={handleSourceNavigate}

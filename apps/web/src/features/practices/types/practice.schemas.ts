@@ -25,6 +25,7 @@ const practiceBaseFields = {
 	step: v.nullable(v.number()),
 	srs_enabled: v.boolean(),
 	last_reviewed_at: v.nullable(v.string()),
+	last_review_rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 	// Inherited FSRS fields (not used for practices, but kept for consistency)
 	inherited_stability: v.nullable(v.number()),
 	inherited_difficulty: v.nullable(v.number()),

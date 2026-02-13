@@ -52,13 +52,11 @@ const getStabilityChangeColorClass = (
 	if (after == null || before == null) {
 		return ''
 	}
-	if (after > before) {
+	const roundedDelta = Math.round(after - before)
+	if (roundedDelta >= 0) {
 		return 'text-green-600 dark:text-green-400'
 	}
-	if (after < before) {
-		return 'text-red-600 dark:text-red-400'
-	}
-	return 'text-muted-foreground'
+	return 'text-red-600 dark:text-red-400'
 }
 
 interface ReviewItemProps {

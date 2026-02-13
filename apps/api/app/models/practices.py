@@ -227,6 +227,20 @@ Practice.topics_count = column_property(
     .scalar_subquery()
 )
 
+from app.models.reviews import Review  # noqa: E402
+
+Practice.last_review_rating = column_property(
+    select(Review.rating)
+    .where(
+        Review.practice_id == Practice.id,
+        Review.completed_at.isnot(None),
+    )
+    .order_by(Review.completed_at.desc(), Review.id.desc())
+    .limit(1)
+    .correlate(Practice)
+    .scalar_subquery()
+)
+
 Practice.sources_count = column_property(
     select(func.count())
     .select_from(t_practice_sources)

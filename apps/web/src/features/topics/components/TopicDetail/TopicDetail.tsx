@@ -192,10 +192,6 @@ interface TopicDetailProps {
 	 */
 	isLoading?: boolean
 	/**
-	 * Content to render in the left section before the parents panel (e.g., navigation buttons).
-	 */
-	headerBeforeActions?: ReactNode
-	/**
 	 * Content to render on the right side of the header (e.g., close/minimize buttons).
 	 */
 	headerAfterActions?: ReactNode
@@ -255,7 +251,6 @@ interface TopicDetailProps {
 export function TopicDetail({
 	topic: topicProp,
 	isLoading: isLoadingProp,
-	headerBeforeActions,
 	headerAfterActions,
 	sidebarReadonly = false,
 	onConvertSuccess,
@@ -404,7 +399,6 @@ export function TopicDetail({
 		<div className='flex h-full min-h-0 flex-col'>
 			<TopicDetailNavBar
 				afterActions={headerAfterActions}
-				headerBeforeActions={headerBeforeActions}
 				onParentSelect={onTopicNavigate}
 				topic={topic}
 			/>
@@ -413,7 +407,7 @@ export function TopicDetail({
 					className='scrollbar-track-transparent flex min-h-0 w-full flex-col overflow-y-scroll'
 					ref={scrollContainerRef}
 				>
-					<div className={cn('w-full px-6 pt-2 pb-4', className)}>
+					<div className={cn('w-full px-6 pt-6 pb-4', className)}>
 						<LearnableDetailHeader
 							archived={topic.archived}
 							createdAt={topic.inserted_at}
@@ -490,7 +484,7 @@ export function TopicDetail({
 									},
 									{
 										value: 'sources',
-										label: 'Sources',
+										label: 'Teaching sources',
 										count: topic.sources_count ?? 0,
 										content: requestedTabs.sources ? (
 											<TopicSourcesPanel

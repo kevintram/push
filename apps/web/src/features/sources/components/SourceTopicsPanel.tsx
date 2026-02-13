@@ -15,7 +15,6 @@ import { useSourceTopics } from '../api/getSourceTopics'
 import { sourceKeys } from '../api/queryKeys'
 import { useRemoveSourceTopic } from '../api/removeSourceTopic'
 
-const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 interface SourceTopicsPanelProps {
@@ -191,7 +190,6 @@ export function SourceTopicsPanel({
 					getItemKey={getItemKey}
 					getScrollElement={getScrollElement}
 					items={topics}
-					minItemWidth={MIN_WIDTH}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>

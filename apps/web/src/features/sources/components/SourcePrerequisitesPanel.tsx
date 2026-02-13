@@ -198,7 +198,6 @@ export function SourcePrerequisitesPanel({
 					getItemKey={getEntityKey}
 					getScrollElement={getScrollElement}
 					items={entityItems}
-					minItemWidth={280}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>

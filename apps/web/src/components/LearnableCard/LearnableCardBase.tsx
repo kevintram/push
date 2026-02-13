@@ -1,11 +1,13 @@
 import type { QueryClient } from '@tanstack/react-query'
 import {
+	Anvil,
 	Archive,
 	Baby,
 	Brain,
-	FileText,
+	ChevronDown,
 	Inbox,
 	Loader2,
+	Plus,
 	Sparkles,
 	Star,
 	User2
@@ -13,8 +15,8 @@ import {
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
-import { SquarePlusBottomRight } from '~/components/icons'
 import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import {
 	Tooltip,
@@ -26,6 +28,7 @@ import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
 import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type { Rating } from '~/features/reviews/types/review.types'
+import { getReviewCreatedToastDescription } from '~/features/reviews/utils/reviewToastDescription'
 import type { LearnableMetrics } from '~/hooks/useLearnableMetrics'
 import type { LearnableBase } from '~/models/learnable.types'
 import { localDateString } from '~/utils/date'
@@ -33,6 +36,7 @@ import {
 	formatAbsoluteDate,
 	formatRelativeDate
 } from '~/utils/formatRelativeDate'
+import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 
 const MIN_HEIGHT = 96
@@ -48,6 +52,8 @@ export interface LearnableCardConfig<T extends LearnableBase> {
 	showTypeBadge: boolean
 	/** Label for the type badge (e.g., "Source") */
 	typeBadgeLabel?: string
+	/** Get the parent display label (name/title or notes) */
+	getParentLabel?: (entity: T) => string | null
 	/** Get the relations count for display */
 	getRelationsCount: (entity: T) => number
 	/** Format relations count for tooltip (e.g., "1 child" vs "1 relation") */
@@ -89,7 +95,9 @@ export function LearnableCardBase<T extends LearnableBase>({
 		isUnreviewed,
 		isLeavingSoon,
 		leavingSoonLabel,
-		leavingSoonTooltip
+		leavingSoonTooltip,
+		stabilityText,
+		stabilityTooltipText
 	} = metrics
 
 	const lastReviewed = useMemo(
@@ -173,6 +181,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 			})
 
 			toast('Review created', {
+				description: getReviewCreatedToastDescription(review),
 				action: {
 					label: 'Open',
 					onClick: () => openReviewDialog(review.id)
@@ -205,7 +214,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 
 	return (
 		<Card
-			className='max-h-96 cursor-pointer overflow-hidden transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+			className='max-h-96 cursor-pointer gap-0 overflow-hidden transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 			onClick={handleActivate}
 			onKeyDown={handleKeyDown}
 			onMouseEnter={handleMouseEnter}
@@ -213,34 +222,26 @@ export function LearnableCardBase<T extends LearnableBase>({
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardHeader className='-top-1 -left-1 relative flex items-start justify-between gap-2'>
+			<CardHeader className='-top-1 -left-1 relative mb-1 flex items-center justify-between gap-2'>
 				{'parent_id' in entity && (
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-									<User2 className='h-3 w-3' />
-									<span>{entity.parent_id ? 1 : 0}</span>
+								<div className='flex min-w-0 items-center gap-1 font-semibold text-muted-foreground text-xs'>
+									<User2 className='h-3 w-3 shrink-0' />
+									<span className='truncate'>
+										{entity.parent_id
+											? (config.getParentLabel?.(entity) ?? entity.parent_id)
+											: 'None'}
+									</span>
 								</div>
 							}
 						/>
-						<TooltipContent side='top'>
-							{entity.parent_id ? '1 parent' : '0 parents'}
-						</TooltipContent>
-					</Tooltip>
-				)}
-				{config.showTypeBadge && config.typeBadgeLabel && (
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-									<FileText className='h-3 w-3' />
-									<span>{config.typeBadgeLabel}</span>
-								</div>
-							}
-						/>
-						<TooltipContent side='top'>
-							This is a {config.typeBadgeLabel}
+						<TooltipContent>
+							{entity.parent_id
+								? (config.getParentLabel?.(entity) ??
+									`Parent #${entity.parent_id}`)
+								: 'No parent'}
 						</TooltipContent>
 					</Tooltip>
 				)}
@@ -261,40 +262,33 @@ export function LearnableCardBase<T extends LearnableBase>({
 							}
 						/>
 						{leavingSoonTooltip && (
-							<TooltipContent side='top'>{leavingSoonTooltip}</TooltipContent>
+							<TooltipContent>{leavingSoonTooltip}</TooltipContent>
 						)}
 					</Tooltip>
 				)}
 				{/* Add review */}
-				<Tooltip>
-					<RatingDropdown
-						align='end'
-						nativeButton={false}
-						onSelect={handleRatingSelect}
-						trigger={
-							<TooltipTrigger
-								render={
-									<div
-										aria-label='Add review'
-										className={
-											isCreatingReview ? 'opacity-50' : 'cursor-pointer'
-										}
-										onClick={e => e.stopPropagation()}
-										onKeyDown={e => e.stopPropagation()}
-										role='button'
-									>
-										{isCreatingReview ? (
-											<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
-										) : (
-											<SquarePlusBottomRight className='h-4 w-4 text-muted-foreground' />
-										)}
-									</div>
-								}
-							/>
-						}
-					/>
-					<TooltipContent side='top'>Add review</TooltipContent>
-				</Tooltip>
+				<RatingDropdown
+					align='end'
+					onSelect={handleRatingSelect}
+					trigger={
+						<Button
+							className='rounded-full'
+							disabled={isCreatingReview}
+							onClick={e => e.stopPropagation()}
+							onKeyDown={e => e.stopPropagation()}
+							size='xs'
+							variant='tertiary'
+						>
+							{isCreatingReview ? (
+								<Loader2 className='h-3 w-3 animate-spin' />
+							) : (
+								<Plus className='h-3 w-3' />
+							)}
+							<span>Review</span>
+							<ChevronDown className='h-3 w-3' />
+						</Button>
+					}
+				/>
 				{/* SRS toggle */}
 				<div
 					className={config.isUpdating ? 'opacity-50' : 'cursor-pointer'}
@@ -312,19 +306,26 @@ export function LearnableCardBase<T extends LearnableBase>({
 
 			<CardContent className='mb-3 flex flex-1 flex-col gap-3'>
 				<div className='flex flex-col gap-1'>
-					{/* Inbox/Archive indicators */}
-					{(entity.inboxed || entity.archived) && (
-						<div className='flex items-center gap-2 text-muted-foreground text-xs'>
+					{/* Type / Inbox / Archive indicators */}
+					{(config.typeBadgeLabel || entity.inboxed || entity.archived) && (
+						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+							{config.typeBadgeLabel && <span>{config.typeBadgeLabel}</span>}
+							{config.typeBadgeLabel && entity.inboxed && (
+								<span className='font-bold'>·</span>
+							)}
 							{entity.inboxed && (
 								<div className='flex items-center gap-1'>
 									<Inbox className='h-3 w-3' />
-									<span>Inboxed</span>
+									<span>Inbox</span>
 								</div>
+							)}
+							{(config.typeBadgeLabel || entity.inboxed) && entity.archived && (
+								<span className='font-bold'>·</span>
 							)}
 							{entity.archived && (
 								<div className='flex items-center gap-1'>
 									<Archive className='h-3 w-3' />
-									<span>Archived</span>
+									<span>Archive</span>
 								</div>
 							)}
 						</div>
@@ -367,9 +368,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 										</div>
 									}
 								/>
-								<TooltipContent side='top'>
-									{freshnessTierInfo.tooltip}
-								</TooltipContent>
+								<TooltipContent>{freshnessTierInfo.tooltip}</TooltipContent>
 							</Tooltip>
 						) : (
 							<span className={`font-semibold ${freshnessTierColor}`}>
@@ -377,14 +376,36 @@ export function LearnableCardBase<T extends LearnableBase>({
 							</span>
 						)}
 						{/* Last reviewed */}
-						<span>·</span>
+						<span className='font-bold'>·</span>
 						<Tooltip>
 							<TooltipTrigger
 								render={
-									<span className='font-semibold'>{`Reviewed ${lastReviewed.text}`}</span>
+									<span className='flex items-center gap-1 font-semibold'>
+										<span>{`Reviewed ${lastReviewed.text}`}</span>
+										{entity.last_review_rating ? (
+											<span className='flex size-4 shrink-0 items-center justify-center rounded-full border border-muted-foreground text-muted-foreground'>
+												{getRatingIcon(entity.last_review_rating)}
+											</span>
+										) : null}
+									</span>
 								}
 							/>
-							<TooltipContent side='top'>{lastReviewedDate}</TooltipContent>
+							<TooltipContent>{lastReviewedDate}</TooltipContent>
+						</Tooltip>
+						{/* Durability */}
+						<span className='font-bold'>·</span>
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<div className='flex items-center gap-1 font-semibold text-muted-foreground'>
+										<Anvil className='h-3 w-3' />
+										<span>{stabilityText}</span>
+									</div>
+								}
+							/>
+							<TooltipContent>
+								Durable for {stabilityTooltipText} without review
+							</TooltipContent>
 						</Tooltip>
 					</>
 				)}
@@ -399,7 +420,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 							</div>
 						}
 					/>
-					<TooltipContent side='top'>
+					<TooltipContent>
 						{config.getRelationsLabel(config.getRelationsCount(entity))}
 					</TooltipContent>
 				</Tooltip>

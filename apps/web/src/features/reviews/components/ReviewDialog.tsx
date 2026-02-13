@@ -126,13 +126,13 @@ export function ReviewDialog({
 		if (review?.stability_after == null || review?.stability_before == null) {
 			return ''
 		}
-		if (review.stability_after > review.stability_before) {
+		const roundedDelta = Math.round(
+			review.stability_after - review.stability_before
+		)
+		if (roundedDelta >= 0) {
 			return 'text-green-600 dark:text-green-400'
 		}
-		if (review.stability_after < review.stability_before) {
-			return 'text-red-600 dark:text-red-400'
-		}
-		return 'text-muted-foreground'
+		return 'text-red-600 dark:text-red-400'
 	}, [review?.stability_after, review?.stability_before])
 	const hasStability =
 		review?.stability_after != null && review?.stability_before != null

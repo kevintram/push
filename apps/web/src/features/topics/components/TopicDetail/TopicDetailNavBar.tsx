@@ -1,17 +1,14 @@
 import { useNavigate } from '@tanstack/react-router'
 import { type ReactNode, useCallback } from 'react'
-import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { DetailNavBar, type DetailNavTab } from '~/components/ui/detail-nav-bar'
+import { useDetailReviewCounts } from '~/features/reviews/hooks/useDetailReviewCounts'
 import type { Topic } from '../../types/topic.types'
 import { TopicParentsPanel } from '../TopicParentsPanel'
 
-type TopicDetailTab = 'home' | 'reviews'
+type TopicDetailTab = DetailNavTab
 
 interface TopicDetailNavBarProps {
 	topic: Topic
-	/**
-	 * Content to render in the left section before the parents panel (e.g., navigation buttons)
-	 */
-	headerBeforeActions?: ReactNode
 	/**
 	 * Content to render on the right side (e.g., close/minimize buttons)
 	 */
@@ -25,15 +22,18 @@ interface TopicDetailNavBarProps {
 
 export function TopicDetailNavBar({
 	topic,
-	headerBeforeActions,
 	afterActions,
 	onParentSelect,
 	activeTab = 'home'
 }: TopicDetailNavBarProps) {
 	const navigate = useNavigate()
+	const { unscheduledCount, overdueCount, dueTodayCount } =
+		useDetailReviewCounts({
+			topicId: topic.id
+		})
 
 	const handleTabChange = useCallback(
-		(value: string) => {
+		(value: DetailNavTab) => {
 			if (value === activeTab) return
 
 			if (value === 'reviews') {
@@ -53,29 +53,20 @@ export function TopicDetailNavBar({
 	)
 
 	return (
-		<div className='sticky top-0 z-10 w-full border-b'>
-			<div className='flex items-center justify-between gap-4 px-2 py-1'>
-				<div className='flex min-w-0 flex-1 items-center gap-4'>
-					{headerBeforeActions}
-					<TopicParentsPanel
-						onParentSelect={onParentSelect}
-						parent={topic.parent}
-						topicId={topic.id}
-					/>
-				</div>
-
-				<div className='flex items-center gap-2'>
-					<Tabs onValueChange={handleTabChange} value={activeTab}>
-						<TabsList className='h-8'>
-							<TabsTrigger value='home'>Home</TabsTrigger>
-							<TabsTrigger value='reviews'>Reviews</TabsTrigger>
-						</TabsList>
-					</Tabs>
-					{afterActions && (
-						<div className='flex items-center gap-2'>{afterActions}</div>
-					)}
-				</div>
-			</div>
-		</div>
+		<DetailNavBar
+			activeTab={activeTab}
+			afterActions={afterActions}
+			dueTodayCount={dueTodayCount}
+			leftContent={
+				<TopicParentsPanel
+					onParentSelect={onParentSelect}
+					parent={topic.parent}
+					topicId={topic.id}
+				/>
+			}
+			onTabChange={handleTabChange}
+			overdueCount={overdueCount}
+			unscheduledCount={unscheduledCount}
+		/>
 	)
 }

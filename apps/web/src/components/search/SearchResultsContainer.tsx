@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { MIN_CARD_WIDTH } from './constants'
 
 interface SearchResultsContainerProps<T> {
 	/** Whether the search is currently loading */
@@ -44,7 +43,7 @@ export function SearchResultsContainer<T>({
 	getItemKey,
 	getScrollElement,
 	gap = 16,
-	minItemWidth = MIN_CARD_WIDTH,
+	minItemWidth,
 	animate = true,
 	emptyMessage = 'No results found',
 	loadingMessage,

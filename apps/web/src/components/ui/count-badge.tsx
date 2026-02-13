@@ -9,7 +9,7 @@ export function CountBadge({ count, className }: CountBadgeProps) {
 	return (
 		<span
 			className={cn(
-				"inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 font-medium text-muted-foreground text-xs",
+				"inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-tertiary px-1.5 font-medium text-tertiary-foreground text-xs",
 				count === 0 && "opacity-50",
 				className
 			)}

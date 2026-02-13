@@ -39,6 +39,7 @@ class TestPracticesEndpoints:
         practices = response.json()
         assert len(practices) == 1
         assert practices[0]["prompt"] == "My Test Practice"
+        assert practices[0]["last_review_rating"] is None
 
     async def test_create_practice_success(
         self,

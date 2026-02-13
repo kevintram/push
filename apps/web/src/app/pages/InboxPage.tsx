@@ -31,8 +31,6 @@ import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 import { useEntityNavigation } from '~/hooks/useEntityNavigation'
 
-const MIN_CARD_WIDTH = 280
-
 function toEntityItems(results: Array<SearchResultItem>): Array<EntityItem> {
 	return results.map(result => {
 		switch (result.entity_type) {
@@ -191,7 +189,6 @@ function InboxList({
 				estimateItemSize={estimateEntitySize}
 				getItemKey={getEntityKey}
 				items={items}
-				minItemWidth={MIN_CARD_WIDTH}
 				renderItem={renderItem}
 			/>
 		</PageLayout.Content>

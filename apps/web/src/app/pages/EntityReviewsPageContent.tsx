@@ -14,6 +14,7 @@ import type {
 	Rating,
 	ReviewListItem
 } from '~/features/reviews/types/review.types'
+import { getReviewCreatedToastDescription } from '~/features/reviews/utils/reviewToastDescription'
 import { localDateString } from '~/utils/date'
 
 type EntityType = 'topic' | 'source' | 'practice'
@@ -34,7 +35,10 @@ function toReviewFilters(
 }
 
 function splitReviews(reviews: Array<ReviewListItem>) {
+	const today = localDateString()
 	const uncompletedUnscheduled: Array<ReviewListItem> = []
+	const overdue: Array<ReviewListItem> = []
+	const todayReviews: Array<ReviewListItem> = []
 	const upcoming: Array<ReviewListItem> = []
 	const completed: Array<ReviewListItem> = []
 
@@ -45,19 +49,27 @@ function splitReviews(reviews: Array<ReviewListItem>) {
 		}
 
 		if (review.scheduled_at || review.effective_date) {
-			upcoming.push(review)
+			const date = review.effective_date ?? review.scheduled_at
+			if (date && date < today) {
+				overdue.push(review)
+			} else if (date && date === today) {
+				todayReviews.push(review)
+			} else {
+				upcoming.push(review)
+			}
 			continue
 		}
 
 		uncompletedUnscheduled.push(review)
 	}
 
-	upcoming.sort((a, b) => {
-		return (
-			new Date(a.effective_date ?? 0).getTime() -
-			new Date(b.effective_date ?? 0).getTime()
-		)
-	})
+	const sortByEffectiveDateAsc = (a: ReviewListItem, b: ReviewListItem) =>
+		new Date(a.effective_date ?? 0).getTime() -
+		new Date(b.effective_date ?? 0).getTime()
+
+	overdue.sort(sortByEffectiveDateAsc)
+	todayReviews.sort(sortByEffectiveDateAsc)
+	upcoming.sort(sortByEffectiveDateAsc)
 	uncompletedUnscheduled.sort((a, b) => {
 		return new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
 	})
@@ -70,6 +82,8 @@ function splitReviews(reviews: Array<ReviewListItem>) {
 
 	return {
 		uncompletedUnscheduledReviews: uncompletedUnscheduled,
+		overdueReviews: overdue,
+		todayReviews,
 		upcomingReviews: upcoming,
 		completedReviews: completed
 	}
@@ -85,8 +99,13 @@ export function EntityReviewsPageContent({
 		[entityType, entityId]
 	)
 	const { data: reviews = [], isLoading } = useReviews(filters)
-	const { uncompletedUnscheduledReviews, upcomingReviews, completedReviews } =
-		useMemo(() => splitReviews(reviews), [reviews])
+	const {
+		uncompletedUnscheduledReviews,
+		overdueReviews,
+		todayReviews,
+		upcomingReviews,
+		completedReviews
+	} = useMemo(() => splitReviews(reviews), [reviews])
 
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
@@ -132,6 +151,7 @@ export function EntityReviewsPageContent({
 						: await createReview(localDateString(), ratingState)
 
 				toast('Review created', {
+					description: getReviewCreatedToastDescription(review),
 					action: {
 						label: 'Open',
 						onClick: () => openReviewDialog(review.id)
@@ -156,16 +176,17 @@ export function EntityReviewsPageContent({
 								onSelect={handleRatingSelect}
 								trigger={
 									<Button
+										className='rounded-full'
 										disabled={isCreatingReview}
 										size='sm'
-										variant='outline'
+										variant='default'
 									>
 										{isCreatingReview ? (
 											<Loader2 className='animate-spin' />
 										) : (
 											<Plus />
 										)}
-										Add
+										Review
 										<ChevronDown />
 									</Button>
 								}
@@ -178,6 +199,36 @@ export function EntityReviewsPageContent({
 								{uncompletedUnscheduledReviews.length > 0 && (
 									<div>
 										{uncompletedUnscheduledReviews.map(entry => (
+											<ReviewItem
+												entry={entry}
+												key={entry.id}
+												onReviewClick={openReviewDialog}
+												variant='default'
+											/>
+										))}
+									</div>
+								)}
+								{overdueReviews.length > 0 && (
+									<div>
+										<h2 className='mb-3 font-bold text-2xl text-red-600 dark:text-red-400'>
+											Overdue
+										</h2>
+										{overdueReviews.map(entry => (
+											<ReviewItem
+												entry={entry}
+												key={entry.id}
+												onReviewClick={openReviewDialog}
+												variant='default'
+											/>
+										))}
+									</div>
+								)}
+								{todayReviews.length > 0 && (
+									<div>
+										<h2 className='mb-3 font-bold text-2xl text-blue-600 dark:text-blue-400'>
+											Today
+										</h2>
+										{todayReviews.map(entry => (
 											<ReviewItem
 												entry={entry}
 												key={entry.id}

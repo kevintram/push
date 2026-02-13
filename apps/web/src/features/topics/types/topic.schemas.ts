@@ -37,6 +37,7 @@ const topicBaseFields = {
 	archived: v.boolean(),
 	inboxed: v.boolean(),
 	last_reviewed_at: v.nullable(v.string()),
+	last_review_rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 	srs_enabled: v.boolean(),
 	retrievability: v.nullable(v.number()),
 	freshness_tier: v.nullable(
