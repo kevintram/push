@@ -253,7 +253,6 @@ export function PracticeRelatedPanel({
 					getItemKey={getEntityKey}
 					getScrollElement={getScrollElement}
 					items={filteredItems}
-					minItemWidth={280}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>

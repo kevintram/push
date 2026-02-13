@@ -257,7 +257,6 @@ export function SourceRelatedPanel({
 					getItemKey={getEntityKey}
 					getScrollElement={getScrollElement}
 					items={filteredEntityItems}
-					minItemWidth={280}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>

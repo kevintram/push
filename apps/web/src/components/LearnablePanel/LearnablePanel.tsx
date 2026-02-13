@@ -7,7 +7,6 @@ import { CountBadge } from '~/components/ui/count-badge'
 import { TopicPanelHeader } from '~/components/ui/topic-panel-header'
 import { cn } from '~/lib/utils'
 
-const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 interface LearnablePanelProps<T> {
@@ -98,7 +97,6 @@ export function LearnablePanel<T>({
 					getItemKey={wrappedGetItemKey}
 					getScrollElement={getScrollElement}
 					items={items}
-					minItemWidth={MIN_WIDTH}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>

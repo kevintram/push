@@ -15,7 +15,6 @@ import { useSourcePractices } from '../api/getSourcePractices'
 import { sourceKeys } from '../api/queryKeys'
 import { useRemoveSourcePractice } from '../api/removeSourcePractice'
 
-const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 interface SourcePracticesPanelProps {
@@ -192,7 +191,6 @@ export function SourcePracticesPanel({
 					getItemKey={getItemKey}
 					getScrollElement={getScrollElement}
 					items={practices}
-					minItemWidth={MIN_WIDTH}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>

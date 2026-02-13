@@ -15,7 +15,6 @@ import { AddSourceDialog } from './AddSourceDialog'
 import { SourceActionMenu } from './SourceActionMenu'
 import { SourceCard } from './SourceCard'
 
-const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 type ListItem = { type: 'child'; child: Source }
@@ -214,7 +213,6 @@ export function SourceChildrenPanel({
 					getItemKey={getItemKey}
 					getScrollElement={getScrollElement}
 					items={items}
-					minItemWidth={MIN_WIDTH}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>

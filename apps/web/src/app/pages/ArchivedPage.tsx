@@ -164,7 +164,6 @@ function ArchivedList({
 				gap={16}
 				getItemKey={getEntityKey}
 				items={items}
-				minItemWidth={280}
 				renderItem={renderItem}
 			/>
 		</PageLayout.Content>

@@ -118,7 +118,6 @@ function RootTopicsList({
 				gap={16}
 				getItemKey={getItemKey}
 				items={topics}
-				minItemWidth={280}
 				renderItem={renderItem}
 			/>
 		</PageLayout.Content>

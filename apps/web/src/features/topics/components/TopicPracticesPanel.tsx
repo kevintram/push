@@ -15,7 +15,6 @@ import { useTopicPractices } from '../api/getTopicPractices'
 import { topicKeys } from '../api/queryKeys'
 import { useRemoveTopicPractice } from '../api/removeTopicPractice'
 
-const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 interface TopicPracticesPanelProps {
@@ -195,7 +194,6 @@ export function TopicPracticesPanel({
 					getItemKey={getItemKey}
 					getScrollElement={getScrollElement}
 					items={practices}
-					minItemWidth={MIN_WIDTH}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>
