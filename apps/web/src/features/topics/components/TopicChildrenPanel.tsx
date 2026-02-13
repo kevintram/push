@@ -16,7 +16,6 @@ import { AddTopicDialog } from './AddTopicDialog'
 import { TopicActionMenu } from './TopicActionMenu'
 import { TopicCard } from './TopicCard'
 
-const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 type ListItem = { type: 'child'; child: Topic }
@@ -208,7 +207,6 @@ export function TopicChildrenPanel({
 					getItemKey={getItemKey}
 					getScrollElement={getScrollElement}
 					items={items}
-					minItemWidth={MIN_WIDTH}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>

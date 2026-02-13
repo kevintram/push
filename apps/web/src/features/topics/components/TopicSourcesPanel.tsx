@@ -12,7 +12,6 @@ import type { FsrsState } from '~/models/learnable.types'
 import { useAddTopicSource } from '../api/addTopicSource'
 import { useTopicSources } from '../api/getTopicSources'
 
-const MIN_WIDTH = 280
 const MIN_HEIGHT = 96
 
 interface TopicSourcesPanelProps {
@@ -142,7 +141,6 @@ export function TopicSourcesPanel({
 					getItemKey={getItemKey}
 					getScrollElement={getScrollElement}
 					items={sources}
-					minItemWidth={MIN_WIDTH}
 					renderItem={renderItem}
 					scrollMargin={scrollMargin}
 				/>

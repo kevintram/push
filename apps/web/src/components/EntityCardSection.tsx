@@ -13,8 +13,6 @@ import { PracticeActionMenu } from '~/features/practices/components/PracticeActi
 import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
 import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
 
-const MIN_CARD_WIDTH = 280
-
 export const EntityCardSection = memo(function EntityCardSection({
 	id,
 	label,
@@ -81,7 +79,6 @@ export const EntityCardSection = memo(function EntityCardSection({
 						estimateItemSize={estimateEntitySize}
 						getItemKey={getEntityKey}
 						items={items}
-						minItemWidth={MIN_CARD_WIDTH}
 						renderItem={renderItem}
 					/>
 				</div>

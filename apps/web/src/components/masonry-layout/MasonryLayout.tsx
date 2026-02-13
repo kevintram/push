@@ -48,7 +48,7 @@ function MasonryLayoutInner<T>({
 	items,
 	renderItem,
 	estimateItemSize,
-	minItemWidth = 280,
+	minItemWidth = 300,
 	gap = 16,
 	overscan,
 	getItemKey,

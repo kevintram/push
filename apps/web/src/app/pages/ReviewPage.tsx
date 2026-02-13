@@ -444,7 +444,6 @@ function ReviewQueueGroupedList({
 						gap={16}
 						getItemKey={getEntityKey}
 						items={group.items}
-						minItemWidth={280}
 						renderItem={renderItem}
 					/>
 				</div>
