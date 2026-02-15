@@ -14,11 +14,11 @@ export function ReviewModeControl() {
 	const { reviewMode, setReviewMode } = useFlashcardMode()
 
 	return (
-		<div className='pointer-events-auto flex flex-col gap-2 rounded-2xl border bg-background/90 p-3 shadow-lg backdrop-blur-sm'>
+		<div className='pointer-events-auto flex max-w-42 flex-col gap-2 rounded-2xl border bg-background/90 p-3 shadow-lg backdrop-blur-sm'>
 			<div>
 				<span className='font-medium text-sm'>Review Mode</span>
 				<p className='text-muted-foreground text-xs'>
-					Hide things so you can guess
+					Hide stuff so you can guess stuff
 				</p>
 			</div>
 			<div className='flex justify-center'>
