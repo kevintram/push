@@ -49,8 +49,11 @@ const getStabilityChangeColorClass = (
 	before: number | null,
 	after: number | null
 ) => {
-	if (after == null || before == null) {
+	if (after == null) {
 		return ''
+	}
+	if (before == null) {
+		return 'text-green-600 dark:text-green-400'
 	}
 	const roundedDelta = Math.round(after - before)
 	if (roundedDelta >= 0) {
@@ -90,12 +93,13 @@ export function ReviewItem({
 		entry.stability_before,
 		entry.stability_after
 	)
-	const hasStability =
+	const hasStability = entry.stability_after != null
+	const hasDelta =
 		entry.stability_after != null && entry.stability_before != null
 	const stabilityAfterRounded = hasStability
 		? Math.round(entry.stability_after ?? 0)
 		: 0
-	const stabilityDeltaRounded = hasStability
+	const stabilityDeltaRounded = hasDelta
 		? Math.round((entry.stability_after ?? 0) - (entry.stability_before ?? 0))
 		: 0
 
@@ -345,10 +349,16 @@ export function ReviewItem({
 								<div className='flex items-center'>
 									<Anvil className='mr-1 h-3 w-3' />
 									<span>{`${stabilityAfterRounded}d`}</span>
-									<span className={cn('ml-1', stabilityChangeColorClass)}>
-										({stabilityDeltaRounded >= 0 ? '+' : ''}
-										{stabilityDeltaRounded})
-									</span>
+									{hasDelta ? (
+										<span className={cn('ml-1', stabilityChangeColorClass)}>
+											({stabilityDeltaRounded >= 0 ? '+' : ''}
+											{stabilityDeltaRounded})
+										</span>
+									) : (
+										<span className={cn('ml-1', stabilityChangeColorClass)}>
+											(new)
+										</span>
+									)}
 								</div>
 							</>
 						)}

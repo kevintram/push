@@ -121,8 +121,11 @@ export function ReviewDialog({
 	}, [review?.completed_at, review?.rating])
 
 	const stabilityChangeColorClass = useMemo(() => {
-		if (review?.stability_after == null || review?.stability_before == null) {
+		if (review?.stability_after == null) {
 			return ''
+		}
+		if (review?.stability_before == null) {
+			return 'text-green-600 dark:text-green-400'
 		}
 		const roundedDelta = Math.round(
 			review.stability_after - review.stability_before
@@ -132,12 +135,13 @@ export function ReviewDialog({
 		}
 		return 'text-red-600 dark:text-red-400'
 	}, [review?.stability_after, review?.stability_before])
-	const hasStability =
+	const hasStability = review?.stability_after != null
+	const hasDelta =
 		review?.stability_after != null && review?.stability_before != null
 	const stabilityAfterRounded = hasStability
 		? Math.round(review.stability_after ?? 0)
 		: 0
-	const stabilityDeltaRounded = hasStability
+	const stabilityDeltaRounded = hasDelta
 		? Math.round((review.stability_after ?? 0) - (review.stability_before ?? 0))
 		: 0
 
@@ -412,10 +416,14 @@ export function ReviewDialog({
 									<Button className='h-7 px-2' size='sm' variant='secondary'>
 										<Anvil className='h-3.5 w-3.5' />
 										<span>Durability {stabilityAfterRounded}d</span>
-										<span className={stabilityChangeColorClass}>
-											({stabilityDeltaRounded >= 0 ? '+' : ''}
-											{stabilityDeltaRounded})
-										</span>
+										{hasDelta ? (
+											<span className={stabilityChangeColorClass}>
+												({stabilityDeltaRounded >= 0 ? '+' : ''}
+												{stabilityDeltaRounded})
+											</span>
+										) : (
+											<span className={stabilityChangeColorClass}>(new)</span>
+										)}
 									</Button>
 								)}
 							</div>
