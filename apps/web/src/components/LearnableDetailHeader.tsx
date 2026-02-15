@@ -66,7 +66,8 @@ interface LearnableDetailHeaderProps {
 	inboxed: boolean
 	onInboxToggle: () => void
 	isUpdating: boolean
-	readonly?: boolean
+	isTitleHidden?: boolean
+	onRevealTitle?: () => void
 	renderTypeChangeMenu?: (trigger: ReactElement) => ReactNode
 	renderActionMenu: (trigger: ReactNode) => ReactNode
 }
@@ -123,7 +124,8 @@ export function LearnableDetailHeader({
 	inboxed,
 	onInboxToggle,
 	isUpdating,
-	readonly = false,
+	isTitleHidden = false,
+	onRevealTitle,
 	renderTypeChangeMenu,
 	renderActionMenu
 }: LearnableDetailHeaderProps) {
@@ -231,7 +233,6 @@ export function LearnableDetailHeader({
 	const typeMenuTrigger = (
 		<Button
 			className='-ml-2 h-7 rounded-md px-2 font-semibold text-muted-foreground text-sm'
-			disabled={readonly}
 			size='sm'
 			variant='ghost'
 		>
@@ -272,13 +273,24 @@ export function LearnableDetailHeader({
 			</div>
 
 			{/* Title row */}
-			<Textarea
-				className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-				onChange={onTitleChange}
-				placeholder={titlePlaceholder}
-				spellCheck={false}
-				value={title}
-			/>
+			{isTitleHidden ? (
+				<Button
+					className='my-1 min-h-12 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 font-bold text-3xl text-muted-foreground leading-tight hover:bg-muted/70'
+					onClick={onRevealTitle}
+					size='default'
+					variant='outline'
+				>
+					Reveal
+				</Button>
+			) : (
+				<Textarea
+					className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+					onChange={onTitleChange}
+					placeholder={titlePlaceholder}
+					spellCheck={false}
+					value={title}
+				/>
+			)}
 
 			{/* Properties Row 2 */}
 			<div className='flex flex-wrap items-center gap-2 text-sm'>
@@ -315,7 +327,6 @@ export function LearnableDetailHeader({
 										render={
 											<Button
 												className='h-auto gap-1 p-0 font-semibold text-muted-foreground text-sm'
-												disabled={readonly}
 												onClick={handleOpenLastReview}
 												size='default'
 												variant='link'
@@ -369,7 +380,7 @@ export function LearnableDetailHeader({
 						trigger={
 							<Button
 								className='rounded-full'
-								disabled={readonly || isCreatingReview}
+								disabled={isCreatingReview}
 								size='sm'
 							>
 								{isCreatingReview ? (
@@ -386,7 +397,6 @@ export function LearnableDetailHeader({
 						<TooltipTrigger render={<span className='inline-flex' />}>
 							<Button
 								className='rounded-full'
-								disabled={readonly}
 								onClick={() => onSrsToggle(!srsEnabled)}
 								size='icon-sm'
 								variant='outline'
@@ -412,7 +422,7 @@ export function LearnableDetailHeader({
 									'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
 									'data-[state=on]:bg-muted data-[state=on]:text-foreground'
 								)}
-								disabled={isUpdating || readonly}
+								disabled={isUpdating}
 								onPressedChange={onInboxToggle}
 								pressed={inboxed}
 								size='sm'
@@ -431,7 +441,7 @@ export function LearnableDetailHeader({
 									'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
 									'data-[state=on]:bg-muted data-[state=on]:text-foreground'
 								)}
-								disabled={isUpdating || readonly}
+								disabled={isUpdating}
 								onPressedChange={onArchiveToggle}
 								pressed={archived}
 								size='sm'
