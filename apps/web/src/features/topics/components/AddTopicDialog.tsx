@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Anvil, Inbox, RotateCcw, Star } from 'lucide-react'
+import { Anvil, Inbox, Star } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import {
@@ -392,23 +392,6 @@ export function AddTopicDialog({
 								</Toggle>
 							</TooltipTrigger>
 							<TooltipContent>Show in review queue</TooltipContent>
-						</Tooltip>
-
-						{/* Reset Button */}
-						<Tooltip>
-							<TooltipTrigger
-								render={
-									<Button
-										className='rounded-full'
-										onClick={resetToggleFields}
-										size='icon-sm'
-										variant='ghost'
-									>
-										<RotateCcw className='h-4 w-4' />
-									</Button>
-								}
-							/>
-							<TooltipContent>Reset options to defaults</TooltipContent>
 						</Tooltip>
 					</div>
 				</div>
