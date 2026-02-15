@@ -130,13 +130,12 @@ async def create_review(
     session: SessionDep,
     user_id: UserIdDep,
 ) -> ReviewWithTopic | ReviewWithSource | ReviewWithPractice | ReviewRead:
-    """Create a new review, optionally linked to a topic, source, or practice.
+    """Create a new review linked to a topic, source, or practice.
 
     Supports creating and linking entities in any combination:
     - For topic reviews: provide topic_id or topic (inline creation)
     - For source reviews: provide source_id or source (inline creation)
     - For practice reviews: provide practice_id or practice (inline creation)
-    - For entity-less reviews: omit all entity fields
     """
     # Convert Pydantic models to dicts for service layer
     topic_data = None

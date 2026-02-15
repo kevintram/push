@@ -12,7 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.exceptions import AlreadyExistsError, NotFoundError
+from app.exceptions import AlreadyExistsError, BadRequestError, NotFoundError
 from app.models import FsrsState, Practice, Review, Source, Topic
 
 ReviewEntity = Topic | Source | Practice
@@ -300,11 +300,15 @@ async def _resolve_entity_change(
         f for f in incoming if f in fields_set and incoming[f] is not None
     ]
     if len(reassigned) > 1:
-        raise ValueError("At most one of topic_id, source_id, practice_id may be set")
+        raise BadRequestError(
+            "At most one of topic_id, source_id, practice_id may be set"
+        )
     if reassigned:
         for f in resolved_ids:
             if f != reassigned[0]:
                 resolved_ids[f] = None
+    elif all(resolved_ids[f] is None for f in resolved_ids):
+        raise BadRequestError("Review must remain linked to an entity")
 
     # Update review FKs
     review.topic_id = resolved_ids["topic_id"]
@@ -450,19 +454,22 @@ async def create_review(
     completed_at: date | None = None,
     rating: str | None = None,
 ) -> Review:
-    """Create a new review, optionally linked to a topic, source, or practice.
+    """Create a new review linked to a topic, source, or practice.
 
     Supports creating and linking entities in any combination:
     - For topic reviews: provide topic_id or topic_data (inline creation)
     - For source reviews: provide source_id or source_data (inline creation)
     - For practice reviews: provide practice_id or practice_data (inline creation)
-    - For entity-less reviews: omit all entity fields
     Raises AlreadyExistsError if review already exists.
     """
     # Determine entity type
     is_topic_review = topic_id is not None or topic_data is not None
     is_source_review = source_id is not None or source_data is not None
     is_practice_review = practice_id is not None or practice_data is not None
+    if not any([is_topic_review, is_source_review, is_practice_review]):
+        raise BadRequestError(
+            "Review must be linked to exactly one of topic, source, or practice"
+        )
 
     # Resolve or create the target entity
     topic: Topic | None = None
