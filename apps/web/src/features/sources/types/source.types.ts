@@ -6,10 +6,19 @@ import type {
 import type { FreshnessTier, ReviewRating } from '~/models/learnable.types'
 import type { LearningState } from '~/models/learning-state.types'
 
+export type SourceLifecycleStatus =
+	| 'NEW'
+	| 'IN_PROGRESS'
+	| 'ON_HOLD'
+	| 'DROPPED'
+	| 'COMPLETED'
+
 export type Source = {
 	id: number
 	title: string
 	notes: string
+	status: SourceLifecycleStatus
+	progress_note: string
 	entity_type?: 'source' // Discriminator for related entities
 	inserted_at: string
 	updated_at: string
@@ -65,6 +74,8 @@ export type SourceTopicResponse = {
 export type SourceCreate = {
 	title?: string
 	notes?: string
+	status?: SourceLifecycleStatus
+	progress_note?: string
 	archived?: boolean
 	inboxed?: boolean
 	parent_id?: number | null
@@ -75,6 +86,8 @@ export type SourceCreate = {
 export type SourceUpdate = {
 	title?: string
 	notes?: string
+	status?: SourceLifecycleStatus
+	progress_note?: string
 	archived?: boolean
 	inboxed?: boolean
 	parent_id?: number | null
