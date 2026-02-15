@@ -1,6 +1,7 @@
 """Reviews HTTP endpoints - thin wrapper around service layer."""
 
 from datetime import datetime
+from typing import Literal
 
 from fastapi import APIRouter
 
@@ -31,6 +32,7 @@ async def read_reviews(
     effective_date_after: str | None = None,
     completed: bool | None = None,
     scheduled: bool | None = None,
+    order: Literal["asc", "desc"] = "asc",
 ) -> list[ReviewListItem]:
     """Get all reviews for the user, with optional filters.
 
@@ -54,6 +56,7 @@ async def read_reviews(
         effective_date_after=date_after,
         completed=completed,
         scheduled=scheduled,
+        order=order,
     )
 
     items: list[ReviewListItem] = []
