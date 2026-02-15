@@ -30,6 +30,7 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
 import { cn } from '~/lib/utils'
+import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { ConversionError } from '~/utils/ConversionError'
 import {
 	getSourceToPracticePreview,
@@ -211,10 +212,6 @@ interface SourceDetailProps {
 	 */
 	headerAfterActions?: ReactNode
 	/**
-	 * Whether the sidebar should be readonly. Defaults to false.
-	 */
-	sidebarReadonly?: boolean
-	/**
 	 * Callback when the source is successfully converted to another entity type.
 	 */
 	onConvertSuccess?: OnConversionSuccess
@@ -271,7 +268,6 @@ export function SourceDetail({
 	source: sourceProp,
 	isLoading: isLoadingProp,
 	headerAfterActions,
-	sidebarReadonly = false,
 	onConvertSuccess,
 	onDelete,
 	onSourceNavigate,
@@ -324,13 +320,13 @@ export function SourceDetail({
 
 	const handleSrsToggle = useCallback(
 		async (pressed: boolean) => {
-			if (!source?.id || sidebarReadonly) return
+			if (!source?.id) return
 			await updateSource({
 				id: source.id,
 				srs_enabled: pressed
 			})
 		},
-		[source?.id, sidebarReadonly, updateSource]
+		[source?.id, updateSource]
 	)
 
 	const metrics = useSourceMetrics(source ?? null)
@@ -367,10 +363,10 @@ export function SourceDetail({
 
 	const handleStatusChange = useCallback(
 		async (newStatus: SourceLifecycleStatus) => {
-			if (!source?.id || sidebarReadonly || source.status === newStatus) return
+			if (!source?.id || source.status === newStatus) return
 			await updateSource({ id: source.id, status: newStatus })
 		},
-		[updateSource, source?.id, source?.status, sidebarReadonly]
+		[updateSource, source?.id, source?.status]
 	)
 
 	const currentStatusOption = getSourceStatusOption(source?.status)
@@ -387,6 +383,9 @@ export function SourceDetail({
 		onSave: updateProgressNote,
 		key: `sources-progress-note-${source?.id}`
 	})
+	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
+	const [isTitleRevealed, setIsTitleRevealed] = useState(!hidesPrimary)
+	const [isNotesRevealed, setIsNotesRevealed] = useState(!hidesSecondary)
 
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
@@ -427,6 +426,10 @@ export function SourceDetail({
 		setRelatedCount(null)
 	}, [source?.id])
 	useEffect(() => {
+		setIsTitleRevealed(!hidesPrimary)
+		setIsNotesRevealed(!hidesSecondary)
+	}, [hidesPrimary, hidesSecondary, source?.id])
+	useEffect(() => {
 		setRequestedTabs(previous => {
 			if (previous[activeTab]) return previous
 			return { ...previous, [activeTab]: true }
@@ -459,7 +462,6 @@ export function SourceDetail({
 						<LearnableDetailHeader
 							afterSrsControl={
 								<SourceStatusPopover
-									disabled={sidebarReadonly}
 									onProgressNoteChange={onProgressNoteChange}
 									onStatusChange={handleStatusChange}
 									progressNote={progressNote}
@@ -467,8 +469,7 @@ export function SourceDetail({
 									trigger={
 										<Button
 											className='h-8 rounded-full px-3'
-											disabled={sidebarReadonly}
-											size='sm'
+												size='sm'
 											variant='outline'
 										>
 											<CurrentStatusIcon
@@ -489,13 +490,14 @@ export function SourceDetail({
 							entityLabel='Source'
 							entityType='source'
 							inboxed={source.inboxed}
+							isTitleHidden={hidesPrimary && !isTitleRevealed}
 							isUpdating={isUpdatingSource}
 							metrics={metrics}
 							onArchiveToggle={handleArchiveToggle}
 							onInboxToggle={handleInboxToggle}
+							onRevealTitle={() => setIsTitleRevealed(true)}
 							onSrsToggle={handleSrsToggle}
 							onTitleChange={onTitleChange}
-							readonly={sidebarReadonly}
 							renderActionMenu={trigger => (
 								<SourceActionMenu
 									hideInboxArchive={true}
@@ -517,13 +519,24 @@ export function SourceDetail({
 							title={title}
 							updatedAt={source.updated_at}
 						/>
-						<Textarea
-							className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-							name='notes'
-							onChange={onNotesChange}
-							placeholder='Notes'
-							value={notes}
-						/>
+						{hidesSecondary && !isNotesRevealed ? (
+							<Button
+								className='mt-1 min-h-16 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-base text-muted-foreground hover:bg-muted/70'
+								onClick={() => setIsNotesRevealed(true)}
+								size='default'
+								variant='outline'
+							>
+								Reveal
+							</Button>
+						) : (
+							<Textarea
+								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+								name='notes'
+								onChange={onNotesChange}
+								placeholder='Notes'
+								value={notes}
+							/>
+						)}
 						<div className='mt-6'>
 							<DetailTabsShell
 								defaultValue='children'

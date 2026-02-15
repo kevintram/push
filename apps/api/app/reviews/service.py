@@ -5,6 +5,7 @@ tightly coupled with database operations in replay functions.
 """
 
 from datetime import date, datetime, time, timezone
+from typing import Literal
 
 from fsrs import Card, Rating as FSRSRating, Scheduler, State as FSRSState
 from sqlalchemy import select
@@ -378,6 +379,7 @@ async def list_reviews(
     effective_date_after: date | None = None,
     completed: bool | None = None,
     scheduled: bool | None = None,
+    order: Literal["asc", "desc"] = "asc",
 ) -> list[tuple]:
     """List reviews with optional filters. Returns raw query results for router to process."""
     stmt = (
@@ -397,12 +399,18 @@ async def list_reviews(
         .outerjoin(Source, Review.source_id == Source.id)
         .outerjoin(Practice, Review.practice_id == Practice.id)
         .where(Review.user_id == user_id)
-        .order_by(
-            Review.completed_at.asc().nulls_first(),
-            Review.scheduled_at.asc(),
+    )
+
+    if order == "desc":
+        stmt = stmt.order_by(
+            Review.effective_date.desc().nulls_last(),
+            Review.id.desc(),
+        )
+    else:
+        stmt = stmt.order_by(
+            Review.effective_date.asc().nulls_first(),
             Review.id.asc(),
         )
-    )
 
     if topic_id is not None:
         stmt = stmt.where(Review.topic_id == topic_id)

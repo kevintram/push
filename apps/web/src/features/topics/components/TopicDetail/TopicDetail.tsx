@@ -12,6 +12,7 @@ import {
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { DetailTabsShell } from '~/components/DetailTabs'
 import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
+import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -28,6 +29,7 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
 import { cn } from '~/lib/utils'
+import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { ConversionError } from '~/utils/ConversionError'
 import {
 	getTopicToPracticePreview,
@@ -196,10 +198,6 @@ interface TopicDetailProps {
 	 */
 	headerAfterActions?: ReactNode
 	/**
-	 * Whether the sidebar should be readonly. Defaults to false.
-	 */
-	sidebarReadonly?: boolean
-	/**
 	 * Callback when the topic is successfully converted to another entity type.
 	 */
 	onConvertSuccess?: OnConversionSuccess
@@ -252,7 +250,6 @@ export function TopicDetail({
 	topic: topicProp,
 	isLoading: isLoadingProp,
 	headerAfterActions,
-	sidebarReadonly = false,
 	onConvertSuccess,
 	onDelete,
 	onTopicNavigate,
@@ -302,13 +299,13 @@ export function TopicDetail({
 
 	const handleSrsToggle = useCallback(
 		async (pressed: boolean) => {
-			if (!topic?.id || sidebarReadonly) return
+			if (!topic?.id) return
 			await updateTopic({
 				id: topic.id,
 				srs_enabled: pressed
 			})
 		},
-		[topic?.id, sidebarReadonly, updateTopic]
+		[topic?.id, updateTopic]
 	)
 
 	const metrics = useTopicMetrics(topic ?? null)
@@ -340,6 +337,9 @@ export function TopicDetail({
 		onSave: updateName,
 		key: `topics-${topic?.id}`
 	})
+	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
+	const [isTitleRevealed, setIsTitleRevealed] = useState(!hidesPrimary)
+	const [isNotesRevealed, setIsNotesRevealed] = useState(!hidesSecondary)
 
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
@@ -380,6 +380,10 @@ export function TopicDetail({
 		setRelatedCount(null)
 	}, [topic?.id])
 	useEffect(() => {
+		setIsTitleRevealed(!hidesPrimary)
+		setIsNotesRevealed(!hidesSecondary)
+	}, [hidesPrimary, hidesSecondary, topic?.id])
+	useEffect(() => {
 		setRequestedTabs(previous => {
 			if (previous[activeTab]) return previous
 			return { ...previous, [activeTab]: true }
@@ -415,13 +419,14 @@ export function TopicDetail({
 							entityLabel='Topic'
 							entityType='topic'
 							inboxed={topic.inboxed}
+							isTitleHidden={hidesPrimary && !isTitleRevealed}
 							isUpdating={isUpdatingTopic}
 							metrics={metrics}
 							onArchiveToggle={handleArchiveToggle}
 							onInboxToggle={handleInboxToggle}
+							onRevealTitle={() => setIsTitleRevealed(true)}
 							onSrsToggle={handleSrsToggle}
 							onTitleChange={onNameChange}
-							readonly={sidebarReadonly}
 							renderActionMenu={trigger => (
 								<TopicActionMenu
 									hideInboxArchive={true}
@@ -443,13 +448,24 @@ export function TopicDetail({
 							title={title}
 							updatedAt={topic.updated_at}
 						/>
-						<Textarea
-							className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-							name='notes'
-							onChange={onNotesChange}
-							placeholder='Notes'
-							value={notes}
-						/>
+						{hidesSecondary && !isNotesRevealed ? (
+							<Button
+								className='mt-1 min-h-16 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-base text-muted-foreground hover:bg-muted/70'
+								onClick={() => setIsNotesRevealed(true)}
+								size='default'
+								variant='outline'
+							>
+								Reveal
+							</Button>
+						) : (
+							<Textarea
+								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+								name='notes'
+								onChange={onNotesChange}
+								placeholder='Notes'
+								value={notes}
+							/>
+						)}
 						<div className='mt-6'>
 							<DetailTabsShell
 								defaultValue='children'

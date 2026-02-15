@@ -13,7 +13,7 @@ import {
 	User2
 } from 'lucide-react'
 import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -34,6 +34,7 @@ import { getSourceStatusOption } from '~/features/sources/constants/statusOption
 import type { SourceLifecycleStatus } from '~/features/sources/types/source.types'
 import type { LearnableMetrics } from '~/hooks/useLearnableMetrics'
 import type { LearnableBase } from '~/models/learnable.types'
+import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { localDateString } from '~/utils/date'
 import {
 	formatAbsoluteDate,
@@ -113,6 +114,11 @@ export function LearnableCardBase<T extends LearnableBase>({
 		stabilityText,
 		stabilityTooltipText
 	} = metrics
+	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
+	const [isPrimaryRevealed, setIsPrimaryRevealed] = useState(!hidesPrimary)
+	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
+		!hidesSecondary
+	)
 
 	const lastReviewed = useMemo(
 		() =>
@@ -141,6 +147,16 @@ export function LearnableCardBase<T extends LearnableBase>({
 		if (!searchQuery?.trim()) return secondaryText
 		return truncateWithHighlight(secondaryText, searchQuery, 200)
 	}, [secondaryText, searchQuery])
+	const hasPrimaryText = Boolean(primaryText.trim())
+	const hasSecondaryText = Boolean(secondaryText?.trim())
+	const hidePrimary = hidesPrimary && hasPrimaryText && !isPrimaryRevealed
+	const hideSecondary =
+		hidesSecondary && hasSecondaryText && !isSecondaryRevealed
+
+	useEffect(() => {
+		setIsPrimaryRevealed(!hidesPrimary)
+		setIsSecondaryRevealed(!hidesSecondary)
+	}, [hidesPrimary, hidesSecondary])
 
 	const handleActivate = useCallback(() => {
 		onEntityClick?.(entity)
@@ -167,6 +183,14 @@ export function LearnableCardBase<T extends LearnableBase>({
 		},
 		[config, entity.id, entity.srs_enabled]
 	)
+	const handleRevealPrimary = useCallback((e: MouseEvent) => {
+		e.stopPropagation()
+		setIsPrimaryRevealed(true)
+	}, [])
+	const handleRevealSecondary = useCallback((e: MouseEvent) => {
+		e.stopPropagation()
+		setIsSecondaryRevealed(true)
+	}, [])
 
 	// Review creation
 	const createReviewMutation = useCreateReview()
@@ -399,16 +423,60 @@ export function LearnableCardBase<T extends LearnableBase>({
 						</div>
 					)}
 
-					<div className='flex flex-col gap-0.5'>
-						{highlightedPrimary && (
-							<h3 className='break-word line-clamp-5 font-semibold leading-tight [overflow-wrap:anywhere]'>
-								{highlightedPrimary}
-							</h3>
+					<div className='flex flex-col gap-2'>
+						{hidePrimary ? (
+							<div className='relative'>
+								<h3
+									aria-hidden={true}
+									className='break-word invisible line-clamp-5 font-semibold leading-tight [overflow-wrap:anywhere]'
+								>
+									{highlightedPrimary}
+								</h3>
+								<div className='absolute inset-0'>
+									<Button
+										className='h-full w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-muted-foreground text-sm hover:bg-muted/70'
+										onClick={handleRevealPrimary}
+										onKeyDown={e => e.stopPropagation()}
+										size='default'
+										variant='outline'
+									>
+										Reveal
+									</Button>
+								</div>
+							</div>
+						) : (
+							highlightedPrimary && (
+								<h3 className='break-word line-clamp-5 font-semibold leading-tight [overflow-wrap:anywhere]'>
+									{highlightedPrimary}
+								</h3>
+							)
 						)}
-						{highlightedSecondary && (
-							<p className='break-word line-clamp-[8] text-sm [overflow-wrap:anywhere]'>
-								{highlightedSecondary}
-							</p>
+						{hideSecondary ? (
+							<div className='relative'>
+								<p
+									aria-hidden={true}
+									className='break-word invisible line-clamp-[8] text-sm [overflow-wrap:anywhere]'
+								>
+									{highlightedSecondary}
+								</p>
+								<div className='absolute inset-0'>
+									<Button
+										className='h-full w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-muted-foreground text-sm hover:bg-muted/70'
+										onClick={handleRevealSecondary}
+										onKeyDown={e => e.stopPropagation()}
+										size='default'
+										variant='outline'
+									>
+										Reveal
+									</Button>
+								</div>
+							</div>
+						) : (
+							highlightedSecondary && (
+								<p className='break-word line-clamp-[8] text-sm [overflow-wrap:anywhere]'>
+									{highlightedSecondary}
+								</p>
+							)
 						)}
 					</div>
 				</div>

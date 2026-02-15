@@ -36,6 +36,10 @@ export async function getReviews(filters?: GetReviewsFilters) {
 		params.append('completed', String(filters.completed))
 	}
 
+	if (filters?.order !== undefined) {
+		params.append('order', filters.order)
+	}
+
 	const url = `${import.meta.env.VITE_API_URL}/reviews/${params.toString() ? `?${params.toString()}` : ''}`
 
 	const response = await apiFetch(url, {
