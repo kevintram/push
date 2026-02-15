@@ -169,6 +169,8 @@ export function AddSourceDialog({
 			const sourceData = {
 				title: title.trim(),
 				notes: notes.trim(),
+				status: 'NEW' as const,
+				progress_note: '',
 				archived: false,
 				inboxed,
 				srs_enabled: srsEnabled,

@@ -67,6 +67,7 @@ interface LearnableDetailHeaderProps {
 	onInboxToggle: () => void
 	isUpdating: boolean
 	readonly?: boolean
+	afterSrsControl?: ReactNode
 	renderTypeChangeMenu?: (trigger: ReactElement) => ReactNode
 	renderActionMenu: (trigger: ReactNode) => ReactNode
 }
@@ -124,6 +125,7 @@ export function LearnableDetailHeader({
 	onInboxToggle,
 	isUpdating,
 	readonly = false,
+	afterSrsControl,
 	renderTypeChangeMenu,
 	renderActionMenu
 }: LearnableDetailHeaderProps) {
@@ -382,6 +384,7 @@ export function LearnableDetailHeader({
 							</Button>
 						}
 					/>
+					{afterSrsControl}
 					<Tooltip>
 						<TooltipTrigger render={<span className='inline-flex' />}>
 							<Button
