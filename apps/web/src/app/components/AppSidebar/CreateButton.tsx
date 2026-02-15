@@ -43,11 +43,11 @@ export function CreateButton() {
 			<DropdownMenuContent align='start' side='right'>
 				<DropdownMenuItem onClick={() => setIsAddTopicDialogOpen(true)}>
 					<SquarePen />
-					<span>New topic</span>
+					<span>Topic</span>
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => setIsAddSourceDialogOpen(true)}>
 					<FileText />
-					<span>New source</span>
+					<span>Source</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 
