@@ -1,4 +1,4 @@
-import { Book } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
@@ -199,7 +199,7 @@ export function ReadPage() {
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={Book} title='Read'>
+			<PageLayout.Header icon={BookOpen} title='Read'>
 				<Tabs
 					className='-mb-2'
 					onValueChange={value => {
@@ -258,7 +258,7 @@ function ReadSections({
 				<Empty>
 					<EmptyHeader>
 						<EmptyMedia variant='icon'>
-							<Book />
+							<BookOpen />
 						</EmptyMedia>
 						<EmptyTitle>{emptyTitle}</EmptyTitle>
 						<EmptyDescription>{emptyDescription}</EmptyDescription>

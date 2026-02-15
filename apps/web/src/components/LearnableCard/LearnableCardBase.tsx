@@ -81,6 +81,34 @@ export interface LearnableCardConfig<T extends LearnableBase> {
 	}
 }
 
+export interface LearnableCardHeaderBadge {
+	label: string
+	tooltip?: string | null
+	variant?:
+		| 'default'
+		| 'secondary'
+		| 'destructive'
+		| 'warning'
+		| 'outline'
+		| 'ghost'
+		| 'link'
+}
+
+export interface LearnableCardStatusBadge {
+	label: string
+	tooltip?: string | null
+	className?: string
+	onClick?: () => void
+	variant?:
+		| 'default'
+		| 'secondary'
+		| 'destructive'
+		| 'warning'
+		| 'outline'
+		| 'ghost'
+		| 'link'
+}
+
 export interface LearnableCardBaseProps<T extends LearnableBase> {
 	entity: T
 	config: LearnableCardConfig<T>
@@ -91,6 +119,9 @@ export interface LearnableCardBaseProps<T extends LearnableBase> {
 	searchQuery?: string
 	headerRight?: ReactNode
 	showLeavingSoon?: boolean
+	headerBadge?: LearnableCardHeaderBadge
+	statusBadges?: Array<LearnableCardStatusBadge>
+	statusRowPlacement?: 'above-header' | 'below-header'
 }
 
 export function LearnableCardBase<T extends LearnableBase>({
@@ -102,7 +133,10 @@ export function LearnableCardBase<T extends LearnableBase>({
 	minHeight = MIN_HEIGHT,
 	searchQuery,
 	headerRight,
-	showLeavingSoon = false
+	showLeavingSoon = false,
+	headerBadge,
+	statusBadges = [],
+	statusRowPlacement = 'below-header'
 }: LearnableCardBaseProps<T>) {
 	const {
 		freshnessTierInfo,
@@ -267,9 +301,62 @@ export function LearnableCardBase<T extends LearnableBase>({
 		[entity, statusControl]
 	)
 
+	const hasStatusBadges = statusBadges.length > 0
+	const hasFloatingStatusRow =
+		hasStatusBadges && statusRowPlacement === 'above-header'
+	const statusRowClassName =
+		statusRowPlacement === 'above-header'
+			? 'absolute top-0 right-2 z-10 flex max-w-[calc(100%-1rem)] flex-wrap items-center justify-end gap-1.5 -translate-y-[45%]'
+			: 'flex w-full flex-wrap items-center justify-end gap-1.5 px-5 pt-0 pb-2'
+
+	const statusRow = hasStatusBadges ? (
+		<div className={statusRowClassName}>
+			{statusBadges.map((badge, index) => (
+				<Tooltip key={`${badge.label}-${index}`}>
+					<TooltipTrigger
+						render={
+							<Badge
+								className={
+									badge.className
+										? `${badge.className} rounded-sm shadow-sm`
+										: 'h-5 rounded-sm text-xs shadow-sm'
+								}
+								onClick={event => {
+									if (!badge.onClick) {
+										return
+									}
+									event.stopPropagation()
+									badge.onClick()
+								}}
+								onKeyDown={event => {
+									if (
+										(event.key === 'Enter' || event.key === ' ') &&
+										badge.onClick
+									) {
+										event.preventDefault()
+										event.stopPropagation()
+										badge.onClick()
+									}
+								}}
+								role={badge.onClick ? 'button' : undefined}
+								tabIndex={badge.onClick ? 0 : undefined}
+								variant={badge.variant ?? 'outline'}
+							>
+								{badge.label}
+							</Badge>
+						}
+					/>
+					{badge.tooltip && <TooltipContent>{badge.tooltip}</TooltipContent>}
+				</Tooltip>
+			))}
+		</div>
+	) : null
+
 	return (
 		<Card
-			className='max-h-96 cursor-pointer gap-0 overflow-hidden transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+			className={`relative max-h-96 cursor-pointer gap-0 overflow-visible transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
+				hasFloatingStatusRow ? 'pt-3' : ''
+			}`}
 			onClick={handleActivate}
 			onKeyDown={handleKeyDown}
 			onMouseEnter={handleMouseEnter}
@@ -277,7 +364,12 @@ export function LearnableCardBase<T extends LearnableBase>({
 			style={{ minHeight: `${minHeight}px` }}
 			tabIndex={0}
 		>
-			<CardHeader className='-top-1 -left-1 relative mb-1 flex items-center justify-between gap-0.5'>
+			{statusRowPlacement === 'above-header' && statusRow}
+			<CardHeader
+				className={`-left-1 relative mb-1 flex items-center justify-between gap-2 ${
+					hasFloatingStatusRow ? 'pt-2' : '-top-1'
+				}`}
+			>
 				{'parent_id' in entity && (
 					<Tooltip>
 						<TooltipTrigger
@@ -301,26 +393,49 @@ export function LearnableCardBase<T extends LearnableBase>({
 					</Tooltip>
 				)}
 				<div className='flex-1' />
-				{/* Leaving soon badge */}
-				{showLeavingSoon && isLeavingSoon && leavingSoonLabel && (
+				{/* Queue priority badge */}
+				{headerBadge && (
 					<Tooltip>
 						<TooltipTrigger
 							render={
 								<Badge
 									className='h-5 text-xs'
-									variant={
-										leavingSoonLabel === 'Hazy soon' ? 'warning' : 'destructive'
-									}
+									variant={headerBadge.variant ?? 'warning'}
 								>
-									{leavingSoonLabel}
+									{headerBadge.label}
 								</Badge>
 							}
 						/>
-						{leavingSoonTooltip && (
-							<TooltipContent>{leavingSoonTooltip}</TooltipContent>
+						{headerBadge.tooltip && (
+							<TooltipContent>{headerBadge.tooltip}</TooltipContent>
 						)}
 					</Tooltip>
 				)}
+				{/* Leaving soon badge */}
+				{!headerBadge &&
+					showLeavingSoon &&
+					isLeavingSoon &&
+					leavingSoonLabel && (
+						<Tooltip>
+							<TooltipTrigger
+								render={
+									<Badge
+										className='h-5 text-xs'
+										variant={
+											leavingSoonLabel === 'Hazy soon'
+												? 'warning'
+												: 'destructive'
+										}
+									>
+										{leavingSoonLabel}
+									</Badge>
+								}
+							/>
+							{leavingSoonTooltip && (
+								<TooltipContent>{leavingSoonTooltip}</TooltipContent>
+							)}
+						</Tooltip>
+					)}
 				{/* Add review */}
 				<RatingDropdown
 					align='end'
@@ -395,6 +510,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 				</Button>
 				<div className='flex items-center gap-1'>{headerRight}</div>
 			</CardHeader>
+			{statusRowPlacement === 'below-header' && statusRow}
 
 			<CardContent className='mb-3 flex flex-1 flex-col gap-3'>
 				<div className='flex flex-col gap-1'>

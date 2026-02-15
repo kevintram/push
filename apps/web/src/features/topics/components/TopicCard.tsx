@@ -2,7 +2,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import {
 	LearnableCardBase,
-	type LearnableCardConfig
+	type LearnableCardConfig,
+	type LearnableCardHeaderBadge,
+	type LearnableCardStatusBadge
 } from '~/components/LearnableCard'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { useTopicMetrics } from '~/features/topics/hooks/useTopicMetrics'
@@ -19,6 +21,9 @@ interface TopicCardProps {
 	headerRight?: React.ReactNode
 	/** Whether to show the "leaving soon" badge in the header. Defaults to false. */
 	showLeavingSoon?: boolean
+	headerBadge?: LearnableCardHeaderBadge
+	statusBadges?: Array<LearnableCardStatusBadge>
+	statusRowPlacement?: 'above-header' | 'below-header'
 }
 
 export function TopicCard({
@@ -27,7 +32,10 @@ export function TopicCard({
 	minHeight = MIN_HEIGHT,
 	searchQuery,
 	headerRight,
-	showLeavingSoon = false
+	showLeavingSoon = false,
+	headerBadge,
+	statusBadges,
+	statusRowPlacement
 }: TopicCardProps) {
 	const queryClient = useQueryClient()
 	const { mutate: updateTopic, isPending: isUpdatingTopic } = useUpdateTopic()
@@ -55,6 +63,7 @@ export function TopicCard({
 		<LearnableCardBase
 			config={config}
 			entity={topic}
+			headerBadge={headerBadge}
 			headerRight={headerRight}
 			metrics={metrics}
 			minHeight={minHeight}
@@ -62,6 +71,8 @@ export function TopicCard({
 			queryClient={queryClient}
 			searchQuery={searchQuery}
 			showLeavingSoon={showLeavingSoon}
+			statusBadges={statusBadges}
+			statusRowPlacement={statusRowPlacement}
 		/>
 	)
 }

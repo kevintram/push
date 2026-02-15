@@ -109,7 +109,7 @@ class ReviewWithPractice(ReviewRead):
 
 
 class ReviewCreate(BaseModel):
-    """Create a new review, optionally linked to a topic, source, or practice."""
+    """Create a new review linked to exactly one topic, source, or practice."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -129,7 +129,7 @@ class ReviewCreate(BaseModel):
 
     @model_validator(mode="after")
     def validate_mutually_exclusive_fields(self) -> "ReviewCreate":
-        # Validate polymorphic target (at most one entity reference)
+        # Validate polymorphic target (exactly one entity reference)
         targets = [
             self.topic_id is not None,
             self.topic is not None,
@@ -138,9 +138,9 @@ class ReviewCreate(BaseModel):
             self.practice_id is not None,
             self.practice is not None,
         ]
-        if sum(targets) > 1:
+        if sum(targets) != 1:
             raise ValueError(
-                "Must provide at most one of: topic_id, topic, source_id, source, practice_id, or practice"
+                "Must provide exactly one of: topic_id, topic, source_id, source, practice_id, or practice"
             )
 
         return self
@@ -168,5 +168,13 @@ class ReviewUpdate(BaseModel):
         if sum(targets) > 1:
             raise ValueError(
                 "At most one of topic_id, source_id, practice_id may be set"
+            )
+
+        if sum(targets) == 0 and any(
+            field in self.model_fields_set
+            for field in ("topic_id", "source_id", "practice_id")
+        ):
+            raise ValueError(
+                "Review must remain linked to an entity; null entity IDs are not allowed"
             )
         return self

@@ -469,7 +469,7 @@ export function SourceDetail({
 									trigger={
 										<Button
 											className='h-8 rounded-full px-3'
-												size='sm'
+											size='sm'
 											variant='outline'
 										>
 											<CurrentStatusIcon
