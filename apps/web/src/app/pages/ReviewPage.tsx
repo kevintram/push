@@ -224,6 +224,8 @@ export function ReviewPage() {
 						: offset === 1
 							? 'Next week'
 							: `In ${offset} weeks`,
+				headingClassName:
+					offset === 0 ? 'text-blue-600 dark:text-blue-400' : undefined,
 				items: [...bucketItems].sort(sortUpcomingQueueItems)
 			})
 		}
