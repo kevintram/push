@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { ChevronDown } from 'lucide-react'
 import {
 	type ReactElement,
 	type ReactNode,
@@ -37,14 +38,16 @@ import {
 } from '~/utils/conversionPreview'
 import { sourceKeys } from '../../api/queryKeys'
 import { useUpdateSource } from '../../api/updateSource'
+import { getSourceStatusOption } from '../../constants/statusOptions'
 import { useSourceMetrics } from '../../hooks/useSourceMetrics'
 import { SourceContext } from '../../stores/SelectedSourceContext'
-import type { Source } from '../../types/source.types'
+import type { Source, SourceLifecycleStatus } from '../../types/source.types'
 import { SourceActionMenu } from '../SourceActionMenu'
 import { SourceChildrenPanel } from '../SourceChildrenPanel'
 import { SourcePracticesPanel } from '../SourcePracticesPanel'
 import { SourcePrerequisitesPanel } from '../SourcePrerequisitesPanel'
 import { SourceRelatedPanel } from '../SourceRelatedPanel'
+import { SourceStatusPopover } from '../SourceStatusPopover'
 import { SourceTopicsPanel } from '../SourceTopicsPanel'
 import { SourceDetailNavBar } from './SourceDetailNavBar'
 import { SourceDetailSkeleton } from './SourceDetailSkeleton'
@@ -347,13 +350,38 @@ export function SourceDetail({
 	const { value: notes, onChange: onNotesChange } = useAutoSave({
 		initialValue: source?.notes ?? '',
 		onSave: updateNotes,
-		key: `sources-${source?.id}`
+		key: `sources-notes-${source?.id}`
 	})
+
+	const updateProgressNote = useCallback(
+		(newProgressNote: string) => {
+			if (!source?.id) return
+			updateSource({ id: source.id, progress_note: newProgressNote })
+		},
+		[updateSource, source?.id]
+	)
+
+	const handleStatusChange = useCallback(
+		async (newStatus: SourceLifecycleStatus) => {
+			if (!source?.id || source.status === newStatus) return
+			await updateSource({ id: source.id, status: newStatus })
+		},
+		[updateSource, source?.id, source?.status]
+	)
+
+	const currentStatusOption = getSourceStatusOption(source?.status)
+	const CurrentStatusIcon = currentStatusOption.icon
 
 	const { value: title, onChange: onTitleChange } = useAutoSave({
 		initialValue: source?.title ?? '',
 		onSave: updateTitle,
-		key: `sources-${source?.id}`
+		key: `sources-title-${source?.id}`
+	})
+
+	const { value: progressNote, onChange: onProgressNoteChange } = useAutoSave({
+		initialValue: source?.progress_note ?? '',
+		onSave: updateProgressNote,
+		key: `sources-progress-note-${source?.id}`
 	})
 	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
 	const [isTitleRevealed, setIsTitleRevealed] = useState(!hidesPrimary)
@@ -432,6 +460,30 @@ export function SourceDetail({
 				>
 					<div className={cn('w-full px-6 pt-6 pb-4', className)}>
 						<LearnableDetailHeader
+							afterSrsControl={
+								<SourceStatusPopover
+									onProgressNoteChange={onProgressNoteChange}
+									onStatusChange={handleStatusChange}
+									progressNote={progressNote}
+									status={source.status}
+									trigger={
+										<Button
+											className='h-8 rounded-full px-3'
+											size='sm'
+											variant='outline'
+										>
+											<CurrentStatusIcon
+												className={cn(
+													'h-4 w-4',
+													currentStatusOption.colorClassName
+												)}
+											/>
+											<span>{currentStatusOption.label}</span>
+											<ChevronDown className='h-4 w-4' />
+										</Button>
+									}
+								/>
+							}
 							archived={source.archived}
 							createdAt={source.inserted_at}
 							entityId={source.id}

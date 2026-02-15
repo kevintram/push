@@ -18,6 +18,8 @@ export async function createSource(
 		body: JSON.stringify({
 			title: input.title ?? '',
 			notes: input.notes ?? '',
+			status: input.status ?? 'NEW',
+			progress_note: input.progress_note ?? '',
 			archived: input.archived ?? false,
 			inboxed: input.inboxed ?? false,
 			parent_id: input.parent_id ?? null,

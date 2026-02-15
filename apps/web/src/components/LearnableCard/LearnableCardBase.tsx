@@ -12,7 +12,7 @@ import {
 	Star,
 	User2
 } from 'lucide-react'
-import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
+import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '~/components/ui/badge'
@@ -29,6 +29,9 @@ import type { ReviewRatingState } from '~/features/reviews/components/ReviewRati
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type { Rating } from '~/features/reviews/types/review.types'
 import { getReviewCreatedToastDescription } from '~/features/reviews/utils/reviewToastDescription'
+import { SourceStatusPopover } from '~/features/sources/components/SourceStatusPopover'
+import { getSourceStatusOption } from '~/features/sources/constants/statusOptions'
+import type { SourceLifecycleStatus } from '~/features/sources/types/source.types'
 import type { LearnableMetrics } from '~/hooks/useLearnableMetrics'
 import type { LearnableBase } from '~/models/learnable.types'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
@@ -65,6 +68,17 @@ export interface LearnableCardConfig<T extends LearnableBase> {
 	isUpdating: boolean
 	/** Prefetch entity data on hover */
 	onPrefetch: (queryClient: QueryClient, entity: T) => void
+	/** Optional source status controls shown as an icon button */
+	statusControl?: {
+		getStatus: (entity: T) => SourceLifecycleStatus
+		onStatusChange: (id: number, status: SourceLifecycleStatus) => void
+		progressNote?: (entity: T) => string
+		onProgressNoteChange?: (
+			entity: T,
+			event: ChangeEvent<HTMLTextAreaElement>
+		) => void
+		isUpdating: boolean
+	}
 }
 
 export interface LearnableCardHeaderBadge {
@@ -270,6 +284,23 @@ export function LearnableCardBase<T extends LearnableBase>({
 		[createReview, isCreatingReview]
 	)
 
+	const statusControl = config.statusControl
+	const currentStatusOption = useMemo(() => {
+		if (!statusControl) return null
+		return getSourceStatusOption(statusControl.getStatus(entity))
+	}, [entity, statusControl])
+	const CurrentStatusIcon = currentStatusOption?.icon
+
+	const handleStatusSelect = useCallback(
+		(nextStatus: SourceLifecycleStatus) => {
+			if (!statusControl) return
+			const currentStatus = statusControl.getStatus(entity)
+			if (currentStatus === nextStatus || statusControl.isUpdating) return
+			statusControl.onStatusChange(entity.id, nextStatus)
+		},
+		[entity, statusControl]
+	)
+
 	const hasStatusBadges = statusBadges.length > 0
 	const hasFloatingStatusRow =
 		hasStatusBadges && statusRowPlacement === 'above-header'
@@ -428,18 +459,55 @@ export function LearnableCardBase<T extends LearnableBase>({
 						</Button>
 					}
 				/>
+				{statusControl && currentStatusOption && CurrentStatusIcon && (
+					<SourceStatusPopover
+						align='end'
+						disabled={statusControl.isUpdating}
+						onProgressNoteChange={
+							statusControl.onProgressNoteChange
+								? event => statusControl.onProgressNoteChange?.(entity, event)
+								: undefined
+						}
+						onStatusChange={handleStatusSelect}
+						progressNote={statusControl.progressNote?.(entity)}
+						sideOffset={6}
+						status={currentStatusOption.value}
+						trigger={
+							<Button
+								aria-label={`Status: ${currentStatusOption.label}`}
+								disabled={statusControl.isUpdating}
+								onClick={e => e.stopPropagation()}
+								onKeyDown={e => e.stopPropagation()}
+								size='icon-sm'
+								variant='ghost'
+							>
+								<CurrentStatusIcon
+									className={`h-3.5 w-3.5 ${currentStatusOption.colorClassName}`}
+								/>
+							</Button>
+						}
+					/>
+				)}
 				{/* SRS toggle */}
-				<div
-					className={config.isUpdating ? 'opacity-50' : 'cursor-pointer'}
+				<Button
+					aria-label={
+						(entity.srs_enabled ?? true)
+							? 'Disable SRS for this item'
+							: 'Enable SRS for this item'
+					}
+					aria-pressed={entity.srs_enabled ?? true}
+					className={config.isUpdating ? 'opacity-50' : ''}
 					onClick={handleSrsToggle}
 					onKeyDown={e => e.stopPropagation()}
+					size='icon-sm'
+					variant='ghost'
 				>
 					{(entity.srs_enabled ?? true) ? (
 						<Star className='h-4 w-4 fill-yellow-500 text-yellow-500' />
 					) : (
 						<Star className='h-4 w-4 text-muted-foreground' />
 					)}
-				</div>
+				</Button>
 				<div className='flex items-center gap-1'>{headerRight}</div>
 			</CardHeader>
 			{statusRowPlacement === 'below-header' && statusRow}

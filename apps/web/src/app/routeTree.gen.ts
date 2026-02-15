@@ -19,6 +19,7 @@ import { Route as MainTodayRouteImport } from './routes/_main/today'
 import { Route as MainSourcesRouteImport } from './routes/_main/sources'
 import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
+import { Route as MainReadRouteImport } from './routes/_main/read'
 import { Route as MainPracticesRouteImport } from './routes/_main/practices'
 import { Route as MainMyTopicsRouteImport } from './routes/_main/my-topics'
 import { Route as MainMyLibraryRouteImport } from './routes/_main/my-library'
@@ -89,6 +90,11 @@ const MainReviewRoute = MainReviewRouteImport.update({
 const MainRecentRoute = MainRecentRouteImport.update({
   id: '/recent',
   path: '/recent',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainReadRoute = MainReadRouteImport.update({
+  id: '/read',
+  path: '/read',
   getParentRoute: () => MainRoute,
 } as any)
 const MainPracticesRoute = MainPracticesRouteImport.update({
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/my-library': typeof MainMyLibraryRoute
   '/my-topics': typeof MainMyTopicsRoute
   '/practices': typeof MainPracticesRoute
+  '/read': typeof MainReadRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
   '/sources': typeof MainSourcesRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/my-library': typeof MainMyLibraryRoute
   '/my-topics': typeof MainMyTopicsRoute
   '/practices': typeof MainPracticesRoute
+  '/read': typeof MainReadRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
   '/sources': typeof MainSourcesRoute
@@ -287,6 +295,7 @@ export interface FileRoutesById {
   '/_main/my-library': typeof MainMyLibraryRoute
   '/_main/my-topics': typeof MainMyTopicsRoute
   '/_main/practices': typeof MainPracticesRoute
+  '/_main/read': typeof MainReadRoute
   '/_main/recent': typeof MainRecentRoute
   '/_main/review': typeof MainReviewRoute
   '/_main/sources': typeof MainSourcesRoute
@@ -322,6 +331,7 @@ export interface FileRouteTypes {
     | '/my-library'
     | '/my-topics'
     | '/practices'
+    | '/read'
     | '/recent'
     | '/review'
     | '/sources'
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
     | '/my-library'
     | '/my-topics'
     | '/practices'
+    | '/read'
     | '/recent'
     | '/review'
     | '/sources'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/_main/my-library'
     | '/_main/my-topics'
     | '/_main/practices'
+    | '/_main/read'
     | '/_main/recent'
     | '/_main/review'
     | '/_main/sources'
@@ -487,6 +499,13 @@ declare module '@tanstack/react-router' {
       path: '/recent'
       fullPath: '/recent'
       preLoaderRoute: typeof MainRecentRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/read': {
+      id: '/_main/read'
+      path: '/read'
+      fullPath: '/read'
+      preLoaderRoute: typeof MainReadRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/practices': {
@@ -709,6 +728,7 @@ interface MainRouteChildren {
   MainMyLibraryRoute: typeof MainMyLibraryRoute
   MainMyTopicsRoute: typeof MainMyTopicsRoute
   MainPracticesRoute: typeof MainPracticesRoute
+  MainReadRoute: typeof MainReadRoute
   MainRecentRoute: typeof MainRecentRoute
   MainReviewRoute: typeof MainReviewRoute
   MainSourcesRoute: typeof MainSourcesRoute
@@ -729,6 +749,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainMyLibraryRoute: MainMyLibraryRoute,
   MainMyTopicsRoute: MainMyTopicsRoute,
   MainPracticesRoute: MainPracticesRoute,
+  MainReadRoute: MainReadRoute,
   MainRecentRoute: MainRecentRoute,
   MainReviewRoute: MainReviewRoute,
   MainSourcesRoute: MainSourcesRoute,

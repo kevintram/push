@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, date
+from enum import Enum
 
 from typing import TYPE_CHECKING
 
@@ -15,11 +16,21 @@ if TYPE_CHECKING:
     from app.schemas.topics import TopicCreate
 
 
+class SourceStatus(str, Enum):
+    NEW = "NEW"
+    IN_PROGRESS = "IN_PROGRESS"
+    ON_HOLD = "ON_HOLD"
+    DROPPED = "DROPPED"
+    COMPLETED = "COMPLETED"
+
+
 class SourceBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     title: str = ""
     notes: str = ""
+    status: SourceStatus = SourceStatus.NEW
+    progress_note: str = ""
     archived: bool = False
     inboxed: bool = False
 
@@ -92,6 +103,8 @@ class SourceCreate(BaseModel):
 
     title: str = ""
     notes: str = ""
+    status: SourceStatus = SourceStatus.NEW
+    progress_note: str = ""
     archived: bool = False
     inboxed: bool = False
     parent_id: int | None = None
@@ -150,6 +163,8 @@ class SourceUpdate(BaseModel):
 
     title: str | None = None
     notes: str | None = None
+    status: SourceStatus | None = None
+    progress_note: str | None = None
     archived: bool | None = None
     inboxed: bool | None = None
     parent_id: int | None = None  # Explicit null clears parent

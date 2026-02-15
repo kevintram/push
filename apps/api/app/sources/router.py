@@ -129,6 +129,8 @@ async def insert_child(
             parent_id,
             child_title=child_data.get("title"),
             child_notes=child_data.get("notes"),
+            child_status=child_data.get("status", "NEW"),
+            child_progress_note=child_data.get("progress_note", ""),
             child_srs_enabled=child_data.get("srs_enabled", False),
             child_inherit_fsrs=child_data.get("inherit_fsrs", False),
             child_inboxed=child_data.get("inboxed", False),
@@ -372,6 +374,10 @@ async def update_source(
         kwargs["title"] = update_data["title"]
     if "notes" in update_data:
         kwargs["notes"] = update_data["notes"]
+    if "status" in update_data:
+        kwargs["status"] = update_data["status"]
+    if "progress_note" in update_data:
+        kwargs["progress_note"] = update_data["progress_note"]
     if "parent_id" in update_data:
         kwargs["parent_id"] = update_data["parent_id"]
     if "srs_enabled" in update_data:

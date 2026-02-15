@@ -59,6 +59,8 @@ class TestSourcesEndpoints:
         data = response.json()
         assert data["title"] == "New Source"
         assert data["notes"] == "Some notes"
+        assert data["status"] == "NEW"
+        assert data["progress_note"] == ""
         assert data["id"] is not None
 
     async def test_get_source_by_id(
@@ -116,6 +118,27 @@ class TestSourcesEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert data["title"] == "Updated Title"
+
+    async def test_update_source_status_and_progress_note(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+    ):
+        """Should update status and progress_note fields."""
+        source = await create_test_source(title="Progress Source")
+
+        response = await test_client.patch(
+            f"/sources/{source.id}/",
+            json={
+                "status": "IN_PROGRESS",
+                "progress_note": "00:12:45 - paused to review chapter 2",
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "IN_PROGRESS"
+        assert data["progress_note"] == "00:12:45 - paused to review chapter 2"
 
 
 class TestInheritFsrs:

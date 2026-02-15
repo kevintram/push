@@ -40,6 +40,18 @@ from app.models import (
 from app.utils.fsrs import apply_inherited_fsrs
 
 
+def append_progress_note(base_text: str, progress_note: str) -> str:
+    """Append progress note to converted text fields when present."""
+    normalized_note = progress_note.strip()
+    if not normalized_note:
+        return base_text
+
+    if not base_text.strip():
+        return f"Progress note:\n{normalized_note}"
+
+    return f"{base_text}\n\nProgress note:\n{normalized_note}"
+
+
 async def get_source(session: AsyncSession, source_id: int, user_id: str) -> Source:
     """Get a source or raise NotFoundError."""
     stmt = (
@@ -317,6 +329,8 @@ async def create_source(
     *,
     title: str = "",
     notes: str = "",
+    status: str = "NEW",
+    progress_note: str = "",
     parent_id: int | None = None,
     srs_enabled: bool = False,
     inherit_fsrs: bool = False,
@@ -329,6 +343,8 @@ async def create_source(
         user_id=user_id,
         title=title,
         notes=notes,
+        status=status,
+        progress_note=progress_note,
         parent_id=parent_id,
         inboxed=inboxed,
         archived=archived,
@@ -407,6 +423,8 @@ async def add_child(
     child_id: int | None = None,
     child_title: str | None = None,
     child_notes: str | None = None,
+    child_status: str = "NEW",
+    child_progress_note: str = "",
     child_srs_enabled: bool = False,
     child_inherit_fsrs: bool = False,
     child_inboxed: bool = False,
@@ -436,6 +454,8 @@ async def add_child(
             user_id=user_id,
             title=child_title,
             notes=child_notes or "",
+            status=child_status,
+            progress_note=child_progress_note,
             parent_id=parent_id,
             inboxed=child_inboxed,
             archived=child_archived,
@@ -627,6 +647,8 @@ async def update_source(
     *,
     title: str | None = None,
     notes: str | None = None,
+    status: str | None = None,
+    progress_note: str | None = None,
     parent_id: int | None = ...,  # Use ... as sentinel to distinguish from None
     srs_enabled: bool | None = None,
     inboxed: bool | None = None,
@@ -661,6 +683,10 @@ async def update_source(
         source.title = title
     if notes is not None:
         source.notes = notes
+    if status is not None:
+        source.status = status
+    if progress_note is not None:
+        source.progress_note = progress_note
     if inboxed is not None:
         source.inboxed = inboxed
     if archived is not None:
@@ -1275,7 +1301,7 @@ async def convert_source_to_topic(
         new_topic = Topic(
             user_id=user_id,
             name=source.title,
-            notes=source.notes,
+            notes=append_progress_note(source.notes, source.progress_note),
             parent_id=parent_topic_id,
             fsrs_state_id=new_fsrs_state_id,
             archived=source.archived,
@@ -1440,7 +1466,7 @@ async def convert_source_to_practice(
     new_practice = Practice(
         user_id=user_id,
         prompt=source.title,
-        answer=source.notes,
+        answer=append_progress_note(source.notes, source.progress_note),
         fsrs_state_id=new_fsrs_state_id,
         archived=source.archived,
         inboxed=source.inboxed,

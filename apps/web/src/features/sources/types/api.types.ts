@@ -12,6 +12,8 @@ export type GetSourcesParams = {
 export type CreateSourceInput = {
 	title?: string
 	notes?: string
+	status?: 'NEW' | 'IN_PROGRESS' | 'ON_HOLD' | 'DROPPED' | 'COMPLETED'
+	progress_note?: string
 	archived?: boolean
 	inboxed?: boolean
 	parent_id?: number | null
@@ -23,6 +25,8 @@ export type UpdateSourceInput = {
 	id: number
 	title?: string
 	notes?: string
+	status?: 'NEW' | 'IN_PROGRESS' | 'ON_HOLD' | 'DROPPED' | 'COMPLETED'
+	progress_note?: string
 	archived?: boolean
 	inboxed?: boolean
 	parent_id?: number | null

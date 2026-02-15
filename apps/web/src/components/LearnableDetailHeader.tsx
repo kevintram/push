@@ -66,6 +66,7 @@ interface LearnableDetailHeaderProps {
 	inboxed: boolean
 	onInboxToggle: () => void
 	isUpdating: boolean
+	afterSrsControl?: ReactNode
 	isTitleHidden?: boolean
 	onRevealTitle?: () => void
 	renderTypeChangeMenu?: (trigger: ReactElement) => ReactNode
@@ -124,6 +125,7 @@ export function LearnableDetailHeader({
 	inboxed,
 	onInboxToggle,
 	isUpdating,
+	afterSrsControl,
 	isTitleHidden = false,
 	onRevealTitle,
 	renderTypeChangeMenu,
@@ -275,7 +277,7 @@ export function LearnableDetailHeader({
 			{/* Title row */}
 			{isTitleHidden ? (
 				<Button
-					className='my-1 min-h-12 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 font-bold text-3xl text-muted-foreground leading-tight hover:bg-muted/70'
+					className='my-1 min-h-12 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 font-bold text-muted-foreground text-xl leading-tight hover:bg-muted/70'
 					onClick={onRevealTitle}
 					size='default'
 					variant='outline'
@@ -393,6 +395,7 @@ export function LearnableDetailHeader({
 							</Button>
 						}
 					/>
+					{afterSrsControl}
 					<Tooltip>
 						<TooltipTrigger render={<span className='inline-flex' />}>
 							<Button

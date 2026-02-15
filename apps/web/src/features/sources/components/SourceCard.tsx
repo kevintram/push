@@ -1,11 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import {
 	LearnableCardBase,
 	type LearnableCardConfig,
 	type LearnableCardHeaderBadge,
 	type LearnableCardStatusBadge
 } from '~/components/LearnableCard'
+import { useAutoSave } from '~/hooks/useAutoSave'
 import { sourceKeys } from '../api/queryKeys'
 import { useUpdateSource } from '../api/updateSource'
 import { useSourceMetrics } from '../hooks/useSourceMetrics'
@@ -41,6 +42,17 @@ export function SourceCard({
 	const { mutate: updateSource, isPending: isUpdatingSource } =
 		useUpdateSource()
 	const metrics = useSourceMetrics(source)
+	const updateProgressNote = useCallback(
+		(newProgressNote: string) => {
+			updateSource({ id: source.id, progress_note: newProgressNote })
+		},
+		[source.id, updateSource]
+	)
+	const { value: progressNote, onChange: onProgressNoteChange } = useAutoSave({
+		initialValue: source.progress_note ?? '',
+		onSave: updateProgressNote,
+		key: `source-card-progress-note-${source.id}`
+	})
 
 	const config = useMemo(
 		(): LearnableCardConfig<Source> => ({
@@ -56,6 +68,13 @@ export function SourceCard({
 			onSrsToggle: (id, newValue) =>
 				updateSource({ id, srs_enabled: newValue }),
 			isUpdating: isUpdatingSource,
+			statusControl: {
+				getStatus: s => s.status,
+				onStatusChange: (id, status) => updateSource({ id, status }),
+				progressNote: () => progressNote,
+				onProgressNoteChange: (_source, event) => onProgressNoteChange(event),
+				isUpdating: isUpdatingSource
+			},
 			onPrefetch: (qc, s) => {
 				qc.prefetchQuery({
 					queryKey: sourceKeys.detail(s.id),
@@ -63,7 +82,7 @@ export function SourceCard({
 				})
 			}
 		}),
-		[updateSource, isUpdatingSource]
+		[updateSource, isUpdatingSource, progressNote, onProgressNoteChange]
 	)
 
 	return (
