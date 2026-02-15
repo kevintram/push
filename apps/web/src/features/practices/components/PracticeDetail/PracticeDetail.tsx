@@ -4,6 +4,7 @@ import {
 	type ReactNode,
 	use,
 	useCallback,
+	useEffect,
 	useMemo,
 	useRef,
 	useState
@@ -11,6 +12,7 @@ import {
 import { ConversionConfirmationDialog } from '~/components/ConversionConfirmationDialog'
 import { DetailTabsShell } from '~/components/DetailTabs'
 import { LearnableDetailHeader } from '~/components/LearnableDetailHeader'
+import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -27,6 +29,7 @@ import type { OnConversionSuccess } from '~/hooks/useConversionNavigate'
 import { useFsrsState } from '~/hooks/useFsrsState'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { cn } from '~/lib/utils'
+import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { ConversionError } from '~/utils/ConversionError'
 import {
 	getPracticeToSourcePreview,
@@ -284,6 +287,13 @@ export function PracticeDetail({
 		onSave: updateAnswer,
 		key: `practices-${practice?.id}-answer`
 	})
+	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
+	const [isPromptRevealed, setIsPromptRevealed] = useState(!hidesPrimary)
+	const [isAnswerRevealed, setIsAnswerRevealed] = useState(!hidesSecondary)
+	useEffect(() => {
+		setIsPromptRevealed(!hidesPrimary)
+		setIsAnswerRevealed(!hidesSecondary)
+	}, [hidesPrimary, hidesSecondary, practice?.id])
 
 	// Compute metrics for FSRS display using the hook
 	const metrics = useLearnableMetrics(practice ?? null)
@@ -310,10 +320,12 @@ export function PracticeDetail({
 							entityLabel='Practice'
 							entityType='practice'
 							inboxed={practice.inboxed}
+							isTitleHidden={hidesPrimary && !isPromptRevealed}
 							isUpdating={false}
 							metrics={metrics}
 							onArchiveToggle={handleArchiveToggle}
 							onInboxToggle={handleInboxToggle}
+							onRevealTitle={() => setIsPromptRevealed(true)}
 							onSrsToggle={handleSrsToggle}
 							onTitleChange={onPromptChange}
 							renderActionMenu={trigger => (
@@ -341,13 +353,24 @@ export function PracticeDetail({
 
 						{/* Answer field */}
 						<div className='mt-4'>
-							<Textarea
-								className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-								onChange={onAnswerChange}
-								placeholder='Answer'
-								spellCheck={false}
-								value={answer}
-							/>
+							{hidesSecondary && !isAnswerRevealed ? (
+								<Button
+									className='min-h-16 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-base text-muted-foreground hover:bg-muted/70'
+									onClick={() => setIsAnswerRevealed(true)}
+									size='default'
+									variant='outline'
+								>
+									Reveal
+								</Button>
+							) : (
+								<Textarea
+									className='!bg-transparent m-0 w-full resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									onChange={onAnswerChange}
+									placeholder='Answer'
+									spellCheck={false}
+									value={answer}
+								/>
+							)}
 						</div>
 
 						<div className='mt-6'>
