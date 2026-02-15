@@ -106,6 +106,8 @@ class Source(Base):
     inboxed: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
+    status: Mapped[str] = mapped_column(Text, nullable=False, server_default="NEW")
+    progress_note: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
 
     # Relationships
     parent: Mapped["Source | None"] = relationship(
