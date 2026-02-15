@@ -463,68 +463,47 @@ export function useLogbookReviewEntries() {
 			})
 	})
 
-	// Group entries into Today, Yesterday, Last Week, Future, and Monthly sections
+	// Group entries into Future, monthly (current year), and yearly (previous years) sections
 	const sections = useMemo(() => {
 		if (!query.data) {
 			return []
 		}
 
-		// Calculate date boundaries
 		const today = dayjs()
 		const todayDateStr = today.format('YYYY-MM-DD')
-		const yesterday = today.subtract(1, 'day')
-		const yesterdayDateStr = yesterday.format('YYYY-MM-DD')
-
-		// Last week: 6 days ago through 2 days ago (past 7 days excluding yesterday)
-		const sixDaysAgo = today.subtract(6, 'day')
-		const twoDaysAgo = today.subtract(2, 'day')
-		const sixDaysAgoDateStr = sixDaysAgo.format('YYYY-MM-DD')
-		const twoDaysAgoDateStr = twoDaysAgo.format('YYYY-MM-DD')
+		const currentYear = today.year()
 
 		// Categorize entries
-		const todayEntries: Array<ReviewListItem> = []
-		const yesterdayEntries: Array<ReviewListItem> = []
-		const lastWeekEntries: Array<ReviewListItem> = []
 		const futureEntries: Array<ReviewListItem> = []
 		const monthlyGroups = new Map<string, Array<ReviewListItem>>()
+		const yearlyGroups = new Map<number, Array<ReviewListItem>>()
 
 		for (const entry of query.data) {
 			const effectiveDate = entry.effective_date
 
-			// Skip entries without effective_date
 			if (!effectiveDate) {
 				continue
 			}
 
-			// Future section
 			if (effectiveDate > todayDateStr) {
 				futureEntries.push(entry)
-			}
-			// Today section
-			else if (effectiveDate === todayDateStr) {
-				todayEntries.push(entry)
-			}
-			// Yesterday section
-			else if (effectiveDate === yesterdayDateStr) {
-				yesterdayEntries.push(entry)
-			}
-			// Last Week section (6 days ago through 2 days ago)
-			else if (
-				effectiveDate >= sixDaysAgoDateStr &&
-				effectiveDate <= twoDaysAgoDateStr
-			) {
-				lastWeekEntries.push(entry)
-			}
-			// Monthly sections (everything else)
-			else {
-				const monthKey = dayjs(effectiveDate).format('YYYY-MM')
+			} else {
+				const entryDate = dayjs(effectiveDate)
+				const entryYear = entryDate.year()
 
-				if (!monthlyGroups.has(monthKey)) {
-					monthlyGroups.set(monthKey, [])
-				}
-				const group = monthlyGroups.get(monthKey)
-				if (group) {
-					group.push(entry)
+				if (entryYear === currentYear) {
+					// Current year: group by month
+					const monthKey = entryDate.format('YYYY-MM')
+					if (!monthlyGroups.has(monthKey)) {
+						monthlyGroups.set(monthKey, [])
+					}
+					monthlyGroups.get(monthKey)!.push(entry)
+				} else {
+					// Previous years: group by year
+					if (!yearlyGroups.has(entryYear)) {
+						yearlyGroups.set(entryYear, [])
+					}
+					yearlyGroups.get(entryYear)!.push(entry)
 				}
 			}
 		}
@@ -532,7 +511,6 @@ export function useLogbookReviewEntries() {
 		// Build sections array
 		const sectionsArray: Array<LogbookEntrySection> = []
 
-		// Add Future section if it has entries
 		if (futureEntries.length > 0) {
 			sectionsArray.push({
 				id: 'future',
@@ -541,47 +519,29 @@ export function useLogbookReviewEntries() {
 			})
 		}
 
-		// Add Today section if it has entries
-		if (todayEntries.length > 0) {
+		// Monthly sections for current year, sorted descending
+		const monthlyKeys = Array.from(monthlyGroups.keys()).sort((a, b) =>
+			b.localeCompare(a)
+		)
+		for (const monthKey of monthlyKeys) {
+			const entries = monthlyGroups.get(monthKey)!
 			sectionsArray.push({
-				id: 'today',
-				label: 'Today',
-				entries: sortReviewsByEffectiveDateDesc(todayEntries)
+				id: monthKey,
+				label: dayjs(`${monthKey}-01`).format('MMMM'),
+				entries: sortReviewsByEffectiveDateDesc(entries)
 			})
 		}
 
-		// Add Yesterday section if it has entries
-		if (yesterdayEntries.length > 0) {
+		// Yearly sections for previous years, sorted descending
+		const yearKeys = Array.from(yearlyGroups.keys()).sort((a, b) => b - a)
+		for (const year of yearKeys) {
+			const entries = yearlyGroups.get(year)!
 			sectionsArray.push({
-				id: 'yesterday',
-				label: 'Yesterday',
-				entries: sortReviewsByEffectiveDateDesc(yesterdayEntries)
+				id: String(year),
+				label: String(year),
+				entries: sortReviewsByEffectiveDateDesc(entries)
 			})
 		}
-
-		// Add Last Week section if it has entries
-		if (lastWeekEntries.length > 0) {
-			sectionsArray.push({
-				id: 'last-week',
-				label: 'Last Week',
-				entries: sortReviewsByEffectiveDateDesc(lastWeekEntries)
-			})
-		}
-
-		// Add monthly sections, sorted by date descending (most recent first)
-		const monthlySections: Array<LogbookEntrySection> = Array.from(
-			monthlyGroups.entries()
-		).map(([monthKey, entries]) => ({
-			id: monthKey,
-			label: dayjs(`${monthKey}-01`).format('MMMM YYYY'),
-			entries: sortReviewsByEffectiveDateDesc(entries)
-		}))
-
-		// Sort monthly sections by month key descending
-		monthlySections.sort((a, b) => b.id.localeCompare(a.id))
-
-		// Add monthly sections to the array
-		sectionsArray.push(...monthlySections)
 
 		return sectionsArray
 	}, [query.data])
