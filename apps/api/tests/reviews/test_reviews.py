@@ -149,6 +149,66 @@ class TestReviewsEndpoints:
         assert len(reviews) == 1
         assert reviews[0]["topic_id"] == topic1.id
 
+    async def test_list_reviews_supports_asc_and_desc_order(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+    ):
+        """List reviews should support asc/desc ordering by effective date, including mixed states."""
+        topic = await create_test_topic(name="Ordering Topic")
+        oldest_date = date.today() - timedelta(days=5)
+        middle_date = date.today() - timedelta(days=3)
+        newest_date = date.today() + timedelta(days=2)
+
+        # Completed review with oldest date
+        await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": topic.id,
+                "completed_at": str(oldest_date),
+                "rating": "good",
+            },
+        )
+        # Uncompleted review scheduled for newest date
+        await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": topic.id,
+                "scheduled_at": str(newest_date),
+            },
+        )
+        # Completed review with middle date
+        await test_client.post(
+            "/reviews/",
+            json={
+                "topic_id": topic.id,
+                "completed_at": str(middle_date),
+                "rating": "good",
+            },
+        )
+
+        asc_response = await test_client.get(f"/reviews/?topic_id={topic.id}&order=asc")
+        desc_response = await test_client.get(
+            f"/reviews/?topic_id={topic.id}&order=desc"
+        )
+
+        assert asc_response.status_code == 200
+        assert desc_response.status_code == 200
+
+        asc_reviews = asc_response.json()
+        desc_reviews = desc_response.json()
+
+        assert [review["effective_date"] for review in asc_reviews] == [
+            str(oldest_date),
+            str(middle_date),
+            str(newest_date),
+        ]
+        assert [review["effective_date"] for review in desc_reviews] == [
+            str(newest_date),
+            str(middle_date),
+            str(oldest_date),
+        ]
+
     async def test_update_review_rating_recalculates_fsrs(
         self,
         test_client: AsyncClient,
