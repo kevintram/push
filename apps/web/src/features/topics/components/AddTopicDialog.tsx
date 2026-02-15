@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Anvil, Inbox, RotateCcw } from 'lucide-react'
+import { Anvil, Inbox, RotateCcw, Star } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import {
@@ -24,6 +24,7 @@ import type { ReviewRatingState } from '~/features/reviews/components/ReviewRati
 import { useAddSourceEntityRelation } from '~/features/sources/api/addSourceEntityRelation'
 import { useAddSourcePrerequisite } from '~/features/sources/api/addSourcePrerequisite'
 import { useAddSourceTopic } from '~/features/sources/api/addSourceTopic'
+import { cn } from '~/lib/utils'
 import { EntityType } from '~/models/entity-relations.types'
 import type { InheritOptions } from '~/models/learnable.types'
 import { useCreateTopic } from '../api/createTopic'
@@ -324,64 +325,85 @@ export function AddTopicDialog({
 					<div className='flex flex-wrap items-center gap-2 border-t pt-4'>
 						{/* Inbox Toggle */}
 						<Tooltip>
-							<TooltipTrigger
-								render={
-									<span>
-										<Toggle
-											aria-label='Add to inbox'
-											onPressedChange={setInboxed}
-											pressed={inboxed}
-											size='sm'
-											variant='outline'
-										>
-											<Inbox className='h-4 w-4' />
-										</Toggle>
-									</span>
-								}
-							/>
+							<TooltipTrigger render={<span className='inline-flex' />}>
+								<Toggle
+									aria-label={inboxed ? 'Remove from inbox' : 'Add to inbox'}
+									className={cn(
+										'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
+										'data-[state=on]:bg-muted data-[state=on]:text-foreground'
+									)}
+									onPressedChange={setInboxed}
+									pressed={inboxed}
+									size='sm'
+									variant='outline'
+								>
+									<Inbox className='h-4 w-4' />
+								</Toggle>
+							</TooltipTrigger>
 							<TooltipContent>Add to inbox</TooltipContent>
 						</Tooltip>
 
 						{/* Inherit SRS Toggle (when available) */}
 						{hasInheritFsrs && (
 							<Tooltip>
-								<TooltipTrigger
-									render={
-										<span>
-											<Toggle
-												aria-label='Inherit SRS state'
-												onPressedChange={setInheritFsrs}
-												pressed={inheritFsrs}
-												size='sm'
-												variant='outline'
-											>
-												<Anvil className='h-4 w-4' />
-												<span className='ml-1 text-xs'>Inherit SRS</span>
-											</Toggle>
-										</span>
-									}
-								/>
+								<TooltipTrigger render={<span className='inline-flex' />}>
+									<Toggle
+										aria-label='Inherit SRS state'
+										className={cn(
+											'rounded-full px-3 text-muted-foreground transition-colors',
+											'data-[state=on]:bg-muted data-[state=on]:text-foreground'
+										)}
+										onPressedChange={setInheritFsrs}
+										pressed={inheritFsrs}
+										size='sm'
+										variant='outline'
+									>
+										<Anvil className='h-4 w-4' />
+										<span className='ml-1 text-xs'>Inherit SRS</span>
+									</Toggle>
+								</TooltipTrigger>
 								<TooltipContent>
 									Inherit SRS state from source entity
 								</TooltipContent>
 							</Tooltip>
 						)}
 
-						{/* Show When Due Switch */}
-						<div className='flex items-center gap-1.5 rounded-md border px-2 py-1'>
-							<span className='text-xs'>Show when due</span>
-							<Switch
-								checked={srsEnabled}
-								onCheckedChange={setSrsEnabled}
-								size='xs'
-							/>
-						</div>
+						{/* Show in Review Queue Toggle */}
+						<Tooltip>
+							<TooltipTrigger render={<span className='inline-flex' />}>
+								<Toggle
+									aria-label='Show in review queue'
+									className={cn(
+										'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
+										'data-[state=on]:bg-muted data-[state=on]:text-foreground'
+									)}
+									onPressedChange={setSrsEnabled}
+									pressed={srsEnabled}
+									size='sm'
+									variant='outline'
+								>
+									<Star
+										className={
+											srsEnabled
+												? 'h-4 w-4 fill-yellow-500 text-yellow-500'
+												: 'h-4 w-4 text-muted-foreground'
+										}
+									/>
+								</Toggle>
+							</TooltipTrigger>
+							<TooltipContent>Show in review queue</TooltipContent>
+						</Tooltip>
 
 						{/* Reset Button */}
 						<Tooltip>
 							<TooltipTrigger
 								render={
-									<Button onClick={resetToggleFields} size='sm' variant='ghost'>
+									<Button
+										className='rounded-full'
+										onClick={resetToggleFields}
+										size='icon-sm'
+										variant='ghost'
+									>
 										<RotateCcw className='h-4 w-4' />
 									</Button>
 								}
