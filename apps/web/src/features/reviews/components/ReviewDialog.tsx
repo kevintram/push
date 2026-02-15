@@ -1,7 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { Anvil, CalendarIcon, Link, MoreHorizontal, X } from 'lucide-react'
-import type { MouseEvent } from 'react'
+import {
+	Anvil,
+	CalendarIcon,
+	ChevronDown,
+	Link,
+	MoreHorizontal,
+	X
+} from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import type { EntityItem } from '~/components/EntityCard'
 import { Button } from '~/components/ui/button'
@@ -114,14 +120,6 @@ export function ReviewDialog({
 		return review.rating ?? 'good'
 	}, [review?.completed_at, review?.rating])
 
-	const hasEntity = useMemo(
-		() =>
-			review?.topic_id != null ||
-			review?.source_id != null ||
-			review?.practice_id != null,
-		[review?.topic_id, review?.source_id, review?.practice_id]
-	)
-
 	const stabilityChangeColorClass = useMemo(() => {
 		if (review?.stability_after == null || review?.stability_before == null) {
 			return ''
@@ -211,12 +209,7 @@ export function ReviewDialog({
 
 	const navigate = useNavigate()
 
-	const handleEntityClick = useCallback(() => {
-		if (!review?.id) return
-		if (!hasEntity) {
-			setIsSearchOpen(true)
-			return
-		}
+	const handleOpenLinkedEntity = useCallback(() => {
 		if (review?.topic_id) {
 			navigate({
 				to: '/topics/$topicId',
@@ -233,14 +226,11 @@ export function ReviewDialog({
 				params: { practiceId: review.practice_id.toString() }
 			})
 		}
-	}, [
-		hasEntity,
-		navigate,
-		review?.id,
-		review?.topic_id,
-		review?.source_id,
-		review?.practice_id
-	])
+	}, [navigate, review?.topic_id, review?.source_id, review?.practice_id])
+
+	const handleChangeEntity = useCallback(() => {
+		setIsSearchOpen(true)
+	}, [])
 
 	const handleSearchOpenChange = useCallback((nextOpen: boolean) => {
 		setIsSearchOpen(nextOpen)
@@ -258,29 +248,6 @@ export function ReviewDialog({
 			onOpenChange(nextOpen)
 		},
 		[onOpenChange]
-	)
-
-	const handleEntityRemove = useCallback(
-		(event: MouseEvent<HTMLButtonElement>) => {
-			event.stopPropagation()
-			if (!review?.id) return
-			const payload: UpdateReviewInput = { id: review.id }
-			if (review.topic_id != null) {
-				payload.topic_id = null
-			} else if (review.source_id != null) {
-				payload.source_id = null
-			} else if (review.practice_id != null) {
-				payload.practice_id = null
-			}
-			updateReviewMutation.mutate(payload)
-		},
-		[
-			review?.id,
-			review?.topic_id,
-			review?.source_id,
-			review?.practice_id,
-			updateReviewMutation
-		]
 	)
 
 	const handleEntitySelect = useCallback(
@@ -417,31 +384,30 @@ export function ReviewDialog({
 							</div>
 
 							<div className='mt-auto flex flex-wrap items-center gap-2'>
-								<div className='inline-flex h-7 items-center rounded-md bg-secondary text-secondary-foreground'>
-									<button
-										className='flex items-center gap-1.5 px-2 text-sm'
-										disabled={updateReviewMutation.isPending}
-										onClick={handleEntityClick}
-										title={hasEntity ? getEntityTypeLabel() : 'Entity'}
-										type='button'
-									>
-										<Link className='h-3.5 w-3.5' />
-										<span className={cn(!hasEntity && 'text-muted-foreground')}>
-											{hasEntity ? getEntityName() : 'Entity'}
-										</span>
-									</button>
-									{hasEntity && (
-										<button
-											aria-label='Remove entity'
-											className='flex h-full items-center px-1.5 text-muted-foreground hover:text-foreground'
-											disabled={updateReviewMutation.isPending}
-											onClick={handleEntityRemove}
-											type='button'
-										>
-											<X className='h-3 w-3' />
-										</button>
-									)}
-								</div>
+								<DropdownMenu>
+									<DropdownMenuTrigger
+										render={
+											<button
+												className='inline-flex h-7 items-center gap-1.5 rounded-md bg-secondary px-2 text-secondary-foreground text-sm'
+												disabled={updateReviewMutation.isPending}
+												title={getEntityTypeLabel()}
+												type='button'
+											>
+												<Link className='h-3.5 w-3.5' />
+												<span>{getEntityName()}</span>
+												<ChevronDown className='h-3 w-3 text-muted-foreground' />
+											</button>
+										}
+									/>
+									<DropdownMenuContent align='start'>
+										<DropdownMenuItem onClick={handleOpenLinkedEntity}>
+											Open
+										</DropdownMenuItem>
+										<DropdownMenuItem onClick={handleChangeEntity}>
+											Change
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
 								{hasStability && (
 									<Button className='h-7 px-2' size='sm' variant='secondary'>
 										<Anvil className='h-3.5 w-3.5' />
