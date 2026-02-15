@@ -2,7 +2,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import {
 	LearnableCardBase,
-	type LearnableCardConfig
+	type LearnableCardConfig,
+	type LearnableCardHeaderBadge,
+	type LearnableCardStatusBadge
 } from '~/components/LearnableCard'
 import { sourceKeys } from '../api/queryKeys'
 import { useUpdateSource } from '../api/updateSource'
@@ -19,6 +21,9 @@ interface SourceCardProps {
 	headerRight?: React.ReactNode
 	/** Whether to show the "leaving soon" badge in the header. Defaults to false. */
 	showLeavingSoon?: boolean
+	headerBadge?: LearnableCardHeaderBadge
+	statusBadges?: Array<LearnableCardStatusBadge>
+	statusRowPlacement?: 'above-header' | 'below-header'
 }
 
 export function SourceCard({
@@ -27,7 +32,10 @@ export function SourceCard({
 	minHeight = MIN_HEIGHT,
 	searchQuery,
 	headerRight,
-	showLeavingSoon = false
+	showLeavingSoon = false,
+	headerBadge,
+	statusBadges,
+	statusRowPlacement
 }: SourceCardProps) {
 	const queryClient = useQueryClient()
 	const { mutate: updateSource, isPending: isUpdatingSource } =
@@ -62,6 +70,7 @@ export function SourceCard({
 		<LearnableCardBase
 			config={config}
 			entity={source}
+			headerBadge={headerBadge}
 			headerRight={headerRight}
 			metrics={metrics}
 			minHeight={minHeight}
@@ -69,6 +78,8 @@ export function SourceCard({
 			queryClient={queryClient}
 			searchQuery={searchQuery}
 			showLeavingSoon={showLeavingSoon}
+			statusBadges={statusBadges}
+			statusRowPlacement={statusRowPlacement}
 		/>
 	)
 }

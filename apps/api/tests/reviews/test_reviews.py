@@ -122,6 +122,20 @@ class TestReviewsEndpoints:
         assert data["topic_id"] is not None
         assert data["completed_at"] is None
 
+    async def test_create_review_requires_entity(
+        self,
+        test_client: AsyncClient,
+    ):
+        """Creating a review without a linked entity should fail validation."""
+        response = await test_client.post(
+            "/reviews/",
+            json={
+                "scheduled_at": str(date.today()),
+            },
+        )
+
+        assert response.status_code == 422
+
     async def test_list_reviews_filters_by_topic(
         self,
         test_client: AsyncClient,
@@ -497,24 +511,13 @@ class TestFsrsReplayEdgeCases:
         # Before state should have changed from original
         assert replayed_review2["stability_before"] != original_review2_stability_before
 
-    async def test_update_review_detach_entity_clears_fsrs(
+    async def test_update_review_detach_entity_rejected(
         self,
         test_client: AsyncClient,
-        db_session: AsyncSession,
         create_test_topic,
     ):
-        """Detaching an entity from a completed review should clear entity IDs,
-        null FSRS fields on the review, and recalculate old entity's FSRS state.
-
-        Verifies that:
-        1. All entity IDs (topic_id, source_id, practice_id) are null
-        2. All FSRS before/after fields on the review are null
-        3. Old entity's FSRS state is recalculated (reset since its only review detached)
-        """
+        """Reviews must remain linked to an entity; detach requests are invalid."""
         topic = await create_test_topic()
-        original_stability = topic.fsrs_state.stability
-        original_state = topic.fsrs_state.state
-        original_last_reviewed_at = topic.fsrs_state.last_reviewed_at
 
         # Create a completed review linked to the topic
         create_response = await test_client.post(
@@ -531,42 +534,12 @@ class TestFsrsReplayEdgeCases:
         assert create_response.json()["stability_after"] is not None
         assert create_response.json()["topic_id"] == topic.id
 
-        # Detach the entity by setting topic_id to null
+        # Detach attempts should be rejected
         update_response = await test_client.post(
             f"/reviews/{review_id}/",
             json={"topic_id": None},
         )
-        assert update_response.status_code == 200
-        data = update_response.json()
-
-        # Entity IDs should all be null
-        assert data["topic_id"] is None
-        assert data["source_id"] is None
-        assert data["practice_id"] is None
-
-        # FSRS fields should be null (no entity to calculate against)
-        assert data["stability_before"] is None
-        assert data["difficulty_before"] is None
-        assert data["state_before"] is None
-        assert data["step_before"] is None
-        assert data["due_before"] is None
-        assert data["stability_after"] is None
-        assert data["difficulty_after"] is None
-        assert data["state_after"] is None
-        assert data["step_after"] is None
-        assert data["due_after"] is None
-
-        # Old entity (topic) FSRS should be recalculated back to initial state
-        # (since its only review was detached)
-        result = await db_session.execute(
-            select(Topic)
-            .where(Topic.id == topic.id)
-            .options(selectinload(Topic.fsrs_state))
-        )
-        refreshed_topic = result.scalar_one()
-        assert refreshed_topic.fsrs_state.stability == original_stability
-        assert refreshed_topic.fsrs_state.state == original_state
-        assert refreshed_topic.fsrs_state.last_reviewed_at == original_last_reviewed_at
+        assert update_response.status_code == 422
 
     async def test_update_review_reassign_entity_with_single_target_field(
         self,

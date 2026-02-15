@@ -1,4 +1,8 @@
 import type { ReactNode } from 'react'
+import type {
+	LearnableCardHeaderBadge,
+	LearnableCardStatusBadge
+} from '~/components/LearnableCard'
 import { PracticeCard } from '~/features/practices/components/PracticeCard'
 import type { Practice } from '~/features/practices/types/practice.types'
 import { SourceCard } from '~/features/sources/components/SourceCard'
@@ -20,6 +24,9 @@ interface EntityCardProps {
 	searchQuery?: string
 	headerRight?: ReactNode
 	showLeavingSoon?: boolean
+	headerBadge?: LearnableCardHeaderBadge
+	statusBadges?: Array<LearnableCardStatusBadge>
+	statusRowPlacement?: 'above-header' | 'below-header'
 }
 
 export function EntityCard({
@@ -28,12 +35,16 @@ export function EntityCard({
 	minHeight,
 	searchQuery,
 	headerRight,
-	showLeavingSoon
+	showLeavingSoon,
+	headerBadge,
+	statusBadges,
+	statusRowPlacement
 }: EntityCardProps) {
 	switch (entity.type) {
 		case 'topic':
 			return (
 				<TopicCard
+					headerBadge={headerBadge}
 					headerRight={headerRight}
 					minHeight={minHeight}
 					onTopicClick={
@@ -43,12 +54,15 @@ export function EntityCard({
 					}
 					searchQuery={searchQuery}
 					showLeavingSoon={showLeavingSoon}
+					statusBadges={statusBadges}
+					statusRowPlacement={statusRowPlacement}
 					topic={entity.item}
 				/>
 			)
 		case 'source':
 			return (
 				<SourceCard
+					headerBadge={headerBadge}
 					headerRight={headerRight}
 					minHeight={minHeight}
 					onSourceClick={
@@ -59,11 +73,14 @@ export function EntityCard({
 					searchQuery={searchQuery}
 					showLeavingSoon={showLeavingSoon}
 					source={entity.item}
+					statusBadges={statusBadges}
+					statusRowPlacement={statusRowPlacement}
 				/>
 			)
 		case 'practice':
 			return (
 				<PracticeCard
+					headerBadge={headerBadge}
 					headerRight={headerRight}
 					minHeight={minHeight}
 					onPracticeClick={
@@ -74,6 +91,8 @@ export function EntityCard({
 					practice={entity.item}
 					searchQuery={searchQuery}
 					showLeavingSoon={showLeavingSoon}
+					statusBadges={statusBadges}
+					statusRowPlacement={statusRowPlacement}
 				/>
 			)
 		default: {

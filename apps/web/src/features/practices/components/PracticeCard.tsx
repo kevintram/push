@@ -3,7 +3,9 @@ import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 import {
 	LearnableCardBase,
-	type LearnableCardConfig
+	type LearnableCardConfig,
+	type LearnableCardHeaderBadge,
+	type LearnableCardStatusBadge
 } from '~/components/LearnableCard'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { practiceKeys } from '../api/queryKeys'
@@ -20,6 +22,9 @@ interface PracticeCardProps {
 	headerRight?: ReactNode
 	/** Whether to show the "leaving soon" badge in the header. Defaults to false. */
 	showLeavingSoon?: boolean
+	headerBadge?: LearnableCardHeaderBadge
+	statusBadges?: Array<LearnableCardStatusBadge>
+	statusRowPlacement?: 'above-header' | 'below-header'
 }
 
 export function PracticeCard({
@@ -28,7 +33,10 @@ export function PracticeCard({
 	minHeight = MIN_HEIGHT,
 	searchQuery,
 	headerRight,
-	showLeavingSoon = false
+	showLeavingSoon = false,
+	headerBadge,
+	statusBadges,
+	statusRowPlacement
 }: PracticeCardProps) {
 	const queryClient = useQueryClient()
 	const { mutate: updatePractice, isPending: isUpdatingPractice } =
@@ -62,6 +70,7 @@ export function PracticeCard({
 		<LearnableCardBase
 			config={config}
 			entity={practice}
+			headerBadge={headerBadge}
 			headerRight={headerRight}
 			metrics={metrics}
 			minHeight={minHeight}
@@ -69,6 +78,8 @@ export function PracticeCard({
 			queryClient={queryClient}
 			searchQuery={searchQuery}
 			showLeavingSoon={showLeavingSoon}
+			statusBadges={statusBadges}
+			statusRowPlacement={statusRowPlacement}
 		/>
 	)
 }

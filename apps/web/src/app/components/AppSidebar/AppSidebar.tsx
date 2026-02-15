@@ -2,13 +2,13 @@ import { Link, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
-	BookOpen,
 	Clock,
 	Inbox,
 	Library,
 	ListChecks,
 	PanelLeft,
-	Settings
+	Settings,
+	Star
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -31,6 +31,15 @@ import {
 } from '~/components/ui/sidebar'
 import { useTopics } from '~/features/topics/api/getTopics'
 
+function ReviewSidebarStarIcon(props: React.ComponentProps<typeof Star>) {
+	return (
+		<Star
+			{...props}
+			className={`fill-yellow-500 text-yellow-500 ${props.className ?? ''}`}
+		/>
+	)
+}
+
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
@@ -43,7 +52,7 @@ export function AppSidebar() {
 		{
 			title: 'Review',
 			url: '/review',
-			icon: BookOpen,
+			icon: ReviewSidebarStarIcon,
 			isActive: (pathname: string) => pathname === '/review'
 		}
 	]
