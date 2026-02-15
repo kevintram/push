@@ -12,7 +12,7 @@ from app.practices.service import list_practices
 from app.schemas.review_queue import ReviewQueueItem
 from app.sources.service import list_sources
 from app.topics.service import list_topics
-from app.utils.retrievability import HAZY_THRESHOLD, calculate_days_until_threshold
+from app.utils.retrievability import FINE_THRESHOLD, calculate_days_until_threshold
 
 QueueEntity = Topic | Source | Practice
 EntityKey = tuple[str, int]
@@ -24,7 +24,7 @@ def _get_days_until_hazy(entity: QueueEntity) -> int | None:
     return calculate_days_until_threshold(
         entity.stability,
         entity.last_reviewed_at,
-        target_retrievability=HAZY_THRESHOLD,
+        target_retrievability=FINE_THRESHOLD,
     )
 
 
@@ -155,13 +155,11 @@ async def list_review_queue(
             return
         if entity.retrievability is None:
             return
-        if entity.freshness_tier not in ("Fresh", "Fine"):
-            return
         if (entity_type, entity.id) in due_entity_keys:
             return
 
         days_until_hazy = _get_days_until_hazy(entity)
-        if days_until_hazy is None or days_until_hazy < 0:
+        if days_until_hazy is None:
             return
 
         items.append(

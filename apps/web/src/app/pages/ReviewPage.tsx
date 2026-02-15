@@ -269,11 +269,8 @@ function QueueView() {
 		const weeklyBuckets = new Map<number, Array<QueueCardItem>>()
 
 		for (const item of queueItems) {
-			if (item.queueType === 'due' && item.urgencyDays < 0) {
-				overdueItems.push(item)
-				continue
-			}
 			if (item.urgencyDays < 0) {
+				overdueItems.push(item)
 				continue
 			}
 
