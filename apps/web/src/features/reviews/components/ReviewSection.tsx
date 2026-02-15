@@ -7,6 +7,7 @@ import { ReviewItem } from './ReviewItem'
 type ReviewSectionProps = {
 	id: string
 	label: string
+	dateFormat?: 'relative' | 'short'
 	headingClassName?: string
 	entries: Array<ReviewListItem>
 	isCollapsed: boolean
@@ -17,6 +18,7 @@ type ReviewSectionProps = {
 export function ReviewSection({
 	id,
 	label,
+	dateFormat,
 	headingClassName,
 	entries,
 	isCollapsed,
@@ -48,6 +50,7 @@ export function ReviewSection({
 						<div className='px-4'>
 							{entries.map(entry => (
 								<ReviewItem
+									dateFormat={dateFormat}
 									entry={entry}
 									key={`review-${entry.id}`}
 									onReviewClick={onReviewClick}

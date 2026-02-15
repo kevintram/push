@@ -63,6 +63,7 @@ const getStabilityChangeColorClass = (
 }
 
 interface ReviewItemProps {
+	dateFormat?: 'relative' | 'short'
 	entry: ReviewListItem
 	onReviewClick?: (reviewId: number) => void
 	readonly?: boolean
@@ -70,6 +71,7 @@ interface ReviewItemProps {
 }
 
 export function ReviewItem({
+	dateFormat = 'relative',
 	entry,
 	onReviewClick,
 	readonly = false,
@@ -204,7 +206,9 @@ export function ReviewItem({
 		isCompleted
 	})
 
-	const relativeDate = formatRelativeDate(effectiveDate)
+	const relativeDate = formatRelativeDate(effectiveDate, {
+		shortDate: dateFormat === 'short'
+	})
 
 	const dateButtonColorClass = cn(
 		isOverdueValue && 'text-red-600 dark:text-red-400',
@@ -245,7 +249,7 @@ export function ReviewItem({
 						>
 							{description || 'No description'}
 						</span>
-						<Tooltip>
+						{dateFormat === 'short' ? (
 							<DatePickerDropdown
 								disabled={readonly}
 								isOpen={isDatePopoverOpen}
@@ -253,32 +257,60 @@ export function ReviewItem({
 								onOpenChange={setIsDatePopoverOpen}
 								selectedDate={selectedDate}
 								trigger={
-									<TooltipTrigger
-										render={
-											<Button
-												className={cn(
-													'text-xs',
-													readonly
-														? 'cursor-default opacity-50'
-														: 'hover:bg-muted/50',
-													dateButtonColorClass
-												)}
-												disabled={readonly}
-												onClick={e => e.stopPropagation()}
-												size='sm'
-												variant='ghost'
-											>
-												<CalendarIcon className='h-3 w-3' />
-												{relativeDate.text}
-											</Button>
-										}
-									/>
+									<Button
+										className={cn(
+											'text-xs',
+											readonly
+												? 'cursor-default opacity-50'
+												: 'hover:bg-muted/50',
+											dateButtonColorClass
+										)}
+										disabled={readonly}
+										onClick={e => e.stopPropagation()}
+										size='sm'
+										variant='ghost'
+									>
+										<CalendarIcon className='h-3 w-3' />
+										{relativeDate.text}
+									</Button>
 								}
 							/>
-							<TooltipContent>
-								{effectiveDate && dayjs(effectiveDate).format('MMMM D, YYYY')}
-							</TooltipContent>
-						</Tooltip>
+						) : (
+							<Tooltip>
+								<DatePickerDropdown
+									disabled={readonly}
+									isOpen={isDatePopoverOpen}
+									onDateChange={handleDateSave}
+									onOpenChange={setIsDatePopoverOpen}
+									selectedDate={selectedDate}
+									trigger={
+										<TooltipTrigger
+											render={
+												<Button
+													className={cn(
+														'text-xs',
+														readonly
+															? 'cursor-default opacity-50'
+															: 'hover:bg-muted/50',
+														dateButtonColorClass
+													)}
+													disabled={readonly}
+													onClick={e => e.stopPropagation()}
+													size='sm'
+													variant='ghost'
+												>
+													<CalendarIcon className='h-3 w-3' />
+													{relativeDate.text}
+												</Button>
+											}
+										/>
+									}
+								/>
+								<TooltipContent>
+									{effectiveDate && dayjs(effectiveDate).format('MMMM D, YYYY')}
+								</TooltipContent>
+							</Tooltip>
+						)}
 						{!readonly && (
 							<DropdownMenu>
 								<DropdownMenuTrigger

@@ -86,6 +86,7 @@ function LogbookList({
 		<PageLayout.Content>
 			{sections.map(section => (
 				<ReviewSection
+					dateFormat='short'
 					entries={section.entries}
 					id={section.id}
 					isCollapsed={collapsedSections[section.id] ?? false}

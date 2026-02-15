@@ -23,6 +23,12 @@ interface FormatRelativeDateOptions {
 	 * @default 'No date'
 	 */
 	nullLabel?: string
+	/**
+	 * When true, past dates beyond yesterday display as "MMM D" (e.g., "Feb 3")
+	 * instead of "Xd ago". Today and Yesterday remain unchanged.
+	 * @default false
+	 */
+	shortDate?: boolean
 }
 
 interface FormatRelativeDateResult {
@@ -54,7 +60,11 @@ export function formatRelativeDate(
 	date: Date | string | null,
 	options: FormatRelativeDateOptions = {}
 ): FormatRelativeDateResult {
-	const { includeFuture = true, nullLabel = 'No date' } = options
+	const {
+		includeFuture = true,
+		nullLabel = 'No date',
+		shortDate = false
+	} = options
 
 	if (!date) {
 		return { text: nullLabel, tooltipText: nullLabel }
@@ -77,6 +87,10 @@ export function formatRelativeDate(
 	}
 
 	if (diffDays < 0) {
+		if (shortDate) {
+			const formatted = dayjs(date).format('MMM D')
+			return { text: formatted, tooltipText: formatted }
+		}
 		const days = Math.abs(diffDays)
 		return {
 			text: `${days}d ago`,
