@@ -63,7 +63,10 @@ export function SourceStatusPopover({
 									)}
 									disabled={disabled}
 									key={option.value}
-									onClick={() => onStatusChange(option.value)}
+									onClick={e => {
+									e.stopPropagation()
+									onStatusChange(option.value)
+								}}
 									size='sm'
 									variant='ghost'
 								>
