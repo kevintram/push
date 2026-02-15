@@ -33,6 +33,25 @@ class TestConvertSourceToTopic:
         source_response = await test_client.get(f"/sources/{source.id}/")
         assert source_response.status_code == 404
 
+    async def test_convert_source_appends_progress_note_to_topic_notes(
+        self, test_client: AsyncClient, create_test_source
+    ):
+        """Source progress note is appended to converted topic notes."""
+        source = await create_test_source(
+            title="Test Source",
+            notes="Some notes",
+            progress_note="00:12:45",
+        )
+
+        response = await test_client.post(f"/sources/{source.id}/convert-to-topic/")
+        assert response.status_code == 200
+        topic_id = response.json()["topic_id"]
+
+        topic_response = await test_client.get(f"/topics/{topic_id}/")
+        assert topic_response.status_code == 200
+        topic_data = topic_response.json()
+        assert topic_data["notes"] == "Some notes\n\nProgress note:\n00:12:45"
+
     async def test_convert_source_preserves_flags(
         self, test_client: AsyncClient, create_test_source
     ):
@@ -257,6 +276,27 @@ class TestConvertSourceToPractice:
         # Verify source was deleted
         source_response = await test_client.get(f"/sources/{source.id}/")
         assert source_response.status_code == 404
+
+    async def test_convert_source_appends_progress_note_to_practice_answer(
+        self, test_client: AsyncClient, create_test_source
+    ):
+        """Source progress note is appended to converted practice answer."""
+        source = await create_test_source(
+            title="Test Source",
+            notes="Answer text",
+            progress_note="Stopped at 14:22",
+        )
+
+        response = await test_client.post(f"/sources/{source.id}/convert-to-practice/")
+        assert response.status_code == 200
+        practice_id = response.json()["practice_id"]
+
+        practice_response = await test_client.get(f"/practices/{practice_id}/")
+        assert practice_response.status_code == 200
+        practice_data = practice_response.json()
+        assert (
+            practice_data["answer"] == "Answer text\n\nProgress note:\nStopped at 14:22"
+        )
 
     async def test_convert_source_preserves_flags(
         self, test_client: AsyncClient, create_test_source

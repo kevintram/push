@@ -282,6 +282,8 @@ def create_test_source(db_session: AsyncSession, mock_user_id: str):
         user_id: str | None = None,
         title: str = "Test Source",
         notes: str | None = None,
+        status: str = "NEW",
+        progress_note: str = "",
         parent_id: int | None = None,
         srs_enabled: bool = True,
         initial_stability: float | None = None,
@@ -308,6 +310,8 @@ def create_test_source(db_session: AsyncSession, mock_user_id: str):
             user_id=actual_user_id,
             title=title,
             notes=notes or "",
+            status=status,
+            progress_note=progress_note,
             parent_id=parent_id,
             fsrs_state_id=fsrs_state.id if fsrs_state else None,
         )
