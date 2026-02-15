@@ -63,6 +63,7 @@ const getStabilityChangeColorClass = (
 }
 
 interface ReviewItemProps {
+	dateFormat?: 'relative' | 'short'
 	entry: ReviewListItem
 	onReviewClick?: (reviewId: number) => void
 	readonly?: boolean
@@ -70,6 +71,7 @@ interface ReviewItemProps {
 }
 
 export function ReviewItem({
+	dateFormat = 'relative',
 	entry,
 	onReviewClick,
 	readonly = false,
@@ -204,7 +206,9 @@ export function ReviewItem({
 		isCompleted
 	})
 
-	const relativeDate = formatRelativeDate(effectiveDate)
+	const relativeDate = formatRelativeDate(effectiveDate, {
+		shortDate: dateFormat === 'short'
+	})
 
 	const dateButtonColorClass = cn(
 		isOverdueValue && 'text-red-600 dark:text-red-400',
