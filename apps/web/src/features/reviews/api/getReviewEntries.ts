@@ -451,24 +451,19 @@ export function useFutureReviewEntries(options?: { enabled?: boolean }) {
 }
 
 export function useLogbookReviewEntries() {
-	const yesterday = useMemo(
-		() => dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
-		[]
-	)
-
 	const query = useQuery({
 		queryKey: reviewKeys.list({
-			effectiveDateBefore: yesterday,
-			completed: true
+			completed: true,
+			order: 'desc'
 		}),
 		queryFn: () =>
 			getReviews({
-				effectiveDateBefore: yesterday,
-				completed: true
+				completed: true,
+				order: 'desc'
 			})
 	})
 
-	// Group entries into Yesterday, Last Week, and Monthly sections
+	// Group entries into Today, Yesterday, Last Week, Future, and Monthly sections
 	const sections = useMemo(() => {
 		if (!query.data) {
 			return []
@@ -476,6 +471,7 @@ export function useLogbookReviewEntries() {
 
 		// Calculate date boundaries
 		const today = dayjs()
+		const todayDateStr = today.format('YYYY-MM-DD')
 		const yesterday = today.subtract(1, 'day')
 		const yesterdayDateStr = yesterday.format('YYYY-MM-DD')
 
@@ -486,8 +482,10 @@ export function useLogbookReviewEntries() {
 		const twoDaysAgoDateStr = twoDaysAgo.format('YYYY-MM-DD')
 
 		// Categorize entries
+		const todayEntries: Array<ReviewListItem> = []
 		const yesterdayEntries: Array<ReviewListItem> = []
 		const lastWeekEntries: Array<ReviewListItem> = []
+		const futureEntries: Array<ReviewListItem> = []
 		const monthlyGroups = new Map<string, Array<ReviewListItem>>()
 
 		for (const entry of query.data) {
@@ -498,8 +496,16 @@ export function useLogbookReviewEntries() {
 				continue
 			}
 
+			// Future section
+			if (effectiveDate > todayDateStr) {
+				futureEntries.push(entry)
+			}
+			// Today section
+			else if (effectiveDate === todayDateStr) {
+				todayEntries.push(entry)
+			}
 			// Yesterday section
-			if (effectiveDate === yesterdayDateStr) {
+			else if (effectiveDate === yesterdayDateStr) {
 				yesterdayEntries.push(entry)
 			}
 			// Last Week section (6 days ago through 2 days ago)
@@ -526,12 +532,30 @@ export function useLogbookReviewEntries() {
 		// Build sections array
 		const sectionsArray: Array<LogbookEntrySection> = []
 
+		// Add Future section if it has entries
+		if (futureEntries.length > 0) {
+			sectionsArray.push({
+				id: 'future',
+				label: 'Future???',
+				entries: sortReviewsByEffectiveDateDesc(futureEntries)
+			})
+		}
+
+		// Add Today section if it has entries
+		if (todayEntries.length > 0) {
+			sectionsArray.push({
+				id: 'today',
+				label: 'Today',
+				entries: sortReviewsByEffectiveDateDesc(todayEntries)
+			})
+		}
+
 		// Add Yesterday section if it has entries
 		if (yesterdayEntries.length > 0) {
 			sectionsArray.push({
 				id: 'yesterday',
 				label: 'Yesterday',
-				entries: yesterdayEntries
+				entries: sortReviewsByEffectiveDateDesc(yesterdayEntries)
 			})
 		}
 
@@ -540,7 +564,7 @@ export function useLogbookReviewEntries() {
 			sectionsArray.push({
 				id: 'last-week',
 				label: 'Last Week',
-				entries: lastWeekEntries
+				entries: sortReviewsByEffectiveDateDesc(lastWeekEntries)
 			})
 		}
 
@@ -550,7 +574,7 @@ export function useLogbookReviewEntries() {
 		).map(([monthKey, entries]) => ({
 			id: monthKey,
 			label: dayjs(`${monthKey}-01`).format('MMMM YYYY'),
-			entries
+			entries: sortReviewsByEffectiveDateDesc(entries)
 		}))
 
 		// Sort monthly sections by month key descending

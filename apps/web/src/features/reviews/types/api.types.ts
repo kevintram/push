@@ -110,6 +110,7 @@ export type GetReviewsFilters = {
 	effectiveDateAfter?: string
 	scheduled?: boolean
 	completed?: boolean
+	order?: 'asc' | 'desc'
 }
 
 export type TodaySectionKey = 'overdue' | 'today'
