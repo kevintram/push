@@ -82,7 +82,9 @@ class Topic(Base):
         "Topic", back_populates="parent", foreign_keys=[parent_id]
     )
     fsrs_state: Mapped["FsrsState | None"] = relationship("FsrsState", lazy="joined")
-    reviews: Mapped[list["Review"]] = relationship(back_populates="topic")
+    reviews: Mapped[list["Review"]] = relationship(
+        back_populates="topic", passive_deletes=True
+    )
 
     # Entity relations (unified, replacing topic_other_relations)
     # These are used by the service layer to load related entities

@@ -129,7 +129,9 @@ class Source(Base):
         viewonly=True,
     )
 
-    reviews: Mapped[list["Review"]] = relationship("Review", back_populates="source")
+    reviews: Mapped[list["Review"]] = relationship(
+        "Review", back_populates="source", passive_deletes=True
+    )
 
     # Entity relations (unified, for related topics/sources)
     related_outgoing_relations: Mapped[list["EntityRelation"]] = relationship(
