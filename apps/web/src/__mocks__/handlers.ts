@@ -87,6 +87,7 @@ export const handlers = [
 					retrievability: null,
 					freshness_tier: null,
 					days_until_next_tier: null,
+					days_in_current_tier: null,
 					children_count: 0,
 					related_outgoing_count: 0,
 					related_incoming_count: 0
@@ -116,6 +117,7 @@ export const handlers = [
 					retrievability: null,
 					freshness_tier: null,
 					days_until_next_tier: null,
+					days_in_current_tier: null,
 					children_count: 0,
 					related_outgoing_count: 0,
 					related_incoming_count: 0

@@ -45,6 +45,7 @@ export type Source = {
 	retrievability: number | null
 	freshness_tier: FreshnessTier | null
 	days_until_next_tier: number | null
+	days_in_current_tier: number | null
 	// Relationship counts
 	children_count?: number
 	topics_count?: number

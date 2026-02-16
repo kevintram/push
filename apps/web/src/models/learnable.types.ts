@@ -60,5 +60,6 @@ export type LearnableBase = {
 	retrievability: number | null
 	freshness_tier: FreshnessTier | null
 	days_until_next_tier: number | null
+	days_in_current_tier: number | null
 	children_count?: number
 }

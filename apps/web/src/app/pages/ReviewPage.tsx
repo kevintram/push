@@ -107,6 +107,10 @@ function formatHazySoonLabel(daysUntilHazy: number): string {
 	return `Hazy in ${daysUntilHazy}d`
 }
 
+function formatHazyForLabel(daysInTier: number): string {
+	return `Hazy for ${daysInTier}d`
+}
+
 function sortUpcomingQueueItems(a: QueueCardItem, b: QueueCardItem): number {
 	if (a.urgencyDays !== b.urgencyDays) {
 		return a.urgencyDays - b.urgencyDays
@@ -337,7 +341,22 @@ function ReviewQueueGroupedList({
 				}
 			}
 
+			let hazyForBadge: LearnableCardStatusBadge | null = null
+			if (
+				queueItem.urgencyDays < 0 &&
+				entity.item.freshness_tier === 'Hazy' &&
+				entity.item.days_in_current_tier != null
+			) {
+				hazyForBadge = {
+					label: formatHazyForLabel(entity.item.days_in_current_tier),
+					variant: 'outline',
+					className:
+						'h-5 border-transparent bg-amber-100 text-amber-900 text-xs dark:bg-amber-950 dark:text-amber-200'
+				}
+			}
+
 			const statusBadges: Array<LearnableCardStatusBadge> = []
+			if (hazyForBadge) statusBadges.push(hazyForBadge)
 			if (hazyStatusBadge) statusBadges.push(hazyStatusBadge)
 			if (dueStatusBadge) statusBadges.push(dueStatusBadge)
 

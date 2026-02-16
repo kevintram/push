@@ -63,6 +63,7 @@ class TopicRead(TopicBase):
     retrievability: float | None = None
     freshness_tier: FreshnessTier | None = None
     days_until_next_tier: int | None = None
+    days_in_current_tier: int | None = None
 
 
 class TopicSummaryRead(TopicRead):

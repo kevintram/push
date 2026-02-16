@@ -21,6 +21,7 @@ from sqlalchemy.types import TIMESTAMP, Boolean, Text
 from app.models.base import Base
 from app.utils.retrievability import (
     calculate_retrievability,
+    calculate_days_in_current_tier,
     calculate_days_until_threshold,
     get_freshness_tier,
     get_next_tier_threshold,
@@ -166,6 +167,16 @@ class Practice(Base):
             self.fsrs_state.stability,
             self.fsrs_state.last_reviewed_at,
             target_retrievability=target_retrievability,
+        )
+
+    @property
+    def days_in_current_tier(self) -> int | None:
+        if self.fsrs_state is None or self.fsrs_state.stability is None:
+            return None
+        return calculate_days_in_current_tier(
+            self.fsrs_state.stability,
+            self.fsrs_state.last_reviewed_at,
+            self.retrievability,
         )
 
     @property
