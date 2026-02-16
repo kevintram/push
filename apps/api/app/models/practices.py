@@ -130,7 +130,9 @@ class Practice(Base):
 
     # Relationships
     fsrs_state: Mapped["FsrsState | None"] = relationship("FsrsState", lazy="joined")
-    reviews: Mapped[list["Review"]] = relationship("Review", back_populates="practice")
+    reviews: Mapped[list["Review"]] = relationship(
+        "Review", back_populates="practice", passive_deletes=True
+    )
 
     # Topics this practice assesses
     topics: Mapped[list["Topic"]] = relationship(
