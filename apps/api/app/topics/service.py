@@ -829,13 +829,21 @@ async def remove_related_entity_from_topic(
 
     if entity_type == "topic":
         stmt = delete(EntityRelation).where(
-            EntityRelation.from_topic_id == topic_id,
-            EntityRelation.to_topic_id == entity_id,
+            or_(
+                (EntityRelation.from_topic_id == topic_id)
+                & (EntityRelation.to_topic_id == entity_id),
+                (EntityRelation.from_topic_id == entity_id)
+                & (EntityRelation.to_topic_id == topic_id),
+            )
         )
     elif entity_type == "source":
         stmt = delete(EntityRelation).where(
-            EntityRelation.from_topic_id == topic_id,
-            EntityRelation.to_source_id == entity_id,
+            or_(
+                (EntityRelation.from_topic_id == topic_id)
+                & (EntityRelation.to_source_id == entity_id),
+                (EntityRelation.from_source_id == entity_id)
+                & (EntityRelation.to_topic_id == topic_id),
+            )
         )
     else:
         raise BadRequestError(f"Invalid entity_type: {entity_type}")

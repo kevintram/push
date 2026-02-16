@@ -170,6 +170,69 @@ class TestTopicEntityRelations:
         relation = result.scalar_one_or_none()
         assert relation is not None
 
+    async def test_remove_incoming_topic_relation(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+        db_session: AsyncSession,
+    ):
+        """Should remove a topic relation created in the reverse direction."""
+        topic1 = await create_test_topic(name="Topic 1")
+        topic2 = await create_test_topic(name="Topic 2")
+
+        # Create relation from topic2 -> topic1
+        await test_client.post(
+            f"/topics/{topic2.id}/entity-relations/",
+            json={"to_entity_type": "topic", "to_entity_id": topic1.id},
+        )
+
+        # Delete from topic1's side (incoming relation)
+        response = await test_client.delete(
+            f"/topics/{topic1.id}/entity-relations/topic/{topic2.id}/"
+        )
+        assert response.status_code == 200
+
+        # Verify relation removed
+        result = await db_session.execute(
+            select(EntityRelation).where(
+                EntityRelation.from_topic_id == topic2.id,
+                EntityRelation.to_topic_id == topic1.id,
+            )
+        )
+        assert result.scalar_one_or_none() is None
+
+    async def test_remove_incoming_source_relation_from_topic(
+        self,
+        test_client: AsyncClient,
+        create_test_topic,
+        create_test_source,
+        db_session: AsyncSession,
+    ):
+        """Should remove a source relation that was created from the source side."""
+        topic = await create_test_topic(name="Topic")
+        source = await create_test_source(title="Source")
+
+        # Create relation from source -> topic (reverse direction)
+        await test_client.post(
+            f"/sources/{source.id}/entity-relations/",
+            json={"to_entity_type": "topic", "to_entity_id": topic.id},
+        )
+
+        # Delete from topic's side (incoming relation)
+        response = await test_client.delete(
+            f"/topics/{topic.id}/entity-relations/source/{source.id}/"
+        )
+        assert response.status_code == 200
+
+        # Verify relation removed
+        result = await db_session.execute(
+            select(EntityRelation).where(
+                EntityRelation.from_source_id == source.id,
+                EntityRelation.to_topic_id == topic.id,
+            )
+        )
+        assert result.scalar_one_or_none() is None
+
     async def test_topic_relation_not_found(
         self,
         test_client: AsyncClient,
@@ -275,6 +338,69 @@ class TestSourceEntityRelations:
         )
         relation = result.scalar_one_or_none()
         assert relation is None
+
+    async def test_remove_incoming_topic_relation_from_source(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+        create_test_topic,
+        db_session: AsyncSession,
+    ):
+        """Should remove a topic relation that was created from the topic side."""
+        source = await create_test_source(title="Source")
+        topic = await create_test_topic(name="Topic")
+
+        # Create relation from topic -> source (reverse direction for source)
+        await test_client.post(
+            f"/topics/{topic.id}/entity-relations/",
+            json={"to_entity_type": "source", "to_entity_id": source.id},
+        )
+
+        # Delete from source's side (incoming relation)
+        response = await test_client.delete(
+            f"/sources/{source.id}/entity-relations/topic/{topic.id}/"
+        )
+        assert response.status_code == 200
+
+        # Verify relation removed
+        result = await db_session.execute(
+            select(EntityRelation).where(
+                EntityRelation.from_topic_id == topic.id,
+                EntityRelation.to_source_id == source.id,
+            )
+        )
+        assert result.scalar_one_or_none() is None
+
+    async def test_remove_incoming_source_relation_from_source(
+        self,
+        test_client: AsyncClient,
+        create_test_source,
+        db_session: AsyncSession,
+    ):
+        """Should remove a source relation created in the reverse direction."""
+        source1 = await create_test_source(title="Source 1")
+        source2 = await create_test_source(title="Source 2")
+
+        # Create relation from source2 -> source1
+        await test_client.post(
+            f"/sources/{source2.id}/entity-relations/",
+            json={"to_entity_type": "source", "to_entity_id": source1.id},
+        )
+
+        # Delete from source1's side (incoming relation)
+        response = await test_client.delete(
+            f"/sources/{source1.id}/entity-relations/source/{source2.id}/"
+        )
+        assert response.status_code == 200
+
+        # Verify relation removed
+        result = await db_session.execute(
+            select(EntityRelation).where(
+                EntityRelation.from_source_id == source2.id,
+                EntityRelation.to_source_id == source1.id,
+            )
+        )
+        assert result.scalar_one_or_none() is None
 
     async def test_add_topic_relation_to_source_inline_create(
         self,
