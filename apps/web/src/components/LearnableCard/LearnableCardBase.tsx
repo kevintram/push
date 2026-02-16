@@ -544,7 +544,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 							<div className='relative'>
 								<h3
 									aria-hidden={true}
-									className='break-word invisible line-clamp-5 font-semibold leading-tight [overflow-wrap:anywhere]'
+									className='break-word invisible line-clamp-5 whitespace-pre-wrap font-semibold leading-tight [overflow-wrap:anywhere]'
 								>
 									{highlightedPrimary}
 								</h3>
@@ -562,7 +562,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 							</div>
 						) : (
 							highlightedPrimary && (
-								<h3 className='break-word line-clamp-5 font-semibold leading-tight [overflow-wrap:anywhere]'>
+								<h3 className='break-word line-clamp-5 whitespace-pre-wrap font-semibold leading-tight [overflow-wrap:anywhere]'>
 									{highlightedPrimary}
 								</h3>
 							)
@@ -571,7 +571,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 							<div className='relative'>
 								<p
 									aria-hidden={true}
-									className='break-word invisible line-clamp-[8] text-sm [overflow-wrap:anywhere]'
+									className='break-word invisible line-clamp-[8] whitespace-pre-wrap text-sm [overflow-wrap:anywhere]'
 								>
 									{highlightedSecondary}
 								</p>
@@ -589,7 +589,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 							</div>
 						) : (
 							highlightedSecondary && (
-								<p className='break-word line-clamp-[8] text-sm [overflow-wrap:anywhere]'>
+								<p className='break-word line-clamp-[8] whitespace-pre-wrap text-sm [overflow-wrap:anywhere]'>
 									{highlightedSecondary}
 								</p>
 							)
