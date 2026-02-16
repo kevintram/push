@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Literal
 if TYPE_CHECKING:
     from app.schemas.entity_summaries import SourceEntitySummary, TopicEntitySummary
 
-from sqlalchemy import cast, delete, desc, func, insert, select, text, update
+from sqlalchemy import cast, delete, desc, func, insert, or_, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -939,13 +939,21 @@ async def remove_related_entity_from_source(
 
     if entity_type == "topic":
         stmt = delete(EntityRelation).where(
-            EntityRelation.from_source_id == source_id,
-            EntityRelation.to_topic_id == entity_id,
+            or_(
+                (EntityRelation.from_source_id == source_id)
+                & (EntityRelation.to_topic_id == entity_id),
+                (EntityRelation.from_topic_id == entity_id)
+                & (EntityRelation.to_source_id == source_id),
+            )
         )
     elif entity_type == "source":
         stmt = delete(EntityRelation).where(
-            EntityRelation.from_source_id == source_id,
-            EntityRelation.to_source_id == entity_id,
+            or_(
+                (EntityRelation.from_source_id == source_id)
+                & (EntityRelation.to_source_id == entity_id),
+                (EntityRelation.from_source_id == entity_id)
+                & (EntityRelation.to_source_id == source_id),
+            )
         )
     else:
         raise BadRequestError(f"Invalid entity_type: {entity_type}")
