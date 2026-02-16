@@ -109,8 +109,10 @@ def calculate_days_in_current_tier(
         # Fresh tier: been in this tier since last review
         return max(0, (current_date - last_reviewed_at).days)
 
-    # For Fine/Hazy/Forgotten: calculate_days_until_threshold returns negative
-    # when the threshold was crossed in the past. Negate to get positive days.
+    # calculate_days_until_threshold returns (target_days_from_review - elapsed_days).
+    # The entry_threshold is a retrievability value the item has *already* crossed
+    # (e.g., 0.85 for an item now in Hazy), so target_days_from_review < elapsed_days,
+    # making the result negative. Negating gives the positive days since crossing.
     return -calculate_days_until_threshold(
         stability, last_reviewed_at, entry_threshold, current_date
     )
