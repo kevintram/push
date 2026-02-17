@@ -1,5 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import * as v from 'valibot'
 import { practiceKeys } from '~/features/practices/api/queryKeys'
+import { PracticeSchema } from '~/features/practices/types/practice.schemas'
+import type { Practice } from '~/features/practices/types/practice.types'
 import { apiFetch } from '~/utils/apiFetch'
 import { sourceKeys } from './queryKeys'
 
@@ -22,7 +25,7 @@ export type AddSourcePracticeInput =
 
 export async function addSourcePractice(
 	input: AddSourcePracticeInput
-): Promise<void> {
+): Promise<Practice> {
 	const body =
 		'practiceId' in input
 			? { practice_id: input.practiceId }
@@ -49,6 +52,16 @@ export async function addSourcePractice(
 	if (!response.ok) {
 		throw new Error(`API request failed: ${response.status}`)
 	}
+
+	const data = await response.json()
+	try {
+		return v.parse(PracticeSchema, data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
 }
 
 export function useAddSourcePractice() {
@@ -56,19 +69,18 @@ export function useAddSourcePractice() {
 
 	return useMutation({
 		mutationFn: addSourcePractice,
-		onSuccess: async (_, input) => {
-			const practiceId = 'practiceId' in input ? input.practiceId : undefined
+		onSuccess: async (practice, input) => {
+			const practiceId = 'practiceId' in input ? input.practiceId : practice.id
 			await Promise.all([
 				queryClient.invalidateQueries({
 					queryKey: sourceKeys.byId(input.sourceId)
 				}),
-				practiceId
-					? queryClient.invalidateQueries({
-							queryKey: practiceKeys.byId(practiceId)
-						})
-					: queryClient.invalidateQueries({
-							queryKey: practiceKeys.all
-						})
+				queryClient.invalidateQueries({
+					queryKey: practiceKeys.byId(practiceId)
+				}),
+				queryClient.invalidateQueries({
+					queryKey: practiceKeys.all
+				})
 			])
 		}
 	})

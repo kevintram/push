@@ -22,7 +22,8 @@ export async function createPractice(
 				answer: input.answer ?? '',
 				archived: input.archived ?? false,
 				inboxed: input.inboxed ?? false,
-				srs_enabled: input.srs_enabled ?? true
+				srs_enabled: input.srs_enabled ?? true,
+				inherit_fsrs: input.inherit_fsrs ?? false
 			})
 		}
 	)

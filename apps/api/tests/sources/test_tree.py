@@ -508,6 +508,9 @@ class TestSourceInlineCreate:
         )
 
         assert response.status_code == 201
+        data = response.json()
+        assert data["id"] is not None
+        assert data["prompt"] == "Inline Practice"
 
         # Verify practice was created and linked
         get_response = await test_client.get(f"/sources/{source.id}/practices/")

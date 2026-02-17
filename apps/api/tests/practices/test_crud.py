@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import Source, Topic
+from app.models import Review, Source, Topic
 
 
 class TestPracticesEndpoints:
@@ -99,6 +99,32 @@ class TestPracticesEndpoints:
         # Verify practice is gone via API
         get_response = await test_client.get(f"/practices/{practice.id}/")
         assert get_response.status_code == 404
+
+    async def test_delete_practice_with_reviews_success(
+        self,
+        test_client: AsyncClient,
+        db_session: AsyncSession,
+        create_test_practice,
+        mock_user_id: str,
+    ):
+        """Deleting a practice should cascade-delete linked reviews."""
+        practice = await create_test_practice(prompt="Practice with Review")
+        review = Review(
+            user_id=mock_user_id,
+            practice_id=practice.id,
+            completed_at=date.today(),
+            rating="good",
+        )
+        db_session.add(review)
+        await db_session.commit()
+
+        response = await test_client.delete(f"/practices/{practice.id}/")
+        assert response.status_code == 204
+
+        review_check = await db_session.execute(
+            select(Review).where(Review.id == review.id)
+        )
+        assert review_check.scalar_one_or_none() is None
 
 
 class TestCrossEntityInheritFsrs:
