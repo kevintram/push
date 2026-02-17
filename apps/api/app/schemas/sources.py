@@ -21,7 +21,7 @@ class SourceStatus(str, Enum):
     IN_PROGRESS = "IN_PROGRESS"
     ON_HOLD = "ON_HOLD"
     DROPPED = "DROPPED"
-    COMPLETED = "COMPLETED"
+    FINISHED = "FINISHED"
 
 
 class SourceBase(BaseModel):

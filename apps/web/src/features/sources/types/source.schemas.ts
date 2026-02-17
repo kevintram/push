@@ -18,7 +18,7 @@ const sourceBaseFields = {
 	id: v.number(),
 	title: v.string(),
 	notes: v.string(),
-	status: v.picklist(['NEW', 'IN_PROGRESS', 'ON_HOLD', 'DROPPED', 'COMPLETED']),
+	status: v.picklist(['NEW', 'IN_PROGRESS', 'ON_HOLD', 'DROPPED', 'FINISHED']),
 	progress_note: v.string(),
 	entity_type: v.optional(v.literal('source')),
 	inserted_at: v.string(),

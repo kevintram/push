@@ -41,8 +41,8 @@ export const SOURCE_STATUS_OPTIONS: Array<SourceStatusOption> = [
 		colorClassName: 'text-rose-600 dark:text-rose-400'
 	},
 	{
-		value: 'COMPLETED',
-		label: 'Completed',
+		value: 'FINISHED',
+		label: 'Finished',
 		icon: CircleCheck,
 		colorClassName: 'text-emerald-600 dark:text-emerald-400'
 	}

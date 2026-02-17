@@ -11,7 +11,7 @@ export type SourceLifecycleStatus =
 	| 'IN_PROGRESS'
 	| 'ON_HOLD'
 	| 'DROPPED'
-	| 'COMPLETED'
+	| 'FINISHED'
 
 export type Source = {
 	id: number
