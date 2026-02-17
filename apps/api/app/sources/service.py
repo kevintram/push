@@ -1152,7 +1152,7 @@ async def add_practice_to_source(
     *,
     practice_id: int | None = None,
     practice_data: dict | None = None,
-) -> None:
+) -> Practice:
     """Link a practice to a source."""
     # Verify source exists and belongs to user
     source = await get_source(session, source_id, user_id)
@@ -1192,6 +1192,15 @@ async def add_practice_to_source(
         t_practice_sources.insert().values(source_id=source_id, practice_id=practice_id)
     )
     await session.commit()
+    result = await session.execute(
+        select(Practice)
+        .where(Practice.id == practice_id, Practice.user_id == user_id)
+        .options(selectinload(Practice.fsrs_state))
+    )
+    refreshed_practice = result.scalar_one_or_none()
+    if refreshed_practice is None:
+        raise NotFoundError("Practice", practice_id)
+    return refreshed_practice
 
 
 async def remove_practice_from_source(

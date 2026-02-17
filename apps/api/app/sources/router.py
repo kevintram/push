@@ -316,19 +316,20 @@ async def add_practice_to_source(
     user_id: UserIdDep,
     source_id: int,
     data: SourcePracticeAdd,
-) -> None:
+) -> PracticeSummaryRead:
     """Link a practice to a source."""
     if data.practice_id is not None:
-        await service.add_practice_to_source(
+        practice = await service.add_practice_to_source(
             session, source_id, user_id, practice_id=data.practice_id
         )
     else:
-        await service.add_practice_to_source(
+        practice = await service.add_practice_to_source(
             session,
             source_id,
             user_id,
             practice_data=data.practice.model_dump(),
         )
+    return PracticeSummaryRead.model_validate(practice)
 
 
 @router.delete("/{source_id}/practices/{practice_id}/", status_code=204)

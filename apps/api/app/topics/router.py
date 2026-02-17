@@ -291,19 +291,20 @@ async def add_practice_to_topic(
     user_id: UserIdDep,
     topic_id: int,
     data: TopicPracticeAdd,
-) -> None:
+) -> PracticeSummaryRead:
     """Link a practice to a topic."""
     if data.practice_id is not None:
-        await service.add_practice_to_topic(
+        practice = await service.add_practice_to_topic(
             session, topic_id, user_id, practice_id=data.practice_id
         )
     else:
-        await service.add_practice_to_topic(
+        practice = await service.add_practice_to_topic(
             session,
             topic_id,
             user_id,
             practice_data=data.practice.model_dump(),
         )
+    return PracticeSummaryRead.model_validate(practice)
 
 
 @router.delete("/{topic_id}/practices/{practice_id}/", status_code=204)

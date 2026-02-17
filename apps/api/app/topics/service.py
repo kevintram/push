@@ -989,7 +989,7 @@ async def add_practice_to_topic(
     *,
     practice_id: int | None = None,
     practice_data: dict | None = None,
-) -> None:
+) -> Practice:
     """Link a practice to a topic."""
     # Verify topic exists and belongs to user
     topic = await get_topic(session, topic_id, user_id)
@@ -1029,6 +1029,15 @@ async def add_practice_to_topic(
         t_practice_topics.insert().values(topic_id=topic_id, practice_id=practice_id)
     )
     await session.commit()
+    result = await session.execute(
+        select(Practice)
+        .where(Practice.id == practice_id, Practice.user_id == user_id)
+        .options(selectinload(Practice.fsrs_state))
+    )
+    refreshed_practice = result.scalar_one_or_none()
+    if refreshed_practice is None:
+        raise NotFoundError("Practice", practice_id)
+    return refreshed_practice
 
 
 async def remove_practice_from_topic(

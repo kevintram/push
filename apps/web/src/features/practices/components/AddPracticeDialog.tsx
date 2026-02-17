@@ -149,15 +149,17 @@ export function AddPracticeDialog({
 				const practice = await createPractice(practiceData)
 				newPracticeId = practice.id
 			} else if (relationship.kind === 'topic') {
-				await addTopicPractice({
+				const practice = await addTopicPractice({
 					topicId: relationship.topicId,
 					practice: practiceData
 				})
+				newPracticeId = practice.id
 			} else if (relationship.kind === 'source') {
-				await addSourcePractice({
+				const practice = await addSourcePractice({
 					sourceId: relationship.sourceId,
 					practice: practiceData
 				})
+				newPracticeId = practice.id
 			}
 
 			// Create review if review section was used and rating was set
