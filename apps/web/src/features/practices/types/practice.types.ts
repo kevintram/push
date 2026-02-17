@@ -31,6 +31,7 @@ export type Practice = {
 	retrievability: number | null
 	freshness_tier: FreshnessTier | null
 	days_until_next_tier: number | null
+	days_in_current_tier: number | null
 	// Relationship counts
 	topics_count?: number
 	sources_count?: number

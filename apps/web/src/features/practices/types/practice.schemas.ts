@@ -38,6 +38,7 @@ const practiceBaseFields = {
 		v.picklist(['Fresh', 'Fine', 'Hazy', 'Forgotten'])
 	),
 	days_until_next_tier: v.nullable(v.number()),
+	days_in_current_tier: v.nullable(v.number()),
 	// Relationship counts
 	topics_count: v.optional(v.number(), 0),
 	sources_count: v.optional(v.number(), 0)

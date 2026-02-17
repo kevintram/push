@@ -48,6 +48,7 @@ const sourceBaseFields = {
 		v.picklist(['Fresh', 'Fine', 'Hazy', 'Forgotten'])
 	),
 	days_until_next_tier: v.nullable(v.number()),
+	days_in_current_tier: v.nullable(v.number()),
 	// Relationship counts
 	children_count: v.optional(v.number(), 0),
 	topics_count: v.optional(v.number(), 0),
