@@ -26,7 +26,7 @@ import type {
 } from '~/features/sources/types/source.types'
 import { useEntityNavigation } from '~/hooks/useEntityNavigation'
 
-type ReadTab = 'read' | 'on-hold' | 'dropped' | 'completed'
+type ReadTab = 'read' | 'on-hold' | 'dropped' | 'finished'
 
 type SourceEntityItem = Extract<EntityItem, { type: 'source' }>
 
@@ -40,7 +40,7 @@ const READ_TAB_OPTIONS: Array<{ value: ReadTab; label: string }> = [
 	{ value: 'read', label: 'Read' },
 	{ value: 'on-hold', label: 'On Hold' },
 	{ value: 'dropped', label: 'Dropped' },
-	{ value: 'completed', label: 'Completed' }
+	{ value: 'finished', label: 'Finished' }
 ]
 
 function isReadTab(value: string): value is ReadTab {
@@ -60,7 +60,7 @@ function bucketSourcesByStatus(sources: Array<Source>) {
 		IN_PROGRESS: [],
 		ON_HOLD: [],
 		DROPPED: [],
-		COMPLETED: []
+		FINISHED: []
 	}
 
 	for (const source of sources) {
@@ -87,10 +87,10 @@ function getEmptyStateCopy(activeTab: ReadTab) {
 				title: 'No dropped sources',
 				description: 'Sources marked Dropped will show up here'
 			}
-		case 'completed':
+		case 'finished':
 			return {
-				title: 'No completed sources',
-				description: 'Sources marked Completed will show up here'
+				title: 'No finished sources',
+				description: 'Sources marked Finished will show up here'
 			}
 		default:
 			return {
@@ -123,7 +123,7 @@ export function ReadPage() {
 			read: statusBuckets.IN_PROGRESS.length + statusBuckets.NEW.length,
 			'on-hold': statusBuckets.ON_HOLD.length,
 			dropped: statusBuckets.DROPPED.length,
-			completed: statusBuckets.COMPLETED.length
+			finished: statusBuckets.FINISHED.length
 		}),
 		[statusBuckets]
 	)
@@ -168,9 +168,9 @@ export function ReadPage() {
 
 		return [
 			{
-				id: 'completed',
-				label: 'Completed',
-				items: toSourceItems(statusBuckets.COMPLETED)
+				id: 'finished',
+				label: 'Finished',
+				items: toSourceItems(statusBuckets.FINISHED)
 			}
 		]
 	}, [activeTab, statusBuckets])

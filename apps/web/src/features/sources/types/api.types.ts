@@ -12,7 +12,7 @@ export type GetSourcesParams = {
 export type CreateSourceInput = {
 	title?: string
 	notes?: string
-	status?: 'NEW' | 'IN_PROGRESS' | 'ON_HOLD' | 'DROPPED' | 'COMPLETED'
+	status?: 'NEW' | 'IN_PROGRESS' | 'ON_HOLD' | 'DROPPED' | 'FINISHED'
 	progress_note?: string
 	archived?: boolean
 	inboxed?: boolean
@@ -25,7 +25,7 @@ export type UpdateSourceInput = {
 	id: number
 	title?: string
 	notes?: string
-	status?: 'NEW' | 'IN_PROGRESS' | 'ON_HOLD' | 'DROPPED' | 'COMPLETED'
+	status?: 'NEW' | 'IN_PROGRESS' | 'ON_HOLD' | 'DROPPED' | 'FINISHED'
 	progress_note?: string
 	archived?: boolean
 	inboxed?: boolean
