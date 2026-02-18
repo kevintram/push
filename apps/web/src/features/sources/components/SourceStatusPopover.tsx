@@ -47,6 +47,9 @@ export function SourceStatusPopover({
 					'w-fit max-w-none overflow-hidden rounded-xl p-2.5',
 					contentClassName
 				)}
+				onClick={event => event.stopPropagation()}
+				onKeyDown={event => event.stopPropagation()}
+				onPointerDown={event => event.stopPropagation()}
 				side={side}
 				sideOffset={sideOffset}
 			>
@@ -63,7 +66,10 @@ export function SourceStatusPopover({
 									)}
 									disabled={disabled}
 									key={option.value}
-									onClick={() => onStatusChange(option.value)}
+									onClick={event => {
+										event.stopPropagation()
+										onStatusChange(option.value)
+									}}
 									size='sm'
 									variant='ghost'
 								>
