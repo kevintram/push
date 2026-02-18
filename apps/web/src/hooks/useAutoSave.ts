@@ -91,6 +91,7 @@ export function useAutoSave({
 
 	useEffect(() => {
 		return () => {
+			// flush() immediately executes the most recent pending debounced save.
 			debouncedSave.flush()
 		}
 	}, [debouncedSave])
@@ -99,6 +100,7 @@ export function useAutoSave({
 	useEffect(() => {
 		// Reset value when key changes (e.g., switching to a different entity)
 		if (keyRef.current !== key) {
+			// flush() runs any queued save now so the previous entity's edit is persisted.
 			debouncedSave.flush()
 			keyRef.current = key
 			setValue(initialValue)
