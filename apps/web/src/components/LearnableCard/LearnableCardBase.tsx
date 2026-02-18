@@ -149,6 +149,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 		stabilityTooltipText
 	} = metrics
 	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
+	const hideParent = hidesPrimary && entity.parent_id != null
 	const [isPrimaryRevealed, setIsPrimaryRevealed] = useState(!hidesPrimary)
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
@@ -370,7 +371,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 					hasFloatingStatusRow ? 'pt-2' : '-top-1'
 				}`}
 			>
-				{'parent_id' in entity && (
+				{'parent_id' in entity && !hideParent && (
 					<Tooltip>
 						<TooltipTrigger
 							render={
