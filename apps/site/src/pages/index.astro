@@ -20,12 +20,25 @@ import { Button } from "../components/ui/button";
         const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         document.documentElement.classList.toggle("dark", isDark);
       }
-      
+
       // Apply immediately
       applyTheme();
-      
+
       // Listen for system changes
       window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+    </script>
+
+    <script is:inline define:vars={{ apiUrl: import.meta.env.PUBLIC_API_URL }}>
+      // Redirect authenticated users to the web app.
+      // The API checks the session cookie (same-site, so the browser sends it)
+      // and redirects to the app if valid, or back here with ?checked if not.
+      var params = new URLSearchParams(window.location.search);
+      if (params.has("checked")) {
+        history.replaceState({}, "", window.location.pathname);
+      } else if (apiUrl) {
+        var fallback = encodeURIComponent(window.location.origin + "/?checked");
+        window.location.href = apiUrl + "/auth/check/?fallback=" + fallback;
+      }
     </script>
   </head>
 
