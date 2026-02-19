@@ -17,7 +17,9 @@ import { Button } from "../components/ui/button";
 
     <script is:inline>
       function applyTheme() {
-        const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const isDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
         document.documentElement.classList.toggle("dark", isDark);
       }
 
@@ -25,15 +27,44 @@ import { Button } from "../components/ui/button";
       applyTheme();
 
       // Listen for system changes
-      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", applyTheme);
     </script>
 
-    <script is:inline define:vars={{ appUrl: import.meta.env.PUBLIC_APP_URL }}>
+    <script
+      is:inline
+      define:vars={{
+        appUrl: import.meta.env.PUBLIC_APP_URL,
+        apiUrl: import.meta.env.PUBLIC_API_URL,
+      }}
+    >
       // Redirect authenticated users to the web app.
-      // The API sets a non-httponly "logged_in" cookie on the shared domain,
-      // so we can check it directly without a server round-trip.
-      if (appUrl && document.cookie.split("; ").some(function(c) { return c === "logged_in=1"; })) {
-        window.location.href = appUrl;
+      // Fast path: use the non-httponly "logged_in" cookie if available.
+      // Fallback: ask the API to validate the sealed session cookie.
+      function hasLoggedInCookie() {
+        return document.cookie
+          .split(";")
+          .map(function (cookie) {
+            return cookie.trim();
+          })
+          .some(function (cookie) {
+            return cookie === "logged_in=1";
+          });
+      }
+
+      if (appUrl && hasLoggedInCookie()) {
+        window.location.replace(appUrl);
+      } else if (apiUrl) {
+        var params = new URLSearchParams(window.location.search);
+        if (!params.has("checked")) {
+          var fallback = encodeURIComponent(
+            window.location.origin + window.location.pathname + "?checked=1",
+          );
+          window.location.replace(apiUrl + "/auth/check/?fallback=" + fallback);
+        } else {
+          history.replaceState({}, "", window.location.pathname);
+        }
       }
     </script>
   </head>
@@ -42,8 +73,7 @@ import { Button } from "../components/ui/button";
     <div class="grid place-items-center h-screen content-center">
       <div class="flex flex-col relative gap-4 items-center">
         <span class="text-9xl font-semibold absolute -top-48">3gulp</span>
-          <Button>Login</Button>
-        </div>
+        <Button>Login</Button>
       </div>
     </div>
   </body>
@@ -56,7 +86,7 @@ import { Button } from "../components/ui/button";
       button.addEventListener("click", () => {
         confetti();
         setTimeout(() => {
-          window.location.href = import.meta.env.PUBLIC_APP_URL
+          window.location.href = import.meta.env.PUBLIC_APP_URL;
         }, 1000);
       });
     }
