@@ -1,5 +1,7 @@
 """Auth HTTP endpoints - login, callback, logout."""
 
+from urllib.parse import urlparse
+
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from starlette import status
@@ -49,6 +51,46 @@ def callback(code: str):
     except Exception as e:
         print("Error authenticating with code", e)
         return RedirectResponse(url="/login/", status_code=status.HTTP_302_FOUND)
+
+
+@router.get("/auth/check/")
+def check_auth(request: Request, fallback: str | None = None):
+    """Redirect to the app if authenticated, otherwise to fallback URL."""
+    settings = get_settings()
+    workos = get_workos()
+
+    # Validate fallback against our domain to prevent open redirects
+    validated_fallback = None
+    if fallback:
+        parsed = urlparse(fallback)
+        # Handle DOMAIN being either "3gulp.com" or "https://3gulp.com"
+        domain = (urlparse(settings.DOMAIN).hostname or settings.DOMAIN).lower()
+        if parsed.hostname and (
+            parsed.hostname == domain
+            or parsed.hostname.endswith(f".{domain}")
+        ):
+            validated_fallback = fallback
+
+    session_cookie = request.cookies.get(settings.WORKOS_COOKIE_NAME)
+    if session_cookie:
+        try:
+            session = workos.user_management.load_sealed_session(
+                sealed_session=session_cookie,
+                cookie_password=settings.WORKOS_COOKIE_PASSWORD,
+            )
+            result = session.authenticate()
+            if result.authenticated:
+                return RedirectResponse(
+                    url=settings.APP_URL, status_code=status.HTTP_302_FOUND
+                )
+        except Exception:
+            pass
+
+    if validated_fallback:
+        return RedirectResponse(
+            url=validated_fallback, status_code=status.HTTP_302_FOUND
+        )
+    return RedirectResponse(url="/login/", status_code=status.HTTP_302_FOUND)
 
 
 @router.get("/logout/")

@@ -158,6 +158,15 @@ if [ -f "$WEB_ENV" ]; then
     fi
 fi
 
+# Create or update apps/site/.env
+SITE_ENV="$ROOT_DIR/apps/site/.env"
+touch "$SITE_ENV"
+set_env_var "$SITE_ENV" "PUBLIC_API_URL" "$API_URL"
+set_env_var "$SITE_ENV" "PUBLIC_APP_URL" "$APP_URL"
+if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
+    echo "Updated apps/site/.env"
+fi
+
 # Create root .env if missing (test user credentials, no vars to update)
 ROOT_ENV="$ROOT_DIR/.env"
 if [ ! -f "$ROOT_ENV" ]; then
