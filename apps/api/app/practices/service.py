@@ -219,7 +219,7 @@ async def create_practice(
     *,
     prompt: str = "",
     answer: str = "",
-    srs_enabled: bool = False,
+    srs_enabled: bool = True,
     inherit_fsrs: bool = False,
     inherit_fsrs_from: FsrsState | None = None,
     inboxed: bool = False,

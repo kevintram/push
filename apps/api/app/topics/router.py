@@ -165,7 +165,7 @@ async def insert_child(
             parent_id,
             child_name=child_data.get("name"),
             child_notes=child_data.get("notes"),
-            child_srs_enabled=child_data.get("srs_enabled", False),
+            child_srs_enabled=child_data.get("srs_enabled", True),
             child_inherit_fsrs=child_data.get("inherit_fsrs", False),
             child_inboxed=child_data.get("inboxed", False),
             child_archived=child_data.get("archived", False),

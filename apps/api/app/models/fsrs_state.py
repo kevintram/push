@@ -25,7 +25,7 @@ class FsrsState(Base):
     step: Mapped[int | None] = mapped_column(Integer, nullable=True)
     last_reviewed_at: Mapped[date | None] = mapped_column(Date, nullable=True)
     srs_enabled: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, server_default=text("false")
+        Boolean, nullable=False, server_default=text("true")
     )
 
     # Inherited fields (propagated from parent at creation time)

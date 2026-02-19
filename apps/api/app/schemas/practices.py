@@ -36,7 +36,7 @@ class PracticeRead(PracticeBase):
     difficulty: float | None = None
     state: str = "LEARNING"
     step: int | None = None
-    srs_enabled: bool = False
+    srs_enabled: bool = True
     last_reviewed_at: date | None = None
     last_review_rating: str | None = None
 
@@ -81,7 +81,7 @@ class PracticeCreate(BaseModel):
     answer: str = ""
     archived: bool = False
     inboxed: bool = False
-    srs_enabled: bool = False
+    srs_enabled: bool = True
     inherit_fsrs: bool = False
 
 
