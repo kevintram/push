@@ -80,24 +80,28 @@ export function useAutoSave({
 	const keyRef = useRef<string | undefined>(key)
 	const lastUserActionRef = useRef<number>(Date.now())
 
-	// Keep onSave ref up-to-date without recreating the debounced function
-	const onSaveRef = useRef(onSave)
-	useEffect(() => {
-		onSaveRef.current = onSave
-	}, [onSave])
-
 	// Create debounced save function once and reuse it
-	// Uses onSaveRef so it always calls the latest onSave callback
+	// The save callback is provided per change event so pending saves can
+	// still target the correct entity after navigation.
 	const debouncedSave = useRef(
-		debounce((newValue: string) => {
-			onSaveRef.current(newValue)
+		debounce((newValue: string, saveFn: (value: string) => void) => {
+			saveFn(newValue)
 		}, debounceMs)
 	).current
+
+	useEffect(() => {
+		return () => {
+			// flush() immediately executes the most recent pending debounced save.
+			debouncedSave.flush()
+		}
+	}, [debouncedSave])
 
 	// Handle external initialValue updates intelligently
 	useEffect(() => {
 		// Reset value when key changes (e.g., switching to a different entity)
 		if (keyRef.current !== key) {
+			// flush() runs any queued save now so the previous entity's edit is persisted.
+			debouncedSave.flush()
 			keyRef.current = key
 			setValue(initialValue)
 			return
@@ -112,16 +116,16 @@ export function useAutoSave({
 
 		// Safe to update from external source if user hasn't typed recently
 		setValue(initialValue)
-	}, [initialValue, debounceMs, key])
+	}, [initialValue, debounceMs, key, debouncedSave])
 
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 			const newValue = e.target.value
 			lastUserActionRef.current = Date.now()
 			setValue(newValue)
-			debouncedSave(newValue)
+			debouncedSave(newValue, onSave)
 		},
-		[debouncedSave]
+		[debouncedSave, onSave]
 	)
 
 	return {
