@@ -84,7 +84,7 @@ export function useAutoSave({
 }: UseAutoSaveOptions): UseAutoSaveReturn {
 	const [value, setValue] = useState(initialValue)
 	const keyRef = useRef<string | undefined>(key)
-	const lastUserActionRef = useRef<number>(Date.now())
+	const lastUserActionRef = useRef<number | null>(null)
 
 	// Create debounced save function once and reuse it
 	// The save callback is provided per change event so pending saves can
@@ -111,6 +111,7 @@ export function useAutoSave({
 		if (keyRef.current !== key) {
 			debouncedSave.flush()
 			keyRef.current = key
+			lastUserActionRef.current = null
 			setValue(initialValue)
 		}
 	}, [key, debouncedSave, initialValue])
@@ -123,8 +124,9 @@ export function useAutoSave({
 		}
 
 		// Prevent external updates from overwriting recent user changes
-		const timeSinceLastUserAction = Date.now() - lastUserActionRef.current
-		const isRecentUserActivity = timeSinceLastUserAction < debounceMs + 500
+		const isRecentUserActivity =
+			lastUserActionRef.current !== null &&
+			Date.now() - lastUserActionRef.current < debounceMs + 500
 		if (isRecentUserActivity) {
 			return
 		}

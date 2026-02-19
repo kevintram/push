@@ -81,4 +81,31 @@ describe('useAutoSave', () => {
 		expect(onSave).toHaveBeenCalledTimes(1)
 		expect(onSave).toHaveBeenCalledWith('draft before navigation')
 	})
+
+	it('applies external initialValue updates when user has not typed', () => {
+		const onSave = vi.fn()
+		const { rerender, result } = renderHook(
+			({ initialValue }: { initialValue: string }) =>
+				useAutoSave({
+					initialValue,
+					onSave,
+					debounceMs: 1000,
+					key: 'topic-1'
+				}),
+			{
+				initialProps: {
+					initialValue: 'stale cache value'
+				}
+			}
+		)
+
+		act(() => {
+			rerender({
+				initialValue: 'fresh server value'
+			})
+		})
+
+		expect(result.current.value).toBe('fresh server value')
+		expect(onSave).not.toHaveBeenCalled()
+	})
 })
