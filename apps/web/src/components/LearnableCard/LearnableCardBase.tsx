@@ -629,22 +629,26 @@ export function LearnableCardBase<T extends LearnableBase>({
 							</span>
 						)}
 						{/* Last reviewed */}
-						<span className='font-bold'>·</span>
-						<Tooltip>
-							<TooltipTrigger
-								render={
-									<span className='flex items-center gap-1 font-semibold'>
-										<span>{`Reviewed ${lastReviewed.text}`}</span>
-										{entity.last_review_rating ? (
-											<span className='flex size-4 shrink-0 items-center justify-center rounded-full border border-muted-foreground text-muted-foreground'>
-												{getRatingIcon(entity.last_review_rating)}
+						{entity.last_reviewed_at && (
+							<>
+								<span className='font-bold'>·</span>
+								<Tooltip>
+									<TooltipTrigger
+										render={
+											<span className='flex items-center gap-1 font-semibold'>
+												<span>{`Reviewed ${lastReviewed.text}`}</span>
+												{entity.last_review_rating ? (
+													<span className='flex size-4 shrink-0 items-center justify-center rounded-full border border-muted-foreground text-muted-foreground'>
+														{getRatingIcon(entity.last_review_rating)}
+													</span>
+												) : null}
 											</span>
-										) : null}
-									</span>
-								}
-							/>
-							<TooltipContent>{lastReviewedDate}</TooltipContent>
-						</Tooltip>
+										}
+									/>
+									<TooltipContent>{lastReviewedDate}</TooltipContent>
+								</Tooltip>
+							</>
+						)}
 						{/* Durability */}
 						<span className='font-bold'>·</span>
 						<Tooltip>

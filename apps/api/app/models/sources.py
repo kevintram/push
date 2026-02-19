@@ -155,35 +155,46 @@ class Source(Base):
         viewonly=True,
     )
 
+    # Effective FSRS values: own values with inherited fallback
+    @property
+    def _effective_stability(self) -> float | None:
+        if self.fsrs_state is None:
+            return None
+        return self.fsrs_state.stability or self.fsrs_state.inherited_stability
+
+    @property
+    def _effective_last_reviewed(self):
+        if self.fsrs_state is None:
+            return None
+        return self.fsrs_state.last_reviewed_at or self.fsrs_state.inherited_last_review
+
     # Computed property for retrievability
     @hybrid_property
     def retrievability(self) -> float | None:
-        if self.fsrs_state is None:
-            return None
         return calculate_retrievability(
-            self.fsrs_state.stability, self.fsrs_state.last_reviewed_at
+            self._effective_stability, self._effective_last_reviewed
         )
 
     @property
     def days_until_next_tier(self) -> int | None:
-        if self.fsrs_state is None or self.fsrs_state.stability is None:
+        if self._effective_stability is None:
             return None
         target_retrievability = get_next_tier_threshold(self.retrievability)
         if target_retrievability is None:
             return None
         return calculate_days_until_threshold(
-            self.fsrs_state.stability,
-            self.fsrs_state.last_reviewed_at,
+            self._effective_stability,
+            self._effective_last_reviewed,
             target_retrievability=target_retrievability,
         )
 
     @property
     def days_in_current_tier(self) -> int | None:
-        if self.fsrs_state is None or self.fsrs_state.stability is None:
+        if self._effective_stability is None:
             return None
         return calculate_days_in_current_tier(
-            self.fsrs_state.stability,
-            self.fsrs_state.last_reviewed_at,
+            self._effective_stability,
+            self._effective_last_reviewed,
             self.retrievability,
         )
 
@@ -194,7 +205,7 @@ class Source(Base):
     # FSRS field accessors for backward compatibility with schemas
     @property
     def stability(self) -> float | None:
-        return self.fsrs_state.stability if self.fsrs_state else None
+        return self._effective_stability
 
     @property
     def difficulty(self) -> float | None:
