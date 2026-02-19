@@ -66,8 +66,7 @@ def check_auth(request: Request, fallback: str | None = None):
         # Handle DOMAIN being either "3gulp.com" or "https://3gulp.com"
         domain = (urlparse(settings.DOMAIN).hostname or settings.DOMAIN).lower()
         if parsed.hostname and (
-            parsed.hostname == domain
-            or parsed.hostname.endswith(f".{domain}")
+            parsed.hostname == domain or parsed.hostname.endswith(f".{domain}")
         ):
             validated_fallback = fallback
 
