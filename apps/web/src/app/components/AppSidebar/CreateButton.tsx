@@ -40,12 +40,18 @@ export function CreateButton() {
 					</SidebarMenuButton>
 				}
 			/>
-			<DropdownMenuContent align='start' side='right'>
-				<DropdownMenuItem onClick={() => setIsAddTopicDialogOpen(true)}>
+			<DropdownMenuContent align='start' className='min-w-56' side='right'>
+				<DropdownMenuItem
+					className='py-2'
+					onClick={() => setIsAddTopicDialogOpen(true)}
+				>
 					<SquarePen />
 					<span>Topic</span>
 				</DropdownMenuItem>
-				<DropdownMenuItem onClick={() => setIsAddSourceDialogOpen(true)}>
+				<DropdownMenuItem
+					className='py-2'
+					onClick={() => setIsAddSourceDialogOpen(true)}
+				>
 					<FileText />
 					<div className='flex flex-col'>
 						<span>Source</span>
