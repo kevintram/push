@@ -74,6 +74,9 @@ import { Button } from "../components/ui/button";
       <div class="flex flex-col relative gap-4 items-center">
         <span class="text-9xl font-semibold absolute -top-48">3gulp</span>
         <Button>Login</Button>
+        <p id="login-error" class="hidden text-sm text-red-600">
+          Something has gone wrong
+        </p>
       </div>
     </div>
   </body>
@@ -81,6 +84,7 @@ import { Button } from "../components/ui/button";
   <script>
     import confetti from "canvas-confetti";
     const button = document.body.querySelector("button");
+    const errorText = document.getElementById("login-error");
     const apiUrl = import.meta.env.PUBLIC_API_URL;
     const appUrl = import.meta.env.PUBLIC_APP_URL;
     const loginUrl = apiUrl
@@ -89,11 +93,16 @@ import { Button } from "../components/ui/button";
 
     if (button) {
       button.addEventListener("click", () => {
+        if (!loginUrl) {
+          if (errorText) {
+            errorText.classList.remove("hidden");
+          }
+          return;
+        }
+
         confetti();
         setTimeout(() => {
-          if (loginUrl) {
-            window.location.href = loginUrl;
-          }
+          window.location.href = loginUrl;
         }, 1000);
       });
     }
