@@ -2,9 +2,11 @@ import dayjs from 'dayjs'
 import { BookOpen, type LucideProps, Star } from 'lucide-react'
 import {
 	forwardRef,
+	type MouseEvent as ReactMouseEvent,
 	type ReactNode,
 	useCallback,
 	useMemo,
+	useRef,
 	useState
 } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
@@ -128,6 +130,47 @@ function sortOverdueItems(a: QueueCardItem, b: QueueCardItem): number {
 		return aDistance - bDistance
 	}
 	return getEntityTitle(a.entity).localeCompare(getEntityTitle(b.entity))
+}
+
+/**
+ * Build a bidirectional relationship map from parent_id links between entities
+ * currently visible on the review page. When entity A is a parent of entity B
+ * (both present in the queue), hovering either should highlight the other.
+ */
+function buildRelationshipMap(
+	items: Array<QueueCardItem>
+): Map<string, Set<string>> {
+	const map = new Map<string, Set<string>>()
+	const presentKeys = new Set<string>()
+
+	for (const item of items) {
+		presentKeys.add(`${item.entity.type}-${item.entity.item.id}`)
+	}
+
+	function addBidirectional(a: string, b: string) {
+		if (!map.has(a)) map.set(a, new Set())
+		if (!map.has(b)) map.set(b, new Set())
+		map.get(a)!.add(b)
+		map.get(b)!.add(a)
+	}
+
+	for (const item of items) {
+		const { entity } = item
+		const key = `${entity.type}-${entity.item.id}`
+
+		// Parent-child relationships for topics and sources
+		if (entity.type === 'topic' || entity.type === 'source') {
+			const parentId = entity.item.parent_id
+			if (parentId != null) {
+				const parentKey = `${entity.type}-${parentId}`
+				if (presentKeys.has(parentKey)) {
+					addBidirectional(key, parentKey)
+				}
+			}
+		}
+	}
+
+	return map
 }
 
 export function ReviewPage() {
@@ -289,6 +332,56 @@ function ReviewQueueGroupedList({
 	onDueBadgeClick: (reviewId: number) => void
 	statusRowPlacement: StatusRowPlacement
 }) {
+	// --- Related-entity highlight (DOM-based to avoid re-renders) ---
+	const containerRef = useRef<HTMLDivElement>(null)
+	const lastHoveredKeyRef = useRef<string | null>(null)
+
+	const relationshipMap = useMemo(() => {
+		const allItems = sections.flatMap(s => s.items)
+		return buildRelationshipMap(allItems)
+	}, [sections])
+
+	const handleMouseOver = useCallback(
+		(e: ReactMouseEvent) => {
+			const container = containerRef.current
+			if (!container) return
+
+			const cardWrapper = (e.target as HTMLElement).closest('[data-entity-key]')
+			const newKey = cardWrapper?.getAttribute('data-entity-key') ?? null
+
+			if (newKey === lastHoveredKeyRef.current) return
+			lastHoveredKeyRef.current = newKey
+
+			// Clear previous highlights
+			for (const el of container.querySelectorAll('[data-related-highlight]')) {
+				delete (el as HTMLElement).dataset.relatedHighlight
+			}
+
+			if (!newKey) return
+
+			const relatedKeys = relationshipMap.get(newKey)
+			if (!relatedKeys || relatedKeys.size === 0) return
+
+			for (const key of relatedKeys) {
+				for (const el of container.querySelectorAll(
+					`[data-entity-key="${key}"]`
+				)) {
+					;(el as HTMLElement).dataset.relatedHighlight = 'true'
+				}
+			}
+		},
+		[relationshipMap]
+	)
+
+	const handleMouseLeave = useCallback(() => {
+		const container = containerRef.current
+		if (!container) return
+		lastHoveredKeyRef.current = null
+		for (const el of container.querySelectorAll('[data-related-highlight]')) {
+			delete (el as HTMLElement).dataset.relatedHighlight
+		}
+	}, [])
+
 	const renderItem = useCallback(
 		(queueItem: QueueCardItem) => {
 			const entity = queueItem.entity
@@ -361,21 +454,31 @@ function ReviewQueueGroupedList({
 			if (dueStatusBadge) statusBadges.push(dueStatusBadge)
 
 			return (
-				<EntityCard
-					entity={entity}
-					headerRight={headerRight}
-					minHeight={96}
-					onEntityClick={onEntityClick}
-					statusBadges={statusBadges}
-					statusRowPlacement={statusRowPlacement}
-				/>
+				<div
+					className='rounded-xl transition-shadow duration-200 data-[related-highlight]:ring-2 data-[related-highlight]:ring-blue-400/60 dark:data-[related-highlight]:ring-blue-400/40'
+					data-entity-key={`${entity.type}-${entity.item.id}`}
+				>
+					<EntityCard
+						entity={entity}
+						headerRight={headerRight}
+						minHeight={96}
+						onEntityClick={onEntityClick}
+						statusBadges={statusBadges}
+						statusRowPlacement={statusRowPlacement}
+					/>
+				</div>
 			)
 		},
 		[onDueBadgeClick, onEntityClick, statusRowPlacement]
 	)
 
 	return (
-		<div className='space-y-8'>
+		<div
+			className='space-y-8'
+			onMouseLeave={handleMouseLeave}
+			onMouseOver={handleMouseOver}
+			ref={containerRef}
+		>
 			{sections.map(section => (
 				<div className='space-y-3' key={section.id}>
 					<div className='flex items-center gap-2'>
