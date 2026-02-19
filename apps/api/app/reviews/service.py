@@ -53,6 +53,53 @@ def map_fsrs_state_to_db(state: FSRSState) -> str:
     return mapping[state]
 
 
+def _card_from_review(review: Review) -> Card:
+    """Build an FSRS Card from a review's after-state."""
+    state = map_state_to_fsrs(review.state_after)
+    last_review_date = review.completed_at
+    if isinstance(last_review_date, datetime):
+        last_review_datetime = last_review_date
+    else:
+        last_review_datetime = datetime.combine(last_review_date, time.min).replace(
+            tzinfo=timezone.utc
+        )
+    return Card(
+        state=state,
+        stability=review.stability_after,
+        difficulty=review.difficulty_after,
+        step=None if state == FSRSState.Review else review.step_after,
+        last_review=last_review_datetime,
+    )
+
+
+def _card_from_inherited(fsrs_state: FsrsState) -> Card:
+    """Build an FSRS Card from an entity's inherited FSRS state."""
+    state_str = fsrs_state.inherited_state or "LEARNING"
+    state = map_state_to_fsrs(state_str)
+    last_review_dt = (
+        datetime.combine(fsrs_state.inherited_last_review, time.min).replace(
+            tzinfo=timezone.utc
+        )
+        if fsrs_state.inherited_last_review is not None
+        else None
+    )
+    return Card(
+        state=state,
+        stability=fsrs_state.inherited_stability,
+        difficulty=fsrs_state.inherited_difficulty,
+        step=None if state == FSRSState.Review else fsrs_state.inherited_step,
+        last_review=last_review_dt,
+    )
+
+
+def _apply_card_to_fsrs(fsrs_state: FsrsState, card: Card) -> None:
+    """Write an FSRS Card's values into the entity's main FSRS fields."""
+    fsrs_state.stability = card.stability
+    fsrs_state.difficulty = card.difficulty
+    fsrs_state.state = map_fsrs_state_to_db(card.state)
+    fsrs_state.step = card.step
+
+
 def update_fsrs(
     fsrs_state: FsrsState,
     reviews: list[Review],
@@ -69,57 +116,15 @@ def update_fsrs(
         reviews: Reviews in chronological order by completed_at (mutated with before/after states)
         last_before_review: Last completed review before the reviews list, or None
     """
-    if not reviews:
-        # Reset to last_before_review's after-state, or inherited state
-        if last_before_review and last_before_review.stability_after is not None:
-            fsrs_state.stability = last_before_review.stability_after
-            fsrs_state.difficulty = last_before_review.difficulty_after
-            fsrs_state.state = last_before_review.state_after
-            fsrs_state.step = last_before_review.step_after
-        else:
-            fsrs_state.stability = fsrs_state.inherited_stability
-            fsrs_state.difficulty = fsrs_state.inherited_difficulty
-            fsrs_state.state = fsrs_state.inherited_state or "LEARNING"
-            inherited_state = fsrs_state.inherited_state or "LEARNING"
-            fsrs_state.step = (
-                None if inherited_state == "REVIEW" else fsrs_state.inherited_step
-            )
-        return
-
-    # Determine starting card from last_before_review or inherited state
+    # Build starting card from prior review or inherited state
     if last_before_review and last_before_review.stability_after is not None:
-        state = map_state_to_fsrs(last_before_review.state_after)
-        last_review_date = last_before_review.completed_at
-        if isinstance(last_review_date, datetime):
-            last_review_datetime = last_review_date
-        else:
-            last_review_datetime = datetime.combine(last_review_date, time.min).replace(
-                tzinfo=timezone.utc
-            )
-        starting_card = Card(
-            state=state,
-            stability=last_before_review.stability_after,
-            difficulty=last_before_review.difficulty_after,
-            step=None if state == FSRSState.Review else last_before_review.step_after,
-            last_review=last_review_datetime,
-        )
+        starting_card = _card_from_review(last_before_review)
     else:
-        inherited_state_str = fsrs_state.inherited_state or "LEARNING"
-        state = map_state_to_fsrs(inherited_state_str)
-        inherited_last_review_dt = (
-            datetime.combine(fsrs_state.inherited_last_review, time.min).replace(
-                tzinfo=timezone.utc
-            )
-            if fsrs_state.inherited_last_review is not None
-            else None
-        )
-        starting_card = Card(
-            state=state,
-            stability=fsrs_state.inherited_stability,
-            difficulty=fsrs_state.inherited_difficulty,
-            step=None if state == FSRSState.Review else fsrs_state.inherited_step,
-            last_review=inherited_last_review_dt,
-        )
+        starting_card = _card_from_inherited(fsrs_state)
+
+    if not reviews:
+        _apply_card_to_fsrs(fsrs_state, starting_card)
+        return
 
     # Process each review
     scheduler = Scheduler()
@@ -160,10 +165,7 @@ def update_fsrs(
         current_card = updated_card
 
     # Update fsrs_state with final card
-    fsrs_state.stability = current_card.stability
-    fsrs_state.difficulty = current_card.difficulty
-    fsrs_state.state = map_fsrs_state_to_db(current_card.state)
-    fsrs_state.step = current_card.step
+    _apply_card_to_fsrs(fsrs_state, current_card)
 
 
 async def update_entity_fsrs(
@@ -220,7 +222,8 @@ async def update_entity_fsrs(
     elif last_before is not None:
         entity.fsrs_state.last_reviewed_at = last_before.completed_at
     else:
-        entity.fsrs_state.last_reviewed_at = None
+        # Restore inherited value (or None if no inheritance)
+        entity.fsrs_state.last_reviewed_at = entity.fsrs_state.inherited_last_review
 
 
 def get_review_entity(review: Review) -> ReviewEntity | None:
