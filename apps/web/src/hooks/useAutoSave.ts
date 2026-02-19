@@ -1,5 +1,11 @@
 import debounce from 'lodash.debounce'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState
+} from 'react'
 
 interface UseAutoSaveOptions {
 	/** The initial value to display in the input */
@@ -96,14 +102,21 @@ export function useAutoSave({
 		}
 	}, [debouncedSave])
 
-	// Handle external initialValue updates intelligently
-	useEffect(() => {
-		// Reset value when key changes (e.g., switching to a different entity)
+	// Flush pending saves synchronously when key changes, BEFORE paint.
+	// This prevents a race condition where the user could type on the new entity
+	// before the old entity's edit is saved, which would overwrite the pending save.
+	useLayoutEffect(() => {
 		if (keyRef.current !== key) {
-			// flush() runs any queued save now so the previous entity's edit is persisted.
 			debouncedSave.flush()
 			keyRef.current = key
 			setValue(initialValue)
+		}
+	}, [key, debouncedSave, initialValue])
+
+	// Handle external initialValue updates intelligently (after paint is fine)
+	useEffect(() => {
+		// Skip if key just changed - useLayoutEffect already handled it
+		if (keyRef.current !== key) {
 			return
 		}
 
@@ -116,7 +129,7 @@ export function useAutoSave({
 
 		// Safe to update from external source if user hasn't typed recently
 		setValue(initialValue)
-	}, [initialValue, debounceMs, key, debouncedSave])
+	}, [initialValue, debounceMs, key])
 
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
