@@ -142,7 +142,7 @@ export function AddTopicDialog({
 	const resetToggleFields = useCallback(() => {
 		setInboxed(false)
 		setInheritFsrs(hasInheritFsrs)
-		setSrsEnabled(false)
+		setSrsEnabled(true)
 	}, [hasInheritFsrs])
 
 	// Reset all fields when dialog opens
