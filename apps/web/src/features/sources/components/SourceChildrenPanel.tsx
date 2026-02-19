@@ -9,7 +9,7 @@ import { AddEntityMenu } from '~/components/ui/add-entity-menu'
 import type { FsrsState } from '~/models/learnable.types'
 import { useAddSourceChild } from '../api/addSourceChild'
 import { useSourceChildren } from '../api/getSourceChildren'
-import { sourceKeys } from '../api/queryKeys'
+import { invalidateSourceDetailQueries, sourceKeys } from '../api/queryKeys'
 import type { Source } from '../types/source.types'
 import { AddSourceDialog } from './AddSourceDialog'
 import { SourceActionMenu } from './SourceActionMenu'
@@ -76,7 +76,7 @@ export function SourceChildrenPanel({
 	const handleChildCreated = useCallback(
 		(newSourceId: number) => {
 			if (sourceId !== undefined) {
-				queryClient.invalidateQueries({ queryKey: sourceKeys.byId(sourceId) })
+				void invalidateSourceDetailQueries(queryClient, sourceId)
 			}
 			onChildCreated?.(newSourceId)
 		},

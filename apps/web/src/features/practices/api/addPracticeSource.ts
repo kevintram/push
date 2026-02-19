@@ -1,11 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { sourceKeys } from '~/features/sources/api/queryKeys'
+import {
+	invalidateSourceDetailQueries,
+	sourceKeys
+} from '~/features/sources/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
 import type { AddPracticeSourceInput } from '../types/api.types'
 import { PracticeSourceResponseSchema } from '../types/practice.schemas'
 import type { PracticeSourceResponse } from '../types/practice.types'
-import { practiceKeys } from './queryKeys'
+import { invalidatePracticeDetailQueries } from './queryKeys'
 
 export async function addPracticeSource(
 	input: AddPracticeSourceInput
@@ -58,13 +61,9 @@ export function useAddPracticeSource() {
 		onSuccess: async (_, input) => {
 			const sourceId = 'sourceId' in input ? input.sourceId : undefined
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: practiceKeys.byId(input.practiceId)
-				}),
+				invalidatePracticeDetailQueries(queryClient, input.practiceId),
 				sourceId
-					? queryClient.invalidateQueries({
-							queryKey: sourceKeys.byId(sourceId)
-						})
+					? invalidateSourceDetailQueries(queryClient, sourceId)
 					: queryClient.invalidateQueries({
 							queryKey: sourceKeys.all
 						})

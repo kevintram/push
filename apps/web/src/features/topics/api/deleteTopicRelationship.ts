@@ -6,7 +6,7 @@ import type {
 	DeleteParentRelationshipInput
 } from '../types/api.types'
 import { TopicSchema } from '../types/topic.schemas'
-import { topicKeys } from './queryKeys'
+import { invalidateTopicDetailQueries } from './queryKeys'
 
 export type ChildHandlingStrategy = 'delete' | 'orphan' | 'reparent'
 
@@ -82,12 +82,8 @@ export function useDeleteRelationship() {
 
 			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(parentId)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(childId)
-				})
+				invalidateTopicDetailQueries(queryClient, parentId),
+				invalidateTopicDetailQueries(queryClient, childId)
 			])
 		}
 	})

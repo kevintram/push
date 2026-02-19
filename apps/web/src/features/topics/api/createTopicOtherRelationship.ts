@@ -6,7 +6,7 @@ import type {
 	TopicOtherRelationshipCreate,
 	TopicOtherRelationshipResponse
 } from '../types/topic.types'
-import { topicKeys } from './queryKeys'
+import { invalidateTopicDetailQueries } from './queryKeys'
 
 export async function createTopicOtherRelationship(
 	fromTopicId: number,
@@ -55,12 +55,8 @@ export function useCreateTopicOtherRelationship() {
 
 			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(fromTopicId)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(toTopicId)
-				})
+				invalidateTopicDetailQueries(queryClient, fromTopicId),
+				invalidateTopicDetailQueries(queryClient, toTopicId)
 			])
 		}
 	})

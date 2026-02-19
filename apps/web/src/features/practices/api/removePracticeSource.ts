@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { sourceKeys } from '~/features/sources/api/queryKeys'
+import { invalidateSourceDetailQueries } from '~/features/sources/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
 import type { RemovePracticeSourceInput } from '../types/api.types'
-import { practiceKeys } from './queryKeys'
+import { invalidatePracticeDetailQueries } from './queryKeys'
 
 export async function removePracticeSource(
 	input: RemovePracticeSourceInput
@@ -26,12 +26,8 @@ export function useRemovePracticeSource() {
 		mutationFn: removePracticeSource,
 		onSuccess: async (_, input) => {
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: practiceKeys.byId(input.practiceId)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: sourceKeys.byId(input.sourceId)
-				})
+				invalidatePracticeDetailQueries(queryClient, input.practiceId),
+				invalidateSourceDetailQueries(queryClient, input.sourceId)
 			])
 		}
 	})

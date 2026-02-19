@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { topicKeys } from '~/features/topics/api/queryKeys'
+import { invalidateTopicDetailQueries } from '~/features/topics/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
 import { SourceTopicResponseSchema } from '../types/source.schemas'
 import type { SourceTopicAdd, SourceTopicResponse } from '../types/source.types'
-import { sourceKeys } from './queryKeys'
+import { invalidateSourceDetailQueries } from './queryKeys'
 
 export async function addSourceTopic(
 	sourceId: number,
@@ -54,12 +54,8 @@ export function useAddSourceTopic() {
 			// Invalidate source detail so the topics list refreshes
 			// Also invalidate topic detail so the sources list refreshes
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: sourceKeys.byId(sourceId)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(topicId)
-				})
+				invalidateSourceDetailQueries(queryClient, sourceId),
+				invalidateTopicDetailQueries(queryClient, topicId)
 			])
 		}
 	})

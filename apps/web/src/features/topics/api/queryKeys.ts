@@ -1,3 +1,4 @@
+import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import type { GetTopicsParams, SearchTopicsParams } from '../types/api.types'
 
 export const topicKeys = {
@@ -37,4 +38,31 @@ export const topicKeys = {
 	},
 	practices: (topicId: number) =>
 		[...topicKeys.byId(topicId), 'practices'] as const
+}
+
+function topicDetailQueryKeys(topicId: number): Array<QueryKey> {
+	return [
+		topicKeys.detail(topicId),
+		topicKeys.children(topicId),
+		topicKeys.parents(topicId),
+		topicKeys.related(topicId),
+		topicKeys.entityRelations(topicId),
+		topicKeys.sources(topicId),
+		topicKeys.practices(topicId)
+	]
+}
+
+export async function invalidateTopicDetailQueries(
+	queryClient: QueryClient,
+	topicId: number
+) {
+	await Promise.all(
+		topicDetailQueryKeys(topicId).map(queryKey =>
+			queryClient.invalidateQueries({
+				queryKey,
+				exact: true,
+				refetchType: 'all'
+			})
+		)
+	)
 }

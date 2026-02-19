@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiFetch } from '~/utils/apiFetch'
-import { topicKeys } from './queryKeys'
+import { invalidateTopicDetailQueries } from './queryKeys'
 
 export async function deleteTopicOtherRelationship(
 	fromTopicId: number,
@@ -35,12 +35,8 @@ export function useDeleteTopicOtherRelationship() {
 
 			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(fromTopicId)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(toTopicId)
-				})
+				invalidateTopicDetailQueries(queryClient, fromTopicId),
+				invalidateTopicDetailQueries(queryClient, toTopicId)
 			])
 		}
 	})

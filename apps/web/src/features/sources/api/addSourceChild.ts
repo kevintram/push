@@ -6,7 +6,7 @@ import type {
 	SourceChildRelationshipCreate,
 	SourceRelationshipResponse
 } from '../types/source.types'
-import { sourceKeys } from './queryKeys'
+import { invalidateSourceDetailQueries } from './queryKeys'
 
 export type AddSourceChildInput = {
 	parentId: number
@@ -49,12 +49,8 @@ export function useAddSourceChild() {
 		mutationFn: addSourceChild,
 		onSuccess: async response => {
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: sourceKeys.byId(response.parent.id)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: sourceKeys.byId(response.child.id)
-				})
+				invalidateSourceDetailQueries(queryClient, response.parent.id),
+				invalidateSourceDetailQueries(queryClient, response.child.id)
 			])
 		}
 	})

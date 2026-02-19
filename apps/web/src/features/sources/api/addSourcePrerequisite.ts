@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { SourcePrerequisiteCreate } from '~/models/entity-relations.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { sourceKeys } from './queryKeys'
+import { invalidateSourceDetailQueries, sourceKeys } from './queryKeys'
 
 export async function addSourcePrerequisite(
 	sourceId: number,
@@ -39,9 +39,7 @@ export function useAddSourcePrerequisite() {
 				queryClient.invalidateQueries({
 					queryKey: sourceKeys.prerequisites(variables.sourceId)
 				}),
-				queryClient.invalidateQueries({
-					queryKey: sourceKeys.byId(variables.sourceId)
-				})
+				invalidateSourceDetailQueries(queryClient, variables.sourceId)
 			])
 		}
 	})

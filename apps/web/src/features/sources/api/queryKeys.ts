@@ -1,3 +1,4 @@
+import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import type { GetSourcesParams } from '../types/api.types'
 
 type SearchSourcesKeyParams = {
@@ -43,4 +44,30 @@ export const sourceKeys = {
 		[...sourceKeys.byId(sourceId), 'prerequisites'] as const,
 	practices: (sourceId: number) =>
 		[...sourceKeys.byId(sourceId), 'practices'] as const
+}
+
+function sourceDetailQueryKeys(sourceId: number): Array<QueryKey> {
+	return [
+		sourceKeys.detail(sourceId),
+		sourceKeys.children(sourceId),
+		sourceKeys.topics(sourceId),
+		sourceKeys.related(sourceId),
+		sourceKeys.prerequisites(sourceId),
+		sourceKeys.practices(sourceId)
+	]
+}
+
+export async function invalidateSourceDetailQueries(
+	queryClient: QueryClient,
+	sourceId: number
+) {
+	await Promise.all(
+		sourceDetailQueryKeys(sourceId).map(queryKey =>
+			queryClient.invalidateQueries({
+				queryKey,
+				exact: true,
+				refetchType: 'all'
+			})
+		)
+	)
 }

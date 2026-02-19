@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { EntityRelationCreate } from '~/models/entity-relations.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { sourceKeys } from './queryKeys'
+import { invalidateSourceDetailQueries } from './queryKeys'
 
 export async function addSourceEntityRelation(
 	sourceId: number,
@@ -35,9 +35,7 @@ export function useAddSourceEntityRelation() {
 			data: EntityRelationCreate
 		}) => addSourceEntityRelation(sourceId, data),
 		onSuccess: async (_data, variables) => {
-			await queryClient.invalidateQueries({
-				queryKey: sourceKeys.byId(variables.sourceId)
-			})
+			await invalidateSourceDetailQueries(queryClient, variables.sourceId)
 		}
 	})
 }

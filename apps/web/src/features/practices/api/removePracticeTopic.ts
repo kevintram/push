@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { topicKeys } from '~/features/topics/api/queryKeys'
+import { invalidateTopicDetailQueries } from '~/features/topics/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
 import type { RemovePracticeTopicInput } from '../types/api.types'
-import { practiceKeys } from './queryKeys'
+import { invalidatePracticeDetailQueries } from './queryKeys'
 
 export async function removePracticeTopic(
 	input: RemovePracticeTopicInput
@@ -26,12 +26,8 @@ export function useRemovePracticeTopic() {
 		mutationFn: removePracticeTopic,
 		onSuccess: async (_, input) => {
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: practiceKeys.byId(input.practiceId)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(input.topicId)
-				})
+				invalidatePracticeDetailQueries(queryClient, input.practiceId),
+				invalidateTopicDetailQueries(queryClient, input.topicId)
 			])
 		}
 	})

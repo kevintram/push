@@ -1,3 +1,4 @@
+import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import type { GetPracticesParams, SearchPracticesParams } from '../types'
 
 export const practiceKeys = {
@@ -29,4 +30,27 @@ export const practiceKeys = {
 		[...practiceKeys.byId(practiceId), 'topics'] as const,
 	sources: (practiceId: number) =>
 		[...practiceKeys.byId(practiceId), 'sources'] as const
+}
+
+function practiceDetailQueryKeys(practiceId: number): Array<QueryKey> {
+	return [
+		practiceKeys.detail(practiceId),
+		practiceKeys.topics(practiceId),
+		practiceKeys.sources(practiceId)
+	]
+}
+
+export async function invalidatePracticeDetailQueries(
+	queryClient: QueryClient,
+	practiceId: number
+) {
+	await Promise.all(
+		practiceDetailQueryKeys(practiceId).map(queryKey =>
+			queryClient.invalidateQueries({
+				queryKey,
+				exact: true,
+				refetchType: 'all'
+			})
+		)
+	)
 }

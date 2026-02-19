@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { EntityType } from '~/models/entity-relations.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { sourceKeys } from './queryKeys'
+import { invalidateSourceDetailQueries } from './queryKeys'
 
 export async function removeSourceEntityRelation(
 	sourceId: number,
@@ -34,9 +34,7 @@ export function useRemoveSourceEntityRelation() {
 			entityId: number
 		}) => removeSourceEntityRelation(sourceId, entityType, entityId),
 		onSuccess: async (_data, variables) => {
-			await queryClient.invalidateQueries({
-				queryKey: sourceKeys.byId(variables.sourceId)
-			})
+			await invalidateSourceDetailQueries(queryClient, variables.sourceId)
 		}
 	})
 }

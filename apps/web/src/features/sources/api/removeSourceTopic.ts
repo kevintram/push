@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { topicKeys } from '~/features/topics/api/queryKeys'
+import { invalidateTopicDetailQueries } from '~/features/topics/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
-import { sourceKeys } from './queryKeys'
+import { invalidateSourceDetailQueries } from './queryKeys'
 
 export async function removeSourceTopic(
 	sourceId: number,
@@ -36,12 +36,8 @@ export function useRemoveSourceTopic() {
 			// Invalidate source detail so the topics list refreshes
 			// Also invalidate topic detail so the sources list refreshes
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: sourceKeys.byId(sourceId)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(topicId)
-				})
+				invalidateSourceDetailQueries(queryClient, sourceId),
+				invalidateTopicDetailQueries(queryClient, topicId)
 			])
 		}
 	})

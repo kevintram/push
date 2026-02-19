@@ -1,11 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { topicKeys } from '~/features/topics/api/queryKeys'
+import {
+	invalidateTopicDetailQueries,
+	topicKeys
+} from '~/features/topics/api/queryKeys'
 import { apiFetch } from '~/utils/apiFetch'
 import type { AddPracticeTopicInput } from '../types/api.types'
 import { PracticeTopicResponseSchema } from '../types/practice.schemas'
 import type { PracticeTopicResponse } from '../types/practice.types'
-import { practiceKeys } from './queryKeys'
+import { invalidatePracticeDetailQueries } from './queryKeys'
 
 export async function addPracticeTopic(
 	input: AddPracticeTopicInput
@@ -58,13 +61,9 @@ export function useAddPracticeTopic() {
 		onSuccess: async (_, input) => {
 			const topicId = 'topicId' in input ? input.topicId : undefined
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: practiceKeys.byId(input.practiceId)
-				}),
+				invalidatePracticeDetailQueries(queryClient, input.practiceId),
 				topicId
-					? queryClient.invalidateQueries({
-							queryKey: topicKeys.byId(topicId)
-						})
+					? invalidateTopicDetailQueries(queryClient, topicId)
 					: queryClient.invalidateQueries({
 							queryKey: topicKeys.all
 						})

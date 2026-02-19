@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { EntityType } from '~/models/entity-relations.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { topicKeys } from './queryKeys'
+import { invalidateTopicDetailQueries } from './queryKeys'
 
 export async function removeTopicEntityRelation(
 	topicId: number,
@@ -34,9 +34,7 @@ export function useRemoveTopicEntityRelation() {
 			entityId: number
 		}) => removeTopicEntityRelation(topicId, entityType, entityId),
 		onSuccess: async (_data, variables) => {
-			await queryClient.invalidateQueries({
-				queryKey: topicKeys.byId(variables.topicId)
-			})
+			await invalidateTopicDetailQueries(queryClient, variables.topicId)
 		}
 	})
 }

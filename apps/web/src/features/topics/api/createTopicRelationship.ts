@@ -8,7 +8,7 @@ import type {
 } from '../types/api.types'
 import { TopicRelationshipResponseSchema } from '../types/topic.schemas'
 import type { TopicRelationshipResponse } from '../types/topic.types'
-import { topicKeys } from './queryKeys'
+import { invalidateTopicDetailQueries } from './queryKeys'
 
 export async function createChildRelationship(
 	input: CreateChildRelationshipInput
@@ -122,12 +122,8 @@ export function useCreateRelationship() {
 
 			// Invalidate the detail queries so the single getTopic fetch refreshes with updated relationships
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(parentId)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(childId)
-				})
+				invalidateTopicDetailQueries(queryClient, parentId),
+				invalidateTopicDetailQueries(queryClient, childId)
 			])
 		}
 	})
@@ -144,12 +140,8 @@ export function useSetTopicParent() {
 			const childId = data.child.id
 
 			await Promise.all([
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(parentId)
-				}),
-				queryClient.invalidateQueries({
-					queryKey: topicKeys.byId(childId)
-				})
+				invalidateTopicDetailQueries(queryClient, parentId),
+				invalidateTopicDetailQueries(queryClient, childId)
 			])
 		}
 	})

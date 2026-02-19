@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { EntityType } from '~/models/entity-relations.types'
 import { apiFetch } from '~/utils/apiFetch'
-import { sourceKeys } from './queryKeys'
+import { invalidateSourceDetailQueries, sourceKeys } from './queryKeys'
 
 export async function removeSourcePrerequisite(
 	sourceId: number,
@@ -38,9 +38,7 @@ export function useRemoveSourcePrerequisite() {
 				queryClient.invalidateQueries({
 					queryKey: sourceKeys.prerequisites(variables.sourceId)
 				}),
-				queryClient.invalidateQueries({
-					queryKey: sourceKeys.byId(variables.sourceId)
-				})
+				invalidateSourceDetailQueries(queryClient, variables.sourceId)
 			])
 		}
 	})
