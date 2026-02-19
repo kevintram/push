@@ -95,7 +95,9 @@ export function useAutoSave({
 		}, debounceMs)
 	).current
 
-	useEffect(() => {
+	// Flush pending saves during unmount before paint. Using layout cleanup
+	// avoids losing edits when users navigate away immediately after typing.
+	useLayoutEffect(() => {
 		return () => {
 			// flush() immediately executes the most recent pending debounced save.
 			debouncedSave.flush()
