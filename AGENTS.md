@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a monorepo containing multiple independent but related applications:
 
-1. `apps/api/` - Python FastAPI service for all the frontend applications
-2. `apps/web/` - React/TypeScript web application 
+1. `apps/api/` - Python FastAPI service for all the frontend applications (deployed as `api.3gulp.com`)
+2. `apps/web/` - React/TypeScript web application (deployed as `app.3gulp.com`)
 3. `apps/android/` - Kotlin native Android application **(development not started yet)**
 4. `apps/ios/` -  Swift native iOS application **(development not started yet)**
-5. `apps/site/` - Astro landing page 
+5. `apps/site/` - Astro landing page (deployed as `3gulp.com )
 
 The application uses Supabase as a managed postgres database. Configuration, migration, and seed files are located in `supabase/`.
 
