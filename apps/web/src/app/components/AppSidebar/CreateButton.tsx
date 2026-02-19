@@ -47,7 +47,12 @@ export function CreateButton() {
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => setIsAddSourceDialogOpen(true)}>
 					<FileText />
-					<span>Source</span>
+					<div className='flex flex-col'>
+						<span>Source</span>
+						<span className='text-muted-foreground text-xs'>
+							Books, articles, lectures, videos, etc.
+						</span>
+					</div>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 
