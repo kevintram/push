@@ -31,7 +31,6 @@ export function useLearnableMetrics(
 	const daysUntilNextTier = learnable?.days_until_next_tier ?? null
 	const stability = learnable?.stability ?? null
 	const lastReviewedAt = learnable?.last_reviewed_at ?? null
-	const inheritedStability = learnable?.inherited_stability ?? null
 	const srsEnabled = learnable?.srs_enabled ?? true
 
 	const retrievabilityDisplay = useMemo(() => {
@@ -77,12 +76,8 @@ export function useLearnableMetrics(
 	}, [stability])
 
 	const isUnreviewed = useMemo(() => {
-		return (
-			retrievability === null &&
-			lastReviewedAt === null &&
-			inheritedStability === null
-		)
-	}, [retrievability, lastReviewedAt, inheritedStability])
+		return retrievability === null && lastReviewedAt === null
+	}, [retrievability, lastReviewedAt])
 
 	const isLeavingSoon = useMemo(() => {
 		if (daysUntilNextTier === null) return false
