@@ -62,7 +62,7 @@ export function AddPracticeDialog({
 	// Toggle states
 	const [inboxed, setInboxed] = useState(false)
 	const [inheritFsrs, setInheritFsrs] = useState(false)
-	const [srsEnabled, setSrsEnabled] = useState(false)
+	const [srsEnabled, setSrsEnabled] = useState(true)
 
 	// Footer state
 	const [createMore, setCreateMore] = useState(false)

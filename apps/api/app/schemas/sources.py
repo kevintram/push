@@ -52,7 +52,7 @@ class SourceRead(SourceBase):
     difficulty: float | None = None
     state: str = "LEARNING"
     step: int | None = None
-    srs_enabled: bool = False
+    srs_enabled: bool = True
     last_reviewed_at: date | None = None
     last_review_rating: str | None = None
 
@@ -109,7 +109,7 @@ class SourceCreate(BaseModel):
     archived: bool = False
     inboxed: bool = False
     parent_id: int | None = None
-    srs_enabled: bool = False
+    srs_enabled: bool = True
     inherit_fsrs: bool = False  # If true and parent_id set, copy parent's FSRS state
 
 
