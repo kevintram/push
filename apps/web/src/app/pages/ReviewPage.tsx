@@ -7,6 +7,7 @@ import {
 	useMemo,
 	useState
 } from 'react'
+import { ReviewModeWarningDialog } from '~/app/components/ReviewModeWarningDialog'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	EntityCard,
@@ -241,6 +242,7 @@ export function ReviewPage() {
 
 	return (
 		<PageLayout>
+			<ReviewModeWarningDialog />
 			<PageLayout.Header icon={QueueHeaderStarIcon} title='Review'>
 				<EntityTypeFilter
 					activeFilter={activeFilter}

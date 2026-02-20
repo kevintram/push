@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 const FLASHCARD_MODE_STORAGE_KEY = '3gulp-flashcard-mode'
+const REVIEW_MODE_WARNING_STORAGE_KEY = '3gulp-review-mode-warning'
 
 export const REVIEW_MODES = [
 	'off',
@@ -16,6 +17,8 @@ type FlashcardModeContextType = {
 	isReviewModeEnabled: boolean
 	hidesPrimary: boolean
 	hidesSecondary: boolean
+	showReviewModeWarning: boolean
+	setShowReviewModeWarning: (value: boolean) => void
 }
 
 const FlashcardModeContext = createContext<
@@ -28,6 +31,17 @@ interface FlashcardModeProviderProps {
 
 function isReviewMode(value: string): value is ReviewMode {
 	return REVIEW_MODES.includes(value as ReviewMode)
+}
+
+function getInitialShowReviewModeWarning(): boolean {
+	if (typeof window === 'undefined') return true
+
+	const storedValue = window.localStorage.getItem(
+		REVIEW_MODE_WARNING_STORAGE_KEY
+	)
+	if (storedValue === null) return true
+
+	return storedValue !== 'false'
 }
 
 function getInitialReviewMode(): ReviewMode {
@@ -47,10 +61,20 @@ export function FlashcardModeProvider({
 	children
 }: FlashcardModeProviderProps) {
 	const [reviewMode, setReviewMode] = useState<ReviewMode>(getInitialReviewMode)
+	const [showReviewModeWarning, setShowReviewModeWarning] = useState(
+		getInitialShowReviewModeWarning
+	)
 
 	useEffect(() => {
 		window.localStorage.setItem(FLASHCARD_MODE_STORAGE_KEY, reviewMode)
 	}, [reviewMode])
+
+	useEffect(() => {
+		window.localStorage.setItem(
+			REVIEW_MODE_WARNING_STORAGE_KEY,
+			String(showReviewModeWarning)
+		)
+	}, [showReviewModeWarning])
 
 	const value = useMemo(
 		() => ({
@@ -58,9 +82,11 @@ export function FlashcardModeProvider({
 			setReviewMode,
 			isReviewModeEnabled: reviewMode !== 'off',
 			hidesPrimary: reviewMode === 'hide_everything',
-			hidesSecondary: reviewMode !== 'off'
+			hidesSecondary: reviewMode !== 'off',
+			showReviewModeWarning,
+			setShowReviewModeWarning
 		}),
-		[reviewMode]
+		[reviewMode, showReviewModeWarning]
 	)
 
 	return <FlashcardModeContext value={value}>{children}</FlashcardModeContext>
