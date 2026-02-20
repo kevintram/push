@@ -325,17 +325,18 @@ export function ReviewDialog({
 								<DropdownMenuTrigger
 									render={
 										<Button
+											className='max-w-48'
 											disabled={updateReviewMutation.isPending}
 											size='sm'
 											variant='ghost'
 										>
-											<Link className='h-3.5 w-3.5' />
-											<span>{getEntityName()}</span>
-											<ChevronDown className='h-3 w-3 text-muted-foreground' />
+											<Link className='h-3.5 w-3.5 shrink-0' />
+											<span className='truncate'>{getEntityName()}</span>
+											<ChevronDown className='h-3 w-3 shrink-0 text-muted-foreground' />
 										</Button>
 									}
 								/>
-								<DropdownMenuContent align='start'>
+								<DropdownMenuContent align='start' className='w-auto'>
 									<DropdownMenuItem onClick={handleOpenLinkedEntity}>
 										Open
 									</DropdownMenuItem>

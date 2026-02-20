@@ -223,8 +223,9 @@ export function ReviewsSidebar<T extends EntityWithId>({
 				) : (
 					<>
 						{/* Unscheduled Reviews Section */}
+						{/* @container keeps ReviewItem in compact mode at sidebar widths (no ReviewListHeader needed) */}
 						{unscheduledReviews.length > 0 && (
-							<div className='flex flex-col'>
+							<div className='@container/review-list flex flex-col'>
 								{unscheduledReviews.map(entry => (
 									<ReviewItem
 										entry={entry}
@@ -239,7 +240,7 @@ export function ReviewsSidebar<T extends EntityWithId>({
 
 						{/* Scheduled Reviews Section */}
 						{scheduledReviews.length > 0 && (
-							<div className='flex flex-col'>
+							<div className='@container/review-list flex flex-col'>
 								{scheduledReviews.map(entry => (
 									<ReviewItem
 										entry={entry}

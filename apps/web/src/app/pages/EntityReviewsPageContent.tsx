@@ -8,6 +8,7 @@ import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviews } from '~/features/reviews/api/getReviews'
 import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
+import { ReviewListHeader } from '~/features/reviews/components/ReviewListHeader'
 import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type { GetReviewsFilters } from '~/features/reviews/types/api.types'
@@ -217,7 +218,8 @@ export function EntityReviewsPageContent({
 						) : (
 							<div className='flex flex-col gap-10'>
 								{uncompletedUnscheduledReviews.length > 0 && (
-									<div>
+									<div className='@container/review-list'>
+										<ReviewListHeader />
 										{uncompletedUnscheduledReviews.map(entry => (
 											<ReviewItem
 												entry={entry}
@@ -233,14 +235,17 @@ export function EntityReviewsPageContent({
 										<h2 className='mb-3 font-bold text-2xl text-red-600 dark:text-red-400'>
 											Overdue
 										</h2>
-										{overdueReviews.map(entry => (
-											<ReviewItem
-												entry={entry}
-												key={entry.id}
-												onReviewClick={openReviewDialog}
-												variant='default'
-											/>
-										))}
+										<div className='@container/review-list'>
+											<ReviewListHeader />
+											{overdueReviews.map(entry => (
+												<ReviewItem
+													entry={entry}
+													key={entry.id}
+													onReviewClick={openReviewDialog}
+													variant='default'
+												/>
+											))}
+										</div>
 									</div>
 								)}
 								{todayReviews.length > 0 && (
@@ -248,40 +253,49 @@ export function EntityReviewsPageContent({
 										<h2 className='mb-3 font-bold text-2xl text-blue-600 dark:text-blue-400'>
 											Today
 										</h2>
-										{todayReviews.map(entry => (
-											<ReviewItem
-												entry={entry}
-												key={entry.id}
-												onReviewClick={openReviewDialog}
-												variant='default'
-											/>
-										))}
+										<div className='@container/review-list'>
+											<ReviewListHeader />
+											{todayReviews.map(entry => (
+												<ReviewItem
+													entry={entry}
+													key={entry.id}
+													onReviewClick={openReviewDialog}
+													variant='default'
+												/>
+											))}
+										</div>
 									</div>
 								)}
 								{upcomingReviews.length > 0 && (
 									<div>
 										<h2 className='mb-3 font-bold text-2xl'>Upcoming</h2>
-										{upcomingReviews.map(entry => (
-											<ReviewItem
-												entry={entry}
-												key={entry.id}
-												onReviewClick={openReviewDialog}
-												variant='default'
-											/>
-										))}
+										<div className='@container/review-list'>
+											<ReviewListHeader />
+											{upcomingReviews.map(entry => (
+												<ReviewItem
+													entry={entry}
+													key={entry.id}
+													onReviewClick={openReviewDialog}
+													variant='default'
+												/>
+											))}
+										</div>
 									</div>
 								)}
 								{completedReviews.length > 0 && (
 									<div>
 										<h2 className='mb-3 font-bold text-2xl'>Completed</h2>
-										{completedReviews.map(entry => (
-											<ReviewItem
-												entry={entry}
-												key={entry.id}
-												onReviewClick={openReviewDialog}
-												variant='default'
-											/>
-										))}
+										<div className='@container/review-list'>
+											<ReviewListHeader />
+											{completedReviews.map(entry => (
+												<ReviewItem
+													entry={entry}
+													key={entry.id}
+													onReviewClick={openReviewDialog}
+													variant='default'
+												/>
+											))}
+										</div>
 									</div>
 								)}
 							</div>
