@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import { ChevronDown, Loader2, Plus } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
@@ -80,6 +81,7 @@ export function ReviewsSidebar<T extends EntityWithId>({
 		}
 	}, [reviews])
 
+	const navigate = useNavigate()
 	const createReviewMutation = useCreateReview()
 	const isCreatingReview = createReviewMutation.isPending
 	const { openReviewDialog } = useReviewDialog()
@@ -125,11 +127,29 @@ export function ReviewsSidebar<T extends EntityWithId>({
 				description: getReviewCreatedToastDescription(review),
 				action: {
 					label: 'Open',
-					onClick: () => openReviewDialog(review.id)
+					onClick: () => {
+						if (entityType === 'topic') {
+							navigate({
+								to: '/topics/$topicId/reviews',
+								params: { topicId: entity.id.toString() }
+							})
+						} else if (entityType === 'source') {
+							navigate({
+								to: '/sources/$sourceId/reviews',
+								params: { sourceId: entity.id.toString() }
+							})
+						} else {
+							navigate({
+								to: '/practices/$practiceId/reviews',
+								params: { practiceId: entity.id.toString() }
+							})
+						}
+						openReviewDialog(review.id)
+					}
 				}
 			})
 		},
-		[entity, entityType, createReviewMutation, openReviewDialog]
+		[entity, entityType, createReviewMutation, navigate, openReviewDialog]
 	)
 
 	const handleRatingSelect = useCallback(
