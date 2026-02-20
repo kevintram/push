@@ -6,6 +6,8 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/dialog'
+import { Switch } from '~/components/ui/switch'
+import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { useTheme } from '~/stores/ThemeContext'
 
 const THEME_OPTIONS = [
@@ -21,6 +23,7 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 	const { theme, setTheme } = useTheme()
+	const { showReviewModeWarning, setShowReviewModeWarning } = useFlashcardMode()
 
 	const handleLogout = () => {
 		window.location.href = `${import.meta.env.VITE_API_URL}/logout`
@@ -52,6 +55,20 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 								)
 							})}
 						</div>
+					</div>
+
+					<div className='flex items-start justify-between border-t pt-6'>
+						<div>
+							<div className='font-medium text-sm'>Review Mode Warning</div>
+							<div className='text-muted-foreground text-xs'>
+								Show warning when Review Mode is off in the Review Page
+							</div>
+						</div>
+						<Switch
+							checked={showReviewModeWarning}
+							className='ml-24'
+							onCheckedChange={setShowReviewModeWarning}
+						/>
 					</div>
 
 					<div className='flex items-start justify-between border-t pt-6'>
