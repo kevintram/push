@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react'
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
 import {
@@ -30,7 +30,21 @@ export function ReviewModeWarningDialog() {
 	const [neverShowAgain, setNeverShowAgain] = useState(false)
 	const [dismissed, setDismissed] = useState(false)
 
-	const isOpen = reviewMode === 'off' && showReviewModeWarning && !dismissed
+	// Track whether review mode was ever enabled during this component's
+	// lifecycle. If the user explicitly turns it off after having it on,
+	// we suppress the warning — it should only appear on page navigation.
+	const hasBeenEnabled = useRef(false)
+	useEffect(() => {
+		if (reviewMode !== 'off') {
+			hasBeenEnabled.current = true
+		}
+	}, [reviewMode])
+
+	const isOpen =
+		reviewMode === 'off' &&
+		showReviewModeWarning &&
+		!dismissed &&
+		!hasBeenEnabled.current
 
 	function handleClose() {
 		if (neverShowAgain) {
