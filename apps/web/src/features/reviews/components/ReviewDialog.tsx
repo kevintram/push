@@ -208,25 +208,6 @@ export function ReviewDialog({
 	const handleOpenLinkedEntity = useCallback(() => {
 		if (review?.topic_id) {
 			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: review.topic_id.toString() }
-			})
-		} else if (review?.source_id) {
-			navigate({
-				to: '/sources/$sourceId',
-				params: { sourceId: review.source_id.toString() }
-			})
-		} else if (review?.practice_id) {
-			navigate({
-				to: '/practices/$practiceId',
-				params: { practiceId: review.practice_id.toString() }
-			})
-		}
-	}, [navigate, review?.topic_id, review?.source_id, review?.practice_id])
-
-	const handleSeeAllReviews = useCallback(() => {
-		if (review?.topic_id) {
-			navigate({
 				to: '/topics/$topicId/reviews',
 				params: { topicId: review.topic_id.toString() }
 			})
@@ -241,7 +222,14 @@ export function ReviewDialog({
 				params: { practiceId: review.practice_id.toString() }
 			})
 		}
-	}, [navigate, review?.topic_id, review?.source_id, review?.practice_id])
+		onOpenChange(false)
+	}, [
+		navigate,
+		onOpenChange,
+		review?.topic_id,
+		review?.source_id,
+		review?.practice_id
+	])
 
 	const handleChangeEntity = useCallback(() => {
 		setIsSearchOpen(true)
@@ -339,9 +327,6 @@ export function ReviewDialog({
 								<DropdownMenuContent align='start' className='w-auto'>
 									<DropdownMenuItem onClick={handleOpenLinkedEntity}>
 										Open
-									</DropdownMenuItem>
-									<DropdownMenuItem onClick={handleSeeAllReviews}>
-										See all reviews
 									</DropdownMenuItem>
 									<DropdownMenuItem onClick={handleChangeEntity}>
 										Change
