@@ -4,6 +4,7 @@ import {
 	Anvil,
 	CalendarIcon,
 	Dumbbell,
+	File,
 	FileText,
 	MoreHorizontal,
 	StickyNote,
@@ -11,18 +12,12 @@ import {
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Button } from '~/components/ui/button'
-import { Card, CardContent } from '~/components/ui/card'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger
-} from '~/components/ui/tooltip'
 import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
@@ -30,6 +25,7 @@ import { useDeleteReview } from '../api/deleteReview'
 import { useUpdateReview } from '../api/updateReview'
 import type { ReviewListItem } from '../types/review.types'
 import { DatePickerDropdown } from './DatePickerDropdown'
+import { REVIEW_LIST_GRID_COLS } from './ReviewListHeader'
 import {
 	ReviewRatingCheckbox,
 	type ReviewRatingState
@@ -78,7 +74,7 @@ export function ReviewItem({
 	variant = 'default'
 }: ReviewItemProps) {
 	const navigate = useNavigate()
-	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
+	const [isDateOpen, setIsDateOpen] = useState(false)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
 		getInitialSelectedDate(entry)
 	)
@@ -129,7 +125,7 @@ export function ReviewItem({
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
 			if (!entry.id) {
-				setIsDatePopoverOpen(false)
+				setIsDateOpen(false)
 				return
 			}
 			const newDateString = newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
@@ -144,7 +140,7 @@ export function ReviewItem({
 					scheduled_at: newDateString
 				})
 			}
-			setIsDatePopoverOpen(false)
+			setIsDateOpen(false)
 		},
 		[entry.id, entry.completed_at, updateReviewMutation]
 	)
@@ -223,180 +219,227 @@ export function ReviewItem({
 		(variant === 'default' || variant === 'topic') &&
 		(entry.topic?.name || entry.source?.title || entry.practice?.prompt)
 
+	// --- Shared element JSX ---
+
+	const checkboxEl = (
+		<ReviewRatingCheckbox
+			disabled={readonly || updateReviewMutation.isPending}
+			invalid={isOverdueValue}
+			onChange={handleStatusChange}
+			value={reviewStatus}
+		/>
+	)
+
+	const hasNotes = !!entry.notes?.trim()
+
+	const descriptionEl = (
+		<span
+			className={cn(
+				'flex min-w-0 items-center gap-1.5 text-sm',
+				description ? 'text-foreground' : 'text-muted-foreground'
+			)}
+		>
+			<span className='truncate'>{description || 'No description'}</span>
+			{hasNotes && <File className='h-3 w-3 shrink-0 text-muted-foreground' />}
+		</span>
+	)
+
+	const compactDateEl = (
+		<DatePickerDropdown
+			disabled={readonly}
+			isOpen={isDateOpen}
+			onDateChange={handleDateSave}
+			onOpenChange={setIsDateOpen}
+			selectedDate={selectedDate}
+			trigger={
+				<Button
+					className={cn(
+						'!px-0 h-auto text-xs',
+						readonly && 'cursor-default opacity-50',
+						dateButtonColorClass
+					)}
+					disabled={readonly}
+					onClick={e => e.stopPropagation()}
+					size='sm'
+					variant='link'
+				>
+					<CalendarIcon className='h-3 w-3' />
+					{relativeDate.text}
+				</Button>
+			}
+		/>
+	)
+
+	const wideDateEl = (
+		<DatePickerDropdown
+			disabled={readonly}
+			isOpen={isDateOpen}
+			onDateChange={handleDateSave}
+			onOpenChange={setIsDateOpen}
+			selectedDate={selectedDate}
+			trigger={
+				<Button
+					className={cn(
+						'!px-0 h-auto text-foreground text-sm hover:text-foreground',
+						readonly && 'cursor-default opacity-50',
+						dateButtonColorClass
+					)}
+					disabled={readonly}
+					onClick={e => e.stopPropagation()}
+					size='sm'
+					variant='link'
+				>
+					<CalendarIcon className='h-3 w-3' />
+					{relativeDate.text}
+				</Button>
+			}
+		/>
+	)
+
+	const moreButtonEl = !readonly && (
+		<DropdownMenu>
+			<DropdownMenuTrigger
+				render={
+					<Button
+						className='h-6 w-6 p-0'
+						onClick={e => e.stopPropagation()}
+						size='sm'
+						title='More options'
+						variant='ghost'
+					>
+						<MoreHorizontal className='h-3 w-3' />
+					</Button>
+				}
+			/>
+			<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+				<DropdownMenuItem
+					onClick={e => {
+						e.stopPropagation()
+						handleDelete()
+					}}
+				>
+					<Trash className='mr-2 h-4 w-4' />
+					Delete
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	)
+
+	// Entity display helper
+	const entityInfo = (() => {
+		if (variant !== 'default' && variant !== 'topic') return null
+		if (entry.topic) {
+			return {
+				icon: <StickyNote className='h-3 w-3' />,
+				label: entry.topic.name,
+				onClick: handleTopicClick
+			}
+		}
+		if (entry.source) {
+			return {
+				icon: <FileText className='h-3 w-3' />,
+				label: entry.source.title,
+				onClick: handleSourceClick
+			}
+		}
+		if (entry.practice) {
+			return {
+				icon: <Dumbbell className='h-3 w-3' />,
+				label: entry.practice.prompt,
+				onClick: handlePracticeClick
+			}
+		}
+		return null
+	})()
+
+	const durabilityCompactEl = hasStability && (
+		<div className='flex items-center text-muted-foreground text-xs'>
+			<Anvil className='mr-1 h-3 w-3' />
+			<span>{`${stabilityAfterRounded}d`}</span>
+			{hasDelta ? (
+				<span className={cn('ml-1', stabilityChangeColorClass)}>
+					({stabilityDeltaRounded >= 0 ? '+' : ''}
+					{stabilityDeltaRounded})
+				</span>
+			) : (
+				<span className={cn('ml-1', stabilityChangeColorClass)}>(new)</span>
+			)}
+		</div>
+	)
+
+	const durabilityWideEl = hasStability && (
+		<span className='flex items-center truncate text-foreground text-sm'>
+			<Anvil className='mr-1 h-3 w-3 shrink-0' />
+			{`${stabilityAfterRounded}d`}
+			{hasDelta ? (
+				<span className={cn('ml-1', stabilityChangeColorClass)}>
+					({stabilityDeltaRounded >= 0 ? '+' : ''}
+					{stabilityDeltaRounded})
+				</span>
+			) : (
+				<span className={cn('ml-1', stabilityChangeColorClass)}>(new)</span>
+			)}
+		</span>
+	)
+
 	return (
-		<Card className='rounded-none border-0 bg-transparent shadow-none'>
-			<CardContent
-				className={cn(
-					'rounded-md py-2',
-					readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'
-				)}
-				onClick={handleReviewClick}
-			>
-				<div className='flex flex-col'>
-					{/* Row 1: Checkbox, Description, Date, More Button */}
-					<div className='flex items-center pb-1'>
-						<ReviewRatingCheckbox
-							disabled={readonly || updateReviewMutation.isPending}
-							invalid={isOverdueValue}
-							onChange={handleStatusChange}
-							value={reviewStatus}
-						/>
-						<span
-							className={cn(
-								'ml-2 min-w-0 flex-1 truncate text-sm',
-								description ? 'text-foreground' : 'text-muted-foreground'
-							)}
-						>
-							{description || 'No description'}
-						</span>
-						{dateFormat === 'short' ? (
-							<DatePickerDropdown
-								disabled={readonly}
-								isOpen={isDatePopoverOpen}
-								onDateChange={handleDateSave}
-								onOpenChange={setIsDatePopoverOpen}
-								selectedDate={selectedDate}
-								trigger={
-									<Button
-										className={cn(
-											'text-xs',
-											readonly
-												? 'cursor-default opacity-50'
-												: 'hover:bg-muted/50',
-											dateButtonColorClass
-										)}
-										disabled={readonly}
-										onClick={e => e.stopPropagation()}
-										size='sm'
-										variant='ghost'
-									>
-										<CalendarIcon className='h-3 w-3' />
-										{relativeDate.text}
-									</Button>
-								}
-							/>
-						) : (
-							<Tooltip>
-								<DatePickerDropdown
-									disabled={readonly}
-									isOpen={isDatePopoverOpen}
-									onDateChange={handleDateSave}
-									onOpenChange={setIsDatePopoverOpen}
-									selectedDate={selectedDate}
-									trigger={
-										<TooltipTrigger
-											render={
-												<Button
-													className={cn(
-														'text-xs',
-														readonly
-															? 'cursor-default opacity-50'
-															: 'hover:bg-muted/50',
-														dateButtonColorClass
-													)}
-													disabled={readonly}
-													onClick={e => e.stopPropagation()}
-													size='sm'
-													variant='ghost'
-												>
-													<CalendarIcon className='h-3 w-3' />
-													{relativeDate.text}
-												</Button>
-											}
-										/>
-									}
-								/>
-								<TooltipContent>
-									{effectiveDate && dayjs(effectiveDate).format('MMMM D, YYYY')}
-								</TooltipContent>
-							</Tooltip>
-						)}
-						{!readonly && (
-							<DropdownMenu>
-								<DropdownMenuTrigger
-									render={
-										<Button
-											className='h-6 w-6 p-0'
-											onClick={e => e.stopPropagation()}
-											size='sm'
-											title='More options'
-											variant='ghost'
-										>
-											<MoreHorizontal className='h-3 w-3' />
-										</Button>
-									}
-								/>
-								<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
-									<DropdownMenuItem
-										onClick={e => {
-											e.stopPropagation()
-											handleDelete()
-										}}
-									>
-										<Trash className='mr-2 h-4 w-4' />
-										Delete
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						)}
-					</div>
-					<div className='flex items-center justify-end gap-2 text-muted-foreground text-xs'>
-						{(variant === 'default' || variant === 'topic') && entry.topic && (
-							<Button
-								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-								onClick={handleTopicClick}
-								size='sm'
-								variant='link'
-							>
-								<StickyNote className='h-3 w-3' />
-								<span>{entry.topic.name}</span>
-							</Button>
-						)}
-						{(variant === 'default' || variant === 'topic') && entry.source && (
-							<Button
-								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-								onClick={handleSourceClick}
-								size='sm'
-								variant='link'
-							>
-								<FileText className='h-3 w-3' />
-								<span>{entry.source.title}</span>
-							</Button>
-						)}
-						{(variant === 'default' || variant === 'topic') &&
-							entry.practice && (
-								<Button
-									className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-									onClick={handlePracticeClick}
-									size='sm'
-									variant='link'
-								>
-									<Dumbbell className='h-3 w-3' />
-									<span>{entry.practice.prompt}</span>
-								</Button>
-							)}
-						{hasStability && (
-							<>
-								{showingEntity && <span>⋅</span>}
-								<div className='flex items-center'>
-									<Anvil className='mr-1 h-3 w-3' />
-									<span>{`${stabilityAfterRounded}d`}</span>
-									{hasDelta ? (
-										<span className={cn('ml-1', stabilityChangeColorClass)}>
-											({stabilityDeltaRounded >= 0 ? '+' : ''}
-											{stabilityDeltaRounded})
-										</span>
-									) : (
-										<span className={cn('ml-1', stabilityChangeColorClass)}>
-											(new)
-										</span>
-									)}
-								</div>
-							</>
-						)}
-					</div>
+		<div
+			className={cn(
+				'rounded-md px-2 py-2',
+				readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'
+			)}
+			onClick={handleReviewClick}
+		>
+			{/* Compact layout (default, hidden at wide) */}
+			<div className='flex @lg/review-list:hidden flex-col'>
+				<div className='flex items-center gap-2 pb-1'>
+					{checkboxEl}
+					<span className='flex-1'>{descriptionEl}</span>
+					{compactDateEl}
+					{moreButtonEl}
 				</div>
-			</CardContent>
-		</Card>
+				<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+					{entityInfo && (
+						<Button
+							className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
+							onClick={entityInfo.onClick}
+							size='sm'
+							variant='link'
+						>
+							<span>{entityInfo.label}</span>
+						</Button>
+					)}
+					{hasStability && (
+						<>
+							{showingEntity && <span className='font-semibold'>⋅</span>}
+							{durabilityCompactEl}
+						</>
+					)}
+				</div>
+			</div>
+
+			{/* Wide/table layout (hidden by default, shown at @lg) */}
+			<div
+				className={`@lg/review-list:grid hidden ${REVIEW_LIST_GRID_COLS} items-center gap-x-3`}
+			>
+				<div>{checkboxEl}</div>
+				{descriptionEl}
+				{durabilityWideEl || <span />}
+				{entityInfo ? (
+					<Button
+						className='!px-0 h-auto min-w-0 justify-start text-foreground text-sm hover:text-foreground'
+						onClick={entityInfo.onClick}
+						size='sm'
+						variant='link'
+					>
+						<span className='truncate'>{entityInfo.label}</span>
+					</Button>
+				) : (
+					<span />
+				)}
+				<div>{wideDateEl}</div>
+				<div className='flex justify-center'>{moreButtonEl}</div>
+			</div>
+		</div>
 	)
 }

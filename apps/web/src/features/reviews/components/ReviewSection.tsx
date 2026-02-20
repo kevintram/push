@@ -3,6 +3,7 @@ import { Button } from '~/components/ui/button'
 import { CountBadge } from '~/components/ui/count-badge'
 import type { ReviewListItem } from '../types/review.types'
 import { ReviewItem } from './ReviewItem'
+import { ReviewListHeader } from './ReviewListHeader'
 
 type ReviewSectionProps = {
 	id: string
@@ -45,9 +46,10 @@ export function ReviewSection({
 			</div>
 
 			{!isCollapsed && (
-				<div className='mt-2 mb-10 ml-5 border-border border-l-2 pl-2'>
+				<div className='mt-2 mb-10'>
 					{entries.length > 0 ? (
-						<div className='px-4'>
+						<div className='@container/review-list'>
+							<ReviewListHeader />
 							{entries.map(entry => (
 								<ReviewItem
 									dateFormat={dateFormat}
@@ -59,9 +61,7 @@ export function ReviewSection({
 							))}
 						</div>
 					) : (
-						<p className='px-4 text-muted-foreground text-sm italic'>
-							No reviews
-						</p>
+						<p className='text-muted-foreground text-sm italic'>No reviews</p>
 					)}
 				</div>
 			)}
