@@ -145,14 +145,6 @@ export function ReviewDialog({
 		? Math.round((review.stability_after ?? 0) - (review.stability_before ?? 0))
 		: 0
 
-	// Helper to get the entity type label for display
-	const getEntityTypeLabel = useCallback((): string => {
-		if (review?.topic_id) return 'Topic'
-		if (review?.source_id) return 'Source'
-		if (review?.practice_id) return 'Practice'
-		return ''
-	}, [review?.topic_id, review?.source_id, review?.practice_id])
-
 	// Helper to get the entity name for display
 	const getEntityName = useCallback((): string => {
 		if (review?.topic) return review.topic.name
@@ -329,7 +321,32 @@ export function ReviewDialog({
 				>
 					<div className='flex h-full min-h-0 flex-col'>
 						<div className='flex items-center justify-between border-b px-2 py-1'>
-							<div className='flex-1' />
+							<DropdownMenu>
+								<DropdownMenuTrigger
+									render={
+										<Button
+											disabled={updateReviewMutation.isPending}
+											size='sm'
+											variant='ghost'
+										>
+											<Link className='h-3.5 w-3.5' />
+											<span>{getEntityName()}</span>
+											<ChevronDown className='h-3 w-3 text-muted-foreground' />
+										</Button>
+									}
+								/>
+								<DropdownMenuContent align='start'>
+									<DropdownMenuItem onClick={handleOpenLinkedEntity}>
+										Open
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={handleSeeAllReviews}>
+										See all reviews
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={handleChangeEntity}>
+										Change
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 							<div className='flex items-center gap-2'>
 								<DropdownMenu>
 									<DropdownMenuTrigger
@@ -357,14 +374,31 @@ export function ReviewDialog({
 							</div>
 						</div>
 
-						<div className='flex min-h-0 flex-1 flex-col gap-4 px-4 py-4'>
-							<div className='grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-2'>
+						<div className='flex min-h-0 flex-1 flex-col gap-y-2 px-4 py-4'>
+							{hasStability && (
+								<div className='flex items-center text-muted-foreground text-xs'>
+									<Anvil className='mr-1 h-3 w-3' />
+									<span>{stabilityAfterRounded}d</span>
+									{hasDelta ? (
+										<span className={cn('ml-1', stabilityChangeColorClass)}>
+											({stabilityDeltaRounded >= 0 ? '+' : ''}
+											{stabilityDeltaRounded})
+										</span>
+									) : (
+										<span className={cn('ml-1', stabilityChangeColorClass)}>
+											(new)
+										</span>
+									)}
+								</div>
+							)}
+							<div className='grid min-h-0 flex-1 grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr] content-start items-center gap-x-2'>
+								{/* Row 1: Checkbox | Description | Date */}
 								<ReviewRatingCheckbox
-									className={
-										isOverdueValue
-											? 'border-red-600 dark:border-red-700 dark:bg-red-700'
-											: ''
-									}
+									className={cn(
+										'ml-2',
+										isOverdueValue &&
+											'border-red-600 dark:border-red-700 dark:bg-red-700'
+									)}
 									disabled={isLoading || updateReviewMutation.isPending}
 									onChange={handleStatusChange}
 									value={reviewStatus}
@@ -397,57 +431,15 @@ export function ReviewDialog({
 										</Button>
 									}
 								/>
+								{/* Row 2: [empty] | Notes */}
+								<div className='self-start' />
 								<Textarea
-									className='!bg-transparent col-span-2 col-start-2 m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									className='!bg-transparent m-0 h-full min-h-0 min-w-0 resize-none rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
 									onChange={onNotesChange}
 									placeholder='Notes'
 									spellCheck={false}
 									value={notes}
 								/>
-							</div>
-
-							<div className='mt-auto flex flex-wrap items-center gap-2'>
-								<DropdownMenu>
-									<DropdownMenuTrigger
-										render={
-											<button
-												className='inline-flex h-7 items-center gap-1.5 rounded-md bg-secondary px-2 text-secondary-foreground text-sm'
-												disabled={updateReviewMutation.isPending}
-												title={getEntityTypeLabel()}
-												type='button'
-											>
-												<Link className='h-3.5 w-3.5' />
-												<span>{getEntityName()}</span>
-												<ChevronDown className='h-3 w-3 text-muted-foreground' />
-											</button>
-										}
-									/>
-									<DropdownMenuContent align='start'>
-										<DropdownMenuItem onClick={handleOpenLinkedEntity}>
-											Open
-										</DropdownMenuItem>
-										<DropdownMenuItem onClick={handleSeeAllReviews}>
-											See all reviews
-										</DropdownMenuItem>
-										<DropdownMenuItem onClick={handleChangeEntity}>
-											Change
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-								{hasStability && (
-									<Button className='h-7 px-2' size='sm' variant='secondary'>
-										<Anvil className='h-3.5 w-3.5' />
-										<span>Durability {stabilityAfterRounded}d</span>
-										{hasDelta ? (
-											<span className={stabilityChangeColorClass}>
-												({stabilityDeltaRounded >= 0 ? '+' : ''}
-												{stabilityDeltaRounded})
-											</span>
-										) : (
-											<span className={stabilityChangeColorClass}>(new)</span>
-										)}
-									</Button>
-								)}
 							</div>
 						</div>
 					</div>
