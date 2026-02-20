@@ -1,4 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import {
 	Anvil,
 	Archive,
@@ -228,6 +229,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 	}, [])
 
 	// Review creation
+	const navigate = useNavigate()
 	const createReviewMutation = useCreateReview()
 	const isCreatingReview = createReviewMutation.isPending
 	const { openReviewDialog } = useReviewDialog()
@@ -257,7 +259,25 @@ export function LearnableCardBase<T extends LearnableBase>({
 				description: getReviewCreatedToastDescription(review),
 				action: {
 					label: 'Open',
-					onClick: () => openReviewDialog(review.id)
+					onClick: () => {
+						if (config.entityType === 'topic') {
+							navigate({
+								to: '/topics/$topicId/reviews',
+								params: { topicId: entity.id.toString() }
+							})
+						} else if (config.entityType === 'source') {
+							navigate({
+								to: '/sources/$sourceId/reviews',
+								params: { sourceId: entity.id.toString() }
+							})
+						} else {
+							navigate({
+								to: '/practices/$practiceId/reviews',
+								params: { practiceId: entity.id.toString() }
+							})
+						}
+						openReviewDialog(review.id)
+					}
 				}
 			})
 		},
@@ -265,6 +285,7 @@ export function LearnableCardBase<T extends LearnableBase>({
 			entity.id,
 			config.entityType,
 			createReviewMutation.mutateAsync,
+			navigate,
 			openReviewDialog
 		]
 	)

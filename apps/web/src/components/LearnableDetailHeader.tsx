@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
 	Anvil,
@@ -136,6 +137,7 @@ export function LearnableDetailHeader({
 		[entityType, entityId]
 	)
 	const { data: reviews = [] } = useReviews(filters)
+	const navigate = useNavigate()
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
 	const isCreatingReview = createReviewMutation.isPending
@@ -203,14 +205,32 @@ export function LearnableDetailHeader({
 					description: getReviewCreatedToastDescription(review),
 					action: {
 						label: 'Open',
-						onClick: () => openReviewDialog(review.id)
+						onClick: () => {
+							if (entityType === 'topic') {
+								navigate({
+									to: '/topics/$topicId/reviews',
+									params: { topicId: entityId.toString() }
+								})
+							} else if (entityType === 'source') {
+								navigate({
+									to: '/sources/$sourceId/reviews',
+									params: { sourceId: entityId.toString() }
+								})
+							} else {
+								navigate({
+									to: '/practices/$practiceId/reviews',
+									params: { practiceId: entityId.toString() }
+								})
+							}
+							openReviewDialog(review.id)
+						}
 					}
 				})
 			} catch {
 				toast.error('Failed to create review')
 			}
 		},
-		[createReview, openReviewDialog]
+		[createReview, entityId, entityType, navigate, openReviewDialog]
 	)
 
 	const {
