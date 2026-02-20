@@ -162,7 +162,7 @@ export function ReviewItem({
 			event.stopPropagation()
 			if (!entry.topic) return
 			navigate({
-				to: '/topics/$topicId',
+				to: '/topics/$topicId/reviews',
 				params: { topicId: entry.topic.id.toString() }
 			})
 		},
@@ -174,7 +174,7 @@ export function ReviewItem({
 			event.stopPropagation()
 			if (!entry.source) return
 			navigate({
-				to: '/sources/$sourceId',
+				to: '/sources/$sourceId/reviews',
 				params: { sourceId: entry.source.id.toString() }
 			})
 		},
@@ -186,7 +186,7 @@ export function ReviewItem({
 			event.stopPropagation()
 			if (!entry.practice) return
 			navigate({
-				to: '/practices/$practiceId',
+				to: '/practices/$practiceId/reviews',
 				params: { practiceId: entry.practice.id.toString() }
 			})
 		},
