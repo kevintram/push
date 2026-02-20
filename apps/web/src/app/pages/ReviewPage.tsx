@@ -242,7 +242,7 @@ export function ReviewPage() {
 
 	return (
 		<PageLayout>
-			<ReviewModeWarningDialog />
+			{sections.length > 0 && <ReviewModeWarningDialog />}
 			<PageLayout.Header icon={QueueHeaderStarIcon} title='Review'>
 				<EntityTypeFilter
 					activeFilter={activeFilter}
