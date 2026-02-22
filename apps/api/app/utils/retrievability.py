@@ -1,3 +1,4 @@
+import math
 from datetime import date
 
 
@@ -109,31 +110,33 @@ def calculate_days_in_current_tier(
         # Fresh tier: been in this tier since last review
         return max(0, (current_date - last_reviewed_at).days)
 
-    # calculate_days_until_threshold returns (target_days_from_review - elapsed_days).
+    # compute_distance_to_retrievability returns
+    # (target_days_from_review - elapsed_days).
     # The entry_threshold is a retrievability value the item has *already* crossed
     # (e.g., 0.85 for an item now in Hazy), so target_days_from_review < elapsed_days,
     # making the result negative. Negating gives the positive days since crossing.
-    return -calculate_days_until_threshold(
+    return -compute_distance_to_retrievability(
         stability, last_reviewed_at, entry_threshold, current_date
     )
 
 
-def calculate_days_until_threshold(
+def compute_distance_to_retrievability(
     stability: float,
     last_reviewed_at: date | None,
     target_retrievability: float,
     current_date: date | None = None,
 ) -> int:
     """
-    Calculate days until retrievability crosses a threshold.
+    Calculate signed day distance to a target retrievability.
 
     Formula derivation (solving for elapsed_days):
     R = (1 + F * d / S)^D
     R^(1/D) = 1 + F * d / S
     (R^(1/D) - 1) * S / F = d
 
-    Returns positive for future dates (days until threshold reached),
-    negative for past dates (days since threshold was crossed).
+    Returns positive values when the target retrievability lies in the future
+    (days until), and negative values when it was reached in the past
+    (days since).
     """
     if current_date is None:
         current_date = date.today()
@@ -148,4 +151,9 @@ def calculate_days_until_threshold(
 
     elapsed_days = (current_date - last_reviewed_at).days
 
-    return int(target_days_from_review - elapsed_days)
+    delta_days = target_days_from_review - elapsed_days
+    if delta_days > 0:
+        return math.ceil(delta_days)
+    if delta_days < 0:
+        return math.floor(delta_days)
+    return 0
