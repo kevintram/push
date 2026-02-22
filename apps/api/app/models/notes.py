@@ -22,7 +22,7 @@ from app.notes.status_badges import build_note_status_badges
 from app.types.ltree import LtreeType
 from app.utils.retrievability import (
     calculate_days_in_current_tier,
-    calculate_days_until_threshold,
+    compute_distance_to_retrievability,
     calculate_retrievability,
     get_freshness_tier,
     get_next_tier_threshold,
@@ -178,7 +178,7 @@ class Note(Base):
         target_retrievability = get_next_tier_threshold(self.retrievability)
         if target_retrievability is None:
             return None
-        return calculate_days_until_threshold(
+        return compute_distance_to_retrievability(
             self.fsrs_state.stability,
             self.fsrs_state.last_reviewed_at,
             target_retrievability=target_retrievability,

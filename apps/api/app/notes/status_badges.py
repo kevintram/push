@@ -5,7 +5,10 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
-from app.utils.retrievability import FINE_THRESHOLD, calculate_days_until_threshold
+from app.utils.retrievability import (
+    FINE_THRESHOLD,
+    compute_distance_to_retrievability,
+)
 
 if TYPE_CHECKING:
     from app.models.notes import Note
@@ -25,8 +28,6 @@ def _format_due_label(days_until_due: int) -> str:
 
 
 def _format_hazy_soon_label(days_until_hazy: int) -> str:
-    if days_until_hazy == 0:
-        return "Hazy in 0d"
     return f"Hazy in {days_until_hazy}d"
 
 
@@ -48,12 +49,19 @@ def get_days_until_hazy(note: Note, *, today: date | None = None) -> int | None:
     """Calculate note-level days until entering hazy retrievability."""
     if note.stability is None or note.last_reviewed_at is None:
         return None
-    return calculate_days_until_threshold(
+    days_until_hazy = compute_distance_to_retrievability(
         note.stability,
         note.last_reviewed_at,
         target_retrievability=FINE_THRESHOLD,
         current_date=today or date.today(),
     )
+    # Avoid "0d" edge cases: a note is either at least one full day away from
+    # becoming hazy, or already hazy/overdue by at least one day.
+    if days_until_hazy == 0:
+        if note.freshness_tier in {"Hazy", "Forgotten"}:
+            return -1
+        return 1
+    return days_until_hazy
 
 
 def get_earliest_due_review(note: Note) -> Review | None:
@@ -120,7 +128,7 @@ def build_note_status_badges(
             }
         )
 
-    if selected_days_until_hazy is not None and 0 <= selected_days_until_hazy <= 7:
+    if selected_days_until_hazy is not None and 1 <= selected_days_until_hazy <= 7:
         hazy_date = current_day + timedelta(days=selected_days_until_hazy)
         badges.append(
             {
@@ -149,10 +157,11 @@ def build_note_status_badges(
         )
 
     if note.freshness_tier == "Hazy" and note.days_in_current_tier is not None:
+        days_in_hazy_tier = max(1, note.days_in_current_tier)
         badges.append(
             {
                 "key": "hazy_for",
-                "label": _format_hazy_for_label(note.days_in_current_tier),
+                "label": _format_hazy_for_label(days_in_hazy_tier),
                 "tooltip": None,
                 "tone": "warning",
                 "review_id": None,
@@ -160,10 +169,11 @@ def build_note_status_badges(
         )
 
     if note.freshness_tier == "Forgotten" and note.days_in_current_tier is not None:
+        days_in_forgotten_tier = max(1, note.days_in_current_tier)
         badges.append(
             {
                 "key": "forgotten_for",
-                "label": _format_forgotten_for_label(note.days_in_current_tier),
+                "label": _format_forgotten_for_label(days_in_forgotten_tier),
                 "tooltip": None,
                 "tone": "danger",
                 "review_id": None,

@@ -14,7 +14,7 @@ from app.utils.retrievability import (
     FSRS_FACTOR,
     HAZY_THRESHOLD,
     calculate_days_in_current_tier,
-    calculate_days_until_threshold,
+    compute_distance_to_retrievability,
     calculate_retrievability,
     get_current_tier_entry_threshold,
     get_freshness_tier,
@@ -220,10 +220,36 @@ class TestCalculateDaysInCurrentTier:
         assert get_freshness_tier(r) == "Fine"
 
         days_in = calculate_days_in_current_tier(stability, reviewed, r, today)
-        days_until = calculate_days_until_threshold(
+        days_until = compute_distance_to_retrievability(
             stability, reviewed, FINE_THRESHOLD, today
         )
 
         # days_in + days_until should ≈ total Fine band duration
         tier_span = int(days_to_hazy - days_to_fine)
         assert abs((days_in + days_until) - tier_span) <= 1
+
+
+class TestComputeDistanceToRetrievability:
+    def test_rounds_positive_fraction_up(self):
+        reviewed = date(2026, 2, 16)
+        today = date(2026, 2, 16)
+        # stability=1 gives ~0.40 days to FRESH threshold from review time.
+        result = compute_distance_to_retrievability(
+            stability=1.0,
+            last_reviewed_at=reviewed,
+            target_retrievability=FRESH_THRESHOLD,
+            current_date=today,
+        )
+        assert result == 1
+
+    def test_rounds_negative_fraction_down(self):
+        reviewed = date(2026, 2, 15)
+        today = date(2026, 2, 16)
+        # Same setup as above, but one day elapsed -> around -0.60 days.
+        result = compute_distance_to_retrievability(
+            stability=1.0,
+            last_reviewed_at=reviewed,
+            target_retrievability=FRESH_THRESHOLD,
+            current_date=today,
+        )
+        assert result == -1
