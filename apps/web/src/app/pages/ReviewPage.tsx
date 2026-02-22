@@ -1,24 +1,11 @@
 import dayjs from 'dayjs'
-import { BookOpen, type LucideProps, Star } from 'lucide-react'
-import {
-	forwardRef,
-	type ReactNode,
-	useCallback,
-	useMemo,
-	useState
-} from 'react'
+import { BookOpen, Loader2, type LucideProps, Star } from 'lucide-react'
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
-import {
-	EntityCard,
-	type EntityItem,
-	estimateEntitySize,
-	getEntityTitle
-} from '~/components/EntityCard'
 import {
 	EntityTypeFilter,
 	type EntityTypeFilterValue
 } from '~/components/EntityTypeFilter'
-import type { LearnableCardStatusBadge } from '~/components/LearnableCard'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { CountBadge } from '~/components/ui/count-badge'
 import {
@@ -28,20 +15,29 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
-import { useReviewQueue } from '~/features/reviews/api/getReviewQueue'
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { useNotes } from '~/features/notes/api/getNotes'
+import {
+	NoteCard,
+	toNoteCardStatusBadge
+} from '~/features/notes/components/NoteCard'
+import type { Note } from '~/features/notes/types/note.types'
+import { orderNoteStatusBadges } from '~/features/notes/utils/orderNoteStatusBadges'
+import { useInfiniteReviewQueue } from '~/features/reviews/api/getReviewQueue'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
-import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
-import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
-import { useEntityNavigation } from '~/hooks/useEntityNavigation'
+import type { ReviewQueueItem } from '~/features/reviews/types/review-queue.types'
+import { useNoteNavigation } from '~/hooks/useNoteNavigation'
+import { estimateCardSize } from '~/utils/estimateCardSize'
+
+function getWeekOffset(daysUntil: number, daysUntilSunday: number): number {
+	if (daysUntil <= daysUntilSunday) return 0
+	return 1 + Math.floor((daysUntil - daysUntilSunday - 1) / 7)
+}
 
 type QueueCardItem = {
 	key: string
-	entity: EntityItem
+	entry: ReviewQueueItem
 	queueType: 'due' | 'hazy'
-	reviewId: number | null
-	daysUntilDue: number | null
-	daysUntilHazy: number | null
 	urgencyDays: number
 }
 
@@ -52,63 +48,10 @@ type QueueSection = {
 	items: Array<QueueCardItem>
 }
 
-type StatusRowPlacement = 'above-header' | 'below-header'
+type ReviewQueueTab = 'due' | 'unreviewed'
 
-const QueueHeaderStarIcon = forwardRef<SVGSVGElement, LucideProps>(
-	(props, ref) => (
-		<Star
-			ref={ref}
-			{...props}
-			className={`fill-yellow-500 text-yellow-500 ${props.className ?? ''}`}
-		/>
-	)
-)
-QueueHeaderStarIcon.displayName = 'QueueHeaderStarIcon'
-
-function getWeekOffset(daysUntil: number, daysUntilSunday: number): number {
-	if (daysUntil <= daysUntilSunday) {
-		return 0
-	}
-	return 1 + Math.floor((daysUntil - daysUntilSunday - 1) / 7)
-}
-
-function formatDueLabel(daysUntilDue: number | null): string {
-	if (daysUntilDue === null) {
-		return 'Due'
-	}
-	if (daysUntilDue === 0) {
-		return 'Due in 0d'
-	}
-	if (daysUntilDue < 0) {
-		return `Due ${Math.abs(daysUntilDue)}d ago`
-	}
-	return `Due in ${daysUntilDue}d`
-}
-
-function formatDateFromOffset(daysFromToday: number | null): string | null {
-	if (daysFromToday === null) {
-		return null
-	}
-	return dayjs().startOf('day').add(daysFromToday, 'day').format('MMM D, YYYY')
-}
-
-function formatDueTooltip(daysUntilDue: number | null): string | null {
-	return formatDateFromOffset(daysUntilDue)
-}
-
-function formatHazyTooltip(daysUntilHazy: number | null): string | null {
-	return formatDateFromOffset(daysUntilHazy)
-}
-
-function formatHazySoonLabel(daysUntilHazy: number): string {
-	if (daysUntilHazy === 0) {
-		return 'Hazy in 0d'
-	}
-	return `Hazy in ${daysUntilHazy}d`
-}
-
-function formatHazyForLabel(daysInTier: number): string {
-	return `Hazy for ${daysInTier}d`
+function getQueueItemTitle(item: QueueCardItem): string {
+	return item.entry.note.title || 'Untitled note'
 }
 
 function sortUpcomingQueueItems(a: QueueCardItem, b: QueueCardItem): number {
@@ -118,7 +61,7 @@ function sortUpcomingQueueItems(a: QueueCardItem, b: QueueCardItem): number {
 	if (a.queueType !== b.queueType) {
 		return a.queueType === 'due' ? -1 : 1
 	}
-	return getEntityTitle(a.entity).localeCompare(getEntityTitle(b.entity))
+	return getQueueItemTitle(a).localeCompare(getQueueItemTitle(b))
 }
 
 function sortOverdueItems(a: QueueCardItem, b: QueueCardItem): number {
@@ -127,65 +70,114 @@ function sortOverdueItems(a: QueueCardItem, b: QueueCardItem): number {
 	if (aDistance !== bDistance) {
 		return aDistance - bDistance
 	}
-	return getEntityTitle(a.entity).localeCompare(getEntityTitle(b.entity))
+	return getQueueItemTitle(a).localeCompare(getQueueItemTitle(b))
+}
+
+function matchesNoteFilter(note: Note, filter: EntityTypeFilterValue): boolean {
+	if (filter === 'all') return true
+	if (filter === 'none') return note.tags.length === 0
+	if (filter === 'topic') return note.tags.includes('TOPIC')
+	if (filter === 'source') return note.tags.includes('SOURCE')
+	return note.tags.includes('PRACTICE')
+}
+
+function groupUnreviewedByCreatedDate(
+	notes: Array<Note>
+): Array<{ id: string; label: string; notes: Array<Note> }> {
+	const now = new Date()
+	now.setHours(0, 0, 0, 0)
+
+	const byKey = new Map<
+		string,
+		{ id: string; label: string; notes: Array<Note> }
+	>()
+	for (const note of notes) {
+		const createdAt = new Date(note.inserted_at)
+		const key = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')}`
+		const existing = byKey.get(key)
+		if (existing) {
+			existing.notes.push(note)
+			continue
+		}
+
+		const normalized = new Date(createdAt)
+		normalized.setHours(0, 0, 0, 0)
+		const diffDays = Math.floor(
+			(now.getTime() - normalized.getTime()) / (1000 * 60 * 60 * 24)
+		)
+		const label =
+			diffDays <= 0
+				? 'Today'
+				: diffDays === 1
+					? 'Yesterday'
+					: `${diffDays}d ago`
+
+		byKey.set(key, { id: key, label, notes: [note] })
+	}
+
+	return [...byKey.values()]
+		.map(section => ({
+			...section,
+			notes: [...section.notes].sort((a, b) =>
+				a.inserted_at < b.inserted_at ? 1 : -1
+			)
+		}))
+		.sort((a, b) => (a.id < b.id ? 1 : -1))
 }
 
 export function ReviewPage() {
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
-	const { data: reviewQueue = [], isLoading: isQueueLoading } = useReviewQueue()
-	const handleEntityClick = useEntityNavigation()
+	const [activeQueueTab, setActiveQueueTab] = useState<ReviewQueueTab>('due')
+	const {
+		data: reviewQueuePages,
+		isLoading: isQueueLoading,
+		hasNextPage,
+		isFetchingNextPage,
+		fetchNextPage
+	} = useInfiniteReviewQueue()
+	const { data: notes = [], isLoading: isNotesLoading } = useNotes({
+		archived: false,
+		order: 'desc'
+	})
+	const navigateToNote = useNoteNavigation()
 	const { openReviewDialog } = useReviewDialog()
-	const statusRowPlacement: StatusRowPlacement = 'above-header'
+	const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
-	const daysUntilSunday = useMemo(() => {
-		return (7 - dayjs().day()) % 7
-	}, [])
+	const daysUntilSunday = useMemo(() => (7 - dayjs().day()) % 7, [])
+	const reviewQueue = useMemo(
+		() => reviewQueuePages?.pages.flatMap(page => page.items) ?? [],
+		[reviewQueuePages]
+	)
 
 	const queueItems = useMemo<Array<QueueCardItem>>(() => {
-		const items: Array<QueueCardItem> = []
-		for (const entry of reviewQueue) {
-			let entity: EntityItem | null = null
-			if (entry.entity_type === 'topic' && entry.topic) {
-				entity = { type: 'topic', item: entry.topic }
-			} else if (entry.entity_type === 'source' && entry.source) {
-				entity = { type: 'source', item: entry.source }
-			} else if (entry.entity_type === 'practice' && entry.practice) {
-				entity = { type: 'practice', item: entry.practice }
-			}
-
-			if (!entity) {
-				continue
-			}
-			if (activeFilter !== 'all' && entity.type !== activeFilter) {
-				continue
-			}
-
-			const urgencyDays =
-				entry.queue_type === 'due'
-					? entry.days_until_due
-					: entry.days_until_hazy
-			if (urgencyDays === null || urgencyDays === undefined) {
-				continue
-			}
-
-			items.push({
-				key:
+		return reviewQueue
+			.map(entry => {
+				const urgencyDays =
+					entry.queue_type === 'due'
+						? entry.days_until_due
+						: entry.days_until_hazy
+				if (urgencyDays === null || urgencyDays === undefined) return null
+				const key =
 					entry.queue_type === 'due' && entry.review_id != null
 						? `due-${entry.review_id}`
-						: `hazy-${entity.type}-${entity.item.id}`,
-				entity,
-				queueType: entry.queue_type,
-				reviewId: entry.review_id ?? null,
-				daysUntilDue: entry.days_until_due ?? null,
-				daysUntilHazy: entry.days_until_hazy ?? null,
-				urgencyDays
+						: `hazy-note-${entry.note.id}`
+				return { key, entry, queueType: entry.queue_type, urgencyDays }
 			})
-		}
-
-		return items
+			.filter((item): item is QueueCardItem => item !== null)
+			.filter(item => matchesNoteFilter(item.entry.note, activeFilter))
 	}, [reviewQueue, activeFilter])
 
-	const sections = useMemo<Array<QueueSection>>(() => {
+	const unreviewedNotes = useMemo(
+		() =>
+			notes.filter(
+				note =>
+					note.last_reviewed_at === null &&
+					matchesNoteFilter(note, activeFilter)
+			),
+		[notes, activeFilter]
+	)
+
+	const queueSections = useMemo<Array<QueueSection>>(() => {
 		const overdueItems: Array<QueueCardItem> = []
 		const weeklyBuckets = new Map<number, Array<QueueCardItem>>()
 
@@ -194,7 +186,6 @@ export function ReviewPage() {
 				overdueItems.push(item)
 				continue
 			}
-
 			const weekOffset = getWeekOffset(item.urgencyDays, daysUntilSunday)
 			const bucket = weeklyBuckets.get(weekOffset)
 			if (bucket) {
@@ -214,12 +205,9 @@ export function ReviewPage() {
 			})
 		}
 
-		const weekOffsets = [...weeklyBuckets.keys()].sort((a, b) => a - b)
-		for (const offset of weekOffsets) {
+		for (const offset of [...weeklyBuckets.keys()].sort((a, b) => a - b)) {
 			const bucketItems = weeklyBuckets.get(offset)
-			if (!bucketItems || bucketItems.length === 0) {
-				continue
-			}
+			if (!bucketItems || bucketItems.length === 0) continue
 			output.push({
 				id: `week-${offset}`,
 				label:
@@ -237,170 +225,181 @@ export function ReviewPage() {
 		return output
 	}, [queueItems, daysUntilSunday])
 
-	const isQueueEmpty = !isQueueLoading && sections.length === 0
+	const unreviewedSections = useMemo(
+		() => groupUnreviewedByCreatedDate(unreviewedNotes),
+		[unreviewedNotes]
+	)
+
+	const isActiveTabLoading =
+		activeQueueTab === 'due' ? isQueueLoading : isNotesLoading
+	const isQueueEmpty =
+		!isActiveTabLoading &&
+		(activeQueueTab === 'due'
+			? queueSections.length === 0 && !hasNextPage
+			: unreviewedSections.length === 0)
+
+	useEffect(() => {
+		if (activeQueueTab !== 'due' || !hasNextPage || isFetchingNextPage) return
+		const target = loadMoreRef.current
+		if (!target) return
+
+		const observer = new IntersectionObserver(
+			entries => {
+				const [entry] = entries
+				if (!entry?.isIntersecting) return
+				fetchNextPage().catch(() => {})
+			},
+			{ rootMargin: '300px 0px', threshold: 0 }
+		)
+
+		observer.observe(target)
+		return () => observer.disconnect()
+	}, [activeQueueTab, hasNextPage, isFetchingNextPage, fetchNextPage])
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={QueueHeaderStarIcon} title='Review'>
-				<EntityTypeFilter
-					activeFilter={activeFilter}
-					onFilterChange={setActiveFilter}
-				/>
+			<PageLayout.Header icon={ReviewSidebarStarIcon} title='Review'>
+				<div className='flex justify-start'>
+					<Tabs
+						className='-mb-2'
+						onValueChange={value => {
+							if (value === 'due' || value === 'unreviewed') {
+								setActiveQueueTab(value)
+							}
+						}}
+						value={activeQueueTab}
+					>
+						<TabsList className='border-b-0' variant='line'>
+							<TabsTrigger className='gap-2' value='due'>
+								<span>Due</span>
+							</TabsTrigger>
+							<TabsTrigger className='gap-2' value='unreviewed'>
+								<span>Unreviewed</span>
+								<CountBadge
+									className='h-4 min-w-4 px-1 text-[10px]'
+									count={unreviewedNotes.length}
+								/>
+							</TabsTrigger>
+						</TabsList>
+					</Tabs>
+				</div>
 			</PageLayout.Header>
-			<PageLayout.Content className='max-w-screen'>
-				{isQueueLoading ? (
-					<ReviewQueueSkeleton />
-				) : isQueueEmpty ? (
-					<ReviewQueueEmpty />
-				) : (
-					<ReviewQueueGroupedList
-						onDueBadgeClick={openReviewDialog}
-						onEntityClick={handleEntityClick}
-						sections={sections}
-						statusRowPlacement={statusRowPlacement}
+			<PageLayout.Content className='max-w-screen px-6 pt-3 pb-6'>
+				<div className='mb-4'>
+					<EntityTypeFilter
+						activeFilter={activeFilter}
+						onFilterChange={setActiveFilter}
 					/>
+				</div>
+				{isActiveTabLoading ? (
+					<LoadingSpinner containerClassName='min-h-64' />
+				) : isQueueEmpty ? (
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<BookOpen />
+							</EmptyMedia>
+							<EmptyTitle>See items up for review</EmptyTitle>
+						</EmptyHeader>
+					</Empty>
+				) : activeQueueTab === 'unreviewed' ? (
+					<div className='space-y-8'>
+						{unreviewedSections.map(section => (
+							<div className='space-y-3' key={section.id}>
+								<div className='flex items-center gap-2'>
+									<h3 className='font-bold text-xl'>{section.label}</h3>
+									<CountBadge count={section.notes.length} />
+								</div>
+								<MasonryLayout
+									estimateItemSize={(note, _index, laneWidth) =>
+										estimateCardSize(
+											note.title || 'Untitled note',
+											note.body || '',
+											laneWidth
+										)
+									}
+									gap={16}
+									getItemKey={note => `unreviewed-note-${note.id}`}
+									items={section.notes}
+									renderItem={note => (
+										<NoteCard
+											note={note}
+											onClick={() => navigateToNote(note.id)}
+										/>
+									)}
+								/>
+							</div>
+						))}
+					</div>
+				) : (
+					<div className='space-y-8'>
+						{queueSections.map(section => (
+							<div className='space-y-3' key={section.id}>
+								<div className='flex items-center gap-2'>
+									<h3
+										className={`font-bold text-xl ${section.headingClassName ?? ''}`}
+									>
+										{section.label}
+									</h3>
+									<CountBadge count={section.items.length} />
+								</div>
+								<MasonryLayout
+									estimateItemSize={(item, _index, laneWidth) =>
+										estimateCardSize(
+											item.entry.note.title || 'Untitled note',
+											item.entry.note.body || '',
+											laneWidth
+										)
+									}
+									gap={16}
+									getItemKey={item => item.key}
+									items={section.items}
+									renderItem={item => {
+										const badges = orderNoteStatusBadges(
+											item.entry.status_badges ?? []
+										).map(apiBadge =>
+											toNoteCardStatusBadge(apiBadge, {
+												onOpenReviewDialog: openReviewDialog
+											})
+										)
+
+										return (
+											<NoteCard
+												note={item.entry.note}
+												onClick={() => navigateToNote(item.entry.note.id)}
+												statusBadges={badges}
+											/>
+										)
+									}}
+								/>
+							</div>
+						))}
+						{hasNextPage && (
+							<div
+								aria-hidden={true}
+								className='flex h-10 items-center justify-center'
+								ref={loadMoreRef}
+							>
+								{isFetchingNextPage && (
+									<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
+								)}
+							</div>
+						)}
+					</div>
 				)}
 			</PageLayout.Content>
 		</PageLayout>
 	)
 }
 
-function ReviewQueueEmpty() {
-	return (
-		<Empty>
-			<EmptyHeader>
-				<EmptyMedia variant='icon'>
-					<BookOpen />
-				</EmptyMedia>
-				<EmptyTitle>See items up for review</EmptyTitle>
-			</EmptyHeader>
-		</Empty>
+const ReviewSidebarStarIcon = forwardRef<SVGSVGElement, LucideProps>(
+	({ className, ...props }, ref) => (
+		<Star
+			ref={ref}
+			{...props}
+			className={`fill-yellow-500 text-yellow-500 ${className ?? ''}`}
+		/>
 	)
-}
+)
 
-function ReviewQueueGroupedList({
-	sections,
-	onEntityClick,
-	onDueBadgeClick,
-	statusRowPlacement
-}: {
-	sections: Array<QueueSection>
-	onEntityClick: (entity: EntityItem) => void
-	onDueBadgeClick: (reviewId: number) => void
-	statusRowPlacement: StatusRowPlacement
-}) {
-	const renderItem = useCallback(
-		(queueItem: QueueCardItem) => {
-			const entity = queueItem.entity
-			let headerRight: ReactNode
-			switch (entity.type) {
-				case 'topic':
-					headerRight = <TopicActionMenu topic={entity.item} />
-					break
-				case 'source':
-					headerRight = <SourceActionMenu source={entity.item} />
-					break
-				case 'practice':
-					headerRight = <PracticeActionMenu practice={entity.item} />
-					break
-			}
-
-			let dueStatusBadge: LearnableCardStatusBadge | null = null
-			if (queueItem.queueType === 'due') {
-				const isOverdue = (queueItem.daysUntilDue ?? 0) < 0
-				const isDueToday = (queueItem.daysUntilDue ?? 0) === 0
-				const dueReviewId = queueItem.reviewId
-				dueStatusBadge = {
-					label: formatDueLabel(queueItem.daysUntilDue),
-					tooltip: formatDueTooltip(queueItem.daysUntilDue),
-					onClick:
-						dueReviewId != null
-							? () => onDueBadgeClick(dueReviewId)
-							: undefined,
-					variant: isOverdue ? 'destructive' : 'warning',
-					className: isOverdue
-						? 'h-5 border-transparent bg-rose-200 text-rose-900 text-xs dark:bg-red-950 dark:text-red-200'
-						: isDueToday
-							? 'h-5 border border-blue-300 bg-blue-100 text-blue-900 text-xs dark:border-blue-700 dark:bg-blue-950 dark:text-blue-200'
-							: 'h-5 border border-zinc-300 bg-zinc-100 text-zinc-900 text-xs dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200'
-				}
-			}
-
-			let hazyStatusBadge: LearnableCardStatusBadge | null = null
-			if (
-				queueItem.daysUntilHazy !== null &&
-				queueItem.daysUntilHazy >= 0 &&
-				queueItem.daysUntilHazy <= 7
-			) {
-				hazyStatusBadge = {
-					label: formatHazySoonLabel(queueItem.daysUntilHazy),
-					tooltip: formatHazyTooltip(queueItem.daysUntilHazy),
-					variant: 'outline',
-					className:
-						'h-5 border-transparent bg-amber-100 text-amber-900 text-xs dark:bg-amber-950 dark:text-amber-200'
-				}
-			}
-
-			let hazyForBadge: LearnableCardStatusBadge | null = null
-			if (
-				queueItem.urgencyDays < 0 &&
-				entity.item.freshness_tier === 'Hazy' &&
-				entity.item.days_in_current_tier != null
-			) {
-				hazyForBadge = {
-					label: formatHazyForLabel(entity.item.days_in_current_tier),
-					variant: 'outline',
-					className:
-						'h-5 border-transparent bg-amber-100 text-amber-900 text-xs dark:bg-amber-950 dark:text-amber-200'
-				}
-			}
-
-			const statusBadges: Array<LearnableCardStatusBadge> = []
-			if (hazyForBadge) statusBadges.push(hazyForBadge)
-			if (hazyStatusBadge) statusBadges.push(hazyStatusBadge)
-			if (dueStatusBadge) statusBadges.push(dueStatusBadge)
-
-			return (
-				<EntityCard
-					entity={entity}
-					headerRight={headerRight}
-					minHeight={96}
-					onEntityClick={onEntityClick}
-					statusBadges={statusBadges}
-					statusRowPlacement={statusRowPlacement}
-				/>
-			)
-		},
-		[onDueBadgeClick, onEntityClick, statusRowPlacement]
-	)
-
-	return (
-		<div className='space-y-8'>
-			{sections.map(section => (
-				<div className='space-y-3' key={section.id}>
-					<div className='flex items-center gap-2'>
-						<h3
-							className={`font-bold text-xl ${section.headingClassName ?? ''}`}
-						>
-							{section.label}
-						</h3>
-						<CountBadge count={section.items.length} />
-					</div>
-					<MasonryLayout
-						estimateItemSize={(item, index, laneWidth) =>
-							estimateEntitySize(item.entity, index, laneWidth)
-						}
-						gap={16}
-						getItemKey={item => item.key}
-						items={section.items}
-						renderItem={renderItem}
-					/>
-				</div>
-			))}
-		</div>
-	)
-}
-
-function ReviewQueueSkeleton() {
-	return <LoadingSpinner containerClassName='min-h-64' />
-}
+ReviewSidebarStarIcon.displayName = 'ReviewSidebarStarIcon'
