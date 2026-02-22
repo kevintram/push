@@ -111,6 +111,9 @@ import {
 } from '~/utils/formatRelativeDate'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 
+const EMPTY_BADGE_CLASSNAME =
+	'h-5 rounded-sm border-transparent bg-amber-100 text-amber-900 text-xs shadow-sm dark:bg-amber-950 dark:text-amber-200'
+
 function toFreshnessTier(
 	value: string | null
 ): 'Fresh' | 'Fine' | 'Hazy' | 'Forgotten' | null {
@@ -353,6 +356,7 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
 	const [isTitleRevealed, setIsTitleRevealed] = useState(!hidesPrimary)
 	const [isBodyRevealed, setIsBodyRevealed] = useState(!hidesSecondary)
+	const isBodyEmpty = body.trim().length === 0
 
 	useEffect(() => {
 		if (!note) return
@@ -2110,12 +2114,20 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 
 							{hidesSecondary && !isBodyRevealed ? (
 								<Button
-									className='mt-1 min-h-16 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-base text-muted-foreground hover:bg-muted/70'
+									className='relative mt-1 min-h-16 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-base text-muted-foreground hover:bg-muted/70'
 									onClick={() => setIsBodyRevealed(true)}
 									size='default'
 									variant='outline'
 								>
 									Reveal
+									{isBodyEmpty ? (
+										<Badge
+											className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
+											variant='outline'
+										>
+											Empty
+										</Badge>
+									) : null}
 								</Button>
 							) : (
 								<Textarea
