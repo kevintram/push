@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
+from app.utils.current_date import get_current_date
 from app.utils.retrievability import (
     FINE_THRESHOLD,
     compute_distance_to_retrievability,
@@ -28,10 +29,16 @@ def _format_due_label(days_until_due: int) -> str:
 
 
 def _format_hazy_soon_label(days_until_hazy: int) -> str:
+    if days_until_hazy == 1:
+        return "Hazy Tomorrow"
     return f"Hazy in {days_until_hazy}d"
 
 
 def _format_hazy_for_label(days_in_tier: int) -> str:
+    if days_in_tier == 1:
+        return "Hazy Today"
+    if days_in_tier == 2:
+        return "Hazy Yesterday"
     return f"Hazy for {days_in_tier}d"
 
 
@@ -53,7 +60,7 @@ def get_days_until_hazy(note: Note, *, today: date | None = None) -> int | None:
         note.stability,
         note.last_reviewed_at,
         target_retrievability=FINE_THRESHOLD,
-        current_date=today or date.today(),
+        current_date=today or get_current_date(),
     )
     # Avoid "0d" edge cases: a note is either at least one full day away from
     # becoming hazy, or already hazy/overdue by at least one day.
@@ -86,7 +93,7 @@ def build_note_status_badges(
     resolve_due_badge: bool = True,
 ) -> list[dict[str, str | int | None]]:
     """Build stable, API-level status badges for a note."""
-    current_day = today or date.today()
+    current_day = today or get_current_date()
     selected_due_review = (
         due_review
         if due_review is not None

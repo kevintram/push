@@ -1,6 +1,8 @@
 import math
 from datetime import date
 
+from app.utils.current_date import get_current_date
+
 
 # FSRS constants from py-fsrs
 FSRS_DECAY = -0.1542
@@ -29,7 +31,7 @@ def calculate_retrievability(
         return None
 
     if current_date is None:
-        current_date = date.today()
+        current_date = get_current_date()
 
     elapsed_days = max(0, (current_date - last_reviewed_at).days)
 
@@ -99,7 +101,7 @@ def calculate_days_in_current_tier(
         return None
 
     if current_date is None:
-        current_date = date.today()
+        current_date = get_current_date()
 
     tier = get_freshness_tier(retrievability)
     if tier is None:
@@ -139,7 +141,7 @@ def compute_distance_to_retrievability(
     (days since).
     """
     if current_date is None:
-        current_date = date.today()
+        current_date = get_current_date()
 
     if last_reviewed_at is None:
         last_reviewed_at = current_date

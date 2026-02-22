@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { TooltipProvider } from '~/components/ui/tooltip'
 import { FlashcardModeProvider } from '~/stores/FlashcardModeContext'
 import { ThemeProvider } from '~/stores/ThemeContext'
+import { WeekStartProvider } from '~/stores/WeekStartContext'
 import './global.css'
 import { routeTree } from './app/routeTree.gen'
 
@@ -50,12 +51,14 @@ enableMocking()
 				<StrictMode>
 					<ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
 						<FlashcardModeProvider>
-							<QueryClientProvider client={queryClient}>
-								<TooltipProvider delay={200}>
-									<ReactQueryDevtools initialIsOpen={false} />
-									<RouterProvider router={router} />
-								</TooltipProvider>
-							</QueryClientProvider>
+							<WeekStartProvider>
+								<QueryClientProvider client={queryClient}>
+									<TooltipProvider delay={200}>
+										<ReactQueryDevtools initialIsOpen={false} />
+										<RouterProvider router={router} />
+									</TooltipProvider>
+								</QueryClientProvider>
+							</WeekStartProvider>
 						</FlashcardModeProvider>
 					</ThemeProvider>
 				</StrictMode>

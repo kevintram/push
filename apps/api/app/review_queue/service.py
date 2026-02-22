@@ -1,7 +1,5 @@
 """Review queue business logic (unified due + hazy queue over notes)."""
 
-from datetime import date
-
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -9,6 +7,7 @@ from app.database import get_session_factory
 from app.models import Note, Review
 from app.notes.status_badges import build_note_status_badges, get_days_until_hazy
 from app.schemas.review_queue import ReviewQueueItem, ReviewQueuePage
+from app.utils.current_date import get_current_date
 
 
 def _sort_key(item: ReviewQueueItem) -> tuple[int, int, int]:
@@ -24,7 +23,7 @@ async def list_review_queue(
 ) -> ReviewQueuePage:
     """Unified review queue over notes with due reviews and hazy candidates."""
     session_factory = get_session_factory()
-    as_of = date.today()
+    as_of = get_current_date()
     due_note_ids_query = (
         select(Review.note_id)
         .where(

@@ -12,9 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VirtualizationSmokeRouteImport } from './routes/virtualization-smoke'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
-import { Route as MainUpcomingRouteImport } from './routes/_main/upcoming'
-import { Route as MainUnscheduledRouteImport } from './routes/_main/unscheduled'
-import { Route as MainTodayRouteImport } from './routes/_main/today'
 import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainReadRouteImport } from './routes/_main/read'
@@ -37,21 +34,6 @@ const MainRoute = MainRouteImport.update({
 const MainIndexRoute = MainIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainUpcomingRoute = MainUpcomingRouteImport.update({
-  id: '/upcoming',
-  path: '/upcoming',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainUnscheduledRoute = MainUnscheduledRouteImport.update({
-  id: '/unscheduled',
-  path: '/unscheduled',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainTodayRoute = MainTodayRouteImport.update({
-  id: '/today',
-  path: '/today',
   getParentRoute: () => MainRoute,
 } as any)
 const MainReviewRoute = MainReviewRouteImport.update({
@@ -109,9 +91,6 @@ export interface FileRoutesByFullPath {
   '/read': typeof MainReadRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
-  '/today': typeof MainTodayRoute
-  '/unscheduled': typeof MainUnscheduledRoute
-  '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/notes/$noteId': typeof MainNotesNoteIdRouteWithChildren
   '/notes/$noteId/': typeof MainNotesNoteIdIndexRoute
@@ -125,9 +104,6 @@ export interface FileRoutesByTo {
   '/read': typeof MainReadRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
-  '/today': typeof MainTodayRoute
-  '/unscheduled': typeof MainUnscheduledRoute
-  '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
   '/notes/$noteId': typeof MainNotesNoteIdIndexRoute
 }
@@ -142,9 +118,6 @@ export interface FileRoutesById {
   '/_main/read': typeof MainReadRoute
   '/_main/recent': typeof MainRecentRoute
   '/_main/review': typeof MainReviewRoute
-  '/_main/today': typeof MainTodayRoute
-  '/_main/unscheduled': typeof MainUnscheduledRoute
-  '/_main/upcoming': typeof MainUpcomingRoute
   '/_main/': typeof MainIndexRoute
   '/_main/notes_/$noteId': typeof MainNotesNoteIdRouteWithChildren
   '/_main/notes_/$noteId/': typeof MainNotesNoteIdIndexRoute
@@ -160,9 +133,6 @@ export interface FileRouteTypes {
     | '/read'
     | '/recent'
     | '/review'
-    | '/today'
-    | '/unscheduled'
-    | '/upcoming'
     | '/'
     | '/notes/$noteId'
     | '/notes/$noteId/'
@@ -176,9 +146,6 @@ export interface FileRouteTypes {
     | '/read'
     | '/recent'
     | '/review'
-    | '/today'
-    | '/unscheduled'
-    | '/upcoming'
     | '/'
     | '/notes/$noteId'
   id:
@@ -192,9 +159,6 @@ export interface FileRouteTypes {
     | '/_main/read'
     | '/_main/recent'
     | '/_main/review'
-    | '/_main/today'
-    | '/_main/unscheduled'
-    | '/_main/upcoming'
     | '/_main/'
     | '/_main/notes_/$noteId'
     | '/_main/notes_/$noteId/'
@@ -226,27 +190,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof MainIndexRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/upcoming': {
-      id: '/_main/upcoming'
-      path: '/upcoming'
-      fullPath: '/upcoming'
-      preLoaderRoute: typeof MainUpcomingRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/unscheduled': {
-      id: '/_main/unscheduled'
-      path: '/unscheduled'
-      fullPath: '/unscheduled'
-      preLoaderRoute: typeof MainUnscheduledRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/today': {
-      id: '/_main/today'
-      path: '/today'
-      fullPath: '/today'
-      preLoaderRoute: typeof MainTodayRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/review': {
@@ -335,9 +278,6 @@ interface MainRouteChildren {
   MainReadRoute: typeof MainReadRoute
   MainRecentRoute: typeof MainRecentRoute
   MainReviewRoute: typeof MainReviewRoute
-  MainTodayRoute: typeof MainTodayRoute
-  MainUnscheduledRoute: typeof MainUnscheduledRoute
-  MainUpcomingRoute: typeof MainUpcomingRoute
   MainIndexRoute: typeof MainIndexRoute
   MainNotesNoteIdRoute: typeof MainNotesNoteIdRouteWithChildren
 }
@@ -350,9 +290,6 @@ const MainRouteChildren: MainRouteChildren = {
   MainReadRoute: MainReadRoute,
   MainRecentRoute: MainRecentRoute,
   MainReviewRoute: MainReviewRoute,
-  MainTodayRoute: MainTodayRoute,
-  MainUnscheduledRoute: MainUnscheduledRoute,
-  MainUpcomingRoute: MainUpcomingRoute,
   MainIndexRoute: MainIndexRoute,
   MainNotesNoteIdRoute: MainNotesNoteIdRouteWithChildren,
 }

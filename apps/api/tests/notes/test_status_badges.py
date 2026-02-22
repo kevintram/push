@@ -84,7 +84,33 @@ class TestNoteStatusBadges:
         )
 
         hazy_for = next(badge for badge in badges if badge["key"] == "hazy_for")
-        assert hazy_for["label"] == "Hazy for 1d"
+        assert hazy_for["label"] == "Hazy Today"
+
+    def test_hazy_soon_uses_tomorrow_label_for_1d(self):
+        note = _make_note(freshness_tier="Fine")
+        badges = build_note_status_badges(
+            note,
+            today=date(2026, 2, 21),
+            days_until_hazy=1,
+        )
+
+        hazy_soon = next(badge for badge in badges if badge["key"] == "hazy_soon")
+        assert hazy_soon["label"] == "Hazy Tomorrow"
+
+    def test_hazy_for_uses_yesterday_label_for_2d(self):
+        note = _make_note(
+            freshness_tier="Hazy",
+            days_in_current_tier=2,
+            days_until_next_tier=3,
+        )
+        badges = build_note_status_badges(
+            note,
+            today=date(2026, 2, 21),
+            days_until_hazy=-1,
+        )
+
+        hazy_for = next(badge for badge in badges if badge["key"] == "hazy_for")
+        assert hazy_for["label"] == "Hazy Yesterday"
 
     def test_get_days_until_hazy_normalizes_zero_for_hazy_items(self, monkeypatch):
         note = _make_note(freshness_tier="Hazy")

@@ -1,4 +1,4 @@
-import { LogOut, Monitor, Moon, Sun } from 'lucide-react'
+import { Check, ChevronDown, LogOut, Monitor, Moon, Sun } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import {
 	Dialog,
@@ -6,9 +6,16 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/dialog'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/dropdown-menu'
 import { Switch } from '~/components/ui/switch'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { useTheme } from '~/stores/ThemeContext'
+import { useWeekStart, WEEK_START_OPTIONS } from '~/stores/WeekStartContext'
 
 const THEME_OPTIONS = [
 	{ value: 'light', label: 'Light', icon: Sun },
@@ -24,6 +31,10 @@ interface SettingsDialogProps {
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 	const { theme, setTheme } = useTheme()
 	const { showReviewModeWarning, setShowReviewModeWarning } = useFlashcardMode()
+	const { weekStartDay, setWeekStartDay } = useWeekStart()
+	const selectedWeekStartOption = WEEK_START_OPTIONS.find(
+		option => option.value === weekStartDay
+	) ?? { value: 0, label: 'Sunday' }
 
 	const handleLogout = () => {
 		window.location.href = `${import.meta.env.VITE_API_URL}/logout`
@@ -69,6 +80,43 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 							className='ml-24'
 							onCheckedChange={setShowReviewModeWarning}
 						/>
+					</div>
+
+					<div className='flex items-start justify-between border-t pt-6'>
+						<div>
+							<div className='font-medium text-sm'>Start week on</div>
+							<div className='text-muted-foreground text-xs'>
+								Used for Review week sections
+							</div>
+						</div>
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								render={
+									<Button
+										className='min-w-28 justify-between'
+										variant='outline'
+									/>
+								}
+							>
+								<span>{selectedWeekStartOption.label}</span>
+								<ChevronDown className='h-4 w-4' />
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align='end' matchTriggerWidth={false}>
+								{WEEK_START_OPTIONS.map(option => {
+									const isSelected = weekStartDay === option.value
+
+									return (
+										<DropdownMenuItem
+											key={option.value}
+											onClick={() => setWeekStartDay(option.value)}
+										>
+											<span className='flex-1'>{option.label}</span>
+											{isSelected && <Check className='h-4 w-4' />}
+										</DropdownMenuItem>
+									)
+								})}
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 
 					<div className='flex items-start justify-between border-t pt-6'>

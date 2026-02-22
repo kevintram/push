@@ -133,3 +133,52 @@ class TestReviewQueueEndpoint:
             if item["queue_type"] == "due"
         }
         assert returned_due_ids.issuperset(set(review_ids))
+
+    async def test_review_queue_uses_client_date_header_for_as_of_and_distances(
+        self,
+        test_client: AsyncClient,
+        db_session: AsyncSession,
+        monkeypatch,
+    ):
+        test_session_factory = async_sessionmaker(
+            bind=db_session.bind,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+        monkeypatch.setattr(
+            review_queue_service,
+            "get_session_factory",
+            lambda: test_session_factory,
+        )
+
+        note_response = await test_client.post(
+            "/notes/",
+            json={"title": "Client-date note", "body": "", "tags": ["TOPIC"]},
+        )
+        assert note_response.status_code == 201
+        note = note_response.json()
+
+        review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "note_id": note["id"],
+                "scheduled_at": str(date.today()),
+            },
+        )
+        assert review_response.status_code == 200
+        review = review_response.json()
+
+        client_as_of = date.today() - timedelta(days=2)
+        queue_response = await test_client.get(
+            "/review-queue/",
+            headers={"X-Client-Date": str(client_as_of)},
+        )
+        assert queue_response.status_code == 200
+
+        payload = queue_response.json()
+        assert payload["as_of"] == str(client_as_of)
+
+        due_item = next(
+            item for item in payload["items"] if item.get("review_id") == review["id"]
+        )
+        assert due_item["days_until_due"] == 2
