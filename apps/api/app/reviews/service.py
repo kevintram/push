@@ -1,29 +1,19 @@
-"""Review business logic, data access, and FSRS logic.
-
-FSRS helper functions are kept here (not in a separate module) because they're
-tightly coupled with database operations in replay functions.
-"""
+"""Review business logic and FSRS replay (note-centric)."""
 
 from datetime import date, datetime, time, timezone
 from typing import Literal
 
 from fsrs import Card, Rating as FSRSRating, Scheduler, State as FSRSState
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.exceptions import AlreadyExistsError, BadRequestError, NotFoundError
-from app.models import FsrsState, Practice, Review, Source, Topic
-
-ReviewEntity = Topic | Source | Practice
-
-
-# --- FSRS Helpers (pure functions, kept here for locality) ---
+from app.exceptions import BadRequestError, NotFoundError
+from app.models import FsrsState, Note, Review
+from app.utils.retrievability import FINE_THRESHOLD
 
 
 def map_rating_to_fsrs(rating: str) -> FSRSRating:
-    """Map database rating string to FSRS Rating enum."""
     mapping = {
         "miss": FSRSRating.Again,
         "hard": FSRSRating.Hard,
@@ -34,7 +24,6 @@ def map_rating_to_fsrs(rating: str) -> FSRSRating:
 
 
 def map_state_to_fsrs(state: str) -> FSRSState:
-    """Map database state string to FSRS State enum."""
     mapping = {
         "LEARNING": FSRSState.Learning,
         "REVIEW": FSRSState.Review,
@@ -44,7 +33,6 @@ def map_state_to_fsrs(state: str) -> FSRSState:
 
 
 def map_fsrs_state_to_db(state: FSRSState) -> str:
-    """Map FSRS State enum to database string."""
     mapping = {
         FSRSState.Learning: "LEARNING",
         FSRSState.Review: "REVIEW",
@@ -54,13 +42,12 @@ def map_fsrs_state_to_db(state: FSRSState) -> str:
 
 
 def _card_from_review(review: Review) -> Card:
-    """Build an FSRS Card from a review's after-state."""
-    state = map_state_to_fsrs(review.state_after)
-    last_review_date = review.completed_at
-    if isinstance(last_review_date, datetime):
-        last_review_datetime = last_review_date
+    state = map_state_to_fsrs(review.state_after or "LEARNING")
+    review_date = review.completed_at
+    if isinstance(review_date, datetime):
+        review_datetime = review_date
     else:
-        last_review_datetime = datetime.combine(last_review_date, time.min).replace(
+        review_datetime = datetime.combine(review_date, time.min).replace(
             tzinfo=timezone.utc
         )
     return Card(
@@ -68,12 +55,11 @@ def _card_from_review(review: Review) -> Card:
         stability=review.stability_after,
         difficulty=review.difficulty_after,
         step=None if state == FSRSState.Review else review.step_after,
-        last_review=last_review_datetime,
+        last_review=review_datetime,
     )
 
 
 def _card_from_inherited(fsrs_state: FsrsState) -> Card:
-    """Build an FSRS Card from an entity's inherited FSRS state."""
     state_str = fsrs_state.inherited_state or "LEARNING"
     state = map_state_to_fsrs(state_str)
     last_review_dt = (
@@ -93,7 +79,6 @@ def _card_from_inherited(fsrs_state: FsrsState) -> Card:
 
 
 def _apply_card_to_fsrs(fsrs_state: FsrsState, card: Card) -> None:
-    """Write an FSRS Card's values into the entity's main FSRS fields."""
     fsrs_state.stability = card.stability
     fsrs_state.difficulty = card.difficulty
     fsrs_state.state = map_fsrs_state_to_db(card.state)
@@ -105,18 +90,6 @@ def update_fsrs(
     reviews: list[Review],
     last_before_review: Review | None,
 ) -> None:
-    """
-    Run FSRS calculations for a list of reviews and update entity state.
-
-    Sets before/after FSRS state on each review and updates the entity's fsrs_state
-    to match the final review's after-state.
-
-    Args:
-        fsrs_state: The FsrsState to update (mutated in place)
-        reviews: Reviews in chronological order by completed_at (mutated with before/after states)
-        last_before_review: Last completed review before the reviews list, or None
-    """
-    # Build starting card from prior review or inherited state
     if last_before_review and last_before_review.stability_after is not None:
         starting_card = _card_from_review(last_before_review)
     else:
@@ -126,11 +99,10 @@ def update_fsrs(
         _apply_card_to_fsrs(fsrs_state, starting_card)
         return
 
-    # Process each review
-    scheduler = Scheduler()
+    scheduler = Scheduler(desired_retention=FINE_THRESHOLD)
     current_card = starting_card
+
     for review in reviews:
-        # Set review's before-state from current_card
         review.stability_before = current_card.stability
         review.difficulty_before = current_card.difficulty
         review.state_before = map_fsrs_state_to_db(current_card.state)
@@ -141,7 +113,6 @@ def update_fsrs(
             else current_card.due
         )
 
-        # Run FSRS
         fsrs_rating = map_rating_to_fsrs(review.rating or "good")
         review_date = review.completed_at
         if isinstance(review_date, datetime):
@@ -152,10 +123,11 @@ def update_fsrs(
             )
 
         updated_card, _ = scheduler.review_card(
-            card=current_card, rating=fsrs_rating, review_datetime=review_datetime
+            card=current_card,
+            rating=fsrs_rating,
+            review_datetime=review_datetime,
         )
 
-        # Set review's after-state
         review.stability_after = updated_card.stability
         review.difficulty_after = updated_card.difficulty
         review.state_after = map_fsrs_state_to_db(updated_card.state)
@@ -164,37 +136,45 @@ def update_fsrs(
 
         current_card = updated_card
 
-    # Update fsrs_state with final card
     _apply_card_to_fsrs(fsrs_state, current_card)
+
+
+async def _get_note(session: AsyncSession, note_id: int, user_id: str) -> Note:
+    result = await session.execute(
+        select(Note)
+        .where(Note.id == note_id, Note.user_id == user_id)
+        .options(selectinload(Note.fsrs_state), selectinload(Note.tag_assignments))
+    )
+    note = result.scalar_one_or_none()
+    if not note:
+        raise NotFoundError("Note", note_id)
+    return note
+
+
+async def ensure_entity_fsrs_state(session: AsyncSession, note: Note) -> None:
+    if note.fsrs_state is not None:
+        return
+
+    fsrs_state = FsrsState(srs_enabled=True)
+    session.add(fsrs_state)
+    await session.flush()
+    note.fsrs_state_id = fsrs_state.id
+    note.fsrs_state = fsrs_state
 
 
 async def update_entity_fsrs(
     session: AsyncSession,
-    entity: Topic | Source | Practice,
+    note: Note,
     starting_from: date,
 ) -> None:
-    """Update FSRS state for an entity from a given date forward.
-
-    Fetches all completed reviews from starting_from onward, finds the prior
-    review state, and runs FSRS to recalculate. No-op if entity has no fsrs_state.
-    """
-    if entity.fsrs_state is None:
+    if note.fsrs_state is None:
         return
 
-    # Determine filter based on entity type
-    if isinstance(entity, Topic):
-        entity_filter = Review.topic_id == entity.id
-    elif isinstance(entity, Source):
-        entity_filter = Review.source_id == entity.id
-    else:
-        entity_filter = Review.practice_id == entity.id
-
-    # Fetch completed reviews from starting_from onward
     reviews_result = await session.execute(
         select(Review)
         .where(
-            entity_filter,
-            Review.user_id == entity.user_id,
+            Review.note_id == note.id,
+            Review.user_id == note.user_id,
             Review.completed_at.isnot(None),
             Review.completed_at >= starting_from,
         )
@@ -202,12 +182,11 @@ async def update_entity_fsrs(
     )
     reviews_to_replay = list(reviews_result.scalars().all())
 
-    # Find last review BEFORE starting_from
     before_result = await session.execute(
         select(Review)
         .where(
-            entity_filter,
-            Review.user_id == entity.user_id,
+            Review.note_id == note.id,
+            Review.user_id == note.user_id,
             Review.completed_at.isnot(None),
             Review.completed_at < starting_from,
         )
@@ -216,29 +195,118 @@ async def update_entity_fsrs(
     )
     last_before = before_result.scalar_one_or_none()
 
-    update_fsrs(entity.fsrs_state, reviews_to_replay, last_before)
+    update_fsrs(note.fsrs_state, reviews_to_replay, last_before)
     if reviews_to_replay:
-        entity.fsrs_state.last_reviewed_at = reviews_to_replay[-1].completed_at
+        note.fsrs_state.last_reviewed_at = reviews_to_replay[-1].completed_at
     elif last_before is not None:
-        entity.fsrs_state.last_reviewed_at = last_before.completed_at
+        note.fsrs_state.last_reviewed_at = last_before.completed_at
     else:
-        # Restore inherited value (or None if no inheritance)
-        entity.fsrs_state.last_reviewed_at = entity.fsrs_state.inherited_last_review
+        note.fsrs_state.last_reviewed_at = note.fsrs_state.inherited_last_review
 
 
-def get_review_entity(review: Review) -> ReviewEntity | None:
-    """Return the linked entity for a review, if any."""
-    if review.practice is not None:
-        return review.practice
-    if review.source is not None:
-        return review.source
-    if review.topic is not None:
-        return review.topic
-    return None
+async def _reload_review(session: AsyncSession, review_id: int, user_id: str) -> Review:
+    result = await session.execute(
+        select(Review)
+        .where(Review.id == review_id, Review.user_id == user_id)
+        .options(
+            selectinload(Review.note).selectinload(Note.fsrs_state),
+            selectinload(Review.note).selectinload(Note.tag_assignments),
+        )
+    )
+    review = result.scalar_one_or_none()
+    if not review:
+        raise NotFoundError("Review", review_id)
+    return review
+
+
+async def get_review(session: AsyncSession, review_id: int, user_id: str) -> Review:
+    return await _reload_review(session, review_id, user_id)
+
+
+async def list_reviews(
+    session: AsyncSession,
+    user_id: str,
+    *,
+    note_id: int | None = None,
+    effective_date_before: date | None = None,
+    effective_date_after: date | None = None,
+    completed: bool | None = None,
+    scheduled: bool | None = None,
+    order: Literal["asc", "desc"] = "asc",
+) -> list[tuple[Review, str, str]]:
+    stmt = (
+        select(Review, Note.title, Note.body)
+        .join(Note, Review.note_id == Note.id)
+        .where(Review.user_id == user_id)
+    )
+
+    if note_id is not None:
+        stmt = stmt.where(Review.note_id == note_id)
+
+    if effective_date_before is not None:
+        stmt = stmt.where(Review.effective_date <= effective_date_before)
+    if effective_date_after is not None:
+        stmt = stmt.where(Review.effective_date >= effective_date_after)
+
+    if completed is not None:
+        stmt = (
+            stmt.where(Review.completed_at.isnot(None))
+            if completed
+            else stmt.where(Review.completed_at.is_(None))
+        )
+
+    if scheduled is not None:
+        stmt = (
+            stmt.where(Review.scheduled_at.isnot(None))
+            if scheduled
+            else stmt.where(Review.scheduled_at.is_(None))
+        )
+
+    if order == "desc":
+        stmt = stmt.order_by(
+            Review.effective_date.desc().nulls_last(), Review.id.desc()
+        )
+    else:
+        stmt = stmt.order_by(Review.effective_date.asc().nulls_first(), Review.id.asc())
+
+    result = await session.execute(stmt)
+    return result.all()
+
+
+async def create_review(
+    session: AsyncSession,
+    user_id: str,
+    *,
+    note_id: int,
+    description: str | None = None,
+    notes: str | None = None,
+    scheduled_at: date | None = None,
+    completed_at: date | None = None,
+    rating: str | None = None,
+) -> Review:
+    note = await _get_note(session, note_id, user_id)
+
+    new_review = Review(
+        user_id=user_id,
+        note_id=note.id,
+        description=description or "",
+        notes=notes or "",
+        scheduled_at=scheduled_at,
+        completed_at=completed_at,
+        rating=(rating or "good") if completed_at is not None else None,
+    )
+    session.add(new_review)
+    await session.flush()
+
+    if completed_at is not None:
+        await ensure_entity_fsrs_state(session, note)
+        await update_entity_fsrs(session, note, completed_at)
+        await session.flush()
+
+    return await _reload_review(session, new_review.id, user_id)
 
 
 def _clear_fsrs_fields(review: Review) -> None:
-    """Clear all FSRS before/after fields on a review."""
     review.stability_before = None
     review.difficulty_before = None
     review.state_before = None
@@ -251,382 +319,6 @@ def _clear_fsrs_fields(review: Review) -> None:
     review.due_after = None
 
 
-async def _reload_review(session: AsyncSession, review_id: int) -> Review:
-    """Re-query a review with all entity relationships loaded."""
-    result = await session.execute(
-        select(Review)
-        .where(Review.id == review_id)
-        .options(
-            selectinload(Review.topic),
-            selectinload(Review.source),
-            selectinload(Review.practice),
-        )
-    )
-    return result.scalar_one()
-
-
-_ENTITY_TYPES: list[tuple[str, type[ReviewEntity], str]] = [
-    ("topic_id", Topic, "Topic"),
-    ("source_id", Source, "Source"),
-    ("practice_id", Practice, "Practice"),
-]
-
-
-async def _resolve_entity_change(
-    session: AsyncSession,
-    review: Review,
-    user_id: str,
-    fields_set: set[str],
-    *,
-    topic_id: int | None,
-    source_id: int | None,
-    practice_id: int | None,
-) -> ReviewEntity | None:
-    """Resolve entity reassignment for a review update.
-
-    Applies PATCH semantics: merges provided IDs with existing review values,
-    clears siblings when a non-null ID is set, fetches the entity,
-    and updates the review's foreign keys and relationships.
-    """
-    # PATCH semantics: for each entity FK, use the caller's value if explicitly
-    # provided, otherwise keep the existing value from the current review.
-    incoming = {
-        "topic_id": topic_id,
-        "source_id": source_id,
-        "practice_id": practice_id,
-    }
-    resolved_ids: dict[str, int | None] = {
-        f: incoming[f] if f in fields_set else getattr(review, f) for f in incoming
-    }
-
-    # A non-null reassignment clears siblings
-    reassigned: list[str] = [
-        f for f in incoming if f in fields_set and incoming[f] is not None
-    ]
-    if len(reassigned) > 1:
-        raise BadRequestError(
-            "At most one of topic_id, source_id, practice_id may be set"
-        )
-    if reassigned:
-        for f in resolved_ids:
-            if f != reassigned[0]:
-                resolved_ids[f] = None
-    elif all(resolved_ids[f] is None for f in resolved_ids):
-        raise BadRequestError("Review must remain linked to an entity")
-
-    # Update review FKs
-    review.topic_id = resolved_ids["topic_id"]
-    review.source_id = resolved_ids["source_id"]
-    review.practice_id = resolved_ids["practice_id"]
-
-    # Fetch the linked entity (if any)
-    entity: ReviewEntity | None = None
-    for field, model, name in _ENTITY_TYPES:
-        eid = resolved_ids[field]
-        if eid is not None:
-            result = await session.execute(
-                select(model)
-                .where(model.id == eid, model.user_id == user_id)
-                .options(selectinload(model.fsrs_state))
-            )
-            entity = result.scalar_one_or_none()
-            if not entity:
-                raise NotFoundError(name, eid)
-            break
-
-    # Update review relationships
-    review.topic = entity if isinstance(entity, Topic) else None
-    review.source = entity if isinstance(entity, Source) else None
-    review.practice = entity if isinstance(entity, Practice) else None
-
-    return entity
-
-
-async def ensure_entity_fsrs_state(session: AsyncSession, entity: ReviewEntity) -> None:
-    """Create an FSRS state row for an entity if one does not exist yet."""
-    if entity.fsrs_state is not None:
-        return
-
-    fsrs_state = FsrsState(srs_enabled=True)
-    session.add(fsrs_state)
-    await session.flush()
-    entity.fsrs_state_id = fsrs_state.id
-    entity.fsrs_state = fsrs_state
-
-
-# --- Review Operations ---
-
-
-async def get_review(session: AsyncSession, review_id: int, user_id: str) -> Review:
-    """Get a review or raise NotFoundError."""
-    stmt = (
-        select(Review)
-        .where(Review.id == review_id, Review.user_id == user_id)
-        .options(
-            selectinload(Review.topic).selectinload(Topic.fsrs_state),
-            selectinload(Review.source).selectinload(Source.fsrs_state),
-            selectinload(Review.practice).selectinload(Practice.fsrs_state),
-        )
-    )
-    result = await session.execute(stmt)
-    review = result.scalar_one_or_none()
-    if not review:
-        raise NotFoundError("Review", review_id)
-    return review
-
-
-async def list_reviews(
-    session: AsyncSession,
-    user_id: str,
-    *,
-    topic_id: int | None = None,
-    source_id: int | None = None,
-    practice_id: int | None = None,
-    effective_date_before: date | None = None,
-    effective_date_after: date | None = None,
-    completed: bool | None = None,
-    scheduled: bool | None = None,
-    order: Literal["asc", "desc"] = "asc",
-) -> list[tuple]:
-    """List reviews with optional filters. Returns raw query results for router to process."""
-    stmt = (
-        select(
-            Review,
-            Topic.id,
-            Topic.name,
-            Topic.notes,
-            Source.id,
-            Source.title,
-            Source.notes,
-            Practice.id,
-            Practice.prompt,
-            Practice.answer,
-        )
-        .outerjoin(Topic, Review.topic_id == Topic.id)
-        .outerjoin(Source, Review.source_id == Source.id)
-        .outerjoin(Practice, Review.practice_id == Practice.id)
-        .where(Review.user_id == user_id)
-    )
-
-    if order == "desc":
-        stmt = stmt.order_by(
-            Review.effective_date.desc().nulls_last(),
-            Review.id.desc(),
-        )
-    else:
-        stmt = stmt.order_by(
-            Review.effective_date.asc().nulls_first(),
-            Review.id.asc(),
-        )
-
-    if topic_id is not None:
-        stmt = stmt.where(Review.topic_id == topic_id)
-
-    if source_id is not None:
-        stmt = stmt.where(Review.source_id == source_id)
-
-    if practice_id is not None:
-        stmt = stmt.where(Review.practice_id == practice_id)
-
-    if effective_date_before is not None:
-        stmt = stmt.where(Review.effective_date <= effective_date_before)
-
-    if effective_date_after is not None:
-        stmt = stmt.where(Review.effective_date >= effective_date_after)
-
-    if completed is not None:
-        if completed:
-            stmt = stmt.where(Review.completed_at.isnot(None))
-        else:
-            stmt = stmt.where(Review.completed_at.is_(None))
-
-    if scheduled is not None:
-        if scheduled:
-            stmt = stmt.where(Review.scheduled_at.isnot(None))
-        else:
-            stmt = stmt.where(Review.scheduled_at.is_(None))
-
-    result = await session.execute(stmt)
-    return result.all()
-
-
-async def create_review(
-    session: AsyncSession,
-    user_id: str,
-    *,
-    topic_id: int | None = None,
-    topic_data: dict | None = None,
-    source_id: int | None = None,
-    source_data: dict | None = None,
-    practice_id: int | None = None,
-    practice_data: dict | None = None,
-    description: str | None = None,
-    scheduled_at: date | None = None,
-    completed_at: date | None = None,
-    rating: str | None = None,
-) -> Review:
-    """Create a new review linked to a topic, source, or practice.
-
-    Supports creating and linking entities in any combination:
-    - For topic reviews: provide topic_id or topic_data (inline creation)
-    - For source reviews: provide source_id or source_data (inline creation)
-    - For practice reviews: provide practice_id or practice_data (inline creation)
-    Raises AlreadyExistsError if review already exists.
-    """
-    # Determine entity type
-    is_topic_review = topic_id is not None or topic_data is not None
-    is_source_review = source_id is not None or source_data is not None
-    is_practice_review = practice_id is not None or practice_data is not None
-    if not any([is_topic_review, is_source_review, is_practice_review]):
-        raise BadRequestError(
-            "Review must be linked to exactly one of topic, source, or practice"
-        )
-
-    # Resolve or create the target entity
-    topic: Topic | None = None
-    source: Source | None = None
-    practice: Practice | None = None
-    entity_for_fsrs: Topic | Source | Practice | None = None
-
-    if is_topic_review:
-        if topic_id is not None:
-            topic_result = await session.execute(
-                select(Topic)
-                .where(Topic.id == topic_id, Topic.user_id == user_id)
-                .options(selectinload(Topic.fsrs_state))
-            )
-            topic = topic_result.scalar_one_or_none()
-            if not topic:
-                raise NotFoundError("Topic", topic_id)
-        else:
-            assert topic_data is not None
-            topic = Topic(
-                name=topic_data["name"],
-                notes=topic_data.get("notes", ""),
-                user_id=user_id,
-            )
-
-            if topic_data.get("srs_enabled"):
-                fsrs_state = FsrsState(srs_enabled=True)
-                session.add(fsrs_state)
-                await session.flush()
-                topic.fsrs_state_id = fsrs_state.id
-
-            session.add(topic)
-            await session.flush()
-        entity_for_fsrs = topic
-    elif is_source_review:
-        if source_id is not None:
-            source_result = await session.execute(
-                select(Source)
-                .where(Source.id == source_id, Source.user_id == user_id)
-                .options(selectinload(Source.fsrs_state))
-            )
-            source = source_result.scalar_one_or_none()
-            if not source:
-                raise NotFoundError("Source", source_id)
-        else:
-            assert source_data is not None
-            source = Source(
-                title=source_data["title"],
-                notes=source_data.get("notes", ""),
-                user_id=user_id,
-            )
-
-            if source_data.get("srs_enabled"):
-                fsrs_state = FsrsState(srs_enabled=True)
-                session.add(fsrs_state)
-                await session.flush()
-                source.fsrs_state_id = fsrs_state.id
-
-            session.add(source)
-            await session.flush()
-        entity_for_fsrs = source
-    elif is_practice_review:
-        if practice_id is not None:
-            practice_result = await session.execute(
-                select(Practice)
-                .where(Practice.id == practice_id, Practice.user_id == user_id)
-                .options(selectinload(Practice.fsrs_state))
-            )
-            practice = practice_result.scalar_one_or_none()
-            if not practice:
-                raise NotFoundError("Practice", practice_id)
-        else:
-            assert practice_data is not None
-            practice = Practice(
-                prompt=practice_data.get("prompt", ""),
-                answer=practice_data.get("answer", ""),
-                user_id=user_id,
-            )
-
-            if practice_data.get("srs_enabled"):
-                fsrs_state = FsrsState(srs_enabled=True)
-                session.add(fsrs_state)
-                await session.flush()
-                practice.fsrs_state_id = fsrs_state.id
-
-            session.add(practice)
-            await session.flush()
-        entity_for_fsrs = practice
-
-    # Check if review is completed - only run FSRS if it is
-    if completed_at is None:
-        # Review not completed yet - create review without FSRS or rating
-        new_review = Review(
-            topic_id=topic.id if topic else None,
-            source_id=source.id if source else None,
-            practice_id=practice.id if practice else None,
-            user_id=user_id,
-            description=description,
-            scheduled_at=scheduled_at,
-            completed_at=None,
-        )
-        session.add(new_review)
-
-        try:
-            await session.flush()
-        except IntegrityError:
-            raise AlreadyExistsError("Review already exists")
-
-        return await _reload_review(session, new_review.id)
-
-    # Review is completed - create with rating, let run_fsrs set FSRS fields
-    rating_value = rating or "good"
-
-    new_review = Review(
-        topic_id=topic.id if topic else None,
-        source_id=source.id if source else None,
-        practice_id=practice.id if practice else None,
-        user_id=user_id,
-        description=description,
-        scheduled_at=scheduled_at,
-        completed_at=completed_at,
-        rating=rating_value,
-    )
-    session.add(new_review)
-
-    try:
-        await session.flush()
-    except IntegrityError:
-        raise AlreadyExistsError("Review already exists")
-
-    # Ensure entity has fsrs_state before running FSRS
-    if entity_for_fsrs is not None:
-        if entity_for_fsrs.fsrs_state is None:
-            fsrs_state = FsrsState(srs_enabled=True)
-            session.add(fsrs_state)
-            await session.flush()
-            entity_for_fsrs.fsrs_state_id = fsrs_state.id
-            entity_for_fsrs.fsrs_state = fsrs_state
-
-        # Run FSRS for this review and any subsequent reviews
-        await update_entity_fsrs(session, entity_for_fsrs, completed_at)
-        await session.flush()
-
-    return await _reload_review(session, new_review.id)
-
-
 async def update_review(
     session: AsyncSession,
     review_id: int,
@@ -634,84 +326,66 @@ async def update_review(
     *,
     description: str | None = None,
     notes: str | None = None,
-    scheduled_at: date | None = ...,  # Use ... as sentinel
-    completed_at: date | None = ...,  # Use ... as sentinel
+    scheduled_at: date | None = ...,  # sentinel
+    completed_at: date | None = ...,  # sentinel
     rating: str | None = None,
-    topic_id: int | None = None,
-    source_id: int | None = None,
-    practice_id: int | None = None,
+    note_id: int | None = None,
     fields_set: set[str],
 ) -> Review:
-    """Update a review's rating/completion and recalculate FSRS state.
+    review = await get_review(session, review_id, user_id)
+    old_completed_at = review.completed_at
+    old_note = review.note
 
-    Uses PATCH semantics - only updates fields in fields_set.
-    """
-    existing_review = await get_review(session, review_id, user_id)
-    old_completed_at = existing_review.completed_at
-    old_entity = get_review_entity(existing_review)
-
-    # --- Update scalar fields ---
     if "description" in fields_set and description is not None:
-        existing_review.description = description
+        review.description = description
     if "notes" in fields_set and notes is not None:
-        existing_review.notes = notes
+        review.notes = notes
     if "scheduled_at" in fields_set:
-        existing_review.scheduled_at = scheduled_at
+        review.scheduled_at = scheduled_at
 
-    # --- Check and do entity reassignment ---
-    new_entity = old_entity
-    entity_changed = False
-    if {"topic_id", "source_id", "practice_id"} & fields_set:
-        new_entity = await _resolve_entity_change(
-            session,
-            existing_review,
-            user_id,
-            fields_set,
-            topic_id=topic_id,
-            source_id=source_id,
-            practice_id=practice_id,
-        )
-        entity_changed = not (
-            old_entity is not None
-            and new_entity is not None
-            and type(old_entity) is type(new_entity)
-            and old_entity.id == new_entity.id
-        )
-        await session.flush()
+    note_changed = False
+    new_note = old_note
 
-    # --- Completion & rating ---
+    if "note_id" in fields_set:
+        if note_id is None:
+            raise BadRequestError("Review must remain linked to a note")
+        new_note = await _get_note(session, note_id, user_id)
+        review.note_id = new_note.id
+        note_changed = old_note is None or old_note.id != new_note.id
+
     new_completed_at = (
-        completed_at if "completed_at" in fields_set else existing_review.completed_at
+        completed_at if "completed_at" in fields_set else review.completed_at
     )
-    if existing_review.completed_at != new_completed_at:
-        existing_review.completed_at = new_completed_at
+    if review.completed_at != new_completed_at:
+        review.completed_at = new_completed_at
 
     if new_completed_at is not None:
-        existing_review.rating = rating or existing_review.rating or "good"
-    elif "rating" in fields_set:
-        existing_review.rating = rating
-
-    await session.flush()
-
-    # --- FSRS recalculation ---
-    if new_completed_at is None:
-        _clear_fsrs_fields(existing_review)
-        if old_completed_at is not None and old_entity is not None:
-            await update_entity_fsrs(session, old_entity, old_completed_at)
-    elif entity_changed:
-        if old_entity is not None:
-            replay_start = old_completed_at or new_completed_at
-            await update_entity_fsrs(session, old_entity, replay_start)
-        if new_entity is not None:
-            await ensure_entity_fsrs_state(session, new_entity)
-            await update_entity_fsrs(session, new_entity, new_completed_at)
+        if "rating" in fields_set:
+            review.rating = rating or review.rating or "good"
         else:
-            _clear_fsrs_fields(existing_review)
-    elif new_entity is not None:
-        await update_entity_fsrs(session, new_entity, new_completed_at)
+            review.rating = review.rating or "good"
+    elif "rating" in fields_set:
+        review.rating = rating
 
     await session.flush()
-    return await _reload_review(session, existing_review.id)
+
+    if new_completed_at is None:
+        _clear_fsrs_fields(review)
+        if old_completed_at is not None and old_note is not None:
+            await update_entity_fsrs(session, old_note, old_completed_at)
+    elif note_changed:
+        if old_note is not None and old_completed_at is not None:
+            await update_entity_fsrs(session, old_note, old_completed_at)
+
+        if new_note is not None:
+            await ensure_entity_fsrs_state(session, new_note)
+            await update_entity_fsrs(session, new_note, new_completed_at)
+    elif new_note is not None:
+        await ensure_entity_fsrs_state(session, new_note)
+        await update_entity_fsrs(session, new_note, new_completed_at)
+
+    await session.flush()
+    return await _reload_review(session, review.id, user_id)
 
 
 async def delete_review(
@@ -719,30 +393,13 @@ async def delete_review(
     review_id: int,
     user_id: str,
 ) -> None:
-    """Delete a review and restore entity (topic, source, or practice) to its before state."""
-    # Fetch the review with topic, source, and practice relationships
     review = await get_review(session, review_id, user_id)
-
-    # Capture entity and info before deletion
-    topic = review.topic
-    source = review.source
-    practice = review.practice
+    note = review.note
     completed_at = review.completed_at
 
-    # Delete the review
     await session.delete(review)
     await session.flush()
 
-    # Only replay if review was completed
     if completed_at is not None:
-        entity: Topic | Source | Practice | None = None
-        if practice is not None:
-            entity = practice
-        elif source is not None:
-            entity = source
-        elif topic is not None:
-            entity = topic
-
-        if entity:
-            await update_entity_fsrs(session, entity, completed_at)
-            await session.flush()
+        await update_entity_fsrs(session, note, completed_at)
+        await session.flush()

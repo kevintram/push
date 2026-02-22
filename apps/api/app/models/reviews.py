@@ -20,24 +20,15 @@ from typing import TYPE_CHECKING
 from app.models.base import Base
 
 if TYPE_CHECKING:
-    from app.models.practices import Practice
-    from app.models.sources import Source
-    from app.models.topics import Topic
+    from app.models.notes import Note
 
 
 class Review(Base):
     __tablename__ = "reviews"
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
-    # Exactly one of topic_id, source_id, or practice_id must be set (enforced by CHECK constraint)
-    topic_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey("topics.id", ondelete="CASCADE"), nullable=True
-    )
-    source_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey("sources.id", ondelete="CASCADE"), nullable=True
-    )
-    practice_id: Mapped[int | None] = mapped_column(
-        BigInteger, ForeignKey("practices.id", ondelete="CASCADE"), nullable=True
+    note_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("notes.id", ondelete="CASCADE"), nullable=False
     )
     user_id: Mapped[str] = mapped_column(String, nullable=False)
 
@@ -68,7 +59,7 @@ class Review(Base):
         server_default=text("timezone('utc'::text, now())"),
     )
 
-    # Topic FSRS state before review
+    # Entity FSRS state before review
     stability_before: Mapped[float | None] = mapped_column(Float, nullable=True)
     difficulty_before: Mapped[float | None] = mapped_column(Float, nullable=True)
     state_before: Mapped[str | None] = mapped_column(
@@ -78,7 +69,7 @@ class Review(Base):
     step_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
     due_before: Mapped[date | None] = mapped_column(Date, nullable=True)
 
-    # Topic FSRS state after review
+    # Entity FSRS state after review
     stability_after: Mapped[float | None] = mapped_column(Float, nullable=True)
     difficulty_after: Mapped[float | None] = mapped_column(Float, nullable=True)
     state_after: Mapped[str | None] = mapped_column(
@@ -89,6 +80,4 @@ class Review(Base):
     due_after: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     # Relationships
-    topic: Mapped["Topic | None"] = relationship(back_populates="reviews")
-    source: Mapped["Source | None"] = relationship(back_populates="reviews")
-    practice: Mapped["Practice | None"] = relationship(back_populates="reviews")
+    note: Mapped["Note"] = relationship(back_populates="reviews")
