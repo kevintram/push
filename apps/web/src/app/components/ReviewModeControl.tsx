@@ -20,7 +20,7 @@ export function ReviewModeControl() {
 					Hide stuff so you can guess stuff
 				</p>
 			</div>
-			<div className='flex justify-center'>
+			<div>
 				<ToggleGroup
 					onValueChange={value => {
 						if (value.length > 0) {

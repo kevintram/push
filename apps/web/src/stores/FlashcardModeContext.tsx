@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 const FLASHCARD_MODE_STORAGE_KEY = '3gulp-flashcard-mode'
 const REVIEW_MODE_WARNING_STORAGE_KEY = '3gulp-review-mode-warning'
+const REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY = '3gulp-review-mode-auto-enable'
 
 export const REVIEW_MODES = ['off', 'on'] as const
 
@@ -15,6 +16,8 @@ type FlashcardModeContextType = {
 	hidesSecondary: boolean
 	showReviewModeWarning: boolean
 	setShowReviewModeWarning: (value: boolean) => void
+	autoEnableReviewMode: boolean
+	setAutoEnableReviewMode: (value: boolean) => void
 }
 
 const FlashcardModeContext = createContext<
@@ -55,12 +58,26 @@ function getInitialReviewMode(): ReviewMode {
 	return isReviewMode(storedValue) ? storedValue : 'off'
 }
 
+function getInitialAutoEnableReviewMode(): boolean {
+	if (typeof window === 'undefined') return false
+
+	const storedValue = window.localStorage.getItem(
+		REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY
+	)
+	if (storedValue === null) return false
+
+	return storedValue === 'true'
+}
+
 export function FlashcardModeProvider({
 	children
 }: FlashcardModeProviderProps) {
 	const [reviewMode, setReviewMode] = useState<ReviewMode>(getInitialReviewMode)
 	const [showReviewModeWarning, setShowReviewModeWarning] = useState(
 		getInitialShowReviewModeWarning
+	)
+	const [autoEnableReviewMode, setAutoEnableReviewMode] = useState(
+		getInitialAutoEnableReviewMode
 	)
 
 	useEffect(() => {
@@ -74,6 +91,13 @@ export function FlashcardModeProvider({
 		)
 	}, [showReviewModeWarning])
 
+	useEffect(() => {
+		window.localStorage.setItem(
+			REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY,
+			String(autoEnableReviewMode)
+		)
+	}, [autoEnableReviewMode])
+
 	const value = useMemo(
 		() => ({
 			reviewMode,
@@ -82,9 +106,11 @@ export function FlashcardModeProvider({
 			hidesPrimary: false,
 			hidesSecondary: reviewMode !== 'off',
 			showReviewModeWarning,
-			setShowReviewModeWarning
+			setShowReviewModeWarning,
+			autoEnableReviewMode,
+			setAutoEnableReviewMode
 		}),
-		[reviewMode, showReviewModeWarning]
+		[reviewMode, showReviewModeWarning, autoEnableReviewMode]
 	)
 
 	return <FlashcardModeContext value={value}>{children}</FlashcardModeContext>
