@@ -1,198 +1,199 @@
-"""Review queue business logic (unified due + hazy queue)."""
+"""Review queue business logic (unified due + hazy queue over notes)."""
 
-import asyncio
+import base64
+import binascii
+import json
 from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_session_factory
-from app.models import Practice, Review, Source, Topic
-from app.practices.service import list_practices
-from app.schemas.review_queue import ReviewQueueItem
-from app.sources.service import list_sources
-from app.topics.service import list_topics
-from app.utils.retrievability import FINE_THRESHOLD, calculate_days_until_threshold
-
-QueueEntity = Topic | Source | Practice
-EntityKey = tuple[str, int]
+from app.models import Note, Review
+from app.notes.status_badges import build_note_status_badges, get_days_until_hazy
+from app.schemas.review_queue import ReviewQueueItem, ReviewQueuePage
 
 
-def _get_days_until_hazy(entity: QueueEntity) -> int | None:
-    if entity.stability is None or entity.last_reviewed_at is None:
-        return None
-    return calculate_days_until_threshold(
-        entity.stability,
-        entity.last_reviewed_at,
-        target_retrievability=FINE_THRESHOLD,
-    )
+def _sort_key(item: ReviewQueueItem) -> tuple[int, int, int]:
+    if item.queue_type == "due":
+        urgency = item.days_until_due if item.days_until_due is not None else 999_999
+        return (urgency, 0, item.review_id or 0)
+    urgency = item.days_until_hazy if item.days_until_hazy is not None else 999_999
+    return (urgency, 1, item.note.id)
 
 
-def _get_due_sort_key(item: ReviewQueueItem) -> tuple[int, int]:
-    if item.days_until_due is None:
-        return (999_999, item.review_id or 0)
-    return (item.days_until_due, item.review_id or 0)
+def _encode_cursor(*, as_of: date, key: tuple[int, int, int]) -> str:
+    payload = {"v": 1, "as_of": as_of.isoformat(), "k": [key[0], key[1], key[2]]}
+    raw = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+
+
+def _decode_cursor(cursor: str) -> tuple[date, tuple[int, int, int]]:
+    try:
+        padded = f"{cursor}{'=' * (-len(cursor) % 4)}"
+        raw = base64.urlsafe_b64decode(padded.encode("ascii"))
+        payload = json.loads(raw.decode("utf-8"))
+    except (
+        ValueError,
+        UnicodeDecodeError,
+        json.JSONDecodeError,
+        binascii.Error,
+    ) as exc:
+        raise ValueError("Invalid review queue cursor") from exc
+
+    if not isinstance(payload, dict):
+        raise ValueError("Invalid review queue cursor")
+
+    version = payload.get("v")
+    as_of_raw = payload.get("as_of")
+    sort_key_raw = payload.get("k")
+    if (
+        version != 1
+        or not isinstance(as_of_raw, str)
+        or not isinstance(sort_key_raw, list)
+    ):
+        raise ValueError("Invalid review queue cursor")
+    if len(sort_key_raw) != 3:
+        raise ValueError("Invalid review queue cursor")
+
+    try:
+        as_of = date.fromisoformat(as_of_raw)
+    except ValueError as exc:
+        raise ValueError("Invalid review queue cursor") from exc
+
+    urgency, queue_rank, tie_breaker = sort_key_raw
+    if (
+        not isinstance(urgency, int)
+        or not isinstance(queue_rank, int)
+        or not isinstance(tie_breaker, int)
+        or queue_rank not in (0, 1)
+    ):
+        raise ValueError("Invalid review queue cursor")
+
+    return as_of, (urgency, queue_rank, tie_breaker)
 
 
 async def list_review_queue(
     user_id: str,
     *,
     limit: int | None = None,
-) -> list[ReviewQueueItem]:
-    """Unified review queue across entities with due reviews and hazy candidates."""
+    cursor: str | None = None,
+) -> ReviewQueuePage:
+    """Unified review queue over notes with due reviews and hazy candidates."""
     session_factory = get_session_factory()
-    today = date.today()
-
-    async def fetch_topics() -> list[Topic]:
-        async with session_factory() as session:
-            return await list_topics(
-                session,
-                user_id,
-                has_stability=True,
-                srs_enabled=True,
-                archived=False,
-            )
-
-    async def fetch_sources() -> list[Source]:
-        async with session_factory() as session:
-            return await list_sources(
-                session,
-                user_id,
-                has_stability=True,
-                srs_enabled=True,
-                archived=False,
-            )
-
-    async def fetch_practices() -> list[Practice]:
-        async with session_factory() as session:
-            return await list_practices(
-                session,
-                user_id,
-                has_stability=True,
-                srs_enabled=True,
-                archived=False,
-            )
-
-    async def fetch_due_items() -> tuple[list[ReviewQueueItem], set[EntityKey]]:
-        async with session_factory() as session:
-            result = await session.execute(
-                select(Review)
-                .where(
-                    Review.user_id == user_id,
-                    Review.completed_at.is_(None),
-                    Review.scheduled_at.isnot(None),
-                )
-                .options(
-                    selectinload(Review.topic)
-                    .selectinload(Topic.parent)
-                    .selectinload(Topic.fsrs_state),
-                    selectinload(Review.topic).selectinload(Topic.fsrs_state),
-                    selectinload(Review.source)
-                    .selectinload(Source.parent)
-                    .selectinload(Source.fsrs_state),
-                    selectinload(Review.source).selectinload(Source.fsrs_state),
-                    selectinload(Review.practice).selectinload(Practice.fsrs_state),
-                )
-                .order_by(Review.scheduled_at.asc(), Review.id.asc())
-            )
-            reviews = list(result.scalars().all())
-
-        due_items: list[ReviewQueueItem] = []
-        due_entity_keys: set[EntityKey] = set()
-
-        for review in reviews:
-            if review.scheduled_at is None:
-                continue
-
-            entity_type: str | None = None
-            entity: QueueEntity | None = None
-
-            if review.topic is not None:
-                entity_type = "topic"
-                entity = review.topic
-            elif review.source is not None:
-                entity_type = "source"
-                entity = review.source
-            elif review.practice is not None:
-                entity_type = "practice"
-                entity = review.practice
-
-            if entity is None or entity_type is None:
-                continue
-            if entity.archived:
-                continue
-
-            due_entity_keys.add((entity_type, entity.id))
-            due_items.append(
-                ReviewQueueItem(
-                    queue_type="due",
-                    entity_type=entity_type,
-                    topic=review.topic if entity_type == "topic" else None,
-                    source=review.source if entity_type == "source" else None,
-                    practice=review.practice if entity_type == "practice" else None,
-                    review_id=review.id,
-                    scheduled_at=review.scheduled_at,
-                    days_until_due=(review.scheduled_at - today).days,
-                    days_until_hazy=_get_days_until_hazy(entity),
-                )
-            )
-
-        due_items.sort(key=_get_due_sort_key)
-        return due_items, due_entity_keys
-
-    topics, sources, practices, due_results = await asyncio.gather(
-        fetch_topics(),
-        fetch_sources(),
-        fetch_practices(),
-        fetch_due_items(),
+    as_of = date.today()
+    cursor_key: tuple[int, int, int] | None = None
+    if cursor is not None:
+        as_of, cursor_key = _decode_cursor(cursor)
+    due_note_ids_query = (
+        select(Review.note_id)
+        .where(
+            Review.user_id == user_id,
+            Review.completed_at.is_(None),
+            Review.scheduled_at.isnot(None),
+        )
+        .distinct()
     )
-    due_items, due_entity_keys = due_results
 
-    items: list[ReviewQueueItem] = [*due_items]
+    async with session_factory() as session:
+        due_result = await session.execute(
+            select(Review)
+            .where(
+                Review.user_id == user_id,
+                Review.completed_at.is_(None),
+                Review.scheduled_at.isnot(None),
+            )
+            .options(
+                selectinload(Review.note).selectinload(Note.parent),
+                selectinload(Review.note).selectinload(Note.fsrs_state),
+                selectinload(Review.note).selectinload(Note.tag_assignments),
+                selectinload(Review.note).selectinload(Note.reviews),
+            )
+            .order_by(Review.scheduled_at.asc(), Review.id.asc())
+        )
+        due_reviews = list(due_result.scalars().all())
 
-    def append_hazy(entity_type: str, entity: QueueEntity) -> None:
-        if entity.archived:
-            return
-        if entity.retrievability is None:
-            return
-        if (entity_type, entity.id) in due_entity_keys:
-            return
+        note_result = await session.execute(
+            select(Note)
+            .where(
+                Note.user_id == user_id,
+                Note.archived.is_(False),
+                ~Note.id.in_(due_note_ids_query),
+            )
+            .options(
+                selectinload(Note.parent),
+                selectinload(Note.fsrs_state),
+                selectinload(Note.tag_assignments),
+                selectinload(Note.reviews),
+            )
+            .order_by(Note.updated_at.desc())
+        )
+        notes = list(note_result.scalars().unique().all())
 
-        days_until_hazy = _get_days_until_hazy(entity)
+    items: list[ReviewQueueItem] = []
+
+    for review in due_reviews:
+        if review.scheduled_at is None or review.note is None:
+            continue
+        note = review.note
+        if note.archived:
+            continue
+
+        days_until_due = (review.scheduled_at - as_of).days
+        items.append(
+            ReviewQueueItem(
+                queue_type="due",
+                entity_type="note",
+                note=note,
+                review_id=review.id,
+                scheduled_at=review.scheduled_at,
+                days_until_due=days_until_due,
+                days_until_hazy=get_days_until_hazy(note, today=as_of),
+                status_badges=build_note_status_badges(
+                    note,
+                    today=as_of,
+                    due_review=review,
+                    days_until_due=days_until_due,
+                ),
+            )
+        )
+
+    for note in notes:
+        if note.retrievability is None:
+            continue
+
+        days_until_hazy = get_days_until_hazy(note, today=as_of)
         if days_until_hazy is None:
-            return
+            continue
 
         items.append(
             ReviewQueueItem(
                 queue_type="hazy",
-                entity_type=entity_type,
-                topic=entity if entity_type == "topic" else None,
-                source=entity if entity_type == "source" else None,
-                practice=entity if entity_type == "practice" else None,
+                entity_type="note",
+                note=note,
                 days_until_hazy=days_until_hazy,
+                status_badges=build_note_status_badges(
+                    note,
+                    today=as_of,
+                    due_review=None,
+                    days_until_due=None,
+                    days_until_hazy=days_until_hazy,
+                    resolve_due_badge=False,
+                ),
             )
         )
 
-    for topic in topics:
-        append_hazy("topic", topic)
-    for source in sources:
-        append_hazy("source", source)
-    for practice in practices:
-        append_hazy("practice", practice)
+    items.sort(key=_sort_key)
 
-    def sort_key(item: ReviewQueueItem) -> tuple[int, int, int]:
-        if item.queue_type == "due":
-            urgency = (
-                item.days_until_due if item.days_until_due is not None else 999_999
-            )
-            return (urgency, 0, item.review_id or 0)
-        urgency = item.days_until_hazy if item.days_until_hazy is not None else 999_999
-        entity = item.topic or item.source or item.practice
-        return (urgency, 1, entity.id if entity is not None else 0)
+    if cursor_key is not None:
+        items = [item for item in items if _sort_key(item) > cursor_key]
 
-    items.sort(key=sort_key)
+    page_size = len(items) if limit is None else max(limit, 0)
+    paged_items = items[:page_size]
+    next_cursor = (
+        _encode_cursor(as_of=as_of, key=_sort_key(paged_items[-1]))
+        if limit is not None and len(items) > page_size and paged_items
+        else None
+    )
 
-    if limit is not None:
-        items = items[: max(limit, 0)]
-
-    return items
+    return ReviewQueuePage(items=paged_items, next_cursor=next_cursor, as_of=as_of)

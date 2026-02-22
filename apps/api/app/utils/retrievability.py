@@ -42,13 +42,13 @@ def get_freshness_tier(retrievability: float | None) -> str | None:
     """Map retrievability to a freshness tier."""
     if retrievability is None:
         return None
-    if retrievability > FRESH_THRESHOLD:
-        return "Fresh"
-    if retrievability > FINE_THRESHOLD:
-        return "Fine"
-    if retrievability > HAZY_THRESHOLD:
+    if retrievability <= HAZY_THRESHOLD:
+        return "Forgotten"
+    if retrievability <= FINE_THRESHOLD:
         return "Hazy"
-    return "Forgotten"
+    if retrievability <= FRESH_THRESHOLD:
+        return "Fine"
+    return "Fresh"
 
 
 def get_next_tier_threshold(retrievability: float | None) -> float | None:
