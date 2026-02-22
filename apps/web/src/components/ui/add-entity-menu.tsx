@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react"
 import { ChevronDown, Loader2, Plus, Search, SquarePen } from "lucide-react"
+import type { ComponentProps } from "react"
 import { Button } from "~/components/ui/button"
 import {
 	DropdownMenu,
@@ -34,6 +35,9 @@ interface AddEntityMenuProps {
 		| "icon-xs"
 		| "icon-sm"
 		| "icon-lg"
+	buttonLabel?: string
+	buttonVariant?: NonNullable<ComponentProps<typeof Button>["variant"]>
+	showChevron?: boolean
 	buttonClassName?: string
 }
 
@@ -45,6 +49,9 @@ export function AddEntityMenu({
 	createItems,
 	createLabel = "Create",
 	buttonSize = "sm",
+	buttonLabel = "Add",
+	buttonVariant = "outline",
+	showChevron = true,
 	buttonClassName
 }: AddEntityMenuProps) {
 	const singleCreateItem = createItems.length === 1 ? createItems[0] : null
@@ -57,15 +64,15 @@ export function AddEntityMenu({
 					<Button
 						className={cn("gap-1", buttonClassName)}
 						size={buttonSize}
-						variant='outline'
+						variant={buttonVariant}
 					>
 						{isLoading ? (
 							<Loader2 className='h-4 w-4 animate-spin' />
 						) : (
 							<Plus className='h-4 w-4' />
 						)}
-						Add
-						<ChevronDown className='h-4 w-4' />
+						{buttonLabel}
+						{showChevron ? <ChevronDown className='h-4 w-4' /> : null}
 					</Button>
 				}
 			/>
