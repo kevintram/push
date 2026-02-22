@@ -1,4 +1,4 @@
-"""Integration tests for unified search endpoint."""
+"""Integration tests for unified note search endpoint."""
 
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -7,16 +7,12 @@ from app.search import service as search_service
 
 
 class TestSearchEndpoint:
-    """Integration tests for /search endpoint."""
-
-    async def test_search_topics_with_parents_does_not_500(
+    async def test_search_with_legacy_topic_filter_returns_note_payload(
         self,
         test_client: AsyncClient,
         db_session: AsyncSession,
         monkeypatch,
-        create_test_topic,
     ):
-        """Search should serialize topic.parent without triggering async lazy load."""
         test_session_factory = async_sessionmaker(
             bind=db_session.bind,
             class_=AsyncSession,
@@ -26,32 +22,48 @@ class TestSearchEndpoint:
             search_service, "get_session_factory", lambda: test_session_factory
         )
 
-        parent = await create_test_topic(name="Search Parent Topic")
-        await create_test_topic(name="Search Child Topic", parent_id=parent.id)
+        topic_response = await test_client.post(
+            "/notes/",
+            json={
+                "title": "Rust Ownership",
+                "body": "Borrow checker basics",
+                "tags": ["TOPIC"],
+                "archived": False,
+                "inboxed": False,
+            },
+        )
+        assert topic_response.status_code == 201
+        topic_note = topic_response.json()
+
+        source_response = await test_client.post(
+            "/notes/",
+            json={
+                "title": "Rust Book",
+                "body": "Source note",
+                "tags": ["SOURCE"],
+                "archived": False,
+                "inboxed": False,
+            },
+        )
+        assert source_response.status_code == 201
 
         response = await test_client.get(
-            "/search/?entity_types=topic&inboxed=false&archived=false"
+            "/search/?query=rust&entity_types=topic&inboxed=false&archived=false"
         )
 
         assert response.status_code == 200
         results = response.json()
+        assert len(results) == 1
+        assert results[0]["entity_type"] == "note"
+        assert results[0]["note"]["id"] == topic_note["id"]
+        assert "TOPIC" in results[0]["note"]["tags"]
 
-        child = next(
-            item
-            for item in results
-            if item["entity_type"] == "topic"
-            and item["topic"]["name"] == "Search Child Topic"
-        )
-        assert child["topic"]["parent"]["id"] == parent.id
-
-    async def test_search_sources_with_parents_does_not_500(
+    async def test_search_entity_types_note_includes_all_matching_note_tags(
         self,
         test_client: AsyncClient,
         db_session: AsyncSession,
         monkeypatch,
-        create_test_source,
     ):
-        """Search should serialize source.parent without triggering async lazy load."""
         test_session_factory = async_sessionmaker(
             bind=db_session.bind,
             class_=AsyncSession,
@@ -61,20 +73,29 @@ class TestSearchEndpoint:
             search_service, "get_session_factory", lambda: test_session_factory
         )
 
-        parent = await create_test_source(title="Search Parent Source")
-        await create_test_source(title="Search Child Source", parent_id=parent.id)
-
-        response = await test_client.get(
-            "/search/?entity_types=source&inboxed=false&archived=false"
+        topic_response = await test_client.post(
+            "/notes/",
+            json={"title": "Queue theory", "body": "A", "tags": ["TOPIC"]},
         )
+        assert topic_response.status_code == 201
+        topic_note = topic_response.json()
+
+        practice_response = await test_client.post(
+            "/notes/",
+            json={
+                "title": "Queue practice prompt",
+                "body": "B",
+                "tags": ["PRACTICE"],
+            },
+        )
+        assert practice_response.status_code == 201
+        practice_note = practice_response.json()
+
+        response = await test_client.get("/search/?query=queue&entity_types=note")
 
         assert response.status_code == 200
         results = response.json()
-
-        child = next(
-            item
-            for item in results
-            if item["entity_type"] == "source"
-            and item["source"]["title"] == "Search Child Source"
-        )
-        assert child["source"]["parent"]["id"] == parent.id
+        ids = {item["note"]["id"] for item in results}
+        assert topic_note["id"] in ids
+        assert practice_note["id"] in ids
+        assert all(item["entity_type"] == "note" for item in results)
