@@ -31,6 +31,9 @@ export async function getNotes(
 	if (params.tag !== undefined) {
 		searchParams.append('tag', params.tag)
 	}
+	if (params.srs_enabled !== undefined) {
+		searchParams.append('srs_enabled', String(params.srs_enabled))
+	}
 	if (params.order !== undefined) {
 		searchParams.append('order', params.order)
 	}

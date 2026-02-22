@@ -138,6 +138,7 @@ export function ReviewPage() {
 	} = useInfiniteReviewQueue()
 	const { data: notes = [], isLoading: isNotesLoading } = useNotes({
 		archived: false,
+		srs_enabled: true,
 		order: 'desc'
 	})
 	const navigateToNote = useNoteNavigation()

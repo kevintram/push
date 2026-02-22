@@ -57,6 +57,7 @@ async def list_notes(
     in_reading_list: bool | None = None,
     reading_status: str | None = None,
     tag: str | None = None,
+    srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
 ) -> list[Note]:
@@ -76,6 +77,15 @@ async def list_notes(
         stmt = stmt.where(Note.reading_status == reading_status)
     if tag is not None:
         stmt = stmt.join(NoteTag, NoteTag.note_id == Note.id).where(NoteTag.tag == tag)
+    if srs_enabled is not None:
+        if srs_enabled:
+            stmt = stmt.join(FsrsState, Note.fsrs_state_id == FsrsState.id).where(
+                FsrsState.srs_enabled.is_(True)
+            )
+        else:
+            stmt = stmt.outerjoin(FsrsState, Note.fsrs_state_id == FsrsState.id).where(
+                (Note.fsrs_state_id.is_(None)) | (FsrsState.srs_enabled.is_(False))
+            )
 
     if order == "asc":
         stmt = stmt.order_by(Note.updated_at.asc())

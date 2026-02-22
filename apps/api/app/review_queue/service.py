@@ -138,6 +138,8 @@ async def list_review_queue(
         note = review.note
         if note.archived:
             continue
+        if not note.srs_enabled:
+            continue
 
         days_until_due = (review.scheduled_at - as_of).days
         items.append(
@@ -159,6 +161,8 @@ async def list_review_queue(
         )
 
     for note in notes:
+        if not note.srs_enabled:
+            continue
         if note.retrievability is None:
             continue
 

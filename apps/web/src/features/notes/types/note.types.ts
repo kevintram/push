@@ -61,6 +61,7 @@ export interface GetNotesParams {
 	in_reading_list?: boolean
 	reading_status?: ReadingStatus
 	tag?: NoteTag
+	srs_enabled?: boolean
 	limit?: number
 	order?: 'asc' | 'desc'
 }
