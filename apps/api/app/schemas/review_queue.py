@@ -21,5 +21,4 @@ class ReviewQueueItem(BaseModel):
 
 class ReviewQueuePage(BaseModel):
     items: list[ReviewQueueItem]
-    next_cursor: str | None = None
     as_of: date

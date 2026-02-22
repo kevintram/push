@@ -60,12 +60,11 @@ class TestReviewQueueEndpoint:
         )
         assert completed_review_response.status_code == 200
 
-        queue_response = await test_client.get("/review-queue/?limit=50")
+        queue_response = await test_client.get("/review-queue/")
 
         assert queue_response.status_code == 200
         payload = queue_response.json()
         queue = payload["items"]
-        assert payload["next_cursor"] is None
         assert payload["as_of"] == str(date.today())
         assert len(queue) > 0
         assert all(item["entity_type"] == "note" for item in queue)
@@ -89,7 +88,7 @@ class TestReviewQueueEndpoint:
         assert hazy_item["review_id"] is None
         assert hazy_item["days_until_hazy"] is not None
 
-    async def test_review_queue_cursor_pagination(
+    async def test_review_queue_returns_all_due_items_without_pagination(
         self,
         test_client: AsyncClient,
         db_session: AsyncSession,
@@ -125,33 +124,12 @@ class TestReviewQueueEndpoint:
             assert review_response.status_code == 200
             review_ids.append(review_response.json()["id"])
 
-        first_page_response = await test_client.get("/review-queue/?limit=2")
-        assert first_page_response.status_code == 200
-        first_page = first_page_response.json()
-        first_items = first_page["items"]
-        assert len(first_items) == 2
-        assert first_page["next_cursor"] is not None
-        first_ids = {item["review_id"] for item in first_items}
-        assert first_ids.issubset(set(review_ids))
-
-        second_page_response = await test_client.get(
-            f"/review-queue/?limit=2&cursor={first_page['next_cursor']}"
-        )
-        assert second_page_response.status_code == 200
-        second_page = second_page_response.json()
-        second_items = second_page["items"]
-        assert len(second_items) == 1
-        second_ids = {item["review_id"] for item in second_items}
-        assert second_ids.issubset(set(review_ids))
-        assert first_ids.isdisjoint(second_ids)
-        assert second_page["next_cursor"] is None
-
-    async def test_review_queue_invalid_cursor_returns_400(
-        self,
-        test_client: AsyncClient,
-    ):
-        response = await test_client.get(
-            "/review-queue/?limit=10&cursor=not-a-valid-cursor"
-        )
-        assert response.status_code == 400
-        assert response.json()["detail"] == "Invalid review queue cursor"
+        queue_response = await test_client.get("/review-queue/")
+        assert queue_response.status_code == 200
+        payload = queue_response.json()
+        returned_due_ids = {
+            item["review_id"]
+            for item in payload["items"]
+            if item["queue_type"] == "due"
+        }
+        assert returned_due_ids.issuperset(set(review_ids))

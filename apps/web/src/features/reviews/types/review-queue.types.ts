@@ -13,6 +13,5 @@ export type ReviewQueueItem = {
 
 export type ReviewQueuePage = {
 	items: Array<ReviewQueueItem>
-	next_cursor: string | null
 	as_of: string
 }

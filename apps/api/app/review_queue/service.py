@@ -1,8 +1,5 @@
 """Review queue business logic (unified due + hazy queue over notes)."""
 
-import base64
-import binascii
-import json
 from datetime import date
 
 from sqlalchemy import select
@@ -22,69 +19,12 @@ def _sort_key(item: ReviewQueueItem) -> tuple[int, int, int]:
     return (urgency, 1, item.note.id)
 
 
-def _encode_cursor(*, as_of: date, key: tuple[int, int, int]) -> str:
-    payload = {"v": 1, "as_of": as_of.isoformat(), "k": [key[0], key[1], key[2]]}
-    raw = json.dumps(payload, separators=(",", ":")).encode("utf-8")
-    return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
-
-
-def _decode_cursor(cursor: str) -> tuple[date, tuple[int, int, int]]:
-    try:
-        padded = f"{cursor}{'=' * (-len(cursor) % 4)}"
-        raw = base64.urlsafe_b64decode(padded.encode("ascii"))
-        payload = json.loads(raw.decode("utf-8"))
-    except (
-        ValueError,
-        UnicodeDecodeError,
-        json.JSONDecodeError,
-        binascii.Error,
-    ) as exc:
-        raise ValueError("Invalid review queue cursor") from exc
-
-    if not isinstance(payload, dict):
-        raise ValueError("Invalid review queue cursor")
-
-    version = payload.get("v")
-    as_of_raw = payload.get("as_of")
-    sort_key_raw = payload.get("k")
-    if (
-        version != 1
-        or not isinstance(as_of_raw, str)
-        or not isinstance(sort_key_raw, list)
-    ):
-        raise ValueError("Invalid review queue cursor")
-    if len(sort_key_raw) != 3:
-        raise ValueError("Invalid review queue cursor")
-
-    try:
-        as_of = date.fromisoformat(as_of_raw)
-    except ValueError as exc:
-        raise ValueError("Invalid review queue cursor") from exc
-
-    urgency, queue_rank, tie_breaker = sort_key_raw
-    if (
-        not isinstance(urgency, int)
-        or not isinstance(queue_rank, int)
-        or not isinstance(tie_breaker, int)
-        or queue_rank not in (0, 1)
-    ):
-        raise ValueError("Invalid review queue cursor")
-
-    return as_of, (urgency, queue_rank, tie_breaker)
-
-
 async def list_review_queue(
     user_id: str,
-    *,
-    limit: int | None = None,
-    cursor: str | None = None,
 ) -> ReviewQueuePage:
     """Unified review queue over notes with due reviews and hazy candidates."""
     session_factory = get_session_factory()
     as_of = date.today()
-    cursor_key: tuple[int, int, int] | None = None
-    if cursor is not None:
-        as_of, cursor_key = _decode_cursor(cursor)
     due_note_ids_query = (
         select(Review.note_id)
         .where(
@@ -189,15 +129,4 @@ async def list_review_queue(
 
     items.sort(key=_sort_key)
 
-    if cursor_key is not None:
-        items = [item for item in items if _sort_key(item) > cursor_key]
-
-    page_size = len(items) if limit is None else max(limit, 0)
-    paged_items = items[:page_size]
-    next_cursor = (
-        _encode_cursor(as_of=as_of, key=_sort_key(paged_items[-1]))
-        if limit is not None and len(items) > page_size and paged_items
-        else None
-    )
-
-    return ReviewQueuePage(items=paged_items, next_cursor=next_cursor, as_of=as_of)
+    return ReviewQueuePage(items=items, as_of=as_of)
