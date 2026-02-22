@@ -271,8 +271,10 @@ function MasonryLayoutInner<T>({
 		}
 	}, [virtualizer, remeasureMountedItems])
 
-	// Compute scrollMargin via bounding rects (layout-independent)
-	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally retrigger this setup when list shape changes can shift vertical offsets.
+	// Compute scrollMargin via bounding rects (layout-independent).
+	// Keep this observer setup stable across item-count changes so pagination
+	// updates do not teardown/re-init the effect and risk scroll jumps.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally keep a narrow dependency set; observers below react to runtime layout shifts.
 	useLayoutEffect(() => {
 		if (scrollMargin != null) return
 		const scrollEl = resolvedGetScrollElement()
@@ -286,8 +288,12 @@ function MasonryLayoutInner<T>({
 		const updateOffset = () => {
 			const scrollRect = scrollEl.getBoundingClientRect()
 			const parentRect = parentEl.getBoundingClientRect()
-			const nextOffset = parentRect.top - scrollRect.top + scrollEl.scrollTop
-			setAutoScrollMargin(prev => (prev === nextOffset ? prev : nextOffset))
+			const nextOffset = Math.round(
+				parentRect.top - scrollRect.top + scrollEl.scrollTop
+			)
+			setAutoScrollMargin(prev =>
+				Math.abs(prev - nextOffset) < 1 ? prev : nextOffset
+			)
 		}
 		const scheduleUpdate = () => {
 			if (raf) return
@@ -327,13 +333,10 @@ function MasonryLayoutInner<T>({
 			})
 		}
 
-		const handleScroll = () => scheduleUpdate()
 		const handleWindowResize = () => scheduleUpdate()
-		scrollEl.addEventListener('scroll', handleScroll, { passive: true })
 		window.addEventListener('resize', handleWindowResize)
 
 		return () => {
-			scrollEl.removeEventListener('scroll', handleScroll)
 			window.removeEventListener('resize', handleWindowResize)
 			resizeObserver.disconnect()
 			mutationObserver.disconnect()
@@ -341,7 +344,7 @@ function MasonryLayoutInner<T>({
 				cancelAnimationFrame(raf)
 			}
 		}
-	}, [resolvedGetScrollElement, scrollMargin, items.length, numLanes])
+	}, [resolvedGetScrollElement, scrollMargin, numLanes])
 
 	useEffect(() => {
 		if (import.meta.env.DEV) {

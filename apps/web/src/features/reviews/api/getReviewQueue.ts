@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import {
@@ -11,27 +11,9 @@ import type {
 } from '../types/review-queue.types'
 import { reviewQueueKeys } from './queryKeys'
 
-type GetReviewQueuePageParams = {
-	limit?: number
-	cursor?: string
-}
-
-const DEFAULT_REVIEW_QUEUE_PAGE_SIZE = 50
-
-export async function getReviewQueuePage({
-	limit,
-	cursor
-}: GetReviewQueuePageParams = {}): Promise<ReviewQueuePage> {
-	const searchParams = new URLSearchParams()
-	if (limit !== undefined) {
-		searchParams.append('limit', String(limit))
-	}
-	if (cursor !== undefined) {
-		searchParams.append('cursor', cursor)
-	}
-
+export async function getReviewQueuePage(): Promise<ReviewQueuePage> {
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/review-queue/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+		`${import.meta.env.VITE_API_URL}/review-queue/`
 	)
 
 	if (!response.ok) {
@@ -49,31 +31,14 @@ export async function getReviewQueuePage({
 	}
 }
 
-export async function getReviewQueue(
-	limit?: number
-): Promise<Array<ReviewQueueItem>> {
-	const page = await getReviewQueuePage({ limit })
+export async function getReviewQueue(): Promise<Array<ReviewQueueItem>> {
+	const page = await getReviewQueuePage()
 	return v.parse(v.array(ReviewQueueItemSchema), page.items)
 }
 
-export function useReviewQueue(limit?: number) {
+export function useReviewQueue() {
 	return useQuery({
-		queryKey: reviewQueueKeys.list(limit),
-		queryFn: () => getReviewQueue(limit)
-	})
-}
-
-export function useInfiniteReviewQueue(
-	limit: number = DEFAULT_REVIEW_QUEUE_PAGE_SIZE
-) {
-	return useInfiniteQuery({
-		queryKey: reviewQueueKeys.infinite(limit),
-		initialPageParam: undefined as string | undefined,
-		queryFn: ({ pageParam }) =>
-			getReviewQueuePage({
-				limit,
-				cursor: typeof pageParam === 'string' ? pageParam : undefined
-			}),
-		getNextPageParam: lastPage => lastPage.next_cursor ?? undefined
+		queryKey: reviewQueueKeys.list(),
+		queryFn: () => getReviewQueue()
 	})
 }

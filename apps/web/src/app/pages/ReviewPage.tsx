@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
-import { BookOpen, Loader2, type LucideProps, Star } from 'lucide-react'
-import { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
+import { BookOpen, type LucideProps, Star } from 'lucide-react'
+import { forwardRef, useMemo, useState } from 'react'
 import { ReviewModeWarningDialog } from '~/app/components/ReviewModeWarningDialog'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
@@ -24,7 +24,7 @@ import {
 } from '~/features/notes/components/NoteCard'
 import type { Note } from '~/features/notes/types/note.types'
 import { orderNoteStatusBadges } from '~/features/notes/utils/orderNoteStatusBadges'
-import { useInfiniteReviewQueue } from '~/features/reviews/api/getReviewQueue'
+import { useReviewQueue } from '~/features/reviews/api/getReviewQueue'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type { ReviewQueueItem } from '~/features/reviews/types/review-queue.types'
 import { useNoteNavigation } from '~/hooks/useNoteNavigation'
@@ -66,10 +66,13 @@ function sortUpcomingQueueItems(a: QueueCardItem, b: QueueCardItem): number {
 }
 
 function sortOverdueItems(a: QueueCardItem, b: QueueCardItem): number {
-	const aDistance = Math.abs(a.urgencyDays)
-	const bDistance = Math.abs(b.urgencyDays)
-	if (aDistance !== bDistance) {
-		return aDistance - bDistance
+	// Overdue values are negative, so lower values are more overdue and should
+	// remain earlier in the list to preserve stable, intuitive ordering.
+	if (a.urgencyDays !== b.urgencyDays) {
+		return a.urgencyDays - b.urgencyDays
+	}
+	if (a.queueType !== b.queueType) {
+		return a.queueType === 'due' ? -1 : 1
 	}
 	return getQueueItemTitle(a).localeCompare(getQueueItemTitle(b))
 }
@@ -129,13 +132,7 @@ function groupUnreviewedByCreatedDate(
 export function ReviewPage() {
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 	const [activeQueueTab, setActiveQueueTab] = useState<ReviewQueueTab>('due')
-	const {
-		data: reviewQueuePages,
-		isLoading: isQueueLoading,
-		hasNextPage,
-		isFetchingNextPage,
-		fetchNextPage
-	} = useInfiniteReviewQueue()
+	const { data: reviewQueue = [], isLoading: isQueueLoading } = useReviewQueue()
 	const { data: notes = [], isLoading: isNotesLoading } = useNotes({
 		archived: false,
 		srs_enabled: true,
@@ -143,13 +140,8 @@ export function ReviewPage() {
 	})
 	const navigateToNote = useNoteNavigation()
 	const { openReviewDialog } = useReviewDialog()
-	const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
 	const daysUntilSunday = useMemo(() => (7 - dayjs().day()) % 7, [])
-	const reviewQueue = useMemo(
-		() => reviewQueuePages?.pages.flatMap(page => page.items) ?? [],
-		[reviewQueuePages]
-	)
 
 	const queueItems = useMemo<Array<QueueCardItem>>(() => {
 		return reviewQueue
@@ -237,28 +229,10 @@ export function ReviewPage() {
 	const isQueueEmpty =
 		!isActiveTabLoading &&
 		(activeQueueTab === 'due'
-			? queueSections.length === 0 && !hasNextPage
+			? queueSections.length === 0
 			: unreviewedSections.length === 0)
 	const hasActionableContent =
 		queueSections.length > 0 || unreviewedSections.length > 0
-
-	useEffect(() => {
-		if (activeQueueTab !== 'due' || !hasNextPage || isFetchingNextPage) return
-		const target = loadMoreRef.current
-		if (!target) return
-
-		const observer = new IntersectionObserver(
-			entries => {
-				const [entry] = entries
-				if (!entry?.isIntersecting) return
-				fetchNextPage().catch(() => {})
-			},
-			{ rootMargin: '300px 0px', threshold: 0 }
-		)
-
-		observer.observe(target)
-		return () => observer.disconnect()
-	}, [activeQueueTab, hasNextPage, isFetchingNextPage, fetchNextPage])
 
 	return (
 		<PageLayout>
@@ -379,17 +353,6 @@ export function ReviewPage() {
 								/>
 							</div>
 						))}
-						{hasNextPage && (
-							<div
-								aria-hidden={true}
-								className='flex h-10 items-center justify-center'
-								ref={loadMoreRef}
-							>
-								{isFetchingNextPage && (
-									<Loader2 className='h-4 w-4 animate-spin text-muted-foreground' />
-								)}
-							</div>
-						)}
 					</div>
 				)}
 			</PageLayout.Content>

@@ -23,10 +23,5 @@ export const reviewKeys = {
 
 export const reviewQueueKeys = {
 	all: ['review-queue'] as const,
-	list: (limit?: number) =>
-		limit === undefined
-			? [...reviewQueueKeys.all, 'list']
-			: [...reviewQueueKeys.all, 'list', limit],
-	infinite: (limit: number) =>
-		[...reviewQueueKeys.all, 'infinite', limit] as const
+	list: () => [...reviewQueueKeys.all, 'list'] as const
 }

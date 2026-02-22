@@ -21,7 +21,6 @@ export const ReviewQueueItemSchema: v.GenericSchema<ReviewQueueItem> = v.object(
 export const ReviewQueuePageSchema: v.GenericSchema<ReviewQueuePage> = v.object(
 	{
 		items: v.array(ReviewQueueItemSchema),
-		next_cursor: v.nullable(v.string()),
 		as_of: v.string()
 	}
 )
