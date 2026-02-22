@@ -37,6 +37,7 @@ async def read_notes(
     in_reading_list: bool | None = None,
     reading_status: ReadingStatusEnum | None = None,
     tag: NoteTagEnum | None = None,
+    srs_enabled: bool | None = None,
     limit: int | None = None,
     order: Literal["asc", "desc"] = "desc",
 ) -> list[NoteRead]:
@@ -50,6 +51,7 @@ async def read_notes(
         in_reading_list=in_reading_list,
         reading_status=reading_status.value if reading_status else None,
         tag=tag.value if tag else None,
+        srs_enabled=srs_enabled,
         limit=limit,
         order=order,
     )
