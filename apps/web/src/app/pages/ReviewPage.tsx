@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { BookOpen, Loader2, type LucideProps, Star } from 'lucide-react'
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
+import { ReviewModeWarningDialog } from '~/app/components/ReviewModeWarningDialog'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	EntityTypeFilter,
@@ -237,6 +238,8 @@ export function ReviewPage() {
 		(activeQueueTab === 'due'
 			? queueSections.length === 0 && !hasNextPage
 			: unreviewedSections.length === 0)
+	const hasActionableContent =
+		queueSections.length > 0 || unreviewedSections.length > 0
 
 	useEffect(() => {
 		if (activeQueueTab !== 'due' || !hasNextPage || isFetchingNextPage) return
@@ -258,6 +261,7 @@ export function ReviewPage() {
 
 	return (
 		<PageLayout>
+			{hasActionableContent && <ReviewModeWarningDialog />}
 			<PageLayout.Header icon={ReviewSidebarStarIcon} title='Review'>
 				<div className='flex justify-start'>
 					<Tabs
