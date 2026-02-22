@@ -2178,7 +2178,7 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 												type='button'
 												variant='outline'
 											>
-												Guess
+												Type a guess
 											</Button>
 											<Button
 												className='rounded-full'
