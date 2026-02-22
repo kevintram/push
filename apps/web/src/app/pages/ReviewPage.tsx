@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import { BookOpen, type LucideProps, Star } from 'lucide-react'
 import { forwardRef, useMemo, useState } from 'react'
 import { ReviewModeWarningDialog } from '~/app/components/ReviewModeWarningDialog'
@@ -27,19 +26,20 @@ import { orderNoteStatusBadges } from '~/features/notes/utils/orderNoteStatusBad
 import { useReviewQueue } from '~/features/reviews/api/getReviewQueue'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type { ReviewQueueItem } from '~/features/reviews/types/review-queue.types'
+import {
+	getActionDays,
+	getWeekOffsetFromActionDays,
+	getWeekSectionLabel
+} from '~/features/reviews/utils/reviewWeekBuckets'
 import { useNoteNavigation } from '~/hooks/useNoteNavigation'
+import { useWeekStart } from '~/stores/WeekStartContext'
 import { estimateCardSize } from '~/utils/estimateCardSize'
-
-function getWeekOffset(daysUntil: number, daysUntilSunday: number): number {
-	if (daysUntil <= daysUntilSunday) return 0
-	return 1 + Math.floor((daysUntil - daysUntilSunday - 1) / 7)
-}
 
 type QueueCardItem = {
 	key: string
 	entry: ReviewQueueItem
 	queueType: 'due' | 'hazy'
-	urgencyDays: number
+	actionDays: number
 }
 
 type QueueSection = {
@@ -56,8 +56,8 @@ function getQueueItemTitle(item: QueueCardItem): string {
 }
 
 function sortUpcomingQueueItems(a: QueueCardItem, b: QueueCardItem): number {
-	if (a.urgencyDays !== b.urgencyDays) {
-		return a.urgencyDays - b.urgencyDays
+	if (a.actionDays !== b.actionDays) {
+		return a.actionDays - b.actionDays
 	}
 	if (a.queueType !== b.queueType) {
 		return a.queueType === 'due' ? -1 : 1
@@ -68,8 +68,8 @@ function sortUpcomingQueueItems(a: QueueCardItem, b: QueueCardItem): number {
 function sortOverdueItems(a: QueueCardItem, b: QueueCardItem): number {
 	// Overdue values are negative, so lower values are more overdue and should
 	// remain earlier in the list to preserve stable, intuitive ordering.
-	if (a.urgencyDays !== b.urgencyDays) {
-		return a.urgencyDays - b.urgencyDays
+	if (a.actionDays !== b.actionDays) {
+		return a.actionDays - b.actionDays
 	}
 	if (a.queueType !== b.queueType) {
 		return a.queueType === 'due' ? -1 : 1
@@ -140,22 +140,18 @@ export function ReviewPage() {
 	})
 	const navigateToNote = useNoteNavigation()
 	const { openReviewDialog } = useReviewDialog()
-
-	const daysUntilSunday = useMemo(() => (7 - dayjs().day()) % 7, [])
+	const { weekStartDay } = useWeekStart()
 
 	const queueItems = useMemo<Array<QueueCardItem>>(() => {
 		return reviewQueue
 			.map(entry => {
-				const urgencyDays =
-					entry.queue_type === 'due'
-						? entry.days_until_due
-						: entry.days_until_hazy
-				if (urgencyDays === null || urgencyDays === undefined) return null
+				const actionDays = getActionDays(entry)
+				if (actionDays === null) return null
 				const key =
 					entry.queue_type === 'due' && entry.review_id != null
 						? `due-${entry.review_id}`
 						: `hazy-note-${entry.note.id}`
-				return { key, entry, queueType: entry.queue_type, urgencyDays }
+				return { key, entry, queueType: entry.queue_type, actionDays }
 			})
 			.filter((item): item is QueueCardItem => item !== null)
 			.filter(item => matchesNoteFilter(item.entry.note, activeFilter))
@@ -176,11 +172,14 @@ export function ReviewPage() {
 		const weeklyBuckets = new Map<number, Array<QueueCardItem>>()
 
 		for (const item of queueItems) {
-			if (item.urgencyDays < 0) {
+			if (item.actionDays < 0) {
 				overdueItems.push(item)
 				continue
 			}
-			const weekOffset = getWeekOffset(item.urgencyDays, daysUntilSunday)
+			const weekOffset = getWeekOffsetFromActionDays(
+				item.actionDays,
+				weekStartDay
+			)
 			const bucket = weeklyBuckets.get(weekOffset)
 			if (bucket) {
 				bucket.push(item)
@@ -204,12 +203,7 @@ export function ReviewPage() {
 			if (!bucketItems || bucketItems.length === 0) continue
 			output.push({
 				id: `week-${offset}`,
-				label:
-					offset === 0
-						? 'This week'
-						: offset === 1
-							? 'Next week'
-							: `In ${offset} weeks`,
+				label: getWeekSectionLabel(offset),
 				headingClassName:
 					offset === 0 ? 'text-blue-600 dark:text-blue-400' : undefined,
 				items: [...bucketItems].sort(sortUpcomingQueueItems)
@@ -217,7 +211,7 @@ export function ReviewPage() {
 		}
 
 		return output
-	}, [queueItems, daysUntilSunday])
+	}, [queueItems, weekStartDay])
 
 	const unreviewedSections = useMemo(
 		() => groupUnreviewedByCreatedDate(unreviewedNotes),
