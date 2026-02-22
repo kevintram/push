@@ -1,10 +1,10 @@
-import type { EntityItem } from '~/components/EntityCard'
+import type { Note } from '~/features/notes/types/note.types'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 
-export type DateSection = {
+export type DateSection<T> = {
 	id: string
 	label: string
-	items: Array<EntityItem>
+	items: Array<T>
 }
 
 function getDateKey(date: Date): string {
@@ -12,8 +12,6 @@ function getDateKey(date: Date): string {
 }
 
 function getDateLabel(date: Date, today: Date): string {
-	// Today/Yesterday use date-key string comparison for reliable boundary detection.
-	// Older dates use normalized-midnight arithmetic since off-by-one is less noticeable.
 	const todayKey = getDateKey(today)
 	const dateKey = getDateKey(date)
 
@@ -31,16 +29,13 @@ function getDateLabel(date: Date, today: Date): string {
 	return `${daysDiff}d ago`
 }
 
-export function groupByDate(
-	entries: Array<{ item: EntityItem; date: string | Date }>
-): Array<DateSection> {
+export function groupByDate<T>(
+	entries: Array<{ item: T; date: string | Date }>
+): Array<DateSection<T>> {
 	const today = new Date()
 	today.setHours(0, 0, 0, 0)
 
-	const groupMap = new Map<
-		string,
-		{ label: string; items: Array<EntityItem> }
-	>()
+	const groupMap = new Map<string, { label: string; items: Array<T> }>()
 	const groupOrder: Array<string> = []
 
 	for (const { item, date } of entries) {
@@ -66,24 +61,9 @@ export function groupByDate(
 
 export function toEntityEntries(
 	results: Array<SearchResultItem>
-): Array<{ item: EntityItem; date: string }> {
-	return results.map(result => {
-		let entity: EntityItem
-		switch (result.entity_type) {
-			case 'topic':
-				entity = { type: 'topic', item: result.topic }
-				break
-			case 'source':
-				entity = { type: 'source', item: result.source }
-				break
-			case 'practice':
-				entity = { type: 'practice', item: result.practice }
-				break
-			default: {
-				const _exhaustiveCheck: never = result
-				return _exhaustiveCheck
-			}
-		}
-		return { item: entity, date: result.recent_activity_at }
-	})
+): Array<{ item: Note; date: string }> {
+	return results.map(result => ({
+		item: result.note,
+		date: result.recent_activity_at
+	}))
 }
