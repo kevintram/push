@@ -1,16 +1,33 @@
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
-import { ReviewQueueItemSchema } from '../types/review-queue.schemas'
-import type { ReviewQueueItem } from '../types/review-queue.types'
+import {
+	ReviewQueueItemSchema,
+	ReviewQueuePageSchema
+} from '../types/review-queue.schemas'
+import type {
+	ReviewQueueItem,
+	ReviewQueuePage
+} from '../types/review-queue.types'
 import { reviewQueueKeys } from './queryKeys'
 
-export async function getReviewQueue(
+type GetReviewQueuePageParams = {
 	limit?: number
-): Promise<Array<ReviewQueueItem>> {
+	cursor?: string
+}
+
+const DEFAULT_REVIEW_QUEUE_PAGE_SIZE = 50
+
+export async function getReviewQueuePage({
+	limit,
+	cursor
+}: GetReviewQueuePageParams = {}): Promise<ReviewQueuePage> {
 	const searchParams = new URLSearchParams()
 	if (limit !== undefined) {
 		searchParams.append('limit', String(limit))
+	}
+	if (cursor !== undefined) {
+		searchParams.append('cursor', cursor)
 	}
 
 	const response = await apiFetch(
@@ -23,7 +40,7 @@ export async function getReviewQueue(
 
 	const data = await response.json()
 	try {
-		return v.parse(v.array(ReviewQueueItemSchema), data)
+		return v.parse(ReviewQueuePageSchema, data)
 	} catch (error) {
 		if (v.isValiError(error)) {
 			throw new Error(`Validation failed: ${error.message}`)
@@ -32,9 +49,31 @@ export async function getReviewQueue(
 	}
 }
 
+export async function getReviewQueue(
+	limit?: number
+): Promise<Array<ReviewQueueItem>> {
+	const page = await getReviewQueuePage({ limit })
+	return v.parse(v.array(ReviewQueueItemSchema), page.items)
+}
+
 export function useReviewQueue(limit?: number) {
 	return useQuery({
 		queryKey: reviewQueueKeys.list(limit),
 		queryFn: () => getReviewQueue(limit)
+	})
+}
+
+export function useInfiniteReviewQueue(
+	limit: number = DEFAULT_REVIEW_QUEUE_PAGE_SIZE
+) {
+	return useInfiniteQuery({
+		queryKey: reviewQueueKeys.infinite(limit),
+		initialPageParam: undefined as string | undefined,
+		queryFn: ({ pageParam }) =>
+			getReviewQueuePage({
+				limit,
+				cursor: typeof pageParam === 'string' ? pageParam : undefined
+			}),
+		getNextPageParam: lastPage => lastPage.next_cursor ?? undefined
 	})
 }

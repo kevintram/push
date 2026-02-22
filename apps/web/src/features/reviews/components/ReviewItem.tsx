@@ -2,14 +2,12 @@ import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
 	Anvil,
+	BookText,
 	CalendarIcon,
-	Dumbbell,
-	FileText,
 	MoreHorizontal,
-	StickyNote,
 	Trash
 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { type MouseEvent, useCallback, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent } from '~/components/ui/card'
 import {
@@ -23,12 +21,12 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
-import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReview } from '../api/deleteReview'
 import { useUpdateReview } from '../api/updateReview'
 import type { ReviewListItem } from '../types/review.types'
+import { isOverdue } from '../utils/isOverdue'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import {
 	ReviewRatingCheckbox,
@@ -161,40 +159,15 @@ export function ReviewItem({
 		}
 	}, [entry.id, onReviewClick, readonly])
 
-	const handleTopicClick = useCallback(
-		(event: React.MouseEvent) => {
+	const handleNoteClick = useCallback(
+		(event: MouseEvent) => {
 			event.stopPropagation()
-			if (!entry.topic) return
 			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: entry.topic.id.toString() }
+				to: '/notes/$noteId',
+				params: { noteId: entry.note_id.toString() }
 			})
 		},
-		[navigate, entry.topic]
-	)
-
-	const handleSourceClick = useCallback(
-		(event: React.MouseEvent) => {
-			event.stopPropagation()
-			if (!entry.source) return
-			navigate({
-				to: '/sources/$sourceId',
-				params: { sourceId: entry.source.id.toString() }
-			})
-		},
-		[navigate, entry.source]
-	)
-
-	const handlePracticeClick = useCallback(
-		(event: React.MouseEvent) => {
-			event.stopPropagation()
-			if (!entry.practice) return
-			navigate({
-				to: '/practices/$practiceId',
-				params: { practiceId: entry.practice.id.toString() }
-			})
-		},
-		[navigate, entry.practice]
+		[navigate, entry.note_id]
 	)
 
 	const effectiveDate = entry.effective_date
@@ -218,10 +191,8 @@ export function ReviewItem({
 	)
 	const description = entry.description?.trim()
 
-	// Determine if we're actually rendering an entity link
 	const showingEntity =
-		(variant === 'default' || variant === 'topic') &&
-		(entry.topic?.name || entry.source?.title || entry.practice?.prompt)
+		(variant === 'default' || variant === 'topic') && entry.note.title
 
 	return (
 		<Card className='rounded-none border-0 bg-transparent shadow-none'>
@@ -341,40 +312,17 @@ export function ReviewItem({
 						)}
 					</div>
 					<div className='flex items-center justify-end gap-2 text-muted-foreground text-xs'>
-						{(variant === 'default' || variant === 'topic') && entry.topic && (
+						{(variant === 'default' || variant === 'topic') && (
 							<Button
 								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-								onClick={handleTopicClick}
+								onClick={handleNoteClick}
 								size='sm'
 								variant='link'
 							>
-								<StickyNote className='h-3 w-3' />
-								<span>{entry.topic.name}</span>
+								<BookText className='h-3 w-3' />
+								<span>{entry.note.title || 'Untitled note'}</span>
 							</Button>
 						)}
-						{(variant === 'default' || variant === 'topic') && entry.source && (
-							<Button
-								className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-								onClick={handleSourceClick}
-								size='sm'
-								variant='link'
-							>
-								<FileText className='h-3 w-3' />
-								<span>{entry.source.title}</span>
-							</Button>
-						)}
-						{(variant === 'default' || variant === 'topic') &&
-							entry.practice && (
-								<Button
-									className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-									onClick={handlePracticeClick}
-									size='sm'
-									variant='link'
-								>
-									<Dumbbell className='h-3 w-3' />
-									<span>{entry.practice.prompt}</span>
-								</Button>
-							)}
 						{hasStability && (
 							<>
 								{showingEntity && <span>⋅</span>}

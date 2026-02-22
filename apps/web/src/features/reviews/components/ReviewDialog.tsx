@@ -9,7 +9,6 @@ import {
 	X
 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import type { EntityItem } from '~/components/EntityCard'
 import { Button } from '~/components/ui/button'
 import { Dialog, DialogContent } from '~/components/ui/dialog'
 import {
@@ -20,8 +19,8 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Textarea } from '~/components/ui/textarea'
+import type { Note } from '~/features/notes/types/note.types'
 import { SearchDialog } from '~/features/search/components/SearchDialog'
-import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
@@ -29,6 +28,7 @@ import { useDeleteReview } from '../api/deleteReview'
 import { useReview } from '../api/getReviews'
 import { useUpdateReview } from '../api/updateReview'
 import type { UpdateReviewInput } from '../types/api.types'
+import { isOverdue } from '../utils/isOverdue'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import {
 	ReviewRatingCheckbox,
@@ -145,21 +145,10 @@ export function ReviewDialog({
 		? Math.round((review.stability_after ?? 0) - (review.stability_before ?? 0))
 		: 0
 
-	// Helper to get the entity type label for display
-	const getEntityTypeLabel = useCallback((): string => {
-		if (review?.topic_id) return 'Topic'
-		if (review?.source_id) return 'Source'
-		if (review?.practice_id) return 'Practice'
-		return ''
-	}, [review?.topic_id, review?.source_id, review?.practice_id])
-
-	// Helper to get the entity name for display
 	const getEntityName = useCallback((): string => {
-		if (review?.topic) return review.topic.name
-		if (review?.source) return review.source.title
-		if (review?.practice) return review.practice.prompt
+		if (review?.note) return review.note.title || 'Untitled note'
 		return 'Unknown'
-	}, [review?.topic, review?.source, review?.practice])
+	}, [review?.note])
 
 	const handleStatusChange = useCallback(
 		(status: ReviewRatingState) => {
@@ -214,23 +203,12 @@ export function ReviewDialog({
 	const navigate = useNavigate()
 
 	const handleOpenLinkedEntity = useCallback(() => {
-		if (review?.topic_id) {
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: review.topic_id.toString() }
-			})
-		} else if (review?.source_id) {
-			navigate({
-				to: '/sources/$sourceId',
-				params: { sourceId: review.source_id.toString() }
-			})
-		} else if (review?.practice_id) {
-			navigate({
-				to: '/practices/$practiceId',
-				params: { practiceId: review.practice_id.toString() }
-			})
-		}
-	}, [navigate, review?.topic_id, review?.source_id, review?.practice_id])
+		if (!review?.note_id) return
+		navigate({
+			to: '/notes/$noteId',
+			params: { noteId: review.note_id.toString() }
+		})
+	}, [navigate, review?.note_id])
 
 	const handleChangeEntity = useCallback(() => {
 		setIsSearchOpen(true)
@@ -255,16 +233,10 @@ export function ReviewDialog({
 	)
 
 	const handleEntitySelect = useCallback(
-		(entity: EntityItem) => {
+		(note: Note) => {
 			if (!review?.id) return
 			const payload: UpdateReviewInput = { id: review.id }
-			if (entity.type === 'topic') {
-				payload.topic_id = entity.item.id
-			} else if (entity.type === 'source') {
-				payload.source_id = entity.item.id
-			} else {
-				payload.practice_id = entity.item.id
-			}
+			payload.note_id = note.id
 			updateReviewMutation.mutate(payload)
 		},
 		[review?.id, updateReviewMutation]
@@ -394,7 +366,7 @@ export function ReviewDialog({
 											<button
 												className='inline-flex h-7 items-center gap-1.5 rounded-md bg-secondary px-2 text-secondary-foreground text-sm'
 												disabled={updateReviewMutation.isPending}
-												title={getEntityTypeLabel()}
+												title='Note'
 												type='button'
 											>
 												<Link className='h-3.5 w-3.5' />

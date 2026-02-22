@@ -8,16 +8,8 @@ import { reviewKeys } from './queryKeys'
 export async function getReviews(filters?: GetReviewsFilters) {
 	const params = new URLSearchParams()
 
-	if (filters?.topicId !== undefined) {
-		params.append('topic_id', filters.topicId.toString())
-	}
-
-	if (filters?.sourceId !== undefined) {
-		params.append('source_id', filters.sourceId.toString())
-	}
-
-	if (filters?.practiceId !== undefined) {
-		params.append('practice_id', filters.practiceId.toString())
+	if (filters?.noteId !== undefined) {
+		params.append('note_id', filters.noteId.toString())
 	}
 
 	if (filters?.effectiveDateBefore !== undefined) {
@@ -68,27 +60,11 @@ export function useReviews(filters?: GetReviewsFilters) {
 	})
 }
 
-export function useReviewsByTopic(topicId: number | undefined) {
+export function useReviewsByNote(noteId: number | undefined) {
 	return useQuery({
-		queryKey: reviewKeys.list({ topicId }),
-		queryFn: () => getReviews({ topicId }),
-		enabled: topicId !== undefined
-	})
-}
-
-export function useReviewsBySource(sourceId: number | undefined) {
-	return useQuery({
-		queryKey: reviewKeys.list({ sourceId }),
-		queryFn: () => getReviews({ sourceId }),
-		enabled: sourceId !== undefined
-	})
-}
-
-export function useReviewsByPractice(practiceId: number | undefined) {
-	return useQuery({
-		queryKey: reviewKeys.list({ practiceId }),
-		queryFn: () => getReviews({ practiceId }),
-		enabled: practiceId !== undefined
+		queryKey: reviewKeys.list({ noteId }),
+		queryFn: () => getReviews({ noteId }),
+		enabled: noteId !== undefined
 	})
 }
 

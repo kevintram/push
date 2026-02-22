@@ -46,7 +46,7 @@ export function useLearnableMetrics(
 
 		const tooltip =
 			retrievabilityDisplay !== null
-				? `Retrievability: ${retrievabilityDisplay}`
+				? `${retrievabilityDisplay} retrievability`
 				: 'Complete a review to calculate retrievability.'
 
 		return { label: freshnessTier, tooltip }
