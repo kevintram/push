@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from httpx import AsyncClient
 
 
@@ -86,3 +88,41 @@ class TestNotesEndpoints:
         )
         assert relation_response.status_code == 400
         assert "SOURCE tag" in relation_response.json()["detail"]
+
+    async def test_note_status_badges_use_client_date_header(
+        self, test_client: AsyncClient
+    ):
+        note_response = await test_client.post(
+            "/notes/",
+            json={"title": "Date-scoped badge note", "body": "", "tags": ["TOPIC"]},
+        )
+        assert note_response.status_code == 201
+        note = note_response.json()
+
+        review_response = await test_client.post(
+            "/reviews/",
+            json={"note_id": note["id"], "scheduled_at": str(date.today())},
+        )
+        assert review_response.status_code == 200
+
+        default_response = await test_client.get(f"/notes/{note['id']}/")
+        assert default_response.status_code == 200
+        default_due_badge = next(
+            badge
+            for badge in default_response.json()["status_badges"]
+            if badge["key"] == "due"
+        )
+        assert default_due_badge["label"] == "Due in 0d"
+
+        client_today = date.today() - timedelta(days=1)
+        client_date_response = await test_client.get(
+            f"/notes/{note['id']}/",
+            headers={"X-Client-Date": str(client_today)},
+        )
+        assert client_date_response.status_code == 200
+        client_due_badge = next(
+            badge
+            for badge in client_date_response.json()["status_badges"]
+            if badge["key"] == "due"
+        )
+        assert client_due_badge["label"] == "Due in 1d"

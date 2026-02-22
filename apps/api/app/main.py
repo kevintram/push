@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
@@ -10,6 +10,11 @@ from app.auth.router import router as auth_router
 from app.admin.router import router as admin_router
 from app.search.router import router as search_router
 from app.notes.router import router as notes_router
+from app.utils.current_date import (
+    parse_iso_date,
+    reset_request_current_date,
+    set_request_current_date,
+)
 
 app = FastAPI()
 
@@ -22,6 +27,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def apply_client_date_header(request: Request, call_next):
+    client_date = parse_iso_date(request.headers.get("X-Client-Date"))
+    token = set_request_current_date(client_date)
+    try:
+        return await call_next(request)
+    finally:
+        reset_request_current_date(token)
+
 
 app.include_router(reviews_router)
 app.include_router(review_queue_router)
