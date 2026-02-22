@@ -3,16 +3,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.practices import PracticeSummaryRead
-from app.schemas.sources import SourceSummaryRead
-from app.schemas.topics import TopicSummaryRead
+from app.schemas.notes import NoteRead
 
 
 class SearchResultItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    entity_type: Literal["topic", "source", "practice"]
-    topic: TopicSummaryRead | None = None
-    source: SourceSummaryRead | None = None
-    practice: PracticeSummaryRead | None = None
+    entity_type: Literal["note"]
+    note: NoteRead
     recent_activity_at: datetime
