@@ -9,7 +9,6 @@ import {
 	X
 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import type { EntityItem } from '~/components/EntityCard'
 import { Button } from '~/components/ui/button'
 import { Dialog, DialogContent } from '~/components/ui/dialog'
 import {
@@ -20,8 +19,8 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Textarea } from '~/components/ui/textarea'
+import type { Note } from '~/features/notes/types/note.types'
 import { SearchDialog } from '~/features/search/components/SearchDialog'
-import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
@@ -29,6 +28,7 @@ import { useDeleteReview } from '../api/deleteReview'
 import { useReview } from '../api/getReviews'
 import { useUpdateReview } from '../api/updateReview'
 import type { UpdateReviewInput } from '../types/api.types'
+import { isOverdue } from '../utils/isOverdue'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import {
 	ReviewRatingCheckbox,
@@ -145,13 +145,10 @@ export function ReviewDialog({
 		? Math.round((review.stability_after ?? 0) - (review.stability_before ?? 0))
 		: 0
 
-	// Helper to get the entity name for display
 	const getEntityName = useCallback((): string => {
-		if (review?.topic) return review.topic.name
-		if (review?.source) return review.source.title
-		if (review?.practice) return review.practice.prompt
+		if (review?.note) return review.note.title || 'Untitled note'
 		return 'Unknown'
-	}, [review?.topic, review?.source, review?.practice])
+	}, [review?.note])
 
 	const handleStatusChange = useCallback(
 		(status: ReviewRatingState) => {
@@ -206,30 +203,12 @@ export function ReviewDialog({
 	const navigate = useNavigate()
 
 	const handleOpenLinkedEntity = useCallback(() => {
-		if (review?.topic_id) {
-			navigate({
-				to: '/topics/$topicId/reviews',
-				params: { topicId: review.topic_id.toString() }
-			})
-		} else if (review?.source_id) {
-			navigate({
-				to: '/sources/$sourceId/reviews',
-				params: { sourceId: review.source_id.toString() }
-			})
-		} else if (review?.practice_id) {
-			navigate({
-				to: '/practices/$practiceId/reviews',
-				params: { practiceId: review.practice_id.toString() }
-			})
-		}
-		onOpenChange(false)
-	}, [
-		navigate,
-		onOpenChange,
-		review?.topic_id,
-		review?.source_id,
-		review?.practice_id
-	])
+		if (!review?.note_id) return
+		navigate({
+			to: '/notes/$noteId',
+			params: { noteId: review.note_id.toString() }
+		})
+	}, [navigate, review?.note_id])
 
 	const handleChangeEntity = useCallback(() => {
 		setIsSearchOpen(true)
@@ -254,16 +233,10 @@ export function ReviewDialog({
 	)
 
 	const handleEntitySelect = useCallback(
-		(entity: EntityItem) => {
+		(note: Note) => {
 			if (!review?.id) return
 			const payload: UpdateReviewInput = { id: review.id }
-			if (entity.type === 'topic') {
-				payload.topic_id = entity.item.id
-			} else if (entity.type === 'source') {
-				payload.source_id = entity.item.id
-			} else {
-				payload.practice_id = entity.item.id
-			}
+			payload.note_id = note.id
 			updateReviewMutation.mutate(payload)
 		},
 		[review?.id, updateReviewMutation]
@@ -309,30 +282,7 @@ export function ReviewDialog({
 				>
 					<div className='flex h-full min-h-0 flex-col'>
 						<div className='flex items-center justify-between border-b px-2 py-1'>
-							<DropdownMenu>
-								<DropdownMenuTrigger
-									render={
-										<Button
-											className='max-w-48'
-											disabled={updateReviewMutation.isPending}
-											size='sm'
-											variant='ghost'
-										>
-											<Link className='h-3.5 w-3.5 shrink-0' />
-											<span className='truncate'>{getEntityName()}</span>
-											<ChevronDown className='h-3 w-3 shrink-0 text-muted-foreground' />
-										</Button>
-									}
-								/>
-								<DropdownMenuContent align='start' className='w-auto'>
-									<DropdownMenuItem onClick={handleOpenLinkedEntity}>
-										Open
-									</DropdownMenuItem>
-									<DropdownMenuItem onClick={handleChangeEntity}>
-										Change
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
+							<div className='flex-1' />
 							<div className='flex items-center gap-2'>
 								<DropdownMenu>
 									<DropdownMenuTrigger
@@ -360,31 +310,14 @@ export function ReviewDialog({
 							</div>
 						</div>
 
-						<div className='flex min-h-0 flex-1 flex-col gap-y-2 px-4 py-4'>
-							{hasStability && (
-								<div className='flex items-center text-muted-foreground text-xs'>
-									<Anvil className='mr-1 h-3 w-3' />
-									<span>{stabilityAfterRounded}d</span>
-									{hasDelta ? (
-										<span className={cn('ml-1', stabilityChangeColorClass)}>
-											({stabilityDeltaRounded >= 0 ? '+' : ''}
-											{stabilityDeltaRounded})
-										</span>
-									) : (
-										<span className={cn('ml-1', stabilityChangeColorClass)}>
-											(new)
-										</span>
-									)}
-								</div>
-							)}
-							<div className='grid min-h-0 flex-1 grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr] content-start items-center gap-x-2'>
-								{/* Row 1: Checkbox | Description | Date */}
+						<div className='flex min-h-0 flex-1 flex-col gap-4 px-4 py-4'>
+							<div className='grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-2'>
 								<ReviewRatingCheckbox
-									className={cn(
-										'ml-2',
-										isOverdueValue &&
-											'border-red-600 dark:border-red-700 dark:bg-red-700'
-									)}
+									className={
+										isOverdueValue
+											? 'border-red-600 dark:border-red-700 dark:bg-red-700'
+											: ''
+									}
 									disabled={isLoading || updateReviewMutation.isPending}
 									onChange={handleStatusChange}
 									value={reviewStatus}
@@ -417,15 +350,54 @@ export function ReviewDialog({
 										</Button>
 									}
 								/>
-								{/* Row 2: [empty] | Notes */}
-								<div className='self-start' />
 								<Textarea
-									className='!bg-transparent m-0 h-full min-h-0 min-w-0 resize-none rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									className='!bg-transparent col-span-2 col-start-2 m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
 									onChange={onNotesChange}
 									placeholder='Notes'
 									spellCheck={false}
 									value={notes}
 								/>
+							</div>
+
+							<div className='mt-auto flex flex-wrap items-center gap-2'>
+								<DropdownMenu>
+									<DropdownMenuTrigger
+										render={
+											<button
+												className='inline-flex h-7 items-center gap-1.5 rounded-md bg-secondary px-2 text-secondary-foreground text-sm'
+												disabled={updateReviewMutation.isPending}
+												title='Note'
+												type='button'
+											>
+												<Link className='h-3.5 w-3.5' />
+												<span>{getEntityName()}</span>
+												<ChevronDown className='h-3 w-3 text-muted-foreground' />
+											</button>
+										}
+									/>
+									<DropdownMenuContent align='start'>
+										<DropdownMenuItem onClick={handleOpenLinkedEntity}>
+											Open
+										</DropdownMenuItem>
+										<DropdownMenuItem onClick={handleChangeEntity}>
+											Change
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+								{hasStability && (
+									<Button className='h-7 px-2' size='sm' variant='secondary'>
+										<Anvil className='h-3.5 w-3.5' />
+										<span>Durability {stabilityAfterRounded}d</span>
+										{hasDelta ? (
+											<span className={stabilityChangeColorClass}>
+												({stabilityDeltaRounded >= 0 ? '+' : ''}
+												{stabilityDeltaRounded})
+											</span>
+										) : (
+											<span className={stabilityChangeColorClass}>(new)</span>
+										)}
+									</Button>
+								)}
 							</div>
 						</div>
 					</div>

@@ -1,14 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, date
-from typing import TYPE_CHECKING
+from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, model_validator
-
-if TYPE_CHECKING:
-    from app.schemas.topics import TopicRead, TopicCreate
-    from app.schemas.sources import SourceRead, SourceCreate
-    from app.schemas.practices import PracticeRead, PracticeCreate
+from pydantic import BaseModel, ConfigDict
 
 
 class ReviewBase(BaseModel):
@@ -22,15 +16,10 @@ class ReviewBase(BaseModel):
 
 
 class ReviewRead(ReviewBase):
-    """Review read schema - supports polymorphic reviews (topic, source, or practice)."""
-
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    # Polymorphic: at most one of topic_id, source_id, or practice_id will be set
-    topic_id: int | None = None
-    source_id: int | None = None
-    practice_id: int | None = None
+    note_id: int
     inserted_at: datetime
     updated_at: datetime
     effective_date: date | None = None
@@ -50,131 +39,43 @@ class ReviewRead(ReviewBase):
     due_after: date | None
 
 
-class TopicSummary(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    name: str
-    notes: str
-
-
-class SourceSummary(BaseModel):
+class NoteSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     title: str
-    notes: str
-
-
-class PracticeSummary(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    prompt: str
-    answer: str
+    body: str
 
 
 class ReviewListItem(ReviewRead):
-    """Review list item with embedded topic, source, or practice summary."""
-
     model_config = ConfigDict(from_attributes=True)
 
-    topic: TopicSummary | None = None
-    source: SourceSummary | None = None
-    practice: PracticeSummary | None = None
+    note: NoteSummary
 
 
-class ReviewWithTopic(ReviewRead):
-    """Review with full topic details (for topic reviews)."""
-
+class ReviewWithNote(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 
-    topic: "TopicRead"
-
-
-class ReviewWithSource(ReviewRead):
-    """Review with full source details (for source reviews)."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    source: "SourceRead"
-
-
-class ReviewWithPractice(ReviewRead):
-    """Review with full practice details (for practice reviews)."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    practice: "PracticeRead"
+    note: NoteSummary
 
 
 class ReviewCreate(BaseModel):
-    """Create a new review linked to exactly one topic, source, or practice."""
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
 
-    model_config = ConfigDict(from_attributes=True)
-
+    note_id: int
     description: str = ""
+    notes: str = ""
     scheduled_at: date | None = None
     completed_at: date | None = None
-
-    # Polymorphic: provide at most one entity reference
-    topic_id: int | None = None
-    topic: "TopicCreate | None" = None
-    source_id: int | None = None
-    source: "SourceCreate | None" = None
-    practice_id: int | None = None
-    practice: "PracticeCreate | None" = None
-
     rating: str | None = None
-
-    @model_validator(mode="after")
-    def validate_mutually_exclusive_fields(self) -> "ReviewCreate":
-        # Validate polymorphic target (exactly one entity reference)
-        targets = [
-            self.topic_id is not None,
-            self.topic is not None,
-            self.source_id is not None,
-            self.source is not None,
-            self.practice_id is not None,
-            self.practice is not None,
-        ]
-        if sum(targets) != 1:
-            raise ValueError(
-                "Must provide exactly one of: topic_id, topic, source_id, source, practice_id, or practice"
-            )
-
-        return self
 
 
 class ReviewUpdate(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
 
     rating: str | None = None
     description: str | None = None
     notes: str | None = None
     scheduled_at: date | None = None
     completed_at: date | None = None
-    topic_id: int | None = None
-    source_id: int | None = None
-    practice_id: int | None = None
-
-    @model_validator(mode="after")
-    def validate_entity_fields(self) -> "ReviewUpdate":
-        targets = [
-            self.topic_id is not None,
-            self.source_id is not None,
-            self.practice_id is not None,
-        ]
-        if sum(targets) > 1:
-            raise ValueError(
-                "At most one of topic_id, source_id, practice_id may be set"
-            )
-
-        if sum(targets) == 0 and any(
-            field in self.model_fields_set
-            for field in ("topic_id", "source_id", "practice_id")
-        ):
-            raise ValueError(
-                "Review must remain linked to an entity; null entity IDs are not allowed"
-            )
-        return self
+    note_id: int | None = None

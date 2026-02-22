@@ -2,11 +2,9 @@ import { BookOpen } from 'lucide-react'
 import { type ReactNode, useCallback, useMemo, useState } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
-	EntityCard,
-	type EntityItem,
-	estimateEntitySize,
-	getEntityKey
-} from '~/components/EntityCard'
+	EntityTypeFilter,
+	type EntityTypeFilterValue
+} from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { MasonryLayoutSkeleton } from '~/components/masonry-layout/MasonryLayoutSkeleton'
 import { CountBadge } from '~/components/ui/count-badge'
@@ -18,28 +16,23 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
-import { useSources } from '~/features/sources/api/getSources'
-import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
-import type {
-	Source,
-	SourceLifecycleStatus
-} from '~/features/sources/types/source.types'
-import { useEntityNavigation } from '~/hooks/useEntityNavigation'
+import { useNotes } from '~/features/notes/api/getNotes'
+import { NoteCard } from '~/features/notes/components/NoteCard'
+import type { Note, ReadingStatus } from '~/features/notes/types/note.types'
+import { useNoteNavigation } from '~/hooks/useNoteNavigation'
+import { estimateCardSize } from '~/utils/estimateCardSize'
 
-type ReadTab = 'read' | 'on-hold' | 'dropped' | 'finished'
+type ReadTab = 'read' | 'on-hold' | 'finished'
 
-type SourceEntityItem = Extract<EntityItem, { type: 'source' }>
-
-type SourceSection = {
+type ReadSection = {
 	id: string
 	label: string
-	items: Array<SourceEntityItem>
+	items: Array<Note>
 }
 
 const READ_TAB_OPTIONS: Array<{ value: ReadTab; label: string }> = [
 	{ value: 'read', label: 'Read' },
 	{ value: 'on-hold', label: 'On Hold' },
-	{ value: 'dropped', label: 'Dropped' },
 	{ value: 'finished', label: 'Finished' }
 ]
 
@@ -47,24 +40,16 @@ function isReadTab(value: string): value is ReadTab {
 	return READ_TAB_OPTIONS.some(option => option.value === value)
 }
 
-function toSourceItems(sources: Array<Source>): Array<SourceEntityItem> {
-	return sources.map(source => ({
-		type: 'source',
-		item: source
-	}))
-}
-
-function bucketSourcesByStatus(sources: Array<Source>) {
-	const buckets: Record<SourceLifecycleStatus, Array<Source>> = {
+function bucketNotesByStatus(notes: Array<Note>) {
+	const buckets: Record<ReadingStatus, Array<Note>> = {
 		NEW: [],
 		IN_PROGRESS: [],
 		ON_HOLD: [],
-		DROPPED: [],
 		FINISHED: []
 	}
 
-	for (const source of sources) {
-		buckets[source.status].push(source)
+	for (const note of notes) {
+		buckets[note.reading_status].push(note)
 	}
 
 	return buckets
@@ -74,76 +59,94 @@ function getEmptyStateCopy(activeTab: ReadTab) {
 	switch (activeTab) {
 		case 'read':
 			return {
-				title: 'No sources to read',
-				description: 'Set a source to New or In Progress to show it here'
+				title: 'No notes to read',
+				description: 'Add a note to your reading list to show it here'
 			}
 		case 'on-hold':
 			return {
-				title: 'No sources on hold',
-				description: 'Sources marked On Hold will show up here'
-			}
-		case 'dropped':
-			return {
-				title: 'No dropped sources',
-				description: 'Sources marked Dropped will show up here'
+				title: 'No notes on hold',
+				description: 'Notes marked On Hold will show up here'
 			}
 		case 'finished':
 			return {
-				title: 'No finished sources',
-				description: 'Sources marked Finished will show up here'
+				title: 'No finished notes',
+				description: 'Notes marked Finished will show up here'
 			}
 		default:
 			return {
-				title: 'No sources',
-				description: 'Sources will show up here once available'
+				title: 'No notes',
+				description: 'Notes will show up here once available'
 			}
 	}
 }
 
-export function ReadPage() {
-	const handleEntityClick = useEntityNavigation()
-	const [activeTab, setActiveTab] = useState<ReadTab>('read')
+function estimateNoteSize(
+	note: Note,
+	_index: number,
+	laneWidth: number
+): number {
+	return estimateCardSize(note.title || 'Untitled', note.body || '', laneWidth)
+}
 
-	const { data: sources = [], isLoading } = useSources({
+function getNoteKey(note: Note): string {
+	return `note-${note.id}`
+}
+
+function matchesNoteFilter(note: Note, filter: EntityTypeFilterValue): boolean {
+	if (filter === 'all') return true
+	if (filter === 'none') return note.tags.length === 0
+	if (filter === 'topic') return note.tags.includes('TOPIC')
+	if (filter === 'source') return note.tags.includes('SOURCE')
+	return note.tags.includes('PRACTICE')
+}
+
+export function ReadPage() {
+	const [activeTab, setActiveTab] = useState<ReadTab>('read')
+	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
+	const navigateToNote = useNoteNavigation()
+
+	const { data: notes = [], isLoading } = useNotes({
+		in_reading_list: true,
 		archived: false,
-		order: 'desc',
-		orderBy: 'updated_at'
+		order: 'desc'
 	})
 
+	const filteredNotes = useMemo(
+		() => notes.filter(note => matchesNoteFilter(note, activeFilter)),
+		[notes, activeFilter]
+	)
+
 	const statusBuckets = useMemo(() => {
-		const sortedSources = [...sources].sort(
+		const sortedNotes = [...filteredNotes].sort(
 			(a, b) =>
 				new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
 		)
-		return bucketSourcesByStatus(sortedSources)
-	}, [sources])
+		return bucketNotesByStatus(sortedNotes)
+	}, [filteredNotes])
 
 	const tabCounts = useMemo(
 		() => ({
 			read: statusBuckets.IN_PROGRESS.length + statusBuckets.NEW.length,
 			'on-hold': statusBuckets.ON_HOLD.length,
-			dropped: statusBuckets.DROPPED.length,
 			finished: statusBuckets.FINISHED.length
 		}),
 		[statusBuckets]
 	)
 
-	const sections = useMemo<Array<SourceSection>>(() => {
+	const sections = useMemo<Array<ReadSection>>(() => {
 		if (activeTab === 'read') {
-			const readSections: Array<SourceSection> = [
+			return [
 				{
 					id: 'in-progress',
 					label: 'In Progress',
-					items: toSourceItems(statusBuckets.IN_PROGRESS)
+					items: statusBuckets.IN_PROGRESS
 				},
 				{
 					id: 'new',
 					label: 'New',
-					items: toSourceItems(statusBuckets.NEW)
+					items: statusBuckets.NEW
 				}
-			]
-
-			return readSections.filter(section => section.items.length > 0)
+			].filter(section => section.items.length > 0)
 		}
 
 		if (activeTab === 'on-hold') {
@@ -151,17 +154,7 @@ export function ReadPage() {
 				{
 					id: 'on-hold',
 					label: 'On Hold',
-					items: toSourceItems(statusBuckets.ON_HOLD)
-				}
-			]
-		}
-
-		if (activeTab === 'dropped') {
-			return [
-				{
-					id: 'dropped',
-					label: 'Dropped',
-					items: toSourceItems(statusBuckets.DROPPED)
+					items: statusBuckets.ON_HOLD
 				}
 			]
 		}
@@ -170,7 +163,7 @@ export function ReadPage() {
 			{
 				id: 'finished',
 				label: 'Finished',
-				items: toSourceItems(statusBuckets.FINISHED)
+				items: statusBuckets.FINISHED
 			}
 		]
 	}, [activeTab, statusBuckets])
@@ -186,15 +179,14 @@ export function ReadPage() {
 	)
 
 	const renderItem = useCallback(
-		(entity: SourceEntityItem) => (
-			<EntityCard
-				entity={entity}
-				headerRight={<SourceActionMenu source={entity.item} />}
+		(note: Note) => (
+			<NoteCard
 				minHeight={96}
-				onEntityClick={handleEntityClick}
+				note={note}
+				onClick={() => navigateToNote(note.id)}
 			/>
 		),
-		[handleEntityClick]
+		[navigateToNote]
 	)
 
 	return (
@@ -222,7 +214,13 @@ export function ReadPage() {
 					</TabsList>
 				</Tabs>
 			</PageLayout.Header>
-			<PageLayout.Content className='max-w-screen p-6'>
+			<PageLayout.Content className='max-w-screen px-6 pt-3 pb-6'>
+				<div className='mb-4'>
+					<EntityTypeFilter
+						activeFilter={activeFilter}
+						onFilterChange={setActiveFilter}
+					/>
+				</div>
 				<ReadSections
 					emptyDescription={emptyStateCopy.description}
 					emptyTitle={emptyStateCopy.title}
@@ -242,11 +240,11 @@ function ReadSections({
 	emptyDescription,
 	renderItem
 }: {
-	sections: Array<SourceSection>
+	sections: Array<ReadSection>
 	isLoading: boolean
 	emptyTitle: string
 	emptyDescription: string
-	renderItem: (entity: SourceEntityItem) => ReactNode
+	renderItem: (note: Note) => ReactNode
 }) {
 	if (isLoading) {
 		return <MasonryLayoutSkeleton />
@@ -274,9 +272,9 @@ function ReadSections({
 				<div className='space-y-3' key={section.id}>
 					<h2 className='font-semibold text-lg'>{section.label}</h2>
 					<MasonryLayout
-						estimateItemSize={estimateEntitySize}
+						estimateItemSize={estimateNoteSize}
 						gap={16}
-						getItemKey={getEntityKey}
+						getItemKey={getNoteKey}
 						items={section.items}
 						renderItem={renderItem}
 					/>

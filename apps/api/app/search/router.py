@@ -14,7 +14,7 @@ async def search(
     user_id: UserIdDep,
     query: str | None = None,
     entity_types: str | None = Query(
-        None, description="Comma-separated: topic,source,practice"
+        None, description="Comma-separated: note,topic,source,practice"
     ),
     inboxed: bool | None = None,
     archived: bool | None = None,

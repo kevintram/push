@@ -14,34 +14,16 @@ import { Route as MainRouteImport } from './routes/_main'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
 import { Route as MainUpcomingRouteImport } from './routes/_main/upcoming'
 import { Route as MainUnscheduledRouteImport } from './routes/_main/unscheduled'
-import { Route as MainTopicsRouteImport } from './routes/_main/topics'
 import { Route as MainTodayRouteImport } from './routes/_main/today'
-import { Route as MainSourcesRouteImport } from './routes/_main/sources'
 import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainReadRouteImport } from './routes/_main/read'
-import { Route as MainPracticesRouteImport } from './routes/_main/practices'
-import { Route as MainMyTopicsRouteImport } from './routes/_main/my-topics'
 import { Route as MainMyLibraryRouteImport } from './routes/_main/my-library'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainInboxRouteImport } from './routes/_main/inbox'
 import { Route as MainArchivedRouteImport } from './routes/_main/archived'
-import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
-import { Route as MainSourcesSourceIdRouteImport } from './routes/_main/sources_.$sourceId'
-import { Route as MainPracticesPracticeIdRouteImport } from './routes/_main/practices_.$practiceId'
-import { Route as MainTopicsTopicIdIndexRouteImport } from './routes/_main/topics_.$topicId.index'
-import { Route as MainSourcesSourceIdIndexRouteImport } from './routes/_main/sources_.$sourceId.index'
-import { Route as MainPracticesPracticeIdIndexRouteImport } from './routes/_main/practices_.$practiceId.index'
-import { Route as MainTopicsTopicIdSourcesRouteImport } from './routes/_main/topics_.$topicId.sources'
-import { Route as MainTopicsTopicIdReviewsRouteImport } from './routes/_main/topics_.$topicId.reviews'
-import { Route as MainTopicsTopicIdRelatedRouteImport } from './routes/_main/topics_.$topicId.related'
-import { Route as MainTopicsTopicIdPracticeRouteImport } from './routes/_main/topics_.$topicId.practice'
-import { Route as MainSourcesSourceIdTopicsRouteImport } from './routes/_main/sources_.$sourceId.topics'
-import { Route as MainSourcesSourceIdReviewsRouteImport } from './routes/_main/sources_.$sourceId.reviews'
-import { Route as MainSourcesSourceIdRelatedRouteImport } from './routes/_main/sources_.$sourceId.related'
-import { Route as MainSourcesSourceIdPrerequisitesRouteImport } from './routes/_main/sources_.$sourceId.prerequisites'
-import { Route as MainSourcesSourceIdPracticeRouteImport } from './routes/_main/sources_.$sourceId.practice'
-import { Route as MainPracticesPracticeIdReviewsRouteImport } from './routes/_main/practices_.$practiceId.reviews'
+import { Route as MainNotesNoteIdRouteImport } from './routes/_main/notes_.$noteId'
+import { Route as MainNotesNoteIdIndexRouteImport } from './routes/_main/notes_.$noteId.index'
 
 const VirtualizationSmokeRoute = VirtualizationSmokeRouteImport.update({
   id: '/virtualization-smoke',
@@ -67,19 +49,9 @@ const MainUnscheduledRoute = MainUnscheduledRouteImport.update({
   path: '/unscheduled',
   getParentRoute: () => MainRoute,
 } as any)
-const MainTopicsRoute = MainTopicsRouteImport.update({
-  id: '/topics',
-  path: '/topics',
-  getParentRoute: () => MainRoute,
-} as any)
 const MainTodayRoute = MainTodayRouteImport.update({
   id: '/today',
   path: '/today',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainSourcesRoute = MainSourcesRouteImport.update({
-  id: '/sources',
-  path: '/sources',
   getParentRoute: () => MainRoute,
 } as any)
 const MainReviewRoute = MainReviewRouteImport.update({
@@ -95,16 +67,6 @@ const MainRecentRoute = MainRecentRouteImport.update({
 const MainReadRoute = MainReadRouteImport.update({
   id: '/read',
   path: '/read',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainPracticesRoute = MainPracticesRouteImport.update({
-  id: '/practices',
-  path: '/practices',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainMyTopicsRoute = MainMyTopicsRouteImport.update({
-  id: '/my-topics',
-  path: '/my-topics',
   getParentRoute: () => MainRoute,
 } as any)
 const MainMyLibraryRoute = MainMyLibraryRouteImport.update({
@@ -127,98 +89,16 @@ const MainArchivedRoute = MainArchivedRouteImport.update({
   path: '/archived',
   getParentRoute: () => MainRoute,
 } as any)
-const MainTopicsTopicIdRoute = MainTopicsTopicIdRouteImport.update({
-  id: '/topics_/$topicId',
-  path: '/topics/$topicId',
+const MainNotesNoteIdRoute = MainNotesNoteIdRouteImport.update({
+  id: '/notes_/$noteId',
+  path: '/notes/$noteId',
   getParentRoute: () => MainRoute,
 } as any)
-const MainSourcesSourceIdRoute = MainSourcesSourceIdRouteImport.update({
-  id: '/sources_/$sourceId',
-  path: '/sources/$sourceId',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainPracticesPracticeIdRoute = MainPracticesPracticeIdRouteImport.update({
-  id: '/practices_/$practiceId',
-  path: '/practices/$practiceId',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainTopicsTopicIdIndexRoute = MainTopicsTopicIdIndexRouteImport.update({
+const MainNotesNoteIdIndexRoute = MainNotesNoteIdIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => MainTopicsTopicIdRoute,
+  getParentRoute: () => MainNotesNoteIdRoute,
 } as any)
-const MainSourcesSourceIdIndexRoute =
-  MainSourcesSourceIdIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => MainSourcesSourceIdRoute,
-  } as any)
-const MainPracticesPracticeIdIndexRoute =
-  MainPracticesPracticeIdIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => MainPracticesPracticeIdRoute,
-  } as any)
-const MainTopicsTopicIdSourcesRoute =
-  MainTopicsTopicIdSourcesRouteImport.update({
-    id: '/sources',
-    path: '/sources',
-    getParentRoute: () => MainTopicsTopicIdRoute,
-  } as any)
-const MainTopicsTopicIdReviewsRoute =
-  MainTopicsTopicIdReviewsRouteImport.update({
-    id: '/reviews',
-    path: '/reviews',
-    getParentRoute: () => MainTopicsTopicIdRoute,
-  } as any)
-const MainTopicsTopicIdRelatedRoute =
-  MainTopicsTopicIdRelatedRouteImport.update({
-    id: '/related',
-    path: '/related',
-    getParentRoute: () => MainTopicsTopicIdRoute,
-  } as any)
-const MainTopicsTopicIdPracticeRoute =
-  MainTopicsTopicIdPracticeRouteImport.update({
-    id: '/practice',
-    path: '/practice',
-    getParentRoute: () => MainTopicsTopicIdRoute,
-  } as any)
-const MainSourcesSourceIdTopicsRoute =
-  MainSourcesSourceIdTopicsRouteImport.update({
-    id: '/topics',
-    path: '/topics',
-    getParentRoute: () => MainSourcesSourceIdRoute,
-  } as any)
-const MainSourcesSourceIdReviewsRoute =
-  MainSourcesSourceIdReviewsRouteImport.update({
-    id: '/reviews',
-    path: '/reviews',
-    getParentRoute: () => MainSourcesSourceIdRoute,
-  } as any)
-const MainSourcesSourceIdRelatedRoute =
-  MainSourcesSourceIdRelatedRouteImport.update({
-    id: '/related',
-    path: '/related',
-    getParentRoute: () => MainSourcesSourceIdRoute,
-  } as any)
-const MainSourcesSourceIdPrerequisitesRoute =
-  MainSourcesSourceIdPrerequisitesRouteImport.update({
-    id: '/prerequisites',
-    path: '/prerequisites',
-    getParentRoute: () => MainSourcesSourceIdRoute,
-  } as any)
-const MainSourcesSourceIdPracticeRoute =
-  MainSourcesSourceIdPracticeRouteImport.update({
-    id: '/practice',
-    path: '/practice',
-    getParentRoute: () => MainSourcesSourceIdRoute,
-  } as any)
-const MainPracticesPracticeIdReviewsRoute =
-  MainPracticesPracticeIdReviewsRouteImport.update({
-    id: '/reviews',
-    path: '/reviews',
-    getParentRoute: () => MainPracticesPracticeIdRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
@@ -226,33 +106,15 @@ export interface FileRoutesByFullPath {
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
-  '/my-topics': typeof MainMyTopicsRoute
-  '/practices': typeof MainPracticesRoute
   '/read': typeof MainReadRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
-  '/sources': typeof MainSourcesRoute
   '/today': typeof MainTodayRoute
-  '/topics': typeof MainTopicsRoute
   '/unscheduled': typeof MainUnscheduledRoute
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
-  '/practices/$practiceId': typeof MainPracticesPracticeIdRouteWithChildren
-  '/sources/$sourceId': typeof MainSourcesSourceIdRouteWithChildren
-  '/topics/$topicId': typeof MainTopicsTopicIdRouteWithChildren
-  '/practices/$practiceId/reviews': typeof MainPracticesPracticeIdReviewsRoute
-  '/sources/$sourceId/practice': typeof MainSourcesSourceIdPracticeRoute
-  '/sources/$sourceId/prerequisites': typeof MainSourcesSourceIdPrerequisitesRoute
-  '/sources/$sourceId/related': typeof MainSourcesSourceIdRelatedRoute
-  '/sources/$sourceId/reviews': typeof MainSourcesSourceIdReviewsRoute
-  '/sources/$sourceId/topics': typeof MainSourcesSourceIdTopicsRoute
-  '/topics/$topicId/practice': typeof MainTopicsTopicIdPracticeRoute
-  '/topics/$topicId/related': typeof MainTopicsTopicIdRelatedRoute
-  '/topics/$topicId/reviews': typeof MainTopicsTopicIdReviewsRoute
-  '/topics/$topicId/sources': typeof MainTopicsTopicIdSourcesRoute
-  '/practices/$practiceId/': typeof MainPracticesPracticeIdIndexRoute
-  '/sources/$sourceId/': typeof MainSourcesSourceIdIndexRoute
-  '/topics/$topicId/': typeof MainTopicsTopicIdIndexRoute
+  '/notes/$noteId': typeof MainNotesNoteIdRouteWithChildren
+  '/notes/$noteId/': typeof MainNotesNoteIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
@@ -260,30 +122,14 @@ export interface FileRoutesByTo {
   '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
-  '/my-topics': typeof MainMyTopicsRoute
-  '/practices': typeof MainPracticesRoute
   '/read': typeof MainReadRoute
   '/recent': typeof MainRecentRoute
   '/review': typeof MainReviewRoute
-  '/sources': typeof MainSourcesRoute
   '/today': typeof MainTodayRoute
-  '/topics': typeof MainTopicsRoute
   '/unscheduled': typeof MainUnscheduledRoute
   '/upcoming': typeof MainUpcomingRoute
   '/': typeof MainIndexRoute
-  '/practices/$practiceId/reviews': typeof MainPracticesPracticeIdReviewsRoute
-  '/sources/$sourceId/practice': typeof MainSourcesSourceIdPracticeRoute
-  '/sources/$sourceId/prerequisites': typeof MainSourcesSourceIdPrerequisitesRoute
-  '/sources/$sourceId/related': typeof MainSourcesSourceIdRelatedRoute
-  '/sources/$sourceId/reviews': typeof MainSourcesSourceIdReviewsRoute
-  '/sources/$sourceId/topics': typeof MainSourcesSourceIdTopicsRoute
-  '/topics/$topicId/practice': typeof MainTopicsTopicIdPracticeRoute
-  '/topics/$topicId/related': typeof MainTopicsTopicIdRelatedRoute
-  '/topics/$topicId/reviews': typeof MainTopicsTopicIdReviewsRoute
-  '/topics/$topicId/sources': typeof MainTopicsTopicIdSourcesRoute
-  '/practices/$practiceId': typeof MainPracticesPracticeIdIndexRoute
-  '/sources/$sourceId': typeof MainSourcesSourceIdIndexRoute
-  '/topics/$topicId': typeof MainTopicsTopicIdIndexRoute
+  '/notes/$noteId': typeof MainNotesNoteIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -293,33 +139,15 @@ export interface FileRoutesById {
   '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/my-library': typeof MainMyLibraryRoute
-  '/_main/my-topics': typeof MainMyTopicsRoute
-  '/_main/practices': typeof MainPracticesRoute
   '/_main/read': typeof MainReadRoute
   '/_main/recent': typeof MainRecentRoute
   '/_main/review': typeof MainReviewRoute
-  '/_main/sources': typeof MainSourcesRoute
   '/_main/today': typeof MainTodayRoute
-  '/_main/topics': typeof MainTopicsRoute
   '/_main/unscheduled': typeof MainUnscheduledRoute
   '/_main/upcoming': typeof MainUpcomingRoute
   '/_main/': typeof MainIndexRoute
-  '/_main/practices_/$practiceId': typeof MainPracticesPracticeIdRouteWithChildren
-  '/_main/sources_/$sourceId': typeof MainSourcesSourceIdRouteWithChildren
-  '/_main/topics_/$topicId': typeof MainTopicsTopicIdRouteWithChildren
-  '/_main/practices_/$practiceId/reviews': typeof MainPracticesPracticeIdReviewsRoute
-  '/_main/sources_/$sourceId/practice': typeof MainSourcesSourceIdPracticeRoute
-  '/_main/sources_/$sourceId/prerequisites': typeof MainSourcesSourceIdPrerequisitesRoute
-  '/_main/sources_/$sourceId/related': typeof MainSourcesSourceIdRelatedRoute
-  '/_main/sources_/$sourceId/reviews': typeof MainSourcesSourceIdReviewsRoute
-  '/_main/sources_/$sourceId/topics': typeof MainSourcesSourceIdTopicsRoute
-  '/_main/topics_/$topicId/practice': typeof MainTopicsTopicIdPracticeRoute
-  '/_main/topics_/$topicId/related': typeof MainTopicsTopicIdRelatedRoute
-  '/_main/topics_/$topicId/reviews': typeof MainTopicsTopicIdReviewsRoute
-  '/_main/topics_/$topicId/sources': typeof MainTopicsTopicIdSourcesRoute
-  '/_main/practices_/$practiceId/': typeof MainPracticesPracticeIdIndexRoute
-  '/_main/sources_/$sourceId/': typeof MainSourcesSourceIdIndexRoute
-  '/_main/topics_/$topicId/': typeof MainTopicsTopicIdIndexRoute
+  '/_main/notes_/$noteId': typeof MainNotesNoteIdRouteWithChildren
+  '/_main/notes_/$noteId/': typeof MainNotesNoteIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -329,33 +157,15 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/logbook'
     | '/my-library'
-    | '/my-topics'
-    | '/practices'
     | '/read'
     | '/recent'
     | '/review'
-    | '/sources'
     | '/today'
-    | '/topics'
     | '/unscheduled'
     | '/upcoming'
     | '/'
-    | '/practices/$practiceId'
-    | '/sources/$sourceId'
-    | '/topics/$topicId'
-    | '/practices/$practiceId/reviews'
-    | '/sources/$sourceId/practice'
-    | '/sources/$sourceId/prerequisites'
-    | '/sources/$sourceId/related'
-    | '/sources/$sourceId/reviews'
-    | '/sources/$sourceId/topics'
-    | '/topics/$topicId/practice'
-    | '/topics/$topicId/related'
-    | '/topics/$topicId/reviews'
-    | '/topics/$topicId/sources'
-    | '/practices/$practiceId/'
-    | '/sources/$sourceId/'
-    | '/topics/$topicId/'
+    | '/notes/$noteId'
+    | '/notes/$noteId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/virtualization-smoke'
@@ -363,30 +173,14 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/logbook'
     | '/my-library'
-    | '/my-topics'
-    | '/practices'
     | '/read'
     | '/recent'
     | '/review'
-    | '/sources'
     | '/today'
-    | '/topics'
     | '/unscheduled'
     | '/upcoming'
     | '/'
-    | '/practices/$practiceId/reviews'
-    | '/sources/$sourceId/practice'
-    | '/sources/$sourceId/prerequisites'
-    | '/sources/$sourceId/related'
-    | '/sources/$sourceId/reviews'
-    | '/sources/$sourceId/topics'
-    | '/topics/$topicId/practice'
-    | '/topics/$topicId/related'
-    | '/topics/$topicId/reviews'
-    | '/topics/$topicId/sources'
-    | '/practices/$practiceId'
-    | '/sources/$sourceId'
-    | '/topics/$topicId'
+    | '/notes/$noteId'
   id:
     | '__root__'
     | '/_main'
@@ -395,33 +189,15 @@ export interface FileRouteTypes {
     | '/_main/inbox'
     | '/_main/logbook'
     | '/_main/my-library'
-    | '/_main/my-topics'
-    | '/_main/practices'
     | '/_main/read'
     | '/_main/recent'
     | '/_main/review'
-    | '/_main/sources'
     | '/_main/today'
-    | '/_main/topics'
     | '/_main/unscheduled'
     | '/_main/upcoming'
     | '/_main/'
-    | '/_main/practices_/$practiceId'
-    | '/_main/sources_/$sourceId'
-    | '/_main/topics_/$topicId'
-    | '/_main/practices_/$practiceId/reviews'
-    | '/_main/sources_/$sourceId/practice'
-    | '/_main/sources_/$sourceId/prerequisites'
-    | '/_main/sources_/$sourceId/related'
-    | '/_main/sources_/$sourceId/reviews'
-    | '/_main/sources_/$sourceId/topics'
-    | '/_main/topics_/$topicId/practice'
-    | '/_main/topics_/$topicId/related'
-    | '/_main/topics_/$topicId/reviews'
-    | '/_main/topics_/$topicId/sources'
-    | '/_main/practices_/$practiceId/'
-    | '/_main/sources_/$sourceId/'
-    | '/_main/topics_/$topicId/'
+    | '/_main/notes_/$noteId'
+    | '/_main/notes_/$noteId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -466,25 +242,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainUnscheduledRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/topics': {
-      id: '/_main/topics'
-      path: '/topics'
-      fullPath: '/topics'
-      preLoaderRoute: typeof MainTopicsRouteImport
-      parentRoute: typeof MainRoute
-    }
     '/_main/today': {
       id: '/_main/today'
       path: '/today'
       fullPath: '/today'
       preLoaderRoute: typeof MainTodayRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/sources': {
-      id: '/_main/sources'
-      path: '/sources'
-      fullPath: '/sources'
-      preLoaderRoute: typeof MainSourcesRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/review': {
@@ -506,20 +268,6 @@ declare module '@tanstack/react-router' {
       path: '/read'
       fullPath: '/read'
       preLoaderRoute: typeof MainReadRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/practices': {
-      id: '/_main/practices'
-      path: '/practices'
-      fullPath: '/practices'
-      preLoaderRoute: typeof MainPracticesRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/my-topics': {
-      id: '/_main/my-topics'
-      path: '/my-topics'
-      fullPath: '/my-topics'
-      preLoaderRoute: typeof MainMyTopicsRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/my-library': {
@@ -550,196 +298,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainArchivedRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/topics_/$topicId': {
-      id: '/_main/topics_/$topicId'
-      path: '/topics/$topicId'
-      fullPath: '/topics/$topicId'
-      preLoaderRoute: typeof MainTopicsTopicIdRouteImport
+    '/_main/notes_/$noteId': {
+      id: '/_main/notes_/$noteId'
+      path: '/notes/$noteId'
+      fullPath: '/notes/$noteId'
+      preLoaderRoute: typeof MainNotesNoteIdRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/sources_/$sourceId': {
-      id: '/_main/sources_/$sourceId'
-      path: '/sources/$sourceId'
-      fullPath: '/sources/$sourceId'
-      preLoaderRoute: typeof MainSourcesSourceIdRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/practices_/$practiceId': {
-      id: '/_main/practices_/$practiceId'
-      path: '/practices/$practiceId'
-      fullPath: '/practices/$practiceId'
-      preLoaderRoute: typeof MainPracticesPracticeIdRouteImport
-      parentRoute: typeof MainRoute
-    }
-    '/_main/topics_/$topicId/': {
-      id: '/_main/topics_/$topicId/'
+    '/_main/notes_/$noteId/': {
+      id: '/_main/notes_/$noteId/'
       path: '/'
-      fullPath: '/topics/$topicId/'
-      preLoaderRoute: typeof MainTopicsTopicIdIndexRouteImport
-      parentRoute: typeof MainTopicsTopicIdRoute
-    }
-    '/_main/sources_/$sourceId/': {
-      id: '/_main/sources_/$sourceId/'
-      path: '/'
-      fullPath: '/sources/$sourceId/'
-      preLoaderRoute: typeof MainSourcesSourceIdIndexRouteImport
-      parentRoute: typeof MainSourcesSourceIdRoute
-    }
-    '/_main/practices_/$practiceId/': {
-      id: '/_main/practices_/$practiceId/'
-      path: '/'
-      fullPath: '/practices/$practiceId/'
-      preLoaderRoute: typeof MainPracticesPracticeIdIndexRouteImport
-      parentRoute: typeof MainPracticesPracticeIdRoute
-    }
-    '/_main/topics_/$topicId/sources': {
-      id: '/_main/topics_/$topicId/sources'
-      path: '/sources'
-      fullPath: '/topics/$topicId/sources'
-      preLoaderRoute: typeof MainTopicsTopicIdSourcesRouteImport
-      parentRoute: typeof MainTopicsTopicIdRoute
-    }
-    '/_main/topics_/$topicId/reviews': {
-      id: '/_main/topics_/$topicId/reviews'
-      path: '/reviews'
-      fullPath: '/topics/$topicId/reviews'
-      preLoaderRoute: typeof MainTopicsTopicIdReviewsRouteImport
-      parentRoute: typeof MainTopicsTopicIdRoute
-    }
-    '/_main/topics_/$topicId/related': {
-      id: '/_main/topics_/$topicId/related'
-      path: '/related'
-      fullPath: '/topics/$topicId/related'
-      preLoaderRoute: typeof MainTopicsTopicIdRelatedRouteImport
-      parentRoute: typeof MainTopicsTopicIdRoute
-    }
-    '/_main/topics_/$topicId/practice': {
-      id: '/_main/topics_/$topicId/practice'
-      path: '/practice'
-      fullPath: '/topics/$topicId/practice'
-      preLoaderRoute: typeof MainTopicsTopicIdPracticeRouteImport
-      parentRoute: typeof MainTopicsTopicIdRoute
-    }
-    '/_main/sources_/$sourceId/topics': {
-      id: '/_main/sources_/$sourceId/topics'
-      path: '/topics'
-      fullPath: '/sources/$sourceId/topics'
-      preLoaderRoute: typeof MainSourcesSourceIdTopicsRouteImport
-      parentRoute: typeof MainSourcesSourceIdRoute
-    }
-    '/_main/sources_/$sourceId/reviews': {
-      id: '/_main/sources_/$sourceId/reviews'
-      path: '/reviews'
-      fullPath: '/sources/$sourceId/reviews'
-      preLoaderRoute: typeof MainSourcesSourceIdReviewsRouteImport
-      parentRoute: typeof MainSourcesSourceIdRoute
-    }
-    '/_main/sources_/$sourceId/related': {
-      id: '/_main/sources_/$sourceId/related'
-      path: '/related'
-      fullPath: '/sources/$sourceId/related'
-      preLoaderRoute: typeof MainSourcesSourceIdRelatedRouteImport
-      parentRoute: typeof MainSourcesSourceIdRoute
-    }
-    '/_main/sources_/$sourceId/prerequisites': {
-      id: '/_main/sources_/$sourceId/prerequisites'
-      path: '/prerequisites'
-      fullPath: '/sources/$sourceId/prerequisites'
-      preLoaderRoute: typeof MainSourcesSourceIdPrerequisitesRouteImport
-      parentRoute: typeof MainSourcesSourceIdRoute
-    }
-    '/_main/sources_/$sourceId/practice': {
-      id: '/_main/sources_/$sourceId/practice'
-      path: '/practice'
-      fullPath: '/sources/$sourceId/practice'
-      preLoaderRoute: typeof MainSourcesSourceIdPracticeRouteImport
-      parentRoute: typeof MainSourcesSourceIdRoute
-    }
-    '/_main/practices_/$practiceId/reviews': {
-      id: '/_main/practices_/$practiceId/reviews'
-      path: '/reviews'
-      fullPath: '/practices/$practiceId/reviews'
-      preLoaderRoute: typeof MainPracticesPracticeIdReviewsRouteImport
-      parentRoute: typeof MainPracticesPracticeIdRoute
+      fullPath: '/notes/$noteId/'
+      preLoaderRoute: typeof MainNotesNoteIdIndexRouteImport
+      parentRoute: typeof MainNotesNoteIdRoute
     }
   }
 }
 
-interface MainPracticesPracticeIdRouteChildren {
-  MainPracticesPracticeIdReviewsRoute: typeof MainPracticesPracticeIdReviewsRoute
-  MainPracticesPracticeIdIndexRoute: typeof MainPracticesPracticeIdIndexRoute
+interface MainNotesNoteIdRouteChildren {
+  MainNotesNoteIdIndexRoute: typeof MainNotesNoteIdIndexRoute
 }
 
-const MainPracticesPracticeIdRouteChildren: MainPracticesPracticeIdRouteChildren =
-  {
-    MainPracticesPracticeIdReviewsRoute: MainPracticesPracticeIdReviewsRoute,
-    MainPracticesPracticeIdIndexRoute: MainPracticesPracticeIdIndexRoute,
-  }
-
-const MainPracticesPracticeIdRouteWithChildren =
-  MainPracticesPracticeIdRoute._addFileChildren(
-    MainPracticesPracticeIdRouteChildren,
-  )
-
-interface MainSourcesSourceIdRouteChildren {
-  MainSourcesSourceIdPracticeRoute: typeof MainSourcesSourceIdPracticeRoute
-  MainSourcesSourceIdPrerequisitesRoute: typeof MainSourcesSourceIdPrerequisitesRoute
-  MainSourcesSourceIdRelatedRoute: typeof MainSourcesSourceIdRelatedRoute
-  MainSourcesSourceIdReviewsRoute: typeof MainSourcesSourceIdReviewsRoute
-  MainSourcesSourceIdTopicsRoute: typeof MainSourcesSourceIdTopicsRoute
-  MainSourcesSourceIdIndexRoute: typeof MainSourcesSourceIdIndexRoute
+const MainNotesNoteIdRouteChildren: MainNotesNoteIdRouteChildren = {
+  MainNotesNoteIdIndexRoute: MainNotesNoteIdIndexRoute,
 }
 
-const MainSourcesSourceIdRouteChildren: MainSourcesSourceIdRouteChildren = {
-  MainSourcesSourceIdPracticeRoute: MainSourcesSourceIdPracticeRoute,
-  MainSourcesSourceIdPrerequisitesRoute: MainSourcesSourceIdPrerequisitesRoute,
-  MainSourcesSourceIdRelatedRoute: MainSourcesSourceIdRelatedRoute,
-  MainSourcesSourceIdReviewsRoute: MainSourcesSourceIdReviewsRoute,
-  MainSourcesSourceIdTopicsRoute: MainSourcesSourceIdTopicsRoute,
-  MainSourcesSourceIdIndexRoute: MainSourcesSourceIdIndexRoute,
-}
-
-const MainSourcesSourceIdRouteWithChildren =
-  MainSourcesSourceIdRoute._addFileChildren(MainSourcesSourceIdRouteChildren)
-
-interface MainTopicsTopicIdRouteChildren {
-  MainTopicsTopicIdPracticeRoute: typeof MainTopicsTopicIdPracticeRoute
-  MainTopicsTopicIdRelatedRoute: typeof MainTopicsTopicIdRelatedRoute
-  MainTopicsTopicIdReviewsRoute: typeof MainTopicsTopicIdReviewsRoute
-  MainTopicsTopicIdSourcesRoute: typeof MainTopicsTopicIdSourcesRoute
-  MainTopicsTopicIdIndexRoute: typeof MainTopicsTopicIdIndexRoute
-}
-
-const MainTopicsTopicIdRouteChildren: MainTopicsTopicIdRouteChildren = {
-  MainTopicsTopicIdPracticeRoute: MainTopicsTopicIdPracticeRoute,
-  MainTopicsTopicIdRelatedRoute: MainTopicsTopicIdRelatedRoute,
-  MainTopicsTopicIdReviewsRoute: MainTopicsTopicIdReviewsRoute,
-  MainTopicsTopicIdSourcesRoute: MainTopicsTopicIdSourcesRoute,
-  MainTopicsTopicIdIndexRoute: MainTopicsTopicIdIndexRoute,
-}
-
-const MainTopicsTopicIdRouteWithChildren =
-  MainTopicsTopicIdRoute._addFileChildren(MainTopicsTopicIdRouteChildren)
+const MainNotesNoteIdRouteWithChildren = MainNotesNoteIdRoute._addFileChildren(
+  MainNotesNoteIdRouteChildren,
+)
 
 interface MainRouteChildren {
   MainArchivedRoute: typeof MainArchivedRoute
   MainInboxRoute: typeof MainInboxRoute
   MainLogbookRoute: typeof MainLogbookRoute
   MainMyLibraryRoute: typeof MainMyLibraryRoute
-  MainMyTopicsRoute: typeof MainMyTopicsRoute
-  MainPracticesRoute: typeof MainPracticesRoute
   MainReadRoute: typeof MainReadRoute
   MainRecentRoute: typeof MainRecentRoute
   MainReviewRoute: typeof MainReviewRoute
-  MainSourcesRoute: typeof MainSourcesRoute
   MainTodayRoute: typeof MainTodayRoute
-  MainTopicsRoute: typeof MainTopicsRoute
   MainUnscheduledRoute: typeof MainUnscheduledRoute
   MainUpcomingRoute: typeof MainUpcomingRoute
   MainIndexRoute: typeof MainIndexRoute
-  MainPracticesPracticeIdRoute: typeof MainPracticesPracticeIdRouteWithChildren
-  MainSourcesSourceIdRoute: typeof MainSourcesSourceIdRouteWithChildren
-  MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRouteWithChildren
+  MainNotesNoteIdRoute: typeof MainNotesNoteIdRouteWithChildren
 }
 
 const MainRouteChildren: MainRouteChildren = {
@@ -747,20 +347,14 @@ const MainRouteChildren: MainRouteChildren = {
   MainInboxRoute: MainInboxRoute,
   MainLogbookRoute: MainLogbookRoute,
   MainMyLibraryRoute: MainMyLibraryRoute,
-  MainMyTopicsRoute: MainMyTopicsRoute,
-  MainPracticesRoute: MainPracticesRoute,
   MainReadRoute: MainReadRoute,
   MainRecentRoute: MainRecentRoute,
   MainReviewRoute: MainReviewRoute,
-  MainSourcesRoute: MainSourcesRoute,
   MainTodayRoute: MainTodayRoute,
-  MainTopicsRoute: MainTopicsRoute,
   MainUnscheduledRoute: MainUnscheduledRoute,
   MainUpcomingRoute: MainUpcomingRoute,
   MainIndexRoute: MainIndexRoute,
-  MainPracticesPracticeIdRoute: MainPracticesPracticeIdRouteWithChildren,
-  MainSourcesSourceIdRoute: MainSourcesSourceIdRouteWithChildren,
-  MainTopicsTopicIdRoute: MainTopicsTopicIdRouteWithChildren,
+  MainNotesNoteIdRoute: MainNotesNoteIdRouteWithChildren,
 }
 
 const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren)

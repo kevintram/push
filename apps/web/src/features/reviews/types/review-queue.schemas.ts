@@ -1,19 +1,27 @@
 import * as v from 'valibot'
-import { PracticeSchemaBase } from '~/features/practices/types/practice.schemas'
-import { SourceSchemaBase } from '~/features/sources/types/source.schemas'
-import { TopicSchemaBase } from '~/features/topics/types/topic.schemas'
-import type { ReviewQueueItem } from './review-queue.types'
+import {
+	NoteSchema,
+	NoteStatusBadgeSchema
+} from '~/features/notes/types/note.schemas'
+import type { ReviewQueueItem, ReviewQueuePage } from './review-queue.types'
 
 export const ReviewQueueItemSchema: v.GenericSchema<ReviewQueueItem> = v.object(
 	{
 		queue_type: v.picklist(['due', 'hazy']),
-		entity_type: v.picklist(['topic', 'source', 'practice']),
-		topic: v.optional(v.nullable(TopicSchemaBase)),
-		source: v.optional(v.nullable(SourceSchemaBase)),
-		practice: v.optional(v.nullable(PracticeSchemaBase)),
+		entity_type: v.literal('note'),
+		note: NoteSchema,
 		review_id: v.optional(v.nullable(v.number())),
 		scheduled_at: v.optional(v.nullable(v.string())),
 		days_until_due: v.optional(v.nullable(v.number())),
-		days_until_hazy: v.optional(v.nullable(v.number()))
+		days_until_hazy: v.optional(v.nullable(v.number())),
+		status_badges: v.optional(v.array(NoteStatusBadgeSchema))
+	}
+)
+
+export const ReviewQueuePageSchema: v.GenericSchema<ReviewQueuePage> = v.object(
+	{
+		items: v.array(ReviewQueueItemSchema),
+		next_cursor: v.nullable(v.string()),
+		as_of: v.string()
 	}
 )

@@ -1,179 +1,61 @@
-from app.schemas.entity_relations import (
-    EntityRelationCreate,
-    EntityRelationRead,
-    EntityType,
-    RelatedEntityRead,
-    SourcePrerequisiteCreate,
-    SourcePrerequisiteRead,
+from app.schemas.notes import (
+    NoteCreate,
+    NoteRead,
+    NoteReadingListUpdate,
+    NoteReadingUpdate,
+    NoteRelationCreate,
+    NoteRelationListItem,
+    NoteRelationRead,
+    NoteRelationTypeEnum,
+    NoteTagCreate,
+    NoteTagEnum,
+    NoteUpdate,
+    ReadingStatusEnum,
+    RelationDirectionEnum,
 )
-from app.schemas.practices import (
-    ConvertPracticeToSourceResponse,
-    ConvertPracticeToTopicResponse,
-    PracticeBase,
-    PracticeCreate,
-    PracticeDetailRead,
-    PracticeRead,
-    PracticeSourceAdd,
-    PracticeSourceResponse,
-    PracticeSummaryRead,
-    PracticeTopicAdd,
-    PracticeTopicResponse,
-    PracticeUpdate,
-)
-from app.schemas.sources import (
-    ConvertSourceToPracticeResponse,
-    ConvertSourceToTopicResponse,
-    SourceBase,
-    SourceRead,
-    SourceCreate,
-    SourceUpdate,
-    SourceSummaryRead,
-    SourceDetailRead,
-    SourceChildRelationshipCreate,
-    SourceParentRelationshipCreate,
-    SourceRelationshipResponse,
-    SourceTopicAdd,
-    SourceTopicResponse,
-    SourcePracticeAdd,
-)
-from app.schemas.topics import (
-    ConvertToPracticeResponse,
-    ConvertToSourceResponse,
-    TopicRead,
-    TopicCreate,
-    TopicUpdate,
-    TopicSummaryRead,
-    TopicDetailRead,
-    TopicChildRelationshipCreate,
-    TopicParentRelationshipCreate,
-    TopicRelationshipResponse,
-    TopicOtherRelationshipCreate,
-    TopicOtherRelationshipResponse,
-    TopicRelatedRead,
-    RelationshipDirection,
-    TopicPracticeAdd,
-    TopicSourceAdd,
-)
+from app.schemas.review_queue import ReviewQueueItem
 from app.schemas.reviews import (
+    NoteSummary,
     ReviewBase,
-    ReviewRead,
-    ReviewListItem,
-    TopicSummary,
-    SourceSummary,
-    ReviewWithTopic,
-    ReviewWithSource,
-    ReviewWithPractice,
-    PracticeSummary,
     ReviewCreate,
+    ReviewListItem,
+    ReviewRead,
     ReviewUpdate,
+    ReviewWithNote,
 )
 from app.schemas.search import SearchResultItem
-from app.schemas.entity_summaries import (
-    EntityRelationsRead,
-    EntitySummaryRead,
-    SourceEntitySummary,
-    TopicEntitySummary,
-)
 
-# Rebuild models to resolve forward references
-TopicRead.model_rebuild()
-TopicSummaryRead.model_rebuild()
-TopicDetailRead.model_rebuild()
+NoteRead.model_rebuild()
 ReviewBase.model_rebuild()
 ReviewRead.model_rebuild()
 ReviewListItem.model_rebuild()
-TopicSummary.model_rebuild()
-ReviewWithTopic.model_rebuild()
 ReviewCreate.model_rebuild()
 ReviewUpdate.model_rebuild()
-ReviewWithSource.model_rebuild()
-ReviewWithPractice.model_rebuild()
-TopicRelatedRead.model_rebuild()
-EntityRelationCreate.model_rebuild()
-SourcePrerequisiteCreate.model_rebuild()
-SourceRead.model_rebuild()
-SourceSummaryRead.model_rebuild()
-SourceDetailRead.model_rebuild()
-SourceRelationshipResponse.model_rebuild()
-SourceTopicResponse.model_rebuild()
-SourceTopicAdd.model_rebuild()
-SourcePracticeAdd.model_rebuild()
-SourceParentRelationshipCreate.model_rebuild()
-PracticeRead.model_rebuild()
-PracticeSummaryRead.model_rebuild()
-PracticeDetailRead.model_rebuild()
-PracticeTopicResponse.model_rebuild()
-PracticeSourceResponse.model_rebuild()
-TopicPracticeAdd.model_rebuild()
-TopicSourceAdd.model_rebuild()
+ReviewWithNote.model_rebuild()
 SearchResultItem.model_rebuild()
-TopicEntitySummary.model_rebuild()
-SourceEntitySummary.model_rebuild()
-EntityRelationsRead.model_rebuild()
+ReviewQueueItem.model_rebuild()
 
 __all__ = [
-    "ConvertPracticeToSourceResponse",
-    "ConvertPracticeToTopicResponse",
-    "ConvertSourceToPracticeResponse",
-    "ConvertSourceToTopicResponse",
-    "ConvertToPracticeResponse",
-    "ConvertToSourceResponse",
-    "EntityRelationCreate",
-    "EntityRelationRead",
-    "EntityType",
-    "RelatedEntityRead",
-    "SourcePrerequisiteCreate",
-    "SourcePrerequisiteRead",
-    "PracticeBase",
-    "PracticeCreate",
-    "PracticeDetailRead",
-    "PracticeRead",
-    "PracticeSourceAdd",
-    "PracticeSourceResponse",
-    "PracticeSummary",
-    "PracticeSummaryRead",
-    "PracticeTopicAdd",
-    "PracticeTopicResponse",
-    "PracticeUpdate",
-    "TopicRead",
-    "TopicCreate",
-    "TopicChildRelationshipCreate",
-    "TopicParentRelationshipCreate",
-    "TopicRelationshipResponse",
-    "TopicOtherRelationshipCreate",
-    "TopicOtherRelationshipResponse",
-    "TopicUpdate",
-    "TopicSummaryRead",
-    "TopicDetailRead",
+    "NoteCreate",
+    "NoteRead",
+    "NoteReadingListUpdate",
+    "NoteReadingUpdate",
+    "NoteRelationCreate",
+    "NoteRelationListItem",
+    "NoteRelationRead",
+    "NoteRelationTypeEnum",
+    "NoteTagCreate",
+    "NoteTagEnum",
+    "NoteUpdate",
+    "ReadingStatusEnum",
+    "RelationDirectionEnum",
+    "ReviewQueueItem",
+    "NoteSummary",
     "ReviewBase",
-    "ReviewRead",
-    "ReviewListItem",
-    "TopicSummary",
-    "SourceSummary",
-    "ReviewWithTopic",
-    "ReviewWithSource",
-    "ReviewWithPractice",
     "ReviewCreate",
+    "ReviewListItem",
+    "ReviewRead",
     "ReviewUpdate",
-    "TopicRelatedRead",
-    "RelationshipDirection",
-    "SourceBase",
-    "SourceRead",
-    "SourceCreate",
-    "SourceUpdate",
-    "SourceSummaryRead",
-    "SourceDetailRead",
-    "SourceChildRelationshipCreate",
-    "SourceParentRelationshipCreate",
-    "SourceRelationshipResponse",
-    "SourceTopicAdd",
-    "SourceTopicResponse",
-    "SourcePracticeAdd",
-    "TopicPracticeAdd",
-    "TopicSourceAdd",
+    "ReviewWithNote",
     "SearchResultItem",
-    "EntitySummaryRead",
-    "EntityRelationsRead",
-    "TopicEntitySummary",
-    "SourceEntitySummary",
 ]

@@ -1,16 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import {
-	Anvil,
-	CalendarIcon,
-	Dumbbell,
-	File,
-	FileText,
-	MoreHorizontal,
-	StickyNote,
-	Trash
-} from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { Anvil, CalendarIcon, File, MoreHorizontal, Trash } from 'lucide-react'
+import { type MouseEvent, useCallback, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
@@ -18,12 +9,12 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
-import { isOverdue } from '~/features/topics/utils/isOverdue'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReview } from '../api/deleteReview'
 import { useUpdateReview } from '../api/updateReview'
 import type { ReviewListItem } from '../types/review.types'
+import { isOverdue } from '../utils/isOverdue'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { REVIEW_LIST_GRID_COLS } from './ReviewListHeader'
 import {
@@ -157,40 +148,15 @@ export function ReviewItem({
 		}
 	}, [entry.id, onReviewClick, readonly])
 
-	const handleTopicClick = useCallback(
-		(event: React.MouseEvent) => {
+	const handleNoteClick = useCallback(
+		(event: MouseEvent) => {
 			event.stopPropagation()
-			if (!entry.topic) return
 			navigate({
-				to: '/topics/$topicId/reviews',
-				params: { topicId: entry.topic.id.toString() }
+				to: '/notes/$noteId',
+				params: { noteId: entry.note_id.toString() }
 			})
 		},
-		[navigate, entry.topic]
-	)
-
-	const handleSourceClick = useCallback(
-		(event: React.MouseEvent) => {
-			event.stopPropagation()
-			if (!entry.source) return
-			navigate({
-				to: '/sources/$sourceId/reviews',
-				params: { sourceId: entry.source.id.toString() }
-			})
-		},
-		[navigate, entry.source]
-	)
-
-	const handlePracticeClick = useCallback(
-		(event: React.MouseEvent) => {
-			event.stopPropagation()
-			if (!entry.practice) return
-			navigate({
-				to: '/practices/$practiceId/reviews',
-				params: { practiceId: entry.practice.id.toString() }
-			})
-		},
-		[navigate, entry.practice]
+		[navigate, entry.note_id]
 	)
 
 	const effectiveDate = entry.effective_date
@@ -214,10 +180,9 @@ export function ReviewItem({
 	)
 	const description = entry.description?.trim()
 
-	// Determine if we're actually rendering an entity link
 	const showingEntity =
 		(variant === 'default' || variant === 'topic') &&
-		(entry.topic?.name || entry.source?.title || entry.practice?.prompt)
+		!!(entry.note.title || entry.note_id)
 
 	// --- Shared element JSX ---
 
@@ -325,31 +290,12 @@ export function ReviewItem({
 		</DropdownMenu>
 	)
 
-	// Entity display helper
 	const entityInfo = (() => {
 		if (variant !== 'default' && variant !== 'topic') return null
-		if (entry.topic) {
-			return {
-				icon: <StickyNote className='h-3 w-3' />,
-				label: entry.topic.name,
-				onClick: handleTopicClick
-			}
+		return {
+			label: entry.note.title || 'Untitled note',
+			onClick: handleNoteClick
 		}
-		if (entry.source) {
-			return {
-				icon: <FileText className='h-3 w-3' />,
-				label: entry.source.title,
-				onClick: handleSourceClick
-			}
-		}
-		if (entry.practice) {
-			return {
-				icon: <Dumbbell className='h-3 w-3' />,
-				label: entry.practice.prompt,
-				onClick: handlePracticeClick
-			}
-		}
-		return null
 	})()
 
 	const durabilityCompactEl = hasStability && (

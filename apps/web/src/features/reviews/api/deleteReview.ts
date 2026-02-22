@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { topicKeys } from '~/features/topics/api/queryKeys'
+import { noteKeys } from '~/features/notes/api/queryKeys'
+import { reviewQueueKeys } from '~/features/reviews/api/queryKeys'
+import { searchKeys } from '~/features/search/api/searchAll'
 import { apiFetch } from '~/utils/apiFetch'
 import { reviewKeys } from './queryKeys'
 
@@ -29,8 +31,10 @@ export function useDeleteReview() {
 		mutationFn: deleteReview,
 		onSuccess: async () => {
 			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: topicKeys.all }),
-				queryClient.invalidateQueries({ queryKey: reviewKeys.all })
+				queryClient.invalidateQueries({ queryKey: noteKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewQueueKeys.all }),
+				queryClient.invalidateQueries({ queryKey: searchKeys.all })
 			])
 		}
 	})

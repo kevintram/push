@@ -4,10 +4,10 @@ These are pure Python exceptions, NOT HTTPExceptions.
 They are translated to HTTP responses by exception handlers in main.py.
 
 Usage:
-    raise NotFoundError("Topic", topic_id)
-    raise CycleDetectedError("topics")
-    raise AlreadyExistsError("Topic is already a child")
-    raise SelfReferenceError("Cannot relate topic to itself")
+    raise NotFoundError("Note", note_id)
+    raise CycleDetectedError("notes")
+    raise AlreadyExistsError("Note relation already exists")
+    raise SelfReferenceError("Cannot relate note to itself")
 """
 
 
@@ -74,13 +74,6 @@ class HasDependentsError(ConflictError):
         super().__init__(
             f"Cannot delete {entity_type}: {count} {dependent_type}(s) depend on it"
         )
-
-
-class ConversionBlockedError(ConflictError):
-    """Conversion is blocked due to incompatible relationships."""
-
-    def __init__(self, reason: str):
-        super().__init__(f"Cannot convert: {reason}")
 
 
 # --- 400 Bad Request ---

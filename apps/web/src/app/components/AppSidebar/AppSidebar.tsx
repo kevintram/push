@@ -30,7 +30,7 @@ import {
 	SidebarMenuItem,
 	useSidebar
 } from '~/components/ui/sidebar'
-import { useTopics } from '~/features/topics/api/getTopics'
+import { useNotes } from '~/features/notes/api/getNotes'
 
 function ReviewSidebarStarIcon(props: React.ComponentProps<typeof Star>) {
 	return (
@@ -46,8 +46,8 @@ export function AppSidebar() {
 	const location = useLocation()
 	const { toggleSidebar } = useSidebar()
 
-	const { data: inboxTopics } = useTopics({ inboxed: true, archived: false })
-	const inboxCount = inboxTopics?.length ?? 0
+	const { data: inboxNotes } = useNotes({ inboxed: true, archived: false })
+	const inboxCount = inboxNotes?.length ?? 0
 
 	const reviewItems = [
 		{

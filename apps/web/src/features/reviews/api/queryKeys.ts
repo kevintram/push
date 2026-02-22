@@ -26,5 +26,7 @@ export const reviewQueueKeys = {
 	list: (limit?: number) =>
 		limit === undefined
 			? [...reviewQueueKeys.all, 'list']
-			: [...reviewQueueKeys.all, 'list', limit]
+			: [...reviewQueueKeys.all, 'list', limit],
+	infinite: (limit: number) =>
+		[...reviewQueueKeys.all, 'infinite', limit] as const
 }

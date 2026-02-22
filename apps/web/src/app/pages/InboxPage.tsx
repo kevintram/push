@@ -1,14 +1,7 @@
-import { useNavigate } from '@tanstack/react-router'
 import { Inbox } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { EmptyStateCreateTopicButton } from '~/components/EmptyStateCreateTopicButton'
-import {
-	EntityCard,
-	type EntityItem,
-	estimateEntitySize,
-	getEntityKey
-} from '~/components/EntityCard'
 import {
 	EntityTypeFilter,
 	type EntityTypeFilterValue
@@ -23,62 +16,38 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/empty'
-import { PracticeActionMenu } from '~/features/practices/components/PracticeActionMenu'
-import { useSearchAll } from '~/features/search/api/searchAll'
-import type { SearchResultItem } from '~/features/search/types/search.types'
-import { SourceActionMenu } from '~/features/sources/components/SourceActionMenu'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
-import { TopicActionMenu } from '~/features/topics/components/TopicActionMenu'
-import { useEntityNavigation } from '~/hooks/useEntityNavigation'
+import { useNotes } from '~/features/notes/api/getNotes'
+import { AddNoteDialog } from '~/features/notes/components/AddNoteDialog'
+import { NoteCard } from '~/features/notes/components/NoteCard'
+import type { Note } from '~/features/notes/types/note.types'
+import { useNoteNavigation } from '~/hooks/useNoteNavigation'
+import { estimateCardSize } from '~/utils/estimateCardSize'
 
-function toEntityItems(results: Array<SearchResultItem>): Array<EntityItem> {
-	return results.map(result => {
-		switch (result.entity_type) {
-			case 'topic':
-				return { type: 'topic', item: result.topic }
-			case 'source':
-				return { type: 'source', item: result.source }
-			case 'practice':
-				return { type: 'practice', item: result.practice }
-			default: {
-				const _exhaustiveCheck: never = result
-				return _exhaustiveCheck
-			}
-		}
-	})
+function matchesFilter(note: Note, filter: EntityTypeFilterValue): boolean {
+	if (filter === 'all') return true
+	if (filter === 'none') return note.tags.length === 0
+	if (filter === 'topic') return note.tags.includes('TOPIC')
+	if (filter === 'source') return note.tags.includes('SOURCE')
+	return note.tags.includes('PRACTICE')
 }
 
 export function InboxPage() {
-	const navigate = useNavigate()
-	const handleEntitySelect = useEntityNavigation()
+	const navigateToNote = useNoteNavigation()
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
+	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
-	const { data: searchResults = [], isLoading } = useSearchAll({
+	const { data: notes = [], isLoading } = useNotes({
 		inboxed: true,
 		archived: false,
-		entityTypes: activeFilter === 'all' ? undefined : activeFilter
+		order: 'desc'
 	})
 
-	const { mutateAsync: createTopic, isPending: isCreatingTopic } =
-		useCreateTopic()
-
-	const entityItems = useMemo(
-		() => toEntityItems(searchResults),
-		[searchResults]
+	const inboxNotes = useMemo(
+		() => notes.filter(note => matchesFilter(note, activeFilter)),
+		[notes, activeFilter]
 	)
 
-	const handleCreateInboxTopic = useCallback(async () => {
-		const newTopic = await createTopic({
-			inboxed: true,
-			archived: false
-		})
-		navigate({
-			to: '/topics/$topicId',
-			params: { topicId: newTopic.id.toString() }
-		})
-	}, [createTopic, navigate])
-
-	const inboxCountLabel = isLoading ? '...' : searchResults.length
+	const inboxCountLabel = isLoading ? '...' : inboxNotes.length
 
 	return (
 		<PageLayout>
@@ -97,100 +66,54 @@ export function InboxPage() {
 				/>
 			</PageLayout.Header>
 
-			<InboxList
-				isCreatingTopic={isCreatingTopic}
-				isLoading={isLoading}
-				items={entityItems}
-				onCreateInboxTopic={handleCreateInboxTopic}
-				onEntitySelect={handleEntitySelect}
+			{isLoading ? (
+				<PageLayout.Content className='max-w-screen p-6'>
+					<MasonryLayoutSkeleton />
+				</PageLayout.Content>
+			) : inboxNotes.length === 0 ? (
+				<PageLayout.Content>
+					<Empty>
+						<EmptyHeader>
+							<EmptyMedia variant='icon'>
+								<Inbox />
+							</EmptyMedia>
+							<EmptyTitle>Your inbox is empty</EmptyTitle>
+							<EmptyDescription>
+								The inbox is for items to be processed later: fleeting notes,
+								random ideas, whatever
+							</EmptyDescription>
+						</EmptyHeader>
+						<EmptyContent>
+							<EmptyStateCreateTopicButton
+								buttonText='Add to your inbox'
+								onClick={() => setIsAddDialogOpen(true)}
+							/>
+						</EmptyContent>
+					</Empty>
+				</PageLayout.Content>
+			) : (
+				<PageLayout.Content className='max-w-screen p-6'>
+					<MasonryLayout
+						estimateItemSize={(note, _index, laneWidth) =>
+							estimateCardSize(
+								note.title || 'Untitled note',
+								note.body || '',
+								laneWidth
+							)
+						}
+						getItemKey={note => `note-${note.id}`}
+						items={inboxNotes}
+						renderItem={note => (
+							<NoteCard note={note} onClick={() => navigateToNote(note.id)} />
+						)}
+					/>
+				</PageLayout.Content>
+			)}
+			<AddNoteDialog
+				defaults={{ inboxed: true, archived: false, tags: ['TOPIC'] }}
+				onOpenChange={setIsAddDialogOpen}
+				open={isAddDialogOpen}
 			/>
 		</PageLayout>
-	)
-}
-
-function InboxList({
-	items,
-	onEntitySelect,
-	onCreateInboxTopic,
-	isLoading,
-	isCreatingTopic
-}: {
-	items: Array<EntityItem>
-	onEntitySelect: (entity: EntityItem) => void
-	onCreateInboxTopic: () => void
-	isLoading: boolean
-	isCreatingTopic: boolean
-}) {
-	const renderItem = useCallback(
-		(entity: EntityItem) => {
-			let headerRight: React.ReactNode
-			switch (entity.type) {
-				case 'topic':
-					headerRight = <TopicActionMenu topic={entity.item} />
-					break
-				case 'source':
-					headerRight = <SourceActionMenu source={entity.item} />
-					break
-				case 'practice':
-					headerRight = <PracticeActionMenu practice={entity.item} />
-					break
-				default:
-					break
-			}
-			return (
-				<EntityCard
-					entity={entity}
-					headerRight={headerRight}
-					minHeight={96}
-					onEntityClick={onEntitySelect}
-				/>
-			)
-		},
-		[onEntitySelect]
-	)
-
-	if (isLoading) {
-		return (
-			<PageLayout.Content className='max-w-screen p-6'>
-				<MasonryLayoutSkeleton />
-			</PageLayout.Content>
-		)
-	}
-
-	if (items.length === 0) {
-		return (
-			<PageLayout.Content>
-				<Empty>
-					<EmptyHeader>
-						<EmptyMedia variant='icon'>
-							<Inbox />
-						</EmptyMedia>
-						<EmptyTitle>Your inbox is empty</EmptyTitle>
-						<EmptyDescription>
-							The inbox is for items to be processed later: fleeting notes,
-							random ideas, whatever
-						</EmptyDescription>
-					</EmptyHeader>
-					<EmptyContent>
-						<EmptyStateCreateTopicButton
-							buttonText='Add to your inbox'
-							disabled={isCreatingTopic}
-							onClick={onCreateInboxTopic}
-						/>
-					</EmptyContent>
-				</Empty>
-			</PageLayout.Content>
-		)
-	}
-
-	return (
-		<PageLayout.Content className='max-w-screen p-6'>
-			<MasonryLayout
-				estimateItemSize={estimateEntitySize}
-				getItemKey={getEntityKey}
-				items={items}
-				renderItem={renderItem}
-			/>
-		</PageLayout.Content>
 	)
 }
