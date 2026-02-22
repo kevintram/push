@@ -3,11 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 const FLASHCARD_MODE_STORAGE_KEY = '3gulp-flashcard-mode'
 const REVIEW_MODE_WARNING_STORAGE_KEY = '3gulp-review-mode-warning'
 
-export const REVIEW_MODES = [
-	'off',
-	'hide_answers_only',
-	'hide_everything'
-] as const
+export const REVIEW_MODES = ['off', 'on'] as const
 
 export type ReviewMode = (typeof REVIEW_MODES)[number]
 
@@ -51,8 +47,10 @@ function getInitialReviewMode(): ReviewMode {
 	if (!storedValue) return 'off'
 
 	// Backwards-compatibility for prior boolean persistence.
-	if (storedValue === 'true') return 'hide_everything'
+	if (storedValue === 'true') return 'on'
 	if (storedValue === 'false') return 'off'
+	if (storedValue === 'hide_answers_only') return 'on'
+	if (storedValue === 'hide_everything') return 'on'
 
 	return isReviewMode(storedValue) ? storedValue : 'off'
 }
@@ -81,7 +79,7 @@ export function FlashcardModeProvider({
 			reviewMode,
 			setReviewMode,
 			isReviewModeEnabled: reviewMode !== 'off',
-			hidesPrimary: reviewMode === 'hide_everything',
+			hidesPrimary: false,
 			hidesSecondary: reviewMode !== 'off',
 			showReviewModeWarning,
 			setShowReviewModeWarning

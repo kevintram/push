@@ -6,8 +6,7 @@ import {
 
 const CONTROLS: Array<{ label: string; mode: ReviewMode }> = [
 	{ label: 'Off', mode: 'off' },
-	{ label: 'Answers', mode: 'hide_answers_only' },
-	{ label: 'All', mode: 'hide_everything' }
+	{ label: 'On', mode: 'on' }
 ]
 
 export function ReviewModeControl() {
