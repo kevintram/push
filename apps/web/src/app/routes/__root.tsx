@@ -9,7 +9,16 @@ function renderError({ error }: FallbackProps) {
 	return <LoadingOrError error={error} />
 }
 
+function NotFoundView() {
+	return (
+		<div className='flex min-h-screen items-center justify-center'>
+			<h1 className='text-xl'>Page not found</h1>
+		</div>
+	)
+}
+
 export const Route = createRootRoute({
+	notFoundComponent: NotFoundView,
 	component: () => (
 		<ErrorBoundary fallbackRender={renderError}>
 			<ReviewDialogProvider>
