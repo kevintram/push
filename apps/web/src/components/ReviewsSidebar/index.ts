@@ -1,1 +1,0 @@
-export { ReviewsSidebar } from './ReviewsSidebar'
