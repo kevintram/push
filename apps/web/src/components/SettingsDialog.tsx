@@ -1,4 +1,12 @@
-import { Check, ChevronDown, LogOut, Monitor, Moon, Sun } from 'lucide-react'
+import {
+	Check,
+	ChevronDown,
+	LogOut,
+	Monitor,
+	Moon,
+	Settings,
+	Sun
+} from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import {
 	Dialog,
@@ -30,7 +38,12 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 	const { theme, setTheme } = useTheme()
-	const { showReviewModeWarning, setShowReviewModeWarning } = useFlashcardMode()
+	const {
+		showReviewModeWarning,
+		setShowReviewModeWarning,
+		autoEnableReviewMode,
+		setAutoEnableReviewMode
+	} = useFlashcardMode()
 	const { weekStartDay, setWeekStartDay } = useWeekStart()
 	const selectedWeekStartOption = WEEK_START_OPTIONS.find(
 		option => option.value === weekStartDay
@@ -44,7 +57,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent className='max-w-lg'>
 				<DialogHeader>
-					<DialogTitle>Settings</DialogTitle>
+					<DialogTitle className='flex flex-row items-center gap-2 text-base'>
+						<Settings className='h-5 w-5' />
+						<span>Settings</span>
+					</DialogTitle>
 				</DialogHeader>
 				<div className='space-y-6'>
 					<div className='flex items-start justify-between border-t pt-6'>
@@ -70,24 +86,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
 					<div className='flex items-start justify-between border-t pt-6'>
 						<div>
-							<div className='font-medium text-sm'>Review Mode Warning</div>
-							<div className='text-muted-foreground text-xs'>
-								Show warning when Review Mode is off in the Review Page
-							</div>
-						</div>
-						<Switch
-							checked={showReviewModeWarning}
-							className='ml-24'
-							onCheckedChange={setShowReviewModeWarning}
-						/>
-					</div>
-
-					<div className='flex items-start justify-between border-t pt-6'>
-						<div>
 							<div className='font-medium text-sm'>Start week on</div>
-							<div className='text-muted-foreground text-xs'>
-								Used for Review week sections
-							</div>
 						</div>
 						<DropdownMenu>
 							<DropdownMenuTrigger
@@ -117,6 +116,41 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 								})}
 							</DropdownMenuContent>
 						</DropdownMenu>
+					</div>
+
+					<div className='border-t pt-4'>
+						<div className='mb-4'>
+							<div className='font-medium text-base'>Review Mode</div>
+						</div>
+						<div className='space-y-4'>
+							<div className='flex items-start justify-between gap-4'>
+								<div>
+									<div className='font-medium text-sm'>Show warning</div>
+									<div className='text-muted-foreground text-xs'>
+										Show warning when Review Mode is off in the Review Page
+									</div>
+								</div>
+								<Switch
+									checked={showReviewModeWarning}
+									className='mt-0.5 shrink-0'
+									onCheckedChange={setShowReviewModeWarning}
+								/>
+							</div>
+
+							<div className='flex items-start justify-between gap-4 border-t pt-4'>
+								<div>
+									<div className='font-medium text-sm'>Auto-turn-on</div>
+									<div className='text-muted-foreground text-xs'>
+										Automatically turn on Review Mode in the Review Page
+									</div>
+								</div>
+								<Switch
+									checked={autoEnableReviewMode}
+									className='mt-0.5 shrink-0'
+									onCheckedChange={setAutoEnableReviewMode}
+								/>
+							</div>
+						</div>
 					</div>
 
 					<div className='flex items-start justify-between border-t pt-6'>

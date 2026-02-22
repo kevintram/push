@@ -1,4 +1,3 @@
-import { ChevronDown } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
@@ -11,12 +10,6 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/dialog'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/dropdown-menu'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 
 export function ReviewModeWarningDialog() {
@@ -24,7 +17,9 @@ export function ReviewModeWarningDialog() {
 		reviewMode,
 		setReviewMode,
 		showReviewModeWarning,
-		setShowReviewModeWarning
+		setShowReviewModeWarning,
+		autoEnableReviewMode,
+		setAutoEnableReviewMode
 	} = useFlashcardMode()
 	const checkboxId = useId()
 	const [neverShowAgain, setNeverShowAgain] = useState(false)
@@ -40,10 +35,17 @@ export function ReviewModeWarningDialog() {
 		}
 	}, [reviewMode])
 
+	useEffect(() => {
+		if (reviewMode === 'off' && autoEnableReviewMode) {
+			setReviewMode('on')
+		}
+	}, [reviewMode, autoEnableReviewMode, setReviewMode])
+
 	const isOpen =
 		reviewMode === 'off' &&
 		showReviewModeWarning &&
 		!dismissed &&
+		!autoEnableReviewMode &&
 		!hasBeenEnabled.current
 
 	function handleClose() {
@@ -53,9 +55,15 @@ export function ReviewModeWarningDialog() {
 		setDismissed(true)
 	}
 
-	function handleSetMode(mode: 'hide_answers_only' | 'hide_everything') {
+	function handleSetMode() {
 		handleClose()
-		setReviewMode(mode)
+		setReviewMode('on')
+	}
+
+	function handleAutoEnable() {
+		setAutoEnableReviewMode(true)
+		handleClose()
+		setReviewMode('on')
 	}
 
 	return (
@@ -65,9 +73,9 @@ export function ReviewModeWarningDialog() {
 			}}
 			open={isOpen}
 		>
-			<DialogContent>
+			<DialogContent className='max-w-sm'>
 				<DialogHeader>
-					<DialogTitle>Review mode is not on</DialogTitle>
+					<DialogTitle>Review mode is not on!</DialogTitle>
 					<DialogDescription>
 						Review mode allows you to hide stuff so you can guess stuff
 					</DialogDescription>
@@ -82,38 +90,20 @@ export function ReviewModeWarningDialog() {
 						Never show this again
 					</label>
 				</div>
-				<DialogFooter>
-					<DialogClose render={<Button variant='outline' />}>
+				<DialogFooter className='flex-col gap-2 sm:flex-col'>
+					<Button className='w-full' onClick={handleSetMode} variant='outline'>
+						Turn on
+					</Button>
+					<Button
+						className='w-full'
+						onClick={handleAutoEnable}
+						variant='outline'
+					>
+						Turn on automatically
+					</Button>
+					<DialogClose render={<Button className='w-full' variant='ghost' />}>
 						Dismiss
 					</DialogClose>
-					<DropdownMenu>
-						<DropdownMenuTrigger render={<Button />}>
-							Activate
-							<ChevronDown className='h-4 w-4' />
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end'>
-							<DropdownMenuItem
-								onClick={() => handleSetMode('hide_answers_only')}
-							>
-								<div>
-									<div>Answers</div>
-									<div className='text-muted-foreground text-xs'>
-										Hide answers only
-									</div>
-								</div>
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => handleSetMode('hide_everything')}
-							>
-								<div>
-									<div>All</div>
-									<div className='text-muted-foreground text-xs'>
-										Hide everything
-									</div>
-								</div>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

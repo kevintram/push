@@ -6,8 +6,7 @@ import {
 
 const CONTROLS: Array<{ label: string; mode: ReviewMode }> = [
 	{ label: 'Off', mode: 'off' },
-	{ label: 'Answers', mode: 'hide_answers_only' },
-	{ label: 'All', mode: 'hide_everything' }
+	{ label: 'On', mode: 'on' }
 ]
 
 export function ReviewModeControl() {
@@ -21,7 +20,7 @@ export function ReviewModeControl() {
 					Hide stuff so you can guess stuff
 				</p>
 			</div>
-			<div className='flex justify-center'>
+			<div>
 				<ToggleGroup
 					onValueChange={value => {
 						if (value.length > 0) {
