@@ -5,7 +5,9 @@ import {
 	Archive,
 	BookOpen,
 	Brain,
+	Check,
 	ChevronDown,
+	Copy,
 	Inbox,
 	Loader2,
 	MoreHorizontal,
@@ -49,6 +51,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { Textarea } from '~/components/ui/textarea'
 import { Toggle } from '~/components/ui/toggle'
 import {
@@ -308,6 +311,14 @@ function isNoteHomeTab(value: string): value is NoteHomeTab {
 	)
 }
 
+type NoteDetailRevealPanelTab = 'guess' | 'reveal'
+
+function isNoteDetailRevealPanelTab(
+	value: string
+): value is NoteDetailRevealPanelTab {
+	return value === 'guess' || value === 'reveal'
+}
+
 export function NoteDetailPage({ noteId }: { noteId: string }) {
 	const numericNoteId = Number(noteId)
 	const { data: note, isLoading } = useNote(
@@ -355,7 +366,10 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 	const [addParentOnCreate, setAddParentOnCreate] = useState(false)
 	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
 	const [isTitleRevealed, setIsTitleRevealed] = useState(!hidesPrimary)
-	const [isBodyRevealed, setIsBodyRevealed] = useState(!hidesSecondary)
+	const [revealPanelTab, setRevealPanelTab] =
+		useState<NoteDetailRevealPanelTab | null>(hidesSecondary ? null : 'reveal')
+	const [guessBodyText, setGuessBodyText] = useState('')
+	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const isBodyEmpty = body.trim().length === 0
 
 	useEffect(() => {
@@ -365,9 +379,22 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 	}, [note])
 
 	useEffect(() => {
+		if (Number.isNaN(numericNoteId)) return
 		setIsTitleRevealed(!hidesPrimary)
-		setIsBodyRevealed(!hidesSecondary)
+		setRevealPanelTab(hidesSecondary ? null : 'reveal')
+		setGuessBodyText('')
+		setIsRevealPanelCopied(false)
 	}, [hidesPrimary, hidesSecondary, numericNoteId])
+
+	useEffect(() => {
+		if (!isRevealPanelCopied) return
+		const timeoutId = window.setTimeout(() => {
+			setIsRevealPanelCopied(false)
+		}, 1500)
+		return () => {
+			window.clearTimeout(timeoutId)
+		}
+	}, [isRevealPanelCopied])
 
 	useEffect(() => {
 		if (Number.isNaN(numericNoteId)) return
@@ -1250,6 +1277,29 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 			setAddParentOnCreate(false)
 		}
 	}, [])
+	const handleRevealPanelTabChange = useCallback((value: string) => {
+		if (isNoteDetailRevealPanelTab(value)) {
+			setRevealPanelTab(value)
+		}
+	}, [])
+	const handleCopyGuessText = useCallback(async () => {
+		try {
+			await navigator.clipboard.writeText(guessBodyText)
+			setIsRevealPanelCopied(true)
+			toast.success('Guess copied')
+		} catch {
+			toast.error('Failed to copy guess')
+		}
+	}, [guessBodyText])
+	const handleCopyRevealText = useCallback(async () => {
+		try {
+			await navigator.clipboard.writeText(body)
+			setIsRevealPanelCopied(true)
+			toast.success('Reveal copied')
+		} catch {
+			toast.error('Failed to copy reveal')
+		}
+	}, [body])
 
 	if (isLoading || !note) {
 		return (
@@ -1263,6 +1313,10 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 
 	const currentStatusOption = getReadingStatusOption(note.reading_status)
 	const CurrentStatusIcon = currentStatusOption.icon
+	const revealPanelTextareaClassName =
+		'min-h-24 resize-none border-border/70 bg-background/80 pb-10 pr-10'
+	const revealPanelCopyButtonClassName =
+		'absolute right-2 bottom-2 text-muted-foreground hover:text-foreground'
 	const isUpdatingTags = isAddingNoteTag || isRemovingNoteTag
 	const parentLabel =
 		note.parent_title?.trim() ||
@@ -2112,23 +2166,125 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 								</div>
 							</div>
 
-							{hidesSecondary && !isBodyRevealed ? (
-								<Button
-									className='relative mt-1 min-h-16 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-base text-muted-foreground hover:bg-muted/70'
-									onClick={() => setIsBodyRevealed(true)}
-									size='default'
-									variant='outline'
-								>
-									Reveal
-									{isBodyEmpty ? (
-										<Badge
-											className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
-											variant='outline'
+							{hidesSecondary ? (
+								revealPanelTab == null ? (
+									<div className='relative mt-1 flex min-h-16 w-full items-center justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2'>
+										<div className='flex items-center gap-2'>
+											<Button
+												className='rounded-full'
+												onClick={() => setRevealPanelTab('guess')}
+												size='sm'
+												type='button'
+												variant='outline'
+											>
+												Guess
+											</Button>
+											<Button
+												className='rounded-full'
+												onClick={() => setRevealPanelTab('reveal')}
+												size='sm'
+												type='button'
+												variant='outline'
+											>
+												Reveal
+											</Button>
+										</div>
+										{isBodyEmpty ? (
+											<Badge
+												className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
+												variant='outline'
+											>
+												Empty
+											</Badge>
+										) : null}
+									</div>
+								) : (
+									<div className='mt-1 rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'>
+										<Tabs
+											className='gap-2'
+											onValueChange={handleRevealPanelTabChange}
+											value={revealPanelTab}
 										>
-											Empty
-										</Badge>
-									) : null}
-								</Button>
+											<div className='flex items-start justify-between gap-2'>
+												<TabsList className='h-8' variant='default'>
+													<TabsTrigger className='px-2 text-xs' value='guess'>
+														Guess
+													</TabsTrigger>
+													<TabsTrigger className='px-2 text-xs' value='reveal'>
+														Reveal
+													</TabsTrigger>
+												</TabsList>
+												{revealPanelTab === 'reveal' && isBodyEmpty ? (
+													<Badge
+														className={EMPTY_BADGE_CLASSNAME}
+														variant='outline'
+													>
+														Empty
+													</Badge>
+												) : null}
+											</div>
+											<TabsContent className='mt-0' value='guess'>
+												<div className='relative'>
+													<Textarea
+														className={revealPanelTextareaClassName}
+														onChange={event => {
+															setGuessBodyText(event.target.value)
+															if (isRevealPanelCopied)
+																setIsRevealPanelCopied(false)
+														}}
+														placeholder='Type your guess...'
+														spellCheck={false}
+														value={guessBodyText}
+													/>
+													<Button
+														aria-label='Copy guess text'
+														className={revealPanelCopyButtonClassName}
+														onClick={handleCopyGuessText}
+														size='icon-xs'
+														type='button'
+														variant='ghost'
+													>
+														{isRevealPanelCopied ? (
+															<Check className='h-3 w-3' />
+														) : (
+															<Copy className='h-3 w-3' />
+														)}
+													</Button>
+												</div>
+											</TabsContent>
+											<TabsContent className='mt-0' value='reveal'>
+												<div className='relative'>
+													<Textarea
+														className={revealPanelTextareaClassName}
+														onBlur={() => {
+															if (body !== note.body) {
+																updateNote({ id: note.id, body })
+															}
+														}}
+														onChange={event => setBody(event.target.value)}
+														placeholder='Write your note...'
+														spellCheck={false}
+														value={body}
+													/>
+													<Button
+														aria-label='Copy reveal text'
+														className={revealPanelCopyButtonClassName}
+														onClick={handleCopyRevealText}
+														size='icon-xs'
+														type='button'
+														variant='ghost'
+													>
+														{isRevealPanelCopied ? (
+															<Check className='h-3 w-3' />
+														) : (
+															<Copy className='h-3 w-3' />
+														)}
+													</Button>
+												</div>
+											</TabsContent>
+										</Tabs>
+									</div>
+								)
 							) : (
 								<Textarea
 									className='!bg-transparent m-0 min-h-[2lh] resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
