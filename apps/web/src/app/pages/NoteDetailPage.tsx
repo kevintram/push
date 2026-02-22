@@ -102,6 +102,7 @@ import {
 import { SearchDialog } from '~/features/search/components/SearchDialog'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useNoteNavigation } from '~/hooks/useNoteNavigation'
+import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { localDateString } from '~/utils/date'
 import { estimateCardSize } from '~/utils/estimateCardSize'
 import {
@@ -349,12 +350,20 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 	const [addRelationContext, setAddRelationContext] =
 		useState<CreateRelationContext | null>(null)
 	const [addParentOnCreate, setAddParentOnCreate] = useState(false)
+	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
+	const [isTitleRevealed, setIsTitleRevealed] = useState(!hidesPrimary)
+	const [isBodyRevealed, setIsBodyRevealed] = useState(!hidesSecondary)
 
 	useEffect(() => {
 		if (!note) return
 		setTitle(note.title)
 		setBody(note.body)
 	}, [note])
+
+	useEffect(() => {
+		setIsTitleRevealed(!hidesPrimary)
+		setIsBodyRevealed(!hidesSecondary)
+	}, [hidesPrimary, hidesSecondary, numericNoteId])
 
 	useEffect(() => {
 		if (Number.isNaN(numericNoteId)) return
@@ -1508,6 +1517,7 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 				afterActions={null}
 				dueTodayCount={dueTodayCount}
 				leftContent={
+					hidesPrimary ? null : (
 					<div className='flex min-w-0 items-center gap-2'>
 						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
 							<User2 className='h-3 w-3' />
@@ -1546,6 +1556,7 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 							addParentMenu
 						)}
 					</div>
+					)
 				}
 				onTabChange={setActiveNavTab}
 				overdueCount={overdueCount}
@@ -1764,18 +1775,29 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 								</div>
 							</div>
 
-							<Textarea
-								className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-								onBlur={() => {
-									if (title !== note.title) {
-										updateNote({ id: note.id, title })
-									}
-								}}
-								onChange={event => setTitle(event.target.value)}
-								placeholder='Untitled note'
-								spellCheck={false}
-								value={title}
-							/>
+							{hidesPrimary && !isTitleRevealed ? (
+								<Button
+									className='my-1 min-h-12 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 font-bold text-3xl text-muted-foreground leading-tight hover:bg-muted/70'
+									onClick={() => setIsTitleRevealed(true)}
+									size='default'
+									variant='outline'
+								>
+									Reveal
+								</Button>
+							) : (
+								<Textarea
+									className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+									onBlur={() => {
+										if (title !== note.title) {
+											updateNote({ id: note.id, title })
+										}
+									}}
+									onChange={event => setTitle(event.target.value)}
+									placeholder='Untitled note'
+									spellCheck={false}
+									value={title}
+								/>
+							)}
 
 							<div className='flex flex-wrap items-center gap-2 text-sm'>
 								{isUnreviewed ? (
@@ -2086,18 +2108,29 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 								</div>
 							</div>
 
-							<Textarea
-								className='!bg-transparent m-0 min-h-[2lh] resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-								onBlur={() => {
-									if (body !== note.body) {
-										updateNote({ id: note.id, body })
-									}
-								}}
-								onChange={event => setBody(event.target.value)}
-								placeholder='Write your note...'
-								spellCheck={false}
-								value={body}
-							/>
+							{hidesSecondary && !isBodyRevealed ? (
+								<Button
+									className='mt-1 min-h-16 w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-base text-muted-foreground hover:bg-muted/70'
+									onClick={() => setIsBodyRevealed(true)}
+									size='default'
+									variant='outline'
+								>
+									Reveal
+								</Button>
+							) : (
+								<Textarea
+									className='!bg-transparent m-0 min-h-[2lh] resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+									onBlur={() => {
+										if (body !== note.body) {
+											updateNote({ id: note.id, body })
+										}
+									}}
+									onChange={event => setBody(event.target.value)}
+									placeholder='Write your note...'
+									spellCheck={false}
+									value={body}
+								/>
+							)}
 
 							<DetailTabsShell
 								onValueChange={handleHomeTabChange}
