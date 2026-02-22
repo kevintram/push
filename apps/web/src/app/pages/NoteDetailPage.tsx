@@ -1518,44 +1518,44 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 				dueTodayCount={dueTodayCount}
 				leftContent={
 					hidesPrimary ? null : (
-					<div className='flex min-w-0 items-center gap-2'>
-						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-							<User2 className='h-3 w-3' />
-							<span>Parent</span>
+						<div className='flex min-w-0 items-center gap-2'>
+							<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+								<User2 className='h-3 w-3' />
+								<span>Parent</span>
+							</div>
+							{note.parent_id != null ? (
+								<Badge
+									className='group/parent h-6 rounded-full px-1 text-xs'
+									variant='ghost'
+								>
+									<Button
+										className='h-5 cursor-pointer rounded-full px-0 font-medium text-xs leading-none'
+										onClick={() => navigateToNote(note.parent_id!)}
+										size='xs'
+										type='button'
+										variant='ghost'
+									>
+										{parentLabel}
+									</Button>
+									<Button
+										aria-label='Remove parent'
+										className='pointer-events-none inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full p-0 opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/parent:pointer-events-auto group-hover/parent:opacity-100 group-active/parent:pointer-events-auto group-active/parent:opacity-100'
+										disabled={isUpdatingNote}
+										onClick={event => {
+											event.stopPropagation()
+											updateNote({ id: note.id, parent_id: null })
+										}}
+										size='icon-xs'
+										type='button'
+										variant='ghost'
+									>
+										<X className='h-3 w-3' />
+									</Button>
+								</Badge>
+							) : (
+								addParentMenu
+							)}
 						</div>
-						{note.parent_id != null ? (
-							<Badge
-								className='group/parent h-6 rounded-full px-1 text-xs'
-								variant='ghost'
-							>
-								<Button
-									className='h-5 cursor-pointer rounded-full px-0 font-medium text-xs leading-none'
-									onClick={() => navigateToNote(note.parent_id!)}
-									size='xs'
-									type='button'
-									variant='ghost'
-								>
-									{parentLabel}
-								</Button>
-								<Button
-									aria-label='Remove parent'
-									className='pointer-events-none inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full p-0 opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/parent:pointer-events-auto group-hover/parent:opacity-100 group-active/parent:pointer-events-auto group-active/parent:opacity-100'
-									disabled={isUpdatingNote}
-									onClick={event => {
-										event.stopPropagation()
-										updateNote({ id: note.id, parent_id: null })
-									}}
-									size='icon-xs'
-									type='button'
-									variant='ghost'
-								>
-									<X className='h-3 w-3' />
-								</Button>
-							</Badge>
-						) : (
-							addParentMenu
-						)}
-					</div>
 					)
 				}
 				onTabChange={setActiveNavTab}
