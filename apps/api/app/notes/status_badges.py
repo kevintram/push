@@ -29,10 +29,16 @@ def _format_due_label(days_until_due: int) -> str:
 
 
 def _format_hazy_soon_label(days_until_hazy: int) -> str:
+    if days_until_hazy == 1:
+        return "Hazy Tomorrow"
     return f"Hazy in {days_until_hazy}d"
 
 
 def _format_hazy_for_label(days_in_tier: int) -> str:
+    if days_in_tier == 1:
+        return "Hazy Today"
+    if days_in_tier == 2:
+        return "Hazy Yesterday"
     return f"Hazy for {days_in_tier}d"
 
 
