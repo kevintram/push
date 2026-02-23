@@ -283,10 +283,10 @@ export function ReviewPage() {
 					<div className='space-y-8'>
 						{unreviewedSections.map(section => (
 							<div className='space-y-3' key={section.id}>
-								<div className='flex items-center gap-2'>
-									<h3 className='font-bold text-xl'>{section.label}</h3>
+								<h3 className='flex items-center gap-2 font-bold text-xl'>
+									{section.label}
 									<CountBadge count={section.notes.length} />
-								</div>
+								</h3>
 								<MasonryLayout
 									estimateItemSize={(note, _index, laneWidth) =>
 										estimateCardSize(
@@ -312,20 +312,18 @@ export function ReviewPage() {
 					<div className='space-y-8'>
 						{queueSections.map(section => (
 							<div className='space-y-3' key={section.id}>
-								<div className='flex items-start gap-2'>
-									<div>
-										<h3
-											className={`font-bold text-xl ${section.headingClassName ?? ''}`}
-										>
-											{section.label}
-										</h3>
-										{section.subLabel ? (
-											<p className='text-muted-foreground text-sm'>
-												{section.subLabel}
-											</p>
-										) : null}
-									</div>
-									<CountBadge count={section.items.length} />
+								<div>
+									<h3
+										className={`flex items-center gap-2 font-bold text-xl ${section.headingClassName ?? ''}`}
+									>
+										{section.label}
+										<CountBadge count={section.items.length} />
+									</h3>
+									{section.subLabel ? (
+										<p className='text-muted-foreground text-sm'>
+											{section.subLabel}
+										</p>
+									) : null}
 								</div>
 								<MasonryLayout
 									estimateItemSize={(item, _index, laneWidth) =>
