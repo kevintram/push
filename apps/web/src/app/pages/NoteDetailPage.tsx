@@ -205,6 +205,9 @@ function NoteGrid({
 	showAllOption = true,
 	showNoTagOption = true,
 	actions,
+	onRemoveFromTab,
+	removeFromTabLabel,
+	removingFromTabNoteId,
 	isLoading = false,
 	minCardHeight = 140,
 	getScrollElement
@@ -217,6 +220,9 @@ function NoteGrid({
 	showAllOption?: boolean
 	showNoTagOption?: boolean
 	actions?: ReactNode
+	onRemoveFromTab?: (note: Note) => void | Promise<void>
+	removeFromTabLabel?: string
+	removingFromTabNoteId?: number | null
 	isLoading?: boolean
 	minCardHeight?: number
 	getScrollElement?: () => HTMLDivElement | null
@@ -250,14 +256,28 @@ function NoteGrid({
 				items={filteredNotes}
 				renderItem={relatedNote => (
 					<NoteCard
+						isRemovingFromTab={removingFromTabNoteId === relatedNote.id}
 						minHeight={minCardHeight}
 						note={relatedNote}
 						onClick={() => onNoteClick(relatedNote.id)}
+						onRemoveFromTab={
+							onRemoveFromTab ? () => onRemoveFromTab(relatedNote) : undefined
+						}
+						removeFromTabLabel={removeFromTabLabel}
 					/>
 				)}
 			/>
 		)
-	}, [filteredNotes, getScrollElement, isLoading, minCardHeight, onNoteClick])
+	}, [
+		filteredNotes,
+		getScrollElement,
+		isLoading,
+		minCardHeight,
+		onNoteClick,
+		onRemoveFromTab,
+		removeFromTabLabel,
+		removingFromTabNoteId
+	])
 
 	return (
 		<div className='space-y-5 pb-2'>
@@ -362,6 +382,10 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 	const [searchAddPendingNoteId, setSearchAddPendingNoteId] = useState<
 		number | null
 	>(null)
+	const [removeFromTabPending, setRemoveFromTabPending] = useState<{
+		tab: NoteHomeTab
+		noteId: number
+	} | null>(null)
 	const contentScrollRef = useRef<HTMLDivElement>(null)
 	const getContentScrollElement = useCallback(
 		() => contentScrollRef.current,
@@ -1022,6 +1046,90 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 		setSearchAddQuery('')
 		setIsSearchAddOpen(true)
 	}, [note])
+	const getHomeTabLabel = useCallback((tab: NoteHomeTab) => {
+		if (tab === 'contents') return 'Contents'
+		if (tab === 'practice') return 'Practice'
+		if (tab === 'prerequisites') return 'Prerequisites'
+		if (tab === 'sources') return 'Sources'
+		if (tab === 'topics_covered') return 'Topics covered'
+		if (tab === 'assesses') return 'Assesses'
+		return 'Related'
+	}, [])
+	const handleRemoveFromTab = useCallback(
+		async (tab: NoteHomeTab, selectedNote: Note) => {
+			if (!note || removeFromTabPending) return
+			const tabLabel = getHomeTabLabel(tab)
+
+			setRemoveFromTabPending({ tab, noteId: selectedNote.id })
+			try {
+				if (tab === 'contents') {
+					await updateNoteAsync({
+						id: selectedNote.id,
+						parent_id: null
+					})
+				} else if (tab === 'related') {
+					const hasOutgoingRelatedRelation = outgoingRelated.some(
+						relation => relation.to_id === selectedNote.id
+					)
+					const hasIncomingRelatedRelation = incomingRelated.some(
+						relation => relation.from_id === selectedNote.id
+					)
+					const removals: Array<Promise<void>> = []
+					if (hasOutgoingRelatedRelation) {
+						removals.push(
+							removeNoteRelationMutation.mutateAsync({
+								noteId: note.id,
+								otherNoteId: selectedNote.id,
+								relationType: 'RELATED',
+								direction: 'outgoing'
+							})
+						)
+					}
+					if (hasIncomingRelatedRelation) {
+						removals.push(
+							removeNoteRelationMutation.mutateAsync({
+								noteId: note.id,
+								otherNoteId: selectedNote.id,
+								relationType: 'RELATED',
+								direction: 'incoming'
+							})
+						)
+					}
+					await Promise.all(removals)
+				} else {
+					let relationType: NoteRelationType = 'ASSESSES'
+					if (tab === 'sources' || tab === 'topics_covered') {
+						relationType = 'COVERS'
+					} else if (tab === 'prerequisites') {
+						relationType = 'PREREQUISITE'
+					}
+					const direction =
+						tab === 'practice' || tab === 'sources' ? 'incoming' : 'outgoing'
+					await removeNoteRelationMutation.mutateAsync({
+						noteId: note.id,
+						otherNoteId: selectedNote.id,
+						relationType,
+						direction
+					})
+				}
+
+				toast.success(`Removed from ${tabLabel}`)
+			} catch {
+				toast.error(`Failed to remove from ${tabLabel}`)
+			} finally {
+				setRemoveFromTabPending(null)
+			}
+		},
+		[
+			note,
+			removeFromTabPending,
+			getHomeTabLabel,
+			incomingRelated,
+			outgoingRelated,
+			removeNoteRelationMutation,
+			updateNoteAsync
+		]
+	)
 
 	const handleSearchAddSelect = useCallback(
 		async (selectedNote: Note) => {
@@ -1443,6 +1551,15 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 					notes={contentsNotes}
 					onFilterChange={setActiveHomeFilter}
 					onNoteClick={navigateToNote}
+					onRemoveFromTab={relatedNote =>
+						handleRemoveFromTab('contents', relatedNote)
+					}
+					removeFromTabLabel='Remove from Contents'
+					removingFromTabNoteId={
+						removeFromTabPending?.tab === 'contents'
+							? removeFromTabPending.noteId
+							: null
+					}
 					showAllOption={tabFilterConfig.contents.showAllOption}
 					showNoTagOption={tabFilterConfig.contents.showNoTagOption}
 				/>
@@ -1465,6 +1582,15 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 					notes={practiceNotes}
 					onFilterChange={setActiveHomeFilter}
 					onNoteClick={navigateToNote}
+					onRemoveFromTab={relatedNote =>
+						handleRemoveFromTab('practice', relatedNote)
+					}
+					removeFromTabLabel='Remove from Practice'
+					removingFromTabNoteId={
+						removeFromTabPending?.tab === 'practice'
+							? removeFromTabPending.noteId
+							: null
+					}
 					showAllOption={tabFilterConfig.practice.showAllOption}
 					showNoTagOption={tabFilterConfig.practice.showNoTagOption}
 				/>
@@ -1487,6 +1613,15 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 					notes={prerequisiteNotes}
 					onFilterChange={setActiveHomeFilter}
 					onNoteClick={navigateToNote}
+					onRemoveFromTab={relatedNote =>
+						handleRemoveFromTab('prerequisites', relatedNote)
+					}
+					removeFromTabLabel='Remove from Prerequisites'
+					removingFromTabNoteId={
+						removeFromTabPending?.tab === 'prerequisites'
+							? removeFromTabPending.noteId
+							: null
+					}
 					showAllOption={tabFilterConfig.prerequisites.showAllOption}
 					showNoTagOption={tabFilterConfig.prerequisites.showNoTagOption}
 				/>
@@ -1509,6 +1644,15 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 					notes={sourceNotes}
 					onFilterChange={setActiveHomeFilter}
 					onNoteClick={navigateToNote}
+					onRemoveFromTab={relatedNote =>
+						handleRemoveFromTab('sources', relatedNote)
+					}
+					removeFromTabLabel='Remove from Sources'
+					removingFromTabNoteId={
+						removeFromTabPending?.tab === 'sources'
+							? removeFromTabPending.noteId
+							: null
+					}
 					showAllOption={tabFilterConfig.sources.showAllOption}
 					showNoTagOption={tabFilterConfig.sources.showNoTagOption}
 				/>
@@ -1531,6 +1675,15 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 					notes={coveredTopicNotes}
 					onFilterChange={setActiveHomeFilter}
 					onNoteClick={navigateToNote}
+					onRemoveFromTab={relatedNote =>
+						handleRemoveFromTab('topics_covered', relatedNote)
+					}
+					removeFromTabLabel='Remove from Topics covered'
+					removingFromTabNoteId={
+						removeFromTabPending?.tab === 'topics_covered'
+							? removeFromTabPending.noteId
+							: null
+					}
 					showAllOption={tabFilterConfig.topics_covered.showAllOption}
 					showNoTagOption={tabFilterConfig.topics_covered.showNoTagOption}
 				/>
@@ -1553,6 +1706,15 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 					notes={assessesNotes}
 					onFilterChange={setActiveHomeFilter}
 					onNoteClick={navigateToNote}
+					onRemoveFromTab={relatedNote =>
+						handleRemoveFromTab('assesses', relatedNote)
+					}
+					removeFromTabLabel='Remove from Assesses'
+					removingFromTabNoteId={
+						removeFromTabPending?.tab === 'assesses'
+							? removeFromTabPending.noteId
+							: null
+					}
 					showAllOption={tabFilterConfig.assesses.showAllOption}
 					showNoTagOption={tabFilterConfig.assesses.showNoTagOption}
 				/>
@@ -1575,6 +1737,15 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 				notes={relatedNotes}
 				onFilterChange={setActiveHomeFilter}
 				onNoteClick={navigateToNote}
+				onRemoveFromTab={relatedNote =>
+					handleRemoveFromTab('related', relatedNote)
+				}
+				removeFromTabLabel='Remove from Related'
+				removingFromTabNoteId={
+					removeFromTabPending?.tab === 'related'
+						? removeFromTabPending.noteId
+						: null
+				}
 				showAllOption={tabFilterConfig.related.showAllOption}
 				showNoTagOption={tabFilterConfig.related.showNoTagOption}
 			/>
