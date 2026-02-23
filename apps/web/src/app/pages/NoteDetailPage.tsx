@@ -1315,7 +1315,7 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 	const currentStatusOption = getReadingStatusOption(note.reading_status)
 	const CurrentStatusIcon = currentStatusOption.icon
 	const revealPanelTextareaClassName =
-		'min-h-24 resize-none border-border/70 bg-background/80 pb-10 pr-10'
+		'min-h-24 resize-none border-border/70 bg-background/80'
 	const revealPanelCopyButtonClassName =
 		'absolute right-2 bottom-2 text-muted-foreground hover:text-foreground'
 	const isUpdatingTags = isAddingNoteTag || isRemovingNoteTag
