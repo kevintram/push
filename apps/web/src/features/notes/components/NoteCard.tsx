@@ -14,7 +14,8 @@ import {
 	Sparkles,
 	Star,
 	Trash2,
-	User2
+	User2,
+	X
 } from 'lucide-react'
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -148,6 +149,9 @@ interface NoteCardProps {
 	minHeight?: number
 	searchQuery?: string
 	statusBadges?: Array<NoteCardStatusBadge>
+	onRemoveFromTab?: () => void
+	removeFromTabLabel?: string
+	isRemovingFromTab?: boolean
 }
 
 export function NoteCard({
@@ -155,7 +159,10 @@ export function NoteCard({
 	onClick,
 	minHeight = MIN_HEIGHT,
 	searchQuery,
-	statusBadges
+	statusBadges,
+	onRemoveFromTab,
+	removeFromTabLabel = 'Remove from tab',
+	isRemovingFromTab = false
 }: NoteCardProps) {
 	const [cardRef, cardRect] = useResizeObserver<HTMLDivElement>()
 	const queryClient = useQueryClient()
@@ -594,6 +601,18 @@ export function NoteCard({
 									</>
 								)}
 							</DropdownMenuItem>
+							{onRemoveFromTab ? (
+								<DropdownMenuItem
+									disabled={isRemovingFromTab}
+									onClick={event => {
+										event.stopPropagation()
+										onRemoveFromTab()
+									}}
+								>
+									<X className='mr-2 h-4 w-4' />
+									{removeFromTabLabel}
+								</DropdownMenuItem>
+							) : null}
 							<DropdownMenuItem
 								disabled={deleteNoteMutation.isPending}
 								onClick={event => {
