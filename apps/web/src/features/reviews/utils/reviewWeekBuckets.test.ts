@@ -3,6 +3,7 @@ import type { Note } from '~/features/notes/types/note.types'
 import type { ReviewQueueItem } from '~/features/reviews/types/review-queue.types'
 import {
 	getActionDays,
+	getThisWeekEndSubtext,
 	getWeekOffsetFromActionDays,
 	getWeekSectionLabel
 } from './reviewWeekBuckets'
@@ -94,5 +95,20 @@ describe('reviewWeekBuckets', () => {
 		expect(getWeekSectionLabel(0)).toBe('This week')
 		expect(getWeekSectionLabel(1)).toBe('Next week')
 		expect(getWeekSectionLabel(3)).toBe('In 3 weeks')
+	})
+
+	it('returns this-week end subtext', () => {
+		const sunday = 0
+		const saturday = new Date('2026-02-28T12:00:00Z')
+		const friday = new Date('2026-02-27T12:00:00Z')
+		const monday = new Date('2026-02-23T12:00:00Z')
+
+		expect(getThisWeekEndSubtext(sunday, saturday)).toBe('Ends Today')
+		expect(getThisWeekEndSubtext(sunday, friday)).toBe('Ends Tomorrow')
+
+		const weekdayLabel = getThisWeekEndSubtext(sunday, monday)
+		expect(weekdayLabel.startsWith('Ends ')).toBe(true)
+		expect(weekdayLabel).not.toBe('Ends Today')
+		expect(weekdayLabel).not.toBe('Ends Tomorrow')
 	})
 })

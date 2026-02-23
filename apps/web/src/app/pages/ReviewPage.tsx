@@ -28,6 +28,7 @@ import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import type { ReviewQueueItem } from '~/features/reviews/types/review-queue.types'
 import {
 	getActionDays,
+	getThisWeekEndSubtext,
 	getWeekOffsetFromActionDays,
 	getWeekSectionLabel
 } from '~/features/reviews/utils/reviewWeekBuckets'
@@ -45,6 +46,7 @@ type QueueCardItem = {
 type QueueSection = {
 	id: string
 	label: string
+	subLabel?: string
 	headingClassName?: string
 	items: Array<QueueCardItem>
 }
@@ -204,6 +206,8 @@ export function ReviewPage() {
 			output.push({
 				id: `week-${offset}`,
 				label: getWeekSectionLabel(offset),
+				subLabel:
+					offset === 0 ? getThisWeekEndSubtext(weekStartDay) : undefined,
 				headingClassName:
 					offset === 0 ? 'text-blue-600 dark:text-blue-400' : undefined,
 				items: [...bucketItems].sort(sortUpcomingQueueItems)
@@ -308,12 +312,19 @@ export function ReviewPage() {
 					<div className='space-y-8'>
 						{queueSections.map(section => (
 							<div className='space-y-3' key={section.id}>
-								<div className='flex items-center gap-2'>
-									<h3
-										className={`font-bold text-xl ${section.headingClassName ?? ''}`}
-									>
-										{section.label}
-									</h3>
+								<div className='flex items-start gap-2'>
+									<div>
+										<h3
+											className={`font-bold text-xl ${section.headingClassName ?? ''}`}
+										>
+											{section.label}
+										</h3>
+										{section.subLabel ? (
+											<p className='text-muted-foreground text-sm'>
+												{section.subLabel}
+											</p>
+										) : null}
+									</div>
 									<CountBadge count={section.items.length} />
 								</div>
 								<MasonryLayout
