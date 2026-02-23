@@ -338,8 +338,19 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 	const navigateToNote = useNoteNavigation()
 	const [activeNavTab, setActiveNavTab] = useState<DetailNavTab>('home')
 	const [activeHomeTab, setActiveHomeTab] = useState<NoteHomeTab>('contents')
-	const [activeHomeFilter, setActiveHomeFilter] =
-		useState<EntityTypeFilterValue>('all')
+	const [homeFilterByTab, setHomeFilterByTab] = useState<
+		Partial<Record<NoteHomeTab, EntityTypeFilterValue>>
+	>({})
+
+	const activeHomeFilter: EntityTypeFilterValue =
+		homeFilterByTab[activeHomeTab] ?? 'all'
+
+	const setActiveHomeFilter = useCallback(
+		(filter: EntityTypeFilterValue) => {
+			setHomeFilterByTab(prev => ({ ...prev, [activeHomeTab]: filter }))
+		},
+		[activeHomeTab]
+	)
 	const [tagMenuSide, setTagMenuSide] = useState<'left' | 'bottom'>('left')
 	const tagMenuTriggerRef = useRef<HTMLButtonElement>(null)
 	const [isSearchAddOpen, setIsSearchAddOpen] = useState(false)
@@ -848,7 +859,7 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 		if (activeHomeTabFilterConfig.allowedTypes.includes(activeHomeFilter))
 			return
 		setActiveHomeFilter(fallbackFilter)
-	}, [activeHomeFilter, activeHomeTabFilterConfig])
+	}, [activeHomeFilter, activeHomeTabFilterConfig, setActiveHomeFilter])
 	const childNoteIds = useMemo(
 		() => new Set(childNotes.map(childNote => childNote.id)),
 		[childNotes]
