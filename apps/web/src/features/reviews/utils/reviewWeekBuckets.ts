@@ -49,6 +49,19 @@ export function getWeekOffsetFromActionDays(
 	return (toDayNumber(actionWeekStart) - toDayNumber(currentWeekStart)) / 7
 }
 
+export function getThisWeekEndSubtext(
+	weekStartDay: WeekStartDay,
+	today: Date = new Date()
+): string {
+	const currentWeekStart = startOfWeek(today, weekStartDay)
+	const weekEnd = addDays(currentWeekStart, 6)
+	const daysUntilWeekEnd = toDayNumber(weekEnd) - toDayNumber(startOfDay(today))
+
+	if (daysUntilWeekEnd <= 0) return 'Ends Today'
+	if (daysUntilWeekEnd === 1) return 'Ends Tomorrow'
+	return `Ends ${weekEnd.toLocaleDateString(undefined, { weekday: 'long' })}`
+}
+
 export function getWeekSectionLabel(offset: number): string {
 	if (offset === 0) return 'This week'
 	if (offset === 1) return 'Next week'
