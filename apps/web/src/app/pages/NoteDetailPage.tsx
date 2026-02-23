@@ -2246,7 +2246,7 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 												</div>
 												<p className='mt-1 flex items-center justify-end gap-1 text-muted-foreground text-xs'>
 													<AlertTriangle className='h-3 w-3 shrink-0 text-amber-500 dark:text-amber-400' />
-													<span>Guesses will not be saved.</span>
+													<span>Guesses are not saved.</span>
 												</p>
 											</TabsContent>
 											<TabsContent className='mt-0' value='reveal'>
@@ -2279,7 +2279,7 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 													</Button>
 												</div>
 												<p className='mt-1 text-right text-muted-foreground text-xs'>
-													Changes will be automatically saved.
+													Changes are automatically saved.
 												</p>
 											</TabsContent>
 										</Tabs>
