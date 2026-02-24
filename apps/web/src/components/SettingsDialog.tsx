@@ -139,9 +139,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
 							<div className='flex items-start justify-between gap-4 border-t pt-4'>
 								<div>
-									<div className='font-medium text-sm'>Auto-turn-on</div>
+									<div className='font-medium text-sm'>Always turn on</div>
 									<div className='text-muted-foreground text-xs'>
-										Automatically turn on Review Mode in the Review Page
+										Always turn on Review Mode in the Review Page
 									</div>
 								</div>
 								<Switch
