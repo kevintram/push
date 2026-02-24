@@ -99,7 +99,7 @@ export function ReviewModeWarningDialog() {
 						onClick={handleAutoEnable}
 						variant='outline'
 					>
-						Turn on automatically
+						Always turn on
 					</Button>
 					<DialogClose render={<Button className='w-full' variant='ghost' />}>
 						Dismiss
