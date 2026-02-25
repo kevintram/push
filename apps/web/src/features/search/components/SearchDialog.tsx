@@ -267,7 +267,7 @@ export function SearchDialog({
 			>
 				<DialogHeader className='space-y-1 px-4 pt-4 sm:px-6'>
 					<DialogTitle className='sr-only'>{title}</DialogTitle>
-					<div className='flex items-center gap-1'>
+					<div className='flex items-center gap-2'>
 						<SearchInput
 							inputClassName='px-8 text-base sm:px-10 sm:text-lg'
 							inputRef={inputRef}
@@ -280,7 +280,7 @@ export function SearchDialog({
 						<Button
 							onClick={() => setIsAddNoteOpen(true)}
 							size='sm'
-							variant='ghost'
+							variant='outline'
 						>
 							<Plus className='h-4 w-4' />
 							Create new
