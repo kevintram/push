@@ -22,11 +22,6 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/dialog'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger
-} from '~/components/ui/tooltip'
 import { AddNoteDialog } from '~/features/notes/components/AddNoteDialog'
 import {
 	NoteCard,
@@ -282,19 +277,14 @@ export function SearchDialog({
 							placeholder={placeholder}
 							value={query}
 						/>
-						<Tooltip>
-							<TooltipTrigger render={<span className='inline-flex' />}>
-								<Button
-									aria-label='Create new note'
-									onClick={() => setIsAddNoteOpen(true)}
-									size='icon-sm'
-									variant='ghost'
-								>
-									<Plus className='h-4 w-4' />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>Create new note</TooltipContent>
-						</Tooltip>
+						<Button
+							onClick={() => setIsAddNoteOpen(true)}
+							size='sm'
+							variant='ghost'
+						>
+							<Plus className='h-4 w-4' />
+							Create new
+						</Button>
 					</div>
 					<EntityTypeFilter
 						activeFilter={activeFilter}
