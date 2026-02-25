@@ -279,7 +279,7 @@ export function SearchDialog({
 						/>
 						<Button
 							onClick={() => setIsAddNoteOpen(true)}
-							size='sm'
+							size='default'
 							variant='outline'
 						>
 							<Plus className='h-4 w-4' />
