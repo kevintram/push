@@ -277,10 +277,7 @@ export function SearchDialog({
 							placeholder={placeholder}
 							value={query}
 						/>
-						<Button
-							onClick={() => setIsAddNoteOpen(true)}
-							variant='outline'
-						>
+						<Button onClick={() => setIsAddNoteOpen(true)} variant='outline'>
 							<Plus className='h-4 w-4' />
 							Create new
 						</Button>
