@@ -1,4 +1,4 @@
-import { Check, Loader2 } from 'lucide-react'
+import { Check, Loader2, Plus } from 'lucide-react'
 import {
 	useCallback,
 	useEffect,
@@ -15,12 +15,19 @@ import {
 import { MIN_HEIGHT } from '~/components/search/constants'
 import { SearchInput } from '~/components/search/SearchInput'
 import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
+import { Button } from '~/components/ui/button'
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/dialog'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/tooltip'
+import { AddNoteDialog } from '~/features/notes/components/AddNoteDialog'
 import {
 	NoteCard,
 	type NoteCardStatusBadge,
@@ -97,6 +104,23 @@ export function SearchDialog({
 		resolvedInitialFilter
 	)
 	const [gap, setGap] = useState(12)
+	const [isAddNoteOpen, setIsAddNoteOpen] = useState(false)
+
+	const handleCreateNoteSuccess = useCallback(
+		async (note: Note) => {
+			if (onSelectEntity) {
+				await onSelectEntity(note)
+				if (closeOnSelect) {
+					onOpenChange(false)
+				}
+				return
+			}
+			navigateToNote(note.id)
+			onOpenChange(false)
+		},
+		[onSelectEntity, closeOnSelect, onOpenChange, navigateToNote]
+	)
+
 	const addedNoteIdSet = useMemo(
 		() => new Set<number>(addedNoteIds),
 		[addedNoteIds]
@@ -248,15 +272,30 @@ export function SearchDialog({
 			>
 				<DialogHeader className='space-y-1 px-4 pt-4 sm:px-6'>
 					<DialogTitle className='sr-only'>{title}</DialogTitle>
-					<SearchInput
-						inputClassName='px-8 text-base sm:px-10 sm:text-lg'
-						inputRef={inputRef}
-						onChange={e => setQuery(e.target.value)}
-						onClear={() => setQuery('')}
-						onKeyDown={handleKeyDown}
-						placeholder={placeholder}
-						value={query}
-					/>
+					<div className='flex items-center gap-1'>
+						<SearchInput
+							inputClassName='px-8 text-base sm:px-10 sm:text-lg'
+							inputRef={inputRef}
+							onChange={e => setQuery(e.target.value)}
+							onClear={() => setQuery('')}
+							onKeyDown={handleKeyDown}
+							placeholder={placeholder}
+							value={query}
+						/>
+						<Tooltip>
+							<TooltipTrigger render={<span className='inline-flex' />}>
+								<Button
+									aria-label='Create new note'
+									onClick={() => setIsAddNoteOpen(true)}
+									size='icon-sm'
+									variant='ghost'
+								>
+									<Plus className='h-4 w-4' />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>Create new note</TooltipContent>
+						</Tooltip>
+					</div>
 					<EntityTypeFilter
 						activeFilter={activeFilter}
 						allowedTypes={resolvedAllowedTypes}
@@ -297,6 +336,12 @@ export function SearchDialog({
 					/>
 				</div>
 			</DialogContent>
+			<AddNoteDialog
+				defaults={{ title: query }}
+				onOpenChange={setIsAddNoteOpen}
+				onSuccess={handleCreateNoteSuccess}
+				open={isAddNoteOpen}
+			/>
 		</Dialog>
 	)
 }
