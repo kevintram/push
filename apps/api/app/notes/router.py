@@ -181,4 +181,3 @@ async def remove_note_relation(
         relation_type=relation_type.value,
         direction=direction.value,
     )
-

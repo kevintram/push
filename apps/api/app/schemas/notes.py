@@ -127,4 +127,3 @@ class NoteRelationRead(BaseModel):
 
 class NoteRelationListItem(NoteRelationRead):
     direction: RelationDirectionEnum
-
