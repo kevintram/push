@@ -17,9 +17,9 @@ VALUES
   (3, 5.0, 5.5, 'LEARNING', 2, '2026-01-16', true, NULL, NULL, NULL, NULL, NULL),
   -- Ruby on Rails (id=4) - archived
   (4, 20.0, 4.0, 'REVIEW', 0, '2025-12-01', true, NULL, NULL, NULL, NULL, NULL),
-  -- Kubernetes (id=5) - inboxed, new
+  -- Kubernetes (id=5)
   (5, NULL, NULL, 'LEARNING', 0, NULL, true, NULL, NULL, NULL, NULL, NULL),
-  -- GraphQL (id=6) - inboxed, new
+  -- GraphQL (id=6)
   (6, NULL, NULL, 'LEARNING', 0, NULL, true, NULL, NULL, NULL, NULL, NULL),
   -- TypeScript (id=7)
   (7, 25.0, 3.0, 'REVIEW', 0, '2026-01-14', true, NULL, NULL, NULL, NULL, NULL),
@@ -63,63 +63,63 @@ SELECT setval('fsrs_states_id_seq', (SELECT MAX(id) FROM fsrs_states));
 -- A mix of programming, math, and language learning topics with various states
 -- Using tree hierarchy with parent_id instead of closure table
 
-INSERT INTO notes (id, user_id, title, body, parent_id, fsrs_state_id, archived, inboxed, inserted_at, updated_at)
+INSERT INTO notes (id, user_id, title, body, parent_id, fsrs_state_id, archived, inserted_at, updated_at)
 OVERRIDING SYSTEM VALUE
 VALUES
   -- Root-level topics (no parent)
   -- Programming (will be id 1)
-  (1, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Programming', 'Software development concepts and languages', NULL, 1, false, false, NOW() - INTERVAL '60 days', NOW()),
+  (1, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Programming', 'Software development concepts and languages', NULL, 1, false, NOW() - INTERVAL '60 days', NOW()),
 
   -- Mathematics (will be id 2)
-  (2, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Mathematics', 'Mathematical foundations', NULL, 2, false, false, NOW() - INTERVAL '45 days', NOW()),
+  (2, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Mathematics', 'Mathematical foundations', NULL, 2, false, NOW() - INTERVAL '45 days', NOW()),
 
   -- Spanish (will be id 3)
-  (3, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish', 'Learning Spanish language', NULL, 3, false, false, NOW() - INTERVAL '14 days', NOW()),
+  (3, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish', 'Learning Spanish language', NULL, 3, false, NOW() - INTERVAL '14 days', NOW()),
 
   -- Archived topic (will be id 4)
-  (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Ruby on Rails', 'Decided to focus on other frameworks', NULL, 4, true, false, NOW() - INTERVAL '90 days', NOW()),
+  (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Ruby on Rails', 'Decided to focus on other frameworks', NULL, 4, true, NOW() - INTERVAL '90 days', NOW()),
 
-  -- Inboxed topics (newly added, not yet organized) (ids 5, 6)
-  (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Kubernetes', 'Container orchestration - need to learn', NULL, 5, false, true, NOW() - INTERVAL '2 days', NOW()),
-  (6, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'GraphQL', 'API query language', NULL, 6, false, true, NOW() - INTERVAL '1 day', NOW()),
+  -- New topics (ids 5, 6)
+  (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Kubernetes', 'Container orchestration - need to learn', NULL, 5, false, NOW() - INTERVAL '2 days', NOW()),
+  (6, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'GraphQL', 'API query language', NULL, 6, false, NOW() - INTERVAL '1 day', NOW()),
 
   -- Programming subtopics (ids 7-11)
   -- TypeScript (child of Programming)
-  (7, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'TypeScript', 'Type-safe JavaScript', 1, 7, false, false, NOW() - INTERVAL '30 days', NOW()),
+  (7, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'TypeScript', 'Type-safe JavaScript', 1, 7, false, NOW() - INTERVAL '30 days', NOW()),
 
   -- Python (child of Programming)
-  (8, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Python', 'Python programming language', 1, 8, false, false, NOW() - INTERVAL '50 days', NOW()),
+  (8, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Python', 'Python programming language', 1, 8, false, NOW() - INTERVAL '50 days', NOW()),
 
   -- React (child of Programming)
-  (9, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React', 'React framework and hooks', 1, 9, false, false, NOW() - INTERVAL '25 days', NOW()),
+  (9, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React', 'React framework and hooks', 1, 9, false, NOW() - INTERVAL '25 days', NOW()),
 
   -- SQL (child of Programming)
-  (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'SQL', 'Database queries and design', 1, 10, false, false, NOW() - INTERVAL '10 days', NOW()),
+  (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'SQL', 'Database queries and design', 1, 10, false, NOW() - INTERVAL '10 days', NOW()),
 
   -- Git (child of Programming)
-  (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Git', 'Version control with Git', 1, 11, false, false, NOW() - INTERVAL '80 days', NOW()),
+  (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Git', 'Version control with Git', 1, 11, false, NOW() - INTERVAL '80 days', NOW()),
 
   -- TypeScript subtopics (grandchildren of Programming, ids 12-14)
-  (12, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Generics', 'TypeScript generic types and constraints', 7, 12, false, false, NOW() - INTERVAL '7 days', NOW()),
-  (13, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Type Guards', 'Narrowing types with type guards', 7, 13, false, false, NOW() - INTERVAL '14 days', NOW()),
-  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Utility Types', 'Partial, Required, Pick, Omit, etc.', 7, 14, false, false, NOW() - INTERVAL '20 days', NOW()),
+  (12, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Generics', 'TypeScript generic types and constraints', 7, 12, false, NOW() - INTERVAL '7 days', NOW()),
+  (13, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Type Guards', 'Narrowing types with type guards', 7, 13, false, NOW() - INTERVAL '14 days', NOW()),
+  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Utility Types', 'Partial, Required, Pick, Omit, etc.', 7, 14, false, NOW() - INTERVAL '20 days', NOW()),
 
   -- React subtopics (ids 15-16)
-  (15, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React Hooks', 'useState, useEffect, useCallback, useMemo', 9, 15, false, false, NOW() - INTERVAL '20 days', NOW()),
-  (16, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React Server Components', 'RSC and streaming', 9, 16, false, false, NOW() - INTERVAL '5 days', NOW()),
+  (15, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React Hooks', 'useState, useEffect, useCallback, useMemo', 9, 15, false, NOW() - INTERVAL '20 days', NOW()),
+  (16, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React Server Components', 'RSC and streaming', 9, 16, false, NOW() - INTERVAL '5 days', NOW()),
 
   -- Mathematics subtopics (ids 17-19)
-  (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Linear Algebra', 'Vectors, matrices, transformations', 2, 17, false, false, NOW() - INTERVAL '40 days', NOW()),
-  (18, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Calculus', 'Derivatives and integrals', 2, 18, false, false, NOW() - INTERVAL '60 days', NOW()),
-  (19, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Probability', 'Probability theory and distributions', 2, 19, false, false, NOW() - INTERVAL '12 days', NOW()),
+  (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Linear Algebra', 'Vectors, matrices, transformations', 2, 17, false, NOW() - INTERVAL '40 days', NOW()),
+  (18, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Calculus', 'Derivatives and integrals', 2, 18, false, NOW() - INTERVAL '60 days', NOW()),
+  (19, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Probability', 'Probability theory and distributions', 2, 19, false, NOW() - INTERVAL '12 days', NOW()),
 
   -- Spanish subtopics (ids 20-22)
-  (20, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish Vocabulary', 'Common words and phrases', 3, 20, false, false, NOW() - INTERVAL '10 days', NOW()),
-  (21, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish Grammar', 'Verb conjugations and sentence structure', 3, 21, false, false, NOW() - INTERVAL '8 days', NOW()),
-  (22, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Ser vs Estar', 'When to use ser vs estar', 21, 22, false, false, NOW() - INTERVAL '5 days', NOW()),
+  (20, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish Vocabulary', 'Common words and phrases', 3, 20, false, NOW() - INTERVAL '10 days', NOW()),
+  (21, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish Grammar', 'Verb conjugations and sentence structure', 3, 21, false, NOW() - INTERVAL '8 days', NOW()),
+  (22, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Ser vs Estar', 'When to use ser vs estar', 21, 22, false, NOW() - INTERVAL '5 days', NOW()),
 
   -- Topic without SRS (reference material, id 23)
-  (23, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Keyboard Shortcuts', 'VS Code and terminal shortcuts - reference only', NULL, NULL, false, false, NOW() - INTERVAL '30 days', NOW());
+  (23, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Keyboard Shortcuts', 'VS Code and terminal shortcuts - reference only', NULL, NULL, false, NOW() - INTERVAL '30 days', NOW());
 
 INSERT INTO note_tags (note_id, tag)
 SELECT id, 'TOPIC'
@@ -185,7 +185,7 @@ VALUES
   (103, 25.0, 3.5, 'REVIEW', 0, '2026-01-12', true, NULL, NULL, NULL, NULL, NULL),
   -- Python Crash Course (book, id=104)
   (104, 50.0, 2.5, 'REVIEW', 0, '2026-01-08', true, NULL, NULL, NULL, NULL, NULL),
-  -- Spanish Learning Podcast (id=105) - inboxed
+  -- Spanish Learning Podcast (id=105)
   (105, NULL, NULL, 'LEARNING', 0, NULL, true, NULL, NULL, NULL, NULL, NULL),
   -- Algorithm Design Manual (archived, id=106)
   (106, 15.0, 6.0, 'REVIEW', 0, '2025-11-15', true, NULL, NULL, NULL, NULL, NULL);
@@ -206,32 +206,31 @@ INSERT INTO notes (
   reading_notes,
   in_reading_list,
   archived,
-  inboxed,
   inserted_at,
   updated_at
 )
 OVERRIDING SYSTEM VALUE
 VALUES
   -- Effective TypeScript (root source - a book)
-  (54, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Effective TypeScript', '62 Specific Ways to Improve Your TypeScript by Dan Vanderkam', NULL, 100, 'NEW', '', true, false, false, NOW() - INTERVAL '30 days', NOW()),
+  (54, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Effective TypeScript', '62 Specific Ways to Improve Your TypeScript by Dan Vanderkam', NULL, 100, 'NEW', '', true, false, NOW() - INTERVAL '30 days', NOW()),
 
   -- Chapter 1 (child of Effective TypeScript)
-  (55, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chapter 1: Getting to Know TypeScript', 'Introduction to TypeScript and its relationship with JavaScript', 54, 101, 'NEW', '', true, false, false, NOW() - INTERVAL '28 days', NOW()),
+  (55, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chapter 1: Getting to Know TypeScript', 'Introduction to TypeScript and its relationship with JavaScript', 54, 101, 'NEW', '', true, false, NOW() - INTERVAL '28 days', NOW()),
 
   -- Chapter 2 (child of Effective TypeScript)
-  (56, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chapter 2: TypeScript''s Type System', 'Deep dive into the type system', 54, 102, 'NEW', '', true, false, false, NOW() - INTERVAL '20 days', NOW()),
+  (56, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chapter 2: TypeScript''s Type System', 'Deep dive into the type system', 54, 102, 'NEW', '', true, false, NOW() - INTERVAL '20 days', NOW()),
 
   -- React Documentation (root source)
-  (57, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React Documentation', 'Official React documentation - react.dev', NULL, 103, 'NEW', '', true, false, false, NOW() - INTERVAL '25 days', NOW()),
+  (57, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React Documentation', 'Official React documentation - react.dev', NULL, 103, 'NEW', '', true, false, NOW() - INTERVAL '25 days', NOW()),
 
   -- Python Crash Course (root source - a book)
-  (58, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Python Crash Course', 'A Hands-On, Project-Based Introduction to Programming', NULL, 104, 'NEW', '', true, false, false, NOW() - INTERVAL '60 days', NOW()),
+  (58, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Python Crash Course', 'A Hands-On, Project-Based Introduction to Programming', NULL, 104, 'NEW', '', true, false, NOW() - INTERVAL '60 days', NOW()),
 
-  -- Spanish Learning Podcast (inboxed - new source)
-  (59, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish Learning Podcast', 'Need to evaluate and organize', NULL, 105, 'NEW', '', true, false, true, NOW() - INTERVAL '2 days', NOW()),
+  -- Spanish Learning Podcast (new source)
+  (59, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish Learning Podcast', 'Need to evaluate and organize', NULL, 105, 'NEW', '', true, false, NOW() - INTERVAL '2 days', NOW()),
 
   -- Algorithm Design Manual (archived)
-  (60, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Algorithm Design Manual', 'Steven Skiena - decided to use different resource', NULL, 106, 'NEW', '', true, true, false, NOW() - INTERVAL '90 days', NOW());
+  (60, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Algorithm Design Manual', 'Steven Skiena - decided to use different resource', NULL, 106, 'NEW', '', true, true, NOW() - INTERVAL '90 days', NOW());
 
 INSERT INTO note_tags (note_id, tag)
 SELECT id, 'SOURCE'
@@ -333,39 +332,39 @@ VALUES
 
 SELECT setval('fsrs_states_id_seq', (SELECT MAX(id) FROM fsrs_states));
 
-INSERT INTO notes (id, user_id, title, body, parent_id, fsrs_state_id, archived, inboxed, inserted_at, updated_at)
+INSERT INTO notes (id, user_id, title, body, parent_id, fsrs_state_id, archived, inserted_at, updated_at)
 OVERRIDING SYSTEM VALUE
 VALUES
-  (24, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Machine Learning', 'Neural networks, training, and model evaluation', NULL, 24, false, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '2 days'),
-  (25, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Docker', 'Containers, images, and Docker Compose', NULL, 25, false, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '3 days'),
-  (26, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'AWS Cloud', 'EC2, S3, Lambda, and cloud architecture', NULL, 26, false, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '5 days'),
-  (27, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Data Structures', 'Arrays, trees, graphs, hash maps', NULL, 27, false, false, NOW() - INTERVAL '70 days', NOW() - INTERVAL '1 day'),
-  (28, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Algorithms', 'Sorting, searching, dynamic programming', NULL, 28, false, false, NOW() - INTERVAL '65 days', NOW() - INTERVAL '4 days'),
-  (29, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'System Design', 'Distributed systems and architecture patterns', NULL, 29, false, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
-  (30, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Networking', 'TCP/IP, HTTP, DNS, and protocols', NULL, 30, false, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '6 days'),
-  (31, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Operating Systems', 'Processes, memory, file systems', NULL, 31, false, false, NOW() - INTERVAL '45 days', NOW() - INTERVAL '8 days'),
-  (32, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Cybersecurity', 'Network security, encryption, OWASP', NULL, 32, false, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '2 days'),
-  (33, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'DevOps', 'CI/CD pipelines and infrastructure as code', NULL, 33, false, false, NOW() - INTERVAL '30 days', NOW() - INTERVAL '4 days'),
-  (34, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Rust', 'Ownership, borrowing, and systems programming', NULL, 34, false, false, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 day'),
-  (35, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Go', 'Goroutines, channels, and Go idioms', NULL, 35, false, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '1 day'),
-  (36, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'C++', 'Modern C++ features and memory management', NULL, 36, false, false, NOW() - INTERVAL '80 days', NOW() - INTERVAL '3 days'),
-  (37, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Java', 'JVM, Spring Boot, and enterprise patterns', NULL, 37, false, false, NOW() - INTERVAL '90 days', NOW() - INTERVAL '9 days'),
-  (38, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Design Patterns', 'GoF patterns and modern alternatives', NULL, 38, false, false, NOW() - INTERVAL '60 days', NOW() - INTERVAL '5 days'),
-  (39, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Microservices', 'Service mesh, event-driven architecture', NULL, 39, false, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '2 days'),
-  (40, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Database Design', 'Normalization, indexing, query optimization', NULL, 40, false, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '7 days'),
-  (41, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Computer Vision', 'Image recognition, CNNs, OpenCV', NULL, 41, false, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '1 day'),
-  (42, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Natural Language Processing', 'Transformers, embeddings, text classification', NULL, 42, false, false, NOW() - INTERVAL '14 days', NOW() - INTERVAL '1 day'),
-  (43, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Statistics', 'Hypothesis testing, regression, Bayesian methods', NULL, 43, false, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '6 days'),
-  (44, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Physics', 'Classical mechanics and electromagnetism', NULL, 44, false, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '8 days'),
-  (45, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chemistry', 'Organic chemistry and molecular structures', NULL, 45, false, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '10 days'),
-  (46, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Economics', 'Micro and macroeconomics fundamentals', NULL, 46, false, false, NOW() - INTERVAL '30 days', NOW() - INTERVAL '4 days'),
-  (47, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Philosophy', 'Logic, ethics, and epistemology', NULL, 47, false, false, NOW() - INTERVAL '22 days', NOW() - INTERVAL '3 days'),
-  (48, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Music Theory', 'Scales, chords, harmony, and composition', NULL, 48, false, false, NOW() - INTERVAL '16 days', NOW() - INTERVAL '2 days'),
-  (49, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Creative Writing', 'Fiction techniques, character development', NULL, 49, false, false, NOW() - INTERVAL '28 days', NOW() - INTERVAL '5 days'),
-  (50, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Public Speaking', 'Presentation skills and rhetoric', NULL, 50, false, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
-  (51, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'UI/UX Design', 'User research, wireframing, design systems', NULL, 51, false, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '3 days'),
-  (52, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Project Management', 'Agile, Scrum, and team coordination', NULL, 52, false, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '6 days'),
-  (53, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Japanese', 'Hiragana, katakana, kanji, and grammar', NULL, 53, false, false, NOW() - INTERVAL '8 days', NOW() - INTERVAL '1 day');
+  (24, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Machine Learning', 'Neural networks, training, and model evaluation', NULL, 24, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '2 days'),
+  (25, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Docker', 'Containers, images, and Docker Compose', NULL, 25, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '3 days'),
+  (26, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'AWS Cloud', 'EC2, S3, Lambda, and cloud architecture', NULL, 26, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '5 days'),
+  (27, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Data Structures', 'Arrays, trees, graphs, hash maps', NULL, 27, false, NOW() - INTERVAL '70 days', NOW() - INTERVAL '1 day'),
+  (28, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Algorithms', 'Sorting, searching, dynamic programming', NULL, 28, false, NOW() - INTERVAL '65 days', NOW() - INTERVAL '4 days'),
+  (29, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'System Design', 'Distributed systems and architecture patterns', NULL, 29, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
+  (30, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Networking', 'TCP/IP, HTTP, DNS, and protocols', NULL, 30, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '6 days'),
+  (31, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Operating Systems', 'Processes, memory, file systems', NULL, 31, false, NOW() - INTERVAL '45 days', NOW() - INTERVAL '8 days'),
+  (32, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Cybersecurity', 'Network security, encryption, OWASP', NULL, 32, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '2 days'),
+  (33, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'DevOps', 'CI/CD pipelines and infrastructure as code', NULL, 33, false, NOW() - INTERVAL '30 days', NOW() - INTERVAL '4 days'),
+  (34, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Rust', 'Ownership, borrowing, and systems programming', NULL, 34, false, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 day'),
+  (35, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Go', 'Goroutines, channels, and Go idioms', NULL, 35, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '1 day'),
+  (36, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'C++', 'Modern C++ features and memory management', NULL, 36, false, NOW() - INTERVAL '80 days', NOW() - INTERVAL '3 days'),
+  (37, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Java', 'JVM, Spring Boot, and enterprise patterns', NULL, 37, false, NOW() - INTERVAL '90 days', NOW() - INTERVAL '9 days'),
+  (38, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Design Patterns', 'GoF patterns and modern alternatives', NULL, 38, false, NOW() - INTERVAL '60 days', NOW() - INTERVAL '5 days'),
+  (39, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Microservices', 'Service mesh, event-driven architecture', NULL, 39, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '2 days'),
+  (40, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Database Design', 'Normalization, indexing, query optimization', NULL, 40, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '7 days'),
+  (41, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Computer Vision', 'Image recognition, CNNs, OpenCV', NULL, 41, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '1 day'),
+  (42, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Natural Language Processing', 'Transformers, embeddings, text classification', NULL, 42, false, NOW() - INTERVAL '14 days', NOW() - INTERVAL '1 day'),
+  (43, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Statistics', 'Hypothesis testing, regression, Bayesian methods', NULL, 43, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '6 days'),
+  (44, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Physics', 'Classical mechanics and electromagnetism', NULL, 44, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '8 days'),
+  (45, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chemistry', 'Organic chemistry and molecular structures', NULL, 45, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '10 days'),
+  (46, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Economics', 'Micro and macroeconomics fundamentals', NULL, 46, false, NOW() - INTERVAL '30 days', NOW() - INTERVAL '4 days'),
+  (47, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Philosophy', 'Logic, ethics, and epistemology', NULL, 47, false, NOW() - INTERVAL '22 days', NOW() - INTERVAL '3 days'),
+  (48, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Music Theory', 'Scales, chords, harmony, and composition', NULL, 48, false, NOW() - INTERVAL '16 days', NOW() - INTERVAL '2 days'),
+  (49, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Creative Writing', 'Fiction techniques, character development', NULL, 49, false, NOW() - INTERVAL '28 days', NOW() - INTERVAL '5 days'),
+  (50, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Public Speaking', 'Presentation skills and rhetoric', NULL, 50, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
+  (51, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'UI/UX Design', 'User research, wireframing, design systems', NULL, 51, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '3 days'),
+  (52, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Project Management', 'Agile, Scrum, and team coordination', NULL, 52, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '6 days'),
+  (53, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Japanese', 'Hiragana, katakana, kanji, and grammar', NULL, 53, false, NOW() - INTERVAL '8 days', NOW() - INTERVAL '1 day');
 
 INSERT INTO note_tags (note_id, tag)
 SELECT id, 'TOPIC'
@@ -414,27 +413,26 @@ INSERT INTO notes (
   reading_notes,
   in_reading_list,
   archived,
-  inboxed,
   inserted_at,
   updated_at
 )
 OVERRIDING SYSTEM VALUE
 VALUES
-  (61, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Clean Code', 'A Handbook of Agile Software Craftsmanship by Robert C. Martin', NULL, 107, 'NEW', '', true, false, false, NOW() - INTERVAL '75 days', NOW() - INTERVAL '5 days'),
-  (62, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Designing Data-Intensive Applications', 'Martin Kleppmann - distributed systems and data storage', NULL, 108, 'NEW', '', true, false, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '3 days'),
-  (63, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Pragmatic Programmer', 'David Thomas and Andrew Hunt - software craftsmanship', NULL, 109, 'NEW', '', true, false, false, NOW() - INTERVAL '85 days', NOW() - INTERVAL '9 days'),
-  (64, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Structure and Interpretation of Computer Programs', 'Abelson and Sussman - CS fundamentals', NULL, 110, 'NEW', '', true, false, false, NOW() - INTERVAL '60 days', NOW() - INTERVAL '7 days'),
-  (65, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Introduction to Algorithms (CLRS)', 'Cormen et al. - comprehensive algorithms reference', NULL, 111, 'NEW', '', true, false, false, NOW() - INTERVAL '70 days', NOW() - INTERVAL '6 days'),
-  (66, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Operating Systems: Three Easy Pieces', 'Remzi Arpaci-Dusseau - virtualization, concurrency, persistence', NULL, 112, 'NEW', '', true, false, false, NOW() - INTERVAL '45 days', NOW() - INTERVAL '4 days'),
-  (67, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Computer Networking: A Top-Down Approach', 'Kurose and Ross - networking fundamentals', NULL, 113, 'NEW', '', true, false, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '2 days'),
-  (68, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Deep Learning', 'Goodfellow, Bengio, Courville - neural networks and deep learning', NULL, 114, 'NEW', '', true, false, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
-  (69, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Rust Programming Language', 'Official Rust book - ownership and systems programming', NULL, 115, 'NEW', '', true, false, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '2 days'),
-  (70, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Go by Example', 'Hands-on introduction to Go with annotated examples', NULL, 116, 'NEW', '', true, false, false, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 day'),
-  (71, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Head First Design Patterns', 'Freeman and Robson - design patterns with visual explanations', NULL, 117, 'NEW', '', true, false, false, NOW() - INTERVAL '65 days', NOW() - INTERVAL '8 days'),
-  (72, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Art of Public Speaking', 'Stephen Lucas - presentation and communication skills', NULL, 118, 'NEW', '', true, false, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '3 days'),
-  (73, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Music Theory for Beginners', 'Leonard Vogler - fundamentals of music theory', NULL, 119, 'NEW', '', true, false, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '5 days'),
-  (74, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'MDN Web Docs', 'Mozilla Developer Network - web platform reference', NULL, 120, 'NEW', '', true, false, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '7 days'),
-  (75, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Kubernetes Documentation', 'Official Kubernetes docs - container orchestration', NULL, 121, 'NEW', '', true, false, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '2 days');
+  (61, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Clean Code', 'A Handbook of Agile Software Craftsmanship by Robert C. Martin', NULL, 107, 'NEW', '', true, false, NOW() - INTERVAL '75 days', NOW() - INTERVAL '5 days'),
+  (62, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Designing Data-Intensive Applications', 'Martin Kleppmann - distributed systems and data storage', NULL, 108, 'NEW', '', true, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '3 days'),
+  (63, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Pragmatic Programmer', 'David Thomas and Andrew Hunt - software craftsmanship', NULL, 109, 'NEW', '', true, false, NOW() - INTERVAL '85 days', NOW() - INTERVAL '9 days'),
+  (64, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Structure and Interpretation of Computer Programs', 'Abelson and Sussman - CS fundamentals', NULL, 110, 'NEW', '', true, false, NOW() - INTERVAL '60 days', NOW() - INTERVAL '7 days'),
+  (65, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Introduction to Algorithms (CLRS)', 'Cormen et al. - comprehensive algorithms reference', NULL, 111, 'NEW', '', true, false, NOW() - INTERVAL '70 days', NOW() - INTERVAL '6 days'),
+  (66, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Operating Systems: Three Easy Pieces', 'Remzi Arpaci-Dusseau - virtualization, concurrency, persistence', NULL, 112, 'NEW', '', true, false, NOW() - INTERVAL '45 days', NOW() - INTERVAL '4 days'),
+  (67, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Computer Networking: A Top-Down Approach', 'Kurose and Ross - networking fundamentals', NULL, 113, 'NEW', '', true, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '2 days'),
+  (68, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Deep Learning', 'Goodfellow, Bengio, Courville - neural networks and deep learning', NULL, 114, 'NEW', '', true, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
+  (69, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Rust Programming Language', 'Official Rust book - ownership and systems programming', NULL, 115, 'NEW', '', true, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '2 days'),
+  (70, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Go by Example', 'Hands-on introduction to Go with annotated examples', NULL, 116, 'NEW', '', true, false, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 day'),
+  (71, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Head First Design Patterns', 'Freeman and Robson - design patterns with visual explanations', NULL, 117, 'NEW', '', true, false, NOW() - INTERVAL '65 days', NOW() - INTERVAL '8 days'),
+  (72, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Art of Public Speaking', 'Stephen Lucas - presentation and communication skills', NULL, 118, 'NEW', '', true, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '3 days'),
+  (73, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Music Theory for Beginners', 'Leonard Vogler - fundamentals of music theory', NULL, 119, 'NEW', '', true, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '5 days'),
+  (74, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'MDN Web Docs', 'Mozilla Developer Network - web platform reference', NULL, 120, 'NEW', '', true, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '7 days'),
+  (75, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Kubernetes Documentation', 'Official Kubernetes docs - container orchestration', NULL, 121, 'NEW', '', true, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '2 days');
 
 INSERT INTO note_tags (note_id, tag)
 SELECT id, 'SOURCE'
@@ -490,19 +488,19 @@ VALUES
 SELECT setval('fsrs_states_id_seq', (SELECT MAX(id) FROM fsrs_states));
 
 -- Practice legacy IDs 1-10 map to note IDs 76-85.
-INSERT INTO notes (id, user_id, title, body, fsrs_state_id, archived, inboxed, inserted_at, updated_at)
+INSERT INTO notes (id, user_id, title, body, fsrs_state_id, archived, inserted_at, updated_at)
 OVERRIDING SYSTEM VALUE
 VALUES
-  (76, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is the time complexity of binary search?', 'O(log n) - halves the search space each iteration', 200, false, false, NOW() - INTERVAL '30 days', NOW() - INTERVAL '3 days'),
-  (77, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Explain the difference between a stack and a queue', 'Stack: LIFO (Last In First Out). Queue: FIFO (First In First Out).', 201, false, false, NOW() - INTERVAL '28 days', NOW() - INTERVAL '2 days'),
-  (78, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What are the SOLID principles?', 'Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion', 202, false, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '5 days'),
-  (79, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Describe the observer pattern', 'A subject maintains a list of dependents (observers) and notifies them of state changes automatically.', 203, false, false, NOW() - INTERVAL '22 days', NOW() - INTERVAL '4 days'),
-  (80, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is a closure in JavaScript?', 'A function that retains access to its lexical scope even when executed outside that scope.', 204, false, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '1 day'),
-  (81, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Explain TCP vs UDP', 'TCP: reliable, ordered, connection-oriented. UDP: unreliable, unordered, connectionless, lower latency.', 205, false, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '6 days'),
-  (82, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is the CAP theorem?', 'A distributed system can only guarantee two of three: Consistency, Availability, Partition tolerance.', 206, false, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '1 day'),
-  (83, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'How does Git use a directed acyclic graph?', 'Each commit points to its parent(s), forming a DAG. Branches are pointers to commits, merges create nodes with multiple parents.', 207, false, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '7 days'),
-  (84, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is dependency injection?', 'A design pattern where dependencies are provided to a class rather than created internally, enabling loose coupling and testability.', 208, false, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '3 days'),
-  (85, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Explain the difference between a process and a thread', 'Process: independent execution unit with own memory space. Thread: lightweight unit within a process sharing its memory space.', 209, false, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '2 days');
+  (76, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is the time complexity of binary search?', 'O(log n) - halves the search space each iteration', 200, false, NOW() - INTERVAL '30 days', NOW() - INTERVAL '3 days'),
+  (77, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Explain the difference between a stack and a queue', 'Stack: LIFO (Last In First Out). Queue: FIFO (First In First Out).', 201, false, NOW() - INTERVAL '28 days', NOW() - INTERVAL '2 days'),
+  (78, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What are the SOLID principles?', 'Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion', 202, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '5 days'),
+  (79, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Describe the observer pattern', 'A subject maintains a list of dependents (observers) and notifies them of state changes automatically.', 203, false, NOW() - INTERVAL '22 days', NOW() - INTERVAL '4 days'),
+  (80, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is a closure in JavaScript?', 'A function that retains access to its lexical scope even when executed outside that scope.', 204, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '1 day'),
+  (81, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Explain TCP vs UDP', 'TCP: reliable, ordered, connection-oriented. UDP: unreliable, unordered, connectionless, lower latency.', 205, false, NOW() - INTERVAL '35 days', NOW() - INTERVAL '6 days'),
+  (82, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is the CAP theorem?', 'A distributed system can only guarantee two of three: Consistency, Availability, Partition tolerance.', 206, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '1 day'),
+  (83, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'How does Git use a directed acyclic graph?', 'Each commit points to its parent(s), forming a DAG. Branches are pointers to commits, merges create nodes with multiple parents.', 207, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '7 days'),
+  (84, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'What is dependency injection?', 'A design pattern where dependencies are provided to a class rather than created internally, enabling loose coupling and testability.', 208, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '3 days'),
+  (85, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Explain the difference between a process and a thread', 'Process: independent execution unit with own memory space. Thread: lightweight unit within a process sharing its memory space.', 209, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '2 days');
 
 INSERT INTO note_tags (note_id, tag)
 SELECT id, 'PRACTICE'

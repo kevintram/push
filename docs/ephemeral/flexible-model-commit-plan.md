@@ -174,7 +174,7 @@ refactor(api): unify search endpoint over notes with tag filtering
 Replaces separate topic/source/practice search endpoints with a single
 /search/ endpoint querying notes. Supports ILIKE text matching on title
 and body, entity_type filtering mapped to note tags (topic->TOPIC, etc.),
-and inbox/archive filters. Results ordered by updated_at descending.
+and archive filter. Results ordered by updated_at descending.
 EOF
 )"
 ```
@@ -390,7 +390,7 @@ feat(web): complete note detail page with inline editing and action bar
 Adds tag management dropdown with multi-select for TOPIC/SOURCE/PRACTICE.
 Implements inline title/body editing with auto-save on blur. Displays
 status badges (hazy, forgotten) with tooltips. Adds action toolbar with
-SRS toggle, reading list popover, inbox/archive toggles, and overflow
+SRS toggle, reading list popover, archive toggle, and overflow
 menu. Shows freshness tier, last reviewed date, and durability metrics.
 EOF
 )"
@@ -445,7 +445,7 @@ git add apps/web/src/app/routes/__root.tsx
 git commit -m "$(cat <<'EOF'
 refactor(web): wire app shell to notes API and AddNoteDialog
 
-AppSidebar fetches inbox count via useNotes hook. CreateButton opens
+AppSidebar fetches note counts via useNotes hook. CreateButton opens
 AddNoteDialog instead of legacy entity dialogs. EntityTypeFilter badges
 now map to note tags. Removes legacy entity providers from __root.tsx,
 keeping only ReviewDialogProvider for note-aware review modals.
@@ -469,26 +469,13 @@ EOF
 )"
 ```
 
-### 27) `refactor(web): rewrite InboxPage with useNotes and NoteCard`
-```bash
-git add apps/web/src/app/pages/InboxPage.tsx
-git commit -m "$(cat <<'EOF'
-refactor(web): rewrite InboxPage with useNotes and NoteCard
-
-Replaces topic-based inbox with unified notes query (inboxed=true).
-Uses NoteCard in masonry layout with tag-based filtering (TOPIC/SOURCE/
-PRACTICE). AddNoteDialog creates notes directly instead of legacy topics.
-EOF
-)"
-```
-
-### 28) `refactor(web): rewrite MyLibraryPage with useNotes and NoteCard`
+### 27) `refactor(web): rewrite MyLibraryPage with useNotes and NoteCard`
 ```bash
 git add apps/web/src/app/pages/MyLibraryPage.tsx
 git commit -m "$(cat <<'EOF'
 refactor(web): rewrite MyLibraryPage with useNotes and NoteCard
 
-Queries root-level non-archived, non-inboxed notes instead of legacy
+Queries root-level non-archived notes instead of legacy
 topics. Displays notes in masonry layout with tag filtering and empty
 state prompting creation via AddNoteDialog.
 EOF

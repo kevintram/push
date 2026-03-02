@@ -67,7 +67,6 @@ CREATE TABLE notes (
   in_reading_list BOOLEAN NOT NULL DEFAULT false,
 
   archived BOOLEAN NOT NULL DEFAULT false,
-  inboxed BOOLEAN NOT NULL DEFAULT false,
 
   inserted_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
