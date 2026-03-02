@@ -50,7 +50,6 @@ async def list_notes(
     session: AsyncSession,
     user_id: str,
     *,
-    inboxed: bool | None = None,
     archived: bool | None = None,
     root: bool | None = None,
     parent_id: int | None = None,
@@ -63,8 +62,6 @@ async def list_notes(
 ) -> list[Note]:
     stmt = select(Note).where(Note.user_id == user_id)
 
-    if inboxed is not None:
-        stmt = stmt.where(Note.inboxed == inboxed)
     if archived is not None:
         stmt = stmt.where(Note.archived == archived)
     if root is True:
@@ -117,7 +114,6 @@ async def create_note(
     reading_notes: str = "",
     in_reading_list: bool = False,
     archived: bool = False,
-    inboxed: bool = False,
     tags: list[str] | None = None,
     srs_enabled: bool = True,
 ) -> Note:
@@ -133,7 +129,6 @@ async def create_note(
         reading_notes=reading_notes,
         in_reading_list=in_reading_list,
         archived=archived,
-        inboxed=inboxed,
     )
 
     if srs_enabled:
@@ -183,8 +178,6 @@ async def update_note(
         note.in_reading_list = updates["in_reading_list"]
     if "archived" in updates and updates["archived"] is not None:
         note.archived = updates["archived"]
-    if "inboxed" in updates and updates["inboxed"] is not None:
-        note.inboxed = updates["inboxed"]
 
     if "srs_enabled" in updates and updates["srs_enabled"] is not None:
         srs_enabled = updates["srs_enabled"]

@@ -66,7 +66,6 @@ class NoteBase(BaseModel):
     reading_notes: str = ""
     in_reading_list: bool = False
     archived: bool = False
-    inboxed: bool = False
 
 
 class NoteRead(NoteBase):
@@ -114,7 +113,6 @@ class NoteUpdate(BaseModel):
     reading_notes: str | None = None
     in_reading_list: bool | None = None
     archived: bool | None = None
-    inboxed: bool | None = None
     srs_enabled: bool | None = None
 
 

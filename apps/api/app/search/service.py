@@ -21,7 +21,6 @@ async def _list_notes_for_search(
     *,
     query: str | None,
     entity_types: list[str] | None,
-    inboxed: bool | None,
     archived: bool | None,
     limit: int | None,
 ) -> list[Note]:
@@ -30,9 +29,6 @@ async def _list_notes_for_search(
     if query:
         q = f"%{query}%"
         stmt = stmt.where(or_(Note.title.ilike(q), Note.body.ilike(q)))
-
-    if inboxed is not None:
-        stmt = stmt.where(Note.inboxed == inboxed)
 
     if archived is not None:
         stmt = stmt.where(Note.archived == archived)
@@ -77,7 +73,6 @@ async def search_all(
     *,
     query: str | None = None,
     entity_types: list[str] | None = None,
-    inboxed: bool | None = None,
     archived: bool | None = None,
     limit: int | None = None,
 ) -> list[SearchResultItem]:
@@ -90,7 +85,6 @@ async def search_all(
             user_id,
             query=query,
             entity_types=entity_types,
-            inboxed=inboxed,
             archived=archived,
             limit=limit,
         )
