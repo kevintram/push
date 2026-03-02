@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { Anvil, BookOpen, Inbox, Plus, Star } from 'lucide-react'
+import { Anvil, BookOpen, Plus, Star } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '~/components/ui/badge'
@@ -48,7 +48,6 @@ export interface AddNoteDialogDefaults {
 	body?: string
 	tags?: Array<NoteTag>
 	parent_id?: number | null
-	inboxed?: boolean
 	archived?: boolean
 	in_reading_list?: boolean
 	reading_status?: Note['reading_status']
@@ -83,7 +82,6 @@ export function AddNoteDialog({
 	const [title, setTitle] = useState('')
 	const [body, setBody] = useState('')
 	const [tags, setTags] = useState<Array<NoteTag>>([])
-	const [inboxed, setInboxed] = useState(false)
 	const [inReadingList, setInReadingList] = useState(false)
 	const [readingStatus, setReadingStatus] =
 		useState<Note['reading_status']>('NEW')
@@ -117,7 +115,6 @@ export function AddNoteDialog({
 			setTitle(defaults?.title ?? '')
 			setBody(defaults?.body ?? '')
 			setTags(normalizeNoteTags(defaults?.tags ?? []))
-			setInboxed(defaults?.inboxed ?? false)
 			setInReadingList(defaults?.in_reading_list ?? false)
 			setReadingStatus(defaults?.reading_status ?? 'NEW')
 			setReadingNotes(defaults?.reading_notes ?? '')
@@ -186,7 +183,6 @@ export function AddNoteDialog({
 				title: title.trim(),
 				body: body.trim(),
 				parent_id: defaults?.parent_id,
-				inboxed,
 				archived: defaults?.archived ?? false,
 				in_reading_list: inReadingList,
 				reading_status: inReadingList ? readingStatus : undefined,
@@ -244,7 +240,6 @@ export function AddNoteDialog({
 		createReview,
 		defaults?.archived,
 		defaults?.parent_id,
-		inboxed,
 		inReadingList,
 		inheritSrs,
 		inheritSrsEnabled,
@@ -363,25 +358,6 @@ export function AddNoteDialog({
 					/>
 
 					<div className='flex flex-wrap items-center gap-2 border-t pt-4'>
-						<Tooltip>
-							<TooltipTrigger render={<span className='inline-flex' />}>
-								<Toggle
-									aria-label={inboxed ? 'Remove from inbox' : 'Add to inbox'}
-									className={cn(
-										'h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors',
-										'data-[state=on]:bg-muted data-[state=on]:text-foreground'
-									)}
-									onPressedChange={setInboxed}
-									pressed={inboxed}
-									size='sm'
-									variant='outline'
-								>
-									<Inbox className='h-4 w-4' />
-								</Toggle>
-							</TooltipTrigger>
-							<TooltipContent>Add to inbox</TooltipContent>
-						</Tooltip>
-
 						{inReadingList ? (
 							<Tooltip>
 								<TooltipTrigger render={<span className='inline-flex' />}>

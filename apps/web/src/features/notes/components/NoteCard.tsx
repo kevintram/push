@@ -7,7 +7,6 @@ import {
 	BookOpen,
 	Brain,
 	ChevronDown,
-	Inbox,
 	Loader2,
 	MoreHorizontal,
 	Plus,
@@ -573,18 +572,6 @@ export function NoteCard({
 									event.stopPropagation()
 									updateNote({
 										id: note.id,
-										inboxed: !note.inboxed
-									})
-								}}
-							>
-								<Inbox className='mr-2 h-4 w-4' />
-								{note.inboxed ? 'Remove from Inbox' : 'Inbox'}
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={event => {
-									event.stopPropagation()
-									updateNote({
-										id: note.id,
 										archived: !note.archived
 									})
 								}}
@@ -633,15 +620,6 @@ export function NoteCard({
 				<div className='flex flex-col gap-1'>
 					<div className='flex items-center gap-1 text-muted-foreground text-xs'>
 						<span>{typeBadgeLabel}</span>
-						{note.inboxed && (
-							<>
-								<span className='font-bold'>·</span>
-								<div className='flex items-center gap-1'>
-									<Inbox className='h-3 w-3' />
-									<span>Inbox</span>
-								</div>
-							</>
-						)}
 						{note.archived && (
 							<>
 								<span className='font-bold'>·</span>
