@@ -16,7 +16,6 @@ async def search(
     entity_types: str | None = Query(
         None, description="Comma-separated: note,topic,source,practice"
     ),
-    inboxed: bool | None = None,
     archived: bool | None = None,
     limit: int | None = None,
 ) -> list[SearchResultItem]:
@@ -27,7 +26,6 @@ async def search(
         user_id,
         query=query,
         entity_types=parsed_types,
-        inboxed=inboxed,
         archived=archived,
         limit=limit,
     )

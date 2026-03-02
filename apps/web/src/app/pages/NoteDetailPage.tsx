@@ -8,7 +8,6 @@ import {
 	Check,
 	ChevronDown,
 	Copy,
-	Inbox,
 	Loader2,
 	Plus,
 	Sparkles,
@@ -2182,26 +2181,6 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 									</Tooltip>
 								</div>
 								<div className='flex items-center gap-2'>
-									<Tooltip>
-										<TooltipTrigger render={<span className='inline-flex' />}>
-											<Toggle
-												aria-label={
-													note.inboxed ? 'Remove from inbox' : 'Add to inbox'
-												}
-												className='h-8 w-8 rounded-full p-0 text-muted-foreground transition-colors data-[state=on]:bg-muted data-[state=on]:text-foreground'
-												disabled={isUpdatingNote}
-												onPressedChange={() =>
-													updateNote({ id: note.id, inboxed: !note.inboxed })
-												}
-												pressed={note.inboxed}
-												size='sm'
-												variant='outline'
-											>
-												<Inbox className='h-4 w-4' />
-											</Toggle>
-										</TooltipTrigger>
-										<TooltipContent>Inbox</TooltipContent>
-									</Tooltip>
 									<Tooltip>
 										<TooltipTrigger render={<span className='inline-flex' />}>
 											<Toggle

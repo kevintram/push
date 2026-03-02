@@ -10,7 +10,6 @@ export interface CreateNoteInput {
 	body?: string
 	parent_id?: number | null
 	archived?: boolean
-	inboxed?: boolean
 	tags?: Array<NoteTag>
 	srs_enabled?: boolean
 }

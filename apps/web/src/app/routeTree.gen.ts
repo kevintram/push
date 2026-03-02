@@ -16,7 +16,6 @@ import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainMyLibraryRouteImport } from './routes/_main/my-library'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
-import { Route as MainInboxRouteImport } from './routes/_main/inbox'
 import { Route as MainArchivedRouteImport } from './routes/_main/archived'
 import { Route as MainNotesNoteIdRouteImport } from './routes/_main/notes_.$noteId'
 import { Route as MainNotesNoteIdIndexRouteImport } from './routes/_main/notes_.$noteId.index'
@@ -55,11 +54,6 @@ const MainLogbookRoute = MainLogbookRouteImport.update({
   path: '/logbook',
   getParentRoute: () => MainRoute,
 } as any)
-const MainInboxRoute = MainInboxRouteImport.update({
-  id: '/inbox',
-  path: '/inbox',
-  getParentRoute: () => MainRoute,
-} as any)
 const MainArchivedRoute = MainArchivedRouteImport.update({
   id: '/archived',
   path: '/archived',
@@ -79,7 +73,6 @@ const MainNotesNoteIdIndexRoute = MainNotesNoteIdIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
   '/archived': typeof MainArchivedRoute
-  '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
   '/recent': typeof MainRecentRoute
@@ -91,7 +84,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
   '/archived': typeof MainArchivedRoute
-  '/inbox': typeof MainInboxRoute
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
   '/recent': typeof MainRecentRoute
@@ -104,7 +96,6 @@ export interface FileRoutesById {
   '/_main': typeof MainRouteWithChildren
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
   '/_main/archived': typeof MainArchivedRoute
-  '/_main/inbox': typeof MainInboxRoute
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/my-library': typeof MainMyLibraryRoute
   '/_main/recent': typeof MainRecentRoute
@@ -118,7 +109,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/virtualization-smoke'
     | '/archived'
-    | '/inbox'
     | '/logbook'
     | '/my-library'
     | '/recent'
@@ -130,7 +120,6 @@ export interface FileRouteTypes {
   to:
     | '/virtualization-smoke'
     | '/archived'
-    | '/inbox'
     | '/logbook'
     | '/my-library'
     | '/recent'
@@ -142,7 +131,6 @@ export interface FileRouteTypes {
     | '/_main'
     | '/virtualization-smoke'
     | '/_main/archived'
-    | '/_main/inbox'
     | '/_main/logbook'
     | '/_main/my-library'
     | '/_main/recent'
@@ -208,13 +196,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainLogbookRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/inbox': {
-      id: '/_main/inbox'
-      path: '/inbox'
-      fullPath: '/inbox'
-      preLoaderRoute: typeof MainInboxRouteImport
-      parentRoute: typeof MainRoute
-    }
     '/_main/archived': {
       id: '/_main/archived'
       path: '/archived'
@@ -253,7 +234,6 @@ const MainNotesNoteIdRouteWithChildren = MainNotesNoteIdRoute._addFileChildren(
 
 interface MainRouteChildren {
   MainArchivedRoute: typeof MainArchivedRoute
-  MainInboxRoute: typeof MainInboxRoute
   MainLogbookRoute: typeof MainLogbookRoute
   MainMyLibraryRoute: typeof MainMyLibraryRoute
   MainRecentRoute: typeof MainRecentRoute
@@ -264,7 +244,6 @@ interface MainRouteChildren {
 
 const MainRouteChildren: MainRouteChildren = {
   MainArchivedRoute: MainArchivedRoute,
-  MainInboxRoute: MainInboxRoute,
   MainLogbookRoute: MainLogbookRoute,
   MainMyLibraryRoute: MainMyLibraryRoute,
   MainRecentRoute: MainRecentRoute,

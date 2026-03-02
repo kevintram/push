@@ -39,7 +39,6 @@ export function MyLibraryPage() {
 	const { data: notes = [], isLoading } = useNotes({
 		root: true,
 		archived: false,
-		inboxed: false,
 		order: 'desc'
 	})
 
@@ -61,7 +60,7 @@ export function MyLibraryPage() {
 					<MasonryLayoutSkeleton />
 				</PageLayout.Content>
 				<AddNoteDialog
-					defaults={{ inboxed: false, archived: false, tags: ['TOPIC'] }}
+					defaults={{ archived: false, tags: ['TOPIC'] }}
 					onOpenChange={setIsAddDialogOpen}
 					open={isAddDialogOpen}
 				/>
@@ -97,7 +96,7 @@ export function MyLibraryPage() {
 					</Empty>
 				</PageLayout.Content>
 				<AddNoteDialog
-					defaults={{ inboxed: false, archived: false, tags: ['TOPIC'] }}
+					defaults={{ archived: false, tags: ['TOPIC'] }}
 					onOpenChange={setIsAddDialogOpen}
 					open={isAddDialogOpen}
 				/>
@@ -131,7 +130,7 @@ export function MyLibraryPage() {
 				/>
 			</PageLayout.Content>
 			<AddNoteDialog
-				defaults={{ inboxed: false, archived: false, tags: ['TOPIC'] }}
+				defaults={{ archived: false, tags: ['TOPIC'] }}
 				onOpenChange={setIsAddDialogOpen}
 				open={isAddDialogOpen}
 			/>

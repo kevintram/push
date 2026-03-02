@@ -29,7 +29,6 @@ class TestSearchEndpoint:
                 "body": "Borrow checker basics",
                 "tags": ["TOPIC"],
                 "archived": False,
-                "inboxed": False,
             },
         )
         assert topic_response.status_code == 201
@@ -42,13 +41,12 @@ class TestSearchEndpoint:
                 "body": "Source note",
                 "tags": ["SOURCE"],
                 "archived": False,
-                "inboxed": False,
             },
         )
         assert source_response.status_code == 201
 
         response = await test_client.get(
-            "/search/?query=rust&entity_types=topic&inboxed=false&archived=false"
+            "/search/?query=rust&entity_types=topic&archived=false"
         )
 
         assert response.status_code == 200

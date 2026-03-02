@@ -3,7 +3,6 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
 	Clock,
-	Inbox,
 	Library,
 	ListChecks,
 	PanelLeft,
@@ -24,12 +23,10 @@ import {
 	SidebarGroupContent,
 	SidebarHeader,
 	SidebarMenu,
-	SidebarMenuBadge,
 	SidebarMenuButton,
 	SidebarMenuItem,
 	useSidebar
 } from '~/components/ui/sidebar'
-import { useNotes } from '~/features/notes/api/getNotes'
 
 function ReviewSidebarStarIcon(props: React.ComponentProps<typeof Star>) {
 	return (
@@ -45,9 +42,6 @@ export function AppSidebar() {
 	const location = useLocation()
 	const { toggleSidebar } = useSidebar()
 
-	const { data: inboxNotes } = useNotes({ inboxed: true, archived: false })
-	const inboxCount = inboxNotes?.length ?? 0
-
 	const reviewItems = [
 		{
 			title: 'Review',
@@ -58,12 +52,6 @@ export function AppSidebar() {
 	]
 
 	const libraryItems = [
-		{
-			title: 'Inbox',
-			url: '/inbox',
-			icon: Inbox,
-			isActive: (pathname: string) => pathname === '/inbox'
-		},
 		{
 			title: 'Recent',
 			url: '/recent',
@@ -147,7 +135,6 @@ export function AppSidebar() {
 						<SidebarMenu>
 							{libraryItems.map(item => {
 								const isActive = item.isActive(location.pathname)
-								const isInbox = item.title === 'Inbox'
 								return (
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
@@ -158,9 +145,6 @@ export function AppSidebar() {
 											<item.icon />
 											<span>{item.title}</span>
 										</SidebarMenuButton>
-										{isInbox && inboxCount > 0 && (
-											<SidebarMenuBadge>{inboxCount}</SidebarMenuBadge>
-										)}
 									</SidebarMenuItem>
 								)
 							})}

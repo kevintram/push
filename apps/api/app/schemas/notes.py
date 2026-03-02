@@ -56,7 +56,6 @@ class NoteBase(BaseModel):
     body: str = ""
     parent_id: int | None = None
     archived: bool = False
-    inboxed: bool = False
 
 
 class NoteRead(NoteBase):
@@ -101,7 +100,6 @@ class NoteUpdate(BaseModel):
     body: str | None = None
     parent_id: int | None = None
     archived: bool | None = None
-    inboxed: bool | None = None
     srs_enabled: bool | None = None
 
 

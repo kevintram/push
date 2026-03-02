@@ -45,7 +45,6 @@ export const NoteSchema = v.object({
 	last_review_rating: v.nullable(NoteReviewRatingSchema),
 	fsrs_state_id: v.nullable(v.number()),
 	archived: v.boolean(),
-	inboxed: v.boolean(),
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	stability: v.nullable(v.number()),

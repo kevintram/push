@@ -76,9 +76,6 @@ class Note(Base):
     archived: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
-    inboxed: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, server_default=text("false")
-    )
 
     parent: Mapped["Note | None"] = relationship(
         "Note",

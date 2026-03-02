@@ -27,7 +27,6 @@ router = APIRouter(prefix="/notes", tags=["notes"])
 async def read_notes(
     session: SessionDep,
     user_id: UserIdDep,
-    inboxed: bool | None = None,
     archived: bool | None = None,
     root: bool | None = None,
     parent_id: int | None = None,
@@ -39,7 +38,6 @@ async def read_notes(
     return await service.list_notes(
         session,
         user_id,
-        inboxed=inboxed,
         archived=archived,
         root=root,
         parent_id=parent_id,
