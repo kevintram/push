@@ -13,9 +13,6 @@ export async function getNotes(
 	if (params.root !== undefined) {
 		searchParams.append('root', String(params.root))
 	}
-	if (params.inboxed !== undefined) {
-		searchParams.append('inboxed', String(params.inboxed))
-	}
 	if (params.archived !== undefined) {
 		searchParams.append('archived', String(params.archived))
 	}

@@ -13,7 +13,6 @@ export interface CreateNoteInput {
 	reading_notes?: string
 	in_reading_list?: boolean
 	archived?: boolean
-	inboxed?: boolean
 	tags?: Array<NoteTag>
 	srs_enabled?: boolean
 }

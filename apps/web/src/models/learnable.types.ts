@@ -41,7 +41,6 @@ export type LearnableBase = {
 	updated_at: string
 	parent_id?: number | null
 	archived: boolean
-	inboxed: boolean
 	// FSRS fields
 	stability: number | null
 	difficulty: number | null

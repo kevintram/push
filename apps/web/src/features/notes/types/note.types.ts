@@ -36,7 +36,6 @@ export interface Note {
 	reading_notes: string
 	in_reading_list: boolean
 	archived: boolean
-	inboxed: boolean
 	inserted_at: string
 	updated_at: string
 	stability: number | null
@@ -54,7 +53,6 @@ export interface Note {
 }
 
 export interface GetNotesParams {
-	inboxed?: boolean
 	archived?: boolean
 	root?: boolean
 	parent_id?: number
@@ -75,7 +73,6 @@ export interface UpdateNoteInput {
 	reading_notes?: string
 	in_reading_list?: boolean
 	archived?: boolean
-	inboxed?: boolean
 	srs_enabled?: boolean
 }
 

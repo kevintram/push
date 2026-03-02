@@ -54,7 +54,6 @@ export const NoteSchema = v.object({
 	reading_notes: v.string(),
 	in_reading_list: v.boolean(),
 	archived: v.boolean(),
-	inboxed: v.boolean(),
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	stability: v.nullable(v.number()),

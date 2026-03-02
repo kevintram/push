@@ -9,7 +9,6 @@ export type SearchResultItem = {
 export type SearchAllParams = {
 	query?: string
 	entityTypes?: string
-	inboxed?: boolean
 	archived?: boolean
 	limit?: number
 }
