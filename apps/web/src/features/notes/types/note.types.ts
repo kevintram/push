@@ -22,8 +22,6 @@ export interface NoteStatusBadge {
 	review_id: number | null
 }
 
-export type ReadingStatus = 'NEW' | 'IN_PROGRESS' | 'ON_HOLD' | 'FINISHED'
-
 export interface Note {
 	id: number
 	title: string
@@ -32,9 +30,6 @@ export interface Note {
 	parent_title: string | null
 	last_review_rating: NoteReviewRating | null
 	fsrs_state_id: number | null
-	reading_status: ReadingStatus
-	reading_notes: string
-	in_reading_list: boolean
 	archived: boolean
 	inboxed: boolean
 	inserted_at: string
@@ -58,8 +53,6 @@ export interface GetNotesParams {
 	archived?: boolean
 	root?: boolean
 	parent_id?: number
-	in_reading_list?: boolean
-	reading_status?: ReadingStatus
 	tag?: NoteTag
 	srs_enabled?: boolean
 	limit?: number
@@ -71,9 +64,6 @@ export interface UpdateNoteInput {
 	title?: string
 	body?: string
 	parent_id?: number | null
-	reading_status?: ReadingStatus
-	reading_notes?: string
-	in_reading_list?: boolean
 	archived?: boolean
 	inboxed?: boolean
 	srs_enabled?: boolean
