@@ -6,7 +6,6 @@ from app.models.notes import (
     NoteRelationType,
     NoteTag,
     NoteTagType,
-    ReadingStatus,
 )
 from app.models.reviews import Review
 
@@ -18,6 +17,5 @@ __all__ = [
     "NoteRelationType",
     "NoteTag",
     "NoteTagType",
-    "ReadingStatus",
     "Review",
 ]

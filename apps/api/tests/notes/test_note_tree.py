@@ -1,4 +1,4 @@
-"""Integration tests for note tree and reading endpoints."""
+"""Integration tests for note tree endpoints."""
 
 from httpx import AsyncClient
 
@@ -77,38 +77,3 @@ class TestNoteTree:
         assert parent_read.status_code == 404
         assert child_read.status_code == 200
         assert child_read.json()["parent_id"] is None
-
-
-class TestNoteReading:
-    async def test_reading_list_and_reading_update_endpoints(
-        self,
-        test_client: AsyncClient,
-    ):
-        create_response = await test_client.post(
-            "/notes/",
-            json={"title": "Reading note", "body": "", "tags": ["SOURCE"]},
-        )
-        assert create_response.status_code == 201
-        note = create_response.json()
-
-        list_update = await test_client.post(
-            f"/notes/{note['id']}/reading-list/",
-            json={"in_reading_list": True},
-        )
-        assert list_update.status_code == 200
-        assert list_update.json()["in_reading_list"] is True
-
-        reading_update = await test_client.post(
-            f"/notes/{note['id']}/reading/",
-            json={"reading_status": "ON_HOLD", "reading_notes": "Revisit later"},
-        )
-        assert reading_update.status_code == 200
-        assert reading_update.json()["reading_status"] == "ON_HOLD"
-        assert reading_update.json()["reading_notes"] == "Revisit later"
-
-        filtered = await test_client.get(
-            "/notes/?in_reading_list=true&reading_status=ON_HOLD"
-        )
-        assert filtered.status_code == 200
-        ids = {item["id"] for item in filtered.json()}
-        assert note["id"] in ids

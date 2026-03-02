@@ -8,8 +8,6 @@ from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
 from app.schemas.notes import (
     NoteCreate,
-    NoteReadingListUpdate,
-    NoteReadingUpdate,
     NoteRead,
     NoteRelationCreate,
     NoteRelationListItem,
@@ -18,7 +16,6 @@ from app.schemas.notes import (
     NoteTagCreate,
     NoteTagEnum,
     NoteUpdate,
-    ReadingStatusEnum,
     RelationDirectionEnum,
 )
 from app.notes import service
@@ -34,8 +31,6 @@ async def read_notes(
     archived: bool | None = None,
     root: bool | None = None,
     parent_id: int | None = None,
-    in_reading_list: bool | None = None,
-    reading_status: ReadingStatusEnum | None = None,
     tag: NoteTagEnum | None = None,
     srs_enabled: bool | None = None,
     limit: int | None = None,
@@ -48,8 +43,6 @@ async def read_notes(
         archived=archived,
         root=root,
         parent_id=parent_id,
-        in_reading_list=in_reading_list,
-        reading_status=reading_status.value if reading_status else None,
         tag=tag.value if tag else None,
         srs_enabled=srs_enabled,
         limit=limit,
@@ -188,29 +181,3 @@ async def remove_note_relation(
         relation_type=relation_type.value,
         direction=direction.value,
     )
-
-
-@router.post("/{note_id}/reading-list/")
-async def update_note_reading_list(
-    note_id: int,
-    payload: NoteReadingListUpdate,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> NoteRead:
-    return await service.update_note(
-        session,
-        note_id,
-        user_id,
-        updates={"in_reading_list": payload.in_reading_list},
-    )
-
-
-@router.post("/{note_id}/reading/")
-async def update_note_reading(
-    note_id: int,
-    payload: NoteReadingUpdate,
-    session: SessionDep,
-    user_id: UserIdDep,
-) -> NoteRead:
-    updates = payload.model_dump(exclude_unset=True)
-    return await service.update_note(session, note_id, user_id, updates=updates)

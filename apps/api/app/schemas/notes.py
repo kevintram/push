@@ -3,20 +3,13 @@ from __future__ import annotations
 from datetime import date, datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict
 
 
 class NoteTagEnum(str, Enum):
     TOPIC = "TOPIC"
     SOURCE = "SOURCE"
     PRACTICE = "PRACTICE"
-
-
-class ReadingStatusEnum(str, Enum):
-    NEW = "NEW"
-    IN_PROGRESS = "IN_PROGRESS"
-    ON_HOLD = "ON_HOLD"
-    FINISHED = "FINISHED"
 
 
 class NoteRelationTypeEnum(str, Enum):
@@ -62,9 +55,6 @@ class NoteBase(BaseModel):
     title: str = ""
     body: str = ""
     parent_id: int | None = None
-    reading_status: ReadingStatusEnum = ReadingStatusEnum.NEW
-    reading_notes: str = ""
-    in_reading_list: bool = False
     archived: bool = False
     inboxed: bool = False
 
@@ -110,9 +100,6 @@ class NoteUpdate(BaseModel):
     title: str | None = None
     body: str | None = None
     parent_id: int | None = None
-    reading_status: ReadingStatusEnum | None = None
-    reading_notes: str | None = None
-    in_reading_list: bool | None = None
     archived: bool | None = None
     inboxed: bool | None = None
     srs_enabled: bool | None = None
@@ -140,18 +127,3 @@ class NoteRelationRead(BaseModel):
 
 class NoteRelationListItem(NoteRelationRead):
     direction: RelationDirectionEnum
-
-
-class NoteReadingListUpdate(BaseModel):
-    in_reading_list: bool
-
-
-class NoteReadingUpdate(BaseModel):
-    reading_status: ReadingStatusEnum | None = None
-    reading_notes: str | None = None
-
-    @model_validator(mode="after")
-    def validate_payload(self) -> "NoteReadingUpdate":
-        if self.reading_status is None and self.reading_notes is None:
-            raise ValueError("Provide at least one of reading_status or reading_notes")
-        return self

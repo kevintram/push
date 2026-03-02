@@ -4,14 +4,12 @@ import {
 	AlertTriangle,
 	Anvil,
 	Archive,
-	BookOpen,
 	Brain,
 	Check,
 	ChevronDown,
 	Copy,
 	Inbox,
 	Loader2,
-	MoreHorizontal,
 	Plus,
 	Sparkles,
 	Star,
@@ -46,9 +44,6 @@ import {
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
 	DropdownMenuGroup,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
@@ -79,12 +74,7 @@ import {
 	NoteCard,
 	toNoteCardStatusBadge
 } from '~/features/notes/components/NoteCard'
-import { NoteReadingStatusPopover } from '~/features/notes/components/NoteReadingStatusPopover'
 import { NOTE_TAG_OPTIONS } from '~/features/notes/constants/noteTagOptions'
-import {
-	getReadingStatusOption,
-	READING_STATUS_OPTIONS
-} from '~/features/notes/constants/readingStatusOptions'
 import type {
 	Note,
 	NoteRelationType,
@@ -394,7 +384,6 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 
 	const [title, setTitle] = useState('')
 	const [body, setBody] = useState('')
-	const [isReadingStatusOpen, setIsReadingStatusOpen] = useState(false)
 	const [isAddNoteDialogOpen, setIsAddNoteDialogOpen] = useState(false)
 	const [addNoteDefaults, setAddNoteDefaults] =
 		useState<AddNoteDialogDefaults>()
@@ -432,11 +421,6 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 			window.clearTimeout(timeoutId)
 		}
 	}, [isRevealPanelCopied])
-
-	useEffect(() => {
-		if (Number.isNaN(numericNoteId)) return
-		setIsReadingStatusOpen(false)
-	}, [numericNoteId])
 
 	const { data: childNotes = [], isLoading: isChildrenLoading } = useNotes(
 		{
@@ -1432,8 +1416,6 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 		)
 	}
 
-	const currentStatusOption = getReadingStatusOption(note.reading_status)
-	const CurrentStatusIcon = currentStatusOption.icon
 	const revealPanelTextareaClassName =
 		'min-h-24 resize-none border-border/70 bg-background/80'
 	const revealPanelCopyButtonClassName =
@@ -1487,14 +1469,6 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 				}
 			}
 		)
-	}
-	const addToReadingList = () => {
-		setIsReadingStatusOpen(true)
-		updateNote({
-			id: note.id,
-			in_reading_list: true,
-			reading_status: 'NEW'
-		})
 	}
 	const updateTagMenuSide = (trigger?: HTMLButtonElement | null) => {
 		const element = trigger ?? tagMenuTriggerRef.current
@@ -2208,67 +2182,6 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 									</Tooltip>
 								</div>
 								<div className='flex items-center gap-2'>
-									{note.in_reading_list ? (
-										<Tooltip>
-											<TooltipTrigger render={<span className='inline-flex' />}>
-												<NoteReadingStatusPopover
-													align='end'
-													disabled={isUpdatingNote}
-													onOpenChange={setIsReadingStatusOpen}
-													onProgressNoteChange={event =>
-														updateNote({
-															id: note.id,
-															reading_notes: event.target.value
-														})
-													}
-													onRemoveFromReadingList={() => {
-														setIsReadingStatusOpen(false)
-														updateNote({ id: note.id, in_reading_list: false })
-													}}
-													onStatusChange={nextStatus =>
-														updateNote({
-															id: note.id,
-															reading_status: nextStatus
-														})
-													}
-													open={isReadingStatusOpen}
-													progressNote={note.reading_notes}
-													sideOffset={6}
-													status={note.reading_status}
-													trigger={
-														<Button
-															aria-label={`Status: ${currentStatusOption.label}`}
-															className='rounded-full'
-															disabled={isUpdatingNote}
-															size='icon-sm'
-															variant='outline'
-														>
-															<CurrentStatusIcon
-																className={`h-3.5 w-3.5 ${currentStatusOption.colorClassName}`}
-															/>
-														</Button>
-													}
-												/>
-											</TooltipTrigger>
-											<TooltipContent>Change reading status</TooltipContent>
-										</Tooltip>
-									) : (
-										<Tooltip>
-											<TooltipTrigger render={<span className='inline-flex' />}>
-												<Button
-													aria-label='Add to reading list'
-													className='rounded-full'
-													disabled={isUpdatingNote}
-													onClick={addToReadingList}
-													size='icon-sm'
-													variant='outline'
-												>
-													<BookOpen className='h-4 w-4 text-muted-foreground' />
-												</Button>
-											</TooltipTrigger>
-											<TooltipContent>Add to reading list</TooltipContent>
-										</Tooltip>
-									)}
 									<Tooltip>
 										<TooltipTrigger render={<span className='inline-flex' />}>
 											<Toggle
@@ -2307,61 +2220,6 @@ export function NoteDetailPage({ noteId }: { noteId: string }) {
 										</TooltipTrigger>
 										<TooltipContent>Archive</TooltipContent>
 									</Tooltip>
-									<DropdownMenu>
-										<DropdownMenuTrigger
-											render={
-												<Button
-													className='rounded-full'
-													size='icon-sm'
-													variant='outline'
-												>
-													<MoreHorizontal className='h-4 w-4' />
-												</Button>
-											}
-										/>
-										<DropdownMenuContent
-											align='end'
-											side='bottom'
-											sideOffset={4}
-										>
-											{note.in_reading_list ? (
-												<>
-													<DropdownMenuLabel>Reading status</DropdownMenuLabel>
-													{READING_STATUS_OPTIONS.map(option => (
-														<DropdownMenuItem
-															key={option.value}
-															onClick={() =>
-																updateNote({
-																	id: note.id,
-																	reading_status: option.value
-																})
-															}
-														>
-															{option.label}
-														</DropdownMenuItem>
-													))}
-													<DropdownMenuSeparator />
-												</>
-											) : null}
-											<DropdownMenuItem
-												onClick={() => {
-													if (note.in_reading_list) {
-														setIsReadingStatusOpen(false)
-														updateNote({
-															id: note.id,
-															in_reading_list: false
-														})
-														return
-													}
-													addToReadingList()
-												}}
-											>
-												{note.in_reading_list
-													? 'Remove from Read list'
-													: 'Add to Read list'}
-											</DropdownMenuItem>
-										</DropdownMenuContent>
-									</DropdownMenu>
 								</div>
 							</div>
 

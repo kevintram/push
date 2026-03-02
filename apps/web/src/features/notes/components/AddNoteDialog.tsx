@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { Anvil, BookOpen, Inbox, Plus, Star } from 'lucide-react'
+import { Anvil, Inbox, Plus, Star } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '~/components/ui/badge'
@@ -36,12 +36,7 @@ import {
 	NOTE_TAG_OPTIONS,
 	normalizeNoteTags
 } from '../constants/noteTagOptions'
-import {
-	getReadingStatusOption,
-	type ReadingStatusOption
-} from '../constants/readingStatusOptions'
 import type { Note, NoteTag } from '../types/note.types'
-import { NoteReadingStatusPopover } from './NoteReadingStatusPopover'
 
 export interface AddNoteDialogDefaults {
 	title?: string
@@ -50,9 +45,6 @@ export interface AddNoteDialogDefaults {
 	parent_id?: number | null
 	inboxed?: boolean
 	archived?: boolean
-	in_reading_list?: boolean
-	reading_status?: Note['reading_status']
-	reading_notes?: string
 	srs_enabled?: boolean
 }
 
@@ -84,11 +76,6 @@ export function AddNoteDialog({
 	const [body, setBody] = useState('')
 	const [tags, setTags] = useState<Array<NoteTag>>([])
 	const [inboxed, setInboxed] = useState(false)
-	const [inReadingList, setInReadingList] = useState(false)
-	const [readingStatus, setReadingStatus] =
-		useState<Note['reading_status']>('NEW')
-	const [readingNotes, setReadingNotes] = useState('')
-	const [isReadingStatusOpen, setIsReadingStatusOpen] = useState(false)
 	const [tagMenuSide, setTagMenuSide] = useState<'left' | 'bottom'>('left')
 	const [inheritSrs, setInheritSrs] = useState(false)
 	const [srsEnabled, setSrsEnabled] = useState(true)
@@ -118,10 +105,6 @@ export function AddNoteDialog({
 			setBody(defaults?.body ?? '')
 			setTags(normalizeNoteTags(defaults?.tags ?? []))
 			setInboxed(defaults?.inboxed ?? false)
-			setInReadingList(defaults?.in_reading_list ?? false)
-			setReadingStatus(defaults?.reading_status ?? 'NEW')
-			setReadingNotes(defaults?.reading_notes ?? '')
-			setIsReadingStatusOpen(false)
 			setInheritSrs(hasInheritSrs)
 			setSrsEnabled(defaults?.srs_enabled ?? true)
 			setCreateMore(false)
@@ -145,18 +128,6 @@ export function AddNoteDialog({
 			}
 			return normalizeNoteTags([...previous, tag])
 		})
-	}, [])
-
-	const currentStatusOption: ReadingStatusOption = useMemo(
-		() => getReadingStatusOption(readingStatus),
-		[readingStatus]
-	)
-	const CurrentStatusIcon = currentStatusOption.icon
-
-	const addToReadingList = useCallback(() => {
-		setInReadingList(true)
-		setReadingStatus('NEW')
-		setIsReadingStatusOpen(true)
 	}, [])
 	const updateTagMenuSide = useCallback(
 		(trigger?: HTMLButtonElement | null) => {
@@ -188,9 +159,6 @@ export function AddNoteDialog({
 				parent_id: defaults?.parent_id,
 				inboxed,
 				archived: defaults?.archived ?? false,
-				in_reading_list: inReadingList,
-				reading_status: inReadingList ? readingStatus : undefined,
-				reading_notes: inReadingList ? readingNotes.trim() : undefined,
 				tags,
 				srs_enabled: resolvedSrsEnabled
 			})
@@ -245,14 +213,11 @@ export function AddNoteDialog({
 		defaults?.archived,
 		defaults?.parent_id,
 		inboxed,
-		inReadingList,
 		inheritSrs,
 		inheritSrsEnabled,
 		navigate,
 		onOpenChange,
 		onSuccess,
-		readingNotes,
-		readingStatus,
 		resetReviewFields,
 		reviewDate,
 		reviewDescription,
@@ -381,61 +346,6 @@ export function AddNoteDialog({
 							</TooltipTrigger>
 							<TooltipContent>Add to inbox</TooltipContent>
 						</Tooltip>
-
-						{inReadingList ? (
-							<Tooltip>
-								<TooltipTrigger render={<span className='inline-flex' />}>
-									<NoteReadingStatusPopover
-										align='start'
-										disabled={isPending}
-										onOpenChange={setIsReadingStatusOpen}
-										onProgressNoteChange={event =>
-											setReadingNotes(event.target.value)
-										}
-										onRemoveFromReadingList={() => {
-											setIsReadingStatusOpen(false)
-											setInReadingList(false)
-										}}
-										onStatusChange={setReadingStatus}
-										open={isReadingStatusOpen}
-										progressNote={readingNotes}
-										side='bottom'
-										sideOffset={6}
-										status={readingStatus}
-										trigger={
-											<Button
-												aria-label={`Status: ${currentStatusOption.label}`}
-												className='rounded-full'
-												disabled={isPending}
-												size='icon-sm'
-												variant='outline'
-											>
-												<CurrentStatusIcon
-													className={`h-3.5 w-3.5 ${currentStatusOption.colorClassName}`}
-												/>
-											</Button>
-										}
-									/>
-								</TooltipTrigger>
-								<TooltipContent>Change reading status</TooltipContent>
-							</Tooltip>
-						) : (
-							<Tooltip>
-								<TooltipTrigger render={<span className='inline-flex' />}>
-									<Button
-										aria-label='Add to reading list'
-										className='rounded-full'
-										disabled={isPending}
-										onClick={addToReadingList}
-										size='icon-sm'
-										variant='outline'
-									>
-										<BookOpen className='h-4 w-4 text-muted-foreground' />
-									</Button>
-								</TooltipTrigger>
-								<TooltipContent>Add to reading list</TooltipContent>
-							</Tooltip>
-						)}
 
 						{hasInheritSrs && (
 							<Tooltip>

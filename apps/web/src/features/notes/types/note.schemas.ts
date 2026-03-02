@@ -15,12 +15,6 @@ export const NoteReviewRatingSchema = v.picklist([
 	'easy'
 ])
 
-export const ReadingStatusSchema = v.picklist([
-	'NEW',
-	'IN_PROGRESS',
-	'ON_HOLD',
-	'FINISHED'
-])
 export const NoteStatusBadgeKeySchema = v.picklist([
 	'due',
 	'hazy_soon',
@@ -50,9 +44,6 @@ export const NoteSchema = v.object({
 	parent_title: v.nullable(v.string()),
 	last_review_rating: v.nullable(NoteReviewRatingSchema),
 	fsrs_state_id: v.nullable(v.number()),
-	reading_status: ReadingStatusSchema,
-	reading_notes: v.string(),
-	in_reading_list: v.boolean(),
 	archived: v.boolean(),
 	inboxed: v.boolean(),
 	inserted_at: v.string(),
