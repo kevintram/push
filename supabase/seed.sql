@@ -202,9 +202,6 @@ INSERT INTO notes (
   body,
   parent_id,
   fsrs_state_id,
-  reading_status,
-  reading_notes,
-  in_reading_list,
   archived,
   inserted_at,
   updated_at
@@ -212,25 +209,25 @@ INSERT INTO notes (
 OVERRIDING SYSTEM VALUE
 VALUES
   -- Effective TypeScript (root source - a book)
-  (54, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Effective TypeScript', '62 Specific Ways to Improve Your TypeScript by Dan Vanderkam', NULL, 100, 'NEW', '', true, false, NOW() - INTERVAL '30 days', NOW()),
+  (54, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Effective TypeScript', '62 Specific Ways to Improve Your TypeScript by Dan Vanderkam', NULL, 100, false, NOW() - INTERVAL '30 days', NOW()),
 
   -- Chapter 1 (child of Effective TypeScript)
-  (55, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chapter 1: Getting to Know TypeScript', 'Introduction to TypeScript and its relationship with JavaScript', 54, 101, 'NEW', '', true, false, NOW() - INTERVAL '28 days', NOW()),
+  (55, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chapter 1: Getting to Know TypeScript', 'Introduction to TypeScript and its relationship with JavaScript', 54, 101, false, NOW() - INTERVAL '28 days', NOW()),
 
   -- Chapter 2 (child of Effective TypeScript)
-  (56, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chapter 2: TypeScript''s Type System', 'Deep dive into the type system', 54, 102, 'NEW', '', true, false, NOW() - INTERVAL '20 days', NOW()),
+  (56, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Chapter 2: TypeScript''s Type System', 'Deep dive into the type system', 54, 102, false, NOW() - INTERVAL '20 days', NOW()),
 
   -- React Documentation (root source)
-  (57, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React Documentation', 'Official React documentation - react.dev', NULL, 103, 'NEW', '', true, false, NOW() - INTERVAL '25 days', NOW()),
+  (57, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'React Documentation', 'Official React documentation - react.dev', NULL, 103, false, NOW() - INTERVAL '25 days', NOW()),
 
   -- Python Crash Course (root source - a book)
-  (58, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Python Crash Course', 'A Hands-On, Project-Based Introduction to Programming', NULL, 104, 'NEW', '', true, false, NOW() - INTERVAL '60 days', NOW()),
+  (58, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Python Crash Course', 'A Hands-On, Project-Based Introduction to Programming', NULL, 104, false, NOW() - INTERVAL '60 days', NOW()),
 
   -- Spanish Learning Podcast (new source)
-  (59, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish Learning Podcast', 'Need to evaluate and organize', NULL, 105, 'NEW', '', true, false, NOW() - INTERVAL '2 days', NOW()),
+  (59, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Spanish Learning Podcast', 'Need to evaluate and organize', NULL, 105, false, NOW() - INTERVAL '2 days', NOW()),
 
   -- Algorithm Design Manual (archived)
-  (60, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Algorithm Design Manual', 'Steven Skiena - decided to use different resource', NULL, 106, 'NEW', '', true, true, NOW() - INTERVAL '90 days', NOW());
+  (60, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Algorithm Design Manual', 'Steven Skiena - decided to use different resource', NULL, 106, true, NOW() - INTERVAL '90 days', NOW());
 
 INSERT INTO note_tags (note_id, tag)
 SELECT id, 'SOURCE'
@@ -409,30 +406,27 @@ INSERT INTO notes (
   body,
   parent_id,
   fsrs_state_id,
-  reading_status,
-  reading_notes,
-  in_reading_list,
   archived,
   inserted_at,
   updated_at
 )
 OVERRIDING SYSTEM VALUE
 VALUES
-  (61, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Clean Code', 'A Handbook of Agile Software Craftsmanship by Robert C. Martin', NULL, 107, 'NEW', '', true, false, NOW() - INTERVAL '75 days', NOW() - INTERVAL '5 days'),
-  (62, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Designing Data-Intensive Applications', 'Martin Kleppmann - distributed systems and data storage', NULL, 108, 'NEW', '', true, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '3 days'),
-  (63, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Pragmatic Programmer', 'David Thomas and Andrew Hunt - software craftsmanship', NULL, 109, 'NEW', '', true, false, NOW() - INTERVAL '85 days', NOW() - INTERVAL '9 days'),
-  (64, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Structure and Interpretation of Computer Programs', 'Abelson and Sussman - CS fundamentals', NULL, 110, 'NEW', '', true, false, NOW() - INTERVAL '60 days', NOW() - INTERVAL '7 days'),
-  (65, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Introduction to Algorithms (CLRS)', 'Cormen et al. - comprehensive algorithms reference', NULL, 111, 'NEW', '', true, false, NOW() - INTERVAL '70 days', NOW() - INTERVAL '6 days'),
-  (66, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Operating Systems: Three Easy Pieces', 'Remzi Arpaci-Dusseau - virtualization, concurrency, persistence', NULL, 112, 'NEW', '', true, false, NOW() - INTERVAL '45 days', NOW() - INTERVAL '4 days'),
-  (67, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Computer Networking: A Top-Down Approach', 'Kurose and Ross - networking fundamentals', NULL, 113, 'NEW', '', true, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '2 days'),
-  (68, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Deep Learning', 'Goodfellow, Bengio, Courville - neural networks and deep learning', NULL, 114, 'NEW', '', true, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
-  (69, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Rust Programming Language', 'Official Rust book - ownership and systems programming', NULL, 115, 'NEW', '', true, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '2 days'),
-  (70, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Go by Example', 'Hands-on introduction to Go with annotated examples', NULL, 116, 'NEW', '', true, false, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 day'),
-  (71, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Head First Design Patterns', 'Freeman and Robson - design patterns with visual explanations', NULL, 117, 'NEW', '', true, false, NOW() - INTERVAL '65 days', NOW() - INTERVAL '8 days'),
-  (72, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Art of Public Speaking', 'Stephen Lucas - presentation and communication skills', NULL, 118, 'NEW', '', true, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '3 days'),
-  (73, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Music Theory for Beginners', 'Leonard Vogler - fundamentals of music theory', NULL, 119, 'NEW', '', true, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '5 days'),
-  (74, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'MDN Web Docs', 'Mozilla Developer Network - web platform reference', NULL, 120, 'NEW', '', true, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '7 days'),
-  (75, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Kubernetes Documentation', 'Official Kubernetes docs - container orchestration', NULL, 121, 'NEW', '', true, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '2 days');
+  (61, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Clean Code', 'A Handbook of Agile Software Craftsmanship by Robert C. Martin', NULL, 107, false, NOW() - INTERVAL '75 days', NOW() - INTERVAL '5 days'),
+  (62, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Designing Data-Intensive Applications', 'Martin Kleppmann - distributed systems and data storage', NULL, 108, false, NOW() - INTERVAL '40 days', NOW() - INTERVAL '3 days'),
+  (63, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Pragmatic Programmer', 'David Thomas and Andrew Hunt - software craftsmanship', NULL, 109, false, NOW() - INTERVAL '85 days', NOW() - INTERVAL '9 days'),
+  (64, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Structure and Interpretation of Computer Programs', 'Abelson and Sussman - CS fundamentals', NULL, 110, false, NOW() - INTERVAL '60 days', NOW() - INTERVAL '7 days'),
+  (65, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Introduction to Algorithms (CLRS)', 'Cormen et al. - comprehensive algorithms reference', NULL, 111, false, NOW() - INTERVAL '70 days', NOW() - INTERVAL '6 days'),
+  (66, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Operating Systems: Three Easy Pieces', 'Remzi Arpaci-Dusseau - virtualization, concurrency, persistence', NULL, 112, false, NOW() - INTERVAL '45 days', NOW() - INTERVAL '4 days'),
+  (67, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Computer Networking: A Top-Down Approach', 'Kurose and Ross - networking fundamentals', NULL, 113, false, NOW() - INTERVAL '50 days', NOW() - INTERVAL '2 days'),
+  (68, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Deep Learning', 'Goodfellow, Bengio, Courville - neural networks and deep learning', NULL, 114, false, NOW() - INTERVAL '20 days', NOW() - INTERVAL '1 day'),
+  (69, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Rust Programming Language', 'Official Rust book - ownership and systems programming', NULL, 115, false, NOW() - INTERVAL '12 days', NOW() - INTERVAL '2 days'),
+  (70, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Go by Example', 'Hands-on introduction to Go with annotated examples', NULL, 116, false, NOW() - INTERVAL '10 days', NOW() - INTERVAL '1 day'),
+  (71, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Head First Design Patterns', 'Freeman and Robson - design patterns with visual explanations', NULL, 117, false, NOW() - INTERVAL '65 days', NOW() - INTERVAL '8 days'),
+  (72, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'The Art of Public Speaking', 'Stephen Lucas - presentation and communication skills', NULL, 118, false, NOW() - INTERVAL '25 days', NOW() - INTERVAL '3 days'),
+  (73, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Music Theory for Beginners', 'Leonard Vogler - fundamentals of music theory', NULL, 119, false, NOW() - INTERVAL '18 days', NOW() - INTERVAL '5 days'),
+  (74, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'MDN Web Docs', 'Mozilla Developer Network - web platform reference', NULL, 120, false, NOW() - INTERVAL '55 days', NOW() - INTERVAL '7 days'),
+  (75, 'user_01KGG4R8HZAV513662YE3DJ0A9', 'Kubernetes Documentation', 'Official Kubernetes docs - container orchestration', NULL, 121, false, NOW() - INTERVAL '15 days', NOW() - INTERVAL '2 days');
 
 INSERT INTO note_tags (note_id, tag)
 SELECT id, 'SOURCE'

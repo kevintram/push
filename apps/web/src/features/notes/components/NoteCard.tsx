@@ -4,7 +4,6 @@ import {
 	Archive,
 	ArchiveRestore,
 	Baby,
-	BookOpen,
 	Brain,
 	ChevronDown,
 	Loader2,
@@ -33,7 +32,6 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
-import { useAutoSave } from '~/hooks/useAutoSave'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
@@ -57,8 +55,6 @@ import { useDeleteNote } from '../api/deleteNote'
 import { getNote } from '../api/getNote'
 import { noteKeys } from '../api/queryKeys'
 import { useUpdateNote } from '../api/updateNote'
-import { NoteReadingStatusPopover } from '../components/NoteReadingStatusPopover'
-import { getReadingStatusOption } from '../constants/readingStatusOptions'
 import type { Note, NoteStatusBadge, NoteTag } from '../types/note.types'
 import { orderNoteStatusBadges } from '../utils/orderNoteStatusBadges'
 
@@ -187,20 +183,6 @@ export function NoteCard({
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
 	)
-	const [isReadingStatusOpen, setIsReadingStatusOpen] = useState(false)
-
-	const updateReadingNotes = useCallback(
-		(newReadingNote: string) => {
-			updateNote({ id: note.id, reading_notes: newReadingNote })
-		},
-		[note.id, updateNote]
-	)
-	const { value: readingNotesValue, onChange: onReadingNotesChange } =
-		useAutoSave({
-			initialValue: note.reading_notes ?? '',
-			onSave: updateReadingNotes,
-			key: `note-card-reading-notes-${note.id}`
-		})
 
 	const lastReviewed = useMemo(
 		() =>
@@ -343,32 +325,6 @@ export function NoteCard({
 		[createReview, isCreatingReview]
 	)
 
-	const currentStatusOption = useMemo(
-		() => getReadingStatusOption(note.reading_status),
-		[note.reading_status]
-	)
-	const CurrentStatusIcon = currentStatusOption.icon
-
-	const handleStatusSelect = useCallback(
-		(nextStatus: Note['reading_status']) => {
-			if (nextStatus === note.reading_status || isUpdatingNote) return
-			updateNote({ id: note.id, reading_status: nextStatus })
-		},
-		[note.id, note.reading_status, isUpdatingNote, updateNote]
-	)
-	const handleAddToReadingList = useCallback(
-		(event: MouseEvent) => {
-			event.stopPropagation()
-			setIsReadingStatusOpen(true)
-			updateNote({
-				id: note.id,
-				in_reading_list: true,
-				reading_status: 'NEW'
-			})
-		},
-		[note.id, updateNote]
-	)
-
 	const hasStatusBadges = resolvedStatusBadges.length > 0
 	const statusRowClassName =
 		'pointer-events-none absolute top-[0.5px] right-3 z-10 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-1.5 -translate-y-1/2'
@@ -501,58 +457,6 @@ export function NoteCard({
 							<Star className='h-4 w-4 text-muted-foreground' />
 						)}
 					</Button>
-					{note.in_reading_list ? (
-						<Tooltip>
-							<TooltipTrigger render={<span className='inline-flex' />}>
-								<NoteReadingStatusPopover
-									align='end'
-									disabled={isUpdatingNote}
-									onOpenChange={setIsReadingStatusOpen}
-									onProgressNoteChange={onReadingNotesChange}
-									onRemoveFromReadingList={() => {
-										setIsReadingStatusOpen(false)
-										updateNote({ id: note.id, in_reading_list: false })
-									}}
-									onStatusChange={handleStatusSelect}
-									open={isReadingStatusOpen}
-									progressNote={readingNotesValue}
-									sideOffset={6}
-									status={note.reading_status}
-									trigger={
-										<Button
-											aria-label={`Status: ${currentStatusOption.label}`}
-											disabled={isUpdatingNote}
-											onClick={event => event.stopPropagation()}
-											onKeyDown={event => event.stopPropagation()}
-											size='icon-sm'
-											variant='ghost'
-										>
-											<CurrentStatusIcon
-												className={`h-3.5 w-3.5 ${currentStatusOption.colorClassName}`}
-											/>
-										</Button>
-									}
-								/>
-							</TooltipTrigger>
-							<TooltipContent>Change reading status</TooltipContent>
-						</Tooltip>
-					) : (
-						<Tooltip>
-							<TooltipTrigger render={<span className='inline-flex' />}>
-								<Button
-									aria-label='Add to reading list'
-									disabled={isUpdatingNote}
-									onClick={handleAddToReadingList}
-									onKeyDown={event => event.stopPropagation()}
-									size='icon-sm'
-									variant='ghost'
-								>
-									<BookOpen className='h-4 w-4 text-muted-foreground' />
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>Add to reading list</TooltipContent>
-						</Tooltip>
-					)}
 					<DropdownMenu>
 						<DropdownMenuTrigger
 							render={

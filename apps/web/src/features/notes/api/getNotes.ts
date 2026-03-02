@@ -19,12 +19,6 @@ export async function getNotes(
 	if (params.parent_id !== undefined) {
 		searchParams.append('parent_id', String(params.parent_id))
 	}
-	if (params.in_reading_list !== undefined) {
-		searchParams.append('in_reading_list', String(params.in_reading_list))
-	}
-	if (params.reading_status !== undefined) {
-		searchParams.append('reading_status', params.reading_status)
-	}
 	if (params.tag !== undefined) {
 		searchParams.append('tag', params.tag)
 	}

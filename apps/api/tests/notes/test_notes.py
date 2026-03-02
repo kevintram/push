@@ -11,8 +11,6 @@ class TestNotesEndpoints:
                 "title": "Unified note",
                 "body": "Body",
                 "tags": ["TOPIC", "SOURCE"],
-                "reading_status": "IN_PROGRESS",
-                "in_reading_list": True,
             },
         )
 
@@ -20,8 +18,6 @@ class TestNotesEndpoints:
         created = response.json()
         assert created["title"] == "Unified note"
         assert sorted(created["tags"]) == ["SOURCE", "TOPIC"]
-        assert created["reading_status"] == "IN_PROGRESS"
-        assert created["in_reading_list"] is True
         assert created["status_badges"] == []
 
         read_response = await test_client.get(f"/notes/{created['id']}/")
@@ -30,42 +26,6 @@ class TestNotesEndpoints:
         assert fetched["id"] == created["id"]
         assert sorted(fetched["tags"]) == ["SOURCE", "TOPIC"]
         assert fetched["status_badges"] == []
-
-    async def test_read_list_filter_uses_in_reading_list(
-        self, test_client: AsyncClient
-    ):
-        keep_response = await test_client.post(
-            "/notes/",
-            json={
-                "title": "Keep",
-                "body": "",
-                "tags": ["SOURCE"],
-                "in_reading_list": True,
-                "reading_status": "NEW",
-            },
-        )
-        assert keep_response.status_code == 201
-        keep_note = keep_response.json()
-
-        drop_response = await test_client.post(
-            "/notes/",
-            json={
-                "title": "Skip",
-                "body": "",
-                "tags": ["TOPIC"],
-                "in_reading_list": False,
-                "reading_status": "NEW",
-            },
-        )
-        assert drop_response.status_code == 201
-
-        list_response = await test_client.get(
-            "/notes/?in_reading_list=true&archived=false"
-        )
-        assert list_response.status_code == 200
-        note_ids = {item["id"] for item in list_response.json()}
-        assert keep_note["id"] in note_ids
-        assert len(note_ids) == 1
 
     async def test_covers_relation_requires_source_tag(self, test_client: AsyncClient):
         from_response = await test_client.post(

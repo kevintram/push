@@ -53,8 +53,6 @@ async def list_notes(
     archived: bool | None = None,
     root: bool | None = None,
     parent_id: int | None = None,
-    in_reading_list: bool | None = None,
-    reading_status: str | None = None,
     tag: str | None = None,
     srs_enabled: bool | None = None,
     limit: int | None = None,
@@ -68,10 +66,6 @@ async def list_notes(
         stmt = stmt.where(Note.parent_id.is_(None))
     if parent_id is not None:
         stmt = stmt.where(Note.parent_id == parent_id)
-    if in_reading_list is not None:
-        stmt = stmt.where(Note.in_reading_list == in_reading_list)
-    if reading_status is not None:
-        stmt = stmt.where(Note.reading_status == reading_status)
     if tag is not None:
         stmt = stmt.join(NoteTag, NoteTag.note_id == Note.id).where(NoteTag.tag == tag)
     if srs_enabled is not None:
@@ -110,9 +104,6 @@ async def create_note(
     title: str = "",
     body: str = "",
     parent_id: int | None = None,
-    reading_status: str = "NEW",
-    reading_notes: str = "",
-    in_reading_list: bool = False,
     archived: bool = False,
     tags: list[str] | None = None,
     srs_enabled: bool = True,
@@ -125,9 +116,6 @@ async def create_note(
         title=title,
         body=body,
         parent_id=parent_id,
-        reading_status=reading_status,
-        reading_notes=reading_notes,
-        in_reading_list=in_reading_list,
         archived=archived,
     )
 
@@ -170,12 +158,6 @@ async def update_note(
         note.title = updates["title"]
     if "body" in updates and updates["body"] is not None:
         note.body = updates["body"]
-    if "reading_status" in updates and updates["reading_status"] is not None:
-        note.reading_status = updates["reading_status"]
-    if "reading_notes" in updates and updates["reading_notes"] is not None:
-        note.reading_notes = updates["reading_notes"]
-    if "in_reading_list" in updates and updates["in_reading_list"] is not None:
-        note.in_reading_list = updates["in_reading_list"]
     if "archived" in updates and updates["archived"] is not None:
         note.archived = updates["archived"]
 

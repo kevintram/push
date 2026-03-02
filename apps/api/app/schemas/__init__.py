@@ -1,8 +1,6 @@
 from app.schemas.notes import (
     NoteCreate,
     NoteRead,
-    NoteReadingListUpdate,
-    NoteReadingUpdate,
     NoteRelationCreate,
     NoteRelationListItem,
     NoteRelationRead,
@@ -10,7 +8,6 @@ from app.schemas.notes import (
     NoteTagCreate,
     NoteTagEnum,
     NoteUpdate,
-    ReadingStatusEnum,
     RelationDirectionEnum,
 )
 from app.schemas.review_queue import ReviewQueueItem
@@ -38,8 +35,6 @@ ReviewQueueItem.model_rebuild()
 __all__ = [
     "NoteCreate",
     "NoteRead",
-    "NoteReadingListUpdate",
-    "NoteReadingUpdate",
     "NoteRelationCreate",
     "NoteRelationListItem",
     "NoteRelationRead",
@@ -47,7 +42,6 @@ __all__ = [
     "NoteTagCreate",
     "NoteTagEnum",
     "NoteUpdate",
-    "ReadingStatusEnum",
     "RelationDirectionEnum",
     "ReviewQueueItem",
     "NoteSummary",

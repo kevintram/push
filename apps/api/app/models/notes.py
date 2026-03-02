@@ -39,13 +39,6 @@ class NoteTagType(str, PyEnum):
     PRACTICE = "PRACTICE"
 
 
-class ReadingStatus(str, PyEnum):
-    NEW = "NEW"
-    IN_PROGRESS = "IN_PROGRESS"
-    ON_HOLD = "ON_HOLD"
-    FINISHED = "FINISHED"
-
-
 class NoteRelationType(str, PyEnum):
     RELATED = "RELATED"
     PREREQUISITE = "PREREQUISITE"
@@ -78,16 +71,6 @@ class Note(Base):
 
     fsrs_state_id: Mapped[int | None] = mapped_column(
         BigInteger, ForeignKey("fsrs_states.id", ondelete="SET NULL"), unique=True
-    )
-
-    reading_status: Mapped[str] = mapped_column(
-        Enum(*[status.value for status in ReadingStatus], name="reading_status"),
-        nullable=False,
-        server_default=text("'NEW'::reading_status"),
-    )
-    reading_notes: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
-    in_reading_list: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, server_default=text("false")
     )
 
     archived: Mapped[bool] = mapped_column(

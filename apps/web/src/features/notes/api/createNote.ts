@@ -9,9 +9,6 @@ export interface CreateNoteInput {
 	title?: string
 	body?: string
 	parent_id?: number | null
-	reading_status?: 'NEW' | 'IN_PROGRESS' | 'ON_HOLD' | 'FINISHED'
-	reading_notes?: string
-	in_reading_list?: boolean
 	archived?: boolean
 	tags?: Array<NoteTag>
 	srs_enabled?: boolean
