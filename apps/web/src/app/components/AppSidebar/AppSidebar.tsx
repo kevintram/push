@@ -2,7 +2,6 @@ import { Link, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Archive,
-	BookOpen,
 	Clock,
 	Inbox,
 	Library,
@@ -55,12 +54,6 @@ export function AppSidebar() {
 			url: '/review',
 			icon: ReviewSidebarStarIcon,
 			isActive: (pathname: string) => pathname === '/review'
-		},
-		{
-			title: 'Read',
-			url: '/read',
-			icon: BookOpen,
-			isActive: (pathname: string) => pathname === '/read'
 		}
 	]
 
