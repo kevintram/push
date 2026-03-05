@@ -1,7 +1,12 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { Anvil, CalendarIcon, File, MoreHorizontal, Trash } from 'lucide-react'
-import { type MouseEvent, useCallback, useState } from 'react'
+import {
+	type KeyboardEvent,
+	type MouseEvent,
+	useCallback,
+	useState
+} from 'react'
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
@@ -148,17 +153,28 @@ export function ReviewItem({
 		}
 	}, [entry.id, onReviewClick, readonly])
 
-	const handleNoteClick = useCallback(
-		(event: MouseEvent) => {
-			event.stopPropagation()
-			navigate({
-				to: '/notes/$noteId',
-				params: { noteId: entry.note_id.toString() }
-			})
+	const handleRowKeyDown = useCallback(
+		(event: KeyboardEvent<HTMLDivElement>) => {
+			if (readonly) return
+			if (event.key === 'Enter' || event.key === ' ') {
+				event.preventDefault()
+				handleReviewClick()
+			}
 		},
-		[navigate, entry.note_id]
+		[handleReviewClick, readonly]
 	)
 
+	const handleReviewCardClick = useCallback(
+		(event: MouseEvent) => {
+			event.stopPropagation()
+			if (!entry.review_card) return
+			navigate({
+				to: '/review-cards/$reviewCardId',
+				params: { reviewCardId: entry.review_card.id.toString() }
+			})
+		},
+		[navigate, entry.review_card]
+	)
 	const effectiveDate = entry.effective_date
 		? dayjs(entry.effective_date).toDate()
 		: null
@@ -181,8 +197,7 @@ export function ReviewItem({
 	const description = entry.description?.trim()
 
 	const showingEntity =
-		(variant === 'default' || variant === 'topic') &&
-		!!(entry.note.title || entry.note_id)
+		(variant === 'default' || variant === 'topic') && !!entry.review_card
 
 	// --- Shared element JSX ---
 
@@ -292,9 +307,15 @@ export function ReviewItem({
 
 	const entityInfo = (() => {
 		if (variant !== 'default' && variant !== 'topic') return null
+		if (entry.review_card) {
+			return {
+				label: `${entry.review_card.type}: ${entry.review_card.prompt || 'Untitled card'}`,
+				onClick: handleReviewCardClick
+			}
+		}
 		return {
-			label: entry.note.title || 'Untitled note',
-			onClick: handleNoteClick
+			label: 'Unknown entity',
+			onClick: handleReviewCardClick
 		}
 	})()
 
@@ -329,12 +350,16 @@ export function ReviewItem({
 	)
 
 	return (
+		// biome-ignore lint/nursery/noNoninteractiveElementInteractions: row container supports keyboard navigation and cannot be a button due to nested controls
+		// biome-ignore lint/a11y/noStaticElementInteractions: interactive row behavior is intentional for review list ergonomics
 		<div
 			className={cn(
 				'rounded-md px-2 py-2',
 				readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'
 			)}
 			onClick={handleReviewClick}
+			onKeyDown={handleRowKeyDown}
+			tabIndex={readonly ? -1 : 0}
 		>
 			{/* Compact layout (default, hidden at wide) */}
 			<div className='flex @lg/review-list:hidden flex-col'>

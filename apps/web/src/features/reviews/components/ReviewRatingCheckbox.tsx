@@ -1,11 +1,9 @@
-import { ChevronDown, Circle } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { cn } from '~/lib/utils'
-import { getRatingIcon } from '~/utils/getRatingIcon'
-import type { Rating } from '../types/review.types'
 import { RatingDropdown } from './RatingDropdown'
+import { getOptionIcon, type ReviewRatingState } from './reviewRatingOptions'
 
-export type ReviewRatingState = 'uncompleted' | Rating
+export type { ReviewRatingState } from './reviewRatingOptions'
 
 interface ReviewRatingDropdownProps {
 	value: ReviewRatingState
@@ -13,24 +11,6 @@ interface ReviewRatingDropdownProps {
 	disabled?: boolean
 	className?: string
 	invalid?: boolean
-}
-
-export const ratingOptions: Array<{ value: ReviewRatingState; label: string }> =
-	[
-		{ value: 'uncompleted', label: 'Uncompleted' },
-		{ value: 'miss', label: 'Miss' },
-		{ value: 'hard', label: 'Hard' },
-		{ value: 'good', label: 'Good' },
-		{ value: 'easy', label: 'Easy' }
-	]
-
-function EmptyRatingIcon() {
-	return <Circle className='h-3 w-3' />
-}
-
-export function getOptionIcon(option: ReviewRatingState): ReactNode {
-	if (option === 'uncompleted') return <EmptyRatingIcon />
-	return getRatingIcon(option)
 }
 
 export function ReviewRatingCheckbox({
@@ -64,7 +44,7 @@ export function ReviewRatingCheckbox({
 								'border-red-600 dark:border-red-500'
 						)}
 					>
-						{value === 'uncompleted' ? null : getRatingIcon(value)}
+						{value === 'uncompleted' ? null : getOptionIcon(value)}
 					</span>
 					<ChevronDown className='h-3 w-3 text-muted-foreground' />
 				</button>
