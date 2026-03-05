@@ -27,7 +27,7 @@ import {
 	estimateTopicCardSize
 } from '~/utils/estimateMasonryItemSize'
 
-export function MyLibraryPage() {
+export function TopicsPage() {
 	const navigate = useNavigate()
 
 	const { data: topics = [], isLoading: topicsLoading } = useTopics({
@@ -49,7 +49,8 @@ export function MyLibraryPage() {
 			})
 			await navigate({
 				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() }
+				params: { topicId: created.id.toString() },
+				search: { tab: 'subtopics' }
 			})
 		} catch {
 			toast.error('Failed to create topic')
@@ -111,7 +112,8 @@ export function MyLibraryPage() {
 						onClick={() =>
 							navigate({
 								to: '/topics/$topicId',
-								params: { topicId: topic.id.toString() }
+								params: { topicId: topic.id.toString() },
+								search: { tab: 'subtopics' }
 							})
 						}
 						topic={topic}
