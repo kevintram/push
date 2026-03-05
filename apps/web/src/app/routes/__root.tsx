@@ -5,7 +5,19 @@ import { LoadingOrError } from '~/components/LoadingOrError'
 import { Toaster } from '~/components/ui/sonner'
 import { ReviewDialogProvider } from '~/features/reviews/providers/ReviewDialogProvider'
 
+function isNotFoundError(error: unknown): error is { isNotFound: true } {
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'isNotFound' in error &&
+		(error as { isNotFound?: unknown }).isNotFound === true
+	)
+}
+
 function renderError({ error }: FallbackProps) {
+	if (isNotFoundError(error)) {
+		return <NotFoundView />
+	}
 	return <LoadingOrError error={error} />
 }
 
