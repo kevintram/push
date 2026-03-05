@@ -1,7 +1,7 @@
 import type { Rating, ReviewListItem } from './review.types'
 
 export type CreateReviewPayload = {
-	note_id: number
+	review_card_id: number
 	rating?: Rating | null
 	description?: string
 	notes?: string
@@ -16,11 +16,11 @@ export type UpdateReviewInput = {
 	notes?: string
 	scheduled_at?: string | null
 	completed_at?: string | null
-	note_id?: number
+	review_card_id?: number
 }
 
 export type GetReviewsFilters = {
-	noteId?: number
+	reviewCardId?: number
 	effectiveDateBefore?: string
 	effectiveDateAfter?: string
 	scheduled?: boolean

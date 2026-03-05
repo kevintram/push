@@ -3,7 +3,7 @@ import type { Review, ReviewListItem } from './review.types'
 
 export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	id: v.number(),
-	note_id: v.number(),
+	review_card_id: v.number(),
 	rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 
 	description: v.string(),
@@ -14,10 +14,12 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 
 	inserted_at: v.string(),
 	updated_at: v.string(),
-	note: v.object({
+	review_card: v.object({
 		id: v.number(),
-		title: v.string(),
-		body: v.string()
+		topic_id: v.number(),
+		type: v.picklist(['practice', 'flashcard']),
+		prompt: v.string(),
+		answer: v.string()
 	}),
 
 	// Entity FSRS state before review

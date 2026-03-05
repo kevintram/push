@@ -3,21 +3,20 @@ import { useMemo } from 'react'
 import { useReviews } from '~/features/reviews/api/getReviews'
 
 type ReviewEntityFilters = {
-	noteId?: number
+	reviewCardId?: number
 }
 
 export function useDetailReviewCounts(filters?: ReviewEntityFilters) {
-	const noteIdFilter =
-		filters?.noteId !== undefined ? { noteId: filters.noteId } : { noteId: -1 }
+	const entityFilter = { reviewCardId: filters?.reviewCardId }
 
 	const { data: unscheduledReviews = [] } = useReviews({
-		...noteIdFilter,
+		...entityFilter,
 		scheduled: false,
 		completed: false
 	})
 
 	const { data: scheduledReviews = [] } = useReviews({
-		...noteIdFilter,
+		...entityFilter,
 		scheduled: true,
 		completed: false
 	})
