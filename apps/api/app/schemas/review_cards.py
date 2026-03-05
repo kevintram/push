@@ -33,12 +33,11 @@ class ReviewCardRead(ReviewCardBase):
     updated_at: datetime
 
     last_review_rating: str | None = None
-    fsrs_state_id: int | None = None
     stability: float | None = None
     difficulty: float | None = None
     state: str = "LEARNING"
     step: int | None = None
-    srs_enabled: bool = True
+    retired: bool = False
     last_reviewed_at: date | None = None
     retrievability: float | None = None
     freshness_tier: str | None = None
@@ -51,7 +50,7 @@ class ReviewCardRead(ReviewCardBase):
 class ReviewCardCreate(ReviewCardBase):
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
-    srs_enabled: bool = True
+    retired: bool = False
 
 
 class ReviewCardUpdate(BaseModel):
@@ -61,7 +60,7 @@ class ReviewCardUpdate(BaseModel):
     type: ReviewCardTypeEnum | None = None
     prompt: str | None = None
     answer: str | None = None
-    srs_enabled: bool | None = None
+    retired: bool | None = None
 
 
 class ReviewCardQueueItem(BaseModel):

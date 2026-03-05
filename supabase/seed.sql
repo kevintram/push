@@ -3,7 +3,7 @@
 
 BEGIN;
 
-TRUNCATE TABLE review_card_types, reviews, review_cards, topics, fsrs_states
+TRUNCATE TABLE review_card_types, reviews, review_cards, topics
 RESTART IDENTITY CASCADE;
 
 -- Real WorkOS test user id (workostest@protonmail.com)
@@ -70,51 +70,91 @@ FROM topic_seed
 ORDER BY id;
 
 -- A larger FSRS spread:
--- 1-28 mostly active reviewed cards, 29-36 mixed/new cards, 37-40 reviewable but SRS-disabled.
-INSERT INTO fsrs_states (
+-- 1-28 mostly active reviewed cards, 29-36 mixed/new cards, 37-40 reviewable but retired from the queue.
+WITH fsrs_data AS (
+  SELECT
+    n AS legacy_id,
+    CASE
+      WHEN n >= 29 AND n <= 36 THEN NULL
+      WHEN n IN (17, 18, 19, 20) THEN (0.9 + (n * 0.08))::real
+      ELSE (2.0 + (n * 0.28))::real
+    END AS stability,
+    CASE
+      WHEN n >= 29 AND n <= 36 THEN NULL
+      ELSE (2.1 + ((n % 9) * 0.23))::real
+    END AS difficulty,
+    CASE
+      WHEN n >= 29 AND n <= 36 THEN 'LEARNING'::learning_state
+      WHEN n IN (4, 8, 12, 16, 20, 24, 28, 40) THEN 'RELEARNING'::learning_state
+      ELSE 'REVIEW'::learning_state
+    END AS state,
+    CASE
+      WHEN n >= 29 AND n <= 36 THEN 0
+      WHEN n IN (4, 8, 12, 16, 20, 24, 28, 40) THEN 1
+      ELSE NULL
+    END AS step,
+    CASE
+      WHEN n >= 29 AND n <= 36 THEN NULL
+      WHEN n IN (17, 18, 19, 20) THEN CURRENT_DATE - (10 + (n - 17))
+      WHEN n IN (37, 38, 39, 40) THEN CURRENT_DATE - ((n % 4) + 2)
+      ELSE CURRENT_DATE - ((n % 8) + 1)
+    END AS last_reviewed_at,
+    CASE WHEN n IN (37, 38, 39, 40) THEN true ELSE false END AS retired
+  FROM generate_series(1, 40) AS n
+),
+seeded_cards (
   id,
-  stability,
-  difficulty,
-  state,
-  step,
-  last_reviewed_at,
-  srs_enabled,
+  user_id,
+  topic_id,
+  type,
+  prompt,
+  answer,
+  legacy_fsrs_id,
   inserted_at,
   updated_at
+) AS (
+  VALUES
+    (1, 'user_01KGG4R8HZAV513662YE3DJ0A9', 2, 'practice', 'Solve a two-step linear equation quickly', 'Undo addition/subtraction first, then divide or multiply, then verify the result.', 1, timezone('utc'::text, now()) - interval '55 days', timezone('utc'::text, now()) - interval '2 days'),
+    (2, 'user_01KGG4R8HZAV513662YE3DJ0A9', 35, 'practice', 'Compute a dot product without hesitation', 'Multiply aligned components, then sum the products.', 2, timezone('utc'::text, now()) - interval '54 days', timezone('utc'::text, now()) - interval '3 days'),
+    (3, 'user_01KGG4R8HZAV513662YE3DJ0A9', 4, 'flashcard', 'Derivative of x^3', '3x^2', 3, timezone('utc'::text, now()) - interval '53 days', timezone('utc'::text, now()) - interval '4 days'),
+    (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 3, 'flashcard', 'Sum of triangle interior angles', '180 degrees', 4, timezone('utc'::text, now()) - interval '52 days', timezone('utc'::text, now()) - interval '8 days'),
+    (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 6, 'practice', 'Choose between stack and queue in an interview', 'Use a stack for LIFO backtracking or undo flows; use a queue for FIFO scheduling and BFS.', 5, timezone('utc'::text, now()) - interval '51 days', timezone('utc'::text, now()) - interval '1 days'),
+    (6, 'user_01KGG4R8HZAV513662YE3DJ0A9', 7, 'flashcard', 'Binary search runtime', 'O(log n)', 6, timezone('utc'::text, now()) - interval '50 days', timezone('utc'::text, now()) - interval '2 days'),
+    (7, 'user_01KGG4R8HZAV513662YE3DJ0A9', 8, 'practice', 'Explain quorum writes', 'A write commits after enough replicas acknowledge so read and write quorums overlap.', 7, timezone('utc'::text, now()) - interval '49 days', timezone('utc'::text, now()) - interval '1 days'),
+    (8, 'user_01KGG4R8HZAV513662YE3DJ0A9', 40, 'flashcard', 'What does DNS caching reduce first?', 'Repeated recursive lookup latency and upstream load.', 8, timezone('utc'::text, now()) - interval '48 days', timezone('utc'::text, now()) - interval '3 days'),
+    (9, 'user_01KGG4R8HZAV513662YE3DJ0A9', 9, 'practice', 'Design an idempotent webhook handler', 'Store a delivery identifier and make processing safe to replay.', 9, timezone('utc'::text, now()) - interval '47 days', timezone('utc'::text, now()) - interval '2 days'),
+    (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 44, 'flashcard', 'What is an index seek?', 'A targeted lookup that navigates an index instead of scanning all rows.', 10, timezone('utc'::text, now()) - interval '46 days', timezone('utc'::text, now()) - interval '2 days'),
+    (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 11, 'flashcard', 'How do you say "I would like" in Spanish?', 'Me gustaria', 11, timezone('utc'::text, now()) - interval '45 days', timezone('utc'::text, now()) - interval '2 days'),
+    (12, 'user_01KGG4R8HZAV513662YE3DJ0A9', 37, 'practice', 'Choose between ser and estar', 'Use ser for identity or stable traits; use estar for states, conditions, and location.', 12, timezone('utc'::text, now()) - interval '44 days', timezone('utc'::text, now()) - interval '3 days'),
+    (13, 'user_01KGG4R8HZAV513662YE3DJ0A9', 12, 'flashcard', 'Meaning of arigato gozaimasu', 'Thank you very much', 13, timezone('utc'::text, now()) - interval '43 days', timezone('utc'::text, now()) - interval '6 days'),
+    (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 38, 'practice', 'Recall the kanji for water', 'The character is read as mizu or sui and is written with four simple strokes.', 14, timezone('utc'::text, now()) - interval '42 days', timezone('utc'::text, now()) - interval '4 days'),
+    (15, 'user_01KGG4R8HZAV513662YE3DJ0A9', 14, 'practice', 'Write a tighter thesis statement', 'Make a debatable claim plus the main reason or structure that will support it.', 15, timezone('utc'::text, now()) - interval '41 days', timezone('utc'::text, now()) - interval '2 days'),
+    (16, 'user_01KGG4R8HZAV513662YE3DJ0A9', 15, 'practice', 'Open a talk with a hook', 'Start with a sharp question, contrast, or story that earns the next sentence.', 16, timezone('utc'::text, now()) - interval '40 days', timezone('utc'::text, now()) - interval '1 days'),
+    (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 17, 'practice', 'Write a neutral user interview question', 'Ask about a recent concrete behavior without implying the desired answer.', 17, timezone('utc'::text, now()) - interval '39 days', timezone('utc'::text, now()) - interval '2 days'),
+    (18, 'user_01KGG4R8HZAV513662YE3DJ0A9', 39, 'flashcard', 'Case study structure', 'Problem, role, process, decisions, impact, and reflection.', 18, timezone('utc'::text, now()) - interval '38 days', timezone('utc'::text, now()) - interval '3 days'),
+    (19, 'user_01KGG4R8HZAV513662YE3DJ0A9', 18, 'flashcard', 'What does contrast improve first?', 'Scanability and visual hierarchy.', 19, timezone('utc'::text, now()) - interval '37 days', timezone('utc'::text, now()) - interval '6 days'),
+    (20, 'user_01KGG4R8HZAV513662YE3DJ0A9', 45, 'practice', 'When should a design token be extracted?', 'Extract it when the value carries semantic meaning and must stay consistent across components.', 20, timezone('utc'::text, now()) - interval '36 days', timezone('utc'::text, now()) - interval '4 days'),
+    (21, 'user_01KGG4R8HZAV513662YE3DJ0A9', 20, 'practice', 'Answer "tell me about yourself"', 'Present present-past-future: where you are, why that path makes sense, and why this role now.', 21, timezone('utc'::text, now()) - interval '35 days', timezone('utc'::text, now()) - interval '1 days'),
+    (22, 'user_01KGG4R8HZAV513662YE3DJ0A9', 46, 'practice', 'Recover after getting stuck in a mock interview', 'State what you know, name the uncertainty, then propose a reasonable next step.', 22, timezone('utc'::text, now()) - interval '34 days', timezone('utc'::text, now()) - interval '1 days'),
+    (23, 'user_01KGG4R8HZAV513662YE3DJ0A9', 21, 'flashcard', 'CAP theorem in one line', 'During a partition you must trade consistency against availability.', 23, timezone('utc'::text, now()) - interval '33 days', timezone('utc'::text, now()) - interval '2 days'),
+    (24, 'user_01KGG4R8HZAV513662YE3DJ0A9', 22, 'flashcard', 'STAR stands for?', 'Situation, Task, Action, Result.', 24, timezone('utc'::text, now()) - interval '32 days', timezone('utc'::text, now()) - interval '3 days'),
+    (25, 'user_01KGG4R8HZAV513662YE3DJ0A9', 24, 'practice', 'First step in a free-body diagram', 'Isolate the object and label every external force acting on it.', 25, timezone('utc'::text, now()) - interval '31 days', timezone('utc'::text, now()) - interval '3 days'),
+    (26, 'user_01KGG4R8HZAV513662YE3DJ0A9', 25, 'flashcard', 'Function of mitochondria', 'They generate ATP through cellular respiration.', 26, timezone('utc'::text, now()) - interval '30 days', timezone('utc'::text, now()) - interval '5 days'),
+    (27, 'user_01KGG4R8HZAV513662YE3DJ0A9', 27, 'flashcard', 'What is Hammurabi''s Code?', 'An early Babylonian law code known for explicit written rules and penalties.', 27, timezone('utc'::text, now()) - interval '29 days', timezone('utc'::text, now()) - interval '7 days'),
+    (28, 'user_01KGG4R8HZAV513662YE3DJ0A9', 42, 'practice', 'Name one Renaissance turning point', 'The printing press accelerated the spread of ideas and learning.', 28, timezone('utc'::text, now()) - interval '28 days', timezone('utc'::text, now()) - interval '4 days'),
+    (29, 'user_01KGG4R8HZAV513662YE3DJ0A9', 30, 'practice', 'Define progressive overload', 'Increase stress over time through load, reps, sets, or difficulty so the body adapts.', 29, timezone('utc'::text, now()) - interval '27 days', timezone('utc'::text, now()) - interval '2 days'),
+    (30, 'user_01KGG4R8HZAV513662YE3DJ0A9', 31, 'flashcard', 'Protein target per kg for muscle gain', 'Roughly 1.6 to 2.2 grams per kilogram per day.', 30, timezone('utc'::text, now()) - interval '26 days', timezone('utc'::text, now()) - interval '1 days'),
+    (31, 'user_01KGG4R8HZAV513662YE3DJ0A9', 41, 'practice', 'Build a simple cutting meal plan', 'Choose fixed meal templates, adequate protein, and a calorie target you can repeat.', 31, timezone('utc'::text, now()) - interval '25 days', timezone('utc'::text, now()) - interval '2 days'),
+    (32, 'user_01KGG4R8HZAV513662YE3DJ0A9', 33, 'practice', 'Legacy whiteboard prompt', 'Clarify constraints, state tradeoffs, and keep the old flow rendering correctly.', 32, timezone('utc'::text, now()) - interval '24 days', timezone('utc'::text, now()) - interval '18 days'),
+    (33, 'user_01KGG4R8HZAV513662YE3DJ0A9', 34, 'flashcard', 'Legacy cache invalidation quote', 'There are only two hard things in computer science: cache invalidation and naming things.', 33, timezone('utc'::text, now()) - interval '23 days', timezone('utc'::text, now()) - interval '19 days'),
+    (34, 'user_01KGG4R8HZAV513662YE3DJ0A9', 1, 'flashcard', 'What is the Feynman technique?', 'Explain the idea simply, identify gaps, then refine until the explanation is clear.', 34, timezone('utc'::text, now()) - interval '22 days', timezone('utc'::text, now()) - interval '2 days'),
+    (35, 'user_01KGG4R8HZAV513662YE3DJ0A9', 5, 'flashcard', 'Difference between a process and a thread', 'Processes isolate memory; threads share memory within a process.', 35, timezone('utc'::text, now()) - interval '21 days', timezone('utc'::text, now()) - interval '1 days'),
+    (36, 'user_01KGG4R8HZAV513662YE3DJ0A9', 10, 'practice', 'Thirty-minute language study loop', 'Review old cards, shadow audio, speak aloud, and end with short recall writing.', 36, timezone('utc'::text, now()) - interval '20 days', timezone('utc'::text, now()) - interval '3 days'),
+    (37, 'user_01KGG4R8HZAV513662YE3DJ0A9', 19, 'practice', 'Run a weekly career growth review', 'Audit wins, bottlenecks, evidence of impact, and the single skill to push next.', 37, timezone('utc'::text, now()) - interval '19 days', timezone('utc'::text, now()) - interval '2 days'),
+    (38, 'user_01KGG4R8HZAV513662YE3DJ0A9', 23, 'flashcard', 'Difference between hypothesis and theory', 'A hypothesis is a testable claim; a theory is a broader explanatory framework backed by evidence.', 38, timezone('utc'::text, now()) - interval '18 days', timezone('utc'::text, now()) - interval '2 days'),
+    (39, 'user_01KGG4R8HZAV513662YE3DJ0A9', 26, 'flashcard', 'Primary versus secondary source', 'A primary source is direct evidence from the time; a secondary source interprets it later.', 39, timezone('utc'::text, now()) - interval '17 days', timezone('utc'::text, now()) - interval '2 days'),
+    (40, 'user_01KGG4R8HZAV513662YE3DJ0A9', 29, 'flashcard', 'Why schedule recovery days?', 'Recovery lets adaptation happen and reduces injury risk from accumulated fatigue.', 40, timezone('utc'::text, now()) - interval '16 days', timezone('utc'::text, now()) - interval '1 days')
 )
-OVERRIDING SYSTEM VALUE
-SELECT
-  n,
-  CASE
-    WHEN n >= 29 AND n <= 36 THEN NULL
-    WHEN n IN (17, 18, 19, 20) THEN (0.9 + (n * 0.08))::real
-    ELSE (2.0 + (n * 0.28))::real
-  END,
-  CASE
-    WHEN n >= 29 AND n <= 36 THEN NULL
-    ELSE (2.1 + ((n % 9) * 0.23))::real
-  END,
-  CASE
-    WHEN n >= 29 AND n <= 36 THEN 'LEARNING'::learning_state
-    WHEN n IN (4, 8, 12, 16, 20, 24, 28, 40) THEN 'RELEARNING'::learning_state
-    ELSE 'REVIEW'::learning_state
-  END,
-  CASE
-    WHEN n >= 29 AND n <= 36 THEN 0
-    WHEN n IN (4, 8, 12, 16, 20, 24, 28, 40) THEN 1
-    ELSE NULL
-  END,
-  CASE
-    WHEN n >= 29 AND n <= 36 THEN NULL
-    WHEN n IN (17, 18, 19, 20) THEN CURRENT_DATE - (10 + (n - 17))
-    WHEN n IN (37, 38, 39, 40) THEN CURRENT_DATE - ((n % 4) + 2)
-    ELSE CURRENT_DATE - ((n % 8) + 1)
-  END,
-  CASE WHEN n IN (37, 38, 39, 40) THEN false ELSE true END,
-  timezone('utc'::text, now()) - ((70 - n) || ' days')::interval,
-  timezone('utc'::text, now()) - ((n % 6) || ' days')::interval
-FROM generate_series(1, 40) AS n;
-
 INSERT INTO review_cards (
   id,
   user_id,
@@ -122,52 +162,33 @@ INSERT INTO review_cards (
   type,
   prompt,
   answer,
-  fsrs_state_id,
+  stability,
+  difficulty,
+  state,
+  step,
+  last_reviewed_at,
+  retired,
   inserted_at,
   updated_at
 )
 OVERRIDING SYSTEM VALUE
-VALUES
-  (1, 'user_01KGG4R8HZAV513662YE3DJ0A9', 2, 'practice', 'Solve a two-step linear equation quickly', 'Undo addition/subtraction first, then divide or multiply, then verify the result.', 1, timezone('utc'::text, now()) - interval '55 days', timezone('utc'::text, now()) - interval '2 days'),
-  (2, 'user_01KGG4R8HZAV513662YE3DJ0A9', 35, 'practice', 'Compute a dot product without hesitation', 'Multiply aligned components, then sum the products.', 2, timezone('utc'::text, now()) - interval '54 days', timezone('utc'::text, now()) - interval '3 days'),
-  (3, 'user_01KGG4R8HZAV513662YE3DJ0A9', 4, 'flashcard', 'Derivative of x^3', '3x^2', 3, timezone('utc'::text, now()) - interval '53 days', timezone('utc'::text, now()) - interval '4 days'),
-  (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 3, 'flashcard', 'Sum of triangle interior angles', '180 degrees', 4, timezone('utc'::text, now()) - interval '52 days', timezone('utc'::text, now()) - interval '8 days'),
-  (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 6, 'practice', 'Choose between stack and queue in an interview', 'Use a stack for LIFO backtracking or undo flows; use a queue for FIFO scheduling and BFS.', 5, timezone('utc'::text, now()) - interval '51 days', timezone('utc'::text, now()) - interval '1 days'),
-  (6, 'user_01KGG4R8HZAV513662YE3DJ0A9', 7, 'flashcard', 'Binary search runtime', 'O(log n)', 6, timezone('utc'::text, now()) - interval '50 days', timezone('utc'::text, now()) - interval '2 days'),
-  (7, 'user_01KGG4R8HZAV513662YE3DJ0A9', 8, 'practice', 'Explain quorum writes', 'A write commits after enough replicas acknowledge so read and write quorums overlap.', 7, timezone('utc'::text, now()) - interval '49 days', timezone('utc'::text, now()) - interval '1 days'),
-  (8, 'user_01KGG4R8HZAV513662YE3DJ0A9', 40, 'flashcard', 'What does DNS caching reduce first?', 'Repeated recursive lookup latency and upstream load.', 8, timezone('utc'::text, now()) - interval '48 days', timezone('utc'::text, now()) - interval '3 days'),
-  (9, 'user_01KGG4R8HZAV513662YE3DJ0A9', 9, 'practice', 'Design an idempotent webhook handler', 'Store a delivery identifier and make processing safe to replay.', 9, timezone('utc'::text, now()) - interval '47 days', timezone('utc'::text, now()) - interval '2 days'),
-  (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 44, 'flashcard', 'What is an index seek?', 'A targeted lookup that navigates an index instead of scanning all rows.', 10, timezone('utc'::text, now()) - interval '46 days', timezone('utc'::text, now()) - interval '2 days'),
-  (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 11, 'flashcard', 'How do you say "I would like" in Spanish?', 'Me gustaria', 11, timezone('utc'::text, now()) - interval '45 days', timezone('utc'::text, now()) - interval '2 days'),
-  (12, 'user_01KGG4R8HZAV513662YE3DJ0A9', 37, 'practice', 'Choose between ser and estar', 'Use ser for identity or stable traits; use estar for states, conditions, and location.', 12, timezone('utc'::text, now()) - interval '44 days', timezone('utc'::text, now()) - interval '3 days'),
-  (13, 'user_01KGG4R8HZAV513662YE3DJ0A9', 12, 'flashcard', 'Meaning of arigato gozaimasu', 'Thank you very much', 13, timezone('utc'::text, now()) - interval '43 days', timezone('utc'::text, now()) - interval '6 days'),
-  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 38, 'practice', 'Recall the kanji for water', 'The character is read as mizu or sui and is written with four simple strokes.', 14, timezone('utc'::text, now()) - interval '42 days', timezone('utc'::text, now()) - interval '4 days'),
-  (15, 'user_01KGG4R8HZAV513662YE3DJ0A9', 14, 'practice', 'Write a tighter thesis statement', 'Make a debatable claim plus the main reason or structure that will support it.', 15, timezone('utc'::text, now()) - interval '41 days', timezone('utc'::text, now()) - interval '2 days'),
-  (16, 'user_01KGG4R8HZAV513662YE3DJ0A9', 15, 'practice', 'Open a talk with a hook', 'Start with a sharp question, contrast, or story that earns the next sentence.', 16, timezone('utc'::text, now()) - interval '40 days', timezone('utc'::text, now()) - interval '1 days'),
-  (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 17, 'practice', 'Write a neutral user interview question', 'Ask about a recent concrete behavior without implying the desired answer.', 17, timezone('utc'::text, now()) - interval '39 days', timezone('utc'::text, now()) - interval '2 days'),
-  (18, 'user_01KGG4R8HZAV513662YE3DJ0A9', 39, 'flashcard', 'Case study structure', 'Problem, role, process, decisions, impact, and reflection.', 18, timezone('utc'::text, now()) - interval '38 days', timezone('utc'::text, now()) - interval '3 days'),
-  (19, 'user_01KGG4R8HZAV513662YE3DJ0A9', 18, 'flashcard', 'What does contrast improve first?', 'Scanability and visual hierarchy.', 19, timezone('utc'::text, now()) - interval '37 days', timezone('utc'::text, now()) - interval '6 days'),
-  (20, 'user_01KGG4R8HZAV513662YE3DJ0A9', 45, 'practice', 'When should a design token be extracted?', 'Extract it when the value carries semantic meaning and must stay consistent across components.', 20, timezone('utc'::text, now()) - interval '36 days', timezone('utc'::text, now()) - interval '4 days'),
-  (21, 'user_01KGG4R8HZAV513662YE3DJ0A9', 20, 'practice', 'Answer "tell me about yourself"', 'Present present-past-future: where you are, why that path makes sense, and why this role now.', 21, timezone('utc'::text, now()) - interval '35 days', timezone('utc'::text, now()) - interval '1 days'),
-  (22, 'user_01KGG4R8HZAV513662YE3DJ0A9', 46, 'practice', 'Recover after getting stuck in a mock interview', 'State what you know, name the uncertainty, then propose a reasonable next step.', 22, timezone('utc'::text, now()) - interval '34 days', timezone('utc'::text, now()) - interval '1 days'),
-  (23, 'user_01KGG4R8HZAV513662YE3DJ0A9', 21, 'flashcard', 'CAP theorem in one line', 'During a partition you must trade consistency against availability.', 23, timezone('utc'::text, now()) - interval '33 days', timezone('utc'::text, now()) - interval '2 days'),
-  (24, 'user_01KGG4R8HZAV513662YE3DJ0A9', 22, 'flashcard', 'STAR stands for?', 'Situation, Task, Action, Result.', 24, timezone('utc'::text, now()) - interval '32 days', timezone('utc'::text, now()) - interval '3 days'),
-  (25, 'user_01KGG4R8HZAV513662YE3DJ0A9', 24, 'practice', 'First step in a free-body diagram', 'Isolate the object and label every external force acting on it.', 25, timezone('utc'::text, now()) - interval '31 days', timezone('utc'::text, now()) - interval '3 days'),
-  (26, 'user_01KGG4R8HZAV513662YE3DJ0A9', 25, 'flashcard', 'Function of mitochondria', 'They generate ATP through cellular respiration.', 26, timezone('utc'::text, now()) - interval '30 days', timezone('utc'::text, now()) - interval '5 days'),
-  (27, 'user_01KGG4R8HZAV513662YE3DJ0A9', 27, 'flashcard', 'What is Hammurabi''s Code?', 'An early Babylonian law code known for explicit written rules and penalties.', 27, timezone('utc'::text, now()) - interval '29 days', timezone('utc'::text, now()) - interval '7 days'),
-  (28, 'user_01KGG4R8HZAV513662YE3DJ0A9', 42, 'practice', 'Name one Renaissance turning point', 'The printing press accelerated the spread of ideas and learning.', 28, timezone('utc'::text, now()) - interval '28 days', timezone('utc'::text, now()) - interval '4 days'),
-  (29, 'user_01KGG4R8HZAV513662YE3DJ0A9', 30, 'practice', 'Define progressive overload', 'Increase stress over time through load, reps, sets, or difficulty so the body adapts.', 29, timezone('utc'::text, now()) - interval '27 days', timezone('utc'::text, now()) - interval '2 days'),
-  (30, 'user_01KGG4R8HZAV513662YE3DJ0A9', 31, 'flashcard', 'Protein target per kg for muscle gain', 'Roughly 1.6 to 2.2 grams per kilogram per day.', 30, timezone('utc'::text, now()) - interval '26 days', timezone('utc'::text, now()) - interval '1 days'),
-  (31, 'user_01KGG4R8HZAV513662YE3DJ0A9', 41, 'practice', 'Build a simple cutting meal plan', 'Choose fixed meal templates, adequate protein, and a calorie target you can repeat.', 31, timezone('utc'::text, now()) - interval '25 days', timezone('utc'::text, now()) - interval '2 days'),
-  (32, 'user_01KGG4R8HZAV513662YE3DJ0A9', 33, 'practice', 'Legacy whiteboard prompt', 'Clarify constraints, state tradeoffs, and keep the old flow rendering correctly.', 32, timezone('utc'::text, now()) - interval '24 days', timezone('utc'::text, now()) - interval '18 days'),
-  (33, 'user_01KGG4R8HZAV513662YE3DJ0A9', 34, 'flashcard', 'Legacy cache invalidation quote', 'There are only two hard things in computer science: cache invalidation and naming things.', 33, timezone('utc'::text, now()) - interval '23 days', timezone('utc'::text, now()) - interval '19 days'),
-  (34, 'user_01KGG4R8HZAV513662YE3DJ0A9', 1, 'flashcard', 'What is the Feynman technique?', 'Explain the idea simply, identify gaps, then refine until the explanation is clear.', 34, timezone('utc'::text, now()) - interval '22 days', timezone('utc'::text, now()) - interval '2 days'),
-  (35, 'user_01KGG4R8HZAV513662YE3DJ0A9', 5, 'flashcard', 'Difference between a process and a thread', 'Processes isolate memory; threads share memory within a process.', 35, timezone('utc'::text, now()) - interval '21 days', timezone('utc'::text, now()) - interval '1 days'),
-  (36, 'user_01KGG4R8HZAV513662YE3DJ0A9', 10, 'practice', 'Thirty-minute language study loop', 'Review old cards, shadow audio, speak aloud, and end with short recall writing.', 36, timezone('utc'::text, now()) - interval '20 days', timezone('utc'::text, now()) - interval '3 days'),
-  (37, 'user_01KGG4R8HZAV513662YE3DJ0A9', 19, 'practice', 'Run a weekly career growth review', 'Audit wins, bottlenecks, evidence of impact, and the single skill to push next.', 37, timezone('utc'::text, now()) - interval '19 days', timezone('utc'::text, now()) - interval '2 days'),
-  (38, 'user_01KGG4R8HZAV513662YE3DJ0A9', 23, 'flashcard', 'Difference between hypothesis and theory', 'A hypothesis is a testable claim; a theory is a broader explanatory framework backed by evidence.', 38, timezone('utc'::text, now()) - interval '18 days', timezone('utc'::text, now()) - interval '2 days'),
-  (39, 'user_01KGG4R8HZAV513662YE3DJ0A9', 26, 'flashcard', 'Primary versus secondary source', 'A primary source is direct evidence from the time; a secondary source interprets it later.', 39, timezone('utc'::text, now()) - interval '17 days', timezone('utc'::text, now()) - interval '2 days'),
-  (40, 'user_01KGG4R8HZAV513662YE3DJ0A9', 29, 'flashcard', 'Why schedule recovery days?', 'Recovery lets adaptation happen and reduces injury risk from accumulated fatigue.', 40, timezone('utc'::text, now()) - interval '16 days', timezone('utc'::text, now()) - interval '1 days');
+SELECT
+  seeded_cards.id,
+  seeded_cards.user_id,
+  seeded_cards.topic_id,
+  seeded_cards.type::review_card_type,
+  seeded_cards.prompt,
+  seeded_cards.answer,
+  fsrs_data.stability,
+  fsrs_data.difficulty,
+  fsrs_data.state,
+  fsrs_data.step,
+  fsrs_data.last_reviewed_at,
+  fsrs_data.retired,
+  seeded_cards.inserted_at,
+  seeded_cards.updated_at
+FROM seeded_cards
+LEFT JOIN fsrs_data ON fsrs_data.legacy_id = seeded_cards.legacy_fsrs_id;
 
 INSERT INTO review_card_types (review_card_id, type)
 SELECT id, type
@@ -243,7 +264,6 @@ VALUES
   (116, 'user_01KGG4R8HZAV513662YE3DJ0A9', 1, 'Older algebra review', 'Solved it but skipped the verification step.', CURRENT_DATE - 11, CURRENT_DATE - 11, 'miss', 1.9, 3.3, 'REVIEW', NULL, CURRENT_DATE - 4, 2.1, 3.1, 'RELEARNING', 1, CURRENT_DATE + 1);
 
 SELECT setval('topics_id_seq', (SELECT COALESCE(MAX(id), 1) FROM topics), true);
-SELECT setval('fsrs_states_id_seq', (SELECT COALESCE(MAX(id), 1) FROM fsrs_states), true);
 SELECT setval('review_cards_id_seq', (SELECT COALESCE(MAX(id), 1) FROM review_cards), true);
 SELECT setval('reviews_id_seq', (SELECT COALESCE(MAX(id), 1) FROM reviews), true);
 

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.exceptions import NotFoundError
-from app.models import FsrsState, Review, ReviewCard, ReviewCardTypeAssignment, Topic
+from app.models import Review, ReviewCard, ReviewCardTypeAssignment, Topic
 from app.schemas.review_cards import ReviewCardQueueItem, ReviewCardQueuePage
 from app.utils.current_date import get_current_date
 
@@ -33,7 +33,6 @@ async def get_review_card(
         .where(ReviewCard.id == review_card_id, ReviewCard.user_id == user_id)
         .options(
             selectinload(ReviewCard.topic),
-            selectinload(ReviewCard.fsrs_state),
             selectinload(ReviewCard.reviews),
             selectinload(ReviewCard.type_assignments),
         )
@@ -78,7 +77,6 @@ async def list_review_cards(
 
     stmt = stmt.options(
         selectinload(ReviewCard.topic),
-        selectinload(ReviewCard.fsrs_state),
         selectinload(ReviewCard.reviews),
         selectinload(ReviewCard.type_assignments),
     )
@@ -95,7 +93,7 @@ async def create_review_card(
     type: str,
     prompt: str = "",
     answer: str = "",
-    srs_enabled: bool = True,
+    retired: bool = False,
 ) -> ReviewCard:
     topic_result = await session.execute(
         select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
@@ -110,14 +108,8 @@ async def create_review_card(
         type=type,
         prompt=prompt,
         answer=answer,
+        retired=retired,
     )
-
-    if srs_enabled:
-        fsrs_state = FsrsState(srs_enabled=True)
-        session.add(fsrs_state)
-        await session.flush()
-        review_card.fsrs_state_id = fsrs_state.id
-        review_card.fsrs_state = fsrs_state
 
     session.add(review_card)
     await session.flush()
@@ -156,16 +148,8 @@ async def update_review_card(
     if type_changed:
         await sync_review_card_type_assignment(session, review_card)
 
-    if "srs_enabled" in updates and updates["srs_enabled"] is not None:
-        srs_enabled = updates["srs_enabled"]
-        if review_card.fsrs_state is None:
-            fsrs_state = FsrsState(srs_enabled=srs_enabled)
-            session.add(fsrs_state)
-            await session.flush()
-            review_card.fsrs_state_id = fsrs_state.id
-            review_card.fsrs_state = fsrs_state
-        else:
-            review_card.fsrs_state.srs_enabled = srs_enabled
+    if "retired" in updates and updates["retired"] is not None:
+        review_card.retired = updates["retired"]
 
     await session.flush()
     return await get_review_card(session, review_card_id, user_id)
@@ -207,7 +191,6 @@ async def list_review_card_queue(
             )
             .options(
                 selectinload(Review.review_card).selectinload(ReviewCard.topic),
-                selectinload(Review.review_card).selectinload(ReviewCard.fsrs_state),
                 selectinload(Review.review_card).selectinload(ReviewCard.reviews),
                 selectinload(Review.review_card).selectinload(
                     ReviewCard.type_assignments
@@ -220,7 +203,7 @@ async def list_review_card_queue(
             review_card = review.review_card
             if review_card is None:
                 continue
-            if not review_card.srs_enabled:
+            if review_card.retired:
                 continue
             if review.scheduled_at is None:
                 continue
@@ -251,7 +234,6 @@ async def list_review_card_queue(
             )
             .options(
                 selectinload(ReviewCard.topic),
-                selectinload(ReviewCard.fsrs_state),
                 selectinload(ReviewCard.reviews),
                 selectinload(ReviewCard.type_assignments),
             )
@@ -259,7 +241,7 @@ async def list_review_card_queue(
         )
 
         for review_card in new_cards_result.scalars().unique().all():
-            if not review_card.srs_enabled:
+            if review_card.retired:
                 continue
             items.append(
                 ReviewCardQueueItem(

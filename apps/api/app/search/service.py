@@ -63,7 +63,6 @@ async def _search_review_cards(
 
     stmt = stmt.options(
         selectinload(ReviewCard.topic),
-        selectinload(ReviewCard.fsrs_state),
         selectinload(ReviewCard.reviews),
         selectinload(ReviewCard.type_assignments),
     )
