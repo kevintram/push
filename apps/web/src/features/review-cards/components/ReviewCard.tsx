@@ -149,7 +149,6 @@ interface ReviewCardProps {
 	onRemoveFromTab?: () => void
 	removeFromTabLabel?: string
 	isRemovingFromTab?: boolean
-	readOnly?: boolean
 	parentLabel?: string
 	typeLabelOverride?: string
 }
@@ -163,7 +162,6 @@ export function ReviewCard({
 	onRemoveFromTab,
 	removeFromTabLabel = 'Remove from tab',
 	isRemovingFromTab = false,
-	readOnly = true,
 	parentLabel,
 	typeLabelOverride
 }: ReviewCardProps) {
@@ -296,17 +294,16 @@ export function ReviewCard({
 	const handleSrsToggle = useCallback(
 		(event: MouseEvent) => {
 			event.stopPropagation()
-			if (readOnly) return
 			updateReviewCard({
 				id: reviewCard.id,
 				srs_enabled: !reviewCard.srs_enabled
 			})
 		},
-		[readOnly, reviewCard.id, reviewCard.srs_enabled, updateReviewCard]
+		[reviewCard.id, reviewCard.srs_enabled, updateReviewCard]
 	)
 
 	const handleDeleteReviewCard = useCallback(async () => {
-		if (readOnly || deleteReviewCardMutation.isPending) return
+		if (deleteReviewCardMutation.isPending) return
 		const confirmed = window.confirm(
 			'Delete this review card? This action cannot be undone.'
 		)
@@ -319,7 +316,7 @@ export function ReviewCard({
 				error instanceof Error ? error.message : 'Failed to delete review card'
 			)
 		}
-	}, [deleteReviewCardMutation, readOnly, reviewCard.id])
+	}, [deleteReviewCardMutation, reviewCard.id])
 
 	const handleRevealPrimary = useCallback((event: MouseEvent) => {
 		event.stopPropagation()
@@ -390,7 +387,7 @@ export function ReviewCard({
 
 	const handleRatingSelect = useCallback(
 		async (ratingState: ReviewRatingState) => {
-			if (isCreatingReview || readOnly) return
+			if (isCreatingReview) return
 			try {
 				if (ratingState === 'uncompleted') {
 					await createReview(null, null)
@@ -401,7 +398,7 @@ export function ReviewCard({
 				toast.error('Failed to create review')
 			}
 		},
-		[createReview, isCreatingReview, readOnly]
+		[createReview, isCreatingReview]
 	)
 
 	const hasStatusBadges = resolvedStatusBadges.length > 0
@@ -720,7 +717,7 @@ export function ReviewCard({
 						trigger={
 							<Button
 								className='rounded-full'
-								disabled={isCreatingReview || readOnly}
+								disabled={isCreatingReview}
 								onClick={event => event.stopPropagation()}
 								onKeyDown={event => event.stopPropagation()}
 								size='xs'
@@ -744,7 +741,6 @@ export function ReviewCard({
 						}
 						aria-pressed={reviewCard.srs_enabled}
 						className={isUpdatingReviewCard ? 'opacity-50' : ''}
-						disabled={readOnly}
 						onClick={handleSrsToggle}
 						onKeyDown={event => event.stopPropagation()}
 						size='icon-sm'
@@ -783,7 +779,7 @@ export function ReviewCard({
 								</DropdownMenuItem>
 							) : null}
 							<DropdownMenuItem
-								disabled={deleteReviewCardMutation.isPending || readOnly}
+								disabled={deleteReviewCardMutation.isPending}
 								onClick={event => {
 									event.stopPropagation()
 									handleDeleteReviewCard().catch(() => {})

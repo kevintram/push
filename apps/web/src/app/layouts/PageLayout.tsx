@@ -11,6 +11,7 @@ interface PageLayoutHeaderProps {
 	title: string
 	icon?: LucideIcon
 	titleExtra?: ReactNode
+	actions?: ReactNode
 	children?: ReactNode
 }
 
@@ -31,6 +32,7 @@ function PageLayoutHeader({
 	title,
 	icon: Icon,
 	titleExtra,
+	actions,
 	children
 }: PageLayoutHeaderProps) {
 	return (
@@ -41,6 +43,7 @@ function PageLayoutHeader({
 					{title}
 					{titleExtra}
 				</h1>
+				{actions}
 			</div>
 			{children}
 		</div>

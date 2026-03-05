@@ -4,6 +4,7 @@ import { Layers } from 'lucide-react'
 import { type ReactNode, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Button } from '~/components/ui/button'
 import { CountBadge } from '~/components/ui/count-badge'
 import {
@@ -18,6 +19,13 @@ import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQue
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import type { ReviewCardQueueItem } from '~/features/review-cards/types/review-card.types'
 import { useCreateReview } from '~/features/reviews/api/createReview'
+import {
+	DEFAULT_MASONRY_GAP,
+	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
+	estimateReviewCardSize
+} from '~/utils/estimateMasonryItemSize'
+
+const FLASHCARD_ACTION_ROW_ESTIMATE_PX = 56
 
 function groupDueByDate(items: Array<ReviewCardQueueItem>) {
 	const byDate = new Map<string, Array<ReviewCardQueueItem>>()
@@ -58,6 +66,42 @@ export function FlashcardsPage() {
 
 	const activeCard = useMemo(() => items[0]?.card ?? null, [items])
 	const dueSections = useMemo(() => groupDueByDate(items), [items])
+
+	function renderQueueMasonry(
+		queueItems: Array<ReviewCardQueueItem>,
+		options?: {
+			renderActions?: (item: ReviewCardQueueItem) => ReactNode
+			actionEstimate?: number
+		}
+	) {
+		const actionEstimate = options?.actionEstimate ?? 0
+
+		return (
+			<MasonryLayout
+				estimateItemSize={(item, _index, laneWidth) =>
+					estimateReviewCardSize(item.card, laneWidth, actionEstimate)
+				}
+				gap={DEFAULT_MASONRY_GAP}
+				getItemKey={item => `${item.card.id}-${item.review_id ?? 'new'}`}
+				items={queueItems}
+				minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
+				renderItem={item => (
+					<div className='space-y-2'>
+						<ReviewCard
+							onClick={() =>
+								navigate({
+									to: '/review-cards/$reviewCardId',
+									params: { reviewCardId: item.card.id.toString() }
+								})
+							}
+							reviewCard={item.card}
+						/>
+						{options?.renderActions?.(item)}
+					</div>
+				)}
+			/>
+		)
+	}
 
 	async function rateCard(rating: 'miss' | 'hard' | 'good' | 'easy') {
 		if (!activeCard) return
@@ -112,7 +156,6 @@ export function FlashcardsPage() {
 							params: { reviewCardId: activeCard.id.toString() }
 						})
 					}
-					readOnly={true}
 					reviewCard={activeCard}
 				/>
 				<div className='flex flex-wrap items-center justify-center gap-2'>
@@ -131,6 +174,19 @@ export function FlashcardsPage() {
 				</div>
 			</div>
 		)
+	} else if (scope === 'all') {
+		content =
+			activeTab === 'due'
+				? dueSections.map(section => (
+						<div className='space-y-3' key={section.id}>
+							<h3 className='flex items-center gap-2 font-bold text-xl'>
+								{section.label}
+								<CountBadge count={section.items.length} />
+							</h3>
+							{renderQueueMasonry(section.items)}
+						</div>
+					))
+				: renderQueueMasonry(items)
 	} else if (activeTab === 'due') {
 		content = dueSections.map(section => (
 			<div className='space-y-3' key={section.id}>
@@ -138,67 +194,40 @@ export function FlashcardsPage() {
 					{section.label}
 					<CountBadge count={section.items.length} />
 				</h3>
-				<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-					{section.items.map(item => (
-						<div
-							className='space-y-2'
-							key={`${item.card.id}-${item.review_id ?? 'new'}`}
-						>
-							<ReviewCard
-								onClick={() =>
-									navigate({
-										to: '/review-cards/$reviewCardId',
-										params: { reviewCardId: item.card.id.toString() }
-									})
-								}
-								readOnly={true}
-								reviewCard={item.card}
-							/>
-							<div className='flex items-center gap-2'>
-								<Button
-									onClick={() => markCard(item.card.id, 'hard')}
-									size='xs'
-									variant='outline'
-								>
-									Hard
-								</Button>
-								<Button
-									onClick={() => markCard(item.card.id, 'good')}
-									size='xs'
-									variant='outline'
-								>
-									Good
-								</Button>
-							</div>
+				{renderQueueMasonry(section.items, {
+					actionEstimate: FLASHCARD_ACTION_ROW_ESTIMATE_PX,
+					renderActions: item => (
+						<div className='flex items-center gap-2'>
+							<Button
+								onClick={() => markCard(item.card.id, 'hard')}
+								size='xs'
+								variant='outline'
+							>
+								Hard
+							</Button>
+							<Button
+								onClick={() => markCard(item.card.id, 'good')}
+								size='xs'
+								variant='outline'
+							>
+								Good
+							</Button>
 						</div>
-					))}
-				</div>
+					)
+				})}
 			</div>
 		))
 	} else {
-		content = (
-			<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-				{items.map(item => (
-					<div className='space-y-2' key={item.card.id}>
-						<ReviewCard
-							onClick={() =>
-								navigate({
-									to: '/review-cards/$reviewCardId',
-									params: { reviewCardId: item.card.id.toString() }
-								})
-							}
-							readOnly={true}
-							reviewCard={item.card}
-						/>
-						<div className='flex items-center gap-2'>
-							<Button onClick={() => markCard(item.card.id, 'good')} size='xs'>
-								Mark Reviewed
-							</Button>
-						</div>
-					</div>
-				))}
-			</div>
-		)
+		content = renderQueueMasonry(items, {
+			actionEstimate: FLASHCARD_ACTION_ROW_ESTIMATE_PX,
+			renderActions: item => (
+				<div className='flex items-center gap-2'>
+					<Button onClick={() => markCard(item.card.id, 'good')} size='xs'>
+						Mark Reviewed
+					</Button>
+				</div>
+			)
+		})
 	}
 
 	return (
