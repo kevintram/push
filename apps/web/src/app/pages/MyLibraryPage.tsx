@@ -57,13 +57,13 @@ export function MyLibraryPage() {
 	}, [createTopicAsync, isCreatingTopic, navigate])
 
 	useEffect(() => {
-		const createRequestedTopic = () => {
+		const createRequestedTopic = async () => {
 			if (consumeCreateTopicRequest()) {
-				void handleCreateTopic()
+				await handleCreateTopic()
 			}
 		}
 
-		createRequestedTopic()
+		createRequestedTopic().catch(() => {})
 		window.addEventListener(CREATE_TOPIC_INTENT_EVENT, createRequestedTopic)
 
 		return () => {
@@ -87,7 +87,7 @@ export function MyLibraryPage() {
 					<EmptyDescription>Create topics to get started</EmptyDescription>
 				</EmptyHeader>
 				<EmptyContent>
-					<Button disabled={isCreatingTopic} onClick={() => void handleCreateTopic()}>
+					<Button disabled={isCreatingTopic} onClick={handleCreateTopic}>
 						<Plus />
 						Create
 					</Button>
@@ -125,10 +125,7 @@ export function MyLibraryPage() {
 		<PageLayout>
 			<PageLayout.Header
 				actions={
-					<Button
-						disabled={isCreatingTopic}
-						onClick={() => void handleCreateTopic()}
-					>
+					<Button disabled={isCreatingTopic} onClick={handleCreateTopic}>
 						<Plus />
 						Create
 					</Button>
