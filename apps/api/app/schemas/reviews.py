@@ -1,14 +1,22 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from enum import Enum
 
 from pydantic import BaseModel, ConfigDict
+
+
+class RatingEnum(str, Enum):
+    MISS = "miss"
+    HARD = "hard"
+    GOOD = "good"
+    EASY = "easy"
 
 
 class ReviewBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    rating: str | None
+    rating: RatingEnum | None
     description: str = ""
     notes: str = ""
     scheduled_at: date | None = None
@@ -19,7 +27,7 @@ class ReviewRead(ReviewBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    note_id: int
+    review_card_id: int
     inserted_at: datetime
     updated_at: datetime
     effective_date: date | None = None
@@ -39,43 +47,45 @@ class ReviewRead(ReviewBase):
     due_after: date | None
 
 
-class NoteSummary(BaseModel):
+class ReviewCardSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    title: str
-    body: str
+    topic_id: int
+    type: str
+    prompt: str
+    answer: str
 
 
 class ReviewListItem(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 
-    note: NoteSummary
+    review_card: ReviewCardSummary
 
 
-class ReviewWithNote(ReviewRead):
+class ReviewWithCard(ReviewRead):
     model_config = ConfigDict(from_attributes=True)
 
-    note: NoteSummary
+    review_card: ReviewCardSummary
 
 
 class ReviewCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
-    note_id: int
+    review_card_id: int
     description: str = ""
     notes: str = ""
     scheduled_at: date | None = None
     completed_at: date | None = None
-    rating: str | None = None
+    rating: RatingEnum | None = None
 
 
 class ReviewUpdate(BaseModel):
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
-    rating: str | None = None
+    rating: RatingEnum | None = None
     description: str | None = None
     notes: str | None = None
     scheduled_at: date | None = None
     completed_at: date | None = None
-    note_id: int | None = None
+    review_card_id: int | None = None

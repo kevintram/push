@@ -20,15 +20,15 @@ from typing import TYPE_CHECKING
 from app.models.base import Base
 
 if TYPE_CHECKING:
-    from app.models.notes import Note
+    from app.models.review_cards import ReviewCard
 
 
 class Review(Base):
     __tablename__ = "reviews"
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
-    note_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("notes.id", ondelete="CASCADE"), nullable=False
+    review_card_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("review_cards.id", ondelete="CASCADE"), nullable=False
     )
     user_id: Mapped[str] = mapped_column(String, nullable=False)
 
@@ -80,4 +80,4 @@ class Review(Base):
     due_after: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     # Relationships
-    note: Mapped["Note"] = relationship(back_populates="reviews")
+    review_card: Mapped["ReviewCard"] = relationship(back_populates="reviews")
