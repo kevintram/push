@@ -4,10 +4,10 @@ These are pure Python exceptions, NOT HTTPExceptions.
 They are translated to HTTP responses by exception handlers in main.py.
 
 Usage:
-    raise NotFoundError("Note", note_id)
-    raise CycleDetectedError("notes")
-    raise AlreadyExistsError("Note relation already exists")
-    raise SelfReferenceError("Cannot relate note to itself")
+    raise NotFoundError("Topic", topic_id)
+    raise CycleDetectedError("topics")
+    raise AlreadyExistsError("Review card relation already exists")
+    raise SelfReferenceError("Cannot relate topic to itself")
 """
 
 
