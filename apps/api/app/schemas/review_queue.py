@@ -1,24 +1,4 @@
-from datetime import date
-from typing import Literal
+from app.schemas.review_cards import ReviewCardQueueItem as ReviewQueueItem
+from app.schemas.review_cards import ReviewCardQueuePage as ReviewQueuePage
 
-from pydantic import BaseModel, ConfigDict
-
-from app.schemas.notes import NoteRead, NoteStatusBadge
-
-
-class ReviewQueueItem(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    queue_type: Literal["due", "hazy"]
-    entity_type: Literal["note"]
-    note: NoteRead
-    review_id: int | None = None
-    scheduled_at: date | None = None
-    days_until_due: int | None = None
-    days_until_hazy: int | None = None
-    status_badges: list[NoteStatusBadge] = []
-
-
-class ReviewQueuePage(BaseModel):
-    items: list[ReviewQueueItem]
-    as_of: date
+__all__ = ["ReviewQueueItem", "ReviewQueuePage"]
