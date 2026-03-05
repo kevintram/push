@@ -23,12 +23,5 @@ export function useFsrsState(
 			step: entity.step,
 			lastReviewedAt: entity.last_reviewed_at
 		}
-	}, [
-		entity?.fsrs_state_id,
-		entity?.stability,
-		entity?.difficulty,
-		entity?.state,
-		entity?.step,
-		entity?.last_reviewed_at
-	])
+	}, [entity])
 }
