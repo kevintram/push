@@ -462,7 +462,7 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 								variant='destructive'
 							>
 								<Trash2 className='mr-2 h-4 w-4' />
-								Delete topic
+								Delete
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
