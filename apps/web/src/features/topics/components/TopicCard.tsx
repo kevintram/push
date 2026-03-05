@@ -3,7 +3,9 @@ import {
 	CalendarClock,
 	Check,
 	Copy,
+	MoreHorizontal,
 	PenLine,
+	Trash2,
 	User2
 } from 'lucide-react'
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
@@ -11,6 +13,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { Textarea } from '~/components/ui/textarea'
 import {
@@ -25,6 +33,7 @@ import {
 	formatAbsoluteDate,
 	formatRelativeDate
 } from '~/utils/formatRelativeDate'
+import { useDeleteTopic } from '../api/deleteTopic'
 import type { Topic } from '../types/topic.types'
 
 const MIN_HEIGHT = 96
@@ -56,6 +65,7 @@ export function TopicCard({
 	minHeight = MIN_HEIGHT
 }: TopicCardProps) {
 	const [cardRef, cardRect] = useResizeObserver<HTMLDivElement>()
+	const deleteTopicMutation = useDeleteTopic()
 	const { hidesSecondary } = useFlashcardMode()
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
@@ -144,6 +154,17 @@ export function TopicCard({
 			toast.error('Failed to copy reveal')
 		}
 	}, [topic.body])
+	const handleDeleteTopic = useCallback(async () => {
+		if (deleteTopicMutation.isPending) return
+		try {
+			await deleteTopicMutation.mutateAsync(topic.id)
+			toast.success('Topic deleted')
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : 'Failed to delete topic'
+			)
+		}
+	}, [deleteTopicMutation, topic.id])
 
 	useEffect(() => {
 		if (topic.id < 0) return
@@ -385,6 +406,33 @@ export function TopicCard({
 					<TooltipContent>{resolvedParentLabel}</TooltipContent>
 				</Tooltip>
 				<div className='flex-1' />
+				<DropdownMenu>
+					<DropdownMenuTrigger
+						render={
+							<Button
+								className='h-5 w-5 p-0'
+								onClick={event => event.stopPropagation()}
+								onKeyDown={event => event.stopPropagation()}
+								variant='ghost'
+							>
+								<MoreHorizontal className='h-3 w-3' />
+							</Button>
+						}
+					/>
+					<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+						<DropdownMenuItem
+							disabled={deleteTopicMutation.isPending}
+							onClick={event => {
+								event.stopPropagation()
+								handleDeleteTopic().catch(() => {})
+							}}
+							variant='destructive'
+						>
+							<Trash2 className='mr-2 h-4 w-4' />
+							Delete
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 			</CardHeader>
 
 			<CardContent className='flex min-h-0 flex-1 flex-col gap-3 p-0'>
