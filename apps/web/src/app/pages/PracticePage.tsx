@@ -1,10 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
-import dayjs from 'dayjs'
 import { ListChecks } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
-import { PageLayout } from '~/app/layouts/PageLayout'
-import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { CountBadge } from '~/components/ui/count-badge'
+import { ReviewCardPageLayout } from '~/app/components/ReviewCardPageLayout'
 import {
 	Empty,
 	EmptyHeader,
@@ -12,43 +9,13 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQueue'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
+import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
 import type { ReviewCardQueueItem } from '~/features/review-cards/types/review-card.types'
-import { cn } from '~/lib/utils'
-import {
-	DEFAULT_MASONRY_GAP,
-	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
-	estimateReviewCardSize
-} from '~/utils/estimateMasonryItemSize'
+import { groupReviewCardQueueByDueDate } from '~/features/review-cards/utils/groupReviewCardQueueByDueDate'
 import { groupByDate } from '~/utils/groupByDate'
 import { useMediaQuery } from '~/utils/useMediaQuery'
-
-function groupDueByDate(items: Array<ReviewCardQueueItem>) {
-	const byDate = new Map<string, Array<ReviewCardQueueItem>>()
-
-	for (const item of items) {
-		const key = item.scheduled_at ?? 'unscheduled'
-		if (!byDate.has(key)) byDate.set(key, [])
-		byDate.get(key)!.push(item)
-	}
-
-	return [...byDate.entries()]
-		.sort(([a], [b]) => {
-			if (a === 'unscheduled') return 1
-			if (b === 'unscheduled') return -1
-			return a.localeCompare(b)
-		})
-		.map(([dateKey, groupedItems]) => ({
-			id: dateKey,
-			label:
-				dateKey === 'unscheduled'
-					? 'Unscheduled'
-					: dayjs(dateKey).format('dddd, MMM D'),
-			items: groupedItems
-		}))
-}
 
 function groupFocusedPracticeRows(
 	items: Array<ReviewCardQueueItem>,
@@ -82,6 +49,16 @@ function getFocusedPracticeRowClassName(rowLength: number) {
 export type PracticeTab = 'due' | 'new'
 export type PracticeScope = 'focused' | 'all'
 
+const PRACTICE_TAB_OPTIONS = [
+	{ label: 'Due', value: 'due' },
+	{ label: 'New', value: 'new' }
+] as const
+
+const PRACTICE_SCOPE_OPTIONS = [
+	{ label: 'Focused', value: 'focused' },
+	{ label: 'All', value: 'all' }
+] as const
+
 type PracticePageProps = {
 	activeTab: PracticeTab
 	scope?: PracticeScope
@@ -104,7 +81,10 @@ export function PracticePage({
 		focused: activeTab === 'due' ? scope === 'focused' : undefined
 	})
 
-	const dueSections = useMemo(() => groupDueByDate(items), [items])
+	const dueSections = useMemo(
+		() => groupReviewCardQueueByDueDate(items),
+		[items]
+	)
 	const focusedRows = useMemo(
 		() => groupFocusedPracticeRows(items, usesDesktopFocusedLayout),
 		[items, usesDesktopFocusedLayout]
@@ -119,33 +99,6 @@ export function PracticePage({
 			),
 		[items]
 	)
-
-	function renderQueueMasonry(queueItems: Array<ReviewCardQueueItem>) {
-		return (
-			<MasonryLayout
-				estimateItemSize={(item, _index, laneWidth) =>
-					estimateReviewCardSize(item.card, laneWidth)
-				}
-				gap={DEFAULT_MASONRY_GAP}
-				getItemKey={item => `${item.card.id}-${item.review_id ?? 'new'}`}
-				items={queueItems}
-				minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
-				renderItem={item => (
-					<div className='space-y-2'>
-						<ReviewCard
-							onClick={() =>
-								navigate({
-									to: '/review-cards/$reviewCardId',
-									params: { reviewCardId: item.card.id.toString() }
-								})
-							}
-							reviewCard={item.card}
-						/>
-					</div>
-				)}
-			/>
-		)
-	}
 
 	let content: ReactNode
 	if (isLoading) {
@@ -197,74 +150,35 @@ export function PracticePage({
 		)
 	} else {
 		const sections = activeTab === 'due' ? dueSections : newSections
-		content = sections.map(section => (
-			<div className='space-y-3' key={section.id}>
-				<h3 className='flex items-center gap-2 font-bold text-xl'>
-					{section.label}
-					<CountBadge count={section.items.length} />
-				</h3>
-				{renderQueueMasonry(section.items)}
-			</div>
-		))
-	}
-
-	let contentClassName = 'max-w-screen space-y-6 p-6'
-	if (isFocusedDueView) {
-		contentClassName =
-			'flex max-w-screen min-h-0 flex-1 flex-col gap-4 px-3 pt-3 pb-4 sm:px-6 sm:pt-3 sm:pb-6'
-	} else if (activeTab === 'due') {
-		contentClassName = 'max-w-screen space-y-6 px-6 pt-3 pb-6'
+		content = (
+			<ReviewCardSectionList
+				onCardClick={cardId =>
+					navigate({
+						to: '/review-cards/$reviewCardId',
+						params: { reviewCardId: cardId.toString() }
+					})
+				}
+				sections={sections}
+			/>
+		)
 	}
 
 	return (
-		<PageLayout>
-			<PageLayout.Header icon={ListChecks} title='Practice'>
-				<div className='flex justify-start'>
-					<Tabs
-						className='-mb-2'
-						onValueChange={value => {
-							if (value === 'due' || value === 'new') onActiveTabChange(value)
-						}}
-						value={activeTab}
-					>
-						<TabsList className='border-b-0' variant='line'>
-							<TabsTrigger value='due'>Due</TabsTrigger>
-							<TabsTrigger value='new'>New</TabsTrigger>
-						</TabsList>
-					</Tabs>
-				</div>
-			</PageLayout.Header>
-			<PageLayout.Content className={contentClassName}>
-				{activeTab === 'due' ? (
-					<div className='relative flex min-h-0 flex-1 flex-col'>
-						<Tabs
-							className='pointer-events-none absolute top-0 left-0 z-10 w-full items-start'
-							onValueChange={value => {
-								if (value === 'focused' || value === 'all') {
-									onScopeChange(value)
-								}
-							}}
-							value={scope}
-						>
-							<TabsList className='pointer-events-auto'>
-								<TabsTrigger value='focused'>Focused</TabsTrigger>
-								<TabsTrigger value='all'>All</TabsTrigger>
-							</TabsList>
-						</Tabs>
-						<div
-							className={cn(
-								'min-h-0 flex-1',
-								isFocusedDueView
-									? 'pt-14 xl:flex xl:items-center xl:justify-center xl:pt-0'
-									: 'pt-14'
-							)}
-						>
-							{content}
-						</div>
-					</div>
-				) : null}
-				{activeTab === 'new' ? content : null}
-			</PageLayout.Content>
-		</PageLayout>
+		<ReviewCardPageLayout
+			activeTab={activeTab}
+			centerFocusedContent={usesDesktopFocusedLayout}
+			icon={ListChecks}
+			isDueView={activeTab === 'due'}
+			isFocusedDueView={isFocusedDueView}
+			onActiveTabChange={onActiveTabChange}
+			onScopeChange={onScopeChange}
+			overlayFocusedScopeTabs={usesDesktopFocusedLayout}
+			scope={scope}
+			scopeOptions={PRACTICE_SCOPE_OPTIONS}
+			tabOptions={PRACTICE_TAB_OPTIONS}
+			title='Practice'
+		>
+			{content}
+		</ReviewCardPageLayout>
 	)
 }

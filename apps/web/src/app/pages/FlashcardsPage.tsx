@@ -3,10 +3,8 @@ import dayjs from 'dayjs'
 import { Layers } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '~/app/layouts/PageLayout'
-import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { ReviewCardPageLayout } from '~/app/components/ReviewCardPageLayout'
 import { Button } from '~/components/ui/button'
-import { CountBadge } from '~/components/ui/count-badge'
 import {
 	Empty,
 	EmptyHeader,
@@ -14,46 +12,26 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQueue'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
-import type { ReviewCardQueueItem } from '~/features/review-cards/types/review-card.types'
+import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
+import { groupReviewCardQueueByDueDate } from '~/features/review-cards/utils/groupReviewCardQueueByDueDate'
 import { useCreateReview } from '~/features/reviews/api/createReview'
-import { cn } from '~/lib/utils'
-import {
-	DEFAULT_MASONRY_GAP,
-	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
-	estimateReviewCardSize
-} from '~/utils/estimateMasonryItemSize'
+import { getRatingIcon } from '~/utils/getRatingIcon'
 import { groupByDate } from '~/utils/groupByDate'
-
-function groupDueByDate(items: Array<ReviewCardQueueItem>) {
-	const byDate = new Map<string, Array<ReviewCardQueueItem>>()
-
-	for (const item of items) {
-		const key = item.scheduled_at ?? 'unscheduled'
-		if (!byDate.has(key)) byDate.set(key, [])
-		byDate.get(key)!.push(item)
-	}
-
-	return [...byDate.entries()]
-		.sort(([a], [b]) => {
-			if (a === 'unscheduled') return 1
-			if (b === 'unscheduled') return -1
-			return a.localeCompare(b)
-		})
-		.map(([dateKey, groupedItems]) => ({
-			id: dateKey,
-			label:
-				dateKey === 'unscheduled'
-					? 'Unscheduled'
-					: dayjs(dateKey).format('dddd, MMM D'),
-			items: groupedItems
-		}))
-}
 
 export type FlashcardsTab = 'due' | 'new'
 export type FlashcardsScope = 'focused' | 'all'
+
+const FLASHCARD_TAB_OPTIONS = [
+	{ label: 'Due', value: 'due' },
+	{ label: 'New', value: 'new' }
+] as const
+
+const FLASHCARD_SCOPE_OPTIONS = [
+	{ label: 'Focused', value: 'focused' },
+	{ label: 'All', value: 'all' }
+] as const
 
 type FlashcardsPageProps = {
 	activeTab: FlashcardsTab
@@ -78,7 +56,10 @@ export function FlashcardsPage({
 	const createReviewMutation = useCreateReview()
 
 	const activeCard = useMemo(() => items[0]?.card ?? null, [items])
-	const dueSections = useMemo(() => groupDueByDate(items), [items])
+	const dueSections = useMemo(
+		() => groupReviewCardQueueByDueDate(items),
+		[items]
+	)
 	const newSections = useMemo(
 		() =>
 			groupByDate(
@@ -89,33 +70,6 @@ export function FlashcardsPage({
 			),
 		[items]
 	)
-
-	function renderQueueMasonry(queueItems: Array<ReviewCardQueueItem>) {
-		return (
-			<MasonryLayout
-				estimateItemSize={(item, _index, laneWidth) =>
-					estimateReviewCardSize(item.card, laneWidth)
-				}
-				gap={DEFAULT_MASONRY_GAP}
-				getItemKey={item => `${item.card.id}-${item.review_id ?? 'new'}`}
-				items={queueItems}
-				minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
-				renderItem={item => (
-					<div className='space-y-2'>
-						<ReviewCard
-							onClick={() =>
-								navigate({
-									to: '/review-cards/$reviewCardId',
-									params: { reviewCardId: item.card.id.toString() }
-								})
-							}
-							reviewCard={item.card}
-						/>
-					</div>
-				)}
-			/>
-		)
-	}
 
 	async function rateCard(rating: 'miss' | 'hard' | 'good' | 'easy') {
 		if (!activeCard) return
@@ -159,86 +113,61 @@ export function FlashcardsPage({
 				/>
 				<div className='flex flex-wrap items-center justify-center gap-2'>
 					<Button onClick={() => rateCard('miss')} variant='outline'>
-						Miss
+						<span className='flex items-center gap-2'>
+							{getRatingIcon('miss')}
+							<span>Miss</span>
+						</span>
 					</Button>
 					<Button onClick={() => rateCard('hard')} variant='outline'>
-						Hard
+						<span className='flex items-center gap-2'>
+							{getRatingIcon('hard')}
+							<span>Hard</span>
+						</span>
 					</Button>
 					<Button onClick={() => rateCard('good')} variant='outline'>
-						Good
+						<span className='flex items-center gap-2'>
+							{getRatingIcon('good')}
+							<span>Good</span>
+						</span>
 					</Button>
 					<Button onClick={() => rateCard('easy')} variant='outline'>
-						Easy
+						<span className='flex items-center gap-2'>
+							{getRatingIcon('easy')}
+							<span>Easy</span>
+						</span>
 					</Button>
 				</div>
 			</div>
 		)
 	} else {
 		const sections = activeTab === 'due' ? dueSections : newSections
-		content = sections.map(section => (
-			<div className='space-y-3' key={section.id}>
-				<h3 className='flex items-center gap-2 font-bold text-xl'>
-					{section.label}
-					<CountBadge count={section.items.length} />
-				</h3>
-				{renderQueueMasonry(section.items)}
-			</div>
-		))
+		content = (
+			<ReviewCardSectionList
+				onCardClick={cardId =>
+					navigate({
+						to: '/review-cards/$reviewCardId',
+						params: { reviewCardId: cardId.toString() }
+					})
+				}
+				sections={sections}
+			/>
+		)
 	}
 
-	const contentClassName = isFocusedDueView
-		? 'flex max-w-screen min-h-0 flex-1 flex-col gap-4 px-3 pt-3 pb-4 sm:px-6 sm:pt-3 sm:pb-6'
-		: activeTab === 'due'
-			? 'max-w-screen space-y-6 px-6 pt-3 pb-6'
-			: 'max-w-screen space-y-6 p-6'
-
 	return (
-		<PageLayout>
-			<PageLayout.Header icon={Layers} title='Flashcards'>
-				<div className='flex justify-start'>
-					<Tabs
-						className='-mb-2'
-						onValueChange={value => {
-							if (value === 'due' || value === 'new') onActiveTabChange(value)
-						}}
-						value={activeTab}
-					>
-						<TabsList className='border-b-0' variant='line'>
-							<TabsTrigger value='due'>Due</TabsTrigger>
-							<TabsTrigger value='new'>New</TabsTrigger>
-						</TabsList>
-					</Tabs>
-				</div>
-			</PageLayout.Header>
-			<PageLayout.Content className={contentClassName}>
-				{activeTab === 'due' ? (
-					<div className='relative flex min-h-0 flex-1 flex-col'>
-						<Tabs
-							className='pointer-events-none absolute top-0 left-0 z-10 w-full items-start'
-							onValueChange={value => {
-								if (value === 'focused' || value === 'all') {
-									onScopeChange(value)
-								}
-							}}
-							value={scope}
-						>
-							<TabsList className='pointer-events-auto'>
-								<TabsTrigger value='focused'>Focused</TabsTrigger>
-								<TabsTrigger value='all'>All</TabsTrigger>
-							</TabsList>
-						</Tabs>
-						<div
-							className={cn(
-								'min-h-0 flex-1',
-								isFocusedDueView ? 'flex items-center justify-center' : 'pt-14'
-							)}
-						>
-							{content}
-						</div>
-					</div>
-				) : null}
-				{activeTab === 'new' ? content : null}
-			</PageLayout.Content>
-		</PageLayout>
+		<ReviewCardPageLayout
+			activeTab={activeTab}
+			icon={Layers}
+			isDueView={activeTab === 'due'}
+			isFocusedDueView={isFocusedDueView}
+			onActiveTabChange={onActiveTabChange}
+			onScopeChange={onScopeChange}
+			scope={scope}
+			scopeOptions={FLASHCARD_SCOPE_OPTIONS}
+			tabOptions={FLASHCARD_TAB_OPTIONS}
+			title='Flashcards'
+		>
+			{content}
+		</ReviewCardPageLayout>
 	)
 }
