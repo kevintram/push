@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import {
 	AlertTriangle,
 	Anvil,
+	ArrowLeftRight,
 	Brain,
 	Check,
 	ChevronDown,
@@ -10,8 +11,9 @@ import {
 	Loader2,
 	MoreHorizontal,
 	Plus,
+	Search,
 	Sparkles,
-	Star,
+	Sunset,
 	Trash2,
 	User2
 } from 'lucide-react'
@@ -64,6 +66,9 @@ import {
 	getReviewCreatedToastActionLabel,
 	getReviewCreatedToastDescription
 } from '~/features/reviews/utils/reviewToastDescription'
+import { SearchDialog } from '~/features/search/components/SearchDialog'
+import type { SearchResultItem } from '~/features/search/types/search.types'
+import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
@@ -173,6 +178,7 @@ export function ReviewCardDetailPage({
 		mutateAsync: updateReviewCardAsync,
 		isPending: isUpdatingReviewCard
 	} = useUpdateReviewCard()
+	const { mutateAsync: createTopicAsync } = useCreateTopic()
 	const {
 		mutateAsync: deleteReviewCardAsync,
 		isPending: isDeletingReviewCard
@@ -203,8 +209,7 @@ export function ReviewCardDetailPage({
 					days_until_next_tier: reviewCard.days_until_next_tier,
 					stability: reviewCard.stability,
 					last_reviewed_at: reviewCard.last_reviewed_at,
-					inherited_stability: null,
-					srs_enabled: reviewCard.srs_enabled
+					inherited_stability: null
 				}
 			: null
 	)
@@ -264,6 +269,10 @@ export function ReviewCardDetailPage({
 	const [guessAnswerText, setGuessAnswerText] = useState('')
 	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const [isTopicMenuOpen, setIsTopicMenuOpen] = useState(false)
+	const [isTopicSearchOpen, setIsTopicSearchOpen] = useState(false)
+	const [topicSearchQuery, setTopicSearchQuery] = useState('')
+	const [isTopicMutationPending, setIsTopicMutationPending] = useState(false)
 
 	useEffect(() => {
 		if (!reviewCard) return
@@ -293,7 +302,7 @@ export function ReviewCardDetailPage({
 	}, [topic?.title, reviewCard?.topic_id])
 
 	const handleUpdateReviewCardFields = useCallback(
-		(fields: { prompt?: string; answer?: string; srs_enabled?: boolean }) => {
+		(fields: { prompt?: string; answer?: string; retired?: boolean }) => {
 			if (!reviewCard) return
 			updateReviewCardAsync({ id: reviewCard.id, ...fields }).catch(() => {
 				toast.error('Failed to update review card')
@@ -359,7 +368,8 @@ export function ReviewCardDetailPage({
 			if (reviewCard.topic_id != null) {
 				navigate({
 					to: '/topics/$topicId',
-					params: { topicId: reviewCard.topic_id.toString() }
+					params: { topicId: reviewCard.topic_id.toString() },
+					search: { tab: 'subtopics' }
 				})
 				return
 			}
@@ -370,6 +380,75 @@ export function ReviewCardDetailPage({
 			)
 		}
 	}, [deleteReviewCardAsync, isDeletingReviewCard, navigate, reviewCard])
+	const handleOpenTopicSearch = useCallback(() => {
+		if (isTopicMutationPending || isUpdatingReviewCard) return
+		setTopicSearchQuery('')
+		setIsTopicSearchOpen(true)
+	}, [isTopicMutationPending, isUpdatingReviewCard])
+	const handleAssignTopic = useCallback(
+		async (entity: SearchResultItem) => {
+			if (
+				!reviewCard ||
+				entity.entity_type !== 'topic' ||
+				!entity.topic ||
+				isTopicMutationPending
+			) {
+				return
+			}
+
+			if (entity.topic.id === reviewCard.topic_id) {
+				setIsTopicSearchOpen(false)
+				return
+			}
+
+			setIsTopicMutationPending(true)
+			try {
+				await updateReviewCardAsync({
+					id: reviewCard.id,
+					topic_id: entity.topic.id
+				})
+				toast.success('Topic changed')
+				setIsTopicSearchOpen(false)
+			} catch {
+				toast.error('Failed to change topic')
+			} finally {
+				setIsTopicMutationPending(false)
+			}
+		},
+		[isTopicMutationPending, reviewCard, updateReviewCardAsync]
+	)
+	const handleCreateAndAssignTopic = useCallback(async () => {
+		if (!reviewCard || isTopicMutationPending) return
+
+		setIsTopicMutationPending(true)
+		try {
+			const created = await createTopicAsync({
+				title: '',
+				body: '',
+				parent_id: null
+			})
+
+			try {
+				await updateReviewCardAsync({
+					id: reviewCard.id,
+					topic_id: created.id
+				})
+				toast.success('Topic changed')
+				setIsTopicSearchOpen(false)
+			} catch {
+				toast.error('Topic created but failed to assign')
+			}
+		} catch {
+			toast.error('Failed to create topic')
+		} finally {
+			setIsTopicMutationPending(false)
+		}
+	}, [
+		createTopicAsync,
+		isTopicMutationPending,
+		reviewCard,
+		updateReviewCardAsync
+	])
 
 	if (isLoading) {
 		return (
@@ -416,13 +495,23 @@ export function ReviewCardDetailPage({
 							<User2 className='h-3 w-3' />
 							<span>Topic</span>
 						</div>
-						<Badge className='h-6 rounded-full px-2 text-xs' variant='ghost'>
+						<Badge
+							className={`group/topic h-6 rounded-full px-1 text-xs ${
+								isTopicMenuOpen
+									? 'bg-muted text-muted-foreground dark:bg-muted/50'
+									: ''
+							}`}
+							variant='ghost'
+						>
 							<Button
-								className='h-5 cursor-pointer rounded-full px-0 font-medium text-xs leading-none'
+								className={`h-5 cursor-pointer rounded-full px-0 font-medium text-xs leading-none ${
+									isTopicMenuOpen ? 'text-muted-foreground' : ''
+								}`}
 								onClick={() =>
 									navigate({
 										to: '/topics/$topicId',
-										params: { topicId: reviewCard.topic_id.toString() }
+										params: { topicId: reviewCard.topic_id.toString() },
+										search: { tab: 'subtopics' }
 									})
 								}
 								size='xs'
@@ -431,6 +520,43 @@ export function ReviewCardDetailPage({
 							>
 								{parentLabel}
 							</Button>
+							<DropdownMenu onOpenChange={setIsTopicMenuOpen}>
+								<DropdownMenuTrigger
+									disabled={isTopicMutationPending || isUpdatingReviewCard}
+									render={
+										<Button
+											aria-label='Change topic'
+											className={`inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full p-0 transition-opacity ${
+												isTopicMenuOpen
+													? 'pointer-events-auto opacity-100'
+													: 'pointer-events-none opacity-0 focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/topic:pointer-events-auto group-hover/topic:opacity-100 group-active/topic:pointer-events-auto group-active/topic:opacity-100'
+											}`}
+											size='icon-xs'
+											type='button'
+											variant='ghost'
+										/>
+									}
+								>
+									<ArrowLeftRight className='h-3 w-3' />
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+									<div className='px-2 py-1.5 font-medium text-muted-foreground text-xs'>
+										Swap topic
+									</div>
+									<DropdownMenuItem onClick={handleOpenTopicSearch}>
+										<Search className='mr-2 h-4 w-4' />
+										Search
+									</DropdownMenuItem>
+									<DropdownMenuItem
+										onClick={() => {
+											void handleCreateAndAssignTopic()
+										}}
+									>
+										<Plus className='mr-2 h-4 w-4' />
+										Create
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</Badge>
 					</div>
 				}
@@ -438,6 +564,30 @@ export function ReviewCardDetailPage({
 				overdueCount={overdueCount}
 				unscheduledCount={unscheduledCount}
 			/>
+			{isTopicSearchOpen ? (
+				<SearchDialog
+					allowedTypes={['topic']}
+					closeOnSelect={false}
+					createLabel='Create topic'
+					filterResult={result =>
+						result.entity_type === 'topic' &&
+						result.topic != null &&
+						result.topic.id !== reviewCard.topic_id
+					}
+					initialFilter='topic'
+					isCreating={isTopicMutationPending}
+					onCreate={handleCreateAndAssignTopic}
+					onOpenChange={setIsTopicSearchOpen}
+					onSelectEntity={handleAssignTopic}
+					open={isTopicSearchOpen}
+					placeholder='Search topics to reassign this card...'
+					query={topicSearchQuery}
+					setQuery={setTopicSearchQuery}
+					showAllOption={false}
+					showNoTagOption={false}
+					title='Search topic'
+				/>
+			) : null}
 
 			<div className='flex-1 overflow-y-auto'>
 				<div className='mx-auto flex min-h-full w-full max-w-5xl flex-col px-6 py-5'>
@@ -749,29 +899,33 @@ export function ReviewCardDetailPage({
 										<TooltipTrigger render={<span className='inline-flex' />}>
 											<Button
 												aria-label={
-													reviewCard.srs_enabled
-														? 'Disable SRS for this item'
-														: 'Enable SRS for this item'
+													reviewCard.retired
+														? 'Return this item to review queue'
+														: 'Retire this item'
 												}
-												aria-pressed={reviewCard.srs_enabled}
+												aria-pressed={reviewCard.retired}
 												className='rounded-full'
 												disabled={isUpdatingReviewCard}
 												onClick={() =>
 													handleUpdateReviewCardFields({
-														srs_enabled: !reviewCard.srs_enabled
+														retired: !reviewCard.retired
 													})
 												}
 												size='icon-sm'
 												variant='outline'
 											>
-												{reviewCard.srs_enabled ? (
-													<Star className='h-4 w-4 fill-yellow-500 text-yellow-500' />
+												{reviewCard.retired ? (
+													<Sunset className='h-4 w-4 text-orange-500' />
 												) : (
-													<Star className='h-4 w-4 text-muted-foreground' />
+													<Sunset className='h-4 w-4 text-muted-foreground' />
 												)}
 											</Button>
 										</TooltipTrigger>
-										<TooltipContent>Show in review queue</TooltipContent>
+										<TooltipContent>
+											{reviewCard.retired
+												? 'Show in review queue'
+												: 'Hide from review queue'}
+										</TooltipContent>
 									</Tooltip>
 								</div>
 								<div className='flex items-center justify-end'>

@@ -6,10 +6,9 @@ export function formatRetrievability(retrievability: number | null): string {
 }
 
 export function getFreshnessTierColor(
-	freshnessTier: FreshnessTier | null,
-	srsEnabled = true
+	freshnessTier: FreshnessTier | null
 ): string {
-	if (!srsEnabled || freshnessTier === null) {
+	if (freshnessTier === null) {
 		return 'text-muted-foreground'
 	}
 

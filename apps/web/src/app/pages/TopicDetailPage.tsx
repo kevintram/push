@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { DetailTabsShell } from '~/components/DetailTabs/DetailTabsShell'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { AddEntityMenu } from '~/components/ui/add-entity-menu'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import {
@@ -57,6 +58,8 @@ import {
 import { useCreateReviewCard } from '~/features/review-cards/api/createReviewCard'
 import { useReviewCards } from '~/features/review-cards/api/getReviewCards'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
+import { SearchDialog } from '~/features/search/components/SearchDialog'
+import type { SearchResultItem } from '~/features/search/types/search.types'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
@@ -84,8 +87,41 @@ function isTopicDetailRevealPanelTab(
 	return value === 'guess' || value === 'reveal'
 }
 
-export function TopicDetailPage({ topicId }: { topicId: number }) {
+export type TopicDetailTab = 'subtopics' | 'review_cards'
+export type TopicDetailReviewCardFilter = 'all' | 'practice' | 'flashcard'
+
+function isTopicDetailTab(value: string): value is TopicDetailTab {
+	return value === 'subtopics' || value === 'review_cards'
+}
+
+function isTopicDetailReviewCardFilter(
+	value: string
+): value is TopicDetailReviewCardFilter {
+	return value === 'all' || value === 'practice' || value === 'flashcard'
+}
+
+type TopicDetailPageProps = {
+	topicId: number
+	activeHomeTab: TopicDetailTab | string
+	cardTypeFilter?: TopicDetailReviewCardFilter | string
+	onActiveHomeTabChange: (tab: TopicDetailTab) => void
+	onCardTypeFilterChange: (filter: TopicDetailReviewCardFilter) => void
+}
+
+export function TopicDetailPage({
+	topicId,
+	activeHomeTab,
+	cardTypeFilter = 'all',
+	onActiveHomeTabChange,
+	onCardTypeFilterChange
+}: TopicDetailPageProps) {
 	const navigate = useNavigate()
+	const resolvedActiveHomeTab = isTopicDetailTab(activeHomeTab)
+		? activeHomeTab
+		: 'subtopics'
+	const resolvedCardTypeFilter = isTopicDetailReviewCardFilter(cardTypeFilter)
+		? cardTypeFilter
+		: 'all'
 	const {
 		data: topic,
 		isLoading: isTopicLoading,
@@ -103,14 +139,11 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 		isPending: isCreatingReviewCard
 	} = useCreateReviewCard()
 
-	const [activeHomeTab, setActiveHomeTab] = useState<
-		'subtopics' | 'review_cards'
-	>('subtopics')
 	const [title, setTitle] = useState('')
 	const [body, setBody] = useState('')
-	const [cardTypeFilter, setCardTypeFilter] = useState<
-		'all' | 'practice' | 'flashcard'
-	>('all')
+	const [isParentSearchOpen, setIsParentSearchOpen] = useState(false)
+	const [parentSearchQuery, setParentSearchQuery] = useState('')
+	const [isParentMutationPending, setIsParentMutationPending] = useState(false)
 	const { hidesSecondary } = useFlashcardMode()
 	const [revealPanelTab, setRevealPanelTab] =
 		useState<TopicDetailRevealPanelTab | null>(hidesSecondary ? null : 'reveal')
@@ -142,9 +175,9 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 	}, [isRevealPanelCopied])
 
 	const selectedCardType = useMemo(() => {
-		if (cardTypeFilter === 'all') return
-		return cardTypeFilter
-	}, [cardTypeFilter])
+		if (resolvedCardTypeFilter === 'all') return
+		return resolvedCardTypeFilter
+	}, [resolvedCardTypeFilter])
 
 	const { data: subtopics = [], isLoading: isSubtopicsLoading } = useTopics(
 		{
@@ -186,7 +219,8 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 			})
 			navigate({
 				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() }
+				params: { topicId: created.id.toString() },
+				search: { tab: 'subtopics' }
 			})
 		} catch {
 			toast.error('Failed to create subtopic')
@@ -201,7 +235,7 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 				type,
 				prompt: '',
 				answer: '',
-				srs_enabled: true
+				retired: false
 			})
 			navigate({
 				to: '/review-cards/$reviewCardId',
@@ -225,6 +259,66 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 			)
 		}
 	}
+
+	const handleOpenSearchParent = useCallback(() => {
+		if (isUpdatingTopic || isParentMutationPending) return
+		setParentSearchQuery('')
+		setIsParentSearchOpen(true)
+	}, [isParentMutationPending, isUpdatingTopic])
+
+	const handleAssignParent = useCallback(
+		async (entity: SearchResultItem) => {
+			if (!topic || entity.entity_type !== 'topic' || !entity.topic) return
+			if (isParentMutationPending) return
+
+			if (entity.topic.id === topic.id) {
+				toast.error('Cannot set this topic as its own parent')
+				return
+			}
+
+			if (entity.topic.id === topic.parent_id) {
+				setIsParentSearchOpen(false)
+				return
+			}
+
+			setIsParentMutationPending(true)
+			try {
+				await updateTopicAsync({ id: topic.id, parent_id: entity.topic.id })
+				toast.success('Parent added')
+				setIsParentSearchOpen(false)
+			} catch {
+				toast.error('Failed to set parent')
+			} finally {
+				setIsParentMutationPending(false)
+			}
+		},
+		[isParentMutationPending, topic, updateTopicAsync]
+	)
+
+	const handleCreateParent = useCallback(async () => {
+		if (!topic || isParentMutationPending) return
+
+		setIsParentMutationPending(true)
+		try {
+			const created = await createTopicAsync({
+				title: '',
+				body: '',
+				parent_id: null
+			})
+
+			try {
+				await updateTopicAsync({ id: topic.id, parent_id: created.id })
+				toast.success('Parent added')
+				setIsParentSearchOpen(false)
+			} catch {
+				toast.error('Parent created but failed to set')
+			}
+		} catch {
+			toast.error('Failed to create parent')
+		} finally {
+			setIsParentMutationPending(false)
+		}
+	}, [createTopicAsync, isParentMutationPending, topic, updateTopicAsync])
 
 	if (isTopicLoading) {
 		return (
@@ -258,6 +352,22 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 	const revealPanelCopyButtonClassName =
 		'absolute right-2 bottom-2 text-muted-foreground hover:text-foreground'
 	const isBodyEmpty = body.trim().length === 0
+	const addParentMenu = (
+		<AddEntityMenu
+			buttonClassName='h-6 rounded-full px-2 text-xs'
+			buttonLabel='Add parent'
+			buttonSize='sm'
+			buttonVariant='ghost'
+			createItems={[
+				{ label: 'Create', onSelect: () => void handleCreateParent() }
+			]}
+			disabled={isUpdatingTopic}
+			isLoading={isParentMutationPending}
+			onSearch={handleOpenSearchParent}
+			searchLabel='Search'
+			showChevron={false}
+		/>
+	)
 
 	let subtopicsContent: ReactNode
 	if (isSubtopicsLoading) {
@@ -289,7 +399,8 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 						onClick={() =>
 							navigate({
 								to: '/topics/$topicId',
-								params: { topicId: subtopic.id.toString() }
+								params: { topicId: subtopic.id.toString() },
+								search: { tab: 'subtopics' }
 							})
 						}
 						parentLabel={topic.title || 'Current topic'}
@@ -373,22 +484,26 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 					<div className='flex items-center gap-2'>
 						<Badge
 							className='cursor-pointer'
-							onClick={() => setCardTypeFilter('all')}
-							variant={cardTypeFilter === 'all' ? 'default' : 'outline'}
+							onClick={() => onCardTypeFilterChange('all')}
+							variant={resolvedCardTypeFilter === 'all' ? 'default' : 'outline'}
 						>
 							All
 						</Badge>
 						<Badge
 							className='cursor-pointer'
-							onClick={() => setCardTypeFilter('practice')}
-							variant={cardTypeFilter === 'practice' ? 'default' : 'outline'}
+							onClick={() => onCardTypeFilterChange('practice')}
+							variant={
+								resolvedCardTypeFilter === 'practice' ? 'default' : 'outline'
+							}
 						>
 							Practice
 						</Badge>
 						<Badge
 							className='cursor-pointer'
-							onClick={() => setCardTypeFilter('flashcard')}
-							variant={cardTypeFilter === 'flashcard' ? 'default' : 'outline'}
+							onClick={() => onCardTypeFilterChange('flashcard')}
+							variant={
+								resolvedCardTypeFilter === 'flashcard' ? 'default' : 'outline'
+							}
 						>
 							Flashcard
 						</Badge>
@@ -448,7 +563,8 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 								onClick={() =>
 									navigate({
 										to: '/topics/$topicId',
-										params: { topicId: topic.parent_id!.toString() }
+										params: { topicId: topic.parent_id!.toString() },
+										search: { tab: 'subtopics' }
 									})
 								}
 								size='xs'
@@ -473,7 +589,7 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 							</Button>
 						</Badge>
 					) : (
-						<Badge variant='outline'>No parent</Badge>
+						addParentMenu
 					)}
 				</div>
 				<div className='flex items-center justify-end'>
@@ -497,6 +613,30 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 					</DropdownMenu>
 				</div>
 			</div>
+			{isParentSearchOpen ? (
+				<SearchDialog
+					allowedTypes={['topic']}
+					closeOnSelect={false}
+					createLabel='Create parent'
+					filterResult={result =>
+						result.entity_type === 'topic' &&
+						result.topic != null &&
+						result.topic.id !== topic.id
+					}
+					initialFilter='topic'
+					isCreating={isParentMutationPending}
+					onCreate={handleCreateParent}
+					onOpenChange={setIsParentSearchOpen}
+					onSelectEntity={handleAssignParent}
+					open={isParentSearchOpen}
+					placeholder='Search topics to set as parent...'
+					query={parentSearchQuery}
+					setQuery={setParentSearchQuery}
+					showAllOption={false}
+					showNoTagOption={false}
+					title='Search parent topic'
+				/>
+			) : null}
 
 			<div className='flex-1 overflow-y-auto' ref={scrollContainerRef}>
 				<div className='mx-auto w-full max-w-5xl px-6 py-5'>
@@ -694,11 +834,11 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 						<DetailTabsShell
 							onValueChange={value => {
 								if (value === 'subtopics' || value === 'review_cards') {
-									setActiveHomeTab(value)
+									onActiveHomeTabChange(value)
 								}
 							}}
 							tabs={tabs}
-							value={activeHomeTab}
+							value={resolvedActiveHomeTab}
 						/>
 					</div>
 				</div>

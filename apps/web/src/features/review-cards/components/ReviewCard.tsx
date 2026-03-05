@@ -11,7 +11,7 @@ import {
 	MoreHorizontal,
 	Plus,
 	Sparkles,
-	Star,
+	Sunset,
 	Trash2,
 	User2,
 	X
@@ -177,8 +177,7 @@ export function ReviewCard({
 		days_until_next_tier: reviewCard.days_until_next_tier,
 		stability: reviewCard.stability,
 		last_reviewed_at: reviewCard.last_reviewed_at,
-		inherited_stability: null,
-		srs_enabled: reviewCard.srs_enabled
+		inherited_stability: null
 	})
 
 	const { freshnessTierInfo, freshnessTierColor, isUnreviewed, stabilityText } =
@@ -291,15 +290,15 @@ export function ReviewCard({
 		})
 	}, [queryClient, reviewCard.id])
 
-	const handleSrsToggle = useCallback(
+	const handleRetiredToggle = useCallback(
 		(event: MouseEvent) => {
 			event.stopPropagation()
 			updateReviewCard({
 				id: reviewCard.id,
-				srs_enabled: !reviewCard.srs_enabled
+				retired: !reviewCard.retired
 			})
 		},
-		[reviewCard.id, reviewCard.srs_enabled, updateReviewCard]
+		[reviewCard.id, reviewCard.retired, updateReviewCard]
 	)
 
 	const handleDeleteReviewCard = useCallback(async () => {
@@ -735,21 +734,21 @@ export function ReviewCard({
 					/>
 					<Button
 						aria-label={
-							reviewCard.srs_enabled
-								? 'Disable SRS for this item'
-								: 'Enable SRS for this item'
+							reviewCard.retired
+								? 'Return this item to review queue'
+								: 'Retire this item'
 						}
-						aria-pressed={reviewCard.srs_enabled}
+						aria-pressed={reviewCard.retired}
 						className={isUpdatingReviewCard ? 'opacity-50' : ''}
-						onClick={handleSrsToggle}
+						onClick={handleRetiredToggle}
 						onKeyDown={event => event.stopPropagation()}
 						size='icon-sm'
 						variant='ghost'
 					>
-						{reviewCard.srs_enabled ? (
-							<Star className='h-4 w-4 fill-yellow-500 text-yellow-500' />
+						{reviewCard.retired ? (
+							<Sunset className='h-4 w-4 text-orange-500' />
 						) : (
-							<Star className='h-4 w-4 text-muted-foreground' />
+							<Sunset className='h-4 w-4 text-muted-foreground' />
 						)}
 					</Button>
 					<DropdownMenu>

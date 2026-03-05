@@ -36,11 +36,15 @@ interface SearchDialogProps {
 	query: string
 	setQuery: (query: string) => void
 	onSelectEntity?: (entity: SearchResultItem) => void | Promise<void>
+	onCreate?: () => void | Promise<void>
 	allowedTypes?: Array<EntityType>
 	initialFilter?: EntityTypeFilterValue
 	closeOnSelect?: boolean
 	title?: string
 	placeholder?: string
+	createLabel?: string
+	isCreating?: boolean
+	filterResult?: (result: SearchResultItem) => boolean
 	showAllOption?: boolean
 	showNoTagOption?: boolean
 }
@@ -68,11 +72,15 @@ export function SearchDialog({
 	query,
 	setQuery,
 	onSelectEntity,
+	onCreate,
 	allowedTypes,
 	initialFilter,
 	closeOnSelect = true,
 	title = 'Search',
 	placeholder = 'Search notes...',
+	createLabel = 'Create topic',
+	isCreating = false,
+	filterResult,
 	showAllOption = true,
 	showNoTagOption = false
 }: SearchDialogProps) {
@@ -116,8 +124,11 @@ export function SearchDialog({
 			activeFilter === 'all' ||
 			resolvedAllowedTypes.includes(activeFilter as EntityType)
 		if (!isAllowedFilter) return []
-		return searchResults.filter(result => matchesFilter(result, activeFilter))
-	}, [searchResults, activeFilter, resolvedAllowedTypes])
+		return searchResults.filter(result => {
+			if (!matchesFilter(result, activeFilter)) return false
+			return filterResult ? filterResult(result) : true
+		})
+	}, [searchResults, activeFilter, resolvedAllowedTypes, filterResult])
 
 	useEffect(() => {
 		if (open) {
@@ -152,16 +163,16 @@ export function SearchDialog({
 		} else if (e.key === 'Enter') {
 			e.preventDefault()
 			if (results[selectedIndex]) {
-				handleSelect(results[selectedIndex])
+				void handleSelect(results[selectedIndex])
 			}
 		} else if (e.key === 'Escape') {
 			onOpenChange(false)
 		}
 	}
 
-	const handleSelect = (entity: SearchResultItem) => {
+	const handleSelect = async (entity: SearchResultItem) => {
 		if (onSelectEntity) {
-			onSelectEntity(entity)
+			await onSelectEntity(entity)
 			if (closeOnSelect) onOpenChange(false)
 			return
 		}
@@ -169,7 +180,8 @@ export function SearchDialog({
 		if (entity.entity_type === 'topic' && entity.topic) {
 			navigate({
 				to: '/topics/$topicId',
-				params: { topicId: entity.topic.id.toString() }
+				params: { topicId: entity.topic.id.toString() },
+				search: { tab: 'subtopics' }
 			})
 		} else if (entity.entity_type === 'review_card' && entity.review_card) {
 			navigate({
@@ -181,7 +193,12 @@ export function SearchDialog({
 		onOpenChange(false)
 	}
 
-	const handleCreateNew = () => {
+	const handleCreateNew = async () => {
+		if (onCreate) {
+			await onCreate()
+			return
+		}
+
 		onOpenChange(false)
 		requestCreateTopic()
 		navigate({ to: '/topics' })
@@ -205,9 +222,15 @@ export function SearchDialog({
 							placeholder={placeholder}
 							value={query}
 						/>
-						<Button onClick={handleCreateNew} variant='outline'>
+						<Button
+							disabled={isCreating}
+							onClick={() => {
+								void handleCreateNew()
+							}}
+							variant='outline'
+						>
 							<Plus className='h-4 w-4' />
-							Create topic
+							{createLabel}
 						</Button>
 					</div>
 					<EntityTypeFilter
@@ -256,7 +279,9 @@ export function SearchDialog({
 							if (result.entity_type === 'topic' && result.topic) {
 								return (
 									<TopicCard
-										onClick={() => handleSelect(result)}
+										onClick={() => {
+											void handleSelect(result)
+										}}
 										topic={result.topic}
 									/>
 								)
@@ -265,7 +290,9 @@ export function SearchDialog({
 							if (result.entity_type === 'review_card' && result.review_card) {
 								return (
 									<ReviewCard
-										onClick={() => handleSelect(result)}
+										onClick={() => {
+											void handleSelect(result)
+										}}
 										reviewCard={result.review_card}
 									/>
 								)

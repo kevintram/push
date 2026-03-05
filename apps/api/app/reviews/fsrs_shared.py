@@ -2,12 +2,26 @@
 
 from __future__ import annotations
 
-from datetime import datetime, time, timezone
+from datetime import date, datetime, time, timezone
+from typing import Protocol
 
 from fsrs import Card, Rating as FSRSRating, Scheduler, State as FSRSState
 
-from app.models import FsrsState, Review
+from app.models import Review
 from app.utils.retrievability import FINE_THRESHOLD
+
+
+class ReviewCardFsrsCarrier(Protocol):
+    stability: float | None
+    difficulty: float | None
+    state: str
+    step: int | None
+    last_reviewed_at: date | None
+    inherited_stability: float | None
+    inherited_difficulty: float | None
+    inherited_state: str | None
+    inherited_step: int | None
+    inherited_last_review: date | None
 
 
 def map_rating_to_fsrs(rating: str) -> FSRSRating:
@@ -56,44 +70,44 @@ def _card_from_review(review: Review) -> Card:
     )
 
 
-def _card_from_inherited(fsrs_state: FsrsState) -> Card:
-    state_str = fsrs_state.inherited_state or "LEARNING"
+def _card_from_inherited(review_card: ReviewCardFsrsCarrier) -> Card:
+    state_str = review_card.inherited_state or "LEARNING"
     state = map_state_to_fsrs(state_str)
     last_review_dt = (
-        datetime.combine(fsrs_state.inherited_last_review, time.min).replace(
+        datetime.combine(review_card.inherited_last_review, time.min).replace(
             tzinfo=timezone.utc
         )
-        if fsrs_state.inherited_last_review is not None
+        if review_card.inherited_last_review is not None
         else None
     )
     return Card(
         state=state,
-        stability=fsrs_state.inherited_stability,
-        difficulty=fsrs_state.inherited_difficulty,
-        step=None if state == FSRSState.Review else fsrs_state.inherited_step,
+        stability=review_card.inherited_stability,
+        difficulty=review_card.inherited_difficulty,
+        step=None if state == FSRSState.Review else review_card.inherited_step,
         last_review=last_review_dt,
     )
 
 
-def _apply_card_to_fsrs(fsrs_state: FsrsState, card: Card) -> None:
-    fsrs_state.stability = card.stability
-    fsrs_state.difficulty = card.difficulty
-    fsrs_state.state = map_fsrs_state_to_db(card.state)
-    fsrs_state.step = card.step
+def _apply_card_to_review_card(review_card: ReviewCardFsrsCarrier, card: Card) -> None:
+    review_card.stability = card.stability
+    review_card.difficulty = card.difficulty
+    review_card.state = map_fsrs_state_to_db(card.state)
+    review_card.step = card.step
 
 
 def update_fsrs(
-    fsrs_state: FsrsState,
+    review_card: ReviewCardFsrsCarrier,
     reviews: list[Review],
     last_before_review: Review | None,
 ) -> None:
     if last_before_review and last_before_review.stability_after is not None:
         starting_card = _card_from_review(last_before_review)
     else:
-        starting_card = _card_from_inherited(fsrs_state)
+        starting_card = _card_from_inherited(review_card)
 
     if not reviews:
-        _apply_card_to_fsrs(fsrs_state, starting_card)
+        _apply_card_to_review_card(review_card, starting_card)
         return
 
     scheduler = Scheduler(desired_retention=FINE_THRESHOLD)
@@ -133,4 +147,4 @@ def update_fsrs(
 
         current_card = updated_card
 
-    _apply_card_to_fsrs(fsrs_state, current_card)
+    _apply_card_to_review_card(review_card, current_card)

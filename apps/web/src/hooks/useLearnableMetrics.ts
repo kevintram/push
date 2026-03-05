@@ -32,7 +32,6 @@ export function useLearnableMetrics(
 	const stability = learnable?.stability ?? null
 	const lastReviewedAt = learnable?.last_reviewed_at ?? null
 	const inheritedStability = learnable?.inherited_stability ?? null
-	const srsEnabled = learnable?.srs_enabled ?? true
 
 	const retrievabilityDisplay = useMemo(() => {
 		if (retrievability === null) return null
@@ -91,8 +90,8 @@ export function useLearnableMetrics(
 	}, [daysUntilNextTier, freshnessTier])
 
 	const freshnessTierColor = useMemo(
-		() => getFreshnessTierColor(freshnessTier, srsEnabled),
-		[freshnessTier, srsEnabled]
+		() => getFreshnessTierColor(freshnessTier),
+		[freshnessTier]
 	)
 
 	return {

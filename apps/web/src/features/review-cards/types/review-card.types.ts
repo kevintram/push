@@ -11,12 +11,11 @@ export type ReviewCard = {
 	inserted_at: string
 	updated_at: string
 	last_review_rating: 'miss' | 'hard' | 'good' | 'easy' | null
-	fsrs_state_id: number | null
 	stability: number | null
 	difficulty: number | null
 	state: string
 	step: number | null
-	srs_enabled: boolean
+	retired: boolean
 	last_reviewed_at: string | null
 	retrievability: number | null
 	freshness_tier: string | null
@@ -66,7 +65,7 @@ export type CreateReviewCardPayload = {
 	type: ReviewCardType
 	prompt?: string
 	answer?: string
-	srs_enabled?: boolean
+	retired?: boolean
 }
 
 export type UpdateReviewCardInput = {
@@ -75,5 +74,5 @@ export type UpdateReviewCardInput = {
 	type?: ReviewCardType
 	prompt?: string
 	answer?: string
-	srs_enabled?: boolean
+	retired?: boolean
 }

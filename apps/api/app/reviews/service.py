@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.exceptions import BadRequestError, NotFoundError
-from app.models import FsrsState, Review, ReviewCard
+from app.models import Review, ReviewCard
 from app.reviews.fsrs_shared import update_fsrs
 
 
@@ -20,7 +20,6 @@ async def _get_review_card(
         .where(ReviewCard.id == review_card_id, ReviewCard.user_id == user_id)
         .options(
             selectinload(ReviewCard.topic),
-            selectinload(ReviewCard.fsrs_state),
             selectinload(ReviewCard.reviews),
         )
     )
@@ -30,27 +29,11 @@ async def _get_review_card(
     return review_card
 
 
-async def ensure_entity_fsrs_state(
-    session: AsyncSession, review_card: ReviewCard
-) -> None:
-    if review_card.fsrs_state is not None:
-        return
-
-    fsrs_state = FsrsState(srs_enabled=True)
-    session.add(fsrs_state)
-    await session.flush()
-    review_card.fsrs_state_id = fsrs_state.id
-    review_card.fsrs_state = fsrs_state
-
-
 async def update_entity_fsrs(
     session: AsyncSession,
     review_card: ReviewCard,
     starting_from: date,
 ) -> None:
-    if review_card.fsrs_state is None:
-        return
-
     reviews_result = await session.execute(
         select(Review)
         .where(
@@ -76,15 +59,13 @@ async def update_entity_fsrs(
     )
     last_before = before_result.scalar_one_or_none()
 
-    update_fsrs(review_card.fsrs_state, reviews_to_replay, last_before)
+    update_fsrs(review_card, reviews_to_replay, last_before)
     if reviews_to_replay:
-        review_card.fsrs_state.last_reviewed_at = reviews_to_replay[-1].completed_at
+        review_card.last_reviewed_at = reviews_to_replay[-1].completed_at
     elif last_before is not None:
-        review_card.fsrs_state.last_reviewed_at = last_before.completed_at
+        review_card.last_reviewed_at = last_before.completed_at
     else:
-        review_card.fsrs_state.last_reviewed_at = (
-            review_card.fsrs_state.inherited_last_review
-        )
+        review_card.last_reviewed_at = review_card.inherited_last_review
 
 
 async def _reload_review(session: AsyncSession, review_id: int, user_id: str) -> Review:
@@ -93,7 +74,6 @@ async def _reload_review(session: AsyncSession, review_id: int, user_id: str) ->
         .where(Review.id == review_id, Review.user_id == user_id)
         .options(
             selectinload(Review.review_card).selectinload(ReviewCard.topic),
-            selectinload(Review.review_card).selectinload(ReviewCard.fsrs_state),
         )
     )
     review = result.scalar_one_or_none()
@@ -122,7 +102,6 @@ async def list_reviews(
         .where(Review.user_id == user_id)
         .options(
             selectinload(Review.review_card).selectinload(ReviewCard.topic),
-            selectinload(Review.review_card).selectinload(ReviewCard.fsrs_state),
         )
     )
 
@@ -185,7 +164,6 @@ async def create_review(
     await session.flush()
 
     if completed_at is not None:
-        await ensure_entity_fsrs_state(session, review_card)
         await update_entity_fsrs(session, review_card, completed_at)
         await session.flush()
 
@@ -264,10 +242,8 @@ async def update_review(
             await update_entity_fsrs(session, old_card, old_completed_at)
 
         if new_card is not None:
-            await ensure_entity_fsrs_state(session, new_card)
             await update_entity_fsrs(session, new_card, new_completed_at)
     elif new_card is not None:
-        await ensure_entity_fsrs_state(session, new_card)
         await update_entity_fsrs(session, new_card, new_completed_at)
 
     await session.flush()

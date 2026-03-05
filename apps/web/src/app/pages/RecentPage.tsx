@@ -17,7 +17,6 @@ import {
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { useSearchAll } from '~/features/search/api/searchAll'
-import type { SearchResultItem } from '~/features/search/types/search.types'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import {
 	DEFAULT_MASONRY_GAP,
@@ -25,14 +24,9 @@ import {
 	estimateReviewCardSize,
 	estimateTopicCardSize
 } from '~/utils/estimateMasonryItemSize'
+import { groupByDate, toEntityEntries } from '~/utils/groupByDate'
 
 const RECENT_LIMIT = 50
-
-type DateSection = {
-	id: string
-	label: string
-	items: Array<SearchResultItem>
-}
 
 function filterToEntityTypes(
 	filter: EntityTypeFilterValue
@@ -41,37 +35,6 @@ function filterToEntityTypes(
 	if (filter === 'topic') return 'topic'
 	if (filter === 'practice') return 'practice'
 	return 'flashcard'
-}
-
-function groupRecentByDate(items: Array<SearchResultItem>): Array<DateSection> {
-	const now = new Date()
-	now.setHours(0, 0, 0, 0)
-
-	const byKey = new Map<string, DateSection>()
-	for (const item of items) {
-		const date = new Date(item.recent_activity_at)
-		const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-		const existing = byKey.get(key)
-		if (existing) {
-			existing.items.push(item)
-			continue
-		}
-
-		const normalized = new Date(date)
-		normalized.setHours(0, 0, 0, 0)
-		const diffDays = Math.floor(
-			(now.getTime() - normalized.getTime()) / (1000 * 60 * 60 * 24)
-		)
-		let label = `${diffDays}d ago`
-		if (diffDays <= 0) {
-			label = 'Today'
-		} else if (diffDays === 1) {
-			label = 'Yesterday'
-		}
-		byKey.set(key, { id: key, label, items: [item] })
-	}
-
-	return [...byKey.values()].sort((a, b) => (a.id < b.id ? 1 : -1))
 }
 
 export function RecentPage() {
@@ -84,7 +47,7 @@ export function RecentPage() {
 	})
 
 	const sections = useMemo(
-		() => groupRecentByDate(searchResults),
+		() => groupByDate(toEntityEntries(searchResults)),
 		[searchResults]
 	)
 
@@ -145,7 +108,8 @@ export function RecentPage() {
 											onClick={() =>
 												navigate({
 													to: '/topics/$topicId',
-													params: { topicId: topic.id.toString() }
+													params: { topicId: topic.id.toString() },
+													search: { tab: 'subtopics' }
 												})
 											}
 											topic={topic}
