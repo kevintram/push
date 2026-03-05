@@ -9,7 +9,8 @@ from app.review_queue.router import router as review_queue_router
 from app.auth.router import router as auth_router
 from app.admin.router import router as admin_router
 from app.search.router import router as search_router
-from app.notes.router import router as notes_router
+from app.review_cards.router import router as review_cards_router
+from app.topics.router import router as topics_router
 from app.utils.current_date import (
     parse_iso_date,
     reset_request_current_date,
@@ -42,7 +43,8 @@ async def apply_client_date_header(request: Request, call_next):
 app.include_router(reviews_router)
 app.include_router(review_queue_router)
 app.include_router(search_router)
-app.include_router(notes_router)
+app.include_router(topics_router)
+app.include_router(review_cards_router)
 app.include_router(auth_router)
 app.include_router(
     admin_router,
