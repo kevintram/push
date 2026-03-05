@@ -80,7 +80,8 @@ vi.mock('~/features/review-cards/api/getReviewCards', () => ({
 }))
 
 vi.mock('~/features/review-cards/api/getReviewCardQueue', () => ({
-	useReviewCardQueue: (...args: Array<unknown>) => useReviewCardQueueMock(...args)
+	useReviewCardQueue: (...args: Array<unknown>) =>
+		useReviewCardQueueMock(...args)
 }))
 
 vi.mock('~/features/search/api/searchAll', () => ({
@@ -191,7 +192,14 @@ describe('masonry-backed page feeds', () => {
 
 		render(<MyLibraryPage />)
 
-		await user.click(screen.getAllByRole('button', { name: /^Create$/i })[0])
+		const [createButton] = screen.getAllByRole('button', { name: /^Create$/i })
+
+		expect(createButton).toBeDefined()
+		if (!createButton) {
+			throw new Error('Expected a create button to be rendered')
+		}
+
+		await user.click(createButton)
 
 		expect(createTopicAsyncMock).toHaveBeenCalledWith({
 			title: '',

@@ -64,13 +64,13 @@ import { useTopics } from '~/features/topics/api/getTopics'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
-import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
 	estimateReviewCardSize,
 	estimateTopicCardSize
 } from '~/utils/estimateMasonryItemSize'
+import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { isHttpStatusError } from '~/utils/httpStatusError'
 
 const EMPTY_BADGE_CLASSNAME =
@@ -275,16 +275,16 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 		)
 	} else {
 		subtopicsContent = (
-				<MasonryLayout
-					estimateItemSize={(subtopic, _index, laneWidth) =>
-						estimateTopicCardSize(subtopic, laneWidth)
-					}
-					gap={DEFAULT_MASONRY_GAP}
-					getItemKey={subtopic => `topic-${subtopic.id}`}
-					getScrollElement={getScrollElement}
-					items={subtopics}
-					minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
-					renderItem={subtopic => (
+			<MasonryLayout
+				estimateItemSize={(subtopic, _index, laneWidth) =>
+					estimateTopicCardSize(subtopic, laneWidth)
+				}
+				gap={DEFAULT_MASONRY_GAP}
+				getItemKey={subtopic => `topic-${subtopic.id}`}
+				getScrollElement={getScrollElement}
+				items={subtopics}
+				minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
+				renderItem={subtopic => (
 					<TopicCard
 						onClick={() =>
 							navigate({
@@ -316,16 +316,16 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 		)
 	} else {
 		reviewCardsContent = (
-				<MasonryLayout
-					estimateItemSize={(card, _index, laneWidth) =>
-						estimateReviewCardSize(card, laneWidth)
-					}
-					gap={DEFAULT_MASONRY_GAP}
-					getItemKey={card => `review-card-${card.id}`}
-					getScrollElement={getScrollElement}
-					items={reviewCards}
-					minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
-					renderItem={card => (
+			<MasonryLayout
+				estimateItemSize={(card, _index, laneWidth) =>
+					estimateReviewCardSize(card, laneWidth)
+				}
+				gap={DEFAULT_MASONRY_GAP}
+				getItemKey={card => `review-card-${card.id}`}
+				getScrollElement={getScrollElement}
+				items={reviewCards}
+				minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
+				renderItem={card => (
 					<ReviewCard
 						onClick={() =>
 							navigate({

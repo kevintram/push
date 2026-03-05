@@ -146,6 +146,9 @@
 			"includes": ["src/**/*.test.tsx"],
 			"linter": {
 				"rules": {
+					"nursery": {
+						"noSecrets": "off"
+					},
 					"performance": {
 						"useTopLevelRegex": "off"
 					},

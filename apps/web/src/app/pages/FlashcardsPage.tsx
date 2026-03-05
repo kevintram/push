@@ -176,19 +176,17 @@ export function FlashcardsPage() {
 		)
 	} else if (scope === 'all') {
 		content =
-			activeTab === 'due' ? (
-				dueSections.map(section => (
-					<div className='space-y-3' key={section.id}>
-						<h3 className='flex items-center gap-2 font-bold text-xl'>
-							{section.label}
-							<CountBadge count={section.items.length} />
-						</h3>
-						{renderQueueMasonry(section.items)}
-					</div>
-				))
-			) : (
-				renderQueueMasonry(items)
-			)
+			activeTab === 'due'
+				? dueSections.map(section => (
+						<div className='space-y-3' key={section.id}>
+							<h3 className='flex items-center gap-2 font-bold text-xl'>
+								{section.label}
+								<CountBadge count={section.items.length} />
+							</h3>
+							{renderQueueMasonry(section.items)}
+						</div>
+					))
+				: renderQueueMasonry(items)
 	} else if (activeTab === 'due') {
 		content = dueSections.map(section => (
 			<div className='space-y-3' key={section.id}>
