@@ -55,9 +55,9 @@ export function AppSidebar() {
 		},
 		{
 			title: 'Topics',
-			url: '/my-library',
+			url: '/topics',
 			icon: Library,
-			isActive: (pathname: string) => pathname === '/my-library'
+			isActive: (pathname: string) => pathname === '/topics'
 		}
 	]
 
