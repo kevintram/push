@@ -1,99 +1,107 @@
-"""Integration tests for unified note search endpoint."""
+"""Integration tests for topic + review-card search endpoint."""
 
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.search import service as search_service
+
+async def _create_topic(test_client: AsyncClient, title: str) -> dict:
+    response = await test_client.post(
+        "/topics/",
+        json={"title": title, "body": "Body"},
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
+async def _create_review_card(
+    test_client: AsyncClient,
+    topic_id: int,
+    *,
+    card_type: str,
+    prompt: str,
+    answer: str = "Answer",
+) -> dict:
+    response = await test_client.post(
+        "/review-cards/",
+        json={
+            "topic_id": topic_id,
+            "type": card_type,
+            "prompt": prompt,
+            "answer": answer,
+            "srs_enabled": True,
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
 
 
 class TestSearchEndpoint:
-    async def test_search_with_legacy_topic_filter_returns_note_payload(
+    async def test_search_topic_filter_returns_topic_entities(
         self,
         test_client: AsyncClient,
-        db_session: AsyncSession,
-        monkeypatch,
     ):
-        test_session_factory = async_sessionmaker(
-            bind=db_session.bind,
-            class_=AsyncSession,
-            expire_on_commit=False,
-        )
-        monkeypatch.setattr(
-            search_service, "get_session_factory", lambda: test_session_factory
-        )
+        rust_topic = await _create_topic(test_client, "Rust Ownership")
+        _ = await _create_topic(test_client, "React Rendering")
 
-        topic_response = await test_client.post(
-            "/notes/",
-            json={
-                "title": "Rust Ownership",
-                "body": "Borrow checker basics",
-                "tags": ["TOPIC"],
-                "archived": False,
-            },
-        )
-        assert topic_response.status_code == 201
-        topic_note = topic_response.json()
-
-        source_response = await test_client.post(
-            "/notes/",
-            json={
-                "title": "Rust Book",
-                "body": "Source note",
-                "tags": ["SOURCE"],
-                "archived": False,
-            },
-        )
-        assert source_response.status_code == 201
-
-        response = await test_client.get(
-            "/search/?query=rust&entity_types=topic&archived=false"
-        )
+        response = await test_client.get("/search/?query=rust&entity_types=topic")
 
         assert response.status_code == 200
         results = response.json()
         assert len(results) == 1
-        assert results[0]["entity_type"] == "note"
-        assert results[0]["note"]["id"] == topic_note["id"]
-        assert "TOPIC" in results[0]["note"]["tags"]
+        assert results[0]["entity_type"] == "topic"
+        assert results[0]["topic"]["id"] == rust_topic["id"]
+        assert results[0]["review_card"] is None
 
-    async def test_search_entity_types_note_includes_all_matching_note_tags(
+    async def test_search_review_card_filter_returns_review_card_entities(
         self,
         test_client: AsyncClient,
-        db_session: AsyncSession,
-        monkeypatch,
     ):
-        test_session_factory = async_sessionmaker(
-            bind=db_session.bind,
-            class_=AsyncSession,
-            expire_on_commit=False,
+        topic = await _create_topic(test_client, "Card topic")
+        practice_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Queue practice prompt",
         )
-        monkeypatch.setattr(
-            search_service, "get_session_factory", lambda: test_session_factory
+        _ = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="flashcard",
+            prompt="Rust flashcard prompt",
         )
 
-        topic_response = await test_client.post(
-            "/notes/",
-            json={"title": "Queue theory", "body": "A", "tags": ["TOPIC"]},
+        response = await test_client.get(
+            "/search/?query=queue&entity_types=review_card"
         )
-        assert topic_response.status_code == 201
-        topic_note = topic_response.json()
-
-        practice_response = await test_client.post(
-            "/notes/",
-            json={
-                "title": "Queue practice prompt",
-                "body": "B",
-                "tags": ["PRACTICE"],
-            },
-        )
-        assert practice_response.status_code == 201
-        practice_note = practice_response.json()
-
-        response = await test_client.get("/search/?query=queue&entity_types=note")
 
         assert response.status_code == 200
         results = response.json()
-        ids = {item["note"]["id"] for item in results}
-        assert topic_note["id"] in ids
-        assert practice_note["id"] in ids
-        assert all(item["entity_type"] == "note" for item in results)
+        assert len(results) >= 1
+        assert all(item["entity_type"] == "review_card" for item in results)
+        ids = {item["review_card"]["id"] for item in results if item["review_card"]}
+        assert practice_card["id"] in ids
+
+    async def test_search_practice_filter_limits_card_type(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Practice filter")
+        practice_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Binary trees practice",
+        )
+        flashcard = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="flashcard",
+            prompt="Binary trees flashcard",
+        )
+
+        response = await test_client.get("/search/?query=binary&entity_types=practice")
+
+        assert response.status_code == 200
+        results = response.json()
+        ids = {item["review_card"]["id"] for item in results if item["review_card"]}
+        assert practice_card["id"] in ids
+        assert flashcard["id"] not in ids
