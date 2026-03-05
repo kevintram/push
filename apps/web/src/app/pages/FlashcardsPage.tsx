@@ -131,6 +131,51 @@ export function FlashcardsPage() {
 				</div>
 			</div>
 		)
+	} else if (scope === 'all') {
+		content =
+			activeTab === 'due' ? (
+				dueSections.map(section => (
+					<div className='space-y-3' key={section.id}>
+						<h3 className='flex items-center gap-2 font-bold text-xl'>
+							{section.label}
+							<CountBadge count={section.items.length} />
+						</h3>
+						<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+							{section.items.map(item => (
+								<div key={`${item.card.id}-${item.review_id ?? 'new'}`}>
+									<ReviewCard
+										onClick={() =>
+											navigate({
+												to: '/review-cards/$reviewCardId',
+												params: { reviewCardId: item.card.id.toString() }
+											})
+										}
+										readOnly={true}
+										reviewCard={item.card}
+									/>
+								</div>
+							))}
+						</div>
+					</div>
+				))
+			) : (
+				<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+					{items.map(item => (
+						<div key={item.card.id}>
+							<ReviewCard
+								onClick={() =>
+									navigate({
+										to: '/review-cards/$reviewCardId',
+										params: { reviewCardId: item.card.id.toString() }
+									})
+								}
+								readOnly={true}
+								reviewCard={item.card}
+							/>
+						</div>
+					))}
+				</div>
+			)
 	} else if (activeTab === 'due') {
 		content = dueSections.map(section => (
 			<div className='space-y-3' key={section.id}>
