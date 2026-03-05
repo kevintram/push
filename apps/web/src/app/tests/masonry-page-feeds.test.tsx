@@ -1,12 +1,24 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { FlashcardsPage } from '~/app/pages/FlashcardsPage'
-import { MyLibraryPage } from '~/app/pages/MyLibraryPage'
-import { PracticePage } from '~/app/pages/PracticePage'
+import {
+	FlashcardsPage,
+	type FlashcardsScope,
+	type FlashcardsTab
+} from '~/app/pages/FlashcardsPage'
+import {
+	PracticePage,
+	type PracticeScope,
+	type PracticeTab
+} from '~/app/pages/PracticePage'
 import { RecentPage } from '~/app/pages/RecentPage'
-import { TopicDetailPage } from '~/app/pages/TopicDetailPage'
+import {
+	TopicDetailPage,
+	type TopicDetailReviewCardFilter,
+	type TopicDetailTab
+} from '~/app/pages/TopicDetailPage'
+import { TopicsPage } from '~/app/pages/TopicsPage'
 
 const navigateMock = vi.fn()
 const masonryRenderSpy = vi.fn()
@@ -138,12 +150,11 @@ const reviewCard = {
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',
 	last_review_rating: null,
-	fsrs_state_id: null,
 	stability: null,
 	difficulty: null,
 	state: 'new',
 	step: null,
-	srs_enabled: true,
+	retired: false,
 	last_reviewed_at: null,
 	retrievability: null,
 	freshness_tier: null,
@@ -151,6 +162,82 @@ const reviewCard = {
 	days_in_current_tier: null,
 	is_new: true,
 	status_badges: []
+}
+
+function buildPracticeQueueItems(count: number) {
+	return Array.from({ length: count }, (_, index) => ({
+		queue_type: 'due' as const,
+		card: {
+			...reviewCard,
+			id: 31 + index,
+			prompt: `Practice prompt ${index + 1}`
+		},
+		review_id: null,
+		scheduled_at: '2026-03-05',
+		days_until_due: 0
+	}))
+}
+
+function FlashcardsHarness({
+	initialTab = 'due',
+	initialScope = 'focused'
+}: {
+	initialTab?: FlashcardsTab
+	initialScope?: FlashcardsScope
+}) {
+	const [activeTab, setActiveTab] = useState<FlashcardsTab>(initialTab)
+	const [scope, setScope] = useState<FlashcardsScope>(initialScope)
+
+	return (
+		<FlashcardsPage
+			activeTab={activeTab}
+			onActiveTabChange={setActiveTab}
+			onScopeChange={setScope}
+			scope={scope}
+		/>
+	)
+}
+
+function PracticeHarness({
+	initialTab = 'due',
+	initialScope = 'all'
+}: {
+	initialTab?: PracticeTab
+	initialScope?: PracticeScope
+}) {
+	const [activeTab, setActiveTab] = useState<PracticeTab>(initialTab)
+	const [scope, setScope] = useState<PracticeScope>(initialScope)
+
+	return (
+		<PracticePage
+			activeTab={activeTab}
+			onActiveTabChange={setActiveTab}
+			onScopeChange={setScope}
+			scope={scope}
+		/>
+	)
+}
+
+function TopicDetailHarness({
+	initialTab = 'subtopics',
+	initialFilter = 'all'
+}: {
+	initialTab?: TopicDetailTab
+	initialFilter?: TopicDetailReviewCardFilter
+}) {
+	const [activeHomeTab, setActiveHomeTab] = useState<TopicDetailTab>(initialTab)
+	const [cardTypeFilter, setCardTypeFilter] =
+		useState<TopicDetailReviewCardFilter>(initialFilter)
+
+	return (
+		<TopicDetailPage
+			activeHomeTab={activeHomeTab}
+			cardTypeFilter={cardTypeFilter}
+			onActiveHomeTabChange={setActiveHomeTab}
+			onCardTypeFilterChange={setCardTypeFilter}
+			topicId={1}
+		/>
+	)
 }
 
 beforeEach(() => {
@@ -164,6 +251,7 @@ beforeEach(() => {
 	useSearchAllMock.mockReset()
 	createTopicAsyncMock.mockReset()
 	window.sessionStorage.clear()
+	window.happyDOM?.setViewport({ height: 900, width: 1024 })
 })
 
 describe('masonry-backed page feeds', () => {
@@ -173,7 +261,7 @@ describe('masonry-backed page feeds', () => {
 			isLoading: false
 		})
 
-		render(<MyLibraryPage />)
+		render(<TopicsPage />)
 
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
 		expect(screen.getByTestId('topic-card')).toHaveTextContent('Algebra')
@@ -190,7 +278,7 @@ describe('masonry-backed page feeds', () => {
 			id: 42
 		})
 
-		render(<MyLibraryPage />)
+		render(<TopicsPage />)
 
 		const [createButton] = screen.getAllByRole('button', { name: /^Create$/i })
 
@@ -208,7 +296,8 @@ describe('masonry-backed page feeds', () => {
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/topics/$topicId',
-			params: { topicId: '42' }
+			params: { topicId: '42' },
+			search: { tab: 'subtopics' }
 		})
 	})
 
@@ -261,7 +350,7 @@ describe('masonry-backed page feeds', () => {
 			isLoading: false
 		})
 
-		render(<TopicDetailPage topicId={1} />)
+		render(<TopicDetailHarness />)
 
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
 		expect(screen.getByText('Subtopic')).toBeInTheDocument()
@@ -293,7 +382,7 @@ describe('masonry-backed page feeds', () => {
 			isLoading: false
 		})
 
-		render(<FlashcardsPage />)
+		render(<FlashcardsHarness />)
 
 		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
 		expect(screen.getByText('Flashcard prompt')).toBeInTheDocument()
@@ -319,7 +408,7 @@ describe('masonry-backed page feeds', () => {
 			isLoading: false
 		})
 
-		render(<PracticePage />)
+		render(<PracticeHarness />)
 
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
 		expect(screen.getByText('Thursday, Mar 5')).toBeInTheDocument()
@@ -328,5 +417,216 @@ describe('masonry-backed page feeds', () => {
 
 		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
 		expect(screen.getByText('Practice prompt')).toBeInTheDocument()
+		expect(screen.getByTestId('focused-practice-layout')).toBeInTheDocument()
+		expect(screen.queryByText('Focused Queue')).not.toBeInTheDocument()
+		expect(screen.queryByText('Keep this set warm')).not.toBeInTheDocument()
+		expect(screen.queryByText('card in focus')).not.toBeInTheDocument()
+		expect(screen.queryByText('cards in focus')).not.toBeInTheDocument()
+	})
+
+	it.each([
+		{
+			count: 1,
+			expectedRows: [['Practice prompt 1']]
+		},
+		{
+			count: 2,
+			expectedRows: [['Practice prompt 1', 'Practice prompt 2']]
+		},
+		{
+			count: 3,
+			expectedRows: [
+				['Practice prompt 1', 'Practice prompt 2', 'Practice prompt 3']
+			]
+		},
+		{
+			count: 4,
+			expectedRows: [
+				['Practice prompt 1', 'Practice prompt 2'],
+				['Practice prompt 3', 'Practice prompt 4']
+			]
+		}
+	])(
+		'renders focused practice layout rows for $count cards',
+		({ count, expectedRows }) => {
+			useReviewCardQueueMock.mockReturnValue({
+				data: buildPracticeQueueItems(count),
+				isLoading: false
+			})
+
+			render(<PracticeHarness initialScope='focused' />)
+
+			expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
+			expect(screen.getAllByTestId('review-card')).toHaveLength(count)
+			expect(
+				screen.getAllByTestId('review-card').map(card => card.textContent)
+			).toEqual(expectedRows.flat())
+
+			const rows = screen.getAllByTestId('focused-practice-row')
+			expect(rows).toHaveLength(expectedRows.length)
+			expect(rows.map(row => row.getAttribute('data-row-size'))).toEqual(
+				expectedRows.map(row => row.length.toString())
+			)
+			expect(
+				rows.map(row =>
+					within(row)
+						.getAllByTestId('review-card')
+						.map(card => card.textContent)
+				)
+			).toEqual(expectedRows)
+		}
+	)
+
+	it('renders five focused practice cards as 2/2/1 below xl', async () => {
+		window.happyDOM?.setViewport({ height: 1100, width: 900 })
+		useReviewCardQueueMock.mockReturnValue({
+			data: buildPracticeQueueItems(5),
+			isLoading: false
+		})
+
+		render(<PracticeHarness initialScope='focused' />)
+
+		await waitFor(() => {
+			const rows = screen.getAllByTestId('focused-practice-row')
+			expect(rows.map(row => row.getAttribute('data-row-size'))).toEqual([
+				'2',
+				'2',
+				'1'
+			])
+		})
+		expect(
+			screen.getAllByTestId('review-card').map(card => card.textContent)
+		).toEqual([
+			'Practice prompt 1',
+			'Practice prompt 2',
+			'Practice prompt 3',
+			'Practice prompt 4',
+			'Practice prompt 5'
+		])
+	})
+
+	it('renders five focused practice cards as 3/2 at xl and above', async () => {
+		window.happyDOM?.setViewport({ height: 1200, width: 1440 })
+		useReviewCardQueueMock.mockReturnValue({
+			data: buildPracticeQueueItems(5),
+			isLoading: false
+		})
+
+		render(<PracticeHarness initialScope='focused' />)
+
+		await waitFor(() => {
+			const rows = screen.getAllByTestId('focused-practice-row')
+			expect(rows.map(row => row.getAttribute('data-row-size'))).toEqual([
+				'3',
+				'2'
+			])
+		})
+		expect(
+			screen.getAllByTestId('review-card').map(card => card.textContent)
+		).toEqual([
+			'Practice prompt 1',
+			'Practice prompt 2',
+			'Practice prompt 3',
+			'Practice prompt 4',
+			'Practice prompt 5'
+		])
+	})
+
+	it('renders Flashcards new cards grouped by creation date without due scope tabs', () => {
+		vi.useFakeTimers()
+		vi.setSystemTime(new Date('2026-03-05T12:00:00.000Z'))
+		useReviewCardQueueMock.mockReturnValue({
+			data: [
+				{
+					queue_type: 'new',
+					card: {
+						...reviewCard,
+						id: 41,
+						prompt: 'Today flashcard',
+						inserted_at: '2026-03-05T12:00:00.000Z'
+					},
+					review_id: null,
+					scheduled_at: null,
+					days_until_due: null
+				},
+				{
+					queue_type: 'new',
+					card: {
+						...reviewCard,
+						id: 42,
+						prompt: 'Yesterday flashcard',
+						inserted_at: '2026-03-04T12:00:00.000Z'
+					},
+					review_id: null,
+					scheduled_at: null,
+					days_until_due: null
+				}
+			],
+			isLoading: false
+		})
+
+		try {
+			render(<FlashcardsHarness initialTab='new' />)
+
+			expect(
+				screen.queryByRole('tab', { name: 'Focused' })
+			).not.toBeInTheDocument()
+			expect(screen.queryByRole('tab', { name: 'All' })).not.toBeInTheDocument()
+			expect(screen.getAllByText(/^Today/)).toHaveLength(2)
+			expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(2)
+			expect(screen.getByText('Today flashcard')).toBeInTheDocument()
+			expect(screen.getByText('Yesterday flashcard')).toBeInTheDocument()
+		} finally {
+			vi.useRealTimers()
+		}
+	})
+
+	it('renders Practice new cards grouped by creation date without due scope tabs', () => {
+		vi.useFakeTimers()
+		vi.setSystemTime(new Date('2026-03-05T12:00:00.000Z'))
+		useReviewCardQueueMock.mockReturnValue({
+			data: [
+				{
+					queue_type: 'new',
+					card: {
+						...reviewCard,
+						id: 51,
+						prompt: 'Today practice',
+						inserted_at: '2026-03-05T12:00:00.000Z'
+					},
+					review_id: null,
+					scheduled_at: null,
+					days_until_due: null
+				},
+				{
+					queue_type: 'new',
+					card: {
+						...reviewCard,
+						id: 52,
+						prompt: 'Older practice',
+						inserted_at: '2026-03-03T12:00:00.000Z'
+					},
+					review_id: null,
+					scheduled_at: null,
+					days_until_due: null
+				}
+			],
+			isLoading: false
+		})
+
+		try {
+			render(<PracticeHarness initialTab='new' />)
+
+			expect(
+				screen.queryByRole('tab', { name: 'Focused' })
+			).not.toBeInTheDocument()
+			expect(screen.queryByRole('tab', { name: 'All' })).not.toBeInTheDocument()
+			expect(screen.getAllByText(/^Today/)).toHaveLength(2)
+			expect(screen.getByText(/^2d ago/)).toBeInTheDocument()
+			expect(screen.getByText('Today practice')).toBeInTheDocument()
+			expect(screen.getByText('Older practice')).toBeInTheDocument()
+		} finally {
+			vi.useRealTimers()
+		}
 	})
 })
