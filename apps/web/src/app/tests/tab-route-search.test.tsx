@@ -240,7 +240,7 @@ describe('route-backed tab search state', () => {
 		})
 	})
 
-	it('falls back to Practice due all state for invalid search', async () => {
+	it('falls back to Practice due focused state for invalid search', async () => {
 		useReviewCardQueueMock.mockReturnValue({
 			data: [
 				{
@@ -260,10 +260,10 @@ describe('route-backed tab search state', () => {
 			expect(useReviewCardQueueMock).toHaveBeenLastCalledWith({
 				type: 'practice',
 				tab: 'due',
-				focused: false
+				focused: true
 			})
 		})
-		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
+		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
 		expect(screen.getByText('Due practice')).toBeInTheDocument()
 	})
 
@@ -294,7 +294,7 @@ describe('route-backed tab search state', () => {
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({
 				tab: 'due',
-				scope: 'all'
+				scope: 'focused'
 			})
 		})
 	})

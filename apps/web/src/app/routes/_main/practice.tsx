@@ -29,7 +29,7 @@ export function validatePracticeSearch(
 
 	return {
 		tab,
-		scope: isPracticeScope(search.scope) ? search.scope : 'all'
+		scope: isPracticeScope(search.scope) ? search.scope : 'focused'
 	}
 }
 
@@ -48,7 +48,7 @@ function PracticeRoute() {
 			onActiveTabChange={tab =>
 				navigate({
 					to: '/practice',
-					search: tab === 'new' ? { tab } : { tab, scope: 'all' }
+					search: tab === 'new' ? { tab } : { tab, scope: 'focused' }
 				})
 			}
 			onScopeChange={scope =>
