@@ -28,7 +28,7 @@ async def _create_review_card(
             "type": card_type,
             "prompt": prompt,
             "answer": "Answer",
-            "srs_enabled": True,
+            "retired": False,
         },
     )
     assert response.status_code == 201
@@ -160,6 +160,45 @@ class TestReviewsEndpoints:
         )
 
         assert response.status_code == 422
+
+    async def test_create_completed_review_updates_fsrs_for_retired_card(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Retired review")
+        create_card_response = await test_client.post(
+            "/review-cards/",
+            json={
+                "topic_id": topic["id"],
+                "type": "flashcard",
+                "prompt": "Retired card",
+                "answer": "Answer",
+                "retired": True,
+            },
+        )
+        assert create_card_response.status_code == 201
+        review_card = create_card_response.json()
+
+        review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": review_card["id"],
+                "completed_at": str(date.today()),
+                "rating": "good",
+            },
+        )
+
+        assert review_response.status_code == 200
+        payload = review_response.json()
+        assert payload["stability_after"] is not None
+
+        review_card_response = await test_client.get(
+            f"/review-cards/{review_card['id']}/"
+        )
+        assert review_card_response.status_code == 200
+        refreshed_card = review_card_response.json()
+        assert refreshed_card["retired"] is True
+        assert refreshed_card["last_reviewed_at"] == str(date.today())
 
     async def test_update_review_can_reassign_review_card_id(
         self,

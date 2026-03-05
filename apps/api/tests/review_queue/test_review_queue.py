@@ -15,7 +15,12 @@ async def _create_topic(test_client: AsyncClient, title: str) -> dict:
 
 
 async def _create_card(
-    test_client: AsyncClient, topic_id: int, *, card_type: str, prompt: str
+    test_client: AsyncClient,
+    topic_id: int,
+    *,
+    card_type: str,
+    prompt: str,
+    retired: bool = False,
 ) -> dict:
     response = await test_client.post(
         "/review-cards/",
@@ -24,7 +29,7 @@ async def _create_card(
             "type": card_type,
             "prompt": prompt,
             "answer": "Answer",
-            "srs_enabled": True,
+            "retired": retired,
         },
     )
     assert response.status_code == 201
@@ -114,3 +119,48 @@ class TestReviewQueueEndpoint:
         items = response.json()["items"]
         assert len(items) == 1
         assert items[0]["card"]["type"] == "flashcard"
+
+    async def test_review_queue_excludes_retired_cards_from_due_and_new_tabs(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Retired queue")
+        retired_due_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Retired due card",
+            retired=True,
+        )
+        await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Active new card",
+        )
+        await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Retired new card",
+            retired=True,
+        )
+
+        review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": retired_due_card["id"],
+                "scheduled_at": str(date.today()),
+            },
+        )
+        assert review_response.status_code == 200
+
+        due_response = await test_client.get("/review-queue/?type=practice&tab=due")
+        new_response = await test_client.get("/review-queue/?type=practice&tab=new")
+
+        assert due_response.status_code == 200
+        assert new_response.status_code == 200
+        assert due_response.json()["items"] == []
+        assert [item["card"]["prompt"] for item in new_response.json()["items"]] == [
+            "Active new card"
+        ]

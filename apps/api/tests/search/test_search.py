@@ -27,7 +27,7 @@ async def _create_review_card(
             "type": card_type,
             "prompt": prompt,
             "answer": answer,
-            "srs_enabled": True,
+            "retired": False,
         },
     )
     assert response.status_code == 201
