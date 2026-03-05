@@ -8,9 +8,11 @@ import {
 	ChevronDown,
 	Copy,
 	Loader2,
+	MoreHorizontal,
 	Plus,
 	Sparkles,
 	Star,
+	Trash2,
 	User2
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -19,6 +21,20 @@ import { LoadingOrError } from '~/components/LoadingOrError'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { DetailNavBar, type DetailNavTab } from '~/components/ui/detail-nav-bar'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle
+} from '~/components/ui/dialog'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { Textarea } from '~/components/ui/textarea'
@@ -27,6 +43,7 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
+import { useDeleteReviewCard } from '~/features/review-cards/api/deleteReviewCard'
 import { useReviewCard } from '~/features/review-cards/api/getReviewCard'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import {
@@ -156,6 +173,10 @@ export function ReviewCardDetailPage({
 		mutateAsync: updateReviewCardAsync,
 		isPending: isUpdatingReviewCard
 	} = useUpdateReviewCard()
+	const {
+		mutateAsync: deleteReviewCardAsync,
+		isPending: isDeletingReviewCard
+	} = useDeleteReviewCard()
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
 
@@ -242,6 +263,7 @@ export function ReviewCardDetailPage({
 		)
 	const [guessAnswerText, setGuessAnswerText] = useState('')
 	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	useEffect(() => {
 		if (!reviewCard) return
@@ -328,6 +350,26 @@ export function ReviewCardDetailPage({
 			toast.error('Failed to copy reveal')
 		}
 	}, [answer])
+	const handleDeleteReviewCard = useCallback(async () => {
+		if (!reviewCard || isDeletingReviewCard) return
+		try {
+			await deleteReviewCardAsync(reviewCard.id)
+			setIsDeleteDialogOpen(false)
+			toast.success('Review card deleted')
+			if (reviewCard.topic_id != null) {
+				navigate({
+					to: '/topics/$topicId',
+					params: { topicId: reviewCard.topic_id.toString() }
+				})
+				return
+			}
+			navigate({ to: '/topics' })
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : 'Failed to delete review card'
+			)
+		}
+	}, [deleteReviewCardAsync, isDeletingReviewCard, navigate, reviewCard])
 
 	if (isLoading) {
 		return (
@@ -732,6 +774,31 @@ export function ReviewCardDetailPage({
 										<TooltipContent>Show in review queue</TooltipContent>
 									</Tooltip>
 								</div>
+								<div className='flex items-center justify-end'>
+									<DropdownMenu>
+										<DropdownMenuTrigger
+											render={
+												<Button size='icon-sm' type='button' variant='ghost'>
+													<MoreHorizontal className='h-4 w-4' />
+												</Button>
+											}
+										/>
+										<DropdownMenuContent
+											align='end'
+											side='bottom'
+											sideOffset={4}
+										>
+											<DropdownMenuItem
+												disabled={isDeletingReviewCard}
+												onClick={() => setIsDeleteDialogOpen(true)}
+												variant='destructive'
+											>
+												<Trash2 className='mr-2 h-4 w-4' />
+												Delete
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</div>
 							</div>
 
 							{hidesSecondary ? (
@@ -878,6 +945,37 @@ export function ReviewCardDetailPage({
 					)}
 				</div>
 			</div>
+			<Dialog onOpenChange={setIsDeleteDialogOpen} open={isDeleteDialogOpen}>
+				<DialogContent className='max-w-md'>
+					<DialogHeader>
+						<DialogTitle>Delete review card?</DialogTitle>
+						<DialogDescription>
+							This will delete this review card and all linked reviews. This
+							action cannot be undone.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button
+							disabled={isDeletingReviewCard}
+							onClick={() => setIsDeleteDialogOpen(false)}
+							type='button'
+							variant='outline'
+						>
+							Cancel
+						</Button>
+						<Button
+							disabled={isDeletingReviewCard}
+							onClick={() => {
+								handleDeleteReviewCard().catch(() => {})
+							}}
+							type='button'
+							variant='destructive'
+						>
+							{isDeletingReviewCard ? 'Deleting...' : 'Delete review card'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }
