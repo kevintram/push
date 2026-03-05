@@ -21,7 +21,7 @@ type CallbackRefWithCurrent<T> = React.RefCallback<T> & {
  * Resize observer hook stolen from @mantine/hooks.
  * https://mantine.dev/hooks/use-resize-observer/
  */
-export function useResizeObserver<T extends HTMLElement = any>(
+export function useResizeObserver<T extends HTMLElement = HTMLElement>(
 	options?: ResizeObserverOptions
 ) {
 	const frameID = useRef(0)
@@ -97,7 +97,7 @@ export function useResizeObserver<T extends HTMLElement = any>(
 	return [ref, rect] as const
 }
 
-export function useElementSize<T extends HTMLElement = any>(
+export function useElementSize<T extends HTMLElement = HTMLElement>(
 	options?: ResizeObserverOptions
 ) {
 	const [ref, { width, height }] = useResizeObserver<T>(options)

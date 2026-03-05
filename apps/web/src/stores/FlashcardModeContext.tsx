@@ -120,6 +120,7 @@ export function useFlashcardMode() {
 	const context = useContext(FlashcardModeContext)
 
 	if (!context) {
+		// biome-ignore lint/nursery/noSecrets: false positive on static invariant message
 		throw new Error('FlashcardModeProvider is required')
 	}
 

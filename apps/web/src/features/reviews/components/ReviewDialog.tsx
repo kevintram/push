@@ -19,15 +19,12 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Textarea } from '~/components/ui/textarea'
-import type { Note } from '~/features/notes/types/note.types'
-import { SearchDialog } from '~/features/search/components/SearchDialog'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReview } from '../api/deleteReview'
 import { useReview } from '../api/getReviews'
 import { useUpdateReview } from '../api/updateReview'
-import type { UpdateReviewInput } from '../types/api.types'
 import { isOverdue } from '../utils/isOverdue'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import {
@@ -52,8 +49,6 @@ export function ReviewDialog({
 	const deleteReviewMutation = useDeleteReview()
 
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
-	const [isSearchOpen, setIsSearchOpen] = useState(false)
-	const [searchQuery, setSearchQuery] = useState('')
 
 	// Computed date values
 	const selectedDate = (() => {
@@ -146,9 +141,9 @@ export function ReviewDialog({
 		: 0
 
 	const getEntityName = useCallback((): string => {
-		if (review?.note) return review.note.title || 'Untitled note'
+		if (review?.review_card) return review.review_card.prompt || 'Untitled card'
 		return 'Unknown'
-	}, [review?.note])
+	}, [review?.review_card])
 
 	const handleStatusChange = useCallback(
 		(status: ReviewRatingState) => {
@@ -203,43 +198,18 @@ export function ReviewDialog({
 	const navigate = useNavigate()
 
 	const handleOpenLinkedEntity = useCallback(() => {
-		if (!review?.note_id) return
+		if (!review?.review_card) return
 		navigate({
-			to: '/notes/$noteId',
-			params: { noteId: review.note_id.toString() }
+			to: '/review-cards/$reviewCardId',
+			params: { reviewCardId: review.review_card.id.toString() }
 		})
-	}, [navigate, review?.note_id])
-
-	const handleChangeEntity = useCallback(() => {
-		setIsSearchOpen(true)
-	}, [])
-
-	const handleSearchOpenChange = useCallback((nextOpen: boolean) => {
-		setIsSearchOpen(nextOpen)
-		if (!nextOpen) {
-			setSearchQuery('')
-		}
-	}, [])
+	}, [navigate, review?.review_card])
 
 	const handleDialogOpenChange = useCallback(
 		(nextOpen: boolean) => {
-			if (!nextOpen) {
-				setIsSearchOpen(false)
-				setSearchQuery('')
-			}
 			onOpenChange(nextOpen)
 		},
 		[onOpenChange]
-	)
-
-	const handleEntitySelect = useCallback(
-		(note: Note) => {
-			if (!review?.id) return
-			const payload: UpdateReviewInput = { id: review.id }
-			payload.note_id = note.id
-			updateReviewMutation.mutate(payload)
-		},
-		[review?.id, updateReviewMutation]
 	)
 
 	const headerActions = useMemo(
@@ -274,141 +244,129 @@ export function ReviewDialog({
 	}
 
 	return (
-		<>
-			<Dialog onOpenChange={handleDialogOpenChange} open={open}>
-				<DialogContent
-					className='h-full w-full p-0 md:max-h-[400px] md:max-w-[540px] lg:max-w-[680px]'
-					showCloseButton={false}
-				>
-					<div className='flex h-full min-h-0 flex-col'>
-						<div className='flex items-center justify-between border-b px-2 py-1'>
+		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
+			<DialogContent
+				className='h-full w-full p-0 md:max-h-[400px] md:max-w-[540px] lg:max-w-[680px]'
+				showCloseButton={false}
+			>
+				<div className='flex h-full min-h-0 flex-col'>
+					<div className='flex items-center justify-between border-b px-2 py-1'>
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								render={
+									<Button
+										className='max-w-48'
+										disabled={updateReviewMutation.isPending}
+										size='sm'
+										variant='ghost'
+									>
+										<Link className='h-3.5 w-3.5 shrink-0' />
+										<span className='truncate'>{getEntityName()}</span>
+										<ChevronDown className='h-3 w-3 shrink-0 text-muted-foreground' />
+									</Button>
+								}
+							/>
+							<DropdownMenuContent align='start' className='w-auto'>
+								<DropdownMenuItem onClick={handleOpenLinkedEntity}>
+									Open
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+						<div className='flex items-center gap-2'>
 							<DropdownMenu>
 								<DropdownMenuTrigger
 									render={
 										<Button
-											className='max-w-48'
-											disabled={updateReviewMutation.isPending}
+											className='h-6 w-6 p-0'
 											size='sm'
+											title='More options'
 											variant='ghost'
 										>
-											<Link className='h-3.5 w-3.5 shrink-0' />
-											<span className='truncate'>{getEntityName()}</span>
-											<ChevronDown className='h-3 w-3 shrink-0 text-muted-foreground' />
+											<MoreHorizontal className='h-4 w-4' />
 										</Button>
 									}
 								/>
-								<DropdownMenuContent align='start' className='w-auto'>
-									<DropdownMenuItem onClick={handleOpenLinkedEntity}>
-										Open
-									</DropdownMenuItem>
-									<DropdownMenuItem onClick={handleChangeEntity}>
-										Change
+								<DropdownMenuContent>
+									<DropdownMenuItem
+										onClick={handleDelete}
+										variant='destructive'
+									>
+										Delete
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
-							<div className='flex items-center gap-2'>
-								<DropdownMenu>
-									<DropdownMenuTrigger
-										render={
-											<Button
-												className='h-6 w-6 p-0'
-												size='sm'
-												title='More options'
-												variant='ghost'
-											>
-												<MoreHorizontal className='h-4 w-4' />
-											</Button>
-										}
-									/>
-									<DropdownMenuContent>
-										<DropdownMenuItem
-											onClick={handleDelete}
-											variant='destructive'
-										>
-											Delete
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-								{headerActions}
-							</div>
-						</div>
-
-						<div className='flex min-h-0 flex-1 flex-col gap-y-2 px-4 py-4'>
-							{hasStability && (
-								<div className='flex items-center text-muted-foreground text-xs'>
-									<Anvil className='mr-1 h-3 w-3' />
-									<span>{stabilityAfterRounded}d</span>
-									{hasDelta ? (
-										<span className={cn('ml-1', stabilityChangeColorClass)}>
-											({stabilityDeltaRounded >= 0 ? '+' : ''}
-											{stabilityDeltaRounded})
-										</span>
-									) : (
-										<span className={cn('ml-1', stabilityChangeColorClass)}>
-											(new)
-										</span>
-									)}
-								</div>
-							)}
-							<div className='grid min-h-0 flex-1 grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr] content-start items-center gap-x-2'>
-								<ReviewRatingCheckbox
-									className={cn(
-										'ml-2',
-										isOverdueValue &&
-											'border-red-600 dark:border-red-700 dark:bg-red-700'
-									)}
-									disabled={isLoading || updateReviewMutation.isPending}
-									onChange={handleStatusChange}
-									value={reviewStatus}
-								/>
-								<Textarea
-									className='!bg-transparent m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
-									onChange={onDescriptionChange}
-									placeholder='Description'
-									spellCheck={false}
-									value={description}
-								/>
-								<DatePickerDropdown
-									isOpen={isDatePopoverOpen}
-									onDateChange={handleDateChange}
-									onOpenChange={setIsDatePopoverOpen}
-									selectedDate={selectedDate}
-									trigger={
-										<Button
-											className={cn(
-												'shrink-0 text-xs',
-												isOverdueValue && 'text-red-600 dark:text-red-400',
-												relativeDate.text === 'Today' &&
-													'text-blue-600 dark:text-blue-400'
-											)}
-											size='sm'
-											variant='ghost'
-										>
-											<CalendarIcon className='h-3 w-3' />
-											{relativeDate.text}
-										</Button>
-									}
-								/>
-								<div className='self-start' />
-								<Textarea
-									className='!bg-transparent m-0 h-full min-h-0 min-w-0 resize-none rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-									onChange={onNotesChange}
-									placeholder='Notes'
-									spellCheck={false}
-									value={notes}
-								/>
-							</div>
+							{headerActions}
 						</div>
 					</div>
-				</DialogContent>
-			</Dialog>
-			<SearchDialog
-				onOpenChange={handleSearchOpenChange}
-				onSelectEntity={handleEntitySelect}
-				open={isSearchOpen}
-				query={searchQuery}
-				setQuery={setSearchQuery}
-			/>
-		</>
+
+					<div className='flex min-h-0 flex-1 flex-col gap-y-2 px-4 py-4'>
+						{hasStability && (
+							<div className='flex items-center text-muted-foreground text-xs'>
+								<Anvil className='mr-1 h-3 w-3' />
+								<span>{stabilityAfterRounded}d</span>
+								{hasDelta ? (
+									<span className={cn('ml-1', stabilityChangeColorClass)}>
+										({stabilityDeltaRounded >= 0 ? '+' : ''}
+										{stabilityDeltaRounded})
+									</span>
+								) : (
+									<span className={cn('ml-1', stabilityChangeColorClass)}>
+										(new)
+									</span>
+								)}
+							</div>
+						)}
+						<div className='grid min-h-0 flex-1 grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr] content-start items-center gap-x-2'>
+							<ReviewRatingCheckbox
+								className={cn(
+									'ml-2',
+									isOverdueValue &&
+										'border-red-600 dark:border-red-700 dark:bg-red-700'
+								)}
+								disabled={isLoading || updateReviewMutation.isPending}
+								onChange={handleStatusChange}
+								value={reviewStatus}
+							/>
+							<Textarea
+								className='!bg-transparent m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								onChange={onDescriptionChange}
+								placeholder='Description'
+								spellCheck={false}
+								value={description}
+							/>
+							<DatePickerDropdown
+								isOpen={isDatePopoverOpen}
+								onDateChange={handleDateChange}
+								onOpenChange={setIsDatePopoverOpen}
+								selectedDate={selectedDate}
+								trigger={
+									<Button
+										className={cn(
+											'shrink-0 text-xs',
+											isOverdueValue && 'text-red-600 dark:text-red-400',
+											relativeDate.text === 'Today' &&
+												'text-blue-600 dark:text-blue-400'
+										)}
+										size='sm'
+										variant='ghost'
+									>
+										<CalendarIcon className='h-3 w-3' />
+										{relativeDate.text}
+									</Button>
+								}
+							/>
+							<div className='self-start' />
+							<Textarea
+								className='!bg-transparent m-0 h-full min-h-0 min-w-0 resize-none rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+								onChange={onNotesChange}
+								placeholder='Notes'
+								spellCheck={false}
+								value={notes}
+							/>
+						</div>
+					</div>
+				</div>
+			</DialogContent>
+		</Dialog>
 	)
 }

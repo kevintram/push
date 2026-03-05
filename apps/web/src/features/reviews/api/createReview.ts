@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
-import { noteKeys } from '~/features/notes/api/queryKeys'
+import { reviewCardKeys } from '~/features/review-cards/api/queryKeys'
 import { searchKeys } from '~/features/search/api/searchAll'
 import { apiFetch } from '~/utils/apiFetch'
 import type { CreateReviewPayload } from '../types/api.types'
@@ -38,7 +38,7 @@ export function useCreateReview() {
 		mutationFn: createReview,
 		onSuccess: async () => {
 			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: noteKeys.all }),
+				queryClient.invalidateQueries({ queryKey: reviewCardKeys.all }),
 				queryClient.invalidateQueries({ queryKey: reviewKeys.all }),
 				queryClient.invalidateQueries({ queryKey: reviewQueueKeys.all }),
 				queryClient.invalidateQueries({ queryKey: searchKeys.all })

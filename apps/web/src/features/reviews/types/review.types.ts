@@ -4,7 +4,7 @@ export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 
 export type Review = {
 	id: number
-	note_id: number
+	review_card_id: number
 	rating: Rating | null
 
 	description: string
@@ -15,10 +15,12 @@ export type Review = {
 
 	inserted_at: string
 	updated_at: string
-	note: {
+	review_card: {
 		id: number
-		title: string
-		body: string
+		topic_id: number
+		type: 'practice' | 'flashcard'
+		prompt: string
+		answer: string
 	}
 
 	// Entity FSRS state before review

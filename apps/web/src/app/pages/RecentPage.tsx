@@ -1,11 +1,11 @@
+import { useNavigate } from '@tanstack/react-router'
 import { Clock } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	EntityTypeFilter,
 	type EntityTypeFilterValue
 } from '~/components/EntityTypeFilter'
-import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import {
 	Empty,
 	EmptyDescription,
@@ -14,39 +14,39 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { NoteCard } from '~/features/notes/components/NoteCard'
-import type { Note } from '~/features/notes/types/note.types'
+import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { useSearchAll } from '~/features/search/api/searchAll'
-import { useNoteNavigation } from '~/hooks/useNoteNavigation'
-import { estimateCardSize } from '~/utils/estimateCardSize'
+import type { SearchResultItem } from '~/features/search/types/search.types'
+import { TopicCard } from '~/features/topics/components/TopicCard'
 
 const RECENT_LIMIT = 50
 
 type DateSection = {
 	id: string
 	label: string
-	items: Array<Note>
+	items: Array<SearchResultItem>
 }
 
-function matchesFilter(note: Note, filter: EntityTypeFilterValue): boolean {
-	if (filter === 'all') return true
-	if (filter === 'none') return note.tags.length === 0
-	if (filter === 'topic') return note.tags.includes('TOPIC')
-	if (filter === 'source') return note.tags.includes('SOURCE')
-	return note.tags.includes('PRACTICE')
+function filterToEntityTypes(
+	filter: EntityTypeFilterValue
+): string | undefined {
+	if (filter === 'all') return
+	if (filter === 'topic') return 'topic'
+	if (filter === 'practice') return 'practice'
+	return 'flashcard'
 }
 
-function groupRecentByDate(notes: Array<Note>): Array<DateSection> {
+function groupRecentByDate(items: Array<SearchResultItem>): Array<DateSection> {
 	const now = new Date()
 	now.setHours(0, 0, 0, 0)
 
 	const byKey = new Map<string, DateSection>()
-	for (const note of notes) {
-		const date = new Date(note.updated_at)
+	for (const item of items) {
+		const date = new Date(item.recent_activity_at)
 		const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 		const existing = byKey.get(key)
 		if (existing) {
-			existing.items.push(note)
+			existing.items.push(item)
 			continue
 		}
 
@@ -55,38 +55,107 @@ function groupRecentByDate(notes: Array<Note>): Array<DateSection> {
 		const diffDays = Math.floor(
 			(now.getTime() - normalized.getTime()) / (1000 * 60 * 60 * 24)
 		)
-		const label =
-			diffDays <= 0
-				? 'Today'
-				: diffDays === 1
-					? 'Yesterday'
-					: `${diffDays}d ago`
-		byKey.set(key, { id: key, label, items: [note] })
+		let label = `${diffDays}d ago`
+		if (diffDays <= 0) {
+			label = 'Today'
+		} else if (diffDays === 1) {
+			label = 'Yesterday'
+		}
+		byKey.set(key, { id: key, label, items: [item] })
 	}
 
 	return [...byKey.values()].sort((a, b) => (a.id < b.id ? 1 : -1))
 }
 
 export function RecentPage() {
-	const navigateToNote = useNoteNavigation()
+	const navigate = useNavigate()
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
 
 	const { data: searchResults = [], isLoading } = useSearchAll({
 		limit: RECENT_LIMIT,
-		entityTypes:
-			activeFilter === 'all' || activeFilter === 'none'
-				? undefined
-				: activeFilter
+		entityTypes: filterToEntityTypes(activeFilter)
 	})
 
-	const recentNotes = useMemo(
-		() =>
-			searchResults
-				.map(result => result.note)
-				.filter(note => matchesFilter(note, activeFilter)),
-		[searchResults, activeFilter]
+	const sections = useMemo(
+		() => groupRecentByDate(searchResults),
+		[searchResults]
 	)
-	const sections = useMemo(() => groupRecentByDate(recentNotes), [recentNotes])
+
+	let content: ReactNode
+	if (isLoading) {
+		content = (
+			<PageLayout.Content className='max-w-screen p-6'>
+				<LoadingSpinner containerClassName='min-h-64' />
+			</PageLayout.Content>
+		)
+	} else if (sections.length === 0) {
+		content = (
+			<PageLayout.Content>
+				<Empty>
+					<EmptyHeader>
+						<EmptyMedia variant='icon'>
+							<Clock />
+						</EmptyMedia>
+						<EmptyTitle>No recent items</EmptyTitle>
+						<EmptyDescription>
+							See your most recently edited topics and review cards
+						</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
+			</PageLayout.Content>
+		)
+	} else {
+		content = (
+			<PageLayout.Content className='max-w-screen space-y-6 p-6'>
+				{sections.map(section => (
+					<div className='space-y-3' key={section.id}>
+						<h3 className='font-bold text-xl'>{section.label}</h3>
+						<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+							{section.items.map(item => {
+								const topic = item.topic
+								const reviewCard = item.review_card
+
+								if (item.entity_type === 'topic' && topic) {
+									return (
+										<TopicCard
+											key={`topic-${topic.id}`}
+											onClick={() =>
+												navigate({
+													to: '/topics/$topicId',
+													params: { topicId: topic.id.toString() }
+												})
+											}
+											topic={topic}
+										/>
+									)
+								}
+
+								if (item.entity_type === 'review_card' && reviewCard) {
+									return (
+										<ReviewCard
+											key={`review-card-${reviewCard.id}`}
+											onClick={() =>
+												navigate({
+													to: '/review-cards/$reviewCardId',
+													params: {
+														reviewCardId: reviewCard.id.toString()
+													}
+												})
+											}
+											readOnly={true}
+											reviewCard={reviewCard}
+										/>
+									)
+								}
+
+								return null
+							})}
+						</div>
+					</div>
+				))}
+			</PageLayout.Content>
+		)
+	}
 
 	return (
 		<PageLayout>
@@ -96,50 +165,7 @@ export function RecentPage() {
 					onFilterChange={setActiveFilter}
 				/>
 			</PageLayout.Header>
-			{isLoading ? (
-				<PageLayout.Content className='max-w-screen p-6'>
-					<LoadingSpinner containerClassName='min-h-64' />
-				</PageLayout.Content>
-			) : sections.length === 0 ? (
-				<PageLayout.Content>
-					<Empty>
-						<EmptyHeader>
-							<EmptyMedia variant='icon'>
-								<Clock />
-							</EmptyMedia>
-							<EmptyTitle>No recent items</EmptyTitle>
-							<EmptyDescription>
-								See your most recently edited or reviewed notes
-							</EmptyDescription>
-						</EmptyHeader>
-					</Empty>
-				</PageLayout.Content>
-			) : (
-				<PageLayout.Content className='max-w-screen space-y-6 p-6'>
-					{sections.map(section => (
-						<div className='space-y-3' key={section.id}>
-							<h3 className='font-bold text-xl'>{section.label}</h3>
-							<MasonryLayout
-								estimateItemSize={(note, _index, laneWidth) =>
-									estimateCardSize(
-										note.title || 'Untitled note',
-										note.body || '',
-										laneWidth
-									)
-								}
-								getItemKey={note => `note-${note.id}`}
-								items={section.items}
-								renderItem={note => (
-									<NoteCard
-										note={note}
-										onClick={() => navigateToNote(note.id)}
-									/>
-								)}
-							/>
-						</div>
-					))}
-				</PageLayout.Content>
-			)}
+			{content}
 		</PageLayout>
 	)
 }

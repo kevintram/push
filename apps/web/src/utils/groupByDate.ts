@@ -1,4 +1,3 @@
-import type { Note } from '~/features/notes/types/note.types'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 
 export type DateSection<T> = {
@@ -61,9 +60,9 @@ export function groupByDate<T>(
 
 export function toEntityEntries(
 	results: Array<SearchResultItem>
-): Array<{ item: Note; date: string }> {
+): Array<{ item: SearchResultItem; date: string }> {
 	return results.map(result => ({
-		item: result.note,
+		item: result,
 		date: result.recent_activity_at
 	}))
 }

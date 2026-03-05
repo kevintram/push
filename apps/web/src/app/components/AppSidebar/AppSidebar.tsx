@@ -1,13 +1,12 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
-	Archive,
 	Clock,
+	Layers,
 	Library,
 	ListChecks,
 	PanelLeft,
-	Settings,
-	Star
+	Settings
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -28,15 +27,6 @@ import {
 	useSidebar
 } from '~/components/ui/sidebar'
 
-function ReviewSidebarStarIcon(props: React.ComponentProps<typeof Star>) {
-	return (
-		<Star
-			{...props}
-			className={`fill-yellow-500 text-yellow-500 ${props.className ?? ''}`}
-		/>
-	)
-}
-
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
@@ -44,10 +34,16 @@ export function AppSidebar() {
 
 	const reviewItems = [
 		{
-			title: 'Review',
-			url: '/review',
-			icon: ReviewSidebarStarIcon,
-			isActive: (pathname: string) => pathname === '/review'
+			title: 'Practice',
+			url: '/practice',
+			icon: ListChecks,
+			isActive: (pathname: string) => pathname === '/practice'
+		},
+		{
+			title: 'Flashcards',
+			url: '/flashcards',
+			icon: Layers,
+			isActive: (pathname: string) => pathname === '/flashcards'
 		}
 	]
 
@@ -66,18 +62,12 @@ export function AppSidebar() {
 		}
 	]
 
-	const archiveItems = [
+	const activityItems = [
 		{
 			title: 'Logbook',
 			url: '/logbook',
 			icon: ListChecks,
 			isActive: (pathname: string) => pathname === '/logbook'
-		},
-		{
-			title: 'Archived',
-			url: '/archived',
-			icon: Archive,
-			isActive: (pathname: string) => pathname === '/archived'
 		}
 	]
 
@@ -155,7 +145,7 @@ export function AppSidebar() {
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{archiveItems.map(item => {
+							{activityItems.map(item => {
 								const isActive = item.isActive(location.pathname)
 								return (
 									<SidebarMenuItem key={item.title}>

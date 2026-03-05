@@ -10,7 +10,7 @@ import {
 	getOptionIcon,
 	type ReviewRatingState,
 	ratingOptions
-} from './ReviewRatingCheckbox'
+} from './reviewRatingOptions'
 
 interface RatingDropdownProps {
 	onSelect: (value: ReviewRatingState) => void

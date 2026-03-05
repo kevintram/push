@@ -1,4 +1,4 @@
-"""Reviews HTTP endpoints - thin wrapper around service layer."""
+"""Reviews HTTP endpoints - review-card only."""
 
 from datetime import datetime
 from typing import Literal
@@ -11,9 +11,8 @@ from app.reviews import service
 from app.schemas.reviews import (
     ReviewCreate,
     ReviewListItem,
-    ReviewRead,
     ReviewUpdate,
-    ReviewWithNote,
+    ReviewWithCard,
 )
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
@@ -23,14 +22,13 @@ router = APIRouter(prefix="/reviews", tags=["reviews"])
 async def read_reviews(
     session: SessionDep,
     user_id: UserIdDep,
-    note_id: int | None = None,
+    review_card_id: int | None = None,
     effective_date_before: str | None = None,
     effective_date_after: str | None = None,
     completed: bool | None = None,
     scheduled: bool | None = None,
     order: Literal["asc", "desc"] = "asc",
 ) -> list[ReviewListItem]:
-    """Get all reviews for the user, with optional filters."""
     date_before = None
     date_after = None
     if effective_date_before is not None:
@@ -38,28 +36,17 @@ async def read_reviews(
     if effective_date_after is not None:
         date_after = datetime.strptime(effective_date_after, "%Y-%m-%d").date()
 
-    results = await service.list_reviews(
+    reviews = await service.list_reviews(
         session,
         user_id,
-        note_id=note_id,
+        review_card_id=review_card_id,
         effective_date_before=date_before,
         effective_date_after=date_after,
         completed=completed,
         scheduled=scheduled,
         order=order,
     )
-
-    items: list[ReviewListItem] = []
-    for review, note_title, note_body in results:
-        review_data = ReviewRead.model_validate(review).model_dump()
-        review_data["note"] = {
-            "id": review.note_id,
-            "title": note_title or "",
-            "body": note_body or "",
-        }
-        items.append(ReviewListItem(**review_data))
-
-    return items
+    return [ReviewListItem.model_validate(review) for review in reviews]
 
 
 @router.get("/{id}/")
@@ -67,10 +54,9 @@ async def read_review(
     session: SessionDep,
     user_id: UserIdDep,
     id: int,
-) -> ReviewWithNote:
-    """Get a specific review by id."""
+) -> ReviewWithCard:
     review = await service.get_review(session, id, user_id)
-    return ReviewWithNote.model_validate(review)
+    return ReviewWithCard.model_validate(review)
 
 
 @router.post("/")
@@ -78,19 +64,18 @@ async def create_review(
     review_create: ReviewCreate,
     session: SessionDep,
     user_id: UserIdDep,
-) -> ReviewWithNote:
-    """Create a new review."""
+) -> ReviewWithCard:
     review = await service.create_review(
         session,
         user_id,
-        note_id=review_create.note_id,
+        review_card_id=review_create.review_card_id,
         description=review_create.description,
         notes=review_create.notes,
         scheduled_at=review_create.scheduled_at,
         completed_at=review_create.completed_at,
-        rating=review_create.rating,
+        rating=review_create.rating.value if review_create.rating else None,
     )
-    return ReviewWithNote.model_validate(review)
+    return ReviewWithCard.model_validate(review)
 
 
 @router.post("/{id}/")
@@ -99,8 +84,7 @@ async def update_review(
     review_update: ReviewUpdate,
     session: SessionDep,
     user_id: UserIdDep,
-) -> ReviewWithNote:
-    """Update a review and recalculate FSRS state."""
+) -> ReviewWithCard:
     review = await service.update_review(
         session,
         id,
@@ -109,11 +93,11 @@ async def update_review(
         notes=review_update.notes,
         scheduled_at=review_update.scheduled_at,
         completed_at=review_update.completed_at,
-        rating=review_update.rating,
-        note_id=review_update.note_id,
+        rating=review_update.rating.value if review_update.rating else None,
+        review_card_id=review_update.review_card_id,
         fields_set=review_update.model_fields_set,
     )
-    return ReviewWithNote.model_validate(review)
+    return ReviewWithCard.model_validate(review)
 
 
 @router.delete("/{id}/")
@@ -121,7 +105,6 @@ async def delete_review(
     id: int,
     session: SessionDep,
     user_id: UserIdDep,
-):
-    """Delete a review."""
+) -> dict[str, str]:
     await service.delete_review(session, id, user_id)
     return {"message": "Review deleted successfully"}

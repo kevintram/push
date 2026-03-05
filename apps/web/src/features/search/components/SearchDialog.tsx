@@ -1,4 +1,5 @@
-import { Check, Loader2, Plus } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { Plus } from 'lucide-react'
 import {
 	useCallback,
 	useEffect,
@@ -12,7 +13,6 @@ import {
 	EntityTypeFilter,
 	type EntityTypeFilterValue
 } from '~/components/EntityTypeFilter'
-import { MIN_HEIGHT } from '~/components/search/constants'
 import { SearchInput } from '~/components/search/SearchInput'
 import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
 import { Button } from '~/components/ui/button'
@@ -22,17 +22,11 @@ import {
 	DialogHeader,
 	DialogTitle
 } from '~/components/ui/dialog'
-import { AddNoteDialog } from '~/features/notes/components/AddNoteDialog'
-import {
-	NoteCard,
-	type NoteCardStatusBadge,
-	toNoteCardStatusBadge
-} from '~/features/notes/components/NoteCard'
-import type { Note } from '~/features/notes/types/note.types'
-import { orderNoteStatusBadges } from '~/features/notes/utils/orderNoteStatusBadges'
+import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { useSearchAll } from '~/features/search/api/searchAll'
+import type { SearchResultItem } from '~/features/search/types/search.types'
+import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
-import { useNoteNavigation } from '~/hooks/useNoteNavigation'
 import { estimateCardSize } from '~/utils/estimateCardSize'
 
 interface SearchDialogProps {
@@ -40,12 +34,9 @@ interface SearchDialogProps {
 	onOpenChange: (open: boolean) => void
 	query: string
 	setQuery: (query: string) => void
-	onSelectEntity?: (note: Note) => void | Promise<void>
+	onSelectEntity?: (entity: SearchResultItem) => void | Promise<void>
 	allowedTypes?: Array<EntityType>
 	initialFilter?: EntityTypeFilterValue
-	addedNoteIds?: Array<number>
-	pendingNoteIds?: Array<number>
-	customStatusBadges?: Array<{ noteId: number; badge: NoteCardStatusBadge }>
 	closeOnSelect?: boolean
 	title?: string
 	placeholder?: string
@@ -53,12 +44,21 @@ interface SearchDialogProps {
 	showNoTagOption?: boolean
 }
 
-function matchesFilter(note: Note, filter: EntityTypeFilterValue): boolean {
+function toEntityTypes(filter: EntityTypeFilterValue): string | undefined {
+	if (filter === 'all') return
+	if (filter === 'topic') return 'topic'
+	if (filter === 'practice') return 'practice'
+	return 'flashcard'
+}
+
+function matchesFilter(
+	result: SearchResultItem,
+	filter: EntityTypeFilterValue
+): boolean {
 	if (filter === 'all') return true
-	if (filter === 'none') return note.tags.length === 0
-	if (filter === 'topic') return note.tags.includes('TOPIC')
-	if (filter === 'source') return note.tags.includes('SOURCE')
-	return note.tags.includes('PRACTICE')
+	if (filter === 'topic') return result.entity_type === 'topic'
+	if (result.entity_type !== 'review_card' || !result.review_card) return false
+	return result.review_card.type === filter
 }
 
 export function SearchDialog({
@@ -69,22 +69,19 @@ export function SearchDialog({
 	onSelectEntity,
 	allowedTypes,
 	initialFilter,
-	addedNoteIds = [],
-	pendingNoteIds = [],
-	customStatusBadges = [],
 	closeOnSelect = true,
 	title = 'Search',
 	placeholder = 'Search notes...',
 	showAllOption = true,
-	showNoTagOption = true
+	showNoTagOption = false
 }: SearchDialogProps) {
-	const navigateToNote = useNoteNavigation()
+	const navigate = useNavigate()
 	const inputRef = useRef<HTMLInputElement>(null)
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
 	const [selectedIndex, setSelectedIndex] = useState(0)
 	const resolvedAllowedTypes = useMemo<Array<EntityType>>(
-		() => allowedTypes ?? ['topic', 'source', 'practice'],
+		() => allowedTypes ?? ['topic', 'practice', 'flashcard'],
 		[allowedTypes]
 	)
 	const resolvedInitialFilter = useMemo<EntityTypeFilterValue>(
@@ -99,60 +96,6 @@ export function SearchDialog({
 		resolvedInitialFilter
 	)
 	const [gap, setGap] = useState(12)
-	const [isAddNoteOpen, setIsAddNoteOpen] = useState(false)
-
-	const handleCreateNoteSuccess = useCallback(
-		async (note: Note) => {
-			if (onSelectEntity) {
-				await onSelectEntity(note)
-				if (closeOnSelect) {
-					onOpenChange(false)
-				}
-				return
-			}
-			navigateToNote(note.id)
-			onOpenChange(false)
-		},
-		[onSelectEntity, closeOnSelect, onOpenChange, navigateToNote]
-	)
-
-	const addedNoteIdSet = useMemo(
-		() => new Set<number>(addedNoteIds),
-		[addedNoteIds]
-	)
-	const pendingNoteIdSet = useMemo(
-		() => new Set<number>(pendingNoteIds),
-		[pendingNoteIds]
-	)
-	const customStatusBadgeMap = useMemo(
-		() =>
-			new Map<number, NoteCardStatusBadge>(
-				customStatusBadges.map(({ noteId, badge }) => [noteId, badge])
-			),
-		[customStatusBadges]
-	)
-	const addedBadge = useMemo<NoteCardStatusBadge>(
-		() => ({
-			label: '',
-			icon: <Check className='h-3 w-3' />,
-			tooltip: 'Added',
-			variant: 'outline',
-			className:
-				'h-5 border border-emerald-300 bg-emerald-100 text-emerald-900 text-xs dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200'
-		}),
-		[]
-	)
-	const addingBadge = useMemo<NoteCardStatusBadge>(
-		() => ({
-			label: '',
-			icon: <Loader2 className='h-3 w-3 animate-spin' />,
-			tooltip: 'Adding...',
-			variant: 'outline',
-			className:
-				'h-5 border border-emerald-300 bg-emerald-100 text-emerald-900 text-xs dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200'
-		}),
-		[]
-	)
 
 	const debouncedQuery = useDebouncedValue(query, 300)
 	const trimmedQuery = debouncedQuery.trim()
@@ -161,27 +104,19 @@ export function SearchDialog({
 	const { data: searchResults = [], isLoading } = useSearchAll(
 		{
 			query: trimmedQuery || undefined,
-			limit: 12,
-			entityTypes:
-				activeFilter === 'all' || activeFilter === 'none'
-					? undefined
-					: activeFilter
+			limit: 24,
+			entityTypes: toEntityTypes(activeFilter)
 		},
 		{ enabled: open }
 	)
 
-	const results = useMemo(
-		() =>
-			searchResults
-				.map(result => result.note)
-				.filter(note => matchesFilter(note, activeFilter))
-				.filter(note =>
-					activeFilter === 'none'
-						? note.tags.length === 0
-						: resolvedAllowedTypes.some(type => matchesFilter(note, type))
-				),
-		[searchResults, activeFilter, resolvedAllowedTypes]
-	)
+	const results = useMemo(() => {
+		const isAllowedFilter =
+			activeFilter === 'all' ||
+			resolvedAllowedTypes.includes(activeFilter as EntityType)
+		if (!isAllowedFilter) return []
+		return searchResults.filter(result => matchesFilter(result, activeFilter))
+	}, [searchResults, activeFilter, resolvedAllowedTypes])
 
 	useEffect(() => {
 		if (open) {
@@ -204,18 +139,6 @@ export function SearchDialog({
 		return () => window.removeEventListener('resize', updateGap)
 	}, [])
 
-	const handleEntitySelect = (note: Note) => {
-		if (onSelectEntity) {
-			onSelectEntity(note)
-			if (closeOnSelect) {
-				onOpenChange(false)
-			}
-			return
-		}
-		navigateToNote(note.id)
-		onOpenChange(false)
-	}
-
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (results.length === 0) return
 
@@ -228,35 +151,43 @@ export function SearchDialog({
 		} else if (e.key === 'Enter') {
 			e.preventDefault()
 			if (results[selectedIndex]) {
-				handleEntitySelect(results[selectedIndex])
+				handleSelect(results[selectedIndex])
 			}
 		} else if (e.key === 'Escape') {
 			onOpenChange(false)
 		}
 	}
-	const getStatusBadges = (
-		note: Note
-	): Array<NoteCardStatusBadge> | undefined => {
-		let appendedBadge: NoteCardStatusBadge | null = null
-		if (pendingNoteIdSet.has(note.id)) {
-			appendedBadge = addingBadge
-		} else {
-			const customStatusBadge = customStatusBadgeMap.get(note.id)
-			if (customStatusBadge) {
-				appendedBadge = customStatusBadge
-			} else if (addedNoteIdSet.has(note.id)) {
-				appendedBadge = addedBadge
-			}
-		}
-		if (!appendedBadge) {
+
+	const handleSelect = (entity: SearchResultItem) => {
+		if (onSelectEntity) {
+			onSelectEntity(entity)
+			if (closeOnSelect) onOpenChange(false)
 			return
 		}
-		return [
-			...orderNoteStatusBadges(note.status_badges).map(apiBadge =>
-				toNoteCardStatusBadge(apiBadge)
-			),
-			appendedBadge
-		]
+
+		if (entity.entity_type === 'topic' && entity.topic) {
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: entity.topic.id.toString() }
+			})
+		} else if (entity.entity_type === 'review_card' && entity.review_card) {
+			navigate({
+				to: '/review-cards/$reviewCardId',
+				params: { reviewCardId: entity.review_card.id.toString() }
+			})
+		}
+
+		onOpenChange(false)
+	}
+
+	const handleCreateNew = () => {
+		onOpenChange(false)
+		setTimeout(() => {
+			const sidebarCreateButton = Array.from(
+				document.querySelectorAll<HTMLButtonElement>('button')
+			).find(button => button.textContent?.trim() === 'Create')
+			sidebarCreateButton?.click()
+		}, 0)
 	}
 
 	return (
@@ -277,13 +208,7 @@ export function SearchDialog({
 							placeholder={placeholder}
 							value={query}
 						/>
-						<Button
-							onClick={() => {
-								onOpenChange(false)
-								setIsAddNoteOpen(true)
-							}}
-							variant='outline'
-						>
+						<Button onClick={handleCreateNew} variant='outline'>
 							<Plus className='h-4 w-4' />
 							Create new
 						</Button>
@@ -303,37 +228,60 @@ export function SearchDialog({
 				>
 					<SearchResultsContainer
 						animate={false}
-						estimateItemSize={(note, _index, laneWidth) =>
-							estimateCardSize(
-								note.title || 'Untitled note',
-								note.body || '',
-								laneWidth
-							)
-						}
+						estimateItemSize={(result, _index, laneWidth) => {
+							if (result.entity_type === 'topic' && result.topic) {
+								return estimateCardSize(
+									result.topic.title || 'Untitled topic',
+									result.topic.body || '',
+									laneWidth
+								)
+							}
+							if (result.entity_type === 'review_card' && result.review_card) {
+								return estimateCardSize(
+									result.review_card.prompt || 'Untitled prompt',
+									result.review_card.answer || '',
+									laneWidth
+								)
+							}
+							return 120
+						}}
 						gap={gap}
-						getItemKey={note => `note-${note.id}`}
+						getItemKey={result =>
+							result.entity_type === 'topic'
+								? `topic-${result.topic?.id ?? 'unknown'}`
+								: `review-card-${result.review_card?.id ?? 'unknown'}`
+						}
 						getScrollElement={getScrollElement}
 						hasQuery={hasQuery}
 						isLoading={isLoading}
-						renderItem={note => (
-							<NoteCard
-								minHeight={MIN_HEIGHT}
-								note={note}
-								onClick={() => handleEntitySelect(note)}
-								statusBadges={getStatusBadges(note)}
-							/>
-						)}
+						minItemWidth={280}
+						renderItem={result => {
+							if (result.entity_type === 'topic' && result.topic) {
+								return (
+									<TopicCard
+										onClick={() => handleSelect(result)}
+										topic={result.topic}
+									/>
+								)
+							}
+
+							if (result.entity_type === 'review_card' && result.review_card) {
+								return (
+									<ReviewCard
+										onClick={() => handleSelect(result)}
+										readOnly={true}
+										reviewCard={result.review_card}
+									/>
+								)
+							}
+
+							return null
+						}}
 						results={results}
-						searchQuery={query}
+						searchQuery={trimmedQuery}
 					/>
 				</div>
 			</DialogContent>
-			<AddNoteDialog
-				defaults={{ title: query }}
-				onOpenChange={setIsAddNoteOpen}
-				onSuccess={handleCreateNoteSuccess}
-				open={isAddNoteOpen}
-			/>
 		</Dialog>
 	)
 }

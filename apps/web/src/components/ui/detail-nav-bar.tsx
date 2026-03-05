@@ -12,6 +12,7 @@ interface DetailNavBarProps {
 	unscheduledCount: number
 	overdueCount: number
 	dueTodayCount: number
+	showReviewsTab?: boolean
 }
 
 export function DetailNavBar({
@@ -21,17 +22,18 @@ export function DetailNavBar({
 	onTabChange,
 	unscheduledCount,
 	overdueCount,
-	dueTodayCount
+	dueTodayCount,
+	showReviewsTab = true
 }: DetailNavBarProps) {
 	const handleValueChange = useCallback(
 		(value: string) => {
-			if (value !== "home" && value !== "reviews") {
+			if (value !== "home" && (showReviewsTab ? value !== "reviews" : true)) {
 				return
 			}
 
-			onTabChange(value)
+			onTabChange(value as DetailNavTab)
 		},
-		[onTabChange]
+		[onTabChange, showReviewsTab]
 	)
 
 	return (
@@ -41,24 +43,28 @@ export function DetailNavBar({
 			<Tabs onValueChange={handleValueChange} value={activeTab}>
 				<TabsList className='h-8'>
 					<TabsTrigger value='home'>Home</TabsTrigger>
-					<TabsTrigger value='reviews'>
-						<span className='flex items-center gap-1.5'>
-							Reviews
-							{unscheduledCount > 0 && <CountBadge count={unscheduledCount} />}
-							{overdueCount > 0 && (
-								<CountBadge
-									className='bg-red-600 text-white dark:bg-red-400'
-									count={overdueCount}
-								/>
-							)}
-							{dueTodayCount > 0 && (
-								<CountBadge
-									className='bg-transparent text-blue-600 dark:text-blue-400'
-									count={dueTodayCount}
-								/>
-							)}
-						</span>
-					</TabsTrigger>
+					{showReviewsTab ? (
+						<TabsTrigger value='reviews'>
+							<span className='flex items-center gap-1.5'>
+								Reviews
+								{unscheduledCount > 0 && (
+									<CountBadge count={unscheduledCount} />
+								)}
+								{overdueCount > 0 && (
+									<CountBadge
+										className='bg-red-600 text-white dark:bg-red-400'
+										count={overdueCount}
+									/>
+								)}
+								{dueTodayCount > 0 && (
+									<CountBadge
+										className='bg-transparent text-blue-600 dark:text-blue-400'
+										count={dueTodayCount}
+									/>
+								)}
+							</span>
+						</TabsTrigger>
+					) : null}
 				</TabsList>
 			</Tabs>
 

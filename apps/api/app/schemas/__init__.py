@@ -1,55 +1,53 @@
-from app.schemas.notes import (
-    NoteCreate,
-    NoteRead,
-    NoteRelationCreate,
-    NoteRelationListItem,
-    NoteRelationRead,
-    NoteRelationTypeEnum,
-    NoteTagCreate,
-    NoteTagEnum,
-    NoteUpdate,
-    RelationDirectionEnum,
+from app.schemas.review_cards import (
+    ReviewCardCreate,
+    ReviewCardQueueItem,
+    ReviewCardReviewCreate,
+    ReviewCardRead,
+    ReviewCardTypeEnum,
+    ReviewCardUpdate,
 )
-from app.schemas.review_queue import ReviewQueueItem
+from app.schemas.review_queue import ReviewQueueItem, ReviewQueuePage
 from app.schemas.reviews import (
-    NoteSummary,
     ReviewBase,
+    ReviewCardSummary,
     ReviewCreate,
     ReviewListItem,
     ReviewRead,
     ReviewUpdate,
-    ReviewWithNote,
+    ReviewWithCard,
 )
 from app.schemas.search import SearchResultItem
+from app.schemas.topics import TopicCreate, TopicRead, TopicUpdate
 
-NoteRead.model_rebuild()
 ReviewBase.model_rebuild()
 ReviewRead.model_rebuild()
 ReviewListItem.model_rebuild()
 ReviewCreate.model_rebuild()
 ReviewUpdate.model_rebuild()
-ReviewWithNote.model_rebuild()
+ReviewWithCard.model_rebuild()
 SearchResultItem.model_rebuild()
 ReviewQueueItem.model_rebuild()
+ReviewCardRead.model_rebuild()
+ReviewCardQueueItem.model_rebuild()
 
 __all__ = [
-    "NoteCreate",
-    "NoteRead",
-    "NoteRelationCreate",
-    "NoteRelationListItem",
-    "NoteRelationRead",
-    "NoteRelationTypeEnum",
-    "NoteTagCreate",
-    "NoteTagEnum",
-    "NoteUpdate",
-    "RelationDirectionEnum",
+    "ReviewCardCreate",
+    "ReviewCardQueueItem",
+    "ReviewCardReviewCreate",
+    "ReviewCardRead",
+    "ReviewCardTypeEnum",
+    "ReviewCardUpdate",
     "ReviewQueueItem",
-    "NoteSummary",
+    "ReviewQueuePage",
     "ReviewBase",
+    "ReviewCardSummary",
     "ReviewCreate",
     "ReviewListItem",
     "ReviewRead",
     "ReviewUpdate",
-    "ReviewWithNote",
+    "ReviewWithCard",
     "SearchResultItem",
+    "TopicCreate",
+    "TopicRead",
+    "TopicUpdate",
 ]

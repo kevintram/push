@@ -8,8 +8,8 @@ import { reviewKeys } from './queryKeys'
 export async function getReviews(filters?: GetReviewsFilters) {
 	const params = new URLSearchParams()
 
-	if (filters?.noteId !== undefined) {
-		params.append('note_id', filters.noteId.toString())
+	if (filters?.reviewCardId !== undefined) {
+		params.append('review_card_id', filters.reviewCardId.toString())
 	}
 
 	if (filters?.effectiveDateBefore !== undefined) {
@@ -60,11 +60,11 @@ export function useReviews(filters?: GetReviewsFilters) {
 	})
 }
 
-export function useReviewsByNote(noteId: number | undefined) {
+export function useReviewsByReviewCard(reviewCardId: number | undefined) {
 	return useQuery({
-		queryKey: reviewKeys.list({ noteId }),
-		queryFn: () => getReviews({ noteId }),
-		enabled: noteId !== undefined
+		queryKey: reviewKeys.list({ reviewCardId }),
+		queryFn: () => getReviews({ reviewCardId }),
+		enabled: reviewCardId !== undefined
 	})
 }
 

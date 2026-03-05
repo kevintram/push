@@ -1,8 +1,38 @@
-"""Integration tests for note-native reviews endpoints."""
+"""Integration tests for review-card based reviews endpoints."""
 
 from datetime import date, timedelta
 
 from httpx import AsyncClient
+
+
+async def _create_topic(test_client: AsyncClient, title: str = "Topic") -> dict:
+    response = await test_client.post(
+        "/topics/",
+        json={"title": title, "body": ""},
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
+async def _create_review_card(
+    test_client: AsyncClient,
+    topic_id: int,
+    *,
+    card_type: str = "practice",
+    prompt: str = "Prompt",
+) -> dict:
+    response = await test_client.post(
+        "/review-cards/",
+        json={
+            "topic_id": topic_id,
+            "type": card_type,
+            "prompt": prompt,
+            "answer": "Answer",
+            "srs_enabled": True,
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
 
 
 class TestReviewsEndpoints:
@@ -10,44 +40,41 @@ class TestReviewsEndpoints:
         self,
         test_client: AsyncClient,
     ):
-        note_response = await test_client.post(
-            "/notes/",
-            json={"title": "Uncompleted review note", "body": "", "tags": ["TOPIC"]},
-        )
-        assert note_response.status_code == 201
-        note = note_response.json()
+        topic = await _create_topic(test_client, "Uncompleted")
+        review_card = await _create_review_card(test_client, topic["id"])
 
         response = await test_client.post(
             "/reviews/",
             json={
-                "note_id": note["id"],
+                "review_card_id": review_card["id"],
                 "scheduled_at": str(date.today()),
             },
         )
 
         assert response.status_code == 200
         review = response.json()
-        assert review["note_id"] == note["id"]
+        assert review["review_card_id"] == review_card["id"]
         assert review["completed_at"] is None
         assert review["rating"] is None
         assert review["stability_before"] is None
         assert review["stability_after"] is None
 
-    async def test_create_completed_review_and_filter_by_note_id(
+    async def test_create_completed_review_and_filter_by_review_card_id(
         self,
         test_client: AsyncClient,
     ):
-        note_response = await test_client.post(
-            "/notes/",
-            json={"title": "Completed review note", "body": "", "tags": ["SOURCE"]},
+        topic = await _create_topic(test_client, "Completed")
+        review_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="flashcard",
+            prompt="Completed card",
         )
-        assert note_response.status_code == 201
-        note = note_response.json()
 
         create_response = await test_client.post(
             "/reviews/",
             json={
-                "note_id": note["id"],
+                "review_card_id": review_card["id"],
                 "completed_at": str(date.today()),
                 "rating": "good",
                 "description": "First completed review",
@@ -56,41 +83,104 @@ class TestReviewsEndpoints:
         )
         assert create_response.status_code == 200
         created = create_response.json()
-        assert created["note_id"] == note["id"]
+        assert created["review_card_id"] == review_card["id"]
         assert created["stability_after"] is not None
         assert created["notes"] == "Created with notes payload"
+        assert created["review_card"]["prompt"] == "Completed card"
 
-        list_response = await test_client.get(f"/reviews/?note_id={note['id']}")
+        list_response = await test_client.get(
+            f"/reviews/?review_card_id={review_card['id']}"
+        )
         assert list_response.status_code == 200
 
         items = list_response.json()
         assert len(items) == 1
-        assert items[0]["note_id"] == note["id"]
-        assert items[0]["note"]["id"] == note["id"]
-        assert items[0]["note"]["title"] == "Completed review note"
+        assert items[0]["review_card_id"] == review_card["id"]
+        assert items[0]["review_card"]["id"] == review_card["id"]
+        assert items[0]["review_card"]["type"] == "flashcard"
 
-    async def test_update_review_can_reassign_note_id(
+    async def test_nested_review_card_create_endpoint_delegates_to_reviews_flow(
         self,
         test_client: AsyncClient,
     ):
-        first_note_response = await test_client.post(
-            "/notes/",
-            json={"title": "First note", "body": "", "tags": ["TOPIC"]},
+        topic = await _create_topic(test_client, "Delegated")
+        review_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="flashcard",
+            prompt="Delegated card",
         )
-        assert first_note_response.status_code == 201
-        first_note = first_note_response.json()
 
-        second_note_response = await test_client.post(
-            "/notes/",
-            json={"title": "Second note", "body": "", "tags": ["TOPIC"]},
+        nested_response = await test_client.post(
+            f"/review-cards/{review_card['id']}/reviews/",
+            json={
+                "completed_at": str(date.today()),
+                "rating": "hard",
+                "description": "Created through nested endpoint",
+            },
         )
-        assert second_note_response.status_code == 201
-        second_note = second_note_response.json()
+        direct_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": review_card["id"],
+                "completed_at": str(date.today()),
+                "rating": "good",
+                "description": "Created through canonical endpoint",
+            },
+        )
+
+        assert nested_response.status_code == 200
+        assert direct_response.status_code == 200
+
+        nested = nested_response.json()
+        direct = direct_response.json()
+
+        assert nested["review_card_id"] == review_card["id"]
+        assert direct["review_card_id"] == review_card["id"]
+        assert nested["review_card"]["id"] == review_card["id"]
+        assert direct["review_card"]["id"] == review_card["id"]
+        assert nested["stability_after"] is not None
+        assert direct["stability_after"] is not None
+        assert nested["description"] == "Created through nested endpoint"
+        assert direct["description"] == "Created through canonical endpoint"
+
+    async def test_nested_review_card_create_rejects_invalid_rating(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Invalid rating")
+        review_card = await _create_review_card(test_client, topic["id"])
+
+        response = await test_client.post(
+            f"/review-cards/{review_card['id']}/reviews/",
+            json={
+                "completed_at": str(date.today()),
+                "rating": "invalid-rating",
+            },
+        )
+
+        assert response.status_code == 422
+
+    async def test_update_review_can_reassign_review_card_id(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Reassign")
+        first_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            prompt="First card",
+        )
+        second_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            prompt="Second card",
+        )
 
         create_response = await test_client.post(
             "/reviews/",
             json={
-                "note_id": first_note["id"],
+                "review_card_id": first_card["id"],
                 "completed_at": str(date.today() - timedelta(days=1)),
                 "rating": "good",
             },
@@ -100,13 +190,17 @@ class TestReviewsEndpoints:
 
         update_response = await test_client.post(
             f"/reviews/{review_id}/",
-            json={"note_id": second_note["id"]},
+            json={"review_card_id": second_card["id"]},
         )
         assert update_response.status_code == 200
-        assert update_response.json()["note_id"] == second_note["id"]
+        assert update_response.json()["review_card_id"] == second_card["id"]
 
-        first_list = await test_client.get(f"/reviews/?note_id={first_note['id']}")
-        second_list = await test_client.get(f"/reviews/?note_id={second_note['id']}")
+        first_list = await test_client.get(
+            f"/reviews/?review_card_id={first_card['id']}"
+        )
+        second_list = await test_client.get(
+            f"/reviews/?review_card_id={second_card['id']}"
+        )
 
         assert first_list.status_code == 200
         assert second_list.status_code == 200
@@ -114,24 +208,15 @@ class TestReviewsEndpoints:
         assert len(second_list.json()) == 1
         assert second_list.json()[0]["id"] == review_id
 
-    async def test_create_review_with_multiple_targets_fails_validation(
+    async def test_create_review_with_legacy_field_fails_validation(
         self,
         test_client: AsyncClient,
     ):
-        note_response = await test_client.post(
-            "/notes/",
-            json={"title": "Validation note", "body": "", "tags": ["TOPIC"]},
-        )
-        assert note_response.status_code == 201
-        note = note_response.json()
-
         response = await test_client.post(
             "/reviews/",
             json={
-                "note_id": note["id"],
-                "topic_id": note["id"],
+                "legacy_id": 123,
                 "scheduled_at": str(date.today()),
             },
         )
-
         assert response.status_code == 422

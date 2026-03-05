@@ -1,184 +1,116 @@
-"""Integration tests for note-native review queue endpoint."""
+"""Integration tests for review-card queue endpoint."""
 
 from datetime import date, timedelta
 
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.review_queue import service as review_queue_service
+
+async def _create_topic(test_client: AsyncClient, title: str) -> dict:
+    response = await test_client.post(
+        "/topics/",
+        json={"title": title, "body": ""},
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
+async def _create_card(
+    test_client: AsyncClient, topic_id: int, *, card_type: str, prompt: str
+) -> dict:
+    response = await test_client.post(
+        "/review-cards/",
+        json={
+            "topic_id": topic_id,
+            "type": card_type,
+            "prompt": prompt,
+            "answer": "Answer",
+            "srs_enabled": True,
+        },
+    )
+    assert response.status_code == 201
+    return response.json()
 
 
 class TestReviewQueueEndpoint:
-    async def test_review_queue_returns_due_and_hazy_note_items(
+    async def test_review_queue_returns_due_practice_items(
         self,
         test_client: AsyncClient,
-        db_session: AsyncSession,
-        monkeypatch,
     ):
-        test_session_factory = async_sessionmaker(
-            bind=db_session.bind,
-            class_=AsyncSession,
-            expire_on_commit=False,
+        topic = await _create_topic(test_client, "Queue topic")
+        due_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Due card",
         )
-        monkeypatch.setattr(
-            review_queue_service,
-            "get_session_factory",
-            lambda: test_session_factory,
+        _ = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="flashcard",
+            prompt="Other type card",
         )
-
-        due_note_response = await test_client.post(
-            "/notes/",
-            json={"title": "Due note", "body": "", "tags": ["TOPIC"]},
-        )
-        assert due_note_response.status_code == 201
-        due_note = due_note_response.json()
-
-        hazy_note_response = await test_client.post(
-            "/notes/",
-            json={"title": "Hazy note", "body": "", "tags": ["TOPIC"]},
-        )
-        assert hazy_note_response.status_code == 201
-        hazy_note = hazy_note_response.json()
 
         due_review_response = await test_client.post(
             "/reviews/",
             json={
-                "note_id": due_note["id"],
+                "review_card_id": due_card["id"],
                 "scheduled_at": str(date.today() - timedelta(days=1)),
             },
         )
         assert due_review_response.status_code == 200
         due_review = due_review_response.json()
 
-        completed_review_response = await test_client.post(
-            "/reviews/",
-            json={
-                "note_id": hazy_note["id"],
-                "completed_at": str(date.today() - timedelta(days=2)),
-                "rating": "good",
-            },
-        )
-        assert completed_review_response.status_code == 200
-
-        queue_response = await test_client.get("/review-queue/")
+        queue_response = await test_client.get("/review-queue/?type=practice&tab=due")
 
         assert queue_response.status_code == 200
         payload = queue_response.json()
         queue = payload["items"]
         assert payload["as_of"] == str(date.today())
-        assert len(queue) > 0
-        assert all(item["entity_type"] == "note" for item in queue)
-        assert all("note" in item for item in queue)
+        assert len(queue) == 1
+        assert queue[0]["queue_type"] == "due"
+        assert queue[0]["review_id"] == due_review["id"]
+        assert queue[0]["card"]["id"] == due_card["id"]
+        assert queue[0]["card"]["type"] == "practice"
 
-        due_item = next(
-            item for item in queue if item.get("review_id") == due_review["id"]
-        )
-        assert due_item["queue_type"] == "due"
-        assert due_item["note"]["id"] == due_note["id"]
-        assert len(due_item["status_badges"]) > 0
-        due_badge = due_item["status_badges"][0]
-        assert due_badge["key"] == "due"
-        assert due_badge["review_id"] == due_review["id"]
-
-        hazy_item = next(
-            item
-            for item in queue
-            if item["queue_type"] == "hazy" and item["note"]["id"] == hazy_note["id"]
-        )
-        assert hazy_item["review_id"] is None
-        assert hazy_item["days_until_hazy"] is not None
-
-    async def test_review_queue_returns_all_due_items_without_pagination(
+    async def test_review_queue_returns_new_cards_and_respects_focused_limit(
         self,
         test_client: AsyncClient,
-        db_session: AsyncSession,
-        monkeypatch,
     ):
-        test_session_factory = async_sessionmaker(
-            bind=db_session.bind,
-            class_=AsyncSession,
-            expire_on_commit=False,
-        )
-        monkeypatch.setattr(
-            review_queue_service,
-            "get_session_factory",
-            lambda: test_session_factory,
-        )
+        topic = await _create_topic(test_client, "Focused queue")
+        for index in range(7):
+            await _create_card(
+                test_client,
+                topic["id"],
+                card_type="practice",
+                prompt=f"Practice #{index}",
+            )
 
-        review_ids: list[int] = []
+        practice_focus_response = await test_client.get(
+            "/review-queue/?type=practice&tab=new&focused=true"
+        )
+        assert practice_focus_response.status_code == 200
+        practice_items = practice_focus_response.json()["items"]
+        assert len(practice_items) == 5
+        assert all(item["queue_type"] == "new" for item in practice_items)
+        assert all(item["card"]["type"] == "practice" for item in practice_items)
+
+    async def test_review_queue_focused_flashcards_returns_single_item(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Flashcard focus")
         for index in range(3):
-            note_response = await test_client.post(
-                "/notes/",
-                json={"title": f"Due note {index}", "body": "", "tags": ["TOPIC"]},
+            await _create_card(
+                test_client,
+                topic["id"],
+                card_type="flashcard",
+                prompt=f"Flashcard #{index}",
             )
-            assert note_response.status_code == 201
-            note = note_response.json()
 
-            review_response = await test_client.post(
-                "/reviews/",
-                json={
-                    "note_id": note["id"],
-                    "scheduled_at": str(date.today() - timedelta(days=(3 - index))),
-                },
-            )
-            assert review_response.status_code == 200
-            review_ids.append(review_response.json()["id"])
-
-        queue_response = await test_client.get("/review-queue/")
-        assert queue_response.status_code == 200
-        payload = queue_response.json()
-        returned_due_ids = {
-            item["review_id"]
-            for item in payload["items"]
-            if item["queue_type"] == "due"
-        }
-        assert returned_due_ids.issuperset(set(review_ids))
-
-    async def test_review_queue_uses_client_date_header_for_as_of_and_distances(
-        self,
-        test_client: AsyncClient,
-        db_session: AsyncSession,
-        monkeypatch,
-    ):
-        test_session_factory = async_sessionmaker(
-            bind=db_session.bind,
-            class_=AsyncSession,
-            expire_on_commit=False,
+        response = await test_client.get(
+            "/review-queue/?type=flashcard&tab=new&focused=true"
         )
-        monkeypatch.setattr(
-            review_queue_service,
-            "get_session_factory",
-            lambda: test_session_factory,
-        )
-
-        note_response = await test_client.post(
-            "/notes/",
-            json={"title": "Client-date note", "body": "", "tags": ["TOPIC"]},
-        )
-        assert note_response.status_code == 201
-        note = note_response.json()
-
-        review_response = await test_client.post(
-            "/reviews/",
-            json={
-                "note_id": note["id"],
-                "scheduled_at": str(date.today()),
-            },
-        )
-        assert review_response.status_code == 200
-        review = review_response.json()
-
-        client_as_of = date.today() - timedelta(days=2)
-        queue_response = await test_client.get(
-            "/review-queue/",
-            headers={"X-Client-Date": str(client_as_of)},
-        )
-        assert queue_response.status_code == 200
-
-        payload = queue_response.json()
-        assert payload["as_of"] == str(client_as_of)
-
-        due_item = next(
-            item for item in payload["items"] if item.get("review_id") == review["id"]
-        )
-        assert due_item["days_until_due"] == 2
+        assert response.status_code == 200
+        items = response.json()["items"]
+        assert len(items) == 1
+        assert items[0]["card"]["type"] == "flashcard"
