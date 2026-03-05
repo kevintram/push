@@ -12,13 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VirtualizationSmokeRouteImport } from './routes/virtualization-smoke'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
-import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
+import { Route as MainPracticeRouteImport } from './routes/_main/practice'
 import { Route as MainMyLibraryRouteImport } from './routes/_main/my-library'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
-import { Route as MainArchivedRouteImport } from './routes/_main/archived'
-import { Route as MainNotesNoteIdRouteImport } from './routes/_main/notes_.$noteId'
-import { Route as MainNotesNoteIdIndexRouteImport } from './routes/_main/notes_.$noteId.index'
+import { Route as MainFlashcardsRouteImport } from './routes/_main/flashcards'
+import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
+import { Route as MainReviewCardsReviewCardIdRouteImport } from './routes/_main/review-cards_.$reviewCardId'
+import { Route as MainPracticeReviewCardIdRouteImport } from './routes/_main/practice_.$reviewCardId'
+import { Route as MainFlashcardsReviewCardIdRouteImport } from './routes/_main/flashcards_.$reviewCardId'
 
 const VirtualizationSmokeRoute = VirtualizationSmokeRouteImport.update({
   id: '/virtualization-smoke',
@@ -34,14 +36,14 @@ const MainIndexRoute = MainIndexRouteImport.update({
   path: '/',
   getParentRoute: () => MainRoute,
 } as any)
-const MainReviewRoute = MainReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => MainRoute,
-} as any)
 const MainRecentRoute = MainRecentRouteImport.update({
   id: '/recent',
   path: '/recent',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainPracticeRoute = MainPracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
   getParentRoute: () => MainRoute,
 } as any)
 const MainMyLibraryRoute = MainMyLibraryRouteImport.update({
@@ -54,90 +56,117 @@ const MainLogbookRoute = MainLogbookRouteImport.update({
   path: '/logbook',
   getParentRoute: () => MainRoute,
 } as any)
-const MainArchivedRoute = MainArchivedRouteImport.update({
-  id: '/archived',
-  path: '/archived',
+const MainFlashcardsRoute = MainFlashcardsRouteImport.update({
+  id: '/flashcards',
+  path: '/flashcards',
   getParentRoute: () => MainRoute,
 } as any)
-const MainNotesNoteIdRoute = MainNotesNoteIdRouteImport.update({
-  id: '/notes_/$noteId',
-  path: '/notes/$noteId',
+const MainTopicsTopicIdRoute = MainTopicsTopicIdRouteImport.update({
+  id: '/topics_/$topicId',
+  path: '/topics/$topicId',
   getParentRoute: () => MainRoute,
 } as any)
-const MainNotesNoteIdIndexRoute = MainNotesNoteIdIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => MainNotesNoteIdRoute,
-} as any)
+const MainReviewCardsReviewCardIdRoute =
+  MainReviewCardsReviewCardIdRouteImport.update({
+    id: '/review-cards_/$reviewCardId',
+    path: '/review-cards/$reviewCardId',
+    getParentRoute: () => MainRoute,
+  } as any)
+const MainPracticeReviewCardIdRoute =
+  MainPracticeReviewCardIdRouteImport.update({
+    id: '/practice_/$reviewCardId',
+    path: '/practice/$reviewCardId',
+    getParentRoute: () => MainRoute,
+  } as any)
+const MainFlashcardsReviewCardIdRoute =
+  MainFlashcardsReviewCardIdRouteImport.update({
+    id: '/flashcards_/$reviewCardId',
+    path: '/flashcards/$reviewCardId',
+    getParentRoute: () => MainRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
-  '/archived': typeof MainArchivedRoute
+  '/flashcards': typeof MainFlashcardsRoute
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
+  '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
-  '/review': typeof MainReviewRoute
   '/': typeof MainIndexRoute
-  '/notes/$noteId': typeof MainNotesNoteIdRouteWithChildren
-  '/notes/$noteId/': typeof MainNotesNoteIdIndexRoute
+  '/flashcards/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
+  '/practice/$reviewCardId': typeof MainPracticeReviewCardIdRoute
+  '/review-cards/$reviewCardId': typeof MainReviewCardsReviewCardIdRoute
+  '/topics/$topicId': typeof MainTopicsTopicIdRoute
 }
 export interface FileRoutesByTo {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
-  '/archived': typeof MainArchivedRoute
+  '/flashcards': typeof MainFlashcardsRoute
   '/logbook': typeof MainLogbookRoute
   '/my-library': typeof MainMyLibraryRoute
+  '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
-  '/review': typeof MainReviewRoute
   '/': typeof MainIndexRoute
-  '/notes/$noteId': typeof MainNotesNoteIdIndexRoute
+  '/flashcards/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
+  '/practice/$reviewCardId': typeof MainPracticeReviewCardIdRoute
+  '/review-cards/$reviewCardId': typeof MainReviewCardsReviewCardIdRoute
+  '/topics/$topicId': typeof MainTopicsTopicIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_main': typeof MainRouteWithChildren
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
-  '/_main/archived': typeof MainArchivedRoute
+  '/_main/flashcards': typeof MainFlashcardsRoute
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/my-library': typeof MainMyLibraryRoute
+  '/_main/practice': typeof MainPracticeRoute
   '/_main/recent': typeof MainRecentRoute
-  '/_main/review': typeof MainReviewRoute
   '/_main/': typeof MainIndexRoute
-  '/_main/notes_/$noteId': typeof MainNotesNoteIdRouteWithChildren
-  '/_main/notes_/$noteId/': typeof MainNotesNoteIdIndexRoute
+  '/_main/flashcards_/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
+  '/_main/practice_/$reviewCardId': typeof MainPracticeReviewCardIdRoute
+  '/_main/review-cards_/$reviewCardId': typeof MainReviewCardsReviewCardIdRoute
+  '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/virtualization-smoke'
-    | '/archived'
+    | '/flashcards'
     | '/logbook'
     | '/my-library'
+    | '/practice'
     | '/recent'
-    | '/review'
     | '/'
-    | '/notes/$noteId'
-    | '/notes/$noteId/'
+    | '/flashcards/$reviewCardId'
+    | '/practice/$reviewCardId'
+    | '/review-cards/$reviewCardId'
+    | '/topics/$topicId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/virtualization-smoke'
-    | '/archived'
+    | '/flashcards'
     | '/logbook'
     | '/my-library'
+    | '/practice'
     | '/recent'
-    | '/review'
     | '/'
-    | '/notes/$noteId'
+    | '/flashcards/$reviewCardId'
+    | '/practice/$reviewCardId'
+    | '/review-cards/$reviewCardId'
+    | '/topics/$topicId'
   id:
     | '__root__'
     | '/_main'
     | '/virtualization-smoke'
-    | '/_main/archived'
+    | '/_main/flashcards'
     | '/_main/logbook'
     | '/_main/my-library'
+    | '/_main/practice'
     | '/_main/recent'
-    | '/_main/review'
     | '/_main/'
-    | '/_main/notes_/$noteId'
-    | '/_main/notes_/$noteId/'
+    | '/_main/flashcards_/$reviewCardId'
+    | '/_main/practice_/$reviewCardId'
+    | '/_main/review-cards_/$reviewCardId'
+    | '/_main/topics_/$topicId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -168,18 +197,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainIndexRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/review': {
-      id: '/_main/review'
-      path: '/review'
-      fullPath: '/review'
-      preLoaderRoute: typeof MainReviewRouteImport
-      parentRoute: typeof MainRoute
-    }
     '/_main/recent': {
       id: '/_main/recent'
       path: '/recent'
       fullPath: '/recent'
       preLoaderRoute: typeof MainRecentRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/practice': {
+      id: '/_main/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof MainPracticeRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/my-library': {
@@ -196,60 +225,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainLogbookRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/archived': {
-      id: '/_main/archived'
-      path: '/archived'
-      fullPath: '/archived'
-      preLoaderRoute: typeof MainArchivedRouteImport
+    '/_main/flashcards': {
+      id: '/_main/flashcards'
+      path: '/flashcards'
+      fullPath: '/flashcards'
+      preLoaderRoute: typeof MainFlashcardsRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/notes_/$noteId': {
-      id: '/_main/notes_/$noteId'
-      path: '/notes/$noteId'
-      fullPath: '/notes/$noteId'
-      preLoaderRoute: typeof MainNotesNoteIdRouteImport
+    '/_main/topics_/$topicId': {
+      id: '/_main/topics_/$topicId'
+      path: '/topics/$topicId'
+      fullPath: '/topics/$topicId'
+      preLoaderRoute: typeof MainTopicsTopicIdRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/notes_/$noteId/': {
-      id: '/_main/notes_/$noteId/'
-      path: '/'
-      fullPath: '/notes/$noteId/'
-      preLoaderRoute: typeof MainNotesNoteIdIndexRouteImport
-      parentRoute: typeof MainNotesNoteIdRoute
+    '/_main/review-cards_/$reviewCardId': {
+      id: '/_main/review-cards_/$reviewCardId'
+      path: '/review-cards/$reviewCardId'
+      fullPath: '/review-cards/$reviewCardId'
+      preLoaderRoute: typeof MainReviewCardsReviewCardIdRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/practice_/$reviewCardId': {
+      id: '/_main/practice_/$reviewCardId'
+      path: '/practice/$reviewCardId'
+      fullPath: '/practice/$reviewCardId'
+      preLoaderRoute: typeof MainPracticeReviewCardIdRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/flashcards_/$reviewCardId': {
+      id: '/_main/flashcards_/$reviewCardId'
+      path: '/flashcards/$reviewCardId'
+      fullPath: '/flashcards/$reviewCardId'
+      preLoaderRoute: typeof MainFlashcardsReviewCardIdRouteImport
+      parentRoute: typeof MainRoute
     }
   }
 }
 
-interface MainNotesNoteIdRouteChildren {
-  MainNotesNoteIdIndexRoute: typeof MainNotesNoteIdIndexRoute
-}
-
-const MainNotesNoteIdRouteChildren: MainNotesNoteIdRouteChildren = {
-  MainNotesNoteIdIndexRoute: MainNotesNoteIdIndexRoute,
-}
-
-const MainNotesNoteIdRouteWithChildren = MainNotesNoteIdRoute._addFileChildren(
-  MainNotesNoteIdRouteChildren,
-)
-
 interface MainRouteChildren {
-  MainArchivedRoute: typeof MainArchivedRoute
+  MainFlashcardsRoute: typeof MainFlashcardsRoute
   MainLogbookRoute: typeof MainLogbookRoute
   MainMyLibraryRoute: typeof MainMyLibraryRoute
+  MainPracticeRoute: typeof MainPracticeRoute
   MainRecentRoute: typeof MainRecentRoute
-  MainReviewRoute: typeof MainReviewRoute
   MainIndexRoute: typeof MainIndexRoute
-  MainNotesNoteIdRoute: typeof MainNotesNoteIdRouteWithChildren
+  MainFlashcardsReviewCardIdRoute: typeof MainFlashcardsReviewCardIdRoute
+  MainPracticeReviewCardIdRoute: typeof MainPracticeReviewCardIdRoute
+  MainReviewCardsReviewCardIdRoute: typeof MainReviewCardsReviewCardIdRoute
+  MainTopicsTopicIdRoute: typeof MainTopicsTopicIdRoute
 }
 
 const MainRouteChildren: MainRouteChildren = {
-  MainArchivedRoute: MainArchivedRoute,
+  MainFlashcardsRoute: MainFlashcardsRoute,
   MainLogbookRoute: MainLogbookRoute,
   MainMyLibraryRoute: MainMyLibraryRoute,
+  MainPracticeRoute: MainPracticeRoute,
   MainRecentRoute: MainRecentRoute,
-  MainReviewRoute: MainReviewRoute,
   MainIndexRoute: MainIndexRoute,
-  MainNotesNoteIdRoute: MainNotesNoteIdRouteWithChildren,
+  MainFlashcardsReviewCardIdRoute: MainFlashcardsReviewCardIdRoute,
+  MainPracticeReviewCardIdRoute: MainPracticeReviewCardIdRoute,
+  MainReviewCardsReviewCardIdRoute: MainReviewCardsReviewCardIdRoute,
+  MainTopicsTopicIdRoute: MainTopicsTopicIdRoute,
 }
 
 const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren)
