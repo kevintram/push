@@ -1,20 +1,20 @@
 import { Badge } from '~/components/ui/badge'
 
-export type EntityType = 'topic' | 'source' | 'practice'
-export type EntityTypeFilterValue = 'all' | 'none' | EntityType
+export type EntityType = 'topic' | 'practice' | 'flashcard'
+export type EntityTypeFilterValue = 'all' | EntityType
 
 const ENTITY_FILTER_BADGES: Record<EntityType, string> = {
 	topic: 'Topics',
-	source: 'Sources',
-	practice: 'Practices'
+	practice: 'Practices',
+	flashcard: 'Flashcards'
 }
 
 export function EntityTypeFilter({
 	activeFilter,
 	onFilterChange,
-	allowedTypes = ['topic', 'source', 'practice'],
+	allowedTypes = ['topic', 'practice', 'flashcard'],
 	showAllOption = true,
-	showNoTagOption = true
+	showNoTagOption = false
 }: {
 	activeFilter: EntityTypeFilterValue
 	onFilterChange: (filter: EntityTypeFilterValue) => void
@@ -23,7 +23,6 @@ export function EntityTypeFilter({
 	showNoTagOption?: boolean
 }) {
 	const isAllActive = activeFilter === 'all'
-	const isNoneActive = activeFilter === 'none'
 	const shouldHideFilter =
 		!(showAllOption || showNoTagOption) && allowedTypes.length <= 1
 
@@ -73,24 +72,6 @@ export function EntityTypeFilter({
 					</Badge>
 				)
 			})}
-			{showNoTagOption ? (
-				<Badge
-					className='cursor-pointer'
-					onClick={() => {
-						if (!isNoneActive) onFilterChange('none')
-					}}
-					onKeyDown={e => {
-						if (e.key === 'Enter' || e.key === ' ') {
-							e.preventDefault()
-							if (!isNoneActive) onFilterChange('none')
-						}
-					}}
-					tabIndex={0}
-					variant={isNoneActive ? 'default' : 'outline'}
-				>
-					No tags
-				</Badge>
-			) : null}
 		</div>
 	)
 }
