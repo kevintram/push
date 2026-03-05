@@ -4,19 +4,6 @@ export type FreshnessTier = 'Fresh' | 'Fine' | 'Hazy' | 'Forgotten'
 export type ReviewRating = 'miss' | 'hard' | 'good' | 'easy'
 
 /**
- * Thin FSRS state projection used for inheritance decisions.
- */
-export type FsrsState = {
-	stability: number | null
-	difficulty: number | null
-	state: LearningState | null
-	step: number | null
-	lastReviewedAt: string | null
-}
-
-export type InheritOptions = { fsrsState?: FsrsState | null }
-
-/**
  * Shared FSRS fields required for metrics calculations.
  * Used by useLearnableMetrics hook.
  */
@@ -27,7 +14,7 @@ export type LearnableMetricsInput = {
 	stability: number | null
 	last_reviewed_at: string | null
 	inherited_stability: number | null
-	srs_enabled: boolean | null
+	retired?: boolean | null
 }
 
 /**
@@ -45,7 +32,7 @@ export type LearnableBase = {
 	difficulty: number | null
 	state: LearningState
 	step: number | null
-	srs_enabled: boolean
+	retired: boolean
 	last_reviewed_at: string | null
 	last_review_rating: ReviewRating | null
 	// Inherited FSRS

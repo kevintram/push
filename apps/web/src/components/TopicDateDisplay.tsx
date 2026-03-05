@@ -1,4 +1,4 @@
-import { Calendar, Gauge, GaugeCircle } from 'lucide-react'
+import { Calendar, Gauge } from 'lucide-react'
 import { useMemo } from 'react'
 import type { FreshnessTier } from '~/models/learnable.types'
 import { getDateColor, getDueDateDisplay } from '~/utils/dueDate'
@@ -11,7 +11,6 @@ interface TopicDateDisplayProps {
 	freshnessTier: FreshnessTier | null
 	retrievability: number | null
 	scheduledAt?: string | null
-	srsEnabled: boolean
 	className?: string
 }
 
@@ -19,7 +18,6 @@ export function TopicDateDisplay({
 	freshnessTier,
 	retrievability,
 	scheduledAt = null,
-	srsEnabled,
 	className
 }: TopicDateDisplayProps) {
 	const nextScheduledDisplay = useMemo(
@@ -33,8 +31,8 @@ export function TopicDateDisplay({
 	)
 
 	const tierColor = useMemo(
-		() => getFreshnessTierColor(freshnessTier, srsEnabled),
-		[freshnessTier, srsEnabled]
+		() => getFreshnessTierColor(freshnessTier),
+		[freshnessTier]
 	)
 
 	const tierLabel = freshnessTier ?? '—'
@@ -56,11 +54,7 @@ export function TopicDateDisplay({
 				</div>
 			)}
 			<div className='flex items-center gap-1'>
-				{srsEnabled ? (
-					<Gauge className={`h-3 w-3 ${tierColor}`} />
-				) : (
-					<GaugeCircle className={`h-3 w-3 ${tierColor}`} />
-				)}
+				<Gauge className={`h-3 w-3 ${tierColor}`} />
 				<span className={`text-xs ${tierColor}`} title={retrievabilityText}>
 					{tierLabel}
 				</span>
