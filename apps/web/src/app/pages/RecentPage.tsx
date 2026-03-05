@@ -6,6 +6,7 @@ import {
 	EntityTypeFilter,
 	type EntityTypeFilterValue
 } from '~/components/EntityTypeFilter'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import {
 	Empty,
 	EmptyDescription,
@@ -18,6 +19,12 @@ import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { useSearchAll } from '~/features/search/api/searchAll'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 import { TopicCard } from '~/features/topics/components/TopicCard'
+import {
+	DEFAULT_MASONRY_GAP,
+	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
+	estimateReviewCardSize,
+	estimateTopicCardSize
+} from '~/utils/estimateMasonryItemSize'
 
 const RECENT_LIMIT = 50
 
@@ -110,15 +117,31 @@ export function RecentPage() {
 				{sections.map(section => (
 					<div className='space-y-3' key={section.id}>
 						<h3 className='font-bold text-xl'>{section.label}</h3>
-						<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-							{section.items.map(item => {
+						<MasonryLayout
+							estimateItemSize={(item, _index, laneWidth) => {
+								if (item.entity_type === 'topic' && item.topic) {
+									return estimateTopicCardSize(item.topic, laneWidth)
+								}
+								if (item.entity_type === 'review_card' && item.review_card) {
+									return estimateReviewCardSize(item.review_card, laneWidth)
+								}
+								return 120
+							}}
+							gap={DEFAULT_MASONRY_GAP}
+							getItemKey={item =>
+								item.entity_type === 'topic'
+									? `topic-${item.topic?.id ?? 'unknown'}`
+									: `review-card-${item.review_card?.id ?? 'unknown'}`
+							}
+							items={section.items}
+							minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
+							renderItem={item => {
 								const topic = item.topic
 								const reviewCard = item.review_card
 
 								if (item.entity_type === 'topic' && topic) {
 									return (
 										<TopicCard
-											key={`topic-${topic.id}`}
 											onClick={() =>
 												navigate({
 													to: '/topics/$topicId',
@@ -133,7 +156,6 @@ export function RecentPage() {
 								if (item.entity_type === 'review_card' && reviewCard) {
 									return (
 										<ReviewCard
-											key={`review-card-${reviewCard.id}`}
 											onClick={() =>
 												navigate({
 													to: '/review-cards/$reviewCardId',
@@ -142,15 +164,14 @@ export function RecentPage() {
 													}
 												})
 											}
-											readOnly={true}
 											reviewCard={reviewCard}
 										/>
 									)
 								}
 
 								return null
-							})}
-						</div>
+							}}
+						/>
 					</div>
 				))}
 			</PageLayout.Content>

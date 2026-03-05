@@ -12,10 +12,18 @@ import {
 	User2,
 	X
 } from 'lucide-react'
-import { type ReactNode, useEffect, useMemo, useState } from 'react'
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState
+} from 'react'
 import { toast } from 'sonner'
 import { DetailTabsShell } from '~/components/DetailTabs/DetailTabsShell'
 import { LoadingOrError } from '~/components/LoadingOrError'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import {
@@ -57,6 +65,12 @@ import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
+import {
+	DEFAULT_MASONRY_GAP,
+	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
+	estimateReviewCardSize,
+	estimateTopicCardSize
+} from '~/utils/estimateMasonryItemSize'
 import { isHttpStatusError } from '~/utils/httpStatusError'
 
 const EMPTY_BADGE_CLASSNAME =
@@ -103,6 +117,8 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 	const [guessBodyText, setGuessBodyText] = useState('')
 	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
 
 	useEffect(() => {
 		if (!topic) return
@@ -202,7 +218,7 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 			await deleteTopicAsync(topic.id)
 			setIsDeleteDialogOpen(false)
 			toast.success('Topic deleted')
-			navigate({ to: '/my-library' })
+			navigate({ to: '/topics' })
 		} catch (error) {
 			toast.error(
 				error instanceof Error ? error.message : 'Failed to delete topic'
@@ -259,10 +275,17 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 		)
 	} else {
 		subtopicsContent = (
-			<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-				{subtopics.map(subtopic => (
+				<MasonryLayout
+					estimateItemSize={(subtopic, _index, laneWidth) =>
+						estimateTopicCardSize(subtopic, laneWidth)
+					}
+					gap={DEFAULT_MASONRY_GAP}
+					getItemKey={subtopic => `topic-${subtopic.id}`}
+					getScrollElement={getScrollElement}
+					items={subtopics}
+					minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
+					renderItem={subtopic => (
 					<TopicCard
-						key={subtopic.id}
 						onClick={() =>
 							navigate({
 								to: '/topics/$topicId',
@@ -272,8 +295,8 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 						parentLabel={topic.title || 'Current topic'}
 						topic={subtopic}
 					/>
-				))}
-			</div>
+				)}
+			/>
 		)
 	}
 
@@ -293,10 +316,17 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 		)
 	} else {
 		reviewCardsContent = (
-			<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-				{reviewCards.map(card => (
+				<MasonryLayout
+					estimateItemSize={(card, _index, laneWidth) =>
+						estimateReviewCardSize(card, laneWidth)
+					}
+					gap={DEFAULT_MASONRY_GAP}
+					getItemKey={card => `review-card-${card.id}`}
+					getScrollElement={getScrollElement}
+					items={reviewCards}
+					minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
+					renderItem={card => (
 					<ReviewCard
-						key={card.id}
 						onClick={() =>
 							navigate({
 								to: '/review-cards/$reviewCardId',
@@ -304,11 +334,10 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 							})
 						}
 						parentLabel={topic.title || 'Current topic'}
-						readOnly={true}
 						reviewCard={card}
 					/>
-				))}
-			</div>
+				)}
+			/>
 		)
 	}
 
@@ -469,7 +498,7 @@ export function TopicDetailPage({ topicId }: { topicId: number }) {
 				</div>
 			</div>
 
-			<div className='flex-1 overflow-y-auto'>
+			<div className='flex-1 overflow-y-auto' ref={scrollContainerRef}>
 				<div className='mx-auto w-full max-w-5xl px-6 py-5'>
 					<div className='space-y-2'>
 						<Textarea

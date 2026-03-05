@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import { ListChecks } from 'lucide-react'
 import { type ReactNode, useMemo, useState } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { CountBadge } from '~/components/ui/count-badge'
 import {
 	Empty,
@@ -15,6 +16,11 @@ import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQueue'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import type { ReviewCardQueueItem } from '~/features/review-cards/types/review-card.types'
+import {
+	DEFAULT_MASONRY_GAP,
+	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
+	estimateReviewCardSize
+} from '~/utils/estimateMasonryItemSize'
 
 function groupDueByDate(items: Array<ReviewCardQueueItem>) {
 	const byDate = new Map<string, Array<ReviewCardQueueItem>>()
@@ -53,6 +59,33 @@ export function PracticePage() {
 
 	const dueSections = useMemo(() => groupDueByDate(items), [items])
 
+	function renderQueueMasonry(queueItems: Array<ReviewCardQueueItem>) {
+		return (
+			<MasonryLayout
+				estimateItemSize={(item, _index, laneWidth) =>
+					estimateReviewCardSize(item.card, laneWidth)
+				}
+				gap={DEFAULT_MASONRY_GAP}
+				getItemKey={item => `${item.card.id}-${item.review_id ?? 'new'}`}
+				items={queueItems}
+				minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
+				renderItem={item => (
+					<div className='space-y-2'>
+						<ReviewCard
+							onClick={() =>
+								navigate({
+									to: '/review-cards/$reviewCardId',
+									params: { reviewCardId: item.card.id.toString() }
+								})
+							}
+							reviewCard={item.card}
+						/>
+					</div>
+				)}
+			/>
+		)
+	}
+
 	let content: ReactNode
 	if (isLoading) {
 		content = <LoadingSpinner containerClassName='min-h-64' />
@@ -83,7 +116,6 @@ export function PracticePage() {
 										params: { reviewCardId: item.card.id.toString() }
 									})
 								}
-								readOnly={true}
 								reviewCard={item.card}
 							/>
 						</div>
@@ -98,46 +130,11 @@ export function PracticePage() {
 					{section.label}
 					<CountBadge count={section.items.length} />
 				</h3>
-				<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-					{section.items.map(item => (
-						<div
-							className='space-y-2'
-							key={`${item.card.id}-${item.review_id ?? 'new'}`}
-						>
-							<ReviewCard
-								onClick={() =>
-									navigate({
-										to: '/review-cards/$reviewCardId',
-										params: { reviewCardId: item.card.id.toString() }
-									})
-								}
-								readOnly={true}
-								reviewCard={item.card}
-							/>
-						</div>
-					))}
-				</div>
+				{renderQueueMasonry(section.items)}
 			</div>
 		))
 	} else {
-		content = (
-			<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-				{items.map(item => (
-					<div className='space-y-2' key={item.card.id}>
-						<ReviewCard
-							onClick={() =>
-								navigate({
-									to: '/review-cards/$reviewCardId',
-									params: { reviewCardId: item.card.id.toString() }
-								})
-							}
-							readOnly={true}
-							reviewCard={item.card}
-						/>
-					</div>
-				))}
-			</div>
-		)
+		content = renderQueueMasonry(items)
 	}
 
 	return (

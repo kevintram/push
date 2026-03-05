@@ -184,7 +184,7 @@ export function SearchDialog({
 	const handleCreateNew = () => {
 		onOpenChange(false)
 		requestCreateTopic()
-		navigate({ to: '/my-library' })
+		navigate({ to: '/topics' })
 	}
 
 	return (
@@ -266,7 +266,6 @@ export function SearchDialog({
 								return (
 									<ReviewCard
 										onClick={() => handleSelect(result)}
-										readOnly={true}
 										reviewCard={result.review_card}
 									/>
 								)
