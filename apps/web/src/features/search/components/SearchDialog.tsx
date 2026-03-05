@@ -26,6 +26,7 @@ import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { useSearchAll } from '~/features/search/api/searchAll'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 import { TopicCard } from '~/features/topics/components/TopicCard'
+import { requestCreateTopic } from '~/features/topics/createTopicIntent'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import { estimateCardSize } from '~/utils/estimateCardSize'
 
@@ -182,12 +183,8 @@ export function SearchDialog({
 
 	const handleCreateNew = () => {
 		onOpenChange(false)
-		setTimeout(() => {
-			const sidebarCreateButton = Array.from(
-				document.querySelectorAll<HTMLButtonElement>('button')
-			).find(button => button.textContent?.trim() === 'Create')
-			sidebarCreateButton?.click()
-		}, 0)
+		requestCreateTopic()
+		navigate({ to: '/my-library' })
 	}
 
 	return (
@@ -210,7 +207,7 @@ export function SearchDialog({
 						/>
 						<Button onClick={handleCreateNew} variant='outline'>
 							<Plus className='h-4 w-4' />
-							Create new
+							Create topic
 						</Button>
 					</div>
 					<EntityTypeFilter

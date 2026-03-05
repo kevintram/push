@@ -10,7 +10,6 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { CreateButton } from '~/app/components/AppSidebar/CreateButton'
 import { SidebarSearch } from '~/app/components/AppSidebar/SidebarSearch'
 import { SettingsDialog } from '~/components/SettingsDialog'
 import { Button } from '~/components/ui/button'
@@ -55,7 +54,7 @@ export function AppSidebar() {
 			isActive: (pathname: string) => pathname === '/recent'
 		},
 		{
-			title: 'My Library',
+			title: 'Topics',
 			url: '/my-library',
 			icon: Library,
 			isActive: (pathname: string) => pathname === '/my-library'
@@ -91,9 +90,6 @@ export function AppSidebar() {
 						</Button>
 					</SidebarMenuItem>
 					<SidebarSearch />
-					<SidebarMenuItem>
-						<CreateButton />
-					</SidebarMenuItem>
 				</SidebarMenu>
 			</SidebarHeader>
 
