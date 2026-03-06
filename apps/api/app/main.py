@@ -1,5 +1,6 @@
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.config import get_settings
 from app.exception_handlers import register_exception_handlers
@@ -21,16 +22,7 @@ app = FastAPI()
 
 register_exception_handlers(app)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=get_settings().CORS_ALLOWED_ORIGINS_AS_STRINGS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-
-@app.middleware("http")
 async def apply_client_date_header(request: Request, call_next):
     client_date = parse_iso_date(request.headers.get("X-Client-Date"))
     token = set_request_current_date(client_date)
@@ -38,6 +30,20 @@ async def apply_client_date_header(request: Request, call_next):
         return await call_next(request)
     finally:
         reset_request_current_date(token)
+
+
+app.add_middleware(
+    BaseHTTPMiddleware,
+    dispatch=apply_client_date_header,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_settings().CORS_ALLOWED_ORIGINS_AS_STRINGS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(reviews_router)
