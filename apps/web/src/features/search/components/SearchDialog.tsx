@@ -186,7 +186,8 @@ export function SearchDialog({
 		} else if (entity.entity_type === 'review_card' && entity.review_card) {
 			navigate({
 				to: '/review-cards/$reviewCardId',
-				params: { reviewCardId: entity.review_card.id.toString() }
+				params: { reviewCardId: entity.review_card.id.toString() },
+				search: { tab: 'home' }
 			})
 		}
 

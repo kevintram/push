@@ -239,7 +239,8 @@ export function TopicDetailPage({
 			})
 			navigate({
 				to: '/review-cards/$reviewCardId',
-				params: { reviewCardId: created.id.toString() }
+				params: { reviewCardId: created.id.toString() },
+				search: { tab: 'home' }
 			})
 		} catch {
 			toast.error('Failed to create review card')
@@ -441,7 +442,8 @@ export function TopicDetailPage({
 						onClick={() =>
 							navigate({
 								to: '/review-cards/$reviewCardId',
-								params: { reviewCardId: card.id.toString() }
+								params: { reviewCardId: card.id.toString() },
+								search: { tab: 'home' }
 							})
 						}
 						parentLabel={topic.title || 'Current topic'}

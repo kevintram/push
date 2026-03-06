@@ -125,7 +125,8 @@ export function RecentPage() {
 													to: '/review-cards/$reviewCardId',
 													params: {
 														reviewCardId: reviewCard.id.toString()
-													}
+													},
+													search: { tab: 'home' }
 												})
 											}
 											reviewCard={reviewCard}

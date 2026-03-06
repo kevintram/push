@@ -182,7 +182,8 @@ export function FlashcardsPage({
 					onClick={() =>
 						navigate({
 							to: '/review-cards/$reviewCardId',
-							params: { reviewCardId: activeCard.id.toString() }
+							params: { reviewCardId: activeCard.id.toString() },
+							search: { tab: 'home' }
 						})
 					}
 					reviewCard={activeCard}
@@ -238,7 +239,8 @@ export function FlashcardsPage({
 				onCardClick={cardId =>
 					navigate({
 						to: '/review-cards/$reviewCardId',
-						params: { reviewCardId: cardId.toString() }
+						params: { reviewCardId: cardId.toString() },
+						search: { tab: 'home' }
 					})
 				}
 				sections={sections}

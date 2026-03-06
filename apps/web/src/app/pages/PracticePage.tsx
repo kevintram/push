@@ -187,7 +187,8 @@ export function PracticePage({
 									onClick={() =>
 										navigate({
 											to: '/review-cards/$reviewCardId',
-											params: { reviewCardId: item.card.id.toString() }
+											params: { reviewCardId: item.card.id.toString() },
+											search: { tab: 'home' }
 										})
 									}
 									reviewCard={item.card}
@@ -205,7 +206,8 @@ export function PracticePage({
 				onCardClick={cardId =>
 					navigate({
 						to: '/review-cards/$reviewCardId',
-						params: { reviewCardId: cardId.toString() }
+						params: { reviewCardId: cardId.toString() },
+						search: { tab: 'home' }
 					})
 				}
 				sections={sections}
