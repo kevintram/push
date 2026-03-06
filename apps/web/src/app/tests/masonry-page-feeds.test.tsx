@@ -302,6 +302,8 @@ describe('masonry-backed page feeds', () => {
 	})
 
 	it('renders Recent grouped sections through masonry', () => {
+		vi.useFakeTimers()
+		vi.setSystemTime(new Date('2026-03-05T12:00:00.000Z'))
 		useSearchAllMock.mockReturnValue({
 			data: [
 				{
@@ -324,13 +326,17 @@ describe('masonry-backed page feeds', () => {
 			isLoading: false
 		})
 
-		render(<RecentPage />)
+		try {
+			render(<RecentPage />)
 
-		expect(screen.getByText('Today')).toBeInTheDocument()
-		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
-		expect(screen.getAllByTestId('masonry-item')).toHaveLength(2)
-		expect(screen.getByTestId('topic-card')).toHaveTextContent('Algebra')
-		expect(screen.getByText('Different prompt')).toBeInTheDocument()
+			expect(screen.getByText('Today')).toBeInTheDocument()
+			expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
+			expect(screen.getAllByTestId('masonry-item')).toHaveLength(2)
+			expect(screen.getByTestId('topic-card')).toHaveTextContent('Algebra')
+			expect(screen.getByText('Different prompt')).toBeInTheDocument()
+		} finally {
+			vi.useRealTimers()
+		}
 	})
 
 	it('renders TopicDetail subtopics and review cards through masonry in tabs', async () => {
