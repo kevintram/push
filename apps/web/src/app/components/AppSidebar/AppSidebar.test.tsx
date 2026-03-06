@@ -1,11 +1,14 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import type { ComponentProps } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppSidebar } from '~/app/components/AppSidebar/AppSidebar'
 import { SidebarProvider } from '~/components/ui/sidebar'
 
 const useLocationMock = vi.fn()
 const useReviewCardQueueCountsMock = vi.fn()
+const useTopicsMock = vi.fn()
+const navigateMock = vi.fn()
+const requestCreateTopicMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
 	Link: ({ children, to, ...props }: ComponentProps<'a'> & { to: string }) => (
@@ -13,7 +16,8 @@ vi.mock('@tanstack/react-router', () => ({
 			{children}
 		</a>
 	),
-	useLocation: () => useLocationMock()
+	useLocation: () => useLocationMock(),
+	useNavigate: () => navigateMock
 }))
 
 vi.mock('@tanstack/react-router-devtools', () => ({
@@ -33,9 +37,26 @@ vi.mock('~/features/review-cards/hooks/useReviewCardQueueCounts', () => ({
 		useReviewCardQueueCountsMock(...args)
 }))
 
+vi.mock('~/features/topics/api/getTopics', () => ({
+	useTopics: (...args: Array<unknown>) => useTopicsMock(...args)
+}))
+
+vi.mock('~/features/topics/createTopicIntent', () => ({
+	requestCreateTopic: () => requestCreateTopicMock()
+}))
+
 describe('AppSidebar', () => {
+	beforeEach(() => {
+		useLocationMock.mockReset()
+		useReviewCardQueueCountsMock.mockReset()
+		useTopicsMock.mockReset()
+		navigateMock.mockReset()
+		requestCreateTopicMock.mockReset()
+	})
+
 	it('renders practice and flashcard queue summaries in the sidebar', () => {
 		useLocationMock.mockReturnValue({ pathname: '/practice' })
+		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockImplementation(
 			({ type }: { type: 'practice' | 'flashcard' }) => {
 				if (type === 'practice') {
@@ -74,5 +95,152 @@ describe('AppSidebar', () => {
 		expect(flashcardsLink).not.toHaveTextContent('overdue')
 		expect(flashcardsLink).not.toHaveTextContent('today')
 		expect(flashcardsLink).not.toHaveTextContent('new')
+	})
+
+	it('renders capped root topics with untitled fallback in the sidebar', () => {
+		useLocationMock.mockReturnValue({ pathname: '/topics/2' })
+		useTopicsMock.mockReturnValue({
+			data: [
+				{ id: 1, title: 'Alpha' },
+				{ id: 2, title: '' },
+				{ id: 3, title: 'Beta' },
+				{ id: 4, title: 'Delta' },
+				{ id: 5, title: 'Epsilon' },
+				{ id: 6, title: 'Gamma' },
+				{ id: 7, title: 'Eta' },
+				{ id: 8, title: 'Iota' },
+				{ id: 9, title: 'Kappa' },
+				{ id: 10, title: 'Lambda' },
+				{ id: 11, title: 'Mu' }
+			]
+		})
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+
+		render(
+			<SidebarProvider>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		expect(screen.getByRole('link', { name: /topics/i })).toBeInTheDocument()
+		expect(screen.getByRole('link', { name: 'Alpha' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('link', { name: 'Untitled topic' })
+		).toBeInTheDocument()
+		expect(screen.getByRole('link', { name: 'Lambda' })).toBeInTheDocument()
+		expect(screen.queryByRole('link', { name: 'Mu' })).not.toBeInTheDocument()
+	})
+
+	it('does not mark the top-level topics item active on a topic detail route', () => {
+		useLocationMock.mockReturnValue({ pathname: '/topics/2' })
+		useTopicsMock.mockReturnValue({
+			data: [
+				{ id: 1, title: 'Alpha' },
+				{ id: 2, title: 'Beta' }
+			]
+		})
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+
+		render(
+			<SidebarProvider>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		expect(screen.getByRole('link', { name: /^Topics$/ })).not.toHaveAttribute(
+			'data-active',
+			'true'
+		)
+		expect(screen.getByRole('link', { name: 'Beta' })).toHaveAttribute(
+			'data-active'
+		)
+	})
+
+	it('renders an add topic action and navigates to topics when outside the topics routes', () => {
+		useLocationMock.mockReturnValue({ pathname: '/recent' })
+		useTopicsMock.mockReturnValue({ data: [] })
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+
+		render(
+			<SidebarProvider>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		fireEvent.click(screen.getByRole('button', { name: 'Add topic' }))
+
+		expect(requestCreateTopicMock).toHaveBeenCalledTimes(1)
+		expect(navigateMock).toHaveBeenCalledWith({ to: '/topics' })
+	})
+
+	it('requests topic creation without leaving the current topics route', () => {
+		useLocationMock.mockReturnValue({ pathname: '/topics/2' })
+		useTopicsMock.mockReturnValue({ data: [] })
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+
+		render(
+			<SidebarProvider>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		fireEvent.click(screen.getByRole('button', { name: 'Add topic' }))
+
+		expect(requestCreateTopicMock).toHaveBeenCalledTimes(1)
+		expect(navigateMock).not.toHaveBeenCalled()
+	})
+
+	it('orders top-level sidebar groups as review, activity, then library', () => {
+		useLocationMock.mockReturnValue({ pathname: '/recent' })
+		useTopicsMock.mockReturnValue({ data: [] })
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+
+		render(
+			<SidebarProvider>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		const links = screen.getAllByRole('link')
+		const topLevelLabels = links
+			.map(link => link.textContent)
+			.filter(label =>
+				['Recent', 'Topics', 'Logbook', 'Practice', 'Flashcards'].includes(
+					label ?? ''
+				)
+			)
+
+		expect(topLevelLabels).toEqual([
+			'Practice',
+			'Flashcards',
+			'Logbook',
+			'Recent',
+			'Topics'
+		])
 	})
 })

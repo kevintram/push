@@ -1,6 +1,8 @@
 """Topics business logic and data access."""
 
-from sqlalchemy import desc, select, text
+from typing import Literal
+
+from sqlalchemy import case, desc, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -46,6 +48,7 @@ async def list_topics(
     *,
     root: bool | None = None,
     parent_id: int | None = None,
+    sort: Literal["updated_at", "title"] = "updated_at",
     order: str = "desc",
 ) -> list[Topic]:
     stmt = select(Topic).where(Topic.user_id == user_id)
@@ -55,10 +58,19 @@ async def list_topics(
     if parent_id is not None:
         stmt = stmt.where(Topic.parent_id == parent_id)
 
-    if order == "asc":
-        stmt = stmt.order_by(Topic.updated_at.asc())
+    if sort == "title":
+        normalized_title = case(
+            (func.length(func.trim(Topic.title)) == 0, "untitled topic"),
+            else_=func.lower(func.trim(Topic.title)),
+        )
+        if order == "asc":
+            stmt = stmt.order_by(normalized_title.asc(), Topic.id.asc())
+        else:
+            stmt = stmt.order_by(normalized_title.desc(), Topic.id.desc())
+    elif order == "asc":
+        stmt = stmt.order_by(Topic.updated_at.asc(), Topic.id.asc())
     else:
-        stmt = stmt.order_by(desc(Topic.updated_at))
+        stmt = stmt.order_by(desc(Topic.updated_at), Topic.id.desc())
 
     stmt = stmt.options(selectinload(Topic.parent))
 

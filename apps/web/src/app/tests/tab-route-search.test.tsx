@@ -441,7 +441,7 @@ describe('route-backed tab search state', () => {
 				{ enabled: true }
 			)
 		})
-		expect(screen.getByText('Subtopic')).toBeInTheDocument()
+		expect(screen.getByTestId('topic-card')).toHaveTextContent('Subtopic')
 	})
 
 	it('deep links TopicDetail review-card filters and removes filter on subtopics', async () => {
