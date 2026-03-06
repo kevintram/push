@@ -694,9 +694,7 @@ describe('masonry-backed page feeds', () => {
 
 		const dueTab = screen.getByRole('tab', { name: 'Due' })
 		const newTab = screen.getByRole('tab', { name: 'New' })
-		const dueSummary = screen.getByText(
-			'Actionable in next 7 days'
-		).parentElement
+		const dueSummary = screen.getByText('Due in next 7d').parentElement
 
 		expect(within(dueTab).getByText('2')).toBeInTheDocument()
 		expect(within(dueTab).getByText('3')).toBeInTheDocument()
@@ -849,9 +847,7 @@ describe('masonry-backed page feeds', () => {
 
 		const dueTab = screen.getByRole('tab', { name: 'Due' })
 		const newTab = screen.getByRole('tab', { name: 'New' })
-		const dueSummary = screen.getByText(
-			'Actionable in next 7 days'
-		).parentElement
+		const dueSummary = screen.getByText('Due in next 7d').parentElement
 
 		expect(screen.getByText('Focused flashcard')).toBeInTheDocument()
 		expect(within(dueTab).getByText('1')).toBeInTheDocument()
@@ -984,9 +980,7 @@ describe('masonry-backed page feeds', () => {
 		expect(scopeBar).toContainElement(
 			screen.getByRole('tab', { name: 'Focused' })
 		)
-		expect(scopeBar).toContainElement(
-			screen.getByText('Actionable in next 7 days')
-		)
+		expect(scopeBar).toContainElement(screen.getByText('Due in next 7d'))
 		// biome-ignore lint/nursery/noBitwiseOperators: compareDocumentPosition returns a bitmask
 		expect(
 			scopeBar.compareDocumentPosition(focusedLayout) &
