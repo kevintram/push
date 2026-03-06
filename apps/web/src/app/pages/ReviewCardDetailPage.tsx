@@ -83,7 +83,13 @@ import { isHttpStatusError } from '~/utils/httpStatusError'
 const EMPTY_BADGE_CLASSNAME =
 	'h-5 rounded-sm border-transparent bg-amber-100 text-amber-900 text-xs shadow-sm dark:bg-amber-950 dark:text-amber-200'
 
+export type ReviewCardDetailTab = 'home' | 'reviews'
+
 type ReviewCardDetailRevealPanelTab = 'guess' | 'reveal'
+
+function isReviewCardDetailTab(value: string): value is ReviewCardDetailTab {
+	return value === 'home' || value === 'reviews'
+}
 
 function isReviewCardDetailRevealPanelTab(
 	value: string
@@ -161,12 +167,21 @@ function splitReviews(reviews: Array<ReviewListItem>) {
 }
 
 export function ReviewCardDetailPage({
-	reviewCardId
+	reviewCardId,
+	activeTab,
+	onActiveTabChange
 }: {
 	reviewCardId: number
+	activeTab?: ReviewCardDetailTab | string
+	onActiveTabChange?: (tab: ReviewCardDetailTab) => void
 }) {
 	const navigate = useNavigate()
-	const [activeNavTab, setActiveNavTab] = useState<DetailNavTab>('home')
+	const [fallbackActiveTab, setFallbackActiveTab] =
+		useState<ReviewCardDetailTab>('home')
+	const resolvedActiveTab: ReviewCardDetailTab =
+		activeTab != null && isReviewCardDetailTab(activeTab)
+			? activeTab
+			: fallbackActiveTab
 
 	const {
 		data: reviewCard,
@@ -486,7 +501,7 @@ export function ReviewCardDetailPage({
 	return (
 		<div className='flex h-full min-h-0 w-full flex-col'>
 			<DetailNavBar
-				activeTab={activeNavTab}
+				activeTab={resolvedActiveTab}
 				afterActions={null}
 				dueTodayCount={dueTodayCount}
 				leftContent={
@@ -560,7 +575,10 @@ export function ReviewCardDetailPage({
 						</Badge>
 					</div>
 				}
-				onTabChange={setActiveNavTab}
+				onTabChange={(tab: DetailNavTab) => {
+					setFallbackActiveTab(tab)
+					onActiveTabChange?.(tab)
+				}}
 				overdueCount={overdueCount}
 				unscheduledCount={unscheduledCount}
 			/>
@@ -591,7 +609,7 @@ export function ReviewCardDetailPage({
 
 			<div className='flex-1 overflow-y-auto'>
 				<div className='mx-auto flex min-h-full w-full max-w-5xl flex-col px-6 py-5'>
-					{activeNavTab === 'reviews' ? (
+					{resolvedActiveTab === 'reviews' ? (
 						isReviewsLoading ? (
 							<LoadingSpinner containerClassName='min-h-40 py-2' />
 						) : (

@@ -201,7 +201,8 @@ export function ReviewDialog({
 		if (!review?.review_card) return
 		navigate({
 			to: '/review-cards/$reviewCardId',
-			params: { reviewCardId: review.review_card.id.toString() }
+			params: { reviewCardId: review.review_card.id.toString() },
+			search: { tab: 'reviews' }
 		})
 	}, [navigate, review?.review_card])
 

@@ -172,7 +172,8 @@ export function ReviewItem({
 			if (!entry.review_card) return
 			navigate({
 				to: '/review-cards/$reviewCardId',
-				params: { reviewCardId: entry.review_card.id.toString() }
+				params: { reviewCardId: entry.review_card.id.toString() },
+				search: { tab: 'reviews' }
 			})
 		},
 		[navigate, entry.review_card]
