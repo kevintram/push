@@ -903,7 +903,7 @@ export function ReviewCard({
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
 			>
-				<AlertDialogContent size='sm'>
+				<AlertDialogContent onClick={event => event.stopPropagation()} size='sm'>
 					<AlertDialogHeader>
 						<AlertDialogMedia>
 							<AlertTriangle className='h-5 w-5' />
