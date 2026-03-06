@@ -29,6 +29,7 @@ const useReviewCardsMock = vi.fn()
 const useReviewCardQueueMock = vi.fn()
 const useSearchAllMock = vi.fn()
 const createTopicAsyncMock = vi.fn()
+const updateReviewCardAsyncMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
@@ -121,6 +122,13 @@ vi.mock('~/features/review-cards/api/createReviewCard', () => ({
 
 vi.mock('~/features/reviews/api/createReview', () => ({
 	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
+}))
+
+vi.mock('~/features/review-cards/api/updateReviewCard', () => ({
+	useUpdateReviewCard: () => ({
+		mutateAsync: updateReviewCardAsyncMock,
+		isPending: false
+	})
 }))
 
 vi.mock('~/stores/FlashcardModeContext', () => ({
@@ -250,6 +258,7 @@ beforeEach(() => {
 	useReviewCardQueueMock.mockReset()
 	useSearchAllMock.mockReset()
 	createTopicAsyncMock.mockReset()
+	updateReviewCardAsyncMock.mockReset()
 	window.sessionStorage.clear()
 	window.happyDOM?.setViewport({ height: 900, width: 1024 })
 })
@@ -397,6 +406,37 @@ describe('masonry-backed page feeds', () => {
 
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
 		expect(screen.getByText('Thursday, Mar 5')).toBeInTheDocument()
+	})
+
+	it('retires the focused flashcard from the rating action row', async () => {
+		const user = userEvent.setup()
+		useReviewCardQueueMock.mockReturnValue({
+			data: [
+				{
+					queue_type: 'due',
+					card: {
+						...reviewCard,
+						id: 22,
+						type: 'flashcard',
+						prompt: 'Retire me'
+					},
+					review_id: null,
+					scheduled_at: '2026-03-05',
+					days_until_due: 0
+				}
+			],
+			isLoading: false
+		})
+		updateReviewCardAsyncMock.mockResolvedValue(undefined)
+
+		render(<FlashcardsHarness />)
+
+		await user.click(screen.getByRole('button', { name: /retire this item/i }))
+
+		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
+			id: 22,
+			retired: true
+		})
 	})
 
 	it('renders Practice list views through masonry and keeps focused view non-masonry', async () => {

@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { Layers } from 'lucide-react'
+import { Layers, Loader2, Sunset } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
 import { toast } from 'sonner'
 import { ReviewCardPageLayout } from '~/app/components/ReviewCardPageLayout'
@@ -14,6 +14,7 @@ import {
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQueue'
+import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
@@ -55,6 +56,7 @@ export function FlashcardsPage({
 		focused: activeTab === 'due' ? scope === 'focused' : undefined
 	})
 	const createReviewMutation = useCreateReview()
+	const updateReviewCardMutation = useUpdateReviewCard()
 	const tabOptions = useMemo(
 		() => [
 			{
@@ -116,6 +118,18 @@ export function FlashcardsPage({
 			),
 		[items]
 	)
+	const retireLabel = activeCard?.retired ? 'Restore' : 'Retire'
+	const retireAriaLabel = activeCard?.retired
+		? 'Return this item to review queue'
+		: 'Retire this item'
+	let retireIcon: ReactNode = (
+		<Sunset className='h-4 w-4 text-muted-foreground' />
+	)
+	if (updateReviewCardMutation.isPending) {
+		retireIcon = <Loader2 className='h-4 w-4 animate-spin' />
+	} else if (activeCard?.retired) {
+		retireIcon = <Sunset className='h-4 w-4 text-orange-500' />
+	}
 
 	async function rateCard(rating: 'miss' | 'hard' | 'good' | 'easy') {
 		if (!activeCard) return
@@ -127,6 +141,18 @@ export function FlashcardsPage({
 			})
 		} catch {
 			toast.error('Failed to record review')
+		}
+	}
+
+	async function toggleRetired() {
+		if (!activeCard) return
+		try {
+			await updateReviewCardMutation.mutateAsync({
+				id: activeCard.id,
+				retired: !activeCard.retired
+			})
+		} catch {
+			toast.error('Failed to update review card')
 		}
 	}
 
@@ -157,31 +183,47 @@ export function FlashcardsPage({
 					}
 					reviewCard={activeCard}
 				/>
-				<div className='flex flex-wrap items-center justify-center gap-2'>
-					<Button onClick={() => rateCard('miss')} variant='outline'>
-						<span className='flex items-center gap-2'>
-							{getRatingIcon('miss')}
-							<span>Miss</span>
-						</span>
-					</Button>
-					<Button onClick={() => rateCard('hard')} variant='outline'>
-						<span className='flex items-center gap-2'>
-							{getRatingIcon('hard')}
-							<span>Hard</span>
-						</span>
-					</Button>
-					<Button onClick={() => rateCard('good')} variant='outline'>
-						<span className='flex items-center gap-2'>
-							{getRatingIcon('good')}
-							<span>Good</span>
-						</span>
-					</Button>
-					<Button onClick={() => rateCard('easy')} variant='outline'>
-						<span className='flex items-center gap-2'>
-							{getRatingIcon('easy')}
-							<span>Easy</span>
-						</span>
-					</Button>
+				<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+					<div className='flex flex-wrap items-center gap-2'>
+						<Button onClick={() => rateCard('miss')} variant='outline'>
+							<span className='flex items-center gap-2'>
+								{getRatingIcon('miss')}
+								<span>Miss</span>
+							</span>
+						</Button>
+						<Button onClick={() => rateCard('hard')} variant='outline'>
+							<span className='flex items-center gap-2'>
+								{getRatingIcon('hard')}
+								<span>Hard</span>
+							</span>
+						</Button>
+						<Button onClick={() => rateCard('good')} variant='outline'>
+							<span className='flex items-center gap-2'>
+								{getRatingIcon('good')}
+								<span>Good</span>
+							</span>
+						</Button>
+						<Button onClick={() => rateCard('easy')} variant='outline'>
+							<span className='flex items-center gap-2'>
+								{getRatingIcon('easy')}
+								<span>Easy</span>
+							</span>
+						</Button>
+					</div>
+					<div className='flex justify-start sm:justify-end'>
+						<Button
+							aria-label={retireAriaLabel}
+							aria-pressed={activeCard.retired}
+							disabled={updateReviewCardMutation.isPending}
+							onClick={() => toggleRetired()}
+							variant='ghost'
+						>
+							<span className='flex items-center gap-2'>
+								{retireIcon}
+								<span>{retireLabel}</span>
+							</span>
+						</Button>
+					</div>
 				</div>
 			</div>
 		)
