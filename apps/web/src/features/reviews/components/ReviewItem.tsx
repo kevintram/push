@@ -21,7 +21,7 @@ import { useUpdateReview } from '../api/updateReview'
 import type { ReviewListItem } from '../types/review.types'
 import { isOverdue } from '../utils/isOverdue'
 import { DatePickerDropdown } from './DatePickerDropdown'
-import { REVIEW_LIST_GRID_COLS } from './ReviewListHeader'
+import { getReviewListGridCols } from './ReviewListHeader'
 import {
 	ReviewRatingCheckbox,
 	type ReviewRatingState
@@ -59,6 +59,7 @@ interface ReviewItemProps {
 	entry: ReviewListItem
 	onReviewClick?: (reviewId: number) => void
 	readonly?: boolean
+	showCardColumn?: boolean
 	variant?: 'default' | 'topic'
 }
 
@@ -67,6 +68,7 @@ export function ReviewItem({
 	entry,
 	onReviewClick,
 	readonly = false,
+	showCardColumn = true,
 	variant = 'default'
 }: ReviewItemProps) {
 	const navigate = useNavigate()
@@ -196,8 +198,11 @@ export function ReviewItem({
 	)
 	const description = entry.description?.trim()
 
-	const showingEntity =
-		(variant === 'default' || variant === 'topic') && !!entry.review_card
+	const showCard =
+		showCardColumn &&
+		(variant === 'default' || variant === 'topic') &&
+		!!entry.review_card
+	const gridCols = getReviewListGridCols(showCardColumn)
 
 	// --- Shared element JSX ---
 
@@ -305,7 +310,8 @@ export function ReviewItem({
 		</DropdownMenu>
 	)
 
-	const entityInfo = (() => {
+	const cardInfo = (() => {
+		if (!showCardColumn) return null
 		if (variant !== 'default' && variant !== 'topic') return null
 		if (entry.review_card) {
 			return {
@@ -314,7 +320,7 @@ export function ReviewItem({
 			}
 		}
 		return {
-			label: 'Unknown entity',
+			label: 'Unknown card',
 			onClick: handleReviewCardClick
 		}
 	})()
@@ -370,19 +376,19 @@ export function ReviewItem({
 					{moreButtonEl}
 				</div>
 				<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-					{entityInfo && (
+					{cardInfo && (
 						<Button
 							className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-							onClick={entityInfo.onClick}
+							onClick={cardInfo.onClick}
 							size='sm'
 							variant='link'
 						>
-							<span>{entityInfo.label}</span>
+							<span>{cardInfo.label}</span>
 						</Button>
 					)}
 					{hasStability && (
 						<>
-							{showingEntity && <span className='font-semibold'>⋅</span>}
+							{showCard && <span className='font-semibold'>⋅</span>}
 							{durabilityCompactEl}
 						</>
 					)}
@@ -391,23 +397,24 @@ export function ReviewItem({
 
 			{/* Wide/table layout (hidden by default, shown at @lg) */}
 			<div
-				className={`@lg/review-list:grid hidden ${REVIEW_LIST_GRID_COLS} items-center gap-x-3`}
+				className={`@lg/review-list:grid hidden ${gridCols} items-center gap-x-3`}
 			>
 				<div>{checkboxEl}</div>
 				{descriptionEl}
 				{durabilityWideEl || <span />}
-				{entityInfo ? (
-					<Button
-						className='!px-0 h-auto min-w-0 justify-start text-foreground text-sm hover:text-foreground'
-						onClick={entityInfo.onClick}
-						size='sm'
-						variant='link'
-					>
-						<span className='truncate'>{entityInfo.label}</span>
-					</Button>
-				) : (
-					<span />
-				)}
+				{showCardColumn &&
+					(cardInfo ? (
+						<Button
+							className='!px-0 h-auto min-w-0 justify-start text-foreground text-sm hover:text-foreground'
+							onClick={cardInfo.onClick}
+							size='sm'
+							variant='link'
+						>
+							<span className='truncate'>{cardInfo.label}</span>
+						</Button>
+					) : (
+						<span />
+					))}
 				<div>{wideDateEl}</div>
 				<div className='flex justify-center'>{moreButtonEl}</div>
 			</div>

@@ -627,12 +627,13 @@ export function ReviewCardDetailPage({
 										{uncompletedUnscheduledReviews.length > 0 && (
 											<div>
 												<div className='@container/review-list'>
-													<ReviewListHeader />
+													<ReviewListHeader showCardColumn={false} />
 													{uncompletedUnscheduledReviews.map(entry => (
 														<ReviewItem
 															entry={entry}
 															key={entry.id}
 															onReviewClick={openReviewDialog}
+															showCardColumn={false}
 															variant='default'
 														/>
 													))}
@@ -645,12 +646,13 @@ export function ReviewCardDetailPage({
 													Overdue
 												</h2>
 												<div className='@container/review-list'>
-													<ReviewListHeader />
+													<ReviewListHeader showCardColumn={false} />
 													{overdueReviews.map(entry => (
 														<ReviewItem
 															entry={entry}
 															key={entry.id}
 															onReviewClick={openReviewDialog}
+															showCardColumn={false}
 															variant='default'
 														/>
 													))}
@@ -663,12 +665,13 @@ export function ReviewCardDetailPage({
 													Today
 												</h2>
 												<div className='@container/review-list'>
-													<ReviewListHeader />
+													<ReviewListHeader showCardColumn={false} />
 													{todayReviews.map(entry => (
 														<ReviewItem
 															entry={entry}
 															key={entry.id}
 															onReviewClick={openReviewDialog}
+															showCardColumn={false}
 															variant='default'
 														/>
 													))}
@@ -679,12 +682,13 @@ export function ReviewCardDetailPage({
 											<div>
 												<h2 className='mb-3 font-bold text-2xl'>Upcoming</h2>
 												<div className='@container/review-list'>
-													<ReviewListHeader />
+													<ReviewListHeader showCardColumn={false} />
 													{upcomingReviews.map(entry => (
 														<ReviewItem
 															entry={entry}
 															key={entry.id}
 															onReviewClick={openReviewDialog}
+															showCardColumn={false}
 															variant='default'
 														/>
 													))}
@@ -695,12 +699,13 @@ export function ReviewCardDetailPage({
 											<div>
 												<h2 className='mb-3 font-bold text-2xl'>Completed</h2>
 												<div className='@container/review-list'>
-													<ReviewListHeader />
+													<ReviewListHeader showCardColumn={false} />
 													{completedReviews.map(entry => (
 														<ReviewItem
 															entry={entry}
 															key={entry.id}
 															onReviewClick={openReviewDialog}
+															showCardColumn={false}
 															variant='default'
 														/>
 													))}
