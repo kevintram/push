@@ -492,6 +492,7 @@ describe('masonry-backed page feeds', () => {
 			render(<FlashcardsHarness initialScope='all' />)
 
 			expect(screen.getByText('Next week')).toBeInTheDocument()
+			expect(screen.getByText('Starts Tomorrow')).toBeInTheDocument()
 			expect(screen.queryByText('Tuesday')).not.toBeInTheDocument()
 		} finally {
 			vi.useRealTimers()
