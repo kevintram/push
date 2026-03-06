@@ -1,5 +1,4 @@
-import { useMemo } from 'react'
-import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQueue'
+import { useReviewCardQueueSummary } from '~/features/review-cards/api/getReviewCardQueueSummary'
 import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
 
 type UseReviewCardQueueCountsOptions = {
@@ -9,47 +8,12 @@ type UseReviewCardQueueCountsOptions = {
 export function useReviewCardQueueCounts({
 	type
 }: UseReviewCardQueueCountsOptions) {
-	const { data: dueItems = [] } = useReviewCardQueue({
-		type,
-		tab: 'due'
-	})
-	const { data: newItems = [] } = useReviewCardQueue({
-		type,
-		tab: 'new'
-	})
-
-	const dueCounts = useMemo(() => {
-		let overdueCount = 0
-		let dueTodayCount = 0
-		let dueNextSevenDaysCount = 0
-
-		for (const item of dueItems) {
-			if (item.days_until_due == null) continue
-
-			if (item.days_until_due < 0) {
-				overdueCount++
-				continue
-			}
-
-			if (item.days_until_due === 0) {
-				dueTodayCount++
-				continue
-			}
-
-			if (item.days_until_due <= 7) {
-				dueNextSevenDaysCount++
-			}
-		}
-
-		return {
-			overdueCount,
-			dueTodayCount,
-			dueNextSevenDaysCount
-		}
-	}, [dueItems])
+	const { data } = useReviewCardQueueSummary(type)
 
 	return {
-		newCount: newItems.length,
-		...dueCounts
+		newCount: data?.new_count ?? 0,
+		overdueCount: data?.overdue_count ?? 0,
+		dueTodayCount: data?.due_today_count ?? 0,
+		dueNextSevenDaysCount: data?.due_next_seven_days_count ?? 0
 	}
 }

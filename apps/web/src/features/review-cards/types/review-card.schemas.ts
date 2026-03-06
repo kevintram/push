@@ -40,3 +40,11 @@ export const ReviewCardQueuePageSchema = v.object({
 	items: v.array(ReviewCardQueueItemSchema),
 	as_of: v.string()
 })
+
+export const ReviewCardQueueSummarySchema = v.object({
+	overdue_count: v.number(),
+	due_today_count: v.number(),
+	due_next_seven_days_count: v.number(),
+	new_count: v.number(),
+	as_of: v.string()
+})

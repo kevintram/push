@@ -5,6 +5,7 @@ import {
 	Layers,
 	Library,
 	ListChecks,
+	type LucideIcon,
 	PanelLeft,
 	Settings
 } from 'lucide-react'
@@ -13,6 +14,7 @@ import { useState } from 'react'
 import { SidebarSearch } from '~/app/components/AppSidebar/SidebarSearch'
 import { SettingsDialog } from '~/components/SettingsDialog'
 import { Button } from '~/components/ui/button'
+import { CountBadge } from '~/components/ui/count-badge'
 import {
 	Sidebar,
 	SidebarContent,
@@ -25,23 +27,81 @@ import {
 	SidebarMenuItem,
 	useSidebar
 } from '~/components/ui/sidebar'
+import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
+import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
+
+type ReviewSidebarItem = {
+	title: string
+	url: '/practice' | '/flashcards'
+	icon: LucideIcon
+	type: ReviewCardType
+	isActive: (pathname: string) => boolean
+}
+
+function ReviewSidebarMenuItem({
+	item,
+	isActive
+}: {
+	item: ReviewSidebarItem
+	isActive: boolean
+}) {
+	const { dueTodayCount, newCount, overdueCount } = useReviewCardQueueCounts({
+		type: item.type
+	})
+	const tooltip = `${item.title}: ${overdueCount} overdue, ${dueTodayCount} due today, ${newCount} new`
+
+	return (
+		<SidebarMenuItem key={item.title}>
+			<SidebarMenuButton
+				className='h-auto min-h-10 py-2'
+				isActive={isActive}
+				render={<Link to={item.url} />}
+				tooltip={tooltip}
+			>
+				<item.icon />
+				<span className='flex min-w-0 flex-1 items-center gap-2 group-data-[collapsible=icon]:hidden'>
+					<span className='min-w-0 truncate'>{item.title}</span>
+					<span
+						aria-hidden='true'
+						className='ml-auto flex shrink-0 items-center gap-1'
+					>
+						<CountBadge
+							className='h-4 min-w-4 bg-red-600 px-1 text-[10px] text-white dark:bg-red-400'
+							count={overdueCount}
+						/>
+						<CountBadge
+							className='h-4 min-w-4 bg-transparent px-1 text-[10px] text-blue-600 dark:text-blue-400'
+							count={dueTodayCount}
+						/>
+						<CountBadge
+							className='h-4 min-w-4 px-1 text-[10px]'
+							count={newCount}
+						/>
+					</span>
+				</span>
+			</SidebarMenuButton>
+		</SidebarMenuItem>
+	)
+}
 
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
 	const { toggleSidebar } = useSidebar()
 
-	const reviewItems = [
+	const reviewItems: Array<ReviewSidebarItem> = [
 		{
 			title: 'Practice',
 			url: '/practice',
 			icon: ListChecks,
+			type: 'practice',
 			isActive: (pathname: string) => pathname === '/practice'
 		},
 		{
 			title: 'Flashcards',
 			url: '/flashcards',
 			icon: Layers,
+			type: 'flashcard',
 			isActive: (pathname: string) => pathname === '/flashcards'
 		}
 	]
@@ -100,16 +160,11 @@ export function AppSidebar() {
 							{reviewItems.map(item => {
 								const isActive = item.isActive(location.pathname)
 								return (
-									<SidebarMenuItem key={item.title}>
-										<SidebarMenuButton
-											isActive={isActive}
-											render={<Link to={item.url} />}
-											tooltip={item.title}
-										>
-											<item.icon />
-											<span>{item.title}</span>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
+									<ReviewSidebarMenuItem
+										isActive={isActive}
+										item={item}
+										key={item.title}
+									/>
 								)
 							})}
 						</SidebarMenu>

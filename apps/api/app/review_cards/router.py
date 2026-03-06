@@ -10,9 +10,10 @@ from app.review_cards import service
 from app.reviews import service as reviews_service
 from app.schemas.review_cards import (
     ReviewCardCreate,
-    ReviewCardReviewCreate,
     ReviewCardQueuePage,
+    ReviewCardQueueSummary,
     ReviewCardRead,
+    ReviewCardReviewCreate,
     ReviewCardTypeEnum,
     ReviewCardUpdate,
 )
@@ -56,6 +57,19 @@ async def read_review_card_queue(
         tab=tab,
         focused=focused,
         limit=limit,
+    )
+
+
+@router.get("/queue-summary/")
+async def read_review_card_queue_summary(
+    session: SessionDep,
+    user_id: UserIdDep,
+    type: ReviewCardTypeEnum,
+) -> ReviewCardQueueSummary:
+    return await service.get_review_card_queue_summary(
+        session,
+        user_id,
+        card_type=type.value,
     )
 
 
