@@ -27,6 +27,7 @@ const useTopicsMock = vi.fn()
 const useTopicMock = vi.fn()
 const useReviewCardsMock = vi.fn()
 const useReviewCardQueueMock = vi.fn()
+const useReviewCardQueueCountsMock = vi.fn()
 const useSearchAllMock = vi.fn()
 const createTopicAsyncMock = vi.fn()
 const updateReviewCardAsyncMock = vi.fn()
@@ -95,6 +96,11 @@ vi.mock('~/features/review-cards/api/getReviewCards', () => ({
 vi.mock('~/features/review-cards/api/getReviewCardQueue', () => ({
 	useReviewCardQueue: (...args: Array<unknown>) =>
 		useReviewCardQueueMock(...args)
+}))
+
+vi.mock('~/features/review-cards/hooks/useReviewCardQueueCounts', () => ({
+	useReviewCardQueueCounts: (...args: Array<unknown>) =>
+		useReviewCardQueueCountsMock(...args)
 }))
 
 vi.mock('~/features/search/api/searchAll', () => ({
@@ -256,9 +262,16 @@ beforeEach(() => {
 	useTopicMock.mockReset()
 	useReviewCardsMock.mockReset()
 	useReviewCardQueueMock.mockReset()
+	useReviewCardQueueCountsMock.mockReset()
 	useSearchAllMock.mockReset()
 	createTopicAsyncMock.mockReset()
 	updateReviewCardAsyncMock.mockReset()
+	useReviewCardQueueCountsMock.mockReturnValue({
+		overdueCount: 0,
+		dueTodayCount: 0,
+		newCount: 0,
+		dueNextSevenDaysCount: 0
+	})
 	window.sessionStorage.clear()
 	window.happyDOM?.setViewport({ height: 900, width: 1024 })
 })
@@ -471,6 +484,13 @@ describe('masonry-backed page feeds', () => {
 	})
 
 	it('renders Practice tab counts and due header summary', () => {
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 2,
+			dueTodayCount: 3,
+			newCount: 4,
+			dueNextSevenDaysCount: 5
+		})
+
 		useReviewCardQueueMock.mockImplementation(
 			(params: { type: string; tab?: string; focused?: boolean }) => {
 				if (params.type !== 'practice') {
@@ -586,6 +606,13 @@ describe('masonry-backed page feeds', () => {
 	})
 
 	it('renders Flashcards counts from the full due queue while focused mode shows one card', () => {
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 1,
+			dueTodayCount: 2,
+			newCount: 4,
+			dueNextSevenDaysCount: 3
+		})
+
 		useReviewCardQueueMock.mockImplementation(
 			(params: { type: string; tab?: string; focused?: boolean }) => {
 				if (params.type !== 'flashcard') {

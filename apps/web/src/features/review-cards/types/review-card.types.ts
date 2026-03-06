@@ -38,6 +38,14 @@ export type ReviewCardQueuePage = {
 	as_of: string
 }
 
+export type ReviewCardQueueSummary = {
+	overdue_count: number
+	due_today_count: number
+	due_next_seven_days_count: number
+	new_count: number
+	as_of: string
+}
+
 export type GetReviewCardsParams = {
 	topic_id?: number
 	type?: ReviewCardType
