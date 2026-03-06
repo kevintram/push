@@ -529,6 +529,132 @@ describe('masonry-backed page feeds', () => {
 		})
 	})
 
+	it('warns before retiring a focused flashcard with scheduled reviews', async () => {
+		const user = userEvent.setup()
+		useReviewCardQueueMock.mockReturnValue({
+			data: [
+				{
+					queue_type: 'due',
+					card: {
+						...reviewCard,
+						id: 23,
+						type: 'flashcard',
+						prompt: 'Due flashcard',
+						status_badges: [
+							{
+								key: 'due',
+								label: 'Due in 0d',
+								tooltip: 'Mar 5, 2026',
+								tone: 'info',
+								review_id: 91
+							}
+						]
+					},
+					review_id: 91,
+					scheduled_at: '2026-03-05',
+					days_until_due: 0,
+					days_until_hazy: null
+				}
+			],
+			isLoading: false
+		})
+		updateReviewCardAsyncMock.mockResolvedValue(undefined)
+
+		render(<FlashcardsHarness />)
+
+		await user.click(screen.getByRole('button', { name: /retire this item/i }))
+
+		expect(
+			screen.getByRole('alertdialog', {
+				name: /this card still has scheduled reviews!/i
+			})
+		).toBeInTheDocument()
+		expect(updateReviewCardAsyncMock).not.toHaveBeenCalled()
+
+		await user.click(screen.getByRole('button', { name: /^Confirm$/i }))
+
+		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
+			id: 23,
+			retired: true
+		})
+	})
+
+	it('opens the reviews tab from the focused flashcard retire warning', async () => {
+		const user = userEvent.setup()
+		useReviewCardQueueMock.mockReturnValue({
+			data: [
+				{
+					queue_type: 'due',
+					card: {
+						...reviewCard,
+						id: 24,
+						type: 'flashcard',
+						prompt: 'Review me first',
+						status_badges: [
+							{
+								key: 'due',
+								label: 'Due in 0d',
+								tooltip: 'Mar 5, 2026',
+								tone: 'info',
+								review_id: 92
+							}
+						]
+					},
+					review_id: 92,
+					scheduled_at: '2026-03-05',
+					days_until_due: 0,
+					days_until_hazy: null
+				}
+			],
+			isLoading: false
+		})
+
+		render(<FlashcardsHarness />)
+
+		await user.click(screen.getByRole('button', { name: /retire this item/i }))
+		await user.click(screen.getByRole('button', { name: /^See reviews\.$/i }))
+
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/review-cards/$reviewCardId',
+			params: { reviewCardId: '24' },
+			search: { tab: 'reviews' }
+		})
+		expect(updateReviewCardAsyncMock).not.toHaveBeenCalled()
+	})
+
+	it('shows the focused flashcard retire button in an on state when retired', () => {
+		useReviewCardQueueMock.mockReturnValue({
+			data: [
+				{
+					queue_type: 'due',
+					card: {
+						...reviewCard,
+						id: 25,
+						type: 'flashcard',
+						prompt: 'Retired flashcard',
+						retired: true
+					},
+					review_id: null,
+					scheduled_at: '2026-03-05',
+					days_until_due: 0,
+					days_until_hazy: null
+				}
+			],
+			isLoading: false
+		})
+
+		render(<FlashcardsHarness />)
+
+		const retireButton = screen.getByRole('button', {
+			name: /return this item to review queue/i
+		})
+
+		expect(retireButton).toHaveAttribute('aria-pressed', 'true')
+		expect(retireButton).toHaveTextContent('Retire')
+		expect(retireButton).not.toHaveTextContent('Restore')
+		expect(retireButton.className).toContain('bg-muted')
+	})
+
 	it('renders Practice list views through masonry and keeps focused view non-masonry', async () => {
 		const user = userEvent.setup()
 		useReviewCardQueueMock.mockReturnValue({
