@@ -224,7 +224,6 @@ export function PracticePage({
 			isFocusedDueView={isFocusedDueView}
 			onActiveTabChange={onActiveTabChange}
 			onScopeChange={onScopeChange}
-			overlayFocusedScopeTabs={usesDesktopFocusedLayout}
 			scope={scope}
 			scopeBarActions={dueSummary}
 			scopeOptions={PRACTICE_SCOPE_OPTIONS}

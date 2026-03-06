@@ -18,7 +18,6 @@ type ReviewCardPageLayoutProps<TTab extends string, TScope extends string> = {
 	isDueView: boolean
 	isFocusedDueView: boolean
 	onActiveTabChange: (tab: TTab) => void
-	overlayFocusedScopeTabs?: boolean
 	onScopeChange?: (scope: TScope) => void
 	scope?: TScope
 	scopeOptions?: ReadonlyArray<PageTabOption<TScope>>
@@ -38,7 +37,6 @@ export function ReviewCardPageLayout<
 	isDueView,
 	isFocusedDueView,
 	onActiveTabChange,
-	overlayFocusedScopeTabs = true,
 	onScopeChange,
 	scope,
 	scopeOptions,
@@ -52,22 +50,17 @@ export function ReviewCardPageLayout<
 		scopeOptions != null &&
 		scopeOptions.length > 0 &&
 		onScopeChange != null
-	const shouldOverlayScopeTabs =
-		showScopeTabs && isFocusedDueView && overlayFocusedScopeTabs
 
 	const scopeTabs = showScopeTabs ? (
 		<Tabs
-			className={cn('w-fit', shouldOverlayScopeTabs && 'pointer-events-none')}
+			className='w-fit'
 			onValueChange={value => {
 				const nextScope = scopeOptions.find(option => option.value === value)
 				if (nextScope) onScopeChange(nextScope.value)
 			}}
 			value={scope}
 		>
-			<TabsList
-				className={cn(shouldOverlayScopeTabs && 'pointer-events-auto')}
-				variant='badge'
-			>
+			<TabsList variant='badge'>
 				{scopeOptions.map(option => (
 					<TabsTrigger
 						badgeStyle={true}
@@ -133,26 +126,21 @@ export function ReviewCardPageLayout<
 					isDueView && 'flex min-h-0 flex-1 flex-col'
 				)}
 			>
-				{shouldOverlayScopeTabs ? (
-					<div className='relative min-h-0 flex-1'>
-						<div className='absolute top-0 left-0 z-10 w-full'>{scopeBar}</div>
-						<div
-							className={cn(
-								'flex h-full min-h-0 flex-1',
-								centerFocusedContent && 'items-center justify-center'
-							)}
-						>
-							{children}
-						</div>
-					</div>
-				) : (
+				<div
+					className={cn('flex flex-col gap-4', isDueView && 'min-h-0 flex-1')}
+				>
+					{scopeBar}
 					<div
-						className={cn('flex flex-col gap-4', isDueView && 'min-h-0 flex-1')}
+						className={cn(
+							isDueView && 'min-h-0 flex-1',
+							centerFocusedContent &&
+								isFocusedDueView &&
+								'flex items-center justify-center'
+						)}
 					>
-						{scopeBar}
-						<div className={cn(isDueView && 'min-h-0 flex-1')}>{children}</div>
+						{children}
 					</div>
-				)}
+				</div>
 			</PageLayout.Content>
 		</PageLayout>
 	)
