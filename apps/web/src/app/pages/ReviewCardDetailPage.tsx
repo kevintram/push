@@ -20,17 +20,20 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { LoadingOrError } from '~/components/LoadingOrError'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogMedia,
+	AlertDialogTitle
+} from '~/components/ui/alert-dialog'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { DetailNavBar, type DetailNavTab } from '~/components/ui/detail-nav-bar'
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle
-} from '~/components/ui/dialog'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -1122,37 +1125,40 @@ export function ReviewCardDetailPage({
 					)}
 				</div>
 			</div>
-			<Dialog onOpenChange={setIsDeleteDialogOpen} open={isDeleteDialogOpen}>
-				<DialogContent className='max-w-md'>
-					<DialogHeader>
-						<DialogTitle>Delete review card?</DialogTitle>
-						<DialogDescription>
+			<AlertDialog
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+			>
+				<AlertDialogContent size='sm'>
+					<AlertDialogHeader>
+						<AlertDialogMedia>
+							<AlertTriangle className='h-5 w-5' />
+						</AlertDialogMedia>
+						<AlertDialogTitle>Delete review card?</AlertDialogTitle>
+						<AlertDialogDescription>
 							This will delete this review card and all linked reviews. This
 							action cannot be undone.
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							buttonClassName='w-full sm:w-auto'
 							disabled={isDeletingReviewCard}
-							onClick={() => setIsDeleteDialogOpen(false)}
-							type='button'
-							variant='outline'
 						>
 							Cancel
-						</Button>
-						<Button
+						</AlertDialogCancel>
+						<AlertDialogAction
+							buttonClassName='w-full sm:w-auto'
 							disabled={isDeletingReviewCard}
 							onClick={() => {
 								handleDeleteReviewCard().catch(() => {})
 							}}
-							type='button'
-							variant='destructive'
 						>
 							{isDeletingReviewCard ? 'Deleting...' : 'Delete review card'}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	)
 }
