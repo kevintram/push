@@ -18,11 +18,11 @@ import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCar
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
-import { groupReviewCardQueueByActionWeek } from '~/features/review-cards/utils/groupReviewCardQueueByActionWeek'
+import { groupReviewCardQueueByActionDay } from '~/features/review-cards/utils/groupReviewCardQueueByActionDay'
+import { groupReviewCardQueueByCreatedDay } from '~/features/review-cards/utils/groupReviewCardQueueByCreatedDay'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useWeekStart } from '~/stores/WeekStartContext'
 import { getRatingIcon } from '~/utils/getRatingIcon'
-import { groupByDate } from '~/utils/groupByDate'
 
 export type FlashcardsTab = 'due' | 'new'
 export type FlashcardsScope = 'focused' | 'all'
@@ -109,18 +109,13 @@ export function FlashcardsPage({
 	const activeCard = useMemo(() => items[0]?.card ?? null, [items])
 	const dueSections = useMemo(
 		() =>
-			groupReviewCardQueueByActionWeek(items, weekStartDay, queuePage?.as_of),
+			groupReviewCardQueueByActionDay(items, weekStartDay, queuePage?.as_of),
 		[items, queuePage?.as_of, weekStartDay]
 	)
 	const newSections = useMemo(
 		() =>
-			groupByDate(
-				items.map(item => ({
-					item,
-					date: item.card.inserted_at
-				}))
-			),
-		[items]
+			groupReviewCardQueueByCreatedDay(items, weekStartDay, queuePage?.as_of),
+		[items, queuePage?.as_of, weekStartDay]
 	)
 	const retireLabel = activeCard?.retired ? 'Restore' : 'Retire'
 	const retireAriaLabel = activeCard?.retired

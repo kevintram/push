@@ -28,6 +28,10 @@ function startOfWeek(date: Date, weekStartDay: WeekStartDay): Date {
 	return day
 }
 
+function getDateKey(date: Date): string {
+	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
 function toDayNumber(date: Date): number {
 	return Math.floor(
 		Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MS_PER_DAY
@@ -55,22 +59,7 @@ function getWeekOffsetFromActionDays(
 	return (toDayNumber(actionWeekStart) - toDayNumber(currentWeekStart)) / 7
 }
 
-function getThisWeekEndSubtext(
-	weekStartDay: WeekStartDay,
-	anchorDate: Date
-): string {
-	const currentWeekStart = startOfWeek(anchorDate, weekStartDay)
-	const weekEnd = addDays(currentWeekStart, 6)
-	const daysUntilWeekEnd =
-		toDayNumber(weekEnd) - toDayNumber(startOfDay(anchorDate))
-
-	if (daysUntilWeekEnd <= 0) return 'Ends Today'
-	if (daysUntilWeekEnd === 1) return 'Ends Tomorrow'
-	return `Ends ${weekEnd.toLocaleDateString(undefined, { weekday: 'long' })}`
-}
-
 function getWeekSectionLabel(offset: number): string {
-	if (offset === 0) return 'This week'
 	if (offset === 1) return 'Next week'
 	return `In ${offset} weeks`
 }
@@ -105,67 +94,89 @@ type ActionableSection = {
 	id: string
 	items: Array<ReviewCardQueueItem>
 	label: string
-	subLabel?: string
 	headingClassName?: string
 }
 
-export function groupReviewCardQueueByActionWeek(
+function getSectionForActionDay(
+	actionDays: number,
+	weekStartDay: WeekStartDay,
+	anchorDate: Date
+): Omit<ActionableSection, 'items'> {
+	if (actionDays < 0) {
+		return {
+			id: 'overdue',
+			label: 'Overdue',
+			headingClassName: 'text-red-600 dark:text-red-400'
+		}
+	}
+
+	if (actionDays === 0) {
+		return {
+			id: 'today',
+			label: 'Today',
+			headingClassName: 'text-blue-600 dark:text-blue-400'
+		}
+	}
+
+	if (actionDays === 1) {
+		return {
+			id: 'tomorrow',
+			label: 'Tomorrow'
+		}
+	}
+
+	const actionDate = addDays(startOfDay(anchorDate), actionDays)
+	const weekOffset = getWeekOffsetFromActionDays(
+		actionDays,
+		weekStartDay,
+		anchorDate
+	)
+
+	if (weekOffset === 0) {
+		return {
+			id: getDateKey(actionDate),
+			label: actionDate.toLocaleDateString(undefined, { weekday: 'long' })
+		}
+	}
+
+	return {
+		id: `week-${weekOffset}`,
+		label: getWeekSectionLabel(weekOffset)
+	}
+}
+
+export function groupReviewCardQueueByActionDay(
 	items: Array<ReviewCardQueueItem>,
 	weekStartDay: WeekStartDay,
 	asOf?: string
 ): Array<ActionableSection> {
-	const overdueItems: Array<ReviewCardQueueItem> = []
-	const weeklyBuckets = new Map<number, Array<ReviewCardQueueItem>>()
+	const sectionMap = new Map<string, ActionableSection>()
+	const sectionOrder: Array<string> = []
 	const anchorDate = asOf ? parseAsOfDate(asOf) : new Date()
 
 	for (const item of items) {
 		const actionDays = getActionDays(item)
 		if (actionDays == null) continue
 
-		if (actionDays < 0) {
-			overdueItems.push(item)
-			continue
+		const section = getSectionForActionDay(actionDays, weekStartDay, anchorDate)
+		if (!sectionMap.has(section.id)) {
+			sectionMap.set(section.id, {
+				...section,
+				items: []
+			})
+			sectionOrder.push(section.id)
 		}
+		sectionMap.get(section.id)!.items.push(item)
+	}
 
-		const weekOffset = getWeekOffsetFromActionDays(
-			actionDays,
-			weekStartDay,
-			anchorDate
-		)
-		const bucket = weeklyBuckets.get(weekOffset)
-		if (bucket) {
-			bucket.push(item)
-		} else {
-			weeklyBuckets.set(weekOffset, [item])
+	return sectionOrder.map(sectionId => {
+		const section = sectionMap.get(sectionId)
+		if (!section) {
+			throw new Error(`Missing queue section: ${sectionId}`)
 		}
-	}
-
-	const output: Array<ActionableSection> = []
-	if (overdueItems.length > 0) {
-		output.push({
-			id: 'overdue',
-			label: 'Overdue',
-			headingClassName: 'text-red-600 dark:text-red-400',
-			items: [...overdueItems].sort(sortActionableQueueItems)
-		})
-	}
-
-	for (const offset of [...weeklyBuckets.keys()].sort((a, b) => a - b)) {
-		const bucketItems = weeklyBuckets.get(offset)
-		if (!bucketItems || bucketItems.length === 0) continue
-
-		output.push({
-			id: `week-${offset}`,
-			label: getWeekSectionLabel(offset),
-			subLabel:
-				offset === 0
-					? getThisWeekEndSubtext(weekStartDay, anchorDate)
-					: undefined,
-			headingClassName:
-				offset === 0 ? 'text-blue-600 dark:text-blue-400' : undefined,
-			items: [...bucketItems].sort(sortActionableQueueItems)
-		})
-	}
-
-	return output
+		return {
+			...section,
+			items: [...section.items].sort(sortActionableQueueItems)
+		}
+	})
 }
