@@ -945,7 +945,7 @@ describe('masonry-backed page feeds', () => {
 		])
 	})
 
-	it('keeps the due scope controls in normal content flow for focused practice', () => {
+	it('renders the due scope controls inline above focused practice content', () => {
 		useReviewCardQueueMock.mockReturnValue({
 			data: buildPracticeQueueItems(2),
 			isLoading: false
@@ -956,8 +956,7 @@ describe('masonry-backed page feeds', () => {
 		const scopeBar = screen.getByTestId('review-queue-scope-bar')
 		const focusedLayout = screen.getByTestId('focused-practice-layout')
 
-		expect(scopeBar.closest('.sticky')).toBe(scopeBar)
-		expect(scopeBar.className).toContain('sticky')
+		expect(scopeBar.closest('.sticky')).toBeNull()
 		expect(scopeBar).toContainElement(
 			screen.getByRole('tab', { name: 'Focused' })
 		)
