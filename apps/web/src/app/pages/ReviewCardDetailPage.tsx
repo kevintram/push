@@ -51,10 +51,12 @@ import {
 import { useDeleteReviewCard } from '~/features/review-cards/api/deleteReviewCard'
 import { useReviewCard } from '~/features/review-cards/api/getReviewCard'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
+import { RetireReviewCardDialog } from '~/features/review-cards/components/RetireReviewCardDialog'
 import {
 	type ReviewCardBadge,
 	toReviewCardBadge
 } from '~/features/review-cards/components/ReviewCard'
+import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '~/features/review-cards/utils/orderReviewCardStatusBadges'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewsByReviewCard } from '~/features/reviews/api/getReviews'
@@ -287,6 +289,7 @@ export function ReviewCardDetailPage({
 	const [guessAnswerText, setGuessAnswerText] = useState('')
 	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
 	const [isTopicMenuOpen, setIsTopicMenuOpen] = useState(false)
 	const [isTopicSearchOpen, setIsTopicSearchOpen] = useState(false)
 	const [topicSearchQuery, setTopicSearchQuery] = useState('')
@@ -302,6 +305,7 @@ export function ReviewCardDetailPage({
 		setRevealPanelTab(hidesSecondary ? null : 'reveal')
 		setGuessAnswerText('')
 		setIsRevealPanelCopied(false)
+		setIsRetireDialogOpen(false)
 	}, [hidesSecondary, reviewCard])
 	useEffect(() => {
 		if (!isRevealPanelCopied) return
@@ -328,6 +332,31 @@ export function ReviewCardDetailPage({
 		},
 		[reviewCard, updateReviewCardAsync]
 	)
+
+	const handleRetiredToggle = useCallback(() => {
+		if (!reviewCard) return
+		if (!reviewCard.retired && hasScheduledDueReviews(reviewCard)) {
+			setIsRetireDialogOpen(true)
+			return
+		}
+		handleUpdateReviewCardFields({
+			retired: !reviewCard.retired
+		})
+	}, [handleUpdateReviewCardFields, reviewCard])
+
+	const handleSeeReviews = useCallback(() => {
+		if (!reviewCard) return
+		setIsRetireDialogOpen(false)
+		if (onActiveTabChange) {
+			onActiveTabChange('reviews')
+			return
+		}
+		navigate({
+			to: '/review-cards/$reviewCardId',
+			params: { reviewCardId: reviewCard.id.toString() },
+			search: { tab: 'reviews' }
+		})
+	}, [navigate, onActiveTabChange, reviewCard])
 
 	const handleRatingSelect = useCallback(
 		async (ratingState: ReviewRatingState) => {
@@ -932,11 +961,7 @@ export function ReviewCardDetailPage({
 												aria-pressed={reviewCard.retired}
 												className='rounded-full'
 												disabled={isUpdatingReviewCard}
-												onClick={() =>
-													handleUpdateReviewCardFields({
-														retired: !reviewCard.retired
-													})
-												}
+												onClick={handleRetiredToggle}
 												size='icon-sm'
 												variant='outline'
 											>
@@ -1159,6 +1184,19 @@ export function ReviewCardDetailPage({
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+			<RetireReviewCardDialog
+				isPending={isUpdatingReviewCard}
+				onConfirm={() => {
+					if (!reviewCard) return
+					handleUpdateReviewCardFields({
+						retired: !reviewCard.retired
+					})
+					setIsRetireDialogOpen(false)
+				}}
+				onOpenChange={setIsRetireDialogOpen}
+				onSeeReviews={handleSeeReviews}
+				open={isRetireDialogOpen}
+			/>
 		</div>
 	)
 }
