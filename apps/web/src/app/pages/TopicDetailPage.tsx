@@ -7,7 +7,6 @@ import {
 	Copy,
 	MoreHorizontal,
 	Plus,
-	SquarePen,
 	Trash2,
 	User2,
 	X
@@ -528,13 +527,11 @@ export function TopicDetailPage({
 									<DropdownMenuItem
 										onClick={() => handleAddReviewCard('practice')}
 									>
-										<SquarePen className='h-4 w-4' />
 										Practice
 									</DropdownMenuItem>
 									<DropdownMenuItem
 										onClick={() => handleAddReviewCard('flashcard')}
 									>
-										<SquarePen className='h-4 w-4' />
 										Flashcard
 									</DropdownMenuItem>
 								</DropdownMenuContent>
