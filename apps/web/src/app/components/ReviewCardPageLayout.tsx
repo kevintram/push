@@ -12,7 +12,6 @@ type PageTabOption<TValue extends string> = {
 
 type ReviewCardPageLayoutProps<TTab extends string, TScope extends string> = {
 	activeTab: TTab
-	centerFocusedContent?: boolean
 	children: ReactNode
 	icon: LucideIcon
 	isDueView: boolean
@@ -31,7 +30,6 @@ export function ReviewCardPageLayout<
 	TScope extends string
 >({
 	activeTab,
-	centerFocusedContent = true,
 	children,
 	icon,
 	isDueView,
@@ -74,7 +72,10 @@ export function ReviewCardPageLayout<
 		</Tabs>
 	) : null
 	const scopeBar = showScopeTabs ? (
-		<div className='flex items-center justify-between gap-4'>
+		<div
+			className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'
+			data-testid='review-queue-scope-bar'
+		>
 			{scopeTabs}
 			{scopeBarActions ? (
 				<div className='flex shrink-0 items-center justify-end'>
@@ -130,16 +131,7 @@ export function ReviewCardPageLayout<
 					className={cn('flex flex-col gap-4', isDueView && 'min-h-0 flex-1')}
 				>
 					{scopeBar}
-					<div
-						className={cn(
-							isDueView && 'min-h-0 flex-1',
-							centerFocusedContent &&
-								isFocusedDueView &&
-								'flex items-center justify-center'
-						)}
-					>
-						{children}
-					</div>
+					<div className={cn(isDueView && 'min-h-0 flex-1')}>{children}</div>
 				</div>
 			</PageLayout.Content>
 		</PageLayout>

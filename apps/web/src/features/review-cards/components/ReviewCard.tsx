@@ -402,7 +402,7 @@ export function ReviewCard({
 
 	const hasStatusBadges = resolvedStatusBadges.length > 0
 	const statusRowClassName =
-		'pointer-events-none absolute top-[0.5px] right-3 z-10 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-1.5 -translate-y-1/2'
+		'pointer-events-none absolute top-[0.5px] right-3 z-5 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-1.5 -translate-y-1/2'
 
 	const statusRow = hasStatusBadges ? (
 		<div className={statusRowClassName}>

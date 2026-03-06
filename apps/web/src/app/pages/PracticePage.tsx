@@ -218,7 +218,6 @@ export function PracticePage({
 	return (
 		<ReviewCardPageLayout
 			activeTab={activeTab}
-			centerFocusedContent={usesDesktopFocusedLayout}
 			icon={ListChecks}
 			isDueView={activeTab === 'due'}
 			isFocusedDueView={isFocusedDueView}
