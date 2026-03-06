@@ -6,6 +6,7 @@ import { cn } from '~/lib/utils'
 
 type PageTabOption<TValue extends string> = {
 	label: string
+	count?: ReactNode
 	value: TValue
 }
 
@@ -21,6 +22,7 @@ type ReviewCardPageLayoutProps<TTab extends string, TScope extends string> = {
 	onScopeChange?: (scope: TScope) => void
 	scope?: TScope
 	scopeOptions?: ReadonlyArray<PageTabOption<TScope>>
+	scopeBarActions?: ReactNode
 	tabOptions: ReadonlyArray<PageTabOption<TTab>>
 	title: string
 }
@@ -40,6 +42,7 @@ export function ReviewCardPageLayout<
 	onScopeChange,
 	scope,
 	scopeOptions,
+	scopeBarActions,
 	tabOptions,
 	title
 }: ReviewCardPageLayoutProps<TTab, TScope>) {
@@ -77,11 +80,21 @@ export function ReviewCardPageLayout<
 			</TabsList>
 		</Tabs>
 	) : null
+	const scopeBar = showScopeTabs ? (
+		<div className='flex items-center justify-between gap-4'>
+			{scopeTabs}
+			{scopeBarActions ? (
+				<div className='flex shrink-0 items-center justify-end'>
+					{scopeBarActions}
+				</div>
+			) : null}
+		</div>
+	) : null
 
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={icon} title={title}>
-				<div className='flex justify-start'>
+				<div className='flex min-w-0 justify-start'>
 					<Tabs
 						className='-mb-2 w-fit'
 						onValueChange={value => {
@@ -92,8 +105,20 @@ export function ReviewCardPageLayout<
 					>
 						<TabsList className='border-b-0' variant='line'>
 							{tabOptions.map(option => (
-								<TabsTrigger key={option.value} value={option.value}>
-									{option.label}
+								<TabsTrigger
+									className={option.count != null ? 'gap-2' : undefined}
+									key={option.value}
+									value={option.value}
+								>
+									<span>{option.label}</span>
+									{option.count != null ? (
+										<span
+											aria-hidden='true'
+											className='flex items-center gap-1.5'
+										>
+											{option.count}
+										</span>
+									) : null}
 								</TabsTrigger>
 							))}
 						</TabsList>
@@ -110,9 +135,7 @@ export function ReviewCardPageLayout<
 			>
 				{shouldOverlayScopeTabs ? (
 					<div className='relative min-h-0 flex-1'>
-						<div className='absolute top-0 left-0 z-10 flex w-full items-start'>
-							{scopeTabs}
-						</div>
+						<div className='absolute top-0 left-0 z-10 w-full'>{scopeBar}</div>
 						<div
 							className={cn(
 								'flex h-full min-h-0 flex-1',
@@ -126,7 +149,7 @@ export function ReviewCardPageLayout<
 					<div
 						className={cn('flex flex-col gap-4', isDueView && 'min-h-0 flex-1')}
 					>
-						{scopeTabs}
+						{scopeBar}
 						<div className={cn(isDueView && 'min-h-0 flex-1')}>{children}</div>
 					</div>
 				)}

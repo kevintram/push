@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { ListChecks } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
 import { ReviewCardPageLayout } from '~/app/components/ReviewCardPageLayout'
+import { CountBadge } from '~/components/ui/count-badge'
 import {
 	Empty,
 	EmptyHeader,
@@ -12,6 +13,7 @@ import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQueue'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
+import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import type { ReviewCardQueueItem } from '~/features/review-cards/types/review-card.types'
 import { groupReviewCardQueueByDueDate } from '~/features/review-cards/utils/groupReviewCardQueueByDueDate'
 import { groupByDate } from '~/utils/groupByDate'
@@ -49,11 +51,6 @@ function getFocusedPracticeRowClassName(rowLength: number) {
 export type PracticeTab = 'due' | 'new'
 export type PracticeScope = 'focused' | 'all'
 
-const PRACTICE_TAB_OPTIONS = [
-	{ label: 'Due', value: 'due' },
-	{ label: 'New', value: 'new' }
-] as const
-
 const PRACTICE_SCOPE_OPTIONS = [
 	{ label: 'Focused', value: 'focused' },
 	{ label: 'All', value: 'all' }
@@ -75,11 +72,60 @@ export function PracticePage({
 	const navigate = useNavigate()
 	const isFocusedDueView = activeTab === 'due' && scope === 'focused'
 	const usesDesktopFocusedLayout = useMediaQuery('(min-width: 1280px)')
+	const { dueNextSevenDaysCount, dueTodayCount, newCount, overdueCount } =
+		useReviewCardQueueCounts({
+			type: 'practice'
+		})
 	const { data: items = [], isLoading } = useReviewCardQueue({
 		type: 'practice',
 		tab: activeTab,
 		focused: activeTab === 'due' ? scope === 'focused' : undefined
 	})
+	const tabOptions = useMemo(
+		() => [
+			{
+				label: 'Due',
+				value: 'due' as const,
+				count: (
+					<>
+						{overdueCount > 0 ? (
+							<CountBadge
+								className='h-4 min-w-4 bg-red-600 px-1 text-[10px] text-white dark:bg-red-400'
+								count={overdueCount}
+							/>
+						) : null}
+						{dueTodayCount > 0 ? (
+							<CountBadge
+								className='h-4 min-w-4 bg-transparent px-1 text-[10px] text-blue-600 dark:text-blue-400'
+								count={dueTodayCount}
+							/>
+						) : null}
+					</>
+				)
+			},
+			{
+				label: 'New',
+				value: 'new' as const,
+				count: (
+					<CountBadge
+						className='h-4 min-w-4 px-1 text-[10px]'
+						count={newCount}
+					/>
+				)
+			}
+		],
+		[dueTodayCount, newCount, overdueCount]
+	)
+	const dueSummary = useMemo(() => {
+		if (activeTab !== 'due') return null
+
+		return (
+			<div className='flex items-center gap-2 text-muted-foreground text-sm'>
+				<span>Due in next 7 days</span>
+				<CountBadge count={dueNextSevenDaysCount} />
+			</div>
+		)
+	}, [activeTab, dueNextSevenDaysCount])
 
 	const dueSections = useMemo(
 		() => groupReviewCardQueueByDueDate(items),
@@ -174,8 +220,9 @@ export function PracticePage({
 			onScopeChange={onScopeChange}
 			overlayFocusedScopeTabs={usesDesktopFocusedLayout}
 			scope={scope}
+			scopeBarActions={dueSummary}
 			scopeOptions={PRACTICE_SCOPE_OPTIONS}
-			tabOptions={PRACTICE_TAB_OPTIONS}
+			tabOptions={tabOptions}
 			title='Practice'
 		>
 			{content}
