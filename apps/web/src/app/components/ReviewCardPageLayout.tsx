@@ -73,7 +73,7 @@ export function ReviewCardPageLayout<
 	) : null
 	const scopeBar = showScopeTabs ? (
 		<div
-			className='-mx-3 sticky top-[var(--page-layout-header-height)] z-[5] flex flex-col gap-3 border-b bg-background/95 px-3 py-2 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between'
+			className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'
 			data-testid='review-queue-scope-bar'
 		>
 			{scopeTabs}
