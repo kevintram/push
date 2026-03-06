@@ -1,15 +1,16 @@
+import { AlertTriangle } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
+import {
+	AlertDialog,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogMedia,
+	AlertDialogTitle
+} from '~/components/ui/alert-dialog'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle
-} from '~/components/ui/dialog'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 
 export function ReviewModeWarningDialog() {
@@ -67,19 +68,22 @@ export function ReviewModeWarningDialog() {
 	}
 
 	return (
-		<Dialog
+		<AlertDialog
 			onOpenChange={open => {
 				if (!open) handleClose()
 			}}
 			open={isOpen}
 		>
-			<DialogContent className='max-w-sm'>
-				<DialogHeader>
-					<DialogTitle>Review mode is not on!</DialogTitle>
-					<DialogDescription>
+			<AlertDialogContent size='sm'>
+				<AlertDialogHeader>
+					<AlertDialogMedia>
+						<AlertTriangle className='h-5 w-5' />
+					</AlertDialogMedia>
+					<AlertDialogTitle>Review mode is not on!</AlertDialogTitle>
+					<AlertDialogDescription>
 						Review mode allows you to hide stuff so you can guess stuff
-					</DialogDescription>
-				</DialogHeader>
+					</AlertDialogDescription>
+				</AlertDialogHeader>
 				<div className='flex items-center gap-2'>
 					<Checkbox
 						checked={neverShowAgain}
@@ -90,7 +94,7 @@ export function ReviewModeWarningDialog() {
 						Never show this again
 					</label>
 				</div>
-				<DialogFooter className='flex-col gap-2 sm:flex-col'>
+				<AlertDialogFooter className='flex-col gap-2 sm:flex-col'>
 					<Button className='w-full' onClick={handleSetMode} variant='outline'>
 						Turn on
 					</Button>
@@ -101,11 +105,11 @@ export function ReviewModeWarningDialog() {
 					>
 						Always turn on
 					</Button>
-					<DialogClose render={<Button className='w-full' variant='ghost' />}>
+					<Button className='w-full' onClick={handleClose} variant='ghost'>
 						Dismiss
-					</DialogClose>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+					</Button>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
 	)
 }

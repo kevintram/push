@@ -19,6 +19,17 @@ import {
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogMedia,
+	AlertDialogTitle
+} from '~/components/ui/alert-dialog'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
@@ -193,6 +204,7 @@ export function ReviewCard({
 		useState<ReviewCardRevealPanelTab | null>(null)
 	const [guessSecondaryText, setGuessSecondaryText] = useState('')
 	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	const lastReviewed = useMemo(
 		() =>
@@ -303,12 +315,9 @@ export function ReviewCard({
 
 	const handleDeleteReviewCard = useCallback(async () => {
 		if (deleteReviewCardMutation.isPending) return
-		const confirmed = window.confirm(
-			'Delete this review card? This action cannot be undone.'
-		)
-		if (!confirmed) return
 		try {
 			await deleteReviewCardMutation.mutateAsync(reviewCard.id)
+			setIsDeleteDialogOpen(false)
 			toast.success('Review card deleted')
 		} catch (error) {
 			toast.error(
@@ -781,7 +790,7 @@ export function ReviewCard({
 								disabled={deleteReviewCardMutation.isPending}
 								onClick={event => {
 									event.stopPropagation()
-									handleDeleteReviewCard().catch(() => {})
+									setIsDeleteDialogOpen(true)
 								}}
 								variant='destructive'
 							>
@@ -890,6 +899,42 @@ export function ReviewCard({
 					</TooltipContent>
 				</Tooltip>
 			</CardFooter>
+			<AlertDialog
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+			>
+				<AlertDialogContent size='sm'>
+					<AlertDialogHeader>
+						<AlertDialogMedia>
+							<AlertTriangle className='h-5 w-5' />
+						</AlertDialogMedia>
+						<AlertDialogTitle>Delete review card?</AlertDialogTitle>
+						<AlertDialogDescription>
+							This will delete this review card and all linked reviews. This
+							action cannot be undone.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							buttonClassName='w-full sm:w-auto'
+							disabled={deleteReviewCardMutation.isPending}
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction
+							buttonClassName='w-full sm:w-auto'
+							disabled={deleteReviewCardMutation.isPending}
+							onClick={() => {
+								handleDeleteReviewCard().catch(() => {})
+							}}
+						>
+							{deleteReviewCardMutation.isPending
+								? 'Deleting...'
+								: 'Delete review card'}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</Card>
 	)
 }

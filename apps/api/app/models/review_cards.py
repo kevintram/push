@@ -79,11 +79,13 @@ class ReviewCard(Base):
     topic: Mapped["Topic"] = relationship("Topic", back_populates="review_cards")
     reviews: Mapped[list["Review"]] = relationship(
         back_populates="review_card",
+        cascade="all, delete-orphan",
         passive_deletes=True,
         foreign_keys="Review.review_card_id",
     )
     type_assignments: Mapped[list["ReviewCardTypeAssignment"]] = relationship(
         back_populates="review_card",
+        cascade="all, delete-orphan",
         passive_deletes=True,
     )
 

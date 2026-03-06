@@ -24,16 +24,19 @@ import { DetailTabsShell } from '~/components/DetailTabs/DetailTabsShell'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { AddEntityMenu } from '~/components/ui/add-entity-menu'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogMedia,
+	AlertDialogTitle
+} from '~/components/ui/alert-dialog'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle
-} from '~/components/ui/dialog'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -843,37 +846,40 @@ export function TopicDetailPage({
 				</div>
 			</div>
 
-			<Dialog onOpenChange={setIsDeleteDialogOpen} open={isDeleteDialogOpen}>
-				<DialogContent className='max-w-md'>
-					<DialogHeader>
-						<DialogTitle>Delete topic?</DialogTitle>
-						<DialogDescription>
+			<AlertDialog
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+			>
+				<AlertDialogContent size='sm'>
+					<AlertDialogHeader>
+						<AlertDialogMedia>
+							<AlertTriangle className='h-5 w-5' />
+						</AlertDialogMedia>
+						<AlertDialogTitle>Delete topic?</AlertDialogTitle>
+						<AlertDialogDescription>
 							This will delete this topic, all subtopics, and all linked review
 							cards and reviews. This action cannot be undone.
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							buttonClassName='w-full sm:w-auto'
 							disabled={isDeletingTopic}
-							onClick={() => setIsDeleteDialogOpen(false)}
-							type='button'
-							variant='outline'
 						>
 							Cancel
-						</Button>
-						<Button
+						</AlertDialogCancel>
+						<AlertDialogAction
+							buttonClassName='w-full sm:w-auto'
 							disabled={isDeletingTopic}
 							onClick={() => {
 								handleDeleteTopic().catch(() => {})
 							}}
-							type='button'
-							variant='destructive'
 						>
 							{isDeletingTopic ? 'Deleting...' : 'Delete topic'}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	)
 }
