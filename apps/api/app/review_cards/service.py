@@ -1,6 +1,6 @@
 """Review cards business logic and queue logic."""
 
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import Literal
 
 from sqlalchemy import case, delete, desc, exists, func, select
@@ -9,12 +9,164 @@ from sqlalchemy.orm import selectinload
 
 from app.exceptions import NotFoundError
 from app.models import Review, ReviewCard, ReviewCardTypeAssignment, Topic
+from app.review_cards.status_badges import compute_days_until_hazy, get_days_until_hazy
 from app.schemas.review_cards import (
     ReviewCardQueueItem,
     ReviewCardQueuePage,
     ReviewCardQueueSummary,
 )
 from app.utils.current_date import get_current_date
+from app.utils.retrievability import calculate_retrievability, get_freshness_tier
+
+
+def _get_action_days(item: ReviewCardQueueItem) -> int | None:
+    if item.queue_type == "due":
+        return item.days_until_due
+    if item.queue_type == "hazy" and item.days_until_hazy is not None:
+        return item.days_until_hazy - 1
+    return None
+
+
+def _queue_sort_key(item: ReviewCardQueueItem) -> tuple[int, int, int]:
+    action_days = _get_action_days(item)
+    urgency = action_days if action_days is not None else 999_999
+    queue_rank = (
+        0 if item.queue_type == "due" else 1 if item.queue_type == "hazy" else 2
+    )
+    return (urgency, queue_rank, item.review_id or item.card.id)
+
+
+def _apply_action_day_counts(
+    *,
+    overdue_count: int,
+    due_today_count: int,
+    due_next_seven_days_count: int,
+    action_days: int | None,
+) -> tuple[int, int, int]:
+    if action_days is None:
+        return overdue_count, due_today_count, due_next_seven_days_count
+    if action_days < 0:
+        return overdue_count + 1, due_today_count, due_next_seven_days_count
+    if action_days == 0:
+        return overdue_count, due_today_count + 1, due_next_seven_days_count
+    if action_days <= 7:
+        return overdue_count, due_today_count, due_next_seven_days_count + 1
+    return overdue_count, due_today_count, due_next_seven_days_count
+
+
+def _get_hazy_action_days(
+    *,
+    review_card_id: int,
+    stability: float | None,
+    last_reviewed_at: date | None,
+    today: date,
+) -> int | None:
+    retrievability = calculate_retrievability(
+        stability,
+        last_reviewed_at,
+        current_date=today,
+    )
+    days_until_hazy = compute_days_until_hazy(
+        stability=stability,
+        last_reviewed_at=last_reviewed_at,
+        freshness_tier=get_freshness_tier(retrievability),
+        today=today,
+    )
+    if days_until_hazy is None:
+        return None
+    return days_until_hazy - 1
+
+
+async def _list_actionable_due_queue_items(
+    session: AsyncSession,
+    user_id: str,
+    *,
+    card_type: str,
+    as_of: date,
+) -> list[ReviewCardQueueItem]:
+    due_card_ids_query = (
+        select(Review.review_card_id)
+        .join(ReviewCard, Review.review_card_id == ReviewCard.id)
+        .where(
+            Review.user_id == user_id,
+            Review.review_card_id.isnot(None),
+            Review.completed_at.is_(None),
+            Review.scheduled_at.isnot(None),
+            ReviewCard.type == card_type,
+            ReviewCard.retired.is_(False),
+        )
+        .distinct()
+    )
+
+    due_result = await session.execute(
+        select(Review)
+        .join(ReviewCard, Review.review_card_id == ReviewCard.id)
+        .where(
+            Review.user_id == user_id,
+            Review.review_card_id.isnot(None),
+            Review.completed_at.is_(None),
+            Review.scheduled_at.isnot(None),
+            ReviewCard.type == card_type,
+            ReviewCard.retired.is_(False),
+        )
+        .options(
+            selectinload(Review.review_card).selectinload(ReviewCard.topic),
+            selectinload(Review.review_card).selectinload(ReviewCard.reviews),
+            selectinload(Review.review_card).selectinload(ReviewCard.type_assignments),
+        )
+        .order_by(Review.scheduled_at.asc(), Review.id.asc())
+    )
+
+    items: list[ReviewCardQueueItem] = []
+    for review in due_result.scalars().all():
+        review_card = review.review_card
+        if review_card is None or review.scheduled_at is None:
+            continue
+
+        items.append(
+            ReviewCardQueueItem(
+                queue_type="due",
+                card=review_card,
+                review_id=review.id,
+                scheduled_at=review.scheduled_at,
+                days_until_due=(review.scheduled_at - as_of).days,
+                days_until_hazy=None,
+            )
+        )
+
+    hazy_cards_result = await session.execute(
+        select(ReviewCard)
+        .where(
+            ReviewCard.user_id == user_id,
+            ReviewCard.type == card_type,
+            ReviewCard.retired.is_(False),
+            ~ReviewCard.id.in_(due_card_ids_query),
+        )
+        .options(
+            selectinload(ReviewCard.topic),
+            selectinload(ReviewCard.reviews),
+            selectinload(ReviewCard.type_assignments),
+        )
+    )
+
+    for review_card in hazy_cards_result.scalars().unique().all():
+        days_until_hazy = get_days_until_hazy(review_card, today=as_of)
+        if days_until_hazy is None:
+            continue
+
+        items.append(
+            ReviewCardQueueItem(
+                queue_type="hazy",
+                card=review_card,
+                review_id=None,
+                scheduled_at=None,
+                days_until_due=None,
+                days_until_hazy=days_until_hazy,
+            )
+        )
+
+    items.sort(key=_queue_sort_key)
+    return items
 
 
 async def sync_review_card_type_assignment(
@@ -184,44 +336,12 @@ async def list_review_card_queue(
     items: list[ReviewCardQueueItem] = []
 
     if tab == "due":
-        due_result = await session.execute(
-            select(Review)
-            .join(ReviewCard, Review.review_card_id == ReviewCard.id)
-            .where(
-                Review.user_id == user_id,
-                Review.review_card_id.isnot(None),
-                Review.completed_at.is_(None),
-                Review.scheduled_at.isnot(None),
-                ReviewCard.type == card_type,
-            )
-            .options(
-                selectinload(Review.review_card).selectinload(ReviewCard.topic),
-                selectinload(Review.review_card).selectinload(ReviewCard.reviews),
-                selectinload(Review.review_card).selectinload(
-                    ReviewCard.type_assignments
-                ),
-            )
-            .order_by(Review.scheduled_at.asc(), Review.id.asc())
+        items = await _list_actionable_due_queue_items(
+            session,
+            user_id,
+            card_type=card_type,
+            as_of=as_of,
         )
-
-        for review in due_result.scalars().all():
-            review_card = review.review_card
-            if review_card is None:
-                continue
-            if review_card.retired:
-                continue
-            if review.scheduled_at is None:
-                continue
-
-            items.append(
-                ReviewCardQueueItem(
-                    queue_type="due",
-                    card=review_card,
-                    review_id=review.id,
-                    scheduled_at=review.scheduled_at,
-                    days_until_due=(review.scheduled_at - as_of).days,
-                )
-            )
     else:
         new_cards_result = await session.execute(
             select(ReviewCard)
@@ -255,6 +375,7 @@ async def list_review_card_queue(
                     review_id=None,
                     scheduled_at=None,
                     days_until_due=None,
+                    days_until_hazy=None,
                 )
             )
 
@@ -314,6 +435,52 @@ async def get_review_card_queue_summary(
 
     due_summary = (await session.execute(due_summary_stmt)).one()
 
+    overdue_count = due_summary.overdue_count
+    due_today_count = due_summary.due_today_count
+    due_next_seven_days_count = due_summary.due_next_seven_days_count
+
+    due_card_ids_query = (
+        select(Review.review_card_id)
+        .join(ReviewCard, Review.review_card_id == ReviewCard.id)
+        .where(
+            Review.user_id == user_id,
+            Review.review_card_id.isnot(None),
+            Review.completed_at.is_(None),
+            Review.scheduled_at.isnot(None),
+            ReviewCard.type == card_type,
+            ReviewCard.retired.is_(False),
+        )
+        .distinct()
+    )
+
+    hazy_cards_stmt = select(
+        ReviewCard.id,
+        ReviewCard.stability,
+        ReviewCard.last_reviewed_at,
+    ).where(
+        ReviewCard.user_id == user_id,
+        ReviewCard.type == card_type,
+        ReviewCard.retired.is_(False),
+        ~ReviewCard.id.in_(due_card_ids_query),
+    )
+
+    for review_card_id, stability, last_reviewed_at in await session.execute(
+        hazy_cards_stmt
+    ):
+        overdue_count, due_today_count, due_next_seven_days_count = (
+            _apply_action_day_counts(
+                overdue_count=overdue_count,
+                due_today_count=due_today_count,
+                due_next_seven_days_count=due_next_seven_days_count,
+                action_days=_get_hazy_action_days(
+                    review_card_id=review_card_id,
+                    stability=stability,
+                    last_reviewed_at=last_reviewed_at,
+                    today=as_of,
+                ),
+            )
+        )
+
     completed_review_exists = (
         select(Review.id)
         .where(
@@ -335,9 +502,9 @@ async def get_review_card_queue_summary(
     new_count = (await session.execute(new_count_stmt)).scalar_one()
 
     return ReviewCardQueueSummary(
-        overdue_count=due_summary.overdue_count,
-        due_today_count=due_summary.due_today_count,
-        due_next_seven_days_count=due_summary.due_next_seven_days_count,
+        overdue_count=overdue_count,
+        due_today_count=due_today_count,
+        due_next_seven_days_count=due_next_seven_days_count,
         new_count=new_count,
         as_of=as_of,
     )

@@ -52,23 +52,39 @@ def _format_forgotten_for_label(days_in_tier: int) -> str:
     return f"Forgotten for {days_in_tier}d"
 
 
-def get_days_until_hazy(
-    review_card: ReviewCard, *, today: date | None = None
+def compute_days_until_hazy(
+    *,
+    stability: float | None,
+    last_reviewed_at: date | None,
+    freshness_tier: str | None,
+    today: date | None = None,
 ) -> int | None:
-    """Calculate card-level days until entering hazy retrievability."""
-    if review_card.stability is None or review_card.last_reviewed_at is None:
+    """Calculate days until entering hazy retrievability from persisted fields."""
+    if stability is None or last_reviewed_at is None:
         return None
     days_until_hazy = compute_distance_to_retrievability(
-        review_card.stability,
-        review_card.last_reviewed_at,
+        stability,
+        last_reviewed_at,
         target_retrievability=FINE_THRESHOLD,
         current_date=today or get_current_date(),
     )
     if days_until_hazy == 0:
-        if review_card.freshness_tier in {"Hazy", "Forgotten"}:
+        if freshness_tier in {"Hazy", "Forgotten"}:
             return -1
         return 1
     return days_until_hazy
+
+
+def get_days_until_hazy(
+    review_card: ReviewCard, *, today: date | None = None
+) -> int | None:
+    """Calculate card-level days until entering hazy retrievability."""
+    return compute_days_until_hazy(
+        stability=review_card.stability,
+        last_reviewed_at=review_card.last_reviewed_at,
+        freshness_tier=review_card.freshness_tier,
+        today=today,
+    )
 
 
 def get_earliest_due_review(review_card: ReviewCard) -> Review | None:
