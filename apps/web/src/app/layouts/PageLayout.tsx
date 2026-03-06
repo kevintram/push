@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode, RefCallback } from 'react'
 import { createContext, useCallback, useContext, useRef } from 'react'
+import { useElementSize } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
 
 interface PageLayoutProps {
@@ -24,6 +25,8 @@ interface PageLayoutContentProps {
 const PageLayoutScrollContext = createContext<
 	(() => HTMLDivElement | null) | null
 >(null)
+const PageLayoutHeaderRegistrationContext =
+	createContext<RefCallback<HTMLDivElement> | null>(null)
 
 export function usePageScrollElement() {
 	return useContext(PageLayoutScrollContext)
@@ -37,8 +40,13 @@ function PageLayoutHeader({
 	centerContent,
 	children
 }: PageLayoutHeaderProps) {
+	const registerHeader = useContext(PageLayoutHeaderRegistrationContext)
+
 	return (
-		<div className='sticky top-0 z-10 flex flex-col gap-2 border-b-1 bg-background/40 px-4 pt-4 pb-2 backdrop-blur-sm'>
+		<div
+			className='sticky top-0 z-10 flex flex-col gap-2 border-b-1 bg-background/40 px-4 pt-4 pb-2 backdrop-blur-sm'
+			ref={registerHeader}
+		>
 			<div
 				className={cn(
 					'items-center gap-2',
@@ -84,14 +92,25 @@ function PageLayoutContent({ children, className }: PageLayoutContentProps) {
 export function PageLayout({ children }: PageLayoutProps) {
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollRef.current, [])
+	const { ref: headerRef, height: headerHeight } =
+		useElementSize<HTMLDivElement>()
 
 	return (
 		<PageLayoutScrollContext.Provider value={getScrollElement}>
-			<div className='scrollbar-track-transparent relative h-full w-full'>
-				<div className='flex h-full flex-col overflow-auto' ref={scrollRef}>
-					{children}
+			<PageLayoutHeaderRegistrationContext.Provider value={headerRef}>
+				<div
+					className='scrollbar-track-transparent relative h-full w-full'
+					style={
+						{
+							'--page-layout-header-height': `${headerHeight}px`
+						} as CSSProperties
+					}
+				>
+					<div className='flex h-full flex-col overflow-auto' ref={scrollRef}>
+						{children}
+					</div>
 				</div>
-			</div>
+			</PageLayoutHeaderRegistrationContext.Provider>
 		</PageLayoutScrollContext.Provider>
 	)
 }

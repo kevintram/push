@@ -980,7 +980,8 @@ describe('masonry-backed page feeds', () => {
 		const scopeBar = screen.getByTestId('review-queue-scope-bar')
 		const focusedLayout = screen.getByTestId('focused-practice-layout')
 
-		expect(scopeBar.closest('.sticky')).toBeNull()
+		expect(scopeBar.closest('.sticky')).toBe(scopeBar)
+		expect(scopeBar.className).toContain('sticky')
 		expect(scopeBar).toContainElement(
 			screen.getByRole('tab', { name: 'Focused' })
 		)
