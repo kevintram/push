@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import { Layers, Loader2, Sunset } from 'lucide-react'
-import { type ReactNode, useMemo } from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { ReviewCardPageLayout } from '~/app/components/ReviewCardPageLayout'
 import { Button } from '~/components/ui/button'
@@ -15,12 +15,15 @@ import {
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useReviewCardQueuePage } from '~/features/review-cards/api/getReviewCardQueue'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
+import { RetireReviewCardDialog } from '~/features/review-cards/components/RetireReviewCardDialog'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import { groupReviewCardQueueByActionDay } from '~/features/review-cards/utils/groupReviewCardQueueByActionDay'
 import { groupReviewCardQueueByCreatedDay } from '~/features/review-cards/utils/groupReviewCardQueueByCreatedDay'
+import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
 import { useCreateReview } from '~/features/reviews/api/createReview'
+import { cn } from '~/lib/utils'
 import { useWeekStart } from '~/stores/WeekStartContext'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 
@@ -60,6 +63,7 @@ export function FlashcardsPage({
 	const items = queuePage?.items ?? []
 	const createReviewMutation = useCreateReview()
 	const updateReviewCardMutation = useUpdateReviewCard()
+	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
 	const tabOptions = useMemo(
 		() => [
 			{
@@ -117,7 +121,7 @@ export function FlashcardsPage({
 			groupReviewCardQueueByCreatedDay(items, weekStartDay, queuePage?.as_of),
 		[items, queuePage?.as_of, weekStartDay]
 	)
-	const retireLabel = activeCard?.retired ? 'Restore' : 'Retire'
+	const retireLabel = 'Retire'
 	const retireAriaLabel = activeCard?.retired
 		? 'Return this item to review queue'
 		: 'Retire this item'
@@ -129,6 +133,14 @@ export function FlashcardsPage({
 	} else if (activeCard?.retired) {
 		retireIcon = <Sunset className='h-4 w-4 text-orange-500' />
 	}
+
+	useEffect(() => {
+		if (activeCard?.id == null) {
+			setIsRetireDialogOpen(false)
+			return
+		}
+		setIsRetireDialogOpen(false)
+	}, [activeCard?.id])
 
 	async function rateCard(rating: 'miss' | 'hard' | 'good' | 'easy') {
 		if (!activeCard) return
@@ -143,16 +155,40 @@ export function FlashcardsPage({
 		}
 	}
 
-	async function toggleRetired() {
+	async function confirmToggleRetired() {
 		if (!activeCard) return
 		try {
 			await updateReviewCardMutation.mutateAsync({
 				id: activeCard.id,
 				retired: !activeCard.retired
 			})
+			setIsRetireDialogOpen(false)
 		} catch {
 			toast.error('Failed to update review card')
 		}
+	}
+
+	async function toggleRetired() {
+		if (!activeCard) return
+		if (!activeCard.retired && hasScheduledDueReviews(activeCard)) {
+			setIsRetireDialogOpen(true)
+			return
+		}
+		await confirmToggleRetired()
+	}
+
+	function handleSeeReviews() {
+		if (!activeCard) return
+		setIsRetireDialogOpen(false)
+		navigate({
+			to: '/review-cards/$reviewCardId',
+			params: { reviewCardId: activeCard.id.toString() },
+			search: { tab: 'reviews' }
+		})
+	}
+
+	function handleConfirmRetired() {
+		confirmToggleRetired().catch(() => {})
 	}
 
 	let content: ReactNode
@@ -214,6 +250,9 @@ export function FlashcardsPage({
 						<Button
 							aria-label={retireAriaLabel}
 							aria-pressed={activeCard.retired}
+							className={cn(
+								activeCard.retired && 'bg-muted text-foreground hover:bg-muted'
+							)}
 							disabled={updateReviewCardMutation.isPending}
 							onClick={() => toggleRetired()}
 							variant='ghost'
@@ -258,6 +297,13 @@ export function FlashcardsPage({
 			title='Flashcards'
 		>
 			{content}
+			<RetireReviewCardDialog
+				isPending={updateReviewCardMutation.isPending}
+				onConfirm={handleConfirmRetired}
+				onOpenChange={setIsRetireDialogOpen}
+				onSeeReviews={handleSeeReviews}
+				open={isRetireDialogOpen}
+			/>
 		</ReviewCardPageLayout>
 	)
 }

@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import {
 	AlertTriangle,
 	Anvil,
@@ -72,7 +73,9 @@ import { reviewCardKeys } from '../api/queryKeys'
 import { useUpdateReviewCard } from '../api/updateReviewCard'
 import type { ReviewCard as ReviewCardModel } from '../types/review-card.types'
 import type { ReviewCardStatusBadge } from '../types/status-badge.types'
+import { hasScheduledDueReviews } from '../utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '../utils/orderReviewCardStatusBadges'
+import { RetireReviewCardDialog } from './RetireReviewCardDialog'
 
 const MIN_HEIGHT = 96
 const CARD_HEIGHT_GUESS_PANEL_MIN = 300
@@ -205,6 +208,8 @@ export function ReviewCard({
 	const [guessSecondaryText, setGuessSecondaryText] = useState('')
 	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
+	const navigate = useNavigate()
 
 	const lastReviewed = useMemo(
 		() =>
@@ -252,6 +257,7 @@ export function ReviewCard({
 		setRevealPanelTab(null)
 		setGuessSecondaryText('')
 		setIsRevealPanelCopied(false)
+		setIsRetireDialogOpen(false)
 	}, [reviewCard.id])
 	useEffect(() => {
 		if (!hidesSecondary) {
@@ -302,16 +308,34 @@ export function ReviewCard({
 		})
 	}, [queryClient, reviewCard.id])
 
+	const confirmRetiredToggle = useCallback(() => {
+		updateReviewCard({
+			id: reviewCard.id,
+			retired: !reviewCard.retired
+		})
+		setIsRetireDialogOpen(false)
+	}, [reviewCard.id, reviewCard.retired, updateReviewCard])
+
 	const handleRetiredToggle = useCallback(
 		(event: MouseEvent) => {
 			event.stopPropagation()
-			updateReviewCard({
-				id: reviewCard.id,
-				retired: !reviewCard.retired
-			})
+			if (!reviewCard.retired && hasScheduledDueReviews(reviewCard)) {
+				setIsRetireDialogOpen(true)
+				return
+			}
+			confirmRetiredToggle()
 		},
-		[reviewCard.id, reviewCard.retired, updateReviewCard]
+		[confirmRetiredToggle, reviewCard]
 	)
+
+	const handleSeeReviews = useCallback(() => {
+		setIsRetireDialogOpen(false)
+		navigate({
+			to: '/review-cards/$reviewCardId',
+			params: { reviewCardId: reviewCard.id.toString() },
+			search: { tab: 'reviews' }
+		})
+	}, [navigate, reviewCard.id])
 
 	const handleDeleteReviewCard = useCallback(async () => {
 		if (deleteReviewCardMutation.isPending) return
@@ -935,6 +959,13 @@ export function ReviewCard({
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+			<RetireReviewCardDialog
+				isPending={isUpdatingReviewCard}
+				onConfirm={confirmRetiredToggle}
+				onOpenChange={setIsRetireDialogOpen}
+				onSeeReviews={handleSeeReviews}
+				open={isRetireDialogOpen}
+			/>
 		</Card>
 	)
 }
