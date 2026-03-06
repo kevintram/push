@@ -164,3 +164,94 @@ class TestReviewQueueEndpoint:
         assert [item["card"]["prompt"] for item in new_response.json()["items"]] == [
             "Active new card"
         ]
+
+    async def test_review_card_queue_summary_returns_aggregate_counts(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Queue summary")
+        overdue_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Overdue practice",
+        )
+        today_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Today practice",
+        )
+        soon_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Soon practice",
+        )
+        _outside_window_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Later practice",
+        )
+        await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="New practice",
+        )
+        await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Retired new practice",
+            retired=True,
+        )
+        completed_new_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Reviewed practice",
+        )
+        other_type_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="flashcard",
+            prompt="Other type flashcard",
+        )
+
+        for card_id, scheduled_at in [
+            (overdue_card["id"], date.today() - timedelta(days=2)),
+            (today_card["id"], date.today()),
+            (soon_card["id"], date.today() + timedelta(days=3)),
+            (_outside_window_card["id"], date.today() + timedelta(days=9)),
+            (other_type_card["id"], date.today() - timedelta(days=1)),
+        ]:
+            response = await test_client.post(
+                "/reviews/",
+                json={
+                    "review_card_id": card_id,
+                    "scheduled_at": str(scheduled_at),
+                },
+            )
+            assert response.status_code == 200
+
+        completed_review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": completed_new_card["id"],
+                "completed_at": str(date.today()),
+            },
+        )
+        assert completed_review_response.status_code == 200
+
+        response = await test_client.get("/review-cards/queue-summary/?type=practice")
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "overdue_count": 1,
+            "due_today_count": 1,
+            "due_next_seven_days_count": 1,
+            "new_count": 5,
+            "as_of": str(date.today()),
+        }

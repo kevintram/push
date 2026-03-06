@@ -78,6 +78,14 @@ class ReviewCardQueuePage(BaseModel):
     as_of: date
 
 
+class ReviewCardQueueSummary(BaseModel):
+    overdue_count: int
+    due_today_count: int
+    due_next_seven_days_count: int
+    new_count: int
+    as_of: date
+
+
 class ReviewCardReviewCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 

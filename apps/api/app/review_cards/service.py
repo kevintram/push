@@ -1,14 +1,19 @@
 """Review cards business logic and queue logic."""
 
+from datetime import timedelta
 from typing import Literal
 
-from sqlalchemy import delete, desc, exists, select
+from sqlalchemy import case, delete, desc, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.exceptions import NotFoundError
 from app.models import Review, ReviewCard, ReviewCardTypeAssignment, Topic
-from app.schemas.review_cards import ReviewCardQueueItem, ReviewCardQueuePage
+from app.schemas.review_cards import (
+    ReviewCardQueueItem,
+    ReviewCardQueuePage,
+    ReviewCardQueueSummary,
+)
 from app.utils.current_date import get_current_date
 
 
@@ -260,3 +265,79 @@ async def list_review_card_queue(
         items = items[:resolved_limit]
 
     return ReviewCardQueuePage(items=items, as_of=as_of)
+
+
+async def get_review_card_queue_summary(
+    session: AsyncSession,
+    user_id: str,
+    *,
+    card_type: str,
+) -> ReviewCardQueueSummary:
+    as_of = get_current_date()
+    seven_days_out = as_of + timedelta(days=7)
+
+    due_summary_stmt = (
+        select(
+            func.coalesce(
+                func.sum(case((Review.scheduled_at < as_of, 1), else_=0)),
+                0,
+            ).label("overdue_count"),
+            func.coalesce(
+                func.sum(case((Review.scheduled_at == as_of, 1), else_=0)),
+                0,
+            ).label("due_today_count"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            (Review.scheduled_at > as_of)
+                            & (Review.scheduled_at <= seven_days_out),
+                            1,
+                        ),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("due_next_seven_days_count"),
+        )
+        .select_from(Review)
+        .join(ReviewCard, Review.review_card_id == ReviewCard.id)
+        .where(
+            Review.user_id == user_id,
+            Review.review_card_id.isnot(None),
+            Review.completed_at.is_(None),
+            Review.scheduled_at.isnot(None),
+            ReviewCard.type == card_type,
+            ReviewCard.retired.is_(False),
+        )
+    )
+
+    due_summary = (await session.execute(due_summary_stmt)).one()
+
+    completed_review_exists = (
+        select(Review.id)
+        .where(
+            Review.review_card_id == ReviewCard.id,
+            Review.completed_at.isnot(None),
+        )
+        .limit(1)
+    )
+    new_count_stmt = (
+        select(func.count())
+        .select_from(ReviewCard)
+        .where(
+            ReviewCard.user_id == user_id,
+            ReviewCard.type == card_type,
+            ReviewCard.retired.is_(False),
+            ~exists(completed_review_exists),
+        )
+    )
+    new_count = (await session.execute(new_count_stmt)).scalar_one()
+
+    return ReviewCardQueueSummary(
+        overdue_count=due_summary.overdue_count,
+        due_today_count=due_summary.due_today_count,
+        due_next_seven_days_count=due_summary.due_next_seven_days_count,
+        new_count=new_count,
+        as_of=as_of,
+    )
