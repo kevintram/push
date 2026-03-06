@@ -65,18 +65,24 @@ function ReviewSidebarMenuItem({
 						aria-hidden='true'
 						className='ml-auto flex shrink-0 items-center gap-1'
 					>
-						<CountBadge
-							className='h-4 min-w-4 bg-red-600 px-1 text-[10px] text-white dark:bg-red-400'
-							count={overdueCount}
-						/>
-						<CountBadge
-							className='h-4 min-w-4 bg-transparent px-1 text-[10px] text-blue-600 dark:text-blue-400'
-							count={dueTodayCount}
-						/>
-						<CountBadge
-							className='h-4 min-w-4 px-1 text-[10px]'
-							count={newCount}
-						/>
+						{overdueCount > 0 && (
+							<CountBadge
+								className='h-4 min-w-4 bg-red-600 px-1 text-[10px] text-white dark:bg-red-400'
+								count={overdueCount}
+							/>
+						)}
+						{dueTodayCount > 0 && (
+							<CountBadge
+								className='h-4 min-w-4 bg-transparent px-1 text-[10px] text-blue-600 dark:text-blue-400'
+								count={dueTodayCount}
+							/>
+						)}
+						{newCount > 0 && (
+							<CountBadge
+								className='h-4 min-w-4 px-1 text-[10px]'
+								count={newCount}
+							/>
+						)}
 					</span>
 				</span>
 			</SidebarMenuButton>
