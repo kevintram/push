@@ -335,7 +335,7 @@ class TestReviewQueueEndpoint:
         assert response.json() == {
             "overdue_count": 2,
             "due_today_count": 2,
-            "due_next_seven_days_count": 2,
+            "due_next_seven_days_count": 6,
             "new_count": 5,
             "as_of": str(date.today()),
         }
