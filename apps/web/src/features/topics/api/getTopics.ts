@@ -16,6 +16,9 @@ export async function getTopics(
 	if (params.parent_id !== undefined) {
 		searchParams.append('parent_id', String(params.parent_id))
 	}
+	if (params.sort !== undefined) {
+		searchParams.append('sort', params.sort)
+	}
 	if (params.order !== undefined) {
 		searchParams.append('order', params.order)
 	}

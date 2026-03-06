@@ -25,10 +25,20 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	SidebarMenuSub,
+	SidebarMenuSubButton,
+	SidebarMenuSubItem,
 	useSidebar
 } from '~/components/ui/sidebar'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
+import { useTopics } from '~/features/topics/api/getTopics'
+
+const ROOT_TOPICS_LIMIT = 10
+
+function getTopicLabel(title: string) {
+	return title.trim() || 'Untitled topic'
+}
 
 type ReviewSidebarItem = {
 	title: string
@@ -94,6 +104,11 @@ export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
 	const { toggleSidebar } = useSidebar()
+	const { data: rootTopics = [] } = useTopics({
+		root: true,
+		sort: 'title',
+		order: 'asc'
+	})
 
 	const reviewItems: Array<ReviewSidebarItem> = [
 		{
@@ -123,7 +138,8 @@ export function AppSidebar() {
 			title: 'Topics',
 			url: '/topics',
 			icon: Library,
-			isActive: (pathname: string) => pathname === '/topics'
+			isActive: (pathname: string) =>
+				pathname === '/topics' || pathname.startsWith('/topics/')
 		}
 	]
 
@@ -180,7 +196,7 @@ export function AppSidebar() {
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{libraryItems.map(item => {
+							{activityItems.map(item => {
 								const isActive = item.isActive(location.pathname)
 								return (
 									<SidebarMenuItem key={item.title}>
@@ -202,8 +218,9 @@ export function AppSidebar() {
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{activityItems.map(item => {
+							{libraryItems.map(item => {
 								const isActive = item.isActive(location.pathname)
+								const isTopicsItem = item.url === '/topics'
 								return (
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
@@ -214,6 +231,30 @@ export function AppSidebar() {
 											<item.icon />
 											<span>{item.title}</span>
 										</SidebarMenuButton>
+										{isTopicsItem && rootTopics.length > 0 && (
+											<SidebarMenuSub>
+												{rootTopics.slice(0, ROOT_TOPICS_LIMIT).map(topic => (
+													<SidebarMenuSubItem key={topic.id}>
+														<SidebarMenuSubButton
+															isActive={
+																location.pathname === `/topics/${topic.id}`
+															}
+															render={
+																<Link
+																	params={{
+																		topicId: topic.id.toString()
+																	}}
+																	search={{ tab: 'subtopics' }}
+																	to='/topics/$topicId'
+																/>
+															}
+														>
+															<span>{getTopicLabel(topic.title)}</span>
+														</SidebarMenuSubButton>
+													</SidebarMenuSubItem>
+												))}
+											</SidebarMenuSub>
+										)}
 									</SidebarMenuItem>
 								)
 							})}
