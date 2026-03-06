@@ -1,12 +1,17 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import {
 	FlashcardsPage,
 	type FlashcardsScope,
 	type FlashcardsTab
 } from '~/app/pages/FlashcardsPage'
+import {
+	getStoredReviewQueueViewPreference,
+	persistReviewQueueViewPreference
+} from '~/features/review-cards/reviewQueueViewPreferences'
 
 type FlashcardsRouteSearch = {
-	tab: FlashcardsTab
+	tab?: FlashcardsTab
 	scope?: FlashcardsScope
 }
 
@@ -21,15 +26,9 @@ function isFlashcardsScope(value: unknown): value is FlashcardsScope {
 export function validateFlashcardsSearch(
 	search: Record<string, unknown>
 ): FlashcardsRouteSearch {
-	const tab = isFlashcardsTab(search.tab) ? search.tab : 'due'
-
-	if (tab === 'new') {
-		return { tab }
-	}
-
 	return {
-		tab,
-		scope: isFlashcardsScope(search.scope) ? search.scope : 'focused'
+		tab: isFlashcardsTab(search.tab) ? search.tab : undefined,
+		scope: isFlashcardsScope(search.scope) ? search.scope : undefined
 	}
 }
 
@@ -41,14 +40,24 @@ export const Route = createFileRoute('/_main/flashcards')({
 function FlashcardsRoute() {
 	const navigate = useNavigate()
 	const search = Route.useSearch()
+	const storedView = getStoredReviewQueueViewPreference('flashcards')
+	const activeTab = search.tab ?? storedView.tab
+	const dueScope = search.scope ?? storedView.dueScope
+
+	useEffect(() => {
+		persistReviewQueueViewPreference('flashcards', {
+			tab: activeTab,
+			dueScope
+		})
+	}, [activeTab, dueScope])
 
 	return (
 		<FlashcardsPage
-			activeTab={search.tab}
+			activeTab={activeTab}
 			onActiveTabChange={tab =>
 				navigate({
 					to: '/flashcards',
-					search: tab === 'new' ? { tab } : { tab, scope: 'focused' }
+					search: tab === 'new' ? { tab } : { tab, scope: dueScope }
 				})
 			}
 			onScopeChange={scope =>
@@ -57,7 +66,7 @@ function FlashcardsRoute() {
 					search: { tab: 'due', scope }
 				})
 			}
-			scope={search.scope}
+			scope={dueScope}
 		/>
 	)
 }
