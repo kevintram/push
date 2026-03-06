@@ -156,7 +156,7 @@ class TestReviewQueueEndpoint:
         assert len(items) == 1
         assert items[0]["card"]["type"] == "flashcard"
 
-    async def test_review_queue_excludes_retired_cards_from_due_and_new_tabs(
+    async def test_review_queue_includes_retired_scheduled_cards_in_due_tab_only(
         self,
         test_client: AsyncClient,
     ):
@@ -196,7 +196,9 @@ class TestReviewQueueEndpoint:
 
         assert due_response.status_code == 200
         assert new_response.status_code == 200
-        assert due_response.json()["items"] == []
+        assert [item["card"]["prompt"] for item in due_response.json()["items"]] == [
+            "Retired due card"
+        ]
         assert [item["card"]["prompt"] for item in new_response.json()["items"]] == [
             "Active new card"
         ]
@@ -230,6 +232,13 @@ class TestReviewQueueEndpoint:
             topic["id"],
             card_type="practice",
             prompt="Later practice",
+        )
+        retired_overdue_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Retired overdue practice",
+            retired=True,
         )
         hazy_overdue_card = await _create_card(
             test_client,
@@ -280,6 +289,7 @@ class TestReviewQueueEndpoint:
             (today_card["id"], date.today()),
             (soon_card["id"], date.today() + timedelta(days=3)),
             (_outside_window_card["id"], date.today() + timedelta(days=9)),
+            (retired_overdue_card["id"], date.today() - timedelta(days=1)),
             (other_type_card["id"], date.today() - timedelta(days=1)),
         ]:
             response = await test_client.post(
@@ -333,7 +343,7 @@ class TestReviewQueueEndpoint:
 
         assert response.status_code == 200
         assert response.json() == {
-            "overdue_count": 2,
+            "overdue_count": 3,
             "due_today_count": 2,
             "due_next_seven_days_count": 2,
             "new_count": 5,
