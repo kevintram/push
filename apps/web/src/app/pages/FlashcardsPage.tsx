@@ -100,7 +100,7 @@ export function FlashcardsPage({
 
 		return (
 			<div className='flex items-center gap-2 text-muted-foreground text-sm'>
-				<span>Actionable in next 7 days</span>
+				<span>Due in next 7d</span>
 				<CountBadge count={dueNextSevenDaysCount} />
 			</div>
 		)
