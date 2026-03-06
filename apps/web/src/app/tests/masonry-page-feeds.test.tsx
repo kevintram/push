@@ -428,10 +428,23 @@ describe('masonry-backed page feeds', () => {
 			data: [
 				{
 					queue_type: 'due',
-					card: { ...reviewCard, id: 21, prompt: 'Flashcard prompt' },
+					card: { ...reviewCard, id: 21, prompt: 'Today flashcard prompt' },
 					review_id: null,
 					scheduled_at: '2026-03-05',
-					days_until_due: 0
+					days_until_due: 0,
+					days_until_hazy: null
+				},
+				{
+					queue_type: 'due',
+					card: {
+						...reviewCard,
+						id: 22,
+						prompt: 'Tomorrow flashcard prompt'
+					},
+					review_id: null,
+					scheduled_at: '2026-03-06',
+					days_until_due: 1,
+					days_until_hazy: null
 				}
 			],
 			isLoading: false
@@ -440,12 +453,13 @@ describe('masonry-backed page feeds', () => {
 		render(<FlashcardsHarness />)
 
 		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
-		expect(screen.getByText('Flashcard prompt')).toBeInTheDocument()
+		expect(screen.getByText('Today flashcard prompt')).toBeInTheDocument()
 
 		await user.click(screen.getByRole('tab', { name: 'All' }))
 
-		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
-		expect(screen.getByText('This week')).toBeInTheDocument()
+		expect(screen.getAllByTestId('masonry-layout')).toHaveLength(2)
+		expect(screen.getByText('Today')).toBeInTheDocument()
+		expect(screen.getByText('Tomorrow')).toBeInTheDocument()
 	})
 
 	it('anchors actionable week sections to the queue as_of date', () => {
@@ -466,7 +480,7 @@ describe('masonry-backed page feeds', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-09',
-							days_until_due: 1,
+							days_until_due: 2,
 							days_until_hazy: null
 						}
 					],
@@ -478,7 +492,7 @@ describe('masonry-backed page feeds', () => {
 			render(<FlashcardsHarness initialScope='all' />)
 
 			expect(screen.getByText('Next week')).toBeInTheDocument()
-			expect(screen.queryByText('This week')).not.toBeInTheDocument()
+			expect(screen.queryByText('Tuesday')).not.toBeInTheDocument()
 		} finally {
 			vi.useRealTimers()
 		}
@@ -521,10 +535,19 @@ describe('masonry-backed page feeds', () => {
 			data: [
 				{
 					queue_type: 'due',
-					card: { ...reviewCard, id: 31, prompt: 'Practice prompt' },
+					card: { ...reviewCard, id: 31, prompt: 'Today practice prompt' },
 					review_id: null,
 					scheduled_at: '2026-03-05',
-					days_until_due: 0
+					days_until_due: 0,
+					days_until_hazy: null
+				},
+				{
+					queue_type: 'due',
+					card: { ...reviewCard, id: 32, prompt: 'Tomorrow practice prompt' },
+					review_id: null,
+					scheduled_at: '2026-03-06',
+					days_until_due: 1,
+					days_until_hazy: null
 				}
 			],
 			isLoading: false
@@ -532,13 +555,14 @@ describe('masonry-backed page feeds', () => {
 
 		render(<PracticeHarness />)
 
-		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
-		expect(screen.getByText('This week')).toBeInTheDocument()
+		expect(screen.getAllByTestId('masonry-layout')).toHaveLength(2)
+		expect(screen.getByText('Today')).toBeInTheDocument()
+		expect(screen.getByText('Tomorrow')).toBeInTheDocument()
 
 		await user.click(screen.getByRole('tab', { name: 'Focused' }))
 
 		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
-		expect(screen.getByText('Practice prompt')).toBeInTheDocument()
+		expect(screen.getByText('Today practice prompt')).toBeInTheDocument()
 		expect(screen.getByTestId('focused-practice-layout')).toBeInTheDocument()
 		expect(screen.queryByText('Focused Queue')).not.toBeInTheDocument()
 		expect(screen.queryByText('Keep this set warm')).not.toBeInTheDocument()
@@ -1016,8 +1040,20 @@ describe('masonry-backed page feeds', () => {
 					card: {
 						...reviewCard,
 						id: 52,
-						prompt: 'Older practice',
+						prompt: 'Earlier this week practice',
 						inserted_at: '2026-03-03T12:00:00.000Z'
+					},
+					review_id: null,
+					scheduled_at: null,
+					days_until_due: null
+				},
+				{
+					queue_type: 'new',
+					card: {
+						...reviewCard,
+						id: 53,
+						prompt: 'Last week practice',
+						inserted_at: '2026-02-26T12:00:00.000Z'
 					},
 					review_id: null,
 					scheduled_at: null,
@@ -1035,9 +1071,11 @@ describe('masonry-backed page feeds', () => {
 			).not.toBeInTheDocument()
 			expect(screen.queryByRole('tab', { name: 'All' })).not.toBeInTheDocument()
 			expect(screen.getAllByText(/^Today/)).toHaveLength(2)
-			expect(screen.getByText(/^2d ago/)).toBeInTheDocument()
+			expect(screen.getByText('Tuesday')).toBeInTheDocument()
+			expect(screen.getByText('Last week')).toBeInTheDocument()
 			expect(screen.getByText('Today practice')).toBeInTheDocument()
-			expect(screen.getByText('Older practice')).toBeInTheDocument()
+			expect(screen.getByText('Earlier this week practice')).toBeInTheDocument()
+			expect(screen.getByText('Last week practice')).toBeInTheDocument()
 		} finally {
 			vi.useRealTimers()
 		}

@@ -15,9 +15,9 @@ import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import type { ReviewCardQueueItem } from '~/features/review-cards/types/review-card.types'
-import { groupReviewCardQueueByActionWeek } from '~/features/review-cards/utils/groupReviewCardQueueByActionWeek'
+import { groupReviewCardQueueByActionDay } from '~/features/review-cards/utils/groupReviewCardQueueByActionDay'
+import { groupReviewCardQueueByCreatedDay } from '~/features/review-cards/utils/groupReviewCardQueueByCreatedDay'
 import { useWeekStart } from '~/stores/WeekStartContext'
-import { groupByDate } from '~/utils/groupByDate'
 import { useMediaQuery } from '~/utils/useMediaQuery'
 
 function groupFocusedPracticeRows(
@@ -132,7 +132,7 @@ export function PracticePage({
 
 	const dueSections = useMemo(
 		() =>
-			groupReviewCardQueueByActionWeek(items, weekStartDay, queuePage?.as_of),
+			groupReviewCardQueueByActionDay(items, weekStartDay, queuePage?.as_of),
 		[items, queuePage?.as_of, weekStartDay]
 	)
 	const focusedRows = useMemo(
@@ -141,13 +141,8 @@ export function PracticePage({
 	)
 	const newSections = useMemo(
 		() =>
-			groupByDate(
-				items.map(item => ({
-					item,
-					date: item.card.inserted_at
-				}))
-			),
-		[items]
+			groupReviewCardQueueByCreatedDay(items, weekStartDay, queuePage?.as_of),
+		[items, queuePage?.as_of, weekStartDay]
 	)
 
 	let content: ReactNode
