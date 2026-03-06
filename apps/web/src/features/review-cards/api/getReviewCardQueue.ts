@@ -54,6 +54,13 @@ export async function getReviewCardQueue(
 	return v.parse(v.array(ReviewCardQueueItemSchema), page.items)
 }
 
+export function useReviewCardQueuePage(params: ReviewCardQueueParams) {
+	return useQuery({
+		queryKey: reviewCardKeys.queue(params),
+		queryFn: () => getReviewCardQueuePage(params)
+	})
+}
+
 export function useReviewCardQueue(params: ReviewCardQueueParams) {
 	return useQuery({
 		queryKey: reviewCardKeys.queue(params),

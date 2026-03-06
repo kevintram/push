@@ -13,13 +13,14 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQueue'
+import { useReviewCardQueuePage } from '~/features/review-cards/api/getReviewCardQueue'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
-import { groupReviewCardQueueByDueDate } from '~/features/review-cards/utils/groupReviewCardQueueByDueDate'
+import { groupReviewCardQueueByActionWeek } from '~/features/review-cards/utils/groupReviewCardQueueByActionWeek'
 import { useCreateReview } from '~/features/reviews/api/createReview'
+import { useWeekStart } from '~/stores/WeekStartContext'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { groupByDate } from '~/utils/groupByDate'
 
@@ -45,16 +46,18 @@ export function FlashcardsPage({
 	onScopeChange
 }: FlashcardsPageProps) {
 	const navigate = useNavigate()
+	const { weekStartDay } = useWeekStart()
 	const isFocusedDueView = activeTab === 'due' && scope === 'focused'
 	const { dueNextSevenDaysCount, dueTodayCount, newCount, overdueCount } =
 		useReviewCardQueueCounts({
 			type: 'flashcard'
 		})
-	const { data: items = [], isLoading } = useReviewCardQueue({
+	const { data: queuePage, isLoading } = useReviewCardQueuePage({
 		type: 'flashcard',
 		tab: activeTab,
 		focused: activeTab === 'due' ? scope === 'focused' : undefined
 	})
+	const items = queuePage?.items ?? []
 	const createReviewMutation = useCreateReview()
 	const updateReviewCardMutation = useUpdateReviewCard()
 	const tabOptions = useMemo(
@@ -97,7 +100,7 @@ export function FlashcardsPage({
 
 		return (
 			<div className='flex items-center gap-2 text-muted-foreground text-sm'>
-				<span>Due in next 7 days</span>
+				<span>Actionable in next 7 days</span>
 				<CountBadge count={dueNextSevenDaysCount} />
 			</div>
 		)
@@ -105,8 +108,9 @@ export function FlashcardsPage({
 
 	const activeCard = useMemo(() => items[0]?.card ?? null, [items])
 	const dueSections = useMemo(
-		() => groupReviewCardQueueByDueDate(items),
-		[items]
+		() =>
+			groupReviewCardQueueByActionWeek(items, weekStartDay, queuePage?.as_of),
+		[items, queuePage?.as_of, weekStartDay]
 	)
 	const newSections = useMemo(
 		() =>

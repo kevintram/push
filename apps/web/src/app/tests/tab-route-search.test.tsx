@@ -15,6 +15,23 @@ const useTopicsMock = vi.fn()
 const useReviewCardsMock = vi.fn()
 const useReviewCardQueueMock = vi.fn()
 
+function normalizeQueuePageResult(result: {
+	data?: unknown
+	isLoading?: boolean
+}) {
+	if (Array.isArray(result.data)) {
+		return {
+			...result,
+			data: {
+				items: result.data,
+				as_of: '2026-03-05'
+			}
+		}
+	}
+
+	return result
+}
+
 const PRACTICE_VIEW_PREFERENCES_STORAGE_KEY = '3gulp-practice-view-preferences'
 const FLASHCARDS_VIEW_PREFERENCES_STORAGE_KEY =
 	'3gulp-flashcards-view-preferences'
@@ -86,13 +103,22 @@ vi.mock('~/features/review-cards/api/getReviewCards', () => ({
 
 vi.mock('~/features/review-cards/api/getReviewCardQueue', () => ({
 	useReviewCardQueue: (...args: Array<unknown>) =>
-		useReviewCardQueueMock(...args)
+		useReviewCardQueueMock(...args),
+	useReviewCardQueuePage: (...args: Array<unknown>) =>
+		normalizeQueuePageResult(useReviewCardQueueMock(...args))
 }))
 
 vi.mock('~/stores/FlashcardModeContext', () => ({
 	useFlashcardMode: () => ({
 		hidesPrimary: false,
 		hidesSecondary: false
+	})
+}))
+
+vi.mock('~/stores/WeekStartContext', () => ({
+	useWeekStart: () => ({
+		weekStartDay: 1,
+		setWeekStartDay: vi.fn()
 	})
 }))
 

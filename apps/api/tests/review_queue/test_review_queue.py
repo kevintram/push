@@ -4,6 +4,8 @@ from datetime import date, timedelta
 
 from httpx import AsyncClient
 
+from app.review_cards import service as review_card_service
+
 
 async def _create_topic(test_client: AsyncClient, title: str) -> dict:
     response = await test_client.post(
@@ -40,6 +42,7 @@ class TestReviewQueueEndpoint:
     async def test_review_queue_returns_due_practice_items(
         self,
         test_client: AsyncClient,
+        monkeypatch,
     ):
         topic = await _create_topic(test_client, "Queue topic")
         due_card = await _create_card(
@@ -54,6 +57,12 @@ class TestReviewQueueEndpoint:
             card_type="flashcard",
             prompt="Other type card",
         )
+        hazy_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Hazy practice card",
+        )
 
         due_review_response = await test_client.post(
             "/reviews/",
@@ -65,17 +74,44 @@ class TestReviewQueueEndpoint:
         assert due_review_response.status_code == 200
         due_review = due_review_response.json()
 
+        completed_review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": hazy_card["id"],
+                "completed_at": str(date.today() - timedelta(days=2)),
+                "rating": "good",
+            },
+        )
+        assert completed_review_response.status_code == 200
+
+        monkeypatch.setattr(
+            review_card_service,
+            "get_days_until_hazy",
+            lambda review_card, *, today=None: (
+                3 if review_card.id == hazy_card["id"] else None
+            ),
+        )
+
         queue_response = await test_client.get("/review-queue/?type=practice&tab=due")
 
         assert queue_response.status_code == 200
         payload = queue_response.json()
         queue = payload["items"]
         assert payload["as_of"] == str(date.today())
-        assert len(queue) == 1
-        assert queue[0]["queue_type"] == "due"
-        assert queue[0]["review_id"] == due_review["id"]
-        assert queue[0]["card"]["id"] == due_card["id"]
-        assert queue[0]["card"]["type"] == "practice"
+        assert len(queue) == 2
+
+        due_item = next(item for item in queue if item["queue_type"] == "due")
+        assert due_item["review_id"] == due_review["id"]
+        assert due_item["card"]["id"] == due_card["id"]
+        assert due_item["card"]["type"] == "practice"
+        assert due_item["days_until_hazy"] is None
+
+        hazy_item = next(item for item in queue if item["queue_type"] == "hazy")
+        assert hazy_item["review_id"] is None
+        assert hazy_item["scheduled_at"] is None
+        assert hazy_item["card"]["id"] == hazy_card["id"]
+        assert hazy_item["card"]["type"] == "practice"
+        assert hazy_item["days_until_hazy"] == 3
 
     async def test_review_queue_returns_new_cards_and_respects_focused_limit(
         self,
@@ -168,6 +204,7 @@ class TestReviewQueueEndpoint:
     async def test_review_card_queue_summary_returns_aggregate_counts(
         self,
         test_client: AsyncClient,
+        monkeypatch,
     ):
         topic = await _create_topic(test_client, "Queue summary")
         overdue_card = await _create_card(
@@ -193,6 +230,24 @@ class TestReviewQueueEndpoint:
             topic["id"],
             card_type="practice",
             prompt="Later practice",
+        )
+        hazy_overdue_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Hazy overdue practice",
+        )
+        hazy_today_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Hazy today practice",
+        )
+        hazy_soon_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Hazy soon practice",
         )
         await _create_card(
             test_client,
@@ -245,13 +300,42 @@ class TestReviewQueueEndpoint:
         )
         assert completed_review_response.status_code == 200
 
+        for card_id in [
+            hazy_overdue_card["id"],
+            hazy_today_card["id"],
+            hazy_soon_card["id"],
+        ]:
+            response = await test_client.post(
+                "/reviews/",
+                json={
+                    "review_card_id": card_id,
+                    "completed_at": str(date.today() - timedelta(days=2)),
+                    "rating": "good",
+                },
+            )
+            assert response.status_code == 200
+
+        monkeypatch.setattr(
+            review_card_service,
+            "_get_hazy_action_days",
+            lambda *, review_card_id, stability, last_reviewed_at, today=None: (
+                -1
+                if review_card_id == hazy_overdue_card["id"]
+                else 0
+                if review_card_id == hazy_today_card["id"]
+                else 3
+                if review_card_id == hazy_soon_card["id"]
+                else None
+            ),
+        )
+
         response = await test_client.get("/review-cards/queue-summary/?type=practice")
 
         assert response.status_code == 200
         assert response.json() == {
-            "overdue_count": 1,
-            "due_today_count": 1,
-            "due_next_seven_days_count": 1,
+            "overdue_count": 2,
+            "due_today_count": 2,
+            "due_next_seven_days_count": 2,
             "new_count": 5,
             "as_of": str(date.today()),
         }

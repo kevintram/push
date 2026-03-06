@@ -32,6 +32,23 @@ const useSearchAllMock = vi.fn()
 const createTopicAsyncMock = vi.fn()
 const updateReviewCardAsyncMock = vi.fn()
 
+function normalizeQueuePageResult(result: {
+	data?: unknown
+	isLoading?: boolean
+}) {
+	if (Array.isArray(result.data)) {
+		return {
+			...result,
+			data: {
+				items: result.data,
+				as_of: '2026-03-05'
+			}
+		}
+	}
+
+	return result
+}
+
 vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
@@ -95,7 +112,9 @@ vi.mock('~/features/review-cards/api/getReviewCards', () => ({
 
 vi.mock('~/features/review-cards/api/getReviewCardQueue', () => ({
 	useReviewCardQueue: (...args: Array<unknown>) =>
-		useReviewCardQueueMock(...args)
+		useReviewCardQueueMock(...args),
+	useReviewCardQueuePage: (...args: Array<unknown>) =>
+		normalizeQueuePageResult(useReviewCardQueueMock(...args))
 }))
 
 vi.mock('~/features/review-cards/hooks/useReviewCardQueueCounts', () => ({
@@ -144,6 +163,13 @@ vi.mock('~/stores/FlashcardModeContext', () => ({
 	})
 }))
 
+vi.mock('~/stores/WeekStartContext', () => ({
+	useWeekStart: () => ({
+		weekStartDay: 1,
+		setWeekStartDay: vi.fn()
+	})
+}))
+
 const topic = {
 	id: 1,
 	title: 'Algebra',
@@ -188,7 +214,8 @@ function buildPracticeQueueItems(count: number) {
 		},
 		review_id: null,
 		scheduled_at: '2026-03-05',
-		days_until_due: 0
+		days_until_due: 0,
+		days_until_hazy: null
 	}))
 }
 
@@ -418,7 +445,43 @@ describe('masonry-backed page feeds', () => {
 		await user.click(screen.getByRole('tab', { name: 'All' }))
 
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
-		expect(screen.getByText('Thursday, Mar 5')).toBeInTheDocument()
+		expect(screen.getByText('This week')).toBeInTheDocument()
+	})
+
+	it('anchors actionable week sections to the queue as_of date', () => {
+		vi.useFakeTimers()
+		vi.setSystemTime(new Date('2026-03-09T12:00:00.000Z'))
+
+		try {
+			useReviewCardQueueMock.mockReturnValue({
+				data: {
+					items: [
+						{
+							queue_type: 'due' as const,
+							card: {
+								...reviewCard,
+								id: 22,
+								type: 'flashcard',
+								prompt: 'Anchor flashcard'
+							},
+							review_id: null,
+							scheduled_at: '2026-03-09',
+							days_until_due: 1,
+							days_until_hazy: null
+						}
+					],
+					as_of: '2026-03-08'
+				},
+				isLoading: false
+			})
+
+			render(<FlashcardsHarness initialScope='all' />)
+
+			expect(screen.getByText('Next week')).toBeInTheDocument()
+			expect(screen.queryByText('This week')).not.toBeInTheDocument()
+		} finally {
+			vi.useRealTimers()
+		}
 	})
 
 	it('retires the focused flashcard from the rating action row', async () => {
@@ -470,7 +533,7 @@ describe('masonry-backed page feeds', () => {
 		render(<PracticeHarness />)
 
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
-		expect(screen.getByText('Thursday, Mar 5')).toBeInTheDocument()
+		expect(screen.getByText('This week')).toBeInTheDocument()
 
 		await user.click(screen.getByRole('tab', { name: 'Focused' }))
 
@@ -508,7 +571,8 @@ describe('masonry-backed page feeds', () => {
 							},
 							review_id: null,
 							scheduled_at: null,
-							days_until_due: null
+							days_until_due: null,
+							days_until_hazy: null
 						})),
 						isLoading: false
 					}
@@ -521,70 +585,80 @@ describe('masonry-backed page feeds', () => {
 							card: { ...reviewCard, id: 81, prompt: 'Overdue practice A' },
 							review_id: null,
 							scheduled_at: '2026-03-03',
-							days_until_due: -2
+							days_until_due: -2,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
 							card: { ...reviewCard, id: 82, prompt: 'Overdue practice B' },
 							review_id: null,
 							scheduled_at: '2026-03-04',
-							days_until_due: -1
+							days_until_due: -1,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
 							card: { ...reviewCard, id: 83, prompt: 'Today practice A' },
 							review_id: null,
 							scheduled_at: '2026-03-05',
-							days_until_due: 0
+							days_until_due: 0,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
 							card: { ...reviewCard, id: 84, prompt: 'Today practice B' },
 							review_id: null,
 							scheduled_at: '2026-03-05',
-							days_until_due: 0
+							days_until_due: 0,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
 							card: { ...reviewCard, id: 85, prompt: 'Today practice C' },
 							review_id: null,
 							scheduled_at: '2026-03-05',
-							days_until_due: 0
+							days_until_due: 0,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
 							card: { ...reviewCard, id: 86, prompt: 'Soon practice A' },
 							review_id: null,
 							scheduled_at: '2026-03-06',
-							days_until_due: 1
+							days_until_due: 1,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
 							card: { ...reviewCard, id: 87, prompt: 'Soon practice B' },
 							review_id: null,
 							scheduled_at: '2026-03-07',
-							days_until_due: 2
+							days_until_due: 2,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
 							card: { ...reviewCard, id: 88, prompt: 'Soon practice C' },
 							review_id: null,
 							scheduled_at: '2026-03-08',
-							days_until_due: 3
+							days_until_due: 3,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
 							card: { ...reviewCard, id: 89, prompt: 'Soon practice D' },
 							review_id: null,
 							scheduled_at: '2026-03-09',
-							days_until_due: 4
+							days_until_due: 4,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
 							card: { ...reviewCard, id: 90, prompt: 'Soon practice E' },
 							review_id: null,
 							scheduled_at: '2026-03-10',
-							days_until_due: 5
+							days_until_due: 5,
+							days_until_hazy: null
 						}
 					],
 					isLoading: false
@@ -596,7 +670,9 @@ describe('masonry-backed page feeds', () => {
 
 		const dueTab = screen.getByRole('tab', { name: 'Due' })
 		const newTab = screen.getByRole('tab', { name: 'New' })
-		const dueSummary = screen.getByText('Due in next 7 days').parentElement
+		const dueSummary = screen.getByText(
+			'Actionable in next 7 days'
+		).parentElement
 
 		expect(within(dueTab).getByText('2')).toBeInTheDocument()
 		expect(within(dueTab).getByText('3')).toBeInTheDocument()
@@ -631,7 +707,8 @@ describe('masonry-backed page feeds', () => {
 							},
 							review_id: null,
 							scheduled_at: null,
-							days_until_due: null
+							days_until_due: null,
+							days_until_hazy: null
 						})),
 						isLoading: false
 					}
@@ -641,7 +718,7 @@ describe('masonry-backed page feeds', () => {
 					return {
 						data: [
 							{
-								queue_type: 'due' as const,
+								queue_type: 'hazy' as const,
 								card: {
 									...reviewCard,
 									id: 111,
@@ -649,8 +726,9 @@ describe('masonry-backed page feeds', () => {
 									prompt: 'Focused flashcard'
 								},
 								review_id: null,
-								scheduled_at: '2026-03-05',
-								days_until_due: 0
+								scheduled_at: null,
+								days_until_due: null,
+								days_until_hazy: 1
 							}
 						],
 						isLoading: false
@@ -669,7 +747,8 @@ describe('masonry-backed page feeds', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-04',
-							days_until_due: -1
+							days_until_due: -1,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
@@ -681,7 +760,8 @@ describe('masonry-backed page feeds', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-05',
-							days_until_due: 0
+							days_until_due: 0,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
@@ -693,7 +773,8 @@ describe('masonry-backed page feeds', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-05',
-							days_until_due: 0
+							days_until_due: 0,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
@@ -705,7 +786,8 @@ describe('masonry-backed page feeds', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-06',
-							days_until_due: 1
+							days_until_due: 1,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
@@ -717,7 +799,8 @@ describe('masonry-backed page feeds', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-07',
-							days_until_due: 2
+							days_until_due: 2,
+							days_until_hazy: null
 						},
 						{
 							queue_type: 'due' as const,
@@ -729,7 +812,8 @@ describe('masonry-backed page feeds', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-08',
-							days_until_due: 3
+							days_until_due: 3,
+							days_until_hazy: null
 						}
 					],
 					isLoading: false
@@ -741,7 +825,9 @@ describe('masonry-backed page feeds', () => {
 
 		const dueTab = screen.getByRole('tab', { name: 'Due' })
 		const newTab = screen.getByRole('tab', { name: 'New' })
-		const dueSummary = screen.getByText('Due in next 7 days').parentElement
+		const dueSummary = screen.getByText(
+			'Actionable in next 7 days'
+		).parentElement
 
 		expect(screen.getByText('Focused flashcard')).toBeInTheDocument()
 		expect(within(dueTab).getByText('1')).toBeInTheDocument()

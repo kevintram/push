@@ -66,11 +66,12 @@ class ReviewCardUpdate(BaseModel):
 class ReviewCardQueueItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    queue_type: Literal["due", "new"]
+    queue_type: Literal["due", "hazy", "new"]
     card: ReviewCardRead
     review_id: int | None = None
     scheduled_at: date | None = None
     days_until_due: int | None = None
+    days_until_hazy: int | None = None
 
 
 class ReviewCardQueuePage(BaseModel):

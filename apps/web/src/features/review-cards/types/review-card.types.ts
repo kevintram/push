@@ -26,11 +26,12 @@ export type ReviewCard = {
 }
 
 export type ReviewCardQueueItem = {
-	queue_type: 'due' | 'new'
+	queue_type: 'due' | 'hazy' | 'new'
 	card: ReviewCard
 	review_id: number | null
 	scheduled_at: string | null
 	days_until_due: number | null
+	days_until_hazy: number | null
 }
 
 export type ReviewCardQueuePage = {
