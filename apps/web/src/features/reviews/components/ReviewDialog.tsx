@@ -140,9 +140,9 @@ export function ReviewDialog({
 		? Math.round((review.stability_after ?? 0) - (review.stability_before ?? 0))
 		: 0
 
-	const getEntityName = useCallback((): string => {
+	const getCardName = useCallback((): string => {
 		if (review?.review_card) return review.review_card.prompt || 'Untitled card'
-		return 'Unknown'
+		return 'Unknown card'
 	}, [review?.review_card])
 
 	const handleStatusChange = useCallback(
@@ -197,7 +197,7 @@ export function ReviewDialog({
 
 	const navigate = useNavigate()
 
-	const handleOpenLinkedEntity = useCallback(() => {
+	const handleOpenLinkedCard = useCallback(() => {
 		if (!review?.review_card) return
 		navigate({
 			to: '/review-cards/$reviewCardId',
@@ -258,17 +258,18 @@ export function ReviewDialog({
 										className='max-w-48'
 										disabled={updateReviewMutation.isPending}
 										size='sm'
+										title='Open card'
 										variant='ghost'
 									>
 										<Link className='h-3.5 w-3.5 shrink-0' />
-										<span className='truncate'>{getEntityName()}</span>
+										<span className='truncate'>{getCardName()}</span>
 										<ChevronDown className='h-3 w-3 shrink-0 text-muted-foreground' />
 									</Button>
 								}
 							/>
 							<DropdownMenuContent align='start' className='w-auto'>
-								<DropdownMenuItem onClick={handleOpenLinkedEntity}>
-									Open
+								<DropdownMenuItem onClick={handleOpenLinkedCard}>
+									Open card
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>

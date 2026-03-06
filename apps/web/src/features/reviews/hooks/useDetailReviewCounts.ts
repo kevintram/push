@@ -2,21 +2,21 @@ import dayjs from 'dayjs'
 import { useMemo } from 'react'
 import { useReviews } from '~/features/reviews/api/getReviews'
 
-type ReviewEntityFilters = {
+type ReviewCardFilters = {
 	reviewCardId?: number
 }
 
-export function useDetailReviewCounts(filters?: ReviewEntityFilters) {
-	const entityFilter = { reviewCardId: filters?.reviewCardId }
+export function useDetailReviewCounts(filters?: ReviewCardFilters) {
+	const reviewCardFilter = { reviewCardId: filters?.reviewCardId }
 
 	const { data: unscheduledReviews = [] } = useReviews({
-		...entityFilter,
+		...reviewCardFilter,
 		scheduled: false,
 		completed: false
 	})
 
 	const { data: scheduledReviews = [] } = useReviews({
-		...entityFilter,
+		...reviewCardFilter,
 		scheduled: true,
 		completed: false
 	})

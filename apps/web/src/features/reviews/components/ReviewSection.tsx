@@ -6,6 +6,7 @@ import { ReviewItem } from './ReviewItem'
 import { ReviewListHeader } from './ReviewListHeader'
 
 type ReviewSectionProps = {
+	showCardColumn?: boolean
 	id: string
 	label: string
 	dateFormat?: 'relative' | 'short'
@@ -17,6 +18,7 @@ type ReviewSectionProps = {
 }
 
 export function ReviewSection({
+	showCardColumn = true,
 	id,
 	label,
 	dateFormat,
@@ -49,13 +51,14 @@ export function ReviewSection({
 				<div className='mt-2 mb-10'>
 					{entries.length > 0 ? (
 						<div className='@container/review-list'>
-							<ReviewListHeader />
+							<ReviewListHeader showCardColumn={showCardColumn} />
 							{entries.map(entry => (
 								<ReviewItem
 									dateFormat={dateFormat}
 									entry={entry}
 									key={`review-${entry.id}`}
 									onReviewClick={onReviewClick}
+									showCardColumn={showCardColumn}
 									variant='default'
 								/>
 							))}
