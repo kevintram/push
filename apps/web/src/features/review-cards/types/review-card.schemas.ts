@@ -29,11 +29,12 @@ export const ReviewCardSchema = v.object({
 })
 
 export const ReviewCardQueueItemSchema = v.object({
-	queue_type: v.picklist(['due', 'new']),
+	queue_type: v.picklist(['due', 'hazy', 'new']),
 	card: ReviewCardSchema,
 	review_id: v.nullable(v.number()),
 	scheduled_at: v.nullable(v.string()),
-	days_until_due: v.nullable(v.number())
+	days_until_due: v.nullable(v.number()),
+	days_until_hazy: v.nullable(v.number())
 })
 
 export const ReviewCardQueuePageSchema = v.object({

@@ -10,12 +10,13 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQueue'
+import { useReviewCardQueuePage } from '~/features/review-cards/api/getReviewCardQueue'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import type { ReviewCardQueueItem } from '~/features/review-cards/types/review-card.types'
-import { groupReviewCardQueueByDueDate } from '~/features/review-cards/utils/groupReviewCardQueueByDueDate'
+import { groupReviewCardQueueByActionWeek } from '~/features/review-cards/utils/groupReviewCardQueueByActionWeek'
+import { useWeekStart } from '~/stores/WeekStartContext'
 import { groupByDate } from '~/utils/groupByDate'
 import { useMediaQuery } from '~/utils/useMediaQuery'
 
@@ -70,17 +71,19 @@ export function PracticePage({
 	onScopeChange
 }: PracticePageProps) {
 	const navigate = useNavigate()
+	const { weekStartDay } = useWeekStart()
 	const isFocusedDueView = activeTab === 'due' && scope === 'focused'
 	const usesDesktopFocusedLayout = useMediaQuery('(min-width: 1280px)')
 	const { dueNextSevenDaysCount, dueTodayCount, newCount, overdueCount } =
 		useReviewCardQueueCounts({
 			type: 'practice'
 		})
-	const { data: items = [], isLoading } = useReviewCardQueue({
+	const { data: queuePage, isLoading } = useReviewCardQueuePage({
 		type: 'practice',
 		tab: activeTab,
 		focused: activeTab === 'due' ? scope === 'focused' : undefined
 	})
+	const items = queuePage?.items ?? []
 	const tabOptions = useMemo(
 		() => [
 			{
@@ -121,15 +124,16 @@ export function PracticePage({
 
 		return (
 			<div className='flex items-center gap-2 text-muted-foreground text-sm'>
-				<span>Due in next 7 days</span>
+				<span>Actionable in next 7 days</span>
 				<CountBadge count={dueNextSevenDaysCount} />
 			</div>
 		)
 	}, [activeTab, dueNextSevenDaysCount])
 
 	const dueSections = useMemo(
-		() => groupReviewCardQueueByDueDate(items),
-		[items]
+		() =>
+			groupReviewCardQueueByActionWeek(items, weekStartDay, queuePage?.as_of),
+		[items, queuePage?.as_of, weekStartDay]
 	)
 	const focusedRows = useMemo(
 		() => groupFocusedPracticeRows(items, usesDesktopFocusedLayout),

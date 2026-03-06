@@ -48,7 +48,7 @@ function ReviewSidebarMenuItem({
 	const { dueTodayCount, newCount, overdueCount } = useReviewCardQueueCounts({
 		type: item.type
 	})
-	const tooltip = `${item.title}: ${overdueCount} overdue, ${dueTodayCount} due today, ${newCount} new`
+	const tooltip = `${item.title}: ${overdueCount} actionable overdue, ${dueTodayCount} actionable today, ${newCount} new`
 
 	return (
 		<SidebarMenuItem key={item.title}>
