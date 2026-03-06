@@ -136,14 +136,24 @@ type AlertDialogButtonProps = AlertDialogPrimitive.Close.Props & {
 	buttonClassName?: string
 }
 
+type AlertDialogActionProps = Omit<
+	React.ComponentProps<typeof Button>,
+	"className" | "variant"
+> & {
+	buttonClassName?: string
+}
+
 function AlertDialogAction({
 	buttonClassName,
+	type = "button",
 	...props
-}: AlertDialogButtonProps) {
+}: AlertDialogActionProps) {
 	return (
-		<AlertDialogPrimitive.Close
+		<Button
+			className={buttonClassName}
 			data-slot='alert-dialog-action'
-			render={<Button className={buttonClassName} variant='destructive' />}
+			type={type}
+			variant='destructive'
 			{...props}
 		/>
 	)
