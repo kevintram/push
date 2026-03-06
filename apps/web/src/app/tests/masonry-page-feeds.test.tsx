@@ -969,6 +969,31 @@ describe('masonry-backed page feeds', () => {
 		])
 	})
 
+	it('keeps the due scope controls in normal content flow for focused practice', () => {
+		useReviewCardQueueMock.mockReturnValue({
+			data: buildPracticeQueueItems(2),
+			isLoading: false
+		})
+
+		render(<PracticeHarness initialScope='focused' />)
+
+		const scopeBar = screen.getByTestId('review-queue-scope-bar')
+		const focusedLayout = screen.getByTestId('focused-practice-layout')
+
+		expect(scopeBar.closest('.sticky')).toBeNull()
+		expect(scopeBar).toContainElement(
+			screen.getByRole('tab', { name: 'Focused' })
+		)
+		expect(scopeBar).toContainElement(
+			screen.getByText('Actionable in next 7 days')
+		)
+		// biome-ignore lint/nursery/noBitwiseOperators: compareDocumentPosition returns a bitmask
+		expect(
+			scopeBar.compareDocumentPosition(focusedLayout) &
+				Node.DOCUMENT_POSITION_FOLLOWING
+		).toBeTruthy()
+	})
+
 	it('renders Flashcards new cards grouped by creation date without due scope tabs', () => {
 		vi.useFakeTimers()
 		vi.setSystemTime(new Date('2026-03-05T12:00:00.000Z'))
