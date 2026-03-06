@@ -87,9 +87,9 @@ class TestReviewQueueEndpoint:
         monkeypatch.setattr(
             review_card_service,
             "get_days_until_hazy",
-            lambda review_card, *, today=None: 3
-            if review_card.id == hazy_card["id"]
-            else None,
+            lambda review_card, *, today=None: (
+                3 if review_card.id == hazy_card["id"] else None
+            ),
         )
 
         queue_response = await test_client.get("/review-queue/?type=practice&tab=due")
