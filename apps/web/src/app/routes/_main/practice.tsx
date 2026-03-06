@@ -1,12 +1,17 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import {
 	PracticePage,
 	type PracticeScope,
 	type PracticeTab
 } from '~/app/pages/PracticePage'
+import {
+	getStoredReviewQueueViewPreference,
+	persistReviewQueueViewPreference
+} from '~/features/review-cards/reviewQueueViewPreferences'
 
 type PracticeRouteSearch = {
-	tab: PracticeTab
+	tab?: PracticeTab
 	scope?: PracticeScope
 }
 
@@ -21,15 +26,9 @@ function isPracticeScope(value: unknown): value is PracticeScope {
 export function validatePracticeSearch(
 	search: Record<string, unknown>
 ): PracticeRouteSearch {
-	const tab = isPracticeTab(search.tab) ? search.tab : 'due'
-
-	if (tab === 'new') {
-		return { tab }
-	}
-
 	return {
-		tab,
-		scope: isPracticeScope(search.scope) ? search.scope : 'focused'
+		tab: isPracticeTab(search.tab) ? search.tab : undefined,
+		scope: isPracticeScope(search.scope) ? search.scope : undefined
 	}
 }
 
@@ -41,14 +40,24 @@ export const Route = createFileRoute('/_main/practice')({
 function PracticeRoute() {
 	const navigate = useNavigate()
 	const search = Route.useSearch()
+	const storedView = getStoredReviewQueueViewPreference('practice')
+	const activeTab = search.tab ?? storedView.tab
+	const dueScope = search.scope ?? storedView.dueScope
+
+	useEffect(() => {
+		persistReviewQueueViewPreference('practice', {
+			tab: activeTab,
+			dueScope
+		})
+	}, [activeTab, dueScope])
 
 	return (
 		<PracticePage
-			activeTab={search.tab}
+			activeTab={activeTab}
 			onActiveTabChange={tab =>
 				navigate({
 					to: '/practice',
-					search: tab === 'new' ? { tab } : { tab, scope: 'focused' }
+					search: tab === 'new' ? { tab } : { tab, scope: dueScope }
 				})
 			}
 			onScopeChange={scope =>
@@ -57,7 +66,7 @@ function PracticeRoute() {
 					search: { tab: 'due', scope }
 				})
 			}
-			scope={search.scope}
+			scope={dueScope}
 		/>
 	)
 }

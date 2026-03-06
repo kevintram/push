@@ -15,6 +15,24 @@ const useTopicsMock = vi.fn()
 const useReviewCardsMock = vi.fn()
 const useReviewCardQueueMock = vi.fn()
 
+const PRACTICE_VIEW_PREFERENCES_STORAGE_KEY = '3gulp-practice-view-preferences'
+const FLASHCARDS_VIEW_PREFERENCES_STORAGE_KEY =
+	'3gulp-flashcards-view-preferences'
+const storage = new Map<string, string>()
+
+const mockLocalStorage = {
+	getItem: (key: string) => storage.get(key) ?? null,
+	setItem: (key: string, value: string) => {
+		storage.set(key, value)
+	},
+	removeItem: (key: string) => {
+		storage.delete(key)
+	},
+	clear: () => {
+		storage.clear()
+	}
+}
+
 vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 	MasonryLayout: ({
 		items,
@@ -168,6 +186,11 @@ beforeEach(() => {
 	useTopicsMock.mockReset()
 	useReviewCardsMock.mockReset()
 	useReviewCardQueueMock.mockReset()
+	storage.clear()
+	Object.defineProperty(window, 'localStorage', {
+		value: mockLocalStorage,
+		configurable: true
+	})
 })
 
 describe('route-backed tab search state', () => {
@@ -203,7 +226,7 @@ describe('route-backed tab search state', () => {
 		expect(screen.getByText('Due flashcard')).toBeInTheDocument()
 	})
 
-	it('removes Flashcards scope on new and restores due default when switching back', async () => {
+	it('restores the last Flashcards due scope when switching back from new', async () => {
 		useReviewCardQueueMock.mockReturnValue({
 			data: [
 				{
@@ -235,9 +258,44 @@ describe('route-backed tab search state', () => {
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({
 				tab: 'due',
-				scope: 'focused'
+				scope: 'all'
 			})
 		})
+	})
+
+	it('restores stored Flashcards preferences when search params are missing', async () => {
+		window.localStorage.setItem(
+			FLASHCARDS_VIEW_PREFERENCES_STORAGE_KEY,
+			JSON.stringify({ tab: 'new', dueScope: 'all' })
+		)
+		useReviewCardQueueMock.mockReturnValue({
+			data: [
+				{
+					queue_type: 'new',
+					card: {
+						...reviewCard,
+						id: 23,
+						type: 'flashcard',
+						prompt: 'Stored flashcard view'
+					},
+					review_id: null,
+					scheduled_at: null,
+					days_until_due: null
+				}
+			],
+			isLoading: false
+		})
+
+		renderRoute('/flashcards')
+
+		await waitFor(() => {
+			expect(useReviewCardQueueMock).toHaveBeenLastCalledWith({
+				type: 'flashcard',
+				tab: 'new',
+				focused: undefined
+			})
+		})
+		expect(screen.getByText('Stored flashcard view')).toBeInTheDocument()
 	})
 
 	it('falls back to Practice due focused state for invalid search', async () => {
@@ -267,7 +325,7 @@ describe('route-backed tab search state', () => {
 		expect(screen.getByText('Due practice')).toBeInTheDocument()
 	})
 
-	it('removes Practice scope on new and restores due default when switching back', async () => {
+	it('restores the last Practice due scope when switching back from new', async () => {
 		useReviewCardQueueMock.mockReturnValue({
 			data: [
 				{
@@ -280,7 +338,7 @@ describe('route-backed tab search state', () => {
 			],
 			isLoading: false
 		})
-		const { router, user } = renderRoute('/practice?tab=due&scope=focused')
+		const { router, user } = renderRoute('/practice?tab=due&scope=all')
 		const newTab = await screen.findByRole('tab', { name: 'New' })
 
 		await user.click(newTab)
@@ -294,9 +352,39 @@ describe('route-backed tab search state', () => {
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({
 				tab: 'due',
-				scope: 'focused'
+				scope: 'all'
 			})
 		})
+	})
+
+	it('restores stored Practice preferences when search params are missing', async () => {
+		window.localStorage.setItem(
+			PRACTICE_VIEW_PREFERENCES_STORAGE_KEY,
+			JSON.stringify({ tab: 'new', dueScope: 'all' })
+		)
+		useReviewCardQueueMock.mockReturnValue({
+			data: [
+				{
+					queue_type: 'new',
+					card: { ...reviewCard, id: 33, prompt: 'Stored practice view' },
+					review_id: null,
+					scheduled_at: null,
+					days_until_due: null
+				}
+			],
+			isLoading: false
+		})
+
+		renderRoute('/practice')
+
+		await waitFor(() => {
+			expect(useReviewCardQueueMock).toHaveBeenLastCalledWith({
+				type: 'practice',
+				tab: 'new',
+				focused: undefined
+			})
+		})
+		expect(screen.getByText('Stored practice view')).toBeInTheDocument()
 	})
 
 	it('falls back to TopicDetail subtopics and all-card filter for invalid search', async () => {
