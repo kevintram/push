@@ -1,4 +1,4 @@
-import { Link, useLocation } from '@tanstack/react-router'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Clock,
@@ -7,6 +7,7 @@ import {
 	ListChecks,
 	type LucideIcon,
 	PanelLeft,
+	Plus,
 	Settings
 } from 'lucide-react'
 import { useState } from 'react'
@@ -23,6 +24,7 @@ import {
 	SidebarGroupContent,
 	SidebarHeader,
 	SidebarMenu,
+	SidebarMenuAction,
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarMenuSub,
@@ -33,6 +35,7 @@ import {
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
 import { useTopics } from '~/features/topics/api/getTopics'
+import { requestCreateTopic } from '~/features/topics/createTopicIntent'
 
 const ROOT_TOPICS_LIMIT = 10
 
@@ -63,7 +66,6 @@ function ReviewSidebarMenuItem({
 	return (
 		<SidebarMenuItem key={item.title}>
 			<SidebarMenuButton
-				className='h-auto min-h-10 py-2'
 				isActive={isActive}
 				render={<Link to={item.url} />}
 				tooltip={tooltip}
@@ -103,6 +105,7 @@ function ReviewSidebarMenuItem({
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
+	const navigate = useNavigate()
 	const { toggleSidebar } = useSidebar()
 	const { data: rootTopics = [] } = useTopics({
 		root: true,
@@ -138,8 +141,7 @@ export function AppSidebar() {
 			title: 'Topics',
 			url: '/topics',
 			icon: Library,
-			isActive: (pathname: string) =>
-				pathname === '/topics' || pathname.startsWith('/topics/')
+			isActive: (pathname: string) => pathname === '/topics'
 		}
 	]
 
@@ -151,6 +153,17 @@ export function AppSidebar() {
 			isActive: (pathname: string) => pathname === '/logbook'
 		}
 	]
+
+	const handleAddTopic = () => {
+		requestCreateTopic()
+
+		if (
+			location.pathname !== '/topics' &&
+			!location.pathname.startsWith('/topics/')
+		) {
+			navigate({ to: '/topics' })
+		}
+	}
 
 	return (
 		<Sidebar
@@ -231,6 +244,21 @@ export function AppSidebar() {
 											<item.icon />
 											<span>{item.title}</span>
 										</SidebarMenuButton>
+										{isTopicsItem && (
+											<SidebarMenuAction
+												aria-label='Add topic'
+												className='z-10'
+												onClick={event => {
+													event.preventDefault()
+													event.stopPropagation()
+													handleAddTopic()
+												}}
+												type='button'
+											>
+												<Plus />
+												<span className='sr-only'>Add topic</span>
+											</SidebarMenuAction>
+										)}
 										{isTopicsItem && rootTopics.length > 0 && (
 											<SidebarMenuSub>
 												{rootTopics.slice(0, ROOT_TOPICS_LIMIT).map(topic => (
