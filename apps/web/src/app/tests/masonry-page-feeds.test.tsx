@@ -701,7 +701,9 @@ describe('masonry-backed page feeds', () => {
 		expect(within(dueTab).getByText('3')).toBeInTheDocument()
 		expect(within(newTab).getByText('4')).toBeInTheDocument()
 		expect(dueSummary).not.toBeNull()
-		expect(within(dueSummary as HTMLElement).getByText('10')).toBeInTheDocument()
+		expect(
+			within(dueSummary as HTMLElement).getByText('10')
+		).toBeInTheDocument()
 	})
 
 	it('renders Flashcards counts from the full due queue while focused mode shows one card', () => {
