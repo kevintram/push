@@ -64,6 +64,20 @@ function getWeekSectionLabel(offset: number): string {
 	return `In ${offset} weeks`
 }
 
+function getNextWeekStartSubLabel(
+	weekStartDay: WeekStartDay,
+	anchorDate: Date
+): string {
+	const currentWeekStart = startOfWeek(anchorDate, weekStartDay)
+	const nextWeekStart = addDays(currentWeekStart, 7)
+	const daysUntilNextWeek =
+		toDayNumber(nextWeekStart) - toDayNumber(startOfDay(anchorDate))
+
+	if (daysUntilNextWeek <= 0) return 'Starts Today'
+	if (daysUntilNextWeek === 1) return 'Starts Tomorrow'
+	return `Starts ${nextWeekStart.toLocaleDateString(undefined, { weekday: 'long' })}`
+}
+
 function getQueueRank(item: ReviewCardQueueItem): number {
 	if (item.queue_type === 'due') return 0
 	if (item.queue_type === 'hazy') return 1
@@ -94,6 +108,7 @@ type ActionableSection = {
 	id: string
 	items: Array<ReviewCardQueueItem>
 	label: string
+	subLabel?: string
 	headingClassName?: string
 }
 
@@ -141,7 +156,11 @@ function getSectionForActionDay(
 
 	return {
 		id: `week-${weekOffset}`,
-		label: getWeekSectionLabel(weekOffset)
+		label: getWeekSectionLabel(weekOffset),
+		subLabel:
+			weekOffset === 1
+				? getNextWeekStartSubLabel(weekStartDay, anchorDate)
+				: undefined
 	}
 }
 
