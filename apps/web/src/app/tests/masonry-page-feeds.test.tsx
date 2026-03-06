@@ -29,6 +29,7 @@ const useReviewCardsMock = vi.fn()
 const useReviewCardQueueMock = vi.fn()
 const useSearchAllMock = vi.fn()
 const createTopicAsyncMock = vi.fn()
+const updateReviewCardAsyncMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
@@ -121,6 +122,13 @@ vi.mock('~/features/review-cards/api/createReviewCard', () => ({
 
 vi.mock('~/features/reviews/api/createReview', () => ({
 	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
+}))
+
+vi.mock('~/features/review-cards/api/updateReviewCard', () => ({
+	useUpdateReviewCard: () => ({
+		mutateAsync: updateReviewCardAsyncMock,
+		isPending: false
+	})
 }))
 
 vi.mock('~/stores/FlashcardModeContext', () => ({
@@ -250,6 +258,7 @@ beforeEach(() => {
 	useReviewCardQueueMock.mockReset()
 	useSearchAllMock.mockReset()
 	createTopicAsyncMock.mockReset()
+	updateReviewCardAsyncMock.mockReset()
 	window.sessionStorage.clear()
 	window.happyDOM?.setViewport({ height: 900, width: 1024 })
 })
@@ -399,6 +408,37 @@ describe('masonry-backed page feeds', () => {
 		expect(screen.getByText('Thursday, Mar 5')).toBeInTheDocument()
 	})
 
+	it('retires the focused flashcard from the rating action row', async () => {
+		const user = userEvent.setup()
+		useReviewCardQueueMock.mockReturnValue({
+			data: [
+				{
+					queue_type: 'due',
+					card: {
+						...reviewCard,
+						id: 22,
+						type: 'flashcard',
+						prompt: 'Retire me'
+					},
+					review_id: null,
+					scheduled_at: '2026-03-05',
+					days_until_due: 0
+				}
+			],
+			isLoading: false
+		})
+		updateReviewCardAsyncMock.mockResolvedValue(undefined)
+
+		render(<FlashcardsHarness />)
+
+		await user.click(screen.getByRole('button', { name: /retire this item/i }))
+
+		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
+			id: 22,
+			retired: true
+		})
+	})
+
 	it('renders Practice list views through masonry and keeps focused view non-masonry', async () => {
 		const user = userEvent.setup()
 		useReviewCardQueueMock.mockReturnValue({
@@ -428,6 +468,260 @@ describe('masonry-backed page feeds', () => {
 		expect(screen.queryByText('Keep this set warm')).not.toBeInTheDocument()
 		expect(screen.queryByText('card in focus')).not.toBeInTheDocument()
 		expect(screen.queryByText('cards in focus')).not.toBeInTheDocument()
+	})
+
+	it('renders Practice tab counts and due header summary', () => {
+		useReviewCardQueueMock.mockImplementation(
+			(params: { type: string; tab?: string; focused?: boolean }) => {
+				if (params.type !== 'practice') {
+					return { data: [], isLoading: false }
+				}
+
+				if (params.tab === 'new') {
+					return {
+						data: Array.from({ length: 4 }, (_, index) => ({
+							queue_type: 'new' as const,
+							card: {
+								...reviewCard,
+								id: 70 + index,
+								prompt: `New practice ${index + 1}`
+							},
+							review_id: null,
+							scheduled_at: null,
+							days_until_due: null
+						})),
+						isLoading: false
+					}
+				}
+
+				return {
+					data: [
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 81, prompt: 'Overdue practice A' },
+							review_id: null,
+							scheduled_at: '2026-03-03',
+							days_until_due: -2
+						},
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 82, prompt: 'Overdue practice B' },
+							review_id: null,
+							scheduled_at: '2026-03-04',
+							days_until_due: -1
+						},
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 83, prompt: 'Today practice A' },
+							review_id: null,
+							scheduled_at: '2026-03-05',
+							days_until_due: 0
+						},
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 84, prompt: 'Today practice B' },
+							review_id: null,
+							scheduled_at: '2026-03-05',
+							days_until_due: 0
+						},
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 85, prompt: 'Today practice C' },
+							review_id: null,
+							scheduled_at: '2026-03-05',
+							days_until_due: 0
+						},
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 86, prompt: 'Soon practice A' },
+							review_id: null,
+							scheduled_at: '2026-03-06',
+							days_until_due: 1
+						},
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 87, prompt: 'Soon practice B' },
+							review_id: null,
+							scheduled_at: '2026-03-07',
+							days_until_due: 2
+						},
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 88, prompt: 'Soon practice C' },
+							review_id: null,
+							scheduled_at: '2026-03-08',
+							days_until_due: 3
+						},
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 89, prompt: 'Soon practice D' },
+							review_id: null,
+							scheduled_at: '2026-03-09',
+							days_until_due: 4
+						},
+						{
+							queue_type: 'due' as const,
+							card: { ...reviewCard, id: 90, prompt: 'Soon practice E' },
+							review_id: null,
+							scheduled_at: '2026-03-10',
+							days_until_due: 5
+						}
+					],
+					isLoading: false
+				}
+			}
+		)
+
+		render(<PracticeHarness initialScope='all' />)
+
+		const dueTab = screen.getByRole('tab', { name: 'Due' })
+		const newTab = screen.getByRole('tab', { name: 'New' })
+		const dueSummary = screen.getByText('Due in next 7 days').parentElement
+
+		expect(within(dueTab).getByText('2')).toBeInTheDocument()
+		expect(within(dueTab).getByText('3')).toBeInTheDocument()
+		expect(within(newTab).getByText('4')).toBeInTheDocument()
+		expect(dueSummary).not.toBeNull()
+		expect(within(dueSummary as HTMLElement).getByText('5')).toBeInTheDocument()
+	})
+
+	it('renders Flashcards counts from the full due queue while focused mode shows one card', () => {
+		useReviewCardQueueMock.mockImplementation(
+			(params: { type: string; tab?: string; focused?: boolean }) => {
+				if (params.type !== 'flashcard') {
+					return { data: [], isLoading: false }
+				}
+
+				if (params.tab === 'new') {
+					return {
+						data: Array.from({ length: 4 }, (_, index) => ({
+							queue_type: 'new' as const,
+							card: {
+								...reviewCard,
+								id: 100 + index,
+								type: 'flashcard' as const,
+								prompt: `New flashcard ${index + 1}`
+							},
+							review_id: null,
+							scheduled_at: null,
+							days_until_due: null
+						})),
+						isLoading: false
+					}
+				}
+
+				if (params.focused) {
+					return {
+						data: [
+							{
+								queue_type: 'due' as const,
+								card: {
+									...reviewCard,
+									id: 111,
+									type: 'flashcard' as const,
+									prompt: 'Focused flashcard'
+								},
+								review_id: null,
+								scheduled_at: '2026-03-05',
+								days_until_due: 0
+							}
+						],
+						isLoading: false
+					}
+				}
+
+				return {
+					data: [
+						{
+							queue_type: 'due' as const,
+							card: {
+								...reviewCard,
+								id: 112,
+								type: 'flashcard' as const,
+								prompt: 'Overdue flashcard'
+							},
+							review_id: null,
+							scheduled_at: '2026-03-04',
+							days_until_due: -1
+						},
+						{
+							queue_type: 'due' as const,
+							card: {
+								...reviewCard,
+								id: 113,
+								type: 'flashcard' as const,
+								prompt: 'Today flashcard A'
+							},
+							review_id: null,
+							scheduled_at: '2026-03-05',
+							days_until_due: 0
+						},
+						{
+							queue_type: 'due' as const,
+							card: {
+								...reviewCard,
+								id: 114,
+								type: 'flashcard' as const,
+								prompt: 'Today flashcard B'
+							},
+							review_id: null,
+							scheduled_at: '2026-03-05',
+							days_until_due: 0
+						},
+						{
+							queue_type: 'due' as const,
+							card: {
+								...reviewCard,
+								id: 115,
+								type: 'flashcard' as const,
+								prompt: 'Soon flashcard A'
+							},
+							review_id: null,
+							scheduled_at: '2026-03-06',
+							days_until_due: 1
+						},
+						{
+							queue_type: 'due' as const,
+							card: {
+								...reviewCard,
+								id: 116,
+								type: 'flashcard' as const,
+								prompt: 'Soon flashcard B'
+							},
+							review_id: null,
+							scheduled_at: '2026-03-07',
+							days_until_due: 2
+						},
+						{
+							queue_type: 'due' as const,
+							card: {
+								...reviewCard,
+								id: 117,
+								type: 'flashcard' as const,
+								prompt: 'Soon flashcard C'
+							},
+							review_id: null,
+							scheduled_at: '2026-03-08',
+							days_until_due: 3
+						}
+					],
+					isLoading: false
+				}
+			}
+		)
+
+		render(<FlashcardsHarness />)
+
+		const dueTab = screen.getByRole('tab', { name: 'Due' })
+		const newTab = screen.getByRole('tab', { name: 'New' })
+		const dueSummary = screen.getByText('Due in next 7 days').parentElement
+
+		expect(screen.getByText('Focused flashcard')).toBeInTheDocument()
+		expect(within(dueTab).getByText('1')).toBeInTheDocument()
+		expect(within(dueTab).getByText('2')).toBeInTheDocument()
+		expect(within(newTab).getByText('4')).toBeInTheDocument()
+		expect(dueSummary).not.toBeNull()
+		expect(within(dueSummary as HTMLElement).getByText('3')).toBeInTheDocument()
 	})
 
 	it.each([

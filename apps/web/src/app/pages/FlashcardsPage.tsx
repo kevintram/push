@@ -1,10 +1,11 @@
 import { useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
-import { Layers } from 'lucide-react'
+import { Layers, Loader2, Sunset } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
 import { toast } from 'sonner'
 import { ReviewCardPageLayout } from '~/app/components/ReviewCardPageLayout'
 import { Button } from '~/components/ui/button'
+import { CountBadge } from '~/components/ui/count-badge'
 import {
 	Empty,
 	EmptyHeader,
@@ -13,8 +14,10 @@ import {
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useReviewCardQueue } from '~/features/review-cards/api/getReviewCardQueue'
+import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
+import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import { groupReviewCardQueueByDueDate } from '~/features/review-cards/utils/groupReviewCardQueueByDueDate'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { getRatingIcon } from '~/utils/getRatingIcon'
@@ -22,11 +25,6 @@ import { groupByDate } from '~/utils/groupByDate'
 
 export type FlashcardsTab = 'due' | 'new'
 export type FlashcardsScope = 'focused' | 'all'
-
-const FLASHCARD_TAB_OPTIONS = [
-	{ label: 'Due', value: 'due' },
-	{ label: 'New', value: 'new' }
-] as const
 
 const FLASHCARD_SCOPE_OPTIONS = [
 	{ label: 'Focused', value: 'focused' },
@@ -48,12 +46,62 @@ export function FlashcardsPage({
 }: FlashcardsPageProps) {
 	const navigate = useNavigate()
 	const isFocusedDueView = activeTab === 'due' && scope === 'focused'
+	const { dueNextSevenDaysCount, dueTodayCount, newCount, overdueCount } =
+		useReviewCardQueueCounts({
+			type: 'flashcard'
+		})
 	const { data: items = [], isLoading } = useReviewCardQueue({
 		type: 'flashcard',
 		tab: activeTab,
 		focused: activeTab === 'due' ? scope === 'focused' : undefined
 	})
 	const createReviewMutation = useCreateReview()
+	const updateReviewCardMutation = useUpdateReviewCard()
+	const tabOptions = useMemo(
+		() => [
+			{
+				label: 'Due',
+				value: 'due' as const,
+				count: (
+					<>
+						{overdueCount > 0 ? (
+							<CountBadge
+								className='h-4 min-w-4 bg-red-600 px-1 text-[10px] text-white dark:bg-red-400'
+								count={overdueCount}
+							/>
+						) : null}
+						{dueTodayCount > 0 ? (
+							<CountBadge
+								className='h-4 min-w-4 bg-transparent px-1 text-[10px] text-blue-600 dark:text-blue-400'
+								count={dueTodayCount}
+							/>
+						) : null}
+					</>
+				)
+			},
+			{
+				label: 'New',
+				value: 'new' as const,
+				count: (
+					<CountBadge
+						className='h-4 min-w-4 px-1 text-[10px]'
+						count={newCount}
+					/>
+				)
+			}
+		],
+		[dueTodayCount, newCount, overdueCount]
+	)
+	const dueSummary = useMemo(() => {
+		if (activeTab !== 'due') return null
+
+		return (
+			<div className='flex items-center gap-2 text-muted-foreground text-sm'>
+				<span>Due in next 7 days</span>
+				<CountBadge count={dueNextSevenDaysCount} />
+			</div>
+		)
+	}, [activeTab, dueNextSevenDaysCount])
 
 	const activeCard = useMemo(() => items[0]?.card ?? null, [items])
 	const dueSections = useMemo(
@@ -70,6 +118,18 @@ export function FlashcardsPage({
 			),
 		[items]
 	)
+	const retireLabel = activeCard?.retired ? 'Restore' : 'Retire'
+	const retireAriaLabel = activeCard?.retired
+		? 'Return this item to review queue'
+		: 'Retire this item'
+	let retireIcon: ReactNode = (
+		<Sunset className='h-4 w-4 text-muted-foreground' />
+	)
+	if (updateReviewCardMutation.isPending) {
+		retireIcon = <Loader2 className='h-4 w-4 animate-spin' />
+	} else if (activeCard?.retired) {
+		retireIcon = <Sunset className='h-4 w-4 text-orange-500' />
+	}
 
 	async function rateCard(rating: 'miss' | 'hard' | 'good' | 'easy') {
 		if (!activeCard) return
@@ -81,6 +141,18 @@ export function FlashcardsPage({
 			})
 		} catch {
 			toast.error('Failed to record review')
+		}
+	}
+
+	async function toggleRetired() {
+		if (!activeCard) return
+		try {
+			await updateReviewCardMutation.mutateAsync({
+				id: activeCard.id,
+				retired: !activeCard.retired
+			})
+		} catch {
+			toast.error('Failed to update review card')
 		}
 	}
 
@@ -111,31 +183,47 @@ export function FlashcardsPage({
 					}
 					reviewCard={activeCard}
 				/>
-				<div className='flex flex-wrap items-center justify-center gap-2'>
-					<Button onClick={() => rateCard('miss')} variant='outline'>
-						<span className='flex items-center gap-2'>
-							{getRatingIcon('miss')}
-							<span>Miss</span>
-						</span>
-					</Button>
-					<Button onClick={() => rateCard('hard')} variant='outline'>
-						<span className='flex items-center gap-2'>
-							{getRatingIcon('hard')}
-							<span>Hard</span>
-						</span>
-					</Button>
-					<Button onClick={() => rateCard('good')} variant='outline'>
-						<span className='flex items-center gap-2'>
-							{getRatingIcon('good')}
-							<span>Good</span>
-						</span>
-					</Button>
-					<Button onClick={() => rateCard('easy')} variant='outline'>
-						<span className='flex items-center gap-2'>
-							{getRatingIcon('easy')}
-							<span>Easy</span>
-						</span>
-					</Button>
+				<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+					<div className='flex flex-wrap items-center gap-2'>
+						<Button onClick={() => rateCard('miss')} variant='outline'>
+							<span className='flex items-center gap-2'>
+								{getRatingIcon('miss')}
+								<span>Miss</span>
+							</span>
+						</Button>
+						<Button onClick={() => rateCard('hard')} variant='outline'>
+							<span className='flex items-center gap-2'>
+								{getRatingIcon('hard')}
+								<span>Hard</span>
+							</span>
+						</Button>
+						<Button onClick={() => rateCard('good')} variant='outline'>
+							<span className='flex items-center gap-2'>
+								{getRatingIcon('good')}
+								<span>Good</span>
+							</span>
+						</Button>
+						<Button onClick={() => rateCard('easy')} variant='outline'>
+							<span className='flex items-center gap-2'>
+								{getRatingIcon('easy')}
+								<span>Easy</span>
+							</span>
+						</Button>
+					</div>
+					<div className='flex justify-start sm:justify-end'>
+						<Button
+							aria-label={retireAriaLabel}
+							aria-pressed={activeCard.retired}
+							disabled={updateReviewCardMutation.isPending}
+							onClick={() => toggleRetired()}
+							variant='ghost'
+						>
+							<span className='flex items-center gap-2'>
+								{retireIcon}
+								<span>{retireLabel}</span>
+							</span>
+						</Button>
+					</div>
 				</div>
 			</div>
 		)
@@ -163,8 +251,9 @@ export function FlashcardsPage({
 			onActiveTabChange={onActiveTabChange}
 			onScopeChange={onScopeChange}
 			scope={scope}
+			scopeBarActions={dueSummary}
 			scopeOptions={FLASHCARD_SCOPE_OPTIONS}
-			tabOptions={FLASHCARD_TAB_OPTIONS}
+			tabOptions={tabOptions}
 			title='Flashcards'
 		>
 			{content}
