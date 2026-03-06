@@ -107,11 +107,12 @@ export function AppSidebar() {
 	const location = useLocation()
 	const navigate = useNavigate()
 	const { toggleSidebar } = useSidebar()
-	const { data: rootTopics = [] } = useTopics({
+	const rootTopicsQuery = useTopics({
 		root: true,
 		sort: 'title',
 		order: 'asc'
 	})
+	const rootTopics = rootTopicsQuery?.data ?? []
 
 	const reviewItems: Array<ReviewSidebarItem> = [
 		{
