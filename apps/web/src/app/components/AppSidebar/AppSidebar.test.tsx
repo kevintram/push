@@ -70,7 +70,7 @@ describe('AppSidebar', () => {
 		expect(practiceLink).not.toHaveTextContent('today')
 		expect(practiceLink).not.toHaveTextContent('new')
 
-		expect(flashcardsLink).toHaveTextContent('Flashcards107')
+		expect(flashcardsLink).toHaveTextContent('Flashcards17')
 		expect(flashcardsLink).not.toHaveTextContent('overdue')
 		expect(flashcardsLink).not.toHaveTextContent('today')
 		expect(flashcardsLink).not.toHaveTextContent('new')
