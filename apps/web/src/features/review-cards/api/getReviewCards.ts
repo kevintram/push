@@ -22,6 +22,9 @@ export async function getReviewCards(
 	if (params.new_only !== undefined) {
 		searchParams.append('new_only', String(params.new_only))
 	}
+	if (params.pinned_only !== undefined) {
+		searchParams.append('pinned_only', String(params.pinned_only))
+	}
 	if (params.order !== undefined) {
 		searchParams.append('order', params.order)
 	}

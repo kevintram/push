@@ -14,5 +14,20 @@ export const handlers = [
 			new_count: 0,
 			as_of: '2026-03-05'
 		})
+	}),
+	http.get('*/review-cards/pinned-summary/', () => {
+		return HttpResponse.json({
+			pinned_count: 0
+		})
+	}),
+	http.get('*/topics/', ({ request }) => {
+		const url = new URL(request.url)
+		if (
+			url.searchParams.get('root') === 'true' &&
+			url.searchParams.get('sort') === 'title' &&
+			url.searchParams.get('order') === 'asc'
+		) {
+			return HttpResponse.json([])
+		}
 	})
 ]
