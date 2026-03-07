@@ -117,7 +117,7 @@ export function PinnedPage({
 				title='Pinned'
 				titleExtra={<CountBadge count={reviewCards.length} />}
 			/>
-			<PageLayout.Content className='max-w-screen space-y-4 p-6'>
+			<PageLayout.Content className='max-w-screen space-y-4 px-3 pt-3 pb-6'>
 				{filterControls}
 				{body}
 			</PageLayout.Content>
