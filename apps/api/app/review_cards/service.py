@@ -93,7 +93,6 @@ async def _list_actionable_due_queue_items(
             Review.completed_at.is_(None),
             Review.scheduled_at.isnot(None),
             ReviewCard.type == card_type,
-            ReviewCard.retired.is_(False),
         )
         .distinct()
     )
@@ -107,7 +106,6 @@ async def _list_actionable_due_queue_items(
             Review.completed_at.is_(None),
             Review.scheduled_at.isnot(None),
             ReviewCard.type == card_type,
-            ReviewCard.retired.is_(False),
         )
         .options(
             selectinload(Review.review_card).selectinload(ReviewCard.topic),
@@ -428,7 +426,6 @@ async def get_review_card_queue_summary(
             Review.completed_at.is_(None),
             Review.scheduled_at.isnot(None),
             ReviewCard.type == card_type,
-            ReviewCard.retired.is_(False),
         )
     )
 
@@ -447,7 +444,6 @@ async def get_review_card_queue_summary(
             Review.completed_at.is_(None),
             Review.scheduled_at.isnot(None),
             ReviewCard.type == card_type,
-            ReviewCard.retired.is_(False),
         )
         .distinct()
     )
