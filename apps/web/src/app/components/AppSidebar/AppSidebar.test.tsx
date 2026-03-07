@@ -51,6 +51,13 @@ vi.mock('~/features/topics/createTopicIntent', () => ({
 	requestCreateTopic: () => requestCreateTopicMock()
 }))
 
+vi.mock('~/stores/FlashcardModeContext', () => ({
+	useFlashcardMode: () => ({
+		reviewMode: 'off',
+		setReviewMode: () => {}
+	})
+}))
+
 describe('AppSidebar', () => {
 	beforeEach(() => {
 		useLocationMock.mockReset()

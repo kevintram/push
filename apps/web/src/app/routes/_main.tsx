@@ -1,7 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import type { CSSProperties } from 'react'
 import { AppSidebar } from '~/app/components/AppSidebar/AppSidebar'
-import { FlashcardModeFab } from '~/app/components/FlashcardModeFab'
 import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
 
 export const Route = createFileRoute('/_main')({
@@ -22,7 +21,6 @@ function MainLayout() {
 				<div className='relative ml-1 flex min-h-0 min-w-0 flex-1 flex-col bg-primary-foreground'>
 					<div className='relative min-h-0 min-w-0 flex-1 bg-background'>
 						<Outlet />
-						<FlashcardModeFab visible={true} />
 					</div>
 				</div>
 			</SidebarInset>

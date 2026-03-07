@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Clock,
+	Eye,
 	Layers,
 	Library,
 	ListChecks,
@@ -33,11 +34,13 @@ import {
 	SidebarMenuSubItem,
 	useSidebar
 } from '~/components/ui/sidebar'
+import { Switch } from '~/components/ui/switch'
 import { useReviewCardPinnedSummary } from '~/features/review-cards/api/getReviewCardPinnedSummary'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { requestCreateTopic } from '~/features/topics/createTopicIntent'
+import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 
 const ROOT_TOPICS_LIMIT = 10
 
@@ -112,6 +115,7 @@ export function AppSidebar() {
 	const location = useLocation()
 	const navigate = useNavigate()
 	const { toggleSidebar } = useSidebar()
+	const { reviewMode, setReviewMode } = useFlashcardMode()
 	const pinnedSummaryQuery = useReviewCardPinnedSummary()
 	const rootTopicsQuery = useTopics({
 		root: true,
@@ -334,6 +338,25 @@ export function AppSidebar() {
 
 			<SidebarFooter className='bg-primary-foreground'>
 				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							onClick={() => setReviewMode(reviewMode === 'on' ? 'off' : 'on')}
+							tooltip='Review Mode'
+						>
+							<Eye />
+							<span className='flex flex-1 items-center justify-between'>
+								<span>Review</span>
+								<Switch
+									checked={reviewMode === 'on'}
+									onCheckedChange={checked =>
+										setReviewMode(checked ? 'on' : 'off')
+									}
+									size='xs'
+									tabIndex={-1}
+								/>
+							</span>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
 					<SidebarMenuItem>
 						<SidebarMenuButton
 							onClick={() => setIsSettingsDialogOpen(true)}
