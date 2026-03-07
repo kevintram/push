@@ -22,11 +22,7 @@ vi.mock('~/stores/FlashcardModeContext', () => ({
 		setReviewMode: () => {},
 		isReviewModeEnabled: false,
 		hidesPrimary: false,
-		hidesSecondary: false,
-		showReviewModeWarning: false,
-		setShowReviewModeWarning: () => {},
-		autoEnableReviewMode: false,
-		setAutoEnableReviewMode: () => {}
+		hidesSecondary: false
 	})
 }))
 

@@ -20,8 +20,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
-import { Switch } from '~/components/ui/switch'
-import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { useTheme } from '~/stores/ThemeContext'
 import { useWeekStart, WEEK_START_OPTIONS } from '~/stores/WeekStartContext'
 
@@ -38,12 +36,6 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 	const { theme, setTheme } = useTheme()
-	const {
-		showReviewModeWarning,
-		setShowReviewModeWarning,
-		autoEnableReviewMode,
-		setAutoEnableReviewMode
-	} = useFlashcardMode()
 	const { weekStartDay, setWeekStartDay } = useWeekStart()
 	const selectedWeekStartOption = WEEK_START_OPTIONS.find(
 		option => option.value === weekStartDay
@@ -116,41 +108,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 								})}
 							</DropdownMenuContent>
 						</DropdownMenu>
-					</div>
-
-					<div className='border-t pt-4'>
-						<div className='mb-4'>
-							<div className='font-medium text-base'>Review Mode</div>
-						</div>
-						<div className='space-y-4'>
-							<div className='flex items-start justify-between gap-4'>
-								<div>
-									<div className='font-medium text-sm'>Show warning</div>
-									<div className='text-muted-foreground text-xs'>
-										Show warning when Review Mode is off in the Review Page
-									</div>
-								</div>
-								<Switch
-									checked={showReviewModeWarning}
-									className='mt-0.5 shrink-0'
-									onCheckedChange={setShowReviewModeWarning}
-								/>
-							</div>
-
-							<div className='flex items-start justify-between gap-4 border-t pt-4'>
-								<div>
-									<div className='font-medium text-sm'>Always turn on</div>
-									<div className='text-muted-foreground text-xs'>
-										Always turn on Review Mode in the Review Page
-									</div>
-								</div>
-								<Switch
-									checked={autoEnableReviewMode}
-									className='mt-0.5 shrink-0'
-									onCheckedChange={setAutoEnableReviewMode}
-								/>
-							</div>
-						</div>
 					</div>
 
 					<div className='flex items-start justify-between border-t pt-6'>

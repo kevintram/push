@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 const FLASHCARD_MODE_STORAGE_KEY = '3gulp-flashcard-mode'
-const REVIEW_MODE_WARNING_STORAGE_KEY = '3gulp-review-mode-warning'
-const REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY = '3gulp-review-mode-auto-enable'
 
 export const REVIEW_MODES = ['off', 'on'] as const
 
@@ -14,10 +12,6 @@ type FlashcardModeContextType = {
 	isReviewModeEnabled: boolean
 	hidesPrimary: boolean
 	hidesSecondary: boolean
-	showReviewModeWarning: boolean
-	setShowReviewModeWarning: (value: boolean) => void
-	autoEnableReviewMode: boolean
-	setAutoEnableReviewMode: (value: boolean) => void
 }
 
 const FlashcardModeContext = createContext<
@@ -30,17 +24,6 @@ interface FlashcardModeProviderProps {
 
 function isReviewMode(value: string): value is ReviewMode {
 	return REVIEW_MODES.includes(value as ReviewMode)
-}
-
-function getInitialShowReviewModeWarning(): boolean {
-	if (typeof window === 'undefined') return true
-
-	const storedValue = window.localStorage.getItem(
-		REVIEW_MODE_WARNING_STORAGE_KEY
-	)
-	if (storedValue === null) return true
-
-	return storedValue !== 'false'
 }
 
 function getInitialReviewMode(): ReviewMode {
@@ -58,45 +41,14 @@ function getInitialReviewMode(): ReviewMode {
 	return isReviewMode(storedValue) ? storedValue : 'off'
 }
 
-function getInitialAutoEnableReviewMode(): boolean {
-	if (typeof window === 'undefined') return false
-
-	const storedValue = window.localStorage.getItem(
-		REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY
-	)
-	if (storedValue === null) return false
-
-	return storedValue === 'true'
-}
-
 export function FlashcardModeProvider({
 	children
 }: FlashcardModeProviderProps) {
 	const [reviewMode, setReviewMode] = useState<ReviewMode>(getInitialReviewMode)
-	const [showReviewModeWarning, setShowReviewModeWarning] = useState(
-		getInitialShowReviewModeWarning
-	)
-	const [autoEnableReviewMode, setAutoEnableReviewMode] = useState(
-		getInitialAutoEnableReviewMode
-	)
 
 	useEffect(() => {
 		window.localStorage.setItem(FLASHCARD_MODE_STORAGE_KEY, reviewMode)
 	}, [reviewMode])
-
-	useEffect(() => {
-		window.localStorage.setItem(
-			REVIEW_MODE_WARNING_STORAGE_KEY,
-			String(showReviewModeWarning)
-		)
-	}, [showReviewModeWarning])
-
-	useEffect(() => {
-		window.localStorage.setItem(
-			REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY,
-			String(autoEnableReviewMode)
-		)
-	}, [autoEnableReviewMode])
 
 	const value = useMemo(
 		() => ({
@@ -104,13 +56,9 @@ export function FlashcardModeProvider({
 			setReviewMode,
 			isReviewModeEnabled: reviewMode !== 'off',
 			hidesPrimary: false,
-			hidesSecondary: reviewMode !== 'off',
-			showReviewModeWarning,
-			setShowReviewModeWarning,
-			autoEnableReviewMode,
-			setAutoEnableReviewMode
+			hidesSecondary: reviewMode !== 'off'
 		}),
-		[reviewMode, showReviewModeWarning, autoEnableReviewMode]
+		[reviewMode]
 	)
 
 	return <FlashcardModeContext value={value}>{children}</FlashcardModeContext>
