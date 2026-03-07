@@ -12,10 +12,6 @@ vi.mock('~/components/SettingsDialog', () => ({
 	SettingsDialog: () => null
 }))
 
-vi.mock('~/app/components/FlashcardModeFab', () => ({
-	FlashcardModeFab: () => null
-}))
-
 vi.mock('~/stores/FlashcardModeContext', () => ({
 	useFlashcardMode: () => ({
 		reviewMode: 'off',
