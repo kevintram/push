@@ -286,6 +286,7 @@ const reviewCard = {
 	state: 'new',
 	step: null,
 	retired: false,
+	pinned_at: null,
 	last_reviewed_at: null,
 	retrievability: null,
 	freshness_tier: null,
@@ -500,6 +501,22 @@ describe('legacy-style detail parent and topic controls', () => {
 		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
 			id: 11,
 			topic_id: 4
+		})
+	})
+
+	it('pins a review card from ReviewCardDetail', async () => {
+		const user = userEvent.setup()
+		updateReviewCardAsyncMock.mockResolvedValue(undefined)
+
+		render(<ReviewCardDetailPage reviewCardId={11} />)
+
+		await user.click(screen.getByRole('button', { name: /Pin this item/i }))
+
+		await waitFor(() => {
+			expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
+				id: 11,
+				pinned: true
+			})
 		})
 	})
 })

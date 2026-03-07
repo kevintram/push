@@ -9,6 +9,7 @@ import {
 	Copy,
 	Loader2,
 	MoreHorizontal,
+	Pin,
 	Plus,
 	Sparkles,
 	Sunset,
@@ -83,6 +84,8 @@ const REVEAL_PANEL_TEXTAREA_CLASSNAME =
 	'h-full min-h-24 resize-none border-border/70 bg-background/80 text-sm'
 const REVEAL_PANEL_COPY_BUTTON_CLASSNAME =
 	'absolute right-2 bottom-2 text-muted-foreground hover:text-foreground'
+const PINNED_ICON_CLASSNAME =
+	'h-4 w-4 fill-current text-sky-500 dark:text-sky-300'
 
 type ReviewCardRevealPanelTab = 'guess' | 'reveal'
 
@@ -312,6 +315,16 @@ export function ReviewCard({
 		},
 		[reviewCard.id, reviewCard.retired, updateReviewCard]
 	)
+	const handlePinnedToggle = useCallback(
+		(event: MouseEvent) => {
+			event.stopPropagation()
+			updateReviewCard({
+				id: reviewCard.id,
+				pinned: reviewCard.pinned_at == null
+			})
+		},
+		[reviewCard.id, reviewCard.pinned_at, updateReviewCard]
+	)
 
 	const handleDeleteReviewCard = useCallback(async () => {
 		if (deleteReviewCardMutation.isPending) return
@@ -462,6 +475,7 @@ export function ReviewCard({
 	const typeBadgeLabel =
 		typeLabelOverride ??
 		(reviewCard.type === 'practice' ? 'Practice' : 'Flashcard')
+	const isPinned = reviewCard.pinned_at != null
 	const topicTitle = reviewCard.topic_title?.trim() ?? ''
 	const resolvedParentLabel =
 		parentLabel ??
@@ -742,6 +756,23 @@ export function ReviewCard({
 						}
 					/>
 					<Button
+						aria-label={isPinned ? 'Unpin this item' : 'Pin this item'}
+						aria-pressed={isPinned}
+						className={isUpdatingReviewCard ? 'opacity-50' : ''}
+						onClick={handlePinnedToggle}
+						onKeyDown={event => event.stopPropagation()}
+						size='icon-sm'
+						variant='ghost'
+					>
+						<Pin
+							className={
+								isPinned
+									? PINNED_ICON_CLASSNAME
+									: 'h-4 w-4 text-muted-foreground'
+							}
+						/>
+					</Button>
+					<Button
 						aria-label={
 							reviewCard.retired
 								? 'Return this item to review queue'
@@ -787,6 +818,19 @@ export function ReviewCard({
 								</DropdownMenuItem>
 							) : null}
 							<DropdownMenuItem
+								disabled={isUpdatingReviewCard}
+								onClick={event => {
+									event.stopPropagation()
+									updateReviewCard({
+										id: reviewCard.id,
+										pinned: !isPinned
+									})
+								}}
+							>
+								<Pin className='mr-2 h-4 w-4' />
+								{isPinned ? 'Unpin' : 'Pin'}
+							</DropdownMenuItem>
+							<DropdownMenuItem
 								disabled={deleteReviewCardMutation.isPending}
 								onClick={event => {
 									event.stopPropagation()
@@ -804,7 +848,7 @@ export function ReviewCard({
 
 			<CardContent className='flex min-h-0 flex-1 flex-col gap-3 p-0'>
 				<div className='flex min-h-0 flex-1 flex-col gap-1'>
-					<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+					<div className='flex flex-wrap items-center gap-1 text-muted-foreground text-xs'>
 						<span>{typeBadgeLabel}</span>
 					</div>
 
