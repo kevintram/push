@@ -54,7 +54,23 @@ WITH topic_seed (id, title, body, parent_id, created_days_ago, updated_days_ago)
     (43, 'Probability', 'Randomness, expectation, and uncertainty.', 1, 76, 6),
     (44, 'Databases', 'Indexes, storage, and query behavior.', 9, 75, 2),
     (45, 'CSS Systems', 'Tokens, reuse, and resilient UI styling.', 18, 74, 5),
-    (46, 'Mock Interviews', 'High-pressure reps with deliberate feedback loops.', 20, 73, 1)
+    (46, 'Mock Interviews', 'High-pressure reps with deliberate feedback loops.', 20, 73, 1),
+    (
+      47,
+      'UI Overflow Lab',
+      'This root topic exists specifically to stress the card layout with a body that is much longer than the ordinary seed content. It includes a dense explanation of how a user might document an issue: first they describe the visible symptom, then they describe the exact interaction that triggers it, then they capture what they expected to happen, and finally they list every clue that might help them reproduce it later. The paragraph keeps going on purpose so the topic card has enough text to clamp, scroll, and expose any unstable sizing assumptions in the masonry grid. To make that practical for debugging, it mentions nested states, delayed measurements, responsive widths, scroll containers, reveal controls, and why a card that appears visually harmless can still be a pathological layout case when the content is several times longer than the visible shell.',
+      NULL,
+      72,
+      1
+    ),
+    (
+      48,
+      'Dense Reading Notes',
+      'This is another intentionally long root topic designed to create a topic card with a body large enough to need internal scrolling. Imagine a user dumping structured reading notes into a topic after a study session: the body contains the summary of the chapter, a list of confusing ideas, a short explanation in plain language, a concrete example, a reminder to revisit edge cases, and a final reflection about what still feels shaky. That combination is realistic enough to mirror production use, but verbose enough to surface UI problems that only appear when the text area is forced to balance clamping, wrapping, and overflow behavior. The goal of this fixture is not realism alone; it is to make sure the masonry layout can survive a card whose natural content height is far larger than its rendered height.',
+      NULL,
+      71,
+      1
+    )
 )
 INSERT INTO topics (id, user_id, title, body, parent_id, inserted_at, updated_at)
 OVERRIDING SYSTEM VALUE
@@ -100,7 +116,7 @@ WITH fsrs_data AS (
       ELSE CURRENT_DATE - ((n % 8) + 1)
     END AS last_reviewed_at,
     CASE WHEN n IN (37, 38, 39, 40) THEN true ELSE false END AS retired
-  FROM generate_series(1, 40) AS n
+  FROM generate_series(1, 44) AS n
 ),
 seeded_cards (
   id,
@@ -153,7 +169,51 @@ seeded_cards (
     (37, 'user_01KGG4R8HZAV513662YE3DJ0A9', 19, 'practice', 'Run a weekly career growth review', 'Audit wins, bottlenecks, evidence of impact, and the single skill to push next.', 37, timezone('utc'::text, now()) - interval '19 days', timezone('utc'::text, now()) - interval '2 days'),
     (38, 'user_01KGG4R8HZAV513662YE3DJ0A9', 23, 'flashcard', 'Difference between hypothesis and theory', 'A hypothesis is a testable claim; a theory is a broader explanatory framework backed by evidence.', 38, timezone('utc'::text, now()) - interval '18 days', timezone('utc'::text, now()) - interval '2 days'),
     (39, 'user_01KGG4R8HZAV513662YE3DJ0A9', 26, 'flashcard', 'Primary versus secondary source', 'A primary source is direct evidence from the time; a secondary source interprets it later.', 39, timezone('utc'::text, now()) - interval '17 days', timezone('utc'::text, now()) - interval '2 days'),
-    (40, 'user_01KGG4R8HZAV513662YE3DJ0A9', 29, 'flashcard', 'Why schedule recovery days?', 'Recovery lets adaptation happen and reduces injury risk from accumulated fatigue.', 40, timezone('utc'::text, now()) - interval '16 days', timezone('utc'::text, now()) - interval '1 days')
+    (40, 'user_01KGG4R8HZAV513662YE3DJ0A9', 29, 'flashcard', 'Why schedule recovery days?', 'Recovery lets adaptation happen and reduces injury risk from accumulated fatigue.', 40, timezone('utc'::text, now()) - interval '16 days', timezone('utc'::text, now()) - interval '1 days'),
+    (
+      41,
+      'user_01KGG4R8HZAV513662YE3DJ0A9',
+      47,
+      'practice',
+      'Explain why masonry layouts are sensitive to stale height measurements',
+      'A masonry layout is sensitive to stale height measurements because every item placement depends on the heights that came before it in each lane. If a card is measured once and then its inner content changes without the outer layout being remeasured, the virtualizer can keep positioning later cards as though the old height were still true. That means one lane may reserve too much space, another lane may overlap, and the whole grid can look randomly broken even though the bug is simply that the cache was never invalidated. In practice, the failure shows up most clearly when a card toggles between a long scrollable answer and a shorter reveal state, because the content looks similar conceptually but the rendered geometry is very different.',
+      41,
+      timezone('utc'::text, now()) - interval '15 days',
+      timezone('utc'::text, now()) - interval '1 days'
+    ),
+    (
+      42,
+      'user_01KGG4R8HZAV513662YE3DJ0A9',
+      47,
+      'flashcard',
+      'What kind of text content is most useful for overflow regression testing?',
+      'The most useful text for overflow regression testing is realistic but intentionally oversized. It should be long enough to wrap across many lines, include punctuation and sentence breaks that mimic real notes, and contain enough semantic structure that a developer can tell whether the card is clipping, scrolling, or collapsing in the wrong way. Short lorem ipsum is not enough, because it does not create the same line lengths or perceived density as real product content. A better seed is a dense explanation, a numbered idea sequence, or a reflective note that keeps going until the card is forced to choose between internal scrolling and increasing its outer height.',
+      42,
+      timezone('utc'::text, now()) - interval '14 days',
+      timezone('utc'::text, now()) - interval '1 days'
+    ),
+    (
+      43,
+      'user_01KGG4R8HZAV513662YE3DJ0A9',
+      48,
+      'practice',
+      'Summarize a long note without losing the structural markers',
+      'Start by finding the spine of the note: what problem it is about, what sequence of ideas it follows, where the examples appear, and how the author closes the argument. Then compress each section into one or two sentences without flattening everything into a single blob. The point of the summary is not just brevity; it is preserving the original map so a reader can still tell where context ends, where the key insight begins, where the exception lives, and where the next action belongs. That makes this answer intentionally long enough to generate a scrollable card while still reading like something a real user might store in the system.',
+      43,
+      timezone('utc'::text, now()) - interval '13 days',
+      timezone('utc'::text, now()) - interval '1 days'
+    ),
+    (
+      44,
+      'user_01KGG4R8HZAV513662YE3DJ0A9',
+      48,
+      'flashcard',
+      'Why does clipping feel different from scrolling in a note card?',
+      'Clipping and scrolling feel different because clipping hides information with no recovery path inside the component, while scrolling makes the component admit that more content exists and gives the user a way to reach it. In a note card, that difference matters because clipping can make the card look tidy while silently dropping context, whereas scrolling preserves the content model but changes how the layout engine has to reason about the card height. For UI debugging, that distinction is important: a bug may not be in the text rendering itself, but in the mismatch between the fixed shell that the grid expects and the overflow behavior that the card body actually uses.',
+      44,
+      timezone('utc'::text, now()) - interval '12 days',
+      timezone('utc'::text, now()) - interval '1 days'
+    )
 )
 INSERT INTO review_cards (
   id,
@@ -220,7 +280,11 @@ VALUES
   (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 34, 'Math meta-learning recall today', '', CURRENT_DATE, NULL, NULL),
   (12, 'user_01KGG4R8HZAV513662YE3DJ0A9', 38, 'Unscheduled science distinction recall', '', NULL, NULL, NULL),
   (13, 'user_01KGG4R8HZAV513662YE3DJ0A9', 40, 'Recovery-day recall overdue', '', CURRENT_DATE - 2, NULL, NULL),
-  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 30, 'Nutrition target recall later this week', '', CURRENT_DATE + 5, NULL, NULL);
+  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 30, 'Nutrition target recall later this week', '', CURRENT_DATE + 5, NULL, NULL),
+  (15, 'user_01KGG4R8HZAV513662YE3DJ0A9', 41, 'Long masonry explanation due today', '', CURRENT_DATE, NULL, NULL),
+  (16, 'user_01KGG4R8HZAV513662YE3DJ0A9', 42, 'Long overflow testing flashcard tomorrow', '', CURRENT_DATE + 1, NULL, NULL),
+  (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 43, 'Dense reading-note practice later this week', '', CURRENT_DATE + 3, NULL, NULL),
+  (18, 'user_01KGG4R8HZAV513662YE3DJ0A9', 44, 'Scrolling versus clipping flashcard overdue', '', CURRENT_DATE - 3, NULL, NULL);
 
 -- Completed reviews (recent + older) for status badges/logbook/history.
 INSERT INTO reviews (
