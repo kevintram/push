@@ -316,7 +316,7 @@ export function ReviewItem({
 		if (variant !== 'default' && variant !== 'topic') return null
 		if (entry.review_card) {
 			return {
-				label: `${entry.review_card.type}: ${entry.review_card.prompt || 'Untitled card'}`,
+				label: entry.review_card.prompt || 'Untitled card',
 				onClick: handleReviewCardClick
 			}
 		}
