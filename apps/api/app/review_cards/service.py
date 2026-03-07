@@ -46,10 +46,10 @@ def _apply_action_day_counts(
     if action_days is None:
         return overdue_count, due_today_count, due_next_seven_days_count
     if action_days < 0:
-        return overdue_count + 1, due_today_count, due_next_seven_days_count
+        return overdue_count + 1, due_today_count, due_next_seven_days_count + 1
     if action_days == 0:
-        return overdue_count, due_today_count + 1, due_next_seven_days_count
-    if action_days <= 7:
+        return overdue_count, due_today_count + 1, due_next_seven_days_count + 1
+    if action_days <= 6:
         return overdue_count, due_today_count, due_next_seven_days_count + 1
     return overdue_count, due_today_count, due_next_seven_days_count
 
@@ -393,7 +393,7 @@ async def get_review_card_queue_summary(
     card_type: str,
 ) -> ReviewCardQueueSummary:
     as_of = get_current_date()
-    seven_days_out = as_of + timedelta(days=7)
+    six_days_out = as_of + timedelta(days=6)
 
     due_summary_stmt = (
         select(
@@ -409,8 +409,7 @@ async def get_review_card_queue_summary(
                 func.sum(
                     case(
                         (
-                            (Review.scheduled_at > as_of)
-                            & (Review.scheduled_at <= seven_days_out),
+                            Review.scheduled_at <= six_days_out,
                             1,
                         ),
                         else_=0,

@@ -208,6 +208,14 @@ class TestReviewQueueEndpoint:
         test_client: AsyncClient,
         monkeypatch,
     ):
+        # Pin "today" to avoid date-boundary flakiness in CI
+        today = date(2026, 1, 15)
+        monkeypatch.setattr(
+            review_card_service,
+            "get_current_date",
+            lambda: today,
+        )
+
         topic = await _create_topic(test_client, "Queue summary")
         overdue_card = await _create_card(
             test_client,
@@ -285,12 +293,12 @@ class TestReviewQueueEndpoint:
         )
 
         for card_id, scheduled_at in [
-            (overdue_card["id"], date.today() - timedelta(days=2)),
-            (today_card["id"], date.today()),
-            (soon_card["id"], date.today() + timedelta(days=3)),
-            (_outside_window_card["id"], date.today() + timedelta(days=9)),
-            (retired_overdue_card["id"], date.today() - timedelta(days=1)),
-            (other_type_card["id"], date.today() - timedelta(days=1)),
+            (overdue_card["id"], today - timedelta(days=2)),
+            (today_card["id"], today),
+            (soon_card["id"], today + timedelta(days=3)),
+            (_outside_window_card["id"], today + timedelta(days=9)),
+            (retired_overdue_card["id"], today - timedelta(days=1)),
+            (other_type_card["id"], today - timedelta(days=1)),
         ]:
             response = await test_client.post(
                 "/reviews/",
@@ -305,7 +313,7 @@ class TestReviewQueueEndpoint:
             "/reviews/",
             json={
                 "review_card_id": completed_new_card["id"],
-                "completed_at": str(date.today()),
+                "completed_at": str(today),
             },
         )
         assert completed_review_response.status_code == 200
@@ -319,7 +327,7 @@ class TestReviewQueueEndpoint:
                 "/reviews/",
                 json={
                     "review_card_id": card_id,
-                    "completed_at": str(date.today() - timedelta(days=2)),
+                    "completed_at": str(today - timedelta(days=2)),
                     "rating": "good",
                 },
             )
@@ -345,7 +353,7 @@ class TestReviewQueueEndpoint:
         assert response.json() == {
             "overdue_count": 3,
             "due_today_count": 2,
-            "due_next_seven_days_count": 2,
+            "due_next_seven_days_count": 7,
             "new_count": 5,
-            "as_of": str(date.today()),
+            "as_of": str(today),
         }
