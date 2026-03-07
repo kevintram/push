@@ -5,9 +5,7 @@ import {
 	Anvil,
 	ArrowLeftRight,
 	Brain,
-	Check,
 	ChevronDown,
-	Copy,
 	Loader2,
 	MoreHorizontal,
 	Pin,
@@ -21,6 +19,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { LoadingOrError } from '~/components/LoadingOrError'
+import { RevealPanel, type RevealPanelTab } from '~/components/RevealPanel'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -42,7 +41,6 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { Textarea } from '~/components/ui/textarea'
 import {
 	Tooltip,
@@ -93,16 +91,8 @@ const PINNED_ICON_CLASSNAME =
 
 export type ReviewCardDetailTab = 'home' | 'reviews'
 
-type ReviewCardDetailRevealPanelTab = 'guess' | 'reveal'
-
 function isReviewCardDetailTab(value: string): value is ReviewCardDetailTab {
 	return value === 'home' || value === 'reviews'
-}
-
-function isReviewCardDetailRevealPanelTab(
-	value: string
-): value is ReviewCardDetailRevealPanelTab {
-	return value === 'guess' || value === 'reveal'
 }
 
 function toFreshnessTier(
@@ -285,10 +275,9 @@ export function ReviewCardDetailPage({
 	const [prompt, setPrompt] = useState('')
 	const [answer, setAnswer] = useState('')
 	const { hidesSecondary } = useFlashcardMode()
-	const [revealPanelTab, setRevealPanelTab] =
-		useState<ReviewCardDetailRevealPanelTab | null>(
-			hidesSecondary ? null : 'reveal'
-		)
+	const [revealPanelTab, setRevealPanelTab] = useState<RevealPanelTab | null>(
+		hidesSecondary ? null : 'reveal'
+	)
 	const [guessAnswerText, setGuessAnswerText] = useState('')
 	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -392,11 +381,6 @@ export function ReviewCardDetailPage({
 		},
 		[reviewCard, createReviewMutation, openReviewDialog]
 	)
-	const handleRevealPanelTabChange = useCallback((value: string) => {
-		if (isReviewCardDetailRevealPanelTab(value)) {
-			setRevealPanelTab(value)
-		}
-	}, [])
 	const handleCopyGuessText = useCallback(async () => {
 		try {
 			await navigator.clipboard.writeText(guessAnswerText)
@@ -548,10 +532,7 @@ export function ReviewCardDetailPage({
 		throw notFound()
 	}
 
-	const revealPanelTextareaClassName =
-		'field-sizing-fixed min-h-24 flex-1 resize-none border-border/70 bg-background/80'
-	const revealPanelCopyButtonClassName =
-		'absolute right-2 bottom-2 text-muted-foreground hover:text-foreground'
+	const revealPanelTextareaClassName = 'field-sizing-fixed flex-1'
 	const isAnswerEmpty = answer.trim().length === 0
 
 	return (
@@ -1131,94 +1112,32 @@ export function ReviewCardDetailPage({
 									</div>
 								) : (
 									<div className='mt-1 flex min-h-0 flex-1 flex-col rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'>
-										<Tabs
-											className='flex min-h-0 flex-1 flex-col gap-2'
-											onValueChange={handleRevealPanelTabChange}
+										<RevealPanel
+											containerClassName='flex min-h-0 flex-1 flex-col'
+											guessFieldContainerClassName='relative flex min-h-0 flex-1 flex-col'
+											guessValue={guessAnswerText}
+											isCopied={isRevealPanelCopied}
+											onGuessCopy={handleCopyGuessText}
+											onGuessValueChange={value => {
+												setGuessAnswerText(value)
+												if (isRevealPanelCopied) setIsRevealPanelCopied(false)
+											}}
+											onRevealBlur={() => {
+												if (answer !== reviewCard.answer) {
+													handleUpdateReviewCardFields({ answer })
+												}
+											}}
+											onRevealCopy={handleCopyRevealText}
+											onRevealValueChange={setAnswer}
+											onValueChange={setRevealPanelTab}
+											revealFieldContainerClassName='relative flex min-h-0 flex-1 flex-col'
+											revealHelperVariant='autosave'
+											revealPlaceholder='Write your answer...'
+											revealValue={answer}
+											tabsClassName='flex min-h-0 flex-1 flex-col gap-2'
+											textareaClassName={revealPanelTextareaClassName}
 											value={revealPanelTab}
-										>
-											<div className='flex items-start justify-between gap-2'>
-												<TabsList className='h-8' variant='default'>
-													<TabsTrigger className='px-2 text-xs' value='guess'>
-														Guess
-													</TabsTrigger>
-													<TabsTrigger className='px-2 text-xs' value='reveal'>
-														Reveal
-													</TabsTrigger>
-												</TabsList>
-											</div>
-											<TabsContent
-												className='mt-0 flex min-h-0 flex-1 flex-col'
-												value='guess'
-											>
-												<div className='relative flex min-h-0 flex-1 flex-col'>
-													<Textarea
-														className={revealPanelTextareaClassName}
-														onChange={event => {
-															setGuessAnswerText(event.target.value)
-															if (isRevealPanelCopied)
-																setIsRevealPanelCopied(false)
-														}}
-														placeholder='Type your guess...'
-														spellCheck={false}
-														value={guessAnswerText}
-													/>
-													<Button
-														aria-label='Copy guess text'
-														className={revealPanelCopyButtonClassName}
-														onClick={handleCopyGuessText}
-														size='icon-xs'
-														type='button'
-														variant='ghost'
-													>
-														{isRevealPanelCopied ? (
-															<Check className='h-3 w-3' />
-														) : (
-															<Copy className='h-3 w-3' />
-														)}
-													</Button>
-												</div>
-												<p className='mt-1 flex items-center justify-end gap-1 text-muted-foreground text-xs'>
-													<AlertTriangle className='h-3 w-3 shrink-0 text-amber-500 dark:text-amber-400' />
-													<span>Guesses are not saved.</span>
-												</p>
-											</TabsContent>
-											<TabsContent
-												className='mt-0 flex min-h-0 flex-1 flex-col'
-												value='reveal'
-											>
-												<div className='relative flex min-h-0 flex-1 flex-col'>
-													<Textarea
-														className={revealPanelTextareaClassName}
-														onBlur={() => {
-															if (answer !== reviewCard.answer) {
-																handleUpdateReviewCardFields({ answer })
-															}
-														}}
-														onChange={event => setAnswer(event.target.value)}
-														placeholder='Write your answer...'
-														spellCheck={false}
-														value={answer}
-													/>
-													<Button
-														aria-label='Copy reveal text'
-														className={revealPanelCopyButtonClassName}
-														onClick={handleCopyRevealText}
-														size='icon-xs'
-														type='button'
-														variant='ghost'
-													>
-														{isRevealPanelCopied ? (
-															<Check className='h-3 w-3' />
-														) : (
-															<Copy className='h-3 w-3' />
-														)}
-													</Button>
-												</div>
-												<p className='mt-1 text-right text-muted-foreground text-xs'>
-													Changes are automatically saved.
-												</p>
-											</TabsContent>
-										</Tabs>
+										/>
 									</div>
 								)
 							) : (

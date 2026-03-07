@@ -3,8 +3,6 @@ import dayjs from 'dayjs'
 import {
 	AlertTriangle,
 	BookOpen,
-	Check,
-	Copy,
 	MoreHorizontal,
 	Plus,
 	Trash2,
@@ -23,6 +21,7 @@ import { toast } from 'sonner'
 import { DetailTabsShell } from '~/components/DetailTabs/DetailTabsShell'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { RevealPanel, type RevealPanelTab } from '~/components/RevealPanel'
 import { AddEntityMenu } from '~/components/ui/add-entity-menu'
 import {
 	AlertDialog,
@@ -50,7 +49,6 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { Textarea } from '~/components/ui/textarea'
 import {
 	Tooltip,
@@ -80,14 +78,6 @@ import { isHttpStatusError } from '~/utils/httpStatusError'
 
 const EMPTY_BADGE_CLASSNAME =
 	'h-5 rounded-sm border-transparent bg-amber-100 text-amber-900 text-xs shadow-sm dark:bg-amber-950 dark:text-amber-200'
-
-type TopicDetailRevealPanelTab = 'guess' | 'reveal'
-
-function isTopicDetailRevealPanelTab(
-	value: string
-): value is TopicDetailRevealPanelTab {
-	return value === 'guess' || value === 'reveal'
-}
 
 export type TopicDetailTab = 'subtopics' | 'review_cards'
 export type TopicDetailReviewCardFilter = 'all' | 'practice' | 'flashcard'
@@ -147,8 +137,9 @@ export function TopicDetailPage({
 	const [parentSearchQuery, setParentSearchQuery] = useState('')
 	const [isParentMutationPending, setIsParentMutationPending] = useState(false)
 	const { hidesSecondary } = useFlashcardMode()
-	const [revealPanelTab, setRevealPanelTab] =
-		useState<TopicDetailRevealPanelTab | null>(hidesSecondary ? null : 'reveal')
+	const [revealPanelTab, setRevealPanelTab] = useState<RevealPanelTab | null>(
+		hidesSecondary ? null : 'reveal'
+	)
 	const [guessBodyText, setGuessBodyText] = useState('')
 	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -350,10 +341,6 @@ export function TopicDetailPage({
 		throw notFound()
 	}
 
-	const revealPanelTextareaClassName =
-		'min-h-24 resize-none border-border/70 bg-background/80'
-	const revealPanelCopyButtonClassName =
-		'absolute right-2 bottom-2 text-muted-foreground hover:text-foreground'
 	const isBodyEmpty = body.trim().length === 0
 	const addParentMenu = (
 		<AddEntityMenu
@@ -714,108 +701,46 @@ export function TopicDetailPage({
 								</div>
 							) : (
 								<div className='mt-1 rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'>
-									<Tabs
-										className='gap-2'
-										onValueChange={value => {
-											if (isTopicDetailRevealPanelTab(value)) {
-												setRevealPanelTab(value)
+									<RevealPanel
+										contentClassName='mt-0'
+										guessFieldContainerClassName='relative'
+										guessValue={guessBodyText}
+										isCopied={isRevealPanelCopied}
+										onGuessCopy={async () => {
+											try {
+												await navigator.clipboard.writeText(guessBodyText)
+												setIsRevealPanelCopied(true)
+												toast.success('Guess copied')
+											} catch {
+												toast.error('Failed to copy guess')
 											}
 										}}
+										onGuessValueChange={value => {
+											setGuessBodyText(value)
+											if (isRevealPanelCopied) setIsRevealPanelCopied(false)
+										}}
+										onRevealBlur={() => {
+											if (body !== topic.body) {
+												updateTopicFields({ body }).catch(() => {})
+											}
+										}}
+										onRevealCopy={async () => {
+											try {
+												await navigator.clipboard.writeText(body)
+												setIsRevealPanelCopied(true)
+												toast.success('Reveal copied')
+											} catch {
+												toast.error('Failed to copy reveal')
+											}
+										}}
+										onRevealValueChange={setBody}
+										onValueChange={setRevealPanelTab}
+										revealFieldContainerClassName='relative'
+										revealHelperVariant='autosave'
+										revealPlaceholder='Write your topic...'
+										revealValue={body}
 										value={revealPanelTab}
-									>
-										<div className='flex items-start justify-between gap-2'>
-											<TabsList className='h-8' variant='default'>
-												<TabsTrigger className='px-2 text-xs' value='guess'>
-													Guess
-												</TabsTrigger>
-												<TabsTrigger className='px-2 text-xs' value='reveal'>
-													Reveal
-												</TabsTrigger>
-											</TabsList>
-										</div>
-										<TabsContent className='mt-0' value='guess'>
-											<div className='relative'>
-												<Textarea
-													className={revealPanelTextareaClassName}
-													onChange={event => {
-														setGuessBodyText(event.target.value)
-														if (isRevealPanelCopied)
-															setIsRevealPanelCopied(false)
-													}}
-													placeholder='Type your guess...'
-													spellCheck={false}
-													value={guessBodyText}
-												/>
-												<Button
-													aria-label='Copy guess text'
-													className={revealPanelCopyButtonClassName}
-													onClick={async () => {
-														try {
-															await navigator.clipboard.writeText(guessBodyText)
-															setIsRevealPanelCopied(true)
-															toast.success('Guess copied')
-														} catch {
-															toast.error('Failed to copy guess')
-														}
-													}}
-													size='icon-xs'
-													type='button'
-													variant='ghost'
-												>
-													{isRevealPanelCopied ? (
-														<Check className='h-3 w-3' />
-													) : (
-														<Copy className='h-3 w-3' />
-													)}
-												</Button>
-											</div>
-											<p className='mt-1 flex items-center justify-end gap-1 text-muted-foreground text-xs'>
-												<AlertTriangle className='h-3 w-3 shrink-0 text-amber-500 dark:text-amber-400' />
-												<span>Guesses are not saved.</span>
-											</p>
-										</TabsContent>
-										<TabsContent className='mt-0' value='reveal'>
-											<div className='relative'>
-												<Textarea
-													className={revealPanelTextareaClassName}
-													onBlur={() => {
-														if (body !== topic.body) {
-															updateTopicFields({ body }).catch(() => {})
-														}
-													}}
-													onChange={event => setBody(event.target.value)}
-													placeholder='Write your topic...'
-													spellCheck={false}
-													value={body}
-												/>
-												<Button
-													aria-label='Copy reveal text'
-													className={revealPanelCopyButtonClassName}
-													onClick={async () => {
-														try {
-															await navigator.clipboard.writeText(body)
-															setIsRevealPanelCopied(true)
-															toast.success('Reveal copied')
-														} catch {
-															toast.error('Failed to copy reveal')
-														}
-													}}
-													size='icon-xs'
-													type='button'
-													variant='ghost'
-												>
-													{isRevealPanelCopied ? (
-														<Check className='h-3 w-3' />
-													) : (
-														<Copy className='h-3 w-3' />
-													)}
-												</Button>
-											</div>
-											<p className='mt-1 text-right text-muted-foreground text-xs'>
-												Changes are automatically saved.
-											</p>
-										</TabsContent>
-									</Tabs>
+									/>
 								</div>
 							)
 						) : (
