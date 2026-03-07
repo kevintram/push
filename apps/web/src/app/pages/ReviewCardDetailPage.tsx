@@ -297,6 +297,7 @@ export function ReviewCardDetailPage({
 	const [isTopicSearchOpen, setIsTopicSearchOpen] = useState(false)
 	const [topicSearchQuery, setTopicSearchQuery] = useState('')
 	const [isTopicMutationPending, setIsTopicMutationPending] = useState(false)
+	const [isTypeMutationPending, setIsTypeMutationPending] = useState(false)
 
 	useEffect(() => {
 		if (!reviewCard) return
@@ -435,6 +436,21 @@ export function ReviewCardDetailPage({
 			)
 		}
 	}, [deleteReviewCardAsync, isDeletingReviewCard, navigate, reviewCard])
+	const handleConvertType = useCallback(async () => {
+		if (!reviewCard || isTypeMutationPending) return
+		const newType = reviewCard.type === 'practice' ? 'flashcard' : 'practice'
+		setIsTypeMutationPending(true)
+		try {
+			await updateReviewCardAsync({ id: reviewCard.id, type: newType })
+			toast.success(
+				`Converted to ${newType === 'practice' ? 'Practice' : 'Flashcard'}`
+			)
+		} catch {
+			toast.error('Failed to convert card')
+		} finally {
+			setIsTypeMutationPending(false)
+		}
+	}, [reviewCard, isTypeMutationPending, updateReviewCardAsync])
 	const handleOpenTopicSearch = useCallback(() => {
 		if (isTopicMutationPending || isUpdatingReviewCard) return
 		setTopicSearchQuery('')
@@ -778,8 +794,41 @@ export function ReviewCardDetailPage({
 						<div className='flex min-h-0 flex-1 flex-col gap-2'>
 							<div className='flex flex-wrap items-center justify-between gap-2'>
 								<div className='flex min-w-0 flex-wrap items-center gap-2'>
-									<Badge variant='secondary'>
-										{reviewCard.type === 'practice' ? 'Practice' : 'Flashcard'}
+									<Badge
+										className='group/type h-6 rounded-full px-1 text-xs'
+										variant='ghost'
+									>
+										<span className='px-1 font-medium text-xs leading-none'>
+											{reviewCard.type === 'practice'
+												? 'Practice'
+												: 'Flashcard'}
+										</span>
+										<Tooltip>
+											<TooltipTrigger
+												render={
+													<Button
+														aria-label='Convert type'
+														className='pointer-events-none inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full p-0 opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/type:pointer-events-auto group-hover/type:opacity-100 group-active/type:pointer-events-auto group-active/type:opacity-100'
+														disabled={
+															isTypeMutationPending || isUpdatingReviewCard
+														}
+														onClick={() => {
+															void handleConvertType()
+														}}
+														size='icon-xs'
+														type='button'
+														variant='ghost'
+													/>
+												}
+											>
+												<ArrowLeftRight className='h-3 w-3' />
+											</TooltipTrigger>
+											<TooltipContent>
+												{reviewCard.type === 'practice'
+													? 'Convert to Flashcard'
+													: 'Convert to Practice'}
+											</TooltipContent>
+										</Tooltip>
 									</Badge>
 								</div>
 								<div className='flex flex-wrap items-center justify-end gap-1.5'>
