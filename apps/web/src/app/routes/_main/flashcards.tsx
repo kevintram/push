@@ -9,6 +9,7 @@ import {
 	getStoredReviewQueueViewPreference,
 	persistReviewQueueViewPreference
 } from '~/features/review-cards/reviewQueueViewPreferences'
+import { useReviewMode } from '~/stores/ReviewModeContext'
 
 type FlashcardsRouteSearch = {
 	tab?: FlashcardsTab
@@ -39,10 +40,15 @@ export const Route = createFileRoute('/_main/flashcards')({
 
 function FlashcardsRoute() {
 	const navigate = useNavigate()
+	const { setReviewMode } = useReviewMode()
 	const search = Route.useSearch()
 	const storedView = getStoredReviewQueueViewPreference('flashcards')
 	const activeTab = search.tab ?? storedView.tab
 	const dueScope = search.scope ?? storedView.dueScope
+
+	useEffect(() => {
+		setReviewMode('on')
+	}, [setReviewMode])
 
 	useEffect(() => {
 		persistReviewQueueViewPreference('flashcards', {
