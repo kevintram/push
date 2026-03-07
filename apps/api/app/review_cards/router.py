@@ -10,6 +10,7 @@ from app.review_cards import service
 from app.reviews import service as reviews_service
 from app.schemas.review_cards import (
     ReviewCardCreate,
+    ReviewCardPinnedSummary,
     ReviewCardQueuePage,
     ReviewCardQueueSummary,
     ReviewCardRead,
@@ -29,6 +30,7 @@ async def read_review_cards(
     topic_id: int | None = None,
     type: ReviewCardTypeEnum | None = None,
     new_only: bool | None = None,
+    pinned_only: bool | None = None,
     order: Literal["asc", "desc"] = "desc",
 ) -> list[ReviewCardRead]:
     return await service.list_review_cards(
@@ -37,6 +39,7 @@ async def read_review_cards(
         topic_id=topic_id,
         card_type=type.value if type else None,
         new_only=new_only,
+        pinned_only=pinned_only,
         order=order,
     )
 
@@ -71,6 +74,14 @@ async def read_review_card_queue_summary(
         user_id,
         card_type=type.value,
     )
+
+
+@router.get("/pinned-summary/")
+async def read_review_card_pinned_summary(
+    session: SessionDep,
+    user_id: UserIdDep,
+) -> ReviewCardPinnedSummary:
+    return await service.get_review_card_pinned_summary(session, user_id)
 
 
 @router.get("/{review_card_id}/")

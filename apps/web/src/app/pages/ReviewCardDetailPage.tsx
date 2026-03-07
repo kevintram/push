@@ -10,6 +10,7 @@ import {
 	Copy,
 	Loader2,
 	MoreHorizontal,
+	Pin,
 	Plus,
 	Search,
 	Sparkles,
@@ -87,6 +88,8 @@ import { isHttpStatusError } from '~/utils/httpStatusError'
 
 const EMPTY_BADGE_CLASSNAME =
 	'h-5 rounded-sm border-transparent bg-amber-100 text-amber-900 text-xs shadow-sm dark:bg-amber-950 dark:text-amber-200'
+const PINNED_ICON_CLASSNAME =
+	'h-4 w-4 fill-current text-sky-500 dark:text-sky-300'
 
 export type ReviewCardDetailTab = 'home' | 'reviews'
 
@@ -324,7 +327,12 @@ export function ReviewCardDetailPage({
 	}, [topic?.title, reviewCard?.topic_id])
 
 	const handleUpdateReviewCardFields = useCallback(
-		(fields: { prompt?: string; answer?: string; retired?: boolean }) => {
+		(fields: {
+			prompt?: string
+			answer?: string
+			retired?: boolean
+			pinned?: boolean
+		}) => {
 			if (!reviewCard) return
 			updateReviewCardAsync({ id: reviewCard.id, ...fields }).catch(() => {
 				toast.error('Failed to update review card')
@@ -950,6 +958,40 @@ export function ReviewCardDetailPage({
 											</Button>
 										}
 									/>
+									<Tooltip>
+										<TooltipTrigger
+											render={
+												<Button
+													aria-label={
+														reviewCard.pinned_at
+															? 'Unpin this item'
+															: 'Pin this item'
+													}
+													aria-pressed={reviewCard.pinned_at != null}
+													className='rounded-full'
+													disabled={isUpdatingReviewCard}
+													onClick={() =>
+														handleUpdateReviewCardFields({
+															pinned: reviewCard.pinned_at == null
+														})
+													}
+													size='icon-sm'
+													variant='outline'
+												>
+													<Pin
+														className={
+															reviewCard.pinned_at
+																? PINNED_ICON_CLASSNAME
+																: 'h-4 w-4 text-muted-foreground'
+														}
+													/>
+												</Button>
+											}
+										/>
+										<TooltipContent>
+											{reviewCard.pinned_at ? 'Unpin' : 'Pin'}
+										</TooltipContent>
+									</Tooltip>
 									<Tooltip>
 										<TooltipTrigger render={<span className='inline-flex' />}>
 											<Button

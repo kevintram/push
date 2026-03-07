@@ -7,6 +7,7 @@ import {
 	ListChecks,
 	type LucideIcon,
 	PanelLeft,
+	Pin,
 	Plus,
 	Settings
 } from 'lucide-react'
@@ -32,6 +33,7 @@ import {
 	SidebarMenuSubItem,
 	useSidebar
 } from '~/components/ui/sidebar'
+import { useReviewCardPinnedSummary } from '~/features/review-cards/api/getReviewCardPinnedSummary'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
 import { useTopics } from '~/features/topics/api/getTopics'
@@ -43,12 +45,15 @@ function getTopicLabel(title: string) {
 	return title.trim() || 'Untitled topic'
 }
 
-type ReviewSidebarItem = {
+type SidebarNavItem = {
 	title: string
-	url: '/practice' | '/flashcards'
+	url: '/practice' | '/flashcards' | '/pinned'
 	icon: LucideIcon
-	type: ReviewCardType
 	isActive: (pathname: string) => boolean
+}
+
+type ReviewSidebarItem = SidebarNavItem & {
+	type: ReviewCardType
 }
 
 function ReviewSidebarMenuItem({
@@ -107,12 +112,14 @@ export function AppSidebar() {
 	const location = useLocation()
 	const navigate = useNavigate()
 	const { toggleSidebar } = useSidebar()
+	const pinnedSummaryQuery = useReviewCardPinnedSummary()
 	const rootTopicsQuery = useTopics({
 		root: true,
 		sort: 'title',
 		order: 'asc'
 	})
 	const rootTopics = rootTopicsQuery?.data ?? []
+	const pinnedCount = pinnedSummaryQuery?.data?.pinned_count ?? 0
 
 	const reviewItems: Array<ReviewSidebarItem> = [
 		{
@@ -128,6 +135,14 @@ export function AppSidebar() {
 			icon: Layers,
 			type: 'flashcard',
 			isActive: (pathname: string) => pathname === '/flashcards'
+		}
+	]
+	const reviewUtilityItems: Array<SidebarNavItem> = [
+		{
+			title: 'Pinned',
+			url: '/pinned',
+			icon: Pin,
+			isActive: (pathname: string) => pathname === '/pinned'
 		}
 	]
 
@@ -201,6 +216,29 @@ export function AppSidebar() {
 										item={item}
 										key={item.title}
 									/>
+								)
+							})}
+							{reviewUtilityItems.map(item => {
+								const isActive = item.isActive(location.pathname)
+								return (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton
+											isActive={isActive}
+											render={<Link to={item.url} />}
+											tooltip={`${item.title}: ${pinnedCount} review cards`}
+										>
+											<item.icon />
+											<span className='flex min-w-0 flex-1 items-center gap-2 group-data-[collapsible=icon]:hidden'>
+												<span className='min-w-0 truncate'>{item.title}</span>
+												<span aria-hidden='true' className='ml-auto shrink-0'>
+													<CountBadge
+														className='h-4 min-w-4 px-1 text-[10px]'
+														count={pinnedCount}
+													/>
+												</span>
+											</span>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
 								)
 							})}
 						</SidebarMenu>

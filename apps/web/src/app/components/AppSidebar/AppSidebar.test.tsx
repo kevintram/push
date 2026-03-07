@@ -6,6 +6,7 @@ import { SidebarProvider } from '~/components/ui/sidebar'
 
 const useLocationMock = vi.fn()
 const useReviewCardQueueCountsMock = vi.fn()
+const useReviewCardPinnedSummaryMock = vi.fn()
 const useTopicsMock = vi.fn()
 const navigateMock = vi.fn()
 const requestCreateTopicMock = vi.fn()
@@ -37,6 +38,11 @@ vi.mock('~/features/review-cards/hooks/useReviewCardQueueCounts', () => ({
 		useReviewCardQueueCountsMock(...args)
 }))
 
+vi.mock('~/features/review-cards/api/getReviewCardPinnedSummary', () => ({
+	useReviewCardPinnedSummary: (...args: Array<unknown>) =>
+		useReviewCardPinnedSummaryMock(...args)
+}))
+
 vi.mock('~/features/topics/api/getTopics', () => ({
 	useTopics: (...args: Array<unknown>) => useTopicsMock(...args)
 }))
@@ -49,9 +55,13 @@ describe('AppSidebar', () => {
 	beforeEach(() => {
 		useLocationMock.mockReset()
 		useReviewCardQueueCountsMock.mockReset()
+		useReviewCardPinnedSummaryMock.mockReset()
 		useTopicsMock.mockReset()
 		navigateMock.mockReset()
 		requestCreateTopicMock.mockReset()
+		useReviewCardPinnedSummaryMock.mockReturnValue({
+			data: { pinned_count: 0 }
+		})
 	})
 
 	it('renders practice and flashcard queue summaries in the sidebar', () => {
@@ -76,6 +86,9 @@ describe('AppSidebar', () => {
 				}
 			}
 		)
+		useReviewCardPinnedSummaryMock.mockReturnValue({
+			data: { pinned_count: 2 }
+		})
 
 		render(
 			<SidebarProvider>
@@ -85,6 +98,7 @@ describe('AppSidebar', () => {
 
 		const practiceLink = screen.getByRole('link', { name: /practice/i })
 		const flashcardsLink = screen.getByRole('link', { name: /flashcards/i })
+		const pinnedLink = screen.getByRole('link', { name: /pinned/i })
 
 		expect(practiceLink).toHaveTextContent('Practice234')
 		expect(practiceLink).not.toHaveTextContent('overdue')
@@ -95,6 +109,29 @@ describe('AppSidebar', () => {
 		expect(flashcardsLink).not.toHaveTextContent('overdue')
 		expect(flashcardsLink).not.toHaveTextContent('today')
 		expect(flashcardsLink).not.toHaveTextContent('new')
+		expect(pinnedLink).toHaveTextContent('Pinned2')
+	})
+
+	it('falls back to a zero pinned count when the summary query is unavailable', () => {
+		useLocationMock.mockReturnValue({ pathname: '/recent' })
+		useTopicsMock.mockReturnValue({ data: [] })
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+		useReviewCardPinnedSummaryMock.mockReturnValue(undefined)
+
+		render(
+			<SidebarProvider>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		expect(screen.getByRole('link', { name: /pinned/i })).toHaveTextContent(
+			'Pinned0'
+		)
 	})
 
 	it('renders capped root topics with untitled fallback in the sidebar', () => {
@@ -228,16 +265,22 @@ describe('AppSidebar', () => {
 
 		const links = screen.getAllByRole('link')
 		const topLevelLabels = links
-			.map(link => link.textContent)
+			.map(link => link.textContent?.replace(/\d+$/, '').trim())
 			.filter(label =>
-				['Recent', 'Topics', 'Logbook', 'Practice', 'Flashcards'].includes(
-					label ?? ''
-				)
+				[
+					'Recent',
+					'Topics',
+					'Logbook',
+					'Practice',
+					'Flashcards',
+					'Pinned'
+				].includes(label ?? '')
 			)
 
 		expect(topLevelLabels).toEqual([
 			'Practice',
 			'Flashcards',
+			'Pinned',
 			'Logbook',
 			'Recent',
 			'Topics'

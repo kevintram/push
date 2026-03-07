@@ -1,6 +1,6 @@
 """Review cards business logic and queue logic."""
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
 from sqlalchemy import case, delete, desc, exists, func, select
@@ -11,6 +11,7 @@ from app.exceptions import NotFoundError
 from app.models import Review, ReviewCard, ReviewCardTypeAssignment, Topic
 from app.review_cards.status_badges import compute_days_until_hazy, get_days_until_hazy
 from app.schemas.review_cards import (
+    ReviewCardPinnedSummary,
     ReviewCardQueueItem,
     ReviewCardQueuePage,
     ReviewCardQueueSummary,
@@ -206,6 +207,7 @@ async def list_review_cards(
     topic_id: int | None = None,
     card_type: str | None = None,
     new_only: bool | None = None,
+    pinned_only: bool | None = None,
     order: Literal["asc", "desc"] = "desc",
 ) -> list[ReviewCard]:
     stmt = select(ReviewCard).where(ReviewCard.user_id == user_id)
@@ -224,11 +226,24 @@ async def list_review_cards(
             .limit(1)
         )
         stmt = stmt.where(~exists(completed_exists))
+    if pinned_only is True:
+        stmt = stmt.where(ReviewCard.pinned_at.isnot(None))
 
+    pinned_rank = case((ReviewCard.pinned_at.is_(None), 1), else_=0)
     if order == "asc":
-        stmt = stmt.order_by(ReviewCard.updated_at.asc())
+        stmt = stmt.order_by(
+            pinned_rank.asc(),
+            ReviewCard.pinned_at.desc(),
+            ReviewCard.updated_at.asc(),
+            ReviewCard.id.asc(),
+        )
     else:
-        stmt = stmt.order_by(desc(ReviewCard.updated_at))
+        stmt = stmt.order_by(
+            pinned_rank.asc(),
+            desc(ReviewCard.pinned_at),
+            desc(ReviewCard.updated_at),
+            desc(ReviewCard.id),
+        )
 
     stmt = stmt.options(
         selectinload(ReviewCard.topic),
@@ -305,6 +320,10 @@ async def update_review_card(
 
     if "retired" in updates and updates["retired"] is not None:
         review_card.retired = updates["retired"]
+    if "pinned" in updates and updates["pinned"] is not None:
+        review_card.pinned_at = (
+            datetime.now(timezone.utc) if updates["pinned"] else None
+        )
 
     await session.flush()
     return await get_review_card(session, review_card_id, user_id)
@@ -503,3 +522,21 @@ async def get_review_card_queue_summary(
         new_count=new_count,
         as_of=as_of,
     )
+
+
+async def get_review_card_pinned_summary(
+    session: AsyncSession,
+    user_id: str,
+) -> ReviewCardPinnedSummary:
+    pinned_count = (
+        await session.execute(
+            select(func.count())
+            .select_from(ReviewCard)
+            .where(
+                ReviewCard.user_id == user_id,
+                ReviewCard.pinned_at.isnot(None),
+            )
+        )
+    ).scalar_one()
+
+    return ReviewCardPinnedSummary(pinned_count=pinned_count)
