@@ -108,15 +108,21 @@ vi.mock('~/features/review-cards/api/getReviewCardQueue', () => ({
 		normalizeQueuePageResult(useReviewCardQueueMock(...args))
 }))
 
-vi.mock('~/stores/ReviewModeContext', () => ({
-	useReviewMode: () => ({
-		reviewMode: 'off',
-		setReviewMode: () => {},
-		isReviewModeEnabled: false,
-		hidesPrimary: false,
-		hidesSecondary: false
-	})
-}))
+vi.mock('~/stores/ReviewModeContext', async importOriginal => {
+	const actual =
+		await importOriginal<typeof import('~/stores/ReviewModeContext')>()
+
+	return {
+		...actual,
+		useReviewMode: () => ({
+			reviewMode: 'off',
+			setReviewMode: () => {},
+			isReviewModeEnabled: false,
+			hidesPrimary: false,
+			hidesSecondary: false
+		})
+	}
+})
 
 vi.mock('~/stores/WeekStartContext', () => ({
 	useWeekStart: () => ({

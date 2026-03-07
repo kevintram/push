@@ -156,12 +156,18 @@ vi.mock('~/features/review-cards/api/updateReviewCard', () => ({
 	})
 }))
 
-vi.mock('~/stores/ReviewModeContext', () => ({
-	useReviewMode: () => ({
-		hidesPrimary: false,
-		hidesSecondary: false
-	})
-}))
+vi.mock('~/stores/ReviewModeContext', async importOriginal => {
+	const actual =
+		await importOriginal<typeof import('~/stores/ReviewModeContext')>()
+
+	return {
+		...actual,
+		useReviewMode: () => ({
+			hidesPrimary: false,
+			hidesSecondary: false
+		})
+	}
+})
 
 vi.mock('~/stores/WeekStartContext', () => ({
 	useWeekStart: () => ({

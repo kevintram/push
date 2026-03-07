@@ -9,7 +9,6 @@ import {
 	getStoredReviewQueueViewPreference,
 	persistReviewQueueViewPreference
 } from '~/features/review-cards/reviewQueueViewPreferences'
-import { useReviewMode } from '~/stores/ReviewModeContext'
 
 type PracticeRouteSearch = {
 	tab?: PracticeTab
@@ -40,15 +39,10 @@ export const Route = createFileRoute('/_main/practice')({
 
 function PracticeRoute() {
 	const navigate = useNavigate()
-	const { setReviewMode } = useReviewMode()
 	const search = Route.useSearch()
 	const storedView = getStoredReviewQueueViewPreference('practice')
 	const activeTab = search.tab ?? storedView.tab
 	const dueScope = search.scope ?? storedView.dueScope
-
-	useEffect(() => {
-		setReviewMode('on')
-	}, [setReviewMode])
 
 	useEffect(() => {
 		persistReviewQueueViewPreference('practice', {

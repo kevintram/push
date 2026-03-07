@@ -1,3 +1,4 @@
+import { useRouterState } from '@tanstack/react-router'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 const FLASHCARD_MODE_STORAGE_KEY = '3gulp-flashcard-mode'
@@ -22,6 +23,10 @@ interface ReviewModeProviderProps {
 	children: React.ReactNode
 }
 
+function isForcedReviewModePath(pathname: string): boolean {
+	return pathname === '/practice' || pathname === '/flashcards'
+}
+
 function isReviewMode(value: string): value is ReviewMode {
 	return REVIEW_MODES.includes(value as ReviewMode)
 }
@@ -29,7 +34,10 @@ function isReviewMode(value: string): value is ReviewMode {
 function getInitialReviewMode(): ReviewMode {
 	if (typeof window === 'undefined') return 'off'
 
-	const storedValue = window.localStorage.getItem(FLASHCARD_MODE_STORAGE_KEY)
+	const storage = window.localStorage
+	if (!storage || typeof storage.getItem !== 'function') return 'off'
+
+	const storedValue = storage.getItem(FLASHCARD_MODE_STORAGE_KEY)
 	if (!storedValue) return 'off'
 
 	// Backwards-compatibility for prior boolean persistence.
@@ -42,16 +50,24 @@ function getInitialReviewMode(): ReviewMode {
 }
 
 export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
-	const [reviewMode, setReviewMode] = useState<ReviewMode>(getInitialReviewMode)
+	const pathname = useRouterState({
+		select: state => state.location.pathname
+	})
+	const [storedReviewMode, setStoredReviewMode] =
+		useState<ReviewMode>(getInitialReviewMode)
+	const reviewMode = isForcedReviewModePath(pathname) ? 'on' : storedReviewMode
 
 	useEffect(() => {
-		window.localStorage.setItem(FLASHCARD_MODE_STORAGE_KEY, reviewMode)
-	}, [reviewMode])
+		const storage = window.localStorage
+		if (!storage || typeof storage.setItem !== 'function') return
+
+		storage.setItem(FLASHCARD_MODE_STORAGE_KEY, storedReviewMode)
+	}, [storedReviewMode])
 
 	const value = useMemo(
 		() => ({
 			reviewMode,
-			setReviewMode,
+			setReviewMode: setStoredReviewMode,
 			isReviewModeEnabled: reviewMode !== 'off',
 			hidesPrimary: false,
 			hidesSecondary: reviewMode !== 'off'

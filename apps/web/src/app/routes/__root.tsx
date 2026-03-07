@@ -4,6 +4,7 @@ import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { Toaster } from '~/components/ui/sonner'
 import { ReviewDialogProvider } from '~/features/reviews/providers/ReviewDialogProvider'
+import { ReviewModeProvider } from '~/stores/ReviewModeContext'
 
 function isNotFoundError(error: unknown): error is { isNotFound: true } {
 	return (
@@ -33,12 +34,14 @@ export const Route = createRootRoute({
 	notFoundComponent: NotFoundView,
 	component: () => (
 		<ErrorBoundary fallbackRender={renderError}>
-			<ReviewDialogProvider>
-				<Suspense fallback={<LoadingOrError />}>
-					<Outlet />
-				</Suspense>
-				<Toaster />
-			</ReviewDialogProvider>
+			<ReviewModeProvider>
+				<ReviewDialogProvider>
+					<Suspense fallback={<LoadingOrError />}>
+						<Outlet />
+					</Suspense>
+					<Toaster />
+				</ReviewDialogProvider>
+			</ReviewModeProvider>
 		</ErrorBoundary>
 	)
 })
