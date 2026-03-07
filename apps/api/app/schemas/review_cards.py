@@ -38,6 +38,7 @@ class ReviewCardRead(ReviewCardBase):
     state: str = "LEARNING"
     step: int | None = None
     retired: bool = False
+    pinned_at: datetime | None = None
     last_reviewed_at: date | None = None
     retrievability: float | None = None
     freshness_tier: str | None = None
@@ -61,6 +62,7 @@ class ReviewCardUpdate(BaseModel):
     prompt: str | None = None
     answer: str | None = None
     retired: bool | None = None
+    pinned: bool | None = None
 
 
 class ReviewCardQueueItem(BaseModel):
@@ -85,6 +87,10 @@ class ReviewCardQueueSummary(BaseModel):
     due_next_seven_days_count: int
     new_count: int
     as_of: date
+
+
+class ReviewCardPinnedSummary(BaseModel):
+    pinned_count: int
 
 
 class ReviewCardReviewCreate(BaseModel):
