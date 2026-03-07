@@ -263,6 +263,7 @@ async def create_review_card(
     type: str,
     prompt: str = "",
     answer: str = "",
+    notes: str = "",
     retired: bool = False,
 ) -> ReviewCard:
     topic_result = await session.execute(
@@ -278,6 +279,7 @@ async def create_review_card(
         type=type,
         prompt=prompt,
         answer=answer,
+        notes=notes,
         retired=retired,
     )
 
@@ -315,6 +317,8 @@ async def update_review_card(
         review_card.prompt = updates["prompt"]
     if "answer" in updates and updates["answer"] is not None:
         review_card.answer = updates["answer"]
+    if "notes" in updates and updates["notes"] is not None:
+        review_card.notes = updates["notes"]
     if type_changed:
         await sync_review_card_type_assignment(session, review_card)
 

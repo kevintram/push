@@ -11,6 +11,7 @@ export const ReviewCardSchema = v.object({
 	type: ReviewCardTypeSchema,
 	prompt: v.string(),
 	answer: v.string(),
+	notes: v.string(),
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	last_review_rating: v.nullable(ReviewRatingSchema),

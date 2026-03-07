@@ -2,7 +2,7 @@ import { type ReactNode, useCallback } from "react"
 import { CountBadge } from "~/components/ui/count-badge"
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"
 
-export type DetailNavTab = "home" | "reviews"
+export type DetailNavTab = "home" | "notes" | "reviews"
 
 interface DetailNavBarProps {
 	leftContent?: ReactNode
@@ -12,6 +12,7 @@ interface DetailNavBarProps {
 	unscheduledCount: number
 	overdueCount: number
 	dueTodayCount: number
+	showNotesTab?: boolean
 	showReviewsTab?: boolean
 }
 
@@ -23,17 +24,23 @@ export function DetailNavBar({
 	unscheduledCount,
 	overdueCount,
 	dueTodayCount,
+	showNotesTab = false,
 	showReviewsTab = true
 }: DetailNavBarProps) {
 	const handleValueChange = useCallback(
 		(value: string) => {
-			if (value !== "home" && (showReviewsTab ? value !== "reviews" : true)) {
+			const isSupportedTab =
+				value === "home" ||
+				(showNotesTab && value === "notes") ||
+				(showReviewsTab && value === "reviews")
+
+			if (!isSupportedTab) {
 				return
 			}
 
 			onTabChange(value as DetailNavTab)
 		},
-		[onTabChange, showReviewsTab]
+		[onTabChange, showNotesTab, showReviewsTab]
 	)
 
 	return (
@@ -43,6 +50,7 @@ export function DetailNavBar({
 			<Tabs onValueChange={handleValueChange} value={activeTab}>
 				<TabsList className='h-8'>
 					<TabsTrigger value='home'>Home</TabsTrigger>
+					{showNotesTab ? <TabsTrigger value='notes'>Notes</TabsTrigger> : null}
 					{showReviewsTab ? (
 						<TabsTrigger value='reviews'>
 							<span className='flex items-center gap-1.5'>
