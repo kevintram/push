@@ -110,6 +110,9 @@ vi.mock('~/features/review-cards/api/getReviewCardQueue', () => ({
 
 vi.mock('~/stores/ReviewModeContext', () => ({
 	useReviewMode: () => ({
+		reviewMode: 'off',
+		setReviewMode: () => {},
+		isReviewModeEnabled: false,
 		hidesPrimary: false,
 		hidesSecondary: false
 	})
