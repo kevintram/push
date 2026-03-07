@@ -156,8 +156,8 @@ vi.mock('~/features/review-cards/api/updateReviewCard', () => ({
 	})
 }))
 
-vi.mock('~/stores/FlashcardModeContext', () => ({
-	useFlashcardMode: () => ({
+vi.mock('~/stores/ReviewModeContext', () => ({
+	useReviewMode: () => ({
 		hidesPrimary: false,
 		hidesSecondary: false
 	})

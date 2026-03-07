@@ -1,10 +1,10 @@
 import { ReviewModeControl } from '~/app/components/ReviewModeControl'
 
-interface FlashcardModeFabProps {
+interface ReviewModeFabProps {
 	visible: boolean
 }
 
-export function FlashcardModeFab({ visible }: FlashcardModeFabProps) {
+export function ReviewModeFab({ visible }: ReviewModeFabProps) {
 	if (!visible) return null
 
 	return (

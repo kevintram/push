@@ -28,7 +28,7 @@ import {
 } from '~/components/ui/tooltip'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
-import { useFlashcardMode } from '~/stores/FlashcardModeContext'
+import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate
@@ -66,7 +66,7 @@ export function TopicCard({
 }: TopicCardProps) {
 	const [cardRef, cardRect] = useResizeObserver<HTMLDivElement>()
 	const deleteTopicMutation = useDeleteTopic()
-	const { hidesSecondary } = useFlashcardMode()
+	const { hidesSecondary } = useReviewMode()
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
 	)

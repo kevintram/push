@@ -4,7 +4,7 @@ import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { TooltipProvider } from '~/components/ui/tooltip'
-import { FlashcardModeProvider } from '~/stores/FlashcardModeContext'
+import { ReviewModeProvider } from '~/stores/ReviewModeContext'
 import { ThemeProvider } from '~/stores/ThemeContext'
 import { WeekStartProvider } from '~/stores/WeekStartContext'
 import './global.css'
@@ -50,7 +50,7 @@ enableMocking()
 			root.render(
 				<StrictMode>
 					<ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
-						<FlashcardModeProvider>
+						<ReviewModeProvider>
 							<WeekStartProvider>
 								<QueryClientProvider client={queryClient}>
 									<TooltipProvider delay={200}>
@@ -59,7 +59,7 @@ enableMocking()
 									</TooltipProvider>
 								</QueryClientProvider>
 							</WeekStartProvider>
-						</FlashcardModeProvider>
+						</ReviewModeProvider>
 					</ThemeProvider>
 				</StrictMode>
 			)

@@ -248,8 +248,8 @@ vi.mock('~/hooks/useLearnableMetrics', () => ({
 	})
 }))
 
-vi.mock('~/stores/FlashcardModeContext', () => ({
-	useFlashcardMode: () => ({
+vi.mock('~/stores/ReviewModeContext', () => ({
+	useReviewMode: () => ({
 		hidesPrimary: false,
 		hidesSecondary: false
 	})

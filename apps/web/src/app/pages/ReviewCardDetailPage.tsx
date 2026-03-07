@@ -77,7 +77,7 @@ import type { SearchResultItem } from '~/features/search/types/search.types'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
-import { useFlashcardMode } from '~/stores/FlashcardModeContext'
+import { useReviewMode } from '~/stores/ReviewModeContext'
 import { localDateString } from '~/utils/date'
 import {
 	formatAbsoluteDate,
@@ -284,7 +284,7 @@ export function ReviewCardDetailPage({
 
 	const [prompt, setPrompt] = useState('')
 	const [answer, setAnswer] = useState('')
-	const { hidesSecondary } = useFlashcardMode()
+	const { hidesSecondary } = useReviewMode()
 	const [revealPanelTab, setRevealPanelTab] =
 		useState<ReviewCardDetailRevealPanelTab | null>(
 			hidesSecondary ? null : 'reveal'

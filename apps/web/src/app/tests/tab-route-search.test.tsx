@@ -108,8 +108,8 @@ vi.mock('~/features/review-cards/api/getReviewCardQueue', () => ({
 		normalizeQueuePageResult(useReviewCardQueueMock(...args))
 }))
 
-vi.mock('~/stores/FlashcardModeContext', () => ({
-	useFlashcardMode: () => ({
+vi.mock('~/stores/ReviewModeContext', () => ({
+	useReviewMode: () => ({
 		hidesPrimary: false,
 		hidesSecondary: false
 	})

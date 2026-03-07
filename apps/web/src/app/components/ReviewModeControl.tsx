@@ -1,8 +1,8 @@
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group'
 import {
 	type ReviewMode,
-	useFlashcardMode
-} from '~/stores/FlashcardModeContext'
+	useReviewMode
+} from '~/stores/ReviewModeContext'
 
 const CONTROLS: Array<{ label: string; mode: ReviewMode }> = [
 	{ label: 'Off', mode: 'off' },
@@ -10,7 +10,7 @@ const CONTROLS: Array<{ label: string; mode: ReviewMode }> = [
 ]
 
 export function ReviewModeControl() {
-	const { reviewMode, setReviewMode } = useFlashcardMode()
+	const { reviewMode, setReviewMode } = useReviewMode()
 
 	return (
 		<div className='pointer-events-auto flex max-w-42 flex-col gap-2 rounded-2xl border bg-background/90 p-3 shadow-lg backdrop-blur-sm'>

@@ -6,7 +6,7 @@ export const REVIEW_MODES = ['off', 'on'] as const
 
 export type ReviewMode = (typeof REVIEW_MODES)[number]
 
-type FlashcardModeContextType = {
+type ReviewModeContextType = {
 	reviewMode: ReviewMode
 	setReviewMode: (mode: ReviewMode) => void
 	isReviewModeEnabled: boolean
@@ -14,11 +14,11 @@ type FlashcardModeContextType = {
 	hidesSecondary: boolean
 }
 
-const FlashcardModeContext = createContext<
-	FlashcardModeContextType | undefined
+const ReviewModeContext = createContext<
+	ReviewModeContextType | undefined
 >(undefined)
 
-interface FlashcardModeProviderProps {
+interface ReviewModeProviderProps {
 	children: React.ReactNode
 }
 
@@ -41,9 +41,9 @@ function getInitialReviewMode(): ReviewMode {
 	return isReviewMode(storedValue) ? storedValue : 'off'
 }
 
-export function FlashcardModeProvider({
+export function ReviewModeProvider({
 	children
-}: FlashcardModeProviderProps) {
+}: ReviewModeProviderProps) {
 	const [reviewMode, setReviewMode] = useState<ReviewMode>(getInitialReviewMode)
 
 	useEffect(() => {
@@ -61,15 +61,15 @@ export function FlashcardModeProvider({
 		[reviewMode]
 	)
 
-	return <FlashcardModeContext value={value}>{children}</FlashcardModeContext>
+	return <ReviewModeContext value={value}>{children}</ReviewModeContext>
 }
 
-export function useFlashcardMode() {
-	const context = useContext(FlashcardModeContext)
+export function useReviewMode() {
+	const context = useContext(ReviewModeContext)
 
 	if (!context) {
 		// biome-ignore lint/nursery/noSecrets: false positive on static invariant message
-		throw new Error('FlashcardModeProvider is required')
+		throw new Error('ReviewModeProvider is required')
 	}
 
 	return context

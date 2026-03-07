@@ -51,7 +51,7 @@ import {
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
-import { useFlashcardMode } from '~/stores/FlashcardModeContext'
+import { useReviewMode } from '~/stores/ReviewModeContext'
 import { localDateString } from '~/utils/date'
 import {
 	formatAbsoluteDate,
@@ -200,7 +200,7 @@ export function ReviewCard({
 	const { freshnessTierInfo, freshnessTierColor, isUnreviewed, stabilityText } =
 		metrics
 
-	const { hidesPrimary, hidesSecondary } = useFlashcardMode()
+	const { hidesPrimary, hidesSecondary } = useReviewMode()
 	const hideParent = hidesPrimary && reviewCard.topic_id != null
 	const [isPrimaryRevealed, setIsPrimaryRevealed] = useState(!hidesPrimary)
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(

@@ -12,12 +12,12 @@ vi.mock('~/components/SettingsDialog', () => ({
 	SettingsDialog: () => null
 }))
 
-vi.mock('~/app/components/FlashcardModeFab', () => ({
-	FlashcardModeFab: () => null
+vi.mock('~/app/components/ReviewModeFab', () => ({
+	ReviewModeFab: () => null
 }))
 
-vi.mock('~/stores/FlashcardModeContext', () => ({
-	useFlashcardMode: () => ({
+vi.mock('~/stores/ReviewModeContext', () => ({
+	useReviewMode: () => ({
 		reviewMode: 'off',
 		setReviewMode: () => {},
 		isReviewModeEnabled: false,
