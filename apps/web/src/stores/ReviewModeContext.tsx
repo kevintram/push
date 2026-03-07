@@ -14,9 +14,9 @@ type ReviewModeContextType = {
 	hidesSecondary: boolean
 }
 
-const ReviewModeContext = createContext<
-	ReviewModeContextType | undefined
->(undefined)
+const ReviewModeContext = createContext<ReviewModeContextType | undefined>(
+	undefined
+)
 
 interface ReviewModeProviderProps {
 	children: React.ReactNode
@@ -41,9 +41,7 @@ function getInitialReviewMode(): ReviewMode {
 	return isReviewMode(storedValue) ? storedValue : 'off'
 }
 
-export function ReviewModeProvider({
-	children
-}: ReviewModeProviderProps) {
+export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 	const [reviewMode, setReviewMode] = useState<ReviewMode>(getInitialReviewMode)
 
 	useEffect(() => {

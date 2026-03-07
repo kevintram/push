@@ -1,8 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group'
-import {
-	type ReviewMode,
-	useReviewMode
-} from '~/stores/ReviewModeContext'
+import { type ReviewMode, useReviewMode } from '~/stores/ReviewModeContext'
 
 const CONTROLS: Array<{ label: string; mode: ReviewMode }> = [
 	{ label: 'Off', mode: 'off' },
