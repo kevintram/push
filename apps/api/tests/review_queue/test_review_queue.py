@@ -113,6 +113,115 @@ class TestReviewQueueEndpoint:
         assert hazy_item["card"]["type"] == "practice"
         assert hazy_item["days_until_hazy"] == 3
 
+    async def test_review_queue_prioritizes_recently_overdue_due_cards(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        today = date(2026, 1, 15)
+        monkeypatch.setattr(
+            review_card_service,
+            "get_current_date",
+            lambda: today,
+        )
+
+        topic = await _create_topic(test_client, "Overdue ordering")
+        slightly_overdue_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Slightly overdue practice",
+        )
+        stale_overdue_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Stale overdue practice",
+        )
+        hazy_overdue_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Hazy overdue practice",
+        )
+        today_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Today practice",
+        )
+        tomorrow_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Tomorrow practice",
+        )
+        later_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Later practice",
+        )
+
+        for card_id, scheduled_at in [
+            (slightly_overdue_card["id"], today - timedelta(days=1)),
+            (stale_overdue_card["id"], today - timedelta(days=4)),
+            (today_card["id"], today),
+            (tomorrow_card["id"], today + timedelta(days=1)),
+            (later_card["id"], today + timedelta(days=2)),
+        ]:
+            response = await test_client.post(
+                "/reviews/",
+                json={
+                    "review_card_id": card_id,
+                    "scheduled_at": str(scheduled_at),
+                },
+            )
+            assert response.status_code == 200
+
+        completed_review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": hazy_overdue_card["id"],
+                "completed_at": str(today - timedelta(days=2)),
+                "rating": "good",
+            },
+        )
+        assert completed_review_response.status_code == 200
+
+        monkeypatch.setattr(
+            review_card_service,
+            "get_days_until_hazy",
+            lambda review_card, *, today=None: (
+                0 if review_card.id == hazy_overdue_card["id"] else None
+            ),
+        )
+
+        full_response = await test_client.get("/review-queue/?type=practice&tab=due")
+        focused_response = await test_client.get(
+            "/review-queue/?type=practice&tab=due&focused=true"
+        )
+
+        assert full_response.status_code == 200
+        assert focused_response.status_code == 200
+        assert [item["card"]["prompt"] for item in full_response.json()["items"]] == [
+            "Slightly overdue practice",
+            "Stale overdue practice",
+            "Hazy overdue practice",
+            "Today practice",
+            "Tomorrow practice",
+            "Later practice",
+        ]
+        assert [
+            item["card"]["prompt"] for item in focused_response.json()["items"]
+        ] == [
+            "Slightly overdue practice",
+            "Stale overdue practice",
+            "Hazy overdue practice",
+            "Today practice",
+            "Tomorrow practice",
+        ]
+
     async def test_review_queue_returns_new_cards_and_respects_focused_limit(
         self,
         test_client: AsyncClient,
