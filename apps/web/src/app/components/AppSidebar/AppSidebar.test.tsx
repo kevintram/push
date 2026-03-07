@@ -112,7 +112,7 @@ describe('AppSidebar', () => {
 		expect(pinnedLink).toHaveTextContent('Pinned2')
 	})
 
-	it('falls back to a zero pinned count when the summary query is unavailable', () => {
+	it('hides pinned count badge when the summary query is unavailable', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
 		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
@@ -130,8 +130,11 @@ describe('AppSidebar', () => {
 		)
 
 		expect(screen.getByRole('link', { name: /pinned/i })).toHaveTextContent(
-			'Pinned0'
+			'Pinned'
 		)
+		expect(
+			screen.getByRole('link', { name: /pinned/i })
+		).not.toHaveTextContent('Pinned0')
 	})
 
 	it('renders capped root topics with untitled fallback in the sidebar', () => {

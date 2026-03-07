@@ -230,12 +230,14 @@ export function AppSidebar() {
 											<item.icon />
 											<span className='flex min-w-0 flex-1 items-center gap-2 group-data-[collapsible=icon]:hidden'>
 												<span className='min-w-0 truncate'>{item.title}</span>
-												<span aria-hidden='true' className='ml-auto shrink-0'>
-													<CountBadge
-														className='h-4 min-w-4 px-1 text-[10px]'
-														count={pinnedCount}
-													/>
-												</span>
+												{pinnedCount > 0 && (
+													<span aria-hidden='true' className='ml-auto shrink-0'>
+														<CountBadge
+															className='h-4 min-w-4 px-1 text-[10px]'
+															count={pinnedCount}
+														/>
+													</span>
+												)}
 											</span>
 										</SidebarMenuButton>
 									</SidebarMenuItem>
