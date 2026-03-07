@@ -8,6 +8,7 @@ export type ReviewCard = {
 	type: ReviewCardType
 	prompt: string
 	answer: string
+	notes: string
 	inserted_at: string
 	updated_at: string
 	last_review_rating: 'miss' | 'hard' | 'good' | 'easy' | null
@@ -80,6 +81,7 @@ export type CreateReviewCardPayload = {
 	type: ReviewCardType
 	prompt?: string
 	answer?: string
+	notes?: string
 	retired?: boolean
 }
 
@@ -89,6 +91,7 @@ export type UpdateReviewCardInput = {
 	type?: ReviewCardType
 	prompt?: string
 	answer?: string
+	notes?: string
 	retired?: boolean
 	pinned?: boolean
 }
