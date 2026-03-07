@@ -28,13 +28,19 @@ def _get_action_days(item: ReviewCardQueueItem) -> int | None:
     return None
 
 
-def _queue_sort_key(item: ReviewCardQueueItem) -> tuple[int, int, int]:
+def _queue_sort_key(item: ReviewCardQueueItem) -> tuple[int, int, int, int]:
     action_days = _get_action_days(item)
+    # Keep overdue scheduled reviews at the front, but show the most recently
+    # overdue ones first so focused mode surfaces slightly late cards ahead of
+    # very stale ones.
+    if item.queue_type == "due" and action_days is not None and action_days < 0:
+        return (0, -action_days, 0, item.review_id or item.card.id)
+
     urgency = action_days if action_days is not None else 999_999
     queue_rank = (
         0 if item.queue_type == "due" else 1 if item.queue_type == "hazy" else 2
     )
-    return (urgency, queue_rank, item.review_id or item.card.id)
+    return (1, urgency, queue_rank, item.review_id or item.card.id)
 
 
 def _apply_action_day_counts(
