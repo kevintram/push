@@ -132,9 +132,9 @@ describe('AppSidebar', () => {
 		expect(screen.getByRole('link', { name: /pinned/i })).toHaveTextContent(
 			'Pinned'
 		)
-		expect(
-			screen.getByRole('link', { name: /pinned/i })
-		).not.toHaveTextContent('Pinned0')
+		expect(screen.getByRole('link', { name: /pinned/i })).not.toHaveTextContent(
+			'Pinned0'
+		)
 	})
 
 	it('renders capped root topics with untitled fallback in the sidebar', () => {
