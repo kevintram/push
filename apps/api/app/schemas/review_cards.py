@@ -22,6 +22,7 @@ class ReviewCardBase(BaseModel):
     type: ReviewCardTypeEnum
     prompt: str = ""
     answer: str = ""
+    notes: str = ""
 
 
 class ReviewCardRead(ReviewCardBase):
@@ -61,6 +62,7 @@ class ReviewCardUpdate(BaseModel):
     type: ReviewCardTypeEnum | None = None
     prompt: str | None = None
     answer: str | None = None
+    notes: str | None = None
     retired: bool | None = None
     pinned: bool | None = None
 

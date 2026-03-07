@@ -54,7 +54,13 @@ async def _search_review_cards(
     stmt = select(ReviewCard).where(ReviewCard.user_id == user_id)
     if query:
         q = f"%{query}%"
-        stmt = stmt.where(or_(ReviewCard.prompt.ilike(q), ReviewCard.answer.ilike(q)))
+        stmt = stmt.where(
+            or_(
+                ReviewCard.prompt.ilike(q),
+                ReviewCard.answer.ilike(q),
+                ReviewCard.notes.ilike(q),
+            )
+        )
     normalized = {value.strip().lower() for value in (entity_types or [])}
     if "practice" in normalized and "flashcard" not in normalized:
         stmt = stmt.where(ReviewCard.type == "practice")
