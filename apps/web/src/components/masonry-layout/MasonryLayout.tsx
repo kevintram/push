@@ -36,6 +36,7 @@ interface MasonryLayoutProps<T> {
 	items: Array<T>
 	renderItem: (item: T, index: number, laneWidth: number) => ReactNode
 	estimateItemSize: (item: T, index: number, laneWidth: number) => number
+	measurementVersion?: boolean | number | string | null
 	minItemWidth?: number
 	gap?: number
 	overscan?: number
@@ -48,6 +49,7 @@ function MasonryLayoutInner<T>({
 	items,
 	renderItem,
 	estimateItemSize,
+	measurementVersion,
 	minItemWidth = 300,
 	gap = 16,
 	overscan,
@@ -70,6 +72,7 @@ function MasonryLayoutInner<T>({
 	const laneWidthRemeasureRafRef = useRef<number | null>(null)
 	const laneChangeReflowRafRef = useRef<number | null>(null)
 	const [isLaneReflowing, setIsLaneReflowing] = useState(false)
+	const previousMeasurementVersionRef = useRef(measurementVersion)
 
 	const numLanes = useMemo(
 		() =>
@@ -195,6 +198,11 @@ function MasonryLayoutInner<T>({
 		laneChangeReflowRafRef.current = requestAnimationFrame(tick)
 	}, [measureMountedElements])
 
+	const resetMeasurements = useCallback(() => {
+		virtualizer.measure()
+		runLaneReflow()
+	}, [runLaneReflow, virtualizer])
+
 	useLayoutEffect(() => {
 		if (!hasMeasuredWidth) return
 
@@ -213,8 +221,7 @@ function MasonryLayoutInner<T>({
 		// the multi-frame reflow which will progressively replace those estimates
 		// with real DOM heights over the next few frames.
 		if (laneCountChanged) {
-			virtualizer.measure()
-			runLaneReflow()
+			resetMeasurements()
 			return
 		}
 
@@ -225,13 +232,30 @@ function MasonryLayoutInner<T>({
 			remeasureMountedItems()
 		}
 	}, [
-		virtualizer,
-		runLaneReflow,
 		remeasureMountedItems,
 		numLanes,
 		laneWidth,
-		hasMeasuredWidth
+		hasMeasuredWidth,
+		resetMeasurements
 	])
+
+	useLayoutEffect(() => {
+		if (!hasMeasuredWidth) return
+
+		const previousMeasurementVersion = previousMeasurementVersionRef.current
+		previousMeasurementVersionRef.current = measurementVersion
+
+		if (
+			measurementVersion === undefined ||
+			Object.is(previousMeasurementVersion, measurementVersion)
+		) {
+			return
+		}
+
+		// Item content can change without item keys changing. Invalidate cached
+		// sizes so off-screen items do not keep stale heights from the prior mode.
+		resetMeasurements()
+	}, [hasMeasuredWidth, measurementVersion, resetMeasurements])
 
 	useEffect(() => {
 		return () => {

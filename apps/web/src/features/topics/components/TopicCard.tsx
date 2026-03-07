@@ -1,8 +1,5 @@
 import {
-	AlertTriangle,
 	CalendarClock,
-	Check,
-	Copy,
 	MoreHorizontal,
 	PenLine,
 	Trash2,
@@ -11,6 +8,7 @@ import {
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { RevealPanel, type RevealPanelTab } from '~/components/RevealPanel'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import {
@@ -19,8 +17,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
-import { Textarea } from '~/components/ui/textarea'
 import {
 	Tooltip,
 	TooltipContent,
@@ -30,6 +26,10 @@ import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import {
+	estimateCardSize,
+	estimateExpandedCardSize
+} from '~/utils/estimateCardSize'
+import {
 	formatAbsoluteDate,
 	formatRelativeDate
 } from '~/utils/formatRelativeDate'
@@ -37,32 +37,26 @@ import { useDeleteTopic } from '../api/deleteTopic'
 import type { Topic } from '../types/topic.types'
 
 const MIN_HEIGHT = 96
-const CARD_HEIGHT_GUESS_PANEL_MIN = 300
+const LARGE_CARD_CONTENT_HEIGHT_MIN = 500
+const MAX_CARD_HEIGHT = 384
+const CARD_ESTIMATE_FALLBACK_WIDTH = 280
 const REVEAL_PANEL_TEXTAREA_CLASSNAME =
-	'h-full min-h-24 resize-none border-border/70 bg-background/80 text-sm'
-const REVEAL_PANEL_COPY_BUTTON_CLASSNAME =
-	'absolute right-2 bottom-2 text-muted-foreground hover:text-foreground'
-
-type TopicCardRevealPanelTab = 'guess' | 'reveal'
-
-function isTopicCardRevealPanelTab(
-	value: string
-): value is TopicCardRevealPanelTab {
-	return value === 'guess' || value === 'reveal'
-}
+	'field-sizing-fixed h-full min-h-24 flex-1 text-sm'
 
 interface TopicCardProps {
 	topic: Topic
 	onClick?: () => void
 	parentLabel?: string
 	minHeight?: number
+	enableLargeCardMode?: boolean
 }
 
 export function TopicCard({
 	topic,
 	onClick,
 	parentLabel,
-	minHeight = MIN_HEIGHT
+	minHeight = MIN_HEIGHT,
+	enableLargeCardMode = false
 }: TopicCardProps) {
 	const [cardRef, cardRect] = useResizeObserver<HTMLDivElement>()
 	const deleteTopicMutation = useDeleteTopic()
@@ -70,8 +64,9 @@ export function TopicCard({
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
 	)
-	const [revealPanelTab, setRevealPanelTab] =
-		useState<TopicCardRevealPanelTab | null>(null)
+	const [revealPanelTab, setRevealPanelTab] = useState<RevealPanelTab | null>(
+		null
+	)
 	const [guessBodyText, setGuessBodyText] = useState('')
 	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 
@@ -81,12 +76,35 @@ export function TopicCard({
 		(topic.parent_id != null ? `Topic #${topic.parent_id}` : 'No parent')
 	const hasBodyText = Boolean(topic.body.trim())
 	const hideSecondary = hidesSecondary && hasBodyText && !isSecondaryRevealed
-	const hasMeasuredCardHeight = cardRect.height > 0
-	const effectiveCardHeight = hasMeasuredCardHeight
-		? cardRect.height
-		: minHeight
-	const isLargeCard = effectiveCardHeight >= CARD_HEIGHT_GUESS_PANEL_MIN
-	const canUseGuessPanel = hidesSecondary && hasBodyText && isLargeCard
+	const estimatedCardHeight = useMemo(() => {
+		const estimatedWidth =
+			cardRect.width > 0 ? cardRect.width : CARD_ESTIMATE_FALLBACK_WIDTH
+		return Math.min(
+			MAX_CARD_HEIGHT,
+			Math.max(
+				minHeight,
+				estimateCardSize(
+					topic.title || 'Untitled topic',
+					topic.body || '',
+					estimatedWidth
+				)
+			)
+		)
+	}, [cardRect.width, minHeight, topic.body, topic.title])
+	const estimatedExpandedCardHeight = useMemo(() => {
+		const estimatedWidth =
+			cardRect.width > 0 ? cardRect.width : CARD_ESTIMATE_FALLBACK_WIDTH
+		return estimateExpandedCardSize(
+			topic.title || 'Untitled topic',
+			topic.body || '',
+			estimatedWidth
+		)
+	}, [cardRect.width, topic.body, topic.title])
+	const isLargeCard =
+		enableLargeCardMode &&
+		estimatedExpandedCardHeight >= LARGE_CARD_CONTENT_HEIGHT_MIN
+	const canUseGuessPanel =
+		enableLargeCardMode && hidesSecondary && hasBodyText && isLargeCard
 
 	const updated = useMemo(
 		() =>
@@ -130,11 +148,6 @@ export function TopicCard({
 	const handleRevealSecondary = useCallback((event: MouseEvent) => {
 		event.stopPropagation()
 		setIsSecondaryRevealed(true)
-	}, [])
-	const handleRevealPanelTabChange = useCallback((value: string) => {
-		if (isTopicCardRevealPanelTab(value)) {
-			setRevealPanelTab(value)
-		}
 	}, [])
 	const handleCopyGuessText = useCallback(async () => {
 		try {
@@ -237,111 +250,26 @@ export function TopicCard({
 						</div>
 					</div>
 				) : (
-					<div className='mt-1 flex h-full min-h-16 flex-1 flex-col rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'>
-						<Tabs
-							className='flex h-full min-h-0 flex-col gap-2'
-							onValueChange={handleRevealPanelTabChange}
-							value={revealPanelTab}
-						>
-							<div className='flex items-start justify-between gap-2'>
-								<TabsList
-									className='h-8'
-									onClick={event => event.stopPropagation()}
-									onKeyDown={event => event.stopPropagation()}
-									variant='default'
-								>
-									<TabsTrigger
-										className='px-2 text-xs'
-										onClick={event => event.stopPropagation()}
-										onKeyDown={event => event.stopPropagation()}
-										value='guess'
-									>
-										Guess
-									</TabsTrigger>
-									<TabsTrigger
-										className='px-2 text-xs'
-										onClick={event => event.stopPropagation()}
-										onKeyDown={event => event.stopPropagation()}
-										value='reveal'
-									>
-										Reveal
-									</TabsTrigger>
-								</TabsList>
-							</div>
-							<TabsContent
-								className='mt-0 flex min-h-0 flex-1 flex-col'
-								value='guess'
-							>
-								<div className='relative min-h-0 flex-1'>
-									<Textarea
-										className={REVEAL_PANEL_TEXTAREA_CLASSNAME}
-										onChange={event => {
-											setGuessBodyText(event.target.value)
-											if (isRevealPanelCopied) setIsRevealPanelCopied(false)
-										}}
-										onClick={event => event.stopPropagation()}
-										onKeyDown={event => event.stopPropagation()}
-										placeholder='Type your guess...'
-										spellCheck={false}
-										value={guessBodyText}
-									/>
-									<Button
-										aria-label='Copy guess text'
-										className={REVEAL_PANEL_COPY_BUTTON_CLASSNAME}
-										onClick={event => {
-											event.stopPropagation()
-											handleCopyGuessText().catch(() => {})
-										}}
-										size='icon-xs'
-										type='button'
-										variant='ghost'
-									>
-										{isRevealPanelCopied ? (
-											<Check className='h-3 w-3' />
-										) : (
-											<Copy className='h-3 w-3' />
-										)}
-									</Button>
-								</div>
-								<p className='mt-1 flex items-center justify-end gap-1 text-muted-foreground text-xs'>
-									<AlertTriangle className='h-3 w-3 shrink-0 text-amber-500 dark:text-amber-400' />
-									<span>Guesses are not saved.</span>
-								</p>
-							</TabsContent>
-							<TabsContent
-								className='mt-0 flex min-h-0 flex-1 flex-col'
-								value='reveal'
-							>
-								<div className='relative min-h-0 flex-1'>
-									<Textarea
-										className={REVEAL_PANEL_TEXTAREA_CLASSNAME}
-										onClick={event => event.stopPropagation()}
-										onKeyDown={event => event.stopPropagation()}
-										readOnly={true}
-										spellCheck={false}
-										value={topic.body}
-									/>
-									<Button
-										aria-label='Copy reveal text'
-										className={REVEAL_PANEL_COPY_BUTTON_CLASSNAME}
-										onClick={event => {
-											event.stopPropagation()
-											handleCopyRevealText().catch(() => {})
-										}}
-										size='icon-xs'
-										type='button'
-										variant='ghost'
-									>
-										{isRevealPanelCopied ? (
-											<Check className='h-3 w-3' />
-										) : (
-											<Copy className='h-3 w-3' />
-										)}
-									</Button>
-								</div>
-							</TabsContent>
-						</Tabs>
-					</div>
+					<RevealPanel
+						containerClassName='mt-1 flex min-h-16 flex-1 flex-col rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'
+						guessFieldContainerClassName='relative flex min-h-0 flex-1 flex-col'
+						guessValue={guessBodyText}
+						isCopied={isRevealPanelCopied}
+						onGuessCopy={handleCopyGuessText}
+						onGuessValueChange={value => {
+							setGuessBodyText(value)
+							if (isRevealPanelCopied) setIsRevealPanelCopied(false)
+						}}
+						onRevealCopy={handleCopyRevealText}
+						onValueChange={setRevealPanelTab}
+						revealFieldContainerClassName='relative flex min-h-0 flex-1 flex-col'
+						revealReadOnly={true}
+						revealValue={topic.body}
+						stopPropagation={true}
+						tabsClassName='flex min-h-0 flex-1 flex-col gap-2'
+						textareaClassName={REVEAL_PANEL_TEXTAREA_CLASSNAME}
+						value={revealPanelTab}
+					/>
 				)
 		} else {
 			secondaryContent = (
@@ -390,7 +318,14 @@ export function TopicCard({
 			onKeyDown={handleKeyDown}
 			ref={cardRef}
 			role={onClick ? 'button' : undefined}
-			style={{ minHeight: `${minHeight}px` }}
+			style={
+				isLargeCard
+					? {
+							height: `${estimatedCardHeight}px`,
+							minHeight: `${estimatedCardHeight}px`
+						}
+					: { minHeight: `${minHeight}px` }
+			}
 			tabIndex={onClick ? 0 : undefined}
 		>
 			<CardHeader className='relative flex min-h-8 items-center justify-between gap-2 p-0 pb-1'>
