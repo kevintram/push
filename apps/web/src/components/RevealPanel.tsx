@@ -1,5 +1,11 @@
 import { Check, Copy } from 'lucide-react'
-import { type KeyboardEvent, type MouseEvent, useEffect, useRef } from 'react'
+import {
+	type KeyboardEvent,
+	type MouseEvent,
+	type ReactNode,
+	useEffect,
+	useRef
+} from 'react'
 import { ReviewModeHelperText } from '~/components/ReviewModeHelperText'
 import { Button } from '~/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
@@ -14,7 +20,7 @@ import { cn } from '~/lib/utils'
 export type RevealPanelTab = 'guess' | 'reveal'
 
 type RevealPanelProps = {
-	value: RevealPanelTab
+	value: RevealPanelTab | null
 	onValueChange: (value: RevealPanelTab) => void
 	guessValue: string
 	onGuessValueChange: (value: string) => void
@@ -25,19 +31,36 @@ type RevealPanelProps = {
 	onRevealValueChange?: (value: string) => void
 	onRevealBlur?: () => void
 	isCopied: boolean
-	containerClassName?: string
-	tabsClassName?: string
-	headerClassName?: string
-	contentClassName?: string
-	guessFieldContainerClassName?: string
-	revealFieldContainerClassName?: string
-	textareaClassName?: string
+	variant: 'card' | 'detail'
+	className?: string
 	guessPlaceholder?: string
 	revealPlaceholder?: string
 	revealHelperVariant?: 'autosave' | null
+	closedContent?: ReactNode
 	stopPropagation?: boolean
 	autoFocusGuess?: boolean
 }
+
+const VARIANT_STYLES = {
+	card: {
+		wrapper:
+			'mt-1 flex min-h-16 flex-1 flex-col rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2',
+		tabs: 'flex min-h-0 flex-1 flex-col gap-2',
+		content: 'mt-0 flex min-h-0 flex-1 flex-col',
+		fieldContainer: 'relative flex min-h-0 flex-1 flex-col',
+		textarea: 'field-sizing-fixed h-full min-h-24 flex-1 text-sm',
+		closed: 'flex min-h-0 flex-1 items-center justify-center'
+	},
+	detail: {
+		wrapper:
+			'mt-1 rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2',
+		tabs: 'flex min-h-0 flex-1 flex-col gap-2',
+		content: 'mt-0 flex min-h-0 flex-1 flex-col',
+		fieldContainer: 'relative flex min-h-0 flex-1 flex-col',
+		textarea: 'field-sizing-fixed flex-1',
+		closed: 'flex min-h-16 w-full items-center justify-center'
+	}
+} as const
 
 export function RevealPanel({
 	value,
@@ -51,20 +74,17 @@ export function RevealPanel({
 	onRevealValueChange,
 	onRevealBlur,
 	isCopied,
-	containerClassName,
-	tabsClassName,
-	headerClassName,
-	contentClassName = 'mt-0 flex min-h-0 flex-1 flex-col',
-	guessFieldContainerClassName = 'relative min-h-0 flex-1',
-	revealFieldContainerClassName = 'relative min-h-0 flex-1',
-	textareaClassName,
+	variant,
+	className,
 	guessPlaceholder = 'Type your guess...',
 	revealPlaceholder,
 	revealHelperVariant = null,
+	closedContent,
 	stopPropagation = false,
 	autoFocusGuess = false
 }: RevealPanelProps) {
 	const guessTextareaRef = useRef<HTMLTextAreaElement | null>(null)
+	const variantStyles = VARIANT_STYLES[variant]
 
 	const handleStopPropagation = (
 		event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>
@@ -91,7 +111,7 @@ export function RevealPanel({
 		'absolute top-2 right-2 text-muted-foreground hover:text-foreground'
 	const resolvedTextareaClassName = cn(
 		'min-h-24 resize-none border-border/70 bg-background/80 pr-8',
-		textareaClassName
+		variantStyles.textarea
 	)
 
 	useEffect(() => {
@@ -110,19 +130,52 @@ export function RevealPanel({
 		}
 	}, [autoFocusGuess, value])
 
+	if (value == null) {
+		return (
+			<div className={cn('relative', variantStyles.wrapper, className)}>
+				<div className={variantStyles.closed}>
+					<div className='flex items-center gap-2'>
+						<Button
+							className='rounded-full'
+							onClick={event => {
+								handleStopPropagation(event)
+								onValueChange('guess')
+							}}
+							onKeyDown={handleStopPropagation}
+							size='sm'
+							type='button'
+							variant='outline'
+						>
+							Type a guess
+						</Button>
+						<Button
+							className='rounded-full'
+							onClick={event => {
+								handleStopPropagation(event)
+								onValueChange('reveal')
+							}}
+							onKeyDown={handleStopPropagation}
+							size='sm'
+							type='button'
+							variant='outline'
+						>
+							Reveal
+						</Button>
+					</div>
+				</div>
+				{closedContent}
+			</div>
+		)
+	}
+
 	return (
-		<div className={containerClassName}>
+		<div className={cn('relative', variantStyles.wrapper, className)}>
 			<Tabs
-				className={cn('flex flex-col gap-2', tabsClassName)}
+				className={variantStyles.tabs}
 				onValueChange={value => onValueChange(value as RevealPanelTab)}
 				value={value}
 			>
-				<div
-					className={cn(
-						'flex min-w-0 items-center justify-between gap-2',
-						headerClassName
-					)}
-				>
+				<div className='flex min-w-0 items-center justify-between gap-2'>
 					<TabsList
 						className='h-8'
 						onClick={handleStopPropagation}
@@ -148,8 +201,8 @@ export function RevealPanel({
 					</TabsList>
 					{helperText}
 				</div>
-				<TabsContent className={contentClassName} value='guess'>
-					<div className={guessFieldContainerClassName}>
+				<TabsContent className={variantStyles.content} value='guess'>
+					<div className={variantStyles.fieldContainer}>
 						<Textarea
 							className={resolvedTextareaClassName}
 							onChange={event => onGuessValueChange(event.target.value)}
@@ -186,8 +239,8 @@ export function RevealPanel({
 						</Tooltip>
 					</div>
 				</TabsContent>
-				<TabsContent className={contentClassName} value='reveal'>
-					<div className={revealFieldContainerClassName}>
+				<TabsContent className={variantStyles.content} value='reveal'>
+					<div className={variantStyles.fieldContainer}>
 						<Textarea
 							className={resolvedTextareaClassName}
 							onBlur={onRevealBlur}

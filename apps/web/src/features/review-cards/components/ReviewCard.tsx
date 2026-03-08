@@ -19,7 +19,7 @@ import {
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { RevealPanel, type RevealPanelTab } from '~/components/RevealPanel'
+import { RevealPanel } from '~/components/RevealPanel'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -47,6 +47,7 @@ import {
 } from '~/components/ui/tooltip'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
+import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { cn } from '~/lib/utils'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { localDateString } from '~/utils/date'
@@ -82,8 +83,6 @@ const CARD_ESTIMATE_FALLBACK_WIDTH = 280
 const CARD_WIDTH_REVIEWED_META_MIN = 0
 const CARD_WIDTH_RATING_META_MIN = 0
 const CARD_WIDTH_STABILITY_META_MIN = 300
-const REVEAL_PANEL_TEXTAREA_CLASSNAME =
-	'field-sizing-fixed h-full min-h-24 flex-1 text-sm'
 const PINNED_ICON_CLASSNAME =
 	'h-4 w-4 fill-current text-sky-500 dark:text-sky-300'
 
@@ -197,11 +196,6 @@ export function ReviewCard({
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
 	)
-	const [revealPanelTab, setRevealPanelTab] = useState<RevealPanelTab | null>(
-		null
-	)
-	const [guessSecondaryText, setGuessSecondaryText] = useState('')
-	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
 	const navigate = useNavigate()
@@ -251,6 +245,19 @@ export function ReviewCard({
 	const canUseGuessPanel =
 		enableLargeCardMode && hidesSecondary && hasSecondaryText
 	const largeCardHeight = Math.max(minHeight, estimatedExpandedCardHeight)
+	const {
+		revealPanelTab,
+		setRevealPanelTab,
+		guessText: guessSecondaryText,
+		setGuessText: setGuessSecondaryText,
+		isCopied: isRevealPanelCopied,
+		handleCopyGuessText,
+		handleCopyRevealText
+	} = useRevealPanel({
+		revealText: reviewCard.answer,
+		entityId: reviewCard.id < 0 ? null : reviewCard.id,
+		hidesSecondary
+	})
 
 	useEffect(() => {
 		setIsPrimaryRevealed(!hidesPrimary)
@@ -258,37 +265,8 @@ export function ReviewCard({
 	}, [hidesPrimary, hidesSecondary])
 	useEffect(() => {
 		if (reviewCard.id < 0) return
-		setRevealPanelTab(null)
-		setGuessSecondaryText('')
-		setIsRevealPanelCopied(false)
 		setIsRetireDialogOpen(false)
 	}, [reviewCard.id])
-	useEffect(() => {
-		if (!hidesSecondary) {
-			setRevealPanelTab(null)
-			setGuessSecondaryText('')
-			setIsRevealPanelCopied(false)
-			return
-		}
-		if (canUseGuessPanel) {
-			setRevealPanelTab(null)
-			setGuessSecondaryText('')
-			setIsRevealPanelCopied(false)
-			return
-		}
-		setRevealPanelTab(null)
-		setGuessSecondaryText('')
-		setIsRevealPanelCopied(false)
-	}, [hidesSecondary, canUseGuessPanel])
-	useEffect(() => {
-		if (!isRevealPanelCopied) return
-		const timeoutId = window.setTimeout(() => {
-			setIsRevealPanelCopied(false)
-		}, 1500)
-		return () => {
-			window.clearTimeout(timeoutId)
-		}
-	}, [isRevealPanelCopied])
 
 	const handleActivate = useCallback(() => {
 		onClick?.()
@@ -372,24 +350,6 @@ export function ReviewCard({
 		event.stopPropagation()
 		setIsSecondaryRevealed(true)
 	}, [])
-	const handleCopyGuessText = useCallback(async () => {
-		try {
-			await navigator.clipboard.writeText(guessSecondaryText)
-			setIsRevealPanelCopied(true)
-			toast.success('Guess copied')
-		} catch {
-			toast.error('Failed to copy guess')
-		}
-	}, [guessSecondaryText])
-	const handleCopyRevealText = useCallback(async () => {
-		try {
-			await navigator.clipboard.writeText(reviewCard.answer)
-			setIsRevealPanelCopied(true)
-			toast.success('Reveal copied')
-		} catch {
-			toast.error('Failed to copy reveal')
-		}
-	}, [reviewCard.answer])
 
 	const createReviewMutation = useCreateReview()
 	const isCreatingReview = createReviewMutation.isPending
@@ -547,59 +507,22 @@ export function ReviewCard({
 	let secondaryContent: ReactNode
 	if (hideSecondary) {
 		if (canUseGuessPanel) {
-			secondaryContent =
-				revealPanelTab == null ? (
-					<div className='relative mt-1 flex h-full min-h-16 w-full flex-1 items-center justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2'>
-						<div className='flex items-center gap-2'>
-							<Button
-								className='rounded-full'
-								onClick={event => {
-									event.stopPropagation()
-									setRevealPanelTab('guess')
-								}}
-								size='sm'
-								type='button'
-								variant='outline'
-							>
-								Type a guess
-							</Button>
-							<Button
-								className='rounded-full'
-								onClick={event => {
-									event.stopPropagation()
-									setRevealPanelTab('reveal')
-								}}
-								size='sm'
-								type='button'
-								variant='outline'
-							>
-								Reveal
-							</Button>
-						</div>
-					</div>
-				) : (
-					<RevealPanel
-						autoFocusGuess={true}
-						containerClassName='mt-1 flex min-h-16 flex-1 flex-col rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'
-						guessFieldContainerClassName='relative flex min-h-0 flex-1 flex-col'
-						guessValue={guessSecondaryText}
-						isCopied={isRevealPanelCopied}
-						onGuessCopy={handleCopyGuessText}
-						onGuessValueChange={value => {
-							setGuessSecondaryText(value)
-							if (isRevealPanelCopied) setIsRevealPanelCopied(false)
-						}}
-						onRevealCopy={handleCopyRevealText}
-						onValueChange={setRevealPanelTab}
-						revealFieldContainerClassName='relative flex min-h-0 flex-1 flex-col'
-						revealReadOnly={true}
-						revealValue={reviewCard.answer}
-						stopPropagation={true}
-						tabsClassName='flex min-h-0 flex-1 flex-col gap-2'
-						textareaClassName={REVEAL_PANEL_TEXTAREA_CLASSNAME}
-						value={revealPanelTab}
-					/>
-				)
+			secondaryContent = (
+				<RevealPanel
+					autoFocusGuess={true}
+					guessValue={guessSecondaryText}
+					isCopied={isRevealPanelCopied}
+					onGuessCopy={handleCopyGuessText}
+					onGuessValueChange={setGuessSecondaryText}
+					onRevealCopy={handleCopyRevealText}
+					onValueChange={setRevealPanelTab}
+					revealReadOnly={true}
+					revealValue={reviewCard.answer}
+					stopPropagation={true}
+					value={revealPanelTab}
+					variant='card'
+				/>
+			)
 		} else {
 			secondaryContent = (
 				<div className='relative'>

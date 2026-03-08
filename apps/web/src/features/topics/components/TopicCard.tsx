@@ -8,7 +8,7 @@ import {
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { RevealPanel, type RevealPanelTab } from '~/components/RevealPanel'
+import { RevealPanel } from '~/components/RevealPanel'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import {
@@ -23,6 +23,7 @@ import {
 	TooltipTrigger
 } from '~/components/ui/tooltip'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
+import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { cn } from '~/lib/utils'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import {
@@ -40,8 +41,6 @@ const MIN_HEIGHT = 96
 const LARGE_CARD_CONTENT_HEIGHT_MIN = 500
 const MAX_CARD_HEIGHT = 384
 const CARD_ESTIMATE_FALLBACK_WIDTH = 280
-const REVEAL_PANEL_TEXTAREA_CLASSNAME =
-	'field-sizing-fixed h-full min-h-24 flex-1 text-sm'
 
 interface TopicCardProps {
 	topic: Topic
@@ -64,11 +63,6 @@ export function TopicCard({
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
 	)
-	const [revealPanelTab, setRevealPanelTab] = useState<RevealPanelTab | null>(
-		null
-	)
-	const [guessBodyText, setGuessBodyText] = useState('')
-	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 
 	const resolvedParentLabel =
 		parentLabel ??
@@ -105,6 +99,19 @@ export function TopicCard({
 		estimatedExpandedCardHeight >= LARGE_CARD_CONTENT_HEIGHT_MIN
 	const canUseGuessPanel =
 		enableLargeCardMode && hidesSecondary && hasBodyText && isLargeCard
+	const {
+		revealPanelTab,
+		setRevealPanelTab,
+		guessText: guessBodyText,
+		setGuessText: setGuessBodyText,
+		isCopied: isRevealPanelCopied,
+		handleCopyGuessText,
+		handleCopyRevealText
+	} = useRevealPanel({
+		revealText: topic.body,
+		entityId: topic.id < 0 ? null : topic.id,
+		hidesSecondary
+	})
 
 	const updated = useMemo(
 		() =>
@@ -149,24 +156,6 @@ export function TopicCard({
 		event.stopPropagation()
 		setIsSecondaryRevealed(true)
 	}, [])
-	const handleCopyGuessText = useCallback(async () => {
-		try {
-			await navigator.clipboard.writeText(guessBodyText)
-			setIsRevealPanelCopied(true)
-			toast.success('Guess copied')
-		} catch {
-			toast.error('Failed to copy guess')
-		}
-	}, [guessBodyText])
-	const handleCopyRevealText = useCallback(async () => {
-		try {
-			await navigator.clipboard.writeText(topic.body)
-			setIsRevealPanelCopied(true)
-			toast.success('Reveal copied')
-		} catch {
-			toast.error('Failed to copy reveal')
-		}
-	}, [topic.body])
 	const handleDeleteTopic = useCallback(async () => {
 		if (deleteTopicMutation.isPending) return
 		try {
@@ -183,94 +172,25 @@ export function TopicCard({
 		if (topic.id < 0) return
 		setIsSecondaryRevealed(!hidesSecondary)
 	}, [hidesSecondary, topic.id])
-	useEffect(() => {
-		if (topic.id < 0) return
-		setRevealPanelTab(null)
-		setGuessBodyText('')
-		setIsRevealPanelCopied(false)
-	}, [topic.id])
-	useEffect(() => {
-		if (!hidesSecondary) {
-			setRevealPanelTab(null)
-			setGuessBodyText('')
-			setIsRevealPanelCopied(false)
-			return
-		}
-		if (canUseGuessPanel) {
-			setRevealPanelTab(null)
-			setGuessBodyText('')
-			setIsRevealPanelCopied(false)
-			return
-		}
-		setRevealPanelTab(null)
-		setGuessBodyText('')
-		setIsRevealPanelCopied(false)
-	}, [hidesSecondary, canUseGuessPanel])
-	useEffect(() => {
-		if (!isRevealPanelCopied) return
-		const timeoutId = window.setTimeout(() => {
-			setIsRevealPanelCopied(false)
-		}, 1500)
-		return () => {
-			window.clearTimeout(timeoutId)
-		}
-	}, [isRevealPanelCopied])
 
 	let secondaryContent: ReactNode
 	if (hideSecondary) {
 		if (canUseGuessPanel) {
-			secondaryContent =
-				revealPanelTab == null ? (
-					<div className='relative mt-1 flex h-full min-h-16 w-full flex-1 items-center justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2'>
-						<div className='flex items-center gap-2'>
-							<Button
-								className='rounded-full'
-								onClick={event => {
-									event.stopPropagation()
-									setRevealPanelTab('guess')
-								}}
-								size='sm'
-								type='button'
-								variant='outline'
-							>
-								Type a guess
-							</Button>
-							<Button
-								className='rounded-full'
-								onClick={event => {
-									event.stopPropagation()
-									setRevealPanelTab('reveal')
-								}}
-								size='sm'
-								type='button'
-								variant='outline'
-							>
-								Reveal
-							</Button>
-						</div>
-					</div>
-				) : (
-					<RevealPanel
-						containerClassName='mt-1 flex min-h-16 flex-1 flex-col rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'
-						guessFieldContainerClassName='relative flex min-h-0 flex-1 flex-col'
-						guessValue={guessBodyText}
-						isCopied={isRevealPanelCopied}
-						onGuessCopy={handleCopyGuessText}
-						onGuessValueChange={value => {
-							setGuessBodyText(value)
-							if (isRevealPanelCopied) setIsRevealPanelCopied(false)
-						}}
-						onRevealCopy={handleCopyRevealText}
-						onValueChange={setRevealPanelTab}
-						revealFieldContainerClassName='relative flex min-h-0 flex-1 flex-col'
-						revealReadOnly={true}
-						revealValue={topic.body}
-						stopPropagation={true}
-						tabsClassName='flex min-h-0 flex-1 flex-col gap-2'
-						textareaClassName={REVEAL_PANEL_TEXTAREA_CLASSNAME}
-						value={revealPanelTab}
-					/>
-				)
+			secondaryContent = (
+				<RevealPanel
+					guessValue={guessBodyText}
+					isCopied={isRevealPanelCopied}
+					onGuessCopy={handleCopyGuessText}
+					onGuessValueChange={setGuessBodyText}
+					onRevealCopy={handleCopyRevealText}
+					onValueChange={setRevealPanelTab}
+					revealReadOnly={true}
+					revealValue={topic.body}
+					stopPropagation={true}
+					value={revealPanelTab}
+					variant='card'
+				/>
+			)
 		} else {
 			secondaryContent = (
 				<div className='relative'>

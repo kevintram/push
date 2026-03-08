@@ -21,7 +21,7 @@ import { toast } from 'sonner'
 import { DetailTabsShell } from '~/components/DetailTabs/DetailTabsShell'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { RevealPanel, type RevealPanelTab } from '~/components/RevealPanel'
+import { RevealPanel } from '~/components/RevealPanel'
 import { AddEntityMenu } from '~/components/ui/add-entity-menu'
 import {
 	AlertDialog,
@@ -66,6 +66,7 @@ import { useTopic } from '~/features/topics/api/getTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { TopicCard } from '~/features/topics/components/TopicCard'
+import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import {
 	DEFAULT_MASONRY_GAP,
@@ -137,35 +138,29 @@ export function TopicDetailPage({
 	const [parentSearchQuery, setParentSearchQuery] = useState('')
 	const [isParentMutationPending, setIsParentMutationPending] = useState(false)
 	const { hidesSecondary } = useFlashcardMode()
-	const [revealPanelTab, setRevealPanelTab] = useState<RevealPanelTab | null>(
-		hidesSecondary ? null : 'reveal'
-	)
-	const [guessBodyText, setGuessBodyText] = useState('')
-	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
+	const {
+		revealPanelTab,
+		setRevealPanelTab,
+		guessText: guessBodyText,
+		setGuessText: setGuessBodyText,
+		isCopied: isRevealPanelCopied,
+		handleCopyGuessText,
+		handleCopyRevealText
+	} = useRevealPanel({
+		revealText: body,
+		entityId: topic?.id ?? null,
+		hidesSecondary,
+		defaultTab: hidesSecondary ? null : 'reveal'
+	})
 
 	useEffect(() => {
 		if (!topic) return
 		setTitle(topic.title)
 		setBody(topic.body)
 	}, [topic])
-	useEffect(() => {
-		if (!topic) return
-		setRevealPanelTab(hidesSecondary ? null : 'reveal')
-		setGuessBodyText('')
-		setIsRevealPanelCopied(false)
-	}, [hidesSecondary, topic])
-	useEffect(() => {
-		if (!isRevealPanelCopied) return
-		const timeoutId = window.setTimeout(() => {
-			setIsRevealPanelCopied(false)
-		}, 1500)
-		return () => {
-			window.clearTimeout(timeoutId)
-		}
-	}, [isRevealPanelCopied])
 
 	const selectedCardType = useMemo(() => {
 		if (resolvedCardTypeFilter === 'all') return
@@ -668,81 +663,35 @@ export function TopicDetailPage({
 						</div>
 
 						{hidesSecondary ? (
-							revealPanelTab == null ? (
-								<div className='relative mt-1 flex min-h-16 w-full items-center justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2'>
-									<div className='flex items-center gap-2'>
-										<Button
-											className='rounded-full'
-											onClick={() => setRevealPanelTab('guess')}
-											size='sm'
-											type='button'
-											variant='outline'
-										>
-											Type a guess
-										</Button>
-										<Button
-											className='rounded-full'
-											onClick={() => setRevealPanelTab('reveal')}
-											size='sm'
-											type='button'
-											variant='outline'
-										>
-											Reveal
-										</Button>
-									</div>
-									{isBodyEmpty ? (
+							<RevealPanel
+								closedContent={
+									isBodyEmpty ? (
 										<Badge
 											className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
 											variant='outline'
 										>
 											Empty
 										</Badge>
-									) : null}
-								</div>
-							) : (
-								<div className='mt-1 rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'>
-									<RevealPanel
-										contentClassName='mt-0'
-										guessFieldContainerClassName='relative'
-										guessValue={guessBodyText}
-										isCopied={isRevealPanelCopied}
-										onGuessCopy={async () => {
-											try {
-												await navigator.clipboard.writeText(guessBodyText)
-												setIsRevealPanelCopied(true)
-												toast.success('Guess copied')
-											} catch {
-												toast.error('Failed to copy guess')
-											}
-										}}
-										onGuessValueChange={value => {
-											setGuessBodyText(value)
-											if (isRevealPanelCopied) setIsRevealPanelCopied(false)
-										}}
-										onRevealBlur={() => {
-											if (body !== topic.body) {
-												updateTopicFields({ body }).catch(() => {})
-											}
-										}}
-										onRevealCopy={async () => {
-											try {
-												await navigator.clipboard.writeText(body)
-												setIsRevealPanelCopied(true)
-												toast.success('Reveal copied')
-											} catch {
-												toast.error('Failed to copy reveal')
-											}
-										}}
-										onRevealValueChange={setBody}
-										onValueChange={setRevealPanelTab}
-										revealFieldContainerClassName='relative'
-										revealHelperVariant='autosave'
-										revealPlaceholder='Write your topic...'
-										revealValue={body}
-										value={revealPanelTab}
-									/>
-								</div>
-							)
+									) : null
+								}
+								guessValue={guessBodyText}
+								isCopied={isRevealPanelCopied}
+								onGuessCopy={handleCopyGuessText}
+								onGuessValueChange={setGuessBodyText}
+								onRevealBlur={() => {
+									if (body !== topic.body) {
+										updateTopicFields({ body }).catch(() => {})
+									}
+								}}
+								onRevealCopy={handleCopyRevealText}
+								onRevealValueChange={setBody}
+								onValueChange={setRevealPanelTab}
+								revealHelperVariant='autosave'
+								revealPlaceholder='Write your topic...'
+								revealValue={body}
+								value={revealPanelTab}
+								variant='detail'
+							/>
 						) : (
 							<Textarea
 								className='!bg-transparent m-0 min-h-[2lh] resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
