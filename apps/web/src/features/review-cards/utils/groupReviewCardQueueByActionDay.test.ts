@@ -26,7 +26,8 @@ const baseCard: ReviewCard = {
 	days_until_next_tier: null,
 	days_in_current_tier: null,
 	is_new: true,
-	status_badges: []
+	status_badges: [],
+	notes: ''
 }
 
 function buildQueueItem(

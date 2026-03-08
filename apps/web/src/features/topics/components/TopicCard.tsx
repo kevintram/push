@@ -25,7 +25,7 @@ import {
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { cn } from '~/lib/utils'
-import { useFlashcardMode } from '~/stores/FlashcardModeContext'
+import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
 	estimateCardSize,
 	estimateExpandedCardSize
@@ -59,7 +59,7 @@ export function TopicCard({
 }: TopicCardProps) {
 	const [cardRef, cardRect] = useResizeObserver<HTMLDivElement>()
 	const deleteTopicMutation = useDeleteTopic()
-	const { hidesSecondary } = useFlashcardMode()
+	const { hidesSecondary } = useReviewMode()
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
 	)

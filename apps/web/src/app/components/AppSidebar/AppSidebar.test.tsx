@@ -8,7 +8,7 @@ const useLocationMock = vi.fn()
 const useReviewCardQueueCountsMock = vi.fn()
 const useReviewCardPinnedSummaryMock = vi.fn()
 const useTopicsMock = vi.fn()
-const useFlashcardModeMock = vi.fn()
+const useReviewModeMock = vi.fn()
 const navigateMock = vi.fn()
 const requestCreateTopicMock = vi.fn()
 
@@ -52,8 +52,8 @@ vi.mock('~/features/topics/createTopicIntent', () => ({
 	requestCreateTopic: () => requestCreateTopicMock()
 }))
 
-vi.mock('~/stores/FlashcardModeContext', () => ({
-	useFlashcardMode: (...args: Array<unknown>) => useFlashcardModeMock(...args)
+vi.mock('~/stores/ReviewModeContext', () => ({
+	useReviewMode: (...args: Array<unknown>) => useReviewModeMock(...args)
 }))
 
 describe('AppSidebar', () => {
@@ -62,13 +62,13 @@ describe('AppSidebar', () => {
 		useReviewCardQueueCountsMock.mockReset()
 		useReviewCardPinnedSummaryMock.mockReset()
 		useTopicsMock.mockReset()
-		useFlashcardModeMock.mockReset()
+		useReviewModeMock.mockReset()
 		navigateMock.mockReset()
 		requestCreateTopicMock.mockReset()
 		useReviewCardPinnedSummaryMock.mockReturnValue({
 			data: { pinned_count: 0 }
 		})
-		useFlashcardModeMock.mockReturnValue({
+		useReviewModeMock.mockReturnValue({
 			reviewMode: 'off',
 			setReviewMode: vi.fn(),
 			isReviewModeEnabled: false,
@@ -316,7 +316,7 @@ describe('AppSidebar', () => {
 			newCount: 0,
 			dueNextSevenDaysCount: 0
 		})
-		useFlashcardModeMock.mockReturnValue({
+		useReviewModeMock.mockReturnValue({
 			reviewMode: 'on',
 			setReviewMode: vi.fn(),
 			isReviewModeEnabled: true,
@@ -361,7 +361,7 @@ describe('AppSidebar', () => {
 			dueNextSevenDaysCount: 0
 		})
 		const setReviewMode = vi.fn()
-		useFlashcardModeMock.mockReturnValue({
+		useReviewModeMock.mockReturnValue({
 			reviewMode: 'off',
 			setReviewMode,
 			isReviewModeEnabled: false,
@@ -393,7 +393,7 @@ describe('AppSidebar', () => {
 			newCount: 0,
 			dueNextSevenDaysCount: 0
 		})
-		useFlashcardModeMock.mockReturnValue({
+		useReviewModeMock.mockReturnValue({
 			reviewMode: 'on',
 			setReviewMode: vi.fn(),
 			isReviewModeEnabled: true,

@@ -57,8 +57,8 @@ vi.mock('~/hooks/useLearnableMetrics', () => ({
 	})
 }))
 
-vi.mock('~/stores/FlashcardModeContext', () => ({
-	useFlashcardMode: () => ({
+vi.mock('~/stores/ReviewModeContext', () => ({
+	useReviewMode: () => ({
 		reviewMode: 'on',
 		setReviewMode: vi.fn(),
 		isReviewModeEnabled: true,
@@ -209,7 +209,8 @@ describe('ReviewCard', () => {
 			days_until_next_tier: 3,
 			days_in_current_tier: 1,
 			is_new: false,
-			status_badges: []
+			status_badges: [],
+			notes: ''
 		}
 
 		render(<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />)
@@ -255,7 +256,8 @@ describe('ReviewCard', () => {
 			days_until_next_tier: 3,
 			days_in_current_tier: 1,
 			is_new: false,
-			status_badges: []
+			status_badges: [],
+			notes: ''
 		}
 
 		render(<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />)

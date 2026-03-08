@@ -6,10 +6,7 @@ import {
 	useSidebar
 } from '~/components/ui/sidebar'
 import { ToggleGroup, ToggleGroupItem } from '~/components/ui/toggle-group'
-import {
-	type ReviewMode,
-	useFlashcardMode
-} from '~/stores/FlashcardModeContext'
+import { type ReviewMode, useReviewMode } from '~/stores/ReviewModeContext'
 
 const CONTROLS: Array<{ label: string; mode: ReviewMode }> = [
 	{ label: 'Off', mode: 'off' },
@@ -21,7 +18,7 @@ function getReviewModeStatusLabel(reviewMode: ReviewMode) {
 }
 
 export function ReviewModeFooterControl() {
-	const { reviewMode, setReviewMode } = useFlashcardMode()
+	const { reviewMode, setReviewMode } = useReviewMode()
 	const { state } = useSidebar()
 	const statusLabel = getReviewModeStatusLabel(reviewMode)
 	const isOn = reviewMode === 'on'

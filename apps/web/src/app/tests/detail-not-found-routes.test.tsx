@@ -12,19 +12,21 @@ vi.mock('~/components/SettingsDialog', () => ({
 	SettingsDialog: () => null
 }))
 
-vi.mock('~/stores/FlashcardModeContext', () => ({
-	useFlashcardMode: () => ({
-		reviewMode: 'off',
-		setReviewMode: () => {},
-		isReviewModeEnabled: false,
-		hidesPrimary: false,
-		hidesSecondary: false,
-		showReviewModeWarning: false,
-		setShowReviewModeWarning: () => {},
-		autoEnableReviewMode: false,
-		setAutoEnableReviewMode: () => {}
-	})
-}))
+vi.mock('~/stores/ReviewModeContext', async importOriginal => {
+	const actual =
+		await importOriginal<typeof import('~/stores/ReviewModeContext')>()
+
+	return {
+		...actual,
+		useReviewMode: () => ({
+			reviewMode: 'off',
+			setReviewMode: () => {},
+			isReviewModeEnabled: false,
+			hidesPrimary: false,
+			hidesSecondary: false
+		})
+	}
+})
 
 function renderRoute(route: string) {
 	const queryClient = new QueryClient({

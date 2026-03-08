@@ -76,7 +76,7 @@ import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
-import { useFlashcardMode } from '~/stores/FlashcardModeContext'
+import { useReviewMode } from '~/stores/ReviewModeContext'
 import { localDateString } from '~/utils/date'
 import {
 	formatAbsoluteDate,
@@ -276,7 +276,7 @@ export function ReviewCardDetailPage({
 	const [prompt, setPrompt] = useState('')
 	const [answer, setAnswer] = useState('')
 	const [notes, setNotes] = useState('')
-	const { hidesSecondary } = useFlashcardMode()
+	const { hidesSecondary } = useReviewMode()
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
 	const [isTopicMenuOpen, setIsTopicMenuOpen] = useState(false)

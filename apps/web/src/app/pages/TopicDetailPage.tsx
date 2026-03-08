@@ -67,7 +67,7 @@ import { useTopics } from '~/features/topics/api/getTopics'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
-import { useFlashcardMode } from '~/stores/FlashcardModeContext'
+import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
@@ -137,7 +137,7 @@ export function TopicDetailPage({
 	const [isParentSearchOpen, setIsParentSearchOpen] = useState(false)
 	const [parentSearchQuery, setParentSearchQuery] = useState('')
 	const [isParentMutationPending, setIsParentMutationPending] = useState(false)
-	const { hidesSecondary } = useFlashcardMode()
+	const { hidesSecondary } = useReviewMode()
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])

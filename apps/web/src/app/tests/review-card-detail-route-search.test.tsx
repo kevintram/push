@@ -91,12 +91,18 @@ vi.mock('~/hooks/useLearnableMetrics', () => ({
 	})
 }))
 
-vi.mock('~/stores/FlashcardModeContext', () => ({
-	useFlashcardMode: () => ({
-		hidesPrimary: false,
-		hidesSecondary: false
-	})
-}))
+vi.mock('~/stores/ReviewModeContext', async importOriginal => {
+	const actual =
+		await importOriginal<typeof import('~/stores/ReviewModeContext')>()
+
+	return {
+		...actual,
+		useReviewMode: () => ({
+			hidesPrimary: false,
+			hidesSecondary: false
+		})
+	}
+})
 
 const reviewCard = {
 	id: 11,
