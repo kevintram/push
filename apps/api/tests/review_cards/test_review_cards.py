@@ -24,6 +24,8 @@ async def _create_review_card(
     *,
     card_type: str = "flashcard",
     prompt: str = "Prompt",
+    answer: str = "Answer",
+    notes: str = "",
 ) -> dict:
     response = await test_client.post(
         "/review-cards/",
@@ -31,7 +33,8 @@ async def _create_review_card(
             "topic_id": topic_id,
             "type": card_type,
             "prompt": prompt,
-            "answer": "Answer",
+            "answer": answer,
+            "notes": notes,
         },
     )
     assert response.status_code == 201
@@ -52,6 +55,7 @@ class TestReviewCardEndpoints:
                 "type": "flashcard",
                 "prompt": "Prompt",
                 "answer": "Answer",
+                "notes": "Reference material",
             },
         )
 
@@ -59,6 +63,7 @@ class TestReviewCardEndpoints:
         payload = response.json()
         assert payload["retired"] is False
         assert payload["pinned_at"] is None
+        assert payload["notes"] == "Reference material"
         assert "srs_enabled" not in payload
         assert "fsrs_state_id" not in payload
 
@@ -116,6 +121,25 @@ class TestReviewCardEndpoints:
 
         assert unpin_response.status_code == 200
         assert unpin_response.json()["pinned_at"] is None
+
+    async def test_update_review_card_notes(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Card notes")
+        review_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            notes="Initial notes",
+        )
+
+        update_response = await test_client.patch(
+            f"/review-cards/{review_card['id']}/",
+            json={"notes": "Updated notes"},
+        )
+
+        assert update_response.status_code == 200
+        assert update_response.json()["notes"] == "Updated notes"
 
     async def test_list_review_cards_orders_pinned_first_and_filters_pinned_only(
         self,

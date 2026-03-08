@@ -55,6 +55,7 @@ class ReviewCard(Base):
     )
     prompt: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
     answer: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
+    notes: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
     stability: Mapped[float | None] = mapped_column(REAL, nullable=True)
     difficulty: Mapped[float | None] = mapped_column(REAL, nullable=True)
     state: Mapped[str] = mapped_column(

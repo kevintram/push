@@ -51,32 +51,26 @@ export function RecentPage() {
 		[searchResults]
 	)
 
-	let content: ReactNode
+	let body: ReactNode
 	if (isLoading) {
-		content = (
-			<PageLayout.Content className='max-w-screen p-6'>
-				<LoadingSpinner containerClassName='min-h-64' />
-			</PageLayout.Content>
-		)
+		body = <LoadingSpinner containerClassName='min-h-64' />
 	} else if (sections.length === 0) {
-		content = (
-			<PageLayout.Content>
-				<Empty>
-					<EmptyHeader>
-						<EmptyMedia variant='icon'>
-							<Clock />
-						</EmptyMedia>
-						<EmptyTitle>No recent items</EmptyTitle>
-						<EmptyDescription>
-							See your most recently edited topics and review cards
-						</EmptyDescription>
-					</EmptyHeader>
-				</Empty>
-			</PageLayout.Content>
+		body = (
+			<Empty>
+				<EmptyHeader>
+					<EmptyMedia variant='icon'>
+						<Clock />
+					</EmptyMedia>
+					<EmptyTitle>No recent items</EmptyTitle>
+					<EmptyDescription>
+						See your most recently edited topics and review cards
+					</EmptyDescription>
+				</EmptyHeader>
+			</Empty>
 		)
 	} else {
-		content = (
-			<PageLayout.Content className='max-w-screen space-y-6 p-6'>
+		body = (
+			<div className='space-y-6'>
 				{sections.map(section => (
 					<div className='space-y-3' key={section.id}>
 						<h3 className='font-bold text-xl'>{section.label}</h3>
@@ -139,19 +133,20 @@ export function RecentPage() {
 						/>
 					</div>
 				))}
-			</PageLayout.Content>
+			</div>
 		)
 	}
 
 	return (
 		<PageLayout>
-			<PageLayout.Header icon={Clock} title='Recent'>
+			<PageLayout.Header icon={Clock} title='Recent' />
+			<PageLayout.Content className='max-w-screen space-y-4 px-3 pt-3 pb-6'>
 				<EntityTypeFilter
 					activeFilter={activeFilter}
 					onFilterChange={setActiveFilter}
 				/>
-			</PageLayout.Header>
-			{content}
+				{body}
+			</PageLayout.Content>
 		</PageLayout>
 	)
 }

@@ -90,6 +90,21 @@ function sortActionableQueueItems(
 ): number {
 	const aActionDays = getActionDays(a)
 	const bActionDays = getActionDays(b)
+
+	// Mirror the backend queue order so sectioned due views and focused mode
+	// agree on which overdue scheduled reviews should be surfaced first.
+	const aIsOverdueDue =
+		a.queue_type === 'due' && aActionDays != null && aActionDays < 0
+	const bIsOverdueDue =
+		b.queue_type === 'due' && bActionDays != null && bActionDays < 0
+
+	if (aIsOverdueDue !== bIsOverdueDue) {
+		return aIsOverdueDue ? -1 : 1
+	}
+	if (aIsOverdueDue && bIsOverdueDue && aActionDays !== bActionDays) {
+		return bActionDays! - aActionDays!
+	}
+
 	const aUrgency = aActionDays ?? Number.POSITIVE_INFINITY
 	const bUrgency = bActionDays ?? Number.POSITIVE_INFINITY
 
