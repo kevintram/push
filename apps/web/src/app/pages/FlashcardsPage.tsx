@@ -209,6 +209,7 @@ export function FlashcardsPage({
 		content = (
 			<div className='mx-auto w-full max-w-3xl space-y-4'>
 				<ReviewCard
+					enableLargeCardMode={true}
 					minHeight={380}
 					onClick={() =>
 						navigate({

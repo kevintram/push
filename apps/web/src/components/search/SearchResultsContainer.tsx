@@ -17,6 +17,8 @@ interface SearchResultsContainerProps<T> {
 	estimateItemSize: (item: T, index: number, laneWidth: number) => number
 	/** Function to get a unique key for each item */
 	getItemKey: (item: T) => number | string
+	/** Invalidates cached masonry measurements when global card presentation changes */
+	measurementVersion?: boolean | number | string | null
 	/** Scroll container element getter for virtualization */
 	getScrollElement?: () => HTMLDivElement | null
 	/** Gap between items in the masonry layout */
@@ -41,6 +43,7 @@ export function SearchResultsContainer<T>({
 	renderItem,
 	estimateItemSize,
 	getItemKey,
+	measurementVersion,
 	getScrollElement,
 	gap = 16,
 	minItemWidth,
@@ -102,6 +105,7 @@ export function SearchResultsContainer<T>({
 					getItemKey={getItemKey}
 					getScrollElement={getScrollElement}
 					items={results}
+					measurementVersion={measurementVersion}
 					minItemWidth={minItemWidth}
 					renderItem={renderItem}
 				/>

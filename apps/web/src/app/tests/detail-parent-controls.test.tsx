@@ -284,6 +284,7 @@ const reviewCard = {
 	type: 'practice' as const,
 	prompt: 'Solve for x',
 	answer: 'x = 3',
+	notes: 'Factor carefully',
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',
 	last_review_rating: null,

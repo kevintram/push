@@ -23,6 +23,7 @@ import { TopicsPage } from '~/app/pages/TopicsPage'
 const navigateMock = vi.fn()
 const masonryRenderSpy = vi.fn()
 const masonryPropsSpy = vi.fn()
+const reviewCardRenderSpy = vi.fn()
 const useTopicsMock = vi.fn()
 const useTopicMock = vi.fn()
 const useReviewCardsMock = vi.fn()
@@ -93,9 +94,13 @@ vi.mock('~/features/topics/components/TopicCard', () => ({
 }))
 
 vi.mock('~/features/review-cards/components/ReviewCard', () => ({
-	ReviewCard: ({ reviewCard }: { reviewCard: { prompt: string } }) => (
-		<div data-testid='review-card'>{reviewCard.prompt}</div>
-	)
+	ReviewCard: (props: {
+		reviewCard: { prompt: string }
+		enableLargeCardMode?: boolean
+	}) => {
+		reviewCardRenderSpy(props)
+		return <div data-testid='review-card'>{props.reviewCard.prompt}</div>
+	}
 }))
 
 vi.mock('~/features/topics/api/getTopics', () => ({
@@ -193,6 +198,7 @@ const reviewCard = {
 	type: 'practice' as const,
 	prompt: 'Solve for x',
 	answer: 'x = 3',
+	notes: 'Factor carefully',
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',
 	last_review_rating: null,
@@ -292,6 +298,7 @@ beforeEach(() => {
 	navigateMock.mockReset()
 	masonryRenderSpy.mockReset()
 	masonryPropsSpy.mockReset()
+	reviewCardRenderSpy.mockReset()
 	useTopicsMock.mockReset()
 	useTopicMock.mockReset()
 	useReviewCardsMock.mockReset()
@@ -461,6 +468,14 @@ describe('masonry-backed page feeds', () => {
 
 		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
 		expect(screen.getByText('Today flashcard prompt')).toBeInTheDocument()
+		expect(reviewCardRenderSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				enableLargeCardMode: true,
+				reviewCard: expect.objectContaining({
+					prompt: 'Today flashcard prompt'
+				})
+			})
+		)
 
 		await user.click(screen.getByRole('tab', { name: 'All' }))
 
@@ -697,6 +712,12 @@ describe('masonry-backed page feeds', () => {
 
 		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
 		expect(screen.getByText('Today practice prompt')).toBeInTheDocument()
+		expect(
+			reviewCardRenderSpy.mock.calls.some(([props]) => {
+				if (props.reviewCard.prompt !== 'Today practice prompt') return false
+				return !('enableLargeCardMode' in props && props.enableLargeCardMode)
+			})
+		).toBe(true)
 		expect(screen.getByTestId('focused-practice-layout')).toBeInTheDocument()
 		expect(screen.queryByText('Focused Queue')).not.toBeInTheDocument()
 		expect(screen.queryByText('Keep this set warm')).not.toBeInTheDocument()

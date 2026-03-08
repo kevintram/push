@@ -12,10 +12,6 @@ vi.mock('~/components/SettingsDialog', () => ({
 	SettingsDialog: () => null
 }))
 
-vi.mock('~/app/components/ReviewModeFab', () => ({
-	ReviewModeFab: () => null
-}))
-
 vi.mock('~/stores/ReviewModeContext', async importOriginal => {
 	const actual =
 		await importOriginal<typeof import('~/stores/ReviewModeContext')>()

@@ -111,6 +111,7 @@ const reviewCard = {
 	type: 'practice' as const,
 	prompt: 'Solve for x',
 	answer: 'x = 3',
+	notes: 'Factor carefully',
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',
 	last_review_rating: null,
@@ -213,6 +214,26 @@ describe('review card detail route-backed tabs', () => {
 
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({ tab: 'reviews' })
+		})
+	})
+
+	it('deep links the notes tab and updates search when tabs change', async () => {
+		const { router, user } = renderRoute('/review-cards/11?tab=notes')
+
+		expect(
+			await screen.findByDisplayValue('Factor carefully')
+		).toBeInTheDocument()
+
+		await user.click(screen.getByRole('tab', { name: 'Reviews 1' }))
+
+		await waitFor(() => {
+			expect(router.state.location.search).toEqual({ tab: 'reviews' })
+		})
+
+		await user.click(screen.getByRole('tab', { name: 'Notes' }))
+
+		await waitFor(() => {
+			expect(router.state.location.search).toEqual({ tab: 'notes' })
 		})
 	})
 })

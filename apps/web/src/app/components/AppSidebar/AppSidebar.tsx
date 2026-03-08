@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
+import { ReviewModeFooterControl } from '~/app/components/AppSidebar/ReviewModeFooterControl'
 import { SidebarSearch } from '~/app/components/AppSidebar/SidebarSearch'
 import { SettingsDialog } from '~/components/SettingsDialog'
 import { Button } from '~/components/ui/button'
@@ -334,6 +335,7 @@ export function AppSidebar() {
 
 			<SidebarFooter className='bg-primary-foreground'>
 				<SidebarMenu>
+					<ReviewModeFooterControl />
 					<SidebarMenuItem>
 						<SidebarMenuButton
 							onClick={() => setIsSettingsDialogOpen(true)}

@@ -3,8 +3,6 @@ import dayjs from 'dayjs'
 import {
 	AlertTriangle,
 	BookOpen,
-	Check,
-	Copy,
 	MoreHorizontal,
 	Plus,
 	Trash2,
@@ -23,6 +21,7 @@ import { toast } from 'sonner'
 import { DetailTabsShell } from '~/components/DetailTabs/DetailTabsShell'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
+import { RevealPanel } from '~/components/RevealPanel'
 import { AddEntityMenu } from '~/components/ui/add-entity-menu'
 import {
 	AlertDialog,
@@ -50,7 +49,6 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { Textarea } from '~/components/ui/textarea'
 import {
 	Tooltip,
@@ -68,6 +66,7 @@ import { useTopic } from '~/features/topics/api/getTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { TopicCard } from '~/features/topics/components/TopicCard'
+import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
 	DEFAULT_MASONRY_GAP,
@@ -80,14 +79,6 @@ import { isHttpStatusError } from '~/utils/httpStatusError'
 
 const EMPTY_BADGE_CLASSNAME =
 	'h-5 rounded-sm border-transparent bg-amber-100 text-amber-900 text-xs shadow-sm dark:bg-amber-950 dark:text-amber-200'
-
-type TopicDetailRevealPanelTab = 'guess' | 'reveal'
-
-function isTopicDetailRevealPanelTab(
-	value: string
-): value is TopicDetailRevealPanelTab {
-	return value === 'guess' || value === 'reveal'
-}
 
 export type TopicDetailTab = 'subtopics' | 'review_cards'
 export type TopicDetailReviewCardFilter = 'all' | 'practice' | 'flashcard'
@@ -147,34 +138,29 @@ export function TopicDetailPage({
 	const [parentSearchQuery, setParentSearchQuery] = useState('')
 	const [isParentMutationPending, setIsParentMutationPending] = useState(false)
 	const { hidesSecondary } = useReviewMode()
-	const [revealPanelTab, setRevealPanelTab] =
-		useState<TopicDetailRevealPanelTab | null>(hidesSecondary ? null : 'reveal')
-	const [guessBodyText, setGuessBodyText] = useState('')
-	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
+	const {
+		revealPanelTab,
+		setRevealPanelTab,
+		guessText: guessBodyText,
+		setGuessText: setGuessBodyText,
+		isCopied: isRevealPanelCopied,
+		handleCopyGuessText,
+		handleCopyRevealText
+	} = useRevealPanel({
+		revealText: body,
+		entityId: topic?.id ?? null,
+		hidesSecondary,
+		defaultTab: hidesSecondary ? null : 'reveal'
+	})
 
 	useEffect(() => {
 		if (!topic) return
 		setTitle(topic.title)
 		setBody(topic.body)
 	}, [topic])
-	useEffect(() => {
-		if (!topic) return
-		setRevealPanelTab(hidesSecondary ? null : 'reveal')
-		setGuessBodyText('')
-		setIsRevealPanelCopied(false)
-	}, [hidesSecondary, topic])
-	useEffect(() => {
-		if (!isRevealPanelCopied) return
-		const timeoutId = window.setTimeout(() => {
-			setIsRevealPanelCopied(false)
-		}, 1500)
-		return () => {
-			window.clearTimeout(timeoutId)
-		}
-	}, [isRevealPanelCopied])
 
 	const selectedCardType = useMemo(() => {
 		if (resolvedCardTypeFilter === 'all') return
@@ -350,10 +336,6 @@ export function TopicDetailPage({
 		throw notFound()
 	}
 
-	const revealPanelTextareaClassName =
-		'min-h-24 resize-none border-border/70 bg-background/80'
-	const revealPanelCopyButtonClassName =
-		'absolute right-2 bottom-2 text-muted-foreground hover:text-foreground'
 	const isBodyEmpty = body.trim().length === 0
 	const addParentMenu = (
 		<AddEntityMenu
@@ -681,143 +663,35 @@ export function TopicDetailPage({
 						</div>
 
 						{hidesSecondary ? (
-							revealPanelTab == null ? (
-								<div className='relative mt-1 flex min-h-16 w-full items-center justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2'>
-									<div className='flex items-center gap-2'>
-										<Button
-											className='rounded-full'
-											onClick={() => setRevealPanelTab('guess')}
-											size='sm'
-											type='button'
-											variant='outline'
-										>
-											Type a guess
-										</Button>
-										<Button
-											className='rounded-full'
-											onClick={() => setRevealPanelTab('reveal')}
-											size='sm'
-											type='button'
-											variant='outline'
-										>
-											Reveal
-										</Button>
-									</div>
-									{isBodyEmpty ? (
+							<RevealPanel
+								closedContent={
+									isBodyEmpty ? (
 										<Badge
 											className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
 											variant='outline'
 										>
 											Empty
 										</Badge>
-									) : null}
-								</div>
-							) : (
-								<div className='mt-1 rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'>
-									<Tabs
-										className='gap-2'
-										onValueChange={value => {
-											if (isTopicDetailRevealPanelTab(value)) {
-												setRevealPanelTab(value)
-											}
-										}}
-										value={revealPanelTab}
-									>
-										<div className='flex items-start justify-between gap-2'>
-											<TabsList className='h-8' variant='default'>
-												<TabsTrigger className='px-2 text-xs' value='guess'>
-													Guess
-												</TabsTrigger>
-												<TabsTrigger className='px-2 text-xs' value='reveal'>
-													Reveal
-												</TabsTrigger>
-											</TabsList>
-										</div>
-										<TabsContent className='mt-0' value='guess'>
-											<div className='relative'>
-												<Textarea
-													className={revealPanelTextareaClassName}
-													onChange={event => {
-														setGuessBodyText(event.target.value)
-														if (isRevealPanelCopied)
-															setIsRevealPanelCopied(false)
-													}}
-													placeholder='Type your guess...'
-													spellCheck={false}
-													value={guessBodyText}
-												/>
-												<Button
-													aria-label='Copy guess text'
-													className={revealPanelCopyButtonClassName}
-													onClick={async () => {
-														try {
-															await navigator.clipboard.writeText(guessBodyText)
-															setIsRevealPanelCopied(true)
-															toast.success('Guess copied')
-														} catch {
-															toast.error('Failed to copy guess')
-														}
-													}}
-													size='icon-xs'
-													type='button'
-													variant='ghost'
-												>
-													{isRevealPanelCopied ? (
-														<Check className='h-3 w-3' />
-													) : (
-														<Copy className='h-3 w-3' />
-													)}
-												</Button>
-											</div>
-											<p className='mt-1 flex items-center justify-end gap-1 text-muted-foreground text-xs'>
-												<AlertTriangle className='h-3 w-3 shrink-0 text-amber-500 dark:text-amber-400' />
-												<span>Guesses are not saved.</span>
-											</p>
-										</TabsContent>
-										<TabsContent className='mt-0' value='reveal'>
-											<div className='relative'>
-												<Textarea
-													className={revealPanelTextareaClassName}
-													onBlur={() => {
-														if (body !== topic.body) {
-															updateTopicFields({ body }).catch(() => {})
-														}
-													}}
-													onChange={event => setBody(event.target.value)}
-													placeholder='Write your topic...'
-													spellCheck={false}
-													value={body}
-												/>
-												<Button
-													aria-label='Copy reveal text'
-													className={revealPanelCopyButtonClassName}
-													onClick={async () => {
-														try {
-															await navigator.clipboard.writeText(body)
-															setIsRevealPanelCopied(true)
-															toast.success('Reveal copied')
-														} catch {
-															toast.error('Failed to copy reveal')
-														}
-													}}
-													size='icon-xs'
-													type='button'
-													variant='ghost'
-												>
-													{isRevealPanelCopied ? (
-														<Check className='h-3 w-3' />
-													) : (
-														<Copy className='h-3 w-3' />
-													)}
-												</Button>
-											</div>
-											<p className='mt-1 text-right text-muted-foreground text-xs'>
-												Changes are automatically saved.
-											</p>
-										</TabsContent>
-									</Tabs>
-								</div>
-							)
+									) : null
+								}
+								guessValue={guessBodyText}
+								isCopied={isRevealPanelCopied}
+								onGuessCopy={handleCopyGuessText}
+								onGuessValueChange={setGuessBodyText}
+								onRevealBlur={() => {
+									if (body !== topic.body) {
+										updateTopicFields({ body }).catch(() => {})
+									}
+								}}
+								onRevealCopy={handleCopyRevealText}
+								onRevealValueChange={setBody}
+								onValueChange={setRevealPanelTab}
+								revealHelperVariant='autosave'
+								revealPlaceholder='Write your topic...'
+								revealValue={body}
+								value={revealPanelTab}
+								variant='detail'
+							/>
 						) : (
 							<Textarea
 								className='!bg-transparent m-0 min-h-[2lh] resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'

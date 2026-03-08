@@ -9,7 +9,7 @@ type ReviewCardDetailRouteSearch = {
 }
 
 function isReviewCardDetailTab(value: unknown): value is ReviewCardDetailTab {
-	return value === 'home' || value === 'reviews'
+	return value === 'home' || value === 'notes' || value === 'reviews'
 }
 
 export function validateReviewCardDetailSearch(

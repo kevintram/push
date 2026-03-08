@@ -19,6 +19,7 @@ async def _create_review_card(
     card_type: str,
     prompt: str,
     answer: str = "Answer",
+    notes: str = "",
 ) -> dict:
     response = await test_client.post(
         "/review-cards/",
@@ -27,6 +28,7 @@ async def _create_review_card(
             "type": card_type,
             "prompt": prompt,
             "answer": answer,
+            "notes": notes,
             "retired": False,
         },
     )
@@ -105,3 +107,25 @@ class TestSearchEndpoint:
         ids = {item["review_card"]["id"] for item in results if item["review_card"]}
         assert practice_card["id"] in ids
         assert flashcard["id"] not in ids
+
+    async def test_search_review_card_notes(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Search notes")
+        review_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="flashcard",
+            prompt="Hash maps",
+            notes="Collision strategy and load factor",
+        )
+
+        response = await test_client.get(
+            "/search/?query=collision&entity_types=review_card"
+        )
+
+        assert response.status_code == 200
+        results = response.json()
+        ids = {item["review_card"]["id"] for item in results if item["review_card"]}
+        assert review_card["id"] in ids
