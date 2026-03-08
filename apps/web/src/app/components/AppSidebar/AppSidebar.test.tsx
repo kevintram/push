@@ -8,6 +8,7 @@ const useLocationMock = vi.fn()
 const useReviewCardQueueCountsMock = vi.fn()
 const useReviewCardPinnedSummaryMock = vi.fn()
 const useTopicsMock = vi.fn()
+const useFlashcardModeMock = vi.fn()
 const navigateMock = vi.fn()
 const requestCreateTopicMock = vi.fn()
 
@@ -51,16 +52,32 @@ vi.mock('~/features/topics/createTopicIntent', () => ({
 	requestCreateTopic: () => requestCreateTopicMock()
 }))
 
+vi.mock('~/stores/FlashcardModeContext', () => ({
+	useFlashcardMode: (...args: Array<unknown>) => useFlashcardModeMock(...args)
+}))
+
 describe('AppSidebar', () => {
 	beforeEach(() => {
 		useLocationMock.mockReset()
 		useReviewCardQueueCountsMock.mockReset()
 		useReviewCardPinnedSummaryMock.mockReset()
 		useTopicsMock.mockReset()
+		useFlashcardModeMock.mockReset()
 		navigateMock.mockReset()
 		requestCreateTopicMock.mockReset()
 		useReviewCardPinnedSummaryMock.mockReturnValue({
 			data: { pinned_count: 0 }
+		})
+		useFlashcardModeMock.mockReturnValue({
+			reviewMode: 'off',
+			setReviewMode: vi.fn(),
+			isReviewModeEnabled: false,
+			hidesPrimary: false,
+			hidesSecondary: false,
+			showReviewModeWarning: false,
+			setShowReviewModeWarning: vi.fn(),
+			autoEnableReviewMode: false,
+			setAutoEnableReviewMode: vi.fn()
 		})
 	})
 
@@ -288,5 +305,114 @@ describe('AppSidebar', () => {
 			'Recent',
 			'Topics'
 		])
+	})
+
+	it('renders review mode ahead of settings in the footer', () => {
+		useLocationMock.mockReturnValue({ pathname: '/recent' })
+		useTopicsMock.mockReturnValue({ data: [] })
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+		useFlashcardModeMock.mockReturnValue({
+			reviewMode: 'on',
+			setReviewMode: vi.fn(),
+			isReviewModeEnabled: true,
+			hidesPrimary: false,
+			hidesSecondary: true,
+			showReviewModeWarning: false,
+			setShowReviewModeWarning: vi.fn(),
+			autoEnableReviewMode: false,
+			setAutoEnableReviewMode: vi.fn()
+		})
+
+		render(
+			<SidebarProvider>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		const reviewModeHeading = screen.getByText('Review Mode')
+		const reviewModeButton = screen.getByRole('button', {
+			name: 'Review mode On'
+		})
+		const settingsButton = screen.getByRole('button', { name: /settings/i })
+
+		expect(reviewModeHeading).toBeInTheDocument()
+		expect(reviewModeButton).toBeInTheDocument()
+		expect(
+			screen.getByText('Hide stuff so you can guess stuff')
+		).toBeInTheDocument()
+		expect(settingsButton).toBeInTheDocument()
+		expect(reviewModeHeading.compareDocumentPosition(settingsButton)).toBe(
+			Node.DOCUMENT_POSITION_FOLLOWING
+		)
+	})
+
+	it('updates review mode directly from the inline footer card', () => {
+		useLocationMock.mockReturnValue({ pathname: '/recent' })
+		useTopicsMock.mockReturnValue({ data: [] })
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+		const setReviewMode = vi.fn()
+		useFlashcardModeMock.mockReturnValue({
+			reviewMode: 'off',
+			setReviewMode,
+			isReviewModeEnabled: false,
+			hidesPrimary: false,
+			hidesSecondary: false,
+			showReviewModeWarning: false,
+			setShowReviewModeWarning: vi.fn(),
+			autoEnableReviewMode: false,
+			setAutoEnableReviewMode: vi.fn()
+		})
+
+		render(
+			<SidebarProvider>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		fireEvent.click(screen.getByRole('button', { name: 'Review mode On' }))
+
+		expect(setReviewMode).toHaveBeenCalledWith('on')
+	})
+
+	it('shows the collapsed review mode button as active when review mode is on', () => {
+		useLocationMock.mockReturnValue({ pathname: '/recent' })
+		useTopicsMock.mockReturnValue({ data: [] })
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+		useFlashcardModeMock.mockReturnValue({
+			reviewMode: 'on',
+			setReviewMode: vi.fn(),
+			isReviewModeEnabled: true,
+			hidesPrimary: false,
+			hidesSecondary: true,
+			showReviewModeWarning: false,
+			setShowReviewModeWarning: vi.fn(),
+			autoEnableReviewMode: false,
+			setAutoEnableReviewMode: vi.fn()
+		})
+
+		render(
+			<SidebarProvider defaultOpen={false}>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		expect(
+			screen.getByRole('button', { name: 'Review Mode: On' })
+		).toHaveAttribute('data-active')
 	})
 })

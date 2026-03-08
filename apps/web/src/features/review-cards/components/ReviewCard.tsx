@@ -5,9 +5,7 @@ import {
 	Anvil,
 	Baby,
 	Brain,
-	Check,
 	ChevronDown,
-	Copy,
 	Loader2,
 	MoreHorizontal,
 	Pin,
@@ -21,6 +19,7 @@ import {
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { RevealPanel } from '~/components/RevealPanel'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -41,8 +40,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
-import { Textarea } from '~/components/ui/textarea'
 import {
 	Tooltip,
 	TooltipContent,
@@ -50,9 +47,11 @@ import {
 } from '~/components/ui/tooltip'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
+import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { cn } from '~/lib/utils'
 import { useFlashcardMode } from '~/stores/FlashcardModeContext'
 import { localDateString } from '~/utils/date'
+import { estimateExpandedCardSize } from '~/utils/estimateCardSize'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate
@@ -79,24 +78,13 @@ import { orderReviewCardStatusBadges } from '../utils/orderReviewCardStatusBadge
 import { RetireReviewCardDialog } from './RetireReviewCardDialog'
 
 const MIN_HEIGHT = 96
-const CARD_HEIGHT_GUESS_PANEL_MIN = 300
+const LARGE_CARD_CONTENT_HEIGHT_MIN = 500
+const CARD_ESTIMATE_FALLBACK_WIDTH = 280
 const CARD_WIDTH_REVIEWED_META_MIN = 0
 const CARD_WIDTH_RATING_META_MIN = 0
 const CARD_WIDTH_STABILITY_META_MIN = 300
-const REVEAL_PANEL_TEXTAREA_CLASSNAME =
-	'h-full min-h-24 resize-none border-border/70 bg-background/80 text-sm'
-const REVEAL_PANEL_COPY_BUTTON_CLASSNAME =
-	'absolute right-2 bottom-2 text-muted-foreground hover:text-foreground'
 const PINNED_ICON_CLASSNAME =
 	'h-4 w-4 fill-current text-sky-500 dark:text-sky-300'
-
-type ReviewCardRevealPanelTab = 'guess' | 'reveal'
-
-function isReviewCardRevealPanelTab(
-	value: string
-): value is ReviewCardRevealPanelTab {
-	return value === 'guess' || value === 'reveal'
-}
 
 export interface ReviewCardBadge {
 	label: string
@@ -161,6 +149,7 @@ interface ReviewCardProps {
 	reviewCard: ReviewCardModel
 	onClick?: () => void
 	minHeight?: number
+	enableLargeCardMode?: boolean
 	searchQuery?: string
 	statusBadges?: Array<ReviewCardBadge>
 	onRemoveFromTab?: () => void
@@ -174,6 +163,7 @@ export function ReviewCard({
 	reviewCard,
 	onClick,
 	minHeight = MIN_HEIGHT,
+	enableLargeCardMode = false,
 	searchQuery,
 	statusBadges,
 	onRemoveFromTab,
@@ -206,10 +196,6 @@ export function ReviewCard({
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
 	)
-	const [revealPanelTab, setRevealPanelTab] =
-		useState<ReviewCardRevealPanelTab | null>(null)
-	const [guessSecondaryText, setGuessSecondaryText] = useState('')
-	const [isRevealPanelCopied, setIsRevealPanelCopied] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
 	const navigate = useNavigate()
@@ -244,12 +230,34 @@ export function ReviewCard({
 	const hidePrimary = hidesPrimary && hasPrimaryText && !isPrimaryRevealed
 	const hideSecondary =
 		hidesSecondary && hasSecondaryText && !isSecondaryRevealed
-	const hasMeasuredCardHeight = cardRect.height > 0
-	const effectiveCardHeight = hasMeasuredCardHeight
-		? cardRect.height
-		: minHeight
-	const isLargeCard = effectiveCardHeight >= CARD_HEIGHT_GUESS_PANEL_MIN
-	const canUseGuessPanel = hidesSecondary && hasSecondaryText && isLargeCard
+	const estimatedExpandedCardHeight = useMemo(() => {
+		const estimatedWidth =
+			cardRect.width > 0 ? cardRect.width : CARD_ESTIMATE_FALLBACK_WIDTH
+		return estimateExpandedCardSize(
+			reviewCard.prompt || 'Untitled prompt',
+			reviewCard.answer || '',
+			estimatedWidth
+		)
+	}, [cardRect.width, reviewCard.answer, reviewCard.prompt])
+	const isLargeCard =
+		enableLargeCardMode &&
+		estimatedExpandedCardHeight >= LARGE_CARD_CONTENT_HEIGHT_MIN
+	const canUseGuessPanel =
+		enableLargeCardMode && hidesSecondary && hasSecondaryText
+	const largeCardHeight = Math.max(minHeight, estimatedExpandedCardHeight)
+	const {
+		revealPanelTab,
+		setRevealPanelTab,
+		guessText: guessSecondaryText,
+		setGuessText: setGuessSecondaryText,
+		isCopied: isRevealPanelCopied,
+		handleCopyGuessText,
+		handleCopyRevealText
+	} = useRevealPanel({
+		revealText: reviewCard.answer,
+		entityId: reviewCard.id < 0 ? null : reviewCard.id,
+		hidesSecondary
+	})
 
 	useEffect(() => {
 		setIsPrimaryRevealed(!hidesPrimary)
@@ -257,37 +265,8 @@ export function ReviewCard({
 	}, [hidesPrimary, hidesSecondary])
 	useEffect(() => {
 		if (reviewCard.id < 0) return
-		setRevealPanelTab(null)
-		setGuessSecondaryText('')
-		setIsRevealPanelCopied(false)
 		setIsRetireDialogOpen(false)
 	}, [reviewCard.id])
-	useEffect(() => {
-		if (!hidesSecondary) {
-			setRevealPanelTab(null)
-			setGuessSecondaryText('')
-			setIsRevealPanelCopied(false)
-			return
-		}
-		if (canUseGuessPanel) {
-			setRevealPanelTab(null)
-			setGuessSecondaryText('')
-			setIsRevealPanelCopied(false)
-			return
-		}
-		setRevealPanelTab(null)
-		setGuessSecondaryText('')
-		setIsRevealPanelCopied(false)
-	}, [hidesSecondary, canUseGuessPanel])
-	useEffect(() => {
-		if (!isRevealPanelCopied) return
-		const timeoutId = window.setTimeout(() => {
-			setIsRevealPanelCopied(false)
-		}, 1500)
-		return () => {
-			window.clearTimeout(timeoutId)
-		}
-	}, [isRevealPanelCopied])
 
 	const handleActivate = useCallback(() => {
 		onClick?.()
@@ -371,29 +350,6 @@ export function ReviewCard({
 		event.stopPropagation()
 		setIsSecondaryRevealed(true)
 	}, [])
-	const handleRevealPanelTabChange = useCallback((value: string) => {
-		if (isReviewCardRevealPanelTab(value)) {
-			setRevealPanelTab(value)
-		}
-	}, [])
-	const handleCopyGuessText = useCallback(async () => {
-		try {
-			await navigator.clipboard.writeText(guessSecondaryText)
-			setIsRevealPanelCopied(true)
-			toast.success('Guess copied')
-		} catch {
-			toast.error('Failed to copy guess')
-		}
-	}, [guessSecondaryText])
-	const handleCopyRevealText = useCallback(async () => {
-		try {
-			await navigator.clipboard.writeText(reviewCard.answer)
-			setIsRevealPanelCopied(true)
-			toast.success('Reveal copied')
-		} catch {
-			toast.error('Failed to copy reveal')
-		}
-	}, [reviewCard.answer])
 
 	const createReviewMutation = useCreateReview()
 	const isCreatingReview = createReviewMutation.isPending
@@ -551,143 +507,22 @@ export function ReviewCard({
 	let secondaryContent: ReactNode
 	if (hideSecondary) {
 		if (canUseGuessPanel) {
-			secondaryContent =
-				revealPanelTab == null ? (
-					<div className='relative mt-1 flex h-full min-h-16 w-full flex-1 items-center justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2'>
-						<div className='flex items-center gap-2'>
-							<Button
-								className='rounded-full'
-								onClick={event => {
-									event.stopPropagation()
-									setRevealPanelTab('guess')
-								}}
-								size='sm'
-								type='button'
-								variant='outline'
-							>
-								Type a guess
-							</Button>
-							<Button
-								className='rounded-full'
-								onClick={event => {
-									event.stopPropagation()
-									setRevealPanelTab('reveal')
-								}}
-								size='sm'
-								type='button'
-								variant='outline'
-							>
-								Reveal
-							</Button>
-						</div>
-					</div>
-				) : (
-					<div className='mt-1 flex h-full min-h-16 flex-1 flex-col rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2'>
-						<Tabs
-							className='flex h-full min-h-0 flex-col gap-2'
-							onValueChange={handleRevealPanelTabChange}
-							value={revealPanelTab}
-						>
-							<div className='flex items-start justify-between gap-2'>
-								<TabsList
-									className='h-8'
-									onClick={event => event.stopPropagation()}
-									onKeyDown={event => event.stopPropagation()}
-									variant='default'
-								>
-									<TabsTrigger
-										className='px-2 text-xs'
-										onClick={event => event.stopPropagation()}
-										onKeyDown={event => event.stopPropagation()}
-										value='guess'
-									>
-										Guess
-									</TabsTrigger>
-									<TabsTrigger
-										className='px-2 text-xs'
-										onClick={event => event.stopPropagation()}
-										onKeyDown={event => event.stopPropagation()}
-										value='reveal'
-									>
-										Reveal
-									</TabsTrigger>
-								</TabsList>
-							</div>
-							<TabsContent
-								className='mt-0 flex min-h-0 flex-1 flex-col'
-								value='guess'
-							>
-								<div className='relative min-h-0 flex-1'>
-									<Textarea
-										className={REVEAL_PANEL_TEXTAREA_CLASSNAME}
-										onChange={event => {
-											setGuessSecondaryText(event.target.value)
-											if (isRevealPanelCopied) setIsRevealPanelCopied(false)
-										}}
-										onClick={event => event.stopPropagation()}
-										onKeyDown={event => event.stopPropagation()}
-										placeholder='Type your guess...'
-										spellCheck={false}
-										value={guessSecondaryText}
-									/>
-									<Button
-										aria-label='Copy guess text'
-										className={REVEAL_PANEL_COPY_BUTTON_CLASSNAME}
-										onClick={event => {
-											event.stopPropagation()
-											handleCopyGuessText().catch(() => {})
-										}}
-										size='icon-xs'
-										type='button'
-										variant='ghost'
-									>
-										{isRevealPanelCopied ? (
-											<Check className='h-3 w-3' />
-										) : (
-											<Copy className='h-3 w-3' />
-										)}
-									</Button>
-								</div>
-								<p className='mt-1 flex items-center justify-end gap-1 text-muted-foreground text-xs'>
-									<AlertTriangle className='h-3 w-3 shrink-0 text-amber-500 dark:text-amber-400' />
-									<span>Guesses are not saved.</span>
-								</p>
-							</TabsContent>
-							<TabsContent
-								className='mt-0 flex min-h-0 flex-1 flex-col'
-								value='reveal'
-							>
-								<div className='relative min-h-0 flex-1'>
-									<Textarea
-										className={REVEAL_PANEL_TEXTAREA_CLASSNAME}
-										onClick={event => event.stopPropagation()}
-										onKeyDown={event => event.stopPropagation()}
-										readOnly={true}
-										spellCheck={false}
-										value={reviewCard.answer}
-									/>
-									<Button
-										aria-label='Copy reveal text'
-										className={REVEAL_PANEL_COPY_BUTTON_CLASSNAME}
-										onClick={event => {
-											event.stopPropagation()
-											handleCopyRevealText().catch(() => {})
-										}}
-										size='icon-xs'
-										type='button'
-										variant='ghost'
-									>
-										{isRevealPanelCopied ? (
-											<Check className='h-3 w-3' />
-										) : (
-											<Copy className='h-3 w-3' />
-										)}
-									</Button>
-								</div>
-							</TabsContent>
-						</Tabs>
-					</div>
-				)
+			secondaryContent = (
+				<RevealPanel
+					autoFocusGuess={true}
+					guessValue={guessSecondaryText}
+					isCopied={isRevealPanelCopied}
+					onGuessCopy={handleCopyGuessText}
+					onGuessValueChange={setGuessSecondaryText}
+					onRevealCopy={handleCopyRevealText}
+					onValueChange={setRevealPanelTab}
+					revealReadOnly={true}
+					revealValue={reviewCard.answer}
+					stopPropagation={true}
+					value={revealPanelTab}
+					variant='card'
+				/>
+			)
 		} else {
 			secondaryContent = (
 				<div className='relative'>
@@ -729,7 +564,8 @@ export function ReviewCard({
 	return (
 		<Card
 			className={cn(
-				'relative max-h-96 gap-0 overflow-visible p-3 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+				'relative gap-0 overflow-visible p-3 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+				isLargeCard ? 'max-h-none' : 'max-h-96',
 				onClick ? 'cursor-pointer hover:bg-muted/50' : null
 			)}
 			onClick={handleActivate}
@@ -737,7 +573,14 @@ export function ReviewCard({
 			onMouseEnter={handleMouseEnter}
 			ref={cardRef}
 			role={onClick ? 'button' : undefined}
-			style={{ minHeight: `${minHeight}px` }}
+			style={
+				isLargeCard
+					? {
+							height: `${largeCardHeight}px`,
+							minHeight: `${largeCardHeight}px`
+						}
+					: { minHeight: `${minHeight}px` }
+			}
 			tabIndex={onClick ? 0 : undefined}
 		>
 			{statusRow}
