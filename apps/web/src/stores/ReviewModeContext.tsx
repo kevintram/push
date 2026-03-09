@@ -53,30 +53,28 @@ export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 	const pathname = useRouterState({
 		select: state => state.location.pathname
 	})
-	const [storedReviewMode, setStoredReviewMode] =
-		useState<ReviewMode>(getInitialReviewMode)
-	const onForcedPath = isForcedReviewModePath(pathname)
-	const reviewMode = onForcedPath ? 'on' : storedReviewMode
+	const [reviewMode, setReviewMode] = useState<ReviewMode>(() =>
+		isForcedReviewModePath(pathname) ? 'on' : getInitialReviewMode()
+	)
 
-	// Persist 'on' when a forced-review path activates review mode so it
-	// survives navigation to other pages.
+	// Force review mode on when navigating to a forced path.
 	useEffect(() => {
-		if (onForcedPath && storedReviewMode !== 'on') {
-			setStoredReviewMode('on')
+		if (isForcedReviewModePath(pathname) && reviewMode !== 'on') {
+			setReviewMode('on')
 		}
-	}, [onForcedPath, storedReviewMode])
+	}, [pathname, reviewMode])
 
 	useEffect(() => {
 		const storage = window.localStorage
 		if (!storage || typeof storage.setItem !== 'function') return
 
-		storage.setItem(FLASHCARD_MODE_STORAGE_KEY, storedReviewMode)
-	}, [storedReviewMode])
+		storage.setItem(FLASHCARD_MODE_STORAGE_KEY, reviewMode)
+	}, [reviewMode])
 
 	const value = useMemo(
 		() => ({
 			reviewMode,
-			setReviewMode: setStoredReviewMode,
+			setReviewMode,
 			isReviewModeEnabled: reviewMode !== 'off',
 			hidesPrimary: false,
 			hidesSecondary: reviewMode !== 'off'
