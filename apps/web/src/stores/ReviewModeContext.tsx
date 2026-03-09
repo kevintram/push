@@ -55,7 +55,16 @@ export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 	})
 	const [storedReviewMode, setStoredReviewMode] =
 		useState<ReviewMode>(getInitialReviewMode)
-	const reviewMode = isForcedReviewModePath(pathname) ? 'on' : storedReviewMode
+	const onForcedPath = isForcedReviewModePath(pathname)
+	const reviewMode = onForcedPath ? 'on' : storedReviewMode
+
+	// Persist 'on' when a forced-review path activates review mode so it
+	// survives navigation to other pages.
+	useEffect(() => {
+		if (onForcedPath && storedReviewMode !== 'on') {
+			setStoredReviewMode('on')
+		}
+	}, [onForcedPath, storedReviewMode])
 
 	useEffect(() => {
 		const storage = window.localStorage

@@ -110,4 +110,15 @@ describe('ReviewModeProvider', () => {
 		expect(await screen.findByTestId('mode')).toHaveTextContent('off')
 		expect(screen.getByTestId('hidden')).toHaveTextContent('false')
 	})
+
+	it('persists review mode when navigating away from a forced path', async () => {
+		window.localStorage.setItem('3gulp-flashcard-mode', 'off')
+
+		renderRoute('/practice')
+
+		expect(await screen.findByTestId('mode')).toHaveTextContent('on')
+
+		// The forced path should have persisted 'on' to localStorage
+		expect(window.localStorage.getItem('3gulp-flashcard-mode')).toBe('on')
+	})
 })
