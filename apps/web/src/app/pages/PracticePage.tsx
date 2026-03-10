@@ -178,6 +178,7 @@ export function PracticePage({
 								key={`${item.card.id}-${item.review_id ?? 'new'}`}
 							>
 								<ReviewCard
+									enableLargeCardMode={true}
 									minHeight={380}
 									onClick={() =>
 										navigate({
