@@ -516,7 +516,6 @@ export function ReviewCard({
 					onGuessValueChange={setGuessSecondaryText}
 					onRevealCopy={handleCopyRevealText}
 					onValueChange={setRevealPanelTab}
-					revealReadOnly={true}
 					revealValue={reviewCard.answer}
 					stopPropagation={true}
 					value={revealPanelTab}

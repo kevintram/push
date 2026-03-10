@@ -184,7 +184,6 @@ export function TopicCard({
 					onGuessValueChange={setGuessBodyText}
 					onRevealCopy={handleCopyRevealText}
 					onValueChange={setRevealPanelTab}
-					revealReadOnly={true}
 					revealValue={topic.body}
 					stopPropagation={true}
 					value={revealPanelTab}

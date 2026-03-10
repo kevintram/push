@@ -4,7 +4,8 @@ import {
 	type MouseEvent,
 	type ReactNode,
 	useEffect,
-	useRef
+	useRef,
+	useState
 } from 'react'
 import { ReviewModeHelperText } from '~/components/ReviewModeHelperText'
 import { Button } from '~/components/ui/button'
@@ -26,8 +27,7 @@ type RevealPanelProps = {
 	onGuessValueChange: (value: string) => void
 	onGuessCopy: () => void | Promise<void>
 	revealValue: string
-	onRevealCopy: () => void | Promise<void>
-	revealReadOnly?: boolean
+	onRevealCopy: (value: string) => void | Promise<void>
 	onRevealValueChange?: (value: string) => void
 	onRevealBlur?: () => void
 	isCopied: boolean
@@ -70,7 +70,6 @@ export function RevealPanel({
 	onGuessCopy,
 	revealValue,
 	onRevealCopy,
-	revealReadOnly = false,
 	onRevealValueChange,
 	onRevealBlur,
 	isCopied,
@@ -84,7 +83,15 @@ export function RevealPanel({
 	autoFocusGuess = false
 }: RevealPanelProps) {
 	const guessTextareaRef = useRef<HTMLTextAreaElement | null>(null)
+	const [localRevealValue, setLocalRevealValue] = useState(revealValue)
 	const variantStyles = VARIANT_STYLES[variant]
+	const resolvedRevealValue =
+		onRevealValueChange == null ? localRevealValue : revealValue
+
+	useEffect(() => {
+		if (onRevealValueChange != null) return
+		setLocalRevealValue(revealValue)
+	}, [onRevealValueChange, revealValue])
 
 	const handleStopPropagation = (
 		event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>
@@ -244,20 +251,26 @@ export function RevealPanel({
 						<Textarea
 							className={resolvedTextareaClassName}
 							onBlur={onRevealBlur}
-							onChange={event => onRevealValueChange?.(event.target.value)}
+							onChange={event => {
+								const nextValue = event.target.value
+								if (onRevealValueChange != null) {
+									onRevealValueChange(nextValue)
+									return
+								}
+								setLocalRevealValue(nextValue)
+							}}
 							onClick={handleStopPropagation}
 							onKeyDown={handleStopPropagation}
 							placeholder={revealPlaceholder}
-							readOnly={revealReadOnly}
 							spellCheck={false}
-							value={revealValue}
+							value={resolvedRevealValue}
 						/>
 						<Button
 							aria-label='Copy reveal text'
 							className={copyButtonClassName}
 							onClick={event => {
 								handleStopPropagation(event)
-								handleAction(onRevealCopy)
+								handleAction(() => onRevealCopy(resolvedRevealValue))
 							}}
 							size='icon-xs'
 							type='button'
