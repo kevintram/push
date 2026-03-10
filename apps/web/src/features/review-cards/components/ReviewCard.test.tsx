@@ -266,4 +266,43 @@ describe('ReviewCard', () => {
 			screen.getByRole('button', { name: 'Type a guess' })
 		).toBeInTheDocument()
 	})
+
+	it('keeps the reveal textarea editable in focused large cards', async () => {
+		const user = userEvent.setup()
+		const reviewCard: ReviewCardModel = {
+			id: 44,
+			topic_id: 9,
+			topic_title: 'Topic',
+			type: 'flashcard',
+			prompt: 'Reveal prompt',
+			answer: 'Original answer',
+			inserted_at: '2026-03-01T00:00:00.000Z',
+			updated_at: '2026-03-01T00:00:00.000Z',
+			last_review_rating: 'good',
+			stability: 10,
+			difficulty: 3,
+			state: 'review',
+			step: 2,
+			retired: false,
+			pinned_at: null,
+			last_reviewed_at: '2026-03-02T00:00:00.000Z',
+			retrievability: 0.8,
+			freshness_tier: 'Fresh',
+			days_until_next_tier: 3,
+			days_in_current_tier: 1,
+			is_new: false,
+			status_badges: [],
+			notes: ''
+		}
+
+		render(<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />)
+
+		await user.click(screen.getByRole('button', { name: 'Reveal' }))
+
+		const revealTextarea = screen.getByRole('textbox')
+		await user.clear(revealTextarea)
+		await user.type(revealTextarea, 'Edited answer')
+
+		expect(revealTextarea).toHaveValue('Edited answer')
+	})
 })

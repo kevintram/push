@@ -24,7 +24,7 @@ type UseRevealPanelResult = {
 	isCopied: boolean
 	setIsCopied: Dispatch<SetStateAction<boolean>>
 	handleCopyGuessText: () => Promise<void>
-	handleCopyRevealText: () => Promise<void>
+	handleCopyRevealText: (textOverride?: string) => Promise<void>
 	reset: () => void
 }
 
@@ -63,15 +63,18 @@ export function useRevealPanel({
 		}
 	}, [guessTextState])
 
-	const handleCopyRevealText = useCallback(async () => {
-		try {
-			await navigator.clipboard.writeText(revealText)
-			setIsCopied(true)
-			toast.success('Reveal copied')
-		} catch {
-			toast.error('Failed to copy reveal')
-		}
-	}, [revealText])
+	const handleCopyRevealText = useCallback(
+		async (textOverride?: string) => {
+			try {
+				await navigator.clipboard.writeText(textOverride ?? revealText)
+				setIsCopied(true)
+				toast.success('Reveal copied')
+			} catch {
+				toast.error('Failed to copy reveal')
+			}
+		},
+		[revealText]
+	)
 
 	useEffect(() => {
 		if (previousEntityIdRef.current === entityId) return
