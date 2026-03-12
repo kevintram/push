@@ -14,6 +14,11 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger
+} from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReview } from '../api/deleteReview'
@@ -191,6 +196,10 @@ export function ReviewItem({
 		shortDate: dateFormat === 'short'
 	})
 
+	const dateTooltipText = effectiveDate
+		? dayjs(effectiveDate).format('MMM D, YYYY')
+		: null
+
 	const dateButtonColorClass = cn(
 		isOverdueValue && 'text-red-600 dark:text-red-400',
 		!isOverdueValue &&
@@ -231,55 +240,69 @@ export function ReviewItem({
 	)
 
 	const compactDateEl = (
-		<DatePickerDropdown
-			disabled={readonly}
-			isOpen={isDateOpen}
-			onDateChange={handleDateSave}
-			onOpenChange={setIsDateOpen}
-			selectedDate={selectedDate}
-			trigger={
-				<Button
-					className={cn(
-						'!px-0 h-auto text-xs',
-						readonly && 'cursor-default opacity-50',
-						dateButtonColorClass
-					)}
-					disabled={readonly}
-					onClick={e => e.stopPropagation()}
-					size='sm'
-					variant='link'
-				>
-					<CalendarIcon className='h-3 w-3' />
-					{relativeDate.text}
-				</Button>
-			}
-		/>
+		<Tooltip>
+			<TooltipTrigger
+				render={
+					<DatePickerDropdown
+						disabled={readonly}
+						isOpen={isDateOpen}
+						onDateChange={handleDateSave}
+						onOpenChange={setIsDateOpen}
+						selectedDate={selectedDate}
+						trigger={
+							<Button
+								className={cn(
+									'!px-0 h-auto text-xs',
+									readonly && 'cursor-default opacity-50',
+									dateButtonColorClass
+								)}
+								disabled={readonly}
+								onClick={e => e.stopPropagation()}
+								size='sm'
+								variant='link'
+							>
+								<CalendarIcon className='h-3 w-3' />
+								{relativeDate.text}
+							</Button>
+						}
+					/>
+				}
+			/>
+			{dateTooltipText && <TooltipContent>{dateTooltipText}</TooltipContent>}
+		</Tooltip>
 	)
 
 	const wideDateEl = (
-		<DatePickerDropdown
-			disabled={readonly}
-			isOpen={isDateOpen}
-			onDateChange={handleDateSave}
-			onOpenChange={setIsDateOpen}
-			selectedDate={selectedDate}
-			trigger={
-				<Button
-					className={cn(
-						'!px-0 h-auto text-foreground text-sm hover:text-foreground',
-						readonly && 'cursor-default opacity-50',
-						dateButtonColorClass
-					)}
-					disabled={readonly}
-					onClick={e => e.stopPropagation()}
-					size='sm'
-					variant='link'
-				>
-					<CalendarIcon className='h-3 w-3' />
-					{relativeDate.text}
-				</Button>
-			}
-		/>
+		<Tooltip>
+			<TooltipTrigger
+				render={
+					<DatePickerDropdown
+						disabled={readonly}
+						isOpen={isDateOpen}
+						onDateChange={handleDateSave}
+						onOpenChange={setIsDateOpen}
+						selectedDate={selectedDate}
+						trigger={
+							<Button
+								className={cn(
+									'!px-0 h-auto text-foreground text-sm hover:text-foreground',
+									readonly && 'cursor-default opacity-50',
+									dateButtonColorClass
+								)}
+								disabled={readonly}
+								onClick={e => e.stopPropagation()}
+								size='sm'
+								variant='link'
+							>
+								<CalendarIcon className='h-3 w-3' />
+								{relativeDate.text}
+							</Button>
+						}
+					/>
+				}
+			/>
+			{dateTooltipText && <TooltipContent>{dateTooltipText}</TooltipContent>}
+		</Tooltip>
 	)
 
 	const moreButtonEl = !readonly && (
