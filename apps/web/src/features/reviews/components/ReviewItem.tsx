@@ -72,7 +72,9 @@ export function ReviewItem({
 	variant = 'default'
 }: ReviewItemProps) {
 	const navigate = useNavigate()
-	const [isDateOpen, setIsDateOpen] = useState(false)
+	const [openDatePicker, setOpenDatePicker] = useState<
+		'compact' | 'wide' | null
+	>(null)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
 		getInitialSelectedDate(entry)
 	)
@@ -123,7 +125,7 @@ export function ReviewItem({
 		(newDate: Date | null) => {
 			setSelectedDate(newDate)
 			if (!entry.id) {
-				setIsDateOpen(false)
+				setOpenDatePicker(null)
 				return
 			}
 			const newDateString = newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
@@ -138,7 +140,7 @@ export function ReviewItem({
 					scheduled_at: newDateString
 				})
 			}
-			setIsDateOpen(false)
+			setOpenDatePicker(null)
 		},
 		[entry.id, entry.completed_at, updateReviewMutation]
 	)
@@ -233,9 +235,9 @@ export function ReviewItem({
 	const compactDateEl = (
 		<DatePickerDropdown
 			disabled={readonly}
-			isOpen={isDateOpen}
+			isOpen={openDatePicker === 'compact'}
 			onDateChange={handleDateSave}
-			onOpenChange={setIsDateOpen}
+			onOpenChange={open => setOpenDatePicker(open ? 'compact' : null)}
 			selectedDate={selectedDate}
 			trigger={
 				<Button
@@ -259,9 +261,9 @@ export function ReviewItem({
 	const wideDateEl = (
 		<DatePickerDropdown
 			disabled={readonly}
-			isOpen={isDateOpen}
+			isOpen={openDatePicker === 'wide'}
 			onDateChange={handleDateSave}
-			onOpenChange={setIsDateOpen}
+			onOpenChange={open => setOpenDatePicker(open ? 'wide' : null)}
 			selectedDate={selectedDate}
 			trigger={
 				<Button
