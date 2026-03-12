@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-router'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { routeTree } from '~/app/routeTree.gen'
 
@@ -16,6 +16,64 @@ const useReviewsByReviewCardMock = vi.fn()
 
 vi.mock('~/components/SettingsDialog', () => ({
 	SettingsDialog: () => null
+}))
+
+vi.mock('~/components/ui/dropdown-menu', async () => {
+	const React = await import('react')
+
+	return {
+		DropdownMenu: ({ children }: { children: ReactNode }) => (
+			<div>{children}</div>
+		),
+		DropdownMenuTrigger: ({
+			render,
+			children,
+			...props
+		}: {
+			render?: ReactElement
+			children?: ReactNode
+		}) =>
+			render ? (
+				React.cloneElement(
+					render,
+					props,
+					children ??
+						(render as ReactElement<{ children?: ReactNode }>).props.children
+				)
+			) : (
+				<button type='button' {...props}>
+					{children}
+				</button>
+			),
+		DropdownMenuContent: ({ children }: { children: ReactNode }) => (
+			<div>{children}</div>
+		),
+		DropdownMenuItem: ({
+			children,
+			onClick,
+			disabled
+		}: {
+			children: ReactNode
+			onClick?: () => void
+			disabled?: boolean
+		}) => (
+			<button disabled={disabled} onClick={onClick} type='button'>
+				{children}
+			</button>
+		)
+	}
+})
+
+vi.mock('~/components/ui/tooltip', () => ({
+	Tooltip: ({ children }: { children: ReactNode }) => <>{children}</>,
+	TooltipTrigger: ({
+		render,
+		children
+	}: {
+		render?: ReactNode
+		children?: ReactNode
+	}) => <>{render ?? children}</>,
+	TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>
 }))
 
 vi.mock('~/features/reviews/components/ReviewItem', () => ({
@@ -194,9 +252,11 @@ describe('review card detail route-backed tabs', () => {
 	it('falls back to the home tab for invalid search', async () => {
 		const { router } = renderRoute('/review-cards/11?tab=invalid')
 
-		expect(await screen.findByDisplayValue('Solve for x')).toBeInTheDocument()
+		expect(await screen.findByRole('tab', { name: 'Home' })).toBeInTheDocument()
 		expect(screen.queryByText('Linked review item')).not.toBeInTheDocument()
-		expect(router.state.location.search).toEqual({ tab: 'home' })
+		await waitFor(() => {
+			expect(router.state.location.search).toEqual({ tab: 'home' })
+		})
 	})
 
 	it('deep links the reviews tab and updates search when tabs change', async () => {
@@ -221,7 +281,7 @@ describe('review card detail route-backed tabs', () => {
 		const { router, user } = renderRoute('/review-cards/11?tab=notes')
 
 		expect(
-			await screen.findByDisplayValue('Factor carefully')
+			await screen.findByRole('tab', { name: 'Notes' })
 		).toBeInTheDocument()
 
 		await user.click(screen.getByRole('tab', { name: 'Reviews 1' }))

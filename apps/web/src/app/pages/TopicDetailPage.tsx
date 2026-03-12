@@ -134,6 +134,11 @@ export function TopicDetailPage({
 
 	const [title, setTitle] = useState('')
 	const [body, setBody] = useState('')
+	const lastSyncedTopicFieldsRef = useRef<{
+		id: number
+		title: string
+		body: string
+	} | null>(null)
 	const [isParentSearchOpen, setIsParentSearchOpen] = useState(false)
 	const [parentSearchQuery, setParentSearchQuery] = useState('')
 	const [isParentMutationPending, setIsParentMutationPending] = useState(false)
@@ -158,8 +163,26 @@ export function TopicDetailPage({
 
 	useEffect(() => {
 		if (!topic) return
-		setTitle(topic.title)
-		setBody(topic.body)
+		const lastSyncedTopicFields = lastSyncedTopicFieldsRef.current
+		setTitle(previousTitle =>
+			lastSyncedTopicFields === null ||
+			lastSyncedTopicFields.id !== topic.id ||
+			previousTitle === lastSyncedTopicFields.title
+				? topic.title
+				: previousTitle
+		)
+		setBody(previousBody =>
+			lastSyncedTopicFields === null ||
+			lastSyncedTopicFields.id !== topic.id ||
+			previousBody === lastSyncedTopicFields.body
+				? topic.body
+				: previousBody
+		)
+		lastSyncedTopicFieldsRef.current = {
+			id: topic.id,
+			title: topic.title,
+			body: topic.body
+		}
 	}, [topic])
 
 	const selectedCardType = useMemo(() => {
