@@ -312,6 +312,67 @@ class TestReviewQueueEndpoint:
             "Active new card"
         ]
 
+    async def test_focused_due_queue_excludes_fresh_cards(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        """Fresh cards should be hidden in focused due view but visible in all."""
+        topic = await _create_topic(test_client, "Fresh filter")
+        fresh_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Fresh card",
+        )
+        non_fresh_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Non-fresh card",
+        )
+
+        for card_id in [fresh_card["id"], non_fresh_card["id"]]:
+            response = await test_client.post(
+                "/reviews/",
+                json={
+                    "review_card_id": card_id,
+                    "scheduled_at": str(date.today()),
+                },
+            )
+            assert response.status_code == 200
+
+        from app.models.review_cards import ReviewCard
+
+        original_freshness_tier = ReviewCard.freshness_tier.fget
+
+        def patched_freshness_tier(self):
+            if self.id == fresh_card["id"]:
+                return "Fresh"
+            return original_freshness_tier(self)
+
+        monkeypatch.setattr(
+            ReviewCard, "freshness_tier", property(patched_freshness_tier)
+        )
+
+        all_response = await test_client.get("/review-queue/?type=practice&tab=due")
+        focused_response = await test_client.get(
+            "/review-queue/?type=practice&tab=due&focused=true"
+        )
+
+        assert all_response.status_code == 200
+        assert focused_response.status_code == 200
+
+        all_prompts = [item["card"]["prompt"] for item in all_response.json()["items"]]
+        focused_prompts = [
+            item["card"]["prompt"] for item in focused_response.json()["items"]
+        ]
+
+        assert "Fresh card" in all_prompts
+        assert "Non-fresh card" in all_prompts
+        assert "Fresh card" not in focused_prompts
+        assert "Non-fresh card" in focused_prompts
+
     async def test_review_card_queue_summary_returns_aggregate_counts(
         self,
         test_client: AsyncClient,
