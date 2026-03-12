@@ -61,6 +61,13 @@ export function FlashcardsPage({
 		focused: activeTab === 'due' ? scope === 'focused' : undefined
 	})
 	const items = queuePage?.items ?? []
+	const focusedItems = useMemo(
+		() =>
+			isFocusedDueView
+				? items.filter(item => item.card.freshness_tier !== 'Fresh')
+				: items,
+		[items, isFocusedDueView]
+	)
 	const createReviewMutation = useCreateReview()
 	const updateReviewCardMutation = useUpdateReviewCard()
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
@@ -110,7 +117,10 @@ export function FlashcardsPage({
 		)
 	}, [activeTab, dueNextSevenDaysCount])
 
-	const activeCard = useMemo(() => items[0]?.card ?? null, [items])
+	const activeCard = useMemo(
+		() => focusedItems[0]?.card ?? null,
+		[focusedItems]
+	)
 	const dueSections = useMemo(
 		() =>
 			groupReviewCardQueueByActionDay(items, weekStartDay, queuePage?.as_of),
@@ -194,6 +204,19 @@ export function FlashcardsPage({
 	let content: ReactNode
 	if (isLoading) {
 		content = <LoadingSpinner containerClassName='min-h-64' />
+	} else if (isFocusedDueView && focusedItems.length === 0) {
+		content = (
+			<Empty>
+				<EmptyHeader>
+					<EmptyMedia variant='icon'>
+						<Layers />
+					</EmptyMedia>
+					<EmptyTitle>
+						You're all caught up! All remaining cards are still fresh.
+					</EmptyTitle>
+				</EmptyHeader>
+			</Empty>
+		)
 	} else if (items.length === 0) {
 		content = (
 			<Empty>

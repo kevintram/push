@@ -84,6 +84,13 @@ export function PracticePage({
 		focused: activeTab === 'due' ? scope === 'focused' : undefined
 	})
 	const items = queuePage?.items ?? []
+	const focusedItems = useMemo(
+		() =>
+			isFocusedDueView
+				? items.filter(item => item.card.freshness_tier !== 'Fresh')
+				: items,
+		[items, isFocusedDueView]
+	)
 	const tabOptions = useMemo(
 		() => [
 			{
@@ -136,8 +143,8 @@ export function PracticePage({
 		[items, queuePage?.as_of, weekStartDay]
 	)
 	const focusedRows = useMemo(
-		() => groupFocusedPracticeRows(items, usesDesktopFocusedLayout),
-		[items, usesDesktopFocusedLayout]
+		() => groupFocusedPracticeRows(focusedItems, usesDesktopFocusedLayout),
+		[focusedItems, usesDesktopFocusedLayout]
 	)
 	const newSections = useMemo(
 		() =>
@@ -148,6 +155,19 @@ export function PracticePage({
 	let content: ReactNode
 	if (isLoading) {
 		content = <LoadingSpinner containerClassName='min-h-64' />
+	} else if (isFocusedDueView && focusedItems.length === 0) {
+		content = (
+			<Empty>
+				<EmptyHeader>
+					<EmptyMedia variant='icon'>
+						<ListChecks />
+					</EmptyMedia>
+					<EmptyTitle>
+						You're all caught up! All remaining cards are still fresh.
+					</EmptyTitle>
+				</EmptyHeader>
+			</Empty>
+		)
 	} else if (items.length === 0) {
 		content = (
 			<Empty>
