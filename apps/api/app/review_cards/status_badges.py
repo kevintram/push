@@ -189,7 +189,7 @@ def build_review_card_status_badges(
                 "key": "hazy_for",
                 "label": _format_hazy_for_label(days_in_hazy_tier),
                 "tooltip": None,
-                "tone": "warning",
+                "tone": "danger",
                 "review_id": None,
             }
         )
