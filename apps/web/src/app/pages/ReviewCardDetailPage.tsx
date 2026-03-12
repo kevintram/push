@@ -16,7 +16,7 @@ import {
 	Trash2,
 	User2
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { RevealPanel } from '~/components/RevealPanel'
@@ -276,6 +276,11 @@ export function ReviewCardDetailPage({
 	const [prompt, setPrompt] = useState('')
 	const [answer, setAnswer] = useState('')
 	const [notes, setNotes] = useState('')
+	const lastSyncedReviewCardFieldsRef = useRef<{
+		prompt: string
+		answer: string
+		notes: string
+	} | null>(null)
 	const { hidesSecondary } = useReviewMode()
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
@@ -301,9 +306,26 @@ export function ReviewCardDetailPage({
 
 	useEffect(() => {
 		if (!reviewCard) return
-		setPrompt(reviewCard.prompt)
-		setAnswer(reviewCard.answer)
-		setNotes(reviewCard.notes)
+		setPrompt(previousPrompt =>
+			previousPrompt === lastSyncedReviewCardFieldsRef.current?.prompt
+				? reviewCard.prompt
+				: previousPrompt
+		)
+		setAnswer(previousAnswer =>
+			previousAnswer === lastSyncedReviewCardFieldsRef.current?.answer
+				? reviewCard.answer
+				: previousAnswer
+		)
+		setNotes(previousNotes =>
+			previousNotes === lastSyncedReviewCardFieldsRef.current?.notes
+				? reviewCard.notes
+				: previousNotes
+		)
+		lastSyncedReviewCardFieldsRef.current = {
+			prompt: reviewCard.prompt,
+			answer: reviewCard.answer,
+			notes: reviewCard.notes
+		}
 	}, [reviewCard])
 	useEffect(() => {
 		if (!reviewCard) return
