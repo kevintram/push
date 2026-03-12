@@ -197,7 +197,7 @@ export function ReviewItem({
 	})
 
 	const dateTooltipText = effectiveDate
-		? dayjs(effectiveDate).format('MMM D YYYY')
+		? dayjs(effectiveDate).format('MMM D, YYYY')
 		: null
 
 	const dateButtonColorClass = cn(
