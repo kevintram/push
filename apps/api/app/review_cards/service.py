@@ -407,6 +407,11 @@ async def list_review_card_queue(
             )
 
     if focused:
+        items = [
+            item
+            for item in items
+            if not (item.queue_type == "hazy" and item.card.freshness_tier == "Fresh")
+        ]
         resolved_limit = limit
         if resolved_limit is None:
             resolved_limit = 1 if card_type == "flashcard" else 5
