@@ -277,6 +277,7 @@ export function ReviewCardDetailPage({
 	const [answer, setAnswer] = useState('')
 	const [notes, setNotes] = useState('')
 	const lastSyncedReviewCardFieldsRef = useRef<{
+		id: number
 		prompt: string
 		answer: string
 		notes: string
@@ -306,22 +307,30 @@ export function ReviewCardDetailPage({
 
 	useEffect(() => {
 		if (!reviewCard) return
+		const lastSyncedReviewCardFields = lastSyncedReviewCardFieldsRef.current
 		setPrompt(previousPrompt =>
-			previousPrompt === lastSyncedReviewCardFieldsRef.current?.prompt
+			lastSyncedReviewCardFields === null ||
+			lastSyncedReviewCardFields.id !== reviewCard.id ||
+			previousPrompt === lastSyncedReviewCardFields.prompt
 				? reviewCard.prompt
 				: previousPrompt
 		)
 		setAnswer(previousAnswer =>
-			previousAnswer === lastSyncedReviewCardFieldsRef.current?.answer
+			lastSyncedReviewCardFields === null ||
+			lastSyncedReviewCardFields.id !== reviewCard.id ||
+			previousAnswer === lastSyncedReviewCardFields.answer
 				? reviewCard.answer
 				: previousAnswer
 		)
 		setNotes(previousNotes =>
-			previousNotes === lastSyncedReviewCardFieldsRef.current?.notes
+			lastSyncedReviewCardFields === null ||
+			lastSyncedReviewCardFields.id !== reviewCard.id ||
+			previousNotes === lastSyncedReviewCardFields.notes
 				? reviewCard.notes
 				: previousNotes
 		)
 		lastSyncedReviewCardFieldsRef.current = {
+			id: reviewCard.id,
 			prompt: reviewCard.prompt,
 			answer: reviewCard.answer,
 			notes: reviewCard.notes

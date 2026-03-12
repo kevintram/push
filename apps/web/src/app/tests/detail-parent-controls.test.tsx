@@ -453,6 +453,63 @@ describe('legacy-style detail parent and topic controls', () => {
 		})
 	})
 
+	it('syncs topic fields on first load and only refreshes untouched fields on refetch', async () => {
+		const user = userEvent.setup()
+		let currentTopic = { ...topic }
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: currentTopic, isLoading: false, error: null }
+			}
+			if (topicId === 2) {
+				return { data: parentTopic, isLoading: false, error: null }
+			}
+			return { data: null, isLoading: false, error: null }
+		})
+
+		const { rerender } = render(
+			<TopicDetailPage
+				activeHomeTab='subtopics'
+				cardTypeFilter='all'
+				onActiveHomeTabChange={vi.fn()}
+				onCardTypeFilterChange={vi.fn()}
+				topicId={1}
+			/>
+		)
+
+		await waitFor(() => {
+			expect(screen.getByDisplayValue(topic.title)).toBeInTheDocument()
+			expect(screen.getByDisplayValue(topic.body)).toBeInTheDocument()
+		})
+
+		const titleField = screen.getByDisplayValue(topic.title)
+		await user.clear(titleField)
+		await user.type(titleField, 'Algebra draft')
+
+		currentTopic = {
+			...currentTopic,
+			title: 'Algebra from server',
+			body: 'Updated body from server'
+		}
+
+		rerender(
+			<TopicDetailPage
+				activeHomeTab='subtopics'
+				cardTypeFilter='all'
+				onActiveHomeTabChange={vi.fn()}
+				onCardTypeFilterChange={vi.fn()}
+				topicId={1}
+			/>
+		)
+
+		await waitFor(() => {
+			expect(screen.getByDisplayValue('Algebra draft')).toBeInTheDocument()
+			expect(
+				screen.getByDisplayValue('Updated body from server')
+			).toBeInTheDocument()
+		})
+	})
+
 	it('keeps the review-card topic pill navigable and reassigns through search', async () => {
 		const user = userEvent.setup()
 		updateReviewCardAsyncMock.mockResolvedValue(undefined)
@@ -508,6 +565,43 @@ describe('legacy-style detail parent and topic controls', () => {
 		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
 			id: 11,
 			topic_id: 4
+		})
+	})
+
+	it('syncs review-card fields on first load and only refreshes untouched fields on refetch', async () => {
+		const user = userEvent.setup()
+		let currentReviewCard = { ...reviewCard }
+
+		useReviewCardMock.mockImplementation(() => ({
+			data: currentReviewCard,
+			isLoading: false,
+			error: null
+		}))
+
+		const { rerender } = render(<ReviewCardDetailPage reviewCardId={11} />)
+
+		await waitFor(() => {
+			expect(screen.getByDisplayValue(reviewCard.prompt)).toBeInTheDocument()
+			expect(screen.getByDisplayValue(reviewCard.answer)).toBeInTheDocument()
+		})
+
+		const promptField = screen.getByDisplayValue(reviewCard.prompt)
+		await user.clear(promptField)
+		await user.type(promptField, 'Solve for y')
+
+		currentReviewCard = {
+			...currentReviewCard,
+			prompt: 'Solve for z',
+			answer: 'Updated answer from server'
+		}
+
+		rerender(<ReviewCardDetailPage reviewCardId={11} />)
+
+		await waitFor(() => {
+			expect(screen.getByDisplayValue('Solve for y')).toBeInTheDocument()
+			expect(
+				screen.getByDisplayValue('Updated answer from server')
+			).toBeInTheDocument()
 		})
 	})
 

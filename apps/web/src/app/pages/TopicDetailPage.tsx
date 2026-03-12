@@ -135,6 +135,7 @@ export function TopicDetailPage({
 	const [title, setTitle] = useState('')
 	const [body, setBody] = useState('')
 	const lastSyncedTopicFieldsRef = useRef<{
+		id: number
 		title: string
 		body: string
 	} | null>(null)
@@ -162,17 +163,23 @@ export function TopicDetailPage({
 
 	useEffect(() => {
 		if (!topic) return
+		const lastSyncedTopicFields = lastSyncedTopicFieldsRef.current
 		setTitle(previousTitle =>
-			previousTitle === lastSyncedTopicFieldsRef.current?.title
+			lastSyncedTopicFields === null ||
+			lastSyncedTopicFields.id !== topic.id ||
+			previousTitle === lastSyncedTopicFields.title
 				? topic.title
 				: previousTitle
 		)
 		setBody(previousBody =>
-			previousBody === lastSyncedTopicFieldsRef.current?.body
+			lastSyncedTopicFields === null ||
+			lastSyncedTopicFields.id !== topic.id ||
+			previousBody === lastSyncedTopicFields.body
 				? topic.body
 				: previousBody
 		)
 		lastSyncedTopicFieldsRef.current = {
+			id: topic.id,
 			title: topic.title,
 			body: topic.body
 		}
