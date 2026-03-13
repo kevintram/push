@@ -415,4 +415,65 @@ describe('AppSidebar', () => {
 			screen.getByRole('button', { name: 'Review Mode: On' })
 		).toHaveAttribute('data-active')
 	})
+
+	it('renders review queue badges as collapsed overlay stacks', () => {
+		useLocationMock.mockReturnValue({ pathname: '/practice' })
+		useTopicsMock.mockReturnValue({ data: [] })
+		useReviewCardQueueCountsMock.mockImplementation(
+			({ type }: { type: 'practice' | 'flashcard' }) => {
+				if (type === 'practice') {
+					return {
+						overdueCount: 2,
+						dueTodayCount: 3,
+						newCount: 4,
+						dueNextSevenDaysCount: 0
+					}
+				}
+
+				return {
+					overdueCount: 1,
+					dueTodayCount: 0,
+					newCount: 7,
+					dueNextSevenDaysCount: 0
+				}
+			}
+		)
+
+		render(
+			<SidebarProvider defaultOpen={false}>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		expect(
+			screen.getByTestId('sidebar-collapsed-badges-practice')
+		).toHaveTextContent('234')
+		expect(
+			screen.getByTestId('sidebar-collapsed-badges-flashcard')
+		).toHaveTextContent('17')
+	})
+
+	it('renders the pinned count badge as a collapsed overlay stack', () => {
+		useLocationMock.mockReturnValue({ pathname: '/pinned' })
+		useTopicsMock.mockReturnValue({ data: [] })
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+		useReviewCardPinnedSummaryMock.mockReturnValue({
+			data: { pinned_count: 2 }
+		})
+
+		render(
+			<SidebarProvider defaultOpen={false}>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		expect(
+			screen.getByTestId('sidebar-collapsed-badges-pinned')
+		).toHaveTextContent('2')
+	})
 })
