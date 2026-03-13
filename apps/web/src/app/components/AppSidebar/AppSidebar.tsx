@@ -2,12 +2,12 @@ import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import {
 	Clock,
+	Flag,
 	Layers,
 	Library,
 	ListChecks,
 	type LucideIcon,
 	PanelLeft,
-	Pin,
 	Plus,
 	Settings
 } from 'lucide-react'
@@ -34,7 +34,7 @@ import {
 	SidebarMenuSubItem,
 	useSidebar
 } from '~/components/ui/sidebar'
-import { useReviewCardPinnedSummary } from '~/features/review-cards/api/getReviewCardPinnedSummary'
+import { useReviewCardFlaggedSummary } from '~/features/review-cards/api/getReviewCardFlaggedSummary'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
 import { useTopics } from '~/features/topics/api/getTopics'
@@ -48,7 +48,7 @@ function getTopicLabel(title: string) {
 
 type SidebarNavItem = {
 	title: string
-	url: '/practice' | '/flashcards' | '/pinned'
+	url: '/practice' | '/flashcards' | '/flagged'
 	icon: LucideIcon
 	isActive: (pathname: string) => boolean
 }
@@ -176,16 +176,16 @@ export function AppSidebar() {
 	const location = useLocation()
 	const navigate = useNavigate()
 	const { state, toggleSidebar } = useSidebar()
-	const pinnedSummaryQuery = useReviewCardPinnedSummary()
+	const flaggedSummaryQuery = useReviewCardFlaggedSummary()
 	const rootTopicsQuery = useTopics({
 		root: true,
 		sort: 'title',
 		order: 'asc'
 	})
 	const rootTopics = rootTopicsQuery?.data ?? []
-	const pinnedCount = pinnedSummaryQuery?.data?.pinned_count ?? 0
-	const pinnedCollapsedBadges: Array<SidebarCountBadgeItem> = [
-		{ key: 'pinned', count: pinnedCount }
+	const flaggedCount = flaggedSummaryQuery?.data?.flagged_count ?? 0
+	const flaggedCollapsedBadges: Array<SidebarCountBadgeItem> = [
+		{ key: 'flagged', count: flaggedCount }
 	]
 
 	const reviewItems: Array<ReviewSidebarItem> = [
@@ -206,10 +206,10 @@ export function AppSidebar() {
 	]
 	const reviewUtilityItems: Array<SidebarNavItem> = [
 		{
-			title: 'Pinned',
-			url: '/pinned',
-			icon: Pin,
-			isActive: (pathname: string) => pathname === '/pinned'
+			title: 'Flagged',
+			url: '/flagged',
+			icon: Flag,
+			isActive: (pathname: string) => pathname === '/flagged'
 		}
 	]
 
@@ -292,16 +292,16 @@ export function AppSidebar() {
 										<SidebarMenuButton
 											isActive={isActive}
 											render={<Link to={item.url} />}
-											tooltip={`${item.title}: ${pinnedCount} review cards`}
+											tooltip={`${item.title}: ${flaggedCount} review cards`}
 										>
 											<item.icon />
 											<span className='flex min-w-0 flex-1 items-center gap-2 group-data-[collapsible=icon]:hidden'>
 												<span className='min-w-0 truncate'>{item.title}</span>
-												{pinnedCount > 0 && (
+												{flaggedCount > 0 && (
 													<span aria-hidden='true' className='ml-auto shrink-0'>
 														<CountBadge
 															className='h-4 min-w-4 px-1 text-[10px]'
-															count={pinnedCount}
+															count={flaggedCount}
 														/>
 													</span>
 												)}
@@ -309,8 +309,8 @@ export function AppSidebar() {
 										</SidebarMenuButton>
 										{state === 'collapsed' ? (
 											<SidebarCollapsedBadgeStack
-												badges={pinnedCollapsedBadges}
-												testId='sidebar-collapsed-badges-pinned'
+												badges={flaggedCollapsedBadges}
+												testId='sidebar-collapsed-badges-flagged'
 											/>
 										) : null}
 									</SidebarMenuItem>

@@ -20,7 +20,7 @@ export const ReviewCardSchema = v.object({
 	state: v.string(),
 	step: v.nullable(v.number()),
 	retired: v.boolean(),
-	pinned_at: v.nullable(v.string()),
+	flagged_at: v.nullable(v.string()),
 	last_reviewed_at: v.nullable(v.string()),
 	retrievability: v.nullable(v.number()),
 	freshness_tier: v.nullable(v.string()),
@@ -52,6 +52,6 @@ export const ReviewCardQueueSummarySchema = v.object({
 	as_of: v.string()
 })
 
-export const ReviewCardPinnedSummarySchema = v.object({
-	pinned_count: v.number()
+export const ReviewCardFlaggedSummarySchema = v.object({
+	flagged_count: v.number()
 })

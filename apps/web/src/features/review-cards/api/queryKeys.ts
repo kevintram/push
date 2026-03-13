@@ -9,7 +9,7 @@ export const reviewCardKeys = {
 		[...reviewCardKeys.all, 'list', params] as const,
 	detail: (reviewCardId: number) =>
 		[...reviewCardKeys.all, 'detail', reviewCardId] as const,
-	pinnedSummary: () => [...reviewCardKeys.all, 'pinned-summary'] as const,
+	flaggedSummary: () => [...reviewCardKeys.all, 'flagged-summary'] as const,
 	queue: (params: ReviewCardQueueParams) =>
 		[...reviewCardKeys.all, 'queue', params] as const,
 	queueSummary: (type: ReviewCardQueueParams['type']) =>

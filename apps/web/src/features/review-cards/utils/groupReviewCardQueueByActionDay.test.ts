@@ -19,7 +19,7 @@ const baseCard: ReviewCard = {
 	state: 'new',
 	step: null,
 	retired: false,
-	pinned_at: null,
+	flagged_at: null,
 	last_reviewed_at: null,
 	retrievability: null,
 	freshness_tier: null,
