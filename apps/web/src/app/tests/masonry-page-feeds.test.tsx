@@ -54,6 +54,22 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
+		Link: ({
+			children,
+			to,
+			params: _params,
+			search: _search,
+			...props
+		}: {
+			children?: ReactNode
+			to?: string
+			params?: unknown
+			search?: unknown
+		}) => (
+			<a data-to={to} href={typeof to === 'string' ? to : '#'} {...props}>
+				{children}
+			</a>
+		),
 		useNavigate: () => navigateMock
 	}
 })
@@ -319,16 +335,72 @@ beforeEach(() => {
 
 describe('masonry-backed page feeds', () => {
 	it('renders MyLibrary topics through masonry', () => {
-		useTopicsMock.mockReturnValue({
-			data: [topic],
-			isLoading: false
-		})
+		useTopicsMock.mockImplementation(
+			(params?: { root?: boolean; sort?: string; order?: string }) => {
+				if (params?.root === true) {
+					return {
+						data: [topic],
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [
+							topic,
+							{ ...topic, id: 2, title: 'Linear equations', parent_id: 1 }
+						],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
 
 		render(<TopicsPage />)
 
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
 		expect(screen.getByTestId('topic-card')).toHaveTextContent('Algebra')
 		expect(masonryRenderSpy).toHaveBeenCalledWith([topic])
+	})
+
+	it('renders a collapsed topic hierarchy rail on the topics page', () => {
+		useTopicsMock.mockImplementation(
+			(params?: { root?: boolean; sort?: string; order?: string }) => {
+				if (params?.root === true) {
+					return {
+						data: [topic],
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [
+							topic,
+							{
+								...topic,
+								id: 2,
+								title: 'Linear equations',
+								parent_id: 1,
+								parent_title: 'Algebra'
+							}
+						],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(<TopicsPage />)
+
+		expect(screen.getAllByRole('link', { name: 'Algebra' })).not.toHaveLength(0)
+		expect(
+			screen.queryByRole('link', { name: 'Linear equations' })
+		).not.toBeInTheDocument()
 	})
 
 	it('creates a blank root topic and navigates to it from the topics page', async () => {
@@ -422,7 +494,7 @@ describe('masonry-backed page feeds', () => {
 		render(<TopicDetailHarness />)
 
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
-		expect(screen.getByText('Subtopic')).toBeInTheDocument()
+		expect(screen.getAllByText('Subtopic').length).toBeGreaterThan(0)
 
 		await user.click(screen.getByRole('tab', { name: /Review Cards/i }))
 
