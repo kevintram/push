@@ -57,6 +57,45 @@ type ReviewSidebarItem = SidebarNavItem & {
 	type: ReviewCardType
 }
 
+type SidebarCountBadgeItem = {
+	key: string
+	count: number
+	className?: string
+}
+
+function SidebarCollapsedBadgeStack({
+	badges,
+	testId
+}: {
+	badges: Array<SidebarCountBadgeItem>
+	testId?: string
+}) {
+	const visibleBadges = badges.filter(badge => badge.count > 0)
+
+	if (visibleBadges.length === 0) return null
+
+	return (
+		<div
+			aria-hidden='true'
+			className='-translate-y-[46%] pointer-events-none absolute top-0 right-[-0.25rem] z-10 flex max-w-[calc(100%+1.25rem)] items-center justify-end'
+			data-testid={testId}
+		>
+			{visibleBadges.map((badge, index) => (
+				<span
+					className={`${index > 0 ? '-ml-1' : ''} relative`}
+					key={badge.key}
+					style={{ zIndex: visibleBadges.length - index }}
+				>
+					<CountBadge
+						className={`h-4 min-w-4 rounded-sm px-1 text-[10px] shadow-sm ${badge.className ?? ''}`}
+						count={badge.count}
+					/>
+				</span>
+			))}
+		</div>
+	)
+}
+
 function ReviewSidebarMenuItem({
 	item,
 	isActive
@@ -67,7 +106,25 @@ function ReviewSidebarMenuItem({
 	const { dueTodayCount, newCount, overdueCount } = useReviewCardQueueCounts({
 		type: item.type
 	})
+	const { state } = useSidebar()
 	const tooltip = `${item.title}: ${overdueCount} actionable overdue, ${dueTodayCount} actionable today, ${newCount} new`
+	const collapsedBadges: Array<SidebarCountBadgeItem> = [
+		{
+			key: 'overdue',
+			count: overdueCount,
+			className: 'bg-red-600 text-white dark:bg-red-400'
+		},
+		{
+			key: 'today',
+			count: dueTodayCount,
+			className:
+				'border border-blue-200 bg-background text-blue-600 dark:border-blue-900 dark:bg-background dark:text-blue-400'
+		},
+		{
+			key: 'new',
+			count: newCount
+		}
+	]
 
 	return (
 		<SidebarMenuItem key={item.title}>
@@ -104,6 +161,12 @@ function ReviewSidebarMenuItem({
 					</span>
 				</span>
 			</SidebarMenuButton>
+			{state === 'collapsed' ? (
+				<SidebarCollapsedBadgeStack
+					badges={collapsedBadges}
+					testId={`sidebar-collapsed-badges-${item.type}`}
+				/>
+			) : null}
 		</SidebarMenuItem>
 	)
 }
@@ -112,7 +175,7 @@ export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const location = useLocation()
 	const navigate = useNavigate()
-	const { toggleSidebar } = useSidebar()
+	const { state, toggleSidebar } = useSidebar()
 	const pinnedSummaryQuery = useReviewCardPinnedSummary()
 	const rootTopicsQuery = useTopics({
 		root: true,
@@ -121,6 +184,9 @@ export function AppSidebar() {
 	})
 	const rootTopics = rootTopicsQuery?.data ?? []
 	const pinnedCount = pinnedSummaryQuery?.data?.pinned_count ?? 0
+	const pinnedCollapsedBadges: Array<SidebarCountBadgeItem> = [
+		{ key: 'pinned', count: pinnedCount }
+	]
 
 	const reviewItems: Array<ReviewSidebarItem> = [
 		{
@@ -241,6 +307,12 @@ export function AppSidebar() {
 												)}
 											</span>
 										</SidebarMenuButton>
+										{state === 'collapsed' ? (
+											<SidebarCollapsedBadgeStack
+												badges={pinnedCollapsedBadges}
+												testId='sidebar-collapsed-badges-pinned'
+											/>
+										) : null}
 									</SidebarMenuItem>
 								)
 							})}
