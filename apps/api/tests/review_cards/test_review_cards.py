@@ -62,7 +62,7 @@ class TestReviewCardEndpoints:
         assert response.status_code == 201
         payload = response.json()
         assert payload["retired"] is False
-        assert payload["pinned_at"] is None
+        assert payload["flagged_at"] is None
         assert payload["notes"] == "Reference material"
         assert "srs_enabled" not in payload
         assert "fsrs_state_id" not in payload
@@ -94,11 +94,11 @@ class TestReviewCardEndpoints:
         assert payload["retired"] is True
         assert "srs_enabled" not in payload
 
-    async def test_update_review_card_can_toggle_pinned(
+    async def test_update_review_card_can_toggle_flagged(
         self,
         test_client: AsyncClient,
     ):
-        topic = await _create_topic(test_client, "Pinned toggle")
+        topic = await _create_topic(test_client, "Flagged toggle")
         review_card = await _create_review_card(
             test_client,
             topic["id"],
@@ -107,20 +107,20 @@ class TestReviewCardEndpoints:
 
         update_response = await test_client.patch(
             f"/review-cards/{review_card['id']}/",
-            json={"pinned": True},
+            json={"flagged": True},
         )
 
         assert update_response.status_code == 200
         payload = update_response.json()
-        assert payload["pinned_at"] is not None
+        assert payload["flagged_at"] is not None
 
-        unpin_response = await test_client.patch(
+        unflag_response = await test_client.patch(
             f"/review-cards/{review_card['id']}/",
-            json={"pinned": False},
+            json={"flagged": False},
         )
 
-        assert unpin_response.status_code == 200
-        assert unpin_response.json()["pinned_at"] is None
+        assert unflag_response.status_code == 200
+        assert unflag_response.json()["flagged_at"] is None
 
     async def test_update_review_card_notes(
         self,
@@ -141,22 +141,22 @@ class TestReviewCardEndpoints:
         assert update_response.status_code == 200
         assert update_response.json()["notes"] == "Updated notes"
 
-    async def test_list_review_cards_orders_pinned_first_and_filters_pinned_only(
+    async def test_list_review_cards_orders_flagged_first_and_filters_flagged_only(
         self,
         test_client: AsyncClient,
     ):
-        topic = await _create_topic(test_client, "Pinned list")
+        topic = await _create_topic(test_client, "Flagged list")
         first_card = await _create_review_card(
             test_client,
             topic["id"],
             card_type="practice",
             prompt="First",
         )
-        pinned_card = await _create_review_card(
+        flagged_card = await _create_review_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Pinned",
+            prompt="Flagged",
         )
         _third_card = await _create_review_card(
             test_client,
@@ -165,68 +165,70 @@ class TestReviewCardEndpoints:
             prompt="Third",
         )
 
-        pin_response = await test_client.patch(
-            f"/review-cards/{pinned_card['id']}/",
-            json={"pinned": True},
+        flag_response = await test_client.patch(
+            f"/review-cards/{flagged_card['id']}/",
+            json={"flagged": True},
         )
-        assert pin_response.status_code == 200
+        assert flag_response.status_code == 200
 
         list_response = await test_client.get(f"/review-cards/?topic_id={topic['id']}")
         assert list_response.status_code == 200
         items = list_response.json()
-        assert [item["prompt"] for item in items][:2] == ["Pinned", "Third"]
-        assert items[0]["pinned_at"] is not None
+        assert [item["prompt"] for item in items][:2] == ["Flagged", "Third"]
+        assert items[0]["flagged_at"] is not None
         assert items[-1]["id"] == first_card["id"]
 
-        pinned_only_response = await test_client.get("/review-cards/?pinned_only=true")
-        assert pinned_only_response.status_code == 200
-        pinned_only_items = pinned_only_response.json()
-        assert [item["id"] for item in pinned_only_items] == [pinned_card["id"]]
+        flagged_only_response = await test_client.get(
+            "/review-cards/?flagged_only=true"
+        )
+        assert flagged_only_response.status_code == 200
+        flagged_only_items = flagged_only_response.json()
+        assert [item["id"] for item in flagged_only_items] == [flagged_card["id"]]
 
-    async def test_review_card_pinned_summary_updates_when_cards_are_pinned_and_unpinned(
+    async def test_review_card_flagged_summary_updates_when_cards_are_flagged_and_unflagged(
         self,
         test_client: AsyncClient,
     ):
-        topic = await _create_topic(test_client, "Pinned summary")
+        topic = await _create_topic(test_client, "Flagged summary")
         review_card = await _create_review_card(test_client, topic["id"])
 
-        initial_response = await test_client.get("/review-cards/pinned-summary/")
+        initial_response = await test_client.get("/review-cards/flagged-summary/")
         assert initial_response.status_code == 200
-        assert initial_response.json() == {"pinned_count": 0}
+        assert initial_response.json() == {"flagged_count": 0}
 
-        pin_response = await test_client.patch(
+        flag_response = await test_client.patch(
             f"/review-cards/{review_card['id']}/",
-            json={"pinned": True},
+            json={"flagged": True},
         )
-        assert pin_response.status_code == 200
+        assert flag_response.status_code == 200
 
-        pinned_response = await test_client.get("/review-cards/pinned-summary/")
-        assert pinned_response.status_code == 200
-        assert pinned_response.json() == {"pinned_count": 1}
+        flagged_response = await test_client.get("/review-cards/flagged-summary/")
+        assert flagged_response.status_code == 200
+        assert flagged_response.json() == {"flagged_count": 1}
 
-        unpin_response = await test_client.patch(
+        unflag_response = await test_client.patch(
             f"/review-cards/{review_card['id']}/",
-            json={"pinned": False},
+            json={"flagged": False},
         )
-        assert unpin_response.status_code == 200
+        assert unflag_response.status_code == 200
 
-        unpinned_response = await test_client.get("/review-cards/pinned-summary/")
-        assert unpinned_response.status_code == 200
-        assert unpinned_response.json() == {"pinned_count": 0}
+        unflagged_response = await test_client.get("/review-cards/flagged-summary/")
+        assert unflagged_response.status_code == 200
+        assert unflagged_response.json() == {"flagged_count": 0}
 
-    async def test_review_card_pinned_summary_counts_only_authenticated_users_cards(
+    async def test_review_card_flagged_summary_counts_only_authenticated_users_cards(
         self,
         test_client: AsyncClient,
         db_session: AsyncSession,
     ):
-        topic = await _create_topic(test_client, "Current user pinned summary")
+        topic = await _create_topic(test_client, "Current user flagged summary")
         review_card = await _create_review_card(test_client, topic["id"])
 
-        pin_response = await test_client.patch(
+        flag_response = await test_client.patch(
             f"/review-cards/{review_card['id']}/",
-            json={"pinned": True},
+            json={"flagged": True},
         )
-        assert pin_response.status_code == 200
+        assert flag_response.status_code == 200
 
         other_topic = Topic(user_id="other-user-456", title="Other topic", body="")
         db_session.add(other_topic)
@@ -237,17 +239,17 @@ class TestReviewCardEndpoints:
                 user_id="other-user-456",
                 topic_id=other_topic.id,
                 type="practice",
-                prompt="Other user pinned card",
+                prompt="Other user flagged card",
                 answer="Answer",
-                pinned_at=datetime.now(timezone.utc),
+                flagged_at=datetime.now(timezone.utc),
             )
         )
         await db_session.flush()
 
-        response = await test_client.get("/review-cards/pinned-summary/")
+        response = await test_client.get("/review-cards/flagged-summary/")
 
         assert response.status_code == 200
-        assert response.json() == {"pinned_count": 1}
+        assert response.json() == {"flagged_count": 1}
 
     async def test_create_review_card_rejects_legacy_srs_enabled_field(
         self,

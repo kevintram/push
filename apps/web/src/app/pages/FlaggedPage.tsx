@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Pin } from 'lucide-react'
+import { Flag } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
 import { PageLayout, usePageScrollElement } from '~/app/layouts/PageLayout'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
@@ -21,17 +21,17 @@ import {
 	estimateReviewCardSize
 } from '~/utils/estimateMasonryItemSize'
 
-export type PinnedPageFilter = 'all' | ReviewCardType
+export type FlaggedPageFilter = 'all' | ReviewCardType
 
-type PinnedPageProps = {
-	filter?: PinnedPageFilter
-	onFilterChange: (filter: PinnedPageFilter) => void
+type FlaggedPageProps = {
+	filter?: FlaggedPageFilter
+	onFilterChange: (filter: FlaggedPageFilter) => void
 }
 
-export function PinnedPage({
+export function FlaggedPage({
 	filter = 'all',
 	onFilterChange
-}: PinnedPageProps) {
+}: FlaggedPageProps) {
 	const navigate = useNavigate()
 	const getScrollElement = usePageScrollElement()
 	const selectedType = useMemo(() => {
@@ -39,7 +39,7 @@ export function PinnedPage({
 		return filter
 	}, [filter])
 	const { data: reviewCards = [], isLoading } = useReviewCards({
-		pinned_only: true,
+		flagged_only: true,
 		type: selectedType
 	})
 
@@ -77,9 +77,9 @@ export function PinnedPage({
 			<Empty>
 				<EmptyHeader>
 					<EmptyMedia variant='icon'>
-						<Pin />
+						<Flag />
 					</EmptyMedia>
-					<EmptyTitle>No pinned review cards</EmptyTitle>
+					<EmptyTitle>No flagged review cards</EmptyTitle>
 				</EmptyHeader>
 			</Empty>
 		)
@@ -113,8 +113,8 @@ export function PinnedPage({
 	return (
 		<PageLayout>
 			<PageLayout.Header
-				icon={Pin}
-				title='Pinned'
+				icon={Flag}
+				title='Flagged'
 				titleExtra={<CountBadge count={reviewCards.length} />}
 			/>
 			<PageLayout.Content className='max-w-screen space-y-4 px-3 pt-3 pb-6'>

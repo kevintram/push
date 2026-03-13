@@ -15,9 +15,9 @@ export const handlers = [
 			as_of: '2026-03-05'
 		})
 	}),
-	http.get('*/review-cards/pinned-summary/', () => {
+	http.get('*/review-cards/flagged-summary/', () => {
 		return HttpResponse.json({
-			pinned_count: 0
+			flagged_count: 0
 		})
 	}),
 	http.get('*/topics/', ({ request }) => {

@@ -6,9 +6,9 @@ import {
 	ArrowLeftRight,
 	Brain,
 	ChevronDown,
+	Flag,
 	Loader2,
 	MoreHorizontal,
-	Pin,
 	Plus,
 	Search,
 	Sparkles,
@@ -87,7 +87,7 @@ import { isHttpStatusError } from '~/utils/httpStatusError'
 
 const EMPTY_BADGE_CLASSNAME =
 	'h-5 rounded-sm border-transparent bg-amber-100 text-amber-900 text-xs shadow-sm dark:bg-amber-950 dark:text-amber-200'
-const PINNED_ICON_CLASSNAME =
+const FLAGGED_ICON_CLASSNAME =
 	'h-4 w-4 fill-current text-sky-500 dark:text-sky-300'
 
 export type ReviewCardDetailTab = 'home' | 'notes' | 'reviews'
@@ -353,7 +353,7 @@ export function ReviewCardDetailPage({
 			answer?: string
 			notes?: string
 			retired?: boolean
-			pinned?: boolean
+			flagged?: boolean
 		}) => {
 			if (!reviewCard) return
 			updateReviewCardAsync({ id: reviewCard.id, ...fields }).catch(() => {
@@ -1033,25 +1033,25 @@ export function ReviewCardDetailPage({
 												render={
 													<Button
 														aria-label={
-															reviewCard.pinned_at
-																? 'Unpin this item'
-																: 'Pin this item'
+															reviewCard.flagged_at
+																? 'Unflag this item'
+																: 'Flag this item'
 														}
-														aria-pressed={reviewCard.pinned_at != null}
+														aria-pressed={reviewCard.flagged_at != null}
 														className='rounded-full'
 														disabled={isUpdatingReviewCard}
 														onClick={() =>
 															handleUpdateReviewCardFields({
-																pinned: reviewCard.pinned_at == null
+																flagged: reviewCard.flagged_at == null
 															})
 														}
 														size='icon-sm'
 														variant='outline'
 													>
-														<Pin
+														<Flag
 															className={
-																reviewCard.pinned_at
-																	? PINNED_ICON_CLASSNAME
+																reviewCard.flagged_at
+																	? FLAGGED_ICON_CLASSNAME
 																	: 'h-4 w-4 text-muted-foreground'
 															}
 														/>
@@ -1059,7 +1059,7 @@ export function ReviewCardDetailPage({
 												}
 											/>
 											<TooltipContent>
-												{reviewCard.pinned_at ? 'Unpin' : 'Pin'}
+												{reviewCard.flagged_at ? 'Unflag' : 'Flag'}
 											</TooltipContent>
 										</Tooltip>
 										<Tooltip>

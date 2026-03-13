@@ -6,7 +6,7 @@ import { SidebarProvider } from '~/components/ui/sidebar'
 
 const useLocationMock = vi.fn()
 const useReviewCardQueueCountsMock = vi.fn()
-const useReviewCardPinnedSummaryMock = vi.fn()
+const useReviewCardFlaggedSummaryMock = vi.fn()
 const useTopicsMock = vi.fn()
 const useReviewModeMock = vi.fn()
 const navigateMock = vi.fn()
@@ -39,9 +39,9 @@ vi.mock('~/features/review-cards/hooks/useReviewCardQueueCounts', () => ({
 		useReviewCardQueueCountsMock(...args)
 }))
 
-vi.mock('~/features/review-cards/api/getReviewCardPinnedSummary', () => ({
-	useReviewCardPinnedSummary: (...args: Array<unknown>) =>
-		useReviewCardPinnedSummaryMock(...args)
+vi.mock('~/features/review-cards/api/getReviewCardFlaggedSummary', () => ({
+	useReviewCardFlaggedSummary: (...args: Array<unknown>) =>
+		useReviewCardFlaggedSummaryMock(...args)
 }))
 
 vi.mock('~/features/topics/api/getTopics', () => ({
@@ -60,13 +60,13 @@ describe('AppSidebar', () => {
 	beforeEach(() => {
 		useLocationMock.mockReset()
 		useReviewCardQueueCountsMock.mockReset()
-		useReviewCardPinnedSummaryMock.mockReset()
+		useReviewCardFlaggedSummaryMock.mockReset()
 		useTopicsMock.mockReset()
 		useReviewModeMock.mockReset()
 		navigateMock.mockReset()
 		requestCreateTopicMock.mockReset()
-		useReviewCardPinnedSummaryMock.mockReturnValue({
-			data: { pinned_count: 0 }
+		useReviewCardFlaggedSummaryMock.mockReturnValue({
+			data: { flagged_count: 0 }
 		})
 		useReviewModeMock.mockReturnValue({
 			reviewMode: 'off',
@@ -103,8 +103,8 @@ describe('AppSidebar', () => {
 				}
 			}
 		)
-		useReviewCardPinnedSummaryMock.mockReturnValue({
-			data: { pinned_count: 2 }
+		useReviewCardFlaggedSummaryMock.mockReturnValue({
+			data: { flagged_count: 2 }
 		})
 
 		render(
@@ -115,7 +115,7 @@ describe('AppSidebar', () => {
 
 		const practiceLink = screen.getByRole('link', { name: /practice/i })
 		const flashcardsLink = screen.getByRole('link', { name: /flashcards/i })
-		const pinnedLink = screen.getByRole('link', { name: /pinned/i })
+		const flaggedLink = screen.getByRole('link', { name: /flagged/i })
 
 		expect(practiceLink).toHaveTextContent('Practice234')
 		expect(practiceLink).not.toHaveTextContent('overdue')
@@ -126,10 +126,10 @@ describe('AppSidebar', () => {
 		expect(flashcardsLink).not.toHaveTextContent('overdue')
 		expect(flashcardsLink).not.toHaveTextContent('today')
 		expect(flashcardsLink).not.toHaveTextContent('new')
-		expect(pinnedLink).toHaveTextContent('Pinned2')
+		expect(flaggedLink).toHaveTextContent('Flagged2')
 	})
 
-	it('hides pinned count badge when the summary query is unavailable', () => {
+	it('hides flagged count badge when the summary query is unavailable', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
 		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
@@ -138,7 +138,7 @@ describe('AppSidebar', () => {
 			newCount: 0,
 			dueNextSevenDaysCount: 0
 		})
-		useReviewCardPinnedSummaryMock.mockReturnValue(undefined)
+		useReviewCardFlaggedSummaryMock.mockReturnValue(undefined)
 
 		render(
 			<SidebarProvider>
@@ -146,12 +146,12 @@ describe('AppSidebar', () => {
 			</SidebarProvider>
 		)
 
-		expect(screen.getByRole('link', { name: /pinned/i })).toHaveTextContent(
-			'Pinned'
+		expect(screen.getByRole('link', { name: /flagged/i })).toHaveTextContent(
+			'Flagged'
 		)
-		expect(screen.getByRole('link', { name: /pinned/i })).not.toHaveTextContent(
-			'Pinned0'
-		)
+		expect(
+			screen.getByRole('link', { name: /flagged/i })
+		).not.toHaveTextContent('Flagged0')
 	})
 
 	it('renders capped root topics with untitled fallback in the sidebar', () => {
@@ -293,14 +293,14 @@ describe('AppSidebar', () => {
 					'Logbook',
 					'Practice',
 					'Flashcards',
-					'Pinned'
+					'Flagged'
 				].includes(label ?? '')
 			)
 
 		expect(topLevelLabels).toEqual([
 			'Practice',
 			'Flashcards',
-			'Pinned',
+			'Flagged',
 			'Logbook',
 			'Recent',
 			'Topics'
@@ -453,8 +453,8 @@ describe('AppSidebar', () => {
 		).toHaveTextContent('17')
 	})
 
-	it('renders the pinned count badge as a collapsed overlay stack', () => {
-		useLocationMock.mockReturnValue({ pathname: '/pinned' })
+	it('renders the flagged count badge as a collapsed overlay stack', () => {
+		useLocationMock.mockReturnValue({ pathname: '/flagged' })
 		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
@@ -462,8 +462,8 @@ describe('AppSidebar', () => {
 			newCount: 0,
 			dueNextSevenDaysCount: 0
 		})
-		useReviewCardPinnedSummaryMock.mockReturnValue({
-			data: { pinned_count: 2 }
+		useReviewCardFlaggedSummaryMock.mockReturnValue({
+			data: { flagged_count: 2 }
 		})
 
 		render(
@@ -473,7 +473,7 @@ describe('AppSidebar', () => {
 		)
 
 		expect(
-			screen.getByTestId('sidebar-collapsed-badges-pinned')
+			screen.getByTestId('sidebar-collapsed-badges-flagged')
 		).toHaveTextContent('2')
 	})
 })

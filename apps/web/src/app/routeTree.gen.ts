@@ -15,9 +15,9 @@ import { Route as MainIndexRouteImport } from './routes/_main/index'
 import { Route as MainTopicsRouteImport } from './routes/_main/topics'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainPracticeRouteImport } from './routes/_main/practice'
-import { Route as MainPinnedRouteImport } from './routes/_main/pinned'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainFlashcardsRouteImport } from './routes/_main/flashcards'
+import { Route as MainFlaggedRouteImport } from './routes/_main/flagged'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
 import { Route as MainReviewCardsReviewCardIdRouteImport } from './routes/_main/review-cards_.$reviewCardId'
 import { Route as MainPracticeReviewCardIdRouteImport } from './routes/_main/practice_.$reviewCardId'
@@ -52,11 +52,6 @@ const MainPracticeRoute = MainPracticeRouteImport.update({
   path: '/practice',
   getParentRoute: () => MainRoute,
 } as any)
-const MainPinnedRoute = MainPinnedRouteImport.update({
-  id: '/pinned',
-  path: '/pinned',
-  getParentRoute: () => MainRoute,
-} as any)
 const MainLogbookRoute = MainLogbookRouteImport.update({
   id: '/logbook',
   path: '/logbook',
@@ -65,6 +60,11 @@ const MainLogbookRoute = MainLogbookRouteImport.update({
 const MainFlashcardsRoute = MainFlashcardsRouteImport.update({
   id: '/flashcards',
   path: '/flashcards',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainFlaggedRoute = MainFlaggedRouteImport.update({
+  id: '/flagged',
+  path: '/flagged',
   getParentRoute: () => MainRoute,
 } as any)
 const MainTopicsTopicIdRoute = MainTopicsTopicIdRouteImport.update({
@@ -93,9 +93,9 @@ const MainFlashcardsReviewCardIdRoute =
 
 export interface FileRoutesByFullPath {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
+  '/flagged': typeof MainFlaggedRoute
   '/flashcards': typeof MainFlashcardsRoute
   '/logbook': typeof MainLogbookRoute
-  '/pinned': typeof MainPinnedRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
   '/topics': typeof MainTopicsRoute
@@ -107,9 +107,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
+  '/flagged': typeof MainFlaggedRoute
   '/flashcards': typeof MainFlashcardsRoute
   '/logbook': typeof MainLogbookRoute
-  '/pinned': typeof MainPinnedRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
   '/topics': typeof MainTopicsRoute
@@ -123,9 +123,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_main': typeof MainRouteWithChildren
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
+  '/_main/flagged': typeof MainFlaggedRoute
   '/_main/flashcards': typeof MainFlashcardsRoute
   '/_main/logbook': typeof MainLogbookRoute
-  '/_main/pinned': typeof MainPinnedRoute
   '/_main/practice': typeof MainPracticeRoute
   '/_main/recent': typeof MainRecentRoute
   '/_main/topics': typeof MainTopicsRoute
@@ -139,9 +139,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/virtualization-smoke'
+    | '/flagged'
     | '/flashcards'
     | '/logbook'
-    | '/pinned'
     | '/practice'
     | '/recent'
     | '/topics'
@@ -153,9 +153,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/virtualization-smoke'
+    | '/flagged'
     | '/flashcards'
     | '/logbook'
-    | '/pinned'
     | '/practice'
     | '/recent'
     | '/topics'
@@ -168,9 +168,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_main'
     | '/virtualization-smoke'
+    | '/_main/flagged'
     | '/_main/flashcards'
     | '/_main/logbook'
-    | '/_main/pinned'
     | '/_main/practice'
     | '/_main/recent'
     | '/_main/topics'
@@ -230,13 +230,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainPracticeRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/pinned': {
-      id: '/_main/pinned'
-      path: '/pinned'
-      fullPath: '/pinned'
-      preLoaderRoute: typeof MainPinnedRouteImport
-      parentRoute: typeof MainRoute
-    }
     '/_main/logbook': {
       id: '/_main/logbook'
       path: '/logbook'
@@ -249,6 +242,13 @@ declare module '@tanstack/react-router' {
       path: '/flashcards'
       fullPath: '/flashcards'
       preLoaderRoute: typeof MainFlashcardsRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/flagged': {
+      id: '/_main/flagged'
+      path: '/flagged'
+      fullPath: '/flagged'
+      preLoaderRoute: typeof MainFlaggedRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/topics_/$topicId': {
@@ -283,9 +283,9 @@ declare module '@tanstack/react-router' {
 }
 
 interface MainRouteChildren {
+  MainFlaggedRoute: typeof MainFlaggedRoute
   MainFlashcardsRoute: typeof MainFlashcardsRoute
   MainLogbookRoute: typeof MainLogbookRoute
-  MainPinnedRoute: typeof MainPinnedRoute
   MainPracticeRoute: typeof MainPracticeRoute
   MainRecentRoute: typeof MainRecentRoute
   MainTopicsRoute: typeof MainTopicsRoute
@@ -297,9 +297,9 @@ interface MainRouteChildren {
 }
 
 const MainRouteChildren: MainRouteChildren = {
+  MainFlaggedRoute: MainFlaggedRoute,
   MainFlashcardsRoute: MainFlashcardsRoute,
   MainLogbookRoute: MainLogbookRoute,
-  MainPinnedRoute: MainPinnedRoute,
   MainPracticeRoute: MainPracticeRoute,
   MainRecentRoute: MainRecentRoute,
   MainTopicsRoute: MainTopicsRoute,

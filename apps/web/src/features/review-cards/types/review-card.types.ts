@@ -17,7 +17,7 @@ export type ReviewCard = {
 	state: string
 	step: number | null
 	retired: boolean
-	pinned_at: string | null
+	flagged_at: string | null
 	last_reviewed_at: string | null
 	retrievability: number | null
 	freshness_tier: string | null
@@ -49,15 +49,15 @@ export type ReviewCardQueueSummary = {
 	as_of: string
 }
 
-export type ReviewCardPinnedSummary = {
-	pinned_count: number
+export type ReviewCardFlaggedSummary = {
+	flagged_count: number
 }
 
 export type GetReviewCardsParams = {
 	topic_id?: number
 	type?: ReviewCardType
 	new_only?: boolean
-	pinned_only?: boolean
+	flagged_only?: boolean
 	order?: 'asc' | 'desc'
 }
 
@@ -93,5 +93,5 @@ export type UpdateReviewCardInput = {
 	answer?: string
 	notes?: string
 	retired?: boolean
-	pinned?: boolean
+	flagged?: boolean
 }

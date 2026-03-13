@@ -6,9 +6,9 @@ import {
 	Baby,
 	Brain,
 	ChevronDown,
+	Flag,
 	Loader2,
 	MoreHorizontal,
-	Pin,
 	Plus,
 	Sparkles,
 	Sunset,
@@ -83,7 +83,7 @@ const CARD_ESTIMATE_FALLBACK_WIDTH = 280
 const CARD_WIDTH_REVIEWED_META_MIN = 0
 const CARD_WIDTH_RATING_META_MIN = 0
 const CARD_WIDTH_STABILITY_META_MIN = 300
-const PINNED_ICON_CLASSNAME =
+const FLAGGED_ICON_CLASSNAME =
 	'h-4 w-4 fill-current text-sky-500 dark:text-sky-300'
 
 export interface ReviewCardBadge {
@@ -309,15 +309,15 @@ export function ReviewCard({
 		},
 		[confirmRetiredToggle, reviewCard]
 	)
-	const handlePinnedToggle = useCallback(
+	const handleFlaggedToggle = useCallback(
 		(event: MouseEvent) => {
 			event.stopPropagation()
 			updateReviewCard({
 				id: reviewCard.id,
-				pinned: reviewCard.pinned_at == null
+				flagged: reviewCard.flagged_at == null
 			})
 		},
-		[reviewCard.id, reviewCard.pinned_at, updateReviewCard]
+		[reviewCard.id, reviewCard.flagged_at, updateReviewCard]
 	)
 
 	const handleSeeReviews = useCallback(() => {
@@ -455,7 +455,7 @@ export function ReviewCard({
 	const typeBadgeLabel =
 		typeLabelOverride ??
 		(reviewCard.type === 'practice' ? 'Practice' : 'Flashcard')
-	const isPinned = reviewCard.pinned_at != null
+	const isFlagged = reviewCard.flagged_at != null
 	const topicTitle = reviewCard.topic_title?.trim() ?? ''
 	const resolvedParentLabel =
 		parentLabel ??
@@ -622,18 +622,18 @@ export function ReviewCard({
 						}
 					/>
 					<Button
-						aria-label={isPinned ? 'Unpin this item' : 'Pin this item'}
-						aria-pressed={isPinned}
+						aria-label={isFlagged ? 'Unflag this item' : 'Flag this item'}
+						aria-pressed={isFlagged}
 						className={isUpdatingReviewCard ? 'opacity-50' : ''}
-						onClick={handlePinnedToggle}
+						onClick={handleFlaggedToggle}
 						onKeyDown={event => event.stopPropagation()}
 						size='icon-sm'
 						variant='ghost'
 					>
-						<Pin
+						<Flag
 							className={
-								isPinned
-									? PINNED_ICON_CLASSNAME
+								isFlagged
+									? FLAGGED_ICON_CLASSNAME
 									: 'h-4 w-4 text-muted-foreground'
 							}
 						/>
@@ -689,12 +689,12 @@ export function ReviewCard({
 									event.stopPropagation()
 									updateReviewCard({
 										id: reviewCard.id,
-										pinned: !isPinned
+										flagged: !isFlagged
 									})
 								}}
 							>
-								<Pin className='mr-2 h-4 w-4' />
-								{isPinned ? 'Unpin' : 'Pin'}
+								<Flag className='mr-2 h-4 w-4' />
+								{isFlagged ? 'Unflag' : 'Flag'}
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								disabled={deleteReviewCardMutation.isPending}
