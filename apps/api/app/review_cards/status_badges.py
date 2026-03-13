@@ -132,6 +132,29 @@ def build_review_card_status_badges(
 
     badges: list[dict[str, str | int | None]] = []
 
+    # Retired cards only show the "due" badge since they still appear when due,
+    # but retrievability-based badges (hazy/forgotten) are irrelevant.
+    if review_card.retired:
+        if selected_due_review is not None and selected_days_until_due is not None:
+            due_date = current_day + timedelta(days=selected_days_until_due)
+            tone = (
+                "danger"
+                if selected_days_until_due < 0
+                else "info"
+                if selected_days_until_due == 0
+                else "neutral"
+            )
+            badges.append(
+                {
+                    "key": "due",
+                    "label": _format_due_label(selected_days_until_due),
+                    "tooltip": _format_calendar_date(due_date),
+                    "tone": tone,
+                    "review_id": selected_due_review.id,
+                }
+            )
+        return badges
+
     if selected_due_review is not None and selected_days_until_due is not None:
         due_date = current_day + timedelta(days=selected_days_until_due)
         tone = (
