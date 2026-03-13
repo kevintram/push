@@ -107,7 +107,6 @@ function ReviewSidebarMenuItem({
 		type: item.type
 	})
 	const { state } = useSidebar()
-	const tooltip = `${item.title}: ${overdueCount} actionable overdue, ${dueTodayCount} actionable today, ${newCount} new`
 	const collapsedBadges: Array<SidebarCountBadgeItem> = [
 		{
 			key: 'overdue',
@@ -131,7 +130,7 @@ function ReviewSidebarMenuItem({
 			<SidebarMenuButton
 				isActive={isActive}
 				render={<Link to={item.url} />}
-				tooltip={tooltip}
+				tooltip={item.title}
 			>
 				<item.icon />
 				<span className='flex min-w-0 flex-1 items-center gap-2 group-data-[collapsible=icon]:hidden'>
@@ -292,7 +291,7 @@ export function AppSidebar() {
 										<SidebarMenuButton
 											isActive={isActive}
 											render={<Link to={item.url} />}
-											tooltip={`${item.title}: ${pinnedCount} review cards`}
+											tooltip={item.title}
 										>
 											<item.icon />
 											<span className='flex min-w-0 flex-1 items-center gap-2 group-data-[collapsible=icon]:hidden'>
