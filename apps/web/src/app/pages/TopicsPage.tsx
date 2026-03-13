@@ -145,7 +145,9 @@ export function TopicsPage() {
 						icon={Library}
 						title='Topics'
 					/>
-					<PageLayout.Content>{content}</PageLayout.Content>
+					<PageLayout.Content className='max-w-screen space-y-6 p-6'>
+						{content}
+					</PageLayout.Content>
 				</PageLayout>
 			</div>
 		</div>
