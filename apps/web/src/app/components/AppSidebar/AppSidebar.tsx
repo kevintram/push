@@ -29,22 +29,12 @@ import {
 	SidebarMenuAction,
 	SidebarMenuButton,
 	SidebarMenuItem,
-	SidebarMenuSub,
-	SidebarMenuSubButton,
-	SidebarMenuSubItem,
 	useSidebar
 } from '~/components/ui/sidebar'
 import { useReviewCardFlaggedSummary } from '~/features/review-cards/api/getReviewCardFlaggedSummary'
 import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
-import { useTopics } from '~/features/topics/api/getTopics'
 import { requestCreateTopic } from '~/features/topics/createTopicIntent'
-
-const ROOT_TOPICS_LIMIT = 10
-
-function getTopicLabel(title: string) {
-	return title.trim() || 'Untitled topic'
-}
 
 type SidebarNavItem = {
 	title: string
@@ -176,12 +166,6 @@ export function AppSidebar() {
 	const navigate = useNavigate()
 	const { state, toggleSidebar } = useSidebar()
 	const flaggedSummaryQuery = useReviewCardFlaggedSummary()
-	const rootTopicsQuery = useTopics({
-		root: true,
-		sort: 'title',
-		order: 'asc'
-	})
-	const rootTopics = rootTopicsQuery?.data ?? []
 	const flaggedCount = flaggedSummaryQuery?.data?.flagged_count ?? 0
 	const flaggedCollapsedBadges: Array<SidebarCountBadgeItem> = [
 		{ key: 'flagged', count: flaggedCount }
@@ -371,30 +355,6 @@ export function AppSidebar() {
 												<Plus />
 												<span className='sr-only'>Add topic</span>
 											</SidebarMenuAction>
-										)}
-										{isTopicsItem && rootTopics.length > 0 && (
-											<SidebarMenuSub>
-												{rootTopics.slice(0, ROOT_TOPICS_LIMIT).map(topic => (
-													<SidebarMenuSubItem key={topic.id}>
-														<SidebarMenuSubButton
-															isActive={
-																location.pathname === `/topics/${topic.id}`
-															}
-															render={
-																<Link
-																	params={{
-																		topicId: topic.id.toString()
-																	}}
-																	search={{ tab: 'subtopics' }}
-																	to='/topics/$topicId'
-																/>
-															}
-														>
-															<span>{getTopicLabel(topic.title)}</span>
-														</SidebarMenuSubButton>
-													</SidebarMenuSubItem>
-												))}
-											</SidebarMenuSub>
 										)}
 									</SidebarMenuItem>
 								)
