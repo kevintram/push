@@ -5,9 +5,9 @@
 	"version": "0.0.0",
 	"scripts": {
 		"dev": "vite --open",
-		"test": "vitest",
+		"test": "node ./scripts/vitest-runner.mjs",
 		"test:e2e": "node ./scripts/playwright-runner.mjs test --ui",
-		"test:ci": "vitest run",
+		"test:ci": "rm -rf coverage && pnpm exec vitest run",
 		"test:e2e:ci": "node ./scripts/playwright-runner.mjs test",
 		"lint:tsc": "tsc -b",
 		"lint:biome": "biome check --write --unsafe",

@@ -21,6 +21,22 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
+		Link: ({
+			children,
+			to,
+			params: _params,
+			search: _search,
+			...props
+		}: {
+			children?: ReactNode
+			to?: string
+			params?: unknown
+			search?: unknown
+		}) => (
+			<a data-to={to} href={typeof to === 'string' ? to : '#'} {...props}>
+				{children}
+			</a>
+		),
 		useNavigate: vi.fn()
 	}
 })
@@ -404,6 +420,7 @@ describe('legacy-style detail parent and topic controls', () => {
 			/>
 		)
 
+		await user.click(screen.getByRole('button', { name: /Add parent/i }))
 		await user.click(screen.getByRole('button', { name: /^Create$/i }))
 
 		await waitFor(() => {
@@ -417,6 +434,108 @@ describe('legacy-style detail parent and topic controls', () => {
 			id: 1,
 			parent_id: 3
 		})
+	})
+
+	it('expands the active branch in TopicDetail hierarchy', () => {
+		useTopicsMock.mockImplementation(
+			(params?: { parent_id?: number; sort?: string; order?: string }) => {
+				if (params?.parent_id === 1) {
+					return {
+						data: [
+							{
+								...topic,
+								id: 3,
+								title: 'Linear equations',
+								parent_id: 1,
+								parent_title: 'Algebra'
+							}
+						],
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [
+							topic,
+							{
+								...topic,
+								id: 3,
+								title: 'Linear equations',
+								parent_id: 1,
+								parent_title: 'Algebra'
+							}
+						],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				activeHomeTab='subtopics'
+				cardTypeFilter='all'
+				onActiveHomeTabChange={vi.fn()}
+				onCardTypeFilterChange={vi.fn()}
+				topicId={1}
+			/>
+		)
+
+		expect(screen.getByRole('link', { name: 'Algebra' })).toHaveAttribute(
+			'aria-current',
+			'page'
+		)
+		expect(
+			screen.getByRole('link', { name: 'Linear equations' })
+		).toBeInTheDocument()
+	})
+
+	it('expands the active branch in ReviewCardDetail hierarchy', () => {
+		useTopicsMock.mockImplementation(
+			(params?: { sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [
+							topic,
+							{
+								...topic,
+								id: 3,
+								title: 'Linear equations',
+								parent_id: 1,
+								parent_title: 'Algebra'
+							}
+						],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+		useReviewCardMock.mockReturnValue({
+			data: { ...reviewCard, topic_id: 1 },
+			isLoading: false,
+			error: null
+		})
+
+		render(
+			<ReviewCardDetailPage
+				activeTab='home'
+				onActiveTabChange={vi.fn()}
+				reviewCardId={11}
+			/>
+		)
+
+		expect(screen.getByRole('link', { name: 'Algebra' })).toHaveAttribute(
+			'aria-current',
+			'page'
+		)
+		expect(
+			screen.getByRole('link', { name: 'Linear equations' })
+		).toBeInTheDocument()
 	})
 
 	it('removes an existing parent from TopicDetail', async () => {
@@ -553,6 +672,7 @@ describe('legacy-style detail parent and topic controls', () => {
 
 		render(<ReviewCardDetailPage reviewCardId={11} />)
 
+		await user.click(screen.getByRole('button', { name: /Change topic/i }))
 		await user.click(screen.getByRole('button', { name: /^Create$/i }))
 
 		await waitFor(() => {

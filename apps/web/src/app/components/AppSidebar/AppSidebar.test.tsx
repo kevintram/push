@@ -7,7 +7,6 @@ import { SidebarProvider } from '~/components/ui/sidebar'
 const useLocationMock = vi.fn()
 const useReviewCardQueueCountsMock = vi.fn()
 const useReviewCardFlaggedSummaryMock = vi.fn()
-const useTopicsMock = vi.fn()
 const useReviewModeMock = vi.fn()
 const navigateMock = vi.fn()
 const requestCreateTopicMock = vi.fn()
@@ -44,10 +43,6 @@ vi.mock('~/features/review-cards/api/getReviewCardFlaggedSummary', () => ({
 		useReviewCardFlaggedSummaryMock(...args)
 }))
 
-vi.mock('~/features/topics/api/getTopics', () => ({
-	useTopics: (...args: Array<unknown>) => useTopicsMock(...args)
-}))
-
 vi.mock('~/features/topics/createTopicIntent', () => ({
 	requestCreateTopic: () => requestCreateTopicMock()
 }))
@@ -61,7 +56,6 @@ describe('AppSidebar', () => {
 		useLocationMock.mockReset()
 		useReviewCardQueueCountsMock.mockReset()
 		useReviewCardFlaggedSummaryMock.mockReset()
-		useTopicsMock.mockReset()
 		useReviewModeMock.mockReset()
 		navigateMock.mockReset()
 		requestCreateTopicMock.mockReset()
@@ -83,7 +77,6 @@ describe('AppSidebar', () => {
 
 	it('renders practice and flashcard queue summaries in the sidebar', () => {
 		useLocationMock.mockReturnValue({ pathname: '/practice' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockImplementation(
 			({ type }: { type: 'practice' | 'flashcard' }) => {
 				if (type === 'practice') {
@@ -131,7 +124,6 @@ describe('AppSidebar', () => {
 
 	it('hides flagged count badge when the summary query is unavailable', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
@@ -154,23 +146,8 @@ describe('AppSidebar', () => {
 		).not.toHaveTextContent('Flagged0')
 	})
 
-	it('renders capped root topics with untitled fallback in the sidebar', () => {
+	it('does not render root topic links beneath the topics item', () => {
 		useLocationMock.mockReturnValue({ pathname: '/topics/2' })
-		useTopicsMock.mockReturnValue({
-			data: [
-				{ id: 1, title: 'Alpha' },
-				{ id: 2, title: '' },
-				{ id: 3, title: 'Beta' },
-				{ id: 4, title: 'Delta' },
-				{ id: 5, title: 'Epsilon' },
-				{ id: 6, title: 'Gamma' },
-				{ id: 7, title: 'Eta' },
-				{ id: 8, title: 'Iota' },
-				{ id: 9, title: 'Kappa' },
-				{ id: 10, title: 'Lambda' },
-				{ id: 11, title: 'Mu' }
-			]
-		})
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
@@ -184,23 +161,17 @@ describe('AppSidebar', () => {
 			</SidebarProvider>
 		)
 
-		expect(screen.getByRole('link', { name: /topics/i })).toBeInTheDocument()
-		expect(screen.getByRole('link', { name: 'Alpha' })).toBeInTheDocument()
+		expect(screen.getByRole('link', { name: /^Topics$/ })).toBeInTheDocument()
 		expect(
-			screen.getByRole('link', { name: 'Untitled topic' })
-		).toBeInTheDocument()
-		expect(screen.getByRole('link', { name: 'Lambda' })).toBeInTheDocument()
-		expect(screen.queryByRole('link', { name: 'Mu' })).not.toBeInTheDocument()
+			screen.queryByRole('link', { name: 'Alpha' })
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('link', { name: 'Untitled topic' })
+		).not.toBeInTheDocument()
 	})
 
 	it('does not mark the top-level topics item active on a topic detail route', () => {
 		useLocationMock.mockReturnValue({ pathname: '/topics/2' })
-		useTopicsMock.mockReturnValue({
-			data: [
-				{ id: 1, title: 'Alpha' },
-				{ id: 2, title: 'Beta' }
-			]
-		})
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
@@ -218,14 +189,10 @@ describe('AppSidebar', () => {
 			'data-active',
 			'true'
 		)
-		expect(screen.getByRole('link', { name: 'Beta' })).toHaveAttribute(
-			'data-active'
-		)
 	})
 
 	it('renders an add topic action and navigates to topics when outside the topics routes', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
@@ -247,7 +214,6 @@ describe('AppSidebar', () => {
 
 	it('requests topic creation without leaving the current topics route', () => {
 		useLocationMock.mockReturnValue({ pathname: '/topics/2' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
@@ -269,7 +235,6 @@ describe('AppSidebar', () => {
 
 	it('orders top-level sidebar groups as review, activity, then library', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
@@ -309,7 +274,6 @@ describe('AppSidebar', () => {
 
 	it('renders review mode ahead of settings in the footer', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
@@ -353,7 +317,6 @@ describe('AppSidebar', () => {
 
 	it('updates review mode directly from the inline footer card', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
@@ -386,7 +349,6 @@ describe('AppSidebar', () => {
 
 	it('shows the collapsed review mode button as active when review mode is on', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
@@ -418,7 +380,6 @@ describe('AppSidebar', () => {
 
 	it('renders review queue badges as collapsed overlay stacks', () => {
 		useLocationMock.mockReturnValue({ pathname: '/practice' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockImplementation(
 			({ type }: { type: 'practice' | 'flashcard' }) => {
 				if (type === 'practice') {
@@ -455,7 +416,6 @@ describe('AppSidebar', () => {
 
 	it('renders the flagged count badge as a collapsed overlay stack', () => {
 		useLocationMock.mockReturnValue({ pathname: '/flagged' })
-		useTopicsMock.mockReturnValue({ data: [] })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
