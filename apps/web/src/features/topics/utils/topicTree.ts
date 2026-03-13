@@ -15,7 +15,7 @@ export function getTopicDisplayTitle(title: string, body?: string) {
 	if (trimmedTitle.length > 0) return trimmedTitle
 
 	const trimmedBody = body?.trim() ?? ''
-	return trimmedBody.length > 0 ? trimmedBody : 'Empty Topic'
+	return trimmedBody.length > 0 ? trimmedBody : 'Untitled'
 }
 
 export function buildTopicTree(topics: Array<Topic>): TopicTree {
