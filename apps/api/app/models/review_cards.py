@@ -68,7 +68,7 @@ class ReviewCard(Base):
     retired: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
-    pinned_at: Mapped[datetime | None] = mapped_column(
+    flagged_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True),
         nullable=True,
     )
