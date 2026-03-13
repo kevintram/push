@@ -153,7 +153,7 @@ function TopicNavigatorItem({
 	const hasChildren = node.children.length > 0
 	const isExpanded = expandedIdSet.has(node.id)
 	const isActive = node.id === activeTopicId
-	const label = getTopicDisplayTitle(node.title)
+	const label = getTopicDisplayTitle(node.title, node.body)
 
 	return (
 		<li>
