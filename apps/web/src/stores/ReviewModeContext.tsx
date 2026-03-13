@@ -57,12 +57,12 @@ export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 		isForcedReviewModePath(pathname) ? 'on' : getInitialReviewMode()
 	)
 
-	// Force review mode on when navigating to a forced path.
+	// Auto-enable review mode when navigating to a forced path.
 	useEffect(() => {
-		if (isForcedReviewModePath(pathname) && reviewMode !== 'on') {
+		if (isForcedReviewModePath(pathname)) {
 			setReviewMode('on')
 		}
-	}, [pathname, reviewMode])
+	}, [pathname])
 
 	useEffect(() => {
 		const storage = window.localStorage

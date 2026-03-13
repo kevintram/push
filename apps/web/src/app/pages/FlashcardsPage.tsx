@@ -105,7 +105,7 @@ export function FlashcardsPage({
 		return (
 			<div className='flex items-center gap-2 text-muted-foreground text-sm'>
 				<span>Due in next 7d</span>
-				<CountBadge count={dueNextSevenDaysCount} />
+				<CountBadge count={dueNextSevenDaysCount} variant='outline' />
 			</div>
 		)
 	}, [activeTab, dueNextSevenDaysCount])
