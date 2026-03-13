@@ -10,9 +10,12 @@ export type TopicTree = {
 	ancestorIdsById: Map<number, Array<number>>
 }
 
-export function getTopicDisplayTitle(title: string) {
+export function getTopicDisplayTitle(title: string, body?: string) {
 	const trimmedTitle = title.trim()
-	return trimmedTitle.length > 0 ? trimmedTitle : 'Untitled topic'
+	if (trimmedTitle.length > 0) return trimmedTitle
+
+	const trimmedBody = body?.trim() ?? ''
+	return trimmedBody.length > 0 ? trimmedBody : 'Untitled'
 }
 
 export function buildTopicTree(topics: Array<Topic>): TopicTree {
