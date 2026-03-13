@@ -66,6 +66,10 @@ import { useTopic } from '~/features/topics/api/getTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { TopicCard } from '~/features/topics/components/TopicCard'
+import {
+	TopicNavigatorRail,
+	TopicNavigatorSheet
+} from '~/features/topics/components/TopicNavigator'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
@@ -553,192 +557,196 @@ export function TopicDetailPage({
 	]
 
 	return (
-		<div className='flex h-full min-h-0 w-full flex-col'>
-			<div className='sticky top-0 z-10 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center border-b px-2 py-1'>
-				<div className='flex min-w-0 items-center gap-2'>
-					<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-						<User2 className='h-3 w-3' />
-						<span>Parent</span>
-					</div>
-					{topic.parent_id != null ? (
-						<Badge
-							className='group/parent h-6 rounded-full px-1 text-xs'
-							variant='ghost'
-						>
-							<Button
-								className='h-5 cursor-pointer rounded-full px-0 font-medium text-xs leading-none'
-								onClick={() =>
-									navigate({
-										to: '/topics/$topicId',
-										params: { topicId: topic.parent_id!.toString() },
-										search: { tab: 'subtopics' }
-									})
-								}
-								size='xs'
-								type='button'
-								variant='ghost'
-							>
-								{parentTopic?.title || `Topic #${topic.parent_id}`}
-							</Button>
-							<Button
-								aria-label='Remove parent'
-								className='pointer-events-none inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full p-0 opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/parent:pointer-events-auto group-hover/parent:opacity-100 group-active/parent:pointer-events-auto group-active/parent:opacity-100'
-								disabled={isUpdatingTopic}
-								onClick={event => {
-									event.stopPropagation()
-									updateTopicFields({ parent_id: null }).catch(() => {})
-								}}
-								size='icon-xs'
-								type='button'
-								variant='ghost'
-							>
-								<X className='h-3 w-3' />
-							</Button>
-						</Badge>
-					) : (
-						addParentMenu
-					)}
-				</div>
-				<div className='flex items-center justify-end'>
-					<DropdownMenu>
-						<DropdownMenuTrigger
-							render={
-								<Button size='icon-sm' type='button' variant='ghost'>
-									<MoreHorizontal className='h-4 w-4' />
-								</Button>
-							}
-						/>
-						<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
-							<DropdownMenuItem
-								onClick={() => setIsDeleteDialogOpen(true)}
-								variant='destructive'
-							>
-								<Trash2 className='mr-2 h-4 w-4' />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-			</div>
-			{isParentSearchOpen ? (
-				<SearchDialog
-					allowedTypes={['topic']}
-					closeOnSelect={false}
-					createLabel='Create parent'
-					filterResult={result =>
-						result.entity_type === 'topic' &&
-						result.topic != null &&
-						result.topic.id !== topic.id
-					}
-					initialFilter='topic'
-					isCreating={isParentMutationPending}
-					onCreate={handleCreateParent}
-					onOpenChange={setIsParentSearchOpen}
-					onSelectEntity={handleAssignParent}
-					open={isParentSearchOpen}
-					placeholder='Search topics to set as parent...'
-					query={parentSearchQuery}
-					setQuery={setParentSearchQuery}
-					showAllOption={false}
-					showNoTagOption={false}
-					title='Search parent topic'
-				/>
-			) : null}
-
-			<div className='flex-1 overflow-y-auto' ref={scrollContainerRef}>
-				<div className='mx-auto w-full max-w-5xl px-6 py-5'>
-					<div className='space-y-2'>
-						<Textarea
-							className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-							onBlur={() => {
-								if (title !== topic.title) {
-									updateTopicFields({ title }).catch(() => {})
-								}
-							}}
-							onChange={event => setTitle(event.target.value)}
-							placeholder='Untitled topic'
-							spellCheck={false}
-							value={title}
-						/>
-
-						<div className='flex flex-wrap items-center gap-2 font-semibold text-muted-foreground text-sm'>
-							<Tooltip>
-								<TooltipTrigger
-									render={
-										<span>{`Edited ${formatRelativeDate(topic.updated_at).text}`}</span>
-									}
-								/>
-								<TooltipContent>
-									{dayjs(topic.updated_at).format('MMM D, YYYY')}
-								</TooltipContent>
-							</Tooltip>
-							<span aria-hidden={true}>·</span>
-							<Tooltip>
-								<TooltipTrigger
-									render={
-										<span>{`Created ${formatRelativeDate(topic.inserted_at).text}`}</span>
-									}
-								/>
-								<TooltipContent>
-									{dayjs(topic.inserted_at).format('MMM D, YYYY')}
-								</TooltipContent>
-							</Tooltip>
+		<div className='flex h-full min-h-0 w-full'>
+			<TopicNavigatorRail activeTopicId={topic.id} />
+			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
+				<div className='sticky top-0 z-10 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center px-2 py-1'>
+					<div className='flex min-w-0 items-center gap-2'>
+						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
+							<User2 className='h-3 w-3' />
+							<span>Parent</span>
 						</div>
-
-						{hidesSecondary ? (
-							<RevealPanel
-								closedContent={
-									isBodyEmpty ? (
-										<Badge
-											className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
-											variant='outline'
-										>
-											Empty
-										</Badge>
-									) : null
-								}
-								guessValue={guessBodyText}
-								isCopied={isRevealPanelCopied}
-								onGuessCopy={handleCopyGuessText}
-								onGuessValueChange={setGuessBodyText}
-								onRevealBlur={() => {
-									if (body !== topic.body) {
-										updateTopicFields({ body }).catch(() => {})
+						{topic.parent_id != null ? (
+							<Badge
+								className='group/parent h-6 rounded-full px-1 text-xs'
+								variant='ghost'
+							>
+								<Button
+									className='h-5 cursor-pointer rounded-full px-0 font-medium text-xs leading-none'
+									onClick={() =>
+										navigate({
+											to: '/topics/$topicId',
+											params: { topicId: topic.parent_id!.toString() },
+											search: { tab: 'subtopics' }
+										})
 									}
-								}}
-								onRevealCopy={handleCopyRevealText}
-								onRevealValueChange={setBody}
-								onValueChange={setRevealPanelTab}
-								revealHelperVariant='autosave'
-								revealPlaceholder='Write your topic...'
-								revealValue={body}
-								value={revealPanelTab}
-								variant='detail'
-							/>
+									size='xs'
+									type='button'
+									variant='ghost'
+								>
+									{parentTopic?.title || `Topic #${topic.parent_id}`}
+								</Button>
+								<Button
+									aria-label='Remove parent'
+									className='pointer-events-none inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full p-0 opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/parent:pointer-events-auto group-hover/parent:opacity-100 group-active/parent:pointer-events-auto group-active/parent:opacity-100'
+									disabled={isUpdatingTopic}
+									onClick={event => {
+										event.stopPropagation()
+										updateTopicFields({ parent_id: null }).catch(() => {})
+									}}
+									size='icon-xs'
+									type='button'
+									variant='ghost'
+								>
+									<X className='h-3 w-3' />
+								</Button>
+							</Badge>
 						) : (
+							addParentMenu
+						)}
+					</div>
+					<div className='flex items-center justify-end gap-2'>
+						<TopicNavigatorSheet activeTopicId={topic.id} />
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								render={
+									<Button size='icon-sm' type='button' variant='ghost'>
+										<MoreHorizontal className='h-4 w-4' />
+									</Button>
+								}
+							/>
+							<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+								<DropdownMenuItem
+									onClick={() => setIsDeleteDialogOpen(true)}
+									variant='destructive'
+								>
+									<Trash2 className='mr-2 h-4 w-4' />
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+				</div>
+				{isParentSearchOpen ? (
+					<SearchDialog
+						allowedTypes={['topic']}
+						closeOnSelect={false}
+						createLabel='Create parent'
+						filterResult={result =>
+							result.entity_type === 'topic' &&
+							result.topic != null &&
+							result.topic.id !== topic.id
+						}
+						initialFilter='topic'
+						isCreating={isParentMutationPending}
+						onCreate={handleCreateParent}
+						onOpenChange={setIsParentSearchOpen}
+						onSelectEntity={handleAssignParent}
+						open={isParentSearchOpen}
+						placeholder='Search topics to set as parent...'
+						query={parentSearchQuery}
+						setQuery={setParentSearchQuery}
+						showAllOption={false}
+						showNoTagOption={false}
+						title='Search parent topic'
+					/>
+				) : null}
+
+				<div className='flex-1 overflow-y-auto' ref={scrollContainerRef}>
+					<div className='mx-auto w-full max-w-5xl px-6 py-5'>
+						<div className='min-w-0 space-y-2'>
 							<Textarea
-								className='!bg-transparent m-0 min-h-[2lh] resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onBlur={() => {
-									if (body !== topic.body) {
-										updateTopicFields({ body }).catch(() => {})
+									if (title !== topic.title) {
+										updateTopicFields({ title }).catch(() => {})
 									}
 								}}
-								onChange={event => setBody(event.target.value)}
-								placeholder='Write your topic...'
+								onChange={event => setTitle(event.target.value)}
+								placeholder='Untitled topic'
 								spellCheck={false}
-								value={body}
+								value={title}
 							/>
-						)}
 
-						<DetailTabsShell
-							onValueChange={value => {
-								if (value === 'subtopics' || value === 'review_cards') {
-									onActiveHomeTabChange(value)
-								}
-							}}
-							tabs={tabs}
-							value={resolvedActiveHomeTab}
-						/>
+							<div className='flex flex-wrap items-center gap-2 font-semibold text-muted-foreground text-sm'>
+								<Tooltip>
+									<TooltipTrigger
+										render={
+											<span>{`Edited ${formatRelativeDate(topic.updated_at).text}`}</span>
+										}
+									/>
+									<TooltipContent>
+										{dayjs(topic.updated_at).format('MMM D, YYYY')}
+									</TooltipContent>
+								</Tooltip>
+								<span aria-hidden={true}>·</span>
+								<Tooltip>
+									<TooltipTrigger
+										render={
+											<span>{`Created ${formatRelativeDate(topic.inserted_at).text}`}</span>
+										}
+									/>
+									<TooltipContent>
+										{dayjs(topic.inserted_at).format('MMM D, YYYY')}
+									</TooltipContent>
+								</Tooltip>
+							</div>
+
+							{hidesSecondary ? (
+								<RevealPanel
+									closedContent={
+										isBodyEmpty ? (
+											<Badge
+												className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
+												variant='outline'
+											>
+												Empty
+											</Badge>
+										) : null
+									}
+									guessValue={guessBodyText}
+									isCopied={isRevealPanelCopied}
+									onGuessCopy={handleCopyGuessText}
+									onGuessValueChange={setGuessBodyText}
+									onRevealBlur={() => {
+										if (body !== topic.body) {
+											updateTopicFields({ body }).catch(() => {})
+										}
+									}}
+									onRevealCopy={handleCopyRevealText}
+									onRevealValueChange={setBody}
+									onValueChange={setRevealPanelTab}
+									revealHelperVariant='autosave'
+									revealPlaceholder='Write your topic...'
+									revealValue={body}
+									value={revealPanelTab}
+									variant='detail'
+								/>
+							) : (
+								<Textarea
+									className='!bg-transparent m-0 min-h-[2lh] resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+									onBlur={() => {
+										if (body !== topic.body) {
+											updateTopicFields({ body }).catch(() => {})
+										}
+									}}
+									onChange={event => setBody(event.target.value)}
+									placeholder='Write your topic...'
+									spellCheck={false}
+									value={body}
+								/>
+							)}
+
+							<DetailTabsShell
+								onValueChange={value => {
+									if (value === 'subtopics' || value === 'review_cards') {
+										onActiveHomeTabChange(value)
+									}
+								}}
+								tabs={tabs}
+								value={resolvedActiveHomeTab}
+							/>
+						</div>
 					</div>
 				</div>
 			</div>
