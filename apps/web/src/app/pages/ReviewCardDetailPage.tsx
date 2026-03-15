@@ -664,9 +664,9 @@ export function ReviewCardDetailPage({
 					/>
 				) : null}
 
-				<div className='flex-1 overflow-y-auto'>
-					<div className='mx-auto min-h-full w-full max-w-5xl px-6 py-5'>
-						<div className='min-w-0'>
+				<div className='flex min-h-0 flex-1 flex-col overflow-y-auto'>
+					<div className='mx-auto flex min-h-full w-full max-w-5xl flex-1 flex-col px-6 py-5'>
+						<div className='flex min-h-full min-w-0 flex-1 flex-col'>
 							{(() => {
 								if (resolvedActiveTab === 'reviews') {
 									return isReviewsLoading ? (
@@ -806,7 +806,7 @@ export function ReviewCardDetailPage({
 												<h2 className='font-semibold text-lg'>Notes</h2>
 											</div>
 											<Textarea
-												className='!bg-transparent field-sizing-fixed m-0 min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+												className='!bg-transparent field-sizing-fixed m-0 h-full min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 												onBlur={() => {
 													if (notes !== reviewCard.notes) {
 														handleUpdateReviewCardFields({ notes })
@@ -1176,7 +1176,7 @@ export function ReviewCardDetailPage({
 										) : (
 											<div className='flex min-h-0 flex-1 flex-col'>
 												<Textarea
-													className='!bg-transparent field-sizing-fixed m-0 min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+													className='!bg-transparent field-sizing-fixed m-0 h-full min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 													onBlur={() => {
 														if (answer !== reviewCard.answer) {
 															handleUpdateReviewCardFields({ answer })

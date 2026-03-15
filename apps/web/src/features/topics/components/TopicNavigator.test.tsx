@@ -53,6 +53,7 @@ describe('TopicNavigator', () => {
 	beforeEach(() => {
 		window.localStorage?.removeItem?.('topic-navigator-expanded-ids')
 		window.localStorage?.removeItem?.('topic-navigator-width')
+		window.sessionStorage.clear()
 		navigateMock.mockReset()
 		useCreateTopicMock.mockReset()
 		useDeleteTopicMock.mockReset()
@@ -350,6 +351,42 @@ describe('TopicNavigator', () => {
 			to: '/topics/$topicId',
 			params: { topicId: '7' }
 		})
+		expect(window.sessionStorage.getItem('topics:focus-new-topic-title')).toBe(
+			'7'
+		)
+	})
+
+	it('creates a root topic from the navigator button and records title focus intent', async () => {
+		const createTopicAsync = vi.fn().mockResolvedValue({ id: 8 })
+		useCreateTopicMock.mockReturnValue({
+			mutateAsync: createTopicAsync,
+			isPending: false
+		})
+		useTopicTreeMock.mockReturnValue({
+			roots: [],
+			ancestorIdsById: new Map<number, Array<number>>(),
+			nodeById: new Map<number, object>(),
+			isLoading: false,
+			error: null
+		})
+
+		render(<TopicNavigatorRail className='block' />)
+
+		fireEvent.click(screen.getByRole('button', { name: 'Create new topic' }))
+
+		await waitFor(() => {
+			expect(createTopicAsync).toHaveBeenCalledWith({
+				title: '',
+				body: ''
+			})
+		})
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/topics/$topicId',
+			params: { topicId: '8' }
+		})
+		expect(window.sessionStorage.getItem('topics:focus-new-topic-title')).toBe(
+			'8'
+		)
 	})
 
 	it('deletes the active topic from the context menu and navigates to its parent', async () => {

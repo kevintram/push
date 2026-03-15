@@ -71,6 +71,7 @@ import {
 	TopicNavigatorRail,
 	TopicNavigatorSheet
 } from '~/features/topics/components/TopicNavigator'
+import { consumeFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { useTopicTree } from '~/features/topics/hooks/useTopicTree'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
@@ -127,6 +128,7 @@ export function TopicDetailPage({
 
 	const [title, setTitle] = useState('')
 	const [body, setBody] = useState('')
+	const titleTextareaRef = useRef<HTMLTextAreaElement>(null)
 	const lastSyncedTopicFieldsRef = useRef<{
 		id: number
 		title: string
@@ -173,6 +175,13 @@ export function TopicDetailPage({
 			title: topic.title,
 			body: topic.body
 		}
+	}, [topic])
+
+	useEffect(() => {
+		if (!topic) return
+		if (!consumeFocusNewTopicTitle(topic.id)) return
+
+		titleTextareaRef.current?.focus()
 	}, [topic])
 
 	const selectedCardType = useMemo(() => {
@@ -455,6 +464,7 @@ export function TopicDetailPage({
 								</BreadcrumbList>
 							</Breadcrumb>
 							<Textarea
+								aria-label='Topic title'
 								className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onBlur={() => {
 									if (title !== topic.title) {
@@ -463,6 +473,7 @@ export function TopicDetailPage({
 								}}
 								onChange={event => setTitle(event.target.value)}
 								placeholder='Untitled topic'
+								ref={titleTextareaRef}
 								spellCheck={false}
 								value={title}
 							/>

@@ -23,7 +23,8 @@ import {
 } from '~/features/topics/components/TopicNavigator'
 import {
 	CREATE_TOPIC_INTENT_EVENT,
-	consumeCreateTopicRequest
+	consumeCreateTopicRequest,
+	requestFocusNewTopicTitle
 } from '~/features/topics/createTopicIntent'
 import {
 	DEFAULT_MASONRY_GAP,
@@ -51,6 +52,7 @@ export function TopicsPage() {
 				body: '',
 				parent_id: null
 			})
+			requestFocusNewTopicTitle(created.id)
 			await navigate({
 				to: '/topics/$topicId',
 				params: { topicId: created.id.toString() }
