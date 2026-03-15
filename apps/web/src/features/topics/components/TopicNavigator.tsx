@@ -86,6 +86,7 @@ const TOPIC_NAVIGATOR_EXPANDED_IDS_STORAGE_KEY = 'topic-navigator-expanded-ids'
 const TOPIC_NAVIGATOR_DRAG_EXPAND_DELAY_MS = 650
 const TOPIC_NAVIGATOR_DRAG_SCROLL_EDGE_THRESHOLD_PX = 56
 const TOPIC_NAVIGATOR_DRAG_SCROLL_MAX_STEP_PX = 14
+const TOPIC_NAVIGATOR_TREE_INDENT_REM = 0.75
 
 function areNumberArraysEqual(left: Array<number>, right: Array<number>) {
 	if (left.length !== right.length) return false
@@ -193,7 +194,6 @@ function TopicNavigatorRootDropZone({
 
 function TopicNavigatorItem(props: {
 	node: TopicTreeNode
-	depth: number
 	activeTopicId?: number | null
 	activeDragTopicId: number | null
 	ancestorIdsById: Map<number, Array<number>>
@@ -211,7 +211,6 @@ function TopicNavigatorItem(props: {
 }) {
 	const {
 		node,
-		depth,
 		activeTopicId,
 		activeDragTopicId,
 		ancestorIdsById,
@@ -286,7 +285,6 @@ function TopicNavigatorItem(props: {
 							setDraggableNodeRef(element)
 							setDroppableNodeRef(element)
 						}}
-						style={{ paddingLeft: `${depth * 0.75}rem` }}
 					>
 						{hasChildren ? (
 							<Button
@@ -307,13 +305,12 @@ function TopicNavigatorItem(props: {
 									)}
 								/>
 							</Button>
-						) : (
-							<span aria-hidden='true' className='h-6 w-6 shrink-0' />
-						)}
+						) : null}
 						<Link
 							aria-current={isActive ? 'page' : undefined}
 							className={cn(
 								'min-w-0 flex-1 truncate rounded-md px-2 py-1.5 text-sm underline-offset-4 transition-colors hover:underline',
+								!hasChildren && 'ml-1',
 								isActive && 'font-medium text-foreground',
 								!isActive && isDropSubtreeHighlighted && 'text-foreground',
 								!(isActive || isDropSubtreeHighlighted) &&
@@ -358,13 +355,18 @@ function TopicNavigatorItem(props: {
 					</ContextMenuContent>
 
 					{hasChildren && isExpanded ? (
-						<ul className='mt-1 space-y-1'>
+						<ul
+							className='mt-1 space-y-1 border-border/60 border-l'
+							style={{
+								marginLeft: `${TOPIC_NAVIGATOR_TREE_INDENT_REM}rem`,
+								paddingLeft: `${TOPIC_NAVIGATOR_TREE_INDENT_REM}rem`
+							}}
+						>
 							{node.children.map(childNode => (
 								<TopicNavigatorItem
 									activeDragTopicId={activeDragTopicId}
 									activeTopicId={activeTopicId}
 									ancestorIdsById={ancestorIdsById}
-									depth={depth + 1}
 									expandedIdSet={expandedIdSet}
 									highlightedDropTopicId={highlightedDropTopicId}
 									isDragAndDropEnabled={isDragAndDropEnabled}
@@ -865,7 +867,6 @@ function TopicNavigatorContent({
 							activeDragTopicId={activeDragTopicId}
 							activeTopicId={activeTopicId}
 							ancestorIdsById={ancestorIdsById}
-							depth={0}
 							expandedIdSet={expandedIdSet}
 							highlightedDropTopicId={highlightedDropTopicId}
 							isDragAndDropEnabled={enableDragAndDrop}

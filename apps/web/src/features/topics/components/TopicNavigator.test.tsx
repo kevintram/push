@@ -177,6 +177,50 @@ describe('TopicNavigator', () => {
 		expect(screen.getByRole('link', { name: 'Systems' })).toBeInTheDocument()
 	})
 
+	it('renders guide lines for nested topic branches', () => {
+		useTopicTreeMock.mockReturnValue({
+			roots: [
+				{
+					id: 1,
+					title: 'Algebra',
+					body: '',
+					parent_id: null,
+					parent_title: null,
+					inserted_at: '',
+					updated_at: '',
+					children: [
+						{
+							id: 2,
+							title: 'Linear equations',
+							body: '',
+							parent_id: 1,
+							parent_title: 'Algebra',
+							inserted_at: '',
+							updated_at: '',
+							children: []
+						}
+					]
+				}
+			],
+			ancestorIdsById: new Map<number, Array<number>>([
+				[1, []],
+				[2, [1]]
+			]),
+			nodeById: new Map<number, object>([
+				[1, {}],
+				[2, {}]
+			]),
+			isLoading: false,
+			error: null
+		})
+
+		render(<TopicNavigatorRail activeTopicId={2} className='block' />)
+
+		expect(
+			screen.getByRole('link', { name: 'Linear equations' }).closest('ul')
+		).toHaveClass('border-l')
+	})
+
 	it('keeps manually expanded branches open when the active topic changes', () => {
 		useTopicTreeMock.mockReturnValue({
 			roots: [
