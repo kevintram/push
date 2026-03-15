@@ -53,12 +53,12 @@ const VARIANT_STYLES = {
 	},
 	detail: {
 		wrapper:
-			'mt-1 rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2',
+			'mt-1 flex min-h-0 flex-1 flex-col rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 p-2',
 		tabs: 'flex min-h-0 flex-1 flex-col gap-2',
 		content: 'mt-0 flex min-h-0 flex-1 flex-col',
 		fieldContainer: 'relative flex min-h-0 flex-1 flex-col',
-		textarea: 'field-sizing-fixed flex-1',
-		closed: 'flex min-h-16 w-full items-center justify-center'
+		textarea: 'field-sizing-fixed h-full min-h-0 flex-1',
+		closed: 'flex min-h-0 flex-1 w-full items-center justify-center'
 	}
 } as const
 
