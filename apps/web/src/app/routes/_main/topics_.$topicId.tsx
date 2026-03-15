@@ -1,17 +1,11 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
 	TopicDetailPage,
-	type TopicDetailReviewCardFilter,
-	type TopicDetailTab
+	type TopicDetailReviewCardFilter
 } from '~/app/pages/TopicDetailPage'
 
 type TopicDetailRouteSearch = {
-	tab: TopicDetailTab
 	filter?: TopicDetailReviewCardFilter
-}
-
-function isTopicDetailTab(value: unknown): value is TopicDetailTab {
-	return value === 'subtopics' || value === 'review_cards'
 }
 
 function isTopicDetailFilter(
@@ -23,16 +17,7 @@ function isTopicDetailFilter(
 export function validateTopicDetailSearch(
 	search: Record<string, unknown>
 ): TopicDetailRouteSearch {
-	const tab = isTopicDetailTab(search.tab) ? search.tab : 'subtopics'
-
-	if (tab === 'subtopics') {
-		return { tab }
-	}
-
-	return {
-		tab,
-		filter: isTopicDetailFilter(search.filter) ? search.filter : 'all'
-	}
+	return isTopicDetailFilter(search.filter) ? { filter: search.filter } : {}
 }
 
 export const Route = createFileRoute('/_main/topics_/$topicId')({
@@ -47,20 +32,12 @@ function TopicDetailRoute() {
 
 	return (
 		<TopicDetailPage
-			activeHomeTab={search.tab}
 			cardTypeFilter={search.filter}
-			onActiveHomeTabChange={tab =>
-				navigate({
-					to: '/topics/$topicId',
-					params: { topicId },
-					search: tab === 'subtopics' ? { tab } : { tab, filter: 'all' }
-				})
-			}
 			onCardTypeFilterChange={filter =>
 				navigate({
 					to: '/topics/$topicId',
 					params: { topicId },
-					search: { tab: 'review_cards', filter }
+					search: filter === 'all' ? {} : { filter }
 				})
 			}
 			topicId={Number(topicId)}

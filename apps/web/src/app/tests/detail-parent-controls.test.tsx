@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactElement, ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -371,69 +371,79 @@ beforeEach(() => {
 	})
 })
 
-describe('legacy-style detail parent and topic controls', () => {
-	it('shows Add parent and assigns a searched parent topic', async () => {
-		const user = userEvent.setup()
+describe('detail hierarchy and topic controls', () => {
+	it('renders a read-only breadcrumb path from root to current topic', () => {
+		const rootTopic = {
+			...topic,
+			id: 4,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const branchTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 4,
+			parent_title: 'Mathematics'
+		}
+		const currentTopic = {
+			...topic,
+			id: 3,
+			title: 'Linear equations',
+			parent_id: 2,
+			parent_title: 'Algebra'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 3) {
+				return { data: currentTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { parent_id?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [rootTopic, branchTopic, currentTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
 
 		render(
 			<TopicDetailPage
-				activeHomeTab='subtopics'
 				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
 				onCardTypeFilterChange={vi.fn()}
-				topicId={1}
+				topicId={3}
 			/>
 		)
 
+		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+
 		expect(
-			screen.getByRole('button', { name: /Add parent/i })
+			within(breadcrumb).getByRole('link', { name: 'Mathematics' })
 		).toBeInTheDocument()
-		expect(screen.queryByText('No parent')).not.toBeInTheDocument()
-
-		await user.click(screen.getByRole('button', { name: /^Search$/i }))
-
 		expect(
-			screen.queryByRole('button', { name: topic.title })
+			within(breadcrumb).getByRole('link', { name: 'Algebra' })
+		).toBeInTheDocument()
+		expect(within(breadcrumb).getByText('Linear equations')).toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Linear equations' })
 		).not.toBeInTheDocument()
-		await user.click(screen.getByRole('button', { name: parentTopic.title }))
-
-		await waitFor(() => {
-			expect(updateTopicAsyncMock).toHaveBeenCalledWith({
-				id: 1,
-				parent_id: 2
-			})
-		})
-	})
-
-	it('creates and assigns a parent topic from TopicDetail', async () => {
-		const user = userEvent.setup()
-		createTopicAsyncMock.mockResolvedValue({ id: 3 })
-		updateTopicAsyncMock.mockResolvedValue(undefined)
-
-		render(
-			<TopicDetailPage
-				activeHomeTab='subtopics'
-				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
-				onCardTypeFilterChange={vi.fn()}
-				topicId={1}
-			/>
-		)
-
-		await user.click(screen.getByRole('button', { name: /Add parent/i }))
-		await user.click(screen.getByRole('button', { name: /^Create$/i }))
-
-		await waitFor(() => {
-			expect(createTopicAsyncMock).toHaveBeenCalledWith({
-				title: '',
-				body: '',
-				parent_id: null
-			})
-		})
-		expect(updateTopicAsyncMock).toHaveBeenCalledWith({
-			id: 1,
-			parent_id: 3
-		})
+		expect(
+			within(breadcrumb).getByText('Linear equations').closest('a')
+		).toBeNull()
+		expect(
+			screen.queryByRole('button', { name: /Add parent/i })
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: /Remove parent/i })
+		).not.toBeInTheDocument()
 	})
 
 	it('expands the active branch in TopicDetail hierarchy', () => {
@@ -476,20 +486,21 @@ describe('legacy-style detail parent and topic controls', () => {
 
 		render(
 			<TopicDetailPage
-				activeHomeTab='subtopics'
 				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
 				onCardTypeFilterChange={vi.fn()}
 				topicId={1}
 			/>
 		)
 
-		expect(screen.getByRole('link', { name: 'Algebra' })).toHaveAttribute(
-			'aria-current',
-			'page'
-		)
+		const hierarchy = screen.getByRole('navigation', {
+			name: 'Topic hierarchy'
+		})
+
 		expect(
-			screen.getByRole('link', { name: 'Linear equations' })
+			within(hierarchy).getByRole('link', { name: 'Algebra' })
+		).toHaveAttribute('aria-current', 'page')
+		expect(
+			within(hierarchy).getByRole('link', { name: 'Linear equations' })
 		).toBeInTheDocument()
 	})
 
@@ -529,47 +540,16 @@ describe('legacy-style detail parent and topic controls', () => {
 			/>
 		)
 
-		expect(screen.getByRole('link', { name: 'Algebra' })).toHaveAttribute(
-			'aria-current',
-			'page'
-		)
+		const hierarchy = screen.getByRole('navigation', {
+			name: 'Topic hierarchy'
+		})
+
 		expect(
-			screen.getByRole('link', { name: 'Linear equations' })
+			within(hierarchy).getByRole('link', { name: 'Algebra' })
+		).toHaveAttribute('aria-current', 'page')
+		expect(
+			within(hierarchy).getByRole('link', { name: 'Linear equations' })
 		).toBeInTheDocument()
-	})
-
-	it('removes an existing parent from TopicDetail', async () => {
-		const user = userEvent.setup()
-		useTopicMock.mockImplementation((topicId: number | null) => {
-			if (topicId === 1) {
-				return {
-					data: { ...topic, parent_id: 2, parent_title: parentTopic.title },
-					isLoading: false,
-					error: null
-				}
-			}
-			if (topicId === 2) {
-				return { data: parentTopic, isLoading: false, error: null }
-			}
-			return { data: null, isLoading: false, error: null }
-		})
-
-		render(
-			<TopicDetailPage
-				activeHomeTab='subtopics'
-				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
-				onCardTypeFilterChange={vi.fn()}
-				topicId={1}
-			/>
-		)
-
-		await user.click(screen.getByRole('button', { name: /Remove parent/i }))
-
-		expect(updateTopicAsyncMock).toHaveBeenCalledWith({
-			id: 1,
-			parent_id: null
-		})
 	})
 
 	it('syncs topic fields on first load and only refreshes untouched fields on refetch', async () => {
@@ -588,9 +568,7 @@ describe('legacy-style detail parent and topic controls', () => {
 
 		const { rerender } = render(
 			<TopicDetailPage
-				activeHomeTab='subtopics'
 				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
 				onCardTypeFilterChange={vi.fn()}
 				topicId={1}
 			/>
@@ -613,9 +591,7 @@ describe('legacy-style detail parent and topic controls', () => {
 
 		rerender(
 			<TopicDetailPage
-				activeHomeTab='subtopics'
 				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
 				onCardTypeFilterChange={vi.fn()}
 				topicId={1}
 			/>
@@ -641,8 +617,7 @@ describe('legacy-style detail parent and topic controls', () => {
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/topics/$topicId',
-			params: { topicId: '1' },
-			search: { tab: 'subtopics' }
+			params: { topicId: '1' }
 		})
 		expect(
 			screen.getByRole('button', { name: /Change topic/i })

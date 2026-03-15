@@ -426,8 +426,7 @@ export function ReviewCardDetailPage({
 			if (reviewCard.topic_id != null) {
 				navigate({
 					to: '/topics/$topicId',
-					params: { topicId: reviewCard.topic_id.toString() },
-					search: { tab: 'subtopics' }
+					params: { topicId: reviewCard.topic_id.toString() }
 				})
 				return
 			}
@@ -583,8 +582,7 @@ export function ReviewCardDetailPage({
 									onClick={() =>
 										navigate({
 											to: '/topics/$topicId',
-											params: { topicId: reviewCard.topic_id.toString() },
-											search: { tab: 'subtopics' }
+											params: { topicId: reviewCard.topic_id.toString() }
 										})
 									}
 									size='xs'

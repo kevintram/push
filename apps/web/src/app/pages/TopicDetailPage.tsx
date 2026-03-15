@@ -1,15 +1,14 @@
-import { notFound, useNavigate } from '@tanstack/react-router'
+import { Link, notFound, useNavigate } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
 	AlertTriangle,
 	BookOpen,
 	MoreHorizontal,
 	Plus,
-	Trash2,
-	User2,
-	X
+	Trash2
 } from 'lucide-react'
 import {
+	Fragment,
 	type ReactNode,
 	useCallback,
 	useEffect,
@@ -22,7 +21,6 @@ import { DetailTabsShell } from '~/components/DetailTabs/DetailTabsShell'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { RevealPanel } from '~/components/RevealPanel'
-import { AddEntityMenu } from '~/components/ui/add-entity-menu'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -35,6 +33,14 @@ import {
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
 import { Badge } from '~/components/ui/badge'
+import {
+	Breadcrumb,
+	BreadcrumbItem,
+	BreadcrumbLink,
+	BreadcrumbList,
+	BreadcrumbPage,
+	BreadcrumbSeparator
+} from '~/components/ui/breadcrumb'
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
@@ -58,25 +64,21 @@ import {
 import { useCreateReviewCard } from '~/features/review-cards/api/createReviewCard'
 import { useReviewCards } from '~/features/review-cards/api/getReviewCards'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
-import { SearchDialog } from '~/features/search/components/SearchDialog'
-import type { SearchResultItem } from '~/features/search/types/search.types'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
-import { useTopics } from '~/features/topics/api/getTopics'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
-import { TopicCard } from '~/features/topics/components/TopicCard'
 import {
 	TopicNavigatorRail,
 	TopicNavigatorSheet
 } from '~/features/topics/components/TopicNavigator'
+import { useTopicTree } from '~/features/topics/hooks/useTopicTree'
+import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
-	estimateReviewCardSize,
-	estimateTopicCardSize
+	estimateReviewCardSize
 } from '~/utils/estimateMasonryItemSize'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { isHttpStatusError } from '~/utils/httpStatusError'
@@ -84,12 +86,7 @@ import { isHttpStatusError } from '~/utils/httpStatusError'
 const EMPTY_BADGE_CLASSNAME =
 	'h-5 rounded-sm border-transparent bg-amber-100 text-amber-900 text-xs shadow-sm dark:bg-amber-950 dark:text-amber-200'
 
-export type TopicDetailTab = 'subtopics' | 'review_cards'
 export type TopicDetailReviewCardFilter = 'all' | 'practice' | 'flashcard'
-
-function isTopicDetailTab(value: string): value is TopicDetailTab {
-	return value === 'subtopics' || value === 'review_cards'
-}
 
 function isTopicDetailReviewCardFilter(
 	value: string
@@ -99,23 +96,16 @@ function isTopicDetailReviewCardFilter(
 
 type TopicDetailPageProps = {
 	topicId: number
-	activeHomeTab: TopicDetailTab | string
 	cardTypeFilter?: TopicDetailReviewCardFilter | string
-	onActiveHomeTabChange: (tab: TopicDetailTab) => void
 	onCardTypeFilterChange: (filter: TopicDetailReviewCardFilter) => void
 }
 
 export function TopicDetailPage({
 	topicId,
-	activeHomeTab,
 	cardTypeFilter = 'all',
-	onActiveHomeTabChange,
 	onCardTypeFilterChange
 }: TopicDetailPageProps) {
 	const navigate = useNavigate()
-	const resolvedActiveHomeTab = isTopicDetailTab(activeHomeTab)
-		? activeHomeTab
-		: 'subtopics'
 	const resolvedCardTypeFilter = isTopicDetailReviewCardFilter(cardTypeFilter)
 		? cardTypeFilter
 		: 'all'
@@ -124,11 +114,10 @@ export function TopicDetailPage({
 		isLoading: isTopicLoading,
 		error: topicError
 	} = useTopic(topicId)
-	const { data: parentTopic } = useTopic(topic?.parent_id ?? null)
-	const { mutateAsync: updateTopicAsync, isPending: isUpdatingTopic } =
-		useUpdateTopic()
-	const { mutateAsync: createTopicAsync, isPending: isCreatingSubtopic } =
-		useCreateTopic()
+	const { ancestorIdsById, nodeById } = useTopicTree({
+		enabled: !isTopicLoading && topic !== undefined
+	})
+	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
 	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
 		useDeleteTopic()
 	const {
@@ -143,9 +132,6 @@ export function TopicDetailPage({
 		title: string
 		body: string
 	} | null>(null)
-	const [isParentSearchOpen, setIsParentSearchOpen] = useState(false)
-	const [parentSearchQuery, setParentSearchQuery] = useState('')
-	const [isParentMutationPending, setIsParentMutationPending] = useState(false)
 	const { hidesSecondary } = useReviewMode()
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -194,13 +180,20 @@ export function TopicDetailPage({
 		return resolvedCardTypeFilter
 	}, [resolvedCardTypeFilter])
 
-	const { data: subtopics = [], isLoading: isSubtopicsLoading } = useTopics(
-		{
-			parent_id: topicId,
-			order: 'desc'
-		},
-		{ enabled: !isTopicLoading && topic !== undefined }
-	)
+	const topicPath = useMemo(() => {
+		if (!topic) return []
+
+		const ancestorIds = ancestorIdsById.get(topic.id)
+		if (!ancestorIds || ancestorIds.length === 0) {
+			return [topic]
+		}
+
+		const pathTopics = ancestorIds
+			.map(ancestorId => nodeById.get(ancestorId))
+			.filter(topicNode => topicNode != null)
+
+		return [...pathTopics, topic]
+	}, [ancestorIdsById, nodeById, topic])
 
 	const { data: reviewCards = [], isLoading: isCardsLoading } = useReviewCards(
 		{
@@ -221,24 +214,6 @@ export function TopicDetailPage({
 			await updateTopicAsync({ id: topic.id, ...fields })
 		} catch {
 			toast.error('Failed to update topic')
-		}
-	}
-
-	async function handleAddSubtopic() {
-		if (!topic) return
-		try {
-			const created = await createTopicAsync({
-				parent_id: topic.id,
-				title: '',
-				body: ''
-			})
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() },
-				search: { tab: 'subtopics' }
-			})
-		} catch {
-			toast.error('Failed to create subtopic')
 		}
 	}
 
@@ -276,66 +251,6 @@ export function TopicDetailPage({
 		}
 	}
 
-	const handleOpenSearchParent = useCallback(() => {
-		if (isUpdatingTopic || isParentMutationPending) return
-		setParentSearchQuery('')
-		setIsParentSearchOpen(true)
-	}, [isParentMutationPending, isUpdatingTopic])
-
-	const handleAssignParent = useCallback(
-		async (entity: SearchResultItem) => {
-			if (!topic || entity.entity_type !== 'topic' || !entity.topic) return
-			if (isParentMutationPending) return
-
-			if (entity.topic.id === topic.id) {
-				toast.error('Cannot set this topic as its own parent')
-				return
-			}
-
-			if (entity.topic.id === topic.parent_id) {
-				setIsParentSearchOpen(false)
-				return
-			}
-
-			setIsParentMutationPending(true)
-			try {
-				await updateTopicAsync({ id: topic.id, parent_id: entity.topic.id })
-				toast.success('Parent added')
-				setIsParentSearchOpen(false)
-			} catch {
-				toast.error('Failed to set parent')
-			} finally {
-				setIsParentMutationPending(false)
-			}
-		},
-		[isParentMutationPending, topic, updateTopicAsync]
-	)
-
-	const handleCreateParent = useCallback(async () => {
-		if (!topic || isParentMutationPending) return
-
-		setIsParentMutationPending(true)
-		try {
-			const created = await createTopicAsync({
-				title: '',
-				body: '',
-				parent_id: null
-			})
-
-			try {
-				await updateTopicAsync({ id: topic.id, parent_id: created.id })
-				toast.success('Parent added')
-				setIsParentSearchOpen(false)
-			} catch {
-				toast.error('Parent created but failed to set')
-			}
-		} catch {
-			toast.error('Failed to create parent')
-		} finally {
-			setIsParentMutationPending(false)
-		}
-	}, [createTopicAsync, isParentMutationPending, topic, updateTopicAsync])
-
 	if (isTopicLoading) {
 		return (
 			<div className='flex h-full min-h-0 w-full items-center justify-center'>
@@ -364,64 +279,6 @@ export function TopicDetailPage({
 	}
 
 	const isBodyEmpty = body.trim().length === 0
-	const addParentMenu = (
-		<AddEntityMenu
-			buttonClassName='h-6 rounded-full px-2 text-xs'
-			buttonLabel='Add parent'
-			buttonSize='sm'
-			buttonVariant='ghost'
-			createItems={[
-				{ label: 'Create', onSelect: () => void handleCreateParent() }
-			]}
-			disabled={isUpdatingTopic}
-			isLoading={isParentMutationPending}
-			onSearch={handleOpenSearchParent}
-			searchLabel='Search'
-			showChevron={false}
-		/>
-	)
-
-	let subtopicsContent: ReactNode
-	if (isSubtopicsLoading) {
-		subtopicsContent = <LoadingSpinner containerClassName='min-h-40' />
-	} else if (subtopics.length === 0) {
-		subtopicsContent = (
-			<Empty>
-				<EmptyHeader>
-					<EmptyMedia variant='icon'>
-						<BookOpen />
-					</EmptyMedia>
-					<EmptyTitle>No subtopics yet</EmptyTitle>
-				</EmptyHeader>
-			</Empty>
-		)
-	} else {
-		subtopicsContent = (
-			<MasonryLayout
-				estimateItemSize={(subtopic, _index, laneWidth) =>
-					estimateTopicCardSize(subtopic, laneWidth)
-				}
-				gap={DEFAULT_MASONRY_GAP}
-				getItemKey={subtopic => `topic-${subtopic.id}`}
-				getScrollElement={getScrollElement}
-				items={subtopics}
-				minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
-				renderItem={subtopic => (
-					<TopicCard
-						onClick={() =>
-							navigate({
-								to: '/topics/$topicId',
-								params: { topicId: subtopic.id.toString() },
-								search: { tab: 'subtopics' }
-							})
-						}
-						parentLabel={topic.title || 'Current topic'}
-						topic={subtopic}
-					/>
-				)}
-			/>
-		)
-	}
 
 	let reviewCardsContent: ReactNode
 	if (isCardsLoading) {
@@ -465,29 +322,33 @@ export function TopicDetailPage({
 		)
 	}
 
+	const reviewCardAddButton = (
+		<DropdownMenu>
+			<DropdownMenuTrigger
+				render={
+					<Button
+						className='rounded-full'
+						disabled={isCreatingReviewCard}
+						size='sm'
+						variant='outline'
+					>
+						<Plus className='h-4 w-4' />
+						Add
+					</Button>
+				}
+			/>
+			<DropdownMenuContent align='end'>
+				<DropdownMenuItem onClick={() => handleAddReviewCard('practice')}>
+					Practice
+				</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => handleAddReviewCard('flashcard')}>
+					Flashcard
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	)
+
 	const tabs = [
-		{
-			value: 'subtopics',
-			label: 'Subtopics',
-			count: subtopics.length,
-			content: (
-				<div className='space-y-4'>
-					<div className='flex items-center justify-end'>
-						<Button
-							className='rounded-full'
-							disabled={isCreatingSubtopic}
-							onClick={handleAddSubtopic}
-							size='sm'
-							variant='outline'
-						>
-							<Plus className='h-4 w-4' />
-							Add
-						</Button>
-					</div>
-					{subtopicsContent}
-				</div>
-			)
-		},
 		{
 			value: 'review_cards',
 			label: 'Review Cards',
@@ -520,35 +381,6 @@ export function TopicDetailPage({
 						>
 							Flashcard
 						</Badge>
-						<div className='ml-auto'>
-							<DropdownMenu>
-								<DropdownMenuTrigger
-									render={
-										<Button
-											className='rounded-full'
-											disabled={isCreatingReviewCard}
-											size='sm'
-											variant='outline'
-										>
-											<Plus className='h-4 w-4' />
-											Add
-										</Button>
-									}
-								/>
-								<DropdownMenuContent align='end'>
-									<DropdownMenuItem
-										onClick={() => handleAddReviewCard('practice')}
-									>
-										Practice
-									</DropdownMenuItem>
-									<DropdownMenuItem
-										onClick={() => handleAddReviewCard('flashcard')}
-									>
-										Flashcard
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
 					</div>
 					{reviewCardsContent}
 				</div>
@@ -560,51 +392,7 @@ export function TopicDetailPage({
 		<div className='flex h-full min-h-0 w-full'>
 			<TopicNavigatorRail activeTopicId={topic.id} />
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
-				<div className='sticky top-0 z-10 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center px-2 py-1'>
-					<div className='flex min-w-0 items-center gap-2'>
-						<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-							<User2 className='h-3 w-3' />
-							<span>Parent</span>
-						</div>
-						{topic.parent_id != null ? (
-							<Badge
-								className='group/parent h-6 rounded-full px-1 text-xs'
-								variant='ghost'
-							>
-								<Button
-									className='h-5 cursor-pointer rounded-full px-0 font-medium text-xs leading-none'
-									onClick={() =>
-										navigate({
-											to: '/topics/$topicId',
-											params: { topicId: topic.parent_id!.toString() },
-											search: { tab: 'subtopics' }
-										})
-									}
-									size='xs'
-									type='button'
-									variant='ghost'
-								>
-									{parentTopic?.title || `Topic #${topic.parent_id}`}
-								</Button>
-								<Button
-									aria-label='Remove parent'
-									className='pointer-events-none inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full p-0 opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/parent:pointer-events-auto group-hover/parent:opacity-100 group-active/parent:pointer-events-auto group-active/parent:opacity-100'
-									disabled={isUpdatingTopic}
-									onClick={event => {
-										event.stopPropagation()
-										updateTopicFields({ parent_id: null }).catch(() => {})
-									}}
-									size='icon-xs'
-									type='button'
-									variant='ghost'
-								>
-									<X className='h-3 w-3' />
-								</Button>
-							</Badge>
-						) : (
-							addParentMenu
-						)}
-					</div>
+				<div className='sticky top-0 z-10 flex w-full items-center justify-end px-2 py-1'>
 					<div className='flex items-center justify-end gap-2'>
 						<TopicNavigatorSheet activeTopicId={topic.id} />
 						<DropdownMenu>
@@ -627,34 +415,45 @@ export function TopicDetailPage({
 						</DropdownMenu>
 					</div>
 				</div>
-				{isParentSearchOpen ? (
-					<SearchDialog
-						allowedTypes={['topic']}
-						closeOnSelect={false}
-						createLabel='Create parent'
-						filterResult={result =>
-							result.entity_type === 'topic' &&
-							result.topic != null &&
-							result.topic.id !== topic.id
-						}
-						initialFilter='topic'
-						isCreating={isParentMutationPending}
-						onCreate={handleCreateParent}
-						onOpenChange={setIsParentSearchOpen}
-						onSelectEntity={handleAssignParent}
-						open={isParentSearchOpen}
-						placeholder='Search topics to set as parent...'
-						query={parentSearchQuery}
-						setQuery={setParentSearchQuery}
-						showAllOption={false}
-						showNoTagOption={false}
-						title='Search parent topic'
-					/>
-				) : null}
-
 				<div className='flex-1 overflow-y-auto' ref={scrollContainerRef}>
 					<div className='mx-auto w-full max-w-5xl px-6 py-5'>
 						<div className='min-w-0 space-y-2'>
+							<Breadcrumb aria-label='Topic path'>
+								<BreadcrumbList>
+									{topicPath.map((pathTopic, index) => {
+										const label = getTopicDisplayTitle(
+											pathTopic.title,
+											pathTopic.body
+										)
+										const isCurrentTopic = index === topicPath.length - 1
+
+										return (
+											<Fragment key={pathTopic.id}>
+												{index > 0 ? <BreadcrumbSeparator /> : null}
+												<BreadcrumbItem className='min-w-0'>
+													{isCurrentTopic ? (
+														<BreadcrumbPage className='truncate font-medium'>
+															{label}
+														</BreadcrumbPage>
+													) : (
+														<BreadcrumbLink
+															className='truncate'
+															render={
+																<Link
+																	params={{ topicId: pathTopic.id.toString() }}
+																	to='/topics/$topicId'
+																/>
+															}
+														>
+															{label}
+														</BreadcrumbLink>
+													)}
+												</BreadcrumbItem>
+											</Fragment>
+										)
+									})}
+								</BreadcrumbList>
+							</Breadcrumb>
 							<Textarea
 								className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 								onBlur={() => {
@@ -738,13 +537,9 @@ export function TopicDetailPage({
 							)}
 
 							<DetailTabsShell
-								onValueChange={value => {
-									if (value === 'subtopics' || value === 'review_cards') {
-										onActiveHomeTabChange(value)
-									}
-								}}
+								defaultValue='review_cards'
+								headerEndContent={reviewCardAddButton}
 								tabs={tabs}
-								value={resolvedActiveHomeTab}
 							/>
 						</div>
 					</div>
