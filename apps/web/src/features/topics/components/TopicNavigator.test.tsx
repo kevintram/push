@@ -348,8 +348,7 @@ describe('TopicNavigator', () => {
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/topics/$topicId',
-			params: { topicId: '7' },
-			search: { tab: 'subtopics' }
+			params: { topicId: '7' }
 		})
 	})
 
@@ -434,8 +433,7 @@ describe('TopicNavigator', () => {
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/topics/$topicId',
-			params: { topicId: '1' },
-			search: { tab: 'subtopics' }
+			params: { topicId: '1' }
 		})
 	})
 })

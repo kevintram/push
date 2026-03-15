@@ -15,8 +15,7 @@ import {
 import { RecentPage } from '~/app/pages/RecentPage'
 import {
 	TopicDetailPage,
-	type TopicDetailReviewCardFilter,
-	type TopicDetailTab
+	type TopicDetailReviewCardFilter
 } from '~/app/pages/TopicDetailPage'
 import { TopicsPage } from '~/app/pages/TopicsPage'
 
@@ -289,21 +288,16 @@ function PracticeHarness({
 }
 
 function TopicDetailHarness({
-	initialTab = 'subtopics',
 	initialFilter = 'all'
 }: {
-	initialTab?: TopicDetailTab
 	initialFilter?: TopicDetailReviewCardFilter
 }) {
-	const [activeHomeTab, setActiveHomeTab] = useState<TopicDetailTab>(initialTab)
 	const [cardTypeFilter, setCardTypeFilter] =
 		useState<TopicDetailReviewCardFilter>(initialFilter)
 
 	return (
 		<TopicDetailPage
-			activeHomeTab={activeHomeTab}
 			cardTypeFilter={cardTypeFilter}
-			onActiveHomeTabChange={setActiveHomeTab}
 			onCardTypeFilterChange={setCardTypeFilter}
 			topicId={1}
 		/>
@@ -431,8 +425,7 @@ describe('masonry-backed page feeds', () => {
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/topics/$topicId',
-			params: { topicId: '42' },
-			search: { tab: 'subtopics' }
+			params: { topicId: '42' }
 		})
 	})
 
@@ -474,18 +467,14 @@ describe('masonry-backed page feeds', () => {
 		}
 	})
 
-	it('renders TopicDetail subtopics and review cards through masonry in tabs', async () => {
-		const user = userEvent.setup()
+	it('renders TopicDetail review cards through masonry without subtopic tabs', () => {
 		useTopicMock.mockImplementation((topicId: number | null) => {
 			if (topicId === 1) {
 				return { data: topic, isLoading: false, error: null }
 			}
 			return { data: null, isLoading: false, error: null }
 		})
-		useTopicsMock.mockReturnValue({
-			data: [{ ...topic, id: 2, title: 'Subtopic' }],
-			isLoading: false
-		})
+		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
 			data: [{ ...reviewCard, id: 13, prompt: 'Topic detail card' }],
 			isLoading: false
@@ -494,12 +483,11 @@ describe('masonry-backed page feeds', () => {
 		render(<TopicDetailHarness />)
 
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
-		expect(screen.getAllByText('Subtopic').length).toBeGreaterThan(0)
-
-		await user.click(screen.getByRole('tab', { name: /Review Cards/i }))
-
-		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
 		expect(screen.getByText('Topic detail card')).toBeInTheDocument()
+		expect(
+			screen.queryByRole('tab', { name: /Subtopics/i })
+		).not.toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /^Add$/i })).toBeInTheDocument()
 		expect(
 			masonryPropsSpy.mock.calls.some(
 				([props]) =>

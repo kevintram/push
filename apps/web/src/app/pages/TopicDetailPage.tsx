@@ -64,12 +64,9 @@ import {
 import { useCreateReviewCard } from '~/features/review-cards/api/createReviewCard'
 import { useReviewCards } from '~/features/review-cards/api/getReviewCards'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
-import { useTopics } from '~/features/topics/api/getTopics'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
-import { TopicCard } from '~/features/topics/components/TopicCard'
 import {
 	TopicNavigatorRail,
 	TopicNavigatorSheet
@@ -81,8 +78,7 @@ import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
-	estimateReviewCardSize,
-	estimateTopicCardSize
+	estimateReviewCardSize
 } from '~/utils/estimateMasonryItemSize'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { isHttpStatusError } from '~/utils/httpStatusError'
@@ -90,12 +86,7 @@ import { isHttpStatusError } from '~/utils/httpStatusError'
 const EMPTY_BADGE_CLASSNAME =
 	'h-5 rounded-sm border-transparent bg-amber-100 text-amber-900 text-xs shadow-sm dark:bg-amber-950 dark:text-amber-200'
 
-export type TopicDetailTab = 'subtopics' | 'review_cards'
 export type TopicDetailReviewCardFilter = 'all' | 'practice' | 'flashcard'
-
-function isTopicDetailTab(value: string): value is TopicDetailTab {
-	return value === 'subtopics' || value === 'review_cards'
-}
 
 function isTopicDetailReviewCardFilter(
 	value: string
@@ -105,23 +96,16 @@ function isTopicDetailReviewCardFilter(
 
 type TopicDetailPageProps = {
 	topicId: number
-	activeHomeTab: TopicDetailTab | string
 	cardTypeFilter?: TopicDetailReviewCardFilter | string
-	onActiveHomeTabChange: (tab: TopicDetailTab) => void
 	onCardTypeFilterChange: (filter: TopicDetailReviewCardFilter) => void
 }
 
 export function TopicDetailPage({
 	topicId,
-	activeHomeTab,
 	cardTypeFilter = 'all',
-	onActiveHomeTabChange,
 	onCardTypeFilterChange
 }: TopicDetailPageProps) {
 	const navigate = useNavigate()
-	const resolvedActiveHomeTab = isTopicDetailTab(activeHomeTab)
-		? activeHomeTab
-		: 'subtopics'
 	const resolvedCardTypeFilter = isTopicDetailReviewCardFilter(cardTypeFilter)
 		? cardTypeFilter
 		: 'all'
@@ -134,8 +118,6 @@ export function TopicDetailPage({
 		enabled: !isTopicLoading && topic !== undefined
 	})
 	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
-	const { mutateAsync: createTopicAsync, isPending: isCreatingSubtopic } =
-		useCreateTopic()
 	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
 		useDeleteTopic()
 	const {
@@ -213,14 +195,6 @@ export function TopicDetailPage({
 		return [...pathTopics, topic]
 	}, [ancestorIdsById, nodeById, topic])
 
-	const { data: subtopics = [], isLoading: isSubtopicsLoading } = useTopics(
-		{
-			parent_id: topicId,
-			order: 'desc'
-		},
-		{ enabled: !isTopicLoading && topic !== undefined }
-	)
-
 	const { data: reviewCards = [], isLoading: isCardsLoading } = useReviewCards(
 		{
 			topic_id: topicId,
@@ -240,24 +214,6 @@ export function TopicDetailPage({
 			await updateTopicAsync({ id: topic.id, ...fields })
 		} catch {
 			toast.error('Failed to update topic')
-		}
-	}
-
-	async function handleAddSubtopic() {
-		if (!topic) return
-		try {
-			const created = await createTopicAsync({
-				parent_id: topic.id,
-				title: '',
-				body: ''
-			})
-			navigate({
-				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() },
-				search: { tab: 'subtopics' }
-			})
-		} catch {
-			toast.error('Failed to create subtopic')
 		}
 	}
 
@@ -324,48 +280,6 @@ export function TopicDetailPage({
 
 	const isBodyEmpty = body.trim().length === 0
 
-	let subtopicsContent: ReactNode
-	if (isSubtopicsLoading) {
-		subtopicsContent = <LoadingSpinner containerClassName='min-h-40' />
-	} else if (subtopics.length === 0) {
-		subtopicsContent = (
-			<Empty>
-				<EmptyHeader>
-					<EmptyMedia variant='icon'>
-						<BookOpen />
-					</EmptyMedia>
-					<EmptyTitle>No subtopics yet</EmptyTitle>
-				</EmptyHeader>
-			</Empty>
-		)
-	} else {
-		subtopicsContent = (
-			<MasonryLayout
-				estimateItemSize={(subtopic, _index, laneWidth) =>
-					estimateTopicCardSize(subtopic, laneWidth)
-				}
-				gap={DEFAULT_MASONRY_GAP}
-				getItemKey={subtopic => `topic-${subtopic.id}`}
-				getScrollElement={getScrollElement}
-				items={subtopics}
-				minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
-				renderItem={subtopic => (
-					<TopicCard
-						onClick={() =>
-							navigate({
-								to: '/topics/$topicId',
-								params: { topicId: subtopic.id.toString() },
-								search: { tab: 'subtopics' }
-							})
-						}
-						parentLabel={topic.title || 'Current topic'}
-						topic={subtopic}
-					/>
-				)}
-			/>
-		)
-	}
-
 	let reviewCardsContent: ReactNode
 	if (isCardsLoading) {
 		reviewCardsContent = <LoadingSpinner containerClassName='min-h-40' />
@@ -408,29 +322,33 @@ export function TopicDetailPage({
 		)
 	}
 
+	const reviewCardAddButton = (
+		<DropdownMenu>
+			<DropdownMenuTrigger
+				render={
+					<Button
+						className='rounded-full'
+						disabled={isCreatingReviewCard}
+						size='sm'
+						variant='outline'
+					>
+						<Plus className='h-4 w-4' />
+						Add
+					</Button>
+				}
+			/>
+			<DropdownMenuContent align='end'>
+				<DropdownMenuItem onClick={() => handleAddReviewCard('practice')}>
+					Practice
+				</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => handleAddReviewCard('flashcard')}>
+					Flashcard
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	)
+
 	const tabs = [
-		{
-			value: 'subtopics',
-			label: 'Subtopics',
-			count: subtopics.length,
-			content: (
-				<div className='space-y-4'>
-					<div className='flex items-center justify-end'>
-						<Button
-							className='rounded-full'
-							disabled={isCreatingSubtopic}
-							onClick={handleAddSubtopic}
-							size='sm'
-							variant='outline'
-						>
-							<Plus className='h-4 w-4' />
-							Add
-						</Button>
-					</div>
-					{subtopicsContent}
-				</div>
-			)
-		},
 		{
 			value: 'review_cards',
 			label: 'Review Cards',
@@ -463,35 +381,6 @@ export function TopicDetailPage({
 						>
 							Flashcard
 						</Badge>
-						<div className='ml-auto'>
-							<DropdownMenu>
-								<DropdownMenuTrigger
-									render={
-										<Button
-											className='rounded-full'
-											disabled={isCreatingReviewCard}
-											size='sm'
-											variant='outline'
-										>
-											<Plus className='h-4 w-4' />
-											Add
-										</Button>
-									}
-								/>
-								<DropdownMenuContent align='end'>
-									<DropdownMenuItem
-										onClick={() => handleAddReviewCard('practice')}
-									>
-										Practice
-									</DropdownMenuItem>
-									<DropdownMenuItem
-										onClick={() => handleAddReviewCard('flashcard')}
-									>
-										Flashcard
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
 					</div>
 					{reviewCardsContent}
 				</div>
@@ -552,7 +441,6 @@ export function TopicDetailPage({
 															render={
 																<Link
 																	params={{ topicId: pathTopic.id.toString() }}
-																	search={{ tab: 'subtopics' }}
 																	to='/topics/$topicId'
 																/>
 															}
@@ -649,13 +537,9 @@ export function TopicDetailPage({
 							)}
 
 							<DetailTabsShell
-								onValueChange={value => {
-									if (value === 'subtopics' || value === 'review_cards') {
-										onActiveHomeTabChange(value)
-									}
-								}}
+								defaultValue='review_cards'
+								headerEndContent={reviewCardAddButton}
 								tabs={tabs}
-								value={resolvedActiveHomeTab}
 							/>
 						</div>
 					</div>

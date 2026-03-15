@@ -53,8 +53,7 @@ export function TopicsPage() {
 			})
 			await navigate({
 				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() },
-				search: { tab: 'subtopics' }
+				params: { topicId: created.id.toString() }
 			})
 		} catch {
 			toast.error('Failed to create topic')
@@ -116,8 +115,7 @@ export function TopicsPage() {
 						onClick={() =>
 							navigate({
 								to: '/topics/$topicId',
-								params: { topicId: topic.id.toString() },
-								search: { tab: 'subtopics' }
+								params: { topicId: topic.id.toString() }
 							})
 						}
 						topic={topic}

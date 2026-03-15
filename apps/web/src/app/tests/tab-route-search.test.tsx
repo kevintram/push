@@ -424,17 +424,14 @@ describe('route-backed tab search state', () => {
 		expect(screen.getByText('Stored practice view')).toBeInTheDocument()
 	})
 
-	it('falls back to TopicDetail subtopics and all-card filter for invalid search', async () => {
+	it('falls back to TopicDetail all-card filter for invalid search', async () => {
 		useTopicMock.mockImplementation((topicId: number | null) => {
 			if (topicId === 1) {
 				return { data: topic, isLoading: false, error: null }
 			}
 			return { data: null, isLoading: false, error: null }
 		})
-		useTopicsMock.mockReturnValue({
-			data: [{ ...topic, id: 2, title: 'Subtopic' }],
-			isLoading: false
-		})
+		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
 			data: [{ ...reviewCard, id: 33, prompt: 'Topic card' }],
 			isLoading: false
@@ -452,27 +449,22 @@ describe('route-backed tab search state', () => {
 				{ enabled: true }
 			)
 		})
-		expect(screen.getByTestId('topic-card')).toHaveTextContent('Subtopic')
+		expect(screen.getByText('Topic card')).toBeInTheDocument()
 	})
 
-	it('deep links TopicDetail review-card filters and removes filter on subtopics', async () => {
+	it('deep links TopicDetail review-card filters and clears filter when all is selected', async () => {
 		useTopicMock.mockImplementation((topicId: number | null) => {
 			if (topicId === 1) {
 				return { data: topic, isLoading: false, error: null }
 			}
 			return { data: null, isLoading: false, error: null }
 		})
-		useTopicsMock.mockReturnValue({
-			data: [{ ...topic, id: 2, title: 'Subtopic' }],
-			isLoading: false
-		})
+		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
 			data: [{ ...reviewCard, id: 34, prompt: 'Practice-only card' }],
 			isLoading: false
 		})
-		const { router, user } = renderRoute(
-			'/topics/1?tab=review_cards&filter=practice'
-		)
+		const { router, user } = renderRoute('/topics/1?filter=practice')
 
 		await waitFor(() => {
 			expect(useReviewCardsMock).toHaveBeenLastCalledWith(
@@ -486,10 +478,10 @@ describe('route-backed tab search state', () => {
 		})
 		expect(await screen.findByText('Practice-only card')).toBeInTheDocument()
 
-		await user.click(await screen.findByRole('tab', { name: /Subtopics/i }))
+		await user.click(screen.getByText('All'))
 
 		await waitFor(() => {
-			expect(router.state.location.search).toEqual({ tab: 'subtopics' })
+			expect(router.state.location.search).toEqual({})
 		})
 	})
 })

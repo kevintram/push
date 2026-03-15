@@ -417,9 +417,7 @@ describe('detail hierarchy and topic controls', () => {
 
 		render(
 			<TopicDetailPage
-				activeHomeTab='subtopics'
 				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
 				onCardTypeFilterChange={vi.fn()}
 				topicId={3}
 			/>
@@ -488,9 +486,7 @@ describe('detail hierarchy and topic controls', () => {
 
 		render(
 			<TopicDetailPage
-				activeHomeTab='subtopics'
 				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
 				onCardTypeFilterChange={vi.fn()}
 				topicId={1}
 			/>
@@ -572,9 +568,7 @@ describe('detail hierarchy and topic controls', () => {
 
 		const { rerender } = render(
 			<TopicDetailPage
-				activeHomeTab='subtopics'
 				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
 				onCardTypeFilterChange={vi.fn()}
 				topicId={1}
 			/>
@@ -597,9 +591,7 @@ describe('detail hierarchy and topic controls', () => {
 
 		rerender(
 			<TopicDetailPage
-				activeHomeTab='subtopics'
 				cardTypeFilter='all'
-				onActiveHomeTabChange={vi.fn()}
 				onCardTypeFilterChange={vi.fn()}
 				topicId={1}
 			/>
@@ -625,8 +617,7 @@ describe('detail hierarchy and topic controls', () => {
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/topics/$topicId',
-			params: { topicId: '1' },
-			search: { tab: 'subtopics' }
+			params: { topicId: '1' }
 		})
 		expect(
 			screen.getByRole('button', { name: /Change topic/i })

@@ -180,8 +180,7 @@ export function SearchDialog({
 		if (entity.entity_type === 'topic' && entity.topic) {
 			navigate({
 				to: '/topics/$topicId',
-				params: { topicId: entity.topic.id.toString() },
-				search: { tab: 'subtopics' }
+				params: { topicId: entity.topic.id.toString() }
 			})
 		} else if (entity.entity_type === 'review_card' && entity.review_card) {
 			navigate({

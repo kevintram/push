@@ -326,7 +326,6 @@ function TopicNavigatorItem(props: {
 								onNavigate?.()
 							}}
 							params={{ topicId: node.id.toString() }}
-							search={{ tab: 'subtopics' }}
 							to='/topics/$topicId'
 						>
 							{label}
@@ -610,8 +609,7 @@ function TopicNavigatorContent({
 			)
 			await navigate({
 				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() },
-				search: { tab: 'subtopics' }
+				params: { topicId: created.id.toString() }
 			})
 			onNavigate?.()
 		} catch {
@@ -647,8 +645,7 @@ function TopicNavigatorContent({
 			) {
 				await navigate({
 					to: '/topics/$topicId',
-					params: { topicId: topicToDelete.parent_id.toString() },
-					search: { tab: 'subtopics' }
+					params: { topicId: topicToDelete.parent_id.toString() }
 				})
 			} else {
 				await navigate({ to: '/topics' })

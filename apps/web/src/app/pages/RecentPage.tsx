@@ -102,8 +102,7 @@ export function RecentPage() {
 											onClick={() =>
 												navigate({
 													to: '/topics/$topicId',
-													params: { topicId: topic.id.toString() },
-													search: { tab: 'subtopics' }
+													params: { topicId: topic.id.toString() }
 												})
 											}
 											topic={topic}
