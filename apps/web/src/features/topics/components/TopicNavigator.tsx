@@ -978,19 +978,54 @@ function TopicNavigatorPanel({
 	enableDragAndDrop?: boolean
 	onNavigate?: () => void
 }) {
+	const navigate = useNavigate()
+	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
+		useCreateTopic()
+
+	const handleCreateTopic = async () => {
+		if (isCreatingTopic) return
+
+		try {
+			const created = await createTopicAsync({
+				title: '',
+				body: ''
+			})
+			await navigate({
+				to: '/topics/$topicId',
+				params: { topicId: created.id.toString() }
+			})
+			onNavigate?.()
+		} catch {
+			toast.error('Failed to create topic')
+		}
+	}
+
 	return (
 		<>
 			<SidebarHeader className='border-sidebar-border/70'>
-				<Button
-					className='w-full justify-start'
-					nativeButton={false}
-					onClick={() => onNavigate?.()}
-					render={<Link to='/topics' />}
-					variant='ghost'
-				>
-					<House className='h-4 w-4' />
-					Home
-				</Button>
+				<div className='flex items-center gap-1'>
+					<Button
+						className='flex-1 justify-start'
+						nativeButton={false}
+						onClick={() => onNavigate?.()}
+						render={<Link to='/topics' />}
+						variant='ghost'
+					>
+						<House className='h-4 w-4' />
+						Home
+					</Button>
+					<Button
+						aria-label='Create new topic'
+						disabled={isCreatingTopic}
+						onClick={() => {
+							handleCreateTopic().catch(() => {})
+						}}
+						size='icon-sm'
+						variant='ghost'
+					>
+						<Plus className='h-4 w-4' />
+					</Button>
+				</div>
 				<Separator className='mr-12 w-auto!' />
 			</SidebarHeader>
 			<SidebarContent className='p-2'>
