@@ -427,6 +427,33 @@ describe('masonry-backed page feeds', () => {
 			to: '/topics/$topicId',
 			params: { topicId: '42' }
 		})
+		expect(window.sessionStorage.getItem('topics:focus-new-topic-title')).toBe(
+			'42'
+		)
+	})
+
+	it('focuses the title textarea when landing on a newly created topic', async () => {
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: topic, isLoading: false, error: null }
+			}
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
+		useReviewCardsMock.mockReturnValue({
+			data: [{ ...reviewCard, id: 13, prompt: 'Topic detail card' }],
+			isLoading: false
+		})
+		window.sessionStorage.setItem('topics:focus-new-topic-title', '1')
+
+		render(<TopicDetailHarness />)
+
+		await waitFor(() => {
+			expect(screen.getByRole('textbox', { name: 'Topic title' })).toHaveFocus()
+		})
+		expect(window.sessionStorage.getItem('topics:focus-new-topic-title')).toBe(
+			null
+		)
 	})
 
 	it('renders Recent grouped sections through masonry', () => {

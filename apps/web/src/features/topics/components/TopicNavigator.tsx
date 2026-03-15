@@ -68,6 +68,7 @@ import { cn } from '~/lib/utils'
 import { useCreateTopic } from '../api/createTopic'
 import { useDeleteTopic } from '../api/deleteTopic'
 import { useUpdateTopic } from '../api/updateTopic'
+import { requestFocusNewTopicTitle } from '../createTopicIntent'
 import { useTopicTree } from '../hooks/useTopicTree'
 import { getTopicDisplayTitle, type TopicTreeNode } from '../utils/topicTree'
 import {
@@ -602,6 +603,7 @@ function TopicNavigatorContent({
 				body: '',
 				parent_id: parentTopicId
 			})
+			requestFocusNewTopicTitle(created.id)
 			setExpandedIds(previousExpandedIds =>
 				previousExpandedIds.includes(parentTopicId)
 					? previousExpandedIds
@@ -990,6 +992,7 @@ function TopicNavigatorPanel({
 				title: '',
 				body: ''
 			})
+			requestFocusNewTopicTitle(created.id)
 			await navigate({
 				to: '/topics/$topicId',
 				params: { topicId: created.id.toString() }
