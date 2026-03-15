@@ -1,8 +1,11 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TopicNavigatorRail } from './TopicNavigator'
 
+const navigateMock = vi.fn()
+const useCreateTopicMock = vi.fn()
+const useDeleteTopicMock = vi.fn()
 const useTopicTreeMock = vi.fn()
 const useUpdateTopicMock = vi.fn()
 
@@ -10,6 +13,7 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
+		useNavigate: () => navigateMock,
 		Link: ({
 			children,
 			to,
@@ -33,6 +37,14 @@ vi.mock('../hooks/useTopicTree', () => ({
 	useTopicTree: () => useTopicTreeMock()
 }))
 
+vi.mock('../api/createTopic', () => ({
+	useCreateTopic: () => useCreateTopicMock()
+}))
+
+vi.mock('../api/deleteTopic', () => ({
+	useDeleteTopic: () => useDeleteTopicMock()
+}))
+
 vi.mock('../api/updateTopic', () => ({
 	useUpdateTopic: () => useUpdateTopicMock()
 }))
@@ -41,8 +53,19 @@ describe('TopicNavigator', () => {
 	beforeEach(() => {
 		window.localStorage?.removeItem?.('topic-navigator-expanded-ids')
 		window.localStorage?.removeItem?.('topic-navigator-width')
+		navigateMock.mockReset()
+		useCreateTopicMock.mockReset()
+		useDeleteTopicMock.mockReset()
 		useTopicTreeMock.mockReset()
 		useUpdateTopicMock.mockReset()
+		useCreateTopicMock.mockReturnValue({
+			mutateAsync: vi.fn(),
+			isPending: false
+		})
+		useDeleteTopicMock.mockReturnValue({
+			mutateAsync: vi.fn(),
+			isPending: false
+		})
 		useUpdateTopicMock.mockReturnValue({
 			mutateAsync: vi.fn(),
 			isPending: false
@@ -226,5 +249,149 @@ describe('TopicNavigator', () => {
 		rerender(<TopicNavigatorRail activeTopicId={1} className='block' />)
 
 		expect(screen.getByRole('link', { name: 'Triangles' })).toBeInTheDocument()
+	})
+
+	it('creates a subtopic from the topic context menu and navigates to it', async () => {
+		const createTopicAsync = vi.fn().mockResolvedValue({ id: 7 })
+		useCreateTopicMock.mockReturnValue({
+			mutateAsync: createTopicAsync,
+			isPending: false
+		})
+		useTopicTreeMock.mockReturnValue({
+			roots: [
+				{
+					id: 1,
+					title: 'Algebra',
+					body: '',
+					parent_id: null,
+					parent_title: null,
+					inserted_at: '',
+					updated_at: '',
+					children: []
+				}
+			],
+			ancestorIdsById: new Map<number, Array<number>>([[1, []]]),
+			nodeById: new Map<number, object>([
+				[
+					1,
+					{
+						id: 1,
+						title: 'Algebra',
+						body: '',
+						parent_id: null,
+						parent_title: null,
+						inserted_at: '',
+						updated_at: '',
+						children: []
+					}
+				]
+			]),
+			isLoading: false,
+			error: null
+		})
+
+		render(<TopicNavigatorRail activeTopicId={1} className='block' />)
+
+		fireEvent.contextMenu(screen.getByRole('link', { name: 'Algebra' }))
+		fireEvent.click(await screen.findByRole('menuitem', { name: /New topic/i }))
+
+		await waitFor(() => {
+			expect(createTopicAsync).toHaveBeenCalledWith({
+				title: '',
+				body: '',
+				parent_id: 1
+			})
+		})
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/topics/$topicId',
+			params: { topicId: '7' },
+			search: { tab: 'subtopics' }
+		})
+	})
+
+	it('deletes the active topic from the context menu and navigates to its parent', async () => {
+		const deleteTopicAsync = vi.fn().mockResolvedValue(undefined)
+		useDeleteTopicMock.mockReturnValue({
+			mutateAsync: deleteTopicAsync,
+			isPending: false
+		})
+		useTopicTreeMock.mockReturnValue({
+			roots: [
+				{
+					id: 1,
+					title: 'Algebra',
+					body: '',
+					parent_id: null,
+					parent_title: null,
+					inserted_at: '',
+					updated_at: '',
+					children: [
+						{
+							id: 2,
+							title: 'Linear equations',
+							body: '',
+							parent_id: 1,
+							parent_title: 'Algebra',
+							inserted_at: '',
+							updated_at: '',
+							children: []
+						}
+					]
+				}
+			],
+			ancestorIdsById: new Map<number, Array<number>>([
+				[1, []],
+				[2, [1]]
+			]),
+			nodeById: new Map<number, object>([
+				[
+					1,
+					{
+						id: 1,
+						title: 'Algebra',
+						body: '',
+						parent_id: null,
+						parent_title: null,
+						inserted_at: '',
+						updated_at: '',
+						children: []
+					}
+				],
+				[
+					2,
+					{
+						id: 2,
+						title: 'Linear equations',
+						body: '',
+						parent_id: 1,
+						parent_title: 'Algebra',
+						inserted_at: '',
+						updated_at: '',
+						children: []
+					}
+				]
+			]),
+			isLoading: false,
+			error: null
+		})
+
+		render(<TopicNavigatorRail activeTopicId={2} className='block' />)
+
+		fireEvent.contextMenu(
+			screen.getByRole('link', { name: 'Linear equations' })
+		)
+		fireEvent.click(await screen.findByRole('menuitem', { name: /^Delete$/i }))
+		fireEvent.click(
+			await screen.findByRole('button', { name: /Delete topic/i })
+		)
+
+		await waitFor(() => {
+			expect(deleteTopicAsync).toHaveBeenCalledWith(2)
+		})
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/topics/$topicId',
+			params: { topicId: '1' },
+			search: { tab: 'subtopics' }
+		})
 	})
 })

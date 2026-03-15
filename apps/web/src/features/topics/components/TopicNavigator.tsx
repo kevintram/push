@@ -13,8 +13,15 @@ import {
 	useSensors
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
-import { Link } from '@tanstack/react-router'
-import { ChevronRight, House, Library } from 'lucide-react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import {
+	AlertTriangle,
+	ChevronRight,
+	House,
+	Library,
+	Plus,
+	Trash2
+} from 'lucide-react'
 import type {
 	CSSProperties,
 	MutableRefObject,
@@ -22,8 +29,25 @@ import type {
 } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogMedia,
+	AlertDialogTitle
+} from '~/components/ui/alert-dialog'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuTrigger
+} from '~/components/ui/context-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { Separator } from '~/components/ui/separator'
 import {
@@ -41,6 +65,8 @@ import {
 	SidebarProvider
 } from '~/components/ui/sidebar'
 import { cn } from '~/lib/utils'
+import { useCreateTopic } from '../api/createTopic'
+import { useDeleteTopic } from '../api/deleteTopic'
 import { useUpdateTopic } from '../api/updateTopic'
 import { useTopicTree } from '../hooks/useTopicTree'
 import { getTopicDisplayTitle, type TopicTreeNode } from '../utils/topicTree'
@@ -165,22 +191,7 @@ function TopicNavigatorRootDropZone({
 	)
 }
 
-function TopicNavigatorItem({
-	node,
-	depth,
-	activeTopicId,
-	activeDragTopicId,
-	ancestorIdsById,
-	expandedIdSet,
-	highlightedDropTopicId,
-	isDragAndDropEnabled,
-	isUpdatingTopic,
-	nodeById,
-	onNavigate,
-	onToggleExpanded,
-	suppressNavigationRef,
-	setItemRef
-}: {
+function TopicNavigatorItem(props: {
 	node: TopicTreeNode
 	depth: number
 	activeTopicId?: number | null
@@ -193,9 +204,30 @@ function TopicNavigatorItem({
 	nodeById: Map<number, TopicTreeNode>
 	onNavigate?: () => void
 	onToggleExpanded: (topicId: number) => void
+	onCreateSubtopic: (topicId: number) => void
+	onRequestDeleteTopic: (topicId: number) => void
 	suppressNavigationRef: MutableRefObject<boolean>
 	setItemRef: (topicId: number, element: HTMLLIElement | null) => void
 }) {
+	const {
+		node,
+		depth,
+		activeTopicId,
+		activeDragTopicId,
+		ancestorIdsById,
+		expandedIdSet,
+		highlightedDropTopicId,
+		isDragAndDropEnabled,
+		isUpdatingTopic,
+		nodeById,
+		onNavigate,
+		onCreateSubtopic,
+		onRequestDeleteTopic,
+		onToggleExpanded,
+		suppressNavigationRef,
+		setItemRef
+	} = props
+
 	const hasChildren = node.children.length > 0
 	const isExpanded = expandedIdSet.has(node.id)
 	const isActive = node.id === activeTopicId
@@ -230,104 +262,129 @@ function TopicNavigatorItem({
 	})
 
 	return (
-		<li ref={element => setItemRef(node.id, element)}>
-			<div
-				className={cn(
-					'rounded-lg transition-colors',
-					isDropSubtreeHighlighted &&
-						'bg-accent text-foreground ring-1 ring-border'
-				)}
-			>
+		<ContextMenu>
+			<li ref={element => setItemRef(node.id, element)}>
 				<div
-					{...(isDragAndDropEnabled && !isUpdatingTopic
-						? { ...attributes, ...listeners }
-						: {})}
 					className={cn(
-						'group/topic-row flex items-center gap-1 rounded-md pr-1 transition-colors',
-						isDragAndDropEnabled && !isUpdatingTopic && 'cursor-grab',
-						isActive && 'bg-accent/70 text-foreground',
-						!(isActive || isDropSubtreeHighlighted) && 'hover:bg-muted/50',
-						isDragging && 'cursor-grabbing opacity-15'
+						'rounded-lg transition-colors',
+						isDropSubtreeHighlighted &&
+							'bg-accent text-foreground ring-1 ring-border'
 					)}
-					ref={element => {
-						setDraggableNodeRef(element)
-						setDroppableNodeRef(element)
-					}}
-					style={{ paddingLeft: `${depth * 0.75}rem` }}
 				>
-					{hasChildren ? (
-						<Button
-							aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${label}`}
-							className='h-6 w-6 shrink-0'
-							onClick={event => {
-								event.stopPropagation()
-								onToggleExpanded(node.id)
-							}}
-							size='icon-sm'
-							type='button'
-							variant='ghost'
-						>
-							<ChevronRight
-								className={cn(
-									'h-4 w-4 transition-transform',
-									isExpanded && 'rotate-90'
-								)}
-							/>
-						</Button>
-					) : (
-						<span aria-hidden='true' className='h-6 w-6 shrink-0' />
-					)}
-					<Link
-						aria-current={isActive ? 'page' : undefined}
+					<ContextMenuTrigger
+						{...(isDragAndDropEnabled && !isUpdatingTopic
+							? { ...attributes, ...listeners }
+							: {})}
 						className={cn(
-							'min-w-0 flex-1 truncate rounded-md px-2 py-1.5 text-sm underline-offset-4 transition-colors hover:underline',
-							isActive && 'font-medium text-foreground',
-							!isActive && isDropSubtreeHighlighted && 'text-foreground',
-							!(isActive || isDropSubtreeHighlighted) &&
-								'text-muted-foreground hover:text-foreground'
+							'group/topic-row flex select-none items-center gap-1 rounded-md pr-1 transition-colors',
+							isDragAndDropEnabled && !isUpdatingTopic && 'cursor-grab',
+							isActive && 'bg-accent/70 text-foreground',
+							!(isActive || isDropSubtreeHighlighted) && 'hover:bg-muted/50',
+							isDragging && 'cursor-grabbing opacity-15'
 						)}
-						onClick={event => {
-							if (suppressNavigationRef.current) {
-								event.preventDefault()
-								event.stopPropagation()
-								return
-							}
-
-							onNavigate?.()
+						ref={element => {
+							setDraggableNodeRef(element)
+							setDroppableNodeRef(element)
 						}}
-						params={{ topicId: node.id.toString() }}
-						search={{ tab: 'subtopics' }}
-						to='/topics/$topicId'
+						style={{ paddingLeft: `${depth * 0.75}rem` }}
 					>
-						{label}
-					</Link>
-				</div>
+						{hasChildren ? (
+							<Button
+								aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${label}`}
+								className='h-6 w-6 shrink-0'
+								onClick={event => {
+									event.stopPropagation()
+									onToggleExpanded(node.id)
+								}}
+								size='icon-sm'
+								type='button'
+								variant='ghost'
+							>
+								<ChevronRight
+									className={cn(
+										'h-4 w-4 transition-transform',
+										isExpanded && 'rotate-90'
+									)}
+								/>
+							</Button>
+						) : (
+							<span aria-hidden='true' className='h-6 w-6 shrink-0' />
+						)}
+						<Link
+							aria-current={isActive ? 'page' : undefined}
+							className={cn(
+								'min-w-0 flex-1 truncate rounded-md px-2 py-1.5 text-sm underline-offset-4 transition-colors hover:underline',
+								isActive && 'font-medium text-foreground',
+								!isActive && isDropSubtreeHighlighted && 'text-foreground',
+								!(isActive || isDropSubtreeHighlighted) &&
+									'text-muted-foreground hover:text-foreground'
+							)}
+							onClick={event => {
+								if (suppressNavigationRef.current) {
+									event.preventDefault()
+									event.stopPropagation()
+									return
+								}
 
-				{hasChildren && isExpanded ? (
-					<ul className='mt-1 space-y-1'>
-						{node.children.map(childNode => (
-							<TopicNavigatorItem
-								activeDragTopicId={activeDragTopicId}
-								activeTopicId={activeTopicId}
-								ancestorIdsById={ancestorIdsById}
-								depth={depth + 1}
-								expandedIdSet={expandedIdSet}
-								highlightedDropTopicId={highlightedDropTopicId}
-								isDragAndDropEnabled={isDragAndDropEnabled}
-								isUpdatingTopic={isUpdatingTopic}
-								key={childNode.id}
-								node={childNode}
-								nodeById={nodeById}
-								onNavigate={onNavigate}
-								onToggleExpanded={onToggleExpanded}
-								setItemRef={setItemRef}
-								suppressNavigationRef={suppressNavigationRef}
-							/>
-						))}
-					</ul>
-				) : null}
-			</div>
-		</li>
+								onNavigate?.()
+							}}
+							params={{ topicId: node.id.toString() }}
+							search={{ tab: 'subtopics' }}
+							to='/topics/$topicId'
+						>
+							{label}
+						</Link>
+					</ContextMenuTrigger>
+					<ContextMenuContent align='start' side='right' sideOffset={6}>
+						<ContextMenuItem
+							disabled={isUpdatingTopic}
+							onClick={() => {
+								onCreateSubtopic(node.id)
+							}}
+						>
+							<Plus className='h-4 w-4' />
+							New topic
+						</ContextMenuItem>
+						<ContextMenuItem
+							disabled={isUpdatingTopic}
+							onClick={() => {
+								onRequestDeleteTopic(node.id)
+							}}
+							variant='destructive'
+						>
+							<Trash2 className='h-4 w-4' />
+							Delete
+						</ContextMenuItem>
+					</ContextMenuContent>
+
+					{hasChildren && isExpanded ? (
+						<ul className='mt-1 space-y-1'>
+							{node.children.map(childNode => (
+								<TopicNavigatorItem
+									activeDragTopicId={activeDragTopicId}
+									activeTopicId={activeTopicId}
+									ancestorIdsById={ancestorIdsById}
+									depth={depth + 1}
+									expandedIdSet={expandedIdSet}
+									highlightedDropTopicId={highlightedDropTopicId}
+									isDragAndDropEnabled={isDragAndDropEnabled}
+									isUpdatingTopic={isUpdatingTopic}
+									key={childNode.id}
+									node={childNode}
+									nodeById={nodeById}
+									onCreateSubtopic={onCreateSubtopic}
+									onNavigate={onNavigate}
+									onRequestDeleteTopic={onRequestDeleteTopic}
+									onToggleExpanded={onToggleExpanded}
+									setItemRef={setItemRef}
+									suppressNavigationRef={suppressNavigationRef}
+								/>
+							))}
+						</ul>
+					) : null}
+				</div>
+			</li>
+		</ContextMenu>
 	)
 }
 
@@ -340,7 +397,12 @@ function TopicNavigatorContent({
 	enableDragAndDrop?: boolean
 	onNavigate?: () => void
 }) {
+	const navigate = useNavigate()
 	const { roots, nodeById, ancestorIdsById, isLoading, error } = useTopicTree()
+	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
+		useCreateTopic()
+	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
+		useDeleteTopic()
 	const { mutateAsync: updateTopicAsync, isPending: isUpdatingTopic } =
 		useUpdateTopic()
 	const [expandedIds, setExpandedIds] = useState(getStoredExpandedTopicIds)
@@ -359,6 +421,9 @@ function TopicNavigatorContent({
 	const activeItemScrollFrameRef = useRef<number | null>(null)
 	const dragPointerPositionRef = useRef<{ x: number; y: number } | null>(null)
 	const dragScrollFrameRef = useRef<number | null>(null)
+	const [pendingDeleteTopicId, setPendingDeleteTopicId] = useState<
+		number | null
+	>(null)
 	const activeBranchIds = useMemo(() => {
 		if (activeTopicId == null) return []
 
@@ -374,6 +439,8 @@ function TopicNavigatorContent({
 					nodeById.get(activeDragTopicId)?.title ?? '',
 					nodeById.get(activeDragTopicId)?.body ?? ''
 				)
+	const pendingDeleteTopic =
+		pendingDeleteTopicId == null ? null : nodeById.get(pendingDeleteTopicId)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -523,6 +590,73 @@ function TopicNavigatorContent({
 				? previousExpandedIds.filter(id => id !== topicId)
 				: [...previousExpandedIds, topicId]
 		)
+	}
+
+	const handleCreateSubtopic = async (parentTopicId: number) => {
+		if (isCreatingTopic) return
+
+		try {
+			const created = await createTopicAsync({
+				title: '',
+				body: '',
+				parent_id: parentTopicId
+			})
+			setExpandedIds(previousExpandedIds =>
+				previousExpandedIds.includes(parentTopicId)
+					? previousExpandedIds
+					: [...previousExpandedIds, parentTopicId]
+			)
+			await navigate({
+				to: '/topics/$topicId',
+				params: { topicId: created.id.toString() },
+				search: { tab: 'subtopics' }
+			})
+			onNavigate?.()
+		} catch {
+			toast.error('Failed to create subtopic')
+		}
+	}
+
+	const handleDeleteTopic = async () => {
+		if (pendingDeleteTopicId == null || isDeletingTopic) return
+
+		const topicToDelete = nodeById.get(pendingDeleteTopicId)
+		if (!topicToDelete) {
+			setPendingDeleteTopicId(null)
+			return
+		}
+
+		const activeTopicAncestorIds =
+			activeTopicId == null ? [] : (ancestorIdsById.get(activeTopicId) ?? [])
+		const shouldNavigateAway =
+			activeTopicId === topicToDelete.id ||
+			activeTopicAncestorIds.includes(topicToDelete.id)
+
+		try {
+			await deleteTopicAsync(topicToDelete.id)
+			setPendingDeleteTopicId(null)
+			toast.success('Topic deleted')
+
+			if (!shouldNavigateAway) return
+
+			if (
+				topicToDelete.parent_id != null &&
+				nodeById.has(topicToDelete.parent_id)
+			) {
+				await navigate({
+					to: '/topics/$topicId',
+					params: { topicId: topicToDelete.parent_id.toString() },
+					search: { tab: 'subtopics' }
+				})
+			} else {
+				await navigate({ to: '/topics' })
+			}
+			onNavigate?.()
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : 'Failed to delete topic'
+			)
+		}
 	}
 
 	const resetDragState = () => {
@@ -739,7 +873,11 @@ function TopicNavigatorContent({
 							key={rootNode.id}
 							node={rootNode}
 							nodeById={nodeById}
+							onCreateSubtopic={topicId => {
+								handleCreateSubtopic(topicId).catch(() => {})
+							}}
 							onNavigate={onNavigate}
+							onRequestDeleteTopic={setPendingDeleteTopicId}
 							onToggleExpanded={toggleExpanded}
 							setItemRef={(topicId, element) => {
 								if (element == null) {
@@ -789,6 +927,46 @@ function TopicNavigatorContent({
 					</Badge>
 				) : null}
 			</DragOverlay>
+			<AlertDialog
+				onOpenChange={open => {
+					if (!open) setPendingDeleteTopicId(null)
+				}}
+				open={pendingDeleteTopicId != null}
+			>
+				<AlertDialogContent size='sm'>
+					<AlertDialogHeader>
+						<AlertDialogMedia>
+							<AlertTriangle className='h-5 w-5' />
+						</AlertDialogMedia>
+						<AlertDialogTitle>Delete topic?</AlertDialogTitle>
+						<AlertDialogDescription>
+							{pendingDeleteTopic
+								? `Delete ${getTopicDisplayTitle(
+										pendingDeleteTopic.title,
+										pendingDeleteTopic.body
+									)} and all of its subtopics, review cards, and reviews? This action cannot be undone.`
+								: 'This action cannot be undone.'}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							buttonClassName='w-full sm:w-auto'
+							disabled={isDeletingTopic}
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction
+							buttonClassName='w-full sm:w-auto'
+							disabled={isDeletingTopic}
+							onClick={() => {
+								handleDeleteTopic().catch(() => {})
+							}}
+						>
+							{isDeletingTopic ? 'Deleting...' : 'Delete topic'}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</DndContext>
 	)
 }
