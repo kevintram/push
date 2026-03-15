@@ -31,6 +31,7 @@ interface DetailTabsShellProps {
 	value?: string
 	onValueChange?: (value: string) => void
 	className?: string
+	headerEndContent?: ReactNode
 }
 
 export function DetailTabsShell({
@@ -38,7 +39,8 @@ export function DetailTabsShell({
 	defaultValue,
 	value,
 	onValueChange,
-	className
+	className,
+	headerEndContent
 }: DetailTabsShellProps) {
 	if (tabs.length === 0) return null
 
@@ -51,14 +53,34 @@ export function DetailTabsShell({
 			onValueChange={onValueChange}
 			value={value}
 		>
-			<TabsList variant='line'>
-				{tabs.map(tab => (
-					<TabsTrigger className='gap-2' key={tab.value} value={tab.value}>
-						<span>{tab.label}</span>
-						<CountBadge className='h-4 min-w-4 text-[10px]' count={tab.count} />
-					</TabsTrigger>
-				))}
-			</TabsList>
+			{headerEndContent ? (
+				<div className='flex items-center gap-3 border-border border-b'>
+					<TabsList className='border-0' variant='line'>
+						{tabs.map(tab => (
+							<TabsTrigger className='gap-2' key={tab.value} value={tab.value}>
+								<span>{tab.label}</span>
+								<CountBadge
+									className='h-4 min-w-4 text-[10px]'
+									count={tab.count}
+								/>
+							</TabsTrigger>
+						))}
+					</TabsList>
+					<div className='ml-auto shrink-0'>{headerEndContent}</div>
+				</div>
+			) : (
+				<TabsList variant='line'>
+					{tabs.map(tab => (
+						<TabsTrigger className='gap-2' key={tab.value} value={tab.value}>
+							<span>{tab.label}</span>
+							<CountBadge
+								className='h-4 min-w-4 text-[10px]'
+								count={tab.count}
+							/>
+						</TabsTrigger>
+					))}
+				</TabsList>
+			)}
 			{tabs.map(tab => (
 				<TabsContent className='mt-0' key={tab.value} value={tab.value}>
 					<ErrorBoundary FallbackComponent={TabErrorFallback}>
