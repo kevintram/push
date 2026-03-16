@@ -16,7 +16,7 @@ import {
 	Trash2,
 	User2
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { RevealPanel } from '~/components/RevealPanel'
@@ -78,6 +78,7 @@ import {
 	TopicNavigatorRail,
 	TopicNavigatorSheet
 } from '~/features/topics/components/TopicNavigator'
+import { useAutoSave } from '~/hooks/useAutoSave'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { useReviewMode } from '~/stores/ReviewModeContext'
@@ -277,15 +278,6 @@ export function ReviewCardDetailPage({
 		[reviewCard?.status_badges, openReviewDialog]
 	)
 
-	const [prompt, setPrompt] = useState('')
-	const [answer, setAnswer] = useState('')
-	const [notes, setNotes] = useState('')
-	const lastSyncedReviewCardFieldsRef = useRef<{
-		id: number
-		prompt: string
-		answer: string
-		notes: string
-	} | null>(null)
 	const { hidesSecondary } = useReviewMode()
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
@@ -294,52 +286,7 @@ export function ReviewCardDetailPage({
 	const [topicSearchQuery, setTopicSearchQuery] = useState('')
 	const [isTopicMutationPending, setIsTopicMutationPending] = useState(false)
 	const [isTypeMutationPending, setIsTypeMutationPending] = useState(false)
-	const {
-		revealPanelTab,
-		setRevealPanelTab,
-		guessText: guessAnswerText,
-		setGuessText: setGuessAnswerText,
-		isCopied: isRevealPanelCopied,
-		handleCopyGuessText,
-		handleCopyRevealText
-	} = useRevealPanel({
-		revealText: answer,
-		entityId: reviewCard?.id ?? null,
-		hidesSecondary,
-		defaultTab: hidesSecondary ? null : 'reveal'
-	})
 
-	useEffect(() => {
-		if (!reviewCard) return
-		const lastSyncedReviewCardFields = lastSyncedReviewCardFieldsRef.current
-		setPrompt(previousPrompt =>
-			lastSyncedReviewCardFields === null ||
-			lastSyncedReviewCardFields.id !== reviewCard.id ||
-			previousPrompt === lastSyncedReviewCardFields.prompt
-				? reviewCard.prompt
-				: previousPrompt
-		)
-		setAnswer(previousAnswer =>
-			lastSyncedReviewCardFields === null ||
-			lastSyncedReviewCardFields.id !== reviewCard.id ||
-			previousAnswer === lastSyncedReviewCardFields.answer
-				? reviewCard.answer
-				: previousAnswer
-		)
-		setNotes(previousNotes =>
-			lastSyncedReviewCardFields === null ||
-			lastSyncedReviewCardFields.id !== reviewCard.id ||
-			previousNotes === lastSyncedReviewCardFields.notes
-				? reviewCard.notes
-				: previousNotes
-		)
-		lastSyncedReviewCardFieldsRef.current = {
-			id: reviewCard.id,
-			prompt: reviewCard.prompt,
-			answer: reviewCard.answer,
-			notes: reviewCard.notes
-		}
-	}, [reviewCard])
 	useEffect(() => {
 		if (!reviewCard) return
 		setIsRetireDialogOpen(false)
@@ -360,12 +307,84 @@ export function ReviewCardDetailPage({
 			flagged?: boolean
 		}) => {
 			if (!reviewCard) return
-			updateReviewCardAsync({ id: reviewCard.id, ...fields }).catch(() => {
+			Promise.resolve(
+				updateReviewCardAsync({ id: reviewCard.id, ...fields })
+			).catch(() => {
 				toast.error('Failed to update review card')
 			})
 		},
 		[reviewCard, updateReviewCardAsync]
 	)
+
+	const saveReviewCardPrompt = useCallback(
+		(newPrompt: string) => {
+			if (!reviewCard || newPrompt === reviewCard.prompt) return
+			handleUpdateReviewCardFields({ prompt: newPrompt })
+		},
+		[handleUpdateReviewCardFields, reviewCard]
+	)
+
+	const saveReviewCardAnswer = useCallback(
+		(newAnswer: string) => {
+			if (!reviewCard || newAnswer === reviewCard.answer) return
+			handleUpdateReviewCardFields({ answer: newAnswer })
+		},
+		[handleUpdateReviewCardFields, reviewCard]
+	)
+
+	const saveReviewCardNotes = useCallback(
+		(newNotes: string) => {
+			if (!reviewCard || newNotes === reviewCard.notes) return
+			handleUpdateReviewCardFields({ notes: newNotes })
+		},
+		[handleUpdateReviewCardFields, reviewCard]
+	)
+
+	const {
+		value: prompt,
+		onChange: onPromptChange,
+		flush: flushPrompt
+	} = useAutoSave({
+		initialValue: reviewCard?.prompt ?? '',
+		onSave: saveReviewCardPrompt,
+		key: `review-card-prompt-${reviewCard?.id ?? 'new'}`
+	})
+
+	const {
+		value: answer,
+		onChange: onAnswerChange,
+		setValue: setAnswer,
+		flush: flushAnswer
+	} = useAutoSave({
+		initialValue: reviewCard?.answer ?? '',
+		onSave: saveReviewCardAnswer,
+		key: `review-card-answer-${reviewCard?.id ?? 'new'}`
+	})
+
+	const {
+		value: notes,
+		onChange: onNotesChange,
+		flush: flushNotes
+	} = useAutoSave({
+		initialValue: reviewCard?.notes ?? '',
+		onSave: saveReviewCardNotes,
+		key: `review-card-notes-${reviewCard?.id ?? 'new'}`
+	})
+
+	const {
+		revealPanelTab,
+		setRevealPanelTab,
+		guessText: guessAnswerText,
+		setGuessText: setGuessAnswerText,
+		isCopied: isRevealPanelCopied,
+		handleCopyGuessText,
+		handleCopyRevealText
+	} = useRevealPanel({
+		revealText: answer,
+		entityId: reviewCard?.id ?? null,
+		hidesSecondary,
+		defaultTab: hidesSecondary ? null : 'reveal'
+	})
 
 	const handleRetiredToggle = useCallback(() => {
 		if (!reviewCard) return
@@ -807,12 +826,8 @@ export function ReviewCardDetailPage({
 											</div>
 											<Textarea
 												className='!bg-transparent field-sizing-fixed m-0 h-full min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-												onBlur={() => {
-													if (notes !== reviewCard.notes) {
-														handleUpdateReviewCardFields({ notes })
-													}
-												}}
-												onChange={event => setNotes(event.target.value)}
+												onBlur={flushNotes}
+												onChange={onNotesChange}
 												placeholder='Add notes...'
 												spellCheck={false}
 												value={notes}
@@ -910,12 +925,8 @@ export function ReviewCardDetailPage({
 
 										<Textarea
 											className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-											onBlur={() => {
-												if (prompt !== reviewCard.prompt) {
-													handleUpdateReviewCardFields({ prompt })
-												}
-											}}
-											onChange={event => setPrompt(event.target.value)}
+											onBlur={flushPrompt}
+											onChange={onPromptChange}
 											placeholder='Untitled prompt'
 											spellCheck={false}
 											value={prompt}
@@ -1159,11 +1170,7 @@ export function ReviewCardDetailPage({
 												isCopied={isRevealPanelCopied}
 												onGuessCopy={handleCopyGuessText}
 												onGuessValueChange={setGuessAnswerText}
-												onRevealBlur={() => {
-													if (answer !== reviewCard.answer) {
-														handleUpdateReviewCardFields({ answer })
-													}
-												}}
+												onRevealBlur={flushAnswer}
 												onRevealCopy={handleCopyRevealText}
 												onRevealValueChange={setAnswer}
 												onValueChange={setRevealPanelTab}
@@ -1177,12 +1184,8 @@ export function ReviewCardDetailPage({
 											<div className='flex min-h-0 flex-1 flex-col'>
 												<Textarea
 													className='!bg-transparent field-sizing-fixed m-0 h-full min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-													onBlur={() => {
-														if (answer !== reviewCard.answer) {
-															handleUpdateReviewCardFields({ answer })
-														}
-													}}
-													onChange={event => setAnswer(event.target.value)}
+													onBlur={flushAnswer}
+													onChange={onAnswerChange}
 													placeholder='Write your answer...'
 													spellCheck={false}
 													value={answer}

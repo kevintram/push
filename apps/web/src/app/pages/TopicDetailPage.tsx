@@ -74,6 +74,7 @@ import {
 import { consumeFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { useTopicTree } from '~/features/topics/hooks/useTopicTree'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
+import { useAutoSave } from '~/hooks/useAutoSave'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
@@ -126,56 +127,11 @@ export function TopicDetailPage({
 		isPending: isCreatingReviewCard
 	} = useCreateReviewCard()
 
-	const [title, setTitle] = useState('')
-	const [body, setBody] = useState('')
 	const titleTextareaRef = useRef<HTMLTextAreaElement>(null)
-	const lastSyncedTopicFieldsRef = useRef<{
-		id: number
-		title: string
-		body: string
-	} | null>(null)
 	const { hidesSecondary } = useReviewMode()
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
-	const {
-		revealPanelTab,
-		setRevealPanelTab,
-		guessText: guessBodyText,
-		setGuessText: setGuessBodyText,
-		isCopied: isRevealPanelCopied,
-		handleCopyGuessText,
-		handleCopyRevealText
-	} = useRevealPanel({
-		revealText: body,
-		entityId: topic?.id ?? null,
-		hidesSecondary,
-		defaultTab: hidesSecondary ? null : 'reveal'
-	})
-
-	useEffect(() => {
-		if (!topic) return
-		const lastSyncedTopicFields = lastSyncedTopicFieldsRef.current
-		setTitle(previousTitle =>
-			lastSyncedTopicFields === null ||
-			lastSyncedTopicFields.id !== topic.id ||
-			previousTitle === lastSyncedTopicFields.title
-				? topic.title
-				: previousTitle
-		)
-		setBody(previousBody =>
-			lastSyncedTopicFields === null ||
-			lastSyncedTopicFields.id !== topic.id ||
-			previousBody === lastSyncedTopicFields.body
-				? topic.body
-				: previousBody
-		)
-		lastSyncedTopicFieldsRef.current = {
-			id: topic.id,
-			title: topic.title,
-			body: topic.body
-		}
-	}, [topic])
 
 	useEffect(() => {
 		if (!topic) return
@@ -213,18 +169,73 @@ export function TopicDetailPage({
 		{ enabled: !isTopicLoading && topic !== undefined }
 	)
 
-	async function updateTopicFields(fields: {
-		title?: string
-		body?: string
-		parent_id?: number | null
-	}) {
-		if (!topic) return
-		try {
-			await updateTopicAsync({ id: topic.id, ...fields })
-		} catch {
-			toast.error('Failed to update topic')
-		}
-	}
+	const updateTopicFields = useCallback(
+		async (fields: {
+			title?: string
+			body?: string
+			parent_id?: number | null
+		}) => {
+			if (!topic) return
+			try {
+				await updateTopicAsync({ id: topic.id, ...fields })
+			} catch {
+				toast.error('Failed to update topic')
+			}
+		},
+		[topic, updateTopicAsync]
+	)
+
+	const saveTopicTitle = useCallback(
+		(newTitle: string) => {
+			if (!topic || newTitle === topic.title) return
+			updateTopicFields({ title: newTitle }).catch(() => {})
+		},
+		[topic, updateTopicFields]
+	)
+
+	const saveTopicBody = useCallback(
+		(newBody: string) => {
+			if (!topic || newBody === topic.body) return
+			updateTopicFields({ body: newBody }).catch(() => {})
+		},
+		[topic, updateTopicFields]
+	)
+
+	const {
+		value: title,
+		onChange: onTitleChange,
+		flush: flushTitle
+	} = useAutoSave({
+		initialValue: topic?.title ?? '',
+		onSave: saveTopicTitle,
+		key: `topic-title-${topic?.id ?? 'new'}`
+	})
+
+	const {
+		value: body,
+		onChange: onBodyChange,
+		setValue: setBody,
+		flush: flushBody
+	} = useAutoSave({
+		initialValue: topic?.body ?? '',
+		onSave: saveTopicBody,
+		key: `topic-body-${topic?.id ?? 'new'}`
+	})
+
+	const {
+		revealPanelTab,
+		setRevealPanelTab,
+		guessText: guessBodyText,
+		setGuessText: setGuessBodyText,
+		isCopied: isRevealPanelCopied,
+		handleCopyGuessText,
+		handleCopyRevealText
+	} = useRevealPanel({
+		revealText: body,
+		entityId: topic?.id ?? null,
+		hidesSecondary,
+		defaultTab: hidesSecondary ? null : 'reveal'
+	})
 
 	async function handleAddReviewCard(type: 'practice' | 'flashcard') {
 		if (!topic) return
@@ -466,12 +477,8 @@ export function TopicDetailPage({
 							<Textarea
 								aria-label='Topic title'
 								className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-								onBlur={() => {
-									if (title !== topic.title) {
-										updateTopicFields({ title }).catch(() => {})
-									}
-								}}
-								onChange={event => setTitle(event.target.value)}
+								onBlur={flushTitle}
+								onChange={onTitleChange}
 								placeholder='Untitled topic'
 								ref={titleTextareaRef}
 								spellCheck={false}
@@ -518,11 +525,7 @@ export function TopicDetailPage({
 									isCopied={isRevealPanelCopied}
 									onGuessCopy={handleCopyGuessText}
 									onGuessValueChange={setGuessBodyText}
-									onRevealBlur={() => {
-										if (body !== topic.body) {
-											updateTopicFields({ body }).catch(() => {})
-										}
-									}}
+									onRevealBlur={flushBody}
 									onRevealCopy={handleCopyRevealText}
 									onRevealValueChange={setBody}
 									onValueChange={setRevealPanelTab}
@@ -535,12 +538,8 @@ export function TopicDetailPage({
 							) : (
 								<Textarea
 									className='!bg-transparent m-0 min-h-[2lh] resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-									onBlur={() => {
-										if (body !== topic.body) {
-											updateTopicFields({ body }).catch(() => {})
-										}
-									}}
-									onChange={event => setBody(event.target.value)}
+									onBlur={flushBody}
+									onChange={onBodyChange}
 									placeholder='Write your topic...'
 									spellCheck={false}
 									value={body}
