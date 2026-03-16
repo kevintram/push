@@ -108,4 +108,30 @@ describe('useAutoSave', () => {
 		expect(result.current.value).toBe('fresh server value')
 		expect(onSave).not.toHaveBeenCalled()
 	})
+
+	it('supports direct value updates and blur flushes', () => {
+		const onSave = vi.fn()
+		const { result } = renderHook(() =>
+			useAutoSave({
+				initialValue: '',
+				onSave,
+				debounceMs: 1000,
+				key: 'topic-1'
+			})
+		)
+
+		act(() => {
+			result.current.setValue('draft note')
+		})
+
+		expect(result.current.value).toBe('draft note')
+		expect(onSave).not.toHaveBeenCalled()
+
+		act(() => {
+			result.current.flush()
+		})
+
+		expect(onSave).toHaveBeenCalledTimes(1)
+		expect(onSave).toHaveBeenCalledWith('draft note')
+	})
 })
