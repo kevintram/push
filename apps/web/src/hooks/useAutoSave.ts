@@ -29,6 +29,10 @@ interface UseAutoSaveReturn {
 	onChange: (
 		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 	) => void
+	/** Direct setter for components that don't expose DOM change events */
+	setValue: (newValue: string) => void
+	/** Immediately run the pending debounced save, if any */
+	flush: () => void
 }
 
 /**
@@ -145,8 +149,23 @@ export function useAutoSave({
 		[debouncedSave, onSave]
 	)
 
+	const handleValueChange = useCallback(
+		(newValue: string) => {
+			lastUserActionRef.current = Date.now()
+			setValue(newValue)
+			debouncedSave(newValue, onSave)
+		},
+		[debouncedSave, onSave]
+	)
+
+	const flush = useCallback(() => {
+		debouncedSave.flush()
+	}, [debouncedSave])
+
 	return {
 		value,
-		onChange: handleChange
+		onChange: handleChange,
+		setValue: handleValueChange,
+		flush
 	}
 }
