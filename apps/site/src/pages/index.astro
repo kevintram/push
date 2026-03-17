@@ -40,22 +40,8 @@ import { Button } from "../components/ui/button";
       }}
     >
       // Redirect authenticated users to the web app.
-      // Fast path: use the non-httponly "logged_in" cookie if available.
-      // Fallback: ask the API to validate the sealed session cookie.
-      function hasLoggedInCookie() {
-        return document.cookie
-          .split(";")
-          .map(function (cookie) {
-            return cookie.trim();
-          })
-          .some(function (cookie) {
-            return cookie === "logged_in=1";
-          });
-      }
-
-      if (appUrl && hasLoggedInCookie()) {
-        window.location.replace(appUrl);
-      } else if (apiUrl) {
+      // Always ask the API to validate or refresh the sealed session cookie.
+      if (apiUrl) {
         var params = new URLSearchParams(window.location.search);
         if (!params.has("checked")) {
           var fallback = encodeURIComponent(

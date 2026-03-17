@@ -3,9 +3,32 @@
  *
  * Features:
  * - Automatically includes credentials (cookies)
- * - Detects 401 errors and redirects to login page
- * - No global error handling needed
+ * - Detects 401 errors and redirects to login page once
  */
+
+const TRAILING_SLASH_PATTERN = /\/$/
+
+let isAuthRedirectInFlight = false
+
+export class AuthRedirectError extends Error {
+	constructor() {
+		super('Authentication required')
+		this.name = new.target.name
+	}
+}
+
+function getLoginUrl(): string {
+	return `${import.meta.env.VITE_API_URL.replace(TRAILING_SLASH_PATTERN, '')}/login/`
+}
+
+function startAuthRedirect() {
+	if (isAuthRedirectInFlight) {
+		return
+	}
+
+	isAuthRedirectInFlight = true
+	window.location.replace(getLoginUrl())
+}
 
 export async function apiFetch(
 	url: string,
@@ -26,12 +49,9 @@ export async function apiFetch(
 		credentials: 'include'
 	})
 
-	// Server returned 401 Unauthorized
-	// Navigate to login page
 	if (response.status === 401) {
-		window.location.href = `${import.meta.env.VITE_API_URL}/login`
-		// Return a never-resolving promise since we're navigating away
-		return new Promise(() => {})
+		startAuthRedirect()
+		throw new AuthRedirectError()
 	}
 
 	return response

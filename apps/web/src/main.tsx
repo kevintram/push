@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { TooltipProvider } from '~/components/ui/tooltip'
 import { ThemeProvider } from '~/stores/ThemeContext'
 import { WeekStartProvider } from '~/stores/WeekStartContext'
+import { createAppQueryClient } from '~/utils/queryClient'
 import './global.css'
 import { routeTree } from './app/routeTree.gen'
 
@@ -23,7 +24,7 @@ if (import.meta.env.DEV && !import.meta.env.VITEST) {
 }
 
 // Create router instance
-const queryClient = new QueryClient()
+const queryClient = createAppQueryClient()
 
 const router = createRouter({
 	routeTree,
@@ -37,7 +38,6 @@ declare module '@tanstack/react-router' {
 		router: typeof router
 	}
 }
-
 async function enableMocking() {
 	if (import.meta.env.VITE_ENABLE_MSW_TESTS !== 'development') {
 		return
