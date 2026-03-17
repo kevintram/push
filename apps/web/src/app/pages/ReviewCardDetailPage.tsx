@@ -16,7 +16,7 @@ import {
 	Trash2,
 	User2
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { RevealPanel } from '~/components/RevealPanel'
@@ -55,6 +55,7 @@ import {
 	type ReviewCardBadge,
 	toReviewCardBadge
 } from '~/features/review-cards/components/ReviewCard'
+import { consumeFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
 import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '~/features/review-cards/utils/orderReviewCardStatusBadges'
 import { useCreateReview } from '~/features/reviews/api/createReview'
@@ -184,6 +185,7 @@ export function ReviewCardDetailPage({
 			? activeTab
 			: fallbackActiveTab
 
+	const promptTextareaRef = useRef<HTMLTextAreaElement>(null)
 	const {
 		data: reviewCard,
 		isLoading,
@@ -201,6 +203,13 @@ export function ReviewCardDetailPage({
 	} = useDeleteReviewCard()
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
+
+	useEffect(() => {
+		if (!reviewCard || resolvedActiveTab !== 'home') return
+		if (!consumeFocusNewReviewCardPrompt(reviewCard.id)) return
+
+		promptTextareaRef.current?.focus()
+	}, [resolvedActiveTab, reviewCard])
 
 	const { unscheduledCount, overdueCount, dueTodayCount } =
 		useDetailReviewCounts(
@@ -924,6 +933,7 @@ export function ReviewCardDetailPage({
 											onBlur={flushPrompt}
 											onChange={onPromptChange}
 											placeholder='Untitled prompt'
+											ref={promptTextareaRef}
 											spellCheck={false}
 											value={prompt}
 										/>

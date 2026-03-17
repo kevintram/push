@@ -64,6 +64,7 @@ import {
 import { useCreateReviewCard } from '~/features/review-cards/api/createReviewCard'
 import { useReviewCards } from '~/features/review-cards/api/getReviewCards'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
+import { requestFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
@@ -240,6 +241,7 @@ export function TopicDetailPage({
 				answer: '',
 				retired: false
 			})
+			requestFocusNewReviewCardPrompt(created.id)
 			navigate({
 				to: '/review-cards/$reviewCardId',
 				params: { reviewCardId: created.id.toString() },
