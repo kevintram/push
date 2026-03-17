@@ -16,12 +16,15 @@ function renderRoute(route: string) {
 	})
 	const router = createRouter({
 		routeTree,
-		history: createMemoryHistory({ initialEntries: [route] })
+		history: createMemoryHistory({ initialEntries: [route] }),
+		context: {
+			queryClient
+		}
 	})
 
 	return render(
 		<QueryClientProvider client={queryClient}>
-			<RouterProvider router={router} />
+			<RouterProvider context={{ queryClient }} router={router} />
 		</QueryClientProvider>
 	)
 }

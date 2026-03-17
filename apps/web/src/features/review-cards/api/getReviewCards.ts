@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { queryOptions, useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import { ReviewCardSchema } from '../types/review-card.schemas'
@@ -7,6 +7,8 @@ import type {
 	ReviewCard
 } from '../types/review-card.types'
 import { reviewCardKeys } from './queryKeys'
+
+const REVIEW_CARDS_QUERY_STALE_TIME = 30_000
 
 export async function getReviewCards(
 	params: GetReviewCardsParams = {}
@@ -48,13 +50,20 @@ export async function getReviewCards(
 	}
 }
 
+export function reviewCardsQueryOptions(params: GetReviewCardsParams = {}) {
+	return queryOptions({
+		queryKey: reviewCardKeys.list(params),
+		queryFn: () => getReviewCards(params),
+		staleTime: REVIEW_CARDS_QUERY_STALE_TIME
+	})
+}
+
 export function useReviewCards(
 	params: GetReviewCardsParams = {},
 	options?: { enabled?: boolean }
 ) {
 	return useQuery({
-		queryKey: reviewCardKeys.list(params),
-		queryFn: () => getReviewCards(params),
+		...reviewCardsQueryOptions(params),
 		enabled: options?.enabled ?? true
 	})
 }

@@ -206,13 +206,16 @@ const reviews = [
 ]
 
 function renderRoute(route: string) {
-	const router = createRouter({
-		routeTree,
-		history: createMemoryHistory({ initialEntries: [route] })
-	})
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false }
+		}
+	})
+	const router = createRouter({
+		routeTree,
+		history: createMemoryHistory({ initialEntries: [route] }),
+		context: {
+			queryClient
 		}
 	})
 
@@ -221,7 +224,7 @@ function renderRoute(route: string) {
 		user: userEvent.setup(),
 		...render(
 			<QueryClientProvider client={queryClient}>
-				<RouterProvider router={router} />
+				<RouterProvider context={{ queryClient }} router={router} />
 			</QueryClientProvider>
 		)
 	}

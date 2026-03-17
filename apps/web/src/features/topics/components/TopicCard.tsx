@@ -5,7 +5,7 @@ import {
 	Trash2,
 	User2
 } from 'lucide-react'
-import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
+import type { FocusEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { RevealPanel } from '~/components/RevealPanel'
@@ -35,6 +35,7 @@ import {
 	formatRelativeDate
 } from '~/utils/formatRelativeDate'
 import { useDeleteTopic } from '../api/deleteTopic'
+import { usePrefetchTopicDetail } from '../hooks/usePrefetchTopicDetail'
 import type { Topic } from '../types/topic.types'
 
 const MIN_HEIGHT = 96
@@ -60,6 +61,11 @@ export function TopicCard({
 	const [cardRef, cardRect] = useResizeObserver<HTMLDivElement>()
 	const deleteTopicMutation = useDeleteTopic()
 	const { hidesSecondary } = useReviewMode()
+	const {
+		preloadTopicDetail,
+		scheduleTopicDetailPreload,
+		cancelTopicDetailPreload
+	} = usePrefetchTopicDetail(onClick ? topic.id : null)
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!hidesSecondary
 	)
@@ -156,6 +162,21 @@ export function TopicCard({
 		event.stopPropagation()
 		setIsSecondaryRevealed(true)
 	}, [])
+	const handleMouseEnter = useCallback(() => {
+		scheduleTopicDetailPreload()
+	}, [scheduleTopicDetailPreload])
+	const handleMouseLeave = useCallback(() => {
+		cancelTopicDetailPreload()
+	}, [cancelTopicDetailPreload])
+	const handleFocus = useCallback(
+		(_event: FocusEvent<HTMLDivElement>) => {
+			preloadTopicDetail()
+		},
+		[preloadTopicDetail]
+	)
+	const handleBlur = useCallback(() => {
+		cancelTopicDetailPreload()
+	}, [cancelTopicDetailPreload])
 	const handleDeleteTopic = useCallback(async () => {
 		if (deleteTopicMutation.isPending) return
 		try {
@@ -233,8 +254,12 @@ export function TopicCard({
 				'relative max-h-96 gap-0 overflow-visible p-3 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
 				onClick ? 'cursor-pointer hover:bg-muted/50' : null
 			)}
+			onBlur={handleBlur}
 			onClick={handleActivate}
+			onFocus={handleFocus}
 			onKeyDown={handleKeyDown}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
 			ref={cardRef}
 			role={onClick ? 'button' : undefined}
 			style={

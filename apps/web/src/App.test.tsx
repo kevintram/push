@@ -103,26 +103,31 @@ function createTestRouter(initialEntries: Array<string> = ['/']) {
 	const memoryHistory = createMemoryHistory({
 		initialEntries
 	})
-
-	return createRouter({
-		routeTree,
-		history: memoryHistory
-	})
-}
-
-function renderApp(route = '/') {
-	const router = createTestRouter([route])
-	const testQueryClient = new QueryClient({
+	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false }
 		}
 	})
 
+	const router = createRouter({
+		routeTree,
+		history: memoryHistory,
+		context: {
+			queryClient
+		}
+	})
+
+	return { queryClient, router }
+}
+
+function renderApp(route = '/') {
+	const { router, queryClient } = createTestRouter([route])
+
 	return {
 		user: userEvent.setup(),
 		...render(
-			<QueryClientProvider client={testQueryClient}>
-				<RouterProvider router={router} />
+			<QueryClientProvider client={queryClient}>
+				<RouterProvider context={{ queryClient }} router={router} />
 			</QueryClientProvider>
 		)
 	}

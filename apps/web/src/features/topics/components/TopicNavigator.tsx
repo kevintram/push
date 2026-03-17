@@ -69,6 +69,7 @@ import { useCreateTopic } from '../api/createTopic'
 import { useDeleteTopic } from '../api/deleteTopic'
 import { useUpdateTopic } from '../api/updateTopic'
 import { requestFocusNewTopicTitle } from '../createTopicIntent'
+import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '../hooks/usePrefetchTopicDetail'
 import { useTopicTree } from '../hooks/useTopicTree'
 import { getTopicDisplayTitle, type TopicTreeNode } from '../utils/topicTree'
 import {
@@ -327,6 +328,8 @@ function TopicNavigatorItem(props: {
 								onNavigate?.()
 							}}
 							params={{ topicId: node.id.toString() }}
+							preload='intent'
+							preloadDelay={TOPIC_DETAIL_INTENT_PRELOAD_DELAY}
 							to='/topics/$topicId'
 						>
 							{label}

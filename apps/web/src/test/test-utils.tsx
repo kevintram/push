@@ -30,14 +30,17 @@ export function render(
 
 	const router = createRouter({
 		routeTree,
-		history: memoryHistory
+		history: memoryHistory,
+		context: {
+			queryClient
+		}
 	})
 
 	return {
 		user: userEvent.setup(),
 		...rtlRender(
 			<QueryClientProvider client={queryClient}>
-				<RouterProvider router={router} />
+				<RouterProvider context={{ queryClient }} router={router} />
 			</QueryClientProvider>,
 			options
 		)
