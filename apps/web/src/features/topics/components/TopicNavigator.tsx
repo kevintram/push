@@ -395,10 +395,12 @@ function TopicNavigatorItem(props: {
 
 function TopicNavigatorContent({
 	activeTopicId,
+	autoScrollActiveTopic = false,
 	enableDragAndDrop = false,
 	onNavigate
 }: {
 	activeTopicId?: number | null
+	autoScrollActiveTopic?: boolean
 	enableDragAndDrop?: boolean
 	onNavigate?: () => void
 }) {
@@ -422,7 +424,6 @@ function TopicNavigatorContent({
 	const suppressNavigationRef = useRef(false)
 	const itemElementsRef = useRef(new Map<number, HTMLLIElement>())
 	const scrollContainerRef = useRef<HTMLElement | null>(null)
-	const pendingScrollTopicIdRef = useRef<number | null>(activeTopicId ?? null)
 	const activeItemScrollFrameRef = useRef<number | null>(null)
 	const dragPointerPositionRef = useRef<{ x: number; y: number } | null>(null)
 	const dragScrollFrameRef = useRef<number | null>(null)
@@ -437,6 +438,11 @@ function TopicNavigatorContent({
 	}, [activeTopicId, ancestorIdsById])
 	const validTopicIds = useMemo(() => new Set(nodeById.keys()), [nodeById])
 	const expandedIdSet = useMemo(() => new Set(expandedIds), [expandedIds])
+	const isActiveTopicReadyToScroll = useMemo(
+		() =>
+			activeBranchIds.slice(0, -1).every(topicId => expandedIdSet.has(topicId)),
+		[activeBranchIds, expandedIdSet]
+	)
 	const activeDragLabel =
 		activeDragTopicId == null
 			? null
@@ -471,6 +477,59 @@ function TopicNavigatorContent({
 		dragPointerPositionRef.current = null
 	}, [])
 
+	const cancelActiveItemScroll = useCallback(() => {
+		if (activeItemScrollFrameRef.current != null) {
+			window.cancelAnimationFrame(activeItemScrollFrameRef.current)
+			activeItemScrollFrameRef.current = null
+		}
+	}, [])
+
+	const scheduleActiveTopicScroll = useCallback(
+		(topicId: number) => {
+			cancelActiveItemScroll()
+
+			activeItemScrollFrameRef.current = window.requestAnimationFrame(() => {
+				activeItemScrollFrameRef.current = null
+
+				const scrollContainer = scrollContainerRef.current
+				const activeItemElement = itemElementsRef.current.get(topicId)
+
+				if (!(scrollContainer && activeItemElement)) return
+
+				const containerRect = scrollContainer.getBoundingClientRect()
+				const activeItemRect = activeItemElement.getBoundingClientRect()
+				const isAboveViewport = activeItemRect.top < containerRect.top
+				const isBelowViewport = activeItemRect.bottom > containerRect.bottom
+
+				if (!(isAboveViewport || isBelowViewport)) return
+
+				const containerCenterY = containerRect.top + containerRect.height / 2
+				const activeItemCenterY = activeItemRect.top + activeItemRect.height / 2
+				const centeredScrollTop =
+					scrollContainer.scrollTop + (activeItemCenterY - containerCenterY)
+				const maxScrollTop = Math.max(
+					0,
+					scrollContainer.scrollHeight - scrollContainer.clientHeight
+				)
+				const nextScrollTop = Math.min(
+					Math.max(0, centeredScrollTop),
+					maxScrollTop
+				)
+
+				if (typeof scrollContainer.scrollTo === 'function') {
+					scrollContainer.scrollTo({
+						top: nextScrollTop,
+						behavior: 'smooth'
+					})
+					return
+				}
+
+				scrollContainer.scrollTop = nextScrollTop
+			})
+		},
+		[cancelActiveItemScroll]
+	)
+
 	useEffect(() => {
 		if (typeof window === 'undefined') return
 		if (typeof window.localStorage?.setItem !== 'function') return
@@ -498,25 +557,37 @@ function TopicNavigatorContent({
 	}, [activeBranchIds, error, isLoading, validTopicIds])
 
 	useEffect(() => {
-		pendingScrollTopicIdRef.current = activeTopicId ?? null
+		cancelActiveItemScroll()
 
-		if (activeItemScrollFrameRef.current != null) {
-			window.cancelAnimationFrame(activeItemScrollFrameRef.current)
-			activeItemScrollFrameRef.current = null
-		}
-	}, [activeTopicId])
+		if (!autoScrollActiveTopic) return
+		if (activeTopicId == null || isLoading || error) return
+		if (!isActiveTopicReadyToScroll) return
+		if (!nodeById.has(activeTopicId)) return
+
+		scheduleActiveTopicScroll(activeTopicId)
+	}, [
+		activeTopicId,
+		isActiveTopicReadyToScroll,
+		autoScrollActiveTopic,
+		cancelActiveItemScroll,
+		error,
+		isLoading,
+		nodeById,
+		scheduleActiveTopicScroll
+	])
 
 	useEffect(() => {
 		return () => {
 			clearExpandOnDragHoverTimeout()
 			stopDragAutoScroll()
 
-			if (activeItemScrollFrameRef.current != null) {
-				window.cancelAnimationFrame(activeItemScrollFrameRef.current)
-				activeItemScrollFrameRef.current = null
-			}
+			cancelActiveItemScroll()
 		}
-	}, [clearExpandOnDragHoverTimeout, stopDragAutoScroll])
+	}, [
+		cancelActiveItemScroll,
+		clearExpandOnDragHoverTimeout,
+		stopDragAutoScroll
+	])
 
 	useEffect(() => {
 		if (activeDragTopicId == null) {
@@ -889,22 +960,6 @@ function TopicNavigatorContent({
 								}
 
 								itemElementsRef.current.set(topicId, element)
-
-								if (pendingScrollTopicIdRef.current !== topicId) return
-
-								if (activeItemScrollFrameRef.current != null) {
-									window.cancelAnimationFrame(activeItemScrollFrameRef.current)
-								}
-
-								activeItemScrollFrameRef.current = window.requestAnimationFrame(
-									() => {
-										element.scrollIntoView({
-											block: 'nearest'
-										})
-										pendingScrollTopicIdRef.current = null
-										activeItemScrollFrameRef.current = null
-									}
-								)
 							}}
 							suppressNavigationRef={suppressNavigationRef}
 						/>
@@ -976,10 +1031,12 @@ function TopicNavigatorContent({
 
 function TopicNavigatorPanel({
 	activeTopicId,
+	autoScrollActiveTopic = false,
 	enableDragAndDrop = false,
 	onNavigate
 }: {
 	activeTopicId?: number | null
+	autoScrollActiveTopic?: boolean
 	enableDragAndDrop?: boolean
 	onNavigate?: () => void
 }) {
@@ -1037,6 +1094,7 @@ function TopicNavigatorPanel({
 			<SidebarContent className='p-2'>
 				<TopicNavigatorContent
 					activeTopicId={activeTopicId}
+					autoScrollActiveTopic={autoScrollActiveTopic}
 					enableDragAndDrop={enableDragAndDrop}
 					onNavigate={onNavigate}
 				/>
@@ -1116,6 +1174,7 @@ export function TopicNavigatorRail({
 			>
 				<TopicNavigatorPanel
 					activeTopicId={activeTopicId}
+					autoScrollActiveTopic={true}
 					enableDragAndDrop={true}
 				/>
 			</Sidebar>
