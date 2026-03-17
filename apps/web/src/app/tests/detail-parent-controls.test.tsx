@@ -335,6 +335,7 @@ beforeEach(() => {
 	createTopicAsyncMock.mockReset()
 	updateReviewCardAsyncMock.mockReset()
 	useReviewsByReviewCardMock.mockReset()
+	window.sessionStorage.clear()
 
 	useTopicMock.mockImplementation((topicId: number | null) => {
 		if (topicId === 1) {
@@ -559,6 +560,22 @@ describe('detail hierarchy and topic controls', () => {
 			id: 11,
 			topic_id: 4
 		})
+	})
+
+	it('focuses the prompt field when landing on a newly created review card', async () => {
+		window.sessionStorage.setItem(
+			'review-cards:focus-new-review-card-prompt',
+			'11'
+		)
+
+		render(<ReviewCardDetailPage reviewCardId={11} />)
+
+		await waitFor(() => {
+			expect(screen.getByDisplayValue(reviewCard.prompt)).toHaveFocus()
+		})
+		expect(
+			window.sessionStorage.getItem('review-cards:focus-new-review-card-prompt')
+		).toBeNull()
 	})
 
 	it('syncs review-card fields on first load and only refreshes untouched fields on refetch', async () => {
