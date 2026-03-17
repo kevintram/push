@@ -558,7 +558,7 @@ describe('TopicNavigator', () => {
 		)
 
 		const scrollContainer = container.querySelector(
-			'[data-slot="sidebar-content"]'
+			'[data-slot="scroll-area-viewport"]'
 		)
 		if (!scrollContainer) throw new Error('scroll container not found')
 
@@ -638,7 +638,7 @@ describe('TopicNavigator', () => {
 		)
 
 		const scrollContainer = container.querySelector(
-			'[data-slot="sidebar-content"]'
+			'[data-slot="scroll-area-viewport"]'
 		)
 		if (!scrollContainer) throw new Error('scroll container not found')
 

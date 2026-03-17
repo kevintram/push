@@ -49,6 +49,7 @@ import {
 	ContextMenuTrigger
 } from '~/components/ui/context-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { ScrollArea } from '~/components/ui/scroll-area'
 import { Separator } from '~/components/ui/separator'
 import {
 	Sheet,
@@ -932,7 +933,9 @@ function TopicNavigatorContent({
 					className='space-y-1'
 					ref={element => {
 						scrollContainerRef.current =
-							element?.closest('[data-slot="sidebar-content"]') ?? null
+							element?.closest('[data-slot="scroll-area-viewport"]') ??
+							element?.closest('[data-slot="sidebar-content"]') ??
+							null
 					}}
 				>
 					{roots.map(rootNode => (
@@ -1064,7 +1067,7 @@ function TopicNavigatorPanel({
 	}
 
 	return (
-		<>
+		<div className='flex min-h-0 flex-1 flex-col'>
 			<SidebarHeader className='border-sidebar-border/70'>
 				<div className='flex items-center gap-1'>
 					<Button
@@ -1091,15 +1094,22 @@ function TopicNavigatorPanel({
 				</div>
 				<Separator className='mr-12 w-auto!' />
 			</SidebarHeader>
-			<SidebarContent className='p-2'>
-				<TopicNavigatorContent
-					activeTopicId={activeTopicId}
-					autoScrollActiveTopic={autoScrollActiveTopic}
-					enableDragAndDrop={enableDragAndDrop}
-					onNavigate={onNavigate}
-				/>
+			<SidebarContent className='overflow-hidden p-0'>
+				<ScrollArea
+					className='min-h-0 flex-1'
+					scrollbarClassName='p-px data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5'
+				>
+					<div className='p-2'>
+						<TopicNavigatorContent
+							activeTopicId={activeTopicId}
+							autoScrollActiveTopic={autoScrollActiveTopic}
+							enableDragAndDrop={enableDragAndDrop}
+							onNavigate={onNavigate}
+						/>
+					</div>
+				</ScrollArea>
 			</SidebarContent>
-		</>
+		</div>
 	)
 }
 
@@ -1224,7 +1234,7 @@ export function TopicNavigatorSheet({
 						Browse the full topic and subtopic tree.
 					</SheetDescription>
 				</SheetHeader>
-				<div className='min-h-0 flex-1 overflow-auto px-4 pb-4'>
+				<div className='flex min-h-0 flex-1 flex-col px-4 pb-4'>
 					<TopicNavigatorPanel
 						activeTopicId={activeTopicId}
 						onNavigate={() => setOpen(false)}
