@@ -23,15 +23,20 @@ if (import.meta.env.DEV && !import.meta.env.VITEST) {
 }
 
 // Create router instance
-const router = createRouter({ routeTree })
+const queryClient = new QueryClient()
+
+const router = createRouter({
+	routeTree,
+	context: {
+		queryClient
+	}
+})
 // Declare route type
 declare module '@tanstack/react-router' {
 	interface Register {
 		router: typeof router
 	}
 }
-
-const queryClient = new QueryClient()
 
 async function enableMocking() {
 	if (import.meta.env.VITE_ENABLE_MSW_TESTS !== 'development') {
@@ -53,7 +58,7 @@ enableMocking()
 							<QueryClientProvider client={queryClient}>
 								<TooltipProvider delay={200}>
 									<ReactQueryDevtools initialIsOpen={false} />
-									<RouterProvider router={router} />
+									<RouterProvider context={{ queryClient }} router={router} />
 								</TooltipProvider>
 							</QueryClientProvider>
 						</WeekStartProvider>
