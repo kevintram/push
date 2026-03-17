@@ -5,10 +5,12 @@ import {
 	CalendarIcon,
 	ChevronDown,
 	Link,
+	Maximize2,
+	Minimize2,
 	MoreHorizontal,
 	X
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import { Dialog, DialogContent } from '~/components/ui/dialog'
 import {
@@ -18,6 +20,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { ScrollArea } from '~/components/ui/scroll-area'
 import { Textarea } from '~/components/ui/textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
@@ -49,6 +52,13 @@ export function ReviewDialog({
 	const deleteReviewMutation = useDeleteReview()
 
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
+	const [isExpanded, setIsExpanded] = useState(false)
+
+	useEffect(() => {
+		if (open) return
+		setIsExpanded(false)
+		setIsDatePopoverOpen(false)
+	}, [open])
 
 	// Computed date values
 	const selectedDate = (() => {
@@ -213,25 +223,56 @@ export function ReviewDialog({
 		[onOpenChange]
 	)
 
+	const dialogContentClassName = useMemo(
+		() =>
+			cn(
+				'-translate-x-1/2 fixed left-1/2 top-0 flex h-[100dvh] max-h-[100dvh] w-full max-w-full translate-y-0 flex-col rounded-none p-0 sm:rounded-xl',
+				isExpanded
+					? 'sm:top-[5vh] sm:h-[90vh] sm:max-h-[90vh] sm:max-w-5xl lg:max-w-6xl'
+					: 'sm:top-[10vh] sm:h-[400px] sm:max-h-[400px] sm:max-w-[540px] lg:max-w-[680px]'
+			),
+		[isExpanded]
+	)
+
 	const headerActions = useMemo(
 		() => (
-			<Button
-				className='h-6 w-6 p-0 text-muted-foreground'
-				onClick={() => onOpenChange(false)}
-				size='sm'
-				variant='ghost'
-			>
-				<X className='h-4 w-4' />
-			</Button>
+			<>
+				<Button
+					aria-label={
+						isExpanded ? 'Collapse review dialog' : 'Expand review dialog'
+					}
+					className='hidden h-6 w-6 p-0 text-muted-foreground sm:inline-flex'
+					onClick={() => setIsExpanded(previous => !previous)}
+					size='sm'
+					title={isExpanded ? 'Collapse dialog' : 'Expand dialog'}
+					variant='ghost'
+				>
+					{isExpanded ? (
+						<Minimize2 className='h-4 w-4' />
+					) : (
+						<Maximize2 className='h-4 w-4' />
+					)}
+				</Button>
+				<Button
+					aria-label='Close review dialog'
+					className='h-6 w-6 p-0 text-muted-foreground'
+					onClick={() => onOpenChange(false)}
+					size='sm'
+					title='Close dialog'
+					variant='ghost'
+				>
+					<X className='h-4 w-4' />
+				</Button>
+			</>
 		),
-		[onOpenChange]
+		[isExpanded, onOpenChange]
 	)
 
 	if (isLoading) {
 		return (
 			<Dialog onOpenChange={handleDialogOpenChange} open={open}>
 				<DialogContent
-					className='h-full w-full p-0 md:max-h-[400px] md:max-w-[540px] lg:max-w-[680px]'
+					className={dialogContentClassName}
 					showCloseButton={false}
 				>
 					<LoadingSpinner containerClassName='h-full min-h-48' />
@@ -246,10 +287,7 @@ export function ReviewDialog({
 
 	return (
 		<Dialog onOpenChange={handleDialogOpenChange} open={open}>
-			<DialogContent
-				className='h-full w-full p-0 md:max-h-[400px] md:max-w-[540px] lg:max-w-[680px]'
-				showCloseButton={false}
-			>
+			<DialogContent className={dialogContentClassName} showCloseButton={false}>
 				<div className='flex h-full min-h-0 flex-col'>
 					<div className='flex items-center justify-between border-b px-2 py-1'>
 						<DropdownMenu>
@@ -301,72 +339,77 @@ export function ReviewDialog({
 						</div>
 					</div>
 
-					<div className='flex min-h-0 flex-1 flex-col gap-y-2 px-4 py-4'>
-						{hasStability && (
-							<div className='flex items-center text-muted-foreground text-xs'>
-								<Anvil className='mr-1 h-3 w-3' />
-								<span>{stabilityAfterRounded}d</span>
-								{hasDelta ? (
-									<span className={cn('ml-1', stabilityChangeColorClass)}>
-										({stabilityDeltaRounded >= 0 ? '+' : ''}
-										{stabilityDeltaRounded})
-									</span>
-								) : (
-									<span className={cn('ml-1', stabilityChangeColorClass)}>
-										(new)
-									</span>
-								)}
+					<ScrollArea
+						className='min-h-0 flex-1'
+						scrollbarClassName='p-px data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5'
+					>
+						<div className='flex min-h-full min-w-0 flex-col gap-y-2 px-4 py-4'>
+							{hasStability && (
+								<div className='flex items-center text-muted-foreground text-xs'>
+									<Anvil className='mr-1 h-3 w-3' />
+									<span>{stabilityAfterRounded}d</span>
+									{hasDelta ? (
+										<span className={cn('ml-1', stabilityChangeColorClass)}>
+											({stabilityDeltaRounded >= 0 ? '+' : ''}
+											{stabilityDeltaRounded})
+										</span>
+									) : (
+										<span className={cn('ml-1', stabilityChangeColorClass)}>
+											(new)
+										</span>
+									)}
+								</div>
+							)}
+							<div className='grid min-h-0 flex-1 grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr] content-start items-center gap-x-2'>
+								<ReviewRatingCheckbox
+									className={cn(
+										'ml-2',
+										isOverdueValue &&
+											'border-red-600 dark:border-red-700 dark:bg-red-700'
+									)}
+									disabled={isLoading || updateReviewMutation.isPending}
+									onChange={handleStatusChange}
+									value={reviewStatus}
+								/>
+								<Textarea
+									className='!bg-transparent m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
+									onChange={onDescriptionChange}
+									placeholder='Description'
+									spellCheck={false}
+									value={description}
+								/>
+								<DatePickerDropdown
+									isOpen={isDatePopoverOpen}
+									onDateChange={handleDateChange}
+									onOpenChange={setIsDatePopoverOpen}
+									selectedDate={selectedDate}
+									trigger={
+										<Button
+											className={cn(
+												'shrink-0 text-xs',
+												isOverdueValue && 'text-red-600 dark:text-red-400',
+												relativeDate.text === 'Today' &&
+													'text-blue-600 dark:text-blue-400'
+											)}
+											size='sm'
+											variant='ghost'
+										>
+											<CalendarIcon className='h-3 w-3' />
+											{relativeDate.text}
+										</Button>
+									}
+								/>
+								<div className='self-start' />
+								<Textarea
+									className='!bg-transparent m-0 h-full min-h-0 min-w-0 resize-none rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
+									onChange={onNotesChange}
+									placeholder='Notes'
+									spellCheck={false}
+									value={notes}
+								/>
 							</div>
-						)}
-						<div className='grid min-h-0 flex-1 grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr] content-start items-center gap-x-2'>
-							<ReviewRatingCheckbox
-								className={cn(
-									'ml-2',
-									isOverdueValue &&
-										'border-red-600 dark:border-red-700 dark:bg-red-700'
-								)}
-								disabled={isLoading || updateReviewMutation.isPending}
-								onChange={handleStatusChange}
-								value={reviewStatus}
-							/>
-							<Textarea
-								className='!bg-transparent m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 font-bold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
-								onChange={onDescriptionChange}
-								placeholder='Description'
-								spellCheck={false}
-								value={description}
-							/>
-							<DatePickerDropdown
-								isOpen={isDatePopoverOpen}
-								onDateChange={handleDateChange}
-								onOpenChange={setIsDatePopoverOpen}
-								selectedDate={selectedDate}
-								trigger={
-									<Button
-										className={cn(
-											'shrink-0 text-xs',
-											isOverdueValue && 'text-red-600 dark:text-red-400',
-											relativeDate.text === 'Today' &&
-												'text-blue-600 dark:text-blue-400'
-										)}
-										size='sm'
-										variant='ghost'
-									>
-										<CalendarIcon className='h-3 w-3' />
-										{relativeDate.text}
-									</Button>
-								}
-							/>
-							<div className='self-start' />
-							<Textarea
-								className='!bg-transparent m-0 h-full min-h-0 min-w-0 resize-none rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
-								onChange={onNotesChange}
-								placeholder='Notes'
-								spellCheck={false}
-								value={notes}
-							/>
 						</div>
-					</div>
+					</ScrollArea>
 				</div>
 			</DialogContent>
 		</Dialog>
