@@ -25,12 +25,16 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 			children,
 			to,
 			params: _params,
+			preload: _preload,
+			preloadDelay: _preloadDelay,
 			search: _search,
 			...props
 		}: {
 			children?: ReactNode
 			to?: string
 			params?: unknown
+			preload?: unknown
+			preloadDelay?: unknown
 			search?: unknown
 		}) => (
 			<a data-to={to} href={typeof to === 'string' ? to : '#'} {...props}>

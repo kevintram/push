@@ -1,10 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
+import { queryOptions, useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import { HttpStatusError } from '~/utils/httpStatusError'
 import { TopicSchema } from '../types/topic.schemas'
 import type { Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
+
+const TOPIC_QUERY_STALE_TIME = 30_000
 
 export async function getTopic(topicId: number): Promise<Topic> {
 	const url = `${import.meta.env.VITE_API_URL}/topics/${topicId}/`
@@ -25,10 +27,17 @@ export async function getTopic(topicId: number): Promise<Topic> {
 	}
 }
 
+export function topicQueryOptions(topicId: number) {
+	return queryOptions({
+		queryKey: topicKeys.detail(topicId),
+		queryFn: () => getTopic(topicId),
+		staleTime: TOPIC_QUERY_STALE_TIME
+	})
+}
+
 export function useTopic(topicId: number | null) {
 	return useQuery({
-		queryKey: topicKeys.detail(topicId ?? -1),
-		queryFn: () => getTopic(topicId!),
+		...(topicId === null ? topicQueryOptions(-1) : topicQueryOptions(topicId)),
 		enabled: topicId !== null
 	})
 }

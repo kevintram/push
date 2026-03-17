@@ -90,14 +90,33 @@ vi.mock('~/features/topics/components/TopicCard', () => ({
 }))
 
 vi.mock('~/features/topics/api/getTopic', () => ({
+	topicQueryOptions: (topicId: number) => ({
+		queryKey: ['topics', 'detail', topicId],
+		queryFn: async () => ({
+			id: topicId,
+			title: 'Prefetched topic',
+			body: '',
+			parent_id: null,
+			inserted_at: '2026-03-01T12:00:00.000Z',
+			updated_at: '2026-03-04T12:00:00.000Z'
+		})
+	}),
 	useTopic: (...args: Array<unknown>) => useTopicMock(...args)
 }))
 
 vi.mock('~/features/topics/api/getTopics', () => ({
+	topicsQueryOptions: () => ({
+		queryKey: ['topics', 'list', { sort: 'title', order: 'asc' }],
+		queryFn: async () => []
+	}),
 	useTopics: (...args: Array<unknown>) => useTopicsMock(...args)
 }))
 
 vi.mock('~/features/review-cards/api/getReviewCards', () => ({
+	reviewCardsQueryOptions: (params: Record<string, unknown>) => ({
+		queryKey: ['review-cards', 'list', params],
+		queryFn: async () => []
+	}),
 	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args)
 }))
 
@@ -197,13 +216,16 @@ const reviewCard = {
 }
 
 function renderRoute(route: string) {
-	const router = createRouter({
-		routeTree,
-		history: createMemoryHistory({ initialEntries: [route] })
-	})
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false }
+		}
+	})
+	const router = createRouter({
+		routeTree,
+		history: createMemoryHistory({ initialEntries: [route] }),
+		context: {
+			queryClient
 		}
 	})
 
@@ -212,7 +234,7 @@ function renderRoute(route: string) {
 		user: userEvent.setup(),
 		...render(
 			<QueryClientProvider client={queryClient}>
-				<RouterProvider router={router} />
+				<RouterProvider context={{ queryClient }} router={router} />
 			</QueryClientProvider>
 		)
 	}
@@ -440,14 +462,11 @@ describe('route-backed tab search state', () => {
 		renderRoute('/topics/1?tab=invalid&filter=invalid')
 
 		await waitFor(() => {
-			expect(useReviewCardsMock).toHaveBeenLastCalledWith(
-				{
-					topic_id: 1,
-					type: undefined,
-					order: 'desc'
-				},
-				{ enabled: true }
-			)
+			expect(useReviewCardsMock).toHaveBeenLastCalledWith({
+				topic_id: 1,
+				type: undefined,
+				order: 'desc'
+			})
 		})
 		expect(screen.getByText('Topic card')).toBeInTheDocument()
 	})
@@ -467,14 +486,11 @@ describe('route-backed tab search state', () => {
 		const { router, user } = renderRoute('/topics/1?filter=practice')
 
 		await waitFor(() => {
-			expect(useReviewCardsMock).toHaveBeenLastCalledWith(
-				{
-					topic_id: 1,
-					type: 'practice',
-					order: 'desc'
-				},
-				{ enabled: true }
-			)
+			expect(useReviewCardsMock).toHaveBeenLastCalledWith({
+				topic_id: 1,
+				type: 'practice',
+				order: 'desc'
+			})
 		})
 		expect(await screen.findByText('Practice-only card')).toBeInTheDocument()
 
