@@ -244,6 +244,9 @@ function TopicNavigatorItem(props: {
 		})
 	const isDropSubtreeHighlighted =
 		highlightedDropTopicId === node.id && canDropIntoNode
+	const isActiveSubtreeHighlighted = isActive
+	const isSubtreeHighlighted =
+		isDropSubtreeHighlighted || isActiveSubtreeHighlighted
 
 	const {
 		attributes,
@@ -269,6 +272,8 @@ function TopicNavigatorItem(props: {
 				<div
 					className={cn(
 						'rounded-lg transition-colors',
+						isActiveSubtreeHighlighted &&
+							'bg-accent/45 text-foreground ring-1 ring-border/60',
 						isDropSubtreeHighlighted &&
 							'bg-accent text-foreground ring-1 ring-border'
 					)}
@@ -281,7 +286,7 @@ function TopicNavigatorItem(props: {
 							'group/topic-row flex select-none items-center gap-1 rounded-md pr-1 transition-colors',
 							isDragAndDropEnabled && !isUpdatingTopic && 'cursor-grab',
 							isActive && 'bg-accent/70 text-foreground',
-							!(isActive || isDropSubtreeHighlighted) && 'hover:bg-muted/50',
+							!isSubtreeHighlighted && 'hover:bg-muted/50',
 							isDragging && 'cursor-grabbing opacity-15'
 						)}
 						ref={element => {
@@ -315,8 +320,8 @@ function TopicNavigatorItem(props: {
 								'min-w-0 flex-1 truncate rounded-md px-2 py-1.5 text-sm underline-offset-4 transition-colors hover:underline',
 								!hasChildren && 'ml-1',
 								isActive && 'font-medium text-foreground',
-								!isActive && isDropSubtreeHighlighted && 'text-foreground',
-								!(isActive || isDropSubtreeHighlighted) &&
+								!isActive && isSubtreeHighlighted && 'text-foreground',
+								!(isActive || isSubtreeHighlighted) &&
 									'text-muted-foreground hover:text-foreground'
 							)}
 							onClick={event => {
