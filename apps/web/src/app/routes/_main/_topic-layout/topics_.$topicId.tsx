@@ -20,7 +20,7 @@ export function validateTopicDetailSearch(
 	return isTopicDetailFilter(search.filter) ? { filter: search.filter } : {}
 }
 
-export const Route = createFileRoute('/_main/topics_/$topicId')({
+export const Route = createFileRoute('/_main/_topic-layout/topics_/$topicId')({
 	validateSearch: validateTopicDetailSearch,
 	component: TopicDetailRoute
 })

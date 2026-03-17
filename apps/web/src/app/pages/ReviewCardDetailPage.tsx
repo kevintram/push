@@ -74,10 +74,7 @@ import { SearchDialog } from '~/features/search/components/SearchDialog'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
-import {
-	TopicNavigatorRail,
-	TopicNavigatorSheet
-} from '~/features/topics/components/TopicNavigator'
+import { TopicNavigatorSheet } from '~/features/topics/components/TopicNavigator'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
@@ -572,7 +569,6 @@ export function ReviewCardDetailPage({
 
 	return (
 		<div className='flex h-full min-h-0 w-full'>
-			<TopicNavigatorRail activeTopicId={reviewCard.topic_id} />
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
 				<DetailNavBar
 					activeTab={resolvedActiveTab}

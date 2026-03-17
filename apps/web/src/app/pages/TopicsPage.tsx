@@ -17,10 +17,7 @@ import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import {
-	TopicNavigatorRail,
-	TopicNavigatorSheet
-} from '~/features/topics/components/TopicNavigator'
+import { TopicNavigatorSheet } from '~/features/topics/components/TopicNavigator'
 import {
 	CREATE_TOPIC_INTENT_EVENT,
 	consumeCreateTopicRequest,
@@ -129,7 +126,6 @@ export function TopicsPage() {
 
 	return (
 		<div className='flex h-full min-h-0 w-full'>
-			<TopicNavigatorRail />
 			<div className='min-w-0 flex-1'>
 				<PageLayout>
 					<PageLayout.Header
