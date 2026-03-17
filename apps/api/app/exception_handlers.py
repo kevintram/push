@@ -9,6 +9,7 @@ import logging
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
+from app.auth.session import clear_auth_cookies
 from app.config import get_settings
 from app.exceptions import (
     AuthenticationError,
@@ -65,11 +66,14 @@ async def bad_request_handler(request: Request, exc: BadRequestError) -> JSONRes
 async def authentication_handler(
     request: Request, exc: AuthenticationError
 ) -> JSONResponse:
-    return _json_error_response(
+    response = _json_error_response(
         request,
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=exc.detail,
     )
+    if exc.clear_auth_cookies:
+        clear_auth_cookies(response)
+    return response
 
 
 async def forbidden_handler(request: Request, exc: ForbiddenError) -> JSONResponse:

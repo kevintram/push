@@ -107,8 +107,11 @@ class InvalidStateError(BadRequestError):
 class AuthenticationError(DomainError):
     """Authentication failed (401)."""
 
-    def __init__(self, detail: str = "Not authenticated"):
+    def __init__(
+        self, detail: str = "Not authenticated", *, clear_auth_cookies: bool = False
+    ):
         self.detail = detail
+        self.clear_auth_cookies = clear_auth_cookies
         super().__init__(detail)
 
 
