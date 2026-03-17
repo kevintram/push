@@ -216,6 +216,71 @@ describe('TopicNavigator', () => {
 		expect(screen.getByRole('link', { name: 'Systems' })).toBeInTheDocument()
 	})
 
+	it('highlights the active topic subtree', () => {
+		useTopicTreeMock.mockReturnValue({
+			roots: [
+				{
+					id: 1,
+					title: 'Algebra',
+					body: '',
+					parent_id: null,
+					parent_title: null,
+					inserted_at: '',
+					updated_at: '',
+					children: [
+						{
+							id: 2,
+							title: 'Linear equations',
+							body: '',
+							parent_id: 1,
+							parent_title: 'Algebra',
+							inserted_at: '',
+							updated_at: '',
+							children: [
+								{
+									id: 3,
+									title: 'Systems',
+									body: '',
+									parent_id: 2,
+									parent_title: 'Linear equations',
+									inserted_at: '',
+									updated_at: '',
+									children: []
+								}
+							]
+						}
+					]
+				}
+			],
+			ancestorIdsById: new Map<number, Array<number>>([
+				[1, []],
+				[2, [1]],
+				[3, [1, 2]]
+			]),
+			nodeById: new Map<number, object>([
+				[1, {}],
+				[2, {}],
+				[3, {}]
+			]),
+			isLoading: false,
+			error: null
+		})
+
+		render(<TopicNavigatorRail activeTopicId={2} className='block' />)
+
+		const activeWrapper = screen
+			.getByRole('link', { name: 'Linear equations' })
+			.closest('div')?.parentElement
+		const inactiveWrapper = screen
+			.getByRole('link', { name: 'Algebra' })
+			.closest('div')?.parentElement
+
+		expect(activeWrapper).toHaveClass('bg-accent/45')
+		expect(activeWrapper).toHaveClass('ring-1')
+		expect(inactiveWrapper).not.toHaveClass('bg-accent/45')
+		expect(screen.getByRole('link', { name: 'Systems' })).toBeInTheDocument()
+	})
+
 	it('renders guide lines for nested topic branches', () => {
 		useTopicTreeMock.mockReturnValue({
 			roots: [
