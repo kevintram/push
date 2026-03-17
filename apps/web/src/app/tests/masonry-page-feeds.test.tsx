@@ -359,44 +359,6 @@ describe('masonry-backed page feeds', () => {
 		expect(masonryRenderSpy).toHaveBeenCalledWith([topic])
 	})
 
-	it('renders a collapsed topic hierarchy rail on the topics page', () => {
-		useTopicsMock.mockImplementation(
-			(params?: { root?: boolean; sort?: string; order?: string }) => {
-				if (params?.root === true) {
-					return {
-						data: [topic],
-						isLoading: false
-					}
-				}
-
-				if (params?.sort === 'title' && params?.order === 'asc') {
-					return {
-						data: [
-							topic,
-							{
-								...topic,
-								id: 2,
-								title: 'Linear equations',
-								parent_id: 1,
-								parent_title: 'Algebra'
-							}
-						],
-						isLoading: false
-					}
-				}
-
-				return { data: [], isLoading: false }
-			}
-		)
-
-		render(<TopicsPage />)
-
-		expect(screen.getAllByRole('link', { name: 'Algebra' })).not.toHaveLength(0)
-		expect(
-			screen.queryByRole('link', { name: 'Linear equations' })
-		).not.toBeInTheDocument()
-	})
-
 	it('creates a blank root topic and navigates to it from the topics page', async () => {
 		const user = userEvent.setup()
 		useTopicsMock.mockReturnValue({

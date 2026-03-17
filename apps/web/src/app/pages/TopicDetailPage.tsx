@@ -67,10 +67,7 @@ import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
-import {
-	TopicNavigatorRail,
-	TopicNavigatorSheet
-} from '~/features/topics/components/TopicNavigator'
+import { TopicNavigatorSheet } from '~/features/topics/components/TopicNavigator'
 import { consumeFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { useTopicTree } from '~/features/topics/hooks/useTopicTree'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
@@ -410,7 +407,6 @@ export function TopicDetailPage({
 
 	return (
 		<div className='flex h-full min-h-0 w-full'>
-			<TopicNavigatorRail activeTopicId={topic.id} />
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
 				<div className='sticky top-0 z-10 flex w-full items-center justify-end px-2 py-1'>
 					<div className='flex items-center justify-end gap-2'>
