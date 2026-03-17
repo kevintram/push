@@ -69,6 +69,7 @@ import { useTopic } from '~/features/topics/api/getTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { TopicNavigatorSheet } from '~/features/topics/components/TopicNavigator'
 import { consumeFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
+import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/features/topics/hooks/usePrefetchTopicDetail'
 import { useTopicTree } from '~/features/topics/hooks/useTopicTree'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -113,9 +114,7 @@ export function TopicDetailPage({
 		isLoading: isTopicLoading,
 		error: topicError
 	} = useTopic(topicId)
-	const { ancestorIdsById, nodeById } = useTopicTree({
-		enabled: !isTopicLoading && topic !== undefined
-	})
+	const { ancestorIdsById, nodeById } = useTopicTree()
 	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
 	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
 		useDeleteTopic()
@@ -157,14 +156,11 @@ export function TopicDetailPage({
 		return [...pathTopics, topic]
 	}, [ancestorIdsById, nodeById, topic])
 
-	const { data: reviewCards = [], isLoading: isCardsLoading } = useReviewCards(
-		{
-			topic_id: topicId,
-			type: selectedCardType,
-			order: 'desc'
-		},
-		{ enabled: !isTopicLoading && topic !== undefined }
-	)
+	const { data: reviewCards = [], isLoading: isCardsLoading } = useReviewCards({
+		topic_id: topicId,
+		type: selectedCardType,
+		order: 'desc'
+	})
 
 	const updateTopicFields = useCallback(
 		async (fields: {
@@ -457,6 +453,10 @@ export function TopicDetailPage({
 															render={
 																<Link
 																	params={{ topicId: pathTopic.id.toString() }}
+																	preload='intent'
+																	preloadDelay={
+																		TOPIC_DETAIL_INTENT_PRELOAD_DELAY
+																	}
 																	to='/topics/$topicId'
 																/>
 															}

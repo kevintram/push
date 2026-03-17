@@ -3,6 +3,9 @@ import {
 	TopicDetailPage,
 	type TopicDetailReviewCardFilter
 } from '~/app/pages/TopicDetailPage'
+import { reviewCardsQueryOptions } from '~/features/review-cards/api/getReviewCards'
+import { topicQueryOptions } from '~/features/topics/api/getTopic'
+import { topicsQueryOptions } from '~/features/topics/api/getTopics'
 
 type TopicDetailRouteSearch = {
 	filter?: TopicDetailReviewCardFilter
@@ -22,6 +25,30 @@ export function validateTopicDetailSearch(
 
 export const Route = createFileRoute('/_main/_topic-layout/topics_/$topicId')({
 	validateSearch: validateTopicDetailSearch,
+	loaderDeps: ({ search }) => ({
+		filter: search.filter ?? 'all'
+	}),
+	loader: async ({ context, deps, params }) => {
+		const topicId = Number(params.topicId)
+		const selectedCardType = deps.filter === 'all' ? undefined : deps.filter
+
+		await Promise.all([
+			context.queryClient.prefetchQuery(topicQueryOptions(topicId)),
+			context.queryClient.prefetchQuery(
+				topicsQueryOptions({
+					sort: 'title',
+					order: 'asc'
+				})
+			),
+			context.queryClient.prefetchQuery(
+				reviewCardsQueryOptions({
+					topic_id: topicId,
+					type: selectedCardType,
+					order: 'desc'
+				})
+			)
+		])
+	},
 	component: TopicDetailRoute
 })
 
