@@ -1,9 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
+import { queryOptions, useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import type { GetReviewsFilters } from '../types/api.types'
 import { ReviewListItemSchema, ReviewSchema } from '../types/review.schemas'
+import type { Review } from '../types/review.types'
 import { reviewKeys } from './queryKeys'
+
+const REVIEW_DETAIL_QUERY_STALE_TIME = 30_000
 
 export async function getReviews(filters?: GetReviewsFilters) {
 	const params = new URLSearchParams()
@@ -68,30 +71,41 @@ export function useReviewsByReviewCard(reviewCardId: number | undefined) {
 	})
 }
 
+export async function getReview(reviewId: number): Promise<Review> {
+	const url = `${import.meta.env.VITE_API_URL}/reviews/${reviewId}/`
+
+	const response = await apiFetch(url, {
+		method: 'GET'
+	})
+
+	if (!response.ok) {
+		throw new Error(`API request failed: ${response.status}`)
+	}
+
+	const data = await response.json()
+	try {
+		return v.parse(ReviewSchema, data)
+	} catch (error) {
+		if (v.isValiError(error)) {
+			throw new Error(`Validation failed: ${error.message}`)
+		}
+		throw error
+	}
+}
+
+export function reviewDetailQueryOptions(reviewId: number) {
+	return queryOptions({
+		queryKey: reviewKeys.detail(reviewId),
+		queryFn: () => getReview(reviewId),
+		staleTime: REVIEW_DETAIL_QUERY_STALE_TIME
+	})
+}
+
 export function useReview(reviewId: number | undefined) {
 	return useQuery({
-		queryKey: reviewKeys.detail(reviewId!),
-		queryFn: async () => {
-			const url = `${import.meta.env.VITE_API_URL}/reviews/${reviewId}/`
-
-			const response = await apiFetch(url, {
-				method: 'GET'
-			})
-
-			if (!response.ok) {
-				throw new Error(`API request failed: ${response.status}`)
-			}
-
-			const data = await response.json()
-			try {
-				return v.parse(ReviewSchema, data)
-			} catch (error) {
-				if (v.isValiError(error)) {
-					throw new Error(`Validation failed: ${error.message}`)
-				}
-				throw error
-			}
-		},
+		...(reviewId === undefined
+			? reviewDetailQueryOptions(-1)
+			: reviewDetailQueryOptions(reviewId)),
 		enabled: reviewId !== undefined
 	})
 }
