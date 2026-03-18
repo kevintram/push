@@ -1,8 +1,21 @@
-import { render, screen } from '@testing-library/react'
+import { useQueryClient } from '@tanstack/react-query'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReviewListItem } from '../types/review.types'
 import { ReviewItem } from './ReviewItem'
+
+const prefetchQueryMock = vi.fn()
+const getQueryDataMock = vi.fn()
+const setQueryDataMock = vi.fn()
+
+vi.mock('@tanstack/react-query', async importOriginal => {
+	const actual = await importOriginal<typeof import('@tanstack/react-query')>()
+	return {
+		...actual,
+		useQueryClient: vi.fn()
+	}
+})
 
 vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => vi.fn()
@@ -52,6 +65,22 @@ const entry: ReviewListItem = {
 }
 
 describe('ReviewItem', () => {
+	beforeEach(() => {
+		prefetchQueryMock.mockReset()
+		getQueryDataMock.mockReset()
+		setQueryDataMock.mockReset()
+		prefetchQueryMock.mockResolvedValue(undefined)
+		vi.mocked(useQueryClient).mockReturnValue({
+			prefetchQuery: prefetchQueryMock,
+			getQueryData: getQueryDataMock,
+			setQueryData: setQueryDataMock
+		} as never)
+	})
+
+	afterEach(() => {
+		vi.useRealTimers()
+	})
+
 	it('opens only one date picker popover when a date trigger is clicked', async () => {
 		const user = userEvent.setup()
 
@@ -66,5 +95,70 @@ describe('ReviewItem', () => {
 		expect(
 			await screen.findAllByRole('button', { name: 'Clear' })
 		).toHaveLength(1)
+	})
+
+	it('seeds detail cache and opens the review dialog when clicked', async () => {
+		const user = userEvent.setup()
+		const onReviewClick = vi.fn()
+
+		render(<ReviewItem entry={entry} onReviewClick={onReviewClick} />)
+
+		await user.click(screen.getAllByText('Review item')[0]!)
+
+		expect(setQueryDataMock).toHaveBeenCalledWith(['reviews', 7], entry, {
+			updatedAt: 0
+		})
+		expect(onReviewClick).toHaveBeenCalledWith(7)
+	})
+
+	it('refreshes existing detail cache entries from the latest row data', async () => {
+		const user = userEvent.setup()
+		const onReviewClick = vi.fn()
+
+		getQueryDataMock.mockReturnValue({
+			...entry,
+			description: 'Stale cached review'
+		})
+
+		render(<ReviewItem entry={entry} onReviewClick={onReviewClick} />)
+
+		await user.click(screen.getAllByText('Review item')[0]!)
+
+		expect(setQueryDataMock).toHaveBeenCalledWith(['reviews', 7], entry, {
+			updatedAt: 0
+		})
+		expect(onReviewClick).toHaveBeenCalledWith(7)
+	})
+
+	it('prefetches review detail after hover intent', () => {
+		vi.useFakeTimers()
+
+		render(<ReviewItem entry={entry} />)
+
+		fireEvent.mouseEnter(screen.getAllByText('Review item')[0]!)
+		vi.advanceTimersByTime(100)
+
+		expect(setQueryDataMock).toHaveBeenCalledWith(['reviews', 7], entry, {
+			updatedAt: 0
+		})
+		expect(prefetchQueryMock).toHaveBeenCalledTimes(1)
+		expect(prefetchQueryMock.mock.calls[0]?.[0]).toMatchObject({
+			queryKey: ['reviews', 7],
+			staleTime: 30_000
+		})
+	})
+
+	it('cancels review detail prefetch when hover intent ends early', () => {
+		vi.useFakeTimers()
+
+		render(<ReviewItem entry={entry} />)
+
+		const row = screen.getAllByText('Review item')[0]!
+		fireEvent.mouseEnter(row)
+		fireEvent.mouseLeave(row)
+		vi.advanceTimersByTime(100)
+
+		expect(prefetchQueryMock).not.toHaveBeenCalled()
+		expect(setQueryDataMock).not.toHaveBeenCalled()
 	})
 })
