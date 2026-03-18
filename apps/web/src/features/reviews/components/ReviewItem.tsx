@@ -23,6 +23,7 @@ import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReview } from '../api/deleteReview'
 import { useUpdateReview } from '../api/updateReview'
+import { usePrefetchReviewDetail } from '../hooks/usePrefetchReviewDetail'
 import type { ReviewListItem } from '../types/review.types'
 import { isOverdue } from '../utils/isOverdue'
 import { DatePickerDropdown } from './DatePickerDropdown'
@@ -86,6 +87,11 @@ export function ReviewItem({
 
 	const updateReviewMutation = useUpdateReview()
 	const deleteReviewMutation = useDeleteReview()
+	const {
+		cancelReviewDetailPreload,
+		scheduleReviewDetailPreload,
+		seedReviewDetail
+	} = usePrefetchReviewDetail(entry)
 
 	const isCompleted = entry.completed_at != null
 	const reviewStatus: ReviewRatingState = isCompleted
@@ -158,9 +164,10 @@ export function ReviewItem({
 	const handleReviewClick = useCallback(() => {
 		if (readonly) return
 		if (entry.id) {
+			seedReviewDetail()
 			onReviewClick?.(entry.id)
 		}
-	}, [entry.id, onReviewClick, readonly])
+	}, [entry.id, onReviewClick, readonly, seedReviewDetail])
 
 	const handleRowKeyDown = useCallback(
 		(event: KeyboardEvent<HTMLDivElement>) => {
@@ -172,6 +179,15 @@ export function ReviewItem({
 		},
 		[handleReviewClick, readonly]
 	)
+
+	const handleIntentStart = useCallback(() => {
+		if (readonly) return
+		scheduleReviewDetailPreload()
+	}, [readonly, scheduleReviewDetailPreload])
+
+	const handleIntentEnd = useCallback(() => {
+		cancelReviewDetailPreload()
+	}, [cancelReviewDetailPreload])
 
 	const handleReviewCardClick = useCallback(
 		(event: MouseEvent) => {
@@ -389,8 +405,12 @@ export function ReviewItem({
 				'rounded-md px-2 py-2',
 				readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'
 			)}
+			onBlur={handleIntentEnd}
 			onClick={handleReviewClick}
+			onFocus={handleIntentStart}
 			onKeyDown={handleRowKeyDown}
+			onMouseEnter={handleIntentStart}
+			onMouseLeave={handleIntentEnd}
 			tabIndex={readonly ? -1 : 0}
 		>
 			{/* Compact layout (default, hidden at wide) */}
