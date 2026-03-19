@@ -429,13 +429,17 @@ export function ReviewCardDetailPage({
 					completed_at: ratingState === 'uncompleted' ? null : localDateString()
 				})
 
-				toast('Review created', {
-					description: getReviewCreatedToastDescription(review),
-					action: {
-						label: getReviewCreatedToastActionLabel(review),
-						onClick: () => openReviewDialog(review.id)
-					}
-				})
+				if (ratingState === 'uncompleted') {
+					openReviewDialog(review.id)
+				} else {
+					toast('Review created', {
+						description: getReviewCreatedToastDescription(review),
+						action: {
+							label: getReviewCreatedToastActionLabel(review),
+							onClick: () => openReviewDialog(review.id)
+						}
+					})
+				}
 			} catch {
 				toast.error('Failed to create review')
 			}
