@@ -375,13 +375,17 @@ export function ReviewCard({
 				completed_at: completedAt
 			})
 
-			toast('Review created', {
-				description: getReviewCreatedToastDescription(review),
-				action: {
-					label: getReviewCreatedToastActionLabel(review),
-					onClick: () => openReviewDialog(review.id)
-				}
-			})
+			if (completedAt == null) {
+				openReviewDialog(review.id)
+			} else {
+				toast('Review created', {
+					description: getReviewCreatedToastDescription(review),
+					action: {
+						label: getReviewCreatedToastActionLabel(review),
+						onClick: () => openReviewDialog(review.id)
+					}
+				})
+			}
 		},
 		[createReviewMutation, openReviewDialog, reviewCard.id]
 	)
