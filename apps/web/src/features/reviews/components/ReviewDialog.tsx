@@ -198,10 +198,10 @@ export function ReviewDialog({
 		[review?.id, review?.completed_at, updateReviewMutation]
 	)
 
-	const handleDelete = useCallback(async () => {
+	const handleDelete = useCallback(() => {
 		if (review?.id) {
-			await deleteReviewMutation.mutateAsync(review.id)
 			onOpenChange(false)
+			deleteReviewMutation.mutate(review.id)
 		}
 	}, [review?.id, deleteReviewMutation, onOpenChange])
 

@@ -51,6 +51,7 @@ vi.mock('../api/updateReview', () => ({
 
 vi.mock('../api/deleteReview', () => ({
 	useDeleteReview: () => ({
+		mutate: vi.fn(),
 		mutateAsync: vi.fn()
 	})
 }))
