@@ -665,7 +665,7 @@ export function ReviewCardDetailPage({
 															) : (
 																<Plus className='h-4 w-4' />
 															)}
-															Add review
+															Create review
 															<ChevronDown className='h-4 w-4' />
 														</Button>
 													}

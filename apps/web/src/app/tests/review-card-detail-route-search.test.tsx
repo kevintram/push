@@ -271,7 +271,7 @@ describe('review card detail route-backed tabs', () => {
 
 		expect(await screen.findByText('Linked review item')).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: /add review/i })
+			screen.getByRole('button', { name: /create review/i })
 		).toBeInTheDocument()
 		expect(
 			screen.queryByRole('button', { name: /^Reviews$/i })
