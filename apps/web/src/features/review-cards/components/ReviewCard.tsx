@@ -5,11 +5,8 @@ import {
 	Anvil,
 	Baby,
 	Brain,
-	ChevronDown,
 	Flag,
-	Loader2,
 	MoreHorizontal,
-	Plus,
 	Sparkles,
 	Sunset,
 	Trash2,
@@ -50,7 +47,6 @@ import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { cn } from '~/lib/utils'
 import { useReviewMode } from '~/stores/ReviewModeContext'
-import { localDateString } from '~/utils/date'
 import { estimateExpandedCardSize } from '~/utils/estimateCardSize'
 import {
 	formatAbsoluteDate,
@@ -58,15 +54,8 @@ import {
 } from '~/utils/formatRelativeDate'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
-import { useCreateReview } from '../../reviews/api/createReview'
-import { RatingDropdown } from '../../reviews/components/RatingDropdown'
-import type { ReviewRatingState } from '../../reviews/components/ReviewRatingCheckbox'
+import { ReviewsMenu } from '../../reviews/components/ReviewsMenu'
 import { useReviewDialog } from '../../reviews/hooks/useReviewDialog'
-import type { Rating } from '../../reviews/types/review.types'
-import {
-	getReviewCreatedToastActionLabel,
-	getReviewCreatedToastDescription
-} from '../../reviews/utils/reviewToastDescription'
 import { useDeleteReviewCard } from '../api/deleteReviewCard'
 import { getReviewCard } from '../api/getReviewCard'
 import { reviewCardKeys } from '../api/queryKeys'
@@ -351,8 +340,6 @@ export function ReviewCard({
 		setIsSecondaryRevealed(true)
 	}, [])
 
-	const createReviewMutation = useCreateReview()
-	const isCreatingReview = createReviewMutation.isPending
 	const { openReviewDialog } = useReviewDialog()
 	const reviewCardStatusBadges = useMemo(
 		() =>
@@ -364,47 +351,6 @@ export function ReviewCard({
 		[reviewCard.status_badges, openReviewDialog]
 	)
 	const resolvedStatusBadges = statusBadges ?? reviewCardStatusBadges
-
-	const createReview = useCallback(
-		async (completedAt: string | null, rating: Rating | null) => {
-			const review = await createReviewMutation.mutateAsync({
-				review_card_id: reviewCard.id,
-				rating,
-				description: '',
-				scheduled_at: null,
-				completed_at: completedAt
-			})
-
-			if (completedAt == null) {
-				openReviewDialog(review.id)
-			} else {
-				toast('Review created', {
-					description: getReviewCreatedToastDescription(review),
-					action: {
-						label: getReviewCreatedToastActionLabel(review),
-						onClick: () => openReviewDialog(review.id)
-					}
-				})
-			}
-		},
-		[createReviewMutation, openReviewDialog, reviewCard.id]
-	)
-
-	const handleRatingSelect = useCallback(
-		async (ratingState: ReviewRatingState) => {
-			if (isCreatingReview) return
-			try {
-				if (ratingState === 'uncompleted') {
-					await createReview(null, null)
-				} else {
-					await createReview(localDateString(), ratingState)
-				}
-			} catch {
-				toast.error('Failed to create review')
-			}
-		},
-		[createReview, isCreatingReview]
-	)
 
 	const hasStatusBadges = resolvedStatusBadges.length > 0
 	const statusRowClassName =
@@ -603,27 +549,15 @@ export function ReviewCard({
 				)}
 				<div className='flex-1' />
 				<div className='flex items-center gap-0.5'>
-					<RatingDropdown
+					<ReviewsMenu
 						align='end'
-						onSelect={handleRatingSelect}
-						trigger={
-							<Button
-								className='rounded-full'
-								disabled={isCreatingReview}
-								onClick={event => event.stopPropagation()}
-								onKeyDown={event => event.stopPropagation()}
-								size='xs'
-								variant='tertiary'
-							>
-								{isCreatingReview ? (
-									<Loader2 className='h-3 w-3 animate-spin' />
-								) : (
-									<Plus className='h-3 w-3' />
-								)}
-								<span>Review</span>
-								<ChevronDown className='h-3 w-3' />
-							</Button>
-						}
+						buttonClassName='rounded-full'
+						buttonSize='xs'
+						buttonVariant='tertiary'
+						compactTriggerBadges={true}
+						onTriggerClick={event => event.stopPropagation()}
+						onTriggerKeyDown={event => event.stopPropagation()}
+						reviewCardId={reviewCard.id}
 					/>
 					<Button
 						aria-label={isFlagged ? 'Unflag this item' : 'Flag this item'}

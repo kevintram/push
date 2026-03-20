@@ -242,6 +242,10 @@ vi.mock('~/features/reviews/api/createReview', () => ({
 	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
+vi.mock('~/features/reviews/components/ReviewsMenu', () => ({
+	ReviewsMenu: () => <button type='button'>Reviews</button>
+}))
+
 vi.mock('~/features/reviews/api/getReviews', () => ({
 	useReviewsByReviewCard: (...args: Array<unknown>) =>
 		useReviewsByReviewCardMock(...args)
