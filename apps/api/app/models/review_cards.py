@@ -10,6 +10,7 @@ from sqlalchemy.types import TIMESTAMP, Date, REAL, Text
 
 from app.models.base import Base
 from app.review_cards.status_badges import build_review_card_status_badges
+from app.utils.current_date import get_current_date
 from app.utils.retrievability import (
     calculate_days_in_current_tier,
     calculate_retrievability,
@@ -155,6 +156,34 @@ class ReviewCard(Base):
     @property
     def is_new(self) -> bool:
         return self.last_reviewed_at is None
+
+    @property
+    def reviews_unscheduled_uncompleted_count(self) -> int:
+        return sum(
+            1
+            for review in self.reviews
+            if review.completed_at is None and review.scheduled_at is None
+        )
+
+    @property
+    def reviews_overdue_count(self) -> int:
+        today = get_current_date()
+        return sum(
+            1
+            for review in self.reviews
+            if review.completed_at is None
+            and review.scheduled_at is not None
+            and review.scheduled_at < today
+        )
+
+    @property
+    def reviews_due_today_count(self) -> int:
+        today = get_current_date()
+        return sum(
+            1
+            for review in self.reviews
+            if review.completed_at is None and review.scheduled_at == today
+        )
 
     @property
     def status_badges(self) -> list[dict[str, str | int | None]]:

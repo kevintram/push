@@ -46,6 +46,9 @@ class ReviewCardRead(ReviewCardBase):
     days_until_next_tier: int | None = None
     days_in_current_tier: int | None = None
     is_new: bool = True
+    reviews_unscheduled_uncompleted_count: int = 0
+    reviews_overdue_count: int = 0
+    reviews_due_today_count: int = 0
     status_badges: list[StatusBadge] = Field(default_factory=list)
 
 
