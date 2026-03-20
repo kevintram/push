@@ -88,6 +88,8 @@ export function ReviewsMenu({
 		() => getLatestCompletedReview(reviews),
 		[reviews]
 	)
+	const hasReviewSummarySections =
+		dueReviews.length > 0 || latestCompletedReview != null
 	const overdueCount = overdueReviews.length
 	const dueTodayCount = todayReviews.length
 	const unscheduledCount = uncompletedUnscheduledReviews.length
@@ -203,7 +205,11 @@ export function ReviewsMenu({
 			/>
 			<DropdownMenuContent
 				align={align}
-				className='w-[18rem] max-w-[calc(100vw-2rem)]'
+				className={
+					hasReviewSummarySections
+						? 'w-[18rem] max-w-[calc(100vw-2rem)]'
+						: 'max-w-[calc(100vw-2rem)]'
+				}
 				matchTriggerWidth={false}
 			>
 				<DropdownMenuSub>
@@ -211,7 +217,7 @@ export function ReviewsMenu({
 						<Plus className='h-4 w-4' />
 						Create new
 					</DropdownMenuSubTrigger>
-					<DropdownMenuSubContent className='w-48'>
+					<DropdownMenuSubContent>
 						{uncompletedOption ? (
 							<DropdownMenuItem
 								disabled={createReviewMutation.isPending}

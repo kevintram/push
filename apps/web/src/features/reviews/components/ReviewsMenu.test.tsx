@@ -30,8 +30,16 @@ vi.mock('~/components/ui/dropdown-menu', () => ({
 		<div>{children}</div>
 	),
 	DropdownMenuTrigger: ({ render }: { render: ReactNode }) => <>{render}</>,
-	DropdownMenuContent: ({ children }: { children: ReactNode }) => (
-		<div>{children}</div>
+	DropdownMenuContent: ({
+		children,
+		className
+	}: {
+		children: ReactNode
+		className?: string
+	}) => (
+		<div className={className} data-testid='dropdown-menu-content'>
+			{children}
+		</div>
 	),
 	DropdownMenuGroup: ({ children }: { children: ReactNode }) => (
 		<div>{children}</div>
@@ -268,7 +276,9 @@ describe('ReviewsMenu', () => {
 		render(<ReviewsMenu reviewCardId={12} />)
 
 		const trigger = screen.getByRole('button', { name: /Reviews/i })
+		const content = screen.getByTestId('dropdown-menu-content')
 		expect(trigger).toBeInTheDocument()
+		expect(content).toHaveClass('w-[18rem]')
 		expect(
 			within(trigger).getByTestId('reviews-trigger-unscheduled-count')
 		).toHaveTextContent('1')
@@ -363,5 +373,49 @@ describe('ReviewsMenu', () => {
 		expect(
 			within(trigger).queryByTestId('reviews-trigger-due-today-count')
 		).not.toBeInTheDocument()
+	})
+
+	it('uses the compact dropdown width when there are no due reviews or last reviewed entry', () => {
+		useQueryMock.mockReturnValueOnce({
+			data: [
+				{
+					id: 301,
+					review_card_id: 12,
+					rating: null,
+					description: 'Draft follow-up',
+					notes: '',
+					scheduled_at: null,
+					completed_at: null,
+					effective_date: null,
+					inserted_at: '2026-03-16T12:00:00.000Z',
+					updated_at: '2026-03-16T12:00:00.000Z',
+					review_card: {
+						id: 12,
+						topic_id: 1,
+						type: 'practice',
+						prompt: 'Prompt',
+						answer: 'Answer'
+					},
+					stability_before: null,
+					difficulty_before: null,
+					state_before: null,
+					step_before: null,
+					due_before: null,
+					stability_after: null,
+					difficulty_after: null,
+					state_after: null,
+					step_after: null,
+					due_after: null
+				}
+			]
+		})
+
+		render(<ReviewsMenu reviewCardId={12} />)
+
+		const content = screen.getByTestId('dropdown-menu-content')
+
+		expect(screen.queryByText('Due')).not.toBeInTheDocument()
+		expect(screen.queryByText('Last reviewed')).not.toBeInTheDocument()
+		expect(content).not.toHaveClass('w-[18rem]')
 	})
 })
