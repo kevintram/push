@@ -62,7 +62,11 @@ const getStabilityChangeColorClass = (
 
 interface ReviewItemProps {
 	dateFormat?: 'relative' | 'short'
+	deferStructuralInvalidation?: boolean
 	entry: ReviewListItem
+	onDeferredInvalidation?: () => void
+	onNestedOverlayOpenChange?: (open: boolean) => void
+	onNestedOverlayTriggerInteract?: () => void
 	onReviewClick?: (reviewId: number) => void
 	readonly?: boolean
 	showCardColumn?: boolean
@@ -71,7 +75,11 @@ interface ReviewItemProps {
 
 export function ReviewItem({
 	dateFormat = 'relative',
+	deferStructuralInvalidation = false,
 	entry,
+	onDeferredInvalidation,
+	onNestedOverlayOpenChange,
+	onNestedOverlayTriggerInteract,
 	onReviewClick,
 	readonly = false,
 	showCardColumn = true,
@@ -85,8 +93,14 @@ export function ReviewItem({
 		getInitialSelectedDate(entry)
 	)
 
-	const updateReviewMutation = useUpdateReview()
-	const deleteReviewMutation = useDeleteReview()
+	const updateReviewMutation = useUpdateReview({
+		invalidationScope: deferStructuralInvalidation ? 'reviews-only' : 'all',
+		onDeferredInvalidation
+	})
+	const deleteReviewMutation = useDeleteReview({
+		invalidationScope: deferStructuralInvalidation ? 'reviews-only' : 'all',
+		onDeferredInvalidation
+	})
 	const {
 		cancelReviewDetailPreload,
 		scheduleReviewDetailPreload,
@@ -234,6 +248,9 @@ export function ReviewItem({
 			disabled={readonly || updateReviewMutation.isPending}
 			invalid={isOverdueValue}
 			onChange={handleStatusChange}
+			onMenuInteraction={onNestedOverlayTriggerInteract}
+			onMenuOpenChange={open => onNestedOverlayOpenChange?.(open)}
+			onTriggerInteract={onNestedOverlayTriggerInteract}
 			value={reviewStatus}
 		/>
 	)
@@ -260,7 +277,11 @@ export function ReviewItem({
 						disabled={readonly}
 						isOpen={openDatePicker === 'compact'}
 						onDateChange={handleDateSave}
-						onOpenChange={open => setOpenDatePicker(open ? 'compact' : null)}
+						onInteraction={onNestedOverlayTriggerInteract}
+						onOpenChange={open => {
+							setOpenDatePicker(open ? 'compact' : null)
+							onNestedOverlayOpenChange?.(open)
+						}}
 						selectedDate={selectedDate}
 						trigger={
 							<Button
@@ -270,7 +291,14 @@ export function ReviewItem({
 									dateButtonColorClass
 								)}
 								disabled={readonly}
-								onClick={e => e.stopPropagation()}
+								onClick={e => {
+									e.stopPropagation()
+									onNestedOverlayTriggerInteract?.()
+								}}
+								onMouseDown={e => {
+									e.stopPropagation()
+									onNestedOverlayTriggerInteract?.()
+								}}
 								size='sm'
 								variant='link'
 							>
@@ -293,7 +321,11 @@ export function ReviewItem({
 						disabled={readonly}
 						isOpen={openDatePicker === 'wide'}
 						onDateChange={handleDateSave}
-						onOpenChange={open => setOpenDatePicker(open ? 'wide' : null)}
+						onInteraction={onNestedOverlayTriggerInteract}
+						onOpenChange={open => {
+							setOpenDatePicker(open ? 'wide' : null)
+							onNestedOverlayOpenChange?.(open)
+						}}
 						selectedDate={selectedDate}
 						trigger={
 							<Button
@@ -303,7 +335,14 @@ export function ReviewItem({
 									dateButtonColorClass
 								)}
 								disabled={readonly}
-								onClick={e => e.stopPropagation()}
+								onClick={e => {
+									e.stopPropagation()
+									onNestedOverlayTriggerInteract?.()
+								}}
+								onMouseDown={e => {
+									e.stopPropagation()
+									onNestedOverlayTriggerInteract?.()
+								}}
 								size='sm'
 								variant='link'
 							>
@@ -319,12 +358,19 @@ export function ReviewItem({
 	)
 
 	const moreButtonEl = !readonly && (
-		<DropdownMenu>
+		<DropdownMenu onOpenChange={open => onNestedOverlayOpenChange?.(open)}>
 			<DropdownMenuTrigger
 				render={
 					<Button
 						className='h-6 w-6 p-0'
-						onClick={e => e.stopPropagation()}
+						onClick={e => {
+							e.stopPropagation()
+							onNestedOverlayTriggerInteract?.()
+						}}
+						onMouseDown={e => {
+							e.stopPropagation()
+							onNestedOverlayTriggerInteract?.()
+						}}
 						size='sm'
 						title='More options'
 						variant='ghost'
@@ -333,7 +379,12 @@ export function ReviewItem({
 					</Button>
 				}
 			/>
-			<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+			<DropdownMenuContent
+				align='end'
+				onMouseDownCapture={onNestedOverlayTriggerInteract}
+				side='bottom'
+				sideOffset={4}
+			>
 				<DropdownMenuItem
 					onClick={e => {
 						e.stopPropagation()

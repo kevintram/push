@@ -24,12 +24,44 @@ export async function deleteReview(id: number) {
 	return response.json()
 }
 
-export function useDeleteReview() {
+type DeleteReviewInvalidationScope = 'all' | 'reviews-only'
+
+type UseDeleteReviewOptions = {
+	invalidationScope?: DeleteReviewInvalidationScope
+	onDeferredInvalidation?: () => void
+}
+
+export function useDeleteReview({
+	invalidationScope = 'all',
+	onDeferredInvalidation
+}: UseDeleteReviewOptions = {}) {
 	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: deleteReview,
 		onSuccess: async () => {
+			if (invalidationScope === 'reviews-only') {
+				onDeferredInvalidation?.()
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: reviewCardKeys.all,
+						refetchType: 'none'
+					}),
+					queryClient.invalidateQueries({
+						queryKey: reviewKeys.all
+					}),
+					queryClient.invalidateQueries({
+						queryKey: reviewQueueKeys.all,
+						refetchType: 'none'
+					}),
+					queryClient.invalidateQueries({
+						queryKey: searchKeys.all,
+						refetchType: 'none'
+					})
+				])
+				return
+			}
+
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: reviewCardKeys.all }),
 				queryClient.invalidateQueries({ queryKey: reviewKeys.all }),

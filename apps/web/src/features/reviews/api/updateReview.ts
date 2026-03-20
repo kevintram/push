@@ -35,12 +35,44 @@ export async function updateReview(input: UpdateReviewInput) {
 	}
 }
 
-export function useUpdateReview() {
+type UpdateReviewInvalidationScope = 'all' | 'reviews-only'
+
+type UseUpdateReviewOptions = {
+	invalidationScope?: UpdateReviewInvalidationScope
+	onDeferredInvalidation?: () => void
+}
+
+export function useUpdateReview({
+	invalidationScope = 'all',
+	onDeferredInvalidation
+}: UseUpdateReviewOptions = {}) {
 	const queryClient = useQueryClient()
 
 	return useMutation({
 		mutationFn: updateReview,
 		onSuccess: async () => {
+			if (invalidationScope === 'reviews-only') {
+				onDeferredInvalidation?.()
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: reviewCardKeys.all,
+						refetchType: 'none'
+					}),
+					queryClient.invalidateQueries({
+						queryKey: reviewKeys.all
+					}),
+					queryClient.invalidateQueries({
+						queryKey: reviewQueueKeys.all,
+						refetchType: 'none'
+					}),
+					queryClient.invalidateQueries({
+						queryKey: searchKeys.all,
+						refetchType: 'none'
+					})
+				])
+				return
+			}
+
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: reviewCardKeys.all }),
 				queryClient.invalidateQueries({ queryKey: reviewKeys.all }),

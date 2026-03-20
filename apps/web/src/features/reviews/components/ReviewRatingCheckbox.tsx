@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react'
+import type { ComponentProps } from 'react'
 import { cn } from '~/lib/utils'
 import { RatingDropdown } from './RatingDropdown'
 import { getOptionIcon, type ReviewRatingState } from './reviewRatingOptions'
@@ -11,6 +12,9 @@ interface ReviewRatingDropdownProps {
 	disabled?: boolean
 	className?: string
 	invalid?: boolean
+	onMenuInteraction?: () => void
+	onMenuOpenChange?: ComponentProps<typeof RatingDropdown>['onOpenChange']
+	onTriggerInteract?: () => void
 }
 
 export function ReviewRatingCheckbox({
@@ -18,10 +22,15 @@ export function ReviewRatingCheckbox({
 	onChange,
 	disabled = false,
 	className,
-	invalid = false
+	invalid = false,
+	onMenuInteraction,
+	onMenuOpenChange,
+	onTriggerInteract
 }: ReviewRatingDropdownProps) {
 	return (
 		<RatingDropdown
+			onInteraction={onMenuInteraction}
+			onOpenChange={onMenuOpenChange}
 			onSelect={onChange}
 			trigger={
 				<button
@@ -31,7 +40,14 @@ export function ReviewRatingCheckbox({
 						className
 					)}
 					disabled={disabled}
-					onClick={event => event.stopPropagation()}
+					onClick={event => {
+						event.stopPropagation()
+						onTriggerInteract?.()
+					}}
+					onMouseDown={event => {
+						event.stopPropagation()
+						onTriggerInteract?.()
+					}}
 					type='button'
 				>
 					<span

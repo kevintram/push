@@ -24,6 +24,9 @@ export type ReviewCard = {
 	days_until_next_tier: number | null
 	days_in_current_tier: number | null
 	is_new: boolean
+	reviews_unscheduled_uncompleted_count?: number
+	reviews_overdue_count?: number
+	reviews_due_today_count?: number
 	status_badges: Array<ReviewCardStatusBadge>
 }
 

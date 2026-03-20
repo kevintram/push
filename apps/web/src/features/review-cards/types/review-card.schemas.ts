@@ -27,6 +27,9 @@ export const ReviewCardSchema = v.object({
 	days_until_next_tier: v.nullable(v.number()),
 	days_in_current_tier: v.nullable(v.number()),
 	is_new: v.boolean(),
+	reviews_unscheduled_uncompleted_count: v.optional(v.number(), 0),
+	reviews_overdue_count: v.optional(v.number(), 0),
+	reviews_due_today_count: v.optional(v.number(), 0),
 	status_badges: v.array(ReviewCardStatusBadgeSchema)
 })
 

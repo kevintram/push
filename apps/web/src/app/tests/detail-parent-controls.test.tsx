@@ -16,6 +16,8 @@ const updateTopicAsyncMock = vi.fn()
 const createTopicAsyncMock = vi.fn()
 const updateReviewCardAsyncMock = vi.fn()
 const useReviewsByReviewCardMock = vi.fn()
+const reviewsMenuPropsMock = vi.fn()
+const useDetailReviewCountsMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
@@ -242,8 +244,15 @@ vi.mock('~/features/reviews/api/createReview', () => ({
 	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
+vi.mock('~/features/reviews/components/RatingDropdown', () => ({
+	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>
+}))
+
 vi.mock('~/features/reviews/components/ReviewsMenu', () => ({
-	ReviewsMenu: () => <button type='button'>Reviews</button>
+	ReviewsMenu: (props: unknown) => {
+		reviewsMenuPropsMock(props)
+		return <button type='button'>Reviews</button>
+	}
 }))
 
 vi.mock('~/features/reviews/api/getReviews', () => ({
@@ -252,11 +261,8 @@ vi.mock('~/features/reviews/api/getReviews', () => ({
 }))
 
 vi.mock('~/features/reviews/hooks/useDetailReviewCounts', () => ({
-	useDetailReviewCounts: () => ({
-		unscheduledCount: 0,
-		overdueCount: 0,
-		dueTodayCount: 0
-	})
+	useDetailReviewCounts: (...args: Array<unknown>) =>
+		useDetailReviewCountsMock(...args)
 }))
 
 vi.mock('~/features/reviews/hooks/useReviewDialog', () => ({
@@ -339,6 +345,8 @@ beforeEach(() => {
 	createTopicAsyncMock.mockReset()
 	updateReviewCardAsyncMock.mockReset()
 	useReviewsByReviewCardMock.mockReset()
+	reviewsMenuPropsMock.mockReset()
+	useDetailReviewCountsMock.mockReset()
 	window.sessionStorage.clear()
 
 	useTopicMock.mockImplementation((topicId: number | null) => {
@@ -377,6 +385,11 @@ beforeEach(() => {
 	useReviewsByReviewCardMock.mockReturnValue({
 		data: [],
 		isLoading: false
+	})
+	useDetailReviewCountsMock.mockReturnValue({
+		unscheduledCount: 2,
+		overdueCount: 1,
+		dueTodayCount: 3
 	})
 })
 
@@ -541,6 +554,22 @@ describe('detail hierarchy and topic controls', () => {
 		expect(
 			screen.queryByRole('button', { name: /Remove topic/i })
 		).not.toBeInTheDocument()
+	})
+
+	it('passes stable trigger counts to the detail-page reviews menu', () => {
+		render(<ReviewCardDetailPage reviewCardId={11} />)
+
+		expect(reviewsMenuPropsMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				hasLastReviewed: false,
+				reviewCardId: 11,
+				triggerCounts: {
+					unscheduledCount: 2,
+					overdueCount: 1,
+					dueTodayCount: 3
+				}
+			})
+		)
 	})
 
 	it('creates and assigns a new topic from ReviewCardDetail', async () => {

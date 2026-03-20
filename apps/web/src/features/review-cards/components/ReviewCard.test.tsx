@@ -7,16 +7,19 @@ import type { ReviewCard as ReviewCardModel } from '~/features/review-cards/type
 
 const navigateMock = vi.fn()
 const prefetchQueryMock = vi.fn()
+const getQueryStateMock = vi.fn()
 const updateReviewCardMock = vi.fn()
 const createReviewMock = vi.fn()
 const openReviewDialogMock = vi.fn()
+const reviewsMenuPropsMock = vi.fn()
 
 vi.mock('@tanstack/react-query', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-query')>()
 	return {
 		...actual,
 		useQueryClient: () => ({
-			prefetchQuery: prefetchQueryMock
+			prefetchQuery: prefetchQueryMock,
+			getQueryState: getQueryStateMock
 		})
 	}
 })
@@ -139,7 +142,26 @@ vi.mock('~/features/reviews/components/RatingDropdown', () => ({
 }))
 
 vi.mock('~/features/reviews/components/ReviewsMenu', () => ({
-	ReviewsMenu: () => <button type='button'>Reviews</button>
+	ReviewsMenu: (props: {
+		onTriggerFocus?: () => void
+		onTriggerMouseEnter?: () => void
+		triggerCounts?: {
+			unscheduledCount: number
+			overdueCount: number
+			dueTodayCount: number
+		}
+	}) => {
+		reviewsMenuPropsMock(props)
+		return (
+			<button
+				onFocus={props.onTriggerFocus}
+				onMouseEnter={props.onTriggerMouseEnter}
+				type='button'
+			>
+				Reviews
+			</button>
+		)
+	}
 }))
 
 vi.mock('~/features/reviews/hooks/useReviewDialog', () => ({
@@ -184,9 +206,12 @@ describe('ReviewCard', () => {
 	beforeEach(() => {
 		navigateMock.mockReset()
 		prefetchQueryMock.mockReset()
+		getQueryStateMock.mockReset()
 		updateReviewCardMock.mockReset()
 		createReviewMock.mockReset()
 		openReviewDialogMock.mockReset()
+		reviewsMenuPropsMock.mockReset()
+		getQueryStateMock.mockReturnValue(undefined)
 	})
 
 	it('expands focused large cards and focuses the guess textarea', async () => {
@@ -308,5 +333,66 @@ describe('ReviewCard', () => {
 		await user.type(revealTextarea, 'Edited answer')
 
 		expect(revealTextarea).toHaveValue('Edited answer')
+	})
+
+	it('passes trigger counts and prefetches reviews only from the reviews trigger', async () => {
+		const user = userEvent.setup()
+		const reviewCard: ReviewCardModel = {
+			id: 45,
+			topic_id: 9,
+			topic_title: 'Topic',
+			type: 'practice',
+			prompt: 'Prefetch prompt',
+			answer: 'Answer',
+			inserted_at: '2026-03-01T00:00:00.000Z',
+			updated_at: '2026-03-01T00:00:00.000Z',
+			last_review_rating: 'good',
+			stability: 10,
+			difficulty: 3,
+			state: 'review',
+			step: 2,
+			retired: false,
+			flagged_at: null,
+			last_reviewed_at: '2026-03-02T00:00:00.000Z',
+			retrievability: 0.8,
+			freshness_tier: 'Fresh',
+			days_until_next_tier: 3,
+			days_in_current_tier: 1,
+			is_new: false,
+			reviews_unscheduled_uncompleted_count: 4,
+			reviews_overdue_count: 2,
+			reviews_due_today_count: 1,
+			status_badges: [],
+			notes: ''
+		}
+
+		render(<ReviewCard reviewCard={reviewCard} />)
+
+		expect(reviewsMenuPropsMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				triggerCounts: {
+					unscheduledCount: 4,
+					overdueCount: 2,
+					dueTodayCount: 1
+				}
+			})
+		)
+		expect(prefetchQueryMock).not.toHaveBeenCalledWith(
+			expect.objectContaining({
+				queryKey: ['reviews', 'list', 'reviewCardId', '45']
+			})
+		)
+
+		await user.hover(screen.getByRole('button', { name: 'Reviews' }))
+
+		expect(prefetchQueryMock.mock.calls).toEqual(
+			expect.arrayContaining([
+				[
+					expect.objectContaining({
+						queryKey: ['reviews', 'list', 'reviewCardId', '45']
+					})
+				]
+			])
+		)
 	})
 })

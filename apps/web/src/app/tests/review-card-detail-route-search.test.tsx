@@ -270,6 +270,12 @@ describe('review card detail route-backed tabs', () => {
 		const { router, user } = renderRoute('/review-cards/11?tab=reviews')
 
 		expect(await screen.findByText('Linked review item')).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /add review/i })
+		).toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: /^Reviews$/i })
+		).not.toBeInTheDocument()
 
 		await user.click(screen.getByRole('tab', { name: 'Home' }))
 

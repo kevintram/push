@@ -1,8 +1,13 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { ChevronDown, Loader2, Plus } from 'lucide-react'
-import type { ComponentProps, MouseEventHandler } from 'react'
-import { useCallback, useMemo, useState } from 'react'
+import type {
+	ComponentProps,
+	KeyboardEvent,
+	MouseEvent,
+	MouseEventHandler
+} from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -19,10 +24,13 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { reviewCardKeys } from '~/features/review-cards/api/queryKeys'
+import { searchKeys } from '~/features/search/api/searchAll'
 import { localDateString } from '~/utils/date'
 import { useCreateReview } from '../api/createReview'
-import { getReviews } from '../api/getReviews'
-import { reviewKeys } from '../api/queryKeys'
+import { reviewsQueryOptions } from '../api/getReviews'
+import { reviewQueueKeys } from '../api/queryKeys'
 import { useReviewDialog } from '../hooks/useReviewDialog'
 import type { Rating, ReviewListItem } from '../types/review.types'
 import {
@@ -49,9 +57,17 @@ type ReviewsMenuProps = {
 	disabled?: boolean
 	onSeeAll?: () => void
 	onTriggerClick?: MouseEventHandler<HTMLButtonElement>
+	onTriggerFocus?: ComponentProps<typeof Button>['onFocus']
 	onTriggerKeyDown?: ComponentProps<typeof Button>['onKeyDown']
+	onTriggerMouseEnter?: MouseEventHandler<HTMLButtonElement>
 	reviews?: Array<ReviewListItem>
 	compactTriggerBadges?: boolean
+	hasLastReviewed?: boolean
+	triggerCounts?: {
+		unscheduledCount: number
+		overdueCount: number
+		dueTodayCount: number
+	}
 }
 
 export function ReviewsMenu({
@@ -63,20 +79,57 @@ export function ReviewsMenu({
 	disabled = false,
 	onSeeAll,
 	onTriggerClick,
+	onTriggerFocus,
 	onTriggerKeyDown,
+	onTriggerMouseEnter,
 	reviews: providedReviews,
-	compactTriggerBadges = false
+	compactTriggerBadges = false,
+	hasLastReviewed = false,
+	triggerCounts
 }: ReviewsMenuProps) {
+	const queryClient = useQueryClient()
 	const navigate = useNavigate()
-	const [, setIsOpen] = useState(false)
-	const { data: queriedReviews = [] } = useQuery({
-		queryKey: reviewKeys.list({ reviewCardId }),
-		queryFn: () => getReviews({ reviewCardId }),
-		enabled: providedReviews === undefined
+	const [isOpen, setIsOpen] = useState(false)
+	const [hasNestedOverlayOpen, setHasNestedOverlayOpen] = useState(false)
+	const hasDeferredStructuralInvalidationRef = useRef(false)
+	const nestedOverlayIntentRef = useRef(false)
+	const nestedOverlayCloseTimeoutRef = useRef<ReturnType<
+		typeof setTimeout
+	> | null>(null)
+	const nestedOverlayIntentTimeoutRef = useRef<ReturnType<
+		typeof setTimeout
+	> | null>(null)
+	const {
+		data: queriedReviews,
+		isFetching: isReviewsFetching,
+		isLoading: isReviewsLoading
+	} = useQuery({
+		...reviewsQueryOptions({ reviewCardId }),
+		enabled: providedReviews === undefined && isOpen
 	})
-	const reviews = providedReviews ?? queriedReviews
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
+	const hasLiveProvidedReviews = providedReviews !== undefined
+	const hasLiveQueriedReviews =
+		isOpen &&
+		providedReviews === undefined &&
+		queriedReviews !== undefined &&
+		!isReviewsFetching
+	const hasLiveReviews = hasLiveProvidedReviews || hasLiveQueriedReviews
+	const reviews = useMemo(() => {
+		if (hasLiveProvidedReviews) {
+			return providedReviews
+		}
+		if (hasLiveQueriedReviews) {
+			return queriedReviews
+		}
+		return []
+	}, [
+		hasLiveProvidedReviews,
+		hasLiveQueriedReviews,
+		providedReviews,
+		queriedReviews
+	])
 
 	const { uncompletedUnscheduledReviews, overdueReviews, todayReviews } =
 		useMemo(() => splitReviews(reviews), [reviews])
@@ -88,9 +141,27 @@ export function ReviewsMenu({
 		() => getLatestCompletedReview(reviews),
 		[reviews]
 	)
-	const overdueCount = overdueReviews.length
-	const dueTodayCount = todayReviews.length
-	const unscheduledCount = uncompletedUnscheduledReviews.length
+	const overdueCount = hasLiveReviews
+		? overdueReviews.length
+		: (triggerCounts?.overdueCount ?? overdueReviews.length)
+	const dueTodayCount = hasLiveReviews
+		? todayReviews.length
+		: (triggerCounts?.dueTodayCount ?? todayReviews.length)
+	const unscheduledCount = hasLiveReviews
+		? uncompletedUnscheduledReviews.length
+		: (triggerCounts?.unscheduledCount ?? uncompletedUnscheduledReviews.length)
+	const expectedDueCount = overdueCount + dueTodayCount
+	const isSummaryLoading =
+		providedReviews === undefined &&
+		isOpen &&
+		!hasLiveQueriedReviews &&
+		(isReviewsLoading || isReviewsFetching)
+	const shouldRenderSummaryLoadingState =
+		isSummaryLoading && (expectedDueCount > 0 || hasLastReviewed)
+	const hasReviewSummarySections =
+		dueReviews.length > 0 ||
+		latestCompletedReview != null ||
+		shouldRenderSummaryLoadingState
 	const triggerBadgeClassName = compactTriggerBadges
 		? 'pointer-events-none h-4 min-w-4 px-1 text-[10px]'
 		: 'pointer-events-none'
@@ -129,11 +200,85 @@ export function ReviewsMenu({
 		[createReviewMutation, openReviewDialog, reviewCardId]
 	)
 
+	const clearNestedOverlayIntent = useCallback(() => {
+		if (nestedOverlayIntentTimeoutRef.current != null) {
+			clearTimeout(nestedOverlayIntentTimeoutRef.current)
+			nestedOverlayIntentTimeoutRef.current = null
+		}
+		nestedOverlayIntentRef.current = false
+	}, [])
+
+	const clearNestedOverlayCloseTimeout = useCallback(() => {
+		if (nestedOverlayCloseTimeoutRef.current != null) {
+			clearTimeout(nestedOverlayCloseTimeoutRef.current)
+			nestedOverlayCloseTimeoutRef.current = null
+		}
+	}, [])
+
+	const markNestedOverlayIntent = useCallback(() => {
+		nestedOverlayIntentRef.current = true
+		if (nestedOverlayIntentTimeoutRef.current != null) {
+			clearTimeout(nestedOverlayIntentTimeoutRef.current)
+		}
+		nestedOverlayIntentTimeoutRef.current = setTimeout(() => {
+			nestedOverlayIntentRef.current = false
+			nestedOverlayIntentTimeoutRef.current = null
+		}, 0)
+	}, [])
+
+	const handleNestedOverlayOpenChange = useCallback(
+		(open: boolean) => {
+			if (open) {
+				clearNestedOverlayCloseTimeout()
+				clearNestedOverlayIntent()
+				setHasNestedOverlayOpen(true)
+				return
+			}
+
+			clearNestedOverlayCloseTimeout()
+			nestedOverlayCloseTimeoutRef.current = setTimeout(() => {
+				setHasNestedOverlayOpen(false)
+				nestedOverlayCloseTimeoutRef.current = null
+			}, 0)
+		},
+		[clearNestedOverlayCloseTimeout, clearNestedOverlayIntent]
+	)
+
+	const closeMenu = useCallback(() => {
+		clearNestedOverlayCloseTimeout()
+		clearNestedOverlayIntent()
+		setHasNestedOverlayOpen(false)
+		setIsOpen(false)
+	}, [clearNestedOverlayCloseTimeout, clearNestedOverlayIntent])
+
+	const flushDeferredStructuralInvalidation = useCallback(async () => {
+		if (!hasDeferredStructuralInvalidationRef.current) {
+			return
+		}
+
+		hasDeferredStructuralInvalidationRef.current = false
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: reviewCardKeys.all }),
+			queryClient.invalidateQueries({ queryKey: reviewQueueKeys.all }),
+			queryClient.invalidateQueries({ queryKey: searchKeys.all })
+		])
+	}, [queryClient])
+
+	const markDeferredStructuralInvalidation = useCallback(() => {
+		hasDeferredStructuralInvalidationRef.current = true
+	}, [])
+
+	const closeMenuAndFlushDeferredStructuralInvalidation = useCallback(() => {
+		closeMenu()
+		void flushDeferredStructuralInvalidation()
+	}, [closeMenu, flushDeferredStructuralInvalidation])
+
 	const handleRatingSelect = useCallback(
 		async (ratingState: ReviewRatingState) => {
 			if (createReviewMutation.isPending) return
 
 			try {
+				closeMenuAndFlushDeferredStructuralInvalidation()
 				if (ratingState === 'uncompleted') {
 					await createReview(null, null)
 				} else {
@@ -143,10 +288,15 @@ export function ReviewsMenu({
 				toast.error('Failed to create review')
 			}
 		},
-		[createReview, createReviewMutation.isPending]
+		[
+			closeMenuAndFlushDeferredStructuralInvalidation,
+			createReview,
+			createReviewMutation.isPending
+		]
 	)
 
 	const handleSeeAll = useCallback(() => {
+		closeMenuAndFlushDeferredStructuralInvalidation()
 		if (onSeeAll) {
 			onSeeAll()
 			return
@@ -157,17 +307,74 @@ export function ReviewsMenu({
 			params: { reviewCardId: reviewCardId.toString() },
 			search: { tab: 'reviews' }
 		})
-	}, [navigate, onSeeAll, reviewCardId])
+	}, [
+		closeMenuAndFlushDeferredStructuralInvalidation,
+		navigate,
+		onSeeAll,
+		reviewCardId
+	])
+
+	type DropdownMenuOpenChangeHandler = NonNullable<
+		ComponentProps<typeof DropdownMenu>['onOpenChange']
+	>
+	type DropdownMenuOpenChangeDetails =
+		Parameters<DropdownMenuOpenChangeHandler>[1]
+
+	const shouldKeepMenuOpenForNestedOverlay = useCallback(
+		(eventDetails?: DropdownMenuOpenChangeDetails) => {
+			if (eventDetails?.reason === 'outside-press') {
+				return nestedOverlayIntentRef.current
+			}
+
+			return (
+				(hasNestedOverlayOpen || nestedOverlayIntentRef.current) &&
+				(eventDetails?.reason === 'focus-out' ||
+					eventDetails?.reason === 'sibling-open')
+			)
+		},
+		[hasNestedOverlayOpen]
+	)
+
+	const handleMenuOpenChange = useCallback(
+		(nextOpen: boolean, eventDetails?: DropdownMenuOpenChangeDetails) => {
+			if (!nextOpen && shouldKeepMenuOpenForNestedOverlay(eventDetails)) {
+				return
+			}
+
+			clearNestedOverlayIntent()
+			if (!nextOpen) {
+				clearNestedOverlayCloseTimeout()
+				setHasNestedOverlayOpen(false)
+				void flushDeferredStructuralInvalidation()
+			}
+			setIsOpen(nextOpen)
+		},
+		[
+			clearNestedOverlayCloseTimeout,
+			clearNestedOverlayIntent,
+			flushDeferredStructuralInvalidation,
+			shouldKeepMenuOpenForNestedOverlay
+		]
+	)
+
+	const stopMenuEventPropagation = useCallback(
+		(event: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => {
+			event.stopPropagation()
+		},
+		[]
+	)
 
 	return (
-		<DropdownMenu onOpenChange={setIsOpen}>
+		<DropdownMenu onOpenChange={handleMenuOpenChange} open={isOpen}>
 			<DropdownMenuTrigger
 				disabled={disabled || createReviewMutation.isPending}
 				render={
 					<Button
 						className={buttonClassName}
 						onClick={onTriggerClick}
+						onFocus={onTriggerFocus}
 						onKeyDown={onTriggerKeyDown}
+						onMouseEnter={onTriggerMouseEnter}
 						size={buttonSize}
 						variant={buttonVariant}
 					>
@@ -203,19 +410,25 @@ export function ReviewsMenu({
 			/>
 			<DropdownMenuContent
 				align={align}
-				className='w-[18rem] max-w-[calc(100vw-2rem)]'
+				className={
+					hasReviewSummarySections
+						? 'w-[18rem] max-w-[calc(100vw-2rem)]'
+						: 'max-w-[calc(100vw-2rem)]'
+				}
 				matchTriggerWidth={false}
+				onClick={stopMenuEventPropagation}
+				onKeyDown={stopMenuEventPropagation}
 			>
 				<DropdownMenuSub>
 					<DropdownMenuSubTrigger disabled={createReviewMutation.isPending}>
 						<Plus className='h-4 w-4' />
 						Create new
 					</DropdownMenuSubTrigger>
-					<DropdownMenuSubContent className='w-48'>
+					<DropdownMenuSubContent>
 						{uncompletedOption ? (
 							<DropdownMenuItem
 								disabled={createReviewMutation.isPending}
-								onClick={() => handleRatingSelect(uncompletedOption.value)}
+								onSelect={() => handleRatingSelect(uncompletedOption.value)}
 							>
 								<div className='grid w-full grid-cols-[auto_1fr] items-center gap-x-2'>
 									{getOptionIcon(uncompletedOption.value)}
@@ -231,7 +444,7 @@ export function ReviewsMenu({
 							<DropdownMenuItem
 								disabled={createReviewMutation.isPending}
 								key={option.value}
-								onClick={() => handleRatingSelect(option.value)}
+								onSelect={() => handleRatingSelect(option.value)}
 							>
 								<div className='grid w-full grid-cols-[auto_1fr] items-center gap-x-2'>
 									{getOptionIcon(option.value)}
@@ -242,7 +455,12 @@ export function ReviewsMenu({
 					</DropdownMenuSubContent>
 				</DropdownMenuSub>
 
-				{dueReviews.length > 0 ? (
+				{shouldRenderSummaryLoadingState ? (
+					<>
+						<DropdownMenuSeparator />
+						<LoadingSpinner containerClassName='min-h-12 py-3' size='sm' />
+					</>
+				) : dueReviews.length > 0 ? (
 					<>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
@@ -250,9 +468,13 @@ export function ReviewsMenu({
 							{dueReviews.map(review => (
 								<div className='px-1' key={review.id}>
 									<ReviewItem
+										deferStructuralInvalidation={true}
 										entry={review}
+										onDeferredInvalidation={markDeferredStructuralInvalidation}
+										onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
+										onNestedOverlayTriggerInteract={markNestedOverlayIntent}
 										onReviewClick={reviewId => {
-											setIsOpen(false)
+											closeMenuAndFlushDeferredStructuralInvalidation()
 											openReviewDialog(reviewId)
 										}}
 										showCardColumn={false}
@@ -271,9 +493,13 @@ export function ReviewsMenu({
 							<DropdownMenuLabel>Last reviewed</DropdownMenuLabel>
 							<div className='px-1'>
 								<ReviewItem
+									deferStructuralInvalidation={true}
 									entry={latestCompletedReview}
+									onDeferredInvalidation={markDeferredStructuralInvalidation}
+									onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
+									onNestedOverlayTriggerInteract={markNestedOverlayIntent}
 									onReviewClick={reviewId => {
-										setIsOpen(false)
+										closeMenuAndFlushDeferredStructuralInvalidation()
 										openReviewDialog(reviewId)
 									}}
 									showCardColumn={false}
@@ -285,15 +511,15 @@ export function ReviewsMenu({
 				) : null}
 
 				<DropdownMenuSeparator />
-				<DropdownMenuItem onClick={handleSeeAll}>
+				<DropdownMenuItem onSelect={handleSeeAll}>
 					<div className='flex min-w-0 flex-1 items-center gap-2'>
 						<span className='font-medium'>See all</span>
-						{uncompletedUnscheduledReviews.length > 0 ? (
+						{unscheduledCount > 0 ? (
 							<Badge
 								className='h-5 rounded-full px-1.5 text-xs'
 								variant='outline'
 							>
-								{uncompletedUnscheduledReviews.length}
+								{unscheduledCount}
 							</Badge>
 						) : null}
 					</div>
