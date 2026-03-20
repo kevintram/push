@@ -226,12 +226,7 @@ export function ReviewItem({
 	)
 	const description = entry.description?.trim()
 
-	const showCard =
-		showCardColumn &&
-		(variant === 'default' || variant === 'topic') &&
-		!!entry.review_card
 	const gridCols = getReviewListGridCols(showCardColumn)
-
 	// --- Shared element JSX ---
 
 	const checkboxEl = (
@@ -415,29 +410,26 @@ export function ReviewItem({
 		>
 			{/* Compact layout (default, hidden at wide) */}
 			<div className='flex @lg/review-list:hidden flex-col'>
-				<div className='flex items-center gap-2 pb-1'>
-					{checkboxEl}
-					<span className='flex-1'>{descriptionEl}</span>
-					{compactDateEl}
-					{moreButtonEl}
-				</div>
-				<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-					{cardInfo && (
-						<Button
-							className='!px-0 h-auto text-muted-foreground text-xs hover:text-foreground'
-							onClick={cardInfo.onClick}
-							size='sm'
-							variant='link'
-						>
-							<span>{cardInfo.label}</span>
-						</Button>
-					)}
-					{hasStability && (
-						<>
-							{showCard && <span className='font-semibold'>⋅</span>}
-							{durabilityCompactEl}
-						</>
-					)}
+				<div className='flex items-start gap-2'>
+					<div className='pt-0.5'>{checkboxEl}</div>
+					<div className='min-w-0 flex-1'>
+						{descriptionEl}
+						<div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground text-xs'>
+							{compactDateEl}
+							{cardInfo && (
+								<Button
+									className='!px-0 h-auto min-w-0 max-w-full justify-start text-muted-foreground text-xs hover:text-foreground'
+									onClick={cardInfo.onClick}
+									size='sm'
+									variant='link'
+								>
+									<span className='truncate'>{cardInfo.label}</span>
+								</Button>
+							)}
+							{hasStability ? durabilityCompactEl : null}
+						</div>
+					</div>
+					{moreButtonEl ? <div className='shrink-0'>{moreButtonEl}</div> : null}
 				</div>
 			</div>
 
