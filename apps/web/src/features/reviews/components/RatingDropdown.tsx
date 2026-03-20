@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { Fragment, isValidElement } from 'react'
 import {
 	DropdownMenu,
@@ -13,14 +14,18 @@ import {
 } from './reviewRatingOptions'
 
 interface RatingDropdownProps {
+	onInteraction?: () => void
 	onSelect: (value: ReviewRatingState) => void
+	onOpenChange?: ComponentProps<typeof DropdownMenu>['onOpenChange']
 	trigger: React.ReactNode
 	align?: 'start' | 'center' | 'end'
 	nativeButton?: boolean
 }
 
 export function RatingDropdown({
+	onInteraction,
 	onSelect,
+	onOpenChange,
 	trigger,
 	align = 'start',
 	nativeButton = true
@@ -32,17 +37,18 @@ export function RatingDropdown({
 	)
 
 	return (
-		<DropdownMenu>
+		<DropdownMenu onOpenChange={onOpenChange}>
 			<DropdownMenuTrigger
 				nativeButton={nativeButton}
 				render={triggerElement}
 			/>
-			<DropdownMenuContent align={align}>
+			<DropdownMenuContent align={align} onMouseDownCapture={onInteraction}>
 				{ratingOptions.map(option => (
 					<Fragment key={option.value}>
 						<DropdownMenuItem
 							onClick={e => {
 								e.stopPropagation()
+								onInteraction?.()
 								onSelect(option.value)
 							}}
 							onSelect={e => e.stopPropagation()}

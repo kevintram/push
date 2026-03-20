@@ -10,6 +10,7 @@ import {
 interface DatePickerDropdownProps {
 	selectedDate: Date | null
 	onDateChange: (date: Date | null) => void
+	onInteraction?: () => void
 	isOpen: boolean
 	onOpenChange: (open: boolean) => void
 	trigger: React.ReactNode
@@ -22,6 +23,7 @@ interface DatePickerDropdownProps {
 export function DatePickerDropdown({
 	selectedDate,
 	onDateChange,
+	onInteraction,
 	isOpen,
 	onOpenChange,
 	trigger,
@@ -38,17 +40,20 @@ export function DatePickerDropdown({
 
 	const handleDateSelect = (date: Date | undefined) => {
 		if (date) {
+			onInteraction?.()
 			onDateChange(date)
 		}
 	}
 
 	const setToday = () => {
+		onInteraction?.()
 		const today = new Date()
 		today.setHours(0, 0, 0, 0)
 		onDateChange(today)
 	}
 
 	const setTomorrow = () => {
+		onInteraction?.()
 		const tomorrow = new Date()
 		tomorrow.setDate(tomorrow.getDate() + 1)
 		tomorrow.setHours(0, 0, 0, 0)
@@ -56,6 +61,7 @@ export function DatePickerDropdown({
 	}
 
 	const clearDate = () => {
+		onInteraction?.()
 		onDateChange(null)
 	}
 
@@ -69,6 +75,7 @@ export function DatePickerDropdown({
 				align={align}
 				className='w-auto p-4'
 				onClick={e => e.stopPropagation()}
+				onMouseDownCapture={onInteraction}
 				side={side}
 				sideOffset={sideOffset}
 			>

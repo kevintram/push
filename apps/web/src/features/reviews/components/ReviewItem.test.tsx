@@ -161,4 +161,24 @@ describe('ReviewItem', () => {
 		expect(prefetchQueryMock).not.toHaveBeenCalled()
 		expect(setQueryDataMock).not.toHaveBeenCalled()
 	})
+
+	it('reports more-actions dropdown interactions to parent menu guards', async () => {
+		const user = userEvent.setup()
+		const onNestedOverlayOpenChange = vi.fn()
+		const onNestedOverlayTriggerInteract = vi.fn()
+
+		render(
+			<ReviewItem
+				entry={entry}
+				onNestedOverlayOpenChange={onNestedOverlayOpenChange}
+				onNestedOverlayTriggerInteract={onNestedOverlayTriggerInteract}
+			/>
+		)
+
+		await user.click(screen.getAllByTitle('More options')[0]!)
+
+		expect(onNestedOverlayTriggerInteract).toHaveBeenCalled()
+		expect(onNestedOverlayOpenChange).toHaveBeenCalledWith(true)
+		expect(await screen.findByText('Delete')).toBeInTheDocument()
+	})
 })
