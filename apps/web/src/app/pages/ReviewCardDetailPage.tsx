@@ -5,9 +5,7 @@ import {
 	Anvil,
 	ArrowLeftRight,
 	Brain,
-	ChevronDown,
 	Flag,
-	Loader2,
 	MoreHorizontal,
 	Plus,
 	Search,
@@ -58,19 +56,16 @@ import {
 import { consumeFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
 import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '~/features/review-cards/utils/orderReviewCardStatusBadges'
-import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewsByReviewCard } from '~/features/reviews/api/getReviews'
-import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { ReviewListHeader } from '~/features/reviews/components/ReviewListHeader'
-import type { ReviewRatingState } from '~/features/reviews/components/ReviewRatingCheckbox'
+import { ReviewsMenu } from '~/features/reviews/components/ReviewsMenu'
 import { useDetailReviewCounts } from '~/features/reviews/hooks/useDetailReviewCounts'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
-import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import {
-	getReviewCreatedToastActionLabel,
-	getReviewCreatedToastDescription
-} from '~/features/reviews/utils/reviewToastDescription'
+	getLatestCompletedReview,
+	splitReviews
+} from '~/features/reviews/utils/reviewCollections'
 import { SearchDialog } from '~/features/search/components/SearchDialog'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
@@ -80,7 +75,6 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { useReviewMode } from '~/stores/ReviewModeContext'
-import { localDateString } from '~/utils/date'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate
@@ -111,61 +105,6 @@ function toFreshnessTier(
 		return value
 	}
 	return null
-}
-
-function splitReviews(reviews: Array<ReviewListItem>) {
-	const today = localDateString()
-	const uncompletedUnscheduled: Array<ReviewListItem> = []
-	const overdue: Array<ReviewListItem> = []
-	const todayReviews: Array<ReviewListItem> = []
-	const upcoming: Array<ReviewListItem> = []
-	const completed: Array<ReviewListItem> = []
-
-	for (const review of reviews) {
-		if (review.completed_at) {
-			completed.push(review)
-			continue
-		}
-
-		if (review.scheduled_at || review.effective_date) {
-			const date = review.effective_date ?? review.scheduled_at
-			if (date && date < today) {
-				overdue.push(review)
-			} else if (date && date === today) {
-				todayReviews.push(review)
-			} else {
-				upcoming.push(review)
-			}
-			continue
-		}
-
-		uncompletedUnscheduled.push(review)
-	}
-
-	const sortByEffectiveDateAsc = (a: ReviewListItem, b: ReviewListItem) =>
-		new Date(a.effective_date ?? 0).getTime() -
-		new Date(b.effective_date ?? 0).getTime()
-
-	overdue.sort(sortByEffectiveDateAsc)
-	todayReviews.sort(sortByEffectiveDateAsc)
-	upcoming.sort(sortByEffectiveDateAsc)
-	uncompletedUnscheduled.sort((a, b) => {
-		return new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
-	})
-	completed.sort((a, b) => {
-		return (
-			new Date(b.completed_at ?? b.effective_date ?? 0).getTime() -
-			new Date(a.completed_at ?? a.effective_date ?? 0).getTime()
-		)
-	})
-
-	return {
-		uncompletedUnscheduledReviews: uncompletedUnscheduled,
-		overdueReviews: overdue,
-		todayReviews,
-		upcomingReviews: upcoming,
-		completedReviews: completed
-	}
 }
 
 export function ReviewCardDetailPage({
@@ -201,7 +140,6 @@ export function ReviewCardDetailPage({
 		mutateAsync: deleteReviewCardAsync,
 		isPending: isDeletingReviewCard
 	} = useDeleteReviewCard()
-	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
 
 	useEffect(() => {
@@ -241,23 +179,10 @@ export function ReviewCardDetailPage({
 	const { freshnessTierInfo, freshnessTierColor, isUnreviewed, stabilityText } =
 		metrics
 
-	const latestCompletedReview = useMemo(() => {
-		let latest: (typeof reviews)[number] | null = null
-		for (const review of reviews) {
-			if (!review.completed_at) continue
-			if (!latest) {
-				latest = review
-				continue
-			}
-			if (
-				new Date(review.completed_at).getTime() >
-				new Date(latest.completed_at ?? 0).getTime()
-			) {
-				latest = review
-			}
-		}
-		return latest
-	}, [reviews])
+	const latestCompletedReview = useMemo(
+		() => getLatestCompletedReview(reviews),
+		[reviews]
+	)
 
 	const lastReviewed = useMemo(
 		() =>
@@ -417,35 +342,6 @@ export function ReviewCardDetailPage({
 		})
 	}, [navigate, onActiveTabChange, reviewCard])
 
-	const handleRatingSelect = useCallback(
-		async (ratingState: ReviewRatingState) => {
-			if (!reviewCard || createReviewMutation.isPending) return
-			try {
-				const review = await createReviewMutation.mutateAsync({
-					review_card_id: reviewCard.id,
-					rating: ratingState === 'uncompleted' ? null : ratingState,
-					description: '',
-					scheduled_at: null,
-					completed_at: ratingState === 'uncompleted' ? null : localDateString()
-				})
-
-				if (ratingState === 'uncompleted') {
-					openReviewDialog(review.id)
-				} else {
-					toast('Review created', {
-						description: getReviewCreatedToastDescription(review),
-						action: {
-							label: getReviewCreatedToastActionLabel(review),
-							onClick: () => openReviewDialog(review.id)
-						}
-					})
-				}
-			} catch {
-				toast.error('Failed to create review')
-			}
-		},
-		[reviewCard, createReviewMutation, openReviewDialog]
-	)
 	const handleDeleteReviewCard = useCallback(async () => {
 		if (!reviewCard || isDeletingReviewCard) return
 		try {
@@ -702,25 +598,14 @@ export function ReviewCardDetailPage({
 									) : (
 										<div className='space-y-6 py-2'>
 											<div className='flex items-center justify-end'>
-												<RatingDropdown
+												<ReviewsMenu
 													align='end'
-													onSelect={handleRatingSelect}
-													trigger={
-														<Button
-															className='rounded-full'
-															disabled={createReviewMutation.isPending}
-															size='sm'
-															variant='default'
-														>
-															{createReviewMutation.isPending ? (
-																<Loader2 className='h-4 w-4 animate-spin' />
-															) : (
-																<Plus className='h-4 w-4' />
-															)}
-															Review
-															<ChevronDown className='h-4 w-4' />
-														</Button>
-													}
+													buttonClassName='rounded-full'
+													buttonSize='sm'
+													buttonVariant='default'
+													onSeeAll={handleSeeReviews}
+													reviewCardId={reviewCard.id}
+													reviews={reviews}
 												/>
 											</div>
 											{uncompletedUnscheduledReviews.length === 0 &&
@@ -1048,24 +933,13 @@ export function ReviewCardDetailPage({
 
 										<div className='my-3 flex flex-wrap items-center justify-between border-y-1 py-2'>
 											<div className='flex items-center gap-2'>
-												<RatingDropdown
+												<ReviewsMenu
 													align='end'
-													onSelect={handleRatingSelect}
-													trigger={
-														<Button
-															className='rounded-full'
-															disabled={createReviewMutation.isPending}
-															size='sm'
-														>
-															{createReviewMutation.isPending ? (
-																<Loader2 className='h-4 w-4 animate-spin' />
-															) : (
-																<Plus className='h-4 w-4' />
-															)}
-															<span>Review</span>
-															<ChevronDown className='h-4 w-4' />
-														</Button>
-													}
+													buttonClassName='rounded-full'
+													buttonSize='sm'
+													onSeeAll={handleSeeReviews}
+													reviewCardId={reviewCard.id}
+													reviews={reviews}
 												/>
 												<Tooltip>
 													<TooltipTrigger

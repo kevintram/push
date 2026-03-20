@@ -138,6 +138,10 @@ vi.mock('~/features/reviews/components/RatingDropdown', () => ({
 	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>
 }))
 
+vi.mock('~/features/reviews/components/ReviewsMenu', () => ({
+	ReviewsMenu: () => <button type='button'>Reviews</button>
+}))
+
 vi.mock('~/features/reviews/hooks/useReviewDialog', () => ({
 	useReviewDialog: () => ({
 		openReviewDialog: openReviewDialogMock
