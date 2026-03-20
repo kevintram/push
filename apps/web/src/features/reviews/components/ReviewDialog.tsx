@@ -3,8 +3,6 @@ import dayjs from 'dayjs'
 import {
 	Anvil,
 	CalendarIcon,
-	ChevronDown,
-	Link,
 	Maximize2,
 	Minimize2,
 	MoreHorizontal,
@@ -209,12 +207,13 @@ export function ReviewDialog({
 
 	const handleOpenLinkedCard = useCallback(() => {
 		if (!review?.review_card) return
+		onOpenChange(false)
 		navigate({
 			to: '/review-cards/$reviewCardId',
 			params: { reviewCardId: review.review_card.id.toString() },
 			search: { tab: 'reviews' }
 		})
-	}, [navigate, review?.review_card])
+	}, [navigate, review?.review_card, onOpenChange])
 
 	const handleDialogOpenChange = useCallback(
 		(nextOpen: boolean) => {
@@ -290,28 +289,16 @@ export function ReviewDialog({
 			<DialogContent className={dialogContentClassName} showCloseButton={false}>
 				<div className='flex h-full min-h-0 flex-col'>
 					<div className='flex items-center justify-between border-b px-2 py-1'>
-						<DropdownMenu>
-							<DropdownMenuTrigger
-								render={
-									<Button
-										className='max-w-48'
-										disabled={updateReviewMutation.isPending}
-										size='sm'
-										title='Open card'
-										variant='ghost'
-									>
-										<Link className='h-3.5 w-3.5 shrink-0' />
-										<span className='truncate'>{getCardName()}</span>
-										<ChevronDown className='h-3 w-3 shrink-0 text-muted-foreground' />
-									</Button>
-								}
-							/>
-							<DropdownMenuContent align='start' className='w-auto'>
-								<DropdownMenuItem onClick={handleOpenLinkedCard}>
-									Open card
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+						<Button
+							className='max-w-48'
+							disabled={updateReviewMutation.isPending}
+							onClick={handleOpenLinkedCard}
+							size='sm'
+							title='Open card'
+							variant='ghost'
+						>
+							<span className='truncate'>{getCardName()}</span>
+						</Button>
 						<div className='flex items-center gap-2'>
 							<DropdownMenu>
 								<DropdownMenuTrigger
