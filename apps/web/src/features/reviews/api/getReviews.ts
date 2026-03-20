@@ -6,6 +6,7 @@ import { ReviewListItemSchema, ReviewSchema } from '../types/review.schemas'
 import type { Review } from '../types/review.types'
 import { reviewKeys } from './queryKeys'
 
+export const REVIEW_LIST_QUERY_STALE_TIME = 30_000
 const REVIEW_DETAIL_QUERY_STALE_TIME = 30_000
 
 export async function getReviews(filters?: GetReviewsFilters) {
@@ -58,16 +59,22 @@ export async function getReviews(filters?: GetReviewsFilters) {
 
 export function useReviews(filters?: GetReviewsFilters) {
 	return useQuery({
-		queryKey: reviewKeys.list(filters),
-		queryFn: () => getReviews(filters)
+		...reviewsQueryOptions(filters)
 	})
 }
 
 export function useReviewsByReviewCard(reviewCardId: number | undefined) {
 	return useQuery({
-		queryKey: reviewKeys.list({ reviewCardId }),
-		queryFn: () => getReviews({ reviewCardId }),
+		...reviewsQueryOptions({ reviewCardId }),
 		enabled: reviewCardId !== undefined
+	})
+}
+
+export function reviewsQueryOptions(filters?: GetReviewsFilters) {
+	return queryOptions({
+		queryKey: reviewKeys.list(filters),
+		queryFn: () => getReviews(filters),
+		staleTime: REVIEW_LIST_QUERY_STALE_TIME
 	})
 }
 
