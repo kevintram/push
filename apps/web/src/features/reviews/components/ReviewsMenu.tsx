@@ -177,6 +177,7 @@ export function ReviewsMenu({
 						<span>Reviews</span>
 						{unscheduledCount > 0 ? (
 							<CountBadge
+								data-testid='reviews-trigger-unscheduled-count'
 								className={triggerBadgeClassName}
 								count={unscheduledCount}
 								variant='default'
@@ -184,12 +185,14 @@ export function ReviewsMenu({
 						) : null}
 						{overdueCount > 0 ? (
 							<CountBadge
+								data-testid='reviews-trigger-overdue-count'
 								className={`${triggerBadgeClassName} bg-red-600 text-white dark:bg-red-400`}
 								count={overdueCount}
 							/>
 						) : null}
 						{dueTodayCount > 0 ? (
 							<CountBadge
+								data-testid='reviews-trigger-due-today-count'
 								className={`${triggerBadgeClassName} bg-transparent text-blue-600 dark:text-blue-400`}
 								count={dueTodayCount}
 							/>

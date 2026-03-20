@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "~/lib/utils"
@@ -22,7 +23,12 @@ interface CountBadgeProps extends VariantProps<typeof countBadgeVariants> {
 	className?: string
 }
 
-export function CountBadge({ count, variant, className }: CountBadgeProps) {
+export function CountBadge({
+	count,
+	variant,
+	className,
+	...props
+}: CountBadgeProps & ComponentProps<"span">) {
 	return (
 		<span
 			className={cn(
@@ -30,6 +36,7 @@ export function CountBadge({ count, variant, className }: CountBadgeProps) {
 				count === 0 && "opacity-50",
 				className
 			)}
+			{...props}
 		>
 			{count}
 		</span>

@@ -265,7 +265,15 @@ describe('ReviewsMenu', () => {
 
 		const trigger = screen.getByRole('button', { name: /Reviews/i })
 		expect(trigger).toBeInTheDocument()
-		expect(within(trigger).getAllByText('1')).toHaveLength(3)
+		expect(
+			within(trigger).getByTestId('reviews-trigger-unscheduled-count')
+		).toHaveTextContent('1')
+		expect(
+			within(trigger).getByTestId('reviews-trigger-overdue-count')
+		).toHaveTextContent('1')
+		expect(
+			within(trigger).getByTestId('reviews-trigger-due-today-count')
+		).toHaveTextContent('1')
 		expect(screen.getByText('Create new')).toBeInTheDocument()
 		expect(screen.getByText('Due')).toBeInTheDocument()
 		expect(screen.getByTestId('review-item-101')).toBeInTheDocument()
@@ -342,6 +350,14 @@ describe('ReviewsMenu', () => {
 
 		expect(screen.getByText('See all')).toBeInTheDocument()
 		expect(screen.queryByText('0')).not.toBeInTheDocument()
-		expect(within(trigger).queryByText('0')).not.toBeInTheDocument()
+		expect(
+			within(trigger).queryByTestId('reviews-trigger-unscheduled-count')
+		).not.toBeInTheDocument()
+		expect(
+			within(trigger).queryByTestId('reviews-trigger-overdue-count')
+		).not.toBeInTheDocument()
+		expect(
+			within(trigger).queryByTestId('reviews-trigger-due-today-count')
+		).not.toBeInTheDocument()
 	})
 })
