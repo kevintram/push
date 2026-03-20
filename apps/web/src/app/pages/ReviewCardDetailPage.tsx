@@ -5,7 +5,9 @@ import {
 	Anvil,
 	ArrowLeftRight,
 	Brain,
+	ChevronDown,
 	Flag,
+	Loader2,
 	MoreHorizontal,
 	Plus,
 	Search,
@@ -56,16 +58,23 @@ import {
 import { consumeFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
 import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '~/features/review-cards/utils/orderReviewCardStatusBadges'
+import { useCreateReview } from '~/features/reviews/api/createReview'
 import { useReviewsByReviewCard } from '~/features/reviews/api/getReviews'
+import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
 import { ReviewItem } from '~/features/reviews/components/ReviewItem'
 import { ReviewListHeader } from '~/features/reviews/components/ReviewListHeader'
 import { ReviewsMenu } from '~/features/reviews/components/ReviewsMenu'
+import type { ReviewRatingState } from '~/features/reviews/components/reviewRatingOptions'
 import { useDetailReviewCounts } from '~/features/reviews/hooks/useDetailReviewCounts'
 import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
 import {
 	getLatestCompletedReview,
 	splitReviews
 } from '~/features/reviews/utils/reviewCollections'
+import {
+	getReviewCreatedToastActionLabel,
+	getReviewCreatedToastDescription
+} from '~/features/reviews/utils/reviewToastDescription'
 import { SearchDialog } from '~/features/search/components/SearchDialog'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
@@ -75,6 +84,7 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { useReviewMode } from '~/stores/ReviewModeContext'
+import { localDateString } from '~/utils/date'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate
@@ -140,6 +150,7 @@ export function ReviewCardDetailPage({
 		mutateAsync: deleteReviewCardAsync,
 		isPending: isDeletingReviewCard
 	} = useDeleteReviewCard()
+	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
 
 	useEffect(() => {
@@ -153,8 +164,18 @@ export function ReviewCardDetailPage({
 		useDetailReviewCounts(
 			reviewCard ? { reviewCardId: reviewCard.id } : undefined
 		)
-	const { data: reviews = [], isLoading: isReviewsLoading } =
-		useReviewsByReviewCard(reviewCard?.id)
+	const reviewTriggerCounts = useMemo(
+		() => ({
+			unscheduledCount,
+			overdueCount,
+			dueTodayCount
+		}),
+		[dueTodayCount, overdueCount, unscheduledCount]
+	)
+	const { data: reviews, isLoading: isReviewsLoading } = useReviewsByReviewCard(
+		reviewCard?.id
+	)
+	const resolvedReviews = reviews ?? []
 
 	const {
 		uncompletedUnscheduledReviews,
@@ -162,7 +183,7 @@ export function ReviewCardDetailPage({
 		todayReviews,
 		upcomingReviews,
 		completedReviews
-	} = useMemo(() => splitReviews(reviews), [reviews])
+	} = useMemo(() => splitReviews(resolvedReviews), [resolvedReviews])
 
 	const metrics = useLearnableMetrics(
 		reviewCard
@@ -180,8 +201,8 @@ export function ReviewCardDetailPage({
 		metrics
 
 	const latestCompletedReview = useMemo(
-		() => getLatestCompletedReview(reviews),
-		[reviews]
+		() => getLatestCompletedReview(resolvedReviews),
+		[resolvedReviews]
 	)
 
 	const lastReviewed = useMemo(
@@ -341,6 +362,37 @@ export function ReviewCardDetailPage({
 			search: { tab: 'reviews' }
 		})
 	}, [navigate, onActiveTabChange, reviewCard])
+
+	const handleRatingSelect = useCallback(
+		async (ratingState: ReviewRatingState) => {
+			if (!reviewCard || createReviewMutation.isPending) return
+			try {
+				const review = await createReviewMutation.mutateAsync({
+					review_card_id: reviewCard.id,
+					rating: ratingState === 'uncompleted' ? null : ratingState,
+					description: '',
+					scheduled_at: null,
+					completed_at: ratingState === 'uncompleted' ? null : localDateString()
+				})
+
+				if (ratingState === 'uncompleted') {
+					openReviewDialog(review.id)
+					return
+				}
+
+				toast('Review created', {
+					description: getReviewCreatedToastDescription(review),
+					action: {
+						label: getReviewCreatedToastActionLabel(review),
+						onClick: () => openReviewDialog(review.id)
+					}
+				})
+			} catch {
+				toast.error('Failed to create review')
+			}
+		},
+		[createReviewMutation, openReviewDialog, reviewCard]
+	)
 
 	const handleDeleteReviewCard = useCallback(async () => {
 		if (!reviewCard || isDeletingReviewCard) return
@@ -598,14 +650,25 @@ export function ReviewCardDetailPage({
 									) : (
 										<div className='space-y-6 py-2'>
 											<div className='flex items-center justify-end'>
-												<ReviewsMenu
+												<RatingDropdown
 													align='end'
-													buttonClassName='rounded-full'
-													buttonSize='sm'
-													buttonVariant='default'
-													onSeeAll={handleSeeReviews}
-													reviewCardId={reviewCard.id}
-													reviews={reviews}
+													onSelect={handleRatingSelect}
+													trigger={
+														<Button
+															className='rounded-full'
+															disabled={createReviewMutation.isPending}
+															size='sm'
+															variant='default'
+														>
+															{createReviewMutation.isPending ? (
+																<Loader2 className='h-4 w-4 animate-spin' />
+															) : (
+																<Plus className='h-4 w-4' />
+															)}
+															Add review
+															<ChevronDown className='h-4 w-4' />
+														</Button>
+													}
 												/>
 											</div>
 											{uncompletedUnscheduledReviews.length === 0 &&
@@ -937,9 +1000,11 @@ export function ReviewCardDetailPage({
 													align='end'
 													buttonClassName='rounded-full'
 													buttonSize='sm'
+													hasLastReviewed={reviewCard.last_reviewed_at != null}
 													onSeeAll={handleSeeReviews}
 													reviewCardId={reviewCard.id}
 													reviews={reviews}
+													triggerCounts={reviewTriggerCounts}
 												/>
 												<Tooltip>
 													<TooltipTrigger

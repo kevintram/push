@@ -54,6 +54,10 @@ import {
 } from '~/utils/formatRelativeDate'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
+import {
+	REVIEW_LIST_QUERY_STALE_TIME,
+	reviewsQueryOptions
+} from '../../reviews/api/getReviews'
 import { ReviewsMenu } from '../../reviews/components/ReviewsMenu'
 import { useReviewDialog } from '../../reviews/hooks/useReviewDialog'
 import { useDeleteReviewCard } from '../api/deleteReviewCard'
@@ -277,6 +281,24 @@ export function ReviewCard({
 			queryFn: () => getReviewCard(reviewCard.id),
 			staleTime: 30_000
 		})
+	}, [queryClient, reviewCard.id])
+
+	const handleReviewsMenuPrefetch = useCallback(() => {
+		const queryOptions = reviewsQueryOptions({ reviewCardId: reviewCard.id })
+		const queryState = queryClient.getQueryState(queryOptions.queryKey)
+
+		if (queryState?.fetchStatus === 'fetching') {
+			return
+		}
+
+		if (
+			queryState?.dataUpdatedAt != null &&
+			Date.now() - queryState.dataUpdatedAt < REVIEW_LIST_QUERY_STALE_TIME
+		) {
+			return
+		}
+
+		queryClient.prefetchQuery(queryOptions)
 	}, [queryClient, reviewCard.id])
 
 	const confirmRetiredToggle = useCallback(() => {
@@ -555,9 +577,19 @@ export function ReviewCard({
 						buttonSize='xs'
 						buttonVariant='tertiary'
 						compactTriggerBadges={true}
+						hasLastReviewed={reviewCard.last_reviewed_at != null}
+						onSeeAll={handleSeeReviews}
 						onTriggerClick={event => event.stopPropagation()}
+						onTriggerFocus={handleReviewsMenuPrefetch}
 						onTriggerKeyDown={event => event.stopPropagation()}
+						onTriggerMouseEnter={handleReviewsMenuPrefetch}
 						reviewCardId={reviewCard.id}
+						triggerCounts={{
+							unscheduledCount:
+								reviewCard.reviews_unscheduled_uncompleted_count ?? 0,
+							overdueCount: reviewCard.reviews_overdue_count ?? 0,
+							dueTodayCount: reviewCard.reviews_due_today_count ?? 0
+						}}
 					/>
 					<Button
 						aria-label={isFlagged ? 'Unflag this item' : 'Flag this item'}
