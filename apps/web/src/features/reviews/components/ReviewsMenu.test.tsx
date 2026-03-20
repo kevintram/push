@@ -122,6 +122,10 @@ vi.mock('sonner', () => ({
 	})
 }))
 
+vi.mock('~/utils/date', () => ({
+	localDateString: () => '2026-03-19'
+}))
+
 describe('ReviewsMenu', () => {
 	beforeEach(() => {
 		navigateMock.mockReset()
