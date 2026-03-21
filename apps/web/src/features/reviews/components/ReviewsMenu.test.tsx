@@ -138,22 +138,17 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 		DropdownMenuItem: ({
 			children,
 			onClick,
-			onSelect,
 			disabled,
 			title
 		}: {
 			children: ReactNode
 			onClick?: () => void
-			onSelect?: () => void
 			disabled?: boolean
 			title?: string
 		}) => (
 			<button
 				disabled={disabled}
-				onClick={() => {
-					onSelect?.()
-					onClick?.()
-				}}
+				onClick={() => onClick?.()}
 				title={title}
 				type='button'
 			>
