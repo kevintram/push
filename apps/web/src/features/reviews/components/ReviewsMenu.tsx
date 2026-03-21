@@ -463,8 +463,11 @@ export function ReviewsMenu({
 										onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 										onNestedOverlayTriggerInteract={markNestedOverlayIntent}
 										onReviewClick={reviewId => {
-											closeMenuAndFlushDeferredStructuralInvalidation()
-											openReviewDialog(reviewId)
+											handleNestedOverlayOpenChange(true)
+											void flushDeferredStructuralInvalidation()
+											openReviewDialog(reviewId, {
+												onClose: () => handleNestedOverlayOpenChange(false)
+											})
 										}}
 										showCardColumn={false}
 										variant='default'
@@ -489,8 +492,11 @@ export function ReviewsMenu({
 										onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 										onNestedOverlayTriggerInteract={markNestedOverlayIntent}
 										onReviewClick={reviewId => {
-											closeMenuAndFlushDeferredStructuralInvalidation()
-											openReviewDialog(reviewId)
+											handleNestedOverlayOpenChange(true)
+											void flushDeferredStructuralInvalidation()
+											openReviewDialog(reviewId, {
+												onClose: () => handleNestedOverlayOpenChange(false)
+											})
 										}}
 										showCardColumn={false}
 										variant='default'
@@ -514,8 +520,11 @@ export function ReviewsMenu({
 									onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 									onNestedOverlayTriggerInteract={markNestedOverlayIntent}
 									onReviewClick={reviewId => {
-										closeMenuAndFlushDeferredStructuralInvalidation()
-										openReviewDialog(reviewId)
+										handleNestedOverlayOpenChange(true)
+										void flushDeferredStructuralInvalidation()
+										openReviewDialog(reviewId, {
+											onClose: () => handleNestedOverlayOpenChange(false)
+										})
 									}}
 									showCardColumn={false}
 									variant='default'
