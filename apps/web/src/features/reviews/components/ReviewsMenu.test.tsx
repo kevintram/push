@@ -452,18 +452,21 @@ describe('ReviewsMenu', () => {
 
 		await user.click(trigger)
 		await user.click(screen.getByRole('button', { name: /Catch-up prompt/i }))
-		expect(openReviewDialogMock).toHaveBeenCalledWith(101)
-		expect(
-			screen.queryByTestId('dropdown-menu-content')
-		).not.toBeInTheDocument()
+		expect(openReviewDialogMock).toHaveBeenCalledWith(
+			101,
+			expect.objectContaining({ onClose: expect.any(Function) })
+		)
+		expect(screen.queryByTestId('dropdown-menu-content')).toBeInTheDocument()
 
-		await user.click(trigger)
 		await user.click(screen.getByRole('button', { name: /Strong recall/i }))
-		expect(openReviewDialogMock).toHaveBeenCalledWith(103)
-		expect(
-			screen.queryByTestId('dropdown-menu-content')
-		).not.toBeInTheDocument()
+		expect(openReviewDialogMock).toHaveBeenCalledWith(
+			103,
+			expect.objectContaining({ onClose: expect.any(Function) })
+		)
+		expect(screen.queryByTestId('dropdown-menu-content')).toBeInTheDocument()
 
+		// Close the menu (still open from review click), then reopen for create flow
+		await user.click(trigger)
 		await user.click(trigger)
 		await user.click(screen.getByRole('button', { name: /Good/i }))
 		expect(createReviewMock).toHaveBeenCalledWith({
@@ -494,7 +497,10 @@ describe('ReviewsMenu', () => {
 		await user.click(screen.getByTestId('review-item-mark-deferred-101'))
 		await user.click(screen.getByRole('button', { name: /Catch-up prompt/i }))
 
-		expect(openReviewDialogMock).toHaveBeenCalledWith(101)
+		expect(openReviewDialogMock).toHaveBeenCalledWith(
+			101,
+			expect.objectContaining({ onClose: expect.any(Function) })
+		)
 		expect(invalidateQueriesMock.mock.calls).toEqual(
 			expect.arrayContaining([
 				[{ queryKey: ['review-cards'] }],
@@ -502,9 +508,7 @@ describe('ReviewsMenu', () => {
 				[{ queryKey: ['search'] }]
 			])
 		)
-		expect(
-			screen.queryByTestId('dropdown-menu-content')
-		).not.toBeInTheDocument()
+		expect(screen.queryByTestId('dropdown-menu-content')).toBeInTheDocument()
 	})
 
 	it('omits the see-all badge when there are no unscheduled reviews', async () => {
@@ -912,7 +916,10 @@ describe('ReviewsMenu', () => {
 		onShellClick.mockReset()
 		await user.click(screen.getByRole('button', { name: /Catch-up prompt/i }))
 
-		expect(openReviewDialogMock).toHaveBeenCalledWith(101)
+		expect(openReviewDialogMock).toHaveBeenCalledWith(
+			101,
+			expect.objectContaining({ onClose: expect.any(Function) })
+		)
 		expect(onShellClick).not.toHaveBeenCalled()
 	})
 
