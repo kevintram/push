@@ -222,6 +222,55 @@ class TestReviewQueueEndpoint:
             "Tomorrow practice",
         ]
 
+    async def test_review_queue_returns_each_due_card_once_when_multiple_reviews_are_due(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        today = date(2026, 1, 15)
+        monkeypatch.setattr(
+            review_card_service,
+            "get_current_date",
+            lambda: today,
+        )
+
+        topic = await _create_topic(test_client, "Duplicate due queue")
+        duplicated_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Duplicated due practice",
+        )
+
+        earlier_due_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": duplicated_card["id"],
+                "scheduled_at": str(today - timedelta(days=3)),
+            },
+        )
+        assert earlier_due_response.status_code == 200
+        earlier_due_review = earlier_due_response.json()
+
+        later_due_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": duplicated_card["id"],
+                "scheduled_at": str(today - timedelta(days=1)),
+            },
+        )
+        assert later_due_response.status_code == 200
+
+        response = await test_client.get("/review-queue/?type=practice&tab=due")
+
+        assert response.status_code == 200
+        items = response.json()["items"]
+        assert len(items) == 1
+        assert items[0]["card"]["id"] == duplicated_card["id"]
+        assert items[0]["review_id"] == earlier_due_review["id"]
+        assert items[0]["scheduled_at"] == str(today - timedelta(days=3))
+        assert items[0]["days_until_due"] == -3
+
     async def test_review_queue_returns_new_cards_and_respects_focused_limit(
         self,
         test_client: AsyncClient,
@@ -464,5 +513,62 @@ class TestReviewQueueEndpoint:
             "due_today_count": 2,
             "due_next_seven_days_count": 7,
             "new_count": 5,
+            "as_of": str(today),
+        }
+
+    async def test_review_card_queue_summary_counts_due_cards_once_per_card(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        today = date(2026, 1, 15)
+        monkeypatch.setattr(
+            review_card_service,
+            "get_current_date",
+            lambda: today,
+        )
+
+        topic = await _create_topic(test_client, "Duplicate due summary")
+        duplicated_overdue_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Duplicated overdue practice",
+        )
+        duplicated_today_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Duplicated today practice",
+        )
+
+        for scheduled_at in [today - timedelta(days=4), today - timedelta(days=1)]:
+            response = await test_client.post(
+                "/reviews/",
+                json={
+                    "review_card_id": duplicated_overdue_card["id"],
+                    "scheduled_at": str(scheduled_at),
+                },
+            )
+            assert response.status_code == 200
+
+        for scheduled_at in [today, today + timedelta(days=2)]:
+            response = await test_client.post(
+                "/reviews/",
+                json={
+                    "review_card_id": duplicated_today_card["id"],
+                    "scheduled_at": str(scheduled_at),
+                },
+            )
+            assert response.status_code == 200
+
+        response = await test_client.get("/review-cards/queue-summary/?type=practice")
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "overdue_count": 1,
+            "due_today_count": 1,
+            "due_next_seven_days_count": 2,
+            "new_count": 2,
             "as_of": str(today),
         }
