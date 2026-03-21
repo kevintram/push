@@ -1,8 +1,15 @@
-import { createContext, useCallback, useState } from 'react'
+import { createContext, useCallback, useRef, useState } from 'react'
 import { ReviewDialog } from '../components/ReviewDialog'
 
+interface OpenReviewDialogOptions {
+	onClose?: () => void
+}
+
 interface ReviewDialogContextValue {
-	openReviewDialog: (reviewId: number) => void
+	openReviewDialog: (
+		reviewId: number,
+		options?: OpenReviewDialogOptions
+	) => void
 	closeReviewDialog: () => void
 }
 
@@ -16,15 +23,22 @@ export function ReviewDialogProvider({
 }) {
 	const [reviewId, setReviewId] = useState<number | null>(null)
 	const [isOpen, setIsOpen] = useState(false)
+	const onCloseCallbackRef = useRef<(() => void) | null>(null)
 
-	const openReviewDialog = useCallback((id: number) => {
-		setReviewId(id)
-		setIsOpen(true)
-	}, [])
+	const openReviewDialog = useCallback(
+		(id: number, options?: OpenReviewDialogOptions) => {
+			onCloseCallbackRef.current = options?.onClose ?? null
+			setReviewId(id)
+			setIsOpen(true)
+		},
+		[]
+	)
 
 	const closeReviewDialog = useCallback(() => {
 		setIsOpen(false)
 		setReviewId(null)
+		onCloseCallbackRef.current?.()
+		onCloseCallbackRef.current = null
 	}, [])
 
 	return (
