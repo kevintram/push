@@ -466,8 +466,7 @@ export function ReviewsMenu({
 											handleNestedOverlayOpenChange(true)
 											void flushDeferredStructuralInvalidation()
 											openReviewDialog(reviewId, {
-												onClose: () =>
-													handleNestedOverlayOpenChange(false)
+												onClose: () => handleNestedOverlayOpenChange(false)
 											})
 										}}
 										showCardColumn={false}
@@ -496,8 +495,7 @@ export function ReviewsMenu({
 											handleNestedOverlayOpenChange(true)
 											void flushDeferredStructuralInvalidation()
 											openReviewDialog(reviewId, {
-												onClose: () =>
-													handleNestedOverlayOpenChange(false)
+												onClose: () => handleNestedOverlayOpenChange(false)
 											})
 										}}
 										showCardColumn={false}
@@ -525,8 +523,7 @@ export function ReviewsMenu({
 										handleNestedOverlayOpenChange(true)
 										void flushDeferredStructuralInvalidation()
 										openReviewDialog(reviewId, {
-											onClose: () =>
-												handleNestedOverlayOpenChange(false)
+											onClose: () => handleNestedOverlayOpenChange(false)
 										})
 									}}
 									showCardColumn={false}
