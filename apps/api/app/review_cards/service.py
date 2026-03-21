@@ -123,10 +123,14 @@ async def _list_actionable_due_queue_items(
     )
 
     items: list[ReviewCardQueueItem] = []
+    seen_review_card_ids: set[int] = set()
     for review in due_result.scalars().all():
         review_card = review.review_card
         if review_card is None or review.scheduled_at is None:
             continue
+        if review_card.id in seen_review_card_ids:
+            continue
+        seen_review_card_ids.add(review_card.id)
 
         items.append(
             ReviewCardQueueItem(
@@ -429,30 +433,11 @@ async def get_review_card_queue_summary(
     as_of = get_current_date()
     six_days_out = as_of + timedelta(days=6)
 
-    due_summary_stmt = (
+    due_card_schedule_subquery = (
         select(
-            func.coalesce(
-                func.sum(case((Review.scheduled_at < as_of, 1), else_=0)),
-                0,
-            ).label("overdue_count"),
-            func.coalesce(
-                func.sum(case((Review.scheduled_at == as_of, 1), else_=0)),
-                0,
-            ).label("due_today_count"),
-            func.coalesce(
-                func.sum(
-                    case(
-                        (
-                            Review.scheduled_at <= six_days_out,
-                            1,
-                        ),
-                        else_=0,
-                    )
-                ),
-                0,
-            ).label("due_next_seven_days_count"),
+            Review.review_card_id.label("review_card_id"),
+            func.min(Review.scheduled_at).label("scheduled_at"),
         )
-        .select_from(Review)
         .join(ReviewCard, Review.review_card_id == ReviewCard.id)
         .where(
             Review.user_id == user_id,
@@ -461,7 +446,39 @@ async def get_review_card_queue_summary(
             Review.scheduled_at.isnot(None),
             ReviewCard.type == card_type,
         )
+        .group_by(Review.review_card_id)
+        .subquery()
     )
+
+    due_summary_stmt = select(
+        func.coalesce(
+            func.sum(
+                case((due_card_schedule_subquery.c.scheduled_at < as_of, 1), else_=0)
+            ),
+            0,
+        ).label("overdue_count"),
+        func.coalesce(
+            func.sum(
+                case(
+                    (due_card_schedule_subquery.c.scheduled_at == as_of, 1),
+                    else_=0,
+                )
+            ),
+            0,
+        ).label("due_today_count"),
+        func.coalesce(
+            func.sum(
+                case(
+                    (
+                        due_card_schedule_subquery.c.scheduled_at <= six_days_out,
+                        1,
+                    ),
+                    else_=0,
+                )
+            ),
+            0,
+        ).label("due_next_seven_days_count"),
+    ).select_from(due_card_schedule_subquery)
 
     due_summary = (await session.execute(due_summary_stmt)).one()
 
