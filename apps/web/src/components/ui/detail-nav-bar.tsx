@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback } from "react"
-import { CountBadge } from "~/components/ui/count-badge"
+import { ReviewStatusDots } from "~/components/ui/review-status-dots"
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"
 
 export type DetailNavTab = "home" | "notes" | "reviews"
@@ -55,15 +55,11 @@ export function DetailNavBar({
 						<TabsTrigger value='reviews'>
 							<span className='flex items-center gap-1.5'>
 								Reviews
-								{overdueCount > 0 && (
-									<CountBadge count={overdueCount} tone='overdue' />
-								)}
-								{dueTodayCount > 0 && (
-									<CountBadge count={dueTodayCount} tone='dueToday' />
-								)}
-								{unscheduledCount > 0 && (
-									<CountBadge count={unscheduledCount} tone='unscheduled' />
-								)}
+								<ReviewStatusDots
+									dueTodayCount={dueTodayCount}
+									overdueCount={overdueCount}
+									unscheduledCount={unscheduledCount}
+								/>
 							</span>
 						</TabsTrigger>
 					) : null}
