@@ -50,7 +50,7 @@ type ReviewSidebarItem = SidebarNavItem & {
 type SidebarCountBadgeItem = {
 	key: string
 	count: number
-	className?: string
+	tone?: 'neutral' | 'unscheduled' | 'overdue' | 'dueToday'
 }
 
 function SidebarCollapsedBadgeStack({
@@ -77,8 +77,10 @@ function SidebarCollapsedBadgeStack({
 					style={{ zIndex: visibleBadges.length - index }}
 				>
 					<CountBadge
-						className={`h-4 min-w-4 rounded-sm px-1 text-[10px] shadow-sm ${badge.className ?? ''}`}
+						className='rounded-sm shadow-sm'
 						count={badge.count}
+						size='compact'
+						tone={badge.tone}
 					/>
 				</span>
 			))}
@@ -101,17 +103,17 @@ function ReviewSidebarMenuItem({
 		{
 			key: 'overdue',
 			count: overdueCount,
-			className: 'bg-red-600 text-white dark:bg-red-400'
+			tone: 'overdue'
 		},
 		{
 			key: 'today',
 			count: dueTodayCount,
-			className:
-				'border border-blue-200 bg-background text-blue-600 dark:border-blue-900 dark:bg-background dark:text-blue-400'
+			tone: 'dueToday'
 		},
 		{
 			key: 'new',
-			count: newCount
+			count: newCount,
+			tone: 'unscheduled'
 		}
 	]
 
@@ -130,22 +132,17 @@ function ReviewSidebarMenuItem({
 						className='ml-auto flex shrink-0 items-center gap-1'
 					>
 						{overdueCount > 0 && (
-							<CountBadge
-								className='h-4 min-w-4 bg-red-600 px-1 text-[10px] text-white dark:bg-red-400'
-								count={overdueCount}
-							/>
+							<CountBadge count={overdueCount} size='compact' tone='overdue' />
 						)}
 						{dueTodayCount > 0 && (
 							<CountBadge
-								className='h-4 min-w-4 bg-transparent px-1 text-[10px] text-blue-600 dark:text-blue-400'
 								count={dueTodayCount}
+								size='compact'
+								tone='dueToday'
 							/>
 						)}
 						{newCount > 0 && (
-							<CountBadge
-								className='h-4 min-w-4 px-1 text-[10px]'
-								count={newCount}
-							/>
+							<CountBadge count={newCount} size='compact' tone='unscheduled' />
 						)}
 					</span>
 				</span>

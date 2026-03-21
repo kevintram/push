@@ -55,20 +55,14 @@ export function DetailNavBar({
 						<TabsTrigger value='reviews'>
 							<span className='flex items-center gap-1.5'>
 								Reviews
-								{unscheduledCount > 0 && (
-									<CountBadge count={unscheduledCount} />
-								)}
 								{overdueCount > 0 && (
-									<CountBadge
-										className='bg-red-600 text-white dark:bg-red-400'
-										count={overdueCount}
-									/>
+									<CountBadge count={overdueCount} tone='overdue' />
 								)}
 								{dueTodayCount > 0 && (
-									<CountBadge
-										className='bg-transparent text-blue-600 dark:text-blue-400'
-										count={dueTodayCount}
-									/>
+									<CountBadge count={dueTodayCount} tone='dueToday' />
+								)}
+								{unscheduledCount > 0 && (
+									<CountBadge count={unscheduledCount} tone='unscheduled' />
 								)}
 							</span>
 						</TabsTrigger>

@@ -162,9 +162,6 @@ export function ReviewsMenu({
 		dueReviews.length > 0 ||
 		latestCompletedReview != null ||
 		shouldRenderSummaryLoadingState
-	const triggerBadgeClassName = compactTriggerBadges
-		? 'pointer-events-none h-4 min-w-4 px-1 text-[10px]'
-		: 'pointer-events-none'
 	const uncompletedOption = useMemo(
 		() => ratingOptions.find(option => option.value === 'uncompleted') ?? null,
 		[]
@@ -173,6 +170,9 @@ export function ReviewsMenu({
 		() => ratingOptions.filter(option => option.value !== 'uncompleted'),
 		[]
 	)
+	const triggerBadgeContext =
+		buttonVariant === 'default' ? 'primary' : 'default'
+	const triggerBadgeSize = compactTriggerBadges ? 'compact' : 'default'
 
 	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
@@ -382,26 +382,34 @@ export function ReviewsMenu({
 							<Loader2 className='h-4 w-4 animate-spin' />
 						) : null}
 						<span>Reviews</span>
-						{unscheduledCount > 0 ? (
-							<CountBadge
-								className={triggerBadgeClassName}
-								count={unscheduledCount}
-								data-testid='reviews-trigger-unscheduled-count'
-								variant='default'
-							/>
-						) : null}
 						{overdueCount > 0 ? (
 							<CountBadge
-								className={`${triggerBadgeClassName} bg-red-600 text-white dark:bg-red-400`}
+								className='pointer-events-none'
+								context={triggerBadgeContext}
 								count={overdueCount}
 								data-testid='reviews-trigger-overdue-count'
+								size={triggerBadgeSize}
+								tone='overdue'
 							/>
 						) : null}
 						{dueTodayCount > 0 ? (
 							<CountBadge
-								className={`${triggerBadgeClassName} bg-transparent text-blue-600 dark:text-blue-400`}
+								className='pointer-events-none'
+								context={triggerBadgeContext}
 								count={dueTodayCount}
 								data-testid='reviews-trigger-due-today-count'
+								size={triggerBadgeSize}
+								tone='dueToday'
+							/>
+						) : null}
+						{unscheduledCount > 0 ? (
+							<CountBadge
+								className='pointer-events-none'
+								context={triggerBadgeContext}
+								count={unscheduledCount}
+								data-testid='reviews-trigger-unscheduled-count'
+								size={triggerBadgeSize}
+								tone='unscheduled'
 							/>
 						) : null}
 						<ChevronDown className='h-4 w-4' />
