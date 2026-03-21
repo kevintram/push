@@ -428,7 +428,7 @@ export function ReviewsMenu({
 						{uncompletedOption ? (
 							<DropdownMenuItem
 								disabled={createReviewMutation.isPending}
-								onSelect={() => handleRatingSelect(uncompletedOption.value)}
+								onClick={() => handleRatingSelect(uncompletedOption.value)}
 							>
 								<div className='grid w-full grid-cols-[auto_1fr] items-center gap-x-2'>
 									{getOptionIcon(uncompletedOption.value)}
@@ -444,7 +444,7 @@ export function ReviewsMenu({
 							<DropdownMenuItem
 								disabled={createReviewMutation.isPending}
 								key={option.value}
-								onSelect={() => handleRatingSelect(option.value)}
+								onClick={() => handleRatingSelect(option.value)}
 							>
 								<div className='grid w-full grid-cols-[auto_1fr] items-center gap-x-2'>
 									{getOptionIcon(option.value)}
@@ -511,7 +511,7 @@ export function ReviewsMenu({
 				) : null}
 
 				<DropdownMenuSeparator />
-				<DropdownMenuItem onSelect={handleSeeAll}>
+				<DropdownMenuItem onClick={handleSeeAll}>
 					<div className='flex min-w-0 flex-1 items-center gap-2'>
 						<span className='font-medium'>See all</span>
 						{unscheduledCount > 0 ? (
