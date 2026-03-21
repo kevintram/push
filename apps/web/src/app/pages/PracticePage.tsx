@@ -92,15 +92,13 @@ export function PracticePage({
 				count: (
 					<>
 						{overdueCount > 0 ? (
-							<CountBadge
-								className='h-4 min-w-4 bg-red-600 px-1 text-[10px] text-white dark:bg-red-400'
-								count={overdueCount}
-							/>
+							<CountBadge count={overdueCount} size='compact' tone='overdue' />
 						) : null}
 						{dueTodayCount > 0 ? (
 							<CountBadge
-								className='h-4 min-w-4 bg-transparent px-1 text-[10px] text-blue-600 dark:text-blue-400'
 								count={dueTodayCount}
+								size='compact'
+								tone='dueToday'
 							/>
 						) : null}
 					</>
@@ -109,12 +107,7 @@ export function PracticePage({
 			{
 				label: 'New',
 				value: 'new' as const,
-				count: (
-					<CountBadge
-						className='h-4 min-w-4 px-1 text-[10px]'
-						count={newCount}
-					/>
-				)
+				count: <CountBadge count={newCount} size='compact' tone='unscheduled' />
 			}
 		],
 		[dueTodayCount, newCount, overdueCount]

@@ -283,7 +283,7 @@ describe('review card detail route-backed tabs', () => {
 			expect(router.state.location.search).toEqual({ tab: 'home' })
 		})
 
-		await user.click(screen.getByRole('tab', { name: 'Reviews 1' }))
+		await user.click(screen.getByRole('tab', { name: /Reviews/i }))
 
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({ tab: 'reviews' })
@@ -297,7 +297,7 @@ describe('review card detail route-backed tabs', () => {
 			await screen.findByRole('tab', { name: 'Notes' })
 		).toBeInTheDocument()
 
-		await user.click(screen.getByRole('tab', { name: 'Reviews 1' }))
+		await user.click(screen.getByRole('tab', { name: /Reviews/i }))
 
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({ tab: 'reviews' })

@@ -9,9 +9,7 @@ import type {
 } from 'react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
-import { CountBadge } from '~/components/ui/count-badge'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -25,6 +23,7 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { ReviewStatusDots } from '~/components/ui/review-status-dots'
 import { reviewCardKeys } from '~/features/review-cards/api/queryKeys'
 import { searchKeys } from '~/features/search/api/searchAll'
 import { localDateString } from '~/utils/date'
@@ -151,20 +150,20 @@ export function ReviewsMenu({
 		? uncompletedUnscheduledReviews.length
 		: (triggerCounts?.unscheduledCount ?? uncompletedUnscheduledReviews.length)
 	const expectedDueCount = overdueCount + dueTodayCount
+	const hasExpectedSummaryContent =
+		expectedDueCount > 0 || unscheduledCount > 0 || hasLastReviewed
 	const isSummaryLoading =
 		providedReviews === undefined &&
 		isOpen &&
 		!hasLiveQueriedReviews &&
 		(isReviewsLoading || isReviewsFetching)
 	const shouldRenderSummaryLoadingState =
-		isSummaryLoading && (expectedDueCount > 0 || hasLastReviewed)
+		isSummaryLoading && hasExpectedSummaryContent
 	const hasReviewSummarySections =
 		dueReviews.length > 0 ||
+		uncompletedUnscheduledReviews.length > 0 ||
 		latestCompletedReview != null ||
 		shouldRenderSummaryLoadingState
-	const triggerBadgeClassName = compactTriggerBadges
-		? 'pointer-events-none h-4 min-w-4 px-1 text-[10px]'
-		: 'pointer-events-none'
 	const uncompletedOption = useMemo(
 		() => ratingOptions.find(option => option.value === 'uncompleted') ?? null,
 		[]
@@ -173,6 +172,9 @@ export function ReviewsMenu({
 		() => ratingOptions.filter(option => option.value !== 'uncompleted'),
 		[]
 	)
+	const triggerBadgeContext =
+		buttonVariant === 'default' ? 'primary' : 'default'
+	const triggerDotSize = compactTriggerBadges ? 'compact' : 'default'
 
 	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
@@ -382,28 +384,15 @@ export function ReviewsMenu({
 							<Loader2 className='h-4 w-4 animate-spin' />
 						) : null}
 						<span>Reviews</span>
-						{unscheduledCount > 0 ? (
-							<CountBadge
-								className={triggerBadgeClassName}
-								count={unscheduledCount}
-								data-testid='reviews-trigger-unscheduled-count'
-								variant='default'
-							/>
-						) : null}
-						{overdueCount > 0 ? (
-							<CountBadge
-								className={`${triggerBadgeClassName} bg-red-600 text-white dark:bg-red-400`}
-								count={overdueCount}
-								data-testid='reviews-trigger-overdue-count'
-							/>
-						) : null}
-						{dueTodayCount > 0 ? (
-							<CountBadge
-								className={`${triggerBadgeClassName} bg-transparent text-blue-600 dark:text-blue-400`}
-								count={dueTodayCount}
-								data-testid='reviews-trigger-due-today-count'
-							/>
-						) : null}
+						<ReviewStatusDots
+							className='pointer-events-none'
+							dueTodayCount={dueTodayCount}
+							overdueCount={overdueCount}
+							size={triggerDotSize}
+							surface={triggerBadgeContext}
+							testIdPrefix='reviews-trigger'
+							unscheduledCount={unscheduledCount}
+						/>
 						<ChevronDown className='h-4 w-4' />
 					</Button>
 				}
@@ -486,6 +475,32 @@ export function ReviewsMenu({
 					</>
 				) : null}
 
+				{uncompletedUnscheduledReviews.length > 0 ? (
+					<>
+						<DropdownMenuSeparator />
+						<DropdownMenuGroup>
+							<DropdownMenuLabel>Unscheduled</DropdownMenuLabel>
+							{uncompletedUnscheduledReviews.map(review => (
+								<div className='px-1' key={review.id}>
+									<ReviewItem
+										deferStructuralInvalidation={true}
+										entry={review}
+										onDeferredInvalidation={markDeferredStructuralInvalidation}
+										onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
+										onNestedOverlayTriggerInteract={markNestedOverlayIntent}
+										onReviewClick={reviewId => {
+											closeMenuAndFlushDeferredStructuralInvalidation()
+											openReviewDialog(reviewId)
+										}}
+										showCardColumn={false}
+										variant='default'
+									/>
+								</div>
+							))}
+						</DropdownMenuGroup>
+					</>
+				) : null}
+
 				{latestCompletedReview ? (
 					<>
 						<DropdownMenuSeparator />
@@ -512,17 +527,7 @@ export function ReviewsMenu({
 
 				<DropdownMenuSeparator />
 				<DropdownMenuItem onClick={handleSeeAll}>
-					<div className='flex min-w-0 flex-1 items-center gap-2'>
-						<span className='font-medium'>See all</span>
-						{unscheduledCount > 0 ? (
-							<Badge
-								className='h-5 rounded-full px-1.5 text-xs'
-								variant='outline'
-							>
-								{unscheduledCount}
-							</Badge>
-						) : null}
-					</div>
+					<span className='font-medium'>See all</span>
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

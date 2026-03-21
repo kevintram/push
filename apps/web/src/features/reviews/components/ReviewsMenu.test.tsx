@@ -405,7 +405,7 @@ describe('ReviewsMenu', () => {
 		})
 	})
 
-	it('renders add, due reviews, last reviewed, and the unscheduled count badge', async () => {
+	it('renders add, due reviews, unscheduled reviews, last reviewed, and trigger status dots', async () => {
 		const user = userEvent.setup()
 
 		render(<ReviewsMenu reviewCardId={12} />)
@@ -424,22 +424,23 @@ describe('ReviewsMenu', () => {
 		)
 		expect(content).toHaveClass('w-[18rem]')
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-count')
-		).toHaveTextContent('1')
+			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-overdue-count')
-		).toHaveTextContent('1')
+			within(trigger).getByTestId('reviews-trigger-overdue-dot')
+		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-due-today-count')
-		).toHaveTextContent('1')
+			within(trigger).getByTestId('reviews-trigger-due-today-dot')
+		).toBeInTheDocument()
 		expect(screen.getByText('Create new')).toBeInTheDocument()
 		expect(screen.getByText('Due')).toBeInTheDocument()
 		expect(screen.getByTestId('review-item-101')).toBeInTheDocument()
 		expect(screen.getByTestId('review-item-102')).toBeInTheDocument()
+		expect(screen.getByText('Unscheduled')).toBeInTheDocument()
+		expect(screen.getByTestId('review-item-104')).toBeInTheDocument()
 		expect(screen.getByText('Last reviewed')).toBeInTheDocument()
 		expect(screen.getByTestId('review-item-103')).toBeInTheDocument()
 		expect(screen.getByText('See all')).toBeInTheDocument()
-		expect(screen.getAllByText('1')).toHaveLength(4)
 	})
 
 	it('opens reviews, delegates see-all, and creates a rated review from the add submenu', async () => {
@@ -506,7 +507,7 @@ describe('ReviewsMenu', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('omits the see-all badge when there are no unscheduled uncompleted reviews', async () => {
+	it('omits the see-all badge when there are no unscheduled reviews', async () => {
 		const user = userEvent.setup()
 
 		useQueryMock.mockReturnValue({
@@ -553,17 +554,17 @@ describe('ReviewsMenu', () => {
 		expect(screen.getByText('See all')).toBeInTheDocument()
 		expect(screen.queryByText('0')).not.toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-unscheduled-count')
+			within(trigger).queryByTestId('reviews-trigger-unscheduled-dot')
 		).not.toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-overdue-count')
+			within(trigger).queryByTestId('reviews-trigger-overdue-dot')
 		).not.toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-due-today-count')
+			within(trigger).queryByTestId('reviews-trigger-due-today-dot')
 		).not.toBeInTheDocument()
 	})
 
-	it('uses the compact dropdown width when there are no due reviews or last reviewed entry', async () => {
+	it('uses the compact dropdown width when there are no due, unscheduled, or last reviewed entries', async () => {
 		const user = userEvent.setup()
 
 		useQueryMock.mockReturnValue({
@@ -574,11 +575,11 @@ describe('ReviewsMenu', () => {
 					id: 301,
 					review_card_id: 12,
 					rating: null,
-					description: 'Draft follow-up',
+					description: 'Future follow-up',
 					notes: '',
-					scheduled_at: null,
+					scheduled_at: '2026-03-25',
 					completed_at: null,
-					effective_date: null,
+					effective_date: '2026-03-25',
 					inserted_at: '2026-03-16T12:00:00.000Z',
 					updated_at: '2026-03-16T12:00:00.000Z',
 					review_card: {
@@ -610,10 +611,61 @@ describe('ReviewsMenu', () => {
 
 		expect(screen.queryByText('Due')).not.toBeInTheDocument()
 		expect(screen.queryByText('Last reviewed')).not.toBeInTheDocument()
+		expect(screen.queryByTestId('review-item-301')).not.toBeInTheDocument()
 		expect(content).not.toHaveClass('w-[18rem]')
 	})
 
-	it('renders trigger badges from explicit trigger counts before reviews are loaded', () => {
+	it('renders the unscheduled section when unscheduled reviews are present', async () => {
+		const user = userEvent.setup()
+
+		useQueryMock.mockReturnValue({
+			isFetching: false,
+			isLoading: false,
+			data: [
+				{
+					id: 401,
+					review_card_id: 12,
+					rating: null,
+					description: 'Draft follow-up',
+					notes: '',
+					scheduled_at: null,
+					completed_at: null,
+					effective_date: null,
+					inserted_at: '2026-03-18T12:00:00.000Z',
+					updated_at: '2026-03-18T12:00:00.000Z',
+					review_card: {
+						id: 12,
+						topic_id: 1,
+						type: 'practice',
+						prompt: 'Prompt',
+						answer: 'Answer'
+					},
+					stability_before: null,
+					difficulty_before: null,
+					state_before: null,
+					step_before: null,
+					due_before: null,
+					stability_after: null,
+					difficulty_after: null,
+					state_after: null,
+					step_after: null,
+					due_after: null
+				}
+			]
+		})
+
+		render(<ReviewsMenu reviewCardId={12} />)
+
+		await user.click(screen.getByRole('button', { name: /Reviews/i }))
+
+		expect(screen.getByText('Unscheduled')).toBeInTheDocument()
+		expect(screen.getByTestId('review-item-401')).toBeInTheDocument()
+		expect(screen.queryByText('Due')).not.toBeInTheDocument()
+		expect(screen.queryByText('Last reviewed')).not.toBeInTheDocument()
+		expect(screen.getByTestId('dropdown-menu-content')).toHaveClass('w-[18rem]')
+	})
+
+	it('renders trigger dots from explicit trigger counts before reviews are loaded', () => {
 		useQueryMock.mockReturnValue({
 			isFetching: false,
 			isLoading: false,
@@ -634,20 +686,20 @@ describe('ReviewsMenu', () => {
 		const trigger = screen.getByRole('button', { name: /Reviews/i })
 
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-count')
-		).toHaveTextContent('4')
+			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-overdue-count')
-		).toHaveTextContent('2')
+			within(trigger).getByTestId('reviews-trigger-overdue-dot')
+		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-due-today-count')
-		).toHaveTextContent('1')
+			within(trigger).getByTestId('reviews-trigger-due-today-dot')
+		).toBeInTheDocument()
 		expect(useQueryMock).toHaveBeenLastCalledWith(
 			expect.objectContaining({ enabled: false })
 		)
 	})
 
-	it('keeps trigger badges on stable fallback counts while cached reviews are idle', () => {
+	it('keeps trigger dots on stable fallback counts while cached reviews are idle', () => {
 		useQueryMock.mockReturnValue({
 			isFetching: false,
 			isLoading: false,
@@ -698,14 +750,14 @@ describe('ReviewsMenu', () => {
 		const trigger = screen.getByRole('button', { name: /Reviews/i })
 
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-count')
-		).toHaveTextContent('4')
+			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-overdue-count')
-		).toHaveTextContent('2')
+			within(trigger).getByTestId('reviews-trigger-overdue-dot')
+		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-due-today-count')
-		).toHaveTextContent('1')
+			within(trigger).getByTestId('reviews-trigger-due-today-dot')
+		).toBeInTheDocument()
 	})
 
 	it('prefers live review data over fallback trigger counts when reviews are provided', () => {
@@ -760,13 +812,13 @@ describe('ReviewsMenu', () => {
 		const trigger = screen.getByRole('button', { name: /Reviews/i })
 
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-count')
-		).toHaveTextContent('1')
+			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+		).toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-overdue-count')
+			within(trigger).queryByTestId('reviews-trigger-overdue-dot')
 		).not.toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-due-today-count')
+			within(trigger).queryByTestId('reviews-trigger-due-today-dot')
 		).not.toBeInTheDocument()
 	})
 
@@ -831,19 +883,19 @@ describe('ReviewsMenu', () => {
 		expect(screen.queryByText('Due')).not.toBeInTheDocument()
 		expect(screen.queryByText('Last reviewed')).not.toBeInTheDocument()
 		expect(screen.queryByText('Stale catch-up prompt')).not.toBeInTheDocument()
+		expect(screen.queryByTestId('review-item-301')).not.toBeInTheDocument()
 		expect(content.querySelectorAll('[aria-busy="true"]')).toHaveLength(1)
 		const seeAllButton = screen.getByRole('button', { name: /See all/i })
 		expect(seeAllButton).toBeInTheDocument()
-		expect(within(seeAllButton).getByText('4')).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-count')
-		).toHaveTextContent('4')
+			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-overdue-count')
-		).toHaveTextContent('2')
+			within(trigger).getByTestId('reviews-trigger-overdue-dot')
+		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-due-today-count')
-		).toHaveTextContent('1')
+			within(trigger).getByTestId('reviews-trigger-due-today-dot')
+		).toBeInTheDocument()
 	})
 
 	it('stops nested review clicks from bubbling to parent shells', async () => {
