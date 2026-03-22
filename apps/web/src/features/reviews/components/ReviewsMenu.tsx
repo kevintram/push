@@ -91,6 +91,7 @@ export function ReviewsMenu({
 	const [isOpen, setIsOpen] = useState(false)
 	const [hasNestedOverlayOpen, setHasNestedOverlayOpen] = useState(false)
 	const hasDeferredStructuralInvalidationRef = useRef(false)
+	const hasModalOverlayOpenRef = useRef(false)
 	const nestedOverlayIntentRef = useRef(false)
 	const nestedOverlayCloseTimeoutRef = useRef<ReturnType<
 		typeof setTimeout
@@ -250,6 +251,7 @@ export function ReviewsMenu({
 		clearNestedOverlayCloseTimeout()
 		clearNestedOverlayIntent()
 		setHasNestedOverlayOpen(false)
+		hasModalOverlayOpenRef.current = false
 		setIsOpen(false)
 	}, [clearNestedOverlayCloseTimeout, clearNestedOverlayIntent])
 
@@ -274,6 +276,25 @@ export function ReviewsMenu({
 		closeMenu()
 		void flushDeferredStructuralInvalidation()
 	}, [closeMenu, flushDeferredStructuralInvalidation])
+
+	const handleReviewItemClick = useCallback(
+		(reviewId: number) => {
+			hasModalOverlayOpenRef.current = true
+			handleNestedOverlayOpenChange(true)
+			void flushDeferredStructuralInvalidation()
+			openReviewDialog(reviewId, {
+				onClose: () => {
+					hasModalOverlayOpenRef.current = false
+					handleNestedOverlayOpenChange(false)
+				}
+			})
+		},
+		[
+			flushDeferredStructuralInvalidation,
+			handleNestedOverlayOpenChange,
+			openReviewDialog
+		]
+	)
 
 	const handleRatingSelect = useCallback(
 		async (ratingState: ReviewRatingState) => {
@@ -325,7 +346,7 @@ export function ReviewsMenu({
 	const shouldKeepMenuOpenForNestedOverlay = useCallback(
 		(eventDetails?: DropdownMenuOpenChangeDetails) => {
 			if (eventDetails?.reason === 'outside-press') {
-				return nestedOverlayIntentRef.current
+				return hasModalOverlayOpenRef.current || nestedOverlayIntentRef.current
 			}
 
 			return (
@@ -462,13 +483,7 @@ export function ReviewsMenu({
 										onDeferredInvalidation={markDeferredStructuralInvalidation}
 										onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 										onNestedOverlayTriggerInteract={markNestedOverlayIntent}
-										onReviewClick={reviewId => {
-											handleNestedOverlayOpenChange(true)
-											void flushDeferredStructuralInvalidation()
-											openReviewDialog(reviewId, {
-												onClose: () => handleNestedOverlayOpenChange(false)
-											})
-										}}
+										onReviewClick={handleReviewItemClick}
 										showCardColumn={false}
 										variant='default'
 									/>
@@ -491,13 +506,7 @@ export function ReviewsMenu({
 										onDeferredInvalidation={markDeferredStructuralInvalidation}
 										onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 										onNestedOverlayTriggerInteract={markNestedOverlayIntent}
-										onReviewClick={reviewId => {
-											handleNestedOverlayOpenChange(true)
-											void flushDeferredStructuralInvalidation()
-											openReviewDialog(reviewId, {
-												onClose: () => handleNestedOverlayOpenChange(false)
-											})
-										}}
+										onReviewClick={handleReviewItemClick}
 										showCardColumn={false}
 										variant='default'
 									/>
@@ -519,13 +528,7 @@ export function ReviewsMenu({
 									onDeferredInvalidation={markDeferredStructuralInvalidation}
 									onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 									onNestedOverlayTriggerInteract={markNestedOverlayIntent}
-									onReviewClick={reviewId => {
-										handleNestedOverlayOpenChange(true)
-										void flushDeferredStructuralInvalidation()
-										openReviewDialog(reviewId, {
-											onClose: () => handleNestedOverlayOpenChange(false)
-										})
-									}}
+									onReviewClick={handleReviewItemClick}
 									showCardColumn={false}
 									variant='default'
 								/>
