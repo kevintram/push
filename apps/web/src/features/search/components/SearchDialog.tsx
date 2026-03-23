@@ -207,7 +207,7 @@ export function SearchDialog({
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent
-				className='-translate-x-1/2 fixed top-[5%] left-1/2 flex max-h-[90vh] w-full translate-y-0 flex-col p-0 md:max-w-3xl lg:max-w-5xl xl:max-w-6xl'
+				className='fixed top-[5%] left-1/2 flex max-h-[90vh] w-full -translate-x-1/2 translate-y-0 flex-col p-0 md:max-w-3xl lg:max-w-5xl xl:max-w-6xl'
 				showCloseButton={false}
 			>
 				<DialogHeader className='space-y-1 px-4 pt-4 sm:px-6'>

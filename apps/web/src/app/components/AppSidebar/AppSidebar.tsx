@@ -67,7 +67,7 @@ function SidebarCollapsedBadgeStack({
 	return (
 		<div
 			aria-hidden='true'
-			className='-translate-y-[46%] pointer-events-none absolute top-0 right-[-0.25rem] z-10 flex max-w-[calc(100%+1.25rem)] items-center justify-end'
+			className='pointer-events-none absolute top-0 right-[-0.25rem] z-10 flex max-w-[calc(100%+1.25rem)] -translate-y-[46%] items-center justify-end'
 			data-testid={testId}
 		>
 			{visibleBadges.map((badge, index) => (

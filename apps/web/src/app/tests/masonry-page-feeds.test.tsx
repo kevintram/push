@@ -375,7 +375,7 @@ describe('masonry-backed page feeds', () => {
 
 		render(<TopicsPage />)
 
-		const [createButton] = screen.getAllByRole('button', { name: /^Create$/i })
+		const [createButton] = screen.getAllByRole('button', { name: /^Create$/iu })
 
 		expect(createButton).toBeDefined()
 		if (!createButton) {
@@ -478,9 +478,9 @@ describe('masonry-backed page feeds', () => {
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
 		expect(screen.getByText('Topic detail card')).toBeInTheDocument()
 		expect(
-			screen.queryByRole('tab', { name: /Subtopics/i })
+			screen.queryByRole('tab', { name: /Subtopics/iu })
 		).not.toBeInTheDocument()
-		expect(screen.getByRole('button', { name: /^Add$/i })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: /^Add$/iu })).toBeInTheDocument()
 		expect(
 			masonryPropsSpy.mock.calls.some(
 				([props]) =>
@@ -597,7 +597,7 @@ describe('masonry-backed page feeds', () => {
 
 		render(<FlashcardsHarness />)
 
-		await user.click(screen.getByRole('button', { name: /retire this item/i }))
+		await user.click(screen.getByRole('button', { name: /retire this item/iu }))
 
 		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
 			id: 22,
@@ -638,16 +638,16 @@ describe('masonry-backed page feeds', () => {
 
 		render(<FlashcardsHarness />)
 
-		await user.click(screen.getByRole('button', { name: /retire this item/i }))
+		await user.click(screen.getByRole('button', { name: /retire this item/iu }))
 
 		expect(
 			screen.getByRole('alertdialog', {
-				name: /this card still has scheduled reviews!/i
+				name: /this card still has scheduled reviews!/iu
 			})
 		).toBeInTheDocument()
 		expect(updateReviewCardAsyncMock).not.toHaveBeenCalled()
 
-		await user.click(screen.getByRole('button', { name: /^Confirm$/i }))
+		await user.click(screen.getByRole('button', { name: /^Confirm$/iu }))
 
 		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
 			id: 23,
@@ -687,8 +687,8 @@ describe('masonry-backed page feeds', () => {
 
 		render(<FlashcardsHarness />)
 
-		await user.click(screen.getByRole('button', { name: /retire this item/i }))
-		await user.click(screen.getByRole('button', { name: /^See reviews\.$/i }))
+		await user.click(screen.getByRole('button', { name: /retire this item/iu }))
+		await user.click(screen.getByRole('button', { name: /^See reviews\.$/iu }))
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/review-cards/$reviewCardId',
@@ -722,7 +722,7 @@ describe('masonry-backed page feeds', () => {
 		render(<FlashcardsHarness />)
 
 		const retireButton = screen.getByRole('button', {
-			name: /return this item to review queue/i
+			name: /return this item to review queue/iu
 		})
 
 		expect(retireButton).toHaveAttribute('aria-pressed', 'true')
@@ -1089,36 +1089,36 @@ describe('masonry-backed page feeds', () => {
 				['Practice prompt 3', 'Practice prompt 4']
 			]
 		}
-	])(
-		'renders focused practice layout rows for $count cards',
-		({ count, expectedRows }) => {
-			useReviewCardQueueMock.mockReturnValue({
-				data: buildPracticeQueueItems(count),
-				isLoading: false
-			})
+	])('renders focused practice layout rows for $count cards', ({
+		count,
+		expectedRows
+	}) => {
+		useReviewCardQueueMock.mockReturnValue({
+			data: buildPracticeQueueItems(count),
+			isLoading: false
+		})
 
-			render(<PracticeHarness initialScope='focused' />)
+		render(<PracticeHarness initialScope='focused' />)
 
-			expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
-			expect(screen.getAllByTestId('review-card')).toHaveLength(count)
-			expect(
-				screen.getAllByTestId('review-card').map(card => card.textContent)
-			).toEqual(expectedRows.flat())
+		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
+		expect(screen.getAllByTestId('review-card')).toHaveLength(count)
+		expect(
+			screen.getAllByTestId('review-card').map(card => card.textContent)
+		).toEqual(expectedRows.flat())
 
-			const rows = screen.getAllByTestId('focused-practice-row')
-			expect(rows).toHaveLength(expectedRows.length)
-			expect(rows.map(row => row.getAttribute('data-row-size'))).toEqual(
-				expectedRows.map(row => row.length.toString())
+		const rows = screen.getAllByTestId('focused-practice-row')
+		expect(rows).toHaveLength(expectedRows.length)
+		expect(rows.map(row => row.getAttribute('data-row-size'))).toEqual(
+			expectedRows.map(row => row.length.toString())
+		)
+		expect(
+			rows.map(row =>
+				within(row)
+					.getAllByTestId('review-card')
+					.map(card => card.textContent)
 			)
-			expect(
-				rows.map(row =>
-					within(row)
-						.getAllByTestId('review-card')
-						.map(card => card.textContent)
-				)
-			).toEqual(expectedRows)
-		}
-	)
+		).toEqual(expectedRows)
+	})
 
 	it('renders five focused practice cards as 2/2/1 below xl', async () => {
 		window.happyDOM?.setViewport({ height: 1100, width: 900 })
@@ -1191,7 +1191,7 @@ describe('masonry-backed page feeds', () => {
 			screen.getByRole('tab', { name: 'Focused' })
 		)
 		expect(scopeBar).toContainElement(screen.getByText('Due in next 7d'))
-		// biome-ignore lint/nursery/noBitwiseOperators: compareDocumentPosition returns a bitmask
+		// biome-ignore lint/suspicious/noBitwiseOperators: compareDocumentPosition returns a bitmask
 		expect(
 			scopeBar.compareDocumentPosition(focusedLayout) &
 				Node.DOCUMENT_POSITION_FOLLOWING
@@ -1238,7 +1238,7 @@ describe('masonry-backed page feeds', () => {
 				screen.queryByRole('tab', { name: 'Focused' })
 			).not.toBeInTheDocument()
 			expect(screen.queryByRole('tab', { name: 'All' })).not.toBeInTheDocument()
-			expect(screen.getAllByText(/^Today/)).toHaveLength(2)
+			expect(screen.getAllByText(/^Today/u)).toHaveLength(2)
 			expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(2)
 			expect(screen.getByText('Today flashcard')).toBeInTheDocument()
 			expect(screen.getByText('Yesterday flashcard')).toBeInTheDocument()
@@ -1299,7 +1299,7 @@ describe('masonry-backed page feeds', () => {
 				screen.queryByRole('tab', { name: 'Focused' })
 			).not.toBeInTheDocument()
 			expect(screen.queryByRole('tab', { name: 'All' })).not.toBeInTheDocument()
-			expect(screen.getAllByText(/^Today/)).toHaveLength(2)
+			expect(screen.getAllByText(/^Today/u)).toHaveLength(2)
 			expect(screen.getByText('Tuesday')).toBeInTheDocument()
 			expect(screen.getByText('Last week')).toBeInTheDocument()
 			expect(screen.getByText('Today practice')).toBeInTheDocument()

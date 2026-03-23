@@ -28,6 +28,11 @@
 			"trailingCommas": "none"
 		}
 	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
 	"linter": {
 		"domains": {
 			"project": "all",
@@ -49,6 +54,26 @@
 	},
 	"overrides": [
 		{
+			"includes": [
+				"src/**/*.tsx",
+				"!src/**/*.test.tsx",
+				"!src/components/ui/**"
+			],
+			"linter": {
+				"rules": {
+					"nursery": {
+						"noExcessiveLinesPerFile": {
+							"level": "error",
+							"options": {
+								"maxLines": 500,
+								"skipBlankLines": true
+							}
+						}
+					}
+				}
+			}
+		},
+		{
 			"includes": ["**/*"],
 			"linter": {
 				"rules": {
@@ -61,11 +86,7 @@
 						}
 					},
 					"nursery": {
-						"noUnresolvedImports": "off",
-						"noUnknownAtRule": "off",
 						"useExplicitType": "off",
-						"useForComponent": "off",
-						"useExportsLast": "off",
 						"noShadow": "off",
 						"useSortedClasses": {
 							"level": "error",
@@ -146,9 +167,6 @@
 			"includes": ["src/**/*.test.tsx"],
 			"linter": {
 				"rules": {
-					"nursery": {
-						"noSecrets": "off"
-					},
 					"performance": {
 						"useTopLevelRegex": "off"
 					},
@@ -182,9 +200,7 @@
 						"useKeyWithClickEvents": "off"
 					},
 					"nursery": {
-						"noSecrets": "off", // because it's causing issues with tailwind
-						"useSortedClasses": "off",
-						"noNoninteractiveElementInteractions": "off"
+						"useSortedClasses": "off"
 					}
 				}
 			}
@@ -202,13 +218,7 @@
 		},
 		{
 			"includes": ["src/app/pages/UnscheduledPage.tsx"],
-			"linter": {
-				"rules": {
-					"nursery": {
-						"useUniqueElementIds": "off"
-					}
-				}
-			}
+			"linter": { "rules": {} }
 		},
 		{
 			"includes": ["src/components/LearnableCard/LearnableCardBase.tsx"],
@@ -221,9 +231,6 @@
 						"useSemanticElements": "off",
 						"useFocusableInteractive": "off",
 						"noStaticElementInteractions": "off"
-					},
-					"nursery": {
-						"noNoninteractiveElementInteractions": "off"
 					}
 				}
 			}
@@ -251,22 +258,13 @@
 				"rules": {
 					"a11y": {
 						"noSvgWithoutTitle": "off"
-					},
-					"nursery": {
-						"noSecrets": "off"
 					}
 				}
 			}
 		},
 		{
 			"includes": ["src/components/ui/calendar.tsx"],
-			"linter": {
-				"rules": {
-					"nursery": {
-						"noNestedComponentDefinitions": "off"
-					}
-				}
-			}
+			"linter": { "rules": {} }
 		},
 		{
 			"includes": ["src/app/routes/**"],

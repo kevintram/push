@@ -49,7 +49,7 @@ const topicTreeNodes = [
 	}
 ]
 
-// biome-ignore lint/nursery/noSecrets: Test suite label is not a secret.
+// biome-ignore lint/security/noSecrets: Test suite label is not a secret.
 describe('topicNavigatorUtils', () => {
 	it('parses topic and root drop ids', () => {
 		expect(parseTopicDropId(createTopicDropId(12))).toEqual({

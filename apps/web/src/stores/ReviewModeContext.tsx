@@ -7,7 +7,7 @@ export const REVIEW_MODES = ['off', 'on'] as const
 
 export type ReviewMode = (typeof REVIEW_MODES)[number]
 
-type ReviewModeContextType = {
+interface ReviewModeContextType {
 	reviewMode: ReviewMode
 	setReviewMode: (mode: ReviewMode) => void
 	isReviewModeEnabled: boolean
@@ -89,7 +89,7 @@ export function useReviewMode() {
 	const context = useContext(ReviewModeContext)
 
 	if (!context) {
-		// biome-ignore lint/nursery/noSecrets: false positive on static invariant message
+		// biome-ignore lint/security/noSecrets: false positive on static invariant message
 		throw new Error('ReviewModeProvider is required')
 	}
 

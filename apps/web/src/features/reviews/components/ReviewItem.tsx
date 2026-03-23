@@ -47,10 +47,10 @@ const getStabilityChangeColorClass = (
 	before: number | null,
 	after: number | null
 ) => {
-	if (after == null) {
+	if (after === null) {
 		return ''
 	}
-	if (before == null) {
+	if (before === null) {
 		return 'text-green-600 dark:text-green-400'
 	}
 	const roundedDelta = Math.round(after - before)
@@ -107,7 +107,7 @@ export function ReviewItem({
 		seedReviewDetail
 	} = usePrefetchReviewDetail(entry)
 
-	const isCompleted = entry.completed_at != null
+	const isCompleted = entry.completed_at !== null
 	const reviewStatus: ReviewRatingState = isCompleted
 		? (entry.rating ?? 'good')
 		: 'uncompleted'
@@ -116,9 +116,9 @@ export function ReviewItem({
 		entry.stability_before,
 		entry.stability_after
 	)
-	const hasStability = entry.stability_after != null
+	const hasStability = entry.stability_after !== null
 	const hasDelta =
-		entry.stability_after != null && entry.stability_before != null
+		entry.stability_after !== null && entry.stability_before !== null
 	const stabilityAfterRounded = hasStability
 		? Math.round(entry.stability_after ?? 0)
 		: 0
@@ -255,7 +255,7 @@ export function ReviewItem({
 		/>
 	)
 
-	const hasNotes = !!entry.notes?.trim()
+	const hasNotes = Boolean(entry.notes?.trim())
 
 	const descriptionEl = (
 		<span
@@ -444,7 +444,7 @@ export function ReviewItem({
 	)
 
 	return (
-		// biome-ignore lint/nursery/noNoninteractiveElementInteractions: row container supports keyboard navigation and cannot be a button due to nested controls
+		// biome-ignore lint/a11y/noNoninteractiveElementInteractions: row container supports keyboard navigation and cannot be a button due to nested controls
 		// biome-ignore lint/a11y/noStaticElementInteractions: interactive row behavior is intentional for review list ergonomics
 		<div
 			className={cn(
