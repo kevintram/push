@@ -27,13 +27,15 @@ if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" = "HEAD" ]; then
     exit 1
 fi
 
-slot=$(python3 - "$SLOTS_FILE" "$BRANCH_NAME" "$MAX_SLOT" <<'PY'
+slot=$(python3 - "$SLOTS_FILE" "$BRANCH_NAME" "$MAX_SLOT" "$ROOT_DIR" <<'PY' || true
 import os
+import subprocess
 import sys
 
 slots_file = sys.argv[1]
 key = sys.argv[2]
 max_slot = int(sys.argv[3])
+root_dir = sys.argv[4]
 
 try:
     import tomllib  # Python 3.11+
@@ -47,7 +49,42 @@ if os.path.exists(slots_file):
         data = tomllib.load(f) or {}
 
 worktrees = data.get("worktrees", {})
+
+# Prune slots for worktrees that no longer exist
+pruned = False
+try:
+    result = subprocess.run(
+        ["git", "worktree", "list", "--porcelain"],
+        capture_output=True, text=True, cwd=root_dir,
+    )
+    active_paths = {
+        line.split(" ", 1)[1]
+        for line in result.stdout.splitlines()
+        if line.startswith("worktree ")
+    }
+    parent_dir = os.path.dirname(root_dir)
+    stale = [
+        k for k in worktrees
+        if os.path.join(parent_dir, k.replace("/", "-")) not in active_paths
+    ]
+    for k in stale:
+        del worktrees[k]
+        pruned = True
+except Exception:
+    pass  # If pruning fails, continue without it
+
+def write_slots():
+    data["worktrees"] = worktrees
+    os.makedirs(os.path.dirname(slots_file), exist_ok=True)
+    with open(slots_file, "w", encoding="utf-8") as f:
+        f.write("[worktrees]\n")
+        for k in sorted(worktrees):
+            escaped = str(k).replace("\\", "\\\\").replace('"', '\\"')
+            f.write(f"\"{escaped}\" = {int(worktrees[k])}\n")
+
 if key in worktrees:
+    if pruned:
+        write_slots()
     print(int(worktrees[key]))
     sys.exit(0)
 
@@ -59,14 +96,7 @@ if slot is None:
     sys.exit(1)
 
 worktrees[key] = slot
-data["worktrees"] = worktrees
-
-os.makedirs(os.path.dirname(slots_file), exist_ok=True)
-with open(slots_file, "w", encoding="utf-8") as f:
-    f.write("[worktrees]\n")
-    for k in sorted(worktrees):
-        escaped = str(k).replace("\\", "\\\\").replace('"', '\\"')
-        f.write(f"\"{escaped}\" = {int(worktrees[k])}\n")
+write_slots()
 
 print(int(slot))
 PY
