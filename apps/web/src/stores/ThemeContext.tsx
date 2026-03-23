@@ -1,20 +1,24 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import {
+	ThemeProvider as NextThemesProvider,
+	useTheme as useNextTheme
+} from 'next-themes'
+import type { ReactNode } from 'react'
 
 export type Theme = 'dark' | 'light' | 'system'
-
-type ThemeContextType = {
-	theme: Theme
-	setTheme: (theme: Theme) => void
-}
-
-export const ThemeContext = createContext<ThemeContextType | undefined>(
-	undefined
-)
+export type ResolvedTheme = Exclude<Theme, 'system'>
 
 type ThemeProviderProps = {
-	children: React.ReactNode
+	children: ReactNode
 	defaultTheme?: Theme
 	storageKey?: string
+}
+
+type UseThemeResult = {
+	theme?: Theme
+	resolvedTheme?: ResolvedTheme
+	setTheme: (theme: Theme) => void
+	systemTheme?: ResolvedTheme
+	themes: Array<string>
 }
 
 export function ThemeProvider({
@@ -22,41 +26,26 @@ export function ThemeProvider({
 	defaultTheme = 'system',
 	storageKey = 'vite-ui-theme'
 }: ThemeProviderProps) {
-	const [theme, setTheme] = useState<Theme>(
-		() => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+	return (
+		<NextThemesProvider
+			attribute='class'
+			defaultTheme={defaultTheme}
+			enableSystem={true}
+			storageKey={storageKey}
+		>
+			{children}
+		</NextThemesProvider>
 	)
-
-	useEffect(() => {
-		const root = window.document.documentElement
-		root.classList.remove('light', 'dark')
-		if (theme === 'system') {
-			const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-				.matches
-				? 'dark'
-				: 'light'
-			root.classList.add(systemTheme)
-			return
-		}
-		root.classList.add(theme)
-	}, [theme])
-
-	const value = {
-		theme,
-		setTheme: (newTheme: Theme) => {
-			localStorage.setItem(storageKey, newTheme)
-			setTheme(newTheme)
-		}
-	}
-
-	return <ThemeContext value={value}>{children}</ThemeContext>
 }
 
-export function useTheme() {
-	const context = useContext(ThemeContext)
+export function useTheme(): UseThemeResult {
+	const theme = useNextTheme()
 
-	if (context === undefined) {
-		throw new Error('useTheme must be used within a ThemeProvider')
+	return {
+		theme: theme.theme as Theme | undefined,
+		resolvedTheme: theme.resolvedTheme as ResolvedTheme | undefined,
+		setTheme: theme.setTheme as (theme: Theme) => void,
+		systemTheme: theme.systemTheme as ResolvedTheme | undefined,
+		themes: theme.themes
 	}
-
-	return context
 }
