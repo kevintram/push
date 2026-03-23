@@ -99,10 +99,16 @@ fi
 
 if [ "$FORCE" = true ]; then
     echo "🗑️  Removing worktree (force): $TARGET_WORKTREE"
-    git worktree remove -f "$TARGET_WORKTREE"
+    if ! git worktree remove -f "$TARGET_WORKTREE"; then
+        echo "❌ Failed to remove worktree. Slot assignment kept."
+        exit 1
+    fi
 else
     echo "🗑️  Removing worktree: $TARGET_WORKTREE"
-    git worktree remove "$TARGET_WORKTREE"
+    if ! git worktree remove "$TARGET_WORKTREE"; then
+        echo "❌ Failed to remove worktree (use -f to force). Slot assignment kept."
+        exit 1
+    fi
 fi
 
 remove_slot_assignment "$SLOTS_FILE" "$BRANCH_NAME"
