@@ -57,7 +57,7 @@ const VARIANT_STYLES = {
 		tabs: 'flex min-h-0 flex-1 flex-col gap-2',
 		content: 'mt-0 flex min-h-0 flex-1 flex-col',
 		fieldContainer: 'relative flex min-h-0 flex-1 flex-col',
-		textarea: 'field-sizing-fixed h-full min-h-0 flex-1',
+		textarea: 'min-h-24',
 		closed: 'flex min-h-0 flex-1 w-full items-center justify-center'
 	}
 } as const
