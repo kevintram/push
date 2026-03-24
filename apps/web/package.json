@@ -10,7 +10,7 @@
 		"test:ci": "rm -rf coverage && pnpm exec vitest run",
 		"test:e2e:ci": "pnpm exec playwright test",
 		"lint:tsc": "tsc -b",
-		"lint:biome": "biome lint --diagnostic-level=error --max-diagnostics=none .",
+		"lint:biome": "biome ci --diagnostic-level=error --max-diagnostics=none .",
 		"lint:component-count": "node ./scripts/check-component-count.mjs",
 		"lint": "node ./scripts/run-lint.mjs",
 		"format": "biome format",

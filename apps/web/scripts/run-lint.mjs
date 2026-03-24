@@ -1,11 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import process from 'node:process'
 
-const lintSteps = [
-	'lint:tsc',
-	'lint:biome',
-	'lint:component-count'
-]
+const lintSteps = ['lint:tsc', 'lint:biome', 'lint:component-count']
 
 let hasFailure = false
 

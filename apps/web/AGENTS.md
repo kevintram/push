@@ -31,7 +31,7 @@ For your convenience, these are the commands as of writing this:
 - `pnpm test:e2e` - Run E2E tests with Playwright UI
 - `pnpm test:e2e:ci` - Run E2E tests headlessly
 - `pnpm lint:tsc` - Run TypeScript compiler checks
-- `pnpm lint:biome` - Run Biome linting and formatting
+- `pnpm lint:biome` - Run Biome CI checks (lint + formatting/import organization/assist)
 - `pnpm lint:component-count` - Enforce max two React components per file
 - `pnpm lint` - Run all linting (TypeScript + Biome + component-count)
 - `pnpm format` - Format code with Biome
