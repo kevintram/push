@@ -165,12 +165,12 @@ describe('FlashcardsPage', () => {
 
 		expect(
 			screen.getByRole('alertdialog', {
-				name: /this card still has scheduled reviews!/iu
+				name: /retire this card\?/iu
 			})
 		).toBeInTheDocument()
 		expect(updateReviewCardAsyncMock).not.toHaveBeenCalled()
 
-		await user.click(screen.getByRole('button', { name: /^Confirm$/iu }))
+		await user.click(screen.getByRole('button', { name: /^Retire anyway$/iu }))
 
 		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
 			id: 23,
@@ -211,7 +211,9 @@ describe('FlashcardsPage', () => {
 		render(renderFlashcardsPage({}))
 
 		await user.click(screen.getByRole('button', { name: /retire this item/iu }))
-		await user.click(screen.getByRole('button', { name: /^See reviews\.$/iu }))
+		await user.click(
+			screen.getByRole('button', { name: /^See scheduled reviews\.$/iu })
+		)
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/review-cards/$reviewCardId',
