@@ -1,5 +1,5 @@
 import type { UniqueIdentifier } from '@dnd-kit/core'
-import type { TopicTreeNode } from '../utils/topicTree'
+import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 
 const TOPIC_DROP_ID_PREFIX = 'topic-navigator-topic:'
 const TOPIC_ROOT_DROP_ID_PREFIX = 'topic-navigator-root-drop:'

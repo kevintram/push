@@ -37,19 +37,19 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 	}
 })
 
-vi.mock('../hooks/useTopicTree', () => ({
+vi.mock('~/features/topics/hooks/useTopicTree', () => ({
 	useTopicTree: () => useTopicTreeMock()
 }))
 
-vi.mock('../api/createTopic', () => ({
+vi.mock('~/features/topics/api/createTopic', () => ({
 	useCreateTopic: () => useCreateTopicMock()
 }))
 
-vi.mock('../api/deleteTopic', () => ({
+vi.mock('~/features/topics/api/deleteTopic', () => ({
 	useDeleteTopic: () => useDeleteTopicMock()
 }))
 
-vi.mock('../api/updateTopic', () => ({
+vi.mock('~/features/topics/api/updateTopic', () => ({
 	useUpdateTopic: () => useUpdateTopicMock()
 }))
 
