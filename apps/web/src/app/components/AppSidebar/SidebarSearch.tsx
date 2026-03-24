@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { SidebarMenuButton, SidebarMenuItem } from '~/components/ui/sidebar'
-import { SearchDialog } from '~/features/search/components/SearchDialog'
+import { SearchDialog } from '~/features/search/components/search-dialog/SearchDialog'
 
 export function SidebarSearch() {
 	const [searchOpen, setSearchOpen] = useState(false)

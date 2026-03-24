@@ -13,8 +13,8 @@ import {
 	EntityTypeFilter,
 	type EntityTypeFilterValue
 } from '~/components/EntityTypeFilter'
-import { SearchInput } from '~/components/search/SearchInput'
-import { SearchResultsContainer } from '~/components/search/SearchResultsContainer'
+import { SearchInput } from './SearchInput'
+import { SearchResultsContainer } from './SearchResultsContainer'
 import { Button } from '~/components/ui/button'
 import {
 	Dialog,
