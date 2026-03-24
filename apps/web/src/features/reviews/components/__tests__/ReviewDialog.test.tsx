@@ -1,13 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { ReviewDialog } from './ReviewDialog'
+import { ReviewDialog } from '../ReviewDialog'
 
 vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => vi.fn()
 }))
 
-vi.mock('../api/getReviews', () => ({
+vi.mock('../../api/getReviews', () => ({
 	useReview: () => ({
 		data: {
 			id: 7,
@@ -42,14 +42,14 @@ vi.mock('../api/getReviews', () => ({
 	})
 }))
 
-vi.mock('../api/updateReview', () => ({
+vi.mock('../../api/updateReview', () => ({
 	useUpdateReview: () => ({
 		isPending: false,
 		mutate: vi.fn()
 	})
 }))
 
-vi.mock('../api/deleteReview', () => ({
+vi.mock('../../api/deleteReview', () => ({
 	useDeleteReview: () => ({
 		mutate: vi.fn(),
 		mutateAsync: vi.fn()

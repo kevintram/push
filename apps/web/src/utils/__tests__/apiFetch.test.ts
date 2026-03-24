@@ -5,7 +5,7 @@ const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 function loadApiFetchModule() {
 	vi.resetModules()
 	vi.stubEnv('VITE_API_URL', 'http://api.example')
-	return import('./apiFetch')
+	return import('../apiFetch')
 }
 
 describe('apiFetch', () => {

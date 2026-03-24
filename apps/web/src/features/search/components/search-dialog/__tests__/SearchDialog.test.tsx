@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { SearchDialog } from './SearchDialog'
+import { SearchDialog } from '../SearchDialog'
 
 const navigateMock = vi.fn()
 const useSearchAllMock = vi.fn()

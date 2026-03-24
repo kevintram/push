@@ -8,7 +8,7 @@ import {
 	useReviewCardsMock,
 	useTopicMock,
 	useTopicsMock
-} from '../test-support/masonryPageTestSupport'
+} from '~/testing/support/masonryPageTestSupport'
 
 describe('TopicDetailPage masonry', () => {
 	it('focuses the title textarea when landing on a newly created topic', async () => {

@@ -9,7 +9,7 @@ import {
 	updateReviewCardAsyncMock,
 	useReviewCardQueueCountsMock,
 	useReviewCardQueueMock
-} from './test-support/masonryPageTestSupport'
+} from '~/testing/support/masonryPageTestSupport'
 
 describe('FlashcardsPage', () => {
 	it('renders list views through masonry but keeps focused view non-masonry', async () => {

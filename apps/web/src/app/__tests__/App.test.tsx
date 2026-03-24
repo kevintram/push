@@ -7,7 +7,7 @@ import {
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
-import { routeTree } from './app/routeTree.gen'
+import { routeTree } from '~/app/routeTree.gen'
 
 // Mock the Supabase client so component hooks stay in-memory during tests.
 vi.mock('~/utils/supabase', () => {

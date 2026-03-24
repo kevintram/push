@@ -4,7 +4,7 @@ import {
 	createRootDropId,
 	createTopicDropId,
 	parseTopicDropId
-} from './topicNavigatorUtils'
+} from '../topicNavigatorUtils'
 
 const topicTreeNodes = [
 	{

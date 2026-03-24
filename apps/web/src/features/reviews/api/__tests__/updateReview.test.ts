@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useDeleteReview } from './deleteReview'
+import { useUpdateReview } from '../updateReview'
 
 const invalidateQueriesMock = vi.fn()
 let lastMutationOptions:
@@ -31,7 +31,7 @@ function createPendingPromise() {
 	return { promise, resolve }
 }
 
-describe('useDeleteReview', () => {
+describe('useUpdateReview', () => {
 	beforeEach(() => {
 		invalidateQueriesMock.mockReset()
 		lastMutationOptions = undefined
@@ -51,7 +51,7 @@ describe('useDeleteReview', () => {
 		)
 
 		renderHook(() =>
-			useDeleteReview({
+			useUpdateReview({
 				invalidationScope: 'reviews-only',
 				onDeferredInvalidation
 			})

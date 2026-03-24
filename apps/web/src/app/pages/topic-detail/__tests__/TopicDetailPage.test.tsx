@@ -6,8 +6,8 @@ import {
 	topic,
 	useTopicMock,
 	useTopicsMock
-} from '../test-support/detailPageTestSupport'
-import { TopicDetailPage } from './TopicDetailPage'
+} from '~/testing/support/detailPageTestSupport'
+import { TopicDetailPage } from '../TopicDetailPage'
 
 describe('TopicDetailPage', () => {
 	it('renders a read-only breadcrumb path from root to current topic', () => {

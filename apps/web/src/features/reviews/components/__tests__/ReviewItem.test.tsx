@@ -2,8 +2,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ReviewListItem } from '../types/review.types'
-import { ReviewItem } from './ReviewItem'
+import type { ReviewListItem } from '../../types/review.types'
+import { ReviewItem } from '../ReviewItem'
 
 const prefetchQueryMock = vi.fn()
 const getQueryDataMock = vi.fn()
@@ -21,14 +21,14 @@ vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => vi.fn()
 }))
 
-vi.mock('../api/updateReview', () => ({
+vi.mock('../../api/updateReview', () => ({
 	useUpdateReview: () => ({
 		isPending: false,
 		mutateAsync: vi.fn()
 	})
 }))
 
-vi.mock('../api/deleteReview', () => ({
+vi.mock('../../api/deleteReview', () => ({
 	useDeleteReview: () => ({
 		mutateAsync: vi.fn()
 	})

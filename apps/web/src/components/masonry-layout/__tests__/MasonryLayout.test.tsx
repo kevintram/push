@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { MasonryLayout } from './MasonryLayout'
+import { MasonryLayout } from '../MasonryLayout'
 
 const useVirtualizerMock = vi.fn()
 const useResizeObserverMock = vi.fn()

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { AuthRedirectError } from './apiFetch'
-import { createAppQueryClient, shouldRetryQuery } from './queryClient'
+import { AuthRedirectError } from '../apiFetch'
+import { createAppQueryClient, shouldRetryQuery } from '../queryClient'
 
 describe('queryClient', () => {
 	it('does not retry auth redirect errors', () => {

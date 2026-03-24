@@ -30,11 +30,12 @@ function renderRoute(route: string) {
 }
 
 describe('removed review routes', () => {
-	it.each(['/upcoming', '/today', '/unscheduled'])(
-		'shows not found for %s',
-		async route => {
-			renderRoute(route)
-			expect(await screen.findByText('Page not found')).toBeInTheDocument()
-		}
-	)
+	it.each([
+		'/upcoming',
+		'/today',
+		'/unscheduled'
+	])('shows not found for %s', async route => {
+		renderRoute(route)
+		expect(await screen.findByText('Page not found')).toBeInTheDocument()
+	})
 })

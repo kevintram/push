@@ -7,8 +7,8 @@ import {
 	navigateMock,
 	topic,
 	useTopicsMock
-} from './test-support/masonryPageTestSupport'
-import { TopicsPage } from './TopicsPage'
+} from '~/testing/support/masonryPageTestSupport'
+import { TopicsPage } from '../TopicsPage'
 
 describe('TopicsPage', () => {
 	it('renders MyLibrary topics through masonry', () => {

@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ReviewsMenu } from './ReviewsMenu'
+import { ReviewsMenu } from '../ReviewsMenu'
 
 const navigateMock = vi.fn()
 const useQueryMock = vi.fn()
@@ -186,7 +186,7 @@ vi.mock('~/features/reviews/api/createReview', () => ({
 	})
 }))
 
-vi.mock('../ReviewItem', () => ({
+vi.mock('../../ReviewItem', () => ({
 	ReviewItem: ({
 		entry,
 		onDeferredInvalidation,

@@ -1,8 +1,8 @@
 import type {
 	ReviewCard,
 	ReviewCardQueueItem
-} from '../types/review-card.types'
-import { groupReviewCardQueueByActionDay } from './groupReviewCardQueueByActionDay'
+} from '../../types/review-card.types'
+import { groupReviewCardQueueByActionDay } from '../groupReviewCardQueueByActionDay'
 
 const baseCard: ReviewCard = {
 	id: 1,

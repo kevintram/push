@@ -4,8 +4,8 @@ import {
 	reviewCard,
 	topic,
 	useSearchAllMock
-} from './test-support/masonryPageTestSupport'
-import { RecentPage } from './RecentPage'
+} from '~/testing/support/masonryPageTestSupport'
+import { RecentPage } from '../RecentPage'
 
 describe('RecentPage', () => {
 	it('renders grouped sections through masonry', () => {

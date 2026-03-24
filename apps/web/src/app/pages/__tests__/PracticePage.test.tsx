@@ -8,7 +8,7 @@ import {
 	reviewCardRenderSpy,
 	useReviewCardQueueCountsMock,
 	useReviewCardQueueMock
-} from './test-support/masonryPageTestSupport'
+} from '~/testing/support/masonryPageTestSupport'
 
 describe('PracticePage', () => {
 	it('renders list views through masonry and keeps focused view non-masonry', async () => {
@@ -215,7 +215,10 @@ describe('PracticePage', () => {
 				['Practice prompt 3', 'Practice prompt 4']
 			]
 		}
-	])('renders focused layout rows for $count cards', ({ count, expectedRows }) => {
+	])('renders focused layout rows for $count cards', ({
+		count,
+		expectedRows
+	}) => {
 		useReviewCardQueueMock.mockReturnValue({
 			data: buildPracticeQueueItems(count),
 			isLoading: false

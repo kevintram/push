@@ -9,8 +9,8 @@ import {
 	reviewsMenuPropsMock,
 	updateReviewCardAsyncMock,
 	useReviewCardMock
-} from '../test-support/detailPageTestSupport'
-import { ReviewCardDetailPage } from './ReviewCardDetailPage'
+} from '~/testing/support/detailPageTestSupport'
+import { ReviewCardDetailPage } from '../ReviewCardDetailPage'
 
 describe('ReviewCardDetailPage', () => {
 	it('keeps the review-card topic pill navigable and reassigns through search', async () => {
