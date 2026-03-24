@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useRouterState } from '@tanstack/react-router'
 import { useReviewCard } from '~/features/review-cards/api/getReviewCard'
-import { TopicNavigatorRail } from '~/features/topics/components/TopicNavigator'
+import { TopicNavigatorRail } from '~/features/topics/components/topic-navigator/TopicNavigator'
 
 const TOPIC_DETAIL_PATH_PATTERN = /^\/topics\/([^/]+)$/
 const REVIEW_CARD_DETAIL_PATH_PATTERN = /^\/review-cards\/([^/]+)$/

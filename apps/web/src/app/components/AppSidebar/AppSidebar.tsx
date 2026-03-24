@@ -6,13 +6,19 @@ import {
 	Layers,
 	Library,
 	ListChecks,
-	type LucideIcon,
 	PanelLeft,
 	Plus,
 	Settings
 } from 'lucide-react'
 import { useState } from 'react'
 
+import {
+	type ReviewSidebarItem,
+	ReviewSidebarMenuItem,
+	SidebarCollapsedBadgeStack,
+	type SidebarCountBadgeItem,
+	type SidebarNavItem
+} from '~/app/components/AppSidebar/AppSidebarMenuItems'
 import { ReviewModeFooterControl } from '~/app/components/AppSidebar/ReviewModeFooterControl'
 import { SidebarSearch } from '~/app/components/AppSidebar/SidebarSearch'
 import { SettingsDialog } from '~/components/SettingsDialog'
@@ -32,130 +38,7 @@ import {
 	useSidebar
 } from '~/components/ui/sidebar'
 import { useReviewCardFlaggedSummary } from '~/features/review-cards/api/getReviewCardFlaggedSummary'
-import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
-import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
 import { requestCreateTopic } from '~/features/topics/createTopicIntent'
-
-type SidebarNavItem = {
-	title: string
-	url: '/practice' | '/flashcards' | '/flagged'
-	icon: LucideIcon
-	isActive: (pathname: string) => boolean
-}
-
-type ReviewSidebarItem = SidebarNavItem & {
-	type: ReviewCardType
-}
-
-type SidebarCountBadgeItem = {
-	key: string
-	count: number
-	tone?: 'neutral' | 'unscheduled' | 'overdue' | 'dueToday'
-}
-
-function SidebarCollapsedBadgeStack({
-	badges,
-	testId
-}: {
-	badges: Array<SidebarCountBadgeItem>
-	testId?: string
-}) {
-	const visibleBadges = badges.filter(badge => badge.count > 0)
-
-	if (visibleBadges.length === 0) return null
-
-	return (
-		<div
-			aria-hidden='true'
-			className='-translate-y-[46%] pointer-events-none absolute top-0 right-[-0.25rem] z-10 flex max-w-[calc(100%+1.25rem)] items-center justify-end'
-			data-testid={testId}
-		>
-			{visibleBadges.map((badge, index) => (
-				<span
-					className={`${index > 0 ? '-ml-1' : ''} relative`}
-					key={badge.key}
-					style={{ zIndex: visibleBadges.length - index }}
-				>
-					<CountBadge
-						className='rounded-sm shadow-sm'
-						count={badge.count}
-						size='compact'
-						tone={badge.tone}
-					/>
-				</span>
-			))}
-		</div>
-	)
-}
-
-function ReviewSidebarMenuItem({
-	item,
-	isActive
-}: {
-	item: ReviewSidebarItem
-	isActive: boolean
-}) {
-	const { dueTodayCount, newCount, overdueCount } = useReviewCardQueueCounts({
-		type: item.type
-	})
-	const { state } = useSidebar()
-	const collapsedBadges: Array<SidebarCountBadgeItem> = [
-		{
-			key: 'overdue',
-			count: overdueCount,
-			tone: 'overdue'
-		},
-		{
-			key: 'today',
-			count: dueTodayCount,
-			tone: 'dueToday'
-		},
-		{
-			key: 'new',
-			count: newCount,
-			tone: 'unscheduled'
-		}
-	]
-
-	return (
-		<SidebarMenuItem key={item.title}>
-			<SidebarMenuButton
-				isActive={isActive}
-				render={<Link to={item.url} />}
-				tooltip={item.title}
-			>
-				<item.icon />
-				<span className='flex min-w-0 flex-1 items-center gap-2 group-data-[collapsible=icon]:hidden'>
-					<span className='min-w-0 truncate'>{item.title}</span>
-					<span
-						aria-hidden='true'
-						className='ml-auto flex shrink-0 items-center gap-1'
-					>
-						{overdueCount > 0 && (
-							<CountBadge count={overdueCount} size='compact' tone='overdue' />
-						)}
-						{dueTodayCount > 0 && (
-							<CountBadge
-								count={dueTodayCount}
-								size='compact'
-								tone='dueToday'
-							/>
-						)}
-						{newCount > 0 && (
-							<CountBadge count={newCount} size='compact' tone='unscheduled' />
-						)}
-					</span>
-				</span>
-			</SidebarMenuButton>
-			{state === 'collapsed' ? (
-				<SidebarCollapsedBadgeStack
-					badges={collapsedBadges}
-					testId={`sidebar-collapsed-badges-${item.type}`}
-				/>
-			) : null}
-		</SidebarMenuItem>
-	)
-}
 
 export function AppSidebar() {
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)

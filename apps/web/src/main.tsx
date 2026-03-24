@@ -42,7 +42,7 @@ async function enableMocking() {
 	if (import.meta.env.VITE_ENABLE_MSW_TESTS !== 'development') {
 		return
 	}
-	const { worker } = await import('./__mocks__/browser')
+	const { worker } = await import('./testing/msw/browser')
 	return worker.start()
 }
 

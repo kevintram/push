@@ -21,7 +21,7 @@ This is a React application built with modern tooling focused on topic-based lea
 ## Development Commands
 - Please see the package.json file for all the latest command scripts.
 
-For for your convience, these are the commands of writing this:
+For your convenience, these are the commands as of writing this:
 - `pnpm dev` - Start development server with hot reload
 - `./run.sh` - Worktree dev server (assigned port)
 - `pnpm build` - Build for production (output to `dist/`)
@@ -31,85 +31,78 @@ For for your convience, these are the commands of writing this:
 - `pnpm test:e2e` - Run E2E tests with Playwright UI
 - `pnpm test:e2e:ci` - Run E2E tests headlessly
 - `pnpm lint:tsc` - Run TypeScript compiler checks
-- `pnpm lint:biome` - Run Biome linting and formatting
-- `pnpm lint` - Run all linting (TypeScript + Biome)
+- `pnpm lint:biome` - Run Biome CI checks (lint + formatting/import organization/assist)
+- `pnpm lint:component-count` - Enforce max two React components per file
+- `pnpm lint` - Run all linting (TypeScript + Biome + component-count)
 - `pnpm format` - Format code with Biome
 - `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
 
 Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree/gen-env.sh` to refresh all env files (and recreate any missing ones) then starts on the assigned port.
 
+## Component Size Limits
+
+`src/**/*.tsx` files are linted to a hard cap of **500 lines** and **2 React components**. (`src/components/ui/` and test files are excluded from the automated check, but the same discipline applies.)
+
+When a file approaches either limit, split it: extract presentational sections into sibling `.tsx` files, and move orchestration, derived state, and mutations into a colocated `.ts` hook.
+
 ## Project Structure
 
-The application generally follows [bulletproof react](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md) project structure, however it has been modified to accommodate [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview).
-
-Most of the code lives in the src folder and looks like this:
-
 ```
-src
-|
-+-- app               # application shell (routes, pages, layouts, app-level components)
-|
-+-- components        # shared components and shadcn/ui components
-|
-+-- features          # feature based modules (domain-specific functionality)
-|
-+-- hooks             # shared hooks used across the entire application
-|
-+-- lib               # re-exporting different libraries preconfigured for the application
-|
-+-- __mocks__         # mock data and MSW handlers
-|
-+-- models            # shared data models
-|
-+-- stores            # global state stores
-|
-+-- test              # test utilities and mock server
-|
-+-- utils             # shared utility functions
-```
+src/
+├── app/                     # Application shell
+│   ├── routes/              # TanStack Router file-based routes (no test files here)
+│   ├── pages/               # Page components; complex pages get their own folder
+│   │   ├── topic-detail/    # e.g. TopicDetailPage.tsx + sibling sections + hooks
+│   │   └── review-card-detail/
+│   ├── layouts/             # Layout wrappers (PageLayout, etc.)
+│   ├── components/          # App-level components (AppSidebar, AppHeader, etc.)
+│   ├── hooks/               # App-level hooks
+│   └── __tests__/routes/    # Route-level integration tests
+│
+├── components/              # Shared cross-domain components
+│   └── ui/                  # shadcn/ui design-system primitives
+│
+├── features/                # Domain feature modules
+│   ├── review-cards/
+│   ├── reviews/
+│   ├── search/
+│   └── topics/
+│
+├── hooks/                   # App-wide shared hooks
+├── lib/                     # Preconfigured library wrappers
+├── models/                  # Shared data models
+├── stores/                  # Global state (React context providers)
+├── testing/                 # Shared test infrastructure
+│   ├── msw/                 # MSW handlers and mock data fixtures
+│   └── support/             # Test utilities and render helpers
+└── utils/                   # Shared utility functions
 
-### App Folder (`src/app/`)
-
-The `app` folder contains the application shell and routing infrastructure:
-
-```
-src/app
-|
-+-- routes            # TanStack Router file-based routes
-|
-+-- pages             # page components rendered by routes
-|
-+-- layouts           # layout components (e.g., PageLayout)
-|
-+-- components        # app-level components (AppHeader, AppSidebar, etc.)
-|
-+-- hooks             # app-level hooks
-|
-+-- types             # app-level types
-|
-+-- utils             # app-level utility functions
-|
-+-- routeTree.gen.ts  # auto-generated route tree (should be committed)
+e2e/
+└── tests/                   # Playwright E2E specs
 ```
 
-### Features Folder (`src/features/`)
+### Placement Rules
 
-For maintainable scaling, the application uses feature-based folders. Each feature folder contains domain-specific code, which keeps functionality scoped and separate from shared components.
+**Components**: Colocate with the page or feature that owns them. Only promote to `src/components/` when genuinely used across multiple unrelated domains. `src/components/ui/` is reserved for design-system primitives (shadcn/ui).
 
-A feature could have the following structure:
+**Tests**: Place in a `__tests__/` folder next to the code under test. **Exception**: route-level integration tests belong in `src/app/__tests__/routes/` — never inside `src/app/routes/`, because TanStack Router treats every file there as a route module.
+
+**Shared test infrastructure** (MSW handlers, mock data, render helpers): `src/testing/`.
+
+**Complex pages**: When a page grows, convert it to a folder — `pages/page-name/PageName.tsx` as the orchestration shell, sibling `.tsx` files for sections, and `.ts` files for hooks and utilities.
+
+### Feature Module Structure
+
+Each feature is a self-contained domain module:
 
 ```
-src/features/awesome-feature
-|
-+-- api         # exported API request declarations and api hooks related to a specific feature
-|
-+-- components  # components scoped to a specific feature
-|
-+-- hooks       # hooks scoped to a specific feature
-|
-+-- types       # typescript types for TS specific feature domain
-|
-+-- utils       # utility functions for a specific feature
-|
-+-- index.ts    # entry point for the feature, it should serve as the public API of the given feature and exports everything that should be used outside the feature
+src/features/<feature>/
+├── api/          # TanStack Query hooks and API request functions
+├── components/   # Components scoped to this feature
+├── hooks/        # Hooks scoped to this feature
+├── types/        # TypeScript types for this feature's domain
+├── utils/        # Utility functions for this feature
+└── index.ts      # Public API — the only sanctioned import surface for code outside this feature
 ```
+
+Import features through their `index.ts`. Do not reach into a feature's internals from outside its folder.

@@ -13,9 +13,7 @@ const branchName = (() => {
 		return execSync('git rev-parse --abbrev-ref HEAD', {
 			encoding: 'utf-8'
 		}).trim()
-	} catch {
-		return
-	}
+	} catch {}
 })()
 
 export default defineConfig(() => ({
@@ -35,7 +33,7 @@ export default defineConfig(() => ({
 	},
 	resolve: {
 		alias: {
-			'~': path.resolve(__dirname, './src')
+			'~': path.resolve(import.meta.dirname, './src')
 		}
 	},
 	test: {
@@ -43,12 +41,7 @@ export default defineConfig(() => ({
 		clearMocks: true,
 		coverage: {
 			enabled: true,
-			exclude: [
-				'src/main.tsx',
-				'src/mocks/browser.ts',
-				'src/test-utils.tsx',
-				'src/components/ui/**'
-			],
+			exclude: ['src/main.tsx', 'src/testing/**', 'src/components/ui/**'],
 			include: ['src/**/*'],
 			reporter: ['text', 'lcov'],
 			reportsDirectory: 'coverage',
@@ -63,7 +56,7 @@ export default defineConfig(() => ({
 		css: false,
 		environment: 'happy-dom',
 		globals: true,
-		include: ['src/**/*.test.ts?(x)'],
-		setupFiles: 'src/test/test-setup.ts'
+		include: ['src/**/__tests__/**/*.test.ts?(x)'],
+		setupFiles: 'src/testing/setup-tests.ts'
 	}
 }))

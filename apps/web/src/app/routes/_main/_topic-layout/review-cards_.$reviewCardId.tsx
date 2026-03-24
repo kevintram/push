@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
 	ReviewCardDetailPage,
 	type ReviewCardDetailTab
-} from '~/app/pages/ReviewCardDetailPage'
+} from '~/app/pages/review-card-detail/ReviewCardDetailPage'
 
 type ReviewCardDetailRouteSearch = {
 	tab: ReviewCardDetailTab

@@ -1,22 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import {
-	AlertTriangle,
-	Anvil,
-	Baby,
-	Brain,
-	Flag,
-	MoreHorizontal,
-	Sparkles,
-	Sunset,
-	Trash2,
-	User2,
-	X
-} from 'lucide-react'
-import type { KeyboardEvent, MouseEvent, ReactNode } from 'react'
+import { AlertTriangle } from 'lucide-react'
+import type { KeyboardEvent, MouseEvent } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { RevealPanel } from '~/components/RevealPanel'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -28,20 +15,7 @@ import {
 	AlertDialogMedia,
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
-import { Badge } from '~/components/ui/badge'
-import { Button } from '~/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/dropdown-menu'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger
-} from '~/components/ui/tooltip'
+import { Card } from '~/components/ui/card'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
@@ -52,23 +26,27 @@ import {
 	formatAbsoluteDate,
 	formatRelativeDate
 } from '~/utils/formatRelativeDate'
-import { getRatingIcon } from '~/utils/getRatingIcon'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
 import {
 	REVIEW_LIST_QUERY_STALE_TIME,
 	reviewsQueryOptions
 } from '../../reviews/api/getReviews'
-import { ReviewsMenu } from '../../reviews/components/ReviewsMenu'
 import { useReviewDialog } from '../../reviews/hooks/useReviewDialog'
 import { useDeleteReviewCard } from '../api/deleteReviewCard'
 import { getReviewCard } from '../api/getReviewCard'
 import { reviewCardKeys } from '../api/queryKeys'
 import { useUpdateReviewCard } from '../api/updateReviewCard'
 import type { ReviewCard as ReviewCardModel } from '../types/review-card.types'
-import type { ReviewCardStatusBadge } from '../types/status-badge.types'
 import { hasScheduledDueReviews } from '../utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '../utils/orderReviewCardStatusBadges'
 import { RetireReviewCardDialog } from './RetireReviewCardDialog'
+import { ReviewCardBody, ReviewCardFooterMeta } from './ReviewCardBody'
+import { ReviewCardHeader, ReviewCardStatusRow } from './ReviewCardHeader'
+import {
+	type ReviewCardBadge,
+	toFreshnessTier,
+	toReviewCardBadge
+} from './reviewCardShared'
 
 const MIN_HEIGHT = 96
 const LARGE_CARD_CONTENT_HEIGHT_MIN = 500
@@ -76,67 +54,6 @@ const CARD_ESTIMATE_FALLBACK_WIDTH = 280
 const CARD_WIDTH_REVIEWED_META_MIN = 0
 const CARD_WIDTH_RATING_META_MIN = 0
 const CARD_WIDTH_STABILITY_META_MIN = 300
-const FLAGGED_ICON_CLASSNAME =
-	'h-4 w-4 fill-current text-sky-500 dark:text-sky-300'
-
-export interface ReviewCardBadge {
-	label: string
-	icon?: ReactNode
-	tooltip?: string | null
-	className?: string
-	onClick?: () => void
-	variant?:
-		| 'default'
-		| 'secondary'
-		| 'destructive'
-		| 'warning'
-		| 'outline'
-		| 'ghost'
-		| 'link'
-}
-
-const STATUS_BADGE_CLASSNAMES: Record<ReviewCardStatusBadge['tone'], string> = {
-	danger:
-		'h-5 border-transparent bg-rose-200 text-rose-900 text-xs dark:bg-red-950 dark:text-red-200',
-	info: 'h-5 border border-blue-300 bg-blue-100 text-blue-900 text-xs dark:border-blue-700 dark:bg-blue-950 dark:text-blue-200',
-	neutral:
-		'h-5 border border-zinc-300 bg-zinc-100 text-zinc-900 text-xs dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200',
-	warning:
-		'h-5 border-transparent bg-amber-100 text-amber-900 text-xs dark:bg-amber-950 dark:text-amber-200'
-}
-
-function toFreshnessTier(
-	value: string | null
-): 'Fresh' | 'Fine' | 'Hazy' | 'Forgotten' | null {
-	if (
-		value === 'Fresh' ||
-		value === 'Fine' ||
-		value === 'Hazy' ||
-		value === 'Forgotten'
-	) {
-		return value
-	}
-	return null
-}
-
-export function toReviewCardBadge(
-	badge: ReviewCardStatusBadge,
-	options?: { onOpenReviewDialog?: (reviewId: number) => void }
-): ReviewCardBadge {
-	const reviewId = badge.review_id
-	const handleReviewClick =
-		reviewId != null && options?.onOpenReviewDialog
-			? () => options.onOpenReviewDialog?.(reviewId)
-			: undefined
-
-	return {
-		label: badge.label,
-		tooltip: badge.tooltip,
-		className: STATUS_BADGE_CLASSNAMES[badge.tone],
-		variant: badge.tone === 'danger' ? 'destructive' : 'outline',
-		onClick: handleReviewClick
-	}
-}
 
 interface ReviewCardProps {
 	reviewCard: ReviewCardModel
@@ -374,56 +291,6 @@ export function ReviewCard({
 	)
 	const resolvedStatusBadges = statusBadges ?? reviewCardStatusBadges
 
-	const hasStatusBadges = resolvedStatusBadges.length > 0
-	const statusRowClassName =
-		'pointer-events-none absolute top-[0.5px] right-3 z-5 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-1.5 -translate-y-1/2'
-
-	const statusRow = hasStatusBadges ? (
-		<div className={statusRowClassName}>
-			{resolvedStatusBadges.map((badge, index) => (
-				<Tooltip key={`${badge.label}-${index}`}>
-					<TooltipTrigger
-						render={
-							<Badge
-								className={
-									badge.className
-										? `${badge.className} pointer-events-auto rounded-sm shadow-sm`
-										: 'pointer-events-auto h-5 rounded-sm text-xs shadow-sm'
-								}
-								onClick={event => {
-									if (!badge.onClick) return
-									event.stopPropagation()
-									badge.onClick()
-								}}
-								onKeyDown={event => {
-									if (
-										(event.key === 'Enter' || event.key === ' ') &&
-										badge.onClick
-									) {
-										event.preventDefault()
-										event.stopPropagation()
-										badge.onClick()
-									}
-								}}
-								role={badge.onClick ? 'button' : undefined}
-								tabIndex={badge.onClick ? 0 : undefined}
-								variant={badge.variant ?? 'outline'}
-							>
-								{badge.icon ? (
-									<span className='inline-flex items-center'>{badge.icon}</span>
-								) : null}
-								{badge.label ? <span>{badge.label}</span> : null}
-							</Badge>
-						}
-					/>
-					{badge.tooltip ? (
-						<TooltipContent>{badge.tooltip}</TooltipContent>
-					) : null}
-				</Tooltip>
-			))}
-		</div>
-	) : null
-
 	const typeBadgeLabel =
 		typeLabelOverride ??
 		(reviewCard.type === 'practice' ? 'Practice' : 'Flashcard')
@@ -442,95 +309,6 @@ export function ReviewCard({
 		(!hasMeasuredCardWidth || cardRect.width >= CARD_WIDTH_RATING_META_MIN)
 	const showStabilityMeta =
 		!hasMeasuredCardWidth || cardRect.width >= CARD_WIDTH_STABILITY_META_MIN
-
-	let primaryContent: ReactNode
-	if (hidePrimary) {
-		primaryContent = (
-			<div className='relative'>
-				<div
-					aria-hidden={true}
-					className='break-word invisible line-clamp-5 whitespace-pre-wrap font-semibold leading-tight [overflow-wrap:anywhere]'
-				>
-					{highlightedPrimary}
-				</div>
-				<div className='absolute inset-0'>
-					<Button
-						className='h-full w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-muted-foreground text-sm hover:bg-muted/70'
-						onClick={handleRevealPrimary}
-						onKeyDown={event => event.stopPropagation()}
-						size='default'
-						variant='outline'
-					>
-						Reveal
-					</Button>
-				</div>
-			</div>
-		)
-	} else if (highlightedPrimary) {
-		primaryContent = (
-			<h3 className='break-word line-clamp-5 whitespace-pre-wrap font-semibold leading-tight [overflow-wrap:anywhere]'>
-				{highlightedPrimary}
-			</h3>
-		)
-	} else {
-		primaryContent = null
-	}
-
-	let secondaryContent: ReactNode
-	if (hideSecondary) {
-		if (canUseGuessPanel) {
-			secondaryContent = (
-				<RevealPanel
-					autoFocusGuess={true}
-					guessValue={guessSecondaryText}
-					isCopied={isRevealPanelCopied}
-					onGuessCopy={handleCopyGuessText}
-					onGuessValueChange={setGuessSecondaryText}
-					onRevealCopy={handleCopyRevealText}
-					onValueChange={setRevealPanelTab}
-					revealValue={reviewCard.answer}
-					stopPropagation={true}
-					value={revealPanelTab}
-					variant='card'
-				/>
-			)
-		} else {
-			secondaryContent = (
-				<div className='relative'>
-					<p
-						aria-hidden={true}
-						className='break-word invisible line-clamp-[8] whitespace-pre-wrap text-sm [overflow-wrap:anywhere]'
-					>
-						{highlightedSecondary}
-					</p>
-					<div className='absolute inset-0'>
-						<Button
-							className='h-full w-full justify-center rounded-xl border border-muted-foreground/40 border-dashed bg-muted/40 px-2.5 py-2 text-muted-foreground text-sm hover:bg-muted/70'
-							onClick={handleRevealSecondary}
-							onKeyDown={event => event.stopPropagation()}
-							size='default'
-							variant='outline'
-						>
-							Reveal
-						</Button>
-					</div>
-				</div>
-			)
-		}
-	} else if (highlightedSecondary) {
-		secondaryContent = (
-			<p
-				className={cn(
-					'break-word whitespace-pre-wrap text-sm [overflow-wrap:anywhere]',
-					isLargeCard ? 'min-h-0 flex-1 overflow-y-auto' : 'line-clamp-[8]'
-				)}
-			>
-				{highlightedSecondary}
-			</p>
-		)
-	} else {
-		secondaryContent = null
-	}
 
 	return (
 		<Card
@@ -554,231 +332,61 @@ export function ReviewCard({
 			}
 			tabIndex={onClick ? 0 : undefined}
 		>
-			{statusRow}
-			<CardHeader className='relative flex items-center justify-between gap-2 p-0 pb-1'>
-				{hideParent ? null : (
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<div className='flex min-w-0 items-center gap-1 font-semibold text-muted-foreground text-xs'>
-									<User2 className='h-3 w-3 shrink-0' />
-									<span className='truncate'>{resolvedParentLabel}</span>
-								</div>
-							}
-						/>
-						<TooltipContent>{resolvedParentLabel}</TooltipContent>
-					</Tooltip>
-				)}
-				<div className='flex-1' />
-				<div className='flex items-center gap-0.5'>
-					<ReviewsMenu
-						align='end'
-						buttonClassName='rounded-full'
-						buttonSize='xs'
-						buttonVariant='tertiary'
-						compactTriggerBadges={true}
-						hasLastReviewed={reviewCard.last_reviewed_at != null}
-						onSeeAll={handleSeeReviews}
-						onTriggerClick={event => event.stopPropagation()}
-						onTriggerFocus={handleReviewsMenuPrefetch}
-						onTriggerKeyDown={event => event.stopPropagation()}
-						onTriggerMouseEnter={handleReviewsMenuPrefetch}
-						reviewCardId={reviewCard.id}
-						triggerCounts={{
-							unscheduledCount:
-								reviewCard.reviews_unscheduled_uncompleted_count ?? 0,
-							overdueCount: reviewCard.reviews_overdue_count ?? 0,
-							dueTodayCount: reviewCard.reviews_due_today_count ?? 0
-						}}
-					/>
-					<Button
-						aria-label={isFlagged ? 'Unflag this item' : 'Flag this item'}
-						aria-pressed={isFlagged}
-						className={isUpdatingReviewCard ? 'opacity-50' : ''}
-						onClick={handleFlaggedToggle}
-						onKeyDown={event => event.stopPropagation()}
-						size='icon-sm'
-						variant='ghost'
-					>
-						<Flag
-							className={
-								isFlagged
-									? FLAGGED_ICON_CLASSNAME
-									: 'h-4 w-4 text-muted-foreground'
-							}
-						/>
-					</Button>
-					<Button
-						aria-label={
-							reviewCard.retired
-								? 'Return this item to review queue'
-								: 'Retire this item'
-						}
-						aria-pressed={reviewCard.retired}
-						className={isUpdatingReviewCard ? 'opacity-50' : ''}
-						onClick={handleRetiredToggle}
-						onKeyDown={event => event.stopPropagation()}
-						size='icon-sm'
-						variant='ghost'
-					>
-						{reviewCard.retired ? (
-							<Sunset className='h-4 w-4 text-orange-500' />
-						) : (
-							<Sunset className='h-4 w-4 text-muted-foreground' />
-						)}
-					</Button>
-					<DropdownMenu>
-						<DropdownMenuTrigger
-							render={
-								<Button
-									className='h-5 w-5 p-0'
-									onClick={event => event.stopPropagation()}
-									onKeyDown={event => event.stopPropagation()}
-									variant='ghost'
-								>
-									<MoreHorizontal className='h-3 w-3' />
-								</Button>
-							}
-						/>
-						<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
-							{onRemoveFromTab ? (
-								<DropdownMenuItem
-									disabled={isRemovingFromTab}
-									onClick={event => {
-										event.stopPropagation()
-										onRemoveFromTab()
-									}}
-								>
-									<X className='mr-2 h-4 w-4' />
-									{removeFromTabLabel}
-								</DropdownMenuItem>
-							) : null}
-							<DropdownMenuItem
-								disabled={isUpdatingReviewCard}
-								onClick={event => {
-									event.stopPropagation()
-									updateReviewCard({
-										id: reviewCard.id,
-										flagged: !isFlagged
-									})
-								}}
-							>
-								<Flag className='mr-2 h-4 w-4' />
-								{isFlagged ? 'Unflag' : 'Flag'}
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								disabled={deleteReviewCardMutation.isPending}
-								onClick={event => {
-									event.stopPropagation()
-									setIsDeleteDialogOpen(true)
-								}}
-								variant='destructive'
-							>
-								<Trash2 className='mr-2 h-4 w-4' />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-			</CardHeader>
-
-			<CardContent className='flex min-h-0 flex-1 flex-col gap-3 p-0'>
-				<div className='flex min-h-0 flex-1 flex-col gap-1'>
-					<div className='flex flex-wrap items-center gap-1 text-muted-foreground text-xs'>
-						<span>{typeBadgeLabel}</span>
-					</div>
-
-					<div className='flex min-h-0 flex-1 flex-col gap-2'>
-						{primaryContent}
-						{secondaryContent}
-					</div>
-				</div>
-			</CardContent>
-
-			<CardFooter className='gap-1 px-0 pt-2 text-muted-foreground text-xs'>
-				{isUnreviewed ? (
-					<div className='flex items-center gap-1'>
-						<Sparkles className='h-3 w-3' />
-						<span>Unreviewed</span>
-					</div>
-				) : (
-					<>
-						{freshnessTierInfo.tooltip ? (
-							<Tooltip>
-								<TooltipTrigger
-									render={
-										<div
-											className={`flex items-center gap-1 font-semibold ${freshnessTierColor}`}
-										>
-											<Brain className='h-3 w-3' />
-											<span>{freshnessTierInfo.label}</span>
-										</div>
-									}
-								/>
-								<TooltipContent>{freshnessTierInfo.tooltip}</TooltipContent>
-							</Tooltip>
-						) : (
-							<span className={`font-semibold ${freshnessTierColor}`}>
-								{freshnessTierInfo.label}
-							</span>
-						)}
-						{showReviewedMeta ? (
-							<>
-								<span className='font-bold'>·</span>
-								<Tooltip>
-									<TooltipTrigger
-										render={
-											<span className='flex items-center gap-1 font-semibold'>{`Reviewed ${lastReviewed.text}`}</span>
-										}
-									/>
-									<TooltipContent>{lastReviewedDate}</TooltipContent>
-								</Tooltip>
-							</>
-						) : null}
-						{showRatingMeta ? (
-							<span className='flex size-4 shrink-0 items-center justify-center rounded-full border border-muted-foreground text-muted-foreground'>
-								{reviewCard.last_review_rating
-									? getRatingIcon(reviewCard.last_review_rating)
-									: null}
-							</span>
-						) : null}
-						{showStabilityMeta ? (
-							<>
-								<span className='font-bold'>·</span>
-								<Tooltip>
-									<TooltipTrigger
-										render={
-											<div className='flex items-center gap-1 font-semibold text-muted-foreground'>
-												<Anvil className='h-3 w-3' />
-												<span>{stabilityText}</span>
-											</div>
-										}
-									/>
-									<TooltipContent>
-										Lasts {stabilityText} before getting hazy
-									</TooltipContent>
-								</Tooltip>
-							</>
-						) : null}
-					</>
-				)}
-				<div className='flex-1' />
-				<Tooltip>
-					<TooltipTrigger
-						render={
-							<div className='flex items-center gap-1'>
-								<Baby className='h-3 w-3' />
-								<span>{relationsCount}</span>
-							</div>
-						}
-					/>
-					<TooltipContent>
-						{relationsCount === 1
-							? '1 related card'
-							: `${relationsCount} related cards`}
-					</TooltipContent>
-				</Tooltip>
-			</CardFooter>
+			<ReviewCardStatusRow badges={resolvedStatusBadges} />
+			<ReviewCardHeader
+				deleteDisabled={deleteReviewCardMutation.isPending}
+				hideParent={hideParent}
+				isFlagged={isFlagged}
+				isRemovingFromTab={isRemovingFromTab}
+				isUpdatingReviewCard={isUpdatingReviewCard}
+				onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+				onRemoveFromTab={onRemoveFromTab}
+				onSeeReviews={handleSeeReviews}
+				onToggleFlag={handleFlaggedToggle}
+				onToggleFlagFromMenu={() => {
+					updateReviewCard({
+						id: reviewCard.id,
+						flagged: !isFlagged
+					})
+				}}
+				onToggleRetired={handleRetiredToggle}
+				onTriggerReviewsPrefetch={handleReviewsMenuPrefetch}
+				removeFromTabLabel={removeFromTabLabel}
+				resolvedParentLabel={resolvedParentLabel}
+				reviewCard={reviewCard}
+			/>
+			<ReviewCardBody
+				canUseGuessPanel={canUseGuessPanel}
+				guessSecondaryText={guessSecondaryText}
+				handleCopyGuessText={handleCopyGuessText}
+				handleCopyRevealText={handleCopyRevealText}
+				handleRevealPrimary={handleRevealPrimary}
+				handleRevealSecondary={handleRevealSecondary}
+				hidePrimary={hidePrimary}
+				hideSecondary={hideSecondary}
+				highlightedPrimary={highlightedPrimary}
+				highlightedSecondary={highlightedSecondary}
+				isLargeCard={isLargeCard}
+				isRevealPanelCopied={isRevealPanelCopied}
+				revealPanelTab={revealPanelTab}
+				reviewCardAnswer={reviewCard.answer}
+				setGuessSecondaryText={setGuessSecondaryText}
+				setRevealPanelTab={setRevealPanelTab}
+				typeBadgeLabel={typeBadgeLabel}
+			/>
+			<ReviewCardFooterMeta
+				freshnessTierColor={freshnessTierColor}
+				freshnessTierInfo={freshnessTierInfo}
+				isUnreviewed={isUnreviewed}
+				lastReviewedDate={lastReviewedDate}
+				lastReviewedText={lastReviewed.text}
+				lastReviewRating={reviewCard.last_review_rating}
+				relationsCount={relationsCount}
+				showRatingMeta={showRatingMeta}
+				showReviewedMeta={showReviewedMeta}
+				showStabilityMeta={showStabilityMeta}
+				stabilityText={stabilityText}
+			/>
 			<AlertDialog
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
@@ -828,3 +436,6 @@ export function ReviewCard({
 		</Card>
 	)
 }
+
+export type { ReviewCardBadge } from './reviewCardShared'
+export { toReviewCardBadge } from './reviewCardShared'

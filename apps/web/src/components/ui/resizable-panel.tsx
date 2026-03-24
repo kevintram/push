@@ -8,7 +8,7 @@ import {
 import { cn } from "~/lib/utils"
 
 // Re-export components
-export { Panel, PanelGroup, type ImperativePanelHandle }
+export { type ImperativePanelHandle, Panel, PanelGroup }
 
 // Styled resize handle that fits with shadcn/ui design
 export function ResizableHandle({
