@@ -32,15 +32,32 @@ For for your convience, these are the commands of writing this:
 - `pnpm test:e2e:ci` - Run E2E tests headlessly
 - `pnpm lint:tsc` - Run TypeScript compiler checks
 - `pnpm lint:biome` - Run Biome linting and formatting
-- `pnpm lint` - Run all linting (TypeScript + Biome)
+- `pnpm lint:component-count` - Enforce max two React components per file
+- `pnpm lint` - Run all linting (TypeScript + Biome + component-count)
 - `pnpm format` - Format code with Biome
 - `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
 
 Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree/gen-env.sh` to refresh all env files (and recreate any missing ones) then starts on the assigned port.
 
+## File Size And Component Count Rules
+
+For `src/**/*.tsx`:
+- Keep component files under 500 lines.
+- Keep component files to at most 2 React components.
+- When a file starts to approach either limit, split presentational sections into sibling `.tsx` files and move orchestration, derived state, and mutations into colocated `.ts` hooks/utilities.
+- `src/components/ui/**` and test files are excluded from the 500-line Biome check, but new feature/page code should still follow the same discipline unless there is a strong reason not to.
+
 ## Project Structure
 
 The application generally follows [bulletproof react](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md) project structure, however it has been modified to accommodate [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview).
+
+### Boundary Rules
+
+- `src/components/ui/**` is for reusable design-system primitives.
+- `src/components/**` is for genuinely shared cross-domain components only.
+- If a helper is only used by one page or one feature cluster, colocate it with that page or feature instead of keeping it in `src/components`.
+- Keep `src/app/pages/**` root mostly to simple route-facing pages. Complex pages should live in page folders with local sections/hooks such as `page-name/PageName.tsx`, `usePageName.ts`, and sibling section files.
+- Colocate behavior-heavy tests with the page or feature they primarily exercise. Keep route-contract and route-search tests under `src/app/tests`.
 
 Most of the code lives in the src folder and looks like this:
 

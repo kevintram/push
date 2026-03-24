@@ -29,6 +29,12 @@ pnpm install
 pnpm dev
 ```
 
+Web app linting rules:
+- React/TSX component files are limited to 500 lines.
+- Component files may define at most 2 React components.
+- `pnpm run lint` enforces TypeScript checks, Biome linting, and the component-count check.
+- `pnpm run validate` runs `lint`, `test:ci`, and `test:e2e:ci`.
+
 ### Marketing Site (`apps/site/`)
 - **Tech**: Astro, TypeScript
 - **Package Manager**: pnpm
