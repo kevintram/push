@@ -26,9 +26,9 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
-import { type ReviewCard } from '~/features/review-cards/types/review-card.types'
 import type { ReviewCardBadge } from '~/features/review-cards/components/reviewCardShared'
 import { FLAGGED_ICON_CLASSNAME } from '~/features/review-cards/components/reviewCardShared'
+import type { ReviewCard } from '~/features/review-cards/types/review-card.types'
 import { ReviewsMenu } from '~/features/reviews/components/reviews-menu/ReviewsMenu'
 import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import {

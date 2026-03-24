@@ -5,11 +5,11 @@ import { toast } from 'sonner'
 import { useDeleteReviewCard } from '~/features/review-cards/api/deleteReviewCard'
 import { useReviewCard } from '~/features/review-cards/api/getReviewCard'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
-import { consumeFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
 import {
 	toFreshnessTier,
 	toReviewCardBadge
 } from '~/features/review-cards/components/reviewCardShared'
+import { consumeFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
 import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '~/features/review-cards/utils/orderReviewCardStatusBadges'
 import { useCreateReview } from '~/features/reviews/api/createReview'

@@ -3,9 +3,8 @@ import { useNavigate } from '@tanstack/react-router'
 import type { ComponentProps, KeyboardEvent, MouseEvent } from 'react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { DropdownMenu } from '~/components/ui/dropdown-menu'
+import type { DropdownMenu } from '~/components/ui/dropdown-menu'
 import { reviewCardKeys } from '~/features/review-cards/api/queryKeys'
-import { searchKeys } from '~/features/search/api/searchAll'
 import { useCreateReview } from '~/features/reviews/api/createReview'
 import { reviewsQueryOptions } from '~/features/reviews/api/getReviews'
 import { reviewQueueKeys } from '~/features/reviews/api/queryKeys'
@@ -19,6 +18,7 @@ import {
 	getReviewCreatedToastActionLabel,
 	getReviewCreatedToastDescription
 } from '~/features/reviews/utils/reviewToastDescription'
+import { searchKeys } from '~/features/search/api/searchAll'
 import { localDateString } from '~/utils/date'
 import { type ReviewRatingState, ratingOptions } from '../reviewRatingOptions'
 import type { ReviewsMenuProps } from './shared'

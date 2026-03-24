@@ -13,8 +13,6 @@ import {
 	EntityTypeFilter,
 	type EntityTypeFilterValue
 } from '~/components/EntityTypeFilter'
-import { SearchInput } from './SearchInput'
-import { SearchResultsContainer } from './SearchResultsContainer'
 import { Button } from '~/components/ui/button'
 import {
 	Dialog,
@@ -29,6 +27,8 @@ import { TopicCard } from '~/features/topics/components/TopicCard'
 import { requestCreateTopic } from '~/features/topics/createTopicIntent'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import { estimateCardSize } from '~/utils/estimateCardSize'
+import { SearchInput } from './SearchInput'
+import { SearchResultsContainer } from './SearchResultsContainer'
 
 interface SearchDialogProps {
 	open: boolean

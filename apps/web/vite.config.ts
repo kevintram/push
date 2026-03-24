@@ -13,9 +13,7 @@ const branchName = (() => {
 		return execSync('git rev-parse --abbrev-ref HEAD', {
 			encoding: 'utf-8'
 		}).trim()
-	} catch {
-		return
-	}
+	} catch {}
 })()
 
 export default defineConfig(() => ({
@@ -35,7 +33,7 @@ export default defineConfig(() => ({
 	},
 	resolve: {
 		alias: {
-			'~': path.resolve(__dirname, './src')
+			'~': path.resolve(import.meta.dirname, './src')
 		}
 	},
 	test: {

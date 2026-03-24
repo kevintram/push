@@ -9,9 +9,9 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
+import type { Rating } from '~/features/reviews/types/review.types'
 import { cn } from '~/lib/utils'
 import { getRatingIcon } from '~/utils/getRatingIcon'
-import type { Rating } from '~/features/reviews/types/review.types'
 
 export function ReviewCardBody({
 	canUseGuessPanel,

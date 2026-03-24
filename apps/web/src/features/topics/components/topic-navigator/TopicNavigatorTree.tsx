@@ -10,12 +10,12 @@ import {
 	ContextMenuItem,
 	ContextMenuTrigger
 } from '~/components/ui/context-menu'
-import { cn } from '~/lib/utils'
 import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/features/topics/hooks/usePrefetchTopicDetail'
 import {
 	getTopicDisplayTitle,
 	type TopicTreeNode
 } from '~/features/topics/utils/topicTree'
+import { cn } from '~/lib/utils'
 import { TOPIC_NAVIGATOR_TREE_INDENT_REM } from './TopicNavigator.shared'
 import { canReparentTopic, createTopicDropId } from './topicNavigatorUtils'
 

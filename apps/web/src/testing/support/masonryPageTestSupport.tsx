@@ -1,9 +1,9 @@
 import { type ReactNode, useState } from 'react'
 import { beforeEach, vi } from 'vitest'
 import {
+	FlashcardsPage,
 	type FlashcardsScope,
-	type FlashcardsTab,
-	FlashcardsPage
+	type FlashcardsTab
 } from '~/app/pages/FlashcardsPage'
 import {
 	PracticePage,

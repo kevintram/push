@@ -1,6 +1,4 @@
 import { BookOpen, Plus } from 'lucide-react'
-
-import { DetailTabsShell, type DetailTabDefinition } from './DetailTabsShell'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -24,6 +22,7 @@ import {
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
 	estimateReviewCardSize
 } from '~/utils/estimateMasonryItemSize'
+import { type DetailTabDefinition, DetailTabsShell } from './DetailTabsShell'
 import type { TopicDetailReviewCardFilter } from './shared'
 
 export function TopicDetailReviewCardsTab({

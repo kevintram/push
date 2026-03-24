@@ -15,8 +15,8 @@ import { useState } from 'react'
 import {
 	type ReviewSidebarItem,
 	ReviewSidebarMenuItem,
-	type SidebarCountBadgeItem,
 	SidebarCollapsedBadgeStack,
+	type SidebarCountBadgeItem,
 	type SidebarNavItem
 } from '~/app/components/AppSidebar/AppSidebarMenuItems'
 import { ReviewModeFooterControl } from '~/app/components/AppSidebar/ReviewModeFooterControl'

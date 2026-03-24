@@ -3,8 +3,8 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
 import { ReviewsMenuContent } from './ReviewsMenuContent'
-import type { ReviewsMenuProps } from './shared'
 import { ReviewsMenuTrigger } from './ReviewsMenuTrigger'
+import type { ReviewsMenuProps } from './shared'
 import { useReviewsMenu } from './useReviewsMenu'
 
 export function ReviewsMenu({

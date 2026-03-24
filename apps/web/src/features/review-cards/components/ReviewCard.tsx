@@ -39,9 +39,9 @@ import { useUpdateReviewCard } from '../api/updateReviewCard'
 import type { ReviewCard as ReviewCardModel } from '../types/review-card.types'
 import { hasScheduledDueReviews } from '../utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '../utils/orderReviewCardStatusBadges'
+import { RetireReviewCardDialog } from './RetireReviewCardDialog'
 import { ReviewCardBody, ReviewCardFooterMeta } from './ReviewCardBody'
 import { ReviewCardHeader, ReviewCardStatusRow } from './ReviewCardHeader'
-import { RetireReviewCardDialog } from './RetireReviewCardDialog'
 import {
 	type ReviewCardBadge,
 	toFreshnessTier,
@@ -362,10 +362,10 @@ export function ReviewCard({
 				handleCopyRevealText={handleCopyRevealText}
 				handleRevealPrimary={handleRevealPrimary}
 				handleRevealSecondary={handleRevealSecondary}
-				highlightedPrimary={highlightedPrimary}
-				highlightedSecondary={highlightedSecondary}
 				hidePrimary={hidePrimary}
 				hideSecondary={hideSecondary}
+				highlightedPrimary={highlightedPrimary}
+				highlightedSecondary={highlightedSecondary}
 				isLargeCard={isLargeCard}
 				isRevealPanelCopied={isRevealPanelCopied}
 				revealPanelTab={revealPanelTab}
@@ -437,5 +437,5 @@ export function ReviewCard({
 	)
 }
 
-export { toReviewCardBadge } from './reviewCardShared'
 export type { ReviewCardBadge } from './reviewCardShared'
+export { toReviewCardBadge } from './reviewCardShared'

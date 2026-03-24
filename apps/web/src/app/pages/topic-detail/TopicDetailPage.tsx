@@ -15,11 +15,11 @@ import {
 } from '~/components/ui/alert-dialog'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { isHttpStatusError } from '~/utils/httpStatusError'
+import type { TopicDetailReviewCardFilter } from './shared'
 import { TopicDetailBodyPanel } from './TopicDetailBodyPanel'
 import { TopicDetailBreadcrumb } from './TopicDetailBreadcrumb'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailReviewCardsTab } from './TopicDetailReviewCardsTab'
-import type { TopicDetailReviewCardFilter } from './shared'
 import { useTopicDetailPage } from './useTopicDetailPage'
 
 type TopicDetailPageProps = {

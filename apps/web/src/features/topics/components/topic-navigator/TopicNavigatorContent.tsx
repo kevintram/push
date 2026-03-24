@@ -25,11 +25,11 @@ import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import {
-	TopicNavigatorRootDropZone,
-	TopicNavigatorItem
+	TopicNavigatorItem,
+	TopicNavigatorRootDropZone
 } from './TopicNavigatorTree'
-import { useTopicNavigatorContent } from './useTopicNavigatorContent'
 import { createRootDropId } from './topicNavigatorUtils'
+import { useTopicNavigatorContent } from './useTopicNavigatorContent'
 
 type TopicNavigatorContentProps = {
 	activeTopicId?: number | null

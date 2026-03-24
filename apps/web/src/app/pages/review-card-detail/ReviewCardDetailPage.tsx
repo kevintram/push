@@ -217,11 +217,11 @@ export function ReviewCardDetailPage({
 									handleUpdateReviewCardFields={handleUpdateReviewCardFields}
 									hidesSecondary={hidesSecondary}
 									isAnswerEmpty={isAnswerEmpty}
-									isRevealPanelCopied={isRevealPanelCopied}
 									isRetireDisabled={isUpdatingReviewCard}
+									isRevealPanelCopied={isRevealPanelCopied}
 									isTypeMutationPending={isTypeMutationPending}
-									isUpdatingReviewCard={isUpdatingReviewCard}
 									isUnreviewed={isUnreviewed}
+									isUpdatingReviewCard={isUpdatingReviewCard}
 									lastReviewed={lastReviewed}
 									latestCompletedReview={latestCompletedReview}
 									onAnswerChange={onAnswerChange}

@@ -1,6 +1,5 @@
 import { Plus } from 'lucide-react'
-import type { MouseEvent, KeyboardEvent } from 'react'
-import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import type { KeyboardEvent, MouseEvent } from 'react'
 import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
@@ -11,13 +10,14 @@ import {
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger
 } from '~/components/ui/dropdown-menu'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import { ReviewItem } from '../ReviewItem'
 import {
 	getOptionIcon,
 	type ReviewRatingState,
-	ratingOptions
+	type ratingOptions
 } from '../reviewRatingOptions'
-import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import type { ReviewsMenuProps } from './shared'
 
 type RatingOption = (typeof ratingOptions)[number]
