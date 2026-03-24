@@ -9,7 +9,10 @@ export const TOPIC_NAVIGATOR_DRAG_SCROLL_EDGE_THRESHOLD_PX = 56
 export const TOPIC_NAVIGATOR_DRAG_SCROLL_MAX_STEP_PX = 14
 export const TOPIC_NAVIGATOR_TREE_INDENT_REM = 0.75
 
-export function areNumberArraysEqual(left: Array<number>, right: Array<number>) {
+export function areNumberArraysEqual(
+	left: Array<number>,
+	right: Array<number>
+) {
 	if (left.length !== right.length) return false
 
 	for (let index = 0; index < left.length; index += 1) {

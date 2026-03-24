@@ -1,8 +1,4 @@
-import {
-	DndContext,
-	DragOverlay,
-	pointerWithin
-} from '@dnd-kit/core'
+import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { AlertTriangle, House, Plus } from 'lucide-react'
@@ -28,7 +24,10 @@ import { SidebarContent, SidebarHeader } from '~/components/ui/sidebar'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
-import { TopicNavigatorRootDropZone, TopicNavigatorItem } from './TopicNavigatorTree'
+import {
+	TopicNavigatorRootDropZone,
+	TopicNavigatorItem
+} from './TopicNavigatorTree'
 import { useTopicNavigatorContent } from './useTopicNavigatorContent'
 import { createRootDropId } from './topicNavigatorUtils'
 

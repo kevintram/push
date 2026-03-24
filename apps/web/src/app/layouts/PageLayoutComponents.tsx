@@ -48,7 +48,9 @@ export function PageLayoutHeader({
 					{titleExtra}
 				</h1>
 				{hasCenterContent ? (
-					<div className='flex items-center justify-center'>{centerContent}</div>
+					<div className='flex items-center justify-center'>
+						{centerContent}
+					</div>
 				) : null}
 				{hasCenterContent ? (
 					<div className='flex min-w-0 items-center justify-end'>{actions}</div>

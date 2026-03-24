@@ -109,7 +109,11 @@ export function ReviewSidebarMenuItem({
 							<CountBadge count={overdueCount} size='compact' tone='overdue' />
 						) : null}
 						{dueTodayCount > 0 ? (
-							<CountBadge count={dueTodayCount} size='compact' tone='dueToday' />
+							<CountBadge
+								count={dueTodayCount}
+								size='compact'
+								tone='dueToday'
+							/>
 						) : null}
 						{newCount > 0 ? (
 							<CountBadge count={newCount} size='compact' tone='unscheduled' />

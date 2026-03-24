@@ -31,7 +31,10 @@ import type { ReviewCardBadge } from '~/features/review-cards/components/reviewC
 import { FLAGGED_ICON_CLASSNAME } from '~/features/review-cards/components/reviewCardShared'
 import { ReviewsMenu } from '~/features/reviews/components/reviews-menu/ReviewsMenu'
 import type { ReviewListItem } from '~/features/reviews/types/review.types'
-import { formatAbsoluteDate, formatRelativeDate } from '~/utils/formatRelativeDate'
+import {
+	formatAbsoluteDate,
+	formatRelativeDate
+} from '~/utils/formatRelativeDate'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { EMPTY_BADGE_CLASSNAME } from './shared'
 
@@ -126,7 +129,10 @@ export function ReviewCardDetailHomeTab({
 		<div className='flex min-h-0 flex-1 flex-col gap-2'>
 			<div className='flex flex-wrap items-center justify-between gap-2'>
 				<div className='flex min-w-0 flex-wrap items-center gap-2'>
-					<Badge className='group/type h-6 rounded-full px-1 text-xs' variant='ghost'>
+					<Badge
+						className='group/type h-6 rounded-full px-1 text-xs'
+						variant='ghost'
+					>
 						<span className='px-1 font-medium text-xs leading-none'>
 							{reviewCard.type === 'practice' ? 'Practice' : 'Flashcard'}
 						</span>
@@ -242,7 +248,9 @@ export function ReviewCardDetailHomeTab({
 										render={
 											<Button
 												className='h-auto gap-1 p-0 font-semibold text-muted-foreground text-sm'
-												onClick={() => onOpenReviewDialog(latestCompletedReview.id)}
+												onClick={() =>
+													onOpenReviewDialog(latestCompletedReview.id)
+												}
 												size='default'
 												variant='link'
 											>
@@ -280,7 +288,9 @@ export function ReviewCardDetailHomeTab({
 				<div className='ml-auto flex items-center gap-2 font-semibold text-muted-foreground text-sm'>
 					<Tooltip>
 						<TooltipTrigger
-							render={<span>{`Edited ${formatRelativeDate(reviewCard.updated_at).text}`}</span>}
+							render={
+								<span>{`Edited ${formatRelativeDate(reviewCard.updated_at).text}`}</span>
+							}
 						/>
 						<TooltipContent>
 							{dayjs(reviewCard.updated_at).format('MMM D, YYYY')}
@@ -289,7 +299,9 @@ export function ReviewCardDetailHomeTab({
 					<span aria-hidden={true}>·</span>
 					<Tooltip>
 						<TooltipTrigger
-							render={<span>{`Created ${formatRelativeDate(reviewCard.inserted_at).text}`}</span>}
+							render={
+								<span>{`Created ${formatRelativeDate(reviewCard.inserted_at).text}`}</span>
+							}
 						/>
 						<TooltipContent>
 							{dayjs(reviewCard.inserted_at).format('MMM D, YYYY')}
@@ -315,7 +327,9 @@ export function ReviewCardDetailHomeTab({
 							render={
 								<Button
 									aria-label={
-										reviewCard.flagged_at ? 'Unflag this item' : 'Flag this item'
+										reviewCard.flagged_at
+											? 'Unflag this item'
+											: 'Flag this item'
 									}
 									aria-pressed={reviewCard.flagged_at != null}
 									className='rounded-full'
@@ -365,7 +379,9 @@ export function ReviewCardDetailHomeTab({
 							</Button>
 						</TooltipTrigger>
 						<TooltipContent>
-							{reviewCard.retired ? 'Show in review queue' : 'Hide from review queue'}
+							{reviewCard.retired
+								? 'Show in review queue'
+								: 'Hide from review queue'}
 						</TooltipContent>
 					</Tooltip>
 				</div>

@@ -42,7 +42,12 @@ export function ReviewCardDetailReviewsTab({
 					align='end'
 					onSelect={onSelectRating}
 					trigger={
-						<Button className='rounded-full' disabled={isCreatingReview} size='sm' variant='default'>
+						<Button
+							className='rounded-full'
+							disabled={isCreatingReview}
+							size='sm'
+							variant='default'
+						>
 							{isCreatingReview ? (
 								<Loader2 className='h-4 w-4 animate-spin' />
 							) : (

@@ -22,13 +22,9 @@ type ReviewsMenuTriggerProps = Pick<
 	triggerDotSize: 'compact' | 'default'
 	unscheduledCount: number
 } & Omit<
-	ComponentProps<typeof Button>,
-	| 'children'
-	| 'className'
-	| 'disabled'
-	| 'size'
-	| 'variant'
->
+		ComponentProps<typeof Button>,
+		'children' | 'className' | 'disabled' | 'size' | 'variant'
+	>
 
 export function ReviewsMenuTrigger({
 	buttonClassName,
@@ -69,7 +65,9 @@ export function ReviewsMenuTrigger({
 			size={buttonSize}
 			variant={buttonVariant}
 		>
-			{createReviewPending ? <Loader2 className='h-4 w-4 animate-spin' /> : null}
+			{createReviewPending ? (
+				<Loader2 className='h-4 w-4 animate-spin' />
+			) : null}
 			<span>Reviews</span>
 			<ReviewStatusDots
 				className='pointer-events-none'

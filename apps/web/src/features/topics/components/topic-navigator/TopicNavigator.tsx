@@ -7,16 +7,10 @@ import {
 	SheetTitle,
 	SheetTrigger
 } from '~/components/ui/sheet'
-import {
-	Sidebar,
-	SidebarProvider
-} from '~/components/ui/sidebar'
+import { Sidebar, SidebarProvider } from '~/components/ui/sidebar'
 import { cn } from '~/lib/utils'
 import { Library } from 'lucide-react'
-import type {
-	CSSProperties,
-	PointerEvent as ReactPointerEvent
-} from 'react'
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
 import { useEffect, useState } from 'react'
 import {
 	clampTopicNavigatorWidth,

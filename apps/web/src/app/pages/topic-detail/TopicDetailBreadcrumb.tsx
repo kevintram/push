@@ -98,7 +98,9 @@ export function TopicDetailBreadcrumb({
 			<div className='flex flex-wrap items-center gap-2 font-semibold text-muted-foreground text-sm'>
 				<Tooltip>
 					<TooltipTrigger
-						render={<span>{`Edited ${formatRelativeDate(topic.updated_at).text}`}</span>}
+						render={
+							<span>{`Edited ${formatRelativeDate(topic.updated_at).text}`}</span>
+						}
 					/>
 					<TooltipContent>
 						{dayjs(topic.updated_at).format('MMM D, YYYY')}
@@ -107,7 +109,9 @@ export function TopicDetailBreadcrumb({
 				<span aria-hidden={true}>·</span>
 				<Tooltip>
 					<TooltipTrigger
-						render={<span>{`Created ${formatRelativeDate(topic.inserted_at).text}`}</span>}
+						render={
+							<span>{`Created ${formatRelativeDate(topic.inserted_at).text}`}</span>
+						}
 					/>
 					<TooltipContent>
 						{dayjs(topic.inserted_at).format('MMM D, YYYY')}

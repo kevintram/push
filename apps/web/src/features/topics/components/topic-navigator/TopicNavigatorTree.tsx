@@ -17,10 +17,7 @@ import {
 	type TopicTreeNode
 } from '~/features/topics/utils/topicTree'
 import { TOPIC_NAVIGATOR_TREE_INDENT_REM } from './TopicNavigator.shared'
-import {
-	canReparentTopic,
-	createTopicDropId
-} from './topicNavigatorUtils'
+import { canReparentTopic, createTopicDropId } from './topicNavigatorUtils'
 
 export type TopicNavigatorItemProps = {
 	node: TopicTreeNode

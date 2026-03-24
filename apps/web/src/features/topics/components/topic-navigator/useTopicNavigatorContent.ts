@@ -14,13 +14,8 @@ import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { useTopicTree } from '~/features/topics/hooks/useTopicTree'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
-import {
-	TOPIC_NAVIGATOR_DRAG_EXPAND_DELAY_MS,
-} from './TopicNavigator.shared'
-import {
-	canReparentTopic,
-	parseTopicDropId
-} from './topicNavigatorUtils'
+import { TOPIC_NAVIGATOR_DRAG_EXPAND_DELAY_MS } from './TopicNavigator.shared'
+import { canReparentTopic, parseTopicDropId } from './topicNavigatorUtils'
 import { useTopicNavigatorExpansionState } from './useTopicNavigatorExpansionState'
 import { useTopicNavigatorScrollState } from './useTopicNavigatorScrollState'
 

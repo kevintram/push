@@ -1,4 +1,7 @@
-import { DropdownMenu, DropdownMenuTrigger } from '~/components/ui/dropdown-menu'
+import {
+	DropdownMenu,
+	DropdownMenuTrigger
+} from '~/components/ui/dropdown-menu'
 import { ReviewsMenuContent } from './ReviewsMenuContent'
 import type { ReviewsMenuProps } from './shared'
 import { ReviewsMenuTrigger } from './ReviewsMenuTrigger'

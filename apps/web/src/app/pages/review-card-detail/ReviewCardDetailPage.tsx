@@ -124,7 +124,11 @@ export function ReviewCardDetailPage({
 		}
 		return (
 			<LoadingOrError
-				error={error instanceof Error ? error : new Error('Failed to load review card')}
+				error={
+					error instanceof Error
+						? error
+						: new Error('Failed to load review card')
+				}
 			/>
 		)
 	}

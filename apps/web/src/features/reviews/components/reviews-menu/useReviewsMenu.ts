@@ -20,10 +20,7 @@ import {
 	getReviewCreatedToastDescription
 } from '~/features/reviews/utils/reviewToastDescription'
 import { localDateString } from '~/utils/date'
-import {
-	type ReviewRatingState,
-	ratingOptions
-} from '../reviewRatingOptions'
+import { type ReviewRatingState, ratingOptions } from '../reviewRatingOptions'
 import type { ReviewsMenuProps } from './shared'
 
 type DropdownMenuOpenChangeHandler = NonNullable<
