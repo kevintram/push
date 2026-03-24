@@ -30,6 +30,8 @@ function resolveWebPort() {
 
 const webPort = resolveWebPort()
 const webUrl = `http://localhost:${webPort}`
+// Set PLAYWRIGHT_DISABLE_WEBSERVER=1 when a dev server is already running (e.g. via run.sh).
+const shouldManageWebServer = process.env.PLAYWRIGHT_DISABLE_WEBSERVER !== '1'
 
 export default defineConfig({
 	forbidOnly: !!process.env.CI,
@@ -46,15 +48,17 @@ export default defineConfig({
 	],
 	reporter: 'html',
 	retries: process.env.CI ? 2 : 0,
-	testDir: './tests',
+	testDir: './e2e/tests',
 	use: {
 		baseURL: webUrl,
 		trace: 'on-first-retry'
 	},
-	webServer: {
-		command: `pnpm exec vite --host localhost --port ${webPort} --strictPort`,
-		reuseExistingServer: !process.env.CI,
-		url: webUrl
-	},
+	webServer: shouldManageWebServer
+		? {
+				command: `pnpm exec vite --host localhost --port ${webPort} --strictPort`,
+				reuseExistingServer: !process.env.CI,
+				url: webUrl
+			}
+		: undefined,
 	workers: process.env.CI ? 1 : undefined
 })
