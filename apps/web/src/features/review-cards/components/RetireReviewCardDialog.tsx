@@ -38,11 +38,10 @@ export function RetireReviewCardDialog({
 					<AlertDialogMedia>
 						<AlertTriangle className='size-5 text-amber-600' />
 					</AlertDialogMedia>
-					<AlertDialogTitle>
-						This card still has scheduled reviews!
-					</AlertDialogTitle>
+					<AlertDialogTitle>Retire this card?</AlertDialogTitle>
 					<AlertDialogDescription>
-						This card will still appear when due.{' '}
+						This card has scheduled reviews. Retiring it removes it from the new
+						queue, but it will still appear when those reviews become due.{' '}
 						<button
 							className='underline hover:text-foreground'
 							onClick={event => {
@@ -51,7 +50,7 @@ export function RetireReviewCardDialog({
 							}}
 							type='button'
 						>
-							See reviews.
+							See scheduled reviews.
 						</button>
 					</AlertDialogDescription>
 				</AlertDialogHeader>
@@ -67,7 +66,7 @@ export function RetireReviewCardDialog({
 							onConfirm()
 						}}
 					>
-						Confirm
+						{isPending ? 'Retiring...' : 'Retire anyway'}
 					</Button>
 				</AlertDialogFooter>
 			</AlertDialogContent>

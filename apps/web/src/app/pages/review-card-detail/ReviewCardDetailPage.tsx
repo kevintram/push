@@ -14,6 +14,7 @@ import {
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { ScrollArea } from '~/components/ui/scroll-area'
 import { RetireReviewCardDialog } from '~/features/review-cards/components/RetireReviewCardDialog'
 import { SearchDialog } from '~/features/search/components/search-dialog/SearchDialog'
 import { isHttpStatusError } from '~/utils/httpStatusError'
@@ -181,7 +182,10 @@ export function ReviewCardDetailPage({
 					/>
 				) : null}
 
-				<div className='flex min-h-0 flex-1 flex-col overflow-y-auto'>
+				<ScrollArea
+					className='min-h-0 flex-1'
+					scrollbarClassName='p-px data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5'
+				>
 					<div className='mx-auto flex min-h-full w-full max-w-5xl flex-1 flex-col px-6 py-5'>
 						<div className='flex min-h-full min-w-0 flex-1 flex-col'>
 							{resolvedActiveTab === 'reviews' ? (
@@ -244,7 +248,7 @@ export function ReviewCardDetailPage({
 							)}
 						</div>
 					</div>
-				</div>
+				</ScrollArea>
 			</div>
 
 			<AlertDialog

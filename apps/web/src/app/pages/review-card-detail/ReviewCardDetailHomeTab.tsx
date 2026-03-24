@@ -379,9 +379,7 @@ export function ReviewCardDetailHomeTab({
 							</Button>
 						</TooltipTrigger>
 						<TooltipContent>
-							{reviewCard.retired
-								? 'Show in review queue'
-								: 'Hide from review queue'}
+							{reviewCard.retired ? 'Return to review queue' : 'Retire'}
 						</TooltipContent>
 					</Tooltip>
 				</div>
