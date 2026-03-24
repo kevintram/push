@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
 	TopicDetailPage,
 	type TopicDetailReviewCardFilter
-} from '~/app/pages/TopicDetailPage'
+} from '~/app/pages/topic-detail/TopicDetailPage'
 import { reviewCardsQueryOptions } from '~/features/review-cards/api/getReviewCards'
 import { topicQueryOptions } from '~/features/topics/api/getTopic'
 import { topicsQueryOptions } from '~/features/topics/api/getTopics'

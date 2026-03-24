@@ -17,7 +17,7 @@ import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import { TopicNavigatorSheet } from '~/features/topics/components/TopicNavigator'
+import { TopicNavigatorSheet } from '~/features/topics/components/topic-navigator/TopicNavigator'
 import {
 	CREATE_TOPIC_INTENT_EVENT,
 	consumeCreateTopicRequest,
