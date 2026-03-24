@@ -38,11 +38,6 @@ pnpm run validate   # Run full validation pipeline
 ```
 Note: When using worktrees, run `apps/web/run.sh` from the worktree to use the assigned port.
 
-Web linting rules:
-- `src/**/*.tsx` component files are limited to 500 lines.
-- Component files may define at most 2 React components.
-- Prefer extracting presentational sections into sibling `.tsx` files and moving stateful orchestration into colocated `.ts` hooks when a file approaches either limit.
-
 ### Landing page (`apps/site/`)
 ```bash
 cd apps/site
