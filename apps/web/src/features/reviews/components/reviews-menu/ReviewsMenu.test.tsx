@@ -186,7 +186,7 @@ vi.mock('~/features/reviews/api/createReview', () => ({
 	})
 }))
 
-vi.mock('./ReviewItem', () => ({
+vi.mock('../ReviewItem', () => ({
 	ReviewItem: ({
 		entry,
 		onDeferredInvalidation,
