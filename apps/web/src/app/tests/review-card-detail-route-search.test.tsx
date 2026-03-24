@@ -90,11 +90,11 @@ vi.mock('~/features/reviews/components/RatingDropdown', () => ({
 	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>
 }))
 
-vi.mock('~/features/reviews/components/ReviewsMenu', () => ({
+vi.mock('~/features/reviews/components/reviews-menu/ReviewsMenu', () => ({
 	ReviewsMenu: () => <button type='button'>Reviews</button>
 }))
 
-vi.mock('~/features/search/components/SearchDialog', () => ({
+vi.mock('~/features/search/components/search-dialog/SearchDialog', () => ({
 	SearchDialog: () => null
 }))
 

@@ -1,23 +1,19 @@
 import { useNavigate } from '@tanstack/react-router'
-import { render, screen, waitFor, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import type { ReactElement, ReactNode } from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ReviewCardDetailPage } from '~/app/pages/ReviewCardDetailPage'
-import { TopicDetailPage } from '~/app/pages/TopicDetailPage'
+import { beforeEach, vi } from 'vitest'
 
-const navigateMock = vi.fn()
-const useTopicMock = vi.fn()
-const useTopicsMock = vi.fn()
-const useReviewCardsMock = vi.fn()
-const useSearchAllMock = vi.fn()
-const useReviewCardMock = vi.fn()
-const updateTopicAsyncMock = vi.fn()
-const createTopicAsyncMock = vi.fn()
-const updateReviewCardAsyncMock = vi.fn()
-const useReviewsByReviewCardMock = vi.fn()
-const reviewsMenuPropsMock = vi.fn()
-const useDetailReviewCountsMock = vi.fn()
+export const navigateMock = vi.fn()
+export const useTopicMock = vi.fn()
+export const useTopicsMock = vi.fn()
+export const useReviewCardsMock = vi.fn()
+export const useSearchAllMock = vi.fn()
+export const useReviewCardMock = vi.fn()
+export const updateTopicAsyncMock = vi.fn()
+export const createTopicAsyncMock = vi.fn()
+export const updateReviewCardAsyncMock = vi.fn()
+export const useReviewsByReviewCardMock = vi.fn()
+export const reviewsMenuPropsMock = vi.fn()
+export const useDetailReviewCountsMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
@@ -248,7 +244,7 @@ vi.mock('~/features/reviews/components/RatingDropdown', () => ({
 	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>
 }))
 
-vi.mock('~/features/reviews/components/ReviewsMenu', () => ({
+vi.mock('~/features/reviews/components/reviews-menu/ReviewsMenu', () => ({
 	ReviewsMenu: (props: unknown) => {
 		reviewsMenuPropsMock(props)
 		return <button type='button'>Reviews</button>
@@ -291,7 +287,7 @@ vi.mock('~/stores/ReviewModeContext', async importOriginal => {
 	}
 })
 
-const topic = {
+export const topic = {
 	id: 1,
 	title: 'Algebra',
 	body: 'Working with expressions',
@@ -301,13 +297,13 @@ const topic = {
 	updated_at: '2026-03-04T12:00:00.000Z'
 }
 
-const parentTopic = {
+export const parentTopic = {
 	...topic,
 	id: 2,
 	title: 'Mathematics'
 }
 
-const reviewCard = {
+export const reviewCard = {
 	id: 11,
 	topic_id: 1,
 	topic_title: 'Algebra',
@@ -390,277 +386,5 @@ beforeEach(() => {
 		unscheduledCount: 2,
 		overdueCount: 1,
 		dueTodayCount: 3
-	})
-})
-
-describe('detail hierarchy and topic controls', () => {
-	it('renders a read-only breadcrumb path from root to current topic', () => {
-		const rootTopic = {
-			...topic,
-			id: 4,
-			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null
-		}
-		const branchTopic = {
-			...topic,
-			id: 2,
-			title: 'Algebra',
-			parent_id: 4,
-			parent_title: 'Mathematics'
-		}
-		const currentTopic = {
-			...topic,
-			id: 3,
-			title: 'Linear equations',
-			parent_id: 2,
-			parent_title: 'Algebra'
-		}
-
-		useTopicMock.mockImplementation((topicId: number | null) => {
-			if (topicId === 3) {
-				return { data: currentTopic, isLoading: false, error: null }
-			}
-
-			return { data: null, isLoading: false, error: null }
-		})
-		useTopicsMock.mockImplementation(
-			(params?: { parent_id?: number; sort?: string; order?: string }) => {
-				if (params?.sort === 'title' && params?.order === 'asc') {
-					return {
-						data: [rootTopic, branchTopic, currentTopic],
-						isLoading: false
-					}
-				}
-
-				return { data: [], isLoading: false }
-			}
-		)
-
-		render(
-			<TopicDetailPage
-				cardTypeFilter='all'
-				onCardTypeFilterChange={vi.fn()}
-				topicId={3}
-			/>
-		)
-
-		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
-
-		expect(
-			within(breadcrumb).getByRole('link', { name: 'Mathematics' })
-		).toBeInTheDocument()
-		expect(
-			within(breadcrumb).getByRole('link', { name: 'Algebra' })
-		).toBeInTheDocument()
-		expect(within(breadcrumb).getByText('Linear equations')).toBeInTheDocument()
-		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Linear equations' })
-		).not.toBeInTheDocument()
-		expect(
-			within(breadcrumb).getByText('Linear equations').closest('a')
-		).toBeNull()
-		expect(
-			screen.queryByRole('button', { name: /Add parent/i })
-		).not.toBeInTheDocument()
-		expect(
-			screen.queryByRole('button', { name: /Remove parent/i })
-		).not.toBeInTheDocument()
-	})
-
-	it('syncs topic fields on first load and only refreshes untouched fields on refetch', async () => {
-		const user = userEvent.setup()
-		let currentTopic = { ...topic }
-
-		useTopicMock.mockImplementation((topicId: number | null) => {
-			if (topicId === 1) {
-				return { data: currentTopic, isLoading: false, error: null }
-			}
-			if (topicId === 2) {
-				return { data: parentTopic, isLoading: false, error: null }
-			}
-			return { data: null, isLoading: false, error: null }
-		})
-
-		const { rerender } = render(
-			<TopicDetailPage
-				cardTypeFilter='all'
-				onCardTypeFilterChange={vi.fn()}
-				topicId={1}
-			/>
-		)
-
-		await waitFor(() => {
-			expect(screen.getByDisplayValue(topic.title)).toBeInTheDocument()
-			expect(screen.getByDisplayValue(topic.body)).toBeInTheDocument()
-		})
-
-		const titleField = screen.getByDisplayValue(topic.title)
-		await user.clear(titleField)
-		await user.type(titleField, 'Algebra draft')
-
-		currentTopic = {
-			...currentTopic,
-			title: 'Algebra from server',
-			body: 'Updated body from server'
-		}
-
-		rerender(
-			<TopicDetailPage
-				cardTypeFilter='all'
-				onCardTypeFilterChange={vi.fn()}
-				topicId={1}
-			/>
-		)
-
-		await waitFor(() => {
-			expect(screen.getByDisplayValue('Algebra draft')).toBeInTheDocument()
-			expect(
-				screen.getByDisplayValue('Updated body from server')
-			).toBeInTheDocument()
-		})
-	})
-
-	it('keeps the review-card topic pill navigable and reassigns through search', async () => {
-		const user = userEvent.setup()
-		updateReviewCardAsyncMock.mockResolvedValue(undefined)
-
-		render(<ReviewCardDetailPage reviewCardId={11} />)
-
-		await user.click(
-			screen.getByRole('button', { name: reviewCard.topic_title })
-		)
-
-		expect(navigateMock).toHaveBeenCalledWith({
-			to: '/topics/$topicId',
-			params: { topicId: '1' }
-		})
-		expect(
-			screen.getByRole('button', { name: /Change topic/i })
-		).toBeInTheDocument()
-
-		await user.click(screen.getByRole('button', { name: /^Search$/i }))
-		expect(
-			screen.getAllByRole('button', { name: reviewCard.topic_title })
-		).toHaveLength(1)
-		await user.click(screen.getByRole('button', { name: parentTopic.title }))
-
-		await waitFor(() => {
-			expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
-				id: 11,
-				topic_id: 2
-			})
-		})
-		expect(
-			screen.queryByRole('button', { name: /Remove topic/i })
-		).not.toBeInTheDocument()
-	})
-
-	it('passes stable trigger counts to the detail-page reviews menu', () => {
-		render(<ReviewCardDetailPage reviewCardId={11} />)
-
-		expect(reviewsMenuPropsMock).toHaveBeenCalledWith(
-			expect.objectContaining({
-				hasLastReviewed: false,
-				reviewCardId: 11,
-				triggerCounts: {
-					unscheduledCount: 2,
-					overdueCount: 1,
-					dueTodayCount: 3
-				}
-			})
-		)
-	})
-
-	it('creates and assigns a new topic from ReviewCardDetail', async () => {
-		const user = userEvent.setup()
-		createTopicAsyncMock.mockResolvedValue({ id: 4 })
-		updateReviewCardAsyncMock.mockResolvedValue(undefined)
-
-		render(<ReviewCardDetailPage reviewCardId={11} />)
-
-		await user.click(screen.getByRole('button', { name: /Change topic/i }))
-		await user.click(screen.getByRole('button', { name: /^Create$/i }))
-
-		await waitFor(() => {
-			expect(createTopicAsyncMock).toHaveBeenCalledWith({
-				title: '',
-				body: '',
-				parent_id: null
-			})
-		})
-		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
-			id: 11,
-			topic_id: 4
-		})
-	})
-
-	it('focuses the prompt field when landing on a newly created review card', async () => {
-		window.sessionStorage.setItem(
-			'review-cards:focus-new-review-card-prompt',
-			'11'
-		)
-
-		render(<ReviewCardDetailPage reviewCardId={11} />)
-
-		await waitFor(() => {
-			expect(screen.getByDisplayValue(reviewCard.prompt)).toHaveFocus()
-		})
-		expect(
-			window.sessionStorage.getItem('review-cards:focus-new-review-card-prompt')
-		).toBeNull()
-	})
-
-	it('syncs review-card fields on first load and only refreshes untouched fields on refetch', async () => {
-		const user = userEvent.setup()
-		let currentReviewCard = { ...reviewCard }
-
-		useReviewCardMock.mockImplementation(() => ({
-			data: currentReviewCard,
-			isLoading: false,
-			error: null
-		}))
-
-		const { rerender } = render(<ReviewCardDetailPage reviewCardId={11} />)
-
-		await waitFor(() => {
-			expect(screen.getByDisplayValue(reviewCard.prompt)).toBeInTheDocument()
-			expect(screen.getByDisplayValue(reviewCard.answer)).toBeInTheDocument()
-		})
-
-		const promptField = screen.getByDisplayValue(reviewCard.prompt)
-		await user.clear(promptField)
-		await user.type(promptField, 'Solve for y')
-
-		currentReviewCard = {
-			...currentReviewCard,
-			prompt: 'Solve for z',
-			answer: 'Updated answer from server'
-		}
-
-		rerender(<ReviewCardDetailPage reviewCardId={11} />)
-
-		await waitFor(() => {
-			expect(screen.getByDisplayValue('Solve for y')).toBeInTheDocument()
-			expect(
-				screen.getByDisplayValue('Updated answer from server')
-			).toBeInTheDocument()
-		})
-	})
-
-	it('flags a review card from ReviewCardDetail', async () => {
-		const user = userEvent.setup()
-		updateReviewCardAsyncMock.mockResolvedValue(undefined)
-
-		render(<ReviewCardDetailPage reviewCardId={11} />)
-
-		await user.click(screen.getByRole('button', { name: /Flag this item/i }))
-
-		await waitFor(() => {
-			expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
-				id: 11,
-				flagged: true
-			})
-		})
 	})
 })
