@@ -92,8 +92,10 @@ fi
 
 if [ ! -d "$TARGET_WORKTREE" ]; then
     echo "⚠️  Worktree not found: $TARGET_WORKTREE"
-    echo "   Removing slot assignment anyway."
-    remove_slot_assignment "$SLOTS_FILE" "$BRANCH_NAME"
+    if [ -f "$SLOTS_FILE" ] && grep -q "\"${BRANCH_NAME//\//\\/}\"" "$SLOTS_FILE" 2>/dev/null; then
+        echo "   Removing slot assignment anyway."
+        remove_slot_assignment "$SLOTS_FILE" "$BRANCH_NAME"
+    fi
     exit 0
 fi
 
