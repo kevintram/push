@@ -7,7 +7,7 @@ import {
 import { type RenderOptions, render as rtlRender } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactElement } from 'react'
-import { routeTree } from '../app/routeTree.gen'
+import { routeTree } from '~/app/routeTree.gen'
 
 export const queryClient = new QueryClient({
 	defaultOptions: {

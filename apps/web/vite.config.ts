@@ -43,12 +43,7 @@ export default defineConfig(() => ({
 		clearMocks: true,
 		coverage: {
 			enabled: true,
-			exclude: [
-				'src/main.tsx',
-				'src/mocks/browser.ts',
-				'src/test-utils.tsx',
-				'src/components/ui/**'
-			],
+			exclude: ['src/main.tsx', 'src/testing/**', 'src/components/ui/**'],
 			include: ['src/**/*'],
 			reporter: ['text', 'lcov'],
 			reportsDirectory: 'coverage',
@@ -64,6 +59,6 @@ export default defineConfig(() => ({
 		environment: 'happy-dom',
 		globals: true,
 		include: ['src/**/*.test.ts?(x)'],
-		setupFiles: 'src/test/test-setup.ts'
+		setupFiles: 'src/testing/setup-tests.ts'
 	}
 }))
