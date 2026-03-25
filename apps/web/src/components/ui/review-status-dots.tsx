@@ -11,24 +11,47 @@ const reviewStatusDotVariants = cva("inline-block rounded-full shrink-0", {
 			danger: "",
 			info: "",
 			neutral: ""
+		},
+		surfaceContext: {
+			default: "",
+			primary: ""
 		}
 	},
 	compoundVariants: [
 		{
 			tone: "danger",
+			surfaceContext: "default",
 			className: "bg-rose-500 dark:bg-rose-400"
 		},
 		{
 			tone: "info",
+			surfaceContext: "default",
 			className: "bg-blue-500 dark:bg-blue-400"
 		},
 		{
 			tone: "neutral",
+			surfaceContext: "default",
 			className: "bg-zinc-400 dark:bg-zinc-500"
+		},
+		{
+			tone: "danger",
+			surfaceContext: "primary",
+			className: "bg-rose-400 dark:bg-rose-500"
+		},
+		{
+			tone: "info",
+			surfaceContext: "primary",
+			className: "bg-blue-400 dark:bg-blue-500"
+		},
+		{
+			tone: "neutral",
+			surfaceContext: "primary",
+			className: "bg-zinc-500 dark:bg-zinc-400"
 		}
 	],
 	defaultVariants: {
-		size: "compact"
+		size: "compact",
+		surfaceContext: "default"
 	}
 })
 
@@ -37,6 +60,7 @@ type ReviewStatusDotsProps = {
 	dueTodayCount: number
 	unscheduledCount: number
 	size?: "default" | "compact"
+	surfaceContext?: "default" | "primary"
 	className?: string
 	testIdPrefix?: string
 }
@@ -63,6 +87,7 @@ export function ReviewStatusDots({
 	dueTodayCount,
 	unscheduledCount,
 	size = "compact",
+	surfaceContext = "default",
 	className,
 	testIdPrefix
 }: ReviewStatusDotsProps) {
@@ -81,7 +106,8 @@ export function ReviewStatusDots({
 					aria-hidden={true}
 					className={reviewStatusDotVariants({
 						size,
-						tone: "danger"
+						tone: "danger",
+						surfaceContext
 					})}
 					data-testid={testIdPrefix ? `${testIdPrefix}-overdue-dot` : undefined}
 				/>
@@ -91,7 +117,8 @@ export function ReviewStatusDots({
 					aria-hidden={true}
 					className={reviewStatusDotVariants({
 						size,
-						tone: "info"
+						tone: "info",
+						surfaceContext
 					})}
 					data-testid={
 						testIdPrefix ? `${testIdPrefix}-due-today-dot` : undefined
@@ -103,7 +130,8 @@ export function ReviewStatusDots({
 					aria-hidden={true}
 					className={reviewStatusDotVariants({
 						size,
-						tone: "neutral"
+						tone: "neutral",
+						surfaceContext
 					})}
 					data-testid={
 						testIdPrefix ? `${testIdPrefix}-unscheduled-dot` : undefined
