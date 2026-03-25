@@ -24,7 +24,7 @@ export type ReviewSidebarItem = SidebarNavItem & {
 export type SidebarCountBadgeItem = {
 	key: string
 	count: number
-	tone?: 'neutral' | 'unscheduled' | 'overdue' | 'dueToday'
+	tone?: 'default' | 'neutral' | 'danger' | 'info'
 }
 
 export function SidebarCollapsedBadgeStack({
@@ -77,17 +77,17 @@ export function ReviewSidebarMenuItem({
 		{
 			key: 'overdue',
 			count: overdueCount,
-			tone: 'overdue'
+			tone: 'danger'
 		},
 		{
 			key: 'today',
 			count: dueTodayCount,
-			tone: 'dueToday'
+			tone: 'info'
 		},
 		{
 			key: 'new',
 			count: newCount,
-			tone: 'unscheduled'
+			tone: 'neutral'
 		}
 	]
 
@@ -106,17 +106,13 @@ export function ReviewSidebarMenuItem({
 						className='ml-auto flex shrink-0 items-center gap-1'
 					>
 						{overdueCount > 0 ? (
-							<CountBadge count={overdueCount} size='compact' tone='overdue' />
+							<CountBadge count={overdueCount} size='compact' tone='danger' />
 						) : null}
 						{dueTodayCount > 0 ? (
-							<CountBadge
-								count={dueTodayCount}
-								size='compact'
-								tone='dueToday'
-							/>
+							<CountBadge count={dueTodayCount} size='compact' tone='info' />
 						) : null}
 						{newCount > 0 ? (
-							<CountBadge count={newCount} size='compact' tone='unscheduled' />
+							<CountBadge count={newCount} size='compact' tone='neutral' />
 						) : null}
 					</span>
 				</span>

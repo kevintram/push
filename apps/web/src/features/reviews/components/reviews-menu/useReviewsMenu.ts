@@ -31,7 +31,6 @@ type DropdownMenuOpenChangeDetails =
 
 export function useReviewsMenu({
 	align = 'end',
-	buttonVariant = 'default',
 	compactTriggerBadges = false,
 	hasLastReviewed = false,
 	onSeeAll,
@@ -41,7 +40,6 @@ export function useReviewsMenu({
 }: Pick<
 	ReviewsMenuProps,
 	| 'align'
-	| 'buttonVariant'
 	| 'compactTriggerBadges'
 	| 'hasLastReviewed'
 	| 'onSeeAll'
@@ -132,8 +130,6 @@ export function useReviewsMenu({
 		() => ratingOptions.filter(option => option.value !== 'uncompleted'),
 		[]
 	)
-	const triggerBadgeContext: 'default' | 'primary' =
-		buttonVariant === 'default' ? 'primary' : 'default'
 	const triggerDotSize: 'compact' | 'default' = compactTriggerBadges
 		? 'compact'
 		: 'default'
@@ -360,7 +356,6 @@ export function useReviewsMenu({
 		setIsOpen,
 		shouldRenderSummaryLoadingState,
 		stopMenuEventPropagation,
-		triggerBadgeContext,
 		triggerDotSize,
 		uncompletedOption,
 		uncompletedUnscheduledReviews,

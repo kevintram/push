@@ -26,7 +26,6 @@ export function ReviewsMenu({
 }: ReviewsMenuProps) {
 	const menu = useReviewsMenu({
 		align,
-		buttonVariant,
 		compactTriggerBadges,
 		hasLastReviewed,
 		onSeeAll,
@@ -51,7 +50,6 @@ export function ReviewsMenu({
 						onTriggerKeyDown={onTriggerKeyDown}
 						onTriggerMouseEnter={onTriggerMouseEnter}
 						overdueCount={menu.overdueCount}
-						triggerBadgeContext={menu.triggerBadgeContext}
 						triggerDotSize={menu.triggerDotSize}
 						unscheduledCount={menu.unscheduledCount}
 					/>
