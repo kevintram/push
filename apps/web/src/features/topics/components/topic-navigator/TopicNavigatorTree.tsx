@@ -16,7 +16,10 @@ import {
 	type TopicTreeNode
 } from '~/features/topics/utils/topicTree'
 import { cn } from '~/lib/utils'
-import { TOPIC_NAVIGATOR_TREE_INDENT_REM } from './TopicNavigator.shared'
+import {
+	TOPIC_NAVIGATOR_TREE_GUIDE_OFFSET_REM,
+	TOPIC_NAVIGATOR_TREE_INDENT_REM
+} from './TopicNavigator.shared'
 import { canReparentTopic, createTopicDropId } from './topicNavigatorUtils'
 
 export type TopicNavigatorItemProps = {
@@ -69,7 +72,7 @@ export function TopicNavigatorRootDropZone({
 	return (
 		<div
 			className={cn(
-				'rounded-md border border-dashed px-3 py-2 text-muted-foreground text-xs transition-colors',
+				'rounded-md border border-dashed px-2.5 py-1.5 text-muted-foreground text-xs transition-colors',
 				className,
 				canDropToRoot && 'border-border/80 bg-muted/30',
 				isOver &&
@@ -155,9 +158,9 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 							? { ...attributes, ...listeners }
 							: {})}
 						className={cn(
-							'group/topic-row flex select-none items-center gap-1 rounded-md pr-1 transition-colors',
+							'group/topic-row flex min-h-7 select-none items-center gap-0 rounded-md pr-0.5 transition-colors',
 							isDragAndDropEnabled && !isUpdatingTopic && 'cursor-grab',
-							isActive && 'bg-accent/70 text-foreground',
+							isActive && 'text-foreground',
 							!isSubtreeHighlighted && 'hover:bg-muted/50',
 							isDragging && 'cursor-grabbing opacity-15'
 						)}
@@ -169,18 +172,18 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 						{hasChildren ? (
 							<Button
 								aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${label}`}
-								className='h-6 w-6 shrink-0'
+								className='h-5 w-5 shrink-0'
 								onClick={event => {
 									event.stopPropagation()
 									onToggleExpanded(node.id)
 								}}
-								size='icon-sm'
+								size='icon-xs'
 								type='button'
 								variant='ghost'
 							>
 								<ChevronRight
 									className={cn(
-										'h-4 w-4 transition-transform',
+										'h-3.5 w-3.5 transition-transform',
 										isExpanded && 'rotate-90'
 									)}
 								/>
@@ -189,8 +192,8 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 						<Link
 							aria-current={isActive ? 'page' : undefined}
 							className={cn(
-								'min-w-0 flex-1 truncate rounded-md px-2 py-1.5 text-sm underline-offset-4 transition-colors hover:underline',
-								!hasChildren && 'ml-1',
+								'min-w-0 flex-1 truncate rounded-md py-1 text-sm underline-offset-4 transition-colors hover:underline',
+								hasChildren ? 'pr-1.5 pl-0.5' : 'ml-1 px-1.5',
 								isActive && 'font-medium text-foreground',
 								!isActive && isSubtreeHighlighted && 'text-foreground',
 								!(isActive || isSubtreeHighlighted) &&
@@ -237,9 +240,9 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 
 					{hasChildren && isExpanded ? (
 						<ul
-							className='mt-1 space-y-1 border-border/60 border-l'
+							className='mt-0.5 space-y-px border-border/60 border-l'
 							style={{
-								marginLeft: `${TOPIC_NAVIGATOR_TREE_INDENT_REM}rem`,
+								marginLeft: `${TOPIC_NAVIGATOR_TREE_GUIDE_OFFSET_REM}rem`,
 								paddingLeft: `${TOPIC_NAVIGATOR_TREE_INDENT_REM}rem`
 							}}
 						>
