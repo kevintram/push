@@ -23,7 +23,7 @@ export interface ReviewCardBadge {
 
 const STATUS_BADGE_CLASSNAMES: Record<ReviewCardStatusBadge['tone'], string> = {
 	danger:
-		'h-5 border-transparent bg-rose-200 text-rose-900 text-xs dark:bg-red-950 dark:text-red-200',
+		'h-5 border-transparent bg-rose-200 text-rose-900 text-xs dark:bg-rose-950 dark:text-rose-200',
 	info: 'h-5 border border-blue-300 bg-blue-100 text-blue-900 text-xs dark:border-blue-700 dark:bg-blue-950 dark:text-blue-200',
 	neutral:
 		'h-5 border border-zinc-300 bg-zinc-100 text-zinc-900 text-xs dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200',
