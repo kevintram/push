@@ -436,7 +436,7 @@ export function ReviewCardDetailHomeTab({
 			) : (
 				<div className='flex min-h-0 flex-1 flex-col'>
 					<Textarea
-						className='!bg-transparent m-0 min-h-[2lh] resize-none break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+						className='!bg-transparent m-0 min-h-[2lh] flex-1 resize-none break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 						onBlur={flushAnswer}
 						onChange={onAnswerChange}
 						placeholder='Write your answer...'
