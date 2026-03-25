@@ -105,17 +105,17 @@ export function TopicNavigatorContent({
 			onDragStart={handleDragStart}
 			sensors={enableDragAndDrop ? sensors : undefined}
 		>
-			<nav aria-label='Topic hierarchy' className='space-y-2'>
+			<nav aria-label='Topic hierarchy' className='space-y-1.5'>
 				{enableDragAndDrop ? (
 					<TopicNavigatorRootDropZone
 						activeDragTopicId={activeDragTopicId}
 						ancestorIdsById={ancestorIdsById}
-						className='mb-1'
+						className='mb-0.5'
 						id={createRootDropId('top')}
 						nodeById={nodeById}
 					/>
 				) : null}
-				<ul className='space-y-1' ref={scrollViewportRef}>
+				<ul className='space-y-px' ref={scrollViewportRef}>
 					{roots.map(rootNode => (
 						<TopicNavigatorItem
 							activeDragTopicId={activeDragTopicId}
@@ -141,7 +141,7 @@ export function TopicNavigatorContent({
 					<TopicNavigatorRootDropZone
 						activeDragTopicId={activeDragTopicId}
 						ancestorIdsById={ancestorIdsById}
-						className='mt-1'
+						className='mt-0.5'
 						id={createRootDropId('bottom')}
 						nodeById={nodeById}
 					/>
@@ -225,13 +225,14 @@ export function TopicNavigatorPanel({
 
 	return (
 		<div className='flex min-h-0 flex-1 flex-col'>
-			<SidebarHeader className='border-sidebar-border/70'>
-				<div className='flex items-center gap-1'>
+			<SidebarHeader className='gap-1.5 border-sidebar-border/70 p-1.5'>
+				<div className='flex items-center gap-0.5'>
 					<Button
-						className='flex-1 justify-start'
+						className='h-7 flex-1 justify-start px-2'
 						nativeButton={false}
 						onClick={() => onNavigate?.()}
 						render={<Link to='/topics' />}
+						size='sm'
 						variant='ghost'
 					>
 						<House className='h-4 w-4' />
@@ -243,20 +244,20 @@ export function TopicNavigatorPanel({
 						onClick={() => {
 							handleCreateTopic().catch(() => {})
 						}}
-						size='icon-sm'
+						size='icon-xs'
 						variant='ghost'
 					>
-						<Plus className='h-4 w-4' />
+						<Plus className='h-3.5 w-3.5' />
 					</Button>
 				</div>
-				<Separator className='mr-12 w-auto!' />
+				<Separator className='mr-10 w-auto!' />
 			</SidebarHeader>
 			<SidebarContent className='overflow-hidden p-0'>
 				<ScrollArea
 					className='min-h-0 flex-1'
 					scrollbarClassName='p-px data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5'
 				>
-					<div className='p-2'>
+					<div className='p-1.5'>
 						<TopicNavigatorContent
 							activeTopicId={activeTopicId}
 							autoScrollActiveTopic={autoScrollActiveTopic}
