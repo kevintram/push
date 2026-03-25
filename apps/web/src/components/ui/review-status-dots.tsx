@@ -7,51 +7,51 @@ const reviewStatusDotVariants = cva("inline-block rounded-full shrink-0", {
 			default: "h-2 w-2",
 			compact: "h-1.5 w-1.5"
 		},
-		surface: {
+		tone: {
+			danger: "",
+			info: "",
+			neutral: ""
+		},
+		surfaceContext: {
 			default: "",
 			primary: ""
-		},
-		tone: {
-			overdue: "",
-			dueToday: "",
-			unscheduled: ""
 		}
 	},
 	compoundVariants: [
 		{
-			surface: "default",
-			tone: "overdue",
-			className: "bg-red-500 dark:bg-red-400"
+			tone: "danger",
+			surfaceContext: "default",
+			className: "bg-rose-500 dark:bg-rose-400"
 		},
 		{
-			surface: "primary",
-			tone: "overdue",
-			className: "bg-red-300 dark:bg-red-400"
-		},
-		{
-			surface: "default",
-			tone: "dueToday",
+			tone: "info",
+			surfaceContext: "default",
 			className: "bg-blue-500 dark:bg-blue-400"
 		},
 		{
-			surface: "primary",
-			tone: "dueToday",
-			className: "bg-blue-300 dark:bg-blue-400"
-		},
-		{
-			surface: "default",
-			tone: "unscheduled",
+			tone: "neutral",
+			surfaceContext: "default",
 			className: "bg-zinc-400 dark:bg-zinc-500"
 		},
 		{
-			surface: "primary",
-			tone: "unscheduled",
-			className: "bg-zinc-300 dark:bg-zinc-400"
+			tone: "danger",
+			surfaceContext: "primary",
+			className: "bg-rose-400 dark:bg-rose-500"
+		},
+		{
+			tone: "info",
+			surfaceContext: "primary",
+			className: "bg-blue-400 dark:bg-blue-500"
+		},
+		{
+			tone: "neutral",
+			surfaceContext: "primary",
+			className: "bg-zinc-500 dark:bg-zinc-400"
 		}
 	],
 	defaultVariants: {
 		size: "compact",
-		surface: "default"
+		surfaceContext: "default"
 	}
 })
 
@@ -60,7 +60,7 @@ type ReviewStatusDotsProps = {
 	dueTodayCount: number
 	unscheduledCount: number
 	size?: "default" | "compact"
-	surface?: "default" | "primary"
+	surfaceContext?: "default" | "primary"
 	className?: string
 	testIdPrefix?: string
 }
@@ -87,7 +87,7 @@ export function ReviewStatusDots({
 	dueTodayCount,
 	unscheduledCount,
 	size = "compact",
-	surface = "default",
+	surfaceContext = "default",
 	className,
 	testIdPrefix
 }: ReviewStatusDotsProps) {
@@ -106,8 +106,8 @@ export function ReviewStatusDots({
 					aria-hidden={true}
 					className={reviewStatusDotVariants({
 						size,
-						surface,
-						tone: "overdue"
+						tone: "danger",
+						surfaceContext
 					})}
 					data-testid={testIdPrefix ? `${testIdPrefix}-overdue-dot` : undefined}
 				/>
@@ -117,8 +117,8 @@ export function ReviewStatusDots({
 					aria-hidden={true}
 					className={reviewStatusDotVariants({
 						size,
-						surface,
-						tone: "dueToday"
+						tone: "info",
+						surfaceContext
 					})}
 					data-testid={
 						testIdPrefix ? `${testIdPrefix}-due-today-dot` : undefined
@@ -130,8 +130,8 @@ export function ReviewStatusDots({
 					aria-hidden={true}
 					className={reviewStatusDotVariants({
 						size,
-						surface,
-						tone: "unscheduled"
+						tone: "neutral",
+						surfaceContext
 					})}
 					data-testid={
 						testIdPrefix ? `${testIdPrefix}-unscheduled-dot` : undefined

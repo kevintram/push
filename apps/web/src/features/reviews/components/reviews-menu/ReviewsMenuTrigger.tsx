@@ -18,7 +18,6 @@ type ReviewsMenuTriggerProps = Pick<
 	createReviewPending: boolean
 	dueTodayCount: number
 	overdueCount: number
-	triggerBadgeContext: 'default' | 'primary'
 	triggerDotSize: 'compact' | 'default'
 	unscheduledCount: number
 } & Omit<
@@ -38,7 +37,6 @@ export function ReviewsMenuTrigger({
 	onTriggerKeyDown,
 	onTriggerMouseEnter,
 	overdueCount,
-	triggerBadgeContext,
 	triggerDotSize,
 	unscheduledCount,
 	...buttonProps
@@ -74,7 +72,6 @@ export function ReviewsMenuTrigger({
 				dueTodayCount={dueTodayCount}
 				overdueCount={overdueCount}
 				size={triggerDotSize}
-				surface={triggerBadgeContext}
 				testIdPrefix='reviews-trigger'
 				unscheduledCount={unscheduledCount}
 			/>

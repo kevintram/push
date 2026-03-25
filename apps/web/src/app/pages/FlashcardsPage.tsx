@@ -72,14 +72,10 @@ export function FlashcardsPage({
 				count: (
 					<>
 						{overdueCount > 0 ? (
-							<CountBadge count={overdueCount} size='compact' tone='overdue' />
+							<CountBadge count={overdueCount} size='compact' tone='danger' />
 						) : null}
 						{dueTodayCount > 0 ? (
-							<CountBadge
-								count={dueTodayCount}
-								size='compact'
-								tone='dueToday'
-							/>
+							<CountBadge count={dueTodayCount} size='compact' tone='info' />
 						) : null}
 					</>
 				)
@@ -87,7 +83,7 @@ export function FlashcardsPage({
 			{
 				label: 'New',
 				value: 'new' as const,
-				count: <CountBadge count={newCount} size='compact' tone='unscheduled' />
+				count: <CountBadge count={newCount} size='compact' tone='neutral' />
 			}
 		],
 		[dueTodayCount, newCount, overdueCount]
