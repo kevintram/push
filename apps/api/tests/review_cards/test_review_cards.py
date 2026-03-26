@@ -185,6 +185,85 @@ class TestReviewCardEndpoints:
         flagged_only_items = flagged_only_response.json()
         assert [item["id"] for item in flagged_only_items] == [flagged_card["id"]]
 
+    async def test_list_review_cards_can_include_descendants(
+        self,
+        test_client: AsyncClient,
+    ):
+        root = await _create_topic(test_client, "Mathematics")
+        child_response = await test_client.post(
+            "/topics/",
+            json={"title": "Algebra", "body": "", "parent_id": root["id"]},
+        )
+        assert child_response.status_code == 201
+        child = child_response.json()
+
+        root_card = await _create_review_card(
+            test_client,
+            root["id"],
+            card_type="practice",
+            prompt="Root card",
+        )
+        child_card = await _create_review_card(
+            test_client,
+            child["id"],
+            card_type="flashcard",
+            prompt="Child card",
+        )
+        _outside_topic = await _create_topic(test_client, "Geometry")
+
+        response = await test_client.get(
+            f"/review-cards/?topic_id={root['id']}&include_descendants=true"
+        )
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert {item["id"] for item in payload} == {root_card["id"], child_card["id"]}
+
+    async def test_list_review_cards_include_descendants_after_reparenting_root(
+        self,
+        test_client: AsyncClient,
+    ):
+        root = await _create_topic(test_client, "Computer Science")
+        child_response = await test_client.post(
+            "/topics/",
+            json={"title": "Algorithms", "body": "", "parent_id": root["id"]},
+        )
+        assert child_response.status_code == 201
+        child = child_response.json()
+        new_parent = await _create_topic(test_client, "Mathematics")
+
+        move_response = await test_client.patch(
+            f"/topics/{root['id']}/",
+            json={"parent_id": new_parent["id"]},
+        )
+        assert move_response.status_code == 200
+
+        child_card = await _create_review_card(
+            test_client,
+            child["id"],
+            card_type="flashcard",
+            prompt="Child card",
+        )
+
+        response = await test_client.get(
+            f"/review-cards/?topic_id={root['id']}&include_descendants=true"
+        )
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert {item["id"] for item in payload} == {child_card["id"]}
+
+    async def test_list_review_cards_rejects_include_descendants_without_topic_id(
+        self,
+        test_client: AsyncClient,
+    ):
+        response = await test_client.get("/review-cards/?include_descendants=true")
+
+        assert response.status_code == 400
+        assert response.json()["detail"] == (
+            "topic_id is required when include_descendants is true"
+        )
+
     async def test_review_card_flagged_summary_updates_when_cards_are_flagged_and_unflagged(
         self,
         test_client: AsyncClient,

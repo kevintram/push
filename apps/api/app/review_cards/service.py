@@ -215,6 +215,7 @@ async def list_review_cards(
     user_id: str,
     *,
     topic_id: int | None = None,
+    include_descendants: bool = False,
     card_type: str | None = None,
     new_only: bool | None = None,
     flagged_only: bool | None = None,
@@ -223,7 +224,19 @@ async def list_review_cards(
     stmt = select(ReviewCard).where(ReviewCard.user_id == user_id)
 
     if topic_id is not None:
-        stmt = stmt.where(ReviewCard.topic_id == topic_id)
+        if include_descendants:
+            topic_result = await session.execute(
+                select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+            )
+            topic = topic_result.scalar_one_or_none()
+            if not topic:
+                raise NotFoundError("Topic", topic_id)
+
+            stmt = stmt.join(Topic, ReviewCard.topic_id == Topic.id).where(
+                Topic.path.op("<@")(topic.path)
+            )
+        else:
+            stmt = stmt.where(ReviewCard.topic_id == topic_id)
     if card_type is not None:
         stmt = stmt.where(ReviewCard.type == card_type)
     if new_only is True:

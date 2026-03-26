@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
+from app.exceptions import BadRequestError
 from app.review_cards import service
 from app.reviews import service as reviews_service
 from app.schemas.review_cards import (
@@ -28,15 +29,20 @@ async def read_review_cards(
     session: SessionDep,
     user_id: UserIdDep,
     topic_id: int | None = None,
+    include_descendants: bool = False,
     type: ReviewCardTypeEnum | None = None,
     new_only: bool | None = None,
     flagged_only: bool | None = None,
     order: Literal["asc", "desc"] = "desc",
 ) -> list[ReviewCardRead]:
+    if include_descendants and topic_id is None:
+        raise BadRequestError("topic_id is required when include_descendants is true")
+
     return await service.list_review_cards(
         session,
         user_id,
         topic_id=topic_id,
+        include_descendants=include_descendants,
         card_type=type.value if type else None,
         new_only=new_only,
         flagged_only=flagged_only,
