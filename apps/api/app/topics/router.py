@@ -18,6 +18,7 @@ async def read_topics(
     user_id: UserIdDep,
     root: bool | None = None,
     parent_id: int | None = None,
+    subtree_of: int | None = None,
     sort: Literal["updated_at", "title"] = "updated_at",
     order: Literal["asc", "desc"] = "desc",
 ) -> list[TopicRead]:
@@ -26,6 +27,7 @@ async def read_topics(
         user_id,
         root=root,
         parent_id=parent_id,
+        subtree_of=subtree_of,
         sort=sort,
         order=order,
     )

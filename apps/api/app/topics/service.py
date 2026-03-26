@@ -48,6 +48,7 @@ async def list_topics(
     *,
     root: bool | None = None,
     parent_id: int | None = None,
+    subtree_of: int | None = None,
     sort: Literal["updated_at", "title"] = "updated_at",
     order: str = "desc",
 ) -> list[Topic]:
@@ -57,6 +58,9 @@ async def list_topics(
         stmt = stmt.where(Topic.parent_id.is_(None))
     if parent_id is not None:
         stmt = stmt.where(Topic.parent_id == parent_id)
+    if subtree_of is not None:
+        subtree_root = await get_topic(session, subtree_of, user_id)
+        stmt = stmt.where(Topic.path.op("<@")(subtree_root.path))
 
     if sort == "title":
         normalized_title = case(
