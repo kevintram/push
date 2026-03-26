@@ -270,10 +270,10 @@ describe('TopicNavigator', () => {
 
 		const activeWrapper = screen
 			.getByRole('link', { name: 'Linear equations' })
-			.closest('div')?.parentElement
+			.closest('li')?.firstElementChild
 		const inactiveWrapper = screen
 			.getByRole('link', { name: 'Algebra' })
-			.closest('div')?.parentElement
+			.closest('li')?.firstElementChild
 
 		expect(activeWrapper).toHaveClass('bg-accent/45')
 		expect(activeWrapper).toHaveClass('ring-1')
@@ -441,7 +441,9 @@ describe('TopicNavigator', () => {
 		render(<TopicNavigatorRail activeTopicId={1} className='block' />)
 
 		fireEvent.contextMenu(screen.getByRole('link', { name: 'Algebra' }))
-		fireEvent.click(await screen.findByRole('menuitem', { name: /New topic/i }))
+		fireEvent.click(
+			await screen.findByRole('menuitem', { name: /New topic/iu })
+		)
 
 		await waitFor(() => {
 			expect(createTopicAsync).toHaveBeenCalledWith({
@@ -563,9 +565,9 @@ describe('TopicNavigator', () => {
 		fireEvent.contextMenu(
 			screen.getByRole('link', { name: 'Linear equations' })
 		)
-		fireEvent.click(await screen.findByRole('menuitem', { name: /^Delete$/i }))
+		fireEvent.click(await screen.findByRole('menuitem', { name: /^Delete$/iu }))
 		fireEvent.click(
-			await screen.findByRole('button', { name: /Delete topic/i })
+			await screen.findByRole('button', { name: /Delete topic/iu })
 		)
 
 		await waitFor(() => {
