@@ -50,7 +50,7 @@ export function TopicDetailBreadcrumb({
 	topicPath: Array<TopicPathItem>
 }) {
 	return (
-		<div className='min-w-0 space-y-2'>
+		<div className='min-w-0 space-y-0.5'>
 			<Breadcrumb aria-label='Topic path'>
 				<BreadcrumbList>
 					{topicPath.map((pathTopic, index) => {
@@ -86,10 +86,10 @@ export function TopicDetailBreadcrumb({
 					})}
 				</BreadcrumbList>
 			</Breadcrumb>
-			<div className='flex min-w-0 items-start gap-3'>
+			<div className='relative min-w-0'>
 				<Textarea
 					aria-label='Topic title'
-					className='!bg-transparent !text-4xl xl:!text-5xl m-0 min-h-0 flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight tracking-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+					className='!bg-transparent !text-[2.25rem] xl:!text-[2.75rem] m-0 min-h-0 w-full resize-none overflow-hidden break-words rounded-none border-none p-0 pr-8 font-bold leading-[1.12] tracking-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 					onBlur={onTitleBlur}
 					onChange={onTitleChange}
 					placeholder='Untitled topic'
@@ -97,10 +97,10 @@ export function TopicDetailBreadcrumb({
 					spellCheck={false}
 					value={title}
 				/>
-				{titleAction}
+				<div className='absolute top-0 right-0'>{titleAction}</div>
 			</div>
 
-			<div className='flex flex-wrap items-center gap-2 font-semibold text-muted-foreground text-sm'>
+			<div className='flex flex-wrap items-center gap-2 text-[0.8125rem] text-muted-foreground/70'>
 				<Tooltip>
 					<TooltipTrigger
 						render={

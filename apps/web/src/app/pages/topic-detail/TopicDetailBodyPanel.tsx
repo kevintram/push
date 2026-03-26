@@ -37,6 +37,7 @@ export function TopicDetailBodyPanel({
 	if (hidesSecondary) {
 		return (
 			<RevealPanel
+				className='mt-0'
 				closedContent={
 					isBodyEmpty ? (
 						<Badge

@@ -17,7 +17,6 @@ import { isHttpStatusError } from '~/utils/httpStatusError'
 import type { TopicDetailReviewCardFilter } from './shared'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDocumentOutline } from './TopicDocumentOutline'
-import { TopicDocumentPageHeader } from './TopicDocumentPageHeader'
 import { TopicDocumentSection } from './TopicDocumentSection'
 import { useTopicDocumentPage } from './useTopicDocumentPage'
 
@@ -96,32 +95,29 @@ export function TopicDetailPage({
 		<div className='flex h-full min-h-0 w-full'>
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
 				<div className='border-border/60 border-b bg-background/95 md:hidden'>
-					<div className='mx-auto flex w-full max-w-[110rem] items-center justify-end px-4 py-2 sm:px-6 xl:px-8'>
+					<div className='mx-auto flex w-full max-w-[72rem] items-center justify-end px-4 py-2 sm:px-6 xl:px-8'>
 						<TopicDetailHeader activeTopicId={topic.id} />
 					</div>
 				</div>
 				<div className='flex-1 overflow-y-auto' ref={scrollContainerRef}>
-					<div className='mx-auto flex w-full max-w-[110rem] items-start gap-6 px-4 py-6 sm:px-6 xl:gap-8 xl:px-8 xl:py-7'>
-						<div className='min-w-0 flex-1 space-y-6 xl:space-y-7'>
-							<TopicDocumentPageHeader
-								onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
-								shouldAutoFocusTitle={shouldAutoFocusRootTitle}
-								topic={topic}
-								topicPath={topicPath}
-							/>
+					<div className='mx-auto flex w-full max-w-[72rem] items-start gap-5 px-5 py-5 sm:px-7 xl:gap-6 xl:px-8 xl:py-6'>
+						<div className='min-w-0 flex-1 space-y-5'>
 							<TopicDocumentSection
 								collapsedSections={collapsedSections}
 								getScrollElement={getScrollElement}
 								globalFilter={resolvedCardTypeFilter}
 								onGlobalFilterChange={handleGlobalFilterChange}
 								onOpenReviewCard={handleOpenReviewCard}
+								onOpenRootDeleteDialog={() => setIsDeleteDialogOpen(true)}
 								onSectionFilterChange={handleSectionFilterChange}
 								registerSectionRef={registerSectionRef}
 								resolvedFilterByTopicId={sectionFilterOverrides}
 								rootTopicId={topic.id}
 								searchFilter={resolvedCardTypeFilter}
 								section={rootSection}
+								shouldAutoFocusRootTitle={shouldAutoFocusRootTitle}
 								toggleSection={toggleSection}
+								topicPath={topicPath}
 								topicReviewCardsById={topicReviewCardsById}
 							/>
 						</div>

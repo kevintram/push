@@ -64,9 +64,9 @@ export function TopicDocumentOutline({
 		activeSectionId === outlineRootNode.id ? null : activeSectionId
 
 	return (
-		<aside className='sticky top-6 hidden w-60 shrink-0 self-start xl:block'>
-			<div className='mb-3'>
-				<h2 className='font-semibold text-muted-foreground text-sm uppercase tracking-wide'>
+		<aside className='sticky top-6 hidden w-52 shrink-0 self-start xl:block'>
+			<div className='mb-1.5'>
+				<h2 className='font-medium text-[0.6875rem] text-muted-foreground/70 uppercase tracking-widest'>
 					On this page
 				</h2>
 			</div>
@@ -117,7 +117,7 @@ export function TopicDocumentOutline({
 					</ul>
 				) : null}
 			</nav>
-			<Separator className='my-4' />
+			<Separator className='my-3' />
 			<div>
 				<TopicDocumentReviewCardFilter
 					activeFilter={globalFilter}

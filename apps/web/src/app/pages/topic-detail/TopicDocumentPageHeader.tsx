@@ -63,41 +63,38 @@ export function TopicDocumentPageHeader({
 	}, [shouldAutoFocusTitle])
 
 	return (
-		<div className='grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2'>
-			<div aria-hidden='true' />
-			<TopicDetailBreadcrumb
-				onTitleBlur={flushTitle}
-				onTitleChange={onTitleChange}
-				title={title}
-				titleAction={
-					<DropdownMenu>
-						<DropdownMenuTrigger
-							render={
-								<Button
-									aria-label={`More actions for ${topic.title || 'Untitled topic'}`}
-									className='mt-1 h-8 w-8 shrink-0'
-									size='icon-sm'
-									variant='ghost'
-								>
-									<MoreHorizontal className='h-4 w-4' />
-								</Button>
-							}
-						/>
-						<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
-							<DropdownMenuItem
-								onClick={onOpenDeleteDialog}
-								variant='destructive'
+		<TopicDetailBreadcrumb
+			onTitleBlur={flushTitle}
+			onTitleChange={onTitleChange}
+			title={title}
+			titleAction={
+				<DropdownMenu>
+					<DropdownMenuTrigger
+						render={
+							<Button
+								aria-label={`More actions for ${topic.title || 'Untitled topic'}`}
+								className='h-8 w-8 shrink-0'
+								size='icon-sm'
+								variant='ghost'
 							>
-								<Trash2 className='mr-2 h-4 w-4' />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				}
-				titleTextareaRef={titleTextareaRef}
-				topic={topic}
-				topicPath={topicPath}
-			/>
-		</div>
+								<MoreHorizontal className='h-4 w-4' />
+							</Button>
+						}
+					/>
+					<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+						<DropdownMenuItem
+							onClick={onOpenDeleteDialog}
+							variant='destructive'
+						>
+							<Trash2 className='mr-2 h-4 w-4' />
+							Delete
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			}
+			titleTextareaRef={titleTextareaRef}
+			topic={topic}
+			topicPath={topicPath}
+		/>
 	)
 }

@@ -41,6 +41,7 @@ import {
 import type { TopicDetailReviewCardFilter } from './shared'
 import { TopicDetailBodyPanel } from './TopicDetailBodyPanel'
 import { TopicDocumentNestedSection } from './TopicDocumentNestedSection'
+import { TopicDocumentPageHeader } from './TopicDocumentPageHeader'
 import { TopicDocumentReviewCardsSection } from './TopicDocumentReviewCardsSection'
 import type { TopicDocumentSectionNode } from './topicDocumentUtils'
 import {
@@ -53,6 +54,7 @@ type TopicDocumentSectionProps = {
 	getScrollElement: () => HTMLDivElement | null
 	globalFilter: TopicDetailReviewCardFilter
 	onGlobalFilterChange: (filter: TopicDetailReviewCardFilter) => void
+	onOpenRootDeleteDialog?: () => void
 	onOpenReviewCard: (reviewCardId: number) => void
 	onSectionFilterChange: (
 		topicId: number,
@@ -63,6 +65,12 @@ type TopicDocumentSectionProps = {
 	rootTopicId: number
 	searchFilter: TopicDetailReviewCardFilter
 	section: TopicDocumentSectionNode
+	shouldAutoFocusRootTitle?: boolean
+	topicPath?: Array<{
+		id: number
+		title: string
+		body: string
+	}>
 	topicReviewCardsById: Map<number, Array<ReviewCardModel>>
 	toggleSection: (sectionId: string) => void
 }
@@ -77,21 +85,12 @@ const HEADING_ICON_BY_LEVEL = {
 } as const
 
 function getHeadingClassName(displayLevel: number) {
-	if (displayLevel === 1) return 'text-4xl font-bold tracking-tight'
-	if (displayLevel === 2) return 'text-3xl font-semibold tracking-tight'
-	if (displayLevel === 3) return 'text-2xl font-semibold tracking-tight'
-	if (displayLevel === 4) return 'text-xl font-semibold tracking-tight'
-	if (displayLevel === 5) return 'text-lg font-semibold'
-	return 'text-base font-semibold uppercase tracking-wide text-muted-foreground'
-}
-
-function getHeadingIndicatorMetricsClassName(displayLevel: number) {
-	if (displayLevel === 1) return 'text-4xl leading-tight'
-	if (displayLevel === 2) return 'text-3xl leading-tight'
-	if (displayLevel === 3) return 'text-2xl leading-tight'
-	if (displayLevel === 4) return 'text-xl leading-tight'
-	if (displayLevel === 5) return 'text-lg leading-tight'
-	return 'text-base leading-tight'
+	if (displayLevel === 1) return 'text-[1.75rem] font-semibold tracking-tight'
+	if (displayLevel === 2) return 'text-2xl font-semibold tracking-tight'
+	if (displayLevel === 3) return 'text-xl font-medium tracking-tight'
+	if (displayLevel === 4) return 'text-lg font-medium tracking-tight'
+	if (displayLevel === 5) return 'text-base font-medium'
+	return 'text-sm font-medium uppercase tracking-wide text-muted-foreground'
 }
 
 function getSectionDisplayLevel(section: TopicDocumentSectionNode) {
@@ -112,6 +111,7 @@ export function TopicDocumentSection({
 	getScrollElement,
 	globalFilter,
 	onGlobalFilterChange,
+	onOpenRootDeleteDialog,
 	onOpenReviewCard,
 	onSectionFilterChange,
 	registerSectionRef,
@@ -119,7 +119,9 @@ export function TopicDocumentSection({
 	rootTopicId,
 	searchFilter,
 	section,
+	shouldAutoFocusRootTitle = false,
 	topicReviewCardsById,
+	topicPath = [],
 	toggleSection
 }: TopicDocumentSectionProps) {
 	const navigate = useNavigate()
@@ -150,8 +152,6 @@ export function TopicDocumentSection({
 	const HeadingIcon =
 		HEADING_ICON_BY_LEVEL[displayLevel as keyof typeof HEADING_ICON_BY_LEVEL]
 	const headingClassName = getHeadingClassName(displayLevel)
-	const headingIndicatorMetricsClassName =
-		getHeadingIndicatorMetricsClassName(displayLevel)
 	const sectionLabel = getTopicDocumentLabel(
 		section.topic.title,
 		section.topic.body
@@ -344,20 +344,28 @@ export function TopicDocumentSection({
 
 	return (
 		<section
-			className='scroll-mt-28 space-y-3 py-1'
+			className='scroll-mt-24 space-y-2.5 py-0.5'
 			id={sectionId}
 			ref={element => {
 				registerSectionRef(section.topic.id, element)
 			}}
 		>
-			<div className='space-y-5'>
+			<div className='space-y-3.5'>
 				{isRootSection ? (
 					isCollapsed ? null : (
-						<div className='grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2'>
+						<div className='grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-1.5'>
 							<div aria-hidden='true' />
-							<div className='space-y-5'>
+							<div className='space-y-2'>
+								<TopicDocumentPageHeader
+									onOpenDeleteDialog={() => {
+										onOpenRootDeleteDialog?.()
+									}}
+									shouldAutoFocusTitle={shouldAutoFocusRootTitle}
+									topic={section.topic}
+									topicPath={topicPath}
+								/>
 								{bodyPanel}
-								<div className='space-y-3'>{reviewCardsSection}</div>
+								<div className='space-y-2.5'>{reviewCardsSection}</div>
 							</div>
 						</div>
 					)
@@ -369,7 +377,6 @@ export function TopicDocumentSection({
 						flushTitle={flushTitle}
 						HeadingIcon={HeadingIcon}
 						headingClassName={headingClassName}
-						headingIndicatorMetricsClassName={headingIndicatorMetricsClassName}
 						isCollapsed={isCollapsed}
 						isCreatingTopic={isCreatingTopic}
 						onCreateSubtopic={() => {
@@ -389,7 +396,7 @@ export function TopicDocumentSection({
 					/>
 				)}
 				{isCollapsed ? null : section.children.length > 0 ? (
-					<div className='space-y-8'>
+					<div className='space-y-6'>
 						{section.children.map(childSection => (
 							<TopicDocumentSection
 								collapsedSections={collapsedSections}
@@ -404,7 +411,9 @@ export function TopicDocumentSection({
 								rootTopicId={rootTopicId}
 								searchFilter={searchFilter}
 								section={childSection}
+								shouldAutoFocusRootTitle={shouldAutoFocusRootTitle}
 								toggleSection={toggleSection}
+								topicPath={topicPath}
 								topicReviewCardsById={topicReviewCardsById}
 							/>
 						))}
