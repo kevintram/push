@@ -36,6 +36,7 @@ export function TopicDetailBreadcrumb({
 	onTitleChange,
 	onTitleBlur,
 	title,
+	titleAction,
 	titleTextareaRef,
 	topic,
 	topicPath
@@ -43,6 +44,7 @@ export function TopicDetailBreadcrumb({
 	onTitleBlur: () => void
 	onTitleChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
 	title: string
+	titleAction?: React.ReactNode
 	titleTextareaRef: React.RefObject<HTMLTextAreaElement | null>
 	topic: TopicMeta
 	topicPath: Array<TopicPathItem>
@@ -84,16 +86,19 @@ export function TopicDetailBreadcrumb({
 					})}
 				</BreadcrumbList>
 			</Breadcrumb>
-			<Textarea
-				aria-label='Topic title'
-				className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-				onBlur={onTitleBlur}
-				onChange={onTitleChange}
-				placeholder='Untitled topic'
-				ref={titleTextareaRef}
-				spellCheck={false}
-				value={title}
-			/>
+			<div className='flex min-w-0 items-start gap-3'>
+				<Textarea
+					aria-label='Topic title'
+					className='!bg-transparent !text-4xl xl:!text-5xl m-0 min-h-0 flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight tracking-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+					onBlur={onTitleBlur}
+					onChange={onTitleChange}
+					placeholder='Untitled topic'
+					ref={titleTextareaRef}
+					spellCheck={false}
+					value={title}
+				/>
+				{titleAction}
+			</div>
 
 			<div className='flex flex-wrap items-center gap-2 font-semibold text-muted-foreground text-sm'>
 				<Tooltip>

@@ -1,6 +1,5 @@
 import { notFound } from '@tanstack/react-router'
 import { AlertTriangle } from 'lucide-react'
-
 import { LoadingOrError } from '~/components/LoadingOrError'
 import {
 	AlertDialog,
@@ -16,65 +15,56 @@ import {
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { isHttpStatusError } from '~/utils/httpStatusError'
 import type { TopicDetailReviewCardFilter } from './shared'
-import { TopicDetailBodyPanel } from './TopicDetailBodyPanel'
-import { TopicDetailBreadcrumb } from './TopicDetailBreadcrumb'
 import { TopicDetailHeader } from './TopicDetailHeader'
-import { TopicDetailReviewCardsTab } from './TopicDetailReviewCardsTab'
-import { useTopicDetailPage } from './useTopicDetailPage'
+import { TopicDocumentOutline } from './TopicDocumentOutline'
+import { TopicDocumentPageHeader } from './TopicDocumentPageHeader'
+import { TopicDocumentSection } from './TopicDocumentSection'
+import { useTopicDocumentPage } from './useTopicDocumentPage'
 
 type TopicDetailPageProps = {
-	topicId: number
 	cardTypeFilter?: TopicDetailReviewCardFilter | string
 	onCardTypeFilterChange: (filter: TopicDetailReviewCardFilter) => void
+	topicId: number
 }
 
 export function TopicDetailPage({
-	topicId,
 	cardTypeFilter = 'all',
-	onCardTypeFilterChange
+	onCardTypeFilterChange,
+	topicId
 }: TopicDetailPageProps) {
 	const {
-		body,
-		flushBody,
-		flushTitle,
+		activeSectionId,
+		ancestorIdsById,
+		collapsedSections,
 		getScrollElement,
-		guessBodyText,
-		handleAddReviewCard,
-		handleCopyGuessText,
-		handleCopyRevealText,
 		handleDeleteTopic,
+		handleGlobalFilterChange,
 		handleOpenReviewCard,
-		hidesSecondary,
-		isBodyEmpty,
-		isCardsLoading,
-		isCreatingReviewCard,
+		handleSectionFilterChange,
 		isDeleteDialogOpen,
 		isDeletingTopic,
-		isRevealPanelCopied,
-		isTopicLoading,
-		onBodyChange,
-		onCardTypeFilterChange: handleCardTypeFilterChange,
-		onTitleChange,
+		isDocumentLoading,
+		nodeById,
+		registerSectionRef,
 		resolvedCardTypeFilter,
-		revealPanelTab,
-		reviewCards,
+		rootSection,
 		scrollContainerRef,
-		setBody,
-		setGuessBodyText,
+		scrollToSection,
+		sectionFilterOverrides,
 		setIsDeleteDialogOpen,
-		setRevealPanelTab,
-		title,
-		titleTextareaRef,
+		shouldAutoFocusRootTitle,
+		toggleSection,
 		topic,
 		topicError,
-		topicPath
-	} = useTopicDetailPage({
-		topicId,
+		topicPath,
+		topicReviewCardsById
+	} = useTopicDocumentPage({
 		cardTypeFilter,
-		onCardTypeFilterChange
+		onCardTypeFilterChange,
+		topicId
 	})
 
-	if (isTopicLoading) {
+	if (isDocumentLoading) {
 		return (
 			<div className='flex h-full min-h-0 w-full items-center justify-center'>
 				<LoadingSpinner containerClassName='min-h-64' />
@@ -86,6 +76,7 @@ export function TopicDetailPage({
 		if (isHttpStatusError(topicError) && topicError.status === 404) {
 			throw notFound()
 		}
+
 		return (
 			<LoadingOrError
 				error={
@@ -97,61 +88,57 @@ export function TopicDetailPage({
 		)
 	}
 
-	if (!topic) {
+	if (!(topic && rootSection)) {
 		throw notFound()
 	}
 
 	return (
 		<div className='flex h-full min-h-0 w-full'>
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
-				<TopicDetailHeader
-					activeTopicId={topic.id}
-					onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
-				/>
+				<div className='border-border/60 border-b bg-background/95 md:hidden'>
+					<div className='mx-auto flex w-full max-w-[110rem] items-center justify-end px-4 py-2 sm:px-6 xl:px-8'>
+						<TopicDetailHeader activeTopicId={topic.id} />
+					</div>
+				</div>
 				<div className='flex-1 overflow-y-auto' ref={scrollContainerRef}>
-					<div className='mx-auto w-full max-w-5xl px-6 py-5'>
-						<div className='min-w-0 space-y-2'>
-							<TopicDetailBreadcrumb
-								onTitleBlur={flushTitle}
-								onTitleChange={onTitleChange}
-								title={title}
-								titleTextareaRef={titleTextareaRef}
+					<div className='mx-auto flex w-full max-w-[110rem] items-start gap-6 px-4 py-6 sm:px-6 xl:gap-8 xl:px-8 xl:py-7'>
+						<div className='min-w-0 flex-1 space-y-6 xl:space-y-7'>
+							<TopicDocumentPageHeader
+								onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+								shouldAutoFocusTitle={shouldAutoFocusRootTitle}
 								topic={topic}
 								topicPath={topicPath}
 							/>
-							<TopicDetailBodyPanel
-								body={body}
-								flushBody={flushBody}
-								guessBodyText={guessBodyText}
-								handleCopyGuessText={handleCopyGuessText}
-								handleCopyRevealText={handleCopyRevealText}
-								hidesSecondary={hidesSecondary}
-								isBodyEmpty={isBodyEmpty}
-								isRevealPanelCopied={isRevealPanelCopied}
-								onBodyChange={onBodyChange}
-								revealPanelTab={revealPanelTab}
-								setBody={setBody}
-								setGuessBodyText={setGuessBodyText}
-								setRevealPanelTab={setRevealPanelTab}
-							/>
-							<TopicDetailReviewCardsTab
+							<TopicDocumentSection
+								collapsedSections={collapsedSections}
 								getScrollElement={getScrollElement}
-								isCreatingReviewCard={isCreatingReviewCard}
-								isLoading={isCardsLoading}
-								onAddReviewCard={type => {
-									handleAddReviewCard(type).catch(() => {})
-								}}
-								onCardTypeFilterChange={handleCardTypeFilterChange}
+								globalFilter={resolvedCardTypeFilter}
+								onGlobalFilterChange={handleGlobalFilterChange}
 								onOpenReviewCard={handleOpenReviewCard}
-								resolvedCardTypeFilter={resolvedCardTypeFilter}
-								reviewCards={reviewCards}
-								topicTitle={topic.title}
+								onSectionFilterChange={handleSectionFilterChange}
+								registerSectionRef={registerSectionRef}
+								resolvedFilterByTopicId={sectionFilterOverrides}
+								rootTopicId={topic.id}
+								searchFilter={resolvedCardTypeFilter}
+								section={rootSection}
+								toggleSection={toggleSection}
+								topicReviewCardsById={topicReviewCardsById}
 							/>
 						</div>
+						<TopicDocumentOutline
+							activeSectionId={activeSectionId}
+							ancestorIdsById={ancestorIdsById}
+							globalFilter={resolvedCardTypeFilter}
+							nodeById={nodeById}
+							onGlobalFilterChange={handleGlobalFilterChange}
+							onSelectTopic={topicSectionId => {
+								scrollToSection(topicSectionId)
+							}}
+							outlineRootNode={rootSection.topic}
+						/>
 					</div>
 				</div>
 			</div>
-
 			<AlertDialog
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}

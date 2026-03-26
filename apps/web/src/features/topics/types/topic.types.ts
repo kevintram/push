@@ -11,6 +11,7 @@ export type Topic = {
 export type GetTopicsParams = {
 	root?: boolean
 	parent_id?: number
+	subtree_of?: number
 	sort?: 'updated_at' | 'title'
 	order?: 'asc' | 'desc'
 }

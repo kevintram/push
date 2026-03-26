@@ -25,12 +25,8 @@ export function validateTopicDetailSearch(
 
 export const Route = createFileRoute('/_main/_topic-layout/topics_/$topicId')({
 	validateSearch: validateTopicDetailSearch,
-	loaderDeps: ({ search }) => ({
-		filter: search.filter ?? 'all'
-	}),
-	loader: async ({ context, deps, params }) => {
+	loader: async ({ context, params }) => {
 		const topicId = Number(params.topicId)
-		const selectedCardType = deps.filter === 'all' ? undefined : deps.filter
 
 		await Promise.all([
 			context.queryClient.prefetchQuery(topicQueryOptions(topicId)),
@@ -43,8 +39,15 @@ export const Route = createFileRoute('/_main/_topic-layout/topics_/$topicId')({
 			context.queryClient.prefetchQuery(
 				reviewCardsQueryOptions({
 					topic_id: topicId,
-					type: selectedCardType,
+					include_descendants: true,
 					order: 'desc'
+				})
+			),
+			context.queryClient.prefetchQuery(
+				topicsQueryOptions({
+					subtree_of: topicId,
+					sort: 'title',
+					order: 'asc'
 				})
 			)
 		])

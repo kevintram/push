@@ -58,6 +58,7 @@ export type ReviewCardFlaggedSummary = {
 
 export type GetReviewCardsParams = {
 	topic_id?: number
+	include_descendants?: boolean
 	type?: ReviewCardType
 	new_only?: boolean
 	flagged_only?: boolean
