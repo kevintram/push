@@ -214,13 +214,8 @@ export function useTopicNavigatorContent({
 				}
 			}
 
-			if (nextParentId != null) {
-				ensureExpanded(nextParentId)
-				const parentLabel = getTopicDisplayTitle(
-					nodeById.get(nextParentId)?.title ?? '',
-					nodeById.get(nextParentId)?.body ?? ''
-				)
-				toast.success(`Moved under ${parentLabel}`, {
+			if (nextParentId == null) {
+				toast.success('Moved to top level', {
 					action: {
 						label: 'Undo',
 						onClick: () => {
@@ -229,7 +224,12 @@ export function useTopicNavigatorContent({
 					}
 				})
 			} else {
-				toast.success('Moved to top level', {
+				ensureExpanded(nextParentId)
+				const parentLabel = getTopicDisplayTitle(
+					nodeById.get(nextParentId)?.title ?? '',
+					nodeById.get(nextParentId)?.body ?? ''
+				)
+				toast.success(`Moved under ${parentLabel}`, {
 					action: {
 						label: 'Undo',
 						onClick: () => {
