@@ -104,6 +104,7 @@ class TestReviewQueueEndpoint:
         assert due_item["review_id"] == due_review["id"]
         assert due_item["card"]["id"] == due_card["id"]
         assert due_item["card"]["type"] == "practice"
+        assert due_item["action_days"] == -1
         assert due_item["days_until_hazy"] is None
 
         hazy_item = next(item for item in queue if item["queue_type"] == "hazy")
@@ -111,6 +112,7 @@ class TestReviewQueueEndpoint:
         assert hazy_item["scheduled_at"] is None
         assert hazy_item["card"]["id"] == hazy_card["id"]
         assert hazy_item["card"]["type"] == "practice"
+        assert hazy_item["action_days"] == 3
         assert hazy_item["days_until_hazy"] == 3
 
     async def test_review_queue_prioritizes_recently_overdue_due_cards(
@@ -193,7 +195,7 @@ class TestReviewQueueEndpoint:
             review_card_service,
             "get_days_until_hazy",
             lambda review_card, *, today=None: (
-                0 if review_card.id == hazy_overdue_card["id"] else None
+                -2 if review_card.id == hazy_overdue_card["id"] else None
             ),
         )
 
@@ -393,6 +395,12 @@ class TestReviewQueueEndpoint:
             card_type="practice",
             prompt="Soon practice",
         )
+        boundary_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Boundary practice",
+        )
         _outside_window_card = await _create_card(
             test_client,
             topic["id"],
@@ -424,6 +432,12 @@ class TestReviewQueueEndpoint:
             card_type="practice",
             prompt="Hazy soon practice",
         )
+        hazy_boundary_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            prompt="Hazy boundary practice",
+        )
         await _create_card(
             test_client,
             topic["id"],
@@ -454,6 +468,7 @@ class TestReviewQueueEndpoint:
             (overdue_card["id"], today - timedelta(days=2)),
             (today_card["id"], today),
             (soon_card["id"], today + timedelta(days=3)),
+            (boundary_card["id"], today + timedelta(days=7)),
             (_outside_window_card["id"], today + timedelta(days=9)),
             (retired_overdue_card["id"], today - timedelta(days=1)),
             (other_type_card["id"], today - timedelta(days=1)),
@@ -480,6 +495,7 @@ class TestReviewQueueEndpoint:
             hazy_overdue_card["id"],
             hazy_today_card["id"],
             hazy_soon_card["id"],
+            hazy_boundary_card["id"],
         ]:
             response = await test_client.post(
                 "/reviews/",
@@ -501,6 +517,8 @@ class TestReviewQueueEndpoint:
                 if review_card_id == hazy_today_card["id"]
                 else 3
                 if review_card_id == hazy_soon_card["id"]
+                else 7
+                if review_card_id == hazy_boundary_card["id"]
                 else None
             ),
         )
@@ -511,8 +529,8 @@ class TestReviewQueueEndpoint:
         assert response.json() == {
             "overdue_count": 3,
             "due_today_count": 2,
-            "due_next_seven_days_count": 7,
-            "new_count": 5,
+            "due_next_seven_days_count": 9,
+            "new_count": 6,
             "as_of": str(today),
         }
 

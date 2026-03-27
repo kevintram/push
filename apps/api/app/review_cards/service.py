@@ -9,7 +9,11 @@ from sqlalchemy.orm import selectinload
 
 from app.exceptions import NotFoundError
 from app.models import Review, ReviewCard, ReviewCardTypeAssignment, Topic
-from app.review_cards.status_badges import compute_days_until_hazy, get_days_until_hazy
+from app.review_cards.status_badges import (
+    compute_days_until_hazy,
+    get_days_until_hazy,
+    get_hazy_action_days,
+)
 from app.schemas.review_cards import (
     ReviewCardFlaggedSummary,
     ReviewCardQueueItem,
@@ -20,16 +24,8 @@ from app.utils.current_date import get_current_date
 from app.utils.retrievability import calculate_retrievability, get_freshness_tier
 
 
-def _get_action_days(item: ReviewCardQueueItem) -> int | None:
-    if item.queue_type == "due":
-        return item.days_until_due
-    if item.queue_type == "hazy" and item.days_until_hazy is not None:
-        return item.days_until_hazy - 1
-    return None
-
-
 def _queue_sort_key(item: ReviewCardQueueItem) -> tuple[int, int, int, int]:
-    action_days = _get_action_days(item)
+    action_days = item.action_days
     # Keep overdue scheduled reviews at the front, but show the most recently
     # overdue ones first so focused mode surfaces slightly late cards ahead of
     # very stale ones.
@@ -56,7 +52,7 @@ def _apply_action_day_counts(
         return overdue_count + 1, due_today_count, due_next_seven_days_count + 1
     if action_days == 0:
         return overdue_count, due_today_count + 1, due_next_seven_days_count + 1
-    if action_days <= 6:
+    if action_days <= 7:
         return overdue_count, due_today_count, due_next_seven_days_count + 1
     return overdue_count, due_today_count, due_next_seven_days_count
 
@@ -81,7 +77,7 @@ def _get_hazy_action_days(
     )
     if days_until_hazy is None:
         return None
-    return days_until_hazy - 1
+    return get_hazy_action_days(days_until_hazy)
 
 
 async def _list_actionable_due_queue_items(
@@ -138,6 +134,7 @@ async def _list_actionable_due_queue_items(
                 card=review_card,
                 review_id=review.id,
                 scheduled_at=review.scheduled_at,
+                action_days=(review.scheduled_at - as_of).days,
                 days_until_due=(review.scheduled_at - as_of).days,
                 days_until_hazy=None,
             )
@@ -169,6 +166,7 @@ async def _list_actionable_due_queue_items(
                 card=review_card,
                 review_id=None,
                 scheduled_at=None,
+                action_days=get_hazy_action_days(days_until_hazy),
                 days_until_due=None,
                 days_until_hazy=days_until_hazy,
             )
@@ -405,6 +403,7 @@ async def list_review_card_queue(
                     card=review_card,
                     review_id=None,
                     scheduled_at=None,
+                    action_days=None,
                     days_until_due=None,
                     days_until_hazy=None,
                 )
@@ -431,7 +430,7 @@ async def get_review_card_queue_summary(
     card_type: str,
 ) -> ReviewCardQueueSummary:
     as_of = get_current_date()
-    six_days_out = as_of + timedelta(days=6)
+    seven_days_out = as_of + timedelta(days=7)
 
     due_card_schedule_subquery = (
         select(
@@ -470,7 +469,7 @@ async def get_review_card_queue_summary(
             func.sum(
                 case(
                     (
-                        due_card_schedule_subquery.c.scheduled_at <= six_days_out,
+                        due_card_schedule_subquery.c.scheduled_at <= seven_days_out,
                         1,
                     ),
                     else_=0,

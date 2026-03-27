@@ -77,6 +77,7 @@ class ReviewCardQueueItem(BaseModel):
     card: ReviewCardRead
     review_id: int | None = None
     scheduled_at: date | None = None
+    action_days: int | None = None
     days_until_due: int | None = None
     days_until_hazy: int | None = None
 

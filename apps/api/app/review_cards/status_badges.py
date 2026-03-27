@@ -22,34 +22,56 @@ def _format_calendar_date(target: date) -> str:
 
 def _format_due_label(days_until_due: int) -> str:
     if days_until_due == 0:
-        return "Due in 0d"
+        return "Due Today"
+    if days_until_due == 1:
+        return "Due Tomorrow"
+    if days_until_due == -1:
+        return "Due Yesterday"
     if days_until_due < 0:
         return f"Due {abs(days_until_due)}d ago"
     return f"Due in {days_until_due}d"
 
 
 def _format_hazy_soon_label(days_until_hazy: int) -> str:
+    if days_until_hazy == 0:
+        return "Hazy Today"
     if days_until_hazy == 1:
         return "Hazy Tomorrow"
     return f"Hazy in {days_until_hazy}d"
 
 
-def _format_hazy_for_label(days_in_tier: int) -> str:
-    if days_in_tier == 1:
+def _format_hazy_for_label(action_days: int) -> str:
+    if action_days == 0:
         return "Hazy Today"
-    if days_in_tier == 2:
+    if action_days == -1:
         return "Hazy Yesterday"
-    return f"Hazy for {days_in_tier}d"
+    return f"Hazy {abs(action_days)}d ago"
 
 
 def _format_forgotten_soon_label(days_until_forgotten: int) -> str:
     if days_until_forgotten == 0:
-        return "Forgetting in 0d"
+        return "Forgetting Today"
+    if days_until_forgotten == 1:
+        return "Forgetting Tomorrow"
     return f"Forgetting in {days_until_forgotten}d"
 
 
-def _format_forgotten_for_label(days_in_tier: int) -> str:
-    return f"Forgotten for {days_in_tier}d"
+def _format_forgotten_for_label(action_days: int) -> str:
+    if action_days == 0:
+        return "Forgotten Today"
+    if action_days == -1:
+        return "Forgotten Yesterday"
+    return f"Forgotten {abs(action_days)}d ago"
+
+
+def get_hazy_action_days(days_until_hazy: int) -> int:
+    """Map hazy-threshold distance to the day the card should be acted on."""
+    return days_until_hazy if days_until_hazy >= 0 else days_until_hazy + 1
+
+
+def get_tier_action_days(days_in_tier: int) -> int:
+    """Map elapsed days in a tier to relative action-day wording."""
+    return 1 - max(1, days_in_tier)
 
 
 def compute_days_until_hazy(
@@ -71,7 +93,7 @@ def compute_days_until_hazy(
     if days_until_hazy == 0:
         if freshness_tier in {"Hazy", "Forgotten"}:
             return -1
-        return 1
+        return 0
     return days_until_hazy
 
 
@@ -174,14 +196,14 @@ def build_review_card_status_badges(
             }
         )
 
-    if selected_days_until_hazy is not None and 1 <= selected_days_until_hazy <= 7:
+    if selected_days_until_hazy is not None and 0 <= selected_days_until_hazy <= 7:
         hazy_date = current_day + timedelta(days=selected_days_until_hazy)
         badges.append(
             {
                 "key": "hazy_soon",
                 "label": _format_hazy_soon_label(selected_days_until_hazy),
                 "tooltip": _format_calendar_date(hazy_date),
-                "tone": "warning",
+                "tone": "info" if selected_days_until_hazy == 0 else "neutral",
                 "review_id": None,
             }
         )
@@ -202,17 +224,14 @@ def build_review_card_status_badges(
             }
         )
 
-    if (
-        review_card.freshness_tier == "Hazy"
-        and review_card.days_in_current_tier is not None
-    ):
-        days_in_hazy_tier = max(1, review_card.days_in_current_tier)
+    if review_card.freshness_tier == "Hazy" and selected_days_until_hazy is not None:
+        hazy_action_days = get_hazy_action_days(selected_days_until_hazy)
         badges.append(
             {
                 "key": "hazy_for",
-                "label": _format_hazy_for_label(days_in_hazy_tier),
+                "label": _format_hazy_for_label(hazy_action_days),
                 "tooltip": None,
-                "tone": "danger",
+                "tone": "info" if hazy_action_days == 0 else "warning",
                 "review_id": None,
             }
         )
@@ -221,11 +240,11 @@ def build_review_card_status_badges(
         review_card.freshness_tier == "Forgotten"
         and review_card.days_in_current_tier is not None
     ):
-        days_in_forgotten_tier = max(1, review_card.days_in_current_tier)
+        forgotten_action_days = get_tier_action_days(review_card.days_in_current_tier)
         badges.append(
             {
                 "key": "forgotten_for",
-                "label": _format_forgotten_for_label(days_in_forgotten_tier),
+                "label": _format_forgotten_for_label(forgotten_action_days),
                 "tooltip": None,
                 "tone": "danger",
                 "review_id": None,
