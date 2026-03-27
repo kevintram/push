@@ -38,6 +38,7 @@ export const ReviewCardQueueItemSchema = v.object({
 	card: ReviewCardSchema,
 	review_id: v.nullable(v.number()),
 	scheduled_at: v.nullable(v.string()),
+	action_days: v.nullable(v.number()),
 	days_until_due: v.nullable(v.number()),
 	days_until_hazy: v.nullable(v.number())
 })

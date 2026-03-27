@@ -20,6 +20,7 @@ describe('PracticePage', () => {
 					card: { ...reviewCard, id: 31, prompt: 'Today practice prompt' },
 					review_id: null,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0,
 					days_until_hazy: null
 				},
@@ -28,6 +29,7 @@ describe('PracticePage', () => {
 					card: { ...reviewCard, id: 32, prompt: 'Tomorrow practice prompt' },
 					review_id: null,
 					scheduled_at: '2026-03-06',
+					action_days: 1,
 					days_until_due: 1,
 					days_until_hazy: null
 				}
@@ -83,6 +85,7 @@ describe('PracticePage', () => {
 							},
 							review_id: null,
 							scheduled_at: null,
+							action_days: null,
 							days_until_due: null,
 							days_until_hazy: null
 						})),
@@ -97,6 +100,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 81, prompt: 'Overdue practice A' },
 							review_id: null,
 							scheduled_at: '2026-03-03',
+							action_days: -2,
 							days_until_due: -2,
 							days_until_hazy: null
 						},
@@ -105,6 +109,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 82, prompt: 'Overdue practice B' },
 							review_id: null,
 							scheduled_at: '2026-03-04',
+							action_days: -1,
 							days_until_due: -1,
 							days_until_hazy: null
 						},
@@ -113,6 +118,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 83, prompt: 'Today practice A' },
 							review_id: null,
 							scheduled_at: '2026-03-05',
+							action_days: 0,
 							days_until_due: 0,
 							days_until_hazy: null
 						},
@@ -121,6 +127,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 84, prompt: 'Today practice B' },
 							review_id: null,
 							scheduled_at: '2026-03-05',
+							action_days: 0,
 							days_until_due: 0,
 							days_until_hazy: null
 						},
@@ -129,6 +136,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 85, prompt: 'Today practice C' },
 							review_id: null,
 							scheduled_at: '2026-03-05',
+							action_days: 0,
 							days_until_due: 0,
 							days_until_hazy: null
 						},
@@ -137,6 +145,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 86, prompt: 'Soon practice A' },
 							review_id: null,
 							scheduled_at: '2026-03-06',
+							action_days: 1,
 							days_until_due: 1,
 							days_until_hazy: null
 						},
@@ -145,6 +154,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 87, prompt: 'Soon practice B' },
 							review_id: null,
 							scheduled_at: '2026-03-07',
+							action_days: 2,
 							days_until_due: 2,
 							days_until_hazy: null
 						},
@@ -153,6 +163,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 88, prompt: 'Soon practice C' },
 							review_id: null,
 							scheduled_at: '2026-03-08',
+							action_days: 3,
 							days_until_due: 3,
 							days_until_hazy: null
 						},
@@ -161,6 +172,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 89, prompt: 'Soon practice D' },
 							review_id: null,
 							scheduled_at: '2026-03-09',
+							action_days: 4,
 							days_until_due: 4,
 							days_until_hazy: null
 						},
@@ -169,6 +181,7 @@ describe('PracticePage', () => {
 							card: { ...reviewCard, id: 90, prompt: 'Soon practice E' },
 							review_id: null,
 							scheduled_at: '2026-03-10',
+							action_days: 5,
 							days_until_due: 5,
 							days_until_hazy: null
 						}
@@ -321,6 +334,7 @@ describe('PracticePage', () => {
 					},
 					review_id: null,
 					scheduled_at: null,
+					action_days: null,
 					days_until_due: null
 				},
 				{
@@ -333,6 +347,7 @@ describe('PracticePage', () => {
 					},
 					review_id: null,
 					scheduled_at: null,
+					action_days: null,
 					days_until_due: null
 				},
 				{
@@ -345,6 +360,7 @@ describe('PracticePage', () => {
 					},
 					review_id: null,
 					scheduled_at: null,
+					action_days: null,
 					days_until_due: null
 				}
 			],

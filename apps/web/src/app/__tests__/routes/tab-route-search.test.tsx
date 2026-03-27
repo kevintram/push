@@ -266,6 +266,7 @@ describe('route-backed tab search state', () => {
 					},
 					review_id: null,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0
 				}
 			],
@@ -298,6 +299,7 @@ describe('route-backed tab search state', () => {
 					},
 					review_id: null,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0
 				}
 			],
@@ -339,6 +341,7 @@ describe('route-backed tab search state', () => {
 					},
 					review_id: null,
 					scheduled_at: null,
+					action_days: null,
 					days_until_due: null
 				}
 			],
@@ -365,6 +368,7 @@ describe('route-backed tab search state', () => {
 					card: { ...reviewCard, id: 31, prompt: 'Due practice' },
 					review_id: null,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0
 				}
 			],
@@ -392,6 +396,7 @@ describe('route-backed tab search state', () => {
 					card: { ...reviewCard, id: 32, prompt: 'Switch practice' },
 					review_id: null,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0
 				}
 			],
@@ -428,6 +433,7 @@ describe('route-backed tab search state', () => {
 					card: { ...reviewCard, id: 33, prompt: 'Stored practice view' },
 					review_id: null,
 					scheduled_at: null,
+					action_days: null,
 					days_until_due: null
 				}
 			],

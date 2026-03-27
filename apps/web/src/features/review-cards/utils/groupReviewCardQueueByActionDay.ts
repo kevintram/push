@@ -38,16 +38,6 @@ function toDayNumber(date: Date): number {
 	)
 }
 
-function getActionDays(item: ReviewCardQueueItem): number | null {
-	if (item.queue_type === 'due') {
-		return item.days_until_due
-	}
-	if (item.queue_type === 'hazy' && item.days_until_hazy != null) {
-		return item.days_until_hazy - 1
-	}
-	return null
-}
-
 function getWeekOffsetFromActionDays(
 	actionDays: number,
 	weekStartDay: WeekStartDay,
@@ -88,8 +78,8 @@ function sortActionableQueueItems(
 	a: ReviewCardQueueItem,
 	b: ReviewCardQueueItem
 ): number {
-	const aActionDays = getActionDays(a)
-	const bActionDays = getActionDays(b)
+	const aActionDays = a.action_days
+	const bActionDays = b.action_days
 
 	// Mirror the backend queue order so sectioned due views and focused mode
 	// agree on which overdue scheduled reviews should be surfaced first.
@@ -189,7 +179,7 @@ export function groupReviewCardQueueByActionDay(
 	const anchorDate = asOf ? parseAsOfDate(asOf) : new Date()
 
 	for (const item of items) {
-		const actionDays = getActionDays(item)
+		const actionDays = item.action_days
 		if (actionDays == null) continue
 
 		const section = getSectionForActionDay(actionDays, weekStartDay, anchorDate)

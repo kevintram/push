@@ -38,6 +38,7 @@ function buildQueueItem(
 		card: baseCard,
 		review_id: null,
 		scheduled_at: null,
+		action_days: null,
 		days_until_due: null,
 		days_until_hazy: null,
 		...overrides
@@ -53,18 +54,21 @@ describe('groupReviewCardQueueByActionDay', () => {
 					card: { ...baseCard, id: 11, prompt: 'Stale overdue due' },
 					review_id: 11,
 					scheduled_at: '2026-01-11',
+					action_days: -4,
 					days_until_due: -4
 				}),
 				buildQueueItem({
 					queue_type: 'hazy',
 					card: { ...baseCard, id: 12, prompt: 'Hazy overdue' },
-					days_until_hazy: 0
+					action_days: -1,
+					days_until_hazy: -2
 				}),
 				buildQueueItem({
 					queue_type: 'due',
 					card: { ...baseCard, id: 13, prompt: 'Slightly overdue due' },
 					review_id: 13,
 					scheduled_at: '2026-01-14',
+					action_days: -1,
 					days_until_due: -1
 				}),
 				buildQueueItem({
@@ -72,6 +76,7 @@ describe('groupReviewCardQueueByActionDay', () => {
 					card: { ...baseCard, id: 14, prompt: 'Today due' },
 					review_id: 14,
 					scheduled_at: '2026-01-15',
+					action_days: 0,
 					days_until_due: 0
 				})
 			],
