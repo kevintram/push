@@ -2,10 +2,10 @@ import { useDroppable } from '@dnd-kit/core'
 import { Link } from '@tanstack/react-router'
 import type { MutableRefObject } from 'react'
 
+import { TopicTreeItem } from '~/features/topics/components/topic-tree/TopicTreeItem'
 import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/features/topics/hooks/usePrefetchTopicDetail'
 import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 import { cn } from '~/lib/utils'
-import { TopicTreeItem } from './TopicTreeItem'
 import { canReparentTopic } from './topicNavigatorUtils'
 
 export type TopicNavigatorItemProps = {
@@ -15,10 +15,13 @@ export type TopicNavigatorItemProps = {
 	ancestorIdsById: Map<number, Array<number>>
 	expandedIdSet: Set<number>
 	highlightedDropTopicId: number | null
+	hoveredTopicId: number | null
 	isDragAndDropEnabled: boolean
 	isUpdatingTopic: boolean
 	nodeById: Map<number, TopicTreeNode>
 	onNavigate?: () => void
+	onHoverTopicChange: (topicId: number | null) => void
+	onOpenTopic: (topicId: number) => void
 	onToggleExpanded: (topicId: number) => void
 	onCreateSubtopic: (topicId: number) => void
 	onRequestDeleteTopic: (topicId: number) => void
@@ -80,11 +83,14 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 		ancestorIdsById,
 		expandedIdSet,
 		highlightedDropTopicId,
+		hoveredTopicId,
 		isDragAndDropEnabled,
 		isUpdatingTopic,
 		nodeById,
 		onNavigate,
 		onCreateSubtopic,
+		onHoverTopicChange,
+		onOpenTopic,
 		onRequestDeleteTopic,
 		onToggleExpanded,
 		suppressNavigationRef,
@@ -98,11 +104,14 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 			ancestorIdsById={ancestorIdsById}
 			expandedIdSet={expandedIdSet}
 			highlightedDropTopicId={highlightedDropTopicId}
+			hoveredTopicId={hoveredTopicId}
 			isDragAndDropEnabled={isDragAndDropEnabled}
 			isUpdatingTopic={isUpdatingTopic}
 			node={node}
 			nodeById={nodeById}
 			onCreateSubtopic={onCreateSubtopic}
+			onHoverTopicChange={onHoverTopicChange}
+			onOpenTopic={onOpenTopic}
 			onRequestDeleteTopic={onRequestDeleteTopic}
 			onToggleExpanded={onToggleExpanded}
 			renderPrimaryAction={({
@@ -141,7 +150,6 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 			)}
 			setItemRef={setItemRef}
 			suppressSelectionRef={suppressNavigationRef}
-			variant='navigator'
 		/>
 	)
 }
