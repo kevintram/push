@@ -242,6 +242,7 @@ export function buildPracticeQueueItems(count: number) {
 		},
 		review_id: null,
 		scheduled_at: '2026-03-05',
+		action_days: 0,
 		days_until_due: 0,
 		days_until_hazy: null
 	}))

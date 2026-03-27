@@ -21,6 +21,7 @@ describe('FlashcardsPage', () => {
 					card: { ...reviewCard, id: 21, prompt: 'Today flashcard prompt' },
 					review_id: null,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0,
 					days_until_hazy: null
 				},
@@ -33,6 +34,7 @@ describe('FlashcardsPage', () => {
 					},
 					review_id: null,
 					scheduled_at: '2026-03-06',
+					action_days: 1,
 					days_until_due: 1,
 					days_until_hazy: null
 				}
@@ -78,6 +80,7 @@ describe('FlashcardsPage', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-09',
+							action_days: 2,
 							days_until_due: 2,
 							days_until_hazy: null
 						}
@@ -111,6 +114,7 @@ describe('FlashcardsPage', () => {
 					},
 					review_id: null,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0
 				}
 			],
@@ -142,7 +146,7 @@ describe('FlashcardsPage', () => {
 						status_badges: [
 							{
 								key: 'due',
-								label: 'Due in 0d',
+								label: 'Due Today',
 								tooltip: 'Mar 5, 2026',
 								tone: 'info',
 								review_id: 91
@@ -151,6 +155,7 @@ describe('FlashcardsPage', () => {
 					},
 					review_id: 91,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0,
 					days_until_hazy: null
 				}
@@ -192,7 +197,7 @@ describe('FlashcardsPage', () => {
 						status_badges: [
 							{
 								key: 'due',
-								label: 'Due in 0d',
+								label: 'Due Today',
 								tooltip: 'Mar 5, 2026',
 								tone: 'info',
 								review_id: 92
@@ -201,6 +206,7 @@ describe('FlashcardsPage', () => {
 					},
 					review_id: 92,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0,
 					days_until_hazy: null
 				}
@@ -237,6 +243,7 @@ describe('FlashcardsPage', () => {
 					},
 					review_id: null,
 					scheduled_at: '2026-03-05',
+					action_days: 0,
 					days_until_due: 0,
 					days_until_hazy: null
 				}
@@ -282,6 +289,7 @@ describe('FlashcardsPage', () => {
 							},
 							review_id: null,
 							scheduled_at: null,
+							action_days: null,
 							days_until_due: null,
 							days_until_hazy: null
 						})),
@@ -302,6 +310,7 @@ describe('FlashcardsPage', () => {
 								},
 								review_id: null,
 								scheduled_at: null,
+								action_days: 1,
 								days_until_due: null,
 								days_until_hazy: 1
 							}
@@ -322,6 +331,7 @@ describe('FlashcardsPage', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-04',
+							action_days: -1,
 							days_until_due: -1,
 							days_until_hazy: null
 						},
@@ -335,6 +345,7 @@ describe('FlashcardsPage', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-05',
+							action_days: 0,
 							days_until_due: 0,
 							days_until_hazy: null
 						},
@@ -348,6 +359,7 @@ describe('FlashcardsPage', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-05',
+							action_days: 0,
 							days_until_due: 0,
 							days_until_hazy: null
 						},
@@ -361,6 +373,7 @@ describe('FlashcardsPage', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-06',
+							action_days: 1,
 							days_until_due: 1,
 							days_until_hazy: null
 						},
@@ -374,6 +387,7 @@ describe('FlashcardsPage', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-07',
+							action_days: 2,
 							days_until_due: 2,
 							days_until_hazy: null
 						},
@@ -387,6 +401,7 @@ describe('FlashcardsPage', () => {
 							},
 							review_id: null,
 							scheduled_at: '2026-03-08',
+							action_days: 3,
 							days_until_due: 3,
 							days_until_hazy: null
 						}
@@ -425,6 +440,7 @@ describe('FlashcardsPage', () => {
 					},
 					review_id: null,
 					scheduled_at: null,
+					action_days: null,
 					days_until_due: null
 				},
 				{
@@ -437,6 +453,7 @@ describe('FlashcardsPage', () => {
 					},
 					review_id: null,
 					scheduled_at: null,
+					action_days: null,
 					days_until_due: null
 				}
 			],

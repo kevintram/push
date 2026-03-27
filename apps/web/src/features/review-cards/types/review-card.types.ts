@@ -35,6 +35,7 @@ export type ReviewCardQueueItem = {
 	card: ReviewCard
 	review_id: number | null
 	scheduled_at: string | null
+	action_days: number | null
 	days_until_due: number | null
 	days_until_hazy: number | null
 }
