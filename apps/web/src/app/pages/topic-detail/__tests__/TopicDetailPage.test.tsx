@@ -84,6 +84,48 @@ describe('TopicDetailPage', () => {
 		).not.toBeInTheDocument()
 	})
 
+	it('hides the breadcrumb when the current topic has no ancestors', () => {
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { parent_id?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [rootTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		expect(
+			screen.queryByRole('navigation', { name: 'Topic path' })
+		).not.toBeInTheDocument()
+	})
+
 	it('syncs topic fields on first load and only refreshes untouched fields on refetch', async () => {
 		const user = userEvent.setup()
 		let currentTopic = { ...topic }
@@ -137,7 +179,7 @@ describe('TopicDetailPage', () => {
 		})
 	})
 
-	it('renders the ToC from the current document subtree', () => {
+	it('renders the ToC from the current document subtree including the root topic', () => {
 		const rootTopic = {
 			...topic,
 			id: 1,
@@ -213,13 +255,18 @@ describe('TopicDetailPage', () => {
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
 
-		expect(within(toc).queryByText('Mathematics')).not.toBeInTheDocument()
+		expect(within(toc).getByRole('link', { name: 'Mathematics' })).toHaveClass(
+			'font-bold'
+		)
+		expect(
+			within(toc).getByRole('link', { name: 'Mathematics' }).parentElement
+		).not.toHaveClass('bg-accent/45')
 		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
 		expect(within(toc).getByText('Linear Algebra')).toBeInTheDocument()
 		expect(within(toc).queryByText('Computer Science')).not.toBeInTheDocument()
 	})
 
-	it('keeps the root out of the ToC and allows leaf sections to collapse', async () => {
+	it('renders the root as a flat, non-collapsible ToC row', async () => {
 		const user = userEvent.setup()
 		const rootTopic = {
 			...topic,
@@ -269,15 +316,225 @@ describe('TopicDetailPage', () => {
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
+		const rootRow = within(toc).getByRole('link', { name: 'Mathematics' })
+		const childRow = within(toc).getByRole('link', { name: 'Algebra' })
 
-		expect(within(toc).queryByText('Mathematics')).not.toBeInTheDocument()
+		expect(rootRow).toBeInTheDocument()
+		expect(
+			within(toc).queryByRole('button', { name: 'Collapse Mathematics' })
+		).not.toBeInTheDocument()
+		expect(
+			within(toc).queryByRole('button', {
+				name: 'More actions for Mathematics'
+			})
+		).not.toBeInTheDocument()
+		expect(rootRow.closest('li')?.parentElement).toBe(
+			childRow.closest('li')?.parentElement
+		)
 		expect(
 			screen.getByRole('button', { name: 'Collapse Algebra' })
 		).toBeInTheDocument()
 
 		await user.click(screen.getByRole('button', { name: 'Collapse Algebra' }))
 
+		expect(screen.getByRole('button', { name: 'Expand Algebra' })).toHaveClass(
+			'text-blue-600'
+		)
 		expect(screen.queryByText('Leaf topic body')).not.toBeInTheDocument()
+	})
+
+	it('renders hover-only open and more controls while keeping the chevron visible for nested subtopics', () => {
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const leafTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			body: 'Leaf topic body',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, leafTopic]
+								: [rootTopic, leafTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const openButton = screen.getByRole('button', { name: 'Open Algebra' })
+		const moreActionsButton = screen.getByRole('button', {
+			name: 'More actions for Algebra'
+		})
+		const collapseButton = screen.getByRole('button', {
+			name: 'Collapse Algebra'
+		})
+		const hoverControls = openButton.parentElement
+		const controls = hoverControls?.parentElement
+
+		expect(hoverControls).toHaveClass('opacity-0')
+		expect(hoverControls).toHaveClass('group-hover/section:opacity-100')
+		expect(hoverControls).toHaveClass(
+			'group-has-[:focus-visible]/section:opacity-100'
+		)
+		expect(collapseButton).not.toHaveClass('opacity-0')
+		expect(controls).toContainElement(collapseButton)
+		expect(controls).toContainElement(openButton)
+		expect(controls).toContainElement(moreActionsButton)
+	})
+
+	it('does not duplicate the open action in a nested subtopic more menu', () => {
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const leafTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			body: 'Leaf topic body',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, leafTopic]
+								: [rootTopic, leafTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		expect(
+			screen.getByRole('button', { name: 'Open Algebra' })
+		).toBeInTheDocument()
+
+		const algebraMenuButton = screen.getByRole('button', {
+			name: 'More actions for Algebra'
+		})
+		const algebraMenu = algebraMenuButton.parentElement
+
+		expect(algebraMenu).not.toBeNull()
+		expect(
+			within(algebraMenu!).queryByRole('button', { name: 'Open' })
+		).toBeNull()
+		expect(
+			within(algebraMenu!).getByRole('button', { name: 'New topic' })
+		).toBeInTheDocument()
+		expect(
+			within(algebraMenu!).getByRole('button', { name: 'Delete' })
+		).toBeInTheDocument()
+	})
+
+	it('does not show a visible more-actions button for the ToC root row', () => {
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, childTopic]
+								: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const toc = screen.getByRole('navigation', { name: 'On this page' })
+
+		expect(
+			within(toc).queryByRole('button', {
+				name: 'More actions for Mathematics'
+			})
+		).not.toBeInTheDocument()
 	})
 
 	it('supports expanding and collapsing topics in the ToC', async () => {
@@ -337,6 +594,9 @@ describe('TopicDetailPage', () => {
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
 
+		expect(
+			within(toc).queryByRole('button', { name: 'Collapse Mathematics' })
+		).not.toBeInTheDocument()
 		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
 		expect(within(toc).getByText('Linear Algebra')).toBeInTheDocument()
 

@@ -6,20 +6,20 @@ import {
 	getTopicDisplayTitle
 } from '~/features/topics/utils/topicTree'
 
-export type TopicDocumentSectionNode = {
-	children: Array<TopicDocumentSectionNode>
+export type TopicDetailSectionNode = {
+	children: Array<TopicDetailSectionNode>
 	depth: number
 	headingLevel: number
 	topic: TopicTreeNode
 }
 
 const MAX_HEADING_LEVEL = 6
-const TOPIC_DOCUMENT_HASH_PREFIX = 'topic-'
+const TOPIC_DETAIL_HASH_PREFIX = 'topic-'
 
-export function buildTopicDocumentRoot(
+export function buildTopicDetailRoot(
 	topics: Array<Topic>,
 	rootTopicId: number
-): TopicDocumentSectionNode | null {
+): TopicDetailSectionNode | null {
 	const { nodeById } = buildTopicTree(topics)
 	const rootNode = nodeById.get(rootTopicId)
 
@@ -28,7 +28,7 @@ export function buildTopicDocumentRoot(
 	const buildSectionNode = (
 		node: TopicTreeNode,
 		depth: number
-	): TopicDocumentSectionNode => ({
+	): TopicDetailSectionNode => ({
 		children: node.children.map(childNode =>
 			buildSectionNode(childNode, depth + 1)
 		),
@@ -40,14 +40,14 @@ export function buildTopicDocumentRoot(
 	return buildSectionNode(rootNode, 0)
 }
 
-export function flattenTopicDocumentSectionIds(
-	rootSection: TopicDocumentSectionNode | null
+export function flattenTopicDetailSectionIds(
+	rootSection: TopicDetailSectionNode | null
 ): Array<number> {
 	if (!rootSection) return []
 
 	const ids: Array<number> = []
 
-	const visitSection = (section: TopicDocumentSectionNode) => {
+	const visitSection = (section: TopicDetailSectionNode) => {
 		ids.push(section.topic.id)
 		for (const childSection of section.children) {
 			visitSection(childSection)
@@ -75,26 +75,26 @@ export function groupReviewCardsByTopicId(reviewCards: Array<ReviewCard>) {
 	return cardsByTopicId
 }
 
-export function getTopicDocumentHash(topicId: number) {
-	return `#${TOPIC_DOCUMENT_HASH_PREFIX}${topicId}`
+export function getTopicDetailHash(topicId: number) {
+	return `#${TOPIC_DETAIL_HASH_PREFIX}${topicId}`
 }
 
-export function getTopicDocumentSectionId(topicId: number) {
-	return `${TOPIC_DOCUMENT_HASH_PREFIX}${topicId}`
+export function getTopicDetailSectionId(topicId: number) {
+	return `${TOPIC_DETAIL_HASH_PREFIX}${topicId}`
 }
 
-export function parseTopicDocumentHash(hash: string) {
+export function parseTopicDetailHash(hash: string) {
 	if (!hash.startsWith('#')) return null
-	if (!hash.startsWith(`#${TOPIC_DOCUMENT_HASH_PREFIX}`)) return null
+	if (!hash.startsWith(`#${TOPIC_DETAIL_HASH_PREFIX}`)) return null
 
 	const parsedTopicId = Number.parseInt(
-		hash.slice(TOPIC_DOCUMENT_HASH_PREFIX.length + 1),
+		hash.slice(TOPIC_DETAIL_HASH_PREFIX.length + 1),
 		10
 	)
 
 	return Number.isFinite(parsedTopicId) ? parsedTopicId : null
 }
 
-export function getTopicDocumentLabel(title: string, body?: string) {
+export function getTopicDetailLabel(title: string, body?: string) {
 	return getTopicDisplayTitle(title, body)
 }

@@ -1,26 +1,34 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
-	TopicDetailPage,
+	isTopicDetailReviewCardControlsVariant,
+	isTopicDetailReviewCardFilter,
+	type TopicDetailReviewCardControlsVariant,
 	type TopicDetailReviewCardFilter
-} from '~/app/pages/topic-detail/TopicDetailPage'
+} from '~/app/pages/topic-detail/shared'
+import { TopicDetailPage } from '~/app/pages/topic-detail/TopicDetailPage'
 import { reviewCardsQueryOptions } from '~/features/review-cards/api/getReviewCards'
 import { topicQueryOptions } from '~/features/topics/api/getTopic'
 import { topicsQueryOptions } from '~/features/topics/api/getTopics'
 
-type TopicDetailRouteSearch = {
+interface TopicDetailRouteSearch {
+	controls?: TopicDetailReviewCardControlsVariant
 	filter?: TopicDetailReviewCardFilter
-}
-
-function isTopicDetailFilter(
-	value: unknown
-): value is TopicDetailReviewCardFilter {
-	return value === 'all' || value === 'practice' || value === 'flashcard'
 }
 
 export function validateTopicDetailSearch(
 	search: Record<string, unknown>
 ): TopicDetailRouteSearch {
-	return isTopicDetailFilter(search.filter) ? { filter: search.filter } : {}
+	const controls =
+		typeof search.controls === 'string' ? search.controls : undefined
+	const filter = typeof search.filter === 'string' ? search.filter : undefined
+
+	return {
+		controls:
+			controls && isTopicDetailReviewCardControlsVariant(controls)
+				? controls
+				: undefined,
+		filter: filter && isTopicDetailReviewCardFilter(filter) ? filter : undefined
+	}
 }
 
 export const Route = createFileRoute('/_main/_topic-layout/topics_/$topicId')({
@@ -67,9 +75,13 @@ function TopicDetailRoute() {
 				navigate({
 					to: '/topics/$topicId',
 					params: { topicId },
-					search: filter === 'all' ? {} : { filter }
+					search: {
+						...(search.controls ? { controls: search.controls } : {}),
+						...(filter === 'all' ? {} : { filter })
+					}
 				})
 			}
+			reviewCardControlsVariant={search.controls}
 			topicId={Number(topicId)}
 		/>
 	)

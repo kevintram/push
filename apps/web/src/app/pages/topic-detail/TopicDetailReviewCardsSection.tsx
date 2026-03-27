@@ -1,12 +1,5 @@
 import { Plus } from 'lucide-react'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
-import { Button } from '~/components/ui/button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/dropdown-menu'
 import {
 	Empty,
 	EmptyHeader,
@@ -23,10 +16,16 @@ import {
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
 	estimateReviewCardSize
 } from '~/utils/estimateMasonryItemSize'
-import type { TopicDetailReviewCardFilter } from './shared'
-import { TopicDocumentReviewCardFilter } from './TopicDocumentReviewCardFilter'
+import type {
+	TopicDetailReviewCardControlsVariant,
+	TopicDetailReviewCardFilter
+} from './shared'
+import {
+	TopicDetailReviewCardAddButton,
+	TopicDetailReviewCardFilterControls
+} from './TopicDetailReviewCardControls'
 
-interface TopicDocumentReviewCardsSectionProps {
+interface TopicDetailReviewCardsSectionProps {
 	filteredReviewCards: Array<ReviewCardModel>
 	getScrollElement: () => HTMLDivElement | null
 	hasReviewCards: boolean
@@ -35,11 +34,12 @@ interface TopicDocumentReviewCardsSectionProps {
 	onAddReviewCard: (type: ReviewCardType) => void
 	onFilterChange: (filter: TopicDetailReviewCardFilter) => void
 	onOpenReviewCard: (reviewCardId: number) => void
+	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
 	resolvedSectionFilter: TopicDetailReviewCardFilter
 	sectionLabel: string
 }
 
-export function TopicDocumentReviewCardsSection({
+export function TopicDetailReviewCardsSection({
 	filteredReviewCards,
 	getScrollElement,
 	hasReviewCards,
@@ -48,39 +48,31 @@ export function TopicDocumentReviewCardsSection({
 	onAddReviewCard,
 	onFilterChange,
 	onOpenReviewCard,
+	reviewCardControlsVariant,
 	resolvedSectionFilter,
 	sectionLabel
-}: TopicDocumentReviewCardsSectionProps) {
+}: TopicDetailReviewCardsSectionProps) {
 	return (
 		<div className='space-y-3'>
-			<div className='flex flex-wrap items-center justify-between gap-2.5'>
-				<TopicDocumentReviewCardFilter
-					activeFilter={resolvedSectionFilter}
-					onFilterChange={onFilterChange}
-				/>
-				<DropdownMenu>
-					<DropdownMenuTrigger
-						render={
-							<Button
-								className='shrink-0 rounded-full'
-								disabled={isCreatingReviewCard}
-								size='sm'
-								variant='outline'
-							>
-								<Plus className='h-4 w-4' />
-								Add
-							</Button>
-						}
+			<div>
+				<div className='flex flex-wrap items-center justify-between gap-2.5'>
+					<p className='font-bold text-[0.6875rem] text-muted-foreground/70 uppercase tracking-widest'>
+						Review cards
+					</p>
+					<TopicDetailReviewCardAddButton
+						controlsVariant={reviewCardControlsVariant}
+						isCreatingReviewCard={isCreatingReviewCard}
+						onAddReviewCard={onAddReviewCard}
 					/>
-					<DropdownMenuContent align='end'>
-						<DropdownMenuItem onClick={() => onAddReviewCard('practice')}>
-							Practice
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => onAddReviewCard('flashcard')}>
-							Flashcard
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+				</div>
+				<div aria-hidden={true} className='mt-1 h-px w-full bg-border' />
+				<div className='pt-2'>
+					<TopicDetailReviewCardFilterControls
+						activeFilter={resolvedSectionFilter}
+						controlsVariant={reviewCardControlsVariant}
+						onFilterChange={onFilterChange}
+					/>
+				</div>
 			</div>
 			{hasReviewCards ? (
 				filteredReviewCards.length === 0 ? (

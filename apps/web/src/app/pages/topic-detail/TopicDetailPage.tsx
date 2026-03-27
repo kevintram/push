@@ -1,5 +1,5 @@
 import { notFound } from '@tanstack/react-router'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, MoreHorizontal, Trash2 } from 'lucide-react'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import {
 	AlertDialog,
@@ -12,27 +12,40 @@ import {
 	AlertDialogMedia,
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
+import { Button } from '~/components/ui/button'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { TopicNavigatorSheet } from '~/features/topics/components/topic-navigator/TopicNavigator'
+import { cn } from '~/lib/utils'
 import { isHttpStatusError } from '~/utils/httpStatusError'
-import type { TopicDetailReviewCardFilter } from './shared'
+import type {
+	TopicDetailReviewCardControlsVariant,
+	TopicDetailReviewCardFilter
+} from './shared'
 import { TopicDetailHeader } from './TopicDetailHeader'
-import { TopicDocumentOutline } from './TopicDocumentOutline'
-import { TopicDocumentSection } from './TopicDocumentSection'
-import { useTopicDocumentPage } from './useTopicDocumentPage'
+import { TopicDetailOutline } from './TopicDetailOutline'
+import { TopicDetailSection } from './TopicDetailSection'
+import { useTopicDetailPage } from './useTopicDetailPage'
 
-type TopicDetailPageProps = {
+interface TopicDetailPageProps {
 	cardTypeFilter?: TopicDetailReviewCardFilter | string
 	onCardTypeFilterChange: (filter: TopicDetailReviewCardFilter) => void
+	reviewCardControlsVariant?: TopicDetailReviewCardControlsVariant
 	topicId: number
 }
 
 export function TopicDetailPage({
 	cardTypeFilter = 'all',
 	onCardTypeFilterChange,
+	reviewCardControlsVariant = 'medium',
 	topicId
 }: TopicDetailPageProps) {
 	const {
-		activeSectionId,
 		ancestorIdsById,
 		collapsedSections,
 		getScrollElement,
@@ -42,13 +55,13 @@ export function TopicDetailPage({
 		handleSectionFilterChange,
 		isDeleteDialogOpen,
 		isDeletingTopic,
-		isDocumentLoading,
+		isDetailLoading,
 		nodeById,
+		registerSectionHeadingRef,
 		registerSectionRef,
+		registerScrollContainerRef,
 		resolvedCardTypeFilter,
 		rootSection,
-		scrollContainerRef,
-		scrollToSection,
 		sectionFilterOverrides,
 		setIsDeleteDialogOpen,
 		shouldAutoFocusRootTitle,
@@ -56,14 +69,15 @@ export function TopicDetailPage({
 		topic,
 		topicError,
 		topicPath,
-		topicReviewCardsById
-	} = useTopicDocumentPage({
+		topicReviewCardsById,
+		visibleSectionIds
+	} = useTopicDetailPage({
 		cardTypeFilter,
 		onCardTypeFilterChange,
 		topicId
 	})
 
-	if (isDocumentLoading) {
+	if (isDetailLoading) {
 		return (
 			<div className='flex h-full min-h-0 w-full items-center justify-center'>
 				<LoadingSpinner containerClassName='min-h-64' />
@@ -91,46 +105,140 @@ export function TopicDetailPage({
 		throw notFound()
 	}
 
+	const isLeafTopic = rootSection.children.length === 0
+	const rootContentMeasureClassName = 'max-w-[40rem]'
+	const leafContentRailClassName = 'xl:mx-auto xl:w-full xl:max-w-[57.5rem]'
+	const rootHeaderContentClassName = isLeafTopic
+		? undefined
+		: rootContentMeasureClassName
+	const rootHeaderActionClassName = isLeafTopic
+		? 'top-0 right-0'
+		: 'top-0 right-0 lg:hidden'
+	const rootHeaderTitleContainerClassName = isLeafTopic
+		? 'pr-12 sm:pr-14'
+		: 'pr-12 sm:pr-14 lg:pr-0'
+	const rootSectionContent = (
+		<TopicDetailSection
+			collapsedSections={collapsedSections}
+			getScrollElement={getScrollElement}
+			globalFilter={resolvedCardTypeFilter}
+			onGlobalFilterChange={handleGlobalFilterChange}
+			onOpenReviewCard={handleOpenReviewCard}
+			onOpenRootDeleteDialog={() => setIsDeleteDialogOpen(true)}
+			onSectionFilterChange={handleSectionFilterChange}
+			registerSectionHeadingRef={registerSectionHeadingRef}
+			registerSectionRef={registerSectionRef}
+			renderRootContentOnly={true}
+			resolvedFilterByTopicId={sectionFilterOverrides}
+			reviewCardControlsVariant={reviewCardControlsVariant}
+			rootTopicId={topic.id}
+			searchFilter={resolvedCardTypeFilter}
+			section={rootSection}
+			shouldAutoFocusRootTitle={shouldAutoFocusRootTitle}
+			toggleSection={toggleSection}
+			topicPath={topicPath}
+			topicReviewCardsById={topicReviewCardsById}
+		/>
+	)
+
 	return (
 		<div className='flex h-full min-h-0 w-full'>
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
 				<div className='border-border/60 border-b bg-background/95 md:hidden'>
-					<div className='mx-auto flex w-full max-w-[72rem] items-center justify-end px-4 py-2 sm:px-6 xl:px-8'>
-						<TopicDetailHeader activeTopicId={topic.id} />
+					<div className='mx-auto flex w-full max-w-[76rem] items-center justify-end px-4 py-2 sm:px-6 xl:px-8'>
+						<TopicNavigatorSheet activeTopicId={topic.id} />
 					</div>
 				</div>
-				<div className='flex-1 overflow-y-auto' ref={scrollContainerRef}>
-					<div className='mx-auto flex w-full max-w-[72rem] items-start gap-5 px-5 py-5 sm:px-7 xl:gap-6 xl:px-8 xl:py-6'>
-						<div className='min-w-0 flex-1 space-y-5'>
-							<TopicDocumentSection
-								collapsedSections={collapsedSections}
-								getScrollElement={getScrollElement}
-								globalFilter={resolvedCardTypeFilter}
-								onGlobalFilterChange={handleGlobalFilterChange}
-								onOpenReviewCard={handleOpenReviewCard}
-								onOpenRootDeleteDialog={() => setIsDeleteDialogOpen(true)}
-								onSectionFilterChange={handleSectionFilterChange}
-								registerSectionRef={registerSectionRef}
-								resolvedFilterByTopicId={sectionFilterOverrides}
-								rootTopicId={topic.id}
-								searchFilter={resolvedCardTypeFilter}
-								section={rootSection}
-								shouldAutoFocusRootTitle={shouldAutoFocusRootTitle}
-								toggleSection={toggleSection}
-								topicPath={topicPath}
-								topicReviewCardsById={topicReviewCardsById}
-							/>
+				<div
+					className='flex-1 overflow-y-auto scroll-smooth'
+					ref={registerScrollContainerRef}
+				>
+					<div className='mx-auto w-full max-w-[76rem] pt-5 xl:pt-6'>
+						<div
+							className={cn(
+								'grid gap-6 px-5 pt-5 pb-3 sm:px-7 sm:pt-6 sm:pb-4 xl:gap-6 xl:px-8 xl:pt-7 xl:pb-4',
+								!isLeafTopic && 'lg:grid-cols-[minmax(0,1fr)_13rem]'
+							)}
+						>
+							<div
+								className={cn(
+									'min-w-0',
+									isLeafTopic && leafContentRailClassName
+								)}
+							>
+								<div className='grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-1.5'>
+									<div aria-hidden='true' />
+									<div className='relative min-w-0'>
+										<div
+											className='relative z-10 scroll-mt-24'
+											data-topic-detail-heading-id={rootSection.topic.id}
+											ref={element => {
+												registerSectionHeadingRef(rootSection.topic.id, element)
+											}}
+										>
+											<TopicDetailHeader
+												actionClassName={rootHeaderActionClassName}
+												contentClassName={rootHeaderContentClassName}
+												onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+												shouldAutoFocusTitle={shouldAutoFocusRootTitle}
+												titleContainerClassName={
+													rootHeaderTitleContainerClassName
+												}
+												topic={rootSection.topic}
+												topicPath={topicPath}
+											/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div
+								className={cn(
+									'hidden items-start justify-end lg:flex',
+									isLeafTopic && 'lg:hidden'
+								)}
+							>
+								<DropdownMenu>
+									<DropdownMenuTrigger
+										render={
+											<Button
+												aria-label={`More actions for ${rootSection.topic.title || 'Untitled topic'}`}
+												className='h-8 w-8 shrink-0'
+												size='icon-sm'
+												variant='outline'
+											>
+												<MoreHorizontal className='h-4 w-4' />
+											</Button>
+										}
+									/>
+									<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+										<DropdownMenuItem
+											onClick={() => setIsDeleteDialogOpen(true)}
+											variant='destructive'
+										>
+											<Trash2 className='mr-2 h-4 w-4' />
+											Delete
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</div>
 						</div>
-						<TopicDocumentOutline
-							activeSectionId={activeSectionId}
+					</div>
+					<div className='mx-auto flex w-full max-w-[76rem] items-start gap-5 px-2 pt-2 pb-5 sm:px-7 xl:gap-6 xl:px-8 xl:pt-3 xl:pb-6'>
+						<div
+							className={cn(
+								'min-w-0 flex-1 space-y-5',
+								isLeafTopic && leafContentRailClassName
+							)}
+						>
+							{rootSectionContent}
+						</div>
+						<TopicDetailOutline
 							ancestorIdsById={ancestorIdsById}
 							globalFilter={resolvedCardTypeFilter}
 							nodeById={nodeById}
 							onGlobalFilterChange={handleGlobalFilterChange}
-							onSelectTopic={topicSectionId => {
-								scrollToSection(topicSectionId)
-							}}
 							outlineRootNode={rootSection.topic}
+							visibleSectionIds={visibleSectionIds}
 						/>
 					</div>
 				</div>
@@ -173,4 +281,7 @@ export function TopicDetailPage({
 	)
 }
 
-export type { TopicDetailReviewCardFilter } from './shared'
+export type {
+	TopicDetailReviewCardControlsVariant,
+	TopicDetailReviewCardFilter
+} from './shared'

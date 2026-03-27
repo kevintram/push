@@ -33,23 +33,27 @@ import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
+import { cn } from '~/lib/utils'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate
 } from '~/utils/formatRelativeDate'
-import type { TopicDetailReviewCardFilter } from './shared'
-import { TopicDetailBodyPanel } from './TopicDetailBodyPanel'
-import { TopicDocumentNestedSection } from './TopicDocumentNestedSection'
-import { TopicDocumentPageHeader } from './TopicDocumentPageHeader'
-import { TopicDocumentReviewCardsSection } from './TopicDocumentReviewCardsSection'
-import type { TopicDocumentSectionNode } from './topicDocumentUtils'
+import type {
+	TopicDetailReviewCardControlsVariant,
+	TopicDetailReviewCardFilter
+} from './shared'
+import { TopicDetailBodyEditor } from './TopicDetailBodyEditor'
+import { TopicDetailHeader } from './TopicDetailHeader'
+import { TopicDetailNestedSectionView } from './TopicDetailNestedSectionView'
+import { TopicDetailReviewCardsSection } from './TopicDetailReviewCardsSection'
+import type { TopicDetailSectionNode } from './topicDetailStructure'
 import {
-	getTopicDocumentLabel,
-	getTopicDocumentSectionId
-} from './topicDocumentUtils'
+	getTopicDetailLabel,
+	getTopicDetailSectionId
+} from './topicDetailStructure'
 
-type TopicDocumentSectionProps = {
+type TopicDetailSectionProps = {
 	collapsedSections: Record<string, boolean>
 	getScrollElement: () => HTMLDivElement | null
 	globalFilter: TopicDetailReviewCardFilter
@@ -60,11 +64,16 @@ type TopicDocumentSectionProps = {
 		topicId: number,
 		filter: TopicDetailReviewCardFilter
 	) => void
+	registerSectionHeadingRef: (
+		topicId: number,
+		element: HTMLElement | null
+	) => void
 	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
+	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
 	resolvedFilterByTopicId: Record<number, TopicDetailReviewCardFilter>
 	rootTopicId: number
 	searchFilter: TopicDetailReviewCardFilter
-	section: TopicDocumentSectionNode
+	section: TopicDetailSectionNode
 	shouldAutoFocusRootTitle?: boolean
 	topicPath?: Array<{
 		id: number
@@ -73,6 +82,8 @@ type TopicDocumentSectionProps = {
 	}>
 	topicReviewCardsById: Map<number, Array<ReviewCardModel>>
 	toggleSection: (sectionId: string) => void
+	renderRootContentOnly?: boolean
+	rootContentClassName?: string
 }
 
 const HEADING_ICON_BY_LEVEL = {
@@ -85,15 +96,34 @@ const HEADING_ICON_BY_LEVEL = {
 } as const
 
 function getHeadingClassName(displayLevel: number) {
-	if (displayLevel === 1) return 'text-[1.75rem] font-semibold tracking-tight'
-	if (displayLevel === 2) return 'text-2xl font-semibold tracking-tight'
-	if (displayLevel === 3) return 'text-xl font-medium tracking-tight'
-	if (displayLevel === 4) return 'text-lg font-medium tracking-tight'
-	if (displayLevel === 5) return 'text-base font-medium'
-	return 'text-sm font-medium uppercase tracking-wide text-muted-foreground'
+	if (displayLevel === 1) {
+		return 'text-[1.625rem] font-semibold leading-[1.14] tracking-[-0.022em] sm:text-[1.75rem]'
+	}
+	if (displayLevel === 2) {
+		return 'text-[1.375rem] font-semibold leading-[1.18] tracking-[-0.018em] sm:text-[1.5rem]'
+	}
+	if (displayLevel === 3) {
+		return 'text-[1.125rem] font-semibold leading-[1.24] tracking-[-0.012em] sm:text-[1.1875rem]'
+	}
+	if (displayLevel === 4) {
+		return 'text-base font-semibold leading-[1.3] tracking-[-0.008em] sm:text-[1.0625rem]'
+	}
+	if (displayLevel === 5) {
+		return 'text-[0.9375rem] font-semibold leading-[1.34] tracking-[0.008em] text-foreground/90'
+	}
+	return 'text-[0.875rem] font-semibold leading-[1.4] tracking-[0.012em] text-muted-foreground'
 }
 
-function getSectionDisplayLevel(section: TopicDocumentSectionNode) {
+function getSectionTopSpacingClassName(displayLevel: number) {
+	if (displayLevel === 1) return 'pt-12'
+	if (displayLevel === 2) return 'pt-10'
+	if (displayLevel === 3) return 'pt-8'
+	if (displayLevel === 4) return 'pt-6'
+	if (displayLevel === 5) return 'pt-4'
+	return 'pt-3'
+}
+
+function getSectionDisplayLevel(section: TopicDetailSectionNode) {
 	return Math.min(Math.max(section.headingLevel - 1, 1), 6)
 }
 
@@ -106,7 +136,7 @@ function filterReviewCards(
 	return reviewCards.filter(reviewCard => reviewCard.type === filter)
 }
 
-export function TopicDocumentSection({
+export function TopicDetailSection({
 	collapsedSections,
 	getScrollElement,
 	globalFilter,
@@ -114,7 +144,9 @@ export function TopicDocumentSection({
 	onOpenRootDeleteDialog,
 	onOpenReviewCard,
 	onSectionFilterChange,
+	registerSectionHeadingRef,
 	registerSectionRef,
+	reviewCardControlsVariant,
 	resolvedFilterByTopicId,
 	rootTopicId,
 	searchFilter,
@@ -122,8 +154,10 @@ export function TopicDocumentSection({
 	shouldAutoFocusRootTitle = false,
 	topicReviewCardsById,
 	topicPath = [],
-	toggleSection
-}: TopicDocumentSectionProps) {
+	toggleSection,
+	renderRootContentOnly = false,
+	rootContentClassName
+}: TopicDetailSectionProps) {
 	const navigate = useNavigate()
 	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
 	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
@@ -136,7 +170,7 @@ export function TopicDocumentSection({
 	} = useCreateReviewCard()
 	const { hidesSecondary } = useReviewMode()
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-	const sectionId = getTopicDocumentSectionId(section.topic.id)
+	const sectionId = getTopicDetailSectionId(section.topic.id)
 	const isRootSection = section.topic.id === rootTopicId
 	const isCollapsed = isRootSection
 		? false
@@ -152,10 +186,12 @@ export function TopicDocumentSection({
 	const HeadingIcon =
 		HEADING_ICON_BY_LEVEL[displayLevel as keyof typeof HEADING_ICON_BY_LEVEL]
 	const headingClassName = getHeadingClassName(displayLevel)
-	const sectionLabel = getTopicDocumentLabel(
+	const sectionTopSpacingClassName = getSectionTopSpacingClassName(displayLevel)
+	const sectionLabel = getTopicDetailLabel(
 		section.topic.title,
 		section.topic.body
 	)
+	const shouldRenderRootHeader = !(isRootSection && renderRootContentOnly)
 	const hasReviewCards = sectionReviewCards.length > 0
 	const updated = useMemo(
 		() =>
@@ -274,7 +310,7 @@ export function TopicDocumentSection({
 				params: { topicId: created.id.toString() }
 			})
 		} catch {
-			toast.error('Failed to create subtopic')
+			toast.error('Failed to create topic')
 		}
 	}
 
@@ -282,7 +318,12 @@ export function TopicDocumentSection({
 		navigate({
 			to: '/topics/$topicId',
 			params: { topicId: section.topic.id.toString() },
-			search: searchFilter === 'all' ? {} : { filter: searchFilter }
+			search: {
+				...(searchFilter === 'all' ? {} : { filter: searchFilter }),
+				...(reviewCardControlsVariant === 'compact'
+					? { controls: reviewCardControlsVariant }
+					: {})
+			}
 		}).catch(() => {})
 	}
 
@@ -301,7 +342,7 @@ export function TopicDocumentSection({
 	}
 
 	const bodyPanel = (
-		<TopicDetailBodyPanel
+		<TopicDetailBodyEditor
 			body={body}
 			flushBody={flushBody}
 			guessBodyText={guessBodyText}
@@ -319,7 +360,7 @@ export function TopicDocumentSection({
 	)
 
 	const reviewCardsSection = (
-		<TopicDocumentReviewCardsSection
+		<TopicDetailReviewCardsSection
 			filteredReviewCards={filteredReviewCards}
 			getScrollElement={getScrollElement}
 			hasReviewCards={hasReviewCards}
@@ -338,42 +379,65 @@ export function TopicDocumentSection({
 			}}
 			onOpenReviewCard={onOpenReviewCard}
 			resolvedSectionFilter={resolvedSectionFilter}
+			reviewCardControlsVariant={reviewCardControlsVariant}
 			sectionLabel={sectionLabel}
 		/>
 	)
 
 	return (
 		<section
-			className='scroll-mt-24 space-y-2.5 py-0.5'
+			className={cn(
+				'scroll-mt-24 space-y-2.5 py-0.5',
+				isRootSection && renderRootContentOnly && 'space-y-0'
+			)}
 			id={sectionId}
 			ref={element => {
 				registerSectionRef(section.topic.id, element)
 			}}
 		>
-			<div className='space-y-3.5'>
+			<div
+				className={
+					isRootSection && renderRootContentOnly
+						? undefined
+						: sectionTopSpacingClassName
+				}
+			>
 				{isRootSection ? (
 					isCollapsed ? null : (
 						<div className='grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-1.5'>
 							<div aria-hidden='true' />
-							<div className='space-y-2'>
-								<TopicDocumentPageHeader
-									onOpenDeleteDialog={() => {
-										onOpenRootDeleteDialog?.()
-									}}
-									shouldAutoFocusTitle={shouldAutoFocusRootTitle}
-									topic={section.topic}
-									topicPath={topicPath}
-								/>
-								{bodyPanel}
-								<div className='space-y-2.5'>{reviewCardsSection}</div>
+							<div className={cn('min-w-0', rootContentClassName)}>
+								{shouldRenderRootHeader ? (
+									<div
+										className='scroll-mt-24'
+										data-topic-detail-heading-id={section.topic.id}
+										ref={element => {
+											registerSectionHeadingRef(section.topic.id, element)
+										}}
+									>
+										<TopicDetailHeader
+											onOpenDeleteDialog={() => {
+												onOpenRootDeleteDialog?.()
+											}}
+											shouldAutoFocusTitle={shouldAutoFocusRootTitle}
+											topic={section.topic}
+											topicPath={topicPath}
+										/>
+									</div>
+								) : null}
+								<div className={shouldRenderRootHeader ? 'pt-3' : undefined}>
+									{bodyPanel}
+								</div>
+								<div>{reviewCardsSection}</div>
 							</div>
 						</div>
 					)
 				) : (
-					<TopicDocumentNestedSection
+					<TopicDetailNestedSectionView
 						bodyPanel={bodyPanel}
 						createdDate={createdDate}
 						createdText={created.text}
+						displayLevel={displayLevel}
 						flushTitle={flushTitle}
 						HeadingIcon={HeadingIcon}
 						headingClassName={headingClassName}
@@ -385,6 +449,9 @@ export function TopicDocumentSection({
 						onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
 						onOpenTopic={handleOpenTopic}
 						onTitleChange={onTitleChange}
+						registerHeadingRef={element => {
+							registerSectionHeadingRef(section.topic.id, element)
+						}}
 						reviewCardsSection={reviewCardsSection}
 						section={section}
 						sectionId={sectionId}
@@ -396,9 +463,9 @@ export function TopicDocumentSection({
 					/>
 				)}
 				{isCollapsed ? null : section.children.length > 0 ? (
-					<div className='space-y-6'>
+					<div>
 						{section.children.map(childSection => (
-							<TopicDocumentSection
+							<TopicDetailSection
 								collapsedSections={collapsedSections}
 								getScrollElement={getScrollElement}
 								globalFilter={globalFilter}
@@ -406,8 +473,12 @@ export function TopicDocumentSection({
 								onGlobalFilterChange={onGlobalFilterChange}
 								onOpenReviewCard={onOpenReviewCard}
 								onSectionFilterChange={onSectionFilterChange}
+								registerSectionHeadingRef={registerSectionHeadingRef}
 								registerSectionRef={registerSectionRef}
+								renderRootContentOnly={renderRootContentOnly}
 								resolvedFilterByTopicId={resolvedFilterByTopicId}
+								reviewCardControlsVariant={reviewCardControlsVariant}
+								rootContentClassName={rootContentClassName}
 								rootTopicId={rootTopicId}
 								searchFilter={searchFilter}
 								section={childSection}
