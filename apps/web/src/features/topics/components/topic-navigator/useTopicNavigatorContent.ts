@@ -5,13 +5,9 @@ import type {
 	DragStartEvent
 } from '@dnd-kit/core'
 import { PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
-import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
-import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
-import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { useTopicTree } from '~/features/topics/hooks/useTopicTree'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { TOPIC_NAVIGATOR_DRAG_EXPAND_DELAY_MS } from './TopicNavigator.shared'
@@ -22,22 +18,13 @@ import { useTopicNavigatorScrollState } from './useTopicNavigatorScrollState'
 type UseTopicNavigatorContentOptions = {
 	activeTopicId?: number | null
 	autoScrollActiveTopic?: boolean
-	enableDragAndDrop?: boolean
-	onNavigate?: () => void
 }
 
 export function useTopicNavigatorContent({
 	activeTopicId,
-	autoScrollActiveTopic = false,
-	enableDragAndDrop = false,
-	onNavigate
+	autoScrollActiveTopic = false
 }: UseTopicNavigatorContentOptions) {
-	const navigate = useNavigate()
 	const { roots, nodeById, ancestorIdsById, isLoading, error } = useTopicTree()
-	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
-		useCreateTopic()
-	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
-		useDeleteTopic()
 	const { mutateAsync: updateTopicAsync, isPending: isUpdatingTopic } =
 		useUpdateTopic()
 	const [activeDragTopicId, setActiveDragTopicId] = useState<number | null>(
@@ -46,12 +33,10 @@ export function useTopicNavigatorContent({
 	const [highlightedDropTopicId, setHighlightedDropTopicId] = useState<
 		number | null
 	>(null)
+	const [hoveredTopicId, setHoveredTopicId] = useState<number | null>(null)
 	const expandOnDragHoverTimeoutRef = useRef<number | null>(null)
 	const expandOnDragHoverTopicIdRef = useRef<number | null>(null)
 	const suppressNavigationRef = useRef(false)
-	const [pendingDeleteTopicId, setPendingDeleteTopicId] = useState<
-		number | null
-	>(null)
 	const activeBranchIds = useMemo(() => {
 		if (activeTopicId == null) return []
 
@@ -84,8 +69,6 @@ export function useTopicNavigatorContent({
 					nodeById.get(activeDragTopicId)?.title ?? '',
 					nodeById.get(activeDragTopicId)?.body ?? ''
 				)
-	const pendingDeleteTopic =
-		pendingDeleteTopicId == null ? null : nodeById.get(pendingDeleteTopicId)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -102,68 +85,6 @@ export function useTopicNavigatorContent({
 		}
 		expandOnDragHoverTopicIdRef.current = null
 	}, [])
-
-	const handleCreateSubtopic = async (parentTopicId: number) => {
-		if (isCreatingTopic) return
-
-		try {
-			const created = await createTopicAsync({
-				title: '',
-				body: '',
-				parent_id: parentTopicId
-			})
-			requestFocusNewTopicTitle(created.id)
-			ensureExpanded(parentTopicId)
-			await navigate({
-				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() }
-			})
-			onNavigate?.()
-		} catch {
-			toast.error('Failed to create subtopic')
-		}
-	}
-
-	const handleDeleteTopic = async () => {
-		if (pendingDeleteTopicId == null || isDeletingTopic) return
-
-		const topicToDelete = nodeById.get(pendingDeleteTopicId)
-		if (!topicToDelete) {
-			setPendingDeleteTopicId(null)
-			return
-		}
-
-		const activeTopicAncestorIds =
-			activeTopicId == null ? [] : (ancestorIdsById.get(activeTopicId) ?? [])
-		const shouldNavigateAway =
-			activeTopicId === topicToDelete.id ||
-			activeTopicAncestorIds.includes(topicToDelete.id)
-
-		try {
-			await deleteTopicAsync(topicToDelete.id)
-			setPendingDeleteTopicId(null)
-			toast.success('Topic deleted')
-
-			if (!shouldNavigateAway) return
-
-			if (
-				topicToDelete.parent_id != null &&
-				nodeById.has(topicToDelete.parent_id)
-			) {
-				await navigate({
-					to: '/topics/$topicId',
-					params: { topicId: topicToDelete.parent_id.toString() }
-				})
-			} else {
-				await navigate({ to: '/topics' })
-			}
-			onNavigate?.()
-		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : 'Failed to delete topic'
-			)
-		}
-	}
 
 	const resetDragState = () => {
 		clearExpandOnDragHoverTimeout()
@@ -251,6 +172,7 @@ export function useTopicNavigatorContent({
 
 		suppressNavigationRef.current = true
 		setActiveDragTopicId(activeDropTarget.topicId)
+		setHoveredTopicId(null)
 		setHighlightedDropTopicId(null)
 	}
 
@@ -318,35 +240,23 @@ export function useTopicNavigatorContent({
 		activeDragLabel,
 		activeDragTopicId,
 		ancestorIdsById,
-		enableDragAndDrop,
+		ensureExpanded,
 		error,
 		expandedIdSet,
-		handleConfirmDeleteTopic: () => {
-			handleDeleteTopic().catch(() => {})
-		},
-		handleCreateSubtopic: (topicId: number) => {
-			handleCreateSubtopic(topicId).catch(() => {})
-		},
-		handleDialogOpenChange: (open: boolean) => {
-			if (!open) setPendingDeleteTopicId(null)
-		},
 		handleDragCancel,
 		handleDragEnd,
 		handleDragOver,
 		handleDragStart,
 		highlightedDropTopicId,
-		isDeletingTopic,
+		hoveredTopicId,
 		isLoading,
 		isUpdatingTopic,
 		nodeById,
-		onNavigate,
-		pendingDeleteTopic,
-		pendingDeleteTopicId,
 		roots,
 		scrollViewportRef,
 		sensors,
+		setHoveredTopicId,
 		setItemRef,
-		setPendingDeleteTopicId,
 		suppressNavigationRef,
 		toggleExpanded
 	}

@@ -1,8 +1,7 @@
 import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { AlertTriangle, House, Plus } from 'lucide-react'
-import { toast } from 'sonner'
+import { useNavigate } from '@tanstack/react-router'
+import { AlertTriangle } from 'lucide-react'
 
 import {
 	AlertDialog,
@@ -16,13 +15,8 @@ import {
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
 import { Badge } from '~/components/ui/badge'
-import { Button } from '~/components/ui/button'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { ScrollArea } from '~/components/ui/scroll-area'
-import { Separator } from '~/components/ui/separator'
-import { SidebarContent, SidebarHeader } from '~/components/ui/sidebar'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
-import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
+import { useTopicTreeActions } from '~/features/topics/hooks/useTopicTreeActions'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import {
 	TopicNavigatorItem,
@@ -44,39 +38,62 @@ export function TopicNavigatorContent({
 	enableDragAndDrop = false,
 	onNavigate
 }: TopicNavigatorContentProps) {
+	const navigate = useNavigate()
 	const {
 		activeDragLabel,
 		activeDragTopicId,
 		ancestorIdsById,
+		ensureExpanded,
 		error,
 		expandedIdSet,
-		handleConfirmDeleteTopic,
-		handleCreateSubtopic,
-		handleDialogOpenChange,
 		handleDragCancel,
 		handleDragEnd,
 		handleDragOver,
 		handleDragStart,
 		highlightedDropTopicId,
-		isDeletingTopic,
+		hoveredTopicId,
 		isLoading,
 		isUpdatingTopic,
 		nodeById,
-		pendingDeleteTopic,
-		pendingDeleteTopicId,
 		roots,
 		scrollViewportRef,
 		sensors,
+		setHoveredTopicId,
 		setItemRef,
-		setPendingDeleteTopicId,
 		suppressNavigationRef,
 		toggleExpanded
 	} = useTopicNavigatorContent({
 		activeTopicId,
-		autoScrollActiveTopic,
-		enableDragAndDrop,
-		onNavigate
+		autoScrollActiveTopic
 	})
+	const {
+		handleConfirmDeleteTopic,
+		handleCreateSubtopic,
+		handleDialogOpenChange,
+		isDeletingTopic,
+		pendingDeleteTopic,
+		pendingDeleteTopicId,
+		setPendingDeleteTopicId
+	} = useTopicTreeActions({
+		activeTopicId,
+		ancestorIdsById,
+		nodeById,
+		onAfterCreateSubtopic: parentTopicId => {
+			ensureExpanded(parentTopicId)
+		},
+		onAfterRouteChange: onNavigate
+	})
+	const isTreeMutating = isUpdatingTopic || isDeletingTopic
+	const handleOpenTopic = (topicId: number) => {
+		navigate({
+			to: '/topics/$topicId',
+			params: { topicId: topicId.toString() }
+		})
+			.then(() => {
+				onNavigate?.()
+			})
+			.catch(() => {})
+	}
 
 	if (isLoading) {
 		return <LoadingSpinner containerClassName='min-h-32' />
@@ -123,13 +140,16 @@ export function TopicNavigatorContent({
 							ancestorIdsById={ancestorIdsById}
 							expandedIdSet={expandedIdSet}
 							highlightedDropTopicId={highlightedDropTopicId}
+							hoveredTopicId={hoveredTopicId}
 							isDragAndDropEnabled={enableDragAndDrop}
-							isUpdatingTopic={isUpdatingTopic}
+							isUpdatingTopic={isTreeMutating}
 							key={rootNode.id}
 							node={rootNode}
 							nodeById={nodeById}
 							onCreateSubtopic={handleCreateSubtopic}
+							onHoverTopicChange={setHoveredTopicId}
 							onNavigate={onNavigate}
+							onOpenTopic={handleOpenTopic}
 							onRequestDeleteTopic={setPendingDeleteTopicId}
 							onToggleExpanded={toggleExpanded}
 							setItemRef={setItemRef}
@@ -191,82 +211,5 @@ export function TopicNavigatorContent({
 				</AlertDialogContent>
 			</AlertDialog>
 		</DndContext>
-	)
-}
-
-export function TopicNavigatorPanel({
-	activeTopicId,
-	autoScrollActiveTopic = false,
-	enableDragAndDrop = false,
-	onNavigate
-}: TopicNavigatorContentProps) {
-	const navigate = useNavigate()
-	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
-		useCreateTopic()
-
-	const handleCreateTopic = async () => {
-		if (isCreatingTopic) return
-
-		try {
-			const created = await createTopicAsync({
-				title: '',
-				body: ''
-			})
-			requestFocusNewTopicTitle(created.id)
-			await navigate({
-				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() }
-			})
-			onNavigate?.()
-		} catch {
-			toast.error('Failed to create topic')
-		}
-	}
-
-	return (
-		<div className='flex min-h-0 flex-1 flex-col'>
-			<SidebarHeader className='gap-1.5 border-sidebar-border/70 p-1.5'>
-				<div className='flex items-center gap-0.5'>
-					<Button
-						className='h-7 flex-1 justify-start px-2'
-						nativeButton={false}
-						onClick={() => onNavigate?.()}
-						render={<Link to='/topics' />}
-						size='sm'
-						variant='ghost'
-					>
-						<House className='h-4 w-4' />
-						Home
-					</Button>
-					<Button
-						aria-label='Create new topic'
-						disabled={isCreatingTopic}
-						onClick={() => {
-							handleCreateTopic().catch(() => {})
-						}}
-						size='icon-xs'
-						variant='ghost'
-					>
-						<Plus className='h-3.5 w-3.5' />
-					</Button>
-				</div>
-				<Separator className='mr-10 w-auto!' />
-			</SidebarHeader>
-			<SidebarContent className='overflow-hidden p-0'>
-				<ScrollArea
-					className='min-h-0 flex-1'
-					scrollbarClassName='p-px data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5'
-				>
-					<div className='p-1.5'>
-						<TopicNavigatorContent
-							activeTopicId={activeTopicId}
-							autoScrollActiveTopic={autoScrollActiveTopic}
-							enableDragAndDrop={enableDragAndDrop}
-							onNavigate={onNavigate}
-						/>
-					</div>
-				</ScrollArea>
-			</SidebarContent>
-		</div>
 	)
 }
