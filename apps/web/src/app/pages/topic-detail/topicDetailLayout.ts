@@ -8,6 +8,8 @@ export const TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS =
 export const TOPIC_DETAIL_OUTLINE_WIDTH_CLASS = 'w-52'
 export const TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS =
 	'lg:grid-cols-[minmax(0,1fr)_13rem]'
+export const TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS =
+	'border-border/70 border-y bg-muted/80'
 
 export type TopicDetailSectionPresentation = {
 	displayLevel: number

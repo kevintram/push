@@ -34,6 +34,7 @@ import {
 	TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS,
 	TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
 	TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS,
+	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS,
 	TOPIC_DETAIL_SECTION_GRID_CLASS
 } from './topicDetailLayout'
 import { useTopicDetailPage } from './useTopicDetailPage'
@@ -152,73 +153,88 @@ export function TopicDetailPage({
 					className='flex-1 overflow-y-auto scroll-smooth'
 					ref={registerScrollContainerRef}
 				>
-					<div className='mx-auto w-full max-w-[76rem] pt-5 xl:pt-6'>
-						<div
-							className={cn(
-								'grid gap-6 px-5 pt-5 pb-3 sm:px-7 sm:pt-6 sm:pb-4 xl:gap-6 xl:px-8 xl:pt-7 xl:pb-4',
-								!isLeafTopic && TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS
-							)}
-						>
+					<div className={TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS}>
+						<div className='mx-auto w-full max-w-[76rem]'>
 							<div
 								className={cn(
-									'min-w-0',
-									isLeafTopic && TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS
+									'grid gap-6 px-5 pt-5 pb-3 sm:px-7 sm:pt-6 sm:pb-4 xl:gap-6 xl:px-8 xl:pt-7 xl:pb-4',
+									!isLeafTopic && TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS
 								)}
 							>
-								<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
-									<div aria-hidden='true' />
-									<div className='relative min-w-0'>
+								<div
+									className={cn(
+										'min-w-0',
+										isLeafTopic && TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS
+									)}
+								>
+									<div className='flex items-start gap-3'>
+										<div className='min-w-0 flex-1'>
+											<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
+												<div aria-hidden='true' />
+												<div className='relative min-w-0'>
+													<div
+														className='relative z-10 scroll-mt-24'
+														data-topic-detail-heading-id={rootSection.topic.id}
+														ref={element => {
+															registerSectionHeadingRef(
+																rootSection.topic.id,
+																element
+															)
+														}}
+													>
+														<TopicDetailHeader
+															actionClassName={rootHeaderActionClassName}
+															contentClassName={rootHeaderContentClassName}
+															onOpenDeleteDialog={() =>
+																setIsDeleteDialogOpen(true)
+															}
+															shouldAutoFocusTitle={shouldAutoFocusRootTitle}
+															titleContainerClassName={
+																rootHeaderTitleContainerClassName
+															}
+															topic={rootSection.topic}
+															topicPath={topicPath}
+														/>
+													</div>
+												</div>
+											</div>
+										</div>
 										<div
-											className='relative z-10 scroll-mt-24'
-											data-topic-detail-heading-id={rootSection.topic.id}
-											ref={element => {
-												registerSectionHeadingRef(rootSection.topic.id, element)
-											}}
+											className={cn(
+												'hidden shrink-0 items-start lg:flex',
+												isLeafTopic && 'lg:hidden'
+											)}
 										>
-											<TopicDetailHeader
-												actionClassName={rootHeaderActionClassName}
-												contentClassName={rootHeaderContentClassName}
-												onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
-												shouldAutoFocusTitle={shouldAutoFocusRootTitle}
-												titleContainerClassName={
-													rootHeaderTitleContainerClassName
-												}
-												topic={rootSection.topic}
-												topicPath={topicPath}
-											/>
+											<DropdownMenu>
+												<DropdownMenuTrigger
+													render={
+														<Button
+															aria-label={`More actions for ${rootSection.topic.title || 'Untitled topic'}`}
+															className='h-8 w-8 shrink-0'
+															size='icon-sm'
+															variant='outline'
+														>
+															<MoreHorizontal className='h-4 w-4' />
+														</Button>
+													}
+												/>
+												<DropdownMenuContent
+													align='end'
+													side='bottom'
+													sideOffset={4}
+												>
+													<DropdownMenuItem
+														onClick={() => setIsDeleteDialogOpen(true)}
+														variant='destructive'
+													>
+														<Trash2 className='mr-2 h-4 w-4' />
+														Delete
+													</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
 										</div>
 									</div>
 								</div>
-							</div>
-							<div
-								className={cn(
-									'hidden items-start justify-end lg:flex',
-									isLeafTopic && 'lg:hidden'
-								)}
-							>
-								<DropdownMenu>
-									<DropdownMenuTrigger
-										render={
-											<Button
-												aria-label={`More actions for ${rootSection.topic.title || 'Untitled topic'}`}
-												className='h-8 w-8 shrink-0'
-												size='icon-sm'
-												variant='outline'
-											>
-												<MoreHorizontal className='h-4 w-4' />
-											</Button>
-										}
-									/>
-									<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
-										<DropdownMenuItem
-											onClick={() => setIsDeleteDialogOpen(true)}
-											variant='destructive'
-										>
-											<Trash2 className='mr-2 h-4 w-4' />
-											Delete
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
 							</div>
 						</div>
 					</div>
