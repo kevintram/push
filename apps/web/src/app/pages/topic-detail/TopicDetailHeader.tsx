@@ -162,7 +162,7 @@ export function TopicDetailHeader({
 						render={
 							<Button
 								aria-label={`More actions for ${topic.title || 'Untitled topic'}`}
-								className='h-8 w-8 shrink-0'
+								className='h-8 w-8 shrink-0 rounded-full'
 								size='icon-sm'
 								variant='outline'
 							>

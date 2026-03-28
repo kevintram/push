@@ -117,7 +117,7 @@ export function TopicDetailNestedSectionView({
 									render={
 										<Button
 											aria-label={`Open ${sectionLabel}`}
-											className='h-8 w-8 shrink-0'
+											className='h-8 w-8 shrink-0 rounded-full'
 											onClick={onOpenTopic}
 											size='icon-sm'
 											type='button'
@@ -134,7 +134,7 @@ export function TopicDetailNestedSectionView({
 									render={
 										<Button
 											aria-label={`More actions for ${sectionLabel}`}
-											className='h-8 w-8 shrink-0'
+											className='h-8 w-8 shrink-0 rounded-full'
 											size='icon-sm'
 											variant='ghost'
 										>
@@ -166,7 +166,7 @@ export function TopicDetailNestedSectionView({
 						<Button
 							aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} ${sectionLabel}`}
 							className={cn(
-								'h-8 w-8 shrink-0',
+								'h-8 w-8 shrink-0 rounded-full',
 								isCollapsed &&
 									'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
 							)}
