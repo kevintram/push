@@ -52,24 +52,46 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 		Link: ({
 			children,
 			to,
+			hash,
 			params: _params,
 			preload: _preload,
 			preloadDelay: _preloadDelay,
 			search: _search,
+			hashScrollIntoView: _hashScrollIntoView,
+			resetScroll: _resetScroll,
 			...props
 		}: {
 			children?: ReactNode
 			to?: string
+			hash?: string
 			params?: unknown
 			preload?: unknown
 			preloadDelay?: unknown
 			search?: unknown
+			hashScrollIntoView?: unknown
+			resetScroll?: unknown
 		}) => (
-			<a data-to={to} href={typeof to === 'string' ? to : '#'} {...props}>
+			<a
+				data-hash={hash}
+				data-to={to}
+				href={
+					typeof to === 'string'
+						? `${to}${hash ? `#${hash}` : ''}`
+						: hash
+							? `#${hash}`
+							: '#'
+				}
+				{...props}
+			>
 				{children}
 			</a>
 		),
-		useNavigate: () => navigateMock
+		useNavigate: () => navigateMock,
+		useRouterState: ({
+			select
+		}: {
+			select: (state: { location: { hash: string } }) => unknown
+		}) => select({ location: { hash: '' } })
 	}
 })
 

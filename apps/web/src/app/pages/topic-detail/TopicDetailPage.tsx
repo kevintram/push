@@ -55,6 +55,7 @@ export function TopicDetailPage({
 	const {
 		ancestorIdsById,
 		collapsedSections,
+		detailError,
 		getScrollElement,
 		handleDeleteTopic,
 		handleGlobalFilterChange,
@@ -63,6 +64,7 @@ export function TopicDetailPage({
 		isDeleteDialogOpen,
 		isDeletingTopic,
 		isDetailLoading,
+		isReviewCardsLoading,
 		nodeById,
 		registerSectionHeadingRef,
 		registerSectionRef,
@@ -74,7 +76,6 @@ export function TopicDetailPage({
 		shouldAutoFocusRootTitle,
 		toggleSection,
 		topic,
-		topicError,
 		topicPath,
 		topicReviewCardsById,
 		visibleSectionIds
@@ -92,16 +93,16 @@ export function TopicDetailPage({
 		)
 	}
 
-	if (topicError) {
-		if (isHttpStatusError(topicError) && topicError.status === 404) {
+	if (detailError) {
+		if (isHttpStatusError(detailError) && detailError.status === 404) {
 			throw notFound()
 		}
 
 		return (
 			<LoadingOrError
 				error={
-					topicError instanceof Error
-						? topicError
+					detailError instanceof Error
+						? detailError
 						: new Error('Failed to load topic')
 				}
 			/>
@@ -127,6 +128,7 @@ export function TopicDetailPage({
 			collapsedSections={collapsedSections}
 			getScrollElement={getScrollElement}
 			globalFilter={resolvedCardTypeFilter}
+			isReviewCardsLoading={isReviewCardsLoading}
 			onGlobalFilterChange={handleGlobalFilterChange}
 			onOpenReviewCard={handleOpenReviewCard}
 			onSectionFilterChange={handleSectionFilterChange}
@@ -210,7 +212,7 @@ export function TopicDetailPage({
 													render={
 														<Button
 															aria-label={`More actions for ${rootSection.topic.title || 'Untitled topic'}`}
-															className='h-8 w-8 shrink-0'
+															className='h-8 w-8 shrink-0 rounded-full'
 															size='icon-sm'
 															variant='outline'
 														>
@@ -238,7 +240,7 @@ export function TopicDetailPage({
 							</div>
 						</div>
 					</div>
-					<div className='mx-auto flex w-full max-w-[76rem] items-start gap-5 px-2 pt-2 pb-5 sm:px-7 xl:gap-6 xl:px-8 xl:pt-3 xl:pb-6'>
+					<div className='mx-auto flex w-full max-w-[76rem] items-start gap-5 px-2 pt-4 pb-5 sm:px-7 xl:gap-6 xl:px-8 xl:pt-5 xl:pb-6'>
 						<div
 							className={cn(
 								'min-w-0 flex-1 space-y-5',

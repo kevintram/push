@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
 import type { MouseEvent } from 'react'
 import {
@@ -27,7 +27,7 @@ import { cn } from '~/lib/utils'
 import type { TopicDetailReviewCardFilter } from './shared'
 import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'
 import { TOPIC_DETAIL_OUTLINE_WIDTH_CLASS } from './topicDetailLayout'
-import { getTopicDetailHash } from './topicDetailStructure'
+import { getTopicDetailSectionId } from './topicDetailStructure'
 import { useTopicDetailOutline } from './useTopicDetailOutline'
 
 interface TopicDetailOutlineProps {
@@ -93,6 +93,7 @@ export function TopicDetailOutline({
 		event.preventDefault()
 		event.stopPropagation()
 	}
+	const outlineRootTopicId = outlineRootNode.id.toString()
 
 	return (
 		<aside
@@ -107,20 +108,25 @@ export function TopicDetailOutline({
 						<li>
 							<ContextMenuTrigger className='rounded-md'>
 								<div className='group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors hover:bg-muted/50'>
-									<a
+									<Link
 										className={cn(
 											'min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:underline',
 											isRootActive
 												? 'font-bold text-foreground'
 												: 'font-semibold text-muted-foreground hover:text-foreground'
 										)}
-										href={getTopicDetailHash(outlineRootNode.id)}
+										hash={getTopicDetailSectionId(outlineRootNode.id)}
+										hashScrollIntoView={false}
 										onClick={event => {
 											handleOutlineClick(event, suppressSelectionRef)
 										}}
+										params={{ topicId: outlineRootTopicId }}
+										resetScroll={false}
+										search={true}
+										to='/topics/$topicId'
 									>
 										{rootLabel}
-									</a>
+									</Link>
 								</div>
 							</ContextMenuTrigger>
 							<ContextMenuContent align='start' side='right' sideOffset={6}>
@@ -179,15 +185,20 @@ export function TopicDetailOutline({
 								node,
 								suppressSelectionRef
 							}) => (
-								<a
+								<Link
 									className={cn(className, 'w-full text-left')}
-									href={getTopicDetailHash(node.id)}
+									hash={getTopicDetailSectionId(node.id)}
+									hashScrollIntoView={false}
 									onClick={event => {
 										handleOutlineClick(event, suppressSelectionRef)
 									}}
+									params={{ topicId: outlineRootTopicId }}
+									resetScroll={false}
+									search={true}
+									to='/topics/$topicId'
 								>
 									{label}
-								</a>
+								</Link>
 							)}
 							suppressSelectionRef={suppressSelectionRef}
 						/>

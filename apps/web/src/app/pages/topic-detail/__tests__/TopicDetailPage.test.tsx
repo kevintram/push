@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import {
 	parentTopic,
 	topic,
+	useReviewCardsMock,
 	useTopicMock,
 	useTopicsMock
 } from '~/testing/support/detailPageTestSupport'
@@ -124,6 +125,213 @@ describe('TopicDetailPage', () => {
 		expect(
 			screen.queryByRole('navigation', { name: 'Topic path' })
 		).not.toBeInTheDocument()
+	})
+
+	it('renders the document while review cards continue loading in the background', () => {
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (
+					params?.subtree_of === 1 &&
+					params.sort === 'title' &&
+					params.order === 'asc'
+				) {
+					return {
+						data: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+		useReviewCardsMock.mockReturnValue({ data: [], isLoading: true })
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		expect(screen.getByDisplayValue('Mathematics')).toBeInTheDocument()
+		expect(screen.getAllByText('Loading review cards').length).toBeGreaterThan(
+			0
+		)
+		expect(
+			screen.queryByText('No review cards in this filter')
+		).not.toBeInTheDocument()
+	})
+
+	it('renders an error when the subtree topics request fails', () => {
+		const subtreeError = new Error('subtree failed')
+
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (
+					params?.subtree_of === 1 &&
+					params.sort === 'title' &&
+					params.order === 'asc'
+				) {
+					return {
+						data: [],
+						error: subtreeError,
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [topic],
+						error: null,
+						isLoading: false
+					}
+				}
+
+				return { data: [], error: null, isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		expect(screen.getByText('subtree failed')).toBeInTheDocument()
+		expect(screen.queryByDisplayValue('Algebra')).not.toBeInTheDocument()
+	})
+
+	it('renders an error when the review cards request fails', () => {
+		const reviewCardsError = new Error('review cards failed')
+
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [topic],
+						error: null,
+						isLoading: false
+					}
+				}
+
+				return { data: [], error: null, isLoading: false }
+			}
+		)
+		useReviewCardsMock.mockReturnValue({
+			data: [],
+			error: reviewCardsError,
+			isLoading: false
+		})
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		expect(screen.getByText('review cards failed')).toBeInTheDocument()
+		expect(
+			screen.queryByText('No review cards in this filter')
+		).not.toBeInTheDocument()
+	})
+
+	it('does not render native hash anchor ids for topic sections', () => {
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (
+					params?.subtree_of === 1 &&
+					params.sort === 'title' &&
+					params.order === 'asc'
+				) {
+					return {
+						data: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { container } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		expect(container.querySelector('#topic-1')).toBeNull()
+		expect(container.querySelector('#topic-2')).toBeNull()
+		expect(
+			container.querySelector('[data-topic-detail-heading-id="1"]')
+		).not.toBeNull()
+		expect(
+			container.querySelector('[data-topic-detail-heading-id="2"]')
+		).not.toBeNull()
 	})
 
 	it('syncs topic fields on first load and only refreshes untouched fields on refetch', async () => {
