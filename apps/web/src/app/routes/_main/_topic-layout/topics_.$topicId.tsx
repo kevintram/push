@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
 	isTopicDetailReviewCardControlsVariant,
@@ -31,34 +32,51 @@ export function validateTopicDetailSearch(
 	}
 }
 
+export function prefetchTopicDetailRouteData({
+	queryClient,
+	topicId
+}: {
+	queryClient: Pick<QueryClient, 'prefetchQuery'>
+	topicId: number
+}) {
+	void queryClient
+		.prefetchQuery(topicQueryOptions(topicId))
+		.catch(() => undefined)
+	void queryClient
+		.prefetchQuery(
+			topicsQueryOptions({
+				sort: 'title',
+				order: 'asc'
+			})
+		)
+		.catch(() => undefined)
+	void queryClient
+		.prefetchQuery(
+			topicsQueryOptions({
+				subtree_of: topicId,
+				sort: 'title',
+				order: 'asc'
+			})
+		)
+		.catch(() => undefined)
+	void queryClient
+		.prefetchQuery(
+			reviewCardsQueryOptions({
+				topic_id: topicId,
+				include_descendants: true,
+				order: 'desc'
+			})
+		)
+		.catch(() => undefined)
+}
+
 export const Route = createFileRoute('/_main/_topic-layout/topics_/$topicId')({
 	validateSearch: validateTopicDetailSearch,
-	loader: async ({ context, params }) => {
-		const topicId = Number(params.topicId)
-
-		await Promise.all([
-			context.queryClient.prefetchQuery(topicQueryOptions(topicId)),
-			context.queryClient.prefetchQuery(
-				topicsQueryOptions({
-					sort: 'title',
-					order: 'asc'
-				})
-			),
-			context.queryClient.prefetchQuery(
-				reviewCardsQueryOptions({
-					topic_id: topicId,
-					include_descendants: true,
-					order: 'desc'
-				})
-			),
-			context.queryClient.prefetchQuery(
-				topicsQueryOptions({
-					subtree_of: topicId,
-					sort: 'title',
-					order: 'asc'
-				})
-			)
-		])
+	loader: ({ context, params }) => {
+		prefetchTopicDetailRouteData({
+			queryClient: context.queryClient,
+			topicId: Number(params.topicId)
+		})
 	},
 	component: TopicDetailRoute
 })
