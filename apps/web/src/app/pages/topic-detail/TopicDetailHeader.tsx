@@ -131,13 +131,13 @@ export function TopicDetailHeader({
 						</BreadcrumbList>
 					</Breadcrumb>
 				) : null}
-				<div className='space-y-0'>
+				<div className='space-y-2.5'>
 					<div
 						className={cn('min-w-0 pr-12 sm:pr-14', titleContainerClassName)}
 					>
 						<Textarea
 							aria-label='Topic title'
-							className='!bg-transparent !text-[1.875rem] sm:!text-[2.125rem] xl:!text-[2.375rem] m-0 min-h-0 w-full resize-none overflow-hidden break-words rounded-none border-none p-0 font-semibold leading-[1.08] tracking-[-0.025em] shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+							className='!bg-transparent !text-[1.875rem] sm:!text-[2.125rem] xl:!text-[2.375rem] m-0 min-h-0 w-full resize-none overflow-hidden break-words rounded-none border-none px-0 pt-0 pb-1 font-semibold leading-[1.08] tracking-[-0.025em] shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 							onBlur={flushTitle}
 							onChange={onTitleChange}
 							placeholder='Untitled topic'
@@ -146,7 +146,7 @@ export function TopicDetailHeader({
 							value={title}
 						/>
 					</div>
-					<div className='pt-1'>
+					<div>
 						<TopicDetailSectionMeta
 							createdDate={formatAbsoluteDate(topic.inserted_at)}
 							createdText={formatRelativeDate(topic.inserted_at).text}

@@ -157,7 +157,7 @@ export function TopicDetailPage({
 						<div className='mx-auto w-full max-w-[76rem]'>
 							<div
 								className={cn(
-									'grid gap-6 px-5 pt-5 pb-3 sm:px-7 sm:pt-6 sm:pb-4 xl:gap-6 xl:px-8 xl:pt-7 xl:pb-4',
+									'grid gap-6 px-5 pt-9 pb-7 sm:px-7 sm:pt-10 sm:pb-8 xl:gap-6 xl:px-8 xl:pt-11 xl:pb-8',
 									!isLeafTopic && TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS
 								)}
 							>
