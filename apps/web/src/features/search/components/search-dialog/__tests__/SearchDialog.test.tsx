@@ -88,7 +88,7 @@ describe('SearchDialog', () => {
 			/>
 		)
 
-		await user.click(screen.getByRole('button', { name: /Create topic/i }))
+		await user.click(screen.getByRole('button', { name: /Create topic/iu }))
 
 		expect(requestCreateTopicMock).toHaveBeenCalledTimes(1)
 		expect(navigateMock).toHaveBeenCalledWith({ to: '/topics' })
@@ -111,7 +111,7 @@ describe('SearchDialog', () => {
 			/>
 		)
 
-		await user.click(screen.getByRole('button', { name: /Create parent/i }))
+		await user.click(screen.getByRole('button', { name: /Create parent/iu }))
 
 		expect(onCreate).toHaveBeenCalledTimes(1)
 		expect(requestCreateTopicMock).not.toHaveBeenCalled()

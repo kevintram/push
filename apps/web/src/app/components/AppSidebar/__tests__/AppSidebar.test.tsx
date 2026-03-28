@@ -106,9 +106,9 @@ describe('AppSidebar', () => {
 			</SidebarProvider>
 		)
 
-		const practiceLink = screen.getByRole('link', { name: /practice/i })
-		const flashcardsLink = screen.getByRole('link', { name: /flashcards/i })
-		const flaggedLink = screen.getByRole('link', { name: /flagged/i })
+		const practiceLink = screen.getByRole('link', { name: /practice/iu })
+		const flashcardsLink = screen.getByRole('link', { name: /flashcards/iu })
+		const flaggedLink = screen.getByRole('link', { name: /flagged/iu })
 
 		expect(practiceLink).toHaveTextContent('Practice234')
 		expect(practiceLink).not.toHaveTextContent('overdue')
@@ -138,11 +138,11 @@ describe('AppSidebar', () => {
 			</SidebarProvider>
 		)
 
-		expect(screen.getByRole('link', { name: /flagged/i })).toHaveTextContent(
+		expect(screen.getByRole('link', { name: /flagged/iu })).toHaveTextContent(
 			'Flagged'
 		)
 		expect(
-			screen.getByRole('link', { name: /flagged/i })
+			screen.getByRole('link', { name: /flagged/iu })
 		).not.toHaveTextContent('Flagged0')
 	})
 
@@ -161,7 +161,7 @@ describe('AppSidebar', () => {
 			</SidebarProvider>
 		)
 
-		expect(screen.getByRole('link', { name: /^Topics$/ })).toBeInTheDocument()
+		expect(screen.getByRole('link', { name: /^Topics$/u })).toBeInTheDocument()
 		expect(
 			screen.queryByRole('link', { name: 'Alpha' })
 		).not.toBeInTheDocument()
@@ -185,7 +185,7 @@ describe('AppSidebar', () => {
 			</SidebarProvider>
 		)
 
-		expect(screen.getByRole('link', { name: /^Topics$/ })).not.toHaveAttribute(
+		expect(screen.getByRole('link', { name: /^Topics$/u })).not.toHaveAttribute(
 			'data-active',
 			'true'
 		)
@@ -250,7 +250,7 @@ describe('AppSidebar', () => {
 
 		const links = screen.getAllByRole('link')
 		const topLevelLabels = links
-			.map(link => link.textContent?.replace(/\d+$/, '').trim())
+			.map(link => link.textContent?.replace(/\d+$/u, '').trim())
 			.filter(label =>
 				[
 					'Recent',
@@ -302,7 +302,7 @@ describe('AppSidebar', () => {
 		const reviewModeButton = screen.getByRole('button', {
 			name: 'Review mode On'
 		})
-		const settingsButton = screen.getByRole('button', { name: /settings/i })
+		const settingsButton = screen.getByRole('button', { name: /settings/iu })
 
 		expect(reviewModeHeading).toBeInTheDocument()
 		expect(reviewModeButton).toBeInTheDocument()

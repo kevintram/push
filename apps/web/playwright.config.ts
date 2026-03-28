@@ -7,7 +7,7 @@ import { defineConfig, devices } from '@playwright/test'
 const configDir = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(configDir, '..', '..')
 const worktreeEnvPath = resolve(repoRoot, '.worktree.env')
-const webPortPattern = /^WEB_PORT=(\d+)$/m
+const webPortPattern = /^WEB_PORT=(\d+)$/mu
 
 function resolveWebPort() {
 	const envPort = Number.parseInt(process.env.WEB_PORT ?? '', 10)

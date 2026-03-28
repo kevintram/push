@@ -30,20 +30,22 @@ function VirtualizationSmokePage() {
 		[itemCount]
 	)
 
-	const estimateItemSize = useCallback((item: SmokeItem) => {
-		return 112 + (item.id % 5) * 16
-	}, [])
+	const estimateItemSize = useCallback(
+		(item: SmokeItem) => 112 + (item.id % 5) * 16,
+		[]
+	)
 
 	const getItemKey = useCallback((item: SmokeItem) => item.id, [])
 
-	const renderItem = useCallback((item: SmokeItem) => {
-		return (
+	const renderItem = useCallback(
+		(item: SmokeItem) => (
 			<article className='rounded-md border bg-card p-3'>
 				<h2 className='font-semibold text-sm'>{item.title}</h2>
 				<p className='mt-2 text-muted-foreground text-sm'>{item.body}</p>
 			</article>
-		)
-	}, [])
+		),
+		[]
+	)
 
 	return (
 		<main className='h-screen p-6'>

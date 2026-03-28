@@ -100,19 +100,19 @@ export function ReviewCardPageLayout<
 						<TabsList className='border-b-0' variant='line'>
 							{tabOptions.map(option => (
 								<TabsTrigger
-									className={option.count != null ? 'gap-2' : undefined}
+									className={option.count == null ? undefined : 'gap-2'}
 									key={option.value}
 									value={option.value}
 								>
 									<span>{option.label}</span>
-									{option.count != null ? (
+									{option.count == null ? null : (
 										<span
 											aria-hidden='true'
 											className='flex items-center gap-1.5'
 										>
 											{option.count}
 										</span>
-									) : null}
+									)}
 								</TabsTrigger>
 							))}
 						</TabsList>

@@ -37,15 +37,15 @@ export function splitReviews(reviews: Array<ReviewListItem>) {
 	overdue.sort(sortByEffectiveDateAsc)
 	todayReviews.sort(sortByEffectiveDateAsc)
 	upcoming.sort(sortByEffectiveDateAsc)
-	uncompletedUnscheduled.sort((a, b) => {
-		return new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
-	})
-	completed.sort((a, b) => {
-		return (
+	uncompletedUnscheduled.sort(
+		(a, b) =>
+			new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
+	)
+	completed.sort(
+		(a, b) =>
 			new Date(b.completed_at ?? b.effective_date ?? 0).getTime() -
 			new Date(a.completed_at ?? a.effective_date ?? 0).getTime()
-		)
-	})
+	)
 
 	return {
 		uncompletedUnscheduledReviews: uncompletedUnscheduled,

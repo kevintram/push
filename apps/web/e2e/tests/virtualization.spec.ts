@@ -49,9 +49,7 @@ test('virtualized masonry preserves scroll position when items append', async ({
 	await appendButton.click()
 
 	await expect
-		.poll(async () => {
-			return await scrollContainer.evaluate(node => node.scrollHeight)
-		})
+		.poll(async () => await scrollContainer.evaluate(node => node.scrollHeight))
 		.toBeGreaterThan(before.scrollHeight)
 
 	const afterTop = await scrollContainer.evaluate(node => node.scrollTop)

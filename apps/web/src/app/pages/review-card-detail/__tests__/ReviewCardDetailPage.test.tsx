@@ -28,10 +28,10 @@ describe('ReviewCardDetailPage', () => {
 			params: { topicId: '1' }
 		})
 		expect(
-			screen.getByRole('button', { name: /Change topic/i })
+			screen.getByRole('button', { name: /Change topic/iu })
 		).toBeInTheDocument()
 
-		await user.click(screen.getByRole('button', { name: /^Search$/i }))
+		await user.click(screen.getByRole('button', { name: /^Search$/iu }))
 		expect(
 			screen.getAllByRole('button', { name: reviewCard.topic_title })
 		).toHaveLength(1)
@@ -44,7 +44,7 @@ describe('ReviewCardDetailPage', () => {
 			})
 		})
 		expect(
-			screen.queryByRole('button', { name: /Remove topic/i })
+			screen.queryByRole('button', { name: /Remove topic/iu })
 		).not.toBeInTheDocument()
 	})
 
@@ -71,8 +71,8 @@ describe('ReviewCardDetailPage', () => {
 
 		render(<ReviewCardDetailPage reviewCardId={11} />)
 
-		await user.click(screen.getByRole('button', { name: /Change topic/i }))
-		await user.click(screen.getByRole('button', { name: /^Create$/i }))
+		await user.click(screen.getByRole('button', { name: /Change topic/iu }))
+		await user.click(screen.getByRole('button', { name: /^Create$/iu }))
 
 		await waitFor(() => {
 			expect(createTopicAsyncMock).toHaveBeenCalledWith({
@@ -146,7 +146,7 @@ describe('ReviewCardDetailPage', () => {
 
 		render(<ReviewCardDetailPage reviewCardId={11} />)
 
-		await user.click(screen.getByRole('button', { name: /Flag this item/i }))
+		await user.click(screen.getByRole('button', { name: /Flag this item/iu }))
 
 		await waitFor(() => {
 			expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({

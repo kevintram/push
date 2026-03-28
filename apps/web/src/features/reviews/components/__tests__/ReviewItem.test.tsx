@@ -86,7 +86,7 @@ describe('ReviewItem', () => {
 
 		render(<ReviewItem entry={entry} />)
 
-		const dateButtons = screen.getAllByRole('button', { name: /no date/i })
+		const dateButtons = screen.getAllByRole('button', { name: /no date/iu })
 		expect(dateButtons).toHaveLength(2)
 
 		const dateButton = dateButtons[0]!

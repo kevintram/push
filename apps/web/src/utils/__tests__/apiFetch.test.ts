@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/u
 
 function loadApiFetchModule() {
 	vi.resetModules()
