@@ -107,9 +107,12 @@ export function TopicDetailSection({
 	const resolvedSectionFilter =
 		resolvedFilterByTopicId[section.topic.id] ?? globalFilter
 	const displayLevel = getTopicDetailSectionDisplayLevel(section)
+	const semanticHeadingLevel = Math.min(Math.max(section.headingLevel, 1), 6)
 	const presentation = getTopicDetailSectionPresentation(displayLevel)
 	const HeadingIcon =
-		HEADING_ICON_BY_LEVEL[displayLevel as keyof typeof HEADING_ICON_BY_LEVEL]
+		HEADING_ICON_BY_LEVEL[
+			semanticHeadingLevel as keyof typeof HEADING_ICON_BY_LEVEL
+		]
 	const sectionLabel = getTopicDetailLabel(
 		section.topic.title,
 		section.topic.body
