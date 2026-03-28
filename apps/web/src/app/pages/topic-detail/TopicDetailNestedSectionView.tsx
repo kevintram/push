@@ -1,12 +1,11 @@
 import {
 	ChevronDown,
 	ExternalLink,
-	type LucideIcon,
 	MoreHorizontal,
 	Plus,
 	Trash2
 } from 'lucide-react'
-import type { ChangeEventHandler, ReactNode } from 'react'
+import type { ChangeEventHandler, ComponentType, ReactNode } from 'react'
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
@@ -33,7 +32,7 @@ interface TopicDetailNestedSectionViewProps {
 	headingClassName: string
 	headingIconClassName: string
 	headingIndicatorFrameClassName: string
-	HeadingIcon: LucideIcon
+	HeadingIcon: ComponentType<{ className?: string }>
 	isCollapsed: boolean
 	isCreatingTopic: boolean
 	onCreateSubtopic: () => void
@@ -86,7 +85,7 @@ export function TopicDetailNestedSectionView({
 							headingIndicatorFrameClassName
 						)}
 					>
-						<HeadingIcon className={headingIconClassName} strokeWidth={2.6} />
+						<HeadingIcon className={headingIconClassName} />
 					</div>
 				</div>
 			</div>

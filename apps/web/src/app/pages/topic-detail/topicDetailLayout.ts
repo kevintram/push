@@ -58,8 +58,8 @@ export function getTopicDetailSectionPresentation(
 			displayLevel,
 			headingClassName:
 				'text-[1.125rem] font-semibold leading-[1.24] tracking-[-0.012em] sm:text-[1.1875rem]',
-			headingIconClassName: 'h-[1.125rem] w-[1.125rem]',
-			headingIndicatorFrameClassName: 'top-0.5 h-7 w-7',
+			headingIconClassName: 'h-4 w-4',
+			headingIndicatorFrameClassName: 'top-0 h-6 w-6',
 			sectionTopSpacingClassName: 'pt-8'
 		}
 	}
@@ -69,8 +69,8 @@ export function getTopicDetailSectionPresentation(
 			displayLevel,
 			headingClassName:
 				'text-base font-semibold leading-[1.3] tracking-[-0.008em] sm:text-[1.0625rem]',
-			headingIconClassName: 'h-[1.0625rem] w-[1.0625rem]',
-			headingIndicatorFrameClassName: 'top-0.5 h-7 w-7',
+			headingIconClassName: 'h-[0.9375rem] w-[0.9375rem]',
+			headingIndicatorFrameClassName: 'top-0 h-5 w-5',
 			sectionTopSpacingClassName: 'pt-6'
 		}
 	}
@@ -80,8 +80,8 @@ export function getTopicDetailSectionPresentation(
 			displayLevel,
 			headingClassName:
 				'text-[0.9375rem] font-semibold leading-[1.34] tracking-[0.008em] text-foreground/90',
-			headingIconClassName: 'h-4 w-4',
-			headingIndicatorFrameClassName: 'top-0 h-6 w-6',
+			headingIconClassName: 'h-[0.875rem] w-[0.875rem]',
+			headingIndicatorFrameClassName: 'top-0 h-5 w-5',
 			sectionTopSpacingClassName: 'pt-4'
 		}
 	}
@@ -90,8 +90,8 @@ export function getTopicDetailSectionPresentation(
 		displayLevel,
 		headingClassName:
 			'text-[0.875rem] font-semibold leading-[1.4] tracking-[0.012em] text-muted-foreground',
-		headingIconClassName: 'h-[0.9375rem] w-[0.9375rem]',
-		headingIndicatorFrameClassName: 'top-0 h-6 w-6',
+		headingIconClassName: 'h-[0.8125rem] w-[0.8125rem]',
+		headingIndicatorFrameClassName: 'top-0 h-5 w-5',
 		sectionTopSpacingClassName: 'pt-3'
 	}
 }
