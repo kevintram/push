@@ -1,53 +1,82 @@
+import type { QueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
-	TopicDetailPage,
+	isTopicDetailReviewCardControlsVariant,
+	isTopicDetailReviewCardFilter,
+	type TopicDetailReviewCardControlsVariant,
 	type TopicDetailReviewCardFilter
-} from '~/app/pages/topic-detail/TopicDetailPage'
+} from '~/app/pages/topic-detail/shared'
+import { TopicDetailPage } from '~/app/pages/topic-detail/TopicDetailPage'
 import { reviewCardsQueryOptions } from '~/features/review-cards/api/getReviewCards'
 import { topicQueryOptions } from '~/features/topics/api/getTopic'
 import { topicsQueryOptions } from '~/features/topics/api/getTopics'
 
-type TopicDetailRouteSearch = {
+interface TopicDetailRouteSearch {
+	controls?: TopicDetailReviewCardControlsVariant
 	filter?: TopicDetailReviewCardFilter
-}
-
-function isTopicDetailFilter(
-	value: unknown
-): value is TopicDetailReviewCardFilter {
-	return value === 'all' || value === 'practice' || value === 'flashcard'
 }
 
 export function validateTopicDetailSearch(
 	search: Record<string, unknown>
 ): TopicDetailRouteSearch {
-	return isTopicDetailFilter(search.filter) ? { filter: search.filter } : {}
+	const controls =
+		typeof search.controls === 'string' ? search.controls : undefined
+	const filter = typeof search.filter === 'string' ? search.filter : undefined
+
+	return {
+		controls:
+			controls && isTopicDetailReviewCardControlsVariant(controls)
+				? controls
+				: undefined,
+		filter: filter && isTopicDetailReviewCardFilter(filter) ? filter : undefined
+	}
+}
+
+export function prefetchTopicDetailRouteData({
+	queryClient,
+	topicId
+}: {
+	queryClient: Pick<QueryClient, 'prefetchQuery'>
+	topicId: number
+}) {
+	void queryClient
+		.prefetchQuery(topicQueryOptions(topicId))
+		.catch(() => undefined)
+	void queryClient
+		.prefetchQuery(
+			topicsQueryOptions({
+				sort: 'title',
+				order: 'asc'
+			})
+		)
+		.catch(() => undefined)
+	void queryClient
+		.prefetchQuery(
+			topicsQueryOptions({
+				subtree_of: topicId,
+				sort: 'title',
+				order: 'asc'
+			})
+		)
+		.catch(() => undefined)
+	void queryClient
+		.prefetchQuery(
+			reviewCardsQueryOptions({
+				topic_id: topicId,
+				include_descendants: true,
+				order: 'desc'
+			})
+		)
+		.catch(() => undefined)
 }
 
 export const Route = createFileRoute('/_main/_topic-layout/topics_/$topicId')({
 	validateSearch: validateTopicDetailSearch,
-	loaderDeps: ({ search }) => ({
-		filter: search.filter ?? 'all'
-	}),
-	loader: async ({ context, deps, params }) => {
-		const topicId = Number(params.topicId)
-		const selectedCardType = deps.filter === 'all' ? undefined : deps.filter
-
-		await Promise.all([
-			context.queryClient.prefetchQuery(topicQueryOptions(topicId)),
-			context.queryClient.prefetchQuery(
-				topicsQueryOptions({
-					sort: 'title',
-					order: 'asc'
-				})
-			),
-			context.queryClient.prefetchQuery(
-				reviewCardsQueryOptions({
-					topic_id: topicId,
-					type: selectedCardType,
-					order: 'desc'
-				})
-			)
-		])
+	loader: ({ context, params }) => {
+		prefetchTopicDetailRouteData({
+			queryClient: context.queryClient,
+			topicId: Number(params.topicId)
+		})
 	},
 	component: TopicDetailRoute
 })
@@ -64,9 +93,13 @@ function TopicDetailRoute() {
 				navigate({
 					to: '/topics/$topicId',
 					params: { topicId },
-					search: filter === 'all' ? {} : { filter }
+					search: {
+						...(search.controls ? { controls: search.controls } : {}),
+						...(filter === 'all' ? {} : { filter })
+					}
 				})
 			}
+			reviewCardControlsVariant={search.controls}
 			topicId={Number(topicId)}
 		/>
 	)

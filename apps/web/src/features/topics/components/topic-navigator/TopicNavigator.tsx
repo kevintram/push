@@ -17,7 +17,7 @@ import {
 	getStoredTopicNavigatorWidth,
 	TOPIC_NAVIGATOR_WIDTH_STORAGE_KEY
 } from './TopicNavigator.shared'
-import { TopicNavigatorPanel } from './TopicNavigatorContent'
+import { TopicNavigatorPanel } from './TopicNavigatorPanel'
 
 export function TopicNavigatorRail({
 	activeTopicId,

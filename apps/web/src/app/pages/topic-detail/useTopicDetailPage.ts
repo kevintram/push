@@ -1,68 +1,101 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-
-import { useCreateReviewCard } from '~/features/review-cards/api/createReviewCard'
+import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { useReviewCards } from '~/features/review-cards/api/getReviewCards'
-import { requestFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
-import { useUpdateTopic } from '~/features/topics/api/updateTopic'
+import { useTopics } from '~/features/topics/api/getTopics'
 import { consumeFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { useTopicTree } from '~/features/topics/hooks/useTopicTree'
-import { useAutoSave } from '~/hooks/useAutoSave'
-import { useRevealPanel } from '~/hooks/useRevealPanel'
-import { useReviewMode } from '~/stores/ReviewModeContext'
 import type { TopicDetailReviewCardFilter } from './shared'
 import { isTopicDetailReviewCardFilter } from './shared'
+import {
+	buildTopicDetailRoot,
+	flattenTopicDetailSectionIds,
+	getTopicDetailLabel,
+	groupReviewCardsByTopicId
+} from './topicDetailStructure'
+import { useTopicDetailNavigation } from './useTopicDetailNavigation'
 
-type TopicDetailPageProps = {
-	topicId: number
+type UseTopicDetailPageOptions = {
 	cardTypeFilter?: TopicDetailReviewCardFilter | string
 	onCardTypeFilterChange: (filter: TopicDetailReviewCardFilter) => void
+	topicId: number
 }
 
 export function useTopicDetailPage({
-	topicId,
 	cardTypeFilter = 'all',
-	onCardTypeFilterChange
-}: TopicDetailPageProps) {
+	onCardTypeFilterChange,
+	topicId
+}: UseTopicDetailPageOptions) {
 	const navigate = useNavigate()
 	const resolvedCardTypeFilter = isTopicDetailReviewCardFilter(cardTypeFilter)
 		? cardTypeFilter
 		: 'all'
 	const {
 		data: topic,
-		isLoading: isTopicLoading,
-		error: topicError
+		error: topicError,
+		isLoading: isTopicLoading
 	} = useTopic(topicId)
-	const { ancestorIdsById, nodeById } = useTopicTree()
-	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
+	const {
+		ancestorIdsById,
+		error: topicTreeError,
+		isLoading: isTopicTreeLoading,
+		nodeById
+	} = useTopicTree()
 	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
 		useDeleteTopic()
 	const {
-		mutateAsync: createReviewCardAsync,
-		isPending: isCreatingReviewCard
-	} = useCreateReviewCard()
-
-	const titleTextareaRef = useRef<HTMLTextAreaElement>(null)
-	const { hidesSecondary } = useReviewMode()
+		data: subtreeTopics = [],
+		error: subtreeTopicsError,
+		isLoading: isSubtreeTopicsLoading
+	} = useTopics({
+		subtree_of: topicId,
+		sort: 'title',
+		order: 'asc'
+	})
+	const {
+		data: reviewCards = [],
+		error: reviewCardsError,
+		isLoading: isReviewCardsLoading
+	} = useReviewCards({
+		topic_id: topicId,
+		include_descendants: true,
+		order: 'desc'
+	})
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const [shouldAutoFocusRootTitle, setShouldAutoFocusRootTitle] =
+		useState(false)
+	const [sectionFilterOverrides, setSectionFilterOverrides] = useState<
+		Record<number, TopicDetailReviewCardFilter>
+	>({})
+	const [scrollContainerElement, setScrollContainerElement] =
+		useState<HTMLDivElement | null>(null)
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
+	const { collapsedSections, toggleSection } = useSectionCollapse()
 
-	useEffect(() => {
-		if (!topic) return
-		if (!consumeFocusNewTopicTitle(topic.id)) return
+	const subtreeTopicsWithRoot = useMemo(() => {
+		if (!topic) return subtreeTopics
+		if (subtreeTopics.some(subtreeTopic => subtreeTopic.id === topic.id)) {
+			return subtreeTopics
+		}
 
-		titleTextareaRef.current?.focus()
-	}, [topic])
+		return [topic, ...subtreeTopics]
+	}, [subtreeTopics, topic])
 
-	const selectedCardType = useMemo(() => {
-		if (resolvedCardTypeFilter === 'all') return
-		return resolvedCardTypeFilter
-	}, [resolvedCardTypeFilter])
-
+	const rootSection = useMemo(
+		() => buildTopicDetailRoot(subtreeTopicsWithRoot, topicId),
+		[subtreeTopicsWithRoot, topicId]
+	)
+	const sectionIds = useMemo(
+		() => flattenTopicDetailSectionIds(rootSection),
+		[rootSection]
+	)
+	const topicReviewCardsById = useMemo(
+		() => groupReviewCardsByTopicId(reviewCards),
+		[reviewCards]
+	)
 	const topicPath = useMemo(() => {
 		if (!topic) return []
 
@@ -73,122 +106,80 @@ export function useTopicDetailPage({
 
 		const pathTopics = ancestorIds
 			.map(ancestorId => nodeById.get(ancestorId))
-			.filter(topicNode => topicNode != null)
+			.filter(pathTopic => pathTopic != null)
 
 		return [...pathTopics, topic]
 	}, [ancestorIdsById, nodeById, topic])
+	const { registerSectionHeadingRef, registerSectionRef, visibleSectionIds } =
+		useTopicDetailNavigation({
+			rootTopicId: topicId,
+			scrollContainerElement,
+			sectionIds
+		})
 
-	const { data: reviewCards = [], isLoading: isCardsLoading } = useReviewCards({
-		topic_id: topicId,
-		type: selectedCardType,
-		order: 'desc'
-	})
-
-	const updateTopicFields = useCallback(
-		async (fields: {
-			title?: string
-			body?: string
-			parent_id?: number | null
-		}) => {
-			if (!topic) return
-			try {
-				await updateTopicAsync({ id: topic.id, ...fields })
-			} catch {
-				toast.error('Failed to update topic')
-			}
+	const registerScrollContainerRef = useCallback(
+		(element: HTMLDivElement | null) => {
+			scrollContainerRef.current = element
+			setScrollContainerElement(previousElement =>
+				previousElement === element ? previousElement : element
+			)
 		},
-		[topic, updateTopicAsync]
+		[]
 	)
 
-	const saveTopicTitle = useCallback(
-		(newTitle: string) => {
-			if (!topic || newTitle === topic.title) return
-			updateTopicFields({ title: newTitle }).catch(() => {})
+	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
+	const detailError =
+		topicError ?? topicTreeError ?? subtreeTopicsError ?? reviewCardsError
+
+	const handleGlobalFilterChange = useCallback(
+		(filter: TopicDetailReviewCardFilter) => {
+			setSectionFilterOverrides({})
+			onCardTypeFilterChange(filter)
 		},
-		[topic, updateTopicFields]
+		[onCardTypeFilterChange]
 	)
 
-	const saveTopicBody = useCallback(
-		(newBody: string) => {
-			if (!topic || newBody === topic.body) return
-			updateTopicFields({ body: newBody }).catch(() => {})
+	const handleSectionFilterChange = useCallback(
+		(topicFilterId: number, filter: TopicDetailReviewCardFilter) => {
+			setSectionFilterOverrides(previousOverrides => {
+				if (filter === resolvedCardTypeFilter) {
+					const { [topicFilterId]: _removedOverride, ...remainingOverrides } =
+						previousOverrides
+					return remainingOverrides
+				}
+
+				return {
+					...previousOverrides,
+					[topicFilterId]: filter
+				}
+			})
 		},
-		[topic, updateTopicFields]
-	)
-
-	const {
-		value: title,
-		onChange: onTitleChange,
-		flush: flushTitle
-	} = useAutoSave({
-		initialValue: topic?.title ?? '',
-		onSave: saveTopicTitle,
-		key: `topic-title-${topic?.id ?? 'new'}`
-	})
-
-	const {
-		value: body,
-		onChange: onBodyChange,
-		setValue: setBody,
-		flush: flushBody
-	} = useAutoSave({
-		initialValue: topic?.body ?? '',
-		onSave: saveTopicBody,
-		key: `topic-body-${topic?.id ?? 'new'}`
-	})
-
-	const {
-		revealPanelTab,
-		setRevealPanelTab,
-		guessText: guessBodyText,
-		setGuessText: setGuessBodyText,
-		isCopied: isRevealPanelCopied,
-		handleCopyGuessText,
-		handleCopyRevealText
-	} = useRevealPanel({
-		revealText: body,
-		entityId: topic?.id ?? null,
-		hidesSecondary,
-		defaultTab: hidesSecondary ? null : 'reveal'
-	})
-
-	const handleAddReviewCard = useCallback(
-		async (type: 'practice' | 'flashcard') => {
-			if (!topic) return
-			try {
-				const created = await createReviewCardAsync({
-					topic_id: topic.id,
-					type,
-					prompt: '',
-					answer: '',
-					retired: false
-				})
-				requestFocusNewReviewCardPrompt(created.id)
-				navigate({
-					to: '/review-cards/$reviewCardId',
-					params: { reviewCardId: created.id.toString() },
-					search: { tab: 'home' }
-				})
-			} catch {
-				toast.error('Failed to create review card')
-			}
-		},
-		[createReviewCardAsync, navigate, topic]
+		[resolvedCardTypeFilter]
 	)
 
 	const handleDeleteTopic = useCallback(async () => {
 		if (!topic || isDeletingTopic) return
+
 		try {
 			await deleteTopicAsync(topic.id)
 			setIsDeleteDialogOpen(false)
 			toast.success('Topic deleted')
-			navigate({ to: '/topics' })
+
+			if (topic.parent_id != null && nodeById.has(topic.parent_id)) {
+				await navigate({
+					to: '/topics/$topicId',
+					params: { topicId: topic.parent_id.toString() }
+				})
+				return
+			}
+
+			await navigate({ to: '/topics' })
 		} catch (error) {
 			toast.error(
 				error instanceof Error ? error.message : 'Failed to delete topic'
 			)
 		}
-	}, [deleteTopicAsync, isDeletingTopic, navigate, topic])
+	}, [deleteTopicAsync, isDeletingTopic, navigate, nodeById, topic])
 
 	const handleOpenReviewCard = useCallback(
 		(reviewCardId: number) => {
@@ -201,42 +192,50 @@ export function useTopicDetailPage({
 		[navigate]
 	)
 
-	const isBodyEmpty = body.trim().length === 0
+	useEffect(() => {
+		if (!topic) return
+
+		setShouldAutoFocusRootTitle(consumeFocusNewTopicTitle(topic.id))
+	}, [topic])
+
+	useEffect(() => {
+		if (!topic) return
+
+		const previousTitle = document.title
+		document.title = getTopicDetailLabel(topic.title, topic.body)
+
+		return () => {
+			document.title = previousTitle
+		}
+	}, [topic])
 
 	return {
-		body,
-		flushBody,
-		flushTitle,
+		collapsedSections,
 		getScrollElement,
-		guessBodyText,
-		handleAddReviewCard,
-		handleCopyGuessText,
-		handleCopyRevealText,
 		handleDeleteTopic,
+		handleGlobalFilterChange,
 		handleOpenReviewCard,
-		hidesSecondary,
-		isBodyEmpty,
-		isCardsLoading,
-		isCreatingReviewCard,
+		handleSectionFilterChange,
 		isDeleteDialogOpen,
 		isDeletingTopic,
-		isRevealPanelCopied,
-		isTopicLoading,
-		onBodyChange,
-		onCardTypeFilterChange,
-		onTitleChange,
+		isDetailLoading:
+			isTopicLoading || isTopicTreeLoading || isSubtreeTopicsLoading,
+		isReviewCardsLoading,
+		nodeById,
+		registerSectionHeadingRef,
+		registerSectionRef,
+		registerScrollContainerRef,
 		resolvedCardTypeFilter,
-		revealPanelTab,
-		reviewCards,
-		scrollContainerRef,
-		setBody,
-		setGuessBodyText,
+		rootSection,
+		sectionFilterOverrides,
 		setIsDeleteDialogOpen,
-		setRevealPanelTab,
-		title,
-		titleTextareaRef,
+		shouldAutoFocusRootTitle,
+		toggleSection,
+		detailError,
 		topic,
-		topicError,
-		topicPath
+		topicPath,
+		topicReviewCardsById,
+		ancestorIdsById,
+		visibleSectionIds
 	}
 }

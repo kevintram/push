@@ -18,6 +18,12 @@ export async function getReviewCards(
 	if (params.topic_id !== undefined) {
 		searchParams.append('topic_id', String(params.topic_id))
 	}
+	if (params.include_descendants !== undefined) {
+		searchParams.append(
+			'include_descendants',
+			String(params.include_descendants)
+		)
+	}
 	if (params.type !== undefined) {
 		searchParams.append('type', params.type)
 	}

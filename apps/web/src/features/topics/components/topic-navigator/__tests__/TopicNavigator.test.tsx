@@ -270,15 +270,91 @@ describe('TopicNavigator', () => {
 
 		const activeWrapper = screen
 			.getByRole('link', { name: 'Linear equations' })
-			.closest('div')?.parentElement
+			.closest('li')?.firstElementChild
 		const inactiveWrapper = screen
 			.getByRole('link', { name: 'Algebra' })
-			.closest('div')?.parentElement
+			.closest('li')?.firstElementChild
 
 		expect(activeWrapper).toHaveClass('bg-accent/45')
 		expect(activeWrapper).toHaveClass('ring-1')
 		expect(inactiveWrapper).not.toHaveClass('bg-accent/45')
 		expect(screen.getByRole('link', { name: 'Systems' })).toBeInTheDocument()
+	})
+
+	it('highlights the hovered topic subtree', () => {
+		useTopicTreeMock.mockReturnValue({
+			roots: [
+				{
+					id: 1,
+					title: 'Algebra',
+					body: '',
+					parent_id: null,
+					parent_title: null,
+					inserted_at: '',
+					updated_at: '',
+					children: [
+						{
+							id: 2,
+							title: 'Linear equations',
+							body: '',
+							parent_id: 1,
+							parent_title: 'Algebra',
+							inserted_at: '',
+							updated_at: '',
+							children: [
+								{
+									id: 3,
+									title: 'Systems',
+									body: '',
+									parent_id: 2,
+									parent_title: 'Linear equations',
+									inserted_at: '',
+									updated_at: '',
+									children: []
+								}
+							]
+						}
+					]
+				}
+			],
+			ancestorIdsById: new Map<number, Array<number>>([
+				[1, []],
+				[2, [1]],
+				[3, [1, 2]]
+			]),
+			nodeById: new Map<number, object>([
+				[1, {}],
+				[2, {}],
+				[3, {}]
+			]),
+			isLoading: false,
+			error: null
+		})
+
+		render(<TopicNavigatorRail activeTopicId={null} className='block' />)
+
+		fireEvent.click(screen.getByRole('button', { name: 'Expand Algebra' }))
+
+		const hoveredLink = screen.getByRole('link', { name: 'Algebra' })
+		const hoveredTrigger = hoveredLink.closest(
+			'[data-slot="context-menu-trigger"]'
+		)
+		const hoveredWrapper = hoveredLink.closest('li')?.firstElementChild
+		const descendantWrapper = screen
+			.getByRole('link', { name: 'Linear equations' })
+			.closest('li')?.firstElementChild
+
+		if (!hoveredTrigger) throw new Error('hover trigger not found')
+
+		fireEvent.pointerEnter(hoveredTrigger)
+
+		expect(hoveredWrapper).toHaveClass('bg-accent/45')
+		expect(hoveredWrapper).toHaveClass('ring-1')
+		expect(descendantWrapper).not.toHaveClass('bg-accent/45')
+
+		fireEvent.pointerLeave(hoveredTrigger)
+
+		expect(hoveredWrapper).not.toHaveClass('bg-accent/45')
 	})
 
 	it('renders guide lines for nested topic branches', () => {
@@ -441,7 +517,9 @@ describe('TopicNavigator', () => {
 		render(<TopicNavigatorRail activeTopicId={1} className='block' />)
 
 		fireEvent.contextMenu(screen.getByRole('link', { name: 'Algebra' }))
-		fireEvent.click(await screen.findByRole('menuitem', { name: /New topic/i }))
+		fireEvent.click(
+			await screen.findByRole('menuitem', { name: /New topic/iu })
+		)
 
 		await waitFor(() => {
 			expect(createTopicAsync).toHaveBeenCalledWith({
@@ -457,6 +535,54 @@ describe('TopicNavigator', () => {
 		expect(window.sessionStorage.getItem('topics:focus-new-topic-title')).toBe(
 			'7'
 		)
+	})
+
+	it('opens a topic from the topic context menu', async () => {
+		navigateMock.mockResolvedValue(undefined)
+		useTopicTreeMock.mockReturnValue({
+			roots: [
+				{
+					id: 1,
+					title: 'Algebra',
+					body: '',
+					parent_id: null,
+					parent_title: null,
+					inserted_at: '',
+					updated_at: '',
+					children: []
+				}
+			],
+			ancestorIdsById: new Map<number, Array<number>>([[1, []]]),
+			nodeById: new Map<number, object>([
+				[
+					1,
+					{
+						id: 1,
+						title: 'Algebra',
+						body: '',
+						parent_id: null,
+						parent_title: null,
+						inserted_at: '',
+						updated_at: '',
+						children: []
+					}
+				]
+			]),
+			isLoading: false,
+			error: null
+		})
+
+		render(<TopicNavigatorRail activeTopicId={1} className='block' />)
+
+		fireEvent.contextMenu(screen.getByRole('link', { name: 'Algebra' }))
+		fireEvent.click(await screen.findByRole('menuitem', { name: /^Open$/iu }))
+
+		await waitFor(() => {
+			expect(navigateMock).toHaveBeenCalledWith({
+				to: '/topics/$topicId',
+				params: { topicId: '1' }
+			})
+		})
 	})
 
 	it('creates a root topic from the navigator button and records title focus intent', async () => {
@@ -563,9 +689,9 @@ describe('TopicNavigator', () => {
 		fireEvent.contextMenu(
 			screen.getByRole('link', { name: 'Linear equations' })
 		)
-		fireEvent.click(await screen.findByRole('menuitem', { name: /^Delete$/i }))
+		fireEvent.click(await screen.findByRole('menuitem', { name: /^Delete$/iu }))
 		fireEvent.click(
-			await screen.findByRole('button', { name: /Delete topic/i })
+			await screen.findByRole('button', { name: /Delete topic/iu })
 		)
 
 		await waitFor(() => {

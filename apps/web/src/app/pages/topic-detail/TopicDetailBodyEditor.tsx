@@ -5,7 +5,7 @@ import { Badge } from '~/components/ui/badge'
 import { Textarea } from '~/components/ui/textarea'
 import { EMPTY_BADGE_CLASSNAME } from './shared'
 
-export function TopicDetailBodyPanel({
+export function TopicDetailBodyEditor({
 	body,
 	flushBody,
 	guessBodyText,
@@ -37,6 +37,7 @@ export function TopicDetailBodyPanel({
 	if (hidesSecondary) {
 		return (
 			<RevealPanel
+				className='mt-0'
 				closedContent={
 					isBodyEmpty ? (
 						<Badge

@@ -470,7 +470,7 @@ describe('route-backed tab search state', () => {
 		await waitFor(() => {
 			expect(useReviewCardsMock).toHaveBeenLastCalledWith({
 				topic_id: 1,
-				type: undefined,
+				include_descendants: true,
 				order: 'desc'
 			})
 		})
@@ -494,13 +494,16 @@ describe('route-backed tab search state', () => {
 		await waitFor(() => {
 			expect(useReviewCardsMock).toHaveBeenLastCalledWith({
 				topic_id: 1,
-				type: 'practice',
+				include_descendants: true,
 				order: 'desc'
 			})
 		})
 		expect(await screen.findByText('Practice-only card')).toBeInTheDocument()
 
-		await user.click(screen.getByText('All'))
+		const [globalAllFilter] = screen.getAllByText('All')
+		expect(globalAllFilter).toBeDefined()
+
+		await user.click(globalAllFilter!)
 
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({})

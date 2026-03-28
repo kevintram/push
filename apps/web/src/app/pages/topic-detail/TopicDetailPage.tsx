@@ -1,6 +1,5 @@
 import { notFound } from '@tanstack/react-router'
-import { AlertTriangle } from 'lucide-react'
-
+import { AlertTriangle, MoreHorizontal, Trash2 } from 'lucide-react'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import {
 	AlertDialog,
@@ -13,68 +12,80 @@ import {
 	AlertDialogMedia,
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
+import { Button } from '~/components/ui/button'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { TopicNavigatorSheet } from '~/features/topics/components/topic-navigator/TopicNavigator'
+import { cn } from '~/lib/utils'
 import { isHttpStatusError } from '~/utils/httpStatusError'
-import type { TopicDetailReviewCardFilter } from './shared'
-import { TopicDetailBodyPanel } from './TopicDetailBodyPanel'
-import { TopicDetailBreadcrumb } from './TopicDetailBreadcrumb'
+import type {
+	TopicDetailReviewCardControlsVariant,
+	TopicDetailReviewCardFilter
+} from './shared'
 import { TopicDetailHeader } from './TopicDetailHeader'
-import { TopicDetailReviewCardsTab } from './TopicDetailReviewCardsTab'
+import { TopicDetailOutline } from './TopicDetailOutline'
+import { TopicDetailRootSectionContent } from './TopicDetailRootSectionContent'
+import {
+	TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS,
+	TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
+	TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS,
+	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS,
+	TOPIC_DETAIL_SECTION_GRID_CLASS
+} from './topicDetailLayout'
 import { useTopicDetailPage } from './useTopicDetailPage'
 
-type TopicDetailPageProps = {
-	topicId: number
+interface TopicDetailPageProps {
 	cardTypeFilter?: TopicDetailReviewCardFilter | string
 	onCardTypeFilterChange: (filter: TopicDetailReviewCardFilter) => void
+	reviewCardControlsVariant?: TopicDetailReviewCardControlsVariant
+	topicId: number
 }
 
 export function TopicDetailPage({
-	topicId,
 	cardTypeFilter = 'all',
-	onCardTypeFilterChange
+	onCardTypeFilterChange,
+	reviewCardControlsVariant = 'medium',
+	topicId
 }: TopicDetailPageProps) {
 	const {
-		body,
-		flushBody,
-		flushTitle,
+		ancestorIdsById,
+		collapsedSections,
+		detailError,
 		getScrollElement,
-		guessBodyText,
-		handleAddReviewCard,
-		handleCopyGuessText,
-		handleCopyRevealText,
 		handleDeleteTopic,
+		handleGlobalFilterChange,
 		handleOpenReviewCard,
-		hidesSecondary,
-		isBodyEmpty,
-		isCardsLoading,
-		isCreatingReviewCard,
+		handleSectionFilterChange,
 		isDeleteDialogOpen,
 		isDeletingTopic,
-		isRevealPanelCopied,
-		isTopicLoading,
-		onBodyChange,
-		onCardTypeFilterChange: handleCardTypeFilterChange,
-		onTitleChange,
+		isDetailLoading,
+		isReviewCardsLoading,
+		nodeById,
+		registerSectionHeadingRef,
+		registerSectionRef,
+		registerScrollContainerRef,
 		resolvedCardTypeFilter,
-		revealPanelTab,
-		reviewCards,
-		scrollContainerRef,
-		setBody,
-		setGuessBodyText,
+		rootSection,
+		sectionFilterOverrides,
 		setIsDeleteDialogOpen,
-		setRevealPanelTab,
-		title,
-		titleTextareaRef,
+		shouldAutoFocusRootTitle,
+		toggleSection,
 		topic,
-		topicError,
-		topicPath
+		topicPath,
+		topicReviewCardsById,
+		visibleSectionIds
 	} = useTopicDetailPage({
-		topicId,
 		cardTypeFilter,
-		onCardTypeFilterChange
+		onCardTypeFilterChange,
+		topicId
 	})
 
-	if (isTopicLoading) {
+	if (isDetailLoading) {
 		return (
 			<div className='flex h-full min-h-0 w-full items-center justify-center'>
 				<LoadingSpinner containerClassName='min-h-64' />
@@ -82,76 +93,173 @@ export function TopicDetailPage({
 		)
 	}
 
-	if (topicError) {
-		if (isHttpStatusError(topicError) && topicError.status === 404) {
+	if (detailError) {
+		if (isHttpStatusError(detailError) && detailError.status === 404) {
 			throw notFound()
 		}
+
 		return (
 			<LoadingOrError
 				error={
-					topicError instanceof Error
-						? topicError
+					detailError instanceof Error
+						? detailError
 						: new Error('Failed to load topic')
 				}
 			/>
 		)
 	}
 
-	if (!topic) {
+	if (!(topic && rootSection)) {
 		throw notFound()
 	}
+
+	const isLeafTopic = rootSection.children.length === 0
+	const rootHeaderContentClassName = isLeafTopic
+		? undefined
+		: TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS
+	const rootHeaderActionClassName = isLeafTopic
+		? 'top-0 right-0'
+		: 'top-0 right-0 lg:hidden'
+	const rootHeaderTitleContainerClassName = isLeafTopic
+		? 'pr-12 sm:pr-14'
+		: 'pr-12 sm:pr-14 lg:pr-0'
+	const rootSectionContent = (
+		<TopicDetailRootSectionContent
+			collapsedSections={collapsedSections}
+			getScrollElement={getScrollElement}
+			globalFilter={resolvedCardTypeFilter}
+			isReviewCardsLoading={isReviewCardsLoading}
+			onGlobalFilterChange={handleGlobalFilterChange}
+			onOpenReviewCard={handleOpenReviewCard}
+			onSectionFilterChange={handleSectionFilterChange}
+			registerSectionHeadingRef={registerSectionHeadingRef}
+			registerSectionRef={registerSectionRef}
+			resolvedFilterByTopicId={sectionFilterOverrides}
+			reviewCardControlsVariant={reviewCardControlsVariant}
+			searchFilter={resolvedCardTypeFilter}
+			section={rootSection}
+			toggleSection={toggleSection}
+			topicReviewCardsById={topicReviewCardsById}
+		/>
+	)
 
 	return (
 		<div className='flex h-full min-h-0 w-full'>
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
-				<TopicDetailHeader
-					activeTopicId={topic.id}
-					onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
-				/>
-				<div className='flex-1 overflow-y-auto' ref={scrollContainerRef}>
-					<div className='mx-auto w-full max-w-5xl px-6 py-5'>
-						<div className='min-w-0 space-y-2'>
-							<TopicDetailBreadcrumb
-								onTitleBlur={flushTitle}
-								onTitleChange={onTitleChange}
-								title={title}
-								titleTextareaRef={titleTextareaRef}
-								topic={topic}
-								topicPath={topicPath}
-							/>
-							<TopicDetailBodyPanel
-								body={body}
-								flushBody={flushBody}
-								guessBodyText={guessBodyText}
-								handleCopyGuessText={handleCopyGuessText}
-								handleCopyRevealText={handleCopyRevealText}
-								hidesSecondary={hidesSecondary}
-								isBodyEmpty={isBodyEmpty}
-								isRevealPanelCopied={isRevealPanelCopied}
-								onBodyChange={onBodyChange}
-								revealPanelTab={revealPanelTab}
-								setBody={setBody}
-								setGuessBodyText={setGuessBodyText}
-								setRevealPanelTab={setRevealPanelTab}
-							/>
-							<TopicDetailReviewCardsTab
-								getScrollElement={getScrollElement}
-								isCreatingReviewCard={isCreatingReviewCard}
-								isLoading={isCardsLoading}
-								onAddReviewCard={type => {
-									handleAddReviewCard(type).catch(() => {})
-								}}
-								onCardTypeFilterChange={handleCardTypeFilterChange}
-								onOpenReviewCard={handleOpenReviewCard}
-								resolvedCardTypeFilter={resolvedCardTypeFilter}
-								reviewCards={reviewCards}
-								topicTitle={topic.title}
-							/>
+				<div className='border-border/60 border-b bg-background/95 md:hidden'>
+					<div className='mx-auto flex w-full max-w-[76rem] items-center justify-end px-4 py-2 sm:px-6 xl:px-8'>
+						<TopicNavigatorSheet activeTopicId={topic.id} />
+					</div>
+				</div>
+				<div
+					className='flex-1 overflow-y-auto scroll-smooth'
+					ref={registerScrollContainerRef}
+				>
+					<div className={TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS}>
+						<div className='mx-auto w-full max-w-[76rem]'>
+							<div
+								className={cn(
+									'grid gap-6 px-5 pt-9 pb-7 sm:px-7 sm:pt-10 sm:pb-8 xl:gap-6 xl:px-8 xl:pt-11 xl:pb-8',
+									!isLeafTopic && TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS
+								)}
+							>
+								<div
+									className={cn(
+										'min-w-0',
+										isLeafTopic && TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS
+									)}
+								>
+									<div className='flex items-start gap-3'>
+										<div className='min-w-0 flex-1'>
+											<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
+												<div aria-hidden='true' />
+												<div className='relative min-w-0'>
+													<div
+														className='relative z-10 scroll-mt-24'
+														data-topic-detail-heading-id={rootSection.topic.id}
+														ref={element => {
+															registerSectionHeadingRef(
+																rootSection.topic.id,
+																element
+															)
+														}}
+													>
+														<TopicDetailHeader
+															actionClassName={rootHeaderActionClassName}
+															contentClassName={rootHeaderContentClassName}
+															onOpenDeleteDialog={() =>
+																setIsDeleteDialogOpen(true)
+															}
+															shouldAutoFocusTitle={shouldAutoFocusRootTitle}
+															titleContainerClassName={
+																rootHeaderTitleContainerClassName
+															}
+															topic={rootSection.topic}
+															topicPath={topicPath}
+														/>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div
+											className={cn(
+												'hidden shrink-0 items-start lg:flex',
+												isLeafTopic && 'lg:hidden'
+											)}
+										>
+											<DropdownMenu>
+												<DropdownMenuTrigger
+													render={
+														<Button
+															aria-label={`More actions for ${rootSection.topic.title || 'Untitled topic'}`}
+															className='h-8 w-8 shrink-0 rounded-full'
+															size='icon-sm'
+															variant='outline'
+														>
+															<MoreHorizontal className='h-4 w-4' />
+														</Button>
+													}
+												/>
+												<DropdownMenuContent
+													align='end'
+													side='bottom'
+													sideOffset={4}
+												>
+													<DropdownMenuItem
+														onClick={() => setIsDeleteDialogOpen(true)}
+														variant='destructive'
+													>
+														<Trash2 className='mr-2 h-4 w-4' />
+														Delete
+													</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
+					</div>
+					<div className='mx-auto flex w-full max-w-[76rem] items-start gap-5 px-2 pt-4 pb-5 sm:px-7 xl:gap-6 xl:px-8 xl:pt-5 xl:pb-6'>
+						<div
+							className={cn(
+								'min-w-0 flex-1 space-y-5',
+								isLeafTopic && TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS
+							)}
+						>
+							{rootSectionContent}
+						</div>
+						<TopicDetailOutline
+							ancestorIdsById={ancestorIdsById}
+							globalFilter={resolvedCardTypeFilter}
+							nodeById={nodeById}
+							onGlobalFilterChange={handleGlobalFilterChange}
+							outlineRootNode={rootSection.topic}
+							visibleSectionIds={visibleSectionIds}
+						/>
 					</div>
 				</div>
 			</div>
-
 			<AlertDialog
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
@@ -190,4 +298,7 @@ export function TopicDetailPage({
 	)
 }
 
-export type { TopicDetailReviewCardFilter } from './shared'
+export type {
+	TopicDetailReviewCardControlsVariant,
+	TopicDetailReviewCardFilter
+} from './shared'

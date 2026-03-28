@@ -1,0 +1,112 @@
+import type { ReviewCard as ReviewCardModel } from '~/features/review-cards/types/review-card.types'
+import type {
+	TopicDetailReviewCardControlsVariant,
+	TopicDetailReviewCardFilter
+} from './shared'
+import { TopicDetailSection } from './TopicDetailSection'
+import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
+import {
+	getTopicDetailLabel,
+	type TopicDetailSectionNode
+} from './topicDetailStructure'
+import { useTopicDetailSectionPanels } from './useTopicDetailSectionPanels'
+
+type TopicDetailRootSectionContentProps = {
+	collapsedSections: Record<string, boolean>
+	getScrollElement: () => HTMLDivElement | null
+	globalFilter: TopicDetailReviewCardFilter
+	onGlobalFilterChange: (filter: TopicDetailReviewCardFilter) => void
+	onOpenReviewCard: (reviewCardId: number) => void
+	onSectionFilterChange: (
+		topicId: number,
+		filter: TopicDetailReviewCardFilter
+	) => void
+	isReviewCardsLoading: boolean
+	registerSectionHeadingRef: (
+		topicId: number,
+		element: HTMLElement | null
+	) => void
+	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
+	resolvedFilterByTopicId: Record<number, TopicDetailReviewCardFilter>
+	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
+	searchFilter: TopicDetailReviewCardFilter
+	section: TopicDetailSectionNode
+	toggleSection: (sectionId: string) => void
+	topicReviewCardsById: Map<number, Array<ReviewCardModel>>
+}
+
+export function TopicDetailRootSectionContent({
+	collapsedSections,
+	getScrollElement,
+	globalFilter,
+	onGlobalFilterChange,
+	onOpenReviewCard,
+	onSectionFilterChange,
+	isReviewCardsLoading,
+	registerSectionHeadingRef,
+	registerSectionRef,
+	resolvedFilterByTopicId,
+	reviewCardControlsVariant,
+	searchFilter,
+	section,
+	toggleSection,
+	topicReviewCardsById
+}: TopicDetailRootSectionContentProps) {
+	const sectionLabel = getTopicDetailLabel(
+		section.topic.title,
+		section.topic.body
+	)
+	const resolvedSectionFilter =
+		resolvedFilterByTopicId[section.topic.id] ?? globalFilter
+	const { bodyPanel, reviewCardsSection } = useTopicDetailSectionPanels({
+		getScrollElement,
+		onFilterChange: onGlobalFilterChange,
+		onOpenReviewCard,
+		reviewCardControlsVariant,
+		resolvedSectionFilter,
+		section,
+		sectionLabel,
+		isReviewCardsLoading,
+		topicReviewCardsById
+	})
+
+	return (
+		<section
+			className='scroll-mt-24 space-y-0 py-0.5'
+			ref={element => {
+				registerSectionRef(section.topic.id, element)
+			}}
+		>
+			<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
+				<div aria-hidden='true' />
+				<div className='min-w-0'>
+					<div>{bodyPanel}</div>
+					<div>{reviewCardsSection}</div>
+				</div>
+			</div>
+			{section.children.length > 0 ? (
+				<div>
+					{section.children.map(childSection => (
+						<TopicDetailSection
+							collapsedSections={collapsedSections}
+							getScrollElement={getScrollElement}
+							globalFilter={globalFilter}
+							isReviewCardsLoading={isReviewCardsLoading}
+							key={childSection.topic.id}
+							onOpenReviewCard={onOpenReviewCard}
+							onSectionFilterChange={onSectionFilterChange}
+							registerSectionHeadingRef={registerSectionHeadingRef}
+							registerSectionRef={registerSectionRef}
+							resolvedFilterByTopicId={resolvedFilterByTopicId}
+							reviewCardControlsVariant={reviewCardControlsVariant}
+							searchFilter={searchFilter}
+							section={childSection}
+							toggleSection={toggleSection}
+							topicReviewCardsById={topicReviewCardsById}
+						/>
+					))}
+				</div>
+			) : null}
+		</section>
+	)
+}

@@ -1,0 +1,323 @@
+import { useNavigate } from '@tanstack/react-router'
+import {
+	Heading1,
+	Heading2,
+	Heading3,
+	Heading4,
+	Heading5,
+	Heading6,
+	Trash2
+} from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogMedia,
+	AlertDialogTitle
+} from '~/components/ui/alert-dialog'
+import type { ReviewCard as ReviewCardModel } from '~/features/review-cards/types/review-card.types'
+import { useCreateTopic } from '~/features/topics/api/createTopic'
+import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
+import { useUpdateTopic } from '~/features/topics/api/updateTopic'
+import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
+import { useAutoSave } from '~/hooks/useAutoSave'
+import {
+	formatAbsoluteDate,
+	formatRelativeDate
+} from '~/utils/formatRelativeDate'
+import type {
+	TopicDetailReviewCardControlsVariant,
+	TopicDetailReviewCardFilter
+} from './shared'
+import { TopicDetailNestedSectionView } from './TopicDetailNestedSectionView'
+import {
+	getTopicDetailSectionDisplayLevel,
+	getTopicDetailSectionPresentation
+} from './topicDetailLayout'
+import type { TopicDetailSectionNode } from './topicDetailStructure'
+import {
+	getTopicDetailLabel,
+	getTopicDetailSectionId
+} from './topicDetailStructure'
+import { useTopicDetailSectionPanels } from './useTopicDetailSectionPanels'
+
+type TopicDetailSectionProps = {
+	collapsedSections: Record<string, boolean>
+	getScrollElement: () => HTMLDivElement | null
+	globalFilter: TopicDetailReviewCardFilter
+	onOpenReviewCard: (reviewCardId: number) => void
+	onSectionFilterChange: (
+		topicId: number,
+		filter: TopicDetailReviewCardFilter
+	) => void
+	isReviewCardsLoading: boolean
+	registerSectionHeadingRef: (
+		topicId: number,
+		element: HTMLElement | null
+	) => void
+	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
+	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
+	resolvedFilterByTopicId: Record<number, TopicDetailReviewCardFilter>
+	searchFilter: TopicDetailReviewCardFilter
+	section: TopicDetailSectionNode
+	topicReviewCardsById: Map<number, Array<ReviewCardModel>>
+	toggleSection: (sectionId: string) => void
+}
+
+const HEADING_ICON_BY_LEVEL = {
+	1: Heading1,
+	2: Heading2,
+	3: Heading3,
+	4: Heading4,
+	5: Heading5,
+	6: Heading6
+} as const
+
+export function TopicDetailSection({
+	collapsedSections,
+	getScrollElement,
+	globalFilter,
+	onOpenReviewCard,
+	onSectionFilterChange,
+	isReviewCardsLoading,
+	registerSectionHeadingRef,
+	registerSectionRef,
+	reviewCardControlsVariant,
+	resolvedFilterByTopicId,
+	searchFilter,
+	section,
+	topicReviewCardsById,
+	toggleSection
+}: TopicDetailSectionProps) {
+	const navigate = useNavigate()
+	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
+	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
+		useCreateTopic()
+	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
+		useDeleteTopic()
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const sectionId = getTopicDetailSectionId(section.topic.id)
+	const isCollapsed = collapsedSections[sectionId] ?? false
+	const resolvedSectionFilter =
+		resolvedFilterByTopicId[section.topic.id] ?? globalFilter
+	const displayLevel = getTopicDetailSectionDisplayLevel(section)
+	const presentation = getTopicDetailSectionPresentation(displayLevel)
+	const HeadingIcon =
+		HEADING_ICON_BY_LEVEL[displayLevel as keyof typeof HEADING_ICON_BY_LEVEL]
+	const sectionLabel = getTopicDetailLabel(
+		section.topic.title,
+		section.topic.body
+	)
+	const updated = useMemo(
+		() =>
+			formatRelativeDate(section.topic.updated_at, {
+				includeFuture: false,
+				nullLabel: 'never'
+			}),
+		[section.topic.updated_at]
+	)
+	const created = useMemo(
+		() =>
+			formatRelativeDate(section.topic.inserted_at, {
+				includeFuture: false,
+				nullLabel: 'never'
+			}),
+		[section.topic.inserted_at]
+	)
+	const updatedDate = useMemo(
+		() => formatAbsoluteDate(section.topic.updated_at),
+		[section.topic.updated_at]
+	)
+	const createdDate = useMemo(
+		() => formatAbsoluteDate(section.topic.inserted_at),
+		[section.topic.inserted_at]
+	)
+
+	const saveTopicTitle = useCallback(
+		async (title: string) => {
+			if (title === section.topic.title) return
+
+			try {
+				await updateTopicAsync({ id: section.topic.id, title })
+			} catch {
+				toast.error('Failed to update topic')
+			}
+		},
+		[section.topic.id, section.topic.title, updateTopicAsync]
+	)
+
+	const {
+		value: title,
+		onChange: onTitleChange,
+		flush: flushTitle
+	} = useAutoSave({
+		initialValue: section.topic.title,
+		onSave: saveTopicTitle,
+		key: `topic-document-title-${section.topic.id}`
+	})
+
+	const handleCreateSubtopic = async () => {
+		if (isCreatingTopic) return
+
+		try {
+			const created = await createTopicAsync({
+				title: '',
+				body: '',
+				parent_id: section.topic.id
+			})
+			requestFocusNewTopicTitle(created.id)
+			await navigate({
+				to: '/topics/$topicId',
+				params: { topicId: created.id.toString() }
+			})
+		} catch {
+			toast.error('Failed to create topic')
+		}
+	}
+
+	const handleOpenTopic = () => {
+		navigate({
+			to: '/topics/$topicId',
+			params: { topicId: section.topic.id.toString() },
+			search: {
+				...(searchFilter === 'all' ? {} : { filter: searchFilter }),
+				...(reviewCardControlsVariant === 'compact'
+					? { controls: reviewCardControlsVariant }
+					: {})
+			}
+		}).catch(() => {})
+	}
+
+	const handleDeleteTopic = async () => {
+		if (isDeletingTopic) return
+
+		try {
+			await deleteTopicAsync(section.topic.id)
+			setIsDeleteDialogOpen(false)
+			toast.success('Topic deleted')
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : 'Failed to delete topic'
+			)
+		}
+	}
+
+	const { bodyPanel, reviewCardsSection } = useTopicDetailSectionPanels({
+		getScrollElement,
+		onFilterChange: filter => {
+			onSectionFilterChange(section.topic.id, filter)
+		},
+		onOpenReviewCard,
+		reviewCardControlsVariant,
+		resolvedSectionFilter,
+		section,
+		sectionLabel,
+		isReviewCardsLoading,
+		topicReviewCardsById
+	})
+
+	return (
+		<section
+			className='scroll-mt-24 space-y-2.5 py-0.5'
+			ref={element => {
+				registerSectionRef(section.topic.id, element)
+			}}
+		>
+			<div className={presentation.sectionTopSpacingClassName}>
+				<TopicDetailNestedSectionView
+					bodyPanel={bodyPanel}
+					createdDate={createdDate}
+					createdText={created.text}
+					flushTitle={flushTitle}
+					HeadingIcon={HeadingIcon}
+					headingClassName={presentation.headingClassName}
+					headingIconClassName={presentation.headingIconClassName}
+					headingIndicatorFrameClassName={
+						presentation.headingIndicatorFrameClassName
+					}
+					isCollapsed={isCollapsed}
+					isCreatingTopic={isCreatingTopic}
+					onCreateSubtopic={() => {
+						handleCreateSubtopic().catch(() => {})
+					}}
+					onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+					onOpenTopic={handleOpenTopic}
+					onTitleChange={onTitleChange}
+					registerHeadingRef={element => {
+						registerSectionHeadingRef(section.topic.id, element)
+					}}
+					reviewCardsSection={reviewCardsSection}
+					section={section}
+					sectionId={sectionId}
+					sectionLabel={sectionLabel}
+					title={title}
+					toggleSection={toggleSection}
+					updatedDate={updatedDate}
+					updatedText={updated.text}
+				/>
+				{isCollapsed ? null : section.children.length > 0 ? (
+					<div>
+						{section.children.map(childSection => (
+							<TopicDetailSection
+								collapsedSections={collapsedSections}
+								getScrollElement={getScrollElement}
+								globalFilter={globalFilter}
+								isReviewCardsLoading={isReviewCardsLoading}
+								key={childSection.topic.id}
+								onOpenReviewCard={onOpenReviewCard}
+								onSectionFilterChange={onSectionFilterChange}
+								registerSectionHeadingRef={registerSectionHeadingRef}
+								registerSectionRef={registerSectionRef}
+								resolvedFilterByTopicId={resolvedFilterByTopicId}
+								reviewCardControlsVariant={reviewCardControlsVariant}
+								searchFilter={searchFilter}
+								section={childSection}
+								toggleSection={toggleSection}
+								topicReviewCardsById={topicReviewCardsById}
+							/>
+						))}
+					</div>
+				) : null}
+			</div>
+			<AlertDialog
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+			>
+				<AlertDialogContent size='sm'>
+					<AlertDialogHeader>
+						<AlertDialogMedia>
+							<Trash2 className='h-5 w-5' />
+						</AlertDialogMedia>
+						<AlertDialogTitle>Delete topic?</AlertDialogTitle>
+						<AlertDialogDescription>
+							{`Delete ${sectionLabel} and all of its subtopics, review cards, and reviews? This action cannot be undone.`}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							buttonClassName='w-full sm:w-auto'
+							disabled={isDeletingTopic}
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction
+							buttonClassName='w-full sm:w-auto'
+							disabled={isDeletingTopic}
+							onClick={() => {
+								handleDeleteTopic().catch(() => {})
+							}}
+						>
+							{isDeletingTopic ? 'Deleting...' : 'Delete topic'}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</section>
+	)
+}
