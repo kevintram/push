@@ -498,6 +498,35 @@ describe('TopicDetailPage', () => {
 		).not.toBeNull()
 	})
 
+	it('uses the semantic heading icon for deeply nested sections', () => {
+		const chain = buildTopicChain([
+			'Mathematics',
+			'Algebra',
+			'Linear Algebra',
+			'Matrices',
+			'Rank',
+			'Null Space'
+		])
+		setupTopicChainMocks(chain, 1)
+
+		const { container } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const deepestHeading = container.querySelector(
+			'[data-topic-detail-heading-id="6"]'
+		)
+		const deepestSection = deepestHeading?.closest('section')
+
+		expect(deepestHeading).not.toBeNull()
+		expect(deepestSection?.querySelector('.lucide-heading-6')).not.toBeNull()
+		expect(deepestSection?.querySelector('.lucide-heading-5')).toBeNull()
+	})
+
 	it('syncs topic fields on first load and only refreshes untouched fields on refetch', async () => {
 		const user = userEvent.setup()
 		let currentTopic = { ...topic }
