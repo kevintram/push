@@ -40,23 +40,30 @@ export function useTopicDetailPage({
 	} = useTopic(topicId)
 	const {
 		ancestorIdsById,
+		error: topicTreeError,
 		isLoading: isTopicTreeLoading,
 		nodeById
 	} = useTopicTree()
 	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
 		useDeleteTopic()
-	const { data: subtreeTopics = [], isLoading: isSubtreeTopicsLoading } =
-		useTopics({
-			subtree_of: topicId,
-			sort: 'title',
-			order: 'asc'
-		})
-	const { data: reviewCards = [], isLoading: isReviewCardsLoading } =
-		useReviewCards({
-			topic_id: topicId,
-			include_descendants: true,
-			order: 'desc'
-		})
+	const {
+		data: subtreeTopics = [],
+		error: subtreeTopicsError,
+		isLoading: isSubtreeTopicsLoading
+	} = useTopics({
+		subtree_of: topicId,
+		sort: 'title',
+		order: 'asc'
+	})
+	const {
+		data: reviewCards = [],
+		error: reviewCardsError,
+		isLoading: isReviewCardsLoading
+	} = useReviewCards({
+		topic_id: topicId,
+		include_descendants: true,
+		order: 'desc'
+	})
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const [shouldAutoFocusRootTitle, setShouldAutoFocusRootTitle] =
 		useState(false)
@@ -121,6 +128,8 @@ export function useTopicDetailPage({
 	)
 
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
+	const detailError =
+		topicError ?? topicTreeError ?? subtreeTopicsError ?? reviewCardsError
 
 	const handleGlobalFilterChange = useCallback(
 		(filter: TopicDetailReviewCardFilter) => {
@@ -210,10 +219,8 @@ export function useTopicDetailPage({
 		isDeleteDialogOpen,
 		isDeletingTopic,
 		isDetailLoading:
-			isTopicLoading ||
-			isTopicTreeLoading ||
-			isSubtreeTopicsLoading ||
-			isReviewCardsLoading,
+			isTopicLoading || isTopicTreeLoading || isSubtreeTopicsLoading,
+		isReviewCardsLoading,
 		nodeById,
 		registerSectionHeadingRef,
 		registerSectionRef,
@@ -224,8 +231,8 @@ export function useTopicDetailPage({
 		setIsDeleteDialogOpen,
 		shouldAutoFocusRootTitle,
 		toggleSection,
+		detailError,
 		topic,
-		topicError,
 		topicPath,
 		topicReviewCardsById,
 		ancestorIdsById,

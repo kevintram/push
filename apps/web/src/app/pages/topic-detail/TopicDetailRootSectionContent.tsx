@@ -7,7 +7,6 @@ import { TopicDetailSection } from './TopicDetailSection'
 import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
 import {
 	getTopicDetailLabel,
-	getTopicDetailSectionId,
 	type TopicDetailSectionNode
 } from './topicDetailStructure'
 import { useTopicDetailSectionPanels } from './useTopicDetailSectionPanels'
@@ -22,6 +21,7 @@ type TopicDetailRootSectionContentProps = {
 		topicId: number,
 		filter: TopicDetailReviewCardFilter
 	) => void
+	isReviewCardsLoading: boolean
 	registerSectionHeadingRef: (
 		topicId: number,
 		element: HTMLElement | null
@@ -42,6 +42,7 @@ export function TopicDetailRootSectionContent({
 	onGlobalFilterChange,
 	onOpenReviewCard,
 	onSectionFilterChange,
+	isReviewCardsLoading,
 	registerSectionHeadingRef,
 	registerSectionRef,
 	resolvedFilterByTopicId,
@@ -51,7 +52,6 @@ export function TopicDetailRootSectionContent({
 	toggleSection,
 	topicReviewCardsById
 }: TopicDetailRootSectionContentProps) {
-	const sectionId = getTopicDetailSectionId(section.topic.id)
 	const sectionLabel = getTopicDetailLabel(
 		section.topic.title,
 		section.topic.body
@@ -66,13 +66,13 @@ export function TopicDetailRootSectionContent({
 		resolvedSectionFilter,
 		section,
 		sectionLabel,
+		isReviewCardsLoading,
 		topicReviewCardsById
 	})
 
 	return (
 		<section
 			className='scroll-mt-24 space-y-0 py-0.5'
-			id={sectionId}
 			ref={element => {
 				registerSectionRef(section.topic.id, element)
 			}}
@@ -91,6 +91,7 @@ export function TopicDetailRootSectionContent({
 							collapsedSections={collapsedSections}
 							getScrollElement={getScrollElement}
 							globalFilter={globalFilter}
+							isReviewCardsLoading={isReviewCardsLoading}
 							key={childSection.topic.id}
 							onOpenReviewCard={onOpenReviewCard}
 							onSectionFilterChange={onSectionFilterChange}

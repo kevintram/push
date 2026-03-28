@@ -56,6 +56,7 @@ type TopicDetailSectionProps = {
 		topicId: number,
 		filter: TopicDetailReviewCardFilter
 	) => void
+	isReviewCardsLoading: boolean
 	registerSectionHeadingRef: (
 		topicId: number,
 		element: HTMLElement | null
@@ -84,6 +85,7 @@ export function TopicDetailSection({
 	globalFilter,
 	onOpenReviewCard,
 	onSectionFilterChange,
+	isReviewCardsLoading,
 	registerSectionHeadingRef,
 	registerSectionRef,
 	reviewCardControlsVariant,
@@ -216,13 +218,13 @@ export function TopicDetailSection({
 		resolvedSectionFilter,
 		section,
 		sectionLabel,
+		isReviewCardsLoading,
 		topicReviewCardsById
 	})
 
 	return (
 		<section
 			className='scroll-mt-24 space-y-2.5 py-0.5'
-			id={sectionId}
 			ref={element => {
 				registerSectionRef(section.topic.id, element)
 			}}
@@ -266,6 +268,7 @@ export function TopicDetailSection({
 								collapsedSections={collapsedSections}
 								getScrollElement={getScrollElement}
 								globalFilter={globalFilter}
+								isReviewCardsLoading={isReviewCardsLoading}
 								key={childSection.topic.id}
 								onOpenReviewCard={onOpenReviewCard}
 								onSectionFilterChange={onSectionFilterChange}

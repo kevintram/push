@@ -6,6 +6,7 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/empty'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import type {
 	ReviewCard as ReviewCardModel,
@@ -31,6 +32,7 @@ interface TopicDetailReviewCardsSectionProps {
 	hasReviewCards: boolean
 	hidesSecondary: boolean
 	isCreatingReviewCard: boolean
+	isReviewCardsLoading: boolean
 	onAddReviewCard: (type: ReviewCardType) => void
 	onFilterChange: (filter: TopicDetailReviewCardFilter) => void
 	onOpenReviewCard: (reviewCardId: number) => void
@@ -45,6 +47,7 @@ export function TopicDetailReviewCardsSection({
 	hasReviewCards,
 	hidesSecondary,
 	isCreatingReviewCard,
+	isReviewCardsLoading,
 	onAddReviewCard,
 	onFilterChange,
 	onOpenReviewCard,
@@ -53,7 +56,7 @@ export function TopicDetailReviewCardsSection({
 	sectionLabel
 }: TopicDetailReviewCardsSectionProps) {
 	return (
-		<div className='space-y-3'>
+		<div className='space-y-3 pt-3'>
 			<div>
 				<div className='flex flex-wrap items-center justify-between gap-2.5'>
 					<p className='font-bold text-[0.6875rem] text-muted-foreground/70 uppercase tracking-widest'>
@@ -74,7 +77,13 @@ export function TopicDetailReviewCardsSection({
 					/>
 				</div>
 			</div>
-			{hasReviewCards ? (
+			{isReviewCardsLoading ? (
+				<LoadingSpinner
+					containerClassName='min-h-12 py-3'
+					label='Loading review cards'
+					size='sm'
+				/>
+			) : hasReviewCards ? (
 				filteredReviewCards.length === 0 ? (
 					<Empty>
 						<EmptyHeader>

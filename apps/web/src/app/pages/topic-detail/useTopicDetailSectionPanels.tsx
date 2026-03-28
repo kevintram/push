@@ -26,6 +26,7 @@ type UseTopicDetailSectionPanelsOptions = {
 	resolvedSectionFilter: TopicDetailReviewCardFilter
 	section: TopicDetailSectionNode
 	sectionLabel: string
+	isReviewCardsLoading: boolean
 	topicReviewCardsById: Map<number, Array<ReviewCardModel>>
 }
 
@@ -46,6 +47,7 @@ export function useTopicDetailSectionPanels({
 	resolvedSectionFilter,
 	section,
 	sectionLabel,
+	isReviewCardsLoading,
 	topicReviewCardsById
 }: UseTopicDetailSectionPanelsOptions) {
 	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
@@ -141,6 +143,7 @@ export function useTopicDetailSectionPanels({
 			hasReviewCards={hasReviewCards}
 			hidesSecondary={hidesSecondary}
 			isCreatingReviewCard={isCreatingReviewCard}
+			isReviewCardsLoading={isReviewCardsLoading}
 			onAddReviewCard={type => {
 				handleAddReviewCard(type).catch(() => {})
 			}}
