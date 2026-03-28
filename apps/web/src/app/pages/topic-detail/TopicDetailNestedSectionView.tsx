@@ -20,15 +20,18 @@ import {
 	TooltipTrigger
 } from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
+import { TopicDetailSectionMeta } from './TopicDetailSectionMeta'
+import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
 import type { TopicDetailSectionNode } from './topicDetailStructure'
 
 interface TopicDetailNestedSectionViewProps {
 	bodyPanel: ReactNode
 	createdDate: string
 	createdText: string
-	displayLevel: number
 	flushTitle: () => void
 	headingClassName: string
+	headingIconClassName: string
+	headingIndicatorFrameClassName: string
 	HeadingIcon: ComponentType<{ className?: string }>
 	isCollapsed: boolean
 	isCreatingTopic: boolean
@@ -51,9 +54,10 @@ export function TopicDetailNestedSectionView({
 	bodyPanel,
 	createdDate,
 	createdText,
-	displayLevel,
 	flushTitle,
 	headingClassName,
+	headingIconClassName,
+	headingIndicatorFrameClassName,
 	HeadingIcon,
 	isCollapsed,
 	isCreatingTopic,
@@ -71,25 +75,8 @@ export function TopicDetailNestedSectionView({
 	updatedDate,
 	updatedText
 }: TopicDetailNestedSectionViewProps) {
-	const headingIconClassName =
-		displayLevel <= 2
-			? 'h-[1.125rem] w-[1.125rem]'
-			: displayLevel === 3
-				? 'h-4 w-4'
-				: displayLevel === 4
-					? 'h-[0.9375rem] w-[0.9375rem]'
-					: displayLevel === 5
-						? 'h-[0.875rem] w-[0.875rem]'
-						: 'h-[0.8125rem] w-[0.8125rem]'
-	const headingIndicatorFrameClassName =
-		displayLevel <= 2
-			? 'top-0.5 h-7 w-7'
-			: displayLevel === 3
-				? 'top-0 h-6 w-6'
-				: 'top-0 h-5 w-5'
-
 	return (
-		<div className='group/section grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-1.5'>
+		<div className={cn('group/section', TOPIC_DETAIL_SECTION_GRID_CLASS)}>
 			<div className='relative text-muted-foreground/60'>
 				<div className='absolute right-0 flex items-start justify-end gap-0.5'>
 					<div
@@ -202,21 +189,12 @@ export function TopicDetailNestedSectionView({
 			<div className='min-w-0 pt-1'>
 				{isCollapsed ? null : (
 					<>
-						<div className='flex flex-wrap items-center gap-x-2 gap-y-1 font-medium text-[0.8125rem] text-muted-foreground/75 tracking-[0.01em]'>
-							<Tooltip>
-								<TooltipTrigger
-									render={<span>{`Edited ${updatedText}`}</span>}
-								/>
-								<TooltipContent>{updatedDate}</TooltipContent>
-							</Tooltip>
-							<span aria-hidden={true}>·</span>
-							<Tooltip>
-								<TooltipTrigger
-									render={<span>{`Created ${createdText}`}</span>}
-								/>
-								<TooltipContent>{createdDate}</TooltipContent>
-							</Tooltip>
-						</div>
+						<TopicDetailSectionMeta
+							createdDate={createdDate}
+							createdText={createdText}
+							updatedDate={updatedDate}
+							updatedText={updatedText}
+						/>
 						<div className='pt-3'>{bodyPanel}</div>
 						<div>{reviewCardsSection}</div>
 					</>

@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import dayjs from 'dayjs'
 import { MoreHorizontal, Trash2 } from 'lucide-react'
-import { Fragment, useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -20,18 +19,17 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
 import { Textarea } from '~/components/ui/textarea'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger
-} from '~/components/ui/tooltip'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/features/topics/hooks/usePrefetchTopicDetail'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
-import { formatRelativeDate } from '~/utils/formatRelativeDate'
+import {
+	formatAbsoluteDate,
+	formatRelativeDate
+} from '~/utils/formatRelativeDate'
+import { TopicDetailSectionMeta } from './TopicDetailSectionMeta'
 
 type TopicPathItem = {
 	id: number
@@ -103,32 +101,32 @@ export function TopicDetailHeader({
 								)
 								const isCurrentTopic = index === topicPath.length - 1
 
-								return (
-									<Fragment key={pathTopic.id}>
-										{index > 0 ? <BreadcrumbSeparator /> : null}
-										<BreadcrumbItem className='min-w-0'>
-											{isCurrentTopic ? (
-												<BreadcrumbPage className='truncate font-medium'>
-													{label}
-												</BreadcrumbPage>
-											) : (
-												<BreadcrumbLink
-													className='truncate'
-													render={
-														<Link
-															params={{ topicId: pathTopic.id.toString() }}
-															preload='intent'
-															preloadDelay={TOPIC_DETAIL_INTENT_PRELOAD_DELAY}
-															to='/topics/$topicId'
-														/>
-													}
-												>
-													{label}
-												</BreadcrumbLink>
-											)}
-										</BreadcrumbItem>
-									</Fragment>
-								)
+								return [
+									index > 0 ? (
+										<BreadcrumbSeparator key={`separator-${pathTopic.id}`} />
+									) : null,
+									<BreadcrumbItem className='min-w-0' key={pathTopic.id}>
+										{isCurrentTopic ? (
+											<BreadcrumbPage className='truncate font-medium'>
+												{label}
+											</BreadcrumbPage>
+										) : (
+											<BreadcrumbLink
+												className='truncate'
+												render={
+													<Link
+														params={{ topicId: pathTopic.id.toString() }}
+														preload='intent'
+														preloadDelay={TOPIC_DETAIL_INTENT_PRELOAD_DELAY}
+														to='/topics/$topicId'
+													/>
+												}
+											>
+												{label}
+											</BreadcrumbLink>
+										)}
+									</BreadcrumbItem>
+								]
 							})}
 						</BreadcrumbList>
 					</Breadcrumb>
@@ -149,29 +147,12 @@ export function TopicDetailHeader({
 						/>
 					</div>
 					<div className='pt-1'>
-						<div className='flex flex-wrap items-center gap-x-2 gap-y-1 font-medium text-[0.8125rem] text-muted-foreground/75 tracking-[0.01em]'>
-							<Tooltip>
-								<TooltipTrigger
-									render={
-										<span>{`Edited ${formatRelativeDate(topic.updated_at).text}`}</span>
-									}
-								/>
-								<TooltipContent>
-									{dayjs(topic.updated_at).format('MMM D, YYYY')}
-								</TooltipContent>
-							</Tooltip>
-							<span aria-hidden={true}>·</span>
-							<Tooltip>
-								<TooltipTrigger
-									render={
-										<span>{`Created ${formatRelativeDate(topic.inserted_at).text}`}</span>
-									}
-								/>
-								<TooltipContent>
-									{dayjs(topic.inserted_at).format('MMM D, YYYY')}
-								</TooltipContent>
-							</Tooltip>
-						</div>
+						<TopicDetailSectionMeta
+							createdDate={formatAbsoluteDate(topic.inserted_at)}
+							createdText={formatRelativeDate(topic.inserted_at).text}
+							updatedDate={formatAbsoluteDate(topic.updated_at)}
+							updatedText={formatRelativeDate(topic.updated_at).text}
+						/>
 					</div>
 				</div>
 			</div>

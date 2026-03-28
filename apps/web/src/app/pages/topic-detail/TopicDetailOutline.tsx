@@ -26,6 +26,7 @@ import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { cn } from '~/lib/utils'
 import type { TopicDetailReviewCardFilter } from './shared'
 import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'
+import { TOPIC_DETAIL_OUTLINE_WIDTH_CLASS } from './topicDetailLayout'
 import { getTopicDetailHash } from './topicDetailStructure'
 import { useTopicDetailOutline } from './useTopicDetailOutline'
 
@@ -94,7 +95,12 @@ export function TopicDetailOutline({
 	}
 
 	return (
-		<aside className='sticky top-6 hidden w-52 shrink-0 self-start lg:block'>
+		<aside
+			className={cn(
+				'sticky top-6 hidden shrink-0 self-start lg:block',
+				TOPIC_DETAIL_OUTLINE_WIDTH_CLASS
+			)}
+		>
 			<nav aria-label='On this page' className='space-y-1.5'>
 				<ul className='space-y-px'>
 					<ContextMenu>

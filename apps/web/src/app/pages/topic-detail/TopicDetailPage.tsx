@@ -29,7 +29,13 @@ import type {
 } from './shared'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailOutline } from './TopicDetailOutline'
-import { TopicDetailSection } from './TopicDetailSection'
+import { TopicDetailRootSectionContent } from './TopicDetailRootSectionContent'
+import {
+	TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS,
+	TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
+	TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS,
+	TOPIC_DETAIL_SECTION_GRID_CLASS
+} from './topicDetailLayout'
 import { useTopicDetailPage } from './useTopicDetailPage'
 
 interface TopicDetailPageProps {
@@ -106,11 +112,9 @@ export function TopicDetailPage({
 	}
 
 	const isLeafTopic = rootSection.children.length === 0
-	const rootContentMeasureClassName = 'max-w-[40rem]'
-	const leafContentRailClassName = 'xl:mx-auto xl:w-full xl:max-w-[57.5rem]'
 	const rootHeaderContentClassName = isLeafTopic
 		? undefined
-		: rootContentMeasureClassName
+		: TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS
 	const rootHeaderActionClassName = isLeafTopic
 		? 'top-0 right-0'
 		: 'top-0 right-0 lg:hidden'
@@ -118,25 +122,20 @@ export function TopicDetailPage({
 		? 'pr-12 sm:pr-14'
 		: 'pr-12 sm:pr-14 lg:pr-0'
 	const rootSectionContent = (
-		<TopicDetailSection
+		<TopicDetailRootSectionContent
 			collapsedSections={collapsedSections}
 			getScrollElement={getScrollElement}
 			globalFilter={resolvedCardTypeFilter}
 			onGlobalFilterChange={handleGlobalFilterChange}
 			onOpenReviewCard={handleOpenReviewCard}
-			onOpenRootDeleteDialog={() => setIsDeleteDialogOpen(true)}
 			onSectionFilterChange={handleSectionFilterChange}
 			registerSectionHeadingRef={registerSectionHeadingRef}
 			registerSectionRef={registerSectionRef}
-			renderRootContentOnly={true}
 			resolvedFilterByTopicId={sectionFilterOverrides}
 			reviewCardControlsVariant={reviewCardControlsVariant}
-			rootTopicId={topic.id}
 			searchFilter={resolvedCardTypeFilter}
 			section={rootSection}
-			shouldAutoFocusRootTitle={shouldAutoFocusRootTitle}
 			toggleSection={toggleSection}
-			topicPath={topicPath}
 			topicReviewCardsById={topicReviewCardsById}
 		/>
 	)
@@ -157,16 +156,16 @@ export function TopicDetailPage({
 						<div
 							className={cn(
 								'grid gap-6 px-5 pt-5 pb-3 sm:px-7 sm:pt-6 sm:pb-4 xl:gap-6 xl:px-8 xl:pt-7 xl:pb-4',
-								!isLeafTopic && 'lg:grid-cols-[minmax(0,1fr)_13rem]'
+								!isLeafTopic && TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS
 							)}
 						>
 							<div
 								className={cn(
 									'min-w-0',
-									isLeafTopic && leafContentRailClassName
+									isLeafTopic && TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS
 								)}
 							>
-								<div className='grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-1.5'>
+								<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
 									<div aria-hidden='true' />
 									<div className='relative min-w-0'>
 										<div
@@ -227,7 +226,7 @@ export function TopicDetailPage({
 						<div
 							className={cn(
 								'min-w-0 flex-1 space-y-5',
-								isLeafTopic && leafContentRailClassName
+								isLeafTopic && TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS
 							)}
 						>
 							{rootSectionContent}
