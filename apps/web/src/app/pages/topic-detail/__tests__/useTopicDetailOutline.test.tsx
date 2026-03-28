@@ -84,6 +84,22 @@ function buildOutlineTree() {
 }
 
 describe('useTopicDetailOutline', () => {
+	it('expands collapsible outline topics on first render', () => {
+		const initialTree = buildOutlineTree()
+		const { result } = renderHook(() =>
+			useTopicDetailOutline({
+				ancestorIdsById: initialTree.ancestorIdsById,
+				nodeById: initialTree.nodeById,
+				outlineRootNode: initialTree.outlineRootNode,
+				visibleSectionIds: []
+			})
+		)
+
+		expect(
+			result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+		).toBe(true)
+	})
+
 	it('preserves manual collapse state when the same root topic refetches', async () => {
 		const initialTree = buildOutlineTree()
 		const { result, rerender } = renderHook(

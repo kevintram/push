@@ -15,10 +15,8 @@ export function useTopicDetailOutline({
 	outlineRootNode,
 	visibleSectionIds
 }: UseTopicDetailOutlineOptions) {
-	const [expandedIds, setExpandedIds] = useState<Array<number>>([])
-	const previousRootTopicIdRef = useRef<number | null>(null)
-	const suppressSelectionRef = useRef(false)
 	const rootTopicId = outlineRootNode?.id ?? null
+	const suppressSelectionRef = useRef(false)
 
 	const subtreeTopicIds = useMemo(() => {
 		if (!outlineRootNode) return new Set<number>()
@@ -54,6 +52,10 @@ export function useTopicDetailOutline({
 
 		return ids
 	}, [outlineRootNode])
+	const [expandedIds, setExpandedIds] = useState<Array<number>>(
+		() => defaultExpandedIds
+	)
+	const previousRootTopicIdRef = useRef<number | null>(rootTopicId)
 	const visibleBranchIds = useMemo(() => {
 		const branchIdSet = new Set<number>()
 
@@ -107,7 +109,7 @@ export function useTopicDetailOutline({
 		setExpandedIds(previousExpandedIds => {
 			if (rootTopicId == null) {
 				previousRootTopicIdRef.current = null
-				return []
+				return previousExpandedIds.length === 0 ? previousExpandedIds : []
 			}
 
 			if (previousRootTopicIdRef.current !== rootTopicId) {
@@ -115,7 +117,12 @@ export function useTopicDetailOutline({
 				return defaultExpandedIds
 			}
 
-			return previousExpandedIds.filter(topicId => subtreeTopicIds.has(topicId))
+			const nextExpandedIds = previousExpandedIds.filter(topicId =>
+				subtreeTopicIds.has(topicId)
+			)
+			return nextExpandedIds.length === previousExpandedIds.length
+				? previousExpandedIds
+				: nextExpandedIds
 		})
 	}, [defaultExpandedIds, rootTopicId, subtreeTopicIds])
 
