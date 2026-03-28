@@ -1,7 +1,9 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import {
+	elementSizeMock,
+	navigateMock,
 	parentTopic,
 	topic,
 	useReviewCardsMock,
@@ -10,49 +12,56 @@ import {
 } from '~/testing/support/detailPageTestSupport'
 import { TopicDetailPage } from '../TopicDetailPage'
 
+type TopicFixture = Omit<typeof topic, 'parent_id' | 'parent_title'> & {
+	parent_id: number | null
+	parent_title: string | null
+}
+
+function buildTopicChain(titles: Array<string>): Array<TopicFixture> {
+	return titles.map((title, index) => ({
+		...topic,
+		id: index + 1,
+		title,
+		parent_id: index === 0 ? null : index,
+		parent_title: index === 0 ? null : (titles[index - 1] ?? null)
+	}))
+}
+
+function setupTopicChainMocks(chain: Array<TopicFixture>, currentId: number) {
+	useTopicMock.mockImplementation((topicId: number | null) => {
+		if (topicId === currentId) {
+			return {
+				data: chain.find(t => t.id === currentId) ?? null,
+				isLoading: false,
+				error: null
+			}
+		}
+
+		return { data: null, isLoading: false, error: null }
+	})
+	useTopicsMock.mockImplementation(
+		(params?: { parent_id?: number; sort?: string; order?: string }) => {
+			if (params?.sort === 'title' && params?.order === 'asc') {
+				return { data: chain, isLoading: false }
+			}
+
+			return { data: [], isLoading: false }
+		}
+	)
+}
+
 describe('TopicDetailPage', () => {
+	afterEach(() => {
+		elementSizeMock.width = 1024
+	})
+
 	it('renders a read-only breadcrumb path from root to current topic', () => {
-		const rootTopic = {
-			...topic,
-			id: 4,
-			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null
-		}
-		const branchTopic = {
-			...topic,
-			id: 2,
-			title: 'Algebra',
-			parent_id: 4,
-			parent_title: 'Mathematics'
-		}
-		const currentTopic = {
-			...topic,
-			id: 3,
-			title: 'Linear equations',
-			parent_id: 2,
-			parent_title: 'Algebra'
-		}
-
-		useTopicMock.mockImplementation((topicId: number | null) => {
-			if (topicId === 3) {
-				return { data: currentTopic, isLoading: false, error: null }
-			}
-
-			return { data: null, isLoading: false, error: null }
-		})
-		useTopicsMock.mockImplementation(
-			(params?: { parent_id?: number; sort?: string; order?: string }) => {
-				if (params?.sort === 'title' && params?.order === 'asc') {
-					return {
-						data: [rootTopic, branchTopic, currentTopic],
-						isLoading: false
-					}
-				}
-
-				return { data: [], isLoading: false }
-			}
-		)
+		const chain = buildTopicChain([
+			'Mathematics',
+			'Algebra',
+			'Linear equations'
+		])
+		setupTopicChainMocks(chain, 3)
 
 		render(
 			<TopicDetailPage
@@ -83,6 +92,161 @@ describe('TopicDetailPage', () => {
 		expect(
 			screen.queryByRole('button', { name: /Remove parent/iu })
 		).not.toBeInTheDocument()
+	})
+
+	it('preserves the root topic when collapsing on narrow screens', async () => {
+		elementSizeMock.width = 200
+
+		const chain = buildTopicChain([
+			'Mathematics',
+			'Algebra',
+			'Linear systems',
+			'Gaussian elimination'
+		])
+		setupTopicChainMocks(chain, 4)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={4}
+			/>
+		)
+
+		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+
+		await waitFor(() => {
+			expect(
+				within(breadcrumb).getByRole('link', { name: 'Mathematics' })
+			).toBeInTheDocument()
+		})
+
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
+		).not.toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Linear systems' })
+		).not.toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByText('Gaussian elimination')
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Show hidden topics' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Algebra' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Linear systems' })
+		).toBeInTheDocument()
+		expect(
+			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]')
+		).toBeInTheDocument()
+
+		await userEvent.click(
+			within(breadcrumb).getByRole('button', { name: 'Linear systems' })
+		)
+
+		expect(navigateMock).toHaveBeenCalledWith({
+			params: { topicId: '3' },
+			to: '/topics/$topicId'
+		})
+	})
+
+	it('keeps the immediate parent visible when collapsing deep breadcrumb paths on wider screens', async () => {
+		elementSizeMock.width = 400
+
+		const chain = buildTopicChain([
+			'Mathematics',
+			'Algebra',
+			'Systems of equations',
+			'Row reduction',
+			'Gaussian elimination'
+		])
+		setupTopicChainMocks(chain, 5)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={5}
+			/>
+		)
+
+		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+
+		await waitFor(() => {
+			expect(
+				within(breadcrumb).getByRole('link', { name: 'Row reduction' })
+			).toBeInTheDocument()
+		})
+
+		expect(
+			within(breadcrumb).getByRole('link', { name: 'Mathematics' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
+		).not.toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', {
+				name: 'Systems of equations'
+			})
+		).not.toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByText('Gaussian elimination')
+		).toBeInTheDocument()
+		expect(
+			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]')
+		).toBeInTheDocument()
+	})
+
+	it('keeps moderately deep breadcrumb paths fully expanded on large screens', async () => {
+		elementSizeMock.width = 600
+
+		const chain = buildTopicChain([
+			'Mathematics',
+			'Algebra',
+			'Systems of equations',
+			'Row reduction',
+			'Matrix rank',
+			'Rank-nullity theorem'
+		])
+		setupTopicChainMocks(chain, 6)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={6}
+			/>
+		)
+
+		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+
+		await waitFor(() => {
+			expect(
+				within(breadcrumb).getByRole('link', { name: 'Mathematics' })
+			).toBeInTheDocument()
+		})
+
+		expect(
+			within(breadcrumb).getByRole('link', { name: 'Algebra' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('link', { name: 'Systems of equations' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('link', { name: 'Row reduction' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('link', { name: 'Matrix rank' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByText('Rank-nullity theorem')
+		).toBeInTheDocument()
+		expect(
+			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]')
+		).toBeNull()
 	})
 
 	it('hides the breadcrumb when the current topic has no ancestors', () => {
