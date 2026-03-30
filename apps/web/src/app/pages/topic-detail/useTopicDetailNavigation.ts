@@ -1,5 +1,12 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import type { MutableRefObject } from 'react'
+import {
+	startTransition,
+	useCallback,
+	useEffect,
+	useRef,
+	useState
+} from 'react'
 import {
 	getTopicDetailHash,
 	getTopicDetailSectionId,
@@ -8,7 +15,8 @@ import {
 
 type UseTopicDetailNavigationOptions = {
 	rootTopicId: number
-	scrollContainerElement: HTMLDivElement | null
+	scrollContainerRef: MutableRefObject<HTMLDivElement | null>
+	scrollContainerVersion: number
 	sectionIds: Array<number>
 }
 
@@ -24,7 +32,8 @@ function areSectionIdArraysEqual(left: Array<number>, right: Array<number>) {
 
 export function useTopicDetailNavigation({
 	rootTopicId,
-	scrollContainerElement,
+	scrollContainerRef,
+	scrollContainerVersion,
 	sectionIds
 }: UseTopicDetailNavigationOptions) {
 	const navigate = useNavigate()
@@ -34,6 +43,8 @@ export function useTopicDetailNavigation({
 	const currentHashValue = currentHash ? `#${currentHash}` : ''
 	const sectionElementsRef = useRef(new Map<number, HTMLElement>())
 	const sectionHeadingElementsRef = useRef(new Map<number, HTMLElement>())
+	const intersectingSectionIdsRef = useRef(new Set<number>())
+	const visibilityObserverRef = useRef<IntersectionObserver | null>(null)
 	const visibilityAnimationFrameIdRef = useRef<number | null>(null)
 	const hashTargetAnimationFrameIdRef = useRef<number | null>(null)
 	const fallbackScrolledHashRef = useRef<string | null>(null)
@@ -44,6 +55,26 @@ export function useTopicDetailNavigation({
 	const hashTargetMutationObserverRef = useRef<MutationObserver | null>(null)
 	const hashTargetResizeObserverRef = useRef<ResizeObserver | null>(null)
 	const [visibleSectionIds, setVisibleSectionIds] = useState<Array<number>>([])
+
+	const syncVisibleSectionIds = useCallback(
+		(nextVisibleSectionIdSet: ReadonlySet<number>) => {
+			const nextVisibleSectionIds = sectionIds.filter(topicId =>
+				nextVisibleSectionIdSet.has(topicId)
+			)
+
+			startTransition(() => {
+				setVisibleSectionIds(previousVisibleSectionIds =>
+					areSectionIdArraysEqual(
+						previousVisibleSectionIds,
+						nextVisibleSectionIds
+					)
+						? previousVisibleSectionIds
+						: nextVisibleSectionIds
+				)
+			})
+		},
+		[sectionIds]
+	)
 
 	const updateHash = useCallback(
 		(topicId: number, mode: 'push' | 'replace' = 'push') => {
@@ -63,17 +94,22 @@ export function useTopicDetailNavigation({
 		[currentHash, navigate, rootTopicId]
 	)
 
-	const updateVisibleSections = useCallback(() => {
+	const measureVisibleSections = useCallback(() => {
+		const scrollContainerElement = scrollContainerRef.current
 		if (!scrollContainerElement) return
 
 		const { bottom: containerBottom, top: containerTop } =
 			scrollContainerElement.getBoundingClientRect()
-		const nextVisibleSectionIds: Array<number> = []
+		const nextVisibleSectionIdSet = new Set<number>()
+		const sectionIdSet = new Set(sectionIds)
+		const sectionHeadingElements =
+			scrollContainerElement.querySelectorAll<HTMLElement>(
+				'[data-topic-detail-heading-id]'
+			)
 
-		for (const topicId of sectionIds) {
-			const sectionHeadingElement =
-				sectionHeadingElementsRef.current.get(topicId)
-			if (!sectionHeadingElement) continue
+		for (const sectionHeadingElement of sectionHeadingElements) {
+			const topicId = Number(sectionHeadingElement.dataset.topicDetailHeadingId)
+			if (!Number.isFinite(topicId) || !sectionIdSet.has(topicId)) continue
 
 			const { bottom: sectionHeadingBottom, top: sectionHeadingTop } =
 				sectionHeadingElement.getBoundingClientRect()
@@ -82,26 +118,60 @@ export function useTopicDetailNavigation({
 				sectionHeadingTop < containerBottom
 
 			if (visible) {
-				nextVisibleSectionIds.push(topicId)
+				nextVisibleSectionIdSet.add(topicId)
 			}
 		}
 
-		setVisibleSectionIds(previousVisibleSectionIds =>
-			areSectionIdArraysEqual(previousVisibleSectionIds, nextVisibleSectionIds)
-				? previousVisibleSectionIds
-				: nextVisibleSectionIds
-		)
-	}, [scrollContainerElement, sectionIds])
+		intersectingSectionIdsRef.current = nextVisibleSectionIdSet
+		syncVisibleSectionIds(nextVisibleSectionIdSet)
+	}, [scrollContainerRef, sectionIds, syncVisibleSectionIds])
 
-	const scheduleVisibleSectionsUpdate = useCallback(() => {
+	const scheduleVisibleSectionsMeasurement = useCallback(() => {
 		if (typeof window === 'undefined') return
 		if (visibilityAnimationFrameIdRef.current != null) return
 
 		visibilityAnimationFrameIdRef.current = window.requestAnimationFrame(() => {
 			visibilityAnimationFrameIdRef.current = null
-			updateVisibleSections()
+			measureVisibleSections()
 		})
-	}, [updateVisibleSections])
+	}, [measureVisibleSections])
+
+	const disconnectVisibilityObserver = useCallback(() => {
+		visibilityObserverRef.current?.disconnect()
+		visibilityObserverRef.current = null
+	}, [])
+
+	const handleVisibilityEntries = useCallback(
+		(entries: Array<IntersectionObserverEntry>) => {
+			const nextVisibleSectionIdSet = new Set(intersectingSectionIdsRef.current)
+			let didChange = false
+
+			for (const entry of entries) {
+				const topicId = Number(
+					(entry.target as HTMLElement).dataset.topicDetailHeadingId
+				)
+				if (!Number.isFinite(topicId)) continue
+
+				if (entry.isIntersecting) {
+					if (!nextVisibleSectionIdSet.has(topicId)) {
+						nextVisibleSectionIdSet.add(topicId)
+						didChange = true
+					}
+					continue
+				}
+
+				if (nextVisibleSectionIdSet.delete(topicId)) {
+					didChange = true
+				}
+			}
+
+			if (!didChange) return
+
+			intersectingSectionIdsRef.current = nextVisibleSectionIdSet
+			syncVisibleSectionIds(nextVisibleSectionIdSet)
+		},
+		[syncVisibleSectionIds]
+	)
 
 	const getTargetElement = useCallback(
 		(topicId: number) =>
@@ -118,6 +188,7 @@ export function useTopicDetailNavigation({
 
 	const isTargetAligned = useCallback(
 		(targetElement: HTMLElement) => {
+			const scrollContainerElement = scrollContainerRef.current
 			if (!scrollContainerElement) return false
 
 			const { top: containerTop } =
@@ -129,11 +200,12 @@ export function useTopicDetailNavigation({
 
 			return Math.abs(targetTop - (containerTop + scrollMarginTop)) <= 24
 		},
-		[scrollContainerElement]
+		[scrollContainerRef]
 	)
 
 	const scrollTargetIntoView = useCallback(
 		(targetElement: HTMLElement, options?: { behavior?: ScrollBehavior }) => {
+			const scrollContainerElement = scrollContainerRef.current
 			if (typeof window === 'undefined' || scrollContainerElement == null) {
 				targetElement.scrollIntoView({
 					block: 'start',
@@ -163,7 +235,7 @@ export function useTopicDetailNavigation({
 
 			scrollContainerElement.scrollTop = nextScrollTop
 		},
-		[scrollContainerElement]
+		[scrollContainerRef]
 	)
 
 	const syncHashTargetIntoView = useCallback(() => {
@@ -235,14 +307,14 @@ export function useTopicDetailNavigation({
 		}
 		if (isTargetAligned(targetElement)) {
 			completeCurrentHashAlignment()
-			updateVisibleSections()
+			measureVisibleSections()
 			disconnectHashTargetObservers()
 			return
 		}
 
 		fallbackScrolledHashRef.current = null
 		syncHashTargetIntoView()
-		updateVisibleSections()
+		measureVisibleSections()
 
 		const updatedTargetElement = getTargetElement(targetTopicId)
 		if (!updatedTargetElement || isTargetAligned(updatedTargetElement)) {
@@ -256,8 +328,8 @@ export function useTopicDetailNavigation({
 		getHashTargetTopicId,
 		getTargetElement,
 		isTargetAligned,
-		syncHashTargetIntoView,
-		updateVisibleSections
+		measureVisibleSections,
+		syncHashTargetIntoView
 	])
 
 	const scheduleObservedHashTargetUpdate = useCallback(() => {
@@ -271,6 +343,7 @@ export function useTopicDetailNavigation({
 	}, [handleObservedHashTargetUpdate])
 
 	const observeHashTargetSettledUpdates = useCallback(() => {
+		const scrollContainerElement = scrollContainerRef.current
 		if (
 			typeof window === 'undefined' ||
 			scrollContainerElement == null ||
@@ -324,7 +397,7 @@ export function useTopicDetailNavigation({
 		getTargetElement,
 		isTargetAligned,
 		scheduleObservedHashTargetUpdate,
-		scrollContainerElement,
+		scrollContainerRef,
 		sectionIds
 	])
 
@@ -343,14 +416,9 @@ export function useTopicDetailNavigation({
 			scrollTargetIntoView(targetElement, {
 				behavior: options?.behavior ?? 'smooth'
 			})
-			scheduleVisibleSectionsUpdate()
+			measureVisibleSections()
 		},
-		[
-			getTargetElement,
-			scheduleVisibleSectionsUpdate,
-			scrollTargetIntoView,
-			updateHash
-		]
+		[getTargetElement, measureVisibleSections, scrollTargetIntoView, updateHash]
 	)
 
 	const registerSectionRef = useCallback(
@@ -362,35 +430,60 @@ export function useTopicDetailNavigation({
 			}
 
 			sectionElementsRef.current.set(topicId, element)
+			syncHashTargetIntoView()
 			observeHashTargetSettledUpdates()
 		},
-		[observeHashTargetSettledUpdates]
+		[observeHashTargetSettledUpdates, syncHashTargetIntoView]
 	)
 
 	const registerSectionHeadingRef = useCallback(
 		(topicId: number, element: HTMLElement | null) => {
-			const previousElement = sectionHeadingElementsRef.current.get(topicId)
 			if (element == null) {
-				if (previousElement == null) return
 				sectionHeadingElementsRef.current.delete(topicId)
 			} else {
-				if (previousElement === element) return
 				sectionHeadingElementsRef.current.set(topicId, element)
 			}
 
-			scheduleVisibleSectionsUpdate()
+			syncHashTargetIntoView()
 			observeHashTargetSettledUpdates()
 		},
-		[observeHashTargetSettledUpdates, scheduleVisibleSectionsUpdate]
+		[observeHashTargetSettledUpdates, syncHashTargetIntoView]
 	)
 
 	useEffect(() => {
+		const scrollContainerElement = scrollContainerRef.current
 		if (!scrollContainerElement) return
 
-		updateVisibleSections()
-		scrollContainerElement.addEventListener('scroll', updateVisibleSections, {
-			passive: true
-		})
+		intersectingSectionIdsRef.current = new Set()
+		disconnectVisibilityObserver()
+
+		if (typeof IntersectionObserver !== 'undefined') {
+			const observer = new IntersectionObserver(handleVisibilityEntries, {
+				root: scrollContainerElement,
+				threshold: 0
+			})
+
+			visibilityObserverRef.current = observer
+
+			const sectionHeadingElements =
+				scrollContainerElement.querySelectorAll<HTMLElement>(
+					'[data-topic-detail-heading-id]'
+				)
+			for (const sectionHeadingElement of sectionHeadingElements) {
+				observer.observe(sectionHeadingElement)
+			}
+
+			measureVisibleSections()
+		} else {
+			measureVisibleSections()
+			scrollContainerElement.addEventListener(
+				'scroll',
+				scheduleVisibleSectionsMeasurement,
+				{
+					passive: true
+				}
+			)
+		}
 
 		const handleUserInteraction = () => {
 			if (pendingHashAlignmentRef.current == null) return
@@ -417,9 +510,10 @@ export function useTopicDetailNavigation({
 		window.addEventListener('keydown', handleUserInteraction)
 
 		return () => {
+			disconnectVisibilityObserver()
 			scrollContainerElement.removeEventListener(
 				'scroll',
-				updateVisibleSections
+				scheduleVisibleSectionsMeasurement
 			)
 			scrollContainerElement.removeEventListener('wheel', handleUserInteraction)
 			scrollContainerElement.removeEventListener(
@@ -434,8 +528,13 @@ export function useTopicDetailNavigation({
 		}
 	}, [
 		cancelPendingHashAlignment,
-		scrollContainerElement,
-		updateVisibleSections
+		disconnectVisibilityObserver,
+		handleVisibilityEntries,
+		measureVisibleSections,
+		scheduleVisibleSectionsMeasurement,
+		scrollContainerRef,
+		scrollContainerVersion,
+		syncVisibleSectionIds
 	])
 
 	useEffect(
@@ -446,9 +545,10 @@ export function useTopicDetailNavigation({
 			if (hashTargetAnimationFrameIdRef.current != null) {
 				window.cancelAnimationFrame(hashTargetAnimationFrameIdRef.current)
 			}
+			disconnectVisibilityObserver()
 			disconnectHashTargetObservers()
 		},
-		[disconnectHashTargetObservers]
+		[disconnectHashTargetObservers, disconnectVisibilityObserver]
 	)
 
 	useEffect(() => {
@@ -482,15 +582,15 @@ export function useTopicDetailNavigation({
 			}
 		}
 
-		scheduleVisibleSectionsUpdate()
+		measureVisibleSections()
 	}, [
 		completeCurrentHashAlignment,
 		disconnectHashTargetObservers,
 		getHashTargetTopicId,
 		getTargetElement,
 		isTargetAligned,
+		measureVisibleSections,
 		observeHashTargetSettledUpdates,
-		scheduleVisibleSectionsUpdate,
 		syncHashTargetIntoView
 	])
 
