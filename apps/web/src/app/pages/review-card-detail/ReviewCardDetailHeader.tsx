@@ -9,7 +9,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
-import { TopicNavigatorSheet } from '~/features/topics/components/topic-navigator/TopicNavigator'
 import type { ReviewCardDetailTab } from './shared'
 
 type ReviewCardDetailHeaderProps = {
@@ -25,7 +24,6 @@ type ReviewCardDetailHeaderProps = {
 	onTopicMenuOpenChange: (open: boolean) => void
 	overdueCount: number
 	parentLabel: string
-	reviewCardTopicId: number
 	unscheduledCount: number
 }
 
@@ -42,13 +40,11 @@ export function ReviewCardDetailHeader({
 	onTopicMenuOpenChange,
 	overdueCount,
 	parentLabel,
-	reviewCardTopicId,
 	unscheduledCount
 }: ReviewCardDetailHeaderProps) {
 	return (
 		<DetailNavBar
 			activeTab={activeTab}
-			afterActions={<TopicNavigatorSheet activeTopicId={reviewCardTopicId} />}
 			dueTodayCount={dueTodayCount}
 			leftContent={
 				<div className='flex min-w-0 items-center gap-2'>

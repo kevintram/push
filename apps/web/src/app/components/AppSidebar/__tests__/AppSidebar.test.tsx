@@ -7,7 +7,6 @@ import { SidebarProvider } from '~/components/ui/sidebar'
 const useLocationMock = vi.fn()
 const useReviewCardQueueCountsMock = vi.fn()
 const useReviewCardFlaggedSummaryMock = vi.fn()
-const useReviewModeMock = vi.fn()
 const navigateMock = vi.fn()
 const requestCreateTopicMock = vi.fn()
 
@@ -25,8 +24,8 @@ vi.mock('@tanstack/react-router-devtools', () => ({
 	TanStackRouterDevtools: () => null
 }))
 
-vi.mock('~/app/components/AppSidebar/SidebarSearch', () => ({
-	SidebarSearch: () => null
+vi.mock('~/app/components/AppSidebar/AppSidebarTopicTree', () => ({
+	AppSidebarTopicTree: () => <div data-testid='sidebar-topic-tree' />
 }))
 
 vi.mock('~/components/SettingsDialog', () => ({
@@ -47,31 +46,15 @@ vi.mock('~/features/topics/createTopicIntent', () => ({
 	requestCreateTopic: () => requestCreateTopicMock()
 }))
 
-vi.mock('~/stores/ReviewModeContext', () => ({
-	useReviewMode: (...args: Array<unknown>) => useReviewModeMock(...args)
-}))
-
 describe('AppSidebar', () => {
 	beforeEach(() => {
 		useLocationMock.mockReset()
 		useReviewCardQueueCountsMock.mockReset()
 		useReviewCardFlaggedSummaryMock.mockReset()
-		useReviewModeMock.mockReset()
 		navigateMock.mockReset()
 		requestCreateTopicMock.mockReset()
 		useReviewCardFlaggedSummaryMock.mockReturnValue({
 			data: { flagged_count: 0 }
-		})
-		useReviewModeMock.mockReturnValue({
-			reviewMode: 'off',
-			setReviewMode: vi.fn(),
-			isReviewModeEnabled: false,
-			hidesPrimary: false,
-			hidesSecondary: false,
-			showReviewModeWarning: false,
-			setShowReviewModeWarning: vi.fn(),
-			autoEnableReviewMode: false,
-			setAutoEnableReviewMode: vi.fn()
 		})
 	})
 
@@ -111,14 +94,7 @@ describe('AppSidebar', () => {
 		const flaggedLink = screen.getByRole('link', { name: /flagged/iu })
 
 		expect(practiceLink).toHaveTextContent('Practice234')
-		expect(practiceLink).not.toHaveTextContent('overdue')
-		expect(practiceLink).not.toHaveTextContent('today')
-		expect(practiceLink).not.toHaveTextContent('new')
-
 		expect(flashcardsLink).toHaveTextContent('Flashcards17')
-		expect(flashcardsLink).not.toHaveTextContent('overdue')
-		expect(flashcardsLink).not.toHaveTextContent('today')
-		expect(flashcardsLink).not.toHaveTextContent('new')
 		expect(flaggedLink).toHaveTextContent('Flagged2')
 	})
 
@@ -144,30 +120,6 @@ describe('AppSidebar', () => {
 		expect(
 			screen.getByRole('link', { name: /flagged/iu })
 		).not.toHaveTextContent('Flagged0')
-	})
-
-	it('does not render root topic links beneath the topics item', () => {
-		useLocationMock.mockReturnValue({ pathname: '/topics/2' })
-		useReviewCardQueueCountsMock.mockReturnValue({
-			overdueCount: 0,
-			dueTodayCount: 0,
-			newCount: 0,
-			dueNextSevenDaysCount: 0
-		})
-
-		render(
-			<SidebarProvider>
-				<AppSidebar />
-			</SidebarProvider>
-		)
-
-		expect(screen.getByRole('link', { name: /^Topics$/u })).toBeInTheDocument()
-		expect(
-			screen.queryByRole('link', { name: 'Alpha' })
-		).not.toBeInTheDocument()
-		expect(
-			screen.queryByRole('link', { name: 'Untitled topic' })
-		).not.toBeInTheDocument()
 	})
 
 	it('does not mark the top-level topics item active on a topic detail route', () => {
@@ -233,7 +185,25 @@ describe('AppSidebar', () => {
 		expect(navigateMock).not.toHaveBeenCalled()
 	})
 
-	it('orders top-level sidebar groups as review, activity, then library', () => {
+	it('renders the global topic tree beneath the fixed navigation groups', () => {
+		useLocationMock.mockReturnValue({ pathname: '/recent' })
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+
+		render(
+			<SidebarProvider>
+				<AppSidebar />
+			</SidebarProvider>
+		)
+
+		expect(screen.getByTestId('sidebar-topic-tree')).toBeInTheDocument()
+	})
+
+	it('orders top-level sidebar groups as review then library', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
@@ -252,44 +222,24 @@ describe('AppSidebar', () => {
 		const topLevelLabels = links
 			.map(link => link.textContent?.replace(/\d+$/u, '').trim())
 			.filter(label =>
-				[
-					'Recent',
-					'Topics',
-					'Logbook',
-					'Practice',
-					'Flashcards',
-					'Flagged'
-				].includes(label ?? '')
+				['Practice', 'Flashcards', 'Flagged', 'Topics'].includes(label ?? '')
 			)
 
 		expect(topLevelLabels).toEqual([
 			'Practice',
 			'Flashcards',
 			'Flagged',
-			'Logbook',
-			'Recent',
 			'Topics'
 		])
 	})
 
-	it('renders review mode ahead of settings in the footer', () => {
+	it('does not render settings in the sidebar', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
 			newCount: 0,
 			dueNextSevenDaysCount: 0
-		})
-		useReviewModeMock.mockReturnValue({
-			reviewMode: 'on',
-			setReviewMode: vi.fn(),
-			isReviewModeEnabled: true,
-			hidesPrimary: false,
-			hidesSecondary: true,
-			showReviewModeWarning: false,
-			setShowReviewModeWarning: vi.fn(),
-			autoEnableReviewMode: false,
-			setAutoEnableReviewMode: vi.fn()
 		})
 
 		render(
@@ -298,142 +248,8 @@ describe('AppSidebar', () => {
 			</SidebarProvider>
 		)
 
-		const reviewModeHeading = screen.getByText('Review Mode')
-		const reviewModeButton = screen.getByRole('button', {
-			name: 'Review mode On'
-		})
-		const settingsButton = screen.getByRole('button', { name: /settings/iu })
-
-		expect(reviewModeHeading).toBeInTheDocument()
-		expect(reviewModeButton).toBeInTheDocument()
 		expect(
-			screen.getByText('Hide stuff so you can guess stuff')
-		).toBeInTheDocument()
-		expect(settingsButton).toBeInTheDocument()
-		expect(reviewModeHeading.compareDocumentPosition(settingsButton)).toBe(
-			Node.DOCUMENT_POSITION_FOLLOWING
-		)
-	})
-
-	it('updates review mode directly from the inline footer card', () => {
-		useLocationMock.mockReturnValue({ pathname: '/recent' })
-		useReviewCardQueueCountsMock.mockReturnValue({
-			overdueCount: 0,
-			dueTodayCount: 0,
-			newCount: 0,
-			dueNextSevenDaysCount: 0
-		})
-		const setReviewMode = vi.fn()
-		useReviewModeMock.mockReturnValue({
-			reviewMode: 'off',
-			setReviewMode,
-			isReviewModeEnabled: false,
-			hidesPrimary: false,
-			hidesSecondary: false,
-			showReviewModeWarning: false,
-			setShowReviewModeWarning: vi.fn(),
-			autoEnableReviewMode: false,
-			setAutoEnableReviewMode: vi.fn()
-		})
-
-		render(
-			<SidebarProvider>
-				<AppSidebar />
-			</SidebarProvider>
-		)
-
-		fireEvent.click(screen.getByRole('button', { name: 'Review mode On' }))
-
-		expect(setReviewMode).toHaveBeenCalledWith('on')
-	})
-
-	it('shows the collapsed review mode button as active when review mode is on', () => {
-		useLocationMock.mockReturnValue({ pathname: '/recent' })
-		useReviewCardQueueCountsMock.mockReturnValue({
-			overdueCount: 0,
-			dueTodayCount: 0,
-			newCount: 0,
-			dueNextSevenDaysCount: 0
-		})
-		useReviewModeMock.mockReturnValue({
-			reviewMode: 'on',
-			setReviewMode: vi.fn(),
-			isReviewModeEnabled: true,
-			hidesPrimary: false,
-			hidesSecondary: true,
-			showReviewModeWarning: false,
-			setShowReviewModeWarning: vi.fn(),
-			autoEnableReviewMode: false,
-			setAutoEnableReviewMode: vi.fn()
-		})
-
-		render(
-			<SidebarProvider defaultOpen={false}>
-				<AppSidebar />
-			</SidebarProvider>
-		)
-
-		expect(
-			screen.getByRole('button', { name: 'Review Mode: On' })
-		).toHaveAttribute('data-active')
-	})
-
-	it('renders review queue badges as collapsed overlay stacks', () => {
-		useLocationMock.mockReturnValue({ pathname: '/practice' })
-		useReviewCardQueueCountsMock.mockImplementation(
-			({ type }: { type: 'practice' | 'flashcard' }) => {
-				if (type === 'practice') {
-					return {
-						overdueCount: 2,
-						dueTodayCount: 3,
-						newCount: 4,
-						dueNextSevenDaysCount: 0
-					}
-				}
-
-				return {
-					overdueCount: 1,
-					dueTodayCount: 0,
-					newCount: 7,
-					dueNextSevenDaysCount: 0
-				}
-			}
-		)
-
-		render(
-			<SidebarProvider defaultOpen={false}>
-				<AppSidebar />
-			</SidebarProvider>
-		)
-
-		expect(
-			screen.getByTestId('sidebar-collapsed-badges-practice')
-		).toHaveTextContent('234')
-		expect(
-			screen.getByTestId('sidebar-collapsed-badges-flashcard')
-		).toHaveTextContent('17')
-	})
-
-	it('renders the flagged count badge as a collapsed overlay stack', () => {
-		useLocationMock.mockReturnValue({ pathname: '/flagged' })
-		useReviewCardQueueCountsMock.mockReturnValue({
-			overdueCount: 0,
-			dueTodayCount: 0,
-			newCount: 0,
-			dueNextSevenDaysCount: 0
-		})
-		useReviewCardFlaggedSummaryMock.mockReturnValue({
-			data: { flagged_count: 2 }
-		})
-
-		render(
-			<SidebarProvider defaultOpen={false}>
-				<AppSidebar />
-			</SidebarProvider>
-		)
-
-		expect(
-			screen.getByTestId('sidebar-collapsed-badges-flagged')
-		).toHaveTextContent('2')
+			screen.queryByRole('button', { name: /settings/iu })
+		).not.toBeInTheDocument()
 	})
 })
