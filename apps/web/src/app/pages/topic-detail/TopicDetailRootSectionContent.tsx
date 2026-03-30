@@ -3,6 +3,7 @@ import type {
 	TopicDetailReviewCardControlsVariant,
 	TopicDetailReviewCardFilter
 } from './shared'
+import type { TopicPathItem } from './TopicDetailBreadcrumb'
 import { TopicDetailSection } from './TopicDetailSection'
 import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
 import {
@@ -29,6 +30,7 @@ type TopicDetailRootSectionContentProps = {
 	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
 	resolvedFilterByTopicId: Record<number, TopicDetailReviewCardFilter>
 	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
+	rootTopicPath: Array<TopicPathItem>
 	searchFilter: TopicDetailReviewCardFilter
 	section: TopicDetailSectionNode
 	toggleSection: (sectionId: string) => void
@@ -47,6 +49,7 @@ export function TopicDetailRootSectionContent({
 	registerSectionRef,
 	resolvedFilterByTopicId,
 	reviewCardControlsVariant,
+	rootTopicPath,
 	searchFilter,
 	section,
 	toggleSection,
@@ -78,7 +81,6 @@ export function TopicDetailRootSectionContent({
 			}}
 		>
 			<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
-				<div aria-hidden='true' />
 				<div className='min-w-0'>
 					<div>{bodyPanel}</div>
 					<div>{reviewCardsSection}</div>
@@ -99,6 +101,7 @@ export function TopicDetailRootSectionContent({
 							registerSectionRef={registerSectionRef}
 							resolvedFilterByTopicId={resolvedFilterByTopicId}
 							reviewCardControlsVariant={reviewCardControlsVariant}
+							rootTopicPath={rootTopicPath}
 							searchFilter={searchFilter}
 							section={childSection}
 							toggleSection={toggleSection}

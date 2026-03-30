@@ -1,13 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import {
-	Heading1,
-	Heading2,
-	Heading3,
-	Heading4,
-	Heading5,
-	Heading6,
-	Trash2
-} from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -35,6 +27,7 @@ import type {
 	TopicDetailReviewCardControlsVariant,
 	TopicDetailReviewCardFilter
 } from './shared'
+import type { TopicPathItem } from './TopicDetailBreadcrumb'
 import { TopicDetailNestedSectionView } from './TopicDetailNestedSectionView'
 import {
 	getTopicDetailSectionDisplayLevel,
@@ -63,21 +56,13 @@ type TopicDetailSectionProps = {
 	) => void
 	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
 	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
+	rootTopicPath: Array<TopicPathItem>
 	resolvedFilterByTopicId: Record<number, TopicDetailReviewCardFilter>
 	searchFilter: TopicDetailReviewCardFilter
 	section: TopicDetailSectionNode
 	topicReviewCardsById: Map<number, Array<ReviewCardModel>>
 	toggleSection: (sectionId: string) => void
 }
-
-const HEADING_ICON_BY_LEVEL = {
-	1: Heading1,
-	2: Heading2,
-	3: Heading3,
-	4: Heading4,
-	5: Heading5,
-	6: Heading6
-} as const
 
 export function TopicDetailSection({
 	collapsedSections,
@@ -89,6 +74,7 @@ export function TopicDetailSection({
 	registerSectionHeadingRef,
 	registerSectionRef,
 	reviewCardControlsVariant,
+	rootTopicPath,
 	resolvedFilterByTopicId,
 	searchFilter,
 	section,
@@ -107,16 +93,12 @@ export function TopicDetailSection({
 	const resolvedSectionFilter =
 		resolvedFilterByTopicId[section.topic.id] ?? globalFilter
 	const displayLevel = getTopicDetailSectionDisplayLevel(section)
-	const semanticHeadingLevel = Math.min(Math.max(section.headingLevel, 1), 6)
 	const presentation = getTopicDetailSectionPresentation(displayLevel)
-	const HeadingIcon =
-		HEADING_ICON_BY_LEVEL[
-			semanticHeadingLevel as keyof typeof HEADING_ICON_BY_LEVEL
-		]
 	const sectionLabel = getTopicDetailLabel(
 		section.topic.title,
 		section.topic.body
 	)
+	const rootTopicId = section.topicPath[0]?.id ?? section.topic.id
 	const updated = useMemo(
 		() =>
 			formatRelativeDate(section.topic.updated_at, {
@@ -238,12 +220,7 @@ export function TopicDetailSection({
 					createdDate={createdDate}
 					createdText={created.text}
 					flushTitle={flushTitle}
-					HeadingIcon={HeadingIcon}
 					headingClassName={presentation.headingClassName}
-					headingIconClassName={presentation.headingIconClassName}
-					headingIndicatorFrameClassName={
-						presentation.headingIndicatorFrameClassName
-					}
 					isCollapsed={isCollapsed}
 					isCreatingTopic={isCreatingTopic}
 					onCreateSubtopic={() => {
@@ -256,11 +233,14 @@ export function TopicDetailSection({
 						registerSectionHeadingRef(section.topic.id, element)
 					}}
 					reviewCardsSection={reviewCardsSection}
+					rootTopicId={rootTopicId}
+					rootTopicPath={rootTopicPath}
 					section={section}
 					sectionId={sectionId}
 					sectionLabel={sectionLabel}
 					title={title}
 					toggleSection={toggleSection}
+					topicPath={section.topicPath}
 					updatedDate={updatedDate}
 					updatedText={updated.text}
 				/>
@@ -279,6 +259,7 @@ export function TopicDetailSection({
 								registerSectionRef={registerSectionRef}
 								resolvedFilterByTopicId={resolvedFilterByTopicId}
 								reviewCardControlsVariant={reviewCardControlsVariant}
+								rootTopicPath={rootTopicPath}
 								searchFilter={searchFilter}
 								section={childSection}
 								toggleSection={toggleSection}

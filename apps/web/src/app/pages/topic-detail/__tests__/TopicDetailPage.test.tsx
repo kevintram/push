@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
 	elementSizeMock,
 	navigateMock,
@@ -11,6 +11,7 @@ import {
 	useTopicsMock
 } from '~/testing/support/detailPageTestSupport'
 import { TopicDetailPage } from '../TopicDetailPage'
+import { TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH } from '../topicDetailLayout'
 
 type TopicFixture = Omit<typeof topic, 'parent_id' | 'parent_title'> & {
 	parent_id: number | null
@@ -53,6 +54,7 @@ function setupTopicChainMocks(chain: Array<TopicFixture>, currentId: number) {
 describe('TopicDetailPage', () => {
 	afterEach(() => {
 		elementSizeMock.width = 1024
+		vi.restoreAllMocks()
 	})
 
 	it('renders a read-only breadcrumb path from root to current topic', () => {
@@ -151,6 +153,43 @@ describe('TopicDetailPage', () => {
 			params: { topicId: '3' },
 			to: '/topics/$topicId'
 		})
+	})
+
+	it('renders a single omitted breadcrumb topic directly instead of collapsing it into an ellipsis', async () => {
+		elementSizeMock.width = 200
+
+		const chain = buildTopicChain([
+			'Mathematics',
+			'Algebra',
+			'Gaussian elimination'
+		])
+		setupTopicChainMocks(chain, 3)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={3}
+			/>
+		)
+
+		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+
+		await waitFor(() => {
+			expect(
+				within(breadcrumb).getByRole('link', { name: 'Mathematics' })
+			).toBeInTheDocument()
+		})
+
+		expect(
+			within(breadcrumb).getByRole('link', { name: 'Algebra' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByText('Gaussian elimination')
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('button', { name: 'Show hidden topics' })
+		).not.toBeInTheDocument()
 	})
 
 	it('keeps the immediate parent visible when collapsing deep breadcrumb paths on wider screens', async () => {
@@ -289,6 +328,549 @@ describe('TopicDetailPage', () => {
 		expect(
 			screen.queryByRole('navigation', { name: 'Topic path' })
 		).not.toBeInTheDocument()
+	})
+
+	it('renders abbreviated in-page breadcrumbs for nested subtopics beyond the first level', () => {
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const grandchildTopic = {
+			...topic,
+			id: 3,
+			title: 'Linear Algebra',
+			parent_id: 2,
+			parent_title: 'Algebra'
+		}
+		const greatGrandchildTopic = {
+			...topic,
+			id: 4,
+			title: 'Eigenvalues',
+			parent_id: 3,
+			parent_title: 'Linear Algebra'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, childTopic, grandchildTopic, greatGrandchildTopic]
+								: [
+										rootTopic,
+										childTopic,
+										grandchildTopic,
+										greatGrandchildTopic
+									],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { container } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const childHeading = container.querySelector(
+			'[data-topic-detail-heading-id="2"]'
+		)
+		const greatGrandchildHeading = container.querySelector(
+			'[data-topic-detail-heading-id="4"]'
+		)
+
+		expect(childHeading).not.toBeNull()
+		expect(greatGrandchildHeading).not.toBeNull()
+		const childSectionBreadcrumb = within(
+			childHeading as HTMLElement
+		).getByRole('navigation', { name: 'Section path' })
+		expect(
+			within(childSectionBreadcrumb).getByRole('link', { name: 'Mathematics' })
+		).toHaveAttribute('data-hash', 'topic-1')
+		expect(
+			within(childSectionBreadcrumb).queryByRole('button', {
+				name: 'Show hidden topics'
+			})
+		).not.toBeInTheDocument()
+		expect(
+			within(greatGrandchildHeading as HTMLElement).getByRole('link', {
+				name: 'Mathematics'
+			})
+		).toHaveAttribute('data-hash', 'topic-1')
+
+		const sectionBreadcrumb = within(
+			greatGrandchildHeading as HTMLElement
+		).getByRole('navigation', { name: 'Section path' })
+		const algebraLink = within(sectionBreadcrumb).getByRole('link', {
+			name: 'Algebra'
+		})
+		const linearAlgebraLink = within(sectionBreadcrumb).getByRole('link', {
+			name: 'Linear Algebra'
+		})
+
+		expect(
+			within(sectionBreadcrumb).queryByRole('button', {
+				name: 'Show hidden topics'
+			})
+		).not.toBeInTheDocument()
+		expect(algebraLink).toHaveAttribute('data-hash', 'topic-2')
+		expect(linearAlgebraLink).toHaveAttribute('data-hash', 'topic-3')
+		expect(
+			within(sectionBreadcrumb).getByText('Eigenvalues')
+		).toBeInTheDocument()
+		expect(
+			within(sectionBreadcrumb).queryByRole('link', { name: 'Eigenvalues' })
+		).not.toBeInTheDocument()
+	})
+
+	it('shows the full absolute path to the document root inside the nested breadcrumb ellipsis', () => {
+		const absoluteRootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const rootTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const childTopic = {
+			...topic,
+			id: 3,
+			title: 'Linear Algebra',
+			parent_id: 2,
+			parent_title: 'Algebra'
+		}
+		const grandchildTopic = {
+			...topic,
+			id: 4,
+			title: 'Eigenvalues',
+			parent_id: 3,
+			parent_title: 'Linear Algebra'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 2) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (
+					params?.subtree_of === 2 &&
+					params.sort === 'title' &&
+					params.order === 'asc'
+				) {
+					return {
+						data: [rootTopic, childTopic, grandchildTopic],
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [absoluteRootTopic, rootTopic, childTopic, grandchildTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { container } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={2}
+			/>
+		)
+
+		const grandchildHeading = container.querySelector(
+			'[data-topic-detail-heading-id="4"]'
+		)
+
+		expect(grandchildHeading).not.toBeNull()
+
+		const sectionBreadcrumb = within(
+			grandchildHeading as HTMLElement
+		).getByRole('navigation', { name: 'Section path' })
+
+		expect(
+			within(sectionBreadcrumb).getByRole('button', {
+				name: 'Mathematics'
+			})
+		).toBeInTheDocument()
+		expect(
+			within(sectionBreadcrumb).getByRole('button', {
+				name: 'Algebra'
+			})
+		).toBeInTheDocument()
+	})
+
+	it('navigates to the selected topic page when choosing an omitted nested breadcrumb topic', async () => {
+		const user = userEvent.setup()
+		const absoluteRootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const rootTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const childTopic = {
+			...topic,
+			id: 3,
+			title: 'Linear Algebra',
+			parent_id: 2,
+			parent_title: 'Algebra'
+		}
+		const grandchildTopic = {
+			...topic,
+			id: 4,
+			title: 'Eigenvalues',
+			parent_id: 3,
+			parent_title: 'Linear Algebra'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 2) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (
+					params?.subtree_of === 2 &&
+					params.sort === 'title' &&
+					params.order === 'asc'
+				) {
+					return {
+						data: [rootTopic, childTopic, grandchildTopic],
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [absoluteRootTopic, rootTopic, childTopic, grandchildTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { container } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={2}
+			/>
+		)
+
+		const grandchildHeading = container.querySelector(
+			'[data-topic-detail-heading-id="4"]'
+		)
+
+		expect(grandchildHeading).not.toBeNull()
+
+		const sectionBreadcrumb = within(
+			grandchildHeading as HTMLElement
+		).getByRole('navigation', { name: 'Section path' })
+
+		await user.click(
+			within(sectionBreadcrumb).getByRole('button', { name: 'Mathematics' })
+		)
+
+		expect(navigateMock).toHaveBeenCalledWith({
+			params: { topicId: '1' },
+			to: '/topics/$topicId'
+		})
+	})
+
+	it('jumps to the root section when choosing the hidden document root from a section breadcrumb ellipsis', async () => {
+		elementSizeMock.width = 200
+
+		const user = userEvent.setup()
+		const absoluteRootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const rootTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const childTopic = {
+			...topic,
+			id: 3,
+			title: 'Linear Algebra',
+			parent_id: 2,
+			parent_title: 'Algebra'
+		}
+		const grandchildTopic = {
+			...topic,
+			id: 4,
+			title: 'Matrices',
+			parent_id: 3,
+			parent_title: 'Linear Algebra'
+		}
+		const greatGrandchildTopic = {
+			...topic,
+			id: 5,
+			title: 'Rank',
+			parent_id: 4,
+			parent_title: 'Matrices'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 2) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (
+					params?.subtree_of === 2 &&
+					params.sort === 'title' &&
+					params.order === 'asc'
+				) {
+					return {
+						data: [
+							rootTopic,
+							childTopic,
+							grandchildTopic,
+							greatGrandchildTopic
+						],
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [
+							absoluteRootTopic,
+							rootTopic,
+							childTopic,
+							grandchildTopic,
+							greatGrandchildTopic
+						],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { container } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={2}
+			/>
+		)
+
+		const deepestHeading = container.querySelector(
+			'[data-topic-detail-heading-id="5"]'
+		)
+
+		expect(deepestHeading).not.toBeNull()
+
+		const sectionBreadcrumb = within(deepestHeading as HTMLElement).getByRole(
+			'navigation',
+			{ name: 'Section path' }
+		)
+
+		await user.click(
+			within(sectionBreadcrumb).getAllByRole('button', {
+				name: 'Show hidden topics'
+			})[0] as HTMLElement
+		)
+		await user.click(
+			screen.getAllByRole('button', {
+				name: 'Algebra'
+			})[0] as HTMLElement
+		)
+
+		expect(navigateMock).toHaveBeenCalledWith({
+			hash: 'topic-2',
+			hashScrollIntoView: false,
+			params: { topicId: '2' },
+			resetScroll: false,
+			search: true,
+			to: '/topics/$topicId'
+		})
+	})
+
+	it('renders nested section breadcrumbs with multiple ellipses without duplicate key warnings', () => {
+		elementSizeMock.width = 200
+
+		const consoleErrorSpy = vi
+			.spyOn(console, 'error')
+			.mockImplementation(() => {})
+
+		const absoluteRootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const rootTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const childTopic = {
+			...topic,
+			id: 3,
+			title: 'Linear Algebra',
+			parent_id: 2,
+			parent_title: 'Algebra'
+		}
+		const grandchildTopic = {
+			...topic,
+			id: 4,
+			title: 'Matrices',
+			parent_id: 3,
+			parent_title: 'Linear Algebra'
+		}
+		const greatGrandchildTopic = {
+			...topic,
+			id: 5,
+			title: 'Rank',
+			parent_id: 4,
+			parent_title: 'Matrices'
+		}
+		const deepestTopic = {
+			...topic,
+			id: 6,
+			title: 'Null Space',
+			parent_id: 5,
+			parent_title: 'Rank'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 2) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (
+					params?.subtree_of === 2 &&
+					params.sort === 'title' &&
+					params.order === 'asc'
+				) {
+					return {
+						data: [
+							rootTopic,
+							childTopic,
+							grandchildTopic,
+							greatGrandchildTopic,
+							deepestTopic
+						],
+						isLoading: false
+					}
+				}
+
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [
+							absoluteRootTopic,
+							rootTopic,
+							childTopic,
+							grandchildTopic,
+							greatGrandchildTopic,
+							deepestTopic
+						],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { container } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={2}
+			/>
+		)
+
+		const deepestHeading = container.querySelector(
+			'[data-topic-detail-heading-id="6"]'
+		)
+
+		expect(deepestHeading).not.toBeNull()
+
+		const sectionBreadcrumb = within(deepestHeading as HTMLElement).getByRole(
+			'navigation',
+			{ name: 'Section path' }
+		)
+
+		expect(
+			within(sectionBreadcrumb).getAllByRole('button', {
+				name: 'Show hidden topics'
+			})
+		).toHaveLength(2)
+		expect(consoleErrorSpy).not.toHaveBeenCalledWith(
+			expect.stringContaining('unique "key"')
+		)
 	})
 
 	it('renders the document while review cards continue loading in the background', () => {
@@ -498,7 +1080,7 @@ describe('TopicDetailPage', () => {
 		).not.toBeNull()
 	})
 
-	it('uses the semantic heading icon for deeply nested sections', () => {
+	it('uses the semantic heading level for deeply nested sections', () => {
 		const chain = buildTopicChain([
 			'Mathematics',
 			'Algebra',
@@ -520,11 +1102,11 @@ describe('TopicDetailPage', () => {
 		const deepestHeading = container.querySelector(
 			'[data-topic-detail-heading-id="6"]'
 		)
-		const deepestSection = deepestHeading?.closest('section')
+		const semanticHeading = deepestHeading?.querySelector('[role="heading"]')
 
 		expect(deepestHeading).not.toBeNull()
-		expect(deepestSection?.querySelector('.lucide-heading-6')).not.toBeNull()
-		expect(deepestSection?.querySelector('.lucide-heading-5')).toBeNull()
+		expect(semanticHeading).not.toBeNull()
+		expect(semanticHeading).toHaveAttribute('aria-level', '6')
 	})
 
 	it('syncs topic fields on first load and only refreshes untouched fields on refetch', async () => {
@@ -744,6 +1326,82 @@ describe('TopicDetailPage', () => {
 		expect(screen.queryByText('Leaf topic body')).not.toBeInTheDocument()
 	})
 
+	it('keeps the page gutter aligned with the live outline width', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, childTopic]
+								: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { container } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const pageRoot = container.firstElementChild as HTMLElement
+		const resizeButton = screen.getByRole('button', { name: 'Resize outline' })
+		const outline = screen
+			.getByRole('navigation', { name: 'On this page' })
+			.closest('aside')
+
+		expect(
+			pageRoot.style.getPropertyValue('--topic-detail-outline-width')
+		).toBe(`${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH}px`)
+		expect(outline).toHaveStyle({
+			width: `${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH}px`
+		})
+
+		await user.click(resizeButton)
+		await user.keyboard('{ArrowRight}')
+
+		expect(
+			pageRoot.style.getPropertyValue('--topic-detail-outline-width')
+		).toBe(`${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH + 16}px`)
+		expect(resizeButton).toHaveAttribute(
+			'aria-valuenow',
+			`${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH + 16}`
+		)
+		expect(outline).toHaveStyle({
+			width: `${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH + 16}px`
+		})
+	})
+
 	it('renders hover-only open and more controls while keeping the chevron visible for nested subtopics', () => {
 		const rootTopic = {
 			...topic,
@@ -940,6 +1598,9 @@ describe('TopicDetailPage', () => {
 
 	it('supports expanding and collapsing topics in the ToC', async () => {
 		const user = userEvent.setup()
+		const scrollIntoViewSpy = vi
+			.spyOn(HTMLElement.prototype, 'scrollIntoView')
+			.mockImplementation(() => {})
 		const rootTopic = {
 			...topic,
 			id: 1,
@@ -1005,12 +1666,15 @@ describe('TopicDetailPage', () => {
 			within(toc).getByRole('button', { name: 'Collapse Algebra' })
 		)
 
+		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
 		expect(within(toc).queryByText('Linear Algebra')).not.toBeInTheDocument()
+		expect(scrollIntoViewSpy).toHaveBeenCalled()
 
 		await user.click(
 			within(toc).getByRole('button', { name: 'Expand Algebra' })
 		)
 
 		expect(within(toc).getByText('Linear Algebra')).toBeInTheDocument()
+		scrollIntoViewSpy.mockRestore()
 	})
 })
