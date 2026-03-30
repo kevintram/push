@@ -5,6 +5,7 @@ import {
 	type KeyboardEvent,
 	type MouseEvent,
 	type PointerEvent as ReactPointerEvent,
+	useCallback,
 	useEffect,
 	useMemo,
 	useRef,
@@ -102,27 +103,65 @@ export function TopicDetailOutline({
 		outlineRootNode.body
 	)
 	const outlineNodes = outlineRootNode.children
-	const visibleOutlineTopicIds = new Set(visibleSectionIds)
+	const visibleOutlineTopicIds = useMemo(
+		() => new Set(visibleSectionIds),
+		[visibleSectionIds]
+	)
 	const isRootActive =
 		visibleSectionIds.length === 0 ||
 		visibleOutlineTopicIds.has(outlineRootNode.id)
-	const handleOpenTopic = (topicId: number) => {
-		navigate({
-			to: '/topics/$topicId',
-			params: { topicId: topicId.toString() }
-		}).catch(() => {})
-	}
-	const handleOutlineClick = (
-		event: MouseEvent<HTMLAnchorElement>,
-		suppressSelectionRef: { current: boolean }
-	) => {
-		if (!suppressSelectionRef.current) return
+	const handleOpenTopic = useCallback(
+		(topicId: number) => {
+			navigate({
+				to: '/topics/$topicId',
+				params: { topicId: topicId.toString() }
+			}).catch(() => {})
+		},
+		[navigate]
+	)
+	const handleOutlineClick = useCallback(
+		(
+			event: MouseEvent<HTMLAnchorElement>,
+			suppressSelectionRef: { current: boolean }
+		) => {
+			if (!suppressSelectionRef.current) return
 
-		event.preventDefault()
-		event.stopPropagation()
-	}
+			event.preventDefault()
+			event.stopPropagation()
+		},
+		[]
+	)
 	const outlineRootTopicId = outlineRootNode.id.toString()
 	const stickyTopOffset = 24
+	const renderOutlinePrimaryAction = useCallback(
+		({
+			className,
+			label,
+			node,
+			suppressSelectionRef
+		}: {
+			className: string
+			label: string
+			node: TopicTreeNode
+			suppressSelectionRef: { current: boolean }
+		}) => (
+			<Link
+				className={cn(className, 'w-full text-left')}
+				hash={getTopicDetailSectionId(node.id)}
+				hashScrollIntoView={false}
+				onClick={event => {
+					handleOutlineClick(event, suppressSelectionRef)
+				}}
+				params={{ topicId: outlineRootTopicId }}
+				resetScroll={false}
+				search={true}
+				to='/topics/$topicId'
+			>
+				{label}
+			</Link>
+		),
+		[handleOutlineClick, outlineRootTopicId]
+	)
 
 	const clampOutlineWidth = (width: number) =>
 		Math.min(
@@ -434,27 +473,7 @@ export function TopicDetailOutline({
 										onOpenTopic={handleOpenTopic}
 										onRequestDeleteTopic={setPendingDeleteTopicId}
 										onToggleExpanded={toggleExpanded}
-										renderPrimaryAction={({
-											className,
-											label,
-											node,
-											suppressSelectionRef
-										}) => (
-											<Link
-												className={cn(className, 'w-full text-left')}
-												hash={getTopicDetailSectionId(node.id)}
-												hashScrollIntoView={false}
-												onClick={event => {
-													handleOutlineClick(event, suppressSelectionRef)
-												}}
-												params={{ topicId: outlineRootTopicId }}
-												resetScroll={false}
-												search={true}
-												to='/topics/$topicId'
-											>
-												{label}
-											</Link>
-										)}
+										renderPrimaryAction={renderOutlinePrimaryAction}
 										suppressSelectionRef={suppressSelectionRef}
 									/>
 								))}

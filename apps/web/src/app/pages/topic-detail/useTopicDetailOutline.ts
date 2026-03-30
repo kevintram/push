@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTopicTreeActions } from '~/features/topics/hooks/useTopicTreeActions'
 import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 
@@ -79,7 +79,7 @@ export function useTopicDetailOutline({
 		[manuallyCollapsedIds]
 	)
 
-	const ensureExpanded = (topicId: number) => {
+	const ensureExpanded = useCallback((topicId: number) => {
 		setManuallyCollapsedIds(previousCollapsedIds =>
 			previousCollapsedIds.includes(topicId)
 				? previousCollapsedIds.filter(id => id !== topicId)
@@ -90,28 +90,31 @@ export function useTopicDetailOutline({
 				? previousExpandedIds
 				: [...previousExpandedIds, topicId]
 		)
-	}
+	}, [])
 
-	const toggleExpanded = (topicId: number) => {
-		if (expandedIdSet.has(topicId)) {
-			setManuallyCollapsedIds(previousCollapsedIds =>
-				previousCollapsedIds.includes(topicId)
-					? previousCollapsedIds
-					: [...previousCollapsedIds, topicId]
-			)
-			setExpandedIds(previousExpandedIds =>
-				previousExpandedIds.filter(id => id !== topicId)
-			)
-			return
-		}
+	const toggleExpanded = useCallback((topicId: number) => {
+		setExpandedIds(previousExpandedIds => {
+			const isExpanded = previousExpandedIds.includes(topicId)
 
-		setManuallyCollapsedIds(previousCollapsedIds =>
-			previousCollapsedIds.includes(topicId)
-				? previousCollapsedIds.filter(id => id !== topicId)
-				: previousCollapsedIds
-		)
-		setExpandedIds(previousExpandedIds => [...previousExpandedIds, topicId])
-	}
+			setManuallyCollapsedIds(previousCollapsedIds => {
+				if (isExpanded) {
+					return previousCollapsedIds.includes(topicId)
+						? previousCollapsedIds
+						: [...previousCollapsedIds, topicId]
+				}
+
+				return previousCollapsedIds.includes(topicId)
+					? previousCollapsedIds.filter(id => id !== topicId)
+					: previousCollapsedIds
+			})
+
+			if (isExpanded) {
+				return previousExpandedIds.filter(id => id !== topicId)
+			}
+
+			return [...previousExpandedIds, topicId]
+		})
+	}, [])
 	const {
 		handleConfirmDeleteTopic,
 		handleCreateSubtopic,
@@ -174,15 +177,17 @@ export function useTopicDetailOutline({
 
 		setExpandedIds(previousExpandedIds => {
 			const nextExpandedIds = [...previousExpandedIds]
+			let didExpand = false
 			for (const topicId of visibleBranchIds) {
 				if (manuallyCollapsedIdSet.has(topicId)) {
 					continue
 				}
 				if (!nextExpandedIds.includes(topicId)) {
 					nextExpandedIds.push(topicId)
+					didExpand = true
 				}
 			}
-			return nextExpandedIds
+			return didExpand ? nextExpandedIds : previousExpandedIds
 		})
 	}, [manuallyCollapsedIdSet, visibleBranchIds])
 
