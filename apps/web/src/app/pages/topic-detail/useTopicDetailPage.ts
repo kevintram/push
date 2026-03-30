@@ -70,9 +70,8 @@ export function useTopicDetailPage({
 	const [sectionFilterOverrides, setSectionFilterOverrides] = useState<
 		Record<number, TopicDetailReviewCardFilter>
 	>({})
-	const [scrollContainerElement, setScrollContainerElement] =
-		useState<HTMLDivElement | null>(null)
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const [scrollContainerVersion, setScrollContainerVersion] = useState(0)
 	const { collapsedSections, toggleSection } = useSectionCollapse()
 
 	const subtreeTopicsWithRoot = useMemo(() => {
@@ -113,16 +112,17 @@ export function useTopicDetailPage({
 	const { registerSectionHeadingRef, registerSectionRef, visibleSectionIds } =
 		useTopicDetailNavigation({
 			rootTopicId: topicId,
-			scrollContainerElement,
+			scrollContainerRef,
+			scrollContainerVersion,
 			sectionIds
 		})
 
 	const registerScrollContainerRef = useCallback(
 		(element: HTMLDivElement | null) => {
+			if (scrollContainerRef.current === element) return
+
 			scrollContainerRef.current = element
-			setScrollContainerElement(previousElement =>
-				previousElement === element ? previousElement : element
-			)
+			setScrollContainerVersion(previousVersion => previousVersion + 1)
 		},
 		[]
 	)

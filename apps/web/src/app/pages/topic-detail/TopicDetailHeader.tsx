@@ -1,16 +1,7 @@
-import { Link } from '@tanstack/react-router'
 import { MoreHorizontal, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator
-} from '~/components/ui/breadcrumb'
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
@@ -20,27 +11,24 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { Textarea } from '~/components/ui/textarea'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
-import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/features/topics/hooks/usePrefetchTopicDetail'
 import type { Topic } from '~/features/topics/types/topic.types'
-import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate
 } from '~/utils/formatRelativeDate'
+import {
+	TopicDetailBreadcrumb,
+	type TopicPathItem
+} from './TopicDetailBreadcrumb'
 import { TopicDetailSectionMeta } from './TopicDetailSectionMeta'
-
-type TopicPathItem = {
-	id: number
-	title: string
-	body: string
-}
 
 interface TopicDetailHeaderProps {
 	actionClassName?: string
 	contentClassName?: string
 	onOpenDeleteDialog: () => void
+	pathContainerClassName?: string
 	shouldAutoFocusTitle?: boolean
 	titleContainerClassName?: string
 	topic: Topic
@@ -51,6 +39,7 @@ export function TopicDetailHeader({
 	actionClassName,
 	contentClassName,
 	onOpenDeleteDialog,
+	pathContainerClassName,
 	shouldAutoFocusTitle = false,
 	titleContainerClassName,
 	topic,
@@ -92,44 +81,11 @@ export function TopicDetailHeader({
 		<div className='relative min-w-0'>
 			<div className={cn('min-w-0 space-y-1', contentClassName)}>
 				{topicPath.length > 1 ? (
-					<Breadcrumb aria-label='Topic path'>
-						<BreadcrumbList>
-							{topicPath.map((pathTopic, index) => {
-								const label = getTopicDisplayTitle(
-									pathTopic.title,
-									pathTopic.body
-								)
-								const isCurrentTopic = index === topicPath.length - 1
-
-								return [
-									index > 0 ? (
-										<BreadcrumbSeparator key={`separator-${pathTopic.id}`} />
-									) : null,
-									<BreadcrumbItem className='min-w-0' key={pathTopic.id}>
-										{isCurrentTopic ? (
-											<BreadcrumbPage className='truncate font-medium'>
-												{label}
-											</BreadcrumbPage>
-										) : (
-											<BreadcrumbLink
-												className='truncate'
-												render={
-													<Link
-														params={{ topicId: pathTopic.id.toString() }}
-														preload='intent'
-														preloadDelay={TOPIC_DETAIL_INTENT_PRELOAD_DELAY}
-														to='/topics/$topicId'
-													/>
-												}
-											>
-												{label}
-											</BreadcrumbLink>
-										)}
-									</BreadcrumbItem>
-								]
-							})}
-						</BreadcrumbList>
-					</Breadcrumb>
+					<TopicDetailBreadcrumb
+						className={cn('pr-12 sm:pr-14', pathContainerClassName)}
+						currentTopicId={topic.id}
+						topicPath={topicPath}
+					/>
 				) : null}
 				<div className='space-y-2.5'>
 					<div

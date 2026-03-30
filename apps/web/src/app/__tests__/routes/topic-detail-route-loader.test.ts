@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
-import { prefetchTopicDetailRouteData } from '~/app/routes/_main/_topic-layout/topics_.$topicId'
+import { prefetchTopicDetailRouteData } from '~/app/routes/_main/topics_.$topicId'
 import { reviewCardsQueryOptions } from '~/features/review-cards/api/getReviewCards'
 import { topicQueryOptions } from '~/features/topics/api/getTopic'
 import { topicsQueryOptions } from '~/features/topics/api/getTopics'

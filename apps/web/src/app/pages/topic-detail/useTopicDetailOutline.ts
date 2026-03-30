@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTopicTreeActions } from '~/features/topics/hooks/useTopicTreeActions'
 import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 
@@ -15,10 +15,8 @@ export function useTopicDetailOutline({
 	outlineRootNode,
 	visibleSectionIds
 }: UseTopicDetailOutlineOptions) {
-	const [expandedIds, setExpandedIds] = useState<Array<number>>([])
-	const previousRootTopicIdRef = useRef<number | null>(null)
-	const suppressSelectionRef = useRef(false)
 	const rootTopicId = outlineRootNode?.id ?? null
+	const suppressSelectionRef = useRef(false)
 
 	const subtreeTopicIds = useMemo(() => {
 		if (!outlineRootNode) return new Set<number>()
@@ -54,6 +52,13 @@ export function useTopicDetailOutline({
 
 		return ids
 	}, [outlineRootNode])
+	const [expandedIds, setExpandedIds] = useState<Array<number>>(
+		() => defaultExpandedIds
+	)
+	const [manuallyCollapsedIds, setManuallyCollapsedIds] = useState<
+		Array<number>
+	>([])
+	const previousRootTopicIdRef = useRef<number | null>(rootTopicId)
 	const visibleBranchIds = useMemo(() => {
 		const branchIdSet = new Set<number>()
 
@@ -69,22 +74,47 @@ export function useTopicDetailOutline({
 		return [...branchIdSet]
 	}, [ancestorIdsById, subtreeTopicIds, visibleSectionIds])
 	const expandedIdSet = useMemo(() => new Set(expandedIds), [expandedIds])
+	const manuallyCollapsedIdSet = useMemo(
+		() => new Set(manuallyCollapsedIds),
+		[manuallyCollapsedIds]
+	)
 
-	const ensureExpanded = (topicId: number) => {
+	const ensureExpanded = useCallback((topicId: number) => {
+		setManuallyCollapsedIds(previousCollapsedIds =>
+			previousCollapsedIds.includes(topicId)
+				? previousCollapsedIds.filter(id => id !== topicId)
+				: previousCollapsedIds
+		)
 		setExpandedIds(previousExpandedIds =>
 			previousExpandedIds.includes(topicId)
 				? previousExpandedIds
 				: [...previousExpandedIds, topicId]
 		)
-	}
+	}, [])
 
-	const toggleExpanded = (topicId: number) => {
-		setExpandedIds(previousExpandedIds =>
-			previousExpandedIds.includes(topicId)
-				? previousExpandedIds.filter(id => id !== topicId)
-				: [...previousExpandedIds, topicId]
-		)
-	}
+	const toggleExpanded = useCallback((topicId: number) => {
+		setExpandedIds(previousExpandedIds => {
+			const isExpanded = previousExpandedIds.includes(topicId)
+
+			setManuallyCollapsedIds(previousCollapsedIds => {
+				if (isExpanded) {
+					return previousCollapsedIds.includes(topicId)
+						? previousCollapsedIds
+						: [...previousCollapsedIds, topicId]
+				}
+
+				return previousCollapsedIds.includes(topicId)
+					? previousCollapsedIds.filter(id => id !== topicId)
+					: previousCollapsedIds
+			})
+
+			if (isExpanded) {
+				return previousExpandedIds.filter(id => id !== topicId)
+			}
+
+			return [...previousExpandedIds, topicId]
+		})
+	}, [])
 	const {
 		handleConfirmDeleteTopic,
 		handleCreateSubtopic,
@@ -104,18 +134,41 @@ export function useTopicDetailOutline({
 	})
 
 	useEffect(() => {
+		const didRootTopicChange = previousRootTopicIdRef.current !== rootTopicId
+		previousRootTopicIdRef.current = rootTopicId
+
 		setExpandedIds(previousExpandedIds => {
 			if (rootTopicId == null) {
-				previousRootTopicIdRef.current = null
-				return []
+				return previousExpandedIds.length === 0 ? previousExpandedIds : []
 			}
 
-			if (previousRootTopicIdRef.current !== rootTopicId) {
-				previousRootTopicIdRef.current = rootTopicId
+			if (didRootTopicChange) {
 				return defaultExpandedIds
 			}
 
-			return previousExpandedIds.filter(topicId => subtreeTopicIds.has(topicId))
+			const nextExpandedIds = previousExpandedIds.filter(topicId =>
+				subtreeTopicIds.has(topicId)
+			)
+			return nextExpandedIds.length === previousExpandedIds.length
+				? previousExpandedIds
+				: nextExpandedIds
+		})
+
+		setManuallyCollapsedIds(previousCollapsedIds => {
+			if (rootTopicId == null) {
+				return previousCollapsedIds.length === 0 ? previousCollapsedIds : []
+			}
+
+			if (didRootTopicChange) {
+				return []
+			}
+
+			const nextCollapsedIds = previousCollapsedIds.filter(topicId =>
+				subtreeTopicIds.has(topicId)
+			)
+			return nextCollapsedIds.length === previousCollapsedIds.length
+				? previousCollapsedIds
+				: nextCollapsedIds
 		})
 	}, [defaultExpandedIds, rootTopicId, subtreeTopicIds])
 
@@ -124,14 +177,19 @@ export function useTopicDetailOutline({
 
 		setExpandedIds(previousExpandedIds => {
 			const nextExpandedIds = [...previousExpandedIds]
+			let didExpand = false
 			for (const topicId of visibleBranchIds) {
+				if (manuallyCollapsedIdSet.has(topicId)) {
+					continue
+				}
 				if (!nextExpandedIds.includes(topicId)) {
 					nextExpandedIds.push(topicId)
+					didExpand = true
 				}
 			}
-			return nextExpandedIds
+			return didExpand ? nextExpandedIds : previousExpandedIds
 		})
-	}, [visibleBranchIds])
+	}, [manuallyCollapsedIdSet, visibleBranchIds])
 
 	return {
 		expandedIdSet,

@@ -20,9 +20,7 @@ export function validateReviewCardDetailSearch(
 	}
 }
 
-export const Route = createFileRoute(
-	'/_main/_topic-layout/review-cards_/$reviewCardId'
-)({
+export const Route = createFileRoute('/_main/review-cards_/$reviewCardId')({
 	validateSearch: validateReviewCardDetailSearch,
 	component: RouteComponent
 })

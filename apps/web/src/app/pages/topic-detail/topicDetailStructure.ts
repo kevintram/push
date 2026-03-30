@@ -11,6 +11,7 @@ export type TopicDetailSectionNode = {
 	depth: number
 	headingLevel: number
 	topic: TopicTreeNode
+	topicPath: Array<Pick<TopicTreeNode, 'id' | 'title' | 'body'>>
 }
 
 const MAX_HEADING_LEVEL = 6
@@ -27,17 +28,32 @@ export function buildTopicDetailRoot(
 
 	const buildSectionNode = (
 		node: TopicTreeNode,
-		depth: number
+		depth: number,
+		topicPath: Array<Pick<TopicTreeNode, 'id' | 'title' | 'body'>>
 	): TopicDetailSectionNode => ({
 		children: node.children.map(childNode =>
-			buildSectionNode(childNode, depth + 1)
+			buildSectionNode(childNode, depth + 1, [
+				...topicPath,
+				{
+					id: childNode.id,
+					title: childNode.title,
+					body: childNode.body
+				}
+			])
 		),
 		depth,
 		headingLevel: Math.min(depth + 1, MAX_HEADING_LEVEL),
-		topic: node
+		topic: node,
+		topicPath
 	})
 
-	return buildSectionNode(rootNode, 0)
+	return buildSectionNode(rootNode, 0, [
+		{
+			id: rootNode.id,
+			title: rootNode.title,
+			body: rootNode.body
+		}
+	])
 }
 
 export function flattenTopicDetailSectionIds(

@@ -17,7 +17,6 @@ import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import { TopicNavigatorSheet } from '~/features/topics/components/topic-navigator/TopicNavigator'
 import {
 	CREATE_TOPIC_INTENT_EVENT,
 	consumeCreateTopicRequest,
@@ -130,13 +129,10 @@ export function TopicsPage() {
 				<PageLayout>
 					<PageLayout.Header
 						actions={
-							<div className='flex items-center gap-2'>
-								<TopicNavigatorSheet />
-								<Button disabled={isCreatingTopic} onClick={handleCreateTopic}>
-									<Plus />
-									Create
-								</Button>
-							</div>
+							<Button disabled={isCreatingTopic} onClick={handleCreateTopic}>
+								<Plus />
+								Create
+							</Button>
 						}
 						icon={Library}
 						title='Topics'

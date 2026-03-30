@@ -84,6 +84,22 @@ function buildOutlineTree() {
 }
 
 describe('useTopicDetailOutline', () => {
+	it('expands collapsible outline topics on first render', () => {
+		const initialTree = buildOutlineTree()
+		const { result } = renderHook(() =>
+			useTopicDetailOutline({
+				ancestorIdsById: initialTree.ancestorIdsById,
+				nodeById: initialTree.nodeById,
+				outlineRootNode: initialTree.outlineRootNode,
+				visibleSectionIds: []
+			})
+		)
+
+		expect(
+			result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+		).toBe(true)
+	})
+
 	it('preserves manual collapse state when the same root topic refetches', async () => {
 		const initialTree = buildOutlineTree()
 		const { result, rerender } = renderHook(
@@ -135,6 +151,48 @@ describe('useTopicDetailOutline', () => {
 		await waitFor(() => {
 			expect(
 				result.current.expandedIdSet.has(refetchedTree.collapsibleChild.id)
+			).toBe(false)
+		})
+	})
+
+	it('does not re-expand a manually collapsed outline topic when scrolling reveals its descendants', async () => {
+		const initialTree = buildOutlineTree()
+		const { result, rerender } = renderHook(
+			({ visibleSectionIds }: { visibleSectionIds: Array<number> }) =>
+				useTopicDetailOutline({
+					ancestorIdsById: initialTree.ancestorIdsById,
+					nodeById: initialTree.nodeById,
+					outlineRootNode: initialTree.outlineRootNode,
+					visibleSectionIds
+				}),
+			{
+				initialProps: {
+					visibleSectionIds: [] as Array<number>
+				}
+			}
+		)
+
+		await waitFor(() => {
+			expect(
+				result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+			).toBe(true)
+		})
+
+		act(() => {
+			result.current.toggleExpanded(initialTree.collapsibleChild.id)
+		})
+
+		expect(
+			result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+		).toBe(false)
+
+		rerender({
+			visibleSectionIds: [3]
+		})
+
+		await waitFor(() => {
+			expect(
+				result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
 			).toBe(false)
 		})
 	})

@@ -1,5 +1,5 @@
 import type { ComponentProps, MouseEventHandler } from 'react'
-import { Button } from '~/components/ui/button'
+import type { Button } from '~/components/ui/button'
 import type { ReviewListItem } from '~/features/reviews/types/review.types'
 
 export interface ReviewsMenuProps {

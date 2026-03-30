@@ -271,10 +271,10 @@ describe('review card detail route-backed tabs', () => {
 
 		expect(await screen.findByText('Linked review item')).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: /create review/i })
+			screen.getByRole('button', { name: /create review/iu })
 		).toBeInTheDocument()
 		expect(
-			screen.queryByRole('button', { name: /^Reviews$/i })
+			screen.queryByRole('button', { name: /^Reviews$/iu })
 		).not.toBeInTheDocument()
 
 		await user.click(screen.getByRole('tab', { name: 'Home' }))
@@ -283,7 +283,7 @@ describe('review card detail route-backed tabs', () => {
 			expect(router.state.location.search).toEqual({ tab: 'home' })
 		})
 
-		await user.click(screen.getByRole('tab', { name: /Reviews/i }))
+		await user.click(screen.getByRole('tab', { name: /Reviews/iu }))
 
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({ tab: 'reviews' })
@@ -297,7 +297,7 @@ describe('review card detail route-backed tabs', () => {
 			await screen.findByRole('tab', { name: 'Notes' })
 		).toBeInTheDocument()
 
-		await user.click(screen.getByRole('tab', { name: /Reviews/i }))
+		await user.click(screen.getByRole('tab', { name: /Reviews/iu }))
 
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({ tab: 'reviews' })

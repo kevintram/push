@@ -44,9 +44,9 @@ export function useLearnableMetrics(
 		}
 
 		const tooltip =
-			retrievabilityDisplay !== null
-				? `${retrievabilityDisplay} retrievability`
-				: 'Complete a review to calculate retrievability.'
+			retrievabilityDisplay === null
+				? 'Complete a review to calculate retrievability.'
+				: `${retrievabilityDisplay} retrievability`
 
 		return { label: freshnessTier, tooltip }
 	}, [freshnessTier, retrievabilityDisplay])
@@ -75,13 +75,13 @@ export function useLearnableMetrics(
 		return `${days} ${days === 1 ? 'day' : 'days'}`
 	}, [stability])
 
-	const isUnreviewed = useMemo(() => {
-		return (
+	const isUnreviewed = useMemo(
+		() =>
 			retrievability === null &&
 			lastReviewedAt === null &&
-			inheritedStability === null
-		)
-	}, [retrievability, lastReviewedAt, inheritedStability])
+			inheritedStability === null,
+		[retrievability, lastReviewedAt, inheritedStability]
+	)
 
 	const isLeavingSoon = useMemo(() => {
 		if (daysUntilNextTier === null) return false

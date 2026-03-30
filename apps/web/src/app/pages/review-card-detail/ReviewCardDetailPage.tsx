@@ -154,7 +154,6 @@ export function ReviewCardDetailPage({
 					onTopicMenuOpenChange={setIsTopicMenuOpen}
 					overdueCount={overdueCount}
 					parentLabel={parentLabel}
-					reviewCardTopicId={reviewCard.topic_id}
 					unscheduledCount={unscheduledCount}
 				/>
 				{isTopicSearchOpen ? (

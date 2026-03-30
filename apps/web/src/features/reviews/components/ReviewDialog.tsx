@@ -75,12 +75,14 @@ export function ReviewDialog({
 
 	const relativeDate = formatRelativeDate(effectiveDate)
 
-	const isOverdueValue: boolean = useMemo(() => {
-		return isOverdue({
-			scheduled_at: review?.scheduled_at ?? null,
-			isCompleted: review?.completed_at !== null
-		})
-	}, [review?.scheduled_at, review?.completed_at])
+	const isOverdueValue: boolean = useMemo(
+		() =>
+			isOverdue({
+				scheduled_at: review?.scheduled_at ?? null,
+				isCompleted: review?.completed_at !== null
+			}),
+		[review?.scheduled_at, review?.completed_at]
+	)
 
 	const updateDescriptionMutation = useCallback(
 		(newDescription: string) => {

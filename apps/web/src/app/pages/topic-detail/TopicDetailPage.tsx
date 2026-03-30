@@ -1,5 +1,7 @@
 import { notFound } from '@tanstack/react-router'
 import { AlertTriangle, MoreHorizontal, Trash2 } from 'lucide-react'
+import type { CSSProperties } from 'react'
+import { useState } from 'react'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import {
 	AlertDialog,
@@ -20,7 +22,6 @@ import {
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { TopicNavigatorSheet } from '~/features/topics/components/topic-navigator/TopicNavigator'
 import { cn } from '~/lib/utils'
 import { isHttpStatusError } from '~/utils/httpStatusError'
 import type {
@@ -32,6 +33,8 @@ import { TopicDetailOutline } from './TopicDetailOutline'
 import { TopicDetailRootSectionContent } from './TopicDetailRootSectionContent'
 import {
 	TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS,
+	TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH,
+	TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS,
 	TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
 	TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS,
 	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS,
@@ -52,6 +55,9 @@ export function TopicDetailPage({
 	reviewCardControlsVariant = 'medium',
 	topicId
 }: TopicDetailPageProps) {
+	const [outlineWidth, setOutlineWidth] = useState(
+		TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH
+	)
 	const {
 		ancestorIdsById,
 		collapsedSections,
@@ -114,12 +120,18 @@ export function TopicDetailPage({
 	}
 
 	const isLeafTopic = rootSection.children.length === 0
+	const pageStyle = isLeafTopic
+		? undefined
+		: ({
+				'--topic-detail-outline-width': `${outlineWidth}px`
+			} as CSSProperties)
 	const rootHeaderContentClassName = isLeafTopic
 		? undefined
 		: TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS
 	const rootHeaderActionClassName = isLeafTopic
 		? 'top-0 right-0'
 		: 'top-0 right-0 lg:hidden'
+	const rootHeaderPathContainerClassName = isLeafTopic ? undefined : 'lg:pr-0'
 	const rootHeaderTitleContainerClassName = isLeafTopic
 		? 'pr-12 sm:pr-14'
 		: 'pr-12 sm:pr-14 lg:pr-0'
@@ -136,6 +148,7 @@ export function TopicDetailPage({
 			registerSectionRef={registerSectionRef}
 			resolvedFilterByTopicId={sectionFilterOverrides}
 			reviewCardControlsVariant={reviewCardControlsVariant}
+			rootTopicPath={topicPath}
 			searchFilter={resolvedCardTypeFilter}
 			section={rootSection}
 			toggleSection={toggleSection}
@@ -144,13 +157,8 @@ export function TopicDetailPage({
 	)
 
 	return (
-		<div className='flex h-full min-h-0 w-full'>
+		<div className='flex h-full min-h-0 w-full' style={pageStyle}>
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
-				<div className='border-border/60 border-b bg-background/95 md:hidden'>
-					<div className='mx-auto flex w-full max-w-[76rem] items-center justify-end px-4 py-2 sm:px-6 xl:px-8'>
-						<TopicNavigatorSheet activeTopicId={topic.id} />
-					</div>
-				</div>
 				<div
 					className='flex-1 overflow-y-auto scroll-smooth'
 					ref={registerScrollContainerRef}
@@ -172,7 +180,6 @@ export function TopicDetailPage({
 									<div className='flex items-start gap-3'>
 										<div className='min-w-0 flex-1'>
 											<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
-												<div aria-hidden='true' />
 												<div className='relative min-w-0'>
 													<div
 														className='relative z-10 scroll-mt-24'
@@ -189,6 +196,9 @@ export function TopicDetailPage({
 															contentClassName={rootHeaderContentClassName}
 															onOpenDeleteDialog={() =>
 																setIsDeleteDialogOpen(true)
+															}
+															pathContainerClassName={
+																rootHeaderPathContainerClassName
 															}
 															shouldAutoFocusTitle={shouldAutoFocusRootTitle}
 															titleContainerClassName={
@@ -249,14 +259,25 @@ export function TopicDetailPage({
 						>
 							{rootSectionContent}
 						</div>
-						<TopicDetailOutline
-							ancestorIdsById={ancestorIdsById}
-							globalFilter={resolvedCardTypeFilter}
-							nodeById={nodeById}
-							onGlobalFilterChange={handleGlobalFilterChange}
-							outlineRootNode={rootSection.topic}
-							visibleSectionIds={visibleSectionIds}
-						/>
+						{isLeafTopic ? null : (
+							<div
+								className={cn(
+									'hidden shrink-0 self-start lg:sticky lg:top-6 lg:flex lg:justify-start',
+									TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS
+								)}
+							>
+								<TopicDetailOutline
+									ancestorIdsById={ancestorIdsById}
+									globalFilter={resolvedCardTypeFilter}
+									nodeById={nodeById}
+									onGlobalFilterChange={handleGlobalFilterChange}
+									onOutlineWidthChange={setOutlineWidth}
+									outlineRootNode={rootSection.topic}
+									outlineWidth={outlineWidth}
+									visibleSectionIds={visibleSectionIds}
+								/>
+							</div>
+						)}
 					</div>
 				</div>
 			</div>

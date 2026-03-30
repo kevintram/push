@@ -8,14 +8,13 @@ import { reviewKeys } from './queryKeys'
 
 const sortReviewsByEffectiveDateDesc = (
 	entries: Array<ReviewListItem>
-): Array<ReviewListItem> => {
-	return [...entries].sort((a, b) => {
+): Array<ReviewListItem> =>
+	[...entries].sort((a, b) => {
 		if (a.effective_date === b.effective_date) return 0
 		if (a.effective_date === null) return 1
 		if (b.effective_date === null) return -1
 		return a.effective_date < b.effective_date ? 1 : -1
 	})
-}
 
 export function useLogbookReviewEntries() {
 	const query = useQuery({

@@ -410,7 +410,7 @@ describe('ReviewsMenu', () => {
 
 		render(<ReviewsMenu reviewCardId={12} />)
 
-		const trigger = screen.getByRole('button', { name: /Reviews/i })
+		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 		expect(useQueryMock).toHaveBeenLastCalledWith(
 			expect.objectContaining({ enabled: false })
 		)
@@ -448,17 +448,17 @@ describe('ReviewsMenu', () => {
 		const onSeeAll = vi.fn()
 
 		render(<ReviewsMenu onSeeAll={onSeeAll} reviewCardId={12} />)
-		const trigger = screen.getByRole('button', { name: /Reviews/i })
+		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		await user.click(trigger)
-		await user.click(screen.getByRole('button', { name: /Catch-up prompt/i }))
+		await user.click(screen.getByRole('button', { name: /Catch-up prompt/iu }))
 		expect(openReviewDialogMock).toHaveBeenCalledWith(
 			101,
 			expect.objectContaining({ onClose: expect.any(Function) })
 		)
 		expect(screen.queryByTestId('dropdown-menu-content')).toBeInTheDocument()
 
-		await user.click(screen.getByRole('button', { name: /Strong recall/i }))
+		await user.click(screen.getByRole('button', { name: /Strong recall/iu }))
 		expect(openReviewDialogMock).toHaveBeenCalledWith(
 			103,
 			expect.objectContaining({ onClose: expect.any(Function) })
@@ -468,7 +468,7 @@ describe('ReviewsMenu', () => {
 		// Close the menu (still open from review click), then reopen for create flow
 		await user.click(trigger)
 		await user.click(trigger)
-		await user.click(screen.getByRole('button', { name: /Good/i }))
+		await user.click(screen.getByRole('button', { name: /Good/iu }))
 		expect(createReviewMock).toHaveBeenCalledWith({
 			review_card_id: 12,
 			rating: 'good',
@@ -481,7 +481,7 @@ describe('ReviewsMenu', () => {
 		).not.toBeInTheDocument()
 
 		await user.click(trigger)
-		await user.click(screen.getByRole('button', { name: /See all/i }))
+		await user.click(screen.getByRole('button', { name: /See all/iu }))
 		expect(onSeeAll).toHaveBeenCalled()
 		expect(
 			screen.queryByTestId('dropdown-menu-content')
@@ -493,9 +493,9 @@ describe('ReviewsMenu', () => {
 
 		render(<ReviewsMenu reviewCardId={12} />)
 
-		await user.click(screen.getByRole('button', { name: /Reviews/i }))
+		await user.click(screen.getByRole('button', { name: /Reviews/iu }))
 		await user.click(screen.getByTestId('review-item-mark-deferred-101'))
-		await user.click(screen.getByRole('button', { name: /Catch-up prompt/i }))
+		await user.click(screen.getByRole('button', { name: /Catch-up prompt/iu }))
 
 		expect(openReviewDialogMock).toHaveBeenCalledWith(
 			101,
@@ -552,7 +552,7 @@ describe('ReviewsMenu', () => {
 
 		render(<ReviewsMenu reviewCardId={12} />)
 
-		const trigger = screen.getByRole('button', { name: /Reviews/i })
+		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 		await user.click(trigger)
 
 		expect(screen.getByText('See all')).toBeInTheDocument()
@@ -609,7 +609,7 @@ describe('ReviewsMenu', () => {
 
 		render(<ReviewsMenu reviewCardId={12} />)
 
-		await user.click(screen.getByRole('button', { name: /Reviews/i }))
+		await user.click(screen.getByRole('button', { name: /Reviews/iu }))
 
 		const content = screen.getByTestId('dropdown-menu-content')
 
@@ -660,7 +660,7 @@ describe('ReviewsMenu', () => {
 
 		render(<ReviewsMenu reviewCardId={12} />)
 
-		await user.click(screen.getByRole('button', { name: /Reviews/i }))
+		await user.click(screen.getByRole('button', { name: /Reviews/iu }))
 
 		expect(screen.getByText('Unscheduled')).toBeInTheDocument()
 		expect(screen.getByTestId('review-item-401')).toBeInTheDocument()
@@ -687,7 +687,7 @@ describe('ReviewsMenu', () => {
 			/>
 		)
 
-		const trigger = screen.getByRole('button', { name: /Reviews/i })
+		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		expect(
 			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
@@ -751,7 +751,7 @@ describe('ReviewsMenu', () => {
 			/>
 		)
 
-		const trigger = screen.getByRole('button', { name: /Reviews/i })
+		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		expect(
 			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
@@ -813,7 +813,7 @@ describe('ReviewsMenu', () => {
 			/>
 		)
 
-		const trigger = screen.getByRole('button', { name: /Reviews/i })
+		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		expect(
 			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
@@ -877,7 +877,7 @@ describe('ReviewsMenu', () => {
 			/>
 		)
 
-		const trigger = screen.getByRole('button', { name: /Reviews/i })
+		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		await user.click(trigger)
 
@@ -889,7 +889,7 @@ describe('ReviewsMenu', () => {
 		expect(screen.queryByText('Stale catch-up prompt')).not.toBeInTheDocument()
 		expect(screen.queryByTestId('review-item-301')).not.toBeInTheDocument()
 		expect(content.querySelectorAll('[aria-busy="true"]')).toHaveLength(1)
-		const seeAllButton = screen.getByRole('button', { name: /See all/i })
+		const seeAllButton = screen.getByRole('button', { name: /See all/iu })
 		expect(seeAllButton).toBeInTheDocument()
 		expect(
 			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
@@ -912,9 +912,9 @@ describe('ReviewsMenu', () => {
 			</div>
 		)
 
-		await user.click(screen.getByRole('button', { name: /Reviews/i }))
+		await user.click(screen.getByRole('button', { name: /Reviews/iu }))
 		onShellClick.mockReset()
-		await user.click(screen.getByRole('button', { name: /Catch-up prompt/i }))
+		await user.click(screen.getByRole('button', { name: /Catch-up prompt/iu }))
 
 		expect(openReviewDialogMock).toHaveBeenCalledWith(
 			101,
@@ -928,7 +928,7 @@ describe('ReviewsMenu', () => {
 
 		render(<ReviewsMenu reviewCardId={12} />)
 
-		await user.click(screen.getByRole('button', { name: /Reviews/i }))
+		await user.click(screen.getByRole('button', { name: /Reviews/iu }))
 		await user.click(screen.getByTestId('review-item-open-nested-101'))
 		await user.click(screen.getByTestId('dismiss-menu-focus-out'))
 
@@ -948,7 +948,7 @@ describe('ReviewsMenu', () => {
 
 		render(<ReviewsMenu reviewCardId={12} />)
 
-		await user.click(screen.getByRole('button', { name: /Reviews/i }))
+		await user.click(screen.getByRole('button', { name: /Reviews/iu }))
 		await user.click(screen.getByTestId('review-item-open-nested-101'))
 		await user.click(screen.getByTestId('dismiss-menu-outside-press'))
 

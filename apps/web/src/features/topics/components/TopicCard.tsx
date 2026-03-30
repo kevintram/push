@@ -73,7 +73,7 @@ export function TopicCard({
 	const resolvedParentLabel =
 		parentLabel ??
 		topic.parent_title?.trim() ??
-		(topic.parent_id != null ? `Topic #${topic.parent_id}` : 'No parent')
+		(topic.parent_id == null ? 'No parent' : `Topic #${topic.parent_id}`)
 	const hasBodyText = Boolean(topic.body.trim())
 	const hideSecondary = hidesSecondary && hasBodyText && !isSecondaryRevealed
 	const estimatedCardHeight = useMemo(() => {

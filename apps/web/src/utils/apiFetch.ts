@@ -6,7 +6,7 @@
  * - Detects 401 errors and redirects to login page once
  */
 
-const TRAILING_SLASH_PATTERN = /\/$/
+const TRAILING_SLASH_PATTERN = /\/$/u
 
 let isAuthRedirectInFlight = false
 

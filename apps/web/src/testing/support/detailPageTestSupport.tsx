@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import type { ReactElement, ReactNode } from 'react'
 import { beforeEach, vi } from 'vitest'
 
+export const elementSizeMock = { ref: () => {}, width: 1024, height: 0 }
 export const navigateMock = vi.fn()
 export const useTopicMock = vi.fn()
 export const useTopicsMock = vi.fn()
@@ -65,6 +66,14 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 	}
 })
 
+vi.mock('~/hooks/useResizeObserver', () => ({
+	useElementSize: () => elementSizeMock,
+	useResizeObserver: () => [
+		() => {},
+		{ width: 1024, height: 0, x: 0, y: 0, top: 0, left: 0, bottom: 0, right: 0 }
+	]
+}))
+
 vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 	MasonryLayout: ({
 		items,
@@ -113,6 +122,9 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 				</button>
 			),
 		DropdownMenuContent: ({ children }: { children: ReactNode }) => (
+			<div>{children}</div>
+		),
+		DropdownMenuGroup: ({ children }: { children: ReactNode }) => (
 			<div>{children}</div>
 		),
 		DropdownMenuItem: ({

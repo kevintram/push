@@ -47,6 +47,27 @@ function attachScrollToSpy(element: HTMLDivElement) {
 	return scrollTo
 }
 
+function createNavigationOptions({
+	rootTopicId = 1,
+	scrollContainerElement,
+	scrollContainerVersion = scrollContainerElement ? 1 : 0,
+	sectionIds
+}: {
+	rootTopicId?: number
+	scrollContainerElement: HTMLDivElement | null
+	scrollContainerVersion?: number
+	sectionIds: Array<number>
+}) {
+	return {
+		rootTopicId,
+		scrollContainerRef: {
+			current: scrollContainerElement
+		},
+		scrollContainerVersion,
+		sectionIds
+	}
+}
+
 function createResizeObserverStub() {
 	const observe = vi.fn()
 	const disconnect = vi.fn()
@@ -95,6 +116,7 @@ describe('useTopicDetailNavigation', () => {
 	const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
 	const originalRequestAnimationFrame = window.requestAnimationFrame
 	const originalCancelAnimationFrame = window.cancelAnimationFrame
+	const originalIntersectionObserver = globalThis.IntersectionObserver
 	const originalResizeObserver = globalThis.ResizeObserver
 	const originalMutationObserver = globalThis.MutationObserver
 	let pendingAnimationFrames: Array<FrameRequestCallback>
@@ -125,12 +147,14 @@ describe('useTopicDetailNavigation', () => {
 			return pendingAnimationFrames.length
 		})
 		window.cancelAnimationFrame = vi.fn()
+		globalThis.IntersectionObserver = undefined as never
 	})
 
 	afterEach(() => {
 		HTMLElement.prototype.scrollIntoView = originalScrollIntoView
 		window.requestAnimationFrame = originalRequestAnimationFrame
 		window.cancelAnimationFrame = originalCancelAnimationFrame
+		globalThis.IntersectionObserver = originalIntersectionObserver
 		globalThis.ResizeObserver = originalResizeObserver
 		globalThis.MutationObserver = originalMutationObserver
 		document.body.innerHTML = ''
@@ -163,11 +187,13 @@ describe('useTopicDetailNavigation', () => {
 		)
 
 		const { result, rerender } = renderHook(() =>
-			useTopicDetailNavigation({
-				rootTopicId: 1,
-				scrollContainerElement: scrollContainer,
-				sectionIds: [1, 2, 3]
-			})
+			useTopicDetailNavigation(
+				createNavigationOptions({
+					rootTopicId: 1,
+					scrollContainerElement: scrollContainer,
+					sectionIds: [1, 2, 3]
+				})
+			)
 		)
 
 		act(() => {
@@ -265,17 +291,24 @@ describe('useTopicDetailNavigation', () => {
 
 		const { result, rerender } = renderHook<
 			ReturnType<typeof useTopicDetailNavigation>,
-			{ scrollContainerElement: HTMLDivElement | null }
+			{
+				scrollContainerElement: HTMLDivElement | null
+				scrollContainerVersion: number
+			}
 		>(
-			({ scrollContainerElement }) =>
-				useTopicDetailNavigation({
-					rootTopicId: 1,
-					scrollContainerElement,
-					sectionIds: [1, 2]
-				}),
+			({ scrollContainerElement, scrollContainerVersion }) =>
+				useTopicDetailNavigation(
+					createNavigationOptions({
+						rootTopicId: 1,
+						scrollContainerElement,
+						scrollContainerVersion,
+						sectionIds: [1, 2]
+					})
+				),
 			{
 				initialProps: {
-					scrollContainerElement: null
+					scrollContainerElement: null,
+					scrollContainerVersion: 0
 				}
 			}
 		)
@@ -292,7 +325,8 @@ describe('useTopicDetailNavigation', () => {
 
 		act(() => {
 			rerender({
-				scrollContainerElement: scrollContainer
+				scrollContainerElement: scrollContainer,
+				scrollContainerVersion: 1
 			})
 			flushAnimationFrames()
 		})
@@ -340,11 +374,13 @@ describe('useTopicDetailNavigation', () => {
 
 		const { result, rerender } = renderHook(
 			({ sectionIds }: { sectionIds: Array<number> }) =>
-				useTopicDetailNavigation({
-					rootTopicId: 1,
-					scrollContainerElement: scrollContainer,
-					sectionIds
-				}),
+				useTopicDetailNavigation(
+					createNavigationOptions({
+						rootTopicId: 1,
+						scrollContainerElement: scrollContainer,
+						sectionIds
+					})
+				),
 			{
 				initialProps: {
 					sectionIds: [1, 2]
@@ -406,11 +442,13 @@ describe('useTopicDetailNavigation', () => {
 			.mockReturnValue(createDomRect(320, 60))
 
 		const { result } = renderHook(() =>
-			useTopicDetailNavigation({
-				rootTopicId: 1,
-				scrollContainerElement: scrollContainer,
-				sectionIds: [1, 2]
-			})
+			useTopicDetailNavigation(
+				createNavigationOptions({
+					rootTopicId: 1,
+					scrollContainerElement: scrollContainer,
+					sectionIds: [1, 2]
+				})
+			)
 		)
 
 		act(() => {
@@ -464,11 +502,13 @@ describe('useTopicDetailNavigation', () => {
 			.mockReturnValue(createDomRect(320, 60))
 
 		const { result } = renderHook(() =>
-			useTopicDetailNavigation({
-				rootTopicId: 1,
-				scrollContainerElement: scrollContainer,
-				sectionIds: [1, 2]
-			})
+			useTopicDetailNavigation(
+				createNavigationOptions({
+					rootTopicId: 1,
+					scrollContainerElement: scrollContainer,
+					sectionIds: [1, 2]
+				})
+			)
 		)
 
 		act(() => {
@@ -522,11 +562,13 @@ describe('useTopicDetailNavigation', () => {
 			.mockReturnValue(createDomRect(320, 60))
 
 		const { result } = renderHook(() =>
-			useTopicDetailNavigation({
-				rootTopicId: 1,
-				scrollContainerElement: scrollContainer,
-				sectionIds: [1, 2]
-			})
+			useTopicDetailNavigation(
+				createNavigationOptions({
+					rootTopicId: 1,
+					scrollContainerElement: scrollContainer,
+					sectionIds: [1, 2]
+				})
+			)
 		)
 
 		act(() => {

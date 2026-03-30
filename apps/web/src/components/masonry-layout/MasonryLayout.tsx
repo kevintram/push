@@ -257,16 +257,17 @@ function MasonryLayoutInner<T>({
 		resetMeasurements()
 	}, [hasMeasuredWidth, measurementVersion, resetMeasurements])
 
-	useEffect(() => {
-		return () => {
+	useEffect(
+		() => () => {
 			if (laneWidthRemeasureRafRef.current != null) {
 				cancelAnimationFrame(laneWidthRemeasureRafRef.current)
 			}
 			if (laneChangeReflowRafRef.current != null) {
 				cancelAnimationFrame(laneChangeReflowRafRef.current)
 			}
-		}
-	}, [])
+		},
+		[]
+	)
 
 	useEffect(() => {
 		const handleTransitionEnd = (event: TransitionEvent) => {

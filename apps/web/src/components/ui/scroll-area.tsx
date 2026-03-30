@@ -51,7 +51,6 @@ function ScrollBar({
 			)}
 			data-orientation={orientation}
 			data-slot='scroll-area-scrollbar'
-			keepMounted={true}
 			orientation={orientation}
 			{...props}
 		>

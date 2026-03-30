@@ -16,7 +16,7 @@ export function highlightText({
 	}
 
 	const regex = new RegExp(
-		`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
+		`(${query.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')})`,
 		'gi'
 	)
 	const parts = text.split(regex)

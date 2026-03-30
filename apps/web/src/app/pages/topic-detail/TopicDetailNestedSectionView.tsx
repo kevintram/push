@@ -5,7 +5,7 @@ import {
 	Plus,
 	Trash2
 } from 'lucide-react'
-import type { ChangeEventHandler, ComponentType, ReactNode } from 'react'
+import type { ChangeEventHandler, ReactNode } from 'react'
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
@@ -20,6 +20,10 @@ import {
 	TooltipTrigger
 } from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
+import {
+	TopicDetailSectionBreadcrumb,
+	type TopicPathItem
+} from './TopicDetailBreadcrumb'
 import { TopicDetailSectionMeta } from './TopicDetailSectionMeta'
 import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
 import type { TopicDetailSectionNode } from './topicDetailStructure'
@@ -30,9 +34,6 @@ interface TopicDetailNestedSectionViewProps {
 	createdText: string
 	flushTitle: () => void
 	headingClassName: string
-	headingIconClassName: string
-	headingIndicatorFrameClassName: string
-	HeadingIcon: ComponentType<{ className?: string }>
 	isCollapsed: boolean
 	isCreatingTopic: boolean
 	onCreateSubtopic: () => void
@@ -41,10 +42,13 @@ interface TopicDetailNestedSectionViewProps {
 	onTitleChange: ChangeEventHandler<HTMLTextAreaElement>
 	registerHeadingRef: (element: HTMLDivElement | null) => void
 	reviewCardsSection: ReactNode
+	rootTopicId: number
+	rootTopicPath: Array<TopicPathItem>
 	section: TopicDetailSectionNode
 	sectionId: string
 	sectionLabel: string
 	title: string
+	topicPath: Array<TopicPathItem>
 	toggleSection: (sectionId: string) => void
 	updatedDate: string
 	updatedText: string
@@ -56,9 +60,6 @@ export function TopicDetailNestedSectionView({
 	createdText,
 	flushTitle,
 	headingClassName,
-	headingIconClassName,
-	headingIndicatorFrameClassName,
-	HeadingIcon,
 	isCollapsed,
 	isCreatingTopic,
 	onCreateSubtopic,
@@ -67,34 +68,34 @@ export function TopicDetailNestedSectionView({
 	onTitleChange,
 	registerHeadingRef,
 	reviewCardsSection,
+	rootTopicId,
+	rootTopicPath,
 	section,
 	sectionId,
 	sectionLabel,
 	title,
+	topicPath,
 	toggleSection,
 	updatedDate,
 	updatedText
 }: TopicDetailNestedSectionViewProps) {
 	return (
 		<div className={cn('group/section', TOPIC_DETAIL_SECTION_GRID_CLASS)}>
-			<div className='relative text-muted-foreground/60'>
-				<div className='absolute right-0 flex items-start justify-end gap-0.5'>
-					<div
-						className={cn(
-							'flex shrink-0 items-center justify-center',
-							headingIndicatorFrameClassName
-						)}
-					>
-						<HeadingIcon className={headingIconClassName} />
-					</div>
-				</div>
-			</div>
 			<div
 				className='relative min-w-0 scroll-mt-24'
 				data-topic-detail-heading-id={section.topic.id}
 				ref={registerHeadingRef}
 			>
 				<div className='relative min-w-0'>
+					{topicPath.length > 1 ? (
+						<TopicDetailSectionBreadcrumb
+							className='pr-28 pb-1 sm:pr-32'
+							currentTopicId={section.topic.id}
+							rootTopicId={rootTopicId}
+							rootTopicPath={rootTopicPath}
+							topicPath={topicPath}
+						/>
+					) : null}
 					<div
 						aria-level={section.headingLevel}
 						className='min-w-0 pr-28 sm:pr-32'
@@ -185,7 +186,6 @@ export function TopicDetailNestedSectionView({
 					</div>
 				</div>
 			</div>
-			<div aria-hidden='true' />
 			<div className='min-w-0 pt-1'>
 				{isCollapsed ? null : (
 					<>
