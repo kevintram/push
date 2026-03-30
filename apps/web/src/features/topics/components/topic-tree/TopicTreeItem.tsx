@@ -1,6 +1,6 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { ChevronRight, ExternalLink, Plus, Trash2 } from 'lucide-react'
-import type { MutableRefObject, ReactNode } from 'react'
+import { type MutableRefObject, memo, type ReactNode } from 'react'
 import { Button } from '~/components/ui/button'
 import {
 	ContextMenu,
@@ -54,7 +54,94 @@ export interface TopicTreeItemProps {
 	suppressSelectionRef: MutableRefObject<boolean>
 }
 
-export function TopicTreeItem({
+function isTopicTreeItemActive(nodeId: number, props: TopicTreeItemProps) {
+	return (
+		nodeId === props.activeTopicId ||
+		props.highlightedTopicIds?.has(nodeId) === true
+	)
+}
+
+function doesTopicTreeSubtreeVisualStateChange(
+	node: TopicTreeNode,
+	previousProps: TopicTreeItemProps,
+	nextProps: TopicTreeItemProps
+): boolean {
+	if (
+		isTopicTreeItemActive(node.id, previousProps) !==
+		isTopicTreeItemActive(node.id, nextProps)
+	) {
+		return true
+	}
+
+	if (
+		previousProps.expandedIdSet.has(node.id) !==
+		nextProps.expandedIdSet.has(node.id)
+	) {
+		return true
+	}
+
+	if (
+		(previousProps.hoveredTopicId === node.id) !==
+		(nextProps.hoveredTopicId === node.id)
+	) {
+		return true
+	}
+
+	if (
+		(previousProps.highlightedDropTopicId === node.id) !==
+		(nextProps.highlightedDropTopicId === node.id)
+	) {
+		return true
+	}
+
+	for (const childNode of node.children) {
+		if (
+			doesTopicTreeSubtreeVisualStateChange(childNode, previousProps, nextProps)
+		) {
+			return true
+		}
+	}
+
+	return false
+}
+
+function areTopicTreeItemPropsEqual(
+	previousProps: TopicTreeItemProps,
+	nextProps: TopicTreeItemProps
+) {
+	if (previousProps.node !== nextProps.node) return false
+	if (previousProps.nodeById !== nextProps.nodeById) return false
+	if (previousProps.ancestorIdsById !== nextProps.ancestorIdsById) return false
+	if (
+		previousProps.highlightAppearance !== nextProps.highlightAppearance ||
+		previousProps.isDragAndDropEnabled !== nextProps.isDragAndDropEnabled ||
+		previousProps.isUpdatingTopic !== nextProps.isUpdatingTopic ||
+		previousProps.activeDragTopicId !== nextProps.activeDragTopicId
+	) {
+		return false
+	}
+
+	if (
+		previousProps.onCreateSubtopic !== nextProps.onCreateSubtopic ||
+		previousProps.onOpenTopic !== nextProps.onOpenTopic ||
+		previousProps.onRequestDeleteTopic !== nextProps.onRequestDeleteTopic ||
+		previousProps.onToggleExpanded !== nextProps.onToggleExpanded ||
+		previousProps.renderPrimaryAction !== nextProps.renderPrimaryAction ||
+		previousProps.onHoverTopicChange !== nextProps.onHoverTopicChange ||
+		previousProps.setItemRef !== nextProps.setItemRef ||
+		previousProps.suppressSelectionRef !== nextProps.suppressSelectionRef
+	) {
+		return false
+	}
+
+	return !doesTopicTreeSubtreeVisualStateChange(
+		previousProps.node,
+		previousProps,
+		nextProps
+	)
+}
+
+function TopicTreeItemComponent({
 	activeDragTopicId,
 	activeTopicId,
 	ancestorIdsById,
@@ -292,3 +379,8 @@ export function TopicTreeItem({
 		</ContextMenu>
 	)
 }
+
+export const TopicTreeItem = memo(
+	TopicTreeItemComponent,
+	areTopicTreeItemPropsEqual
+)
