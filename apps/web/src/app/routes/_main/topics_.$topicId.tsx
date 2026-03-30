@@ -70,7 +70,7 @@ export function prefetchTopicDetailRouteData({
 		.catch(() => undefined)
 }
 
-export const Route = createFileRoute('/_main/_topic-layout/topics_/$topicId')({
+export const Route = createFileRoute('/_main/topics_/$topicId')({
 	validateSearch: validateTopicDetailSearch,
 	loader: ({ context, params }) => {
 		prefetchTopicDetailRouteData({

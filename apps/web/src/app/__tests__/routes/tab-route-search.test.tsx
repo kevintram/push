@@ -245,6 +245,7 @@ beforeEach(() => {
 	useTopicsMock.mockReset()
 	useReviewCardsMock.mockReset()
 	useReviewCardQueueMock.mockReset()
+	useTopicsMock.mockReturnValue({ data: [], isLoading: false, error: null })
 	storage.clear()
 	Object.defineProperty(window, 'localStorage', {
 		value: mockLocalStorage,
