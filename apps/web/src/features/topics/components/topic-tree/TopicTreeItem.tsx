@@ -117,6 +117,23 @@ export function TopicTreeItem({
 		isDragAndDropEnabled && !isUpdatingTopic
 			? { ...attributes, ...listeners }
 			: {}
+	const keepRowInView = (element: HTMLElement | null) => {
+		if (element == null) return
+
+		const scrollRowIntoView = () => {
+			element.scrollIntoView({
+				block: 'nearest',
+				inline: 'nearest'
+			})
+		}
+
+		if (typeof window === 'undefined') {
+			scrollRowIntoView()
+			return
+		}
+
+		window.requestAnimationFrame(scrollRowIntoView)
+	}
 
 	const row = (
 		<div
@@ -134,7 +151,9 @@ export function TopicTreeItem({
 					className='h-5 w-5 shrink-0'
 					onClick={event => {
 						event.stopPropagation()
+						const listItem = event.currentTarget.closest('li')
 						onToggleExpanded(node.id)
+						keepRowInView(listItem)
 					}}
 					size='icon-xs'
 					type='button'
