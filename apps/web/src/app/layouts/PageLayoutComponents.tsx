@@ -28,10 +28,10 @@ export function PageLayoutHeader({
 	const hasCenterContent = centerContent != null
 
 	return (
-		<div className='sticky top-0 z-10 flex flex-col gap-2 border-b-1 bg-background/40 px-4 pt-4 pb-2 backdrop-blur-sm'>
+		<div className='sticky top-0 z-10 flex flex-col gap-1 border-b-1 bg-background/40 px-3 py-2.5 backdrop-blur-sm'>
 			<div
 				className={cn(
-					'items-center gap-2',
+					'items-center gap-1',
 					hasCenterContent
 						? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
 						: 'flex justify-between'
@@ -68,7 +68,7 @@ export function PageLayoutContent({
 	className
 }: PageLayoutContentProps) {
 	return (
-		<div className={cn('mx-auto w-full max-w-5xl p-6', className)}>
+		<div className={cn('mx-auto w-full max-w-5xl p-4', className)}>
 			{children}
 		</div>
 	)

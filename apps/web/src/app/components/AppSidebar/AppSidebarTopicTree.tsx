@@ -15,7 +15,7 @@ export function AppSidebarTopicTree({
 	if (!shouldRenderTree) return null
 
 	return (
-		<div className='min-h-0 flex-1 border-sidebar-border/70 pb-1.5 pl-1.5'>
+		<div className='min-h-0 flex-1 border-sidebar-border/70 pr-0.5 pb-1.5 pl-1.5'>
 			<ScrollArea
 				className='h-full min-h-0 flex-1'
 				scrollbarClassName='p-px data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5'

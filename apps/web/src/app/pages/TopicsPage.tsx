@@ -120,7 +120,7 @@ export function TopicsPage({ create }: { create?: boolean }) {
 						icon={Library}
 						title='Topics'
 					/>
-					<PageLayout.Content className='max-w-screen space-y-6 p-6'>
+					<PageLayout.Content className='max-w-screen space-y-4 p-4'>
 						{content}
 					</PageLayout.Content>
 				</PageLayout>

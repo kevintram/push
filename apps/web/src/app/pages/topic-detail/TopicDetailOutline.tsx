@@ -397,7 +397,14 @@ export function TopicDetailOutline({
 								<ContextMenu>
 									<li>
 										<ContextMenuTrigger className='rounded-md'>
-											<div className='group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors hover:bg-muted/50'>
+											<div
+												className={cn(
+													'group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors',
+													isRootActive
+														? 'bg-[var(--app-chrome-selected)] hover:bg-[var(--app-chrome-selected-hover)]'
+														: 'hover:bg-[var(--app-chrome-hover)]'
+												)}
+											>
 												<Link
 													className={cn(
 														'min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:underline',

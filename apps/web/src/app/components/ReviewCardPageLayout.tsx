@@ -73,7 +73,7 @@ export function ReviewCardPageLayout<
 	) : null
 	const scopeBar = showScopeTabs ? (
 		<div
-			className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'
+			className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'
 			data-testid='review-queue-scope-bar'
 		>
 			{scopeTabs}
@@ -121,14 +121,13 @@ export function ReviewCardPageLayout<
 			</PageLayout.Header>
 			<PageLayout.Content
 				className={cn(
-					'max-w-screen p-6',
-					isDueView && 'px-3 pt-3 pb-6',
-					isFocusedDueView && 'pb-4 sm:pb-6',
-					isDueView && 'flex min-h-0 flex-1 flex-col'
+					'max-w-screen p-4',
+					isDueView && 'flex min-h-0 flex-1 flex-col px-2.5 py-2.5 pb-4',
+					isFocusedDueView && 'pb-3 sm:pb-4'
 				)}
 			>
 				<div
-					className={cn('flex flex-col gap-4', isDueView && 'min-h-0 flex-1')}
+					className={cn('flex flex-col gap-3', isDueView && 'min-h-0 flex-1')}
 				>
 					{scopeBar}
 					<div className={cn(isDueView && 'min-h-0 flex-1')}>{children}</div>

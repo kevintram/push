@@ -68,6 +68,7 @@ function MainLayout() {
 
 	return (
 		<SidebarProvider
+			className='bg-[var(--app-shell)]'
 			style={
 				{
 					'--sidebar-width': `${sidebarWidth}px`
@@ -75,11 +76,16 @@ function MainLayout() {
 			}
 		>
 			<AppSidebar onResizeStart={handleSidebarResizeStart} />
-			<SidebarInset className='!bg-primary-foreground h-svh md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none'>
-				<div className='relative ml-1 flex min-h-0 min-w-0 flex-1 flex-col bg-primary-foreground'>
+			<SidebarInset className='!bg-[var(--app-shell)] h-svh'>
+				<div className='relative flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--app-shell)]'>
 					<AppHeader />
-					<div className='relative min-h-0 min-w-0 flex-1 bg-background'>
-						<Outlet />
+					<div className='relative min-h-0 min-w-0 flex-1 px-0 pb-0 md:pr-2 md:pb-2'>
+						<div
+							className='relative flex h-full min-h-0 min-w-0 flex-1 overflow-hidden border border-[var(--workspace-border)] bg-[var(--workspace-surface)] md:rounded-[1.15rem]'
+							style={{ boxShadow: 'var(--workspace-shadow)' }}
+						>
+							<Outlet />
+						</div>
 					</div>
 				</div>
 			</SidebarInset>

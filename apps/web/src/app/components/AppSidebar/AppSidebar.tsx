@@ -102,11 +102,14 @@ export function AppSidebar({
 	}
 
 	return (
-		<Sidebar className='z-20 bg-primary-foreground' collapsible='icon'>
+		<Sidebar
+			className='!border-r-0 z-20 bg-[var(--app-shell)]'
+			collapsible='icon'
+		>
 			<SidebarHeader className='px-1.5 py-1'>
 				<SidebarTrigger className='rounded-full' />
 			</SidebarHeader>
-			<SidebarContent className='gap-0 overflow-hidden bg-primary-foreground'>
+			<SidebarContent className='gap-1 overflow-hidden bg-[var(--app-shell)]'>
 				<div className='flex shrink-0 flex-col gap-1'>
 					<SidebarGroup className='px-1.5'>
 						<SidebarGroupContent>
@@ -217,7 +220,7 @@ export function AppSidebar({
 			</SidebarContent>
 
 			{import.meta.env.DEV && !import.meta.env.VITEST ? (
-				<SidebarFooter className='border-sidebar-border/70 bg-primary-foreground px-1.5 py-1'>
+				<SidebarFooter className='bg-[var(--app-shell)] px-1.5 py-1'>
 					<SidebarMenu>
 						<SidebarMenuItem>
 							<SidebarMenuButton
@@ -239,10 +242,10 @@ export function AppSidebar({
 			{!isMobile && state === 'expanded' && onResizeStart ? (
 				<div
 					aria-hidden='true'
-					className='absolute top-0 right-0 z-20 hidden h-full w-3 translate-x-1/2 cursor-col-resize items-center justify-center md:flex'
+					className='group absolute top-0 right-0 z-20 hidden h-full w-3 translate-x-1/2 cursor-col-resize items-center justify-center md:flex'
 					onPointerDown={onResizeStart}
 				>
-					<div className='h-16 w-px rounded-full bg-border/70 transition-colors' />
+					<div className='h-16 w-px rounded-full bg-transparent transition-colors group-hover:bg-border/55' />
 				</div>
 			) : null}
 		</Sidebar>
