@@ -24,8 +24,25 @@ import {
 	TopicDetailSectionBreadcrumb,
 	type TopicPathItem
 } from './TopicDetailBreadcrumb'
-import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
+import {
+	TOPIC_DETAIL_SECTION_GRID_CLASS,
+	getTopicDetailSectionDisplayLevel
+} from './topicDetailLayout'
 import type { TopicDetailSectionNode } from './topicDetailStructure'
+
+function getActionButtonProps(section: TopicDetailSectionNode) {
+	const displayLevel = getTopicDetailSectionDisplayLevel(section)
+	if (displayLevel <= 3) {
+		return {
+			buttonSize: 'icon-sm' as const,
+			iconClassName: 'size-4'
+		}
+	}
+	return {
+		buttonSize: 'icon-xs' as const,
+		iconClassName: 'size-3'
+	}
+}
 
 interface TopicDetailNestedSectionViewProps {
 	bodyPanel: ReactNode
@@ -70,6 +87,8 @@ export function TopicDetailNestedSectionView({
 	topicPath,
 	toggleSection
 }: TopicDetailNestedSectionViewProps) {
+	const { buttonSize, iconClassName } = getActionButtonProps(section)
+
 	return (
 		<div className={cn('group/section', TOPIC_DETAIL_SECTION_GRID_CLASS)}>
 			<div
@@ -112,11 +131,11 @@ export function TopicDetailNestedSectionView({
 												aria-label={`Open ${sectionLabel}`}
 												className='shrink-0 rounded-full'
 												onClick={onOpenTopic}
-												size='icon-xs'
+												size={buttonSize}
 												type='button'
 												variant='ghost'
 											>
-												<ExternalLink className='h-3 w-3' />
+												<ExternalLink className={iconClassName} />
 											</Button>
 										}
 									/>
@@ -128,10 +147,10 @@ export function TopicDetailNestedSectionView({
 											<Button
 												aria-label={`More actions for ${sectionLabel}`}
 												className='shrink-0 rounded-full'
-												size='icon-xs'
+												size={buttonSize}
 												variant='ghost'
 											>
-												<MoreHorizontal className='h-3 w-3' />
+												<MoreHorizontal className={iconClassName} />
 											</Button>
 										}
 									/>
@@ -164,13 +183,14 @@ export function TopicDetailNestedSectionView({
 										'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
 								)}
 								onClick={() => toggleSection(sectionId)}
-								size='icon-xs'
+								size={buttonSize}
 								type='button'
 								variant='ghost'
 							>
 								<ChevronDown
 									className={cn(
-										'h-3 w-3 translate-y-px transition-transform',
+										iconClassName,
+										'translate-y-px transition-transform',
 										isCollapsed && '-rotate-90'
 									)}
 								/>
