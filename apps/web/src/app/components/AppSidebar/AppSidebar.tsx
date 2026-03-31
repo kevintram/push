@@ -1,7 +1,14 @@
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { Flag, Layers, Library, ListChecks, Plus } from 'lucide-react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
+import {
+	Flag,
+	Layers,
+	Library,
+	ListChecks,
+	Minimize2,
+	Plus
+} from 'lucide-react'
+import { type PointerEvent as ReactPointerEvent, useRef } from 'react'
 
 import {
 	type ReviewSidebarItem,
@@ -76,6 +83,12 @@ export function AppSidebar({
 			isActive: (pathname: string) => pathname === '/topics'
 		}
 	]
+
+	const collapseAllRef = useRef<(() => void) | null>(null)
+
+	const handleCollapseAll = () => {
+		collapseAllRef.current?.()
+	}
 
 	const handleAddTopic = () => {
 		requestCreateTopic()
@@ -163,19 +176,34 @@ export function AppSidebar({
 												<span>{item.title}</span>
 											</SidebarMenuButton>
 											{isTopicsItem ? (
-												<SidebarMenuAction
-													aria-label='Add topic'
-													className='z-10'
-													onClick={event => {
-														event.preventDefault()
-														event.stopPropagation()
-														handleAddTopic()
-													}}
-													type='button'
-												>
-													<Plus />
-													<span className='sr-only'>Add topic</span>
-												</SidebarMenuAction>
+												<>
+													<SidebarMenuAction
+														aria-label='Collapse all topics'
+														className='peer/collapse right-8 z-10'
+														onClick={event => {
+															event.preventDefault()
+															event.stopPropagation()
+															handleCollapseAll()
+														}}
+														type='button'
+													>
+														<Minimize2 />
+														<span className='sr-only'>Collapse all topics</span>
+													</SidebarMenuAction>
+													<SidebarMenuAction
+														aria-label='Add topic'
+														className='z-10'
+														onClick={event => {
+															event.preventDefault()
+															event.stopPropagation()
+															handleAddTopic()
+														}}
+														type='button'
+													>
+														<Plus />
+														<span className='sr-only'>Add topic</span>
+													</SidebarMenuAction>
+												</>
 											) : null}
 										</SidebarMenuItem>
 									)
@@ -185,7 +213,12 @@ export function AppSidebar({
 					</SidebarGroup>
 				</div>
 
-				<AppSidebarTopicTree />
+				<AppSidebarTopicTree>
+					{({ collapseAll }) => {
+						collapseAllRef.current = collapseAll
+						return null
+					}}
+				</AppSidebarTopicTree>
 			</SidebarContent>
 
 			{import.meta.env.DEV && !import.meta.env.VITEST ? (

@@ -28,6 +28,7 @@ import { useTopicNavigatorContent } from './useTopicNavigatorContent'
 type TopicNavigatorContentProps = {
 	activeTopicId?: number | null
 	autoScrollActiveTopic?: boolean
+	children?: (actions: { collapseAll: () => void }) => React.ReactNode
 	enableDragAndDrop?: boolean
 	onNavigate?: () => void
 }
@@ -35,6 +36,7 @@ type TopicNavigatorContentProps = {
 export function TopicNavigatorContent({
 	activeTopicId,
 	autoScrollActiveTopic = false,
+	children,
 	enableDragAndDrop = false,
 	onNavigate
 }: TopicNavigatorContentProps) {
@@ -43,6 +45,7 @@ export function TopicNavigatorContent({
 		activeDragLabel,
 		activeDragTopicId,
 		ancestorIdsById,
+		collapseAll,
 		ensureExpanded,
 		error,
 		expandedIdSet,
@@ -95,121 +98,139 @@ export function TopicNavigatorContent({
 			.catch(() => {})
 	}
 
+	const renderedChildren = children?.({ collapseAll })
+
 	if (isLoading) {
-		return <LoadingSpinner containerClassName='min-h-32' />
+		return (
+			<>
+				{renderedChildren}
+				<LoadingSpinner containerClassName='min-h-32' />
+			</>
+		)
 	}
 
 	if (error) {
 		return (
-			<p className='px-3 py-2 text-muted-foreground text-sm'>
-				Failed to load topic hierarchy.
-			</p>
+			<>
+				{renderedChildren}
+				<p className='px-3 py-2 text-muted-foreground text-sm'>
+					Failed to load topic hierarchy.
+				</p>
+			</>
 		)
 	}
 
 	if (roots.length === 0) {
 		return (
-			<p className='px-3 py-2 text-muted-foreground text-sm'>No topics yet.</p>
+			<>
+				{renderedChildren}
+				<p className='px-3 py-2 text-muted-foreground text-sm'>
+					No topics yet.
+				</p>
+			</>
 		)
 	}
 
 	return (
-		<DndContext
-			collisionDetection={pointerWithin}
-			onDragCancel={handleDragCancel}
-			onDragEnd={handleDragEnd}
-			onDragOver={handleDragOver}
-			onDragStart={handleDragStart}
-			sensors={enableDragAndDrop ? sensors : undefined}
-		>
-			<nav aria-label='Topic hierarchy' className='space-y-1.5'>
-				{enableDragAndDrop ? (
-					<TopicNavigatorRootDropZone
-						activeDragTopicId={activeDragTopicId}
-						ancestorIdsById={ancestorIdsById}
-						className='mb-0.5'
-						id={createRootDropId('top')}
-						nodeById={nodeById}
-					/>
-				) : null}
-				<ul className='space-y-px' ref={scrollViewportRef}>
-					{roots.map(rootNode => (
-						<TopicNavigatorItem
-							activeDragTopicId={activeDragTopicId}
-							activeTopicId={activeTopicId}
-							ancestorIdsById={ancestorIdsById}
-							expandedIdSet={expandedIdSet}
-							highlightedDropTopicId={highlightedDropTopicId}
-							hoveredTopicId={hoveredTopicId}
-							isDragAndDropEnabled={enableDragAndDrop}
-							isUpdatingTopic={isTreeMutating}
-							key={rootNode.id}
-							node={rootNode}
-							nodeById={nodeById}
-							onCreateSubtopic={handleCreateSubtopic}
-							onHoverTopicChange={setHoveredTopicId}
-							onNavigate={onNavigate}
-							onOpenTopic={handleOpenTopic}
-							onRequestDeleteTopic={setPendingDeleteTopicId}
-							onToggleExpanded={toggleExpanded}
-							setItemRef={setItemRef}
-							suppressNavigationRef={suppressNavigationRef}
-						/>
-					))}
-				</ul>
-				{enableDragAndDrop ? (
-					<TopicNavigatorRootDropZone
-						activeDragTopicId={activeDragTopicId}
-						ancestorIdsById={ancestorIdsById}
-						className='mt-0.5'
-						id={createRootDropId('bottom')}
-						nodeById={nodeById}
-					/>
-				) : null}
-			</nav>
-			<DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
-				{activeDragLabel ? (
-					<Badge
-						className='max-w-72 truncate bg-background/95 px-2.5 py-1 text-sm shadow-lg backdrop-blur-xs'
-						variant='outline'
-					>
-						{activeDragLabel}
-					</Badge>
-				) : null}
-			</DragOverlay>
-			<AlertDialog
-				onOpenChange={handleDialogOpenChange}
-				open={pendingDeleteTopicId != null}
+		<>
+			{renderedChildren}
+			<DndContext
+				collisionDetection={pointerWithin}
+				onDragCancel={handleDragCancel}
+				onDragEnd={handleDragEnd}
+				onDragOver={handleDragOver}
+				onDragStart={handleDragStart}
+				sensors={enableDragAndDrop ? sensors : undefined}
 			>
-				<AlertDialogContent size='sm'>
-					<AlertDialogHeader>
-						<AlertDialogMedia>
-							<AlertTriangle className='h-5 w-5' />
-						</AlertDialogMedia>
-						<AlertDialogTitle>Delete topic?</AlertDialogTitle>
-						<AlertDialogDescription>
-							{pendingDeleteTopic
-								? `Delete ${getTopicDisplayTitle(pendingDeleteTopic.title, pendingDeleteTopic.body)} and all of its subtopics, review cards, and reviews? This action cannot be undone.`
-								: 'This action cannot be undone.'}
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel
-							buttonClassName='w-full sm:w-auto'
-							disabled={isDeletingTopic}
+				<nav aria-label='Topic hierarchy' className='space-y-1.5'>
+					{enableDragAndDrop ? (
+						<TopicNavigatorRootDropZone
+							activeDragTopicId={activeDragTopicId}
+							ancestorIdsById={ancestorIdsById}
+							className='mb-0.5'
+							id={createRootDropId('top')}
+							nodeById={nodeById}
+						/>
+					) : null}
+					<ul className='space-y-px' ref={scrollViewportRef}>
+						{roots.map(rootNode => (
+							<TopicNavigatorItem
+								activeDragTopicId={activeDragTopicId}
+								activeTopicId={activeTopicId}
+								ancestorIdsById={ancestorIdsById}
+								expandedIdSet={expandedIdSet}
+								highlightedDropTopicId={highlightedDropTopicId}
+								hoveredTopicId={hoveredTopicId}
+								isDragAndDropEnabled={enableDragAndDrop}
+								isUpdatingTopic={isTreeMutating}
+								key={rootNode.id}
+								node={rootNode}
+								nodeById={nodeById}
+								onCreateSubtopic={handleCreateSubtopic}
+								onHoverTopicChange={setHoveredTopicId}
+								onNavigate={onNavigate}
+								onOpenTopic={handleOpenTopic}
+								onRequestDeleteTopic={setPendingDeleteTopicId}
+								onToggleExpanded={toggleExpanded}
+								setItemRef={setItemRef}
+								suppressNavigationRef={suppressNavigationRef}
+							/>
+						))}
+					</ul>
+					{enableDragAndDrop ? (
+						<TopicNavigatorRootDropZone
+							activeDragTopicId={activeDragTopicId}
+							ancestorIdsById={ancestorIdsById}
+							className='mt-0.5'
+							id={createRootDropId('bottom')}
+							nodeById={nodeById}
+						/>
+					) : null}
+				</nav>
+				<DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
+					{activeDragLabel ? (
+						<Badge
+							className='max-w-72 truncate bg-background/95 px-2.5 py-1 text-sm shadow-lg backdrop-blur-xs'
+							variant='outline'
 						>
-							Cancel
-						</AlertDialogCancel>
-						<AlertDialogAction
-							buttonClassName='w-full sm:w-auto'
-							disabled={isDeletingTopic}
-							onClick={handleConfirmDeleteTopic}
-						>
-							{isDeletingTopic ? 'Deleting...' : 'Delete topic'}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-		</DndContext>
+							{activeDragLabel}
+						</Badge>
+					) : null}
+				</DragOverlay>
+				<AlertDialog
+					onOpenChange={handleDialogOpenChange}
+					open={pendingDeleteTopicId != null}
+				>
+					<AlertDialogContent size='sm'>
+						<AlertDialogHeader>
+							<AlertDialogMedia>
+								<AlertTriangle className='h-5 w-5' />
+							</AlertDialogMedia>
+							<AlertDialogTitle>Delete topic?</AlertDialogTitle>
+							<AlertDialogDescription>
+								{pendingDeleteTopic
+									? `Delete ${getTopicDisplayTitle(pendingDeleteTopic.title, pendingDeleteTopic.body)} and all of its subtopics, review cards, and reviews? This action cannot be undone.`
+									: 'This action cannot be undone.'}
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel
+								buttonClassName='w-full sm:w-auto'
+								disabled={isDeletingTopic}
+							>
+								Cancel
+							</AlertDialogCancel>
+							<AlertDialogAction
+								buttonClassName='w-full sm:w-auto'
+								disabled={isDeletingTopic}
+								onClick={handleConfirmDeleteTopic}
+							>
+								{isDeletingTopic ? 'Deleting...' : 'Delete topic'}
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
+			</DndContext>
+		</>
 	)
 }
