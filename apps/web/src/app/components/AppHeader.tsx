@@ -39,15 +39,15 @@ export function AppHeader() {
 
 	return (
 		<>
-			<header className='grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 bg-background px-3 py-1 sm:px-4'>
+			<header className='grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 bg-transparent px-2 py-1 sm:px-2 sm:py-1.5'>
 				<div className='flex min-w-0 items-center gap-2' />
 
 				<div className='flex min-w-0 justify-center'>
-					<div className='flex w-[min(22rem,calc(100vw-8rem))] items-center gap-1 sm:w-[min(22rem,calc(100vw-10rem))]'>
+					<div className='flex w-[min(21rem,calc(100vw-6.5rem))] items-center gap-0.5 sm:w-[min(21rem,calc(100vw-8rem))]'>
 						<div className='relative min-w-0 flex-1'>
 							<Button
 								aria-label='Open search'
-								className='w-full justify-start px-3'
+								className='h-8 w-full justify-start px-2.5'
 								onClick={() => setSearchOpen(true)}
 								size='sm'
 								variant='outline'
@@ -65,7 +65,7 @@ export function AppHeader() {
 							{searchQuery ? (
 								<Button
 									aria-label='Clear search'
-									className='absolute top-1/2 right-1 size-8 -translate-y-1/2 rounded-full p-0 text-muted-foreground hover:text-foreground'
+									className='absolute top-1/2 right-0.5 size-7 -translate-y-1/2 rounded-full p-0 text-muted-foreground hover:text-foreground'
 									onClick={event => {
 										event.stopPropagation()
 										setSearchQuery('')
@@ -84,7 +84,7 @@ export function AppHeader() {
 									<HeaderIconButton
 										ariaLabel={`Review mode ${isReviewModeEnabled ? 'on' : 'off'}`}
 										className={cn(
-											'size-8 px-0',
+											'size-7.5 px-0',
 											isReviewModeEnabled &&
 												'border-blue-200 bg-blue-50 text-blue-700 shadow-xs hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/60 dark:text-blue-200 dark:hover:bg-blue-900/70'
 										)}
@@ -105,13 +105,13 @@ export function AppHeader() {
 					</div>
 				</div>
 
-				<div className='flex min-w-0 items-center justify-end gap-1'>
+				<div className='flex min-w-0 items-center justify-end gap-0'>
 					<Tooltip>
 						<TooltipTrigger
 							render={
 								<HeaderIconButton
 									ariaLabel='Recent'
-									className='size-8 px-0'
+									className='size-7.5 px-0'
 									nativeButton={false}
 									render={<Link to='/recent' />}
 									showNativeTitle={false}
@@ -127,7 +127,7 @@ export function AppHeader() {
 							render={
 								<HeaderIconButton
 									ariaLabel='Logbook'
-									className='size-8 px-0'
+									className='size-7.5 px-0'
 									nativeButton={false}
 									render={<Link to='/logbook' />}
 									showNativeTitle={false}
@@ -143,7 +143,7 @@ export function AppHeader() {
 							render={
 								<HeaderIconButton
 									ariaLabel='Settings'
-									className='size-8 px-0'
+									className='size-7.5 px-0'
 									onClick={() => setIsSettingsDialogOpen(true)}
 									showNativeTitle={false}
 								/>

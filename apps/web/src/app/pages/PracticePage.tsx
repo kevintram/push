@@ -37,7 +37,7 @@ function groupFocusedPracticeRows(
 }
 
 function getFocusedPracticeRowClassName(rowLength: number) {
-	const baseClassName = 'mx-auto grid w-full gap-4 sm:gap-6'
+	const baseClassName = 'mx-auto grid w-full gap-3 sm:gap-5'
 
 	switch (rowLength) {
 		case 1:
@@ -151,7 +151,7 @@ export function PracticePage({
 	} else if (isFocusedDueView) {
 		content = (
 			<div
-				className='mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6'
+				className='mx-auto flex w-full max-w-7xl flex-col gap-3 sm:gap-5'
 				data-testid='focused-practice-layout'
 			>
 				{focusedRows.map((row, rowIndex) => (
