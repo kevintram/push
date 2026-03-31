@@ -24,7 +24,6 @@ import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
 import { useSearchAll } from '~/features/search/api/searchAll'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 import { TopicCard } from '~/features/topics/components/TopicCard'
-import { requestCreateTopic } from '~/features/topics/createTopicIntent'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import { estimateCardSize } from '~/utils/estimateCardSize'
 import { SearchInput } from './SearchInput'
@@ -200,8 +199,7 @@ export function SearchDialog({
 		}
 
 		onOpenChange(false)
-		requestCreateTopic()
-		navigate({ to: '/topics' })
+		navigate({ to: '/topics', search: { create: true } })
 	}
 
 	return (

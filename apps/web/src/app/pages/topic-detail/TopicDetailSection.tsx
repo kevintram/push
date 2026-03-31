@@ -17,7 +17,6 @@ import type { ReviewCard as ReviewCardModel } from '~/features/review-cards/type
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
-import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import {
 	formatAbsoluteDate,
@@ -156,10 +155,10 @@ export function TopicDetailSection({
 				body: '',
 				parent_id: section.topic.id
 			})
-			requestFocusNewTopicTitle(created.id)
 			await navigate({
 				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() }
+				params: { topicId: created.id.toString() },
+				search: { focusTitle: true }
 			})
 		} catch {
 			toast.error('Failed to create topic')

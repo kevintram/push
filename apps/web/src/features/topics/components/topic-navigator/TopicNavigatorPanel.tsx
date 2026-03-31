@@ -6,7 +6,6 @@ import { ScrollArea } from '~/components/ui/scroll-area'
 import { Separator } from '~/components/ui/separator'
 import { SidebarContent, SidebarHeader } from '~/components/ui/sidebar'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
-import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { TopicNavigatorContent } from './TopicNavigatorContent'
 
 type TopicNavigatorPanelProps = {
@@ -34,10 +33,10 @@ export function TopicNavigatorPanel({
 				title: '',
 				body: ''
 			})
-			requestFocusNewTopicTitle(created.id)
 			await navigate({
 				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() }
+				params: { topicId: created.id.toString() },
+				search: { focusTitle: true }
 			})
 			onNavigate?.()
 		} catch {

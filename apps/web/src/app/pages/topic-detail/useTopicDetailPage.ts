@@ -6,7 +6,6 @@ import { useReviewCards } from '~/features/review-cards/api/getReviewCards'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
-import { consumeFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import { useTopicTree } from '~/features/topics/hooks/useTopicTree'
 import type { TopicDetailReviewCardFilter } from './shared'
 import { isTopicDetailReviewCardFilter } from './shared'
@@ -20,12 +19,14 @@ import { useTopicDetailNavigation } from './useTopicDetailNavigation'
 
 type UseTopicDetailPageOptions = {
 	cardTypeFilter?: TopicDetailReviewCardFilter | string
+	focusTitle?: boolean
 	onCardTypeFilterChange: (filter: TopicDetailReviewCardFilter) => void
 	topicId: number
 }
 
 export function useTopicDetailPage({
 	cardTypeFilter = 'all',
+	focusTitle,
 	onCardTypeFilterChange,
 	topicId
 }: UseTopicDetailPageOptions) {
@@ -65,8 +66,7 @@ export function useTopicDetailPage({
 		order: 'desc'
 	})
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-	const [shouldAutoFocusRootTitle, setShouldAutoFocusRootTitle] =
-		useState(false)
+	const shouldAutoFocusRootTitle = focusTitle ?? false
 	const [sectionFilterOverrides, setSectionFilterOverrides] = useState<
 		Record<number, TopicDetailReviewCardFilter>
 	>({})
@@ -191,12 +191,6 @@ export function useTopicDetailPage({
 		},
 		[navigate]
 	)
-
-	useEffect(() => {
-		if (!topic) return
-
-		setShouldAutoFocusRootTitle(consumeFocusNewTopicTitle(topic.id))
-	}, [topic])
 
 	useEffect(() => {
 		if (!topic) return

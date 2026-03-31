@@ -319,9 +319,11 @@ export function renderPracticePage({
 }
 
 export function renderTopicDetailPage({
-	initialFilter = 'all'
+	initialFilter = 'all',
+	focusTitle
 }: {
 	initialFilter?: TopicDetailReviewCardFilter
+	focusTitle?: boolean
 }) {
 	function TopicDetailHarnessComponent() {
 		const [cardTypeFilter, setCardTypeFilter] =
@@ -330,6 +332,7 @@ export function renderTopicDetailPage({
 		return (
 			<TopicDetailPage
 				cardTypeFilter={cardTypeFilter}
+				focusTitle={focusTitle}
 				onCardTypeFilterChange={setCardTypeFilter}
 				topicId={1}
 			/>

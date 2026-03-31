@@ -14,6 +14,7 @@ import { topicsQueryOptions } from '~/features/topics/api/getTopics'
 interface TopicDetailRouteSearch {
 	controls?: TopicDetailReviewCardControlsVariant
 	filter?: TopicDetailReviewCardFilter
+	focusTitle?: boolean
 }
 
 export function validateTopicDetailSearch(
@@ -28,7 +29,10 @@ export function validateTopicDetailSearch(
 			controls && isTopicDetailReviewCardControlsVariant(controls)
 				? controls
 				: undefined,
-		filter: filter && isTopicDetailReviewCardFilter(filter) ? filter : undefined
+		filter:
+			filter && isTopicDetailReviewCardFilter(filter) ? filter : undefined,
+		focusTitle:
+			search.focusTitle === true || search.focusTitle === 'true' || undefined
 	}
 }
 
@@ -89,6 +93,7 @@ function TopicDetailRoute() {
 	return (
 		<TopicDetailPage
 			cardTypeFilter={search.filter}
+			focusTitle={search.focusTitle}
 			onCardTypeFilterChange={filter =>
 				navigate({
 					to: '/topics/$topicId',

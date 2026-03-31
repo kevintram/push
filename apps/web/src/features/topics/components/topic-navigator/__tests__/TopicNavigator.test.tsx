@@ -530,11 +530,9 @@ describe('TopicNavigator', () => {
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/topics/$topicId',
-			params: { topicId: '7' }
+			params: { topicId: '7' },
+			search: { focusTitle: true }
 		})
-		expect(window.sessionStorage.getItem('topics:focus-new-topic-title')).toBe(
-			'7'
-		)
 	})
 
 	it('opens a topic from the topic context menu', async () => {
@@ -611,11 +609,9 @@ describe('TopicNavigator', () => {
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/topics/$topicId',
-			params: { topicId: '8' }
+			params: { topicId: '8' },
+			search: { focusTitle: true }
 		})
-		expect(window.sessionStorage.getItem('topics:focus-new-topic-title')).toBe(
-			'8'
-		)
 	})
 
 	it('deletes the active topic from the context menu and navigates to its parent', async () => {

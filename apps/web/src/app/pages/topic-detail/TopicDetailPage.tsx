@@ -44,6 +44,7 @@ import { useTopicDetailPage } from './useTopicDetailPage'
 
 interface TopicDetailPageProps {
 	cardTypeFilter?: TopicDetailReviewCardFilter | string
+	focusTitle?: boolean
 	onCardTypeFilterChange: (filter: TopicDetailReviewCardFilter) => void
 	reviewCardControlsVariant?: TopicDetailReviewCardControlsVariant
 	topicId: number
@@ -51,6 +52,7 @@ interface TopicDetailPageProps {
 
 export function TopicDetailPage({
 	cardTypeFilter = 'all',
+	focusTitle,
 	onCardTypeFilterChange,
 	reviewCardControlsVariant = 'medium',
 	topicId
@@ -87,6 +89,7 @@ export function TopicDetailPage({
 		visibleSectionIds
 	} = useTopicDetailPage({
 		cardTypeFilter,
+		focusTitle,
 		onCardTypeFilterChange,
 		topicId
 	})
