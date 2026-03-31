@@ -25,8 +25,8 @@ import {
 	type TopicPathItem
 } from './TopicDetailBreadcrumb'
 import {
-	TOPIC_DETAIL_SECTION_GRID_CLASS,
-	getTopicDetailSectionDisplayLevel
+	getTopicDetailSectionDisplayLevel,
+	TOPIC_DETAIL_SECTION_GRID_CLASS
 } from './topicDetailLayout'
 import type { TopicDetailSectionNode } from './topicDetailStructure'
 
