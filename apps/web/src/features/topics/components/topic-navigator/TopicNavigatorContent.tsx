@@ -2,6 +2,7 @@ import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { useNavigate } from '@tanstack/react-router'
 import { AlertTriangle } from 'lucide-react'
+import { useEffect } from 'react'
 
 import {
 	AlertDialog,
@@ -29,6 +30,7 @@ type TopicNavigatorContentProps = {
 	activeTopicId?: number | null
 	autoScrollActiveTopic?: boolean
 	enableDragAndDrop?: boolean
+	onCollapseAllReady?: (collapseAll: () => void) => void
 	onNavigate?: () => void
 }
 
@@ -36,6 +38,7 @@ export function TopicNavigatorContent({
 	activeTopicId,
 	autoScrollActiveTopic = false,
 	enableDragAndDrop = false,
+	onCollapseAllReady,
 	onNavigate
 }: TopicNavigatorContentProps) {
 	const navigate = useNavigate()
@@ -43,6 +46,7 @@ export function TopicNavigatorContent({
 		activeDragLabel,
 		activeDragTopicId,
 		ancestorIdsById,
+		collapseAll,
 		ensureExpanded,
 		error,
 		expandedIdSet,
@@ -94,6 +98,10 @@ export function TopicNavigatorContent({
 			})
 			.catch(() => {})
 	}
+
+	useEffect(() => {
+		onCollapseAllReady?.(collapseAll)
+	}, [collapseAll, onCollapseAllReady])
 
 	if (isLoading) {
 		return <LoadingSpinner containerClassName='min-h-32' />
