@@ -93,7 +93,7 @@ export function AppSidebar({
 			<SidebarHeader className='px-1.5 py-1'>
 				<SidebarTrigger className='rounded-full' />
 			</SidebarHeader>
-			<SidebarContent className='gap-1 overflow-hidden bg-primary-foreground'>
+			<SidebarContent className='gap-0 overflow-hidden bg-primary-foreground'>
 				<div className='flex shrink-0 flex-col gap-1'>
 					<SidebarGroup className='px-1.5'>
 						<SidebarGroupContent>
@@ -146,7 +146,7 @@ export function AppSidebar({
 						</SidebarGroupContent>
 					</SidebarGroup>
 
-					<SidebarGroup className='px-1.5'>
+					<SidebarGroup className='px-1.5 pb-0'>
 						<SidebarGroupContent>
 							<SidebarMenu>
 								{libraryItems.map(item => {
