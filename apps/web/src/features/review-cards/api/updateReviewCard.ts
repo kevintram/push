@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+import { searchKeys } from '~/features/search/api/searchAll'
 import { apiFetch } from '~/utils/apiFetch'
 import { ReviewCardSchema } from '../types/review-card.schemas'
 import type {
@@ -44,9 +45,12 @@ export function useUpdateReviewCard() {
 
 	return useMutation({
 		mutationFn: updateReviewCard,
-		onSuccess: reviewCard => {
+		onSuccess: async reviewCard => {
 			queryClient.setQueryData(reviewCardKeys.detail(reviewCard.id), reviewCard)
-			return queryClient.invalidateQueries({ queryKey: reviewCardKeys.all })
+			await Promise.all([
+				queryClient.invalidateQueries({ queryKey: reviewCardKeys.all }),
+				queryClient.invalidateQueries({ queryKey: searchKeys.all })
+			])
 		}
 	})
 }
