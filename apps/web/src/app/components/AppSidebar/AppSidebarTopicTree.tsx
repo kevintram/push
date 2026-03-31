@@ -1,13 +1,12 @@
-import type { ReactNode } from 'react'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { useSidebar } from '~/components/ui/sidebar'
 import { TopicNavigatorContent } from '~/features/topics/components/topic-navigator/TopicNavigatorContent'
 import { useActiveTopicNavigatorTopicId } from '~/features/topics/components/topic-navigator/useActiveTopicNavigatorTopicId'
 
 export function AppSidebarTopicTree({
-	children
+	onCollapseAllReady
 }: {
-	children?: (actions: { collapseAll: () => void }) => ReactNode
+	onCollapseAllReady?: (collapseAll: () => void) => void
 }) {
 	const { isMobile, state } = useSidebar()
 	const activeTopicId = useActiveTopicNavigatorTopicId()
@@ -26,9 +25,8 @@ export function AppSidebarTopicTree({
 						activeTopicId={activeTopicId}
 						autoScrollActiveTopic={true}
 						enableDragAndDrop={!isMobile}
-					>
-						{children}
-					</TopicNavigatorContent>
+						onCollapseAllReady={onCollapseAllReady}
+					/>
 				</div>
 			</ScrollArea>
 		</div>

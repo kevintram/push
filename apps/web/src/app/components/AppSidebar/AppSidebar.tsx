@@ -8,7 +8,11 @@ import {
 	Minimize2,
 	Plus
 } from 'lucide-react'
-import { type PointerEvent as ReactPointerEvent, useRef } from 'react'
+import {
+	type PointerEvent as ReactPointerEvent,
+	useCallback,
+	useRef
+} from 'react'
 
 import {
 	type ReviewSidebarItem,
@@ -85,6 +89,10 @@ export function AppSidebar({
 	]
 
 	const collapseAllRef = useRef<(() => void) | null>(null)
+
+	const handleCollapseAllReady = useCallback((collapseAll: () => void) => {
+		collapseAllRef.current = collapseAll
+	}, [])
 
 	const handleCollapseAll = () => {
 		collapseAllRef.current?.()
@@ -176,10 +184,10 @@ export function AppSidebar({
 												<span>{item.title}</span>
 											</SidebarMenuButton>
 											{isTopicsItem ? (
-												<>
+												<div className='absolute top-1.5 right-1 z-10 flex items-center gap-0.5 group-data-[collapsible=icon]:hidden'>
 													<SidebarMenuAction
 														aria-label='Collapse all topics'
-														className='peer/collapse right-8 z-10'
+														className='static'
 														onClick={event => {
 															event.preventDefault()
 															event.stopPropagation()
@@ -192,7 +200,7 @@ export function AppSidebar({
 													</SidebarMenuAction>
 													<SidebarMenuAction
 														aria-label='Add topic'
-														className='z-10'
+														className='static'
 														onClick={event => {
 															event.preventDefault()
 															event.stopPropagation()
@@ -203,7 +211,7 @@ export function AppSidebar({
 														<Plus />
 														<span className='sr-only'>Add topic</span>
 													</SidebarMenuAction>
-												</>
+												</div>
 											) : null}
 										</SidebarMenuItem>
 									)
@@ -213,12 +221,7 @@ export function AppSidebar({
 					</SidebarGroup>
 				</div>
 
-				<AppSidebarTopicTree>
-					{({ collapseAll }) => {
-						collapseAllRef.current = collapseAll
-						return null
-					}}
-				</AppSidebarTopicTree>
+				<AppSidebarTopicTree onCollapseAllReady={handleCollapseAllReady} />
 			</SidebarContent>
 
 			{import.meta.env.DEV && !import.meta.env.VITEST ? (
