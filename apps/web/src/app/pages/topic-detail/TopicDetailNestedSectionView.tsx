@@ -24,14 +24,11 @@ import {
 	TopicDetailSectionBreadcrumb,
 	type TopicPathItem
 } from './TopicDetailBreadcrumb'
-import { TopicDetailSectionMeta } from './TopicDetailSectionMeta'
 import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
 import type { TopicDetailSectionNode } from './topicDetailStructure'
 
 interface TopicDetailNestedSectionViewProps {
 	bodyPanel: ReactNode
-	createdDate: string
-	createdText: string
 	flushTitle: () => void
 	headingClassName: string
 	isCollapsed: boolean
@@ -50,14 +47,10 @@ interface TopicDetailNestedSectionViewProps {
 	title: string
 	topicPath: Array<TopicPathItem>
 	toggleSection: (sectionId: string) => void
-	updatedDate: string
-	updatedText: string
 }
 
 export function TopicDetailNestedSectionView({
 	bodyPanel,
-	createdDate,
-	createdText,
 	flushTitle,
 	headingClassName,
 	isCollapsed,
@@ -75,9 +68,7 @@ export function TopicDetailNestedSectionView({
 	sectionLabel,
 	title,
 	topicPath,
-	toggleSection,
-	updatedDate,
-	updatedText
+	toggleSection
 }: TopicDetailNestedSectionViewProps) {
 	return (
 		<div className={cn('group/section', TOPIC_DETAIL_SECTION_GRID_CLASS)}>
@@ -191,12 +182,6 @@ export function TopicDetailNestedSectionView({
 			<div className='min-w-0 pt-1'>
 				{isCollapsed ? null : (
 					<>
-						<TopicDetailSectionMeta
-							createdDate={createdDate}
-							createdText={createdText}
-							updatedDate={updatedDate}
-							updatedText={updatedText}
-						/>
 						<div className='pt-3'>{bodyPanel}</div>
 						<div>{reviewCardsSection}</div>
 					</>
