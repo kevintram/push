@@ -89,7 +89,7 @@ export function TopicDetailNestedSectionView({
 				<div className='relative min-w-0'>
 					{topicPath.length > 1 ? (
 						<TopicDetailSectionBreadcrumb
-							className='pr-28 pb-1 sm:pr-32'
+							className='pr-28 pb-1 opacity-0 transition-opacity group-hover/section:opacity-100 group-has-[:focus-visible]/section:opacity-100 sm:pr-32'
 							currentTopicId={section.topic.id}
 							rootTopicId={rootTopicId}
 							rootTopicPath={rootTopicPath}
