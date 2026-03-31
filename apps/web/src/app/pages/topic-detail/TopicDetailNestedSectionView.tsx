@@ -32,7 +32,7 @@ import type { TopicDetailSectionNode } from './topicDetailStructure'
 
 function getActionButtonProps(section: TopicDetailSectionNode) {
 	const displayLevel = getTopicDetailSectionDisplayLevel(section)
-	if (displayLevel <= 3) {
+	if (displayLevel <= 4) {
 		return {
 			buttonSize: 'icon-sm' as const,
 			iconClassName: 'size-4'
