@@ -64,7 +64,12 @@ export function useTopicNavigatorExpansionState({
 		)
 	}, [])
 
+	const collapseAll = useCallback(() => {
+		setExpandedIds([])
+	}, [])
+
 	return {
+		collapseAll,
 		ensureExpanded,
 		expandedIdSet,
 		setExpandedIds,

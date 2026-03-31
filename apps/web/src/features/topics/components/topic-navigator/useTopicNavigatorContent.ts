@@ -44,7 +44,7 @@ export function useTopicNavigatorContent({
 		return [...activeAncestorIds, activeTopicId]
 	}, [activeTopicId, ancestorIdsById])
 	const validTopicIds = useMemo(() => new Set(nodeById.keys()), [nodeById])
-	const { ensureExpanded, expandedIdSet, toggleExpanded } =
+	const { collapseAll, ensureExpanded, expandedIdSet, toggleExpanded } =
 		useTopicNavigatorExpansionState({
 			activeBranchIds,
 			error,
@@ -240,6 +240,7 @@ export function useTopicNavigatorContent({
 		activeDragLabel,
 		activeDragTopicId,
 		ancestorIdsById,
+		collapseAll,
 		ensureExpanded,
 		error,
 		expandedIdSet,

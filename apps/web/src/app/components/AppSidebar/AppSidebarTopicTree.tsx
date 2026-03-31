@@ -3,7 +3,11 @@ import { useSidebar } from '~/components/ui/sidebar'
 import { TopicNavigatorContent } from '~/features/topics/components/topic-navigator/TopicNavigatorContent'
 import { useActiveTopicNavigatorTopicId } from '~/features/topics/components/topic-navigator/useActiveTopicNavigatorTopicId'
 
-export function AppSidebarTopicTree() {
+export function AppSidebarTopicTree({
+	onCollapseAllReady
+}: {
+	onCollapseAllReady?: (collapseAll: () => void) => void
+}) {
 	const { isMobile, state } = useSidebar()
 	const activeTopicId = useActiveTopicNavigatorTopicId()
 	const shouldRenderTree = isMobile || state === 'expanded'
@@ -21,6 +25,7 @@ export function AppSidebarTopicTree() {
 						activeTopicId={activeTopicId}
 						autoScrollActiveTopic={true}
 						enableDragAndDrop={!isMobile}
+						onCollapseAllReady={onCollapseAllReady}
 					/>
 				</div>
 			</ScrollArea>

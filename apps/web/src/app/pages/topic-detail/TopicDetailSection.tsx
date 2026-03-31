@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Trash2 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import {
 	AlertDialog,
@@ -18,10 +18,6 @@ import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import {
-	formatAbsoluteDate,
-	formatRelativeDate
-} from '~/utils/formatRelativeDate'
 import type {
 	TopicDetailReviewCardControlsVariant,
 	TopicDetailReviewCardFilter
@@ -98,31 +94,6 @@ export function TopicDetailSection({
 		section.topic.body
 	)
 	const rootTopicId = section.topicPath[0]?.id ?? section.topic.id
-	const updated = useMemo(
-		() =>
-			formatRelativeDate(section.topic.updated_at, {
-				includeFuture: false,
-				nullLabel: 'never'
-			}),
-		[section.topic.updated_at]
-	)
-	const created = useMemo(
-		() =>
-			formatRelativeDate(section.topic.inserted_at, {
-				includeFuture: false,
-				nullLabel: 'never'
-			}),
-		[section.topic.inserted_at]
-	)
-	const updatedDate = useMemo(
-		() => formatAbsoluteDate(section.topic.updated_at),
-		[section.topic.updated_at]
-	)
-	const createdDate = useMemo(
-		() => formatAbsoluteDate(section.topic.inserted_at),
-		[section.topic.inserted_at]
-	)
-
 	const saveTopicTitle = useCallback(
 		async (title: string) => {
 			if (title === section.topic.title) return
@@ -216,8 +187,6 @@ export function TopicDetailSection({
 			<div className={presentation.sectionTopSpacingClassName}>
 				<TopicDetailNestedSectionView
 					bodyPanel={bodyPanel}
-					createdDate={createdDate}
-					createdText={created.text}
 					flushTitle={flushTitle}
 					headingClassName={presentation.headingClassName}
 					isCollapsed={isCollapsed}
@@ -240,8 +209,6 @@ export function TopicDetailSection({
 					title={title}
 					toggleSection={toggleSection}
 					topicPath={section.topicPath}
-					updatedDate={updatedDate}
-					updatedText={updated.text}
 				/>
 				{isCollapsed ? null : section.children.length > 0 ? (
 					<div>
