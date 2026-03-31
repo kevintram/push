@@ -1668,7 +1668,7 @@ describe('TopicDetailPage', () => {
 
 		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
 		expect(within(toc).queryByText('Linear Algebra')).not.toBeInTheDocument()
-		expect(scrollIntoViewSpy).toHaveBeenCalled()
+		expect(scrollIntoViewSpy).not.toHaveBeenCalled()
 
 		await user.click(
 			within(toc).getByRole('button', { name: 'Expand Algebra' })
