@@ -86,103 +86,105 @@ export function TopicDetailNestedSectionView({
 				data-topic-detail-heading-id={section.topic.id}
 				ref={registerHeadingRef}
 			>
-				<div className='relative min-w-0'>
+				<div className='min-w-0'>
 					{topicPath.length > 1 ? (
 						<TopicDetailSectionBreadcrumb
-							className='pr-28 pb-1 opacity-0 transition-opacity group-hover/section:opacity-100 group-has-[:focus-visible]/section:opacity-100 sm:pr-32'
+							className='min-w-0 opacity-0 transition-opacity group-hover/section:opacity-100 group-has-[:focus-visible]/section:opacity-100'
 							currentTopicId={section.topic.id}
 							rootTopicId={rootTopicId}
 							rootTopicPath={rootTopicPath}
 							topicPath={topicPath}
 						/>
 					) : null}
-					<div
-						aria-level={section.headingLevel}
-						className='min-w-0 pr-28 sm:pr-32'
-						role='heading'
-					>
-						<textarea
-							aria-label={`Topic title ${section.topic.id}`}
-							className={`field-sizing-content m-0 block min-h-0 w-full resize-none overflow-hidden border-none bg-transparent p-0 leading-tight outline-none placeholder:text-muted-foreground ${headingClassName}`}
-							onBlur={flushTitle}
-							onChange={onTitleChange}
-							placeholder='Untitled topic'
-							spellCheck={false}
-							value={title}
-						/>
-					</div>
-					<div className='absolute top-0 right-0 flex items-start gap-0.5'>
-						<div className='pointer-events-none flex items-start gap-0.5 opacity-0 transition-opacity group-hover/section:pointer-events-auto group-hover/section:opacity-100 group-has-[:focus-visible]/section:pointer-events-auto group-has-[:focus-visible]/section:opacity-100'>
-							<Tooltip>
-								<TooltipTrigger
-									render={
-										<Button
-											aria-label={`Open ${sectionLabel}`}
-											className='h-8 w-8 shrink-0 rounded-full'
-											onClick={onOpenTopic}
-											size='icon-sm'
-											type='button'
-											variant='ghost'
-										>
-											<ExternalLink className='h-4 w-4' />
-										</Button>
-									}
-								/>
-								<TooltipContent>Open topic</TooltipContent>
-							</Tooltip>
-							<DropdownMenu>
-								<DropdownMenuTrigger
-									render={
-										<Button
-											aria-label={`More actions for ${sectionLabel}`}
-											className='h-8 w-8 shrink-0 rounded-full'
-											size='icon-sm'
-											variant='ghost'
-										>
-											<MoreHorizontal className='h-4 w-4' />
-										</Button>
-									}
-								/>
-								<DropdownMenuContent align='end'>
-									<DropdownMenuItem
-										disabled={isCreatingTopic}
-										onClick={() => {
-											onCreateSubtopic()
-										}}
-									>
-										<Plus className='h-4 w-4' />
-										New topic
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem
-										onClick={onOpenDeleteDialog}
-										variant='destructive'
-									>
-										<Trash2 className='h-4 w-4' />
-										Delete
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
-						<Button
-							aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} ${sectionLabel}`}
-							className={cn(
-								'h-8 w-8 shrink-0 rounded-full',
-								isCollapsed &&
-									'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
-							)}
-							onClick={() => toggleSection(sectionId)}
-							size='icon-sm'
-							type='button'
-							variant='ghost'
+					<div className='flex min-w-0 items-start gap-2'>
+						<div
+							aria-level={section.headingLevel}
+							className='min-w-0 flex-1'
+							role='heading'
 						>
-							<ChevronDown
-								className={cn(
-									'h-4 w-4 translate-y-px transition-transform',
-									isCollapsed && '-rotate-90'
-								)}
+							<textarea
+								aria-label={`Topic title ${section.topic.id}`}
+								className={`field-sizing-content m-0 block min-h-0 w-full resize-none overflow-hidden border-none bg-transparent p-0 leading-tight outline-none placeholder:text-muted-foreground ${headingClassName}`}
+								onBlur={flushTitle}
+								onChange={onTitleChange}
+								placeholder='Untitled topic'
+								spellCheck={false}
+								value={title}
 							/>
-						</Button>
+						</div>
+						<div className='flex shrink-0 items-center gap-0.5'>
+							<div className='pointer-events-none flex items-center gap-0.5 opacity-0 transition-opacity group-hover/section:pointer-events-auto group-hover/section:opacity-100 group-has-[:focus-visible]/section:pointer-events-auto group-has-[:focus-visible]/section:opacity-100'>
+								<Tooltip>
+									<TooltipTrigger
+										render={
+											<Button
+												aria-label={`Open ${sectionLabel}`}
+												className='h-8 w-8 shrink-0 rounded-full'
+												onClick={onOpenTopic}
+												size='icon-sm'
+												type='button'
+												variant='ghost'
+											>
+												<ExternalLink className='h-4 w-4' />
+											</Button>
+										}
+									/>
+									<TooltipContent>Open topic</TooltipContent>
+								</Tooltip>
+								<DropdownMenu>
+									<DropdownMenuTrigger
+										render={
+											<Button
+												aria-label={`More actions for ${sectionLabel}`}
+												className='h-8 w-8 shrink-0 rounded-full'
+												size='icon-sm'
+												variant='ghost'
+											>
+												<MoreHorizontal className='h-4 w-4' />
+											</Button>
+										}
+									/>
+									<DropdownMenuContent align='end'>
+										<DropdownMenuItem
+											disabled={isCreatingTopic}
+											onClick={() => {
+												onCreateSubtopic()
+											}}
+										>
+											<Plus className='h-4 w-4' />
+											New topic
+										</DropdownMenuItem>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem
+											onClick={onOpenDeleteDialog}
+											variant='destructive'
+										>
+											<Trash2 className='h-4 w-4' />
+											Delete
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</div>
+							<Button
+								aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} ${sectionLabel}`}
+								className={cn(
+									'h-8 w-8 shrink-0 rounded-full',
+									isCollapsed &&
+										'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
+								)}
+								onClick={() => toggleSection(sectionId)}
+								size='icon-sm'
+								type='button'
+								variant='ghost'
+							>
+								<ChevronDown
+									className={cn(
+										'h-4 w-4 translate-y-px transition-transform',
+										isCollapsed && '-rotate-90'
+									)}
+								/>
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>
