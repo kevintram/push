@@ -182,7 +182,7 @@ export function TopicDetailNestedSectionView({
 			<div className='min-w-0 pt-1'>
 				{isCollapsed ? null : (
 					<>
-						<div className='pt-3'>{bodyPanel}</div>
+						<div>{bodyPanel}</div>
 						<div>{reviewCardsSection}</div>
 					</>
 				)}
