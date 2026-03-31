@@ -110,13 +110,13 @@ export function TopicDetailNestedSectionView({
 										render={
 											<Button
 												aria-label={`Open ${sectionLabel}`}
-												className='h-8 w-8 shrink-0 rounded-full'
+												className='shrink-0 rounded-full'
 												onClick={onOpenTopic}
-												size='icon-sm'
+												size='icon-xs'
 												type='button'
 												variant='ghost'
 											>
-												<ExternalLink className='h-4 w-4' />
+												<ExternalLink className='h-3 w-3' />
 											</Button>
 										}
 									/>
@@ -127,11 +127,11 @@ export function TopicDetailNestedSectionView({
 										render={
 											<Button
 												aria-label={`More actions for ${sectionLabel}`}
-												className='h-8 w-8 shrink-0 rounded-full'
-												size='icon-sm'
+												className='shrink-0 rounded-full'
+												size='icon-xs'
 												variant='ghost'
 											>
-												<MoreHorizontal className='h-4 w-4' />
+												<MoreHorizontal className='h-3 w-3' />
 											</Button>
 										}
 									/>
@@ -159,18 +159,18 @@ export function TopicDetailNestedSectionView({
 							<Button
 								aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} ${sectionLabel}`}
 								className={cn(
-									'h-8 w-8 shrink-0 rounded-full',
+									'shrink-0 rounded-full',
 									isCollapsed &&
 										'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
 								)}
 								onClick={() => toggleSection(sectionId)}
-								size='icon-sm'
+								size='icon-xs'
 								type='button'
 								variant='ghost'
 							>
 								<ChevronDown
 									className={cn(
-										'h-4 w-4 translate-y-px transition-transform',
+										'h-3 w-3 translate-y-px transition-transform',
 										isCollapsed && '-rotate-90'
 									)}
 								/>
