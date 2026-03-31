@@ -275,9 +275,9 @@ describe('TopicNavigator', () => {
 			.getByRole('link', { name: 'Algebra' })
 			.closest('li')?.firstElementChild
 
-		expect(activeWrapper).toHaveClass('bg-accent/45')
-		expect(activeWrapper).toHaveClass('ring-1')
-		expect(inactiveWrapper).not.toHaveClass('bg-accent/45')
+		expect(activeWrapper).toHaveClass('bg-[var(--app-chrome-selected)]')
+		expect(activeWrapper).not.toHaveClass('ring-1')
+		expect(inactiveWrapper).not.toHaveClass('bg-[var(--app-chrome-selected)]')
 		expect(screen.getByRole('link', { name: 'Systems' })).toBeInTheDocument()
 	})
 
@@ -348,13 +348,131 @@ describe('TopicNavigator', () => {
 
 		fireEvent.pointerEnter(hoveredTrigger)
 
-		expect(hoveredWrapper).toHaveClass('bg-accent/45')
-		expect(hoveredWrapper).toHaveClass('ring-1')
-		expect(descendantWrapper).not.toHaveClass('bg-accent/45')
+		expect(hoveredWrapper).toHaveClass('bg-[var(--app-chrome-hover)]')
+		expect(hoveredWrapper).not.toHaveClass('ring-1')
+		expect(descendantWrapper).not.toHaveClass('bg-[var(--app-chrome-hover)]')
 
 		fireEvent.pointerLeave(hoveredTrigger)
 
-		expect(hoveredWrapper).not.toHaveClass('bg-accent/45')
+		expect(hoveredWrapper).not.toHaveClass('bg-[var(--app-chrome-hover)]')
+	})
+
+	it('keeps an active descendant selected while a hovered ancestor uses hover styling', () => {
+		useTopicTreeMock.mockReturnValue({
+			roots: [
+				{
+					id: 1,
+					title: 'Algebra',
+					body: '',
+					parent_id: null,
+					parent_title: null,
+					inserted_at: '',
+					updated_at: '',
+					children: [
+						{
+							id: 2,
+							title: 'Linear equations',
+							body: '',
+							parent_id: 1,
+							parent_title: 'Algebra',
+							inserted_at: '',
+							updated_at: '',
+							children: []
+						}
+					]
+				}
+			],
+			ancestorIdsById: new Map<number, Array<number>>([
+				[1, []],
+				[2, [1]]
+			]),
+			nodeById: new Map<number, object>([
+				[1, {}],
+				[2, {}]
+			]),
+			isLoading: false,
+			error: null
+		})
+
+		render(<TopicNavigatorRail activeTopicId={2} className='block' />)
+
+		const ancestorLink = screen.getByRole('link', { name: 'Algebra' })
+		const ancestorTrigger = ancestorLink.closest(
+			'[data-slot="context-menu-trigger"]'
+		)
+		const ancestorWrapper = ancestorLink.closest('li')?.firstElementChild
+		const activeWrapper = screen
+			.getByRole('link', { name: 'Linear equations' })
+			.closest('li')?.firstElementChild
+
+		if (!ancestorTrigger) throw new Error('ancestor hover trigger not found')
+
+		fireEvent.pointerEnter(ancestorTrigger)
+
+		expect(ancestorWrapper).toHaveClass('bg-[var(--app-chrome-hover)]')
+		expect(activeWrapper).toHaveClass('bg-[var(--app-chrome-selected)]')
+		expect(activeWrapper).not.toHaveClass('bg-[var(--app-chrome-hover)]')
+	})
+
+	it('keeps an active ancestor selected while a hovered descendant uses hover styling', () => {
+		useTopicTreeMock.mockReturnValue({
+			roots: [
+				{
+					id: 1,
+					title: 'Algebra',
+					body: '',
+					parent_id: null,
+					parent_title: null,
+					inserted_at: '',
+					updated_at: '',
+					children: [
+						{
+							id: 2,
+							title: 'Linear equations',
+							body: '',
+							parent_id: 1,
+							parent_title: 'Algebra',
+							inserted_at: '',
+							updated_at: '',
+							children: []
+						}
+					]
+				}
+			],
+			ancestorIdsById: new Map<number, Array<number>>([
+				[1, []],
+				[2, [1]]
+			]),
+			nodeById: new Map<number, object>([
+				[1, {}],
+				[2, {}]
+			]),
+			isLoading: false,
+			error: null
+		})
+
+		render(<TopicNavigatorRail activeTopicId={1} className='block' />)
+
+		const descendantLink = screen.getByRole('link', {
+			name: 'Linear equations'
+		})
+		const descendantTrigger = descendantLink.closest(
+			'[data-slot="context-menu-trigger"]'
+		)
+		const descendantWrapper = descendantLink.closest('li')?.firstElementChild
+		const activeWrapper = screen
+			.getByRole('link', { name: 'Algebra' })
+			.closest('li')?.firstElementChild
+
+		if (!descendantTrigger) {
+			throw new Error('descendant hover trigger not found')
+		}
+
+		fireEvent.pointerEnter(descendantTrigger)
+
+		expect(activeWrapper).toHaveClass('bg-[var(--app-chrome-selected)]')
+		expect(descendantWrapper).toHaveClass('bg-[var(--app-chrome-hover)]')
+		expect(descendantWrapper).not.toHaveClass('bg-[var(--app-chrome-selected)]')
 	})
 
 	it('renders guide lines for nested topic branches', () => {

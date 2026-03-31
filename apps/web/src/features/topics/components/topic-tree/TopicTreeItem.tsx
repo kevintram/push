@@ -211,7 +211,10 @@ function TopicTreeItemComponent({
 				isDragAndDropEnabled && !isUpdatingTopic && 'cursor-grab',
 				isDragging && 'cursor-grabbing opacity-15',
 				(highlightAppearance === 'text-only' || !isSubtreeHighlighted) &&
-					'hover:bg-muted/50'
+					'hover:bg-[var(--app-chrome-hover)]',
+				highlightAppearance === 'container' &&
+					isActive &&
+					'hover:bg-[var(--app-chrome-selected-hover)]'
 			)}
 		>
 			{hasChildren ? (
@@ -261,11 +264,15 @@ function TopicTreeItemComponent({
 						highlightAppearance === 'container' &&
 							'rounded-lg transition-colors',
 						highlightAppearance === 'container' &&
-							(isActive || isHoverSubtreeHighlighted) &&
-							'bg-accent/45 text-foreground ring-1 ring-border/60',
+							isActive &&
+							'bg-[var(--app-chrome-selected)] text-foreground',
+						highlightAppearance === 'container' &&
+							!isActive &&
+							isHoverSubtreeHighlighted &&
+							'bg-[var(--app-chrome-hover)] text-foreground',
 						highlightAppearance === 'container' &&
 							isDropSubtreeHighlighted &&
-							'bg-accent text-foreground ring-1 ring-border'
+							'bg-[var(--app-chrome-selected)] text-foreground ring-1 ring-[var(--app-chrome-border)]'
 					)}
 				>
 					<ContextMenuTrigger
