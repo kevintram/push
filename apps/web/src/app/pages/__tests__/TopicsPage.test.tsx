@@ -70,10 +70,8 @@ describe('TopicsPage', () => {
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/topics/$topicId',
-			params: { topicId: '42' }
+			params: { topicId: '42' },
+			search: { focusTitle: true }
 		})
-		expect(window.sessionStorage.getItem('topics:focus-new-topic-title')).toBe(
-			'42'
-		)
 	})
 })

@@ -8,7 +8,6 @@ const useLocationMock = vi.fn()
 const useReviewCardQueueCountsMock = vi.fn()
 const useReviewCardFlaggedSummaryMock = vi.fn()
 const navigateMock = vi.fn()
-const requestCreateTopicMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
 	Link: ({ children, to, ...props }: ComponentProps<'a'> & { to: string }) => (
@@ -42,17 +41,12 @@ vi.mock('~/features/review-cards/api/getReviewCardFlaggedSummary', () => ({
 		useReviewCardFlaggedSummaryMock(...args)
 }))
 
-vi.mock('~/features/topics/createTopicIntent', () => ({
-	requestCreateTopic: () => requestCreateTopicMock()
-}))
-
 describe('AppSidebar', () => {
 	beforeEach(() => {
 		useLocationMock.mockReset()
 		useReviewCardQueueCountsMock.mockReset()
 		useReviewCardFlaggedSummaryMock.mockReset()
 		navigateMock.mockReset()
-		requestCreateTopicMock.mockReset()
 		useReviewCardFlaggedSummaryMock.mockReturnValue({
 			data: { flagged_count: 0 }
 		})
@@ -143,7 +137,7 @@ describe('AppSidebar', () => {
 		)
 	})
 
-	it('renders an add topic action and navigates to topics when outside the topics routes', () => {
+	it('navigates to topics with create search param when add topic is clicked', () => {
 		useLocationMock.mockReturnValue({ pathname: '/recent' })
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
@@ -160,29 +154,10 @@ describe('AppSidebar', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: 'Add topic' }))
 
-		expect(requestCreateTopicMock).toHaveBeenCalledTimes(1)
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/topics' })
-	})
-
-	it('requests topic creation without leaving the current topics route', () => {
-		useLocationMock.mockReturnValue({ pathname: '/topics/2' })
-		useReviewCardQueueCountsMock.mockReturnValue({
-			overdueCount: 0,
-			dueTodayCount: 0,
-			newCount: 0,
-			dueNextSevenDaysCount: 0
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/topics',
+			search: { create: true }
 		})
-
-		render(
-			<SidebarProvider>
-				<AppSidebar />
-			</SidebarProvider>
-		)
-
-		fireEvent.click(screen.getByRole('button', { name: 'Add topic' }))
-
-		expect(requestCreateTopicMock).toHaveBeenCalledTimes(1)
-		expect(navigateMock).not.toHaveBeenCalled()
 	})
 
 	it('renders the global topic tree beneath the fixed navigation groups', () => {

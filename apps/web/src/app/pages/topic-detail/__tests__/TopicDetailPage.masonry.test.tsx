@@ -23,16 +23,12 @@ describe('TopicDetailPage masonry', () => {
 			data: [{ ...reviewCard, id: 13, prompt: 'Topic detail card' }],
 			isLoading: false
 		})
-		window.sessionStorage.setItem('topics:focus-new-topic-title', '1')
 
-		render(renderTopicDetailPage({}))
+		render(renderTopicDetailPage({ focusTitle: true }))
 
 		await waitFor(() => {
 			expect(screen.getByRole('textbox', { name: 'Topic title' })).toHaveFocus()
 		})
-		expect(window.sessionStorage.getItem('topics:focus-new-topic-title')).toBe(
-			null
-		)
 	})
 
 	it('renders review cards through masonry without subtopic tabs', () => {

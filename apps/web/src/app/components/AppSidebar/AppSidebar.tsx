@@ -38,7 +38,6 @@ import {
 	useSidebar
 } from '~/components/ui/sidebar'
 import { useReviewCardFlaggedSummary } from '~/features/review-cards/api/getReviewCardFlaggedSummary'
-import { requestCreateTopic } from '~/features/topics/createTopicIntent'
 
 export function AppSidebar({
 	onResizeStart
@@ -99,14 +98,7 @@ export function AppSidebar({
 	}
 
 	const handleAddTopic = () => {
-		requestCreateTopic()
-
-		if (
-			location.pathname !== '/topics' &&
-			!location.pathname.startsWith('/topics/')
-		) {
-			navigate({ to: '/topics' })
-		}
+		navigate({ to: '/topics', search: { create: true } })
 	}
 
 	return (

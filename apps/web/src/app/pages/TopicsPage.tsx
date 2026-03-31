@@ -18,17 +18,12 @@ import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
 import { TopicCard } from '~/features/topics/components/TopicCard'
 import {
-	CREATE_TOPIC_INTENT_EVENT,
-	consumeCreateTopicRequest,
-	requestFocusNewTopicTitle
-} from '~/features/topics/createTopicIntent'
-import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
 	estimateTopicCardSize
 } from '~/utils/estimateMasonryItemSize'
 
-export function TopicsPage() {
+export function TopicsPage({ create }: { create?: boolean }) {
 	const navigate = useNavigate()
 
 	const { data: topics = [], isLoading: topicsLoading } = useTopics({
@@ -48,10 +43,10 @@ export function TopicsPage() {
 				body: '',
 				parent_id: null
 			})
-			requestFocusNewTopicTitle(created.id)
 			await navigate({
 				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() }
+				params: { topicId: created.id.toString() },
+				search: { focusTitle: true }
 			})
 		} catch {
 			toast.error('Failed to create topic')
@@ -59,22 +54,10 @@ export function TopicsPage() {
 	}, [createTopicAsync, isCreatingTopic, navigate])
 
 	useEffect(() => {
-		const createRequestedTopic = async () => {
-			if (consumeCreateTopicRequest()) {
-				await handleCreateTopic()
-			}
+		if (create) {
+			handleCreateTopic()
 		}
-
-		createRequestedTopic().catch(() => {})
-		window.addEventListener(CREATE_TOPIC_INTENT_EVENT, createRequestedTopic)
-
-		return () => {
-			window.removeEventListener(
-				CREATE_TOPIC_INTENT_EVENT,
-				createRequestedTopic
-			)
-		}
-	}, [handleCreateTopic])
+	}, [create, handleCreateTopic])
 
 	let content = <LoadingSpinner containerClassName='min-h-64' />
 

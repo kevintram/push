@@ -7,7 +7,6 @@ import { SearchDialog } from '../SearchDialog'
 
 const navigateMock = vi.fn()
 const useSearchAllMock = vi.fn()
-const requestCreateTopicMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
 	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
@@ -19,10 +18,6 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 
 vi.mock('~/features/search/api/searchAll', () => ({
 	useSearchAll: (...args: Array<unknown>) => useSearchAllMock(...args)
-}))
-
-vi.mock('~/features/topics/createTopicIntent', () => ({
-	requestCreateTopic: () => requestCreateTopicMock()
 }))
 
 vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
@@ -90,8 +85,10 @@ describe('SearchDialog', () => {
 
 		await user.click(screen.getByRole('button', { name: /Create topic/iu }))
 
-		expect(requestCreateTopicMock).toHaveBeenCalledTimes(1)
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/topics' })
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/topics',
+			search: { create: true }
+		})
 	})
 
 	it('uses the contextual create handler when provided', async () => {
@@ -114,7 +111,6 @@ describe('SearchDialog', () => {
 		await user.click(screen.getByRole('button', { name: /Create parent/iu }))
 
 		expect(onCreate).toHaveBeenCalledTimes(1)
-		expect(requestCreateTopicMock).not.toHaveBeenCalled()
 		expect(navigateMock).not.toHaveBeenCalled()
 	})
 

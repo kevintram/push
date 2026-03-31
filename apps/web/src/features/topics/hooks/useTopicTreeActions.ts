@@ -3,7 +3,6 @@ import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
-import { requestFocusNewTopicTitle } from '~/features/topics/createTopicIntent'
 import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 
 type UseTopicTreeActionsOptions = {
@@ -49,11 +48,11 @@ export function useTopicTreeActions({
 					body: '',
 					parent_id: parentTopicId
 				})
-				requestFocusNewTopicTitle(created.id)
 				await onAfterCreateSubtopic?.(parentTopicId, created.id)
 				await navigate({
 					to: '/topics/$topicId',
-					params: { topicId: created.id.toString() }
+					params: { topicId: created.id.toString() },
+					search: { focusTitle: true }
 				})
 				await onAfterRouteChange?.()
 			} catch {
