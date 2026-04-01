@@ -35,6 +35,7 @@ import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { cn } from '~/lib/utils'
 import type { TopicDetailReviewCardFilter } from './shared'
+import { TopicDetailOutlineHeader } from './TopicDetailOutlineHeader'
 import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'
 import {
 	TOPIC_DETAIL_OUTLINE_MAX_WIDTH,
@@ -84,6 +85,7 @@ export function TopicDetailOutline({
 	const [outlineTopOffset, setOutlineTopOffset] = useState(0)
 	const [viewportHeight, setViewportHeight] = useState(0)
 	const footerRef = useRef<HTMLDivElement | null>(null)
+	const outlineHeaderRef = useRef<HTMLDivElement | null>(null)
 	const outlineNavRef = useRef<HTMLElement | null>(null)
 	const outlineRef = useRef<HTMLElement | null>(null)
 	const resizeCleanupRef = useRef<(() => void) | null>(null)
@@ -92,6 +94,7 @@ export function TopicDetailOutline({
 	const outlineWidthRef = useRef(outlineWidth)
 	const pendingWidthRef = useRef(outlineWidth)
 	const {
+		collapseAll,
 		expandedIdSet,
 		handleConfirmDeleteTopic,
 		handleCreateSubtopic,
@@ -183,6 +186,9 @@ export function TopicDetailOutline({
 		),
 		[handleOutlineClick, outlineRootTopicId]
 	)
+	const handleAddChildTopic = useCallback(() => {
+		handleCreateSubtopic(outlineRootNode.id)
+	}, [handleCreateSubtopic, outlineRootNode.id])
 
 	const clampOutlineWidth = (width: number) =>
 		Math.min(
@@ -221,13 +227,16 @@ export function TopicDetailOutline({
 	useEffect(() => {
 		if (typeof ResizeObserver === 'undefined') return
 
+		const headerElement = outlineHeaderRef.current
 		const navElement = outlineNavRef.current
 		const footerElement = footerRef.current
 
-		if (!(navElement || footerElement)) return
+		if (!(headerElement || navElement || footerElement)) return
 
 		const updateMeasuredHeights = () => {
-			setOutlineContentHeight(navElement?.scrollHeight ?? 0)
+			const headerHeight = headerElement?.getBoundingClientRect().height ?? 0
+			const navHeight = navElement?.scrollHeight ?? 0
+			setOutlineContentHeight(headerHeight + navHeight)
 			setFooterHeight(footerElement?.getBoundingClientRect().height ?? 0)
 		}
 
@@ -235,6 +244,7 @@ export function TopicDetailOutline({
 			updateMeasuredHeights()
 		})
 
+		if (headerElement) observer.observe(headerElement)
 		if (navElement) observer.observe(navElement)
 		if (footerElement) observer.observe(footerElement)
 
@@ -409,105 +419,116 @@ export function TopicDetailOutline({
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'>
 				<div className='min-h-0 min-w-0 shrink-0 pr-1' style={outlineListStyle}>
 					<div className='h-full min-h-0 overflow-y-auto pr-2'>
-						<nav
-							aria-label='On this page'
-							className='min-w-0 space-y-1.5'
-							ref={outlineNavRef}
-						>
-							<ul className='space-y-px'>
-								<ContextMenu>
-									<li>
-										<ContextMenuTrigger className='rounded-md'>
-											<div
-												className={cn(
-													'group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors hover:bg-[var(--app-chrome-hover)]'
-												)}
-											>
-												<Link
-													className={cn(
-														'min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:underline',
-														isRootActive
-															? 'font-medium text-foreground'
-															: 'font-semibold text-muted-foreground hover:text-foreground'
-													)}
-													hash={getTopicDetailSectionId(outlineRootNode.id)}
-													hashScrollIntoView={false}
-													onClick={event => {
-														handleOutlineClick(
-															event,
-															outlineRootNode.id,
-															suppressSelectionRef
-														)
-													}}
-													params={{ topicId: outlineRootTopicId }}
-													resetScroll={false}
-													search={true}
-													to='/topics/$topicId'
+						<div className='flex h-full min-h-0 flex-col'>
+							<div className='shrink-0' ref={outlineHeaderRef}>
+								<TopicDetailOutlineHeader
+									isUpdatingTopic={isUpdatingTopic}
+									onAdd={handleAddChildTopic}
+									onCollapseAll={collapseAll}
+								/>
+							</div>
+							<div className='min-h-0 flex-1 overflow-y-auto'>
+								<nav
+									aria-label='On this page'
+									className='min-w-0'
+									ref={outlineNavRef}
+								>
+									<ul className='space-y-px'>
+										<ContextMenu>
+											<li>
+												<ContextMenuTrigger className='rounded-md'>
+													<div
+														className={cn(
+															'group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors hover:bg-[var(--app-chrome-hover)]'
+														)}
+													>
+														<Link
+															className={cn(
+																'min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:underline',
+																isRootActive
+																	? 'font-medium text-foreground'
+																	: 'font-semibold text-muted-foreground hover:text-foreground'
+															)}
+															hash={getTopicDetailSectionId(outlineRootNode.id)}
+															hashScrollIntoView={false}
+															onClick={event => {
+																handleOutlineClick(
+																	event,
+																	outlineRootNode.id,
+																	suppressSelectionRef
+																)
+															}}
+															params={{ topicId: outlineRootTopicId }}
+															resetScroll={false}
+															search={true}
+															to='/topics/$topicId'
+														>
+															{rootLabel}
+														</Link>
+													</div>
+												</ContextMenuTrigger>
+												<ContextMenuContent
+													align='start'
+													side='right'
+													sideOffset={6}
 												>
-													{rootLabel}
-												</Link>
-											</div>
-										</ContextMenuTrigger>
-										<ContextMenuContent
-											align='start'
-											side='right'
-											sideOffset={6}
-										>
-											<ContextMenuItem
-												disabled={isUpdatingTopic}
-												onClick={() => {
-													handleOpenTopic(outlineRootNode.id)
-												}}
-											>
-												<ExternalLink className='h-4 w-4' />
-												Open
-											</ContextMenuItem>
-											<ContextMenuItem
-												disabled={isUpdatingTopic}
-												onClick={() => {
-													handleCreateSubtopic(outlineRootNode.id)
-												}}
-											>
-												<Plus className='h-4 w-4' />
-												New topic
-											</ContextMenuItem>
-											<ContextMenuSeparator />
-											<ContextMenuItem
-												disabled={isUpdatingTopic}
-												onClick={() => {
-													setPendingDeleteTopicId(outlineRootNode.id)
-												}}
-												variant='destructive'
-											>
-												<Trash2 className='h-4 w-4' />
-												Delete
-											</ContextMenuItem>
-										</ContextMenuContent>
-									</li>
-								</ContextMenu>
-								{outlineNodes.map(node => (
-									<TopicTreeItem
-										activeDragTopicId={null}
-										ancestorIdsById={ancestorIdsById}
-										expandedIdSet={expandedIdSet}
-										highlightAppearance='text-only'
-										highlightedDropTopicId={null}
-										highlightedTopicIds={visibleOutlineTopicIds}
-										isDragAndDropEnabled={false}
-										isUpdatingTopic={isUpdatingTopic}
-										key={node.id}
-										node={node}
-										nodeById={nodeById}
-										onCreateSubtopic={handleCreateSubtopic}
-										onOpenTopic={handleOpenTopic}
-										onRequestDeleteTopic={setPendingDeleteTopicId}
-										onToggleExpanded={toggleExpanded}
-										renderPrimaryAction={renderOutlinePrimaryAction}
-										suppressSelectionRef={suppressSelectionRef}
-									/>
-								))}
-							</ul>
-						</nav>
+													<ContextMenuItem
+														disabled={isUpdatingTopic}
+														onClick={() => {
+															handleOpenTopic(outlineRootNode.id)
+														}}
+													>
+														<ExternalLink className='h-4 w-4' />
+														Open
+													</ContextMenuItem>
+													<ContextMenuItem
+														disabled={isUpdatingTopic}
+														onClick={() => {
+															handleCreateSubtopic(outlineRootNode.id)
+														}}
+													>
+														<Plus className='h-4 w-4' />
+														New topic
+													</ContextMenuItem>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														disabled={isUpdatingTopic}
+														onClick={() => {
+															setPendingDeleteTopicId(outlineRootNode.id)
+														}}
+														variant='destructive'
+													>
+														<Trash2 className='h-4 w-4' />
+														Delete
+													</ContextMenuItem>
+												</ContextMenuContent>
+											</li>
+										</ContextMenu>
+										{outlineNodes.map(node => (
+											<TopicTreeItem
+												activeDragTopicId={null}
+												ancestorIdsById={ancestorIdsById}
+												expandedIdSet={expandedIdSet}
+												highlightAppearance='text-only'
+												highlightedDropTopicId={null}
+												highlightedTopicIds={visibleOutlineTopicIds}
+												isDragAndDropEnabled={false}
+												isUpdatingTopic={isUpdatingTopic}
+												key={node.id}
+												node={node}
+												nodeById={nodeById}
+												onCreateSubtopic={handleCreateSubtopic}
+												onOpenTopic={handleOpenTopic}
+												onRequestDeleteTopic={setPendingDeleteTopicId}
+												onToggleExpanded={toggleExpanded}
+												renderPrimaryAction={renderOutlinePrimaryAction}
+												suppressSelectionRef={suppressSelectionRef}
+											/>
+										))}
+									</ul>
+								</nav>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

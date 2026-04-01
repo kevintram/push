@@ -52,6 +52,10 @@ export function useTopicDetailOutline({
 
 		return ids
 	}, [outlineRootNode])
+	const collapsibleTopicIds = useMemo(
+		() => defaultExpandedIds,
+		[defaultExpandedIds]
+	)
 	const [expandedIds, setExpandedIds] = useState<Array<number>>(
 		() => defaultExpandedIds
 	)
@@ -115,6 +119,10 @@ export function useTopicDetailOutline({
 			return [...previousExpandedIds, topicId]
 		})
 	}, [])
+	const collapseAll = useCallback(() => {
+		setExpandedIds([])
+		setManuallyCollapsedIds(collapsibleTopicIds)
+	}, [collapsibleTopicIds])
 	const {
 		handleConfirmDeleteTopic,
 		handleCreateSubtopic,
@@ -201,6 +209,7 @@ export function useTopicDetailOutline({
 		pendingDeleteTopic,
 		pendingDeleteTopicId,
 		setPendingDeleteTopicId,
+		collapseAll,
 		suppressSelectionRef,
 		toggleExpanded
 	}

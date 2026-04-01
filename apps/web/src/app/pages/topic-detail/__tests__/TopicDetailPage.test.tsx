@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+	createTopicAsyncMock,
 	elementSizeMock,
 	navigateMock,
 	parentTopic,
@@ -1324,6 +1325,233 @@ describe('TopicDetailPage', () => {
 			'text-blue-600'
 		)
 		expect(screen.queryByText('Leaf topic body')).not.toBeInTheDocument()
+	})
+
+	it('renders an outline header with collapse and add actions', () => {
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, childTopic]
+								: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const toc = screen.getByRole('navigation', { name: 'On this page' })
+		const outlineRail = toc.closest('aside')
+
+		expect(outlineRail).not.toBeNull()
+		expect(
+			within(outlineRail as HTMLElement).getByText('topics')
+		).toBeInTheDocument()
+		expect(
+			within(outlineRail as HTMLElement).getByRole('button', {
+				name: 'Collapse outline'
+			})
+		).toBeInTheDocument()
+		expect(
+			within(outlineRail as HTMLElement).getByRole('button', {
+				name: 'Add topic'
+			})
+		).toBeInTheDocument()
+		expect(
+			within(outlineRail as HTMLElement).queryByRole('link', {
+				name: 'topics'
+			})
+		).not.toBeInTheDocument()
+	})
+
+	it('collapses all outline branches from the outline header action', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const grandchildTopic = {
+			...topic,
+			id: 3,
+			title: 'Linear Algebra',
+			parent_id: 2,
+			parent_title: 'Algebra'
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, childTopic, grandchildTopic]
+								: [rootTopic, childTopic, grandchildTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const toc = screen.getByRole('navigation', { name: 'On this page' })
+
+		expect(within(toc).getByText('Linear Algebra')).toBeInTheDocument()
+
+		const outlineRail = toc.closest('aside')
+
+		expect(outlineRail).not.toBeNull()
+
+		await user.click(
+			within(outlineRail as HTMLElement).getByRole('button', {
+				name: 'Collapse outline'
+			})
+		)
+
+		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
+		expect(within(toc).queryByText('Linear Algebra')).not.toBeInTheDocument()
+		expect(
+			within(toc).getByRole('button', { name: 'Expand Algebra' })
+		).toBeInTheDocument()
+	})
+
+	it('creates a direct child topic from the outline header add action', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+
+		createTopicAsyncMock.mockResolvedValue({
+			id: 9,
+			title: '',
+			body: '',
+			parent_id: 1
+		})
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, childTopic]
+								: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const toc = screen.getByRole('navigation', { name: 'On this page' })
+		const outlineRail = toc.closest('aside')
+
+		expect(outlineRail).not.toBeNull()
+
+		await user.click(
+			within(outlineRail as HTMLElement).getByRole('button', {
+				name: 'Add topic'
+			})
+		)
+
+		expect(createTopicAsyncMock).toHaveBeenCalledWith({
+			title: '',
+			body: '',
+			parent_id: 1
+		})
+		await waitFor(() => {
+			expect(navigateMock).toHaveBeenCalledWith({
+				params: { topicId: '9' },
+				search: { focusTitle: true },
+				to: '/topics/$topicId'
+			})
+		})
 	})
 
 	it('keeps the page gutter aligned with the live outline width', async () => {
