@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
-import { type MouseEvent, useCallback, useMemo } from 'react'
+import { type MouseEvent, useCallback, useMemo, useRef } from 'react'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -123,6 +123,11 @@ export function TopicDetailOutline({
 		rootLabel
 	})
 
+	const outlineScrollRef = useRef<HTMLDivElement>(null)
+	const handleScrollToTop = useCallback(() => {
+		outlineScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+	}, [])
+
 	const visibleOutlineTopicIds = useMemo(
 		() => new Set(visibleSectionIds),
 		[visibleSectionIds]
@@ -226,9 +231,13 @@ export function TopicDetailOutline({
 									isUpdatingTopic={isUpdatingTopic}
 									onAdd={handleAddChildTopic}
 									onCollapseAll={collapseAll}
+									onScrollToTop={handleScrollToTop}
 								/>
 							</div>
-							<div className='min-h-0 flex-1 overflow-y-auto'>
+							<div
+								className='min-h-0 flex-1 overflow-y-auto'
+								ref={outlineScrollRef}
+							>
 								<nav
 									aria-label='On this page'
 									className='min-w-0'
