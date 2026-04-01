@@ -1237,13 +1237,13 @@ describe('TopicDetailPage', () => {
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
+		const rootRow = within(toc).getByRole('link', { name: 'Mathematics' })
 
-		expect(within(toc).getByRole('link', { name: 'Mathematics' })).toHaveClass(
-			'font-bold'
+		expect(rootRow).toHaveClass('font-medium')
+		expect(rootRow).not.toHaveClass('font-bold')
+		expect(rootRow.parentElement).not.toHaveClass(
+			'bg-[var(--app-chrome-selected)]'
 		)
-		expect(
-			within(toc).getByRole('link', { name: 'Mathematics' }).parentElement
-		).not.toHaveClass('bg-accent/45')
 		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
 		expect(within(toc).getByText('Linear Algebra')).toBeInTheDocument()
 		expect(within(toc).queryByText('Computer Science')).not.toBeInTheDocument()
