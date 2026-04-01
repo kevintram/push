@@ -23,10 +23,16 @@ import {
 	type TopicPathItem
 } from './TopicDetailBreadcrumb'
 import { TopicDetailSectionMeta } from './TopicDetailSectionMeta'
+import {
+	getTopicDetailHeadingIndicatorPresentation,
+	TOPIC_DETAIL_HEADING_INDICATOR_OFFSET_CLASS,
+	TOPIC_DETAIL_SECTION_GRID_CLASS
+} from './topicDetailLayout'
 
 interface TopicDetailHeaderProps {
 	actionClassName?: string
 	contentClassName?: string
+	headingLevel: number
 	onOpenDeleteDialog: () => void
 	pathContainerClassName?: string
 	shouldAutoFocusTitle?: boolean
@@ -38,6 +44,7 @@ interface TopicDetailHeaderProps {
 export function TopicDetailHeader({
 	actionClassName,
 	contentClassName,
+	headingLevel,
 	onOpenDeleteDialog,
 	pathContainerClassName,
 	shouldAutoFocusTitle = false,
@@ -77,66 +84,92 @@ export function TopicDetailHeader({
 		titleTextareaRef.current?.focus()
 	}, [shouldAutoFocusTitle])
 
+	const { HeadingIcon, headingIconClassName } =
+		getTopicDetailHeadingIndicatorPresentation(headingLevel)
+	const hasBreadcrumbs = topicPath.length > 1
+
 	return (
-		<div className='relative min-w-0'>
-			<div className={cn('min-w-0 space-y-1', contentClassName)}>
-				{topicPath.length > 1 ? (
-					<TopicDetailBreadcrumb
-						className={cn('pr-12 sm:pr-14', pathContainerClassName)}
-						currentTopicId={topic.id}
-						topicPath={topicPath}
-					/>
-				) : null}
-				<div className='space-y-2.5'>
-					<div
-						className={cn('min-w-0 pr-12 sm:pr-14', titleContainerClassName)}
-					>
-						<Textarea
-							aria-label='Topic title'
-							className='!bg-transparent !text-[1.875rem] sm:!text-[2.125rem] xl:!text-[2.375rem] m-0 min-h-0 w-full resize-none overflow-hidden break-words rounded-none border-none px-0 pt-0 pb-1 font-semibold leading-[1.08] tracking-[-0.025em] shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-							onBlur={flushTitle}
-							onChange={onTitleChange}
-							placeholder='Untitled topic'
-							ref={titleTextareaRef}
-							spellCheck={false}
-							value={title}
-						/>
-					</div>
-					<div>
-						<TopicDetailSectionMeta
-							createdDate={formatAbsoluteDate(topic.inserted_at)}
-							createdText={formatRelativeDate(topic.inserted_at).text}
-							updatedDate={formatAbsoluteDate(topic.updated_at)}
-							updatedText={formatRelativeDate(topic.updated_at).text}
+		<>
+			{hasBreadcrumbs ? (
+				<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
+					<div aria-hidden='true' />
+					<div className='min-w-0'>
+						<TopicDetailBreadcrumb
+							className={pathContainerClassName}
+							currentTopicId={topic.id}
+							topicPath={topicPath}
 						/>
 					</div>
 				</div>
-			</div>
-			<div className={cn('absolute top-1 right-0', actionClassName)}>
-				<DropdownMenu>
-					<DropdownMenuTrigger
-						render={
-							<Button
-								aria-label={`More actions for ${topic.title || 'Untitled topic'}`}
-								className='h-8 w-8 shrink-0 rounded-full'
-								size='icon-sm'
-								variant='outline'
-							>
-								<MoreHorizontal className='h-4 w-4' />
-							</Button>
-						}
+			) : null}
+			<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
+				<div className='flex justify-end text-muted-foreground/60'>
+					<HeadingIcon
+						aria-hidden='true'
+						className={cn(
+							'shrink-0 text-muted-foreground/60',
+							headingIconClassName,
+							TOPIC_DETAIL_HEADING_INDICATOR_OFFSET_CLASS
+						)}
+						data-topic-detail-heading-indicator={topic.id}
+						data-topic-detail-heading-level={headingLevel}
+						strokeWidth={2.6}
 					/>
-					<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
-						<DropdownMenuItem
-							onClick={onOpenDeleteDialog}
-							variant='destructive'
+				</div>
+				<div className='relative min-w-0'>
+					<div className={cn('min-w-0 space-y-2.5', contentClassName)}>
+						<div
+							aria-level={headingLevel}
+							className={cn('min-w-0 pr-12 sm:pr-14', titleContainerClassName)}
+							role='heading'
 						>
-							<Trash2 className='mr-2 h-4 w-4' />
-							Delete
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+							<Textarea
+								aria-label='Topic title'
+								className='!bg-transparent !text-[1.875rem] sm:!text-[2.125rem] xl:!text-[2.375rem] m-0 min-h-0 w-full resize-none overflow-hidden break-words rounded-none border-none px-0 pt-0 pb-1 font-semibold leading-[1.08] tracking-[-0.025em] shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								onBlur={flushTitle}
+								onChange={onTitleChange}
+								placeholder='Untitled topic'
+								ref={titleTextareaRef}
+								spellCheck={false}
+								value={title}
+							/>
+						</div>
+						<div>
+							<TopicDetailSectionMeta
+								createdDate={formatAbsoluteDate(topic.inserted_at)}
+								createdText={formatRelativeDate(topic.inserted_at).text}
+								updatedDate={formatAbsoluteDate(topic.updated_at)}
+								updatedText={formatRelativeDate(topic.updated_at).text}
+							/>
+						</div>
+					</div>
+					<div className={cn('absolute top-1 right-0', actionClassName)}>
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								render={
+									<Button
+										aria-label={`More actions for ${topic.title || 'Untitled topic'}`}
+										className='h-8 w-8 shrink-0 rounded-full'
+										size='icon-sm'
+										variant='outline'
+									>
+										<MoreHorizontal className='h-4 w-4' />
+									</Button>
+								}
+							/>
+							<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+								<DropdownMenuItem
+									onClick={onOpenDeleteDialog}
+									variant='destructive'
+								>
+									<Trash2 className='mr-2 h-4 w-4' />
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+				</div>
 			</div>
-		</div>
+		</>
 	)
 }
