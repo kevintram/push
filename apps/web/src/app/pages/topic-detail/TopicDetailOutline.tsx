@@ -1,16 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ExternalLink, Plus, Trash2 } from 'lucide-react'
-import {
-	type CSSProperties,
-	type KeyboardEvent,
-	type MouseEvent,
-	type PointerEvent as ReactPointerEvent,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState
-} from 'react'
+import { type MouseEvent, useCallback, useMemo } from 'react'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -35,6 +25,7 @@ import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { cn } from '~/lib/utils'
 import type { TopicDetailReviewCardFilter } from './shared'
+import { TopicDetailOutlineHeader } from './TopicDetailOutlineHeader'
 import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'
 import {
 	TOPIC_DETAIL_OUTLINE_MAX_WIDTH,
@@ -42,16 +33,21 @@ import {
 } from './topicDetailLayout'
 import { getTopicDetailSectionId } from './topicDetailStructure'
 import { useTopicDetailOutline } from './useTopicDetailOutline'
+import { useTopicDetailOutlineSizing } from './useTopicDetailOutlineSizing'
 
 interface TopicDetailOutlineProps {
 	ancestorIdsById: Map<number, Array<number>>
+	freshTopicId: number | null
 	globalFilter: TopicDetailReviewCardFilter
 	nodeById: Map<number, TopicTreeNode>
 	onGlobalFilterChange: (filter: TopicDetailReviewCardFilter) => void
 	onOutlineWidthChange: (width: number) => void
+	onSubtopicCreated: (parentTopicId: number, createdTopicId: number) => void
 	onSectionSelect: (topicId: number) => void
 	outlineRootNode: TopicTreeNode | null
 	outlineWidth: number
+	pendingCreatedParentTopicId: number | null
+	pendingCreatedTopicId: number | null
 	visibleSectionIds: Array<number>
 }
 
@@ -69,29 +65,22 @@ function shouldHandleSamePageSectionNavigation(
 
 export function TopicDetailOutline({
 	ancestorIdsById,
+	freshTopicId,
 	globalFilter,
 	nodeById,
 	onGlobalFilterChange,
 	onOutlineWidthChange,
+	onSubtopicCreated,
 	onSectionSelect,
 	outlineRootNode,
 	outlineWidth,
+	pendingCreatedParentTopicId,
+	pendingCreatedTopicId,
 	visibleSectionIds
 }: TopicDetailOutlineProps) {
 	const navigate = useNavigate()
-	const [footerHeight, setFooterHeight] = useState(0)
-	const [outlineContentHeight, setOutlineContentHeight] = useState(0)
-	const [outlineTopOffset, setOutlineTopOffset] = useState(0)
-	const [viewportHeight, setViewportHeight] = useState(0)
-	const footerRef = useRef<HTMLDivElement | null>(null)
-	const outlineNavRef = useRef<HTMLElement | null>(null)
-	const outlineRef = useRef<HTMLElement | null>(null)
-	const resizeCleanupRef = useRef<(() => void) | null>(null)
-	const resizeFrameRef = useRef<number | null>(null)
-	const resizeButtonRef = useRef<HTMLButtonElement | null>(null)
-	const outlineWidthRef = useRef(outlineWidth)
-	const pendingWidthRef = useRef(outlineWidth)
 	const {
+		collapseAll,
 		expandedIdSet,
 		handleConfirmDeleteTopic,
 		handleCreateSubtopic,
@@ -106,24 +95,42 @@ export function TopicDetailOutline({
 	} = useTopicDetailOutline({
 		ancestorIdsById,
 		nodeById,
+		onCreateSubtopicCreated: onSubtopicCreated,
 		outlineRootNode,
+		pendingCreatedParentTopicId,
 		visibleSectionIds
 	})
+	const rootLabel = outlineRootNode
+		? getTopicDisplayTitle(outlineRootNode.title, outlineRootNode.body)
+		: ''
+	const outlineNodes = outlineRootNode?.children ?? []
+	const {
+		asideStyle,
+		footerRef,
+		handleResizeKeyDown,
+		handleResizeStart,
+		outlineHeaderRef,
+		outlineListStyle,
+		outlineNavRef,
+		outlineRef,
+		registerOutlineItemRef,
+		resizeButtonRef
+	} = useTopicDetailOutlineSizing({
+		onOutlineWidthChange,
+		outlineNodeCount: outlineNodes.length,
+		outlineWidth,
+		pendingCreatedTopicId,
+		rootLabel
+	})
 
-	if (!outlineRootNode || outlineRootNode.children.length === 0) return null
-
-	const rootLabel = getTopicDisplayTitle(
-		outlineRootNode.title,
-		outlineRootNode.body
-	)
-	const outlineNodes = outlineRootNode.children
 	const visibleOutlineTopicIds = useMemo(
 		() => new Set(visibleSectionIds),
 		[visibleSectionIds]
 	)
-	const isRootActive =
-		visibleSectionIds.length === 0 ||
-		visibleOutlineTopicIds.has(outlineRootNode.id)
+	const freshOutlineTopicIds = useMemo(
+		() => (freshTopicId == null ? undefined : new Set([freshTopicId])),
+		[freshTopicId]
+	)
 	const handleOpenTopic = useCallback(
 		(topicId: number) => {
 			navigate({
@@ -152,8 +159,13 @@ export function TopicDetailOutline({
 		},
 		[onSectionSelect]
 	)
+
+	if (!outlineRootNode || outlineNodes.length === 0) return null
+
+	const isRootActive =
+		visibleSectionIds.length === 0 ||
+		visibleOutlineTopicIds.has(outlineRootNode.id)
 	const outlineRootTopicId = outlineRootNode.id.toString()
-	const stickyTopOffset = 24
 	const renderOutlinePrimaryAction = useCallback(
 		({
 			className,
@@ -183,210 +195,9 @@ export function TopicDetailOutline({
 		),
 		[handleOutlineClick, outlineRootTopicId]
 	)
-
-	const clampOutlineWidth = (width: number) =>
-		Math.min(
-			Math.max(width, TOPIC_DETAIL_OUTLINE_MIN_WIDTH),
-			TOPIC_DETAIL_OUTLINE_MAX_WIDTH
-		)
-
-	useEffect(() => {
-		if (typeof window === 'undefined') return
-
-		const updateViewportMetrics = () => {
-			setViewportHeight(window.innerHeight)
-			setOutlineTopOffset(
-				outlineRef.current?.getBoundingClientRect().top ?? stickyTopOffset
-			)
-		}
-
-		updateViewportMetrics()
-		window.addEventListener('resize', updateViewportMetrics)
-
-		return () => {
-			window.removeEventListener('resize', updateViewportMetrics)
-		}
-	}, [])
-
-	useEffect(
-		() => () => {
-			resizeCleanupRef.current?.()
-			if (resizeFrameRef.current !== null) {
-				cancelAnimationFrame(resizeFrameRef.current)
-			}
-		},
-		[]
-	)
-
-	useEffect(() => {
-		if (typeof ResizeObserver === 'undefined') return
-
-		const navElement = outlineNavRef.current
-		const footerElement = footerRef.current
-
-		if (!(navElement || footerElement)) return
-
-		const updateMeasuredHeights = () => {
-			setOutlineContentHeight(navElement?.scrollHeight ?? 0)
-			setFooterHeight(footerElement?.getBoundingClientRect().height ?? 0)
-		}
-
-		const observer = new ResizeObserver(() => {
-			updateMeasuredHeights()
-		})
-
-		if (navElement) observer.observe(navElement)
-		if (footerElement) observer.observe(footerElement)
-
-		updateMeasuredHeights()
-
-		return () => {
-			observer.disconnect()
-		}
-	}, [outlineNodes.length, rootLabel])
-
-	useEffect(() => {
-		outlineWidthRef.current = outlineWidth
-		pendingWidthRef.current = outlineWidth
-
-		if (outlineRef.current) {
-			outlineRef.current.style.width = `${outlineWidth}px`
-		}
-
-		if (resizeButtonRef.current) {
-			resizeButtonRef.current.setAttribute(
-				'aria-valuenow',
-				outlineWidth.toString()
-			)
-		}
-	}, [outlineWidth])
-
-	const outlineRailStyle = useMemo<CSSProperties | undefined>(() => {
-		if (viewportHeight <= stickyTopOffset) return
-
-		const maxOutlineHeight = Math.max(
-			viewportHeight - outlineTopOffset - stickyTopOffset,
-			0
-		)
-		const desiredOutlineHeight = outlineContentHeight + footerHeight
-		return {
-			height:
-				desiredOutlineHeight > 0
-					? `${Math.min(desiredOutlineHeight, maxOutlineHeight)}px`
-					: 'fit-content',
-			maxHeight: `${maxOutlineHeight}px`
-		}
-	}, [footerHeight, outlineContentHeight, outlineTopOffset, viewportHeight])
-	const outlineListStyle = useMemo<CSSProperties | undefined>(() => {
-		if (viewportHeight <= stickyTopOffset) return
-		if (outlineContentHeight <= 0 || footerHeight <= 0) return
-
-		const maxOutlineHeight = Math.max(
-			viewportHeight - outlineTopOffset - stickyTopOffset,
-			0
-		)
-		const maxListHeight = Math.max(maxOutlineHeight - footerHeight, 0)
-
-		return {
-			height: `${Math.min(outlineContentHeight, maxListHeight)}px`
-		}
-	}, [footerHeight, outlineContentHeight, outlineTopOffset, viewportHeight])
-	const asideStyle = useMemo<CSSProperties>(
-		() => ({
-			...outlineRailStyle,
-			width: `${outlineWidth}px`
-		}),
-		[outlineRailStyle, outlineWidth]
-	)
-
-	const applyOutlineWidth = (nextWidth: number) => {
-		outlineWidthRef.current = nextWidth
-		pendingWidthRef.current = nextWidth
-
-		if (resizeButtonRef.current) {
-			resizeButtonRef.current.setAttribute(
-				'aria-valuenow',
-				nextWidth.toString()
-			)
-		}
-
-		if (resizeFrameRef.current !== null) return
-
-		resizeFrameRef.current = requestAnimationFrame(() => {
-			resizeFrameRef.current = null
-
-			if (outlineRef.current) {
-				outlineRef.current.style.width = `${pendingWidthRef.current}px`
-			}
-		})
-	}
-
-	const handleResizeStart = (event: ReactPointerEvent<HTMLButtonElement>) => {
-		if (event.button !== 0) return
-
-		const startX = event.clientX
-		const startWidth = outlineWidthRef.current
-		const originalCursor = document.body.style.cursor
-		const originalUserSelect = document.body.style.userSelect
-
-		const cleanup = () => {
-			window.removeEventListener('pointermove', handlePointerMove)
-			window.removeEventListener('pointerup', handlePointerUp)
-			document.body.style.cursor = originalCursor
-			document.body.style.userSelect = originalUserSelect
-			resizeCleanupRef.current = null
-		}
-
-		const handlePointerMove = (moveEvent: PointerEvent) => {
-			applyOutlineWidth(
-				clampOutlineWidth(startWidth + (moveEvent.clientX - startX))
-			)
-		}
-
-		const handlePointerUp = () => {
-			const finalWidth = outlineWidthRef.current
-			cleanup()
-			onOutlineWidthChange(finalWidth)
-		}
-
-		resizeCleanupRef.current?.()
-		resizeCleanupRef.current = cleanup
-		document.body.style.cursor = 'col-resize'
-		document.body.style.userSelect = 'none'
-		window.addEventListener('pointermove', handlePointerMove)
-		window.addEventListener('pointerup', handlePointerUp)
-	}
-
-	const handleResizeKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-		if (event.key === 'ArrowLeft') {
-			event.preventDefault()
-			const nextWidth = clampOutlineWidth(outlineWidthRef.current - 16)
-			applyOutlineWidth(nextWidth)
-			onOutlineWidthChange(nextWidth)
-			return
-		}
-
-		if (event.key === 'ArrowRight') {
-			event.preventDefault()
-			const nextWidth = clampOutlineWidth(outlineWidthRef.current + 16)
-			applyOutlineWidth(nextWidth)
-			onOutlineWidthChange(nextWidth)
-			return
-		}
-
-		if (event.key === 'Home') {
-			event.preventDefault()
-			applyOutlineWidth(TOPIC_DETAIL_OUTLINE_MIN_WIDTH)
-			onOutlineWidthChange(TOPIC_DETAIL_OUTLINE_MIN_WIDTH)
-			return
-		}
-
-		if (event.key === 'End') {
-			event.preventDefault()
-			applyOutlineWidth(TOPIC_DETAIL_OUTLINE_MAX_WIDTH)
-			onOutlineWidthChange(TOPIC_DETAIL_OUTLINE_MAX_WIDTH)
-		}
-	}
+	const handleAddChildTopic = useCallback(() => {
+		handleCreateSubtopic(outlineRootNode.id)
+	}, [handleCreateSubtopic, outlineRootNode.id])
 
 	return (
 		<aside
@@ -409,105 +220,123 @@ export function TopicDetailOutline({
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'>
 				<div className='min-h-0 min-w-0 shrink-0 pr-1' style={outlineListStyle}>
 					<div className='h-full min-h-0 overflow-y-auto pr-2'>
-						<nav
-							aria-label='On this page'
-							className='min-w-0 space-y-1.5'
-							ref={outlineNavRef}
-						>
-							<ul className='space-y-px'>
-								<ContextMenu>
-									<li>
-										<ContextMenuTrigger className='rounded-md'>
-											<div
-												className={cn(
-													'group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors hover:bg-[var(--app-chrome-hover)]'
-												)}
-											>
-												<Link
-													className={cn(
-														'min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:underline',
-														isRootActive
-															? 'font-bold text-foreground'
-															: 'font-semibold text-muted-foreground hover:text-foreground'
-													)}
-													hash={getTopicDetailSectionId(outlineRootNode.id)}
-													hashScrollIntoView={false}
-													onClick={event => {
-														handleOutlineClick(
-															event,
-															outlineRootNode.id,
-															suppressSelectionRef
-														)
-													}}
-													params={{ topicId: outlineRootTopicId }}
-													resetScroll={false}
-													search={true}
-													to='/topics/$topicId'
+						<div className='flex h-full min-h-0 flex-col'>
+							<div className='shrink-0' ref={outlineHeaderRef}>
+								<TopicDetailOutlineHeader
+									isUpdatingTopic={isUpdatingTopic}
+									onAdd={handleAddChildTopic}
+									onCollapseAll={collapseAll}
+								/>
+							</div>
+							<div className='min-h-0 flex-1 overflow-y-auto'>
+								<nav
+									aria-label='On this page'
+									className='min-w-0'
+									ref={outlineNavRef}
+								>
+									<ul className='space-y-px'>
+										<ContextMenu>
+											<li>
+												<ContextMenuTrigger className='rounded-md'>
+													<div
+														className={cn(
+															'group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors hover:bg-[var(--app-chrome-hover)]'
+														)}
+														data-fresh-topic={
+															freshTopicId === outlineRootNode.id
+																? 'true'
+																: undefined
+														}
+													>
+														<Link
+															className={cn(
+																'min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:underline',
+																isRootActive
+																	? 'font-bold text-foreground'
+																	: 'font-semibold text-muted-foreground hover:text-foreground'
+															)}
+															hash={getTopicDetailSectionId(outlineRootNode.id)}
+															hashScrollIntoView={false}
+															onClick={event => {
+																handleOutlineClick(
+																	event,
+																	outlineRootNode.id,
+																	suppressSelectionRef
+																)
+															}}
+															params={{ topicId: outlineRootTopicId }}
+															resetScroll={false}
+															search={true}
+															to='/topics/$topicId'
+														>
+															{rootLabel}
+														</Link>
+													</div>
+												</ContextMenuTrigger>
+												<ContextMenuContent
+													align='start'
+													side='right'
+													sideOffset={6}
 												>
-													{rootLabel}
-												</Link>
-											</div>
-										</ContextMenuTrigger>
-										<ContextMenuContent
-											align='start'
-											side='right'
-											sideOffset={6}
-										>
-											<ContextMenuItem
-												disabled={isUpdatingTopic}
-												onClick={() => {
-													handleOpenTopic(outlineRootNode.id)
-												}}
-											>
-												<ExternalLink className='h-4 w-4' />
-												Open
-											</ContextMenuItem>
-											<ContextMenuItem
-												disabled={isUpdatingTopic}
-												onClick={() => {
-													handleCreateSubtopic(outlineRootNode.id)
-												}}
-											>
-												<Plus className='h-4 w-4' />
-												New topic
-											</ContextMenuItem>
-											<ContextMenuSeparator />
-											<ContextMenuItem
-												disabled={isUpdatingTopic}
-												onClick={() => {
-													setPendingDeleteTopicId(outlineRootNode.id)
-												}}
-												variant='destructive'
-											>
-												<Trash2 className='h-4 w-4' />
-												Delete
-											</ContextMenuItem>
-										</ContextMenuContent>
-									</li>
-								</ContextMenu>
-								{outlineNodes.map(node => (
-									<TopicTreeItem
-										activeDragTopicId={null}
-										ancestorIdsById={ancestorIdsById}
-										expandedIdSet={expandedIdSet}
-										highlightAppearance='text-only'
-										highlightedDropTopicId={null}
-										highlightedTopicIds={visibleOutlineTopicIds}
-										isDragAndDropEnabled={false}
-										isUpdatingTopic={isUpdatingTopic}
-										key={node.id}
-										node={node}
-										nodeById={nodeById}
-										onCreateSubtopic={handleCreateSubtopic}
-										onOpenTopic={handleOpenTopic}
-										onRequestDeleteTopic={setPendingDeleteTopicId}
-										onToggleExpanded={toggleExpanded}
-										renderPrimaryAction={renderOutlinePrimaryAction}
-										suppressSelectionRef={suppressSelectionRef}
-									/>
-								))}
-							</ul>
-						</nav>
+													<ContextMenuItem
+														disabled={isUpdatingTopic}
+														onClick={() => {
+															handleOpenTopic(outlineRootNode.id)
+														}}
+													>
+														<ExternalLink className='h-4 w-4' />
+														Open
+													</ContextMenuItem>
+													<ContextMenuItem
+														disabled={isUpdatingTopic}
+														onClick={() => {
+															handleCreateSubtopic(outlineRootNode.id)
+														}}
+													>
+														<Plus className='h-4 w-4' />
+														New topic
+													</ContextMenuItem>
+													<ContextMenuSeparator />
+													<ContextMenuItem
+														disabled={isUpdatingTopic}
+														onClick={() => {
+															setPendingDeleteTopicId(outlineRootNode.id)
+														}}
+														variant='destructive'
+													>
+														<Trash2 className='h-4 w-4' />
+														Delete
+													</ContextMenuItem>
+												</ContextMenuContent>
+											</li>
+										</ContextMenu>
+										{outlineNodes.map(node => (
+											<TopicTreeItem
+												activeDragTopicId={null}
+												ancestorIdsById={ancestorIdsById}
+												expandedIdSet={expandedIdSet}
+												freshTopicIds={freshOutlineTopicIds}
+												highlightAppearance='text-only'
+												highlightedDropTopicId={null}
+												highlightedTopicIds={visibleOutlineTopicIds}
+												isDragAndDropEnabled={false}
+												isUpdatingTopic={isUpdatingTopic}
+												key={node.id}
+												node={node}
+												nodeById={nodeById}
+												onCreateSubtopic={handleCreateSubtopic}
+												onOpenTopic={handleOpenTopic}
+												onRequestDeleteTopic={setPendingDeleteTopicId}
+												onToggleExpanded={toggleExpanded}
+												renderPrimaryAction={renderOutlinePrimaryAction}
+												setItemRef={registerOutlineItemRef}
+												suppressSelectionRef={suppressSelectionRef}
+											/>
+										))}
+									</ul>
+								</nav>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

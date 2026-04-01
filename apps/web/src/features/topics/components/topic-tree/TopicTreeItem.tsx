@@ -36,6 +36,7 @@ export interface TopicTreeItemProps {
 	activeTopicId?: number | null
 	ancestorIdsById: Map<number, Array<number>>
 	expandedIdSet: Set<number>
+	freshTopicIds?: ReadonlySet<number>
 	highlightedDropTopicId: number | null
 	highlightedTopicIds?: ReadonlySet<number>
 	highlightAppearance?: TopicTreeHighlightAppearance
@@ -61,6 +62,10 @@ function isTopicTreeItemActive(nodeId: number, props: TopicTreeItemProps) {
 	)
 }
 
+function isTopicTreeItemFresh(nodeId: number, props: TopicTreeItemProps) {
+	return props.freshTopicIds?.has(nodeId) === true
+}
+
 function doesTopicTreeSubtreeVisualStateChange(
 	node: TopicTreeNode,
 	previousProps: TopicTreeItemProps,
@@ -69,6 +74,13 @@ function doesTopicTreeSubtreeVisualStateChange(
 	if (
 		isTopicTreeItemActive(node.id, previousProps) !==
 		isTopicTreeItemActive(node.id, nextProps)
+	) {
+		return true
+	}
+
+	if (
+		isTopicTreeItemFresh(node.id, previousProps) !==
+		isTopicTreeItemFresh(node.id, nextProps)
 	) {
 		return true
 	}
@@ -113,6 +125,7 @@ function areTopicTreeItemPropsEqual(
 	if (previousProps.nodeById !== nextProps.nodeById) return false
 	if (previousProps.ancestorIdsById !== nextProps.ancestorIdsById) return false
 	if (
+		previousProps.freshTopicIds !== nextProps.freshTopicIds ||
 		previousProps.highlightAppearance !== nextProps.highlightAppearance ||
 		previousProps.isDragAndDropEnabled !== nextProps.isDragAndDropEnabled ||
 		previousProps.isUpdatingTopic !== nextProps.isUpdatingTopic ||
@@ -146,6 +159,7 @@ function TopicTreeItemComponent({
 	activeTopicId,
 	ancestorIdsById,
 	expandedIdSet,
+	freshTopicIds,
 	highlightedDropTopicId,
 	highlightedTopicIds,
 	highlightAppearance = 'container',
@@ -167,6 +181,7 @@ function TopicTreeItemComponent({
 	const isExpanded = expandedIdSet.has(node.id)
 	const isActive =
 		node.id === activeTopicId || highlightedTopicIds?.has(node.id) === true
+	const isFresh = freshTopicIds?.has(node.id) === true
 	const label = getTopicDisplayTitle(node.title, node.body)
 	const canDropIntoNode =
 		activeDragTopicId !== null &&
@@ -258,11 +273,18 @@ function TopicTreeItemComponent({
 
 	return (
 		<ContextMenu>
-			<li ref={element => setItemRef?.(node.id, element)}>
+			<li
+				data-fresh-topic={isFresh ? 'true' : undefined}
+				ref={element => setItemRef?.(node.id, element)}
+			>
 				<div
 					className={cn(
 						highlightAppearance === 'container' &&
-							'rounded-lg transition-colors',
+							'rounded-lg transition-[background-color,box-shadow,color] duration-300 ease-out',
+						isFresh && 'rounded-lg ring-1 ring-sky-200/80 dark:ring-sky-800/70',
+						isFresh &&
+							!isActive &&
+							'bg-sky-50/70 text-foreground dark:bg-sky-950/20',
 						highlightAppearance === 'container' &&
 							isActive &&
 							'bg-[var(--app-chrome-selected)] text-foreground',
@@ -340,6 +362,7 @@ function TopicTreeItemComponent({
 									activeTopicId={activeTopicId}
 									ancestorIdsById={ancestorIdsById}
 									expandedIdSet={expandedIdSet}
+									freshTopicIds={freshTopicIds}
 									highlightAppearance={highlightAppearance}
 									highlightedDropTopicId={highlightedDropTopicId}
 									highlightedTopicIds={highlightedTopicIds}

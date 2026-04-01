@@ -26,6 +26,19 @@ export function useSectionCollapse() {
 		Record<string, boolean>
 	>({})
 
+	const expandSection = useCallback((sectionId: string) => {
+		setCollapsedSections(prev => {
+			if (prev[sectionId] === false || prev[sectionId] == null) {
+				return prev
+			}
+
+			return {
+				...prev,
+				[sectionId]: false
+			}
+		})
+	}, [])
+
 	const toggleSection = useCallback((sectionId: string) => {
 		setCollapsedSections(prev => ({
 			...prev,
@@ -35,6 +48,7 @@ export function useSectionCollapse() {
 
 	return {
 		collapsedSections,
+		expandSection,
 		toggleSection
 	}
 }

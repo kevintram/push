@@ -237,7 +237,10 @@ export function useTopicDetailNavigation({
 				(targetTop - containerTop) -
 				scrollMarginTop
 
-			if (options?.behavior === 'smooth') {
+			if (
+				options?.behavior === 'smooth' &&
+				typeof scrollContainerElement.scrollTo === 'function'
+			) {
 				scrollContainerElement.scrollTo({
 					top: nextScrollTop,
 					behavior: 'smooth'
@@ -362,15 +365,21 @@ export function useTopicDetailNavigation({
 	const scrollToSection = useCallback(
 		(
 			topicId: number,
-			options?: { behavior?: ScrollBehavior; mode?: 'push' | 'replace' }
+			options?: {
+				behavior?: ScrollBehavior
+				mode?: 'push' | 'replace'
+				updateHash?: boolean
+			}
 		) => {
 			const targetElement = getTargetElement(topicId)
 			if (!targetElement || typeof window === 'undefined') return
 
-			const nextHash = getTopicDetailHash(topicId)
-			ignoredHashAlignmentHashRef.current = nextHash
-			clearHashAlignmentRequest()
-			void updateHash(topicId, options?.mode ?? 'push')
+			if (options?.updateHash !== false) {
+				const nextHash = getTopicDetailHash(topicId)
+				ignoredHashAlignmentHashRef.current = nextHash
+				clearHashAlignmentRequest()
+				void updateHash(topicId, options?.mode ?? 'push')
+			}
 			scrollTargetIntoView(targetElement, {
 				behavior: options?.behavior ?? 'smooth'
 			})
