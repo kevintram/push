@@ -1,14 +1,6 @@
-import { MoreHorizontal, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
-import { Button } from '~/components/ui/button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/dropdown-menu'
 import { Textarea } from '~/components/ui/textarea'
 import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import type { Topic } from '~/features/topics/types/topic.types'
@@ -22,11 +14,14 @@ import {
 	TopicDetailBreadcrumb,
 	type TopicPathItem
 } from './TopicDetailBreadcrumb'
+import { TopicDetailRootActionsMenu } from './TopicDetailRootActionsMenu'
 import { TopicDetailSectionMeta } from './TopicDetailSectionMeta'
 
 interface TopicDetailHeaderProps {
 	actionClassName?: string
 	contentClassName?: string
+	isCreatingTopic: boolean
+	onCreateSubtopic: () => void
 	onOpenDeleteDialog: () => void
 	pathContainerClassName?: string
 	shouldAutoFocusTitle?: boolean
@@ -38,6 +33,8 @@ interface TopicDetailHeaderProps {
 export function TopicDetailHeader({
 	actionClassName,
 	contentClassName,
+	isCreatingTopic,
+	onCreateSubtopic,
 	onOpenDeleteDialog,
 	pathContainerClassName,
 	shouldAutoFocusTitle = false,
@@ -113,29 +110,12 @@ export function TopicDetailHeader({
 				</div>
 			</div>
 			<div className={cn('absolute top-1 right-0', actionClassName)}>
-				<DropdownMenu>
-					<DropdownMenuTrigger
-						render={
-							<Button
-								aria-label={`More actions for ${topic.title || 'Untitled topic'}`}
-								className='h-8 w-8 shrink-0 rounded-full'
-								size='icon-sm'
-								variant='outline'
-							>
-								<MoreHorizontal className='h-4 w-4' />
-							</Button>
-						}
-					/>
-					<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
-						<DropdownMenuItem
-							onClick={onOpenDeleteDialog}
-							variant='destructive'
-						>
-							<Trash2 className='mr-2 h-4 w-4' />
-							Delete
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
+				<TopicDetailRootActionsMenu
+					isCreatingTopic={isCreatingTopic}
+					onCreateSubtopic={onCreateSubtopic}
+					onOpenDeleteDialog={onOpenDeleteDialog}
+					topicTitle={topic.title}
+				/>
 			</div>
 		</div>
 	)

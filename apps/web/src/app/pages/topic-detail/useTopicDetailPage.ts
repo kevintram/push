@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { useReviewCards } from '~/features/review-cards/api/getReviewCards'
+import { useCreateTopic } from '~/features/topics/api/createTopic'
 import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
 import { useTopic } from '~/features/topics/api/getTopic'
 import { useTopics } from '~/features/topics/api/getTopics'
@@ -48,6 +49,8 @@ export function useTopicDetailPage({
 	} = useTopicTree()
 	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
 		useDeleteTopic()
+	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
+		useCreateTopic()
 	const {
 		data: subtreeTopics = [],
 		error: subtreeTopicsError,
@@ -252,6 +255,18 @@ export function useTopicDetailPage({
 		[freshTopicId]
 	)
 
+	const handleCreateSubtopic = useCallback(() => {
+		if (!topic || isCreatingTopic) return
+
+		createTopicAsync({
+			title: '',
+			body: '',
+			parent_id: topic.id
+		})
+			.then(created => handleSubtopicCreated(topic.id, created.id))
+			.catch(() => toast.error('Failed to create topic'))
+	}, [createTopicAsync, handleSubtopicCreated, isCreatingTopic, topic])
+
 	const handleDeleteTopic = useCallback(async () => {
 		if (!topic || isDeletingTopic) return
 
@@ -313,6 +328,7 @@ export function useTopicDetailPage({
 	return {
 		collapsedSections,
 		getScrollElement,
+		handleCreateSubtopic,
 		handleDeleteTopic,
 		handleGlobalFilterChange,
 		handleOpenReviewCard,
@@ -322,6 +338,7 @@ export function useTopicDetailPage({
 		isDeletingTopic,
 		isDetailLoading:
 			isTopicLoading || isTopicTreeLoading || isSubtreeTopicsLoading,
+		isCreatingTopic,
 		isReviewCardsLoading,
 		nodeById,
 		freshTopicId,

@@ -1676,6 +1676,104 @@ describe('TopicDetailPage', () => {
 		expect(navigateMock).not.toHaveBeenCalled()
 	})
 
+	it('creates a root child topic in place from the root more menu', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const createdTopic = {
+			id: 9,
+			title: '',
+			body: '',
+			parent_id: 1,
+			parent_title: 'Mathematics',
+			inserted_at: topic.inserted_at,
+			updated_at: topic.updated_at
+		}
+		let topicsData = [rootTopic, childTopic]
+
+		createTopicAsyncMock.mockImplementation(async () => {
+			topicsData = [rootTopic, childTopic, createdTopic]
+			return createdTopic
+		})
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { rerender } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const rootMenuButton = screen.getAllByRole('button', {
+			name: 'More actions for Mathematics'
+		})[0]
+		const rootMenu = rootMenuButton?.parentElement
+
+		expect(rootMenu).not.toBeNull()
+
+		await user.click(
+			within(rootMenu as HTMLElement).getByRole('button', {
+				name: 'New topic'
+			})
+		)
+
+		expect(createTopicAsyncMock).toHaveBeenCalledWith({
+			title: '',
+			body: '',
+			parent_id: 1
+		})
+		rerender(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+		await waitFor(() => {
+			expect(
+				screen.getByRole('textbox', { name: 'Topic title 9' })
+			).toHaveFocus()
+		})
+		expect(
+			screen
+				.getByRole('textbox', { name: 'Topic title 9' })
+				.closest('[data-fresh-topic="true"]')
+		).not.toBeNull()
+		expect(navigateMock).not.toHaveBeenCalled()
+	})
+
 	it('keeps the created parent outline section collapsible after focusing the new child', async () => {
 		const user = userEvent.setup()
 		const rootTopic = {
@@ -1736,10 +1834,18 @@ describe('TopicDetailPage', () => {
 			/>
 		)
 
+		const algebraMenuButton = screen.getByRole('button', {
+			name: 'More actions for Algebra'
+		})
+		const algebraMenu = algebraMenuButton.parentElement
+
+		expect(algebraMenu).not.toBeNull()
+
 		await user.click(
-			screen.getByRole('button', { name: 'More actions for Algebra' })
+			within(algebraMenu as HTMLElement).getByRole('button', {
+				name: 'New topic'
+			})
 		)
-		await user.click(screen.getByRole('button', { name: 'New topic' }))
 
 		rerender(
 			<TopicDetailPage
@@ -1827,10 +1933,18 @@ describe('TopicDetailPage', () => {
 			/>
 		)
 
+		const algebraMenuButton = screen.getByRole('button', {
+			name: 'More actions for Algebra'
+		})
+		const algebraMenu = algebraMenuButton.parentElement
+
+		expect(algebraMenu).not.toBeNull()
+
 		await user.click(
-			screen.getByRole('button', { name: 'More actions for Algebra' })
+			within(algebraMenu as HTMLElement).getByRole('button', {
+				name: 'New topic'
+			})
 		)
-		await user.click(screen.getByRole('button', { name: 'New topic' }))
 
 		rerender(
 			<TopicDetailPage
@@ -1917,10 +2031,18 @@ describe('TopicDetailPage', () => {
 			/>
 		)
 
+		const algebraMenuButton = screen.getByRole('button', {
+			name: 'More actions for Algebra'
+		})
+		const algebraMenu = algebraMenuButton.parentElement
+
+		expect(algebraMenu).not.toBeNull()
+
 		await user.click(
-			screen.getByRole('button', { name: 'More actions for Algebra' })
+			within(algebraMenu as HTMLElement).getByRole('button', {
+				name: 'New topic'
+			})
 		)
-		await user.click(screen.getByRole('button', { name: 'New topic' }))
 
 		rerender(
 			<TopicDetailPage
@@ -2017,10 +2139,18 @@ describe('TopicDetailPage', () => {
 			/>
 		)
 
+		const algebraMenuButton = screen.getByRole('button', {
+			name: 'More actions for Algebra'
+		})
+		const algebraMenu = algebraMenuButton.parentElement
+
+		expect(algebraMenu).not.toBeNull()
+
 		await user.click(
-			screen.getByRole('button', { name: 'More actions for Algebra' })
+			within(algebraMenu as HTMLElement).getByRole('button', {
+				name: 'New topic'
+			})
 		)
-		await user.click(screen.getByRole('button', { name: 'New topic' }))
 
 		rerender(
 			<TopicDetailPage

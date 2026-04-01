@@ -1,5 +1,5 @@
 import { notFound } from '@tanstack/react-router'
-import { AlertTriangle, MoreHorizontal, Trash2 } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { useState } from 'react'
 import { LoadingOrError } from '~/components/LoadingOrError'
@@ -14,13 +14,6 @@ import {
 	AlertDialogMedia,
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
-import { Button } from '~/components/ui/button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { cn } from '~/lib/utils'
 import { isHttpStatusError } from '~/utils/httpStatusError'
@@ -30,6 +23,7 @@ import type {
 } from './shared'
 import { TopicDetailHeader } from './TopicDetailHeader'
 import { TopicDetailOutline } from './TopicDetailOutline'
+import { TopicDetailRootActionsMenu } from './TopicDetailRootActionsMenu'
 import { TopicDetailRootSectionContent } from './TopicDetailRootSectionContent'
 import {
 	TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS,
@@ -65,12 +59,14 @@ export function TopicDetailPage({
 		collapsedSections,
 		detailError,
 		getScrollElement,
+		handleCreateSubtopic,
 		handleDeleteTopic,
 		handleGlobalFilterChange,
 		handleOpenReviewCard,
 		handleSectionFilterChange,
 		handleFreshTopicInteraction,
 		handleSubtopicCreated,
+		isCreatingTopic,
 		isDeleteDialogOpen,
 		isDeletingTopic,
 		isDetailLoading,
@@ -208,6 +204,8 @@ export function TopicDetailPage({
 														<TopicDetailHeader
 															actionClassName={rootHeaderActionClassName}
 															contentClassName={rootHeaderContentClassName}
+															isCreatingTopic={isCreatingTopic}
+															onCreateSubtopic={handleCreateSubtopic}
 															onOpenDeleteDialog={() =>
 																setIsDeleteDialogOpen(true)
 															}
@@ -231,33 +229,14 @@ export function TopicDetailPage({
 												isLeafTopic && 'lg:hidden'
 											)}
 										>
-											<DropdownMenu>
-												<DropdownMenuTrigger
-													render={
-														<Button
-															aria-label={`More actions for ${rootSection.topic.title || 'Untitled topic'}`}
-															className='h-8 w-8 shrink-0 rounded-full'
-															size='icon-sm'
-															variant='outline'
-														>
-															<MoreHorizontal className='h-4 w-4' />
-														</Button>
-													}
-												/>
-												<DropdownMenuContent
-													align='end'
-													side='bottom'
-													sideOffset={4}
-												>
-													<DropdownMenuItem
-														onClick={() => setIsDeleteDialogOpen(true)}
-														variant='destructive'
-													>
-														<Trash2 className='mr-2 h-4 w-4' />
-														Delete
-													</DropdownMenuItem>
-												</DropdownMenuContent>
-											</DropdownMenu>
+											<TopicDetailRootActionsMenu
+												isCreatingTopic={isCreatingTopic}
+												onCreateSubtopic={handleCreateSubtopic}
+												onOpenDeleteDialog={() => {
+													setIsDeleteDialogOpen(true)
+												}}
+												topicTitle={rootSection.topic.title}
+											/>
 										</div>
 									</div>
 								</div>
