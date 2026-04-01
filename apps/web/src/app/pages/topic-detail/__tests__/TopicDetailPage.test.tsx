@@ -1239,8 +1239,7 @@ describe('TopicDetailPage', () => {
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
 		const rootRow = within(toc).getByRole('link', { name: 'Mathematics' })
 
-		expect(rootRow).toHaveClass('font-medium')
-		expect(rootRow).not.toHaveClass('font-bold')
+		expect(rootRow).toHaveClass('font-bold')
 		expect(rootRow.parentElement).not.toHaveClass(
 			'bg-[var(--app-chrome-selected)]'
 		)

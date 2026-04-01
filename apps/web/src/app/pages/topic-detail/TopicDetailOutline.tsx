@@ -427,7 +427,7 @@ export function TopicDetailOutline({
 													className={cn(
 														'min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:underline',
 														isRootActive
-															? 'font-medium text-foreground'
+															? 'font-bold text-foreground'
 															: 'font-semibold text-muted-foreground hover:text-foreground'
 													)}
 													hash={getTopicDetailSectionId(outlineRootNode.id)}
