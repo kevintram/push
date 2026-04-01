@@ -53,36 +53,6 @@ vi.mock('~/features/topics/api/updateTopic', () => ({
 	useUpdateTopic: () => useUpdateTopicMock()
 }))
 
-function mockElementRect(
-	element: Element,
-	{
-		top,
-		height,
-		left = 0,
-		width = 240
-	}: {
-		top: number
-		height: number
-		left?: number
-		width?: number
-	}
-) {
-	Object.defineProperty(element, 'getBoundingClientRect', {
-		configurable: true,
-		value: () => ({
-			top,
-			bottom: top + height,
-			left,
-			right: left + width,
-			width,
-			height,
-			x: left,
-			y: top,
-			toJSON: () => ({})
-		})
-	})
-}
-
 describe('TopicNavigator', () => {
 	afterEach(() => {
 		vi.restoreAllMocks()
@@ -817,7 +787,7 @@ describe('TopicNavigator', () => {
 		})
 	})
 
-	it('smoothly centers the active topic in the rail when it is offscreen', async () => {
+	it('scrolls the active topic into view using nearest block alignment', async () => {
 		vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => {
 			callback(0)
 			return 1
@@ -858,119 +828,24 @@ describe('TopicNavigator', () => {
 			error: null
 		})
 
-		const { container, rerender } = render(
+		const { rerender } = render(
 			<TopicNavigatorRail activeTopicId={1} className='block' />
 		)
-
-		const scrollContainer = container.querySelector(
-			'[data-slot="scroll-area-viewport"]'
-		)
-		if (!scrollContainer) throw new Error('scroll container not found')
-
-		Object.defineProperty(scrollContainer, 'clientHeight', {
-			configurable: true,
-			value: 200
-		})
-		Object.defineProperty(scrollContainer, 'scrollHeight', {
-			configurable: true,
-			value: 1000
-		})
-		;(scrollContainer as HTMLElement).scrollTop = 80
-		const scrollToMock = vi.fn()
-		;(scrollContainer as HTMLElement).scrollTo = scrollToMock
-
-		mockElementRect(scrollContainer, { top: 100, height: 200 })
 
 		const activeItem = screen
 			.getByRole('link', { name: 'Geometry' })
 			.closest('li')
 		if (!activeItem) throw new Error('active item not found')
-		mockElementRect(activeItem, { top: 360, height: 40 })
+		const scrollIntoViewMock = vi.fn()
+		activeItem.scrollIntoView = scrollIntoViewMock
 
 		rerender(<TopicNavigatorRail activeTopicId={2} className='block' />)
 
 		await waitFor(() => {
-			expect(scrollToMock).toHaveBeenCalledWith({
-				top: 260,
+			expect(scrollIntoViewMock).toHaveBeenCalledWith({
+				block: 'nearest',
 				behavior: 'smooth'
 			})
-		})
-	})
-
-	it('does not scroll the rail when the active topic is already visible', async () => {
-		vi.spyOn(window, 'requestAnimationFrame').mockImplementation(callback => {
-			callback(0)
-			return 1
-		})
-
-		useTopicTreeMock.mockReturnValue({
-			roots: [
-				{
-					id: 1,
-					title: 'Algebra',
-					body: '',
-					parent_id: null,
-					parent_title: null,
-					inserted_at: '',
-					updated_at: '',
-					children: []
-				},
-				{
-					id: 2,
-					title: 'Geometry',
-					body: '',
-					parent_id: null,
-					parent_title: null,
-					inserted_at: '',
-					updated_at: '',
-					children: []
-				}
-			],
-			ancestorIdsById: new Map<number, Array<number>>([
-				[1, []],
-				[2, []]
-			]),
-			nodeById: new Map<number, object>([
-				[1, {}],
-				[2, {}]
-			]),
-			isLoading: false,
-			error: null
-		})
-
-		const { container, rerender } = render(
-			<TopicNavigatorRail activeTopicId={1} className='block' />
-		)
-
-		const scrollContainer = container.querySelector(
-			'[data-slot="scroll-area-viewport"]'
-		)
-		if (!scrollContainer) throw new Error('scroll container not found')
-
-		Object.defineProperty(scrollContainer, 'clientHeight', {
-			configurable: true,
-			value: 200
-		})
-		Object.defineProperty(scrollContainer, 'scrollHeight', {
-			configurable: true,
-			value: 1000
-		})
-		;(scrollContainer as HTMLElement).scrollTop = 80
-		const scrollToMock = vi.fn()
-		;(scrollContainer as HTMLElement).scrollTo = scrollToMock
-
-		mockElementRect(scrollContainer, { top: 100, height: 200 })
-
-		const activeItem = screen
-			.getByRole('link', { name: 'Geometry' })
-			.closest('li')
-		if (!activeItem) throw new Error('active item not found')
-		mockElementRect(activeItem, { top: 180, height: 40 })
-
-		rerender(<TopicNavigatorRail activeTopicId={2} className='block' />)
-
-		await waitFor(() => {
-			expect(scrollToMock).not.toHaveBeenCalled()
 		})
 	})
 })
