@@ -10,21 +10,27 @@ interface TopicDetailOutlineHeaderProps {
 	isUpdatingTopic: boolean
 	onAdd: () => Promise<void>
 	onCollapseAll: () => void
+	onScrollToTop: () => void
 }
 
 export function TopicDetailOutlineHeader({
 	isUpdatingTopic,
 	onAdd,
-	onCollapseAll
+	onCollapseAll,
+	onScrollToTop
 }: TopicDetailOutlineHeaderProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const addTopicLabel = isSubmitting ? 'Creating topic' : ADD_TOPIC_LABEL
 
 	return (
 		<div className='flex min-h-8 items-center justify-between gap-2 rounded-md px-1.5 text-sm'>
-			<span className='truncate font-semibold text-accent-foreground/90 text-sm uppercase tracking-wide'>
+			<button
+				className='cursor-pointer truncate font-semibold text-accent-foreground/90 text-sm uppercase tracking-wide hover:text-accent-foreground'
+				onClick={onScrollToTop}
+				type='button'
+			>
 				{OUTLINE_LABEL}
-			</span>
+			</button>
 			<div className='flex items-center gap-0.5'>
 				<Button
 					aria-label={COLLAPSE_OUTLINE_LABEL}
