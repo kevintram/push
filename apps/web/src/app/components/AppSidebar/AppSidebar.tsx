@@ -107,7 +107,7 @@ export function AppSidebar({
 			collapsible='icon'
 		>
 			<SidebarHeader className='px-1.5 py-1'>
-				<SidebarTrigger className='rounded-full' />
+				<SidebarTrigger className='hidden rounded-full md:flex' />
 			</SidebarHeader>
 			<SidebarContent className='gap-1 overflow-hidden bg-[var(--app-shell)]'>
 				<div className='flex shrink-0 flex-col gap-1'>

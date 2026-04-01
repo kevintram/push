@@ -8,6 +8,7 @@ import {
 import { BookOpenOff } from '~/components/icons'
 import { SettingsDialog } from '~/components/SettingsDialog'
 import { Button } from '~/components/ui/button'
+import { SidebarTrigger } from '~/components/ui/sidebar'
 import {
 	Tooltip,
 	TooltipContent,
@@ -40,7 +41,9 @@ export function AppHeader() {
 	return (
 		<>
 			<header className='grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 bg-transparent px-2 py-1 sm:px-2 sm:py-1.5'>
-				<div className='flex min-w-0 items-center gap-2' />
+				<div className='flex min-w-0 items-center gap-2'>
+					<SidebarTrigger className='rounded-full md:hidden' />
+				</div>
 
 				<div className='flex min-w-0 justify-center'>
 					<div className='flex w-[min(21rem,calc(100vw-6.5rem))] items-center gap-0.5 sm:w-[min(21rem,calc(100vw-8rem))]'>
