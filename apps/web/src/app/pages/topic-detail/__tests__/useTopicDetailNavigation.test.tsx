@@ -48,17 +48,20 @@ function attachScrollToSpy(element: HTMLDivElement) {
 }
 
 function createNavigationOptions({
+	passiveHashAlignmentEnabled = true,
 	rootTopicId = 1,
 	scrollContainerElement,
 	scrollContainerVersion = scrollContainerElement ? 1 : 0,
 	sectionIds
 }: {
+	passiveHashAlignmentEnabled?: boolean
 	rootTopicId?: number
 	scrollContainerElement: HTMLDivElement | null
 	scrollContainerVersion?: number
 	sectionIds: Array<number>
 }) {
 	return {
+		passiveHashAlignmentEnabled,
 		rootTopicId,
 		scrollContainerRef: {
 			current: scrollContainerElement
@@ -68,48 +71,19 @@ function createNavigationOptions({
 	}
 }
 
-function createResizeObserverStub() {
-	const observe = vi.fn()
-	const disconnect = vi.fn()
-	let callback: ResizeObserverCallback | null = null
-
-	class ResizeObserverStub {
-		constructor(nextCallback: ResizeObserverCallback) {
-			callback = nextCallback
-		}
-
-		observe = observe
-		disconnect = disconnect
-	}
-
-	return {
-		ResizeObserverStub,
-		observe,
-		disconnect,
-		getCallback: () => callback
-	}
-}
-
-function createMutationObserverStub() {
-	const observe = vi.fn()
-	const disconnect = vi.fn()
-	let callback: MutationCallback | null = null
-
-	class MutationObserverStub {
-		constructor(nextCallback: MutationCallback) {
-			callback = nextCallback
-		}
-
-		observe = observe
-		disconnect = disconnect
-	}
-
-	return {
-		MutationObserverStub,
-		observe,
-		disconnect,
-		getCallback: () => callback
-	}
+function mockRectFromScrollPosition(
+	element: HTMLElement,
+	scrollContainer: HTMLDivElement,
+	documentTop: number,
+	height = 60
+) {
+	return vi.spyOn(element, 'getBoundingClientRect').mockImplementation(() => {
+		const containerTop = scrollContainer.getBoundingClientRect().top
+		return createDomRect(
+			documentTop - scrollContainer.scrollTop + containerTop,
+			height
+		)
+	})
 }
 
 describe('useTopicDetailNavigation', () => {
@@ -117,8 +91,6 @@ describe('useTopicDetailNavigation', () => {
 	const originalRequestAnimationFrame = window.requestAnimationFrame
 	const originalCancelAnimationFrame = window.cancelAnimationFrame
 	const originalIntersectionObserver = globalThis.IntersectionObserver
-	const originalResizeObserver = globalThis.ResizeObserver
-	const originalMutationObserver = globalThis.MutationObserver
 	let pendingAnimationFrames: Array<FrameRequestCallback>
 
 	function flushAnimationFrames(...timestamps: Array<number>) {
@@ -134,6 +106,7 @@ describe('useTopicDetailNavigation', () => {
 	}
 
 	beforeEach(() => {
+		vi.useFakeTimers()
 		currentHash = ''
 		navigateMock.mockReset()
 		navigateMock.mockImplementation(async options => {
@@ -151,12 +124,11 @@ describe('useTopicDetailNavigation', () => {
 	})
 
 	afterEach(() => {
+		vi.useRealTimers()
 		HTMLElement.prototype.scrollIntoView = originalScrollIntoView
 		window.requestAnimationFrame = originalRequestAnimationFrame
 		window.cancelAnimationFrame = originalCancelAnimationFrame
 		globalThis.IntersectionObserver = originalIntersectionObserver
-		globalThis.ResizeObserver = originalResizeObserver
-		globalThis.MutationObserver = originalMutationObserver
 		document.body.innerHTML = ''
 	})
 
@@ -344,13 +316,8 @@ describe('useTopicDetailNavigation', () => {
 		expect(result.current.visibleSectionIds).toEqual([2])
 	})
 
-	it('does not re-scroll the current hash target when section ids refresh', () => {
+	it('aligns a deep link after section ids and refs arrive asynchronously', () => {
 		currentHash = 'topic-2'
-
-		const resizeObserver = createResizeObserverStub()
-		const mutationObserver = createMutationObserverStub()
-		globalThis.ResizeObserver = resizeObserver.ResizeObserverStub as never
-		globalThis.MutationObserver = mutationObserver.MutationObserverStub as never
 
 		const scrollContainer = document.createElement('div')
 		attachScrollToSpy(scrollContainer)
@@ -365,15 +332,14 @@ describe('useTopicDetailNavigation', () => {
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
 			createDomRect(0, 220)
 		)
-		vi.spyOn(sectionOne, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(20, 60)
-		)
-		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(130, 60)
-		)
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
 
-		const { result, rerender } = renderHook(
-			({ sectionIds }: { sectionIds: Array<number> }) =>
+		const { result, rerender } = renderHook<
+			ReturnType<typeof useTopicDetailNavigation>,
+			{ sectionIds: Array<number> }
+		>(
+			({ sectionIds }) =>
 				useTopicDetailNavigation(
 					createNavigationOptions({
 						rootTopicId: 1,
@@ -383,7 +349,175 @@ describe('useTopicDetailNavigation', () => {
 				),
 			{
 				initialProps: {
+					sectionIds: []
+				}
+			}
+		)
+
+		expect(scrollContainer.scrollTop).toBe(0)
+
+		act(() => {
+			rerender({
+				sectionIds: [1, 2]
+			})
+			result.current.registerSectionRef(1, sectionOne)
+			result.current.registerSectionRef(2, sectionTwo)
+			result.current.registerSectionHeadingRef(1, sectionOne)
+			result.current.registerSectionHeadingRef(2, sectionTwo)
+			flushAnimationFrames()
+			vi.runAllTimers()
+		})
+
+		expect(scrollContainer.scrollTop).toBe(320)
+	})
+
+	it('does not re-align a pending deep link when unrelated sections register', () => {
+		currentHash = 'topic-2'
+
+		const scrollContainer = document.createElement('div')
+		const sectionOne = document.createElement('section')
+		const sectionTwo = document.createElement('section')
+		const sectionThree = document.createElement('section')
+		let sectionTwoDocumentTop = 185
+
+		document.body.append(scrollContainer)
+		scrollContainer.append(sectionOne, sectionTwo, sectionThree)
+		sectionOne.dataset.topicDetailHeadingId = '1'
+		sectionTwo.dataset.topicDetailHeadingId = '2'
+		sectionThree.dataset.topicDetailHeadingId = '3'
+
+		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
+			createDomRect(0, 220)
+		)
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
+			const containerTop = scrollContainer.getBoundingClientRect().top
+			return createDomRect(
+				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
+				60
+			)
+		})
+		mockRectFromScrollPosition(sectionThree, scrollContainer, 420)
+
+		const { result } = renderHook(() =>
+			useTopicDetailNavigation(
+				createNavigationOptions({
+					rootTopicId: 1,
+					scrollContainerElement: scrollContainer,
+					sectionIds: [1, 2, 3]
+				})
+			)
+		)
+
+		act(() => {
+			result.current.registerSectionRef(1, sectionOne)
+			result.current.registerSectionHeadingRef(1, sectionOne)
+			result.current.registerSectionRef(2, sectionTwo)
+			result.current.registerSectionHeadingRef(2, sectionTwo)
+			vi.advanceTimersByTime(100)
+		})
+
+		expect(scrollContainer.scrollTop).toBe(185)
+
+		act(() => {
+			sectionTwoDocumentTop = 320
+			result.current.registerSectionRef(3, sectionThree)
+			result.current.registerSectionHeadingRef(3, sectionThree)
+		})
+
+		expect(scrollContainer.scrollTop).toBe(185)
+	})
+
+	it('keeps a passive deep-link request alive through transient alignment', () => {
+		currentHash = 'topic-2'
+
+		const scrollContainer = document.createElement('div')
+		const sectionOne = document.createElement('section')
+		const sectionTwo = document.createElement('section')
+		let sectionTwoDocumentTop = 0
+
+		document.body.append(scrollContainer)
+		scrollContainer.append(sectionOne, sectionTwo)
+		sectionOne.dataset.topicDetailHeadingId = '1'
+		sectionTwo.dataset.topicDetailHeadingId = '2'
+
+		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
+			createDomRect(0, 220)
+		)
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
+			const containerTop = scrollContainer.getBoundingClientRect().top
+			return createDomRect(
+				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
+				60
+			)
+		})
+
+		const { result } = renderHook(() =>
+			useTopicDetailNavigation(
+				createNavigationOptions({
+					rootTopicId: 1,
+					scrollContainerElement: scrollContainer,
 					sectionIds: [1, 2]
+				})
+			)
+		)
+
+		act(() => {
+			result.current.registerSectionRef(1, sectionOne)
+			result.current.registerSectionHeadingRef(1, sectionOne)
+			result.current.registerSectionRef(2, sectionTwo)
+			result.current.registerSectionHeadingRef(2, sectionTwo)
+		})
+
+		expect(scrollContainer.scrollTop).toBe(0)
+
+		act(() => {
+			sectionTwoDocumentTop = 320
+			result.current.registerSectionHeadingRef(2, null)
+			result.current.registerSectionRef(2, null)
+			result.current.registerSectionHeadingRef(2, sectionTwo)
+			result.current.registerSectionRef(2, sectionTwo)
+			vi.advanceTimersByTime(250)
+		})
+
+		expect(scrollContainer.scrollTop).toBe(320)
+	})
+
+	it('waits until passive hash alignment is enabled before scrolling a deep link', () => {
+		currentHash = 'topic-2'
+
+		const scrollContainer = document.createElement('div')
+		const sectionOne = document.createElement('section')
+		const sectionTwo = document.createElement('section')
+
+		document.body.append(scrollContainer)
+		scrollContainer.append(sectionOne, sectionTwo)
+		sectionOne.dataset.topicDetailHeadingId = '1'
+		sectionTwo.dataset.topicDetailHeadingId = '2'
+
+		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
+			createDomRect(0, 220)
+		)
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
+
+		const { result, rerender } = renderHook<
+			ReturnType<typeof useTopicDetailNavigation>,
+			{ passiveHashAlignmentEnabled: boolean }
+		>(
+			({ passiveHashAlignmentEnabled }) =>
+				useTopicDetailNavigation(
+					createNavigationOptions({
+						passiveHashAlignmentEnabled,
+						rootTopicId: 1,
+						scrollContainerElement: scrollContainer,
+						sectionIds: [1, 2]
+					})
+				),
+			{
+				initialProps: {
+					passiveHashAlignmentEnabled: false
 				}
 			}
 		)
@@ -393,33 +527,23 @@ describe('useTopicDetailNavigation', () => {
 			result.current.registerSectionRef(2, sectionTwo)
 			result.current.registerSectionHeadingRef(1, sectionOne)
 			result.current.registerSectionHeadingRef(2, sectionTwo)
-			flushAnimationFrames()
-			rerender({
-				sectionIds: [1, 2]
-			})
-			flushAnimationFrames()
+			vi.runAllTimers()
 		})
 
-		expect(scrollContainer.scrollTop).toBe(130)
-		scrollContainer.scrollTop = 16
+		expect(scrollContainer.scrollTop).toBe(0)
 
 		act(() => {
 			rerender({
-				sectionIds: [1, 2, 3]
+				passiveHashAlignmentEnabled: true
 			})
-			flushAnimationFrames()
+			vi.runAllTimers()
 		})
 
-		expect(scrollContainer.scrollTop).toBe(16)
+		expect(scrollContainer.scrollTop).toBe(320)
 	})
 
-	it('re-aligns the current hash target after delayed layout changes', () => {
+	it('waits for the scroll container ref before resolving a deep link', () => {
 		currentHash = 'topic-2'
-
-		const resizeObserver = createResizeObserverStub()
-		const mutationObserver = createMutationObserverStub()
-		globalThis.ResizeObserver = resizeObserver.ResizeObserverStub as never
-		globalThis.MutationObserver = mutationObserver.MutationObserverStub as never
 
 		const scrollContainer = document.createElement('div')
 		attachScrollToSpy(scrollContainer)
@@ -434,21 +558,31 @@ describe('useTopicDetailNavigation', () => {
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
 			createDomRect(0, 220)
 		)
-		vi.spyOn(sectionOne, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(20, 60)
-		)
-		const sectionTwoRect = vi
-			.spyOn(sectionTwo, 'getBoundingClientRect')
-			.mockReturnValue(createDomRect(320, 60))
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
 
-		const { result } = renderHook(() =>
-			useTopicDetailNavigation(
-				createNavigationOptions({
-					rootTopicId: 1,
-					scrollContainerElement: scrollContainer,
-					sectionIds: [1, 2]
-				})
-			)
+		const { result, rerender } = renderHook<
+			ReturnType<typeof useTopicDetailNavigation>,
+			{
+				scrollContainerElement: HTMLDivElement | null
+				scrollContainerVersion: number
+			}
+		>(
+			({ scrollContainerElement, scrollContainerVersion }) =>
+				useTopicDetailNavigation(
+					createNavigationOptions({
+						rootTopicId: 1,
+						scrollContainerElement,
+						scrollContainerVersion,
+						sectionIds: [1, 2]
+					})
+				),
+			{
+				initialProps: {
+					scrollContainerElement: null,
+					scrollContainerVersion: 0
+				}
+			}
 		)
 
 		act(() => {
@@ -456,31 +590,26 @@ describe('useTopicDetailNavigation', () => {
 			result.current.registerSectionRef(2, sectionTwo)
 			result.current.registerSectionHeadingRef(1, sectionOne)
 			result.current.registerSectionHeadingRef(2, sectionTwo)
+			vi.runAllTimers()
+		})
+
+		expect(scrollContainer.scrollTop).toBe(0)
+
+		act(() => {
+			rerender({
+				scrollContainerElement: scrollContainer,
+				scrollContainerVersion: 1
+			})
 			flushAnimationFrames()
+			vi.runAllTimers()
 		})
 
 		expect(scrollContainer.scrollTop).toBe(320)
-		expect(mutationObserver.observe).toHaveBeenCalled()
-		expect(resizeObserver.observe).toHaveBeenCalled()
-
-		sectionTwoRect.mockReturnValue(createDomRect(220, 60))
-
-		act(() => {
-			mutationObserver.getCallback()?.([], {} as MutationObserver)
-			flushAnimationFrames()
-		})
-
-		expect(scrollContainer.scrollTop).toBe(540)
 	})
 
 	it('cancels pending hash alignment when the user scrolls the container', () => {
 		currentHash = 'topic-2'
 
-		const resizeObserver = createResizeObserverStub()
-		const mutationObserver = createMutationObserverStub()
-		globalThis.ResizeObserver = resizeObserver.ResizeObserverStub as never
-		globalThis.MutationObserver = mutationObserver.MutationObserverStub as never
-
 		const scrollContainer = document.createElement('div')
 		attachScrollToSpy(scrollContainer)
 		const sectionOne = document.createElement('section')
@@ -494,12 +623,8 @@ describe('useTopicDetailNavigation', () => {
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
 			createDomRect(0, 220)
 		)
-		vi.spyOn(sectionOne, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(20, 60)
-		)
-		const sectionTwoRect = vi
-			.spyOn(sectionTwo, 'getBoundingClientRect')
-			.mockReturnValue(createDomRect(320, 60))
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
 
 		const { result } = renderHook(() =>
 			useTopicDetailNavigation(
@@ -517,29 +642,23 @@ describe('useTopicDetailNavigation', () => {
 			result.current.registerSectionHeadingRef(1, sectionOne)
 			result.current.registerSectionHeadingRef(2, sectionTwo)
 			flushAnimationFrames()
+			vi.advanceTimersByTime(100)
 		})
 
 		expect(scrollContainer.scrollTop).toBe(320)
 
 		scrollContainer.scrollTop = 120
-		sectionTwoRect.mockReturnValue(createDomRect(120, 60))
 
 		act(() => {
 			scrollContainer.dispatchEvent(new Event('wheel'))
-			mutationObserver.getCallback()?.([], {} as MutationObserver)
-			flushAnimationFrames()
+			vi.runAllTimers()
 		})
 
 		expect(scrollContainer.scrollTop).toBe(120)
 	})
 
-	it('does not snap back to the hash target after the user scrolls away', () => {
+	it('does not snap back to the hash target after the alignment window expires', () => {
 		currentHash = 'topic-2'
-
-		const resizeObserver = createResizeObserverStub()
-		const mutationObserver = createMutationObserverStub()
-		globalThis.ResizeObserver = resizeObserver.ResizeObserverStub as never
-		globalThis.MutationObserver = mutationObserver.MutationObserverStub as never
 
 		const scrollContainer = document.createElement('div')
 		attachScrollToSpy(scrollContainer)
@@ -554,12 +673,8 @@ describe('useTopicDetailNavigation', () => {
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
 			createDomRect(0, 220)
 		)
-		vi.spyOn(sectionOne, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(20, 60)
-		)
-		const sectionTwoRect = vi
-			.spyOn(sectionTwo, 'getBoundingClientRect')
-			.mockReturnValue(createDomRect(320, 60))
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
 
 		const { result } = renderHook(() =>
 			useTopicDetailNavigation(
@@ -577,26 +692,16 @@ describe('useTopicDetailNavigation', () => {
 			result.current.registerSectionHeadingRef(1, sectionOne)
 			result.current.registerSectionHeadingRef(2, sectionTwo)
 			flushAnimationFrames()
+			vi.advanceTimersByTime(100)
 		})
 
 		expect(scrollContainer.scrollTop).toBe(320)
 
-		sectionTwoRect.mockReturnValue(createDomRect(20, 60))
-
 		act(() => {
-			mutationObserver.getCallback()?.([], {} as MutationObserver)
-			flushAnimationFrames()
-		})
-
-		expect(scrollContainer.scrollTop).toBe(320)
-
-		scrollContainer.scrollTop = 120
-		sectionTwoRect.mockReturnValue(createDomRect(120, 60))
-
-		act(() => {
+			vi.runAllTimers()
+			scrollContainer.scrollTop = 120
 			result.current.registerSectionHeadingRef(2, null)
 			result.current.registerSectionHeadingRef(2, sectionTwo)
-			mutationObserver.getCallback()?.([], {} as MutationObserver)
 			flushAnimationFrames()
 		})
 

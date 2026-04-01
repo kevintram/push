@@ -76,6 +76,7 @@ export function TopicDetailPage({
 		nodeById,
 		registerSectionHeadingRef,
 		registerSectionRef,
+		scrollToSection,
 		registerScrollContainerRef,
 		resolvedCardTypeFilter,
 		rootSection,
@@ -275,6 +276,7 @@ export function TopicDetailPage({
 									nodeById={nodeById}
 									onGlobalFilterChange={handleGlobalFilterChange}
 									onOutlineWidthChange={setOutlineWidth}
+									onSectionSelect={scrollToSection}
 									outlineRootNode={rootSection.topic}
 									outlineWidth={outlineWidth}
 									visibleSectionIds={visibleSectionIds}

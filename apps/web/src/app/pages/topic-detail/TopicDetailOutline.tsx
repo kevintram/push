@@ -49,9 +49,22 @@ interface TopicDetailOutlineProps {
 	nodeById: Map<number, TopicTreeNode>
 	onGlobalFilterChange: (filter: TopicDetailReviewCardFilter) => void
 	onOutlineWidthChange: (width: number) => void
+	onSectionSelect: (topicId: number) => void
 	outlineRootNode: TopicTreeNode | null
 	outlineWidth: number
 	visibleSectionIds: Array<number>
+}
+
+function shouldHandleSamePageSectionNavigation(
+	event: MouseEvent<HTMLAnchorElement>
+) {
+	return !(
+		event.button !== 0 ||
+		event.altKey ||
+		event.ctrlKey ||
+		event.metaKey ||
+		event.shiftKey
+	)
 }
 
 export function TopicDetailOutline({
@@ -60,6 +73,7 @@ export function TopicDetailOutline({
 	nodeById,
 	onGlobalFilterChange,
 	onOutlineWidthChange,
+	onSectionSelect,
 	outlineRootNode,
 	outlineWidth,
 	visibleSectionIds
@@ -122,14 +136,21 @@ export function TopicDetailOutline({
 	const handleOutlineClick = useCallback(
 		(
 			event: MouseEvent<HTMLAnchorElement>,
+			topicId: number,
 			suppressSelectionRef: { current: boolean }
 		) => {
-			if (!suppressSelectionRef.current) return
+			if (suppressSelectionRef.current) {
+				event.preventDefault()
+				event.stopPropagation()
+				return
+			}
+
+			if (!shouldHandleSamePageSectionNavigation(event)) return
 
 			event.preventDefault()
-			event.stopPropagation()
+			onSectionSelect(topicId)
 		},
-		[]
+		[onSectionSelect]
 	)
 	const outlineRootTopicId = outlineRootNode.id.toString()
 	const stickyTopOffset = 24
@@ -150,7 +171,7 @@ export function TopicDetailOutline({
 				hash={getTopicDetailSectionId(node.id)}
 				hashScrollIntoView={false}
 				onClick={event => {
-					handleOutlineClick(event, suppressSelectionRef)
+					handleOutlineClick(event, node.id, suppressSelectionRef)
 				}}
 				params={{ topicId: outlineRootTopicId }}
 				resetScroll={false}
@@ -399,23 +420,24 @@ export function TopicDetailOutline({
 										<ContextMenuTrigger className='rounded-md'>
 											<div
 												className={cn(
-													'group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors',
-													isRootActive
-														? 'bg-[var(--app-chrome-selected)] hover:bg-[var(--app-chrome-selected-hover)]'
-														: 'hover:bg-[var(--app-chrome-hover)]'
+													'group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors hover:bg-[var(--app-chrome-hover)]'
 												)}
 											>
 												<Link
 													className={cn(
 														'min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:underline',
 														isRootActive
-															? 'font-bold text-foreground'
+															? 'font-medium text-foreground'
 															: 'font-semibold text-muted-foreground hover:text-foreground'
 													)}
 													hash={getTopicDetailSectionId(outlineRootNode.id)}
 													hashScrollIntoView={false}
 													onClick={event => {
-														handleOutlineClick(event, suppressSelectionRef)
+														handleOutlineClick(
+															event,
+															outlineRootNode.id,
+															suppressSelectionRef
+														)
 													}}
 													params={{ topicId: outlineRootTopicId }}
 													resetScroll={false}

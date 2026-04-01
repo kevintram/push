@@ -91,6 +91,11 @@ export function useTopicDetailPage({
 		() => flattenTopicDetailSectionIds(rootSection),
 		[rootSection]
 	)
+	const isPassiveHashAlignmentEnabled =
+		!isTopicLoading &&
+		!isTopicTreeLoading &&
+		!isSubtreeTopicsLoading &&
+		!isReviewCardsLoading
 	const topicReviewCardsById = useMemo(
 		() => groupReviewCardsByTopicId(reviewCards),
 		[reviewCards]
@@ -109,13 +114,18 @@ export function useTopicDetailPage({
 
 		return [...pathTopics, topic]
 	}, [ancestorIdsById, nodeById, topic])
-	const { registerSectionHeadingRef, registerSectionRef, visibleSectionIds } =
-		useTopicDetailNavigation({
-			rootTopicId: topicId,
-			scrollContainerRef,
-			scrollContainerVersion,
-			sectionIds
-		})
+	const {
+		registerSectionHeadingRef,
+		registerSectionRef,
+		scrollToSection,
+		visibleSectionIds
+	} = useTopicDetailNavigation({
+		passiveHashAlignmentEnabled: isPassiveHashAlignmentEnabled,
+		rootTopicId: topicId,
+		scrollContainerRef,
+		scrollContainerVersion,
+		sectionIds
+	})
 
 	const registerScrollContainerRef = useCallback(
 		(element: HTMLDivElement | null) => {
@@ -218,6 +228,7 @@ export function useTopicDetailPage({
 		nodeById,
 		registerSectionHeadingRef,
 		registerSectionRef,
+		scrollToSection,
 		registerScrollContainerRef,
 		resolvedCardTypeFilter,
 		rootSection,
