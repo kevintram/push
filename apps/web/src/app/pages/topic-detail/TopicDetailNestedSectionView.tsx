@@ -50,11 +50,13 @@ interface TopicDetailNestedSectionViewProps {
 	headingClassName: string
 	isCollapsed: boolean
 	isCreatingTopic: boolean
+	isFreshTopic: boolean
 	onCreateSubtopic: () => void
 	onOpenDeleteDialog: () => void
 	onOpenTopic: () => void
 	onTitleChange: ChangeEventHandler<HTMLTextAreaElement>
 	registerHeadingRef: (element: HTMLDivElement | null) => void
+	registerTitleRef: (element: HTMLTextAreaElement | null) => void
 	reviewCardsSection: ReactNode
 	rootTopicId: number
 	rootTopicPath: Array<TopicPathItem>
@@ -72,11 +74,13 @@ export function TopicDetailNestedSectionView({
 	headingClassName,
 	isCollapsed,
 	isCreatingTopic,
+	isFreshTopic,
 	onCreateSubtopic,
 	onOpenDeleteDialog,
 	onOpenTopic,
 	onTitleChange,
 	registerHeadingRef,
+	registerTitleRef,
 	reviewCardsSection,
 	rootTopicId,
 	rootTopicPath,
@@ -90,7 +94,15 @@ export function TopicDetailNestedSectionView({
 	const { buttonSize, iconClassName } = getActionButtonProps(section)
 
 	return (
-		<div className={cn('group/section', TOPIC_DETAIL_SECTION_GRID_CLASS)}>
+		<div
+			className={cn(
+				'group/section transition-[background-color,box-shadow] duration-400 ease-out',
+				TOPIC_DETAIL_SECTION_GRID_CLASS,
+				isFreshTopic &&
+					'-mx-3 rounded-xl bg-sky-50/70 px-3 py-2 ring-1 ring-sky-200/80 dark:bg-sky-950/20 dark:ring-sky-800/70'
+			)}
+			data-fresh-topic={isFreshTopic ? 'true' : undefined}
+		>
 			<div
 				className='relative min-w-0 scroll-mt-24'
 				data-topic-detail-heading-id={section.topic.id}
@@ -118,6 +130,7 @@ export function TopicDetailNestedSectionView({
 								onBlur={flushTitle}
 								onChange={onTitleChange}
 								placeholder='Untitled topic'
+								ref={registerTitleRef}
 								spellCheck={false}
 								value={title}
 							/>

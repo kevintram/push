@@ -11,6 +11,7 @@ export const useSearchAllMock = vi.fn()
 export const useReviewCardMock = vi.fn()
 export const updateTopicAsyncMock = vi.fn()
 export const createTopicAsyncMock = vi.fn()
+export const createReviewCardAsyncMock = vi.fn()
 export const updateReviewCardAsyncMock = vi.fn()
 export const useReviewsByReviewCardMock = vi.fn()
 export const reviewsMenuPropsMock = vi.fn()
@@ -252,7 +253,10 @@ vi.mock('~/features/topics/api/deleteTopic', () => ({
 }))
 
 vi.mock('~/features/review-cards/api/createReviewCard', () => ({
-	useCreateReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useCreateReviewCard: () => ({
+		mutateAsync: createReviewCardAsyncMock,
+		isPending: false
+	})
 }))
 
 vi.mock('~/features/review-cards/api/getReviewCard', () => ({
@@ -373,6 +377,7 @@ beforeEach(() => {
 	useReviewCardMock.mockReset()
 	updateTopicAsyncMock.mockReset()
 	createTopicAsyncMock.mockReset()
+	createReviewCardAsyncMock.mockReset()
 	updateReviewCardAsyncMock.mockReset()
 	useReviewsByReviewCardMock.mockReset()
 	reviewsMenuPropsMock.mockReset()

@@ -5,14 +5,21 @@ import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 type UseTopicDetailOutlineOptions = {
 	ancestorIdsById: Map<number, Array<number>>
 	nodeById: Map<number, TopicTreeNode>
+	onCreateSubtopicCreated?: (
+		parentTopicId: number,
+		createdTopicId: number
+	) => void | Promise<void>
 	outlineRootNode: TopicTreeNode | null
+	pendingCreatedParentTopicId?: number | null
 	visibleSectionIds: Array<number>
 }
 
 export function useTopicDetailOutline({
 	ancestorIdsById,
 	nodeById,
+	onCreateSubtopicCreated,
 	outlineRootNode,
+	pendingCreatedParentTopicId = null,
 	visibleSectionIds
 }: UseTopicDetailOutlineOptions) {
 	const rootTopicId = outlineRootNode?.id ?? null
@@ -135,11 +142,18 @@ export function useTopicDetailOutline({
 	} = useTopicTreeActions({
 		activeTopicId: outlineRootNode?.id,
 		ancestorIdsById,
+		navigateToCreatedTopic: false,
 		nodeById,
-		onAfterCreateSubtopic: parentTopicId => {
+		onAfterCreateSubtopic: async (parentTopicId, createdTopicId) => {
 			ensureExpanded(parentTopicId)
+			await onCreateSubtopicCreated?.(parentTopicId, createdTopicId)
 		}
 	})
+
+	useEffect(() => {
+		if (pendingCreatedParentTopicId == null) return
+		ensureExpanded(pendingCreatedParentTopicId)
+	}, [ensureExpanded, pendingCreatedParentTopicId])
 
 	useEffect(() => {
 		const didRootTopicChange = previousRootTopicIdRef.current !== rootTopicId

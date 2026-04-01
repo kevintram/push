@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+	createReviewCardAsyncMock,
 	createTopicAsyncMock,
 	elementSizeMock,
 	navigateMock,
@@ -1476,6 +1477,9 @@ describe('TopicDetailPage', () => {
 
 	it('creates a direct child topic from the outline header add action', async () => {
 		const user = userEvent.setup()
+		const scrollIntoViewSpy = vi
+			.spyOn(HTMLElement.prototype, 'scrollIntoView')
+			.mockImplementation(() => {})
 		const rootTopic = {
 			...topic,
 			id: 1,
@@ -1490,12 +1494,20 @@ describe('TopicDetailPage', () => {
 			parent_id: 1,
 			parent_title: 'Mathematics'
 		}
-
-		createTopicAsyncMock.mockResolvedValue({
+		const createdTopic = {
 			id: 9,
 			title: '',
 			body: '',
-			parent_id: 1
+			parent_id: 1,
+			parent_title: 'Mathematics',
+			inserted_at: topic.inserted_at,
+			updated_at: topic.updated_at
+		}
+		let topicsData = [rootTopic, childTopic]
+
+		createTopicAsyncMock.mockImplementation(async () => {
+			topicsData = [rootTopic, childTopic, createdTopic]
+			return createdTopic
 		})
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -1509,10 +1521,7 @@ describe('TopicDetailPage', () => {
 			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
-						data:
-							params?.subtree_of === 1
-								? [rootTopic, childTopic]
-								: [rootTopic, childTopic],
+						data: params?.subtree_of === 1 ? topicsData : topicsData,
 						isLoading: false
 					}
 				}
@@ -1521,7 +1530,7 @@ describe('TopicDetailPage', () => {
 			}
 		)
 
-		render(
+		const { rerender } = render(
 			<TopicDetailPage
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
@@ -1545,12 +1554,505 @@ describe('TopicDetailPage', () => {
 			body: '',
 			parent_id: 1
 		})
+		rerender(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
 		await waitFor(() => {
-			expect(navigateMock).toHaveBeenCalledWith({
-				params: { topicId: '9' },
-				search: { focusTitle: true },
-				to: '/topics/$topicId'
-			})
+			expect(
+				screen.getByRole('textbox', { name: 'Topic title 9' })
+			).toHaveFocus()
+		})
+		expect(
+			screen
+				.getByRole('textbox', { name: 'Topic title 9' })
+				.closest('[data-fresh-topic="true"]')
+		).not.toBeNull()
+		expect(
+			within(toc)
+				.getByRole('link', { name: 'Untitled' })
+				.closest('[data-fresh-topic="true"]')
+		).not.toBeNull()
+		await waitFor(() => {
+			expect(scrollIntoViewSpy).toHaveBeenCalled()
+		})
+		expect(navigateMock).not.toHaveBeenCalled()
+	})
+
+	it('creates a nested child topic in place from the section more menu', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const createdTopic = {
+			id: 9,
+			title: '',
+			body: '',
+			parent_id: 2,
+			parent_title: 'Algebra',
+			inserted_at: topic.inserted_at,
+			updated_at: topic.updated_at
+		}
+		let topicsData = [rootTopic, childTopic]
+
+		createTopicAsyncMock.mockImplementation(async () => {
+			topicsData = [rootTopic, childTopic, createdTopic]
+			return createdTopic
+		})
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { rerender } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const algebraMenuButton = screen.getByRole('button', {
+			name: 'More actions for Algebra'
+		})
+		const algebraMenu = algebraMenuButton.parentElement
+
+		expect(algebraMenu).not.toBeNull()
+
+		await user.click(
+			within(algebraMenu!).getByRole('button', { name: 'New topic' })
+		)
+
+		expect(createTopicAsyncMock).toHaveBeenCalledWith({
+			title: '',
+			body: '',
+			parent_id: 2
+		})
+		rerender(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+		await waitFor(() => {
+			expect(
+				screen.getByRole('textbox', { name: 'Topic title 9' })
+			).toHaveFocus()
+		})
+		const createdTitle = screen.getByRole('textbox', { name: 'Topic title 9' })
+		expect(createdTitle.closest('[data-fresh-topic="true"]')).not.toBeNull()
+		expect(screen.getByRole('link', { name: 'Untitled' })).toBeInTheDocument()
+		expect(navigateMock).not.toHaveBeenCalled()
+	})
+
+	it('keeps the created parent outline section collapsible after focusing the new child', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const createdTopic = {
+			id: 9,
+			title: '',
+			body: '',
+			parent_id: 2,
+			parent_title: 'Algebra',
+			inserted_at: topic.inserted_at,
+			updated_at: topic.updated_at
+		}
+		let topicsData = [rootTopic, childTopic]
+
+		createTopicAsyncMock.mockImplementation(async () => {
+			topicsData = [rootTopic, childTopic, createdTopic]
+			return createdTopic
+		})
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { rerender } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		await user.click(
+			screen.getByRole('button', { name: 'More actions for Algebra' })
+		)
+		await user.click(screen.getByRole('button', { name: 'New topic' }))
+
+		rerender(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		await screen.findByRole('textbox', {
+			name: 'Topic title 9'
+		})
+
+		const toc = screen.getByRole('navigation', { name: 'On this page' })
+
+		await user.click(
+			within(toc).getByRole('button', { name: 'Collapse Algebra' })
+		)
+
+		await waitFor(() => {
+			expect(
+				within(toc).getByRole('button', { name: 'Expand Algebra' })
+			).toBeInTheDocument()
+		})
+		expect(within(toc).queryByText('Untitled')).not.toBeInTheDocument()
+	})
+
+	it('clears the fresh-topic highlight after typing in the created title', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const createdTopic = {
+			id: 9,
+			title: '',
+			body: '',
+			parent_id: 2,
+			parent_title: 'Algebra',
+			inserted_at: topic.inserted_at,
+			updated_at: topic.updated_at
+		}
+		let topicsData = [rootTopic, childTopic]
+
+		createTopicAsyncMock.mockImplementation(async () => {
+			topicsData = [rootTopic, childTopic, createdTopic]
+			return createdTopic
+		})
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { rerender } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		await user.click(
+			screen.getByRole('button', { name: 'More actions for Algebra' })
+		)
+		await user.click(screen.getByRole('button', { name: 'New topic' }))
+
+		rerender(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const createdTitle = await screen.findByRole('textbox', {
+			name: 'Topic title 9'
+		})
+		expect(createdTitle.closest('[data-fresh-topic="true"]')).not.toBeNull()
+
+		await user.type(createdTitle, 'Vectors')
+
+		await waitFor(() => {
+			expect(createdTitle.closest('[data-fresh-topic="true"]')).toBeNull()
+		})
+		expect(
+			screen
+				.getByRole('link', { name: 'Untitled' })
+				.closest('[data-fresh-topic="true"]')
+		).toBeNull()
+	})
+
+	it('clears the fresh-topic highlight after typing in the created body', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const createdTopic = {
+			id: 9,
+			title: '',
+			body: '',
+			parent_id: 2,
+			parent_title: 'Algebra',
+			inserted_at: topic.inserted_at,
+			updated_at: topic.updated_at
+		}
+		let topicsData = [rootTopic, childTopic]
+
+		createTopicAsyncMock.mockImplementation(async () => {
+			topicsData = [rootTopic, childTopic, createdTopic]
+			return createdTopic
+		})
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { rerender } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		await user.click(
+			screen.getByRole('button', { name: 'More actions for Algebra' })
+		)
+		await user.click(screen.getByRole('button', { name: 'New topic' }))
+
+		rerender(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const createdTitle = await screen.findByRole('textbox', {
+			name: 'Topic title 9'
+		})
+		const freshSection = createdTitle.closest('[data-fresh-topic="true"]')
+
+		expect(freshSection).not.toBeNull()
+
+		await user.type(
+			within(freshSection as HTMLElement).getByPlaceholderText(
+				'Write your topic...'
+			),
+			'Body text'
+		)
+
+		await waitFor(() => {
+			expect(createdTitle.closest('[data-fresh-topic="true"]')).toBeNull()
+		})
+	})
+
+	it('clears the fresh-topic highlight after adding a review card to the created topic', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const createdTopic = {
+			id: 9,
+			title: '',
+			body: '',
+			parent_id: 2,
+			parent_title: 'Algebra',
+			inserted_at: topic.inserted_at,
+			updated_at: topic.updated_at
+		}
+		let topicsData = [rootTopic, childTopic]
+
+		createTopicAsyncMock.mockImplementation(async () => {
+			topicsData = [rootTopic, childTopic, createdTopic]
+			return createdTopic
+		})
+		createReviewCardAsyncMock.mockResolvedValue({
+			id: 41,
+			topic_id: 9,
+			type: 'practice',
+			prompt: '',
+			answer: '',
+			retired: false
+		})
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		const { rerender } = render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		await user.click(
+			screen.getByRole('button', { name: 'More actions for Algebra' })
+		)
+		await user.click(screen.getByRole('button', { name: 'New topic' }))
+
+		rerender(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const createdTitle = await screen.findByRole('textbox', {
+			name: 'Topic title 9'
+		})
+		const freshSection = createdTitle.closest('[data-fresh-topic="true"]')
+
+		expect(freshSection).not.toBeNull()
+
+		const practiceButtons = within(freshSection as HTMLElement).getAllByRole(
+			'button',
+			{ name: 'Practice' }
+		)
+
+		await user.click(practiceButtons[0]!)
+
+		expect(createReviewCardAsyncMock).toHaveBeenCalledWith({
+			answer: '',
+			prompt: '',
+			retired: false,
+			topic_id: 9,
+			type: 'practice'
+		})
+		await waitFor(() => {
+			expect(createdTitle.closest('[data-fresh-topic="true"]')).toBeNull()
 		})
 	})
 

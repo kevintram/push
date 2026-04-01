@@ -14,10 +14,13 @@ import { useTopicDetailSectionPanels } from './useTopicDetailSectionPanels'
 
 type TopicDetailRootSectionContentProps = {
 	collapsedSections: Record<string, boolean>
+	freshTopicId: number | null
 	getScrollElement: () => HTMLDivElement | null
 	globalFilter: TopicDetailReviewCardFilter
 	onGlobalFilterChange: (filter: TopicDetailReviewCardFilter) => void
+	onFreshTopicInteraction: (topicId: number) => void
 	onOpenReviewCard: (reviewCardId: number) => void
+	onSubtopicCreated: (parentTopicId: number, createdTopicId: number) => void
 	onSectionFilterChange: (
 		topicId: number,
 		filter: TopicDetailReviewCardFilter
@@ -26,6 +29,10 @@ type TopicDetailRootSectionContentProps = {
 	registerSectionHeadingRef: (
 		topicId: number,
 		element: HTMLElement | null
+	) => void
+	registerSectionTitleRef: (
+		topicId: number,
+		element: HTMLTextAreaElement | null
 	) => void
 	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
 	resolvedFilterByTopicId: Record<number, TopicDetailReviewCardFilter>
@@ -39,13 +46,17 @@ type TopicDetailRootSectionContentProps = {
 
 export function TopicDetailRootSectionContent({
 	collapsedSections,
+	freshTopicId,
 	getScrollElement,
 	globalFilter,
 	onGlobalFilterChange,
+	onFreshTopicInteraction,
 	onOpenReviewCard,
+	onSubtopicCreated,
 	onSectionFilterChange,
 	isReviewCardsLoading,
 	registerSectionHeadingRef,
+	registerSectionTitleRef,
 	registerSectionRef,
 	resolvedFilterByTopicId,
 	reviewCardControlsVariant,
@@ -91,14 +102,18 @@ export function TopicDetailRootSectionContent({
 					{section.children.map(childSection => (
 						<TopicDetailSection
 							collapsedSections={collapsedSections}
+							freshTopicId={freshTopicId}
 							getScrollElement={getScrollElement}
 							globalFilter={globalFilter}
 							isReviewCardsLoading={isReviewCardsLoading}
 							key={childSection.topic.id}
+							onFreshTopicInteraction={onFreshTopicInteraction}
 							onOpenReviewCard={onOpenReviewCard}
 							onSectionFilterChange={onSectionFilterChange}
+							onSubtopicCreated={onSubtopicCreated}
 							registerSectionHeadingRef={registerSectionHeadingRef}
 							registerSectionRef={registerSectionRef}
+							registerSectionTitleRef={registerSectionTitleRef}
 							resolvedFilterByTopicId={resolvedFilterByTopicId}
 							reviewCardControlsVariant={reviewCardControlsVariant}
 							rootTopicPath={rootTopicPath}

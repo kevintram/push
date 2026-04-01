@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Trash2 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { type ChangeEventHandler, useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import {
 	AlertDialog,
@@ -37,9 +37,12 @@ import { useTopicDetailSectionPanels } from './useTopicDetailSectionPanels'
 
 type TopicDetailSectionProps = {
 	collapsedSections: Record<string, boolean>
+	freshTopicId: number | null
 	getScrollElement: () => HTMLDivElement | null
 	globalFilter: TopicDetailReviewCardFilter
+	onFreshTopicInteraction: (topicId: number) => void
 	onOpenReviewCard: (reviewCardId: number) => void
+	onSubtopicCreated: (parentTopicId: number, createdTopicId: number) => void
 	onSectionFilterChange: (
 		topicId: number,
 		filter: TopicDetailReviewCardFilter
@@ -48,6 +51,10 @@ type TopicDetailSectionProps = {
 	registerSectionHeadingRef: (
 		topicId: number,
 		element: HTMLElement | null
+	) => void
+	registerSectionTitleRef: (
+		topicId: number,
+		element: HTMLTextAreaElement | null
 	) => void
 	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
 	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
@@ -61,12 +68,16 @@ type TopicDetailSectionProps = {
 
 export function TopicDetailSection({
 	collapsedSections,
+	freshTopicId,
 	getScrollElement,
 	globalFilter,
+	onFreshTopicInteraction,
 	onOpenReviewCard,
+	onSubtopicCreated,
 	onSectionFilterChange,
 	isReviewCardsLoading,
 	registerSectionHeadingRef,
+	registerSectionTitleRef,
 	registerSectionRef,
 	reviewCardControlsVariant,
 	rootTopicPath,
@@ -85,6 +96,7 @@ export function TopicDetailSection({
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const sectionId = getTopicDetailSectionId(section.topic.id)
 	const isCollapsed = collapsedSections[sectionId] ?? false
+	const isFreshTopic = freshTopicId === section.topic.id
 	const resolvedSectionFilter =
 		resolvedFilterByTopicId[section.topic.id] ?? globalFilter
 	const displayLevel = getTopicDetailSectionDisplayLevel(section)
@@ -116,6 +128,14 @@ export function TopicDetailSection({
 		onSave: saveTopicTitle,
 		key: `topic-document-title-${section.topic.id}`
 	})
+	const handleTitleChange: ChangeEventHandler<HTMLTextAreaElement> =
+		useCallback(
+			event => {
+				onFreshTopicInteraction(section.topic.id)
+				onTitleChange(event)
+			},
+			[onFreshTopicInteraction, onTitleChange, section.topic.id]
+		)
 
 	const handleCreateSubtopic = async () => {
 		if (isCreatingTopic) return
@@ -126,18 +146,14 @@ export function TopicDetailSection({
 				body: '',
 				parent_id: section.topic.id
 			})
-			await navigate({
-				to: '/topics/$topicId',
-				params: { topicId: created.id.toString() },
-				search: { focusTitle: true }
-			})
+			onSubtopicCreated(section.topic.id, created.id)
 		} catch {
 			toast.error('Failed to create topic')
 		}
 	}
 
 	const handleOpenTopic = () => {
-		navigate({
+		void navigate({
 			to: '/topics/$topicId',
 			params: { topicId: section.topic.id.toString() },
 			search: {
@@ -146,7 +162,7 @@ export function TopicDetailSection({
 					? { controls: reviewCardControlsVariant }
 					: {})
 			}
-		}).catch(() => {})
+		})
 	}
 
 	const handleDeleteTopic = async () => {
@@ -167,6 +183,9 @@ export function TopicDetailSection({
 		getScrollElement,
 		onFilterChange: filter => {
 			onSectionFilterChange(section.topic.id, filter)
+		},
+		onTopicInteraction: () => {
+			onFreshTopicInteraction(section.topic.id)
 		},
 		onOpenReviewCard,
 		reviewCardControlsVariant,
@@ -191,14 +210,18 @@ export function TopicDetailSection({
 					headingClassName={presentation.headingClassName}
 					isCollapsed={isCollapsed}
 					isCreatingTopic={isCreatingTopic}
+					isFreshTopic={isFreshTopic}
 					onCreateSubtopic={() => {
 						handleCreateSubtopic().catch(() => {})
 					}}
 					onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
 					onOpenTopic={handleOpenTopic}
-					onTitleChange={onTitleChange}
+					onTitleChange={handleTitleChange}
 					registerHeadingRef={element => {
 						registerSectionHeadingRef(section.topic.id, element)
+					}}
+					registerTitleRef={element => {
+						registerSectionTitleRef(section.topic.id, element)
 					}}
 					reviewCardsSection={reviewCardsSection}
 					rootTopicId={rootTopicId}
@@ -215,14 +238,18 @@ export function TopicDetailSection({
 						{section.children.map(childSection => (
 							<TopicDetailSection
 								collapsedSections={collapsedSections}
+								freshTopicId={freshTopicId}
 								getScrollElement={getScrollElement}
 								globalFilter={globalFilter}
 								isReviewCardsLoading={isReviewCardsLoading}
 								key={childSection.topic.id}
+								onFreshTopicInteraction={onFreshTopicInteraction}
 								onOpenReviewCard={onOpenReviewCard}
 								onSectionFilterChange={onSectionFilterChange}
+								onSubtopicCreated={onSubtopicCreated}
 								registerSectionHeadingRef={registerSectionHeadingRef}
 								registerSectionRef={registerSectionRef}
+								registerSectionTitleRef={registerSectionTitleRef}
 								resolvedFilterByTopicId={resolvedFilterByTopicId}
 								reviewCardControlsVariant={reviewCardControlsVariant}
 								rootTopicPath={rootTopicPath}

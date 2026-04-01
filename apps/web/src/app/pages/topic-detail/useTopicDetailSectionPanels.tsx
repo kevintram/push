@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { type ChangeEvent, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { useCreateReviewCard } from '~/features/review-cards/api/createReviewCard'
 import { requestFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
@@ -22,6 +22,7 @@ type UseTopicDetailSectionPanelsOptions = {
 	getScrollElement: () => HTMLDivElement | null
 	onFilterChange: (filter: TopicDetailReviewCardFilter) => void
 	onOpenReviewCard: (reviewCardId: number) => void
+	onTopicInteraction?: () => void
 	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
 	resolvedSectionFilter: TopicDetailReviewCardFilter
 	section: TopicDetailSectionNode
@@ -43,6 +44,7 @@ export function useTopicDetailSectionPanels({
 	getScrollElement,
 	onFilterChange,
 	onOpenReviewCard,
+	onTopicInteraction,
 	reviewCardControlsVariant,
 	resolvedSectionFilter,
 	section,
@@ -111,12 +113,29 @@ export function useTopicDetailSectionPanels({
 				answer: '',
 				retired: false
 			})
+			onTopicInteraction?.()
 			requestFocusNewReviewCardPrompt(created.id)
 			onOpenReviewCard(created.id)
 		} catch {
 			toast.error('Failed to create review card')
 		}
 	}
+
+	const handleBodyChange = useCallback(
+		(event: ChangeEvent<HTMLTextAreaElement>) => {
+			onTopicInteraction?.()
+			onBodyChange(event)
+		},
+		[onBodyChange, onTopicInteraction]
+	)
+
+	const handleBodyValueChange = useCallback(
+		(value: string) => {
+			onTopicInteraction?.()
+			setBody(value)
+		},
+		[onTopicInteraction, setBody]
+	)
 
 	const bodyPanel = (
 		<TopicDetailBodyEditor
@@ -128,9 +147,9 @@ export function useTopicDetailSectionPanels({
 			hidesSecondary={hidesSecondary}
 			isBodyEmpty={isBodyEmpty}
 			isRevealPanelCopied={isRevealPanelCopied}
-			onBodyChange={onBodyChange}
+			onBodyChange={handleBodyChange}
 			revealPanelTab={revealPanelTab}
-			setBody={setBody}
+			setBody={handleBodyValueChange}
 			setGuessBodyText={setGuessBodyText}
 			setRevealPanelTab={setRevealPanelTab}
 		/>

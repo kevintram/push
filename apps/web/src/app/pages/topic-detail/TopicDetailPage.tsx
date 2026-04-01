@@ -69,13 +69,19 @@ export function TopicDetailPage({
 		handleGlobalFilterChange,
 		handleOpenReviewCard,
 		handleSectionFilterChange,
+		handleFreshTopicInteraction,
+		handleSubtopicCreated,
 		isDeleteDialogOpen,
 		isDeletingTopic,
 		isDetailLoading,
 		isReviewCardsLoading,
 		nodeById,
+		freshTopicId,
+		pendingCreatedTopicId,
+		pendingCreatedParentTopicId,
 		registerSectionHeadingRef,
 		registerSectionRef,
+		registerSectionTitleRef,
 		scrollToSection,
 		registerScrollContainerRef,
 		resolvedCardTypeFilter,
@@ -142,14 +148,18 @@ export function TopicDetailPage({
 	const rootSectionContent = (
 		<TopicDetailRootSectionContent
 			collapsedSections={collapsedSections}
+			freshTopicId={freshTopicId}
 			getScrollElement={getScrollElement}
 			globalFilter={resolvedCardTypeFilter}
 			isReviewCardsLoading={isReviewCardsLoading}
+			onFreshTopicInteraction={handleFreshTopicInteraction}
 			onGlobalFilterChange={handleGlobalFilterChange}
 			onOpenReviewCard={handleOpenReviewCard}
 			onSectionFilterChange={handleSectionFilterChange}
+			onSubtopicCreated={handleSubtopicCreated}
 			registerSectionHeadingRef={registerSectionHeadingRef}
 			registerSectionRef={registerSectionRef}
+			registerSectionTitleRef={registerSectionTitleRef}
 			resolvedFilterByTopicId={sectionFilterOverrides}
 			reviewCardControlsVariant={reviewCardControlsVariant}
 			rootTopicPath={topicPath}
@@ -272,13 +282,17 @@ export function TopicDetailPage({
 							>
 								<TopicDetailOutline
 									ancestorIdsById={ancestorIdsById}
+									freshTopicId={freshTopicId}
 									globalFilter={resolvedCardTypeFilter}
 									nodeById={nodeById}
 									onGlobalFilterChange={handleGlobalFilterChange}
 									onOutlineWidthChange={setOutlineWidth}
 									onSectionSelect={scrollToSection}
+									onSubtopicCreated={handleSubtopicCreated}
 									outlineRootNode={rootSection.topic}
 									outlineWidth={outlineWidth}
+									pendingCreatedParentTopicId={pendingCreatedParentTopicId}
+									pendingCreatedTopicId={pendingCreatedTopicId}
 									visibleSectionIds={visibleSectionIds}
 								/>
 							</div>

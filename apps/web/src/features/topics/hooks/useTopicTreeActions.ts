@@ -8,6 +8,7 @@ import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 type UseTopicTreeActionsOptions = {
 	activeTopicId?: number | null
 	ancestorIdsById: Map<number, Array<number>>
+	navigateToCreatedTopic?: boolean
 	nodeById: Map<number, TopicTreeNode>
 	onAfterCreateSubtopic?: (
 		parentTopicId: number,
@@ -19,6 +20,7 @@ type UseTopicTreeActionsOptions = {
 export function useTopicTreeActions({
 	activeTopicId = null,
 	ancestorIdsById,
+	navigateToCreatedTopic = true,
 	nodeById,
 	onAfterCreateSubtopic,
 	onAfterRouteChange
@@ -49,12 +51,14 @@ export function useTopicTreeActions({
 					parent_id: parentTopicId
 				})
 				await onAfterCreateSubtopic?.(parentTopicId, created.id)
-				await navigate({
-					to: '/topics/$topicId',
-					params: { topicId: created.id.toString() },
-					search: { focusTitle: true }
-				})
-				await onAfterRouteChange?.()
+				if (navigateToCreatedTopic) {
+					await navigate({
+						to: '/topics/$topicId',
+						params: { topicId: created.id.toString() },
+						search: { focusTitle: true }
+					})
+					await onAfterRouteChange?.()
+				}
 			} catch {
 				toast.error('Failed to create topic')
 			}
@@ -63,6 +67,7 @@ export function useTopicTreeActions({
 			createTopicAsync,
 			isCreatingTopic,
 			navigate,
+			navigateToCreatedTopic,
 			onAfterCreateSubtopic,
 			onAfterRouteChange
 		]

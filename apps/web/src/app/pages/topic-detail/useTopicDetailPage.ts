@@ -13,6 +13,7 @@ import {
 	buildTopicDetailRoot,
 	flattenTopicDetailSectionIds,
 	getTopicDetailLabel,
+	getTopicDetailSectionId,
 	groupReviewCardsByTopicId
 } from './topicDetailStructure'
 import { useTopicDetailNavigation } from './useTopicDetailNavigation'
@@ -67,12 +68,21 @@ export function useTopicDetailPage({
 	})
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const shouldAutoFocusRootTitle = focusTitle ?? false
+	const [pendingCreatedTopicId, setPendingCreatedTopicId] = useState<
+		number | null
+	>(null)
+	const [freshTopicId, setFreshTopicId] = useState<number | null>(null)
+	const [pendingCreatedParentTopicId, setPendingCreatedParentTopicId] =
+		useState<number | null>(null)
 	const [sectionFilterOverrides, setSectionFilterOverrides] = useState<
 		Record<number, TopicDetailReviewCardFilter>
 	>({})
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const sectionTitleElementsRef = useRef(new Map<number, HTMLTextAreaElement>())
+	const pendingCreatedTopicIdRef = useRef<number | null>(null)
 	const [scrollContainerVersion, setScrollContainerVersion] = useState(0)
-	const { collapsedSections, toggleSection } = useSectionCollapse()
+	const { collapsedSections, expandSection, toggleSection } =
+		useSectionCollapse()
 
 	const subtreeTopicsWithRoot = useMemo(() => {
 		if (!topic) return subtreeTopics
@@ -138,8 +148,60 @@ export function useTopicDetailPage({
 	)
 
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
+	const completePendingCreatedTopic = useCallback(
+		(topicId: number, titleElement: HTMLTextAreaElement | null) => {
+			if (
+				titleElement == null ||
+				pendingCreatedTopicIdRef.current !== topicId ||
+				!sectionIds.includes(topicId)
+			) {
+				return
+			}
+
+			pendingCreatedTopicIdRef.current = null
+
+			const focusCreatedTopic = () => {
+				scrollToSection(topicId, {
+					behavior: 'smooth',
+					mode: 'replace',
+					updateHash: false
+				})
+				titleElement.focus({ preventScroll: true })
+				titleElement.setSelectionRange(0, titleElement.value.length)
+				setPendingCreatedTopicId(currentTopicId =>
+					currentTopicId === topicId ? null : currentTopicId
+				)
+				setPendingCreatedParentTopicId(currentParentTopicId =>
+					currentParentTopicId === nodeById.get(topicId)?.parent_id
+						? null
+						: currentParentTopicId
+				)
+			}
+
+			if (typeof window === 'undefined') {
+				focusCreatedTopic()
+				return
+			}
+
+			window.requestAnimationFrame(focusCreatedTopic)
+		},
+		[nodeById, scrollToSection, sectionIds]
+	)
 	const detailError =
 		topicError ?? topicTreeError ?? subtreeTopicsError ?? reviewCardsError
+
+	const registerSectionTitleRef = useCallback(
+		(topicId: number, element: HTMLTextAreaElement | null) => {
+			if (element == null) {
+				sectionTitleElementsRef.current.delete(topicId)
+				return
+			}
+
+			sectionTitleElementsRef.current.set(topicId, element)
+			completePendingCreatedTopic(topicId, element)
+		},
+		[completePendingCreatedTopic]
+	)
 
 	const handleGlobalFilterChange = useCallback(
 		(filter: TopicDetailReviewCardFilter) => {
@@ -165,6 +227,29 @@ export function useTopicDetailPage({
 			})
 		},
 		[resolvedCardTypeFilter]
+	)
+
+	const handleSubtopicCreated = useCallback(
+		(parentTopicId: number, createdTopicId: number) => {
+			const ancestorIds = ancestorIdsById.get(parentTopicId) ?? []
+			for (const topicIdToExpand of [...ancestorIds, parentTopicId]) {
+				expandSection(getTopicDetailSectionId(topicIdToExpand))
+			}
+
+			pendingCreatedTopicIdRef.current = createdTopicId
+			setFreshTopicId(createdTopicId)
+			setPendingCreatedTopicId(createdTopicId)
+			setPendingCreatedParentTopicId(parentTopicId)
+		},
+		[ancestorIdsById, expandSection]
+	)
+
+	const handleFreshTopicInteraction = useCallback(
+		(topicId: number) => {
+			if (freshTopicId !== topicId) return
+			setFreshTopicId(null)
+		},
+		[freshTopicId]
 	)
 
 	const handleDeleteTopic = useCallback(async () => {
@@ -213,6 +298,18 @@ export function useTopicDetailPage({
 		}
 	}, [topic])
 
+	useEffect(() => {
+		pendingCreatedTopicIdRef.current = pendingCreatedTopicId
+	}, [pendingCreatedTopicId])
+
+	useEffect(() => {
+		if (pendingCreatedTopicId == null) return
+
+		const titleElement =
+			sectionTitleElementsRef.current.get(pendingCreatedTopicId) ?? null
+		completePendingCreatedTopic(pendingCreatedTopicId, titleElement)
+	}, [completePendingCreatedTopic, pendingCreatedTopicId, sectionIds])
+
 	return {
 		collapsedSections,
 		getScrollElement,
@@ -220,14 +317,20 @@ export function useTopicDetailPage({
 		handleGlobalFilterChange,
 		handleOpenReviewCard,
 		handleSectionFilterChange,
+		handleSubtopicCreated,
 		isDeleteDialogOpen,
 		isDeletingTopic,
 		isDetailLoading:
 			isTopicLoading || isTopicTreeLoading || isSubtreeTopicsLoading,
 		isReviewCardsLoading,
 		nodeById,
+		freshTopicId,
+		pendingCreatedTopicId,
+		pendingCreatedParentTopicId,
+		handleFreshTopicInteraction,
 		registerSectionHeadingRef,
 		registerSectionRef,
+		registerSectionTitleRef,
 		scrollToSection,
 		registerScrollContainerRef,
 		resolvedCardTypeFilter,
