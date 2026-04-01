@@ -126,7 +126,7 @@ export function useTopicDetailNavigation({
 
 		for (const sectionHeadingElement of sectionHeadingElements) {
 			const topicId = Number(sectionHeadingElement.dataset.topicDetailHeadingId)
-			if (!Number.isFinite(topicId) || !sectionIdSet.has(topicId)) continue
+			if (!(Number.isFinite(topicId) && sectionIdSet.has(topicId))) continue
 
 			const { bottom: sectionHeadingBottom, top: sectionHeadingTop } =
 				sectionHeadingElement.getBoundingClientRect()
@@ -357,9 +357,10 @@ export function useTopicDetailNavigation({
 		]
 	)
 
-	const shouldAttemptHashAlignmentForTopic = useCallback((topicId: number) => {
-		return hashAlignmentRequestRef.current?.topicId === topicId
-	}, [])
+	const shouldAttemptHashAlignmentForTopic = useCallback(
+		(topicId: number) => hashAlignmentRequestRef.current?.topicId === topicId,
+		[]
+	)
 
 	const scrollToSection = useCallback(
 		(
@@ -451,7 +452,16 @@ export function useTopicDetailNavigation({
 		intersectingSectionIdsRef.current = new Set()
 		disconnectVisibilityObserver()
 
-		if (typeof IntersectionObserver !== 'undefined') {
+		if (typeof IntersectionObserver === 'undefined') {
+			measureVisibleSections()
+			scrollContainerElement.addEventListener(
+				'scroll',
+				scheduleVisibleSectionsMeasurement,
+				{
+					passive: true
+				}
+			)
+		} else {
 			const observer = new IntersectionObserver(handleVisibilityEntries, {
 				root: scrollContainerElement,
 				threshold: 0
@@ -468,15 +478,6 @@ export function useTopicDetailNavigation({
 			}
 
 			measureVisibleSections()
-		} else {
-			measureVisibleSections()
-			scrollContainerElement.addEventListener(
-				'scroll',
-				scheduleVisibleSectionsMeasurement,
-				{
-					passive: true
-				}
-			)
 		}
 
 		const handleUserInteraction = () => {

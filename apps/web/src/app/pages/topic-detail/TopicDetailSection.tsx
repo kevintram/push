@@ -25,6 +25,7 @@ import type {
 import type { TopicPathItem } from './TopicDetailBreadcrumb'
 import { TopicDetailNestedSectionView } from './TopicDetailNestedSectionView'
 import {
+	getTopicDetailHeadingIndicatorPresentation,
 	getTopicDetailSectionDisplayLevel,
 	getTopicDetailSectionPresentation
 } from './topicDetailLayout'
@@ -101,6 +102,8 @@ export function TopicDetailSection({
 		resolvedFilterByTopicId[section.topic.id] ?? globalFilter
 	const displayLevel = getTopicDetailSectionDisplayLevel(section)
 	const presentation = getTopicDetailSectionPresentation(displayLevel)
+	const headingIndicatorPresentation =
+		getTopicDetailHeadingIndicatorPresentation(section.headingLevel)
 	const sectionLabel = getTopicDetailLabel(
 		section.topic.title,
 		section.topic.body
@@ -208,6 +211,7 @@ export function TopicDetailSection({
 					bodyPanel={bodyPanel}
 					flushTitle={flushTitle}
 					headingClassName={presentation.headingClassName}
+					headingIndicatorPresentation={headingIndicatorPresentation}
 					isCollapsed={isCollapsed}
 					isCreatingTopic={isCreatingTopic}
 					isFreshTopic={isFreshTopic}

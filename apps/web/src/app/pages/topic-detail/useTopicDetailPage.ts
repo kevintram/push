@@ -104,11 +104,12 @@ export function useTopicDetailPage({
 		() => flattenTopicDetailSectionIds(rootSection),
 		[rootSection]
 	)
-	const isPassiveHashAlignmentEnabled =
-		!isTopicLoading &&
-		!isTopicTreeLoading &&
-		!isSubtreeTopicsLoading &&
-		!isReviewCardsLoading
+	const isPassiveHashAlignmentEnabled = !(
+		isTopicLoading ||
+		isTopicTreeLoading ||
+		isSubtreeTopicsLoading ||
+		isReviewCardsLoading
+	)
 	const topicReviewCardsById = useMemo(
 		() => groupReviewCardsByTopicId(reviewCards),
 		[reviewCards]

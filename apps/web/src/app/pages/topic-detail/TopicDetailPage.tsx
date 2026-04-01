@@ -31,8 +31,7 @@ import {
 	TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS,
 	TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
 	TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS,
-	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS,
-	TOPIC_DETAIL_SECTION_GRID_CLASS
+	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS
 } from './topicDetailLayout'
 import { useTopicDetailPage } from './useTopicDetailPage'
 
@@ -189,38 +188,33 @@ export function TopicDetailPage({
 								>
 									<div className='flex items-start gap-3'>
 										<div className='min-w-0 flex-1'>
-											<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
-												<div className='relative min-w-0'>
-													<div
-														className='relative z-10 scroll-mt-24'
-														data-topic-detail-heading-id={rootSection.topic.id}
-														ref={element => {
-															registerSectionHeadingRef(
-																rootSection.topic.id,
-																element
-															)
-														}}
-													>
-														<TopicDetailHeader
-															actionClassName={rootHeaderActionClassName}
-															contentClassName={rootHeaderContentClassName}
-															isCreatingTopic={isCreatingTopic}
-															onCreateSubtopic={handleCreateSubtopic}
-															onOpenDeleteDialog={() =>
-																setIsDeleteDialogOpen(true)
-															}
-															pathContainerClassName={
-																rootHeaderPathContainerClassName
-															}
-															shouldAutoFocusTitle={shouldAutoFocusRootTitle}
-															titleContainerClassName={
-																rootHeaderTitleContainerClassName
-															}
-															topic={rootSection.topic}
-															topicPath={topicPath}
-														/>
-													</div>
-												</div>
+											<div
+												className='relative z-10 min-w-0 scroll-mt-24'
+												data-topic-detail-heading-id={rootSection.topic.id}
+												ref={element => {
+													registerSectionHeadingRef(
+														rootSection.topic.id,
+														element
+													)
+												}}
+											>
+												<TopicDetailHeader
+													actionClassName={rootHeaderActionClassName}
+													contentClassName={rootHeaderContentClassName}
+													headingLevel={rootSection.headingLevel}
+													isCreatingTopic={isCreatingTopic}
+													onCreateSubtopic={handleCreateSubtopic}
+													onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+													pathContainerClassName={
+														rootHeaderPathContainerClassName
+													}
+													shouldAutoFocusTitle={shouldAutoFocusRootTitle}
+													titleContainerClassName={
+														rootHeaderTitleContainerClassName
+													}
+													topic={rootSection.topic}
+													topicPath={topicPath}
+												/>
 											</div>
 										</div>
 										<div

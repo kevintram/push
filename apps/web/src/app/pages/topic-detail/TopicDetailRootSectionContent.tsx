@@ -92,6 +92,7 @@ export function TopicDetailRootSectionContent({
 			}}
 		>
 			<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
+				<div aria-hidden='true' />
 				<div className='min-w-0'>
 					<div>{bodyPanel}</div>
 					<div>{reviewCardsSection}</div>
