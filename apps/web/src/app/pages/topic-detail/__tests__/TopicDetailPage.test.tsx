@@ -2481,6 +2481,60 @@ describe('TopicDetailPage', () => {
 		).not.toBeInTheDocument()
 	})
 
+	it('renders the desktop outline for a leaf topic', () => {
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data: [rootTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const toc = screen.getByRole('navigation', { name: 'On this page' })
+		const outlineRail = toc.closest('aside')
+
+		expect(outlineRail).not.toBeNull()
+		expect(within(toc).getByRole('link', { name: 'Mathematics' })).toBeVisible()
+		expect(
+			within(outlineRail as HTMLElement).getByRole('button', {
+				name: 'Collapse outline'
+			})
+		).toBeInTheDocument()
+		expect(
+			within(outlineRail as HTMLElement).getByRole('button', {
+				name: 'Add topic'
+			})
+		).toBeInTheDocument()
+	})
+
 	it('supports expanding and collapsing topics in the ToC', async () => {
 		const user = userEvent.setup()
 		const scrollIntoViewSpy = vi
