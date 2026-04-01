@@ -160,7 +160,7 @@ export function TopicDetailOutline({
 		[onSectionSelect]
 	)
 
-	if (!outlineRootNode || outlineNodes.length === 0) return null
+	if (!outlineRootNode) return null
 
 	const isRootActive =
 		visibleSectionIds.length === 0 ||

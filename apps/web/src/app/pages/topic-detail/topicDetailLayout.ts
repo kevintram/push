@@ -12,8 +12,7 @@ import type { TopicDetailSectionNode } from './topicDetailStructure'
 export const TOPIC_DETAIL_SECTION_GRID_CLASS =
 	'grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-1.5'
 export const TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS = 'max-w-[40rem]'
-export const TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS =
-	'xl:mx-auto xl:w-full xl:max-w-[57.5rem]'
+export const TOPIC_DETAIL_LEAF_CONTENT_MEASURE_CLASS = 'lg:max-w-[40rem]'
 export const TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS =
 	'lg:w-(--topic-detail-outline-width)'
 export const TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS =

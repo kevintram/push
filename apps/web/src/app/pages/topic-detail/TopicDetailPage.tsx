@@ -26,7 +26,7 @@ import { TopicDetailOutline } from './TopicDetailOutline'
 import { TopicDetailRootActionsMenu } from './TopicDetailRootActionsMenu'
 import { TopicDetailRootSectionContent } from './TopicDetailRootSectionContent'
 import {
-	TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS,
+	TOPIC_DETAIL_LEAF_CONTENT_MEASURE_CLASS,
 	TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH,
 	TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS,
 	TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
@@ -124,22 +124,13 @@ export function TopicDetailPage({
 		throw notFound()
 	}
 
-	const isLeafTopic = rootSection.children.length === 0
-	const pageStyle = isLeafTopic
-		? undefined
-		: ({
-				'--topic-detail-outline-width': `${outlineWidth}px`
-			} as CSSProperties)
-	const rootHeaderContentClassName = isLeafTopic
-		? undefined
-		: TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS
-	const rootHeaderActionClassName = isLeafTopic
-		? 'top-0 right-0'
-		: 'top-0 right-0 lg:hidden'
-	const rootHeaderPathContainerClassName = isLeafTopic ? undefined : 'lg:pr-0'
-	const rootHeaderTitleContainerClassName = isLeafTopic
-		? 'pr-12 sm:pr-14'
-		: 'pr-12 sm:pr-14 lg:pr-0'
+	const hasChildSections = rootSection.children.length > 0
+	const pageStyle = {
+		'--topic-detail-outline-width': `${outlineWidth}px`
+	} as CSSProperties
+	const rootHeaderContentClassName = hasChildSections
+		? TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS
+		: TOPIC_DETAIL_LEAF_CONTENT_MEASURE_CLASS
 	const rootSectionContent = (
 		<TopicDetailRootSectionContent
 			collapsedSections={collapsedSections}
@@ -177,15 +168,10 @@ export function TopicDetailPage({
 							<div
 								className={cn(
 									'grid gap-6 px-5 pt-9 pb-7 sm:px-7 sm:pt-10 sm:pb-8 xl:gap-6 xl:px-8 xl:pt-11 xl:pb-8',
-									!isLeafTopic && TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS
+									TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS
 								)}
 							>
-								<div
-									className={cn(
-										'min-w-0',
-										isLeafTopic && TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS
-									)}
-								>
+								<div className='min-w-0'>
 									<div className='flex items-start gap-3'>
 										<div className='min-w-0 flex-1'>
 											<div
@@ -199,30 +185,21 @@ export function TopicDetailPage({
 												}}
 											>
 												<TopicDetailHeader
-													actionClassName={rootHeaderActionClassName}
+													actionClassName='top-0 right-0 lg:hidden'
 													contentClassName={rootHeaderContentClassName}
 													headingLevel={rootSection.headingLevel}
 													isCreatingTopic={isCreatingTopic}
 													onCreateSubtopic={handleCreateSubtopic}
 													onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
-													pathContainerClassName={
-														rootHeaderPathContainerClassName
-													}
+													pathContainerClassName='lg:pr-0'
 													shouldAutoFocusTitle={shouldAutoFocusRootTitle}
-													titleContainerClassName={
-														rootHeaderTitleContainerClassName
-													}
+													titleContainerClassName='pr-12 sm:pr-14 lg:pr-0'
 													topic={rootSection.topic}
 													topicPath={topicPath}
 												/>
 											</div>
 										</div>
-										<div
-											className={cn(
-												'hidden shrink-0 items-start lg:flex',
-												isLeafTopic && 'lg:hidden'
-											)}
-										>
+										<div className='hidden shrink-0 items-start lg:flex'>
 											<TopicDetailRootActionsMenu
 												isCreatingTopic={isCreatingTopic}
 												onCreateSubtopic={handleCreateSubtopic}
@@ -238,38 +215,29 @@ export function TopicDetailPage({
 						</div>
 					</div>
 					<div className='mx-auto flex w-full max-w-[76rem] items-start gap-5 px-2 pt-4 pb-5 sm:px-7 xl:gap-6 xl:px-8 xl:pt-5 xl:pb-6'>
+						<div className='min-w-0 flex-1 space-y-5'>{rootSectionContent}</div>
 						<div
 							className={cn(
-								'min-w-0 flex-1 space-y-5',
-								isLeafTopic && TOPIC_DETAIL_LEAF_CONTENT_RAIL_CLASS
+								'hidden shrink-0 self-start lg:sticky lg:top-6 lg:flex lg:justify-start',
+								TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS
 							)}
 						>
-							{rootSectionContent}
+							<TopicDetailOutline
+								ancestorIdsById={ancestorIdsById}
+								freshTopicId={freshTopicId}
+								globalFilter={resolvedCardTypeFilter}
+								nodeById={nodeById}
+								onGlobalFilterChange={handleGlobalFilterChange}
+								onOutlineWidthChange={setOutlineWidth}
+								onSectionSelect={scrollToSection}
+								onSubtopicCreated={handleSubtopicCreated}
+								outlineRootNode={rootSection.topic}
+								outlineWidth={outlineWidth}
+								pendingCreatedParentTopicId={pendingCreatedParentTopicId}
+								pendingCreatedTopicId={pendingCreatedTopicId}
+								visibleSectionIds={visibleSectionIds}
+							/>
 						</div>
-						{isLeafTopic ? null : (
-							<div
-								className={cn(
-									'hidden shrink-0 self-start lg:sticky lg:top-6 lg:flex lg:justify-start',
-									TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS
-								)}
-							>
-								<TopicDetailOutline
-									ancestorIdsById={ancestorIdsById}
-									freshTopicId={freshTopicId}
-									globalFilter={resolvedCardTypeFilter}
-									nodeById={nodeById}
-									onGlobalFilterChange={handleGlobalFilterChange}
-									onOutlineWidthChange={setOutlineWidth}
-									onSectionSelect={scrollToSection}
-									onSubtopicCreated={handleSubtopicCreated}
-									outlineRootNode={rootSection.topic}
-									outlineWidth={outlineWidth}
-									pendingCreatedParentTopicId={pendingCreatedParentTopicId}
-									pendingCreatedTopicId={pendingCreatedTopicId}
-									visibleSectionIds={visibleSectionIds}
-								/>
-							</div>
-						)}
 					</div>
 				</div>
 			</div>
