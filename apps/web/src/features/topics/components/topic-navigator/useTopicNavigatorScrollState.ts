@@ -59,40 +59,13 @@ export function useTopicNavigatorScrollState({
 			activeItemScrollFrameRef.current = window.requestAnimationFrame(() => {
 				activeItemScrollFrameRef.current = null
 
-				const scrollContainer = scrollContainerRef.current
 				const activeItemElement = itemElementsRef.current.get(topicId)
+				if (!activeItemElement) return
 
-				if (!(scrollContainer && activeItemElement)) return
-
-				const containerRect = scrollContainer.getBoundingClientRect()
-				const activeItemRect = activeItemElement.getBoundingClientRect()
-				const isAboveViewport = activeItemRect.top < containerRect.top
-				const isBelowViewport = activeItemRect.bottom > containerRect.bottom
-
-				if (!(isAboveViewport || isBelowViewport)) return
-
-				const containerCenterY = containerRect.top + containerRect.height / 2
-				const activeItemCenterY = activeItemRect.top + activeItemRect.height / 2
-				const centeredScrollTop =
-					scrollContainer.scrollTop + (activeItemCenterY - containerCenterY)
-				const maxScrollTop = Math.max(
-					0,
-					scrollContainer.scrollHeight - scrollContainer.clientHeight
-				)
-				const nextScrollTop = Math.min(
-					Math.max(0, centeredScrollTop),
-					maxScrollTop
-				)
-
-				if (typeof scrollContainer.scrollTo === 'function') {
-					scrollContainer.scrollTo({
-						top: nextScrollTop,
-						behavior: 'smooth'
-					})
-					return
-				}
-
-				scrollContainer.scrollTop = nextScrollTop
+				activeItemElement.scrollIntoView({
+					block: 'nearest',
+					behavior: 'smooth'
+				})
 			})
 		},
 		[cancelActiveItemScroll]
