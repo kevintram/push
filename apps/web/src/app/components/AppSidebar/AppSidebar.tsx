@@ -190,7 +190,7 @@ export function AppSidebar({
 														}}
 														type='button'
 													>
-														<Minimize2 />
+														<Minimize2 className='h-4 w-4' />
 														<span className='sr-only'>Collapse all topics</span>
 													</SidebarMenuAction>
 													<SidebarMenuAction
@@ -203,7 +203,7 @@ export function AppSidebar({
 														}}
 														type='button'
 													>
-														<Plus />
+														<Plus className='h-4 w-4' />
 														<span className='sr-only'>Add topic</span>
 													</SidebarMenuAction>
 												</div>
