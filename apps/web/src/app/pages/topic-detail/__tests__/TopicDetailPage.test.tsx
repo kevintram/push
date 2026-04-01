@@ -405,8 +405,13 @@ describe('TopicDetailPage', () => {
 
 		expect(childHeading).not.toBeNull()
 		expect(greatGrandchildHeading).not.toBeNull()
+		const childSection = childHeading?.parentElement
+		const greatGrandchildSection = greatGrandchildHeading?.parentElement
+
+		expect(childSection).not.toBeNull()
+		expect(greatGrandchildSection).not.toBeNull()
 		const childSectionBreadcrumb = within(
-			childHeading as HTMLElement
+			childSection as HTMLElement
 		).getByRole('navigation', { name: 'Section path' })
 		expect(
 			within(childSectionBreadcrumb).getByRole('link', { name: 'Mathematics' })
@@ -417,13 +422,13 @@ describe('TopicDetailPage', () => {
 			})
 		).not.toBeInTheDocument()
 		expect(
-			within(greatGrandchildHeading as HTMLElement).getByRole('link', {
+			within(greatGrandchildSection as HTMLElement).getByRole('link', {
 				name: 'Mathematics'
 			})
 		).toHaveAttribute('data-hash', 'topic-1')
 
 		const sectionBreadcrumb = within(
-			greatGrandchildHeading as HTMLElement
+			greatGrandchildSection as HTMLElement
 		).getByRole('navigation', { name: 'Section path' })
 		const algebraLink = within(sectionBreadcrumb).getByRole('link', {
 			name: 'Algebra'
@@ -521,9 +526,12 @@ describe('TopicDetailPage', () => {
 		)
 
 		expect(grandchildHeading).not.toBeNull()
+		const grandchildSection = grandchildHeading?.parentElement
+
+		expect(grandchildSection).not.toBeNull()
 
 		const sectionBreadcrumb = within(
-			grandchildHeading as HTMLElement
+			grandchildSection as HTMLElement
 		).getByRole('navigation', { name: 'Section path' })
 
 		expect(
@@ -613,9 +621,12 @@ describe('TopicDetailPage', () => {
 		)
 
 		expect(grandchildHeading).not.toBeNull()
+		const grandchildSection = grandchildHeading?.parentElement
+
+		expect(grandchildSection).not.toBeNull()
 
 		const sectionBreadcrumb = within(
-			grandchildHeading as HTMLElement
+			grandchildSection as HTMLElement
 		).getByRole('navigation', { name: 'Section path' })
 
 		await user.click(
@@ -723,8 +734,11 @@ describe('TopicDetailPage', () => {
 		)
 
 		expect(deepestHeading).not.toBeNull()
+		const deepestSection = deepestHeading?.parentElement
 
-		const sectionBreadcrumb = within(deepestHeading as HTMLElement).getByRole(
+		expect(deepestSection).not.toBeNull()
+
+		const sectionBreadcrumb = within(deepestSection as HTMLElement).getByRole(
 			'navigation',
 			{ name: 'Section path' }
 		)
@@ -857,8 +871,11 @@ describe('TopicDetailPage', () => {
 		)
 
 		expect(deepestHeading).not.toBeNull()
+		const deepestSection = deepestHeading?.parentElement
 
-		const sectionBreadcrumb = within(deepestHeading as HTMLElement).getByRole(
+		expect(deepestSection).not.toBeNull()
+
+		const sectionBreadcrumb = within(deepestSection as HTMLElement).getByRole(
 			'navigation',
 			{ name: 'Section path' }
 		)
@@ -1078,6 +1095,12 @@ describe('TopicDetailPage', () => {
 		expect(
 			container.querySelector('[data-topic-detail-heading-id="2"]')
 		).not.toBeNull()
+		expect(
+			container.querySelector('[data-topic-detail-heading-indicator="1"]')
+		).not.toBeNull()
+		expect(
+			container.querySelector('[data-topic-detail-heading-indicator="2"]')
+		).not.toBeNull()
 	})
 
 	it('uses the semantic heading level for deeply nested sections', () => {
@@ -1107,6 +1130,9 @@ describe('TopicDetailPage', () => {
 		expect(deepestHeading).not.toBeNull()
 		expect(semanticHeading).not.toBeNull()
 		expect(semanticHeading).toHaveAttribute('aria-level', '6')
+		expect(
+			container.querySelector('[data-topic-detail-heading-indicator="6"]')
+		).toHaveAttribute('data-topic-detail-heading-level', '6')
 	})
 
 	it('syncs topic fields on first load and only refreshes untouched fields on refetch', async () => {
