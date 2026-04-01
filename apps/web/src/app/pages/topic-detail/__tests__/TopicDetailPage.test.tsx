@@ -53,6 +53,17 @@ function setupTopicChainMocks(chain: Array<TopicFixture>, currentId: number) {
 	)
 }
 
+function createDeferredPromise<T>() {
+	let resolve: (value: T) => void = () => {}
+	let reject: (reason?: unknown) => void = () => {}
+	const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+		resolve = resolvePromise
+		reject = rejectPromise
+	})
+
+	return { promise, resolve, reject }
+}
+
 describe('TopicDetailPage', () => {
 	afterEach(() => {
 		elementSizeMock.width = 1024
@@ -1607,6 +1618,68 @@ describe('TopicDetailPage', () => {
 		expect(navigateMock).not.toHaveBeenCalled()
 	})
 
+	it('shows a local loading state on the outline header add action', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const deferredCreate = createDeferredPromise<typeof topic>()
+
+		createTopicAsyncMock.mockImplementation(() => deferredCreate.promise)
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, childTopic]
+								: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		await user.click(screen.getByRole('button', { name: 'Add topic' }))
+
+		expect(
+			screen.getByRole('button', { name: 'Creating topic' })
+		).toBeDisabled()
+
+		deferredCreate.reject(new Error('cancel test request'))
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: 'Add topic' })).toBeEnabled()
+		})
+	})
+
 	it('creates a nested child topic in place from the section more menu', async () => {
 		const user = userEvent.setup()
 		const rootTopic = {
@@ -1797,6 +1870,77 @@ describe('TopicDetailPage', () => {
 				.closest('[data-fresh-topic="true"]')
 		).not.toBeNull()
 		expect(navigateMock).not.toHaveBeenCalled()
+	})
+
+	it('shows a local loading state in the root more menu while creating a topic', async () => {
+		const user = userEvent.setup()
+		const rootTopic = {
+			...topic,
+			id: 1,
+			title: 'Mathematics',
+			parent_id: null,
+			parent_title: null
+		}
+		const childTopic = {
+			...topic,
+			id: 2,
+			title: 'Algebra',
+			parent_id: 1,
+			parent_title: 'Mathematics'
+		}
+		const deferredCreate = createDeferredPromise<typeof topic>()
+
+		createTopicAsyncMock.mockImplementation(() => deferredCreate.promise)
+		useTopicMock.mockImplementation((topicId: number | null) => {
+			if (topicId === 1) {
+				return { data: rootTopic, isLoading: false, error: null }
+			}
+
+			return { data: null, isLoading: false, error: null }
+		})
+		useTopicsMock.mockImplementation(
+			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+				if (params?.sort === 'title' && params?.order === 'asc') {
+					return {
+						data:
+							params?.subtree_of === 1
+								? [rootTopic, childTopic]
+								: [rootTopic, childTopic],
+						isLoading: false
+					}
+				}
+
+				return { data: [], isLoading: false }
+			}
+		)
+
+		render(
+			<TopicDetailPage
+				cardTypeFilter='all'
+				onCardTypeFilterChange={() => {}}
+				topicId={1}
+			/>
+		)
+
+		const rootMenuButton = screen.getAllByRole('button', {
+			name: 'More actions for Mathematics'
+		})[0]
+		const rootMenu = rootMenuButton?.parentElement
+
+		expect(rootMenu).not.toBeNull()
+
+		await user.click(
+			within(rootMenu as HTMLElement).getByRole('button', {
+				name: 'New topic'
+			})
+		)
+
+		expect(screen.getByText('Creating...')).toBeInTheDocument()
+
+		deferredCreate.reject(new Error('cancel test request'))
+		await waitFor(() => {
+			expect(screen.queryByText('Creating...')).not.toBeInTheDocument()
+		})
 	})
 
 	it('keeps the created parent outline section collapsible after focusing the new child', async () => {

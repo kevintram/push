@@ -256,16 +256,19 @@ export function useTopicDetailPage({
 		[freshTopicId]
 	)
 
-	const handleCreateSubtopic = useCallback(() => {
+	const handleCreateSubtopic = useCallback(async () => {
 		if (!topic || isCreatingTopic) return
 
-		createTopicAsync({
-			title: '',
-			body: '',
-			parent_id: topic.id
-		})
-			.then(created => handleSubtopicCreated(topic.id, created.id))
-			.catch(() => toast.error('Failed to create topic'))
+		try {
+			const created = await createTopicAsync({
+				title: '',
+				body: '',
+				parent_id: topic.id
+			})
+			handleSubtopicCreated(topic.id, created.id)
+		} catch {
+			toast.error('Failed to create topic')
+		}
 	}, [createTopicAsync, handleSubtopicCreated, isCreatingTopic, topic])
 
 	const handleDeleteTopic = useCallback(async () => {

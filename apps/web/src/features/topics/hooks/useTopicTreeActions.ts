@@ -127,8 +127,8 @@ export function useTopicTreeActions({
 		handleConfirmDeleteTopic: () => {
 			handleDeleteTopic().catch(() => {})
 		},
-		handleCreateSubtopic: (topicId: number) => {
-			handleCreateSubtopic(topicId).catch(() => {})
+		handleCreateSubtopic: async (topicId: number) => {
+			await handleCreateSubtopic(topicId)
 		},
 		handleDialogOpenChange: (open: boolean) => {
 			if (!open) setPendingDeleteTopicId(null)

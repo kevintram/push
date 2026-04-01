@@ -1,4 +1,5 @@
-import { Minimize2, Plus } from 'lucide-react'
+import { Loader, Minimize2, Plus } from 'lucide-react'
+import { useState } from 'react'
 import { Button } from '~/components/ui/button'
 
 const OUTLINE_LABEL = 'topics'
@@ -7,7 +8,7 @@ const ADD_TOPIC_LABEL = 'Add topic'
 
 interface TopicDetailOutlineHeaderProps {
 	isUpdatingTopic: boolean
-	onAdd: () => void
+	onAdd: () => Promise<void>
 	onCollapseAll: () => void
 }
 
@@ -16,6 +17,9 @@ export function TopicDetailOutlineHeader({
 	onAdd,
 	onCollapseAll
 }: TopicDetailOutlineHeaderProps) {
+	const [isSubmitting, setIsSubmitting] = useState(false)
+	const addTopicLabel = isSubmitting ? 'Creating topic' : ADD_TOPIC_LABEL
+
 	return (
 		<div className='flex min-h-8 items-center justify-between gap-2 rounded-md px-1.5 text-sm'>
 			<span className='truncate font-semibold text-accent-foreground/90 text-sm uppercase tracking-wide'>
@@ -34,16 +38,25 @@ export function TopicDetailOutlineHeader({
 					<span className='sr-only'>{COLLAPSE_OUTLINE_LABEL}</span>
 				</Button>
 				<Button
-					aria-label={ADD_TOPIC_LABEL}
+					aria-label={addTopicLabel}
 					className='h-5 w-5 rounded-md p-0'
-					disabled={isUpdatingTopic}
-					onClick={onAdd}
+					disabled={isUpdatingTopic || isSubmitting}
+					onClick={() => {
+						setIsSubmitting(true)
+						onAdd().finally(() => {
+							setIsSubmitting(false)
+						})
+					}}
 					size='icon-xs'
 					type='button'
 					variant='ghost'
 				>
-					<Plus className='h-4 w-4' />
-					<span className='sr-only'>{ADD_TOPIC_LABEL}</span>
+					{isSubmitting ? (
+						<Loader className='h-4 w-4 animate-spin' />
+					) : (
+						<Plus className='h-4 w-4' />
+					)}
+					<span className='sr-only'>{addTopicLabel}</span>
 				</Button>
 			</div>
 		</div>

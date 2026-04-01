@@ -215,9 +215,7 @@ export function TopicDetailSection({
 					isCollapsed={isCollapsed}
 					isCreatingTopic={isCreatingTopic}
 					isFreshTopic={isFreshTopic}
-					onCreateSubtopic={() => {
-						handleCreateSubtopic().catch(() => {})
-					}}
+					onCreateSubtopic={handleCreateSubtopic}
 					onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
 					onOpenTopic={handleOpenTopic}
 					onTitleChange={handleTitleChange}

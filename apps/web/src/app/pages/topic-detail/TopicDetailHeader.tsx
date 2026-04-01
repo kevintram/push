@@ -26,7 +26,7 @@ interface TopicDetailHeaderProps {
 	actionClassName?: string
 	contentClassName?: string
 	isCreatingTopic: boolean
-	onCreateSubtopic: () => void
+	onCreateSubtopic: () => Promise<void>
 	headingLevel: number
 	onOpenDeleteDialog: () => void
 	pathContainerClassName?: string
