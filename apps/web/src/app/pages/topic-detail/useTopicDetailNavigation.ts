@@ -14,10 +14,24 @@ import {
 } from './topicDetailStructure'
 
 type UseTopicDetailNavigationOptions = {
+	passiveHashAlignmentEnabled?: boolean
 	rootTopicId: number
 	scrollContainerRef: MutableRefObject<HTMLDivElement | null>
 	scrollContainerVersion: number
 	sectionIds: Array<number>
+}
+
+type HashAlignmentRequest = {
+	behavior: ScrollBehavior
+	hash: string
+	topicId: number
+}
+
+const HASH_ALIGNMENT_RETRY_DELAYS_MS = [100, 250, 500, 900, 1400, 2200] as const
+
+function normalizeTopicDetailHash(hash: string | null | undefined) {
+	if (!hash) return ''
+	return hash.startsWith('#') ? hash : `#${hash}`
 }
 
 function areSectionIdArraysEqual(left: Array<number>, right: Array<number>) {
@@ -31,29 +45,30 @@ function areSectionIdArraysEqual(left: Array<number>, right: Array<number>) {
 }
 
 export function useTopicDetailNavigation({
+	passiveHashAlignmentEnabled = true,
 	rootTopicId,
 	scrollContainerRef,
 	scrollContainerVersion,
 	sectionIds
 }: UseTopicDetailNavigationOptions) {
 	const navigate = useNavigate()
-	const currentHash = useRouterState({
+	const routerHash = useRouterState({
 		select: state => state.location.hash
 	})
-	const currentHashValue = currentHash ? `#${currentHash}` : ''
+	const currentHashValue = normalizeTopicDetailHash(
+		typeof window !== 'undefined' && window.location.hash.length > 0
+			? window.location.hash
+			: routerHash
+	)
 	const sectionElementsRef = useRef(new Map<number, HTMLElement>())
 	const sectionHeadingElementsRef = useRef(new Map<number, HTMLElement>())
 	const intersectingSectionIdsRef = useRef(new Set<number>())
 	const visibilityObserverRef = useRef<IntersectionObserver | null>(null)
 	const visibilityAnimationFrameIdRef = useRef<number | null>(null)
-	const hashTargetAnimationFrameIdRef = useRef<number | null>(null)
-	const fallbackScrolledHashRef = useRef<string | null>(null)
-	const pendingHashAlignmentRef = useRef<string | null>(
-		currentHashValue.length > 0 ? currentHashValue : null
-	)
-	const lastSeenHashRef = useRef<string>(currentHashValue)
-	const hashTargetMutationObserverRef = useRef<MutationObserver | null>(null)
-	const hashTargetResizeObserverRef = useRef<ResizeObserver | null>(null)
+	const hashAlignmentRequestRef = useRef<HashAlignmentRequest | null>(null)
+	const hashAlignmentTimeoutIdsRef = useRef<Array<number>>([])
+	const handledPassiveHashAlignmentRef = useRef<string | null>(null)
+	const ignoredHashAlignmentHashRef = useRef<string | null>(null)
 	const [visibleSectionIds, setVisibleSectionIds] = useState<Array<number>>([])
 
 	const syncVisibleSectionIds = useCallback(
@@ -79,7 +94,9 @@ export function useTopicDetailNavigation({
 	const updateHash = useCallback(
 		(topicId: number, mode: 'push' | 'replace' = 'push') => {
 			const nextHash = getTopicDetailSectionId(topicId)
-			if (currentHash === nextHash) return Promise.resolve()
+			if (normalizeTopicDetailHash(routerHash) === `#${nextHash}`) {
+				return Promise.resolve()
+			}
 
 			return navigate({
 				to: '/topics/$topicId',
@@ -91,7 +108,7 @@ export function useTopicDetailNavigation({
 				hashScrollIntoView: false
 			}).catch(() => undefined)
 		},
-		[currentHash, navigate, rootTopicId]
+		[navigate, rootTopicId, routerHash]
 	)
 
 	const measureVisibleSections = useCallback(() => {
@@ -181,11 +198,6 @@ export function useTopicDetailNavigation({
 		[]
 	)
 
-	const getHashTargetTopicId = useCallback(
-		() => parseTopicDetailHash(currentHashValue),
-		[currentHashValue]
-	)
-
 	const isTargetAligned = useCallback(
 		(targetElement: HTMLElement) => {
 			const scrollContainerElement = scrollContainerRef.current
@@ -233,173 +245,118 @@ export function useTopicDetailNavigation({
 				return
 			}
 
+			const previousInlineScrollBehavior =
+				scrollContainerElement.style.scrollBehavior
+			scrollContainerElement.style.scrollBehavior = 'auto'
 			scrollContainerElement.scrollTop = nextScrollTop
+
+			window.requestAnimationFrame(() => {
+				scrollContainerElement.style.scrollBehavior =
+					previousInlineScrollBehavior
+			})
 		},
 		[scrollContainerRef]
 	)
 
-	const syncHashTargetIntoView = useCallback(() => {
-		if (typeof window === 'undefined') return false
+	const clearHashAlignmentTimers = useCallback(() => {
+		if (typeof window === 'undefined') return
 
-		if (currentHashValue.length === 0) return false
-		if (pendingHashAlignmentRef.current !== currentHashValue) return false
-		if (fallbackScrolledHashRef.current === currentHashValue) return false
-
-		const targetTopicId = getHashTargetTopicId()
-		if (targetTopicId == null) return false
-		if (!sectionIds.includes(targetTopicId)) return false
-
-		const targetElement = getTargetElement(targetTopicId)
-		if (!targetElement) return false
-		if (isTargetAligned(targetElement)) return false
-
-		scrollTargetIntoView(targetElement)
-		fallbackScrolledHashRef.current = currentHashValue
-		return true
-	}, [
-		currentHashValue,
-		getHashTargetTopicId,
-		getTargetElement,
-		isTargetAligned,
-		scrollTargetIntoView,
-		sectionIds
-	])
-
-	const disconnectHashTargetObservers = useCallback(() => {
-		hashTargetMutationObserverRef.current?.disconnect()
-		hashTargetMutationObserverRef.current = null
-		hashTargetResizeObserverRef.current?.disconnect()
-		hashTargetResizeObserverRef.current = null
+		for (const timeoutId of hashAlignmentTimeoutIdsRef.current) {
+			window.clearTimeout(timeoutId)
+		}
+		hashAlignmentTimeoutIdsRef.current = []
 	}, [])
 
-	const cancelPendingHashAlignment = useCallback(() => {
-		pendingHashAlignmentRef.current = null
-		fallbackScrolledHashRef.current = null
-		disconnectHashTargetObservers()
-	}, [disconnectHashTargetObservers])
+	const clearHashAlignmentRequest = useCallback(() => {
+		hashAlignmentRequestRef.current = null
+		clearHashAlignmentTimers()
+	}, [clearHashAlignmentTimers])
 
-	const completeCurrentHashAlignment = useCallback(() => {
-		if (pendingHashAlignmentRef.current === currentHashValue) {
-			pendingHashAlignmentRef.current = null
+	const attemptHashAlignment = useCallback(() => {
+		const request = hashAlignmentRequestRef.current
+		if (!request || request.hash !== currentHashValue) return false
+		if (request.behavior === 'auto' && !passiveHashAlignmentEnabled) {
+			return false
 		}
-	}, [currentHashValue])
+		if (scrollContainerRef.current == null) return false
 
-	const handleObservedHashTargetUpdate = useCallback(() => {
-		if (
-			currentHashValue.length === 0 ||
-			pendingHashAlignmentRef.current !== currentHashValue
-		) {
-			disconnectHashTargetObservers()
-			return
+		if (!sectionIds.includes(request.topicId)) {
+			clearHashAlignmentRequest()
+			return false
 		}
 
-		const targetTopicId = getHashTargetTopicId()
-		if (targetTopicId == null) {
-			completeCurrentHashAlignment()
-			disconnectHashTargetObservers()
-			return
-		}
-
-		const targetElement = getTargetElement(targetTopicId)
-		if (!targetElement) {
-			disconnectHashTargetObservers()
-			return
-		}
+		const targetElement = getTargetElement(request.topicId)
+		if (!targetElement) return false
 		if (isTargetAligned(targetElement)) {
-			completeCurrentHashAlignment()
-			measureVisibleSections()
-			disconnectHashTargetObservers()
-			return
+			handledPassiveHashAlignmentRef.current = request.hash
+			if (request.behavior !== 'auto') {
+				clearHashAlignmentRequest()
+			}
+			return false
 		}
 
-		fallbackScrolledHashRef.current = null
-		syncHashTargetIntoView()
+		scrollTargetIntoView(targetElement, {
+			behavior: request.behavior
+		})
 		measureVisibleSections()
 
-		const updatedTargetElement = getTargetElement(targetTopicId)
-		if (!updatedTargetElement || isTargetAligned(updatedTargetElement)) {
-			completeCurrentHashAlignment()
-			disconnectHashTargetObservers()
+		if (request.behavior !== 'auto') {
+			handledPassiveHashAlignmentRef.current = request.hash
+			clearHashAlignmentRequest()
 		}
+
+		return true
 	}, [
-		completeCurrentHashAlignment,
+		clearHashAlignmentRequest,
 		currentHashValue,
-		disconnectHashTargetObservers,
-		getHashTargetTopicId,
 		getTargetElement,
 		isTargetAligned,
 		measureVisibleSections,
-		syncHashTargetIntoView
-	])
-
-	const scheduleObservedHashTargetUpdate = useCallback(() => {
-		if (typeof window === 'undefined') return
-		if (hashTargetAnimationFrameIdRef.current != null) return
-
-		hashTargetAnimationFrameIdRef.current = window.requestAnimationFrame(() => {
-			hashTargetAnimationFrameIdRef.current = null
-			handleObservedHashTargetUpdate()
-		})
-	}, [handleObservedHashTargetUpdate])
-
-	const observeHashTargetSettledUpdates = useCallback(() => {
-		const scrollContainerElement = scrollContainerRef.current
-		if (
-			typeof window === 'undefined' ||
-			scrollContainerElement == null ||
-			currentHashValue.length === 0 ||
-			pendingHashAlignmentRef.current !== currentHashValue ||
-			typeof MutationObserver === 'undefined'
-		) {
-			disconnectHashTargetObservers()
-			return
-		}
-
-		const targetTopicId = getHashTargetTopicId()
-		if (targetTopicId == null || !sectionIds.includes(targetTopicId)) {
-			disconnectHashTargetObservers()
-			return
-		}
-
-		const targetElement = getTargetElement(targetTopicId)
-		if (!targetElement) {
-			disconnectHashTargetObservers()
-			return
-		}
-		if (isTargetAligned(targetElement)) {
-			completeCurrentHashAlignment()
-			disconnectHashTargetObservers()
-			return
-		}
-
-		disconnectHashTargetObservers()
-		hashTargetMutationObserverRef.current = new MutationObserver(() => {
-			scheduleObservedHashTargetUpdate()
-		})
-		hashTargetMutationObserverRef.current.observe(scrollContainerElement, {
-			subtree: true,
-			childList: true,
-			characterData: true,
-			attributes: true
-		})
-
-		if (typeof ResizeObserver !== 'undefined') {
-			hashTargetResizeObserverRef.current = new ResizeObserver(() => {
-				scheduleObservedHashTargetUpdate()
-			})
-			hashTargetResizeObserverRef.current.observe(targetElement)
-		}
-	}, [
-		completeCurrentHashAlignment,
-		currentHashValue,
-		disconnectHashTargetObservers,
-		getHashTargetTopicId,
-		getTargetElement,
-		isTargetAligned,
-		scheduleObservedHashTargetUpdate,
+		scrollTargetIntoView,
 		scrollContainerRef,
 		sectionIds
 	])
+
+	const scheduleHashAlignment = useCallback(
+		(hash: string, behavior: ScrollBehavior = 'auto') => {
+			if (typeof window === 'undefined') return
+
+			const topicId = parseTopicDetailHash(hash)
+			if (topicId == null || !sectionIds.includes(topicId)) {
+				clearHashAlignmentRequest()
+				return
+			}
+
+			clearHashAlignmentTimers()
+			hashAlignmentRequestRef.current = {
+				behavior,
+				hash,
+				topicId
+			}
+
+			hashAlignmentTimeoutIdsRef.current = HASH_ALIGNMENT_RETRY_DELAYS_MS.map(
+				delay =>
+					window.setTimeout(() => {
+						void attemptHashAlignment()
+					}, delay)
+			)
+			hashAlignmentTimeoutIdsRef.current.push(
+				window.setTimeout(() => {
+					clearHashAlignmentRequest()
+				}, HASH_ALIGNMENT_RETRY_DELAYS_MS.at(-1)! + 1)
+			)
+		},
+		[
+			attemptHashAlignment,
+			clearHashAlignmentRequest,
+			clearHashAlignmentTimers,
+			sectionIds
+		]
+	)
+
+	const shouldAttemptHashAlignmentForTopic = useCallback((topicId: number) => {
+		return hashAlignmentRequestRef.current?.topicId === topicId
+	}, [])
 
 	const scrollToSection = useCallback(
 		(
@@ -410,30 +367,60 @@ export function useTopicDetailNavigation({
 			if (!targetElement || typeof window === 'undefined') return
 
 			const nextHash = getTopicDetailHash(topicId)
-			pendingHashAlignmentRef.current = nextHash
+			ignoredHashAlignmentHashRef.current = nextHash
+			clearHashAlignmentRequest()
 			void updateHash(topicId, options?.mode ?? 'push')
-			fallbackScrolledHashRef.current = nextHash
 			scrollTargetIntoView(targetElement, {
 				behavior: options?.behavior ?? 'smooth'
 			})
 			measureVisibleSections()
 		},
-		[getTargetElement, measureVisibleSections, scrollTargetIntoView, updateHash]
+		[
+			clearHashAlignmentRequest,
+			getTargetElement,
+			measureVisibleSections,
+			scrollTargetIntoView,
+			updateHash
+		]
+	)
+
+	const syncHashAlignmentAfterRefChange = useCallback(
+		(topicId: number, element: HTMLElement | null) => {
+			if (
+				element == null &&
+				hashAlignmentRequestRef.current?.topicId === topicId &&
+				hashAlignmentRequestRef.current.behavior !== 'auto'
+			) {
+				clearHashAlignmentRequest()
+				return
+			}
+
+			if (!shouldAttemptHashAlignmentForTopic(topicId)) return
+			const currentRequest = hashAlignmentRequestRef.current
+			if (currentRequest?.behavior === 'auto') {
+				scheduleHashAlignment(currentRequest.hash, currentRequest.behavior)
+				return
+			}
+			void attemptHashAlignment()
+		},
+		[
+			attemptHashAlignment,
+			clearHashAlignmentRequest,
+			scheduleHashAlignment,
+			shouldAttemptHashAlignmentForTopic
+		]
 	)
 
 	const registerSectionRef = useCallback(
 		(topicId: number, element: HTMLElement | null) => {
 			if (element == null) {
 				sectionElementsRef.current.delete(topicId)
-				observeHashTargetSettledUpdates()
-				return
+			} else {
+				sectionElementsRef.current.set(topicId, element)
 			}
-
-			sectionElementsRef.current.set(topicId, element)
-			syncHashTargetIntoView()
-			observeHashTargetSettledUpdates()
+			syncHashAlignmentAfterRefChange(topicId, element)
 		},
-		[observeHashTargetSettledUpdates, syncHashTargetIntoView]
+		[syncHashAlignmentAfterRefChange]
 	)
 
 	const registerSectionHeadingRef = useCallback(
@@ -443,11 +430,9 @@ export function useTopicDetailNavigation({
 			} else {
 				sectionHeadingElementsRef.current.set(topicId, element)
 			}
-
-			syncHashTargetIntoView()
-			observeHashTargetSettledUpdates()
+			syncHashAlignmentAfterRefChange(topicId, element)
 		},
-		[observeHashTargetSettledUpdates, syncHashTargetIntoView]
+		[syncHashAlignmentAfterRefChange]
 	)
 
 	useEffect(() => {
@@ -486,8 +471,8 @@ export function useTopicDetailNavigation({
 		}
 
 		const handleUserInteraction = () => {
-			if (pendingHashAlignmentRef.current == null) return
-			cancelPendingHashAlignment()
+			if (hashAlignmentRequestRef.current == null) return
+			clearHashAlignmentRequest()
 		}
 
 		scrollContainerElement.addEventListener('wheel', handleUserInteraction, {
@@ -527,14 +512,13 @@ export function useTopicDetailNavigation({
 			window.removeEventListener('keydown', handleUserInteraction)
 		}
 	}, [
-		cancelPendingHashAlignment,
+		clearHashAlignmentRequest,
 		disconnectVisibilityObserver,
 		handleVisibilityEntries,
 		measureVisibleSections,
 		scheduleVisibleSectionsMeasurement,
 		scrollContainerRef,
-		scrollContainerVersion,
-		syncVisibleSectionIds
+		scrollContainerVersion
 	])
 
 	useEffect(
@@ -542,57 +526,47 @@ export function useTopicDetailNavigation({
 			if (visibilityAnimationFrameIdRef.current != null) {
 				window.cancelAnimationFrame(visibilityAnimationFrameIdRef.current)
 			}
-			if (hashTargetAnimationFrameIdRef.current != null) {
-				window.cancelAnimationFrame(hashTargetAnimationFrameIdRef.current)
-			}
 			disconnectVisibilityObserver()
-			disconnectHashTargetObservers()
+			clearHashAlignmentRequest()
 		},
-		[disconnectHashTargetObservers, disconnectVisibilityObserver]
+		[clearHashAlignmentRequest, disconnectVisibilityObserver]
 	)
 
 	useEffect(() => {
-		if (lastSeenHashRef.current === currentHashValue) return
-
-		lastSeenHashRef.current = currentHashValue
-		pendingHashAlignmentRef.current =
-			currentHashValue.length > 0 ? currentHashValue : null
-		if (fallbackScrolledHashRef.current !== currentHashValue) {
-			fallbackScrolledHashRef.current = null
-		}
-
 		if (currentHashValue.length === 0) {
-			disconnectHashTargetObservers()
+			clearHashAlignmentRequest()
+			handledPassiveHashAlignmentRef.current = null
+			return
 		}
-	}, [currentHashValue, disconnectHashTargetObservers])
+
+		if (!passiveHashAlignmentEnabled) return
+
+		if (ignoredHashAlignmentHashRef.current === currentHashValue) {
+			ignoredHashAlignmentHashRef.current = null
+			handledPassiveHashAlignmentRef.current = currentHashValue
+			return
+		}
+
+		if (handledPassiveHashAlignmentRef.current === currentHashValue) return
+		if (hashAlignmentRequestRef.current?.hash === currentHashValue) return
+
+		const targetTopicId = parseTopicDetailHash(currentHashValue)
+		if (targetTopicId == null || !sectionIds.includes(targetTopicId)) return
+
+		scheduleHashAlignment(currentHashValue)
+	}, [
+		clearHashAlignmentRequest,
+		currentHashValue,
+		passiveHashAlignmentEnabled,
+		scheduleHashAlignment,
+		scrollContainerVersion,
+		sectionIds
+	])
 
 	useEffect(() => {
-		const hasHashTarget = getHashTargetTopicId() != null
-
-		if (syncHashTargetIntoView() || hasHashTarget) {
-			observeHashTargetSettledUpdates()
-		}
-
-		const targetTopicId = getHashTargetTopicId()
-		if (targetTopicId != null) {
-			const targetElement = getTargetElement(targetTopicId)
-			if (targetElement && isTargetAligned(targetElement)) {
-				completeCurrentHashAlignment()
-				disconnectHashTargetObservers()
-			}
-		}
-
+		void attemptHashAlignment()
 		measureVisibleSections()
-	}, [
-		completeCurrentHashAlignment,
-		disconnectHashTargetObservers,
-		getHashTargetTopicId,
-		getTargetElement,
-		isTargetAligned,
-		measureVisibleSections,
-		observeHashTargetSettledUpdates,
-		syncHashTargetIntoView
-	])
+	}, [attemptHashAlignment, measureVisibleSections, scrollContainerVersion])
 
 	return {
 		visibleSectionIds,
