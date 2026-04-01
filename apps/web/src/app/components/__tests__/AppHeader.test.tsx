@@ -54,6 +54,12 @@ vi.mock('~/stores/ReviewModeContext', () => ({
 	useReviewMode: () => useReviewModeMock()
 }))
 
+vi.mock('~/components/ui/sidebar', () => ({
+	SidebarTrigger: (props: ComponentProps<'button'>) => (
+		<button {...props}>Toggle Sidebar</button>
+	)
+}))
+
 describe('AppHeader', () => {
 	beforeEach(() => {
 		useLocationMock.mockReset()
