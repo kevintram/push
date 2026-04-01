@@ -44,7 +44,7 @@ export function DetailNavBar({
 	)
 
 	return (
-		<div className='sticky top-0 z-10 grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-2 py-1'>
+		<div className='sticky top-0 z-10 grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-b px-2 py-1'>
 			<div className='flex min-w-0 items-center gap-4'>{leftContent}</div>
 
 			<Tabs onValueChange={handleValueChange} value={activeTab}>
