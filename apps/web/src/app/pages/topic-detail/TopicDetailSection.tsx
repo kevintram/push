@@ -43,6 +43,7 @@ type TopicDetailSectionProps = {
 	globalFilter: TopicDetailReviewCardFilter
 	onFreshTopicInteraction: (topicId: number) => void
 	onOpenReviewCard: (reviewCardId: number) => void
+	onPreserveSectionOffset: (topicId: number) => boolean
 	onSubtopicCreated: (parentTopicId: number, createdTopicId: number) => void
 	onSectionFilterChange: (
 		topicId: number,
@@ -74,6 +75,7 @@ export function TopicDetailSection({
 	globalFilter,
 	onFreshTopicInteraction,
 	onOpenReviewCard,
+	onPreserveSectionOffset,
 	onSubtopicCreated,
 	onSectionFilterChange,
 	isReviewCardsLoading,
@@ -114,12 +116,18 @@ export function TopicDetailSection({
 			if (title === section.topic.title) return
 
 			try {
+				onPreserveSectionOffset(section.topic.id)
 				await updateTopicAsync({ id: section.topic.id, title })
 			} catch {
 				toast.error('Failed to update topic')
 			}
 		},
-		[section.topic.id, section.topic.title, updateTopicAsync]
+		[
+			onPreserveSectionOffset,
+			section.topic.id,
+			section.topic.title,
+			updateTopicAsync
+		]
 	)
 
 	const {
@@ -247,6 +255,7 @@ export function TopicDetailSection({
 								key={childSection.topic.id}
 								onFreshTopicInteraction={onFreshTopicInteraction}
 								onOpenReviewCard={onOpenReviewCard}
+								onPreserveSectionOffset={onPreserveSectionOffset}
 								onSectionFilterChange={onSectionFilterChange}
 								onSubtopicCreated={onSubtopicCreated}
 								registerSectionHeadingRef={registerSectionHeadingRef}

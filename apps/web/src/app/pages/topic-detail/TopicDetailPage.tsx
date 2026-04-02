@@ -77,6 +77,7 @@ export function TopicDetailPage({
 		registerSectionHeadingRef,
 		registerSectionRef,
 		registerSectionTitleRef,
+		preserveSectionOffset,
 		scrollToSection,
 		registerScrollContainerRef,
 		resolvedCardTypeFilter,
@@ -141,6 +142,7 @@ export function TopicDetailPage({
 			onFreshTopicInteraction={handleFreshTopicInteraction}
 			onGlobalFilterChange={handleGlobalFilterChange}
 			onOpenReviewCard={handleOpenReviewCard}
+			onPreserveSectionOffset={preserveSectionOffset}
 			onSectionFilterChange={handleSectionFilterChange}
 			onSubtopicCreated={handleSubtopicCreated}
 			registerSectionHeadingRef={registerSectionHeadingRef}

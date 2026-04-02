@@ -316,6 +316,300 @@ describe('useTopicDetailNavigation', () => {
 		expect(result.current.visibleSectionIds).toEqual([2])
 	})
 
+	it('preserves a section visual offset after the section order changes', () => {
+		const scrollContainer = document.createElement('div')
+		const sectionOne = document.createElement('section')
+		const sectionTwo = document.createElement('section')
+		let sectionTwoDocumentTop = 320
+
+		document.body.append(scrollContainer)
+		scrollContainer.append(sectionOne, sectionTwo)
+		sectionOne.dataset.topicDetailHeadingId = '1'
+		sectionTwo.dataset.topicDetailHeadingId = '2'
+		scrollContainer.scrollTop = 250
+
+		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
+			createDomRect(0, 220)
+		)
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
+			const containerTop = scrollContainer.getBoundingClientRect().top
+			return createDomRect(
+				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
+				60
+			)
+		})
+
+		const { result, rerender } = renderHook<
+			ReturnType<typeof useTopicDetailNavigation>,
+			{ sectionIds: Array<number> }
+		>(
+			({ sectionIds }) =>
+				useTopicDetailNavigation(
+					createNavigationOptions({
+						rootTopicId: 1,
+						scrollContainerElement: scrollContainer,
+						sectionIds
+					})
+				),
+			{
+				initialProps: {
+					sectionIds: [1, 2]
+				}
+			}
+		)
+
+		act(() => {
+			result.current.registerSectionRef(1, sectionOne)
+			result.current.registerSectionRef(2, sectionTwo)
+			result.current.registerSectionHeadingRef(1, sectionOne)
+			result.current.registerSectionHeadingRef(2, sectionTwo)
+			result.current.preserveSectionOffset(2)
+		})
+
+		expect(scrollContainer.scrollTop).toBe(250)
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
+			'none'
+		)
+
+		act(() => {
+			sectionTwoDocumentTop = 120
+			rerender({
+				sectionIds: [2, 1]
+			})
+			flushAnimationFrames()
+		})
+
+		expect(scrollContainer.scrollTop).toBe(50)
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
+			'none'
+		)
+
+		act(() => {
+			vi.runAllTimers()
+		})
+
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe('')
+	})
+
+	it('cancels pending section offset preservation when the user scrolls', () => {
+		const scrollContainer = document.createElement('div')
+		const sectionOne = document.createElement('section')
+		const sectionTwo = document.createElement('section')
+		let sectionTwoDocumentTop = 320
+
+		document.body.append(scrollContainer)
+		scrollContainer.append(sectionOne, sectionTwo)
+		sectionOne.dataset.topicDetailHeadingId = '1'
+		sectionTwo.dataset.topicDetailHeadingId = '2'
+		scrollContainer.scrollTop = 250
+
+		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
+			createDomRect(0, 220)
+		)
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
+			const containerTop = scrollContainer.getBoundingClientRect().top
+			return createDomRect(
+				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
+				60
+			)
+		})
+
+		const { result, rerender } = renderHook<
+			ReturnType<typeof useTopicDetailNavigation>,
+			{ sectionIds: Array<number> }
+		>(
+			({ sectionIds }) =>
+				useTopicDetailNavigation(
+					createNavigationOptions({
+						rootTopicId: 1,
+						scrollContainerElement: scrollContainer,
+						sectionIds
+					})
+				),
+			{
+				initialProps: {
+					sectionIds: [1, 2]
+				}
+			}
+		)
+
+		act(() => {
+			result.current.registerSectionRef(1, sectionOne)
+			result.current.registerSectionRef(2, sectionTwo)
+			result.current.registerSectionHeadingRef(1, sectionOne)
+			result.current.registerSectionHeadingRef(2, sectionTwo)
+			result.current.preserveSectionOffset(2)
+		})
+
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
+			'none'
+		)
+
+		scrollContainer.scrollTop = 100
+
+		act(() => {
+			scrollContainer.dispatchEvent(new Event('wheel'))
+		})
+
+		act(() => {
+			sectionTwoDocumentTop = 120
+			rerender({
+				sectionIds: [2, 1]
+			})
+			flushAnimationFrames()
+			vi.runAllTimers()
+		})
+
+		expect(scrollContainer.scrollTop).toBe(100)
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe('')
+	})
+
+	it('reapplies the preserved section offset after a later native scroll adjustment', () => {
+		const scrollContainer = document.createElement('div')
+		const sectionOne = document.createElement('section')
+		const sectionTwo = document.createElement('section')
+		let sectionTwoDocumentTop = 320
+
+		document.body.append(scrollContainer)
+		scrollContainer.append(sectionOne, sectionTwo)
+		sectionOne.dataset.topicDetailHeadingId = '1'
+		sectionTwo.dataset.topicDetailHeadingId = '2'
+		scrollContainer.scrollTop = 250
+
+		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
+			createDomRect(0, 220)
+		)
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
+			const containerTop = scrollContainer.getBoundingClientRect().top
+			return createDomRect(
+				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
+				60
+			)
+		})
+
+		const { result, rerender } = renderHook<
+			ReturnType<typeof useTopicDetailNavigation>,
+			{ sectionIds: Array<number> }
+		>(
+			({ sectionIds }) =>
+				useTopicDetailNavigation(
+					createNavigationOptions({
+						rootTopicId: 1,
+						scrollContainerElement: scrollContainer,
+						sectionIds
+					})
+				),
+			{
+				initialProps: {
+					sectionIds: [1, 2]
+				}
+			}
+		)
+
+		act(() => {
+			result.current.registerSectionRef(1, sectionOne)
+			result.current.registerSectionRef(2, sectionTwo)
+			result.current.registerSectionHeadingRef(1, sectionOne)
+			result.current.registerSectionHeadingRef(2, sectionTwo)
+			result.current.preserveSectionOffset(2)
+		})
+
+		act(() => {
+			sectionTwoDocumentTop = 120
+			rerender({
+				sectionIds: [2, 1]
+			})
+		})
+
+		expect(scrollContainer.scrollTop).toBe(50)
+
+		scrollContainer.scrollTop = 250
+
+		act(() => {
+			scrollContainer.dispatchEvent(new Event('scroll'))
+			flushAnimationFrames()
+		})
+
+		expect(scrollContainer.scrollTop).toBe(50)
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
+			'none'
+		)
+
+		act(() => {
+			vi.runAllTimers()
+		})
+
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe('')
+	})
+
+	it('cancels pending section offset preservation when navigating to another section', () => {
+		const scrollContainer = document.createElement('div')
+		const sectionOne = document.createElement('section')
+		const sectionTwo = document.createElement('section')
+		let sectionTwoDocumentTop = 320
+
+		document.body.append(scrollContainer)
+		scrollContainer.append(sectionOne, sectionTwo)
+		sectionOne.dataset.topicDetailHeadingId = '1'
+		sectionTwo.dataset.topicDetailHeadingId = '2'
+		scrollContainer.scrollTop = 250
+
+		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
+			createDomRect(0, 220)
+		)
+		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
+		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
+			const containerTop = scrollContainer.getBoundingClientRect().top
+			return createDomRect(
+				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
+				60
+			)
+		})
+
+		const { result } = renderHook(() =>
+			useTopicDetailNavigation(
+				createNavigationOptions({
+					rootTopicId: 1,
+					scrollContainerElement: scrollContainer,
+					sectionIds: [1, 2]
+				})
+			)
+		)
+
+		act(() => {
+			result.current.registerSectionRef(1, sectionOne)
+			result.current.registerSectionRef(2, sectionTwo)
+			result.current.registerSectionHeadingRef(1, sectionOne)
+			result.current.registerSectionHeadingRef(2, sectionTwo)
+			result.current.preserveSectionOffset(2)
+		})
+
+		sectionTwoDocumentTop = 120
+
+		act(() => {
+			result.current.scrollToSection(1, {
+				behavior: 'auto',
+				updateHash: false
+			})
+		})
+
+		expect(scrollContainer.scrollTop).toBe(20)
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe('')
+
+		scrollContainer.scrollTop = 250
+
+		act(() => {
+			scrollContainer.dispatchEvent(new Event('scroll'))
+			flushAnimationFrames()
+			vi.runAllTimers()
+		})
+
+		expect(scrollContainer.scrollTop).toBe(250)
+	})
+
 	it('aligns a deep link after section ids and refs arrive asynchronously', () => {
 		currentHash = 'topic-2'
 
