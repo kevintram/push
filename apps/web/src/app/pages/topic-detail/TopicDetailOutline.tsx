@@ -229,7 +229,7 @@ export function TopicDetailOutline({
 				<div className='min-h-0 min-w-0 shrink-0 pr-1' style={outlineListStyle}>
 					<div className='h-full min-h-0 overflow-y-auto pr-2'>
 						<div className='flex h-full min-h-0 flex-col'>
-							<div className='shrink-0' ref={outlineHeaderRef}>
+							<div className='mb-1.5 shrink-0' ref={outlineHeaderRef}>
 								<TopicDetailOutlineHeader
 									isUpdatingTopic={isUpdatingTopic}
 									onAdd={handleAddChildTopic}
