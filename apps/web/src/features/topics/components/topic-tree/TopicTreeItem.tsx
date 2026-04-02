@@ -1,6 +1,6 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
-import { ChevronRight, ExternalLink, Plus, Trash2 } from 'lucide-react'
-import { type MutableRefObject, memo, type ReactNode } from 'react'
+import { ChevronRight, ExternalLink, Loader, Plus, Trash2 } from 'lucide-react'
+import { type MutableRefObject, memo, type ReactNode, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import {
 	ContextMenu,
@@ -45,7 +45,7 @@ export interface TopicTreeItemProps {
 	isUpdatingTopic: boolean
 	node: TopicTreeNode
 	nodeById: Map<number, TopicTreeNode>
-	onCreateSubtopic: (topicId: number) => void
+	onCreateSubtopic: (topicId: number) => Promise<void>
 	onHoverTopicChange?: (topicId: number | null) => void
 	onOpenTopic?: (topicId: number) => void
 	onRequestDeleteTopic: (topicId: number) => void
@@ -177,6 +177,8 @@ function TopicTreeItemComponent({
 	setItemRef,
 	suppressSelectionRef
 }: TopicTreeItemProps) {
+	const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
+	const [isCreatingSubtopic, setIsCreatingSubtopic] = useState(false)
 	const hasChildren = node.children.length > 0
 	const isExpanded = expandedIdSet.has(node.id)
 	const isActive =
@@ -272,7 +274,13 @@ function TopicTreeItemComponent({
 	)
 
 	return (
-		<ContextMenu>
+		<ContextMenu
+			onOpenChange={nextOpen => {
+				if (isCreatingSubtopic) return
+				setIsContextMenuOpen(nextOpen)
+			}}
+			open={isContextMenuOpen}
+		>
 			<li
 				data-fresh-topic={isFresh ? 'true' : undefined}
 				ref={element => setItemRef?.(node.id, element)}
@@ -328,13 +336,27 @@ function TopicTreeItemComponent({
 							</ContextMenuItem>
 						) : null}
 						<ContextMenuItem
-							disabled={isUpdatingTopic}
+							closeOnClick={false}
+							disabled={isUpdatingTopic || isCreatingSubtopic}
 							onClick={() => {
-								onCreateSubtopic(node.id)
+								setIsCreatingSubtopic(true)
+								onCreateSubtopic(node.id).finally(() => {
+									setIsCreatingSubtopic(false)
+									setIsContextMenuOpen(false)
+								})
 							}}
 						>
-							<Plus className='h-4 w-4' />
-							New topic
+							{isCreatingSubtopic ? (
+								<>
+									<Loader className='h-4 w-4 animate-spin' />
+									Creating...
+								</>
+							) : (
+								<>
+									<Plus className='h-4 w-4' />
+									New topic
+								</>
+							)}
 						</ContextMenuItem>
 						<ContextMenuSeparator />
 						<ContextMenuItem

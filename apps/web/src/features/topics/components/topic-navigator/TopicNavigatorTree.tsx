@@ -23,7 +23,7 @@ export type TopicNavigatorItemProps = {
 	onHoverTopicChange: (topicId: number | null) => void
 	onOpenTopic: (topicId: number) => void
 	onToggleExpanded: (topicId: number) => void
-	onCreateSubtopic: (topicId: number) => void
+	onCreateSubtopic: (topicId: number) => Promise<void>
 	onRequestDeleteTopic: (topicId: number) => void
 	suppressNavigationRef: MutableRefObject<boolean>
 	setItemRef: (topicId: number, element: HTMLLIElement | null) => void

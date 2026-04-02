@@ -1,4 +1,5 @@
-import { MoreHorizontal, Plus, Trash2 } from 'lucide-react'
+import { Loader, MoreHorizontal, Plus, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 
 import { Button } from '~/components/ui/button'
 import {
@@ -11,7 +12,7 @@ import {
 
 type TopicDetailRootActionsMenuProps = {
 	isCreatingTopic: boolean
-	onCreateSubtopic: () => void
+	onCreateSubtopic: () => Promise<void>
 	onOpenDeleteDialog: () => void
 	topicTitle: string
 }
@@ -22,8 +23,17 @@ export function TopicDetailRootActionsMenu({
 	onOpenDeleteDialog,
 	topicTitle
 }: TopicDetailRootActionsMenuProps) {
+	const [isOpen, setIsOpen] = useState(false)
+	const [isSubmitting, setIsSubmitting] = useState(false)
+
 	return (
-		<DropdownMenu>
+		<DropdownMenu
+			onOpenChange={nextOpen => {
+				if (isSubmitting) return
+				setIsOpen(nextOpen)
+			}}
+			open={isOpen}
+		>
 			<DropdownMenuTrigger
 				render={
 					<Button
@@ -37,9 +47,28 @@ export function TopicDetailRootActionsMenu({
 				}
 			/>
 			<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
-				<DropdownMenuItem disabled={isCreatingTopic} onClick={onCreateSubtopic}>
-					<Plus className='mr-2 h-4 w-4' />
-					New topic
+				<DropdownMenuItem
+					closeOnClick={false}
+					disabled={isCreatingTopic || isSubmitting}
+					onClick={() => {
+						setIsSubmitting(true)
+						onCreateSubtopic().finally(() => {
+							setIsSubmitting(false)
+							setIsOpen(false)
+						})
+					}}
+				>
+					{isSubmitting ? (
+						<>
+							<Loader className='h-4 w-4 animate-spin' />
+							Creating...
+						</>
+					) : (
+						<>
+							<Plus className='h-4 w-4' />
+							New topic
+						</>
+					)}
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem onClick={onOpenDeleteDialog} variant='destructive'>

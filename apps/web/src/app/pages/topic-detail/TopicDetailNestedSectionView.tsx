@@ -1,11 +1,12 @@
 import {
 	ChevronDown,
 	ExternalLink,
+	Loader,
 	MoreHorizontal,
 	Plus,
 	Trash2
 } from 'lucide-react'
-import type { ChangeEventHandler, ReactNode } from 'react'
+import { type ChangeEventHandler, type ReactNode, useState } from 'react'
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
@@ -54,7 +55,7 @@ interface TopicDetailNestedSectionViewProps {
 	isCollapsed: boolean
 	isCreatingTopic: boolean
 	isFreshTopic: boolean
-	onCreateSubtopic: () => void
+	onCreateSubtopic: () => Promise<void>
 	onOpenDeleteDialog: () => void
 	onOpenTopic: () => void
 	onTitleChange: ChangeEventHandler<HTMLTextAreaElement>
@@ -95,6 +96,8 @@ export function TopicDetailNestedSectionView({
 	topicPath,
 	toggleSection
 }: TopicDetailNestedSectionViewProps) {
+	const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false)
+	const [isSubmitting, setIsSubmitting] = useState(false)
 	const { buttonSize, iconClassName } = getActionButtonProps(section)
 	const { HeadingIcon, headingIconClassName } = headingIndicatorPresentation
 	const hasBreadcrumbs = topicPath.length > 1
@@ -175,7 +178,13 @@ export function TopicDetailNestedSectionView({
 								/>
 								<TooltipContent>Open topic</TooltipContent>
 							</Tooltip>
-							<DropdownMenu>
+							<DropdownMenu
+								onOpenChange={nextOpen => {
+									if (isSubmitting) return
+									setIsActionsMenuOpen(nextOpen)
+								}}
+								open={isActionsMenuOpen}
+							>
 								<DropdownMenuTrigger
 									render={
 										<Button
@@ -190,13 +199,27 @@ export function TopicDetailNestedSectionView({
 								/>
 								<DropdownMenuContent align='end'>
 									<DropdownMenuItem
-										disabled={isCreatingTopic}
+										closeOnClick={false}
+										disabled={isCreatingTopic || isSubmitting}
 										onClick={() => {
-											onCreateSubtopic()
+											setIsSubmitting(true)
+											onCreateSubtopic().finally(() => {
+												setIsSubmitting(false)
+												setIsActionsMenuOpen(false)
+											})
 										}}
 									>
-										<Plus className='h-4 w-4' />
-										New topic
+										{isSubmitting ? (
+											<>
+												<Loader className='h-4 w-4 animate-spin' />
+												Creating...
+											</>
+										) : (
+											<>
+												<Plus className='h-4 w-4' />
+												New topic
+											</>
+										)}
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem

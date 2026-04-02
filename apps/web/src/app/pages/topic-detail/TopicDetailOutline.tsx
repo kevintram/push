@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ExternalLink, Plus, Trash2 } from 'lucide-react'
-import { type MouseEvent, useCallback, useMemo, useRef } from 'react'
+import { ExternalLink, Loader, Plus, Trash2 } from 'lucide-react'
+import { type MouseEvent, useCallback, useMemo, useRef, useState } from 'react'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -78,6 +78,9 @@ export function TopicDetailOutline({
 	pendingCreatedTopicId,
 	visibleSectionIds
 }: TopicDetailOutlineProps) {
+	const [isRootContextMenuOpen, setIsRootContextMenuOpen] = useState(false)
+	const [isCreatingRootContextTopic, setIsCreatingRootContextTopic] =
+		useState(false)
 	const navigate = useNavigate()
 	const {
 		collapseAll,
@@ -201,7 +204,7 @@ export function TopicDetailOutline({
 		[handleOutlineClick, outlineRootTopicId]
 	)
 	const handleAddChildTopic = useCallback(() => {
-		handleCreateSubtopic(outlineRootNode.id)
+		return handleCreateSubtopic(outlineRootNode.id)
 	}, [handleCreateSubtopic, outlineRootNode.id])
 
 	return (
@@ -244,7 +247,13 @@ export function TopicDetailOutline({
 									ref={outlineNavRef}
 								>
 									<ul className='space-y-px'>
-										<ContextMenu>
+										<ContextMenu
+											onOpenChange={nextOpen => {
+												if (isCreatingRootContextTopic) return
+												setIsRootContextMenuOpen(nextOpen)
+											}}
+											open={isRootContextMenuOpen}
+										>
 											<li>
 												<ContextMenuTrigger className='rounded-md'>
 													<div
@@ -297,13 +306,31 @@ export function TopicDetailOutline({
 														Open
 													</ContextMenuItem>
 													<ContextMenuItem
-														disabled={isUpdatingTopic}
+														closeOnClick={false}
+														disabled={
+															isUpdatingTopic || isCreatingRootContextTopic
+														}
 														onClick={() => {
-															handleCreateSubtopic(outlineRootNode.id)
+															setIsCreatingRootContextTopic(true)
+															handleCreateSubtopic(outlineRootNode.id).finally(
+																() => {
+																	setIsCreatingRootContextTopic(false)
+																	setIsRootContextMenuOpen(false)
+																}
+															)
 														}}
 													>
-														<Plus className='h-4 w-4' />
-														New topic
+														{isCreatingRootContextTopic ? (
+															<>
+																<Loader className='h-4 w-4 animate-spin' />
+																Creating...
+															</>
+														) : (
+															<>
+																<Plus className='h-4 w-4' />
+																New topic
+															</>
+														)}
 													</ContextMenuItem>
 													<ContextMenuSeparator />
 													<ContextMenuItem
