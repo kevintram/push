@@ -15,6 +15,8 @@ interface ReviewRatingDropdownProps {
 	onMenuInteraction?: () => void
 	onMenuOpenChange?: ComponentProps<typeof RatingDropdown>['onOpenChange']
 	onTriggerInteract?: () => void
+	/** Surface context the checkbox is rendered on; controls uncompleted indicator contrast. */
+	surface?: 'default' | 'primary'
 }
 
 export function ReviewRatingCheckbox({
@@ -25,7 +27,8 @@ export function ReviewRatingCheckbox({
 	invalid = false,
 	onMenuInteraction,
 	onMenuOpenChange,
-	onTriggerInteract
+	onTriggerInteract,
+	surface = 'default'
 }: ReviewRatingDropdownProps) {
 	return (
 		<RatingDropdown
@@ -57,7 +60,9 @@ export function ReviewRatingCheckbox({
 								'border-primary bg-primary text-primary-foreground dark:bg-primary',
 							value === 'uncompleted' &&
 								!invalid &&
-								'border-foreground',
+								(surface === 'primary'
+									? 'border-primary-foreground'
+									: 'border-foreground'),
 							invalid &&
 								value === 'uncompleted' &&
 								'border-red-600 dark:border-red-500'
