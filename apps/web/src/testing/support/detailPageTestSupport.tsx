@@ -274,6 +274,10 @@ vi.mock('~/features/review-cards/api/deleteReviewCard', () => ({
 	useDeleteReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
+vi.mock('~/features/review-cards/hooks/useDeleteReviewCardWithUndo', () => ({
+	useDeleteReviewCardWithUndo: () => ({ deleteWithUndo: vi.fn() })
+}))
+
 vi.mock('~/features/reviews/api/createReview', () => ({
 	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))

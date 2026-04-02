@@ -62,7 +62,6 @@ export function ReviewCardDetailPage({
 		hidesSecondary,
 		isAnswerEmpty,
 		isDeleteDialogOpen,
-		isDeletingReviewCard,
 		isLoading,
 		isRevealPanelCopied,
 		isRetireDialogOpen,
@@ -261,25 +260,18 @@ export function ReviewCardDetailPage({
 						</AlertDialogMedia>
 						<AlertDialogTitle>Delete review card?</AlertDialogTitle>
 						<AlertDialogDescription>
-							This will delete this review card and all linked reviews. This
-							action cannot be undone.
+							This will delete this review card and all linked reviews.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel
-							buttonClassName='w-full sm:w-auto'
-							disabled={isDeletingReviewCard}
-						>
+						<AlertDialogCancel buttonClassName='w-full sm:w-auto'>
 							Cancel
 						</AlertDialogCancel>
 						<AlertDialogAction
 							buttonClassName='w-full sm:w-auto'
-							disabled={isDeletingReviewCard}
-							onClick={() => {
-								handleDeleteReviewCard().catch(() => {})
-							}}
+							onClick={handleDeleteReviewCard}
 						>
-							{isDeletingReviewCard ? 'Deleting...' : 'Delete review card'}
+							Delete review card
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

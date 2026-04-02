@@ -1,8 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-
-import { useDeleteReviewCard } from '~/features/review-cards/api/deleteReviewCard'
 import { useReviewCard } from '~/features/review-cards/api/getReviewCard'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import {
@@ -10,6 +8,7 @@ import {
 	toReviewCardBadge
 } from '~/features/review-cards/components/reviewCardShared'
 import { consumeFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
+import { useDeleteReviewCardWithUndo } from '~/features/review-cards/hooks/useDeleteReviewCardWithUndo'
 import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '~/features/review-cards/utils/orderReviewCardStatusBadges'
 import { useCreateReview } from '~/features/reviews/api/createReview'
@@ -68,10 +67,7 @@ export function useReviewCardDetailPage({
 		isPending: isUpdatingReviewCard
 	} = useUpdateReviewCard()
 	const { mutateAsync: createTopicAsync } = useCreateTopic()
-	const {
-		mutateAsync: deleteReviewCardAsync,
-		isPending: isDeletingReviewCard
-	} = useDeleteReviewCard()
+	const { deleteWithUndo } = useDeleteReviewCardWithUndo()
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
 	const { hidesSecondary } = useReviewMode()
@@ -316,14 +312,10 @@ export function useReviewCardDetailPage({
 		[createReviewMutation, openReviewDialog, reviewCard]
 	)
 
-	const handleDeleteReviewCard = useCallback(async () => {
-		if (!reviewCard || isDeletingReviewCard) return
+	const handleDeleteReviewCard = useCallback(() => {
+		if (!reviewCard) return
 
-		try {
-			await deleteReviewCardAsync(reviewCard.id)
-			setIsDeleteDialogOpen(false)
-			toast.success('Review card deleted')
-
+		const navigateAway = () => {
 			if (reviewCard.topic_id != null) {
 				navigate({
 					to: '/topics/$topicId',
@@ -331,14 +323,21 @@ export function useReviewCardDetailPage({
 				})
 				return
 			}
-
 			navigate({ to: '/topics' })
-		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : 'Failed to delete review card'
-			)
 		}
-	}, [deleteReviewCardAsync, isDeletingReviewCard, navigate, reviewCard])
+
+		setIsDeleteDialogOpen(false)
+		deleteWithUndo(reviewCard.id, {
+			onOptimisticDelete: navigateAway,
+			onUndo: () => {
+				navigate({
+					to: '/review-cards/$reviewCardId',
+					params: { reviewCardId: reviewCard.id.toString() },
+					search: { tab: 'home' }
+				})
+			}
+		})
+	}, [deleteWithUndo, navigate, reviewCard])
 
 	const handleConvertType = useCallback(async () => {
 		if (!reviewCard || isTypeMutationPending) return
@@ -474,7 +473,6 @@ export function useReviewCardDetailPage({
 		hidesSecondary,
 		isAnswerEmpty,
 		isDeleteDialogOpen,
-		isDeletingReviewCard,
 		isLoading,
 		isRevealPanelCopied,
 		isRetireDialogOpen,

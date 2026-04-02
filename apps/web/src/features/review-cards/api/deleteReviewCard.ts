@@ -4,7 +4,7 @@ import { searchKeys } from '~/features/search/api/searchAll'
 import { apiFetch } from '~/utils/apiFetch'
 import { reviewCardKeys } from './queryKeys'
 
-async function deleteReviewCard(reviewCardId: number): Promise<void> {
+export async function deleteReviewCard(reviewCardId: number): Promise<void> {
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/review-cards/${reviewCardId}/`,
 		{
