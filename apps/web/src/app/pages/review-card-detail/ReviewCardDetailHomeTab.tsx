@@ -320,6 +320,7 @@ export function ReviewCardDetailHomeTab({
 						onSeeAll={handleSeeReviews}
 						reviewCardId={reviewCard.id}
 						reviews={resolvedReviews}
+						surfaceContext='primary'
 						triggerCounts={reviewTriggerCounts}
 					/>
 					<Tooltip>

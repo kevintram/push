@@ -19,6 +19,7 @@ export function ReviewsMenu({
 	onTriggerKeyDown,
 	onTriggerMouseEnter,
 	reviews,
+	surfaceContext,
 	compactTriggerBadges = false,
 	hasLastReviewed = false,
 	triggerCounts,
@@ -50,6 +51,7 @@ export function ReviewsMenu({
 						onTriggerKeyDown={onTriggerKeyDown}
 						onTriggerMouseEnter={onTriggerMouseEnter}
 						overdueCount={menu.overdueCount}
+						surfaceContext={surfaceContext}
 						triggerDotSize={menu.triggerDotSize}
 						unscheduledCount={menu.unscheduledCount}
 					/>
