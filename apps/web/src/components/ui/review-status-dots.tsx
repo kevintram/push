@@ -46,7 +46,7 @@ const reviewStatusDotVariants = cva("inline-block rounded-full shrink-0", {
 		{
 			tone: "neutral",
 			surfaceContext: "primary",
-			className: "bg-white dark:bg-zinc-950"
+			className: "bg-white"
 		}
 	],
 	defaultVariants: {
