@@ -20,6 +20,7 @@ type TopicDetailRootSectionContentProps = {
 	onGlobalFilterChange: (filter: TopicDetailReviewCardFilter) => void
 	onFreshTopicInteraction: (topicId: number) => void
 	onOpenReviewCard: (reviewCardId: number) => void
+	onPreserveSectionOffset: (topicId: number) => boolean
 	onSubtopicCreated: (parentTopicId: number, createdTopicId: number) => void
 	onSectionFilterChange: (
 		topicId: number,
@@ -52,6 +53,7 @@ export function TopicDetailRootSectionContent({
 	onGlobalFilterChange,
 	onFreshTopicInteraction,
 	onOpenReviewCard,
+	onPreserveSectionOffset,
 	onSubtopicCreated,
 	onSectionFilterChange,
 	isReviewCardsLoading,
@@ -110,6 +112,7 @@ export function TopicDetailRootSectionContent({
 							key={childSection.topic.id}
 							onFreshTopicInteraction={onFreshTopicInteraction}
 							onOpenReviewCard={onOpenReviewCard}
+							onPreserveSectionOffset={onPreserveSectionOffset}
 							onSectionFilterChange={onSectionFilterChange}
 							onSubtopicCreated={onSubtopicCreated}
 							registerSectionHeadingRef={registerSectionHeadingRef}

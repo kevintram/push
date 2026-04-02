@@ -129,6 +129,7 @@ export function useTopicDetailPage({
 		return [...pathTopics, topic]
 	}, [ancestorIdsById, nodeById, topic])
 	const {
+		preserveSectionOffset,
 		registerSectionHeadingRef,
 		registerSectionRef,
 		scrollToSection,
@@ -349,6 +350,7 @@ export function useTopicDetailPage({
 		registerSectionHeadingRef,
 		registerSectionRef,
 		registerSectionTitleRef,
+		preserveSectionOffset,
 		scrollToSection,
 		registerScrollContainerRef,
 		resolvedCardTypeFilter,

@@ -4,6 +4,7 @@ import {
 	startTransition,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useRef,
 	useState
 } from 'react'
@@ -27,7 +28,28 @@ type HashAlignmentRequest = {
 	topicId: number
 }
 
+type SectionOffsetPreservationRequest = {
+	desiredOffsetTop: number
+	initialDocumentTop: number
+	topicId: number
+}
+
 const HASH_ALIGNMENT_RETRY_DELAYS_MS = [100, 250, 500, 900, 1400, 2200] as const
+const SECTION_OFFSET_PRESERVATION_WINDOW_MS = 2500
+const SECTION_OFFSET_PRESERVATION_TOLERANCE_PX = 2
+
+function restoreInlineStyle(
+	element: HTMLElement,
+	property: string,
+	savedValue: string | null
+) {
+	if (savedValue == null) return
+	if (savedValue.length === 0) {
+		element.style.removeProperty(property)
+	} else {
+		element.style.setProperty(property, savedValue)
+	}
+}
 
 function normalizeTopicDetailHash(hash: string | null | undefined) {
 	if (!hash) return ''
@@ -69,6 +91,17 @@ export function useTopicDetailNavigation({
 	const hashAlignmentTimeoutIdsRef = useRef<Array<number>>([])
 	const handledPassiveHashAlignmentRef = useRef<string | null>(null)
 	const ignoredHashAlignmentHashRef = useRef<string | null>(null)
+	const sectionOffsetPreservationRequestRef =
+		useRef<SectionOffsetPreservationRequest | null>(null)
+	const sectionOffsetPreservationTimeoutIdRef = useRef<number | null>(null)
+	const sectionOffsetPreservationAnimationFrameIdRef = useRef<number | null>(
+		null
+	)
+	const sectionOffsetPreservationContainerRef = useRef<HTMLDivElement | null>(
+		null
+	)
+	const sectionOffsetPreservationOverflowAnchorRef = useRef<string | null>(null)
+	const sectionOffsetPreservationScrollBehaviorRef = useRef<string | null>(null)
 	const [visibleSectionIds, setVisibleSectionIds] = useState<Array<number>>([])
 
 	const syncVisibleSectionIds = useCallback(
@@ -261,6 +294,140 @@ export function useTopicDetailNavigation({
 		[scrollContainerRef]
 	)
 
+	const clearSectionOffsetPreservationRequest = useCallback(() => {
+		sectionOffsetPreservationRequestRef.current = null
+
+		if (
+			typeof window !== 'undefined' &&
+			sectionOffsetPreservationTimeoutIdRef.current != null
+		) {
+			window.clearTimeout(sectionOffsetPreservationTimeoutIdRef.current)
+		}
+		if (
+			typeof window !== 'undefined' &&
+			sectionOffsetPreservationAnimationFrameIdRef.current != null
+		) {
+			window.cancelAnimationFrame(
+				sectionOffsetPreservationAnimationFrameIdRef.current
+			)
+		}
+
+		const preservationContainer = sectionOffsetPreservationContainerRef.current
+		if (preservationContainer) {
+			restoreInlineStyle(
+				preservationContainer,
+				'overflow-anchor',
+				sectionOffsetPreservationOverflowAnchorRef.current
+			)
+			restoreInlineStyle(
+				preservationContainer,
+				'scroll-behavior',
+				sectionOffsetPreservationScrollBehaviorRef.current
+			)
+		}
+
+		sectionOffsetPreservationContainerRef.current = null
+		sectionOffsetPreservationOverflowAnchorRef.current = null
+		sectionOffsetPreservationScrollBehaviorRef.current = null
+		sectionOffsetPreservationAnimationFrameIdRef.current = null
+		sectionOffsetPreservationTimeoutIdRef.current = null
+	}, [])
+
+	const preserveSectionOffset = useCallback(
+		(topicId: number) => {
+			if (typeof window === 'undefined') return false
+
+			const scrollContainerElement = scrollContainerRef.current
+			const targetElement = getTargetElement(topicId)
+
+			if (!(scrollContainerElement && targetElement)) {
+				clearSectionOffsetPreservationRequest()
+				return false
+			}
+
+			const { top: containerTop } =
+				scrollContainerElement.getBoundingClientRect()
+			const { top: targetTop } = targetElement.getBoundingClientRect()
+			const desiredOffsetTop = targetTop - containerTop
+
+			clearSectionOffsetPreservationRequest()
+			sectionOffsetPreservationContainerRef.current = scrollContainerElement
+			sectionOffsetPreservationOverflowAnchorRef.current =
+				scrollContainerElement.style.getPropertyValue('overflow-anchor')
+			scrollContainerElement.style.setProperty('overflow-anchor', 'none')
+			sectionOffsetPreservationRequestRef.current = {
+				desiredOffsetTop,
+				initialDocumentTop: scrollContainerElement.scrollTop + desiredOffsetTop,
+				topicId
+			}
+			sectionOffsetPreservationTimeoutIdRef.current = window.setTimeout(() => {
+				clearSectionOffsetPreservationRequest()
+			}, SECTION_OFFSET_PRESERVATION_WINDOW_MS)
+
+			return true
+		},
+		[
+			clearSectionOffsetPreservationRequest,
+			getTargetElement,
+			scrollContainerRef
+		]
+	)
+
+	const attemptSectionOffsetPreservation = useCallback(() => {
+		const request = sectionOffsetPreservationRequestRef.current
+		if (!request) return false
+
+		const scrollContainerElement = scrollContainerRef.current
+		if (!scrollContainerElement) return false
+
+		if (!sectionIds.includes(request.topicId)) {
+			clearSectionOffsetPreservationRequest()
+			return false
+		}
+
+		const targetElement = getTargetElement(request.topicId)
+		if (!targetElement) return false
+
+		const { top: containerTop } = scrollContainerElement.getBoundingClientRect()
+		const { top: targetTop } = targetElement.getBoundingClientRect()
+		const currentOffsetTop = targetTop - containerTop
+		const currentDocumentTop =
+			scrollContainerElement.scrollTop + currentOffsetTop
+		const hasShiftedLayout =
+			Math.abs(currentDocumentTop - request.initialDocumentTop) >
+			SECTION_OFFSET_PRESERVATION_TOLERANCE_PX
+
+		if (!hasShiftedLayout) {
+			return false
+		}
+
+		if (
+			Math.abs(currentOffsetTop - request.desiredOffsetTop) <=
+			SECTION_OFFSET_PRESERVATION_TOLERANCE_PX
+		) {
+			return false
+		}
+
+		const nextScrollTop =
+			scrollContainerElement.scrollTop +
+			(currentOffsetTop - request.desiredOffsetTop)
+		sectionOffsetPreservationScrollBehaviorRef.current =
+			scrollContainerElement.style.scrollBehavior
+		scrollContainerElement.style.scrollBehavior = 'auto'
+		scrollContainerElement.scrollTop = nextScrollTop
+		measureVisibleSections()
+		sectionOffsetPreservationAnimationFrameIdRef.current =
+			window.requestAnimationFrame(() => {
+				sectionOffsetPreservationAnimationFrameIdRef.current = null
+				restoreInlineStyle(
+					scrollContainerElement,
+					'scroll-behavior',
+					sectionOffsetPreservationScrollBehaviorRef.current
+				)
+			})
+		return true
+	}, [getTargetElement, measureVisibleSections, scrollContainerRef, sectionIds])
+
 	const clearHashAlignmentTimers = useCallback(() => {
 		if (typeof window === 'undefined') return
 
@@ -373,6 +540,7 @@ export function useTopicDetailNavigation({
 		) => {
 			const targetElement = getTargetElement(topicId)
 			if (!targetElement || typeof window === 'undefined') return
+			clearSectionOffsetPreservationRequest()
 
 			if (options?.updateHash !== false) {
 				const nextHash = getTopicDetailHash(topicId)
@@ -387,6 +555,7 @@ export function useTopicDetailNavigation({
 		},
 		[
 			clearHashAlignmentRequest,
+			clearSectionOffsetPreservationRequest,
 			getTargetElement,
 			measureVisibleSections,
 			scrollTargetIntoView,
@@ -421,6 +590,15 @@ export function useTopicDetailNavigation({
 		]
 	)
 
+	const syncSectionOffsetPreservationAfterRefChange = useCallback(
+		(topicId: number) => {
+			if (sectionOffsetPreservationRequestRef.current?.topicId !== topicId)
+				return
+			void attemptSectionOffsetPreservation()
+		},
+		[attemptSectionOffsetPreservation]
+	)
+
 	const registerSectionRef = useCallback(
 		(topicId: number, element: HTMLElement | null) => {
 			if (element == null) {
@@ -429,8 +607,12 @@ export function useTopicDetailNavigation({
 				sectionElementsRef.current.set(topicId, element)
 			}
 			syncHashAlignmentAfterRefChange(topicId, element)
+			syncSectionOffsetPreservationAfterRefChange(topicId)
 		},
-		[syncHashAlignmentAfterRefChange]
+		[
+			syncHashAlignmentAfterRefChange,
+			syncSectionOffsetPreservationAfterRefChange
+		]
 	)
 
 	const registerSectionHeadingRef = useCallback(
@@ -441,8 +623,12 @@ export function useTopicDetailNavigation({
 				sectionHeadingElementsRef.current.set(topicId, element)
 			}
 			syncHashAlignmentAfterRefChange(topicId, element)
+			syncSectionOffsetPreservationAfterRefChange(topicId)
 		},
-		[syncHashAlignmentAfterRefChange]
+		[
+			syncHashAlignmentAfterRefChange,
+			syncSectionOffsetPreservationAfterRefChange
+		]
 	)
 
 	useEffect(() => {
@@ -481,10 +667,21 @@ export function useTopicDetailNavigation({
 		}
 
 		const handleUserInteraction = () => {
-			if (hashAlignmentRequestRef.current == null) return
-			clearHashAlignmentRequest()
+			if (hashAlignmentRequestRef.current != null) {
+				clearHashAlignmentRequest()
+			}
+			if (sectionOffsetPreservationRequestRef.current != null) {
+				clearSectionOffsetPreservationRequest()
+			}
+		}
+		const handleContainerScroll = () => {
+			if (sectionOffsetPreservationRequestRef.current == null) return
+			void attemptSectionOffsetPreservation()
 		}
 
+		scrollContainerElement.addEventListener('scroll', handleContainerScroll, {
+			passive: true
+		})
 		scrollContainerElement.addEventListener('wheel', handleUserInteraction, {
 			passive: true
 		})
@@ -510,6 +707,10 @@ export function useTopicDetailNavigation({
 				'scroll',
 				scheduleVisibleSectionsMeasurement
 			)
+			scrollContainerElement.removeEventListener(
+				'scroll',
+				handleContainerScroll
+			)
 			scrollContainerElement.removeEventListener('wheel', handleUserInteraction)
 			scrollContainerElement.removeEventListener(
 				'touchmove',
@@ -527,6 +728,7 @@ export function useTopicDetailNavigation({
 		handleVisibilityEntries,
 		measureVisibleSections,
 		scheduleVisibleSectionsMeasurement,
+		attemptSectionOffsetPreservation,
 		scrollContainerRef,
 		scrollContainerVersion
 	])
@@ -538,8 +740,13 @@ export function useTopicDetailNavigation({
 			}
 			disconnectVisibilityObserver()
 			clearHashAlignmentRequest()
+			clearSectionOffsetPreservationRequest()
 		},
-		[clearHashAlignmentRequest, disconnectVisibilityObserver]
+		[
+			clearHashAlignmentRequest,
+			clearSectionOffsetPreservationRequest,
+			disconnectVisibilityObserver
+		]
 	)
 
 	useEffect(() => {
@@ -573,12 +780,17 @@ export function useTopicDetailNavigation({
 		sectionIds
 	])
 
+	useLayoutEffect(() => {
+		void attemptSectionOffsetPreservation()
+	}, [attemptSectionOffsetPreservation, scrollContainerVersion, sectionIds])
+
 	useEffect(() => {
 		void attemptHashAlignment()
 		measureVisibleSections()
 	}, [attemptHashAlignment, measureVisibleSections, scrollContainerVersion])
 
 	return {
+		preserveSectionOffset,
 		visibleSectionIds,
 		registerSectionHeadingRef,
 		registerSectionRef,
