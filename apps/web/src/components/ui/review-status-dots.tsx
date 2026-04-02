@@ -31,7 +31,8 @@ const reviewStatusDotVariants = cva("inline-block rounded-full shrink-0", {
 		{
 			tone: "neutral",
 			surfaceContext: "default",
-			className: "border border-zinc-950 bg-white dark:border-0 dark:bg-white"
+			className:
+				"border border-zinc-950 bg-transparent dark:border-0 dark:bg-white"
 		},
 		{
 			tone: "danger",
@@ -46,7 +47,7 @@ const reviewStatusDotVariants = cva("inline-block rounded-full shrink-0", {
 		{
 			tone: "neutral",
 			surfaceContext: "primary",
-			className: "bg-white dark:border dark:border-zinc-950 dark:bg-white"
+			className: "bg-white dark:border dark:border-zinc-950 dark:bg-transparent"
 		}
 	],
 	defaultVariants: {
