@@ -25,7 +25,7 @@ export function TopicDetailOutlineHeader({
 	return (
 		<div className='flex min-h-8 items-center justify-between gap-2 rounded-md px-1.5 text-sm'>
 			<button
-				className='cursor-pointer truncate font-semibold text-accent-foreground/90 text-sm uppercase tracking-wide hover:text-accent-foreground'
+				className='cursor-pointer truncate font-black text-accent-foreground/60 text-sm uppercase tracking-wider hover:text-accent-foreground'
 				onClick={onScrollToTop}
 				type='button'
 			>
