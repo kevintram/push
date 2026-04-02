@@ -3,7 +3,6 @@ import { useNavigate } from '@tanstack/react-router'
 import { AlertTriangle } from 'lucide-react'
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -32,10 +31,10 @@ import {
 	reviewsQueryOptions
 } from '../../reviews/api/getReviews'
 import { useReviewDialog } from '../../reviews/hooks/useReviewDialog'
-import { useDeleteReviewCard } from '../api/deleteReviewCard'
 import { getReviewCard } from '../api/getReviewCard'
 import { reviewCardKeys } from '../api/queryKeys'
 import { useUpdateReviewCard } from '../api/updateReviewCard'
+import { useDeleteReviewCardWithUndo } from '../hooks/useDeleteReviewCardWithUndo'
 import type { ReviewCard as ReviewCardModel } from '../types/review-card.types'
 import { hasScheduledDueReviews } from '../utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '../utils/orderReviewCardStatusBadges'
@@ -86,7 +85,7 @@ export function ReviewCard({
 	const queryClient = useQueryClient()
 	const { mutate: updateReviewCard, isPending: isUpdatingReviewCard } =
 		useUpdateReviewCard()
-	const deleteReviewCardMutation = useDeleteReviewCard()
+	const { deleteWithUndo } = useDeleteReviewCardWithUndo()
 
 	const metrics = useLearnableMetrics({
 		retrievability: reviewCard.retrievability,
@@ -257,18 +256,10 @@ export function ReviewCard({
 		})
 	}, [navigate, reviewCard.id])
 
-	const handleDeleteReviewCard = useCallback(async () => {
-		if (deleteReviewCardMutation.isPending) return
-		try {
-			await deleteReviewCardMutation.mutateAsync(reviewCard.id)
-			setIsDeleteDialogOpen(false)
-			toast.success('Review card deleted')
-		} catch (error) {
-			toast.error(
-				error instanceof Error ? error.message : 'Failed to delete review card'
-			)
-		}
-	}, [deleteReviewCardMutation, reviewCard.id])
+	const handleDeleteReviewCard = useCallback(() => {
+		setIsDeleteDialogOpen(false)
+		deleteWithUndo(reviewCard.id)
+	}, [deleteWithUndo, reviewCard.id])
 
 	const handleRevealPrimary = useCallback((event: MouseEvent) => {
 		event.stopPropagation()
@@ -334,7 +325,7 @@ export function ReviewCard({
 		>
 			<ReviewCardStatusRow badges={resolvedStatusBadges} />
 			<ReviewCardHeader
-				deleteDisabled={deleteReviewCardMutation.isPending}
+				deleteDisabled={false}
 				hideParent={hideParent}
 				isFlagged={isFlagged}
 				isRemovingFromTab={isRemovingFromTab}
@@ -401,27 +392,18 @@ export function ReviewCard({
 						</AlertDialogMedia>
 						<AlertDialogTitle>Delete review card?</AlertDialogTitle>
 						<AlertDialogDescription>
-							This will delete this review card and all linked reviews. This
-							action cannot be undone.
+							This will delete this review card and all linked reviews.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel
-							buttonClassName='w-full sm:w-auto'
-							disabled={deleteReviewCardMutation.isPending}
-						>
+						<AlertDialogCancel buttonClassName='w-full sm:w-auto'>
 							Cancel
 						</AlertDialogCancel>
 						<AlertDialogAction
 							buttonClassName='w-full sm:w-auto'
-							disabled={deleteReviewCardMutation.isPending}
-							onClick={() => {
-								handleDeleteReviewCard().catch(() => {})
-							}}
+							onClick={handleDeleteReviewCard}
 						>
-							{deleteReviewCardMutation.isPending
-								? 'Deleting...'
-								: 'Delete review card'}
+							Delete review card
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
