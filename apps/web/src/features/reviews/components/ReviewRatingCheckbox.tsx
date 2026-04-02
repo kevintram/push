@@ -52,9 +52,12 @@ export function ReviewRatingCheckbox({
 				>
 					<span
 						className={cn(
-							'flex size-4 shrink-0 items-center justify-center rounded-full border border-input shadow-xs dark:bg-input/30',
+							'flex size-4 shrink-0 items-center justify-center rounded-full border shadow-xs',
 							value !== 'uncompleted' &&
 								'border-primary bg-primary text-primary-foreground dark:bg-primary',
+							value === 'uncompleted' &&
+								!invalid &&
+								'border-foreground',
 							invalid &&
 								value === 'uncompleted' &&
 								'border-red-600 dark:border-red-500'
