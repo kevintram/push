@@ -17,6 +17,7 @@ export interface ReviewsMenuProps {
 	reviews?: Array<ReviewListItem>
 	compactTriggerBadges?: boolean
 	hasLastReviewed?: boolean
+	surfaceContext?: 'default' | 'primary'
 	triggerCounts?: {
 		unscheduledCount: number
 		overdueCount: number

@@ -14,6 +14,7 @@ type ReviewsMenuTriggerProps = Pick<
 	| 'onTriggerFocus'
 	| 'onTriggerKeyDown'
 	| 'onTriggerMouseEnter'
+	| 'surfaceContext'
 > & {
 	createReviewPending: boolean
 	dueTodayCount: number
@@ -37,6 +38,7 @@ export function ReviewsMenuTrigger({
 	onTriggerKeyDown,
 	onTriggerMouseEnter,
 	overdueCount,
+	surfaceContext,
 	triggerDotSize,
 	unscheduledCount,
 	...buttonProps
@@ -72,6 +74,7 @@ export function ReviewsMenuTrigger({
 				dueTodayCount={dueTodayCount}
 				overdueCount={overdueCount}
 				size={triggerDotSize}
+				surfaceContext={surfaceContext}
 				testIdPrefix='reviews-trigger'
 				unscheduledCount={unscheduledCount}
 			/>

@@ -58,7 +58,7 @@ export function DetailNavBar({
 								<ReviewStatusDots
 									dueTodayCount={dueTodayCount}
 									overdueCount={overdueCount}
-									surfaceContext='primary'
+									surfaceContext='default'
 									unscheduledCount={unscheduledCount}
 								/>
 							</span>
