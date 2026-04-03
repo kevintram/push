@@ -6,7 +6,7 @@
 set -e
 
 FORCE=false
-BRANCH_NAME=""
+TARGET_NAME=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -28,13 +28,13 @@ while [[ $# -gt 0 ]]; do
             exit 1
             ;;
         * )
-            BRANCH_NAME="$1"
+            TARGET_NAME="$1"
             shift
             ;;
     esac
 done
 
-if [ -z "$BRANCH_NAME" ]; then
+if [ -z "$TARGET_NAME" ]; then
     echo "Usage: $0 [-f|--force] <branch-name>"
     echo "Example: $0 feature/my-branch"
     exit 1
@@ -45,8 +45,47 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PARENT_DIR="$(cd "$ROOT_DIR/.." && pwd)"
 SLOTS_FILE="$PARENT_DIR/worktree-slots.toml"
-DIR_NAME="${BRANCH_NAME//\//-}"
+DIR_NAME="${TARGET_NAME//\//-}"
 TARGET_WORKTREE="$PARENT_DIR/$DIR_NAME"
+
+resolve_slot_key() {
+    local slots_file="$1"
+    local target_name="$2"
+    if [ ! -f "$slots_file" ]; then
+        return
+    fi
+
+    python3 - "$slots_file" "$target_name" <<'PY'
+import sys
+
+slots_file = sys.argv[1]
+target_name = sys.argv[2]
+
+try:
+    import tomllib
+except Exception:
+    sys.exit(2)
+
+with open(slots_file, "rb") as f:
+    data = tomllib.load(f) or {}
+
+worktrees = data.get("worktrees", {})
+
+if target_name in worktrees:
+    print(target_name)
+    sys.exit(0)
+
+matches = [key for key in worktrees if key.replace("/", "-") == target_name]
+
+if len(matches) == 1:
+    print(matches[0])
+    sys.exit(0)
+
+if len(matches) > 1:
+    print("AMBIGUOUS:" + ",".join(sorted(matches)))
+    sys.exit(1)
+PY
+}
 
 remove_slot_assignment() {
     local slots_file="$1"
@@ -85,6 +124,19 @@ with open(slots_file, "w", encoding="utf-8") as f:
 PY
 }
 
+SLOT_KEY="$(resolve_slot_key "$SLOTS_FILE" "$TARGET_NAME" || true)"
+
+if [[ "$SLOT_KEY" == AMBIGUOUS:* ]]; then
+    echo "❌ Ambiguous worktree name '$TARGET_NAME'. Matches multiple branches:"
+    echo "   ${SLOT_KEY#AMBIGUOUS:}"
+    echo "   Re-run remove.sh with the full branch name."
+    exit 1
+fi
+
+if [ -z "$SLOT_KEY" ]; then
+    SLOT_KEY="$TARGET_NAME"
+fi
+
 if [ "$TARGET_WORKTREE" = "$ROOT_DIR" ]; then
     echo "❌ Refusing to remove the current worktree. Run this from another worktree."
     exit 1
@@ -92,9 +144,9 @@ fi
 
 if [ ! -d "$TARGET_WORKTREE" ]; then
     echo "⚠️  Worktree not found: $TARGET_WORKTREE"
-    if [ -f "$SLOTS_FILE" ] && grep -q "\"${BRANCH_NAME//\//\\/}\"" "$SLOTS_FILE" 2>/dev/null; then
+    if [ -f "$SLOTS_FILE" ] && grep -q "\"${SLOT_KEY//\//\\/}\"" "$SLOTS_FILE" 2>/dev/null; then
         echo "   Removing slot assignment anyway."
-        remove_slot_assignment "$SLOTS_FILE" "$BRANCH_NAME"
+        remove_slot_assignment "$SLOTS_FILE" "$SLOT_KEY"
     fi
     exit 0
 fi
@@ -113,5 +165,5 @@ else
     fi
 fi
 
-remove_slot_assignment "$SLOTS_FILE" "$BRANCH_NAME"
-echo "✅ Removed worktree: $BRANCH_NAME"
+remove_slot_assignment "$SLOTS_FILE" "$SLOT_KEY"
+echo "✅ Removed worktree: $SLOT_KEY"
