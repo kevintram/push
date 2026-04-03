@@ -5,6 +5,7 @@ import { PanelLeftIcon } from "lucide-react"
 import * as React from "react"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
+import { KeyboardShortcutHint } from "~/components/ui/keyboard-shortcut-hint"
 import { Separator } from "~/components/ui/separator"
 import {
 	Sheet,
@@ -272,9 +273,10 @@ function SidebarTrigger({
 	onClick,
 	...props
 }: React.ComponentProps<typeof Button>) {
-	const { toggleSidebar } = useSidebar()
-
-	return (
+	const { isMobile, open, openMobile, toggleSidebar } = useSidebar()
+	const isSidebarOpen = isMobile ? openMobile : open
+	const tooltipLabel = isSidebarOpen ? "Close sidebar" : "Open sidebar"
+	const trigger = (
 		<Button
 			className={cn(
 				"text-sidebar-foreground/80 hover:bg-[var(--app-chrome-hover)] hover:text-[var(--app-chrome-hover-foreground)] active:border-[var(--app-chrome-border)] active:bg-[var(--app-chrome-selected)] active:text-[var(--app-chrome-selected-foreground)]",
@@ -291,8 +293,20 @@ function SidebarTrigger({
 			{...props}
 		>
 			<PanelLeftIcon />
-			<span className='sr-only'>Toggle Sidebar</span>
+			<span className='sr-only'>{tooltipLabel}</span>
 		</Button>
+	)
+
+	return (
+		<Tooltip>
+			<TooltipTrigger render={trigger} />
+			<TooltipContent side='right'>
+				<div className='flex items-center gap-2'>
+					<span>{tooltipLabel}</span>
+					<KeyboardShortcutHint keyLabel='B' />
+				</div>
+			</TooltipContent>
+		</Tooltip>
 	)
 }
 
