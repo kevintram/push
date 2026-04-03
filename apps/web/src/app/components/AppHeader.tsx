@@ -5,6 +5,7 @@ import {
 	HeaderIconButton,
 	ReviewModeTooltip
 } from '~/app/components/AppHeaderShared'
+import { SearchShortcutHint } from '~/app/components/AppHeaderShortcutHint'
 import { BookOpenOff } from '~/components/icons'
 import { SettingsDialog } from '~/components/SettingsDialog'
 import { Button } from '~/components/ui/button'
@@ -17,6 +18,17 @@ import {
 import { SearchDialog } from '~/features/search/components/search-dialog/SearchDialog'
 import { cn } from '~/lib/utils'
 import { useReviewMode } from '~/stores/ReviewModeContext'
+
+function isEditableTarget(target: EventTarget | null) {
+	if (!(target instanceof HTMLElement)) return false
+
+	return (
+		target.isContentEditable ||
+		target.tagName === 'INPUT' ||
+		target.tagName === 'TEXTAREA' ||
+		target.tagName === 'SELECT'
+	)
+}
 
 export function AppHeader() {
 	const { reviewMode, setReviewMode } = useReviewMode()
@@ -31,12 +43,30 @@ export function AppHeader() {
 			if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
 				event.preventDefault()
 				setSearchOpen(true)
+				return
 			}
+
+			if (
+				event.defaultPrevented ||
+				event.repeat ||
+				event.isComposing ||
+				event.metaKey ||
+				event.ctrlKey ||
+				event.altKey ||
+				event.shiftKey ||
+				isEditableTarget(event.target) ||
+				event.key.toLowerCase() !== 'r'
+			) {
+				return
+			}
+
+			event.preventDefault()
+			setReviewMode(isReviewModeEnabled ? 'off' : 'on')
 		}
 
 		document.addEventListener('keydown', handleKeyDown)
 		return () => document.removeEventListener('keydown', handleKeyDown)
-	}, [])
+	}, [isReviewModeEnabled, setReviewMode])
 
 	return (
 		<>
@@ -62,8 +92,9 @@ export function AppHeader() {
 										searchQuery && 'text-foreground'
 									)}
 								>
-									{searchQuery || 'Search (⌘K)'}
+									{searchQuery || 'Search'}
 								</span>
+								{searchQuery ? null : <SearchShortcutHint />}
 							</Button>
 							{searchQuery ? (
 								<Button

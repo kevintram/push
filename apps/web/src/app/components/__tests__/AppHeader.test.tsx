@@ -65,6 +65,10 @@ describe('AppHeader', () => {
 		useLocationMock.mockReset()
 		useReviewModeMock.mockReset()
 		setReviewModeMock.mockReset()
+		Object.defineProperty(window.navigator, 'platform', {
+			configurable: true,
+			value: 'MacIntel'
+		})
 
 		useLocationMock.mockReturnValue({ pathname: '/topics' })
 		useReviewModeMock.mockReturnValue({
@@ -98,16 +102,55 @@ describe('AppHeader', () => {
 	it('renders the search trigger with outline styling and review mode next to it', () => {
 		render(<AppHeader />)
 
-		expect(screen.getByRole('button', { name: 'Open search' })).toHaveClass(
-			'border',
-			'border-border',
-			'bg-background'
-		)
+		const searchButton = screen.getByRole('button', { name: 'Open search' })
+
+		expect(searchButton).toHaveClass('border', 'border-border', 'bg-background')
+		expect(searchButton).toHaveTextContent('Search')
+		expect(searchButton).toHaveTextContent('⌘')
+		expect(searchButton).toHaveTextContent('K')
 		expect(
 			screen.getByText('Hide answers and test your recall')
 		).toBeInTheDocument()
+		expect(screen.getByText('R')).toBeInTheDocument()
 		fireEvent.click(screen.getByRole('button', { name: 'Review mode off' }))
 
 		expect(setReviewModeMock).toHaveBeenCalledWith('on')
+	})
+
+	it('renders the search shortcut with ctrl on windows', () => {
+		Object.defineProperty(window.navigator, 'platform', {
+			configurable: true,
+			value: 'Win32'
+		})
+
+		render(<AppHeader />)
+
+		const searchButton = screen.getByRole('button', { name: 'Open search' })
+		expect(searchButton).toHaveTextContent('Ctrl')
+		expect(searchButton).toHaveTextContent('K')
+		expect(searchButton).not.toHaveTextContent('⌘')
+	})
+
+	it('toggles review mode when pressing r outside editable fields', () => {
+		render(<AppHeader />)
+
+		fireEvent.keyDown(document, { key: 'r' })
+
+		expect(setReviewModeMock).toHaveBeenCalledWith('on')
+	})
+
+	it('does not toggle review mode when pressing r in an input', () => {
+		render(
+			<>
+				<input aria-label='Test input' />
+				<AppHeader />
+			</>
+		)
+
+		const input = screen.getByRole('textbox', { name: 'Test input' })
+		input.focus()
+		fireEvent.keyDown(input, { key: 'r' })
+
+		expect(setReviewModeMock).not.toHaveBeenCalled()
 	})
 })

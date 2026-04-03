@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { SearchShortcutHint } from '~/app/components/AppHeaderShortcutHint'
 import { SidebarMenuButton, SidebarMenuItem } from '~/components/ui/sidebar'
 import { SearchDialog } from '~/features/search/components/search-dialog/SearchDialog'
 
@@ -24,7 +25,14 @@ export function SidebarSearch() {
 			<SidebarMenuItem>
 				<SidebarMenuButton
 					onClick={() => setSearchOpen(true)}
-					tooltip='Search (⌘K)'
+					tooltip={{
+						children: (
+							<div className='flex items-center gap-2'>
+								<span>Search</span>
+								<SearchShortcutHint />
+							</div>
+						)
+					}}
 				>
 					<Search />
 					<span>Search</span>
