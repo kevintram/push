@@ -33,6 +33,7 @@ import {
 	TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS,
 	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS
 } from './topicDetailLayout'
+import { buildTopicDetailSectionNumberById } from './topicDetailStructure'
 import {
 	getTopicDetailIndicatorLayout,
 	getTopicDetailRootPresentation
@@ -165,6 +166,7 @@ export function TopicDetailPage({
 			topicReviewCardsById={topicReviewCardsById}
 		/>
 	)
+	const sectionNumberById = buildTopicDetailSectionNumberById(rootSection)
 
 	return (
 		<div className='flex h-full min-h-0 w-full' style={pageStyle}>
@@ -250,6 +252,7 @@ export function TopicDetailPage({
 								outlineWidth={outlineWidth}
 								pendingCreatedParentTopicId={pendingCreatedParentTopicId}
 								pendingCreatedTopicId={pendingCreatedTopicId}
+								sectionNumberById={sectionNumberById}
 								visibleSectionIds={visibleSectionIds}
 							/>
 						</div>

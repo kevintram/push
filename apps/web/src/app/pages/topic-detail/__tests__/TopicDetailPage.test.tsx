@@ -1338,7 +1338,7 @@ describe('TopicDetailPage', () => {
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
 		const rootRow = within(toc).getByRole('link', { name: 'Mathematics' })
-		const childRow = within(toc).getByRole('link', { name: 'Algebra' })
+		const childRow = within(toc).getByRole('link', { name: /Algebra$/ })
 
 		expect(rootRow).toBeInTheDocument()
 		expect(
@@ -1609,7 +1609,7 @@ describe('TopicDetailPage', () => {
 		).not.toBeNull()
 		expect(
 			within(toc)
-				.getByRole('link', { name: 'Untitled' })
+				.getByRole('link', { name: /Untitled$/ })
 				.closest('[data-fresh-topic="true"]')
 		).not.toBeNull()
 		await waitFor(() => {
@@ -1770,7 +1770,7 @@ describe('TopicDetailPage', () => {
 		})
 		const createdTitle = screen.getByRole('textbox', { name: 'Topic title 9' })
 		expect(createdTitle.closest('[data-fresh-topic="true"]')).not.toBeNull()
-		expect(screen.getByRole('link', { name: 'Untitled' })).toBeInTheDocument()
+		expect(screen.getByRole('link', { name: /Untitled$/ })).toBeInTheDocument()
 		expect(navigateMock).not.toHaveBeenCalled()
 	})
 
@@ -2135,7 +2135,7 @@ describe('TopicDetailPage', () => {
 		})
 		expect(
 			screen
-				.getByRole('link', { name: 'Untitled' })
+				.getByRole('link', { name: /Untitled$/ })
 				.closest('[data-fresh-topic="true"]')
 		).toBeNull()
 	})

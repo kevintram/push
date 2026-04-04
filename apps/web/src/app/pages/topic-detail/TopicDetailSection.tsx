@@ -233,6 +233,7 @@ export function TopicDetailSection({
 					section={section}
 					sectionId={sectionId}
 					sectionLabel={sectionLabel}
+					sectionNumber={section.sectionNumber}
 					title={title}
 					toggleSection={toggleSection}
 					topicPath={section.topicPath}

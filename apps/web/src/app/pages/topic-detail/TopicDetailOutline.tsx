@@ -48,6 +48,7 @@ interface TopicDetailOutlineProps {
 	outlineWidth: number
 	pendingCreatedParentTopicId: number | null
 	pendingCreatedTopicId: number | null
+	sectionNumberById: Map<number, string>
 	visibleSectionIds: Array<number>
 }
 
@@ -76,6 +77,7 @@ export function TopicDetailOutline({
 	outlineWidth,
 	pendingCreatedParentTopicId,
 	pendingCreatedTopicId,
+	sectionNumberById,
 	visibleSectionIds
 }: TopicDetailOutlineProps) {
 	const [isRootContextMenuOpen, setIsRootContextMenuOpen] = useState(false)
@@ -198,14 +200,18 @@ export function TopicDetailOutline({
 				search={true}
 				to='/topics/$topicId'
 			>
-				{label}
+				<OutlineLabel
+					label={label}
+					sectionNumber={sectionNumberById.get(node.id) ?? null}
+				/>
 			</Link>
 		),
-		[handleOutlineClick, outlineRootTopicId]
+		[handleOutlineClick, outlineRootTopicId, sectionNumberById]
 	)
-	const handleAddChildTopic = useCallback(() => {
-		return handleCreateSubtopic(outlineRootNode.id)
-	}, [handleCreateSubtopic, outlineRootNode.id])
+	const handleAddChildTopic = useCallback(
+		() => handleCreateSubtopic(outlineRootNode.id),
+		[handleCreateSubtopic, outlineRootNode.id]
+	)
 
 	return (
 		<aside
@@ -287,7 +293,13 @@ export function TopicDetailOutline({
 															search={true}
 															to='/topics/$topicId'
 														>
-															{rootLabel}
+															<OutlineLabel
+																label={rootLabel}
+																sectionNumber={
+																	sectionNumberById.get(outlineRootNode.id) ??
+																	null
+																}
+															/>
 														</Link>
 													</div>
 												</ContextMenuTrigger>
@@ -421,5 +433,24 @@ export function TopicDetailOutline({
 				</AlertDialogContent>
 			</AlertDialog>
 		</aside>
+	)
+}
+
+function OutlineLabel({
+	label,
+	sectionNumber
+}: {
+	label: string
+	sectionNumber: string | null
+}) {
+	return (
+		<span className='min-w-0 truncate'>
+			{sectionNumber ? (
+				<span className='whitespace-nowrap font-medium text-[0.72rem] text-slate-400 tabular-nums leading-none tracking-[0.01em] dark:text-slate-500'>
+					{sectionNumber}{' '}
+				</span>
+			) : null}
+			<span>{label}</span>
+		</span>
 	)
 }

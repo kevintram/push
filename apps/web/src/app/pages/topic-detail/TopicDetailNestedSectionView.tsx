@@ -64,6 +64,7 @@ interface TopicDetailNestedSectionViewProps {
 	section: TopicDetailSectionNode
 	sectionId: string
 	sectionLabel: string
+	sectionNumber: string | null
 	title: string
 	topicPath: Array<TopicPathItem>
 	toggleSection: (sectionId: string) => void
@@ -88,6 +89,7 @@ export function TopicDetailNestedSectionView({
 	section,
 	sectionId,
 	sectionLabel,
+	sectionNumber,
 	title,
 	topicPath,
 	toggleSection
@@ -96,6 +98,7 @@ export function TopicDetailNestedSectionView({
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const { buttonSize, iconClassName } = getActionButtonProps(section)
 	const hasBreadcrumbs = topicPath.length > 1
+	const showsInlineNumber = sectionNumber != null
 
 	return (
 		<div
@@ -131,16 +134,50 @@ export function TopicDetailNestedSectionView({
 						className='min-w-0 flex-1'
 						role='heading'
 					>
-						<textarea
-							aria-label={`Topic title ${section.topic.id}`}
-							className={`field-sizing-content m-0 block min-h-0 w-full resize-none overflow-hidden border-none bg-transparent p-0 leading-tight outline-none placeholder:text-muted-foreground ${headingClassName}`}
-							onBlur={flushTitle}
-							onChange={onTitleChange}
-							placeholder='Untitled topic'
-							ref={registerTitleRef}
-							spellCheck={false}
-							value={title}
-						/>
+						<div
+							className={cn(
+								'flex min-w-0 gap-x-3',
+								showsInlineNumber ? 'items-baseline' : 'items-start'
+							)}
+						>
+							{showsInlineNumber ? (
+								<span
+									aria-hidden='true'
+									className={cn(
+										headingClassName,
+										'block shrink-0 select-none whitespace-nowrap text-slate-400 dark:text-slate-500'
+									)}
+								>
+									{sectionNumber}
+								</span>
+							) : null}
+							<div className='relative min-w-0'>
+								<span
+									aria-hidden='true'
+									className={cn(
+										'block whitespace-pre-wrap break-words',
+										headingClassName,
+										title.trim().length === 0 && 'text-muted-foreground'
+									)}
+								>
+									{title.trim().length > 0 ? title : 'Untitled topic'}
+								</span>
+								<textarea
+									aria-label={`Topic title ${section.topic.id}`}
+									className={cn(
+										'absolute inset-0 m-0 block min-h-0 w-full min-w-0 resize-none overflow-hidden border-none bg-transparent p-0 text-transparent caret-current outline-none selection:bg-slate-200/80 selection:text-transparent dark:selection:bg-slate-700/70',
+										headingClassName
+									)}
+									onBlur={flushTitle}
+									onChange={onTitleChange}
+									placeholder='Untitled topic'
+									ref={registerTitleRef}
+									rows={1}
+									spellCheck={false}
+									value={title}
+								/>
+							</div>
+						</div>
 					</div>
 					<div className='flex shrink-0 items-center gap-0.5'>
 						<div className='pointer-events-none flex items-center gap-0.5 opacity-0 transition-opacity group-hover/section:pointer-events-auto group-hover/section:opacity-100 group-has-[:focus-visible]/section:pointer-events-auto group-has-[:focus-visible]/section:opacity-100'>
