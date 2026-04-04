@@ -39,7 +39,8 @@ import type { ReviewCard as ReviewCardModel } from '../types/review-card.types'
 import { hasScheduledDueReviews } from '../utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '../utils/orderReviewCardStatusBadges'
 import { RetireReviewCardDialog } from './RetireReviewCardDialog'
-import { ReviewCardBody, ReviewCardFooterMeta } from './ReviewCardBody'
+import { ReviewCardBody, ReviewCardMetaRow } from './ReviewCardBody'
+import { ReviewCardFooterActions } from './ReviewCardFooterActions'
 import { ReviewCardHeader, ReviewCardStatusRow } from './ReviewCardHeader'
 import {
 	type ReviewCardBadge,
@@ -290,7 +291,6 @@ export function ReviewCard({
 	const resolvedParentLabel =
 		parentLabel ??
 		(topicTitle.length > 0 ? topicTitle : `Topic #${reviewCard.topic_id}`)
-	const relationsCount: number = 0
 	const hasMeasuredCardWidth = cardRect.width > 0
 	const showReviewedMeta =
 		!hasMeasuredCardWidth || cardRect.width >= CARD_WIDTH_REVIEWED_META_MIN
@@ -325,26 +325,9 @@ export function ReviewCard({
 		>
 			<ReviewCardStatusRow badges={resolvedStatusBadges} />
 			<ReviewCardHeader
-				deleteDisabled={false}
 				hideParent={hideParent}
-				isFlagged={isFlagged}
-				isRemovingFromTab={isRemovingFromTab}
-				isUpdatingReviewCard={isUpdatingReviewCard}
-				onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
-				onRemoveFromTab={onRemoveFromTab}
-				onSeeReviews={handleSeeReviews}
-				onToggleFlag={handleFlaggedToggle}
-				onToggleFlagFromMenu={() => {
-					updateReviewCard({
-						id: reviewCard.id,
-						flagged: !isFlagged
-					})
-				}}
-				onToggleRetired={handleRetiredToggle}
-				onTriggerReviewsPrefetch={handleReviewsMenuPrefetch}
-				removeFromTabLabel={removeFromTabLabel}
 				resolvedParentLabel={resolvedParentLabel}
-				reviewCard={reviewCard}
+				typeBadgeLabel={typeBadgeLabel}
 			/>
 			<ReviewCardBody
 				canUseGuessPanel={canUseGuessPanel}
@@ -363,20 +346,31 @@ export function ReviewCard({
 				reviewCardAnswer={reviewCard.answer}
 				setGuessSecondaryText={setGuessSecondaryText}
 				setRevealPanelTab={setRevealPanelTab}
-				typeBadgeLabel={typeBadgeLabel}
 			/>
-			<ReviewCardFooterMeta
+			<ReviewCardMetaRow
 				freshnessTierColor={freshnessTierColor}
 				freshnessTierInfo={freshnessTierInfo}
 				isUnreviewed={isUnreviewed}
 				lastReviewedDate={lastReviewedDate}
 				lastReviewedText={lastReviewed.text}
 				lastReviewRating={reviewCard.last_review_rating}
-				relationsCount={relationsCount}
 				showRatingMeta={showRatingMeta}
 				showReviewedMeta={showReviewedMeta}
 				showStabilityMeta={showStabilityMeta}
 				stabilityText={stabilityText}
+			/>
+			<ReviewCardFooterActions
+				isFlagged={isFlagged}
+				isRemovingFromTab={isRemovingFromTab}
+				isUpdatingReviewCard={isUpdatingReviewCard}
+				onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+				onRemoveFromTab={onRemoveFromTab}
+				onSeeReviews={handleSeeReviews}
+				onToggleFlag={handleFlaggedToggle}
+				onToggleRetired={handleRetiredToggle}
+				onTriggerReviewsPrefetch={handleReviewsMenuPrefetch}
+				removeFromTabLabel={removeFromTabLabel}
+				reviewCard={reviewCard}
 			/>
 			<AlertDialog
 				onOpenChange={setIsDeleteDialogOpen}

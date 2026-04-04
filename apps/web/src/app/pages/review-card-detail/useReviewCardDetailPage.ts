@@ -230,6 +230,7 @@ export function useReviewCardDetailPage({
 	const {
 		value: notes,
 		onChange: onNotesChange,
+		setValue: setNotes,
 		flush: flushNotes
 	} = useAutoSave({
 		initialValue: reviewCard?.notes ?? '',
@@ -501,6 +502,7 @@ export function useReviewCardDetailPage({
 		reviewCard,
 		reviewTriggerCounts,
 		setAnswer,
+		setNotes,
 		setGuessAnswerText,
 		setIsDeleteDialogOpen,
 		setIsRetireDialogOpen,

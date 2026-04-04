@@ -20,7 +20,6 @@ import { SearchDialog } from '~/features/search/components/search-dialog/SearchD
 import { isHttpStatusError } from '~/utils/httpStatusError'
 import { ReviewCardDetailHeader } from './ReviewCardDetailHeader'
 import { ReviewCardDetailHomeTab } from './ReviewCardDetailHomeTab'
-import { ReviewCardDetailNotesTab } from './ReviewCardDetailNotesTab'
 import { ReviewCardDetailReviewsTab } from './ReviewCardDetailReviewsTab'
 import type { ReviewCardDetailTab } from './shared'
 import { useReviewCardDetailPage } from './useReviewCardDetailPage'
@@ -90,6 +89,7 @@ export function ReviewCardDetailPage({
 		reviewCard,
 		reviewTriggerCounts,
 		setAnswer,
+		setNotes,
 		setGuessAnswerText,
 		setIsDeleteDialogOpen,
 		setIsRetireDialogOpen,
@@ -198,16 +198,11 @@ export function ReviewCardDetailPage({
 									uncompletedUnscheduledReviews={uncompletedUnscheduledReviews}
 									upcomingReviews={upcomingReviews}
 								/>
-							) : resolvedActiveTab === 'notes' ? (
-								<ReviewCardDetailNotesTab
-									flushNotes={flushNotes}
-									notes={notes}
-									onNotesChange={onNotesChange}
-								/>
 							) : (
 								<ReviewCardDetailHomeTab
 									answer={answer}
 									flushAnswer={flushAnswer}
+									flushNotes={flushNotes}
 									flushPrompt={flushPrompt}
 									freshnessTierColor={freshnessTierColor}
 									freshnessTierInfo={freshnessTierInfo}
@@ -226,7 +221,9 @@ export function ReviewCardDetailPage({
 									isUpdatingReviewCard={isUpdatingReviewCard}
 									lastReviewed={lastReviewed}
 									latestCompletedReview={latestCompletedReview}
+									notes={notes}
 									onAnswerChange={onAnswerChange}
+									onNotesChange={onNotesChange}
 									onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
 									onOpenReviewDialog={openReviewDialog}
 									onPromptChange={onPromptChange}
@@ -239,6 +236,7 @@ export function ReviewCardDetailPage({
 									reviewTriggerCounts={reviewTriggerCounts}
 									setAnswer={setAnswer}
 									setGuessAnswerText={setGuessAnswerText}
+									setNotes={setNotes}
 									setRevealPanelTab={setRevealPanelTab}
 									stabilityText={stabilityText}
 									statusBadges={statusBadges}
@@ -291,5 +289,3 @@ export function ReviewCardDetailPage({
 		</div>
 	)
 }
-
-export type { ReviewCardDetailTab } from './shared'

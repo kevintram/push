@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import {
 	Anvil,
 	ArrowLeftRight,
@@ -31,16 +30,15 @@ import { FLAGGED_ICON_CLASSNAME } from '~/features/review-cards/components/revie
 import type { ReviewCard } from '~/features/review-cards/types/review-card.types'
 import { ReviewsMenu } from '~/features/reviews/components/reviews-menu/ReviewsMenu'
 import type { ReviewListItem } from '~/features/reviews/types/review.types'
-import {
-	formatAbsoluteDate,
-	formatRelativeDate
-} from '~/utils/formatRelativeDate'
+import { useRevealPanel } from '~/hooks/useRevealPanel'
+import { formatAbsoluteDate } from '~/utils/formatRelativeDate'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { EMPTY_BADGE_CLASSNAME } from './shared'
 
 type ReviewCardDetailHomeTabProps = {
 	answer: string
 	flushAnswer: () => void
+	flushNotes: () => void
 	flushPrompt: () => void
 	freshnessTierColor: string
 	freshnessTierInfo: { label: string; tooltip?: string | null }
@@ -65,7 +63,9 @@ type ReviewCardDetailHomeTabProps = {
 	isUnreviewed: boolean
 	lastReviewed: { text: string }
 	latestCompletedReview: ReviewListItem | null
+	notes: string
 	onAnswerChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
+	onNotesChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
 	onOpenDeleteDialog: () => void
 	onOpenReviewDialog: (reviewId: number) => void
 	onPromptChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
@@ -81,6 +81,7 @@ type ReviewCardDetailHomeTabProps = {
 		dueTodayCount: number
 	}
 	setAnswer: (value: string) => void
+	setNotes: (value: string) => void
 	setGuessAnswerText: Dispatch<SetStateAction<string>>
 	setRevealPanelTab: Dispatch<SetStateAction<RevealPanelTab | null>>
 	stabilityText: string
@@ -90,6 +91,7 @@ type ReviewCardDetailHomeTabProps = {
 export function ReviewCardDetailHomeTab({
 	answer,
 	flushAnswer,
+	flushNotes,
 	flushPrompt,
 	freshnessTierColor,
 	freshnessTierInfo,
@@ -108,7 +110,9 @@ export function ReviewCardDetailHomeTab({
 	isUnreviewed,
 	lastReviewed,
 	latestCompletedReview,
+	notes,
 	onAnswerChange,
+	onNotesChange,
 	onOpenDeleteDialog,
 	onOpenReviewDialog,
 	onPromptChange,
@@ -120,11 +124,29 @@ export function ReviewCardDetailHomeTab({
 	reviewCard,
 	reviewTriggerCounts,
 	setAnswer,
+	setNotes,
 	setGuessAnswerText,
 	setRevealPanelTab,
 	stabilityText,
 	statusBadges
 }: ReviewCardDetailHomeTabProps) {
+	const hidesAnswer = hidesSecondary && reviewCard.type !== 'practice'
+	const reviewedAt =
+		latestCompletedReview?.completed_at ?? reviewCard.last_reviewed_at
+	const {
+		revealPanelTab: notesRevealPanelTab,
+		setRevealPanelTab: setNotesRevealPanelTab,
+		guessText: guessNotesText,
+		setGuessText: setGuessNotesText,
+		isCopied: isNotesRevealPanelCopied,
+		handleCopyGuessText: handleCopyNotesGuessText,
+		handleCopyRevealText: handleCopyNotesRevealText
+	} = useRevealPanel({
+		revealText: notes,
+		entityId: reviewCard.id < 0 ? null : reviewCard.id * 10_000 + 1,
+		hidesSecondary
+	})
+
 	return (
 		<div className='flex min-h-0 flex-1 flex-col gap-2'>
 			<div className='flex flex-wrap items-center justify-between gap-2'>
@@ -205,7 +227,7 @@ export function ReviewCardDetailHomeTab({
 			</div>
 
 			<Textarea
-				className='!bg-transparent !text-3xl m-0 min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 pb-1 font-bold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+				className='!bg-transparent !text-lg min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 font-semibold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 				onBlur={flushPrompt}
 				onChange={onPromptChange}
 				placeholder='Untitled prompt'
@@ -213,6 +235,46 @@ export function ReviewCardDetailHomeTab({
 				spellCheck={false}
 				value={prompt}
 			/>
+
+			{hidesAnswer ? (
+				<RevealPanel
+					className='!flex-none'
+					closedContent={
+						isAnswerEmpty ? (
+							<Badge
+								className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
+								variant='outline'
+							>
+								Empty
+							</Badge>
+						) : null
+					}
+					guessValue={guessAnswerText}
+					isCopied={isRevealPanelCopied}
+					onGuessCopy={handleCopyGuessText}
+					onGuessValueChange={setGuessAnswerText}
+					onRevealBlur={flushAnswer}
+					onRevealCopy={handleCopyRevealText}
+					onRevealValueChange={setAnswer}
+					onValueChange={setRevealPanelTab}
+					revealHelperVariant='autosave'
+					revealPlaceholder='Write your answer...'
+					revealValue={answer}
+					value={revealPanelTab}
+					variant='detail'
+				/>
+			) : (
+				<div className='flex-none'>
+					<Textarea
+						className='!bg-transparent m-0 min-h-[2lh] resize-none break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+						onBlur={flushAnswer}
+						onChange={onAnswerChange}
+						placeholder='Write your answer...'
+						spellCheck={false}
+						value={answer}
+					/>
+				</div>
+			)}
 
 			<div className='flex flex-wrap items-center gap-2 text-sm'>
 				{isUnreviewed ? (
@@ -238,7 +300,7 @@ export function ReviewCardDetailHomeTab({
 									'Complete a review to see freshness tier'}
 							</TooltipContent>
 						</Tooltip>
-						{latestCompletedReview ? (
+						{reviewedAt ? (
 							<>
 								<span aria-hidden={true} className='font-bold'>
 									·
@@ -246,25 +308,31 @@ export function ReviewCardDetailHomeTab({
 								<Tooltip>
 									<TooltipTrigger
 										render={
-											<Button
-												className='h-auto gap-1 p-0 font-semibold text-muted-foreground text-sm'
-												onClick={() =>
-													onOpenReviewDialog(latestCompletedReview.id)
-												}
-												size='default'
-												variant='link'
-											>
-												<span>{`Reviewed ${lastReviewed.text}`}</span>
-												{latestCompletedReview.rating ? (
-													<span className='flex size-4 shrink-0 items-center justify-center rounded-full border border-primary bg-primary text-primary-foreground dark:bg-primary'>
-														{getRatingIcon(latestCompletedReview.rating)}
-													</span>
-												) : null}
-											</Button>
+											latestCompletedReview ? (
+												<Button
+													className='h-auto gap-1 p-0 font-semibold text-muted-foreground text-sm'
+													onClick={() =>
+														onOpenReviewDialog(latestCompletedReview.id)
+													}
+													size='default'
+													variant='link'
+												>
+													<span>{`Last reviewed ${lastReviewed.text}`}</span>
+													{latestCompletedReview.rating ? (
+														<span className='flex size-4 shrink-0 items-center justify-center rounded-full border border-primary bg-primary text-primary-foreground dark:bg-primary'>
+															{getRatingIcon(latestCompletedReview.rating)}
+														</span>
+													) : null}
+												</Button>
+											) : (
+												<div className='flex items-center gap-1 font-semibold text-muted-foreground text-sm'>
+													<span>{`Last reviewed ${lastReviewed.text}`}</span>
+												</div>
+											)
 										}
 									/>
 									<TooltipContent>
-										{formatAbsoluteDate(latestCompletedReview.completed_at)}
+										{formatAbsoluteDate(reviewedAt)}
 									</TooltipContent>
 								</Tooltip>
 							</>
@@ -285,33 +353,7 @@ export function ReviewCardDetailHomeTab({
 						</Tooltip>
 					</>
 				)}
-				<div className='ml-auto flex items-center gap-2 font-semibold text-muted-foreground text-sm'>
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<span>{`Edited ${formatRelativeDate(reviewCard.updated_at).text}`}</span>
-							}
-						/>
-						<TooltipContent>
-							{dayjs(reviewCard.updated_at).format('MMM D, YYYY')}
-						</TooltipContent>
-					</Tooltip>
-					<span aria-hidden={true}>·</span>
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<span>{`Created ${formatRelativeDate(reviewCard.inserted_at).text}`}</span>
-							}
-						/>
-						<TooltipContent>
-							{dayjs(reviewCard.inserted_at).format('MMM D, YYYY')}
-						</TooltipContent>
-					</Tooltip>
-				</div>
-			</div>
-
-			<div className='my-3 flex flex-wrap items-center justify-between border-y-1 py-2'>
-				<div className='flex items-center gap-2'>
+				<div className='ml-auto flex items-center gap-1.5'>
 					<ReviewsMenu
 						align='end'
 						buttonClassName='rounded-full'
@@ -383,19 +425,21 @@ export function ReviewCardDetailHomeTab({
 							{reviewCard.retired ? 'Return to review queue' : 'Retire'}
 						</TooltipContent>
 					</Tooltip>
-				</div>
-				<div className='flex items-center justify-end'>
 					<DropdownMenu>
 						<DropdownMenuTrigger
 							render={
-								<Button size='icon-sm' type='button' variant='ghost'>
+								<Button
+									className='rounded-full'
+									size='icon-sm'
+									type='button'
+									variant='outline'
+								>
 									<MoreHorizontal className='h-4 w-4' />
 								</Button>
 							}
 						/>
 						<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
 							<DropdownMenuItem
-								disabled={false}
 								onClick={onOpenDeleteDialog}
 								variant='destructive'
 							>
@@ -407,45 +451,38 @@ export function ReviewCardDetailHomeTab({
 				</div>
 			</div>
 
-			{hidesSecondary ? (
-				<RevealPanel
-					className='flex min-h-0 flex-1 flex-col'
-					closedContent={
-						isAnswerEmpty ? (
-							<Badge
-								className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
-								variant='outline'
-							>
-								Empty
-							</Badge>
-						) : null
-					}
-					guessValue={guessAnswerText}
-					isCopied={isRevealPanelCopied}
-					onGuessCopy={handleCopyGuessText}
-					onGuessValueChange={setGuessAnswerText}
-					onRevealBlur={flushAnswer}
-					onRevealCopy={handleCopyRevealText}
-					onRevealValueChange={setAnswer}
-					onValueChange={setRevealPanelTab}
-					revealHelperVariant='autosave'
-					revealPlaceholder='Write your answer...'
-					revealValue={answer}
-					value={revealPanelTab}
-					variant='detail'
-				/>
-			) : (
-				<div className='flex min-h-0 flex-1 flex-col'>
-					<Textarea
-						className='!bg-transparent m-0 min-h-[2lh] flex-1 resize-none break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-						onBlur={flushAnswer}
-						onChange={onAnswerChange}
-						placeholder='Write your answer...'
-						spellCheck={false}
-						value={answer}
-					/>
+			<div className='mt-0.5 mb-2 flex min-h-0 flex-1 flex-col border-t pt-1'>
+				<div className='flex min-h-0 flex-1 flex-col gap-2'>
+					<h2 className='font-semibold text-muted-foreground text-sm'>Notes</h2>
+					{hidesSecondary ? (
+						<RevealPanel
+							className='!flex-1'
+							guessValue={guessNotesText}
+							isCopied={isNotesRevealPanelCopied}
+							onGuessCopy={handleCopyNotesGuessText}
+							onGuessValueChange={setGuessNotesText}
+							onRevealBlur={flushNotes}
+							onRevealCopy={handleCopyNotesRevealText}
+							onRevealValueChange={setNotes}
+							onValueChange={setNotesRevealPanelTab}
+							revealHelperVariant='autosave'
+							revealPlaceholder='Add notes...'
+							revealValue={notes}
+							value={notesRevealPanelTab}
+							variant='detail'
+						/>
+					) : (
+						<Textarea
+							className='!bg-transparent field-sizing-fixed m-0 min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+							onBlur={flushNotes}
+							onChange={onNotesChange}
+							placeholder='Add notes...'
+							spellCheck={false}
+							value={notes}
+						/>
+					)}
 				</div>
-			)}
+			</div>
 		</div>
 	)
 }

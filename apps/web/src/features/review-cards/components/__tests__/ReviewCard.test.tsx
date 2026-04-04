@@ -395,4 +395,38 @@ describe('ReviewCard', () => {
 			])
 		)
 	})
+
+	it('groups topic and type in the header and removes the related-card indicator', () => {
+		const reviewCard: ReviewCardModel = {
+			id: 46,
+			topic_id: 9,
+			topic_title: 'Linear algebra',
+			type: 'practice',
+			prompt: 'Header prompt',
+			answer: 'Header answer',
+			inserted_at: '2026-03-01T00:00:00.000Z',
+			updated_at: '2026-03-01T00:00:00.000Z',
+			last_review_rating: 'good',
+			stability: 10,
+			difficulty: 3,
+			state: 'review',
+			step: 2,
+			retired: false,
+			flagged_at: null,
+			last_reviewed_at: '2026-03-02T00:00:00.000Z',
+			retrievability: 0.8,
+			freshness_tier: 'Fresh',
+			days_until_next_tier: 3,
+			days_in_current_tier: 1,
+			is_new: false,
+			status_badges: [],
+			notes: ''
+		}
+
+		render(<ReviewCard reviewCard={reviewCard} />)
+
+		expect(screen.getAllByText('Linear algebra').length).toBeGreaterThan(0)
+		expect(screen.getByText('Practice')).toBeInTheDocument()
+		expect(screen.queryByText(/related cards?/iu)).not.toBeInTheDocument()
+	})
 })

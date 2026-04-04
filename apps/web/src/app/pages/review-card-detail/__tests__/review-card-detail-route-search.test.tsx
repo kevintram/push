@@ -13,6 +13,7 @@ import { routeTree } from '~/app/routeTree.gen'
 const useReviewCardMock = vi.fn()
 const useTopicMock = vi.fn()
 const useReviewsByReviewCardMock = vi.fn()
+const useReviewModeMock = vi.fn()
 
 vi.mock('~/components/SettingsDialog', () => ({
 	SettingsDialog: () => null
@@ -159,10 +160,7 @@ vi.mock('~/stores/ReviewModeContext', async importOriginal => {
 
 	return {
 		...actual,
-		useReviewMode: () => ({
-			hidesPrimary: false,
-			hidesSecondary: false
-		})
+		useReviewMode: () => useReviewModeMock()
 	}
 })
 
@@ -238,6 +236,7 @@ beforeEach(() => {
 	useReviewCardMock.mockReset()
 	useTopicMock.mockReset()
 	useReviewsByReviewCardMock.mockReset()
+	useReviewModeMock.mockReset()
 
 	useReviewCardMock.mockReturnValue({
 		data: reviewCard,
@@ -252,6 +251,10 @@ beforeEach(() => {
 	useReviewsByReviewCardMock.mockReturnValue({
 		data: reviews,
 		isLoading: false
+	})
+	useReviewModeMock.mockReturnValue({
+		hidesPrimary: false,
+		hidesSecondary: false
 	})
 })
 
@@ -290,23 +293,35 @@ describe('review card detail route-backed tabs', () => {
 		})
 	})
 
-	it('deep links the notes tab and updates search when tabs change', async () => {
+	it('treats the removed notes tab as invalid search and falls back home', async () => {
 		const { router, user } = renderRoute('/review-cards/11?tab=notes')
 
-		expect(
-			await screen.findByRole('tab', { name: 'Notes' })
-		).toBeInTheDocument()
+		expect(await screen.findByRole('tab', { name: 'Home' })).toBeInTheDocument()
+		expect(screen.queryByRole('tab', { name: 'Notes' })).not.toBeInTheDocument()
 
 		await user.click(screen.getByRole('tab', { name: /Reviews/iu }))
 
 		await waitFor(() => {
 			expect(router.state.location.search).toEqual({ tab: 'reviews' })
 		})
+	})
 
-		await user.click(screen.getByRole('tab', { name: 'Notes' }))
-
-		await waitFor(() => {
-			expect(router.state.location.search).toEqual({ tab: 'notes' })
+	it('keeps practice answers visible while concealing notes in review mode', async () => {
+		useReviewModeMock.mockReturnValue({
+			hidesPrimary: false,
+			hidesSecondary: true
 		})
+
+		renderRoute('/review-cards/11')
+
+		expect(await screen.findByDisplayValue('x = 3')).toBeInTheDocument()
+		expect(screen.getByText('Notes')).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Type a guess' })
+		).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Reveal' })).toBeInTheDocument()
+		expect(
+			screen.queryByDisplayValue('Factor carefully')
+		).not.toBeInTheDocument()
 	})
 })

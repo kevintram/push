@@ -2,7 +2,7 @@ import { ArrowLeftRight, Plus, Search, User2 } from 'lucide-react'
 
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
-import { DetailNavBar, type DetailNavTab } from '~/components/ui/detail-nav-bar'
+import { DetailNavBar } from '~/components/ui/detail-nav-bar'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -111,11 +111,8 @@ export function ReviewCardDetailHeader({
 					</Badge>
 				</div>
 			}
-			onTabChange={(tab: DetailNavTab) => {
-				onTabChange(tab)
-			}}
+			onTabChange={onTabChange}
 			overdueCount={overdueCount}
-			showNotesTab={true}
 			unscheduledCount={unscheduledCount}
 		/>
 	)

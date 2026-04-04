@@ -2,7 +2,7 @@ import { type ReactNode, useCallback } from "react"
 import { ReviewStatusDots } from "~/components/ui/review-status-dots"
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"
 
-export type DetailNavTab = "home" | "notes" | "reviews"
+export type DetailNavTab = "home" | "reviews"
 
 interface DetailNavBarProps {
 	leftContent?: ReactNode
@@ -12,7 +12,6 @@ interface DetailNavBarProps {
 	unscheduledCount: number
 	overdueCount: number
 	dueTodayCount: number
-	showNotesTab?: boolean
 	showReviewsTab?: boolean
 }
 
@@ -24,15 +23,12 @@ export function DetailNavBar({
 	unscheduledCount,
 	overdueCount,
 	dueTodayCount,
-	showNotesTab = false,
 	showReviewsTab = true
 }: DetailNavBarProps) {
 	const handleValueChange = useCallback(
 		(value: string) => {
 			const isSupportedTab =
-				value === "home" ||
-				(showNotesTab && value === "notes") ||
-				(showReviewsTab && value === "reviews")
+				value === "home" || (showReviewsTab && value === "reviews")
 
 			if (!isSupportedTab) {
 				return
@@ -40,7 +36,7 @@ export function DetailNavBar({
 
 			onTabChange(value as DetailNavTab)
 		},
-		[onTabChange, showNotesTab, showReviewsTab]
+		[onTabChange, showReviewsTab]
 	)
 
 	return (
@@ -50,7 +46,6 @@ export function DetailNavBar({
 			<Tabs onValueChange={handleValueChange} value={activeTab}>
 				<TabsList className='h-8'>
 					<TabsTrigger value='home'>Home</TabsTrigger>
-					{showNotesTab ? <TabsTrigger value='notes'>Notes</TabsTrigger> : null}
 					{showReviewsTab ? (
 						<TabsTrigger value='reviews'>
 							<span className='flex items-center gap-1.5'>
