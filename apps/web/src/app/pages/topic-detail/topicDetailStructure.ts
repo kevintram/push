@@ -10,6 +10,7 @@ export type TopicDetailSectionNode = {
 	children: Array<TopicDetailSectionNode>
 	depth: number
 	headingLevel: number
+	sectionNumber: string | null
 	topic: TopicTreeNode
 	topicPath: Array<Pick<TopicTreeNode, 'id' | 'title' | 'body'>>
 }
@@ -29,31 +30,44 @@ export function buildTopicDetailRoot(
 	const buildSectionNode = (
 		node: TopicTreeNode,
 		depth: number,
+		sectionNumberSegments: Array<number>,
 		topicPath: Array<Pick<TopicTreeNode, 'id' | 'title' | 'body'>>
 	): TopicDetailSectionNode => ({
-		children: node.children.map(childNode =>
-			buildSectionNode(childNode, depth + 1, [
-				...topicPath,
-				{
-					id: childNode.id,
-					title: childNode.title,
-					body: childNode.body
-				}
-			])
+		children: node.children.map((childNode, index) =>
+			buildSectionNode(
+				childNode,
+				depth + 1,
+				[...sectionNumberSegments, index + 1],
+				[
+					...topicPath,
+					{
+						id: childNode.id,
+						title: childNode.title,
+						body: childNode.body
+					}
+				]
+			)
 		),
 		depth,
 		headingLevel: Math.min(depth + 1, MAX_HEADING_LEVEL),
+		sectionNumber:
+			sectionNumberSegments.length > 0 ? sectionNumberSegments.join('.') : null,
 		topic: node,
 		topicPath
 	})
 
-	return buildSectionNode(rootNode, 0, [
-		{
-			id: rootNode.id,
-			title: rootNode.title,
-			body: rootNode.body
-		}
-	])
+	return buildSectionNode(
+		rootNode,
+		0,
+		[],
+		[
+			{
+				id: rootNode.id,
+				title: rootNode.title,
+				body: rootNode.body
+			}
+		]
+	)
 }
 
 export function flattenTopicDetailSectionIds(
@@ -73,6 +87,28 @@ export function flattenTopicDetailSectionIds(
 	visitSection(rootSection)
 
 	return ids
+}
+
+export function buildTopicDetailSectionNumberById(
+	rootSection: TopicDetailSectionNode | null
+) {
+	const sectionNumberById = new Map<number, string>()
+
+	if (!rootSection) return sectionNumberById
+
+	const visitSection = (section: TopicDetailSectionNode) => {
+		if (section.sectionNumber) {
+			sectionNumberById.set(section.topic.id, section.sectionNumber)
+		}
+
+		for (const childSection of section.children) {
+			visitSection(childSection)
+		}
+	}
+
+	visitSection(rootSection)
+
+	return sectionNumberById
 }
 
 export function groupReviewCardsByTopicId(reviewCards: Array<ReviewCard>) {
