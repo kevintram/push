@@ -1,9 +1,9 @@
-import { Anvil, Baby, Brain, Sparkles } from 'lucide-react'
+import { Anvil, Brain, Sparkles } from 'lucide-react'
 import type { Dispatch, ReactNode, SetStateAction } from 'react'
 
 import { RevealPanel } from '~/components/RevealPanel'
 import { Button } from '~/components/ui/button'
-import { CardContent, CardFooter } from '~/components/ui/card'
+import { CardContent } from '~/components/ui/card'
 import {
 	Tooltip,
 	TooltipContent,
@@ -29,8 +29,7 @@ export function ReviewCardBody({
 	revealPanelTab,
 	reviewCardAnswer,
 	setGuessSecondaryText,
-	setRevealPanelTab,
-	typeBadgeLabel
+	setRevealPanelTab
 }: {
 	canUseGuessPanel: boolean
 	guessSecondaryText: string
@@ -48,7 +47,6 @@ export function ReviewCardBody({
 	reviewCardAnswer: string
 	setGuessSecondaryText: Dispatch<SetStateAction<string>>
 	setRevealPanelTab: Dispatch<SetStateAction<'guess' | 'reveal' | null>>
-	typeBadgeLabel: string
 }) {
 	let primaryContent: ReactNode
 	if (hidePrimary) {
@@ -140,29 +138,20 @@ export function ReviewCardBody({
 	}
 
 	return (
-		<CardContent className='flex min-h-0 flex-1 flex-col gap-3 p-0'>
-			<div className='flex min-h-0 flex-1 flex-col gap-1'>
-				<div className='flex flex-wrap items-center gap-1 text-muted-foreground text-xs'>
-					<span>{typeBadgeLabel}</span>
-				</div>
-
-				<div className='flex min-h-0 flex-1 flex-col gap-2'>
-					{primaryContent}
-					{secondaryContent}
-				</div>
-			</div>
+		<CardContent className='flex min-h-0 flex-1 flex-col gap-2 p-0'>
+			{primaryContent}
+			{secondaryContent}
 		</CardContent>
 	)
 }
 
-export function ReviewCardFooterMeta({
+export function ReviewCardMetaRow({
 	freshnessTierColor,
 	freshnessTierInfo,
 	isUnreviewed,
 	lastReviewedDate,
 	lastReviewedText,
 	lastReviewRating,
-	relationsCount,
 	showRatingMeta,
 	showReviewedMeta,
 	showStabilityMeta,
@@ -174,14 +163,13 @@ export function ReviewCardFooterMeta({
 	lastReviewedDate: string
 	lastReviewedText: string
 	lastReviewRating: Rating | null
-	relationsCount: number
 	showRatingMeta: boolean
 	showReviewedMeta: boolean
 	showStabilityMeta: boolean
 	stabilityText: string
 }) {
 	return (
-		<CardFooter className='gap-1 px-0 pt-2 text-muted-foreground text-xs'>
+		<div className='flex items-center gap-1 pt-2 text-muted-foreground text-xs'>
 			{isUnreviewed ? (
 				<div className='flex items-center gap-1'>
 					<Sparkles className='h-3 w-3' />
@@ -246,22 +234,6 @@ export function ReviewCardFooterMeta({
 					) : null}
 				</>
 			)}
-			<div className='flex-1' />
-			<Tooltip>
-				<TooltipTrigger
-					render={
-						<div className='flex items-center gap-1'>
-							<Baby className='h-3 w-3' />
-							<span>{relationsCount}</span>
-						</div>
-					}
-				/>
-				<TooltipContent>
-					{relationsCount === 1
-						? '1 related card'
-						: `${relationsCount} related cards`}
-				</TooltipContent>
-			</Tooltip>
-		</CardFooter>
+		</div>
 	)
 }
