@@ -1,22 +1,21 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { ReviewCardDetailPage } from '~/app/pages/review-card-detail/ReviewCardDetailPage'
 import {
-	ReviewCardDetailPage,
+	isReviewCardDetailTab,
 	type ReviewCardDetailTab
-} from '~/app/pages/review-card-detail/ReviewCardDetailPage'
+} from '~/app/pages/review-card-detail/shared'
 
 type ReviewCardDetailRouteSearch = {
 	tab: ReviewCardDetailTab
 }
 
-function isReviewCardDetailTab(value: unknown): value is ReviewCardDetailTab {
-	return value === 'home' || value === 'notes' || value === 'reviews'
-}
-
 export function validateReviewCardDetailSearch(
 	search: Record<string, unknown>
 ): ReviewCardDetailRouteSearch {
+	const { tab } = search
+
 	return {
-		tab: isReviewCardDetailTab(search.tab) ? search.tab : 'home'
+		tab: typeof tab === 'string' && isReviewCardDetailTab(tab) ? tab : 'home'
 	}
 }
 
