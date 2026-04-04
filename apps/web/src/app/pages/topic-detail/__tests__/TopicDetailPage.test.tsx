@@ -1045,7 +1045,7 @@ describe('TopicDetailPage', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('does not render native hash anchor ids for topic sections', () => {
+	it('does not render native hash anchor ids or heading indicators for topic sections', () => {
 		const rootTopic = {
 			...topic,
 			id: 1,
@@ -1110,10 +1110,10 @@ describe('TopicDetailPage', () => {
 		).not.toBeNull()
 		expect(
 			container.querySelector('[data-topic-detail-heading-indicator="1"]')
-		).not.toBeNull()
+		).toBeNull()
 		expect(
 			container.querySelector('[data-topic-detail-heading-indicator="2"]')
-		).not.toBeNull()
+		).toBeNull()
 	})
 
 	it('uses the semantic heading level for deeply nested sections', () => {
@@ -1145,7 +1145,7 @@ describe('TopicDetailPage', () => {
 		expect(semanticHeading).toHaveAttribute('aria-level', '6')
 		expect(
 			container.querySelector('[data-topic-detail-heading-indicator="6"]')
-		).toHaveAttribute('data-topic-detail-heading-level', '6')
+		).toBeNull()
 	})
 
 	it('syncs topic fields on first load and only refreshes untouched fields on refetch', async () => {

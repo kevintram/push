@@ -16,11 +16,8 @@ import {
 } from './TopicDetailBreadcrumb'
 import { TopicDetailRootActionsMenu } from './TopicDetailRootActionsMenu'
 import { TopicDetailSectionMeta } from './TopicDetailSectionMeta'
-import {
-	getTopicDetailHeadingIndicatorPresentation,
-	TOPIC_DETAIL_HEADING_INDICATOR_OFFSET_CLASS,
-	TOPIC_DETAIL_SECTION_GRID_CLASS
-} from './topicDetailLayout'
+import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
+import { getTopicDetailRootPresentation } from './topicDetailTheme'
 
 interface TopicDetailHeaderProps {
 	actionClassName?: string
@@ -80,10 +77,8 @@ export function TopicDetailHeader({
 
 		titleTextareaRef.current?.focus()
 	}, [shouldAutoFocusTitle])
-
-	const { HeadingIcon, headingIconClassName } =
-		getTopicDetailHeadingIndicatorPresentation(headingLevel)
 	const hasBreadcrumbs = topicPath.length > 1
+	const rootPresentation = getTopicDetailRootPresentation()
 
 	return (
 		<>
@@ -100,19 +95,7 @@ export function TopicDetailHeader({
 				</div>
 			) : null}
 			<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
-				<div className='flex justify-end text-muted-foreground/60'>
-					<HeadingIcon
-						aria-hidden='true'
-						className={cn(
-							'shrink-0 text-muted-foreground/60',
-							headingIconClassName,
-							TOPIC_DETAIL_HEADING_INDICATOR_OFFSET_CLASS
-						)}
-						data-topic-detail-heading-indicator={topic.id}
-						data-topic-detail-heading-level={headingLevel}
-						strokeWidth={2.6}
-					/>
-				</div>
+				<div aria-hidden='true' />
 				<div className='relative min-w-0'>
 					<div className={cn('min-w-0 space-y-2.5', contentClassName)}>
 						<div
@@ -122,7 +105,10 @@ export function TopicDetailHeader({
 						>
 							<Textarea
 								aria-label='Topic title'
-								className='!bg-transparent !text-[1.875rem] sm:!text-[2.125rem] xl:!text-[2.375rem] m-0 min-h-0 w-full resize-none overflow-hidden break-words rounded-none border-none px-0 pt-0 pb-1 font-semibold leading-[1.08] tracking-[-0.025em] shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+								className={cn(
+									'!bg-transparent m-0 min-h-0 w-full resize-none overflow-hidden break-words rounded-none border-none px-0 pt-0 pb-1 shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0',
+									rootPresentation.rootTitleClassName
+								)}
 								onBlur={flushTitle}
 								onChange={onTitleChange}
 								placeholder='Untitled topic'

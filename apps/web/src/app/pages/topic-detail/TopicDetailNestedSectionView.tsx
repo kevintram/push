@@ -27,9 +27,7 @@ import {
 } from './TopicDetailBreadcrumb'
 import {
 	getTopicDetailSectionDisplayLevel,
-	TOPIC_DETAIL_HEADING_INDICATOR_OFFSET_CLASS,
-	TOPIC_DETAIL_SECTION_GRID_CLASS,
-	type TopicDetailHeadingIndicatorPresentation
+	TOPIC_DETAIL_SECTION_GRID_CLASS
 } from './topicDetailLayout'
 import type { TopicDetailSectionNode } from './topicDetailStructure'
 
@@ -51,7 +49,6 @@ interface TopicDetailNestedSectionViewProps {
 	bodyPanel: ReactNode
 	flushTitle: () => void
 	headingClassName: string
-	headingIndicatorPresentation: TopicDetailHeadingIndicatorPresentation
 	isCollapsed: boolean
 	isCreatingTopic: boolean
 	isFreshTopic: boolean
@@ -76,7 +73,6 @@ export function TopicDetailNestedSectionView({
 	bodyPanel,
 	flushTitle,
 	headingClassName,
-	headingIndicatorPresentation,
 	isCollapsed,
 	isCreatingTopic,
 	isFreshTopic,
@@ -99,7 +95,6 @@ export function TopicDetailNestedSectionView({
 	const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const { buttonSize, iconClassName } = getActionButtonProps(section)
-	const { HeadingIcon, headingIconClassName } = headingIndicatorPresentation
 	const hasBreadcrumbs = topicPath.length > 1
 
 	return (
@@ -124,19 +119,7 @@ export function TopicDetailNestedSectionView({
 					/>
 				</div>
 			) : null}
-			<div className='flex justify-end text-muted-foreground/60'>
-				<HeadingIcon
-					aria-hidden='true'
-					className={cn(
-						'shrink-0 text-muted-foreground/60',
-						headingIconClassName,
-						TOPIC_DETAIL_HEADING_INDICATOR_OFFSET_CLASS
-					)}
-					data-topic-detail-heading-indicator={section.topic.id}
-					data-topic-detail-heading-level={section.headingLevel}
-					strokeWidth={2.6}
-				/>
-			</div>
+			<div aria-hidden='true' />
 			<div
 				className='relative min-w-0 scroll-mt-24'
 				data-topic-detail-heading-id={section.topic.id}

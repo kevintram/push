@@ -33,6 +33,10 @@ import {
 	TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS,
 	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS
 } from './topicDetailLayout'
+import {
+	getTopicDetailIndicatorLayout,
+	getTopicDetailRootPresentation
+} from './topicDetailTheme'
 import { useTopicDetailPage } from './useTopicDetailPage'
 
 interface TopicDetailPageProps {
@@ -128,7 +132,11 @@ export function TopicDetailPage({
 	const hasChildSections = rootSection.children.length > 0
 	const pageStyle = {
 		'--topic-detail-outline-width': `${outlineWidth}px`
-	} as CSSProperties
+	} as CSSProperties & Record<string, string>
+	const indicatorLayout = getTopicDetailIndicatorLayout()
+	pageStyle['--topic-detail-indicator-gap'] = indicatorLayout.indicatorGap
+	pageStyle['--topic-detail-indicator-width'] = indicatorLayout.indicatorWidth
+	const rootPresentation = getTopicDetailRootPresentation()
 	const rootHeaderContentClassName = hasChildSections
 		? TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS
 		: TOPIC_DETAIL_LEAF_CONTENT_MEASURE_CLASS
@@ -165,7 +173,12 @@ export function TopicDetailPage({
 					className='flex-1 overflow-y-auto scroll-smooth'
 					ref={registerScrollContainerRef}
 				>
-					<div className={TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS}>
+					<div
+						className={cn(
+							TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS,
+							rootPresentation.rootHeaderBandClassName
+						)}
+					>
 						<div className='mx-auto w-full max-w-[76rem]'>
 							<div
 								className={cn(

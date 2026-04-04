@@ -24,16 +24,13 @@ import type {
 } from './shared'
 import type { TopicPathItem } from './TopicDetailBreadcrumb'
 import { TopicDetailNestedSectionView } from './TopicDetailNestedSectionView'
-import {
-	getTopicDetailHeadingIndicatorPresentation,
-	getTopicDetailSectionDisplayLevel,
-	getTopicDetailSectionPresentation
-} from './topicDetailLayout'
+import { getTopicDetailSectionDisplayLevel } from './topicDetailLayout'
 import type { TopicDetailSectionNode } from './topicDetailStructure'
 import {
 	getTopicDetailLabel,
 	getTopicDetailSectionId
 } from './topicDetailStructure'
+import { getTopicDetailSectionPresentation } from './topicDetailTheme'
 import { useTopicDetailSectionPanels } from './useTopicDetailSectionPanels'
 
 type TopicDetailSectionProps = {
@@ -104,8 +101,6 @@ export function TopicDetailSection({
 		resolvedFilterByTopicId[section.topic.id] ?? globalFilter
 	const displayLevel = getTopicDetailSectionDisplayLevel(section)
 	const presentation = getTopicDetailSectionPresentation(displayLevel)
-	const headingIndicatorPresentation =
-		getTopicDetailHeadingIndicatorPresentation(section.headingLevel)
 	const sectionLabel = getTopicDetailLabel(
 		section.topic.title,
 		section.topic.body
@@ -219,7 +214,6 @@ export function TopicDetailSection({
 					bodyPanel={bodyPanel}
 					flushTitle={flushTitle}
 					headingClassName={presentation.headingClassName}
-					headingIndicatorPresentation={headingIndicatorPresentation}
 					isCollapsed={isCollapsed}
 					isCreatingTopic={isCreatingTopic}
 					isFreshTopic={isFreshTopic}
