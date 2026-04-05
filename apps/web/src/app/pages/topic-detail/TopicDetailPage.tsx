@@ -192,10 +192,7 @@ export function TopicDetailPage({
 										className='relative z-10 min-w-0 scroll-mt-24'
 										data-topic-detail-heading-id={rootSection.topic.id}
 										ref={element => {
-											registerSectionHeadingRef(
-												rootSection.topic.id,
-												element
-											)
+											registerSectionHeadingRef(rootSection.topic.id, element)
 										}}
 									>
 										<TopicDetailHeader
