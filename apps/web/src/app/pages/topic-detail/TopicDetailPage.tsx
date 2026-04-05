@@ -188,44 +188,40 @@ export function TopicDetailPage({
 								)}
 							>
 								<div className='min-w-0'>
-									<div className='flex items-start gap-3'>
-										<div className='min-w-0 flex-1'>
-											<div
-												className='relative z-10 min-w-0 scroll-mt-24'
-												data-topic-detail-heading-id={rootSection.topic.id}
-												ref={element => {
-													registerSectionHeadingRef(
-														rootSection.topic.id,
-														element
-													)
-												}}
-											>
-												<TopicDetailHeader
-													actionClassName='top-0 right-0 lg:hidden'
-													contentClassName={rootHeaderContentClassName}
-													headingLevel={rootSection.headingLevel}
-													isCreatingTopic={isCreatingTopic}
-													onCreateSubtopic={handleCreateSubtopic}
-													onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
-													pathContainerClassName='lg:pr-0'
-													shouldAutoFocusTitle={shouldAutoFocusRootTitle}
-													titleContainerClassName='pr-12 sm:pr-14 lg:pr-0'
-													topic={rootSection.topic}
-													topicPath={topicPath}
-												/>
-											</div>
-										</div>
-										<div className='hidden shrink-0 items-start lg:flex'>
-											<TopicDetailRootActionsMenu
-												isCreatingTopic={isCreatingTopic}
-												onCreateSubtopic={handleCreateSubtopic}
-												onOpenDeleteDialog={() => {
-													setIsDeleteDialogOpen(true)
-												}}
-												topicTitle={rootSection.topic.title}
-											/>
-										</div>
+									<div
+										className='relative z-10 min-w-0 scroll-mt-24'
+										data-topic-detail-heading-id={rootSection.topic.id}
+										ref={element => {
+											registerSectionHeadingRef(
+												rootSection.topic.id,
+												element
+											)
+										}}
+									>
+										<TopicDetailHeader
+											actionClassName='top-0 right-0 lg:hidden'
+											contentClassName={rootHeaderContentClassName}
+											headingLevel={rootSection.headingLevel}
+											isCreatingTopic={isCreatingTopic}
+											onCreateSubtopic={handleCreateSubtopic}
+											onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+											pathContainerClassName='lg:pr-0'
+											shouldAutoFocusTitle={shouldAutoFocusRootTitle}
+											titleContainerClassName='pr-12 sm:pr-14 lg:pr-0'
+											topic={rootSection.topic}
+											topicPath={topicPath}
+										/>
 									</div>
+								</div>
+								<div className='hidden items-start justify-start lg:flex'>
+									<TopicDetailRootActionsMenu
+										isCreatingTopic={isCreatingTopic}
+										onCreateSubtopic={handleCreateSubtopic}
+										onOpenDeleteDialog={() => {
+											setIsDeleteDialogOpen(true)
+										}}
+										topicTitle={rootSection.topic.title}
+									/>
 								</div>
 							</div>
 						</div>
