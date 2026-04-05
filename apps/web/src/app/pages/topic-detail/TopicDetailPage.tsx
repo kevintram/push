@@ -159,8 +159,7 @@ export function TopicDetailPage({
 			registerSectionTitleRef={registerSectionTitleRef}
 			resolvedFilterByTopicId={sectionFilterOverrides}
 			reviewCardControlsVariant={reviewCardControlsVariant}
-			rootTopicPath={topicPath}
-			searchFilter={resolvedCardTypeFilter}
+searchFilter={resolvedCardTypeFilter}
 			section={rootSection}
 			toggleSection={toggleSection}
 			topicReviewCardsById={topicReviewCardsById}

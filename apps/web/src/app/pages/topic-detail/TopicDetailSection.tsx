@@ -22,7 +22,6 @@ import type {
 	TopicDetailReviewCardControlsVariant,
 	TopicDetailReviewCardFilter
 } from './shared'
-import type { TopicPathItem } from './TopicDetailBreadcrumb'
 import { TopicDetailNestedSectionView } from './TopicDetailNestedSectionView'
 import { getTopicDetailSectionDisplayLevel } from './topicDetailLayout'
 import type { TopicDetailSectionNode } from './topicDetailStructure'
@@ -57,7 +56,6 @@ type TopicDetailSectionProps = {
 	) => void
 	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
 	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
-	rootTopicPath: Array<TopicPathItem>
 	resolvedFilterByTopicId: Record<number, TopicDetailReviewCardFilter>
 	searchFilter: TopicDetailReviewCardFilter
 	section: TopicDetailSectionNode
@@ -80,7 +78,6 @@ export function TopicDetailSection({
 	registerSectionTitleRef,
 	registerSectionRef,
 	reviewCardControlsVariant,
-	rootTopicPath,
 	resolvedFilterByTopicId,
 	searchFilter,
 	section,
@@ -105,7 +102,6 @@ export function TopicDetailSection({
 		section.topic.title,
 		section.topic.body
 	)
-	const rootTopicId = section.topicPath[0]?.id ?? section.topic.id
 	const saveTopicTitle = useCallback(
 		async (title: string) => {
 			if (title === section.topic.title) return
@@ -228,15 +224,12 @@ export function TopicDetailSection({
 						registerSectionTitleRef(section.topic.id, element)
 					}}
 					reviewCardsSection={reviewCardsSection}
-					rootTopicId={rootTopicId}
-					rootTopicPath={rootTopicPath}
 					section={section}
 					sectionId={sectionId}
 					sectionLabel={sectionLabel}
 					sectionNumber={section.sectionNumber}
 					title={title}
 					toggleSection={toggleSection}
-					topicPath={section.topicPath}
 				/>
 				{isCollapsed ? null : section.children.length > 0 ? (
 					<div>
@@ -258,7 +251,6 @@ export function TopicDetailSection({
 								registerSectionTitleRef={registerSectionTitleRef}
 								resolvedFilterByTopicId={resolvedFilterByTopicId}
 								reviewCardControlsVariant={reviewCardControlsVariant}
-								rootTopicPath={rootTopicPath}
 								searchFilter={searchFilter}
 								section={childSection}
 								toggleSection={toggleSection}
