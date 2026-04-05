@@ -1,6 +1,7 @@
 type TopicDetailDisplayLevel = 1 | 2 | 3 | 4 | 5 | 6
 
 export type TopicDetailSectionPresentation = {
+	contentTopSpacingClassName: string
 	headingClassName: string
 	sectionTopSpacingClassName: string
 }
@@ -8,7 +9,7 @@ export type TopicDetailSectionPresentation = {
 const TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS_NAME =
 	'bg-slate-50/88 dark:bg-slate-900/48'
 const TOPIC_DETAIL_ROOT_TITLE_CLASS_NAME =
-	'text-[1.95rem] font-semibold leading-[1.01] tracking-[-0.04em] text-slate-800 sm:text-[2.2rem] xl:text-[2.5rem] dark:text-slate-50'
+	'text-[2rem] leading-[2.5rem] font-bold tracking-[-0.02em] text-slate-800 md:text-[2rem] md:leading-[2.5rem] dark:text-slate-50'
 
 const TOPIC_DETAIL_SECTION_PRESENTATION_BY_LEVEL: Record<
 	TopicDetailDisplayLevel,
@@ -16,33 +17,39 @@ const TOPIC_DETAIL_SECTION_PRESENTATION_BY_LEVEL: Record<
 > = {
 	1: {
 		headingClassName:
-			'text-[1.68rem] font-semibold leading-[1.08] tracking-[-0.034em] text-slate-800 sm:text-[1.82rem] dark:text-slate-50',
-		sectionTopSpacingClassName: 'pt-12'
+			'text-[1.3125rem] leading-[1.75rem] font-bold tracking-normal text-slate-800 dark:text-slate-50',
+		contentTopSpacingClassName: 'pt-2',
+		sectionTopSpacingClassName: 'pt-9'
 	},
 	2: {
 		headingClassName:
-			'text-[1.4rem] font-semibold leading-[1.13] tracking-[-0.028em] text-slate-800 sm:text-[1.5rem] dark:text-slate-50',
-		sectionTopSpacingClassName: 'pt-10'
+			'text-[1rem] leading-[1.5rem] font-semibold tracking-normal text-slate-800 dark:text-slate-50',
+		contentTopSpacingClassName: 'pt-2',
+		sectionTopSpacingClassName: 'pt-7'
 	},
 	3: {
 		headingClassName:
-			'text-[1.15rem] font-semibold leading-[1.22] tracking-[-0.018em] text-slate-800 sm:text-[1.2rem] dark:text-slate-50',
-		sectionTopSpacingClassName: 'pt-8'
+			'text-[0.875rem] leading-[1.25rem] font-bold tracking-normal text-slate-800 dark:text-slate-50',
+		contentTopSpacingClassName: 'pt-[0.375rem]',
+		sectionTopSpacingClassName: 'pt-[1.375rem]'
 	},
 	4: {
 		headingClassName:
-			'text-[1rem] font-semibold leading-[1.32] tracking-[-0.01em] text-slate-700 dark:text-slate-100',
-		sectionTopSpacingClassName: 'pt-6'
+			'text-[0.875rem] leading-[1.25rem] font-medium tracking-normal text-slate-700 dark:text-slate-100',
+		contentTopSpacingClassName: 'pt-[0.375rem]',
+		sectionTopSpacingClassName: 'pt-[1.125rem]'
 	},
 	5: {
 		headingClassName:
-			'text-[0.92rem] font-semibold leading-[1.4] tracking-[0.012em] text-slate-600 dark:text-slate-300',
-		sectionTopSpacingClassName: 'pt-4'
+			'text-[0.8125rem] leading-[1.125rem] font-medium tracking-normal text-slate-600 dark:text-slate-300',
+		contentTopSpacingClassName: 'pt-1',
+		sectionTopSpacingClassName: 'pt-[0.875rem]'
 	},
 	6: {
 		headingClassName:
-			'text-[0.84rem] font-semibold leading-[1.46] tracking-[0.02em] text-slate-500 dark:text-slate-400',
-		sectionTopSpacingClassName: 'pt-3'
+			'text-[0.75rem] leading-[1.0625rem] font-medium tracking-normal text-slate-500 dark:text-slate-400',
+		contentTopSpacingClassName: 'pt-1',
+		sectionTopSpacingClassName: 'pt-[0.875rem]'
 	}
 }
 
