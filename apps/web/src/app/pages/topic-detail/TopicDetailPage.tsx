@@ -210,7 +210,7 @@ export function TopicDetailPage({
 										/>
 									</div>
 								</div>
-								<div className='hidden items-start justify-start lg:flex'>
+								<div className='hidden items-start justify-end lg:flex'>
 									<TopicDetailRootActionsMenu
 										isCreatingTopic={isCreatingTopic}
 										onCreateSubtopic={handleCreateSubtopic}
