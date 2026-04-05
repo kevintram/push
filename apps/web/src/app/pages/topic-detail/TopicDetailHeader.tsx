@@ -97,7 +97,7 @@ export function TopicDetailHeader({
 			<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
 				<div aria-hidden='true' />
 				<div className='relative min-w-0'>
-					<div className={cn('min-w-0 space-y-2.5', contentClassName)}>
+					<div className={cn('min-w-0 space-y-2', contentClassName)}>
 						<div
 							aria-level={headingLevel}
 							className={cn('min-w-0 pr-12 sm:pr-14', titleContainerClassName)}

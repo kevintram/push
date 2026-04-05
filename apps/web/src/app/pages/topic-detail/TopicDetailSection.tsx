@@ -208,6 +208,7 @@ export function TopicDetailSection({
 			<div className={presentation.sectionTopSpacingClassName}>
 				<TopicDetailNestedSectionView
 					bodyPanel={bodyPanel}
+					contentTopSpacingClassName={presentation.contentTopSpacingClassName}
 					flushTitle={flushTitle}
 					headingClassName={presentation.headingClassName}
 					isCollapsed={isCollapsed}

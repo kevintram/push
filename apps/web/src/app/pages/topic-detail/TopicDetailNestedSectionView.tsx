@@ -43,6 +43,7 @@ function getActionButtonProps(section: TopicDetailSectionNode) {
 
 interface TopicDetailNestedSectionViewProps {
 	bodyPanel: ReactNode
+	contentTopSpacingClassName: string
 	flushTitle: () => void
 	headingClassName: string
 	isCollapsed: boolean
@@ -65,6 +66,7 @@ interface TopicDetailNestedSectionViewProps {
 
 export function TopicDetailNestedSectionView({
 	bodyPanel,
+	contentTopSpacingClassName,
 	flushTitle,
 	headingClassName,
 	isCollapsed,
@@ -253,7 +255,7 @@ export function TopicDetailNestedSectionView({
 				</div>
 			</div>
 			<div aria-hidden='true' />
-			<div className='min-w-0 pt-1'>
+			<div className={cn('min-w-0', contentTopSpacingClassName)}>
 				{isCollapsed ? null : (
 					<>
 						<div>{bodyPanel}</div>
