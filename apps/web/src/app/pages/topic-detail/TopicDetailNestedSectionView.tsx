@@ -22,10 +22,6 @@ import {
 } from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
 import {
-	TopicDetailSectionBreadcrumb,
-	type TopicPathItem
-} from './TopicDetailBreadcrumb'
-import {
 	getTopicDetailSectionDisplayLevel,
 	TOPIC_DETAIL_SECTION_GRID_CLASS
 } from './topicDetailLayout'
@@ -59,14 +55,11 @@ interface TopicDetailNestedSectionViewProps {
 	registerHeadingRef: (element: HTMLDivElement | null) => void
 	registerTitleRef: (element: HTMLTextAreaElement | null) => void
 	reviewCardsSection: ReactNode
-	rootTopicId: number
-	rootTopicPath: Array<TopicPathItem>
 	section: TopicDetailSectionNode
 	sectionId: string
 	sectionLabel: string
 	sectionNumber: string | null
 	title: string
-	topicPath: Array<TopicPathItem>
 	toggleSection: (sectionId: string) => void
 }
 
@@ -84,20 +77,16 @@ export function TopicDetailNestedSectionView({
 	registerHeadingRef,
 	registerTitleRef,
 	reviewCardsSection,
-	rootTopicId,
-	rootTopicPath,
 	section,
 	sectionId,
 	sectionLabel,
 	sectionNumber,
 	title,
-	topicPath,
 	toggleSection
 }: TopicDetailNestedSectionViewProps) {
 	const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const { buttonSize, iconClassName } = getActionButtonProps(section)
-	const hasBreadcrumbs = topicPath.length > 1
 	const showsInlineNumber = sectionNumber != null
 
 	return (
@@ -110,18 +99,6 @@ export function TopicDetailNestedSectionView({
 			)}
 			data-fresh-topic={isFreshTopic ? 'true' : undefined}
 		>
-			{hasBreadcrumbs ? <div aria-hidden='true' /> : null}
-			{hasBreadcrumbs ? (
-				<div className='min-w-0'>
-					<TopicDetailSectionBreadcrumb
-						className='min-w-0 opacity-0 transition-opacity group-hover/section:opacity-100 group-has-[:focus-visible]/section:opacity-100'
-						currentTopicId={section.topic.id}
-						rootTopicId={rootTopicId}
-						rootTopicPath={rootTopicPath}
-						topicPath={topicPath}
-					/>
-				</div>
-			) : null}
 			<div aria-hidden='true' />
 			<div
 				className='relative min-w-0 scroll-mt-24'
