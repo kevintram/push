@@ -426,7 +426,7 @@ beforeEach(() => {
 		isLoading: false
 	})
 	useDetailReviewCountsMock.mockReturnValue({
-		unscheduledCount: 2,
+		pendingCount: 2,
 		overdueCount: 1,
 		dueTodayCount: 3
 	})

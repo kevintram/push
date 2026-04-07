@@ -88,6 +88,7 @@ export function ReviewCardDetailPage({
 		revealPanelTab,
 		reviewCard,
 		reviewTriggerCounts,
+		pendingCount,
 		setAnswer,
 		setNotes,
 		setGuessAnswerText,
@@ -102,7 +103,6 @@ export function ReviewCardDetailPage({
 		todayReviews,
 		topicSearchQuery,
 		uncompletedUnscheduledReviews,
-		unscheduledCount,
 		upcomingReviews
 	} = useReviewCardDetailPage({
 		activeTab,
@@ -153,7 +153,7 @@ export function ReviewCardDetailPage({
 					onTopicMenuOpenChange={setIsTopicMenuOpen}
 					overdueCount={overdueCount}
 					parentLabel={parentLabel}
-					unscheduledCount={unscheduledCount}
+					pendingCount={pendingCount}
 				/>
 				{isTopicSearchOpen ? (
 					<SearchDialog

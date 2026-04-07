@@ -51,9 +51,9 @@ export function ReviewsMenu({
 						onTriggerKeyDown={onTriggerKeyDown}
 						onTriggerMouseEnter={onTriggerMouseEnter}
 						overdueCount={menu.overdueCount}
+						pendingCount={menu.pendingCount}
 						surfaceContext={surfaceContext}
 						triggerDotSize={menu.triggerDotSize}
-						unscheduledCount={menu.unscheduledCount}
 					/>
 				}
 			/>

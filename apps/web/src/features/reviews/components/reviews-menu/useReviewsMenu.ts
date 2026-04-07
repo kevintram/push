@@ -108,12 +108,13 @@ export function useReviewsMenu({
 	const dueTodayCount = hasLiveReviews
 		? todayReviews.length
 		: (triggerCounts?.dueTodayCount ?? todayReviews.length)
-	const unscheduledCount = hasLiveReviews
+	const pendingCount = hasLiveReviews
 		? uncompletedUnscheduledReviews.length + upcomingReviews.length
-		: (triggerCounts?.unscheduledCount ?? uncompletedUnscheduledReviews.length)
+		: (triggerCounts?.pendingCount ??
+			uncompletedUnscheduledReviews.length + upcomingReviews.length)
 	const expectedDueCount = overdueCount + dueTodayCount
 	const hasExpectedSummaryContent =
-		expectedDueCount > 0 || unscheduledCount > 0 || hasLastReviewed
+		expectedDueCount > 0 || pendingCount > 0 || hasLastReviewed
 	const isSummaryLoading =
 		providedReviews === undefined &&
 		isOpen &&
@@ -365,6 +366,6 @@ export function useReviewsMenu({
 		uncompletedOption,
 		uncompletedUnscheduledReviews,
 		upcomingReviews,
-		unscheduledCount
+		pendingCount
 	}
 }

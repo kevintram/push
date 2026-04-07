@@ -56,7 +56,7 @@ describe('ReviewCardDetailPage', () => {
 				hasLastReviewed: false,
 				reviewCardId: 11,
 				triggerCounts: {
-					unscheduledCount: 2,
+					pendingCount: 2,
 					overdueCount: 1,
 					dueTodayCount: 3
 				}

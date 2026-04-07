@@ -76,7 +76,7 @@ type ReviewCardDetailHomeTabProps = {
 	revealPanelTab: RevealPanelTab | null
 	reviewCard: ReviewCard
 	reviewTriggerCounts: {
-		unscheduledCount: number
+		pendingCount: number
 		overdueCount: number
 		dueTodayCount: number
 	}

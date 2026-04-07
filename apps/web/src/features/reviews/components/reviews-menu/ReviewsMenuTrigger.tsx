@@ -19,8 +19,8 @@ type ReviewsMenuTriggerProps = Pick<
 	createReviewPending: boolean
 	dueTodayCount: number
 	overdueCount: number
+	pendingCount: number
 	triggerDotSize: 'compact' | 'default'
-	unscheduledCount: number
 } & Omit<
 		ComponentProps<typeof Button>,
 		'children' | 'className' | 'disabled' | 'size' | 'variant'
@@ -38,9 +38,9 @@ export function ReviewsMenuTrigger({
 	onTriggerKeyDown,
 	onTriggerMouseEnter,
 	overdueCount,
+	pendingCount,
 	surfaceContext,
 	triggerDotSize,
-	unscheduledCount,
 	...buttonProps
 }: ReviewsMenuTriggerProps) {
 	const forwardedOnClick = (
@@ -73,10 +73,10 @@ export function ReviewsMenuTrigger({
 				className='pointer-events-none'
 				dueTodayCount={dueTodayCount}
 				overdueCount={overdueCount}
+				pendingCount={pendingCount}
 				size={triggerDotSize}
 				surfaceContext={surfaceContext}
 				testIdPrefix='reviews-trigger'
-				unscheduledCount={unscheduledCount}
 			/>
 			<ChevronDown className='h-4 w-4' />
 		</Button>

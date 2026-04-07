@@ -56,8 +56,7 @@ export function ReviewCardFooterActions({
 				onTriggerMouseEnter={onTriggerReviewsPrefetch}
 				reviewCardId={reviewCard.id}
 				triggerCounts={{
-					unscheduledCount:
-						reviewCard.reviews_unscheduled_uncompleted_count ?? 0,
+					pendingCount: reviewCard.reviews_pending_count ?? 0,
 					overdueCount: reviewCard.reviews_overdue_count ?? 0,
 					dueTodayCount: reviewCard.reviews_due_today_count ?? 0
 				}}

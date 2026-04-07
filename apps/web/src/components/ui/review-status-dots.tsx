@@ -59,7 +59,7 @@ const reviewStatusDotVariants = cva("inline-block rounded-full shrink-0", {
 type ReviewStatusDotsProps = {
 	overdueCount: number
 	dueTodayCount: number
-	unscheduledCount: number
+	pendingCount: number
 	size?: "default" | "compact"
 	surfaceContext?: "default" | "primary"
 	className?: string
@@ -69,16 +69,16 @@ type ReviewStatusDotsProps = {
 function buildSummary({
 	overdueCount,
 	dueTodayCount,
-	unscheduledCount
+	pendingCount
 }: Pick<
 	ReviewStatusDotsProps,
-	"overdueCount" | "dueTodayCount" | "unscheduledCount"
+	"overdueCount" | "dueTodayCount" | "pendingCount"
 >) {
 	const parts: Array<string> = []
 
 	if (overdueCount > 0) parts.push("Has overdue reviews")
 	if (dueTodayCount > 0) parts.push("Has reviews due today")
-	if (unscheduledCount > 0) parts.push("Has unscheduled reviews")
+	if (pendingCount > 0) parts.push("Has pending reviews")
 
 	return parts.join(". ")
 }
@@ -86,7 +86,7 @@ function buildSummary({
 export function ReviewStatusDots({
 	overdueCount,
 	dueTodayCount,
-	unscheduledCount,
+	pendingCount,
 	size = "compact",
 	surfaceContext = "default",
 	className,
@@ -95,7 +95,7 @@ export function ReviewStatusDots({
 	const summary = buildSummary({
 		overdueCount,
 		dueTodayCount,
-		unscheduledCount
+		pendingCount
 	})
 
 	if (!summary) return null
@@ -126,7 +126,7 @@ export function ReviewStatusDots({
 					}
 				/>
 			) : null}
-			{unscheduledCount > 0 ? (
+			{pendingCount > 0 ? (
 				<span
 					aria-hidden={true}
 					className={reviewStatusDotVariants({
@@ -134,9 +134,7 @@ export function ReviewStatusDots({
 						tone: "neutral",
 						surfaceContext
 					})}
-					data-testid={
-						testIdPrefix ? `${testIdPrefix}-unscheduled-dot` : undefined
-					}
+					data-testid={testIdPrefix ? `${testIdPrefix}-pending-dot` : undefined}
 				/>
 			) : null}
 			<span className='sr-only'>{summary}</span>

@@ -453,7 +453,7 @@ describe('ReviewsMenu', () => {
 		)
 		expect(content).toHaveClass('w-[18rem]')
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot')
 		).toBeInTheDocument()
 		expect(
 			within(trigger).getByTestId('reviews-trigger-overdue-dot')
@@ -589,7 +589,7 @@ describe('ReviewsMenu', () => {
 		expect(screen.getByText('See all')).toBeInTheDocument()
 		expect(screen.queryByText('0')).not.toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-unscheduled-dot')
+			within(trigger).queryByTestId('reviews-trigger-pending-dot')
 		).not.toBeInTheDocument()
 		expect(
 			within(trigger).queryByTestId('reviews-trigger-overdue-dot')
@@ -722,7 +722,7 @@ describe('ReviewsMenu', () => {
 		expect(screen.queryByText('Last reviewed')).not.toBeInTheDocument()
 		expect(screen.getByTestId('dropdown-menu-content')).toHaveClass('w-[18rem]')
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot')
 		).toBeInTheDocument()
 	})
 
@@ -737,7 +737,7 @@ describe('ReviewsMenu', () => {
 			<ReviewsMenu
 				reviewCardId={12}
 				triggerCounts={{
-					unscheduledCount: 4,
+					pendingCount: 4,
 					overdueCount: 2,
 					dueTodayCount: 1
 				}}
@@ -747,7 +747,7 @@ describe('ReviewsMenu', () => {
 		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot')
 		).toBeInTheDocument()
 		expect(
 			within(trigger).getByTestId('reviews-trigger-overdue-dot')
@@ -801,7 +801,7 @@ describe('ReviewsMenu', () => {
 			<ReviewsMenu
 				reviewCardId={12}
 				triggerCounts={{
-					unscheduledCount: 4,
+					pendingCount: 4,
 					overdueCount: 2,
 					dueTodayCount: 1
 				}}
@@ -811,7 +811,7 @@ describe('ReviewsMenu', () => {
 		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot')
 		).toBeInTheDocument()
 		expect(
 			within(trigger).getByTestId('reviews-trigger-overdue-dot')
@@ -863,7 +863,7 @@ describe('ReviewsMenu', () => {
 					}
 				]}
 				triggerCounts={{
-					unscheduledCount: 4,
+					pendingCount: 4,
 					overdueCount: 2,
 					dueTodayCount: 1
 				}}
@@ -873,7 +873,7 @@ describe('ReviewsMenu', () => {
 		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot')
 		).toBeInTheDocument()
 		expect(
 			within(trigger).queryByTestId('reviews-trigger-overdue-dot')
@@ -927,7 +927,7 @@ describe('ReviewsMenu', () => {
 				hasLastReviewed={true}
 				reviewCardId={12}
 				triggerCounts={{
-					unscheduledCount: 4,
+					pendingCount: 4,
 					overdueCount: 2,
 					dueTodayCount: 1
 				}}
@@ -949,7 +949,7 @@ describe('ReviewsMenu', () => {
 		const seeAllButton = screen.getByRole('button', { name: /See all/iu })
 		expect(seeAllButton).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-unscheduled-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot')
 		).toBeInTheDocument()
 		expect(
 			within(trigger).getByTestId('reviews-trigger-overdue-dot')
