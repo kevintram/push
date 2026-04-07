@@ -41,6 +41,7 @@ type ReviewsMenuContentProps = {
 	) => void
 	uncompletedOption: RatingOption | null
 	uncompletedUnscheduledReviews: Array<ReviewListItem>
+	upcomingReviews: Array<ReviewListItem>
 }
 
 function ReviewsMenuSection({
@@ -100,7 +101,8 @@ export function ReviewsMenuContent({
 	shouldRenderSummaryLoadingState,
 	stopMenuEventPropagation,
 	uncompletedOption,
-	uncompletedUnscheduledReviews
+	uncompletedUnscheduledReviews,
+	upcomingReviews
 }: ReviewsMenuContentProps) {
 	return (
 		<DropdownMenuContent
@@ -171,6 +173,15 @@ export function ReviewsMenuContent({
 				handleNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 				handleReviewItemClick={handleReviewItemClick}
 				label='Unscheduled'
+				markDeferredStructuralInvalidation={markDeferredStructuralInvalidation}
+				markNestedOverlayIntent={markNestedOverlayIntent}
+			/>
+
+			<ReviewsMenuSection
+				entries={upcomingReviews}
+				handleNestedOverlayOpenChange={handleNestedOverlayOpenChange}
+				handleReviewItemClick={handleReviewItemClick}
+				label='Scheduled'
 				markDeferredStructuralInvalidation={markDeferredStructuralInvalidation}
 				markNestedOverlayIntent={markNestedOverlayIntent}
 			/>

@@ -86,17 +86,16 @@ export function useReviewCardDetailPage({
 		promptTextareaRef.current?.focus()
 	}, [resolvedActiveTab, reviewCard])
 
-	const { unscheduledCount, overdueCount, dueTodayCount } =
-		useDetailReviewCounts(
-			reviewCard ? { reviewCardId: reviewCard.id } : undefined
-		)
+	const { pendingCount, overdueCount, dueTodayCount } = useDetailReviewCounts(
+		reviewCard ? { reviewCardId: reviewCard.id } : undefined
+	)
 	const reviewTriggerCounts = useMemo(
 		() => ({
-			unscheduledCount,
+			pendingCount,
 			overdueCount,
 			dueTodayCount
 		}),
-		[dueTodayCount, overdueCount, unscheduledCount]
+		[dueTodayCount, overdueCount, pendingCount]
 	)
 	const { data: reviews, isLoading: isReviewsLoading } = useReviewsByReviewCard(
 		reviewCard?.id
@@ -515,7 +514,7 @@ export function useReviewCardDetailPage({
 		todayReviews,
 		topicSearchQuery,
 		uncompletedUnscheduledReviews,
-		unscheduledCount,
+		pendingCount,
 		upcomingReviews,
 		handleCreateAndAssignTopic
 	}

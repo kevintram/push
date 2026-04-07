@@ -135,7 +135,7 @@ vi.mock('~/features/reviews/api/createReview', () => ({
 
 vi.mock('~/features/reviews/hooks/useDetailReviewCounts', () => ({
 	useDetailReviewCounts: () => ({
-		unscheduledCount: 1,
+		pendingCount: 1,
 		overdueCount: 0,
 		dueTodayCount: 0
 	})

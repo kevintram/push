@@ -51,9 +51,9 @@ export function ReviewsMenu({
 						onTriggerKeyDown={onTriggerKeyDown}
 						onTriggerMouseEnter={onTriggerMouseEnter}
 						overdueCount={menu.overdueCount}
+						pendingCount={menu.pendingCount}
 						surfaceContext={surfaceContext}
 						triggerDotSize={menu.triggerDotSize}
-						unscheduledCount={menu.unscheduledCount}
 					/>
 				}
 			/>
@@ -76,6 +76,7 @@ export function ReviewsMenu({
 				stopMenuEventPropagation={menu.stopMenuEventPropagation}
 				uncompletedOption={menu.uncompletedOption}
 				uncompletedUnscheduledReviews={menu.uncompletedUnscheduledReviews}
+				upcomingReviews={menu.upcomingReviews}
 			/>
 		</DropdownMenu>
 	)

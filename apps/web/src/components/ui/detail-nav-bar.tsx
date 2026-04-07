@@ -9,7 +9,7 @@ interface DetailNavBarProps {
 	afterActions?: ReactNode
 	activeTab: DetailNavTab
 	onTabChange: (tab: DetailNavTab) => void
-	unscheduledCount: number
+	pendingCount: number
 	overdueCount: number
 	dueTodayCount: number
 	showReviewsTab?: boolean
@@ -20,7 +20,7 @@ export function DetailNavBar({
 	afterActions,
 	activeTab,
 	onTabChange,
-	unscheduledCount,
+	pendingCount,
 	overdueCount,
 	dueTodayCount,
 	showReviewsTab = true
@@ -53,8 +53,8 @@ export function DetailNavBar({
 								<ReviewStatusDots
 									dueTodayCount={dueTodayCount}
 									overdueCount={overdueCount}
+									pendingCount={pendingCount}
 									surfaceContext='default'
-									unscheduledCount={unscheduledCount}
 								/>
 							</span>
 						</TabsTrigger>

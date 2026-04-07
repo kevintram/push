@@ -146,7 +146,7 @@ vi.mock('~/features/reviews/components/reviews-menu/ReviewsMenu', () => ({
 		onTriggerFocus?: () => void
 		onTriggerMouseEnter?: () => void
 		triggerCounts?: {
-			unscheduledCount: number
+			pendingCount: number
 			overdueCount: number
 			dueTodayCount: number
 		}
@@ -359,7 +359,7 @@ describe('ReviewCard', () => {
 			days_until_next_tier: 3,
 			days_in_current_tier: 1,
 			is_new: false,
-			reviews_unscheduled_uncompleted_count: 4,
+			reviews_pending_count: 4,
 			reviews_overdue_count: 2,
 			reviews_due_today_count: 1,
 			status_badges: [],
@@ -371,7 +371,7 @@ describe('ReviewCard', () => {
 		expect(reviewsMenuPropsMock).toHaveBeenCalledWith(
 			expect.objectContaining({
 				triggerCounts: {
-					unscheduledCount: 4,
+					pendingCount: 4,
 					overdueCount: 2,
 					dueTodayCount: 1
 				}

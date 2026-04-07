@@ -21,10 +21,11 @@ export function useDetailReviewCounts(filters?: ReviewCardFilters) {
 		completed: false
 	})
 
-	const { overdueCount, dueTodayCount } = useMemo(() => {
+	const { pendingCount, overdueCount, dueTodayCount } = useMemo(() => {
 		const today = dayjs().startOf('day')
 		let overdue = 0
 		let dueToday = 0
+		let pending = unscheduledReviews.length
 
 		for (const review of scheduledReviews) {
 			const scheduled = dayjs(review.scheduled_at).startOf('day')
@@ -32,17 +33,20 @@ export function useDetailReviewCounts(filters?: ReviewCardFilters) {
 				overdue++
 			} else if (scheduled.isSame(today)) {
 				dueToday++
+			} else {
+				pending++
 			}
 		}
 
 		return {
+			pendingCount: pending,
 			overdueCount: overdue,
 			dueTodayCount: dueToday
 		}
-	}, [scheduledReviews])
+	}, [scheduledReviews, unscheduledReviews.length])
 
 	return {
-		unscheduledCount: unscheduledReviews.length,
+		pendingCount,
 		overdueCount,
 		dueTodayCount
 	}

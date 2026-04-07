@@ -88,8 +88,12 @@ export function useReviewsMenu({
 		queriedReviews
 	])
 
-	const { uncompletedUnscheduledReviews, overdueReviews, todayReviews } =
-		useMemo(() => splitReviews(reviews), [reviews])
+	const {
+		uncompletedUnscheduledReviews,
+		overdueReviews,
+		todayReviews,
+		upcomingReviews
+	} = useMemo(() => splitReviews(reviews), [reviews])
 	const dueReviews = useMemo(
 		() => [...overdueReviews, ...todayReviews],
 		[overdueReviews, todayReviews]
@@ -104,12 +108,13 @@ export function useReviewsMenu({
 	const dueTodayCount = hasLiveReviews
 		? todayReviews.length
 		: (triggerCounts?.dueTodayCount ?? todayReviews.length)
-	const unscheduledCount = hasLiveReviews
-		? uncompletedUnscheduledReviews.length
-		: (triggerCounts?.unscheduledCount ?? uncompletedUnscheduledReviews.length)
+	const pendingCount = hasLiveReviews
+		? uncompletedUnscheduledReviews.length + upcomingReviews.length
+		: (triggerCounts?.pendingCount ??
+			uncompletedUnscheduledReviews.length + upcomingReviews.length)
 	const expectedDueCount = overdueCount + dueTodayCount
 	const hasExpectedSummaryContent =
-		expectedDueCount > 0 || unscheduledCount > 0 || hasLastReviewed
+		expectedDueCount > 0 || pendingCount > 0 || hasLastReviewed
 	const isSummaryLoading =
 		providedReviews === undefined &&
 		isOpen &&
@@ -120,6 +125,7 @@ export function useReviewsMenu({
 	const hasReviewSummarySections =
 		dueReviews.length > 0 ||
 		uncompletedUnscheduledReviews.length > 0 ||
+		upcomingReviews.length > 0 ||
 		latestCompletedReview !== null ||
 		shouldRenderSummaryLoadingState
 	const uncompletedOption = useMemo(
@@ -359,6 +365,7 @@ export function useReviewsMenu({
 		triggerDotSize,
 		uncompletedOption,
 		uncompletedUnscheduledReviews,
-		unscheduledCount
+		upcomingReviews,
+		pendingCount
 	}
 }

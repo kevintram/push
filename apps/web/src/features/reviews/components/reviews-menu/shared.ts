@@ -19,7 +19,7 @@ export interface ReviewsMenuProps {
 	hasLastReviewed?: boolean
 	surfaceContext?: 'default' | 'primary'
 	triggerCounts?: {
-		unscheduledCount: number
+		pendingCount: number
 		overdueCount: number
 		dueTodayCount: number
 	}

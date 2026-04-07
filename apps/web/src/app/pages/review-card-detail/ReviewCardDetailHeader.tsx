@@ -24,7 +24,7 @@ type ReviewCardDetailHeaderProps = {
 	onTopicMenuOpenChange: (open: boolean) => void
 	overdueCount: number
 	parentLabel: string
-	unscheduledCount: number
+	pendingCount: number
 }
 
 export function ReviewCardDetailHeader({
@@ -40,7 +40,7 @@ export function ReviewCardDetailHeader({
 	onTopicMenuOpenChange,
 	overdueCount,
 	parentLabel,
-	unscheduledCount
+	pendingCount
 }: ReviewCardDetailHeaderProps) {
 	return (
 		<DetailNavBar
@@ -113,7 +113,7 @@ export function ReviewCardDetailHeader({
 			}
 			onTabChange={onTabChange}
 			overdueCount={overdueCount}
-			unscheduledCount={unscheduledCount}
+			pendingCount={pendingCount}
 		/>
 	)
 }
