@@ -158,11 +158,13 @@ class ReviewCard(Base):
         return self.last_reviewed_at is None
 
     @property
-    def reviews_unscheduled_uncompleted_count(self) -> int:
+    def reviews_pending_count(self) -> int:
+        today = get_current_date()
         return sum(
             1
             for review in self.reviews
-            if review.completed_at is None and review.scheduled_at is None
+            if review.completed_at is None
+            and (review.scheduled_at is None or review.scheduled_at > today)
         )
 
     @property
