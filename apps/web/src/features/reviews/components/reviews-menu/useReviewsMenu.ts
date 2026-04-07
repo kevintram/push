@@ -88,8 +88,12 @@ export function useReviewsMenu({
 		queriedReviews
 	])
 
-	const { uncompletedUnscheduledReviews, overdueReviews, todayReviews } =
-		useMemo(() => splitReviews(reviews), [reviews])
+	const {
+		uncompletedUnscheduledReviews,
+		overdueReviews,
+		todayReviews,
+		upcomingReviews
+	} = useMemo(() => splitReviews(reviews), [reviews])
 	const dueReviews = useMemo(
 		() => [...overdueReviews, ...todayReviews],
 		[overdueReviews, todayReviews]
@@ -105,7 +109,7 @@ export function useReviewsMenu({
 		? todayReviews.length
 		: (triggerCounts?.dueTodayCount ?? todayReviews.length)
 	const unscheduledCount = hasLiveReviews
-		? uncompletedUnscheduledReviews.length
+		? uncompletedUnscheduledReviews.length + upcomingReviews.length
 		: (triggerCounts?.unscheduledCount ?? uncompletedUnscheduledReviews.length)
 	const expectedDueCount = overdueCount + dueTodayCount
 	const hasExpectedSummaryContent =
@@ -120,6 +124,7 @@ export function useReviewsMenu({
 	const hasReviewSummarySections =
 		dueReviews.length > 0 ||
 		uncompletedUnscheduledReviews.length > 0 ||
+		upcomingReviews.length > 0 ||
 		latestCompletedReview !== null ||
 		shouldRenderSummaryLoadingState
 	const uncompletedOption = useMemo(
@@ -359,6 +364,7 @@ export function useReviewsMenu({
 		triggerDotSize,
 		uncompletedOption,
 		uncompletedUnscheduledReviews,
+		upcomingReviews,
 		unscheduledCount
 	}
 }

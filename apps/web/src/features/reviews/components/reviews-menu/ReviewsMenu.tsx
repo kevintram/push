@@ -76,6 +76,7 @@ export function ReviewsMenu({
 				stopMenuEventPropagation={menu.stopMenuEventPropagation}
 				uncompletedOption={menu.uncompletedOption}
 				uncompletedUnscheduledReviews={menu.uncompletedUnscheduledReviews}
+				upcomingReviews={menu.upcomingReviews}
 			/>
 		</DropdownMenu>
 	)
