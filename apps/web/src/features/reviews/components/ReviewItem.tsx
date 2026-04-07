@@ -413,6 +413,17 @@ export function ReviewItem({
 		}
 	})()
 
+	const cardEl = cardInfo ? (
+		<Button
+			className='!px-0 h-auto min-w-0 max-w-full justify-start text-foreground text-sm hover:text-foreground'
+			onClick={cardInfo.onClick}
+			size='sm'
+			variant='link'
+		>
+			<span className='truncate'>{cardInfo.label}</span>
+		</Button>
+	) : null
+
 	const durabilityCompactEl = hasStability && (
 		<div className='flex items-center text-muted-foreground text-xs'>
 			<Anvil className='mr-1 h-3 w-3' />
@@ -463,20 +474,11 @@ export function ReviewItem({
 			<div className='flex @lg/review-list:hidden flex-col'>
 				<div className='flex items-start gap-2'>
 					<div className='pt-0.5'>{checkboxEl}</div>
-					<div className='min-w-0 flex-1'>
+					<div className='flex min-w-0 flex-1 flex-col gap-0.5'>
+						{cardEl}
 						{descriptionEl}
-						<div className='mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground text-xs'>
+						<div className='mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground text-xs'>
 							{compactDateEl}
-							{cardInfo && (
-								<Button
-									className='!px-0 h-auto min-w-0 max-w-full justify-start text-muted-foreground text-xs hover:text-foreground'
-									onClick={cardInfo.onClick}
-									size='sm'
-									variant='link'
-								>
-									<span className='truncate'>{cardInfo.label}</span>
-								</Button>
-							)}
 							{hasStability ? durabilityCompactEl : null}
 						</div>
 					</div>
@@ -489,22 +491,10 @@ export function ReviewItem({
 				className={`@lg/review-list:grid hidden ${gridCols} items-center gap-x-3`}
 			>
 				<div>{checkboxEl}</div>
+				{showCardColumn && (cardEl || <span />)}
 				{descriptionEl}
-				{durabilityWideEl || <span />}
-				{showCardColumn &&
-					(cardInfo ? (
-						<Button
-							className='!px-0 h-auto min-w-0 justify-start text-foreground text-sm hover:text-foreground'
-							onClick={cardInfo.onClick}
-							size='sm'
-							variant='link'
-						>
-							<span className='truncate'>{cardInfo.label}</span>
-						</Button>
-					) : (
-						<span />
-					))}
 				<div>{wideDateEl}</div>
+				{durabilityWideEl || <span />}
 				<div className='flex justify-center'>{moreButtonEl}</div>
 			</div>
 		</div>
