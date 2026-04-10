@@ -40,8 +40,12 @@ export function ReviewCardFooterActions({
 	removeFromTabLabel,
 	reviewCard
 }: ReviewCardFooterActionsProps) {
+	const iconButtonClassName = isUpdatingReviewCard
+		? 'rounded-full opacity-50'
+		: 'rounded-full'
+
 	return (
-		<CardFooter className='mt-1 gap-2 px-0 pt-1'>
+		<CardFooter className='-mx-1 mt-2 -mb-1 gap-2 px-0'>
 			<ReviewsMenu
 				align='end'
 				buttonClassName='rounded-full'
@@ -66,17 +70,15 @@ export function ReviewCardFooterActions({
 				<Button
 					aria-label={isFlagged ? 'Unflag this item' : 'Flag this item'}
 					aria-pressed={isFlagged}
-					className={isUpdatingReviewCard ? 'opacity-50' : ''}
+					className={iconButtonClassName}
 					onClick={onToggleFlag}
 					onKeyDown={event => event.stopPropagation()}
-					size='icon-sm'
+					size='icon-xs'
 					variant='ghost'
 				>
 					<Flag
 						className={
-							isFlagged
-								? FLAGGED_ICON_CLASSNAME
-								: 'h-4 w-4 text-muted-foreground'
+							isFlagged ? FLAGGED_ICON_CLASSNAME : 'text-muted-foreground'
 						}
 					/>
 				</Button>
@@ -87,29 +89,29 @@ export function ReviewCardFooterActions({
 							: 'Retire this item'
 					}
 					aria-pressed={reviewCard.retired}
-					className={isUpdatingReviewCard ? 'opacity-50' : ''}
+					className={iconButtonClassName}
 					onClick={onToggleRetired}
 					onKeyDown={event => event.stopPropagation()}
-					size='icon-sm'
+					size='icon-xs'
 					variant='ghost'
 				>
 					{reviewCard.retired ? (
-						<Sunset className='h-4 w-4 text-orange-500' />
+						<Sunset className='text-orange-500' />
 					) : (
-						<Sunset className='h-4 w-4 text-muted-foreground' />
+						<Sunset className='text-muted-foreground' />
 					)}
 				</Button>
 				<DropdownMenu>
 					<DropdownMenuTrigger
 						render={
 							<Button
-								className={isUpdatingReviewCard ? 'opacity-50' : ''}
+								className={iconButtonClassName}
 								onClick={event => event.stopPropagation()}
 								onKeyDown={event => event.stopPropagation()}
-								size='icon-sm'
+								size='icon-xs'
 								variant='ghost'
 							>
-								<MoreHorizontal className='h-4 w-4 text-muted-foreground' />
+								<MoreHorizontal className='text-muted-foreground' />
 							</Button>
 						}
 					/>
