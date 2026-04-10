@@ -189,8 +189,8 @@ export function TopicBreadcrumb({
 											render={
 												<Button
 													aria-label='Show hidden topics'
-													className='h-6 w-6 rounded-sm text-muted-foreground'
-													size='icon-sm'
+													className='rounded-sm text-muted-foreground'
+													size='icon-xs'
 													variant='ghost'
 												>
 													<BreadcrumbEllipsis />

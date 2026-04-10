@@ -289,12 +289,12 @@ export function TopicCard({
 					<DropdownMenuTrigger
 						render={
 							<Button
-								className='h-5 w-5 p-0'
 								onClick={event => event.stopPropagation()}
 								onKeyDown={event => event.stopPropagation()}
+								size='icon-xs'
 								variant='ghost'
 							>
-								<MoreHorizontal className='h-3 w-3' />
+								<MoreHorizontal />
 							</Button>
 						}
 					/>

@@ -236,11 +236,7 @@ export function RevealPanel({
 									/>
 								}
 							>
-								{isCopied ? (
-									<Check className='h-3 w-3' />
-								) : (
-									<Copy className='h-3 w-3' />
-								)}
+								{isCopied ? <Check /> : <Copy />}
 							</TooltipTrigger>
 							<TooltipContent>{isCopied ? 'Copied' : 'Copy'}</TooltipContent>
 						</Tooltip>
@@ -276,11 +272,7 @@ export function RevealPanel({
 							type='button'
 							variant='ghost'
 						>
-							{isCopied ? (
-								<Check className='h-3 w-3' />
-							) : (
-								<Copy className='h-3 w-3' />
-							)}
+							{isCopied ? <Check /> : <Copy />}
 						</Button>
 					</div>
 				</TabsContent>

@@ -21,9 +21,9 @@ export function AddFirstReviewButton({
 						size='sm'
 						variant='secondary'
 					>
-						<Plus className='h-4 w-4' />
+						<Plus />
 						Add first review
-						<ChevronDown className='h-3 w-3' />
+						<ChevronDown />
 					</Button>
 				}
 			/>

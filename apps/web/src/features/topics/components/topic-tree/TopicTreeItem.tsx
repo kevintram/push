@@ -237,7 +237,7 @@ function TopicTreeItemComponent({
 			{hasChildren ? (
 				<Button
 					aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${label}`}
-					className='h-5 w-5 shrink-0'
+					className='shrink-0'
 					onClick={event => {
 						event.stopPropagation()
 						onToggleExpanded(node.id)
@@ -249,7 +249,7 @@ function TopicTreeItemComponent({
 					<ChevronRight
 						aria-hidden='true'
 						className={cn(
-							'h-3.5 w-3.5 shrink-0 text-muted-foreground/70 transition-transform',
+							'shrink-0 text-muted-foreground/70 transition-transform',
 							isExpanded && 'rotate-90'
 						)}
 					/>

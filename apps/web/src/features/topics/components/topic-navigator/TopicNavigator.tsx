@@ -129,7 +129,7 @@ export function TopicNavigatorSheet({
 					/>
 				}
 			>
-				<Library className='h-4 w-4' />
+				<Library />
 				Hierarchy
 			</SheetTrigger>
 			<SheetContent className='w-full sm:max-w-sm' side='right'>

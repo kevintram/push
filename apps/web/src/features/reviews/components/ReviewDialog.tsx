@@ -242,27 +242,23 @@ export function ReviewDialog({
 					aria-label={
 						isExpanded ? 'Collapse review dialog' : 'Expand review dialog'
 					}
-					className='hidden h-6 w-6 p-0 text-muted-foreground sm:inline-flex'
+					className='hidden text-muted-foreground sm:inline-flex'
 					onClick={() => setIsExpanded(previous => !previous)}
-					size='sm'
+					size='icon-xs'
 					title={isExpanded ? 'Collapse dialog' : 'Expand dialog'}
 					variant='ghost'
 				>
-					{isExpanded ? (
-						<Minimize2 className='h-4 w-4' />
-					) : (
-						<Maximize2 className='h-4 w-4' />
-					)}
+					{isExpanded ? <Minimize2 /> : <Maximize2 />}
 				</Button>
 				<Button
 					aria-label='Close review dialog'
-					className='h-6 w-6 p-0 text-muted-foreground'
+					className='text-muted-foreground'
 					onClick={() => onOpenChange(false)}
-					size='sm'
+					size='icon-xs'
 					title='Close dialog'
 					variant='ghost'
 				>
-					<X className='h-4 w-4' />
+					<X />
 				</Button>
 			</>
 		),
@@ -305,13 +301,8 @@ export function ReviewDialog({
 							<DropdownMenu>
 								<DropdownMenuTrigger
 									render={
-										<Button
-											className='h-6 w-6 p-0'
-											size='sm'
-											title='More options'
-											variant='ghost'
-										>
-											<MoreHorizontal className='h-4 w-4' />
+										<Button size='icon-xs' title='More options' variant='ghost'>
+											<MoreHorizontal />
 										</Button>
 									}
 								/>
@@ -383,7 +374,7 @@ export function ReviewDialog({
 											size='sm'
 											variant='ghost'
 										>
-											<CalendarIcon className='h-3 w-3' />
+											<CalendarIcon />
 											{relativeDate.text}
 										</Button>
 									}

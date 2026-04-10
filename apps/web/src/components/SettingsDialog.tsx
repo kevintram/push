@@ -68,7 +68,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 										onClick={() => setTheme(option.value)}
 										variant={isSelected ? 'default' : 'outline'}
 									>
-										<Icon className='h-4 w-4' />
+										<Icon />
 										<span>{option.label}</span>
 									</Button>
 								)
@@ -90,7 +90,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 								}
 							>
 								<span>{selectedWeekStartOption.label}</span>
-								<ChevronDown className='h-4 w-4' />
+								<ChevronDown />
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end' matchTriggerWidth={false}>
 								{WEEK_START_OPTIONS.map(option => {
@@ -113,7 +113,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 					<div className='flex items-start justify-between border-t pt-6'>
 						<div className='font-medium text-sm'>Log out</div>
 						<Button onClick={handleLogout} variant='outline'>
-							<LogOut className='mr-2 h-4 w-4' />
+							<LogOut className='mr-2' />
 							Log out
 						</Button>
 					</div>

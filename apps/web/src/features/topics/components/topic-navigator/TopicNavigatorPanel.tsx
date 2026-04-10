@@ -49,14 +49,14 @@ export function TopicNavigatorPanel({
 			<SidebarHeader className='gap-1.5 border-sidebar-border/70 p-1.5'>
 				<div className='flex items-center gap-0.5'>
 					<Button
-						className='h-7 flex-1 justify-start px-2'
+						className='flex-1 justify-start'
 						nativeButton={false}
 						onClick={() => onNavigate?.()}
 						render={<Link to='/topics' />}
-						size='sm'
+						size='xs'
 						variant='ghost'
 					>
-						<House className='h-4 w-4' />
+						<House />
 						Home
 					</Button>
 					<Button
@@ -68,7 +68,7 @@ export function TopicNavigatorPanel({
 						size='icon-xs'
 						variant='ghost'
 					>
-						<Plus className='h-3.5 w-3.5' />
+						<Plus />
 					</Button>
 				</div>
 				<Separator className='mr-10 w-auto!' />

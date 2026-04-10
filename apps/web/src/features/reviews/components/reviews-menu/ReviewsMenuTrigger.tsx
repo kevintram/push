@@ -65,9 +65,7 @@ export function ReviewsMenuTrigger({
 			size={buttonSize}
 			variant={buttonVariant}
 		>
-			{createReviewPending ? (
-				<Loader2 className='h-4 w-4 animate-spin' />
-			) : null}
+			{createReviewPending ? <Loader2 className='animate-spin' /> : null}
 			<span>Reviews</span>
 			<ReviewStatusDots
 				className='pointer-events-none'
@@ -78,7 +76,7 @@ export function ReviewsMenuTrigger({
 				surfaceContext={surfaceContext}
 				testIdPrefix='reviews-trigger'
 			/>
-			<ChevronDown className='h-4 w-4' />
+			<ChevronDown />
 		</Button>
 	)
 }

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { ReviewCardStatusBadge } from '../types/status-badge.types'
 
 export const FLAGGED_ICON_CLASSNAME =
-	'h-4 w-4 fill-current text-sky-500 dark:text-sky-300'
+	'fill-current text-sky-500 dark:text-sky-300'
 
 export interface ReviewCardBadge {
 	label: string

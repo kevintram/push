@@ -302,7 +302,7 @@ export function ReviewItem({
 								size='sm'
 								variant='link'
 							>
-								<CalendarIcon className='h-3 w-3' />
+								<CalendarIcon />
 								{relativeDate.text}
 							</Button>
 						}
@@ -346,7 +346,7 @@ export function ReviewItem({
 								size='sm'
 								variant='link'
 							>
-								<CalendarIcon className='h-3 w-3' />
+								<CalendarIcon />
 								{relativeDate.text}
 							</Button>
 						}
@@ -362,7 +362,6 @@ export function ReviewItem({
 			<DropdownMenuTrigger
 				render={
 					<Button
-						className='h-6 w-6 p-0'
 						onClick={e => {
 							e.stopPropagation()
 							onNestedOverlayTriggerInteract?.()
@@ -371,11 +370,11 @@ export function ReviewItem({
 							e.stopPropagation()
 							onNestedOverlayTriggerInteract?.()
 						}}
-						size='sm'
+						size='icon-xs'
 						title='More options'
 						variant='ghost'
 					>
-						<MoreHorizontal className='h-3 w-3' />
+						<MoreHorizontal />
 					</Button>
 				}
 			/>

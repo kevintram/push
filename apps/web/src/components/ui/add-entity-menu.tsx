@@ -66,13 +66,9 @@ export function AddEntityMenu({
 						size={buttonSize}
 						variant={buttonVariant}
 					>
-						{isLoading ? (
-							<Loader2 className='h-4 w-4 animate-spin' />
-						) : (
-							<Plus className='h-4 w-4' />
-						)}
+						{isLoading ? <Loader2 className='animate-spin' /> : <Plus />}
 						{buttonLabel}
-						{showChevron ? <ChevronDown className='h-4 w-4' /> : null}
+						{showChevron ? <ChevronDown /> : null}
 					</Button>
 				}
 			/>

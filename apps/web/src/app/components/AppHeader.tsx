@@ -80,12 +80,12 @@ export function AppHeader() {
 						<div className='relative min-w-0 flex-1'>
 							<Button
 								aria-label='Open search'
-								className='h-8 w-full justify-start px-2.5 hover:bg-[var(--app-chrome-hover)] active:border-[var(--app-chrome-border)] active:bg-[var(--app-chrome-selected)]'
+								className='w-full justify-start hover:bg-[var(--app-chrome-hover)] active:border-[var(--app-chrome-border)] active:bg-[var(--app-chrome-selected)]'
 								onClick={() => setSearchOpen(true)}
 								size='sm'
 								variant='outline'
 							>
-								<Search className='h-4 w-4 text-muted-foreground' />
+								<Search className='text-muted-foreground' />
 								<span
 									className={cn(
 										'min-w-0 flex-1 truncate text-left font-normal text-muted-foreground',
@@ -99,16 +99,16 @@ export function AppHeader() {
 							{searchQuery ? (
 								<Button
 									aria-label='Clear search'
-									className='absolute top-1/2 right-0.5 size-7 -translate-y-1/2 rounded-full p-0 text-muted-foreground hover:bg-[var(--app-chrome-hover)] hover:text-[var(--app-chrome-hover-foreground)] active:border-[var(--app-chrome-border)] active:bg-[var(--app-chrome-selected)] active:text-[var(--app-chrome-selected-foreground)]'
+									className='absolute top-1/2 right-0.5 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-[var(--app-chrome-hover)] hover:text-[var(--app-chrome-hover-foreground)] active:border-[var(--app-chrome-border)] active:bg-[var(--app-chrome-selected)] active:text-[var(--app-chrome-selected-foreground)]'
 									onClick={event => {
 										event.stopPropagation()
 										setSearchQuery('')
 									}}
-									size='sm'
+									size='icon-xs'
 									type='button'
 									variant='ghost'
 								>
-									<X className='h-4 w-4' />
+									<X />
 								</Button>
 							) : null}
 						</div>

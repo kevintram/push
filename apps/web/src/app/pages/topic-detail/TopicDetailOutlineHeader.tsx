@@ -34,18 +34,18 @@ export function TopicDetailOutlineHeader({
 			<div className='flex items-center gap-0.5'>
 				<Button
 					aria-label={COLLAPSE_OUTLINE_LABEL}
-					className='h-5 w-5 rounded-md p-0'
+					className='rounded-md'
 					onClick={onCollapseAll}
 					size='icon-xs'
 					type='button'
 					variant='ghost'
 				>
-					<Minimize2 className='h-4 w-4' />
+					<Minimize2 />
 					<span className='sr-only'>{COLLAPSE_OUTLINE_LABEL}</span>
 				</Button>
 				<Button
 					aria-label={addTopicLabel}
-					className='h-5 w-5 rounded-md p-0'
+					className='rounded-md'
 					disabled={isUpdatingTopic || isSubmitting}
 					onClick={() => {
 						setIsSubmitting(true)
@@ -57,11 +57,7 @@ export function TopicDetailOutlineHeader({
 					type='button'
 					variant='ghost'
 				>
-					{isSubmitting ? (
-						<Loader className='h-4 w-4 animate-spin' />
-					) : (
-						<Plus className='h-4 w-4' />
-					)}
+					{isSubmitting ? <Loader className='animate-spin' /> : <Plus />}
 					<span className='sr-only'>{addTopicLabel}</span>
 				</Button>
 			</div>

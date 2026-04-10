@@ -38,11 +38,11 @@ export function TopicDetailRootActionsMenu({
 				render={
 					<Button
 						aria-label={`More actions for ${topicTitle || 'Untitled topic'}`}
-						className='h-8 w-8 shrink-0 rounded-full'
+						className='shrink-0 rounded-full'
 						size='icon-sm'
 						variant='outline'
 					>
-						<MoreHorizontal className='h-4 w-4' />
+						<MoreHorizontal />
 					</Button>
 				}
 			/>
