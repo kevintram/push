@@ -45,7 +45,7 @@ export function ReviewCardFooterActions({
 		: 'rounded-full'
 
 	return (
-		<CardFooter className='-mx-1 mt-2 -mb-1 gap-2 px-0'>
+		<CardFooter className='-mx-1 mt-3 -mb-1 gap-2 px-0'>
 			<ReviewsMenu
 				align='end'
 				buttonClassName='rounded-full'
