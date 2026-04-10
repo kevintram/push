@@ -5,6 +5,9 @@ import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { cn } from "~/lib/utils"
 
+const inputGroupInheritedIconClass =
+	"[&>svg:not([class*='size-']):not([class*='h-']):not([class*='w-'])]"
+
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
@@ -67,11 +70,10 @@ const inputGroupButtonVariants = cva(
 	{
 		variants: {
 			size: {
-				xs: "h-6 gap-1 rounded-[calc(var(--radius)-5px)] px-1.5 [&>svg:not([class*='size-'])]:size-3.5",
+				xs: `h-6 gap-1 rounded-[calc(var(--radius)-5px)] px-1.5 ${inputGroupInheritedIconClass}:size-3.5`,
 				sm: "",
-				"icon-xs":
-					"size-6 rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0",
-				"icon-sm": "size-8 p-0 has-[>svg]:p-0"
+				"icon-xs": `size-6 rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0 ${inputGroupInheritedIconClass}:size-3.5`,
+				"icon-sm": `size-8 p-0 has-[>svg]:p-0 ${inputGroupInheritedIconClass}:size-[1.125rem]`
 			}
 		},
 		defaultVariants: {

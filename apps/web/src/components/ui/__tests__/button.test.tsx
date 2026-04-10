@@ -11,6 +11,21 @@ describe("buttonVariants", () => {
 		expect(buttonVariants({ size: "icon-sm" })).not.toContain("rounded-full")
 	})
 
+	it("scales inherited button icons by shell size while preserving hardcoded icon sizing opt-outs", () => {
+		expect(buttonVariants({ size: "xs" })).toContain(
+			"[&_svg:not([class*='size-']):not([class*='h-']):not([class*='w-'])]:size-3.5"
+		)
+		expect(buttonVariants({ size: "sm" })).toContain(
+			"[&_svg:not([class*='size-']):not([class*='h-']):not([class*='w-'])]:size-[1.125rem]"
+		)
+		expect(buttonVariants({ size: "default" })).toContain(
+			"[&_svg:not([class*='size-']):not([class*='h-']):not([class*='w-'])]:size-[1.375rem]"
+		)
+		expect(buttonVariants({ size: "lg" })).toContain(
+			"[&_svg:not([class*='size-']):not([class*='h-']):not([class*='w-'])]:size-[1.625rem]"
+		)
+	})
+
 	it("keeps topic detail review-card controls locally rounded", () => {
 		render(
 			<TopicDetailReviewCardFilterControls

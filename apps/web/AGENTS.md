@@ -45,6 +45,10 @@ Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree/gen-env.sh
 
 When a file approaches either limit, split it: extract presentational sections into sibling `.tsx` files, and move orchestration, derived state, and mutations into a colocated `.ts` hook.
 
+## Button Icon Sizing
+
+Button icons inherit their size automatically from the button's `size` variant — do not pass manual sizing classes (`h-4 w-4`, `size-4`, etc.) to SVGs inside buttons. Just use `<Plus />`, not `<Plus className='h-4 w-4' />`. Icons that need to opt out of inherited sizing (e.g. for color-only overrides) can use an explicit `size-*` or `h-*`/`w-*` class to escape the automatic selector.
+
 ## Project Structure
 
 ```
