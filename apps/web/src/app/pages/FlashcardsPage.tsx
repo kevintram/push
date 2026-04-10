@@ -114,13 +114,11 @@ export function FlashcardsPage({
 	const retireAriaLabel = activeCard?.retired
 		? 'Return this item to review queue'
 		: 'Retire this item'
-	let retireIcon: ReactNode = (
-		<Sunset className='h-4 w-4 text-muted-foreground' />
-	)
+	let retireIcon: ReactNode = <Sunset className='text-muted-foreground' />
 	if (updateReviewCardMutation.isPending) {
-		retireIcon = <Loader2 className='h-4 w-4 animate-spin' />
+		retireIcon = <Loader2 className='animate-spin' />
 	} else if (activeCard?.retired) {
-		retireIcon = <Sunset className='h-4 w-4 text-orange-500' />
+		retireIcon = <Sunset className='text-orange-500' />
 	}
 
 	useEffect(() => {

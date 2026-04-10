@@ -163,7 +163,7 @@ export function ReviewCardDetailHomeTab({
 								render={
 									<Button
 										aria-label='Convert type'
-										className='pointer-events-none inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full p-0 opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/type:pointer-events-auto group-hover/type:opacity-100 group-active/type:pointer-events-auto group-active/type:opacity-100'
+										className='pointer-events-none cursor-pointer rounded-full opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/type:pointer-events-auto group-hover/type:opacity-100 group-active/type:pointer-events-auto group-active/type:opacity-100'
 										disabled={isTypeMutationPending || isUpdatingReviewCard}
 										onClick={() => {
 											handleConvertType().catch(() => {})
@@ -174,7 +174,7 @@ export function ReviewCardDetailHomeTab({
 									/>
 								}
 							>
-								<ArrowLeftRight className='h-3 w-3' />
+								<ArrowLeftRight />
 							</TooltipTrigger>
 							<TooltipContent>
 								{reviewCard.type === 'practice'
@@ -389,7 +389,7 @@ export function ReviewCardDetailHomeTab({
 										className={
 											reviewCard.flagged_at
 												? FLAGGED_ICON_CLASSNAME
-												: 'h-4 w-4 text-muted-foreground'
+												: 'text-muted-foreground'
 										}
 									/>
 								</Button>
@@ -415,9 +415,9 @@ export function ReviewCardDetailHomeTab({
 								variant='outline'
 							>
 								{reviewCard.retired ? (
-									<Sunset className='h-4 w-4 text-orange-500' />
+									<Sunset className='text-orange-500' />
 								) : (
-									<Sunset className='h-4 w-4 text-muted-foreground' />
+									<Sunset className='text-muted-foreground' />
 								)}
 							</Button>
 						</TooltipTrigger>
@@ -434,7 +434,7 @@ export function ReviewCardDetailHomeTab({
 									type='button'
 									variant='outline'
 								>
-									<MoreHorizontal className='h-4 w-4' />
+									<MoreHorizontal />
 								</Button>
 							}
 						/>

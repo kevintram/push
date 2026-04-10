@@ -31,13 +31,11 @@ function getActionButtonProps(section: TopicDetailSectionNode) {
 	const displayLevel = getTopicDetailSectionDisplayLevel(section)
 	if (displayLevel <= 4) {
 		return {
-			buttonSize: 'icon-sm' as const,
-			iconClassName: 'size-4'
+			buttonSize: 'icon-sm' as const
 		}
 	}
 	return {
-		buttonSize: 'icon-xs' as const,
-		iconClassName: 'size-3'
+		buttonSize: 'icon-xs' as const
 	}
 }
 
@@ -88,7 +86,7 @@ export function TopicDetailNestedSectionView({
 }: TopicDetailNestedSectionViewProps) {
 	const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
-	const { buttonSize, iconClassName } = getActionButtonProps(section)
+	const { buttonSize } = getActionButtonProps(section)
 	const showsInlineNumber = sectionNumber != null
 
 	return (
@@ -171,7 +169,7 @@ export function TopicDetailNestedSectionView({
 											type='button'
 											variant='ghost'
 										>
-											<ExternalLink className={iconClassName} />
+											<ExternalLink />
 										</Button>
 									}
 								/>
@@ -192,7 +190,7 @@ export function TopicDetailNestedSectionView({
 											size={buttonSize}
 											variant='ghost'
 										>
-											<MoreHorizontal className={iconClassName} />
+											<MoreHorizontal />
 										</Button>
 									}
 								/>
@@ -210,12 +208,12 @@ export function TopicDetailNestedSectionView({
 									>
 										{isSubmitting ? (
 											<>
-												<Loader className='h-4 w-4 animate-spin' />
+												<Loader className='animate-spin' />
 												Creating...
 											</>
 										) : (
 											<>
-												<Plus className='h-4 w-4' />
+												<Plus />
 												New topic
 											</>
 										)}
@@ -225,7 +223,7 @@ export function TopicDetailNestedSectionView({
 										onClick={onOpenDeleteDialog}
 										variant='destructive'
 									>
-										<Trash2 className='h-4 w-4' />
+										<Trash2 />
 										Delete
 									</DropdownMenuItem>
 								</DropdownMenuContent>
@@ -245,7 +243,6 @@ export function TopicDetailNestedSectionView({
 						>
 							<ChevronDown
 								className={cn(
-									iconClassName,
 									'translate-y-px transition-transform',
 									isCollapsed && '-rotate-90'
 								)}

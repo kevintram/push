@@ -49,12 +49,12 @@ export function ReviewCardDetailReviewsTab({
 							variant='default'
 						>
 							{isCreatingReview ? (
-								<Loader2 className='h-4 w-4 animate-spin' />
+								<Loader2 className='animate-spin' />
 							) : (
-								<Plus className='h-4 w-4' />
+								<Plus />
 							)}
 							Create review
-							<ChevronDown className='h-4 w-4' />
+							<ChevronDown />
 						</Button>
 					}
 				/>

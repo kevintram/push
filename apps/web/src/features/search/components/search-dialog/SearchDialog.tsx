@@ -227,7 +227,7 @@ export function SearchDialog({
 							}}
 							variant='outline'
 						>
-							<Plus className='h-4 w-4' />
+							<Plus />
 							{createLabel}
 						</Button>
 					</div>

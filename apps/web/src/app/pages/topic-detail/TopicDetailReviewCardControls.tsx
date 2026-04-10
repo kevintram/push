@@ -42,13 +42,6 @@ function getControlClassName(
 	return 'rounded-full'
 }
 
-function getAddIconClassName(
-	controlsVariant: TopicDetailReviewCardControlsVariant
-) {
-	if (controlsVariant === 'button') return 'h-4 w-4'
-	return 'h-3 w-3'
-}
-
 export function TopicDetailReviewCardFilterControls({
 	activeFilter,
 	controlsVariant,
@@ -95,7 +88,7 @@ export function TopicDetailReviewCardAddButton({
 						size={getControlSize(controlsVariant)}
 						variant='secondary'
 					>
-						<Plus className={getAddIconClassName(controlsVariant)} />
+						<Plus />
 						Add
 					</Button>
 				}

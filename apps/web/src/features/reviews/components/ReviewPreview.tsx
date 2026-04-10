@@ -119,7 +119,7 @@ export function ReviewPreview({
 							size='sm'
 							variant='ghost'
 						>
-							<CalendarIcon className='h-3 w-3' />
+							<CalendarIcon />
 							{relativeDate.text}
 						</Button>
 					}
