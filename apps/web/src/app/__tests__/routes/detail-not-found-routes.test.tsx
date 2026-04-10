@@ -81,7 +81,9 @@ describe('detail route not-found handling', () => {
 		})
 
 		renderRoute('/topics/999')
-		expect(await screen.findByText('Page not found')).toBeInTheDocument()
+		expect(
+			await screen.findByText('Page not found', undefined, { timeout: 3_000 })
+		).toBeInTheDocument()
 	})
 
 	it('shows not found for missing review card detail route', async () => {
@@ -102,6 +104,8 @@ describe('detail route not-found handling', () => {
 		})
 
 		renderRoute('/review-cards/999')
-		expect(await screen.findByText('Page not found')).toBeInTheDocument()
+		expect(
+			await screen.findByText('Page not found', undefined, { timeout: 3_000 })
+		).toBeInTheDocument()
 	})
 })

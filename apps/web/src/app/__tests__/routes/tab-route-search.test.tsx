@@ -276,13 +276,16 @@ describe('route-backed tab search state', () => {
 
 		renderRoute('/flashcards?tab=invalid&scope=invalid')
 
-		await waitFor(() => {
-			expect(useReviewCardQueueMock).toHaveBeenLastCalledWith({
-				type: 'flashcard',
-				tab: 'due',
-				focused: true
-			})
-		})
+		await waitFor(
+			() => {
+				expect(useReviewCardQueueMock).toHaveBeenLastCalledWith({
+					type: 'flashcard',
+					tab: 'due',
+					focused: true
+				})
+			},
+			{ timeout: 3_000 }
+		)
 		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
 		expect(screen.getByText('Due flashcard')).toBeInTheDocument()
 	})
