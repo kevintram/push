@@ -174,7 +174,7 @@ export function ReviewCardDetailHomeTab({
 									/>
 								}
 							>
-								<ArrowLeftRight />
+								<ArrowLeftRight className='h-3 w-3' />
 							</TooltipTrigger>
 							<TooltipContent>
 								{reviewCard.type === 'practice'
