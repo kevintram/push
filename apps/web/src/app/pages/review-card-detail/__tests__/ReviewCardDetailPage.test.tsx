@@ -87,19 +87,21 @@ describe('ReviewCardDetailPage', () => {
 		})
 	})
 
-	it('focuses the prompt field when landing on a newly created review card', async () => {
+	it('focuses the primary text field when landing on a newly created review card', async () => {
 		window.sessionStorage.setItem(
-			'review-cards:focus-new-review-card-prompt',
+			'review-cards:focus-new-review-card-primary-text',
 			'11'
 		)
 
 		render(<ReviewCardDetailPage reviewCardId={11} />)
 
 		await waitFor(() => {
-			expect(screen.getByDisplayValue(reviewCard.prompt)).toHaveFocus()
+			expect(screen.getByDisplayValue(reviewCard.primary_text)).toHaveFocus()
 		})
 		expect(
-			window.sessionStorage.getItem('review-cards:focus-new-review-card-prompt')
+			window.sessionStorage.getItem(
+				'review-cards:focus-new-review-card-primary-text'
+			)
 		).toBeNull()
 	})
 
@@ -116,18 +118,22 @@ describe('ReviewCardDetailPage', () => {
 		const { rerender } = render(<ReviewCardDetailPage reviewCardId={11} />)
 
 		await waitFor(() => {
-			expect(screen.getByDisplayValue(reviewCard.prompt)).toBeInTheDocument()
-			expect(screen.getByDisplayValue(reviewCard.answer)).toBeInTheDocument()
+			expect(
+				screen.getByDisplayValue(reviewCard.primary_text)
+			).toBeInTheDocument()
+			expect(
+				screen.getByDisplayValue(reviewCard.secondary_text)
+			).toBeInTheDocument()
 		})
 
-		const promptField = screen.getByDisplayValue(reviewCard.prompt)
+		const promptField = screen.getByDisplayValue(reviewCard.primary_text)
 		await user.clear(promptField)
 		await user.type(promptField, 'Solve for y')
 
 		currentReviewCard = {
 			...currentReviewCard,
-			prompt: 'Solve for z',
-			answer: 'Updated answer from server'
+			primary_text: 'Solve for z',
+			secondary_text: 'Updated answer from server'
 		}
 
 		rerender(<ReviewCardDetailPage reviewCardId={11} />)

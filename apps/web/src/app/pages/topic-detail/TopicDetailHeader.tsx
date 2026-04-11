@@ -111,7 +111,7 @@ export function TopicDetailHeader({
 								)}
 								onBlur={flushTitle}
 								onChange={onTitleChange}
-								placeholder='Untitled topic'
+								placeholder='Title'
 								ref={titleTextareaRef}
 								spellCheck={false}
 								value={title}

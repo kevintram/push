@@ -9,8 +9,8 @@ const baseCard: ReviewCard = {
 	topic_id: 1,
 	topic_title: 'Algebra',
 	type: 'practice',
-	prompt: 'Prompt',
-	answer: 'Answer',
+	primary_text: 'Prompt',
+	secondary_text: 'Answer',
 	inserted_at: '2026-01-01T12:00:00.000Z',
 	updated_at: '2026-01-02T12:00:00.000Z',
 	last_review_rating: null,
@@ -51,7 +51,7 @@ describe('groupReviewCardQueueByActionDay', () => {
 			[
 				buildQueueItem({
 					queue_type: 'due',
-					card: { ...baseCard, id: 11, prompt: 'Stale overdue due' },
+					card: { ...baseCard, id: 11, primary_text: 'Stale overdue due' },
 					review_id: 11,
 					scheduled_at: '2026-01-11',
 					action_days: -4,
@@ -59,13 +59,13 @@ describe('groupReviewCardQueueByActionDay', () => {
 				}),
 				buildQueueItem({
 					queue_type: 'hazy',
-					card: { ...baseCard, id: 12, prompt: 'Hazy overdue' },
+					card: { ...baseCard, id: 12, primary_text: 'Hazy overdue' },
 					action_days: -1,
 					days_until_hazy: -2
 				}),
 				buildQueueItem({
 					queue_type: 'due',
-					card: { ...baseCard, id: 13, prompt: 'Slightly overdue due' },
+					card: { ...baseCard, id: 13, primary_text: 'Slightly overdue due' },
 					review_id: 13,
 					scheduled_at: '2026-01-14',
 					action_days: -1,
@@ -73,7 +73,7 @@ describe('groupReviewCardQueueByActionDay', () => {
 				}),
 				buildQueueItem({
 					queue_type: 'due',
-					card: { ...baseCard, id: 14, prompt: 'Today due' },
+					card: { ...baseCard, id: 14, primary_text: 'Today due' },
 					review_id: 14,
 					scheduled_at: '2026-01-15',
 					action_days: 0,
@@ -85,12 +85,12 @@ describe('groupReviewCardQueueByActionDay', () => {
 		)
 
 		expect(sections.map(section => section.label)).toEqual(['Overdue', 'Today'])
-		expect(sections[0]?.items.map(item => item.card.prompt)).toEqual([
+		expect(sections[0]?.items.map(item => item.card.primary_text)).toEqual([
 			'Slightly overdue due',
 			'Stale overdue due',
 			'Hazy overdue'
 		])
-		expect(sections[1]?.items.map(item => item.card.prompt)).toEqual([
+		expect(sections[1]?.items.map(item => item.card.primary_text)).toEqual([
 			'Today due'
 		])
 	})

@@ -169,8 +169,8 @@ const reviewCard = {
 	topic_id: 1,
 	topic_title: 'Algebra',
 	type: 'practice' as const,
-	prompt: 'Solve for x',
-	answer: 'x = 3',
+	primary_text: 'Solve for x',
+	secondary_text: 'x = 3',
 	notes: 'Factor carefully',
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',
@@ -195,7 +195,7 @@ const reviews = [
 		id: 101,
 		review_card: {
 			id: 11,
-			prompt: 'Solve for x'
+			primary_text: 'Solve for x'
 		},
 		description: 'Linked review item',
 		notes: null,

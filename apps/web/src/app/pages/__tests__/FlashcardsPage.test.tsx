@@ -18,7 +18,11 @@ describe('FlashcardsPage', () => {
 			data: [
 				{
 					queue_type: 'due',
-					card: { ...reviewCard, id: 21, prompt: 'Today flashcard prompt' },
+					card: {
+						...reviewCard,
+						id: 21,
+						primary_text: 'Today flashcard prompt'
+					},
 					review_id: null,
 					scheduled_at: '2026-03-05',
 					action_days: 0,
@@ -30,7 +34,7 @@ describe('FlashcardsPage', () => {
 					card: {
 						...reviewCard,
 						id: 22,
-						prompt: 'Tomorrow flashcard prompt'
+						primary_text: 'Tomorrow flashcard prompt'
 					},
 					review_id: null,
 					scheduled_at: '2026-03-06',
@@ -50,7 +54,7 @@ describe('FlashcardsPage', () => {
 			expect.objectContaining({
 				enableLargeCardMode: true,
 				reviewCard: expect.objectContaining({
-					prompt: 'Today flashcard prompt'
+					primary_text: 'Today flashcard prompt'
 				})
 			})
 		)
@@ -76,7 +80,7 @@ describe('FlashcardsPage', () => {
 								...reviewCard,
 								id: 22,
 								type: 'flashcard',
-								prompt: 'Anchor flashcard'
+								primary_text: 'Anchor flashcard'
 							},
 							review_id: null,
 							scheduled_at: '2026-03-09',
@@ -110,7 +114,7 @@ describe('FlashcardsPage', () => {
 						...reviewCard,
 						id: 22,
 						type: 'flashcard',
-						prompt: 'Retire me'
+						primary_text: 'Retire me'
 					},
 					review_id: null,
 					scheduled_at: '2026-03-05',
@@ -142,7 +146,7 @@ describe('FlashcardsPage', () => {
 						...reviewCard,
 						id: 23,
 						type: 'flashcard',
-						prompt: 'Due flashcard',
+						primary_text: 'Due flashcard',
 						status_badges: [
 							{
 								key: 'due',
@@ -193,7 +197,7 @@ describe('FlashcardsPage', () => {
 						...reviewCard,
 						id: 24,
 						type: 'flashcard',
-						prompt: 'Review me first',
+						primary_text: 'Review me first',
 						status_badges: [
 							{
 								key: 'due',
@@ -238,7 +242,7 @@ describe('FlashcardsPage', () => {
 						...reviewCard,
 						id: 25,
 						type: 'flashcard',
-						prompt: 'Retired flashcard',
+						primary_text: 'Retired flashcard',
 						retired: true
 					},
 					review_id: null,
@@ -285,7 +289,7 @@ describe('FlashcardsPage', () => {
 								...reviewCard,
 								id: 100 + index,
 								type: 'flashcard' as const,
-								prompt: `New flashcard ${index + 1}`
+								primary_text: `New flashcard ${index + 1}`
 							},
 							review_id: null,
 							scheduled_at: null,
@@ -306,7 +310,7 @@ describe('FlashcardsPage', () => {
 									...reviewCard,
 									id: 111,
 									type: 'flashcard' as const,
-									prompt: 'Focused flashcard'
+									primary_text: 'Focused flashcard'
 								},
 								review_id: null,
 								scheduled_at: null,
@@ -327,7 +331,7 @@ describe('FlashcardsPage', () => {
 								...reviewCard,
 								id: 112,
 								type: 'flashcard' as const,
-								prompt: 'Overdue flashcard'
+								primary_text: 'Overdue flashcard'
 							},
 							review_id: null,
 							scheduled_at: '2026-03-04',
@@ -341,7 +345,7 @@ describe('FlashcardsPage', () => {
 								...reviewCard,
 								id: 113,
 								type: 'flashcard' as const,
-								prompt: 'Today flashcard A'
+								primary_text: 'Today flashcard A'
 							},
 							review_id: null,
 							scheduled_at: '2026-03-05',
@@ -355,7 +359,7 @@ describe('FlashcardsPage', () => {
 								...reviewCard,
 								id: 114,
 								type: 'flashcard' as const,
-								prompt: 'Today flashcard B'
+								primary_text: 'Today flashcard B'
 							},
 							review_id: null,
 							scheduled_at: '2026-03-05',
@@ -369,7 +373,7 @@ describe('FlashcardsPage', () => {
 								...reviewCard,
 								id: 115,
 								type: 'flashcard' as const,
-								prompt: 'Soon flashcard A'
+								primary_text: 'Soon flashcard A'
 							},
 							review_id: null,
 							scheduled_at: '2026-03-06',
@@ -383,7 +387,7 @@ describe('FlashcardsPage', () => {
 								...reviewCard,
 								id: 116,
 								type: 'flashcard' as const,
-								prompt: 'Soon flashcard B'
+								primary_text: 'Soon flashcard B'
 							},
 							review_id: null,
 							scheduled_at: '2026-03-07',
@@ -397,7 +401,7 @@ describe('FlashcardsPage', () => {
 								...reviewCard,
 								id: 117,
 								type: 'flashcard' as const,
-								prompt: 'Soon flashcard C'
+								primary_text: 'Soon flashcard C'
 							},
 							review_id: null,
 							scheduled_at: '2026-03-08',
@@ -435,7 +439,7 @@ describe('FlashcardsPage', () => {
 					card: {
 						...reviewCard,
 						id: 41,
-						prompt: 'Today flashcard',
+						primary_text: 'Today flashcard',
 						inserted_at: '2026-03-05T12:00:00.000Z'
 					},
 					review_id: null,
@@ -448,7 +452,7 @@ describe('FlashcardsPage', () => {
 					card: {
 						...reviewCard,
 						id: 42,
-						prompt: 'Yesterday flashcard',
+						primary_text: 'Yesterday flashcard',
 						inserted_at: '2026-03-04T12:00:00.000Z'
 					},
 					review_id: null,

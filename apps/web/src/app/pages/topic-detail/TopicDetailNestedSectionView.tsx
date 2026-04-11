@@ -147,7 +147,7 @@ export function TopicDetailNestedSectionView({
 									)}
 									onBlur={flushTitle}
 									onChange={onTitleChange}
-									placeholder='Untitled topic'
+									placeholder='Title'
 									ref={registerTitleRef}
 									rows={1}
 									spellCheck={false}

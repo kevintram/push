@@ -19,8 +19,8 @@ export type Review = {
 		id: number
 		topic_id: number
 		type: 'practice' | 'flashcard'
-		prompt: string
-		answer: string
+		primary_text: string
+		secondary_text: string
 	}
 
 	// Entity FSRS state before review

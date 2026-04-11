@@ -19,6 +19,7 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
+import { getReviewCardDisplayTitle } from '~/features/review-cards/utils/reviewCardCopy'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
 import { useDeleteReview } from '../api/deleteReview'
@@ -402,7 +403,7 @@ export function ReviewItem({
 		if (variant !== 'default' && variant !== 'topic') return null
 		if (entry.review_card) {
 			return {
-				label: entry.review_card.prompt || 'Untitled card',
+				label: getReviewCardDisplayTitle(entry.review_card),
 				onClick: handleReviewCardClick
 			}
 		}

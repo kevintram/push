@@ -18,8 +18,8 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 		id: v.number(),
 		topic_id: v.number(),
 		type: v.picklist(['practice', 'flashcard']),
-		prompt: v.string(),
-		answer: v.string()
+		primary_text: v.string(),
+		secondary_text: v.string()
 	}),
 
 	// Entity FSRS state before review

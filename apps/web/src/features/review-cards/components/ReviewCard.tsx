@@ -38,6 +38,7 @@ import { useDeleteReviewCardWithUndo } from '../hooks/useDeleteReviewCardWithUnd
 import type { ReviewCard as ReviewCardModel } from '../types/review-card.types'
 import { hasScheduledDueReviews } from '../utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '../utils/orderReviewCardStatusBadges'
+import { getReviewCardDisplayTitle } from '../utils/reviewCardCopy'
 import { RetireReviewCardDialog } from './RetireReviewCardDialog'
 import { ReviewCardBody, ReviewCardMetaRow } from './ReviewCardBody'
 import { ReviewCardFooterActions } from './ReviewCardFooterActions'
@@ -124,31 +125,32 @@ export function ReviewCard({
 	)
 
 	const highlightedPrimary = useMemo(() => {
-		if (!reviewCard.prompt) return null
-		if (!searchQuery?.trim()) return reviewCard.prompt
-		return highlightText({ text: reviewCard.prompt, query: searchQuery })
-	}, [reviewCard.prompt, searchQuery])
+		if (!reviewCard.primary_text) return null
+		if (!searchQuery?.trim()) return reviewCard.primary_text
+		return highlightText({ text: reviewCard.primary_text, query: searchQuery })
+	}, [reviewCard.primary_text, searchQuery])
 
 	const highlightedSecondary = useMemo(() => {
-		if (!reviewCard.answer) return null
-		if (!searchQuery?.trim()) return reviewCard.answer
-		return truncateWithHighlight(reviewCard.answer, searchQuery, 200)
-	}, [reviewCard.answer, searchQuery])
+		if (!reviewCard.secondary_text) return null
+		if (!searchQuery?.trim()) return reviewCard.secondary_text
+		return truncateWithHighlight(reviewCard.secondary_text, searchQuery, 200)
+	}, [reviewCard.secondary_text, searchQuery])
 
-	const hasPrimaryText = Boolean(reviewCard.prompt.trim())
-	const hasSecondaryText = Boolean(reviewCard.answer.trim())
+	const hasPrimaryText = Boolean(reviewCard.primary_text.trim())
+	const hasSecondaryText = Boolean(reviewCard.secondary_text.trim())
 	const hidePrimary = hidesPrimary && hasPrimaryText && !isPrimaryRevealed
 	const hideSecondary =
 		hidesSecondary && hasSecondaryText && !isSecondaryRevealed
+	const displayPrimaryText = getReviewCardDisplayTitle(reviewCard)
 	const estimatedExpandedCardHeight = useMemo(() => {
 		const estimatedWidth =
 			cardRect.width > 0 ? cardRect.width : CARD_ESTIMATE_FALLBACK_WIDTH
 		return estimateExpandedCardSize(
-			reviewCard.prompt || 'Untitled prompt',
-			reviewCard.answer || '',
+			displayPrimaryText,
+			reviewCard.secondary_text || '',
 			estimatedWidth
 		)
-	}, [cardRect.width, reviewCard.answer, reviewCard.prompt])
+	}, [cardRect.width, displayPrimaryText, reviewCard.secondary_text])
 	const isLargeCard =
 		enableLargeCardMode &&
 		estimatedExpandedCardHeight >= LARGE_CARD_CONTENT_HEIGHT_MIN
@@ -164,7 +166,7 @@ export function ReviewCard({
 		handleCopyGuessText,
 		handleCopyRevealText
 	} = useRevealPanel({
-		revealText: reviewCard.answer,
+		revealText: reviewCard.secondary_text,
 		entityId: reviewCard.id < 0 ? null : reviewCard.id,
 		hidesSecondary
 	})
@@ -343,7 +345,7 @@ export function ReviewCard({
 				isLargeCard={isLargeCard}
 				isRevealPanelCopied={isRevealPanelCopied}
 				revealPanelTab={revealPanelTab}
-				reviewCardAnswer={reviewCard.answer}
+				reviewCardAnswer={reviewCard.secondary_text}
 				setGuessSecondaryText={setGuessSecondaryText}
 				setRevealPanelTab={setRevealPanelTab}
 			/>

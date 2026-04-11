@@ -24,8 +24,8 @@ vi.mock('../../api/getReviews', () => ({
 				id: 11,
 				topic_id: 5,
 				type: 'flashcard',
-				prompt: 'Prompt',
-				answer: 'Answer'
+				primary_text: 'Prompt',
+				secondary_text: 'Answer'
 			},
 			stability_before: null,
 			difficulty_before: null,

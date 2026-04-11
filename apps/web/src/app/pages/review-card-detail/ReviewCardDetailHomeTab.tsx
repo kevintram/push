@@ -28,6 +28,10 @@ import {
 import type { ReviewCardBadge } from '~/features/review-cards/components/reviewCardShared'
 import { FLAGGED_ICON_CLASSNAME } from '~/features/review-cards/components/reviewCardShared'
 import type { ReviewCard } from '~/features/review-cards/types/review-card.types'
+import {
+	getReviewCardPrimaryFieldLabel,
+	getReviewCardSecondaryFieldLabel
+} from '~/features/review-cards/utils/reviewCardCopy'
 import { ReviewsMenu } from '~/features/reviews/components/reviews-menu/ReviewsMenu'
 import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
@@ -36,26 +40,25 @@ import { getRatingIcon } from '~/utils/getRatingIcon'
 import { EMPTY_BADGE_CLASSNAME } from './shared'
 
 type ReviewCardDetailHomeTabProps = {
-	answer: string
-	flushAnswer: () => void
+	secondaryText: string
+	flushPrimaryText: () => void
 	flushNotes: () => void
-	flushPrompt: () => void
+	flushSecondaryText: () => void
 	freshnessTierColor: string
 	freshnessTierInfo: { label: string; tooltip?: string | null }
-	guessAnswerText: string
+	guessSecondaryText: string
 	handleConvertType: () => Promise<void>
 	handleCopyGuessText: () => Promise<void>
 	handleCopyRevealText: (textOverride?: string) => Promise<void>
 	handleSeeReviews: () => void
 	handleUpdateReviewCardFields: (fields: {
-		prompt?: string
-		answer?: string
+		primary_text?: string
+		secondary_text?: string
 		notes?: string
 		retired?: boolean
 		flagged?: boolean
 	}) => void
 	hidesSecondary: boolean
-	isAnswerEmpty: boolean
 	isRevealPanelCopied: boolean
 	isRetireDisabled: boolean
 	isTypeMutationPending: boolean
@@ -64,14 +67,14 @@ type ReviewCardDetailHomeTabProps = {
 	lastReviewed: { text: string }
 	latestCompletedReview: ReviewListItem | null
 	notes: string
-	onAnswerChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
+	onPrimaryTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
 	onNotesChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
 	onOpenDeleteDialog: () => void
 	onOpenReviewDialog: (reviewId: number) => void
-	onPromptChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
+	onSecondaryTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
 	onRetireToggle: () => void
-	prompt: string
-	promptTextareaRef: React.RefObject<HTMLTextAreaElement | null>
+	primaryText: string
+	primaryTextTextareaRef: React.RefObject<HTMLTextAreaElement | null>
 	resolvedReviews: Array<ReviewListItem>
 	revealPanelTab: RevealPanelTab | null
 	reviewCard: ReviewCard
@@ -80,29 +83,28 @@ type ReviewCardDetailHomeTabProps = {
 		overdueCount: number
 		dueTodayCount: number
 	}
-	setAnswer: (value: string) => void
+	setSecondaryText: (value: string) => void
 	setNotes: (value: string) => void
-	setGuessAnswerText: Dispatch<SetStateAction<string>>
+	setGuessSecondaryText: Dispatch<SetStateAction<string>>
 	setRevealPanelTab: Dispatch<SetStateAction<RevealPanelTab | null>>
 	stabilityText: string
 	statusBadges: Array<ReviewCardBadge>
 }
 
 export function ReviewCardDetailHomeTab({
-	answer,
-	flushAnswer,
+	secondaryText,
+	flushPrimaryText,
 	flushNotes,
-	flushPrompt,
+	flushSecondaryText,
 	freshnessTierColor,
 	freshnessTierInfo,
-	guessAnswerText,
+	guessSecondaryText,
 	handleConvertType,
 	handleCopyGuessText,
 	handleCopyRevealText,
 	handleSeeReviews,
 	handleUpdateReviewCardFields,
 	hidesSecondary,
-	isAnswerEmpty,
 	isRevealPanelCopied,
 	isRetireDisabled,
 	isTypeMutationPending,
@@ -111,28 +113,31 @@ export function ReviewCardDetailHomeTab({
 	lastReviewed,
 	latestCompletedReview,
 	notes,
-	onAnswerChange,
+	onPrimaryTextChange,
 	onNotesChange,
 	onOpenDeleteDialog,
 	onOpenReviewDialog,
-	onPromptChange,
+	onSecondaryTextChange,
 	onRetireToggle,
-	prompt,
-	promptTextareaRef,
+	primaryText,
+	primaryTextTextareaRef,
 	resolvedReviews,
 	revealPanelTab,
 	reviewCard,
 	reviewTriggerCounts,
-	setAnswer,
+	setSecondaryText,
 	setNotes,
-	setGuessAnswerText,
+	setGuessSecondaryText,
 	setRevealPanelTab,
 	stabilityText,
 	statusBadges
 }: ReviewCardDetailHomeTabProps) {
-	const hidesAnswer = hidesSecondary && reviewCard.type !== 'practice'
+	const hidesSecondaryText = hidesSecondary && reviewCard.type !== 'practice'
+	const isSecondaryTextEmpty = secondaryText.trim().length === 0
 	const reviewedAt =
 		latestCompletedReview?.completed_at ?? reviewCard.last_reviewed_at
+	const primaryTextLabel = getReviewCardPrimaryFieldLabel(reviewCard.type)
+	const secondaryTextLabel = getReviewCardSecondaryFieldLabel(reviewCard.type)
 	const {
 		revealPanelTab: notesRevealPanelTab,
 		setRevealPanelTab: setNotesRevealPanelTab,
@@ -228,19 +233,19 @@ export function ReviewCardDetailHomeTab({
 
 			<Textarea
 				className='!bg-transparent !text-lg min-h-0 resize-none overflow-hidden break-words rounded-none border-none p-0 font-semibold leading-tight shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-				onBlur={flushPrompt}
-				onChange={onPromptChange}
-				placeholder='Untitled prompt'
-				ref={promptTextareaRef}
+				onBlur={flushPrimaryText}
+				onChange={onPrimaryTextChange}
+				placeholder={primaryTextLabel}
+				ref={primaryTextTextareaRef}
 				spellCheck={false}
-				value={prompt}
+				value={primaryText}
 			/>
 
-			{hidesAnswer ? (
+			{hidesSecondaryText ? (
 				<RevealPanel
 					className='!flex-none'
 					closedContent={
-						isAnswerEmpty ? (
+						isSecondaryTextEmpty ? (
 							<Badge
 								className={`${EMPTY_BADGE_CLASSNAME} pointer-events-none absolute top-2 right-2`}
 								variant='outline'
@@ -249,17 +254,17 @@ export function ReviewCardDetailHomeTab({
 							</Badge>
 						) : null
 					}
-					guessValue={guessAnswerText}
+					guessValue={guessSecondaryText}
 					isCopied={isRevealPanelCopied}
 					onGuessCopy={handleCopyGuessText}
-					onGuessValueChange={setGuessAnswerText}
-					onRevealBlur={flushAnswer}
+					onGuessValueChange={setGuessSecondaryText}
+					onRevealBlur={flushSecondaryText}
 					onRevealCopy={handleCopyRevealText}
-					onRevealValueChange={setAnswer}
+					onRevealValueChange={setSecondaryText}
 					onValueChange={setRevealPanelTab}
 					revealHelperVariant='autosave'
-					revealPlaceholder='Write your answer...'
-					revealValue={answer}
+					revealPlaceholder={secondaryTextLabel}
+					revealValue={secondaryText}
 					value={revealPanelTab}
 					variant='detail'
 				/>
@@ -267,11 +272,11 @@ export function ReviewCardDetailHomeTab({
 				<div className='flex-none'>
 					<Textarea
 						className='!bg-transparent m-0 min-h-[2lh] resize-none break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
-						onBlur={flushAnswer}
-						onChange={onAnswerChange}
-						placeholder='Write your answer...'
+						onBlur={flushSecondaryText}
+						onChange={onSecondaryTextChange}
+						placeholder={secondaryTextLabel}
 						spellCheck={false}
-						value={answer}
+						value={secondaryText}
 					/>
 				</div>
 			)}
@@ -466,7 +471,7 @@ export function ReviewCardDetailHomeTab({
 							onRevealValueChange={setNotes}
 							onValueChange={setNotesRevealPanelTab}
 							revealHelperVariant='autosave'
-							revealPlaceholder='Add notes...'
+							revealPlaceholder='Notes'
 							revealValue={notes}
 							value={notesRevealPanelTab}
 							variant='detail'
@@ -476,7 +481,7 @@ export function ReviewCardDetailHomeTab({
 							className='!bg-transparent field-sizing-fixed m-0 min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 							onBlur={flushNotes}
 							onChange={onNotesChange}
-							placeholder='Add notes...'
+							placeholder='Notes'
 							spellCheck={false}
 							value={notes}
 						/>

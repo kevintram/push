@@ -75,7 +75,7 @@ export function RevealPanel({
 	isCopied,
 	variant,
 	className,
-	guessPlaceholder = 'Type your guess...',
+	guessPlaceholder = 'Type your guess here...',
 	revealPlaceholder,
 	revealHelperVariant = null,
 	closedContent,

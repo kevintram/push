@@ -78,8 +78,8 @@ vi.mock('~/components/SettingsDialog', () => ({
 }))
 
 vi.mock('~/features/review-cards/components/ReviewCard', () => ({
-	ReviewCard: ({ reviewCard }: { reviewCard: { prompt: string } }) => (
-		<div data-testid='review-card'>{reviewCard.prompt}</div>
+	ReviewCard: ({ reviewCard }: { reviewCard: { primary_text: string } }) => (
+		<div data-testid='review-card'>{reviewCard.primary_text}</div>
 	)
 }))
 
@@ -194,8 +194,8 @@ const reviewCard = {
 	topic_id: 1,
 	topic_title: 'Algebra',
 	type: 'practice' as const,
-	prompt: 'Solve for x',
-	answer: 'x = 3',
+	primary_text: 'Solve for x',
+	secondary_text: 'x = 3',
 	notes: 'Factor carefully',
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',
@@ -263,7 +263,7 @@ describe('route-backed tab search state', () => {
 						...reviewCard,
 						id: 21,
 						type: 'flashcard',
-						prompt: 'Due flashcard'
+						primary_text: 'Due flashcard'
 					},
 					review_id: null,
 					scheduled_at: '2026-03-05',
@@ -284,7 +284,7 @@ describe('route-backed tab search state', () => {
 					focused: true
 				})
 			},
-			{ timeout: 3_000 }
+			{ timeout: 3000 }
 		)
 		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
 		expect(screen.getByText('Due flashcard')).toBeInTheDocument()
@@ -299,7 +299,7 @@ describe('route-backed tab search state', () => {
 						...reviewCard,
 						id: 22,
 						type: 'flashcard',
-						prompt: 'Switch flashcard'
+						primary_text: 'Switch flashcard'
 					},
 					review_id: null,
 					scheduled_at: '2026-03-05',
@@ -341,7 +341,7 @@ describe('route-backed tab search state', () => {
 						...reviewCard,
 						id: 23,
 						type: 'flashcard',
-						prompt: 'Stored flashcard view'
+						primary_text: 'Stored flashcard view'
 					},
 					review_id: null,
 					scheduled_at: null,
@@ -369,7 +369,7 @@ describe('route-backed tab search state', () => {
 			data: [
 				{
 					queue_type: 'due',
-					card: { ...reviewCard, id: 31, prompt: 'Due practice' },
+					card: { ...reviewCard, id: 31, primary_text: 'Due practice' },
 					review_id: null,
 					scheduled_at: '2026-03-05',
 					action_days: 0,
@@ -397,7 +397,7 @@ describe('route-backed tab search state', () => {
 			data: [
 				{
 					queue_type: 'due',
-					card: { ...reviewCard, id: 32, prompt: 'Switch practice' },
+					card: { ...reviewCard, id: 32, primary_text: 'Switch practice' },
 					review_id: null,
 					scheduled_at: '2026-03-05',
 					action_days: 0,
@@ -434,7 +434,7 @@ describe('route-backed tab search state', () => {
 			data: [
 				{
 					queue_type: 'new',
-					card: { ...reviewCard, id: 33, prompt: 'Stored practice view' },
+					card: { ...reviewCard, id: 33, primary_text: 'Stored practice view' },
 					review_id: null,
 					scheduled_at: null,
 					action_days: null,
@@ -465,7 +465,7 @@ describe('route-backed tab search state', () => {
 		})
 		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
-			data: [{ ...reviewCard, id: 33, prompt: 'Topic card' }],
+			data: [{ ...reviewCard, id: 33, primary_text: 'Topic card' }],
 			isLoading: false
 		})
 
@@ -490,7 +490,7 @@ describe('route-backed tab search state', () => {
 		})
 		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
-			data: [{ ...reviewCard, id: 34, prompt: 'Practice-only card' }],
+			data: [{ ...reviewCard, id: 34, primary_text: 'Practice-only card' }],
 			isLoading: false
 		})
 		const { router, user } = renderRoute('/topics/1?filter=practice')
