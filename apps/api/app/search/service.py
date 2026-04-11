@@ -56,8 +56,8 @@ async def _search_review_cards(
         q = f"%{query}%"
         stmt = stmt.where(
             or_(
-                ReviewCard.prompt.ilike(q),
-                ReviewCard.answer.ilike(q),
+                ReviewCard.primary_text.ilike(q),
+                ReviewCard.secondary_text.ilike(q),
                 ReviewCard.notes.ilike(q),
             )
         )

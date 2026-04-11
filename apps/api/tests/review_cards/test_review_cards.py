@@ -23,8 +23,8 @@ async def _create_review_card(
     topic_id: int,
     *,
     card_type: str = "flashcard",
-    prompt: str = "Prompt",
-    answer: str = "Answer",
+    primary_text: str = "Prompt",
+    secondary_text: str = "Answer",
     notes: str = "",
 ) -> dict:
     response = await test_client.post(
@@ -32,8 +32,8 @@ async def _create_review_card(
         json={
             "topic_id": topic_id,
             "type": card_type,
-            "prompt": prompt,
-            "answer": answer,
+            "primary_text": primary_text,
+            "secondary_text": secondary_text,
             "notes": notes,
         },
     )
@@ -53,8 +53,8 @@ class TestReviewCardEndpoints:
             json={
                 "topic_id": topic["id"],
                 "type": "flashcard",
-                "prompt": "Prompt",
-                "answer": "Answer",
+                "primary_text": "Prompt",
+                "secondary_text": "Answer",
                 "notes": "Reference material",
             },
         )
@@ -77,8 +77,8 @@ class TestReviewCardEndpoints:
             json={
                 "topic_id": topic["id"],
                 "type": "practice",
-                "prompt": "Prompt",
-                "answer": "Answer",
+                "primary_text": "Prompt",
+                "secondary_text": "Answer",
             },
         )
         assert create_response.status_code == 201
@@ -150,19 +150,19 @@ class TestReviewCardEndpoints:
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="First",
+            primary_text="First",
         )
         flagged_card = await _create_review_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Flagged",
+            primary_text="Flagged",
         )
         _third_card = await _create_review_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Third",
+            primary_text="Third",
         )
 
         flag_response = await test_client.patch(
@@ -174,7 +174,7 @@ class TestReviewCardEndpoints:
         list_response = await test_client.get(f"/review-cards/?topic_id={topic['id']}")
         assert list_response.status_code == 200
         items = list_response.json()
-        assert [item["prompt"] for item in items][:2] == ["Flagged", "Third"]
+        assert [item["primary_text"] for item in items][:2] == ["Flagged", "Third"]
         assert items[0]["flagged_at"] is not None
         assert items[-1]["id"] == first_card["id"]
 
@@ -201,13 +201,13 @@ class TestReviewCardEndpoints:
             test_client,
             root["id"],
             card_type="practice",
-            prompt="Root card",
+            primary_text="Root card",
         )
         child_card = await _create_review_card(
             test_client,
             child["id"],
             card_type="flashcard",
-            prompt="Child card",
+            primary_text="Child card",
         )
         _outside_topic = await _create_topic(test_client, "Geometry")
 
@@ -242,7 +242,7 @@ class TestReviewCardEndpoints:
             test_client,
             child["id"],
             card_type="flashcard",
-            prompt="Child card",
+            primary_text="Child card",
         )
 
         response = await test_client.get(
@@ -318,8 +318,8 @@ class TestReviewCardEndpoints:
                 user_id="other-user-456",
                 topic_id=other_topic.id,
                 type="practice",
-                prompt="Other user flagged card",
-                answer="Answer",
+                primary_text="Other user flagged card",
+                secondary_text="Answer",
                 flagged_at=datetime.now(timezone.utc),
             )
         )
@@ -341,8 +341,8 @@ class TestReviewCardEndpoints:
             json={
                 "topic_id": topic["id"],
                 "type": "flashcard",
-                "prompt": "Prompt",
-                "answer": "Answer",
+                "primary_text": "Prompt",
+                "secondary_text": "Answer",
                 "srs_enabled": True,
             },
         )

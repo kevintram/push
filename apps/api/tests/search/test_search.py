@@ -17,8 +17,8 @@ async def _create_review_card(
     topic_id: int,
     *,
     card_type: str,
-    prompt: str,
-    answer: str = "Answer",
+    primary_text: str,
+    secondary_text: str = "Answer",
     notes: str = "",
 ) -> dict:
     response = await test_client.post(
@@ -26,8 +26,8 @@ async def _create_review_card(
         json={
             "topic_id": topic_id,
             "type": card_type,
-            "prompt": prompt,
-            "answer": answer,
+            "primary_text": primary_text,
+            "secondary_text": secondary_text,
             "notes": notes,
             "retired": False,
         },
@@ -62,13 +62,13 @@ class TestSearchEndpoint:
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Queue practice prompt",
+            primary_text="Queue practice prompt",
         )
         _ = await _create_review_card(
             test_client,
             topic["id"],
             card_type="flashcard",
-            prompt="Rust flashcard prompt",
+            primary_text="Rust flashcard prompt",
         )
 
         response = await test_client.get(
@@ -91,13 +91,13 @@ class TestSearchEndpoint:
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Binary trees practice",
+            primary_text="Binary trees practice",
         )
         flashcard = await _create_review_card(
             test_client,
             topic["id"],
             card_type="flashcard",
-            prompt="Binary trees flashcard",
+            primary_text="Binary trees flashcard",
         )
 
         response = await test_client.get("/search/?query=binary&entity_types=practice")
@@ -117,7 +117,7 @@ class TestSearchEndpoint:
             test_client,
             topic["id"],
             card_type="flashcard",
-            prompt="Hash maps",
+            primary_text="Hash maps",
             notes="Collision strategy and load factor",
         )
 

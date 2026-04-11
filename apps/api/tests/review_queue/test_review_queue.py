@@ -21,7 +21,7 @@ async def _create_card(
     topic_id: int,
     *,
     card_type: str,
-    prompt: str,
+    primary_text: str,
     retired: bool = False,
 ) -> dict:
     response = await test_client.post(
@@ -29,8 +29,8 @@ async def _create_card(
         json={
             "topic_id": topic_id,
             "type": card_type,
-            "prompt": prompt,
-            "answer": "Answer",
+            "primary_text": primary_text,
+            "secondary_text": "Answer",
             "retired": retired,
         },
     )
@@ -49,19 +49,19 @@ class TestReviewQueueEndpoint:
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Due card",
+            primary_text="Due card",
         )
         _ = await _create_card(
             test_client,
             topic["id"],
             card_type="flashcard",
-            prompt="Other type card",
+            primary_text="Other type card",
         )
         hazy_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Hazy practice card",
+            primary_text="Hazy practice card",
         )
 
         due_review_response = await test_client.post(
@@ -132,37 +132,37 @@ class TestReviewQueueEndpoint:
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Slightly overdue practice",
+            primary_text="Slightly overdue practice",
         )
         stale_overdue_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Stale overdue practice",
+            primary_text="Stale overdue practice",
         )
         hazy_overdue_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Hazy overdue practice",
+            primary_text="Hazy overdue practice",
         )
         today_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Today practice",
+            primary_text="Today practice",
         )
         tomorrow_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Tomorrow practice",
+            primary_text="Tomorrow practice",
         )
         later_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Later practice",
+            primary_text="Later practice",
         )
 
         for card_id, scheduled_at in [
@@ -206,7 +206,7 @@ class TestReviewQueueEndpoint:
 
         assert full_response.status_code == 200
         assert focused_response.status_code == 200
-        assert [item["card"]["prompt"] for item in full_response.json()["items"]] == [
+        assert [item["card"]["primary_text"] for item in full_response.json()["items"]] == [
             "Slightly overdue practice",
             "Stale overdue practice",
             "Hazy overdue practice",
@@ -215,7 +215,7 @@ class TestReviewQueueEndpoint:
             "Later practice",
         ]
         assert [
-            item["card"]["prompt"] for item in focused_response.json()["items"]
+            item["card"]["primary_text"] for item in focused_response.json()["items"]
         ] == [
             "Slightly overdue practice",
             "Stale overdue practice",
@@ -241,7 +241,7 @@ class TestReviewQueueEndpoint:
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Duplicated due practice",
+            primary_text="Duplicated due practice",
         )
 
         earlier_due_response = await test_client.post(
@@ -283,7 +283,7 @@ class TestReviewQueueEndpoint:
                 test_client,
                 topic["id"],
                 card_type="practice",
-                prompt=f"Practice #{index}",
+                primary_text=f"Practice #{index}",
             )
 
         practice_focus_response = await test_client.get(
@@ -305,7 +305,7 @@ class TestReviewQueueEndpoint:
                 test_client,
                 topic["id"],
                 card_type="flashcard",
-                prompt=f"Flashcard #{index}",
+                primary_text=f"Flashcard #{index}",
             )
 
         response = await test_client.get(
@@ -325,20 +325,20 @@ class TestReviewQueueEndpoint:
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Retired due card",
+            primary_text="Retired due card",
             retired=True,
         )
         await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Active new card",
+            primary_text="Active new card",
         )
         await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Retired new card",
+            primary_text="Retired new card",
             retired=True,
         )
 
@@ -356,10 +356,10 @@ class TestReviewQueueEndpoint:
 
         assert due_response.status_code == 200
         assert new_response.status_code == 200
-        assert [item["card"]["prompt"] for item in due_response.json()["items"]] == [
+        assert [item["card"]["primary_text"] for item in due_response.json()["items"]] == [
             "Retired due card"
         ]
-        assert [item["card"]["prompt"] for item in new_response.json()["items"]] == [
+        assert [item["card"]["primary_text"] for item in new_response.json()["items"]] == [
             "Active new card"
         ]
 
@@ -381,87 +381,87 @@ class TestReviewQueueEndpoint:
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Overdue practice",
+            primary_text="Overdue practice",
         )
         today_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Today practice",
+            primary_text="Today practice",
         )
         soon_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Soon practice",
+            primary_text="Soon practice",
         )
         boundary_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Boundary practice",
+            primary_text="Boundary practice",
         )
         _outside_window_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Later practice",
+            primary_text="Later practice",
         )
         retired_overdue_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Retired overdue practice",
+            primary_text="Retired overdue practice",
             retired=True,
         )
         hazy_overdue_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Hazy overdue practice",
+            primary_text="Hazy overdue practice",
         )
         hazy_today_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Hazy today practice",
+            primary_text="Hazy today practice",
         )
         hazy_soon_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Hazy soon practice",
+            primary_text="Hazy soon practice",
         )
         hazy_boundary_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Hazy boundary practice",
+            primary_text="Hazy boundary practice",
         )
         await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="New practice",
+            primary_text="New practice",
         )
         await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Retired new practice",
+            primary_text="Retired new practice",
             retired=True,
         )
         completed_new_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Reviewed practice",
+            primary_text="Reviewed practice",
         )
         other_type_card = await _create_card(
             test_client,
             topic["id"],
             card_type="flashcard",
-            prompt="Other type flashcard",
+            primary_text="Other type flashcard",
         )
 
         for card_id, scheduled_at in [
@@ -551,13 +551,13 @@ class TestReviewQueueEndpoint:
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Duplicated overdue practice",
+            primary_text="Duplicated overdue practice",
         )
         duplicated_today_card = await _create_card(
             test_client,
             topic["id"],
             card_type="practice",
-            prompt="Duplicated today practice",
+            primary_text="Duplicated today practice",
         )
 
         for scheduled_at in [today - timedelta(days=4), today - timedelta(days=1)]:
