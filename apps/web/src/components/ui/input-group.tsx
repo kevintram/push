@@ -6,7 +6,7 @@ import { Textarea } from "~/components/ui/textarea"
 import { cn } from "~/lib/utils"
 
 const inputGroupInheritedIconClass =
-	"[&>svg:not([class*='size-']):not([class*='h-']):not([class*='w-'])]"
+	"[&>svg:not([class^='size-']):not([class*=' size-']):not([class^='h-']):not([class*=' h-']):not([class^='w-']):not([class*=' w-'])]"
 
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
 	return (
