@@ -206,7 +206,9 @@ class TestReviewQueueEndpoint:
 
         assert full_response.status_code == 200
         assert focused_response.status_code == 200
-        assert [item["card"]["primary_text"] for item in full_response.json()["items"]] == [
+        assert [
+            item["card"]["primary_text"] for item in full_response.json()["items"]
+        ] == [
             "Slightly overdue practice",
             "Stale overdue practice",
             "Hazy overdue practice",
@@ -356,12 +358,12 @@ class TestReviewQueueEndpoint:
 
         assert due_response.status_code == 200
         assert new_response.status_code == 200
-        assert [item["card"]["primary_text"] for item in due_response.json()["items"]] == [
-            "Retired due card"
-        ]
-        assert [item["card"]["primary_text"] for item in new_response.json()["items"]] == [
-            "Active new card"
-        ]
+        assert [
+            item["card"]["primary_text"] for item in due_response.json()["items"]
+        ] == ["Retired due card"]
+        assert [
+            item["card"]["primary_text"] for item in new_response.json()["items"]
+        ] == ["Active new card"]
 
     async def test_review_card_queue_summary_returns_aggregate_counts(
         self,
