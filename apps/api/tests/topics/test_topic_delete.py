@@ -24,15 +24,15 @@ async def _create_review_card(
     test_client: AsyncClient,
     *,
     topic_id: int,
-    prompt: str,
+    primary_text: str,
 ) -> dict:
     response = await test_client.post(
         "/review-cards/",
         json={
             "topic_id": topic_id,
             "type": "practice",
-            "prompt": prompt,
-            "answer": "answer",
+            "primary_text": primary_text,
+            "secondary_text": "answer",
             "retired": False,
         },
     )
@@ -77,17 +77,17 @@ class TestTopicDelete:
         root_card = await _create_review_card(
             test_client,
             topic_id=root["id"],
-            prompt="root card",
+            primary_text="root card",
         )
         child_card = await _create_review_card(
             test_client,
             topic_id=child["id"],
-            prompt="child card",
+            primary_text="child card",
         )
         _ = await _create_review_card(
             test_client,
             topic_id=grandchild["id"],
-            prompt="grandchild card",
+            primary_text="grandchild card",
         )
         _ = await _create_completed_review(
             test_client,
@@ -121,7 +121,7 @@ class TestTopicDelete:
         card = await _create_review_card(
             test_client,
             topic_id=topic["id"],
-            prompt="leaf card",
+            primary_text="leaf card",
         )
         _ = await _create_completed_review(
             test_client,

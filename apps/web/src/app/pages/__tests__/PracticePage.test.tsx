@@ -17,7 +17,11 @@ describe('PracticePage', () => {
 			data: [
 				{
 					queue_type: 'due',
-					card: { ...reviewCard, id: 31, prompt: 'Today practice prompt' },
+					card: {
+						...reviewCard,
+						id: 31,
+						primary_text: 'Today practice prompt'
+					},
 					review_id: null,
 					scheduled_at: '2026-03-05',
 					action_days: 0,
@@ -26,7 +30,11 @@ describe('PracticePage', () => {
 				},
 				{
 					queue_type: 'due',
-					card: { ...reviewCard, id: 32, prompt: 'Tomorrow practice prompt' },
+					card: {
+						...reviewCard,
+						id: 32,
+						primary_text: 'Tomorrow practice prompt'
+					},
 					review_id: null,
 					scheduled_at: '2026-03-06',
 					action_days: 1,
@@ -49,7 +57,8 @@ describe('PracticePage', () => {
 		expect(screen.getByText('Today practice prompt')).toBeInTheDocument()
 		expect(
 			reviewCardRenderSpy.mock.calls.some(([props]) => {
-				if (props.reviewCard.prompt !== 'Today practice prompt') return false
+				if (props.reviewCard.primary_text !== 'Today practice prompt')
+					return false
 				return !('enableLargeCardMode' in props && props.enableLargeCardMode)
 			})
 		).toBe(true)
@@ -81,7 +90,7 @@ describe('PracticePage', () => {
 							card: {
 								...reviewCard,
 								id: 70 + index,
-								prompt: `New practice ${index + 1}`
+								primary_text: `New practice ${index + 1}`
 							},
 							review_id: null,
 							scheduled_at: null,
@@ -97,7 +106,11 @@ describe('PracticePage', () => {
 					data: [
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 81, prompt: 'Overdue practice A' },
+							card: {
+								...reviewCard,
+								id: 81,
+								primary_text: 'Overdue practice A'
+							},
 							review_id: null,
 							scheduled_at: '2026-03-03',
 							action_days: -2,
@@ -106,7 +119,11 @@ describe('PracticePage', () => {
 						},
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 82, prompt: 'Overdue practice B' },
+							card: {
+								...reviewCard,
+								id: 82,
+								primary_text: 'Overdue practice B'
+							},
 							review_id: null,
 							scheduled_at: '2026-03-04',
 							action_days: -1,
@@ -115,7 +132,7 @@ describe('PracticePage', () => {
 						},
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 83, prompt: 'Today practice A' },
+							card: { ...reviewCard, id: 83, primary_text: 'Today practice A' },
 							review_id: null,
 							scheduled_at: '2026-03-05',
 							action_days: 0,
@@ -124,7 +141,7 @@ describe('PracticePage', () => {
 						},
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 84, prompt: 'Today practice B' },
+							card: { ...reviewCard, id: 84, primary_text: 'Today practice B' },
 							review_id: null,
 							scheduled_at: '2026-03-05',
 							action_days: 0,
@@ -133,7 +150,7 @@ describe('PracticePage', () => {
 						},
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 85, prompt: 'Today practice C' },
+							card: { ...reviewCard, id: 85, primary_text: 'Today practice C' },
 							review_id: null,
 							scheduled_at: '2026-03-05',
 							action_days: 0,
@@ -142,7 +159,7 @@ describe('PracticePage', () => {
 						},
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 86, prompt: 'Soon practice A' },
+							card: { ...reviewCard, id: 86, primary_text: 'Soon practice A' },
 							review_id: null,
 							scheduled_at: '2026-03-06',
 							action_days: 1,
@@ -151,7 +168,7 @@ describe('PracticePage', () => {
 						},
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 87, prompt: 'Soon practice B' },
+							card: { ...reviewCard, id: 87, primary_text: 'Soon practice B' },
 							review_id: null,
 							scheduled_at: '2026-03-07',
 							action_days: 2,
@@ -160,7 +177,7 @@ describe('PracticePage', () => {
 						},
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 88, prompt: 'Soon practice C' },
+							card: { ...reviewCard, id: 88, primary_text: 'Soon practice C' },
 							review_id: null,
 							scheduled_at: '2026-03-08',
 							action_days: 3,
@@ -169,7 +186,7 @@ describe('PracticePage', () => {
 						},
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 89, prompt: 'Soon practice D' },
+							card: { ...reviewCard, id: 89, primary_text: 'Soon practice D' },
 							review_id: null,
 							scheduled_at: '2026-03-09',
 							action_days: 4,
@@ -178,7 +195,7 @@ describe('PracticePage', () => {
 						},
 						{
 							queue_type: 'due' as const,
-							card: { ...reviewCard, id: 90, prompt: 'Soon practice E' },
+							card: { ...reviewCard, id: 90, primary_text: 'Soon practice E' },
 							review_id: null,
 							scheduled_at: '2026-03-10',
 							action_days: 5,
@@ -329,7 +346,7 @@ describe('PracticePage', () => {
 					card: {
 						...reviewCard,
 						id: 51,
-						prompt: 'Today practice',
+						primary_text: 'Today practice',
 						inserted_at: '2026-03-05T12:00:00.000Z'
 					},
 					review_id: null,
@@ -342,7 +359,7 @@ describe('PracticePage', () => {
 					card: {
 						...reviewCard,
 						id: 52,
-						prompt: 'Earlier this week practice',
+						primary_text: 'Earlier this week practice',
 						inserted_at: '2026-03-03T12:00:00.000Z'
 					},
 					review_id: null,
@@ -355,7 +372,7 @@ describe('PracticePage', () => {
 					card: {
 						...reviewCard,
 						id: 53,
-						prompt: 'Last week practice',
+						primary_text: 'Last week practice',
 						inserted_at: '2026-02-26T12:00:00.000Z'
 					},
 					review_id: null,

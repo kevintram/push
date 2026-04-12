@@ -25,7 +25,7 @@ describe('RecentPage', () => {
 					review_card: {
 						...reviewCard,
 						id: 12,
-						prompt: 'Different prompt'
+						primary_text: 'Different prompt'
 					},
 					recent_activity_at: '2026-03-05T08:00:00.000Z'
 				}

@@ -209,11 +209,11 @@ vi.mock('~/features/review-cards/components/ReviewCard', () => ({
 		reviewCard,
 		onClick
 	}: {
-		reviewCard: { prompt: string }
+		reviewCard: { primary_text: string }
 		onClick?: () => void
 	}) => (
 		<button onClick={onClick} type='button'>
-			{reviewCard.prompt}
+			{reviewCard.primary_text}
 		</button>
 	)
 }))
@@ -350,8 +350,8 @@ export const reviewCard = {
 	topic_id: 1,
 	topic_title: 'Algebra',
 	type: 'practice' as const,
-	prompt: 'Solve for x',
-	answer: 'x = 3',
+	primary_text: 'Solve for x',
+	secondary_text: 'x = 3',
 	notes: 'Factor carefully',
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',

@@ -21,6 +21,7 @@ import {
 	DialogTitle
 } from '~/components/ui/dialog'
 import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
+import { getReviewCardDisplayTitle } from '~/features/review-cards/utils/reviewCardCopy'
 import { useSearchAll } from '~/features/search/api/searchAll'
 import type { SearchResultItem } from '~/features/search/types/search.types'
 import { TopicCard } from '~/features/topics/components/TopicCard'
@@ -256,8 +257,8 @@ export function SearchDialog({
 							}
 							if (result.entity_type === 'review_card' && result.review_card) {
 								return estimateCardSize(
-									result.review_card.prompt || 'Untitled prompt',
-									result.review_card.answer || '',
+									getReviewCardDisplayTitle(result.review_card),
+									result.review_card.secondary_text || '',
 									laneWidth
 								)
 							}

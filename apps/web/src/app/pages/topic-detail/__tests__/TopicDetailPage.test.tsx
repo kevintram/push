@@ -778,7 +778,7 @@ describe('TopicDetailPage', () => {
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
 		const rootRow = within(toc).getByRole('link', { name: 'Mathematics' })
-		const childRow = within(toc).getByRole('link', { name: /Algebra$/ })
+		const childRow = within(toc).getByRole('link', { name: /Algebra$/u })
 
 		expect(rootRow).toBeInTheDocument()
 		expect(
@@ -1049,7 +1049,7 @@ describe('TopicDetailPage', () => {
 		).not.toBeNull()
 		expect(
 			within(toc)
-				.getByRole('link', { name: /Untitled$/ })
+				.getByRole('link', { name: /Untitled$/u })
 				.closest('[data-fresh-topic="true"]')
 		).not.toBeNull()
 		await waitFor(() => {
@@ -1210,7 +1210,7 @@ describe('TopicDetailPage', () => {
 		})
 		const createdTitle = screen.getByRole('textbox', { name: 'Topic title 9' })
 		expect(createdTitle.closest('[data-fresh-topic="true"]')).not.toBeNull()
-		expect(screen.getByRole('link', { name: /Untitled$/ })).toBeInTheDocument()
+		expect(screen.getByRole('link', { name: /Untitled$/u })).toBeInTheDocument()
 		expect(navigateMock).not.toHaveBeenCalled()
 	})
 
@@ -1575,7 +1575,7 @@ describe('TopicDetailPage', () => {
 		})
 		expect(
 			screen
-				.getByRole('link', { name: /Untitled$/ })
+				.getByRole('link', { name: /Untitled$/u })
 				.closest('[data-fresh-topic="true"]')
 		).toBeNull()
 	})
@@ -1669,9 +1669,7 @@ describe('TopicDetailPage', () => {
 		expect(freshSection).not.toBeNull()
 
 		await user.type(
-			within(freshSection as HTMLElement).getByPlaceholderText(
-				'Write your topic...'
-			),
+			within(freshSection as HTMLElement).getByPlaceholderText('Body'),
 			'Body text'
 		)
 
@@ -1715,8 +1713,8 @@ describe('TopicDetailPage', () => {
 			id: 41,
 			topic_id: 9,
 			type: 'practice',
-			prompt: '',
-			answer: '',
+			primary_text: '',
+			secondary_text: '',
 			retired: false
 		})
 
@@ -1784,8 +1782,8 @@ describe('TopicDetailPage', () => {
 		await user.click(practiceButtons[0]!)
 
 		expect(createReviewCardAsyncMock).toHaveBeenCalledWith({
-			answer: '',
-			prompt: '',
+			secondary_text: '',
+			primary_text: '',
 			retired: false,
 			topic_id: 9,
 			type: 'practice'

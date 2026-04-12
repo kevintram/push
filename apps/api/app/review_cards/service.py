@@ -282,8 +282,8 @@ async def create_review_card(
     *,
     topic_id: int,
     type: str,
-    prompt: str = "",
-    answer: str = "",
+    primary_text: str = "",
+    secondary_text: str = "",
     notes: str = "",
     retired: bool = False,
 ) -> ReviewCard:
@@ -298,8 +298,8 @@ async def create_review_card(
         user_id=user_id,
         topic_id=topic_id,
         type=type,
-        prompt=prompt,
-        answer=answer,
+        primary_text=primary_text,
+        secondary_text=secondary_text,
         notes=notes,
         retired=retired,
     )
@@ -334,10 +334,10 @@ async def update_review_card(
     if "type" in updates and updates["type"] is not None:
         review_card.type = updates["type"]
         type_changed = True
-    if "prompt" in updates and updates["prompt"] is not None:
-        review_card.prompt = updates["prompt"]
-    if "answer" in updates and updates["answer"] is not None:
-        review_card.answer = updates["answer"]
+    if "primary_text" in updates and updates["primary_text"] is not None:
+        review_card.primary_text = updates["primary_text"]
+    if "secondary_text" in updates and updates["secondary_text"] is not None:
+        review_card.secondary_text = updates["secondary_text"]
     if "notes" in updates and updates["notes"] is not None:
         review_card.notes = updates["notes"]
     if type_changed:

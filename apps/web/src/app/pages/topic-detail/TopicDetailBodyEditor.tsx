@@ -57,7 +57,7 @@ export function TopicDetailBodyEditor({
 				onRevealValueChange={setBody}
 				onValueChange={setRevealPanelTab}
 				revealHelperVariant='autosave'
-				revealPlaceholder='Write your topic...'
+				revealPlaceholder='Body'
 				revealValue={body}
 				value={revealPanelTab}
 				variant='detail'
@@ -70,7 +70,7 @@ export function TopicDetailBodyEditor({
 			className='!bg-transparent m-0 min-h-[2lh] resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 			onBlur={flushBody}
 			onChange={onBodyChange}
-			placeholder='Write your topic...'
+			placeholder='Body'
 			spellCheck={false}
 			value={body}
 		/>

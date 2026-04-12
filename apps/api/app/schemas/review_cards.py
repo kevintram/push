@@ -20,8 +20,8 @@ class ReviewCardBase(BaseModel):
 
     topic_id: int
     type: ReviewCardTypeEnum
-    prompt: str = ""
-    answer: str = ""
+    primary_text: str = ""
+    secondary_text: str = ""
     notes: str = ""
 
 
@@ -63,8 +63,8 @@ class ReviewCardUpdate(BaseModel):
 
     topic_id: int | None = None
     type: ReviewCardTypeEnum | None = None
-    prompt: str | None = None
-    answer: str | None = None
+    primary_text: str | None = None
+    secondary_text: str | None = None
     notes: str | None = None
     retired: bool | None = None
     flagged: bool | None = None

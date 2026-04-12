@@ -132,11 +132,11 @@ vi.mock('~/features/topics/components/TopicCard', () => ({
 
 vi.mock('~/features/review-cards/components/ReviewCard', () => ({
 	ReviewCard: (props: {
-		reviewCard: { prompt: string }
+		reviewCard: { primary_text: string }
 		enableLargeCardMode?: boolean
 	}) => {
 		reviewCardRenderSpy(props)
-		return <div data-testid='review-card'>{props.reviewCard.prompt}</div>
+		return <div data-testid='review-card'>{props.reviewCard.primary_text}</div>
 	}
 }))
 
@@ -233,8 +233,8 @@ export const reviewCard = {
 	topic_id: 1,
 	topic_title: 'Algebra',
 	type: 'practice' as const,
-	prompt: 'Solve for x',
-	answer: 'x = 3',
+	primary_text: 'Solve for x',
+	secondary_text: 'x = 3',
 	notes: 'Factor carefully',
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',
@@ -260,7 +260,7 @@ export function buildPracticeQueueItems(count: number) {
 		card: {
 			...reviewCard,
 			id: 31 + index,
-			prompt: `Practice prompt ${index + 1}`
+			primary_text: `Practice prompt ${index + 1}`
 		},
 		review_id: null,
 		scheduled_at: '2026-03-05',

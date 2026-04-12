@@ -34,17 +34,17 @@ export function ReviewCardDetailPage({
 	onActiveTabChange?: (tab: ReviewCardDetailTab) => void
 }) {
 	const {
-		answer,
+		secondaryText,
 		completedReviews,
 		createReviewMutation,
 		dueTodayCount,
 		error,
-		flushAnswer,
+		flushPrimaryText,
 		flushNotes,
-		flushPrompt,
+		flushSecondaryText,
 		freshnessTierColor,
 		freshnessTierInfo,
-		guessAnswerText,
+		guessSecondaryText,
 		handleAssignTopic,
 		handleConvertType,
 		handleCopyGuessText,
@@ -59,7 +59,6 @@ export function ReviewCardDetailPage({
 		handleTabChange,
 		handleUpdateReviewCardFields,
 		hidesSecondary,
-		isAnswerEmpty,
 		isDeleteDialogOpen,
 		isLoading,
 		isRevealPanelCopied,
@@ -74,24 +73,24 @@ export function ReviewCardDetailPage({
 		lastReviewed,
 		latestCompletedReview,
 		notes,
-		onAnswerChange,
+		onPrimaryTextChange,
 		onNotesChange,
-		onPromptChange,
+		onSecondaryTextChange,
 		openReviewDialog,
 		overdueCount,
 		overdueReviews,
 		parentLabel,
-		prompt,
-		promptTextareaRef,
+		primaryText,
+		primaryTextTextareaRef,
 		resolvedActiveTab,
 		resolvedReviews,
 		revealPanelTab,
 		reviewCard,
 		reviewTriggerCounts,
 		pendingCount,
-		setAnswer,
+		setSecondaryText,
 		setNotes,
-		setGuessAnswerText,
+		setGuessSecondaryText,
 		setIsDeleteDialogOpen,
 		setIsRetireDialogOpen,
 		setIsTopicMenuOpen,
@@ -200,20 +199,18 @@ export function ReviewCardDetailPage({
 								/>
 							) : (
 								<ReviewCardDetailHomeTab
-									answer={answer}
-									flushAnswer={flushAnswer}
 									flushNotes={flushNotes}
-									flushPrompt={flushPrompt}
+									flushPrimaryText={flushPrimaryText}
+									flushSecondaryText={flushSecondaryText}
 									freshnessTierColor={freshnessTierColor}
 									freshnessTierInfo={freshnessTierInfo}
-									guessAnswerText={guessAnswerText}
+									guessSecondaryText={guessSecondaryText}
 									handleConvertType={handleConvertType}
 									handleCopyGuessText={handleCopyGuessText}
 									handleCopyRevealText={handleCopyRevealText}
 									handleSeeReviews={handleSeeReviews}
 									handleUpdateReviewCardFields={handleUpdateReviewCardFields}
 									hidesSecondary={hidesSecondary}
-									isAnswerEmpty={isAnswerEmpty}
 									isRetireDisabled={isUpdatingReviewCard}
 									isRevealPanelCopied={isRevealPanelCopied}
 									isTypeMutationPending={isTypeMutationPending}
@@ -222,22 +219,23 @@ export function ReviewCardDetailPage({
 									lastReviewed={lastReviewed}
 									latestCompletedReview={latestCompletedReview}
 									notes={notes}
-									onAnswerChange={onAnswerChange}
 									onNotesChange={onNotesChange}
 									onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
 									onOpenReviewDialog={openReviewDialog}
-									onPromptChange={onPromptChange}
+									onPrimaryTextChange={onPrimaryTextChange}
 									onRetireToggle={handleRetiredToggle}
-									prompt={prompt}
-									promptTextareaRef={promptTextareaRef}
+									onSecondaryTextChange={onSecondaryTextChange}
+									primaryText={primaryText}
+									primaryTextTextareaRef={primaryTextTextareaRef}
 									resolvedReviews={resolvedReviews}
 									revealPanelTab={revealPanelTab}
 									reviewCard={reviewCard}
 									reviewTriggerCounts={reviewTriggerCounts}
-									setAnswer={setAnswer}
-									setGuessAnswerText={setGuessAnswerText}
+									secondaryText={secondaryText}
+									setGuessSecondaryText={setGuessSecondaryText}
 									setNotes={setNotes}
 									setRevealPanelTab={setRevealPanelTab}
+									setSecondaryText={setSecondaryText}
 									stabilityText={stabilityText}
 									statusBadges={statusBadges}
 								/>

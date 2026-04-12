@@ -7,7 +7,7 @@ import {
 	toFreshnessTier,
 	toReviewCardBadge
 } from '~/features/review-cards/components/reviewCardShared'
-import { consumeFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
+import { consumeFocusNewReviewCardPrimaryText } from '~/features/review-cards/createReviewCardIntent'
 import { useDeleteReviewCardWithUndo } from '~/features/review-cards/hooks/useDeleteReviewCardWithUndo'
 import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '~/features/review-cards/utils/orderReviewCardStatusBadges'
@@ -55,7 +55,7 @@ export function useReviewCardDetailPage({
 			? activeTab
 			: fallbackActiveTab
 
-	const promptTextareaRef = useRef<HTMLTextAreaElement>(null)
+	const primaryTextTextareaRef = useRef<HTMLTextAreaElement>(null)
 	const {
 		data: reviewCard,
 		isLoading,
@@ -81,9 +81,9 @@ export function useReviewCardDetailPage({
 
 	useEffect(() => {
 		if (!reviewCard || resolvedActiveTab !== 'home') return
-		if (!consumeFocusNewReviewCardPrompt(reviewCard.id)) return
+		if (!consumeFocusNewReviewCardPrimaryText(reviewCard.id)) return
 
-		promptTextareaRef.current?.focus()
+		primaryTextTextareaRef.current?.focus()
 	}, [resolvedActiveTab, reviewCard])
 
 	const { pendingCount, overdueCount, dueTodayCount } = useDetailReviewCounts(
@@ -166,8 +166,8 @@ export function useReviewCardDetailPage({
 
 	const handleUpdateReviewCardFields = useCallback(
 		(fields: {
-			prompt?: string
-			answer?: string
+			primary_text?: string
+			secondary_text?: string
 			notes?: string
 			retired?: boolean
 			flagged?: boolean
@@ -183,18 +183,18 @@ export function useReviewCardDetailPage({
 		[reviewCard, updateReviewCardAsync]
 	)
 
-	const saveReviewCardPrompt = useCallback(
-		(newPrompt: string) => {
-			if (!reviewCard || newPrompt === reviewCard.prompt) return
-			handleUpdateReviewCardFields({ prompt: newPrompt })
+	const saveReviewCardPrimaryText = useCallback(
+		(newPrimaryText: string) => {
+			if (!reviewCard || newPrimaryText === reviewCard.primary_text) return
+			handleUpdateReviewCardFields({ primary_text: newPrimaryText })
 		},
 		[handleUpdateReviewCardFields, reviewCard]
 	)
 
-	const saveReviewCardAnswer = useCallback(
-		(newAnswer: string) => {
-			if (!reviewCard || newAnswer === reviewCard.answer) return
-			handleUpdateReviewCardFields({ answer: newAnswer })
+	const saveReviewCardSecondaryText = useCallback(
+		(newSecondaryText: string) => {
+			if (!reviewCard || newSecondaryText === reviewCard.secondary_text) return
+			handleUpdateReviewCardFields({ secondary_text: newSecondaryText })
 		},
 		[handleUpdateReviewCardFields, reviewCard]
 	)
@@ -208,23 +208,23 @@ export function useReviewCardDetailPage({
 	)
 
 	const {
-		value: prompt,
-		onChange: onPromptChange,
-		flush: flushPrompt
+		value: primaryText,
+		onChange: onPrimaryTextChange,
+		flush: flushPrimaryText
 	} = useAutoSave({
-		initialValue: reviewCard?.prompt ?? '',
-		onSave: saveReviewCardPrompt,
-		key: `review-card-prompt-${reviewCard?.id ?? 'new'}`
+		initialValue: reviewCard?.primary_text ?? '',
+		onSave: saveReviewCardPrimaryText,
+		key: `review-card-primary-text-${reviewCard?.id ?? 'new'}`
 	})
 	const {
-		value: answer,
-		onChange: onAnswerChange,
-		setValue: setAnswer,
-		flush: flushAnswer
+		value: secondaryText,
+		onChange: onSecondaryTextChange,
+		setValue: setSecondaryText,
+		flush: flushSecondaryText
 	} = useAutoSave({
-		initialValue: reviewCard?.answer ?? '',
-		onSave: saveReviewCardAnswer,
-		key: `review-card-answer-${reviewCard?.id ?? 'new'}`
+		initialValue: reviewCard?.secondary_text ?? '',
+		onSave: saveReviewCardSecondaryText,
+		key: `review-card-secondary-text-${reviewCard?.id ?? 'new'}`
 	})
 	const {
 		value: notes,
@@ -240,13 +240,13 @@ export function useReviewCardDetailPage({
 	const {
 		revealPanelTab,
 		setRevealPanelTab,
-		guessText: guessAnswerText,
-		setGuessText: setGuessAnswerText,
+		guessText: guessSecondaryText,
+		setGuessText: setGuessSecondaryText,
 		isCopied: isRevealPanelCopied,
 		handleCopyGuessText,
 		handleCopyRevealText
 	} = useRevealPanel({
-		revealText: answer,
+		revealText: secondaryText,
 		entityId: reviewCard?.id ?? null,
 		hidesSecondary,
 		defaultTab: hidesSecondary ? null : 'reveal'
@@ -444,20 +444,18 @@ export function useReviewCardDetailPage({
 		})
 	}, [navigate, reviewCard])
 
-	const isAnswerEmpty = answer.trim().length === 0
-
 	return {
-		answer,
+		secondaryText,
 		completedReviews,
 		createReviewMutation,
 		dueTodayCount,
 		error: reviewCardError,
-		flushAnswer,
+		flushPrimaryText,
 		flushNotes,
-		flushPrompt,
+		flushSecondaryText,
 		freshnessTierColor,
 		freshnessTierInfo,
-		guessAnswerText,
+		guessSecondaryText,
 		handleAssignTopic,
 		handleConvertType,
 		handleCopyGuessText,
@@ -471,7 +469,6 @@ export function useReviewCardDetailPage({
 		handleTabChange,
 		handleUpdateReviewCardFields,
 		hidesSecondary,
-		isAnswerEmpty,
 		isDeleteDialogOpen,
 		isLoading,
 		isRevealPanelCopied,
@@ -486,23 +483,23 @@ export function useReviewCardDetailPage({
 		lastReviewed,
 		latestCompletedReview,
 		notes,
-		onAnswerChange,
+		onPrimaryTextChange,
 		onNotesChange,
-		onPromptChange,
+		onSecondaryTextChange,
 		openReviewDialog,
 		overdueCount,
 		overdueReviews,
 		parentLabel,
-		prompt,
-		promptTextareaRef,
+		primaryText,
+		primaryTextTextareaRef,
 		resolvedActiveTab,
 		resolvedReviews,
 		revealPanelTab,
 		reviewCard,
 		reviewTriggerCounts,
-		setAnswer,
+		setSecondaryText,
 		setNotes,
-		setGuessAnswerText,
+		setGuessSecondaryText,
 		setIsDeleteDialogOpen,
 		setIsRetireDialogOpen,
 		setIsTopicMenuOpen,

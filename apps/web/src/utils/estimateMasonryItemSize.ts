@@ -1,4 +1,5 @@
 import type { ReviewCard } from '~/features/review-cards/types/review-card.types'
+import { getReviewCardDisplayTitle } from '~/features/review-cards/utils/reviewCardCopy'
 import type { Topic } from '~/features/topics/types/topic.types'
 import { estimateCardSize } from './estimateCardSize'
 
@@ -20,8 +21,8 @@ export function estimateReviewCardSize(
 ): number {
 	return (
 		estimateCardSize(
-			reviewCard.prompt || 'Untitled prompt',
-			reviewCard.answer || '',
+			getReviewCardDisplayTitle(reviewCard),
+			reviewCard.secondary_text || '',
 			laneWidth
 		) + extraHeight
 	)

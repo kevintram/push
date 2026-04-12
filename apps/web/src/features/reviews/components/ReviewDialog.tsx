@@ -20,6 +20,7 @@ import {
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { Textarea } from '~/components/ui/textarea'
+import { getReviewCardDisplayTitle } from '~/features/review-cards/utils/reviewCardCopy'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
@@ -151,7 +152,9 @@ export function ReviewDialog({
 		: 0
 
 	const getCardName = useCallback((): string => {
-		if (review?.review_card) return review.review_card.prompt || 'Untitled card'
+		if (review?.review_card) {
+			return getReviewCardDisplayTitle(review.review_card)
+		}
 		return 'Unknown card'
 	}, [review?.review_card])
 

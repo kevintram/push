@@ -1,7 +1,7 @@
 import { type ChangeEvent, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { useCreateReviewCard } from '~/features/review-cards/api/createReviewCard'
-import { requestFocusNewReviewCardPrompt } from '~/features/review-cards/createReviewCardIntent'
+import { requestFocusNewReviewCardPrimaryText } from '~/features/review-cards/createReviewCardIntent'
 import type {
 	ReviewCard as ReviewCardModel,
 	ReviewCardType
@@ -109,12 +109,12 @@ export function useTopicDetailSectionPanels({
 			const created = await createReviewCardAsync({
 				topic_id: section.topic.id,
 				type,
-				prompt: '',
-				answer: '',
+				primary_text: '',
+				secondary_text: '',
 				retired: false
 			})
 			onTopicInteraction?.()
-			requestFocusNewReviewCardPrompt(created.id)
+			requestFocusNewReviewCardPrimaryText(created.id)
 			onOpenReviewCard(created.id)
 		} catch {
 			toast.error('Failed to create review card')

@@ -59,11 +59,11 @@ vi.mock('~/features/review-cards/components/ReviewCard', () => ({
 		reviewCard,
 		onClick
 	}: {
-		reviewCard: { prompt: string }
+		reviewCard: { primary_text: string }
 		onClick?: () => void
 	}) => (
 		<button onClick={onClick} type='button'>
-			{reviewCard.prompt}
+			{reviewCard.primary_text}
 		</button>
 	)
 }))

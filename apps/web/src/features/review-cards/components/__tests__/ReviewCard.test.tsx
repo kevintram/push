@@ -221,8 +221,8 @@ describe('ReviewCard', () => {
 			topic_id: 9,
 			topic_title: 'Topic',
 			type: 'flashcard',
-			prompt: 'Focused prompt',
-			answer: 'Long answer '.repeat(120),
+			primary_text: 'Focused prompt',
+			secondary_text: 'Long answer '.repeat(120),
 			inserted_at: '2026-03-01T00:00:00.000Z',
 			updated_at: '2026-03-01T00:00:00.000Z',
 			last_review_rating: 'good',
@@ -253,7 +253,7 @@ describe('ReviewCard', () => {
 
 		await user.click(screen.getByRole('button', { name: 'Type a guess' }))
 
-		const guessTextarea = screen.getByPlaceholderText('Type your guess...')
+		const guessTextarea = screen.getByPlaceholderText('Type your guess here...')
 		await waitFor(() => {
 			expect(guessTextarea).toHaveFocus()
 		})
@@ -268,8 +268,8 @@ describe('ReviewCard', () => {
 			topic_id: 9,
 			topic_title: 'Topic',
 			type: 'flashcard',
-			prompt: 'Short prompt',
-			answer: 'Short answer',
+			primary_text: 'Short prompt',
+			secondary_text: 'Short answer',
 			inserted_at: '2026-03-01T00:00:00.000Z',
 			updated_at: '2026-03-01T00:00:00.000Z',
 			last_review_rating: 'good',
@@ -303,8 +303,8 @@ describe('ReviewCard', () => {
 			topic_id: 9,
 			topic_title: 'Topic',
 			type: 'flashcard',
-			prompt: 'Reveal prompt',
-			answer: 'Original answer',
+			primary_text: 'Reveal prompt',
+			secondary_text: 'Original answer',
 			inserted_at: '2026-03-01T00:00:00.000Z',
 			updated_at: '2026-03-01T00:00:00.000Z',
 			last_review_rating: 'good',
@@ -342,8 +342,8 @@ describe('ReviewCard', () => {
 			topic_id: 9,
 			topic_title: 'Topic',
 			type: 'practice',
-			prompt: 'Prefetch prompt',
-			answer: 'Answer',
+			primary_text: 'Prefetch prompt',
+			secondary_text: 'Answer',
 			inserted_at: '2026-03-01T00:00:00.000Z',
 			updated_at: '2026-03-01T00:00:00.000Z',
 			last_review_rating: 'good',
@@ -402,8 +402,8 @@ describe('ReviewCard', () => {
 			topic_id: 9,
 			topic_title: 'Linear algebra',
 			type: 'practice',
-			prompt: 'Header prompt',
-			answer: 'Header answer',
+			primary_text: 'Header prompt',
+			secondary_text: 'Header answer',
 			inserted_at: '2026-03-01T00:00:00.000Z',
 			updated_at: '2026-03-01T00:00:00.000Z',
 			last_review_rating: 'good',

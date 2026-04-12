@@ -19,15 +19,15 @@ async def _create_review_card(
     topic_id: int,
     *,
     card_type: str = "practice",
-    prompt: str = "Prompt",
+    primary_text: str = "Prompt",
 ) -> dict:
     response = await test_client.post(
         "/review-cards/",
         json={
             "topic_id": topic_id,
             "type": card_type,
-            "prompt": prompt,
-            "answer": "Answer",
+            "primary_text": primary_text,
+            "secondary_text": "Answer",
             "retired": False,
         },
     )
@@ -68,7 +68,7 @@ class TestReviewsEndpoints:
             test_client,
             topic["id"],
             card_type="flashcard",
-            prompt="Completed card",
+            primary_text="Completed card",
         )
 
         create_response = await test_client.post(
@@ -86,7 +86,7 @@ class TestReviewsEndpoints:
         assert created["review_card_id"] == review_card["id"]
         assert created["stability_after"] is not None
         assert created["notes"] == "Created with notes payload"
-        assert created["review_card"]["prompt"] == "Completed card"
+        assert created["review_card"]["primary_text"] == "Completed card"
 
         list_response = await test_client.get(
             f"/reviews/?review_card_id={review_card['id']}"
@@ -108,7 +108,7 @@ class TestReviewsEndpoints:
             test_client,
             topic["id"],
             card_type="flashcard",
-            prompt="Delegated card",
+            primary_text="Delegated card",
         )
 
         nested_response = await test_client.post(
@@ -171,8 +171,8 @@ class TestReviewsEndpoints:
             json={
                 "topic_id": topic["id"],
                 "type": "flashcard",
-                "prompt": "Retired card",
-                "answer": "Answer",
+                "primary_text": "Retired card",
+                "secondary_text": "Answer",
                 "retired": True,
             },
         )
@@ -208,12 +208,12 @@ class TestReviewsEndpoints:
         first_card = await _create_review_card(
             test_client,
             topic["id"],
-            prompt="First card",
+            primary_text="First card",
         )
         second_card = await _create_review_card(
             test_client,
             topic["id"],
-            prompt="Second card",
+            primary_text="Second card",
         )
 
         create_response = await test_client.post(

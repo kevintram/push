@@ -6,8 +6,8 @@ export type ReviewCard = {
 	topic_id: number
 	topic_title: string
 	type: ReviewCardType
-	prompt: string
-	answer: string
+	primary_text: string
+	secondary_text: string
 	notes: string
 	inserted_at: string
 	updated_at: string
@@ -84,8 +84,8 @@ export type CreateReviewCardReviewPayload = {
 export type CreateReviewCardPayload = {
 	topic_id: number
 	type: ReviewCardType
-	prompt?: string
-	answer?: string
+	primary_text?: string
+	secondary_text?: string
 	notes?: string
 	retired?: boolean
 }
@@ -94,8 +94,8 @@ export type UpdateReviewCardInput = {
 	id: number
 	topic_id?: number
 	type?: ReviewCardType
-	prompt?: string
-	answer?: string
+	primary_text?: string
+	secondary_text?: string
 	notes?: string
 	retired?: boolean
 	flagged?: boolean

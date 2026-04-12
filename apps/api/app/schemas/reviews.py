@@ -53,8 +53,8 @@ class ReviewCardSummary(BaseModel):
     id: int
     topic_id: int
     type: str
-    prompt: str
-    answer: str
+    primary_text: str
+    secondary_text: str
 
 
 class ReviewListItem(ReviewRead):

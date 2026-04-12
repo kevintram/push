@@ -17,8 +17,8 @@ class TestReviewCardDelete:
             json={
                 "topic_id": topic["id"],
                 "type": "practice",
-                "prompt": "Prompt",
-                "answer": "Answer",
+                "primary_text": "Prompt",
+                "secondary_text": "Answer",
             },
         )
         assert create_response.status_code == 201

@@ -291,8 +291,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 1,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -320,8 +320,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 1,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -349,8 +349,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 1,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -378,8 +378,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 1,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -407,8 +407,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 1,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -564,8 +564,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 1,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -643,8 +643,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 1,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -693,8 +693,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 1,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -780,8 +780,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 1,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -847,8 +847,8 @@ describe('ReviewsMenu', () => {
 							id: 12,
 							topic_id: 1,
 							type: 'practice',
-							prompt: 'Prompt',
-							answer: 'Answer'
+							primary_text: 'Prompt',
+							secondary_text: 'Answer'
 						},
 						stability_before: null,
 						difficulty_before: null,
@@ -903,8 +903,8 @@ describe('ReviewsMenu', () => {
 						id: 12,
 						topic_id: 7,
 						type: 'practice',
-						prompt: 'Prompt',
-						answer: 'Answer'
+						primary_text: 'Prompt',
+						secondary_text: 'Answer'
 					},
 					stability_before: null,
 					difficulty_before: null,
