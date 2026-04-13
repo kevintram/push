@@ -3,9 +3,6 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "~/lib/utils"
 
-const buttonInheritedIconClass =
-	"[&_svg:not([class^='size-']):not([class*=' size-']):not([class^='h-']):not([class*=' h-']):not([class^='w-']):not([class*=' w-'])]"
-
 const buttonVariants = cva(
 	`focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-lg border border-transparent bg-clip-padding text-sm font-medium focus-visible:ring-3 aria-invalid:ring-3 inline-flex items-center justify-center whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none shrink-0 [&_svg]:shrink-0 outline-none group/button select-none`,
 	{
@@ -25,14 +22,17 @@ const buttonVariants = cva(
 				link: "text-primary underline-offset-4 hover:underline"
 			},
 			size: {
-				default: `h-9 gap-1.5 px-2.5 in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 ${buttonInheritedIconClass}:size-[1.375rem]`,
-				xs: `h-6 gap-1 px-2 text-xs in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 ${buttonInheritedIconClass}:size-3.5`,
-				sm: `h-8 gap-1 px-2.5 in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 ${buttonInheritedIconClass}:size-[1.125rem]`,
-				lg: `h-10 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 ${buttonInheritedIconClass}:size-[1.625rem]`,
-				icon: `size-9 ${buttonInheritedIconClass}:size-[1.375rem]`,
-				"icon-xs": `size-6 in-data-[slot=button-group]:rounded-md ${buttonInheritedIconClass}:size-3.5`,
-				"icon-sm": `size-8 in-data-[slot=button-group]:rounded-md ${buttonInheritedIconClass}:size-[1.125rem]`,
-				"icon-lg": `size-10 ${buttonInheritedIconClass}:size-[1.625rem]`
+				default:
+					"h-9 gap-1.5 px-2.5 in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 button-inherit-icon-default",
+				xs: "h-6 gap-1 px-2 text-xs in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 button-inherit-icon-xs",
+				sm: "h-8 gap-1 px-2.5 in-data-[slot=button-group]:rounded-md has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 button-inherit-icon-sm",
+				lg: "h-10 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3 button-inherit-icon-lg",
+				icon: "size-9 button-inherit-icon-default",
+				"icon-xs":
+					"size-6 in-data-[slot=button-group]:rounded-md button-inherit-icon-xs",
+				"icon-sm":
+					"size-8 in-data-[slot=button-group]:rounded-md button-inherit-icon-sm",
+				"icon-lg": "size-10 button-inherit-icon-lg"
 			}
 		},
 		defaultVariants: {

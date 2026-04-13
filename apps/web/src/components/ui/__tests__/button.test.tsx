@@ -13,26 +13,15 @@ describe("buttonVariants", () => {
 	})
 
 	it("scales inherited button icons by shell size while preserving hardcoded icon sizing opt-outs", () => {
-		const inheritedIconSelector =
-			"[&_svg:not([class^='size-']):not([class*=' size-']):not([class^='h-']):not([class*=' h-']):not([class^='w-']):not([class*=' w-'])]"
-		expect(buttonVariants({ size: "xs" })).toContain(
-			`${inheritedIconSelector}:size-3.5`
-		)
-		expect(buttonVariants({ size: "sm" })).toContain(
-			`${inheritedIconSelector}:size-[1.125rem]`
-		)
+		expect(buttonVariants({ size: "xs" })).toContain("button-inherit-icon-xs")
+		expect(buttonVariants({ size: "sm" })).toContain("button-inherit-icon-sm")
 		expect(buttonVariants({ size: "default" })).toContain(
-			`${inheritedIconSelector}:size-[1.375rem]`
+			"button-inherit-icon-default"
 		)
-		expect(buttonVariants({ size: "lg" })).toContain(
-			`${inheritedIconSelector}:size-[1.625rem]`
-		)
+		expect(buttonVariants({ size: "lg" })).toContain("button-inherit-icon-lg")
 	})
 
-	it("matches inherited icon sizing selector for lucide icons whose class names contain 'w-' substrings", () => {
-		// The `lucide-arrow-left-right` class contains the substring "w-"
-		// (from "arrow-left"), which previously tripped the
-		// `:not([class*='w-'])` exclusion and left the svg unsized.
+	it("keeps arrow-left-right icons eligible for inherited sizing despite the lucide class name", () => {
 		render(
 			<Button size='icon-xs' variant='ghost'>
 				<ArrowLeftRight data-testid='arrow-icon' />

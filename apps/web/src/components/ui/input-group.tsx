@@ -5,9 +5,6 @@ import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { cn } from "~/lib/utils"
 
-const inputGroupInheritedIconClass =
-	"[&>svg:not([class^='size-']):not([class*=' size-']):not([class^='h-']):not([class*=' h-']):not([class^='w-']):not([class*=' w-'])]"
-
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
@@ -70,10 +67,10 @@ const inputGroupButtonVariants = cva(
 	{
 		variants: {
 			size: {
-				xs: `h-6 gap-1 rounded-[calc(var(--radius)-5px)] px-1.5 ${inputGroupInheritedIconClass}:size-3.5`,
+				xs: "rounded-[calc(var(--radius)-5px)] !px-1.5",
 				sm: "",
-				"icon-xs": `size-6 rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0 ${inputGroupInheritedIconClass}:size-3.5`,
-				"icon-sm": `size-8 p-0 has-[>svg]:p-0 ${inputGroupInheritedIconClass}:size-[1.125rem]`
+				"icon-xs": "rounded-[calc(var(--radius)-5px)] p-0 has-[>svg]:p-0",
+				"icon-sm": "p-0 has-[>svg]:p-0"
 			}
 		},
 		defaultVariants: {
@@ -88,7 +85,7 @@ function InputGroupButton({
 	variant = "ghost",
 	size = "xs",
 	...props
-}: Omit<React.ComponentProps<typeof Button>, "size" | "type"> &
+}: Omit<React.ComponentProps<typeof Button>, "type"> &
 	VariantProps<typeof inputGroupButtonVariants> & {
 		type?: "button" | "submit" | "reset"
 	}) {
@@ -96,6 +93,7 @@ function InputGroupButton({
 		<Button
 			className={cn(inputGroupButtonVariants({ size }), className)}
 			data-size={size}
+			size={size}
 			type={type}
 			variant={variant}
 			{...props}
