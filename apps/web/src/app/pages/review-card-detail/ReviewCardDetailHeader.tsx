@@ -49,7 +49,7 @@ export function ReviewCardDetailHeader({
 			leftContent={
 				<div className='flex min-w-0 items-center gap-2'>
 					<div className='flex items-center gap-1 text-muted-foreground text-xs'>
-						<User2 className='h-3 w-3' />
+						<User2 className='size-3' />
 						<span>Topic</span>
 					</div>
 					<Badge
@@ -88,7 +88,7 @@ export function ReviewCardDetailHeader({
 									/>
 								}
 							>
-								<ArrowLeftRight className='h-3 w-3' />
+								<ArrowLeftRight className='size-3' />
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
 								<div className='px-2 py-1.5 font-medium text-muted-foreground text-xs'>
