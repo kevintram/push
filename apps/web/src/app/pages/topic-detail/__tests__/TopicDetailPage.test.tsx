@@ -1762,7 +1762,9 @@ describe('TopicDetailPage', () => {
 		expect(freshSection).not.toBeNull()
 
 		await user.type(
-			within(freshSection as HTMLElement).getByPlaceholderText('Body'),
+			within(freshSection as HTMLElement).getByPlaceholderText(
+				'Add description...'
+			),
 			'Body text'
 		)
 
