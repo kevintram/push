@@ -386,7 +386,7 @@ export function ReviewDialog({
 								<Textarea
 									className='!bg-transparent m-0 h-full min-h-0 min-w-0 resize-none rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
 									onChange={onNotesChange}
-									placeholder='Notes'
+									placeholder='Add notes...'
 									spellCheck={false}
 									value={notes}
 								/>
