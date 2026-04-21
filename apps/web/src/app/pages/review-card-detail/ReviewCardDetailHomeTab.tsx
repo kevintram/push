@@ -471,7 +471,7 @@ export function ReviewCardDetailHomeTab({
 							onRevealValueChange={setNotes}
 							onValueChange={setNotesRevealPanelTab}
 							revealHelperVariant='autosave'
-							revealPlaceholder='Notes'
+							revealPlaceholder='Add notes...'
 							revealValue={notes}
 							value={notesRevealPanelTab}
 							variant='detail'
@@ -481,7 +481,7 @@ export function ReviewCardDetailHomeTab({
 							className='!bg-transparent field-sizing-fixed m-0 min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 							onBlur={flushNotes}
 							onChange={onNotesChange}
-							placeholder='Notes'
+							placeholder='Add notes...'
 							spellCheck={false}
 							value={notes}
 						/>

@@ -127,7 +127,7 @@ export function ReviewPreview({
 				<Textarea
 					className='!bg-transparent col-span-2 col-start-2 m-0 min-h-0 resize-none overflow-hidden rounded-none border-none p-0 shadow-none focus-visible:border-none focus-visible:ring-0'
 					onChange={e => onNotesChange(e.target.value)}
-					placeholder='Notes'
+					placeholder='Add notes...'
 					spellCheck={false}
 					value={notes}
 				/>
