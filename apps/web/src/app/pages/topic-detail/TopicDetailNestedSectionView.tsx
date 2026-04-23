@@ -88,6 +88,7 @@ export function TopicDetailNestedSectionView({
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const { buttonSize } = getActionButtonProps(section)
 	const showsInlineNumber = sectionNumber != null
+	const isTitleEmpty = title.trim().length === 0
 
 	return (
 		<div
@@ -134,15 +135,18 @@ export function TopicDetailNestedSectionView({
 									className={cn(
 										'block whitespace-pre-wrap break-words',
 										headingClassName,
-										title.trim().length === 0 && 'text-transparent'
+										isTitleEmpty && 'text-transparent'
 									)}
 								>
-									{title.trim().length > 0 ? title : '\u00A0'}
+									{title.trim().length > 0 ? title : 'Title'}
 								</span>
 								<textarea
 									aria-label={`Topic title ${section.topic.id}`}
 									className={cn(
-										'absolute inset-0 m-0 block min-h-0 w-full min-w-0 resize-none overflow-hidden border-none bg-transparent p-0 text-transparent caret-current outline-none selection:bg-slate-200/80 selection:text-transparent placeholder:text-muted-foreground dark:selection:bg-slate-700/70',
+										'absolute inset-0 m-0 block min-h-0 w-full min-w-0 resize-none overflow-hidden border-none bg-transparent p-0 caret-current outline-none selection:bg-slate-200/80 placeholder:text-muted-foreground placeholder:opacity-100 dark:selection:bg-slate-700/70',
+										isTitleEmpty
+											? 'text-muted-foreground'
+											: 'text-transparent selection:text-transparent',
 										headingClassName
 									)}
 									onBlur={flushTitle}
