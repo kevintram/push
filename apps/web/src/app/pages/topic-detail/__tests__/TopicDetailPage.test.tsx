@@ -1214,7 +1214,7 @@ describe('TopicDetailPage', () => {
 		expect(navigateMock).not.toHaveBeenCalled()
 	})
 
-	it('does not render a duplicate title placeholder for empty nested topics', async () => {
+	it('uses the title placeholder for empty nested topics without a fallback label', async () => {
 		const user = userEvent.setup()
 		const rootTopic = {
 			...topic,
@@ -1300,11 +1300,11 @@ describe('TopicDetailPage', () => {
 
 		expect(freshSection).not.toBeNull()
 		expect(
-			within(freshSection as HTMLElement).queryByPlaceholderText('Title')
-		).not.toBeInTheDocument()
-		expect(
-			within(freshSection as HTMLElement).getByText('Untitled topic')
+			within(freshSection as HTMLElement).getByPlaceholderText('Title')
 		).toBeInTheDocument()
+		expect(
+			within(freshSection as HTMLElement).queryByText('Untitled topic')
+		).not.toBeInTheDocument()
 	})
 
 	it('creates a root child topic in place from the root more menu', async () => {
