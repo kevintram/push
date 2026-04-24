@@ -1,9 +1,17 @@
 import { Link, useNavigate } from '@tanstack/react-router'
+import { useMemo } from 'react'
 import { BreadcrumbLink } from '~/components/ui/breadcrumb'
 import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/features/topics/hooks/usePrefetchTopicDetail'
 import { TopicBreadcrumb, type TopicPathItem } from './TopicBreadcrumb'
+import { TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID } from './topicDetailStructure'
 
 export type { TopicPathItem } from './TopicBreadcrumb'
+
+const LIBRARY_TOPIC_PATH_ITEM: TopicPathItem = {
+	id: TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID,
+	title: 'Library',
+	body: ''
+}
 
 interface TopicDetailBreadcrumbProps {
 	className?: string
@@ -17,6 +25,10 @@ export function TopicDetailBreadcrumb({
 	topicPath
 }: TopicDetailBreadcrumbProps) {
 	const navigate = useNavigate()
+	const breadcrumbTopicPath = useMemo(
+		() => [LIBRARY_TOPIC_PATH_ITEM, ...topicPath],
+		[topicPath]
+	)
 
 	return (
 		<TopicBreadcrumb
@@ -24,28 +36,39 @@ export function TopicDetailBreadcrumb({
 			className={className}
 			currentTopicId={currentTopicId}
 			onHiddenTopicSelect={topic => {
-				void navigate({
-					to: '/topics/$topicId',
-					params: { topicId: topic.id.toString() }
-				})
+				void navigate(
+					topic.id === TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID
+						? { to: '/topics' }
+						: {
+								to: '/topics/$topicId',
+								params: { topicId: topic.id.toString() }
+							}
+				)
 			}}
-			renderTopicLink={({ className: linkClassName, label, topic }) => (
-				<BreadcrumbLink
-					className={linkClassName}
-					render={
+			renderTopicLink={({ className: linkClassName, label, topic }) => {
+				const linkElement =
+					topic.id === TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID ? (
+						<Link to='/topics' />
+					) : (
 						<Link
 							params={{ topicId: topic.id.toString() }}
 							preload='intent'
 							preloadDelay={TOPIC_DETAIL_INTENT_PRELOAD_DELAY}
 							to='/topics/$topicId'
 						/>
-					}
-					title={label}
-				>
-					{label}
-				</BreadcrumbLink>
-			)}
-			topicPath={topicPath}
+					)
+
+				return (
+					<BreadcrumbLink
+						className={linkClassName}
+						render={linkElement}
+						title={label}
+					>
+						{label}
+					</BreadcrumbLink>
+				)
+			}}
+			topicPath={breadcrumbTopicPath}
 		/>
 	)
 }

@@ -77,7 +77,7 @@ export function TopicDetailHeader({
 
 		titleTextareaRef.current?.focus()
 	}, [shouldAutoFocusTitle])
-	const hasBreadcrumbs = topicPath.length > 1
+	const hasBreadcrumbs = topicPath.length > 0
 	const rootPresentation = getTopicDetailRootPresentation()
 
 	return (
