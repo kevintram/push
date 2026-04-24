@@ -5,6 +5,7 @@ import {
 	useCallback,
 	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState
 } from 'react'
@@ -15,6 +16,11 @@ import {
 } from './topicDetailStructure'
 
 type UseTopicDetailNavigationOptions = {
+	onNavigateToHash?: (
+		topicId: number,
+		hash: string,
+		mode: 'push' | 'replace'
+	) => Promise<unknown> | void
 	passiveHashAlignmentEnabled?: boolean
 	rootTopicId: number
 	scrollContainerRef: MutableRefObject<HTMLDivElement | null>
@@ -42,7 +48,7 @@ function restoreInlineStyle(
 	element: HTMLElement,
 	property: string,
 	savedValue: string | null
-) {
+): void {
 	if (savedValue == null) return
 	if (savedValue.length === 0) {
 		element.style.removeProperty(property)
@@ -51,12 +57,15 @@ function restoreInlineStyle(
 	}
 }
 
-function normalizeTopicDetailHash(hash: string | null | undefined) {
+function normalizeTopicDetailHash(hash: string | null | undefined): string {
 	if (!hash) return ''
 	return hash.startsWith('#') ? hash : `#${hash}`
 }
 
-function areSectionIdArraysEqual(left: Array<number>, right: Array<number>) {
+function areSectionIdArraysEqual(
+	left: Array<number>,
+	right: Array<number>
+): boolean {
 	if (left.length !== right.length) return false
 
 	for (let index = 0; index < left.length; index += 1) {
@@ -67,6 +76,7 @@ function areSectionIdArraysEqual(left: Array<number>, right: Array<number>) {
 }
 
 export function useTopicDetailNavigation({
+	onNavigateToHash,
 	passiveHashAlignmentEnabled = true,
 	rootTopicId,
 	scrollContainerRef,
@@ -82,6 +92,7 @@ export function useTopicDetailNavigation({
 			? window.location.hash
 			: routerHash
 	)
+	const sectionIdSet = useMemo(() => new Set(sectionIds), [sectionIds])
 	const sectionElementsRef = useRef(new Map<number, HTMLElement>())
 	const sectionHeadingElementsRef = useRef(new Map<number, HTMLElement>())
 	const intersectingSectionIdsRef = useRef(new Set<number>())
@@ -127,8 +138,14 @@ export function useTopicDetailNavigation({
 	const updateHash = useCallback(
 		(topicId: number, mode: 'push' | 'replace' = 'push') => {
 			const nextHash = getTopicDetailSectionId(topicId)
-			if (normalizeTopicDetailHash(routerHash) === `#${nextHash}`) {
+			if (currentHashValue === `#${nextHash}`) {
 				return Promise.resolve()
+			}
+
+			if (onNavigateToHash) {
+				return Promise.resolve(onNavigateToHash(topicId, nextHash, mode)).catch(
+					() => undefined
+				)
 			}
 
 			return navigate({
@@ -141,7 +158,7 @@ export function useTopicDetailNavigation({
 				hashScrollIntoView: false
 			}).catch(() => undefined)
 		},
-		[navigate, rootTopicId, routerHash]
+		[currentHashValue, navigate, onNavigateToHash, rootTopicId]
 	)
 
 	const measureVisibleSections = useCallback(() => {
@@ -151,7 +168,6 @@ export function useTopicDetailNavigation({
 		const { bottom: containerBottom, top: containerTop } =
 			scrollContainerElement.getBoundingClientRect()
 		const nextVisibleSectionIdSet = new Set<number>()
-		const sectionIdSet = new Set(sectionIds)
 		const sectionHeadingElements =
 			scrollContainerElement.querySelectorAll<HTMLElement>(
 				'[data-topic-detail-heading-id]'
@@ -174,7 +190,7 @@ export function useTopicDetailNavigation({
 
 		intersectingSectionIdsRef.current = nextVisibleSectionIdSet
 		syncVisibleSectionIds(nextVisibleSectionIdSet)
-	}, [scrollContainerRef, sectionIds, syncVisibleSectionIds])
+	}, [scrollContainerRef, sectionIdSet, sectionIds, syncVisibleSectionIds])
 
 	const scheduleVisibleSectionsMeasurement = useCallback(() => {
 		if (typeof window === 'undefined') return
@@ -380,7 +396,7 @@ export function useTopicDetailNavigation({
 		const scrollContainerElement = scrollContainerRef.current
 		if (!scrollContainerElement) return false
 
-		if (!sectionIds.includes(request.topicId)) {
+		if (!sectionIdSet.has(request.topicId)) {
 			clearSectionOffsetPreservationRequest()
 			return false
 		}
@@ -426,7 +442,13 @@ export function useTopicDetailNavigation({
 				)
 			})
 		return true
-	}, [getTargetElement, measureVisibleSections, scrollContainerRef, sectionIds])
+	}, [
+		clearSectionOffsetPreservationRequest,
+		getTargetElement,
+		measureVisibleSections,
+		scrollContainerRef,
+		sectionIdSet
+	])
 
 	const clearHashAlignmentTimers = useCallback(() => {
 		if (typeof window === 'undefined') return
@@ -450,7 +472,7 @@ export function useTopicDetailNavigation({
 		}
 		if (scrollContainerRef.current == null) return false
 
-		if (!sectionIds.includes(request.topicId)) {
+		if (!sectionIdSet.has(request.topicId)) {
 			clearHashAlignmentRequest()
 			return false
 		}
@@ -484,7 +506,7 @@ export function useTopicDetailNavigation({
 		measureVisibleSections,
 		scrollTargetIntoView,
 		scrollContainerRef,
-		sectionIds
+		sectionIdSet
 	])
 
 	const scheduleHashAlignment = useCallback(
@@ -492,7 +514,7 @@ export function useTopicDetailNavigation({
 			if (typeof window === 'undefined') return
 
 			const topicId = parseTopicDetailHash(hash)
-			if (topicId == null || !sectionIds.includes(topicId)) {
+			if (topicId == null || !sectionIdSet.has(topicId)) {
 				clearHashAlignmentRequest()
 				return
 			}
@@ -520,7 +542,7 @@ export function useTopicDetailNavigation({
 			attemptHashAlignment,
 			clearHashAlignmentRequest,
 			clearHashAlignmentTimers,
-			sectionIds
+			sectionIdSet
 		]
 	)
 
@@ -768,7 +790,7 @@ export function useTopicDetailNavigation({
 		if (hashAlignmentRequestRef.current?.hash === currentHashValue) return
 
 		const targetTopicId = parseTopicDetailHash(currentHashValue)
-		if (targetTopicId == null || !sectionIds.includes(targetTopicId)) return
+		if (targetTopicId == null || !sectionIdSet.has(targetTopicId)) return
 
 		scheduleHashAlignment(currentHashValue)
 	}, [
@@ -777,7 +799,7 @@ export function useTopicDetailNavigation({
 		passiveHashAlignmentEnabled,
 		scheduleHashAlignment,
 		scrollContainerVersion,
-		sectionIds
+		sectionIdSet
 	])
 
 	useLayoutEffect(() => {
