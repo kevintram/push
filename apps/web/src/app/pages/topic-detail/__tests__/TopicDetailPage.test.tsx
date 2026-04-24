@@ -109,7 +109,7 @@ describe('TopicDetailPage', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('preserves the root topic when collapsing on narrow screens', async () => {
+	it('preserves the library root when collapsing on narrow screens', async () => {
 		elementSizeMock.width = 200
 
 		const chain = buildTopicChain([
@@ -132,10 +132,13 @@ describe('TopicDetailPage', () => {
 
 		await waitFor(() => {
 			expect(
-				within(breadcrumb).getByRole('link', { name: 'Mathematics' })
+				within(breadcrumb).getByRole('link', { name: 'Library' })
 			).toBeInTheDocument()
 		})
 
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
+		).not.toBeInTheDocument()
 		expect(
 			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
 		).not.toBeInTheDocument()
@@ -147,6 +150,9 @@ describe('TopicDetailPage', () => {
 		).toBeInTheDocument()
 		expect(
 			within(breadcrumb).getByRole('button', { name: 'Show hidden topics' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Mathematics' })
 		).toBeInTheDocument()
 		expect(
 			within(breadcrumb).getByRole('button', { name: 'Algebra' })
@@ -168,7 +174,7 @@ describe('TopicDetailPage', () => {
 		})
 	})
 
-	it('renders a single omitted breadcrumb topic directly instead of collapsing it into an ellipsis', async () => {
+	it('collapses multiple hidden topics into an ellipsis on narrow screens', async () => {
 		elementSizeMock.width = 200
 
 		const chain = buildTopicChain([
@@ -190,19 +196,28 @@ describe('TopicDetailPage', () => {
 
 		await waitFor(() => {
 			expect(
-				within(breadcrumb).getByRole('link', { name: 'Mathematics' })
+				within(breadcrumb).getByRole('link', { name: 'Library' })
 			).toBeInTheDocument()
 		})
 
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'Algebra' })
-		).toBeInTheDocument()
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
+		).not.toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
+		).not.toBeInTheDocument()
 		expect(
 			within(breadcrumb).getByText('Gaussian elimination')
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('button', { name: 'Show hidden topics' })
-		).not.toBeInTheDocument()
+			within(breadcrumb).getByRole('button', { name: 'Show hidden topics' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Mathematics' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Algebra' })
+		).toBeInTheDocument()
 	})
 
 	it('keeps the immediate parent visible when collapsing deep breadcrumb paths on wider screens', async () => {
@@ -234,8 +249,11 @@ describe('TopicDetailPage', () => {
 		})
 
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'Mathematics' })
+			within(breadcrumb).getByRole('link', { name: 'Library' })
 		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
+		).not.toBeInTheDocument()
 		expect(
 			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
 		).not.toBeInTheDocument()
@@ -244,6 +262,15 @@ describe('TopicDetailPage', () => {
 				name: 'Systems of equations'
 			})
 		).not.toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Mathematics' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Algebra' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Systems of equations' })
+		).toBeInTheDocument()
 		expect(
 			within(breadcrumb).getByText('Gaussian elimination')
 		).toBeInTheDocument()
@@ -277,16 +304,10 @@ describe('TopicDetailPage', () => {
 
 		await waitFor(() => {
 			expect(
-				within(breadcrumb).getByRole('link', { name: 'Mathematics' })
+				within(breadcrumb).getByRole('link', { name: 'Library' })
 			).toBeInTheDocument()
 		})
 
-		expect(
-			within(breadcrumb).getByRole('link', { name: 'Algebra' })
-		).toBeInTheDocument()
-		expect(
-			within(breadcrumb).getByRole('link', { name: 'Systems of equations' })
-		).toBeInTheDocument()
 		expect(
 			within(breadcrumb).getByRole('link', { name: 'Row reduction' })
 		).toBeInTheDocument()
@@ -294,14 +315,32 @@ describe('TopicDetailPage', () => {
 			within(breadcrumb).getByRole('link', { name: 'Matrix rank' })
 		).toBeInTheDocument()
 		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
+		).not.toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
+		).not.toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Systems of equations' })
+		).not.toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Mathematics' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Algebra' })
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).getByRole('button', { name: 'Systems of equations' })
+		).toBeInTheDocument()
+		expect(
 			within(breadcrumb).getByText('Rank-nullity theorem')
 		).toBeInTheDocument()
 		expect(
 			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]')
-		).toBeNull()
+		).toBeInTheDocument()
 	})
 
-	it('hides the breadcrumb when the current topic has no ancestors', () => {
+	it('shows the library breadcrumb when the current topic has no ancestors', () => {
 		const rootTopic = {
 			...topic,
 			id: 1,
@@ -338,8 +377,14 @@ describe('TopicDetailPage', () => {
 			/>
 		)
 
+		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+
 		expect(
-			screen.queryByRole('navigation', { name: 'Topic path' })
+			within(breadcrumb).getByRole('link', { name: 'Library' })
+		).toBeInTheDocument()
+		expect(within(breadcrumb).getByText('Mathematics')).toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
 		).not.toBeInTheDocument()
 	})
 
