@@ -22,8 +22,6 @@ export const TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID = 0
 type TopicDetailPathItem = Pick<TopicTreeNode, 'id' | 'title' | 'body'>
 type TopicDetailSectionsOptions = {
 	baseDepth?: number
-	parentSectionNumberSegments?: Array<number>
-	parentTopicPath?: Array<TopicDetailPathItem>
 }
 
 function toTopicDetailPathItem(node: TopicTreeNode): TopicDetailPathItem {
@@ -72,18 +70,14 @@ export function buildTopicDetailSections(
 	nodes: Array<TopicTreeNode>,
 	options?: TopicDetailSectionsOptions
 ): Array<TopicDetailSectionNode> {
-	const {
-		baseDepth = 0,
-		parentSectionNumberSegments = [],
-		parentTopicPath = []
-	} = options ?? {}
+	const { baseDepth = 0 } = options ?? {}
 
 	return nodes.map((node, index) =>
 		buildTopicDetailSectionNode(
 			node,
 			baseDepth,
-			[...parentSectionNumberSegments, index + 1],
-			[...parentTopicPath, toTopicDetailPathItem(node)]
+			[index + 1],
+			[toTopicDetailPathItem(node)]
 		)
 	)
 }

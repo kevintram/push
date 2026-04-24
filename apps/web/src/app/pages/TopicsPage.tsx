@@ -170,11 +170,7 @@ export function TopicsPage({ create }: TopicsPageProps): ReactElement {
 												<div
 													className={TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS}
 												>
-													<div
-														aria-level={1}
-														className='pr-12 sm:pr-14 lg:pr-0'
-														role='heading'
-													>
+													<div className='pr-12 sm:pr-14 lg:pr-0'>
 														<h1
 															className={cn(
 																'min-w-0 break-words',
