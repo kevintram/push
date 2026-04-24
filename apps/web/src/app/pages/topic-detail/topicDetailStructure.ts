@@ -17,6 +17,94 @@ export type TopicDetailSectionNode = {
 
 const MAX_HEADING_LEVEL = 6
 const TOPIC_DETAIL_HASH_PREFIX = 'topic-'
+export const TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID = 0
+
+type TopicDetailPathItem = Pick<TopicTreeNode, 'id' | 'title' | 'body'>
+type TopicDetailSectionsOptions = {
+	baseDepth?: number
+}
+
+function toTopicDetailPathItem(node: TopicTreeNode): TopicDetailPathItem {
+	return {
+		id: node.id,
+		title: node.title,
+		body: node.body
+	}
+}
+
+function buildTopicDetailSectionNode(
+	node: TopicTreeNode,
+	depth: number,
+	sectionNumberSegments: Array<number>,
+	topicPath: Array<TopicDetailPathItem>
+): TopicDetailSectionNode {
+	return {
+		children: node.children.map((childNode, index) =>
+			buildTopicDetailSectionNode(
+				childNode,
+				depth + 1,
+				[...sectionNumberSegments, index + 1],
+				[...topicPath, toTopicDetailPathItem(childNode)]
+			)
+		),
+		depth,
+		headingLevel: Math.min(depth + 1, MAX_HEADING_LEVEL),
+		sectionNumber:
+			sectionNumberSegments.length > 0 ? sectionNumberSegments.join('.') : null,
+		topic: node,
+		topicPath
+	}
+}
+
+function visitTopicDetailSections(
+	sections: Array<TopicDetailSectionNode>,
+	visitor: (section: TopicDetailSectionNode) => void
+): void {
+	for (const section of sections) {
+		visitor(section)
+		visitTopicDetailSections(section.children, visitor)
+	}
+}
+
+export function buildTopicDetailSections(
+	nodes: Array<TopicTreeNode>,
+	options?: TopicDetailSectionsOptions
+): Array<TopicDetailSectionNode> {
+	const { baseDepth = 0 } = options ?? {}
+
+	return nodes.map((node, index) =>
+		buildTopicDetailSectionNode(
+			node,
+			baseDepth,
+			[index + 1],
+			[toTopicDetailPathItem(node)]
+		)
+	)
+}
+
+export function flattenTopicDetailSectionIdsFromSections(
+	sections: Array<TopicDetailSectionNode>
+): Array<number> {
+	const ids: Array<number> = []
+	visitTopicDetailSections(sections, section => {
+		ids.push(section.topic.id)
+	})
+	return ids
+}
+
+export function buildTopicDetailSectionNumberByIdFromSections(
+	sections: Array<TopicDetailSectionNode>
+): Map<number, string> {
+	const sectionNumberById = new Map<number, string>()
+
+	visitTopicDetailSections(sections, section => {
+		if (section.sectionNumber) {
+			sectionNumberById.set(section.topic.id, section.sectionNumber)
+		}
+	})
+
+	return sectionNumberById
+}
 
 export function buildTopicDetailRoot(
 	topics: Array<Topic>,
@@ -27,46 +115,11 @@ export function buildTopicDetailRoot(
 
 	if (!rootNode) return null
 
-	const buildSectionNode = (
-		node: TopicTreeNode,
-		depth: number,
-		sectionNumberSegments: Array<number>,
-		topicPath: Array<Pick<TopicTreeNode, 'id' | 'title' | 'body'>>
-	): TopicDetailSectionNode => ({
-		children: node.children.map((childNode, index) =>
-			buildSectionNode(
-				childNode,
-				depth + 1,
-				[...sectionNumberSegments, index + 1],
-				[
-					...topicPath,
-					{
-						id: childNode.id,
-						title: childNode.title,
-						body: childNode.body
-					}
-				]
-			)
-		),
-		depth,
-		headingLevel: Math.min(depth + 1, MAX_HEADING_LEVEL),
-		sectionNumber:
-			sectionNumberSegments.length > 0 ? sectionNumberSegments.join('.') : null,
-		topic: node,
-		topicPath
-	})
-
-	return buildSectionNode(
+	return buildTopicDetailSectionNode(
 		rootNode,
 		0,
 		[],
-		[
-			{
-				id: rootNode.id,
-				title: rootNode.title,
-				body: rootNode.body
-			}
-		]
+		[toTopicDetailPathItem(rootNode)]
 	)
 }
 
@@ -74,44 +127,19 @@ export function flattenTopicDetailSectionIds(
 	rootSection: TopicDetailSectionNode | null
 ): Array<number> {
 	if (!rootSection) return []
-
-	const ids: Array<number> = []
-
-	const visitSection = (section: TopicDetailSectionNode) => {
-		ids.push(section.topic.id)
-		for (const childSection of section.children) {
-			visitSection(childSection)
-		}
-	}
-
-	visitSection(rootSection)
-
-	return ids
+	return flattenTopicDetailSectionIdsFromSections([rootSection])
 }
 
 export function buildTopicDetailSectionNumberById(
 	rootSection: TopicDetailSectionNode | null
-) {
-	const sectionNumberById = new Map<number, string>()
-
-	if (!rootSection) return sectionNumberById
-
-	const visitSection = (section: TopicDetailSectionNode) => {
-		if (section.sectionNumber) {
-			sectionNumberById.set(section.topic.id, section.sectionNumber)
-		}
-
-		for (const childSection of section.children) {
-			visitSection(childSection)
-		}
-	}
-
-	visitSection(rootSection)
-
-	return sectionNumberById
+): Map<number, string> {
+	if (!rootSection) return new Map<number, string>()
+	return buildTopicDetailSectionNumberByIdFromSections([rootSection])
 }
 
-export function groupReviewCardsByTopicId(reviewCards: Array<ReviewCard>) {
+export function groupReviewCardsByTopicId(
+	reviewCards: Array<ReviewCard>
+): Map<number, Array<ReviewCard>> {
 	const cardsByTopicId = new Map<number, Array<ReviewCard>>()
 
 	for (const reviewCard of reviewCards) {
@@ -127,15 +155,15 @@ export function groupReviewCardsByTopicId(reviewCards: Array<ReviewCard>) {
 	return cardsByTopicId
 }
 
-export function getTopicDetailHash(topicId: number) {
+export function getTopicDetailHash(topicId: number): string {
 	return `#${TOPIC_DETAIL_HASH_PREFIX}${topicId}`
 }
 
-export function getTopicDetailSectionId(topicId: number) {
+export function getTopicDetailSectionId(topicId: number): string {
 	return `${TOPIC_DETAIL_HASH_PREFIX}${topicId}`
 }
 
-export function parseTopicDetailHash(hash: string) {
+export function parseTopicDetailHash(hash: string): number | null {
 	if (!hash.startsWith('#')) return null
 	if (!hash.startsWith(`#${TOPIC_DETAIL_HASH_PREFIX}`)) return null
 
@@ -147,6 +175,6 @@ export function parseTopicDetailHash(hash: string) {
 	return Number.isFinite(parsedTopicId) ? parsedTopicId : null
 }
 
-export function getTopicDetailLabel(title: string, body?: string) {
+export function getTopicDetailLabel(title: string, body?: string): string {
 	return getTopicDisplayTitle(title, body)
 }
