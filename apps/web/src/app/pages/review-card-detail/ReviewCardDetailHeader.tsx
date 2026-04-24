@@ -1,4 +1,5 @@
 import { ArrowLeftRight, Plus, Search, User2 } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -13,6 +14,7 @@ import type { ReviewCardDetailTab } from './shared'
 
 type ReviewCardDetailHeaderProps = {
 	activeTab: ReviewCardDetailTab
+	afterActions?: ReactNode
 	dueTodayCount: number
 	isTopicMenuOpen: boolean
 	isTopicMutationPending: boolean
@@ -29,6 +31,7 @@ type ReviewCardDetailHeaderProps = {
 
 export function ReviewCardDetailHeader({
 	activeTab,
+	afterActions,
 	dueTodayCount,
 	isTopicMenuOpen,
 	isTopicMutationPending,
@@ -45,6 +48,7 @@ export function ReviewCardDetailHeader({
 	return (
 		<DetailNavBar
 			activeTab={activeTab}
+			afterActions={afterActions}
 			dueTodayCount={dueTodayCount}
 			leftContent={
 				<div className='flex min-w-0 items-center gap-2'>

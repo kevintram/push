@@ -444,6 +444,15 @@ export function useReviewCardDetailPage({
 		})
 	}, [navigate, reviewCard])
 
+	const handleOpenFullPage = useCallback(() => {
+		if (!reviewCard) return
+		navigate({
+			to: '/review-cards/$reviewCardId',
+			params: { reviewCardId: reviewCard.id.toString() },
+			search: { tab: resolvedActiveTab }
+		})
+	}, [navigate, resolvedActiveTab, reviewCard])
+
 	return {
 		secondaryText,
 		completedReviews,
@@ -462,6 +471,7 @@ export function useReviewCardDetailPage({
 		handleCopyRevealText,
 		handleDeleteReviewCard,
 		handleNavigateToTopic,
+		handleOpenFullPage,
 		handleOpenTopicSearch,
 		handleRatingSelect,
 		handleRetiredToggle,
