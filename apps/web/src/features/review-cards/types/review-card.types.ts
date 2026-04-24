@@ -1,5 +1,7 @@
 import type { ReviewCardStatusBadge } from './status-badge.types'
 export type ReviewCardType = 'practice' | 'flashcard'
+export type ReviewFilter = 'all' | 'practice' | 'flashcards'
+export type ReviewFocusOrder = 'due-date' | 'random'
 
 export type ReviewCard = {
 	id: number
@@ -66,12 +68,18 @@ export type GetReviewCardsParams = {
 	order?: 'asc' | 'desc'
 }
 
-export type ReviewCardQueueParams = {
-	type: ReviewCardType
+type ReviewCardQueueBaseParams = {
 	tab?: 'due' | 'new'
 	focused?: boolean
 	limit?: number
 }
+
+export type ReviewCardQueueSummaryParams =
+	| { filter: ReviewFilter; type?: never }
+	| { filter?: never; type: ReviewCardType }
+
+export type ReviewCardQueueParams = ReviewCardQueueBaseParams &
+	ReviewCardQueueSummaryParams
 
 export type CreateReviewCardReviewPayload = {
 	rating?: 'miss' | 'hard' | 'good' | 'easy' | null

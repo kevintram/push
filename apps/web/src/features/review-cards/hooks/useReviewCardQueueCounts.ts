@@ -1,14 +1,10 @@
 import { useReviewCardQueueSummary } from '~/features/review-cards/api/getReviewCardQueueSummary'
-import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
+import type { ReviewCardQueueSummaryParams } from '~/features/review-cards/types/review-card.types'
 
-type UseReviewCardQueueCountsOptions = {
-	type: ReviewCardType
-}
-
-export function useReviewCardQueueCounts({
-	type
-}: UseReviewCardQueueCountsOptions) {
-	const { data } = useReviewCardQueueSummary(type)
+export function useReviewCardQueueCounts(
+	options: ReviewCardQueueSummaryParams
+) {
+	const { data } = useReviewCardQueueSummary(options)
 
 	return {
 		newCount: data?.new_count ?? 0,

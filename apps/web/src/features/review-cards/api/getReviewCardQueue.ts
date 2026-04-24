@@ -1,10 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
-import {
-	ReviewCardQueueItemSchema,
-	ReviewCardQueuePageSchema
-} from '../types/review-card.schemas'
+import { ReviewCardQueuePageSchema } from '../types/review-card.schemas'
 import type {
 	ReviewCardQueueItem,
 	ReviewCardQueuePage,
@@ -16,7 +13,11 @@ export async function getReviewCardQueuePage(
 	params: ReviewCardQueueParams
 ): Promise<ReviewCardQueuePage> {
 	const searchParams = new URLSearchParams()
-	searchParams.append('type', params.type)
+	if (params.filter === undefined) {
+		searchParams.append('type', params.type)
+	} else {
+		searchParams.append('filter', params.filter)
+	}
 
 	if (params.tab !== undefined) {
 		searchParams.append('tab', params.tab)
@@ -51,7 +52,7 @@ export async function getReviewCardQueue(
 	params: ReviewCardQueueParams
 ): Promise<Array<ReviewCardQueueItem>> {
 	const page = await getReviewCardQueuePage(params)
-	return v.parse(v.array(ReviewCardQueueItemSchema), page.items)
+	return page.items
 }
 
 export function useReviewCardQueuePage(params: ReviewCardQueueParams) {
