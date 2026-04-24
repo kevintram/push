@@ -11,6 +11,7 @@ from app.review_cards import service
 from app.reviews import service as reviews_service
 from app.schemas.review_cards import (
     ReviewCardCreate,
+    ReviewCardFilterEnum,
     ReviewCardFlaggedSummary,
     ReviewCardQueuePage,
     ReviewCardQueueSummary,
@@ -54,7 +55,8 @@ async def read_review_cards(
 async def read_review_card_queue(
     session: SessionDep,
     user_id: UserIdDep,
-    type: ReviewCardTypeEnum,
+    type: ReviewCardTypeEnum | None = None,
+    filter: ReviewCardFilterEnum | None = None,
     tab: Literal["due", "new"] = "due",
     focused: bool = False,
     limit: int | None = None,
@@ -62,7 +64,9 @@ async def read_review_card_queue(
     return await service.list_review_card_queue(
         session,
         user_id,
-        card_type=type.value,
+        card_types=service.resolve_queue_card_types(
+            card_type=type, review_filter=filter
+        ),
         tab=tab,
         focused=focused,
         limit=limit,
@@ -73,12 +77,15 @@ async def read_review_card_queue(
 async def read_review_card_queue_summary(
     session: SessionDep,
     user_id: UserIdDep,
-    type: ReviewCardTypeEnum,
+    type: ReviewCardTypeEnum | None = None,
+    filter: ReviewCardFilterEnum | None = None,
 ) -> ReviewCardQueueSummary:
     return await service.get_review_card_queue_summary(
         session,
         user_id,
-        card_type=type.value,
+        card_types=service.resolve_queue_card_types(
+            card_type=type, review_filter=filter
+        ),
     )
 
 

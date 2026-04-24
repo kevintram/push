@@ -15,10 +15,12 @@ from app.review_cards.status_badges import (
     get_hazy_action_days,
 )
 from app.schemas.review_cards import (
+    ReviewCardFilterEnum,
     ReviewCardFlaggedSummary,
     ReviewCardQueueItem,
     ReviewCardQueuePage,
     ReviewCardQueueSummary,
+    ReviewCardTypeEnum,
 )
 from app.utils.current_date import get_current_date
 from app.utils.retrievability import calculate_retrievability, get_freshness_tier
@@ -37,6 +39,20 @@ def _queue_sort_key(item: ReviewCardQueueItem) -> tuple[int, int, int, int]:
         0 if item.queue_type == "due" else 1 if item.queue_type == "hazy" else 2
     )
     return (1, urgency, queue_rank, item.review_id or item.card.id)
+
+
+def resolve_queue_card_types(
+    *,
+    card_type: ReviewCardTypeEnum | None,
+    review_filter: ReviewCardFilterEnum | None,
+) -> tuple[str, ...]:
+    if review_filter == ReviewCardFilterEnum.PRACTICE:
+        return (ReviewCardTypeEnum.PRACTICE.value,)
+    if review_filter == ReviewCardFilterEnum.FLASHCARDS:
+        return (ReviewCardTypeEnum.FLASHCARD.value,)
+    if review_filter is None and card_type is not None:
+        return (card_type.value,)
+    return tuple(t.value for t in ReviewCardTypeEnum)
 
 
 def _apply_action_day_counts(
@@ -84,7 +100,7 @@ async def _list_actionable_due_queue_items(
     session: AsyncSession,
     user_id: str,
     *,
-    card_type: str,
+    card_types: tuple[str, ...],
     as_of: date,
 ) -> list[ReviewCardQueueItem]:
     due_card_ids_query = (
@@ -95,7 +111,7 @@ async def _list_actionable_due_queue_items(
             Review.review_card_id.isnot(None),
             Review.completed_at.is_(None),
             Review.scheduled_at.isnot(None),
-            ReviewCard.type == card_type,
+            ReviewCard.type.in_(card_types),
         )
         .distinct()
     )
@@ -108,7 +124,7 @@ async def _list_actionable_due_queue_items(
             Review.review_card_id.isnot(None),
             Review.completed_at.is_(None),
             Review.scheduled_at.isnot(None),
-            ReviewCard.type == card_type,
+            ReviewCard.type.in_(card_types),
         )
         .options(
             selectinload(Review.review_card).selectinload(ReviewCard.topic),
@@ -144,7 +160,7 @@ async def _list_actionable_due_queue_items(
         select(ReviewCard)
         .where(
             ReviewCard.user_id == user_id,
-            ReviewCard.type == card_type,
+            ReviewCard.type.in_(card_types),
             ReviewCard.retired.is_(False),
             ~ReviewCard.id.in_(due_card_ids_query),
         )
@@ -368,7 +384,7 @@ async def list_review_card_queue(
     session: AsyncSession,
     user_id: str,
     *,
-    card_type: str,
+    card_types: tuple[str, ...],
     tab: Literal["due", "new"] = "due",
     focused: bool = False,
     limit: int | None = None,
@@ -381,7 +397,7 @@ async def list_review_card_queue(
         items = await _list_actionable_due_queue_items(
             session,
             user_id,
-            card_type=card_type,
+            card_types=card_types,
             as_of=as_of,
         )
     else:
@@ -389,7 +405,7 @@ async def list_review_card_queue(
             select(ReviewCard)
             .where(
                 ReviewCard.user_id == user_id,
-                ReviewCard.type == card_type,
+                ReviewCard.type.in_(card_types),
                 ~exists(
                     select(Review.id)
                     .where(
@@ -430,7 +446,8 @@ async def list_review_card_queue(
         ]
         resolved_limit = limit
         if resolved_limit is None:
-            resolved_limit = 1 if card_type == "flashcard" else 5
+            flashcard_only = set(card_types) == {ReviewCardTypeEnum.FLASHCARD.value}
+            resolved_limit = 1 if flashcard_only else 5
         items = items[:resolved_limit]
 
     return ReviewCardQueuePage(items=items, as_of=as_of)
@@ -440,7 +457,7 @@ async def get_review_card_queue_summary(
     session: AsyncSession,
     user_id: str,
     *,
-    card_type: str,
+    card_types: tuple[str, ...],
 ) -> ReviewCardQueueSummary:
     as_of = get_current_date()
     seven_days_out = as_of + timedelta(days=7)
@@ -456,7 +473,7 @@ async def get_review_card_queue_summary(
             Review.review_card_id.isnot(None),
             Review.completed_at.is_(None),
             Review.scheduled_at.isnot(None),
-            ReviewCard.type == card_type,
+            ReviewCard.type.in_(card_types),
         )
         .group_by(Review.review_card_id)
         .subquery()
@@ -506,7 +523,7 @@ async def get_review_card_queue_summary(
             Review.review_card_id.isnot(None),
             Review.completed_at.is_(None),
             Review.scheduled_at.isnot(None),
-            ReviewCard.type == card_type,
+            ReviewCard.type.in_(card_types),
         )
         .distinct()
     )
@@ -517,7 +534,7 @@ async def get_review_card_queue_summary(
         ReviewCard.last_reviewed_at,
     ).where(
         ReviewCard.user_id == user_id,
-        ReviewCard.type == card_type,
+        ReviewCard.type.in_(card_types),
         ReviewCard.retired.is_(False),
         ~ReviewCard.id.in_(due_card_ids_query),
     )
@@ -552,7 +569,7 @@ async def get_review_card_queue_summary(
         .select_from(ReviewCard)
         .where(
             ReviewCard.user_id == user_id,
-            ReviewCard.type == card_type,
+            ReviewCard.type.in_(card_types),
             ReviewCard.retired.is_(False),
             ~exists(completed_review_exists),
         )

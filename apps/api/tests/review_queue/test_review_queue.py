@@ -115,6 +115,73 @@ class TestReviewQueueEndpoint:
         assert hazy_item["action_days"] == 3
         assert hazy_item["days_until_hazy"] == 3
 
+    async def test_review_card_queue_filter_returns_mixed_and_filtered_due_items(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        today = date(2026, 1, 15)
+        monkeypatch.setattr(
+            review_card_service,
+            "get_current_date",
+            lambda: today,
+        )
+
+        topic = await _create_topic(test_client, "Mixed due queue")
+        practice_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="Due practice",
+        )
+        flashcard = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="flashcard",
+            primary_text="Due flashcard",
+        )
+
+        for card_id in [practice_card["id"], flashcard["id"]]:
+            response = await test_client.post(
+                "/reviews/",
+                json={
+                    "review_card_id": card_id,
+                    "scheduled_at": str(today),
+                },
+            )
+            assert response.status_code == 200
+
+        all_response = await test_client.get(
+            "/review-cards/queue/?filter=all&tab=due"
+        )
+        practice_response = await test_client.get(
+            "/review-cards/queue/?filter=practice&tab=due"
+        )
+        flashcards_response = await test_client.get(
+            "/review-cards/queue/?filter=flashcards&tab=due"
+        )
+        legacy_all_response = await test_client.get("/review-queue/?filter=all&tab=due")
+
+        assert all_response.status_code == 200
+        assert practice_response.status_code == 200
+        assert flashcards_response.status_code == 200
+        assert legacy_all_response.status_code == 200
+        assert [
+            item["card"]["primary_text"] for item in all_response.json()["items"]
+        ] == ["Due practice", "Due flashcard"]
+        assert [
+            item["card"]["primary_text"]
+            for item in practice_response.json()["items"]
+        ] == ["Due practice"]
+        assert [
+            item["card"]["primary_text"]
+            for item in flashcards_response.json()["items"]
+        ] == ["Due flashcard"]
+        assert [
+            item["card"]["primary_text"]
+            for item in legacy_all_response.json()["items"]
+        ] == ["Due practice", "Due flashcard"]
+
     async def test_review_queue_prioritizes_recently_overdue_due_cards(
         self,
         test_client: AsyncClient,
@@ -526,13 +593,33 @@ class TestReviewQueueEndpoint:
         )
 
         response = await test_client.get("/review-cards/queue-summary/?type=practice")
+        all_response = await test_client.get("/review-cards/queue-summary/?filter=all")
+        flashcards_response = await test_client.get(
+            "/review-cards/queue-summary/?filter=flashcards"
+        )
 
         assert response.status_code == 200
+        assert all_response.status_code == 200
+        assert flashcards_response.status_code == 200
         assert response.json() == {
             "overdue_count": 3,
             "due_today_count": 2,
             "due_next_seven_days_count": 9,
             "new_count": 6,
+            "as_of": str(today),
+        }
+        assert all_response.json() == {
+            "overdue_count": 4,
+            "due_today_count": 2,
+            "due_next_seven_days_count": 10,
+            "new_count": 7,
+            "as_of": str(today),
+        }
+        assert flashcards_response.json() == {
+            "overdue_count": 1,
+            "due_today_count": 0,
+            "due_next_seven_days_count": 1,
+            "new_count": 1,
             "as_of": str(today),
         }
 

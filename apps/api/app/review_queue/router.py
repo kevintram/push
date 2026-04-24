@@ -6,8 +6,13 @@ from fastapi import APIRouter
 
 from app.auth.dependencies import UserIdDep
 from app.dependencies import SessionDep
+from app.review_cards.service import resolve_queue_card_types
 from app.review_queue import service
-from app.schemas.review_cards import ReviewCardQueuePage, ReviewCardTypeEnum
+from app.schemas.review_cards import (
+    ReviewCardFilterEnum,
+    ReviewCardQueuePage,
+    ReviewCardTypeEnum,
+)
 
 router = APIRouter(prefix="/review-queue", tags=["review-queue"])
 
@@ -16,7 +21,8 @@ router = APIRouter(prefix="/review-queue", tags=["review-queue"])
 async def read_review_queue(
     session: SessionDep,
     user_id: UserIdDep,
-    type: ReviewCardTypeEnum,
+    type: ReviewCardTypeEnum | None = None,
+    filter: ReviewCardFilterEnum | None = None,
     tab: Literal["due", "new"] = "due",
     focused: bool = False,
     limit: int | None = None,
@@ -24,7 +30,7 @@ async def read_review_queue(
     return await service.list_review_queue(
         session,
         user_id,
-        card_type=type.value,
+        card_types=resolve_queue_card_types(card_type=type, review_filter=filter),
         tab=tab,
         focused=focused,
         limit=limit,

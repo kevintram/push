@@ -12,7 +12,7 @@ async def list_review_queue(
     session: AsyncSession,
     user_id: str,
     *,
-    card_type: str,
+    card_types: tuple[str, ...],
     tab: Literal["due", "new"] = "due",
     focused: bool = False,
     limit: int | None = None,
@@ -20,7 +20,7 @@ async def list_review_queue(
     return await review_cards_service.list_review_card_queue(
         session,
         user_id,
-        card_type=card_type,
+        card_types=card_types,
         tab=tab,
         focused=focused,
         limit=limit,

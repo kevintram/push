@@ -15,6 +15,12 @@ class ReviewCardTypeEnum(str, Enum):
     FLASHCARD = "flashcard"
 
 
+class ReviewCardFilterEnum(str, Enum):
+    ALL = "all"
+    PRACTICE = "practice"
+    FLASHCARDS = "flashcards"
+
+
 class ReviewCardBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
