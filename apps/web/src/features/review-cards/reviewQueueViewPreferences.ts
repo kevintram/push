@@ -42,11 +42,11 @@ function isReviewQueueDueScope(value: unknown): value is ReviewQueueDueScope {
 	return value === 'focused' || value === 'all'
 }
 
-function isReviewFilter(value: unknown): value is ReviewFilter {
+export function isReviewFilter(value: unknown): value is ReviewFilter {
 	return value === 'all' || value === 'practice' || value === 'flashcards'
 }
 
-function isReviewFocusOrder(value: unknown): value is ReviewFocusOrder {
+export function isReviewFocusOrder(value: unknown): value is ReviewFocusOrder {
 	return value === 'due-date' || value === 'random'
 }
 

@@ -10,10 +10,27 @@ import {
 	type PracticeScope,
 	type PracticeTab
 } from '~/app/pages/PracticePage'
+import { ReviewPage, type ReviewPageFilter } from '~/app/pages/ReviewPage'
 import {
 	TopicDetailPage,
 	type TopicDetailReviewCardFilter
 } from '~/app/pages/topic-detail/TopicDetailPage'
+
+export function createMockLocalStorage() {
+	const storage = new Map<string, string>()
+	return {
+		clear: () => {
+			storage.clear()
+		},
+		getItem: (key: string) => storage.get(key) ?? null,
+		removeItem: (key: string) => {
+			storage.delete(key)
+		},
+		setItem: (key: string, value: string) => {
+			storage.set(key, value)
+		}
+	}
+}
 
 export const navigateMock = vi.fn()
 export const masonryRenderSpy = vi.fn()
@@ -27,6 +44,7 @@ export const useReviewCardQueueCountsMock = vi.fn()
 export const useSearchAllMock = vi.fn()
 export const createTopicAsyncMock = vi.fn()
 export const updateReviewCardAsyncMock = vi.fn()
+export const createReviewAsyncMock = vi.fn()
 
 function normalizeQueuePageResult(result: {
 	data?: unknown
@@ -188,7 +206,10 @@ vi.mock('~/features/review-cards/api/createReviewCard', () => ({
 }))
 
 vi.mock('~/features/reviews/api/createReview', () => ({
-	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useCreateReview: () => ({
+		mutateAsync: createReviewAsyncMock,
+		isPending: false
+	})
 }))
 
 vi.mock('~/features/review-cards/api/updateReviewCard', () => ({
@@ -318,6 +339,20 @@ export function renderPracticePage({
 	return <PracticeHarnessComponent />
 }
 
+export function renderReviewPage({
+	initialFilter = 'all'
+}: {
+	initialFilter?: ReviewPageFilter
+}) {
+	function ReviewHarnessComponent() {
+		const [filter, setFilter] = useState<ReviewPageFilter>(initialFilter)
+
+		return <ReviewPage filter={filter} onFilterChange={setFilter} />
+	}
+
+	return <ReviewHarnessComponent />
+}
+
 export function renderTopicDetailPage({
 	initialFilter = 'all',
 	focusTitle
@@ -355,6 +390,7 @@ beforeEach(() => {
 	useSearchAllMock.mockReset()
 	createTopicAsyncMock.mockReset()
 	updateReviewCardAsyncMock.mockReset()
+	createReviewAsyncMock.mockReset()
 	useReviewCardQueueCountsMock.mockReturnValue({
 		overdueCount: 0,
 		dueTodayCount: 0,

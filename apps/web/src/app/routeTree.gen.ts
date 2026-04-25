@@ -13,6 +13,7 @@ import { Route as VirtualizationSmokeRouteImport } from './routes/virtualization
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
 import { Route as MainTopicsRouteImport } from './routes/_main/topics'
+import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainPracticeRouteImport } from './routes/_main/practice'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
@@ -40,6 +41,11 @@ const MainIndexRoute = MainIndexRouteImport.update({
 const MainTopicsRoute = MainTopicsRouteImport.update({
   id: '/topics',
   path: '/topics',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainReviewRoute = MainReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
   getParentRoute: () => MainRoute,
 } as any)
 const MainRecentRoute = MainRecentRouteImport.update({
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/logbook': typeof MainLogbookRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
+  '/review': typeof MainReviewRoute
   '/topics': typeof MainTopicsRoute
   '/': typeof MainIndexRoute
   '/flashcards/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/logbook': typeof MainLogbookRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
+  '/review': typeof MainReviewRoute
   '/topics': typeof MainTopicsRoute
   '/': typeof MainIndexRoute
   '/flashcards/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/practice': typeof MainPracticeRoute
   '/_main/recent': typeof MainRecentRoute
+  '/_main/review': typeof MainReviewRoute
   '/_main/topics': typeof MainTopicsRoute
   '/_main/': typeof MainIndexRoute
   '/_main/flashcards_/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/logbook'
     | '/practice'
     | '/recent'
+    | '/review'
     | '/topics'
     | '/'
     | '/flashcards/$reviewCardId'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/logbook'
     | '/practice'
     | '/recent'
+    | '/review'
     | '/topics'
     | '/'
     | '/flashcards/$reviewCardId'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/_main/logbook'
     | '/_main/practice'
     | '/_main/recent'
+    | '/_main/review'
     | '/_main/topics'
     | '/_main/'
     | '/_main/flashcards_/$reviewCardId'
@@ -214,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/topics'
       fullPath: '/topics'
       preLoaderRoute: typeof MainTopicsRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/review': {
+      id: '/_main/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof MainReviewRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/recent': {
@@ -288,6 +307,7 @@ interface MainRouteChildren {
   MainLogbookRoute: typeof MainLogbookRoute
   MainPracticeRoute: typeof MainPracticeRoute
   MainRecentRoute: typeof MainRecentRoute
+  MainReviewRoute: typeof MainReviewRoute
   MainTopicsRoute: typeof MainTopicsRoute
   MainIndexRoute: typeof MainIndexRoute
   MainFlashcardsReviewCardIdRoute: typeof MainFlashcardsReviewCardIdRoute
@@ -302,6 +322,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainLogbookRoute: MainLogbookRoute,
   MainPracticeRoute: MainPracticeRoute,
   MainRecentRoute: MainRecentRoute,
+  MainReviewRoute: MainReviewRoute,
   MainTopicsRoute: MainTopicsRoute,
   MainIndexRoute: MainIndexRoute,
   MainFlashcardsReviewCardIdRoute: MainFlashcardsReviewCardIdRoute,
