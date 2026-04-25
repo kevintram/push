@@ -6,14 +6,17 @@ import {
 } from '@tanstack/react-router'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { HttpResponse, http } from 'msw'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { routeTree } from '~/app/routeTree.gen'
+import { server } from '~/testing/msw/server'
 
 const useTopicMock = vi.fn()
 const useTopicsMock = vi.fn()
 const useReviewCardsMock = vi.fn()
 const useReviewCardQueueMock = vi.fn()
+const useReviewCardQueueCountsMock = vi.fn()
 
 function normalizeQueuePageResult(result: {
 	data?: unknown
@@ -32,9 +35,6 @@ function normalizeQueuePageResult(result: {
 	return result
 }
 
-const PRACTICE_VIEW_PREFERENCES_STORAGE_KEY = '3gulp-practice-view-preferences'
-const FLASHCARDS_VIEW_PREFERENCES_STORAGE_KEY =
-	'3gulp-flashcards-view-preferences'
 const storage = new Map<string, string>()
 
 const mockLocalStorage = {
@@ -83,6 +83,12 @@ vi.mock('~/features/review-cards/components/ReviewCard', () => ({
 	)
 }))
 
+vi.mock('~/app/pages/review-card-detail/ReviewCardDetailPage', () => ({
+	ReviewCardDetailPage: ({ reviewCardId }: { reviewCardId: number }) => (
+		<div data-testid='review-card-detail-page'>{reviewCardId}</div>
+	)
+}))
+
 vi.mock('~/features/topics/components/TopicCard', () => ({
 	TopicCard: ({ topic }: { topic: { title: string } }) => (
 		<div data-testid='topic-card'>{topic.title}</div>
@@ -125,6 +131,11 @@ vi.mock('~/features/review-cards/api/getReviewCardQueue', () => ({
 		useReviewCardQueueMock(...args),
 	useReviewCardQueuePage: (...args: Array<unknown>) =>
 		normalizeQueuePageResult(useReviewCardQueueMock(...args))
+}))
+
+vi.mock('~/features/review-cards/hooks/useReviewCardQueueCounts', () => ({
+	useReviewCardQueueCounts: (...args: Array<unknown>) =>
+		useReviewCardQueueCountsMock(...args)
 }))
 
 vi.mock('~/stores/ReviewModeContext', async importOriginal => {
@@ -245,7 +256,23 @@ beforeEach(() => {
 	useTopicsMock.mockReset()
 	useReviewCardsMock.mockReset()
 	useReviewCardQueueMock.mockReset()
+	useReviewCardQueueCountsMock.mockReset()
 	useTopicsMock.mockReturnValue({ data: [], isLoading: false, error: null })
+	useReviewCardQueueMock.mockReturnValue({
+		data: { items: [], as_of: '2026-03-05' },
+		isLoading: false
+	})
+	useReviewCardQueueCountsMock.mockReturnValue({
+		overdueCount: 0,
+		dueTodayCount: 0,
+		newCount: 0,
+		dueNextSevenDaysCount: 0
+	})
+	server.use(
+		http.get('*/review-cards/:reviewCardId/', () =>
+			HttpResponse.json(reviewCard)
+		)
+	)
 	storage.clear()
 	Object.defineProperty(window, 'localStorage', {
 		value: mockLocalStorage,
@@ -254,206 +281,38 @@ beforeEach(() => {
 })
 
 describe('route-backed tab search state', () => {
-	it('falls back to Flashcards due focused state for invalid search', async () => {
-		useReviewCardQueueMock.mockReturnValue({
-			data: [
-				{
-					queue_type: 'due',
-					card: {
-						...reviewCard,
-						id: 21,
-						type: 'flashcard',
-						primary_text: 'Due flashcard'
-					},
-					review_id: null,
-					scheduled_at: '2026-03-05',
-					action_days: 0,
-					days_until_due: 0
-				}
-			],
-			isLoading: false
-		})
-
-		renderRoute('/flashcards?tab=invalid&scope=invalid')
-
-		await waitFor(
-			() => {
-				expect(useReviewCardQueueMock).toHaveBeenLastCalledWith({
-					type: 'flashcard',
-					tab: 'due',
-					focused: true
-				})
-			},
-			{ timeout: 3000 }
-		)
-		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
-		expect(screen.getByText('Due flashcard')).toBeInTheDocument()
-	})
-
-	it('restores the last Flashcards due scope when switching back from new', async () => {
-		useReviewCardQueueMock.mockReturnValue({
-			data: [
-				{
-					queue_type: 'due',
-					card: {
-						...reviewCard,
-						id: 22,
-						type: 'flashcard',
-						primary_text: 'Switch flashcard'
-					},
-					review_id: null,
-					scheduled_at: '2026-03-05',
-					action_days: 0,
-					days_until_due: 0
-				}
-			],
-			isLoading: false
-		})
-		const { router, user } = renderRoute('/flashcards?tab=due&scope=all')
-		const newTab = await screen.findByRole('tab', { name: 'New' })
-
-		await user.click(newTab)
+	it('redirects legacy flashcards list route to Reviews filtered to flashcards', async () => {
+		const { router } = renderRoute('/flashcards?tab=invalid&scope=invalid')
 
 		await waitFor(() => {
-			expect(router.state.location.search).toEqual({ tab: 'new' })
-		})
-
-		await user.click(screen.getByRole('tab', { name: 'Due' }))
-
-		await waitFor(() => {
-			expect(router.state.location.search).toEqual({
-				tab: 'due',
-				scope: 'all'
-			})
+			expect(router.state.location.pathname).toBe('/review')
+			expect(router.state.location.search).toEqual({ filter: 'flashcards' })
 		})
 	})
 
-	it('restores stored Flashcards preferences when search params are missing', async () => {
-		window.localStorage.setItem(
-			FLASHCARDS_VIEW_PREFERENCES_STORAGE_KEY,
-			JSON.stringify({ tab: 'new', dueScope: 'all' })
-		)
-		useReviewCardQueueMock.mockReturnValue({
-			data: [
-				{
-					queue_type: 'new',
-					card: {
-						...reviewCard,
-						id: 23,
-						type: 'flashcard',
-						primary_text: 'Stored flashcard view'
-					},
-					review_id: null,
-					scheduled_at: null,
-					action_days: null,
-					days_until_due: null
-				}
-			],
-			isLoading: false
-		})
-
-		renderRoute('/flashcards')
+	it('redirects legacy practice list route to Reviews filtered to practice', async () => {
+		const { router } = renderRoute('/practice?tab=invalid&scope=invalid')
 
 		await waitFor(() => {
-			expect(useReviewCardQueueMock).toHaveBeenLastCalledWith({
-				type: 'flashcard',
-				tab: 'new',
-				focused: undefined
-			})
-		})
-		expect(screen.getByText('Stored flashcard view')).toBeInTheDocument()
-	})
-
-	it('falls back to Practice due focused state for invalid search', async () => {
-		useReviewCardQueueMock.mockReturnValue({
-			data: [
-				{
-					queue_type: 'due',
-					card: { ...reviewCard, id: 31, primary_text: 'Due practice' },
-					review_id: null,
-					scheduled_at: '2026-03-05',
-					action_days: 0,
-					days_until_due: 0
-				}
-			],
-			isLoading: false
-		})
-
-		renderRoute('/practice?tab=invalid&scope=invalid')
-
-		await waitFor(() => {
-			expect(useReviewCardQueueMock).toHaveBeenLastCalledWith({
-				type: 'practice',
-				tab: 'due',
-				focused: true
-			})
-		})
-		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
-		expect(screen.getByText('Due practice')).toBeInTheDocument()
-	})
-
-	it('restores the last Practice due scope when switching back from new', async () => {
-		useReviewCardQueueMock.mockReturnValue({
-			data: [
-				{
-					queue_type: 'due',
-					card: { ...reviewCard, id: 32, primary_text: 'Switch practice' },
-					review_id: null,
-					scheduled_at: '2026-03-05',
-					action_days: 0,
-					days_until_due: 0
-				}
-			],
-			isLoading: false
-		})
-		const { router, user } = renderRoute('/practice?tab=due&scope=all')
-		const newTab = await screen.findByRole('tab', { name: 'New' })
-
-		await user.click(newTab)
-
-		await waitFor(() => {
-			expect(router.state.location.search).toEqual({ tab: 'new' })
-		})
-
-		await user.click(screen.getByRole('tab', { name: 'Due' }))
-
-		await waitFor(() => {
-			expect(router.state.location.search).toEqual({
-				tab: 'due',
-				scope: 'all'
-			})
+			expect(router.state.location.pathname).toBe('/review')
+			expect(router.state.location.search).toEqual({ filter: 'practice' })
 		})
 	})
 
-	it('restores stored Practice preferences when search params are missing', async () => {
-		window.localStorage.setItem(
-			PRACTICE_VIEW_PREFERENCES_STORAGE_KEY,
-			JSON.stringify({ tab: 'new', dueScope: 'all' })
-		)
-		useReviewCardQueueMock.mockReturnValue({
-			data: [
-				{
-					queue_type: 'new',
-					card: { ...reviewCard, id: 33, primary_text: 'Stored practice view' },
-					review_id: null,
-					scheduled_at: null,
-					action_days: null,
-					days_until_due: null
-				}
-			],
-			isLoading: false
-		})
-
-		renderRoute('/practice')
+	it('redirects legacy review-card routes to the canonical detail page', async () => {
+		const { router } = renderRoute('/flashcards/42')
 
 		await waitFor(() => {
-			expect(useReviewCardQueueMock).toHaveBeenLastCalledWith({
-				type: 'practice',
-				tab: 'new',
-				focused: undefined
-			})
+			expect(router.state.location.pathname).toBe('/review-cards/42')
 		})
-		expect(screen.getByText('Stored practice view')).toBeInTheDocument()
+	})
+
+	it('redirects legacy practice-card routes to the canonical detail page', async () => {
+		const { router } = renderRoute('/practice/43')
+
+		await waitFor(() => {
+			expect(router.state.location.pathname).toBe('/review-cards/43')
+		})
 	})
 
 	it('falls back to TopicDetail all-card filter for invalid search', async () => {
