@@ -1,15 +1,5 @@
 import { type ReactNode, useState } from 'react'
 import { beforeEach, vi } from 'vitest'
-import {
-	FlashcardsPage,
-	type FlashcardsScope,
-	type FlashcardsTab
-} from '~/app/pages/FlashcardsPage'
-import {
-	PracticePage,
-	type PracticeScope,
-	type PracticeTab
-} from '~/app/pages/PracticePage'
 import { ReviewPage, type ReviewPageFilter } from '~/app/pages/ReviewPage'
 import {
 	TopicDetailPage,
@@ -273,70 +263,6 @@ export const reviewCard = {
 	days_in_current_tier: null,
 	is_new: true,
 	status_badges: []
-}
-
-export function buildPracticeQueueItems(count: number) {
-	return Array.from({ length: count }, (_, index) => ({
-		queue_type: 'due' as const,
-		card: {
-			...reviewCard,
-			id: 31 + index,
-			primary_text: `Practice prompt ${index + 1}`
-		},
-		review_id: null,
-		scheduled_at: '2026-03-05',
-		action_days: 0,
-		days_until_due: 0,
-		days_until_hazy: null
-	}))
-}
-
-export function renderFlashcardsPage({
-	initialTab = 'due',
-	initialScope = 'focused'
-}: {
-	initialTab?: FlashcardsTab
-	initialScope?: FlashcardsScope
-}) {
-	function FlashcardsHarnessComponent() {
-		const [activeTab, setActiveTab] = useState<FlashcardsTab>(initialTab)
-		const [scope, setScope] = useState<FlashcardsScope>(initialScope)
-
-		return (
-			<FlashcardsPage
-				activeTab={activeTab}
-				onActiveTabChange={setActiveTab}
-				onScopeChange={setScope}
-				scope={scope}
-			/>
-		)
-	}
-
-	return <FlashcardsHarnessComponent />
-}
-
-export function renderPracticePage({
-	initialTab = 'due',
-	initialScope = 'all'
-}: {
-	initialTab?: PracticeTab
-	initialScope?: PracticeScope
-}) {
-	function PracticeHarnessComponent() {
-		const [activeTab, setActiveTab] = useState<PracticeTab>(initialTab)
-		const [scope, setScope] = useState<PracticeScope>(initialScope)
-
-		return (
-			<PracticePage
-				activeTab={activeTab}
-				onActiveTabChange={setActiveTab}
-				onScopeChange={setScope}
-				scope={scope}
-			/>
-		)
-	}
-
-	return <PracticeHarnessComponent />
 }
 
 export function renderReviewPage({
