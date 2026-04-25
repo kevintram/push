@@ -90,13 +90,25 @@ describe('AppHeader', () => {
 	it('renders recent to the left of logbook in the header actions', () => {
 		render(<AppHeader />)
 
+		const reviewsButton = screen.getByRole('button', { name: 'Reviews' })
+		const flaggedButton = screen.getByRole('button', { name: 'Flagged' })
 		const recentButton = screen.getByRole('button', { name: 'Recent' })
 		const logbookButton = screen.getByRole('button', { name: 'Logbook' })
 
+		expect(reviewsButton).toHaveAttribute('href', '/review')
+		expect(flaggedButton).toHaveAttribute('href', '/flagged')
 		expect(
 			recentButton.compareDocumentPosition(logbookButton) &
 				Node.DOCUMENT_POSITION_FOLLOWING
 		).toBeTruthy()
+	})
+
+	it('renders the sidebar trigger in the header', () => {
+		render(<AppHeader />)
+
+		expect(
+			screen.getByRole('button', { name: 'Toggle Sidebar' })
+		).toBeInTheDocument()
 	})
 
 	it('renders the search trigger with outline styling and review mode next to it', () => {

@@ -1,6 +1,16 @@
-import { Link } from '@tanstack/react-router'
-import { BookOpen, Clock, ListChecks, Search, Settings, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Link, useLocation } from '@tanstack/react-router'
+import {
+	BookOpen,
+	BookOpenCheck,
+	Clock,
+	Flag,
+	ListChecks,
+	type LucideIcon,
+	Search,
+	Settings,
+	X
+} from 'lucide-react'
+import { type ReactNode, useEffect, useState } from 'react'
 import {
 	HeaderIconButton,
 	ReviewModeTooltip
@@ -19,6 +29,43 @@ import { SearchDialog } from '~/features/search/components/search-dialog/SearchD
 import { cn } from '~/lib/utils'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 
+type NavLinkTarget = '/review' | '/flagged' | '/recent' | '/logbook'
+
+function HeaderNavLink({
+	to,
+	label,
+	icon: Icon,
+	isActive
+}: {
+	to: NavLinkTarget
+	label: string
+	icon: LucideIcon
+	isActive: boolean
+}): ReactNode {
+	return (
+		<Tooltip>
+			<TooltipTrigger
+				render={
+					<HeaderIconButton
+						ariaLabel={label}
+						className={cn(
+							'size-7.5 px-0',
+							isActive &&
+								'bg-[var(--app-chrome-selected)] text-[var(--app-chrome-selected-foreground)]'
+						)}
+						nativeButton={false}
+						render={<Link to={to} />}
+						showNativeTitle={false}
+					/>
+				}
+			>
+				<Icon />
+			</TooltipTrigger>
+			<TooltipContent>{label}</TooltipContent>
+		</Tooltip>
+	)
+}
+
 function isEditableTarget(target: EventTarget | null) {
 	if (!(target instanceof HTMLElement)) return false
 
@@ -31,6 +78,7 @@ function isEditableTarget(target: EventTarget | null) {
 }
 
 export function AppHeader() {
+	const location = useLocation()
 	const { reviewMode, setReviewMode } = useReviewMode()
 	const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
 	const [searchOpen, setSearchOpen] = useState(false)
@@ -72,7 +120,7 @@ export function AppHeader() {
 		<>
 			<header className='grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 bg-transparent px-2 py-1 sm:px-2 sm:py-1.5'>
 				<div className='flex min-w-0 items-center gap-2'>
-					<SidebarTrigger className='rounded-full md:hidden' />
+					<SidebarTrigger className='rounded-full' />
 				</div>
 
 				<div className='flex min-w-0 justify-center'>
@@ -140,38 +188,30 @@ export function AppHeader() {
 				</div>
 
 				<div className='flex min-w-0 items-center justify-end gap-0'>
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<HeaderIconButton
-									ariaLabel='Recent'
-									className='size-7.5 px-0'
-									nativeButton={false}
-									render={<Link to='/recent' />}
-									showNativeTitle={false}
-								/>
-							}
-						>
-							<Clock />
-						</TooltipTrigger>
-						<TooltipContent>Recent</TooltipContent>
-					</Tooltip>
-					<Tooltip>
-						<TooltipTrigger
-							render={
-								<HeaderIconButton
-									ariaLabel='Logbook'
-									className='size-7.5 px-0'
-									nativeButton={false}
-									render={<Link to='/logbook' />}
-									showNativeTitle={false}
-								/>
-							}
-						>
-							<ListChecks />
-						</TooltipTrigger>
-						<TooltipContent>Logbook</TooltipContent>
-					</Tooltip>
+					<HeaderNavLink
+						icon={BookOpenCheck}
+						isActive={location.pathname.startsWith('/review')}
+						label='Reviews'
+						to='/review'
+					/>
+					<HeaderNavLink
+						icon={Flag}
+						isActive={location.pathname === '/flagged'}
+						label='Flagged'
+						to='/flagged'
+					/>
+					<HeaderNavLink
+						icon={Clock}
+						isActive={location.pathname === '/recent'}
+						label='Recent'
+						to='/recent'
+					/>
+					<HeaderNavLink
+						icon={ListChecks}
+						isActive={location.pathname === '/logbook'}
+						label='Logbook'
+						to='/logbook'
+					/>
 					<Tooltip>
 						<TooltipTrigger
 							render={

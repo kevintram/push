@@ -92,7 +92,11 @@ vi.mock('~/features/reviews/components/RatingDropdown', () => ({
 }))
 
 vi.mock('~/features/reviews/components/reviews-menu/ReviewsMenu', () => ({
-	ReviewsMenu: () => <button type='button'>Reviews</button>
+	ReviewsMenu: () => (
+		<button data-testid='reviews-menu' type='button'>
+			Reviews
+		</button>
+	)
 }))
 
 vi.mock('~/features/search/components/search-dialog/SearchDialog', () => ({
@@ -276,9 +280,7 @@ describe('review card detail route-backed tabs', () => {
 		expect(
 			screen.getByRole('button', { name: /create review/iu })
 		).toBeInTheDocument()
-		expect(
-			screen.queryByRole('button', { name: /^Reviews$/iu })
-		).not.toBeInTheDocument()
+		expect(screen.queryByTestId('reviews-menu')).not.toBeInTheDocument()
 
 		await user.click(screen.getByRole('tab', { name: 'Home' }))
 
