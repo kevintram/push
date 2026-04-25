@@ -1,4 +1,9 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+	createFileRoute,
+	Outlet,
+	useNavigate,
+	useRouterState
+} from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { ReviewPage } from '~/app/pages/ReviewPage'
 import {
@@ -63,7 +68,9 @@ export const Route = createFileRoute('/_main/review')({
 function ReviewRoute() {
 	const navigate = useNavigate()
 	const search = Route.useSearch()
+	const pathname = useRouterState({ select: state => state.location.pathname })
 	const filter = resolveReviewFilter(search)
+	const isFocusRoute = pathname.startsWith('/review/focus')
 
 	useEffect(() => {
 		persistReviewViewPreference({
@@ -71,6 +78,8 @@ function ReviewRoute() {
 			filter
 		})
 	}, [filter])
+
+	if (isFocusRoute) return <Outlet />
 
 	return (
 		<ReviewPage

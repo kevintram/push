@@ -42,6 +42,8 @@ function shuffleItems(
 	return shuffled
 }
 
+const EMPTY_ITEMS: Array<ReviewCardQueueItem> = []
+
 function isCurrentDueItem(item: ReviewCardQueueItem) {
 	const actionDays = item.action_days
 	return actionDays != null && actionDays <= 0
@@ -80,8 +82,8 @@ export function useReviewFocusStream({
 		tab: 'due',
 		focused: false
 	})
-	const newItems = newQueueQuery.data?.items ?? []
-	const dueItems = dueQueueQuery.data?.items ?? []
+	const newItems = newQueueQuery.data?.items ?? EMPTY_ITEMS
+	const dueItems = dueQueueQuery.data?.items ?? EMPTY_ITEMS
 
 	const currentDueItems = useMemo(
 		() => dueItems.filter(isCurrentDueItem),

@@ -37,16 +37,18 @@ export function PageLayoutHeader({
 						: 'flex justify-between'
 				)}
 			>
-				<h1
+				<div
 					className={cn(
-						'flex min-w-0 items-center gap-2 font-bold text-xl',
+						'flex min-w-0 items-center gap-2',
 						hasCenterContent && 'justify-self-start'
 					)}
 				>
-					{Icon ? <Icon className='h-5 w-5 shrink-0' /> : null}
-					<span className='truncate'>{title}</span>
+					<h1 className='flex min-w-0 items-center gap-2 font-bold text-xl'>
+						{Icon ? <Icon className='h-5 w-5 shrink-0' /> : null}
+						<span className='truncate'>{title}</span>
+					</h1>
 					{titleExtra}
-				</h1>
+				</div>
 				{hasCenterContent ? (
 					<div className='flex items-center justify-center'>
 						{centerContent}

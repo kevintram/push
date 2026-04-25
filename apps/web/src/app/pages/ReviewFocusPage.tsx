@@ -4,32 +4,33 @@ import {
 	ArrowRight,
 	BookOpenCheck,
 	Loader2,
-	Shuffle,
 	Sunset
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { PageLayout } from '~/app/layouts/PageLayout'
+import {
+	ReviewHeaderControls,
+	ReviewStatusBadges
+} from '~/app/pages/review/ReviewHeaderControls'
 import { useReviewFocusStream } from '~/app/pages/review/useReviewFocusStream'
 import { ReviewCardDetailSurface } from '~/app/pages/review-card-detail/ReviewCardDetailSurface'
 import { Button } from '~/components/ui/button'
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '~/components/ui/dropdown-menu'
-import {
 	Empty,
 	EmptyContent,
-	EmptyDescription,
 	EmptyHeader,
-	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import { RetireReviewCardDialog } from '~/features/review-cards/components/RetireReviewCardDialog'
+import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
+import {
+	buildFocusSearch,
+	makeShuffleSeed,
+	type ReviewFocusSearch
+} from '~/features/review-cards/reviewFocusSearch'
 import {
 	getStoredReviewViewPreference,
 	persistReviewViewPreference
@@ -52,26 +53,6 @@ const RATING_OPTIONS: Array<{ label: string; value: Exclude<Rating, null> }> = [
 	{ label: 'Easy', value: 'easy' }
 ]
 
-function makeShuffleSeed() {
-	return `${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
-
-function buildFocusSearch({
-	filter,
-	order,
-	shuffle
-}: {
-	filter: ReviewFilter
-	order: ReviewFocusOrder
-	shuffle?: string
-}) {
-	return {
-		filter,
-		order,
-		shuffle: order === 'random' ? shuffle : undefined
-	}
-}
-
 export function ReviewFocusPage({
 	filter,
 	order,
@@ -92,12 +73,13 @@ export function ReviewFocusPage({
 	})
 	const createReviewMutation = useCreateReview()
 	const updateReviewCardMutation = useUpdateReviewCard()
+	const { dueTodayCount, overdueCount } = useReviewCardQueueCounts({ filter })
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
 	const activeCard = stream.activeItem?.card ?? null
 	const activeReviewCardId = activeCard?.id ?? reviewCardId
 
 	function navigateToFocus(
-		search: ReturnType<typeof buildFocusSearch>,
+		search: ReviewFocusSearch,
 		options?: { replace?: boolean }
 	) {
 		if (reviewCardId == null) {
@@ -122,10 +104,9 @@ export function ReviewFocusPage({
 	useEffect(() => {
 		persistReviewViewPreference({
 			...getStoredReviewViewPreference(),
-			filter,
 			focusOrder: order
 		})
-	}, [filter, order])
+	}, [order])
 
 	useEffect(() => {
 		if (stream.isLoading || reviewCardId != null) return
@@ -257,7 +238,6 @@ export function ReviewFocusPage({
 		})
 	}
 
-	const orderLabel = order === 'random' ? 'Random' : 'Due date'
 	const isRetirePending = updateReviewCardMutation.isPending
 	const retireIcon = isRetirePending ? (
 		<Loader2 className='animate-spin' />
@@ -268,54 +248,35 @@ export function ReviewFocusPage({
 	return (
 		<PageLayout>
 			<PageLayout.Header
-				actions={
-					<div className='flex items-center gap-2'>
-						<DropdownMenu>
-							<DropdownMenuTrigger
-								render={
-									<Button size='sm' type='button' variant='outline'>
-										Order by: {orderLabel}
-									</Button>
-								}
-							/>
-							<DropdownMenuContent align='end'>
-								<DropdownMenuItem onClick={() => handleOrderChange('due-date')}>
-									Due date
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => handleOrderChange('random')}>
-									Random
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-						<Button
-							aria-label='Shuffle focus order'
-							onClick={handleShuffle}
-							size='sm'
-							type='button'
-							variant='outline'
-						>
-							<Shuffle className='size-4' />
-							Shuffle
-						</Button>
-					</div>
-				}
 				icon={BookOpenCheck}
 				title='Reviews'
-			/>
-			<PageLayout.Content className='flex min-h-[calc(100vh-9rem)] max-w-screen flex-col px-2.5 py-2.5 pb-3'>
+				titleExtra={
+					<ReviewStatusBadges
+						dueTodayCount={dueTodayCount}
+						overdueCount={overdueCount}
+					/>
+				}
+			>
+				<ReviewHeaderControls
+					filter={filter}
+					onFilterChange={nextFilter => {
+						navigate({
+							to: '/review/focus',
+							search: buildFocusSearch({ filter: nextFilter, order, shuffle })
+						})
+					}}
+					onOrderChange={handleOrderChange}
+					onShuffle={handleShuffle}
+					order={order}
+				/>
+			</PageLayout.Header>
+			<PageLayout.Content className='flex min-h-[calc(100vh-8.5rem)] max-w-screen flex-col px-2.5 py-2.5 pb-3'>
 				{stream.isLoading ? (
 					<LoadingSpinner containerClassName='min-h-64' />
 				) : activeReviewCardId == null ? (
-					<Empty className='min-h-64'>
+					<Empty className='min-h-[calc(100vh-14rem)]'>
 						<EmptyHeader>
-							<EmptyMedia variant='icon'>
-								<BookOpenCheck />
-							</EmptyMedia>
 							<EmptyTitle>You're all caught up!</EmptyTitle>
-							<EmptyDescription>
-								There are no overdue, due today, or new cards in this review
-								queue.
-							</EmptyDescription>
 						</EmptyHeader>
 						<EmptyContent>
 							<div className='flex flex-wrap justify-center gap-2'>
@@ -337,7 +298,7 @@ export function ReviewFocusPage({
 						</EmptyContent>
 					</Empty>
 				) : (
-					<div className='flex min-h-0 flex-1 flex-col gap-3'>
+					<div className='mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-3'>
 						<div className='min-h-0 flex-1'>
 							<ReviewCardDetailSurface
 								mode='contained'

@@ -160,13 +160,13 @@ export function ReviewCardDetailSurface({
 						isContained ? (
 							<Button
 								aria-label='Open review card'
+								className='size-5 rounded-full [&_svg]:size-3'
 								onClick={handleOpenFullPage}
-								size='sm'
+								size='icon-xs'
+								title='Open'
 								type='button'
-								variant='ghost'
 							>
-								<ExternalLink />
-								Open
+								<ExternalLink className='size-3' />
 							</Button>
 						) : null
 					}

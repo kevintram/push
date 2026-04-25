@@ -79,13 +79,8 @@ function MainLayout() {
 			<SidebarInset className='!bg-[var(--app-shell)] h-svh'>
 				<div className='relative flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--app-shell)]'>
 					<AppHeader />
-					<div className='relative min-h-0 min-w-0 flex-1 px-0 pb-0 md:pr-2 md:pb-2'>
-						<div
-							className='relative flex h-full min-h-0 min-w-0 flex-1 overflow-hidden border border-[var(--workspace-border)] bg-[var(--workspace-surface)] md:rounded-[1.15rem]'
-							style={{ boxShadow: 'var(--workspace-shadow)' }}
-						>
-							<Outlet />
-						</div>
+					<div className='relative flex min-h-0 min-w-0 flex-1 overflow-hidden bg-[var(--workspace-surface)]'>
+						<Outlet />
 					</div>
 				</div>
 			</SidebarInset>
