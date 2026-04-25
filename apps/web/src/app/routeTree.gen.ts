@@ -20,9 +20,11 @@ import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainFlashcardsRouteImport } from './routes/_main/flashcards'
 import { Route as MainFlaggedRouteImport } from './routes/_main/flagged'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
+import { Route as MainReviewFocusRouteImport } from './routes/_main/review.focus'
 import { Route as MainReviewCardsReviewCardIdRouteImport } from './routes/_main/review-cards_.$reviewCardId'
 import { Route as MainPracticeReviewCardIdRouteImport } from './routes/_main/practice_.$reviewCardId'
 import { Route as MainFlashcardsReviewCardIdRouteImport } from './routes/_main/flashcards_.$reviewCardId'
+import { Route as MainReviewFocusReviewCardIdRouteImport } from './routes/_main/review.focus_.$reviewCardId'
 
 const VirtualizationSmokeRoute = VirtualizationSmokeRouteImport.update({
   id: '/virtualization-smoke',
@@ -78,6 +80,11 @@ const MainTopicsTopicIdRoute = MainTopicsTopicIdRouteImport.update({
   path: '/topics/$topicId',
   getParentRoute: () => MainRoute,
 } as any)
+const MainReviewFocusRoute = MainReviewFocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => MainReviewRoute,
+} as any)
 const MainReviewCardsReviewCardIdRoute =
   MainReviewCardsReviewCardIdRouteImport.update({
     id: '/review-cards_/$reviewCardId',
@@ -96,6 +103,12 @@ const MainFlashcardsReviewCardIdRoute =
     path: '/flashcards/$reviewCardId',
     getParentRoute: () => MainRoute,
   } as any)
+const MainReviewFocusReviewCardIdRoute =
+  MainReviewFocusReviewCardIdRouteImport.update({
+    id: '/focus_/$reviewCardId',
+    path: '/focus/$reviewCardId',
+    getParentRoute: () => MainReviewRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
@@ -104,13 +117,15 @@ export interface FileRoutesByFullPath {
   '/logbook': typeof MainLogbookRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
-  '/review': typeof MainReviewRoute
+  '/review': typeof MainReviewRouteWithChildren
   '/topics': typeof MainTopicsRoute
   '/': typeof MainIndexRoute
   '/flashcards/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
   '/practice/$reviewCardId': typeof MainPracticeReviewCardIdRoute
   '/review-cards/$reviewCardId': typeof MainReviewCardsReviewCardIdRoute
+  '/review/focus': typeof MainReviewFocusRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
+  '/review/focus/$reviewCardId': typeof MainReviewFocusReviewCardIdRoute
 }
 export interface FileRoutesByTo {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
@@ -119,13 +134,15 @@ export interface FileRoutesByTo {
   '/logbook': typeof MainLogbookRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
-  '/review': typeof MainReviewRoute
+  '/review': typeof MainReviewRouteWithChildren
   '/topics': typeof MainTopicsRoute
   '/': typeof MainIndexRoute
   '/flashcards/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
   '/practice/$reviewCardId': typeof MainPracticeReviewCardIdRoute
   '/review-cards/$reviewCardId': typeof MainReviewCardsReviewCardIdRoute
+  '/review/focus': typeof MainReviewFocusRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
+  '/review/focus/$reviewCardId': typeof MainReviewFocusReviewCardIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -136,13 +153,15 @@ export interface FileRoutesById {
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/practice': typeof MainPracticeRoute
   '/_main/recent': typeof MainRecentRoute
-  '/_main/review': typeof MainReviewRoute
+  '/_main/review': typeof MainReviewRouteWithChildren
   '/_main/topics': typeof MainTopicsRoute
   '/_main/': typeof MainIndexRoute
   '/_main/flashcards_/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
   '/_main/practice_/$reviewCardId': typeof MainPracticeReviewCardIdRoute
   '/_main/review-cards_/$reviewCardId': typeof MainReviewCardsReviewCardIdRoute
+  '/_main/review/focus': typeof MainReviewFocusRoute
   '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
+  '/_main/review/focus_/$reviewCardId': typeof MainReviewFocusReviewCardIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,7 +178,9 @@ export interface FileRouteTypes {
     | '/flashcards/$reviewCardId'
     | '/practice/$reviewCardId'
     | '/review-cards/$reviewCardId'
+    | '/review/focus'
     | '/topics/$topicId'
+    | '/review/focus/$reviewCardId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/virtualization-smoke'
@@ -174,7 +195,9 @@ export interface FileRouteTypes {
     | '/flashcards/$reviewCardId'
     | '/practice/$reviewCardId'
     | '/review-cards/$reviewCardId'
+    | '/review/focus'
     | '/topics/$topicId'
+    | '/review/focus/$reviewCardId'
   id:
     | '__root__'
     | '/_main'
@@ -190,7 +213,9 @@ export interface FileRouteTypes {
     | '/_main/flashcards_/$reviewCardId'
     | '/_main/practice_/$reviewCardId'
     | '/_main/review-cards_/$reviewCardId'
+    | '/_main/review/focus'
     | '/_main/topics_/$topicId'
+    | '/_main/review/focus_/$reviewCardId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -277,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainTopicsTopicIdRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/review/focus': {
+      id: '/_main/review/focus'
+      path: '/focus'
+      fullPath: '/review/focus'
+      preLoaderRoute: typeof MainReviewFocusRouteImport
+      parentRoute: typeof MainReviewRoute
+    }
     '/_main/review-cards_/$reviewCardId': {
       id: '/_main/review-cards_/$reviewCardId'
       path: '/review-cards/$reviewCardId'
@@ -298,8 +330,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainFlashcardsReviewCardIdRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/review/focus_/$reviewCardId': {
+      id: '/_main/review/focus_/$reviewCardId'
+      path: '/focus/$reviewCardId'
+      fullPath: '/review/focus/$reviewCardId'
+      preLoaderRoute: typeof MainReviewFocusReviewCardIdRouteImport
+      parentRoute: typeof MainReviewRoute
+    }
   }
 }
+
+interface MainReviewRouteChildren {
+  MainReviewFocusRoute: typeof MainReviewFocusRoute
+  MainReviewFocusReviewCardIdRoute: typeof MainReviewFocusReviewCardIdRoute
+}
+
+const MainReviewRouteChildren: MainReviewRouteChildren = {
+  MainReviewFocusRoute: MainReviewFocusRoute,
+  MainReviewFocusReviewCardIdRoute: MainReviewFocusReviewCardIdRoute,
+}
+
+const MainReviewRouteWithChildren = MainReviewRoute._addFileChildren(
+  MainReviewRouteChildren,
+)
 
 interface MainRouteChildren {
   MainFlaggedRoute: typeof MainFlaggedRoute
@@ -307,7 +360,7 @@ interface MainRouteChildren {
   MainLogbookRoute: typeof MainLogbookRoute
   MainPracticeRoute: typeof MainPracticeRoute
   MainRecentRoute: typeof MainRecentRoute
-  MainReviewRoute: typeof MainReviewRoute
+  MainReviewRoute: typeof MainReviewRouteWithChildren
   MainTopicsRoute: typeof MainTopicsRoute
   MainIndexRoute: typeof MainIndexRoute
   MainFlashcardsReviewCardIdRoute: typeof MainFlashcardsReviewCardIdRoute
@@ -322,7 +375,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainLogbookRoute: MainLogbookRoute,
   MainPracticeRoute: MainPracticeRoute,
   MainRecentRoute: MainRecentRoute,
-  MainReviewRoute: MainReviewRoute,
+  MainReviewRoute: MainReviewRouteWithChildren,
   MainTopicsRoute: MainTopicsRoute,
   MainIndexRoute: MainIndexRoute,
   MainFlashcardsReviewCardIdRoute: MainFlashcardsReviewCardIdRoute,
