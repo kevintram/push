@@ -151,9 +151,7 @@ class TestReviewQueueEndpoint:
             )
             assert response.status_code == 200
 
-        all_response = await test_client.get(
-            "/review-cards/queue/?filter=all&tab=due"
-        )
+        all_response = await test_client.get("/review-cards/queue/?filter=all&tab=due")
         practice_response = await test_client.get(
             "/review-cards/queue/?filter=practice&tab=due"
         )
@@ -170,16 +168,13 @@ class TestReviewQueueEndpoint:
             item["card"]["primary_text"] for item in all_response.json()["items"]
         ] == ["Due practice", "Due flashcard"]
         assert [
-            item["card"]["primary_text"]
-            for item in practice_response.json()["items"]
+            item["card"]["primary_text"] for item in practice_response.json()["items"]
         ] == ["Due practice"]
         assert [
-            item["card"]["primary_text"]
-            for item in flashcards_response.json()["items"]
+            item["card"]["primary_text"] for item in flashcards_response.json()["items"]
         ] == ["Due flashcard"]
         assert [
-            item["card"]["primary_text"]
-            for item in legacy_all_response.json()["items"]
+            item["card"]["primary_text"] for item in legacy_all_response.json()["items"]
         ] == ["Due practice", "Due flashcard"]
 
     async def test_review_queue_prioritizes_recently_overdue_due_cards(
