@@ -1,65 +1,29 @@
 import { User2 } from 'lucide-react'
 
-import { Badge } from '~/components/ui/badge'
 import { CardHeader } from '~/components/ui/card'
+import {
+	type StatusBadgeItem,
+	StatusBadgeList
+} from '~/components/ui/status-badge'
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
-import type { ReviewCardBadge } from './reviewCardShared'
 
 export function ReviewCardStatusRow({
 	badges
 }: {
-	badges: Array<ReviewCardBadge>
+	badges: Array<StatusBadgeItem>
 }) {
 	if (badges.length === 0) return null
 
 	return (
-		<div className='pointer-events-none absolute top-[0.5px] right-3 z-5 flex max-w-[calc(100%-1.5rem)] -translate-y-1/2 flex-wrap items-center justify-end gap-1.5'>
-			{badges.map((badge, index) => (
-				<Tooltip key={`${badge.label}-${index}`}>
-					<TooltipTrigger
-						render={
-							<Badge
-								className={
-									badge.className
-										? `${badge.className} pointer-events-auto rounded-sm shadow-sm`
-										: 'pointer-events-auto h-5 rounded-sm text-xs shadow-sm'
-								}
-								onClick={event => {
-									if (!badge.onClick) return
-									event.stopPropagation()
-									badge.onClick()
-								}}
-								onKeyDown={event => {
-									if (
-										(event.key === 'Enter' || event.key === ' ') &&
-										badge.onClick
-									) {
-										event.preventDefault()
-										event.stopPropagation()
-										badge.onClick()
-									}
-								}}
-								role={badge.onClick ? 'button' : undefined}
-								tabIndex={badge.onClick ? 0 : undefined}
-								variant={badge.variant ?? 'outline'}
-							>
-								{badge.icon ? (
-									<span className='inline-flex items-center'>{badge.icon}</span>
-								) : null}
-								{badge.label ? <span>{badge.label}</span> : null}
-							</Badge>
-						}
-					/>
-					{badge.tooltip ? (
-						<TooltipContent>{badge.tooltip}</TooltipContent>
-					) : null}
-				</Tooltip>
-			))}
-		</div>
+		<StatusBadgeList
+			badgeClassName='pointer-events-auto'
+			badges={badges}
+			className='pointer-events-none absolute top-[0.5px] right-3 z-5 max-w-[calc(100%-1.5rem)] -translate-y-1/2 justify-end'
+		/>
 	)
 }
 

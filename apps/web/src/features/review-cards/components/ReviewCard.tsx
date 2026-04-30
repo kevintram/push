@@ -15,6 +15,7 @@ import {
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
 import { Card } from '~/components/ui/card'
+import type { StatusBadgeItem } from '~/components/ui/status-badge'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
@@ -43,11 +44,7 @@ import { RetireReviewCardDialog } from './RetireReviewCardDialog'
 import { ReviewCardBody, ReviewCardMetaRow } from './ReviewCardBody'
 import { ReviewCardFooterActions } from './ReviewCardFooterActions'
 import { ReviewCardHeader, ReviewCardStatusRow } from './ReviewCardHeader'
-import {
-	type ReviewCardBadge,
-	toFreshnessTier,
-	toReviewCardBadge
-} from './reviewCardShared'
+import { toFreshnessTier, toReviewCardStatusBadge } from './reviewCardShared'
 
 const MIN_HEIGHT = 96
 const LARGE_CARD_CONTENT_HEIGHT_MIN = 500
@@ -62,7 +59,7 @@ interface ReviewCardProps {
 	minHeight?: number
 	enableLargeCardMode?: boolean
 	searchQuery?: string
-	statusBadges?: Array<ReviewCardBadge>
+	statusBadges?: Array<StatusBadgeItem>
 	onRemoveFromTab?: () => void
 	removeFromTabLabel?: string
 	isRemovingFromTab?: boolean
@@ -277,7 +274,7 @@ export function ReviewCard({
 	const reviewCardStatusBadges = useMemo(
 		() =>
 			orderReviewCardStatusBadges(reviewCard.status_badges).map(apiBadge =>
-				toReviewCardBadge(apiBadge, {
+				toReviewCardStatusBadge(apiBadge, {
 					onOpenReviewDialog: openReviewDialog
 				})
 			),
@@ -415,5 +412,4 @@ export function ReviewCard({
 	)
 }
 
-export type { ReviewCardBadge } from './reviewCardShared'
-export { toReviewCardBadge } from './reviewCardShared'
+export { toReviewCardStatusBadge } from './reviewCardShared'

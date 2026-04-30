@@ -5,7 +5,7 @@ import { useReviewCard } from '~/features/review-cards/api/getReviewCard'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import {
 	toFreshnessTier,
-	toReviewCardBadge
+	toReviewCardStatusBadge
 } from '~/features/review-cards/components/reviewCardShared'
 import { consumeFocusNewReviewCardPrimaryText } from '~/features/review-cards/createReviewCardIntent'
 import { useDeleteReviewCardWithUndo } from '~/features/review-cards/hooks/useDeleteReviewCardWithUndo'
@@ -146,7 +146,7 @@ export function useReviewCardDetailPage({
 		() =>
 			orderReviewCardStatusBadges(reviewCard?.status_badges ?? []).map(
 				apiBadge =>
-					toReviewCardBadge(apiBadge, {
+					toReviewCardStatusBadge(apiBadge, {
 						onOpenReviewDialog: openReviewDialog
 					})
 			),
