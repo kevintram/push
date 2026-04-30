@@ -8,7 +8,12 @@ import {
 	clampAppSidebarWidth,
 	getStoredAppSidebarWidth
 } from '~/app/components/AppSidebar/appSidebarWidth'
-import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
+import {
+	SidebarInset,
+	SidebarProvider,
+	useSidebar
+} from '~/components/ui/sidebar'
+import { cn } from '~/lib/utils'
 
 export const Route = createFileRoute('/_main')({
 	component: MainLayout
@@ -75,15 +80,40 @@ function MainLayout() {
 				} as CSSProperties
 			}
 		>
-			<AppSidebar onResizeStart={handleSidebarResizeStart} />
+			<MainLayoutContent onSidebarResizeStart={handleSidebarResizeStart} />
+		</SidebarProvider>
+	)
+}
+
+function MainLayoutContent({
+	onSidebarResizeStart
+}: {
+	onSidebarResizeStart: (event: ReactPointerEvent<HTMLDivElement>) => void
+}) {
+	const { isMobile, state } = useSidebar()
+	const shouldInsetLeft = !isMobile && state === 'collapsed'
+
+	return (
+		<>
+			<AppSidebar onResizeStart={onSidebarResizeStart} />
 			<SidebarInset className='!bg-[var(--app-shell)] h-svh'>
 				<div className='relative flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--app-shell)]'>
 					<AppHeader />
-					<div className='relative flex min-h-0 min-w-0 flex-1 overflow-hidden bg-[var(--workspace-surface)]'>
-						<Outlet />
+					<div
+						className={cn(
+							'relative min-h-0 min-w-0 flex-1 px-0 pb-0 transition-[padding] duration-200 ease-linear md:pr-2 md:pb-2',
+							shouldInsetLeft && 'md:pl-2'
+						)}
+					>
+						<div
+							className='relative flex h-full min-h-0 min-w-0 flex-1 overflow-hidden border border-[var(--workspace-border)] bg-[var(--workspace-surface)] md:rounded-[1.15rem]'
+							style={{ boxShadow: 'var(--workspace-shadow)' }}
+						>
+							<Outlet />
+						</div>
 					</div>
 				</div>
 			</SidebarInset>
-		</SidebarProvider>
+		</>
 	)
 }
