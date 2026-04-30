@@ -19,11 +19,11 @@ export async function getReviewCardQueuePage(
 		searchParams.append('filter', params.filter)
 	}
 
-	if (params.tab !== undefined) {
-		searchParams.append('tab', params.tab)
+	if (params.mode !== undefined) {
+		searchParams.append('mode', params.mode)
 	}
-	if (params.focused !== undefined) {
-		searchParams.append('focused', String(params.focused))
+	if (params.include_future !== undefined) {
+		searchParams.append('include_future', String(params.include_future))
 	}
 	if (params.limit !== undefined) {
 		searchParams.append('limit', String(params.limit))

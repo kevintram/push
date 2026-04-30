@@ -28,14 +28,14 @@ describe('review card queue API', () => {
 
 		await getReviewCardQueuePage({
 			filter: 'all',
-			tab: 'due',
-			focused: true,
-			limit: 10
+			include_future: true,
+			limit: 10,
+			mode: 'focus'
 		})
 
 		expect(apiFetchMock).toHaveBeenCalledWith(
 			expect.stringContaining(
-				'/review-cards/queue/?filter=all&tab=due&focused=true&limit=10'
+				'/review-cards/queue/?filter=all&mode=focus&include_future=true&limit=10'
 			)
 		)
 	})
@@ -47,11 +47,11 @@ describe('review card queue API', () => {
 
 		await getReviewCardQueuePage({
 			type: 'flashcard',
-			tab: 'new'
+			mode: 'list'
 		})
 
 		expect(apiFetchMock).toHaveBeenCalledWith(
-			expect.stringContaining('/review-cards/queue/?type=flashcard&tab=new')
+			expect.stringContaining('/review-cards/queue/?type=flashcard&mode=list')
 		)
 	})
 

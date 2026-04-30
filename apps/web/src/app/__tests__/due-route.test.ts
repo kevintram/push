@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { resolveDueFilter, validateDueSearch } from '~/app/routes/_main/due'
+import {
+	resolveDueFilter,
+	validateDueFocusSearch,
+	validateDueSearch
+} from '~/app/routes/_main/due'
 import { createMockLocalStorage } from '~/testing/support/masonryPageTestSupport'
 
 const mockLocalStorage = createMockLocalStorage()
@@ -40,5 +44,25 @@ describe('due route search', () => {
 			'flashcards'
 		)
 		expect(resolveDueFilter(validateDueSearch({}))).toBe('flashcards')
+	})
+
+	it('accepts focus index state search params', () => {
+		expect(
+			validateDueFocusSearch({
+				card: '12',
+				done: 'true',
+				filter: 'all',
+				include_future: 'true',
+				order: 'random',
+				shuffle: 'seed'
+			})
+		).toEqual({
+			card: 12,
+			done: true,
+			filter: 'all',
+			include_future: true,
+			order: 'random',
+			shuffle: 'seed'
+		})
 	})
 })
