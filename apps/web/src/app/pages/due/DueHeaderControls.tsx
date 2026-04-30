@@ -8,6 +8,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
+import { ReviewStatusDots } from '~/components/ui/review-status-dots'
 import {
 	type StatusBadgeItem,
 	StatusBadgeList
@@ -24,6 +25,7 @@ const DUE_FILTER_OPTIONS = [
 ] as const
 
 type DueHeaderControlsProps = {
+	filterStatusCounts: DueFilterStatusCountsByFilter
 	filter: ReviewFilter
 	order: ReviewFocusOrder
 	onFilterChange: (filter: ReviewFilter) => void
@@ -37,6 +39,16 @@ type DueQueueStatusBadgesProps = {
 	newCount: number
 	overdueCount: number
 }
+
+type DueFilterStatusCounts = {
+	dueTodayCount: number
+	newCount: number
+	overdueCount: number
+}
+
+type StatusFilter = Exclude<ReviewFilter, 'all'>
+
+type DueFilterStatusCountsByFilter = Record<StatusFilter, DueFilterStatusCounts>
 
 function buildDueQueueStatusBadges({
 	dueTodayCount,
@@ -78,8 +90,29 @@ export function DueQueueStatusBadges(props: DueQueueStatusBadgesProps) {
 	)
 }
 
+function formatStatusParts(parts: Array<string>) {
+	if (parts.length <= 1) return parts[0] ?? ''
+	if (parts.length === 2) return `${parts[0]} and ${parts[1]}`
+	return `${parts.slice(0, -1).join(', ')}, and ${parts.at(-1)}`
+}
+
+function buildFilterStatusLabel(
+	label: string,
+	counts: DueFilterStatusCounts | undefined
+) {
+	const parts: Array<string> = []
+
+	if (counts?.overdueCount) parts.push('has overdue reviews')
+	if (counts?.dueTodayCount) parts.push('reviews due today')
+	if (counts?.newCount) parts.push('new review cards')
+
+	const summary = formatStatusParts(parts)
+	return summary ? `${label} filter, ${summary}` : `${label} filter`
+}
+
 export function DueHeaderControls({
 	filter,
+	filterStatusCounts,
 	order,
 	onFilterChange,
 	onOrderChange,
@@ -92,8 +125,11 @@ export function DueHeaderControls({
 		<div className='flex flex-wrap items-center gap-1.5'>
 			{DUE_FILTER_OPTIONS.map(option => {
 				const isActive = filter === option.value
+				const statusCounts =
+					option.value === 'all' ? undefined : filterStatusCounts[option.value]
 				return (
 					<Button
+						aria-label={buildFilterStatusLabel(option.label, statusCounts)}
 						aria-pressed={isActive}
 						className='h-6 rounded-full px-2 text-xs'
 						key={option.value}
@@ -105,6 +141,16 @@ export function DueHeaderControls({
 						variant={isActive ? 'default' : 'outline'}
 					>
 						{option.label}
+						{statusCounts ? (
+							<ReviewStatusDots
+								dueTodayCount={statusCounts.dueTodayCount}
+								neutralVariant='solid'
+								overdueCount={statusCounts.overdueCount}
+								pendingCount={statusCounts.newCount}
+								surfaceContext={isActive ? 'primary' : 'default'}
+								testIdPrefix={`due-filter-${option.value}`}
+							/>
+						) : null}
 					</Button>
 				)
 			})}

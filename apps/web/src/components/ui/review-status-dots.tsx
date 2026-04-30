@@ -6,8 +6,8 @@ export const reviewStatusDotVariants = cva(
 	{
 		variants: {
 			size: {
-				default: "h-3 w-3",
-				compact: "h-2 w-2"
+				default: "h-2 w-2",
+				compact: "h-1.5 w-1.5"
 			},
 			tone: {
 				danger: "",

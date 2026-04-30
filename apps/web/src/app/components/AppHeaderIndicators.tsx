@@ -85,7 +85,7 @@ export function HeaderArcIndicator({
 					<span
 						aria-hidden={true}
 						className={cn(
-							reviewStatusDotVariants({ size: 'compact', tone: dot.tone }),
+							reviewStatusDotVariants({ size: 'default', tone: dot.tone }),
 							'pointer-events-none absolute z-10'
 						)}
 						data-testid={
