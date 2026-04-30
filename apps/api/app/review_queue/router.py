@@ -23,7 +23,9 @@ async def read_review_queue(
     user_id: UserIdDep,
     type: ReviewCardTypeEnum | None = None,
     filter: ReviewCardFilterEnum | None = None,
-    tab: Literal["due", "new"] = "due",
+    mode: Literal["list", "focus"] = "list",
+    include_future: bool = False,
+    tab: Literal["due", "new"] | None = None,
     focused: bool = False,
     limit: int | None = None,
 ) -> ReviewCardQueuePage:
@@ -31,7 +33,9 @@ async def read_review_queue(
         session,
         user_id,
         card_types=resolve_queue_card_types(card_type=type, review_filter=filter),
-        tab=tab,
+        include_future=include_future,
         focused=focused,
         limit=limit,
+        mode=mode,
+        tab=tab,
     )

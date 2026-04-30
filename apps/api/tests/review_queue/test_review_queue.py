@@ -177,6 +177,102 @@ class TestReviewQueueEndpoint:
             item["card"]["primary_text"] for item in legacy_all_response.json()["items"]
         ] == ["Due practice", "Due flashcard"]
 
+    async def test_review_card_queue_modes_order_combined_work(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        today = date(2026, 1, 15)
+        monkeypatch.setattr(
+            review_card_service,
+            "get_current_date",
+            lambda: today,
+        )
+
+        topic = await _create_topic(test_client, "Mode queue")
+        overdue_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="Overdue practice",
+        )
+        today_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="Today practice",
+        )
+        future_card = await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="Future practice",
+        )
+        await _create_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="New practice",
+        )
+
+        for card_id, scheduled_at in [
+            (overdue_card["id"], today - timedelta(days=1)),
+            (today_card["id"], today),
+            (future_card["id"], today + timedelta(days=1)),
+        ]:
+            response = await test_client.post(
+                "/reviews/",
+                json={
+                    "review_card_id": card_id,
+                    "scheduled_at": str(scheduled_at),
+                },
+            )
+            assert response.status_code == 200
+
+        list_response = await test_client.get(
+            "/review-cards/queue/?filter=practice&mode=list"
+        )
+        focus_response = await test_client.get(
+            "/review-cards/queue/?filter=practice&mode=focus"
+        )
+        future_focus_response = await test_client.get(
+            "/review-cards/queue/?filter=practice&mode=focus&include_future=true"
+        )
+
+        assert list_response.status_code == 200
+        assert focus_response.status_code == 200
+        assert future_focus_response.status_code == 200
+        assert [
+            item["card"]["primary_text"] for item in list_response.json()["items"]
+        ] == [
+            "New practice",
+            "Overdue practice",
+            "Today practice",
+            "Future practice",
+        ]
+        assert [
+            item["card"]["primary_text"] for item in focus_response.json()["items"]
+        ] == ["Overdue practice", "Today practice", "New practice"]
+        assert [
+            item["card"]["primary_text"]
+            for item in future_focus_response.json()["items"]
+        ] == [
+            "Overdue practice",
+            "Today practice",
+            "New practice",
+            "Future practice",
+        ]
+
+    async def test_review_card_queue_rejects_invalid_mode(
+        self,
+        test_client: AsyncClient,
+    ):
+        response = await test_client.get(
+            "/review-cards/queue/?filter=practice&mode=wat"
+        )
+
+        assert response.status_code == 422
+
     async def test_review_queue_prioritizes_recently_overdue_due_cards(
         self,
         test_client: AsyncClient,

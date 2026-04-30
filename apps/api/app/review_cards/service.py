@@ -192,6 +192,54 @@ async def _list_actionable_due_queue_items(
     return items
 
 
+async def _list_new_queue_items(
+    session: AsyncSession,
+    user_id: str,
+    *,
+    card_types: tuple[str, ...],
+    exclude_card_ids: set[int] | None = None,
+) -> list[ReviewCardQueueItem]:
+    new_cards_result = await session.execute(
+        select(ReviewCard)
+        .where(
+            ReviewCard.user_id == user_id,
+            ReviewCard.type.in_(card_types),
+            ~exists(
+                select(Review.id)
+                .where(
+                    Review.review_card_id == ReviewCard.id,
+                    Review.completed_at.isnot(None),
+                )
+                .limit(1)
+            ),
+        )
+        .options(
+            selectinload(ReviewCard.topic),
+            selectinload(ReviewCard.reviews),
+            selectinload(ReviewCard.type_assignments),
+        )
+        .order_by(ReviewCard.inserted_at.desc(), ReviewCard.id.desc())
+    )
+
+    items: list[ReviewCardQueueItem] = []
+    excluded_ids = exclude_card_ids or set()
+    for review_card in new_cards_result.scalars().unique().all():
+        if review_card.retired or review_card.id in excluded_ids:
+            continue
+        items.append(
+            ReviewCardQueueItem(
+                queue_type="new",
+                card=review_card,
+                review_id=None,
+                scheduled_at=None,
+                action_days=None,
+                days_until_due=None,
+                days_until_hazy=None,
+            )
+        )
+    return items
+
+
 async def sync_review_card_type_assignment(
     session: AsyncSession, review_card: ReviewCard
 ) -> None:
@@ -385,70 +433,74 @@ async def list_review_card_queue(
     user_id: str,
     *,
     card_types: tuple[str, ...],
-    tab: Literal["due", "new"] = "due",
+    mode: Literal["list", "focus"] = "list",
+    include_future: bool = False,
+    tab: Literal["due", "new"] | None = None,
     focused: bool = False,
     limit: int | None = None,
 ) -> ReviewCardQueuePage:
     as_of = get_current_date()
 
-    items: list[ReviewCardQueueItem] = []
-
-    if tab == "due":
-        items = await _list_actionable_due_queue_items(
-            session,
-            user_id,
-            card_types=card_types,
-            as_of=as_of,
-        )
-    else:
-        new_cards_result = await session.execute(
-            select(ReviewCard)
-            .where(
-                ReviewCard.user_id == user_id,
-                ReviewCard.type.in_(card_types),
-                ~exists(
-                    select(Review.id)
-                    .where(
-                        Review.review_card_id == ReviewCard.id,
-                        Review.completed_at.isnot(None),
-                    )
-                    .limit(1)
-                ),
+    if tab is not None:
+        if tab == "due":
+            items = await _list_actionable_due_queue_items(
+                session,
+                user_id,
+                card_types=card_types,
+                as_of=as_of,
             )
-            .options(
-                selectinload(ReviewCard.topic),
-                selectinload(ReviewCard.reviews),
-                selectinload(ReviewCard.type_assignments),
+        else:
+            items = await _list_new_queue_items(
+                session,
+                user_id,
+                card_types=card_types,
             )
-            .order_by(ReviewCard.inserted_at.desc(), ReviewCard.id.desc())
-        )
 
-        for review_card in new_cards_result.scalars().unique().all():
-            if review_card.retired:
-                continue
-            items.append(
-                ReviewCardQueueItem(
-                    queue_type="new",
-                    card=review_card,
-                    review_id=None,
-                    scheduled_at=None,
-                    action_days=None,
-                    days_until_due=None,
-                    days_until_hazy=None,
+        if focused:
+            items = [
+                item
+                for item in items
+                if not (
+                    item.queue_type == "hazy" and item.card.freshness_tier == "Fresh"
                 )
-            )
+            ]
+            resolved_limit = limit
+            if resolved_limit is None:
+                flashcard_only = set(card_types) == {ReviewCardTypeEnum.FLASHCARD.value}
+                resolved_limit = 1 if flashcard_only else 5
+            items = items[:resolved_limit]
 
-    if focused:
-        items = [
-            item
-            for item in items
-            if not (item.queue_type == "hazy" and item.card.freshness_tier == "Fresh")
-        ]
-        resolved_limit = limit
-        if resolved_limit is None:
-            flashcard_only = set(card_types) == {ReviewCardTypeEnum.FLASHCARD.value}
-            resolved_limit = 1 if flashcard_only else 5
-        items = items[:resolved_limit]
+        return ReviewCardQueuePage(items=items, as_of=as_of)
+
+    due_items = await _list_actionable_due_queue_items(
+        session,
+        user_id,
+        card_types=card_types,
+        as_of=as_of,
+    )
+    new_items = await _list_new_queue_items(
+        session,
+        user_id,
+        card_types=card_types,
+        exclude_card_ids={item.card.id for item in due_items},
+    )
+
+    if mode == "list":
+        return ReviewCardQueuePage(items=[*new_items, *due_items], as_of=as_of)
+
+    current_actionable_items = [
+        item
+        for item in due_items
+        if item.action_days is not None and item.action_days <= 0
+    ]
+    future_items = [
+        item
+        for item in due_items
+        if item.action_days is not None and item.action_days > 0
+    ]
+    items = [*current_actionable_items, *new_items]
+    if include_future:
+        items.extend(future_items)
 
     return ReviewCardQueuePage(items=items, as_of=as_of)
 
