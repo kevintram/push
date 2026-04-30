@@ -43,34 +43,30 @@ export function DuePage({ filter, onFilterChange }: DuePageProps) {
 		() => getStoredDueViewPreference().focusOrder
 	)
 	const [shuffleSeed, setShuffleSeed] = useState<string | undefined>()
-	const newQueueQuery = useReviewCardQueuePage({
+	const queueQuery = useReviewCardQueuePage({
 		filter,
-		tab: 'new'
+		mode: 'list'
 	})
-	const dueQueueQuery = useReviewCardQueuePage({
-		filter,
-		tab: 'due',
-		focused: false
-	})
-	const newItems = newQueueQuery.data?.items ?? EMPTY_ITEMS
-	const dueItems = dueQueueQuery.data?.items ?? EMPTY_ITEMS
-	const isLoading = newQueueQuery.isLoading || dueQueueQuery.isLoading
+	const queueItems = queueQuery.data?.items ?? EMPTY_ITEMS
+	const newItems = useMemo(
+		() => queueItems.filter(item => item.queue_type === 'new'),
+		[queueItems]
+	)
+	const dueItems = useMemo(
+		() => queueItems.filter(item => item.queue_type !== 'new'),
+		[queueItems]
+	)
+	const isLoading = queueQuery.isLoading
 	const sections = useMemo(
 		() =>
 			groupUnifiedReviewQueue(
 				{ dueItems, newItems },
 				{
-					asOf: dueQueueQuery.data?.as_of ?? newQueueQuery.data?.as_of,
+					asOf: queueQuery.data?.as_of,
 					weekStartDay
 				}
 			),
-		[
-			dueItems,
-			dueQueueQuery.data?.as_of,
-			newItems,
-			newQueueQuery.data?.as_of,
-			weekStartDay
-		]
+		[dueItems, newItems, queueQuery.data?.as_of, weekStartDay]
 	)
 	const focusSearch = useMemo(
 		() => buildFocusSearch({ filter, order: focusOrder, shuffle: shuffleSeed }),

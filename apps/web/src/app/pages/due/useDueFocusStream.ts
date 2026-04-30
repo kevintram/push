@@ -65,25 +65,30 @@ function findItemByCardId(
 export function useDueFocusStream({
 	activeReviewCardId,
 	filter,
+	includeFuture,
 	order,
 	shuffle
 }: {
 	activeReviewCardId?: number
 	filter: ReviewFilter
+	includeFuture: boolean
 	order: ReviewFocusOrder
 	shuffle?: string
 }) {
-	const newQueueQuery = useReviewCardQueuePage({
+	const queueQuery = useReviewCardQueuePage({
 		filter,
-		tab: 'new'
+		include_future: true,
+		mode: 'focus'
 	})
-	const dueQueueQuery = useReviewCardQueuePage({
-		filter,
-		tab: 'due',
-		focused: false
-	})
-	const newItems = newQueueQuery.data?.items ?? EMPTY_ITEMS
-	const dueItems = dueQueueQuery.data?.items ?? EMPTY_ITEMS
+	const queueItems = queueQuery.data?.items ?? EMPTY_ITEMS
+	const newItems = useMemo(
+		() => queueItems.filter(item => item.queue_type === 'new'),
+		[queueItems]
+	)
+	const dueItems = useMemo(
+		() => queueItems.filter(item => item.queue_type !== 'new'),
+		[queueItems]
+	)
 
 	const currentDueItems = useMemo(
 		() => dueItems.filter(isCurrentDueItem),
@@ -98,7 +103,7 @@ export function useDueFocusStream({
 		[currentDueItems, newItems]
 	)
 	const activeFutureItem = findItemByCardId(futureDueItems, activeReviewCardId)
-	const includesFutureDueItems = activeFutureItem != null
+	const includesFutureDueItems = includeFuture || activeFutureItem != null
 	const dueDateItems = useMemo(
 		() =>
 			includesFutureDueItems
@@ -135,7 +140,7 @@ export function useDueFocusStream({
 		firstFutureItem: futureDueItems[0] ?? null,
 		firstStreamItem: streamItems[0] ?? null,
 		includesFutureDueItems,
-		isLoading: newQueueQuery.isLoading || dueQueueQuery.isLoading,
+		isLoading: queueQuery.isLoading,
 		nextItem,
 		previousItem,
 		streamItems
