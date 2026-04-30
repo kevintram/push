@@ -72,6 +72,7 @@ type ReviewCardDetailHomeTabProps = {
 	notes: string
 	onPrimaryTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
 	onNotesChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
+	onCompletedReviewCreated?: () => void
 	onOpenDeleteDialog: () => void
 	onOpenReviewDialog: (reviewId: number) => void
 	onSecondaryTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
@@ -118,6 +119,7 @@ export function ReviewCardDetailHomeTab({
 	notes,
 	onPrimaryTextChange,
 	onNotesChange,
+	onCompletedReviewCreated,
 	onOpenDeleteDialog,
 	onOpenReviewDialog,
 	onSecondaryTextChange,
@@ -328,6 +330,7 @@ export function ReviewCardDetailHomeTab({
 						buttonClassName='rounded-full'
 						buttonSize='sm'
 						hasLastReviewed={reviewCard.last_reviewed_at != null}
+						onCompletedReviewCreated={onCompletedReviewCreated}
 						onSeeAll={handleSeeReviews}
 						reviewCardId={reviewCard.id}
 						reviews={resolvedReviews}

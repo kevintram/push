@@ -33,6 +33,7 @@ export function useReviewsMenu({
 	align = 'end',
 	compactTriggerBadges = false,
 	hasLastReviewed = false,
+	onCompletedReviewCreated,
 	onSeeAll,
 	reviewCardId,
 	reviews: providedReviews,
@@ -42,6 +43,7 @@ export function useReviewsMenu({
 	| 'align'
 	| 'compactTriggerBadges'
 	| 'hasLastReviewed'
+	| 'onCompletedReviewCreated'
 	| 'onSeeAll'
 	| 'reviewCardId'
 	| 'reviews'
@@ -267,6 +269,7 @@ export function useReviewsMenu({
 					await createReview(null, null)
 				} else {
 					await createReview(localDateString(), ratingState)
+					onCompletedReviewCreated?.()
 				}
 			} catch {
 				toast.error('Failed to create review')
@@ -275,7 +278,8 @@ export function useReviewsMenu({
 		[
 			closeMenuAndFlushDeferredStructuralInvalidation,
 			createReview,
-			createReviewMutation.isPending
+			createReviewMutation.isPending,
+			onCompletedReviewCreated
 		]
 	)
 
