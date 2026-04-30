@@ -42,6 +42,7 @@ export function useReviewCardQueueSummary(
 ) {
 	return useQuery({
 		queryKey: reviewCardKeys.queueSummary(params),
-		queryFn: () => getReviewCardQueueSummary(params)
+		queryFn: () => getReviewCardQueueSummary(params),
+		staleTime: 30_000
 	})
 }
