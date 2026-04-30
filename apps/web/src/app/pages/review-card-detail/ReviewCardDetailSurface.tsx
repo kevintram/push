@@ -32,12 +32,14 @@ export function ReviewCardDetailSurface({
 	reviewCardId,
 	activeTab,
 	mode = 'fullPage',
-	onActiveTabChange
+	onActiveTabChange,
+	onCompletedReviewCreated
 }: {
 	reviewCardId: number
 	activeTab?: ReviewCardDetailTab | string
 	mode?: ReviewCardDetailSurfaceMode
 	onActiveTabChange?: (tab: ReviewCardDetailTab) => void
+	onCompletedReviewCreated?: () => void
 }) {
 	const {
 		secondaryText,
@@ -83,6 +85,7 @@ export function ReviewCardDetailSurface({
 		onPrimaryTextChange,
 		onNotesChange,
 		onSecondaryTextChange,
+		onCompletedReviewCreated: handleCompletedReviewCreated,
 		openReviewDialog,
 		overdueCount,
 		overdueReviews,
@@ -113,6 +116,7 @@ export function ReviewCardDetailSurface({
 	} = useReviewCardDetailPage({
 		activeTab,
 		onActiveTabChange,
+		onCompletedReviewCreated,
 		reviewCardId
 	})
 
@@ -253,6 +257,7 @@ export function ReviewCardDetailSurface({
 									lastReviewed={lastReviewed}
 									latestCompletedReview={latestCompletedReview}
 									notes={notes}
+									onCompletedReviewCreated={handleCompletedReviewCreated}
 									onNotesChange={onNotesChange}
 									onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
 									onOpenReviewDialog={openReviewDialog}

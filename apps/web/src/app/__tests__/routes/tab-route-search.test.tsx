@@ -315,6 +315,22 @@ describe('route-backed tab search state', () => {
 		})
 	})
 
+	it('redirects legacy due focus card routes to focus index card state', async () => {
+		const { router } = renderRoute(
+			'/due/focus/42?filter=practice&order=random&shuffle=abc'
+		)
+
+		await waitFor(() => {
+			expect(router.state.location.pathname).toBe('/due/focus')
+			expect(router.state.location.search).toEqual({
+				card: 42,
+				filter: 'practice',
+				order: 'random',
+				shuffle: 'abc'
+			})
+		})
+	})
+
 	it('falls back to TopicDetail all-card filter for invalid search', async () => {
 		useTopicMock.mockImplementation((topicId: number | null) => {
 			if (topicId === 1) {

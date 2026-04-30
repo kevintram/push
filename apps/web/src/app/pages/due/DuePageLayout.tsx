@@ -36,8 +36,10 @@ export function DuePageLayout({
 }: DuePageLayoutProps) {
 	const navigate = useNavigate()
 	const { dueTodayCount, newCount, overdueCount } = useReviewCardQueueCounts({
-		filter
+		filter: 'all'
 	})
+	const practiceCounts = useReviewCardQueueCounts({ filter: 'practice' })
+	const flashcardsCounts = useReviewCardQueueCounts({ filter: 'flashcards' })
 
 	function handleFocusToggle() {
 		if (isFocusActive) {
@@ -78,6 +80,10 @@ export function DuePageLayout({
 				controls={
 					<DueHeaderControls
 						filter={filter}
+						filterStatusCounts={{
+							flashcards: flashcardsCounts,
+							practice: practiceCounts
+						}}
 						onFilterChange={onFilterChange}
 						onOrderChange={onOrderChange}
 						onShuffle={onShuffle}

@@ -9,6 +9,7 @@ export interface ReviewsMenuProps {
 	buttonSize?: NonNullable<ComponentProps<typeof Button>['size']>
 	buttonVariant?: NonNullable<ComponentProps<typeof Button>['variant']>
 	disabled?: boolean
+	onCompletedReviewCreated?: () => void
 	onSeeAll?: () => void
 	onTriggerClick?: MouseEventHandler<HTMLButtonElement>
 	onTriggerFocus?: ComponentProps<typeof Button>['onFocus']

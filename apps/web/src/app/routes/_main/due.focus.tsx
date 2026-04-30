@@ -16,5 +16,14 @@ function DueFocusRoute() {
 	const filter = resolveDueFilter(search)
 	const order = resolveDueFocusOrder(search)
 
-	return <DueFocusPage filter={filter} order={order} shuffle={search.shuffle} />
+	return (
+		<DueFocusPage
+			done={search.done}
+			filter={filter}
+			includeFuture={search.include_future}
+			order={order}
+			reviewCardId={search.card}
+			shuffle={search.shuffle}
+		/>
+	)
 }

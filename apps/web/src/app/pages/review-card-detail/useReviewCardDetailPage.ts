@@ -39,12 +39,14 @@ import { isReviewCardDetailTab } from './shared'
 type UseReviewCardDetailPageOptions = {
 	activeTab?: ReviewCardDetailTab | string
 	onActiveTabChange?: (tab: ReviewCardDetailTab) => void
+	onCompletedReviewCreated?: () => void
 	reviewCardId: number
 }
 
 export function useReviewCardDetailPage({
 	activeTab,
 	onActiveTabChange,
+	onCompletedReviewCreated,
 	reviewCardId
 }: UseReviewCardDetailPageOptions) {
 	const navigate = useNavigate()
@@ -297,6 +299,7 @@ export function useReviewCardDetailPage({
 					openReviewDialog(review.id)
 					return
 				}
+				onCompletedReviewCreated?.()
 
 				toast('Review created', {
 					description: getReviewCreatedToastDescription(review),
@@ -309,7 +312,12 @@ export function useReviewCardDetailPage({
 				toast.error('Failed to create review')
 			}
 		},
-		[createReviewMutation, openReviewDialog, reviewCard]
+		[
+			createReviewMutation,
+			onCompletedReviewCreated,
+			openReviewDialog,
+			reviewCard
+		]
 	)
 
 	const handleDeleteReviewCard = useCallback(() => {
@@ -497,6 +505,7 @@ export function useReviewCardDetailPage({
 		onNotesChange,
 		onSecondaryTextChange,
 		openReviewDialog,
+		onCompletedReviewCreated,
 		overdueCount,
 		overdueReviews,
 		parentLabel,

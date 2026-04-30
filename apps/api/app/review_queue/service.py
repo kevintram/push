@@ -13,7 +13,9 @@ async def list_review_queue(
     user_id: str,
     *,
     card_types: tuple[str, ...],
-    tab: Literal["due", "new"] = "due",
+    mode: Literal["list", "focus"] = "list",
+    include_future: bool = False,
+    tab: Literal["due", "new"] | None = None,
     focused: bool = False,
     limit: int | None = None,
 ) -> ReviewCardQueuePage:
@@ -21,7 +23,9 @@ async def list_review_queue(
         session,
         user_id,
         card_types=card_types,
-        tab=tab,
+        include_future=include_future,
         focused=focused,
         limit=limit,
+        mode=mode,
+        tab=tab,
     )

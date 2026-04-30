@@ -18,53 +18,42 @@ describe('DuePage', () => {
 			dueNextSevenDaysCount: 3
 		})
 		useReviewCardQueueMock.mockImplementation(
-			(params: { filter?: string; tab?: string }) => {
+			(params: { filter?: string; mode?: string }) => {
 				if (params.filter !== 'all') {
 					return { data: { items: [], as_of: '2026-03-05' }, isLoading: false }
-				}
-
-				if (params.tab === 'new') {
-					return {
-						data: {
-							items: [
-								{
-									queue_type: 'new' as const,
-									card: {
-										...reviewCard,
-										id: 51,
-										primary_text: 'New practice',
-										type: 'practice'
-									},
-									review_id: null,
-									scheduled_at: null,
-									action_days: null,
-									days_until_due: null,
-									days_until_hazy: null
-								},
-								{
-									queue_type: 'new' as const,
-									card: {
-										...reviewCard,
-										id: 52,
-										primary_text: 'New flashcard',
-										type: 'flashcard'
-									},
-									review_id: null,
-									scheduled_at: null,
-									action_days: null,
-									days_until_due: null,
-									days_until_hazy: null
-								}
-							],
-							as_of: '2026-03-05'
-						},
-						isLoading: false
-					}
 				}
 
 				return {
 					data: {
 						items: [
+							{
+								queue_type: 'new' as const,
+								card: {
+									...reviewCard,
+									id: 51,
+									primary_text: 'New practice',
+									type: 'practice'
+								},
+								review_id: null,
+								scheduled_at: null,
+								action_days: null,
+								days_until_due: null,
+								days_until_hazy: null
+							},
+							{
+								queue_type: 'new' as const,
+								card: {
+									...reviewCard,
+									id: 52,
+									primary_text: 'New flashcard',
+									type: 'flashcard'
+								},
+								review_id: null,
+								scheduled_at: null,
+								action_days: null,
+								days_until_due: null,
+								days_until_hazy: null
+							},
 							{
 								queue_type: 'due' as const,
 								card: {
@@ -106,12 +95,7 @@ describe('DuePage', () => {
 		expect(useReviewCardQueueCountsMock).toHaveBeenCalledWith({ filter: 'all' })
 		expect(useReviewCardQueueMock).toHaveBeenCalledWith({
 			filter: 'all',
-			tab: 'new'
-		})
-		expect(useReviewCardQueueMock).toHaveBeenCalledWith({
-			filter: 'all',
-			tab: 'due',
-			focused: false
+			mode: 'list'
 		})
 		expect(screen.getByRole('button', { name: 'Focus' })).toHaveAttribute(
 			'aria-pressed',
@@ -159,7 +143,7 @@ describe('DuePage', () => {
 		})
 	})
 
-	it('switches filters and requests the filtered queue', async () => {
+	it('switches filters, keeps global counts, and requests the filtered queue', async () => {
 		const user = userEvent.setup()
 		useReviewCardQueueMock.mockReturnValue({
 			data: { items: [], as_of: '2026-03-05' },
@@ -168,21 +152,83 @@ describe('DuePage', () => {
 
 		render(renderDuePage({ initialFilter: 'all' }))
 
-		await user.click(screen.getByRole('button', { name: 'Practice' }))
+		await user.click(screen.getByRole('button', { name: /^Practice filter/iu }))
 
 		await waitFor(() => {
 			expect(useReviewCardQueueCountsMock).toHaveBeenCalledWith({
-				filter: 'practice'
+				filter: 'all'
 			})
 		})
 		expect(useReviewCardQueueMock).toHaveBeenCalledWith({
 			filter: 'practice',
-			tab: 'new'
+			mode: 'list'
 		})
-		expect(useReviewCardQueueMock).toHaveBeenCalledWith({
-			filter: 'practice',
-			tab: 'due',
-			focused: false
+	})
+
+	it('renders review status dots on scoped filter buttons', () => {
+		useReviewCardQueueCountsMock.mockImplementation(
+			(params: { filter: 'all' | 'practice' | 'flashcards' }) => {
+				if (params.filter === 'practice') {
+					return {
+						overdueCount: 2,
+						dueTodayCount: 0,
+						newCount: 1,
+						dueNextSevenDaysCount: 2
+					}
+				}
+
+				if (params.filter === 'flashcards') {
+					return {
+						overdueCount: 0,
+						dueTodayCount: 3,
+						newCount: 0,
+						dueNextSevenDaysCount: 3
+					}
+				}
+
+				return {
+					overdueCount: 2,
+					dueTodayCount: 3,
+					newCount: 1,
+					dueNextSevenDaysCount: 5
+				}
+			}
+		)
+		useReviewCardQueueMock.mockReturnValue({
+			data: { items: [], as_of: '2026-03-05' },
+			isLoading: false
 		})
+
+		render(renderDuePage({ initialFilter: 'all' }))
+
+		expect(
+			screen.getByRole('button', {
+				name: 'Practice filter, has overdue reviews and new review cards'
+			})
+		).toBeInTheDocument()
+		expect(
+			screen.getByTestId('due-filter-practice-overdue-dot')
+		).toBeInTheDocument()
+		expect(
+			screen.queryByTestId('due-filter-practice-due-today-dot')
+		).not.toBeInTheDocument()
+		expect(
+			screen.getByTestId('due-filter-practice-pending-dot')
+		).toBeInTheDocument()
+
+		expect(
+			screen.getByRole('button', {
+				name: 'Flashcards filter, reviews due today'
+			})
+		).toBeInTheDocument()
+		expect(
+			screen.queryByTestId('due-filter-flashcards-overdue-dot')
+		).not.toBeInTheDocument()
+		expect(
+			screen.getByTestId('due-filter-flashcards-due-today-dot')
+		).toBeInTheDocument()
+		expect(
+			screen.queryByTestId('due-filter-flashcards-pending-dot')
+		).not.toBeInTheDocument()
 	})
 })

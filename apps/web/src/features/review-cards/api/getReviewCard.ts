@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { queryOptions, useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 import { apiFetch } from '~/utils/apiFetch'
 import { HttpStatusError } from '~/utils/httpStatusError'
@@ -25,10 +25,18 @@ export async function getReviewCard(reviewCardId: number): Promise<ReviewCard> {
 	}
 }
 
+export function reviewCardQueryOptions(reviewCardId: number) {
+	return queryOptions({
+		queryKey: reviewCardKeys.detail(reviewCardId),
+		queryFn: () => getReviewCard(reviewCardId)
+	})
+}
+
 export function useReviewCard(reviewCardId: number | null) {
 	return useQuery({
-		queryKey: reviewCardKeys.detail(reviewCardId ?? -1),
-		queryFn: () => getReviewCard(reviewCardId!),
+		...(reviewCardId === null
+			? reviewCardQueryOptions(-1)
+			: reviewCardQueryOptions(reviewCardId)),
 		enabled: reviewCardId !== null
 	})
 }

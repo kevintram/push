@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, ArrowRight, Loader2, Sunset } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -9,10 +10,12 @@ import { Button } from '~/components/ui/button'
 import {
 	Empty,
 	EmptyContent,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { reviewCardQueryOptions } from '~/features/review-cards/api/getReviewCard'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import { RetireReviewCardDialog } from '~/features/review-cards/components/RetireReviewCardDialog'
 import {
@@ -31,6 +34,7 @@ import type {
 } from '~/features/review-cards/types/review-card.types'
 import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
 import { useCreateReview } from '~/features/reviews/api/createReview'
+import { reviewsQueryOptions } from '~/features/reviews/api/getReviews'
 import type { Rating } from '~/features/reviews/types/review.types'
 import { localDateString } from '~/utils/date'
 import { getRatingIcon } from '~/utils/getRatingIcon'
@@ -43,20 +47,26 @@ const RATING_OPTIONS: Array<{ label: string; value: Exclude<Rating, null> }> = [
 ]
 
 export function DueFocusPage({
+	done,
 	filter,
+	includeFuture = false,
 	order,
 	reviewCardId,
 	shuffle
 }: {
+	done?: boolean
 	filter: ReviewFilter
+	includeFuture?: boolean
 	order: ReviewFocusOrder
 	reviewCardId?: number
 	shuffle?: string
 }) {
 	const navigate = useNavigate()
+	const queryClient = useQueryClient()
 	const stream = useDueFocusStream({
 		activeReviewCardId: reviewCardId,
 		filter,
+		includeFuture,
 		order,
 		shuffle
 	})
@@ -65,19 +75,21 @@ export function DueFocusPage({
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
 	const activeCard = stream.activeItem?.card ?? null
 	const activeReviewCardId = activeCard?.id ?? reviewCardId
-	const currentFocusSearch = buildFocusSearch({ filter, order, shuffle })
+	const currentFocusSearch = buildFocusSearch({
+		card: reviewCardId,
+		done,
+		filter,
+		include_future: includeFuture,
+		order,
+		shuffle
+	})
 
 	function navigateToFocus(
 		search: ReviewFocusSearch,
 		options?: { replace?: boolean }
 	) {
-		if (reviewCardId == null) {
-			navigate({ to: '/due/focus', search, replace: options?.replace })
-			return
-		}
 		navigate({
-			to: '/due/focus/$reviewCardId',
-			params: { reviewCardId: reviewCardId.toString() },
+			to: '/due/focus',
 			search,
 			replace: options?.replace
 		})
@@ -86,8 +98,28 @@ export function DueFocusPage({
 	function navigateToFocusRoot(search?: ReviewFocusSearch) {
 		navigate({
 			to: '/due/focus',
-			search: search ?? buildFocusSearch({ filter, order, shuffle })
+			search:
+				search ??
+				buildFocusSearch({
+					done,
+					filter,
+					include_future: includeFuture,
+					order,
+					shuffle
+				})
 		})
+	}
+
+	function navigateToDone() {
+		navigateToFocusRoot(
+			buildFocusSearch({
+				done: true,
+				filter,
+				include_future: includeFuture,
+				order,
+				shuffle
+			})
+		)
 	}
 
 	useEffect(() => {
@@ -98,45 +130,95 @@ export function DueFocusPage({
 	}, [order])
 
 	useEffect(() => {
-		if (stream.isLoading || reviewCardId != null) return
+		if (order !== 'random' || shuffle != null) return
+		navigateToFocus(
+			buildFocusSearch({
+				done,
+				filter,
+				include_future: includeFuture,
+				order,
+				shuffle: makeShuffleSeed()
+			}),
+			{ replace: true }
+		)
+		// biome-ignore lint/correctness/useExhaustiveDependencies: navigateToFocus closes over navigate
+	}, [done, filter, includeFuture, order, shuffle])
+
+	useEffect(() => {
+		if (stream.isLoading || done) return
 		if (order === 'random' && shuffle == null) return
 		const firstItem = stream.firstStreamItem
-		if (!firstItem) return
-		navigate({
-			to: '/due/focus/$reviewCardId',
-			params: { reviewCardId: firstItem.card.id.toString() },
-			search: buildFocusSearch({ filter, order, shuffle })
-		})
+		if (reviewCardId == null) {
+			if (!firstItem) return
+			navigateToFocus(
+				buildFocusSearch({
+					card: firstItem.card.id,
+					filter,
+					include_future: includeFuture,
+					order,
+					shuffle
+				})
+			)
+			return
+		}
+
+		if (stream.activeItem != null) return
+		navigateToFocus(
+			buildFocusSearch({
+				card: firstItem?.card.id,
+				filter,
+				include_future: includeFuture,
+				order,
+				shuffle
+			}),
+			{ replace: true }
+		)
 	}, [
+		done,
 		filter,
-		navigate,
+		includeFuture,
 		order,
 		reviewCardId,
 		shuffle,
+		stream.activeItem,
 		stream.firstStreamItem,
 		stream.isLoading
 	])
 
 	useEffect(() => {
-		if (order !== 'random' || shuffle != null) return
-		navigateToFocus(
-			buildFocusSearch({ filter, order, shuffle: makeShuffleSeed() }),
-			{ replace: true }
-		)
-		// biome-ignore lint/correctness/useExhaustiveDependencies: navigateToFocus closes over reviewCardId/navigate
-	}, [filter, order, reviewCardId, shuffle])
-
-	useEffect(() => {
 		setIsRetireDialogOpen(false)
 	}, [activeReviewCardId])
 
+	useEffect(() => {
+		for (const item of [stream.previousItem, stream.nextItem]) {
+			const cardId = item?.card.id
+			if (cardId == null) continue
+			queryClient.prefetchQuery(reviewCardQueryOptions(cardId)).catch(() => {})
+			queryClient
+				.prefetchQuery(reviewsQueryOptions({ reviewCardId: cardId }))
+				.catch(() => {})
+		}
+	}, [queryClient, stream.nextItem, stream.previousItem])
+
 	function navigateToItem(item: ReviewCardQueueItem | null) {
 		if (!item) return
-		navigate({
-			to: '/due/focus/$reviewCardId',
-			params: { reviewCardId: item.card.id.toString() },
-			search: buildFocusSearch({ filter, order, shuffle })
-		})
+		navigateToFocus(
+			buildFocusSearch({
+				card: item.card.id,
+				filter,
+				include_future: includeFuture,
+				order,
+				shuffle
+			})
+		)
+	}
+
+	function advanceAfterCompletedItem() {
+		if (stream.nextItem) {
+			navigateToItem(stream.nextItem)
+		} else {
+			navigateToDone()
+		}
 	}
 
 	async function rateCard(rating: Exclude<Rating, null>) {
@@ -148,11 +230,7 @@ export function DueFocusPage({
 				rating,
 				completed_at: localDateString()
 			})
-			if (stream.nextItem) {
-				navigateToItem(stream.nextItem)
-			} else {
-				navigateToFocusRoot()
-			}
+			advanceAfterCompletedItem()
 		} catch {
 			toast.error('Failed to record review')
 		}
@@ -166,11 +244,7 @@ export function DueFocusPage({
 				retired: !activeCard.retired
 			})
 			setIsRetireDialogOpen(false)
-			if (stream.nextItem) {
-				navigateToItem(stream.nextItem)
-			} else {
-				navigateToFocusRoot()
-			}
+			advanceAfterCompletedItem()
 		} catch {
 			toast.error('Failed to update review card')
 		}
@@ -199,6 +273,7 @@ export function DueFocusPage({
 		navigateToFocusRoot(
 			buildFocusSearch({
 				filter,
+				include_future: includeFuture,
 				order: nextOrder,
 				shuffle:
 					nextOrder === 'random' ? (shuffle ?? makeShuffleSeed()) : undefined
@@ -210,6 +285,7 @@ export function DueFocusPage({
 		navigateToFocusRoot(
 			buildFocusSearch({
 				filter,
+				include_future: includeFuture,
 				order: 'random',
 				shuffle: makeShuffleSeed()
 			})
@@ -217,7 +293,17 @@ export function DueFocusPage({
 	}
 
 	function handleContinueReviewing() {
-		navigateToItem(stream.firstFutureItem)
+		const firstFutureItem = stream.firstFutureItem
+		if (!firstFutureItem) return
+		navigateToFocus(
+			buildFocusSearch({
+				card: firstFutureItem.card.id,
+				filter,
+				include_future: true,
+				order,
+				shuffle
+			})
+		)
 	}
 
 	function handleSeeUpcoming() {
@@ -243,7 +329,12 @@ export function DueFocusPage({
 			onFilterChange={nextFilter => {
 				navigate({
 					to: '/due/focus',
-					search: buildFocusSearch({ filter: nextFilter, order, shuffle })
+					search: buildFocusSearch({
+						filter: nextFilter,
+						include_future: includeFuture,
+						order,
+						shuffle
+					})
 				})
 			}}
 			onOrderChange={handleOrderChange}
@@ -252,10 +343,40 @@ export function DueFocusPage({
 		>
 			{stream.isLoading ? (
 				<LoadingSpinner containerClassName='min-h-64' />
-			) : activeReviewCardId == null ? (
+			) : done ? (
+				<Empty className='min-h-[calc(100vh-14rem)]'>
+					<EmptyHeader>
+						<EmptyTitle>Review complete</EmptyTitle>
+						<EmptyDescription>
+							You finished the current focus queue.
+						</EmptyDescription>
+					</EmptyHeader>
+					<EmptyContent>
+						<div className='flex flex-wrap justify-center gap-2'>
+							<Button
+								disabled={stream.firstFutureItem == null}
+								onClick={handleContinueReviewing}
+								type='button'
+							>
+								Review more
+							</Button>
+							<Button
+								onClick={handleSeeUpcoming}
+								type='button'
+								variant='outline'
+							>
+								See upcoming
+							</Button>
+						</div>
+					</EmptyContent>
+				</Empty>
+			) : activeCard == null ? (
 				<Empty className='min-h-[calc(100vh-14rem)]'>
 					<EmptyHeader>
 						<EmptyTitle>You're all caught up!</EmptyTitle>
+						<EmptyDescription>
+							There are no current items in this focus queue.
+						</EmptyDescription>
 					</EmptyHeader>
 					<EmptyContent>
 						<div className='flex flex-wrap justify-center gap-2'>
@@ -281,7 +402,8 @@ export function DueFocusPage({
 					<div className='min-h-0 flex-1'>
 						<ReviewCardDetailSurface
 							mode='contained'
-							reviewCardId={activeReviewCardId}
+							onCompletedReviewCreated={advanceAfterCompletedItem}
+							reviewCardId={activeCard.id}
 						/>
 					</div>
 					<footer className='flex shrink-0 flex-col gap-3 border-t bg-background/80 pt-3 sm:flex-row sm:items-center sm:justify-between'>

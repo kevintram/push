@@ -22,6 +22,9 @@ type DueRouteSearch = {
 }
 
 type DueFocusRouteSearch = DueRouteSearch & {
+	card?: number
+	done?: boolean
+	include_future?: boolean
 	order?: ReviewFocusOrder
 	shuffle?: string
 }
@@ -38,6 +41,24 @@ export function validateDueFocusSearch(
 	search: Record<string, unknown>
 ): DueFocusRouteSearch {
 	const result: DueFocusRouteSearch = validateDueSearch(search)
+	const card =
+		typeof search.card === 'number'
+			? search.card
+			: typeof search.card === 'string'
+				? Number(search.card)
+				: Number.NaN
+
+	if (Number.isInteger(card) && card > 0) {
+		result.card = card
+	}
+
+	if (search.done === true || search.done === 'true') {
+		result.done = true
+	}
+
+	if (search.include_future === true || search.include_future === 'true') {
+		result.include_future = true
+	}
 
 	if (isReviewFocusOrder(search.order)) {
 		result.order = search.order
