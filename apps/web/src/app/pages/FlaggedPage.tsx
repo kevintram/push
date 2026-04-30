@@ -117,8 +117,10 @@ export function FlaggedPage({
 				title='Flagged'
 				titleExtra={<CountBadge count={reviewCards.length} />}
 			/>
-			<PageLayout.Content className='max-w-screen space-y-3 px-2.5 py-2.5 pb-4'>
-				{filterControls}
+			<PageLayout.Content
+				className='max-w-screen px-2.5 py-2.5 pb-4'
+				controls={filterControls}
+			>
 				{body}
 			</PageLayout.Content>
 		</PageLayout>

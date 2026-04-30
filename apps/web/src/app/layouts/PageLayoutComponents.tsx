@@ -15,6 +15,7 @@ export interface PageLayoutHeaderProps {
 export interface PageLayoutContentProps {
 	children: ReactNode
 	className?: string
+	controls?: ReactNode
 }
 
 export function PageLayoutHeader({
@@ -67,10 +68,12 @@ export function PageLayoutHeader({
 
 export function PageLayoutContent({
 	children,
-	className
+	className,
+	controls
 }: PageLayoutContentProps) {
 	return (
 		<div className={cn('mx-auto w-full max-w-5xl p-4', className)}>
+			{controls ? <div className='mb-3'>{controls}</div> : null}
 			{children}
 		</div>
 	)
