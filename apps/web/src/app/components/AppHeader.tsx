@@ -1,7 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import {
 	BookOpen,
-	BookOpenCheck,
+	CalendarIcon,
 	Clock,
 	Flag,
 	ListChecks,
@@ -11,6 +11,10 @@ import {
 	X
 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
+import {
+	HeaderArcIndicator,
+	HeaderNavIndicator
+} from '~/app/components/AppHeaderIndicators'
 import {
 	HeaderIconButton,
 	ReviewModeTooltip
@@ -25,22 +29,28 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
+import { useReviewCardFlaggedSummary } from '~/features/review-cards/api/getReviewCardFlaggedSummary'
+import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
 import { SearchDialog } from '~/features/search/components/search-dialog/SearchDialog'
 import { cn } from '~/lib/utils'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 
-type NavLinkTarget = '/review' | '/flagged' | '/recent' | '/logbook'
+type NavLinkTarget = '/due' | '/flagged' | '/recent' | '/logbook'
 
 function HeaderNavLink({
 	to,
 	label,
 	icon: Icon,
-	isActive
+	isActive,
+	indicator,
+	rawIndicator
 }: {
 	to: NavLinkTarget
 	label: string
 	icon: LucideIcon
 	isActive: boolean
+	indicator?: ReactNode
+	rawIndicator?: ReactNode
 }): ReactNode {
 	return (
 		<Tooltip>
@@ -49,18 +59,20 @@ function HeaderNavLink({
 					<HeaderIconButton
 						ariaLabel={label}
 						className={cn(
-							'size-7.5 px-0',
+							'relative size-7.5 px-0',
 							isActive &&
 								'bg-[var(--app-chrome-selected)] text-[var(--app-chrome-selected-foreground)]'
 						)}
 						nativeButton={false}
 						render={<Link to={to} />}
 						showNativeTitle={false}
-					/>
+					>
+						<Icon />
+						<HeaderNavIndicator>{indicator}</HeaderNavIndicator>
+						{rawIndicator}
+					</HeaderIconButton>
 				}
-			>
-				<Icon />
-			</TooltipTrigger>
+			/>
 			<TooltipContent>{label}</TooltipContent>
 		</Tooltip>
 	)
@@ -85,6 +97,11 @@ export function AppHeader() {
 	const [searchQuery, setSearchQuery] = useState('')
 	const isReviewModeEnabled = reviewMode === 'on'
 	const ReviewModeIcon = isReviewModeEnabled ? BookOpen : BookOpenOff
+	const { dueTodayCount, newCount, overdueCount } = useReviewCardQueueCounts({
+		filter: 'all'
+	})
+	const flaggedSummaryQuery = useReviewCardFlaggedSummary()
+	const flaggedCount = flaggedSummaryQuery?.data?.flagged_count ?? 0
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -189,15 +206,33 @@ export function AppHeader() {
 
 				<div className='flex min-w-0 items-center justify-end gap-0'>
 					<HeaderNavLink
-						icon={BookOpenCheck}
-						isActive={location.pathname.startsWith('/review')}
-						label='Reviews'
-						to='/review'
+						icon={CalendarIcon}
+						isActive={location.pathname.startsWith('/due')}
+						label='Due'
+						rawIndicator={
+							<HeaderArcIndicator
+								dueTodayCount={dueTodayCount}
+								neutralVariant='solid'
+								overdueCount={overdueCount}
+								pendingCount={newCount}
+								testIdPrefix='header-due'
+							/>
+						}
+						to='/due'
 					/>
 					<HeaderNavLink
 						icon={Flag}
 						isActive={location.pathname === '/flagged'}
 						label='Flagged'
+						rawIndicator={
+							<HeaderArcIndicator
+								dueTodayCount={0}
+								neutralVariant='solid'
+								overdueCount={0}
+								pendingCount={flaggedCount}
+								testIdPrefix='header-flagged'
+							/>
+						}
 						to='/flagged'
 					/>
 					<HeaderNavLink

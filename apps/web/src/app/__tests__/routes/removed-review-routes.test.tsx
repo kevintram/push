@@ -31,6 +31,9 @@ function renderRoute(route: string) {
 
 describe('removed review routes', () => {
 	it.each([
+		'/review',
+		'/review/focus',
+		'/review/focus/42',
 		'/upcoming',
 		'/today',
 		'/unscheduled'

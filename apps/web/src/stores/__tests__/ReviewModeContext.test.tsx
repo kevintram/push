@@ -56,13 +56,13 @@ function createTestRouter(initialEntry: string) {
 
 	const reviewFocusRoute = createRoute({
 		getParentRoute: () => rootRoute,
-		path: 'review/focus',
+		path: 'due/focus',
 		component: Probe
 	})
 
 	const reviewFocusCardRoute = createRoute({
 		getParentRoute: () => rootRoute,
-		path: 'review/focus/$reviewCardId',
+		path: 'due/focus/$reviewCardId',
 		component: Probe
 	})
 
@@ -122,7 +122,7 @@ describe('ReviewModeProvider', () => {
 	it('forces review mode on before the first render for review focus routes', async () => {
 		window.localStorage.setItem('3gulp-flashcard-mode', 'off')
 
-		renderRoute('/review/focus')
+		renderRoute('/due/focus')
 
 		expect(await screen.findByTestId('mode')).toHaveTextContent('on')
 		expect(screen.getByTestId('hidden')).toHaveTextContent('true')
@@ -131,7 +131,7 @@ describe('ReviewModeProvider', () => {
 	it('forces review mode on before the first render for focused review cards', async () => {
 		window.localStorage.setItem('3gulp-flashcard-mode', 'off')
 
-		renderRoute('/review/focus/42')
+		renderRoute('/due/focus/42')
 
 		expect(await screen.findByTestId('mode')).toHaveTextContent('on')
 		expect(screen.getByTestId('hidden')).toHaveTextContent('true')

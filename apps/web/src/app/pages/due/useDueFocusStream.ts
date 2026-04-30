@@ -62,7 +62,7 @@ function findItemByCardId(
 	return items.find(item => item.card.id === cardId) ?? null
 }
 
-export function useReviewFocusStream({
+export function useDueFocusStream({
 	activeReviewCardId,
 	filter,
 	order,

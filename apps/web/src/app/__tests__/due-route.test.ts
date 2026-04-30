@@ -1,13 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-	resolveReviewFilter,
-	validateReviewSearch
-} from '~/app/routes/_main/review'
+import { resolveDueFilter, validateDueSearch } from '~/app/routes/_main/due'
 import { createMockLocalStorage } from '~/testing/support/masonryPageTestSupport'
 
 const mockLocalStorage = createMockLocalStorage()
 
-describe('review route search', () => {
+describe('due route search', () => {
 	beforeEach(() => {
 		mockLocalStorage.clear()
 		vi.stubGlobal('localStorage', mockLocalStorage)
@@ -18,30 +15,30 @@ describe('review route search', () => {
 	})
 
 	it('accepts supported filter values', () => {
-		expect(validateReviewSearch({ filter: 'all' })).toEqual({ filter: 'all' })
-		expect(validateReviewSearch({ filter: 'practice' })).toEqual({
+		expect(validateDueSearch({ filter: 'all' })).toEqual({ filter: 'all' })
+		expect(validateDueSearch({ filter: 'practice' })).toEqual({
 			filter: 'practice'
 		})
-		expect(validateReviewSearch({ filter: 'flashcards' })).toEqual({
+		expect(validateDueSearch({ filter: 'flashcards' })).toEqual({
 			filter: 'flashcards'
 		})
 	})
 
 	it('falls back to stored filter when the URL filter is missing or invalid', () => {
 		globalThis.localStorage.setItem(
-			'3gulp-review-view-preferences',
+			'3gulp-due-view-preferences',
 			JSON.stringify({
 				filter: 'flashcards',
 				focusOrder: 'random'
 			})
 		)
 
-		expect(validateReviewSearch({ filter: 'wat' })).toEqual({
+		expect(validateDueSearch({ filter: 'wat' })).toEqual({
 			filter: undefined
 		})
-		expect(resolveReviewFilter(validateReviewSearch({ filter: 'wat' }))).toBe(
+		expect(resolveDueFilter(validateDueSearch({ filter: 'wat' }))).toBe(
 			'flashcards'
 		)
-		expect(resolveReviewFilter(validateReviewSearch({}))).toBe('flashcards')
+		expect(resolveDueFilter(validateDueSearch({}))).toBe('flashcards')
 	})
 })

@@ -3,14 +3,15 @@ import type {
 	ReviewFocusOrder
 } from '~/features/review-cards/types/review-card.types'
 
-const REVIEW_VIEW_DEFAULTS = {
+const DUE_VIEW_DEFAULTS = {
 	filter: 'all',
 	focusOrder: 'due-date'
-} as const satisfies ReviewViewPreference
+} as const satisfies DueViewPreference
 
-const REVIEW_VIEW_STORAGE_KEY = '3gulp-review-view-preferences'
+const DUE_VIEW_STORAGE_KEY = '3gulp-due-view-preferences'
+const LEGACY_REVIEW_VIEW_STORAGE_KEY = '3gulp-review-view-preferences'
 
-export interface ReviewViewPreference {
+export interface DueViewPreference {
 	filter: ReviewFilter
 	focusOrder: ReviewFocusOrder
 }
@@ -21,6 +22,22 @@ export function isReviewFilter(value: unknown): value is ReviewFilter {
 
 export function isReviewFocusOrder(value: unknown): value is ReviewFocusOrder {
 	return value === 'due-date' || value === 'random'
+}
+
+let didMigrateLegacyKey = false
+
+function migrateLegacyDuePreference() {
+	if (didMigrateLegacyKey) return
+	if (typeof window === 'undefined') return
+	if (typeof window.localStorage?.getItem !== 'function') return
+	didMigrateLegacyKey = true
+
+	const legacy = window.localStorage.getItem(LEGACY_REVIEW_VIEW_STORAGE_KEY)
+	if (legacy === null) return
+	if (window.localStorage.getItem(DUE_VIEW_STORAGE_KEY) === null) {
+		window.localStorage.setItem(DUE_VIEW_STORAGE_KEY, legacy)
+	}
+	window.localStorage.removeItem(LEGACY_REVIEW_VIEW_STORAGE_KEY)
 }
 
 function readStoredPreference<T>(
@@ -49,21 +66,23 @@ function writeStoredPreference<T>(key: string, preference: T) {
 	window.localStorage.setItem(key, next)
 }
 
-export function getStoredReviewViewPreference(): ReviewViewPreference {
+export function getStoredDueViewPreference(): DueViewPreference {
+	migrateLegacyDuePreference()
 	return readStoredPreference(
-		REVIEW_VIEW_STORAGE_KEY,
-		REVIEW_VIEW_DEFAULTS,
+		DUE_VIEW_STORAGE_KEY,
+		DUE_VIEW_DEFAULTS,
 		parsed => ({
 			filter: isReviewFilter(parsed.filter)
 				? parsed.filter
-				: REVIEW_VIEW_DEFAULTS.filter,
+				: DUE_VIEW_DEFAULTS.filter,
 			focusOrder: isReviewFocusOrder(parsed.focusOrder)
 				? parsed.focusOrder
-				: REVIEW_VIEW_DEFAULTS.focusOrder
+				: DUE_VIEW_DEFAULTS.focusOrder
 		})
 	)
 }
 
-export function persistReviewViewPreference(preference: ReviewViewPreference) {
-	writeStoredPreference(REVIEW_VIEW_STORAGE_KEY, preference)
+export function persistDueViewPreference(preference: DueViewPreference) {
+	migrateLegacyDuePreference()
+	writeStoredPreference(DUE_VIEW_STORAGE_KEY, preference)
 }

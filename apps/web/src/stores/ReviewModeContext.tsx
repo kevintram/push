@@ -27,8 +27,8 @@ function isForcedReviewModePath(pathname: string): boolean {
 	return (
 		pathname === '/practice' ||
 		pathname === '/flashcards' ||
-		pathname === '/review/focus' ||
-		pathname.startsWith('/review/focus/')
+		pathname === '/due/focus' ||
+		pathname.startsWith('/due/focus/')
 	)
 }
 

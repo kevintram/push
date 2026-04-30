@@ -13,18 +13,18 @@ import { Route as VirtualizationSmokeRouteImport } from './routes/virtualization
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as MainIndexRouteImport } from './routes/_main/index'
 import { Route as MainTopicsRouteImport } from './routes/_main/topics'
-import { Route as MainReviewRouteImport } from './routes/_main/review'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainPracticeRouteImport } from './routes/_main/practice'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
 import { Route as MainFlashcardsRouteImport } from './routes/_main/flashcards'
 import { Route as MainFlaggedRouteImport } from './routes/_main/flagged'
+import { Route as MainDueRouteImport } from './routes/_main/due'
 import { Route as MainTopicsTopicIdRouteImport } from './routes/_main/topics_.$topicId'
-import { Route as MainReviewFocusRouteImport } from './routes/_main/review.focus'
 import { Route as MainReviewCardsReviewCardIdRouteImport } from './routes/_main/review-cards_.$reviewCardId'
 import { Route as MainPracticeReviewCardIdRouteImport } from './routes/_main/practice_.$reviewCardId'
 import { Route as MainFlashcardsReviewCardIdRouteImport } from './routes/_main/flashcards_.$reviewCardId'
-import { Route as MainReviewFocusReviewCardIdRouteImport } from './routes/_main/review.focus_.$reviewCardId'
+import { Route as MainDueFocusRouteImport } from './routes/_main/due.focus'
+import { Route as MainDueFocusReviewCardIdRouteImport } from './routes/_main/due.focus_.$reviewCardId'
 
 const VirtualizationSmokeRoute = VirtualizationSmokeRouteImport.update({
   id: '/virtualization-smoke',
@@ -43,11 +43,6 @@ const MainIndexRoute = MainIndexRouteImport.update({
 const MainTopicsRoute = MainTopicsRouteImport.update({
   id: '/topics',
   path: '/topics',
-  getParentRoute: () => MainRoute,
-} as any)
-const MainReviewRoute = MainReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
   getParentRoute: () => MainRoute,
 } as any)
 const MainRecentRoute = MainRecentRouteImport.update({
@@ -75,15 +70,15 @@ const MainFlaggedRoute = MainFlaggedRouteImport.update({
   path: '/flagged',
   getParentRoute: () => MainRoute,
 } as any)
+const MainDueRoute = MainDueRouteImport.update({
+  id: '/due',
+  path: '/due',
+  getParentRoute: () => MainRoute,
+} as any)
 const MainTopicsTopicIdRoute = MainTopicsTopicIdRouteImport.update({
   id: '/topics_/$topicId',
   path: '/topics/$topicId',
   getParentRoute: () => MainRoute,
-} as any)
-const MainReviewFocusRoute = MainReviewFocusRouteImport.update({
-  id: '/focus',
-  path: '/focus',
-  getParentRoute: () => MainReviewRoute,
 } as any)
 const MainReviewCardsReviewCardIdRoute =
   MainReviewCardsReviewCardIdRouteImport.update({
@@ -103,119 +98,124 @@ const MainFlashcardsReviewCardIdRoute =
     path: '/flashcards/$reviewCardId',
     getParentRoute: () => MainRoute,
   } as any)
-const MainReviewFocusReviewCardIdRoute =
-  MainReviewFocusReviewCardIdRouteImport.update({
+const MainDueFocusRoute = MainDueFocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => MainDueRoute,
+} as any)
+const MainDueFocusReviewCardIdRoute =
+  MainDueFocusReviewCardIdRouteImport.update({
     id: '/focus_/$reviewCardId',
     path: '/focus/$reviewCardId',
-    getParentRoute: () => MainReviewRoute,
+    getParentRoute: () => MainDueRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
+  '/due': typeof MainDueRouteWithChildren
   '/flagged': typeof MainFlaggedRoute
   '/flashcards': typeof MainFlashcardsRoute
   '/logbook': typeof MainLogbookRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
-  '/review': typeof MainReviewRouteWithChildren
   '/topics': typeof MainTopicsRoute
   '/': typeof MainIndexRoute
+  '/due/focus': typeof MainDueFocusRoute
   '/flashcards/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
   '/practice/$reviewCardId': typeof MainPracticeReviewCardIdRoute
   '/review-cards/$reviewCardId': typeof MainReviewCardsReviewCardIdRoute
-  '/review/focus': typeof MainReviewFocusRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
-  '/review/focus/$reviewCardId': typeof MainReviewFocusReviewCardIdRoute
+  '/due/focus/$reviewCardId': typeof MainDueFocusReviewCardIdRoute
 }
 export interface FileRoutesByTo {
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
+  '/due': typeof MainDueRouteWithChildren
   '/flagged': typeof MainFlaggedRoute
   '/flashcards': typeof MainFlashcardsRoute
   '/logbook': typeof MainLogbookRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
-  '/review': typeof MainReviewRouteWithChildren
   '/topics': typeof MainTopicsRoute
   '/': typeof MainIndexRoute
+  '/due/focus': typeof MainDueFocusRoute
   '/flashcards/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
   '/practice/$reviewCardId': typeof MainPracticeReviewCardIdRoute
   '/review-cards/$reviewCardId': typeof MainReviewCardsReviewCardIdRoute
-  '/review/focus': typeof MainReviewFocusRoute
   '/topics/$topicId': typeof MainTopicsTopicIdRoute
-  '/review/focus/$reviewCardId': typeof MainReviewFocusReviewCardIdRoute
+  '/due/focus/$reviewCardId': typeof MainDueFocusReviewCardIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_main': typeof MainRouteWithChildren
   '/virtualization-smoke': typeof VirtualizationSmokeRoute
+  '/_main/due': typeof MainDueRouteWithChildren
   '/_main/flagged': typeof MainFlaggedRoute
   '/_main/flashcards': typeof MainFlashcardsRoute
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/practice': typeof MainPracticeRoute
   '/_main/recent': typeof MainRecentRoute
-  '/_main/review': typeof MainReviewRouteWithChildren
   '/_main/topics': typeof MainTopicsRoute
   '/_main/': typeof MainIndexRoute
+  '/_main/due/focus': typeof MainDueFocusRoute
   '/_main/flashcards_/$reviewCardId': typeof MainFlashcardsReviewCardIdRoute
   '/_main/practice_/$reviewCardId': typeof MainPracticeReviewCardIdRoute
   '/_main/review-cards_/$reviewCardId': typeof MainReviewCardsReviewCardIdRoute
-  '/_main/review/focus': typeof MainReviewFocusRoute
   '/_main/topics_/$topicId': typeof MainTopicsTopicIdRoute
-  '/_main/review/focus_/$reviewCardId': typeof MainReviewFocusReviewCardIdRoute
+  '/_main/due/focus_/$reviewCardId': typeof MainDueFocusReviewCardIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/virtualization-smoke'
+    | '/due'
     | '/flagged'
     | '/flashcards'
     | '/logbook'
     | '/practice'
     | '/recent'
-    | '/review'
     | '/topics'
     | '/'
+    | '/due/focus'
     | '/flashcards/$reviewCardId'
     | '/practice/$reviewCardId'
     | '/review-cards/$reviewCardId'
-    | '/review/focus'
     | '/topics/$topicId'
-    | '/review/focus/$reviewCardId'
+    | '/due/focus/$reviewCardId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/virtualization-smoke'
+    | '/due'
     | '/flagged'
     | '/flashcards'
     | '/logbook'
     | '/practice'
     | '/recent'
-    | '/review'
     | '/topics'
     | '/'
+    | '/due/focus'
     | '/flashcards/$reviewCardId'
     | '/practice/$reviewCardId'
     | '/review-cards/$reviewCardId'
-    | '/review/focus'
     | '/topics/$topicId'
-    | '/review/focus/$reviewCardId'
+    | '/due/focus/$reviewCardId'
   id:
     | '__root__'
     | '/_main'
     | '/virtualization-smoke'
+    | '/_main/due'
     | '/_main/flagged'
     | '/_main/flashcards'
     | '/_main/logbook'
     | '/_main/practice'
     | '/_main/recent'
-    | '/_main/review'
     | '/_main/topics'
     | '/_main/'
+    | '/_main/due/focus'
     | '/_main/flashcards_/$reviewCardId'
     | '/_main/practice_/$reviewCardId'
     | '/_main/review-cards_/$reviewCardId'
-    | '/_main/review/focus'
     | '/_main/topics_/$topicId'
-    | '/_main/review/focus_/$reviewCardId'
+    | '/_main/due/focus_/$reviewCardId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -253,13 +253,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainTopicsRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/review': {
-      id: '/_main/review'
-      path: '/review'
-      fullPath: '/review'
-      preLoaderRoute: typeof MainReviewRouteImport
-      parentRoute: typeof MainRoute
-    }
     '/_main/recent': {
       id: '/_main/recent'
       path: '/recent'
@@ -295,19 +288,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainFlaggedRouteImport
       parentRoute: typeof MainRoute
     }
+    '/_main/due': {
+      id: '/_main/due'
+      path: '/due'
+      fullPath: '/due'
+      preLoaderRoute: typeof MainDueRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/_main/topics_/$topicId': {
       id: '/_main/topics_/$topicId'
       path: '/topics/$topicId'
       fullPath: '/topics/$topicId'
       preLoaderRoute: typeof MainTopicsTopicIdRouteImport
       parentRoute: typeof MainRoute
-    }
-    '/_main/review/focus': {
-      id: '/_main/review/focus'
-      path: '/focus'
-      fullPath: '/review/focus'
-      preLoaderRoute: typeof MainReviewFocusRouteImport
-      parentRoute: typeof MainReviewRoute
     }
     '/_main/review-cards_/$reviewCardId': {
       id: '/_main/review-cards_/$reviewCardId'
@@ -330,37 +323,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainFlashcardsReviewCardIdRouteImport
       parentRoute: typeof MainRoute
     }
-    '/_main/review/focus_/$reviewCardId': {
-      id: '/_main/review/focus_/$reviewCardId'
+    '/_main/due/focus': {
+      id: '/_main/due/focus'
+      path: '/focus'
+      fullPath: '/due/focus'
+      preLoaderRoute: typeof MainDueFocusRouteImport
+      parentRoute: typeof MainDueRoute
+    }
+    '/_main/due/focus_/$reviewCardId': {
+      id: '/_main/due/focus_/$reviewCardId'
       path: '/focus/$reviewCardId'
-      fullPath: '/review/focus/$reviewCardId'
-      preLoaderRoute: typeof MainReviewFocusReviewCardIdRouteImport
-      parentRoute: typeof MainReviewRoute
+      fullPath: '/due/focus/$reviewCardId'
+      preLoaderRoute: typeof MainDueFocusReviewCardIdRouteImport
+      parentRoute: typeof MainDueRoute
     }
   }
 }
 
-interface MainReviewRouteChildren {
-  MainReviewFocusRoute: typeof MainReviewFocusRoute
-  MainReviewFocusReviewCardIdRoute: typeof MainReviewFocusReviewCardIdRoute
+interface MainDueRouteChildren {
+  MainDueFocusRoute: typeof MainDueFocusRoute
+  MainDueFocusReviewCardIdRoute: typeof MainDueFocusReviewCardIdRoute
 }
 
-const MainReviewRouteChildren: MainReviewRouteChildren = {
-  MainReviewFocusRoute: MainReviewFocusRoute,
-  MainReviewFocusReviewCardIdRoute: MainReviewFocusReviewCardIdRoute,
+const MainDueRouteChildren: MainDueRouteChildren = {
+  MainDueFocusRoute: MainDueFocusRoute,
+  MainDueFocusReviewCardIdRoute: MainDueFocusReviewCardIdRoute,
 }
 
-const MainReviewRouteWithChildren = MainReviewRoute._addFileChildren(
-  MainReviewRouteChildren,
-)
+const MainDueRouteWithChildren =
+  MainDueRoute._addFileChildren(MainDueRouteChildren)
 
 interface MainRouteChildren {
+  MainDueRoute: typeof MainDueRouteWithChildren
   MainFlaggedRoute: typeof MainFlaggedRoute
   MainFlashcardsRoute: typeof MainFlashcardsRoute
   MainLogbookRoute: typeof MainLogbookRoute
   MainPracticeRoute: typeof MainPracticeRoute
   MainRecentRoute: typeof MainRecentRoute
-  MainReviewRoute: typeof MainReviewRouteWithChildren
   MainTopicsRoute: typeof MainTopicsRoute
   MainIndexRoute: typeof MainIndexRoute
   MainFlashcardsReviewCardIdRoute: typeof MainFlashcardsReviewCardIdRoute
@@ -370,12 +369,12 @@ interface MainRouteChildren {
 }
 
 const MainRouteChildren: MainRouteChildren = {
+  MainDueRoute: MainDueRouteWithChildren,
   MainFlaggedRoute: MainFlaggedRoute,
   MainFlashcardsRoute: MainFlashcardsRoute,
   MainLogbookRoute: MainLogbookRoute,
   MainPracticeRoute: MainPracticeRoute,
   MainRecentRoute: MainRecentRoute,
-  MainReviewRoute: MainReviewRouteWithChildren,
   MainTopicsRoute: MainTopicsRoute,
   MainIndexRoute: MainIndexRoute,
   MainFlashcardsReviewCardIdRoute: MainFlashcardsReviewCardIdRoute,

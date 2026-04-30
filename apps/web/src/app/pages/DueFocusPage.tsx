@@ -1,19 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
-import {
-	ArrowLeft,
-	ArrowRight,
-	BookOpenCheck,
-	Loader2,
-	Sunset
-} from 'lucide-react'
+import { ArrowLeft, ArrowRight, Loader2, Sunset } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { PageLayout } from '~/app/layouts/PageLayout'
-import {
-	ReviewHeaderControls,
-	ReviewStatusBadges
-} from '~/app/pages/review/ReviewHeaderControls'
-import { useReviewFocusStream } from '~/app/pages/review/useReviewFocusStream'
+import { DuePageLayout } from '~/app/pages/due/DuePageLayout'
+import { useDueFocusStream } from '~/app/pages/due/useDueFocusStream'
 import { ReviewCardDetailSurface } from '~/app/pages/review-card-detail/ReviewCardDetailSurface'
 import { Button } from '~/components/ui/button'
 import {
@@ -25,16 +15,15 @@ import {
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import { RetireReviewCardDialog } from '~/features/review-cards/components/RetireReviewCardDialog'
-import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
+import {
+	getStoredDueViewPreference,
+	persistDueViewPreference
+} from '~/features/review-cards/dueQueueViewPreferences'
 import {
 	buildFocusSearch,
 	makeShuffleSeed,
 	type ReviewFocusSearch
 } from '~/features/review-cards/reviewFocusSearch'
-import {
-	getStoredReviewViewPreference,
-	persistReviewViewPreference
-} from '~/features/review-cards/reviewQueueViewPreferences'
 import type {
 	ReviewCardQueueItem,
 	ReviewFilter,
@@ -53,7 +42,7 @@ const RATING_OPTIONS: Array<{ label: string; value: Exclude<Rating, null> }> = [
 	{ label: 'Easy', value: 'easy' }
 ]
 
-export function ReviewFocusPage({
+export function DueFocusPage({
 	filter,
 	order,
 	reviewCardId,
@@ -65,7 +54,7 @@ export function ReviewFocusPage({
 	shuffle?: string
 }) {
 	const navigate = useNavigate()
-	const stream = useReviewFocusStream({
+	const stream = useDueFocusStream({
 		activeReviewCardId: reviewCardId,
 		filter,
 		order,
@@ -73,37 +62,37 @@ export function ReviewFocusPage({
 	})
 	const createReviewMutation = useCreateReview()
 	const updateReviewCardMutation = useUpdateReviewCard()
-	const { dueTodayCount, overdueCount } = useReviewCardQueueCounts({ filter })
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
 	const activeCard = stream.activeItem?.card ?? null
 	const activeReviewCardId = activeCard?.id ?? reviewCardId
+	const currentFocusSearch = buildFocusSearch({ filter, order, shuffle })
 
 	function navigateToFocus(
 		search: ReviewFocusSearch,
 		options?: { replace?: boolean }
 	) {
 		if (reviewCardId == null) {
-			navigate({ to: '/review/focus', search, replace: options?.replace })
+			navigate({ to: '/due/focus', search, replace: options?.replace })
 			return
 		}
 		navigate({
-			to: '/review/focus/$reviewCardId',
+			to: '/due/focus/$reviewCardId',
 			params: { reviewCardId: reviewCardId.toString() },
 			search,
 			replace: options?.replace
 		})
 	}
 
-	function navigateToFocusRoot() {
+	function navigateToFocusRoot(search?: ReviewFocusSearch) {
 		navigate({
-			to: '/review/focus',
-			search: buildFocusSearch({ filter, order, shuffle })
+			to: '/due/focus',
+			search: search ?? buildFocusSearch({ filter, order, shuffle })
 		})
 	}
 
 	useEffect(() => {
-		persistReviewViewPreference({
-			...getStoredReviewViewPreference(),
+		persistDueViewPreference({
+			...getStoredDueViewPreference(),
 			focusOrder: order
 		})
 	}, [order])
@@ -114,7 +103,7 @@ export function ReviewFocusPage({
 		const firstItem = stream.firstStreamItem
 		if (!firstItem) return
 		navigate({
-			to: '/review/focus/$reviewCardId',
+			to: '/due/focus/$reviewCardId',
 			params: { reviewCardId: firstItem.card.id.toString() },
 			search: buildFocusSearch({ filter, order, shuffle })
 		})
@@ -144,7 +133,7 @@ export function ReviewFocusPage({
 	function navigateToItem(item: ReviewCardQueueItem | null) {
 		if (!item) return
 		navigate({
-			to: '/review/focus/$reviewCardId',
+			to: '/due/focus/$reviewCardId',
 			params: { reviewCardId: item.card.id.toString() },
 			search: buildFocusSearch({ filter, order, shuffle })
 		})
@@ -207,7 +196,7 @@ export function ReviewFocusPage({
 	}
 
 	function handleOrderChange(nextOrder: ReviewFocusOrder) {
-		navigateToFocus(
+		navigateToFocusRoot(
 			buildFocusSearch({
 				filter,
 				order: nextOrder,
@@ -218,7 +207,7 @@ export function ReviewFocusPage({
 	}
 
 	function handleShuffle() {
-		navigateToFocus(
+		navigateToFocusRoot(
 			buildFocusSearch({
 				filter,
 				order: 'random',
@@ -233,7 +222,7 @@ export function ReviewFocusPage({
 
 	function handleSeeUpcoming() {
 		navigate({
-			to: '/review',
+			to: '/due',
 			search: { filter }
 		})
 	}
@@ -246,127 +235,116 @@ export function ReviewFocusPage({
 	)
 
 	return (
-		<PageLayout>
-			<PageLayout.Header
-				icon={BookOpenCheck}
-				title='Reviews'
-				titleExtra={
-					<ReviewStatusBadges
-						dueTodayCount={dueTodayCount}
-						overdueCount={overdueCount}
-					/>
-				}
-			>
-				<ReviewHeaderControls
-					filter={filter}
-					onFilterChange={nextFilter => {
-						navigate({
-							to: '/review/focus',
-							search: buildFocusSearch({ filter: nextFilter, order, shuffle })
-						})
-					}}
-					onOrderChange={handleOrderChange}
-					onShuffle={handleShuffle}
-					order={order}
-				/>
-			</PageLayout.Header>
-			<PageLayout.Content className='flex min-h-[calc(100vh-8.5rem)] max-w-screen flex-col px-2.5 py-2.5 pb-3'>
-				{stream.isLoading ? (
-					<LoadingSpinner containerClassName='min-h-64' />
-				) : activeReviewCardId == null ? (
-					<Empty className='min-h-[calc(100vh-14rem)]'>
-						<EmptyHeader>
-							<EmptyTitle>You're all caught up!</EmptyTitle>
-						</EmptyHeader>
-						<EmptyContent>
-							<div className='flex flex-wrap justify-center gap-2'>
-								<Button
-									disabled={stream.firstFutureItem == null}
-									onClick={handleContinueReviewing}
-									type='button'
-								>
-									Continue reviewing
-								</Button>
-								<Button
-									onClick={handleSeeUpcoming}
-									type='button'
-									variant='outline'
-								>
-									See upcoming
-								</Button>
-							</div>
-						</EmptyContent>
-					</Empty>
-				) : (
-					<div className='mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-3'>
-						<div className='min-h-0 flex-1'>
-							<ReviewCardDetailSurface
-								mode='contained'
-								reviewCardId={activeReviewCardId}
-							/>
+		<DuePageLayout
+			contentClassName='flex min-h-[calc(100vh-8.5rem)] max-w-screen flex-col px-2.5 py-2.5 pb-3'
+			filter={filter}
+			focusSearch={currentFocusSearch}
+			isFocusActive={true}
+			onFilterChange={nextFilter => {
+				navigate({
+					to: '/due/focus',
+					search: buildFocusSearch({ filter: nextFilter, order, shuffle })
+				})
+			}}
+			onOrderChange={handleOrderChange}
+			onShuffle={handleShuffle}
+			order={order}
+		>
+			{stream.isLoading ? (
+				<LoadingSpinner containerClassName='min-h-64' />
+			) : activeReviewCardId == null ? (
+				<Empty className='min-h-[calc(100vh-14rem)]'>
+					<EmptyHeader>
+						<EmptyTitle>You're all caught up!</EmptyTitle>
+					</EmptyHeader>
+					<EmptyContent>
+						<div className='flex flex-wrap justify-center gap-2'>
+							<Button
+								disabled={stream.firstFutureItem == null}
+								onClick={handleContinueReviewing}
+								type='button'
+							>
+								Continue reviewing
+							</Button>
+							<Button
+								onClick={handleSeeUpcoming}
+								type='button'
+								variant='outline'
+							>
+								See upcoming
+							</Button>
 						</div>
-						<footer className='flex shrink-0 flex-col gap-3 border-t bg-background/80 pt-3 sm:flex-row sm:items-center sm:justify-between'>
-							<div className='flex flex-wrap items-center gap-2'>
-								{RATING_OPTIONS.map(option => (
-									<Button
-										disabled={
-											createReviewMutation.isPending || activeCard == null
-										}
-										key={option.value}
-										onClick={() => rateCard(option.value)}
-										type='button'
-										variant='outline'
-									>
-										{getRatingIcon(option.value)}
-										{option.label}
-									</Button>
-								))}
-							</div>
-							<div className='flex flex-wrap items-center justify-start gap-2 sm:justify-end'>
-								<Button
-									aria-label='Retire this item'
-									disabled={activeCard == null || isRetirePending}
-									onClick={toggleRetired}
-									type='button'
-									variant='ghost'
-								>
-									{retireIcon}
-									Retire
-								</Button>
-								<Button
-									aria-label='Previous review card'
-									disabled={stream.previousItem == null}
-									onClick={() => navigateToItem(stream.previousItem)}
-									type='button'
-									variant='outline'
-								>
-									<ArrowLeft className='size-4' />
-									Back
-								</Button>
-								<Button
-									aria-label='Next review card'
-									disabled={stream.nextItem == null}
-									onClick={() => navigateToItem(stream.nextItem)}
-									type='button'
-									variant='outline'
-								>
-									Forward
-									<ArrowRight className='size-4' />
-								</Button>
-							</div>
-						</footer>
-						<RetireReviewCardDialog
-							isPending={isRetirePending}
-							onConfirm={() => {
-								confirmToggleRetired().catch(() => {})
-							}}
-							onOpenChange={setIsRetireDialogOpen}
-							onSeeReviews={handleSeeReviews}
-							open={isRetireDialogOpen}
+					</EmptyContent>
+				</Empty>
+			) : (
+				<div className='mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-3'>
+					<div className='min-h-0 flex-1'>
+						<ReviewCardDetailSurface
+							mode='contained'
+							reviewCardId={activeReviewCardId}
 						/>
 					</div>
-				)}
-			</PageLayout.Content>
-		</PageLayout>
+					<footer className='flex shrink-0 flex-col gap-3 border-t bg-background/80 pt-3 sm:flex-row sm:items-center sm:justify-between'>
+						<div className='flex flex-wrap items-center gap-2'>
+							{RATING_OPTIONS.map(option => (
+								<Button
+									disabled={
+										createReviewMutation.isPending || activeCard == null
+									}
+									key={option.value}
+									onClick={() => rateCard(option.value)}
+									type='button'
+									variant='outline'
+								>
+									{getRatingIcon(option.value)}
+									{option.label}
+								</Button>
+							))}
+						</div>
+						<div className='flex flex-wrap items-center justify-start gap-2 sm:justify-end'>
+							<Button
+								aria-label='Retire this item'
+								disabled={activeCard == null || isRetirePending}
+								onClick={toggleRetired}
+								type='button'
+								variant='ghost'
+							>
+								{retireIcon}
+								Retire
+							</Button>
+							<Button
+								aria-label='Previous review card'
+								disabled={stream.previousItem == null}
+								onClick={() => navigateToItem(stream.previousItem)}
+								type='button'
+								variant='outline'
+							>
+								<ArrowLeft className='size-4' />
+								Back
+							</Button>
+							<Button
+								aria-label='Next review card'
+								disabled={stream.nextItem == null}
+								onClick={() => navigateToItem(stream.nextItem)}
+								type='button'
+								variant='outline'
+							>
+								Forward
+								<ArrowRight className='size-4' />
+							</Button>
+						</div>
+					</footer>
+					<RetireReviewCardDialog
+						isPending={isRetirePending}
+						onConfirm={() => {
+							confirmToggleRetired().catch(() => {})
+						}}
+						onOpenChange={setIsRetireDialogOpen}
+						onSeeReviews={handleSeeReviews}
+						open={isRetireDialogOpen}
+					/>
+				</div>
+			)}
+		</DuePageLayout>
 	)
 }

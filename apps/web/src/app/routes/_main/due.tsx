@@ -5,39 +5,39 @@ import {
 	useRouterState
 } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { ReviewPage } from '~/app/pages/ReviewPage'
+import { DuePage } from '~/app/pages/DuePage'
 import {
-	getStoredReviewViewPreference,
+	getStoredDueViewPreference,
 	isReviewFilter,
 	isReviewFocusOrder,
-	persistReviewViewPreference
-} from '~/features/review-cards/reviewQueueViewPreferences'
+	persistDueViewPreference
+} from '~/features/review-cards/dueQueueViewPreferences'
 import type {
 	ReviewFilter,
 	ReviewFocusOrder
 } from '~/features/review-cards/types/review-card.types'
 
-type ReviewRouteSearch = {
+type DueRouteSearch = {
 	filter?: ReviewFilter
 }
 
-type ReviewFocusRouteSearch = ReviewRouteSearch & {
+type DueFocusRouteSearch = DueRouteSearch & {
 	order?: ReviewFocusOrder
 	shuffle?: string
 }
 
-export function validateReviewSearch(
+export function validateDueSearch(
 	search: Record<string, unknown>
-): ReviewRouteSearch {
+): DueRouteSearch {
 	return {
 		filter: isReviewFilter(search.filter) ? search.filter : undefined
 	}
 }
 
-export function validateReviewFocusSearch(
+export function validateDueFocusSearch(
 	search: Record<string, unknown>
-): ReviewFocusRouteSearch {
-	const result: ReviewFocusRouteSearch = validateReviewSearch(search)
+): DueFocusRouteSearch {
+	const result: DueFocusRouteSearch = validateDueSearch(search)
 
 	if (isReviewFocusOrder(search.order)) {
 		result.order = search.order
@@ -50,31 +50,31 @@ export function validateReviewFocusSearch(
 	return result
 }
 
-export function resolveReviewFilter(search: ReviewRouteSearch): ReviewFilter {
-	return search.filter ?? getStoredReviewViewPreference().filter
+export function resolveDueFilter(search: DueRouteSearch): ReviewFilter {
+	return search.filter ?? getStoredDueViewPreference().filter
 }
 
-export function resolveReviewFocusOrder(
-	search: ReviewFocusRouteSearch
+export function resolveDueFocusOrder(
+	search: DueFocusRouteSearch
 ): ReviewFocusOrder {
-	return search.order ?? getStoredReviewViewPreference().focusOrder
+	return search.order ?? getStoredDueViewPreference().focusOrder
 }
 
-export const Route = createFileRoute('/_main/review')({
-	validateSearch: validateReviewSearch,
-	component: ReviewRoute
+export const Route = createFileRoute('/_main/due')({
+	validateSearch: validateDueSearch,
+	component: DueRoute
 })
 
-function ReviewRoute() {
+function DueRoute() {
 	const navigate = useNavigate()
 	const search = Route.useSearch()
 	const pathname = useRouterState({ select: state => state.location.pathname })
-	const filter = resolveReviewFilter(search)
-	const isFocusRoute = pathname.startsWith('/review/focus')
+	const filter = resolveDueFilter(search)
+	const isFocusRoute = pathname.startsWith('/due/focus')
 
 	useEffect(() => {
-		persistReviewViewPreference({
-			...getStoredReviewViewPreference(),
+		persistDueViewPreference({
+			...getStoredDueViewPreference(),
 			filter
 		})
 	}, [filter])
@@ -82,11 +82,11 @@ function ReviewRoute() {
 	if (isFocusRoute) return <Outlet />
 
 	return (
-		<ReviewPage
+		<DuePage
 			filter={filter}
 			onFilterChange={nextFilter =>
 				navigate({
-					to: '/review',
+					to: '/due',
 					search: { filter: nextFilter }
 				})
 			}

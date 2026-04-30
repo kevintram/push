@@ -281,20 +281,20 @@ beforeEach(() => {
 })
 
 describe('route-backed tab search state', () => {
-	it('redirects legacy flashcards list route to Reviews filtered to flashcards', async () => {
+	it('redirects legacy flashcards list route to Due filtered to flashcards', async () => {
 		const { router } = renderRoute('/flashcards?tab=invalid&scope=invalid')
 
 		await waitFor(() => {
-			expect(router.state.location.pathname).toBe('/review')
+			expect(router.state.location.pathname).toBe('/due')
 			expect(router.state.location.search).toEqual({ filter: 'flashcards' })
 		})
 	})
 
-	it('redirects legacy practice list route to Reviews filtered to practice', async () => {
+	it('redirects legacy practice list route to Due filtered to practice', async () => {
 		const { router } = renderRoute('/practice?tab=invalid&scope=invalid')
 
 		await waitFor(() => {
-			expect(router.state.location.pathname).toBe('/review')
+			expect(router.state.location.pathname).toBe('/due')
 			expect(router.state.location.search).toEqual({ filter: 'practice' })
 		})
 	})

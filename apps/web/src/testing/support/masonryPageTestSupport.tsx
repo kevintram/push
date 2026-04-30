@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from 'react'
 import { beforeEach, vi } from 'vitest'
-import { ReviewPage, type ReviewPageFilter } from '~/app/pages/ReviewPage'
+import { DuePage, type DuePageFilter } from '~/app/pages/DuePage'
 import {
 	TopicDetailPage,
 	type TopicDetailReviewCardFilter
@@ -265,15 +265,15 @@ export const reviewCard = {
 	status_badges: []
 }
 
-export function renderReviewPage({
+export function renderDuePage({
 	initialFilter = 'all'
 }: {
-	initialFilter?: ReviewPageFilter
+	initialFilter?: DuePageFilter
 }) {
 	function ReviewHarnessComponent() {
-		const [filter, setFilter] = useState<ReviewPageFilter>(initialFilter)
+		const [filter, setFilter] = useState<DuePageFilter>(initialFilter)
 
-		return <ReviewPage filter={filter} onFilterChange={setFilter} />
+		return <DuePage filter={filter} onFilterChange={setFilter} />
 	}
 
 	return <ReviewHarnessComponent />

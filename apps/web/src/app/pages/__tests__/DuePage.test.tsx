@@ -2,13 +2,14 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import {
-	renderReviewPage,
+	navigateMock,
+	renderDuePage,
 	reviewCard,
 	useReviewCardQueueCountsMock,
 	useReviewCardQueueMock
 } from '~/testing/support/masonryPageTestSupport'
 
-describe('ReviewPage', () => {
+describe('DuePage', () => {
 	it('requests the unified queues and renders new, overdue, and due sections together', () => {
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 1,
@@ -100,7 +101,7 @@ describe('ReviewPage', () => {
 			}
 		)
 
-		render(renderReviewPage({ initialFilter: 'all' }))
+		render(renderDuePage({ initialFilter: 'all' }))
 
 		expect(useReviewCardQueueCountsMock).toHaveBeenCalledWith({ filter: 'all' })
 		expect(useReviewCardQueueMock).toHaveBeenCalledWith({
@@ -112,9 +113,20 @@ describe('ReviewPage', () => {
 			tab: 'due',
 			focused: false
 		})
+		expect(screen.getByRole('button', { name: 'Focus' })).toHaveAttribute(
+			'aria-pressed',
+			'false'
+		)
 		expect(
-			screen.getByRole('heading', { name: /Reviews/iu })
-		).toBeInTheDocument()
+			screen.queryByRole('button', { name: 'Order by: Due date' })
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: 'Shuffle focus order' })
+		).not.toBeInTheDocument()
+		expect(screen.getByRole('heading', { name: /^Due$/iu })).toBeInTheDocument()
+		expect(screen.getByText('1 Overdue')).toBeInTheDocument()
+		expect(screen.getByText('1 Due')).toBeInTheDocument()
+		expect(screen.getByText('2 New')).toBeInTheDocument()
 		expect(screen.getByRole('heading', { name: /New/iu })).toBeInTheDocument()
 		expect(
 			screen.getByRole('heading', { name: /Overdue/iu })
@@ -126,6 +138,27 @@ describe('ReviewPage', () => {
 		expect(screen.getByText('Today flashcard')).toBeInTheDocument()
 	})
 
+	it('uses the focus toggle to enter focus mode', async () => {
+		const user = userEvent.setup()
+		useReviewCardQueueMock.mockReturnValue({
+			data: { items: [], as_of: '2026-03-05' },
+			isLoading: false
+		})
+
+		render(renderDuePage({ initialFilter: 'practice' }))
+
+		await user.click(screen.getByRole('button', { name: 'Focus' }))
+
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/due/focus',
+			search: {
+				filter: 'practice',
+				order: 'due-date',
+				shuffle: undefined
+			}
+		})
+	})
+
 	it('switches filters and requests the filtered queue', async () => {
 		const user = userEvent.setup()
 		useReviewCardQueueMock.mockReturnValue({
@@ -133,9 +166,9 @@ describe('ReviewPage', () => {
 			isLoading: false
 		})
 
-		render(renderReviewPage({ initialFilter: 'all' }))
+		render(renderDuePage({ initialFilter: 'all' }))
 
-		await user.click(screen.getByRole('tab', { name: 'Practice' }))
+		await user.click(screen.getByRole('button', { name: 'Practice' }))
 
 		await waitFor(() => {
 			expect(useReviewCardQueueCountsMock).toHaveBeenCalledWith({
