@@ -139,11 +139,15 @@ export function RecentPage() {
 	return (
 		<PageLayout>
 			<PageLayout.Header icon={Clock} title='Recent' />
-			<PageLayout.Content className='max-w-screen space-y-3 px-2.5 py-2.5 pb-4'>
-				<EntityTypeFilter
-					activeFilter={activeFilter}
-					onFilterChange={setActiveFilter}
-				/>
+			<PageLayout.Content
+				className='max-w-screen px-2.5 py-2.5 pb-4'
+				controls={
+					<EntityTypeFilter
+						activeFilter={activeFilter}
+						onFilterChange={setActiveFilter}
+					/>
+				}
+			>
 				{body}
 			</PageLayout.Content>
 		</PageLayout>

@@ -15,6 +15,7 @@ export interface PageLayoutHeaderProps {
 export interface PageLayoutContentProps {
 	children: ReactNode
 	className?: string
+	controls?: ReactNode
 }
 
 export function PageLayoutHeader({
@@ -37,16 +38,18 @@ export function PageLayoutHeader({
 						: 'flex justify-between'
 				)}
 			>
-				<h1
+				<div
 					className={cn(
-						'flex min-w-0 items-center gap-2 font-bold text-xl',
+						'flex min-w-0 items-center gap-2',
 						hasCenterContent && 'justify-self-start'
 					)}
 				>
-					{Icon ? <Icon className='h-5 w-5 shrink-0' /> : null}
-					<span className='truncate'>{title}</span>
+					<h1 className='flex min-w-0 items-center gap-2 font-bold text-xl'>
+						{Icon ? <Icon className='h-5 w-5 shrink-0' /> : null}
+						<span className='truncate'>{title}</span>
+					</h1>
 					{titleExtra}
-				</h1>
+				</div>
 				{hasCenterContent ? (
 					<div className='flex items-center justify-center'>
 						{centerContent}
@@ -65,10 +68,12 @@ export function PageLayoutHeader({
 
 export function PageLayoutContent({
 	children,
-	className
+	className,
+	controls
 }: PageLayoutContentProps) {
 	return (
 		<div className={cn('mx-auto w-full max-w-5xl p-4', className)}>
+			{controls ? <div className='mb-3'>{controls}</div> : null}
 			{children}
 		</div>
 	)

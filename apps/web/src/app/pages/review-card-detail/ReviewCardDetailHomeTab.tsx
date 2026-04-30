@@ -19,13 +19,16 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
+import {
+	type StatusBadgeItem,
+	StatusBadgeList
+} from '~/components/ui/status-badge'
 import { Textarea } from '~/components/ui/textarea'
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
-import type { ReviewCardBadge } from '~/features/review-cards/components/reviewCardShared'
 import { FLAGGED_ICON_CLASSNAME } from '~/features/review-cards/components/reviewCardShared'
 import type { ReviewCard } from '~/features/review-cards/types/review-card.types'
 import {
@@ -88,7 +91,7 @@ type ReviewCardDetailHomeTabProps = {
 	setGuessSecondaryText: Dispatch<SetStateAction<string>>
 	setRevealPanelTab: Dispatch<SetStateAction<RevealPanelTab | null>>
 	stabilityText: string
-	statusBadges: Array<ReviewCardBadge>
+	statusBadges: Array<StatusBadgeItem>
 }
 
 export function ReviewCardDetailHomeTab({
@@ -189,46 +192,7 @@ export function ReviewCardDetailHomeTab({
 						</Tooltip>
 					</Badge>
 				</div>
-				<div className='flex flex-wrap items-center justify-end gap-1.5'>
-					{statusBadges.map((badge, index) => (
-						<Tooltip key={`${badge.label}-${index}`}>
-							<TooltipTrigger
-								render={
-									<Badge
-										className={
-											badge.className
-												? `${badge.className} rounded-sm shadow-sm`
-												: 'h-5 rounded-sm text-xs shadow-sm'
-										}
-										onClick={event => {
-											if (!badge.onClick) return
-											event.stopPropagation()
-											badge.onClick()
-										}}
-										onKeyDown={event => {
-											if (
-												(event.key === 'Enter' || event.key === ' ') &&
-												badge.onClick
-											) {
-												event.preventDefault()
-												event.stopPropagation()
-												badge.onClick()
-											}
-										}}
-										role={badge.onClick ? 'button' : undefined}
-										tabIndex={badge.onClick ? 0 : undefined}
-										variant={badge.variant ?? 'outline'}
-									>
-										{badge.label ? <span>{badge.label}</span> : null}
-									</Badge>
-								}
-							/>
-							{badge.tooltip ? (
-								<TooltipContent>{badge.tooltip}</TooltipContent>
-							) : null}
-						</Tooltip>
-					))}
-				</div>
+				<StatusBadgeList badges={statusBadges} className='justify-end' />
 			</div>
 
 			<Textarea

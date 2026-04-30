@@ -1,19 +1,26 @@
 import { type ReactNode, useState } from 'react'
 import { beforeEach, vi } from 'vitest'
-import {
-	FlashcardsPage,
-	type FlashcardsScope,
-	type FlashcardsTab
-} from '~/app/pages/FlashcardsPage'
-import {
-	PracticePage,
-	type PracticeScope,
-	type PracticeTab
-} from '~/app/pages/PracticePage'
+import { DuePage, type DuePageFilter } from '~/app/pages/DuePage'
 import {
 	TopicDetailPage,
 	type TopicDetailReviewCardFilter
 } from '~/app/pages/topic-detail/TopicDetailPage'
+
+export function createMockLocalStorage() {
+	const storage = new Map<string, string>()
+	return {
+		clear: () => {
+			storage.clear()
+		},
+		getItem: (key: string) => storage.get(key) ?? null,
+		removeItem: (key: string) => {
+			storage.delete(key)
+		},
+		setItem: (key: string, value: string) => {
+			storage.set(key, value)
+		}
+	}
+}
 
 export const navigateMock = vi.fn()
 export const masonryRenderSpy = vi.fn()
@@ -27,6 +34,7 @@ export const useReviewCardQueueCountsMock = vi.fn()
 export const useSearchAllMock = vi.fn()
 export const createTopicAsyncMock = vi.fn()
 export const updateReviewCardAsyncMock = vi.fn()
+export const createReviewAsyncMock = vi.fn()
 
 function normalizeQueuePageResult(result: {
 	data?: unknown
@@ -188,7 +196,10 @@ vi.mock('~/features/review-cards/api/createReviewCard', () => ({
 }))
 
 vi.mock('~/features/reviews/api/createReview', () => ({
-	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useCreateReview: () => ({
+		mutateAsync: createReviewAsyncMock,
+		isPending: false
+	})
 }))
 
 vi.mock('~/features/review-cards/api/updateReviewCard', () => ({
@@ -254,68 +265,18 @@ export const reviewCard = {
 	status_badges: []
 }
 
-export function buildPracticeQueueItems(count: number) {
-	return Array.from({ length: count }, (_, index) => ({
-		queue_type: 'due' as const,
-		card: {
-			...reviewCard,
-			id: 31 + index,
-			primary_text: `Practice prompt ${index + 1}`
-		},
-		review_id: null,
-		scheduled_at: '2026-03-05',
-		action_days: 0,
-		days_until_due: 0,
-		days_until_hazy: null
-	}))
-}
-
-export function renderFlashcardsPage({
-	initialTab = 'due',
-	initialScope = 'focused'
+export function renderDuePage({
+	initialFilter = 'all'
 }: {
-	initialTab?: FlashcardsTab
-	initialScope?: FlashcardsScope
+	initialFilter?: DuePageFilter
 }) {
-	function FlashcardsHarnessComponent() {
-		const [activeTab, setActiveTab] = useState<FlashcardsTab>(initialTab)
-		const [scope, setScope] = useState<FlashcardsScope>(initialScope)
+	function ReviewHarnessComponent() {
+		const [filter, setFilter] = useState<DuePageFilter>(initialFilter)
 
-		return (
-			<FlashcardsPage
-				activeTab={activeTab}
-				onActiveTabChange={setActiveTab}
-				onScopeChange={setScope}
-				scope={scope}
-			/>
-		)
+		return <DuePage filter={filter} onFilterChange={setFilter} />
 	}
 
-	return <FlashcardsHarnessComponent />
-}
-
-export function renderPracticePage({
-	initialTab = 'due',
-	initialScope = 'all'
-}: {
-	initialTab?: PracticeTab
-	initialScope?: PracticeScope
-}) {
-	function PracticeHarnessComponent() {
-		const [activeTab, setActiveTab] = useState<PracticeTab>(initialTab)
-		const [scope, setScope] = useState<PracticeScope>(initialScope)
-
-		return (
-			<PracticePage
-				activeTab={activeTab}
-				onActiveTabChange={setActiveTab}
-				onScopeChange={setScope}
-				scope={scope}
-			/>
-		)
-	}
-
-	return <PracticeHarnessComponent />
+	return <ReviewHarnessComponent />
 }
 
 export function renderTopicDetailPage({
@@ -355,6 +316,7 @@ beforeEach(() => {
 	useSearchAllMock.mockReset()
 	createTopicAsyncMock.mockReset()
 	updateReviewCardAsyncMock.mockReset()
+	createReviewAsyncMock.mockReset()
 	useReviewCardQueueCountsMock.mockReturnValue({
 		overdueCount: 0,
 		dueTodayCount: 0,

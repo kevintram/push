@@ -28,6 +28,7 @@ export async function getReviewCardFlaggedSummary(): Promise<ReviewCardFlaggedSu
 export function useReviewCardFlaggedSummary() {
 	return useQuery({
 		queryKey: reviewCardKeys.flaggedSummary(),
-		queryFn: getReviewCardFlaggedSummary
+		queryFn: getReviewCardFlaggedSummary,
+		staleTime: 30_000
 	})
 }

@@ -5,7 +5,7 @@ import { useReviewCard } from '~/features/review-cards/api/getReviewCard'
 import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
 import {
 	toFreshnessTier,
-	toReviewCardBadge
+	toReviewCardStatusBadge
 } from '~/features/review-cards/components/reviewCardShared'
 import { consumeFocusNewReviewCardPrimaryText } from '~/features/review-cards/createReviewCardIntent'
 import { useDeleteReviewCardWithUndo } from '~/features/review-cards/hooks/useDeleteReviewCardWithUndo'
@@ -146,7 +146,7 @@ export function useReviewCardDetailPage({
 		() =>
 			orderReviewCardStatusBadges(reviewCard?.status_badges ?? []).map(
 				apiBadge =>
-					toReviewCardBadge(apiBadge, {
+					toReviewCardStatusBadge(apiBadge, {
 						onOpenReviewDialog: openReviewDialog
 					})
 			),
@@ -444,6 +444,15 @@ export function useReviewCardDetailPage({
 		})
 	}, [navigate, reviewCard])
 
+	const handleOpenFullPage = useCallback(() => {
+		if (!reviewCard) return
+		navigate({
+			to: '/review-cards/$reviewCardId',
+			params: { reviewCardId: reviewCard.id.toString() },
+			search: { tab: resolvedActiveTab }
+		})
+	}, [navigate, resolvedActiveTab, reviewCard])
+
 	return {
 		secondaryText,
 		completedReviews,
@@ -462,6 +471,7 @@ export function useReviewCardDetailPage({
 		handleCopyRevealText,
 		handleDeleteReviewCard,
 		handleNavigateToTopic,
+		handleOpenFullPage,
 		handleOpenTopicSearch,
 		handleRatingSelect,
 		handleRetiredToggle,

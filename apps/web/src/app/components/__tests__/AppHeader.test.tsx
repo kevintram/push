@@ -5,6 +5,8 @@ import { AppHeader } from '~/app/components/AppHeader'
 
 const useLocationMock = vi.fn()
 const useReviewModeMock = vi.fn()
+const useReviewCardQueueCountsMock = vi.fn()
+const useReviewCardFlaggedSummaryMock = vi.fn()
 const setReviewModeMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
@@ -54,6 +56,16 @@ vi.mock('~/stores/ReviewModeContext', () => ({
 	useReviewMode: () => useReviewModeMock()
 }))
 
+vi.mock('~/features/review-cards/hooks/useReviewCardQueueCounts', () => ({
+	useReviewCardQueueCounts: (...args: Array<unknown>) =>
+		useReviewCardQueueCountsMock(...args)
+}))
+
+vi.mock('~/features/review-cards/api/getReviewCardFlaggedSummary', () => ({
+	useReviewCardFlaggedSummary: (...args: Array<unknown>) =>
+		useReviewCardFlaggedSummaryMock(...args)
+}))
+
 vi.mock('~/components/ui/sidebar', () => ({
 	SidebarTrigger: (props: ComponentProps<'button'>) => (
 		<button {...props}>Toggle Sidebar</button>
@@ -64,6 +76,8 @@ describe('AppHeader', () => {
 	beforeEach(() => {
 		useLocationMock.mockReset()
 		useReviewModeMock.mockReset()
+		useReviewCardQueueCountsMock.mockReset()
+		useReviewCardFlaggedSummaryMock.mockReset()
 		setReviewModeMock.mockReset()
 		Object.defineProperty(window.navigator, 'platform', {
 			configurable: true,
@@ -74,6 +88,15 @@ describe('AppHeader', () => {
 		useReviewModeMock.mockReturnValue({
 			reviewMode: 'off',
 			setReviewMode: setReviewModeMock
+		})
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 0,
+			dueTodayCount: 0,
+			newCount: 0,
+			dueNextSevenDaysCount: 0
+		})
+		useReviewCardFlaggedSummaryMock.mockReturnValue({
+			data: { flagged_count: 0 }
 		})
 	})
 
@@ -90,13 +113,47 @@ describe('AppHeader', () => {
 	it('renders recent to the left of logbook in the header actions', () => {
 		render(<AppHeader />)
 
+		const dueButton = screen.getByRole('button', { name: 'Due' })
+		const flaggedButton = screen.getByRole('button', { name: 'Flagged' })
 		const recentButton = screen.getByRole('button', { name: 'Recent' })
 		const logbookButton = screen.getByRole('button', { name: 'Logbook' })
 
+		expect(dueButton).toHaveAttribute('href', '/due')
+		expect(flaggedButton).toHaveAttribute('href', '/flagged')
+		expect(useReviewCardQueueCountsMock).toHaveBeenCalledWith({
+			filter: 'all'
+		})
 		expect(
 			recentButton.compareDocumentPosition(logbookButton) &
 				Node.DOCUMENT_POSITION_FOLLOWING
 		).toBeTruthy()
+	})
+
+	it('renders due and flagged status dots on the header nav buttons', () => {
+		useReviewCardQueueCountsMock.mockReturnValue({
+			overdueCount: 2,
+			dueTodayCount: 3,
+			newCount: 4,
+			dueNextSevenDaysCount: 5
+		})
+		useReviewCardFlaggedSummaryMock.mockReturnValue({
+			data: { flagged_count: 6 }
+		})
+
+		render(<AppHeader />)
+
+		expect(screen.getByTestId('header-due-overdue-dot')).toBeInTheDocument()
+		expect(screen.getByTestId('header-due-due-today-dot')).toBeInTheDocument()
+		expect(screen.getByTestId('header-due-pending-dot')).toBeInTheDocument()
+		expect(screen.getByTestId('header-flagged-pending-dot')).toBeInTheDocument()
+	})
+
+	it('renders the sidebar trigger in the header', () => {
+		render(<AppHeader />)
+
+		expect(
+			screen.getByRole('button', { name: 'Toggle Sidebar' })
+		).toBeInTheDocument()
 	})
 
 	it('renders the search trigger with outline styling and review mode next to it', () => {

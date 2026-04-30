@@ -24,7 +24,12 @@ interface ReviewModeProviderProps {
 }
 
 function isForcedReviewModePath(pathname: string): boolean {
-	return pathname === '/practice' || pathname === '/flashcards'
+	return (
+		pathname === '/practice' ||
+		pathname === '/flashcards' ||
+		pathname === '/due/focus' ||
+		pathname.startsWith('/due/focus/')
+	)
 }
 
 function isReviewMode(value: string): value is ReviewMode {

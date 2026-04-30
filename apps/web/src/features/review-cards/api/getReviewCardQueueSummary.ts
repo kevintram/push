@@ -4,15 +4,19 @@ import { apiFetch } from '~/utils/apiFetch'
 import { ReviewCardQueueSummarySchema } from '../types/review-card.schemas'
 import type {
 	ReviewCardQueueSummary,
-	ReviewCardType
+	ReviewCardQueueSummaryParams
 } from '../types/review-card.types'
 import { reviewCardKeys } from './queryKeys'
 
 export async function getReviewCardQueueSummary(
-	type: ReviewCardType
+	params: ReviewCardQueueSummaryParams
 ): Promise<ReviewCardQueueSummary> {
 	const searchParams = new URLSearchParams()
-	searchParams.append('type', type)
+	if (params.filter === undefined) {
+		searchParams.append('type', params.type)
+	} else {
+		searchParams.append('filter', params.filter)
+	}
 
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/review-cards/queue-summary/?${searchParams.toString()}`
@@ -33,9 +37,12 @@ export async function getReviewCardQueueSummary(
 	}
 }
 
-export function useReviewCardQueueSummary(type: ReviewCardType) {
+export function useReviewCardQueueSummary(
+	params: ReviewCardQueueSummaryParams
+) {
 	return useQuery({
-		queryKey: reviewCardKeys.queueSummary(type),
-		queryFn: () => getReviewCardQueueSummary(type)
+		queryKey: reviewCardKeys.queueSummary(params),
+		queryFn: () => getReviewCardQueueSummary(params),
+		staleTime: 30_000
 	})
 }

@@ -11,6 +11,7 @@ import {
 	useReviewCardMock
 } from '~/testing/support/detailPageTestSupport'
 import { ReviewCardDetailPage } from '../ReviewCardDetailPage'
+import { ReviewCardDetailSurface } from '../ReviewCardDetailSurface'
 
 describe('ReviewCardDetailPage', () => {
 	it('keeps the review-card topic pill navigable and reassigns through search', async () => {
@@ -159,6 +160,20 @@ describe('ReviewCardDetailPage', () => {
 				id: 11,
 				flagged: true
 			})
+		})
+	})
+
+	it('opens the full detail page from the contained surface header', async () => {
+		const user = userEvent.setup()
+
+		render(<ReviewCardDetailSurface mode='contained' reviewCardId={11} />)
+
+		await user.click(screen.getByRole('button', { name: /Open review card/iu }))
+
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/review-cards/$reviewCardId',
+			params: { reviewCardId: '11' },
+			search: { tab: 'home' }
 		})
 	})
 })
