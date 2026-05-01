@@ -61,7 +61,7 @@ export const reviewStatusDotVariants = cva(
 			{
 				tone: "neutral-solid",
 				surfaceContext: "primary",
-				className: "bg-zinc-900 dark:bg-white"
+				className: "bg-primary-foreground"
 			}
 		],
 		defaultVariants: {
