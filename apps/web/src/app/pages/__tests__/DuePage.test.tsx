@@ -212,9 +212,9 @@ describe('DuePage', () => {
 		expect(
 			screen.queryByTestId('due-filter-practice-due-today-dot')
 		).not.toBeInTheDocument()
-		expect(
-			screen.getByTestId('due-filter-practice-pending-dot')
-		).toBeInTheDocument()
+		const pendingDot = screen.getByTestId('due-filter-practice-pending-dot')
+		expect(pendingDot).toBeInTheDocument()
+		expect(pendingDot).toHaveClass('bg-zinc-900')
 
 		expect(
 			screen.getByRole('button', {
@@ -230,5 +230,37 @@ describe('DuePage', () => {
 		expect(
 			screen.queryByTestId('due-filter-flashcards-pending-dot')
 		).not.toBeInTheDocument()
+	})
+
+	it('inverts the new status dot on the selected scoped filter', () => {
+		useReviewCardQueueCountsMock.mockImplementation(
+			(params: { filter: 'all' | 'practice' | 'flashcards' }) => {
+				if (params.filter === 'practice') {
+					return {
+						overdueCount: 0,
+						dueTodayCount: 0,
+						newCount: 1,
+						dueNextSevenDaysCount: 0
+					}
+				}
+
+				return {
+					overdueCount: 0,
+					dueTodayCount: 0,
+					newCount: 0,
+					dueNextSevenDaysCount: 0
+				}
+			}
+		)
+		useReviewCardQueueMock.mockReturnValue({
+			data: { items: [], as_of: '2026-03-05' },
+			isLoading: false
+		})
+
+		render(renderDuePage({ initialFilter: 'practice' }))
+
+		expect(screen.getByTestId('due-filter-practice-pending-dot')).toHaveClass(
+			'bg-primary-foreground'
+		)
 	})
 })
