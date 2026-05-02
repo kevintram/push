@@ -101,7 +101,10 @@ function TopicDetailRoute() {
 					search: {
 						...(search.controls ? { controls: search.controls } : {}),
 						...(filter === 'all' ? {} : { filter })
-					}
+					},
+					hash: true,
+					resetScroll: false,
+					replace: true
 				})
 			}
 			reviewCardControlsVariant={search.controls}
