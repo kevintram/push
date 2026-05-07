@@ -445,7 +445,7 @@ export function ReviewCardDetailHomeTab({
 						/>
 					) : (
 						<Textarea
-							className='!bg-transparent field-sizing-fixed m-0 min-h-[2lh] flex-1 resize-none overflow-hidden break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+							className='!bg-transparent field-sizing-fixed m-0 min-h-[2lh] flex-1 resize-none overflow-y-auto break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 							onBlur={flushNotes}
 							onChange={onNotesChange}
 							placeholder='Add notes...'
