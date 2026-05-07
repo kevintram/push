@@ -38,6 +38,7 @@ import {
 import { ReviewsMenu } from '~/features/reviews/components/reviews-menu/ReviewsMenu'
 import type { ReviewListItem } from '~/features/reviews/types/review.types'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
+import { cn } from '~/lib/utils'
 import { formatAbsoluteDate } from '~/utils/formatRelativeDate'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { EMPTY_BADGE_CLASSNAME } from './shared'
@@ -158,7 +159,9 @@ export function ReviewCardDetailHomeTab({
 	})
 
 	return (
-		<div className='flex min-h-0 flex-1 flex-col gap-2'>
+		<div
+			className={cn('flex flex-col gap-2', hidesSecondary && 'min-h-0 flex-1')}
+		>
 			<div className='flex flex-wrap items-center justify-between gap-2'>
 				<div className='flex min-w-0 flex-wrap items-center gap-2'>
 					<Badge
@@ -423,8 +426,18 @@ export function ReviewCardDetailHomeTab({
 				</div>
 			</div>
 
-			<div className='mt-0.5 mb-2 flex min-h-0 flex-1 flex-col border-t pt-1'>
-				<div className='flex min-h-0 flex-1 flex-col gap-2'>
+			<div
+				className={cn(
+					'mt-0.5 mb-2 flex flex-col border-t pt-1',
+					hidesSecondary && 'min-h-0 flex-1'
+				)}
+			>
+				<div
+					className={cn(
+						'flex flex-col gap-2',
+						hidesSecondary && 'min-h-0 flex-1'
+					)}
+				>
 					<h2 className='font-semibold text-muted-foreground text-sm'>Notes</h2>
 					{hidesSecondary ? (
 						<RevealPanel
@@ -445,7 +458,7 @@ export function ReviewCardDetailHomeTab({
 						/>
 					) : (
 						<Textarea
-							className='!bg-transparent field-sizing-fixed m-0 min-h-[2lh] flex-1 resize-none overflow-y-auto break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
+							className='!bg-transparent m-0 min-h-[2lh] resize-none break-words rounded-none border-none p-0 text-base leading-relaxed shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0'
 							onBlur={flushNotes}
 							onChange={onNotesChange}
 							placeholder='Add notes...'
