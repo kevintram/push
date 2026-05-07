@@ -99,10 +99,12 @@ export function ReviewCard({
 		metrics
 
 	const { hidesPrimary, hidesSecondary } = useReviewMode()
+	const effectiveHidesSecondary =
+		hidesSecondary && reviewCard.type !== 'practice'
 	const hideParent = hidesPrimary && reviewCard.topic_id != null
 	const [isPrimaryRevealed, setIsPrimaryRevealed] = useState(!hidesPrimary)
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
-		!hidesSecondary
+		!effectiveHidesSecondary
 	)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
@@ -137,7 +139,7 @@ export function ReviewCard({
 	const hasSecondaryText = Boolean(reviewCard.secondary_text.trim())
 	const hidePrimary = hidesPrimary && hasPrimaryText && !isPrimaryRevealed
 	const hideSecondary =
-		hidesSecondary && hasSecondaryText && !isSecondaryRevealed
+		effectiveHidesSecondary && hasSecondaryText && !isSecondaryRevealed
 	const displayPrimaryText = getReviewCardDisplayTitle(reviewCard)
 	const estimatedExpandedCardHeight = useMemo(() => {
 		const estimatedWidth =
@@ -152,7 +154,7 @@ export function ReviewCard({
 		enableLargeCardMode &&
 		estimatedExpandedCardHeight >= LARGE_CARD_CONTENT_HEIGHT_MIN
 	const canUseGuessPanel =
-		enableLargeCardMode && hidesSecondary && hasSecondaryText
+		enableLargeCardMode && effectiveHidesSecondary && hasSecondaryText
 	const largeCardHeight = Math.max(minHeight, estimatedExpandedCardHeight)
 	const {
 		revealPanelTab,
@@ -165,13 +167,13 @@ export function ReviewCard({
 	} = useRevealPanel({
 		revealText: reviewCard.secondary_text,
 		entityId: reviewCard.id < 0 ? null : reviewCard.id,
-		hidesSecondary
+		hidesSecondary: effectiveHidesSecondary
 	})
 
 	useEffect(() => {
 		setIsPrimaryRevealed(!hidesPrimary)
-		setIsSecondaryRevealed(!hidesSecondary)
-	}, [hidesPrimary, hidesSecondary])
+		setIsSecondaryRevealed(!effectiveHidesSecondary)
+	}, [hidesPrimary, effectiveHidesSecondary])
 	useEffect(() => {
 		if (reviewCard.id < 0) return
 		setIsRetireDialogOpen(false)
