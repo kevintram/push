@@ -396,6 +396,79 @@ describe('ReviewCard', () => {
 		)
 	})
 
+	it('shows the description for practice cards even when review mode hides the secondary text', () => {
+		const reviewCard: ReviewCardModel = {
+			id: 47,
+			topic_id: 9,
+			topic_title: 'Topic',
+			type: 'practice',
+			primary_text: 'Practice prompt',
+			secondary_text: 'Practice description',
+			inserted_at: '2026-03-01T00:00:00.000Z',
+			updated_at: '2026-03-01T00:00:00.000Z',
+			last_review_rating: 'good',
+			stability: 10,
+			difficulty: 3,
+			state: 'review',
+			step: 2,
+			retired: false,
+			flagged_at: null,
+			last_reviewed_at: '2026-03-02T00:00:00.000Z',
+			retrievability: 0.8,
+			freshness_tier: 'Fresh',
+			days_until_next_tier: 3,
+			days_in_current_tier: 1,
+			is_new: false,
+			status_badges: [],
+			notes: ''
+		}
+
+		render(<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />)
+
+		expect(screen.getByText('Practice description')).toBeVisible()
+		expect(
+			screen.queryByRole('button', { name: 'Reveal' })
+		).not.toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: 'Type a guess' })
+		).not.toBeInTheDocument()
+	})
+
+	it('still hides the description for flashcard cards when review mode is on', () => {
+		const reviewCard: ReviewCardModel = {
+			id: 48,
+			topic_id: 9,
+			topic_title: 'Topic',
+			type: 'flashcard',
+			primary_text: 'Flashcard prompt',
+			secondary_text: 'Flashcard answer',
+			inserted_at: '2026-03-01T00:00:00.000Z',
+			updated_at: '2026-03-01T00:00:00.000Z',
+			last_review_rating: 'good',
+			stability: 10,
+			difficulty: 3,
+			state: 'review',
+			step: 2,
+			retired: false,
+			flagged_at: null,
+			last_reviewed_at: '2026-03-02T00:00:00.000Z',
+			retrievability: 0.8,
+			freshness_tier: 'Fresh',
+			days_until_next_tier: 3,
+			days_in_current_tier: 1,
+			is_new: false,
+			status_badges: [],
+			notes: ''
+		}
+
+		render(<ReviewCard reviewCard={reviewCard} />)
+
+		const hiddenAnswer = screen.getByText('Flashcard answer')
+		expect(hiddenAnswer).toHaveAttribute('aria-hidden', 'true')
+		expect(hiddenAnswer.className).toContain('invisible')
+		expect(screen.getByRole('button', { name: 'Reveal' })).toBeInTheDocument()
+	})
+
 	it('groups topic and type in the header and removes the related-card indicator', () => {
 		const reviewCard: ReviewCardModel = {
 			id: 46,
