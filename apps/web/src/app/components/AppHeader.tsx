@@ -22,6 +22,7 @@ import {
 import { SearchShortcutHint } from '~/app/components/AppHeaderShortcutHint'
 import { BookOpenOff } from '~/components/icons'
 import { SettingsDialog } from '~/components/SettingsDialog'
+import { OPEN_SETTINGS_EVENT } from '~/components/settings-events'
 import { Button } from '~/components/ui/button'
 import { SidebarTrigger } from '~/components/ui/sidebar'
 import {
@@ -132,6 +133,14 @@ export function AppHeader() {
 		document.addEventListener('keydown', handleKeyDown)
 		return () => document.removeEventListener('keydown', handleKeyDown)
 	}, [isReviewModeEnabled, setReviewMode])
+
+	useEffect(() => {
+		const handleOpenSettings = () => setIsSettingsDialogOpen(true)
+
+		window.addEventListener(OPEN_SETTINGS_EVENT, handleOpenSettings)
+		return () =>
+			window.removeEventListener(OPEN_SETTINGS_EVENT, handleOpenSettings)
+	}, [])
 
 	return (
 		<>

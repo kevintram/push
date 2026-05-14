@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { CalendarIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { DuePageLayout } from '~/app/pages/due/DuePageLayout'
+import { DueReviewModePrompt } from '~/app/pages/due/DueReviewModePrompt'
 import {
 	Empty,
 	EmptyDescription,
@@ -101,6 +102,7 @@ export function DuePage({ filter, onFilterChange }: DuePageProps) {
 			onShuffle={handleShuffle}
 			order={focusOrder}
 		>
+			<DueReviewModePrompt />
 			{isLoading ? (
 				<LoadingSpinner containerClassName='min-h-64' />
 			) : sections.length === 0 ? (

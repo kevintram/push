@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const useThemeMock = vi.hoisted(() => vi.fn())
 const useWeekStartMock = vi.hoisted(() => vi.fn())
+const useReviewModeMock = vi.hoisted(() => vi.fn())
 
 vi.mock('~/stores/ThemeContext', () => ({
 	useTheme: useThemeMock
@@ -16,6 +17,10 @@ vi.mock('~/stores/WeekStartContext', () => ({
 		{ value: 1, label: 'Monday' }
 	],
 	useWeekStart: useWeekStartMock
+}))
+
+vi.mock('~/stores/ReviewModeContext', () => ({
+	useReviewMode: useReviewModeMock
 }))
 
 vi.mock('~/components/ui/dialog', () => ({
@@ -62,6 +67,7 @@ describe('SettingsDialog', () => {
 	beforeEach(() => {
 		useThemeMock.mockReset()
 		useWeekStartMock.mockReset()
+		useReviewModeMock.mockReset()
 	})
 
 	it('uses theme and setTheme from the local theme facade', async () => {
@@ -76,6 +82,12 @@ describe('SettingsDialog', () => {
 		useWeekStartMock.mockReturnValue({
 			setWeekStartDay: vi.fn(),
 			weekStartDay: 0
+		})
+		useReviewModeMock.mockReturnValue({
+			showReviewModeWarning: true,
+			setShowReviewModeWarning: vi.fn(),
+			autoEnableReviewMode: false,
+			setAutoEnableReviewMode: vi.fn()
 		})
 
 		render(<SettingsDialog onOpenChange={vi.fn()} open={true} />)

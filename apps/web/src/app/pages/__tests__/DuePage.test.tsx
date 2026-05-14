@@ -1,13 +1,19 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { toast } from 'sonner'
+import { describe, expect, it, vi } from 'vitest'
 import {
 	navigateMock,
 	renderDuePage,
 	reviewCard,
 	useReviewCardQueueCountsMock,
-	useReviewCardQueueMock
+	useReviewCardQueueMock,
+	useReviewModeMock
 } from '~/testing/support/masonryPageTestSupport'
+
+vi.mock('sonner', () => ({
+	toast: vi.fn()
+}))
 
 describe('DuePage', () => {
 	it('requests the unified queues and renders new, overdue, and due sections together', () => {
@@ -262,5 +268,63 @@ describe('DuePage', () => {
 		expect(screen.getByTestId('due-filter-practice-pending-dot')).toHaveClass(
 			'bg-primary-foreground'
 		)
+	})
+
+	it('warns on the due page when review mode is off', () => {
+		useReviewCardQueueMock.mockReturnValue({
+			data: { items: [], as_of: '2026-03-05' },
+			isLoading: false
+		})
+		useReviewModeMock.mockReturnValue({
+			reviewMode: 'off',
+			setReviewMode: vi.fn(),
+			isReviewModeEnabled: false,
+			hidesPrimary: false,
+			hidesSecondary: false,
+			showReviewModeWarning: true,
+			setShowReviewModeWarning: vi.fn(),
+			autoEnableReviewMode: false,
+			setAutoEnableReviewMode: vi.fn()
+		})
+
+		render(renderDuePage({ initialFilter: 'all' }))
+
+		expect(screen.getByText('Review mode is off')).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Turn on' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Always turn on' })
+		).toBeInTheDocument()
+	})
+
+	it('auto-enables review mode on the due page and shows actions', async () => {
+		const setReviewMode = vi.fn()
+		useReviewCardQueueMock.mockReturnValue({
+			data: { items: [], as_of: '2026-03-05' },
+			isLoading: false
+		})
+		useReviewModeMock.mockReturnValue({
+			reviewMode: 'off',
+			setReviewMode,
+			isReviewModeEnabled: false,
+			hidesPrimary: false,
+			hidesSecondary: false,
+			showReviewModeWarning: true,
+			setShowReviewModeWarning: vi.fn(),
+			autoEnableReviewMode: true,
+			setAutoEnableReviewMode: vi.fn()
+		})
+
+		render(renderDuePage({ initialFilter: 'all' }))
+
+		expect(setReviewMode).toHaveBeenCalledWith('on')
+		await waitFor(() => {
+			expect(toast).toHaveBeenCalledWith(
+				'Review mode has been turned on',
+				expect.objectContaining({
+					action: expect.objectContaining({ label: 'Turn off' }),
+					cancel: expect.objectContaining({ label: 'Open settings' })
+				})
+			)
+		})
 	})
 })

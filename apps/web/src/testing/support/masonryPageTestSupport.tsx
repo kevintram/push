@@ -31,6 +31,7 @@ export const useTopicMock = vi.fn()
 export const useReviewCardsMock = vi.fn()
 export const useReviewCardQueueMock = vi.fn()
 export const useReviewCardQueueCountsMock = vi.fn()
+export const useReviewModeMock = vi.fn()
 export const useSearchAllMock = vi.fn()
 export const createTopicAsyncMock = vi.fn()
 export const updateReviewCardAsyncMock = vi.fn()
@@ -215,10 +216,7 @@ vi.mock('~/stores/ReviewModeContext', async importOriginal => {
 
 	return {
 		...actual,
-		useReviewMode: () => ({
-			hidesPrimary: false,
-			hidesSecondary: false
-		})
+		useReviewMode: () => useReviewModeMock()
 	}
 })
 
@@ -313,6 +311,7 @@ beforeEach(() => {
 	useReviewCardsMock.mockReset()
 	useReviewCardQueueMock.mockReset()
 	useReviewCardQueueCountsMock.mockReset()
+	useReviewModeMock.mockReset()
 	useSearchAllMock.mockReset()
 	createTopicAsyncMock.mockReset()
 	updateReviewCardAsyncMock.mockReset()
@@ -322,6 +321,17 @@ beforeEach(() => {
 		dueTodayCount: 0,
 		newCount: 0,
 		dueNextSevenDaysCount: 0
+	})
+	useReviewModeMock.mockReturnValue({
+		reviewMode: 'on',
+		setReviewMode: vi.fn(),
+		isReviewModeEnabled: true,
+		hidesPrimary: false,
+		hidesSecondary: true,
+		showReviewModeWarning: true,
+		setShowReviewModeWarning: vi.fn(),
+		autoEnableReviewMode: false,
+		setAutoEnableReviewMode: vi.fn()
 	})
 	window.sessionStorage.clear()
 	window.happyDOM?.setViewport({ height: 900, width: 1024 })

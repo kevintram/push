@@ -2,6 +2,8 @@ import { useRouterState } from '@tanstack/react-router'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 const FLASHCARD_MODE_STORAGE_KEY = '3gulp-flashcard-mode'
+const REVIEW_MODE_WARNING_STORAGE_KEY = '3gulp-review-mode-warning'
+const REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY = '3gulp-review-mode-auto-enable'
 
 export const REVIEW_MODES = ['off', 'on'] as const
 
@@ -13,6 +15,10 @@ interface ReviewModeContextType {
 	isReviewModeEnabled: boolean
 	hidesPrimary: boolean
 	hidesSecondary: boolean
+	showReviewModeWarning: boolean
+	setShowReviewModeWarning: (value: boolean) => void
+	autoEnableReviewMode: boolean
+	setAutoEnableReviewMode: (value: boolean) => void
 }
 
 const ReviewModeContext = createContext<ReviewModeContextType | undefined>(
@@ -34,6 +40,18 @@ function isForcedReviewModePath(pathname: string): boolean {
 
 function isReviewMode(value: string): value is ReviewMode {
 	return REVIEW_MODES.includes(value as ReviewMode)
+}
+
+function getStoredBoolean(key: string, fallback: boolean): boolean {
+	if (typeof window === 'undefined') return fallback
+
+	const storage = window.localStorage
+	if (!storage || typeof storage.getItem !== 'function') return fallback
+
+	const storedValue = storage.getItem(key)
+	if (storedValue === null) return fallback
+
+	return storedValue === 'true'
 }
 
 function getInitialReviewMode(): ReviewMode {
@@ -61,6 +79,12 @@ export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 	const [reviewMode, setReviewMode] = useState<ReviewMode>(() =>
 		isForcedReviewModePath(pathname) ? 'on' : getInitialReviewMode()
 	)
+	const [showReviewModeWarning, setShowReviewModeWarning] = useState(() =>
+		getStoredBoolean(REVIEW_MODE_WARNING_STORAGE_KEY, true)
+	)
+	const [autoEnableReviewMode, setAutoEnableReviewMode] = useState(() =>
+		getStoredBoolean(REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY, false)
+	)
 
 	// Auto-enable review mode when navigating to a forced path.
 	useEffect(() => {
@@ -74,7 +98,15 @@ export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 		if (!storage || typeof storage.setItem !== 'function') return
 
 		storage.setItem(FLASHCARD_MODE_STORAGE_KEY, reviewMode)
-	}, [reviewMode])
+		storage.setItem(
+			REVIEW_MODE_WARNING_STORAGE_KEY,
+			String(showReviewModeWarning)
+		)
+		storage.setItem(
+			REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY,
+			String(autoEnableReviewMode)
+		)
+	}, [reviewMode, showReviewModeWarning, autoEnableReviewMode])
 
 	const value = useMemo(
 		() => ({
@@ -82,9 +114,13 @@ export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 			setReviewMode,
 			isReviewModeEnabled: reviewMode !== 'off',
 			hidesPrimary: false,
-			hidesSecondary: reviewMode !== 'off'
+			hidesSecondary: reviewMode !== 'off',
+			showReviewModeWarning,
+			setShowReviewModeWarning,
+			autoEnableReviewMode,
+			setAutoEnableReviewMode
 		}),
-		[reviewMode]
+		[reviewMode, showReviewModeWarning, autoEnableReviewMode]
 	)
 
 	return <ReviewModeContext value={value}>{children}</ReviewModeContext>
