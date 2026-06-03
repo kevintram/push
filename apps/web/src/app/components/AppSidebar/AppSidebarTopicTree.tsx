@@ -1,6 +1,6 @@
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { useSidebar } from '~/components/ui/sidebar'
-import { TopicNavigatorContent } from '~/features/topics/components/topic-navigator/TopicNavigatorContent'
+import { TopicNavigator } from '~/features/topics/components/topic-navigator/TopicNavigator'
 import { useActiveTopicNavigatorTopicId } from '~/features/topics/components/topic-navigator/useActiveTopicNavigatorTopicId'
 
 export function AppSidebarTopicTree({
@@ -21,7 +21,7 @@ export function AppSidebarTopicTree({
 				scrollbarClassName='p-px data-[orientation=horizontal]:h-2.5 data-[orientation=vertical]:w-2.5'
 			>
 				<div className='px-1 pb-1.5'>
-					<TopicNavigatorContent
+					<TopicNavigator
 						activeTopicId={activeTopicId}
 						autoScrollActiveTopic={true}
 						enableDragAndDrop={!isMobile}

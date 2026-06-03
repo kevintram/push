@@ -19,14 +19,12 @@ import { Badge } from '~/components/ui/badge'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useTopicTreeActions } from '~/features/topics/hooks/useTopicTreeActions'
 import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
-import {
-	TopicNavigatorItem,
-	TopicNavigatorRootDropZone
-} from './TopicNavigatorTree'
+import { TopicNavigatorItem } from './TopicNavigatorItem'
+import { TopicNavigatorRootDropZone } from './TopicNavigatorRootDropZone'
 import { createRootDropId } from './topicNavigatorUtils'
 import { useTopicNavigatorContent } from './useTopicNavigatorContent'
 
-type TopicNavigatorContentProps = {
+type TopicNavigatorProps = {
 	activeTopicId?: number | null
 	autoScrollActiveTopic?: boolean
 	enableDragAndDrop?: boolean
@@ -34,13 +32,13 @@ type TopicNavigatorContentProps = {
 	onNavigate?: () => void
 }
 
-export function TopicNavigatorContent({
+export function TopicNavigator({
 	activeTopicId,
 	autoScrollActiveTopic = false,
 	enableDragAndDrop = false,
 	onCollapseAllReady,
 	onNavigate
-}: TopicNavigatorContentProps) {
+}: TopicNavigatorProps) {
 	const navigate = useNavigate()
 	const {
 		activeDragLabel,
