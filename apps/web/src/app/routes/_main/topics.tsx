@@ -5,16 +5,10 @@ interface TopicsRouteSearch {
 	create?: boolean
 }
 
-function validateTopicsSearch(
-	search: Record<string, unknown>
-): TopicsRouteSearch {
-	return {
-		create: search.create === true || search.create === 'true' || undefined
-	}
-}
-
 export const Route = createFileRoute('/_main/topics')({
-	validateSearch: validateTopicsSearch,
+	validateSearch: (search): TopicsRouteSearch => ({
+		create: search.create === true || search.create === 'true' || undefined
+	}),
 	component: TopicsRoute
 })
 

@@ -9,16 +9,10 @@ function isFlaggedPageFilter(value: unknown): value is FlaggedPageFilter {
 	return value === 'all' || value === 'practice' || value === 'flashcard'
 }
 
-export function validateFlaggedSearch(
-	search: Record<string, unknown>
-): FlaggedRouteSearch {
-	return {
-		filter: isFlaggedPageFilter(search.filter) ? search.filter : undefined
-	}
-}
-
 export const Route = createFileRoute('/_main/flagged')({
-	validateSearch: validateFlaggedSearch,
+	validateSearch: (search): FlaggedRouteSearch => ({
+		filter: isFlaggedPageFilter(search.filter) ? search.filter : undefined
+	}),
 	component: FlaggedRoute
 })
 
