@@ -37,7 +37,7 @@ For your convenience, these are the commands as of writing this:
 - `pnpm format` - Format code with Biome
 - `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
 
-Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree/gen-env.sh` to refresh all env files (and recreate any missing ones) then starts on the assigned port.
+Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree-scripts/gen-env.sh` to refresh all env files (and recreate any missing ones) then starts on the assigned port.
 
 ## Component Size Limits
 

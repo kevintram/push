@@ -81,12 +81,12 @@ Each application maintains its own:
 
 Git worktrees enable parallel development with isolated ports. Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`).
 
-- **Setup** (`worktree/add.sh`):
+- **Setup** (`worktree-scripts/add.sh`):
   1. Claims a slot in `worktree-slots.toml`
-  2. Generates all environment files via `worktree/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, and `apps/web/.env.local`
+  2. Generates all environment files via `worktree-scripts/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, and `apps/web/.env.local`
   3. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
 - **Dev servers**: Use `apps/api/run.sh` and `apps/web/run.sh` to start on assigned ports (runs `gen-env.sh` to refresh env files and recreate any missing ones).
-- **Teardown**: `worktree/remove.sh` removes the worktree and frees its slot.
+- **Teardown**: `worktree-scripts/remove.sh` removes the worktree and frees its slot.
 
 ### WorkOS redirect URIs
 Whitelist `http://localhost:8000/callback` through `http://localhost:8015/callback` for the slot range.

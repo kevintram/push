@@ -256,7 +256,7 @@ echo "🧩 Creating per-worktree env files..."
 cd "$NEW_WORKTREE"
 
 WORKTREE_ENV="$NEW_WORKTREE/.worktree.env"
-GEN_SCRIPT="$NEW_WORKTREE/worktree/gen-env.sh"
+GEN_SCRIPT="$NEW_WORKTREE/worktree-scripts/gen-env.sh"
 
 if [ ! -f "$GEN_SCRIPT" ]; then
     echo "ERROR: Missing generator script: $GEN_SCRIPT"
@@ -283,7 +283,7 @@ set -e
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
-GEN_SCRIPT="$ROOT_DIR/worktree/gen-env.sh"
+GEN_SCRIPT="$ROOT_DIR/worktree-scripts/gen-env.sh"
 CONFIG_ENV="$ROOT_DIR/.worktree.env"
 API_ENV="$APP_DIR/.env"
 
@@ -327,7 +327,7 @@ set -e
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$APP_DIR/../.." && pwd)"
-GEN_SCRIPT="$ROOT_DIR/worktree/gen-env.sh"
+GEN_SCRIPT="$ROOT_DIR/worktree-scripts/gen-env.sh"
 CONFIG_ENV="$ROOT_DIR/.worktree.env"
 API_ENV="$ROOT_DIR/apps/api/.env"
 
