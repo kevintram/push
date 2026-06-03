@@ -90,6 +90,10 @@ function getRootLinkClassName(isRootActive: boolean): string {
 	return 'font-semibold text-muted-foreground hover:text-foreground'
 }
 
+/**
+ * TopicNavigator except library is set as a synthetic root.
+ * (For use only on `/topics` routes)
+ */
 export function LibraryOutlineContent({
 	ancestorIdsById,
 	collapseAll,

@@ -1,4 +1,3 @@
-import { useDroppable } from '@dnd-kit/core'
 import { Link } from '@tanstack/react-router'
 import type { MutableRefObject } from 'react'
 
@@ -6,7 +5,6 @@ import { TopicTreeItem } from '~/features/topics/components/topic-tree/TopicTree
 import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/features/topics/hooks/usePrefetchTopicDetail'
 import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 import { cn } from '~/lib/utils'
-import { canReparentTopic } from './topicNavigatorUtils'
 
 export type TopicNavigatorItemProps = {
 	node: TopicTreeNode
@@ -27,52 +25,6 @@ export type TopicNavigatorItemProps = {
 	onRequestDeleteTopic: (topicId: number) => void
 	suppressNavigationRef: MutableRefObject<boolean>
 	setItemRef: (topicId: number, element: HTMLLIElement | null) => void
-}
-
-export function TopicNavigatorRootDropZone({
-	activeDragTopicId,
-	ancestorIdsById,
-	className,
-	id,
-	nodeById
-}: {
-	activeDragTopicId: number | null
-	ancestorIdsById: Map<number, Array<number>>
-	className?: string
-	id: string
-	nodeById: Map<number, TopicTreeNode>
-}) {
-	const canDropToRoot =
-		activeDragTopicId != null &&
-		canReparentTopic({
-			draggedTopicId: activeDragTopicId,
-			nextParentId: null,
-			ancestorIdsById,
-			nodeById
-		})
-
-	const { isOver, setNodeRef } = useDroppable({
-		id,
-		disabled: !canDropToRoot
-	})
-
-	if (activeDragTopicId == null) return null
-
-	return (
-		<div
-			className={cn(
-				'rounded-md border border-dashed px-2.5 py-1.5 text-muted-foreground text-xs transition-colors',
-				className,
-				canDropToRoot && 'border-border/80 bg-muted/30',
-				isOver &&
-					canDropToRoot &&
-					'border-foreground/30 bg-accent text-foreground'
-			)}
-			ref={setNodeRef}
-		>
-			Move to top level
-		</div>
-	)
 }
 
 export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
