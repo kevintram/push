@@ -84,7 +84,7 @@ describe('AppHeader', () => {
 			value: 'MacIntel'
 		})
 
-		useLocationMock.mockReturnValue({ pathname: '/topics' })
+		useLocationMock.mockReturnValue({ pathname: '/library' })
 		useReviewModeMock.mockReturnValue({
 			reviewMode: 'off',
 			setReviewMode: setReviewModeMock

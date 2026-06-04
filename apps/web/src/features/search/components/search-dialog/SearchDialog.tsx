@@ -200,7 +200,7 @@ export function SearchDialog({
 		}
 
 		onOpenChange(false)
-		navigate({ to: '/topics', search: { create: true } })
+		navigate({ to: '/library', search: { create: true } })
 	}
 
 	return (

@@ -331,7 +331,7 @@ export function useReviewCardDetailPage({
 				})
 				return
 			}
-			navigate({ to: '/topics' })
+			navigate({ to: '/library' })
 		}
 
 		setIsDeleteDialogOpen(false)

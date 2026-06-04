@@ -104,7 +104,7 @@ export function useLibraryPage({
 	} = useTopicDetailNavigation({
 		onNavigateToHash: (_topicId, hash, mode) =>
 			navigate({
-				to: '/topics',
+				to: '/library',
 				search: true,
 				hash,
 				replace: mode === 'replace',

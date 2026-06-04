@@ -29,7 +29,7 @@ import {
 	getTopicDetailRootPresentation
 } from './topic-detail/topicDetailTheme'
 
-type TopicsPageProps = {
+type LibraryPageProps = {
 	create?: boolean
 }
 
@@ -39,7 +39,7 @@ function getLibraryLoadError(detailError: unknown): Error {
 		: new Error('Failed to load library')
 }
 
-function getTopicsPageStyle(
+function getLibraryPageStyle(
 	outlineWidth: number
 ): CSSProperties & Record<string, string> {
 	const indicatorLayout = getTopicDetailIndicatorLayout()
@@ -51,7 +51,7 @@ function getTopicsPageStyle(
 	}
 }
 
-export function TopicsPage({ create }: TopicsPageProps): ReactElement {
+export function LibraryPage({ create }: LibraryPageProps): ReactElement {
 	const navigate = useNavigate()
 	const [cardTypeFilter, setCardTypeFilter] =
 		useState<TopicDetailReviewCardFilter>('all')
@@ -105,7 +105,7 @@ export function TopicsPage({ create }: TopicsPageProps): ReactElement {
 		if (handledCreateIntentRef.current) return
 		handledCreateIntentRef.current = true
 		void navigate({
-			to: '/topics',
+			to: '/library',
 			replace: true,
 			search: {}
 		})
@@ -128,7 +128,7 @@ export function TopicsPage({ create }: TopicsPageProps): ReactElement {
 		return <LoadingOrError error={getLibraryLoadError(detailError)} />
 	}
 
-	const pageStyle = getTopicsPageStyle(outlineWidth)
+	const pageStyle = getLibraryPageStyle(outlineWidth)
 	const rootPresentation = getTopicDetailRootPresentation()
 
 	return (
