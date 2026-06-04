@@ -11,15 +11,6 @@ import {
 	X
 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
-import {
-	HeaderArcIndicator,
-	HeaderNavIndicator
-} from '~/app/components/AppHeaderIndicators'
-import {
-	HeaderIconButton,
-	ReviewModeTooltip
-} from '~/app/components/AppHeaderShared'
-import { SearchShortcutHint } from '~/app/components/AppHeaderShortcutHint'
 import { BookOpenOff } from '~/components/icons'
 import { SettingsDialog } from '~/components/SettingsDialog'
 import { OPEN_SETTINGS_EVENT } from '~/components/settings-events'
@@ -30,10 +21,19 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
-import { useReviewCardFlaggedSummary } from '~/features/review-cards/api/getReviewCardFlaggedSummary'
-import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
-import { SearchDialog } from '~/features/search/components/search-dialog/SearchDialog'
 import { cn } from '~/lib/utils'
+import { useReviewCardFlaggedSummary } from '~/modules/review-cards/api/getReviewCardFlaggedSummary'
+import { useReviewCardQueueCounts } from '~/modules/review-cards/hooks/useReviewCardQueueCounts'
+import { SearchDialog } from '~/modules/search/components/search-dialog/SearchDialog'
+import {
+	HeaderIconButton,
+	ReviewModeTooltip
+} from '~/modules/shell/header/HeaderIconButton'
+import {
+	HeaderArcIndicator,
+	HeaderNavIndicator
+} from '~/modules/shell/header/HeaderStatusIndicator'
+import { SearchShortcutHint } from '~/modules/shell/header/SearchShortcutHint'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 
 type NavLinkTarget = '/due' | '/flagged' | '/recent' | '/logbook'

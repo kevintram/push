@@ -3,12 +3,12 @@ import {
 	APP_SIDEBAR_WIDTH_STORAGE_KEY,
 	clampAppSidebarWidth,
 	getStoredAppSidebarWidth
-} from '~/app/components/AppSidebar/appSidebarWidth'
+} from '~/modules/shell/sidebar/appSidebarWidth'
 import {
 	TOPIC_NAVIGATOR_DEFAULT_WIDTH_PX,
 	TOPIC_NAVIGATOR_MAX_WIDTH_PX,
 	TOPIC_NAVIGATOR_WIDTH_STORAGE_KEY
-} from '~/features/topics/components/topic-navigator/TopicNavigator.shared'
+} from '~/modules/topics/components/topic-navigator/TopicNavigator.shared'
 
 describe('appSidebarWidth', () => {
 	beforeEach(() => {

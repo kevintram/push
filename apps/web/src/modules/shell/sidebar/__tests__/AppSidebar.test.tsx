@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { ComponentProps } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { AppSidebar } from '~/app/components/AppSidebar/AppSidebar'
 import { SidebarProvider } from '~/components/ui/sidebar'
+import { AppSidebar } from '~/modules/shell/sidebar/AppSidebar'
 
 const collapseAllMock = vi.fn()
 const navigateMock = vi.fn()
@@ -16,8 +16,8 @@ vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => navigateMock
 }))
 
-vi.mock('~/app/components/AppSidebar/AppSidebarTopicTree', () => ({
-	AppSidebarTopicTree: ({
+vi.mock('~/modules/shell/sidebar/SidebarTopicTree', () => ({
+	SidebarTopicTree: ({
 		onCollapseAllReady
 	}: {
 		onCollapseAllReady?: (collapseAll: () => void) => void

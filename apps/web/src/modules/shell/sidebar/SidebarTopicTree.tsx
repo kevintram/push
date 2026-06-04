@@ -1,9 +1,9 @@
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { useSidebar } from '~/components/ui/sidebar'
-import { TopicNavigator } from '~/features/topics/components/topic-navigator/TopicNavigator'
-import { useActiveTopicNavigatorTopicId } from '~/features/topics/components/topic-navigator/useActiveTopicNavigatorTopicId'
+import { TopicNavigator } from '~/modules/topics/components/topic-navigator/TopicNavigator'
+import { useActiveTopicNavigatorTopicId } from '~/modules/topics/components/topic-navigator/useActiveTopicNavigatorTopicId'
 
-export function AppSidebarTopicTree({
+export function SidebarTopicTree({
 	onCollapseAllReady
 }: {
 	onCollapseAllReady?: (collapseAll: () => void) => void

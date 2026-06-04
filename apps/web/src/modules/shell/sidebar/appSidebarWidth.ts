@@ -2,7 +2,7 @@ import {
 	TOPIC_NAVIGATOR_DEFAULT_WIDTH_PX,
 	TOPIC_NAVIGATOR_MAX_WIDTH_PX,
 	TOPIC_NAVIGATOR_MIN_WIDTH_PX
-} from '~/features/topics/components/topic-navigator/TopicNavigator.shared'
+} from '~/modules/topics/components/topic-navigator/TopicNavigator.shared'
 
 export const APP_SIDEBAR_WIDTH_STORAGE_KEY = 'app-sidebar-width'
 

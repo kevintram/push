@@ -5,8 +5,6 @@ import {
 	useCallback,
 	useRef
 } from 'react'
-
-import { AppSidebarTopicTree } from '~/app/components/AppSidebar/AppSidebarTopicTree'
 import {
 	Sidebar,
 	SidebarContent,
@@ -18,6 +16,7 @@ import {
 	SidebarMenuItem,
 	useSidebar
 } from '~/components/ui/sidebar'
+import { SidebarTopicTree } from '~/modules/shell/sidebar/SidebarTopicTree'
 
 export function AppSidebar({
 	onResizeStart
@@ -92,7 +91,7 @@ export function AppSidebar({
 					</SidebarGroup>
 				</div>
 
-				<AppSidebarTopicTree onCollapseAllReady={handleCollapseAllReady} />
+				<SidebarTopicTree onCollapseAllReady={handleCollapseAllReady} />
 			</SidebarContent>
 
 			{!isMobile && state === 'expanded' && onResizeStart ? (

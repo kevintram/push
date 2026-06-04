@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import type { ComponentProps, ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { AppHeader } from '~/app/components/AppHeader'
+import { AppHeader } from '~/modules/shell/header/AppHeader'
 
 const useLocationMock = vi.fn()
 const useReviewModeMock = vi.fn()
@@ -18,7 +18,7 @@ vi.mock('@tanstack/react-router', () => ({
 	useLocation: () => useLocationMock()
 }))
 
-vi.mock('~/features/search/components/search-dialog/SearchDialog', () => ({
+vi.mock('~/modules/search/components/search-dialog/SearchDialog', () => ({
 	SearchDialog: ({
 		open
 	}: {
@@ -56,12 +56,12 @@ vi.mock('~/stores/ReviewModeContext', () => ({
 	useReviewMode: () => useReviewModeMock()
 }))
 
-vi.mock('~/features/review-cards/hooks/useReviewCardQueueCounts', () => ({
+vi.mock('~/modules/review-cards/hooks/useReviewCardQueueCounts', () => ({
 	useReviewCardQueueCounts: (...args: Array<unknown>) =>
 		useReviewCardQueueCountsMock(...args)
 }))
 
-vi.mock('~/features/review-cards/api/getReviewCardFlaggedSummary', () => ({
+vi.mock('~/modules/review-cards/api/getReviewCardFlaggedSummary', () => ({
 	useReviewCardFlaggedSummary: (...args: Array<unknown>) =>
 		useReviewCardFlaggedSummaryMock(...args)
 }))
