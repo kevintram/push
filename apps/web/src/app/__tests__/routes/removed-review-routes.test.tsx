@@ -5,8 +5,12 @@ import {
 	RouterProvider
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { routeTree } from '~/app/routeTree.gen'
+
+vi.mock('~/components/SettingsDialog', () => ({
+	SettingsDialog: () => null
+}))
 
 function renderRoute(route: string) {
 	const queryClient = new QueryClient({

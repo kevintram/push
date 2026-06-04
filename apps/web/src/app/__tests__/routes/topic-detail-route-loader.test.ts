@@ -1,9 +1,9 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
-import { prefetchTopicDetailRouteData } from '~/app/routes/_main/topics_.$topicId'
-import { reviewCardsQueryOptions } from '~/features/review-cards/api/getReviewCards'
-import { topicQueryOptions } from '~/features/topics/api/getTopic'
-import { topicsQueryOptions } from '~/features/topics/api/getTopics'
+import { prefetchTopicDetailRouteData } from '~/app/routes/topics_.$topicId'
+import { reviewCardsQueryOptions } from '~/modules/review-cards/api/getReviewCards'
+import { topicQueryOptions } from '~/modules/topics/api/getTopic'
+import { topicsQueryOptions } from '~/modules/topics/api/getTopics'
 
 function createDeferred() {
 	let resolve!: (value: unknown) => void

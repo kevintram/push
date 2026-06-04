@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/_main/practice_/$reviewCardId')({
+export const Route = createFileRoute('/practice_/$reviewCardId')({
 	beforeLoad: ({ params }) => {
 		throw redirect({
 			to: '/review-cards/$reviewCardId',

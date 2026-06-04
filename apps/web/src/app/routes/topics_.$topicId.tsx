@@ -7,9 +7,9 @@ import {
 	type TopicDetailReviewCardFilter
 } from '~/app/pages/topic-detail/shared'
 import { TopicDetailPage } from '~/app/pages/topic-detail/TopicDetailPage'
-import { reviewCardsQueryOptions } from '~/features/review-cards/api/getReviewCards'
-import { topicQueryOptions } from '~/features/topics/api/getTopic'
-import { topicsQueryOptions } from '~/features/topics/api/getTopics'
+import { reviewCardsQueryOptions } from '~/modules/review-cards/api/getReviewCards'
+import { topicQueryOptions } from '~/modules/topics/api/getTopic'
+import { topicsQueryOptions } from '~/modules/topics/api/getTopics'
 
 interface TopicDetailRouteSearch {
 	controls?: TopicDetailReviewCardControlsVariant
@@ -74,7 +74,7 @@ export function prefetchTopicDetailRouteData({
 		.catch(() => undefined)
 }
 
-export const Route = createFileRoute('/_main/topics_/$topicId')({
+export const Route = createFileRoute('/topics_/$topicId')({
 	validateSearch: validateTopicDetailSearch,
 	loader: ({ context, params }) => {
 		prefetchTopicDetailRouteData({

@@ -9,7 +9,7 @@ function isFlaggedPageFilter(value: unknown): value is FlaggedPageFilter {
 	return value === 'all' || value === 'practice' || value === 'flashcard'
 }
 
-export const Route = createFileRoute('/_main/flagged')({
+export const Route = createFileRoute('/flagged')({
 	validateSearch: (search): FlaggedRouteSearch => ({
 		filter: isFlaggedPageFilter(search.filter) ? search.filter : undefined
 	}),

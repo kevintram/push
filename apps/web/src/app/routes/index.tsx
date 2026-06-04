@@ -1,10 +1,9 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/_main/practice')({
+export const Route = createFileRoute('/')({
 	beforeLoad: () => {
 		throw redirect({
-			to: '/due',
-			search: { filter: 'practice' }
+			to: '/due'
 		})
 	}
 })

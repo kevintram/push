@@ -4,10 +4,10 @@ import {
 	resolveDueFilter,
 	resolveDueFocusOrder,
 	validateDueFocusSearch
-} from '~/app/routes/_main/due'
-import { buildFocusSearch } from '~/features/review-cards/reviewFocusSearch'
+} from '~/app/routes/due'
+import { buildFocusSearch } from '~/modules/review-cards/reviewFocusSearch'
 
-export const Route = createFileRoute('/_main/due/focus_/$reviewCardId')({
+export const Route = createFileRoute('/due/focus_/$reviewCardId')({
 	validateSearch: validateDueFocusSearch,
 	component: DueFocusCardRoute
 })

@@ -9,7 +9,7 @@ type ReviewCardDetailRouteSearch = {
 	tab: ReviewCardDetailTab
 }
 
-export const Route = createFileRoute('/_main/review-cards_/$reviewCardId')({
+export const Route = createFileRoute('/review-cards_/$reviewCardId')({
 	validateSearch: (search): ReviewCardDetailRouteSearch => {
 		const { tab } = search
 

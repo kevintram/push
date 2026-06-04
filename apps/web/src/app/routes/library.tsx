@@ -5,7 +5,7 @@ interface LibraryRouteSearch {
 	create?: boolean
 }
 
-export const Route = createFileRoute('/_main/library')({
+export const Route = createFileRoute('/library')({
 	validateSearch: (search): LibraryRouteSearch => ({
 		create: search.create === true || search.create === 'true' || undefined
 	}),

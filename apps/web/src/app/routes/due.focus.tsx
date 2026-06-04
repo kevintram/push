@@ -4,9 +4,9 @@ import {
 	resolveDueFilter,
 	resolveDueFocusOrder,
 	validateDueFocusSearch
-} from '~/app/routes/_main/due'
+} from '~/app/routes/due'
 
-export const Route = createFileRoute('/_main/due/focus')({
+export const Route = createFileRoute('/due/focus')({
 	validateSearch: validateDueFocusSearch,
 	component: DueFocusRoute
 })

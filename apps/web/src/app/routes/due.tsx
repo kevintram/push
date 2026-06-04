@@ -11,11 +11,11 @@ import {
 	isReviewFilter,
 	isReviewFocusOrder,
 	persistDueViewPreference
-} from '~/features/review-cards/dueQueueViewPreferences'
+} from '~/modules/review-cards/dueQueueViewPreferences'
 import type {
 	ReviewFilter,
 	ReviewFocusOrder
-} from '~/features/review-cards/types/review-card.types'
+} from '~/modules/review-cards/types/review-card.types'
 
 type DueRouteSearch = {
 	filter?: ReviewFilter
@@ -81,7 +81,7 @@ export function resolveDueFocusOrder(
 	return search.order ?? getStoredDueViewPreference().focusOrder
 }
 
-export const Route = createFileRoute('/_main/due')({
+export const Route = createFileRoute('/due')({
 	validateSearch: validateDueSearch,
 	component: DueRoute
 })

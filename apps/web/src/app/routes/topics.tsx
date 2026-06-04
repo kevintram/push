@@ -4,7 +4,7 @@ interface TopicsRouteSearch {
 	create?: boolean
 }
 
-export const Route = createFileRoute('/_main/topics')({
+export const Route = createFileRoute('/topics')({
 	validateSearch: (search): TopicsRouteSearch => ({
 		create: search.create === true || search.create === 'true' || undefined
 	}),
