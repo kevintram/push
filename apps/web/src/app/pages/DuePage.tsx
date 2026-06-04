@@ -11,21 +11,21 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { useReviewCardQueuePage } from '~/features/review-cards/api/getReviewCardQueue'
-import { ReviewCardSectionList } from '~/features/review-cards/components/ReviewCardSectionList'
+import { useReviewCardQueuePage } from '~/modules/review-cards/api/getReviewCardQueue'
+import { ReviewCardSectionList } from '~/modules/review-cards/components/ReviewCardSectionList'
 import {
 	getStoredDueViewPreference,
 	persistDueViewPreference
-} from '~/features/review-cards/dueQueueViewPreferences'
+} from '~/modules/review-cards/dueQueueViewPreferences'
 import {
 	buildFocusSearch,
 	makeShuffleSeed
-} from '~/features/review-cards/reviewFocusSearch'
+} from '~/modules/review-cards/reviewFocusSearch'
 import type {
 	ReviewCardQueueItem,
 	ReviewFilter
-} from '~/features/review-cards/types/review-card.types'
-import { groupUnifiedReviewQueue } from '~/features/review-cards/utils/groupUnifiedReviewQueue'
+} from '~/modules/review-cards/types/review-card.types'
+import { groupUnifiedReviewQueue } from '~/modules/review-cards/utils/groupUnifiedReviewQueue'
 import { useWeekStart } from '~/stores/WeekStartContext'
 
 export type DuePageFilter = ReviewFilter

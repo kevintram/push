@@ -1,4 +1,4 @@
-import type { SearchResultItem } from '~/features/search/types/search.types'
+import type { SearchResultItem } from '~/modules/search/types/search.types'
 
 export type DateSection<T> = {
 	id: string

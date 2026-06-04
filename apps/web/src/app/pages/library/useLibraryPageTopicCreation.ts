@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
+import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
 import {
 	getTopicDetailSectionId,
 	TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID

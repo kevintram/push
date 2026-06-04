@@ -8,7 +8,7 @@ vi.mock('~/components/ui/textarea', () => ({
 	)
 }))
 
-vi.mock('~/features/topics/api/updateTopic', () => ({
+vi.mock('~/modules/topics/api/updateTopic', () => ({
 	useUpdateTopic: () => ({
 		mutateAsync: vi.fn()
 	})

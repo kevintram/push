@@ -1,9 +1,9 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
+import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
 import { useTopicDetailOutline } from '../useTopicDetailOutline'
 
-vi.mock('~/features/topics/hooks/useTopicTreeActions', () => ({
+vi.mock('~/modules/topics/hooks/useTopicTreeActions', () => ({
 	useTopicTreeActions: () => ({
 		handleConfirmDeleteTopic: vi.fn(),
 		handleCreateSubtopic: vi.fn(),

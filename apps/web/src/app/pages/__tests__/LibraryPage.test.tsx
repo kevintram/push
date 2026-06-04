@@ -52,15 +52,15 @@ vi.mock('~/app/pages/topic-detail/useTopicDetailNavigation', () => ({
 	})
 }))
 
-vi.mock('~/features/topics/hooks/useTopicTree', () => ({
+vi.mock('~/modules/topics/hooks/useTopicTree', () => ({
 	useTopicTree: (...args: Array<unknown>) => useTopicTreeMock(...args)
 }))
 
-vi.mock('~/features/review-cards/api/getReviewCards', () => ({
+vi.mock('~/modules/review-cards/api/getReviewCards', () => ({
 	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args)
 }))
 
-vi.mock('~/features/topics/api/createTopic', () => ({
+vi.mock('~/modules/topics/api/createTopic', () => ({
 	useCreateTopic: () => ({
 		mutateAsync: createTopicAsyncMock,
 		isPending: false

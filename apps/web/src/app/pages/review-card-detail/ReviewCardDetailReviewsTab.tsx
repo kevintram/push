@@ -2,11 +2,11 @@ import { ChevronDown, Loader2, Plus } from 'lucide-react'
 
 import { Button } from '~/components/ui/button'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { RatingDropdown } from '~/features/reviews/components/RatingDropdown'
-import { ReviewItem } from '~/features/reviews/components/ReviewItem'
-import { ReviewListHeader } from '~/features/reviews/components/ReviewListHeader'
-import type { ReviewRatingState } from '~/features/reviews/components/reviewRatingOptions'
-import type { ReviewListItem } from '~/features/reviews/types/review.types'
+import { RatingDropdown } from '~/modules/reviews/components/RatingDropdown'
+import { ReviewItem } from '~/modules/reviews/components/ReviewItem'
+import { ReviewListHeader } from '~/modules/reviews/components/ReviewListHeader'
+import type { ReviewRatingState } from '~/modules/reviews/components/reviewRatingOptions'
+import type { ReviewListItem } from '~/modules/reviews/types/review.types'
 
 type ReviewCardDetailReviewsTabProps = {
 	completedReviews: Array<ReviewListItem>

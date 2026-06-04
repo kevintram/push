@@ -1,7 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { BreadcrumbLink } from '~/components/ui/breadcrumb'
-import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/features/topics/hooks/usePrefetchTopicDetail'
+import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/modules/topics/hooks/usePrefetchTopicDetail'
 import { TopicBreadcrumb, type TopicPathItem } from './TopicBreadcrumb'
 import { TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID } from './topicDetailStructure'
 

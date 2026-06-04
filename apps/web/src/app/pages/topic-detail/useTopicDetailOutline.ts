@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useTopicTreeActions } from '~/features/topics/hooks/useTopicTreeActions'
-import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
+import { useTopicTreeActions } from '~/modules/topics/hooks/useTopicTreeActions'
+import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
 
 type UseTopicDetailOutlineOptions = {
 	ancestorIdsById: Map<number, Array<number>>

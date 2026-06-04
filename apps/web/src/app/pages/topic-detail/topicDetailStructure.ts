@@ -1,10 +1,10 @@
-import type { ReviewCard } from '~/features/review-cards/types/review-card.types'
-import type { Topic } from '~/features/topics/types/topic.types'
-import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
+import type { ReviewCard } from '~/modules/review-cards/types/review-card.types'
+import type { Topic } from '~/modules/topics/types/topic.types'
+import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
 import {
 	buildTopicTree,
 	getTopicDisplayTitle
-} from '~/features/topics/utils/topicTree'
+} from '~/modules/topics/utils/topicTree'
 
 export type TopicDetailSectionNode = {
 	children: Array<TopicDetailSectionNode>

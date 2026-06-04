@@ -1,5 +1,4 @@
 import { ListChecks } from 'lucide-react'
-import { ReviewListSkeleton } from '~/app/components/ReviewListSkeleton'
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
@@ -10,10 +9,11 @@ import {
 	EmptyMedia,
 	EmptyTitle
 } from '~/components/ui/empty'
-import { useLogbookReviewEntries } from '~/features/reviews/api/getReviewEntries'
-import { ReviewDialog } from '~/features/reviews/components/ReviewDialog'
-import { ReviewSection } from '~/features/reviews/components/ReviewSection'
-import type { ReviewListItem } from '~/features/reviews/types/review.types'
+import { LoadingSpinner } from '~/components/ui/loading-spinner'
+import { useLogbookReviewEntries } from '~/modules/reviews/api/getReviewEntries'
+import { ReviewDialog } from '~/modules/reviews/components/ReviewDialog'
+import { ReviewSection } from '~/modules/reviews/components/ReviewSection'
+import type { ReviewListItem } from '~/modules/reviews/types/review.types'
 
 export function LogbookPage() {
 	const { sections, isLoading } = useLogbookReviewEntries()
@@ -61,7 +61,11 @@ function LogbookList({
 	}>
 }) {
 	if (isLoading) {
-		return <ReviewListSkeleton />
+		return (
+			<PageLayout.Content>
+				<LoadingSpinner containerClassName='min-h-64' />
+			</PageLayout.Content>
+		)
 	}
 
 	if (sections.length === 0) {

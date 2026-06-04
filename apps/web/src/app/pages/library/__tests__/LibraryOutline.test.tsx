@@ -78,7 +78,7 @@ vi.mock('~/app/pages/topic-detail/useTopicDetailOutlineSizing', () => ({
 	})
 }))
 
-vi.mock('~/features/topics/components/topic-tree/TopicTreeItem', () => ({
+vi.mock('~/modules/topics/components/topic-tree/TopicTreeItem', () => ({
 	TopicTreeItem: ({
 		node,
 		renderPrimaryAction,

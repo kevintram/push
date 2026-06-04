@@ -190,7 +190,7 @@ vi.mock('~/components/ui/detail-nav-bar', () => ({
 	)
 }))
 
-vi.mock('~/features/topics/components/TopicCard', () => ({
+vi.mock('~/modules/topics/components/TopicCard', () => ({
 	TopicCard: ({
 		topic,
 		onClick
@@ -204,7 +204,7 @@ vi.mock('~/features/topics/components/TopicCard', () => ({
 	)
 }))
 
-vi.mock('~/features/review-cards/components/ReviewCard', () => ({
+vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 	ReviewCard: ({
 		reviewCard,
 		onClick
@@ -218,92 +218,92 @@ vi.mock('~/features/review-cards/components/ReviewCard', () => ({
 	)
 }))
 
-vi.mock('~/features/search/api/searchAll', () => ({
+vi.mock('~/modules/search/api/searchAll', () => ({
 	useSearchAll: (...args: Array<unknown>) => useSearchAllMock(...args)
 }))
 
-vi.mock('~/features/topics/api/getTopic', () => ({
+vi.mock('~/modules/topics/api/getTopic', () => ({
 	useTopic: (...args: Array<unknown>) => useTopicMock(...args)
 }))
 
-vi.mock('~/features/topics/api/getTopics', () => ({
+vi.mock('~/modules/topics/api/getTopics', () => ({
 	useTopics: (...args: Array<unknown>) => useTopicsMock(...args)
 }))
 
-vi.mock('~/features/review-cards/api/getReviewCards', () => ({
+vi.mock('~/modules/review-cards/api/getReviewCards', () => ({
 	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args)
 }))
 
-vi.mock('~/features/topics/api/updateTopic', () => ({
+vi.mock('~/modules/topics/api/updateTopic', () => ({
 	useUpdateTopic: () => ({
 		mutateAsync: updateTopicAsyncMock,
 		isPending: false
 	})
 }))
 
-vi.mock('~/features/topics/api/createTopic', () => ({
+vi.mock('~/modules/topics/api/createTopic', () => ({
 	useCreateTopic: () => ({
 		mutateAsync: createTopicAsyncMock,
 		isPending: false
 	})
 }))
 
-vi.mock('~/features/topics/api/deleteTopic', () => ({
+vi.mock('~/modules/topics/api/deleteTopic', () => ({
 	useDeleteTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/review-cards/api/createReviewCard', () => ({
+vi.mock('~/modules/review-cards/api/createReviewCard', () => ({
 	useCreateReviewCard: () => ({
 		mutateAsync: createReviewCardAsyncMock,
 		isPending: false
 	})
 }))
 
-vi.mock('~/features/review-cards/api/getReviewCard', () => ({
+vi.mock('~/modules/review-cards/api/getReviewCard', () => ({
 	useReviewCard: (...args: Array<unknown>) => useReviewCardMock(...args)
 }))
 
-vi.mock('~/features/review-cards/api/updateReviewCard', () => ({
+vi.mock('~/modules/review-cards/api/updateReviewCard', () => ({
 	useUpdateReviewCard: () => ({
 		mutateAsync: updateReviewCardAsyncMock,
 		isPending: false
 	})
 }))
 
-vi.mock('~/features/review-cards/api/deleteReviewCard', () => ({
+vi.mock('~/modules/review-cards/api/deleteReviewCard', () => ({
 	useDeleteReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/review-cards/hooks/useDeleteReviewCardWithUndo', () => ({
+vi.mock('~/modules/review-cards/hooks/useDeleteReviewCardWithUndo', () => ({
 	useDeleteReviewCardWithUndo: () => ({ deleteWithUndo: vi.fn() })
 }))
 
-vi.mock('~/features/reviews/api/createReview', () => ({
+vi.mock('~/modules/reviews/api/createReview', () => ({
 	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/reviews/components/RatingDropdown', () => ({
+vi.mock('~/modules/reviews/components/RatingDropdown', () => ({
 	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>
 }))
 
-vi.mock('~/features/reviews/components/reviews-menu/ReviewsMenu', () => ({
+vi.mock('~/modules/reviews/components/reviews-menu/ReviewsMenu', () => ({
 	ReviewsMenu: (props: unknown) => {
 		reviewsMenuPropsMock(props)
 		return <button type='button'>Reviews</button>
 	}
 }))
 
-vi.mock('~/features/reviews/api/getReviews', () => ({
+vi.mock('~/modules/reviews/api/getReviews', () => ({
 	useReviewsByReviewCard: (...args: Array<unknown>) =>
 		useReviewsByReviewCardMock(...args)
 }))
 
-vi.mock('~/features/reviews/hooks/useDetailReviewCounts', () => ({
+vi.mock('~/modules/reviews/hooks/useDetailReviewCounts', () => ({
 	useDetailReviewCounts: (...args: Array<unknown>) =>
 		useDetailReviewCountsMock(...args)
 }))
 
-vi.mock('~/features/reviews/hooks/useReviewDialog', () => ({
+vi.mock('~/modules/reviews/hooks/useReviewDialog', () => ({
 	useReviewDialog: () => ({ openReviewDialog: vi.fn() })
 }))
 
