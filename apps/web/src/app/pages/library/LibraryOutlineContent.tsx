@@ -92,7 +92,7 @@ function getRootLinkClassName(isRootActive: boolean): string {
 
 /**
  * TopicNavigator except library is set as a synthetic root.
- * (For use only on `/topics` routes)
+ * (For use only on `/library` routes)
  */
 export function LibraryOutlineContent({
 	ancestorIdsById,
@@ -170,7 +170,7 @@ export function LibraryOutlineContent({
 					onClick={handleClick}
 					resetScroll={false}
 					search={true}
-					to='/topics'
+					to='/library'
 				>
 					<OutlineLabel
 						label={label}
@@ -246,7 +246,7 @@ export function LibraryOutlineContent({
 											onClick={handleRootClick}
 											resetScroll={false}
 											search={true}
-											to='/topics'
+											to='/library'
 										>
 											<OutlineLabel
 												label={libraryRootNode.title}

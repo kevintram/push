@@ -9,18 +9,14 @@ type ReviewCardDetailRouteSearch = {
 	tab: ReviewCardDetailTab
 }
 
-export function validateReviewCardDetailSearch(
-	search: Record<string, unknown>
-): ReviewCardDetailRouteSearch {
-	const { tab } = search
-
-	return {
-		tab: typeof tab === 'string' && isReviewCardDetailTab(tab) ? tab : 'home'
-	}
-}
-
 export const Route = createFileRoute('/_main/review-cards_/$reviewCardId')({
-	validateSearch: validateReviewCardDetailSearch,
+	validateSearch: (search): ReviewCardDetailRouteSearch => {
+		const { tab } = search
+
+		return {
+			tab: typeof tab === 'string' && isReviewCardDetailTab(tab) ? tab : 'home'
+		}
+	},
 	component: RouteComponent
 })
 

@@ -38,7 +38,7 @@ export function TopicDetailBreadcrumb({
 			onHiddenTopicSelect={topic => {
 				void navigate(
 					topic.id === TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID
-						? { to: '/topics' }
+						? { to: '/library' }
 						: {
 								to: '/topics/$topicId',
 								params: { topicId: topic.id.toString() }
@@ -48,7 +48,7 @@ export function TopicDetailBreadcrumb({
 			renderTopicLink={({ className: linkClassName, label, topic }) => {
 				const linkElement =
 					topic.id === TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID ? (
-						<Link to='/topics' />
+						<Link to='/library' />
 					) : (
 						<Link
 							params={{ topicId: topic.id.toString() }}

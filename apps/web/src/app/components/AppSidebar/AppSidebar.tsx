@@ -37,7 +37,7 @@ export function AppSidebar({
 	}
 
 	const handleAddTopic = () => {
-		navigate({ to: '/topics', search: { create: true } })
+		navigate({ to: '/library', search: { create: true } })
 	}
 
 	return (
@@ -52,11 +52,11 @@ export function AppSidebar({
 							<SidebarMenu>
 								<SidebarMenuItem>
 									<SidebarMenuButton
-										render={<Link to='/topics' />}
-										tooltip='Topics'
+										render={<Link to='/library' />}
+										tooltip='Library'
 									>
 										<Library />
-										<span>Topics</span>
+										<span>Library</span>
 									</SidebarMenuButton>
 									<div className='absolute top-1.5 right-1 z-10 flex items-center gap-0.5'>
 										<SidebarMenuAction

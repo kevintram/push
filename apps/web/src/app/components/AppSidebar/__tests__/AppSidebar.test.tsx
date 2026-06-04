@@ -33,16 +33,16 @@ describe('AppSidebar', () => {
 		navigateMock.mockReset()
 	})
 
-	it('renders only the topics navigation surface', () => {
+	it('renders only the library navigation surface', () => {
 		render(
 			<SidebarProvider>
 				<AppSidebar />
 			</SidebarProvider>
 		)
 
-		expect(screen.getByRole('link', { name: /^Topics$/u })).toHaveAttribute(
+		expect(screen.getByRole('link', { name: /^Library$/u })).toHaveAttribute(
 			'href',
-			'/topics'
+			'/library'
 		)
 		expect(screen.getByTestId('sidebar-topic-tree')).toBeInTheDocument()
 		expect(
@@ -80,7 +80,7 @@ describe('AppSidebar', () => {
 		).not.toBeInTheDocument()
 	})
 
-	it('navigates to topics with create search param when add topic is clicked', () => {
+	it('navigates to library with create search param when add topic is clicked', () => {
 		render(
 			<SidebarProvider>
 				<AppSidebar />
@@ -90,7 +90,7 @@ describe('AppSidebar', () => {
 		fireEvent.click(screen.getByRole('button', { name: 'Add topic' }))
 
 		expect(navigateMock).toHaveBeenCalledWith({
-			to: '/topics',
+			to: '/library',
 			search: { create: true }
 		})
 	})

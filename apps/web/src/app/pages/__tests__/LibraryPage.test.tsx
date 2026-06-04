@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { TopicsPage } from '../TopicsPage'
+import { LibraryPage } from '../LibraryPage'
 
 const navigateMock = vi.fn()
 const createTopicAsyncMock = vi.fn()
@@ -89,7 +89,7 @@ const rootTopic = {
 	children: [childTopic]
 }
 
-describe('TopicsPage', () => {
+describe('LibraryPage', () => {
 	it('renders the library shell with top-level topic sections', () => {
 		useTopicTreeMock.mockReturnValue({
 			ancestorIdsById: new Map([
@@ -111,7 +111,7 @@ describe('TopicsPage', () => {
 			isLoading: false
 		})
 
-		render(<TopicsPage />)
+		render(<LibraryPage />)
 
 		expect(screen.getByText('Library', { selector: 'h1' })).toBeInTheDocument()
 		expect(screen.getByTestId('library-outline')).toHaveTextContent('Library')
@@ -140,7 +140,7 @@ describe('TopicsPage', () => {
 			id: 42
 		})
 
-		render(<TopicsPage />)
+		render(<LibraryPage />)
 
 		await user.click(screen.getByRole('button', { name: 'New topic' }))
 

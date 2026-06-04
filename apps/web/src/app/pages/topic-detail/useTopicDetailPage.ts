@@ -288,7 +288,7 @@ export function useTopicDetailPage({
 				return
 			}
 
-			await navigate({ to: '/topics' })
+			await navigate({ to: '/library' })
 		} catch (error) {
 			toast.error(
 				error instanceof Error ? error.message : 'Failed to delete topic'

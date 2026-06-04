@@ -167,11 +167,11 @@ describe('LibraryOutline', () => {
 
 		expect(screen.getByRole('link', { name: 'Library' })).toHaveAttribute(
 			'href',
-			'/topics#topic-0'
+			'/library#topic-0'
 		)
 		expect(screen.getByRole('link', { name: '1 Algebra' })).toHaveAttribute(
 			'href',
-			'/topics#topic-1'
+			'/library#topic-1'
 		)
 
 		await user.click(screen.getByRole('link', { name: 'Library' }))

@@ -86,7 +86,7 @@ describe('SearchDialog', () => {
 		await user.click(screen.getByRole('button', { name: /Create topic/iu }))
 
 		expect(navigateMock).toHaveBeenCalledWith({
-			to: '/topics',
+			to: '/library',
 			search: { create: true }
 		})
 	})

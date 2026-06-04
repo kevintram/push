@@ -58,7 +58,7 @@ describe('TopicDetailBreadcrumb', () => {
 
 		expect(screen.getByRole('link', { name: 'Library' })).toHaveAttribute(
 			'href',
-			'/topics'
+			'/library'
 		)
 		expect(screen.getByText('Algebra')).toBeInTheDocument()
 	})

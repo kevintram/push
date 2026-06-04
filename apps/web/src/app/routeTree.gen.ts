@@ -16,6 +16,7 @@ import { Route as MainTopicsRouteImport } from './routes/_main/topics'
 import { Route as MainRecentRouteImport } from './routes/_main/recent'
 import { Route as MainPracticeRouteImport } from './routes/_main/practice'
 import { Route as MainLogbookRouteImport } from './routes/_main/logbook'
+import { Route as MainLibraryRouteImport } from './routes/_main/library'
 import { Route as MainFlashcardsRouteImport } from './routes/_main/flashcards'
 import { Route as MainFlaggedRouteImport } from './routes/_main/flagged'
 import { Route as MainDueRouteImport } from './routes/_main/due'
@@ -58,6 +59,11 @@ const MainPracticeRoute = MainPracticeRouteImport.update({
 const MainLogbookRoute = MainLogbookRouteImport.update({
   id: '/logbook',
   path: '/logbook',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainLibraryRoute = MainLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
   getParentRoute: () => MainRoute,
 } as any)
 const MainFlashcardsRoute = MainFlashcardsRouteImport.update({
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/due': typeof MainDueRouteWithChildren
   '/flagged': typeof MainFlaggedRoute
   '/flashcards': typeof MainFlashcardsRoute
+  '/library': typeof MainLibraryRoute
   '/logbook': typeof MainLogbookRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/due': typeof MainDueRouteWithChildren
   '/flagged': typeof MainFlaggedRoute
   '/flashcards': typeof MainFlashcardsRoute
+  '/library': typeof MainLibraryRoute
   '/logbook': typeof MainLogbookRoute
   '/practice': typeof MainPracticeRoute
   '/recent': typeof MainRecentRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/_main/due': typeof MainDueRouteWithChildren
   '/_main/flagged': typeof MainFlaggedRoute
   '/_main/flashcards': typeof MainFlashcardsRoute
+  '/_main/library': typeof MainLibraryRoute
   '/_main/logbook': typeof MainLogbookRoute
   '/_main/practice': typeof MainPracticeRoute
   '/_main/recent': typeof MainRecentRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/due'
     | '/flagged'
     | '/flashcards'
+    | '/library'
     | '/logbook'
     | '/practice'
     | '/recent'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/due'
     | '/flagged'
     | '/flashcards'
+    | '/library'
     | '/logbook'
     | '/practice'
     | '/recent'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/_main/due'
     | '/_main/flagged'
     | '/_main/flashcards'
+    | '/_main/library'
     | '/_main/logbook'
     | '/_main/practice'
     | '/_main/recent'
@@ -272,6 +284,13 @@ declare module '@tanstack/react-router' {
       path: '/logbook'
       fullPath: '/logbook'
       preLoaderRoute: typeof MainLogbookRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/library': {
+      id: '/_main/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof MainLibraryRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/flashcards': {
@@ -357,6 +376,7 @@ interface MainRouteChildren {
   MainDueRoute: typeof MainDueRouteWithChildren
   MainFlaggedRoute: typeof MainFlaggedRoute
   MainFlashcardsRoute: typeof MainFlashcardsRoute
+  MainLibraryRoute: typeof MainLibraryRoute
   MainLogbookRoute: typeof MainLogbookRoute
   MainPracticeRoute: typeof MainPracticeRoute
   MainRecentRoute: typeof MainRecentRoute
@@ -372,6 +392,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainDueRoute: MainDueRouteWithChildren,
   MainFlaggedRoute: MainFlaggedRoute,
   MainFlashcardsRoute: MainFlashcardsRoute,
+  MainLibraryRoute: MainLibraryRoute,
   MainLogbookRoute: MainLogbookRoute,
   MainPracticeRoute: MainPracticeRoute,
   MainRecentRoute: MainRecentRoute,

@@ -104,7 +104,7 @@ export function useTopicTreeActions({
 					params: { topicId: topicToDelete.parent_id.toString() }
 				})
 			} else {
-				await navigate({ to: '/topics' })
+				await navigate({ to: '/library' })
 			}
 			await onAfterRouteChange?.()
 		} catch (error) {
