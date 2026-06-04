@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { createRootRouteWithContext } from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { LoadingOrError } from '~/components/LoadingOrError'
@@ -43,7 +43,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			<ReviewModeProvider>
 				<ReviewDialogProvider>
 					<Suspense fallback={<LoadingOrError />}>
-						<AppShell />
+						<AppShell>
+							<Outlet />
+						</AppShell>
 					</Suspense>
 					<Toaster />
 				</ReviewDialogProvider>
