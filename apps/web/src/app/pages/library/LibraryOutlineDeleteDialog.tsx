@@ -11,7 +11,7 @@ import {
 	AlertDialogMedia,
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
-import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
+import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
 
 type LibraryOutlineDeleteDialogProps = {
 	isDeletingTopic: boolean

@@ -3,7 +3,7 @@ import {
 	resolveDueFilter,
 	validateDueFocusSearch,
 	validateDueSearch
-} from '~/app/routes/_main/due'
+} from '~/app/routes/due'
 import { createMockLocalStorage } from '~/testing/support/masonryPageTestSupport'
 
 const mockLocalStorage = createMockLocalStorage()

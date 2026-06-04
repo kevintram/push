@@ -15,27 +15,27 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { reviewCardQueryOptions } from '~/features/review-cards/api/getReviewCard'
-import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
-import { RetireReviewCardDialog } from '~/features/review-cards/components/RetireReviewCardDialog'
+import { reviewCardQueryOptions } from '~/modules/review-cards/api/getReviewCard'
+import { useUpdateReviewCard } from '~/modules/review-cards/api/updateReviewCard'
+import { RetireReviewCardDialog } from '~/modules/review-cards/components/RetireReviewCardDialog'
 import {
 	getStoredDueViewPreference,
 	persistDueViewPreference
-} from '~/features/review-cards/dueQueueViewPreferences'
+} from '~/modules/review-cards/dueQueueViewPreferences'
 import {
 	buildFocusSearch,
 	makeShuffleSeed,
 	type ReviewFocusSearch
-} from '~/features/review-cards/reviewFocusSearch'
+} from '~/modules/review-cards/reviewFocusSearch'
 import type {
 	ReviewCardQueueItem,
 	ReviewFilter,
 	ReviewFocusOrder
-} from '~/features/review-cards/types/review-card.types'
-import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
-import { useCreateReview } from '~/features/reviews/api/createReview'
-import { reviewsQueryOptions } from '~/features/reviews/api/getReviews'
-import type { Rating } from '~/features/reviews/types/review.types'
+} from '~/modules/review-cards/types/review-card.types'
+import { hasScheduledDueReviews } from '~/modules/review-cards/utils/hasScheduledDueReviews'
+import { useCreateReview } from '~/modules/reviews/api/createReview'
+import { reviewsQueryOptions } from '~/modules/reviews/api/getReviews'
+import type { Rating } from '~/modules/reviews/types/review.types'
 import { localDateString } from '~/utils/date'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 

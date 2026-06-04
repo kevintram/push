@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
 import { Textarea } from '~/components/ui/textarea'
-import { useUpdateTopic } from '~/features/topics/api/updateTopic'
-import type { Topic } from '~/features/topics/types/topic.types'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
+import { useUpdateTopic } from '~/modules/topics/api/updateTopic'
+import type { Topic } from '~/modules/topics/types/topic.types'
 import {
 	formatAbsoluteDate,
 	formatRelativeDate

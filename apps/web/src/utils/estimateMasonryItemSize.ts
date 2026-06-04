@@ -1,6 +1,6 @@
-import type { ReviewCard } from '~/features/review-cards/types/review-card.types'
-import { getReviewCardDisplayTitle } from '~/features/review-cards/utils/reviewCardCopy'
-import type { Topic } from '~/features/topics/types/topic.types'
+import type { ReviewCard } from '~/modules/review-cards/types/review-card.types'
+import { getReviewCardDisplayTitle } from '~/modules/review-cards/utils/reviewCardCopy'
+import type { Topic } from '~/modules/topics/types/topic.types'
 import { estimateCardSize } from './estimateCardSize'
 
 export const DEFAULT_MASONRY_GAP = 16

@@ -77,7 +77,7 @@ vi.mock('~/components/SettingsDialog', () => ({
 	SettingsDialog: () => null
 }))
 
-vi.mock('~/features/review-cards/components/ReviewCard', () => ({
+vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 	ReviewCard: ({ reviewCard }: { reviewCard: { primary_text: string } }) => (
 		<div data-testid='review-card'>{reviewCard.primary_text}</div>
 	)
@@ -89,13 +89,13 @@ vi.mock('~/app/pages/review-card-detail/ReviewCardDetailPage', () => ({
 	)
 }))
 
-vi.mock('~/features/topics/components/TopicCard', () => ({
+vi.mock('~/modules/topics/components/TopicCard', () => ({
 	TopicCard: ({ topic }: { topic: { title: string } }) => (
 		<div data-testid='topic-card'>{topic.title}</div>
 	)
 }))
 
-vi.mock('~/features/topics/api/getTopic', () => ({
+vi.mock('~/modules/topics/api/getTopic', () => ({
 	topicQueryOptions: (topicId: number) => ({
 		queryKey: ['topics', 'detail', topicId],
 		queryFn: async () => ({
@@ -110,7 +110,7 @@ vi.mock('~/features/topics/api/getTopic', () => ({
 	useTopic: (...args: Array<unknown>) => useTopicMock(...args)
 }))
 
-vi.mock('~/features/topics/api/getTopics', () => ({
+vi.mock('~/modules/topics/api/getTopics', () => ({
 	topicsQueryOptions: () => ({
 		queryKey: ['topics', 'list', { sort: 'title', order: 'asc' }],
 		queryFn: async () => []
@@ -118,7 +118,7 @@ vi.mock('~/features/topics/api/getTopics', () => ({
 	useTopics: (...args: Array<unknown>) => useTopicsMock(...args)
 }))
 
-vi.mock('~/features/review-cards/api/getReviewCards', () => ({
+vi.mock('~/modules/review-cards/api/getReviewCards', () => ({
 	reviewCardsQueryOptions: (params: Record<string, unknown>) => ({
 		queryKey: ['review-cards', 'list', params],
 		queryFn: async () => []
@@ -126,14 +126,14 @@ vi.mock('~/features/review-cards/api/getReviewCards', () => ({
 	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args)
 }))
 
-vi.mock('~/features/review-cards/api/getReviewCardQueue', () => ({
+vi.mock('~/modules/review-cards/api/getReviewCardQueue', () => ({
 	useReviewCardQueue: (...args: Array<unknown>) =>
 		useReviewCardQueueMock(...args),
 	useReviewCardQueuePage: (...args: Array<unknown>) =>
 		normalizeQueuePageResult(useReviewCardQueueMock(...args))
 }))
 
-vi.mock('~/features/review-cards/hooks/useReviewCardQueueCounts', () => ({
+vi.mock('~/modules/review-cards/hooks/useReviewCardQueueCounts', () => ({
 	useReviewCardQueueCounts: (...args: Array<unknown>) =>
 		useReviewCardQueueCountsMock(...args)
 }))
@@ -170,23 +170,23 @@ vi.mock('~/stores/ThemeContext', () => ({
 	})
 }))
 
-vi.mock('~/features/review-cards/api/createReviewCard', () => ({
+vi.mock('~/modules/review-cards/api/createReviewCard', () => ({
 	useCreateReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/topics/api/createTopic', () => ({
+vi.mock('~/modules/topics/api/createTopic', () => ({
 	useCreateTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/topics/api/updateTopic', () => ({
+vi.mock('~/modules/topics/api/updateTopic', () => ({
 	useUpdateTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/topics/api/deleteTopic', () => ({
+vi.mock('~/modules/topics/api/deleteTopic', () => ({
 	useDeleteTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/reviews/api/createReview', () => ({
+vi.mock('~/modules/reviews/api/createReview', () => ({
 	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 

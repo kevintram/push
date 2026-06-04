@@ -4,7 +4,8 @@ import { Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { Toaster } from '~/components/ui/sonner'
-import { ReviewDialogProvider } from '~/features/reviews/providers/ReviewDialogProvider'
+import { ReviewDialogProvider } from '~/modules/reviews/providers/ReviewDialogProvider'
+import { AppShell } from '~/modules/shell/AppShell'
 import { ReviewModeProvider } from '~/stores/ReviewModeContext'
 
 export type RouterContext = {
@@ -42,7 +43,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			<ReviewModeProvider>
 				<ReviewDialogProvider>
 					<Suspense fallback={<LoadingOrError />}>
-						<Outlet />
+						<AppShell>
+							<Outlet />
+						</AppShell>
 					</Suspense>
 					<Toaster />
 				</ReviewDialogProvider>

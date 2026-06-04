@@ -1,14 +1,14 @@
 import { type ChangeEvent, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
-import { useCreateReviewCard } from '~/features/review-cards/api/createReviewCard'
-import { requestFocusNewReviewCardPrimaryText } from '~/features/review-cards/createReviewCardIntent'
+import { useAutoSave } from '~/hooks/useAutoSave'
+import { useRevealPanel } from '~/hooks/useRevealPanel'
+import { useCreateReviewCard } from '~/modules/review-cards/api/createReviewCard'
+import { requestFocusNewReviewCardPrimaryText } from '~/modules/review-cards/createReviewCardIntent'
 import type {
 	ReviewCard as ReviewCardModel,
 	ReviewCardType
-} from '~/features/review-cards/types/review-card.types'
-import { useUpdateTopic } from '~/features/topics/api/updateTopic'
-import { useAutoSave } from '~/hooks/useAutoSave'
-import { useRevealPanel } from '~/hooks/useRevealPanel'
+} from '~/modules/review-cards/types/review-card.types'
+import { useUpdateTopic } from '~/modules/topics/api/updateTopic'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 import type {
 	TopicDetailReviewCardControlsVariant,

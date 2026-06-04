@@ -29,16 +29,16 @@ import {
 	TooltipContent,
 	TooltipTrigger
 } from '~/components/ui/tooltip'
-import { FLAGGED_ICON_CLASSNAME } from '~/features/review-cards/components/reviewCardShared'
-import type { ReviewCard } from '~/features/review-cards/types/review-card.types'
+import { useRevealPanel } from '~/hooks/useRevealPanel'
+import { cn } from '~/lib/utils'
+import { FLAGGED_ICON_CLASSNAME } from '~/modules/review-cards/components/reviewCardShared'
+import type { ReviewCard } from '~/modules/review-cards/types/review-card.types'
 import {
 	getReviewCardPrimaryFieldLabel,
 	getReviewCardSecondaryFieldLabel
-} from '~/features/review-cards/utils/reviewCardCopy'
-import { ReviewsMenu } from '~/features/reviews/components/reviews-menu/ReviewsMenu'
-import type { ReviewListItem } from '~/features/reviews/types/review.types'
-import { useRevealPanel } from '~/hooks/useRevealPanel'
-import { cn } from '~/lib/utils'
+} from '~/modules/review-cards/utils/reviewCardCopy'
+import { ReviewsMenu } from '~/modules/reviews/components/reviews-menu/ReviewsMenu'
+import type { ReviewListItem } from '~/modules/reviews/types/review.types'
 import { formatAbsoluteDate } from '~/utils/formatRelativeDate'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 import { EMPTY_BADGE_CLASSNAME } from './shared'

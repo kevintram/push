@@ -16,7 +16,7 @@ import {
 import type {
 	ReviewFilter,
 	ReviewFocusOrder
-} from '~/features/review-cards/types/review-card.types'
+} from '~/modules/review-cards/types/review-card.types'
 
 const DUE_FILTER_OPTIONS = [
 	{ label: 'All', value: 'all' },

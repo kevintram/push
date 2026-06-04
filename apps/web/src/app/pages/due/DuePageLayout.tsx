@@ -3,12 +3,12 @@ import { CalendarIcon, Focus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { Toggle } from '~/components/ui/toggle'
-import { useReviewCardQueueCounts } from '~/features/review-cards/hooks/useReviewCardQueueCounts'
-import type { ReviewFocusSearch } from '~/features/review-cards/reviewFocusSearch'
+import { useReviewCardQueueCounts } from '~/modules/review-cards/hooks/useReviewCardQueueCounts'
+import type { ReviewFocusSearch } from '~/modules/review-cards/reviewFocusSearch'
 import type {
 	ReviewFilter,
 	ReviewFocusOrder
-} from '~/features/review-cards/types/review-card.types'
+} from '~/modules/review-cards/types/review-card.types'
 import { DueHeaderControls, DueQueueStatusBadges } from './DueHeaderControls'
 
 interface DuePageLayoutProps {

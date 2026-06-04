@@ -1,35 +1,35 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { useReviewCard } from '~/features/review-cards/api/getReviewCard'
-import { useUpdateReviewCard } from '~/features/review-cards/api/updateReviewCard'
-import {
-	toFreshnessTier,
-	toReviewCardStatusBadge
-} from '~/features/review-cards/components/reviewCardShared'
-import { consumeFocusNewReviewCardPrimaryText } from '~/features/review-cards/createReviewCardIntent'
-import { useDeleteReviewCardWithUndo } from '~/features/review-cards/hooks/useDeleteReviewCardWithUndo'
-import { hasScheduledDueReviews } from '~/features/review-cards/utils/hasScheduledDueReviews'
-import { orderReviewCardStatusBadges } from '~/features/review-cards/utils/orderReviewCardStatusBadges'
-import { useCreateReview } from '~/features/reviews/api/createReview'
-import { useReviewsByReviewCard } from '~/features/reviews/api/getReviews'
-import type { ReviewRatingState } from '~/features/reviews/components/reviewRatingOptions'
-import { useDetailReviewCounts } from '~/features/reviews/hooks/useDetailReviewCounts'
-import { useReviewDialog } from '~/features/reviews/hooks/useReviewDialog'
-import {
-	getLatestCompletedReview,
-	splitReviews
-} from '~/features/reviews/utils/reviewCollections'
-import {
-	getReviewCreatedToastActionLabel,
-	getReviewCreatedToastDescription
-} from '~/features/reviews/utils/reviewToastDescription'
-import type { SearchResultItem } from '~/features/search/types/search.types'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
-import { useTopic } from '~/features/topics/api/getTopic'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
+import { useReviewCard } from '~/modules/review-cards/api/getReviewCard'
+import { useUpdateReviewCard } from '~/modules/review-cards/api/updateReviewCard'
+import {
+	toFreshnessTier,
+	toReviewCardStatusBadge
+} from '~/modules/review-cards/components/reviewCardShared'
+import { consumeFocusNewReviewCardPrimaryText } from '~/modules/review-cards/createReviewCardIntent'
+import { useDeleteReviewCardWithUndo } from '~/modules/review-cards/hooks/useDeleteReviewCardWithUndo'
+import { hasScheduledDueReviews } from '~/modules/review-cards/utils/hasScheduledDueReviews'
+import { orderReviewCardStatusBadges } from '~/modules/review-cards/utils/orderReviewCardStatusBadges'
+import { useCreateReview } from '~/modules/reviews/api/createReview'
+import { useReviewsByReviewCard } from '~/modules/reviews/api/getReviews'
+import type { ReviewRatingState } from '~/modules/reviews/components/reviewRatingOptions'
+import { useDetailReviewCounts } from '~/modules/reviews/hooks/useDetailReviewCounts'
+import { useReviewDialog } from '~/modules/reviews/hooks/useReviewDialog'
+import {
+	getLatestCompletedReview,
+	splitReviews
+} from '~/modules/reviews/utils/reviewCollections'
+import {
+	getReviewCreatedToastActionLabel,
+	getReviewCreatedToastDescription
+} from '~/modules/reviews/utils/reviewToastDescription'
+import type { SearchResultItem } from '~/modules/search/types/search.types'
+import { useCreateTopic } from '~/modules/topics/api/createTopic'
+import { useTopic } from '~/modules/topics/api/getTopic'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 import { localDateString } from '~/utils/date'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'

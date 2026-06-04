@@ -15,9 +15,9 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
-import { useSearchAll } from '~/features/search/api/searchAll'
-import { TopicCard } from '~/features/topics/components/TopicCard'
+import { ReviewCard } from '~/modules/review-cards/components/ReviewCard'
+import { useSearchAll } from '~/modules/search/api/searchAll'
+import { TopicCard } from '~/modules/topics/components/TopicCard'
 import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,

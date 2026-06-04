@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { type ReactElement, useCallback } from 'react'
 import { Separator } from '~/components/ui/separator'
-import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
+import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
 import type { TopicDetailReviewCardFilter } from '../topic-detail/shared'
 import { TopicDetailReviewCardFilterControls } from '../topic-detail/TopicDetailReviewCardControls'
 import {

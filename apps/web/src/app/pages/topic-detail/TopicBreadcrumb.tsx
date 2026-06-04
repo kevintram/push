@@ -16,9 +16,9 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
-import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { useElementSize } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
+import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
 
 export type TopicPathItem = {
 	id: number

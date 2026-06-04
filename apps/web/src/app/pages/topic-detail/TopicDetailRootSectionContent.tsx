@@ -1,4 +1,4 @@
-import type { ReviewCard as ReviewCardModel } from '~/features/review-cards/types/review-card.types'
+import type { ReviewCard as ReviewCardModel } from '~/modules/review-cards/types/review-card.types'
 import type {
 	TopicDetailReviewCardControlsVariant,
 	TopicDetailReviewCardFilter

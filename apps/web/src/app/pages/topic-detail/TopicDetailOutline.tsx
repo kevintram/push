@@ -20,10 +20,10 @@ import {
 	ContextMenuTrigger
 } from '~/components/ui/context-menu'
 import { Separator } from '~/components/ui/separator'
-import { TopicTreeItem } from '~/features/topics/components/topic-tree/TopicTreeItem'
-import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
-import { getTopicDisplayTitle } from '~/features/topics/utils/topicTree'
 import { cn } from '~/lib/utils'
+import { TopicTreeItem } from '~/modules/topics/components/topic-tree/TopicTreeItem'
+import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
 import type { TopicDetailReviewCardFilter } from './shared'
 import { TopicDetailOutlineHeader } from './TopicDetailOutlineHeader'
 import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'

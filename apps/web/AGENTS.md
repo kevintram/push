@@ -53,20 +53,21 @@ Button icons inherit their size automatically from the button's `size` variant �
 
 ```
 src/
-├── app/                     # Application shell
+├── app/                     # Application routing and page orchestration
 │   ├── routes/              # TanStack Router file-based routes (no test files here)
 │   ├── pages/               # Page components; complex pages get their own folder
 │   │   ├── topic-detail/    # e.g. TopicDetailPage.tsx + sibling sections + hooks
 │   │   └── review-card-detail/
 │   ├── layouts/             # Layout wrappers (PageLayout, etc.)
-│   ├── components/          # App-level components (AppSidebar, AppHeader, etc.)
+│   ├── components/          # App-level components not owned by a module
 │   ├── hooks/               # App-level hooks
 │   └── __tests__/routes/    # Route-level integration tests
 │
 ├── components/              # Shared cross-domain components
 │   └── ui/                  # shadcn/ui design-system primitives
 │
-├── features/                # Domain feature modules
+├── modules/                 # Product and domain modules
+│   ├── shell/               # App chrome (AppShell, AppHeader, AppSidebar)
 │   ├── review-cards/
 │   ├── reviews/
 │   ├── search/
@@ -87,7 +88,7 @@ e2e/
 
 ### Placement Rules
 
-**Components**: Colocate with the page or feature that owns them. Only promote to `src/components/` when genuinely used across multiple unrelated domains. `src/components/ui/` is reserved for design-system primitives (shadcn/ui).
+**Components**: Colocate with the page or module that owns them. Only promote to `src/components/` when genuinely used across multiple unrelated domains. `src/components/ui/` is reserved for design-system primitives (shadcn/ui).
 
 **Tests**: Place in a `__tests__/` folder next to the code under test. **Exception**: route-level integration tests belong in `src/app/__tests__/routes/` — never inside `src/app/routes/`, because TanStack Router treats every file there as a route module.
 
@@ -95,18 +96,18 @@ e2e/
 
 **Complex pages**: When a page grows, convert it to a folder — `pages/page-name/PageName.tsx` as the orchestration shell, sibling `.tsx` files for sections, and `.ts` files for hooks and utilities.
 
-### Feature Module Structure
+### Module Structure
 
-Each feature is a self-contained domain module:
+Each module is a self-contained product or domain area:
 
 ```
-src/features/<feature>/
+src/modules/<module>/
 ├── api/          # TanStack Query hooks and API request functions
-├── components/   # Components scoped to this feature
-├── hooks/        # Hooks scoped to this feature
-├── types/        # TypeScript types for this feature's domain
-├── utils/        # Utility functions for this feature
-└── index.ts      # Public API — the only sanctioned import surface for code outside this feature
+├── components/   # Components scoped to this module
+├── hooks/        # Hooks scoped to this module
+├── types/        # TypeScript types for this module's domain
+├── utils/        # Utility functions for this module
+└── index.ts      # Public API — the only sanctioned import surface for code outside this module
 ```
 
-Import features through their `index.ts`. Do not reach into a feature's internals from outside its folder.
+Import modules through their `index.ts` when a module exposes one. Do not reach into a module's internals from outside its folder unless the module intentionally has no public barrel yet.

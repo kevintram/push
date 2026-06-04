@@ -6,8 +6,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger
 } from '~/components/ui/dropdown-menu'
-import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
 import { cn } from '~/lib/utils'
+import type { ReviewCardType } from '~/modules/review-cards/types/review-card.types'
 import type {
 	TopicDetailReviewCardControlsVariant,
 	TopicDetailReviewCardFilter

@@ -13,11 +13,11 @@ import {
 	AlertDialogMedia,
 	AlertDialogTitle
 } from '~/components/ui/alert-dialog'
-import type { ReviewCard as ReviewCardModel } from '~/features/review-cards/types/review-card.types'
-import { useCreateTopic } from '~/features/topics/api/createTopic'
-import { useDeleteTopic } from '~/features/topics/api/deleteTopic'
-import { useUpdateTopic } from '~/features/topics/api/updateTopic'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import type { ReviewCard as ReviewCardModel } from '~/modules/review-cards/types/review-card.types'
+import { useCreateTopic } from '~/modules/topics/api/createTopic'
+import { useDeleteTopic } from '~/modules/topics/api/deleteTopic'
+import { useUpdateTopic } from '~/modules/topics/api/updateTopic'
 import type {
 	TopicDetailReviewCardControlsVariant,
 	TopicDetailReviewCardFilter

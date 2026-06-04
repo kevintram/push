@@ -10,9 +10,9 @@ import {
 	useRef
 } from 'react'
 import { TopicDetailOutlineHeader } from '~/app/pages/topic-detail/TopicDetailOutlineHeader'
-import { TopicTreeItem } from '~/features/topics/components/topic-tree/TopicTreeItem'
-import type { TopicTreeNode } from '~/features/topics/utils/topicTree'
 import { cn } from '~/lib/utils'
+import { TopicTreeItem } from '~/modules/topics/components/topic-tree/TopicTreeItem'
+import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
 import { getTopicDetailSectionId } from '../topic-detail/topicDetailStructure'
 
 type LibraryOutlineContentProps = {

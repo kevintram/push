@@ -12,9 +12,9 @@ import {
 	EmptyTitle
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import { useReviewCards } from '~/features/review-cards/api/getReviewCards'
-import { ReviewCard } from '~/features/review-cards/components/ReviewCard'
-import type { ReviewCardType } from '~/features/review-cards/types/review-card.types'
+import { useReviewCards } from '~/modules/review-cards/api/getReviewCards'
+import { ReviewCard } from '~/modules/review-cards/components/ReviewCard'
+import type { ReviewCardType } from '~/modules/review-cards/types/review-card.types'
 import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,

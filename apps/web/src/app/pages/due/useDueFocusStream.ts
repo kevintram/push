@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
-import { useReviewCardQueuePage } from '~/features/review-cards/api/getReviewCardQueue'
+import { useReviewCardQueuePage } from '~/modules/review-cards/api/getReviewCardQueue'
 import type {
 	ReviewCardQueueItem,
 	ReviewFilter,
 	ReviewFocusOrder
-} from '~/features/review-cards/types/review-card.types'
+} from '~/modules/review-cards/types/review-card.types'
 
 function hashSeed(seed: string): number {
 	let hash = 0

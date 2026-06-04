@@ -77,21 +77,21 @@ vi.mock('~/components/ui/tooltip', () => ({
 	TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>
 }))
 
-vi.mock('~/features/reviews/components/ReviewItem', () => ({
+vi.mock('~/modules/reviews/components/ReviewItem', () => ({
 	ReviewItem: ({ entry }: { entry: { description?: string | null } }) => (
 		<div>{entry.description ?? 'Review item'}</div>
 	)
 }))
 
-vi.mock('~/features/reviews/components/ReviewListHeader', () => ({
+vi.mock('~/modules/reviews/components/ReviewListHeader', () => ({
 	ReviewListHeader: () => null
 }))
 
-vi.mock('~/features/reviews/components/RatingDropdown', () => ({
+vi.mock('~/modules/reviews/components/RatingDropdown', () => ({
 	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>
 }))
 
-vi.mock('~/features/reviews/components/reviews-menu/ReviewsMenu', () => ({
+vi.mock('~/modules/reviews/components/reviews-menu/ReviewsMenu', () => ({
 	ReviewsMenu: () => (
 		<button data-testid='reviews-menu' type='button'>
 			Reviews
@@ -99,19 +99,19 @@ vi.mock('~/features/reviews/components/reviews-menu/ReviewsMenu', () => ({
 	)
 }))
 
-vi.mock('~/features/search/components/search-dialog/SearchDialog', () => ({
+vi.mock('~/modules/search/components/search-dialog/SearchDialog', () => ({
 	SearchDialog: () => null
 }))
 
-vi.mock('~/features/review-cards/api/getReviewCard', () => ({
+vi.mock('~/modules/review-cards/api/getReviewCard', () => ({
 	useReviewCard: (...args: Array<unknown>) => useReviewCardMock(...args)
 }))
 
-vi.mock('~/features/topics/api/getTopic', () => ({
+vi.mock('~/modules/topics/api/getTopic', () => ({
 	useTopic: (...args: Array<unknown>) => useTopicMock(...args)
 }))
 
-vi.mock('~/features/reviews/api/getReviews', () => ({
+vi.mock('~/modules/reviews/api/getReviews', () => ({
 	useReview: () => ({
 		data: null,
 		isLoading: false,
@@ -121,23 +121,23 @@ vi.mock('~/features/reviews/api/getReviews', () => ({
 		useReviewsByReviewCardMock(...args)
 }))
 
-vi.mock('~/features/review-cards/api/updateReviewCard', () => ({
+vi.mock('~/modules/review-cards/api/updateReviewCard', () => ({
 	useUpdateReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/topics/api/createTopic', () => ({
+vi.mock('~/modules/topics/api/createTopic', () => ({
 	useCreateTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/review-cards/api/deleteReviewCard', () => ({
+vi.mock('~/modules/review-cards/api/deleteReviewCard', () => ({
 	useDeleteReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/reviews/api/createReview', () => ({
+vi.mock('~/modules/reviews/api/createReview', () => ({
 	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
 }))
 
-vi.mock('~/features/reviews/hooks/useDetailReviewCounts', () => ({
+vi.mock('~/modules/reviews/hooks/useDetailReviewCounts', () => ({
 	useDetailReviewCounts: () => ({
 		pendingCount: 1,
 		overdueCount: 0,
@@ -145,7 +145,7 @@ vi.mock('~/features/reviews/hooks/useDetailReviewCounts', () => ({
 	})
 }))
 
-vi.mock('~/features/reviews/hooks/useReviewDialog', () => ({
+vi.mock('~/modules/reviews/hooks/useReviewDialog', () => ({
 	useReviewDialog: () => ({ openReviewDialog: vi.fn() })
 }))
 
