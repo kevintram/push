@@ -13,7 +13,7 @@
 		"lint:biome": "biome ci --diagnostic-level=error --max-diagnostics=none .",
 		"lint:component-count": "node ./scripts/check-component-count.mjs",
 		"lint": "node ./scripts/run-lint.mjs",
-		"format": "biome format",
+		"format": "biome check --write .",
 		"validate": "pnpm run lint && pnpm run test:ci && pnpm run test:e2e:ci",
 		"build": "vite build",
 		"preview": "vite preview"
