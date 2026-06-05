@@ -4,11 +4,7 @@ import type {
 	PointerEvent as ReactPointerEvent
 } from 'react'
 import { useEffect, useState } from 'react'
-import {
-	SidebarInset,
-	SidebarProvider,
-	useSidebar
-} from '~/components/ui/sidebar'
+import { SidebarProvider, useSidebar } from '~/components/ui/sidebar'
 import { cn } from '~/lib/utils'
 import { AppHeader } from '~/modules/shell/header/AppHeader'
 import { AppSidebar } from '~/modules/shell/sidebar/AppSidebar'
@@ -72,7 +68,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 	return (
 		<SidebarProvider
-			className='bg-[var(--app-shell)]'
+			className='h-svh bg-[var(--app-shell)]'
 			style={
 				{
 					'--sidebar-width': `${sidebarWidth}px`
@@ -86,6 +82,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 	)
 }
 
+/**
+ * Another component so we can use context hook `useSidebar`
+ */
 function AppShellContent({
 	children,
 	onSidebarResizeStart
@@ -93,30 +92,25 @@ function AppShellContent({
 	children: ReactNode
 	onSidebarResizeStart: (event: ReactPointerEvent<HTMLDivElement>) => void
 }) {
-	const { isMobile, state } = useSidebar()
-	const shouldInsetLeft = !isMobile && state === 'collapsed'
+	const { state } = useSidebar()
 
 	return (
 		<>
 			<AppSidebar onResizeStart={onSidebarResizeStart} />
-			<SidebarInset className='!bg-[var(--app-shell)] h-svh'>
-				<div className='relative flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--app-shell)]'>
-					<AppHeader />
-					<div
-						className={cn(
-							'relative min-h-0 min-w-0 flex-1 px-0 pb-0 transition-[padding] duration-200 ease-linear md:pr-2 md:pb-2',
-							shouldInsetLeft && 'md:pl-2'
-						)}
-					>
-						<div
-							className='relative flex h-full min-h-0 min-w-0 flex-1 overflow-hidden border border-[var(--workspace-border)] bg-[var(--workspace-surface)] md:rounded-[1.15rem]'
-							style={{ boxShadow: 'var(--workspace-shadow)' }}
-						>
-							{children}
-						</div>
-					</div>
+			<div className='flex flex-1 flex-col'>
+				<AppHeader />
+				<div
+					className={cn(
+						'min-h-0 min-w-0 flex-1 overflow-y-auto',
+						'border border-[var(--workspace-border)] bg-[var(--workspace-surface)] shadow-[var(--workspace-shadow)]',
+						'md:m-2 md:rounded-[1.15rem]',
+						state === 'expanded' && 'md:ml-0', // when expanded, remove left margin!
+						'transition-[margin] duration-200 ease-linear'
+					)}
+				>
+					{children}
 				</div>
-			</SidebarInset>
+			</div>
 		</>
 	)
 }
