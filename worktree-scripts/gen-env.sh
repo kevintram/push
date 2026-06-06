@@ -10,6 +10,7 @@ WORKTREE_ENV="$ROOT_DIR/.worktree.env"
 
 BASE_API_PORT=8000
 BASE_WEB_PORT=5173
+BASE_WEB_V2_PORT=6173
 MAX_SLOT=15
 
 if ! git -C "$ROOT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -120,15 +121,19 @@ fi
 
 API_PORT=$((BASE_API_PORT + slot))
 WEB_PORT=$((BASE_WEB_PORT + slot))
+WEB_V2_PORT=$((BASE_WEB_V2_PORT + slot))
 API_URL="http://localhost:${API_PORT}"
 APP_URL="http://localhost:${WEB_PORT}"
+APP_V2_URL="http://localhost:${WEB_V2_PORT}"
 
 cat > "$WORKTREE_ENV" <<EOF
 WORKTREE_SLOT=${slot}
 API_PORT=${API_PORT}
 WEB_PORT=${WEB_PORT}
+WEB_V2_PORT=${WEB_V2_PORT}
 API_URL=${API_URL}
 APP_URL=${APP_URL}
+APP_V2_URL=${APP_V2_URL}
 EOF
 
 if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
@@ -185,6 +190,24 @@ if [ -f "$WEB_ENV" ]; then
     set_env_var "$WEB_ENV" "VITE_API_URL" "$API_URL"
     if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
         echo "Updated apps/web/.env.local"
+    fi
+fi
+
+# Create or update apps/web-v2/.env.local
+WEB_V2_ENV="$ROOT_DIR/apps/web-v2/.env.local"
+if [ -d "$ROOT_DIR/apps/web-v2" ]; then
+    if [ ! -f "$WEB_V2_ENV" ]; then
+        if [ -f "$PARENT_DIR/web.env.local" ]; then
+            cp "$PARENT_DIR/web.env.local" "$WEB_V2_ENV"
+            echo "Created apps/web-v2/.env.local"
+        else
+            touch "$WEB_V2_ENV"
+            echo "Created apps/web-v2/.env.local"
+        fi
+    fi
+    set_env_var "$WEB_V2_ENV" "VITE_API_URL" "$API_URL"
+    if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
+        echo "Updated apps/web-v2/.env.local"
     fi
 fi
 
