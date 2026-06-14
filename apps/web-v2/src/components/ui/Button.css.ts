@@ -1,73 +1,242 @@
+import { globalStyle } from '@vanilla-extract/css'
 import { type RecipeVariants, recipe } from '@vanilla-extract/recipes'
 import { vars } from '~/styles/theme.css'
 
-export const button = recipe({
+const focusRing = `0 0 0 3px color-mix(in oklch, ${vars.color.focusRing} 50%, transparent)`
+const destructiveRing = `0 0 0 3px color-mix(in oklch, ${vars.color.destructive} 20%, transparent)`
+
+const buttonVariantRecipe = recipe({
 	base: {
-		height: 36,
 		display: 'inline-flex',
+		flexShrink: 0,
 		alignItems: 'center',
 		justifyContent: 'center',
-		gap: vars.space[2],
 		border: '1px solid transparent',
-		borderRadius: vars.radius.md,
+		borderRadius: vars.radius.lg,
+		backgroundClip: 'padding-box',
 		fontFamily: vars.font.family,
+		fontSize: vars.fontSize.sm,
 		fontWeight: vars.fontWeight.medium,
 		letterSpacing: 0,
 		lineHeight: 1,
 		whiteSpace: 'nowrap',
-		cursor: 'pointer',
-		transition:
-			'background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease',
+		outline: 'none',
+		userSelect: 'none',
+		transition: 'all 150ms ease',
 		selectors: {
 			'&:focus-visible': {
-				outline: `2px solid ${vars.color.focusRing}`,
-				outlineOffset: 2
+				borderColor: vars.color.focusRing,
+				boxShadow: focusRing
+			},
+			'&:active:not([aria-haspopup])': {
+				translate: '0 1px'
 			},
 			'&:disabled': {
-				cursor: 'not-allowed',
-				opacity: 0.55
+				pointerEvents: 'none',
+				opacity: 0.5
+			},
+			'&[aria-invalid="true"]': {
+				borderColor: vars.color.destructive,
+				boxShadow: destructiveRing
 			}
 		}
 	},
 	variants: {
 		variant: {
-			primary: {
-				background: vars.color.foreground,
-				color: vars.color.background,
+			default: {
+				background: vars.color.primary,
+				color: vars.color.primaryForeground,
 				selectors: {
 					'&:hover:not(:disabled)': {
 						background: vars.color.primaryHover
 					}
 				}
 			},
-			secondary: {
-				background: vars.color.surface,
+			outline: {
 				borderColor: vars.color.border,
+				background: vars.color.background,
 				color: vars.color.foreground,
 				selectors: {
 					'&:hover:not(:disabled)': {
-						background: vars.color.surfaceHover
+						background: vars.color.muted,
+						color: vars.color.foreground
+					},
+					'&[aria-expanded="true"]': {
+						background: vars.color.muted,
+						color: vars.color.foreground
+					}
+				}
+			},
+			secondary: {
+				background: vars.color.secondary,
+				color: vars.color.secondaryForeground,
+				selectors: {
+					'&:hover:not(:disabled)': {
+						background: vars.color.secondaryHover
+					},
+					'&[aria-expanded="true"]': {
+						background: vars.color.secondary,
+						color: vars.color.secondaryForeground
+					}
+				}
+			},
+			ghost: {
+				color: vars.color.foreground,
+				selectors: {
+					'&:hover:not(:disabled)': {
+						background: vars.color.muted,
+						color: vars.color.foreground
+					},
+					'&[aria-expanded="true"]': {
+						background: vars.color.muted,
+						color: vars.color.foreground
+					}
+				}
+			},
+			destructive: {
+				background: vars.color.destructiveMuted,
+				color: vars.color.destructive,
+				selectors: {
+					'&:hover:not(:disabled)': {
+						background: `color-mix(in oklch, ${vars.color.destructiveMuted}, ${vars.color.destructive} 8%)`
+					},
+					'&:focus-visible': {
+						borderColor: `color-mix(in oklch, ${vars.color.destructive}, transparent 60%)`,
+						boxShadow: destructiveRing
+					}
+				}
+			},
+			link: {
+				color: vars.color.primary,
+				textUnderlineOffset: 4,
+				selectors: {
+					'&:hover:not(:disabled)': {
+						textDecoration: 'underline'
 					}
 				}
 			}
 		},
 		size: {
-			sm: {
+			default: {
 				height: 32,
-				paddingInline: vars.space[3],
-				fontSize: vars.fontSize.sm
+				gap: vars.space[2],
+				paddingInline: '0.625rem',
+				selectors: {
+					'&:has([data-icon="inline-end"])': {
+						paddingRight: vars.space[2]
+					},
+					'&:has([data-icon="inline-start"])': {
+						paddingLeft: vars.space[2]
+					}
+				}
 			},
-			md: {
+			xs: {
+				height: 24,
+				gap: vars.space[1],
+				borderRadius: `min(${vars.radius.md}, 10px)`,
+				paddingInline: vars.space[2],
+				fontSize: '0.75rem',
+				selectors: {
+					'&:has([data-icon="inline-end"])': {
+						paddingRight: '0.375rem'
+					},
+					'&:has([data-icon="inline-start"])': {
+						paddingLeft: '0.375rem'
+					}
+				}
+			},
+			sm: {
+				height: 28,
+				gap: vars.space[1],
+				borderRadius: `min(${vars.radius.md}, 12px)`,
+				paddingInline: '0.625rem',
+				fontSize: '0.8rem',
+				selectors: {
+					'&:has([data-icon="inline-end"])': {
+						paddingRight: '0.375rem'
+					},
+					'&:has([data-icon="inline-start"])': {
+						paddingLeft: '0.375rem'
+					}
+				}
+			},
+			lg: {
 				height: 36,
-				paddingInline: vars.space[4],
-				fontSize: vars.fontSize.sm
+				gap: vars.space[2],
+				paddingInline: '0.625rem',
+				selectors: {
+					'&:has([data-icon="inline-end"])': {
+						paddingRight: vars.space[2]
+					},
+					'&:has([data-icon="inline-start"])': {
+						paddingLeft: vars.space[2]
+					}
+				}
+			},
+			icon: {
+				width: 32,
+				height: 32
+			},
+			'icon-xs': {
+				width: 24,
+				height: 24,
+				borderRadius: `min(${vars.radius.md}, 10px)`
+			},
+			'icon-sm': {
+				width: 28,
+				height: 28,
+				borderRadius: `min(${vars.radius.md}, 12px)`
+			},
+			'icon-lg': {
+				width: 36,
+				height: 36
 			}
 		}
 	},
 	defaultVariants: {
-		size: 'md',
-		variant: 'primary'
+		size: 'default',
+		variant: 'default'
 	}
 })
 
-export type ButtonVariants = RecipeVariants<typeof button>
+// vanilla-extract recipe selectors cannot target descendants, so SVG defaults
+// live in globalStyle. The size-* guard lets explicit icon size classes win.
+globalStyle(`${buttonVariantRecipe.classNames.base} svg`, {
+	pointerEvents: 'none',
+	flexShrink: 0
+})
+
+globalStyle(
+	`${buttonVariantRecipe.classNames.base} svg:not([class*="size-"])`,
+	{
+		width: 16,
+		height: 16
+	}
+)
+
+globalStyle(
+	`${buttonVariantRecipe.classNames.variants.size.xs} svg:not([class*="size-"])`,
+	{
+		width: 12,
+		height: 12
+	}
+)
+
+globalStyle(
+	`${buttonVariantRecipe.classNames.variants.size.sm} svg:not([class*="size-"])`,
+	{
+		width: 14,
+		height: 14
+	}
+)
+
+globalStyle(
+	`${buttonVariantRecipe.classNames.variants.size['icon-xs']} svg:not([class*="size-"])`,
+	{
+		width: 12,
+		height: 12
+	}
+)
+
+export const buttonVariants = buttonVariantRecipe
+export type ButtonVariants = RecipeVariants<typeof buttonVariantRecipe>
