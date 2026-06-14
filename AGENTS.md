@@ -8,9 +8,10 @@ This is a monorepo containing multiple independent but related applications:
 
 1. `apps/api/` - Python FastAPI service for all the frontend applications (deployed as `api.3gulp.com`)
 2. `apps/web/` - React/TypeScript web application (deployed as `app.3gulp.com`)
-3. `apps/android/` - Kotlin native Android application **(development not started yet)**
-4. `apps/ios/` -  Swift native iOS application **(development not started yet)**
-5. `apps/site/` - Astro landing page (deployed as `3gulp.com )
+3. `apps/web-v2/` - React/TypeScript Vite application
+4. `apps/android/` - Kotlin native Android application **(development not started yet)**
+5. `apps/ios/` -  Swift native iOS application **(development not started yet)**
+6. `apps/site/` - Astro landing page (deployed as `3gulp.com`)
 
 The application uses Supabase as a managed postgres database. Configuration, migration, and seed files are located in `supabase/`.
 
@@ -37,6 +38,17 @@ pnpm run lint       # Run tsc, biome lint, and component-count enforcement
 pnpm run validate   # Run full validation pipeline
 ```
 Note: When using worktrees, run `apps/web/run.sh` from the worktree to use the assigned port.
+
+### Web V2 App (`apps/web-v2/`)
+```bash
+pnpm install        # Install dependencies
+pnpm run dev        # Start dev server
+./run.sh            # Start dev server with worktree port (see ## Worktree and Environment Files)
+pnpm run test       # Run tests
+pnpm run lint       # Run tsc, biome lint, and component-count enforcement
+pnpm run validate   # Run full validation pipeline
+```
+Note: When using worktrees, run `apps/web-v2/run.sh` from the worktree to use the assigned port.
 
 ### Landing page (`apps/site/`)
 ```bash
@@ -70,13 +82,13 @@ chore: update root .gitignore
 ```
 ## Worktree and Environment Files
 
-Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`).
+Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`, Web `5173 + S`, Web V2 `6173 + S`).
 
 - **Setup** (`worktree-scripts/add.sh`):
   1. Claims a slot in `worktree-slots.toml`
-  2. Generates all environment files via `worktree-scripts/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, and `apps/web/.env.local`
-  3. Generates run scripts for api and web: `apps/api/run.sh` and `apps/web/run.sh`
-- **Dev servers**: Run `apps/api/run.sh` or `apps/web/run.sh` to start on the assigned port (runs `gen-env.sh` to refresh env files and recreate any missing ones).
+  2. Generates all environment files via `worktree-scripts/gen-env.sh`: `.worktree.env`, `.env`, `apps/api/.env`, `apps/web/.env.local`, and `apps/web-v2/.env.local`
+  3. Generates run scripts for api, web, and web-v2: `apps/api/run.sh`, `apps/web/run.sh`, and `apps/web-v2/run.sh`
+- **Dev servers**: Run `apps/api/run.sh`, `apps/web/run.sh`, or `apps/web-v2/run.sh` to start on the assigned port (runs `gen-env.sh` to refresh env files and recreate any missing ones).
 - **Teardown**: `worktree-scripts/remove.sh` removes the worktree and frees its slot.
 
 ## E2E Validation

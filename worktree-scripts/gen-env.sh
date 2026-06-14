@@ -168,9 +168,10 @@ if [ ! -f "$API_ENV" ]; then
 fi
 if [ -f "$API_ENV" ]; then
     set_env_var "$API_ENV" "APP_URL" "$APP_URL"
+    set_env_var "$API_ENV" "APP_V2_URL" "$APP_V2_URL"
     set_env_var "$API_ENV" "API_URL" "$API_URL"
     set_env_var "$API_ENV" "DOMAIN" "localhost"
-    set_env_var "$API_ENV" "CORS_ALLOWED_ORIGINS" "$APP_URL"
+    set_env_var "$API_ENV" "CORS_ALLOWED_ORIGINS" "$APP_URL,$APP_V2_URL"
     if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
         echo "Updated apps/api/.env"
     fi
