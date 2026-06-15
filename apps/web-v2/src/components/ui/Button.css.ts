@@ -1,12 +1,16 @@
-import { globalStyle } from '@vanilla-extract/css'
+import { createVar, globalStyle } from '@vanilla-extract/css'
 import { type RecipeVariants, recipe } from '@vanilla-extract/recipes'
 import { vars } from '~/styles/theme.css'
 
 const focusRing = `0 0 0 3px color-mix(in oklch, ${vars.color.focusRing} 50%, transparent)`
 const destructiveRing = `0 0 0 3px color-mix(in oklch, ${vars.color.destructive} 20%, transparent)`
 
+// Per-size icon dimension; the cascade picks the right value per variant.
+const iconSize = createVar()
+
 const buttonVariantRecipe = recipe({
 	base: {
+		vars: { [iconSize]: '16px' },
 		display: 'inline-flex',
 		flexShrink: 0,
 		alignItems: 'center',
@@ -131,6 +135,7 @@ const buttonVariantRecipe = recipe({
 				}
 			},
 			xs: {
+				vars: { [iconSize]: '12px' },
 				height: 24,
 				gap: vars.space[1],
 				borderRadius: `min(${vars.radius.md}, 10px)`,
@@ -146,6 +151,7 @@ const buttonVariantRecipe = recipe({
 				}
 			},
 			sm: {
+				vars: { [iconSize]: '14px' },
 				height: 28,
 				gap: vars.space[1],
 				borderRadius: `min(${vars.radius.md}, 12px)`,
@@ -178,6 +184,7 @@ const buttonVariantRecipe = recipe({
 				height: 32
 			},
 			'icon-xs': {
+				vars: { [iconSize]: '12px' },
 				width: 24,
 				height: 24,
 				borderRadius: `min(${vars.radius.md}, 10px)`
@@ -200,43 +207,14 @@ const buttonVariantRecipe = recipe({
 })
 
 // vanilla-extract recipe selectors cannot target descendants, so SVG defaults
-// live in globalStyle. The size-* guard lets explicit icon size classes win.
+// live in globalStyle. Size flows through the iconSize custom property, which
+// each size variant overrides via the cascade.
 globalStyle(`${buttonVariantRecipe.classNames.base} svg`, {
 	pointerEvents: 'none',
-	flexShrink: 0
+	flexShrink: 0,
+	width: iconSize,
+	height: iconSize
 })
-
-globalStyle(
-	`${buttonVariantRecipe.classNames.base} svg:not([class*="size-"])`,
-	{
-		width: 16,
-		height: 16
-	}
-)
-
-globalStyle(
-	`${buttonVariantRecipe.classNames.variants.size.xs} svg:not([class*="size-"])`,
-	{
-		width: 12,
-		height: 12
-	}
-)
-
-globalStyle(
-	`${buttonVariantRecipe.classNames.variants.size.sm} svg:not([class*="size-"])`,
-	{
-		width: 14,
-		height: 14
-	}
-)
-
-globalStyle(
-	`${buttonVariantRecipe.classNames.variants.size['icon-xs']} svg:not([class*="size-"])`,
-	{
-		width: 12,
-		height: 12
-	}
-)
 
 export const buttonVariants = buttonVariantRecipe
 export type ButtonVariants = RecipeVariants<typeof buttonVariantRecipe>
