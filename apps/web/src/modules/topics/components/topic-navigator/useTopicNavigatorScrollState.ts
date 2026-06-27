@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
 import {
 	TOPIC_NAVIGATOR_DRAG_SCROLL_EDGE_THRESHOLD_PX,
-	TOPIC_NAVIGATOR_DRAG_SCROLL_MAX_STEP_PX
+	TOPIC_NAVIGATOR_DRAG_SCROLL_MAX_STEP_PX,
 } from './TopicNavigator.shared'
 
 type UseTopicNavigatorScrollStateOptions = {
@@ -24,7 +26,7 @@ export function useTopicNavigatorScrollState({
 	error,
 	expandedIdSet,
 	isLoading,
-	nodeById
+	nodeById,
 }: UseTopicNavigatorScrollStateOptions) {
 	const itemElementsRef = useRef(new Map<number, HTMLLIElement>())
 	const scrollContainerRef = useRef<HTMLElement | null>(null)
@@ -33,8 +35,10 @@ export function useTopicNavigatorScrollState({
 	const dragScrollFrameRef = useRef<number | null>(null)
 	const isActiveTopicReadyToScroll = useMemo(
 		() =>
-			activeBranchIds.slice(0, -1).every(topicId => expandedIdSet.has(topicId)),
-		[activeBranchIds, expandedIdSet]
+			activeBranchIds
+				.slice(0, -1)
+				.every(topicId => expandedIdSet.has(topicId)),
+		[activeBranchIds, expandedIdSet],
 	)
 
 	const stopDragAutoScroll = useCallback(() => {
@@ -56,19 +60,22 @@ export function useTopicNavigatorScrollState({
 		(topicId: number) => {
 			cancelActiveItemScroll()
 
-			activeItemScrollFrameRef.current = window.requestAnimationFrame(() => {
-				activeItemScrollFrameRef.current = null
+			activeItemScrollFrameRef.current = window.requestAnimationFrame(
+				() => {
+					activeItemScrollFrameRef.current = null
 
-				const activeItemElement = itemElementsRef.current.get(topicId)
-				if (!activeItemElement) return
+					const activeItemElement =
+						itemElementsRef.current.get(topicId)
+					if (!activeItemElement) return
 
-				activeItemElement.scrollIntoView({
-					block: 'nearest',
-					behavior: 'smooth'
-				})
-			})
+					activeItemElement.scrollIntoView({
+						block: 'nearest',
+						behavior: 'smooth',
+					})
+				},
+			)
 		},
-		[cancelActiveItemScroll]
+		[cancelActiveItemScroll],
 	)
 
 	useEffect(() => {
@@ -88,7 +95,7 @@ export function useTopicNavigatorScrollState({
 		isActiveTopicReadyToScroll,
 		isLoading,
 		nodeById,
-		scheduleActiveTopicScroll
+		scheduleActiveTopicScroll,
 	])
 
 	useEffect(() => {
@@ -98,7 +105,8 @@ export function useTopicNavigatorScrollState({
 		}
 
 		const stepAutoScroll = () => {
-			dragScrollFrameRef.current = window.requestAnimationFrame(stepAutoScroll)
+			dragScrollFrameRef.current =
+				window.requestAnimationFrame(stepAutoScroll)
 
 			const scrollContainer = scrollContainerRef.current
 			const pointerPosition = dragPointerPositionRef.current
@@ -117,23 +125,25 @@ export function useTopicNavigatorScrollState({
 
 			if (
 				pointerPosition.y <
-				containerRect.top + TOPIC_NAVIGATOR_DRAG_SCROLL_EDGE_THRESHOLD_PX
+				containerRect.top +
+					TOPIC_NAVIGATOR_DRAG_SCROLL_EDGE_THRESHOLD_PX
 			) {
 				scrollDelta = -Math.ceil(
 					(containerRect.top +
 						TOPIC_NAVIGATOR_DRAG_SCROLL_EDGE_THRESHOLD_PX -
 						pointerPosition.y) /
-						6
+						6,
 				)
 			} else if (
 				pointerPosition.y >
-				containerRect.bottom - TOPIC_NAVIGATOR_DRAG_SCROLL_EDGE_THRESHOLD_PX
+				containerRect.bottom -
+					TOPIC_NAVIGATOR_DRAG_SCROLL_EDGE_THRESHOLD_PX
 			) {
 				scrollDelta = Math.ceil(
 					(pointerPosition.y -
 						(containerRect.bottom -
 							TOPIC_NAVIGATOR_DRAG_SCROLL_EDGE_THRESHOLD_PX)) /
-						6
+						6,
 				)
 			}
 
@@ -141,7 +151,7 @@ export function useTopicNavigatorScrollState({
 
 			const clampedScrollDelta = Math.max(
 				-TOPIC_NAVIGATOR_DRAG_SCROLL_MAX_STEP_PX,
-				Math.min(scrollDelta, TOPIC_NAVIGATOR_DRAG_SCROLL_MAX_STEP_PX)
+				Math.min(scrollDelta, TOPIC_NAVIGATOR_DRAG_SCROLL_MAX_STEP_PX),
 			)
 			scrollContainer.scrollTop += clampedScrollDelta
 		}
@@ -149,12 +159,13 @@ export function useTopicNavigatorScrollState({
 		const handlePointerMove = (event: PointerEvent) => {
 			dragPointerPositionRef.current = {
 				x: event.clientX,
-				y: event.clientY
+				y: event.clientY,
 			}
 		}
 
 		window.addEventListener('pointermove', handlePointerMove)
-		dragScrollFrameRef.current = window.requestAnimationFrame(stepAutoScroll)
+		dragScrollFrameRef.current =
+			window.requestAnimationFrame(stepAutoScroll)
 
 		return () => {
 			window.removeEventListener('pointermove', handlePointerMove)
@@ -167,7 +178,7 @@ export function useTopicNavigatorScrollState({
 			stopDragAutoScroll()
 			cancelActiveItemScroll()
 		},
-		[cancelActiveItemScroll, stopDragAutoScroll]
+		[cancelActiveItemScroll, stopDragAutoScroll],
 	)
 
 	return {
@@ -186,6 +197,6 @@ export function useTopicNavigatorScrollState({
 
 			itemElementsRef.current.set(topicId, element)
 		},
-		stopDragAutoScroll
+		stopDragAutoScroll,
 	}
 }

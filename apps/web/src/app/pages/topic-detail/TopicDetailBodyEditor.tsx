@@ -1,8 +1,9 @@
-import type { Dispatch, SetStateAction } from 'react'
+import { type Dispatch, type SetStateAction } from 'react'
 
 import { RevealPanel, type RevealPanelTab } from '~/components/RevealPanel'
 import { Badge } from '~/components/ui/badge'
 import { Textarea } from '~/components/ui/textarea'
+
 import { EMPTY_BADGE_CLASSNAME } from './shared'
 
 export function TopicDetailBodyEditor({
@@ -18,7 +19,7 @@ export function TopicDetailBodyEditor({
 	revealPanelTab,
 	setBody,
 	setGuessBodyText,
-	setRevealPanelTab
+	setRevealPanelTab,
 }: {
 	body: string
 	flushBody: () => void

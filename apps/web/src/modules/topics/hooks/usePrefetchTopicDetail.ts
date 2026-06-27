@@ -19,7 +19,7 @@ export function usePrefetchTopicDetail(topicId: number | null | undefined) {
 
 		router.preloadRoute({
 			to: '/topics/$topicId',
-			params: { topicId: topicId.toString() }
+			params: { topicId: topicId.toString() },
 		})
 	}, [router, topicId])
 
@@ -39,7 +39,7 @@ export function usePrefetchTopicDetail(topicId: number | null | undefined) {
 				preloadTopicDetail()
 			}, delay)
 		},
-		[cancelTopicDetailPreload, preloadTopicDetail, topicId]
+		[cancelTopicDetailPreload, preloadTopicDetail, topicId],
 	)
 
 	useEffect(() => cancelTopicDetailPreload, [cancelTopicDetailPreload])
@@ -47,6 +47,6 @@ export function usePrefetchTopicDetail(topicId: number | null | undefined) {
 	return {
 		preloadTopicDetail,
 		scheduleTopicDetailPreload,
-		cancelTopicDetailPreload
+		cancelTopicDetailPreload,
 	}
 }

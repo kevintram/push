@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+
 import {
 	areNumberArraysEqual,
 	getStoredExpandedTopicIds,
-	TOPIC_NAVIGATOR_EXPANDED_IDS_STORAGE_KEY
+	TOPIC_NAVIGATOR_EXPANDED_IDS_STORAGE_KEY,
 } from './TopicNavigator.shared'
 import { mergeExpandedTopicIds } from './topicNavigatorUtils'
 
@@ -17,7 +18,7 @@ export function useTopicNavigatorExpansionState({
 	activeBranchIds,
 	error,
 	isLoading,
-	validTopicIds
+	validTopicIds,
 }: UseTopicNavigatorExpansionStateOptions) {
 	const [expandedIds, setExpandedIds] = useState(getStoredExpandedTopicIds)
 	const expandedIdSet = useMemo(() => new Set(expandedIds), [expandedIds])
@@ -28,7 +29,7 @@ export function useTopicNavigatorExpansionState({
 
 		window.localStorage.setItem(
 			TOPIC_NAVIGATOR_EXPANDED_IDS_STORAGE_KEY,
-			JSON.stringify(expandedIds)
+			JSON.stringify(expandedIds),
 		)
 	}, [expandedIds])
 
@@ -39,7 +40,7 @@ export function useTopicNavigatorExpansionState({
 			const nextExpandedIds = mergeExpandedTopicIds({
 				expandedIds: previousExpandedIds,
 				idsToExpand: activeBranchIds,
-				validTopicIds
+				validTopicIds,
 			})
 
 			return areNumberArraysEqual(previousExpandedIds, nextExpandedIds)
@@ -52,7 +53,7 @@ export function useTopicNavigatorExpansionState({
 		setExpandedIds(previousExpandedIds =>
 			previousExpandedIds.includes(topicId)
 				? previousExpandedIds
-				: [...previousExpandedIds, topicId]
+				: [...previousExpandedIds, topicId],
 		)
 	}, [])
 
@@ -60,7 +61,7 @@ export function useTopicNavigatorExpansionState({
 		setExpandedIds(previousExpandedIds =>
 			previousExpandedIds.includes(topicId)
 				? previousExpandedIds.filter(id => id !== topicId)
-				: [...previousExpandedIds, topicId]
+				: [...previousExpandedIds, topicId],
 		)
 	}, [])
 
@@ -73,6 +74,6 @@ export function useTopicNavigatorExpansionState({
 		ensureExpanded,
 		expandedIdSet,
 		setExpandedIds,
-		toggleExpanded
+		toggleExpanded,
 	}
 }

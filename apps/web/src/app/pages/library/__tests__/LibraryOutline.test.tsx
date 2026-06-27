@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { MouseEvent, ReactNode } from 'react'
+import { type MouseEvent, type ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+
 import { LibraryOutline } from '../LibraryOutline'
 
 const navigateMock = vi.fn()
@@ -11,7 +12,8 @@ const handleDialogOpenChangeMock = vi.fn()
 const setPendingDeleteTopicIdMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
 		Link: ({
@@ -42,7 +44,7 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 				{children}
 			</a>
 		),
-		useNavigate: () => navigateMock
+		useNavigate: () => navigateMock,
 	}
 })
 
@@ -59,8 +61,8 @@ vi.mock('~/app/pages/topic-detail/useTopicDetailOutline', () => ({
 		pendingDeleteTopicId: null,
 		setPendingDeleteTopicId: setPendingDeleteTopicIdMock,
 		suppressSelectionRef: { current: false },
-		toggleExpanded: vi.fn()
-	})
+		toggleExpanded: vi.fn(),
+	}),
 }))
 
 vi.mock('~/app/pages/topic-detail/useTopicDetailOutlineSizing', () => ({
@@ -74,15 +76,15 @@ vi.mock('~/app/pages/topic-detail/useTopicDetailOutlineSizing', () => ({
 		outlineNavRef: vi.fn(),
 		outlineRef: vi.fn(),
 		registerOutlineItemRef: vi.fn(),
-		resizeButtonRef: vi.fn()
-	})
+		resizeButtonRef: vi.fn(),
+	}),
 }))
 
 vi.mock('~/modules/topics/components/topic-tree/TopicTreeItem', () => ({
 	TopicTreeItem: ({
 		node,
 		renderPrimaryAction,
-		suppressSelectionRef
+		suppressSelectionRef,
 	}: {
 		node: { id: number; title: string; body: string }
 		renderPrimaryAction: (props: {
@@ -98,10 +100,10 @@ vi.mock('~/modules/topics/components/topic-tree/TopicTreeItem', () => ({
 				className: 'outline-link',
 				label: node.title,
 				node,
-				suppressSelectionRef
+				suppressSelectionRef,
 			})}
 		</li>
-	)
+	),
 }))
 
 describe('LibraryOutline', () => {
@@ -131,9 +133,9 @@ describe('LibraryOutline', () => {
 							parent_title: null,
 							inserted_at: '',
 							updated_at: '',
-							children: []
-						}
-					]
+							children: [],
+						},
+					],
 				}}
 				nodeById={
 					new Map([
@@ -147,9 +149,9 @@ describe('LibraryOutline', () => {
 								parent_title: null,
 								inserted_at: '',
 								updated_at: '',
-								children: []
-							}
-						]
+								children: [],
+							},
+						],
 					])
 				}
 				onCreateRootTopic={vi.fn()}
@@ -162,16 +164,16 @@ describe('LibraryOutline', () => {
 				pendingCreatedTopicId={null}
 				sectionNumberById={new Map([[1, '1']])}
 				visibleSectionIds={[0]}
-			/>
+			/>,
 		)
 
 		expect(screen.getByRole('link', { name: 'Library' })).toHaveAttribute(
 			'href',
-			'/library#topic-0'
+			'/library#topic-0',
 		)
 		expect(screen.getByRole('link', { name: '1 Algebra' })).toHaveAttribute(
 			'href',
-			'/library#topic-1'
+			'/library#topic-1',
 		)
 
 		await user.click(screen.getByRole('link', { name: 'Library' }))

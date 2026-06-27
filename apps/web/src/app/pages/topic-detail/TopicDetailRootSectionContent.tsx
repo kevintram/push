@@ -1,13 +1,14 @@
-import type { ReviewCard as ReviewCardModel } from '~/modules/review-cards/types/review-card.types'
-import type {
-	TopicDetailReviewCardControlsVariant,
-	TopicDetailReviewCardFilter
+import { type ReviewCard as ReviewCardModel } from '~/modules/review-cards/types/review-card.types'
+
+import {
+	type TopicDetailReviewCardControlsVariant,
+	type TopicDetailReviewCardFilter,
 } from './shared'
-import { TopicDetailSection } from './TopicDetailSection'
 import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
+import { TopicDetailSection } from './TopicDetailSection'
 import {
 	getTopicDetailLabel,
-	type TopicDetailSectionNode
+	type TopicDetailSectionNode,
 } from './topicDetailStructure'
 import { useTopicDetailSectionPanels } from './useTopicDetailSectionPanels'
 
@@ -23,16 +24,16 @@ type TopicDetailRootSectionContentProps = {
 	onSubtopicCreated: (parentTopicId: number, createdTopicId: number) => void
 	onSectionFilterChange: (
 		topicId: number,
-		filter: TopicDetailReviewCardFilter
+		filter: TopicDetailReviewCardFilter,
 	) => void
 	isReviewCardsLoading: boolean
 	registerSectionHeadingRef: (
 		topicId: number,
-		element: HTMLElement | null
+		element: HTMLElement | null,
 	) => void
 	registerSectionTitleRef: (
 		topicId: number,
-		element: HTMLTextAreaElement | null
+		element: HTMLTextAreaElement | null,
 	) => void
 	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
 	resolvedFilterByTopicId: Record<number, TopicDetailReviewCardFilter>
@@ -63,11 +64,11 @@ export function TopicDetailRootSectionContent({
 	searchFilter,
 	section,
 	toggleSection,
-	topicReviewCardsById
+	topicReviewCardsById,
 }: TopicDetailRootSectionContentProps) {
 	const sectionLabel = getTopicDetailLabel(
 		section.topic.title,
-		section.topic.body
+		section.topic.body,
 	)
 	const resolvedSectionFilter =
 		resolvedFilterByTopicId[section.topic.id] ?? globalFilter
@@ -80,7 +81,7 @@ export function TopicDetailRootSectionContent({
 		section,
 		sectionLabel,
 		isReviewCardsLoading,
-		topicReviewCardsById
+		topicReviewCardsById,
 	})
 
 	return (
@@ -112,11 +113,15 @@ export function TopicDetailRootSectionContent({
 							onPreserveSectionOffset={onPreserveSectionOffset}
 							onSectionFilterChange={onSectionFilterChange}
 							onSubtopicCreated={onSubtopicCreated}
-							registerSectionHeadingRef={registerSectionHeadingRef}
+							registerSectionHeadingRef={
+								registerSectionHeadingRef
+							}
 							registerSectionRef={registerSectionRef}
 							registerSectionTitleRef={registerSectionTitleRef}
 							resolvedFilterByTopicId={resolvedFilterByTopicId}
-							reviewCardControlsVariant={reviewCardControlsVariant}
+							reviewCardControlsVariant={
+								reviewCardControlsVariant
+							}
 							searchFilter={searchFilter}
 							section={childSection}
 							toggleSection={toggleSection}

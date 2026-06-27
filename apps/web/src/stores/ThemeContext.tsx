@@ -1,8 +1,8 @@
 import {
 	ThemeProvider as NextThemesProvider,
-	useTheme as useNextTheme
+	useTheme as useNextTheme,
 } from 'next-themes'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 export type Theme = 'dark' | 'light' | 'system'
 export type ResolvedTheme = Exclude<Theme, 'system'>
@@ -24,7 +24,7 @@ type UseThemeResult = {
 export function ThemeProvider({
 	children,
 	defaultTheme = 'system',
-	storageKey = 'vite-ui-theme'
+	storageKey = 'vite-ui-theme',
 }: ThemeProviderProps) {
 	return (
 		<NextThemesProvider
@@ -46,6 +46,6 @@ export function useTheme(): UseThemeResult {
 		resolvedTheme: theme.resolvedTheme as ResolvedTheme | undefined,
 		setTheme: theme.setTheme as (theme: Theme) => void,
 		systemTheme: theme.systemTheme as ResolvedTheme | undefined,
-		themes: theme.themes
+		themes: theme.themes,
 	}
 }

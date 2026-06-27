@@ -13,12 +13,13 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogMedia,
-	AlertDialogTitle
+	AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import { Badge } from '~/components/ui/badge'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useTopicTreeActions } from '~/modules/topics/hooks/useTopicTreeActions'
 import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
+
 import { TopicNavigatorItem } from './TopicNavigatorItem'
 import { TopicNavigatorRootDropZone } from './TopicNavigatorRootDropZone'
 import { createRootDropId } from './topicNavigatorUtils'
@@ -37,7 +38,7 @@ export function TopicNavigator({
 	autoScrollActiveTopic = false,
 	enableDragAndDrop = false,
 	onCollapseAllReady,
-	onNavigate
+	onNavigate,
 }: TopicNavigatorProps) {
 	const navigate = useNavigate()
 	const {
@@ -63,10 +64,10 @@ export function TopicNavigator({
 		setHoveredTopicId,
 		setItemRef,
 		suppressNavigationRef,
-		toggleExpanded
+		toggleExpanded,
 	} = useTopicNavigatorContent({
 		activeTopicId,
-		autoScrollActiveTopic
+		autoScrollActiveTopic,
 	})
 	const {
 		handleConfirmDeleteTopic,
@@ -75,7 +76,7 @@ export function TopicNavigator({
 		isDeletingTopic,
 		pendingDeleteTopic,
 		pendingDeleteTopicId,
-		setPendingDeleteTopicId
+		setPendingDeleteTopicId,
 	} = useTopicTreeActions({
 		activeTopicId,
 		ancestorIdsById,
@@ -83,13 +84,13 @@ export function TopicNavigator({
 		onAfterCreateSubtopic: parentTopicId => {
 			ensureExpanded(parentTopicId)
 		},
-		onAfterRouteChange: onNavigate
+		onAfterRouteChange: onNavigate,
 	})
 	const isTreeMutating = isUpdatingTopic || isDeletingTopic
 	const handleOpenTopic = (topicId: number) => {
 		navigate({
 			to: '/topics/$topicId',
-			params: { topicId: topicId.toString() }
+			params: { topicId: topicId.toString() },
 		})
 			.then(() => {
 				onNavigate?.()
@@ -115,7 +116,9 @@ export function TopicNavigator({
 
 	if (roots.length === 0) {
 		return (
-			<p className='px-3 py-2 text-muted-foreground text-sm'>No topics yet.</p>
+			<p className='px-3 py-2 text-muted-foreground text-sm'>
+				No topics yet.
+			</p>
 		)
 	}
 

@@ -1,14 +1,16 @@
 import { useNavigate } from '@tanstack/react-router'
 import { CalendarIcon, Focus } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
+
 import { PageLayout } from '~/app/layouts/PageLayout'
 import { Toggle } from '~/components/ui/toggle'
 import { useReviewCardQueueCounts } from '~/modules/review-cards/hooks/useReviewCardQueueCounts'
-import type { ReviewFocusSearch } from '~/modules/review-cards/reviewFocusSearch'
-import type {
-	ReviewFilter,
-	ReviewFocusOrder
+import { type ReviewFocusSearch } from '~/modules/review-cards/reviewFocusSearch'
+import {
+	type ReviewFilter,
+	type ReviewFocusOrder,
 } from '~/modules/review-cards/types/review-card.types'
+
 import { DueHeaderControls, DueQueueStatusBadges } from './DueHeaderControls'
 
 interface DuePageLayoutProps {
@@ -32,11 +34,11 @@ export function DuePageLayout({
 	onFilterChange,
 	onOrderChange,
 	onShuffle,
-	order
+	order,
 }: DuePageLayoutProps) {
 	const navigate = useNavigate()
 	const { dueTodayCount, newCount, overdueCount } = useReviewCardQueueCounts({
-		filter: 'all'
+		filter: 'all',
 	})
 	const practiceCounts = useReviewCardQueueCounts({ filter: 'practice' })
 	const flashcardsCounts = useReviewCardQueueCounts({ filter: 'flashcards' })
@@ -82,7 +84,7 @@ export function DuePageLayout({
 						filter={filter}
 						filterStatusCounts={{
 							flashcards: flashcardsCounts,
-							practice: practiceCounts
+							practice: practiceCounts,
 						}}
 						onFilterChange={onFilterChange}
 						onOrderChange={onOrderChange}

@@ -10,7 +10,7 @@ const COMPONENT_WRAPPER_NAMES = new Set([
 	'memo',
 	'forwardRef',
 	'lazy',
-	'observer'
+	'observer',
 ])
 
 function collectTsxFiles(dirPath) {
@@ -62,7 +62,7 @@ function hasJsxLikeSyntax(node) {
 			ts.isCallExpression(currentNode) &&
 			((ts.isIdentifier(currentNode.expression) &&
 				['jsx', 'jsxs', '_jsx', '_jsxs'].includes(
-					currentNode.expression.text
+					currentNode.expression.text,
 				)) ||
 				(ts.isPropertyAccessExpression(currentNode.expression) &&
 					currentNode.expression.name.text === 'createElement'))
@@ -108,7 +108,7 @@ function createComponentDeclarationIndex(sourceFile) {
 			declarationsByName.set(statement.name.text, {
 				name: statement.name.text,
 				node: statement,
-				kind: 'function'
+				kind: 'function',
 			})
 			continue
 		}
@@ -126,7 +126,7 @@ function createComponentDeclarationIndex(sourceFile) {
 			declarationsByName.set(declaration.name.text, {
 				name: declaration.name.text,
 				node: declaration,
-				kind: 'variable'
+				kind: 'variable',
 			})
 		}
 	}
@@ -159,7 +159,7 @@ function isLazyInitializer(expression) {
 function isComponentInitializer(
 	expression,
 	declarationsByName,
-	seenNames = new Set()
+	seenNames = new Set(),
 ) {
 	const normalizedExpression = unwrapExpression(expression)
 
@@ -170,7 +170,7 @@ function isComponentInitializer(
 	if (!ts.isCallExpression(normalizedExpression)) return false
 
 	const callName = getCallName(
-		unwrapExpression(normalizedExpression.expression)
+		unwrapExpression(normalizedExpression.expression),
 	)
 	if (
 		callName === null ||
@@ -188,7 +188,10 @@ function isComponentInitializer(
 
 	if (ts.isIdentifier(firstArgument)) {
 		const referencedDeclaration = declarationsByName.get(firstArgument.text)
-		if (referencedDeclaration === null || seenNames.has(firstArgument.text)) {
+		if (
+			referencedDeclaration === null ||
+			seenNames.has(firstArgument.text)
+		) {
 			return false
 		}
 
@@ -197,7 +200,7 @@ function isComponentInitializer(
 		return isComponentDeclaration(
 			referencedDeclaration,
 			declarationsByName,
-			nextSeenNames
+			nextSeenNames,
 		)
 	}
 
@@ -207,7 +210,7 @@ function isComponentInitializer(
 function isComponentDeclaration(
 	declaration,
 	declarationsByName,
-	seenNames = new Set()
+	seenNames = new Set(),
 ) {
 	if (!isPascalCaseComponentName(declaration.name)) {
 		return false
@@ -215,20 +218,22 @@ function isComponentDeclaration(
 
 	if (declaration.kind === 'function') {
 		return (
-			declaration.node.body !== null && hasJsxLikeSyntax(declaration.node.body)
+			declaration.node.body !== null &&
+			hasJsxLikeSyntax(declaration.node.body)
 		)
 	}
 
 	return isComponentInitializer(
 		declaration.node.initializer,
 		declarationsByName,
-		seenNames
+		seenNames,
 	)
 }
 
 function getNodeLine(sourceFile, node) {
 	return (
-		sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
+		sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile))
+			.line + 1
 	)
 }
 
@@ -238,7 +243,7 @@ function collectTopLevelComponents(source, filePath) {
 		source,
 		ts.ScriptTarget.Latest,
 		true,
-		ts.ScriptKind.TSX
+		ts.ScriptKind.TSX,
 	)
 	const declarationsByName = createComponentDeclarationIndex(sourceFile)
 	const components = []
@@ -248,7 +253,7 @@ function collectTopLevelComponents(source, filePath) {
 
 		components.push({
 			name: declaration.name,
-			line: getNodeLine(sourceFile, declaration.node)
+			line: getNodeLine(sourceFile, declaration.node),
 		})
 	}
 
@@ -264,7 +269,7 @@ const offenders = collectTsxFiles(ROOT_DIR)
 		return {
 			filePath,
 			componentCount: components.length,
-			components
+			components,
 		}
 	})
 	.filter(result => result.componentCount > MAX_COMPONENTS_PER_FILE)

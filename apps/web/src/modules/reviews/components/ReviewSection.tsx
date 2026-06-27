@@ -1,7 +1,9 @@
 import { ChevronDown } from 'lucide-react'
+
 import { Button } from '~/components/ui/button'
 import { CountBadge } from '~/components/ui/count-badge'
-import type { ReviewListItem } from '../types/review.types'
+
+import { type ReviewListItem } from '../types/review.types'
 import { ReviewItem } from './ReviewItem'
 import { ReviewListHeader } from './ReviewListHeader'
 
@@ -26,7 +28,7 @@ export function ReviewSection({
 	entries,
 	isCollapsed,
 	onToggleCollapse,
-	onReviewClick
+	onReviewClick,
 }: ReviewSectionProps) {
 	return (
 		<div className='mb-2'>
@@ -64,7 +66,9 @@ export function ReviewSection({
 							))}
 						</div>
 					) : (
-						<p className='text-muted-foreground text-sm italic'>No reviews</p>
+						<p className='text-muted-foreground text-sm italic'>
+							No reviews
+						</p>
 					)}
 				</div>
 			)}

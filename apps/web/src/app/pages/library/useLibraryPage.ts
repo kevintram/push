@@ -1,11 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { useReviewCards } from '~/modules/review-cards/api/getReviewCards'
 import { useCreateTopic } from '~/modules/topics/api/createTopic'
 import { useTopicTree } from '~/modules/topics/hooks/useTopicTree'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
-import type { TopicDetailReviewCardFilter } from '../topic-detail/shared'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
+import { type TopicDetailReviewCardFilter } from '../topic-detail/shared'
 import { isTopicDetailReviewCardFilter } from '../topic-detail/shared'
 import {
 	buildTopicDetailSectionNumberByIdFromSections,
@@ -13,7 +15,7 @@ import {
 	flattenTopicDetailSectionIdsFromSections,
 	getTopicDetailLabel,
 	groupReviewCardsByTopicId,
-	TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID
+	TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID,
 } from '../topic-detail/topicDetailStructure'
 import { useTopicDetailNavigation } from '../topic-detail/useTopicDetailNavigation'
 import { useLibraryPageTopicCreation } from './useLibraryPageTopicCreation'
@@ -25,7 +27,7 @@ const LIBRARY_ROOT_NODE: Omit<TopicTreeNode, 'children'> = {
 	parent_id: null,
 	parent_title: null,
 	inserted_at: '',
-	updated_at: ''
+	updated_at: '',
 }
 
 type UseLibraryPageOptions = {
@@ -35,7 +37,7 @@ type UseLibraryPageOptions = {
 
 export function useLibraryPage({
 	cardTypeFilter = 'all',
-	onCardTypeFilterChange
+	onCardTypeFilterChange,
 }: UseLibraryPageOptions) {
 	const navigate = useNavigate()
 	const resolvedCardTypeFilter = isTopicDetailReviewCardFilter(cardTypeFilter)
@@ -46,14 +48,14 @@ export function useLibraryPage({
 		error: topicTreeError,
 		isLoading: isTopicTreeLoading,
 		nodeById,
-		roots
+		roots,
 	} = useTopicTree()
 	const {
 		data: reviewCards = [],
 		error: reviewCardsError,
-		isLoading: isReviewCardsLoading
+		isLoading: isReviewCardsLoading,
 	} = useReviewCards({
-		order: 'desc'
+		order: 'desc',
 	})
 	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
 		useCreateTopic()
@@ -68,39 +70,39 @@ export function useLibraryPage({
 	const libraryRootNode = useMemo<TopicTreeNode>(
 		() => ({
 			...LIBRARY_ROOT_NODE,
-			children: roots
+			children: roots,
 		}),
-		[roots]
+		[roots],
 	)
 	const rootSections = useMemo(
 		() =>
 			buildTopicDetailSections(roots, {
-				baseDepth: 1
+				baseDepth: 1,
 			}),
-		[roots]
+		[roots],
 	)
 	const sectionIds = useMemo(
 		() => [
 			TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID,
-			...flattenTopicDetailSectionIdsFromSections(rootSections)
+			...flattenTopicDetailSectionIdsFromSections(rootSections),
 		],
-		[rootSections]
+		[rootSections],
 	)
 	const sectionIdSet = useMemo(() => new Set(sectionIds), [sectionIds])
 	const sectionNumberById = useMemo(
 		() => buildTopicDetailSectionNumberByIdFromSections(rootSections),
-		[rootSections]
+		[rootSections],
 	)
 	const topicReviewCardsById = useMemo(
 		() => groupReviewCardsByTopicId(reviewCards),
-		[reviewCards]
+		[reviewCards],
 	)
 	const {
 		preserveSectionOffset,
 		registerSectionHeadingRef,
 		registerSectionRef,
 		scrollToSection,
-		visibleSectionIds
+		visibleSectionIds,
 	} = useTopicDetailNavigation({
 		onNavigateToHash: (_topicId, hash, mode) =>
 			navigate({
@@ -109,13 +111,15 @@ export function useLibraryPage({
 				hash,
 				replace: mode === 'replace',
 				resetScroll: false,
-				hashScrollIntoView: false
+				hashScrollIntoView: false,
 			}),
-		passiveHashAlignmentEnabled: !(isTopicTreeLoading || isReviewCardsLoading),
+		passiveHashAlignmentEnabled: !(
+			isTopicTreeLoading || isReviewCardsLoading
+		),
 		rootTopicId: TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID,
 		scrollContainerRef,
 		scrollContainerVersion,
-		sectionIds
+		sectionIds,
 	})
 	const {
 		freshTopicId,
@@ -124,7 +128,7 @@ export function useLibraryPage({
 		handleSubtopicCreated,
 		pendingCreatedParentTopicId,
 		pendingCreatedTopicId,
-		registerSectionTitleRef
+		registerSectionTitleRef,
 	} = useLibraryPageTopicCreation({
 		ancestorIdsById,
 		createTopicAsync,
@@ -132,7 +136,7 @@ export function useLibraryPage({
 		isCreatingTopic,
 		nodeById,
 		scrollToSection,
-		sectionIdSet
+		sectionIdSet,
 	})
 
 	const registerScrollContainerRef = useCallback(
@@ -142,7 +146,7 @@ export function useLibraryPage({
 			scrollContainerRef.current = element
 			setScrollContainerVersion(previousVersion => previousVersion + 1)
 		},
-		[]
+		[],
 	)
 
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
@@ -152,25 +156,27 @@ export function useLibraryPage({
 			setSectionFilterOverrides({})
 			onCardTypeFilterChange(filter)
 		},
-		[onCardTypeFilterChange]
+		[onCardTypeFilterChange],
 	)
 
 	const handleSectionFilterChange = useCallback(
 		(topicFilterId: number, filter: TopicDetailReviewCardFilter) => {
 			setSectionFilterOverrides(previousOverrides => {
 				if (filter === resolvedCardTypeFilter) {
-					const { [topicFilterId]: _removedOverride, ...remainingOverrides } =
-						previousOverrides
+					const {
+						[topicFilterId]: _removedOverride,
+						...remainingOverrides
+					} = previousOverrides
 					return remainingOverrides
 				}
 
 				return {
 					...previousOverrides,
-					[topicFilterId]: filter
+					[topicFilterId]: filter,
 				}
 			})
 		},
-		[resolvedCardTypeFilter]
+		[resolvedCardTypeFilter],
 	)
 
 	const handleOpenReviewCard = useCallback(
@@ -178,10 +184,10 @@ export function useLibraryPage({
 			navigate({
 				to: '/review-cards/$reviewCardId',
 				params: { reviewCardId: reviewCardId.toString() },
-				search: { tab: 'home' }
+				search: { tab: 'home' },
 			})
 		},
-		[navigate]
+		[navigate],
 	)
 
 	useEffect(() => {
@@ -219,6 +225,6 @@ export function useLibraryPage({
 		sectionNumberById,
 		toggleSection,
 		topicReviewCardsById,
-		visibleSectionIds
+		visibleSectionIds,
 	}
 }

@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority"
-import type { ComponentProps } from "react"
+import { type ComponentProps } from "react"
 
 import { Separator } from "~/components/ui/separator"
 import { cn } from "~/lib/utils"
@@ -12,13 +12,13 @@ const buttonGroupVariants = cva(
 				horizontal:
 					"[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none",
 				vertical:
-					"flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none"
-			}
+					"flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none",
+			},
 		},
 		defaultVariants: {
-			orientation: "horizontal"
-		}
-	}
+			orientation: "horizontal",
+		},
+	},
 )
 
 function ButtonGroup({
@@ -42,7 +42,7 @@ function ButtonGroupText({ className, ...props }: ComponentProps<"div">) {
 		<div
 			className={cn(
 				"flex items-center gap-2 rounded-md border bg-muted px-4 font-medium text-sm shadow-xs [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none",
-				className
+				className,
 			)}
 			{...props}
 		/>
@@ -58,7 +58,7 @@ function ButtonGroupSeparator({
 		<Separator
 			className={cn(
 				"!m-0 relative self-stretch bg-input data-[orientation=vertical]:h-auto",
-				className
+				className,
 			)}
 			data-slot='button-group-separator'
 			orientation={orientation}
@@ -71,5 +71,5 @@ export {
 	ButtonGroup,
 	ButtonGroupSeparator,
 	ButtonGroupText,
-	buttonGroupVariants
+	buttonGroupVariants,
 }

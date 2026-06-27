@@ -1,27 +1,29 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
-import type { ComponentProps, KeyboardEvent, MouseEvent } from 'react'
+import { type ComponentProps, type KeyboardEvent, type MouseEvent } from 'react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import type { DropdownMenu } from '~/components/ui/dropdown-menu'
+
+import { type DropdownMenu } from '~/components/ui/dropdown-menu'
 import { reviewCardKeys } from '~/modules/review-cards/api/queryKeys'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
 import { reviewsQueryOptions } from '~/modules/reviews/api/getReviews'
 import { reviewQueueKeys } from '~/modules/reviews/api/queryKeys'
 import { useReviewDialog } from '~/modules/reviews/hooks/useReviewDialog'
-import type { Rating } from '~/modules/reviews/types/review.types'
+import { type Rating } from '~/modules/reviews/types/review.types'
 import {
 	getLatestCompletedReview,
-	splitReviews
+	splitReviews,
 } from '~/modules/reviews/utils/reviewCollections'
 import {
 	getReviewCreatedToastActionLabel,
-	getReviewCreatedToastDescription
+	getReviewCreatedToastDescription,
 } from '~/modules/reviews/utils/reviewToastDescription'
 import { searchKeys } from '~/modules/search/api/searchAll'
 import { localDateString } from '~/utils/date'
-import { type ReviewRatingState, ratingOptions } from '../reviewRatingOptions'
-import type { ReviewsMenuProps } from './shared'
+
+import { ratingOptions, type ReviewRatingState } from '../reviewRatingOptions'
+import { type ReviewsMenuProps } from './shared'
 
 type DropdownMenuOpenChangeHandler = NonNullable<
 	ComponentProps<typeof DropdownMenu>['onOpenChange']
@@ -37,7 +39,7 @@ export function useReviewsMenu({
 	onSeeAll,
 	reviewCardId,
 	reviews: providedReviews,
-	triggerCounts
+	triggerCounts,
 }: Pick<
 	ReviewsMenuProps,
 	| 'align'
@@ -65,10 +67,10 @@ export function useReviewsMenu({
 	const {
 		data: queriedReviews,
 		isFetching: isReviewsFetching,
-		isLoading: isReviewsLoading
+		isLoading: isReviewsLoading,
 	} = useQuery({
 		...reviewsQueryOptions({ reviewCardId }),
-		enabled: providedReviews === undefined && isOpen
+		enabled: providedReviews === undefined && isOpen,
 	})
 	const createReviewMutation = useCreateReview()
 	const { openReviewDialog } = useReviewDialog()
@@ -87,22 +89,22 @@ export function useReviewsMenu({
 		hasLiveProvidedReviews,
 		hasLiveQueriedReviews,
 		providedReviews,
-		queriedReviews
+		queriedReviews,
 	])
 
 	const {
 		uncompletedUnscheduledReviews,
 		overdueReviews,
 		todayReviews,
-		upcomingReviews
+		upcomingReviews,
 	} = useMemo(() => splitReviews(reviews), [reviews])
 	const dueReviews = useMemo(
 		() => [...overdueReviews, ...todayReviews],
-		[overdueReviews, todayReviews]
+		[overdueReviews, todayReviews],
 	)
 	const latestCompletedReview = useMemo(
 		() => getLatestCompletedReview(reviews),
-		[reviews]
+		[reviews],
 	)
 	const overdueCount = hasLiveReviews
 		? overdueReviews.length
@@ -131,12 +133,14 @@ export function useReviewsMenu({
 		latestCompletedReview !== null ||
 		shouldRenderSummaryLoadingState
 	const uncompletedOption = useMemo(
-		() => ratingOptions.find(option => option.value === 'uncompleted') ?? null,
-		[]
+		() =>
+			ratingOptions.find(option => option.value === 'uncompleted') ??
+			null,
+		[],
 	)
 	const completedOptions = useMemo(
 		() => ratingOptions.filter(option => option.value !== 'uncompleted'),
-		[]
+		[],
 	)
 	const triggerDotSize: 'compact' | 'default' = compactTriggerBadges
 		? 'compact'
@@ -149,7 +153,7 @@ export function useReviewsMenu({
 				rating,
 				description: '',
 				scheduled_at: null,
-				completed_at: completedAt
+				completed_at: completedAt,
 			})
 
 			if (completedAt === null) {
@@ -161,11 +165,11 @@ export function useReviewsMenu({
 				description: getReviewCreatedToastDescription(review),
 				action: {
 					label: getReviewCreatedToastActionLabel(review),
-					onClick: () => openReviewDialog(review.id)
-				}
+					onClick: () => openReviewDialog(review.id),
+				},
 			})
 		},
-		[createReviewMutation, openReviewDialog, reviewCardId]
+		[createReviewMutation, openReviewDialog, reviewCardId],
 	)
 
 	const clearNestedOverlayIntent = useCallback(() => {
@@ -209,7 +213,7 @@ export function useReviewsMenu({
 				nestedOverlayCloseTimeoutRef.current = null
 			}, 0)
 		},
-		[clearNestedOverlayCloseTimeout, clearNestedOverlayIntent]
+		[clearNestedOverlayCloseTimeout, clearNestedOverlayIntent],
 	)
 
 	const closeMenu = useCallback(() => {
@@ -227,7 +231,7 @@ export function useReviewsMenu({
 		await Promise.all([
 			queryClient.invalidateQueries({ queryKey: reviewCardKeys.all }),
 			queryClient.invalidateQueries({ queryKey: reviewQueueKeys.all }),
-			queryClient.invalidateQueries({ queryKey: searchKeys.all })
+			queryClient.invalidateQueries({ queryKey: searchKeys.all }),
 		])
 	}, [queryClient])
 
@@ -249,14 +253,14 @@ export function useReviewsMenu({
 				onClose: () => {
 					hasModalOverlayOpenRef.current = false
 					handleNestedOverlayOpenChange(false)
-				}
+				},
 			})
 		},
 		[
 			flushDeferredStructuralInvalidation,
 			handleNestedOverlayOpenChange,
-			openReviewDialog
-		]
+			openReviewDialog,
+		],
 	)
 
 	const handleRatingSelect = useCallback(
@@ -279,8 +283,8 @@ export function useReviewsMenu({
 			closeMenuAndFlushDeferredStructuralInvalidation,
 			createReview,
 			createReviewMutation.isPending,
-			onCompletedReviewCreated
-		]
+			onCompletedReviewCreated,
+		],
 	)
 
 	const handleSeeAll = useCallback(() => {
@@ -293,19 +297,22 @@ export function useReviewsMenu({
 		navigate({
 			to: '/review-cards/$reviewCardId',
 			params: { reviewCardId: reviewCardId.toString() },
-			search: { tab: 'reviews' }
+			search: { tab: 'reviews' },
 		})
 	}, [
 		closeMenuAndFlushDeferredStructuralInvalidation,
 		navigate,
 		onSeeAll,
-		reviewCardId
+		reviewCardId,
 	])
 
 	const shouldKeepMenuOpenForNestedOverlay = useCallback(
 		(eventDetails?: DropdownMenuOpenChangeDetails) => {
 			if (eventDetails?.reason === 'outside-press') {
-				return hasModalOverlayOpenRef.current || nestedOverlayIntentRef.current
+				return (
+					hasModalOverlayOpenRef.current ||
+					nestedOverlayIntentRef.current
+				)
 			}
 
 			return (
@@ -314,7 +321,7 @@ export function useReviewsMenu({
 					eventDetails?.reason === 'sibling-open')
 			)
 		},
-		[hasNestedOverlayOpen]
+		[hasNestedOverlayOpen],
 	)
 
 	const handleMenuOpenChange = useCallback(
@@ -335,15 +342,15 @@ export function useReviewsMenu({
 			clearNestedOverlayCloseTimeout,
 			clearNestedOverlayIntent,
 			flushDeferredStructuralInvalidation,
-			shouldKeepMenuOpenForNestedOverlay
-		]
+			shouldKeepMenuOpenForNestedOverlay,
+		],
 	)
 
 	const stopMenuEventPropagation = useCallback(
 		(event: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => {
 			event.stopPropagation()
 		},
-		[]
+		[],
 	)
 
 	return {
@@ -370,6 +377,6 @@ export function useReviewsMenu({
 		uncompletedOption,
 		uncompletedUnscheduledReviews,
 		upcomingReviews,
-		pendingCount
+		pendingCount,
 	}
 }

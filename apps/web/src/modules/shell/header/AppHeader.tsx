@@ -8,18 +8,19 @@ import {
 	type LucideIcon,
 	Search,
 	Settings,
-	X
+	X,
 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
+
 import { BookOpenOff } from '~/components/icons'
-import { SettingsDialog } from '~/components/SettingsDialog'
 import { OPEN_SETTINGS_EVENT } from '~/components/settings-events'
+import { SettingsDialog } from '~/components/SettingsDialog'
 import { Button } from '~/components/ui/button'
 import { SidebarTrigger } from '~/components/ui/sidebar'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
 import { useReviewCardFlaggedSummary } from '~/modules/review-cards/api/getReviewCardFlaggedSummary'
@@ -27,11 +28,11 @@ import { useReviewCardQueueCounts } from '~/modules/review-cards/hooks/useReview
 import { SearchDialog } from '~/modules/search/components/search-dialog/SearchDialog'
 import {
 	HeaderIconButton,
-	ReviewModeTooltip
+	ReviewModeTooltip,
 } from '~/modules/shell/header/HeaderIconButton'
 import {
 	HeaderArcIndicator,
-	HeaderNavIndicator
+	HeaderNavIndicator,
 } from '~/modules/shell/header/HeaderStatusIndicator'
 import { SearchShortcutHint } from '~/modules/shell/header/SearchShortcutHint'
 import { useReviewMode } from '~/stores/ReviewModeContext'
@@ -44,7 +45,7 @@ function HeaderNavLink({
 	icon: Icon,
 	isActive,
 	indicator,
-	rawIndicator
+	rawIndicator,
 }: {
 	to: NavLinkTarget
 	label: string
@@ -62,7 +63,7 @@ function HeaderNavLink({
 						className={cn(
 							'relative size-7.5 px-0',
 							isActive &&
-								'bg-[var(--app-chrome-selected)] text-[var(--app-chrome-selected-foreground)]'
+								'bg-[var(--app-chrome-selected)] text-[var(--app-chrome-selected-foreground)]',
 						)}
 						nativeButton={false}
 						render={<Link to={to} />}
@@ -99,7 +100,7 @@ export function AppHeader() {
 	const isReviewModeEnabled = reviewMode === 'on'
 	const ReviewModeIcon = isReviewModeEnabled ? BookOpen : BookOpenOff
 	const { dueTodayCount, newCount, overdueCount } = useReviewCardQueueCounts({
-		filter: 'all'
+		filter: 'all',
 	})
 	const flaggedSummaryQuery = useReviewCardFlaggedSummary()
 	const flaggedCount = flaggedSummaryQuery?.data?.flagged_count ?? 0
@@ -163,7 +164,7 @@ export function AppHeader() {
 								<span
 									className={cn(
 										'min-w-0 flex-1 truncate text-left font-normal text-muted-foreground',
-										searchQuery && 'text-foreground'
+										searchQuery && 'text-foreground',
 									)}
 								>
 									{searchQuery || 'Search'}
@@ -194,10 +195,14 @@ export function AppHeader() {
 										className={cn(
 											'size-7.5 px-0',
 											isReviewModeEnabled &&
-												'border-blue-200 bg-blue-50 text-blue-700 shadow-xs hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/60 dark:text-blue-200 dark:hover:bg-blue-900/70'
+												'border-blue-200 bg-blue-50 text-blue-700 shadow-xs hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/60 dark:text-blue-200 dark:hover:bg-blue-900/70',
 										)}
 										onClick={() =>
-											setReviewMode(isReviewModeEnabled ? 'off' : 'on')
+											setReviewMode(
+												isReviewModeEnabled
+													? 'off'
+													: 'on',
+											)
 										}
 										showNativeTitle={false}
 										variant='outline'
@@ -207,7 +212,9 @@ export function AppHeader() {
 								<ReviewModeIcon />
 							</TooltipTrigger>
 							<TooltipContent>
-								<ReviewModeTooltip isEnabled={isReviewModeEnabled} />
+								<ReviewModeTooltip
+									isEnabled={isReviewModeEnabled}
+								/>
 							</TooltipContent>
 						</Tooltip>
 					</div>
@@ -262,7 +269,9 @@ export function AppHeader() {
 								<HeaderIconButton
 									ariaLabel='Settings'
 									className='size-7.5 px-0'
-									onClick={() => setIsSettingsDialogOpen(true)}
+									onClick={() =>
+										setIsSettingsDialogOpen(true)
+									}
 									showNativeTitle={false}
 								/>
 							}

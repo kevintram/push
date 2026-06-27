@@ -1,4 +1,4 @@
-import type { Rating, ReviewListItem } from './review.types'
+import { type Rating, type ReviewListItem } from './review.types'
 
 export type CreateReviewPayload = {
 	review_card_id: number

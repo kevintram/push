@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+
 import {
 	masonryPropsSpy,
 	renderTopicDetailPage,
@@ -7,7 +8,7 @@ import {
 	topic,
 	useReviewCardsMock,
 	useTopicMock,
-	useTopicsMock
+	useTopicsMock,
 } from '~/testing/support/masonryPageTestSupport'
 
 describe('TopicDetailPage masonry', () => {
@@ -20,14 +21,18 @@ describe('TopicDetailPage masonry', () => {
 		})
 		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
-			data: [{ ...reviewCard, id: 13, primary_text: 'Topic detail card' }],
-			isLoading: false
+			data: [
+				{ ...reviewCard, id: 13, primary_text: 'Topic detail card' },
+			],
+			isLoading: false,
 		})
 
 		render(renderTopicDetailPage({ focusTitle: true }))
 
 		await waitFor(() => {
-			expect(screen.getByRole('textbox', { name: 'Topic title' })).toHaveFocus()
+			expect(
+				screen.getByRole('textbox', { name: 'Topic title' }),
+			).toHaveFocus()
 		})
 	})
 
@@ -40,8 +45,10 @@ describe('TopicDetailPage masonry', () => {
 		})
 		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
-			data: [{ ...reviewCard, id: 13, primary_text: 'Topic detail card' }],
-			isLoading: false
+			data: [
+				{ ...reviewCard, id: 13, primary_text: 'Topic detail card' },
+			],
+			isLoading: false,
 		})
 
 		render(renderTopicDetailPage({}))
@@ -49,14 +56,17 @@ describe('TopicDetailPage masonry', () => {
 		expect(screen.getByTestId('masonry-layout')).toBeInTheDocument()
 		expect(screen.getByText('Topic detail card')).toBeInTheDocument()
 		expect(
-			screen.queryByRole('tab', { name: /Subtopics/iu })
+			screen.queryByRole('tab', { name: /Subtopics/iu }),
 		).not.toBeInTheDocument()
-		expect(screen.getByRole('button', { name: /^Add$/iu })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /^Add$/iu }),
+		).toBeInTheDocument()
 		expect(
 			masonryPropsSpy.mock.calls.some(
 				([props]) =>
-					props.items.length > 0 && typeof props.getScrollElement === 'function'
-			)
+					props.items.length > 0 &&
+					typeof props.getScrollElement === 'function',
+			),
 		).toBe(true)
 	})
 })

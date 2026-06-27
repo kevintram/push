@@ -1,20 +1,22 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { ChevronRight, ExternalLink, Loader, Plus, Trash2 } from 'lucide-react'
-import { type MutableRefObject, memo, type ReactNode, useState } from 'react'
+import { memo, type MutableRefObject, type ReactNode, useState } from 'react'
+
 import { Button } from '~/components/ui/button'
 import {
 	ContextMenu,
 	ContextMenuContent,
 	ContextMenuItem,
 	ContextMenuSeparator,
-	ContextMenuTrigger
+	ContextMenuTrigger,
 } from '~/components/ui/context-menu'
 import { cn } from '~/lib/utils'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
 import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
+
 import {
 	canReparentTopic,
-	createTopicDropId
+	createTopicDropId,
 } from '../topic-navigator/topicNavigatorUtils'
 
 const TOPIC_TREE_GUIDE_OFFSET_REM = 0.5625
@@ -69,7 +71,7 @@ function isTopicTreeItemFresh(nodeId: number, props: TopicTreeItemProps) {
 function doesTopicTreeSubtreeVisualStateChange(
 	node: TopicTreeNode,
 	previousProps: TopicTreeItemProps,
-	nextProps: TopicTreeItemProps
+	nextProps: TopicTreeItemProps,
 ): boolean {
 	if (
 		isTopicTreeItemActive(node.id, previousProps) !==
@@ -108,7 +110,11 @@ function doesTopicTreeSubtreeVisualStateChange(
 
 	for (const childNode of node.children) {
 		if (
-			doesTopicTreeSubtreeVisualStateChange(childNode, previousProps, nextProps)
+			doesTopicTreeSubtreeVisualStateChange(
+				childNode,
+				previousProps,
+				nextProps,
+			)
 		) {
 			return true
 		}
@@ -119,11 +125,12 @@ function doesTopicTreeSubtreeVisualStateChange(
 
 function areTopicTreeItemPropsEqual(
 	previousProps: TopicTreeItemProps,
-	nextProps: TopicTreeItemProps
+	nextProps: TopicTreeItemProps,
 ) {
 	if (previousProps.node !== nextProps.node) return false
 	if (previousProps.nodeById !== nextProps.nodeById) return false
-	if (previousProps.ancestorIdsById !== nextProps.ancestorIdsById) return false
+	if (previousProps.ancestorIdsById !== nextProps.ancestorIdsById)
+		return false
 	if (
 		previousProps.freshTopicIds !== nextProps.freshTopicIds ||
 		previousProps.highlightAppearance !== nextProps.highlightAppearance ||
@@ -150,7 +157,7 @@ function areTopicTreeItemPropsEqual(
 	return !doesTopicTreeSubtreeVisualStateChange(
 		previousProps.node,
 		previousProps,
-		nextProps
+		nextProps,
 	)
 }
 
@@ -175,7 +182,7 @@ function TopicTreeItemComponent({
 	onToggleExpanded,
 	renderPrimaryAction,
 	setItemRef,
-	suppressSelectionRef
+	suppressSelectionRef,
 }: TopicTreeItemProps) {
 	const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
 	const [isCreatingSubtopic, setIsCreatingSubtopic] = useState(false)
@@ -191,7 +198,7 @@ function TopicTreeItemComponent({
 			draggedTopicId: activeDragTopicId,
 			nextParentId: node.id,
 			ancestorIdsById,
-			nodeById
+			nodeById,
 		})
 	const isDropSubtreeHighlighted =
 		highlightedDropTopicId === node.id && canDropIntoNode
@@ -203,18 +210,18 @@ function TopicTreeItemComponent({
 		attributes,
 		listeners,
 		setNodeRef: setDraggableNodeRef,
-		isDragging
+		isDragging,
 	} = useDraggable({
 		id: createTopicDropId(node.id),
 		data: {
-			topicId: node.id
+			topicId: node.id,
 		},
-		disabled: !isDragAndDropEnabled || isUpdatingTopic
+		disabled: !isDragAndDropEnabled || isUpdatingTopic,
 	})
 
 	const { setNodeRef: setDroppableNodeRef } = useDroppable({
 		id: createTopicDropId(node.id),
-		disabled: !canDropIntoNode
+		disabled: !canDropIntoNode,
 	})
 
 	const triggerProps =
@@ -227,11 +234,12 @@ function TopicTreeItemComponent({
 				'group/topic-row flex min-h-7 select-none items-center gap-0 rounded-md pr-0.5 transition-colors',
 				isDragAndDropEnabled && !isUpdatingTopic && 'cursor-grab',
 				isDragging && 'cursor-grabbing opacity-15',
-				(highlightAppearance === 'text-only' || !isSubtreeHighlighted) &&
+				(highlightAppearance === 'text-only' ||
+					!isSubtreeHighlighted) &&
 					'hover:bg-[var(--app-chrome-hover)]',
 				highlightAppearance === 'container' &&
 					isActive &&
-					'hover:bg-[var(--app-chrome-selected-hover)]'
+					'hover:bg-[var(--app-chrome-selected-hover)]',
 			)}
 		>
 			{hasChildren ? (
@@ -250,7 +258,7 @@ function TopicTreeItemComponent({
 						aria-hidden='true'
 						className={cn(
 							'shrink-0 text-muted-foreground/70 transition-transform',
-							isExpanded && 'rotate-90'
+							isExpanded && 'rotate-90',
 						)}
 					/>
 				</Button>
@@ -262,13 +270,13 @@ function TopicTreeItemComponent({
 					isActive && 'font-medium text-foreground',
 					!isActive && isSubtreeHighlighted && 'text-foreground',
 					!(isActive || isSubtreeHighlighted) &&
-						'text-muted-foreground hover:text-foreground'
+						'text-muted-foreground hover:text-foreground',
 				),
 				isActive,
 				isSubtreeHighlighted,
 				label,
 				node,
-				suppressSelectionRef
+				suppressSelectionRef,
 			})}
 		</div>
 	)
@@ -289,7 +297,8 @@ function TopicTreeItemComponent({
 					className={cn(
 						highlightAppearance === 'container' &&
 							'rounded-lg transition-[background-color,box-shadow,color] duration-300 ease-out',
-						isFresh && 'rounded-lg ring-1 ring-sky-200/80 dark:ring-sky-800/70',
+						isFresh &&
+							'rounded-lg ring-1 ring-sky-200/80 dark:ring-sky-800/70',
 						isFresh &&
 							!isActive &&
 							'bg-sky-50/70 text-foreground dark:bg-sky-950/20',
@@ -302,7 +311,7 @@ function TopicTreeItemComponent({
 							'bg-[var(--app-chrome-hover)] text-foreground',
 						highlightAppearance === 'container' &&
 							isDropSubtreeHighlighted &&
-							'bg-[var(--app-chrome-selected)] text-foreground ring-1 ring-[var(--app-chrome-border)]'
+							'bg-[var(--app-chrome-selected)] text-foreground ring-1 ring-[var(--app-chrome-border)]',
 					)}
 				>
 					<ContextMenuTrigger
@@ -323,7 +332,11 @@ function TopicTreeItemComponent({
 					>
 						{row}
 					</ContextMenuTrigger>
-					<ContextMenuContent align='start' side='right' sideOffset={6}>
+					<ContextMenuContent
+						align='start'
+						side='right'
+						sideOffset={6}
+					>
 						{onOpenTopic ? (
 							<ContextMenuItem
 								disabled={isUpdatingTopic}
@@ -375,7 +388,7 @@ function TopicTreeItemComponent({
 							className='mt-0.5 space-y-px border-border/60 border-l'
 							style={{
 								marginLeft: `${TOPIC_TREE_GUIDE_OFFSET_REM}rem`,
-								paddingLeft: `${TOPIC_TREE_INDENT_REM}rem`
+								paddingLeft: `${TOPIC_TREE_INDENT_REM}rem`,
 							}}
 						>
 							{node.children.map(childNode => (
@@ -386,7 +399,9 @@ function TopicTreeItemComponent({
 									expandedIdSet={expandedIdSet}
 									freshTopicIds={freshTopicIds}
 									highlightAppearance={highlightAppearance}
-									highlightedDropTopicId={highlightedDropTopicId}
+									highlightedDropTopicId={
+										highlightedDropTopicId
+									}
 									highlightedTopicIds={highlightedTopicIds}
 									hoveredTopicId={hoveredTopicId}
 									isDragAndDropEnabled={isDragAndDropEnabled}
@@ -414,5 +429,5 @@ function TopicTreeItemComponent({
 
 export const TopicTreeItem = memo(
 	TopicTreeItemComponent,
-	areTopicTreeItemPropsEqual
+	areTopicTreeItemPropsEqual,
 )

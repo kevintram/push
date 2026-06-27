@@ -1,22 +1,24 @@
 import { type ChangeEvent, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
+
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { useCreateReviewCard } from '~/modules/review-cards/api/createReviewCard'
 import { requestFocusNewReviewCardPrimaryText } from '~/modules/review-cards/createReviewCardIntent'
-import type {
-	ReviewCard as ReviewCardModel,
-	ReviewCardType
+import {
+	type ReviewCard as ReviewCardModel,
+	type ReviewCardType,
 } from '~/modules/review-cards/types/review-card.types'
 import { useUpdateTopic } from '~/modules/topics/api/updateTopic'
 import { useReviewMode } from '~/stores/ReviewModeContext'
-import type {
-	TopicDetailReviewCardControlsVariant,
-	TopicDetailReviewCardFilter
+
+import {
+	type TopicDetailReviewCardControlsVariant,
+	type TopicDetailReviewCardFilter,
 } from './shared'
 import { TopicDetailBodyEditor } from './TopicDetailBodyEditor'
 import { TopicDetailReviewCardsSection } from './TopicDetailReviewCardsSection'
-import type { TopicDetailSectionNode } from './topicDetailStructure'
+import { type TopicDetailSectionNode } from './topicDetailStructure'
 
 type UseTopicDetailSectionPanelsOptions = {
 	getScrollElement: () => HTMLDivElement | null
@@ -33,7 +35,7 @@ type UseTopicDetailSectionPanelsOptions = {
 
 function filterReviewCards(
 	reviewCards: Array<ReviewCardModel>,
-	filter: TopicDetailReviewCardFilter
+	filter: TopicDetailReviewCardFilter,
 ) {
 	if (filter === 'all') return reviewCards
 
@@ -50,18 +52,18 @@ export function useTopicDetailSectionPanels({
 	section,
 	sectionLabel,
 	isReviewCardsLoading,
-	topicReviewCardsById
+	topicReviewCardsById,
 }: UseTopicDetailSectionPanelsOptions) {
 	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
 	const {
 		mutateAsync: createReviewCardAsync,
-		isPending: isCreatingReviewCard
+		isPending: isCreatingReviewCard,
 	} = useCreateReviewCard()
 	const { hidesSecondary } = useReviewMode()
 	const sectionReviewCards = topicReviewCardsById.get(section.topic.id) ?? []
 	const filteredReviewCards = useMemo(
 		() => filterReviewCards(sectionReviewCards, resolvedSectionFilter),
-		[resolvedSectionFilter, sectionReviewCards]
+		[resolvedSectionFilter, sectionReviewCards],
 	)
 	const hasReviewCards = sectionReviewCards.length > 0
 
@@ -75,18 +77,18 @@ export function useTopicDetailSectionPanels({
 				toast.error('Failed to update topic')
 			}
 		},
-		[section.topic.body, section.topic.id, updateTopicAsync]
+		[section.topic.body, section.topic.id, updateTopicAsync],
 	)
 
 	const {
 		value: body,
 		onChange: onBodyChange,
 		setValue: setBody,
-		flush: flushBody
+		flush: flushBody,
 	} = useAutoSave({
 		initialValue: section.topic.body,
 		onSave: saveTopicBody,
-		key: `topic-document-body-${section.topic.id}`
+		key: `topic-document-body-${section.topic.id}`,
 	})
 	const isBodyEmpty = body.trim().length === 0
 	const {
@@ -96,12 +98,12 @@ export function useTopicDetailSectionPanels({
 		setGuessText: setGuessBodyText,
 		isCopied: isRevealPanelCopied,
 		handleCopyGuessText,
-		handleCopyRevealText
+		handleCopyRevealText,
 	} = useRevealPanel({
 		revealText: body,
 		entityId: section.topic.id,
 		hidesSecondary,
-		defaultTab: hidesSecondary ? null : 'reveal'
+		defaultTab: hidesSecondary ? null : 'reveal',
 	})
 
 	const handleAddReviewCard = async (type: ReviewCardType) => {
@@ -111,7 +113,7 @@ export function useTopicDetailSectionPanels({
 				type,
 				primary_text: '',
 				secondary_text: '',
-				retired: false
+				retired: false,
 			})
 			onTopicInteraction?.()
 			requestFocusNewReviewCardPrimaryText(created.id)
@@ -126,7 +128,7 @@ export function useTopicDetailSectionPanels({
 			onTopicInteraction?.()
 			onBodyChange(event)
 		},
-		[onBodyChange, onTopicInteraction]
+		[onBodyChange, onTopicInteraction],
 	)
 
 	const handleBodyValueChange = useCallback(
@@ -134,7 +136,7 @@ export function useTopicDetailSectionPanels({
 			onTopicInteraction?.()
 			setBody(value)
 		},
-		[onTopicInteraction, setBody]
+		[onTopicInteraction, setBody],
 	)
 
 	const bodyPanel = (
@@ -176,6 +178,6 @@ export function useTopicDetailSectionPanels({
 
 	return {
 		bodyPanel,
-		reviewCardsSection
+		reviewCardsSection,
 	}
 }

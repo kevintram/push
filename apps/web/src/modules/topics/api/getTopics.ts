@@ -1,14 +1,16 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
+
 import { TopicSchema } from '../types/topic.schemas'
-import type { GetTopicsParams, Topic } from '../types/topic.types'
+import { type GetTopicsParams, type Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 const TOPICS_QUERY_STALE_TIME = 30_000
 
 export async function getTopics(
-	params: GetTopicsParams = {}
+	params: GetTopicsParams = {},
 ): Promise<Array<Topic>> {
 	const searchParams = new URLSearchParams()
 
@@ -29,7 +31,7 @@ export async function getTopics(
 	}
 
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/topics/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+		`${import.meta.env.VITE_API_URL}/topics/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
 	)
 
 	if (!response.ok) {
@@ -51,16 +53,16 @@ export function topicsQueryOptions(params: GetTopicsParams = {}) {
 	return queryOptions({
 		queryKey: topicKeys.list(params),
 		queryFn: () => getTopics(params),
-		staleTime: TOPICS_QUERY_STALE_TIME
+		staleTime: TOPICS_QUERY_STALE_TIME,
 	})
 }
 
 export function useTopics(
 	params: GetTopicsParams = {},
-	options?: { enabled?: boolean }
+	options?: { enabled?: boolean },
 ) {
 	return useQuery({
 		...topicsQueryOptions(params),
-		enabled: options?.enabled ?? true
+		enabled: options?.enabled ?? true,
 	})
 }

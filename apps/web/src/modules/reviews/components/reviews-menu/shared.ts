@@ -1,6 +1,7 @@
-import type { ComponentProps, MouseEventHandler } from 'react'
-import type { Button } from '~/components/ui/button'
-import type { ReviewListItem } from '~/modules/reviews/types/review.types'
+import { type ComponentProps, type MouseEventHandler } from 'react'
+
+import { type Button } from '~/components/ui/button'
+import { type ReviewListItem } from '~/modules/reviews/types/review.types'
 
 export interface ReviewsMenuProps {
 	reviewCardId: number

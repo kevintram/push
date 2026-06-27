@@ -1,4 +1,4 @@
-import type { LucideProps } from 'lucide-react'
+import { type LucideProps } from 'lucide-react'
 import { forwardRef } from 'react'
 
 export const BookOpenOff = forwardRef<SVGSVGElement, LucideProps>(
@@ -23,7 +23,7 @@ export const BookOpenOff = forwardRef<SVGSVGElement, LucideProps>(
 			{/* Diagonal "off" line */}
 			<line x1='2' x2='22' y1='2' y2='22' />
 		</svg>
-	)
+	),
 )
 
 BookOpenOff.displayName = 'BookOpenOff'

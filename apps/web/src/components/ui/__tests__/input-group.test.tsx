@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { ArrowLeftRight } from "lucide-react"
 import { describe, expect, it } from "vitest"
+
 import { InputGroupButton } from "../input-group"
 
 describe("InputGroupButton", () => {
@@ -8,7 +9,7 @@ describe("InputGroupButton", () => {
 		render(
 			<InputGroupButton size='xs' variant='ghost'>
 				<ArrowLeftRight data-testid='arrow-icon' />
-			</InputGroupButton>
+			</InputGroupButton>,
 		)
 
 		const button = screen.getByRole("button")
@@ -21,7 +22,7 @@ describe("InputGroupButton", () => {
 		render(
 			<InputGroupButton size='icon-sm' variant='ghost'>
 				<ArrowLeftRight data-testid='arrow-icon' />
-			</InputGroupButton>
+			</InputGroupButton>,
 		)
 
 		const button = screen.getByRole("button")

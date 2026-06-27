@@ -4,7 +4,7 @@ export const EMPTY_BADGE_CLASSNAME =
 export type ReviewCardDetailTab = 'home' | 'reviews'
 
 export function isReviewCardDetailTab(
-	value: string
+	value: string,
 ): value is ReviewCardDetailTab {
 	return value === 'home' || value === 'reviews'
 }

@@ -6,7 +6,7 @@ export type EntityTypeFilterValue = 'all' | EntityType
 const ENTITY_FILTER_BADGES: Record<EntityType, string> = {
 	topic: 'Topics',
 	practice: 'Practices',
-	flashcard: 'Flashcards'
+	flashcard: 'Flashcards',
 }
 
 export function EntityTypeFilter({
@@ -14,7 +14,7 @@ export function EntityTypeFilter({
 	onFilterChange,
 	allowedTypes = ['topic', 'practice', 'flashcard'],
 	showAllOption = true,
-	showNoTagOption = false
+	showNoTagOption = false,
 }: {
 	activeFilter: EntityTypeFilterValue
 	onFilterChange: (filter: EntityTypeFilterValue) => void

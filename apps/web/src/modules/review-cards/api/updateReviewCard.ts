@@ -1,16 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { searchKeys } from '~/modules/search/api/searchAll'
 import { apiFetch } from '~/utils/apiFetch'
+
 import { ReviewCardSchema } from '../types/review-card.schemas'
-import type {
-	ReviewCard,
-	UpdateReviewCardInput
+import {
+	type ReviewCard,
+	type UpdateReviewCardInput,
 } from '../types/review-card.types'
 import { reviewCardKeys } from './queryKeys'
 
 async function updateReviewCard(
-	input: UpdateReviewCardInput
+	input: UpdateReviewCardInput,
 ): Promise<ReviewCard> {
 	const { id, ...payload } = input
 
@@ -19,10 +21,10 @@ async function updateReviewCard(
 		{
 			method: 'PATCH',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify(payload)
-		}
+			body: JSON.stringify(payload),
+		},
 	)
 
 	if (!response.ok) {
@@ -46,11 +48,14 @@ export function useUpdateReviewCard() {
 	return useMutation({
 		mutationFn: updateReviewCard,
 		onSuccess: async reviewCard => {
-			queryClient.setQueryData(reviewCardKeys.detail(reviewCard.id), reviewCard)
+			queryClient.setQueryData(
+				reviewCardKeys.detail(reviewCard.id),
+				reviewCard,
+			)
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: reviewCardKeys.all }),
-				queryClient.invalidateQueries({ queryKey: searchKeys.all })
+				queryClient.invalidateQueries({ queryKey: searchKeys.all }),
 			])
-		}
+		},
 	})
 }

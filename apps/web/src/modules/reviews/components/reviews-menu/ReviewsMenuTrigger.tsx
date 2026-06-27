@@ -1,8 +1,10 @@
 import { ChevronDown, Loader2 } from 'lucide-react'
-import type { ComponentProps, MouseEvent } from 'react'
+import { type ComponentProps, type MouseEvent } from 'react'
+
 import { Button } from '~/components/ui/button'
 import { ReviewStatusDots } from '~/components/ui/review-status-dots'
-import type { ReviewsMenuProps } from './shared'
+
+import { type ReviewsMenuProps } from './shared'
 
 type ReviewsMenuTriggerProps = Pick<
 	ReviewsMenuProps,

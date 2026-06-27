@@ -5,11 +5,12 @@ import {
 	createRoute,
 	createRouter,
 	Outlet,
-	RouterProvider
+	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
 import { useState } from 'react'
 import { beforeEach, describe, expect, it } from 'vitest'
+
 import { ReviewModeProvider, useReviewMode } from '~/stores/ReviewModeContext'
 
 const storage = new Map<string, string>()
@@ -24,7 +25,7 @@ const mockLocalStorage = {
 	},
 	clear: () => {
 		storage.clear()
-	}
+	},
 }
 
 function Probe() {
@@ -45,58 +46,58 @@ function createTestRouter(initialEntry: string) {
 			<ReviewModeProvider>
 				<Outlet />
 			</ReviewModeProvider>
-		)
+		),
 	})
 
 	const practiceRoute = createRoute({
 		getParentRoute: () => rootRoute,
 		path: 'practice',
-		component: Probe
+		component: Probe,
 	})
 
 	const reviewFocusRoute = createRoute({
 		getParentRoute: () => rootRoute,
 		path: 'due/focus',
-		component: Probe
+		component: Probe,
 	})
 
 	const reviewFocusCardRoute = createRoute({
 		getParentRoute: () => rootRoute,
 		path: 'due/focus/$reviewCardId',
-		component: Probe
+		component: Probe,
 	})
 
 	const recentRoute = createRoute({
 		getParentRoute: () => rootRoute,
 		path: 'recent',
-		component: Probe
+		component: Probe,
 	})
 
 	const routeTree = rootRoute.addChildren([
 		practiceRoute,
 		recentRoute,
 		reviewFocusRoute,
-		reviewFocusCardRoute
+		reviewFocusCardRoute,
 	])
 
 	return createRouter({
 		routeTree,
-		history: createMemoryHistory({ initialEntries: [initialEntry] })
+		history: createMemoryHistory({ initialEntries: [initialEntry] }),
 	})
 }
 
 function renderRoute(initialEntry: string) {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false }
-		}
+			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false },
+		},
 	})
 	const router = createTestRouter(initialEntry)
 
 	return render(
 		<QueryClientProvider client={queryClient}>
 			<RouterProvider router={router} />
-		</QueryClientProvider>
+		</QueryClientProvider>,
 	)
 }
 
@@ -106,7 +107,7 @@ describe('ReviewModeProvider', () => {
 		Object.defineProperty(window, 'localStorage', {
 			value: mockLocalStorage,
 			writable: true,
-			configurable: true
+			configurable: true,
 		})
 	})
 

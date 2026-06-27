@@ -1,6 +1,6 @@
-import type {
-	ReviewFilter,
-	ReviewFocusOrder
+import {
+	type ReviewFilter,
+	type ReviewFocusOrder,
 } from '~/modules/review-cards/types/review-card.types'
 
 export type ReviewFocusSearch = {
@@ -22,7 +22,7 @@ export function buildFocusSearch({
 	filter,
 	include_future,
 	order,
-	shuffle
+	shuffle,
 }: ReviewFocusSearch): ReviewFocusSearch {
 	return {
 		card,
@@ -30,6 +30,6 @@ export function buildFocusSearch({
 		filter,
 		include_future: include_future === true ? true : undefined,
 		order,
-		shuffle: order === 'random' ? shuffle : undefined
+		shuffle: order === 'random' ? shuffle : undefined,
 	}
 }

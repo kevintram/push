@@ -1,5 +1,6 @@
-import type { UniqueIdentifier } from '@dnd-kit/core'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { type UniqueIdentifier } from '@dnd-kit/core'
+
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
 
 const TOPIC_DROP_ID_PREFIX = 'topic-navigator-topic:'
 const TOPIC_ROOT_DROP_ID_PREFIX = 'topic-navigator-root-drop:'
@@ -13,7 +14,7 @@ export function createTopicDropId(topicId: number): string {
 }
 
 export function parseTopicDropId(
-	id: UniqueIdentifier
+	id: UniqueIdentifier,
 ): { type: 'root' } | { type: 'topic'; topicId: number } | null {
 	if (typeof id === 'string' && id.startsWith(TOPIC_ROOT_DROP_ID_PREFIX)) {
 		return { type: 'root' }
@@ -25,20 +26,20 @@ export function parseTopicDropId(
 
 	const parsedTopicId = Number.parseInt(
 		id.slice(TOPIC_DROP_ID_PREFIX.length),
-		10
+		10,
 	)
 	if (Number.isNaN(parsedTopicId)) return null
 
 	return {
 		type: 'topic',
-		topicId: parsedTopicId
+		topicId: parsedTopicId,
 	}
 }
 
 export function mergeExpandedTopicIds({
 	expandedIds,
 	idsToExpand,
-	validTopicIds
+	validTopicIds,
 }: {
 	expandedIds: Array<number>
 	idsToExpand: Array<number>
@@ -65,7 +66,7 @@ export function canReparentTopic({
 	draggedTopicId,
 	nextParentId,
 	ancestorIdsById,
-	nodeById
+	nodeById,
 }: {
 	draggedTopicId: number
 	nextParentId: number | null

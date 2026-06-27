@@ -15,7 +15,7 @@ This is a React application built with modern tooling focused on topic-based lea
 - **Build Tool**: Vite 6
 - **Package Manager**: pnpm
 - **Testing**: Vitest (unit/integration), Playwright (E2E)
-- **Linting/Formatting**: Biome V2
+- **Linting/Formatting**: ESLint + Prettier
 - **Mocking**: MSW (Mock Service Worker)
 
 ## Development Commands
@@ -31,10 +31,10 @@ For your convenience, these are the commands as of writing this:
 - `pnpm test:e2e` - Run E2E tests with Playwright UI
 - `pnpm test:e2e:ci` - Run E2E tests headlessly
 - `pnpm lint:tsc` - Run TypeScript compiler checks
-- `pnpm lint:biome` - Run Biome CI checks (lint + formatting/import organization/assist)
+- `pnpm lint:eslint` - Run ESLint checks
 - `pnpm lint:component-count` - Enforce max two React components per file
-- `pnpm lint` - Run all linting (TypeScript + Biome + component-count)
-- `pnpm format` - Format code with Biome
+- `pnpm lint` - Run all linting (TypeScript + ESLint + component-count)
+- `pnpm format` - Format code with Prettier
 - `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
 
 Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree-scripts/gen-env.sh` to refresh all env files (and recreate any missing ones) then starts on the assigned port.

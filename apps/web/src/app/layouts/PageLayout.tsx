@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { createContext, useCallback, useContext, useRef } from 'react'
+
 import {
 	PageLayoutContent,
 	type PageLayoutContentProps,
 	PageLayoutHeader,
-	type PageLayoutHeaderProps
+	type PageLayoutHeaderProps,
 } from '~/app/layouts/PageLayoutComponents'
 
 interface PageLayoutProps {
@@ -25,7 +26,7 @@ export function usePageScrollElement() {
 }
 
 export const PageLayout: PageLayoutComponent = function PageLayout({
-	children
+	children,
 }: PageLayoutProps) {
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const getScrollElement = useCallback(() => scrollRef.current, [])
@@ -33,7 +34,10 @@ export const PageLayout: PageLayoutComponent = function PageLayout({
 	return (
 		<PageLayoutScrollContext.Provider value={getScrollElement}>
 			<div className='scrollbar-track-transparent relative h-full w-full'>
-				<div className='flex h-full flex-col overflow-auto' ref={scrollRef}>
+				<div
+					className='flex h-full flex-col overflow-auto'
+					ref={scrollRef}
+				>
 					{children}
 				</div>
 			</div>

@@ -1,15 +1,16 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
+
 import {
 	resolveDueFilter,
 	resolveDueFocusOrder,
-	validateDueFocusSearch
+	validateDueFocusSearch,
 } from '~/app/routes/due'
 import { buildFocusSearch } from '~/modules/review-cards/reviewFocusSearch'
 
 export const Route = createFileRoute('/due/focus_/$reviewCardId')({
 	validateSearch: validateDueFocusSearch,
-	component: DueFocusCardRoute
+	component: DueFocusCardRoute,
 })
 
 function DueFocusCardRoute() {
@@ -29,9 +30,9 @@ function DueFocusCardRoute() {
 				filter,
 				include_future: search.include_future,
 				order,
-				shuffle: search.shuffle
+				shuffle: search.shuffle,
 			}),
-			replace: true
+			replace: true,
 		})
 	}, [
 		card,
@@ -40,7 +41,7 @@ function DueFocusCardRoute() {
 		order,
 		search.done,
 		search.include_future,
-		search.shuffle
+		search.shuffle,
 	])
 
 	return null

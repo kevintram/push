@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
+
 import { TopicSchema } from '../types/topic.schemas'
-import type { Topic } from '../types/topic.types'
+import { type Topic } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 type CreateTopicPayload = {
@@ -15,9 +17,9 @@ async function createTopic(payload: CreateTopicPayload): Promise<Topic> {
 	const response = await apiFetch(`${import.meta.env.VITE_API_URL}/topics/`, {
 		method: 'POST',
 		headers: {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
 		},
-		body: JSON.stringify(payload)
+		body: JSON.stringify(payload),
 	})
 
 	if (!response.ok) {
@@ -43,6 +45,6 @@ export function useCreateTopic() {
 		onSuccess: topic => {
 			queryClient.setQueryData(topicKeys.detail(topic.id), topic)
 			return queryClient.invalidateQueries({ queryKey: topicKeys.all })
-		}
+		},
 	})
 }

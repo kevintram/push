@@ -5,8 +5,8 @@ import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { RatingDropdown } from '~/modules/reviews/components/RatingDropdown'
 import { ReviewItem } from '~/modules/reviews/components/ReviewItem'
 import { ReviewListHeader } from '~/modules/reviews/components/ReviewListHeader'
-import type { ReviewRatingState } from '~/modules/reviews/components/reviewRatingOptions'
-import type { ReviewListItem } from '~/modules/reviews/types/review.types'
+import { type ReviewRatingState } from '~/modules/reviews/components/reviewRatingOptions'
+import { type ReviewListItem } from '~/modules/reviews/types/review.types'
 
 type ReviewCardDetailReviewsTabProps = {
 	completedReviews: Array<ReviewListItem>
@@ -29,7 +29,7 @@ export function ReviewCardDetailReviewsTab({
 	overdueReviews,
 	todayReviews,
 	uncompletedUnscheduledReviews,
-	upcomingReviews
+	upcomingReviews,
 }: ReviewCardDetailReviewsTabProps) {
 	if (isLoading) {
 		return <LoadingSpinner containerClassName='min-h-40 py-2' />
@@ -105,7 +105,7 @@ function ReviewCardDetailReviewSection({
 	entries,
 	onOpenReviewDialog,
 	title,
-	titleClassName
+	titleClassName,
 }: {
 	entries: Array<ReviewListItem>
 	onOpenReviewDialog: (reviewId: number) => void
@@ -117,7 +117,9 @@ function ReviewCardDetailReviewSection({
 	return (
 		<div>
 			{title ? (
-				<h2 className={`mb-3 font-bold text-2xl ${titleClassName}`}>{title}</h2>
+				<h2 className={`mb-3 font-bold text-2xl ${titleClassName}`}>
+					{title}
+				</h2>
 			) : null}
 			<div className='@container/review-list'>
 				<ReviewListHeader showCardColumn={false} />

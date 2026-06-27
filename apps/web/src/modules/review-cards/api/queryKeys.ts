@@ -1,7 +1,7 @@
-import type {
-	GetReviewCardsParams,
-	ReviewCardQueueParams,
-	ReviewCardQueueSummaryParams
+import {
+	type GetReviewCardsParams,
+	type ReviewCardQueueParams,
+	type ReviewCardQueueSummaryParams,
 } from '../types/review-card.types'
 
 export const reviewCardKeys = {
@@ -14,5 +14,5 @@ export const reviewCardKeys = {
 	queue: (params: ReviewCardQueueParams) =>
 		[...reviewCardKeys.all, 'queue', params] as const,
 	queueSummary: (params: ReviewCardQueueSummaryParams) =>
-		[...reviewCardKeys.all, 'queue-summary', params] as const
+		[...reviewCardKeys.all, 'queue-summary', params] as const,
 }

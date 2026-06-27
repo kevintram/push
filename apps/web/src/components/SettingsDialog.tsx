@@ -5,20 +5,21 @@ import {
 	Monitor,
 	Moon,
 	Settings,
-	Sun
+	Sun,
 } from 'lucide-react'
+
 import { Button } from '~/components/ui/button'
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
-	DialogTitle
+	DialogTitle,
 } from '~/components/ui/dialog'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { Switch } from '~/components/ui/switch'
 import { useReviewMode } from '~/stores/ReviewModeContext'
@@ -28,7 +29,7 @@ import { useWeekStart, WEEK_START_OPTIONS } from '~/stores/WeekStartContext'
 const THEME_OPTIONS = [
 	{ value: 'light', label: 'Light', icon: Sun },
 	{ value: 'dark', label: 'Dark', icon: Moon },
-	{ value: 'system', label: 'System', icon: Monitor }
+	{ value: 'system', label: 'System', icon: Monitor },
 ] as const
 
 interface SettingsDialogProps {
@@ -42,11 +43,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 		showReviewModeWarning,
 		setShowReviewModeWarning,
 		autoEnableReviewMode,
-		setAutoEnableReviewMode
+		setAutoEnableReviewMode,
 	} = useReviewMode()
 	const { weekStartDay, setWeekStartDay } = useWeekStart()
 	const selectedWeekStartOption = WEEK_START_OPTIONS.find(
-		option => option.value === weekStartDay
+		option => option.value === weekStartDay,
 	) ?? { value: 0, label: 'Sunday' }
 
 	const handleLogout = () => {
@@ -74,7 +75,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 										className='flex h-auto w-20 flex-col gap-2 px-4 py-3'
 										key={option.value}
 										onClick={() => setTheme(option.value)}
-										variant={isSelected ? 'default' : 'outline'}
+										variant={
+											isSelected ? 'default' : 'outline'
+										}
 									>
 										<Icon />
 										<span>{option.label}</span>
@@ -86,7 +89,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
 					<div className='flex items-start justify-between border-t pt-6'>
 						<div>
-							<div className='font-medium text-sm'>Start week on</div>
+							<div className='font-medium text-sm'>
+								Start week on
+							</div>
 						</div>
 						<DropdownMenu>
 							<DropdownMenuTrigger
@@ -100,17 +105,27 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 								<span>{selectedWeekStartOption.label}</span>
 								<ChevronDown />
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end' matchTriggerWidth={false}>
+							<DropdownMenuContent
+								align='end'
+								matchTriggerWidth={false}
+							>
 								{WEEK_START_OPTIONS.map(option => {
-									const isSelected = weekStartDay === option.value
+									const isSelected =
+										weekStartDay === option.value
 
 									return (
 										<DropdownMenuItem
 											key={option.value}
-											onClick={() => setWeekStartDay(option.value)}
+											onClick={() =>
+												setWeekStartDay(option.value)
+											}
 										>
-											<span className='flex-1'>{option.label}</span>
-											{isSelected && <Check className='h-4 w-4' />}
+											<span className='flex-1'>
+												{option.label}
+											</span>
+											{isSelected && (
+												<Check className='h-4 w-4' />
+											)}
 										</DropdownMenuItem>
 									)
 								})}
@@ -119,13 +134,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 					</div>
 
 					<div className='border-t pt-6'>
-						<div className='mb-4 font-medium text-sm'>Review mode</div>
+						<div className='mb-4 font-medium text-sm'>
+							Review mode
+						</div>
 						<div className='space-y-4'>
 							<div className='flex items-start justify-between gap-4'>
 								<div>
-									<div className='font-medium text-sm'>Show warning</div>
+									<div className='font-medium text-sm'>
+										Show warning
+									</div>
 									<div className='text-muted-foreground text-xs'>
-										Show a warning when review mode is off on the Due page
+										Show a warning when review mode is off
+										on the Due page
 									</div>
 								</div>
 								<Switch
@@ -137,9 +157,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
 							<div className='flex items-start justify-between gap-4 border-t pt-4'>
 								<div>
-									<div className='font-medium text-sm'>Always turn on</div>
+									<div className='font-medium text-sm'>
+										Always turn on
+									</div>
 									<div className='text-muted-foreground text-xs'>
-										Automatically turn on review mode on the Due page
+										Automatically turn on review mode on the
+										Due page
 									</div>
 								</div>
 								<Switch

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 interface HighlightTextProps {
 	text: string
@@ -9,7 +9,7 @@ interface HighlightTextProps {
 export function highlightText({
 	text,
 	query,
-	className = ''
+	className = '',
 }: HighlightTextProps): ReactNode {
 	if (!(query.trim() && text)) {
 		return text
@@ -17,7 +17,7 @@ export function highlightText({
 
 	const regex = new RegExp(
 		`(${query.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')})`,
-		'gi'
+		'gi',
 	)
 	const parts = text.split(regex)
 
@@ -42,7 +42,7 @@ export function highlightText({
 export function truncateWithHighlight(
 	text: string,
 	query: string,
-	maxLength = 150
+	maxLength = 150,
 ): ReactNode {
 	if (!text) return ''
 

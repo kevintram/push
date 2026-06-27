@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { getReviewCardQueuePage } from '~/modules/review-cards/api/getReviewCardQueue'
 import { getReviewCardQueueSummary } from '~/modules/review-cards/api/getReviewCardQueueSummary'
 import { apiFetch } from '~/utils/apiFetch'
 
 vi.mock('~/utils/apiFetch', () => ({
-	apiFetch: vi.fn()
+	apiFetch: vi.fn(),
 }))
 
 const apiFetchMock = vi.mocked(apiFetch)
@@ -12,7 +13,7 @@ const apiFetchMock = vi.mocked(apiFetch)
 function jsonResponse(body: unknown) {
 	return new Response(JSON.stringify(body), {
 		headers: { 'Content-Type': 'application/json' },
-		status: 200
+		status: 200,
 	})
 }
 
@@ -23,35 +24,37 @@ describe('review card queue API', () => {
 
 	it('uses filter when requesting a unified queue', async () => {
 		apiFetchMock.mockResolvedValue(
-			jsonResponse({ items: [], as_of: '2026-01-15' })
+			jsonResponse({ items: [], as_of: '2026-01-15' }),
 		)
 
 		await getReviewCardQueuePage({
 			filter: 'all',
 			include_future: true,
 			limit: 10,
-			mode: 'focus'
+			mode: 'focus',
 		})
 
 		expect(apiFetchMock).toHaveBeenCalledWith(
 			expect.stringContaining(
-				'/review-cards/queue/?filter=all&mode=focus&include_future=true&limit=10'
-			)
+				'/review-cards/queue/?filter=all&mode=focus&include_future=true&limit=10',
+			),
 		)
 	})
 
 	it('keeps legacy type queue requests working', async () => {
 		apiFetchMock.mockResolvedValue(
-			jsonResponse({ items: [], as_of: '2026-01-15' })
+			jsonResponse({ items: [], as_of: '2026-01-15' }),
 		)
 
 		await getReviewCardQueuePage({
 			type: 'flashcard',
-			mode: 'list'
+			mode: 'list',
 		})
 
 		expect(apiFetchMock).toHaveBeenCalledWith(
-			expect.stringContaining('/review-cards/queue/?type=flashcard&mode=list')
+			expect.stringContaining(
+				'/review-cards/queue/?type=flashcard&mode=list',
+			),
 		)
 	})
 
@@ -62,14 +65,14 @@ describe('review card queue API', () => {
 				due_today_count: 2,
 				due_next_seven_days_count: 3,
 				new_count: 4,
-				as_of: '2026-01-15'
-			})
+				as_of: '2026-01-15',
+			}),
 		)
 
 		await getReviewCardQueueSummary({ filter: 'all' })
 
 		expect(apiFetchMock).toHaveBeenCalledWith(
-			expect.stringContaining('/review-cards/queue-summary/?filter=all')
+			expect.stringContaining('/review-cards/queue-summary/?filter=all'),
 		)
 	})
 
@@ -80,14 +83,16 @@ describe('review card queue API', () => {
 				due_today_count: 2,
 				due_next_seven_days_count: 3,
 				new_count: 4,
-				as_of: '2026-01-15'
-			})
+				as_of: '2026-01-15',
+			}),
 		)
 
 		await getReviewCardQueueSummary({ type: 'practice' })
 
 		expect(apiFetchMock).toHaveBeenCalledWith(
-			expect.stringContaining('/review-cards/queue-summary/?type=practice')
+			expect.stringContaining(
+				'/review-cards/queue-summary/?type=practice',
+			),
 		)
 	})
 })

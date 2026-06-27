@@ -2,7 +2,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ReviewListItem } from '../../types/review.types'
+
+import { type ReviewListItem } from '../../types/review.types'
 import { ReviewItem } from '../ReviewItem'
 
 const prefetchQueryMock = vi.fn()
@@ -10,28 +11,29 @@ const getQueryDataMock = vi.fn()
 const setQueryDataMock = vi.fn()
 
 vi.mock('@tanstack/react-query', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-query')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-query')>()
 	return {
 		...actual,
-		useQueryClient: vi.fn()
+		useQueryClient: vi.fn(),
 	}
 })
 
 vi.mock('@tanstack/react-router', () => ({
-	useNavigate: () => vi.fn()
+	useNavigate: () => vi.fn(),
 }))
 
 vi.mock('../../api/updateReview', () => ({
 	useUpdateReview: () => ({
 		isPending: false,
-		mutateAsync: vi.fn()
-	})
+		mutateAsync: vi.fn(),
+	}),
 }))
 
 vi.mock('../../api/deleteReview', () => ({
 	useDeleteReview: () => ({
-		mutateAsync: vi.fn()
-	})
+		mutateAsync: vi.fn(),
+	}),
 }))
 
 const entry: ReviewListItem = {
@@ -50,7 +52,7 @@ const entry: ReviewListItem = {
 		topic_id: 5,
 		type: 'flashcard',
 		primary_text: 'Prompt',
-		secondary_text: 'Answer'
+		secondary_text: 'Answer',
 	},
 	stability_before: null,
 	difficulty_before: null,
@@ -61,7 +63,7 @@ const entry: ReviewListItem = {
 	difficulty_after: null,
 	state_after: null,
 	step_after: null,
-	due_after: null
+	due_after: null,
 }
 
 describe('ReviewItem', () => {
@@ -73,7 +75,7 @@ describe('ReviewItem', () => {
 		vi.mocked(useQueryClient).mockReturnValue({
 			prefetchQuery: prefetchQueryMock,
 			getQueryData: getQueryDataMock,
-			setQueryData: setQueryDataMock
+			setQueryData: setQueryDataMock,
 		} as never)
 	})
 
@@ -93,7 +95,7 @@ describe('ReviewItem', () => {
 		await user.click(dateButton)
 
 		expect(
-			await screen.findAllByRole('button', { name: 'Clear' })
+			await screen.findAllByRole('button', { name: 'Clear' }),
 		).toHaveLength(1)
 	})
 
@@ -106,7 +108,7 @@ describe('ReviewItem', () => {
 		await user.click(screen.getAllByText('Review item')[0]!)
 
 		expect(setQueryDataMock).toHaveBeenCalledWith(['reviews', 7], entry, {
-			updatedAt: 0
+			updatedAt: 0,
 		})
 		expect(onReviewClick).toHaveBeenCalledWith(7)
 	})
@@ -117,7 +119,7 @@ describe('ReviewItem', () => {
 
 		getQueryDataMock.mockReturnValue({
 			...entry,
-			description: 'Stale cached review'
+			description: 'Stale cached review',
 		})
 
 		render(<ReviewItem entry={entry} onReviewClick={onReviewClick} />)
@@ -125,7 +127,7 @@ describe('ReviewItem', () => {
 		await user.click(screen.getAllByText('Review item')[0]!)
 
 		expect(setQueryDataMock).toHaveBeenCalledWith(['reviews', 7], entry, {
-			updatedAt: 0
+			updatedAt: 0,
 		})
 		expect(onReviewClick).toHaveBeenCalledWith(7)
 	})
@@ -139,12 +141,12 @@ describe('ReviewItem', () => {
 		vi.advanceTimersByTime(100)
 
 		expect(setQueryDataMock).toHaveBeenCalledWith(['reviews', 7], entry, {
-			updatedAt: 0
+			updatedAt: 0,
 		})
 		expect(prefetchQueryMock).toHaveBeenCalledTimes(1)
 		expect(prefetchQueryMock.mock.calls[0]?.[0]).toMatchObject({
 			queryKey: ['reviews', 7],
-			staleTime: 30_000
+			staleTime: 30_000,
 		})
 	})
 
@@ -172,7 +174,7 @@ describe('ReviewItem', () => {
 				entry={entry}
 				onNestedOverlayOpenChange={onNestedOverlayOpenChange}
 				onNestedOverlayTriggerInteract={onNestedOverlayTriggerInteract}
-			/>
+			/>,
 		)
 
 		await user.click(screen.getAllByTitle('More options')[0]!)

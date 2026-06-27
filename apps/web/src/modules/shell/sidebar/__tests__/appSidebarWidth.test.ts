@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+
 import {
 	APP_SIDEBAR_WIDTH_STORAGE_KEY,
 	clampAppSidebarWidth,
-	getStoredAppSidebarWidth
+	getStoredAppSidebarWidth,
 } from '~/modules/shell/sidebar/appSidebarWidth'
 import {
 	TOPIC_NAVIGATOR_DEFAULT_WIDTH_PX,
 	TOPIC_NAVIGATOR_MAX_WIDTH_PX,
-	TOPIC_NAVIGATOR_WIDTH_STORAGE_KEY
+	TOPIC_NAVIGATOR_WIDTH_STORAGE_KEY,
 } from '~/modules/topics/components/topic-navigator/TopicNavigator.shared'
 
 describe('appSidebarWidth', () => {
@@ -22,8 +23,8 @@ describe('appSidebarWidth', () => {
 				},
 				removeItem: (key: string) => {
 					storage.delete(key)
-				}
-			}
+				},
+			},
 		})
 	})
 
@@ -36,13 +37,15 @@ describe('appSidebarWidth', () => {
 	it('ignores legacy topic navigator width storage', () => {
 		window.localStorage.setItem(TOPIC_NAVIGATOR_WIDTH_STORAGE_KEY, '320')
 
-		expect(getStoredAppSidebarWidth()).toBe(TOPIC_NAVIGATOR_DEFAULT_WIDTH_PX)
+		expect(getStoredAppSidebarWidth()).toBe(
+			TOPIC_NAVIGATOR_DEFAULT_WIDTH_PX,
+		)
 	})
 
 	it('clamps oversized stored values', () => {
 		window.localStorage.setItem(
 			APP_SIDEBAR_WIDTH_STORAGE_KEY,
-			String(TOPIC_NAVIGATOR_MAX_WIDTH_PX + 100)
+			String(TOPIC_NAVIGATOR_MAX_WIDTH_PX + 100),
 		)
 
 		expect(getStoredAppSidebarWidth()).toBe(TOPIC_NAVIGATOR_MAX_WIDTH_PX)

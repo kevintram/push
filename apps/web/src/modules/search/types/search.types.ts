@@ -1,5 +1,5 @@
-import type { ReviewCard } from '~/modules/review-cards/types/review-card.types'
-import type { Topic } from '~/modules/topics/types/topic.types'
+import { type ReviewCard } from '~/modules/review-cards/types/review-card.types'
+import { type Topic } from '~/modules/topics/types/topic.types'
 
 export type SearchResultItem = {
 	entity_type: 'topic' | 'review_card'

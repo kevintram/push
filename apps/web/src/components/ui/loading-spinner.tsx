@@ -1,4 +1,5 @@
 import { Loader } from "lucide-react"
+
 import { cn } from "~/lib/utils"
 
 type LoadingSpinnerSize = "sm" | "md" | "lg"
@@ -13,14 +14,14 @@ interface LoadingSpinnerProps {
 const iconSizeClass: Record<LoadingSpinnerSize, string> = {
 	sm: "h-4 w-4",
 	md: "h-6 w-6",
-	lg: "h-8 w-8"
+	lg: "h-8 w-8",
 }
 
 export function LoadingSpinner({
 	containerClassName,
 	iconClassName,
 	label,
-	size = "md"
+	size = "md",
 }: LoadingSpinnerProps) {
 	return (
 		<div
@@ -28,11 +29,15 @@ export function LoadingSpinner({
 			aria-live='polite'
 			className={cn(
 				"flex items-center justify-center gap-2 py-6 text-muted-foreground",
-				containerClassName
+				containerClassName,
 			)}
 		>
 			<Loader
-				className={cn("animate-spin", iconSizeClass[size], iconClassName)}
+				className={cn(
+					"animate-spin",
+					iconSizeClass[size],
+					iconClassName,
+				)}
 			/>
 			{label ? <span className='text-sm'>{label}</span> : null}
 			{label ? null : <span className='sr-only'>Loading</span>}

@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
-import type { LearnableMetricsInput } from '~/models/learnable.types'
+
+import { type LearnableMetricsInput } from '~/models/learnable.types'
 import {
 	formatRetrievability,
-	getFreshnessTierColor
+	getFreshnessTierColor,
 } from '~/utils/retrievability'
 
 export interface FreshnessTierInfo {
@@ -24,7 +25,7 @@ export interface LearnableMetrics {
 }
 
 export function useLearnableMetrics(
-	learnable: LearnableMetricsInput | null
+	learnable: LearnableMetricsInput | null,
 ): LearnableMetrics {
 	const retrievability = learnable?.retrievability ?? null
 	const freshnessTier = learnable?.freshness_tier ?? null
@@ -80,7 +81,7 @@ export function useLearnableMetrics(
 			retrievability === null &&
 			lastReviewedAt === null &&
 			inheritedStability === null,
-		[retrievability, lastReviewedAt, inheritedStability]
+		[retrievability, lastReviewedAt, inheritedStability],
 	)
 
 	const isLeavingSoon = useMemo(() => {
@@ -91,7 +92,7 @@ export function useLearnableMetrics(
 
 	const freshnessTierColor = useMemo(
 		() => getFreshnessTierColor(freshnessTier),
-		[freshnessTier]
+		[freshnessTier],
 	)
 
 	return {
@@ -104,6 +105,6 @@ export function useLearnableMetrics(
 		isLeavingSoon,
 		leavingSoonLabel,
 		leavingSoonTooltip,
-		daysUntilNextTier
+		daysUntilNextTier,
 	}
 }

@@ -2,6 +2,7 @@ import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
 import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
 import type * as React from "react"
+
 import { cn } from "~/lib/utils"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
@@ -20,7 +21,7 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
 		<ol
 			className={cn(
 				"flex flex-wrap items-center gap-1.5 text-sm wrap-break-word text-muted-foreground sm:gap-2.5",
-				className
+				className,
 			)}
 			data-slot='breadcrumb-list'
 			{...props}
@@ -47,14 +48,17 @@ function BreadcrumbLink({
 		defaultTagName: "a",
 		props: mergeProps<"a">(
 			{
-				className: cn("transition-colors hover:text-foreground", className)
+				className: cn(
+					"transition-colors hover:text-foreground",
+					className,
+				),
 			},
-			props
+			props,
 		),
 		render,
 		state: {
-			slot: "breadcrumb-link"
-		}
+			slot: "breadcrumb-link",
+		},
 	})
 }
 
@@ -96,7 +100,7 @@ function BreadcrumbEllipsis({
 			aria-hidden='true'
 			className={cn(
 				"flex size-5 items-center justify-center [&>svg]:size-4",
-				className
+				className,
 			)}
 			data-slot='breadcrumb-ellipsis'
 			role='presentation'
@@ -115,5 +119,5 @@ export {
 	BreadcrumbLink,
 	BreadcrumbList,
 	BreadcrumbPage,
-	BreadcrumbSeparator
+	BreadcrumbSeparator,
 }

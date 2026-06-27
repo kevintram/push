@@ -6,27 +6,29 @@ import {
 	useLayoutEffect,
 	useMemo,
 	useRef,
-	useState
+	useState,
 } from 'react'
+
 import {
 	type EntityType,
 	EntityTypeFilter,
-	type EntityTypeFilterValue
+	type EntityTypeFilterValue,
 } from '~/components/EntityTypeFilter'
 import { Button } from '~/components/ui/button'
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
-	DialogTitle
+	DialogTitle,
 } from '~/components/ui/dialog'
 import { useDebouncedValue } from '~/hooks/useDebouncedValue'
 import { ReviewCard } from '~/modules/review-cards/components/ReviewCard'
 import { getReviewCardDisplayTitle } from '~/modules/review-cards/utils/reviewCardCopy'
 import { useSearchAll } from '~/modules/search/api/searchAll'
-import type { SearchResultItem } from '~/modules/search/types/search.types'
+import { type SearchResultItem } from '~/modules/search/types/search.types'
 import { TopicCard } from '~/modules/topics/components/TopicCard'
 import { estimateCardSize } from '~/utils/estimateCardSize'
+
 import { SearchInput } from './SearchInput'
 import { SearchResultsContainer } from './SearchResultsContainer'
 
@@ -58,11 +60,12 @@ function toEntityTypes(filter: EntityTypeFilterValue): string | undefined {
 
 function matchesFilter(
 	result: SearchResultItem,
-	filter: EntityTypeFilterValue
+	filter: EntityTypeFilterValue,
 ): boolean {
 	if (filter === 'all') return true
 	if (filter === 'topic') return result.entity_type === 'topic'
-	if (result.entity_type !== 'review_card' || !result.review_card) return false
+	if (result.entity_type !== 'review_card' || !result.review_card)
+		return false
 	return result.review_card.type === filter
 }
 
@@ -82,7 +85,7 @@ export function SearchDialog({
 	isCreating = false,
 	filterResult,
 	showAllOption = true,
-	showNoTagOption = false
+	showNoTagOption = false,
 }: SearchDialogProps) {
 	const navigate = useNavigate()
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -91,7 +94,7 @@ export function SearchDialog({
 	const [selectedIndex, setSelectedIndex] = useState(0)
 	const resolvedAllowedTypes = useMemo<Array<EntityType>>(
 		() => allowedTypes ?? ['topic', 'practice', 'flashcard'],
-		[allowedTypes]
+		[allowedTypes],
 	)
 	const resolvedInitialFilter = useMemo<EntityTypeFilterValue>(
 		() =>
@@ -99,10 +102,10 @@ export function SearchDialog({
 			(resolvedAllowedTypes.length === 1
 				? (resolvedAllowedTypes[0] ?? 'all')
 				: 'all'),
-		[initialFilter, resolvedAllowedTypes]
+		[initialFilter, resolvedAllowedTypes],
 	)
 	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>(
-		resolvedInitialFilter
+		resolvedInitialFilter,
 	)
 	const [gap, setGap] = useState(12)
 
@@ -114,9 +117,9 @@ export function SearchDialog({
 		{
 			query: trimmedQuery || undefined,
 			limit: 24,
-			entityTypes: toEntityTypes(activeFilter)
+			entityTypes: toEntityTypes(activeFilter),
 		},
-		{ enabled: open }
+		{ enabled: open },
 	)
 
 	const results = useMemo(() => {
@@ -139,7 +142,6 @@ export function SearchDialog({
 		}
 	}, [open, resolvedInitialFilter])
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset keyboard index when query changes
 	useEffect(() => {
 		setSelectedIndex(0)
 	}, [query])
@@ -180,13 +182,13 @@ export function SearchDialog({
 		if (entity.entity_type === 'topic' && entity.topic) {
 			navigate({
 				to: '/topics/$topicId',
-				params: { topicId: entity.topic.id.toString() }
+				params: { topicId: entity.topic.id.toString() },
 			})
 		} else if (entity.entity_type === 'review_card' && entity.review_card) {
 			navigate({
 				to: '/review-cards/$reviewCardId',
 				params: { reviewCardId: entity.review_card.id.toString() },
-				search: { tab: 'home' }
+				search: { tab: 'home' },
 			})
 		}
 
@@ -248,18 +250,26 @@ export function SearchDialog({
 					<SearchResultsContainer
 						animate={false}
 						estimateItemSize={(result, _index, laneWidth) => {
-							if (result.entity_type === 'topic' && result.topic) {
+							if (
+								result.entity_type === 'topic' &&
+								result.topic
+							) {
 								return estimateCardSize(
 									result.topic.title || 'Untitled topic',
 									result.topic.body || '',
-									laneWidth
+									laneWidth,
 								)
 							}
-							if (result.entity_type === 'review_card' && result.review_card) {
+							if (
+								result.entity_type === 'review_card' &&
+								result.review_card
+							) {
 								return estimateCardSize(
-									getReviewCardDisplayTitle(result.review_card),
+									getReviewCardDisplayTitle(
+										result.review_card,
+									),
 									result.review_card.secondary_text || '',
-									laneWidth
+									laneWidth,
 								)
 							}
 							return 120
@@ -275,7 +285,10 @@ export function SearchDialog({
 						isLoading={isLoading}
 						minItemWidth={280}
 						renderItem={result => {
-							if (result.entity_type === 'topic' && result.topic) {
+							if (
+								result.entity_type === 'topic' &&
+								result.topic
+							) {
 								return (
 									<TopicCard
 										onClick={() => {
@@ -286,7 +299,10 @@ export function SearchDialog({
 								)
 							}
 
-							if (result.entity_type === 'review_card' && result.review_card) {
+							if (
+								result.entity_type === 'review_card' &&
+								result.review_card
+							) {
 								return (
 									<ReviewCard
 										onClick={() => {

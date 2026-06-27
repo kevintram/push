@@ -33,7 +33,7 @@ pnpm install        # Install dependencies
 pnpm run dev        # Start dev server
 ./run.sh            # Start dev server with worktree port (see ## Worktree and Environment Files)
 pnpm run test       # Run tests in watch mode
-pnpm run lint       # Run tsc, biome lint, and component-count enforcement
+pnpm run lint       # Run tsc, eslint, and component-count enforcement
 pnpm run validate   # Run full validation pipeline
 ```
 Note: When using worktrees, run `apps/web/run.sh` from the worktree to use the assigned port.

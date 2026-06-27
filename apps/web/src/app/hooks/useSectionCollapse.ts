@@ -34,7 +34,7 @@ export function useSectionCollapse() {
 
 			return {
 				...prev,
-				[sectionId]: false
+				[sectionId]: false,
 			}
 		})
 	}, [])
@@ -42,13 +42,13 @@ export function useSectionCollapse() {
 	const toggleSection = useCallback((sectionId: string) => {
 		setCollapsedSections(prev => ({
 			...prev,
-			[sectionId]: !prev[sectionId]
+			[sectionId]: !prev[sectionId],
 		}))
 	}, [])
 
 	return {
 		collapsedSections,
 		expandSection,
-		toggleSection
+		toggleSection,
 	}
 }

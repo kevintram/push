@@ -1,5 +1,5 @@
-import type { ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
-import type { WeekStartDay } from '~/stores/WeekStartContext'
+import { type ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
+import { type WeekStartDay } from '~/stores/WeekStartContext'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -39,14 +39,15 @@ function getDateKey(date: Date): string {
 
 function toDayNumber(date: Date): number {
 	return Math.floor(
-		Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MS_PER_DAY
+		Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) /
+			MS_PER_DAY,
 	)
 }
 
 function getWeeksAgo(
 	itemDate: Date,
 	weekStartDay: WeekStartDay,
-	anchorDate: Date
+	anchorDate: Date,
 ): number {
 	const currentWeekStart = startOfWeek(anchorDate, weekStartDay)
 	const itemWeekStart = startOfWeek(itemDate, weekStartDay)
@@ -56,25 +57,25 @@ function getWeeksAgo(
 function getSectionForCreatedDate(
 	itemDate: Date,
 	weekStartDay: WeekStartDay,
-	anchorDate: Date
+	anchorDate: Date,
 ): Omit<CreatedSection, 'items'> {
 	const daysAgo = Math.max(
 		0,
-		toDayNumber(startOfDay(anchorDate)) - toDayNumber(startOfDay(itemDate))
+		toDayNumber(startOfDay(anchorDate)) - toDayNumber(startOfDay(itemDate)),
 	)
 
 	if (daysAgo === 0) {
 		return {
 			id: 'today',
 			label: 'Today',
-			headingClassName: 'text-blue-600 dark:text-blue-400'
+			headingClassName: 'text-blue-600 dark:text-blue-400',
 		}
 	}
 
 	if (daysAgo === 1) {
 		return {
 			id: 'yesterday',
-			label: 'Yesterday'
+			label: 'Yesterday',
 		}
 	}
 
@@ -82,27 +83,27 @@ function getSectionForCreatedDate(
 	if (weeksAgo === 0) {
 		return {
 			id: getDateKey(itemDate),
-			label: itemDate.toLocaleDateString(undefined, { weekday: 'long' })
+			label: itemDate.toLocaleDateString(undefined, { weekday: 'long' }),
 		}
 	}
 
 	if (weeksAgo === 1) {
 		return {
 			id: 'last-week',
-			label: 'Last week'
+			label: 'Last week',
 		}
 	}
 
 	return {
 		id: `weeks-ago-${weeksAgo}`,
-		label: `${weeksAgo} weeks ago`
+		label: `${weeksAgo} weeks ago`,
 	}
 }
 
 export function groupReviewCardQueueByCreatedDay(
 	items: Array<ReviewCardQueueItem>,
 	weekStartDay: WeekStartDay,
-	asOf?: string
+	asOf?: string,
 ): Array<CreatedSection> {
 	const sectionMap = new Map<string, CreatedSection>()
 	const sectionOrder: Array<string> = []
@@ -115,13 +116,13 @@ export function groupReviewCardQueueByCreatedDay(
 		const section = getSectionForCreatedDate(
 			parseItemDate(createdAt),
 			weekStartDay,
-			anchorDate
+			anchorDate,
 		)
 
 		if (!sectionMap.has(section.id)) {
 			sectionMap.set(section.id, {
 				...section,
-				items: []
+				items: [],
 			})
 			sectionOrder.push(section.id)
 		}

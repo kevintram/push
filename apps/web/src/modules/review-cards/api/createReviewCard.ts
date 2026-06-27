@@ -1,25 +1,27 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
+
 import { ReviewCardSchema } from '../types/review-card.schemas'
-import type {
-	CreateReviewCardPayload,
-	ReviewCard
+import {
+	type CreateReviewCardPayload,
+	type ReviewCard,
 } from '../types/review-card.types'
 import { reviewCardKeys } from './queryKeys'
 
 async function createReviewCard(
-	payload: CreateReviewCardPayload
+	payload: CreateReviewCardPayload,
 ): Promise<ReviewCard> {
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/review-cards/`,
 		{
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify(payload)
-		}
+			body: JSON.stringify(payload),
+		},
 	)
 
 	if (!response.ok) {
@@ -43,8 +45,13 @@ export function useCreateReviewCard() {
 	return useMutation({
 		mutationFn: createReviewCard,
 		onSuccess: reviewCard => {
-			queryClient.setQueryData(reviewCardKeys.detail(reviewCard.id), reviewCard)
-			return queryClient.invalidateQueries({ queryKey: reviewCardKeys.all })
-		}
+			queryClient.setQueryData(
+				reviewCardKeys.detail(reviewCard.id),
+				reviewCard,
+			)
+			return queryClient.invalidateQueries({
+				queryKey: reviewCardKeys.all,
+			})
+		},
 	})
 }

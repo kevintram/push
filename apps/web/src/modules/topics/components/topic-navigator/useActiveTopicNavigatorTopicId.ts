@@ -1,4 +1,5 @@
 import { useMatchRoute } from '@tanstack/react-router'
+
 import { useReviewCard } from '~/modules/review-cards/api/getReviewCard'
 
 function parsePositiveInteger(value: string | undefined) {
@@ -13,10 +14,10 @@ export function useActiveTopicNavigatorTopicId() {
 	const topicMatch = matchRoute({ to: '/topics/$topicId' })
 	const reviewCardMatch = matchRoute({ to: '/review-cards/$reviewCardId' })
 	const topicId = parsePositiveInteger(
-		topicMatch ? topicMatch.topicId : undefined
+		topicMatch ? topicMatch.topicId : undefined,
 	)
 	const reviewCardId = parsePositiveInteger(
-		reviewCardMatch ? reviewCardMatch.reviewCardId : undefined
+		reviewCardMatch ? reviewCardMatch.reviewCardId : undefined,
 	)
 	const { data: reviewCard } = useReviewCard(reviewCardId)
 

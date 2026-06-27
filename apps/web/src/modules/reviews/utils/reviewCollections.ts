@@ -1,5 +1,6 @@
 import { localDateString } from '~/utils/date'
-import type { ReviewListItem } from '../types/review.types'
+
+import { type ReviewListItem } from '../types/review.types'
 
 export function splitReviews(reviews: Array<ReviewListItem>) {
 	const today = localDateString()
@@ -39,12 +40,13 @@ export function splitReviews(reviews: Array<ReviewListItem>) {
 	upcoming.sort(sortByEffectiveDateAsc)
 	uncompletedUnscheduled.sort(
 		(a, b) =>
-			new Date(b.inserted_at).getTime() - new Date(a.inserted_at).getTime()
+			new Date(b.inserted_at).getTime() -
+			new Date(a.inserted_at).getTime(),
 	)
 	completed.sort(
 		(a, b) =>
 			new Date(b.completed_at ?? b.effective_date ?? 0).getTime() -
-			new Date(a.completed_at ?? a.effective_date ?? 0).getTime()
+			new Date(a.completed_at ?? a.effective_date ?? 0).getTime(),
 	)
 
 	return {
@@ -52,7 +54,7 @@ export function splitReviews(reviews: Array<ReviewListItem>) {
 		overdueReviews: overdue,
 		todayReviews,
 		upcomingReviews: upcoming,
-		completedReviews: completed
+		completedReviews: completed,
 	}
 }
 

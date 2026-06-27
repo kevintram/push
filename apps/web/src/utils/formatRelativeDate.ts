@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
  */
 export function formatAbsoluteDate(
 	date: Date | string | null,
-	fallback = 'never'
+	fallback = 'never',
 ): string {
 	if (!date) return fallback
 	return dayjs(date).format('MMM D, YYYY')
@@ -58,12 +58,12 @@ interface FormatRelativeDateResult {
  */
 export function formatRelativeDate(
 	date: Date | string | null,
-	options: FormatRelativeDateOptions = {}
+	options: FormatRelativeDateOptions = {},
 ): FormatRelativeDateResult {
 	const {
 		includeFuture = true,
 		nullLabel = 'No date',
-		shortDate = false
+		shortDate = false,
 	} = options
 
 	if (!date) {
@@ -94,7 +94,7 @@ export function formatRelativeDate(
 		const days = Math.abs(diffDays)
 		return {
 			text: `${days}d ago`,
-			tooltipText: `${days} days ago`
+			tooltipText: `${days} days ago`,
 		}
 	}
 
@@ -102,7 +102,7 @@ export function formatRelativeDate(
 	if (includeFuture) {
 		return {
 			text: `in ${diffDays}d`,
-			tooltipText: `in ${diffDays} days`
+			tooltipText: `in ${diffDays} days`,
 		}
 	}
 

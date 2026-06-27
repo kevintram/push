@@ -1,14 +1,16 @@
 import { ChevronDown, Plus } from 'lucide-react'
+
 import { Button } from '~/components/ui/button'
+
 import { RatingDropdown } from './RatingDropdown'
-import type { ReviewRatingState } from './ReviewRatingCheckbox'
+import { type ReviewRatingState } from './ReviewRatingCheckbox'
 
 interface AddFirstReviewButtonProps {
 	onSelectRating: (rating: ReviewRatingState) => void
 }
 
 export function AddFirstReviewButton({
-	onSelectRating
+	onSelectRating,
 }: AddFirstReviewButtonProps) {
 	return (
 		<div className='flex justify-center'>

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 type MockNextThemesProviderProps = {
@@ -13,12 +13,12 @@ type MockNextThemesProviderProps = {
 
 const mockUseNextTheme = vi.hoisted(() => vi.fn())
 const mockNextThemesProvider = vi.hoisted(() =>
-	vi.fn(({ children }: MockNextThemesProviderProps) => <>{children}</>)
+	vi.fn(({ children }: MockNextThemesProviderProps) => <>{children}</>),
 )
 
 vi.mock('next-themes', () => ({
 	ThemeProvider: mockNextThemesProvider,
-	useTheme: mockUseNextTheme
+	useTheme: mockUseNextTheme,
 }))
 
 import { ThemeProvider, useTheme } from '~/stores/ThemeContext'
@@ -48,7 +48,7 @@ describe('ThemeContext', () => {
 		render(
 			<ThemeProvider defaultTheme='dark' storageKey='custom-theme-key'>
 				<div>Child content</div>
-			</ThemeProvider>
+			</ThemeProvider>,
 		)
 
 		expect(screen.getByText('Child content')).toBeInTheDocument()
@@ -66,7 +66,7 @@ describe('ThemeContext', () => {
 		render(
 			<ThemeProvider>
 				<div>Child content</div>
-			</ThemeProvider>
+			</ThemeProvider>,
 		)
 
 		const props = mockNextThemesProvider.mock
@@ -86,7 +86,7 @@ describe('ThemeContext', () => {
 			setTheme,
 			systemTheme: 'dark',
 			theme: 'system',
-			themes: ['dark', 'light', 'system']
+			themes: ['dark', 'light', 'system'],
 		})
 
 		render(<ThemeProbe />)

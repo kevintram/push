@@ -1,5 +1,7 @@
 import { useState } from "react"
+
 import { cn } from "~/lib/utils"
+
 import { Kbd, KbdGroup } from "./kbd"
 
 function isApplePlatform() {
@@ -19,7 +21,7 @@ function isApplePlatform() {
 
 export function KeyboardShortcutHint({
 	className,
-	keyLabel
+	keyLabel,
 }: {
 	className?: string
 	keyLabel: string

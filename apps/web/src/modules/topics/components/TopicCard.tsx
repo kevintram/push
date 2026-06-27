@@ -3,11 +3,17 @@ import {
 	MoreHorizontal,
 	PenLine,
 	Trash2,
-	User2
+	User2,
 } from 'lucide-react'
-import type { FocusEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react'
+import {
+	type FocusEvent,
+	type KeyboardEvent,
+	type MouseEvent,
+	type ReactNode,
+} from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+
 import { RevealPanel } from '~/components/RevealPanel'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
@@ -15,12 +21,12 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
@@ -28,15 +34,16 @@ import { cn } from '~/lib/utils'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 import {
 	estimateCardSize,
-	estimateExpandedCardSize
+	estimateExpandedCardSize,
 } from '~/utils/estimateCardSize'
 import {
 	formatAbsoluteDate,
-	formatRelativeDate
+	formatRelativeDate,
 } from '~/utils/formatRelativeDate'
+
 import { useDeleteTopic } from '../api/deleteTopic'
 import { usePrefetchTopicDetail } from '../hooks/usePrefetchTopicDetail'
-import type { Topic } from '../types/topic.types'
+import { type Topic } from '../types/topic.types'
 
 const MIN_HEIGHT = 96
 const LARGE_CARD_CONTENT_HEIGHT_MIN = 500
@@ -56,7 +63,7 @@ export function TopicCard({
 	onClick,
 	parentLabel,
 	minHeight = MIN_HEIGHT,
-	enableLargeCardMode = false
+	enableLargeCardMode = false,
 }: TopicCardProps) {
 	const [cardRef, cardRect] = useResizeObserver<HTMLDivElement>()
 	const deleteTopicMutation = useDeleteTopic()
@@ -64,11 +71,10 @@ export function TopicCard({
 	const {
 		preloadTopicDetail,
 		scheduleTopicDetailPreload,
-		cancelTopicDetailPreload
+		cancelTopicDetailPreload,
 	} = usePrefetchTopicDetail(onClick ? topic.id : null)
-	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
-		!hidesSecondary
-	)
+	const [isSecondaryRevealed, setIsSecondaryRevealed] =
+		useState(!hidesSecondary)
 
 	const resolvedParentLabel =
 		parentLabel ??
@@ -86,9 +92,9 @@ export function TopicCard({
 				estimateCardSize(
 					topic.title || 'Untitled topic',
 					topic.body || '',
-					estimatedWidth
-				)
-			)
+					estimatedWidth,
+				),
+			),
 		)
 	}, [cardRect.width, minHeight, topic.body, topic.title])
 	const estimatedExpandedCardHeight = useMemo(() => {
@@ -97,7 +103,7 @@ export function TopicCard({
 		return estimateExpandedCardSize(
 			topic.title || 'Untitled topic',
 			topic.body || '',
-			estimatedWidth
+			estimatedWidth,
 		)
 	}, [cardRect.width, topic.body, topic.title])
 	const isLargeCard =
@@ -112,37 +118,37 @@ export function TopicCard({
 		setGuessText: setGuessBodyText,
 		isCopied: isRevealPanelCopied,
 		handleCopyGuessText,
-		handleCopyRevealText
+		handleCopyRevealText,
 	} = useRevealPanel({
 		revealText: topic.body,
 		entityId: topic.id < 0 ? null : topic.id,
-		hidesSecondary
+		hidesSecondary,
 	})
 
 	const updated = useMemo(
 		() =>
 			formatRelativeDate(topic.updated_at, {
 				includeFuture: false,
-				nullLabel: 'never'
+				nullLabel: 'never',
 			}),
-		[topic.updated_at]
+		[topic.updated_at],
 	)
 	const created = useMemo(
 		() =>
 			formatRelativeDate(topic.inserted_at, {
 				includeFuture: false,
-				nullLabel: 'never'
+				nullLabel: 'never',
 			}),
-		[topic.inserted_at]
+		[topic.inserted_at],
 	)
 
 	const updatedDate = useMemo(
 		() => formatAbsoluteDate(topic.updated_at),
-		[topic.updated_at]
+		[topic.updated_at],
 	)
 	const createdDate = useMemo(
 		() => formatAbsoluteDate(topic.inserted_at),
-		[topic.inserted_at]
+		[topic.inserted_at],
 	)
 
 	const handleActivate = useCallback(() => {
@@ -156,7 +162,7 @@ export function TopicCard({
 				onClick?.()
 			}
 		},
-		[onClick]
+		[onClick],
 	)
 	const handleRevealSecondary = useCallback((event: MouseEvent) => {
 		event.stopPropagation()
@@ -172,7 +178,7 @@ export function TopicCard({
 		(_event: FocusEvent<HTMLDivElement>) => {
 			preloadTopicDetail()
 		},
-		[preloadTopicDetail]
+		[preloadTopicDetail],
 	)
 	const handleBlur = useCallback(() => {
 		cancelTopicDetailPreload()
@@ -184,7 +190,9 @@ export function TopicCard({
 			toast.success('Topic deleted')
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : 'Failed to delete topic'
+				error instanceof Error
+					? error.message
+					: 'Failed to delete topic',
 			)
 		}
 	}, [deleteTopicMutation, topic.id])
@@ -240,7 +248,9 @@ export function TopicCard({
 				<p
 					className={cn(
 						'break-word whitespace-pre-wrap text-sm [overflow-wrap:anywhere]',
-						isLargeCard ? 'min-h-0 flex-1 overflow-y-auto' : 'line-clamp-[8]'
+						isLargeCard
+							? 'min-h-0 flex-1 overflow-y-auto'
+							: 'line-clamp-[8]',
 					)}
 				>
 					{topic.body}
@@ -252,7 +262,7 @@ export function TopicCard({
 		<Card
 			className={cn(
 				'relative max-h-96 gap-0 overflow-visible p-3 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-				onClick ? 'cursor-pointer hover:bg-muted/50' : null
+				onClick ? 'cursor-pointer hover:bg-muted/50' : null,
 			)}
 			onBlur={handleBlur}
 			onClick={handleActivate}
@@ -266,7 +276,7 @@ export function TopicCard({
 				isLargeCard
 					? {
 							height: `${estimatedCardHeight}px`,
-							minHeight: `${estimatedCardHeight}px`
+							minHeight: `${estimatedCardHeight}px`,
 						}
 					: { minHeight: `${minHeight}px` }
 			}
@@ -278,7 +288,9 @@ export function TopicCard({
 						render={
 							<div className='flex min-w-0 items-center gap-1 font-semibold text-muted-foreground text-xs'>
 								<User2 className='h-3 w-3 shrink-0' />
-								<span className='truncate'>{resolvedParentLabel}</span>
+								<span className='truncate'>
+									{resolvedParentLabel}
+								</span>
 							</div>
 						}
 					/>
@@ -298,7 +310,11 @@ export function TopicCard({
 							</Button>
 						}
 					/>
-					<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+					<DropdownMenuContent
+						align='end'
+						side='bottom'
+						sideOffset={2}
+					>
 						<DropdownMenuItem
 							disabled={deleteTopicMutation.isPending}
 							onClick={event => {

@@ -1,5 +1,5 @@
-import type { LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type LucideIcon } from 'lucide-react'
+import { type ReactNode } from 'react'
 
 import { cn } from '~/lib/utils'
 
@@ -24,7 +24,7 @@ export function PageLayoutHeader({
 	titleExtra,
 	actions,
 	centerContent,
-	children
+	children,
 }: PageLayoutHeaderProps) {
 	const hasCenterContent = centerContent != null
 
@@ -35,13 +35,13 @@ export function PageLayoutHeader({
 					'items-center gap-1',
 					hasCenterContent
 						? 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'
-						: 'flex justify-between'
+						: 'flex justify-between',
 				)}
 			>
 				<div
 					className={cn(
 						'flex min-w-0 items-center gap-2',
-						hasCenterContent && 'justify-self-start'
+						hasCenterContent && 'justify-self-start',
 					)}
 				>
 					<h1 className='flex min-w-0 items-center gap-2 font-bold text-xl'>
@@ -56,7 +56,9 @@ export function PageLayoutHeader({
 					</div>
 				) : null}
 				{hasCenterContent ? (
-					<div className='flex min-w-0 items-center justify-end'>{actions}</div>
+					<div className='flex min-w-0 items-center justify-end'>
+						{actions}
+					</div>
 				) : (
 					actions
 				)}
@@ -69,7 +71,7 @@ export function PageLayoutHeader({
 export function PageLayoutContent({
 	children,
 	className,
-	controls
+	controls,
 }: PageLayoutContentProps) {
 	return (
 		<div className={cn('mx-auto w-full max-w-5xl p-4', className)}>

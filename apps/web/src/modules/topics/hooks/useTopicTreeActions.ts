@@ -1,9 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+
 import { useCreateTopic } from '~/modules/topics/api/createTopic'
 import { useDeleteTopic } from '~/modules/topics/api/deleteTopic'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
 
 type UseTopicTreeActionsOptions = {
 	activeTopicId?: number | null
@@ -12,7 +13,7 @@ type UseTopicTreeActionsOptions = {
 	nodeById: Map<number, TopicTreeNode>
 	onAfterCreateSubtopic?: (
 		parentTopicId: number,
-		createdTopicId: number
+		createdTopicId: number,
 	) => void | Promise<void>
 	onAfterRouteChange?: () => void | Promise<void>
 }
@@ -23,7 +24,7 @@ export function useTopicTreeActions({
 	navigateToCreatedTopic = true,
 	nodeById,
 	onAfterCreateSubtopic,
-	onAfterRouteChange
+	onAfterRouteChange,
 }: UseTopicTreeActionsOptions) {
 	const navigate = useNavigate()
 	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
@@ -36,8 +37,10 @@ export function useTopicTreeActions({
 
 	const pendingDeleteTopic = useMemo(
 		() =>
-			pendingDeleteTopicId == null ? null : nodeById.get(pendingDeleteTopicId),
-		[nodeById, pendingDeleteTopicId]
+			pendingDeleteTopicId == null
+				? null
+				: nodeById.get(pendingDeleteTopicId),
+		[nodeById, pendingDeleteTopicId],
 	)
 
 	const handleCreateSubtopic = useCallback(
@@ -48,14 +51,14 @@ export function useTopicTreeActions({
 				const created = await createTopicAsync({
 					title: '',
 					body: '',
-					parent_id: parentTopicId
+					parent_id: parentTopicId,
 				})
 				await onAfterCreateSubtopic?.(parentTopicId, created.id)
 				if (navigateToCreatedTopic) {
 					await navigate({
 						to: '/topics/$topicId',
 						params: { topicId: created.id.toString() },
-						search: { focusTitle: true }
+						search: { focusTitle: true },
 					})
 					await onAfterRouteChange?.()
 				}
@@ -69,8 +72,8 @@ export function useTopicTreeActions({
 			navigate,
 			navigateToCreatedTopic,
 			onAfterCreateSubtopic,
-			onAfterRouteChange
-		]
+			onAfterRouteChange,
+		],
 	)
 
 	const handleDeleteTopic = useCallback(async () => {
@@ -83,7 +86,9 @@ export function useTopicTreeActions({
 		}
 
 		const activeTopicAncestorIds =
-			activeTopicId == null ? [] : (ancestorIdsById.get(activeTopicId) ?? [])
+			activeTopicId == null
+				? []
+				: (ancestorIdsById.get(activeTopicId) ?? [])
 		const shouldNavigateAway =
 			activeTopicId === topicToDelete.id ||
 			activeTopicAncestorIds.includes(topicToDelete.id)
@@ -101,7 +106,7 @@ export function useTopicTreeActions({
 			) {
 				await navigate({
 					to: '/topics/$topicId',
-					params: { topicId: topicToDelete.parent_id.toString() }
+					params: { topicId: topicToDelete.parent_id.toString() },
 				})
 			} else {
 				await navigate({ to: '/library' })
@@ -109,7 +114,9 @@ export function useTopicTreeActions({
 			await onAfterRouteChange?.()
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : 'Failed to delete topic'
+				error instanceof Error
+					? error.message
+					: 'Failed to delete topic',
 			)
 		}
 	}, [
@@ -120,7 +127,7 @@ export function useTopicTreeActions({
 		navigate,
 		nodeById,
 		onAfterRouteChange,
-		pendingDeleteTopicId
+		pendingDeleteTopicId,
 	])
 
 	return {
@@ -137,6 +144,6 @@ export function useTopicTreeActions({
 		isDeletingTopic,
 		pendingDeleteTopic,
 		pendingDeleteTopicId,
-		setPendingDeleteTopicId
+		setPendingDeleteTopicId,
 	}
 }

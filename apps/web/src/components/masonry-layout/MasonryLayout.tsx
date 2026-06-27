@@ -7,8 +7,9 @@ import {
 	useLayoutEffect,
 	useMemo,
 	useRef,
-	useState
+	useState,
 } from 'react'
+
 import { usePageScrollElement } from '~/app/layouts/PageLayout'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 
@@ -55,7 +56,7 @@ function MasonryLayoutInner<T>({
 	overscan,
 	getItemKey,
 	getScrollElement,
-	scrollMargin
+	scrollMargin,
 }: MasonryLayoutProps<T>) {
 	const [autoScrollMargin, setAutoScrollMargin] = useState(0)
 	const [widthRef, rect] = useResizeObserver<HTMLDivElement>()
@@ -66,9 +67,10 @@ function MasonryLayoutInner<T>({
 	itemsRef.current = items
 	const lastEstimateRef = useRef(96)
 	const warnedMissingKeyRef = useRef(false)
-	const prevLayoutRef = useRef<{ numLanes: number; laneWidth: number } | null>(
-		null
-	)
+	const prevLayoutRef = useRef<{
+		numLanes: number
+		laneWidth: number
+	} | null>(null)
 	const laneWidthRemeasureRafRef = useRef<number | null>(null)
 	const laneChangeReflowRafRef = useRef<number | null>(null)
 	const [isLaneReflowing, setIsLaneReflowing] = useState(false)
@@ -77,9 +79,12 @@ function MasonryLayoutInner<T>({
 	const numLanes = useMemo(
 		() =>
 			rect.width
-				? Math.max(1, Math.floor((rect.width + gap) / (minItemWidth + gap)))
+				? Math.max(
+						1,
+						Math.floor((rect.width + gap) / (minItemWidth + gap)),
+					)
 				: 1,
-		[rect.width, gap, minItemWidth]
+		[rect.width, gap, minItemWidth],
 	)
 	const hasMeasuredWidth = rect.width > 0
 
@@ -102,12 +107,12 @@ function MasonryLayoutInner<T>({
 			}
 			return nextEstimate
 		},
-		[estimateItemSize, laneWidth]
+		[estimateItemSize, laneWidth],
 	)
 
 	const resolvedGetScrollElement = useCallback(
 		() => getScrollElement?.() ?? pageGetScrollElement?.() ?? null,
-		[getScrollElement, pageGetScrollElement]
+		[getScrollElement, pageGetScrollElement],
 	)
 
 	// Issue 1: Forward getItemKey to virtualizer
@@ -142,7 +147,7 @@ function MasonryLayoutInner<T>({
 		lanes: numLanes,
 		gap,
 		scrollMargin: scrollMargin ?? autoScrollMargin,
-		getItemKey: virtualizerGetItemKey
+		getItemKey: virtualizerGetItemKey,
 	})
 
 	// --- Measurement helpers ---
@@ -156,7 +161,9 @@ function MasonryLayoutInner<T>({
 	const measureMountedElements = useCallback(() => {
 		const parentEl = parentRef.current
 		if (!parentEl) return
-		for (const el of parentEl.querySelectorAll<HTMLElement>('[data-index]')) {
+		for (const el of parentEl.querySelectorAll<HTMLElement>(
+			'[data-index]',
+		)) {
 			virtualizer.measureElement(el)
 		}
 	}, [virtualizer])
@@ -212,7 +219,9 @@ function MasonryLayoutInner<T>({
 		}
 
 		const laneCountChanged = prevLayoutRef.current.numLanes !== numLanes
-		const laneWidthDelta = Math.abs(prevLayoutRef.current.laneWidth - laneWidth)
+		const laneWidthDelta = Math.abs(
+			prevLayoutRef.current.laneWidth - laneWidth,
+		)
 
 		prevLayoutRef.current = { numLanes, laneWidth }
 
@@ -236,7 +245,7 @@ function MasonryLayoutInner<T>({
 		numLanes,
 		laneWidth,
 		hasMeasuredWidth,
-		resetMeasurements
+		resetMeasurements,
 	])
 
 	useLayoutEffect(() => {
@@ -266,7 +275,7 @@ function MasonryLayoutInner<T>({
 				cancelAnimationFrame(laneChangeReflowRafRef.current)
 			}
 		},
-		[]
+		[],
 	)
 
 	useEffect(() => {
@@ -292,14 +301,17 @@ function MasonryLayoutInner<T>({
 
 		document.addEventListener('transitionend', handleTransitionEnd, true)
 		return () => {
-			document.removeEventListener('transitionend', handleTransitionEnd, true)
+			document.removeEventListener(
+				'transitionend',
+				handleTransitionEnd,
+				true,
+			)
 		}
 	}, [virtualizer, remeasureMountedItems])
 
 	// Compute scrollMargin via bounding rects (layout-independent).
 	// Keep this observer setup stable across item-count changes so pagination
 	// updates do not teardown/re-init the effect and risk scroll jumps.
-	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally keep a narrow dependency set; observers below react to runtime layout shifts.
 	useLayoutEffect(() => {
 		if (scrollMargin != null) return
 		const scrollEl = resolvedGetScrollElement()
@@ -314,10 +326,10 @@ function MasonryLayoutInner<T>({
 			const scrollRect = scrollEl.getBoundingClientRect()
 			const parentRect = parentEl.getBoundingClientRect()
 			const nextOffset = Math.round(
-				parentRect.top - scrollRect.top + scrollEl.scrollTop
+				parentRect.top - scrollRect.top + scrollEl.scrollTop,
 			)
 			setAutoScrollMargin(prev =>
-				Math.abs(prev - nextOffset) < 1 ? prev : nextOffset
+				Math.abs(prev - nextOffset) < 1 ? prev : nextOffset,
 			)
 		}
 		const scheduleUpdate = () => {
@@ -349,12 +361,12 @@ function MasonryLayoutInner<T>({
 			// Only watch direct container-level changes that can move this masonry block.
 			mutationObserver.observe(mutationContainer, {
 				childList: true,
-				subtree: false
+				subtree: false,
 			})
 			// Also watch container class/style changes (no subtree observation).
 			mutationObserver.observe(mutationContainer, {
 				attributes: true,
-				attributeFilter: ['class', 'style']
+				attributeFilter: ['class', 'style'],
 			})
 		}
 
@@ -389,9 +401,11 @@ function MasonryLayoutInner<T>({
 			<div
 				ref={parentRef}
 				style={{
-					height: hasMeasuredWidth ? `${virtualizer.getTotalSize()}px` : '0px',
+					height: hasMeasuredWidth
+						? `${virtualizer.getTotalSize()}px`
+						: '0px',
 					width: '100%',
-					position: 'relative'
+					position: 'relative',
 				}}
 			>
 				{(hasMeasuredWidth ? virtualizer.getVirtualItems() : []).map(
@@ -409,13 +423,13 @@ function MasonryLayoutInner<T>({
 									// Issue 3: Equal lane widths
 									left: `calc(${virtualItem.lane} * ((100% - ${totalGapPx}px) / ${numLanes} + ${gap}px))`,
 									width: `calc((100% - ${totalGapPx}px) / ${numLanes})`,
-									transform: `translateY(${virtualItem.start - virtualizer.options.scrollMargin}px)`
+									transform: `translateY(${virtualItem.start - virtualizer.options.scrollMargin}px)`,
 								}}
 							>
 								{renderItem(item, virtualItem.index, laneWidth)}
 							</div>
 						)
-					}
+					},
 				)}
 			</div>
 		</div>
@@ -424,5 +438,5 @@ function MasonryLayoutInner<T>({
 
 // Issue 9: Wrap in React.memo
 export const MasonryLayout = memo(MasonryLayoutInner) as <T>(
-	props: MasonryLayoutProps<T>
+	props: MasonryLayoutProps<T>,
 ) => ReactNode

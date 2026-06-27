@@ -1,16 +1,18 @@
-import type { ComponentProps } from 'react'
+import { type ComponentProps } from 'react'
 import { Fragment, isValidElement } from 'react'
+
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
+
 import {
 	getOptionIcon,
+	ratingOptions,
 	type ReviewRatingState,
-	ratingOptions
 } from './reviewRatingOptions'
 
 interface RatingDropdownProps {
@@ -28,7 +30,7 @@ export function RatingDropdown({
 	onOpenChange,
 	trigger,
 	align = 'start',
-	nativeButton = true
+	nativeButton = true,
 }: RatingDropdownProps) {
 	const triggerElement = isValidElement(trigger) ? (
 		trigger
@@ -42,7 +44,10 @@ export function RatingDropdown({
 				nativeButton={nativeButton}
 				render={triggerElement}
 			/>
-			<DropdownMenuContent align={align} onMouseDownCapture={onInteraction}>
+			<DropdownMenuContent
+				align={align}
+				onMouseDownCapture={onInteraction}
+			>
 				{ratingOptions.map(option => (
 					<Fragment key={option.value}>
 						<DropdownMenuItem
@@ -64,11 +69,15 @@ export function RatingDropdown({
 							) : (
 								<div className='flex w-full items-center'>
 									{getOptionIcon(option.value)}
-									<span className='ml-2 flex flex-1'>{option.label}</span>
+									<span className='ml-2 flex flex-1'>
+										{option.label}
+									</span>
 								</div>
 							)}
 						</DropdownMenuItem>
-						{option.value === 'uncompleted' && <DropdownMenuSeparator />}
+						{option.value === 'uncompleted' && (
+							<DropdownMenuSeparator />
+						)}
 					</Fragment>
 				))}
 			</DropdownMenuContent>

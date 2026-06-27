@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, ArrowRight, Loader2, Sunset } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+
 import { DuePageLayout } from '~/app/pages/due/DuePageLayout'
 import { useDueFocusStream } from '~/app/pages/due/useDueFocusStream'
 import { ReviewCardDetailSurface } from '~/app/pages/review-card-detail/ReviewCardDetailSurface'
@@ -12,7 +13,7 @@ import {
 	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
-	EmptyTitle
+	EmptyTitle,
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { reviewCardQueryOptions } from '~/modules/review-cards/api/getReviewCard'
@@ -20,22 +21,22 @@ import { useUpdateReviewCard } from '~/modules/review-cards/api/updateReviewCard
 import { RetireReviewCardDialog } from '~/modules/review-cards/components/RetireReviewCardDialog'
 import {
 	getStoredDueViewPreference,
-	persistDueViewPreference
+	persistDueViewPreference,
 } from '~/modules/review-cards/dueQueueViewPreferences'
 import {
 	buildFocusSearch,
 	makeShuffleSeed,
-	type ReviewFocusSearch
+	type ReviewFocusSearch,
 } from '~/modules/review-cards/reviewFocusSearch'
-import type {
-	ReviewCardQueueItem,
-	ReviewFilter,
-	ReviewFocusOrder
+import {
+	type ReviewCardQueueItem,
+	type ReviewFilter,
+	type ReviewFocusOrder,
 } from '~/modules/review-cards/types/review-card.types'
 import { hasScheduledDueReviews } from '~/modules/review-cards/utils/hasScheduledDueReviews'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
 import { reviewsQueryOptions } from '~/modules/reviews/api/getReviews'
-import type { Rating } from '~/modules/reviews/types/review.types'
+import { type Rating } from '~/modules/reviews/types/review.types'
 import { localDateString } from '~/utils/date'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 
@@ -43,7 +44,7 @@ const RATING_OPTIONS: Array<{ label: string; value: Exclude<Rating, null> }> = [
 	{ label: 'Miss', value: 'miss' },
 	{ label: 'Hard', value: 'hard' },
 	{ label: 'Good', value: 'good' },
-	{ label: 'Easy', value: 'easy' }
+	{ label: 'Easy', value: 'easy' },
 ]
 
 export function DueFocusPage({
@@ -52,7 +53,7 @@ export function DueFocusPage({
 	includeFuture = false,
 	order,
 	reviewCardId,
-	shuffle
+	shuffle,
 }: {
 	done?: boolean
 	filter: ReviewFilter
@@ -68,7 +69,7 @@ export function DueFocusPage({
 		filter,
 		includeFuture,
 		order,
-		shuffle
+		shuffle,
 	})
 	const createReviewMutation = useCreateReview()
 	const updateReviewCardMutation = useUpdateReviewCard()
@@ -81,17 +82,17 @@ export function DueFocusPage({
 		filter,
 		include_future: includeFuture,
 		order,
-		shuffle
+		shuffle,
 	})
 
 	function navigateToFocus(
 		search: ReviewFocusSearch,
-		options?: { replace?: boolean }
+		options?: { replace?: boolean },
 	) {
 		navigate({
 			to: '/due/focus',
 			search,
-			replace: options?.replace
+			replace: options?.replace,
 		})
 	}
 
@@ -105,8 +106,8 @@ export function DueFocusPage({
 					filter,
 					include_future: includeFuture,
 					order,
-					shuffle
-				})
+					shuffle,
+				}),
 		})
 	}
 
@@ -117,15 +118,15 @@ export function DueFocusPage({
 				filter,
 				include_future: includeFuture,
 				order,
-				shuffle
-			})
+				shuffle,
+			}),
 		)
 	}
 
 	useEffect(() => {
 		persistDueViewPreference({
 			...getStoredDueViewPreference(),
-			focusOrder: order
+			focusOrder: order,
 		})
 	}, [order])
 
@@ -137,11 +138,11 @@ export function DueFocusPage({
 				filter,
 				include_future: includeFuture,
 				order,
-				shuffle: makeShuffleSeed()
+				shuffle: makeShuffleSeed(),
 			}),
-			{ replace: true }
+			{ replace: true },
 		)
-		// biome-ignore lint/correctness/useExhaustiveDependencies: navigateToFocus closes over navigate
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- navigateToFocus closes over navigate.
 	}, [done, filter, includeFuture, order, shuffle])
 
 	useEffect(() => {
@@ -156,8 +157,8 @@ export function DueFocusPage({
 					filter,
 					include_future: includeFuture,
 					order,
-					shuffle
-				})
+					shuffle,
+				}),
 			)
 			return
 		}
@@ -169,9 +170,9 @@ export function DueFocusPage({
 				filter,
 				include_future: includeFuture,
 				order,
-				shuffle
+				shuffle,
 			}),
-			{ replace: true }
+			{ replace: true },
 		)
 	}, [
 		done,
@@ -182,7 +183,7 @@ export function DueFocusPage({
 		shuffle,
 		stream.activeItem,
 		stream.firstStreamItem,
-		stream.isLoading
+		stream.isLoading,
 	])
 
 	useEffect(() => {
@@ -193,7 +194,9 @@ export function DueFocusPage({
 		for (const item of [stream.previousItem, stream.nextItem]) {
 			const cardId = item?.card.id
 			if (cardId == null) continue
-			queryClient.prefetchQuery(reviewCardQueryOptions(cardId)).catch(() => {})
+			queryClient
+				.prefetchQuery(reviewCardQueryOptions(cardId))
+				.catch(() => {})
 			queryClient
 				.prefetchQuery(reviewsQueryOptions({ reviewCardId: cardId }))
 				.catch(() => {})
@@ -208,8 +211,8 @@ export function DueFocusPage({
 				filter,
 				include_future: includeFuture,
 				order,
-				shuffle
-			})
+				shuffle,
+			}),
 		)
 	}
 
@@ -228,7 +231,7 @@ export function DueFocusPage({
 			await createReviewMutation.mutateAsync({
 				review_card_id: activeCard.id,
 				rating,
-				completed_at: localDateString()
+				completed_at: localDateString(),
 			})
 			advanceAfterCompletedItem()
 		} catch {
@@ -241,7 +244,7 @@ export function DueFocusPage({
 		try {
 			await updateReviewCardMutation.mutateAsync({
 				id: activeCard.id,
-				retired: !activeCard.retired
+				retired: !activeCard.retired,
 			})
 			setIsRetireDialogOpen(false)
 			advanceAfterCompletedItem()
@@ -265,7 +268,7 @@ export function DueFocusPage({
 		navigate({
 			to: '/review-cards/$reviewCardId',
 			params: { reviewCardId: activeCard.id.toString() },
-			search: { tab: 'reviews' }
+			search: { tab: 'reviews' },
 		})
 	}
 
@@ -276,8 +279,10 @@ export function DueFocusPage({
 				include_future: includeFuture,
 				order: nextOrder,
 				shuffle:
-					nextOrder === 'random' ? (shuffle ?? makeShuffleSeed()) : undefined
-			})
+					nextOrder === 'random'
+						? (shuffle ?? makeShuffleSeed())
+						: undefined,
+			}),
 		)
 	}
 
@@ -287,8 +292,8 @@ export function DueFocusPage({
 				filter,
 				include_future: includeFuture,
 				order: 'random',
-				shuffle: makeShuffleSeed()
-			})
+				shuffle: makeShuffleSeed(),
+			}),
 		)
 	}
 
@@ -301,15 +306,15 @@ export function DueFocusPage({
 				filter,
 				include_future: true,
 				order,
-				shuffle
-			})
+				shuffle,
+			}),
 		)
 	}
 
 	function handleSeeUpcoming() {
 		navigate({
 			to: '/due',
-			search: { filter }
+			search: { filter },
 		})
 	}
 
@@ -333,8 +338,8 @@ export function DueFocusPage({
 						filter: nextFilter,
 						include_future: includeFuture,
 						order,
-						shuffle
-					})
+						shuffle,
+					}),
 				})
 			}}
 			onOrderChange={handleOrderChange}
@@ -411,7 +416,8 @@ export function DueFocusPage({
 							{RATING_OPTIONS.map(option => (
 								<Button
 									disabled={
-										createReviewMutation.isPending || activeCard == null
+										createReviewMutation.isPending ||
+										activeCard == null
 									}
 									key={option.value}
 									onClick={() => rateCard(option.value)}
@@ -437,7 +443,9 @@ export function DueFocusPage({
 							<Button
 								aria-label='Previous review card'
 								disabled={stream.previousItem == null}
-								onClick={() => navigateToItem(stream.previousItem)}
+								onClick={() =>
+									navigateToItem(stream.previousItem)
+								}
 								type='button'
 								variant='outline'
 							>

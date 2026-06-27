@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import type { ComponentProps, ReactNode } from 'react'
+import { type ComponentProps, type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { AppHeader } from '~/modules/shell/header/AppHeader'
 
 const useLocationMock = vi.fn()
@@ -10,66 +11,70 @@ const useReviewCardFlaggedSummaryMock = vi.fn()
 const setReviewModeMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
-	Link: ({ children, to, ...props }: ComponentProps<'a'> & { to: string }) => (
+	Link: ({
+		children,
+		to,
+		...props
+	}: ComponentProps<'a'> & { to: string }) => (
 		<a href={to} {...props}>
 			{children}
 		</a>
 	),
-	useLocation: () => useLocationMock()
+	useLocation: () => useLocationMock(),
 }))
 
 vi.mock('~/modules/search/components/search-dialog/SearchDialog', () => ({
 	SearchDialog: ({
-		open
+		open,
 	}: {
 		open: boolean
 		onOpenChange: (open: boolean) => void
 		query: string
 		setQuery: (value: string) => void
-	}) => (open ? <div data-testid='search-dialog' /> : null)
+	}) => (open ? <div data-testid='search-dialog' /> : null),
 }))
 
 vi.mock('~/components/SettingsDialog', () => ({
 	SettingsDialog: ({
 		open,
-		children
+		children,
 	}: {
 		open: boolean
 		onOpenChange: (open: boolean) => void
 		children?: ReactNode
-	}) => (open ? <div data-testid='settings-dialog'>{children}</div> : null)
+	}) => (open ? <div data-testid='settings-dialog'>{children}</div> : null),
 }))
 
 vi.mock('~/components/ui/tooltip', () => ({
 	Tooltip: ({ children }: { children: ReactNode }) => <>{children}</>,
 	TooltipTrigger: ({
 		render,
-		children
+		children,
 	}: {
 		render?: ReactNode
 		children?: ReactNode
 	}) => <>{render ?? children}</>,
-	TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>
+	TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
 vi.mock('~/stores/ReviewModeContext', () => ({
-	useReviewMode: () => useReviewModeMock()
+	useReviewMode: () => useReviewModeMock(),
 }))
 
 vi.mock('~/modules/review-cards/hooks/useReviewCardQueueCounts', () => ({
 	useReviewCardQueueCounts: (...args: Array<unknown>) =>
-		useReviewCardQueueCountsMock(...args)
+		useReviewCardQueueCountsMock(...args),
 }))
 
 vi.mock('~/modules/review-cards/api/getReviewCardFlaggedSummary', () => ({
 	useReviewCardFlaggedSummary: (...args: Array<unknown>) =>
-		useReviewCardFlaggedSummaryMock(...args)
+		useReviewCardFlaggedSummaryMock(...args),
 }))
 
 vi.mock('~/components/ui/sidebar', () => ({
 	SidebarTrigger: (props: ComponentProps<'button'>) => (
 		<button {...props}>Toggle Sidebar</button>
-	)
+	),
 }))
 
 describe('AppHeader', () => {
@@ -81,22 +86,22 @@ describe('AppHeader', () => {
 		setReviewModeMock.mockReset()
 		Object.defineProperty(window.navigator, 'platform', {
 			configurable: true,
-			value: 'MacIntel'
+			value: 'MacIntel',
 		})
 
 		useLocationMock.mockReturnValue({ pathname: '/library' })
 		useReviewModeMock.mockReturnValue({
 			reviewMode: 'off',
-			setReviewMode: setReviewModeMock
+			setReviewMode: setReviewModeMock,
 		})
 		useReviewCardQueueCountsMock.mockReturnValue({
 			overdueCount: 0,
 			dueTodayCount: 0,
 			newCount: 0,
-			dueNextSevenDaysCount: 0
+			dueNextSevenDaysCount: 0,
 		})
 		useReviewCardFlaggedSummaryMock.mockReturnValue({
-			data: { flagged_count: 0 }
+			data: { flagged_count: 0 },
 		})
 	})
 
@@ -121,11 +126,11 @@ describe('AppHeader', () => {
 		expect(dueButton).toHaveAttribute('href', '/due')
 		expect(flaggedButton).toHaveAttribute('href', '/flagged')
 		expect(useReviewCardQueueCountsMock).toHaveBeenCalledWith({
-			filter: 'all'
+			filter: 'all',
 		})
 		expect(
 			recentButton.compareDocumentPosition(logbookButton) &
-				Node.DOCUMENT_POSITION_FOLLOWING
+				Node.DOCUMENT_POSITION_FOLLOWING,
 		).toBeTruthy()
 	})
 
@@ -134,25 +139,29 @@ describe('AppHeader', () => {
 			overdueCount: 2,
 			dueTodayCount: 3,
 			newCount: 4,
-			dueNextSevenDaysCount: 5
+			dueNextSevenDaysCount: 5,
 		})
 		useReviewCardFlaggedSummaryMock.mockReturnValue({
-			data: { flagged_count: 6 }
+			data: { flagged_count: 6 },
 		})
 
 		render(<AppHeader />)
 
 		expect(screen.getByTestId('header-due-overdue-dot')).toBeInTheDocument()
-		expect(screen.getByTestId('header-due-due-today-dot')).toBeInTheDocument()
+		expect(
+			screen.getByTestId('header-due-due-today-dot'),
+		).toBeInTheDocument()
 		expect(screen.getByTestId('header-due-pending-dot')).toBeInTheDocument()
-		expect(screen.getByTestId('header-flagged-pending-dot')).toBeInTheDocument()
+		expect(
+			screen.getByTestId('header-flagged-pending-dot'),
+		).toBeInTheDocument()
 	})
 
 	it('renders the sidebar trigger in the header', () => {
 		render(<AppHeader />)
 
 		expect(
-			screen.getByRole('button', { name: 'Toggle Sidebar' })
+			screen.getByRole('button', { name: 'Toggle Sidebar' }),
 		).toBeInTheDocument()
 	})
 
@@ -161,12 +170,16 @@ describe('AppHeader', () => {
 
 		const searchButton = screen.getByRole('button', { name: 'Open search' })
 
-		expect(searchButton).toHaveClass('border', 'border-border', 'bg-background')
+		expect(searchButton).toHaveClass(
+			'border',
+			'border-border',
+			'bg-background',
+		)
 		expect(searchButton).toHaveTextContent('Search')
 		expect(searchButton).toHaveTextContent('⌘')
 		expect(searchButton).toHaveTextContent('K')
 		expect(
-			screen.getByText('Hide answers and test your recall')
+			screen.getByText('Hide answers and test your recall'),
 		).toBeInTheDocument()
 		expect(screen.getByText('R')).toBeInTheDocument()
 		fireEvent.click(screen.getByRole('button', { name: 'Review mode off' }))
@@ -177,7 +190,7 @@ describe('AppHeader', () => {
 	it('renders the search shortcut with ctrl on windows', () => {
 		Object.defineProperty(window.navigator, 'platform', {
 			configurable: true,
-			value: 'Win32'
+			value: 'Win32',
 		})
 
 		render(<AppHeader />)
@@ -201,7 +214,7 @@ describe('AppHeader', () => {
 			<>
 				<input aria-label='Test input' />
 				<AppHeader />
-			</>
+			</>,
 		)
 
 		const input = screen.getByRole('textbox', { name: 'Test input' })

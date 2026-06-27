@@ -2,11 +2,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
 	createRouter,
-	RouterProvider
+	RouterProvider,
 } from '@tanstack/react-router'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
+
 import { routeTree } from '~/app/routeTree.gen'
 
 // Mock the Supabase client so component hooks stay in-memory during tests.
@@ -16,7 +17,7 @@ vi.mock('~/utils/supabase', () => {
 		error: null,
 		count: null,
 		status: 200,
-		statusText: 'OK'
+		statusText: 'OK',
 	})
 
 	const createQueryBuilderMock = () => {
@@ -24,12 +25,12 @@ vi.mock('~/utils/supabase', () => {
 		const builder: Record<string, any> = {
 			then: (
 				onFulfilled?: (value: typeof response) => unknown,
-				onRejected?: (reason: unknown) => unknown
+				onRejected?: (reason: unknown) => unknown,
 			) => Promise.resolve(response).then(onFulfilled, onRejected),
 			catch: (onRejected?: (reason: unknown) => unknown) =>
 				Promise.resolve(response).catch(onRejected),
 			finally: (onFinally?: () => unknown) =>
-				Promise.resolve(response).finally(onFinally)
+				Promise.resolve(response).finally(onFinally),
 		}
 
 		const chainableMethods = [
@@ -59,7 +60,7 @@ vi.mock('~/utils/supabase', () => {
 			'select',
 			'single',
 			'textSearch',
-			'throwOnError'
+			'throwOnError',
 		] as const
 
 		for (const method of chainableMethods) {
@@ -80,9 +81,9 @@ vi.mock('~/utils/supabase', () => {
 			on: vi.fn(() => channel),
 			subscribe: vi.fn(async () => ({
 				data: { subscription: { unsubscribe: vi.fn() } },
-				error: null
+				error: null,
 			})),
-			unsubscribe: vi.fn()
+			unsubscribe: vi.fn(),
 		}
 
 		return channel
@@ -94,27 +95,27 @@ vi.mock('~/utils/supabase', () => {
 			rpc: vi.fn(async () => ({ data: null, error: null })),
 			channel: vi.fn(() => createRealtimeChannelMock()),
 			removeChannel: vi.fn(),
-			removeAllChannels: vi.fn()
-		}
+			removeAllChannels: vi.fn(),
+		},
 	}
 })
 
 function createTestRouter(initialEntries: Array<string> = ['/']) {
 	const memoryHistory = createMemoryHistory({
-		initialEntries
+		initialEntries,
 	})
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false }
-		}
+			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false },
+		},
 	})
 
 	const router = createRouter({
 		routeTree,
 		history: memoryHistory,
 		context: {
-			queryClient
-		}
+			queryClient,
+		},
 	})
 
 	return { queryClient, router }
@@ -128,8 +129,8 @@ function renderApp(route = '/') {
 		...render(
 			<QueryClientProvider client={queryClient}>
 				<RouterProvider context={{ queryClient }} router={router} />
-			</QueryClientProvider>
-		)
+			</QueryClientProvider>,
+		),
 	}
 }
 

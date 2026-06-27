@@ -4,7 +4,7 @@ import {
 	useEffect,
 	useLayoutEffect,
 	useRef,
-	useState
+	useState,
 } from 'react'
 
 interface UseAutoSaveOptions {
@@ -27,7 +27,7 @@ interface UseAutoSaveReturn {
 	value: string
 	/** Change handler to attach to input/textarea elements */
 	onChange: (
-		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 	) => void
 	/** Direct setter for components that don't expose DOM change events */
 	setValue: (newValue: string) => void
@@ -84,7 +84,7 @@ export function useAutoSave({
 	initialValue,
 	onSave,
 	debounceMs = 1000,
-	key
+	key,
 }: UseAutoSaveOptions): UseAutoSaveReturn {
 	const [value, setValue] = useState(initialValue)
 	const keyRef = useRef<string | undefined>(key)
@@ -96,7 +96,7 @@ export function useAutoSave({
 	const debouncedSave = useRef(
 		debounce((newValue: string, saveFn: (value: string) => void) => {
 			saveFn(newValue)
-		}, debounceMs)
+		}, debounceMs),
 	).current
 
 	// Flush pending saves during unmount before paint. Using layout cleanup
@@ -146,7 +146,7 @@ export function useAutoSave({
 			setValue(newValue)
 			debouncedSave(newValue, onSave)
 		},
-		[debouncedSave, onSave]
+		[debouncedSave, onSave],
 	)
 
 	const handleValueChange = useCallback(
@@ -155,7 +155,7 @@ export function useAutoSave({
 			setValue(newValue)
 			debouncedSave(newValue, onSave)
 		},
-		[debouncedSave, onSave]
+		[debouncedSave, onSave],
 	)
 
 	const flush = useCallback(() => {
@@ -166,6 +166,6 @@ export function useAutoSave({
 		value,
 		onChange: handleChange,
 		setValue: handleValueChange,
-		flush
+		flush,
 	}
 }

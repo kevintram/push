@@ -1,15 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
+
 import { ReviewCardQueueSummarySchema } from '../types/review-card.schemas'
-import type {
-	ReviewCardQueueSummary,
-	ReviewCardQueueSummaryParams
+import {
+	type ReviewCardQueueSummary,
+	type ReviewCardQueueSummaryParams,
 } from '../types/review-card.types'
 import { reviewCardKeys } from './queryKeys'
 
 export async function getReviewCardQueueSummary(
-	params: ReviewCardQueueSummaryParams
+	params: ReviewCardQueueSummaryParams,
 ): Promise<ReviewCardQueueSummary> {
 	const searchParams = new URLSearchParams()
 	if (params.filter === undefined) {
@@ -19,7 +21,7 @@ export async function getReviewCardQueueSummary(
 	}
 
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/review-cards/queue-summary/?${searchParams.toString()}`
+		`${import.meta.env.VITE_API_URL}/review-cards/queue-summary/?${searchParams.toString()}`,
 	)
 
 	if (!response.ok) {
@@ -38,11 +40,11 @@ export async function getReviewCardQueueSummary(
 }
 
 export function useReviewCardQueueSummary(
-	params: ReviewCardQueueSummaryParams
+	params: ReviewCardQueueSummaryParams,
 ) {
 	return useQuery({
 		queryKey: reviewCardKeys.queueSummary(params),
 		queryFn: () => getReviewCardQueueSummary(params),
-		staleTime: 30_000
+		staleTime: 30_000,
 	})
 }

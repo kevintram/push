@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
+
 import {
 	canReparentTopic,
 	createRootDropId,
 	createTopicDropId,
-	parseTopicDropId
+	parseTopicDropId,
 } from '../topicNavigatorUtils'
 
 const topicTreeNodes = [
@@ -15,7 +16,7 @@ const topicTreeNodes = [
 		parent_title: null,
 		inserted_at: '',
 		updated_at: '',
-		children: []
+		children: [],
 	},
 	{
 		id: 2,
@@ -25,7 +26,7 @@ const topicTreeNodes = [
 		parent_title: 'Algebra',
 		inserted_at: '',
 		updated_at: '',
-		children: []
+		children: [],
 	},
 	{
 		id: 3,
@@ -35,7 +36,7 @@ const topicTreeNodes = [
 		parent_title: 'Linear equations',
 		inserted_at: '',
 		updated_at: '',
-		children: []
+		children: [],
 	},
 	{
 		id: 4,
@@ -45,22 +46,21 @@ const topicTreeNodes = [
 		parent_title: null,
 		inserted_at: '',
 		updated_at: '',
-		children: []
-	}
+		children: [],
+	},
 ]
 
-// biome-ignore lint/security/noSecrets: Test suite label is not a secret.
 describe('topicNavigatorUtils', () => {
 	it('parses topic and root drop ids', () => {
 		expect(parseTopicDropId(createTopicDropId(12))).toEqual({
 			type: 'topic',
-			topicId: 12
+			topicId: 12,
 		})
 		expect(parseTopicDropId(createRootDropId('top'))).toEqual({
-			type: 'root'
+			type: 'root',
 		})
 		expect(parseTopicDropId(createRootDropId('bottom'))).toEqual({
-			type: 'root'
+			type: 'root',
 		})
 	})
 
@@ -70,7 +70,7 @@ describe('topicNavigatorUtils', () => {
 			[1, []],
 			[2, [1]],
 			[3, [1, 2]],
-			[4, []]
+			[4, []],
 		])
 
 		expect(
@@ -78,8 +78,8 @@ describe('topicNavigatorUtils', () => {
 				draggedTopicId: 2,
 				nextParentId: 2,
 				ancestorIdsById,
-				nodeById
-			})
+				nodeById,
+			}),
 		).toBe(false)
 
 		expect(
@@ -87,8 +87,8 @@ describe('topicNavigatorUtils', () => {
 				draggedTopicId: 2,
 				nextParentId: 1,
 				ancestorIdsById,
-				nodeById
-			})
+				nodeById,
+			}),
 		).toBe(false)
 
 		expect(
@@ -96,8 +96,8 @@ describe('topicNavigatorUtils', () => {
 				draggedTopicId: 2,
 				nextParentId: 3,
 				ancestorIdsById,
-				nodeById
-			})
+				nodeById,
+			}),
 		).toBe(false)
 
 		expect(
@@ -105,8 +105,8 @@ describe('topicNavigatorUtils', () => {
 				draggedTopicId: 2,
 				nextParentId: 4,
 				ancestorIdsById,
-				nodeById
-			})
+				nodeById,
+			}),
 		).toBe(true)
 
 		expect(
@@ -114,8 +114,8 @@ describe('topicNavigatorUtils', () => {
 				draggedTopicId: 2,
 				nextParentId: null,
 				ancestorIdsById,
-				nodeById
-			})
+				nodeById,
+			}),
 		).toBe(true)
 	})
 })

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { AuthRedirectError } from '../apiFetch'
 import { createAppQueryClient, shouldRetryQuery } from '../queryClient'
 

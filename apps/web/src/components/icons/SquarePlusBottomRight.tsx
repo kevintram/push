@@ -1,4 +1,4 @@
-import type { LucideProps } from 'lucide-react'
+import { type LucideProps } from 'lucide-react'
 import { forwardRef } from 'react'
 
 export const SquarePlusBottomRight = forwardRef<SVGSVGElement, LucideProps>(
@@ -22,7 +22,7 @@ export const SquarePlusBottomRight = forwardRef<SVGSVGElement, LucideProps>(
 			<path d='M15 18h6' />
 			<path d='M18 15v6' />
 		</svg>
-	)
+	),
 )
 
 SquarePlusBottomRight.displayName = 'SquarePlusBottomRight'

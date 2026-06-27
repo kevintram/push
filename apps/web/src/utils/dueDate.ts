@@ -31,7 +31,7 @@ export function getDueDateDisplay(due: string): DueDateDisplayInfo {
 	return {
 		dueDate: due,
 		isUpcoming,
-		displayText
+		displayText,
 	}
 }
 

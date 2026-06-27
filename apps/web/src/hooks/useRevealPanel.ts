@@ -4,10 +4,11 @@ import {
 	useCallback,
 	useEffect,
 	useRef,
-	useState
+	useState,
 } from 'react'
 import { toast } from 'sonner'
-import type { RevealPanelTab } from '~/components/RevealPanel'
+
+import { type RevealPanelTab } from '~/components/RevealPanel'
 
 export type UseRevealPanelOptions = {
 	revealText: string
@@ -32,10 +33,10 @@ export function useRevealPanel({
 	revealText,
 	entityId,
 	hidesSecondary,
-	defaultTab = null
+	defaultTab = null,
 }: UseRevealPanelOptions): UseRevealPanelResult {
 	const [revealPanelTab, setRevealPanelTab] = useState<RevealPanelTab | null>(
-		defaultTab
+		defaultTab,
 	)
 	const [guessTextState, setGuessTextState] = useState('')
 	const [isCopied, setIsCopied] = useState(false)
@@ -48,10 +49,13 @@ export function useRevealPanel({
 		setIsCopied(false)
 	}, [defaultTab])
 
-	const setGuessText = useCallback<Dispatch<SetStateAction<string>>>(value => {
-		setGuessTextState(value)
-		setIsCopied(false)
-	}, [])
+	const setGuessText = useCallback<Dispatch<SetStateAction<string>>>(
+		value => {
+			setGuessTextState(value)
+			setIsCopied(false)
+		},
+		[],
+	)
 
 	const handleCopyGuessText = useCallback(async () => {
 		try {
@@ -73,7 +77,7 @@ export function useRevealPanel({
 				toast.error('Failed to copy reveal')
 			}
 		},
-		[revealText]
+		[revealText],
 	)
 
 	useEffect(() => {
@@ -109,6 +113,6 @@ export function useRevealPanel({
 		setIsCopied,
 		handleCopyGuessText,
 		handleCopyRevealText,
-		reset
+		reset,
 	}
 }

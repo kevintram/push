@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react'
-import type { KeyboardEvent, MouseEvent } from 'react'
+import { type KeyboardEvent, type MouseEvent } from 'react'
+
 import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
@@ -8,17 +9,18 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuSub,
 	DropdownMenuSubContent,
-	DropdownMenuSubTrigger
+	DropdownMenuSubTrigger,
 } from '~/components/ui/dropdown-menu'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
-import type { ReviewListItem } from '~/modules/reviews/types/review.types'
+import { type ReviewListItem } from '~/modules/reviews/types/review.types'
+
 import { ReviewItem } from '../ReviewItem'
 import {
 	getOptionIcon,
+	type ratingOptions,
 	type ReviewRatingState,
-	type ratingOptions
 } from '../reviewRatingOptions'
-import type { ReviewsMenuProps } from './shared'
+import { type ReviewsMenuProps } from './shared'
 
 type RatingOption = (typeof ratingOptions)[number]
 
@@ -37,7 +39,7 @@ type ReviewsMenuContentProps = {
 	markNestedOverlayIntent: () => void
 	shouldRenderSummaryLoadingState: boolean
 	stopMenuEventPropagation: (
-		event: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>
+		event: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>,
 	) => void
 	uncompletedOption: RatingOption | null
 	uncompletedUnscheduledReviews: Array<ReviewListItem>
@@ -50,7 +52,7 @@ function ReviewsMenuSection({
 	handleNestedOverlayOpenChange,
 	handleReviewItemClick,
 	markDeferredStructuralInvalidation,
-	markNestedOverlayIntent
+	markNestedOverlayIntent,
 }: {
 	label: string
 	entries: Array<ReviewListItem>
@@ -71,9 +73,15 @@ function ReviewsMenuSection({
 						<ReviewItem
 							deferStructuralInvalidation={true}
 							entry={review}
-							onDeferredInvalidation={markDeferredStructuralInvalidation}
-							onNestedOverlayOpenChange={handleNestedOverlayOpenChange}
-							onNestedOverlayTriggerInteract={markNestedOverlayIntent}
+							onDeferredInvalidation={
+								markDeferredStructuralInvalidation
+							}
+							onNestedOverlayOpenChange={
+								handleNestedOverlayOpenChange
+							}
+							onNestedOverlayTriggerInteract={
+								markNestedOverlayIntent
+							}
 							onReviewClick={handleReviewItemClick}
 							showCardColumn={false}
 							variant='default'
@@ -102,7 +110,7 @@ export function ReviewsMenuContent({
 	stopMenuEventPropagation,
 	uncompletedOption,
 	uncompletedUnscheduledReviews,
-	upcomingReviews
+	upcomingReviews,
 }: ReviewsMenuContentProps) {
 	return (
 		<DropdownMenuContent
@@ -125,7 +133,9 @@ export function ReviewsMenuContent({
 					{uncompletedOption ? (
 						<DropdownMenuItem
 							disabled={createReviewPending}
-							onClick={() => handleRatingSelect(uncompletedOption.value)}
+							onClick={() =>
+								handleRatingSelect(uncompletedOption.value)
+							}
 						>
 							<div className='grid w-full grid-cols-[auto_1fr] items-center gap-x-2'>
 								{getOptionIcon(uncompletedOption.value)}
@@ -155,7 +165,10 @@ export function ReviewsMenuContent({
 			{shouldRenderSummaryLoadingState ? (
 				<>
 					<DropdownMenuSeparator />
-					<LoadingSpinner containerClassName='min-h-12 py-3' size='sm' />
+					<LoadingSpinner
+						containerClassName='min-h-12 py-3'
+						size='sm'
+					/>
 				</>
 			) : null}
 
@@ -164,7 +177,9 @@ export function ReviewsMenuContent({
 				handleNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 				handleReviewItemClick={handleReviewItemClick}
 				label='Due'
-				markDeferredStructuralInvalidation={markDeferredStructuralInvalidation}
+				markDeferredStructuralInvalidation={
+					markDeferredStructuralInvalidation
+				}
 				markNestedOverlayIntent={markNestedOverlayIntent}
 			/>
 
@@ -173,7 +188,9 @@ export function ReviewsMenuContent({
 				handleNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 				handleReviewItemClick={handleReviewItemClick}
 				label='Unscheduled'
-				markDeferredStructuralInvalidation={markDeferredStructuralInvalidation}
+				markDeferredStructuralInvalidation={
+					markDeferredStructuralInvalidation
+				}
 				markNestedOverlayIntent={markNestedOverlayIntent}
 			/>
 
@@ -182,7 +199,9 @@ export function ReviewsMenuContent({
 				handleNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 				handleReviewItemClick={handleReviewItemClick}
 				label='Scheduled'
-				markDeferredStructuralInvalidation={markDeferredStructuralInvalidation}
+				markDeferredStructuralInvalidation={
+					markDeferredStructuralInvalidation
+				}
 				markNestedOverlayIntent={markNestedOverlayIntent}
 			/>
 
@@ -191,7 +210,9 @@ export function ReviewsMenuContent({
 				handleNestedOverlayOpenChange={handleNestedOverlayOpenChange}
 				handleReviewItemClick={handleReviewItemClick}
 				label='Last reviewed'
-				markDeferredStructuralInvalidation={markDeferredStructuralInvalidation}
+				markDeferredStructuralInvalidation={
+					markDeferredStructuralInvalidation
+				}
 				markNestedOverlayIntent={markNestedOverlayIntent}
 			/>
 

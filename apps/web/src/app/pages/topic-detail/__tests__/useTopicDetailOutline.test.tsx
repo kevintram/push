@@ -1,6 +1,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
 import { useTopicDetailOutline } from '../useTopicDetailOutline'
 
 vi.mock('~/modules/topics/hooks/useTopicTreeActions', () => ({
@@ -12,15 +14,15 @@ vi.mock('~/modules/topics/hooks/useTopicTreeActions', () => ({
 		isDeletingTopic: false,
 		pendingDeleteTopic: null,
 		pendingDeleteTopicId: null,
-		setPendingDeleteTopicId: vi.fn()
-	})
+		setPendingDeleteTopicId: vi.fn(),
+	}),
 }))
 
 function createTopicNode({
 	children = [],
 	id,
 	parentId,
-	title
+	title,
 }: {
 	children?: Array<TopicTreeNode>
 	id: number
@@ -35,7 +37,7 @@ function createTopicNode({
 		parent_id: parentId,
 		parent_title: null,
 		title,
-		updated_at: '2025-01-01T00:00:00.000Z'
+		updated_at: '2025-01-01T00:00:00.000Z',
 	}
 }
 
@@ -43,43 +45,43 @@ function buildOutlineTree() {
 	const grandchild = createTopicNode({
 		id: 3,
 		parentId: 2,
-		title: 'Grandchild'
+		title: 'Grandchild',
 	})
 	const collapsibleChild = createTopicNode({
 		children: [grandchild],
 		id: 2,
 		parentId: 1,
-		title: 'Collapsible Child'
+		title: 'Collapsible Child',
 	})
 	const leafChild = createTopicNode({
 		id: 4,
 		parentId: 1,
-		title: 'Leaf Child'
+		title: 'Leaf Child',
 	})
 	const root = createTopicNode({
 		children: [collapsibleChild, leafChild],
 		id: 1,
 		parentId: null,
-		title: 'Root'
+		title: 'Root',
 	})
 	const nodeById = new Map<number, TopicTreeNode>([
 		[root.id, root],
 		[collapsibleChild.id, collapsibleChild],
 		[grandchild.id, grandchild],
-		[leafChild.id, leafChild]
+		[leafChild.id, leafChild],
 	])
 	const ancestorIdsById = new Map<number, Array<number>>([
 		[root.id, []],
 		[collapsibleChild.id, [root.id]],
 		[grandchild.id, [root.id, collapsibleChild.id]],
-		[leafChild.id, [root.id]]
+		[leafChild.id, [root.id]],
 	])
 
 	return {
 		ancestorIdsById,
 		collapsibleChild,
 		nodeById,
-		outlineRootNode: root
+		outlineRootNode: root,
 	}
 }
 
@@ -91,12 +93,12 @@ describe('useTopicDetailOutline', () => {
 				ancestorIdsById: initialTree.ancestorIdsById,
 				nodeById: initialTree.nodeById,
 				outlineRootNode: initialTree.outlineRootNode,
-				visibleSectionIds: []
-			})
+				visibleSectionIds: [],
+			}),
 		)
 
 		expect(
-			result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+			result.current.expandedIdSet.has(initialTree.collapsibleChild.id),
 		).toBe(true)
 	})
 
@@ -106,7 +108,7 @@ describe('useTopicDetailOutline', () => {
 			({
 				ancestorIdsById,
 				nodeById,
-				outlineRootNode
+				outlineRootNode,
 			}: {
 				ancestorIdsById: Map<number, Array<number>>
 				nodeById: Map<number, TopicTreeNode>
@@ -116,20 +118,22 @@ describe('useTopicDetailOutline', () => {
 					ancestorIdsById,
 					nodeById,
 					outlineRootNode,
-					visibleSectionIds: []
+					visibleSectionIds: [],
 				}),
 			{
 				initialProps: {
 					ancestorIdsById: initialTree.ancestorIdsById,
 					nodeById: initialTree.nodeById,
-					outlineRootNode: initialTree.outlineRootNode
-				}
-			}
+					outlineRootNode: initialTree.outlineRootNode,
+				},
+			},
 		)
 
 		await waitFor(() => {
 			expect(
-				result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+				result.current.expandedIdSet.has(
+					initialTree.collapsibleChild.id,
+				),
 			).toBe(true)
 		})
 
@@ -138,19 +142,21 @@ describe('useTopicDetailOutline', () => {
 		})
 
 		expect(
-			result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+			result.current.expandedIdSet.has(initialTree.collapsibleChild.id),
 		).toBe(false)
 
 		const refetchedTree = buildOutlineTree()
 		rerender({
 			ancestorIdsById: refetchedTree.ancestorIdsById,
 			nodeById: refetchedTree.nodeById,
-			outlineRootNode: refetchedTree.outlineRootNode
+			outlineRootNode: refetchedTree.outlineRootNode,
 		})
 
 		await waitFor(() => {
 			expect(
-				result.current.expandedIdSet.has(refetchedTree.collapsibleChild.id)
+				result.current.expandedIdSet.has(
+					refetchedTree.collapsibleChild.id,
+				),
 			).toBe(false)
 		})
 	})
@@ -163,18 +169,20 @@ describe('useTopicDetailOutline', () => {
 					ancestorIdsById: initialTree.ancestorIdsById,
 					nodeById: initialTree.nodeById,
 					outlineRootNode: initialTree.outlineRootNode,
-					visibleSectionIds
+					visibleSectionIds,
 				}),
 			{
 				initialProps: {
-					visibleSectionIds: [] as Array<number>
-				}
-			}
+					visibleSectionIds: [] as Array<number>,
+				},
+			},
 		)
 
 		await waitFor(() => {
 			expect(
-				result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+				result.current.expandedIdSet.has(
+					initialTree.collapsibleChild.id,
+				),
 			).toBe(true)
 		})
 
@@ -183,16 +191,18 @@ describe('useTopicDetailOutline', () => {
 		})
 
 		expect(
-			result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+			result.current.expandedIdSet.has(initialTree.collapsibleChild.id),
 		).toBe(false)
 
 		rerender({
-			visibleSectionIds: [3]
+			visibleSectionIds: [3],
 		})
 
 		await waitFor(() => {
 			expect(
-				result.current.expandedIdSet.has(initialTree.collapsibleChild.id)
+				result.current.expandedIdSet.has(
+					initialTree.collapsibleChild.id,
+				),
 			).toBe(false)
 		})
 	})

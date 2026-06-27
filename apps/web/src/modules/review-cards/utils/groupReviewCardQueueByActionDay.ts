@@ -1,5 +1,5 @@
-import type { ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
-import type { WeekStartDay } from '~/stores/WeekStartContext'
+import { type ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
+import { type WeekStartDay } from '~/stores/WeekStartContext'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -34,14 +34,15 @@ function getDateKey(date: Date): string {
 
 function toDayNumber(date: Date): number {
 	return Math.floor(
-		Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MS_PER_DAY
+		Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) /
+			MS_PER_DAY,
 	)
 }
 
 function getWeekOffsetFromActionDays(
 	actionDays: number,
 	weekStartDay: WeekStartDay,
-	anchorDate: Date
+	anchorDate: Date,
 ): number {
 	const currentWeekStart = startOfWeek(anchorDate, weekStartDay)
 	const actionDate = addDays(startOfDay(anchorDate), actionDays)
@@ -56,7 +57,7 @@ function getWeekSectionLabel(offset: number): string {
 
 function getNextWeekStartSubLabel(
 	weekStartDay: WeekStartDay,
-	anchorDate: Date
+	anchorDate: Date,
 ): string {
 	const currentWeekStart = startOfWeek(anchorDate, weekStartDay)
 	const nextWeekStart = addDays(currentWeekStart, 7)
@@ -76,7 +77,7 @@ function getQueueRank(item: ReviewCardQueueItem): number {
 
 function sortActionableQueueItems(
 	a: ReviewCardQueueItem,
-	b: ReviewCardQueueItem
+	b: ReviewCardQueueItem,
 ): number {
 	const aActionDays = a.action_days
 	const bActionDays = b.action_days
@@ -120,13 +121,13 @@ type ActionableSection = {
 function getSectionForActionDay(
 	actionDays: number,
 	weekStartDay: WeekStartDay,
-	anchorDate: Date
+	anchorDate: Date,
 ): Omit<ActionableSection, 'items'> {
 	if (actionDays < 0) {
 		return {
 			id: 'overdue',
 			label: 'Overdue',
-			headingClassName: 'text-red-600 dark:text-red-400'
+			headingClassName: 'text-red-600 dark:text-red-400',
 		}
 	}
 
@@ -134,14 +135,14 @@ function getSectionForActionDay(
 		return {
 			id: 'today',
 			label: 'Today',
-			headingClassName: 'text-blue-600 dark:text-blue-400'
+			headingClassName: 'text-blue-600 dark:text-blue-400',
 		}
 	}
 
 	if (actionDays === 1) {
 		return {
 			id: 'tomorrow',
-			label: 'Tomorrow'
+			label: 'Tomorrow',
 		}
 	}
 
@@ -149,13 +150,15 @@ function getSectionForActionDay(
 	const weekOffset = getWeekOffsetFromActionDays(
 		actionDays,
 		weekStartDay,
-		anchorDate
+		anchorDate,
 	)
 
 	if (weekOffset === 0) {
 		return {
 			id: getDateKey(actionDate),
-			label: actionDate.toLocaleDateString(undefined, { weekday: 'long' })
+			label: actionDate.toLocaleDateString(undefined, {
+				weekday: 'long',
+			}),
 		}
 	}
 
@@ -165,14 +168,14 @@ function getSectionForActionDay(
 		subLabel:
 			weekOffset === 1
 				? getNextWeekStartSubLabel(weekStartDay, anchorDate)
-				: undefined
+				: undefined,
 	}
 }
 
 export function groupReviewCardQueueByActionDay(
 	items: Array<ReviewCardQueueItem>,
 	weekStartDay: WeekStartDay,
-	asOf?: string
+	asOf?: string,
 ): Array<ActionableSection> {
 	const sectionMap = new Map<string, ActionableSection>()
 	const sectionOrder: Array<string> = []
@@ -182,11 +185,15 @@ export function groupReviewCardQueueByActionDay(
 		const actionDays = item.action_days
 		if (actionDays == null) continue
 
-		const section = getSectionForActionDay(actionDays, weekStartDay, anchorDate)
+		const section = getSectionForActionDay(
+			actionDays,
+			weekStartDay,
+			anchorDate,
+		)
 		if (!sectionMap.has(section.id)) {
 			sectionMap.set(section.id, {
 				...section,
-				items: []
+				items: [],
 			})
 			sectionOrder.push(section.id)
 		}
@@ -200,7 +207,7 @@ export function groupReviewCardQueueByActionDay(
 		}
 		return {
 			...section,
-			items: [...section.items].sort(sortActionableQueueItems)
+			items: [...section.items].sort(sortActionableQueueItems),
 		}
 	})
 }

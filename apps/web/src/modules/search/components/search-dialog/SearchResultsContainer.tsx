@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
+
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 
 interface SearchResultsContainerProps<T> {
@@ -50,7 +51,7 @@ export function SearchResultsContainer<T>({
 	animate = true,
 	emptyMessage = 'No results found',
 	loadingMessage,
-	recentLabel = 'Recent'
+	recentLabel = 'Recent',
 }: SearchResultsContainerProps<T>) {
 	const hasResults = results.length > 0
 	const isReady = !isLoading

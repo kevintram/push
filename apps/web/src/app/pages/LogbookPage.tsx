@@ -1,4 +1,5 @@
 import { ListChecks } from 'lucide-react'
+
 import { useReviewPageHandlers } from '~/app/hooks/useReviewPageHandlers'
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { PageLayout } from '~/app/layouts/PageLayout'
@@ -7,13 +8,13 @@ import {
 	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
-	EmptyTitle
+	EmptyTitle,
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useLogbookReviewEntries } from '~/modules/reviews/api/getReviewEntries'
 import { ReviewDialog } from '~/modules/reviews/components/ReviewDialog'
 import { ReviewSection } from '~/modules/reviews/components/ReviewSection'
-import type { ReviewListItem } from '~/modules/reviews/types/review.types'
+import { type ReviewListItem } from '~/modules/reviews/types/review.types'
 
 export function LogbookPage() {
 	const { sections, isLoading } = useLogbookReviewEntries()
@@ -48,7 +49,7 @@ function LogbookList({
 	isLoading,
 	onReviewClick,
 	onToggleCollapse,
-	sections
+	sections,
 }: {
 	collapsedSections: Record<string, boolean>
 	isLoading: boolean

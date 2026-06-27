@@ -1,6 +1,8 @@
 import { ChevronDown } from 'lucide-react'
-import type { ComponentProps } from 'react'
+import { type ComponentProps } from 'react'
+
 import { cn } from '~/lib/utils'
+
 import { RatingDropdown } from './RatingDropdown'
 import { getOptionIcon, type ReviewRatingState } from './reviewRatingOptions'
 
@@ -25,7 +27,7 @@ export function ReviewRatingCheckbox({
 	invalid = false,
 	onMenuInteraction,
 	onMenuOpenChange,
-	onTriggerInteract
+	onTriggerInteract,
 }: ReviewRatingDropdownProps) {
 	return (
 		<RatingDropdown
@@ -37,7 +39,7 @@ export function ReviewRatingCheckbox({
 					aria-label='Set review status'
 					className={cn(
 						'flex cursor-pointer items-center gap-0.5 rounded-md border p-1 outline-none transition-shadow focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50',
-						className
+						className,
 					)}
 					disabled={disabled}
 					onClick={event => {
@@ -57,7 +59,7 @@ export function ReviewRatingCheckbox({
 								'border-primary bg-primary text-primary-foreground dark:bg-primary',
 							invalid &&
 								value === 'uncompleted' &&
-								'border-red-600 dark:border-red-500'
+								'border-red-600 dark:border-red-500',
 						)}
 					>
 						{value === 'uncompleted' ? null : getOptionIcon(value)}

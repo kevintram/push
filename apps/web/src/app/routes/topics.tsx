@@ -6,12 +6,12 @@ interface TopicsRouteSearch {
 
 export const Route = createFileRoute('/topics')({
 	validateSearch: (search): TopicsRouteSearch => ({
-		create: search.create === true || search.create === 'true' || undefined
+		create: search.create === true || search.create === 'true' || undefined,
 	}),
 	beforeLoad: ({ search }) => {
 		throw redirect({
 			to: '/library',
-			search
+			search,
 		})
-	}
+	},
 })

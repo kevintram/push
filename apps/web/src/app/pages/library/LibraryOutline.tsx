@@ -1,13 +1,15 @@
 import { useNavigate } from '@tanstack/react-router'
 import { type ReactElement, useCallback } from 'react'
+
 import { Separator } from '~/components/ui/separator'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
-import type { TopicDetailReviewCardFilter } from '../topic-detail/shared'
-import { TopicDetailReviewCardFilterControls } from '../topic-detail/TopicDetailReviewCardControls'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
+import { type TopicDetailReviewCardFilter } from '../topic-detail/shared'
 import {
 	TOPIC_DETAIL_OUTLINE_MAX_WIDTH,
-	TOPIC_DETAIL_OUTLINE_MIN_WIDTH
+	TOPIC_DETAIL_OUTLINE_MIN_WIDTH,
 } from '../topic-detail/topicDetailLayout'
+import { TopicDetailReviewCardFilterControls } from '../topic-detail/TopicDetailReviewCardControls'
 import { useTopicDetailOutline } from '../topic-detail/useTopicDetailOutline'
 import { useTopicDetailOutlineSizing } from '../topic-detail/useTopicDetailOutlineSizing'
 import { LibraryOutlineContent } from './LibraryOutlineContent'
@@ -46,7 +48,7 @@ export function LibraryOutline({
 	pendingCreatedParentTopicId,
 	pendingCreatedTopicId,
 	sectionNumberById,
-	visibleSectionIds
+	visibleSectionIds,
 }: LibraryOutlineProps): ReactElement {
 	const navigate = useNavigate()
 	const {
@@ -61,14 +63,14 @@ export function LibraryOutline({
 		pendingDeleteTopicId,
 		setPendingDeleteTopicId,
 		suppressSelectionRef,
-		toggleExpanded
+		toggleExpanded,
 	} = useTopicDetailOutline({
 		ancestorIdsById,
 		nodeById,
 		onCreateSubtopicCreated: onSubtopicCreated,
 		outlineRootNode: libraryRootNode,
 		pendingCreatedParentTopicId,
-		visibleSectionIds
+		visibleSectionIds,
 	})
 	const {
 		asideStyle,
@@ -80,22 +82,22 @@ export function LibraryOutline({
 		outlineNavRef,
 		outlineRef,
 		registerOutlineItemRef,
-		resizeButtonRef
+		resizeButtonRef,
 	} = useTopicDetailOutlineSizing({
 		onOutlineWidthChange,
 		outlineNodeCount: libraryRootNode.children.length,
 		outlineWidth,
 		pendingCreatedTopicId,
-		rootLabel: libraryRootNode.title
+		rootLabel: libraryRootNode.title,
 	})
 	const handleOpenTopic = useCallback(
 		(topicId: number) => {
 			void navigate({
 				to: '/topics/$topicId',
-				params: { topicId: topicId.toString() }
+				params: { topicId: topicId.toString() },
 			})
 		},
-		[navigate]
+		[navigate],
 	)
 
 	return (

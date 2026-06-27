@@ -1,5 +1,6 @@
-import type { ReactNode } from "react"
+import { type ReactNode } from "react"
 import { isValidElement, useCallback, useRef, useState } from "react"
+
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card"
 
 interface InteractiveHoverCardProps {
@@ -15,7 +16,7 @@ export function InteractiveHoverCard({
 	content,
 	openDelay = 300,
 	side = "bottom",
-	contentClassName
+	contentClassName,
 }: InteractiveHoverCardProps) {
 	const [open, setOpen] = useState(false)
 	const clickedRef = useRef(false)

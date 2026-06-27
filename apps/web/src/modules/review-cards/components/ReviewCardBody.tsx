@@ -1,5 +1,5 @@
 import { Anvil, Brain, Sparkles } from 'lucide-react'
-import type { Dispatch, ReactNode, SetStateAction } from 'react'
+import { type Dispatch, type ReactNode, type SetStateAction } from 'react'
 
 import { RevealPanel } from '~/components/RevealPanel'
 import { Button } from '~/components/ui/button'
@@ -7,10 +7,10 @@ import { CardContent } from '~/components/ui/card'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
-import type { Rating } from '~/modules/reviews/types/review.types'
+import { type Rating } from '~/modules/reviews/types/review.types'
 import { getRatingIcon } from '~/utils/getRatingIcon'
 
 export function ReviewCardBody({
@@ -29,7 +29,7 @@ export function ReviewCardBody({
 	revealPanelTab,
 	reviewCardAnswer,
 	setGuessSecondaryText,
-	setRevealPanelTab
+	setRevealPanelTab,
 }: {
 	canUseGuessPanel: boolean
 	guessSecondaryText: string
@@ -127,7 +127,9 @@ export function ReviewCardBody({
 			<p
 				className={cn(
 					'break-word whitespace-pre-wrap text-sm [overflow-wrap:anywhere]',
-					isLargeCard ? 'min-h-0 flex-1 overflow-y-auto' : 'line-clamp-[8]'
+					isLargeCard
+						? 'min-h-0 flex-1 overflow-y-auto'
+						: 'line-clamp-[8]',
 				)}
 			>
 				{highlightedSecondary}
@@ -155,7 +157,7 @@ export function ReviewCardMetaRow({
 	showRatingMeta,
 	showReviewedMeta,
 	showStabilityMeta,
-	stabilityText
+	stabilityText,
 }: {
 	freshnessTierColor: string
 	freshnessTierInfo: { label: string; tooltip?: string | null }
@@ -189,7 +191,9 @@ export function ReviewCardMetaRow({
 									</div>
 								}
 							/>
-							<TooltipContent>{freshnessTierInfo.tooltip}</TooltipContent>
+							<TooltipContent>
+								{freshnessTierInfo.tooltip}
+							</TooltipContent>
 						</Tooltip>
 					) : (
 						<span className={`font-semibold ${freshnessTierColor}`}>
@@ -205,13 +209,17 @@ export function ReviewCardMetaRow({
 										<span className='flex items-center gap-1 font-semibold'>{`Reviewed ${lastReviewedText}`}</span>
 									}
 								/>
-								<TooltipContent>{lastReviewedDate}</TooltipContent>
+								<TooltipContent>
+									{lastReviewedDate}
+								</TooltipContent>
 							</Tooltip>
 						</>
 					) : null}
 					{showRatingMeta ? (
 						<span className='flex size-4 shrink-0 items-center justify-center rounded-full border border-muted-foreground text-muted-foreground'>
-							{lastReviewRating ? getRatingIcon(lastReviewRating) : null}
+							{lastReviewRating
+								? getRatingIcon(lastReviewRating)
+								: null}
 						</span>
 					) : null}
 					{showStabilityMeta ? (

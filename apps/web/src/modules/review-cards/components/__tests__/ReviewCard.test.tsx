@@ -1,9 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { ReviewCard } from '~/modules/review-cards/components/ReviewCard'
-import type { ReviewCard as ReviewCardModel } from '~/modules/review-cards/types/review-card.types'
+import { type ReviewCard as ReviewCardModel } from '~/modules/review-cards/types/review-card.types'
 
 const navigateMock = vi.fn()
 const prefetchQueryMock = vi.fn()
@@ -14,21 +15,23 @@ const openReviewDialogMock = vi.fn()
 const reviewsMenuPropsMock = vi.fn()
 
 vi.mock('@tanstack/react-query', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-query')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-query')>()
 	return {
 		...actual,
 		useQueryClient: () => ({
 			prefetchQuery: prefetchQueryMock,
-			getQueryState: getQueryStateMock
-		})
+			getQueryState: getQueryStateMock,
+		}),
 	}
 })
 
 vi.mock('@tanstack/react-router', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
-		useNavigate: () => navigateMock
+		useNavigate: () => navigateMock,
 	}
 })
 
@@ -43,21 +46,21 @@ vi.mock('~/hooks/useResizeObserver', () => ({
 			top: 0,
 			left: 0,
 			bottom: 0,
-			right: 0
-		}
-	]
+			right: 0,
+		},
+	],
 }))
 
 vi.mock('~/hooks/useLearnableMetrics', () => ({
 	useLearnableMetrics: () => ({
 		freshnessTierInfo: {
 			label: 'Fresh',
-			tooltip: null
+			tooltip: null,
 		},
 		freshnessTierColor: 'text-emerald-600',
 		isUnreviewed: false,
-		stabilityText: '10d'
-	})
+		stabilityText: '10d',
+	}),
 }))
 
 vi.mock('~/stores/ReviewModeContext', () => ({
@@ -70,8 +73,8 @@ vi.mock('~/stores/ReviewModeContext', () => ({
 		showReviewModeWarning: false,
 		setShowReviewModeWarning: vi.fn(),
 		autoEnableReviewMode: false,
-		setAutoEnableReviewMode: vi.fn()
-	})
+		setAutoEnableReviewMode: vi.fn(),
+	}),
 }))
 
 vi.mock('~/components/ui/dropdown-menu', () => ({
@@ -85,7 +88,7 @@ vi.mock('~/components/ui/dropdown-menu', () => ({
 	DropdownMenuItem: ({
 		children,
 		onClick,
-		disabled
+		disabled,
 	}: {
 		children: ReactNode
 		onClick?: () => void
@@ -94,19 +97,19 @@ vi.mock('~/components/ui/dropdown-menu', () => ({
 		<button disabled={disabled} onClick={onClick} type='button'>
 			{children}
 		</button>
-	)
+	),
 }))
 
 vi.mock('~/components/ui/tooltip', () => ({
 	Tooltip: ({ children }: { children: ReactNode }) => <>{children}</>,
 	TooltipTrigger: ({
 		render,
-		children
+		children,
 	}: {
 		render?: ReactNode
 		children?: ReactNode
 	}) => <>{render ?? children}</>,
-	TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>
+	TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
 vi.mock('~/components/ui/alert-dialog', () => ({
@@ -134,11 +137,11 @@ vi.mock('~/components/ui/alert-dialog', () => ({
 	),
 	AlertDialogTitle: ({ children }: { children: ReactNode }) => (
 		<div>{children}</div>
-	)
+	),
 }))
 
 vi.mock('~/modules/reviews/components/RatingDropdown', () => ({
-	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>
+	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>,
 }))
 
 vi.mock('~/modules/reviews/components/reviews-menu/ReviewsMenu', () => ({
@@ -161,45 +164,45 @@ vi.mock('~/modules/reviews/components/reviews-menu/ReviewsMenu', () => ({
 				Reviews
 			</button>
 		)
-	}
+	},
 }))
 
 vi.mock('~/modules/reviews/hooks/useReviewDialog', () => ({
 	useReviewDialog: () => ({
-		openReviewDialog: openReviewDialogMock
-	})
+		openReviewDialog: openReviewDialogMock,
+	}),
 }))
 
 vi.mock('~/modules/reviews/api/createReview', () => ({
 	useCreateReview: () => ({
 		mutateAsync: createReviewMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/modules/review-cards/api/updateReviewCard', () => ({
 	useUpdateReviewCard: () => ({
 		mutate: updateReviewCardMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/modules/review-cards/api/deleteReviewCard', () => ({
 	useDeleteReviewCard: () => ({
 		mutateAsync: vi.fn(),
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/modules/review-cards/components/RetireReviewCardDialog', () => ({
-	RetireReviewCardDialog: () => null
+	RetireReviewCardDialog: () => null,
 }))
 
 vi.mock('sonner', () => ({
 	toast: Object.assign(vi.fn(), {
 		error: vi.fn(),
-		success: vi.fn()
-	})
+		success: vi.fn(),
+	}),
 }))
 
 describe('ReviewCard', () => {
@@ -239,21 +242,27 @@ describe('ReviewCard', () => {
 			days_in_current_tier: 1,
 			is_new: false,
 			status_badges: [],
-			notes: ''
+			notes: '',
 		}
 
-		render(<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />)
+		render(
+			<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />,
+		)
 
 		const card = screen
 			.getByText('Focused prompt')
 			.closest('[data-slot="card"]') as HTMLElement | null
 		expect(card).not.toBeNull()
 		expect(card?.className).toContain('max-h-none')
-		expect(Number.parseFloat(card?.style.height ?? '0')).toBeGreaterThan(500)
+		expect(Number.parseFloat(card?.style.height ?? '0')).toBeGreaterThan(
+			500,
+		)
 
 		await user.click(screen.getByRole('button', { name: 'Type a guess' }))
 
-		const guessTextarea = screen.getByPlaceholderText('Type your guess here...')
+		const guessTextarea = screen.getByPlaceholderText(
+			'Type your guess here...',
+		)
 		await waitFor(() => {
 			expect(guessTextarea).toHaveFocus()
 		})
@@ -286,13 +295,15 @@ describe('ReviewCard', () => {
 			days_in_current_tier: 1,
 			is_new: false,
 			status_badges: [],
-			notes: ''
+			notes: '',
 		}
 
-		render(<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />)
+		render(
+			<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />,
+		)
 
 		expect(
-			screen.getByRole('button', { name: 'Type a guess' })
+			screen.getByRole('button', { name: 'Type a guess' }),
 		).toBeInTheDocument()
 	})
 
@@ -321,10 +332,12 @@ describe('ReviewCard', () => {
 			days_in_current_tier: 1,
 			is_new: false,
 			status_badges: [],
-			notes: ''
+			notes: '',
 		}
 
-		render(<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />)
+		render(
+			<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />,
+		)
 
 		await user.click(screen.getByRole('button', { name: 'Reveal' }))
 
@@ -363,7 +376,7 @@ describe('ReviewCard', () => {
 			reviews_overdue_count: 2,
 			reviews_due_today_count: 1,
 			status_badges: [],
-			notes: ''
+			notes: '',
 		}
 
 		render(<ReviewCard reviewCard={reviewCard} />)
@@ -373,14 +386,14 @@ describe('ReviewCard', () => {
 				triggerCounts: {
 					pendingCount: 4,
 					overdueCount: 2,
-					dueTodayCount: 1
-				}
-			})
+					dueTodayCount: 1,
+				},
+			}),
 		)
 		expect(prefetchQueryMock).not.toHaveBeenCalledWith(
 			expect.objectContaining({
-				queryKey: ['reviews', 'list', 'reviewCardId', '45']
-			})
+				queryKey: ['reviews', 'list', 'reviewCardId', '45'],
+			}),
 		)
 
 		await user.hover(screen.getByRole('button', { name: 'Reviews' }))
@@ -389,10 +402,10 @@ describe('ReviewCard', () => {
 			expect.arrayContaining([
 				[
 					expect.objectContaining({
-						queryKey: ['reviews', 'list', 'reviewCardId', '45']
-					})
-				]
-			])
+						queryKey: ['reviews', 'list', 'reviewCardId', '45'],
+					}),
+				],
+			]),
 		)
 	})
 
@@ -420,17 +433,19 @@ describe('ReviewCard', () => {
 			days_in_current_tier: 1,
 			is_new: false,
 			status_badges: [],
-			notes: ''
+			notes: '',
 		}
 
-		render(<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />)
+		render(
+			<ReviewCard enableLargeCardMode={true} reviewCard={reviewCard} />,
+		)
 
 		expect(screen.getByText('Practice description')).toBeVisible()
 		expect(
-			screen.queryByRole('button', { name: 'Reveal' })
+			screen.queryByRole('button', { name: 'Reveal' }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.queryByRole('button', { name: 'Type a guess' })
+			screen.queryByRole('button', { name: 'Type a guess' }),
 		).not.toBeInTheDocument()
 	})
 
@@ -458,7 +473,7 @@ describe('ReviewCard', () => {
 			days_in_current_tier: 1,
 			is_new: false,
 			status_badges: [],
-			notes: ''
+			notes: '',
 		}
 
 		render(<ReviewCard reviewCard={reviewCard} />)
@@ -466,7 +481,9 @@ describe('ReviewCard', () => {
 		const hiddenAnswer = screen.getByText('Flashcard answer')
 		expect(hiddenAnswer).toHaveAttribute('aria-hidden', 'true')
 		expect(hiddenAnswer.className).toContain('invisible')
-		expect(screen.getByRole('button', { name: 'Reveal' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Reveal' }),
+		).toBeInTheDocument()
 	})
 
 	it('groups topic and type in the header and removes the related-card indicator', () => {
@@ -493,7 +510,7 @@ describe('ReviewCard', () => {
 			days_in_current_tier: 1,
 			is_new: false,
 			status_badges: [],
-			notes: ''
+			notes: '',
 		}
 
 		render(<ReviewCard reviewCard={reviewCard} />)

@@ -1,20 +1,22 @@
 import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { MasonryLayout } from '../MasonryLayout'
 
 const useVirtualizerMock = vi.fn()
 const useResizeObserverMock = vi.fn()
 
 vi.mock('@tanstack/react-virtual', () => ({
-	useVirtualizer: (...args: Array<unknown>) => useVirtualizerMock(...args)
+	useVirtualizer: (...args: Array<unknown>) => useVirtualizerMock(...args),
 }))
 
 vi.mock('~/app/layouts/PageLayout', () => ({
-	usePageScrollElement: () => null
+	usePageScrollElement: () => null,
 }))
 
 vi.mock('~/hooks/useResizeObserver', () => ({
-	useResizeObserver: (...args: Array<unknown>) => useResizeObserverMock(...args)
+	useResizeObserver: (...args: Array<unknown>) =>
+		useResizeObserverMock(...args),
 }))
 
 function buildRect(overrides?: Partial<DOMRectReadOnly>): DOMRectReadOnly {
@@ -28,7 +30,7 @@ function buildRect(overrides?: Partial<DOMRectReadOnly>): DOMRectReadOnly {
 		right: 960,
 		bottom: 0,
 		toJSON: () => ({}),
-		...overrides
+		...overrides,
 	}
 }
 
@@ -43,8 +45,8 @@ describe('MasonryLayout', () => {
 			getTotalSize: () => 0,
 			getVirtualItems: () => [],
 			options: {
-				scrollMargin: 0
-			}
+				scrollMargin: 0,
+			},
 		})
 	})
 
@@ -56,8 +58,8 @@ describe('MasonryLayout', () => {
 			getTotalSize: () => 0,
 			getVirtualItems: () => [],
 			options: {
-				scrollMargin: 0
-			}
+				scrollMargin: 0,
+			},
 		})
 
 		const items = [{ id: 1 }]
@@ -65,11 +67,11 @@ describe('MasonryLayout', () => {
 			items,
 			renderItem: () => <div>Card</div>,
 			estimateItemSize: () => 120,
-			getItemKey: (item: { id: number }) => item.id
+			getItemKey: (item: { id: number }) => item.id,
 		}
 
 		const { rerender } = render(
-			<MasonryLayout {...props} measurementVersion='off' />
+			<MasonryLayout {...props} measurementVersion='off' />,
 		)
 
 		expect(measureSpy).not.toHaveBeenCalled()
@@ -87,8 +89,8 @@ describe('MasonryLayout', () => {
 			getTotalSize: () => 0,
 			getVirtualItems: () => [],
 			options: {
-				scrollMargin: 0
-			}
+				scrollMargin: 0,
+			},
 		})
 
 		const items = [{ id: 1 }]
@@ -96,11 +98,11 @@ describe('MasonryLayout', () => {
 			items,
 			renderItem: () => <div>Card</div>,
 			estimateItemSize: () => 120,
-			getItemKey: (item: { id: number }) => item.id
+			getItemKey: (item: { id: number }) => item.id,
 		}
 
 		const { rerender } = render(
-			<MasonryLayout {...props} measurementVersion='off' />
+			<MasonryLayout {...props} measurementVersion='off' />,
 		)
 
 		rerender(<MasonryLayout {...props} measurementVersion='off' />)

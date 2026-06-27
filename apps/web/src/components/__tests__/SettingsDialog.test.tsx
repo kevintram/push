@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const useThemeMock = vi.hoisted(() => vi.fn())
@@ -8,19 +8,19 @@ const useWeekStartMock = vi.hoisted(() => vi.fn())
 const useReviewModeMock = vi.hoisted(() => vi.fn())
 
 vi.mock('~/stores/ThemeContext', () => ({
-	useTheme: useThemeMock
+	useTheme: useThemeMock,
 }))
 
 vi.mock('~/stores/WeekStartContext', () => ({
 	WEEK_START_OPTIONS: [
 		{ value: 0, label: 'Sunday' },
-		{ value: 1, label: 'Monday' }
+		{ value: 1, label: 'Monday' },
 	],
-	useWeekStart: useWeekStartMock
+	useWeekStart: useWeekStartMock,
 }))
 
 vi.mock('~/stores/ReviewModeContext', () => ({
-	useReviewMode: useReviewModeMock
+	useReviewMode: useReviewModeMock,
 }))
 
 vi.mock('~/components/ui/dialog', () => ({
@@ -31,7 +31,9 @@ vi.mock('~/components/ui/dialog', () => ({
 	DialogHeader: ({ children }: { children: ReactNode }) => (
 		<div>{children}</div>
 	),
-	DialogTitle: ({ children }: { children: ReactNode }) => <div>{children}</div>
+	DialogTitle: ({ children }: { children: ReactNode }) => (
+		<div>{children}</div>
+	),
 }))
 
 vi.mock('~/components/ui/dropdown-menu', () => ({
@@ -43,7 +45,7 @@ vi.mock('~/components/ui/dropdown-menu', () => ({
 	),
 	DropdownMenuItem: ({
 		children,
-		onClick
+		onClick,
 	}: {
 		children: ReactNode
 		onClick?: () => void
@@ -54,11 +56,11 @@ vi.mock('~/components/ui/dropdown-menu', () => ({
 	),
 	DropdownMenuTrigger: ({
 		children,
-		render
+		render,
 	}: {
 		children: ReactNode
 		render?: ReactNode
-	}) => <div>{render ?? children}</div>
+	}) => <div>{render ?? children}</div>,
 }))
 
 import { SettingsDialog } from '~/components/SettingsDialog'
@@ -77,22 +79,24 @@ describe('SettingsDialog', () => {
 		useThemeMock.mockReturnValue({
 			resolvedTheme: 'dark',
 			setTheme,
-			theme: 'system'
+			theme: 'system',
 		})
 		useWeekStartMock.mockReturnValue({
 			setWeekStartDay: vi.fn(),
-			weekStartDay: 0
+			weekStartDay: 0,
 		})
 		useReviewModeMock.mockReturnValue({
 			showReviewModeWarning: true,
 			setShowReviewModeWarning: vi.fn(),
 			autoEnableReviewMode: false,
-			setAutoEnableReviewMode: vi.fn()
+			setAutoEnableReviewMode: vi.fn(),
 		})
 
 		render(<SettingsDialog onOpenChange={vi.fn()} open={true} />)
 
-		expect(screen.getByRole('button', { name: 'System' })).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'System' }),
+		).toBeInTheDocument()
 
 		await user.click(screen.getByRole('button', { name: 'Light' }))
 

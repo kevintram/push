@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+
 import { useSectionCollapse } from '~/app/hooks/useSectionCollapse'
 import { useReviewCards } from '~/modules/review-cards/api/getReviewCards'
 import { useCreateTopic } from '~/modules/topics/api/createTopic'
@@ -8,14 +9,15 @@ import { useDeleteTopic } from '~/modules/topics/api/deleteTopic'
 import { useTopic } from '~/modules/topics/api/getTopic'
 import { useTopics } from '~/modules/topics/api/getTopics'
 import { useTopicTree } from '~/modules/topics/hooks/useTopicTree'
-import type { TopicDetailReviewCardFilter } from './shared'
+
+import { type TopicDetailReviewCardFilter } from './shared'
 import { isTopicDetailReviewCardFilter } from './shared'
 import {
 	buildTopicDetailRoot,
 	flattenTopicDetailSectionIds,
 	getTopicDetailLabel,
 	getTopicDetailSectionId,
-	groupReviewCardsByTopicId
+	groupReviewCardsByTopicId,
 } from './topicDetailStructure'
 import { useTopicDetailNavigation } from './useTopicDetailNavigation'
 
@@ -30,7 +32,7 @@ export function useTopicDetailPage({
 	cardTypeFilter = 'all',
 	focusTitle,
 	onCardTypeFilterChange,
-	topicId
+	topicId,
 }: UseTopicDetailPageOptions) {
 	const navigate = useNavigate()
 	const resolvedCardTypeFilter = isTopicDetailReviewCardFilter(cardTypeFilter)
@@ -39,13 +41,13 @@ export function useTopicDetailPage({
 	const {
 		data: topic,
 		error: topicError,
-		isLoading: isTopicLoading
+		isLoading: isTopicLoading,
 	} = useTopic(topicId)
 	const {
 		ancestorIdsById,
 		error: topicTreeError,
 		isLoading: isTopicTreeLoading,
-		nodeById
+		nodeById,
 	} = useTopicTree()
 	const { mutateAsync: deleteTopicAsync, isPending: isDeletingTopic } =
 		useDeleteTopic()
@@ -54,20 +56,20 @@ export function useTopicDetailPage({
 	const {
 		data: subtreeTopics = [],
 		error: subtreeTopicsError,
-		isLoading: isSubtreeTopicsLoading
+		isLoading: isSubtreeTopicsLoading,
 	} = useTopics({
 		subtree_of: topicId,
 		sort: 'title',
-		order: 'asc'
+		order: 'asc',
 	})
 	const {
 		data: reviewCards = [],
 		error: reviewCardsError,
-		isLoading: isReviewCardsLoading
+		isLoading: isReviewCardsLoading,
 	} = useReviewCards({
 		topic_id: topicId,
 		include_descendants: true,
-		order: 'desc'
+		order: 'desc',
 	})
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const shouldAutoFocusRootTitle = focusTitle ?? false
@@ -81,7 +83,9 @@ export function useTopicDetailPage({
 		Record<number, TopicDetailReviewCardFilter>
 	>({})
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	const sectionTitleElementsRef = useRef(new Map<number, HTMLTextAreaElement>())
+	const sectionTitleElementsRef = useRef(
+		new Map<number, HTMLTextAreaElement>(),
+	)
 	const pendingCreatedTopicIdRef = useRef<number | null>(null)
 	const [scrollContainerVersion, setScrollContainerVersion] = useState(0)
 	const { collapsedSections, expandSection, toggleSection } =
@@ -98,11 +102,11 @@ export function useTopicDetailPage({
 
 	const rootSection = useMemo(
 		() => buildTopicDetailRoot(subtreeTopicsWithRoot, topicId),
-		[subtreeTopicsWithRoot, topicId]
+		[subtreeTopicsWithRoot, topicId],
 	)
 	const sectionIds = useMemo(
 		() => flattenTopicDetailSectionIds(rootSection),
-		[rootSection]
+		[rootSection],
 	)
 	const isPassiveHashAlignmentEnabled = !(
 		isTopicLoading ||
@@ -112,7 +116,7 @@ export function useTopicDetailPage({
 	)
 	const topicReviewCardsById = useMemo(
 		() => groupReviewCardsByTopicId(reviewCards),
-		[reviewCards]
+		[reviewCards],
 	)
 	const topicPath = useMemo(() => {
 		if (!topic) return []
@@ -133,13 +137,13 @@ export function useTopicDetailPage({
 		registerSectionHeadingRef,
 		registerSectionRef,
 		scrollToSection,
-		visibleSectionIds
+		visibleSectionIds,
 	} = useTopicDetailNavigation({
 		passiveHashAlignmentEnabled: isPassiveHashAlignmentEnabled,
 		rootTopicId: topicId,
 		scrollContainerRef,
 		scrollContainerVersion,
-		sectionIds
+		sectionIds,
 	})
 
 	const registerScrollContainerRef = useCallback(
@@ -149,7 +153,7 @@ export function useTopicDetailPage({
 			scrollContainerRef.current = element
 			setScrollContainerVersion(previousVersion => previousVersion + 1)
 		},
-		[]
+		[],
 	)
 
 	const getScrollElement = useCallback(() => scrollContainerRef.current, [])
@@ -169,17 +173,17 @@ export function useTopicDetailPage({
 				scrollToSection(topicId, {
 					behavior: 'smooth',
 					mode: 'replace',
-					updateHash: false
+					updateHash: false,
 				})
 				titleElement.focus({ preventScroll: true })
 				titleElement.setSelectionRange(0, titleElement.value.length)
 				setPendingCreatedTopicId(currentTopicId =>
-					currentTopicId === topicId ? null : currentTopicId
+					currentTopicId === topicId ? null : currentTopicId,
 				)
 				setPendingCreatedParentTopicId(currentParentTopicId =>
 					currentParentTopicId === nodeById.get(topicId)?.parent_id
 						? null
-						: currentParentTopicId
+						: currentParentTopicId,
 				)
 			}
 
@@ -190,7 +194,7 @@ export function useTopicDetailPage({
 
 			window.requestAnimationFrame(focusCreatedTopic)
 		},
-		[nodeById, scrollToSection, sectionIds]
+		[nodeById, scrollToSection, sectionIds],
 	)
 	const detailError =
 		topicError ?? topicTreeError ?? subtreeTopicsError ?? reviewCardsError
@@ -205,7 +209,7 @@ export function useTopicDetailPage({
 			sectionTitleElementsRef.current.set(topicId, element)
 			completePendingCreatedTopic(topicId, element)
 		},
-		[completePendingCreatedTopic]
+		[completePendingCreatedTopic],
 	)
 
 	const handleGlobalFilterChange = useCallback(
@@ -213,25 +217,27 @@ export function useTopicDetailPage({
 			setSectionFilterOverrides({})
 			onCardTypeFilterChange(filter)
 		},
-		[onCardTypeFilterChange]
+		[onCardTypeFilterChange],
 	)
 
 	const handleSectionFilterChange = useCallback(
 		(topicFilterId: number, filter: TopicDetailReviewCardFilter) => {
 			setSectionFilterOverrides(previousOverrides => {
 				if (filter === resolvedCardTypeFilter) {
-					const { [topicFilterId]: _removedOverride, ...remainingOverrides } =
-						previousOverrides
+					const {
+						[topicFilterId]: _removedOverride,
+						...remainingOverrides
+					} = previousOverrides
 					return remainingOverrides
 				}
 
 				return {
 					...previousOverrides,
-					[topicFilterId]: filter
+					[topicFilterId]: filter,
 				}
 			})
 		},
-		[resolvedCardTypeFilter]
+		[resolvedCardTypeFilter],
 	)
 
 	const handleSubtopicCreated = useCallback(
@@ -246,7 +252,7 @@ export function useTopicDetailPage({
 			setPendingCreatedTopicId(createdTopicId)
 			setPendingCreatedParentTopicId(parentTopicId)
 		},
-		[ancestorIdsById, expandSection]
+		[ancestorIdsById, expandSection],
 	)
 
 	const handleFreshTopicInteraction = useCallback(
@@ -254,7 +260,7 @@ export function useTopicDetailPage({
 			if (freshTopicId !== topicId) return
 			setFreshTopicId(null)
 		},
-		[freshTopicId]
+		[freshTopicId],
 	)
 
 	const handleCreateSubtopic = useCallback(async () => {
@@ -264,7 +270,7 @@ export function useTopicDetailPage({
 			const created = await createTopicAsync({
 				title: '',
 				body: '',
-				parent_id: topic.id
+				parent_id: topic.id,
 			})
 			handleSubtopicCreated(topic.id, created.id)
 		} catch {
@@ -283,7 +289,7 @@ export function useTopicDetailPage({
 			if (topic.parent_id != null && nodeById.has(topic.parent_id)) {
 				await navigate({
 					to: '/topics/$topicId',
-					params: { topicId: topic.parent_id.toString() }
+					params: { topicId: topic.parent_id.toString() },
 				})
 				return
 			}
@@ -291,7 +297,9 @@ export function useTopicDetailPage({
 			await navigate({ to: '/library' })
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : 'Failed to delete topic'
+				error instanceof Error
+					? error.message
+					: 'Failed to delete topic',
 			)
 		}
 	}, [deleteTopicAsync, isDeletingTopic, navigate, nodeById, topic])
@@ -301,10 +309,10 @@ export function useTopicDetailPage({
 			navigate({
 				to: '/review-cards/$reviewCardId',
 				params: { reviewCardId: reviewCardId.toString() },
-				search: { tab: 'home' }
+				search: { tab: 'home' },
 			})
 		},
-		[navigate]
+		[navigate],
 	)
 
 	useEffect(() => {
@@ -367,6 +375,6 @@ export function useTopicDetailPage({
 		topicPath,
 		topicReviewCardsById,
 		ancestorIdsById,
-		visibleSectionIds
+		visibleSectionIds,
 	}
 }

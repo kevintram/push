@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
+
 import { TopicSchema } from '../types/topic.schemas'
-import type { Topic, UpdateTopicInput } from '../types/topic.types'
+import { type Topic, type UpdateTopicInput } from '../types/topic.types'
 import { topicKeys } from './queryKeys'
 
 async function updateTopic(input: UpdateTopicInput): Promise<Topic> {
@@ -12,10 +14,10 @@ async function updateTopic(input: UpdateTopicInput): Promise<Topic> {
 		{
 			method: 'PATCH',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify(payload)
-		}
+			body: JSON.stringify(payload),
+		},
 	)
 
 	if (!response.ok) {
@@ -41,6 +43,6 @@ export function useUpdateTopic() {
 		onSuccess: topic => {
 			queryClient.setQueryData(topicKeys.detail(topic.id), topic)
 			return queryClient.invalidateQueries({ queryKey: topicKeys.all })
-		}
+		},
 	})
 }

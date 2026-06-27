@@ -3,7 +3,7 @@ import Cookies from 'js-cookie'
 const COOKIE_OPTIONS: Cookies.CookieAttributes = {
 	expires: 30, // 30 days
 	path: '/',
-	sameSite: 'lax'
+	sameSite: 'lax',
 }
 
 /**

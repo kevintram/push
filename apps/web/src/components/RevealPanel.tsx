@@ -5,8 +5,9 @@ import {
 	type ReactNode,
 	useEffect,
 	useRef,
-	useState
+	useState,
 } from 'react'
+
 import { ReviewModeHelperText } from '~/components/ReviewModeHelperText'
 import { Button } from '~/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
@@ -14,7 +15,7 @@ import { Textarea } from '~/components/ui/textarea'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
 
@@ -49,7 +50,7 @@ const VARIANT_STYLES = {
 		content: 'mt-0 flex min-h-0 flex-1 flex-col',
 		fieldContainer: 'relative flex min-h-0 flex-1 flex-col',
 		textarea: 'field-sizing-fixed h-full min-h-24 flex-1 text-sm',
-		closed: 'flex min-h-0 flex-1 items-center justify-center'
+		closed: 'flex min-h-0 flex-1 items-center justify-center',
 	},
 	detail: {
 		wrapper:
@@ -58,8 +59,8 @@ const VARIANT_STYLES = {
 		content: 'mt-0 flex min-h-0 flex-1 flex-col',
 		fieldContainer: 'relative flex min-h-0 flex-1 flex-col',
 		textarea: 'min-h-24 flex-1',
-		closed: 'flex min-h-0 flex-1 w-full items-center justify-center'
-	}
+		closed: 'flex min-h-0 flex-1 w-full items-center justify-center',
+	},
 } as const
 
 export function RevealPanel({
@@ -80,7 +81,7 @@ export function RevealPanel({
 	revealHelperVariant = null,
 	closedContent,
 	stopPropagation = false,
-	autoFocusGuess = false
+	autoFocusGuess = false,
 }: RevealPanelProps) {
 	const guessTextareaRef = useRef<HTMLTextAreaElement | null>(null)
 	const [localRevealValue, setLocalRevealValue] = useState(revealValue)
@@ -94,7 +95,7 @@ export function RevealPanel({
 	}, [onRevealValueChange, revealValue])
 
 	const handleStopPropagation = (
-		event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>
+		event: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>,
 	) => {
 		if (stopPropagation) {
 			event.stopPropagation()
@@ -118,7 +119,7 @@ export function RevealPanel({
 		'absolute top-2 right-2 text-muted-foreground hover:text-foreground'
 	const resolvedTextareaClassName = cn(
 		'min-h-24 resize-none border-border/70 bg-background/80 pr-8',
-		variantStyles.textarea
+		variantStyles.textarea,
 	)
 
 	useEffect(() => {
@@ -212,7 +213,9 @@ export function RevealPanel({
 					<div className={variantStyles.fieldContainer}>
 						<Textarea
 							className={resolvedTextareaClassName}
-							onChange={event => onGuessValueChange(event.target.value)}
+							onChange={event =>
+								onGuessValueChange(event.target.value)
+							}
 							onClick={handleStopPropagation}
 							onKeyDown={handleStopPropagation}
 							placeholder={guessPlaceholder}
@@ -238,7 +241,9 @@ export function RevealPanel({
 							>
 								{isCopied ? <Check /> : <Copy />}
 							</TooltipTrigger>
-							<TooltipContent>{isCopied ? 'Copied' : 'Copy'}</TooltipContent>
+							<TooltipContent>
+								{isCopied ? 'Copied' : 'Copy'}
+							</TooltipContent>
 						</Tooltip>
 					</div>
 				</TabsContent>
@@ -266,7 +271,9 @@ export function RevealPanel({
 							className={copyButtonClassName}
 							onClick={event => {
 								handleStopPropagation(event)
-								handleAction(() => onRevealCopy(resolvedRevealValue))
+								handleAction(() =>
+									onRevealCopy(resolvedRevealValue),
+								)
 							}}
 							size='icon-xs'
 							type='button'

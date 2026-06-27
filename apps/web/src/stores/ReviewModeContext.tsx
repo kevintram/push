@@ -22,7 +22,7 @@ interface ReviewModeContextType {
 }
 
 const ReviewModeContext = createContext<ReviewModeContextType | undefined>(
-	undefined
+	undefined,
 )
 
 interface ReviewModeProviderProps {
@@ -74,16 +74,16 @@ function getInitialReviewMode(): ReviewMode {
 
 export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 	const pathname = useRouterState({
-		select: state => state.location.pathname
+		select: state => state.location.pathname,
 	})
 	const [reviewMode, setReviewMode] = useState<ReviewMode>(() =>
-		isForcedReviewModePath(pathname) ? 'on' : getInitialReviewMode()
+		isForcedReviewModePath(pathname) ? 'on' : getInitialReviewMode(),
 	)
 	const [showReviewModeWarning, setShowReviewModeWarning] = useState(() =>
-		getStoredBoolean(REVIEW_MODE_WARNING_STORAGE_KEY, true)
+		getStoredBoolean(REVIEW_MODE_WARNING_STORAGE_KEY, true),
 	)
 	const [autoEnableReviewMode, setAutoEnableReviewMode] = useState(() =>
-		getStoredBoolean(REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY, false)
+		getStoredBoolean(REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY, false),
 	)
 
 	// Auto-enable review mode when navigating to a forced path.
@@ -100,11 +100,11 @@ export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 		storage.setItem(FLASHCARD_MODE_STORAGE_KEY, reviewMode)
 		storage.setItem(
 			REVIEW_MODE_WARNING_STORAGE_KEY,
-			String(showReviewModeWarning)
+			String(showReviewModeWarning),
 		)
 		storage.setItem(
 			REVIEW_MODE_AUTO_ENABLE_STORAGE_KEY,
-			String(autoEnableReviewMode)
+			String(autoEnableReviewMode),
 		)
 	}, [reviewMode, showReviewModeWarning, autoEnableReviewMode])
 
@@ -118,9 +118,9 @@ export function ReviewModeProvider({ children }: ReviewModeProviderProps) {
 			showReviewModeWarning,
 			setShowReviewModeWarning,
 			autoEnableReviewMode,
-			setAutoEnableReviewMode
+			setAutoEnableReviewMode,
 		}),
-		[reviewMode, showReviewModeWarning, autoEnableReviewMode]
+		[reviewMode, showReviewModeWarning, autoEnableReviewMode],
 	)
 
 	return <ReviewModeContext value={value}>{children}</ReviewModeContext>
@@ -130,7 +130,6 @@ export function useReviewMode() {
 	const context = useContext(ReviewModeContext)
 
 	if (!context) {
-		// biome-ignore lint/security/noSecrets: false positive on static invariant message
 		throw new Error('ReviewModeProvider is required')
 	}
 

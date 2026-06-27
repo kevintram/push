@@ -1,4 +1,4 @@
-import type { ReviewCardStatusBadge } from './status-badge.types'
+import { type ReviewCardStatusBadge } from './status-badge.types'
 export type ReviewCardType = 'practice' | 'flashcard'
 export type ReviewFilter = 'all' | 'practice' | 'flashcards'
 export type ReviewFocusOrder = 'due-date' | 'random'

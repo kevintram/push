@@ -7,7 +7,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 
 type TopicDetailRootActionsMenuProps = {
@@ -21,7 +21,7 @@ export function TopicDetailRootActionsMenu({
 	isCreatingTopic,
 	onCreateSubtopic,
 	onOpenDeleteDialog,
-	topicTitle
+	topicTitle,
 }: TopicDetailRootActionsMenuProps) {
 	const [isOpen, setIsOpen] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
@@ -71,7 +71,10 @@ export function TopicDetailRootActionsMenu({
 					)}
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem onClick={onOpenDeleteDialog} variant='destructive'>
+				<DropdownMenuItem
+					onClick={onOpenDeleteDialog}
+					variant='destructive'
+				>
 					<Trash2 className='mr-2 h-4 w-4' />
 					Delete
 				</DropdownMenuItem>

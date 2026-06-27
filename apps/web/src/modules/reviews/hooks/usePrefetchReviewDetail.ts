@@ -1,8 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useRef } from 'react'
+
 import { reviewDetailQueryOptions } from '../api/getReviews'
 import { reviewKeys } from '../api/queryKeys'
-import type { ReviewListItem } from '../types/review.types'
+import { type ReviewListItem } from '../types/review.types'
 
 export const REVIEW_DETAIL_INTENT_PRELOAD_DELAY = 100
 
@@ -23,7 +24,7 @@ export function usePrefetchReviewDetail(review: ReviewListItem) {
 		// Keep the dialog's immediate render aligned with the latest row snapshot,
 		// but mark it stale so prefetch/open still revalidate the detail endpoint.
 		queryClient.setQueryData(reviewKeys.detail(review.id), review, {
-			updatedAt: 0
+			updatedAt: 0,
 		})
 	}, [queryClient, review])
 
@@ -52,7 +53,7 @@ export function usePrefetchReviewDetail(review: ReviewListItem) {
 				preloadReviewDetail()
 			}, delay)
 		},
-		[cancelReviewDetailPreload, preloadReviewDetail, review.id]
+		[cancelReviewDetailPreload, preloadReviewDetail, review.id],
 	)
 
 	useEffect(() => cancelReviewDetailPreload, [cancelReviewDetailPreload])
@@ -61,6 +62,6 @@ export function usePrefetchReviewDetail(review: ReviewListItem) {
 		seedReviewDetail,
 		preloadReviewDetail,
 		scheduleReviewDetailPreload,
-		cancelReviewDetailPreload
+		cancelReviewDetailPreload,
 	}
 }

@@ -1,11 +1,11 @@
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { CountBadge } from '~/components/ui/count-badge'
 import { ReviewCard } from '~/modules/review-cards/components/ReviewCard'
-import type { ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
+import { type ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
 import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
-	estimateReviewCardSize
+	estimateReviewCardSize,
 } from '~/utils/estimateMasonryItemSize'
 
 type ReviewCardSection = {
@@ -23,7 +23,7 @@ type ReviewCardSectionListProps = {
 
 function ReviewCardMasonry({
 	items,
-	onCardClick
+	onCardClick,
 }: {
 	items: Array<ReviewCardQueueItem>
 	onCardClick: (cardId: number) => void
@@ -49,7 +49,7 @@ function ReviewCardMasonry({
 
 export function ReviewCardSectionList({
 	onCardClick,
-	sections
+	sections,
 }: ReviewCardSectionListProps) {
 	return (
 		<div className='space-y-6'>
@@ -68,7 +68,10 @@ export function ReviewCardSectionList({
 							</p>
 						) : null}
 					</div>
-					<ReviewCardMasonry items={section.items} onCardClick={onCardClick} />
+					<ReviewCardMasonry
+						items={section.items}
+						onCardClick={onCardClick}
+					/>
 				</section>
 			))}
 		</div>

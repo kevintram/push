@@ -1,6 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ExternalLink, Loader, Plus, Trash2 } from 'lucide-react'
 import { type MouseEvent, useCallback, useMemo, useRef, useState } from 'react'
+
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -10,27 +11,28 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogMedia,
-	AlertDialogTitle
+	AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import {
 	ContextMenu,
 	ContextMenuContent,
 	ContextMenuItem,
 	ContextMenuSeparator,
-	ContextMenuTrigger
+	ContextMenuTrigger,
 } from '~/components/ui/context-menu'
 import { Separator } from '~/components/ui/separator'
 import { cn } from '~/lib/utils'
 import { TopicTreeItem } from '~/modules/topics/components/topic-tree/TopicTreeItem'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
 import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
-import type { TopicDetailReviewCardFilter } from './shared'
-import { TopicDetailOutlineHeader } from './TopicDetailOutlineHeader'
-import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'
+
+import { type TopicDetailReviewCardFilter } from './shared'
 import {
 	TOPIC_DETAIL_OUTLINE_MAX_WIDTH,
-	TOPIC_DETAIL_OUTLINE_MIN_WIDTH
+	TOPIC_DETAIL_OUTLINE_MIN_WIDTH,
 } from './topicDetailLayout'
+import { TopicDetailOutlineHeader } from './TopicDetailOutlineHeader'
+import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'
 import { getTopicDetailSectionId } from './topicDetailStructure'
 import { useTopicDetailOutline } from './useTopicDetailOutline'
 import { useTopicDetailOutlineSizing } from './useTopicDetailOutlineSizing'
@@ -53,7 +55,7 @@ interface TopicDetailOutlineProps {
 }
 
 function shouldHandleSamePageSectionNavigation(
-	event: MouseEvent<HTMLAnchorElement>
+	event: MouseEvent<HTMLAnchorElement>,
 ) {
 	return !(
 		event.button !== 0 ||
@@ -78,7 +80,7 @@ export function TopicDetailOutline({
 	pendingCreatedParentTopicId,
 	pendingCreatedTopicId,
 	sectionNumberById,
-	visibleSectionIds
+	visibleSectionIds,
 }: TopicDetailOutlineProps) {
 	const [isRootContextMenuOpen, setIsRootContextMenuOpen] = useState(false)
 	const [isCreatingRootContextTopic, setIsCreatingRootContextTopic] =
@@ -96,14 +98,14 @@ export function TopicDetailOutline({
 		pendingDeleteTopicId,
 		setPendingDeleteTopicId,
 		suppressSelectionRef,
-		toggleExpanded
+		toggleExpanded,
 	} = useTopicDetailOutline({
 		ancestorIdsById,
 		nodeById,
 		onCreateSubtopicCreated: onSubtopicCreated,
 		outlineRootNode,
 		pendingCreatedParentTopicId,
-		visibleSectionIds
+		visibleSectionIds,
 	})
 	const rootLabel = outlineRootNode
 		? getTopicDisplayTitle(outlineRootNode.title, outlineRootNode.body)
@@ -119,13 +121,13 @@ export function TopicDetailOutline({
 		outlineNavRef,
 		outlineRef,
 		registerOutlineItemRef,
-		resizeButtonRef
+		resizeButtonRef,
 	} = useTopicDetailOutlineSizing({
 		onOutlineWidthChange,
 		outlineNodeCount: outlineNodes.length,
 		outlineWidth,
 		pendingCreatedTopicId,
-		rootLabel
+		rootLabel,
 	})
 
 	const outlineScrollRef = useRef<HTMLDivElement>(null)
@@ -135,26 +137,26 @@ export function TopicDetailOutline({
 
 	const visibleOutlineTopicIds = useMemo(
 		() => new Set(visibleSectionIds),
-		[visibleSectionIds]
+		[visibleSectionIds],
 	)
 	const freshOutlineTopicIds = useMemo(
 		() => (freshTopicId == null ? undefined : new Set([freshTopicId])),
-		[freshTopicId]
+		[freshTopicId],
 	)
 	const handleOpenTopic = useCallback(
 		(topicId: number) => {
 			navigate({
 				to: '/topics/$topicId',
-				params: { topicId: topicId.toString() }
+				params: { topicId: topicId.toString() },
 			}).catch(() => {})
 		},
-		[navigate]
+		[navigate],
 	)
 	const handleOutlineClick = useCallback(
 		(
 			event: MouseEvent<HTMLAnchorElement>,
 			topicId: number,
-			suppressSelectionRef: { current: boolean }
+			suppressSelectionRef: { current: boolean },
 		) => {
 			if (suppressSelectionRef.current) {
 				event.preventDefault()
@@ -167,21 +169,16 @@ export function TopicDetailOutline({
 			event.preventDefault()
 			onSectionSelect(topicId)
 		},
-		[onSectionSelect]
+		[onSectionSelect],
 	)
-
-	if (!outlineRootNode) return null
-
-	const isRootActive =
-		visibleSectionIds.length === 0 ||
-		visibleOutlineTopicIds.has(outlineRootNode.id)
-	const outlineRootTopicId = outlineRootNode.id.toString()
+	const outlineRootId = outlineRootNode?.id ?? null
+	const outlineRootTopicId = outlineRootId?.toString() ?? ''
 	const renderOutlinePrimaryAction = useCallback(
 		({
 			className,
 			label,
 			node,
-			suppressSelectionRef
+			suppressSelectionRef,
 		}: {
 			className: string
 			label: string
@@ -206,12 +203,18 @@ export function TopicDetailOutline({
 				/>
 			</Link>
 		),
-		[handleOutlineClick, outlineRootTopicId, sectionNumberById]
+		[handleOutlineClick, outlineRootTopicId, sectionNumberById],
 	)
-	const handleAddChildTopic = useCallback(
-		() => handleCreateSubtopic(outlineRootNode.id),
-		[handleCreateSubtopic, outlineRootNode.id]
-	)
+	const handleAddChildTopic = useCallback(() => {
+		if (outlineRootId == null) return Promise.resolve()
+		return handleCreateSubtopic(outlineRootId)
+	}, [handleCreateSubtopic, outlineRootId])
+
+	if (!outlineRootNode) return null
+
+	const isRootActive =
+		visibleSectionIds.length === 0 ||
+		visibleOutlineTopicIds.has(outlineRootNode.id)
 
 	return (
 		<aside
@@ -232,10 +235,16 @@ export function TopicDetailOutline({
 				type='button'
 			/>
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'>
-				<div className='min-h-0 min-w-0 shrink-0 pr-1' style={outlineListStyle}>
+				<div
+					className='min-h-0 min-w-0 shrink-0 pr-1'
+					style={outlineListStyle}
+				>
 					<div className='h-full min-h-0 overflow-y-auto pr-2'>
 						<div className='flex h-full min-h-0 flex-col'>
-							<div className='mb-1.5 shrink-0' ref={outlineHeaderRef}>
+							<div
+								className='mb-1.5 shrink-0'
+								ref={outlineHeaderRef}
+							>
 								<TopicDetailOutlineHeader
 									isUpdatingTopic={isUpdatingTopic}
 									onAdd={handleAddChildTopic}
@@ -255,8 +264,11 @@ export function TopicDetailOutline({
 									<ul className='space-y-px'>
 										<ContextMenu
 											onOpenChange={nextOpen => {
-												if (isCreatingRootContextTopic) return
-												setIsRootContextMenuOpen(nextOpen)
+												if (isCreatingRootContextTopic)
+													return
+												setIsRootContextMenuOpen(
+													nextOpen,
+												)
 											}}
 											open={isRootContextMenuOpen}
 										>
@@ -264,10 +276,11 @@ export function TopicDetailOutline({
 												<ContextMenuTrigger className='rounded-md'>
 													<div
 														className={cn(
-															'group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors hover:bg-[var(--app-chrome-hover)]'
+															'group/topic-row flex min-h-7 items-center rounded-md pr-0.5 transition-colors hover:bg-[var(--app-chrome-hover)]',
 														)}
 														data-fresh-topic={
-															freshTopicId === outlineRootNode.id
+															freshTopicId ===
+															outlineRootNode.id
 																? 'true'
 																: undefined
 														}
@@ -277,27 +290,37 @@ export function TopicDetailOutline({
 																'min-w-0 flex-1 truncate rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:underline',
 																isRootActive
 																	? 'font-bold text-foreground'
-																	: 'font-semibold text-muted-foreground hover:text-foreground'
+																	: 'font-semibold text-muted-foreground hover:text-foreground',
 															)}
-															hash={getTopicDetailSectionId(outlineRootNode.id)}
-															hashScrollIntoView={false}
+															hash={getTopicDetailSectionId(
+																outlineRootNode.id,
+															)}
+															hashScrollIntoView={
+																false
+															}
 															onClick={event => {
 																handleOutlineClick(
 																	event,
 																	outlineRootNode.id,
-																	suppressSelectionRef
+																	suppressSelectionRef,
 																)
 															}}
-															params={{ topicId: outlineRootTopicId }}
+															params={{
+																topicId:
+																	outlineRootTopicId,
+															}}
 															resetScroll={false}
 															search={true}
 															to='/topics/$topicId'
 														>
 															<OutlineLabel
-																label={rootLabel}
+																label={
+																	rootLabel
+																}
 																sectionNumber={
-																	sectionNumberById.get(outlineRootNode.id) ??
-																	null
+																	sectionNumberById.get(
+																		outlineRootNode.id,
+																	) ?? null
 																}
 															/>
 														</Link>
@@ -309,9 +332,13 @@ export function TopicDetailOutline({
 													sideOffset={6}
 												>
 													<ContextMenuItem
-														disabled={isUpdatingTopic}
+														disabled={
+															isUpdatingTopic
+														}
 														onClick={() => {
-															handleOpenTopic(outlineRootNode.id)
+															handleOpenTopic(
+																outlineRootNode.id,
+															)
 														}}
 													>
 														<ExternalLink className='h-4 w-4' />
@@ -320,16 +347,23 @@ export function TopicDetailOutline({
 													<ContextMenuItem
 														closeOnClick={false}
 														disabled={
-															isUpdatingTopic || isCreatingRootContextTopic
+															isUpdatingTopic ||
+															isCreatingRootContextTopic
 														}
 														onClick={() => {
-															setIsCreatingRootContextTopic(true)
-															handleCreateSubtopic(outlineRootNode.id).finally(
-																() => {
-																	setIsCreatingRootContextTopic(false)
-																	setIsRootContextMenuOpen(false)
-																}
+															setIsCreatingRootContextTopic(
+																true,
 															)
+															handleCreateSubtopic(
+																outlineRootNode.id,
+															).finally(() => {
+																setIsCreatingRootContextTopic(
+																	false,
+																)
+																setIsRootContextMenuOpen(
+																	false,
+																)
+															})
 														}}
 													>
 														{isCreatingRootContextTopic ? (
@@ -346,9 +380,13 @@ export function TopicDetailOutline({
 													</ContextMenuItem>
 													<ContextMenuSeparator />
 													<ContextMenuItem
-														disabled={isUpdatingTopic}
+														disabled={
+															isUpdatingTopic
+														}
 														onClick={() => {
-															setPendingDeleteTopicId(outlineRootNode.id)
+															setPendingDeleteTopicId(
+																outlineRootNode.id,
+															)
 														}}
 														variant='destructive'
 													>
@@ -361,24 +399,44 @@ export function TopicDetailOutline({
 										{outlineNodes.map(node => (
 											<TopicTreeItem
 												activeDragTopicId={null}
-												ancestorIdsById={ancestorIdsById}
+												ancestorIdsById={
+													ancestorIdsById
+												}
 												expandedIdSet={expandedIdSet}
-												freshTopicIds={freshOutlineTopicIds}
+												freshTopicIds={
+													freshOutlineTopicIds
+												}
 												highlightAppearance='text-only'
 												highlightedDropTopicId={null}
-												highlightedTopicIds={visibleOutlineTopicIds}
+												highlightedTopicIds={
+													visibleOutlineTopicIds
+												}
 												isDragAndDropEnabled={false}
-												isUpdatingTopic={isUpdatingTopic}
+												isUpdatingTopic={
+													isUpdatingTopic
+												}
 												key={node.id}
 												node={node}
 												nodeById={nodeById}
-												onCreateSubtopic={handleCreateSubtopic}
+												onCreateSubtopic={
+													handleCreateSubtopic
+												}
 												onOpenTopic={handleOpenTopic}
-												onRequestDeleteTopic={setPendingDeleteTopicId}
-												onToggleExpanded={toggleExpanded}
-												renderPrimaryAction={renderOutlinePrimaryAction}
-												setItemRef={registerOutlineItemRef}
-												suppressSelectionRef={suppressSelectionRef}
+												onRequestDeleteTopic={
+													setPendingDeleteTopicId
+												}
+												onToggleExpanded={
+													toggleExpanded
+												}
+												renderPrimaryAction={
+													renderOutlinePrimaryAction
+												}
+												setItemRef={
+													registerOutlineItemRef
+												}
+												suppressSelectionRef={
+													suppressSelectionRef
+												}
 											/>
 										))}
 									</ul>
@@ -438,7 +496,7 @@ export function TopicDetailOutline({
 
 function OutlineLabel({
 	label,
-	sectionNumber
+	sectionNumber,
 }: {
 	label: string
 	sectionNumber: string | null

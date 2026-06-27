@@ -1,4 +1,5 @@
 import { ChevronDown, Shuffle } from 'lucide-react'
+
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
@@ -6,22 +7,22 @@ import {
 	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { ReviewStatusDots } from '~/components/ui/review-status-dots'
 import {
 	type StatusBadgeItem,
-	StatusBadgeList
+	StatusBadgeList,
 } from '~/components/ui/status-badge'
-import type {
-	ReviewFilter,
-	ReviewFocusOrder
+import {
+	type ReviewFilter,
+	type ReviewFocusOrder,
 } from '~/modules/review-cards/types/review-card.types'
 
 const DUE_FILTER_OPTIONS = [
 	{ label: 'All', value: 'all' },
 	{ label: 'Practice', value: 'practice' },
-	{ label: 'Flashcards', value: 'flashcards' }
+	{ label: 'Flashcards', value: 'flashcards' },
 ] as const
 
 type DueHeaderControlsProps = {
@@ -53,28 +54,28 @@ type DueFilterStatusCountsByFilter = Record<StatusFilter, DueFilterStatusCounts>
 function buildDueQueueStatusBadges({
 	dueTodayCount,
 	newCount,
-	overdueCount
+	overdueCount,
 }: DueQueueStatusBadgesProps): Array<StatusBadgeItem> {
 	const badges: Array<StatusBadgeItem> = []
 
 	if (overdueCount > 0) {
 		badges.push({
 			label: `${overdueCount} Overdue`,
-			tone: 'danger'
+			tone: 'danger',
 		})
 	}
 
 	if (dueTodayCount > 0) {
 		badges.push({
 			label: `${dueTodayCount} Due`,
-			tone: 'info'
+			tone: 'info',
 		})
 	}
 
 	if (newCount > 0) {
 		badges.push({
 			label: `${newCount} New`,
-			tone: 'neutral'
+			tone: 'neutral',
 		})
 	}
 
@@ -98,7 +99,7 @@ function formatStatusParts(parts: Array<string>) {
 
 function buildFilterStatusLabel(
 	label: string,
-	counts: DueFilterStatusCounts | undefined
+	counts: DueFilterStatusCounts | undefined,
 ) {
 	const parts: Array<string> = []
 
@@ -117,7 +118,7 @@ export function DueHeaderControls({
 	onFilterChange,
 	onOrderChange,
 	onShuffle,
-	showFocusOrderControls
+	showFocusOrderControls,
 }: DueHeaderControlsProps) {
 	const orderLabel = order === 'random' ? 'Random' : 'Due date'
 
@@ -126,10 +127,15 @@ export function DueHeaderControls({
 			{DUE_FILTER_OPTIONS.map(option => {
 				const isActive = filter === option.value
 				const statusCounts =
-					option.value === 'all' ? undefined : filterStatusCounts[option.value]
+					option.value === 'all'
+						? undefined
+						: filterStatusCounts[option.value]
 				return (
 					<Button
-						aria-label={buildFilterStatusLabel(option.label, statusCounts)}
+						aria-label={buildFilterStatusLabel(
+							option.label,
+							statusCounts,
+						)}
 						aria-pressed={isActive}
 						className='h-6 rounded-full px-2 text-xs'
 						key={option.value}
@@ -147,7 +153,9 @@ export function DueHeaderControls({
 								neutralVariant='solid'
 								overdueCount={statusCounts.overdueCount}
 								pendingCount={statusCounts.newCount}
-								surfaceContext={isActive ? 'primary' : 'default'}
+								surfaceContext={
+									isActive ? 'primary' : 'default'
+								}
 								testIdPrefix={`due-filter-${option.value}`}
 							/>
 						) : null}
@@ -174,10 +182,14 @@ export function DueHeaderControls({
 						<DropdownMenuContent align='start'>
 							<DropdownMenuGroup>
 								<DropdownMenuLabel>Order by</DropdownMenuLabel>
-								<DropdownMenuItem onClick={() => onOrderChange('due-date')}>
+								<DropdownMenuItem
+									onClick={() => onOrderChange('due-date')}
+								>
 									Due date
 								</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => onOrderChange('random')}>
+								<DropdownMenuItem
+									onClick={() => onOrderChange('random')}
+								>
 									Random
 								</DropdownMenuItem>
 							</DropdownMenuGroup>

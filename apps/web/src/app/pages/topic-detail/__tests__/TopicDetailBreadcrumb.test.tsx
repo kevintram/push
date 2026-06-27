@@ -1,12 +1,14 @@
 import { render, screen } from '@testing-library/react'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+
 import { TopicDetailBreadcrumb } from '../TopicDetailBreadcrumb'
 
 const navigateMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
 		Link: ({
@@ -30,15 +32,15 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 				</a>
 			)
 		},
-		useNavigate: () => navigateMock
+		useNavigate: () => navigateMock,
 	}
 })
 
 vi.mock('~/hooks/useResizeObserver', () => ({
 	useElementSize: () => ({
 		ref: vi.fn(),
-		width: 560
-	})
+		width: 560,
+	}),
 }))
 
 describe('TopicDetailBreadcrumb', () => {
@@ -50,15 +52,15 @@ describe('TopicDetailBreadcrumb', () => {
 					{
 						id: 1,
 						title: 'Algebra',
-						body: ''
-					}
+						body: '',
+					},
 				]}
-			/>
+			/>,
 		)
 
 		expect(screen.getByRole('link', { name: 'Library' })).toHaveAttribute(
 			'href',
-			'/library'
+			'/library',
 		)
 		expect(screen.getByText('Algebra')).toBeInTheDocument()
 	})

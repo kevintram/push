@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+
 import { LibraryPage } from '../LibraryPage'
 
 const navigateMock = vi.fn()
@@ -9,10 +10,11 @@ const useTopicTreeMock = vi.fn()
 const useReviewCardsMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
-		useNavigate: () => navigateMock
+		useNavigate: () => navigateMock,
 	}
 })
 
@@ -20,26 +22,28 @@ vi.mock('~/app/hooks/useSectionCollapse', () => ({
 	useSectionCollapse: () => ({
 		collapsedSections: {},
 		expandSection: vi.fn(),
-		toggleSection: vi.fn()
-	})
+		toggleSection: vi.fn(),
+	}),
 }))
 
 vi.mock('~/app/pages/library/LibraryOutline', () => ({
 	LibraryOutline: ({
-		libraryRootNode
+		libraryRootNode,
 	}: {
 		libraryRootNode: { title: string }
-	}) => <div data-testid='library-outline'>{libraryRootNode.title}</div>
+	}) => <div data-testid='library-outline'>{libraryRootNode.title}</div>,
 }))
 
 vi.mock('~/app/pages/topic-detail/TopicDetailSection', () => ({
 	TopicDetailSection: ({
-		section
+		section,
 	}: {
 		section: { topic: { title: string } }
 	}) => (
-		<section data-testid='topic-detail-section'>{section.topic.title}</section>
-	)
+		<section data-testid='topic-detail-section'>
+			{section.topic.title}
+		</section>
+	),
 }))
 
 vi.mock('~/app/pages/topic-detail/useTopicDetailNavigation', () => ({
@@ -48,23 +52,23 @@ vi.mock('~/app/pages/topic-detail/useTopicDetailNavigation', () => ({
 		registerSectionHeadingRef: vi.fn(),
 		registerSectionRef: vi.fn(),
 		scrollToSection: vi.fn(),
-		visibleSectionIds: [0]
-	})
+		visibleSectionIds: [0],
+	}),
 }))
 
 vi.mock('~/modules/topics/hooks/useTopicTree', () => ({
-	useTopicTree: (...args: Array<unknown>) => useTopicTreeMock(...args)
+	useTopicTree: (...args: Array<unknown>) => useTopicTreeMock(...args),
 }))
 
 vi.mock('~/modules/review-cards/api/getReviewCards', () => ({
-	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args)
+	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args),
 }))
 
 vi.mock('~/modules/topics/api/createTopic', () => ({
 	useCreateTopic: () => ({
 		mutateAsync: createTopicAsyncMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 const childTopic = {
@@ -75,7 +79,7 @@ const childTopic = {
 	parent_title: 'Algebra',
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',
-	children: []
+	children: [],
 }
 
 const rootTopic = {
@@ -86,7 +90,7 @@ const rootTopic = {
 	parent_title: null,
 	inserted_at: '2026-03-01T12:00:00.000Z',
 	updated_at: '2026-03-04T12:00:00.000Z',
-	children: [childTopic]
+	children: [childTopic],
 }
 
 describe('LibraryPage', () => {
@@ -94,29 +98,33 @@ describe('LibraryPage', () => {
 		useTopicTreeMock.mockReturnValue({
 			ancestorIdsById: new Map([
 				[rootTopic.id, []],
-				[childTopic.id, [rootTopic.id]]
+				[childTopic.id, [rootTopic.id]],
 			]),
 			data: [rootTopic, childTopic],
 			error: null,
 			isLoading: false,
 			nodeById: new Map<number, typeof rootTopic | typeof childTopic>([
 				[rootTopic.id, rootTopic],
-				[childTopic.id, childTopic]
+				[childTopic.id, childTopic],
 			]),
-			roots: [rootTopic]
+			roots: [rootTopic],
 		})
 		useReviewCardsMock.mockReturnValue({
 			data: [],
 			error: null,
-			isLoading: false
+			isLoading: false,
 		})
 
 		render(<LibraryPage />)
 
-		expect(screen.getByText('Library', { selector: 'h1' })).toBeInTheDocument()
-		expect(screen.getByTestId('library-outline')).toHaveTextContent('Library')
+		expect(
+			screen.getByText('Library', { selector: 'h1' }),
+		).toBeInTheDocument()
+		expect(screen.getByTestId('library-outline')).toHaveTextContent(
+			'Library',
+		)
 		expect(screen.getByTestId('topic-detail-section')).toHaveTextContent(
-			'Algebra'
+			'Algebra',
 		)
 		expect(screen.queryByTestId('masonry-layout')).not.toBeInTheDocument()
 	})
@@ -129,15 +137,15 @@ describe('LibraryPage', () => {
 			error: null,
 			isLoading: false,
 			nodeById: new Map(),
-			roots: []
+			roots: [],
 		})
 		useReviewCardsMock.mockReturnValue({
 			data: [],
 			error: null,
-			isLoading: false
+			isLoading: false,
 		})
 		createTopicAsyncMock.mockResolvedValue({
-			id: 42
+			id: 42,
 		})
 
 		render(<LibraryPage />)
@@ -147,12 +155,12 @@ describe('LibraryPage', () => {
 		expect(createTopicAsyncMock).toHaveBeenCalledWith({
 			title: '',
 			body: '',
-			parent_id: null
+			parent_id: null,
 		})
 		expect(navigateMock).not.toHaveBeenCalledWith(
 			expect.objectContaining({
-				to: '/topics/$topicId'
-			})
+				to: '/topics/$topicId',
+			}),
 		)
 	})
 })

@@ -3,7 +3,7 @@ import {
 	useCallback,
 	useContext,
 	useMemo,
-	useState
+	useState,
 } from 'react'
 
 const WEEK_START_STORAGE_KEY = '3gulp-week-start-day'
@@ -14,7 +14,7 @@ export const WEEK_START_OPTIONS: Array<{ value: WeekStartDay; label: string }> =
 	[
 		{ value: 6, label: 'Saturday' },
 		{ value: 0, label: 'Sunday' },
-		{ value: 1, label: 'Monday' }
+		{ value: 1, label: 'Monday' },
 	]
 
 type WeekStartContextType = {
@@ -23,7 +23,7 @@ type WeekStartContextType = {
 }
 
 const WeekStartContext = createContext<WeekStartContextType | undefined>(
-	undefined
+	undefined,
 )
 
 function isWeekStartDay(value: number): value is WeekStartDay {
@@ -48,7 +48,7 @@ interface WeekStartProviderProps {
 
 export function WeekStartProvider({ children }: WeekStartProviderProps) {
 	const [weekStartDay, setWeekStartDayState] = useState<WeekStartDay>(
-		getInitialWeekStartDay
+		getInitialWeekStartDay,
 	)
 
 	const setWeekStartDay = useCallback((value: WeekStartDay) => {
@@ -58,7 +58,7 @@ export function WeekStartProvider({ children }: WeekStartProviderProps) {
 
 	const value = useMemo(
 		() => ({ weekStartDay, setWeekStartDay }),
-		[setWeekStartDay, weekStartDay]
+		[setWeekStartDay, weekStartDay],
 	)
 
 	return <WeekStartContext value={value}>{children}</WeekStartContext>

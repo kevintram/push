@@ -1,16 +1,18 @@
 import { Plus } from 'lucide-react'
+
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { cn } from '~/lib/utils'
-import type { ReviewCardType } from '~/modules/review-cards/types/review-card.types'
-import type {
-	TopicDetailReviewCardControlsVariant,
-	TopicDetailReviewCardFilter
+import { type ReviewCardType } from '~/modules/review-cards/types/review-card.types'
+
+import {
+	type TopicDetailReviewCardControlsVariant,
+	type TopicDetailReviewCardFilter,
 } from './shared'
 
 const FILTER_OPTIONS: Array<{
@@ -19,7 +21,7 @@ const FILTER_OPTIONS: Array<{
 }> = [
 	{ label: 'All', value: 'all' },
 	{ label: 'Practice', value: 'practice' },
-	{ label: 'Flashcard', value: 'flashcard' }
+	{ label: 'Flashcard', value: 'flashcard' },
 ]
 
 function getControlSize(controlsVariant: TopicDetailReviewCardControlsVariant) {
@@ -29,7 +31,7 @@ function getControlSize(controlsVariant: TopicDetailReviewCardControlsVariant) {
 }
 
 function getControlClassName(
-	controlsVariant: TopicDetailReviewCardControlsVariant
+	controlsVariant: TopicDetailReviewCardControlsVariant,
 ) {
 	if (controlsVariant === 'compact') {
 		return 'h-5 rounded-4xl px-2 text-xs'
@@ -45,7 +47,7 @@ function getControlClassName(
 export function TopicDetailReviewCardFilterControls({
 	activeFilter,
 	controlsVariant,
-	onFilterChange
+	onFilterChange,
 }: {
 	activeFilter: TopicDetailReviewCardFilter
 	controlsVariant: TopicDetailReviewCardControlsVariant
@@ -56,11 +58,16 @@ export function TopicDetailReviewCardFilterControls({
 			{FILTER_OPTIONS.map(option => (
 				<Button
 					aria-pressed={activeFilter === option.value}
-					className={cn('cursor-pointer', getControlClassName(controlsVariant))}
+					className={cn(
+						'cursor-pointer',
+						getControlClassName(controlsVariant),
+					)}
 					key={option.value}
 					onClick={() => onFilterChange(option.value)}
 					size={getControlSize(controlsVariant)}
-					variant={activeFilter === option.value ? 'default' : 'outline'}
+					variant={
+						activeFilter === option.value ? 'default' : 'outline'
+					}
 				>
 					{option.label}
 				</Button>
@@ -72,7 +79,7 @@ export function TopicDetailReviewCardFilterControls({
 export function TopicDetailReviewCardAddButton({
 	controlsVariant,
 	isCreatingReviewCard,
-	onAddReviewCard
+	onAddReviewCard,
 }: {
 	controlsVariant: TopicDetailReviewCardControlsVariant
 	isCreatingReviewCard: boolean
@@ -83,7 +90,10 @@ export function TopicDetailReviewCardAddButton({
 			<DropdownMenuTrigger
 				render={
 					<Button
-						className={cn('shrink-0', getControlClassName(controlsVariant))}
+						className={cn(
+							'shrink-0',
+							getControlClassName(controlsVariant),
+						)}
 						disabled={isCreatingReviewCard}
 						size={getControlSize(controlsVariant)}
 						variant='secondary'

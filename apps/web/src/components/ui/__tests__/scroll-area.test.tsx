@@ -1,5 +1,6 @@
 import { act, render, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
+
 import { ScrollArea } from "../scroll-area"
 
 class ResizeObserverStub {
@@ -35,41 +36,41 @@ function setViewportDimensions(
 		clientHeight,
 		scrollHeight,
 		clientWidth = 100,
-		scrollWidth = 100
+		scrollWidth = 100,
 	}: {
 		clientHeight: number
 		scrollHeight: number
 		clientWidth?: number
 		scrollWidth?: number
-	}
+	},
 ) {
 	Object.defineProperties(viewport, {
 		clientHeight: {
 			configurable: true,
-			value: clientHeight
+			value: clientHeight,
 		},
 		clientWidth: {
 			configurable: true,
-			value: clientWidth
+			value: clientWidth,
 		},
 		scrollHeight: {
 			configurable: true,
-			value: scrollHeight
+			value: scrollHeight,
 		},
 		scrollWidth: {
 			configurable: true,
-			value: scrollWidth
+			value: scrollWidth,
 		},
 		scrollTop: {
 			configurable: true,
 			value: 0,
-			writable: true
+			writable: true,
 		},
 		scrollLeft: {
 			configurable: true,
 			value: 0,
-			writable: true
-		}
+			writable: true,
+		},
 	})
 }
 
@@ -91,18 +92,18 @@ describe("ScrollArea", () => {
 		const { container } = render(
 			<ScrollArea className='h-24'>
 				<div>Content</div>
-			</ScrollArea>
+			</ScrollArea>,
 		)
 
 		const viewport = container.querySelector(
-			'[data-slot="scroll-area-viewport"]'
+			'[data-slot="scroll-area-viewport"]',
 		)
 
 		expect(viewport).not.toBeNull()
 
 		setViewportDimensions(viewport as HTMLElement, {
 			clientHeight: 100,
-			scrollHeight: 100
+			scrollHeight: 100,
 		})
 
 		await act(async () => {
@@ -112,7 +113,7 @@ describe("ScrollArea", () => {
 
 		await waitFor(() => {
 			expect(
-				container.querySelector('[data-slot="scroll-area-scrollbar"]')
+				container.querySelector('[data-slot="scroll-area-scrollbar"]'),
 			).not.toBeInTheDocument()
 		})
 	})
@@ -121,18 +122,18 @@ describe("ScrollArea", () => {
 		const { container } = render(
 			<ScrollArea className='h-24'>
 				<div>Content</div>
-			</ScrollArea>
+			</ScrollArea>,
 		)
 
 		const viewport = container.querySelector(
-			'[data-slot="scroll-area-viewport"]'
+			'[data-slot="scroll-area-viewport"]',
 		)
 
 		expect(viewport).not.toBeNull()
 
 		setViewportDimensions(viewport as HTMLElement, {
 			clientHeight: 100,
-			scrollHeight: 200
+			scrollHeight: 200,
 		})
 
 		await act(async () => {
@@ -142,7 +143,7 @@ describe("ScrollArea", () => {
 
 		await waitFor(() => {
 			expect(
-				container.querySelector('[data-slot="scroll-area-scrollbar"]')
+				container.querySelector('[data-slot="scroll-area-scrollbar"]'),
 			).toBeInTheDocument()
 		})
 	})

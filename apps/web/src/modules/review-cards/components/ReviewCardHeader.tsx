@@ -3,16 +3,16 @@ import { User2 } from 'lucide-react'
 import { CardHeader } from '~/components/ui/card'
 import {
 	type StatusBadgeItem,
-	StatusBadgeList
+	StatusBadgeList,
 } from '~/components/ui/status-badge'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from '~/components/ui/tooltip'
 
 export function ReviewCardStatusRow({
-	badges
+	badges,
 }: {
 	badges: Array<StatusBadgeItem>
 }) {
@@ -36,7 +36,7 @@ type ReviewCardHeaderProps = {
 export function ReviewCardHeader({
 	hideParent,
 	resolvedParentLabel,
-	typeBadgeLabel
+	typeBadgeLabel,
 }: ReviewCardHeaderProps) {
 	return (
 		<CardHeader className='relative flex items-center gap-2 p-0 pb-1'>
@@ -46,9 +46,15 @@ export function ReviewCardHeader({
 						<User2 className='h-3 w-3 shrink-0' />
 						<Tooltip>
 							<TooltipTrigger
-								render={<span className='truncate'>{resolvedParentLabel}</span>}
+								render={
+									<span className='truncate'>
+										{resolvedParentLabel}
+									</span>
+								}
 							/>
-							<TooltipContent>{resolvedParentLabel}</TooltipContent>
+							<TooltipContent>
+								{resolvedParentLabel}
+							</TooltipContent>
 						</Tooltip>
 						<span aria-hidden={true}>·</span>
 					</>

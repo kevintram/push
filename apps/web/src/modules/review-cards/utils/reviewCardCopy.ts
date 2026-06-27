@@ -1,4 +1,4 @@
-import type { ReviewCardType } from '../types/review-card.types'
+import { type ReviewCardType } from '../types/review-card.types'
 
 export function getReviewCardPrimaryFieldLabel(type: ReviewCardType): string {
 	return type === 'practice' ? 'Title' : 'Prompt'

@@ -6,9 +6,9 @@ import {
 	MoreHorizontal,
 	Sparkles,
 	Sunset,
-	Trash2
+	Trash2,
 } from 'lucide-react'
-import type { Dispatch, SetStateAction } from 'react'
+import { type Dispatch, type SetStateAction } from 'react'
 
 import { RevealPanel, type RevealPanelTab } from '~/components/RevealPanel'
 import { Badge } from '~/components/ui/badge'
@@ -17,30 +17,31 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import {
 	type StatusBadgeItem,
-	StatusBadgeList
+	StatusBadgeList,
 } from '~/components/ui/status-badge'
 import { Textarea } from '~/components/ui/textarea'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
 import { cn } from '~/lib/utils'
 import { FLAGGED_ICON_CLASSNAME } from '~/modules/review-cards/components/reviewCardShared'
-import type { ReviewCard } from '~/modules/review-cards/types/review-card.types'
+import { type ReviewCard } from '~/modules/review-cards/types/review-card.types'
 import {
 	getReviewCardPrimaryFieldLabel,
-	getReviewCardSecondaryFieldLabel
+	getReviewCardSecondaryFieldLabel,
 } from '~/modules/review-cards/utils/reviewCardCopy'
 import { ReviewsMenu } from '~/modules/reviews/components/reviews-menu/ReviewsMenu'
-import type { ReviewListItem } from '~/modules/reviews/types/review.types'
+import { type ReviewListItem } from '~/modules/reviews/types/review.types'
 import { formatAbsoluteDate } from '~/utils/formatRelativeDate'
 import { getRatingIcon } from '~/utils/getRatingIcon'
+
 import { EMPTY_BADGE_CLASSNAME } from './shared'
 
 type ReviewCardDetailHomeTabProps = {
@@ -76,7 +77,9 @@ type ReviewCardDetailHomeTabProps = {
 	onCompletedReviewCreated?: () => void
 	onOpenDeleteDialog: () => void
 	onOpenReviewDialog: (reviewId: number) => void
-	onSecondaryTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void
+	onSecondaryTextChange: (
+		event: React.ChangeEvent<HTMLTextAreaElement>,
+	) => void
 	onRetireToggle: () => void
 	primaryText: string
 	primaryTextTextareaRef: React.RefObject<HTMLTextAreaElement | null>
@@ -136,7 +139,7 @@ export function ReviewCardDetailHomeTab({
 	setGuessSecondaryText,
 	setRevealPanelTab,
 	stabilityText,
-	statusBadges
+	statusBadges,
 }: ReviewCardDetailHomeTabProps) {
 	const hidesSecondaryText = hidesSecondary && reviewCard.type !== 'practice'
 	const isSecondaryTextEmpty = secondaryText.trim().length === 0
@@ -151,16 +154,19 @@ export function ReviewCardDetailHomeTab({
 		setGuessText: setGuessNotesText,
 		isCopied: isNotesRevealPanelCopied,
 		handleCopyGuessText: handleCopyNotesGuessText,
-		handleCopyRevealText: handleCopyNotesRevealText
+		handleCopyRevealText: handleCopyNotesRevealText,
 	} = useRevealPanel({
 		revealText: notes,
 		entityId: reviewCard.id < 0 ? null : reviewCard.id * 10_000 + 1,
-		hidesSecondary
+		hidesSecondary,
 	})
 
 	return (
 		<div
-			className={cn('flex flex-col gap-2', hidesSecondary && 'min-h-0 flex-1')}
+			className={cn(
+				'flex flex-col gap-2',
+				hidesSecondary && 'min-h-0 flex-1',
+			)}
 		>
 			<div className='flex flex-wrap items-center justify-between gap-2'>
 				<div className='flex min-w-0 flex-wrap items-center gap-2'>
@@ -169,7 +175,9 @@ export function ReviewCardDetailHomeTab({
 						variant='ghost'
 					>
 						<span className='px-1 font-medium text-xs leading-none'>
-							{reviewCard.type === 'practice' ? 'Practice' : 'Flashcard'}
+							{reviewCard.type === 'practice'
+								? 'Practice'
+								: 'Flashcard'}
 						</span>
 						<Tooltip>
 							<TooltipTrigger
@@ -177,7 +185,10 @@ export function ReviewCardDetailHomeTab({
 									<Button
 										aria-label='Convert type'
 										className='pointer-events-none cursor-pointer rounded-full opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/type:pointer-events-auto group-hover/type:opacity-100 group-active/type:pointer-events-auto group-active/type:opacity-100'
-										disabled={isTypeMutationPending || isUpdatingReviewCard}
+										disabled={
+											isTypeMutationPending ||
+											isUpdatingReviewCard
+										}
 										onClick={() => {
 											handleConvertType().catch(() => {})
 										}}
@@ -197,7 +208,10 @@ export function ReviewCardDetailHomeTab({
 						</Tooltip>
 					</Badge>
 				</div>
-				<StatusBadgeList badges={statusBadges} className='justify-end' />
+				<StatusBadgeList
+					badges={statusBadges}
+					className='justify-end'
+				/>
 			</div>
 
 			<Textarea
@@ -286,7 +300,9 @@ export function ReviewCardDetailHomeTab({
 												<Button
 													className='h-auto gap-1 p-0 font-semibold text-muted-foreground text-sm'
 													onClick={() =>
-														onOpenReviewDialog(latestCompletedReview.id)
+														onOpenReviewDialog(
+															latestCompletedReview.id,
+														)
 													}
 													size='default'
 													variant='link'
@@ -294,7 +310,9 @@ export function ReviewCardDetailHomeTab({
 													<span>{`Last reviewed ${lastReviewed.text}`}</span>
 													{latestCompletedReview.rating ? (
 														<span className='flex size-4 shrink-0 items-center justify-center rounded-full border border-primary bg-primary text-primary-foreground dark:bg-primary'>
-															{getRatingIcon(latestCompletedReview.rating)}
+															{getRatingIcon(
+																latestCompletedReview.rating,
+															)}
 														</span>
 													) : null}
 												</Button>
@@ -354,7 +372,8 @@ export function ReviewCardDetailHomeTab({
 									disabled={isUpdatingReviewCard}
 									onClick={() =>
 										handleUpdateReviewCardFields({
-											flagged: reviewCard.flagged_at == null
+											flagged:
+												reviewCard.flagged_at == null,
 										})
 									}
 									size='icon-sm'
@@ -375,7 +394,9 @@ export function ReviewCardDetailHomeTab({
 						</TooltipContent>
 					</Tooltip>
 					<Tooltip>
-						<TooltipTrigger render={<span className='inline-flex' />}>
+						<TooltipTrigger
+							render={<span className='inline-flex' />}
+						>
 							<Button
 								aria-label={
 									reviewCard.retired
@@ -397,7 +418,9 @@ export function ReviewCardDetailHomeTab({
 							</Button>
 						</TooltipTrigger>
 						<TooltipContent>
-							{reviewCard.retired ? 'Return to review queue' : 'Retire'}
+							{reviewCard.retired
+								? 'Return to review queue'
+								: 'Retire'}
 						</TooltipContent>
 					</Tooltip>
 					<DropdownMenu>
@@ -413,7 +436,11 @@ export function ReviewCardDetailHomeTab({
 								</Button>
 							}
 						/>
-						<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+						<DropdownMenuContent
+							align='end'
+							side='bottom'
+							sideOffset={4}
+						>
 							<DropdownMenuItem
 								onClick={onOpenDeleteDialog}
 								variant='destructive'
@@ -429,16 +456,18 @@ export function ReviewCardDetailHomeTab({
 			<div
 				className={cn(
 					'mt-0.5 mb-2 flex flex-col border-t pt-1',
-					hidesSecondary && 'min-h-0 flex-1'
+					hidesSecondary && 'min-h-0 flex-1',
 				)}
 			>
 				<div
 					className={cn(
 						'flex flex-col gap-2',
-						hidesSecondary && 'min-h-0 flex-1'
+						hidesSecondary && 'min-h-0 flex-1',
 					)}
 				>
-					<h2 className='font-semibold text-muted-foreground text-sm'>Notes</h2>
+					<h2 className='font-semibold text-muted-foreground text-sm'>
+						Notes
+					</h2>
 					{hidesSecondary ? (
 						<RevealPanel
 							className='!flex-1'

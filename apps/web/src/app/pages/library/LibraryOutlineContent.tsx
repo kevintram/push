@@ -7,12 +7,14 @@ import {
 	type RefObject,
 	useCallback,
 	useMemo,
-	useRef
+	useRef,
 } from 'react'
+
 import { TopicDetailOutlineHeader } from '~/app/pages/topic-detail/TopicDetailOutlineHeader'
 import { cn } from '~/lib/utils'
 import { TopicTreeItem } from '~/modules/topics/components/topic-tree/TopicTreeItem'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
 import { getTopicDetailSectionId } from '../topic-detail/topicDetailStructure'
 
 type LibraryOutlineContentProps = {
@@ -34,7 +36,7 @@ type LibraryOutlineContentProps = {
 	outlineNavRef: RefObject<HTMLElement | null>
 	registerOutlineItemRef: (
 		topicId: number,
-		element: HTMLLIElement | null
+		element: HTMLLIElement | null,
 	) => void
 	sectionNumberById: Map<number, string>
 	suppressSelectionRef: MutableRefObject<boolean>
@@ -50,7 +52,7 @@ type OutlinePrimaryActionProps = {
 
 function OutlineLabel({
 	label,
-	sectionNumber
+	sectionNumber,
 }: {
 	label: string
 	sectionNumber: string | null
@@ -71,7 +73,7 @@ function OutlineLabel({
 }
 
 function shouldHandleSamePageSectionNavigation(
-	event: MouseEvent<HTMLAnchorElement>
+	event: MouseEvent<HTMLAnchorElement>,
 ): boolean {
 	return !(
 		event.button !== 0 ||
@@ -114,13 +116,13 @@ export function LibraryOutlineContent({
 	registerOutlineItemRef,
 	sectionNumberById,
 	suppressSelectionRef,
-	visibleSectionIds
+	visibleSectionIds,
 }: LibraryOutlineContentProps): ReactElement {
 	const outlineNodes = libraryRootNode.children
 	const outlineScrollRef = useRef<HTMLDivElement>(null)
 	const visibleOutlineTopicIds = useMemo(
 		() => new Set(visibleSectionIds),
-		[visibleSectionIds]
+		[visibleSectionIds],
 	)
 	const freshOutlineTopicIds = useMemo(() => {
 		if (freshTopicId === null) {
@@ -136,7 +138,7 @@ export function LibraryOutlineContent({
 		(
 			event: MouseEvent<HTMLAnchorElement>,
 			topicId: number,
-			suppressedRef: MutableRefObject<boolean>
+			suppressedRef: MutableRefObject<boolean>,
 		) => {
 			if (suppressedRef.current) {
 				event.preventDefault()
@@ -149,14 +151,14 @@ export function LibraryOutlineContent({
 			event.preventDefault()
 			onSectionSelect(topicId)
 		},
-		[onSectionSelect]
+		[onSectionSelect],
 	)
 	const renderOutlinePrimaryAction = useCallback(
 		({
 			className,
 			label,
 			node,
-			suppressSelectionRef: suppressedRef
+			suppressSelectionRef: suppressedRef,
 		}: OutlinePrimaryActionProps) => {
 			function handleClick(event: MouseEvent<HTMLAnchorElement>): void {
 				handleOutlineClick(event, node.id, suppressedRef)
@@ -179,12 +181,12 @@ export function LibraryOutlineContent({
 				</Link>
 			)
 		},
-		[handleOutlineClick, sectionNumberById]
+		[handleOutlineClick, sectionNumberById],
 	)
 	const isRootActive = visibleOutlineTopicIds.has(libraryRootNode.id)
 	const rootLinkClassName = cn(
 		'group/topic-row flex min-h-7 items-center rounded-md px-1.5 py-1 text-left text-sm underline-offset-4 transition-colors hover:bg-[var(--app-chrome-hover)] hover:underline',
-		getRootLinkClassName(isRootActive)
+		getRootLinkClassName(isRootActive),
 	)
 	const rootHash = getTopicDetailSectionId(libraryRootNode.id)
 	const rootTopicItems = outlineNodes.map(node => (
@@ -217,7 +219,10 @@ export function LibraryOutlineContent({
 
 	return (
 		<div className='flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'>
-			<div className='min-h-0 min-w-0 shrink-0 pr-1' style={outlineListStyle}>
+			<div
+				className='min-h-0 min-w-0 shrink-0 pr-1'
+				style={outlineListStyle}
+			>
 				<div className='h-full min-h-0 overflow-y-auto pr-2'>
 					<div className='flex h-full min-h-0 flex-col'>
 						<div className='mb-1.5 shrink-0' ref={outlineHeaderRef}>

@@ -1,15 +1,17 @@
 import dayjs from 'dayjs'
 import { CalendarIcon, X } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+
 import { Button } from '~/components/ui/button'
 import { Textarea } from '~/components/ui/textarea'
 import { cn } from '~/lib/utils'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
+
 import { AddFirstReviewButton } from './AddFirstReviewButton'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import {
 	ReviewRatingCheckbox,
-	type ReviewRatingState
+	type ReviewRatingState,
 } from './ReviewRatingCheckbox'
 
 interface ReviewPreviewProps {
@@ -35,7 +37,7 @@ export function ReviewPreview({
 	onRatingChange,
 	onDescriptionChange,
 	onNotesChange,
-	onDateChange
+	onDateChange,
 }: ReviewPreviewProps) {
 	const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false)
 
@@ -44,7 +46,7 @@ export function ReviewPreview({
 			onDateChange(newDate)
 			setIsDatePopoverOpen(false)
 		},
-		[onDateChange]
+		[onDateChange],
 	)
 
 	const handleRemove = useCallback(() => {
@@ -58,7 +60,7 @@ export function ReviewPreview({
 		onRatingChange,
 		onDescriptionChange,
 		onNotesChange,
-		onDateChange
+		onDateChange,
 	])
 
 	const relativeDate = useMemo(() => formatRelativeDate(date), [date])
@@ -67,14 +69,14 @@ export function ReviewPreview({
 		() =>
 			date !== null &&
 			dayjs(date).startOf('day').isBefore(dayjs().startOf('day')),
-		[date]
+		[date],
 	)
 
 	const dateButtonColorClass = cn(
 		isOverdue && 'text-red-600 dark:text-red-400',
 		!isOverdue &&
 			relativeDate.text === 'Today' &&
-			'text-blue-600 dark:text-blue-400'
+			'text-blue-600 dark:text-blue-400',
 	)
 
 	if (!show) {
@@ -83,7 +85,9 @@ export function ReviewPreview({
 				onSelectRating={newRating => {
 					onShowChange(true)
 					onRatingChange(newRating)
-					onDateChange(newRating === 'uncompleted' ? null : new Date())
+					onDateChange(
+						newRating === 'uncompleted' ? null : new Date(),
+					)
 				}}
 			/>
 		)
@@ -100,7 +104,10 @@ export function ReviewPreview({
 				<X className='h-3.5 w-3.5' />
 			</button>
 			<div className='mt-3 grid grid-cols-[auto_1fr_auto] items-center gap-x-2'>
-				<ReviewRatingCheckbox onChange={onRatingChange} value={rating} />
+				<ReviewRatingCheckbox
+					onChange={onRatingChange}
+					value={rating}
+				/>
 				<Textarea
 					className='!bg-transparent m-0 min-h-0 min-w-0 resize-none overflow-hidden rounded-none border-none p-0 font-semibold shadow-none [overflow-wrap:anywhere] focus:outline-none focus-visible:border-none focus-visible:ring-0'
 					onChange={e => onDescriptionChange(e.target.value)}
@@ -115,7 +122,10 @@ export function ReviewPreview({
 					selectedDate={date}
 					trigger={
 						<Button
-							className={cn('shrink-0 text-xs', dateButtonColorClass)}
+							className={cn(
+								'shrink-0 text-xs',
+								dateButtonColorClass,
+							)}
 							size='sm'
 							variant='ghost'
 						>

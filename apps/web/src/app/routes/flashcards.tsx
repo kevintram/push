@@ -4,7 +4,7 @@ export const Route = createFileRoute('/flashcards')({
 	beforeLoad: () => {
 		throw redirect({
 			to: '/due',
-			search: { filter: 'flashcards' }
+			search: { filter: 'flashcards' },
 		})
-	}
+	},
 })

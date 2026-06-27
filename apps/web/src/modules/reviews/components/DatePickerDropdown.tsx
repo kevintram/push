@@ -1,10 +1,11 @@
 import { isValidElement } from 'react'
+
 import { Button } from '~/components/ui/button'
 import { Calendar } from '~/components/ui/calendar'
 import {
 	Popover,
 	PopoverContent,
-	PopoverTrigger
+	PopoverTrigger,
 } from '~/components/ui/popover'
 
 interface DatePickerDropdownProps {
@@ -30,7 +31,7 @@ export function DatePickerDropdown({
 	align = 'end',
 	side = 'bottom',
 	sideOffset = 0,
-	disabled = false
+	disabled = false,
 }: DatePickerDropdownProps) {
 	const triggerElement = isValidElement(trigger) ? (
 		trigger

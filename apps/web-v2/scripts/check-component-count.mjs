@@ -10,7 +10,7 @@ const COMPONENT_WRAPPER_NAMES = new Set([
 	'memo',
 	'forwardRef',
 	'lazy',
-	'observer'
+	'observer',
 ])
 
 function collectTsxFiles(dirPath) {
@@ -88,7 +88,10 @@ function createComponentDeclarationIndex(sourceFile) {
 	const declarationsByName = new Map()
 
 	for (const statement of sourceFile.statements) {
-		if (ts.isFunctionDeclaration(statement) && statement.name !== undefined) {
+		if (
+			ts.isFunctionDeclaration(statement) &&
+			statement.name !== undefined
+		) {
 			declarationsByName.set(statement.name.text, statement)
 			continue
 		}
@@ -119,7 +122,7 @@ function isComponentFunctionLike(node) {
 function isComponentInitializer(
 	expression,
 	declarationsByName,
-	seenNames = new Set()
+	seenNames = new Set(),
 ) {
 	const normalizedExpression = unwrapExpression(expression)
 
@@ -130,7 +133,7 @@ function isComponentInitializer(
 	if (!ts.isCallExpression(normalizedExpression)) return false
 
 	const callName = getCallName(
-		unwrapExpression(normalizedExpression.expression)
+		unwrapExpression(normalizedExpression.expression),
 	)
 	if (
 		callName === null ||
@@ -163,7 +166,7 @@ function isComponentInitializer(
 				? isComponentInitializer(
 						declaration.initializer,
 						declarationsByName,
-						seenNames
+						seenNames,
 					)
 				: false
 		}
@@ -208,7 +211,7 @@ for (const filePath of collectTsxFiles(ROOT_DIR).filter(shouldCheck)) {
 		sourceText,
 		ts.ScriptTarget.Latest,
 		true,
-		ts.ScriptKind.TSX
+		ts.ScriptKind.TSX,
 	)
 	const components = findComponents(sourceFile)
 
@@ -220,7 +223,7 @@ for (const filePath of collectTsxFiles(ROOT_DIR).filter(shouldCheck)) {
 if (failures.length > 0) {
 	for (const failure of failures) {
 		console.error(
-			`${failure.filePath} contains ${failure.components.length} React components: ${failure.components.join(', ')}`
+			`${failure.filePath} contains ${failure.components.length} React components: ${failure.components.join(', ')}`,
 		)
 	}
 	process.exit(1)

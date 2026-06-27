@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
-import type { ReactElement, ReactNode } from 'react'
+import { type ReactElement, type ReactNode } from 'react'
 import { beforeEach, vi } from 'vitest'
 
 export const elementSizeMock = { ref: () => {}, width: 1024, height: 0 }
@@ -18,7 +18,8 @@ export const reviewsMenuPropsMock = vi.fn()
 export const useDetailReviewCountsMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
 		Link: ({
@@ -60,10 +61,10 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 		),
 		useNavigate: vi.fn(),
 		useRouterState: ({
-			select
+			select,
 		}: {
 			select: (state: { location: { hash: string } }) => unknown
-		}) => select({ location: { hash: '' } })
+		}) => select({ location: { hash: '' } }),
 	}
 })
 
@@ -71,15 +72,24 @@ vi.mock('~/hooks/useResizeObserver', () => ({
 	useElementSize: () => elementSizeMock,
 	useResizeObserver: () => [
 		() => {},
-		{ width: 1024, height: 0, x: 0, y: 0, top: 0, left: 0, bottom: 0, right: 0 }
-	]
+		{
+			width: 1024,
+			height: 0,
+			x: 0,
+			y: 0,
+			top: 0,
+			left: 0,
+			bottom: 0,
+			right: 0,
+		},
+	],
 }))
 
 vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 	MasonryLayout: ({
 		items,
 		renderItem,
-		getItemKey
+		getItemKey,
 	}: {
 		items: Array<unknown>
 		renderItem: (item: any, index: number, laneWidth: number) => ReactNode
@@ -92,7 +102,7 @@ vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 				</div>
 			))}
 		</div>
-	)
+	),
 }))
 
 vi.mock('~/components/ui/dropdown-menu', async () => {
@@ -115,7 +125,8 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 					render,
 					props,
 					children ??
-						(render as ReactElement<{ children?: ReactNode }>).props.children
+						(render as ReactElement<{ children?: ReactNode }>).props
+							.children,
 				)
 			) : (
 				<button type='button' {...props}>
@@ -131,7 +142,7 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 		DropdownMenuItem: ({
 			children,
 			onClick,
-			disabled
+			disabled,
 		}: {
 			children: ReactNode
 			onClick?: () => void
@@ -141,7 +152,7 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 				{children}
 			</button>
 		),
-		DropdownMenuSeparator: () => <hr />
+		DropdownMenuSeparator: () => <hr />,
 	}
 })
 
@@ -160,25 +171,27 @@ vi.mock('~/components/ui/dialog', () => ({
 	DialogHeader: ({ children }: { children: ReactNode }) => (
 		<div>{children}</div>
 	),
-	DialogTitle: ({ children }: { children: ReactNode }) => <div>{children}</div>
+	DialogTitle: ({ children }: { children: ReactNode }) => (
+		<div>{children}</div>
+	),
 }))
 
 vi.mock('~/components/ui/tooltip', () => ({
 	Tooltip: ({ children }: { children: ReactNode }) => <>{children}</>,
 	TooltipTrigger: ({
 		render,
-		children
+		children,
 	}: {
 		render?: ReactNode
 		children?: ReactNode
 	}) => <>{render ?? children}</>,
-	TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>
+	TooltipContent: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
 vi.mock('~/components/ui/detail-nav-bar', () => ({
 	DetailNavBar: ({
 		leftContent,
-		afterActions
+		afterActions,
 	}: {
 		leftContent?: ReactNode
 		afterActions?: ReactNode
@@ -187,13 +200,13 @@ vi.mock('~/components/ui/detail-nav-bar', () => ({
 			{leftContent}
 			{afterActions}
 		</div>
-	)
+	),
 }))
 
 vi.mock('~/modules/topics/components/TopicCard', () => ({
 	TopicCard: ({
 		topic,
-		onClick
+		onClick,
 	}: {
 		topic: { title: string }
 		onClick?: () => void
@@ -201,13 +214,13 @@ vi.mock('~/modules/topics/components/TopicCard', () => ({
 		<button onClick={onClick} type='button'>
 			{topic.title}
 		</button>
-	)
+	),
 }))
 
 vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 	ReviewCard: ({
 		reviewCard,
-		onClick
+		onClick,
 	}: {
 		reviewCard: { primary_text: string }
 		onClick?: () => void
@@ -215,96 +228,96 @@ vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 		<button onClick={onClick} type='button'>
 			{reviewCard.primary_text}
 		</button>
-	)
+	),
 }))
 
 vi.mock('~/modules/search/api/searchAll', () => ({
-	useSearchAll: (...args: Array<unknown>) => useSearchAllMock(...args)
+	useSearchAll: (...args: Array<unknown>) => useSearchAllMock(...args),
 }))
 
 vi.mock('~/modules/topics/api/getTopic', () => ({
-	useTopic: (...args: Array<unknown>) => useTopicMock(...args)
+	useTopic: (...args: Array<unknown>) => useTopicMock(...args),
 }))
 
 vi.mock('~/modules/topics/api/getTopics', () => ({
-	useTopics: (...args: Array<unknown>) => useTopicsMock(...args)
+	useTopics: (...args: Array<unknown>) => useTopicsMock(...args),
 }))
 
 vi.mock('~/modules/review-cards/api/getReviewCards', () => ({
-	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args)
+	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args),
 }))
 
 vi.mock('~/modules/topics/api/updateTopic', () => ({
 	useUpdateTopic: () => ({
 		mutateAsync: updateTopicAsyncMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/modules/topics/api/createTopic', () => ({
 	useCreateTopic: () => ({
 		mutateAsync: createTopicAsyncMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/modules/topics/api/deleteTopic', () => ({
-	useDeleteTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useDeleteTopic: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/review-cards/api/createReviewCard', () => ({
 	useCreateReviewCard: () => ({
 		mutateAsync: createReviewCardAsyncMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/modules/review-cards/api/getReviewCard', () => ({
-	useReviewCard: (...args: Array<unknown>) => useReviewCardMock(...args)
+	useReviewCard: (...args: Array<unknown>) => useReviewCardMock(...args),
 }))
 
 vi.mock('~/modules/review-cards/api/updateReviewCard', () => ({
 	useUpdateReviewCard: () => ({
 		mutateAsync: updateReviewCardAsyncMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/modules/review-cards/api/deleteReviewCard', () => ({
-	useDeleteReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useDeleteReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/review-cards/hooks/useDeleteReviewCardWithUndo', () => ({
-	useDeleteReviewCardWithUndo: () => ({ deleteWithUndo: vi.fn() })
+	useDeleteReviewCardWithUndo: () => ({ deleteWithUndo: vi.fn() }),
 }))
 
 vi.mock('~/modules/reviews/api/createReview', () => ({
-	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/reviews/components/RatingDropdown', () => ({
-	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>
+	RatingDropdown: ({ trigger }: { trigger: ReactNode }) => <>{trigger}</>,
 }))
 
 vi.mock('~/modules/reviews/components/reviews-menu/ReviewsMenu', () => ({
 	ReviewsMenu: (props: unknown) => {
 		reviewsMenuPropsMock(props)
 		return <button type='button'>Reviews</button>
-	}
+	},
 }))
 
 vi.mock('~/modules/reviews/api/getReviews', () => ({
 	useReviewsByReviewCard: (...args: Array<unknown>) =>
-		useReviewsByReviewCardMock(...args)
+		useReviewsByReviewCardMock(...args),
 }))
 
 vi.mock('~/modules/reviews/hooks/useDetailReviewCounts', () => ({
 	useDetailReviewCounts: (...args: Array<unknown>) =>
-		useDetailReviewCountsMock(...args)
+		useDetailReviewCountsMock(...args),
 }))
 
 vi.mock('~/modules/reviews/hooks/useReviewDialog', () => ({
-	useReviewDialog: () => ({ openReviewDialog: vi.fn() })
+	useReviewDialog: () => ({ openReviewDialog: vi.fn() }),
 }))
 
 vi.mock('~/hooks/useLearnableMetrics', () => ({
@@ -312,8 +325,8 @@ vi.mock('~/hooks/useLearnableMetrics', () => ({
 		freshnessTierInfo: { label: 'Fresh', tooltip: null },
 		freshnessTierColor: 'text-green-600',
 		isUnreviewed: true,
-		stabilityText: '1d'
-	})
+		stabilityText: '1d',
+	}),
 }))
 
 vi.mock('~/stores/ReviewModeContext', async importOriginal => {
@@ -324,8 +337,8 @@ vi.mock('~/stores/ReviewModeContext', async importOriginal => {
 		...actual,
 		useReviewMode: () => ({
 			hidesPrimary: false,
-			hidesSecondary: false
-		})
+			hidesSecondary: false,
+		}),
 	}
 })
 
@@ -336,13 +349,13 @@ export const topic = {
 	parent_id: null,
 	parent_title: null,
 	inserted_at: '2026-03-01T12:00:00.000Z',
-	updated_at: '2026-03-04T12:00:00.000Z'
+	updated_at: '2026-03-04T12:00:00.000Z',
 }
 
 export const parentTopic = {
 	...topic,
 	id: 2,
-	title: 'Mathematics'
+	title: 'Mathematics',
 }
 
 export const reviewCard = {
@@ -368,7 +381,7 @@ export const reviewCard = {
 	days_until_next_tier: null,
 	days_in_current_tier: null,
 	is_new: true,
-	status_badges: []
+	status_badges: [],
 }
 
 beforeEach(() => {
@@ -405,29 +418,29 @@ beforeEach(() => {
 				entity_type: 'topic',
 				topic,
 				review_card: null,
-				recent_activity_at: '2026-03-05T09:00:00.000Z'
+				recent_activity_at: '2026-03-05T09:00:00.000Z',
 			},
 			{
 				entity_type: 'topic',
 				topic: parentTopic,
 				review_card: null,
-				recent_activity_at: '2026-03-05T08:00:00.000Z'
-			}
+				recent_activity_at: '2026-03-05T08:00:00.000Z',
+			},
 		],
-		isLoading: false
+		isLoading: false,
 	})
 	useReviewCardMock.mockReturnValue({
 		data: reviewCard,
 		isLoading: false,
-		error: null
+		error: null,
 	})
 	useReviewsByReviewCardMock.mockReturnValue({
 		data: [],
-		isLoading: false
+		isLoading: false,
 	})
 	useDetailReviewCountsMock.mockReturnValue({
 		pendingCount: 2,
 		overdueCount: 1,
-		dueTodayCount: 3
+		dueTodayCount: 3,
 	})
 })

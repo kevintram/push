@@ -1,7 +1,8 @@
 import dayjs from 'dayjs'
 import { Anvil, CalendarDays } from 'lucide-react'
-import type { ReactNode } from 'react'
-import type { Review } from '../types/review.types'
+import { type ReactNode } from 'react'
+
+import { type Review } from '../types/review.types'
 
 type ReviewDurabilityFields = Pick<
 	Review,
@@ -11,7 +12,7 @@ type ReviewDurabilityFields = Pick<
 type ReviewToastActionFields = Pick<Review, 'completed_at' | 'scheduled_at'>
 
 export function getReviewCreatedToastActionLabel(
-	review: ReviewToastActionFields
+	review: ReviewToastActionFields,
 ): 'Open' | 'Schedule' {
 	return review.completed_at == null && review.scheduled_at == null
 		? 'Schedule'
@@ -37,9 +38,11 @@ function formatDueRelative(dueDate: string): string {
 }
 
 export function getReviewCreatedToastDescription(
-	review: ReviewDurabilityFields
+	review: ReviewDurabilityFields,
 ): ReactNode | undefined {
-	const dueLabel = review.due_after ? formatDueRelative(review.due_after) : null
+	const dueLabel = review.due_after
+		? formatDueRelative(review.due_after)
+		: null
 	const hasStability = review.stability_after != null
 
 	if (!(dueLabel || hasStability)) {
@@ -52,7 +55,9 @@ export function getReviewCreatedToastDescription(
 	const hasDelta = hasStability && review.stability_before != null
 	const stabilityDeltaRounded =
 		hasDelta && review.stability_before != null
-			? Math.round((review.stability_after ?? 0) - review.stability_before)
+			? Math.round(
+					(review.stability_after ?? 0) - review.stability_before,
+				)
 			: 0
 	let stabilityDeltaColorClass = 'text-green-600 dark:text-green-400'
 	if (hasStability && hasDelta && stabilityDeltaRounded < 0) {

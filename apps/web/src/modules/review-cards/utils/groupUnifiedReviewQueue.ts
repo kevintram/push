@@ -1,5 +1,6 @@
-import type { ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
-import type { WeekStartDay } from '~/stores/WeekStartContext'
+import { type ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
+import { type WeekStartDay } from '~/stores/WeekStartContext'
+
 import { groupReviewCardQueueByActionDay } from './groupReviewCardQueueByActionDay'
 
 export type UnifiedReviewQueueSection = {
@@ -18,7 +19,7 @@ export function groupUnifiedReviewQueue(
 	options: {
 		asOf?: string
 		weekStartDay: WeekStartDay
-	}
+	},
 ): Array<UnifiedReviewQueueSection> {
 	const sections: Array<UnifiedReviewQueueSection> = []
 
@@ -26,7 +27,7 @@ export function groupUnifiedReviewQueue(
 		sections.push({
 			id: 'new',
 			items: queues.newItems,
-			label: 'New'
+			label: 'New',
 		})
 	}
 
@@ -34,8 +35,8 @@ export function groupUnifiedReviewQueue(
 		...groupReviewCardQueueByActionDay(
 			queues.dueItems,
 			options.weekStartDay,
-			options.asOf
-		)
+			options.asOf,
+		),
 	)
 
 	return sections

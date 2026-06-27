@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import type { LogbookEntrySection } from '../types/api.types'
-import type { ReviewListItem } from '../types/review.types'
+
+import { type LogbookEntrySection } from '../types/api.types'
+import { type ReviewListItem } from '../types/review.types'
 import { getReviews } from './getReviews'
 import { reviewKeys } from './queryKeys'
 
 const sortReviewsByEffectiveDateDesc = (
-	entries: Array<ReviewListItem>
+	entries: Array<ReviewListItem>,
 ): Array<ReviewListItem> =>
 	[...entries].sort((a, b) => {
 		if (a.effective_date === b.effective_date) return 0
@@ -20,13 +21,13 @@ export function useLogbookReviewEntries() {
 	const query = useQuery({
 		queryKey: reviewKeys.list({
 			completed: true,
-			order: 'desc'
+			order: 'desc',
 		}),
 		queryFn: () =>
 			getReviews({
 				completed: true,
-				order: 'desc'
-			})
+				order: 'desc',
+			}),
 	})
 
 	// Group entries into Future, monthly (current year), and yearly (previous years) sections
@@ -81,20 +82,20 @@ export function useLogbookReviewEntries() {
 			sectionsArray.push({
 				id: 'future',
 				label: 'Future???',
-				entries: sortReviewsByEffectiveDateDesc(futureEntries)
+				entries: sortReviewsByEffectiveDateDesc(futureEntries),
 			})
 		}
 
 		// Monthly sections for current year, sorted descending
 		const monthlyKeys = Array.from(monthlyGroups.keys()).sort((a, b) =>
-			b.localeCompare(a)
+			b.localeCompare(a),
 		)
 		for (const monthKey of monthlyKeys) {
 			const entries = monthlyGroups.get(monthKey)!
 			sectionsArray.push({
 				id: monthKey,
 				label: dayjs(`${monthKey}-01`).format('MMMM'),
-				entries: sortReviewsByEffectiveDateDesc(entries)
+				entries: sortReviewsByEffectiveDateDesc(entries),
 			})
 		}
 
@@ -105,7 +106,7 @@ export function useLogbookReviewEntries() {
 			sectionsArray.push({
 				id: String(year),
 				label: String(year),
-				entries: sortReviewsByEffectiveDateDesc(entries)
+				entries: sortReviewsByEffectiveDateDesc(entries),
 			})
 		}
 
@@ -115,6 +116,6 @@ export function useLogbookReviewEntries() {
 	return {
 		sections,
 		isLoading: query.isLoading,
-		error: query.error
+		error: query.error,
 	}
 }

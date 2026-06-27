@@ -5,28 +5,30 @@ import {
 	type ReactElement,
 	useEffect,
 	useRef,
-	useState
+	useState,
 } from 'react'
+
 import { LoadingOrError } from '~/components/LoadingOrError'
 import { Button } from '~/components/ui/button'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { cn } from '~/lib/utils'
 import { isHttpStatusError } from '~/utils/httpStatusError'
+
 import { LibraryOutline } from './library/LibraryOutline'
 import { useLibraryPage } from './library/useLibraryPage'
-import type { TopicDetailReviewCardFilter } from './topic-detail/shared'
-import { TopicDetailSection } from './topic-detail/TopicDetailSection'
+import { type TopicDetailReviewCardFilter } from './topic-detail/shared'
 import {
 	TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH,
 	TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS,
 	TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
 	TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS,
 	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS,
-	TOPIC_DETAIL_SECTION_GRID_CLASS
+	TOPIC_DETAIL_SECTION_GRID_CLASS,
 } from './topic-detail/topicDetailLayout'
+import { TopicDetailSection } from './topic-detail/TopicDetailSection'
 import {
 	getTopicDetailIndicatorLayout,
-	getTopicDetailRootPresentation
+	getTopicDetailRootPresentation,
 } from './topic-detail/topicDetailTheme'
 
 type LibraryPageProps = {
@@ -40,14 +42,14 @@ function getLibraryLoadError(detailError: unknown): Error {
 }
 
 function getLibraryPageStyle(
-	outlineWidth: number
+	outlineWidth: number,
 ): CSSProperties & Record<string, string> {
 	const indicatorLayout = getTopicDetailIndicatorLayout()
 
 	return {
 		'--topic-detail-outline-width': `${outlineWidth}px`,
 		'--topic-detail-indicator-gap': indicatorLayout.indicatorGap,
-		'--topic-detail-indicator-width': indicatorLayout.indicatorWidth
+		'--topic-detail-indicator-width': indicatorLayout.indicatorWidth,
 	}
 }
 
@@ -56,7 +58,7 @@ export function LibraryPage({ create }: LibraryPageProps): ReactElement {
 	const [cardTypeFilter, setCardTypeFilter] =
 		useState<TopicDetailReviewCardFilter>('all')
 	const [outlineWidth, setOutlineWidth] = useState(
-		TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH
+		TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH,
 	)
 	const handledCreateIntentRef = useRef(false)
 	const {
@@ -90,10 +92,10 @@ export function LibraryPage({ create }: LibraryPageProps): ReactElement {
 		sectionNumberById,
 		toggleSection,
 		topicReviewCardsById,
-		visibleSectionIds
+		visibleSectionIds,
 	} = useLibraryPage({
 		cardTypeFilter,
-		onCardTypeFilterChange: setCardTypeFilter
+		onCardTypeFilterChange: setCardTypeFilter,
 	})
 
 	useEffect(() => {
@@ -107,7 +109,7 @@ export function LibraryPage({ create }: LibraryPageProps): ReactElement {
 		void navigate({
 			to: '/library',
 			replace: true,
-			search: {}
+			search: {},
 		})
 		void handleCreateRootTopic()
 	}, [create, handleCreateRootTopic, navigate])
@@ -141,40 +143,54 @@ export function LibraryPage({ create }: LibraryPageProps): ReactElement {
 					<div
 						className={cn(
 							TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS,
-							rootPresentation.rootHeaderBandClassName
+							rootPresentation.rootHeaderBandClassName,
 						)}
 					>
 						<div className='mx-auto w-full max-w-[76rem]'>
 							<div
 								className={cn(
 									'grid gap-6 px-5 pt-9 pb-7 sm:px-7 sm:pt-10 sm:pb-8 xl:gap-6 xl:px-8 xl:pt-11 xl:pb-8',
-									TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS
+									TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
 								)}
 							>
 								<section
 									className='min-w-0 scroll-mt-24'
 									ref={element => {
-										registerSectionRef(libraryRootNode.id, element)
+										registerSectionRef(
+											libraryRootNode.id,
+											element,
+										)
 									}}
 								>
 									<div
 										className='relative z-10 min-w-0'
-										data-topic-detail-heading-id={libraryRootNode.id}
+										data-topic-detail-heading-id={
+											libraryRootNode.id
+										}
 										ref={element => {
-											registerSectionHeadingRef(libraryRootNode.id, element)
+											registerSectionHeadingRef(
+												libraryRootNode.id,
+												element,
+											)
 										}}
 									>
-										<div className={TOPIC_DETAIL_SECTION_GRID_CLASS}>
+										<div
+											className={
+												TOPIC_DETAIL_SECTION_GRID_CLASS
+											}
+										>
 											<div aria-hidden='true' />
 											<div className='min-w-0'>
 												<div
-													className={TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS}
+													className={
+														TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS
+													}
 												>
 													<div className='pr-12 sm:pr-14 lg:pr-0'>
 														<h1
 															className={cn(
 																'min-w-0 break-words',
-																rootPresentation.rootTitleClassName
+																rootPresentation.rootTitleClassName,
 															)}
 														>
 															Library
@@ -203,7 +219,8 @@ export function LibraryPage({ create }: LibraryPageProps): ReactElement {
 						<div className='min-w-0 flex-1 space-y-5'>
 							{rootSections.length === 0 ? (
 								<div className='flex min-h-48 items-center justify-center rounded-2xl border border-border/70 border-dashed bg-background/60 px-6 text-center text-muted-foreground'>
-									Create a topic to start building your library.
+									Create a topic to start building your
+									library.
 								</div>
 							) : (
 								rootSections.map(section => (
@@ -212,22 +229,40 @@ export function LibraryPage({ create }: LibraryPageProps): ReactElement {
 										freshTopicId={freshTopicId}
 										getScrollElement={getScrollElement}
 										globalFilter={resolvedCardTypeFilter}
-										isReviewCardsLoading={isReviewCardsLoading}
+										isReviewCardsLoading={
+											isReviewCardsLoading
+										}
 										key={section.topic.id}
-										onFreshTopicInteraction={handleFreshTopicInteraction}
+										onFreshTopicInteraction={
+											handleFreshTopicInteraction
+										}
 										onOpenReviewCard={handleOpenReviewCard}
-										onPreserveSectionOffset={preserveSectionOffset}
-										onSectionFilterChange={handleSectionFilterChange}
-										onSubtopicCreated={handleSubtopicCreated}
-										registerSectionHeadingRef={registerSectionHeadingRef}
+										onPreserveSectionOffset={
+											preserveSectionOffset
+										}
+										onSectionFilterChange={
+											handleSectionFilterChange
+										}
+										onSubtopicCreated={
+											handleSubtopicCreated
+										}
+										registerSectionHeadingRef={
+											registerSectionHeadingRef
+										}
 										registerSectionRef={registerSectionRef}
-										registerSectionTitleRef={registerSectionTitleRef}
-										resolvedFilterByTopicId={sectionFilterOverrides}
+										registerSectionTitleRef={
+											registerSectionTitleRef
+										}
+										resolvedFilterByTopicId={
+											sectionFilterOverrides
+										}
 										reviewCardControlsVariant='medium'
 										searchFilter={resolvedCardTypeFilter}
 										section={section}
 										toggleSection={toggleSection}
-										topicReviewCardsById={topicReviewCardsById}
+										topicReviewCardsById={
+											topicReviewCardsById
+										}
 									/>
 								))
 							)}
@@ -235,7 +270,7 @@ export function LibraryPage({ create }: LibraryPageProps): ReactElement {
 						<div
 							className={cn(
 								'hidden shrink-0 self-start lg:sticky lg:top-6 lg:flex lg:justify-start',
-								TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS
+								TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS,
 							)}
 						>
 							<LibraryOutline
@@ -250,7 +285,9 @@ export function LibraryPage({ create }: LibraryPageProps): ReactElement {
 								onSectionSelect={scrollToSection}
 								onSubtopicCreated={handleSubtopicCreated}
 								outlineWidth={outlineWidth}
-								pendingCreatedParentTopicId={pendingCreatedParentTopicId}
+								pendingCreatedParentTopicId={
+									pendingCreatedParentTopicId
+								}
 								pendingCreatedTopicId={pendingCreatedTopicId}
 								sectionNumberById={sectionNumberById}
 								visibleSectionIds={visibleSectionIds}

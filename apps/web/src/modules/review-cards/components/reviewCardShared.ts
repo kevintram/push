@@ -1,11 +1,12 @@
-import type { StatusBadgeItem } from '~/components/ui/status-badge'
-import type { ReviewCardStatusBadge } from '../types/status-badge.types'
+import { type StatusBadgeItem } from '~/components/ui/status-badge'
+
+import { type ReviewCardStatusBadge } from '../types/status-badge.types'
 
 export const FLAGGED_ICON_CLASSNAME =
 	'fill-current text-sky-500 dark:text-sky-300'
 
 export function toFreshnessTier(
-	value: string | null
+	value: string | null,
 ): 'Fresh' | 'Fine' | 'Hazy' | 'Forgotten' | null {
 	if (
 		value === 'Fresh' ||
@@ -21,7 +22,7 @@ export function toFreshnessTier(
 
 export function toReviewCardStatusBadge(
 	badge: ReviewCardStatusBadge,
-	options?: { onOpenReviewDialog?: (reviewId: number) => void }
+	options?: { onOpenReviewDialog?: (reviewId: number) => void },
 ): StatusBadgeItem {
 	const reviewId = badge.review_id
 	const handleReviewClick =
@@ -33,6 +34,6 @@ export function toReviewCardStatusBadge(
 		label: badge.label,
 		tooltip: badge.tooltip,
 		tone: badge.tone,
-		onClick: handleReviewClick
+		onClick: handleReviewClick,
 	}
 }

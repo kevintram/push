@@ -1,18 +1,21 @@
 {
-	"[typescript]": {
-		"editor.defaultFormatter": "biomejs.biome"
+	"[javascript][javascriptreact][typescript][typescriptreact][json][jsonc][css]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.formatOnSave": true,
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4,
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "always"
+		}
 	},
-	"editor.codeActionsOnSave": {
-		"source.fixAll.biome": "always",
-		"source.action.useSortedAttributes.biome": "always",
-		"source.action.useSortedKeys.biome": "always",
-		"source.action.useSortedProperties.biome": "always",
-		"source.organizeImports": "explicit"
-	},
-	"editor.defaultFormatter": "biomejs.biome",
-	"editor.formatOnSave": true,
-	"editor.insertSpaces": false,
-	"editor.tabSize": 2,
+	"eslint.useFlatConfig": true,
+	"eslint.workingDirectories": [
+		{
+			"directory": ".",
+			"changeProcessCWD": true
+		}
+	],
+	"prettier.requireConfig": true,
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"typescript.format.enable": true
 }

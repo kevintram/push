@@ -7,10 +7,10 @@ let currentHash = ''
 vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => navigateMock,
 	useRouterState: ({
-		select
+		select,
 	}: {
 		select: (state: { location: { hash: string } }) => unknown
-	}) => select({ location: { hash: currentHash } })
+	}) => select({ location: { hash: currentHash } }),
 }))
 
 import { useTopicDetailNavigation } from '../useTopicDetailNavigation'
@@ -25,23 +25,25 @@ function createDomRect(top: number, height = 40): DOMRect {
 		top,
 		width: 0,
 		x: 0,
-		y: top
+		y: top,
 	} as DOMRect
 }
 
 function attachScrollToSpy(element: HTMLDivElement) {
-	const scrollTo = vi.fn((options?: ScrollToOptions | number, _y?: number) => {
-		if (typeof options === 'number') {
-			element.scrollTop = options
-			return
-		}
+	const scrollTo = vi.fn(
+		(options?: ScrollToOptions | number, _y?: number) => {
+			if (typeof options === 'number') {
+				element.scrollTop = options
+				return
+			}
 
-		element.scrollTop = options?.top ?? element.scrollTop
-	})
+			element.scrollTop = options?.top ?? element.scrollTop
+		},
+	)
 
 	Object.defineProperty(element, 'scrollTo', {
 		value: scrollTo,
-		configurable: true
+		configurable: true,
 	})
 
 	return scrollTo
@@ -52,7 +54,7 @@ function createNavigationOptions({
 	rootTopicId = 1,
 	scrollContainerElement,
 	scrollContainerVersion = scrollContainerElement ? 1 : 0,
-	sectionIds
+	sectionIds,
 }: {
 	passiveHashAlignmentEnabled?: boolean
 	rootTopicId?: number
@@ -64,10 +66,10 @@ function createNavigationOptions({
 		passiveHashAlignmentEnabled,
 		rootTopicId,
 		scrollContainerRef: {
-			current: scrollContainerElement
+			current: scrollContainerElement,
 		},
 		scrollContainerVersion,
-		sectionIds
+		sectionIds,
 	}
 }
 
@@ -75,13 +77,13 @@ function mockRectFromScrollPosition(
 	element: HTMLElement,
 	scrollContainer: HTMLDivElement,
 	documentTop: number,
-	height = 60
+	height = 60,
 ) {
 	return vi.spyOn(element, 'getBoundingClientRect').mockImplementation(() => {
 		const containerTop = scrollContainer.getBoundingClientRect().top
 		return createDomRect(
 			documentTop - scrollContainer.scrollTop + containerTop,
-			height
+			height,
 		)
 	})
 }
@@ -146,7 +148,7 @@ describe('useTopicDetailNavigation', () => {
 		sectionThree.dataset.topicDetailHeadingId = '3'
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		const sectionOneRect = vi
 			.spyOn(sectionOne, 'getBoundingClientRect')
@@ -155,7 +157,7 @@ describe('useTopicDetailNavigation', () => {
 			.spyOn(sectionTwo, 'getBoundingClientRect')
 			.mockReturnValue(createDomRect(130, 60))
 		vi.spyOn(sectionThree, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(260, 60)
+			createDomRect(260, 60),
 		)
 
 		const { result, rerender } = renderHook(() =>
@@ -163,9 +165,9 @@ describe('useTopicDetailNavigation', () => {
 				createNavigationOptions({
 					rootTopicId: 1,
 					scrollContainerElement: scrollContainer,
-					sectionIds: [1, 2, 3]
-				})
-			)
+					sectionIds: [1, 2, 3],
+				}),
+			),
 		)
 
 		act(() => {
@@ -187,7 +189,7 @@ describe('useTopicDetailNavigation', () => {
 
 		await act(async () => {
 			result.current.scrollToSection(3, {
-				behavior: 'auto'
+				behavior: 'auto',
 			})
 			flushAnimationFrames()
 		})
@@ -199,7 +201,7 @@ describe('useTopicDetailNavigation', () => {
 			hash: 'topic-3',
 			replace: false,
 			resetScroll: false,
-			hashScrollIntoView: false
+			hashScrollIntoView: false,
 		})
 		expect(scrollContainer.scrollTop).toBe(260)
 		expect(scrollContainerScrollTo).not.toHaveBeenCalled()
@@ -209,7 +211,7 @@ describe('useTopicDetailNavigation', () => {
 
 		await act(async () => {
 			result.current.scrollToSection(2, {
-				mode: 'replace'
+				mode: 'replace',
 			})
 			flushAnimationFrames()
 			rerender()
@@ -222,12 +224,12 @@ describe('useTopicDetailNavigation', () => {
 			hash: 'topic-2',
 			replace: true,
 			resetScroll: false,
-			hashScrollIntoView: false
+			hashScrollIntoView: false,
 		})
 		expect(scrollContainerScrollTo).toHaveBeenCalledTimes(1)
 		expect(scrollContainerScrollTo).toHaveBeenCalledWith({
 			top: 130,
-			behavior: 'smooth'
+			behavior: 'smooth',
 		})
 
 		sectionOneRect.mockReturnValue(createDomRect(-80, 60))
@@ -252,7 +254,7 @@ describe('useTopicDetailNavigation', () => {
 		sectionTwo.dataset.topicDetailHeadingId = '2'
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		const sectionOneRect = vi
 			.spyOn(sectionOne, 'getBoundingClientRect')
@@ -274,15 +276,15 @@ describe('useTopicDetailNavigation', () => {
 						rootTopicId: 1,
 						scrollContainerElement,
 						scrollContainerVersion,
-						sectionIds: [1, 2]
-					})
+						sectionIds: [1, 2],
+					}),
 				),
 			{
 				initialProps: {
 					scrollContainerElement: null,
-					scrollContainerVersion: 0
-				}
-			}
+					scrollContainerVersion: 0,
+				},
+			},
 		)
 
 		act(() => {
@@ -298,7 +300,7 @@ describe('useTopicDetailNavigation', () => {
 		act(() => {
 			rerender({
 				scrollContainerElement: scrollContainer,
-				scrollContainerVersion: 1
+				scrollContainerVersion: 1,
 			})
 			flushAnimationFrames()
 		})
@@ -329,14 +331,16 @@ describe('useTopicDetailNavigation', () => {
 		scrollContainer.scrollTop = 250
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
 			const containerTop = scrollContainer.getBoundingClientRect().top
 			return createDomRect(
-				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
-				60
+				sectionTwoDocumentTop -
+					scrollContainer.scrollTop +
+					containerTop,
+				60,
 			)
 		})
 
@@ -349,14 +353,14 @@ describe('useTopicDetailNavigation', () => {
 					createNavigationOptions({
 						rootTopicId: 1,
 						scrollContainerElement: scrollContainer,
-						sectionIds
-					})
+						sectionIds,
+					}),
 				),
 			{
 				initialProps: {
-					sectionIds: [1, 2]
-				}
-			}
+					sectionIds: [1, 2],
+				},
+			},
 		)
 
 		act(() => {
@@ -369,27 +373,29 @@ describe('useTopicDetailNavigation', () => {
 
 		expect(scrollContainer.scrollTop).toBe(250)
 		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
-			'none'
+			'none',
 		)
 
 		act(() => {
 			sectionTwoDocumentTop = 120
 			rerender({
-				sectionIds: [2, 1]
+				sectionIds: [2, 1],
 			})
 			flushAnimationFrames()
 		})
 
 		expect(scrollContainer.scrollTop).toBe(50)
 		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
-			'none'
+			'none',
 		)
 
 		act(() => {
 			vi.runAllTimers()
 		})
 
-		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe('')
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
+			'',
+		)
 	})
 
 	it('cancels pending section offset preservation when the user scrolls', () => {
@@ -405,14 +411,16 @@ describe('useTopicDetailNavigation', () => {
 		scrollContainer.scrollTop = 250
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
 			const containerTop = scrollContainer.getBoundingClientRect().top
 			return createDomRect(
-				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
-				60
+				sectionTwoDocumentTop -
+					scrollContainer.scrollTop +
+					containerTop,
+				60,
 			)
 		})
 
@@ -425,14 +433,14 @@ describe('useTopicDetailNavigation', () => {
 					createNavigationOptions({
 						rootTopicId: 1,
 						scrollContainerElement: scrollContainer,
-						sectionIds
-					})
+						sectionIds,
+					}),
 				),
 			{
 				initialProps: {
-					sectionIds: [1, 2]
-				}
-			}
+					sectionIds: [1, 2],
+				},
+			},
 		)
 
 		act(() => {
@@ -444,7 +452,7 @@ describe('useTopicDetailNavigation', () => {
 		})
 
 		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
-			'none'
+			'none',
 		)
 
 		scrollContainer.scrollTop = 100
@@ -456,14 +464,16 @@ describe('useTopicDetailNavigation', () => {
 		act(() => {
 			sectionTwoDocumentTop = 120
 			rerender({
-				sectionIds: [2, 1]
+				sectionIds: [2, 1],
 			})
 			flushAnimationFrames()
 			vi.runAllTimers()
 		})
 
 		expect(scrollContainer.scrollTop).toBe(100)
-		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe('')
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
+			'',
+		)
 	})
 
 	it('reapplies the preserved section offset after a later native scroll adjustment', () => {
@@ -479,14 +489,16 @@ describe('useTopicDetailNavigation', () => {
 		scrollContainer.scrollTop = 250
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
 			const containerTop = scrollContainer.getBoundingClientRect().top
 			return createDomRect(
-				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
-				60
+				sectionTwoDocumentTop -
+					scrollContainer.scrollTop +
+					containerTop,
+				60,
 			)
 		})
 
@@ -499,14 +511,14 @@ describe('useTopicDetailNavigation', () => {
 					createNavigationOptions({
 						rootTopicId: 1,
 						scrollContainerElement: scrollContainer,
-						sectionIds
-					})
+						sectionIds,
+					}),
 				),
 			{
 				initialProps: {
-					sectionIds: [1, 2]
-				}
-			}
+					sectionIds: [1, 2],
+				},
+			},
 		)
 
 		act(() => {
@@ -520,7 +532,7 @@ describe('useTopicDetailNavigation', () => {
 		act(() => {
 			sectionTwoDocumentTop = 120
 			rerender({
-				sectionIds: [2, 1]
+				sectionIds: [2, 1],
 			})
 		})
 
@@ -535,14 +547,16 @@ describe('useTopicDetailNavigation', () => {
 
 		expect(scrollContainer.scrollTop).toBe(50)
 		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
-			'none'
+			'none',
 		)
 
 		act(() => {
 			vi.runAllTimers()
 		})
 
-		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe('')
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
+			'',
+		)
 	})
 
 	it('cancels pending section offset preservation when navigating to another section', () => {
@@ -558,14 +572,16 @@ describe('useTopicDetailNavigation', () => {
 		scrollContainer.scrollTop = 250
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
 			const containerTop = scrollContainer.getBoundingClientRect().top
 			return createDomRect(
-				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
-				60
+				sectionTwoDocumentTop -
+					scrollContainer.scrollTop +
+					containerTop,
+				60,
 			)
 		})
 
@@ -574,9 +590,9 @@ describe('useTopicDetailNavigation', () => {
 				createNavigationOptions({
 					rootTopicId: 1,
 					scrollContainerElement: scrollContainer,
-					sectionIds: [1, 2]
-				})
-			)
+					sectionIds: [1, 2],
+				}),
+			),
 		)
 
 		act(() => {
@@ -592,12 +608,14 @@ describe('useTopicDetailNavigation', () => {
 		act(() => {
 			result.current.scrollToSection(1, {
 				behavior: 'auto',
-				updateHash: false
+				updateHash: false,
 			})
 		})
 
 		expect(scrollContainer.scrollTop).toBe(20)
-		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe('')
+		expect(scrollContainer.style.getPropertyValue('overflow-anchor')).toBe(
+			'',
+		)
 
 		scrollContainer.scrollTop = 250
 
@@ -624,7 +642,7 @@ describe('useTopicDetailNavigation', () => {
 		sectionTwo.dataset.topicDetailHeadingId = '2'
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
@@ -638,21 +656,21 @@ describe('useTopicDetailNavigation', () => {
 					createNavigationOptions({
 						rootTopicId: 1,
 						scrollContainerElement: scrollContainer,
-						sectionIds
-					})
+						sectionIds,
+					}),
 				),
 			{
 				initialProps: {
-					sectionIds: []
-				}
-			}
+					sectionIds: [],
+				},
+			},
 		)
 
 		expect(scrollContainer.scrollTop).toBe(0)
 
 		act(() => {
 			rerender({
-				sectionIds: [1, 2]
+				sectionIds: [1, 2],
 			})
 			result.current.registerSectionRef(1, sectionOne)
 			result.current.registerSectionRef(2, sectionTwo)
@@ -681,14 +699,16 @@ describe('useTopicDetailNavigation', () => {
 		sectionThree.dataset.topicDetailHeadingId = '3'
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
 			const containerTop = scrollContainer.getBoundingClientRect().top
 			return createDomRect(
-				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
-				60
+				sectionTwoDocumentTop -
+					scrollContainer.scrollTop +
+					containerTop,
+				60,
 			)
 		})
 		mockRectFromScrollPosition(sectionThree, scrollContainer, 420)
@@ -698,9 +718,9 @@ describe('useTopicDetailNavigation', () => {
 				createNavigationOptions({
 					rootTopicId: 1,
 					scrollContainerElement: scrollContainer,
-					sectionIds: [1, 2, 3]
-				})
-			)
+					sectionIds: [1, 2, 3],
+				}),
+			),
 		)
 
 		act(() => {
@@ -736,14 +756,16 @@ describe('useTopicDetailNavigation', () => {
 		sectionTwo.dataset.topicDetailHeadingId = '2'
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		vi.spyOn(sectionTwo, 'getBoundingClientRect').mockImplementation(() => {
 			const containerTop = scrollContainer.getBoundingClientRect().top
 			return createDomRect(
-				sectionTwoDocumentTop - scrollContainer.scrollTop + containerTop,
-				60
+				sectionTwoDocumentTop -
+					scrollContainer.scrollTop +
+					containerTop,
+				60,
 			)
 		})
 
@@ -752,9 +774,9 @@ describe('useTopicDetailNavigation', () => {
 				createNavigationOptions({
 					rootTopicId: 1,
 					scrollContainerElement: scrollContainer,
-					sectionIds: [1, 2]
-				})
-			)
+					sectionIds: [1, 2],
+				}),
+			),
 		)
 
 		act(() => {
@@ -791,7 +813,7 @@ describe('useTopicDetailNavigation', () => {
 		sectionTwo.dataset.topicDetailHeadingId = '2'
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
@@ -806,14 +828,14 @@ describe('useTopicDetailNavigation', () => {
 						passiveHashAlignmentEnabled,
 						rootTopicId: 1,
 						scrollContainerElement: scrollContainer,
-						sectionIds: [1, 2]
-					})
+						sectionIds: [1, 2],
+					}),
 				),
 			{
 				initialProps: {
-					passiveHashAlignmentEnabled: false
-				}
-			}
+					passiveHashAlignmentEnabled: false,
+				},
+			},
 		)
 
 		act(() => {
@@ -828,7 +850,7 @@ describe('useTopicDetailNavigation', () => {
 
 		act(() => {
 			rerender({
-				passiveHashAlignmentEnabled: true
+				passiveHashAlignmentEnabled: true,
 			})
 			vi.runAllTimers()
 		})
@@ -850,7 +872,7 @@ describe('useTopicDetailNavigation', () => {
 		sectionTwo.dataset.topicDetailHeadingId = '2'
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
@@ -868,15 +890,15 @@ describe('useTopicDetailNavigation', () => {
 						rootTopicId: 1,
 						scrollContainerElement,
 						scrollContainerVersion,
-						sectionIds: [1, 2]
-					})
+						sectionIds: [1, 2],
+					}),
 				),
 			{
 				initialProps: {
 					scrollContainerElement: null,
-					scrollContainerVersion: 0
-				}
-			}
+					scrollContainerVersion: 0,
+				},
+			},
 		)
 
 		act(() => {
@@ -892,7 +914,7 @@ describe('useTopicDetailNavigation', () => {
 		act(() => {
 			rerender({
 				scrollContainerElement: scrollContainer,
-				scrollContainerVersion: 1
+				scrollContainerVersion: 1,
 			})
 			flushAnimationFrames()
 			vi.runAllTimers()
@@ -915,7 +937,7 @@ describe('useTopicDetailNavigation', () => {
 		sectionTwo.dataset.topicDetailHeadingId = '2'
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
@@ -925,9 +947,9 @@ describe('useTopicDetailNavigation', () => {
 				createNavigationOptions({
 					rootTopicId: 1,
 					scrollContainerElement: scrollContainer,
-					sectionIds: [1, 2]
-				})
-			)
+					sectionIds: [1, 2],
+				}),
+			),
 		)
 
 		act(() => {
@@ -965,7 +987,7 @@ describe('useTopicDetailNavigation', () => {
 		sectionTwo.dataset.topicDetailHeadingId = '2'
 
 		vi.spyOn(scrollContainer, 'getBoundingClientRect').mockReturnValue(
-			createDomRect(0, 220)
+			createDomRect(0, 220),
 		)
 		mockRectFromScrollPosition(sectionOne, scrollContainer, 20)
 		mockRectFromScrollPosition(sectionTwo, scrollContainer, 320)
@@ -975,9 +997,9 @@ describe('useTopicDetailNavigation', () => {
 				createNavigationOptions({
 					rootTopicId: 1,
 					scrollContainerElement: scrollContainer,
-					sectionIds: [1, 2]
-				})
-			)
+					sectionIds: [1, 2],
+				}),
+			),
 		)
 
 		act(() => {
