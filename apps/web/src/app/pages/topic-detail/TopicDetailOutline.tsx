@@ -32,6 +32,7 @@ import {
 	TOPIC_DETAIL_OUTLINE_MIN_WIDTH,
 } from './topicDetailLayout'
 import { TopicDetailOutlineHeader } from './TopicDetailOutlineHeader'
+import { TopicDetailOutlineLabel } from './TopicDetailOutlineLabel'
 import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'
 import { getTopicDetailSectionId } from './topicDetailStructure'
 import { useTopicDetailOutline } from './useTopicDetailOutline'
@@ -197,7 +198,7 @@ export function TopicDetailOutline({
 				search={true}
 				to='/topics/$topicId'
 			>
-				<OutlineLabel
+				<TopicDetailOutlineLabel
 					label={label}
 					sectionNumber={sectionNumberById.get(node.id) ?? null}
 				/>
@@ -313,7 +314,7 @@ export function TopicDetailOutline({
 															search={true}
 															to='/topics/$topicId'
 														>
-															<OutlineLabel
+															<TopicDetailOutlineLabel
 																label={
 																	rootLabel
 																}
@@ -491,24 +492,5 @@ export function TopicDetailOutline({
 				</AlertDialogContent>
 			</AlertDialog>
 		</aside>
-	)
-}
-
-function OutlineLabel({
-	label,
-	sectionNumber,
-}: {
-	label: string
-	sectionNumber: string | null
-}) {
-	return (
-		<span className='min-w-0 truncate'>
-			{sectionNumber ? (
-				<span className='whitespace-nowrap font-medium text-[0.72rem] text-slate-400 tabular-nums leading-none tracking-[0.01em] dark:text-slate-500'>
-					{sectionNumber}{' '}
-				</span>
-			) : null}
-			<span>{label}</span>
-		</span>
 	)
 }

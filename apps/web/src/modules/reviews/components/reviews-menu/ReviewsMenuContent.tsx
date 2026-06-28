@@ -3,9 +3,7 @@ import { type KeyboardEvent, type MouseEvent } from 'react'
 
 import {
 	DropdownMenuContent,
-	DropdownMenuGroup,
 	DropdownMenuItem,
-	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuSub,
 	DropdownMenuSubContent,
@@ -14,12 +12,12 @@ import {
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { type ReviewListItem } from '~/modules/reviews/types/review.types'
 
-import { ReviewItem } from '../ReviewItem'
 import {
 	getOptionIcon,
 	type ratingOptions,
 	type ReviewRatingState,
 } from '../reviewRatingOptions'
+import { ReviewsMenuSection } from './ReviewsMenuSection'
 import { type ReviewsMenuProps } from './shared'
 
 type RatingOption = (typeof ratingOptions)[number]
@@ -44,53 +42,6 @@ type ReviewsMenuContentProps = {
 	uncompletedOption: RatingOption | null
 	uncompletedUnscheduledReviews: Array<ReviewListItem>
 	upcomingReviews: Array<ReviewListItem>
-}
-
-function ReviewsMenuSection({
-	label,
-	entries,
-	handleNestedOverlayOpenChange,
-	handleReviewItemClick,
-	markDeferredStructuralInvalidation,
-	markNestedOverlayIntent,
-}: {
-	label: string
-	entries: Array<ReviewListItem>
-	handleNestedOverlayOpenChange: (open: boolean) => void
-	handleReviewItemClick: (reviewId: number) => void
-	markDeferredStructuralInvalidation: () => void
-	markNestedOverlayIntent: () => void
-}) {
-	if (entries.length === 0) return null
-
-	return (
-		<>
-			<DropdownMenuSeparator />
-			<DropdownMenuGroup>
-				<DropdownMenuLabel>{label}</DropdownMenuLabel>
-				{entries.map(review => (
-					<div className='px-1' key={review.id}>
-						<ReviewItem
-							deferStructuralInvalidation={true}
-							entry={review}
-							onDeferredInvalidation={
-								markDeferredStructuralInvalidation
-							}
-							onNestedOverlayOpenChange={
-								handleNestedOverlayOpenChange
-							}
-							onNestedOverlayTriggerInteract={
-								markNestedOverlayIntent
-							}
-							onReviewClick={handleReviewItemClick}
-							showCardColumn={false}
-							variant='default'
-						/>
-					</div>
-				))}
-			</DropdownMenuGroup>
-		</>
-	)
 }
 
 export function ReviewsMenuContent({

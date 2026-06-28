@@ -16,6 +16,7 @@ import { TopicTreeItem } from '~/modules/topics/components/topic-tree/TopicTreeI
 import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
 
 import { getTopicDetailSectionId } from '../topic-detail/topicDetailStructure'
+import { LibraryOutlineLabel } from './LibraryOutlineLabel'
 
 type LibraryOutlineContentProps = {
 	ancestorIdsById: Map<number, Array<number>>
@@ -48,28 +49,6 @@ type OutlinePrimaryActionProps = {
 	label: string
 	node: TopicTreeNode
 	suppressSelectionRef: MutableRefObject<boolean>
-}
-
-function OutlineLabel({
-	label,
-	sectionNumber,
-}: {
-	label: string
-	sectionNumber: string | null
-}): ReactElement {
-	const sectionNumberPrefix =
-		sectionNumber == null ? null : (
-			<span className='whitespace-nowrap font-medium text-[0.72rem] text-slate-400 tabular-nums leading-none tracking-[0.01em] dark:text-slate-500'>
-				{sectionNumber}{' '}
-			</span>
-		)
-
-	return (
-		<span className='min-w-0 truncate'>
-			{sectionNumberPrefix}
-			<span>{label}</span>
-		</span>
-	)
 }
 
 function shouldHandleSamePageSectionNavigation(
@@ -174,7 +153,7 @@ export function LibraryOutlineContent({
 					search={true}
 					to='/library'
 				>
-					<OutlineLabel
+					<LibraryOutlineLabel
 						label={label}
 						sectionNumber={sectionNumberById.get(node.id) ?? null}
 					/>
@@ -253,7 +232,7 @@ export function LibraryOutlineContent({
 											search={true}
 											to='/library'
 										>
-											<OutlineLabel
+											<LibraryOutlineLabel
 												label={libraryRootNode.title}
 												sectionNumber={null}
 											/>

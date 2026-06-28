@@ -32,8 +32,7 @@ For your convenience, these are the commands as of writing this:
 - `pnpm test:e2e:ci` - Run E2E tests headlessly
 - `pnpm lint:tsc` - Run TypeScript compiler checks
 - `pnpm lint:eslint` - Run ESLint checks
-- `pnpm lint:component-count` - Enforce max two React components per file
-- `pnpm lint` - Run all linting (TypeScript + ESLint + component-count)
+- `pnpm lint` - Run all linting (TypeScript + ESLint + formatting checks)
 - `pnpm format` - Format code with Prettier
 - `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
 
@@ -41,7 +40,7 @@ Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree-scripts/ge
 
 ## Component Size Limits
 
-`src/**/*.tsx` files are linted to a hard cap of **500 lines** and **2 React components**. (`src/components/ui/` and test files are excluded from the automated check, but the same discipline applies.)
+Keep `src/**/*.tsx` files under **500 lines** and to **one React component**. ESLint enforces the component limit. (`src/components/ui/` and test files are excluded from the automated component check, but the same discipline applies.)
 
 When a file approaches either limit, split it: extract presentational sections into sibling `.tsx` files, and move orchestration, derived state, and mutations into a colocated `.ts` hook.
 

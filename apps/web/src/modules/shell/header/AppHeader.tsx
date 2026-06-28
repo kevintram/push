@@ -1,16 +1,15 @@
-import { Link, useLocation } from '@tanstack/react-router'
+import { useLocation } from '@tanstack/react-router'
 import {
 	BookOpen,
 	CalendarIcon,
 	Clock,
 	Flag,
 	ListChecks,
-	type LucideIcon,
 	Search,
 	Settings,
 	X,
 } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { BookOpenOff } from '~/components/icons'
 import { OPEN_SETTINGS_EVENT } from '~/components/settings-events'
@@ -26,59 +25,12 @@ import { cn } from '~/lib/utils'
 import { useReviewCardFlaggedSummary } from '~/modules/review-cards/api/getReviewCardFlaggedSummary'
 import { useReviewCardQueueCounts } from '~/modules/review-cards/hooks/useReviewCardQueueCounts'
 import { SearchDialog } from '~/modules/search/components/search-dialog/SearchDialog'
-import {
-	HeaderIconButton,
-	ReviewModeTooltip,
-} from '~/modules/shell/header/HeaderIconButton'
-import {
-	HeaderArcIndicator,
-	HeaderNavIndicator,
-} from '~/modules/shell/header/HeaderStatusIndicator'
+import { HeaderIconButton } from '~/modules/shell/header/HeaderIconButton'
+import { HeaderNavLink } from '~/modules/shell/header/HeaderNavLink'
+import { HeaderArcIndicator } from '~/modules/shell/header/HeaderStatusIndicator'
+import { ReviewModeTooltip } from '~/modules/shell/header/ReviewModeTooltip'
 import { SearchShortcutHint } from '~/modules/shell/header/SearchShortcutHint'
 import { useReviewMode } from '~/stores/ReviewModeContext'
-
-type NavLinkTarget = '/due' | '/flagged' | '/recent' | '/logbook'
-
-function HeaderNavLink({
-	to,
-	label,
-	icon: Icon,
-	isActive,
-	indicator,
-	rawIndicator,
-}: {
-	to: NavLinkTarget
-	label: string
-	icon: LucideIcon
-	isActive: boolean
-	indicator?: ReactNode
-	rawIndicator?: ReactNode
-}): ReactNode {
-	return (
-		<Tooltip>
-			<TooltipTrigger
-				render={
-					<HeaderIconButton
-						ariaLabel={label}
-						className={cn(
-							'relative size-7.5 px-0',
-							isActive &&
-								'bg-[var(--app-chrome-selected)] text-[var(--app-chrome-selected-foreground)]',
-						)}
-						nativeButton={false}
-						render={<Link to={to} />}
-						showNativeTitle={false}
-					>
-						<Icon />
-						<HeaderNavIndicator>{indicator}</HeaderNavIndicator>
-						{rawIndicator}
-					</HeaderIconButton>
-				}
-			/>
-			<TooltipContent>{label}</TooltipContent>
-		</Tooltip>
-	)
-}
 
 function isEditableTarget(target: EventTarget | null) {
 	if (!(target instanceof HTMLElement)) return false

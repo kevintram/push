@@ -11,10 +11,6 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { ReviewStatusDots } from '~/components/ui/review-status-dots'
 import {
-	type StatusBadgeItem,
-	StatusBadgeList,
-} from '~/components/ui/status-badge'
-import {
 	type ReviewFilter,
 	type ReviewFocusOrder,
 } from '~/modules/review-cards/types/review-card.types'
@@ -35,12 +31,6 @@ type DueHeaderControlsProps = {
 	showFocusOrderControls: boolean
 }
 
-type DueQueueStatusBadgesProps = {
-	dueTodayCount: number
-	newCount: number
-	overdueCount: number
-}
-
 type DueFilterStatusCounts = {
 	dueTodayCount: number
 	newCount: number
@@ -50,46 +40,6 @@ type DueFilterStatusCounts = {
 type StatusFilter = Exclude<ReviewFilter, 'all'>
 
 type DueFilterStatusCountsByFilter = Record<StatusFilter, DueFilterStatusCounts>
-
-function buildDueQueueStatusBadges({
-	dueTodayCount,
-	newCount,
-	overdueCount,
-}: DueQueueStatusBadgesProps): Array<StatusBadgeItem> {
-	const badges: Array<StatusBadgeItem> = []
-
-	if (overdueCount > 0) {
-		badges.push({
-			label: `${overdueCount} Overdue`,
-			tone: 'danger',
-		})
-	}
-
-	if (dueTodayCount > 0) {
-		badges.push({
-			label: `${dueTodayCount} Due`,
-			tone: 'info',
-		})
-	}
-
-	if (newCount > 0) {
-		badges.push({
-			label: `${newCount} New`,
-			tone: 'neutral',
-		})
-	}
-
-	return badges
-}
-
-export function DueQueueStatusBadges(props: DueQueueStatusBadgesProps) {
-	return (
-		<StatusBadgeList
-			badges={buildDueQueueStatusBadges(props)}
-			className='shrink-0'
-		/>
-	)
-}
 
 function formatStatusParts(parts: Array<string>) {
 	if (parts.length <= 1) return parts[0] ?? ''

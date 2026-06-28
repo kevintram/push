@@ -23,10 +23,8 @@ import {
 	type TopicDetailReviewCardControlsVariant,
 	type TopicDetailReviewCardFilter,
 } from './shared'
-import {
-	TopicDetailReviewCardAddButton,
-	TopicDetailReviewCardFilterControls,
-} from './TopicDetailReviewCardControls'
+import { TopicDetailReviewCardAddButton } from './TopicDetailReviewCardAddButton'
+import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'
 
 interface TopicDetailReviewCardsSectionProps {
 	filteredReviewCards: Array<ReviewCardModel>

@@ -11,7 +11,8 @@ import {
 	type ReviewFocusOrder,
 } from '~/modules/review-cards/types/review-card.types'
 
-import { DueHeaderControls, DueQueueStatusBadges } from './DueHeaderControls'
+import { DueHeaderControls } from './DueHeaderControls'
+import { DueQueueStatusBadges } from './DueQueueStatusBadges'
 
 interface DuePageLayoutProps {
 	children: ReactNode

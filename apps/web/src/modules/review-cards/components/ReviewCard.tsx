@@ -43,10 +43,12 @@ import { hasScheduledDueReviews } from '../utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '../utils/orderReviewCardStatusBadges'
 import { getReviewCardDisplayTitle } from '../utils/reviewCardCopy'
 import { RetireReviewCardDialog } from './RetireReviewCardDialog'
-import { ReviewCardBody, ReviewCardMetaRow } from './ReviewCardBody'
+import { ReviewCardBody } from './ReviewCardBody'
 import { ReviewCardFooterActions } from './ReviewCardFooterActions'
-import { ReviewCardHeader, ReviewCardStatusRow } from './ReviewCardHeader'
+import { ReviewCardHeader } from './ReviewCardHeader'
+import { ReviewCardMetaRow } from './ReviewCardMetaRow'
 import { toFreshnessTier, toReviewCardStatusBadge } from './reviewCardShared'
+import { ReviewCardStatusRow } from './ReviewCardStatusRow'
 
 const MIN_HEIGHT = 96
 const LARGE_CARD_CONTENT_HEIGHT_MIN = 500

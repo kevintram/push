@@ -6,7 +6,6 @@ import {
 	BreadcrumbEllipsis,
 	BreadcrumbItem,
 	BreadcrumbList,
-	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from '~/components/ui/breadcrumb'
 import { Button } from '~/components/ui/button'
@@ -20,6 +19,8 @@ import {
 import { useElementSize } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
 import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
+
+import { TopicPathBreadcrumbItem } from './TopicPathBreadcrumbItem'
 
 export type TopicPathItem = {
 	id: number
@@ -100,49 +101,6 @@ function buildVisibleTopicPath(
 		},
 		...trailingTopics.map(topic => ({ kind: 'topic' as const, topic })),
 	]
-}
-
-function TopicPathBreadcrumbItem({
-	currentTopicId,
-	renderTopicLink,
-	topic,
-}: {
-	currentTopicId: number
-	renderTopicLink: (args: {
-		className: string
-		label: string
-		topic: TopicPathItem
-	}) => ReactNode
-	topic: TopicPathItem
-}) {
-	const label = getTopicDisplayTitle(topic.title, topic.body)
-	const isCurrentTopic = topic.id === currentTopicId
-
-	return (
-		<BreadcrumbItem
-			className={cn(
-				isCurrentTopic
-					? 'min-w-0 flex-[1_1_7rem] overflow-hidden'
-					: 'min-w-0',
-			)}
-		>
-			{isCurrentTopic ? (
-				<BreadcrumbPage
-					className='block truncate font-medium'
-					title={label}
-				>
-					{label}
-				</BreadcrumbPage>
-			) : (
-				renderTopicLink({
-					className:
-						'block @[300px]/crumbs:max-w-[6.5rem] @[380px]/crumbs:max-w-[7.5rem] @[460px]/crumbs:max-w-36 @[560px]/crumbs:max-w-40 max-w-20 truncate',
-					label,
-					topic,
-				})
-			)}
-		</BreadcrumbItem>
-	)
 }
 
 export function TopicBreadcrumb({

@@ -1,20 +1,5 @@
-import { type ReactNode } from 'react'
-
 import { reviewStatusDotVariants } from '~/components/ui/review-status-dots'
 import { cn } from '~/lib/utils'
-
-export function HeaderNavIndicator({ children }: { children?: ReactNode }) {
-	if (!children) return null
-
-	return (
-		<span
-			aria-hidden={true}
-			className='pointer-events-none absolute top-1 right-1 z-10 inline-flex items-center justify-center'
-		>
-			{children}
-		</span>
-	)
-}
 
 const ARC_BUTTON_SIZE = 30
 const ARC_DOT_SIZE = 8

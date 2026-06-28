@@ -75,6 +75,7 @@ export default tseslint.config(
 			'@typescript-eslint/no-unused-vars': unusedVarRule,
 			'@typescript-eslint/require-await': 'off',
 			'react-hooks/rules-of-hooks': 'error',
+			'react/no-multi-comp': 'error',
 			'react-refresh/only-export-components': [
 				'warn',
 				{ allowConstantExport: true },
@@ -90,6 +91,7 @@ export default tseslint.config(
 		rules: {
 			'@typescript-eslint/consistent-type-imports': 'off',
 			'@typescript-eslint/no-explicit-any': 'off',
+			'react/no-multi-comp': 'off',
 		},
 	},
 	{

@@ -2,11 +2,13 @@ import { type ReactNode } from 'react'
 import { createContext, useCallback, useContext, useRef } from 'react'
 
 import {
-	PageLayoutContent,
-	type PageLayoutContentProps,
 	PageLayoutHeader,
 	type PageLayoutHeaderProps,
 } from '~/app/layouts/PageLayoutComponents'
+import {
+	PageLayoutContent,
+	type PageLayoutContentProps,
+} from '~/app/layouts/PageLayoutContent'
 
 interface PageLayoutProps {
 	children: ReactNode

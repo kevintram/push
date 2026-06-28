@@ -3,10 +3,10 @@ import { ChevronDown, Loader2, Plus } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { RatingDropdown } from '~/modules/reviews/components/RatingDropdown'
-import { ReviewItem } from '~/modules/reviews/components/ReviewItem'
-import { ReviewListHeader } from '~/modules/reviews/components/ReviewListHeader'
 import { type ReviewRatingState } from '~/modules/reviews/components/reviewRatingOptions'
 import { type ReviewListItem } from '~/modules/reviews/types/review.types'
+
+import { ReviewCardDetailReviewSection } from './ReviewCardDetailReviewSection'
 
 type ReviewCardDetailReviewsTabProps = {
 	completedReviews: Array<ReviewListItem>
@@ -97,42 +97,6 @@ export function ReviewCardDetailReviewsTab({
 					/>
 				</div>
 			)}
-		</div>
-	)
-}
-
-function ReviewCardDetailReviewSection({
-	entries,
-	onOpenReviewDialog,
-	title,
-	titleClassName,
-}: {
-	entries: Array<ReviewListItem>
-	onOpenReviewDialog: (reviewId: number) => void
-	title: string | null
-	titleClassName: string
-}) {
-	if (entries.length === 0) return null
-
-	return (
-		<div>
-			{title ? (
-				<h2 className={`mb-3 font-bold text-2xl ${titleClassName}`}>
-					{title}
-				</h2>
-			) : null}
-			<div className='@container/review-list'>
-				<ReviewListHeader showCardColumn={false} />
-				{entries.map(entry => (
-					<ReviewItem
-						entry={entry}
-						key={entry.id}
-						onReviewClick={onOpenReviewDialog}
-						showCardColumn={false}
-						variant='default'
-					/>
-				))}
-			</div>
 		</div>
 	)
 }
