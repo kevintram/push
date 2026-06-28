@@ -1,21 +1,14 @@
 {
 	"[javascript][javascriptreact][typescript][typescriptreact][json][jsonc][css]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.defaultFormatter": "oxc.oxc-vscode",
 		"editor.formatOnSave": true,
 		"editor.insertSpaces": false,
 		"editor.tabSize": 4,
 		"editor.codeActionsOnSave": {
-			"source.fixAll.eslint": "always"
+			"source.format.oxc": "always",
+			"source.fixAll.oxc": "always"
 		}
 	},
-	"eslint.useFlatConfig": true,
-	"eslint.workingDirectories": [
-		{
-			"directory": ".",
-			"changeProcessCWD": true
-		}
-	],
-	"prettier.requireConfig": true,
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"typescript.format.enable": true
 }

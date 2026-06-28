@@ -74,9 +74,8 @@ describe('due view preferences', () => {
 			}),
 		)
 
-		const { getStoredDueViewPreference: freshGet } = await import(
-			'~/modules/review-cards/dueQueueViewPreferences'
-		)
+		const { getStoredDueViewPreference: freshGet } =
+			await import('~/modules/review-cards/dueQueueViewPreferences')
 
 		expect(freshGet()).toEqual({
 			filter: 'practice',
@@ -100,9 +99,8 @@ describe('due view preferences', () => {
 			JSON.stringify({ filter: 'practice', focusOrder: 'random' }),
 		)
 
-		const { getStoredDueViewPreference: freshGet } = await import(
-			'~/modules/review-cards/dueQueueViewPreferences'
-		)
+		const { getStoredDueViewPreference: freshGet } =
+			await import('~/modules/review-cards/dueQueueViewPreferences')
 
 		expect(freshGet()).toEqual({
 			filter: 'flashcards',

@@ -15,7 +15,7 @@ This is a React application built with modern tooling focused on topic-based lea
 - **Build Tool**: Vite 6
 - **Package Manager**: pnpm
 - **Testing**: Vitest (unit/integration), Playwright (E2E)
-- **Linting/Formatting**: ESLint + Prettier
+- **Linting/Formatting**: Oxlint + Oxfmt
 - **Mocking**: MSW (Mock Service Worker)
 
 ## Development Commands
@@ -31,16 +31,16 @@ For your convenience, these are the commands as of writing this:
 - `pnpm test:e2e` - Run E2E tests with Playwright UI
 - `pnpm test:e2e:ci` - Run E2E tests headlessly
 - `pnpm lint:tsc` - Run TypeScript compiler checks
-- `pnpm lint:eslint` - Run ESLint checks
-- `pnpm lint` - Run all linting (TypeScript + ESLint + formatting checks)
-- `pnpm format` - Format code with Prettier
+- `pnpm lint:oxlint` - Run Oxlint checks
+- `pnpm lint` - Run all linting (TypeScript + Oxlint + formatting checks)
+- `pnpm format` - Format code with Oxfmt
 - `pnpm validate` - Run full validation pipeline (lint + test:ci + test:e2e:ci)
 
 Worktrees: use `apps/web/run.sh` from the worktree. It runs `worktree-scripts/gen-env.sh` to refresh all env files (and recreate any missing ones) then starts on the assigned port.
 
 ## Component Size Limits
 
-Keep `src/**/*.tsx` files under **500 lines** and to **one React component**. ESLint enforces the component limit. (`src/components/ui/` and test files are excluded from the automated component check, but the same discipline applies.)
+Keep `src/**/*.tsx` files under **500 lines** and to **one React component**. Oxlint enforces the component limit. (`src/components/ui/` and test files are excluded from the automated component check, but the same discipline applies.)
 
 When a file approaches either limit, split it: extract presentational sections into sibling `.tsx` files, and move orchestration, derived state, and mutations into a colocated `.ts` hook.
 

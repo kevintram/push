@@ -4,15 +4,12 @@
 			"format_on_save": "on",
 			"tab_size": 4,
 			"hard_tabs": true,
-			"code_actions_on_format": {
-				"source.fixAll.eslint": true
-			},
 			"formatter": {
 				"external": {
 					"command": "pnpm",
 					"arguments": [
 						"exec",
-						"prettier",
+						"oxfmt",
 						"--stdin-filepath",
 						"{buffer_path}"
 					]
@@ -23,15 +20,12 @@
 			"format_on_save": "on",
 			"tab_size": 4,
 			"hard_tabs": true,
-			"code_actions_on_format": {
-				"source.fixAll.eslint": true
-			},
 			"formatter": {
 				"external": {
 					"command": "pnpm",
 					"arguments": [
 						"exec",
-						"prettier",
+						"oxfmt",
 						"--stdin-filepath",
 						"{buffer_path}"
 					]
@@ -42,15 +36,12 @@
 			"format_on_save": "on",
 			"tab_size": 4,
 			"hard_tabs": true,
-			"code_actions_on_format": {
-				"source.fixAll.eslint": true
-			},
 			"formatter": {
 				"external": {
 					"command": "pnpm",
 					"arguments": [
 						"exec",
-						"prettier",
+						"oxfmt",
 						"--stdin-filepath",
 						"{buffer_path}"
 					]
@@ -66,7 +57,7 @@
 					"command": "pnpm",
 					"arguments": [
 						"exec",
-						"prettier",
+						"oxfmt",
 						"--stdin-filepath",
 						"{buffer_path}"
 					]
@@ -82,7 +73,7 @@
 					"command": "pnpm",
 					"arguments": [
 						"exec",
-						"prettier",
+						"oxfmt",
 						"--stdin-filepath",
 						"{buffer_path}"
 					]

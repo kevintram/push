@@ -142,7 +142,7 @@ export function DueFocusPage({
 			}),
 			{ replace: true },
 		)
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- navigateToFocus closes over navigate.
+		// oxlint-disable-next-line react-hooks/exhaustive-deps -- navigateToFocus closes over navigate.
 	}, [done, filter, includeFuture, order, shuffle])
 
 	useEffect(() => {

@@ -1,0 +1,38 @@
+{
+	"arrowParens": "avoid",
+	"bracketSpacing": true,
+	"jsxSingleQuote": true,
+	"printWidth": 80,
+	"semi": false,
+	"singleQuote": true,
+	"tabWidth": 4,
+	"trailingComma": "all",
+	"useTabs": true,
+	"sortPackageJson": false,
+	"ignorePatterns": [
+		"coverage",
+		"dist",
+		"node_modules",
+		"playwright-report",
+		"public/mockServiceWorker.js",
+		"src/app/routeTree.gen.ts",
+		"src/types/database.types.ts",
+		"test-results",
+		"pnpm-lock.yaml",
+		"*.md"
+	],
+	"overrides": [
+		{
+			"files": ["src/components/ui/**/*.{ts,tsx}"],
+			"options": {
+				"singleQuote": false
+			}
+		},
+		{
+			"files": ["**/*.css"],
+			"options": {
+				"singleQuote": false
+			}
+		}
+	]
+}
