@@ -1,4 +1,5 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
+
 import { DesignSystemPage } from '~/app/pages/DesignSystemPage'
 
 export const Route = createFileRoute('/design-system')({
@@ -8,5 +9,5 @@ export const Route = createFileRoute('/design-system')({
 			throw notFound()
 		}
 	},
-	component: DesignSystemPage
+	component: DesignSystemPage,
 })

@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
+
 import { AppShell } from '~/components/AppShell'
 import { LoadingState } from '~/components/LoadingState'
 
@@ -36,5 +37,5 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 				</AppShell>
 			</Suspense>
 		</ErrorBoundary>
-	)
+	),
 })

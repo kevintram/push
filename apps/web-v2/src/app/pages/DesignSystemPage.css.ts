@@ -1,4 +1,5 @@
 import { globalStyle, style } from '@vanilla-extract/css'
+
 import { vars } from '~/styles/theme.css'
 
 export const page = style({
@@ -10,9 +11,9 @@ export const page = style({
 	color: vars.color.foreground,
 	'@media': {
 		'(max-width: 900px)': {
-			gridTemplateColumns: '1fr'
-		}
-	}
+			gridTemplateColumns: '1fr',
+		},
+	},
 })
 
 export const sidebar = style({
@@ -32,15 +33,15 @@ export const sidebar = style({
 			height: 'auto',
 			borderRight: 0,
 			borderBottom: `1px solid ${vars.color.border}`,
-			paddingBlock: vars.space[4]
-		}
-	}
+			paddingBlock: vars.space[4],
+		},
+	},
 })
 
 export const sidebarHeader = style({
 	display: 'flex',
 	alignItems: 'center',
-	gap: vars.space[3]
+	gap: vars.space[3],
 })
 
 export const mark = style({
@@ -54,7 +55,7 @@ export const mark = style({
 	justifyContent: 'center',
 	fontSize: vars.fontSize.sm,
 	fontWeight: vars.fontWeight.bold,
-	lineHeight: 1
+	lineHeight: 1,
 })
 
 export const sidebarEyebrow = style({
@@ -62,14 +63,14 @@ export const sidebarEyebrow = style({
 	color: vars.color.mutedForeground,
 	fontSize: vars.fontSize.sm,
 	fontWeight: vars.fontWeight.medium,
-	lineHeight: 1.25
+	lineHeight: 1.25,
 })
 
 export const sidebarTitle = style({
 	margin: 0,
 	fontSize: vars.fontSize.lg,
 	fontWeight: vars.fontWeight.bold,
-	lineHeight: 1.2
+	lineHeight: 1.2,
 })
 
 export const navList = style({
@@ -81,9 +82,9 @@ export const navList = style({
 		'(max-width: 900px)': {
 			flexDirection: 'row',
 			overflowX: 'auto',
-			paddingBottom: vars.space[1]
-		}
-	}
+			paddingBottom: vars.space[1],
+		},
+	},
 })
 
 export const navLink = style({
@@ -101,18 +102,18 @@ export const navLink = style({
 	selectors: {
 		'&:hover': {
 			background: vars.color.surfaceHover,
-			color: vars.color.foreground
+			color: vars.color.foreground,
 		},
 		'&:focus-visible': {
 			outline: `2px solid ${vars.color.focusRing}`,
-			outlineOffset: 2
-		}
+			outlineOffset: 2,
+		},
 	},
 	'@media': {
 		'(max-width: 640px)': {
-			paddingInline: vars.space[2]
-		}
-	}
+			paddingInline: vars.space[2],
+		},
+	},
 })
 
 export const contentGrid = style({
@@ -126,19 +127,19 @@ export const contentGrid = style({
 	gap: vars.space[6],
 	'@media': {
 		'(max-width: 1100px)': {
-			gridTemplateColumns: '1fr'
+			gridTemplateColumns: '1fr',
 		},
 		'(max-width: 640px)': {
-			padding: vars.space[4]
-		}
-	}
+			padding: vars.space[4],
+		},
+	},
 })
 
 export const content = style({
 	minWidth: 0,
 	display: 'flex',
 	flexDirection: 'column',
-	gap: vars.space[6]
+	gap: vars.space[6],
 })
 
 export const hero = style({
@@ -146,7 +147,7 @@ export const hero = style({
 	display: 'flex',
 	flexDirection: 'column',
 	gap: vars.space[5],
-	borderBottom: `1px solid ${vars.color.border}`
+	borderBottom: `1px solid ${vars.color.border}`,
 })
 
 export const eyebrow = style({
@@ -155,13 +156,13 @@ export const eyebrow = style({
 	fontSize: vars.fontSize.sm,
 	fontWeight: vars.fontWeight.medium,
 	letterSpacing: 0,
-	textTransform: 'uppercase'
+	textTransform: 'uppercase',
 })
 
 export const heroCopy = style({
 	display: 'flex',
 	flexDirection: 'column',
-	gap: vars.space[3]
+	gap: vars.space[3],
 })
 
 export const heroTitle = style({
@@ -174,9 +175,9 @@ export const heroTitle = style({
 	overflowWrap: 'anywhere',
 	'@media': {
 		'(max-width: 640px)': {
-			fontSize: '2.75rem'
-		}
-	}
+			fontSize: '2.75rem',
+		},
+	},
 })
 
 export const heroText = style({
@@ -184,13 +185,13 @@ export const heroText = style({
 	maxWidth: 680,
 	color: vars.color.mutedForeground,
 	fontSize: vars.fontSize.lg,
-	lineHeight: 1.55
+	lineHeight: 1.55,
 })
 
 export const statusRow = style({
 	display: 'flex',
 	flexWrap: 'wrap',
-	gap: vars.space[2]
+	gap: vars.space[2],
 })
 
 export const statusPill = style({
@@ -205,26 +206,26 @@ export const statusPill = style({
 	gap: vars.space[2],
 	fontSize: vars.fontSize.sm,
 	fontWeight: vars.fontWeight.medium,
-	lineHeight: 1
+	lineHeight: 1,
 })
 
 globalStyle(`${statusPill} svg`, {
 	width: 16,
 	height: 16,
-	color: vars.color.focusRing
+	color: vars.color.focusRing,
 })
 
 export const section = style({
 	scrollMarginTop: vars.space[5],
 	display: 'flex',
 	flexDirection: 'column',
-	gap: vars.space[5]
+	gap: vars.space[5],
 })
 
 export const sectionHeader = style({
 	display: 'flex',
 	flexDirection: 'column',
-	gap: vars.space[2]
+	gap: vars.space[2],
 })
 
 export const sectionTitle = style({
@@ -232,7 +233,7 @@ export const sectionTitle = style({
 	fontSize: '2rem',
 	fontWeight: vars.fontWeight.bold,
 	letterSpacing: 0,
-	lineHeight: 1.1
+	lineHeight: 1.1,
 })
 
 export const sectionText = style({
@@ -240,7 +241,7 @@ export const sectionText = style({
 	maxWidth: 720,
 	color: vars.color.mutedForeground,
 	fontSize: vars.fontSize.md,
-	lineHeight: 1.6
+	lineHeight: 1.6,
 })
 
 export const inlineCode = style({
@@ -248,7 +249,7 @@ export const inlineCode = style({
 	borderRadius: vars.radius.sm,
 	background: vars.color.surfaceHover,
 	color: vars.color.foreground,
-	fontSize: '0.92em'
+	fontSize: '0.92em',
 })
 
 export const foundationGrid = style({
@@ -257,9 +258,9 @@ export const foundationGrid = style({
 	gap: vars.space[3],
 	'@media': {
 		'(max-width: 860px)': {
-			gridTemplateColumns: '1fr'
-		}
-	}
+			gridTemplateColumns: '1fr',
+		},
+	},
 })
 
 export const foundationCard = style({
@@ -268,7 +269,7 @@ export const foundationCard = style({
 	borderRadius: vars.radius.lg,
 	background: vars.color.surface,
 	display: 'flex',
-	gap: vars.space[3]
+	gap: vars.space[3],
 })
 
 export const foundationIcon = style({
@@ -280,26 +281,26 @@ export const foundationIcon = style({
 	display: 'inline-flex',
 	alignItems: 'center',
 	justifyContent: 'center',
-	flexShrink: 0
+	flexShrink: 0,
 })
 
 globalStyle(`${foundationIcon} svg`, {
 	width: 18,
-	height: 18
+	height: 18,
 })
 
 export const cardTitle = style({
 	margin: 0,
 	fontSize: vars.fontSize.md,
 	fontWeight: vars.fontWeight.bold,
-	lineHeight: 1.3
+	lineHeight: 1.3,
 })
 
 export const cardText = style({
 	margin: `${vars.space[1]} 0 0`,
 	color: vars.color.mutedForeground,
 	fontSize: vars.fontSize.sm,
-	lineHeight: 1.5
+	lineHeight: 1.5,
 })
 
 export const tokenSection = style({
@@ -309,14 +310,14 @@ export const tokenSection = style({
 	background: vars.color.surface,
 	display: 'flex',
 	flexDirection: 'column',
-	gap: vars.space[4]
+	gap: vars.space[4],
 })
 
 export const subsectionTitle = style({
 	margin: 0,
 	fontSize: vars.fontSize.lg,
 	fontWeight: vars.fontWeight.bold,
-	lineHeight: 1.25
+	lineHeight: 1.25,
 })
 
 export const colorGrid = style({
@@ -325,9 +326,9 @@ export const colorGrid = style({
 	gap: vars.space[3],
 	'@media': {
 		'(max-width: 760px)': {
-			gridTemplateColumns: '1fr'
-		}
-	}
+			gridTemplateColumns: '1fr',
+		},
+	},
 })
 
 export const colorToken = style({
@@ -335,28 +336,28 @@ export const colorToken = style({
 	display: 'grid',
 	gridTemplateColumns: '56px minmax(0, 1fr)',
 	gap: vars.space[3],
-	alignItems: 'center'
+	alignItems: 'center',
 })
 
 export const swatch = style({
 	width: 56,
 	height: 56,
 	border: `1px solid ${vars.color.border}`,
-	borderRadius: vars.radius.md
+	borderRadius: vars.radius.md,
 })
 
 export const tokenMeta = style({
 	minWidth: 0,
 	display: 'flex',
 	flexDirection: 'column',
-	gap: vars.space[1]
+	gap: vars.space[1],
 })
 
 export const tokenName = style({
 	color: vars.color.foreground,
 	fontSize: vars.fontSize.sm,
 	fontWeight: vars.fontWeight.medium,
-	lineHeight: 1.25
+	lineHeight: 1.25,
 })
 
 export const tokenValue = style({
@@ -365,20 +366,20 @@ export const tokenValue = style({
 	fontFamily:
 		'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
 	lineHeight: 1.35,
-	overflowWrap: 'anywhere'
+	overflowWrap: 'anywhere',
 })
 
 export const tokenUsage = style({
 	color: vars.color.mutedForeground,
 	fontSize: vars.fontSize.sm,
-	lineHeight: 1.35
+	lineHeight: 1.35,
 })
 
 export const table = style({
 	display: 'grid',
 	border: `1px solid ${vars.color.border}`,
 	borderRadius: vars.radius.md,
-	overflow: 'hidden'
+	overflow: 'hidden',
 })
 
 export const tableRow = style({
@@ -390,14 +391,14 @@ export const tableRow = style({
 	alignItems: 'center',
 	selectors: {
 		'& + &': {
-			borderTop: `1px solid ${vars.color.border}`
-		}
+			borderTop: `1px solid ${vars.color.border}`,
+		},
 	},
 	'@media': {
 		'(max-width: 760px)': {
-			gridTemplateColumns: '1fr'
-		}
-	}
+			gridTemplateColumns: '1fr',
+		},
+	},
 })
 
 export const splitGrid = style({
@@ -406,29 +407,29 @@ export const splitGrid = style({
 	gap: vars.space[4],
 	'@media': {
 		'(max-width: 860px)': {
-			gridTemplateColumns: '1fr'
-		}
-	}
+			gridTemplateColumns: '1fr',
+		},
+	},
 })
 
 export const scaleList = style({
 	display: 'flex',
 	flexDirection: 'column',
-	gap: vars.space[3]
+	gap: vars.space[3],
 })
 
 export const scaleRow = style({
 	display: 'grid',
 	gridTemplateColumns: '80px minmax(48px, 1fr) 72px',
 	gap: vars.space[3],
-	alignItems: 'center'
+	alignItems: 'center',
 })
 
 export const scaleBar = style({
 	height: 12,
 	minWidth: 4,
 	borderRadius: vars.radius.sm,
-	background: vars.color.focusRing
+	background: vars.color.focusRing,
 })
 
 export const radiusGrid = style({
@@ -437,21 +438,21 @@ export const radiusGrid = style({
 	gap: vars.space[3],
 	'@media': {
 		'(max-width: 640px)': {
-			gridTemplateColumns: '1fr'
-		}
-	}
+			gridTemplateColumns: '1fr',
+		},
+	},
 })
 
 export const radiusToken = style({
 	display: 'flex',
 	flexDirection: 'column',
-	gap: vars.space[2]
+	gap: vars.space[2],
 })
 
 export const radiusPreview = style({
 	height: 52,
 	border: `1px solid ${vars.color.border}`,
-	background: vars.color.surfaceHover
+	background: vars.color.surfaceHover,
 })
 
 export const componentPanel = style({
@@ -461,7 +462,7 @@ export const componentPanel = style({
 	background: vars.color.surface,
 	display: 'flex',
 	flexDirection: 'column',
-	gap: vars.space[5]
+	gap: vars.space[5],
 })
 
 export const componentPanelHeader = style({
@@ -471,9 +472,9 @@ export const componentPanelHeader = style({
 	alignItems: 'flex-start',
 	'@media': {
 		'(max-width: 640px)': {
-			flexDirection: 'column'
-		}
-	}
+			flexDirection: 'column',
+		},
+	},
 })
 
 export const buttonMatrix = style({
@@ -482,13 +483,13 @@ export const buttonMatrix = style({
 	gap: vars.space[3],
 	alignItems: 'center',
 	overflowX: 'auto',
-	paddingBottom: vars.space[1]
+	paddingBottom: vars.space[1],
 })
 
 export const matrixLabel = style({
 	color: vars.color.mutedForeground,
 	fontSize: vars.fontSize.sm,
-	fontWeight: vars.fontWeight.medium
+	fontWeight: vars.fontWeight.medium,
 })
 
 export const codeBlock = style({
@@ -501,20 +502,20 @@ export const codeBlock = style({
 	gap: vars.space[2],
 	color: vars.color.foreground,
 	fontSize: vars.fontSize.sm,
-	overflowX: 'auto'
+	overflowX: 'auto',
 })
 
 globalStyle(`${codeBlock} svg`, {
 	width: 16,
 	height: 16,
 	color: vars.color.focusRing,
-	flexShrink: 0
+	flexShrink: 0,
 })
 
 globalStyle(`${codeBlock} code`, {
 	fontFamily:
 		'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-	whiteSpace: 'nowrap'
+	whiteSpace: 'nowrap',
 })
 
 export const decisionList = style({
@@ -526,11 +527,11 @@ export const decisionList = style({
 	flexDirection: 'column',
 	gap: vars.space[3],
 	color: vars.color.mutedForeground,
-	lineHeight: 1.6
+	lineHeight: 1.6,
 })
 
 globalStyle(`${decisionList} p`, {
-	margin: 0
+	margin: 0,
 })
 
 export const rail = style({
@@ -542,23 +543,23 @@ export const rail = style({
 	gap: vars.space[3],
 	'@media': {
 		'(max-width: 1100px)': {
-			display: 'none'
-		}
-	}
+			display: 'none',
+		},
+	},
 })
 
 export const railPanel = style({
 	padding: vars.space[3],
 	border: `1px solid ${vars.color.border}`,
 	borderRadius: vars.radius.lg,
-	background: vars.color.surface
+	background: vars.color.surface,
 })
 
 export const railLabel = style({
 	margin: 0,
 	color: vars.color.mutedForeground,
 	fontSize: vars.fontSize.sm,
-	fontWeight: vars.fontWeight.medium
+	fontWeight: vars.fontWeight.medium,
 })
 
 export const railCode = style({
@@ -566,12 +567,13 @@ export const railCode = style({
 	display: 'block',
 	color: vars.color.foreground,
 	fontSize: vars.fontSize.sm,
-	fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace'
+	fontFamily:
+		'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
 })
 
 export const railValue = style({
 	margin: `${vars.space[2]} 0 0`,
 	color: vars.color.foreground,
 	fontSize: vars.fontSize.md,
-	fontWeight: vars.fontWeight.medium
+	fontWeight: vars.fontWeight.medium,
 })

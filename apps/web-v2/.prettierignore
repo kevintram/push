@@ -1,7 +1,0 @@
-coverage
-dist
-node_modules
-public
-src/app/routeTree.gen.ts
-pnpm-lock.yaml
-*.md

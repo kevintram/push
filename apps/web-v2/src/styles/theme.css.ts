@@ -19,26 +19,25 @@ export const vars = createGlobalTheme(':root', {
 		surfaceHover: 'oklch(94.90% 0.0083 91.48)',
 		border: 'oklch(88.59% 0.0171 88.01)',
 		input: 'oklch(92.81% 0.0153 90.24)',
-		focusRing: 'oklch(50.15% 0.0845 168.71)'
+		focusRing: 'oklch(50.15% 0.0845 168.71)',
 	},
 	font: {
-		family:
-			'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+		family: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 	},
 	fontSize: {
 		sm: '0.875rem',
 		md: '1rem',
-		lg: '1.125rem'
+		lg: '1.125rem',
 	},
 	fontWeight: {
 		regular: '400',
 		medium: '500',
-		bold: '750'
+		bold: '750',
 	},
 	radius: {
 		sm: '4px',
 		md: '6px',
-		lg: '8px'
+		lg: '8px',
 	},
 	space: {
 		1: '0.25rem',
@@ -46,6 +45,6 @@ export const vars = createGlobalTheme(':root', {
 		3: '0.75rem',
 		4: '1rem',
 		5: '1.5rem',
-		6: '2rem'
-	}
+		6: '2rem',
+	},
 })

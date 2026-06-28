@@ -1,13 +1,14 @@
 import { globalStyle } from '@vanilla-extract/css'
+
 import { vars } from './theme.css'
 
 globalStyle('*', {
-	boxSizing: 'border-box'
+	boxSizing: 'border-box',
 })
 
 globalStyle('html, body, #root', {
 	minHeight: '100%',
-	margin: 0
+	margin: 0,
 })
 
 globalStyle('body', {
@@ -16,9 +17,9 @@ globalStyle('body', {
 	fontFamily: vars.font.family,
 	textRendering: 'optimizeLegibility',
 	WebkitFontSmoothing: 'antialiased',
-	MozOsxFontSmoothing: 'grayscale'
+	MozOsxFontSmoothing: 'grayscale',
 })
 
 globalStyle('button, input, textarea, select', {
-	font: 'inherit'
+	font: 'inherit',
 })

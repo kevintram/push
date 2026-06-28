@@ -1,5 +1,6 @@
 import { createVar, globalStyle } from '@vanilla-extract/css'
-import { type RecipeVariants, recipe } from '@vanilla-extract/recipes'
+import { recipe, type RecipeVariants } from '@vanilla-extract/recipes'
+
 import { vars } from '~/styles/theme.css'
 
 const focusRing = `0 0 0 3px color-mix(in oklch, ${vars.color.focusRing} 50%, transparent)`
@@ -30,20 +31,20 @@ const buttonVariantRecipe = recipe({
 		selectors: {
 			'&:focus-visible': {
 				borderColor: vars.color.focusRing,
-				boxShadow: focusRing
+				boxShadow: focusRing,
 			},
 			'&:active:not([aria-haspopup])': {
-				translate: '0 1px'
+				translate: '0 1px',
 			},
 			'&:disabled': {
 				pointerEvents: 'none',
-				opacity: 0.5
+				opacity: 0.5,
 			},
 			'&[aria-invalid="true"]': {
 				borderColor: vars.color.destructive,
-				boxShadow: destructiveRing
-			}
-		}
+				boxShadow: destructiveRing,
+			},
+		},
 	},
 	variants: {
 		variant: {
@@ -52,9 +53,9 @@ const buttonVariantRecipe = recipe({
 				color: vars.color.primaryForeground,
 				selectors: {
 					'&:hover:not(:disabled)': {
-						background: vars.color.primaryHover
-					}
-				}
+						background: vars.color.primaryHover,
+					},
+				},
 			},
 			outline: {
 				borderColor: vars.color.border,
@@ -63,62 +64,62 @@ const buttonVariantRecipe = recipe({
 				selectors: {
 					'&:hover:not(:disabled)': {
 						background: vars.color.muted,
-						color: vars.color.foreground
+						color: vars.color.foreground,
 					},
 					'&[aria-expanded="true"]': {
 						background: vars.color.muted,
-						color: vars.color.foreground
-					}
-				}
+						color: vars.color.foreground,
+					},
+				},
 			},
 			secondary: {
 				background: vars.color.secondary,
 				color: vars.color.secondaryForeground,
 				selectors: {
 					'&:hover:not(:disabled)': {
-						background: vars.color.secondaryHover
+						background: vars.color.secondaryHover,
 					},
 					'&[aria-expanded="true"]': {
 						background: vars.color.secondary,
-						color: vars.color.secondaryForeground
-					}
-				}
+						color: vars.color.secondaryForeground,
+					},
+				},
 			},
 			ghost: {
 				color: vars.color.foreground,
 				selectors: {
 					'&:hover:not(:disabled)': {
 						background: vars.color.muted,
-						color: vars.color.foreground
+						color: vars.color.foreground,
 					},
 					'&[aria-expanded="true"]': {
 						background: vars.color.muted,
-						color: vars.color.foreground
-					}
-				}
+						color: vars.color.foreground,
+					},
+				},
 			},
 			destructive: {
 				background: vars.color.destructiveMuted,
 				color: vars.color.destructive,
 				selectors: {
 					'&:hover:not(:disabled)': {
-						background: `color-mix(in oklch, ${vars.color.destructiveMuted}, ${vars.color.destructive} 8%)`
+						background: `color-mix(in oklch, ${vars.color.destructiveMuted}, ${vars.color.destructive} 8%)`,
 					},
 					'&:focus-visible': {
 						borderColor: `color-mix(in oklch, ${vars.color.destructive}, transparent 60%)`,
-						boxShadow: destructiveRing
-					}
-				}
+						boxShadow: destructiveRing,
+					},
+				},
 			},
 			link: {
 				color: vars.color.primary,
 				textUnderlineOffset: 4,
 				selectors: {
 					'&:hover:not(:disabled)': {
-						textDecoration: 'underline'
-					}
-				}
-			}
+						textDecoration: 'underline',
+					},
+				},
+			},
 		},
 		size: {
 			default: {
@@ -127,12 +128,12 @@ const buttonVariantRecipe = recipe({
 				paddingInline: '0.625rem',
 				selectors: {
 					'&:has([data-icon="inline-end"])': {
-						paddingRight: vars.space[2]
+						paddingRight: vars.space[2],
 					},
 					'&:has([data-icon="inline-start"])': {
-						paddingLeft: vars.space[2]
-					}
-				}
+						paddingLeft: vars.space[2],
+					},
+				},
 			},
 			xs: {
 				vars: { [iconSize]: '12px' },
@@ -143,12 +144,12 @@ const buttonVariantRecipe = recipe({
 				fontSize: '0.75rem',
 				selectors: {
 					'&:has([data-icon="inline-end"])': {
-						paddingRight: '0.375rem'
+						paddingRight: '0.375rem',
 					},
 					'&:has([data-icon="inline-start"])': {
-						paddingLeft: '0.375rem'
-					}
-				}
+						paddingLeft: '0.375rem',
+					},
+				},
 			},
 			sm: {
 				vars: { [iconSize]: '14px' },
@@ -159,12 +160,12 @@ const buttonVariantRecipe = recipe({
 				fontSize: '0.8rem',
 				selectors: {
 					'&:has([data-icon="inline-end"])': {
-						paddingRight: '0.375rem'
+						paddingRight: '0.375rem',
 					},
 					'&:has([data-icon="inline-start"])': {
-						paddingLeft: '0.375rem'
-					}
-				}
+						paddingLeft: '0.375rem',
+					},
+				},
 			},
 			lg: {
 				height: 36,
@@ -172,38 +173,38 @@ const buttonVariantRecipe = recipe({
 				paddingInline: '0.625rem',
 				selectors: {
 					'&:has([data-icon="inline-end"])': {
-						paddingRight: vars.space[2]
+						paddingRight: vars.space[2],
 					},
 					'&:has([data-icon="inline-start"])': {
-						paddingLeft: vars.space[2]
-					}
-				}
+						paddingLeft: vars.space[2],
+					},
+				},
 			},
 			icon: {
 				width: 32,
-				height: 32
+				height: 32,
 			},
 			'icon-xs': {
 				vars: { [iconSize]: '12px' },
 				width: 24,
 				height: 24,
-				borderRadius: `min(${vars.radius.md}, 10px)`
+				borderRadius: `min(${vars.radius.md}, 10px)`,
 			},
 			'icon-sm': {
 				width: 28,
 				height: 28,
-				borderRadius: `min(${vars.radius.md}, 12px)`
+				borderRadius: `min(${vars.radius.md}, 12px)`,
 			},
 			'icon-lg': {
 				width: 36,
-				height: 36
-			}
-		}
+				height: 36,
+			},
+		},
 	},
 	defaultVariants: {
 		size: 'default',
-		variant: 'default'
-	}
+		variant: 'default',
+	},
 })
 
 // vanilla-extract recipe selectors cannot target descendants, so SVG defaults
@@ -213,7 +214,7 @@ globalStyle(`${buttonVariantRecipe.classNames.base} svg`, {
 	pointerEvents: 'none',
 	flexShrink: 0,
 	width: iconSize,
-	height: iconSize
+	height: iconSize,
 })
 
 export const buttonVariants = buttonVariantRecipe

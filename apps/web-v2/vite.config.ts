@@ -25,6 +25,11 @@ export default defineConfig(() => ({
 			autoCodeSplitting: true,
 			routesDirectory: './src/app/routes',
 			generatedRouteTree: './src/app/routeTree.gen.ts',
+			routeTreeFileHeader: [
+				'/* oxlint-disable */',
+				'// @ts-nocheck',
+				'// noinspection JSUnusedGlobalSymbols',
+			],
 		}),
 		vanillaExtractPlugin(),
 		react(),

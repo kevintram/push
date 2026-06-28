@@ -1,9 +1,10 @@
 import { Button as BaseButton } from '@base-ui/react/button'
 import clsx from 'clsx'
 import type { ComponentPropsWithoutRef } from 'react'
+
 import {
 	type ButtonVariants,
-	buttonVariants as buttonVariantClass
+	buttonVariants as buttonVariantClass,
 } from './Button.css'
 
 export type ButtonProps = ComponentPropsWithoutRef<typeof BaseButton> &
