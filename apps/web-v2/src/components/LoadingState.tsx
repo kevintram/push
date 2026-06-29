@@ -1,4 +1,6 @@
-import * as styles from './LoadingState.css'
+import * as stylex from '@stylexjs/stylex'
+
+import { styles } from './LoadingState.stylex'
 
 type LoadingStateProps = {
 	label: string
@@ -6,8 +8,8 @@ type LoadingStateProps = {
 
 export function LoadingState({ label }: LoadingStateProps) {
 	return (
-		<div className={styles.root}>
-			<div aria-hidden={true} className={styles.spinner} />
+		<div {...stylex.props(styles.root)}>
+			<div aria-hidden={true} {...stylex.props(styles.spinner)} />
 			<span>{label}</span>
 		</div>
 	)

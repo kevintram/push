@@ -30,12 +30,12 @@ function NotFoundView() {
 export const Route = createRootRouteWithContext<RouterContext>()({
 	notFoundComponent: NotFoundView,
 	component: () => (
-		<ErrorBoundary fallbackRender={renderError}>
-			<Suspense fallback={<LoadingState label='Loading' />}>
-				<AppShell>
+		<AppShell>
+			<ErrorBoundary fallbackRender={renderError}>
+				<Suspense fallback={<LoadingState label='Loading' />}>
 					<Outlet />
-				</AppShell>
-			</Suspense>
-		</ErrorBoundary>
+				</Suspense>
+			</ErrorBoundary>
+		</AppShell>
 	),
 })

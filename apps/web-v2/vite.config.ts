@@ -3,8 +3,8 @@
 import { execSync } from 'node:child_process'
 import path from 'node:path'
 
+import stylex from '@stylexjs/unplugin'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
-import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
@@ -31,7 +31,9 @@ export default defineConfig(() => ({
 				'// noinspection JSUnusedGlobalSymbols',
 			],
 		}),
-		vanillaExtractPlugin(),
+		stylex.vite({
+			useCSSLayers: true,
+		}),
 		react(),
 	],
 	define: {
@@ -48,7 +50,7 @@ export default defineConfig(() => ({
 		coverage: {
 			enabled: true,
 			exclude: [
-				'src/**/*.css.ts',
+				'src/**/*.stylex.ts',
 				'src/**/*.d.ts',
 				'src/main.tsx',
 				'src/testing/**',
