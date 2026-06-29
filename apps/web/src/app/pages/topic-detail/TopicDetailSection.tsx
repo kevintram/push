@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { Trash2 } from 'lucide-react'
 import { type ChangeEventHandler, useCallback, useState } from 'react'
 import { toast } from 'sonner'
+
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -11,23 +12,24 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogMedia,
-	AlertDialogTitle
+	AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import { useAutoSave } from '~/hooks/useAutoSave'
-import type { ReviewCard as ReviewCardModel } from '~/modules/review-cards/types/review-card.types'
+import { type ReviewCard as ReviewCardModel } from '~/modules/review-cards/types/review-card.types'
 import { useCreateTopic } from '~/modules/topics/api/createTopic'
 import { useDeleteTopic } from '~/modules/topics/api/deleteTopic'
 import { useUpdateTopic } from '~/modules/topics/api/updateTopic'
-import type {
-	TopicDetailReviewCardControlsVariant,
-	TopicDetailReviewCardFilter
+
+import {
+	type TopicDetailReviewCardControlsVariant,
+	type TopicDetailReviewCardFilter,
 } from './shared'
-import { TopicDetailNestedSectionView } from './TopicDetailNestedSectionView'
 import { getTopicDetailSectionDisplayLevel } from './topicDetailLayout'
-import type { TopicDetailSectionNode } from './topicDetailStructure'
+import { TopicDetailNestedSectionView } from './TopicDetailNestedSectionView'
+import { type TopicDetailSectionNode } from './topicDetailStructure'
 import {
 	getTopicDetailLabel,
-	getTopicDetailSectionId
+	getTopicDetailSectionId,
 } from './topicDetailStructure'
 import { getTopicDetailSectionPresentation } from './topicDetailTheme'
 import { useTopicDetailSectionPanels } from './useTopicDetailSectionPanels'
@@ -43,16 +45,16 @@ type TopicDetailSectionProps = {
 	onSubtopicCreated: (parentTopicId: number, createdTopicId: number) => void
 	onSectionFilterChange: (
 		topicId: number,
-		filter: TopicDetailReviewCardFilter
+		filter: TopicDetailReviewCardFilter,
 	) => void
 	isReviewCardsLoading: boolean
 	registerSectionHeadingRef: (
 		topicId: number,
-		element: HTMLElement | null
+		element: HTMLElement | null,
 	) => void
 	registerSectionTitleRef: (
 		topicId: number,
-		element: HTMLTextAreaElement | null
+		element: HTMLTextAreaElement | null,
 	) => void
 	registerSectionRef: (topicId: number, element: HTMLElement | null) => void
 	reviewCardControlsVariant: TopicDetailReviewCardControlsVariant
@@ -82,7 +84,7 @@ export function TopicDetailSection({
 	searchFilter,
 	section,
 	topicReviewCardsById,
-	toggleSection
+	toggleSection,
 }: TopicDetailSectionProps) {
 	const navigate = useNavigate()
 	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
@@ -100,7 +102,7 @@ export function TopicDetailSection({
 	const presentation = getTopicDetailSectionPresentation(displayLevel)
 	const sectionLabel = getTopicDetailLabel(
 		section.topic.title,
-		section.topic.body
+		section.topic.body,
 	)
 	const saveTopicTitle = useCallback(
 		async (title: string) => {
@@ -117,18 +119,18 @@ export function TopicDetailSection({
 			onPreserveSectionOffset,
 			section.topic.id,
 			section.topic.title,
-			updateTopicAsync
-		]
+			updateTopicAsync,
+		],
 	)
 
 	const {
 		value: title,
 		onChange: onTitleChange,
-		flush: flushTitle
+		flush: flushTitle,
 	} = useAutoSave({
 		initialValue: section.topic.title,
 		onSave: saveTopicTitle,
-		key: `topic-document-title-${section.topic.id}`
+		key: `topic-document-title-${section.topic.id}`,
 	})
 	const handleTitleChange: ChangeEventHandler<HTMLTextAreaElement> =
 		useCallback(
@@ -136,7 +138,7 @@ export function TopicDetailSection({
 				onFreshTopicInteraction(section.topic.id)
 				onTitleChange(event)
 			},
-			[onFreshTopicInteraction, onTitleChange, section.topic.id]
+			[onFreshTopicInteraction, onTitleChange, section.topic.id],
 		)
 
 	const handleCreateSubtopic = async () => {
@@ -146,7 +148,7 @@ export function TopicDetailSection({
 			const created = await createTopicAsync({
 				title: '',
 				body: '',
-				parent_id: section.topic.id
+				parent_id: section.topic.id,
 			})
 			onSubtopicCreated(section.topic.id, created.id)
 		} catch {
@@ -162,8 +164,8 @@ export function TopicDetailSection({
 				...(searchFilter === 'all' ? {} : { filter: searchFilter }),
 				...(reviewCardControlsVariant === 'compact'
 					? { controls: reviewCardControlsVariant }
-					: {})
-			}
+					: {}),
+			},
 		})
 	}
 
@@ -176,7 +178,9 @@ export function TopicDetailSection({
 			toast.success('Topic deleted')
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : 'Failed to delete topic'
+				error instanceof Error
+					? error.message
+					: 'Failed to delete topic',
 			)
 		}
 	}
@@ -195,7 +199,7 @@ export function TopicDetailSection({
 		section,
 		sectionLabel,
 		isReviewCardsLoading,
-		topicReviewCardsById
+		topicReviewCardsById,
 	})
 
 	return (
@@ -208,7 +212,9 @@ export function TopicDetailSection({
 			<div className={presentation.sectionTopSpacingClassName}>
 				<TopicDetailNestedSectionView
 					bodyPanel={bodyPanel}
-					contentTopSpacingClassName={presentation.contentTopSpacingClassName}
+					contentTopSpacingClassName={
+						presentation.contentTopSpacingClassName
+					}
 					flushTitle={flushTitle}
 					headingClassName={presentation.headingClassName}
 					isCollapsed={isCollapsed}
@@ -242,16 +248,28 @@ export function TopicDetailSection({
 								globalFilter={globalFilter}
 								isReviewCardsLoading={isReviewCardsLoading}
 								key={childSection.topic.id}
-								onFreshTopicInteraction={onFreshTopicInteraction}
+								onFreshTopicInteraction={
+									onFreshTopicInteraction
+								}
 								onOpenReviewCard={onOpenReviewCard}
-								onPreserveSectionOffset={onPreserveSectionOffset}
+								onPreserveSectionOffset={
+									onPreserveSectionOffset
+								}
 								onSectionFilterChange={onSectionFilterChange}
 								onSubtopicCreated={onSubtopicCreated}
-								registerSectionHeadingRef={registerSectionHeadingRef}
+								registerSectionHeadingRef={
+									registerSectionHeadingRef
+								}
 								registerSectionRef={registerSectionRef}
-								registerSectionTitleRef={registerSectionTitleRef}
-								resolvedFilterByTopicId={resolvedFilterByTopicId}
-								reviewCardControlsVariant={reviewCardControlsVariant}
+								registerSectionTitleRef={
+									registerSectionTitleRef
+								}
+								resolvedFilterByTopicId={
+									resolvedFilterByTopicId
+								}
+								reviewCardControlsVariant={
+									reviewCardControlsVariant
+								}
 								searchFilter={searchFilter}
 								section={childSection}
 								toggleSection={toggleSection}

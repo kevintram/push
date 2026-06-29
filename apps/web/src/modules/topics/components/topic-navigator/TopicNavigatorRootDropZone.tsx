@@ -1,6 +1,8 @@
 import { useDroppable } from '@dnd-kit/core'
+
 import { cn } from '~/lib/utils'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
 import { canReparentTopic } from './topicNavigatorUtils'
 
 type TopicNavigatorRootDropZoneProps = {
@@ -16,7 +18,7 @@ export function TopicNavigatorRootDropZone({
 	ancestorIdsById,
 	className,
 	id,
-	nodeById
+	nodeById,
 }: TopicNavigatorRootDropZoneProps) {
 	const canDropToRoot =
 		activeDragTopicId != null &&
@@ -24,12 +26,12 @@ export function TopicNavigatorRootDropZone({
 			draggedTopicId: activeDragTopicId,
 			nextParentId: null,
 			ancestorIdsById,
-			nodeById
+			nodeById,
 		})
 
 	const { isOver, setNodeRef } = useDroppable({
 		id,
-		disabled: !canDropToRoot
+		disabled: !canDropToRoot,
 	})
 
 	if (activeDragTopicId == null) return null
@@ -42,7 +44,7 @@ export function TopicNavigatorRootDropZone({
 				canDropToRoot && 'border-border/80 bg-muted/30',
 				isOver &&
 					canDropToRoot &&
-					'border-foreground/30 bg-accent text-foreground'
+					'border-foreground/30 bg-accent text-foreground',
 			)}
 			ref={setNodeRef}
 		>

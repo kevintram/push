@@ -1,4 +1,5 @@
 import { createContext, useCallback, useRef, useState } from 'react'
+
 import { ReviewDialog } from '../components/ReviewDialog'
 
 interface OpenReviewDialogOptions {
@@ -8,7 +9,7 @@ interface OpenReviewDialogOptions {
 interface ReviewDialogContextValue {
 	openReviewDialog: (
 		reviewId: number,
-		options?: OpenReviewDialogOptions
+		options?: OpenReviewDialogOptions,
 	) => void
 	closeReviewDialog: () => void
 }
@@ -17,7 +18,7 @@ export const ReviewDialogContext =
 	createContext<ReviewDialogContextValue | null>(null)
 
 export function ReviewDialogProvider({
-	children
+	children,
 }: {
 	children: React.ReactNode
 }) {
@@ -31,7 +32,7 @@ export function ReviewDialogProvider({
 			setReviewId(id)
 			setIsOpen(true)
 		},
-		[]
+		[],
 	)
 
 	const closeReviewDialog = useCallback(() => {

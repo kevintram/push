@@ -1,7 +1,7 @@
-import type { ReviewCardStatusBadge } from '../types/status-badge.types'
+import { type ReviewCardStatusBadge } from '../types/status-badge.types'
 
 export function orderReviewCardStatusBadges(
-	badges: Array<ReviewCardStatusBadge>
+	badges: Array<ReviewCardStatusBadge>,
 ): Array<ReviewCardStatusBadge> {
 	if (badges.length <= 1) return badges
 

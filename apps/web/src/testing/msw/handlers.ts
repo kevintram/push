@@ -1,4 +1,5 @@
-import { delay, HttpResponse, http } from 'msw'
+import { delay, http, HttpResponse } from 'msw'
+
 import fruits from './data/fruits.json' with { type: 'json' }
 
 export const handlers = [
@@ -12,13 +13,13 @@ export const handlers = [
 			due_today_count: 0,
 			due_next_seven_days_count: 0,
 			new_count: 0,
-			as_of: '2026-03-05'
-		})
+			as_of: '2026-03-05',
+		}),
 	),
 	http.get('*/review-cards/flagged-summary/', () =>
 		HttpResponse.json({
-			flagged_count: 0
-		})
+			flagged_count: 0,
+		}),
 	),
 	http.get('*/topics/', ({ request }) => {
 		const url = new URL(request.url)
@@ -29,5 +30,5 @@ export const handlers = [
 		) {
 			return HttpResponse.json([])
 		}
-	})
+	}),
 ]

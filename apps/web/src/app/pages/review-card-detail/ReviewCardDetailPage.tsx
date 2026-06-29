@@ -1,10 +1,10 @@
 import { ReviewCardDetailSurface } from './ReviewCardDetailSurface'
-import type { ReviewCardDetailTab } from './shared'
+import { type ReviewCardDetailTab } from './shared'
 
 export function ReviewCardDetailPage({
 	reviewCardId,
 	activeTab,
-	onActiveTabChange
+	onActiveTabChange,
 }: {
 	reviewCardId: number
 	activeTab?: ReviewCardDetailTab | string

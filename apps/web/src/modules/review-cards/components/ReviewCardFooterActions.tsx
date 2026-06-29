@@ -1,5 +1,5 @@
 import { Flag, MoreHorizontal, Sunset, Trash2, X } from 'lucide-react'
-import type { MouseEvent } from 'react'
+import { type MouseEvent } from 'react'
 
 import { Button } from '~/components/ui/button'
 import { CardFooter } from '~/components/ui/card'
@@ -7,10 +7,11 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
+
 import { ReviewsMenu } from '../../reviews/components/reviews-menu/ReviewsMenu'
-import type { ReviewCard as ReviewCardModel } from '../types/review-card.types'
+import { type ReviewCard as ReviewCardModel } from '../types/review-card.types'
 import { FLAGGED_ICON_CLASSNAME } from './reviewCardShared'
 
 type ReviewCardFooterActionsProps = {
@@ -38,7 +39,7 @@ export function ReviewCardFooterActions({
 	onToggleRetired,
 	onTriggerReviewsPrefetch,
 	removeFromTabLabel,
-	reviewCard
+	reviewCard,
 }: ReviewCardFooterActionsProps) {
 	const iconButtonClassName = isUpdatingReviewCard
 		? 'rounded-full opacity-50'
@@ -62,13 +63,15 @@ export function ReviewCardFooterActions({
 				triggerCounts={{
 					pendingCount: reviewCard.reviews_pending_count ?? 0,
 					overdueCount: reviewCard.reviews_overdue_count ?? 0,
-					dueTodayCount: reviewCard.reviews_due_today_count ?? 0
+					dueTodayCount: reviewCard.reviews_due_today_count ?? 0,
 				}}
 			/>
 			<div className='flex-1' />
 			<div className='flex items-center gap-0.5'>
 				<Button
-					aria-label={isFlagged ? 'Unflag this item' : 'Flag this item'}
+					aria-label={
+						isFlagged ? 'Unflag this item' : 'Flag this item'
+					}
 					aria-pressed={isFlagged}
 					className={iconButtonClassName}
 					onClick={onToggleFlag}
@@ -78,7 +81,9 @@ export function ReviewCardFooterActions({
 				>
 					<Flag
 						className={
-							isFlagged ? FLAGGED_ICON_CLASSNAME : 'text-muted-foreground'
+							isFlagged
+								? FLAGGED_ICON_CLASSNAME
+								: 'text-muted-foreground'
 						}
 					/>
 				</Button>
@@ -115,7 +120,11 @@ export function ReviewCardFooterActions({
 							</Button>
 						}
 					/>
-					<DropdownMenuContent align='end' side='bottom' sideOffset={2}>
+					<DropdownMenuContent
+						align='end'
+						side='bottom'
+						sideOffset={2}
+					>
 						{onRemoveFromTab ? (
 							<DropdownMenuItem
 								disabled={isRemovingFromTab}

@@ -1,96 +1,100 @@
 ---
-import "../styles/global.css";
+import '../styles/global.css'
 // Component Imports
 // import Button from "../components/Button.astro";
-import { Button } from "../components/ui/button";
+import { Button } from '../components/ui/button'
 // Full Astro Component Syntax:
 // https://docs.astro.build/basics/astro-components/
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <title>3gulp</title>
+<html lang='en'>
+	<head>
+		<meta charset='utf-8' />
+		<meta name='viewport' content='width=device-width' />
+		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
+		<meta name='generator' content={Astro.generator} />
+		<title>3gulp</title>
 
-    <script is:inline>
-      function applyTheme() {
-        const isDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        document.documentElement.classList.toggle("dark", isDark);
-      }
+		<script is:inline>
+			function applyTheme() {
+				const isDark = window.matchMedia(
+					'(prefers-color-scheme: dark)',
+				).matches
+				document.documentElement.classList.toggle('dark', isDark)
+			}
 
-      // Apply immediately
-      applyTheme();
+			// Apply immediately
+			applyTheme()
 
-      // Listen for system changes
-      window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .addEventListener("change", applyTheme);
-    </script>
+			// Listen for system changes
+			window
+				.matchMedia('(prefers-color-scheme: dark)')
+				.addEventListener('change', applyTheme)
+		</script>
 
-    <script
-      is:inline
-      define:vars={{
-        appUrl: import.meta.env.PUBLIC_APP_URL,
-        apiUrl: import.meta.env.PUBLIC_API_URL,
-      }}
-    >
-      // Redirect authenticated users to the web app.
-      // Always ask the API to validate or refresh the sealed session cookie.
-      if (apiUrl) {
-        var params = new URLSearchParams(window.location.search);
-        if (!params.has("checked")) {
-          var fallback = encodeURIComponent(
-            window.location.origin + window.location.pathname + "?checked=1",
-          );
-          window.location.replace(apiUrl + "/auth/check/?fallback=" + fallback);
-        } else {
-          history.replaceState({}, "", window.location.pathname);
-        }
-      }
-    </script>
-  </head>
+		<script
+			is:inline
+			define:vars={{
+				appUrl: import.meta.env.PUBLIC_APP_URL,
+				apiUrl: import.meta.env.PUBLIC_API_URL,
+			}}
+		>
+			// Redirect authenticated users to the web app.
+			// Always ask the API to validate or refresh the sealed session cookie.
+			if (apiUrl) {
+				var params = new URLSearchParams(window.location.search)
+				if (!params.has('checked')) {
+					var fallback = encodeURIComponent(
+						window.location.origin +
+							window.location.pathname +
+							'?checked=1',
+					)
+					window.location.replace(
+						apiUrl + '/auth/check/?fallback=' + fallback,
+					)
+				} else {
+					history.replaceState({}, '', window.location.pathname)
+				}
+			}
+		</script>
+	</head>
 
-  <body>
-    <div class="grid place-items-center h-screen content-center">
-      <div class="flex flex-col relative gap-4 items-center">
-        <span class="text-9xl font-semibold absolute -top-48">3gulp</span>
-        <Button>Login</Button>
-        <p id="login-error" class="hidden text-sm text-red-600">
-          Something has gone wrong
-        </p>
-      </div>
-    </div>
-  </body>
+	<body>
+		<div class='grid place-items-center h-screen content-center'>
+			<div class='flex flex-col relative gap-4 items-center'>
+				<span class='text-9xl font-semibold absolute -top-48'
+					>3gulp</span
+				>
+				<Button>Login</Button>
+				<p id='login-error' class='hidden text-sm text-red-600'>
+					Something has gone wrong
+				</p>
+			</div>
+		</div>
+	</body>
 
-  <script>
-    import confetti from "canvas-confetti";
-    const button = document.body.querySelector("button");
-    const errorText = document.getElementById("login-error");
-    const apiUrl = import.meta.env.PUBLIC_API_URL;
-    const appUrl = import.meta.env.PUBLIC_APP_URL;
-    const loginUrl = apiUrl
-      ? `${apiUrl.replace(/\/$/, "")}/login/`
-      : appUrl;
+	<script>
+		import confetti from 'canvas-confetti'
+		const button = document.body.querySelector('button')
+		const errorText = document.getElementById('login-error')
+		const apiUrl = import.meta.env.PUBLIC_API_URL
+		const appUrl = import.meta.env.PUBLIC_APP_URL
+		const loginUrl = apiUrl ? `${apiUrl.replace(/\/$/, '')}/login/` : appUrl
 
-    if (button) {
-      button.addEventListener("click", () => {
-        if (!loginUrl) {
-          if (errorText) {
-            errorText.classList.remove("hidden");
-          }
-          return;
-        }
+		if (button) {
+			button.addEventListener('click', () => {
+				if (!loginUrl) {
+					if (errorText) {
+						errorText.classList.remove('hidden')
+					}
+					return
+				}
 
-        confetti();
-        setTimeout(() => {
-          window.location.href = loginUrl;
-        }, 1000);
-      });
-    }
-  </script>
+				confetti()
+				setTimeout(() => {
+					window.location.href = loginUrl
+				}, 1000)
+			})
+		}
+	</script>
 </html>

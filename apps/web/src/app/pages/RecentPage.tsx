@@ -1,10 +1,11 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Clock } from 'lucide-react'
 import { type ReactNode, useMemo, useState } from 'react'
+
 import { PageLayout } from '~/app/layouts/PageLayout'
 import {
 	EntityTypeFilter,
-	type EntityTypeFilterValue
+	type EntityTypeFilterValue,
 } from '~/components/EntityTypeFilter'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import {
@@ -12,7 +13,7 @@ import {
 	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
-	EmptyTitle
+	EmptyTitle,
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { ReviewCard } from '~/modules/review-cards/components/ReviewCard'
@@ -22,14 +23,14 @@ import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
 	estimateReviewCardSize,
-	estimateTopicCardSize
+	estimateTopicCardSize,
 } from '~/utils/estimateMasonryItemSize'
 import { groupByDate, toEntityEntries } from '~/utils/groupByDate'
 
 const RECENT_LIMIT = 50
 
 function filterToEntityTypes(
-	filter: EntityTypeFilterValue
+	filter: EntityTypeFilterValue,
 ): string | undefined {
 	if (filter === 'all') return
 	if (filter === 'topic') return 'topic'
@@ -39,16 +40,17 @@ function filterToEntityTypes(
 
 export function RecentPage() {
 	const navigate = useNavigate()
-	const [activeFilter, setActiveFilter] = useState<EntityTypeFilterValue>('all')
+	const [activeFilter, setActiveFilter] =
+		useState<EntityTypeFilterValue>('all')
 
 	const { data: searchResults = [], isLoading } = useSearchAll({
 		limit: RECENT_LIMIT,
-		entityTypes: filterToEntityTypes(activeFilter)
+		entityTypes: filterToEntityTypes(activeFilter),
 	})
 
 	const sections = useMemo(
 		() => groupByDate(toEntityEntries(searchResults)),
-		[searchResults]
+		[searchResults],
 	)
 
 	let body: ReactNode
@@ -76,11 +78,23 @@ export function RecentPage() {
 						<h3 className='font-bold text-xl'>{section.label}</h3>
 						<MasonryLayout
 							estimateItemSize={(item, _index, laneWidth) => {
-								if (item.entity_type === 'topic' && item.topic) {
-									return estimateTopicCardSize(item.topic, laneWidth)
+								if (
+									item.entity_type === 'topic' &&
+									item.topic
+								) {
+									return estimateTopicCardSize(
+										item.topic,
+										laneWidth,
+									)
 								}
-								if (item.entity_type === 'review_card' && item.review_card) {
-									return estimateReviewCardSize(item.review_card, laneWidth)
+								if (
+									item.entity_type === 'review_card' &&
+									item.review_card
+								) {
+									return estimateReviewCardSize(
+										item.review_card,
+										laneWidth,
+									)
 								}
 								return 120
 							}}
@@ -102,7 +116,10 @@ export function RecentPage() {
 											onClick={() =>
 												navigate({
 													to: '/topics/$topicId',
-													params: { topicId: topic.id.toString() }
+													params: {
+														topicId:
+															topic.id.toString(),
+													},
 												})
 											}
 											topic={topic}
@@ -110,16 +127,20 @@ export function RecentPage() {
 									)
 								}
 
-								if (item.entity_type === 'review_card' && reviewCard) {
+								if (
+									item.entity_type === 'review_card' &&
+									reviewCard
+								) {
 									return (
 										<ReviewCard
 											onClick={() =>
 												navigate({
 													to: '/review-cards/$reviewCardId',
 													params: {
-														reviewCardId: reviewCard.id.toString()
+														reviewCardId:
+															reviewCard.id.toString(),
 													},
-													search: { tab: 'home' }
+													search: { tab: 'home' },
 												})
 											}
 											reviewCard={reviewCard}

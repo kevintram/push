@@ -1,13 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
+
 import { ReviewCardFlaggedSummarySchema } from '../types/review-card.schemas'
-import type { ReviewCardFlaggedSummary } from '../types/review-card.types'
+import { type ReviewCardFlaggedSummary } from '../types/review-card.types'
 import { reviewCardKeys } from './queryKeys'
 
 export async function getReviewCardFlaggedSummary(): Promise<ReviewCardFlaggedSummary> {
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/review-cards/flagged-summary/`
+		`${import.meta.env.VITE_API_URL}/review-cards/flagged-summary/`,
 	)
 
 	if (!response.ok) {
@@ -29,6 +31,6 @@ export function useReviewCardFlaggedSummary() {
 	return useQuery({
 		queryKey: reviewCardKeys.flaggedSummary(),
 		queryFn: getReviewCardFlaggedSummary,
-		staleTime: 30_000
+		staleTime: 30_000,
 	})
 }

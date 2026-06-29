@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import { useTopicTreeActions } from '~/modules/topics/hooks/useTopicTreeActions'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
 
 type UseTopicDetailOutlineOptions = {
 	ancestorIdsById: Map<number, Array<number>>
 	nodeById: Map<number, TopicTreeNode>
 	onCreateSubtopicCreated?: (
 		parentTopicId: number,
-		createdTopicId: number
+		createdTopicId: number,
 	) => void | Promise<void>
 	outlineRootNode: TopicTreeNode | null
 	pendingCreatedParentTopicId?: number | null
@@ -20,7 +21,7 @@ export function useTopicDetailOutline({
 	onCreateSubtopicCreated,
 	outlineRootNode,
 	pendingCreatedParentTopicId = null,
-	visibleSectionIds
+	visibleSectionIds,
 }: UseTopicDetailOutlineOptions) {
 	const rootTopicId = outlineRootNode?.id ?? null
 	const suppressSelectionRef = useRef(false)
@@ -61,10 +62,10 @@ export function useTopicDetailOutline({
 	}, [outlineRootNode])
 	const collapsibleTopicIds = useMemo(
 		() => defaultExpandedIds,
-		[defaultExpandedIds]
+		[defaultExpandedIds],
 	)
 	const [expandedIds, setExpandedIds] = useState<Array<number>>(
-		() => defaultExpandedIds
+		() => defaultExpandedIds,
 	)
 	const [manuallyCollapsedIds, setManuallyCollapsedIds] = useState<
 		Array<number>
@@ -87,19 +88,19 @@ export function useTopicDetailOutline({
 	const expandedIdSet = useMemo(() => new Set(expandedIds), [expandedIds])
 	const manuallyCollapsedIdSet = useMemo(
 		() => new Set(manuallyCollapsedIds),
-		[manuallyCollapsedIds]
+		[manuallyCollapsedIds],
 	)
 
 	const ensureExpanded = useCallback((topicId: number) => {
 		setManuallyCollapsedIds(previousCollapsedIds =>
 			previousCollapsedIds.includes(topicId)
 				? previousCollapsedIds.filter(id => id !== topicId)
-				: previousCollapsedIds
+				: previousCollapsedIds,
 		)
 		setExpandedIds(previousExpandedIds =>
 			previousExpandedIds.includes(topicId)
 				? previousExpandedIds
-				: [...previousExpandedIds, topicId]
+				: [...previousExpandedIds, topicId],
 		)
 	}, [])
 
@@ -138,7 +139,7 @@ export function useTopicDetailOutline({
 		isDeletingTopic,
 		pendingDeleteTopic,
 		pendingDeleteTopicId,
-		setPendingDeleteTopicId
+		setPendingDeleteTopicId,
 	} = useTopicTreeActions({
 		activeTopicId: outlineRootNode?.id,
 		ancestorIdsById,
@@ -147,7 +148,7 @@ export function useTopicDetailOutline({
 		onAfterCreateSubtopic: async (parentTopicId, createdTopicId) => {
 			ensureExpanded(parentTopicId)
 			await onCreateSubtopicCreated?.(parentTopicId, createdTopicId)
-		}
+		},
 	})
 
 	useEffect(() => {
@@ -156,12 +157,15 @@ export function useTopicDetailOutline({
 	}, [ensureExpanded, pendingCreatedParentTopicId])
 
 	useEffect(() => {
-		const didRootTopicChange = previousRootTopicIdRef.current !== rootTopicId
+		const didRootTopicChange =
+			previousRootTopicIdRef.current !== rootTopicId
 		previousRootTopicIdRef.current = rootTopicId
 
 		setExpandedIds(previousExpandedIds => {
 			if (rootTopicId == null) {
-				return previousExpandedIds.length === 0 ? previousExpandedIds : []
+				return previousExpandedIds.length === 0
+					? previousExpandedIds
+					: []
 			}
 
 			if (didRootTopicChange) {
@@ -169,7 +173,7 @@ export function useTopicDetailOutline({
 			}
 
 			const nextExpandedIds = previousExpandedIds.filter(topicId =>
-				subtreeTopicIds.has(topicId)
+				subtreeTopicIds.has(topicId),
 			)
 			return nextExpandedIds.length === previousExpandedIds.length
 				? previousExpandedIds
@@ -178,7 +182,9 @@ export function useTopicDetailOutline({
 
 		setManuallyCollapsedIds(previousCollapsedIds => {
 			if (rootTopicId == null) {
-				return previousCollapsedIds.length === 0 ? previousCollapsedIds : []
+				return previousCollapsedIds.length === 0
+					? previousCollapsedIds
+					: []
 			}
 
 			if (didRootTopicChange) {
@@ -186,7 +192,7 @@ export function useTopicDetailOutline({
 			}
 
 			const nextCollapsedIds = previousCollapsedIds.filter(topicId =>
-				subtreeTopicIds.has(topicId)
+				subtreeTopicIds.has(topicId),
 			)
 			return nextCollapsedIds.length === previousCollapsedIds.length
 				? previousCollapsedIds
@@ -225,6 +231,6 @@ export function useTopicDetailOutline({
 		setPendingDeleteTopicId,
 		collapseAll,
 		suppressSelectionRef,
-		toggleExpanded
+		toggleExpanded,
 	}
 }

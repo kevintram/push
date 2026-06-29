@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
@@ -8,7 +9,7 @@ import { useReviewCard } from '~/modules/review-cards/api/getReviewCard'
 import { useUpdateReviewCard } from '~/modules/review-cards/api/updateReviewCard'
 import {
 	toFreshnessTier,
-	toReviewCardStatusBadge
+	toReviewCardStatusBadge,
 } from '~/modules/review-cards/components/reviewCardShared'
 import { consumeFocusNewReviewCardPrimaryText } from '~/modules/review-cards/createReviewCardIntent'
 import { useDeleteReviewCardWithUndo } from '~/modules/review-cards/hooks/useDeleteReviewCardWithUndo'
@@ -16,24 +17,25 @@ import { hasScheduledDueReviews } from '~/modules/review-cards/utils/hasSchedule
 import { orderReviewCardStatusBadges } from '~/modules/review-cards/utils/orderReviewCardStatusBadges'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
 import { useReviewsByReviewCard } from '~/modules/reviews/api/getReviews'
-import type { ReviewRatingState } from '~/modules/reviews/components/reviewRatingOptions'
+import { type ReviewRatingState } from '~/modules/reviews/components/reviewRatingOptions'
 import { useDetailReviewCounts } from '~/modules/reviews/hooks/useDetailReviewCounts'
 import { useReviewDialog } from '~/modules/reviews/hooks/useReviewDialog'
 import {
 	getLatestCompletedReview,
-	splitReviews
+	splitReviews,
 } from '~/modules/reviews/utils/reviewCollections'
 import {
 	getReviewCreatedToastActionLabel,
-	getReviewCreatedToastDescription
+	getReviewCreatedToastDescription,
 } from '~/modules/reviews/utils/reviewToastDescription'
-import type { SearchResultItem } from '~/modules/search/types/search.types'
+import { type SearchResultItem } from '~/modules/search/types/search.types'
 import { useCreateTopic } from '~/modules/topics/api/createTopic'
 import { useTopic } from '~/modules/topics/api/getTopic'
 import { useReviewMode } from '~/stores/ReviewModeContext'
 import { localDateString } from '~/utils/date'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
-import type { ReviewCardDetailTab } from './shared'
+
+import { type ReviewCardDetailTab } from './shared'
 import { isReviewCardDetailTab } from './shared'
 
 type UseReviewCardDetailPageOptions = {
@@ -47,7 +49,7 @@ export function useReviewCardDetailPage({
 	activeTab,
 	onActiveTabChange,
 	onCompletedReviewCreated,
-	reviewCardId
+	reviewCardId,
 }: UseReviewCardDetailPageOptions) {
 	const navigate = useNavigate()
 	const [fallbackActiveTab, setFallbackActiveTab] =
@@ -61,12 +63,12 @@ export function useReviewCardDetailPage({
 	const {
 		data: reviewCard,
 		isLoading,
-		error: reviewCardError
+		error: reviewCardError,
 	} = useReviewCard(Number.isNaN(reviewCardId) ? null : reviewCardId)
 	const { data: topic } = useTopic(reviewCard?.topic_id ?? null)
 	const {
 		mutateAsync: updateReviewCardAsync,
-		isPending: isUpdatingReviewCard
+		isPending: isUpdatingReviewCard,
 	} = useUpdateReviewCard()
 	const { mutateAsync: createTopicAsync } = useCreateTopic()
 	const { deleteWithUndo } = useDeleteReviewCardWithUndo()
@@ -89,30 +91,29 @@ export function useReviewCardDetailPage({
 	}, [resolvedActiveTab, reviewCard])
 
 	const { pendingCount, overdueCount, dueTodayCount } = useDetailReviewCounts(
-		reviewCard ? { reviewCardId: reviewCard.id } : undefined
+		reviewCard ? { reviewCardId: reviewCard.id } : undefined,
 	)
 	const reviewTriggerCounts = useMemo(
 		() => ({
 			pendingCount,
 			overdueCount,
-			dueTodayCount
+			dueTodayCount,
 		}),
-		[dueTodayCount, overdueCount, pendingCount]
+		[dueTodayCount, overdueCount, pendingCount],
 	)
-	const { data: reviews, isLoading: isReviewsLoading } = useReviewsByReviewCard(
-		reviewCard?.id
-	)
+	const { data: reviews, isLoading: isReviewsLoading } =
+		useReviewsByReviewCard(reviewCard?.id)
 	const resolvedReviews = reviews ?? []
 	const {
 		uncompletedUnscheduledReviews,
 		overdueReviews,
 		todayReviews,
 		upcomingReviews,
-		completedReviews
+		completedReviews,
 	} = useMemo(() => splitReviews(resolvedReviews), [resolvedReviews])
 	const latestCompletedReview = useMemo(
 		() => getLatestCompletedReview(resolvedReviews),
-		[resolvedReviews]
+		[resolvedReviews],
 	)
 
 	const metrics = useLearnableMetrics(
@@ -123,12 +124,16 @@ export function useReviewCardDetailPage({
 					days_until_next_tier: reviewCard.days_until_next_tier,
 					stability: reviewCard.stability,
 					last_reviewed_at: reviewCard.last_reviewed_at,
-					inherited_stability: null
+					inherited_stability: null,
 				}
-			: null
+			: null,
 	)
-	const { freshnessTierInfo, freshnessTierColor, isUnreviewed, stabilityText } =
-		metrics
+	const {
+		freshnessTierInfo,
+		freshnessTierColor,
+		isUnreviewed,
+		stabilityText,
+	} = metrics
 
 	const lastReviewed = useMemo(
 		() =>
@@ -138,10 +143,10 @@ export function useReviewCardDetailPage({
 					null,
 				{
 					includeFuture: false,
-					nullLabel: 'never'
-				}
+					nullLabel: 'never',
+				},
 			),
-		[latestCompletedReview?.completed_at, reviewCard?.last_reviewed_at]
+		[latestCompletedReview?.completed_at, reviewCard?.last_reviewed_at],
 	)
 
 	const statusBadges = useMemo(
@@ -149,10 +154,10 @@ export function useReviewCardDetailPage({
 			orderReviewCardStatusBadges(reviewCard?.status_badges ?? []).map(
 				apiBadge =>
 					toReviewCardStatusBadge(apiBadge, {
-						onOpenReviewDialog: openReviewDialog
-					})
+						onOpenReviewDialog: openReviewDialog,
+					}),
 			),
-		[reviewCard?.status_badges, openReviewDialog]
+		[reviewCard?.status_badges, openReviewDialog],
 	)
 
 	useEffect(() => {
@@ -177,28 +182,30 @@ export function useReviewCardDetailPage({
 			if (!reviewCard) return
 
 			Promise.resolve(
-				updateReviewCardAsync({ id: reviewCard.id, ...fields })
+				updateReviewCardAsync({ id: reviewCard.id, ...fields }),
 			).catch(() => {
 				toast.error('Failed to update review card')
 			})
 		},
-		[reviewCard, updateReviewCardAsync]
+		[reviewCard, updateReviewCardAsync],
 	)
 
 	const saveReviewCardPrimaryText = useCallback(
 		(newPrimaryText: string) => {
-			if (!reviewCard || newPrimaryText === reviewCard.primary_text) return
+			if (!reviewCard || newPrimaryText === reviewCard.primary_text)
+				return
 			handleUpdateReviewCardFields({ primary_text: newPrimaryText })
 		},
-		[handleUpdateReviewCardFields, reviewCard]
+		[handleUpdateReviewCardFields, reviewCard],
 	)
 
 	const saveReviewCardSecondaryText = useCallback(
 		(newSecondaryText: string) => {
-			if (!reviewCard || newSecondaryText === reviewCard.secondary_text) return
+			if (!reviewCard || newSecondaryText === reviewCard.secondary_text)
+				return
 			handleUpdateReviewCardFields({ secondary_text: newSecondaryText })
 		},
-		[handleUpdateReviewCardFields, reviewCard]
+		[handleUpdateReviewCardFields, reviewCard],
 	)
 
 	const saveReviewCardNotes = useCallback(
@@ -206,37 +213,37 @@ export function useReviewCardDetailPage({
 			if (!reviewCard || newNotes === reviewCard.notes) return
 			handleUpdateReviewCardFields({ notes: newNotes })
 		},
-		[handleUpdateReviewCardFields, reviewCard]
+		[handleUpdateReviewCardFields, reviewCard],
 	)
 
 	const {
 		value: primaryText,
 		onChange: onPrimaryTextChange,
-		flush: flushPrimaryText
+		flush: flushPrimaryText,
 	} = useAutoSave({
 		initialValue: reviewCard?.primary_text ?? '',
 		onSave: saveReviewCardPrimaryText,
-		key: `review-card-primary-text-${reviewCard?.id ?? 'new'}`
+		key: `review-card-primary-text-${reviewCard?.id ?? 'new'}`,
 	})
 	const {
 		value: secondaryText,
 		onChange: onSecondaryTextChange,
 		setValue: setSecondaryText,
-		flush: flushSecondaryText
+		flush: flushSecondaryText,
 	} = useAutoSave({
 		initialValue: reviewCard?.secondary_text ?? '',
 		onSave: saveReviewCardSecondaryText,
-		key: `review-card-secondary-text-${reviewCard?.id ?? 'new'}`
+		key: `review-card-secondary-text-${reviewCard?.id ?? 'new'}`,
 	})
 	const {
 		value: notes,
 		onChange: onNotesChange,
 		setValue: setNotes,
-		flush: flushNotes
+		flush: flushNotes,
 	} = useAutoSave({
 		initialValue: reviewCard?.notes ?? '',
 		onSave: saveReviewCardNotes,
-		key: `review-card-notes-${reviewCard?.id ?? 'new'}`
+		key: `review-card-notes-${reviewCard?.id ?? 'new'}`,
 	})
 
 	const {
@@ -246,12 +253,12 @@ export function useReviewCardDetailPage({
 		setGuessText: setGuessSecondaryText,
 		isCopied: isRevealPanelCopied,
 		handleCopyGuessText,
-		handleCopyRevealText
+		handleCopyRevealText,
 	} = useRevealPanel({
 		revealText: secondaryText,
 		entityId: reviewCard?.id ?? null,
 		hidesSecondary,
-		defaultTab: hidesSecondary ? null : 'reveal'
+		defaultTab: hidesSecondary ? null : 'reveal',
 	})
 
 	const handleRetiredToggle = useCallback(() => {
@@ -262,7 +269,7 @@ export function useReviewCardDetailPage({
 		}
 
 		handleUpdateReviewCardFields({
-			retired: !reviewCard.retired
+			retired: !reviewCard.retired,
 		})
 	}, [handleUpdateReviewCardFields, reviewCard])
 
@@ -278,7 +285,7 @@ export function useReviewCardDetailPage({
 		navigate({
 			to: '/review-cards/$reviewCardId',
 			params: { reviewCardId: reviewCard.id.toString() },
-			search: { tab: 'reviews' }
+			search: { tab: 'reviews' },
 		})
 	}, [navigate, onActiveTabChange, reviewCard])
 
@@ -292,7 +299,10 @@ export function useReviewCardDetailPage({
 					rating: ratingState === 'uncompleted' ? null : ratingState,
 					description: '',
 					scheduled_at: null,
-					completed_at: ratingState === 'uncompleted' ? null : localDateString()
+					completed_at:
+						ratingState === 'uncompleted'
+							? null
+							: localDateString(),
 				})
 
 				if (ratingState === 'uncompleted') {
@@ -305,8 +315,8 @@ export function useReviewCardDetailPage({
 					description: getReviewCreatedToastDescription(review),
 					action: {
 						label: getReviewCreatedToastActionLabel(review),
-						onClick: () => openReviewDialog(review.id)
-					}
+						onClick: () => openReviewDialog(review.id),
+					},
 				})
 			} catch {
 				toast.error('Failed to create review')
@@ -316,8 +326,8 @@ export function useReviewCardDetailPage({
 			createReviewMutation,
 			onCompletedReviewCreated,
 			openReviewDialog,
-			reviewCard
-		]
+			reviewCard,
+		],
 	)
 
 	const handleDeleteReviewCard = useCallback(() => {
@@ -327,7 +337,7 @@ export function useReviewCardDetailPage({
 			if (reviewCard.topic_id != null) {
 				navigate({
 					to: '/topics/$topicId',
-					params: { topicId: reviewCard.topic_id.toString() }
+					params: { topicId: reviewCard.topic_id.toString() },
 				})
 				return
 			}
@@ -341,21 +351,22 @@ export function useReviewCardDetailPage({
 				navigate({
 					to: '/review-cards/$reviewCardId',
 					params: { reviewCardId: reviewCard.id.toString() },
-					search: { tab: 'home' }
+					search: { tab: 'home' },
 				})
-			}
+			},
 		})
 	}, [deleteWithUndo, navigate, reviewCard])
 
 	const handleConvertType = useCallback(async () => {
 		if (!reviewCard || isTypeMutationPending) return
 
-		const newType = reviewCard.type === 'practice' ? 'flashcard' : 'practice'
+		const newType =
+			reviewCard.type === 'practice' ? 'flashcard' : 'practice'
 		setIsTypeMutationPending(true)
 		try {
 			await updateReviewCardAsync({ id: reviewCard.id, type: newType })
 			toast.success(
-				`Converted to ${newType === 'practice' ? 'Practice' : 'Flashcard'}`
+				`Converted to ${newType === 'practice' ? 'Practice' : 'Flashcard'}`,
 			)
 		} catch {
 			toast.error('Failed to convert card')
@@ -390,7 +401,7 @@ export function useReviewCardDetailPage({
 			try {
 				await updateReviewCardAsync({
 					id: reviewCard.id,
-					topic_id: entity.topic.id
+					topic_id: entity.topic.id,
 				})
 				toast.success('Topic changed')
 				setIsTopicSearchOpen(false)
@@ -400,7 +411,7 @@ export function useReviewCardDetailPage({
 				setIsTopicMutationPending(false)
 			}
 		},
-		[isTopicMutationPending, reviewCard, updateReviewCardAsync]
+		[isTopicMutationPending, reviewCard, updateReviewCardAsync],
 	)
 
 	const handleCreateAndAssignTopic = useCallback(async () => {
@@ -411,13 +422,13 @@ export function useReviewCardDetailPage({
 			const created = await createTopicAsync({
 				title: '',
 				body: '',
-				parent_id: null
+				parent_id: null,
 			})
 
 			try {
 				await updateReviewCardAsync({
 					id: reviewCard.id,
-					topic_id: created.id
+					topic_id: created.id,
 				})
 				toast.success('Topic changed')
 				setIsTopicSearchOpen(false)
@@ -433,7 +444,7 @@ export function useReviewCardDetailPage({
 		createTopicAsync,
 		isTopicMutationPending,
 		reviewCard,
-		updateReviewCardAsync
+		updateReviewCardAsync,
 	])
 
 	const handleTabChange = useCallback(
@@ -441,14 +452,14 @@ export function useReviewCardDetailPage({
 			setFallbackActiveTab(tab)
 			onActiveTabChange?.(tab)
 		},
-		[onActiveTabChange]
+		[onActiveTabChange],
 	)
 
 	const handleNavigateToTopic = useCallback(() => {
 		if (!reviewCard) return
 		navigate({
 			to: '/topics/$topicId',
-			params: { topicId: reviewCard.topic_id.toString() }
+			params: { topicId: reviewCard.topic_id.toString() },
 		})
 	}, [navigate, reviewCard])
 
@@ -457,7 +468,7 @@ export function useReviewCardDetailPage({
 		navigate({
 			to: '/review-cards/$reviewCardId',
 			params: { reviewCardId: reviewCard.id.toString() },
-			search: { tab: resolvedActiveTab }
+			search: { tab: resolvedActiveTab },
 		})
 	}, [navigate, resolvedActiveTab, reviewCard])
 
@@ -532,6 +543,6 @@ export function useReviewCardDetailPage({
 		uncompletedUnscheduledReviews,
 		pendingCount,
 		upcomingReviews,
-		handleCreateAndAssignTopic
+		handleCreateAndAssignTopic,
 	}
 }

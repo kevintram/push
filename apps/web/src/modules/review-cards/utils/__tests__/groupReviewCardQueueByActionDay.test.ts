@@ -1,6 +1,6 @@
-import type {
-	ReviewCard,
-	ReviewCardQueueItem
+import {
+	type ReviewCard,
+	type ReviewCardQueueItem,
 } from '../../types/review-card.types'
 import { groupReviewCardQueueByActionDay } from '../groupReviewCardQueueByActionDay'
 
@@ -27,11 +27,11 @@ const baseCard: ReviewCard = {
 	days_in_current_tier: null,
 	is_new: true,
 	status_badges: [],
-	notes: ''
+	notes: '',
 }
 
 function buildQueueItem(
-	overrides: Partial<ReviewCardQueueItem>
+	overrides: Partial<ReviewCardQueueItem>,
 ): ReviewCardQueueItem {
 	return {
 		queue_type: 'due',
@@ -41,7 +41,7 @@ function buildQueueItem(
 		action_days: null,
 		days_until_due: null,
 		days_until_hazy: null,
-		...overrides
+		...overrides,
 	}
 }
 
@@ -51,25 +51,33 @@ describe('groupReviewCardQueueByActionDay', () => {
 			[
 				buildQueueItem({
 					queue_type: 'due',
-					card: { ...baseCard, id: 11, primary_text: 'Stale overdue due' },
+					card: {
+						...baseCard,
+						id: 11,
+						primary_text: 'Stale overdue due',
+					},
 					review_id: 11,
 					scheduled_at: '2026-01-11',
 					action_days: -4,
-					days_until_due: -4
+					days_until_due: -4,
 				}),
 				buildQueueItem({
 					queue_type: 'hazy',
 					card: { ...baseCard, id: 12, primary_text: 'Hazy overdue' },
 					action_days: -1,
-					days_until_hazy: -2
+					days_until_hazy: -2,
 				}),
 				buildQueueItem({
 					queue_type: 'due',
-					card: { ...baseCard, id: 13, primary_text: 'Slightly overdue due' },
+					card: {
+						...baseCard,
+						id: 13,
+						primary_text: 'Slightly overdue due',
+					},
 					review_id: 13,
 					scheduled_at: '2026-01-14',
 					action_days: -1,
-					days_until_due: -1
+					days_until_due: -1,
 				}),
 				buildQueueItem({
 					queue_type: 'due',
@@ -77,21 +85,24 @@ describe('groupReviewCardQueueByActionDay', () => {
 					review_id: 14,
 					scheduled_at: '2026-01-15',
 					action_days: 0,
-					days_until_due: 0
-				})
+					days_until_due: 0,
+				}),
 			],
 			0,
-			'2026-01-15'
+			'2026-01-15',
 		)
 
-		expect(sections.map(section => section.label)).toEqual(['Overdue', 'Today'])
+		expect(sections.map(section => section.label)).toEqual([
+			'Overdue',
+			'Today',
+		])
 		expect(sections[0]?.items.map(item => item.card.primary_text)).toEqual([
 			'Slightly overdue due',
 			'Stale overdue due',
-			'Hazy overdue'
+			'Hazy overdue',
 		])
 		expect(sections[1]?.items.map(item => item.card.primary_text)).toEqual([
-			'Today due'
+			'Today due',
 		])
 	})
 })

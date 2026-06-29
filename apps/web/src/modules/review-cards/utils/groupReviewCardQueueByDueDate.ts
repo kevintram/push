@@ -1,8 +1,9 @@
 import dayjs from 'dayjs'
-import type { ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
+
+import { type ReviewCardQueueItem } from '~/modules/review-cards/types/review-card.types'
 
 export function groupReviewCardQueueByDueDate(
-	items: Array<ReviewCardQueueItem>
+	items: Array<ReviewCardQueueItem>,
 ) {
 	const byDate = new Map<string, Array<ReviewCardQueueItem>>()
 
@@ -24,6 +25,6 @@ export function groupReviewCardQueueByDueDate(
 			label:
 				dateKey === 'unscheduled'
 					? 'Unscheduled'
-					: dayjs(dateKey).format('dddd, MMM D')
+					: dayjs(dateKey).format('dddd, MMM D'),
 		}))
 }

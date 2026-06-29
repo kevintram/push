@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
 	resolveDueFilter,
 	validateDueFocusSearch,
-	validateDueSearch
+	validateDueSearch,
 } from '~/app/routes/due'
 import { createMockLocalStorage } from '~/testing/support/masonryPageTestSupport'
 
@@ -21,10 +22,10 @@ describe('due route search', () => {
 	it('accepts supported filter values', () => {
 		expect(validateDueSearch({ filter: 'all' })).toEqual({ filter: 'all' })
 		expect(validateDueSearch({ filter: 'practice' })).toEqual({
-			filter: 'practice'
+			filter: 'practice',
 		})
 		expect(validateDueSearch({ filter: 'flashcards' })).toEqual({
-			filter: 'flashcards'
+			filter: 'flashcards',
 		})
 	})
 
@@ -33,15 +34,15 @@ describe('due route search', () => {
 			'3gulp-due-view-preferences',
 			JSON.stringify({
 				filter: 'flashcards',
-				focusOrder: 'random'
-			})
+				focusOrder: 'random',
+			}),
 		)
 
 		expect(validateDueSearch({ filter: 'wat' })).toEqual({
-			filter: undefined
+			filter: undefined,
 		})
 		expect(resolveDueFilter(validateDueSearch({ filter: 'wat' }))).toBe(
-			'flashcards'
+			'flashcards',
 		)
 		expect(resolveDueFilter(validateDueSearch({}))).toBe('flashcards')
 	})
@@ -54,15 +55,15 @@ describe('due route search', () => {
 				filter: 'all',
 				include_future: 'true',
 				order: 'random',
-				shuffle: 'seed'
-			})
+				shuffle: 'seed',
+			}),
 		).toEqual({
 			card: 12,
 			done: true,
 			filter: 'all',
 			include_future: true,
 			order: 'random',
-			shuffle: 'seed'
+			shuffle: 'seed',
 		})
 	})
 })

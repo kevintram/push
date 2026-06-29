@@ -1,10 +1,11 @@
-import type { QueryClient } from '@tanstack/react-query'
+import { type QueryClient } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+
 import {
 	isTopicDetailReviewCardControlsVariant,
 	isTopicDetailReviewCardFilter,
 	type TopicDetailReviewCardControlsVariant,
-	type TopicDetailReviewCardFilter
+	type TopicDetailReviewCardFilter,
 } from '~/app/pages/topic-detail/shared'
 import { TopicDetailPage } from '~/app/pages/topic-detail/TopicDetailPage'
 import { reviewCardsQueryOptions } from '~/modules/review-cards/api/getReviewCards'
@@ -18,7 +19,7 @@ interface TopicDetailRouteSearch {
 }
 
 export function validateTopicDetailSearch(
-	search: Record<string, unknown>
+	search: Record<string, unknown>,
 ): TopicDetailRouteSearch {
 	const controls =
 		typeof search.controls === 'string' ? search.controls : undefined
@@ -30,15 +31,19 @@ export function validateTopicDetailSearch(
 				? controls
 				: undefined,
 		filter:
-			filter && isTopicDetailReviewCardFilter(filter) ? filter : undefined,
+			filter && isTopicDetailReviewCardFilter(filter)
+				? filter
+				: undefined,
 		focusTitle:
-			search.focusTitle === true || search.focusTitle === 'true' || undefined
+			search.focusTitle === true ||
+			search.focusTitle === 'true' ||
+			undefined,
 	}
 }
 
 export function prefetchTopicDetailRouteData({
 	queryClient,
-	topicId
+	topicId,
 }: {
 	queryClient: Pick<QueryClient, 'prefetchQuery'>
 	topicId: number
@@ -50,8 +55,8 @@ export function prefetchTopicDetailRouteData({
 		.prefetchQuery(
 			topicsQueryOptions({
 				sort: 'title',
-				order: 'asc'
-			})
+				order: 'asc',
+			}),
 		)
 		.catch(() => undefined)
 	void queryClient
@@ -59,8 +64,8 @@ export function prefetchTopicDetailRouteData({
 			topicsQueryOptions({
 				subtree_of: topicId,
 				sort: 'title',
-				order: 'asc'
-			})
+				order: 'asc',
+			}),
 		)
 		.catch(() => undefined)
 	void queryClient
@@ -68,8 +73,8 @@ export function prefetchTopicDetailRouteData({
 			reviewCardsQueryOptions({
 				topic_id: topicId,
 				include_descendants: true,
-				order: 'desc'
-			})
+				order: 'desc',
+			}),
 		)
 		.catch(() => undefined)
 }
@@ -79,10 +84,10 @@ export const Route = createFileRoute('/topics_/$topicId')({
 	loader: ({ context, params }) => {
 		prefetchTopicDetailRouteData({
 			queryClient: context.queryClient,
-			topicId: Number(params.topicId)
+			topicId: Number(params.topicId),
 		})
 	},
-	component: TopicDetailRoute
+	component: TopicDetailRoute,
 })
 
 function TopicDetailRoute() {
@@ -99,12 +104,14 @@ function TopicDetailRoute() {
 					to: '/topics/$topicId',
 					params: { topicId },
 					search: {
-						...(search.controls ? { controls: search.controls } : {}),
-						...(filter === 'all' ? {} : { filter })
+						...(search.controls
+							? { controls: search.controls }
+							: {}),
+						...(filter === 'all' ? {} : { filter }),
 					},
 					hash: true,
 					resetScroll: false,
-					replace: true
+					replace: true,
 				})
 			}
 			reviewCardControlsVariant={search.controls}

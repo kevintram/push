@@ -1,4 +1,5 @@
 import * as v from 'valibot'
+
 import { ReviewCardStatusBadgeSchema } from './status-badge.schemas'
 
 export const ReviewCardTypeSchema = v.picklist(['practice', 'flashcard'])
@@ -30,7 +31,7 @@ export const ReviewCardSchema = v.object({
 	reviews_pending_count: v.optional(v.number(), 0),
 	reviews_overdue_count: v.optional(v.number(), 0),
 	reviews_due_today_count: v.optional(v.number(), 0),
-	status_badges: v.array(ReviewCardStatusBadgeSchema)
+	status_badges: v.array(ReviewCardStatusBadgeSchema),
 })
 
 export const ReviewCardQueueItemSchema = v.object({
@@ -40,12 +41,12 @@ export const ReviewCardQueueItemSchema = v.object({
 	scheduled_at: v.nullable(v.string()),
 	action_days: v.nullable(v.number()),
 	days_until_due: v.nullable(v.number()),
-	days_until_hazy: v.nullable(v.number())
+	days_until_hazy: v.nullable(v.number()),
 })
 
 export const ReviewCardQueuePageSchema = v.object({
 	items: v.array(ReviewCardQueueItemSchema),
-	as_of: v.string()
+	as_of: v.string(),
 })
 
 export const ReviewCardQueueSummarySchema = v.object({
@@ -53,9 +54,9 @@ export const ReviewCardQueueSummarySchema = v.object({
 	due_today_count: v.number(),
 	due_next_seven_days_count: v.number(),
 	new_count: v.number(),
-	as_of: v.string()
+	as_of: v.string(),
 })
 
 export const ReviewCardFlaggedSummarySchema = v.object({
-	flagged_count: v.number()
+	flagged_count: v.number(),
 })

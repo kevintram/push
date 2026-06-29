@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
+
 import {
 	getTopicDetailSectionId,
-	TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID
+	TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID,
 } from '../topic-detail/topicDetailStructure'
 
 type CreateTopicPayload = {
@@ -32,12 +34,15 @@ type UseLibraryPageTopicCreationResult = {
 	freshTopicId: number | null
 	handleCreateRootTopic: () => Promise<void>
 	handleFreshTopicInteraction: (topicId: number) => void
-	handleSubtopicCreated: (parentTopicId: number, createdTopicId: number) => void
+	handleSubtopicCreated: (
+		parentTopicId: number,
+		createdTopicId: number,
+	) => void
 	pendingCreatedParentTopicId: number | null
 	pendingCreatedTopicId: number | null
 	registerSectionTitleRef: (
 		topicId: number,
-		element: HTMLTextAreaElement | null
+		element: HTMLTextAreaElement | null,
 	) => void
 }
 
@@ -48,7 +53,7 @@ export function useLibraryPageTopicCreation({
 	isCreatingTopic,
 	nodeById,
 	scrollToSection,
-	sectionIdSet
+	sectionIdSet,
 }: UseLibraryPageTopicCreationOptions): UseLibraryPageTopicCreationResult {
 	const [pendingCreatedTopicId, setPendingCreatedTopicId] = useState<
 		number | null
@@ -56,7 +61,9 @@ export function useLibraryPageTopicCreation({
 	const [freshTopicId, setFreshTopicId] = useState<number | null>(null)
 	const [pendingCreatedParentTopicId, setPendingCreatedParentTopicId] =
 		useState<number | null>(null)
-	const sectionTitleElementsRef = useRef(new Map<number, HTMLTextAreaElement>())
+	const sectionTitleElementsRef = useRef(
+		new Map<number, HTMLTextAreaElement>(),
+	)
 	const pendingCreatedTopicIdRef = useRef<number | null>(null)
 
 	const completePendingCreatedTopic = useCallback(
@@ -75,7 +82,7 @@ export function useLibraryPageTopicCreation({
 				scrollToSection(topicId, {
 					behavior: 'smooth',
 					mode: 'replace',
-					updateHash: false
+					updateHash: false,
 				})
 				titleElement.focus({ preventScroll: true })
 				titleElement.setSelectionRange(0, titleElement.value.length)
@@ -87,9 +94,11 @@ export function useLibraryPageTopicCreation({
 					return currentTopicId
 				})
 				setPendingCreatedParentTopicId(currentParentTopicId => {
-					const parentTopicId = nodeById.get(topicId)?.parent_id ?? null
+					const parentTopicId =
+						nodeById.get(topicId)?.parent_id ?? null
 					if (
-						currentParentTopicId === TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID ||
+						currentParentTopicId ===
+							TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID ||
 						currentParentTopicId === parentTopicId
 					) {
 						return null
@@ -106,7 +115,7 @@ export function useLibraryPageTopicCreation({
 
 			window.requestAnimationFrame(focusCreatedTopic)
 		},
-		[nodeById, scrollToSection, sectionIdSet]
+		[nodeById, scrollToSection, sectionIdSet],
 	)
 	const registerSectionTitleRef = useCallback(
 		(topicId: number, element: HTMLTextAreaElement | null) => {
@@ -118,7 +127,7 @@ export function useLibraryPageTopicCreation({
 			sectionTitleElementsRef.current.set(topicId, element)
 			completePendingCreatedTopic(topicId, element)
 		},
-		[completePendingCreatedTopic]
+		[completePendingCreatedTopic],
 	)
 	const handleSubtopicCreated = useCallback(
 		(parentTopicId: number, createdTopicId: number) => {
@@ -132,7 +141,7 @@ export function useLibraryPageTopicCreation({
 			setPendingCreatedTopicId(createdTopicId)
 			setPendingCreatedParentTopicId(parentTopicId)
 		},
-		[ancestorIdsById, expandSection]
+		[ancestorIdsById, expandSection],
 	)
 	const handleCreateRootTopic = useCallback(async () => {
 		if (isCreatingTopic) return
@@ -141,12 +150,14 @@ export function useLibraryPageTopicCreation({
 			const created = await createTopicAsync({
 				title: '',
 				body: '',
-				parent_id: null
+				parent_id: null,
 			})
 			pendingCreatedTopicIdRef.current = created.id
 			setFreshTopicId(created.id)
 			setPendingCreatedTopicId(created.id)
-			setPendingCreatedParentTopicId(TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID)
+			setPendingCreatedParentTopicId(
+				TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID,
+			)
 		} catch {
 			toast.error('Failed to create topic')
 		}
@@ -180,6 +191,6 @@ export function useLibraryPageTopicCreation({
 		handleSubtopicCreated,
 		pendingCreatedParentTopicId,
 		pendingCreatedTopicId,
-		registerSectionTitleRef
+		registerSectionTitleRef,
 	}
 }

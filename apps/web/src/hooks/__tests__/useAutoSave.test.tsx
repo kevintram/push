@@ -1,13 +1,14 @@
 import { act, renderHook } from '@testing-library/react'
-import type { ChangeEvent } from 'react'
+import { type ChangeEvent } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { useAutoSave } from '../useAutoSave'
 
 function createChangeEvent(
-	value: string
+	value: string,
 ): ChangeEvent<HTMLInputElement | HTMLTextAreaElement> {
 	return {
-		target: { value }
+		target: { value },
 	} as ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 }
 
@@ -29,14 +30,14 @@ describe('useAutoSave', () => {
 					initialValue,
 					onSave,
 					debounceMs: 1000,
-					key
+					key,
 				}),
 			{
 				initialProps: {
 					initialValue: 'topic one',
-					key: 'topic-1'
-				}
-			}
+					key: 'topic-1',
+				},
+			},
 		)
 
 		act(() => {
@@ -48,7 +49,7 @@ describe('useAutoSave', () => {
 		act(() => {
 			rerender({
 				initialValue: 'topic two',
-				key: 'topic-2'
+				key: 'topic-2',
 			})
 		})
 
@@ -64,12 +65,14 @@ describe('useAutoSave', () => {
 				initialValue: '',
 				onSave,
 				debounceMs: 1000,
-				key: 'topic-1'
-			})
+				key: 'topic-1',
+			}),
 		)
 
 		act(() => {
-			result.current.onChange(createChangeEvent('draft before navigation'))
+			result.current.onChange(
+				createChangeEvent('draft before navigation'),
+			)
 		})
 
 		expect(onSave).not.toHaveBeenCalled()
@@ -90,18 +93,18 @@ describe('useAutoSave', () => {
 					initialValue,
 					onSave,
 					debounceMs: 1000,
-					key: 'topic-1'
+					key: 'topic-1',
 				}),
 			{
 				initialProps: {
-					initialValue: 'stale cache value'
-				}
-			}
+					initialValue: 'stale cache value',
+				},
+			},
 		)
 
 		act(() => {
 			rerender({
-				initialValue: 'fresh server value'
+				initialValue: 'fresh server value',
 			})
 		})
 
@@ -116,8 +119,8 @@ describe('useAutoSave', () => {
 				initialValue: '',
 				onSave,
 				debounceMs: 1000,
-				key: 'topic-1'
-			})
+				key: 'topic-1',
+			}),
 		)
 
 		act(() => {

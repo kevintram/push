@@ -1,12 +1,12 @@
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { useMemo } from 'react'
+
 import {
 	Breadcrumb,
 	BreadcrumbEllipsis,
 	BreadcrumbItem,
 	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator
+	BreadcrumbSeparator,
 } from '~/components/ui/breadcrumb'
 import { Button } from '~/components/ui/button'
 import {
@@ -14,11 +14,13 @@ import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
 	DropdownMenuItem,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { useElementSize } from '~/hooks/useResizeObserver'
 import { cn } from '~/lib/utils'
 import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
+
+import { TopicPathBreadcrumbItem } from './TopicPathBreadcrumbItem'
 
 export type TopicPathItem = {
 	id: number
@@ -65,7 +67,7 @@ function getBreadcrumbTier(availableWidth: number): BreadcrumbTier {
 
 function buildVisibleTopicPath(
 	topicPath: Array<TopicPathItem>,
-	tier: BreadcrumbTier
+	tier: BreadcrumbTier,
 ): Array<VisibleTopicPathEntry> {
 	if (topicPath.length <= tier.showFullUpTo) {
 		return topicPath.map(topic => ({ kind: 'topic' as const, topic }))
@@ -75,7 +77,7 @@ function buildVisibleTopicPath(
 	const trailingTopics = topicPath.slice(-tier.trailingCount)
 	const hiddenTopics = topicPath.slice(
 		LEADING_COUNT,
-		topicPath.length - tier.trailingCount
+		topicPath.length - tier.trailingCount,
 	)
 
 	if (hiddenTopics.length === 0) {
@@ -86,7 +88,7 @@ function buildVisibleTopicPath(
 		return [
 			...leadingTopics.map(topic => ({ kind: 'topic' as const, topic })),
 			...hiddenTopics.map(topic => ({ kind: 'topic' as const, topic })),
-			...trailingTopics.map(topic => ({ kind: 'topic' as const, topic }))
+			...trailingTopics.map(topic => ({ kind: 'topic' as const, topic })),
 		]
 	}
 
@@ -95,48 +97,10 @@ function buildVisibleTopicPath(
 		{
 			kind: 'ellipsis' as const,
 			hiddenTopics,
-			key: `ellipsis-${hiddenTopics[0]?.id ?? 'start'}-${hiddenTopics.at(-1)?.id ?? 'end'}`
+			key: `ellipsis-${hiddenTopics[0]?.id ?? 'start'}-${hiddenTopics.at(-1)?.id ?? 'end'}`,
 		},
-		...trailingTopics.map(topic => ({ kind: 'topic' as const, topic }))
+		...trailingTopics.map(topic => ({ kind: 'topic' as const, topic })),
 	]
-}
-
-function TopicPathBreadcrumbItem({
-	currentTopicId,
-	renderTopicLink,
-	topic
-}: {
-	currentTopicId: number
-	renderTopicLink: (args: {
-		className: string
-		label: string
-		topic: TopicPathItem
-	}) => ReactNode
-	topic: TopicPathItem
-}) {
-	const label = getTopicDisplayTitle(topic.title, topic.body)
-	const isCurrentTopic = topic.id === currentTopicId
-
-	return (
-		<BreadcrumbItem
-			className={cn(
-				isCurrentTopic ? 'min-w-0 flex-[1_1_7rem] overflow-hidden' : 'min-w-0'
-			)}
-		>
-			{isCurrentTopic ? (
-				<BreadcrumbPage className='block truncate font-medium' title={label}>
-					{label}
-				</BreadcrumbPage>
-			) : (
-				renderTopicLink({
-					className:
-						'block @[300px]/crumbs:max-w-[6.5rem] @[380px]/crumbs:max-w-[7.5rem] @[460px]/crumbs:max-w-36 @[560px]/crumbs:max-w-40 max-w-20 truncate',
-					label,
-					topic
-				})
-			)}
-		</BreadcrumbItem>
-	)
 }
 
 export function TopicBreadcrumb({
@@ -146,7 +110,7 @@ export function TopicBreadcrumb({
 	leadingHiddenTopics = [],
 	onHiddenTopicSelect,
 	renderTopicLink,
-	topicPath
+	topicPath,
 }: TopicBreadcrumbProps) {
 	const { ref, width } = useElementSize<HTMLDivElement>()
 
@@ -160,7 +124,7 @@ export function TopicBreadcrumb({
 
 			return [
 				{ kind: 'topic' as const, topic: leadingTopic },
-				...compactedTopicPath
+				...compactedTopicPath,
 			]
 		}
 
@@ -168,9 +132,9 @@ export function TopicBreadcrumb({
 			{
 				kind: 'ellipsis' as const,
 				hiddenTopics: leadingHiddenTopics,
-				key: `leading-ellipsis-${leadingHiddenTopics[0]?.id ?? 'start'}-${leadingHiddenTopics.at(-1)?.id ?? 'end'}`
+				key: `leading-ellipsis-${leadingHiddenTopics[0]?.id ?? 'start'}-${leadingHiddenTopics.at(-1)?.id ?? 'end'}`,
 			},
-			...compactedTopicPath
+			...compactedTopicPath,
 		]
 	}, [leadingHiddenTopics, tier, topicPath])
 
@@ -179,11 +143,15 @@ export function TopicBreadcrumb({
 			<Breadcrumb aria-label={ariaLabel} className='min-w-0'>
 				<BreadcrumbList className='min-w-0 flex-nowrap overflow-hidden'>
 					{visibleTopicPath.map((entry, index) => {
-						const entryKey = entry.kind === 'topic' ? entry.topic.id : entry.key
+						const entryKey =
+							entry.kind === 'topic' ? entry.topic.id : entry.key
 
 						const breadcrumbEntry =
 							entry.kind === 'ellipsis' ? (
-								<BreadcrumbItem className='shrink-0' key={entryKey}>
+								<BreadcrumbItem
+									className='shrink-0'
+									key={entryKey}
+								>
 									<DropdownMenu>
 										<DropdownMenuTrigger
 											render={
@@ -203,25 +171,37 @@ export function TopicBreadcrumb({
 											matchTriggerWidth={false}
 										>
 											<DropdownMenuGroup>
-												{entry.hiddenTopics.map(hiddenTopic => {
-													const label = getTopicDisplayTitle(
-														hiddenTopic.title,
-														hiddenTopic.body
-													)
+												{entry.hiddenTopics.map(
+													hiddenTopic => {
+														const label =
+															getTopicDisplayTitle(
+																hiddenTopic.title,
+																hiddenTopic.body,
+															)
 
-													return (
-														<DropdownMenuItem
-															key={hiddenTopic.id}
-															onClick={() => {
-																onHiddenTopicSelect(hiddenTopic)
-															}}
-														>
-															<span className='block truncate' title={label}>
-																{label}
-															</span>
-														</DropdownMenuItem>
-													)
-												})}
+														return (
+															<DropdownMenuItem
+																key={
+																	hiddenTopic.id
+																}
+																onClick={() => {
+																	onHiddenTopicSelect(
+																		hiddenTopic,
+																	)
+																}}
+															>
+																<span
+																	className='block truncate'
+																	title={
+																		label
+																	}
+																>
+																	{label}
+																</span>
+															</DropdownMenuItem>
+														)
+													},
+												)}
 											</DropdownMenuGroup>
 										</DropdownMenuContent>
 									</DropdownMenu>
@@ -242,7 +222,7 @@ export function TopicBreadcrumb({
 									key={`separator-${entryKey}`}
 								/>
 							) : null,
-							breadcrumbEntry
+							breadcrumbEntry,
 						]
 					})}
 				</BreadcrumbList>

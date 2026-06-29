@@ -2,8 +2,9 @@
 
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle"
 import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group"
-import type { VariantProps } from "class-variance-authority"
+import { type VariantProps } from "class-variance-authority"
 import * as React from "react"
+
 import { toggleVariants } from "~/components/ui/toggle"
 import { cn } from "~/lib/utils"
 
@@ -16,7 +17,7 @@ const ToggleGroupContext = React.createContext<
 	size: "default",
 	variant: "default",
 	spacing: 0,
-	orientation: "horizontal"
+	orientation: "horizontal",
 })
 
 function ToggleGroup({
@@ -36,7 +37,7 @@ function ToggleGroup({
 		<ToggleGroupPrimitive
 			className={cn(
 				"rounded-md data-[spacing=0]:data-[variant=outline]:shadow-xs group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch",
-				className
+				className,
 			)}
 			data-orientation={orientation}
 			data-size={size}
@@ -71,10 +72,10 @@ function ToggleGroupItem({
 			className={cn(
 				toggleVariants({
 					size: resolvedSize,
-					variant: resolvedVariant
+					variant: resolvedVariant,
 				}),
 				"data-[state=on]:bg-muted group-data-[spacing=0]/toggle-group:rounded-none group-data-[spacing=0]/toggle-group:px-2 group-data-[spacing=0]/toggle-group:shadow-none group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:first:rounded-l-md group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:first:rounded-t-md group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:last:rounded-r-md group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:last:rounded-b-md shrink-0 focus:z-10 focus-visible:z-10 group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-[orientation=horizontal]/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-[orientation=vertical]/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t",
-				className
+				className,
 			)}
 			data-size={resolvedSize}
 			data-slot='toggle-group-item'

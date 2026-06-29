@@ -1,30 +1,30 @@
 import { Plus } from 'lucide-react'
+
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import {
 	Empty,
 	EmptyHeader,
 	EmptyMedia,
-	EmptyTitle
+	EmptyTitle,
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { ReviewCard } from '~/modules/review-cards/components/ReviewCard'
-import type {
-	ReviewCard as ReviewCardModel,
-	ReviewCardType
+import {
+	type ReviewCard as ReviewCardModel,
+	type ReviewCardType,
 } from '~/modules/review-cards/types/review-card.types'
 import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
-	estimateReviewCardSize
+	estimateReviewCardSize,
 } from '~/utils/estimateMasonryItemSize'
-import type {
-	TopicDetailReviewCardControlsVariant,
-	TopicDetailReviewCardFilter
-} from './shared'
+
 import {
-	TopicDetailReviewCardAddButton,
-	TopicDetailReviewCardFilterControls
-} from './TopicDetailReviewCardControls'
+	type TopicDetailReviewCardControlsVariant,
+	type TopicDetailReviewCardFilter,
+} from './shared'
+import { TopicDetailReviewCardAddButton } from './TopicDetailReviewCardAddButton'
+import { TopicDetailReviewCardFilterControls } from './TopicDetailReviewCardControls'
 
 interface TopicDetailReviewCardsSectionProps {
 	filteredReviewCards: Array<ReviewCardModel>
@@ -53,7 +53,7 @@ export function TopicDetailReviewCardsSection({
 	onOpenReviewCard,
 	reviewCardControlsVariant,
 	resolvedSectionFilter,
-	sectionLabel
+	sectionLabel,
 }: TopicDetailReviewCardsSectionProps) {
 	return (
 		<div className='space-y-3 pt-3'>
@@ -68,7 +68,10 @@ export function TopicDetailReviewCardsSection({
 						onAddReviewCard={onAddReviewCard}
 					/>
 				</div>
-				<div aria-hidden={true} className='mt-1 h-px w-full bg-border' />
+				<div
+					aria-hidden={true}
+					className='mt-1 h-px w-full bg-border'
+				/>
 				<div className='pt-2'>
 					<TopicDetailReviewCardFilterControls
 						activeFilter={resolvedSectionFilter}
@@ -90,7 +93,9 @@ export function TopicDetailReviewCardsSection({
 							<EmptyMedia variant='icon'>
 								<Plus />
 							</EmptyMedia>
-							<EmptyTitle>No review cards in this filter</EmptyTitle>
+							<EmptyTitle>
+								No review cards in this filter
+							</EmptyTitle>
 						</EmptyHeader>
 					</Empty>
 				) : (

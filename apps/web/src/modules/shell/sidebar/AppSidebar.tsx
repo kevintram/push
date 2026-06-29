@@ -3,8 +3,9 @@ import { Library, Minimize2, Plus } from 'lucide-react'
 import {
 	type PointerEvent as ReactPointerEvent,
 	useCallback,
-	useRef
+	useRef,
 } from 'react'
+
 import {
 	Sidebar,
 	SidebarContent,
@@ -14,12 +15,12 @@ import {
 	SidebarMenuAction,
 	SidebarMenuButton,
 	SidebarMenuItem,
-	useSidebar
+	useSidebar,
 } from '~/components/ui/sidebar'
 import { SidebarTopicTree } from '~/modules/shell/sidebar/SidebarTopicTree'
 
 export function AppSidebar({
-	onResizeStart
+	onResizeStart,
 }: {
 	onResizeStart?: (event: ReactPointerEvent<HTMLDivElement>) => void
 }) {
@@ -69,7 +70,9 @@ export function AppSidebar({
 											type='button'
 										>
 											<Minimize2 className='h-4 w-4' />
-											<span className='sr-only'>Collapse all topics</span>
+											<span className='sr-only'>
+												Collapse all topics
+											</span>
 										</SidebarMenuAction>
 										<SidebarMenuAction
 											aria-label='Add topic'
@@ -82,7 +85,9 @@ export function AppSidebar({
 											type='button'
 										>
 											<Plus className='h-4 w-4' />
-											<span className='sr-only'>Add topic</span>
+											<span className='sr-only'>
+												Add topic
+											</span>
 										</SidebarMenuAction>
 									</div>
 								</SidebarMenuItem>

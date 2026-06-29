@@ -1,5 +1,6 @@
 import { AlertDialog as AlertDialogPrimitive } from "@base-ui/react"
 import type * as React from "react"
+
 import { Button } from "~/components/ui/button"
 import { cn } from "~/lib/utils"
 
@@ -9,13 +10,19 @@ function AlertDialog({ ...props }: AlertDialogPrimitive.Root.Props) {
 
 function AlertDialogTrigger({ ...props }: AlertDialogPrimitive.Trigger.Props) {
 	return (
-		<AlertDialogPrimitive.Trigger data-slot='alert-dialog-trigger' {...props} />
+		<AlertDialogPrimitive.Trigger
+			data-slot='alert-dialog-trigger'
+			{...props}
+		/>
 	)
 }
 
 function AlertDialogPortal({ ...props }: AlertDialogPrimitive.Portal.Props) {
 	return (
-		<AlertDialogPrimitive.Portal data-slot='alert-dialog-portal' {...props} />
+		<AlertDialogPrimitive.Portal
+			data-slot='alert-dialog-portal'
+			{...props}
+		/>
 	)
 }
 
@@ -27,7 +34,7 @@ function AlertDialogOverlay({
 		<AlertDialogPrimitive.Backdrop
 			className={cn(
 				"data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs",
-				className
+				className,
 			)}
 			data-slot='alert-dialog-overlay'
 			{...props}
@@ -50,7 +57,7 @@ function AlertDialogContent({
 				className={cn(
 					"bg-background data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl p-6 text-sm shadow-lg ring-1 ring-foreground/10 duration-100 outline-none",
 					size === "sm" ? "sm:max-w-sm" : "sm:max-w-md",
-					className
+					className,
 				)}
 				data-slot='alert-dialog-content'
 				{...props}
@@ -82,7 +89,7 @@ function AlertDialogMedia({
 		<div
 			className={cn(
 				"flex size-10 items-center justify-center rounded-full bg-destructive/10 text-destructive",
-				className
+				className,
 			)}
 			data-slot='alert-dialog-media'
 			{...props}
@@ -98,7 +105,7 @@ function AlertDialogFooter({
 		<div
 			className={cn(
 				"flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-				className
+				className,
 			)}
 			data-slot='alert-dialog-footer'
 			{...props}
@@ -184,5 +191,5 @@ export {
 	AlertDialogOverlay,
 	AlertDialogPortal,
 	AlertDialogTitle,
-	AlertDialogTrigger
+	AlertDialogTrigger,
 }

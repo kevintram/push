@@ -8,13 +8,13 @@ export type TopicDetailReviewCardControlsVariant =
 	| 'button'
 
 export function isTopicDetailReviewCardFilter(
-	value: string
+	value: string,
 ): value is TopicDetailReviewCardFilter {
 	return value === 'all' || value === 'practice' || value === 'flashcard'
 }
 
 export function isTopicDetailReviewCardControlsVariant(
-	value: string
+	value: string,
 ): value is TopicDetailReviewCardControlsVariant {
 	return value === 'compact' || value === 'medium' || value === 'button'
 }

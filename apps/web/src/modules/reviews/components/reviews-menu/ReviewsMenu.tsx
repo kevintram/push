@@ -1,10 +1,11 @@
 import {
 	DropdownMenu,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
+
 import { ReviewsMenuContent } from './ReviewsMenuContent'
 import { ReviewsMenuTrigger } from './ReviewsMenuTrigger'
-import type { ReviewsMenuProps } from './shared'
+import { type ReviewsMenuProps } from './shared'
 import { useReviewsMenu } from './useReviewsMenu'
 
 export function ReviewsMenu({
@@ -24,7 +25,7 @@ export function ReviewsMenu({
 	compactTriggerBadges = false,
 	hasLastReviewed = false,
 	triggerCounts,
-	reviewCardId
+	reviewCardId,
 }: ReviewsMenuProps) {
 	const menu = useReviewsMenu({
 		align,
@@ -34,11 +35,14 @@ export function ReviewsMenu({
 		onSeeAll,
 		reviewCardId,
 		reviews,
-		triggerCounts
+		triggerCounts,
 	})
 
 	return (
-		<DropdownMenu onOpenChange={menu.handleMenuOpenChange} open={menu.isOpen}>
+		<DropdownMenu
+			onOpenChange={menu.handleMenuOpenChange}
+			open={menu.isOpen}
+		>
 			<DropdownMenuTrigger
 				render={
 					<ReviewsMenuTrigger
@@ -64,7 +68,9 @@ export function ReviewsMenu({
 				completedOptions={menu.completedOptions}
 				createReviewPending={menu.createReviewPending}
 				dueReviews={menu.dueReviews}
-				handleNestedOverlayOpenChange={menu.handleNestedOverlayOpenChange}
+				handleNestedOverlayOpenChange={
+					menu.handleNestedOverlayOpenChange
+				}
 				handleRatingSelect={menu.handleRatingSelect}
 				handleReviewItemClick={menu.handleReviewItemClick}
 				handleSeeAll={menu.handleSeeAll}
@@ -74,10 +80,14 @@ export function ReviewsMenu({
 					menu.markDeferredStructuralInvalidation
 				}
 				markNestedOverlayIntent={menu.markNestedOverlayIntent}
-				shouldRenderSummaryLoadingState={menu.shouldRenderSummaryLoadingState}
+				shouldRenderSummaryLoadingState={
+					menu.shouldRenderSummaryLoadingState
+				}
 				stopMenuEventPropagation={menu.stopMenuEventPropagation}
 				uncompletedOption={menu.uncompletedOption}
-				uncompletedUnscheduledReviews={menu.uncompletedUnscheduledReviews}
+				uncompletedUnscheduledReviews={
+					menu.uncompletedUnscheduledReviews
+				}
 				upcomingReviews={menu.upcomingReviews}
 			/>
 		</DropdownMenu>

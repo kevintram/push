@@ -12,7 +12,7 @@ export function useDebouncedValue<T>(value: T, delay = 300): T {
 
 	const updateDebouncedValue = useMemo(
 		() => debounce((newValue: T) => setDebouncedValue(newValue), delay),
-		[delay]
+		[delay],
 	)
 
 	useEffect(() => {

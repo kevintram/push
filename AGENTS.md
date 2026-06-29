@@ -34,7 +34,7 @@ pnpm install        # Install dependencies
 pnpm run dev        # Start dev server
 ./run.sh            # Start dev server with worktree port (see ## Worktree and Environment Files)
 pnpm run test       # Run tests in watch mode
-pnpm run lint       # Run tsc, biome lint, and component-count enforcement
+pnpm run lint       # Run tsc, eslint, formatting checks, and the React one-component rule
 pnpm run validate   # Run full validation pipeline
 ```
 Note: When using worktrees, run `apps/web/run.sh` from the worktree to use the assigned port.
@@ -105,7 +105,7 @@ Please clean up your session when you are finished testing.
 
 For `apps/web/`:
 - Keep component files under 500 lines.
-- Keep component files to at most 2 React components.
+- Keep component files to one React component.
 - Treat pages and large feature components as orchestration shells: extract JSX sections into sibling files and move non-UI logic into hooks/utilities before the file grows past the limit.
 
 ### TODO Annotations

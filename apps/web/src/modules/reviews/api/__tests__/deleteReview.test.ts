@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { useDeleteReview } from '../deleteReview'
 
 const invalidateQueriesMock = vi.fn()
@@ -10,7 +11,8 @@ let lastMutationOptions:
 	| undefined
 
 vi.mock('@tanstack/react-query', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-query')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-query')>()
 	return {
 		...actual,
 		useMutation: (options: unknown) => {
@@ -18,8 +20,8 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 			return options
 		},
 		useQueryClient: () => ({
-			invalidateQueries: invalidateQueriesMock
-		})
+			invalidateQueries: invalidateQueriesMock,
+		}),
 	}
 })
 
@@ -47,14 +49,14 @@ describe('useDeleteReview', () => {
 					return reviewsInvalidation.promise
 				}
 				return Promise.resolve()
-			}
+			},
 		)
 
 		renderHook(() =>
 			useDeleteReview({
 				invalidationScope: 'reviews-only',
-				onDeferredInvalidation
-			})
+				onDeferredInvalidation,
+			}),
 		)
 
 		const onSuccess = lastMutationOptions?.onSuccess
@@ -68,8 +70,8 @@ describe('useDeleteReview', () => {
 				[{ queryKey: ['review-cards'], refetchType: 'none' }],
 				[{ queryKey: ['reviews'] }],
 				[{ queryKey: ['review-queue'], refetchType: 'none' }],
-				[{ queryKey: ['search'], refetchType: 'none' }]
-			])
+				[{ queryKey: ['search'], refetchType: 'none' }],
+			]),
 		)
 
 		reviewsInvalidation.resolve()

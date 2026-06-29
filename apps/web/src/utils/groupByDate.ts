@@ -1,4 +1,4 @@
-import type { SearchResultItem } from '~/modules/search/types/search.types'
+import { type SearchResultItem } from '~/modules/search/types/search.types'
 
 export type DateSection<T> = {
 	id: string
@@ -23,13 +23,13 @@ function getDateLabel(date: Date, today: Date): string {
 	const dateNormalized = new Date(date)
 	dateNormalized.setHours(0, 0, 0, 0)
 	const daysDiff = Math.floor(
-		(today.getTime() - dateNormalized.getTime()) / (1000 * 60 * 60 * 24)
+		(today.getTime() - dateNormalized.getTime()) / (1000 * 60 * 60 * 24),
 	)
 	return `${daysDiff}d ago`
 }
 
 export function groupByDate<T>(
-	entries: Array<{ item: T; date: string | Date }>
+	entries: Array<{ item: T; date: string | Date }>,
 ): Array<DateSection<T>> {
 	const today = new Date()
 	today.setHours(0, 0, 0, 0)
@@ -44,7 +44,7 @@ export function groupByDate<T>(
 		if (!groupMap.has(key)) {
 			groupMap.set(key, {
 				label: getDateLabel(dateObj, today),
-				items: []
+				items: [],
 			})
 			groupOrder.push(key)
 		}
@@ -54,15 +54,15 @@ export function groupByDate<T>(
 	return groupOrder.map(key => ({
 		id: key,
 		label: groupMap.get(key)!.label,
-		items: groupMap.get(key)!.items
+		items: groupMap.get(key)!.items,
 	}))
 }
 
 export function toEntityEntries(
-	results: Array<SearchResultItem>
+	results: Array<SearchResultItem>,
 ): Array<{ item: SearchResultItem; date: string }> {
 	return results.map(result => ({
 		item: result,
-		date: result.recent_activity_at
+		date: result.recent_activity_at,
 	}))
 }

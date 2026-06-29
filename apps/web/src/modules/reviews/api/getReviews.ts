@@ -1,9 +1,11 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
-import type { GetReviewsFilters } from '../types/api.types'
+
+import { type GetReviewsFilters } from '../types/api.types'
 import { ReviewListItemSchema, ReviewSchema } from '../types/review.schemas'
-import type { Review } from '../types/review.types'
+import { type Review } from '../types/review.types'
 import { reviewKeys } from './queryKeys'
 
 export const REVIEW_LIST_QUERY_STALE_TIME = 30_000
@@ -39,7 +41,7 @@ export async function getReviews(filters?: GetReviewsFilters) {
 	const url = `${import.meta.env.VITE_API_URL}/reviews/${params.toString() ? `?${params.toString()}` : ''}`
 
 	const response = await apiFetch(url, {
-		method: 'GET'
+		method: 'GET',
 	})
 
 	if (!response.ok) {
@@ -59,14 +61,14 @@ export async function getReviews(filters?: GetReviewsFilters) {
 
 export function useReviews(filters?: GetReviewsFilters) {
 	return useQuery({
-		...reviewsQueryOptions(filters)
+		...reviewsQueryOptions(filters),
 	})
 }
 
 export function useReviewsByReviewCard(reviewCardId: number | undefined) {
 	return useQuery({
 		...reviewsQueryOptions({ reviewCardId }),
-		enabled: reviewCardId !== undefined
+		enabled: reviewCardId !== undefined,
 	})
 }
 
@@ -74,7 +76,7 @@ export function reviewsQueryOptions(filters?: GetReviewsFilters) {
 	return queryOptions({
 		queryKey: reviewKeys.list(filters),
 		queryFn: () => getReviews(filters),
-		staleTime: REVIEW_LIST_QUERY_STALE_TIME
+		staleTime: REVIEW_LIST_QUERY_STALE_TIME,
 	})
 }
 
@@ -82,7 +84,7 @@ export async function getReview(reviewId: number): Promise<Review> {
 	const url = `${import.meta.env.VITE_API_URL}/reviews/${reviewId}/`
 
 	const response = await apiFetch(url, {
-		method: 'GET'
+		method: 'GET',
 	})
 
 	if (!response.ok) {
@@ -104,7 +106,7 @@ export function reviewDetailQueryOptions(reviewId: number) {
 	return queryOptions({
 		queryKey: reviewKeys.detail(reviewId),
 		queryFn: () => getReview(reviewId),
-		staleTime: REVIEW_DETAIL_QUERY_STALE_TIME
+		staleTime: REVIEW_DETAIL_QUERY_STALE_TIME,
 	})
 }
 
@@ -113,6 +115,6 @@ export function useReview(reviewId: number | undefined) {
 		...(reviewId === undefined
 			? reviewDetailQueryOptions(-1)
 			: reviewDetailQueryOptions(reviewId)),
-		enabled: reviewId !== undefined
+		enabled: reviewId !== undefined,
 	})
 }

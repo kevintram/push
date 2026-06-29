@@ -9,7 +9,7 @@ interface ReviewListHeaderProps {
 }
 
 export function ReviewListHeader({
-	showCardColumn = true
+	showCardColumn = true,
 }: ReviewListHeaderProps) {
 	const gridCols = getReviewListGridCols(showCardColumn)
 

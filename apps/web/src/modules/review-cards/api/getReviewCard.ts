@@ -1,9 +1,11 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
 import { HttpStatusError } from '~/utils/httpStatusError'
+
 import { ReviewCardSchema } from '../types/review-card.schemas'
-import type { ReviewCard } from '../types/review-card.types'
+import { type ReviewCard } from '../types/review-card.types'
 import { reviewCardKeys } from './queryKeys'
 
 export async function getReviewCard(reviewCardId: number): Promise<ReviewCard> {
@@ -28,7 +30,7 @@ export async function getReviewCard(reviewCardId: number): Promise<ReviewCard> {
 export function reviewCardQueryOptions(reviewCardId: number) {
 	return queryOptions({
 		queryKey: reviewCardKeys.detail(reviewCardId),
-		queryFn: () => getReviewCard(reviewCardId)
+		queryFn: () => getReviewCard(reviewCardId),
 	})
 }
 
@@ -37,6 +39,6 @@ export function useReviewCard(reviewCardId: number | null) {
 		...(reviewCardId === null
 			? reviewCardQueryOptions(-1)
 			: reviewCardQueryOptions(reviewCardId)),
-		enabled: reviewCardId !== null
+		enabled: reviewCardId !== null,
 	})
 }

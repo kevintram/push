@@ -1,16 +1,21 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
+
 import { SearchResultItemSchema } from '../types/search.schemas'
-import type { SearchAllParams, SearchResultItem } from '../types/search.types'
+import {
+	type SearchAllParams,
+	type SearchResultItem,
+} from '../types/search.types'
 
 export const searchKeys = {
 	all: ['search'] as const,
-	list: (params: SearchAllParams) => [...searchKeys.all, params] as const
+	list: (params: SearchAllParams) => [...searchKeys.all, params] as const,
 }
 
 export async function searchAll(
-	params: SearchAllParams = {}
+	params: SearchAllParams = {},
 ): Promise<Array<SearchResultItem>> {
 	const searchParams = new URLSearchParams()
 
@@ -27,7 +32,7 @@ export async function searchAll(
 	}
 
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/search/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+		`${import.meta.env.VITE_API_URL}/search/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
 	)
 
 	if (!response.ok) {
@@ -47,11 +52,11 @@ export async function searchAll(
 
 export function useSearchAll(
 	params: SearchAllParams = {},
-	options?: { enabled?: boolean }
+	options?: { enabled?: boolean },
 ) {
 	return useQuery({
 		queryKey: searchKeys.list(params),
 		queryFn: () => searchAll(params),
-		enabled: options?.enabled ?? true
+		enabled: options?.enabled ?? true,
 	})
 }

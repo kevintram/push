@@ -1,5 +1,6 @@
-import type { QueryClient } from '@tanstack/react-query'
+import { type QueryClient } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
+
 import { prefetchTopicDetailRouteData } from '~/app/routes/topics_.$topicId'
 import { reviewCardsQueryOptions } from '~/modules/review-cards/api/getReviewCards'
 import { topicQueryOptions } from '~/modules/topics/api/getTopic'
@@ -16,7 +17,7 @@ function createDeferred() {
 	return {
 		promise,
 		resolve,
-		reject
+		reject,
 	}
 }
 
@@ -35,29 +36,32 @@ describe('prefetchTopicDetailRouteData', () => {
 
 		expect(
 			prefetchTopicDetailRouteData({
-				queryClient: { prefetchQuery } as Pick<QueryClient, 'prefetchQuery'>,
-				topicId: 42
-			})
+				queryClient: { prefetchQuery } as Pick<
+					QueryClient,
+					'prefetchQuery'
+				>,
+				topicId: 42,
+			}),
 		).toBeUndefined()
 
 		expect(
-			prefetchQuery.mock.calls.map(([options]) => options.queryKey)
+			prefetchQuery.mock.calls.map(([options]) => options.queryKey),
 		).toEqual([
 			topicQueryOptions(42).queryKey,
 			topicsQueryOptions({
 				sort: 'title',
-				order: 'asc'
+				order: 'asc',
 			}).queryKey,
 			topicsQueryOptions({
 				subtree_of: 42,
 				sort: 'title',
-				order: 'asc'
+				order: 'asc',
 			}).queryKey,
 			reviewCardsQueryOptions({
 				topic_id: 42,
 				include_descendants: true,
-				order: 'desc'
-			}).queryKey
+				order: 'desc',
+			}).queryKey,
 		])
 
 		topicDeferred.resolve(undefined)
@@ -76,9 +80,12 @@ describe('prefetchTopicDetailRouteData', () => {
 
 		expect(
 			prefetchTopicDetailRouteData({
-				queryClient: { prefetchQuery } as Pick<QueryClient, 'prefetchQuery'>,
-				topicId: 7
-			})
+				queryClient: { prefetchQuery } as Pick<
+					QueryClient,
+					'prefetchQuery'
+				>,
+				topicId: 7,
+			}),
 		).toBeUndefined()
 
 		await Promise.resolve()

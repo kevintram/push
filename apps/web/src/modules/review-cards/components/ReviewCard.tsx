@@ -1,8 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { AlertTriangle } from 'lucide-react'
-import type { KeyboardEvent, MouseEvent } from 'react'
+import { type KeyboardEvent, type MouseEvent } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -12,10 +13,10 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogMedia,
-	AlertDialogTitle
+	AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import { Card } from '~/components/ui/card'
-import type { StatusBadgeItem } from '~/components/ui/status-badge'
+import { type StatusBadgeItem } from '~/components/ui/status-badge'
 import { useLearnableMetrics } from '~/hooks/useLearnableMetrics'
 import { useResizeObserver } from '~/hooks/useResizeObserver'
 import { useRevealPanel } from '~/hooks/useRevealPanel'
@@ -24,27 +25,30 @@ import { useReviewMode } from '~/stores/ReviewModeContext'
 import { estimateExpandedCardSize } from '~/utils/estimateCardSize'
 import {
 	formatAbsoluteDate,
-	formatRelativeDate
+	formatRelativeDate,
 } from '~/utils/formatRelativeDate'
 import { highlightText, truncateWithHighlight } from '~/utils/textHighlight'
+
 import {
 	REVIEW_LIST_QUERY_STALE_TIME,
-	reviewsQueryOptions
+	reviewsQueryOptions,
 } from '../../reviews/api/getReviews'
 import { useReviewDialog } from '../../reviews/hooks/useReviewDialog'
 import { getReviewCard } from '../api/getReviewCard'
 import { reviewCardKeys } from '../api/queryKeys'
 import { useUpdateReviewCard } from '../api/updateReviewCard'
 import { useDeleteReviewCardWithUndo } from '../hooks/useDeleteReviewCardWithUndo'
-import type { ReviewCard as ReviewCardModel } from '../types/review-card.types'
+import { type ReviewCard as ReviewCardModel } from '../types/review-card.types'
 import { hasScheduledDueReviews } from '../utils/hasScheduledDueReviews'
 import { orderReviewCardStatusBadges } from '../utils/orderReviewCardStatusBadges'
 import { getReviewCardDisplayTitle } from '../utils/reviewCardCopy'
 import { RetireReviewCardDialog } from './RetireReviewCardDialog'
-import { ReviewCardBody, ReviewCardMetaRow } from './ReviewCardBody'
+import { ReviewCardBody } from './ReviewCardBody'
 import { ReviewCardFooterActions } from './ReviewCardFooterActions'
-import { ReviewCardHeader, ReviewCardStatusRow } from './ReviewCardHeader'
+import { ReviewCardHeader } from './ReviewCardHeader'
+import { ReviewCardMetaRow } from './ReviewCardMetaRow'
 import { toFreshnessTier, toReviewCardStatusBadge } from './reviewCardShared'
+import { ReviewCardStatusRow } from './ReviewCardStatusRow'
 
 const MIN_HEIGHT = 96
 const LARGE_CARD_CONTENT_HEIGHT_MIN = 500
@@ -78,7 +82,7 @@ export function ReviewCard({
 	removeFromTabLabel = 'Remove from tab',
 	isRemovingFromTab = false,
 	parentLabel,
-	typeLabelOverride
+	typeLabelOverride,
 }: ReviewCardProps) {
 	const [cardRef, cardRect] = useResizeObserver<HTMLDivElement>()
 	const queryClient = useQueryClient()
@@ -92,11 +96,15 @@ export function ReviewCard({
 		days_until_next_tier: reviewCard.days_until_next_tier,
 		stability: reviewCard.stability,
 		last_reviewed_at: reviewCard.last_reviewed_at,
-		inherited_stability: null
+		inherited_stability: null,
 	})
 
-	const { freshnessTierInfo, freshnessTierColor, isUnreviewed, stabilityText } =
-		metrics
+	const {
+		freshnessTierInfo,
+		freshnessTierColor,
+		isUnreviewed,
+		stabilityText,
+	} = metrics
 
 	const { hidesPrimary, hidesSecondary } = useReviewMode()
 	const effectiveHidesSecondary =
@@ -104,7 +112,7 @@ export function ReviewCard({
 	const hideParent = hidesPrimary && reviewCard.topic_id != null
 	const [isPrimaryRevealed, setIsPrimaryRevealed] = useState(!hidesPrimary)
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
-		!effectiveHidesSecondary
+		!effectiveHidesSecondary,
 	)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const [isRetireDialogOpen, setIsRetireDialogOpen] = useState(false)
@@ -114,25 +122,32 @@ export function ReviewCard({
 		() =>
 			formatRelativeDate(reviewCard.last_reviewed_at, {
 				includeFuture: false,
-				nullLabel: 'never'
+				nullLabel: 'never',
 			}),
-		[reviewCard.last_reviewed_at]
+		[reviewCard.last_reviewed_at],
 	)
 	const lastReviewedDate = useMemo(
 		() => formatAbsoluteDate(reviewCard.last_reviewed_at),
-		[reviewCard.last_reviewed_at]
+		[reviewCard.last_reviewed_at],
 	)
 
 	const highlightedPrimary = useMemo(() => {
 		if (!reviewCard.primary_text) return null
 		if (!searchQuery?.trim()) return reviewCard.primary_text
-		return highlightText({ text: reviewCard.primary_text, query: searchQuery })
+		return highlightText({
+			text: reviewCard.primary_text,
+			query: searchQuery,
+		})
 	}, [reviewCard.primary_text, searchQuery])
 
 	const highlightedSecondary = useMemo(() => {
 		if (!reviewCard.secondary_text) return null
 		if (!searchQuery?.trim()) return reviewCard.secondary_text
-		return truncateWithHighlight(reviewCard.secondary_text, searchQuery, 200)
+		return truncateWithHighlight(
+			reviewCard.secondary_text,
+			searchQuery,
+			200,
+		)
 	}, [reviewCard.secondary_text, searchQuery])
 
 	const hasPrimaryText = Boolean(reviewCard.primary_text.trim())
@@ -147,7 +162,7 @@ export function ReviewCard({
 		return estimateExpandedCardSize(
 			displayPrimaryText,
 			reviewCard.secondary_text || '',
-			estimatedWidth
+			estimatedWidth,
 		)
 	}, [cardRect.width, displayPrimaryText, reviewCard.secondary_text])
 	const isLargeCard =
@@ -163,11 +178,11 @@ export function ReviewCard({
 		setGuessText: setGuessSecondaryText,
 		isCopied: isRevealPanelCopied,
 		handleCopyGuessText,
-		handleCopyRevealText
+		handleCopyRevealText,
 	} = useRevealPanel({
 		revealText: reviewCard.secondary_text,
 		entityId: reviewCard.id < 0 ? null : reviewCard.id,
-		hidesSecondary: effectiveHidesSecondary
+		hidesSecondary: effectiveHidesSecondary,
 	})
 
 	useEffect(() => {
@@ -190,19 +205,21 @@ export function ReviewCard({
 				onClick?.()
 			}
 		},
-		[onClick]
+		[onClick],
 	)
 
 	const handleMouseEnter = useCallback(() => {
 		queryClient.prefetchQuery({
 			queryKey: reviewCardKeys.detail(reviewCard.id),
 			queryFn: () => getReviewCard(reviewCard.id),
-			staleTime: 30_000
+			staleTime: 30_000,
 		})
 	}, [queryClient, reviewCard.id])
 
 	const handleReviewsMenuPrefetch = useCallback(() => {
-		const queryOptions = reviewsQueryOptions({ reviewCardId: reviewCard.id })
+		const queryOptions = reviewsQueryOptions({
+			reviewCardId: reviewCard.id,
+		})
 		const queryState = queryClient.getQueryState(queryOptions.queryKey)
 
 		if (queryState?.fetchStatus === 'fetching') {
@@ -222,7 +239,7 @@ export function ReviewCard({
 	const confirmRetiredToggle = useCallback(() => {
 		updateReviewCard({
 			id: reviewCard.id,
-			retired: !reviewCard.retired
+			retired: !reviewCard.retired,
 		})
 		setIsRetireDialogOpen(false)
 	}, [reviewCard.id, reviewCard.retired, updateReviewCard])
@@ -236,17 +253,17 @@ export function ReviewCard({
 			}
 			confirmRetiredToggle()
 		},
-		[confirmRetiredToggle, reviewCard]
+		[confirmRetiredToggle, reviewCard],
 	)
 	const handleFlaggedToggle = useCallback(
 		(event: MouseEvent) => {
 			event.stopPropagation()
 			updateReviewCard({
 				id: reviewCard.id,
-				flagged: reviewCard.flagged_at == null
+				flagged: reviewCard.flagged_at == null,
 			})
 		},
-		[reviewCard.id, reviewCard.flagged_at, updateReviewCard]
+		[reviewCard.id, reviewCard.flagged_at, updateReviewCard],
 	)
 
 	const handleSeeReviews = useCallback(() => {
@@ -254,7 +271,7 @@ export function ReviewCard({
 		navigate({
 			to: '/review-cards/$reviewCardId',
 			params: { reviewCardId: reviewCard.id.toString() },
-			search: { tab: 'reviews' }
+			search: { tab: 'reviews' },
 		})
 	}, [navigate, reviewCard.id])
 
@@ -275,12 +292,13 @@ export function ReviewCard({
 	const { openReviewDialog } = useReviewDialog()
 	const reviewCardStatusBadges = useMemo(
 		() =>
-			orderReviewCardStatusBadges(reviewCard.status_badges).map(apiBadge =>
-				toReviewCardStatusBadge(apiBadge, {
-					onOpenReviewDialog: openReviewDialog
-				})
+			orderReviewCardStatusBadges(reviewCard.status_badges).map(
+				apiBadge =>
+					toReviewCardStatusBadge(apiBadge, {
+						onOpenReviewDialog: openReviewDialog,
+					}),
 			),
-		[reviewCard.status_badges, openReviewDialog]
+		[reviewCard.status_badges, openReviewDialog],
 	)
 	const resolvedStatusBadges = statusBadges ?? reviewCardStatusBadges
 
@@ -307,7 +325,7 @@ export function ReviewCard({
 			className={cn(
 				'relative gap-0 overflow-visible p-3 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
 				isLargeCard ? 'max-h-none' : 'max-h-96',
-				onClick ? 'cursor-pointer hover:bg-muted/50' : null
+				onClick ? 'cursor-pointer hover:bg-muted/50' : null,
 			)}
 			onClick={handleActivate}
 			onKeyDown={handleKeyDown}
@@ -318,7 +336,7 @@ export function ReviewCard({
 				isLargeCard
 					? {
 							height: `${largeCardHeight}px`,
-							minHeight: `${largeCardHeight}px`
+							minHeight: `${largeCardHeight}px`,
 						}
 					: { minHeight: `${minHeight}px` }
 			}
@@ -387,7 +405,8 @@ export function ReviewCard({
 						</AlertDialogMedia>
 						<AlertDialogTitle>Delete review card?</AlertDialogTitle>
 						<AlertDialogDescription>
-							This will delete this review card and all linked reviews.
+							This will delete this review card and all linked
+							reviews.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

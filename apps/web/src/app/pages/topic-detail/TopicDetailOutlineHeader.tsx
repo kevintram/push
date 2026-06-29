@@ -1,5 +1,6 @@
 import { Loader, Minimize2, Plus } from 'lucide-react'
 import { useState } from 'react'
+
 import { Button } from '~/components/ui/button'
 
 const OUTLINE_LABEL = 'topics'
@@ -17,7 +18,7 @@ export function TopicDetailOutlineHeader({
 	isUpdatingTopic,
 	onAdd,
 	onCollapseAll,
-	onScrollToTop
+	onScrollToTop,
 }: TopicDetailOutlineHeaderProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const addTopicLabel = isSubmitting ? 'Creating topic' : ADD_TOPIC_LABEL
@@ -57,7 +58,11 @@ export function TopicDetailOutlineHeader({
 					type='button'
 					variant='ghost'
 				>
-					{isSubmitting ? <Loader className='animate-spin' /> : <Plus />}
+					{isSubmitting ? (
+						<Loader className='animate-spin' />
+					) : (
+						<Plus />
+					)}
 					<span className='sr-only'>{addTopicLabel}</span>
 				</Button>
 			</div>

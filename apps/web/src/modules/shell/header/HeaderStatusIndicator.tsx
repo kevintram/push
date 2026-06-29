@@ -1,19 +1,5 @@
-import type { ReactNode } from 'react'
 import { reviewStatusDotVariants } from '~/components/ui/review-status-dots'
 import { cn } from '~/lib/utils'
-
-export function HeaderNavIndicator({ children }: { children?: ReactNode }) {
-	if (!children) return null
-
-	return (
-		<span
-			aria-hidden={true}
-			className='pointer-events-none absolute top-1 right-1 z-10 inline-flex items-center justify-center'
-		>
-			{children}
-		</span>
-	)
-}
 
 const ARC_BUTTON_SIZE = 30
 const ARC_DOT_SIZE = 8
@@ -38,7 +24,7 @@ function getArcPositions(count: number) {
 		const rad = (deg * Math.PI) / 180
 		return {
 			left: cx + r * Math.cos(rad) - half,
-			top: cy + r * Math.sin(rad) - half
+			top: cy + r * Math.sin(rad) - half,
 		}
 	})
 }
@@ -49,7 +35,7 @@ const ARC_DOT_TESTID_SUFFIX: Record<ArcDotTone, string> = {
 	danger: 'overdue-dot',
 	info: 'due-today-dot',
 	neutral: 'pending-dot',
-	'neutral-solid': 'pending-dot'
+	'neutral-solid': 'pending-dot',
 }
 
 export function HeaderArcIndicator({
@@ -57,7 +43,7 @@ export function HeaderArcIndicator({
 	dueTodayCount,
 	pendingCount,
 	neutralVariant = 'outline',
-	testIdPrefix
+	testIdPrefix,
 }: {
 	overdueCount: number
 	dueTodayCount: number
@@ -70,7 +56,7 @@ export function HeaderArcIndicator({
 	if (dueTodayCount > 0) dots.push({ tone: 'info' })
 	if (pendingCount > 0)
 		dots.push({
-			tone: neutralVariant === 'solid' ? 'neutral-solid' : 'neutral'
+			tone: neutralVariant === 'solid' ? 'neutral-solid' : 'neutral',
 		})
 
 	if (dots.length === 0) return null
@@ -85,8 +71,11 @@ export function HeaderArcIndicator({
 					<span
 						aria-hidden={true}
 						className={cn(
-							reviewStatusDotVariants({ size: 'default', tone: dot.tone }),
-							'pointer-events-none absolute z-10'
+							reviewStatusDotVariants({
+								size: 'default',
+								tone: dot.tone,
+							}),
+							'pointer-events-none absolute z-10',
 						)}
 						data-testid={
 							testIdPrefix

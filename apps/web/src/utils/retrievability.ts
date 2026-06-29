@@ -1,4 +1,4 @@
-import type { FreshnessTier } from '~/models/learnable.types'
+import { type FreshnessTier } from '~/models/learnable.types'
 
 export function formatRetrievability(retrievability: number | null): string {
 	if (retrievability === null) return '—'
@@ -6,7 +6,7 @@ export function formatRetrievability(retrievability: number | null): string {
 }
 
 export function getFreshnessTierColor(
-	freshnessTier: FreshnessTier | null
+	freshnessTier: FreshnessTier | null,
 ): string {
 	if (freshnessTier === null) {
 		return 'text-muted-foreground'

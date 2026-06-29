@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { CalendarIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+
 import { DuePageLayout } from '~/app/pages/due/DuePageLayout'
 import { DueReviewModePrompt } from '~/app/pages/due/DueReviewModePrompt'
 import {
@@ -8,22 +9,22 @@ import {
 	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
-	EmptyTitle
+	EmptyTitle,
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useReviewCardQueuePage } from '~/modules/review-cards/api/getReviewCardQueue'
 import { ReviewCardSectionList } from '~/modules/review-cards/components/ReviewCardSectionList'
 import {
 	getStoredDueViewPreference,
-	persistDueViewPreference
+	persistDueViewPreference,
 } from '~/modules/review-cards/dueQueueViewPreferences'
 import {
 	buildFocusSearch,
-	makeShuffleSeed
+	makeShuffleSeed,
 } from '~/modules/review-cards/reviewFocusSearch'
-import type {
-	ReviewCardQueueItem,
-	ReviewFilter
+import {
+	type ReviewCardQueueItem,
+	type ReviewFilter,
 } from '~/modules/review-cards/types/review-card.types'
 import { groupUnifiedReviewQueue } from '~/modules/review-cards/utils/groupUnifiedReviewQueue'
 import { useWeekStart } from '~/stores/WeekStartContext'
@@ -41,21 +42,21 @@ export function DuePage({ filter, onFilterChange }: DuePageProps) {
 	const navigate = useNavigate()
 	const { weekStartDay } = useWeekStart()
 	const [focusOrder, setFocusOrder] = useState(
-		() => getStoredDueViewPreference().focusOrder
+		() => getStoredDueViewPreference().focusOrder,
 	)
 	const [shuffleSeed, setShuffleSeed] = useState<string | undefined>()
 	const queueQuery = useReviewCardQueuePage({
 		filter,
-		mode: 'list'
+		mode: 'list',
 	})
 	const queueItems = queueQuery.data?.items ?? EMPTY_ITEMS
 	const newItems = useMemo(
 		() => queueItems.filter(item => item.queue_type === 'new'),
-		[queueItems]
+		[queueItems],
 	)
 	const dueItems = useMemo(
 		() => queueItems.filter(item => item.queue_type !== 'new'),
-		[queueItems]
+		[queueItems],
 	)
 	const isLoading = queueQuery.isLoading
 	const sections = useMemo(
@@ -64,20 +65,25 @@ export function DuePage({ filter, onFilterChange }: DuePageProps) {
 				{ dueItems, newItems },
 				{
 					asOf: queueQuery.data?.as_of,
-					weekStartDay
-				}
+					weekStartDay,
+				},
 			),
-		[dueItems, newItems, queueQuery.data?.as_of, weekStartDay]
+		[dueItems, newItems, queueQuery.data?.as_of, weekStartDay],
 	)
 	const focusSearch = useMemo(
-		() => buildFocusSearch({ filter, order: focusOrder, shuffle: shuffleSeed }),
-		[filter, focusOrder, shuffleSeed]
+		() =>
+			buildFocusSearch({
+				filter,
+				order: focusOrder,
+				shuffle: shuffleSeed,
+			}),
+		[filter, focusOrder, shuffleSeed],
 	)
 
 	useEffect(() => {
 		persistDueViewPreference({
 			...getStoredDueViewPreference(),
-			focusOrder
+			focusOrder,
 		})
 	}, [focusOrder])
 
@@ -123,7 +129,7 @@ export function DuePage({ filter, onFilterChange }: DuePageProps) {
 						navigate({
 							to: '/review-cards/$reviewCardId',
 							params: { reviewCardId: cardId.toString() },
-							search: { tab: 'home' }
+							search: { tab: 'home' },
 						})
 					}
 					sections={sections}

@@ -2,30 +2,10 @@ import { User2 } from 'lucide-react'
 
 import { CardHeader } from '~/components/ui/card'
 import {
-	type StatusBadgeItem,
-	StatusBadgeList
-} from '~/components/ui/status-badge'
-import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from '~/components/ui/tooltip'
-
-export function ReviewCardStatusRow({
-	badges
-}: {
-	badges: Array<StatusBadgeItem>
-}) {
-	if (badges.length === 0) return null
-
-	return (
-		<StatusBadgeList
-			badgeClassName='pointer-events-auto'
-			badges={badges}
-			className='pointer-events-none absolute top-[0.5px] right-3 z-5 max-w-[calc(100%-1.5rem)] -translate-y-1/2 justify-end'
-		/>
-	)
-}
 
 type ReviewCardHeaderProps = {
 	hideParent: boolean
@@ -36,7 +16,7 @@ type ReviewCardHeaderProps = {
 export function ReviewCardHeader({
 	hideParent,
 	resolvedParentLabel,
-	typeBadgeLabel
+	typeBadgeLabel,
 }: ReviewCardHeaderProps) {
 	return (
 		<CardHeader className='relative flex items-center gap-2 p-0 pb-1'>
@@ -46,9 +26,15 @@ export function ReviewCardHeader({
 						<User2 className='h-3 w-3 shrink-0' />
 						<Tooltip>
 							<TooltipTrigger
-								render={<span className='truncate'>{resolvedParentLabel}</span>}
+								render={
+									<span className='truncate'>
+										{resolvedParentLabel}
+									</span>
+								}
 							/>
-							<TooltipContent>{resolvedParentLabel}</TooltipContent>
+							<TooltipContent>
+								{resolvedParentLabel}
+							</TooltipContent>
 						</Tooltip>
 						<span aria-hidden={true}>·</span>
 					</>

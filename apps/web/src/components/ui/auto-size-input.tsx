@@ -2,8 +2,9 @@ import React, {
 	type ComponentProps,
 	forwardRef,
 	useLayoutEffect,
-	useRef
+	useRef,
 } from "react"
+
 import { cn } from "~/lib/utils"
 
 interface AutoSizeInputProps extends ComponentProps<"input"> {
@@ -27,7 +28,6 @@ export const AutoSizeInput = forwardRef<HTMLInputElement, AutoSizeInputProps>(
 			}
 		}
 
-		// biome-ignore lint/correctness/useExhaustiveDependencies: I WANT VALUE
 		useLayoutEffect(() => {
 			if (spanRef.current && inputRef.current) {
 				inputRef.current.style.width = `${spanRef.current.offsetWidth}px`
@@ -38,7 +38,10 @@ export const AutoSizeInput = forwardRef<HTMLInputElement, AutoSizeInputProps>(
 			<div className='relative flex items-center'>
 				<input
 					{...props}
-					className={cn("border-0 bg-transparent p-0 outline-none", className)}
+					className={cn(
+						"border-0 bg-transparent p-0 outline-none",
+						className,
+					)}
 					onChange={onChange}
 					ref={combinedRef}
 					value={value}
@@ -51,7 +54,7 @@ export const AutoSizeInput = forwardRef<HTMLInputElement, AutoSizeInputProps>(
 				</span>
 			</div>
 		)
-	}
+	},
 )
 
 AutoSizeInput.displayName = "AutoSizeInput"

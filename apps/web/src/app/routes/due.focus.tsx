@@ -1,14 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { DueFocusPage } from '~/app/pages/DueFocusPage'
 import {
 	resolveDueFilter,
 	resolveDueFocusOrder,
-	validateDueFocusSearch
+	validateDueFocusSearch,
 } from '~/app/routes/due'
 
 export const Route = createFileRoute('/due/focus')({
 	validateSearch: validateDueFocusSearch,
-	component: DueFocusRoute
+	component: DueFocusRoute,
 })
 
 function DueFocusRoute() {

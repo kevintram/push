@@ -6,7 +6,7 @@ type EstimateCardSizeOptions = {
 function estimateLines(
 	text: string,
 	numCharsPerLine: number,
-	maxLines?: number
+	maxLines?: number,
 ): number {
 	if (!text) return 0
 
@@ -18,7 +18,7 @@ function estimateCardHeight(
 	title: string,
 	body: string,
 	laneWidth: number,
-	options?: EstimateCardSizeOptions
+	options?: EstimateCardSizeOptions,
 ): number {
 	const chromeHeight = 92
 	const titleLineHeight = 22
@@ -35,16 +35,20 @@ function estimateCardHeight(
 	const titleLines = estimateLines(
 		title,
 		numCharsPerLine,
-		options?.maxTitleLines
+		options?.maxTitleLines,
 	)
-	const bodyLines = estimateLines(body, numCharsPerLine, options?.maxBodyLines)
+	const bodyLines = estimateLines(
+		body,
+		numCharsPerLine,
+		options?.maxBodyLines,
+	)
 
 	const titleHeight = titleLines * titleLineHeight
 	const bodyHeight = bodyLines * bodyLineHeight
 
 	return Math.max(
 		chromeHeight + titleHeight + bodyHeight + measurementSafetyBuffer,
-		minHeight
+		minHeight,
 	)
 }
 
@@ -55,11 +59,11 @@ function estimateCardHeight(
 export function estimateCardSize(
 	title: string,
 	body: string,
-	laneWidth: number
+	laneWidth: number,
 ): number {
 	return estimateCardHeight(title, body, laneWidth, {
 		maxTitleLines: 5,
-		maxBodyLines: 8
+		maxBodyLines: 8,
 	})
 }
 
@@ -71,7 +75,7 @@ export function estimateCardSize(
 export function estimateExpandedCardSize(
 	title: string,
 	body: string,
-	laneWidth: number
+	laneWidth: number,
 ): number {
 	return estimateCardHeight(title, body, laneWidth)
 }

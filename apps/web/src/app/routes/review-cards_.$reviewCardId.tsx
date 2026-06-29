@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+
 import { ReviewCardDetailPage } from '~/app/pages/review-card-detail/ReviewCardDetailPage'
 import {
 	isReviewCardDetailTab,
-	type ReviewCardDetailTab
+	type ReviewCardDetailTab,
 } from '~/app/pages/review-card-detail/shared'
 
 type ReviewCardDetailRouteSearch = {
@@ -14,10 +15,13 @@ export const Route = createFileRoute('/review-cards_/$reviewCardId')({
 		const { tab } = search
 
 		return {
-			tab: typeof tab === 'string' && isReviewCardDetailTab(tab) ? tab : 'home'
+			tab:
+				typeof tab === 'string' && isReviewCardDetailTab(tab)
+					? tab
+					: 'home',
 		}
 	},
-	component: RouteComponent
+	component: RouteComponent,
 })
 
 function RouteComponent() {
@@ -32,7 +36,7 @@ function RouteComponent() {
 				navigate({
 					to: '/review-cards/$reviewCardId',
 					params: { reviewCardId },
-					search: { tab }
+					search: { tab },
 				})
 			}
 			reviewCardId={Number(reviewCardId)}

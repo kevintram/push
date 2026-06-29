@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react'
+
 import { useResizeObserver } from './useResizeObserver'
 
 /**
@@ -20,7 +21,6 @@ export function useAutoResizeTextarea(content: string) {
 	}, [textareaRef])
 
 	// Adjust height when content changes or dimensions change
-	// biome-ignore lint/correctness/useExhaustiveDependencies: content is needed to trigger height recalculation on content changes
 	useEffect(() => {
 		adjustTextareaHeight()
 	}, [content, adjustTextareaHeight])

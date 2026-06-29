@@ -1,4 +1,4 @@
-import type { LearningState } from './learning-state.types'
+import { type LearningState } from './learning-state.types'
 
 export type FreshnessTier = 'Fresh' | 'Fine' | 'Hazy' | 'Forgotten'
 export type ReviewRating = 'miss' | 'hard' | 'good' | 'easy'

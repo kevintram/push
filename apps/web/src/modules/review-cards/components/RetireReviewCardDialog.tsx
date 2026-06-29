@@ -1,5 +1,6 @@
 import { AlertTriangle } from 'lucide-react'
-import type { MouseEvent } from 'react'
+import { type MouseEvent } from 'react'
+
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -8,7 +9,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogMedia,
-	AlertDialogTitle
+	AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import { Button } from '~/components/ui/button'
 
@@ -25,7 +26,7 @@ export function RetireReviewCardDialog({
 	onOpenChange,
 	onConfirm,
 	onSeeReviews,
-	isPending = false
+	isPending = false,
 }: RetireReviewCardDialogProps) {
 	function stopPropagation(event: MouseEvent) {
 		event.stopPropagation()
@@ -40,8 +41,9 @@ export function RetireReviewCardDialog({
 					</AlertDialogMedia>
 					<AlertDialogTitle>Retire this card?</AlertDialogTitle>
 					<AlertDialogDescription>
-						This card has scheduled reviews. Retiring it removes it from the new
-						queue, but it will still appear when those reviews become due.{' '}
+						This card has scheduled reviews. Retiring it removes it
+						from the new queue, but it will still appear when those
+						reviews become due.{' '}
 						<button
 							className='underline hover:text-foreground'
 							onClick={event => {
@@ -55,7 +57,10 @@ export function RetireReviewCardDialog({
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel disabled={isPending} onClick={stopPropagation}>
+					<AlertDialogCancel
+						disabled={isPending}
+						onClick={stopPropagation}
+					>
 						Cancel
 					</AlertDialogCancel>
 					<Button

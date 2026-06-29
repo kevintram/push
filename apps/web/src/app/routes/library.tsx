@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+
 import { LibraryPage } from '~/app/pages/LibraryPage'
 
 interface LibraryRouteSearch {
@@ -7,9 +8,9 @@ interface LibraryRouteSearch {
 
 export const Route = createFileRoute('/library')({
 	validateSearch: (search): LibraryRouteSearch => ({
-		create: search.create === true || search.create === 'true' || undefined
+		create: search.create === true || search.create === 'true' || undefined,
 	}),
-	component: LibraryRoute
+	component: LibraryRoute,
 })
 
 function LibraryRoute() {

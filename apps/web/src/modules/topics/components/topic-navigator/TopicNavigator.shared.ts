@@ -10,7 +10,7 @@ export const TOPIC_NAVIGATOR_DRAG_SCROLL_MAX_STEP_PX = 14
 
 export function areNumberArraysEqual(
 	left: Array<number>,
-	right: Array<number>
+	right: Array<number>,
 ) {
 	if (left.length !== right.length) return false
 
@@ -24,7 +24,7 @@ export function areNumberArraysEqual(
 export function clampTopicNavigatorWidth(width: number) {
 	return Math.min(
 		Math.max(width, TOPIC_NAVIGATOR_MIN_WIDTH_PX),
-		TOPIC_NAVIGATOR_MAX_WIDTH_PX
+		TOPIC_NAVIGATOR_MAX_WIDTH_PX,
 	)
 }
 
@@ -35,7 +35,7 @@ export function getStoredTopicNavigatorWidth() {
 	}
 
 	const storedWidth = window.localStorage.getItem(
-		TOPIC_NAVIGATOR_WIDTH_STORAGE_KEY
+		TOPIC_NAVIGATOR_WIDTH_STORAGE_KEY,
 	)
 
 	if (storedWidth == null) return TOPIC_NAVIGATOR_DEFAULT_WIDTH_PX
@@ -51,7 +51,7 @@ export function getStoredExpandedTopicIds() {
 	if (typeof window.localStorage?.getItem !== 'function') return []
 
 	const storedExpandedIds = window.localStorage.getItem(
-		TOPIC_NAVIGATOR_EXPANDED_IDS_STORAGE_KEY
+		TOPIC_NAVIGATOR_EXPANDED_IDS_STORAGE_KEY,
 	)
 
 	if (storedExpandedIds == null) return []
@@ -62,7 +62,7 @@ export function getStoredExpandedTopicIds() {
 
 		return parsedValue.filter(
 			(value): value is number =>
-				typeof value === 'number' && Number.isInteger(value)
+				typeof value === 'number' && Number.isInteger(value),
 		)
 	} catch {
 		return []

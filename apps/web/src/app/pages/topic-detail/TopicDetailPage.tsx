@@ -1,7 +1,8 @@
 import { notFound } from '@tanstack/react-router'
 import { AlertTriangle } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import { type CSSProperties } from 'react'
 import { useState } from 'react'
+
 import { LoadingOrError } from '~/components/LoadingOrError'
 import {
 	AlertDialog,
@@ -12,31 +13,32 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogMedia,
-	AlertDialogTitle
+	AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { cn } from '~/lib/utils'
 import { isHttpStatusError } from '~/utils/httpStatusError'
-import type {
-	TopicDetailReviewCardControlsVariant,
-	TopicDetailReviewCardFilter
+
+import {
+	type TopicDetailReviewCardControlsVariant,
+	type TopicDetailReviewCardFilter,
 } from './shared'
 import { TopicDetailHeader } from './TopicDetailHeader'
-import { TopicDetailOutline } from './TopicDetailOutline'
-import { TopicDetailRootActionsMenu } from './TopicDetailRootActionsMenu'
-import { TopicDetailRootSectionContent } from './TopicDetailRootSectionContent'
 import {
 	TOPIC_DETAIL_LEAF_CONTENT_MEASURE_CLASS,
 	TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH,
 	TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS,
 	TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
 	TOPIC_DETAIL_ROOT_CONTENT_MEASURE_CLASS,
-	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS
+	TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS,
 } from './topicDetailLayout'
+import { TopicDetailOutline } from './TopicDetailOutline'
+import { TopicDetailRootActionsMenu } from './TopicDetailRootActionsMenu'
+import { TopicDetailRootSectionContent } from './TopicDetailRootSectionContent'
 import { buildTopicDetailSectionNumberById } from './topicDetailStructure'
 import {
 	getTopicDetailIndicatorLayout,
-	getTopicDetailRootPresentation
+	getTopicDetailRootPresentation,
 } from './topicDetailTheme'
 import { useTopicDetailPage } from './useTopicDetailPage'
 
@@ -53,10 +55,10 @@ export function TopicDetailPage({
 	focusTitle,
 	onCardTypeFilterChange,
 	reviewCardControlsVariant = 'medium',
-	topicId
+	topicId,
 }: TopicDetailPageProps) {
 	const [outlineWidth, setOutlineWidth] = useState(
-		TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH
+		TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH,
 	)
 	const {
 		ancestorIdsById,
@@ -94,12 +96,12 @@ export function TopicDetailPage({
 		topic,
 		topicPath,
 		topicReviewCardsById,
-		visibleSectionIds
+		visibleSectionIds,
 	} = useTopicDetailPage({
 		cardTypeFilter,
 		focusTitle,
 		onCardTypeFilterChange,
-		topicId
+		topicId,
 	})
 
 	if (isDetailLoading) {
@@ -132,7 +134,7 @@ export function TopicDetailPage({
 
 	const hasChildSections = rootSection.children.length > 0
 	const pageStyle = {
-		'--topic-detail-outline-width': `${outlineWidth}px`
+		'--topic-detail-outline-width': `${outlineWidth}px`,
 	} as CSSProperties & Record<string, string>
 	const indicatorLayout = getTopicDetailIndicatorLayout()
 	pageStyle['--topic-detail-indicator-gap'] = indicatorLayout.indicatorGap
@@ -177,33 +179,48 @@ export function TopicDetailPage({
 					<div
 						className={cn(
 							TOPIC_DETAIL_ROOT_HEADER_BAND_CLASS,
-							rootPresentation.rootHeaderBandClassName
+							rootPresentation.rootHeaderBandClassName,
 						)}
 					>
 						<div className='mx-auto w-full max-w-[76rem]'>
 							<div
 								className={cn(
 									'grid gap-6 px-5 pt-9 pb-7 sm:px-7 sm:pt-10 sm:pb-8 xl:gap-6 xl:px-8 xl:pt-11 xl:pb-8',
-									TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS
+									TOPIC_DETAIL_PAGE_WITH_OUTLINE_GRID_CLASS,
 								)}
 							>
 								<div className='min-w-0'>
 									<div
 										className='relative z-10 min-w-0 scroll-mt-24'
-										data-topic-detail-heading-id={rootSection.topic.id}
+										data-topic-detail-heading-id={
+											rootSection.topic.id
+										}
 										ref={element => {
-											registerSectionHeadingRef(rootSection.topic.id, element)
+											registerSectionHeadingRef(
+												rootSection.topic.id,
+												element,
+											)
 										}}
 									>
 										<TopicDetailHeader
 											actionClassName='top-0 right-0 lg:hidden'
-											contentClassName={rootHeaderContentClassName}
-											headingLevel={rootSection.headingLevel}
+											contentClassName={
+												rootHeaderContentClassName
+											}
+											headingLevel={
+												rootSection.headingLevel
+											}
 											isCreatingTopic={isCreatingTopic}
-											onCreateSubtopic={handleCreateSubtopic}
-											onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+											onCreateSubtopic={
+												handleCreateSubtopic
+											}
+											onOpenDeleteDialog={() =>
+												setIsDeleteDialogOpen(true)
+											}
 											pathContainerClassName='lg:pr-0'
-											shouldAutoFocusTitle={shouldAutoFocusRootTitle}
+											shouldAutoFocusTitle={
+												shouldAutoFocusRootTitle
+											}
 											titleContainerClassName='pr-12 sm:pr-14 lg:pr-0'
 											topic={rootSection.topic}
 											topicPath={topicPath}
@@ -224,11 +241,13 @@ export function TopicDetailPage({
 						</div>
 					</div>
 					<div className='mx-auto flex w-full max-w-[76rem] items-start gap-5 px-2 pt-4 pb-5 sm:px-7 xl:gap-6 xl:px-8 xl:pt-5 xl:pb-6'>
-						<div className='min-w-0 flex-1 space-y-5'>{rootSectionContent}</div>
+						<div className='min-w-0 flex-1 space-y-5'>
+							{rootSectionContent}
+						</div>
 						<div
 							className={cn(
 								'hidden shrink-0 self-start lg:sticky lg:top-6 lg:flex lg:justify-start',
-								TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS
+								TOPIC_DETAIL_OUTLINE_GUTTER_WIDTH_CLASS,
 							)}
 						>
 							<TopicDetailOutline
@@ -242,7 +261,9 @@ export function TopicDetailPage({
 								onSubtopicCreated={handleSubtopicCreated}
 								outlineRootNode={rootSection.topic}
 								outlineWidth={outlineWidth}
-								pendingCreatedParentTopicId={pendingCreatedParentTopicId}
+								pendingCreatedParentTopicId={
+									pendingCreatedParentTopicId
+								}
 								pendingCreatedTopicId={pendingCreatedTopicId}
 								sectionNumberById={sectionNumberById}
 								visibleSectionIds={visibleSectionIds}
@@ -262,8 +283,9 @@ export function TopicDetailPage({
 						</AlertDialogMedia>
 						<AlertDialogTitle>Delete topic?</AlertDialogTitle>
 						<AlertDialogDescription>
-							This will delete this topic, all subtopics, and all linked review
-							cards and reviews. This action cannot be undone.
+							This will delete this topic, all subtopics, and all
+							linked review cards and reviews. This action cannot
+							be undone.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -291,5 +313,5 @@ export function TopicDetailPage({
 
 export type {
 	TopicDetailReviewCardControlsVariant,
-	TopicDetailReviewCardFilter
+	TopicDetailReviewCardFilter,
 } from './shared'

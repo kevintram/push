@@ -11,7 +11,7 @@ function Card({
 		<div
 			className={cn(
 				"flex flex-col gap-2 rounded-xl border bg-card py-3 text-card-foreground shadow-sm",
-				className
+				className,
 			)}
 			data-size={size}
 			data-slot='card'
@@ -25,7 +25,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 		<div
 			className={cn(
 				"@container/card-header grid auto-rows-min items-start gap-1 px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-6",
-				className
+				className,
 			)}
 			data-slot='card-header'
 			{...props}
@@ -58,7 +58,7 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
 		<div
 			className={cn(
 				"col-start-2 row-span-2 row-start-1 self-start justify-self-end",
-				className
+				className,
 			)}
 			data-slot='card-action'
 			{...props}
@@ -93,5 +93,5 @@ export {
 	CardDescription,
 	CardFooter,
 	CardHeader,
-	CardTitle
+	CardTitle,
 }

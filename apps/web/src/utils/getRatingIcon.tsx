@@ -1,5 +1,6 @@
 import { Check, CheckCheck, Construction, X } from 'lucide-react'
-import type { Rating } from '~/modules/reviews/types/review.types'
+
+import { type Rating } from '~/modules/reviews/types/review.types'
 
 export function getRatingIcon(rating: Rating | null | undefined) {
 	if (!rating) return null

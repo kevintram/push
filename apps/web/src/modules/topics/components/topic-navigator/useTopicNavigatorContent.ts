@@ -1,15 +1,17 @@
-import type {
-	DragCancelEvent,
-	DragEndEvent,
-	DragOverEvent,
-	DragStartEvent
+import {
+	type DragCancelEvent,
+	type DragEndEvent,
+	type DragOverEvent,
+	type DragStartEvent,
 } from '@dnd-kit/core'
 import { PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+
 import { useUpdateTopic } from '~/modules/topics/api/updateTopic'
 import { useTopicTree } from '~/modules/topics/hooks/useTopicTree'
 import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
+
 import { TOPIC_NAVIGATOR_DRAG_EXPAND_DELAY_MS } from './TopicNavigator.shared'
 import { canReparentTopic, parseTopicDropId } from './topicNavigatorUtils'
 import { useTopicNavigatorExpansionState } from './useTopicNavigatorExpansionState'
@@ -22,13 +24,14 @@ type UseTopicNavigatorContentOptions = {
 
 export function useTopicNavigatorContent({
 	activeTopicId,
-	autoScrollActiveTopic = false
+	autoScrollActiveTopic = false,
 }: UseTopicNavigatorContentOptions) {
-	const { roots, nodeById, ancestorIdsById, isLoading, error } = useTopicTree()
+	const { roots, nodeById, ancestorIdsById, isLoading, error } =
+		useTopicTree()
 	const { mutateAsync: updateTopicAsync, isPending: isUpdatingTopic } =
 		useUpdateTopic()
 	const [activeDragTopicId, setActiveDragTopicId] = useState<number | null>(
-		null
+		null,
 	)
 	const [highlightedDropTopicId, setHighlightedDropTopicId] = useState<
 		number | null
@@ -49,7 +52,7 @@ export function useTopicNavigatorContent({
 			activeBranchIds,
 			error,
 			isLoading,
-			validTopicIds
+			validTopicIds,
 		})
 	const { scrollViewportRef, setItemRef, stopDragAutoScroll } =
 		useTopicNavigatorScrollState({
@@ -60,22 +63,22 @@ export function useTopicNavigatorContent({
 			error,
 			expandedIdSet,
 			isLoading,
-			nodeById
+			nodeById,
 		})
 	const activeDragLabel =
 		activeDragTopicId == null
 			? null
 			: getTopicDisplayTitle(
 					nodeById.get(activeDragTopicId)?.title ?? '',
-					nodeById.get(activeDragTopicId)?.body ?? ''
+					nodeById.get(activeDragTopicId)?.body ?? '',
 				)
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
-				distance: 8
-			}
-		})
+				distance: 8,
+			},
+		}),
 	)
 
 	const clearExpandOnDragHoverTimeout = useCallback(() => {
@@ -98,7 +101,7 @@ export function useTopicNavigatorContent({
 
 	const handleMoveTopic = async (
 		draggedTopicId: number,
-		nextParentId: number | null
+		nextParentId: number | null,
 	) => {
 		const draggedNode = nodeById.get(draggedTopicId)
 
@@ -107,7 +110,7 @@ export function useTopicNavigatorContent({
 				draggedTopicId,
 				nextParentId,
 				ancestorIdsById,
-				nodeById
+				nodeById,
 			})
 		) {
 			return
@@ -118,19 +121,21 @@ export function useTopicNavigatorContent({
 		try {
 			await updateTopicAsync({
 				id: draggedTopicId,
-				parent_id: nextParentId
+				parent_id: nextParentId,
 			})
 
 			const handleUndoMove = async () => {
 				try {
 					await updateTopicAsync({
 						id: draggedTopicId,
-						parent_id: previousParentId
+						parent_id: previousParentId,
 					})
 					toast.success('Move undone')
 				} catch (error) {
 					toast.error(
-						error instanceof Error ? error.message : 'Failed to undo move'
+						error instanceof Error
+							? error.message
+							: 'Failed to undo move',
 					)
 				}
 			}
@@ -141,27 +146,27 @@ export function useTopicNavigatorContent({
 						label: 'Undo',
 						onClick: () => {
 							handleUndoMove().catch(() => {})
-						}
-					}
+						},
+					},
 				})
 			} else {
 				ensureExpanded(nextParentId)
 				const parentLabel = getTopicDisplayTitle(
 					nodeById.get(nextParentId)?.title ?? '',
-					nodeById.get(nextParentId)?.body ?? ''
+					nodeById.get(nextParentId)?.body ?? '',
 				)
 				toast.success(`Moved under ${parentLabel}`, {
 					action: {
 						label: 'Undo',
 						onClick: () => {
 							handleUndoMove().catch(() => {})
-						}
-					}
+						},
+					},
 				})
 			}
 		} catch (error) {
 			toast.error(
-				error instanceof Error ? error.message : 'Failed to move topic'
+				error instanceof Error ? error.message : 'Failed to move topic',
 			)
 		}
 	}
@@ -195,10 +200,12 @@ export function useTopicNavigatorContent({
 			draggedTopicId: activeDropTarget.topicId,
 			nextParentId: hoveredTopicId,
 			ancestorIdsById,
-			nodeById
+			nodeById,
 		})
 
-		setHighlightedDropTopicId(canDropIntoHoveredTopic ? hoveredTopicId : null)
+		setHighlightedDropTopicId(
+			canDropIntoHoveredTopic ? hoveredTopicId : null,
+		)
 
 		if (expandOnDragHoverTopicIdRef.current === hoveredTopicId) return
 
@@ -228,7 +235,7 @@ export function useTopicNavigatorContent({
 
 		handleMoveTopic(
 			activeDropTarget.topicId,
-			overDropTarget.type === 'root' ? null : overDropTarget.topicId
+			overDropTarget.type === 'root' ? null : overDropTarget.topicId,
 		).catch(() => {})
 	}
 
@@ -259,6 +266,6 @@ export function useTopicNavigatorContent({
 		setHoveredTopicId,
 		setItemRef,
 		suppressNavigationRef,
-		toggleExpanded
+		toggleExpanded,
 	}
 }

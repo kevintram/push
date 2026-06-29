@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Flag } from 'lucide-react'
 import { type ReactNode, useMemo } from 'react'
+
 import { PageLayout, usePageScrollElement } from '~/app/layouts/PageLayout'
 import { MasonryLayout } from '~/components/masonry-layout/MasonryLayout'
 import { Badge } from '~/components/ui/badge'
@@ -9,16 +10,16 @@ import {
 	Empty,
 	EmptyHeader,
 	EmptyMedia,
-	EmptyTitle
+	EmptyTitle,
 } from '~/components/ui/empty'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
 import { useReviewCards } from '~/modules/review-cards/api/getReviewCards'
 import { ReviewCard } from '~/modules/review-cards/components/ReviewCard'
-import type { ReviewCardType } from '~/modules/review-cards/types/review-card.types'
+import { type ReviewCardType } from '~/modules/review-cards/types/review-card.types'
 import {
 	DEFAULT_MASONRY_GAP,
 	DEFAULT_MASONRY_MIN_ITEM_WIDTH,
-	estimateReviewCardSize
+	estimateReviewCardSize,
 } from '~/utils/estimateMasonryItemSize'
 
 export type FlaggedPageFilter = 'all' | ReviewCardType
@@ -30,7 +31,7 @@ type FlaggedPageProps = {
 
 export function FlaggedPage({
 	filter = 'all',
-	onFilterChange
+	onFilterChange,
 }: FlaggedPageProps) {
 	const navigate = useNavigate()
 	const getScrollElement = usePageScrollElement()
@@ -40,7 +41,7 @@ export function FlaggedPage({
 	}, [filter])
 	const { data: reviewCards = [], isLoading } = useReviewCards({
 		flagged_only: true,
-		type: selectedType
+		type: selectedType,
 	})
 
 	const filterControls = (
@@ -100,7 +101,7 @@ export function FlaggedPage({
 							navigate({
 								to: '/review-cards/$reviewCardId',
 								params: { reviewCardId: card.id.toString() },
-								search: { tab: 'home' }
+								search: { tab: 'home' },
 							})
 						}
 						reviewCard={card}

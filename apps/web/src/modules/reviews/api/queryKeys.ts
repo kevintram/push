@@ -1,4 +1,4 @@
-import type { GetReviewsFilters } from '../types/api.types'
+import { type GetReviewsFilters } from '../types/api.types'
 
 export const reviewKeys = {
 	all: ['reviews'] as const,
@@ -18,10 +18,10 @@ export const reviewKeys = {
 		}
 		return key
 	},
-	detail: (reviewId: number) => [...reviewKeys.all, reviewId] as const
+	detail: (reviewId: number) => [...reviewKeys.all, reviewId] as const,
 }
 
 export const reviewQueueKeys = {
 	all: ['review-queue'] as const,
-	list: () => [...reviewQueueKeys.all, 'list'] as const
+	list: () => [...reviewQueueKeys.all, 'list'] as const,
 }

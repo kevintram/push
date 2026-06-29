@@ -5,33 +5,35 @@ import {
 	type KeyboardEvent,
 	type MouseEvent,
 	useCallback,
-	useState
+	useState,
 } from 'react'
+
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
 import { getReviewCardDisplayTitle } from '~/modules/review-cards/utils/reviewCardCopy'
 import { formatRelativeDate } from '~/utils/formatRelativeDate'
+
 import { useDeleteReview } from '../api/deleteReview'
 import { useUpdateReview } from '../api/updateReview'
 import { usePrefetchReviewDetail } from '../hooks/usePrefetchReviewDetail'
-import type { ReviewListItem } from '../types/review.types'
+import { type ReviewListItem } from '../types/review.types'
 import { isOverdue } from '../utils/isOverdue'
 import { DatePickerDropdown } from './DatePickerDropdown'
 import { getReviewListGridCols } from './ReviewListHeader'
 import {
 	ReviewRatingCheckbox,
-	type ReviewRatingState
+	type ReviewRatingState,
 } from './ReviewRatingCheckbox'
 
 const getInitialSelectedDate = (entry: ReviewListItem) => {
@@ -46,7 +48,7 @@ const getInitialSelectedDate = (entry: ReviewListItem) => {
 
 const getStabilityChangeColorClass = (
 	before: number | null,
-	after: number | null
+	after: number | null,
 ) => {
 	if (after === null) {
 		return ''
@@ -84,28 +86,28 @@ export function ReviewItem({
 	onReviewClick,
 	readonly = false,
 	showCardColumn = true,
-	variant = 'default'
+	variant = 'default',
 }: ReviewItemProps) {
 	const navigate = useNavigate()
 	const [openDatePicker, setOpenDatePicker] = useState<
 		'compact' | 'wide' | null
 	>(null)
 	const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
-		getInitialSelectedDate(entry)
+		getInitialSelectedDate(entry),
 	)
 
 	const updateReviewMutation = useUpdateReview({
 		invalidationScope: deferStructuralInvalidation ? 'reviews-only' : 'all',
-		onDeferredInvalidation
+		onDeferredInvalidation,
 	})
 	const deleteReviewMutation = useDeleteReview({
 		invalidationScope: deferStructuralInvalidation ? 'reviews-only' : 'all',
-		onDeferredInvalidation
+		onDeferredInvalidation,
 	})
 	const {
 		cancelReviewDetailPreload,
 		scheduleReviewDetailPreload,
-		seedReviewDetail
+		seedReviewDetail,
 	} = usePrefetchReviewDetail(entry)
 
 	const isCompleted = entry.completed_at !== null
@@ -115,7 +117,7 @@ export function ReviewItem({
 
 	const stabilityChangeColorClass = getStabilityChangeColorClass(
 		entry.stability_before,
-		entry.stability_after
+		entry.stability_after,
 	)
 	const hasStability = entry.stability_after !== null
 	const hasDelta =
@@ -124,7 +126,9 @@ export function ReviewItem({
 		? Math.round(entry.stability_after ?? 0)
 		: 0
 	const stabilityDeltaRounded = hasDelta
-		? Math.round((entry.stability_after ?? 0) - (entry.stability_before ?? 0))
+		? Math.round(
+				(entry.stability_after ?? 0) - (entry.stability_before ?? 0),
+			)
 		: 0
 
 	const handleStatusChange = useCallback(
@@ -134,17 +138,18 @@ export function ReviewItem({
 				updateReviewMutation.mutateAsync({
 					id: entry.id,
 					rating: null,
-					completed_at: null
+					completed_at: null,
 				})
 				return
 			}
 			updateReviewMutation.mutateAsync({
 				id: entry.id,
 				rating: status,
-				completed_at: entry.completed_at ?? dayjs().format('YYYY-MM-DD')
+				completed_at:
+					entry.completed_at ?? dayjs().format('YYYY-MM-DD'),
 			})
 		},
-		[entry.id, entry.completed_at, updateReviewMutation]
+		[entry.id, entry.completed_at, updateReviewMutation],
 	)
 
 	const handleDateSave = useCallback(
@@ -154,21 +159,23 @@ export function ReviewItem({
 				setOpenDatePicker(null)
 				return
 			}
-			const newDateString = newDate ? dayjs(newDate).format('YYYY-MM-DD') : null
+			const newDateString = newDate
+				? dayjs(newDate).format('YYYY-MM-DD')
+				: null
 			if (entry.completed_at) {
 				updateReviewMutation.mutateAsync({
 					id: entry.id,
-					completed_at: newDateString
+					completed_at: newDateString,
 				})
 			} else {
 				updateReviewMutation.mutateAsync({
 					id: entry.id,
-					scheduled_at: newDateString
+					scheduled_at: newDateString,
 				})
 			}
 			setOpenDatePicker(null)
 		},
-		[entry.id, entry.completed_at, updateReviewMutation]
+		[entry.id, entry.completed_at, updateReviewMutation],
 	)
 
 	const handleDelete = useCallback(async () => {
@@ -192,7 +199,7 @@ export function ReviewItem({
 				handleReviewClick()
 			}
 		},
-		[handleReviewClick, readonly]
+		[handleReviewClick, readonly],
 	)
 
 	const handleIntentStart = useCallback(() => {
@@ -211,10 +218,10 @@ export function ReviewItem({
 			navigate({
 				to: '/review-cards/$reviewCardId',
 				params: { reviewCardId: entry.review_card.id.toString() },
-				search: { tab: 'reviews' }
+				search: { tab: 'reviews' },
 			})
 		},
-		[navigate, entry.review_card]
+		[navigate, entry.review_card],
 	)
 	const effectiveDate = entry.effective_date
 		? dayjs(entry.effective_date).toDate()
@@ -222,11 +229,11 @@ export function ReviewItem({
 
 	const isOverdueValue = isOverdue({
 		scheduled_at: entry.scheduled_at,
-		isCompleted
+		isCompleted,
 	})
 
 	const relativeDate = formatRelativeDate(effectiveDate, {
-		shortDate: dateFormat === 'short'
+		shortDate: dateFormat === 'short',
 	})
 
 	const dateTooltipText = effectiveDate
@@ -237,7 +244,7 @@ export function ReviewItem({
 		isOverdueValue && 'text-red-600 dark:text-red-400',
 		!isOverdueValue &&
 			relativeDate.text === 'Today' &&
-			'text-blue-600 dark:text-blue-400'
+			'text-blue-600 dark:text-blue-400',
 	)
 	const description = entry.description?.trim()
 
@@ -262,11 +269,13 @@ export function ReviewItem({
 		<span
 			className={cn(
 				'flex min-w-0 items-center gap-1.5 text-sm',
-				description ? 'text-foreground' : 'text-muted-foreground'
+				description ? 'text-foreground' : 'text-muted-foreground',
 			)}
 		>
 			<span className='truncate'>{description || 'No description'}</span>
-			{hasNotes && <File className='h-3 w-3 shrink-0 text-muted-foreground' />}
+			{hasNotes && (
+				<File className='h-3 w-3 shrink-0 text-muted-foreground' />
+			)}
 		</span>
 	)
 
@@ -289,7 +298,7 @@ export function ReviewItem({
 								className={cn(
 									'!px-0 h-auto text-xs',
 									readonly && 'cursor-default opacity-50',
-									dateButtonColorClass
+									dateButtonColorClass,
 								)}
 								disabled={readonly}
 								onClick={e => {
@@ -310,7 +319,9 @@ export function ReviewItem({
 					/>
 				}
 			/>
-			{dateTooltipText && <TooltipContent>{dateTooltipText}</TooltipContent>}
+			{dateTooltipText && (
+				<TooltipContent>{dateTooltipText}</TooltipContent>
+			)}
 		</Tooltip>
 	)
 
@@ -333,7 +344,7 @@ export function ReviewItem({
 								className={cn(
 									'!px-0 h-auto text-foreground text-sm hover:text-foreground',
 									readonly && 'cursor-default opacity-50',
-									dateButtonColorClass
+									dateButtonColorClass,
 								)}
 								disabled={readonly}
 								onClick={e => {
@@ -354,7 +365,9 @@ export function ReviewItem({
 					/>
 				}
 			/>
-			{dateTooltipText && <TooltipContent>{dateTooltipText}</TooltipContent>}
+			{dateTooltipText && (
+				<TooltipContent>{dateTooltipText}</TooltipContent>
+			)}
 		</Tooltip>
 	)
 
@@ -404,12 +417,12 @@ export function ReviewItem({
 		if (entry.review_card) {
 			return {
 				label: getReviewCardDisplayTitle(entry.review_card),
-				onClick: handleReviewCardClick
+				onClick: handleReviewCardClick,
 			}
 		}
 		return {
 			label: 'Unknown card',
-			onClick: handleReviewCardClick
+			onClick: handleReviewCardClick,
 		}
 	})()
 
@@ -434,7 +447,9 @@ export function ReviewItem({
 					{stabilityDeltaRounded})
 				</span>
 			) : (
-				<span className={cn('ml-1', stabilityChangeColorClass)}>(new)</span>
+				<span className={cn('ml-1', stabilityChangeColorClass)}>
+					(new)
+				</span>
 			)}
 		</div>
 	)
@@ -449,18 +464,20 @@ export function ReviewItem({
 					{stabilityDeltaRounded})
 				</span>
 			) : (
-				<span className={cn('ml-1', stabilityChangeColorClass)}>(new)</span>
+				<span className={cn('ml-1', stabilityChangeColorClass)}>
+					(new)
+				</span>
 			)}
 		</span>
 	)
 
 	return (
-		// biome-ignore lint/a11y/noNoninteractiveElementInteractions: row container supports keyboard navigation and cannot be a button due to nested controls
-		// biome-ignore lint/a11y/noStaticElementInteractions: interactive row behavior is intentional for review list ergonomics
 		<div
 			className={cn(
 				'rounded-md px-2 py-2',
-				readonly ? 'cursor-default' : 'cursor-pointer hover:bg-muted/50'
+				readonly
+					? 'cursor-default'
+					: 'cursor-pointer hover:bg-muted/50',
 			)}
 			onBlur={handleIntentEnd}
 			onClick={handleReviewClick}
@@ -482,7 +499,9 @@ export function ReviewItem({
 							{hasStability ? durabilityCompactEl : null}
 						</div>
 					</div>
-					{moreButtonEl ? <div className='shrink-0'>{moreButtonEl}</div> : null}
+					{moreButtonEl ? (
+						<div className='shrink-0'>{moreButtonEl}</div>
+					) : null}
 				</div>
 			</div>
 

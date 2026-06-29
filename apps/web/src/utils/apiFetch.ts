@@ -32,7 +32,7 @@ function startAuthRedirect() {
 
 export async function apiFetch(
 	url: string,
-	options?: RequestInit
+	options?: RequestInit,
 ): Promise<Response> {
 	const headers = new Headers(options?.headers)
 	if (!headers.has('X-Client-Date')) {
@@ -46,7 +46,7 @@ export async function apiFetch(
 	const response = await fetch(url, {
 		...options,
 		headers,
-		credentials: 'include'
+		credentials: 'include',
 	})
 
 	if (response.status === 401) {

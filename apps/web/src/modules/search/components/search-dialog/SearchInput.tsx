@@ -1,4 +1,5 @@
 import { Search, X } from 'lucide-react'
+
 import { Input } from '~/components/ui/input'
 import { cn } from '~/lib/utils'
 
@@ -32,13 +33,16 @@ export function SearchInput({
 	placeholder = 'Search topics...',
 	inputRef,
 	className,
-	inputClassName
+	inputClassName,
 }: SearchInputProps) {
 	return (
 		<div className={cn('relative flex-1', className)}>
 			<Search className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
 			<Input
-				className={cn('border-0 px-10 text-lg shadow-none', inputClassName)}
+				className={cn(
+					'border-0 px-10 text-lg shadow-none',
+					inputClassName,
+				)}
 				onChange={onChange}
 				onFocus={onFocus}
 				onKeyDown={onKeyDown}

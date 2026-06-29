@@ -2,19 +2,20 @@ import {
 	createFileRoute,
 	Outlet,
 	useNavigate,
-	useRouterState
+	useRouterState,
 } from '@tanstack/react-router'
 import { useEffect } from 'react'
+
 import { DuePage } from '~/app/pages/DuePage'
 import {
 	getStoredDueViewPreference,
 	isReviewFilter,
 	isReviewFocusOrder,
-	persistDueViewPreference
+	persistDueViewPreference,
 } from '~/modules/review-cards/dueQueueViewPreferences'
-import type {
-	ReviewFilter,
-	ReviewFocusOrder
+import {
+	type ReviewFilter,
+	type ReviewFocusOrder,
 } from '~/modules/review-cards/types/review-card.types'
 
 type DueRouteSearch = {
@@ -30,15 +31,15 @@ type DueFocusRouteSearch = DueRouteSearch & {
 }
 
 export function validateDueSearch(
-	search: Record<string, unknown>
+	search: Record<string, unknown>,
 ): DueRouteSearch {
 	return {
-		filter: isReviewFilter(search.filter) ? search.filter : undefined
+		filter: isReviewFilter(search.filter) ? search.filter : undefined,
 	}
 }
 
 export function validateDueFocusSearch(
-	search: Record<string, unknown>
+	search: Record<string, unknown>,
 ): DueFocusRouteSearch {
 	const result: DueFocusRouteSearch = validateDueSearch(search)
 	const card =
@@ -64,7 +65,10 @@ export function validateDueFocusSearch(
 		result.order = search.order
 	}
 
-	if (typeof search.shuffle === 'string' && search.shuffle.trim().length > 0) {
+	if (
+		typeof search.shuffle === 'string' &&
+		search.shuffle.trim().length > 0
+	) {
 		result.shuffle = search.shuffle
 	}
 
@@ -76,27 +80,29 @@ export function resolveDueFilter(search: DueRouteSearch): ReviewFilter {
 }
 
 export function resolveDueFocusOrder(
-	search: DueFocusRouteSearch
+	search: DueFocusRouteSearch,
 ): ReviewFocusOrder {
 	return search.order ?? getStoredDueViewPreference().focusOrder
 }
 
 export const Route = createFileRoute('/due')({
 	validateSearch: validateDueSearch,
-	component: DueRoute
+	component: DueRoute,
 })
 
 function DueRoute() {
 	const navigate = useNavigate()
 	const search = Route.useSearch()
-	const pathname = useRouterState({ select: state => state.location.pathname })
+	const pathname = useRouterState({
+		select: state => state.location.pathname,
+	})
 	const filter = resolveDueFilter(search)
 	const isFocusRoute = pathname.startsWith('/due/focus')
 
 	useEffect(() => {
 		persistDueViewPreference({
 			...getStoredDueViewPreference(),
-			filter
+			filter,
 		})
 	}, [filter])
 
@@ -108,7 +114,7 @@ function DueRoute() {
 			onFilterChange={nextFilter =>
 				navigate({
 					to: '/due',
-					search: { filter: nextFilter }
+					search: { filter: nextFilter },
 				})
 			}
 		/>

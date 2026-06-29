@@ -2,17 +2,18 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
 import { describe, expect, it, vi } from 'vitest'
+
 import {
 	navigateMock,
 	renderDuePage,
 	reviewCard,
 	useReviewCardQueueCountsMock,
 	useReviewCardQueueMock,
-	useReviewModeMock
+	useReviewModeMock,
 } from '~/testing/support/masonryPageTestSupport'
 
 vi.mock('sonner', () => ({
-	toast: vi.fn()
+	toast: vi.fn(),
 }))
 
 describe('DuePage', () => {
@@ -21,12 +22,15 @@ describe('DuePage', () => {
 			overdueCount: 1,
 			dueTodayCount: 1,
 			newCount: 2,
-			dueNextSevenDaysCount: 3
+			dueNextSevenDaysCount: 3,
 		})
 		useReviewCardQueueMock.mockImplementation(
 			(params: { filter?: string; mode?: string }) => {
 				if (params.filter !== 'all') {
-					return { data: { items: [], as_of: '2026-03-05' }, isLoading: false }
+					return {
+						data: { items: [], as_of: '2026-03-05' },
+						isLoading: false,
+					}
 				}
 
 				return {
@@ -38,13 +42,13 @@ describe('DuePage', () => {
 									...reviewCard,
 									id: 51,
 									primary_text: 'New practice',
-									type: 'practice'
+									type: 'practice',
 								},
 								review_id: null,
 								scheduled_at: null,
 								action_days: null,
 								days_until_due: null,
-								days_until_hazy: null
+								days_until_hazy: null,
 							},
 							{
 								queue_type: 'new' as const,
@@ -52,13 +56,13 @@ describe('DuePage', () => {
 									...reviewCard,
 									id: 52,
 									primary_text: 'New flashcard',
-									type: 'flashcard'
+									type: 'flashcard',
 								},
 								review_id: null,
 								scheduled_at: null,
 								action_days: null,
 								days_until_due: null,
-								days_until_hazy: null
+								days_until_hazy: null,
 							},
 							{
 								queue_type: 'due' as const,
@@ -66,13 +70,13 @@ describe('DuePage', () => {
 									...reviewCard,
 									id: 61,
 									primary_text: 'Overdue practice',
-									type: 'practice'
+									type: 'practice',
 								},
 								review_id: null,
 								scheduled_at: '2026-03-04',
 								action_days: -1,
 								days_until_due: -1,
-								days_until_hazy: null
+								days_until_hazy: null,
 							},
 							{
 								queue_type: 'due' as const,
@@ -80,48 +84,56 @@ describe('DuePage', () => {
 									...reviewCard,
 									id: 62,
 									primary_text: 'Today flashcard',
-									type: 'flashcard'
+									type: 'flashcard',
 								},
 								review_id: null,
 								scheduled_at: '2026-03-05',
 								action_days: 0,
 								days_until_due: 0,
-								days_until_hazy: null
-							}
+								days_until_hazy: null,
+							},
 						],
-						as_of: '2026-03-05'
+						as_of: '2026-03-05',
 					},
-					isLoading: false
+					isLoading: false,
 				}
-			}
+			},
 		)
 
 		render(renderDuePage({ initialFilter: 'all' }))
 
-		expect(useReviewCardQueueCountsMock).toHaveBeenCalledWith({ filter: 'all' })
+		expect(useReviewCardQueueCountsMock).toHaveBeenCalledWith({
+			filter: 'all',
+		})
 		expect(useReviewCardQueueMock).toHaveBeenCalledWith({
 			filter: 'all',
-			mode: 'list'
+			mode: 'list',
 		})
 		expect(screen.getByRole('button', { name: 'Focus' })).toHaveAttribute(
 			'aria-pressed',
-			'false'
+			'false',
 		)
 		expect(
-			screen.queryByRole('button', { name: 'Order by: Due date' })
+			screen.queryByRole('button', { name: 'Order by: Due date' }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.queryByRole('button', { name: 'Shuffle focus order' })
+			screen.queryByRole('button', { name: 'Shuffle focus order' }),
 		).not.toBeInTheDocument()
-		expect(screen.getByRole('heading', { name: /^Due$/iu })).toBeInTheDocument()
+		expect(
+			screen.getByRole('heading', { name: /^Due$/iu }),
+		).toBeInTheDocument()
 		expect(screen.getByText('1 Overdue')).toBeInTheDocument()
 		expect(screen.getByText('1 Due')).toBeInTheDocument()
 		expect(screen.getByText('2 New')).toBeInTheDocument()
-		expect(screen.getByRole('heading', { name: /New/iu })).toBeInTheDocument()
 		expect(
-			screen.getByRole('heading', { name: /Overdue/iu })
+			screen.getByRole('heading', { name: /New/iu }),
 		).toBeInTheDocument()
-		expect(screen.getByRole('heading', { name: /Today/iu })).toBeInTheDocument()
+		expect(
+			screen.getByRole('heading', { name: /Overdue/iu }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('heading', { name: /Today/iu }),
+		).toBeInTheDocument()
 		expect(screen.getByText('New practice')).toBeInTheDocument()
 		expect(screen.getByText('New flashcard')).toBeInTheDocument()
 		expect(screen.getByText('Overdue practice')).toBeInTheDocument()
@@ -132,7 +144,7 @@ describe('DuePage', () => {
 		const user = userEvent.setup()
 		useReviewCardQueueMock.mockReturnValue({
 			data: { items: [], as_of: '2026-03-05' },
-			isLoading: false
+			isLoading: false,
 		})
 
 		render(renderDuePage({ initialFilter: 'practice' }))
@@ -144,8 +156,8 @@ describe('DuePage', () => {
 			search: {
 				filter: 'practice',
 				order: 'due-date',
-				shuffle: undefined
-			}
+				shuffle: undefined,
+			},
 		})
 	})
 
@@ -153,21 +165,23 @@ describe('DuePage', () => {
 		const user = userEvent.setup()
 		useReviewCardQueueMock.mockReturnValue({
 			data: { items: [], as_of: '2026-03-05' },
-			isLoading: false
+			isLoading: false,
 		})
 
 		render(renderDuePage({ initialFilter: 'all' }))
 
-		await user.click(screen.getByRole('button', { name: /^Practice filter/iu }))
+		await user.click(
+			screen.getByRole('button', { name: /^Practice filter/iu }),
+		)
 
 		await waitFor(() => {
 			expect(useReviewCardQueueCountsMock).toHaveBeenCalledWith({
-				filter: 'all'
+				filter: 'all',
 			})
 		})
 		expect(useReviewCardQueueMock).toHaveBeenCalledWith({
 			filter: 'practice',
-			mode: 'list'
+			mode: 'list',
 		})
 	})
 
@@ -179,7 +193,7 @@ describe('DuePage', () => {
 						overdueCount: 2,
 						dueTodayCount: 0,
 						newCount: 1,
-						dueNextSevenDaysCount: 2
+						dueNextSevenDaysCount: 2,
 					}
 				}
 
@@ -188,7 +202,7 @@ describe('DuePage', () => {
 						overdueCount: 0,
 						dueTodayCount: 3,
 						newCount: 0,
-						dueNextSevenDaysCount: 3
+						dueNextSevenDaysCount: 3,
 					}
 				}
 
@@ -196,27 +210,27 @@ describe('DuePage', () => {
 					overdueCount: 2,
 					dueTodayCount: 3,
 					newCount: 1,
-					dueNextSevenDaysCount: 5
+					dueNextSevenDaysCount: 5,
 				}
-			}
+			},
 		)
 		useReviewCardQueueMock.mockReturnValue({
 			data: { items: [], as_of: '2026-03-05' },
-			isLoading: false
+			isLoading: false,
 		})
 
 		render(renderDuePage({ initialFilter: 'all' }))
 
 		expect(
 			screen.getByRole('button', {
-				name: 'Practice filter, has overdue reviews and new review cards'
-			})
+				name: 'Practice filter, has overdue reviews and new review cards',
+			}),
 		).toBeInTheDocument()
 		expect(
-			screen.getByTestId('due-filter-practice-overdue-dot')
+			screen.getByTestId('due-filter-practice-overdue-dot'),
 		).toBeInTheDocument()
 		expect(
-			screen.queryByTestId('due-filter-practice-due-today-dot')
+			screen.queryByTestId('due-filter-practice-due-today-dot'),
 		).not.toBeInTheDocument()
 		const pendingDot = screen.getByTestId('due-filter-practice-pending-dot')
 		expect(pendingDot).toBeInTheDocument()
@@ -224,17 +238,17 @@ describe('DuePage', () => {
 
 		expect(
 			screen.getByRole('button', {
-				name: 'Flashcards filter, reviews due today'
-			})
+				name: 'Flashcards filter, reviews due today',
+			}),
 		).toBeInTheDocument()
 		expect(
-			screen.queryByTestId('due-filter-flashcards-overdue-dot')
+			screen.queryByTestId('due-filter-flashcards-overdue-dot'),
 		).not.toBeInTheDocument()
 		expect(
-			screen.getByTestId('due-filter-flashcards-due-today-dot')
+			screen.getByTestId('due-filter-flashcards-due-today-dot'),
 		).toBeInTheDocument()
 		expect(
-			screen.queryByTestId('due-filter-flashcards-pending-dot')
+			screen.queryByTestId('due-filter-flashcards-pending-dot'),
 		).not.toBeInTheDocument()
 	})
 
@@ -246,7 +260,7 @@ describe('DuePage', () => {
 						overdueCount: 0,
 						dueTodayCount: 0,
 						newCount: 1,
-						dueNextSevenDaysCount: 0
+						dueNextSevenDaysCount: 0,
 					}
 				}
 
@@ -254,26 +268,26 @@ describe('DuePage', () => {
 					overdueCount: 0,
 					dueTodayCount: 0,
 					newCount: 0,
-					dueNextSevenDaysCount: 0
+					dueNextSevenDaysCount: 0,
 				}
-			}
+			},
 		)
 		useReviewCardQueueMock.mockReturnValue({
 			data: { items: [], as_of: '2026-03-05' },
-			isLoading: false
+			isLoading: false,
 		})
 
 		render(renderDuePage({ initialFilter: 'practice' }))
 
-		expect(screen.getByTestId('due-filter-practice-pending-dot')).toHaveClass(
-			'bg-primary-foreground'
-		)
+		expect(
+			screen.getByTestId('due-filter-practice-pending-dot'),
+		).toHaveClass('bg-primary-foreground')
 	})
 
 	it('warns on the due page when review mode is off', () => {
 		useReviewCardQueueMock.mockReturnValue({
 			data: { items: [], as_of: '2026-03-05' },
-			isLoading: false
+			isLoading: false,
 		})
 		useReviewModeMock.mockReturnValue({
 			reviewMode: 'off',
@@ -284,15 +298,17 @@ describe('DuePage', () => {
 			showReviewModeWarning: true,
 			setShowReviewModeWarning: vi.fn(),
 			autoEnableReviewMode: false,
-			setAutoEnableReviewMode: vi.fn()
+			setAutoEnableReviewMode: vi.fn(),
 		})
 
 		render(renderDuePage({ initialFilter: 'all' }))
 
 		expect(screen.getByText('Review mode is off')).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Turn on' })).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Always turn on' })
+			screen.getByRole('button', { name: 'Turn on' }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Always turn on' }),
 		).toBeInTheDocument()
 	})
 
@@ -300,7 +316,7 @@ describe('DuePage', () => {
 		const setReviewMode = vi.fn()
 		useReviewCardQueueMock.mockReturnValue({
 			data: { items: [], as_of: '2026-03-05' },
-			isLoading: false
+			isLoading: false,
 		})
 		useReviewModeMock.mockReturnValue({
 			reviewMode: 'off',
@@ -311,7 +327,7 @@ describe('DuePage', () => {
 			showReviewModeWarning: true,
 			setShowReviewModeWarning: vi.fn(),
 			autoEnableReviewMode: true,
-			setAutoEnableReviewMode: vi.fn()
+			setAutoEnableReviewMode: vi.fn(),
 		})
 
 		render(renderDuePage({ initialFilter: 'all' }))
@@ -322,8 +338,8 @@ describe('DuePage', () => {
 				'Review mode has been turned on',
 				expect.objectContaining({
 					action: expect.objectContaining({ label: 'Turn off' }),
-					cancel: expect.objectContaining({ label: 'Open settings' })
-				})
+					cancel: expect.objectContaining({ label: 'Open settings' }),
+				}),
 			)
 		})
 	})

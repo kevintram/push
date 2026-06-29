@@ -1,4 +1,5 @@
 import { type ReactNode, useCallback } from "react"
+
 import { ReviewStatusDots } from "~/components/ui/review-status-dots"
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs"
 
@@ -23,7 +24,7 @@ export function DetailNavBar({
 	pendingCount,
 	overdueCount,
 	dueTodayCount,
-	showReviewsTab = true
+	showReviewsTab = true,
 }: DetailNavBarProps) {
 	const handleValueChange = useCallback(
 		(value: string) => {
@@ -36,7 +37,7 @@ export function DetailNavBar({
 
 			onTabChange(value as DetailNavTab)
 		},
-		[onTabChange, showReviewsTab]
+		[onTabChange, showReviewsTab],
 	)
 
 	return (

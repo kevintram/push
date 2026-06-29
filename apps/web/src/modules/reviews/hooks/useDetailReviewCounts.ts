@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
+
 import { useReviews } from '~/modules/reviews/api/getReviews'
 
 type ReviewCardFilters = {
@@ -12,13 +13,13 @@ export function useDetailReviewCounts(filters?: ReviewCardFilters) {
 	const { data: unscheduledReviews = [] } = useReviews({
 		...reviewCardFilter,
 		scheduled: false,
-		completed: false
+		completed: false,
 	})
 
 	const { data: scheduledReviews = [] } = useReviews({
 		...reviewCardFilter,
 		scheduled: true,
-		completed: false
+		completed: false,
 	})
 
 	const { pendingCount, overdueCount, dueTodayCount } = useMemo(() => {
@@ -41,13 +42,13 @@ export function useDetailReviewCounts(filters?: ReviewCardFilters) {
 		return {
 			pendingCount: pending,
 			overdueCount: overdue,
-			dueTodayCount: dueToday
+			dueTodayCount: dueToday,
 		}
 	}, [scheduledReviews, unscheduledReviews.length])
 
 	return {
 		pendingCount,
 		overdueCount,
-		dueTodayCount
+		dueTodayCount,
 	}
 }

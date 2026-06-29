@@ -2,14 +2,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
 	createRouter,
-	RouterProvider
+	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
 import { routeTree } from '~/app/routeTree.gen'
 
 vi.mock('~/components/SettingsDialog', () => ({
-	SettingsDialog: () => null
+	SettingsDialog: () => null,
 }))
 
 vi.mock('~/stores/ReviewModeContext', async importOriginal => {
@@ -23,29 +24,29 @@ vi.mock('~/stores/ReviewModeContext', async importOriginal => {
 			setReviewMode: () => {},
 			isReviewModeEnabled: false,
 			hidesPrimary: false,
-			hidesSecondary: false
-		})
+			hidesSecondary: false,
+		}),
 	}
 })
 
 function renderRoute(route: string) {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false }
-		}
+			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false },
+		},
 	})
 	const router = createRouter({
 		routeTree,
 		history: createMemoryHistory({ initialEntries: [route] }),
 		context: {
-			queryClient
-		}
+			queryClient,
+		},
 	})
 
 	return render(
 		<QueryClientProvider client={queryClient}>
 			<RouterProvider context={{ queryClient }} router={router} />
-		</QueryClientProvider>
+		</QueryClientProvider>,
 	)
 }
 
@@ -59,8 +60,8 @@ function jsonResponse(body: unknown, status = 200): Response {
 	return new Response(JSON.stringify(body), {
 		status,
 		headers: {
-			'Content-Type': 'application/json'
-		}
+			'Content-Type': 'application/json',
+		},
 	})
 }
 
@@ -74,7 +75,9 @@ describe('detail route not-found handling', () => {
 			const url = resolveFetchUrl(input)
 
 			if (url.includes('/topics/999/')) {
-				return Promise.resolve(jsonResponse({ detail: 'Topic not found' }, 404))
+				return Promise.resolve(
+					jsonResponse({ detail: 'Topic not found' }, 404),
+				)
 			}
 
 			return Promise.resolve(jsonResponse([], 200))
@@ -82,7 +85,9 @@ describe('detail route not-found handling', () => {
 
 		renderRoute('/topics/999')
 		expect(
-			await screen.findByText('Page not found', undefined, { timeout: 3000 })
+			await screen.findByText('Page not found', undefined, {
+				timeout: 3000,
+			}),
 		).toBeInTheDocument()
 	})
 
@@ -92,7 +97,7 @@ describe('detail route not-found handling', () => {
 
 			if (url.includes('/review-cards/999/')) {
 				return Promise.resolve(
-					jsonResponse({ detail: 'Review card not found' }, 404)
+					jsonResponse({ detail: 'Review card not found' }, 404),
 				)
 			}
 
@@ -105,7 +110,9 @@ describe('detail route not-found handling', () => {
 
 		renderRoute('/review-cards/999')
 		expect(
-			await screen.findByText('Page not found', undefined, { timeout: 3000 })
+			await screen.findByText('Page not found', undefined, {
+				timeout: 3000,
+			}),
 		).toBeInTheDocument()
 	})
 })

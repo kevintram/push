@@ -1,9 +1,9 @@
-import type { ReviewCard } from '~/modules/review-cards/types/review-card.types'
-import type { Topic } from '~/modules/topics/types/topic.types'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { type ReviewCard } from '~/modules/review-cards/types/review-card.types'
+import { type Topic } from '~/modules/topics/types/topic.types'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
 import {
 	buildTopicTree,
-	getTopicDisplayTitle
+	getTopicDisplayTitle,
 } from '~/modules/topics/utils/topicTree'
 
 export type TopicDetailSectionNode = {
@@ -28,7 +28,7 @@ function toTopicDetailPathItem(node: TopicTreeNode): TopicDetailPathItem {
 	return {
 		id: node.id,
 		title: node.title,
-		body: node.body
+		body: node.body,
 	}
 }
 
@@ -36,7 +36,7 @@ function buildTopicDetailSectionNode(
 	node: TopicTreeNode,
 	depth: number,
 	sectionNumberSegments: Array<number>,
-	topicPath: Array<TopicDetailPathItem>
+	topicPath: Array<TopicDetailPathItem>,
 ): TopicDetailSectionNode {
 	return {
 		children: node.children.map((childNode, index) =>
@@ -44,21 +44,23 @@ function buildTopicDetailSectionNode(
 				childNode,
 				depth + 1,
 				[...sectionNumberSegments, index + 1],
-				[...topicPath, toTopicDetailPathItem(childNode)]
-			)
+				[...topicPath, toTopicDetailPathItem(childNode)],
+			),
 		),
 		depth,
 		headingLevel: Math.min(depth + 1, MAX_HEADING_LEVEL),
 		sectionNumber:
-			sectionNumberSegments.length > 0 ? sectionNumberSegments.join('.') : null,
+			sectionNumberSegments.length > 0
+				? sectionNumberSegments.join('.')
+				: null,
 		topic: node,
-		topicPath
+		topicPath,
 	}
 }
 
 function visitTopicDetailSections(
 	sections: Array<TopicDetailSectionNode>,
-	visitor: (section: TopicDetailSectionNode) => void
+	visitor: (section: TopicDetailSectionNode) => void,
 ): void {
 	for (const section of sections) {
 		visitor(section)
@@ -68,7 +70,7 @@ function visitTopicDetailSections(
 
 export function buildTopicDetailSections(
 	nodes: Array<TopicTreeNode>,
-	options?: TopicDetailSectionsOptions
+	options?: TopicDetailSectionsOptions,
 ): Array<TopicDetailSectionNode> {
 	const { baseDepth = 0 } = options ?? {}
 
@@ -77,13 +79,13 @@ export function buildTopicDetailSections(
 			node,
 			baseDepth,
 			[index + 1],
-			[toTopicDetailPathItem(node)]
-		)
+			[toTopicDetailPathItem(node)],
+		),
 	)
 }
 
 export function flattenTopicDetailSectionIdsFromSections(
-	sections: Array<TopicDetailSectionNode>
+	sections: Array<TopicDetailSectionNode>,
 ): Array<number> {
 	const ids: Array<number> = []
 	visitTopicDetailSections(sections, section => {
@@ -93,7 +95,7 @@ export function flattenTopicDetailSectionIdsFromSections(
 }
 
 export function buildTopicDetailSectionNumberByIdFromSections(
-	sections: Array<TopicDetailSectionNode>
+	sections: Array<TopicDetailSectionNode>,
 ): Map<number, string> {
 	const sectionNumberById = new Map<number, string>()
 
@@ -108,7 +110,7 @@ export function buildTopicDetailSectionNumberByIdFromSections(
 
 export function buildTopicDetailRoot(
 	topics: Array<Topic>,
-	rootTopicId: number
+	rootTopicId: number,
 ): TopicDetailSectionNode | null {
 	const { nodeById } = buildTopicTree(topics)
 	const rootNode = nodeById.get(rootTopicId)
@@ -119,26 +121,26 @@ export function buildTopicDetailRoot(
 		rootNode,
 		0,
 		[],
-		[toTopicDetailPathItem(rootNode)]
+		[toTopicDetailPathItem(rootNode)],
 	)
 }
 
 export function flattenTopicDetailSectionIds(
-	rootSection: TopicDetailSectionNode | null
+	rootSection: TopicDetailSectionNode | null,
 ): Array<number> {
 	if (!rootSection) return []
 	return flattenTopicDetailSectionIdsFromSections([rootSection])
 }
 
 export function buildTopicDetailSectionNumberById(
-	rootSection: TopicDetailSectionNode | null
+	rootSection: TopicDetailSectionNode | null,
 ): Map<number, string> {
 	if (!rootSection) return new Map<number, string>()
 	return buildTopicDetailSectionNumberByIdFromSections([rootSection])
 }
 
 export function groupReviewCardsByTopicId(
-	reviewCards: Array<ReviewCard>
+	reviewCards: Array<ReviewCard>,
 ): Map<number, Array<ReviewCard>> {
 	const cardsByTopicId = new Map<number, Array<ReviewCard>>()
 
@@ -169,7 +171,7 @@ export function parseTopicDetailHash(hash: string): number | null {
 
 	const parsedTopicId = Number.parseInt(
 		hash.slice(TOPIC_DETAIL_HASH_PREFIX.length + 1),
-		10
+		10,
 	)
 
 	return Number.isFinite(parsedTopicId) ? parsedTopicId : null

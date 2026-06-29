@@ -1,7 +1,8 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { ReviewsMenu } from '../ReviewsMenu'
 
 const navigateMock = vi.fn()
@@ -11,21 +12,23 @@ const createReviewMock = vi.fn()
 const openReviewDialogMock = vi.fn()
 
 vi.mock('@tanstack/react-query', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-query')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-query')>()
 	return {
 		...actual,
 		useQuery: (...args: Array<unknown>) => useQueryMock(...args),
 		useQueryClient: () => ({
-			invalidateQueries: invalidateQueriesMock
-		})
+			invalidateQueries: invalidateQueriesMock,
+		}),
 	}
 })
 
 vi.mock('@tanstack/react-router', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
-		useNavigate: () => navigateMock
+		useNavigate: () => navigateMock,
 	}
 })
 
@@ -36,14 +39,14 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 		setOpen: (open: boolean, details?: { reason?: string }) => void
 	}>({
 		open: false,
-		setOpen: () => {}
+		setOpen: () => {},
 	})
 
 	return {
 		DropdownMenu: ({
 			children,
 			onOpenChange,
-			open
+			open,
 		}: {
 			children: ReactNode
 			onOpenChange?: (open: boolean) => void
@@ -51,7 +54,10 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 		}) => {
 			const [internalOpen, setInternalOpen] = React.useState(false)
 			const resolvedOpen = open ?? internalOpen
-			const setOpen = (nextOpen: boolean, details?: { reason?: string }) => {
+			const setOpen = (
+				nextOpen: boolean,
+				details?: { reason?: string },
+			) => {
 				if (open === undefined) {
 					setInternalOpen(nextOpen)
 				}
@@ -59,7 +65,7 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 					;(
 						onOpenChange as (
 							open: boolean,
-							details?: { reason?: string }
+							details?: { reason?: string },
 						) => void
 					)(nextOpen, details)
 				}
@@ -89,14 +95,14 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 					if (!event.defaultPrevented) {
 						setOpen(!open, { reason: 'triggerPress' })
 					}
-				}
+				},
 			})
 		},
 		DropdownMenuContent: ({
 			children,
 			className,
 			onClick,
-			onKeyDown
+			onKeyDown,
 		}: {
 			children: ReactNode
 			className?: string
@@ -120,12 +126,16 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 					/>
 					<button
 						data-testid='dismiss-menu-sibling-open'
-						onClick={() => setOpen(false, { reason: 'sibling-open' })}
+						onClick={() =>
+							setOpen(false, { reason: 'sibling-open' })
+						}
 						type='button'
 					/>
 					<button
 						data-testid='dismiss-menu-outside-press'
-						onClick={() => setOpen(false, { reason: 'outside-press' })}
+						onClick={() =>
+							setOpen(false, { reason: 'outside-press' })
+						}
 						type='button'
 					/>
 					{children}
@@ -139,7 +149,7 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 			children,
 			onClick,
 			disabled,
-			title
+			title,
 		}: {
 			children: ReactNode
 			onClick?: () => void
@@ -164,7 +174,7 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 		),
 		DropdownMenuSubTrigger: ({
 			children,
-			disabled
+			disabled,
 		}: {
 			children: ReactNode
 			disabled?: boolean
@@ -175,15 +185,15 @@ vi.mock('~/components/ui/dropdown-menu', async () => {
 		),
 		DropdownMenuSubContent: ({ children }: { children: ReactNode }) => (
 			<div>{children}</div>
-		)
+		),
 	}
 })
 
 vi.mock('~/modules/reviews/api/createReview', () => ({
 	useCreateReview: () => ({
 		mutateAsync: createReviewMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('../../ReviewItem', () => ({
@@ -192,7 +202,7 @@ vi.mock('../../ReviewItem', () => ({
 		onDeferredInvalidation,
 		onNestedOverlayOpenChange,
 		onNestedOverlayTriggerInteract,
-		onReviewClick
+		onReviewClick,
 	}: {
 		entry: {
 			id: number
@@ -244,23 +254,23 @@ vi.mock('../../ReviewItem', () => ({
 				{entry.description?.trim() || 'No description'}
 				{entry.effective_date ? ` ${entry.effective_date}` : ''}
 			</div>
-		)
+		),
 }))
 
 vi.mock('~/modules/reviews/hooks/useReviewDialog', () => ({
 	useReviewDialog: () => ({
-		openReviewDialog: openReviewDialogMock
-	})
+		openReviewDialog: openReviewDialogMock,
+	}),
 }))
 
 vi.mock('sonner', () => ({
 	toast: Object.assign(vi.fn(), {
-		error: vi.fn()
-	})
+		error: vi.fn(),
+	}),
 }))
 
 vi.mock('~/utils/date', () => ({
-	localDateString: () => '2026-03-19'
+	localDateString: () => '2026-03-19',
 }))
 
 describe('ReviewsMenu', () => {
@@ -292,7 +302,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 1,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -303,7 +313,7 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
+					due_after: null,
 				},
 				{
 					id: 102,
@@ -321,7 +331,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 1,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -332,7 +342,7 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
+					due_after: null,
 				},
 				{
 					id: 103,
@@ -350,7 +360,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 1,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -361,7 +371,7 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
+					due_after: null,
 				},
 				{
 					id: 104,
@@ -379,7 +389,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 1,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -390,7 +400,7 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
+					due_after: null,
 				},
 				{
 					id: 105,
@@ -408,7 +418,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 1,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -419,9 +429,9 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
-				}
-			]
+					due_after: null,
+				},
+			],
 		})
 
 		createReviewMock.mockResolvedValue({
@@ -430,7 +440,7 @@ describe('ReviewsMenu', () => {
 			scheduled_at: null,
 			stability_before: null,
 			stability_after: null,
-			due_after: null
+			due_after: null,
 		})
 	})
 
@@ -441,7 +451,7 @@ describe('ReviewsMenu', () => {
 
 		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 		expect(useQueryMock).toHaveBeenLastCalledWith(
-			expect.objectContaining({ enabled: false })
+			expect.objectContaining({ enabled: false }),
 		)
 
 		await user.click(trigger)
@@ -449,17 +459,17 @@ describe('ReviewsMenu', () => {
 		const content = screen.getByTestId('dropdown-menu-content')
 		expect(trigger).toBeInTheDocument()
 		expect(useQueryMock).toHaveBeenLastCalledWith(
-			expect.objectContaining({ enabled: true })
+			expect.objectContaining({ enabled: true }),
 		)
 		expect(content).toHaveClass('w-[18rem]')
 		expect(
-			within(trigger).getByTestId('reviews-trigger-pending-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot'),
 		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-overdue-dot')
+			within(trigger).getByTestId('reviews-trigger-overdue-dot'),
 		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-due-today-dot')
+			within(trigger).getByTestId('reviews-trigger-due-today-dot'),
 		).toBeInTheDocument()
 		expect(screen.getByText('Create new')).toBeInTheDocument()
 		expect(screen.getByText('Due')).toBeInTheDocument()
@@ -482,19 +492,27 @@ describe('ReviewsMenu', () => {
 		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		await user.click(trigger)
-		await user.click(screen.getByRole('button', { name: /Catch-up prompt/iu }))
+		await user.click(
+			screen.getByRole('button', { name: /Catch-up prompt/iu }),
+		)
 		expect(openReviewDialogMock).toHaveBeenCalledWith(
 			101,
-			expect.objectContaining({ onClose: expect.any(Function) })
+			expect.objectContaining({ onClose: expect.any(Function) }),
 		)
-		expect(screen.queryByTestId('dropdown-menu-content')).toBeInTheDocument()
+		expect(
+			screen.queryByTestId('dropdown-menu-content'),
+		).toBeInTheDocument()
 
-		await user.click(screen.getByRole('button', { name: /Strong recall/iu }))
+		await user.click(
+			screen.getByRole('button', { name: /Strong recall/iu }),
+		)
 		expect(openReviewDialogMock).toHaveBeenCalledWith(
 			103,
-			expect.objectContaining({ onClose: expect.any(Function) })
+			expect.objectContaining({ onClose: expect.any(Function) }),
 		)
-		expect(screen.queryByTestId('dropdown-menu-content')).toBeInTheDocument()
+		expect(
+			screen.queryByTestId('dropdown-menu-content'),
+		).toBeInTheDocument()
 
 		// Close the menu (still open from review click), then reopen for create flow
 		await user.click(trigger)
@@ -505,17 +523,17 @@ describe('ReviewsMenu', () => {
 			rating: 'good',
 			description: '',
 			scheduled_at: null,
-			completed_at: '2026-03-19'
+			completed_at: '2026-03-19',
 		})
 		expect(
-			screen.queryByTestId('dropdown-menu-content')
+			screen.queryByTestId('dropdown-menu-content'),
 		).not.toBeInTheDocument()
 
 		await user.click(trigger)
 		await user.click(screen.getByRole('button', { name: /See all/iu }))
 		expect(onSeeAll).toHaveBeenCalled()
 		expect(
-			screen.queryByTestId('dropdown-menu-content')
+			screen.queryByTestId('dropdown-menu-content'),
 		).not.toBeInTheDocument()
 	})
 
@@ -526,20 +544,24 @@ describe('ReviewsMenu', () => {
 
 		await user.click(screen.getByRole('button', { name: /Reviews/iu }))
 		await user.click(screen.getByTestId('review-item-mark-deferred-101'))
-		await user.click(screen.getByRole('button', { name: /Catch-up prompt/iu }))
+		await user.click(
+			screen.getByRole('button', { name: /Catch-up prompt/iu }),
+		)
 
 		expect(openReviewDialogMock).toHaveBeenCalledWith(
 			101,
-			expect.objectContaining({ onClose: expect.any(Function) })
+			expect.objectContaining({ onClose: expect.any(Function) }),
 		)
 		expect(invalidateQueriesMock.mock.calls).toEqual(
 			expect.arrayContaining([
 				[{ queryKey: ['review-cards'] }],
 				[{ queryKey: ['review-queue'] }],
-				[{ queryKey: ['search'] }]
-			])
+				[{ queryKey: ['search'] }],
+			]),
 		)
-		expect(screen.queryByTestId('dropdown-menu-content')).toBeInTheDocument()
+		expect(
+			screen.queryByTestId('dropdown-menu-content'),
+		).toBeInTheDocument()
 	})
 
 	it('omits the see-all badge when there are no unscheduled reviews', async () => {
@@ -565,7 +587,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 1,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -576,9 +598,9 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
-				}
-			]
+					due_after: null,
+				},
+			],
 		})
 
 		render(<ReviewsMenu reviewCardId={12} />)
@@ -589,13 +611,13 @@ describe('ReviewsMenu', () => {
 		expect(screen.getByText('See all')).toBeInTheDocument()
 		expect(screen.queryByText('0')).not.toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-pending-dot')
+			within(trigger).queryByTestId('reviews-trigger-pending-dot'),
 		).not.toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-overdue-dot')
+			within(trigger).queryByTestId('reviews-trigger-overdue-dot'),
 		).not.toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-due-today-dot')
+			within(trigger).queryByTestId('reviews-trigger-due-today-dot'),
 		).not.toBeInTheDocument()
 	})
 
@@ -605,7 +627,7 @@ describe('ReviewsMenu', () => {
 		useQueryMock.mockReturnValue({
 			isFetching: false,
 			isLoading: false,
-			data: []
+			data: [],
 		})
 
 		render(<ReviewsMenu reviewCardId={12} />)
@@ -644,7 +666,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 1,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -655,9 +677,9 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
-				}
-			]
+					due_after: null,
+				},
+			],
 		})
 
 		render(<ReviewsMenu reviewCardId={12} />)
@@ -668,7 +690,9 @@ describe('ReviewsMenu', () => {
 		expect(screen.getByTestId('review-item-401')).toBeInTheDocument()
 		expect(screen.queryByText('Due')).not.toBeInTheDocument()
 		expect(screen.queryByText('Last reviewed')).not.toBeInTheDocument()
-		expect(screen.getByTestId('dropdown-menu-content')).toHaveClass('w-[18rem]')
+		expect(screen.getByTestId('dropdown-menu-content')).toHaveClass(
+			'w-[18rem]',
+		)
 	})
 
 	it('renders the scheduled section when future uncompleted reviews are present', async () => {
@@ -694,7 +718,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 1,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -705,9 +729,9 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
-				}
-			]
+					due_after: null,
+				},
+			],
 		})
 
 		render(<ReviewsMenu reviewCardId={12} />)
@@ -720,9 +744,11 @@ describe('ReviewsMenu', () => {
 		expect(screen.queryByText('Due')).not.toBeInTheDocument()
 		expect(screen.queryByText('Unscheduled')).not.toBeInTheDocument()
 		expect(screen.queryByText('Last reviewed')).not.toBeInTheDocument()
-		expect(screen.getByTestId('dropdown-menu-content')).toHaveClass('w-[18rem]')
+		expect(screen.getByTestId('dropdown-menu-content')).toHaveClass(
+			'w-[18rem]',
+		)
 		expect(
-			within(trigger).getByTestId('reviews-trigger-pending-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot'),
 		).toBeInTheDocument()
 	})
 
@@ -730,7 +756,7 @@ describe('ReviewsMenu', () => {
 		useQueryMock.mockReturnValue({
 			isFetching: false,
 			isLoading: false,
-			data: undefined
+			data: undefined,
 		})
 
 		render(
@@ -739,24 +765,24 @@ describe('ReviewsMenu', () => {
 				triggerCounts={{
 					pendingCount: 4,
 					overdueCount: 2,
-					dueTodayCount: 1
+					dueTodayCount: 1,
 				}}
-			/>
+			/>,
 		)
 
 		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		expect(
-			within(trigger).getByTestId('reviews-trigger-pending-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot'),
 		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-overdue-dot')
+			within(trigger).getByTestId('reviews-trigger-overdue-dot'),
 		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-due-today-dot')
+			within(trigger).getByTestId('reviews-trigger-due-today-dot'),
 		).toBeInTheDocument()
 		expect(useQueryMock).toHaveBeenLastCalledWith(
-			expect.objectContaining({ enabled: false })
+			expect.objectContaining({ enabled: false }),
 		)
 	})
 
@@ -781,7 +807,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 1,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -792,9 +818,9 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
-				}
-			]
+					due_after: null,
+				},
+			],
 		})
 
 		render(
@@ -803,21 +829,21 @@ describe('ReviewsMenu', () => {
 				triggerCounts={{
 					pendingCount: 4,
 					overdueCount: 2,
-					dueTodayCount: 1
+					dueTodayCount: 1,
 				}}
-			/>
+			/>,
 		)
 
 		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		expect(
-			within(trigger).getByTestId('reviews-trigger-pending-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot'),
 		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-overdue-dot')
+			within(trigger).getByTestId('reviews-trigger-overdue-dot'),
 		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-due-today-dot')
+			within(trigger).getByTestId('reviews-trigger-due-today-dot'),
 		).toBeInTheDocument()
 	})
 
@@ -825,7 +851,7 @@ describe('ReviewsMenu', () => {
 		useQueryMock.mockReturnValue({
 			isFetching: false,
 			isLoading: false,
-			data: []
+			data: [],
 		})
 
 		render(
@@ -848,7 +874,7 @@ describe('ReviewsMenu', () => {
 							topic_id: 1,
 							type: 'practice',
 							primary_text: 'Prompt',
-							secondary_text: 'Answer'
+							secondary_text: 'Answer',
 						},
 						stability_before: null,
 						difficulty_before: null,
@@ -859,27 +885,27 @@ describe('ReviewsMenu', () => {
 						difficulty_after: null,
 						state_after: null,
 						step_after: null,
-						due_after: null
-					}
+						due_after: null,
+					},
 				]}
 				triggerCounts={{
 					pendingCount: 4,
 					overdueCount: 2,
-					dueTodayCount: 1
+					dueTodayCount: 1,
 				}}
-			/>
+			/>,
 		)
 
 		const trigger = screen.getByRole('button', { name: /Reviews/iu })
 
 		expect(
-			within(trigger).getByTestId('reviews-trigger-pending-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot'),
 		).toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-overdue-dot')
+			within(trigger).queryByTestId('reviews-trigger-overdue-dot'),
 		).not.toBeInTheDocument()
 		expect(
-			within(trigger).queryByTestId('reviews-trigger-due-today-dot')
+			within(trigger).queryByTestId('reviews-trigger-due-today-dot'),
 		).not.toBeInTheDocument()
 	})
 
@@ -904,7 +930,7 @@ describe('ReviewsMenu', () => {
 						topic_id: 7,
 						type: 'practice',
 						primary_text: 'Prompt',
-						secondary_text: 'Answer'
+						secondary_text: 'Answer',
 					},
 					stability_before: null,
 					difficulty_before: null,
@@ -915,11 +941,11 @@ describe('ReviewsMenu', () => {
 					difficulty_after: null,
 					state_after: null,
 					step_after: null,
-					due_after: null
-				}
+					due_after: null,
+				},
 			],
 			isFetching: true,
-			isLoading: false
+			isLoading: false,
 		})
 
 		render(
@@ -929,9 +955,9 @@ describe('ReviewsMenu', () => {
 				triggerCounts={{
 					pendingCount: 4,
 					overdueCount: 2,
-					dueTodayCount: 1
+					dueTodayCount: 1,
 				}}
-			/>
+			/>,
 		)
 
 		const trigger = screen.getByRole('button', { name: /Reviews/iu })
@@ -943,19 +969,21 @@ describe('ReviewsMenu', () => {
 		expect(content).toHaveClass('w-[18rem]')
 		expect(screen.queryByText('Due')).not.toBeInTheDocument()
 		expect(screen.queryByText('Last reviewed')).not.toBeInTheDocument()
-		expect(screen.queryByText('Stale catch-up prompt')).not.toBeInTheDocument()
+		expect(
+			screen.queryByText('Stale catch-up prompt'),
+		).not.toBeInTheDocument()
 		expect(screen.queryByTestId('review-item-301')).not.toBeInTheDocument()
 		expect(content.querySelectorAll('[aria-busy="true"]')).toHaveLength(1)
 		const seeAllButton = screen.getByRole('button', { name: /See all/iu })
 		expect(seeAllButton).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-pending-dot')
+			within(trigger).getByTestId('reviews-trigger-pending-dot'),
 		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-overdue-dot')
+			within(trigger).getByTestId('reviews-trigger-overdue-dot'),
 		).toBeInTheDocument()
 		expect(
-			within(trigger).getByTestId('reviews-trigger-due-today-dot')
+			within(trigger).getByTestId('reviews-trigger-due-today-dot'),
 		).toBeInTheDocument()
 	})
 
@@ -966,16 +994,18 @@ describe('ReviewsMenu', () => {
 		render(
 			<div onClick={onShellClick}>
 				<ReviewsMenu reviewCardId={12} />
-			</div>
+			</div>,
 		)
 
 		await user.click(screen.getByRole('button', { name: /Reviews/iu }))
 		onShellClick.mockReset()
-		await user.click(screen.getByRole('button', { name: /Catch-up prompt/iu }))
+		await user.click(
+			screen.getByRole('button', { name: /Catch-up prompt/iu }),
+		)
 
 		expect(openReviewDialogMock).toHaveBeenCalledWith(
 			101,
-			expect.objectContaining({ onClose: expect.any(Function) })
+			expect.objectContaining({ onClose: expect.any(Function) }),
 		)
 		expect(onShellClick).not.toHaveBeenCalled()
 	})
@@ -1010,7 +1040,7 @@ describe('ReviewsMenu', () => {
 		await user.click(screen.getByTestId('dismiss-menu-outside-press'))
 
 		expect(
-			screen.queryByTestId('dropdown-menu-content')
+			screen.queryByTestId('dropdown-menu-content'),
 		).not.toBeInTheDocument()
 	})
 })

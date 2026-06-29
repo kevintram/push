@@ -1,5 +1,5 @@
 import { ArrowLeftRight, Plus, Search, User2 } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -8,9 +8,10 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
-import type { ReviewCardDetailTab } from './shared'
+
+import { type ReviewCardDetailTab } from './shared'
 
 type ReviewCardDetailHeaderProps = {
 	activeTab: ReviewCardDetailTab
@@ -43,7 +44,7 @@ export function ReviewCardDetailHeader({
 	onTopicMenuOpenChange,
 	overdueCount,
 	parentLabel,
-	pendingCount
+	pendingCount,
 }: ReviewCardDetailHeaderProps) {
 	return (
 		<DetailNavBar
@@ -77,7 +78,10 @@ export function ReviewCardDetailHeader({
 						</Button>
 						<DropdownMenu onOpenChange={onTopicMenuOpenChange}>
 							<DropdownMenuTrigger
-								disabled={isTopicMutationPending || isUpdatingReviewCard}
+								disabled={
+									isTopicMutationPending ||
+									isUpdatingReviewCard
+								}
 								render={
 									<Button
 										aria-label='Change topic'
@@ -94,7 +98,11 @@ export function ReviewCardDetailHeader({
 							>
 								<ArrowLeftRight className='size-3' />
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end' side='bottom' sideOffset={4}>
+							<DropdownMenuContent
+								align='end'
+								side='bottom'
+								sideOffset={4}
+							>
 								<div className='px-2 py-1.5 font-medium text-muted-foreground text-xs'>
 									Swap topic
 								</div>

@@ -1,4 +1,5 @@
 import React from "react"
+
 import { cn } from "~/lib/utils"
 
 interface SegmentedControlProps {
@@ -29,7 +30,7 @@ function SegmentedControl({
 		<div
 			className={cn(
 				"inline-flex h-9 w-fit items-center justify-center rounded-lg bg-muted p-[3px] text-muted-foreground",
-				className
+				className,
 			)}
 			{...props}
 		>
@@ -63,9 +64,9 @@ function SegmentedControl({
 							"cursor-pointer inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring focus-visible:ring-[3px] focus-visible:outline-1 data-[active=true]:bg-background data-[active=true]:text-foreground dark:data-[active=true]:border-input dark:data-[active=true]:bg-input/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 							roundedClasses,
 							shadowClasses,
-							child.props.className
+							child.props.className,
 						),
-						"data-active": isActive
+						"data-active": isActive,
 					})
 				}
 				return child

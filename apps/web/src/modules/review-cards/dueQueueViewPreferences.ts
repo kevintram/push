@@ -1,11 +1,11 @@
-import type {
-	ReviewFilter,
-	ReviewFocusOrder
+import {
+	type ReviewFilter,
+	type ReviewFocusOrder,
 } from '~/modules/review-cards/types/review-card.types'
 
 const DUE_VIEW_DEFAULTS = {
 	filter: 'all',
-	focusOrder: 'due-date'
+	focusOrder: 'due-date',
 } as const satisfies DueViewPreference
 
 const DUE_VIEW_STORAGE_KEY = '3gulp-due-view-preferences'
@@ -43,7 +43,7 @@ function migrateLegacyDuePreference() {
 function readStoredPreference<T>(
 	key: string,
 	defaults: T,
-	coerce: (parsed: Partial<T>) => T
+	coerce: (parsed: Partial<T>) => T,
 ): T {
 	if (typeof window === 'undefined') return defaults
 	if (typeof window.localStorage?.getItem !== 'function') return defaults
@@ -77,8 +77,8 @@ export function getStoredDueViewPreference(): DueViewPreference {
 				: DUE_VIEW_DEFAULTS.filter,
 			focusOrder: isReviewFocusOrder(parsed.focusOrder)
 				? parsed.focusOrder
-				: DUE_VIEW_DEFAULTS.focusOrder
-		})
+				: DUE_VIEW_DEFAULTS.focusOrder,
+		}),
 	)
 }
 

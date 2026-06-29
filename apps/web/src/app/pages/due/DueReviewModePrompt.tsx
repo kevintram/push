@@ -1,6 +1,7 @@
 import { AlertTriangle } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
+
 import { openSettingsDialog } from '~/components/settings-events'
 import {
 	AlertDialog,
@@ -9,7 +10,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogMedia,
-	AlertDialogTitle
+	AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import { Button } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
@@ -22,7 +23,7 @@ export function DueReviewModePrompt() {
 		showReviewModeWarning,
 		setShowReviewModeWarning,
 		autoEnableReviewMode,
-		setAutoEnableReviewMode
+		setAutoEnableReviewMode,
 	} = useReviewMode()
 	const checkboxId = useId()
 	const [neverShowAgain, setNeverShowAgain] = useState(false)
@@ -51,12 +52,12 @@ export function DueReviewModePrompt() {
 		toast('Review mode has been turned on', {
 			action: {
 				label: 'Turn off',
-				onClick: () => setReviewMode('off')
+				onClick: () => setReviewMode('off'),
 			},
 			cancel: {
 				label: 'Open settings',
-				onClick: openSettingsDialog
-			}
+				onClick: openSettingsDialog,
+			},
 		})
 	}, [autoEnableReviewMode, reviewMode, setReviewMode])
 
@@ -99,8 +100,8 @@ export function DueReviewModePrompt() {
 					</AlertDialogMedia>
 					<AlertDialogTitle>Review mode is off</AlertDialogTitle>
 					<AlertDialogDescription>
-						Turn on review mode to hide answers while you work through due
-						cards.
+						Turn on review mode to hide answers while you work
+						through due cards.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<div className='flex items-center gap-2'>
@@ -109,12 +110,19 @@ export function DueReviewModePrompt() {
 						id={checkboxId}
 						onCheckedChange={setNeverShowAgain}
 					/>
-					<label className='cursor-pointer text-sm' htmlFor={checkboxId}>
+					<label
+						className='cursor-pointer text-sm'
+						htmlFor={checkboxId}
+					>
 						Never show this again
 					</label>
 				</div>
 				<AlertDialogFooter className='flex-col gap-2 sm:flex-col'>
-					<Button className='w-full' onClick={handleTurnOn} variant='outline'>
+					<Button
+						className='w-full'
+						onClick={handleTurnOn}
+						variant='outline'
+					>
 						Turn on
 					</Button>
 					<Button
@@ -124,7 +132,11 @@ export function DueReviewModePrompt() {
 					>
 						Always turn on
 					</Button>
-					<Button className='w-full' onClick={handleClose} variant='ghost'>
+					<Button
+						className='w-full'
+						onClick={handleClose}
+						variant='ghost'
+					>
 						Dismiss
 					</Button>
 				</AlertDialogFooter>

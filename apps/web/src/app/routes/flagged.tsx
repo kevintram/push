@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+
 import { FlaggedPage, type FlaggedPageFilter } from '~/app/pages/FlaggedPage'
 
 type FlaggedRouteSearch = {
@@ -11,9 +12,9 @@ function isFlaggedPageFilter(value: unknown): value is FlaggedPageFilter {
 
 export const Route = createFileRoute('/flagged')({
 	validateSearch: (search): FlaggedRouteSearch => ({
-		filter: isFlaggedPageFilter(search.filter) ? search.filter : undefined
+		filter: isFlaggedPageFilter(search.filter) ? search.filter : undefined,
 	}),
-	component: FlaggedRoute
+	component: FlaggedRoute,
 })
 
 function FlaggedRoute() {
@@ -27,7 +28,7 @@ function FlaggedRoute() {
 			onFilterChange={nextFilter =>
 				navigate({
 					to: '/flagged',
-					search: nextFilter === 'all' ? {} : { filter: nextFilter }
+					search: nextFilter === 'all' ? {} : { filter: nextFilter },
 				})
 			}
 		/>

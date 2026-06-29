@@ -1,4 +1,4 @@
-import type { LearningState } from '~/models/learning-state.types'
+import { type LearningState } from '~/models/learning-state.types'
 
 export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 

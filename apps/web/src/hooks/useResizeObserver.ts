@@ -10,7 +10,7 @@ const defaultState: ObserverRect = {
 	top: 0,
 	left: 0,
 	bottom: 0,
-	right: 0
+	right: 0,
 }
 
 type CallbackRefWithCurrent<T> = React.RefCallback<T> & {
@@ -22,7 +22,7 @@ type CallbackRefWithCurrent<T> = React.RefCallback<T> & {
  * https://mantine.dev/hooks/use-resize-observer/
  */
 export function useResizeObserver<T extends HTMLElement = HTMLElement>(
-	options?: ResizeObserverOptions
+	options?: ResizeObserverOptions,
 ) {
 	const frameID = useRef(0)
 	const nodeRef = useRef<T | null>(null)
@@ -37,7 +37,7 @@ export function useResizeObserver<T extends HTMLElement = HTMLElement>(
 		}) as CallbackRefWithCurrent<T>
 		Object.defineProperty(fn, 'current', {
 			get: () => nodeRef.current,
-			configurable: true
+			configurable: true,
 		})
 		return fn
 	}, [])
@@ -55,7 +55,8 @@ export function useResizeObserver<T extends HTMLElement = HTMLElement>(
 							frameID.current = requestAnimationFrame(() => {
 								if (nodeRef.current) {
 									const boxSize =
-										entry.borderBoxSize?.[0] || entry.contentBoxSize?.[0]
+										entry.borderBoxSize?.[0] ||
+										entry.contentBoxSize?.[0]
 									if (boxSize) {
 										const width = boxSize.inlineSize
 										const height = boxSize.blockSize
@@ -68,7 +69,7 @@ export function useResizeObserver<T extends HTMLElement = HTMLElement>(
 											top: entry.contentRect.top,
 											left: entry.contentRect.left,
 											bottom: entry.contentRect.bottom,
-											right: entry.contentRect.right
+											right: entry.contentRect.right,
 										})
 									} else {
 										setRect(entry.contentRect)
@@ -77,7 +78,7 @@ export function useResizeObserver<T extends HTMLElement = HTMLElement>(
 							})
 						}
 					}),
-		[]
+		[],
 	)
 
 	useEffect(() => {
@@ -98,7 +99,7 @@ export function useResizeObserver<T extends HTMLElement = HTMLElement>(
 }
 
 export function useElementSize<T extends HTMLElement = HTMLElement>(
-	options?: ResizeObserverOptions
+	options?: ResizeObserverOptions,
 ) {
 	const [ref, { width, height }] = useResizeObserver<T>(options)
 	return { ref, width, height }

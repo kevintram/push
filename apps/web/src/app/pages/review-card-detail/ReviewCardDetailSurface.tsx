@@ -11,7 +11,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogMedia,
-	AlertDialogTitle
+	AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import { Button } from '~/components/ui/button'
 import { LoadingSpinner } from '~/components/ui/loading-spinner'
@@ -20,10 +20,11 @@ import { cn } from '~/lib/utils'
 import { RetireReviewCardDialog } from '~/modules/review-cards/components/RetireReviewCardDialog'
 import { SearchDialog } from '~/modules/search/components/search-dialog/SearchDialog'
 import { isHttpStatusError } from '~/utils/httpStatusError'
+
 import { ReviewCardDetailHeader } from './ReviewCardDetailHeader'
 import { ReviewCardDetailHomeTab } from './ReviewCardDetailHomeTab'
 import { ReviewCardDetailReviewsTab } from './ReviewCardDetailReviewsTab'
-import type { ReviewCardDetailTab } from './shared'
+import { type ReviewCardDetailTab } from './shared'
 import { useReviewCardDetailPage } from './useReviewCardDetailPage'
 
 export type ReviewCardDetailSurfaceMode = 'fullPage' | 'contained'
@@ -33,7 +34,7 @@ export function ReviewCardDetailSurface({
 	activeTab,
 	mode = 'fullPage',
 	onActiveTabChange,
-	onCompletedReviewCreated
+	onCompletedReviewCreated,
 }: {
 	reviewCardId: number
 	activeTab?: ReviewCardDetailTab | string
@@ -112,12 +113,12 @@ export function ReviewCardDetailSurface({
 		todayReviews,
 		topicSearchQuery,
 		uncompletedUnscheduledReviews,
-		upcomingReviews
+		upcomingReviews,
 	} = useReviewCardDetailPage({
 		activeTab,
 		onActiveTabChange,
 		onCompletedReviewCreated,
-		reviewCardId
+		reviewCardId,
 	})
 
 	const isContained = mode === 'contained'
@@ -154,7 +155,7 @@ export function ReviewCardDetailSurface({
 			className={cn(
 				'flex h-full min-h-0 w-full',
 				isContained &&
-					'overflow-hidden rounded-lg border bg-background shadow-sm'
+					'overflow-hidden rounded-lg border bg-background shadow-sm',
 			)}
 		>
 			<div className='flex min-h-0 min-w-0 flex-1 flex-col'>
@@ -219,20 +220,26 @@ export function ReviewCardDetailSurface({
 					<div
 						className={cn(
 							'mx-auto flex min-h-full w-full flex-1 flex-col',
-							isContained ? 'max-w-4xl px-4 py-4' : 'max-w-5xl px-6 py-5'
+							isContained
+								? 'max-w-4xl px-4 py-4'
+								: 'max-w-5xl px-6 py-5',
 						)}
 					>
 						<div className='flex min-h-full min-w-0 flex-1 flex-col'>
 							{resolvedActiveTab === 'reviews' ? (
 								<ReviewCardDetailReviewsTab
 									completedReviews={completedReviews}
-									isCreatingReview={createReviewMutation.isPending}
+									isCreatingReview={
+										createReviewMutation.isPending
+									}
 									isLoading={isReviewsLoading}
 									onOpenReviewDialog={openReviewDialog}
 									onSelectRating={handleRatingSelect}
 									overdueReviews={overdueReviews}
 									todayReviews={todayReviews}
-									uncompletedUnscheduledReviews={uncompletedUnscheduledReviews}
+									uncompletedUnscheduledReviews={
+										uncompletedUnscheduledReviews
+									}
 									upcomingReviews={upcomingReviews}
 								/>
 							) : (
@@ -247,31 +254,47 @@ export function ReviewCardDetailSurface({
 									handleCopyGuessText={handleCopyGuessText}
 									handleCopyRevealText={handleCopyRevealText}
 									handleSeeReviews={handleSeeReviews}
-									handleUpdateReviewCardFields={handleUpdateReviewCardFields}
+									handleUpdateReviewCardFields={
+										handleUpdateReviewCardFields
+									}
 									hidesSecondary={hidesSecondary}
 									isRetireDisabled={isUpdatingReviewCard}
 									isRevealPanelCopied={isRevealPanelCopied}
-									isTypeMutationPending={isTypeMutationPending}
+									isTypeMutationPending={
+										isTypeMutationPending
+									}
 									isUnreviewed={isUnreviewed}
 									isUpdatingReviewCard={isUpdatingReviewCard}
 									lastReviewed={lastReviewed}
-									latestCompletedReview={latestCompletedReview}
+									latestCompletedReview={
+										latestCompletedReview
+									}
 									notes={notes}
-									onCompletedReviewCreated={handleCompletedReviewCreated}
+									onCompletedReviewCreated={
+										handleCompletedReviewCreated
+									}
 									onNotesChange={onNotesChange}
-									onOpenDeleteDialog={() => setIsDeleteDialogOpen(true)}
+									onOpenDeleteDialog={() =>
+										setIsDeleteDialogOpen(true)
+									}
 									onOpenReviewDialog={openReviewDialog}
 									onPrimaryTextChange={onPrimaryTextChange}
 									onRetireToggle={handleRetiredToggle}
-									onSecondaryTextChange={onSecondaryTextChange}
+									onSecondaryTextChange={
+										onSecondaryTextChange
+									}
 									primaryText={primaryText}
-									primaryTextTextareaRef={primaryTextTextareaRef}
+									primaryTextTextareaRef={
+										primaryTextTextareaRef
+									}
 									resolvedReviews={resolvedReviews}
 									revealPanelTab={revealPanelTab}
 									reviewCard={reviewCard}
 									reviewTriggerCounts={reviewTriggerCounts}
 									secondaryText={secondaryText}
-									setGuessSecondaryText={setGuessSecondaryText}
+									setGuessSecondaryText={
+										setGuessSecondaryText
+									}
 									setNotes={setNotes}
 									setRevealPanelTab={setRevealPanelTab}
 									setSecondaryText={setSecondaryText}
@@ -295,7 +318,8 @@ export function ReviewCardDetailSurface({
 						</AlertDialogMedia>
 						<AlertDialogTitle>Delete review card?</AlertDialogTitle>
 						<AlertDialogDescription>
-							This will delete this review card and all linked reviews.
+							This will delete this review card and all linked
+							reviews.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -315,7 +339,7 @@ export function ReviewCardDetailSurface({
 				isPending={isUpdatingReviewCard}
 				onConfirm={() => {
 					handleUpdateReviewCardFields({
-						retired: !reviewCard.retired
+						retired: !reviewCard.retired,
 					})
 					setIsRetireDialogOpen(false)
 				}}

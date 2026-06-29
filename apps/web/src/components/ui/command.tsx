@@ -1,12 +1,13 @@
 import { Command as CommandPrimitive } from "cmdk"
 import { CheckIcon, SearchIcon } from "lucide-react"
 import type * as React from "react"
+
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
-	DialogTitle
+	DialogTitle,
 } from "~/components/ui/dialog"
 import { InputGroup, InputGroupAddon } from "~/components/ui/input-group"
 import { cn } from "~/lib/utils"
@@ -19,7 +20,7 @@ function Command({
 		<CommandPrimitive
 			className={cn(
 				"bg-popover text-popover-foreground rounded-xl! p-1 flex size-full flex-col overflow-hidden",
-				className
+				className,
 			)}
 			data-slot='command'
 			{...props}
@@ -50,7 +51,7 @@ function CommandDialog({
 			<DialogContent
 				className={cn(
 					"rounded-xl! top-1/3 translate-y-0 overflow-hidden p-0",
-					className
+					className,
 				)}
 				showCloseButton={showCloseButton}
 			>
@@ -70,7 +71,7 @@ function CommandInput({
 				<CommandPrimitive.Input
 					className={cn(
 						"w-full text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
-						className
+						className,
 					)}
 					data-slot='command-input'
 					{...props}
@@ -91,7 +92,7 @@ function CommandList({
 		<CommandPrimitive.List
 			className={cn(
 				"no-scrollbar max-h-72 scroll-py-1 outline-none overflow-x-hidden overflow-y-auto",
-				className
+				className,
 			)}
 			data-slot='command-list'
 			{...props}
@@ -120,7 +121,7 @@ function CommandGroup({
 		<CommandPrimitive.Group
 			className={cn(
 				"text-foreground **:[[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-1 **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:py-1.5 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-medium",
-				className
+				className,
 			)}
 			data-slot='command-group'
 			{...props}
@@ -150,7 +151,7 @@ function CommandItem({
 		<CommandPrimitive.Item
 			className={cn(
 				"data-selected:bg-muted data-selected:text-foreground data-selected:**:[svg]:text-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:rounded-lg! [&_svg:not([class*='size-'])]:size-4 group/command-item data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-				className
+				className,
 			)}
 			data-slot='command-item'
 			{...props}
@@ -169,7 +170,7 @@ function CommandShortcut({
 		<span
 			className={cn(
 				"text-muted-foreground group-data-selected/command-item:text-foreground ml-auto text-xs tracking-widest",
-				className
+				className,
 			)}
 			data-slot='command-shortcut'
 			{...props}
@@ -186,5 +187,5 @@ export {
 	CommandItem,
 	CommandList,
 	CommandSeparator,
-	CommandShortcut
+	CommandShortcut,
 }

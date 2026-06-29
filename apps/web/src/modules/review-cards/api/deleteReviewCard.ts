@@ -1,15 +1,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+
 import { reviewQueueKeys } from '~/modules/reviews/api/queryKeys'
 import { searchKeys } from '~/modules/search/api/searchAll'
 import { apiFetch } from '~/utils/apiFetch'
+
 import { reviewCardKeys } from './queryKeys'
 
 export async function deleteReviewCard(reviewCardId: number): Promise<void> {
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/review-cards/${reviewCardId}/`,
 		{
-			method: 'DELETE'
-		}
+			method: 'DELETE',
+		},
 	)
 
 	if (!response.ok) {
@@ -24,13 +26,15 @@ export function useDeleteReviewCard() {
 		mutationFn: deleteReviewCard,
 		onSuccess: async (_, reviewCardId) => {
 			queryClient.removeQueries({
-				queryKey: reviewCardKeys.detail(reviewCardId)
+				queryKey: reviewCardKeys.detail(reviewCardId),
 			})
 			await Promise.all([
 				queryClient.invalidateQueries({ queryKey: reviewCardKeys.all }),
-				queryClient.invalidateQueries({ queryKey: reviewQueueKeys.all }),
-				queryClient.invalidateQueries({ queryKey: searchKeys.all })
+				queryClient.invalidateQueries({
+					queryKey: reviewQueueKeys.all,
+				}),
+				queryClient.invalidateQueries({ queryKey: searchKeys.all }),
 			])
-		}
+		},
 	})
 }

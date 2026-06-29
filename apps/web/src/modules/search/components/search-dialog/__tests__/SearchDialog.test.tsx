@@ -1,30 +1,32 @@
 import { useNavigate } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+
 import { SearchDialog } from '../SearchDialog'
 
 const navigateMock = vi.fn()
 const useSearchAllMock = vi.fn()
 
 vi.mock('@tanstack/react-router', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
-		useNavigate: vi.fn()
+		useNavigate: vi.fn(),
 	}
 })
 
 vi.mock('~/modules/search/api/searchAll', () => ({
-	useSearchAll: (...args: Array<unknown>) => useSearchAllMock(...args)
+	useSearchAll: (...args: Array<unknown>) => useSearchAllMock(...args),
 }))
 
 vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 	MasonryLayout: ({
 		items,
 		renderItem,
-		getItemKey
+		getItemKey,
 	}: {
 		items: Array<unknown>
 		renderItem: (item: any, index: number, laneWidth: number) => ReactNode
@@ -37,13 +39,13 @@ vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 				</div>
 			))}
 		</div>
-	)
+	),
 }))
 
 vi.mock('~/modules/topics/components/TopicCard', () => ({
 	TopicCard: ({
 		topic,
-		onClick
+		onClick,
 	}: {
 		topic: { title: string }
 		onClick?: () => void
@@ -51,13 +53,13 @@ vi.mock('~/modules/topics/components/TopicCard', () => ({
 		<button onClick={onClick} type='button'>
 			{topic.title}
 		</button>
-	)
+	),
 }))
 
 vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 	ReviewCard: ({
 		reviewCard,
-		onClick
+		onClick,
 	}: {
 		reviewCard: { primary_text: string }
 		onClick?: () => void
@@ -65,7 +67,7 @@ vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 		<button onClick={onClick} type='button'>
 			{reviewCard.primary_text}
 		</button>
-	)
+	),
 }))
 
 describe('SearchDialog', () => {
@@ -80,14 +82,14 @@ describe('SearchDialog', () => {
 				open={true}
 				query=''
 				setQuery={vi.fn()}
-			/>
+			/>,
 		)
 
 		await user.click(screen.getByRole('button', { name: /Create topic/iu }))
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/library',
-			search: { create: true }
+			search: { create: true },
 		})
 	})
 
@@ -105,10 +107,12 @@ describe('SearchDialog', () => {
 				open={true}
 				query=''
 				setQuery={vi.fn()}
-			/>
+			/>,
 		)
 
-		await user.click(screen.getByRole('button', { name: /Create parent/iu }))
+		await user.click(
+			screen.getByRole('button', { name: /Create parent/iu }),
+		)
 
 		expect(onCreate).toHaveBeenCalledTimes(1)
 		expect(navigateMock).not.toHaveBeenCalled()
@@ -127,10 +131,10 @@ describe('SearchDialog', () => {
 						parent_id: null,
 						parent_title: null,
 						inserted_at: '2026-03-01T12:00:00.000Z',
-						updated_at: '2026-03-01T12:00:00.000Z'
+						updated_at: '2026-03-01T12:00:00.000Z',
 					},
 					review_card: null,
-					recent_activity_at: '2026-03-05T09:00:00.000Z'
+					recent_activity_at: '2026-03-05T09:00:00.000Z',
 				},
 				{
 					entity_type: 'topic',
@@ -141,13 +145,13 @@ describe('SearchDialog', () => {
 						parent_id: null,
 						parent_title: null,
 						inserted_at: '2026-03-01T12:00:00.000Z',
-						updated_at: '2026-03-01T12:00:00.000Z'
+						updated_at: '2026-03-01T12:00:00.000Z',
 					},
 					review_card: null,
-					recent_activity_at: '2026-03-05T08:00:00.000Z'
-				}
+					recent_activity_at: '2026-03-05T08:00:00.000Z',
+				},
 			],
-			isLoading: false
+			isLoading: false,
 		})
 
 		render(
@@ -159,14 +163,14 @@ describe('SearchDialog', () => {
 				open={true}
 				query=''
 				setQuery={vi.fn()}
-			/>
+			/>,
 		)
 
 		expect(
-			screen.queryByRole('button', { name: 'Current topic' })
+			screen.queryByRole('button', { name: 'Current topic' }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Allowed topic' })
+			screen.getByRole('button', { name: 'Allowed topic' }),
 		).toBeInTheDocument()
 	})
 })

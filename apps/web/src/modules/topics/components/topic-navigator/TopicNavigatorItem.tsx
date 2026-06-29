@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router'
-import type { MutableRefObject } from 'react'
+import { type MutableRefObject } from 'react'
+
 import { cn } from '~/lib/utils'
 import { TopicTreeItem } from '~/modules/topics/components/topic-tree/TopicTreeItem'
 import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/modules/topics/hooks/usePrefetchTopicDetail'
-import type { TopicTreeNode } from '~/modules/topics/utils/topicTree'
+import { type TopicTreeNode } from '~/modules/topics/utils/topicTree'
 
 export type TopicNavigatorItemProps = {
 	node: TopicTreeNode
@@ -45,7 +46,7 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 		onRequestDeleteTopic,
 		onToggleExpanded,
 		suppressNavigationRef,
-		setItemRef
+		setItemRef,
 	} = props
 
 	return (
@@ -71,7 +72,7 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 				isSubtreeHighlighted,
 				label,
 				node,
-				suppressSelectionRef
+				suppressSelectionRef,
 			}) => (
 				<Link
 					aria-current={isActive ? 'page' : undefined}
@@ -80,7 +81,7 @@ export function TopicNavigatorItem(props: TopicNavigatorItemProps) {
 						isActive && 'font-medium text-foreground',
 						!isActive && isSubtreeHighlighted && 'text-foreground',
 						!(isActive || isSubtreeHighlighted) &&
-							'text-muted-foreground hover:text-foreground'
+							'text-muted-foreground hover:text-foreground',
 					)}
 					onClick={event => {
 						if (suppressSelectionRef.current) {

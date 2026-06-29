@@ -1,6 +1,7 @@
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { XIcon } from "lucide-react"
 import type * as React from "react"
+
 import { Button } from "~/components/ui/button"
 import { cn } from "~/lib/utils"
 
@@ -28,7 +29,7 @@ function DialogOverlay({
 		<DialogPrimitive.Backdrop
 			className={cn(
 				"data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 isolate z-50",
-				className
+				className,
 			)}
 			data-slot='dialog-overlay'
 			{...props}
@@ -50,7 +51,7 @@ function DialogContent({
 			<DialogPrimitive.Popup
 				className={cn(
 					"bg-background data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 ring-foreground/10 grid max-w-[calc(100%-2rem)] gap-6 rounded-xl p-6 text-sm ring-1 duration-100 sm:max-w-md fixed top-1/2 left-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 outline-none",
-					className
+					className,
 				)}
 				data-slot='dialog-content'
 				{...props}
@@ -98,7 +99,7 @@ function DialogFooter({
 		<div
 			className={cn(
 				"flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-				className
+				className,
 			)}
 			data-slot='dialog-footer'
 			{...props}
@@ -131,7 +132,7 @@ function DialogDescription({
 		<DialogPrimitive.Description
 			className={cn(
 				"text-muted-foreground *:[a]:hover:text-foreground text-sm *:[a]:underline *:[a]:underline-offset-3",
-				className
+				className,
 			)}
 			data-slot='dialog-description'
 			{...props}
@@ -149,5 +150,5 @@ export {
 	DialogOverlay,
 	DialogPortal,
 	DialogTitle,
-	DialogTrigger
+	DialogTrigger,
 }

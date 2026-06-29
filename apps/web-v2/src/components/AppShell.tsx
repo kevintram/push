@@ -1,10 +1,12 @@
+import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
-import * as styles from './AppShell.css'
+
+import { styles } from './AppShell.stylex'
 
 type AppShellProps = {
 	children: ReactNode
 }
 
 export function AppShell({ children }: AppShellProps) {
-	return <div className={styles.shell}>{children}</div>
+	return <div {...stylex.props(styles.shell)}>{children}</div>
 }

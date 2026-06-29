@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 
 const currentMajor = Number.parseInt(
 	process.versions.node.split('.')[0] ?? '',
-	10
+	10,
 )
 const useNode22Shim = Number.isFinite(currentMajor) && currentMajor > 22
 
@@ -33,7 +33,7 @@ if (useNode22Shim) {
 const result = spawnSync(command, commandArgs, {
 	cwd: webRoot,
 	stdio: 'inherit',
-	env
+	env,
 })
 
 if (result.error) {

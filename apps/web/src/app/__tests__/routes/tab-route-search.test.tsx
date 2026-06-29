@@ -2,13 +2,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
 	createRouter,
-	RouterProvider
+	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { HttpResponse, http } from 'msw'
-import type { ReactNode } from 'react'
+import { http, HttpResponse } from 'msw'
+import { type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { routeTree } from '~/app/routeTree.gen'
 import { server } from '~/testing/msw/server'
 
@@ -27,8 +28,8 @@ function normalizeQueuePageResult(result: {
 			...result,
 			data: {
 				items: result.data,
-				as_of: '2026-03-05'
-			}
+				as_of: '2026-03-05',
+			},
 		}
 	}
 
@@ -47,14 +48,14 @@ const mockLocalStorage = {
 	},
 	clear: () => {
 		storage.clear()
-	}
+	},
 }
 
 vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 	MasonryLayout: ({
 		items,
 		renderItem,
-		getItemKey
+		getItemKey,
 	}: {
 		items: Array<unknown>
 		renderItem: (item: any, index: number, laneWidth: number) => ReactNode
@@ -70,29 +71,29 @@ vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 				</div>
 			))}
 		</div>
-	)
+	),
 }))
 
 vi.mock('~/components/SettingsDialog', () => ({
-	SettingsDialog: () => null
+	SettingsDialog: () => null,
 }))
 
 vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 	ReviewCard: ({ reviewCard }: { reviewCard: { primary_text: string } }) => (
 		<div data-testid='review-card'>{reviewCard.primary_text}</div>
-	)
+	),
 }))
 
 vi.mock('~/app/pages/review-card-detail/ReviewCardDetailPage', () => ({
 	ReviewCardDetailPage: ({ reviewCardId }: { reviewCardId: number }) => (
 		<div data-testid='review-card-detail-page'>{reviewCardId}</div>
-	)
+	),
 }))
 
 vi.mock('~/modules/topics/components/TopicCard', () => ({
 	TopicCard: ({ topic }: { topic: { title: string } }) => (
 		<div data-testid='topic-card'>{topic.title}</div>
-	)
+	),
 }))
 
 vi.mock('~/modules/topics/api/getTopic', () => ({
@@ -104,38 +105,38 @@ vi.mock('~/modules/topics/api/getTopic', () => ({
 			body: '',
 			parent_id: null,
 			inserted_at: '2026-03-01T12:00:00.000Z',
-			updated_at: '2026-03-04T12:00:00.000Z'
-		})
+			updated_at: '2026-03-04T12:00:00.000Z',
+		}),
 	}),
-	useTopic: (...args: Array<unknown>) => useTopicMock(...args)
+	useTopic: (...args: Array<unknown>) => useTopicMock(...args),
 }))
 
 vi.mock('~/modules/topics/api/getTopics', () => ({
 	topicsQueryOptions: () => ({
 		queryKey: ['topics', 'list', { sort: 'title', order: 'asc' }],
-		queryFn: async () => []
+		queryFn: async () => [],
 	}),
-	useTopics: (...args: Array<unknown>) => useTopicsMock(...args)
+	useTopics: (...args: Array<unknown>) => useTopicsMock(...args),
 }))
 
 vi.mock('~/modules/review-cards/api/getReviewCards', () => ({
 	reviewCardsQueryOptions: (params: Record<string, unknown>) => ({
 		queryKey: ['review-cards', 'list', params],
-		queryFn: async () => []
+		queryFn: async () => [],
 	}),
-	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args)
+	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args),
 }))
 
 vi.mock('~/modules/review-cards/api/getReviewCardQueue', () => ({
 	useReviewCardQueue: (...args: Array<unknown>) =>
 		useReviewCardQueueMock(...args),
 	useReviewCardQueuePage: (...args: Array<unknown>) =>
-		normalizeQueuePageResult(useReviewCardQueueMock(...args))
+		normalizeQueuePageResult(useReviewCardQueueMock(...args)),
 }))
 
 vi.mock('~/modules/review-cards/hooks/useReviewCardQueueCounts', () => ({
 	useReviewCardQueueCounts: (...args: Array<unknown>) =>
-		useReviewCardQueueCountsMock(...args)
+		useReviewCardQueueCountsMock(...args),
 }))
 
 vi.mock('~/stores/ReviewModeContext', async importOriginal => {
@@ -149,16 +150,16 @@ vi.mock('~/stores/ReviewModeContext', async importOriginal => {
 			setReviewMode: () => {},
 			isReviewModeEnabled: false,
 			hidesPrimary: false,
-			hidesSecondary: false
-		})
+			hidesSecondary: false,
+		}),
 	}
 })
 
 vi.mock('~/stores/WeekStartContext', () => ({
 	useWeekStart: () => ({
 		weekStartDay: 1,
-		setWeekStartDay: vi.fn()
-	})
+		setWeekStartDay: vi.fn(),
+	}),
 }))
 
 vi.mock('~/stores/ThemeContext', () => ({
@@ -166,28 +167,28 @@ vi.mock('~/stores/ThemeContext', () => ({
 	useTheme: () => ({
 		theme: 'system',
 		resolvedTheme: 'light',
-		setTheme: vi.fn()
-	})
+		setTheme: vi.fn(),
+	}),
 }))
 
 vi.mock('~/modules/review-cards/api/createReviewCard', () => ({
-	useCreateReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useCreateReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/topics/api/createTopic', () => ({
-	useCreateTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useCreateTopic: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/topics/api/updateTopic', () => ({
-	useUpdateTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useUpdateTopic: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/topics/api/deleteTopic', () => ({
-	useDeleteTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useDeleteTopic: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/reviews/api/createReview', () => ({
-	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useCreateReview: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 const topic = {
@@ -197,7 +198,7 @@ const topic = {
 	parent_id: null,
 	parent_title: null,
 	inserted_at: '2026-03-01T12:00:00.000Z',
-	updated_at: '2026-03-04T12:00:00.000Z'
+	updated_at: '2026-03-04T12:00:00.000Z',
 }
 
 const reviewCard = {
@@ -223,21 +224,21 @@ const reviewCard = {
 	days_until_next_tier: null,
 	days_in_current_tier: null,
 	is_new: true,
-	status_badges: []
+	status_badges: [],
 }
 
 function renderRoute(route: string) {
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false }
-		}
+			queries: { gcTime: Number.POSITIVE_INFINITY, retry: false },
+		},
 	})
 	const router = createRouter({
 		routeTree,
 		history: createMemoryHistory({ initialEntries: [route] }),
 		context: {
-			queryClient
-		}
+			queryClient,
+		},
 	})
 
 	return {
@@ -246,8 +247,8 @@ function renderRoute(route: string) {
 		...render(
 			<QueryClientProvider client={queryClient}>
 				<RouterProvider context={{ queryClient }} router={router} />
-			</QueryClientProvider>
-		)
+			</QueryClientProvider>,
+		),
 	}
 }
 
@@ -260,23 +261,23 @@ beforeEach(() => {
 	useTopicsMock.mockReturnValue({ data: [], isLoading: false, error: null })
 	useReviewCardQueueMock.mockReturnValue({
 		data: { items: [], as_of: '2026-03-05' },
-		isLoading: false
+		isLoading: false,
 	})
 	useReviewCardQueueCountsMock.mockReturnValue({
 		overdueCount: 0,
 		dueTodayCount: 0,
 		newCount: 0,
-		dueNextSevenDaysCount: 0
+		dueNextSevenDaysCount: 0,
 	})
 	server.use(
 		http.get('*/review-cards/:reviewCardId/', () =>
-			HttpResponse.json(reviewCard)
-		)
+			HttpResponse.json(reviewCard),
+		),
 	)
 	storage.clear()
 	Object.defineProperty(window, 'localStorage', {
 		value: mockLocalStorage,
-		configurable: true
+		configurable: true,
 	})
 })
 
@@ -286,7 +287,9 @@ describe('route-backed tab search state', () => {
 
 		await waitFor(() => {
 			expect(router.state.location.pathname).toBe('/due')
-			expect(router.state.location.search).toEqual({ filter: 'flashcards' })
+			expect(router.state.location.search).toEqual({
+				filter: 'flashcards',
+			})
 		})
 	})
 
@@ -317,7 +320,7 @@ describe('route-backed tab search state', () => {
 
 	it('redirects legacy due focus card routes to focus index card state', async () => {
 		const { router } = renderRoute(
-			'/due/focus/42?filter=practice&order=random&shuffle=abc'
+			'/due/focus/42?filter=practice&order=random&shuffle=abc',
 		)
 
 		await waitFor(() => {
@@ -326,7 +329,7 @@ describe('route-backed tab search state', () => {
 				card: 42,
 				filter: 'practice',
 				order: 'random',
-				shuffle: 'abc'
+				shuffle: 'abc',
 			})
 		})
 	})
@@ -341,7 +344,7 @@ describe('route-backed tab search state', () => {
 		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
 			data: [{ ...reviewCard, id: 33, primary_text: 'Topic card' }],
-			isLoading: false
+			isLoading: false,
 		})
 
 		renderRoute('/topics/1?tab=invalid&filter=invalid')
@@ -350,7 +353,7 @@ describe('route-backed tab search state', () => {
 			expect(useReviewCardsMock).toHaveBeenLastCalledWith({
 				topic_id: 1,
 				include_descendants: true,
-				order: 'desc'
+				order: 'desc',
 			})
 		})
 		expect(screen.getByText('Topic card')).toBeInTheDocument()
@@ -365,8 +368,10 @@ describe('route-backed tab search state', () => {
 		})
 		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
-			data: [{ ...reviewCard, id: 34, primary_text: 'Practice-only card' }],
-			isLoading: false
+			data: [
+				{ ...reviewCard, id: 34, primary_text: 'Practice-only card' },
+			],
+			isLoading: false,
 		})
 		const { router, user } = renderRoute('/topics/1?filter=practice')
 
@@ -374,10 +379,12 @@ describe('route-backed tab search state', () => {
 			expect(useReviewCardsMock).toHaveBeenLastCalledWith({
 				topic_id: 1,
 				include_descendants: true,
-				order: 'desc'
+				order: 'desc',
 			})
 		})
-		expect(await screen.findByText('Practice-only card')).toBeInTheDocument()
+		expect(
+			await screen.findByText('Practice-only card'),
+		).toBeInTheDocument()
 
 		const [globalAllFilter] = screen.getAllByText('All')
 		expect(globalAllFilter).toBeDefined()

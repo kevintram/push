@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
+
 import { useWeekStart, WeekStartProvider } from '~/stores/WeekStartContext'
 
 const WEEK_START_STORAGE_KEY = '3gulp-week-start-day'
@@ -13,7 +14,7 @@ const mockLocalStorage = {
 	},
 	removeItem: (key: string) => {
 		storage.delete(key)
-	}
+	},
 }
 
 function WeekStartProbe() {
@@ -33,7 +34,7 @@ describe('WeekStartContext', () => {
 		storage.clear()
 		Object.defineProperty(window, 'localStorage', {
 			value: mockLocalStorage,
-			configurable: true
+			configurable: true,
 		})
 	})
 
@@ -41,7 +42,7 @@ describe('WeekStartContext', () => {
 		render(
 			<WeekStartProvider>
 				<WeekStartProbe />
-			</WeekStartProvider>
+			</WeekStartProvider>,
 		)
 
 		expect(screen.getByTestId('week-start-day')).toHaveTextContent('0')
@@ -53,7 +54,7 @@ describe('WeekStartContext', () => {
 		render(
 			<WeekStartProvider>
 				<WeekStartProbe />
-			</WeekStartProvider>
+			</WeekStartProvider>,
 		)
 
 		expect(screen.getByTestId('week-start-day')).toHaveTextContent('0')
@@ -65,7 +66,7 @@ describe('WeekStartContext', () => {
 		render(
 			<WeekStartProvider>
 				<WeekStartProbe />
-			</WeekStartProvider>
+			</WeekStartProvider>,
 		)
 
 		expect(screen.getByTestId('week-start-day')).toHaveTextContent('6')
@@ -77,7 +78,7 @@ describe('WeekStartContext', () => {
 		render(
 			<WeekStartProvider>
 				<WeekStartProbe />
-			</WeekStartProvider>
+			</WeekStartProvider>,
 		)
 
 		await user.click(screen.getByRole('button', { name: 'Set Monday' }))

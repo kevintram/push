@@ -1,16 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
+
 import { ReviewCardQueuePageSchema } from '../types/review-card.schemas'
-import type {
-	ReviewCardQueueItem,
-	ReviewCardQueuePage,
-	ReviewCardQueueParams
+import {
+	type ReviewCardQueueItem,
+	type ReviewCardQueuePage,
+	type ReviewCardQueueParams,
 } from '../types/review-card.types'
 import { reviewCardKeys } from './queryKeys'
 
 export async function getReviewCardQueuePage(
-	params: ReviewCardQueueParams
+	params: ReviewCardQueueParams,
 ): Promise<ReviewCardQueuePage> {
 	const searchParams = new URLSearchParams()
 	if (params.filter === undefined) {
@@ -30,7 +32,7 @@ export async function getReviewCardQueuePage(
 	}
 
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/review-cards/queue/?${searchParams.toString()}`
+		`${import.meta.env.VITE_API_URL}/review-cards/queue/?${searchParams.toString()}`,
 	)
 
 	if (!response.ok) {
@@ -49,7 +51,7 @@ export async function getReviewCardQueuePage(
 }
 
 export async function getReviewCardQueue(
-	params: ReviewCardQueueParams
+	params: ReviewCardQueueParams,
 ): Promise<Array<ReviewCardQueueItem>> {
 	const page = await getReviewCardQueuePage(params)
 	return page.items
@@ -58,13 +60,13 @@ export async function getReviewCardQueue(
 export function useReviewCardQueuePage(params: ReviewCardQueueParams) {
 	return useQuery({
 		queryKey: reviewCardKeys.queue(params),
-		queryFn: () => getReviewCardQueuePage(params)
+		queryFn: () => getReviewCardQueuePage(params),
 	})
 }
 
 export function useReviewCardQueue(params: ReviewCardQueueParams) {
 	return useQuery({
 		queryKey: reviewCardKeys.queue(params),
-		queryFn: () => getReviewCardQueue(params)
+		queryFn: () => getReviewCardQueue(params),
 	})
 }

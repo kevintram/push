@@ -4,38 +4,40 @@ import {
 	Loader,
 	MoreHorizontal,
 	Plus,
-	Trash2
+	Trash2,
 } from 'lucide-react'
 import { type ChangeEventHandler, type ReactNode, useState } from 'react'
+
 import { Button } from '~/components/ui/button'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { cn } from '~/lib/utils'
+
 import {
 	getTopicDetailSectionDisplayLevel,
-	TOPIC_DETAIL_SECTION_GRID_CLASS
+	TOPIC_DETAIL_SECTION_GRID_CLASS,
 } from './topicDetailLayout'
-import type { TopicDetailSectionNode } from './topicDetailStructure'
+import { type TopicDetailSectionNode } from './topicDetailStructure'
 
 function getActionButtonProps(section: TopicDetailSectionNode) {
 	const displayLevel = getTopicDetailSectionDisplayLevel(section)
 	if (displayLevel <= 4) {
 		return {
-			buttonSize: 'icon-sm' as const
+			buttonSize: 'icon-sm' as const,
 		}
 	}
 	return {
-		buttonSize: 'icon-xs' as const
+		buttonSize: 'icon-xs' as const,
 	}
 }
 
@@ -82,7 +84,7 @@ export function TopicDetailNestedSectionView({
 	sectionLabel,
 	sectionNumber,
 	title,
-	toggleSection
+	toggleSection,
 }: TopicDetailNestedSectionViewProps) {
 	const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false)
 	const [isSubmitting, setIsSubmitting] = useState(false)
@@ -96,7 +98,7 @@ export function TopicDetailNestedSectionView({
 				'group/section transition-[background-color,box-shadow] duration-400 ease-out',
 				TOPIC_DETAIL_SECTION_GRID_CLASS,
 				isFreshTopic &&
-					'-mx-3 rounded-xl bg-sky-50/70 px-3 py-2 ring-1 ring-sky-200/80 dark:bg-sky-950/20 dark:ring-sky-800/70'
+					'-mx-3 rounded-xl bg-sky-50/70 px-3 py-2 ring-1 ring-sky-200/80 dark:bg-sky-950/20 dark:ring-sky-800/70',
 			)}
 			data-fresh-topic={isFreshTopic ? 'true' : undefined}
 		>
@@ -115,7 +117,9 @@ export function TopicDetailNestedSectionView({
 						<div
 							className={cn(
 								'flex min-w-0 gap-x-3',
-								showsInlineNumber ? 'items-baseline' : 'items-start'
+								showsInlineNumber
+									? 'items-baseline'
+									: 'items-start',
 							)}
 						>
 							{showsInlineNumber ? (
@@ -123,7 +127,7 @@ export function TopicDetailNestedSectionView({
 									aria-hidden='true'
 									className={cn(
 										headingClassName,
-										'block shrink-0 select-none whitespace-nowrap text-slate-400 dark:text-slate-500'
+										'block shrink-0 select-none whitespace-nowrap text-slate-400 dark:text-slate-500',
 									)}
 								>
 									{sectionNumber}
@@ -135,7 +139,7 @@ export function TopicDetailNestedSectionView({
 									className={cn(
 										'block whitespace-pre-wrap break-words',
 										headingClassName,
-										isTitleEmpty && 'text-transparent'
+										isTitleEmpty && 'text-transparent',
 									)}
 								>
 									{title.trim().length > 0 ? title : 'Title'}
@@ -147,7 +151,7 @@ export function TopicDetailNestedSectionView({
 										isTitleEmpty
 											? 'text-muted-foreground'
 											: 'text-transparent selection:text-transparent',
-										headingClassName
+										headingClassName,
 									)}
 									onBlur={flushTitle}
 									onChange={onTitleChange}
@@ -201,7 +205,9 @@ export function TopicDetailNestedSectionView({
 								<DropdownMenuContent align='end'>
 									<DropdownMenuItem
 										closeOnClick={false}
-										disabled={isCreatingTopic || isSubmitting}
+										disabled={
+											isCreatingTopic || isSubmitting
+										}
 										onClick={() => {
 											setIsSubmitting(true)
 											onCreateSubtopic().finally(() => {
@@ -238,7 +244,7 @@ export function TopicDetailNestedSectionView({
 							className={cn(
 								'shrink-0 rounded-full',
 								isCollapsed &&
-									'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
+									'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300',
 							)}
 							onClick={() => toggleSection(sectionId)}
 							size={buttonSize}
@@ -248,7 +254,7 @@ export function TopicDetailNestedSectionView({
 							<ChevronDown
 								className={cn(
 									'translate-y-px transition-transform',
-									isCollapsed && '-rotate-90'
+									isCollapsed && '-rotate-90',
 								)}
 							/>
 						</Button>

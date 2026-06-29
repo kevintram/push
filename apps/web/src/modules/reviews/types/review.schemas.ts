@@ -1,5 +1,6 @@
 import * as v from 'valibot'
-import type { Review, ReviewListItem } from './review.types'
+
+import { type Review, type ReviewListItem } from './review.types'
 
 export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	id: v.number(),
@@ -19,7 +20,7 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 		topic_id: v.number(),
 		type: v.picklist(['practice', 'flashcard']),
 		primary_text: v.string(),
-		secondary_text: v.string()
+		secondary_text: v.string(),
 	}),
 
 	// Entity FSRS state before review
@@ -34,7 +35,7 @@ export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	difficulty_after: v.nullable(v.number()),
 	state_after: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
 	step_after: v.nullable(v.number()),
-	due_after: v.nullable(v.string())
+	due_after: v.nullable(v.string()),
 })
 
 export const ReviewListItemSchema: v.GenericSchema<ReviewListItem> =

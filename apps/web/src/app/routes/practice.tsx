@@ -4,7 +4,7 @@ export const Route = createFileRoute('/practice')({
 	beforeLoad: () => {
 		throw redirect({
 			to: '/due',
-			search: { filter: 'practice' }
+			search: { filter: 'practice' },
 		})
-	}
+	},
 })

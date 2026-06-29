@@ -1,9 +1,10 @@
 import { type ReactNode, useState } from 'react'
 import { beforeEach, vi } from 'vitest'
+
 import { DuePage, type DuePageFilter } from '~/app/pages/DuePage'
 import {
 	TopicDetailPage,
-	type TopicDetailReviewCardFilter
+	type TopicDetailReviewCardFilter,
 } from '~/app/pages/topic-detail/TopicDetailPage'
 
 export function createMockLocalStorage() {
@@ -18,7 +19,7 @@ export function createMockLocalStorage() {
 		},
 		setItem: (key: string, value: string) => {
 			storage.set(key, value)
-		}
+		},
 	}
 }
 
@@ -46,8 +47,8 @@ function normalizeQueuePageResult(result: {
 			...result,
 			data: {
 				items: result.data,
-				as_of: '2026-03-05'
-			}
+				as_of: '2026-03-05',
+			},
 		}
 	}
 
@@ -55,7 +56,8 @@ function normalizeQueuePageResult(result: {
 }
 
 vi.mock('@tanstack/react-router', async importOriginal => {
-	const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+	const actual =
+		await importOriginal<typeof import('@tanstack/react-router')>()
 	return {
 		...actual,
 		Link: ({
@@ -97,10 +99,10 @@ vi.mock('@tanstack/react-router', async importOriginal => {
 		),
 		useNavigate: () => navigateMock,
 		useRouterState: ({
-			select
+			select,
 		}: {
 			select: (state: { location: { hash: string } }) => unknown
-		}) => select({ location: { hash: '' } })
+		}) => select({ location: { hash: '' } }),
 	}
 })
 
@@ -109,7 +111,7 @@ vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 		items,
 		renderItem,
 		getItemKey,
-		getScrollElement
+		getScrollElement,
 	}: {
 		items: Array<unknown>
 		renderItem: (item: any, index: number, laneWidth: number) => ReactNode
@@ -130,13 +132,13 @@ vi.mock('~/components/masonry-layout/MasonryLayout', () => ({
 				))}
 			</div>
 		)
-	}
+	},
 }))
 
 vi.mock('~/modules/topics/components/TopicCard', () => ({
 	TopicCard: ({ topic }: { topic: { title: string } }) => (
 		<div data-testid='topic-card'>{topic.title}</div>
-	)
+	),
 }))
 
 vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
@@ -145,69 +147,71 @@ vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 		enableLargeCardMode?: boolean
 	}) => {
 		reviewCardRenderSpy(props)
-		return <div data-testid='review-card'>{props.reviewCard.primary_text}</div>
-	}
+		return (
+			<div data-testid='review-card'>{props.reviewCard.primary_text}</div>
+		)
+	},
 }))
 
 vi.mock('~/modules/topics/api/getTopics', () => ({
-	useTopics: (...args: Array<unknown>) => useTopicsMock(...args)
+	useTopics: (...args: Array<unknown>) => useTopicsMock(...args),
 }))
 
 vi.mock('~/modules/topics/api/getTopic', () => ({
-	useTopic: (...args: Array<unknown>) => useTopicMock(...args)
+	useTopic: (...args: Array<unknown>) => useTopicMock(...args),
 }))
 
 vi.mock('~/modules/review-cards/api/getReviewCards', () => ({
-	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args)
+	useReviewCards: (...args: Array<unknown>) => useReviewCardsMock(...args),
 }))
 
 vi.mock('~/modules/review-cards/api/getReviewCardQueue', () => ({
 	useReviewCardQueue: (...args: Array<unknown>) =>
 		useReviewCardQueueMock(...args),
 	useReviewCardQueuePage: (...args: Array<unknown>) =>
-		normalizeQueuePageResult(useReviewCardQueueMock(...args))
+		normalizeQueuePageResult(useReviewCardQueueMock(...args)),
 }))
 
 vi.mock('~/modules/review-cards/hooks/useReviewCardQueueCounts', () => ({
 	useReviewCardQueueCounts: (...args: Array<unknown>) =>
-		useReviewCardQueueCountsMock(...args)
+		useReviewCardQueueCountsMock(...args),
 }))
 
 vi.mock('~/modules/search/api/searchAll', () => ({
-	useSearchAll: (...args: Array<unknown>) => useSearchAllMock(...args)
+	useSearchAll: (...args: Array<unknown>) => useSearchAllMock(...args),
 }))
 
 vi.mock('~/modules/topics/api/createTopic', () => ({
 	useCreateTopic: () => ({
 		mutateAsync: createTopicAsyncMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/modules/topics/api/deleteTopic', () => ({
-	useDeleteTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useDeleteTopic: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/topics/api/updateTopic', () => ({
-	useUpdateTopic: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useUpdateTopic: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/review-cards/api/createReviewCard', () => ({
-	useCreateReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false })
+	useCreateReviewCard: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock('~/modules/reviews/api/createReview', () => ({
 	useCreateReview: () => ({
 		mutateAsync: createReviewAsyncMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/modules/review-cards/api/updateReviewCard', () => ({
 	useUpdateReviewCard: () => ({
 		mutateAsync: updateReviewCardAsyncMock,
-		isPending: false
-	})
+		isPending: false,
+	}),
 }))
 
 vi.mock('~/stores/ReviewModeContext', async importOriginal => {
@@ -216,15 +220,15 @@ vi.mock('~/stores/ReviewModeContext', async importOriginal => {
 
 	return {
 		...actual,
-		useReviewMode: () => useReviewModeMock()
+		useReviewMode: () => useReviewModeMock(),
 	}
 })
 
 vi.mock('~/stores/WeekStartContext', () => ({
 	useWeekStart: () => ({
 		weekStartDay: 1,
-		setWeekStartDay: vi.fn()
-	})
+		setWeekStartDay: vi.fn(),
+	}),
 }))
 
 export const topic = {
@@ -234,7 +238,7 @@ export const topic = {
 	parent_id: null,
 	parent_title: null,
 	inserted_at: '2026-03-01T12:00:00.000Z',
-	updated_at: '2026-03-04T12:00:00.000Z'
+	updated_at: '2026-03-04T12:00:00.000Z',
 }
 
 export const reviewCard = {
@@ -260,11 +264,11 @@ export const reviewCard = {
 	days_until_next_tier: null,
 	days_in_current_tier: null,
 	is_new: true,
-	status_badges: []
+	status_badges: [],
 }
 
 export function renderDuePage({
-	initialFilter = 'all'
+	initialFilter = 'all',
 }: {
 	initialFilter?: DuePageFilter
 }) {
@@ -279,7 +283,7 @@ export function renderDuePage({
 
 export function renderTopicDetailPage({
 	initialFilter = 'all',
-	focusTitle
+	focusTitle,
 }: {
 	initialFilter?: TopicDetailReviewCardFilter
 	focusTitle?: boolean
@@ -320,7 +324,7 @@ beforeEach(() => {
 		overdueCount: 0,
 		dueTodayCount: 0,
 		newCount: 0,
-		dueNextSevenDaysCount: 0
+		dueNextSevenDaysCount: 0,
 	})
 	useReviewModeMock.mockReturnValue({
 		reviewMode: 'on',
@@ -331,7 +335,7 @@ beforeEach(() => {
 		showReviewModeWarning: true,
 		setShowReviewModeWarning: vi.fn(),
 		autoEnableReviewMode: false,
-		setAutoEnableReviewMode: vi.fn()
+		setAutoEnableReviewMode: vi.fn(),
 	})
 	window.sessionStorage.clear()
 	window.happyDOM?.setViewport({ height: 900, width: 1024 })

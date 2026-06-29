@@ -6,11 +6,12 @@ import {
 	useEffect,
 	useMemo,
 	useRef,
-	useState
+	useState,
 } from 'react'
+
 import {
 	TOPIC_DETAIL_OUTLINE_MAX_WIDTH,
-	TOPIC_DETAIL_OUTLINE_MIN_WIDTH
+	TOPIC_DETAIL_OUTLINE_MIN_WIDTH,
 } from './topicDetailLayout'
 
 type UseTopicDetailOutlineSizingOptions = {
@@ -26,7 +27,7 @@ export function useTopicDetailOutlineSizing({
 	outlineNodeCount,
 	outlineWidth,
 	pendingCreatedTopicId,
-	rootLabel
+	rootLabel,
 }: UseTopicDetailOutlineSizingOptions) {
 	const [footerHeight, setFooterHeight] = useState(0)
 	const [outlineContentHeight, setOutlineContentHeight] = useState(0)
@@ -53,15 +54,15 @@ export function useTopicDetailOutlineSizing({
 
 			outlineItemElementsRef.current.set(topicId, element)
 		},
-		[]
+		[],
 	)
 	const clampOutlineWidth = useCallback(
 		(width: number) =>
 			Math.min(
 				Math.max(width, TOPIC_DETAIL_OUTLINE_MIN_WIDTH),
-				TOPIC_DETAIL_OUTLINE_MAX_WIDTH
+				TOPIC_DETAIL_OUTLINE_MAX_WIDTH,
 			),
-		[]
+		[],
 	)
 	const applyOutlineWidth = useCallback((nextWidth: number) => {
 		outlineWidthRef.current = nextWidth
@@ -70,7 +71,7 @@ export function useTopicDetailOutlineSizing({
 		if (resizeButtonRef.current) {
 			resizeButtonRef.current.setAttribute(
 				'aria-valuenow',
-				nextWidth.toString()
+				nextWidth.toString(),
 			)
 		}
 
@@ -91,7 +92,8 @@ export function useTopicDetailOutlineSizing({
 		const updateViewportMetrics = () => {
 			setViewportHeight(window.innerHeight)
 			setOutlineTopOffset(
-				outlineRef.current?.getBoundingClientRect().top ?? stickyTopOffset
+				outlineRef.current?.getBoundingClientRect().top ??
+					stickyTopOffset,
 			)
 		}
 
@@ -110,7 +112,7 @@ export function useTopicDetailOutlineSizing({
 				cancelAnimationFrame(resizeFrameRef.current)
 			}
 		},
-		[]
+		[],
 	)
 
 	useEffect(() => {
@@ -123,7 +125,8 @@ export function useTopicDetailOutlineSizing({
 		if (!(headerElement || navElement || footerElement)) return
 
 		const updateMeasuredHeights = () => {
-			const headerHeight = headerElement?.getBoundingClientRect().height ?? 0
+			const headerHeight =
+				headerElement?.getBoundingClientRect().height ?? 0
 			const navHeight = navElement?.scrollHeight ?? 0
 			setOutlineContentHeight(headerHeight + navHeight)
 			setFooterHeight(footerElement?.getBoundingClientRect().height ?? 0)
@@ -148,14 +151,14 @@ export function useTopicDetailOutlineSizing({
 		if (pendingCreatedTopicId == null) return
 
 		const outlineItem = outlineItemElementsRef.current.get(
-			pendingCreatedTopicId
+			pendingCreatedTopicId,
 		)
 		if (outlineItem == null) return
 
 		const scrollOutlineItemIntoView = () => {
 			outlineItem.scrollIntoView({
 				block: 'nearest',
-				inline: 'nearest'
+				inline: 'nearest',
 			})
 		}
 
@@ -178,7 +181,7 @@ export function useTopicDetailOutlineSizing({
 		if (resizeButtonRef.current) {
 			resizeButtonRef.current.setAttribute(
 				'aria-valuenow',
-				outlineWidth.toString()
+				outlineWidth.toString(),
 			)
 		}
 	}, [outlineWidth])
@@ -188,7 +191,7 @@ export function useTopicDetailOutlineSizing({
 
 		const maxOutlineHeight = Math.max(
 			viewportHeight - outlineTopOffset - stickyTopOffset,
-			0
+			0,
 		)
 		const desiredOutlineHeight = outlineContentHeight + footerHeight
 		return {
@@ -196,7 +199,7 @@ export function useTopicDetailOutlineSizing({
 				desiredOutlineHeight > 0
 					? `${Math.min(desiredOutlineHeight, maxOutlineHeight)}px`
 					: 'fit-content',
-			maxHeight: `${maxOutlineHeight}px`
+			maxHeight: `${maxOutlineHeight}px`,
 		}
 	}, [footerHeight, outlineContentHeight, outlineTopOffset, viewportHeight])
 	const outlineListStyle = useMemo<CSSProperties | undefined>(() => {
@@ -205,20 +208,20 @@ export function useTopicDetailOutlineSizing({
 
 		const maxOutlineHeight = Math.max(
 			viewportHeight - outlineTopOffset - stickyTopOffset,
-			0
+			0,
 		)
 		const maxListHeight = Math.max(maxOutlineHeight - footerHeight, 0)
 
 		return {
-			height: `${Math.min(outlineContentHeight, maxListHeight)}px`
+			height: `${Math.min(outlineContentHeight, maxListHeight)}px`,
 		}
 	}, [footerHeight, outlineContentHeight, outlineTopOffset, viewportHeight])
 	const asideStyle = useMemo<CSSProperties>(
 		() => ({
 			...outlineRailStyle,
-			width: `${outlineWidth}px`
+			width: `${outlineWidth}px`,
 		}),
-		[outlineRailStyle, outlineWidth]
+		[outlineRailStyle, outlineWidth],
 	)
 	const handleResizeStart = useCallback(
 		(event: ReactPointerEvent<HTMLButtonElement>) => {
@@ -239,7 +242,9 @@ export function useTopicDetailOutlineSizing({
 
 			const handlePointerMove = (moveEvent: PointerEvent) => {
 				applyOutlineWidth(
-					clampOutlineWidth(startWidth + (moveEvent.clientX - startX))
+					clampOutlineWidth(
+						startWidth + (moveEvent.clientX - startX),
+					),
 				)
 			}
 
@@ -256,13 +261,15 @@ export function useTopicDetailOutlineSizing({
 			window.addEventListener('pointermove', handlePointerMove)
 			window.addEventListener('pointerup', handlePointerUp)
 		},
-		[applyOutlineWidth, clampOutlineWidth, onOutlineWidthChange]
+		[applyOutlineWidth, clampOutlineWidth, onOutlineWidthChange],
 	)
 	const handleResizeKeyDown = useCallback(
 		(event: KeyboardEvent<HTMLButtonElement>) => {
 			if (event.key === 'ArrowLeft') {
 				event.preventDefault()
-				const nextWidth = clampOutlineWidth(outlineWidthRef.current - 16)
+				const nextWidth = clampOutlineWidth(
+					outlineWidthRef.current - 16,
+				)
 				applyOutlineWidth(nextWidth)
 				onOutlineWidthChange(nextWidth)
 				return
@@ -270,7 +277,9 @@ export function useTopicDetailOutlineSizing({
 
 			if (event.key === 'ArrowRight') {
 				event.preventDefault()
-				const nextWidth = clampOutlineWidth(outlineWidthRef.current + 16)
+				const nextWidth = clampOutlineWidth(
+					outlineWidthRef.current + 16,
+				)
 				applyOutlineWidth(nextWidth)
 				onOutlineWidthChange(nextWidth)
 				return
@@ -289,7 +298,7 @@ export function useTopicDetailOutlineSizing({
 				onOutlineWidthChange(TOPIC_DETAIL_OUTLINE_MAX_WIDTH)
 			}
 		},
-		[applyOutlineWidth, clampOutlineWidth, onOutlineWidthChange]
+		[applyOutlineWidth, clampOutlineWidth, onOutlineWidthChange],
 	)
 
 	return {
@@ -302,6 +311,6 @@ export function useTopicDetailOutlineSizing({
 		outlineNavRef,
 		outlineRef,
 		registerOutlineItemRef,
-		resizeButtonRef
+		resizeButtonRef,
 	}
 }

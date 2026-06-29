@@ -2,30 +2,30 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
 	createRouter,
-	RouterProvider
+	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+
 import { routeTree } from '~/app/routeTree.gen'
 import { LoadingState } from '~/components/LoadingState'
-import { Button } from '~/components/ui/Button'
 
 function renderRoute(path: string) {
 	const queryClient = new QueryClient()
 	const router = createRouter({
 		routeTree,
 		context: {
-			queryClient
+			queryClient,
 		},
 		history: createMemoryHistory({
-			initialEntries: [path]
-		})
+			initialEntries: [path],
+		}),
 	})
 
 	return render(
 		<QueryClientProvider client={queryClient}>
 			<RouterProvider context={{ queryClient }} router={router} />
-		</QueryClientProvider>
+		</QueryClientProvider>,
 	)
 }
 
@@ -35,8 +35,8 @@ describe('v2 app setup', () => {
 
 		expect(
 			await screen.findByRole('heading', {
-				name: 'A clean foundation for the rewrite.'
-			})
+				name: 'A clean foundation for the rewrite.',
+			}),
 		).toBeInTheDocument()
 		expect(screen.getByText('3gulp v2')).toBeInTheDocument()
 	})
@@ -45,7 +45,7 @@ describe('v2 app setup', () => {
 		renderRoute('/missing')
 
 		expect(
-			await screen.findByRole('heading', { name: 'Page not found' })
+			await screen.findByRole('heading', { name: 'Page not found' }),
 		).toBeInTheDocument()
 	})
 
@@ -53,13 +53,5 @@ describe('v2 app setup', () => {
 		render(<LoadingState label='Loading' />)
 
 		expect(screen.getByText('Loading')).toBeInTheDocument()
-	})
-
-	it('renders base ui button content', () => {
-		render(<Button>Start building</Button>)
-
-		expect(
-			screen.getByRole('button', { name: 'Start building' })
-		).toBeInTheDocument()
 	})
 })

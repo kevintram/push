@@ -1,7 +1,9 @@
 import { Circle } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type ReactNode } from 'react'
+
 import { getRatingIcon } from '~/utils/getRatingIcon'
-import type { Rating } from '../types/review.types'
+
+import { type Rating } from '../types/review.types'
 
 export type ReviewRatingState = 'uncompleted' | Rating
 
@@ -11,7 +13,7 @@ export const ratingOptions: Array<{ value: ReviewRatingState; label: string }> =
 		{ value: 'miss', label: 'Miss' },
 		{ value: 'hard', label: 'Hard' },
 		{ value: 'good', label: 'Good' },
-		{ value: 'easy', label: 'Easy' }
+		{ value: 'easy', label: 'Easy' },
 	]
 
 function EmptyRatingIcon() {

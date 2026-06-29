@@ -1,7 +1,9 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useMemo } from 'react'
+
 import { BreadcrumbLink } from '~/components/ui/breadcrumb'
 import { TOPIC_DETAIL_INTENT_PRELOAD_DELAY } from '~/modules/topics/hooks/usePrefetchTopicDetail'
+
 import { TopicBreadcrumb, type TopicPathItem } from './TopicBreadcrumb'
 import { TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID } from './topicDetailStructure'
 
@@ -10,7 +12,7 @@ export type { TopicPathItem } from './TopicBreadcrumb'
 const LIBRARY_TOPIC_PATH_ITEM: TopicPathItem = {
 	id: TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID,
 	title: 'Library',
-	body: ''
+	body: '',
 }
 
 interface TopicDetailBreadcrumbProps {
@@ -22,12 +24,12 @@ interface TopicDetailBreadcrumbProps {
 export function TopicDetailBreadcrumb({
 	className,
 	currentTopicId,
-	topicPath
+	topicPath,
 }: TopicDetailBreadcrumbProps) {
 	const navigate = useNavigate()
 	const breadcrumbTopicPath = useMemo(
 		() => [LIBRARY_TOPIC_PATH_ITEM, ...topicPath],
-		[topicPath]
+		[topicPath],
 	)
 
 	return (
@@ -41,8 +43,8 @@ export function TopicDetailBreadcrumb({
 						? { to: '/library' }
 						: {
 								to: '/topics/$topicId',
-								params: { topicId: topic.id.toString() }
-							}
+								params: { topicId: topic.id.toString() },
+							},
 				)
 			}}
 			renderTopicLink={({ className: linkClassName, label, topic }) => {

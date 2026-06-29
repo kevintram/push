@@ -2,39 +2,44 @@
 
 import { execSync } from 'node:child_process'
 import path from 'node:path'
+
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 const branchName = (() => {
 	try {
 		return execSync('git rev-parse --abbrev-ref HEAD', {
-			encoding: 'utf-8'
+			encoding: 'utf-8',
 		}).trim()
 	} catch {}
 })()
 
 export default defineConfig(() => ({
 	plugins: [
-		tsconfigPaths(),
 		tanstackRouter({
 			target: 'react',
 			autoCodeSplitting: true,
 			routesDirectory: './src/app/routes',
-			generatedRouteTree: './src/app/routeTree.gen.ts'
+			generatedRouteTree: './src/app/routeTree.gen.ts',
+			routeTreeFileHeader: [
+				'/* oxlint-disable */',
+				'// @ts-nocheck',
+				'// noinspection JSUnusedGlobalSymbols',
+			],
 		}),
 		react(),
-		tailwindcss()
+		tailwindcss(),
 	],
 	define: {
-		__APP_BRANCH__: JSON.stringify(branchName ?? '')
+		__APP_BRANCH__: JSON.stringify(branchName ?? ''),
 	},
 	resolve: {
 		alias: {
-			'~': path.resolve(import.meta.dirname, './src')
-		}
+			'~': path.resolve(import.meta.dirname, './src'),
+		},
+		tsconfigPaths: true,
 	},
 	test: {
 		bail: 1,
@@ -51,12 +56,12 @@ export default defineConfig(() => ({
 				// functions: 85,
 				// branches: 85,
 				// statements: 85
-			}
+			},
 		},
 		css: false,
 		environment: 'happy-dom',
 		globals: true,
 		include: ['src/**/__tests__/**/*.test.ts?(x)'],
-		setupFiles: 'src/testing/setup-tests.ts'
-	}
+		setupFiles: 'src/testing/setup-tests.ts',
+	},
 }))

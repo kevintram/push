@@ -1,4 +1,4 @@
-import type { Topic } from '../types/topic.types'
+import { type Topic } from '../types/topic.types'
 
 export type TopicTreeNode = Topic & {
 	children: Array<TopicTreeNode>
@@ -24,7 +24,7 @@ export function buildTopicTree(topics: Array<Topic>): TopicTree {
 	for (const topic of topics) {
 		nodeById.set(topic.id, {
 			...topic,
-			children: []
+			children: [],
 		})
 	}
 
@@ -65,6 +65,6 @@ export function buildTopicTree(topics: Array<Topic>): TopicTree {
 	return {
 		roots,
 		nodeById,
-		ancestorIdsById
+		ancestorIdsById,
 	}
 }

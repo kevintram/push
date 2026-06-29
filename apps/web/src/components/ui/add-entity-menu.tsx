@@ -1,6 +1,7 @@
-import type { LucideIcon } from "lucide-react"
+import { type LucideIcon } from "lucide-react"
 import { ChevronDown, Loader2, Plus, Search, SquarePen } from "lucide-react"
-import type { ComponentProps } from "react"
+import { type ComponentProps } from "react"
+
 import { Button } from "~/components/ui/button"
 import {
 	DropdownMenu,
@@ -9,7 +10,7 @@ import {
 	DropdownMenuSub,
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu"
 import { cn } from "~/lib/utils"
 
@@ -52,7 +53,7 @@ export function AddEntityMenu({
 	buttonLabel = "Add",
 	buttonVariant = "outline",
 	showChevron = true,
-	buttonClassName
+	buttonClassName,
 }: AddEntityMenuProps) {
 	const singleCreateItem = createItems.length === 1 ? createItems[0] : null
 
@@ -66,7 +67,11 @@ export function AddEntityMenu({
 						size={buttonSize}
 						variant={buttonVariant}
 					>
-						{isLoading ? <Loader2 className='animate-spin' /> : <Plus />}
+						{isLoading ? (
+							<Loader2 className='animate-spin' />
+						) : (
+							<Plus />
+						)}
 						{buttonLabel}
 						{showChevron ? <ChevronDown /> : null}
 					</Button>
@@ -90,7 +95,10 @@ export function AddEntityMenu({
 						</DropdownMenuSubTrigger>
 						<DropdownMenuSubContent>
 							{createItems.map(item => (
-								<DropdownMenuItem key={item.label} onClick={item.onSelect}>
+								<DropdownMenuItem
+									key={item.label}
+									onClick={item.onSelect}
+								>
 									{item.icon ? (
 										<item.icon className='h-4 w-4' />
 									) : (

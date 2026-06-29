@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+
 import { defineConfig, devices } from '@playwright/test'
 
 const configDir = dirname(fileURLToPath(import.meta.url))
@@ -39,26 +40,26 @@ export default defineConfig({
 	projects: [
 		{
 			name: 'chromium',
-			use: { ...devices['Desktop Chrome'] }
+			use: { ...devices['Desktop Chrome'] },
 		},
 		{
 			name: 'Mobile Chrome',
-			use: { ...devices['Pixel 5'] }
-		}
+			use: { ...devices['Pixel 5'] },
+		},
 	],
 	reporter: 'html',
 	retries: process.env.CI ? 2 : 0,
 	testDir: './e2e/tests',
 	use: {
 		baseURL: webUrl,
-		trace: 'on-first-retry'
+		trace: 'on-first-retry',
 	},
 	webServer: shouldManageWebServer
 		? {
 				command: `pnpm exec vite --host localhost --port ${webPort} --strictPort`,
 				reuseExistingServer: !process.env.CI,
-				url: webUrl
+				url: webUrl,
 			}
 		: undefined,
-	workers: process.env.CI ? 1 : undefined
+	workers: process.env.CI ? 1 : undefined,
 })

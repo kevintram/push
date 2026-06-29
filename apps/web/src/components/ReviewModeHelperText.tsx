@@ -1,4 +1,5 @@
 import { AlertTriangle } from 'lucide-react'
+
 import { cn } from '~/lib/utils'
 
 type ReviewModeHelperTextProps = {
@@ -8,14 +9,14 @@ type ReviewModeHelperTextProps = {
 
 export function ReviewModeHelperText({
 	variant,
-	className
+	className,
 }: ReviewModeHelperTextProps) {
 	if (variant === 'guess') {
 		return (
 			<p
 				className={cn(
 					'flex items-center justify-end gap-1 text-muted-foreground text-xs',
-					className
+					className,
 				)}
 			>
 				<AlertTriangle className='h-3 w-3 shrink-0 text-amber-500 dark:text-amber-400' />
@@ -25,7 +26,12 @@ export function ReviewModeHelperText({
 	}
 
 	return (
-		<p className={cn('text-right text-muted-foreground text-xs', className)}>
+		<p
+			className={cn(
+				'text-right text-muted-foreground text-xs',
+				className,
+			)}
+		>
 			Changes are automatically saved.
 		</p>
 	)

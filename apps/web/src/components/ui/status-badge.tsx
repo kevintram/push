@@ -1,10 +1,10 @@
-import type { KeyboardEvent, ReactNode } from "react"
+import { type KeyboardEvent, type ReactNode } from "react"
 
 import { Badge } from "~/components/ui/badge"
 import {
 	Tooltip,
 	TooltipContent,
-	TooltipTrigger
+	TooltipTrigger,
 } from "~/components/ui/tooltip"
 import { cn } from "~/lib/utils"
 
@@ -20,13 +20,12 @@ export type StatusBadgeItem = {
 }
 
 const STATUS_BADGE_TONE_CLASSNAMES: Record<StatusBadgeTone, string> = {
-	danger:
-		"h-5 border-transparent bg-rose-200 text-rose-900 text-xs dark:bg-rose-950 dark:text-rose-200",
+	danger: "h-5 border-transparent bg-rose-200 text-rose-900 text-xs dark:bg-rose-950 dark:text-rose-200",
 	info: "h-5 border border-blue-300 bg-blue-100 text-blue-900 text-xs dark:border-blue-700 dark:bg-blue-950 dark:text-blue-200",
 	neutral:
 		"h-5 border border-zinc-300 bg-zinc-100 text-zinc-900 text-xs dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
 	warning:
-		"h-5 border-transparent bg-amber-100 text-amber-900 text-xs dark:bg-amber-950 dark:text-amber-200"
+		"h-5 border-transparent bg-amber-100 text-amber-900 text-xs dark:bg-amber-950 dark:text-amber-200",
 }
 
 type StatusBadgeProps = StatusBadgeItem & {
@@ -38,7 +37,7 @@ function StatusBadgeContent({
 	icon,
 	label,
 	onClick,
-	tone
+	tone,
 }: StatusBadgeProps) {
 	function handleKeyDown(event: KeyboardEvent<HTMLSpanElement>) {
 		if (!onClick || (event.key !== "Enter" && event.key !== " ")) return
@@ -52,7 +51,7 @@ function StatusBadgeContent({
 			className={cn(
 				STATUS_BADGE_TONE_CLASSNAMES[tone],
 				"rounded-sm shadow-sm",
-				className
+				className,
 			)}
 			onClick={event => {
 				if (!onClick) return
@@ -64,7 +63,9 @@ function StatusBadgeContent({
 			tabIndex={onClick ? 0 : undefined}
 			variant={tone === "danger" ? "destructive" : "outline"}
 		>
-			{icon ? <span className='inline-flex items-center'>{icon}</span> : null}
+			{icon ? (
+				<span className='inline-flex items-center'>{icon}</span>
+			) : null}
 			{label ? <span>{label}</span> : null}
 		</Badge>
 	)
@@ -90,7 +91,7 @@ type StatusBadgeListProps = {
 export function StatusBadgeList({
 	badges,
 	className,
-	badgeClassName
+	badgeClassName,
 }: StatusBadgeListProps) {
 	if (badges.length === 0) return null
 

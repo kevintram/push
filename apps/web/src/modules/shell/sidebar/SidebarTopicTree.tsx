@@ -4,7 +4,7 @@ import { TopicNavigator } from '~/modules/topics/components/topic-navigator/Topi
 import { useActiveTopicNavigatorTopicId } from '~/modules/topics/components/topic-navigator/useActiveTopicNavigatorTopicId'
 
 export function SidebarTopicTree({
-	onCollapseAllReady
+	onCollapseAllReady,
 }: {
 	onCollapseAllReady?: (collapseAll: () => void) => void
 }) {

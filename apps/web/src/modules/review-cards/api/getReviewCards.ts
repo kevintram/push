@@ -1,17 +1,19 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
+
 import { apiFetch } from '~/utils/apiFetch'
+
 import { ReviewCardSchema } from '../types/review-card.schemas'
-import type {
-	GetReviewCardsParams,
-	ReviewCard
+import {
+	type GetReviewCardsParams,
+	type ReviewCard,
 } from '../types/review-card.types'
 import { reviewCardKeys } from './queryKeys'
 
 const REVIEW_CARDS_QUERY_STALE_TIME = 30_000
 
 export async function getReviewCards(
-	params: GetReviewCardsParams = {}
+	params: GetReviewCardsParams = {},
 ): Promise<Array<ReviewCard>> {
 	const searchParams = new URLSearchParams()
 
@@ -21,7 +23,7 @@ export async function getReviewCards(
 	if (params.include_descendants !== undefined) {
 		searchParams.append(
 			'include_descendants',
-			String(params.include_descendants)
+			String(params.include_descendants),
 		)
 	}
 	if (params.type !== undefined) {
@@ -38,7 +40,7 @@ export async function getReviewCards(
 	}
 
 	const response = await apiFetch(
-		`${import.meta.env.VITE_API_URL}/review-cards/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+		`${import.meta.env.VITE_API_URL}/review-cards/${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
 	)
 
 	if (!response.ok) {
@@ -60,16 +62,16 @@ export function reviewCardsQueryOptions(params: GetReviewCardsParams = {}) {
 	return queryOptions({
 		queryKey: reviewCardKeys.list(params),
 		queryFn: () => getReviewCards(params),
-		staleTime: REVIEW_CARDS_QUERY_STALE_TIME
+		staleTime: REVIEW_CARDS_QUERY_STALE_TIME,
 	})
 }
 
 export function useReviewCards(
 	params: GetReviewCardsParams = {},
-	options?: { enabled?: boolean }
+	options?: { enabled?: boolean },
 ) {
 	return useQuery({
 		...reviewCardsQueryOptions(params),
-		enabled: options?.enabled ?? true
+		enabled: options?.enabled ?? true,
 	})
 }

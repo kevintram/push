@@ -1,5 +1,6 @@
 import { Trash2 } from 'lucide-react'
-import type { ReactElement } from 'react'
+import { type ReactElement } from 'react'
+
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -9,7 +10,7 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogMedia,
-	AlertDialogTitle
+	AlertDialogTitle,
 } from '~/components/ui/alert-dialog'
 import { getTopicDisplayTitle } from '~/modules/topics/utils/topicTree'
 
@@ -25,7 +26,7 @@ type LibraryOutlineDeleteDialogProps = {
 }
 
 function getDeleteDescription(
-	pendingDeleteTopic: LibraryOutlineDeleteDialogProps['pendingDeleteTopic']
+	pendingDeleteTopic: LibraryOutlineDeleteDialogProps['pendingDeleteTopic'],
 ): string {
 	if (pendingDeleteTopic == null) {
 		return 'This action cannot be undone.'
@@ -33,7 +34,7 @@ function getDeleteDescription(
 
 	const topicLabel = getTopicDisplayTitle(
 		pendingDeleteTopic.title,
-		pendingDeleteTopic.body
+		pendingDeleteTopic.body,
 	)
 	return `Delete ${topicLabel} and all of its subtopics, review cards, and reviews? This action cannot be undone.`
 }
@@ -43,7 +44,7 @@ export function LibraryOutlineDeleteDialog({
 	onConfirmDeleteTopic,
 	onOpenChange,
 	pendingDeleteTopic,
-	pendingDeleteTopicId
+	pendingDeleteTopicId,
 }: LibraryOutlineDeleteDialogProps): ReactElement {
 	const actionLabel = isDeletingTopic ? 'Deleting...' : 'Delete topic'
 

@@ -5,18 +5,19 @@ import { Textarea } from '~/components/ui/textarea'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { cn } from '~/lib/utils'
 import { useUpdateTopic } from '~/modules/topics/api/updateTopic'
-import type { Topic } from '~/modules/topics/types/topic.types'
+import { type Topic } from '~/modules/topics/types/topic.types'
 import {
 	formatAbsoluteDate,
-	formatRelativeDate
+	formatRelativeDate,
 } from '~/utils/formatRelativeDate'
+
 import {
 	TopicDetailBreadcrumb,
-	type TopicPathItem
+	type TopicPathItem,
 } from './TopicDetailBreadcrumb'
+import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
 import { TopicDetailRootActionsMenu } from './TopicDetailRootActionsMenu'
 import { TopicDetailSectionMeta } from './TopicDetailSectionMeta'
-import { TOPIC_DETAIL_SECTION_GRID_CLASS } from './topicDetailLayout'
 import { getTopicDetailRootPresentation } from './topicDetailTheme'
 
 interface TopicDetailHeaderProps {
@@ -44,7 +45,7 @@ export function TopicDetailHeader({
 	shouldAutoFocusTitle = false,
 	titleContainerClassName,
 	topic,
-	topicPath
+	topicPath,
 }: TopicDetailHeaderProps) {
 	const { mutateAsync: updateTopicAsync } = useUpdateTopic()
 	const titleTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -59,17 +60,17 @@ export function TopicDetailHeader({
 				toast.error('Failed to update topic')
 			}
 		},
-		[topic.id, topic.title, updateTopicAsync]
+		[topic.id, topic.title, updateTopicAsync],
 	)
 
 	const {
 		value: title,
 		onChange: onTitleChange,
-		flush: flushTitle
+		flush: flushTitle,
 	} = useAutoSave({
 		initialValue: topic.title,
 		onSave: saveTopicTitle,
-		key: `topic-document-root-title-${topic.id}`
+		key: `topic-document-root-title-${topic.id}`,
 	})
 
 	useEffect(() => {
@@ -100,14 +101,17 @@ export function TopicDetailHeader({
 					<div className={cn('min-w-0 space-y-2', contentClassName)}>
 						<div
 							aria-level={headingLevel}
-							className={cn('min-w-0 pr-12 sm:pr-14', titleContainerClassName)}
+							className={cn(
+								'min-w-0 pr-12 sm:pr-14',
+								titleContainerClassName,
+							)}
 							role='heading'
 						>
 							<Textarea
 								aria-label='Topic title'
 								className={cn(
 									'!bg-transparent m-0 min-h-0 w-full resize-none overflow-hidden break-words rounded-none border-none px-0 pt-0 pb-1 shadow-none focus:outline-none focus-visible:border-none focus-visible:ring-0',
-									rootPresentation.rootTitleClassName
+									rootPresentation.rootTitleClassName,
 								)}
 								onBlur={flushTitle}
 								onChange={onTitleChange}
@@ -119,14 +123,27 @@ export function TopicDetailHeader({
 						</div>
 						<div>
 							<TopicDetailSectionMeta
-								createdDate={formatAbsoluteDate(topic.inserted_at)}
-								createdText={formatRelativeDate(topic.inserted_at).text}
-								updatedDate={formatAbsoluteDate(topic.updated_at)}
-								updatedText={formatRelativeDate(topic.updated_at).text}
+								createdDate={formatAbsoluteDate(
+									topic.inserted_at,
+								)}
+								createdText={
+									formatRelativeDate(topic.inserted_at).text
+								}
+								updatedDate={formatAbsoluteDate(
+									topic.updated_at,
+								)}
+								updatedText={
+									formatRelativeDate(topic.updated_at).text
+								}
 							/>
 						</div>
 					</div>
-					<div className={cn('absolute top-1 right-0', actionClassName)}>
+					<div
+						className={cn(
+							'absolute top-1 right-0',
+							actionClassName,
+						)}
+					>
 						<TopicDetailRootActionsMenu
 							isCreatingTopic={isCreatingTopic}
 							onCreateSubtopic={onCreateSubtopic}

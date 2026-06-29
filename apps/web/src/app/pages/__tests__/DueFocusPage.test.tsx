@@ -2,13 +2,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import {
 	createMockLocalStorage,
 	createReviewAsyncMock,
 	navigateMock,
 	reviewCard,
 	updateReviewCardAsyncMock,
-	useReviewCardQueueMock
+	useReviewCardQueueMock,
 } from '~/testing/support/masonryPageTestSupport'
 
 const mockLocalStorage = createMockLocalStorage()
@@ -16,7 +17,7 @@ const mockLocalStorage = createMockLocalStorage()
 vi.mock('~/app/pages/review-card-detail/ReviewCardDetailSurface', () => ({
 	ReviewCardDetailSurface: ({
 		onCompletedReviewCreated,
-		reviewCardId
+		reviewCardId,
 	}: {
 		onCompletedReviewCreated?: () => void
 		reviewCardId: number
@@ -27,14 +28,14 @@ vi.mock('~/app/pages/review-card-detail/ReviewCardDetailSurface', () => ({
 				Create menu review
 			</button>
 		</div>
-	)
+	),
 }))
 
 function queueItem({
 	actionDays,
 	id,
 	primaryText,
-	type = 'practice'
+	type = 'practice',
 }: {
 	actionDays: number | null
 	id: number
@@ -47,20 +48,24 @@ function queueItem({
 			...reviewCard,
 			id,
 			primary_text: primaryText,
-			type
+			type,
 		},
 		review_id: null,
 		scheduled_at:
-			actionDays == null ? null : actionDays <= 0 ? '2026-03-05' : '2026-03-06',
+			actionDays == null
+				? null
+				: actionDays <= 0
+					? '2026-03-05'
+					: '2026-03-06',
 		action_days: actionDays,
 		days_until_due: actionDays,
-		days_until_hazy: null
+		days_until_hazy: null,
 	}
 }
 
 function mockQueues({
 	dueItems,
-	newItems
+	newItems,
 }: {
 	dueItems: Array<ReturnType<typeof queueItem>>
 	newItems: Array<ReturnType<typeof queueItem>>
@@ -77,11 +82,11 @@ function mockQueues({
 			return {
 				data: {
 					items,
-					as_of: '2026-03-05'
+					as_of: '2026-03-05',
 				},
-				isLoading: false
+				isLoading: false,
 			}
-		}
+		},
 	)
 }
 
@@ -96,8 +101,8 @@ async function renderDueFocusPage(props: {
 	const { DueFocusPage } = await import('~/app/pages/DueFocusPage')
 	const queryClient = new QueryClient({
 		defaultOptions: {
-			queries: { retry: false }
-		}
+			queries: { retry: false },
+		},
 	})
 	const prefetchQuerySpy = vi
 		.spyOn(queryClient, 'prefetchQuery')
@@ -105,7 +110,7 @@ async function renderDueFocusPage(props: {
 	render(
 		<QueryClientProvider client={queryClient}>
 			<DueFocusPage {...props} />
-		</QueryClientProvider>
+		</QueryClientProvider>,
 	)
 	return { prefetchQuerySpy }
 }
@@ -122,8 +127,12 @@ describe('DueFocusPage', () => {
 
 	it('redirects /due/focus to the first current workload item', async () => {
 		mockQueues({
-			newItems: [queueItem({ actionDays: null, id: 12, primaryText: 'New' })],
-			dueItems: [queueItem({ actionDays: 0, id: 11, primaryText: 'Today' })]
+			newItems: [
+				queueItem({ actionDays: null, id: 12, primaryText: 'New' }),
+			],
+			dueItems: [
+				queueItem({ actionDays: 0, id: 11, primaryText: 'Today' }),
+			],
 		})
 
 		await renderDueFocusPage({ filter: 'all', order: 'due-date' })
@@ -135,8 +144,8 @@ describe('DueFocusPage', () => {
 					card: 11,
 					filter: 'all',
 					order: 'due-date',
-					shuffle: undefined
-				}
+					shuffle: undefined,
+				},
 			})
 		})
 	})
@@ -145,37 +154,47 @@ describe('DueFocusPage', () => {
 		const user = userEvent.setup()
 		createReviewAsyncMock.mockResolvedValue({ id: 99 })
 		mockQueues({
-			newItems: [queueItem({ actionDays: null, id: 12, primaryText: 'New' })],
+			newItems: [
+				queueItem({ actionDays: null, id: 12, primaryText: 'New' }),
+			],
 			dueItems: [
 				queueItem({ actionDays: 0, id: 11, primaryText: 'Today' }),
 				queueItem({
 					actionDays: 0,
 					id: 13,
 					primaryText: 'Flash',
-					type: 'flashcard'
-				})
-			]
+					type: 'flashcard',
+				}),
+			],
 		})
 
 		await renderDueFocusPage({
 			filter: 'all',
 			order: 'due-date',
-			reviewCardId: 11
+			reviewCardId: 11,
 		})
 
-		expect(screen.getByTestId('review-card-detail-surface')).toHaveTextContent(
-			'Card 11'
-		)
+		expect(
+			screen.getByTestId('review-card-detail-surface'),
+		).toHaveTextContent('Card 11')
 		expect(screen.getByRole('button', { name: 'Focus' })).toHaveAttribute(
 			'aria-pressed',
-			'true'
+			'true',
 		)
-		expect(screen.getByRole('button', { name: /^Miss$/iu })).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: /^Hard$/iu })).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: /^Good$/iu })).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: /^Easy$/iu })).toBeInTheDocument()
 		expect(
-			screen.getByRole('button', { name: 'Previous review card' })
+			screen.getByRole('button', { name: /^Miss$/iu }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /^Hard$/iu }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /^Good$/iu }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /^Easy$/iu }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Previous review card' }),
 		).toBeDisabled()
 
 		await user.click(screen.getByRole('button', { name: /^Good$/iu }))
@@ -184,7 +203,7 @@ describe('DueFocusPage', () => {
 			expect(createReviewAsyncMock).toHaveBeenCalledWith({
 				review_card_id: 11,
 				rating: 'good',
-				completed_at: expect.any(String)
+				completed_at: expect.any(String),
 			})
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
@@ -193,8 +212,8 @@ describe('DueFocusPage', () => {
 				card: 13,
 				filter: 'all',
 				order: 'due-date',
-				shuffle: undefined
-			}
+				shuffle: undefined,
+			},
 		})
 	})
 
@@ -202,20 +221,22 @@ describe('DueFocusPage', () => {
 		const user = userEvent.setup()
 		mockQueues({
 			newItems: [],
-			dueItems: [queueItem({ actionDays: 0, id: 11, primaryText: 'Today' })]
+			dueItems: [
+				queueItem({ actionDays: 0, id: 11, primaryText: 'Today' }),
+			],
 		})
 
 		await renderDueFocusPage({
 			filter: 'practice',
 			order: 'due-date',
-			reviewCardId: 11
+			reviewCardId: 11,
 		})
 
 		await user.click(screen.getByRole('button', { name: 'Focus' }))
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/due',
-			search: { filter: 'practice' }
+			search: { filter: 'practice' },
 		})
 	})
 
@@ -224,13 +245,15 @@ describe('DueFocusPage', () => {
 		createReviewAsyncMock.mockResolvedValue({ id: 99 })
 		mockQueues({
 			newItems: [],
-			dueItems: [queueItem({ actionDays: 0, id: 11, primaryText: 'Today' })]
+			dueItems: [
+				queueItem({ actionDays: 0, id: 11, primaryText: 'Today' }),
+			],
 		})
 
 		await renderDueFocusPage({
 			filter: 'all',
 			order: 'due-date',
-			reviewCardId: 11
+			reviewCardId: 11,
 		})
 
 		await user.click(screen.getByRole('button', { name: /^Good$/iu }))
@@ -239,7 +262,7 @@ describe('DueFocusPage', () => {
 			expect(createReviewAsyncMock).toHaveBeenCalledWith({
 				review_card_id: 11,
 				rating: 'good',
-				completed_at: expect.any(String)
+				completed_at: expect.any(String),
 			})
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
@@ -248,25 +271,31 @@ describe('DueFocusPage', () => {
 				done: true,
 				filter: 'all',
 				order: 'due-date',
-				shuffle: undefined
-			}
+				shuffle: undefined,
+			},
 		})
 	})
 
 	it('advances after a completed review is created from the detail reviews menu', async () => {
 		const user = userEvent.setup()
 		mockQueues({
-			newItems: [queueItem({ actionDays: null, id: 12, primaryText: 'New' })],
-			dueItems: [queueItem({ actionDays: 0, id: 11, primaryText: 'Today' })]
+			newItems: [
+				queueItem({ actionDays: null, id: 12, primaryText: 'New' }),
+			],
+			dueItems: [
+				queueItem({ actionDays: 0, id: 11, primaryText: 'Today' }),
+			],
 		})
 
 		await renderDueFocusPage({
 			filter: 'all',
 			order: 'due-date',
-			reviewCardId: 11
+			reviewCardId: 11,
 		})
 
-		await user.click(screen.getByRole('button', { name: 'Create menu review' }))
+		await user.click(
+			screen.getByRole('button', { name: 'Create menu review' }),
+		)
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/due/focus',
@@ -274,8 +303,8 @@ describe('DueFocusPage', () => {
 				card: 12,
 				filter: 'all',
 				order: 'due-date',
-				shuffle: undefined
-			}
+				shuffle: undefined,
+			},
 		})
 	})
 
@@ -285,36 +314,36 @@ describe('DueFocusPage', () => {
 			dueItems: [
 				queueItem({ actionDays: 0, id: 11, primaryText: 'Previous' }),
 				queueItem({ actionDays: 0, id: 12, primaryText: 'Current' }),
-				queueItem({ actionDays: 0, id: 13, primaryText: 'Next' })
-			]
+				queueItem({ actionDays: 0, id: 13, primaryText: 'Next' }),
+			],
 		})
 
 		const { prefetchQuerySpy } = await renderDueFocusPage({
 			filter: 'all',
 			order: 'due-date',
-			reviewCardId: 12
+			reviewCardId: 12,
 		})
 
 		await waitFor(() => {
 			expect(prefetchQuerySpy).toHaveBeenCalledWith(
 				expect.objectContaining({
-					queryKey: ['review-cards', 'detail', 11]
-				})
+					queryKey: ['review-cards', 'detail', 11],
+				}),
 			)
 			expect(prefetchQuerySpy).toHaveBeenCalledWith(
 				expect.objectContaining({
-					queryKey: ['review-cards', 'detail', 13]
-				})
+					queryKey: ['review-cards', 'detail', 13],
+				}),
 			)
 			expect(prefetchQuerySpy).toHaveBeenCalledWith(
 				expect.objectContaining({
-					queryKey: ['reviews', 'list', 'reviewCardId', '11']
-				})
+					queryKey: ['reviews', 'list', 'reviewCardId', '11'],
+				}),
 			)
 			expect(prefetchQuerySpy).toHaveBeenCalledWith(
 				expect.objectContaining({
-					queryKey: ['reviews', 'list', 'reviewCardId', '13']
-				})
+					queryKey: ['reviews', 'list', 'reviewCardId', '13'],
+				}),
 			)
 		})
 	})
@@ -324,21 +353,25 @@ describe('DueFocusPage', () => {
 		updateReviewCardAsyncMock.mockResolvedValue({ id: 11 })
 		mockQueues({
 			newItems: [],
-			dueItems: [queueItem({ actionDays: 0, id: 11, primaryText: 'Today' })]
+			dueItems: [
+				queueItem({ actionDays: 0, id: 11, primaryText: 'Today' }),
+			],
 		})
 
 		await renderDueFocusPage({
 			filter: 'practice',
 			order: 'due-date',
-			reviewCardId: 11
+			reviewCardId: 11,
 		})
 
-		await user.click(screen.getByRole('button', { name: 'Retire this item' }))
+		await user.click(
+			screen.getByRole('button', { name: 'Retire this item' }),
+		)
 
 		await waitFor(() => {
 			expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
 				id: 11,
-				retired: true
+				retired: true,
 			})
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
@@ -347,15 +380,19 @@ describe('DueFocusPage', () => {
 				done: true,
 				filter: 'practice',
 				order: 'due-date',
-				shuffle: undefined
-			}
+				shuffle: undefined,
+			},
 		})
 	})
 
 	it('seeds random order before redirecting to the first focus card', async () => {
 		mockQueues({
-			newItems: [queueItem({ actionDays: null, id: 12, primaryText: 'New' })],
-			dueItems: [queueItem({ actionDays: 0, id: 11, primaryText: 'Today' })]
+			newItems: [
+				queueItem({ actionDays: null, id: 12, primaryText: 'New' }),
+			],
+			dueItems: [
+				queueItem({ actionDays: 0, id: 11, primaryText: 'Today' }),
+			],
 		})
 
 		await renderDueFocusPage({ filter: 'all', order: 'random' })
@@ -366,9 +403,9 @@ describe('DueFocusPage', () => {
 				search: {
 					filter: 'all',
 					order: 'random',
-					shuffle: expect.any(String)
+					shuffle: expect.any(String),
 				},
-				replace: true
+				replace: true,
 			})
 		})
 		expect(navigateMock).not.toHaveBeenCalledWith(
@@ -377,26 +414,32 @@ describe('DueFocusPage', () => {
 				search: {
 					filter: 'all',
 					order: 'random',
-					shuffle: undefined
-				}
-			})
+					shuffle: undefined,
+				},
+			}),
 		)
 	})
 
 	it('restarts the focus stream when changing order from a focused card', async () => {
 		const user = userEvent.setup()
 		mockQueues({
-			newItems: [queueItem({ actionDays: null, id: 12, primaryText: 'New' })],
-			dueItems: [queueItem({ actionDays: 0, id: 11, primaryText: 'Today' })]
+			newItems: [
+				queueItem({ actionDays: null, id: 12, primaryText: 'New' }),
+			],
+			dueItems: [
+				queueItem({ actionDays: 0, id: 11, primaryText: 'Today' }),
+			],
 		})
 
 		await renderDueFocusPage({
 			filter: 'all',
 			order: 'due-date',
-			reviewCardId: 11
+			reviewCardId: 11,
 		})
 
-		await user.click(screen.getByRole('button', { name: 'Order by: Due date' }))
+		await user.click(
+			screen.getByRole('button', { name: 'Order by: Due date' }),
+		)
 		await user.click(screen.getByRole('menuitem', { name: 'Random' }))
 
 		expect(navigateMock).toHaveBeenCalledWith({
@@ -404,27 +447,31 @@ describe('DueFocusPage', () => {
 			search: {
 				filter: 'all',
 				order: 'random',
-				shuffle: expect.any(String)
-			}
+				shuffle: expect.any(String),
+			},
 		})
 	})
 
 	it('restarts the focus stream with a fresh seed when shuffling', async () => {
 		const user = userEvent.setup()
 		mockQueues({
-			newItems: [queueItem({ actionDays: null, id: 12, primaryText: 'New' })],
-			dueItems: [queueItem({ actionDays: 0, id: 11, primaryText: 'Today' })]
+			newItems: [
+				queueItem({ actionDays: null, id: 12, primaryText: 'New' }),
+			],
+			dueItems: [
+				queueItem({ actionDays: 0, id: 11, primaryText: 'Today' }),
+			],
 		})
 
 		await renderDueFocusPage({
 			filter: 'all',
 			order: 'random',
 			reviewCardId: 11,
-			shuffle: 'old-seed'
+			shuffle: 'old-seed',
 		})
 
 		await user.click(
-			screen.getByRole('button', { name: 'Shuffle focus order' })
+			screen.getByRole('button', { name: 'Shuffle focus order' }),
 		)
 
 		expect(navigateMock).toHaveBeenCalledWith({
@@ -432,8 +479,8 @@ describe('DueFocusPage', () => {
 			search: {
 				filter: 'all',
 				order: 'random',
-				shuffle: expect.not.stringMatching(/^old-seed$/u)
-			}
+				shuffle: expect.not.stringMatching(/^old-seed$/u),
+			},
 		})
 	})
 
@@ -441,14 +488,18 @@ describe('DueFocusPage', () => {
 		const user = userEvent.setup()
 		mockQueues({
 			newItems: [],
-			dueItems: [queueItem({ actionDays: 1, id: 14, primaryText: 'Tomorrow' })]
+			dueItems: [
+				queueItem({ actionDays: 1, id: 14, primaryText: 'Tomorrow' }),
+			],
 		})
 
 		await renderDueFocusPage({ filter: 'practice', order: 'due-date' })
 
 		expect(screen.getByText("You're all caught up!")).toBeInTheDocument()
 
-		await user.click(screen.getByRole('button', { name: 'Continue reviewing' }))
+		await user.click(
+			screen.getByRole('button', { name: 'Continue reviewing' }),
+		)
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/due/focus',
@@ -457,15 +508,15 @@ describe('DueFocusPage', () => {
 				filter: 'practice',
 				include_future: true,
 				order: 'due-date',
-				shuffle: undefined
-			}
+				shuffle: undefined,
+			},
 		})
 
 		await user.click(screen.getByRole('button', { name: 'See upcoming' }))
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			to: '/due',
-			search: { filter: 'practice' }
+			search: { filter: 'practice' },
 		})
 	})
 
@@ -473,13 +524,15 @@ describe('DueFocusPage', () => {
 		const user = userEvent.setup()
 		mockQueues({
 			newItems: [],
-			dueItems: [queueItem({ actionDays: 1, id: 14, primaryText: 'Tomorrow' })]
+			dueItems: [
+				queueItem({ actionDays: 1, id: 14, primaryText: 'Tomorrow' }),
+			],
 		})
 
 		await renderDueFocusPage({
 			done: true,
 			filter: 'practice',
-			order: 'due-date'
+			order: 'due-date',
 		})
 
 		expect(screen.getByText('Review complete')).toBeInTheDocument()
@@ -493,8 +546,8 @@ describe('DueFocusPage', () => {
 				filter: 'practice',
 				include_future: true,
 				order: 'due-date',
-				shuffle: undefined
-			}
+				shuffle: undefined,
+			},
 		})
 	})
 })

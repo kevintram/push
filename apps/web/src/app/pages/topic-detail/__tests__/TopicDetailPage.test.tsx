@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
 import {
 	createReviewCardAsyncMock,
 	createTopicAsyncMock,
@@ -10,10 +11,11 @@ import {
 	topic,
 	useReviewCardsMock,
 	useTopicMock,
-	useTopicsMock
+	useTopicsMock,
 } from '~/testing/support/detailPageTestSupport'
-import { TopicDetailPage } from '../TopicDetailPage'
+
 import { TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH } from '../topicDetailLayout'
+import { TopicDetailPage } from '../TopicDetailPage'
 
 type TopicFixture = Omit<typeof topic, 'parent_id' | 'parent_title'> & {
 	parent_id: number | null
@@ -26,7 +28,7 @@ function buildTopicChain(titles: Array<string>): Array<TopicFixture> {
 		id: index + 1,
 		title,
 		parent_id: index === 0 ? null : index,
-		parent_title: index === 0 ? null : (titles[index - 1] ?? null)
+		parent_title: index === 0 ? null : (titles[index - 1] ?? null),
 	}))
 }
 
@@ -36,7 +38,7 @@ function setupTopicChainMocks(chain: Array<TopicFixture>, currentId: number) {
 			return {
 				data: chain.find(t => t.id === currentId) ?? null,
 				isLoading: false,
-				error: null
+				error: null,
 			}
 		}
 
@@ -49,7 +51,7 @@ function setupTopicChainMocks(chain: Array<TopicFixture>, currentId: number) {
 			}
 
 			return { data: [], isLoading: false }
-		}
+		},
 	)
 }
 
@@ -74,7 +76,7 @@ describe('TopicDetailPage', () => {
 		const chain = buildTopicChain([
 			'Mathematics',
 			'Algebra',
-			'Linear equations'
+			'Linear equations',
 		])
 		setupTopicChainMocks(chain, 3)
 
@@ -83,29 +85,35 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={3}
-			/>
+			/>,
 		)
 
-		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+		const breadcrumb = screen.getByRole('navigation', {
+			name: 'Topic path',
+		})
 
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'Mathematics' })
+			within(breadcrumb).getByRole('link', { name: 'Mathematics' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'Algebra' })
+			within(breadcrumb).getByRole('link', { name: 'Algebra' }),
 		).toBeInTheDocument()
-		expect(within(breadcrumb).getByText('Linear equations')).toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Linear equations' })
+			within(breadcrumb).getByText('Linear equations'),
+		).toBeInTheDocument()
+		expect(
+			within(breadcrumb).queryByRole('link', {
+				name: 'Linear equations',
+			}),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByText('Linear equations').closest('a')
+			within(breadcrumb).getByText('Linear equations').closest('a'),
 		).toBeNull()
 		expect(
-			screen.queryByRole('button', { name: /Add parent/iu })
+			screen.queryByRole('button', { name: /Add parent/iu }),
 		).not.toBeInTheDocument()
 		expect(
-			screen.queryByRole('button', { name: /Remove parent/iu })
+			screen.queryByRole('button', { name: /Remove parent/iu }),
 		).not.toBeInTheDocument()
 	})
 
@@ -116,7 +124,7 @@ describe('TopicDetailPage', () => {
 			'Mathematics',
 			'Algebra',
 			'Linear systems',
-			'Gaussian elimination'
+			'Gaussian elimination',
 		])
 		setupTopicChainMocks(chain, 4)
 
@@ -125,52 +133,56 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={4}
-			/>
+			/>,
 		)
 
-		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+		const breadcrumb = screen.getByRole('navigation', {
+			name: 'Topic path',
+		})
 
 		await waitFor(() => {
 			expect(
-				within(breadcrumb).getByRole('link', { name: 'Library' })
+				within(breadcrumb).getByRole('link', { name: 'Library' }),
 			).toBeInTheDocument()
 		})
 
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
+			within(breadcrumb).queryByRole('link', { name: 'Algebra' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Linear systems' })
+			within(breadcrumb).queryByRole('link', { name: 'Linear systems' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByText('Gaussian elimination')
+			within(breadcrumb).getByText('Gaussian elimination'),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Show hidden topics' })
+			within(breadcrumb).getByRole('button', {
+				name: 'Show hidden topics',
+			}),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Mathematics' })
+			within(breadcrumb).getByRole('button', { name: 'Mathematics' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Algebra' })
+			within(breadcrumb).getByRole('button', { name: 'Algebra' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Linear systems' })
+			within(breadcrumb).getByRole('button', { name: 'Linear systems' }),
 		).toBeInTheDocument()
 		expect(
-			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]')
+			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]'),
 		).toBeInTheDocument()
 
 		await userEvent.click(
-			within(breadcrumb).getByRole('button', { name: 'Linear systems' })
+			within(breadcrumb).getByRole('button', { name: 'Linear systems' }),
 		)
 
 		expect(navigateMock).toHaveBeenCalledWith({
 			params: { topicId: '3' },
-			to: '/topics/$topicId'
+			to: '/topics/$topicId',
 		})
 	})
 
@@ -180,7 +192,7 @@ describe('TopicDetailPage', () => {
 		const chain = buildTopicChain([
 			'Mathematics',
 			'Algebra',
-			'Gaussian elimination'
+			'Gaussian elimination',
 		])
 		setupTopicChainMocks(chain, 3)
 
@@ -189,34 +201,38 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={3}
-			/>
+			/>,
 		)
 
-		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+		const breadcrumb = screen.getByRole('navigation', {
+			name: 'Topic path',
+		})
 
 		await waitFor(() => {
 			expect(
-				within(breadcrumb).getByRole('link', { name: 'Library' })
+				within(breadcrumb).getByRole('link', { name: 'Library' }),
 			).toBeInTheDocument()
 		})
 
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
+			within(breadcrumb).queryByRole('link', { name: 'Algebra' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByText('Gaussian elimination')
+			within(breadcrumb).getByText('Gaussian elimination'),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Show hidden topics' })
+			within(breadcrumb).getByRole('button', {
+				name: 'Show hidden topics',
+			}),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Mathematics' })
+			within(breadcrumb).getByRole('button', { name: 'Mathematics' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Algebra' })
+			within(breadcrumb).getByRole('button', { name: 'Algebra' }),
 		).toBeInTheDocument()
 	})
 
@@ -228,7 +244,7 @@ describe('TopicDetailPage', () => {
 			'Algebra',
 			'Systems of equations',
 			'Row reduction',
-			'Gaussian elimination'
+			'Gaussian elimination',
 		])
 		setupTopicChainMocks(chain, 5)
 
@@ -237,45 +253,49 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={5}
-			/>
+			/>,
 		)
 
-		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+		const breadcrumb = screen.getByRole('navigation', {
+			name: 'Topic path',
+		})
 
 		await waitFor(() => {
 			expect(
-				within(breadcrumb).getByRole('link', { name: 'Row reduction' })
+				within(breadcrumb).getByRole('link', { name: 'Row reduction' }),
 			).toBeInTheDocument()
 		})
 
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'Library' })
+			within(breadcrumb).getByRole('link', { name: 'Library' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
+			within(breadcrumb).queryByRole('link', { name: 'Algebra' }),
 		).not.toBeInTheDocument()
 		expect(
 			within(breadcrumb).queryByRole('link', {
-				name: 'Systems of equations'
-			})
+				name: 'Systems of equations',
+			}),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Mathematics' })
+			within(breadcrumb).getByRole('button', { name: 'Mathematics' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Algebra' })
+			within(breadcrumb).getByRole('button', { name: 'Algebra' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Systems of equations' })
+			within(breadcrumb).getByRole('button', {
+				name: 'Systems of equations',
+			}),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByText('Gaussian elimination')
+			within(breadcrumb).getByText('Gaussian elimination'),
 		).toBeInTheDocument()
 		expect(
-			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]')
+			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]'),
 		).toBeInTheDocument()
 	})
 
@@ -288,7 +308,7 @@ describe('TopicDetailPage', () => {
 			'Systems of equations',
 			'Row reduction',
 			'Matrix rank',
-			'Rank-nullity theorem'
+			'Rank-nullity theorem',
 		])
 		setupTopicChainMocks(chain, 6)
 
@@ -297,46 +317,52 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={6}
-			/>
+			/>,
 		)
 
-		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+		const breadcrumb = screen.getByRole('navigation', {
+			name: 'Topic path',
+		})
 
 		await waitFor(() => {
 			expect(
-				within(breadcrumb).getByRole('link', { name: 'Library' })
+				within(breadcrumb).getByRole('link', { name: 'Library' }),
 			).toBeInTheDocument()
 		})
 
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'Row reduction' })
+			within(breadcrumb).getByRole('link', { name: 'Row reduction' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'Matrix rank' })
+			within(breadcrumb).getByRole('link', { name: 'Matrix rank' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Algebra' })
+			within(breadcrumb).queryByRole('link', { name: 'Algebra' }),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Systems of equations' })
+			within(breadcrumb).queryByRole('link', {
+				name: 'Systems of equations',
+			}),
 		).not.toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Mathematics' })
+			within(breadcrumb).getByRole('button', { name: 'Mathematics' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Algebra' })
+			within(breadcrumb).getByRole('button', { name: 'Algebra' }),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByRole('button', { name: 'Systems of equations' })
+			within(breadcrumb).getByRole('button', {
+				name: 'Systems of equations',
+			}),
 		).toBeInTheDocument()
 		expect(
-			within(breadcrumb).getByText('Rank-nullity theorem')
+			within(breadcrumb).getByText('Rank-nullity theorem'),
 		).toBeInTheDocument()
 		expect(
-			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]')
+			breadcrumb.querySelector('[data-slot="breadcrumb-ellipsis"]'),
 		).toBeInTheDocument()
 	})
 
@@ -346,7 +372,7 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -357,16 +383,20 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { parent_id?: number; sort?: string; order?: string }) => {
+			(params?: {
+				parent_id?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data: [rootTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -374,17 +404,19 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
-		const breadcrumb = screen.getByRole('navigation', { name: 'Topic path' })
+		const breadcrumb = screen.getByRole('navigation', {
+			name: 'Topic path',
+		})
 
 		expect(
-			within(breadcrumb).getByRole('link', { name: 'Library' })
+			within(breadcrumb).getByRole('link', { name: 'Library' }),
 		).toBeInTheDocument()
 		expect(within(breadcrumb).getByText('Mathematics')).toBeInTheDocument()
 		expect(
-			within(breadcrumb).queryByRole('link', { name: 'Mathematics' })
+			within(breadcrumb).queryByRole('link', { name: 'Mathematics' }),
 		).not.toBeInTheDocument()
 	})
 
@@ -394,14 +426,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -412,7 +444,11 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (
 					params?.subtree_of === 1 &&
 					params.sort === 'title' &&
@@ -420,19 +456,19 @@ describe('TopicDetailPage', () => {
 				) {
 					return {
 						data: [rootTopic, childTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data: [rootTopic, childTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 		useReviewCardsMock.mockReturnValue({ data: [], isLoading: true })
 
@@ -441,15 +477,15 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		expect(screen.getByDisplayValue('Mathematics')).toBeInTheDocument()
-		expect(screen.getAllByText('Loading review cards').length).toBeGreaterThan(
-			0
-		)
 		expect(
-			screen.queryByText('No review cards in this filter')
+			screen.getAllByText('Loading review cards').length,
+		).toBeGreaterThan(0)
+		expect(
+			screen.queryByText('No review cards in this filter'),
 		).not.toBeInTheDocument()
 	})
 
@@ -457,7 +493,11 @@ describe('TopicDetailPage', () => {
 		const subtreeError = new Error('subtree failed')
 
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (
 					params?.subtree_of === 1 &&
 					params.sort === 'title' &&
@@ -466,7 +506,7 @@ describe('TopicDetailPage', () => {
 					return {
 						data: [],
 						error: subtreeError,
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
@@ -474,12 +514,12 @@ describe('TopicDetailPage', () => {
 					return {
 						data: [topic],
 						error: null,
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], error: null, isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -487,7 +527,7 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		expect(screen.getByText('subtree failed')).toBeInTheDocument()
@@ -498,22 +538,26 @@ describe('TopicDetailPage', () => {
 		const reviewCardsError = new Error('review cards failed')
 
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data: [topic],
 						error: null,
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], error: null, isLoading: false }
-			}
+			},
 		)
 		useReviewCardsMock.mockReturnValue({
 			data: [],
 			error: reviewCardsError,
-			isLoading: false
+			isLoading: false,
 		})
 
 		render(
@@ -521,12 +565,12 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		expect(screen.getByText('review cards failed')).toBeInTheDocument()
 		expect(
-			screen.queryByText('No review cards in this filter')
+			screen.queryByText('No review cards in this filter'),
 		).not.toBeInTheDocument()
 	})
 
@@ -536,14 +580,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -554,7 +598,11 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (
 					params?.subtree_of === 1 &&
 					params.sort === 'title' &&
@@ -562,19 +610,19 @@ describe('TopicDetailPage', () => {
 				) {
 					return {
 						data: [rootTopic, childTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data: [rootTopic, childTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { container } = render(
@@ -582,22 +630,26 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		expect(container.querySelector('#topic-1')).toBeNull()
 		expect(container.querySelector('#topic-2')).toBeNull()
 		expect(
-			container.querySelector('[data-topic-detail-heading-id="1"]')
+			container.querySelector('[data-topic-detail-heading-id="1"]'),
 		).not.toBeNull()
 		expect(
-			container.querySelector('[data-topic-detail-heading-id="2"]')
+			container.querySelector('[data-topic-detail-heading-id="2"]'),
 		).not.toBeNull()
 		expect(
-			container.querySelector('[data-topic-detail-heading-indicator="1"]')
+			container.querySelector(
+				'[data-topic-detail-heading-indicator="1"]',
+			),
 		).toBeNull()
 		expect(
-			container.querySelector('[data-topic-detail-heading-indicator="2"]')
+			container.querySelector(
+				'[data-topic-detail-heading-indicator="2"]',
+			),
 		).toBeNull()
 	})
 
@@ -608,7 +660,7 @@ describe('TopicDetailPage', () => {
 			'Linear Algebra',
 			'Matrices',
 			'Rank',
-			'Null Space'
+			'Null Space',
 		])
 		setupTopicChainMocks(chain, 1)
 
@@ -617,19 +669,22 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const deepestHeading = container.querySelector(
-			'[data-topic-detail-heading-id="6"]'
+			'[data-topic-detail-heading-id="6"]',
 		)
-		const semanticHeading = deepestHeading?.querySelector('[role="heading"]')
+		const semanticHeading =
+			deepestHeading?.querySelector('[role="heading"]')
 
 		expect(deepestHeading).not.toBeNull()
 		expect(semanticHeading).not.toBeNull()
 		expect(semanticHeading).toHaveAttribute('aria-level', '6')
 		expect(
-			container.querySelector('[data-topic-detail-heading-indicator="6"]')
+			container.querySelector(
+				'[data-topic-detail-heading-indicator="6"]',
+			),
 		).toBeNull()
 	})
 
@@ -652,7 +707,7 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		await waitFor(() => {
@@ -667,7 +722,7 @@ describe('TopicDetailPage', () => {
 		currentTopic = {
 			...currentTopic,
 			title: 'Algebra from server',
-			body: 'Updated body from server'
+			body: 'Updated body from server',
 		}
 
 		rerender(
@@ -675,13 +730,15 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		await waitFor(() => {
-			expect(screen.getByDisplayValue('Algebra draft')).toBeInTheDocument()
 			expect(
-				screen.getByDisplayValue('Updated body from server')
+				screen.getByDisplayValue('Algebra draft'),
+			).toBeInTheDocument()
+			expect(
+				screen.getByDisplayValue('Updated body from server'),
 			).toBeInTheDocument()
 		})
 	})
@@ -692,28 +749,28 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const grandchildTopic = {
 			...topic,
 			id: 3,
 			title: 'Linear Algebra',
 			parent_id: 2,
-			parent_title: 'Algebra'
+			parent_title: 'Algebra',
 		}
 		const unrelatedGlobalChild = {
 			...topic,
 			id: 4,
 			title: 'Computer Science',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -724,7 +781,11 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (
 					params?.subtree_of === 1 &&
 					params.sort === 'title' &&
@@ -732,7 +793,7 @@ describe('TopicDetailPage', () => {
 				) {
 					return {
 						data: [rootTopic, childTopic, grandchildTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
@@ -742,14 +803,14 @@ describe('TopicDetailPage', () => {
 							rootTopic,
 							childTopic,
 							grandchildTopic,
-							unrelatedGlobalChild
+							unrelatedGlobalChild,
 						],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -757,7 +818,7 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
@@ -765,11 +826,13 @@ describe('TopicDetailPage', () => {
 
 		expect(rootRow).toHaveClass('font-bold')
 		expect(rootRow.parentElement).not.toHaveClass(
-			'bg-[var(--app-chrome-selected)]'
+			'bg-[var(--app-chrome-selected)]',
 		)
 		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
 		expect(within(toc).getByText('Linear Algebra')).toBeInTheDocument()
-		expect(within(toc).queryByText('Computer Science')).not.toBeInTheDocument()
+		expect(
+			within(toc).queryByText('Computer Science'),
+		).not.toBeInTheDocument()
 	})
 
 	it('renders the root as a flat, non-collapsible ToC row', async () => {
@@ -779,7 +842,7 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const leafTopic = {
 			...topic,
@@ -787,7 +850,7 @@ describe('TopicDetailPage', () => {
 			title: 'Algebra',
 			body: 'Leaf topic body',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -798,19 +861,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, leafTopic]
 								: [rootTopic, leafTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -818,7 +885,7 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
@@ -827,25 +894,27 @@ describe('TopicDetailPage', () => {
 
 		expect(rootRow).toBeInTheDocument()
 		expect(
-			within(toc).queryByRole('button', { name: 'Collapse Mathematics' })
+			within(toc).queryByRole('button', { name: 'Collapse Mathematics' }),
 		).not.toBeInTheDocument()
 		expect(
 			within(toc).queryByRole('button', {
-				name: 'More actions for Mathematics'
-			})
+				name: 'More actions for Mathematics',
+			}),
 		).not.toBeInTheDocument()
 		expect(rootRow.closest('li')?.parentElement).toBe(
-			childRow.closest('li')?.parentElement
+			childRow.closest('li')?.parentElement,
 		)
 		expect(
-			screen.getByRole('button', { name: 'Collapse Algebra' })
+			screen.getByRole('button', { name: 'Collapse Algebra' }),
 		).toBeInTheDocument()
 
-		await user.click(screen.getByRole('button', { name: 'Collapse Algebra' }))
-
-		expect(screen.getByRole('button', { name: 'Expand Algebra' })).toHaveClass(
-			'text-blue-600'
+		await user.click(
+			screen.getByRole('button', { name: 'Collapse Algebra' }),
 		)
+
+		expect(
+			screen.getByRole('button', { name: 'Expand Algebra' }),
+		).toHaveClass('text-blue-600')
 		expect(screen.queryByText('Leaf topic body')).not.toBeInTheDocument()
 	})
 
@@ -855,14 +924,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -873,19 +942,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, childTopic]
 								: [rootTopic, childTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -893,7 +966,7 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
@@ -901,22 +974,22 @@ describe('TopicDetailPage', () => {
 
 		expect(outlineRail).not.toBeNull()
 		expect(
-			within(outlineRail as HTMLElement).getByText('topics')
+			within(outlineRail as HTMLElement).getByText('topics'),
 		).toBeInTheDocument()
 		expect(
 			within(outlineRail as HTMLElement).getByRole('button', {
-				name: 'Collapse outline'
-			})
+				name: 'Collapse outline',
+			}),
 		).toBeInTheDocument()
 		expect(
 			within(outlineRail as HTMLElement).getByRole('button', {
-				name: 'Add topic'
-			})
+				name: 'Add topic',
+			}),
 		).toBeInTheDocument()
 		expect(
 			within(outlineRail as HTMLElement).queryByRole('link', {
-				name: 'topics'
-			})
+				name: 'topics',
+			}),
 		).not.toBeInTheDocument()
 	})
 
@@ -927,21 +1000,21 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const grandchildTopic = {
 			...topic,
 			id: 3,
 			title: 'Linear Algebra',
 			parent_id: 2,
-			parent_title: 'Algebra'
+			parent_title: 'Algebra',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -952,19 +1025,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, childTopic, grandchildTopic]
 								: [rootTopic, childTopic, grandchildTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -972,7 +1049,7 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
@@ -985,14 +1062,16 @@ describe('TopicDetailPage', () => {
 
 		await user.click(
 			within(outlineRail as HTMLElement).getByRole('button', {
-				name: 'Collapse outline'
-			})
+				name: 'Collapse outline',
+			}),
 		)
 
 		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
-		expect(within(toc).queryByText('Linear Algebra')).not.toBeInTheDocument()
 		expect(
-			within(toc).getByRole('button', { name: 'Expand Algebra' })
+			within(toc).queryByText('Linear Algebra'),
+		).not.toBeInTheDocument()
+		expect(
+			within(toc).getByRole('button', { name: 'Expand Algebra' }),
 		).toBeInTheDocument()
 	})
 
@@ -1006,14 +1085,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
@@ -1022,7 +1101,7 @@ describe('TopicDetailPage', () => {
 			parent_id: 1,
 			parent_title: 'Mathematics',
 			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at
+			updated_at: topic.updated_at,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1039,16 +1118,21 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
-						data: params?.subtree_of === 1 ? topicsData : topicsData,
-						isLoading: false
+						data:
+							params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { rerender } = render(
@@ -1056,7 +1140,7 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
@@ -1066,36 +1150,36 @@ describe('TopicDetailPage', () => {
 
 		await user.click(
 			within(outlineRail as HTMLElement).getByRole('button', {
-				name: 'Add topic'
-			})
+				name: 'Add topic',
+			}),
 		)
 
 		expect(createTopicAsyncMock).toHaveBeenCalledWith({
 			title: '',
 			body: '',
-			parent_id: 1
+			parent_id: 1,
 		})
 		rerender(
 			<TopicDetailPage
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 		await waitFor(() => {
 			expect(
-				screen.getByRole('textbox', { name: 'Topic title 9' })
+				screen.getByRole('textbox', { name: 'Topic title 9' }),
 			).toHaveFocus()
 		})
 		expect(
 			screen
 				.getByRole('textbox', { name: 'Topic title 9' })
-				.closest('[data-fresh-topic="true"]')
+				.closest('[data-fresh-topic="true"]'),
 		).not.toBeNull()
 		expect(
 			within(toc)
 				.getByRole('link', { name: /Untitled$/u })
-				.closest('[data-fresh-topic="true"]')
+				.closest('[data-fresh-topic="true"]'),
 		).not.toBeNull()
 		await waitFor(() => {
 			expect(scrollIntoViewSpy).toHaveBeenCalled()
@@ -1110,14 +1194,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const deferredCreate = createDeferredPromise<typeof topic>()
 
@@ -1130,19 +1214,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, childTopic]
 								: [rootTopic, childTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -1150,18 +1238,20 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		await user.click(screen.getByRole('button', { name: 'Add topic' }))
 
 		expect(
-			screen.getByRole('button', { name: 'Creating topic' })
+			screen.getByRole('button', { name: 'Creating topic' }),
 		).toBeDisabled()
 
 		deferredCreate.reject(new Error('cancel test request'))
 		await waitFor(() => {
-			expect(screen.getByRole('button', { name: 'Add topic' })).toBeEnabled()
+			expect(
+				screen.getByRole('button', { name: 'Add topic' }),
+			).toBeEnabled()
 		})
 	})
 
@@ -1172,14 +1262,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
@@ -1188,7 +1278,7 @@ describe('TopicDetailPage', () => {
 			parent_id: 2,
 			parent_title: 'Algebra',
 			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at
+			updated_at: topic.updated_at,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1205,16 +1295,21 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
-						data: params?.subtree_of === 1 ? topicsData : topicsData,
-						isLoading: false
+						data:
+							params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { rerender } = render(
@@ -1222,40 +1317,44 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const algebraMenuButton = screen.getByRole('button', {
-			name: 'More actions for Algebra'
+			name: 'More actions for Algebra',
 		})
 		const algebraMenu = algebraMenuButton.parentElement
 
 		expect(algebraMenu).not.toBeNull()
 
 		await user.click(
-			within(algebraMenu!).getByRole('button', { name: 'New topic' })
+			within(algebraMenu!).getByRole('button', { name: 'New topic' }),
 		)
 
 		expect(createTopicAsyncMock).toHaveBeenCalledWith({
 			title: '',
 			body: '',
-			parent_id: 2
+			parent_id: 2,
 		})
 		rerender(
 			<TopicDetailPage
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 		await waitFor(() => {
 			expect(
-				screen.getByRole('textbox', { name: 'Topic title 9' })
+				screen.getByRole('textbox', { name: 'Topic title 9' }),
 			).toHaveFocus()
 		})
-		const createdTitle = screen.getByRole('textbox', { name: 'Topic title 9' })
+		const createdTitle = screen.getByRole('textbox', {
+			name: 'Topic title 9',
+		})
 		expect(createdTitle.closest('[data-fresh-topic="true"]')).not.toBeNull()
-		expect(screen.getByRole('link', { name: /Untitled$/u })).toBeInTheDocument()
+		expect(
+			screen.getByRole('link', { name: /Untitled$/u }),
+		).toBeInTheDocument()
 		expect(navigateMock).not.toHaveBeenCalled()
 	})
 
@@ -1266,14 +1365,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
@@ -1282,7 +1381,7 @@ describe('TopicDetailPage', () => {
 			parent_id: 2,
 			parent_title: 'Algebra',
 			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at
+			updated_at: topic.updated_at,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1299,16 +1398,21 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
-						data: params?.subtree_of === 1 ? topicsData : topicsData,
-						isLoading: false
+						data:
+							params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { rerender } = render(
@@ -1316,18 +1420,18 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const algebraMenuButton = screen.getByRole('button', {
-			name: 'More actions for Algebra'
+			name: 'More actions for Algebra',
 		})
 		const algebraMenu = algebraMenuButton.parentElement
 
 		expect(algebraMenu).not.toBeNull()
 
 		await user.click(
-			within(algebraMenu!).getByRole('button', { name: 'New topic' })
+			within(algebraMenu!).getByRole('button', { name: 'New topic' }),
 		)
 
 		rerender(
@@ -1335,20 +1439,20 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const createdTitle = await screen.findByRole('textbox', {
-			name: 'Topic title 9'
+			name: 'Topic title 9',
 		})
 		const freshSection = createdTitle.closest('[data-fresh-topic="true"]')
 
 		expect(freshSection).not.toBeNull()
 		expect(
-			within(freshSection as HTMLElement).getByPlaceholderText('Title')
+			within(freshSection as HTMLElement).getByPlaceholderText('Title'),
 		).toBeInTheDocument()
 		expect(
-			within(freshSection as HTMLElement).queryByText('Untitled topic')
+			within(freshSection as HTMLElement).queryByText('Untitled topic'),
 		).not.toBeInTheDocument()
 	})
 
@@ -1359,14 +1463,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
@@ -1375,7 +1479,7 @@ describe('TopicDetailPage', () => {
 			parent_id: 1,
 			parent_title: 'Mathematics',
 			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at
+			updated_at: topic.updated_at,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1392,16 +1496,21 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
-						data: params?.subtree_of === 1 ? topicsData : topicsData,
-						isLoading: false
+						data:
+							params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { rerender } = render(
@@ -1409,11 +1518,11 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const rootMenuButton = screen.getAllByRole('button', {
-			name: 'More actions for Mathematics'
+			name: 'More actions for Mathematics',
 		})[0]
 		const rootMenu = rootMenuButton?.parentElement
 
@@ -1421,31 +1530,31 @@ describe('TopicDetailPage', () => {
 
 		await user.click(
 			within(rootMenu as HTMLElement).getByRole('button', {
-				name: 'New topic'
-			})
+				name: 'New topic',
+			}),
 		)
 
 		expect(createTopicAsyncMock).toHaveBeenCalledWith({
 			title: '',
 			body: '',
-			parent_id: 1
+			parent_id: 1,
 		})
 		rerender(
 			<TopicDetailPage
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 		await waitFor(() => {
 			expect(
-				screen.getByRole('textbox', { name: 'Topic title 9' })
+				screen.getByRole('textbox', { name: 'Topic title 9' }),
 			).toHaveFocus()
 		})
 		expect(
 			screen
 				.getByRole('textbox', { name: 'Topic title 9' })
-				.closest('[data-fresh-topic="true"]')
+				.closest('[data-fresh-topic="true"]'),
 		).not.toBeNull()
 		expect(navigateMock).not.toHaveBeenCalled()
 	})
@@ -1457,14 +1566,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const deferredCreate = createDeferredPromise<typeof topic>()
 
@@ -1477,19 +1586,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, childTopic]
 								: [rootTopic, childTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -1497,11 +1610,11 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const rootMenuButton = screen.getAllByRole('button', {
-			name: 'More actions for Mathematics'
+			name: 'More actions for Mathematics',
 		})[0]
 		const rootMenu = rootMenuButton?.parentElement
 
@@ -1509,8 +1622,8 @@ describe('TopicDetailPage', () => {
 
 		await user.click(
 			within(rootMenu as HTMLElement).getByRole('button', {
-				name: 'New topic'
-			})
+				name: 'New topic',
+			}),
 		)
 
 		expect(screen.getByText('Creating...')).toBeInTheDocument()
@@ -1528,14 +1641,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
@@ -1544,7 +1657,7 @@ describe('TopicDetailPage', () => {
 			parent_id: 2,
 			parent_title: 'Algebra',
 			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at
+			updated_at: topic.updated_at,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1561,16 +1674,21 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
-						data: params?.subtree_of === 1 ? topicsData : topicsData,
-						isLoading: false
+						data:
+							params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { rerender } = render(
@@ -1578,11 +1696,11 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const algebraMenuButton = screen.getByRole('button', {
-			name: 'More actions for Algebra'
+			name: 'More actions for Algebra',
 		})
 		const algebraMenu = algebraMenuButton.parentElement
 
@@ -1590,8 +1708,8 @@ describe('TopicDetailPage', () => {
 
 		await user.click(
 			within(algebraMenu as HTMLElement).getByRole('button', {
-				name: 'New topic'
-			})
+				name: 'New topic',
+			}),
 		)
 
 		rerender(
@@ -1599,22 +1717,22 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		await screen.findByRole('textbox', {
-			name: 'Topic title 9'
+			name: 'Topic title 9',
 		})
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
 
 		await user.click(
-			within(toc).getByRole('button', { name: 'Collapse Algebra' })
+			within(toc).getByRole('button', { name: 'Collapse Algebra' }),
 		)
 
 		await waitFor(() => {
 			expect(
-				within(toc).getByRole('button', { name: 'Expand Algebra' })
+				within(toc).getByRole('button', { name: 'Expand Algebra' }),
 			).toBeInTheDocument()
 		})
 		expect(within(toc).queryByText('Untitled')).not.toBeInTheDocument()
@@ -1627,14 +1745,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
@@ -1643,7 +1761,7 @@ describe('TopicDetailPage', () => {
 			parent_id: 2,
 			parent_title: 'Algebra',
 			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at
+			updated_at: topic.updated_at,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1660,16 +1778,21 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
-						data: params?.subtree_of === 1 ? topicsData : topicsData,
-						isLoading: false
+						data:
+							params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { rerender } = render(
@@ -1677,11 +1800,11 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const algebraMenuButton = screen.getByRole('button', {
-			name: 'More actions for Algebra'
+			name: 'More actions for Algebra',
 		})
 		const algebraMenu = algebraMenuButton.parentElement
 
@@ -1689,8 +1812,8 @@ describe('TopicDetailPage', () => {
 
 		await user.click(
 			within(algebraMenu as HTMLElement).getByRole('button', {
-				name: 'New topic'
-			})
+				name: 'New topic',
+			}),
 		)
 
 		rerender(
@@ -1698,11 +1821,11 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const createdTitle = await screen.findByRole('textbox', {
-			name: 'Topic title 9'
+			name: 'Topic title 9',
 		})
 		expect(createdTitle.closest('[data-fresh-topic="true"]')).not.toBeNull()
 
@@ -1714,7 +1837,7 @@ describe('TopicDetailPage', () => {
 		expect(
 			screen
 				.getByRole('link', { name: /Untitled$/u })
-				.closest('[data-fresh-topic="true"]')
+				.closest('[data-fresh-topic="true"]'),
 		).toBeNull()
 	})
 
@@ -1725,14 +1848,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
@@ -1741,7 +1864,7 @@ describe('TopicDetailPage', () => {
 			parent_id: 2,
 			parent_title: 'Algebra',
 			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at
+			updated_at: topic.updated_at,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1758,16 +1881,21 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
-						data: params?.subtree_of === 1 ? topicsData : topicsData,
-						isLoading: false
+						data:
+							params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { rerender } = render(
@@ -1775,11 +1903,11 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const algebraMenuButton = screen.getByRole('button', {
-			name: 'More actions for Algebra'
+			name: 'More actions for Algebra',
 		})
 		const algebraMenu = algebraMenuButton.parentElement
 
@@ -1787,8 +1915,8 @@ describe('TopicDetailPage', () => {
 
 		await user.click(
 			within(algebraMenu as HTMLElement).getByRole('button', {
-				name: 'New topic'
-			})
+				name: 'New topic',
+			}),
 		)
 
 		rerender(
@@ -1796,11 +1924,11 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const createdTitle = await screen.findByRole('textbox', {
-			name: 'Topic title 9'
+			name: 'Topic title 9',
 		})
 		const freshSection = createdTitle.closest('[data-fresh-topic="true"]')
 
@@ -1808,9 +1936,9 @@ describe('TopicDetailPage', () => {
 
 		await user.type(
 			within(freshSection as HTMLElement).getByPlaceholderText(
-				'Add description...'
+				'Add description...',
 			),
-			'Body text'
+			'Body text',
 		)
 
 		await waitFor(() => {
@@ -1825,14 +1953,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
@@ -1841,7 +1969,7 @@ describe('TopicDetailPage', () => {
 			parent_id: 2,
 			parent_title: 'Algebra',
 			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at
+			updated_at: topic.updated_at,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1855,7 +1983,7 @@ describe('TopicDetailPage', () => {
 			type: 'practice',
 			primary_text: '',
 			secondary_text: '',
-			retired: false
+			retired: false,
 		})
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -1866,16 +1994,21 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
-						data: params?.subtree_of === 1 ? topicsData : topicsData,
-						isLoading: false
+						data:
+							params?.subtree_of === 1 ? topicsData : topicsData,
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { rerender } = render(
@@ -1883,11 +2016,11 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const algebraMenuButton = screen.getByRole('button', {
-			name: 'More actions for Algebra'
+			name: 'More actions for Algebra',
 		})
 		const algebraMenu = algebraMenuButton.parentElement
 
@@ -1895,8 +2028,8 @@ describe('TopicDetailPage', () => {
 
 		await user.click(
 			within(algebraMenu as HTMLElement).getByRole('button', {
-				name: 'New topic'
-			})
+				name: 'New topic',
+			}),
 		)
 
 		rerender(
@@ -1904,20 +2037,19 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const createdTitle = await screen.findByRole('textbox', {
-			name: 'Topic title 9'
+			name: 'Topic title 9',
 		})
 		const freshSection = createdTitle.closest('[data-fresh-topic="true"]')
 
 		expect(freshSection).not.toBeNull()
 
-		const practiceButtons = within(freshSection as HTMLElement).getAllByRole(
-			'button',
-			{ name: 'Practice' }
-		)
+		const practiceButtons = within(
+			freshSection as HTMLElement,
+		).getAllByRole('button', { name: 'Practice' })
 
 		await user.click(practiceButtons[0]!)
 
@@ -1926,7 +2058,7 @@ describe('TopicDetailPage', () => {
 			primary_text: '',
 			retired: false,
 			topic_id: 9,
-			type: 'practice'
+			type: 'practice',
 		})
 		await waitFor(() => {
 			expect(createdTitle.closest('[data-fresh-topic="true"]')).toBeNull()
@@ -1940,14 +2072,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -1958,19 +2090,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, childTopic]
 								: [rootTopic, childTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		const { container } = render(
@@ -1978,34 +2114,36 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const pageRoot = container.firstElementChild as HTMLElement
-		const resizeButton = screen.getByRole('button', { name: 'Resize outline' })
+		const resizeButton = screen.getByRole('button', {
+			name: 'Resize outline',
+		})
 		const outline = screen
 			.getByRole('navigation', { name: 'On this page' })
 			.closest('aside')
 
 		expect(
-			pageRoot.style.getPropertyValue('--topic-detail-outline-width')
+			pageRoot.style.getPropertyValue('--topic-detail-outline-width'),
 		).toBe(`${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH}px`)
 		expect(outline).toHaveStyle({
-			width: `${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH}px`
+			width: `${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH}px`,
 		})
 
 		await user.click(resizeButton)
 		await user.keyboard('{ArrowRight}')
 
 		expect(
-			pageRoot.style.getPropertyValue('--topic-detail-outline-width')
+			pageRoot.style.getPropertyValue('--topic-detail-outline-width'),
 		).toBe(`${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH + 16}px`)
 		expect(resizeButton).toHaveAttribute(
 			'aria-valuenow',
-			`${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH + 16}`
+			`${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH + 16}`,
 		)
 		expect(outline).toHaveStyle({
-			width: `${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH + 16}px`
+			width: `${TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH + 16}px`,
 		})
 	})
 
@@ -2015,7 +2153,7 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const leafTopic = {
 			...topic,
@@ -2023,7 +2161,7 @@ describe('TopicDetailPage', () => {
 			title: 'Algebra',
 			body: 'Leaf topic body',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2034,19 +2172,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, leafTopic]
 								: [rootTopic, leafTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -2054,15 +2196,15 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const openButton = screen.getByRole('button', { name: 'Open Algebra' })
 		const moreActionsButton = screen.getByRole('button', {
-			name: 'More actions for Algebra'
+			name: 'More actions for Algebra',
 		})
 		const collapseButton = screen.getByRole('button', {
-			name: 'Collapse Algebra'
+			name: 'Collapse Algebra',
 		})
 		const hoverControls = openButton.parentElement
 		const controls = hoverControls?.parentElement
@@ -2070,7 +2212,7 @@ describe('TopicDetailPage', () => {
 		expect(hoverControls).toHaveClass('opacity-0')
 		expect(hoverControls).toHaveClass('group-hover/section:opacity-100')
 		expect(hoverControls).toHaveClass(
-			'group-has-[:focus-visible]/section:opacity-100'
+			'group-has-[:focus-visible]/section:opacity-100',
 		)
 		expect(collapseButton).not.toHaveClass('opacity-0')
 		expect(controls).toContainElement(collapseButton)
@@ -2084,7 +2226,7 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const leafTopic = {
 			...topic,
@@ -2092,7 +2234,7 @@ describe('TopicDetailPage', () => {
 			title: 'Algebra',
 			body: 'Leaf topic body',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2103,19 +2245,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, leafTopic]
 								: [rootTopic, leafTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -2123,27 +2269,27 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		expect(
-			screen.getByRole('button', { name: 'Open Algebra' })
+			screen.getByRole('button', { name: 'Open Algebra' }),
 		).toBeInTheDocument()
 
 		const algebraMenuButton = screen.getByRole('button', {
-			name: 'More actions for Algebra'
+			name: 'More actions for Algebra',
 		})
 		const algebraMenu = algebraMenuButton.parentElement
 
 		expect(algebraMenu).not.toBeNull()
 		expect(
-			within(algebraMenu!).queryByRole('button', { name: 'Open' })
+			within(algebraMenu!).queryByRole('button', { name: 'Open' }),
 		).toBeNull()
 		expect(
-			within(algebraMenu!).getByRole('button', { name: 'New topic' })
+			within(algebraMenu!).getByRole('button', { name: 'New topic' }),
 		).toBeInTheDocument()
 		expect(
-			within(algebraMenu!).getByRole('button', { name: 'Delete' })
+			within(algebraMenu!).getByRole('button', { name: 'Delete' }),
 		).toBeInTheDocument()
 	})
 
@@ -2153,14 +2299,14 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2171,19 +2317,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, childTopic]
 								: [rootTopic, childTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -2191,15 +2341,15 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
 
 		expect(
 			within(toc).queryByRole('button', {
-				name: 'More actions for Mathematics'
-			})
+				name: 'More actions for Mathematics',
+			}),
 		).not.toBeInTheDocument()
 	})
 
@@ -2209,7 +2359,7 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2220,16 +2370,20 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data: [rootTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -2237,23 +2391,25 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
 		const outlineRail = toc.closest('aside')
 
 		expect(outlineRail).not.toBeNull()
-		expect(within(toc).getByRole('link', { name: 'Mathematics' })).toBeVisible()
+		expect(
+			within(toc).getByRole('link', { name: 'Mathematics' }),
+		).toBeVisible()
 		expect(
 			within(outlineRail as HTMLElement).getByRole('button', {
-				name: 'Collapse outline'
-			})
+				name: 'Collapse outline',
+			}),
 		).toBeInTheDocument()
 		expect(
 			within(outlineRail as HTMLElement).getByRole('button', {
-				name: 'Add topic'
-			})
+				name: 'Add topic',
+			}),
 		).toBeInTheDocument()
 	})
 
@@ -2267,21 +2423,21 @@ describe('TopicDetailPage', () => {
 			id: 1,
 			title: 'Mathematics',
 			parent_id: null,
-			parent_title: null
+			parent_title: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			parent_id: 1,
-			parent_title: 'Mathematics'
+			parent_title: 'Mathematics',
 		}
 		const grandchildTopic = {
 			...topic,
 			id: 3,
 			title: 'Linear Algebra',
 			parent_id: 2,
-			parent_title: 'Algebra'
+			parent_title: 'Algebra',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2292,19 +2448,23 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: { subtree_of?: number; sort?: string; order?: string }) => {
+			(params?: {
+				subtree_of?: number
+				sort?: string
+				order?: string
+			}) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data:
 							params?.subtree_of === 1
 								? [rootTopic, childTopic, grandchildTopic]
 								: [rootTopic, childTopic, grandchildTopic],
-						isLoading: false
+						isLoading: false,
 					}
 				}
 
 				return { data: [], isLoading: false }
-			}
+			},
 		)
 
 		render(
@@ -2312,27 +2472,29 @@ describe('TopicDetailPage', () => {
 				cardTypeFilter='all'
 				onCardTypeFilterChange={() => {}}
 				topicId={1}
-			/>
+			/>,
 		)
 
 		const toc = screen.getByRole('navigation', { name: 'On this page' })
 
 		expect(
-			within(toc).queryByRole('button', { name: 'Collapse Mathematics' })
+			within(toc).queryByRole('button', { name: 'Collapse Mathematics' }),
 		).not.toBeInTheDocument()
 		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
 		expect(within(toc).getByText('Linear Algebra')).toBeInTheDocument()
 
 		await user.click(
-			within(toc).getByRole('button', { name: 'Collapse Algebra' })
+			within(toc).getByRole('button', { name: 'Collapse Algebra' }),
 		)
 
 		expect(within(toc).getByText('Algebra')).toBeInTheDocument()
-		expect(within(toc).queryByText('Linear Algebra')).not.toBeInTheDocument()
+		expect(
+			within(toc).queryByText('Linear Algebra'),
+		).not.toBeInTheDocument()
 		expect(scrollIntoViewSpy).not.toHaveBeenCalled()
 
 		await user.click(
-			within(toc).getByRole('button', { name: 'Expand Algebra' })
+			within(toc).getByRole('button', { name: 'Expand Algebra' }),
 		)
 
 		expect(within(toc).getByText('Linear Algebra')).toBeInTheDocument()
