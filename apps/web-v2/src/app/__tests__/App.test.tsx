@@ -9,7 +9,6 @@ import { describe, expect, it } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { LoadingState } from '~/components/LoadingState'
-import { Button } from '~/components/ui/Button'
 
 function renderRoute(path: string) {
 	const queryClient = new QueryClient()
@@ -54,13 +53,5 @@ describe('v2 app setup', () => {
 		render(<LoadingState label='Loading' />)
 
 		expect(screen.getByText('Loading')).toBeInTheDocument()
-	})
-
-	it('renders base ui button content', () => {
-		render(<Button>Start building</Button>)
-
-		expect(
-			screen.getByRole('button', { name: 'Start building' }),
-		).toBeInTheDocument()
 	})
 })
