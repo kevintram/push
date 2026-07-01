@@ -1,24 +1,80 @@
 import * as stylex from '@stylexjs/stylex'
 
+const DARK = '@media (prefers-color-scheme: dark)'
+
 export const colors = stylex.defineVars({
-	background: 'oklch(97.00% 0.0082 91.48)',
-	foreground: 'oklch(20.46% 0 none)',
-	primary: 'oklch(20.46% 0 none)',
-	primaryForeground: 'oklch(97.00% 0.0082 91.48)',
-	primaryHover: 'oklch(28.50% 0 none)',
-	secondary: 'oklch(92.81% 0.0153 90.24)',
-	secondaryForeground: 'oklch(20.46% 0 none)',
-	secondaryHover: 'oklch(90.40% 0.0183 89.37)',
-	muted: 'oklch(94.90% 0.0083 91.48)',
-	mutedForeground: 'oklch(50.28% 0.0112 93.69)',
-	destructive: 'oklch(50.03% 0.1821 29.51)',
-	destructiveForeground: 'oklch(98.18% 0.0090 34.30)',
-	destructiveMuted: 'oklch(92.05% 0.0297 30.64)',
-	surface: 'oklch(100.00% 0 none)',
-	surfaceHover: 'oklch(94.90% 0.0083 91.48)',
-	border: 'oklch(88.59% 0.0171 88.01)',
-	input: 'oklch(92.81% 0.0153 90.24)',
-	focusRing: 'oklch(50.15% 0.0845 168.71)',
+	background: {
+		default: 'oklch(97.00% 0.0082 91.48)',
+		[DARK]: 'oklch(18.20% 0.0060 91.48)',
+	},
+	foreground: {
+		default: 'oklch(20.46% 0 none)',
+		[DARK]: 'oklch(94.80% 0.0060 91.48)',
+	},
+	primary: {
+		default: 'oklch(20.46% 0 none)',
+		[DARK]: 'oklch(92.00% 0.0060 91.48)',
+	},
+	primaryForeground: {
+		default: 'oklch(97.00% 0.0082 91.48)',
+		[DARK]: 'oklch(18.20% 0.0060 91.48)',
+	},
+	primaryHover: {
+		default: 'oklch(28.50% 0 none)',
+		[DARK]: 'oklch(84.00% 0.0075 91.48)',
+	},
+	secondary: {
+		default: 'oklch(92.81% 0.0153 90.24)',
+		[DARK]: 'oklch(25.50% 0.0100 91.48)',
+	},
+	secondaryForeground: {
+		default: 'oklch(20.46% 0 none)',
+		[DARK]: 'oklch(92.00% 0.0060 91.48)',
+	},
+	secondaryHover: {
+		default: 'oklch(90.40% 0.0183 89.37)',
+		[DARK]: 'oklch(30.50% 0.0120 91.48)',
+	},
+	muted: {
+		default: 'oklch(94.90% 0.0083 91.48)',
+		[DARK]: 'oklch(23.00% 0.0075 91.48)',
+	},
+	mutedForeground: {
+		default: 'oklch(50.28% 0.0112 93.69)',
+		[DARK]: 'oklch(72.00% 0.0100 93.69)',
+	},
+	destructive: {
+		default: 'oklch(50.03% 0.1821 29.51)',
+		[DARK]: 'oklch(65.00% 0.1650 29.51)',
+	},
+	destructiveForeground: {
+		default: 'oklch(98.18% 0.0090 34.30)',
+		[DARK]: 'oklch(18.20% 0.0060 34.30)',
+	},
+	destructiveMuted: {
+		default: 'oklch(92.05% 0.0297 30.64)',
+		[DARK]: 'oklch(29.00% 0.0500 30.64)',
+	},
+	surface: {
+		default: 'oklch(100.00% 0 none)',
+		[DARK]: 'oklch(21.50% 0.0070 91.48)',
+	},
+	surfaceHover: {
+		default: 'oklch(94.90% 0.0083 91.48)',
+		[DARK]: 'oklch(27.00% 0.0090 91.48)',
+	},
+	border: {
+		default: 'oklch(88.59% 0.0171 88.01)',
+		[DARK]: 'oklch(33.00% 0.0120 88.01)',
+	},
+	input: {
+		default: 'oklch(92.81% 0.0153 90.24)',
+		[DARK]: 'oklch(27.00% 0.0100 90.24)',
+	},
+	focusRing: {
+		default: 'oklch(50.15% 0.0845 168.71)',
+		[DARK]: 'oklch(73.00% 0.0950 168.71)',
+	},
 })
 
 export const fonts = stylex.defineVars({
