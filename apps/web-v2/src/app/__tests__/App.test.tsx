@@ -8,7 +8,6 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
-import { LoadingState } from '~/components/LoadingState'
 
 function renderRoute(path: string) {
 	const queryClient = new QueryClient()
@@ -47,11 +46,5 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByRole('heading', { name: 'Page not found' }),
 		).toBeInTheDocument()
-	})
-
-	it('renders the loading state', () => {
-		render(<LoadingState label='Loading' />)
-
-		expect(screen.getByText('Loading')).toBeInTheDocument()
 	})
 })

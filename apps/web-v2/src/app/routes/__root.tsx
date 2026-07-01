@@ -1,10 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
-import { Suspense } from 'react'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 
 import { AppShell } from '~/components/AppShell'
-import { LoadingState } from '~/components/LoadingState'
 
 export type RouterContext = {
 	queryClient: QueryClient
@@ -32,9 +30,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 	component: () => (
 		<AppShell>
 			<ErrorBoundary fallbackRender={renderError}>
-				<Suspense fallback={<LoadingState label='Loading' />}>
-					<Outlet />
-				</Suspense>
+				<Outlet />
 			</ErrorBoundary>
 		</AppShell>
 	),

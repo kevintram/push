@@ -44,10 +44,14 @@ export const radii = stylex.defineVars({
 })
 
 export const spacing = stylex.defineVars({
-	one: '0.25rem',
-	two: '0.5rem',
-	three: '0.75rem',
-	four: '1rem',
-	five: '1.5rem',
-	six: '2rem',
+	none: '0',
+	xs: '4px',
+	s: '8px',
+	m: '12px',
+	l: '16px',
+	xl: '24px',
+	'2xl': '32px',
+	'3xl': '48px',
+	'4xl': '64px',
+	'5xl': '96px',
 })

@@ -5,7 +5,7 @@ import { fontSizes, fontWeights, spacing } from '../../styles/theme.stylex'
 export const styles = stylex.create({
 	page: {
 		minHeight: '100%',
-		padding: spacing.five,
+		padding: spacing.xl,
 		display: 'grid',
 		alignItems: 'center',
 	},
@@ -13,7 +13,7 @@ export const styles = stylex.create({
 		width: 'min(100%, 760px)',
 		display: 'flex',
 		flexDirection: 'column',
-		gap: spacing.six,
+		gap: spacing['2xl'],
 	},
 	eyebrow: {
 		margin: 0,
