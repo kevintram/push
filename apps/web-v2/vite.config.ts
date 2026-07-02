@@ -31,6 +31,9 @@ export default defineConfig(() => ({
 		}),
 		stylex.vite({
 			useCSSLayers: true,
+			aliases: {
+				'~/*': [path.resolve(import.meta.dirname, './src/*')],
+			},
 		}),
 		react(),
 	],
