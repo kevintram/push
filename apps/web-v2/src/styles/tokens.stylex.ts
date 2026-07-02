@@ -59,7 +59,7 @@ export const colors = stylex.defineVars({
 		default: 'oklch(100.00% 0 none)',
 		[DARK]: 'oklch(21.50% 0.0070 91.48)',
 	},
-	surfaceHover: {
+	surfaceActive: {
 		default: 'oklch(94.90% 0.0083 91.48)',
 		[DARK]: 'oklch(27.00% 0.0090 91.48)',
 	},
@@ -82,9 +82,11 @@ export const fonts = stylex.defineVars({
 })
 
 export const fontSizes = stylex.defineVars({
+	xs: '0.75rem',
 	sm: '0.875rem',
 	md: '1rem',
 	lg: '1.125rem',
+	xl: '1.25rem',
 })
 
 export const fontWeights = stylex.defineVars({
@@ -102,12 +104,20 @@ export const radii = stylex.defineVars({
 export const spacing = stylex.defineVars({
 	none: '0',
 	xs: '4px',
-	s: '8px',
-	m: '12px',
-	l: '16px',
+	sm: '8px',
+	md: '12px',
+	lg: '16px',
 	xl: '24px',
 	'2xl': '32px',
 	'3xl': '48px',
 	'4xl': '64px',
 	'5xl': '96px',
+})
+
+export const iconSizes = stylex.defineVars({
+	xs: '12px',
+	sm: '16px',
+	md: '24px',
+	lg: '32px',
+	xl: '48px',
 })

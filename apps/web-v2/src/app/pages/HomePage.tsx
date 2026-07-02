@@ -1,13 +1,12 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { fontSizes, fontWeights, spacing } from '../../styles/theme.stylex'
+import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	page: {
 		minHeight: '100%',
 		padding: spacing.xl,
 		display: 'grid',
-		alignItems: 'center',
 	},
 	hero: {
 		width: 'min(100%, 760px)',

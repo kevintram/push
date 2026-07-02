@@ -40,6 +40,21 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('3gulp v2')).toBeInTheDocument()
 	})
 
+	it.each([
+		['/review', 'Review'],
+		['/flagged', 'Flagged'],
+		['/recent', 'Recent'],
+		['/pinned', 'Pinned'],
+		['/library', 'Library'],
+		['/settings', 'Settings'],
+	])('renders the %s route', async (path, heading) => {
+		renderRoute(path)
+
+		expect(
+			await screen.findByRole('heading', { name: heading }),
+		).toBeInTheDocument()
+	})
+
 	it('renders the not found route', async () => {
 		renderRoute('/missing')
 
