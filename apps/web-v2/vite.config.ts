@@ -31,6 +31,9 @@ export default defineConfig(() => ({
 		}),
 		stylex.vite({
 			useCSSLayers: true,
+			aliases: {
+				'~/*': [path.resolve(import.meta.dirname, './src/*')],
+			},
 		}),
 		react(),
 	],
@@ -45,6 +48,11 @@ export default defineConfig(() => ({
 	},
 	test: {
 		bail: 1,
+		// vite#18224: a plugin re-arms a file watcher after server.close() during
+		// late async transforms (e.g. lazy route chunks), leaking a native handle
+		// that keeps the process alive. Tests pass, so force-exit after 1s instead
+		// of waiting out the 10s default.
+		teardownTimeout: 1000,
 		clearMocks: true,
 		coverage: {
 			enabled: true,

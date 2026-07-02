@@ -145,7 +145,12 @@
 				"react/no-unsafe": "off",
 				"react/react-in-jsx-scope": "off",
 				"react/require-render-return": "error",
-				"react/no-multi-comp": "error",
+				"react/no-multi-comp": [
+					"error",
+					{
+						"ignoreStateless": true
+					}
+				],
 				"simple-import-sort/exports": "error",
 				"simple-import-sort/imports": "error",
 				"no-empty-function": "off",

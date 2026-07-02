@@ -5,7 +5,7 @@
 	"version": "0.0.0",
 	"scripts": {
 		"dev": "vite --open",
-		"test": "node ./scripts/vitest-runner.mjs",
+		"test": "vitest",
 		"test:ci": "rm -rf coverage && pnpm exec vitest run",
 		"lint:tsc": "tsc -b",
 		"lint:oxlint": "oxlint --report-unused-disable-directives .",
