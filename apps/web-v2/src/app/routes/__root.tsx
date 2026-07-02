@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 
+import { NotFoundPage } from '~/app/pages/NotFoundPage'
 import { AppShell } from '~/components/AppShell'
 
 export type RouterContext = {
@@ -17,16 +18,8 @@ function renderError({ error }: FallbackProps) {
 	)
 }
 
-function NotFoundView() {
-	return (
-		<div>
-			<h1>Page not found</h1>
-		</div>
-	)
-}
-
 export const Route = createRootRouteWithContext<RouterContext>()({
-	notFoundComponent: NotFoundView,
+	notFoundComponent: NotFoundPage,
 	component: () => (
 		<AppShell>
 			<ErrorBoundary fallbackRender={renderError}>
