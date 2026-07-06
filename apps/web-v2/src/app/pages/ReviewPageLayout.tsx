@@ -1,6 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
+import { Outlet } from '@tanstack/react-router'
 
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
+import { ReviewSidebar } from '~/modules/reviews/components/ReviewSidebar'
 import { spacing } from '~/styles/tokens.stylex'
 
 const reviewCards = [
@@ -51,7 +53,7 @@ const reviewCards = [
 	},
 	{
 		title: 'Physics Prompt',
-		description: 'Describe Newton’s second law in plain language.',
+		description: "Describe Newton's second law in plain language.",
 	},
 	{
 		title: 'Art Practice',
@@ -88,23 +90,31 @@ const reviewCards = [
 ]
 
 const styles = stylex.create({
-	container: {
+	outerContainer: {
+		display: 'flex',
+		flexDirection: 'row',
+	},
+	innerContainer: {
 		display: 'flex',
 		flexDirection: 'column',
 		padding: spacing.xl,
 	},
 })
 
-export function ReviewPage() {
+export function ReviewPageLayout() {
 	return (
-		<div {...stylex.props(styles.container)}>
-			{reviewCards.map(card => (
-				<ReviewCard
-					description={card.description}
-					key={card.title}
-					title={card.title}
-				/>
-			))}
+		<div {...stylex.props(styles.outerContainer)}>
+			<ReviewSidebar />
+			<div {...stylex.props(styles.innerContainer)}>
+				<Outlet />
+				{reviewCards.map(card => (
+					<ReviewCard
+						description={card.description}
+						key={card.title}
+						title={card.title}
+					/>
+				))}
+			</div>
 		</div>
 	)
 }

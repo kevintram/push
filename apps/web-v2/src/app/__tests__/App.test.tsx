@@ -40,8 +40,15 @@ describe('v2 app setup', () => {
 		expect(screen.getByText('3gulp v2')).toBeInTheDocument()
 	})
 
+	it('renders the review route at its default due state', async () => {
+		renderRoute('/review')
+
+		expect(
+			await screen.findByRole('heading', { name: 'Due' }),
+		).toBeInTheDocument()
+	})
+
 	it.each([
-		['/review', 'Review'],
 		['/flagged', 'Flagged'],
 		['/recent', 'Recent'],
 		['/pinned', 'Pinned'],

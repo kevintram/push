@@ -26,7 +26,7 @@ const styles = stylex.create({
 
 		backgroundColor: {
 			':hover': colors.surfaceActive,
-			'[data-statue=active]': colors.surfaceActive,
+			'[data-status=active]': colors.surfaceActive,
 		},
 
 		borderRadius: radii.lg,
