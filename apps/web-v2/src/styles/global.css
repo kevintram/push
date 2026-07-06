@@ -1,8 +1,85 @@
+/* StyleX setup */
 @stylex;
 
-* {
+/*
+ * Custom CSS reset
+ * Adapted from Josh W. Comeau's "A Modern CSS Reset"
+ * https://www.joshwcomeau.com/css/custom-css-reset/
+ */
+
+*,
+*::before,
+*::after {
 	box-sizing: border-box;
 }
+
+*:not(dialog) {
+	margin: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		interpolate-size: allow-keywords;
+	}
+}
+
+html,
+body {
+	min-height: 100%;
+}
+
+body {
+	line-height: 1.5;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+	display: block;
+	max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+	font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	overflow-wrap: break-word;
+}
+
+p {
+	text-wrap: pretty;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	text-wrap: balance;
+}
+
+#root {
+	min-height: 100%;
+	isolation: isolate;
+}
+
+/* App-wide theme defaults */
 
 :root {
 	color-scheme: light dark;
@@ -15,23 +92,6 @@
 	}
 }
 
-html,
-body,
-#root {
-	min-height: 100%;
-	margin: 0;
-}
-
 body {
 	background-color: inherit;
-	text-rendering: optimizeLegibility;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-}
-
-button,
-input,
-textarea,
-select {
-	font: inherit;
 }
