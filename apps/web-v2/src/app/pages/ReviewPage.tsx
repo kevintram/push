@@ -89,9 +89,8 @@ const reviewCards = [
 
 const styles = stylex.create({
 	container: {
-		display: 'grid',
-		gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-		gap: spacing.lg,
+		display: 'flex',
+		flexDirection: 'column',
 		padding: spacing.xl,
 	},
 })
