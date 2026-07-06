@@ -59,32 +59,20 @@ When a file approaches either limit, split it:
 
 ## Project Structure
 
-Current structure:
-
-```text
-src/
-├── app/
-│   ├── routes/              # TanStack Router file-based routes
-│   ├── pages/               # Page components
-│   └── __tests__/           # App and route integration tests
-├── components/              # Shared app components
-│   └── ui/                  # Shared primitive UI components
-├── styles/                  # Global CSS and StyleX theme tokens
-└── testing/                 # Shared test setup
-```
-
-Expected growth pattern:
-
 ```text
 src/
 ├── app/                     # Routing, page orchestration, app providers
+│   ├── routes/              # TanStack Router file-based routes
+│   ├── pages/               # Page components
+│   └── __tests__/           # App and route integration tests
 ├── components/              # Cross-domain shared components
-├── modules/                 # Product/domain modules as features grow
+│   └── ui/                  # Shared primitive UI components
+├── modules/                 # Product/domain modules
 ├── hooks/                   # App-wide shared hooks
 ├── lib/                     # Preconfigured library wrappers
 ├── models/                  # Shared data models
 ├── stores/                  # Global state providers
-├── styles/                  # Global CSS and StyleX tokens
+├── styles/                  # Global CSS and StyleX theme tokens
 ├── testing/                 # Shared test infrastructure
 └── utils/                   # Shared utility functions
 ```
@@ -97,9 +85,9 @@ src/
 
 **Components**: Colocate components with the page or module that owns them. Only promote to `src/components/` when genuinely reused across unrelated domains. Reserve `src/components/ui/` for shared primitive components.
 
-**Modules**: When product areas become large enough, add `src/modules/<module>/` with a public `index.ts`. Outside code should import through that public surface instead of reaching into module internals.
+**Modules**: Product areas live in `src/modules/<module>/` with a public `index.ts`. Outside code imports through that public surface instead of reaching into module internals.
 
-Recommended module shape:
+Module shape:
 
 ```text
 src/modules/<module>/
