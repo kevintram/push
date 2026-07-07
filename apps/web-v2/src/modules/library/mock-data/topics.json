@@ -1,0 +1,124 @@
+[
+	{
+		"id": 1,
+		"slug": "react-foundations",
+		"title": "React Foundations",
+		"body": "Core React concepts for building predictable user interfaces from reusable components.",
+		"reviewCards": [
+			{
+				"id": 101,
+				"title": "Explain JSX",
+				"description": "Describe how JSX represents React elements and how expressions are embedded."
+			},
+			{
+				"id": 102,
+				"title": "Props vs state",
+				"description": "Compare component inputs with component-owned data that can change over time."
+			},
+			{
+				"id": 103,
+				"title": "Render a list",
+				"description": "Explain why stable keys matter when rendering arrays of components."
+			}
+		],
+		"children": [
+			{
+				"id": 2,
+				"slug": "component-composition",
+				"title": "Component Composition",
+				"body": "Patterns for combining small components into larger interfaces while keeping data flow clear.",
+				"reviewCards": [
+					{
+						"id": 201,
+						"title": "Children prop",
+						"description": "Explain when to accept nested JSX through the children prop."
+					},
+					{
+						"id": 202,
+						"title": "Extract a component",
+						"description": "Identify when repeated JSX should become a dedicated component."
+					}
+				],
+				"children": [
+					{
+						"id": 3,
+						"slug": "controlled-components",
+						"title": "Controlled Components",
+						"body": "Form and input patterns where React state is the source of truth.",
+						"reviewCards": [
+							{
+								"id": 301,
+								"title": "Controlled input",
+								"description": "Describe how value and onChange work together in a controlled input."
+							},
+							{
+								"id": 302,
+								"title": "Local form state",
+								"description": "Choose where form state should live for a small editable form."
+							}
+						],
+						"children": []
+					}
+				]
+			},
+			{
+				"id": 4,
+				"slug": "react-effects",
+				"title": "Effects",
+				"body": "Using effects for synchronization with systems outside React rendering.",
+				"reviewCards": [
+					{
+						"id": 401,
+						"title": "Effect dependency array",
+						"description": "Explain how dependencies control when an effect runs."
+					},
+					{
+						"id": 402,
+						"title": "Effect cleanup",
+						"description": "Describe when and why an effect should return a cleanup function."
+					}
+				],
+				"children": []
+			}
+		]
+	},
+	{
+		"id": 5,
+		"slug": "typescript-basics",
+		"title": "TypeScript Basics",
+		"body": "TypeScript language features that make application data and component contracts explicit.",
+		"reviewCards": [
+			{
+				"id": 501,
+				"title": "Type aliases",
+				"description": "Define when a type alias is useful for shared data shapes."
+			},
+			{
+				"id": 502,
+				"title": "Optional properties",
+				"description": "Explain how optional properties affect consumers of a type."
+			}
+		],
+		"children": [
+			{
+				"id": 6,
+				"slug": "discriminated-unions",
+				"title": "Discriminated Unions",
+				"body": "Modeling related variants with a shared discriminant field.",
+				"reviewCards": [
+					{
+						"id": 601,
+						"title": "Union narrowing",
+						"description": "Use a discriminant field to narrow a value to one variant."
+					},
+					{
+						"id": 602,
+						"title": "Exhaustive checks",
+						"description": "Explain how exhaustive handling helps catch missing cases."
+					}
+				],
+				"children": []
+			}
+		]
+	}
+]

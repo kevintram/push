@@ -12,15 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RecentRouteImport } from './routes/recent'
 import { Route as PinnedRouteImport } from './routes/pinned'
-import { Route as LibraryRouteImport } from './routes/library'
 import { Route as FlaggedRouteImport } from './routes/flagged'
 import { Route as ReviewRouteRouteImport } from './routes/review/route'
+import { Route as LibraryRouteRouteImport } from './routes/library/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReviewIndexRouteImport } from './routes/review/index'
+import { Route as LibraryIndexRouteImport } from './routes/library/index'
 import { Route as ReviewNewRouteImport } from './routes/review/new'
 import { Route as ReviewLateRouteImport } from './routes/review/late'
 import { Route as ReviewDueRouteImport } from './routes/review/due'
 import { Route as ReviewCompletedRouteImport } from './routes/review/completed'
+import { Route as LibraryTopicIdRouteImport } from './routes/library/$topicId'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -37,11 +39,6 @@ const PinnedRoute = PinnedRouteImport.update({
   path: '/pinned',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LibraryRoute = LibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const FlaggedRoute = FlaggedRouteImport.update({
   id: '/flagged',
   path: '/flagged',
@@ -50,6 +47,11 @@ const FlaggedRoute = FlaggedRouteImport.update({
 const ReviewRouteRoute = ReviewRouteRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryRouteRoute = LibraryRouteRouteImport.update({
+  id: '/library',
+  path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,6 +63,11 @@ const ReviewIndexRoute = ReviewIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ReviewRouteRoute,
+} as any)
+const LibraryIndexRoute = LibraryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LibraryRouteRoute,
 } as any)
 const ReviewNewRoute = ReviewNewRouteImport.update({
   id: '/new',
@@ -82,98 +89,113 @@ const ReviewCompletedRoute = ReviewCompletedRouteImport.update({
   path: '/completed',
   getParentRoute: () => ReviewRouteRoute,
 } as any)
+const LibraryTopicIdRoute = LibraryTopicIdRouteImport.update({
+  id: '/$topicId',
+  path: '/$topicId',
+  getParentRoute: () => LibraryRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/library': typeof LibraryRouteRouteWithChildren
   '/review': typeof ReviewRouteRouteWithChildren
   '/flagged': typeof FlaggedRoute
-  '/library': typeof LibraryRoute
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
+  '/library/$topicId': typeof LibraryTopicIdRoute
   '/review/completed': typeof ReviewCompletedRoute
   '/review/due': typeof ReviewDueRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
+  '/library/': typeof LibraryIndexRoute
   '/review/': typeof ReviewIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/flagged': typeof FlaggedRoute
-  '/library': typeof LibraryRoute
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
+  '/library/$topicId': typeof LibraryTopicIdRoute
   '/review/completed': typeof ReviewCompletedRoute
   '/review/due': typeof ReviewDueRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
+  '/library': typeof LibraryIndexRoute
   '/review': typeof ReviewIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/library': typeof LibraryRouteRouteWithChildren
   '/review': typeof ReviewRouteRouteWithChildren
   '/flagged': typeof FlaggedRoute
-  '/library': typeof LibraryRoute
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
+  '/library/$topicId': typeof LibraryTopicIdRoute
   '/review/completed': typeof ReviewCompletedRoute
   '/review/due': typeof ReviewDueRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
+  '/library/': typeof LibraryIndexRoute
   '/review/': typeof ReviewIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/library'
     | '/review'
     | '/flagged'
-    | '/library'
     | '/pinned'
     | '/recent'
     | '/settings'
+    | '/library/$topicId'
     | '/review/completed'
     | '/review/due'
     | '/review/late'
     | '/review/new'
+    | '/library/'
     | '/review/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/flagged'
-    | '/library'
     | '/pinned'
     | '/recent'
     | '/settings'
+    | '/library/$topicId'
     | '/review/completed'
     | '/review/due'
     | '/review/late'
     | '/review/new'
+    | '/library'
     | '/review'
   id:
     | '__root__'
     | '/'
+    | '/library'
     | '/review'
     | '/flagged'
-    | '/library'
     | '/pinned'
     | '/recent'
     | '/settings'
+    | '/library/$topicId'
     | '/review/completed'
     | '/review/due'
     | '/review/late'
     | '/review/new'
+    | '/library/'
     | '/review/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LibraryRouteRoute: typeof LibraryRouteRouteWithChildren
   ReviewRouteRoute: typeof ReviewRouteRouteWithChildren
   FlaggedRoute: typeof FlaggedRoute
-  LibraryRoute: typeof LibraryRoute
   PinnedRoute: typeof PinnedRoute
   RecentRoute: typeof RecentRoute
   SettingsRoute: typeof SettingsRoute
@@ -202,13 +224,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PinnedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/library': {
-      id: '/library'
-      path: '/library'
-      fullPath: '/library'
-      preLoaderRoute: typeof LibraryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/flagged': {
       id: '/flagged'
       path: '/flagged'
@@ -221,6 +236,13 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof ReviewRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -236,6 +258,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/review/'
       preLoaderRoute: typeof ReviewIndexRouteImport
       parentRoute: typeof ReviewRouteRoute
+    }
+    '/library/': {
+      id: '/library/'
+      path: '/'
+      fullPath: '/library/'
+      preLoaderRoute: typeof LibraryIndexRouteImport
+      parentRoute: typeof LibraryRouteRoute
     }
     '/review/new': {
       id: '/review/new'
@@ -265,8 +294,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewCompletedRouteImport
       parentRoute: typeof ReviewRouteRoute
     }
+    '/library/$topicId': {
+      id: '/library/$topicId'
+      path: '/$topicId'
+      fullPath: '/library/$topicId'
+      preLoaderRoute: typeof LibraryTopicIdRouteImport
+      parentRoute: typeof LibraryRouteRoute
+    }
   }
 }
+
+interface LibraryRouteRouteChildren {
+  LibraryTopicIdRoute: typeof LibraryTopicIdRoute
+  LibraryIndexRoute: typeof LibraryIndexRoute
+}
+
+const LibraryRouteRouteChildren: LibraryRouteRouteChildren = {
+  LibraryTopicIdRoute: LibraryTopicIdRoute,
+  LibraryIndexRoute: LibraryIndexRoute,
+}
+
+const LibraryRouteRouteWithChildren = LibraryRouteRoute._addFileChildren(
+  LibraryRouteRouteChildren,
+)
 
 interface ReviewRouteRouteChildren {
   ReviewCompletedRoute: typeof ReviewCompletedRoute
@@ -290,9 +340,9 @@ const ReviewRouteRouteWithChildren = ReviewRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LibraryRouteRoute: LibraryRouteRouteWithChildren,
   ReviewRouteRoute: ReviewRouteRouteWithChildren,
   FlaggedRoute: FlaggedRoute,
-  LibraryRoute: LibraryRoute,
   PinnedRoute: PinnedRoute,
   RecentRoute: RecentRoute,
   SettingsRoute: SettingsRoute,
