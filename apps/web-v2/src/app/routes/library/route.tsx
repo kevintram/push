@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { LibraryPage } from '~/app/pages/LibraryPage'
+import { LibraryPageLayout } from '~/app/pages/LibraryPageLayout'
 
 export const Route = createFileRoute('/library')({
-	component: LibraryPage,
+	component: LibraryPageLayout,
 })
