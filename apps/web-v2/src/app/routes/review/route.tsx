@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ReviewPage } from '~/app/pages/ReviewPage'
+import { ReviewPageLayout } from '~/app/pages/ReviewPageLayout'
 
 export const Route = createFileRoute('/review')({
-	component: ReviewPage,
+	component: ReviewPageLayout,
 })

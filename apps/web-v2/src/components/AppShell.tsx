@@ -7,11 +7,20 @@ import { AppSidebar } from './AppSidebar'
 
 const styles = stylex.create({
 	shell: {
-		minHeight: '100svh',
+		height: '100svh',
+		overflow: 'hidden',
+
 		backgroundColor: colors.background,
 		color: colors.foreground,
+
 		fontFamily: fonts.sans,
+
 		display: 'flex',
+	},
+	children: {
+		flexGrow: 1,
+		minHeight: 0,
+		overflowY: 'auto',
 	},
 })
 
@@ -23,7 +32,7 @@ export function AppShell({ children }: AppShellProps) {
 	return (
 		<div {...stylex.props(styles.shell)}>
 			<AppSidebar />
-			{children}
+			<main {...stylex.props(styles.children)}>{children}</main>
 		</div>
 	)
 }

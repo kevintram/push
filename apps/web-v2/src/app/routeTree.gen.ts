@@ -10,21 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ReviewRouteImport } from './routes/review'
 import { Route as RecentRouteImport } from './routes/recent'
 import { Route as PinnedRouteImport } from './routes/pinned'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as FlaggedRouteImport } from './routes/flagged'
+import { Route as ReviewRouteRouteImport } from './routes/review/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReviewIndexRouteImport } from './routes/review/index'
+import { Route as ReviewNewRouteImport } from './routes/review/new'
+import { Route as ReviewLateRouteImport } from './routes/review/late'
+import { Route as ReviewDueRouteImport } from './routes/review/due'
+import { Route as ReviewCompletedRouteImport } from './routes/review/completed'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReviewRoute = ReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RecentRoute = RecentRouteImport.update({
@@ -47,20 +47,55 @@ const FlaggedRoute = FlaggedRouteImport.update({
   path: '/flagged',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewRouteRoute = ReviewRouteRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewIndexRoute = ReviewIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
+const ReviewNewRoute = ReviewNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
+const ReviewLateRoute = ReviewLateRouteImport.update({
+  id: '/late',
+  path: '/late',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
+const ReviewDueRoute = ReviewDueRouteImport.update({
+  id: '/due',
+  path: '/due',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
+const ReviewCompletedRoute = ReviewCompletedRouteImport.update({
+  id: '/completed',
+  path: '/completed',
+  getParentRoute: () => ReviewRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/review': typeof ReviewRouteRouteWithChildren
   '/flagged': typeof FlaggedRoute
   '/library': typeof LibraryRoute
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
-  '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
+  '/review/completed': typeof ReviewCompletedRoute
+  '/review/due': typeof ReviewDueRoute
+  '/review/late': typeof ReviewLateRoute
+  '/review/new': typeof ReviewNewRoute
+  '/review/': typeof ReviewIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,29 +103,43 @@ export interface FileRoutesByTo {
   '/library': typeof LibraryRoute
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
-  '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
+  '/review/completed': typeof ReviewCompletedRoute
+  '/review/due': typeof ReviewDueRoute
+  '/review/late': typeof ReviewLateRoute
+  '/review/new': typeof ReviewNewRoute
+  '/review': typeof ReviewIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/review': typeof ReviewRouteRouteWithChildren
   '/flagged': typeof FlaggedRoute
   '/library': typeof LibraryRoute
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
-  '/review': typeof ReviewRoute
   '/settings': typeof SettingsRoute
+  '/review/completed': typeof ReviewCompletedRoute
+  '/review/due': typeof ReviewDueRoute
+  '/review/late': typeof ReviewLateRoute
+  '/review/new': typeof ReviewNewRoute
+  '/review/': typeof ReviewIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/review'
     | '/flagged'
     | '/library'
     | '/pinned'
     | '/recent'
-    | '/review'
     | '/settings'
+    | '/review/completed'
+    | '/review/due'
+    | '/review/late'
+    | '/review/new'
+    | '/review/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -98,26 +147,35 @@ export interface FileRouteTypes {
     | '/library'
     | '/pinned'
     | '/recent'
-    | '/review'
     | '/settings'
+    | '/review/completed'
+    | '/review/due'
+    | '/review/late'
+    | '/review/new'
+    | '/review'
   id:
     | '__root__'
     | '/'
+    | '/review'
     | '/flagged'
     | '/library'
     | '/pinned'
     | '/recent'
-    | '/review'
     | '/settings'
+    | '/review/completed'
+    | '/review/due'
+    | '/review/late'
+    | '/review/new'
+    | '/review/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ReviewRouteRoute: typeof ReviewRouteRouteWithChildren
   FlaggedRoute: typeof FlaggedRoute
   LibraryRoute: typeof LibraryRoute
   PinnedRoute: typeof PinnedRoute
   RecentRoute: typeof RecentRoute
-  ReviewRoute: typeof ReviewRoute
   SettingsRoute: typeof SettingsRoute
 }
 
@@ -128,13 +186,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/review': {
-      id: '/review'
-      path: '/review'
-      fullPath: '/review'
-      preLoaderRoute: typeof ReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/recent': {
@@ -165,6 +216,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FlaggedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/review': {
+      id: '/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof ReviewRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -172,16 +230,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/review/': {
+      id: '/review/'
+      path: '/'
+      fullPath: '/review/'
+      preLoaderRoute: typeof ReviewIndexRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
+    '/review/new': {
+      id: '/review/new'
+      path: '/new'
+      fullPath: '/review/new'
+      preLoaderRoute: typeof ReviewNewRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
+    '/review/late': {
+      id: '/review/late'
+      path: '/late'
+      fullPath: '/review/late'
+      preLoaderRoute: typeof ReviewLateRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
+    '/review/due': {
+      id: '/review/due'
+      path: '/due'
+      fullPath: '/review/due'
+      preLoaderRoute: typeof ReviewDueRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
+    '/review/completed': {
+      id: '/review/completed'
+      path: '/completed'
+      fullPath: '/review/completed'
+      preLoaderRoute: typeof ReviewCompletedRouteImport
+      parentRoute: typeof ReviewRouteRoute
+    }
   }
 }
 
+interface ReviewRouteRouteChildren {
+  ReviewCompletedRoute: typeof ReviewCompletedRoute
+  ReviewDueRoute: typeof ReviewDueRoute
+  ReviewLateRoute: typeof ReviewLateRoute
+  ReviewNewRoute: typeof ReviewNewRoute
+  ReviewIndexRoute: typeof ReviewIndexRoute
+}
+
+const ReviewRouteRouteChildren: ReviewRouteRouteChildren = {
+  ReviewCompletedRoute: ReviewCompletedRoute,
+  ReviewDueRoute: ReviewDueRoute,
+  ReviewLateRoute: ReviewLateRoute,
+  ReviewNewRoute: ReviewNewRoute,
+  ReviewIndexRoute: ReviewIndexRoute,
+}
+
+const ReviewRouteRouteWithChildren = ReviewRouteRoute._addFileChildren(
+  ReviewRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ReviewRouteRoute: ReviewRouteRouteWithChildren,
   FlaggedRoute: FlaggedRoute,
   LibraryRoute: LibraryRoute,
   PinnedRoute: PinnedRoute,
   RecentRoute: RecentRoute,
-  ReviewRoute: ReviewRoute,
   SettingsRoute: SettingsRoute,
 }
 export const routeTree = rootRouteImport

@@ -92,6 +92,7 @@ export const fontSizes = stylex.defineVars({
 export const fontWeights = stylex.defineVars({
 	regular: '400',
 	medium: '500',
+	semibold: '600',
 	bold: '750',
 })
 

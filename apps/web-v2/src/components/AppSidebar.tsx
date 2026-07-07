@@ -3,7 +3,7 @@ import { BookOpen, Clock, Flag, Library, PinIcon, Settings } from 'lucide-react'
 
 import { colors, spacing } from '~/styles/tokens.stylex'
 
-import { SidebarLink } from './SidebarLink'
+import { SidebarLink } from './sidebar-link'
 
 const styles = stylex.create({
 	container: {

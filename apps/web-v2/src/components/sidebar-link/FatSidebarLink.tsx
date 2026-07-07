@@ -1,6 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link, type LinkProps } from '@tanstack/react-router'
-import { type LucideIcon } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 
 import {
 	colors,
@@ -11,12 +10,7 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-type SidebarLinkProps = {
-	icon: LucideIcon
-	to: LinkProps['to']
-	text?: string
-	ariaLabel?: string
-}
+import { type BaseSidebarLinkProps } from './SidebarLink.types'
 
 const styles = stylex.create({
 	container: {
@@ -50,12 +44,12 @@ const styles = stylex.create({
 	},
 })
 
-export function SidebarLink({
+export function FatSidebarLink({
 	icon: Icon,
 	to,
 	text,
 	ariaLabel,
-}: SidebarLinkProps) {
+}: BaseSidebarLinkProps) {
 	return (
 		<Link
 			to={to}
