@@ -93,10 +93,20 @@ const styles = stylex.create({
 	outerContainer: {
 		display: 'flex',
 		flexDirection: 'row',
+
+		height: '100%',
+		overflow: 'hidden',
 	},
 	innerContainer: {
 		display: 'flex',
 		flexDirection: 'column',
+
+		flexGrow: 1,
+		flexShrink: 1,
+		flexBasis: 0,
+
+		overflow: 'auto',
+
 		padding: spacing.xl,
 	},
 })
