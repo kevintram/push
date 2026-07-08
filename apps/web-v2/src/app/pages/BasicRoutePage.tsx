@@ -9,11 +9,11 @@ type BasicRoutePageProps = {
 
 const styles = stylex.create({
 	page: {
-		minHeight: '100%',
 		padding: spacing.xl,
-		display: 'grid',
-		alignContent: 'start',
 		gap: spacing.md,
+		alignContent: 'start',
+		display: 'grid',
+		minHeight: '100%',
 	},
 	title: {
 		margin: 0,
@@ -23,10 +23,10 @@ const styles = stylex.create({
 	},
 	description: {
 		margin: 0,
-		maxWidth: '52ch',
 		color: colors.mutedForeground,
 		fontSize: fontSizes.md,
 		lineHeight: 1.5,
+		maxWidth: '52ch',
 	},
 })
 

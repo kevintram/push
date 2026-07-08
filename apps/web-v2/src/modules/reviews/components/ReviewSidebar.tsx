@@ -6,10 +6,10 @@ import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
+		padding: spacing.md,
+		gap: spacing.xs,
 		display: 'flex',
 		flexDirection: 'column',
-		gap: spacing.xs,
-		padding: spacing.md,
 	},
 })
 

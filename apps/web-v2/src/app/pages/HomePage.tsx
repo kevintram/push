@@ -4,15 +4,15 @@ import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	page: {
-		minHeight: '100%',
 		padding: spacing.xl,
 		display: 'grid',
+		minHeight: '100%',
 	},
 	hero: {
-		width: 'min(100%, 760px)',
+		gap: spacing['2xl'],
 		display: 'flex',
 		flexDirection: 'column',
-		gap: spacing['2xl'],
+		width: 'min(100%, 760px)',
 	},
 	eyebrow: {
 		margin: 0,
@@ -22,11 +22,11 @@ const styles = stylex.create({
 	},
 	title: {
 		margin: 0,
-		maxWidth: '18ch',
 		fontSize: '3rem',
 		fontWeight: fontWeights.bold,
 		letterSpacing: 0,
 		lineHeight: 0.95,
+		maxWidth: '18ch',
 	},
 })
 

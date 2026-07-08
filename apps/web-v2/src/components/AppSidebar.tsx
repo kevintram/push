@@ -7,20 +7,18 @@ import { SidebarLink } from './sidebar-link'
 
 const styles = stylex.create({
 	container: {
+		padding: spacing.lg,
+		gap: spacing.lg,
+		borderInlineEndColor: colors.border,
+		borderInlineEndStyle: 'solid',
+		borderInlineEndWidth: '1px',
 		display: 'flex',
 		flexDirection: 'column',
-		gap: spacing.lg,
-
-		padding: spacing.lg,
-
-		borderInlineEndWidth: '1px',
-		borderInlineEndStyle: 'solid',
-		borderInlineEndColor: colors.border,
 	},
 	spacer: {
+		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
-		flexBasis: 0,
 	},
 })
 
