@@ -1,6 +1,3 @@
 {
-	"recommendations": [
-		"denoland.vscode-deno",
-		"oxc.oxc-vscode"
-	]
+	"recommendations": ["oxc.oxc-vscode", "bradlc.vscode-tailwindcss"]
 }

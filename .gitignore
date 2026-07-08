@@ -9,9 +9,14 @@ print-run-cmds.sh
 
 # IDEs
 .idea/
-.vscode/
 .cursor/
-.zed/
+**/.vscode/*
+**/.zed/*
+!**/.vscode/
+!**/.vscode/settings.json
+!**/.vscode/extensions.json
+!**/.zed/
+!**/.zed/settings.json
 
 # Environment variables
 .env

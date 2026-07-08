@@ -1,14 +1,19 @@
 {
-	"[javascript][javascriptreact][typescript][typescriptreact][json][jsonc][css]": {
+	"editor.formatOnSave": true,
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"oxc.disableNestedConfig": false,
+	"oxc.fixKind": "safe_fix_or_suggestion",
+	"oxc.lint.run": "onSave",
+	"oxc.tsConfigPath": "tsconfig.json",
+	"[javascript][javascriptreact][typescript][typescriptreact][css][json][jsonc]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode",
-		"editor.formatOnSave": true,
+		"editor.formatOnSave": false,
 		"editor.insertSpaces": false,
 		"editor.tabSize": 4,
 		"editor.codeActionsOnSave": {
 			"source.format.oxc": "always",
 			"source.fixAll.oxc": "always"
 		}
-	},
-	"typescript.tsdk": "node_modules/typescript/lib",
-	"typescript.format.enable": true
+	}
 }

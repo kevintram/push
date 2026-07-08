@@ -1,0 +1,78 @@
+{
+	"auto_install_extensions": {
+		"oxc": true
+	},
+	"lsp": {
+		"oxlint": {
+			"initialization_options": {
+				"settings": {
+					"configPath": null,
+					"disableNestedConfig": false,
+					"fixKind": "safe_fix_or_suggestion",
+					"run": "onSave"
+				}
+			}
+		},
+		"oxfmt": {
+			"initialization_options": {
+				"settings": {
+					"fmt.configPath": null,
+					"run": "onSave"
+				}
+			}
+		}
+	},
+	"languages": {
+		"JavaScript": {
+			"format_on_save": "on",
+			"prettier": { "allowed": false },
+			"tab_size": 4,
+			"hard_tabs": true,
+			"formatter": [
+				{ "language_server": { "name": "oxfmt" } },
+				{ "code_action": "source.fixAll.oxc" }
+			]
+		},
+		"TypeScript": {
+			"format_on_save": "on",
+			"prettier": { "allowed": false },
+			"tab_size": 4,
+			"hard_tabs": true,
+			"formatter": [
+				{ "language_server": { "name": "oxfmt" } },
+				{ "code_action": "source.fixAll.oxc" }
+			]
+		},
+		"TSX": {
+			"format_on_save": "on",
+			"prettier": { "allowed": false },
+			"tab_size": 4,
+			"hard_tabs": true,
+			"formatter": [
+				{ "language_server": { "name": "oxfmt" } },
+				{ "code_action": "source.fixAll.oxc" }
+			]
+		},
+		"CSS": {
+			"format_on_save": "on",
+			"prettier": { "allowed": false },
+			"tab_size": 4,
+			"hard_tabs": true,
+			"formatter": [{ "language_server": { "name": "oxfmt" } }]
+		},
+		"JSON": {
+			"format_on_save": "on",
+			"prettier": { "allowed": false },
+			"tab_size": 4,
+			"hard_tabs": true,
+			"formatter": [{ "language_server": { "name": "oxfmt" } }]
+		},
+		"JSONC": {
+			"format_on_save": "on",
+			"prettier": { "allowed": false },
+			"tab_size": 4,
+			"hard_tabs": true,
+			"formatter": [{ "language_server": { "name": "oxfmt" } }]
+		}
+	}
+}
