@@ -27,7 +27,7 @@ function startAuthRedirect() {
 	}
 
 	isAuthRedirectInFlight = true
-	window.location.replace(getLoginUrl())
+	window.location.assign(getLoginUrl())
 }
 
 export async function apiFetch(

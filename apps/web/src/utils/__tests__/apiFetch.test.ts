@@ -41,8 +41,8 @@ describe('apiFetch', () => {
 			'fetch',
 			vi.fn().mockResolvedValue(new Response(null, { status: 401 })),
 		)
-		const replaceSpy = vi
-			.spyOn(window.location, 'replace')
+		const assignSpy = vi
+			.spyOn(window.location, 'assign')
 			.mockImplementation(() => {})
 
 		const { apiFetch, AuthRedirectError } = await loadApiFetchModule()
@@ -50,8 +50,8 @@ describe('apiFetch', () => {
 		await expect(
 			apiFetch('http://api.example/topics'),
 		).rejects.toBeInstanceOf(AuthRedirectError)
-		expect(replaceSpy).toHaveBeenCalledTimes(1)
-		expect(replaceSpy).toHaveBeenCalledWith('http://api.example/login/')
+		expect(assignSpy).toHaveBeenCalledTimes(1)
+		expect(assignSpy).toHaveBeenCalledWith('http://api.example/login/')
 	})
 
 	it('suppresses duplicate redirects for concurrent 401 responses', async () => {
@@ -59,8 +59,8 @@ describe('apiFetch', () => {
 			'fetch',
 			vi.fn().mockResolvedValue(new Response(null, { status: 401 })),
 		)
-		const replaceSpy = vi
-			.spyOn(window.location, 'replace')
+		const assignSpy = vi
+			.spyOn(window.location, 'assign')
 			.mockImplementation(() => {})
 
 		const { apiFetch, AuthRedirectError } = await loadApiFetchModule()
@@ -70,7 +70,7 @@ describe('apiFetch', () => {
 			apiFetch('http://api.example/review-cards'),
 		])
 
-		expect(replaceSpy).toHaveBeenCalledTimes(1)
+		expect(assignSpy).toHaveBeenCalledTimes(1)
 		for (const result of results) {
 			expect(result.status).toBe('rejected')
 			if (result.status === 'rejected') {
