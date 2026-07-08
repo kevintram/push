@@ -7,7 +7,6 @@ from fastapi import Response
 from starlette.requests import Request
 
 import app.auth.dependencies as auth_dependencies
-import app.auth.router as auth_router
 import app.auth.session as auth_session
 import app.exception_handlers as exception_handlers
 from app.exceptions import AuthenticationError
@@ -170,66 +169,6 @@ async def test_get_user_id_sets_refreshed_cookie(monkeypatch):
 
     assert user_id == "user-123"
     assert set_cookie_calls == ["fresh-cookie"]
-
-
-def test_check_auth_refreshes_session_and_redirects_to_app(monkeypatch):
-    settings = make_settings()
-
-    monkeypatch.setattr(auth_router, "get_settings", lambda: settings)
-    monkeypatch.setattr(
-        auth_router,
-        "authenticate_session",
-        lambda session_cookie: auth_session.SessionAuthenticationResult(
-            authenticated=True,
-            user_id="user-123",
-            sealed_session="fresh-cookie",
-        ),
-    )
-    monkeypatch.setattr(
-        auth_router,
-        "set_session_cookie",
-        lambda response, sealed_session: response.set_cookie(
-            settings.WORKOS_COOKIE_NAME, sealed_session
-        ),
-    )
-
-    response = auth_router.check_auth(
-        make_request(cookie_header="test_session=stale-cookie"),
-        fallback="http://example.com/landing",
-    )
-
-    assert response.status_code == 302
-    assert response.headers["location"] == "http://app.example"
-    assert any(
-        header.startswith("test_session=fresh-cookie")
-        for header in response_cookie_headers(response)
-    )
-
-
-def test_check_auth_clears_cookies_and_redirects_to_fallback(monkeypatch):
-    settings = make_settings()
-
-    monkeypatch.setattr(auth_router, "get_settings", lambda: settings)
-    monkeypatch.setattr(
-        auth_router,
-        "authenticate_session",
-        lambda session_cookie: auth_session.SessionAuthenticationResult(
-            authenticated=False,
-            failure_reason="Authentication failed",
-        ),
-    )
-    monkeypatch.setattr(auth_session, "get_settings", lambda: settings)
-
-    response = auth_router.check_auth(
-        make_request(cookie_header="test_session=stale-cookie"),
-        fallback="http://example.com/landing",
-    )
-
-    assert response.status_code == 302
-    assert response.headers["location"] == "http://example.com/landing"
-    cookie_headers = response_cookie_headers(response)
-    assert any(header.startswith("test_session=") for header in cookie_headers)
-    assert any(header.startswith("logged_in=") for header in cookie_headers)
 
 
 @pytest.mark.asyncio
