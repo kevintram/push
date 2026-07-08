@@ -21,7 +21,6 @@ import { Route as LibraryIndexRouteImport } from './routes/library/index'
 import { Route as ReviewNewRouteImport } from './routes/review/new'
 import { Route as ReviewLateRouteImport } from './routes/review/late'
 import { Route as ReviewDueRouteImport } from './routes/review/due'
-import { Route as ReviewCompletedRouteImport } from './routes/review/completed'
 import { Route as LibraryTopicIdRouteImport } from './routes/library/$topicId'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -84,11 +83,6 @@ const ReviewDueRoute = ReviewDueRouteImport.update({
   path: '/due',
   getParentRoute: () => ReviewRouteRoute,
 } as any)
-const ReviewCompletedRoute = ReviewCompletedRouteImport.update({
-  id: '/completed',
-  path: '/completed',
-  getParentRoute: () => ReviewRouteRoute,
-} as any)
 const LibraryTopicIdRoute = LibraryTopicIdRouteImport.update({
   id: '/$topicId',
   path: '/$topicId',
@@ -104,7 +98,6 @@ export interface FileRoutesByFullPath {
   '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
   '/library/$topicId': typeof LibraryTopicIdRoute
-  '/review/completed': typeof ReviewCompletedRoute
   '/review/due': typeof ReviewDueRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
@@ -118,7 +111,6 @@ export interface FileRoutesByTo {
   '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
   '/library/$topicId': typeof LibraryTopicIdRoute
-  '/review/completed': typeof ReviewCompletedRoute
   '/review/due': typeof ReviewDueRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
@@ -135,7 +127,6 @@ export interface FileRoutesById {
   '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
   '/library/$topicId': typeof LibraryTopicIdRoute
-  '/review/completed': typeof ReviewCompletedRoute
   '/review/due': typeof ReviewDueRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
@@ -153,7 +144,6 @@ export interface FileRouteTypes {
     | '/recent'
     | '/settings'
     | '/library/$topicId'
-    | '/review/completed'
     | '/review/due'
     | '/review/late'
     | '/review/new'
@@ -167,7 +157,6 @@ export interface FileRouteTypes {
     | '/recent'
     | '/settings'
     | '/library/$topicId'
-    | '/review/completed'
     | '/review/due'
     | '/review/late'
     | '/review/new'
@@ -183,7 +172,6 @@ export interface FileRouteTypes {
     | '/recent'
     | '/settings'
     | '/library/$topicId'
-    | '/review/completed'
     | '/review/due'
     | '/review/late'
     | '/review/new'
@@ -287,13 +275,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewDueRouteImport
       parentRoute: typeof ReviewRouteRoute
     }
-    '/review/completed': {
-      id: '/review/completed'
-      path: '/completed'
-      fullPath: '/review/completed'
-      preLoaderRoute: typeof ReviewCompletedRouteImport
-      parentRoute: typeof ReviewRouteRoute
-    }
     '/library/$topicId': {
       id: '/library/$topicId'
       path: '/$topicId'
@@ -319,7 +300,6 @@ const LibraryRouteRouteWithChildren = LibraryRouteRoute._addFileChildren(
 )
 
 interface ReviewRouteRouteChildren {
-  ReviewCompletedRoute: typeof ReviewCompletedRoute
   ReviewDueRoute: typeof ReviewDueRoute
   ReviewLateRoute: typeof ReviewLateRoute
   ReviewNewRoute: typeof ReviewNewRoute
@@ -327,7 +307,6 @@ interface ReviewRouteRouteChildren {
 }
 
 const ReviewRouteRouteChildren: ReviewRouteRouteChildren = {
-  ReviewCompletedRoute: ReviewCompletedRoute,
   ReviewDueRoute: ReviewDueRoute,
   ReviewLateRoute: ReviewLateRoute,
   ReviewNewRoute: ReviewNewRoute,
