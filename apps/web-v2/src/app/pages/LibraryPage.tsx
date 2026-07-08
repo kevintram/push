@@ -10,15 +10,19 @@ const styles = stylex.create({
 	},
 })
 
+const apiUrl = import.meta.env.VITE_API_URL
+
 export function LibraryPage() {
 	const handleLogin = async () => {
 		console.log('logging in!')
-		window.location.replace('http://localhost:8000/login')
+		const loginUrl = apiUrl + '/login'
+		window.location.replace(loginUrl)
 	}
 
 	const handleFetch = async () => {
 		console.log('fetching!')
-		const res = await fetch('http://localhost:8000/reviews', {
+		const reviewsUrl = apiUrl + '/reviews'
+		const res = await fetch(reviewsUrl, {
 			credentials: 'include',
 		})
 		const data = await res.json()
