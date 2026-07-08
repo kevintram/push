@@ -87,6 +87,20 @@
 		{
 			"files": ["**/*.{ts,tsx}"],
 			"rules": {
+				"@stylexjs/enforce-extension": [
+					"error",
+					{
+						"themeFileExtension": ".stylex.ts"
+					}
+				],
+				"@stylexjs/no-conflicting-props": "error",
+				"@stylexjs/no-legacy-contextual-styles": "error",
+				"@stylexjs/no-lookahead-selectors": "error",
+				"@stylexjs/no-nonstandard-styles": "error",
+				"@stylexjs/no-unused": "error",
+				"@stylexjs/sort-keys": "warn",
+				"@stylexjs/valid-shorthands": "error",
+				"@stylexjs/valid-styles": "error",
 				"constructor-super": "off",
 				"getter-return": "off",
 				"no-class-assign": "off",
@@ -179,7 +193,10 @@
 				"typescript/no-non-null-assertion": "off"
 			},
 			"plugins": ["typescript", "react"],
-			"jsPlugins": ["eslint-plugin-simple-import-sort"]
+			"jsPlugins": [
+				"eslint-plugin-simple-import-sort",
+				"@stylexjs/eslint-plugin"
+			]
 		},
 		{
 			"files": ["src/**/*.test.{ts,tsx}", "src/testing/**/*.{ts,tsx}"],

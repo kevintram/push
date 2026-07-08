@@ -19,7 +19,6 @@ const styles = stylex.create({
 
 		padding: spacing.sm,
 
-		fontStyle: 'none',
 		fontSize: fontSizes.sm,
 		textDecoration: 'none',
 		color: 'inherit',
