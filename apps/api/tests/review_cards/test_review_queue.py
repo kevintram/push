@@ -92,7 +92,9 @@ class TestReviewQueueEndpoint:
             ),
         )
 
-        queue_response = await test_client.get("/review-queue/?type=practice&tab=due")
+        queue_response = await test_client.get(
+            "/review-cards/queue/?type=practice&tab=due"
+        )
 
         assert queue_response.status_code == 200
         payload = queue_response.json()
@@ -158,12 +160,10 @@ class TestReviewQueueEndpoint:
         flashcards_response = await test_client.get(
             "/review-cards/queue/?filter=flashcards&tab=due"
         )
-        legacy_all_response = await test_client.get("/review-queue/?filter=all&tab=due")
 
         assert all_response.status_code == 200
         assert practice_response.status_code == 200
         assert flashcards_response.status_code == 200
-        assert legacy_all_response.status_code == 200
         assert [
             item["card"]["primary_text"] for item in all_response.json()["items"]
         ] == ["Due practice", "Due flashcard"]
@@ -173,9 +173,6 @@ class TestReviewQueueEndpoint:
         assert [
             item["card"]["primary_text"] for item in flashcards_response.json()["items"]
         ] == ["Due flashcard"]
-        assert [
-            item["card"]["primary_text"] for item in legacy_all_response.json()["items"]
-        ] == ["Due practice", "Due flashcard"]
 
     async def test_review_card_queue_modes_order_combined_work(
         self,
@@ -357,9 +354,11 @@ class TestReviewQueueEndpoint:
             ),
         )
 
-        full_response = await test_client.get("/review-queue/?type=practice&tab=due")
+        full_response = await test_client.get(
+            "/review-cards/queue/?type=practice&tab=due"
+        )
         focused_response = await test_client.get(
-            "/review-queue/?type=practice&tab=due&focused=true"
+            "/review-cards/queue/?type=practice&tab=due&focused=true"
         )
 
         assert full_response.status_code == 200
@@ -423,7 +422,7 @@ class TestReviewQueueEndpoint:
         )
         assert later_due_response.status_code == 200
 
-        response = await test_client.get("/review-queue/?type=practice&tab=due")
+        response = await test_client.get("/review-cards/queue/?type=practice&tab=due")
 
         assert response.status_code == 200
         items = response.json()["items"]
@@ -447,7 +446,7 @@ class TestReviewQueueEndpoint:
             )
 
         practice_focus_response = await test_client.get(
-            "/review-queue/?type=practice&tab=new&focused=true"
+            "/review-cards/queue/?type=practice&tab=new&focused=true"
         )
         assert practice_focus_response.status_code == 200
         practice_items = practice_focus_response.json()["items"]
@@ -469,7 +468,7 @@ class TestReviewQueueEndpoint:
             )
 
         response = await test_client.get(
-            "/review-queue/?type=flashcard&tab=new&focused=true"
+            "/review-cards/queue/?type=flashcard&tab=new&focused=true"
         )
         assert response.status_code == 200
         items = response.json()["items"]
@@ -511,8 +510,12 @@ class TestReviewQueueEndpoint:
         )
         assert review_response.status_code == 200
 
-        due_response = await test_client.get("/review-queue/?type=practice&tab=due")
-        new_response = await test_client.get("/review-queue/?type=practice&tab=new")
+        due_response = await test_client.get(
+            "/review-cards/queue/?type=practice&tab=due"
+        )
+        new_response = await test_client.get(
+            "/review-cards/queue/?type=practice&tab=new"
+        )
 
         assert due_response.status_code == 200
         assert new_response.status_code == 200
