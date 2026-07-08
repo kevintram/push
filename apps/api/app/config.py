@@ -49,6 +49,7 @@ class Settings(BaseSettings):
         return [str(origin).rstrip("/") for origin in self.CORS_ALLOWED_ORIGINS]
 
     APP_URL: str
+    APP_V2_URL: str
     API_URL: str
     DOMAIN: str
     ENV: str

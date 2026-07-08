@@ -6,6 +6,7 @@ import { LibrarySidebar } from '~/modules/library/components/library-sidebar/Lib
 const styles = stylex.create({
 	container: {
 		display: 'flex',
+
 		height: '100%',
 	},
 })

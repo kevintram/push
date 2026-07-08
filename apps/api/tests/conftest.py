@@ -17,6 +17,7 @@ os.environ.setdefault("WORKOS_COOKIE_PASSWORD", "test-cookie-password-32chars!!"
 os.environ.setdefault("WORKOS_COOKIE_NAME", "test_session")
 os.environ.setdefault("CORS_ALLOWED_ORIGINS", "http://localhost:3000")
 os.environ.setdefault("APP_URL", "http://localhost:3000")
+os.environ.setdefault("APP_V2_URL", "http://localhost:6173")
 os.environ.setdefault("API_URL", "http://localhost:8000")
 os.environ.setdefault("DOMAIN", "localhost")
 os.environ.setdefault("ENV", "test")

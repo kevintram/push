@@ -9,16 +9,17 @@ type TopicPageProps = Topic
 
 const styles = stylex.create({
 	container: {
-		display: 'flex',
-		flexDirection: 'column',
+		padding: spacing.xl,
 		gap: spacing.md,
 
-		padding: spacing.xl,
-	},
-	header: {
 		display: 'flex',
 		flexDirection: 'column',
+	},
+	header: {
 		gap: spacing.sm,
+
+		display: 'flex',
+		flexDirection: 'column',
 	},
 	title: {
 		fontWeight: fontWeights.bold,

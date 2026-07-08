@@ -31,32 +31,6 @@ import { Button } from '../components/ui/button'
 				.matchMedia('(prefers-color-scheme: dark)')
 				.addEventListener('change', applyTheme)
 		</script>
-
-		<script
-			is:inline
-			define:vars={{
-				appUrl: import.meta.env.PUBLIC_APP_URL,
-				apiUrl: import.meta.env.PUBLIC_API_URL,
-			}}
-		>
-			// Redirect authenticated users to the web app.
-			// Always ask the API to validate or refresh the sealed session cookie.
-			if (apiUrl) {
-				var params = new URLSearchParams(window.location.search)
-				if (!params.has('checked')) {
-					var fallback = encodeURIComponent(
-						window.location.origin +
-							window.location.pathname +
-							'?checked=1',
-					)
-					window.location.replace(
-						apiUrl + '/auth/check/?fallback=' + fallback,
-					)
-				} else {
-					history.replaceState({}, '', window.location.pathname)
-				}
-			}
-		</script>
 	</head>
 
 	<body>

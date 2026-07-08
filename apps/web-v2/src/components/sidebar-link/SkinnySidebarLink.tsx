@@ -13,27 +13,27 @@ import { type BaseSidebarLinkProps } from './SidebarLink.types'
 
 const styles = stylex.create({
 	container: {
-		display: 'flex',
-		gap: spacing.sm,
-		alignItems: 'center',
-
 		padding: spacing.sm,
 
-		fontStyle: 'none',
-		fontSize: fontSizes.sm,
+		borderRadius: radii.lg,
+		gap: spacing.sm,
 		textDecoration: 'none',
-		color: 'inherit',
+
+		alignItems: 'center',
 
 		backgroundColor: {
-			':hover': colors.surfaceActive,
 			'[data-status=active]': colors.surfaceActive,
+			':hover': colors.surfaceActive,
 		},
 
-		borderRadius: radii.lg,
+		color: 'inherit',
+		display: 'flex',
+
+		fontSize: fontSizes.sm,
 	},
 	icon: {
-		inlineSize: iconSizes.sm,
 		blockSize: iconSizes.sm,
+		inlineSize: iconSizes.sm,
 	},
 })
 

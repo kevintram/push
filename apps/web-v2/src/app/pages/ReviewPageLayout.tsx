@@ -91,23 +91,23 @@ const reviewCards = [
 
 const styles = stylex.create({
 	outerContainer: {
+		overflow: 'hidden',
+
 		display: 'flex',
 		flexDirection: 'row',
 
 		height: '100%',
-		overflow: 'hidden',
 	},
 	innerContainer: {
-		display: 'flex',
-		flexDirection: 'column',
-
-		flexGrow: 1,
-		flexShrink: 1,
-		flexBasis: 0,
+		padding: spacing.xl,
 
 		overflow: 'auto',
 
-		padding: spacing.xl,
+		display: 'flex',
+		flexBasis: 0,
+		flexDirection: 'column',
+		flexGrow: 1,
+		flexShrink: 1,
 	},
 })
 

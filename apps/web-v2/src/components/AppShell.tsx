@@ -7,19 +7,21 @@ import { AppSidebar } from './AppSidebar'
 
 const styles = stylex.create({
 	shell: {
-		height: '100svh',
 		overflow: 'hidden',
 
 		backgroundColor: colors.background,
 		color: colors.foreground,
 
+		display: 'flex',
+
 		fontFamily: fonts.sans,
 
-		display: 'flex',
+		height: '100svh',
 	},
 	children: {
 		flexGrow: 1,
 		minHeight: 0,
+
 		overflowY: 'auto',
 	},
 })

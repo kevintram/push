@@ -8,19 +8,24 @@ import { TopicLink } from './TopicLink'
 
 const styles = stylex.create({
 	container: {
-		height: '100%',
+		padding: spacing.md,
+
 		overflow: 'hidden',
 
-		inlineSize: '240px',
 		flexShrink: 0,
-		padding: spacing.md,
+		inlineSize: '240px',
+
+		height: '100%',
 	},
 	list: {
-		display: 'flex',
-		flexDirection: 'column',
-		gap: spacing.xs,
 		margin: 0,
 		padding: 0,
+
+		gap: spacing.xs,
+
+		display: 'flex',
+		flexDirection: 'column',
+
 		listStyleType: 'none',
 	},
 })

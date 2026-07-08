@@ -1,0 +1,32 @@
+{
+	"editor.formatOnSave": true,
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"typescript.tsdk": "apps/web/node_modules/typescript/lib",
+	"oxc.disableNestedConfig": false,
+	"oxc.fixKind": "safe_fix_or_suggestion",
+	"oxc.lint.run": "onSave",
+	"python.defaultInterpreterPath": "${workspaceFolder}/apps/api/.venv/bin/python",
+	"python.analysis.extraPaths": ["${workspaceFolder}/apps/api"],
+	"python.terminal.activateEnvironment": true,
+	"ruff.configuration": "${workspaceFolder}/apps/api/pyproject.toml",
+	"ruff.importStrategy": "fromEnvironment",
+	"ruff.interpreter": ["${workspaceFolder}/apps/api/.venv/bin/python"],
+	"[javascript][javascriptreact][typescript][typescriptreact][css][json][jsonc]": {
+		"editor.defaultFormatter": "oxc.oxc-vscode",
+		"editor.formatOnSave": false,
+		"editor.insertSpaces": false,
+		"editor.tabSize": 4,
+		"editor.codeActionsOnSave": {
+			"source.format.oxc": "always",
+			"source.fixAll.oxc": "always"
+		}
+	},
+	"[python]": {
+		"editor.defaultFormatter": "charliermarsh.ruff",
+		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.fixAll.ruff": "always",
+			"source.organizeImports.ruff": "always"
+		}
+	}
+}

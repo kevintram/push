@@ -5,9 +5,7 @@ from fastapi.responses import RedirectResponse
 from starlette import status
 
 from app.auth.session import (
-    authenticate_session,
     clear_auth_cookies,
-    cookie_domain,
     set_session_cookie,
 )
 from app.auth.workos import get_workos
@@ -49,27 +47,6 @@ def callback(code: str):
         return RedirectResponse(url="/login/", status_code=status.HTTP_302_FOUND)
 
 
-@router.get("/auth/check/")
-def check_auth(request: Request, fallback: str | None = None):
-    """Redirect to the app if authenticated, otherwise to fallback URL."""
-    settings = get_settings()
-    validated_fallback = _validate_fallback(fallback)
-    result = authenticate_session(request.cookies.get(settings.WORKOS_COOKIE_NAME))
-
-    if result.authenticated:
-        response = RedirectResponse(
-            url=settings.APP_URL, status_code=status.HTTP_302_FOUND
-        )
-        if result.sealed_session is not None:
-            set_session_cookie(response, result.sealed_session)
-        return response
-
-    target_url = validated_fallback or "/login/"
-    response = RedirectResponse(url=target_url, status_code=status.HTTP_302_FOUND)
-    clear_auth_cookies(response)
-    return response
-
-
 @router.get("/logout/")
 def logout(request: Request):
     settings = get_settings()
@@ -89,21 +66,3 @@ def logout(request: Request):
         resp = RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
         clear_auth_cookies(resp)
         return resp
-
-
-def _validate_fallback(fallback: str | None) -> str | None:
-    if not fallback:
-        return None
-
-    from urllib.parse import urlparse
-
-    settings = get_settings()
-    parsed = urlparse(fallback)
-    domain = cookie_domain(settings.DOMAIN).lower()
-    if parsed.hostname and (
-        parsed.hostname.lower() == domain
-        or parsed.hostname.lower().endswith(f".{domain}")
-    ):
-        return fallback
-
-    return None
