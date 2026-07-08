@@ -11,11 +11,13 @@ const styles = stylex.create({
 	container: {
 		padding: spacing.xl,
 		gap: spacing.md,
+
 		display: 'flex',
 		flexDirection: 'column',
 	},
 	header: {
 		gap: spacing.sm,
+
 		display: 'flex',
 		flexDirection: 'column',
 	},

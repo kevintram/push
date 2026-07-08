@@ -10,26 +10,34 @@ type TopicLinkProps = Topic
 const styles = stylex.create({
 	item: {
 		gap: spacing.xs,
+
 		display: 'flex',
 		flexDirection: 'column',
 	},
 	link: {
 		borderRadius: radii.md,
+
 		paddingBlock: spacing.xs,
 		paddingInline: spacing.sm,
+
 		textDecoration: 'none',
+
 		backgroundColor: {
 			'[data-status=active]': colors.surfaceActive,
 			':hover': colors.surfaceActive,
 		},
+
 		color: 'inherit',
 		display: 'block',
+
 		fontSize: fontSizes.sm,
 	},
 	children: {
 		gap: spacing.xs,
+
 		display: 'flex',
 		flexDirection: 'column',
+
 		paddingInlineStart: spacing.md,
 	},
 })

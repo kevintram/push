@@ -9,9 +9,11 @@ const styles = stylex.create({
 	container: {
 		padding: spacing.lg,
 		gap: spacing.lg,
+
 		borderInlineEndColor: colors.border,
 		borderInlineEndStyle: 'solid',
 		borderInlineEndWidth: '1px',
+
 		display: 'flex',
 		flexDirection: 'column',
 	},

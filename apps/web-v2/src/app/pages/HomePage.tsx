@@ -5,23 +5,27 @@ import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 const styles = stylex.create({
 	page: {
 		padding: spacing.xl,
+
 		display: 'grid',
 		minHeight: '100%',
 	},
 	hero: {
 		gap: spacing['2xl'],
+
 		display: 'flex',
 		flexDirection: 'column',
 		width: 'min(100%, 760px)',
 	},
 	eyebrow: {
 		margin: 0,
+
 		fontSize: fontSizes.sm,
 		fontWeight: fontWeights.bold,
 		letterSpacing: 0,
 	},
 	title: {
 		margin: 0,
+
 		fontSize: '3rem',
 		fontWeight: fontWeights.bold,
 		letterSpacing: 0,

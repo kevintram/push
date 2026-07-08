@@ -6,6 +6,7 @@ import { colors, fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 const styles = stylex.create({
 	container: {
 		paddingBlock: spacing.lg,
+
 		borderBottomColor: colors.border,
 		borderBottomStyle: 'solid',
 		borderBottomWidth: '1px',

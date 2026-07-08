@@ -11,18 +11,21 @@ const styles = stylex.create({
 	page: {
 		padding: spacing.xl,
 		gap: spacing.md,
+
 		alignContent: 'start',
 		display: 'grid',
 		minHeight: '100%',
 	},
 	title: {
 		margin: 0,
+
 		fontSize: fontSizes.xl,
 		fontWeight: fontWeights.bold,
 		letterSpacing: 0,
 	},
 	description: {
 		margin: 0,
+
 		color: colors.mutedForeground,
 		fontSize: fontSizes.md,
 		lineHeight: 1.5,

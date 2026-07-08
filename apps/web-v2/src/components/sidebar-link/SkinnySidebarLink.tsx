@@ -14,16 +14,21 @@ import { type BaseSidebarLinkProps } from './SidebarLink.types'
 const styles = stylex.create({
 	container: {
 		padding: spacing.sm,
+
 		borderRadius: radii.lg,
 		gap: spacing.sm,
 		textDecoration: 'none',
+
 		alignItems: 'center',
+
 		backgroundColor: {
 			'[data-status=active]': colors.surfaceActive,
 			':hover': colors.surfaceActive,
 		},
+
 		color: 'inherit',
 		display: 'flex',
+
 		fontSize: fontSizes.sm,
 	},
 	icon: {
