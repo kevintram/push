@@ -7,18 +7,18 @@
 		"reviewCards": [
 			{
 				"id": 101,
-				"title": "Explain JSX",
-				"description": "Describe how JSX represents React elements and how expressions are embedded."
+				"primary_text": "Explain JSX",
+				"secondary_text": "Describe how JSX represents React elements and how expressions are embedded."
 			},
 			{
 				"id": 102,
-				"title": "Props vs state",
-				"description": "Compare component inputs with component-owned data that can change over time."
+				"primary_text": "Props vs state",
+				"secondary_text": "Compare component inputs with component-owned data that can change over time."
 			},
 			{
 				"id": 103,
-				"title": "Render a list",
-				"description": "Explain why stable keys matter when rendering arrays of components."
+				"primary_text": "Render a list",
+				"secondary_text": "Explain why stable keys matter when rendering arrays of components."
 			}
 		],
 		"children": [
@@ -30,13 +30,13 @@
 				"reviewCards": [
 					{
 						"id": 201,
-						"title": "Children prop",
-						"description": "Explain when to accept nested JSX through the children prop."
+						"primary_text": "Children prop",
+						"secondary_text": "Explain when to accept nested JSX through the children prop."
 					},
 					{
 						"id": 202,
-						"title": "Extract a component",
-						"description": "Identify when repeated JSX should become a dedicated component."
+						"primary_text": "Extract a component",
+						"secondary_text": "Identify when repeated JSX should become a dedicated component."
 					}
 				],
 				"children": [
@@ -48,13 +48,13 @@
 						"reviewCards": [
 							{
 								"id": 301,
-								"title": "Controlled input",
-								"description": "Describe how value and onChange work together in a controlled input."
+								"primary_text": "Controlled input",
+								"secondary_text": "Describe how value and onChange work together in a controlled input."
 							},
 							{
 								"id": 302,
-								"title": "Local form state",
-								"description": "Choose where form state should live for a small editable form."
+								"primary_text": "Local form state",
+								"secondary_text": "Choose where form state should live for a small editable form."
 							}
 						],
 						"children": []
@@ -69,13 +69,13 @@
 				"reviewCards": [
 					{
 						"id": 401,
-						"title": "Effect dependency array",
-						"description": "Explain how dependencies control when an effect runs."
+						"primary_text": "Effect dependency array",
+						"secondary_text": "Explain how dependencies control when an effect runs."
 					},
 					{
 						"id": 402,
-						"title": "Effect cleanup",
-						"description": "Describe when and why an effect should return a cleanup function."
+						"primary_text": "Effect cleanup",
+						"secondary_text": "Describe when and why an effect should return a cleanup function."
 					}
 				],
 				"children": []
@@ -90,13 +90,13 @@
 		"reviewCards": [
 			{
 				"id": 501,
-				"title": "Type aliases",
-				"description": "Define when a type alias is useful for shared data shapes."
+				"primary_text": "Type aliases",
+				"secondary_text": "Define when a type alias is useful for shared data shapes."
 			},
 			{
 				"id": 502,
-				"title": "Optional properties",
-				"description": "Explain how optional properties affect consumers of a type."
+				"primary_text": "Optional properties",
+				"secondary_text": "Explain how optional properties affect consumers of a type."
 			}
 		],
 		"children": [
@@ -108,13 +108,13 @@
 				"reviewCards": [
 					{
 						"id": 601,
-						"title": "Union narrowing",
-						"description": "Use a discriminant field to narrow a value to one variant."
+						"primary_text": "Union narrowing",
+						"secondary_text": "Use a discriminant field to narrow a value to one variant."
 					},
 					{
 						"id": 602,
-						"title": "Exhaustive checks",
-						"description": "Explain how exhaustive handling helps catch missing cases."
+						"primary_text": "Exhaustive checks",
+						"secondary_text": "Explain how exhaustive handling helps catch missing cases."
 					}
 				],
 				"children": []

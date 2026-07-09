@@ -20,14 +20,14 @@ const styles = stylex.create({
 	},
 })
 
-type ReviewCardProps = Pick<ReviewCardData, 'title' | 'description'>
+type ReviewCardProps = Pick<ReviewCardData, 'primary_text' | 'secondary_text'>
 
-export function ReviewCard({ title, description }: ReviewCardProps) {
+export function ReviewCard({ primary_text, secondary_text }: ReviewCardProps) {
 	return (
 		<div {...stylex.props(styles.container)}>
-			<p {...stylex.props(styles.title)}>{title}</p>
-			{description ? (
-				<p {...stylex.props(styles.description)}>{description}</p>
+			<p {...stylex.props(styles.title)}>{primary_text}</p>
+			{secondary_text ? (
+				<p {...stylex.props(styles.description)}>{secondary_text}</p>
 			) : null}
 		</div>
 	)

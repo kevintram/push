@@ -2,121 +2,121 @@
 	{
 		"id": 1,
 		"status": "due",
-		"title": "Spanish Basics",
-		"description": "Translate \"buenos dias\" and say when you would use it."
+		"primary_text": "Spanish Basics",
+		"secondary_text": "Translate \"buenos dias\" and say when you would use it."
 	},
 	{
 		"id": 2,
 		"status": "due",
-		"title": "Anatomy Check",
-		"description": "Label the four chambers of the heart from memory."
+		"primary_text": "Anatomy Check",
+		"secondary_text": "Label the four chambers of the heart from memory."
 	},
 	{
 		"id": 3,
 		"status": "due",
-		"title": "Quick Algebra",
-		"description": "Solve 3x + 5 = 20 and explain each step out loud."
+		"primary_text": "Quick Algebra",
+		"secondary_text": "Solve 3x + 5 = 20 and explain each step out loud."
 	},
 	{
 		"id": 4,
 		"status": "due",
-		"title": "Chemistry Recall",
-		"description": "Name the first ten elements of the periodic table."
+		"primary_text": "Chemistry Recall",
+		"secondary_text": "Name the first ten elements of the periodic table."
 	},
 	{
 		"id": 5,
 		"status": "due",
-		"title": "US Geography",
-		"description": "List five state capitals in under 30 seconds."
+		"primary_text": "US Geography",
+		"secondary_text": "List five state capitals in under 30 seconds."
 	},
 	{
 		"id": 6,
 		"status": "due",
-		"title": "Grammar Drill",
-		"description": "Rewrite the sentence using the past perfect tense."
+		"primary_text": "Grammar Drill",
+		"secondary_text": "Rewrite the sentence using the past perfect tense."
 	},
 	{
 		"id": 7,
 		"status": "due",
-		"title": "Biology Terms",
-		"description": "Define mitosis and identify its main stages."
+		"primary_text": "Biology Terms",
+		"secondary_text": "Define mitosis and identify its main stages."
 	},
 	{
 		"id": 8,
 		"status": "new",
-		"title": "Music Theory",
-		"description": "Build a C major triad and identify each note."
+		"primary_text": "Music Theory",
+		"secondary_text": "Build a C major triad and identify each note."
 	},
 	{
 		"id": 9,
 		"status": "new",
-		"title": "Coding Syntax",
-		"description": "Explain the difference between `map` and `filter`."
+		"primary_text": "Coding Syntax",
+		"secondary_text": "Explain the difference between `map` and `filter`."
 	},
 	{
 		"id": 10,
 		"status": "new",
-		"title": "History Review",
-		"description": "State one cause and one outcome of the French Revolution."
+		"primary_text": "History Review",
+		"secondary_text": "State one cause and one outcome of the French Revolution."
 	},
 	{
 		"id": 11,
 		"status": "new",
-		"title": "Vocabulary Match",
-		"description": "Use \"ephemeral\" correctly in an original sentence."
+		"primary_text": "Vocabulary Match",
+		"secondary_text": "Use \"ephemeral\" correctly in an original sentence."
 	},
 	{
 		"id": 12,
 		"status": "new",
-		"title": "Physics Prompt",
-		"description": "Describe Newton's second law in plain language."
+		"primary_text": "Physics Prompt",
+		"secondary_text": "Describe Newton's second law in plain language."
 	},
 	{
 		"id": 13,
 		"status": "new",
-		"title": "Art Practice",
-		"description": "Identify the primary colors and one secondary color."
+		"primary_text": "Art Practice",
+		"secondary_text": "Identify the primary colors and one secondary color."
 	},
 	{
 		"id": 14,
 		"status": "late",
-		"title": "Fractions Warmup",
-		"description": "Convert 3/4 to a decimal and percentage."
+		"primary_text": "Fractions Warmup",
+		"secondary_text": "Convert 3/4 to a decimal and percentage."
 	},
 	{
 		"id": 15,
 		"status": "late",
-		"title": "French Practice",
-		"description": "Conjugate \"etre\" in the present tense."
+		"primary_text": "French Practice",
+		"secondary_text": "Conjugate \"etre\" in the present tense."
 	},
 	{
 		"id": 16,
 		"status": "late",
-		"title": "Reading Comprehension",
-		"description": "Summarize the main idea of a paragraph in one sentence."
+		"primary_text": "Reading Comprehension",
+		"secondary_text": "Summarize the main idea of a paragraph in one sentence."
 	},
 	{
 		"id": 17,
 		"status": "late",
-		"title": "SAT Words",
-		"description": "Define \"ubiquitous\" and give one real-world example."
+		"primary_text": "SAT Words",
+		"secondary_text": "Define \"ubiquitous\" and give one real-world example."
 	},
 	{
 		"id": 18,
 		"status": "late",
-		"title": "Programming Logic",
-		"description": "Write pseudocode for checking if a number is even."
+		"primary_text": "Programming Logic",
+		"secondary_text": "Write pseudocode for checking if a number is even."
 	},
 	{
 		"id": 19,
 		"status": "late",
-		"title": "Earth Science",
-		"description": "Name the three main rock types and one example of each."
+		"primary_text": "Earth Science",
+		"secondary_text": "Name the three main rock types and one example of each."
 	},
 	{
 		"id": 20,
 		"status": "late",
-		"title": "Public Speaking",
-		"description": "Practice a 20-second explanation of your favorite topic."
+		"primary_text": "Public Speaking",
+		"secondary_text": "Practice a 20-second explanation of your favorite topic."
 	}
 ]
