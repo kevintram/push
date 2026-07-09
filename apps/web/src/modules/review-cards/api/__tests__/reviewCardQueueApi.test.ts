@@ -45,14 +45,16 @@ describe('review card queue API', () => {
 		apiFetchMock.mockResolvedValue(jsonResponse([]))
 
 		await getReviewCards({
+			due: 'new',
 			flagged: true,
-			new: true,
+			order_by: 'due,-inserted_at',
+			retired: false,
 			type: 'practice',
 		})
 
 		expect(apiFetchMock).toHaveBeenCalledWith(
 			expect.stringContaining(
-				'/review-cards/?type=practice&new=true&flagged=true',
+				'/review-cards/?type=practice&due=new&flagged=true&retired=false&order_by=due%2C-inserted_at',
 			),
 		)
 	})

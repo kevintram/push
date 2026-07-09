@@ -54,9 +54,7 @@ export function useLibraryPage({
 		data: reviewCards = [],
 		error: reviewCardsError,
 		isLoading: isReviewCardsLoading,
-	} = useReviewCards({
-		order: 'desc',
-	})
+	} = useReviewCards()
 	const { mutateAsync: createTopicAsync, isPending: isCreatingTopic } =
 		useCreateTopic()
 	const [sectionFilterOverrides, setSectionFilterOverrides] = useState<

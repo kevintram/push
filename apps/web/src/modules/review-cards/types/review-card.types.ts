@@ -60,13 +60,27 @@ export type ReviewCardFlaggedSummary = {
 	flagged_count: number
 }
 
+export type ReviewCardDueFilter =
+	| 'late'
+	| 'new'
+	| `${number}-${number}-${number}`
+type ReviewCardOrderField = 'inserted_at' | 'due'
+export type ReviewCardOrderBy =
+	| ReviewCardOrderField
+	| `-${ReviewCardOrderField}`
+	| `${ReviewCardOrderField},${ReviewCardOrderField}`
+	| `${ReviewCardOrderField},-${ReviewCardOrderField}`
+	| `-${ReviewCardOrderField},${ReviewCardOrderField}`
+	| `-${ReviewCardOrderField},-${ReviewCardOrderField}`
+
 export type GetReviewCardsParams = {
 	topic_id?: number
 	include_descendants?: boolean
 	type?: ReviewCardType
-	new?: boolean
+	due?: ReviewCardDueFilter
 	flagged?: boolean
-	order?: 'asc' | 'desc'
+	retired?: boolean
+	order_by?: ReviewCardOrderBy
 }
 
 type ReviewCardQueueBaseParams = {

@@ -69,7 +69,6 @@ export function useTopicDetailPage({
 	} = useReviewCards({
 		topic_id: topicId,
 		include_descendants: true,
-		order: 'desc',
 	})
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const shouldAutoFocusRootTitle = focusTitle ?? false
