@@ -1,0 +1,122 @@
+[
+	{
+		"id": 1,
+		"status": "due",
+		"title": "Spanish Basics",
+		"description": "Translate \"buenos dias\" and say when you would use it."
+	},
+	{
+		"id": 2,
+		"status": "due",
+		"title": "Anatomy Check",
+		"description": "Label the four chambers of the heart from memory."
+	},
+	{
+		"id": 3,
+		"status": "due",
+		"title": "Quick Algebra",
+		"description": "Solve 3x + 5 = 20 and explain each step out loud."
+	},
+	{
+		"id": 4,
+		"status": "due",
+		"title": "Chemistry Recall",
+		"description": "Name the first ten elements of the periodic table."
+	},
+	{
+		"id": 5,
+		"status": "due",
+		"title": "US Geography",
+		"description": "List five state capitals in under 30 seconds."
+	},
+	{
+		"id": 6,
+		"status": "due",
+		"title": "Grammar Drill",
+		"description": "Rewrite the sentence using the past perfect tense."
+	},
+	{
+		"id": 7,
+		"status": "due",
+		"title": "Biology Terms",
+		"description": "Define mitosis and identify its main stages."
+	},
+	{
+		"id": 8,
+		"status": "new",
+		"title": "Music Theory",
+		"description": "Build a C major triad and identify each note."
+	},
+	{
+		"id": 9,
+		"status": "new",
+		"title": "Coding Syntax",
+		"description": "Explain the difference between `map` and `filter`."
+	},
+	{
+		"id": 10,
+		"status": "new",
+		"title": "History Review",
+		"description": "State one cause and one outcome of the French Revolution."
+	},
+	{
+		"id": 11,
+		"status": "new",
+		"title": "Vocabulary Match",
+		"description": "Use \"ephemeral\" correctly in an original sentence."
+	},
+	{
+		"id": 12,
+		"status": "new",
+		"title": "Physics Prompt",
+		"description": "Describe Newton's second law in plain language."
+	},
+	{
+		"id": 13,
+		"status": "new",
+		"title": "Art Practice",
+		"description": "Identify the primary colors and one secondary color."
+	},
+	{
+		"id": 14,
+		"status": "late",
+		"title": "Fractions Warmup",
+		"description": "Convert 3/4 to a decimal and percentage."
+	},
+	{
+		"id": 15,
+		"status": "late",
+		"title": "French Practice",
+		"description": "Conjugate \"etre\" in the present tense."
+	},
+	{
+		"id": 16,
+		"status": "late",
+		"title": "Reading Comprehension",
+		"description": "Summarize the main idea of a paragraph in one sentence."
+	},
+	{
+		"id": 17,
+		"status": "late",
+		"title": "SAT Words",
+		"description": "Define \"ubiquitous\" and give one real-world example."
+	},
+	{
+		"id": 18,
+		"status": "late",
+		"title": "Programming Logic",
+		"description": "Write pseudocode for checking if a number is even."
+	},
+	{
+		"id": 19,
+		"status": "late",
+		"title": "Earth Science",
+		"description": "Name the three main rock types and one example of each."
+	},
+	{
+		"id": 20,
+		"status": "late",
+		"title": "Public Speaking",
+		"description": "Practice a 20-second explanation of your favorite topic."
+	}
+]

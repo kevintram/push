@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getReviewCardQueuePage } from '~/modules/review-cards/api/getReviewCardQueue'
 import { getReviewCardQueueSummary } from '~/modules/review-cards/api/getReviewCardQueueSummary'
+import { getReviewCards } from '~/modules/review-cards/api/getReviewCards'
 import { apiFetch } from '~/utils/apiFetch'
 
 vi.mock('~/utils/apiFetch', () => ({
@@ -30,13 +31,28 @@ describe('review card queue API', () => {
 		await getReviewCardQueuePage({
 			filter: 'all',
 			include_future: true,
-			limit: 10,
 			mode: 'focus',
 		})
 
 		expect(apiFetchMock).toHaveBeenCalledWith(
 			expect.stringContaining(
-				'/review-cards/queue/?filter=all&mode=focus&include_future=true&limit=10',
+				'/review-cards/queue/?filter=all&mode=focus&include_future=true',
+			),
+		)
+	})
+
+	it('serializes review card list filters', async () => {
+		apiFetchMock.mockResolvedValue(jsonResponse([]))
+
+		await getReviewCards({
+			flagged: true,
+			new: true,
+			type: 'practice',
+		})
+
+		expect(apiFetchMock).toHaveBeenCalledWith(
+			expect.stringContaining(
+				'/review-cards/?type=practice&new=true&flagged=true',
 			),
 		)
 	})

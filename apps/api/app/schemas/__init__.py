@@ -6,7 +6,6 @@ from app.schemas.review_cards import (
     ReviewCardTypeEnum,
     ReviewCardUpdate,
 )
-from app.schemas.review_queue import ReviewQueueItem, ReviewQueuePage
 from app.schemas.reviews import (
     ReviewBase,
     ReviewCardSummary,
@@ -26,7 +25,6 @@ ReviewCreate.model_rebuild()
 ReviewUpdate.model_rebuild()
 ReviewWithCard.model_rebuild()
 SearchResultItem.model_rebuild()
-ReviewQueueItem.model_rebuild()
 ReviewCardRead.model_rebuild()
 ReviewCardQueueItem.model_rebuild()
 
@@ -37,8 +35,6 @@ __all__ = [
     "ReviewCardRead",
     "ReviewCardTypeEnum",
     "ReviewCardUpdate",
-    "ReviewQueueItem",
-    "ReviewQueuePage",
     "ReviewBase",
     "ReviewCardSummary",
     "ReviewCreate",

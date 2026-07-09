@@ -279,8 +279,8 @@ async def list_review_cards(
     topic_id: int | None = None,
     include_descendants: bool = False,
     card_type: str | None = None,
-    new_only: bool | None = None,
-    flagged_only: bool | None = None,
+    new: bool | None = None,
+    flagged: bool | None = None,
     order: Literal["asc", "desc"] = "desc",
 ) -> list[ReviewCard]:
     stmt = select(ReviewCard).where(ReviewCard.user_id == user_id)
@@ -301,7 +301,7 @@ async def list_review_cards(
             stmt = stmt.where(ReviewCard.topic_id == topic_id)
     if card_type is not None:
         stmt = stmt.where(ReviewCard.type == card_type)
-    if new_only is True:
+    if new is True:
         completed_exists = (
             select(Review.id)
             .where(
@@ -311,7 +311,7 @@ async def list_review_cards(
             .limit(1)
         )
         stmt = stmt.where(~exists(completed_exists))
-    if flagged_only is True:
+    if flagged is True:
         stmt = stmt.where(ReviewCard.flagged_at.isnot(None))
 
     flagged_rank = case((ReviewCard.flagged_at.is_(None), 1), else_=0)
@@ -435,42 +435,8 @@ async def list_review_card_queue(
     card_types: tuple[str, ...],
     mode: Literal["list", "focus"] = "list",
     include_future: bool = False,
-    tab: Literal["due", "new"] | None = None,
-    focused: bool = False,
-    limit: int | None = None,
 ) -> ReviewCardQueuePage:
     as_of = get_current_date()
-
-    if tab is not None:
-        if tab == "due":
-            items = await _list_actionable_due_queue_items(
-                session,
-                user_id,
-                card_types=card_types,
-                as_of=as_of,
-            )
-        else:
-            items = await _list_new_queue_items(
-                session,
-                user_id,
-                card_types=card_types,
-            )
-
-        if focused:
-            items = [
-                item
-                for item in items
-                if not (
-                    item.queue_type == "hazy" and item.card.freshness_tier == "Fresh"
-                )
-            ]
-            resolved_limit = limit
-            if resolved_limit is None:
-                flashcard_only = set(card_types) == {ReviewCardTypeEnum.FLASHCARD.value}
-                resolved_limit = 1 if flashcard_only else 5
-            items = items[:resolved_limit]
-
-        return ReviewCardQueuePage(items=items, as_of=as_of)
 
     due_items = await _list_actionable_due_queue_items(
         session,

@@ -32,8 +32,8 @@ async def read_review_cards(
     topic_id: int | None = None,
     include_descendants: bool = False,
     type: ReviewCardTypeEnum | None = None,
-    new_only: bool | None = None,
-    flagged_only: bool | None = None,
+    new: bool | None = None,
+    flagged: bool | None = None,
     order: Literal["asc", "desc"] = "desc",
 ) -> list[ReviewCardRead]:
     if include_descendants and topic_id is None:
@@ -45,8 +45,8 @@ async def read_review_cards(
         topic_id=topic_id,
         include_descendants=include_descendants,
         card_type=type.value if type else None,
-        new_only=new_only,
-        flagged_only=flagged_only,
+        new=new,
+        flagged=flagged,
         order=order,
     )
 
@@ -59,9 +59,6 @@ async def read_review_card_queue(
     filter: ReviewCardFilterEnum | None = None,
     mode: Literal["list", "focus"] = "list",
     include_future: bool = False,
-    tab: Literal["due", "new"] | None = None,
-    focused: bool = False,
-    limit: int | None = None,
 ) -> ReviewCardQueuePage:
     return await service.list_review_card_queue(
         session,
@@ -70,10 +67,7 @@ async def read_review_card_queue(
             card_type=type, review_filter=filter
         ),
         include_future=include_future,
-        focused=focused,
-        limit=limit,
         mode=mode,
-        tab=tab,
     )
 
 

@@ -27,9 +27,6 @@ export async function getReviewCardQueuePage(
 	if (params.include_future !== undefined) {
 		searchParams.append('include_future', String(params.include_future))
 	}
-	if (params.limit !== undefined) {
-		searchParams.append('limit', String(params.limit))
-	}
 
 	const response = await apiFetch(
 		`${import.meta.env.VITE_API_URL}/review-cards/queue/?${searchParams.toString()}`,

@@ -1,9 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/review/late')({
-	component: RouteComponent,
-})
+import { ReviewLatePage } from '~/app/pages/ReviewLatePage'
 
-function RouteComponent() {
-	return <h2>Late</h2>
-}
+export const Route = createFileRoute('/review/late')({
+	component: ReviewLatePage,
+})
