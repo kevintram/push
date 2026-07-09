@@ -254,6 +254,10 @@ INSERT INTO review_card_types (review_card_id, type)
 SELECT id, type
 FROM review_cards;
 
+UPDATE review_cards
+SET flagged_at = timezone('utc'::text, now()) - interval '1 day'
+WHERE id IN (20, 24, 33);
+
 -- Due/scheduled queue entries (uncompleted).
 INSERT INTO reviews (
   id,
@@ -270,23 +274,104 @@ VALUES
   (1, 'user_01KGG4R8HZAV513662YE3DJ0A9', 1, 'Overdue algebra drill', '', CURRENT_DATE - 1, NULL, NULL),
   (2, 'user_01KGG4R8HZAV513662YE3DJ0A9', 2, 'Today linear algebra warm-up', '', CURRENT_DATE, NULL, NULL),
   (3, 'user_01KGG4R8HZAV513662YE3DJ0A9', 5, 'Tomorrow data structures rep', '', CURRENT_DATE + 1, NULL, NULL),
-  (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 7, 'Upcoming quorum recall', '', CURRENT_DATE + 2, NULL, NULL),
-  (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 11, 'Spanish phrase recall overdue', '', CURRENT_DATE - 4, NULL, NULL),
+  (4, 'user_01KGG4R8HZAV513662YE3DJ0A9', 7, 'Next-week quorum recall', '', CURRENT_DATE + 7, NULL, NULL),
+  (5, 'user_01KGG4R8HZAV513662YE3DJ0A9', 11, 'Spanish phrase recall overdue', '', CURRENT_DATE - 1, NULL, NULL),
   (6, 'user_01KGG4R8HZAV513662YE3DJ0A9', 15, 'Essay thesis refinement today', '', CURRENT_DATE, NULL, NULL),
   (7, 'user_01KGG4R8HZAV513662YE3DJ0A9', 18, 'Unscheduled case study refresh', '', NULL, NULL, NULL),
   (8, 'user_01KGG4R8HZAV513662YE3DJ0A9', 21, 'Interview opener tomorrow', '', CURRENT_DATE + 1, NULL, NULL),
   (9, 'user_01KGG4R8HZAV513662YE3DJ0A9', 23, 'System design recall today', '', CURRENT_DATE, NULL, NULL),
-  (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 29, 'Training definition review', '', CURRENT_DATE + 3, NULL, NULL),
-  (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 34, 'Math meta-learning recall today', '', CURRENT_DATE, NULL, NULL),
+  (10, 'user_01KGG4R8HZAV513662YE3DJ0A9', 20, 'Design-token review next week', '', CURRENT_DATE + 7, NULL, NULL),
+  (11, 'user_01KGG4R8HZAV513662YE3DJ0A9', 24, 'Behavioral story recall today', '', CURRENT_DATE, NULL, NULL),
   (12, 'user_01KGG4R8HZAV513662YE3DJ0A9', 38, 'Unscheduled science distinction recall', '', NULL, NULL, NULL),
   (13, 'user_01KGG4R8HZAV513662YE3DJ0A9', 40, 'Recovery-day recall overdue', '', CURRENT_DATE - 2, NULL, NULL),
-  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 30, 'Nutrition target recall later this week', '', CURRENT_DATE + 5, NULL, NULL),
+  (14, 'user_01KGG4R8HZAV513662YE3DJ0A9', 26, 'Biology recall next week', '', CURRENT_DATE + 7, NULL, NULL),
   (15, 'user_01KGG4R8HZAV513662YE3DJ0A9', 41, 'Long masonry explanation due today', '', CURRENT_DATE, NULL, NULL),
   (16, 'user_01KGG4R8HZAV513662YE3DJ0A9', 42, 'Long overflow testing flashcard tomorrow', '', CURRENT_DATE + 1, NULL, NULL),
-  (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 43, 'Dense reading-note practice later this week', '', CURRENT_DATE + 3, NULL, NULL),
+  (17, 'user_01KGG4R8HZAV513662YE3DJ0A9', 43, 'Dense reading-note practice next week', '', CURRENT_DATE + 7, NULL, NULL),
   (18, 'user_01KGG4R8HZAV513662YE3DJ0A9', 44, 'Scrolling versus clipping flashcard overdue', '', CURRENT_DATE - 3, NULL, NULL);
 
--- Completed reviews (recent + older) for status badges/logbook/history.
+-- Completed reviews for status badges, logbook, and coherent FSRS history.
+-- Cards 29-36 intentionally have no completed history so they are true new cards.
+WITH reviewed_card_ids AS (
+  SELECT n AS review_card_id
+  FROM generate_series(1, 28) AS n
+  UNION ALL
+  SELECT n AS review_card_id
+  FROM generate_series(37, 44) AS n
+), completed_seed AS (
+  SELECT
+    99 + row_number() OVER (ORDER BY review_card_id) AS id,
+    review_card_id,
+    CASE
+      WHEN review_card_id IN (17, 18, 19, 20) THEN CURRENT_DATE - (10 + (review_card_id - 17))
+      WHEN review_card_id IN (37, 38, 39, 40) THEN CURRENT_DATE - ((review_card_id % 4) + 2)
+      ELSE CURRENT_DATE - ((review_card_id % 8) + 1)
+    END AS completed_date,
+    CASE
+      WHEN review_card_id % 7 = 0 THEN 'miss'
+      WHEN review_card_id % 5 = 0 THEN 'hard'
+      WHEN review_card_id % 3 = 0 THEN 'easy'
+      ELSE 'good'
+    END AS rating_text
+  FROM reviewed_card_ids
+)
+INSERT INTO reviews (
+  id,
+  user_id,
+  review_card_id,
+  description,
+  notes,
+  scheduled_at,
+  completed_at,
+  rating,
+  stability_before,
+  difficulty_before,
+  state_before,
+  step_before,
+  due_before,
+  stability_after,
+  difficulty_after,
+  state_after,
+  step_after,
+  due_after
+)
+OVERRIDING SYSTEM VALUE
+SELECT
+  completed_seed.id,
+  review_cards.user_id,
+  completed_seed.review_card_id,
+  'Completed seed review: ' || review_cards.primary_text,
+  CASE
+    WHEN completed_seed.rating_text = 'easy' THEN 'Answer came immediately.'
+    WHEN completed_seed.rating_text = 'good' THEN 'Solid recall with a short pause.'
+    WHEN completed_seed.rating_text = 'hard' THEN 'Remembered after working through the prompt.'
+    ELSE 'Missed the first attempt and marked for relearning.'
+  END,
+  completed_seed.completed_date,
+  completed_seed.completed_date,
+  completed_seed.rating_text::rating,
+  (1.8 + (completed_seed.review_card_id * 0.04))::real,
+  (2.4 + ((completed_seed.review_card_id % 6) * 0.12))::real,
+  'REVIEW'::learning_state,
+  NULL,
+  completed_seed.completed_date,
+  (2.1 + (completed_seed.review_card_id * 0.05))::real,
+  (2.2 + ((completed_seed.review_card_id % 5) * 0.10))::real,
+  CASE
+    WHEN completed_seed.rating_text = 'miss' THEN 'RELEARNING'::learning_state
+    ELSE 'REVIEW'::learning_state
+  END,
+  CASE WHEN completed_seed.rating_text = 'miss' THEN 1 ELSE NULL END,
+  completed_seed.completed_date + CASE
+    WHEN completed_seed.rating_text = 'easy' THEN 7
+    WHEN completed_seed.rating_text = 'good' THEN 5
+    WHEN completed_seed.rating_text = 'hard' THEN 2
+    ELSE 1
+  END
+FROM completed_seed
+JOIN review_cards ON review_cards.id = completed_seed.review_card_id;
+
+-- Older logbook anchors that are stable across month/year boundaries.
 INSERT INTO reviews (
   id,
   user_id,
@@ -309,23 +394,8 @@ INSERT INTO reviews (
 )
 OVERRIDING SYSTEM VALUE
 VALUES
-  (100, 'user_01KGG4R8HZAV513662YE3DJ0A9', 6, 'Recent completed algorithms recall', 'Answer came immediately.', CURRENT_DATE - 2, CURRENT_DATE - 2, 'easy', 3.2, 2.8, 'REVIEW', NULL, CURRENT_DATE, 3.9, 2.5, 'REVIEW', NULL, CURRENT_DATE + 6),
-  (101, 'user_01KGG4R8HZAV513662YE3DJ0A9', 8, 'Recent networking review', 'Mixed up resolver and authoritative server once.', CURRENT_DATE - 3, CURRENT_DATE - 3, 'good', 2.4, 3.0, 'RELEARNING', 1, CURRENT_DATE - 1, 2.8, 2.8, 'REVIEW', NULL, CURRENT_DATE + 4),
-  (102, 'user_01KGG4R8HZAV513662YE3DJ0A9', 9, 'Recent backend systems review', 'Used webhook example from Stripe.', CURRENT_DATE - 4, CURRENT_DATE - 4, 'hard', 2.6, 3.2, 'REVIEW', NULL, CURRENT_DATE - 1, 2.9, 3.0, 'REVIEW', NULL, CURRENT_DATE + 3),
-  (103, 'user_01KGG4R8HZAV513662YE3DJ0A9', 10, 'Older databases review', 'Forgot the difference between seek and scan at first.', CURRENT_DATE - 16, CURRENT_DATE - 16, 'miss', 1.8, 3.4, 'REVIEW', NULL, CURRENT_DATE - 8, 2.1, 3.1, 'RELEARNING', 1, CURRENT_DATE - 1),
-  (104, 'user_01KGG4R8HZAV513662YE3DJ0A9', 16, 'Recent speaking drill', 'Hook was stronger than the close.', CURRENT_DATE - 2, CURRENT_DATE - 2, 'good', 2.5, 2.9, 'RELEARNING', 1, CURRENT_DATE, 2.9, 2.7, 'REVIEW', NULL, CURRENT_DATE + 4),
-  (105, 'user_01KGG4R8HZAV513662YE3DJ0A9', 17, 'Recent research review', 'Needed a reminder to stay neutral.', CURRENT_DATE - 5, CURRENT_DATE - 5, 'hard', 1.9, 3.3, 'REVIEW', NULL, CURRENT_DATE - 2, 2.2, 3.0, 'REVIEW', NULL, CURRENT_DATE + 2),
-  (106, 'user_01KGG4R8HZAV513662YE3DJ0A9', 20, 'Older design systems review', 'Remembered the token rule after a pause.', CURRENT_DATE - 12, CURRENT_DATE - 12, 'easy', 2.8, 2.6, 'REVIEW', NULL, CURRENT_DATE - 3, 3.5, 2.4, 'REVIEW', NULL, CURRENT_DATE + 7),
-  (107, 'user_01KGG4R8HZAV513662YE3DJ0A9', 22, 'Recent mock interview review', 'Recovered but still rambled.', CURRENT_DATE - 1, CURRENT_DATE - 1, 'miss', 1.7, 3.5, 'REVIEW', NULL, CURRENT_DATE, 1.9, 3.2, 'RELEARNING', 1, CURRENT_DATE + 1),
-  (108, 'user_01KGG4R8HZAV513662YE3DJ0A9', 24, 'Recent behavioral flashcard recall', 'STAR order was automatic.', CURRENT_DATE - 2, CURRENT_DATE - 2, 'easy', 3.0, 2.5, 'REVIEW', NULL, CURRENT_DATE, 3.7, 2.3, 'REVIEW', NULL, CURRENT_DATE + 6),
-  (109, 'user_01KGG4R8HZAV513662YE3DJ0A9', 25, 'Physics review last week', 'Got the force directions right.', CURRENT_DATE - 7, CURRENT_DATE - 7, 'good', 2.3, 2.9, 'REVIEW', NULL, CURRENT_DATE - 1, 2.8, 2.7, 'REVIEW', NULL, CURRENT_DATE + 4),
-  (110, 'user_01KGG4R8HZAV513662YE3DJ0A9', 27, 'Ancient history review', 'Could not place the Babylonian context initially.', CURRENT_DATE - 13, CURRENT_DATE - 13, 'miss', 1.6, 3.2, 'REVIEW', NULL, CURRENT_DATE - 5, 1.9, 3.0, 'RELEARNING', 1, CURRENT_DATE + 1),
-  (111, 'user_01KGG4R8HZAV513662YE3DJ0A9', 31, 'Meal-planning review', 'The template approach felt reusable.', CURRENT_DATE - 3, CURRENT_DATE - 3, 'good', 2.1, 2.8, 'REVIEW', NULL, CURRENT_DATE - 1, 2.6, 2.6, 'REVIEW', NULL, CURRENT_DATE + 4),
-  (112, 'user_01KGG4R8HZAV513662YE3DJ0A9', 35, 'Recent CS fundamentals review', 'Confident answer with a scheduler example.', CURRENT_DATE - 2, CURRENT_DATE - 2, 'easy', 3.1, 2.7, 'REVIEW', NULL, CURRENT_DATE, 3.8, 2.4, 'REVIEW', NULL, CURRENT_DATE + 5),
-  (113, 'user_01KGG4R8HZAV513662YE3DJ0A9', 39, 'History methods recall', 'Primary-source definition was clean.', CURRENT_DATE - 4, CURRENT_DATE - 4, 'good', 2.7, 2.8, 'REVIEW', NULL, CURRENT_DATE - 1, 3.1, 2.6, 'REVIEW', NULL, CURRENT_DATE + 5),
-  (114, 'user_01KGG4R8HZAV513662YE3DJ0A9', 3, 'Recent calculus recall', 'Derivative rule came back after the first beat.', CURRENT_DATE - 6, CURRENT_DATE - 6, 'hard', 2.0, 3.1, 'REVIEW', NULL, CURRENT_DATE - 2, 2.4, 2.9, 'REVIEW', NULL, CURRENT_DATE + 2),
-  (115, 'user_01KGG4R8HZAV513662YE3DJ0A9', 23, 'Older system design recall', 'Needed the partition caveat.', CURRENT_DATE - 15, CURRENT_DATE - 15, 'good', 2.4, 3.0, 'REVIEW', NULL, CURRENT_DATE - 6, 2.9, 2.8, 'REVIEW', NULL, CURRENT_DATE + 3),
-  (116, 'user_01KGG4R8HZAV513662YE3DJ0A9', 1, 'Older algebra review', 'Solved it but skipped the verification step.', CURRENT_DATE - 11, CURRENT_DATE - 11, 'miss', 1.9, 3.3, 'REVIEW', NULL, CURRENT_DATE - 4, 2.1, 3.1, 'RELEARNING', 1, CURRENT_DATE + 1);
+  (200, 'user_01KGG4R8HZAV513662YE3DJ0A9', 6, 'Previous-month algorithms recall', 'Regression fixture for logbook month grouping.', (date_trunc('month', CURRENT_DATE)::date - 1), (date_trunc('month', CURRENT_DATE)::date - 1), 'good', 2.4, 2.8, 'REVIEW', NULL, (date_trunc('month', CURRENT_DATE)::date - 3), 2.9, 2.6, 'REVIEW', NULL, (date_trunc('month', CURRENT_DATE)::date + 4)),
+  (201, 'user_01KGG4R8HZAV513662YE3DJ0A9', 8, 'Previous-year networking recall', 'Regression fixture for logbook year grouping.', (date_trunc('year', CURRENT_DATE)::date - 1), (date_trunc('year', CURRENT_DATE)::date - 1), 'hard', 2.1, 3.0, 'REVIEW', NULL, (date_trunc('year', CURRENT_DATE)::date - 4), 2.4, 2.8, 'REVIEW', NULL, (date_trunc('year', CURRENT_DATE)::date + 2));
 
 SELECT setval('topics_id_seq', (SELECT COALESCE(MAX(id), 1) FROM topics), true);
 SELECT setval('review_cards_id_seq', (SELECT COALESCE(MAX(id), 1) FROM review_cards), true);
