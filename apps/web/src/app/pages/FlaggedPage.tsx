@@ -40,7 +40,7 @@ export function FlaggedPage({
 		return filter
 	}, [filter])
 	const { data: reviewCards = [], isLoading } = useReviewCards({
-		flagged_only: true,
+		flagged: true,
 		type: selectedType,
 	})
 

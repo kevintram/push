@@ -141,7 +141,7 @@ class TestReviewCardEndpoints:
         assert update_response.status_code == 200
         assert update_response.json()["notes"] == "Updated notes"
 
-    async def test_list_review_cards_orders_flagged_first_and_filters_flagged_only(
+    async def test_list_review_cards_orders_flagged_first_and_filters_flagged(
         self,
         test_client: AsyncClient,
     ):
@@ -178,12 +178,43 @@ class TestReviewCardEndpoints:
         assert items[0]["flagged_at"] is not None
         assert items[-1]["id"] == first_card["id"]
 
-        flagged_only_response = await test_client.get(
-            "/review-cards/?flagged_only=true"
+        flagged_response = await test_client.get("/review-cards/?flagged=true")
+        assert flagged_response.status_code == 200
+        flagged_items = flagged_response.json()
+        assert [item["id"] for item in flagged_items] == [flagged_card["id"]]
+
+    async def test_list_review_cards_filters_new_cards(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "New list")
+        reviewed_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="Reviewed",
         )
-        assert flagged_only_response.status_code == 200
-        flagged_only_items = flagged_only_response.json()
-        assert [item["id"] for item in flagged_only_items] == [flagged_card["id"]]
+        new_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="New",
+        )
+
+        review_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": reviewed_card["id"],
+                "completed_at": "2026-01-15",
+                "rating": "good",
+            },
+        )
+        assert review_response.status_code == 200
+
+        response = await test_client.get("/review-cards/?new=true")
+
+        assert response.status_code == 200
+        assert [item["id"] for item in response.json()] == [new_card["id"]]
 
     async def test_list_review_cards_can_include_descendants(
         self,

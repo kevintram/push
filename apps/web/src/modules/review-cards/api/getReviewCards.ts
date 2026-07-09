@@ -29,11 +29,11 @@ export async function getReviewCards(
 	if (params.type !== undefined) {
 		searchParams.append('type', params.type)
 	}
-	if (params.new_only !== undefined) {
-		searchParams.append('new_only', String(params.new_only))
+	if (params.new !== undefined) {
+		searchParams.append('new', String(params.new))
 	}
-	if (params.flagged_only !== undefined) {
-		searchParams.append('flagged_only', String(params.flagged_only))
+	if (params.flagged !== undefined) {
+		searchParams.append('flagged', String(params.flagged))
 	}
 	if (params.order !== undefined) {
 		searchParams.append('order', params.order)

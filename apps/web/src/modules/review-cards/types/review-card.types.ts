@@ -64,14 +64,13 @@ export type GetReviewCardsParams = {
 	topic_id?: number
 	include_descendants?: boolean
 	type?: ReviewCardType
-	new_only?: boolean
-	flagged_only?: boolean
+	new?: boolean
+	flagged?: boolean
 	order?: 'asc' | 'desc'
 }
 
 type ReviewCardQueueBaseParams = {
 	include_future?: boolean
-	limit?: number
 	mode?: ReviewQueueMode
 }
 
