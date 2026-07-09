@@ -353,7 +353,6 @@ describe('route-backed tab search state', () => {
 			expect(useReviewCardsMock).toHaveBeenLastCalledWith({
 				topic_id: 1,
 				include_descendants: true,
-				order: 'desc',
 			})
 		})
 		expect(screen.getByText('Topic card')).toBeInTheDocument()
@@ -379,7 +378,6 @@ describe('route-backed tab search state', () => {
 			expect(useReviewCardsMock).toHaveBeenLastCalledWith({
 				topic_id: 1,
 				include_descendants: true,
-				order: 'desc',
 			})
 		})
 		expect(

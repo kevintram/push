@@ -41,6 +41,27 @@ async def _create_review_card(
     return response.json()
 
 
+async def _create_review(
+    test_client: AsyncClient,
+    review_card_id: int,
+    *,
+    scheduled_at: str | None = None,
+    completed_at: str | None = None,
+    rating: str | None = None,
+) -> dict:
+    payload: dict[str, object] = {"review_card_id": review_card_id}
+    if scheduled_at is not None:
+        payload["scheduled_at"] = scheduled_at
+    if completed_at is not None:
+        payload["completed_at"] = completed_at
+    if rating is not None:
+        payload["rating"] = rating
+
+    response = await test_client.post("/reviews/", json=payload)
+    assert response.status_code == 200
+    return response.json()
+
+
 class TestReviewCardEndpoints:
     async def test_create_review_card_returns_retired_and_omits_legacy_fields(
         self,
@@ -141,7 +162,7 @@ class TestReviewCardEndpoints:
         assert update_response.status_code == 200
         assert update_response.json()["notes"] == "Updated notes"
 
-    async def test_list_review_cards_orders_flagged_first_and_filters_flagged(
+    async def test_list_review_cards_orders_newest_first_and_filters_flagged(
         self,
         test_client: AsyncClient,
     ):
@@ -174,8 +195,8 @@ class TestReviewCardEndpoints:
         list_response = await test_client.get(f"/review-cards/?topic_id={topic['id']}")
         assert list_response.status_code == 200
         items = list_response.json()
-        assert [item["primary_text"] for item in items][:2] == ["Flagged", "Third"]
-        assert items[0]["flagged_at"] is not None
+        assert [item["primary_text"] for item in items] == ["Third", "Flagged", "First"]
+        assert items[1]["flagged_at"] is not None
         assert items[-1]["id"] == first_card["id"]
 
         flagged_response = await test_client.get("/review-cards/?flagged=true")
@@ -201,20 +222,206 @@ class TestReviewCardEndpoints:
             primary_text="New",
         )
 
-        review_response = await test_client.post(
-            "/reviews/",
-            json={
-                "review_card_id": reviewed_card["id"],
-                "completed_at": "2026-01-15",
-                "rating": "good",
-            },
+        await _create_review(
+            test_client,
+            reviewed_card["id"],
+            completed_at="2026-01-15",
+            rating="good",
         )
-        assert review_response.status_code == 200
 
-        response = await test_client.get("/review-cards/?new=true")
+        response = await test_client.get("/review-cards/?due=new")
 
         assert response.status_code == 200
         assert [item["id"] for item in response.json()] == [new_card["id"]]
+
+    async def test_list_review_cards_filters_exact_due_date(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Exact due")
+        due_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Due"
+        )
+        other_due_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            primary_text="Other due",
+        )
+        unscheduled_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            primary_text="Unscheduled",
+        )
+        await _create_review(test_client, due_card["id"], scheduled_at="2026-07-09")
+        await _create_review(
+            test_client,
+            other_due_card["id"],
+            scheduled_at="2026-07-10",
+        )
+        await _create_review(test_client, unscheduled_card["id"])
+
+        response = await test_client.get("/review-cards/?due=2026-07-09")
+
+        assert response.status_code == 200
+        assert [item["id"] for item in response.json()] == [due_card["id"]]
+
+    async def test_list_review_cards_filters_late_due_date_from_client_date(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Late due")
+        late_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Late"
+        )
+        today_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Today"
+        )
+        future_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            primary_text="Future",
+        )
+        await _create_review(test_client, late_card["id"], scheduled_at="2026-07-08")
+        await _create_review(test_client, today_card["id"], scheduled_at="2026-07-09")
+        await _create_review(test_client, future_card["id"], scheduled_at="2026-07-10")
+
+        response = await test_client.get(
+            "/review-cards/?due=late",
+            headers={"X-Client-Date": "2026-07-09"},
+        )
+
+        assert response.status_code == 200
+        assert [item["id"] for item in response.json()] == [late_card["id"]]
+
+    async def test_list_review_cards_filters_retired(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Retired list")
+        active_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Active"
+        )
+        retired_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            primary_text="Retired",
+        )
+        retire_response = await test_client.patch(
+            f"/review-cards/{retired_card['id']}/",
+            json={"retired": True},
+        )
+        assert retire_response.status_code == 200
+
+        retired_response = await test_client.get("/review-cards/?retired=true")
+        active_response = await test_client.get("/review-cards/?retired=false")
+        all_response = await test_client.get("/review-cards/")
+
+        assert retired_response.status_code == 200
+        assert active_response.status_code == 200
+        assert all_response.status_code == 200
+        assert [item["id"] for item in retired_response.json()] == [retired_card["id"]]
+        assert [item["id"] for item in active_response.json()] == [active_card["id"]]
+        assert {item["id"] for item in all_response.json()} == {
+            active_card["id"],
+            retired_card["id"],
+        }
+
+    async def test_list_review_cards_orders_by_due_with_nulls_first(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Due order")
+        no_due_card = await _create_review_card(
+            test_client, topic["id"], primary_text="No due"
+        )
+        later_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Later"
+        )
+        earlier_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Earlier"
+        )
+        await _create_review(test_client, later_card["id"], scheduled_at="2026-07-10")
+        await _create_review(test_client, earlier_card["id"], scheduled_at="2026-07-09")
+
+        response = await test_client.get("/review-cards/?order_by=due")
+
+        assert response.status_code == 200
+        assert [item["id"] for item in response.json()] == [
+            no_due_card["id"],
+            earlier_card["id"],
+            later_card["id"],
+        ]
+
+    async def test_list_review_cards_orders_by_desc_inserted_at(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Inserted order")
+        first_card = await _create_review_card(
+            test_client, topic["id"], primary_text="First"
+        )
+        second_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Second"
+        )
+        third_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Third"
+        )
+
+        response = await test_client.get("/review-cards/?order_by=-inserted_at")
+
+        assert response.status_code == 200
+        assert [item["id"] for item in response.json()] == [
+            third_card["id"],
+            second_card["id"],
+            first_card["id"],
+        ]
+
+    async def test_list_review_cards_orders_by_multiple_fields(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Multi order")
+        no_due_card = await _create_review_card(
+            test_client, topic["id"], primary_text="No due"
+        )
+        older_due_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Older due"
+        )
+        newer_due_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Newer due"
+        )
+        await _create_review(
+            test_client, older_due_card["id"], scheduled_at="2026-07-09"
+        )
+        await _create_review(
+            test_client, newer_due_card["id"], scheduled_at="2026-07-09"
+        )
+
+        response = await test_client.get("/review-cards/?order_by=due,-inserted_at")
+
+        assert response.status_code == 200
+        assert [item["id"] for item in response.json()] == [
+            no_due_card["id"],
+            newer_due_card["id"],
+            older_due_card["id"],
+        ]
+
+    async def test_list_review_cards_rejects_unknown_order_by_field(
+        self,
+        test_client: AsyncClient,
+    ):
+        response = await test_client.get("/review-cards/?order_by=bogus")
+
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Unknown order_by field: bogus"
+
+    async def test_list_review_cards_rejects_unknown_due_value(
+        self,
+        test_client: AsyncClient,
+    ):
+        response = await test_client.get("/review-cards/?due=bogus")
+
+        assert response.status_code == 422
 
     async def test_list_review_cards_can_include_descendants(
         self,

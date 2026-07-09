@@ -1,5 +1,6 @@
 """Review cards HTTP endpoints."""
 
+from datetime import date
 from typing import Literal
 
 from fastapi import APIRouter
@@ -32,9 +33,10 @@ async def read_review_cards(
     topic_id: int | None = None,
     include_descendants: bool = False,
     type: ReviewCardTypeEnum | None = None,
-    new: bool | None = None,
+    due: date | Literal["late", "new"] | None = None,
     flagged: bool | None = None,
-    order: Literal["asc", "desc"] = "desc",
+    retired: bool | None = None,
+    order_by: str = "-inserted_at",
 ) -> list[ReviewCardRead]:
     if include_descendants and topic_id is None:
         raise BadRequestError("topic_id is required when include_descendants is true")
@@ -45,9 +47,10 @@ async def read_review_cards(
         topic_id=topic_id,
         include_descendants=include_descendants,
         card_type=type.value if type else None,
-        new=new,
+        due=due,
         flagged=flagged,
-        order=order,
+        retired=retired,
+        order_by=order_by,
     )
 
 

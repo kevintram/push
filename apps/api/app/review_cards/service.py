@@ -3,11 +3,11 @@
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
-from sqlalchemy import case, delete, desc, exists, func, select
+from sqlalchemy import case, delete, exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.exceptions import NotFoundError
+from app.exceptions import BadRequestError, NotFoundError
 from app.models import Review, ReviewCard, ReviewCardTypeAssignment, Topic
 from app.review_cards.status_badges import (
     compute_days_until_hazy,
@@ -39,6 +39,19 @@ def _queue_sort_key(item: ReviewCardQueueItem) -> tuple[int, int, int, int]:
         0 if item.queue_type == "due" else 1 if item.queue_type == "hazy" else 2
     )
     return (1, urgency, queue_rank, item.review_id or item.card.id)
+
+
+def _parse_order_by(value: str) -> list[tuple[str, bool]]:
+    allowed_fields = {"inserted_at", "due"}
+    parsed: list[tuple[str, bool]] = []
+    for raw_field in value.split(","):
+        raw_field = raw_field.strip()
+        descending = raw_field.startswith("-")
+        field = raw_field[1:] if descending else raw_field
+        if field not in allowed_fields:
+            raise BadRequestError(f"Unknown order_by field: {field}")
+        parsed.append((field, descending))
+    return parsed
 
 
 def resolve_queue_card_types(
@@ -279,11 +292,36 @@ async def list_review_cards(
     topic_id: int | None = None,
     include_descendants: bool = False,
     card_type: str | None = None,
-    new: bool | None = None,
+    due: date | Literal["late", "new"] | None = None,
     flagged: bool | None = None,
-    order: Literal["asc", "desc"] = "desc",
+    retired: bool | None = None,
+    order_by: str = "-inserted_at",
 ) -> list[ReviewCard]:
+    order_fields = _parse_order_by(order_by)
+    orders_by_due = any(field == "due" for field, _descending in order_fields)
+    due_schedule_subquery = None
+
     stmt = select(ReviewCard).where(ReviewCard.user_id == user_id)
+
+    if due not in (None, "new") or orders_by_due:
+        due_schedule_subquery = (
+            select(
+                Review.review_card_id.label("review_card_id"),
+                func.min(Review.scheduled_at).label("due_date"),
+            )
+            .where(
+                Review.user_id == user_id,
+                Review.review_card_id.isnot(None),
+                Review.completed_at.is_(None),
+                Review.scheduled_at.isnot(None),
+            )
+            .group_by(Review.review_card_id)
+            .subquery()
+        )
+        stmt = stmt.outerjoin(
+            due_schedule_subquery,
+            due_schedule_subquery.c.review_card_id == ReviewCard.id,
+        )
 
     if topic_id is not None:
         if include_descendants:
@@ -301,7 +339,7 @@ async def list_review_cards(
             stmt = stmt.where(ReviewCard.topic_id == topic_id)
     if card_type is not None:
         stmt = stmt.where(ReviewCard.type == card_type)
-    if new is True:
+    if due == "new":
         completed_exists = (
             select(Review.id)
             .where(
@@ -311,24 +349,33 @@ async def list_review_cards(
             .limit(1)
         )
         stmt = stmt.where(~exists(completed_exists))
+    elif due is not None:
+        assert due_schedule_subquery is not None
+        if due == "late":
+            stmt = stmt.where(due_schedule_subquery.c.due_date < get_current_date())
+        else:
+            stmt = stmt.where(due_schedule_subquery.c.due_date == due)
     if flagged is True:
         stmt = stmt.where(ReviewCard.flagged_at.isnot(None))
+    if retired is not None:
+        stmt = stmt.where(ReviewCard.retired.is_(retired))
 
-    flagged_rank = case((ReviewCard.flagged_at.is_(None), 1), else_=0)
-    if order == "asc":
-        stmt = stmt.order_by(
-            flagged_rank.asc(),
-            ReviewCard.flagged_at.desc(),
-            ReviewCard.updated_at.asc(),
-            ReviewCard.id.asc(),
-        )
-    else:
-        stmt = stmt.order_by(
-            flagged_rank.asc(),
-            desc(ReviewCard.flagged_at),
-            desc(ReviewCard.updated_at),
-            desc(ReviewCard.id),
-        )
+    order_clauses = []
+    last_descending = order_fields[-1][1]
+    for field, descending in order_fields:
+        if field == "inserted_at":
+            column = ReviewCard.inserted_at
+            order_clauses.append(column.desc() if descending else column.asc())
+        else:
+            assert due_schedule_subquery is not None
+            column = due_schedule_subquery.c.due_date
+            order_clauses.append(
+                (column.desc() if descending else column.asc()).nullsfirst()
+            )
+    order_clauses.append(
+        ReviewCard.id.desc() if last_descending else ReviewCard.id.asc()
+    )
+    stmt = stmt.order_by(*order_clauses)
 
     stmt = stmt.options(
         selectinload(ReviewCard.topic),

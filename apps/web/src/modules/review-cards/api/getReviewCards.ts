@@ -29,14 +29,17 @@ export async function getReviewCards(
 	if (params.type !== undefined) {
 		searchParams.append('type', params.type)
 	}
-	if (params.new !== undefined) {
-		searchParams.append('new', String(params.new))
+	if (params.due !== undefined) {
+		searchParams.append('due', params.due)
 	}
 	if (params.flagged !== undefined) {
 		searchParams.append('flagged', String(params.flagged))
 	}
-	if (params.order !== undefined) {
-		searchParams.append('order', params.order)
+	if (params.retired !== undefined) {
+		searchParams.append('retired', String(params.retired))
+	}
+	if (params.order_by !== undefined) {
+		searchParams.append('order_by', params.order_by)
 	}
 
 	const response = await apiFetch(

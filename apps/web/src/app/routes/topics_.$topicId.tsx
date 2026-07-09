@@ -73,7 +73,6 @@ export function prefetchTopicDetailRouteData({
 			reviewCardsQueryOptions({
 				topic_id: topicId,
 				include_descendants: true,
-				order: 'desc',
 			}),
 		)
 		.catch(() => undefined)

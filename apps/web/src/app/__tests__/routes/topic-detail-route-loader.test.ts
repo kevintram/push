@@ -60,7 +60,6 @@ describe('prefetchTopicDetailRouteData', () => {
 			reviewCardsQueryOptions({
 				topic_id: 42,
 				include_descendants: true,
-				order: 'desc',
 			}).queryKey,
 		])
 
