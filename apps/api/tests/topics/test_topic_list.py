@@ -33,21 +33,22 @@ async def _update_topic(
 
 
 class TestTopicList:
-    async def test_list_topics_can_sort_roots_alphabetically(
+    async def test_list_topics_can_sort_alphabetically(
         self,
         test_client: AsyncClient,
     ):
         alpha = await _create_topic(test_client, title="alpha")
         root = await _create_topic(test_client, title="Gamma")
         untitled = await _create_topic(test_client, title="")
-        _ = await _create_topic(test_client, title="child", parent_id=root["id"])
+        child = await _create_topic(test_client, title="child", parent_id=root["id"])
 
-        response = await test_client.get("/topics/?root=true&sort=title&order=asc")
+        response = await test_client.get("/topics/?sort=title&order=asc")
 
         assert response.status_code == 200
         payload = response.json()
         assert [topic["id"] for topic in payload] == [
             alpha["id"],
+            child["id"],
             root["id"],
             untitled["id"],
         ]

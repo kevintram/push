@@ -46,7 +46,6 @@ async def list_topics(
     session: AsyncSession,
     user_id: str,
     *,
-    root: bool | None = None,
     parent_id: int | None = None,
     subtree_of: int | None = None,
     sort: Literal["updated_at", "title"] = "updated_at",
@@ -54,8 +53,6 @@ async def list_topics(
 ) -> list[Topic]:
     stmt = select(Topic).where(Topic.user_id == user_id)
 
-    if root is True:
-        stmt = stmt.where(Topic.parent_id.is_(None))
     if parent_id is not None:
         stmt = stmt.where(Topic.parent_id == parent_id)
     if subtree_of is not None:

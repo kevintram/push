@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
+import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 
-import topics from '~/modules/library/mock-data/topics.json'
-import type { Topic } from '~/modules/library/types/topic.types'
+import { topicQueries } from '~/modules/library/api/queries'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
@@ -13,6 +13,10 @@ const styles = stylex.create({
 
 		display: 'flex',
 		flexDirection: 'column',
+
+		flexBasis: 0,
+		flexGrow: '1',
+		flexShrink: '1',
 	},
 	header: {
 		gap: spacing.sm,
@@ -32,45 +36,21 @@ const styles = stylex.create({
 	},
 })
 
-// Temporary testing measure: DFS through mock topics to find the current route.
-function findTopicById(
-	topicsToSearch: Array<Topic>,
-	topicId: string,
-): Topic | undefined {
-	for (const topic of topicsToSearch) {
-		if (topic.slug === topicId || String(topic.id) === topicId) {
-			return topic
-		}
-
-		const childTopic = findTopicById(topic.children, topicId)
-
-		if (childTopic) {
-			return childTopic
-		}
-	}
-
-	return undefined
-}
-
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
-	const topic = findTopicById(topics as Array<Topic>, topicId)
-
-	if (!topic) {
-		return <div>Topic not found.</div>
-	}
+	const { data: topic } = useQuery(topicQueries.detail(topicId))
 
 	return (
 		<div {...stylex.props(styles.container)}>
 			<header {...stylex.props(styles.header)}>
-				<h1 {...stylex.props(styles.title)}>{topic.title}</h1>
-				<p {...stylex.props(styles.body)}>{topic.body}</p>
+				<h1 {...stylex.props(styles.title)}>{topic?.title}</h1>
+				<p {...stylex.props(styles.body)}>{topic?.body}</p>
 			</header>
 
 			<h2>Review Cards</h2>
 
 			<div {...stylex.props(styles.reviewCards)}>
-				{topic.reviewCards.map(reviewCard => (
+				{topic?.reviewCards?.map(reviewCard => (
 					<ReviewCard
 						key={reviewCard.id}
 						primary_text={reviewCard.primary_text}

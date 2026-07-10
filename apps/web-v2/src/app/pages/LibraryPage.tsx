@@ -4,6 +4,7 @@ import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
+		padding: spacing.md,
 		gap: spacing.sm,
 		display: 'flex',
 		flexDirection: 'column',
