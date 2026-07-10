@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { useQuery } from '@tanstack/react-query'
 
-import { getReviewCardsParams } from '~/modules/reviews/api/getReviewCards'
+import { reviewCardQueries } from '~/modules/reviews/api/queries'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
@@ -15,7 +15,7 @@ const styles = stylex.create({
 })
 
 export function ReviewLatePage() {
-	const { data } = useQuery(getReviewCardsParams({ due: 'late' }))
+	const { data } = useQuery(reviewCardQueries.list({ due: 'late' }))
 
 	return (
 		<>

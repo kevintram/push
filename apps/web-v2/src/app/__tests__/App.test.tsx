@@ -10,10 +10,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { routeTree } from '~/app/routeTree.gen'
 
 vi.mock('~/modules/reviews/api/getReviewCards', () => ({
-	getReviewCardsParams: (filters?: unknown) => ({
-		queryKey: ['review-cards', 'test', filters],
-		queryFn: async () => [],
-	}),
+	fetchReviewCards: async () => [],
 }))
 
 function renderRoute(path: string) {
