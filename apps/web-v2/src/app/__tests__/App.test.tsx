@@ -13,6 +13,11 @@ vi.mock('~/modules/reviews/api/getReviewCards', () => ({
 	fetchReviewCards: async () => [],
 }))
 
+vi.mock('~/modules/library/api/getTopics', () => ({
+	fetchTopic: async () => ({ id: 1, title: 'Topic', body: '' }),
+	fetchTopics: async () => [],
+}))
+
 function renderRoute(path: string) {
 	const queryClient = new QueryClient()
 	const router = createRouter({
