@@ -13,6 +13,10 @@ const styles = stylex.create({
 
 		display: 'flex',
 		flexDirection: 'column',
+
+		flexBasis: 0,
+		flexGrow: '1',
+		flexShrink: '1',
 	},
 	header: {
 		gap: spacing.sm,
@@ -34,23 +38,19 @@ const styles = stylex.create({
 
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
-	const { data: topic } = useQuery(topicQueries.detail(Number(topicId)))
-
-	if (!topic) {
-		return <div>Topic not found.</div>
-	}
+	const { data: topic } = useQuery(topicQueries.detail(topicId))
 
 	return (
 		<div {...stylex.props(styles.container)}>
 			<header {...stylex.props(styles.header)}>
-				<h1 {...stylex.props(styles.title)}>{topic.title}</h1>
-				<p {...stylex.props(styles.body)}>{topic.body}</p>
+				<h1 {...stylex.props(styles.title)}>{topic?.title}</h1>
+				<p {...stylex.props(styles.body)}>{topic?.body}</p>
 			</header>
 
 			<h2>Review Cards</h2>
 
 			<div {...stylex.props(styles.reviewCards)}>
-				{topic.reviewCards?.map(reviewCard => (
+				{topic?.reviewCards?.map(reviewCard => (
 					<ReviewCard
 						key={reviewCard.id}
 						primary_text={reviewCard.primary_text}
