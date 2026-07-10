@@ -9,9 +9,9 @@ export const topicQueries = {
 			queryKey: [...topicQueries.all, 'list'],
 			queryFn: () => fetchTopics(),
 		}),
-	detail: (topicId: number) =>
+	detail: (topicId: number | string) =>
 		queryOptions({
-			queryKey: [...topicQueries.all, topicId],
+			queryKey: [...topicQueries.all, 'detail', topicId],
 			queryFn: () => fetchTopic(topicId),
 		}),
 }

@@ -21,7 +21,7 @@ export async function fetchTopics(): Promise<Array<TopicWithChildren>> {
 	return treeify(parsed.output)
 }
 
-export async function fetchTopic(topicId: number): Promise<Topic> {
+export async function fetchTopic(topicId: number | string): Promise<Topic> {
 	const url = new URL(import.meta.env.VITE_API_URL + `/topics/${topicId}`)
 	const response = await fetch(url, { credentials: 'include' })
 	if (!response.ok) {
