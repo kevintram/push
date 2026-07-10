@@ -16,7 +16,6 @@ router = APIRouter(prefix="/topics", tags=["topics"])
 async def read_topics(
     session: SessionDep,
     user_id: UserIdDep,
-    root: bool | None = None,
     parent_id: int | None = None,
     subtree_of: int | None = None,
     sort: Literal["updated_at", "title"] = "updated_at",
@@ -25,7 +24,6 @@ async def read_topics(
     return await service.list_topics(
         session,
         user_id,
-        root=root,
         parent_id=parent_id,
         subtree_of=subtree_of,
         sort=sort,

@@ -14,9 +14,6 @@ export async function getTopics(
 ): Promise<Array<Topic>> {
 	const searchParams = new URLSearchParams()
 
-	if (params.root !== undefined) {
-		searchParams.append('root', String(params.root))
-	}
 	if (params.parent_id !== undefined) {
 		searchParams.append('parent_id', String(params.parent_id))
 	}
