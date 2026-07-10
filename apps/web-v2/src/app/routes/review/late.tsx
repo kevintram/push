@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { ReviewLatePage } from '~/app/pages/ReviewLatePage'
-import { getReviewCardsParams } from '~/modules/reviews/api/getReviewCards'
+import { reviewCardQueries } from '~/modules/reviews/api/queries'
 
 export const Route = createFileRoute('/review/late')({
 	loader: ({ context }) =>
 		context.queryClient.ensureQueryData(
-			getReviewCardsParams({ due: 'late' }),
+			reviewCardQueries.list({ due: 'late' }),
 		),
 	component: ReviewLatePage,
 })

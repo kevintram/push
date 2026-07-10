@@ -106,6 +106,15 @@
 				],
 				"@stylexjs/valid-shorthands": "error",
 				"@stylexjs/valid-styles": "error",
+				"@tanstack/query/exhaustive-deps": "error",
+				"@tanstack/query/infinite-query-property-order": "error",
+				"@tanstack/query/mutation-property-order": "error",
+				"@tanstack/query/no-rest-destructuring": "warn",
+				"@tanstack/query/no-unstable-deps": "error",
+				"@tanstack/query/no-void-query-fn": "error",
+				"@tanstack/query/stable-query-client": "error",
+				"@tanstack/router/create-route-property-order": "warn",
+				"@tanstack/router/route-param-names": "error",
 				"constructor-super": "off",
 				"getter-return": "off",
 				"no-class-assign": "off",
@@ -200,7 +209,9 @@
 			"plugins": ["typescript", "react"],
 			"jsPlugins": [
 				"eslint-plugin-simple-import-sort",
-				"@stylexjs/eslint-plugin"
+				"@stylexjs/eslint-plugin",
+				"@tanstack/eslint-plugin-query",
+				"@tanstack/eslint-plugin-router"
 			]
 		},
 		{
