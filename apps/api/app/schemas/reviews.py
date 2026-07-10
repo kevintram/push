@@ -3,7 +3,9 @@ from __future__ import annotations
 from datetime import date, datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
+
+from app.schemas.base import ApiModel
 
 
 class RatingEnum(str, Enum):
@@ -13,7 +15,7 @@ class RatingEnum(str, Enum):
     EASY = "easy"
 
 
-class ReviewBase(BaseModel):
+class ReviewBase(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     rating: RatingEnum | None
@@ -47,7 +49,7 @@ class ReviewRead(ReviewBase):
     due_after: date | None
 
 
-class ReviewCardSummary(BaseModel):
+class ReviewCardSummary(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -69,7 +71,7 @@ class ReviewWithCard(ReviewRead):
     review_card: ReviewCardSummary
 
 
-class ReviewCreate(BaseModel):
+class ReviewCreate(ApiModel):
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
     review_card_id: int
@@ -80,7 +82,7 @@ class ReviewCreate(BaseModel):
     rating: RatingEnum | None = None
 
 
-class ReviewUpdate(BaseModel):
+class ReviewUpdate(ApiModel):
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
     rating: RatingEnum | None = None

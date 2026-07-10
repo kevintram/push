@@ -63,6 +63,6 @@ export function toEntityEntries(
 ): Array<{ item: SearchResultItem; date: string }> {
 	return results.map(result => ({
 		item: result,
-		date: result.recent_activity_at,
+		date: result.recentActivityAt,
 	}))
 }

@@ -1,13 +1,14 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
 
+from app.schemas.base import ApiModel
 from app.schemas.review_cards import ReviewCardRead
 from app.schemas.topics import TopicRead
 
 
-class SearchResultItem(BaseModel):
+class SearchResultItem(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     entity_type: Literal["topic", "review_card"]

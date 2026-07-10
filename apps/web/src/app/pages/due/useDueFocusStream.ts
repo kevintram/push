@@ -46,12 +46,12 @@ function shuffleItems(
 const EMPTY_ITEMS: Array<ReviewCardQueueItem> = []
 
 function isCurrentDueItem(item: ReviewCardQueueItem) {
-	const actionDays = item.action_days
+	const actionDays = item.actionDays
 	return actionDays != null && actionDays <= 0
 }
 
 function isFutureDueItem(item: ReviewCardQueueItem) {
-	const actionDays = item.action_days
+	const actionDays = item.actionDays
 	return actionDays != null && actionDays > 0
 }
 
@@ -83,11 +83,11 @@ export function useDueFocusStream({
 	})
 	const queueItems = queueQuery.data?.items ?? EMPTY_ITEMS
 	const newItems = useMemo(
-		() => queueItems.filter(item => item.queue_type === 'new'),
+		() => queueItems.filter(item => item.queueType === 'new'),
 		[queueItems],
 	)
 	const dueItems = useMemo(
-		() => queueItems.filter(item => item.queue_type !== 'new'),
+		() => queueItems.filter(item => item.queueType !== 'new'),
 		[queueItems],
 	)
 

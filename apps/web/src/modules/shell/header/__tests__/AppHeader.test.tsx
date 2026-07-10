@@ -101,7 +101,7 @@ describe('AppHeader', () => {
 			dueNextSevenDaysCount: 0,
 		})
 		useReviewCardFlaggedSummaryMock.mockReturnValue({
-			data: { flagged_count: 0 },
+			data: { flaggedCount: 0 },
 		})
 	})
 
@@ -142,7 +142,7 @@ describe('AppHeader', () => {
 			dueNextSevenDaysCount: 5,
 		})
 		useReviewCardFlaggedSummaryMock.mockReturnValue({
-			data: { flagged_count: 6 },
+			data: { flaggedCount: 6 },
 		})
 
 		render(<AppHeader />)

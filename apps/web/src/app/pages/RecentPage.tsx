@@ -78,21 +78,18 @@ export function RecentPage() {
 						<h3 className='font-bold text-xl'>{section.label}</h3>
 						<MasonryLayout
 							estimateItemSize={(item, _index, laneWidth) => {
-								if (
-									item.entity_type === 'topic' &&
-									item.topic
-								) {
+								if (item.entityType === 'topic' && item.topic) {
 									return estimateTopicCardSize(
 										item.topic,
 										laneWidth,
 									)
 								}
 								if (
-									item.entity_type === 'review_card' &&
-									item.review_card
+									item.entityType === 'review_card' &&
+									item.reviewCard
 								) {
 									return estimateReviewCardSize(
-										item.review_card,
+										item.reviewCard,
 										laneWidth,
 									)
 								}
@@ -100,17 +97,17 @@ export function RecentPage() {
 							}}
 							gap={DEFAULT_MASONRY_GAP}
 							getItemKey={item =>
-								item.entity_type === 'topic'
+								item.entityType === 'topic'
 									? `topic-${item.topic?.id ?? 'unknown'}`
-									: `review-card-${item.review_card?.id ?? 'unknown'}`
+									: `review-card-${item.reviewCard?.id ?? 'unknown'}`
 							}
 							items={section.items}
 							minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
 							renderItem={item => {
 								const topic = item.topic
-								const reviewCard = item.review_card
+								const reviewCard = item.reviewCard
 
-								if (item.entity_type === 'topic' && topic) {
+								if (item.entityType === 'topic' && topic) {
 									return (
 										<TopicCard
 											onClick={() =>
@@ -128,7 +125,7 @@ export function RecentPage() {
 								}
 
 								if (
-									item.entity_type === 'review_card' &&
+									item.entityType === 'review_card' &&
 									reviewCard
 								) {
 									return (

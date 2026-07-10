@@ -75,10 +75,10 @@ const childTopic = {
 	id: 2,
 	title: 'Linear equations',
 	body: '',
-	parent_id: 1,
-	parent_title: 'Algebra',
-	inserted_at: '2026-03-01T12:00:00.000Z',
-	updated_at: '2026-03-04T12:00:00.000Z',
+	parentId: 1,
+	parentTitle: 'Algebra',
+	insertedAt: '2026-03-01T12:00:00.000Z',
+	updatedAt: '2026-03-04T12:00:00.000Z',
 	children: [],
 }
 
@@ -86,10 +86,10 @@ const rootTopic = {
 	id: 1,
 	title: 'Algebra',
 	body: 'Working with expressions',
-	parent_id: null,
-	parent_title: null,
-	inserted_at: '2026-03-01T12:00:00.000Z',
-	updated_at: '2026-03-04T12:00:00.000Z',
+	parentId: null,
+	parentTitle: null,
+	insertedAt: '2026-03-01T12:00:00.000Z',
+	updatedAt: '2026-03-04T12:00:00.000Z',
 	children: [childTopic],
 }
 
@@ -155,7 +155,7 @@ describe('LibraryPage', () => {
 		expect(createTopicAsyncMock).toHaveBeenCalledWith({
 			title: '',
 			body: '',
-			parent_id: null,
+			parentId: null,
 		})
 		expect(navigateMock).not.toHaveBeenCalledWith(
 			expect.objectContaining({

@@ -20,7 +20,7 @@ export function ReviewCardMasonry({
 				estimateReviewCardSize(item.card, laneWidth)
 			}
 			gap={DEFAULT_MASONRY_GAP}
-			getItemKey={item => `${item.card.id}-${item.review_id ?? 'new'}`}
+			getItemKey={item => `${item.card.id}-${item.reviewId ?? 'new'}`}
 			items={items}
 			minItemWidth={DEFAULT_MASONRY_MIN_ITEM_WIDTH}
 			renderItem={item => (

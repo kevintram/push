@@ -63,10 +63,9 @@ function matchesFilter(
 	filter: EntityTypeFilterValue,
 ): boolean {
 	if (filter === 'all') return true
-	if (filter === 'topic') return result.entity_type === 'topic'
-	if (result.entity_type !== 'review_card' || !result.review_card)
-		return false
-	return result.review_card.type === filter
+	if (filter === 'topic') return result.entityType === 'topic'
+	if (result.entityType !== 'review_card' || !result.reviewCard) return false
+	return result.reviewCard.type === filter
 }
 
 export function SearchDialog({
@@ -179,15 +178,15 @@ export function SearchDialog({
 			return
 		}
 
-		if (entity.entity_type === 'topic' && entity.topic) {
+		if (entity.entityType === 'topic' && entity.topic) {
 			navigate({
 				to: '/topics/$topicId',
 				params: { topicId: entity.topic.id.toString() },
 			})
-		} else if (entity.entity_type === 'review_card' && entity.review_card) {
+		} else if (entity.entityType === 'review_card' && entity.reviewCard) {
 			navigate({
 				to: '/review-cards/$reviewCardId',
-				params: { reviewCardId: entity.review_card.id.toString() },
+				params: { reviewCardId: entity.reviewCard.id.toString() },
 				search: { tab: 'home' },
 			})
 		}
@@ -250,10 +249,7 @@ export function SearchDialog({
 					<SearchResultsContainer
 						animate={false}
 						estimateItemSize={(result, _index, laneWidth) => {
-							if (
-								result.entity_type === 'topic' &&
-								result.topic
-							) {
+							if (result.entityType === 'topic' && result.topic) {
 								return estimateCardSize(
 									result.topic.title || 'Untitled topic',
 									result.topic.body || '',
@@ -261,14 +257,14 @@ export function SearchDialog({
 								)
 							}
 							if (
-								result.entity_type === 'review_card' &&
-								result.review_card
+								result.entityType === 'review_card' &&
+								result.reviewCard
 							) {
 								return estimateCardSize(
 									getReviewCardDisplayTitle(
-										result.review_card,
+										result.reviewCard,
 									),
-									result.review_card.secondary_text || '',
+									result.reviewCard.secondaryText || '',
 									laneWidth,
 								)
 							}
@@ -276,19 +272,16 @@ export function SearchDialog({
 						}}
 						gap={gap}
 						getItemKey={result =>
-							result.entity_type === 'topic'
+							result.entityType === 'topic'
 								? `topic-${result.topic?.id ?? 'unknown'}`
-								: `review-card-${result.review_card?.id ?? 'unknown'}`
+								: `review-card-${result.reviewCard?.id ?? 'unknown'}`
 						}
 						getScrollElement={getScrollElement}
 						hasQuery={hasQuery}
 						isLoading={isLoading}
 						minItemWidth={280}
 						renderItem={result => {
-							if (
-								result.entity_type === 'topic' &&
-								result.topic
-							) {
+							if (result.entityType === 'topic' && result.topic) {
 								return (
 									<TopicCard
 										onClick={() => {
@@ -300,15 +293,15 @@ export function SearchDialog({
 							}
 
 							if (
-								result.entity_type === 'review_card' &&
-								result.review_card
+								result.entityType === 'review_card' &&
+								result.reviewCard
 							) {
 								return (
 									<ReviewCard
 										onClick={() => {
 											void handleSelect(result)
 										}}
-										reviewCard={result.review_card}
+										reviewCard={result.reviewCard}
 									/>
 								)
 							}

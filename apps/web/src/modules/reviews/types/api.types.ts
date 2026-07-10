@@ -1,12 +1,12 @@
 import { type Rating, type ReviewListItem } from './review.types'
 
 export type CreateReviewPayload = {
-	review_card_id: number
+	reviewCardId: number
 	rating?: Rating | null
 	description?: string
 	notes?: string
-	scheduled_at?: string | null
-	completed_at?: string | null
+	scheduledAt?: string | null
+	completedAt?: string | null
 }
 
 export type UpdateReviewInput = {
@@ -14,9 +14,9 @@ export type UpdateReviewInput = {
 	rating?: Rating | null
 	description?: string
 	notes?: string
-	scheduled_at?: string | null
-	completed_at?: string | null
-	review_card_id?: number
+	scheduledAt?: string | null
+	completedAt?: string | null
+	reviewCardId?: number
 }
 
 export type GetReviewsFilters = {

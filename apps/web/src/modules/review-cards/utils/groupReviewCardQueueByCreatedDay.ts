@@ -110,7 +110,7 @@ export function groupReviewCardQueueByCreatedDay(
 	const anchorDate = asOf ? parseAsOfDate(asOf) : new Date()
 
 	for (const item of items) {
-		const createdAt = item.card.inserted_at
+		const createdAt = item.card.insertedAt
 		if (!createdAt) continue
 
 		const section = getSectionForCreatedDate(

@@ -8,7 +8,7 @@ export function createReviewCardReview(
 	payload: CreateReviewCardReviewPayload,
 ): Promise<Review> {
 	return createReview({
-		review_card_id: reviewCardId,
+		reviewCardId: reviewCardId,
 		...payload,
 	})
 }

@@ -23,8 +23,8 @@ export function ReviewNewPage() {
 			{data?.map(card => (
 				<ReviewCard
 					key={card.id}
-					primary_text={card.primary_text}
-					secondary_text={card.secondary_text}
+					primaryText={card.primaryText}
+					secondaryText={card.secondaryText}
 				/>
 			))}
 		</>

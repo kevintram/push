@@ -53,11 +53,11 @@ class TestReviewsEndpoints:
 
         assert response.status_code == 200
         review = response.json()
-        assert review["review_card_id"] == review_card["id"]
-        assert review["completed_at"] is None
+        assert review["reviewCardId"] == review_card["id"]
+        assert review["completedAt"] is None
         assert review["rating"] is None
-        assert review["stability_before"] is None
-        assert review["stability_after"] is None
+        assert review["stabilityBefore"] is None
+        assert review["stabilityAfter"] is None
 
     async def test_create_completed_review_and_filter_by_review_card_id(
         self,
@@ -83,10 +83,10 @@ class TestReviewsEndpoints:
         )
         assert create_response.status_code == 200
         created = create_response.json()
-        assert created["review_card_id"] == review_card["id"]
-        assert created["stability_after"] is not None
+        assert created["reviewCardId"] == review_card["id"]
+        assert created["stabilityAfter"] is not None
         assert created["notes"] == "Created with notes payload"
-        assert created["review_card"]["primary_text"] == "Completed card"
+        assert created["reviewCard"]["primaryText"] == "Completed card"
 
         list_response = await test_client.get(
             f"/reviews/?review_card_id={review_card['id']}"
@@ -95,9 +95,9 @@ class TestReviewsEndpoints:
 
         items = list_response.json()
         assert len(items) == 1
-        assert items[0]["review_card_id"] == review_card["id"]
-        assert items[0]["review_card"]["id"] == review_card["id"]
-        assert items[0]["review_card"]["type"] == "flashcard"
+        assert items[0]["reviewCardId"] == review_card["id"]
+        assert items[0]["reviewCard"]["id"] == review_card["id"]
+        assert items[0]["reviewCard"]["type"] == "flashcard"
 
     async def test_nested_review_card_create_endpoint_delegates_to_reviews_flow(
         self,
@@ -135,12 +135,12 @@ class TestReviewsEndpoints:
         nested = nested_response.json()
         direct = direct_response.json()
 
-        assert nested["review_card_id"] == review_card["id"]
-        assert direct["review_card_id"] == review_card["id"]
-        assert nested["review_card"]["id"] == review_card["id"]
-        assert direct["review_card"]["id"] == review_card["id"]
-        assert nested["stability_after"] is not None
-        assert direct["stability_after"] is not None
+        assert nested["reviewCardId"] == review_card["id"]
+        assert direct["reviewCardId"] == review_card["id"]
+        assert nested["reviewCard"]["id"] == review_card["id"]
+        assert direct["reviewCard"]["id"] == review_card["id"]
+        assert nested["stabilityAfter"] is not None
+        assert direct["stabilityAfter"] is not None
         assert nested["description"] == "Created through nested endpoint"
         assert direct["description"] == "Created through canonical endpoint"
 
@@ -190,7 +190,7 @@ class TestReviewsEndpoints:
 
         assert review_response.status_code == 200
         payload = review_response.json()
-        assert payload["stability_after"] is not None
+        assert payload["stabilityAfter"] is not None
 
         review_card_response = await test_client.get(
             f"/review-cards/{review_card['id']}/"
@@ -198,7 +198,7 @@ class TestReviewsEndpoints:
         assert review_card_response.status_code == 200
         refreshed_card = review_card_response.json()
         assert refreshed_card["retired"] is True
-        assert refreshed_card["last_reviewed_at"] == str(date.today())
+        assert refreshed_card["lastReviewedAt"] == str(date.today())
 
     async def test_update_review_can_reassign_review_card_id(
         self,
@@ -232,7 +232,7 @@ class TestReviewsEndpoints:
             json={"review_card_id": second_card["id"]},
         )
         assert update_response.status_code == 200
-        assert update_response.json()["review_card_id"] == second_card["id"]
+        assert update_response.json()["reviewCardId"] == second_card["id"]
 
         first_list = await test_client.get(
             f"/reviews/?review_card_id={first_card['id']}"

@@ -11,10 +11,10 @@ const sortReviewsByEffectiveDateDesc = (
 	entries: Array<ReviewListItem>,
 ): Array<ReviewListItem> =>
 	[...entries].sort((a, b) => {
-		if (a.effective_date === b.effective_date) return 0
-		if (a.effective_date === null) return 1
-		if (b.effective_date === null) return -1
-		return a.effective_date < b.effective_date ? 1 : -1
+		if (a.effectiveDate === b.effectiveDate) return 0
+		if (a.effectiveDate === null) return 1
+		if (b.effectiveDate === null) return -1
+		return a.effectiveDate < b.effectiveDate ? 1 : -1
 	})
 
 export function useLogbookReviewEntries() {
@@ -46,7 +46,7 @@ export function useLogbookReviewEntries() {
 		const yearlyGroups = new Map<number, Array<ReviewListItem>>()
 
 		for (const entry of query.data) {
-			const effectiveDate = entry.effective_date
+			const effectiveDate = entry.effectiveDate
 
 			if (!effectiveDate) {
 				continue

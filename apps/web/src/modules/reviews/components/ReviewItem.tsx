@@ -37,11 +37,11 @@ import {
 } from './ReviewRatingCheckbox'
 
 const getInitialSelectedDate = (entry: ReviewListItem) => {
-	if (entry.completed_at) {
-		return dayjs(entry.completed_at).toDate()
+	if (entry.completedAt) {
+		return dayjs(entry.completedAt).toDate()
 	}
-	if (entry.scheduled_at) {
-		return dayjs(entry.scheduled_at).toDate()
+	if (entry.scheduledAt) {
+		return dayjs(entry.scheduledAt).toDate()
 	}
 	return null
 }
@@ -110,25 +110,23 @@ export function ReviewItem({
 		seedReviewDetail,
 	} = usePrefetchReviewDetail(entry)
 
-	const isCompleted = entry.completed_at !== null
+	const isCompleted = entry.completedAt !== null
 	const reviewStatus: ReviewRatingState = isCompleted
 		? (entry.rating ?? 'good')
 		: 'uncompleted'
 
 	const stabilityChangeColorClass = getStabilityChangeColorClass(
-		entry.stability_before,
-		entry.stability_after,
+		entry.stabilityBefore,
+		entry.stabilityAfter,
 	)
-	const hasStability = entry.stability_after !== null
+	const hasStability = entry.stabilityAfter !== null
 	const hasDelta =
-		entry.stability_after !== null && entry.stability_before !== null
+		entry.stabilityAfter !== null && entry.stabilityBefore !== null
 	const stabilityAfterRounded = hasStability
-		? Math.round(entry.stability_after ?? 0)
+		? Math.round(entry.stabilityAfter ?? 0)
 		: 0
 	const stabilityDeltaRounded = hasDelta
-		? Math.round(
-				(entry.stability_after ?? 0) - (entry.stability_before ?? 0),
-			)
+		? Math.round((entry.stabilityAfter ?? 0) - (entry.stabilityBefore ?? 0))
 		: 0
 
 	const handleStatusChange = useCallback(
@@ -138,18 +136,17 @@ export function ReviewItem({
 				updateReviewMutation.mutateAsync({
 					id: entry.id,
 					rating: null,
-					completed_at: null,
+					completedAt: null,
 				})
 				return
 			}
 			updateReviewMutation.mutateAsync({
 				id: entry.id,
 				rating: status,
-				completed_at:
-					entry.completed_at ?? dayjs().format('YYYY-MM-DD'),
+				completedAt: entry.completedAt ?? dayjs().format('YYYY-MM-DD'),
 			})
 		},
-		[entry.id, entry.completed_at, updateReviewMutation],
+		[entry.id, entry.completedAt, updateReviewMutation],
 	)
 
 	const handleDateSave = useCallback(
@@ -162,20 +159,20 @@ export function ReviewItem({
 			const newDateString = newDate
 				? dayjs(newDate).format('YYYY-MM-DD')
 				: null
-			if (entry.completed_at) {
+			if (entry.completedAt) {
 				updateReviewMutation.mutateAsync({
 					id: entry.id,
-					completed_at: newDateString,
+					completedAt: newDateString,
 				})
 			} else {
 				updateReviewMutation.mutateAsync({
 					id: entry.id,
-					scheduled_at: newDateString,
+					scheduledAt: newDateString,
 				})
 			}
 			setOpenDatePicker(null)
 		},
-		[entry.id, entry.completed_at, updateReviewMutation],
+		[entry.id, entry.completedAt, updateReviewMutation],
 	)
 
 	const handleDelete = useCallback(async () => {
@@ -214,21 +211,21 @@ export function ReviewItem({
 	const handleReviewCardClick = useCallback(
 		(event: MouseEvent) => {
 			event.stopPropagation()
-			if (!entry.review_card) return
+			if (!entry.reviewCard) return
 			navigate({
 				to: '/review-cards/$reviewCardId',
-				params: { reviewCardId: entry.review_card.id.toString() },
+				params: { reviewCardId: entry.reviewCard.id.toString() },
 				search: { tab: 'reviews' },
 			})
 		},
-		[navigate, entry.review_card],
+		[navigate, entry.reviewCard],
 	)
-	const effectiveDate = entry.effective_date
-		? dayjs(entry.effective_date).toDate()
+	const effectiveDate = entry.effectiveDate
+		? dayjs(entry.effectiveDate).toDate()
 		: null
 
 	const isOverdueValue = isOverdue({
-		scheduled_at: entry.scheduled_at,
+		scheduledAt: entry.scheduledAt,
 		isCompleted,
 	})
 
@@ -414,9 +411,9 @@ export function ReviewItem({
 	const cardInfo = (() => {
 		if (!showCardColumn) return null
 		if (variant !== 'default' && variant !== 'topic') return null
-		if (entry.review_card) {
+		if (entry.reviewCard) {
 			return {
-				label: getReviewCardDisplayTitle(entry.review_card),
+				label: getReviewCardDisplayTitle(entry.reviewCard),
 				onClick: handleReviewCardClick,
 			}
 		}

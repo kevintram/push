@@ -22,7 +22,7 @@ export function useActiveTopicNavigatorTopicId() {
 	const { data: reviewCard } = useReviewCard(reviewCardId)
 
 	if (topicId != null) return topicId
-	if (reviewCardId != null) return reviewCard?.topic_id ?? null
+	if (reviewCardId != null) return reviewCard?.topicId ?? null
 
 	return null
 }

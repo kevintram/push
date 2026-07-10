@@ -1,16 +1,16 @@
 import dayjs from 'dayjs'
 
 export function isOverdue(options: {
-	scheduled_at: string | Date | undefined | null
+	scheduledAt: string | Date | undefined | null
 	isCompleted?: boolean
 }): boolean {
-	const { scheduled_at, isCompleted = false } = options
+	const { scheduledAt, isCompleted = false } = options
 
 	if (isCompleted) return false
-	if (!scheduled_at) return false
+	if (!scheduledAt) return false
 
 	const today = dayjs().startOf('day')
-	const scheduled = dayjs(scheduled_at).startOf('day')
+	const scheduled = dayjs(scheduledAt).startOf('day')
 
 	return scheduled.isBefore(today)
 }

@@ -65,7 +65,7 @@ export function useReviewCardDetailPage({
 		isLoading,
 		error: reviewCardError,
 	} = useReviewCard(Number.isNaN(reviewCardId) ? null : reviewCardId)
-	const { data: topic } = useTopic(reviewCard?.topic_id ?? null)
+	const { data: topic } = useTopic(reviewCard?.topicId ?? null)
 	const {
 		mutateAsync: updateReviewCardAsync,
 		isPending: isUpdatingReviewCard,
@@ -120,11 +120,11 @@ export function useReviewCardDetailPage({
 		reviewCard
 			? {
 					retrievability: reviewCard.retrievability,
-					freshness_tier: toFreshnessTier(reviewCard.freshness_tier),
-					days_until_next_tier: reviewCard.days_until_next_tier,
+					freshnessTier: toFreshnessTier(reviewCard.freshnessTier),
+					daysUntilNextTier: reviewCard.daysUntilNextTier,
 					stability: reviewCard.stability,
-					last_reviewed_at: reviewCard.last_reviewed_at,
-					inherited_stability: null,
+					lastReviewedAt: reviewCard.lastReviewedAt,
+					inheritedStability: null,
 				}
 			: null,
 	)
@@ -138,26 +138,26 @@ export function useReviewCardDetailPage({
 	const lastReviewed = useMemo(
 		() =>
 			formatRelativeDate(
-				latestCompletedReview?.completed_at ??
-					reviewCard?.last_reviewed_at ??
+				latestCompletedReview?.completedAt ??
+					reviewCard?.lastReviewedAt ??
 					null,
 				{
 					includeFuture: false,
 					nullLabel: 'never',
 				},
 			),
-		[latestCompletedReview?.completed_at, reviewCard?.last_reviewed_at],
+		[latestCompletedReview?.completedAt, reviewCard?.lastReviewedAt],
 	)
 
 	const statusBadges = useMemo(
 		() =>
-			orderReviewCardStatusBadges(reviewCard?.status_badges ?? []).map(
+			orderReviewCardStatusBadges(reviewCard?.statusBadges ?? []).map(
 				apiBadge =>
 					toReviewCardStatusBadge(apiBadge, {
 						onOpenReviewDialog: openReviewDialog,
 					}),
 			),
-		[reviewCard?.status_badges, openReviewDialog],
+		[reviewCard?.statusBadges, openReviewDialog],
 	)
 
 	useEffect(() => {
@@ -167,14 +167,14 @@ export function useReviewCardDetailPage({
 
 	const parentLabel = useMemo(() => {
 		if (topic?.title?.trim()) return topic.title
-		if (reviewCard?.topic_id != null) return `Topic #${reviewCard.topic_id}`
+		if (reviewCard?.topicId != null) return `Topic #${reviewCard.topicId}`
 		return 'None'
-	}, [topic?.title, reviewCard?.topic_id])
+	}, [topic?.title, reviewCard?.topicId])
 
 	const handleUpdateReviewCardFields = useCallback(
 		(fields: {
-			primary_text?: string
-			secondary_text?: string
+			primaryText?: string
+			secondaryText?: string
 			notes?: string
 			retired?: boolean
 			flagged?: boolean
@@ -192,18 +192,17 @@ export function useReviewCardDetailPage({
 
 	const saveReviewCardPrimaryText = useCallback(
 		(newPrimaryText: string) => {
-			if (!reviewCard || newPrimaryText === reviewCard.primary_text)
-				return
-			handleUpdateReviewCardFields({ primary_text: newPrimaryText })
+			if (!reviewCard || newPrimaryText === reviewCard.primaryText) return
+			handleUpdateReviewCardFields({ primaryText: newPrimaryText })
 		},
 		[handleUpdateReviewCardFields, reviewCard],
 	)
 
 	const saveReviewCardSecondaryText = useCallback(
 		(newSecondaryText: string) => {
-			if (!reviewCard || newSecondaryText === reviewCard.secondary_text)
+			if (!reviewCard || newSecondaryText === reviewCard.secondaryText)
 				return
-			handleUpdateReviewCardFields({ secondary_text: newSecondaryText })
+			handleUpdateReviewCardFields({ secondaryText: newSecondaryText })
 		},
 		[handleUpdateReviewCardFields, reviewCard],
 	)
@@ -221,7 +220,7 @@ export function useReviewCardDetailPage({
 		onChange: onPrimaryTextChange,
 		flush: flushPrimaryText,
 	} = useAutoSave({
-		initialValue: reviewCard?.primary_text ?? '',
+		initialValue: reviewCard?.primaryText ?? '',
 		onSave: saveReviewCardPrimaryText,
 		key: `review-card-primary-text-${reviewCard?.id ?? 'new'}`,
 	})
@@ -231,7 +230,7 @@ export function useReviewCardDetailPage({
 		setValue: setSecondaryText,
 		flush: flushSecondaryText,
 	} = useAutoSave({
-		initialValue: reviewCard?.secondary_text ?? '',
+		initialValue: reviewCard?.secondaryText ?? '',
 		onSave: saveReviewCardSecondaryText,
 		key: `review-card-secondary-text-${reviewCard?.id ?? 'new'}`,
 	})
@@ -295,11 +294,11 @@ export function useReviewCardDetailPage({
 
 			try {
 				const review = await createReviewMutation.mutateAsync({
-					review_card_id: reviewCard.id,
+					reviewCardId: reviewCard.id,
 					rating: ratingState === 'uncompleted' ? null : ratingState,
 					description: '',
-					scheduled_at: null,
-					completed_at:
+					scheduledAt: null,
+					completedAt:
 						ratingState === 'uncompleted'
 							? null
 							: localDateString(),
@@ -334,10 +333,10 @@ export function useReviewCardDetailPage({
 		if (!reviewCard) return
 
 		const navigateAway = () => {
-			if (reviewCard.topic_id != null) {
+			if (reviewCard.topicId != null) {
 				navigate({
 					to: '/topics/$topicId',
-					params: { topicId: reviewCard.topic_id.toString() },
+					params: { topicId: reviewCard.topicId.toString() },
 				})
 				return
 			}
@@ -385,14 +384,14 @@ export function useReviewCardDetailPage({
 		async (entity: SearchResultItem) => {
 			if (
 				!reviewCard ||
-				entity.entity_type !== 'topic' ||
+				entity.entityType !== 'topic' ||
 				!entity.topic ||
 				isTopicMutationPending
 			) {
 				return
 			}
 
-			if (entity.topic.id === reviewCard.topic_id) {
+			if (entity.topic.id === reviewCard.topicId) {
 				setIsTopicSearchOpen(false)
 				return
 			}
@@ -401,7 +400,7 @@ export function useReviewCardDetailPage({
 			try {
 				await updateReviewCardAsync({
 					id: reviewCard.id,
-					topic_id: entity.topic.id,
+					topicId: entity.topic.id,
 				})
 				toast.success('Topic changed')
 				setIsTopicSearchOpen(false)
@@ -422,13 +421,13 @@ export function useReviewCardDetailPage({
 			const created = await createTopicAsync({
 				title: '',
 				body: '',
-				parent_id: null,
+				parentId: null,
 			})
 
 			try {
 				await updateReviewCardAsync({
 					id: reviewCard.id,
-					topic_id: created.id,
+					topicId: created.id,
 				})
 				toast.success('Topic changed')
 				setIsTopicSearchOpen(false)
@@ -459,7 +458,7 @@ export function useReviewCardDetailPage({
 		if (!reviewCard) return
 		navigate({
 			to: '/topics/$topicId',
-			params: { topicId: reviewCard.topic_id.toString() },
+			params: { topicId: reviewCard.topicId.toString() },
 		})
 	}, [navigate, reviewCard])
 

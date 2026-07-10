@@ -51,11 +51,11 @@ export function DuePage({ filter, onFilterChange }: DuePageProps) {
 	})
 	const queueItems = queueQuery.data?.items ?? EMPTY_ITEMS
 	const newItems = useMemo(
-		() => queueItems.filter(item => item.queue_type === 'new'),
+		() => queueItems.filter(item => item.queueType === 'new'),
 		[queueItems],
 	)
 	const dueItems = useMemo(
-		() => queueItems.filter(item => item.queue_type !== 'new'),
+		() => queueItems.filter(item => item.queueType !== 'new'),
 		[queueItems],
 	)
 	const isLoading = queueQuery.isLoading
@@ -64,11 +64,11 @@ export function DuePage({ filter, onFilterChange }: DuePageProps) {
 			groupUnifiedReviewQueue(
 				{ dueItems, newItems },
 				{
-					asOf: queueQuery.data?.as_of,
+					asOf: queueQuery.data?.asOf,
 					weekStartDay,
 				},
 			),
-		[dueItems, newItems, queueQuery.data?.as_of, weekStartDay],
+		[dueItems, newItems, queueQuery.data?.asOf, weekStartDay],
 	)
 	const focusSearch = useMemo(
 		() =>

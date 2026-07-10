@@ -9,10 +9,10 @@ export function getReviewCardSecondaryFieldLabel(type: ReviewCardType): string {
 }
 
 export function getReviewCardDisplayTitle(reviewCard: {
-	primary_text: string
+	primaryText: string
 	type: ReviewCardType
 }): string {
-	const trimmed = reviewCard.primary_text.trim()
+	const trimmed = reviewCard.primaryText.trim()
 	if (trimmed.length > 0) return trimmed
 	return reviewCard.type === 'practice'
 		? 'Untitled practice'

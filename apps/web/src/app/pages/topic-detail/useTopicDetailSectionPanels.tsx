@@ -109,10 +109,10 @@ export function useTopicDetailSectionPanels({
 	const handleAddReviewCard = async (type: ReviewCardType) => {
 		try {
 			const created = await createReviewCardAsync({
-				topic_id: section.topic.id,
+				topicId: section.topic.id,
 				type,
-				primary_text: '',
-				secondary_text: '',
+				primaryText: '',
+				secondaryText: '',
 				retired: false,
 			})
 			onTopicInteraction?.()

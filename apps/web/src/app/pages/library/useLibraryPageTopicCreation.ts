@@ -10,7 +10,7 @@ import {
 
 type CreateTopicPayload = {
 	body: string
-	parent_id: number | null
+	parentId: number | null
 	title: string
 }
 
@@ -95,7 +95,7 @@ export function useLibraryPageTopicCreation({
 				})
 				setPendingCreatedParentTopicId(currentParentTopicId => {
 					const parentTopicId =
-						nodeById.get(topicId)?.parent_id ?? null
+						nodeById.get(topicId)?.parentId ?? null
 					if (
 						currentParentTopicId ===
 							TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID ||
@@ -150,7 +150,7 @@ export function useLibraryPageTopicCreation({
 			const created = await createTopicAsync({
 				title: '',
 				body: '',
-				parent_id: null,
+				parentId: null,
 			})
 			pendingCreatedTopicIdRef.current = created.id
 			setFreshTopicId(created.id)

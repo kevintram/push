@@ -16,5 +16,5 @@ export interface ReviewCardStatusBadge {
 	label: string
 	tooltip: string | null
 	tone: ReviewCardStatusBadgeTone
-	review_id: number | null
+	reviewId: number | null
 }

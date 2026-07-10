@@ -4,8 +4,9 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
+from app.schemas.base import ApiModel
 from app.schemas.status_badges import StatusBadge
 from app.schemas.reviews import RatingEnum
 
@@ -21,7 +22,7 @@ class ReviewCardFilterEnum(str, Enum):
     FLASHCARDS = "flashcards"
 
 
-class ReviewCardBase(BaseModel):
+class ReviewCardBase(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     topic_id: int
@@ -64,7 +65,7 @@ class ReviewCardCreate(ReviewCardBase):
     retired: bool = False
 
 
-class ReviewCardUpdate(BaseModel):
+class ReviewCardUpdate(ApiModel):
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
     topic_id: int | None = None
@@ -76,7 +77,7 @@ class ReviewCardUpdate(BaseModel):
     flagged: bool | None = None
 
 
-class ReviewCardQueueItem(BaseModel):
+class ReviewCardQueueItem(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     queue_type: Literal["due", "hazy", "new"]
@@ -88,12 +89,12 @@ class ReviewCardQueueItem(BaseModel):
     days_until_hazy: int | None = None
 
 
-class ReviewCardQueuePage(BaseModel):
+class ReviewCardQueuePage(ApiModel):
     items: list[ReviewCardQueueItem]
     as_of: date
 
 
-class ReviewCardQueueSummary(BaseModel):
+class ReviewCardQueueSummary(ApiModel):
     overdue_count: int
     due_today_count: int
     due_next_seven_days_count: int
@@ -101,11 +102,11 @@ class ReviewCardQueueSummary(BaseModel):
     as_of: date
 
 
-class ReviewCardFlaggedSummary(BaseModel):
+class ReviewCardFlaggedSummary(ApiModel):
     flagged_count: int
 
 
-class ReviewCardReviewCreate(BaseModel):
+class ReviewCardReviewCreate(ApiModel):
     model_config = ConfigDict(from_attributes=True, extra="forbid")
 
     rating: RatingEnum | None = None

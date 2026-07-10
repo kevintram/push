@@ -57,8 +57,8 @@ type ReviewCardDetailHomeTabProps = {
 	handleCopyRevealText: (textOverride?: string) => Promise<void>
 	handleSeeReviews: () => void
 	handleUpdateReviewCardFields: (fields: {
-		primary_text?: string
-		secondary_text?: string
+		primaryText?: string
+		secondaryText?: string
 		notes?: string
 		retired?: boolean
 		flagged?: boolean
@@ -144,7 +144,7 @@ export function ReviewCardDetailHomeTab({
 	const hidesSecondaryText = hidesSecondary && reviewCard.type !== 'practice'
 	const isSecondaryTextEmpty = secondaryText.trim().length === 0
 	const reviewedAt =
-		latestCompletedReview?.completed_at ?? reviewCard.last_reviewed_at
+		latestCompletedReview?.completedAt ?? reviewCard.lastReviewedAt
 	const primaryTextLabel = getReviewCardPrimaryFieldLabel(reviewCard.type)
 	const secondaryTextLabel = getReviewCardSecondaryFieldLabel(reviewCard.type)
 	const {
@@ -350,7 +350,7 @@ export function ReviewCardDetailHomeTab({
 						align='end'
 						buttonClassName='rounded-full'
 						buttonSize='sm'
-						hasLastReviewed={reviewCard.last_reviewed_at != null}
+						hasLastReviewed={reviewCard.lastReviewedAt != null}
 						onCompletedReviewCreated={onCompletedReviewCreated}
 						onSeeAll={handleSeeReviews}
 						reviewCardId={reviewCard.id}
@@ -363,17 +363,17 @@ export function ReviewCardDetailHomeTab({
 							render={
 								<Button
 									aria-label={
-										reviewCard.flagged_at
+										reviewCard.flaggedAt
 											? 'Unflag this item'
 											: 'Flag this item'
 									}
-									aria-pressed={reviewCard.flagged_at != null}
+									aria-pressed={reviewCard.flaggedAt != null}
 									className='rounded-full'
 									disabled={isUpdatingReviewCard}
 									onClick={() =>
 										handleUpdateReviewCardFields({
 											flagged:
-												reviewCard.flagged_at == null,
+												reviewCard.flaggedAt == null,
 										})
 									}
 									size='icon-sm'
@@ -381,7 +381,7 @@ export function ReviewCardDetailHomeTab({
 								>
 									<Flag
 										className={
-											reviewCard.flagged_at
+											reviewCard.flaggedAt
 												? FLAGGED_ICON_CLASSNAME
 												: 'text-muted-foreground'
 										}
@@ -390,7 +390,7 @@ export function ReviewCardDetailHomeTab({
 							}
 						/>
 						<TooltipContent>
-							{reviewCard.flagged_at ? 'Unflag' : 'Flag'}
+							{reviewCard.flaggedAt ? 'Unflag' : 'Flag'}
 						</TooltipContent>
 					</Tooltip>
 					<Tooltip>

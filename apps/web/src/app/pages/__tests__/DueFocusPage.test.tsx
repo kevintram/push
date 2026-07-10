@@ -43,23 +43,23 @@ function queueItem({
 	type?: 'practice' | 'flashcard'
 }) {
 	return {
-		queue_type: actionDays == null ? ('new' as const) : ('due' as const),
+		queueType: actionDays == null ? ('new' as const) : ('due' as const),
 		card: {
 			...reviewCard,
 			id,
-			primary_text: primaryText,
+			primaryText: primaryText,
 			type,
 		},
-		review_id: null,
-		scheduled_at:
+		reviewId: null,
+		scheduledAt:
 			actionDays == null
 				? null
 				: actionDays <= 0
 					? '2026-03-05'
 					: '2026-03-06',
-		action_days: actionDays,
-		days_until_due: actionDays,
-		days_until_hazy: null,
+		actionDays: actionDays,
+		daysUntilDue: actionDays,
+		daysUntilHazy: null,
 	}
 }
 
@@ -72,8 +72,8 @@ function mockQueues({
 }) {
 	useReviewCardQueueMock.mockImplementation(
 		(params: { mode?: 'focus' | 'list' }) => {
-			const currentItems = dueItems.filter(item => item.action_days! <= 0)
-			const futureItems = dueItems.filter(item => item.action_days! > 0)
+			const currentItems = dueItems.filter(item => item.actionDays! <= 0)
+			const futureItems = dueItems.filter(item => item.actionDays! > 0)
 			const items =
 				params.mode === 'list'
 					? [...newItems, ...dueItems]
@@ -82,7 +82,7 @@ function mockQueues({
 			return {
 				data: {
 					items,
-					as_of: '2026-03-05',
+					asOf: '2026-03-05',
 				},
 				isLoading: false,
 			}
@@ -201,9 +201,9 @@ describe('DueFocusPage', () => {
 
 		await waitFor(() => {
 			expect(createReviewAsyncMock).toHaveBeenCalledWith({
-				review_card_id: 11,
+				reviewCardId: 11,
 				rating: 'good',
-				completed_at: expect.any(String),
+				completedAt: expect.any(String),
 			})
 		})
 		expect(navigateMock).toHaveBeenCalledWith({
@@ -260,9 +260,9 @@ describe('DueFocusPage', () => {
 
 		await waitFor(() => {
 			expect(createReviewAsyncMock).toHaveBeenCalledWith({
-				review_card_id: 11,
+				reviewCardId: 11,
 				rating: 'good',
-				completed_at: expect.any(String),
+				completedAt: expect.any(String),
 			})
 		})
 		expect(navigateMock).toHaveBeenCalledWith({

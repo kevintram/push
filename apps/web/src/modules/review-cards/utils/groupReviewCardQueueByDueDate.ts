@@ -8,7 +8,7 @@ export function groupReviewCardQueueByDueDate(
 	const byDate = new Map<string, Array<ReviewCardQueueItem>>()
 
 	for (const item of items) {
-		const key = item.scheduled_at ?? 'unscheduled'
+		const key = item.scheduledAt ?? 'unscheduled'
 		if (!byDate.has(key)) byDate.set(key, [])
 		byDate.get(key)?.push(item)
 	}

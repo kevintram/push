@@ -63,17 +63,17 @@ export function ReviewDialog({
 
 	// Computed date values
 	const selectedDate = (() => {
-		if (review?.completed_at) {
-			return dayjs(review.completed_at).toDate()
+		if (review?.completedAt) {
+			return dayjs(review.completedAt).toDate()
 		}
-		if (review?.scheduled_at) {
-			return dayjs(review.scheduled_at).toDate()
+		if (review?.scheduledAt) {
+			return dayjs(review.scheduledAt).toDate()
 		}
 		return null
 	})()
 
-	const effectiveDate = review?.effective_date
-		? dayjs(review.effective_date).toDate()
+	const effectiveDate = review?.effectiveDate
+		? dayjs(review.effectiveDate).toDate()
 		: null
 
 	const relativeDate = formatRelativeDate(effectiveDate)
@@ -81,10 +81,10 @@ export function ReviewDialog({
 	const isOverdueValue: boolean = useMemo(
 		() =>
 			isOverdue({
-				scheduled_at: review?.scheduled_at ?? null,
-				isCompleted: review?.completed_at !== null,
+				scheduledAt: review?.scheduledAt ?? null,
+				isCompleted: review?.completedAt !== null,
 			}),
-		[review?.scheduled_at, review?.completed_at],
+		[review?.scheduledAt, review?.completedAt],
 	)
 
 	const updateDescriptionMutation = useCallback(
@@ -124,43 +124,43 @@ export function ReviewDialog({
 	})
 
 	const reviewStatus: ReviewRatingState = useMemo(() => {
-		if (!review?.completed_at) return 'uncompleted'
+		if (!review?.completedAt) return 'uncompleted'
 		return review.rating ?? 'good'
-	}, [review?.completed_at, review?.rating])
+	}, [review?.completedAt, review?.rating])
 
 	const stabilityChangeColorClass = useMemo(() => {
-		if (review?.stability_after == null) {
+		if (review?.stabilityAfter == null) {
 			return ''
 		}
-		if (review?.stability_before == null) {
+		if (review?.stabilityBefore == null) {
 			return 'text-green-600 dark:text-green-400'
 		}
 		const roundedDelta = Math.round(
-			review.stability_after - review.stability_before,
+			review.stabilityAfter - review.stabilityBefore,
 		)
 		if (roundedDelta >= 0) {
 			return 'text-green-600 dark:text-green-400'
 		}
 		return 'text-red-600 dark:text-red-400'
-	}, [review?.stability_after, review?.stability_before])
-	const hasStability = review?.stability_after != null
+	}, [review?.stabilityAfter, review?.stabilityBefore])
+	const hasStability = review?.stabilityAfter != null
 	const hasDelta =
-		review?.stability_after != null && review?.stability_before != null
+		review?.stabilityAfter != null && review?.stabilityBefore != null
 	const stabilityAfterRounded = hasStability
-		? Math.round(review.stability_after ?? 0)
+		? Math.round(review.stabilityAfter ?? 0)
 		: 0
 	const stabilityDeltaRounded = hasDelta
 		? Math.round(
-				(review.stability_after ?? 0) - (review.stability_before ?? 0),
+				(review.stabilityAfter ?? 0) - (review.stabilityBefore ?? 0),
 			)
 		: 0
 
 	const getCardName = useCallback((): string => {
-		if (review?.review_card) {
-			return getReviewCardDisplayTitle(review.review_card)
+		if (review?.reviewCard) {
+			return getReviewCardDisplayTitle(review.reviewCard)
 		}
 		return 'Unknown card'
-	}, [review?.review_card])
+	}, [review?.reviewCard])
 
 	const handleStatusChange = useCallback(
 		(status: ReviewRatingState) => {
@@ -169,18 +169,17 @@ export function ReviewDialog({
 				updateReviewMutation.mutate({
 					id: review.id,
 					rating: null,
-					completed_at: null,
+					completedAt: null,
 				})
 				return
 			}
 			updateReviewMutation.mutate({
 				id: review.id,
 				rating: status,
-				completed_at:
-					review.completed_at ?? dayjs().format('YYYY-MM-DD'),
+				completedAt: review.completedAt ?? dayjs().format('YYYY-MM-DD'),
 			})
 		},
-		[review?.id, review?.completed_at, updateReviewMutation],
+		[review?.id, review?.completedAt, updateReviewMutation],
 	)
 
 	const handleDateChange = useCallback(
@@ -189,21 +188,21 @@ export function ReviewDialog({
 				const newDateString = newDate
 					? dayjs(newDate).format('YYYY-MM-DD')
 					: null
-				if (review.completed_at) {
+				if (review.completedAt) {
 					updateReviewMutation.mutate({
 						id: review.id,
-						completed_at: newDateString,
+						completedAt: newDateString,
 					})
 				} else {
 					updateReviewMutation.mutate({
 						id: review.id,
-						scheduled_at: newDateString,
+						scheduledAt: newDateString,
 					})
 				}
 			}
 			setIsDatePopoverOpen(false)
 		},
-		[review?.id, review?.completed_at, updateReviewMutation],
+		[review?.id, review?.completedAt, updateReviewMutation],
 	)
 
 	const handleDelete = useCallback(() => {
@@ -216,14 +215,14 @@ export function ReviewDialog({
 	const navigate = useNavigate()
 
 	const handleOpenLinkedCard = useCallback(() => {
-		if (!review?.review_card) return
+		if (!review?.reviewCard) return
 		onOpenChange(false)
 		navigate({
 			to: '/review-cards/$reviewCardId',
-			params: { reviewCardId: review.review_card.id.toString() },
+			params: { reviewCardId: review.reviewCard.id.toString() },
 			search: { tab: 'reviews' },
 		})
-	}, [navigate, review?.review_card, onOpenChange])
+	}, [navigate, review?.reviewCard, onOpenChange])
 
 	const handleDialogOpenChange = useCallback(
 		(nextOpen: boolean) => {

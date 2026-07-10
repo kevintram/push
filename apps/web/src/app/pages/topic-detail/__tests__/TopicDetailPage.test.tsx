@@ -17,9 +17,9 @@ import {
 import { TOPIC_DETAIL_OUTLINE_DEFAULT_WIDTH } from '../topicDetailLayout'
 import { TopicDetailPage } from '../TopicDetailPage'
 
-type TopicFixture = Omit<typeof topic, 'parent_id' | 'parent_title'> & {
-	parent_id: number | null
-	parent_title: string | null
+type TopicFixture = Omit<typeof topic, 'parentId' | 'parentTitle'> & {
+	parentId: number | null
+	parentTitle: string | null
 }
 
 function buildTopicChain(titles: Array<string>): Array<TopicFixture> {
@@ -27,8 +27,8 @@ function buildTopicChain(titles: Array<string>): Array<TopicFixture> {
 		...topic,
 		id: index + 1,
 		title,
-		parent_id: index === 0 ? null : index,
-		parent_title: index === 0 ? null : (titles[index - 1] ?? null),
+		parentId: index === 0 ? null : index,
+		parentTitle: index === 0 ? null : (titles[index - 1] ?? null),
 	}))
 }
 
@@ -45,7 +45,7 @@ function setupTopicChainMocks(chain: Array<TopicFixture>, currentId: number) {
 		return { data: null, isLoading: false, error: null }
 	})
 	useTopicsMock.mockImplementation(
-		(params?: { parent_id?: number; sort?: string; order?: string }) => {
+		(params?: { parentId?: number; sort?: string; order?: string }) => {
 			if (params?.sort === 'title' && params?.order === 'asc') {
 				return { data: chain, isLoading: false }
 			}
@@ -371,8 +371,8 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -383,11 +383,7 @@ describe('TopicDetailPage', () => {
 			return { data: null, isLoading: false, error: null }
 		})
 		useTopicsMock.mockImplementation(
-			(params?: {
-				parent_id?: number
-				sort?: string
-				order?: string
-			}) => {
+			(params?: { parentId?: number; sort?: string; order?: string }) => {
 				if (params?.sort === 'title' && params?.order === 'asc') {
 					return {
 						data: [rootTopic],
@@ -425,15 +421,15 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -579,15 +575,15 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -748,29 +744,29 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const grandchildTopic = {
 			...topic,
 			id: 3,
 			title: 'Linear Algebra',
-			parent_id: 2,
-			parent_title: 'Algebra',
+			parentId: 2,
+			parentTitle: 'Algebra',
 		}
 		const unrelatedGlobalChild = {
 			...topic,
 			id: 4,
 			title: 'Computer Science',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -841,16 +837,16 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const leafTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			body: 'Leaf topic body',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -923,15 +919,15 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -999,22 +995,22 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const grandchildTopic = {
 			...topic,
 			id: 3,
 			title: 'Linear Algebra',
-			parent_id: 2,
-			parent_title: 'Algebra',
+			parentId: 2,
+			parentTitle: 'Algebra',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -1084,24 +1080,24 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
 			title: '',
 			body: '',
-			parent_id: 1,
-			parent_title: 'Mathematics',
-			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at,
+			parentId: 1,
+			parentTitle: 'Mathematics',
+			insertedAt: topic.insertedAt,
+			updatedAt: topic.updatedAt,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1157,7 +1153,7 @@ describe('TopicDetailPage', () => {
 		expect(createTopicAsyncMock).toHaveBeenCalledWith({
 			title: '',
 			body: '',
-			parent_id: 1,
+			parentId: 1,
 		})
 		rerender(
 			<TopicDetailPage
@@ -1193,15 +1189,15 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const deferredCreate = createDeferredPromise<typeof topic>()
 
@@ -1261,24 +1257,24 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
 			title: '',
 			body: '',
-			parent_id: 2,
-			parent_title: 'Algebra',
-			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at,
+			parentId: 2,
+			parentTitle: 'Algebra',
+			insertedAt: topic.insertedAt,
+			updatedAt: topic.updatedAt,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1334,7 +1330,7 @@ describe('TopicDetailPage', () => {
 		expect(createTopicAsyncMock).toHaveBeenCalledWith({
 			title: '',
 			body: '',
-			parent_id: 2,
+			parentId: 2,
 		})
 		rerender(
 			<TopicDetailPage
@@ -1364,24 +1360,24 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
 			title: '',
 			body: '',
-			parent_id: 2,
-			parent_title: 'Algebra',
-			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at,
+			parentId: 2,
+			parentTitle: 'Algebra',
+			insertedAt: topic.insertedAt,
+			updatedAt: topic.updatedAt,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1462,24 +1458,24 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
 			title: '',
 			body: '',
-			parent_id: 1,
-			parent_title: 'Mathematics',
-			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at,
+			parentId: 1,
+			parentTitle: 'Mathematics',
+			insertedAt: topic.insertedAt,
+			updatedAt: topic.updatedAt,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1537,7 +1533,7 @@ describe('TopicDetailPage', () => {
 		expect(createTopicAsyncMock).toHaveBeenCalledWith({
 			title: '',
 			body: '',
-			parent_id: 1,
+			parentId: 1,
 		})
 		rerender(
 			<TopicDetailPage
@@ -1565,15 +1561,15 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const deferredCreate = createDeferredPromise<typeof topic>()
 
@@ -1640,24 +1636,24 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
 			title: '',
 			body: '',
-			parent_id: 2,
-			parent_title: 'Algebra',
-			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at,
+			parentId: 2,
+			parentTitle: 'Algebra',
+			insertedAt: topic.insertedAt,
+			updatedAt: topic.updatedAt,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1744,24 +1740,24 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
 			title: '',
 			body: '',
-			parent_id: 2,
-			parent_title: 'Algebra',
-			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at,
+			parentId: 2,
+			parentTitle: 'Algebra',
+			insertedAt: topic.insertedAt,
+			updatedAt: topic.updatedAt,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1847,24 +1843,24 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
 			title: '',
 			body: '',
-			parent_id: 2,
-			parent_title: 'Algebra',
-			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at,
+			parentId: 2,
+			parentTitle: 'Algebra',
+			insertedAt: topic.insertedAt,
+			updatedAt: topic.updatedAt,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1952,24 +1948,24 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const createdTopic = {
 			id: 9,
 			title: '',
 			body: '',
-			parent_id: 2,
-			parent_title: 'Algebra',
-			inserted_at: topic.inserted_at,
-			updated_at: topic.updated_at,
+			parentId: 2,
+			parentTitle: 'Algebra',
+			insertedAt: topic.insertedAt,
+			updatedAt: topic.updatedAt,
 		}
 		let topicsData = [rootTopic, childTopic]
 
@@ -1979,10 +1975,10 @@ describe('TopicDetailPage', () => {
 		})
 		createReviewCardAsyncMock.mockResolvedValue({
 			id: 41,
-			topic_id: 9,
+			topicId: 9,
 			type: 'practice',
-			primary_text: '',
-			secondary_text: '',
+			primaryText: '',
+			secondaryText: '',
 			retired: false,
 		})
 
@@ -2054,10 +2050,10 @@ describe('TopicDetailPage', () => {
 		await user.click(practiceButtons[0]!)
 
 		expect(createReviewCardAsyncMock).toHaveBeenCalledWith({
-			secondary_text: '',
-			primary_text: '',
+			secondaryText: '',
+			primaryText: '',
 			retired: false,
-			topic_id: 9,
+			topicId: 9,
 			type: 'practice',
 		})
 		await waitFor(() => {
@@ -2071,15 +2067,15 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2152,16 +2148,16 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const leafTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			body: 'Leaf topic body',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2225,16 +2221,16 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const leafTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
 			body: 'Leaf topic body',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2298,15 +2294,15 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2358,8 +2354,8 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {
@@ -2422,22 +2418,22 @@ describe('TopicDetailPage', () => {
 			...topic,
 			id: 1,
 			title: 'Mathematics',
-			parent_id: null,
-			parent_title: null,
+			parentId: null,
+			parentTitle: null,
 		}
 		const childTopic = {
 			...topic,
 			id: 2,
 			title: 'Algebra',
-			parent_id: 1,
-			parent_title: 'Mathematics',
+			parentId: 1,
+			parentTitle: 'Mathematics',
 		}
 		const grandchildTopic = {
 			...topic,
 			id: 3,
 			title: 'Linear Algebra',
-			parent_id: 2,
-			parent_title: 'Algebra',
+			parentId: 2,
+			parentTitle: 'Algebra',
 		}
 
 		useTopicMock.mockImplementation((topicId: number | null) => {

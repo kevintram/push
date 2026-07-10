@@ -2,10 +2,10 @@ export type Topic = {
 	id: number
 	title: string
 	body: string
-	parent_id: number | null
-	parent_title: string | null
-	inserted_at: string
-	updated_at: string
+	parentId: number | null
+	parentTitle: string | null
+	insertedAt: string
+	updatedAt: string
 }
 
 export type GetTopicsParams = {
@@ -20,5 +20,5 @@ export type UpdateTopicInput = {
 	id: number
 	title?: string
 	body?: string
-	parent_id?: number | null
+	parentId?: number | null
 }

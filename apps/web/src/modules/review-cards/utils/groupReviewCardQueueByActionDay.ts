@@ -70,8 +70,8 @@ function getNextWeekStartSubLabel(
 }
 
 function getQueueRank(item: ReviewCardQueueItem): number {
-	if (item.queue_type === 'due') return 0
-	if (item.queue_type === 'hazy') return 1
+	if (item.queueType === 'due') return 0
+	if (item.queueType === 'hazy') return 1
 	return 2
 }
 
@@ -79,15 +79,15 @@ function sortActionableQueueItems(
 	a: ReviewCardQueueItem,
 	b: ReviewCardQueueItem,
 ): number {
-	const aActionDays = a.action_days
-	const bActionDays = b.action_days
+	const aActionDays = a.actionDays
+	const bActionDays = b.actionDays
 
 	// Mirror the backend queue order so sectioned due views and focused mode
 	// agree on which overdue scheduled reviews should be surfaced first.
 	const aIsOverdueDue =
-		a.queue_type === 'due' && aActionDays != null && aActionDays < 0
+		a.queueType === 'due' && aActionDays != null && aActionDays < 0
 	const bIsOverdueDue =
-		b.queue_type === 'due' && bActionDays != null && bActionDays < 0
+		b.queueType === 'due' && bActionDays != null && bActionDays < 0
 
 	if (aIsOverdueDue !== bIsOverdueDue) {
 		return aIsOverdueDue ? -1 : 1
@@ -107,7 +107,7 @@ function sortActionableQueueItems(
 	if (aRank !== bRank) {
 		return aRank - bRank
 	}
-	return (a.review_id ?? a.card.id) - (b.review_id ?? b.card.id)
+	return (a.reviewId ?? a.card.id) - (b.reviewId ?? b.card.id)
 }
 
 type ActionableSection = {
@@ -182,7 +182,7 @@ export function groupReviewCardQueueByActionDay(
 	const anchorDate = asOf ? parseAsOfDate(asOf) : new Date()
 
 	for (const item of items) {
-		const actionDays = item.action_days
+		const actionDays = item.actionDays
 		if (actionDays == null) continue
 
 		const section = getSectionForActionDay(

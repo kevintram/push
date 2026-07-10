@@ -10,7 +10,7 @@ import { topicKeys } from './queryKeys'
 type CreateTopicPayload = {
 	title?: string
 	body?: string
-	parent_id?: number | null
+	parentId?: number | null
 }
 
 async function createTopic(payload: CreateTopicPayload): Promise<Topic> {

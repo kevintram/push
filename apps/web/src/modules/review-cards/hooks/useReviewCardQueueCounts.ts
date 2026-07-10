@@ -7,9 +7,9 @@ export function useReviewCardQueueCounts(
 	const { data } = useReviewCardQueueSummary(options)
 
 	return {
-		newCount: data?.new_count ?? 0,
-		overdueCount: data?.overdue_count ?? 0,
-		dueTodayCount: data?.due_today_count ?? 0,
-		dueNextSevenDaysCount: data?.due_next_seven_days_count ?? 0,
+		newCount: data?.newCount ?? 0,
+		overdueCount: data?.overdueCount ?? 0,
+		dueTodayCount: data?.dueTodayCount ?? 0,
+		dueNextSevenDaysCount: data?.dueNextSevenDaysCount ?? 0,
 	}
 }

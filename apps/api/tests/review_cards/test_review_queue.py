@@ -99,23 +99,23 @@ class TestReviewQueueEndpoint:
         assert queue_response.status_code == 200
         payload = queue_response.json()
         queue = payload["items"]
-        assert payload["as_of"] == str(date.today())
+        assert payload["asOf"] == str(date.today())
         assert len(queue) == 2
 
-        due_item = next(item for item in queue if item["queue_type"] == "due")
-        assert due_item["review_id"] == due_review["id"]
+        due_item = next(item for item in queue if item["queueType"] == "due")
+        assert due_item["reviewId"] == due_review["id"]
         assert due_item["card"]["id"] == due_card["id"]
         assert due_item["card"]["type"] == "practice"
-        assert due_item["action_days"] == -1
-        assert due_item["days_until_hazy"] is None
+        assert due_item["actionDays"] == -1
+        assert due_item["daysUntilHazy"] is None
 
-        hazy_item = next(item for item in queue if item["queue_type"] == "hazy")
-        assert hazy_item["review_id"] is None
-        assert hazy_item["scheduled_at"] is None
+        hazy_item = next(item for item in queue if item["queueType"] == "hazy")
+        assert hazy_item["reviewId"] is None
+        assert hazy_item["scheduledAt"] is None
         assert hazy_item["card"]["id"] == hazy_card["id"]
         assert hazy_item["card"]["type"] == "practice"
-        assert hazy_item["action_days"] == 3
-        assert hazy_item["days_until_hazy"] == 3
+        assert hazy_item["actionDays"] == 3
+        assert hazy_item["daysUntilHazy"] == 3
 
     async def test_review_card_queue_filter_returns_mixed_and_filtered_due_items(
         self,
@@ -167,13 +167,13 @@ class TestReviewQueueEndpoint:
         assert practice_response.status_code == 200
         assert flashcards_response.status_code == 200
         assert [
-            item["card"]["primary_text"] for item in all_response.json()["items"]
+            item["card"]["primaryText"] for item in all_response.json()["items"]
         ] == ["Due practice", "Due flashcard"]
         assert [
-            item["card"]["primary_text"] for item in practice_response.json()["items"]
+            item["card"]["primaryText"] for item in practice_response.json()["items"]
         ] == ["Due practice"]
         assert [
-            item["card"]["primary_text"] for item in flashcards_response.json()["items"]
+            item["card"]["primaryText"] for item in flashcards_response.json()["items"]
         ] == ["Due flashcard"]
 
     async def test_review_card_queue_modes_order_combined_work(
@@ -242,7 +242,7 @@ class TestReviewQueueEndpoint:
         assert focus_response.status_code == 200
         assert future_focus_response.status_code == 200
         assert [
-            item["card"]["primary_text"] for item in list_response.json()["items"]
+            item["card"]["primaryText"] for item in list_response.json()["items"]
         ] == [
             "New practice",
             "Overdue practice",
@@ -250,10 +250,10 @@ class TestReviewQueueEndpoint:
             "Future practice",
         ]
         assert [
-            item["card"]["primary_text"] for item in focus_response.json()["items"]
+            item["card"]["primaryText"] for item in focus_response.json()["items"]
         ] == ["Overdue practice", "Today practice", "New practice"]
         assert [
-            item["card"]["primary_text"]
+            item["card"]["primaryText"]
             for item in future_focus_response.json()["items"]
         ] == [
             "Overdue practice",
@@ -366,7 +366,7 @@ class TestReviewQueueEndpoint:
         assert full_response.status_code == 200
         assert focused_response.status_code == 200
         assert [
-            item["card"]["primary_text"] for item in full_response.json()["items"]
+            item["card"]["primaryText"] for item in full_response.json()["items"]
         ] == [
             "Slightly overdue practice",
             "Stale overdue practice",
@@ -376,7 +376,7 @@ class TestReviewQueueEndpoint:
             "Later practice",
         ]
         assert [
-            item["card"]["primary_text"] for item in focused_response.json()["items"]
+            item["card"]["primaryText"] for item in focused_response.json()["items"]
         ] == [
             "Slightly overdue practice",
             "Stale overdue practice",
@@ -429,9 +429,9 @@ class TestReviewQueueEndpoint:
         items = response.json()["items"]
         assert len(items) == 1
         assert items[0]["card"]["id"] == duplicated_card["id"]
-        assert items[0]["review_id"] == earlier_due_review["id"]
-        assert items[0]["scheduled_at"] == str(today - timedelta(days=3))
-        assert items[0]["days_until_due"] == -3
+        assert items[0]["reviewId"] == earlier_due_review["id"]
+        assert items[0]["scheduledAt"] == str(today - timedelta(days=3))
+        assert items[0]["daysUntilDue"] == -3
 
     async def test_review_queue_focus_mode_returns_new_cards(
         self,
@@ -452,7 +452,7 @@ class TestReviewQueueEndpoint:
         assert practice_focus_response.status_code == 200
         practice_items = practice_focus_response.json()["items"]
         assert len(practice_items) == 7
-        assert all(item["queue_type"] == "new" for item in practice_items)
+        assert all(item["queueType"] == "new" for item in practice_items)
         assert all(item["card"]["type"] == "practice" for item in practice_items)
 
     async def test_review_queue_includes_retired_scheduled_cards_and_excludes_retired_new_cards(
@@ -493,7 +493,7 @@ class TestReviewQueueEndpoint:
         response = await test_client.get("/review-cards/queue/?type=practice&mode=list")
 
         assert response.status_code == 200
-        assert [item["card"]["primary_text"] for item in response.json()["items"]] == [
+        assert [item["card"]["primaryText"] for item in response.json()["items"]] == [
             "Active new card",
             "Retired due card",
         ]
@@ -668,25 +668,25 @@ class TestReviewQueueEndpoint:
         assert all_response.status_code == 200
         assert flashcards_response.status_code == 200
         assert response.json() == {
-            "overdue_count": 3,
-            "due_today_count": 2,
-            "due_next_seven_days_count": 9,
-            "new_count": 6,
-            "as_of": str(today),
+            "overdueCount": 3,
+            "dueTodayCount": 2,
+            "dueNextSevenDaysCount": 9,
+            "newCount": 6,
+            "asOf": str(today),
         }
         assert all_response.json() == {
-            "overdue_count": 4,
-            "due_today_count": 2,
-            "due_next_seven_days_count": 10,
-            "new_count": 7,
-            "as_of": str(today),
+            "overdueCount": 4,
+            "dueTodayCount": 2,
+            "dueNextSevenDaysCount": 10,
+            "newCount": 7,
+            "asOf": str(today),
         }
         assert flashcards_response.json() == {
-            "overdue_count": 1,
-            "due_today_count": 0,
-            "due_next_seven_days_count": 1,
-            "new_count": 1,
-            "as_of": str(today),
+            "overdueCount": 1,
+            "dueTodayCount": 0,
+            "dueNextSevenDaysCount": 1,
+            "newCount": 1,
+            "asOf": str(today),
         }
 
     async def test_review_card_queue_summary_counts_due_cards_once_per_card(
@@ -739,9 +739,9 @@ class TestReviewQueueEndpoint:
 
         assert response.status_code == 200
         assert response.json() == {
-            "overdue_count": 1,
-            "due_today_count": 1,
-            "due_next_seven_days_count": 2,
-            "new_count": 2,
-            "as_of": str(today),
+            "overdueCount": 1,
+            "dueTodayCount": 1,
+            "dueNextSevenDaysCount": 2,
+            "newCount": 2,
+            "asOf": str(today),
         }

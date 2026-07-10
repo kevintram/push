@@ -145,13 +145,13 @@ export function groupReviewCardsByTopicId(
 	const cardsByTopicId = new Map<number, Array<ReviewCard>>()
 
 	for (const reviewCard of reviewCards) {
-		const existingCards = cardsByTopicId.get(reviewCard.topic_id)
+		const existingCards = cardsByTopicId.get(reviewCard.topicId)
 		if (existingCards) {
 			existingCards.push(reviewCard)
 			continue
 		}
 
-		cardsByTopicId.set(reviewCard.topic_id, [reviewCard])
+		cardsByTopicId.set(reviewCard.topicId, [reviewCard])
 	}
 
 	return cardsByTopicId

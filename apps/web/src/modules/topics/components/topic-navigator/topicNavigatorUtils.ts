@@ -76,7 +76,7 @@ export function canReparentTopic({
 	const draggedNode = nodeById.get(draggedTopicId)
 	if (!draggedNode) return false
 
-	if (nextParentId === draggedNode.parent_id) return false
+	if (nextParentId === draggedNode.parentId) return false
 	if (nextParentId === draggedTopicId) return false
 
 	if (nextParentId != null) {

@@ -23,7 +23,7 @@ describe('ReviewCardDetailPage', () => {
 		render(<ReviewCardDetailPage reviewCardId={11} />)
 
 		await user.click(
-			screen.getByRole('button', { name: reviewCard.topic_title }),
+			screen.getByRole('button', { name: reviewCard.topicTitle }),
 		)
 
 		expect(navigateMock).toHaveBeenCalledWith({
@@ -36,7 +36,7 @@ describe('ReviewCardDetailPage', () => {
 
 		await user.click(screen.getByRole('button', { name: /^Search$/iu }))
 		expect(
-			screen.getAllByRole('button', { name: reviewCard.topic_title }),
+			screen.getAllByRole('button', { name: reviewCard.topicTitle }),
 		).toHaveLength(1)
 		await user.click(
 			screen.getByRole('button', { name: parentTopic.title }),
@@ -45,7 +45,7 @@ describe('ReviewCardDetailPage', () => {
 		await waitFor(() => {
 			expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
 				id: 11,
-				topic_id: 2,
+				topicId: 2,
 			})
 		})
 		expect(
@@ -83,12 +83,12 @@ describe('ReviewCardDetailPage', () => {
 			expect(createTopicAsyncMock).toHaveBeenCalledWith({
 				title: '',
 				body: '',
-				parent_id: null,
+				parentId: null,
 			})
 		})
 		expect(updateReviewCardAsyncMock).toHaveBeenCalledWith({
 			id: 11,
-			topic_id: 4,
+			topicId: 4,
 		})
 	})
 
@@ -102,7 +102,7 @@ describe('ReviewCardDetailPage', () => {
 
 		await waitFor(() => {
 			expect(
-				screen.getByDisplayValue(reviewCard.primary_text),
+				screen.getByDisplayValue(reviewCard.primaryText),
 			).toHaveFocus()
 		})
 		expect(
@@ -126,21 +126,21 @@ describe('ReviewCardDetailPage', () => {
 
 		await waitFor(() => {
 			expect(
-				screen.getByDisplayValue(reviewCard.primary_text),
+				screen.getByDisplayValue(reviewCard.primaryText),
 			).toBeInTheDocument()
 			expect(
-				screen.getByDisplayValue(reviewCard.secondary_text),
+				screen.getByDisplayValue(reviewCard.secondaryText),
 			).toBeInTheDocument()
 		})
 
-		const promptField = screen.getByDisplayValue(reviewCard.primary_text)
+		const promptField = screen.getByDisplayValue(reviewCard.primaryText)
 		await user.clear(promptField)
 		await user.type(promptField, 'Solve for y')
 
 		currentReviewCard = {
 			...currentReviewCard,
-			primary_text: 'Solve for z',
-			secondary_text: 'Updated answer from server',
+			primaryText: 'Solve for z',
+			secondaryText: 'Updated answer from server',
 		}
 
 		rerender(<ReviewCardDetailPage reviewCardId={11} />)

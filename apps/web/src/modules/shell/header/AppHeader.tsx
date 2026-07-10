@@ -55,7 +55,7 @@ export function AppHeader() {
 		filter: 'all',
 	})
 	const flaggedSummaryQuery = useReviewCardFlaggedSummary()
-	const flaggedCount = flaggedSummaryQuery?.data?.flagged_count ?? 0
+	const flaggedCount = flaggedSummaryQuery?.data?.flaggedCount ?? 0
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {

@@ -73,8 +73,8 @@ export function TopicPage() {
 				{topic.reviewCards.map(reviewCard => (
 					<ReviewCard
 						key={reviewCard.id}
-						primary_text={reviewCard.primary_text}
-						secondary_text={reviewCard.secondary_text}
+						primaryText={reviewCard.primary_text}
+						secondaryText={reviewCard.secondary_text}
 					/>
 				))}
 			</div>

@@ -28,11 +28,11 @@ export function useLearnableMetrics(
 	learnable: LearnableMetricsInput | null,
 ): LearnableMetrics {
 	const retrievability = learnable?.retrievability ?? null
-	const freshnessTier = learnable?.freshness_tier ?? null
-	const daysUntilNextTier = learnable?.days_until_next_tier ?? null
+	const freshnessTier = learnable?.freshnessTier ?? null
+	const daysUntilNextTier = learnable?.daysUntilNextTier ?? null
 	const stability = learnable?.stability ?? null
-	const lastReviewedAt = learnable?.last_reviewed_at ?? null
-	const inheritedStability = learnable?.inherited_stability ?? null
+	const lastReviewedAt = learnable?.lastReviewedAt ?? null
+	const inheritedStability = learnable?.inheritedStability ?? null
 
 	const retrievabilityDisplay = useMemo(() => {
 		if (retrievability === null) return null

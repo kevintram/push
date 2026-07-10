@@ -29,7 +29,7 @@ export function useDetailReviewCounts(filters?: ReviewCardFilters) {
 		let pending = unscheduledReviews.length
 
 		for (const review of scheduledReviews) {
-			const scheduled = dayjs(review.scheduled_at).startOf('day')
+			const scheduled = dayjs(review.scheduledAt).startOf('day')
 			if (scheduled.isBefore(today)) {
 				overdue++
 			} else if (scheduled.isSame(today)) {

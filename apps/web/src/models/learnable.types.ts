@@ -9,11 +9,11 @@ export type ReviewRating = 'miss' | 'hard' | 'good' | 'easy'
  */
 export type LearnableMetricsInput = {
 	retrievability: number | null
-	freshness_tier: FreshnessTier | null
-	days_until_next_tier: number | null
+	freshnessTier: FreshnessTier | null
+	daysUntilNextTier: number | null
 	stability: number | null
-	last_reviewed_at: string | null
-	inherited_stability: number | null
+	lastReviewedAt: string | null
+	inheritedStability: number | null
 	retired?: boolean | null
 }
 
@@ -24,27 +24,27 @@ export type LearnableMetricsInput = {
 export type LearnableBase = {
 	id: number
 	notes?: string
-	inserted_at: string
-	updated_at: string
-	parent_id?: number | null
+	insertedAt: string
+	updatedAt: string
+	parentId?: number | null
 	// FSRS fields
 	stability: number | null
 	difficulty: number | null
 	state: LearningState
 	step: number | null
 	retired: boolean
-	last_reviewed_at: string | null
-	last_review_rating: ReviewRating | null
+	lastReviewedAt: string | null
+	lastReviewRating: ReviewRating | null
 	// Inherited FSRS
-	inherited_stability: number | null
-	inherited_difficulty: number | null
-	inherited_state: LearningState | null
-	inherited_step: number | null
-	inherited_last_review: string | null
+	inheritedStability: number | null
+	inheritedDifficulty: number | null
+	inheritedState: LearningState | null
+	inheritedStep: number | null
+	inheritedLastReview: string | null
 	// Computed
 	retrievability: number | null
-	freshness_tier: FreshnessTier | null
-	days_until_next_tier: number | null
-	days_in_current_tier: number | null
-	children_count?: number
+	freshnessTier: FreshnessTier | null
+	daysUntilNextTier: number | null
+	daysInCurrentTier: number | null
+	childrenCount?: number
 }

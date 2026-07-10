@@ -51,7 +51,7 @@ export function useTopicTreeActions({
 				const created = await createTopicAsync({
 					title: '',
 					body: '',
-					parent_id: parentTopicId,
+					parentId: parentTopicId,
 				})
 				await onAfterCreateSubtopic?.(parentTopicId, created.id)
 				if (navigateToCreatedTopic) {
@@ -101,12 +101,12 @@ export function useTopicTreeActions({
 			if (!shouldNavigateAway) return
 
 			if (
-				topicToDelete.parent_id != null &&
-				nodeById.has(topicToDelete.parent_id)
+				topicToDelete.parentId != null &&
+				nodeById.has(topicToDelete.parentId)
 			) {
 				await navigate({
 					to: '/topics/$topicId',
-					params: { topicId: topicToDelete.parent_id.toString() },
+					params: { topicId: topicToDelete.parentId.toString() },
 				})
 			} else {
 				await navigate({ to: '/library' })

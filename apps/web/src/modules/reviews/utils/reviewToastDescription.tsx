@@ -6,15 +6,15 @@ import { type Review } from '../types/review.types'
 
 type ReviewDurabilityFields = Pick<
 	Review,
-	'stability_before' | 'stability_after' | 'due_after'
+	'stabilityBefore' | 'stabilityAfter' | 'dueAfter'
 >
 
-type ReviewToastActionFields = Pick<Review, 'completed_at' | 'scheduled_at'>
+type ReviewToastActionFields = Pick<Review, 'completedAt' | 'scheduledAt'>
 
 export function getReviewCreatedToastActionLabel(
 	review: ReviewToastActionFields,
 ): 'Open' | 'Schedule' {
-	return review.completed_at == null && review.scheduled_at == null
+	return review.completedAt == null && review.scheduledAt == null
 		? 'Schedule'
 		: 'Open'
 }
@@ -40,24 +40,20 @@ function formatDueRelative(dueDate: string): string {
 export function getReviewCreatedToastDescription(
 	review: ReviewDurabilityFields,
 ): ReactNode | undefined {
-	const dueLabel = review.due_after
-		? formatDueRelative(review.due_after)
-		: null
-	const hasStability = review.stability_after != null
+	const dueLabel = review.dueAfter ? formatDueRelative(review.dueAfter) : null
+	const hasStability = review.stabilityAfter != null
 
 	if (!(dueLabel || hasStability)) {
 		return
 	}
 
 	const stabilityAfterRounded = hasStability
-		? Math.round(review.stability_after ?? 0)
+		? Math.round(review.stabilityAfter ?? 0)
 		: null
-	const hasDelta = hasStability && review.stability_before != null
+	const hasDelta = hasStability && review.stabilityBefore != null
 	const stabilityDeltaRounded =
-		hasDelta && review.stability_before != null
-			? Math.round(
-					(review.stability_after ?? 0) - review.stability_before,
-				)
+		hasDelta && review.stabilityBefore != null
+			? Math.round((review.stabilityAfter ?? 0) - review.stabilityBefore)
 			: 0
 	let stabilityDeltaColorClass = 'text-green-600 dark:text-green-400'
 	if (hasStability && hasDelta && stabilityDeltaRounded < 0) {

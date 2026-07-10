@@ -49,9 +49,9 @@ class TestSearchEndpoint:
         assert response.status_code == 200
         results = response.json()
         assert len(results) == 1
-        assert results[0]["entity_type"] == "topic"
+        assert results[0]["entityType"] == "topic"
         assert results[0]["topic"]["id"] == rust_topic["id"]
-        assert results[0]["review_card"] is None
+        assert results[0]["reviewCard"] is None
 
     async def test_search_review_card_filter_returns_review_card_entities(
         self,
@@ -78,8 +78,8 @@ class TestSearchEndpoint:
         assert response.status_code == 200
         results = response.json()
         assert len(results) >= 1
-        assert all(item["entity_type"] == "review_card" for item in results)
-        ids = {item["review_card"]["id"] for item in results if item["review_card"]}
+        assert all(item["entityType"] == "review_card" for item in results)
+        ids = {item["reviewCard"]["id"] for item in results if item["reviewCard"]}
         assert practice_card["id"] in ids
 
     async def test_search_practice_filter_limits_card_type(
@@ -104,7 +104,7 @@ class TestSearchEndpoint:
 
         assert response.status_code == 200
         results = response.json()
-        ids = {item["review_card"]["id"] for item in results if item["review_card"]}
+        ids = {item["reviewCard"]["id"] for item in results if item["reviewCard"]}
         assert practice_card["id"] in ids
         assert flashcard["id"] not in ids
 
@@ -127,5 +127,5 @@ class TestSearchEndpoint:
 
         assert response.status_code == 200
         results = response.json()
-        ids = {item["review_card"]["id"] for item in results if item["review_card"]}
+        ids = {item["reviewCard"]["id"] for item in results if item["reviewCard"]}
         assert review_card["id"] in ids

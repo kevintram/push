@@ -53,7 +53,7 @@ export function ReviewCardFooterActions({
 				buttonSize='xs'
 				buttonVariant='tertiary'
 				compactTriggerBadges={true}
-				hasLastReviewed={reviewCard.last_reviewed_at != null}
+				hasLastReviewed={reviewCard.lastReviewedAt != null}
 				onSeeAll={onSeeReviews}
 				onTriggerClick={event => event.stopPropagation()}
 				onTriggerFocus={onTriggerReviewsPrefetch}
@@ -61,9 +61,9 @@ export function ReviewCardFooterActions({
 				onTriggerMouseEnter={onTriggerReviewsPrefetch}
 				reviewCardId={reviewCard.id}
 				triggerCounts={{
-					pendingCount: reviewCard.reviews_pending_count ?? 0,
-					overdueCount: reviewCard.reviews_overdue_count ?? 0,
-					dueTodayCount: reviewCard.reviews_due_today_count ?? 0,
+					pendingCount: reviewCard.reviewsPendingCount ?? 0,
+					overdueCount: reviewCard.reviewsOverdueCount ?? 0,
+					dueTodayCount: reviewCard.reviewsDueTodayCount ?? 0,
 				}}
 			/>
 			<div className='flex-1' />

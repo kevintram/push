@@ -25,7 +25,7 @@ describe('review card queue API', () => {
 
 	it('uses filter when requesting a unified queue', async () => {
 		apiFetchMock.mockResolvedValue(
-			jsonResponse({ items: [], as_of: '2026-01-15' }),
+			jsonResponse({ items: [], asOf: '2026-01-15' }),
 		)
 
 		await getReviewCardQueuePage({
@@ -61,7 +61,7 @@ describe('review card queue API', () => {
 
 	it('keeps legacy type queue requests working', async () => {
 		apiFetchMock.mockResolvedValue(
-			jsonResponse({ items: [], as_of: '2026-01-15' }),
+			jsonResponse({ items: [], asOf: '2026-01-15' }),
 		)
 
 		await getReviewCardQueuePage({
@@ -79,11 +79,11 @@ describe('review card queue API', () => {
 	it('uses filter when requesting a unified queue summary', async () => {
 		apiFetchMock.mockResolvedValue(
 			jsonResponse({
-				overdue_count: 1,
-				due_today_count: 2,
-				due_next_seven_days_count: 3,
-				new_count: 4,
-				as_of: '2026-01-15',
+				overdueCount: 1,
+				dueTodayCount: 2,
+				dueNextSevenDaysCount: 3,
+				newCount: 4,
+				asOf: '2026-01-15',
 			}),
 		)
 
@@ -97,11 +97,11 @@ describe('review card queue API', () => {
 	it('keeps legacy type summary requests working', async () => {
 		apiFetchMock.mockResolvedValue(
 			jsonResponse({
-				overdue_count: 1,
-				due_today_count: 2,
-				due_next_seven_days_count: 3,
-				new_count: 4,
-				as_of: '2026-01-15',
+				overdueCount: 1,
+				dueTodayCount: 2,
+				dueNextSevenDaysCount: 3,
+				newCount: 4,
+				asOf: '2026-01-15',
 			}),
 		)
 

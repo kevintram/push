@@ -33,11 +33,11 @@ function createTopicNode({
 		body: '',
 		children,
 		id,
-		inserted_at: '2025-01-01T00:00:00.000Z',
-		parent_id: parentId,
-		parent_title: null,
+		insertedAt: '2025-01-01T00:00:00.000Z',
+		parentId: parentId,
+		parentTitle: null,
 		title,
-		updated_at: '2025-01-01T00:00:00.000Z',
+		updatedAt: '2025-01-01T00:00:00.000Z',
 	}
 }
 

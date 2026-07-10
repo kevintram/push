@@ -4,38 +4,38 @@ export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 
 export type Review = {
 	id: number
-	review_card_id: number
+	reviewCardId: number
 	rating: Rating | null
 
 	description: string
 	notes: string
-	scheduled_at: string | null
-	completed_at: string | null
-	effective_date: string | null
+	scheduledAt: string | null
+	completedAt: string | null
+	effectiveDate: string | null
 
-	inserted_at: string
-	updated_at: string
-	review_card: {
+	insertedAt: string
+	updatedAt: string
+	reviewCard: {
 		id: number
-		topic_id: number
+		topicId: number
 		type: 'practice' | 'flashcard'
-		primary_text: string
-		secondary_text: string
+		primaryText: string
+		secondaryText: string
 	}
 
 	// Entity FSRS state before review
-	stability_before: number | null
-	difficulty_before: number | null
-	state_before: LearningState | null
-	step_before: number | null
-	due_before: string | null
+	stabilityBefore: number | null
+	difficultyBefore: number | null
+	stateBefore: LearningState | null
+	stepBefore: number | null
+	dueBefore: string | null
 
 	// Entity FSRS state after review
-	stability_after: number | null
-	difficulty_after: number | null
-	state_after: LearningState | null
-	step_after: number | null
-	due_after: string | null
+	stabilityAfter: number | null
+	difficultyAfter: number | null
+	stateAfter: LearningState | null
+	stepAfter: number | null
+	dueAfter: string | null
 }
 
 export type ReviewListItem = Review

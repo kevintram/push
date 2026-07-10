@@ -61,11 +61,11 @@ vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 		reviewCard,
 		onClick,
 	}: {
-		reviewCard: { primary_text: string }
+		reviewCard: { primaryText: string }
 		onClick?: () => void
 	}) => (
 		<button onClick={onClick} type='button'>
-			{reviewCard.primary_text}
+			{reviewCard.primaryText}
 		</button>
 	),
 }))
@@ -123,32 +123,32 @@ describe('SearchDialog', () => {
 		useSearchAllMock.mockReturnValue({
 			data: [
 				{
-					entity_type: 'topic',
+					entityType: 'topic',
 					topic: {
 						id: 1,
 						title: 'Current topic',
 						body: '',
-						parent_id: null,
-						parent_title: null,
-						inserted_at: '2026-03-01T12:00:00.000Z',
-						updated_at: '2026-03-01T12:00:00.000Z',
+						parentId: null,
+						parentTitle: null,
+						insertedAt: '2026-03-01T12:00:00.000Z',
+						updatedAt: '2026-03-01T12:00:00.000Z',
 					},
-					review_card: null,
-					recent_activity_at: '2026-03-05T09:00:00.000Z',
+					reviewCard: null,
+					recentActivityAt: '2026-03-05T09:00:00.000Z',
 				},
 				{
-					entity_type: 'topic',
+					entityType: 'topic',
 					topic: {
 						id: 2,
 						title: 'Allowed topic',
 						body: '',
-						parent_id: null,
-						parent_title: null,
-						inserted_at: '2026-03-01T12:00:00.000Z',
-						updated_at: '2026-03-01T12:00:00.000Z',
+						parentId: null,
+						parentTitle: null,
+						insertedAt: '2026-03-01T12:00:00.000Z',
+						updatedAt: '2026-03-01T12:00:00.000Z',
 					},
-					review_card: null,
-					recent_activity_at: '2026-03-05T08:00:00.000Z',
+					reviewCard: null,
+					recentActivityAt: '2026-03-05T08:00:00.000Z',
 				},
 			],
 			isLoading: false,
@@ -157,7 +157,7 @@ describe('SearchDialog', () => {
 		render(
 			<SearchDialog
 				filterResult={result =>
-					result.entity_type === 'topic' && result.topic?.id !== 1
+					result.entityType === 'topic' && result.topic?.id !== 1
 				}
 				onOpenChange={vi.fn()}
 				open={true}

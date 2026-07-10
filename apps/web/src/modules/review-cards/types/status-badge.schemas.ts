@@ -20,5 +20,5 @@ export const ReviewCardStatusBadgeSchema = v.object({
 	label: v.string(),
 	tooltip: v.nullable(v.string()),
 	tone: ReviewCardStatusBadgeToneSchema,
-	review_id: v.nullable(v.number()),
+	reviewId: v.nullable(v.number()),
 })

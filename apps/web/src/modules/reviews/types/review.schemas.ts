@@ -4,38 +4,38 @@ import { type Review, type ReviewListItem } from './review.types'
 
 export const ReviewSchema: v.GenericSchema<Review> = v.object({
 	id: v.number(),
-	review_card_id: v.number(),
+	reviewCardId: v.number(),
 	rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 
 	description: v.string(),
 	notes: v.string(),
-	scheduled_at: v.nullable(v.string()),
-	completed_at: v.nullable(v.string()),
-	effective_date: v.nullable(v.string()),
+	scheduledAt: v.nullable(v.string()),
+	completedAt: v.nullable(v.string()),
+	effectiveDate: v.nullable(v.string()),
 
-	inserted_at: v.string(),
-	updated_at: v.string(),
-	review_card: v.object({
+	insertedAt: v.string(),
+	updatedAt: v.string(),
+	reviewCard: v.object({
 		id: v.number(),
-		topic_id: v.number(),
+		topicId: v.number(),
 		type: v.picklist(['practice', 'flashcard']),
-		primary_text: v.string(),
-		secondary_text: v.string(),
+		primaryText: v.string(),
+		secondaryText: v.string(),
 	}),
 
 	// Entity FSRS state before review
-	stability_before: v.nullable(v.number()),
-	difficulty_before: v.nullable(v.number()),
-	state_before: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
-	step_before: v.nullable(v.number()),
-	due_before: v.nullable(v.string()),
+	stabilityBefore: v.nullable(v.number()),
+	difficultyBefore: v.nullable(v.number()),
+	stateBefore: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
+	stepBefore: v.nullable(v.number()),
+	dueBefore: v.nullable(v.string()),
 
 	// Entity FSRS state after review
-	stability_after: v.nullable(v.number()),
-	difficulty_after: v.nullable(v.number()),
-	state_after: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
-	step_after: v.nullable(v.number()),
-	due_after: v.nullable(v.string()),
+	stabilityAfter: v.nullable(v.number()),
+	difficultyAfter: v.nullable(v.number()),
+	stateAfter: v.nullable(v.picklist(['LEARNING', 'REVIEW', 'RELEARNING'])),
+	stepAfter: v.nullable(v.number()),
+	dueAfter: v.nullable(v.string()),
 })
 
 export const ReviewListItemSchema: v.GenericSchema<ReviewListItem> =

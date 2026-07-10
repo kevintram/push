@@ -2,8 +2,8 @@ import type { DateString } from '~/types/date'
 
 export type ReviewCard = {
 	id: number
-	primary_text: string
-	secondary_text?: string
+	primaryText: string
+	secondaryText?: string
 }
 
 export type ReviewCardFilters = {

@@ -148,7 +148,7 @@ export function TopicDetailSection({
 			const created = await createTopicAsync({
 				title: '',
 				body: '',
-				parent_id: section.topic.id,
+				parentId: section.topic.id,
 			})
 			onSubtopicCreated(section.topic.id, created.id)
 		} catch {

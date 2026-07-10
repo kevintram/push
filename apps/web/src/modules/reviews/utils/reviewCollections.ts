@@ -11,13 +11,13 @@ export function splitReviews(reviews: Array<ReviewListItem>) {
 	const completed: Array<ReviewListItem> = []
 
 	for (const review of reviews) {
-		if (review.completed_at) {
+		if (review.completedAt) {
 			completed.push(review)
 			continue
 		}
 
-		if (review.scheduled_at || review.effective_date) {
-			const date = review.effective_date ?? review.scheduled_at
+		if (review.scheduledAt || review.effectiveDate) {
+			const date = review.effectiveDate ?? review.scheduledAt
 			if (date && date < today) {
 				overdue.push(review)
 			} else if (date && date === today) {
@@ -32,21 +32,20 @@ export function splitReviews(reviews: Array<ReviewListItem>) {
 	}
 
 	const sortByEffectiveDateAsc = (a: ReviewListItem, b: ReviewListItem) =>
-		new Date(a.effective_date ?? 0).getTime() -
-		new Date(b.effective_date ?? 0).getTime()
+		new Date(a.effectiveDate ?? 0).getTime() -
+		new Date(b.effectiveDate ?? 0).getTime()
 
 	overdue.sort(sortByEffectiveDateAsc)
 	todayReviews.sort(sortByEffectiveDateAsc)
 	upcoming.sort(sortByEffectiveDateAsc)
 	uncompletedUnscheduled.sort(
 		(a, b) =>
-			new Date(b.inserted_at).getTime() -
-			new Date(a.inserted_at).getTime(),
+			new Date(b.insertedAt).getTime() - new Date(a.insertedAt).getTime(),
 	)
 	completed.sort(
 		(a, b) =>
-			new Date(b.completed_at ?? b.effective_date ?? 0).getTime() -
-			new Date(a.completed_at ?? a.effective_date ?? 0).getTime(),
+			new Date(b.completedAt ?? b.effectiveDate ?? 0).getTime() -
+			new Date(a.completedAt ?? a.effectiveDate ?? 0).getTime(),
 	)
 
 	return {
@@ -62,7 +61,7 @@ export function getLatestCompletedReview(reviews: Array<ReviewListItem>) {
 	let latest: ReviewListItem | null = null
 
 	for (const review of reviews) {
-		if (!review.completed_at) continue
+		if (!review.completedAt) continue
 
 		if (!latest) {
 			latest = review
@@ -70,8 +69,8 @@ export function getLatestCompletedReview(reviews: Array<ReviewListItem>) {
 		}
 
 		if (
-			new Date(review.completed_at).getTime() >
-			new Date(latest.completed_at ?? 0).getTime()
+			new Date(review.completedAt).getTime() >
+			new Date(latest.completedAt ?? 0).getTime()
 		) {
 			latest = review
 		}

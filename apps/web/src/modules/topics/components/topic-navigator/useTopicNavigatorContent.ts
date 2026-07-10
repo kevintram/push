@@ -116,19 +116,19 @@ export function useTopicNavigatorContent({
 			return
 		}
 
-		const previousParentId = draggedNode?.parent_id ?? null
+		const previousParentId = draggedNode?.parentId ?? null
 
 		try {
 			await updateTopicAsync({
 				id: draggedTopicId,
-				parent_id: nextParentId,
+				parentId: nextParentId,
 			})
 
 			const handleUndoMove = async () => {
 				try {
 					await updateTopicAsync({
 						id: draggedTopicId,
-						parent_id: previousParentId,
+						parentId: previousParentId,
 					})
 					toast.success('Move undone')
 				} catch (error) {

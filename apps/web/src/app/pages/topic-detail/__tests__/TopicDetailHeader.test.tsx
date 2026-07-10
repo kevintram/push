@@ -60,10 +60,10 @@ describe('TopicDetailHeader', () => {
 					id: 1,
 					title: 'Algebra',
 					body: '',
-					parent_id: null,
-					parent_title: null,
-					inserted_at: '2026-04-24T12:00:00.000Z',
-					updated_at: '2026-04-24T12:00:00.000Z',
+					parentId: null,
+					parentTitle: null,
+					insertedAt: '2026-04-24T12:00:00.000Z',
+					updatedAt: '2026-04-24T12:00:00.000Z',
 				}}
 				topicPath={[
 					{

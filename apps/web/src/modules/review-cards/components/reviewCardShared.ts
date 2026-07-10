@@ -24,7 +24,7 @@ export function toReviewCardStatusBadge(
 	badge: ReviewCardStatusBadge,
 	options?: { onOpenReviewDialog?: (reviewId: number) => void },
 ): StatusBadgeItem {
-	const reviewId = badge.review_id
+	const reviewId = badge.reviewId
 	const handleReviewClick =
 		reviewId != null && options?.onOpenReviewDialog
 			? () => options.onOpenReviewDialog?.(reviewId)

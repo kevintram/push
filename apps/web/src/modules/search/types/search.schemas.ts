@@ -7,8 +7,8 @@ import { type SearchResultItem } from './search.types'
 
 export const SearchResultItemSchema: v.GenericSchema<SearchResultItem> =
 	v.object({
-		entity_type: v.picklist(['topic', 'review_card']),
+		entityType: v.picklist(['topic', 'review_card']),
 		topic: v.nullable(v.lazy(() => TopicSchema)),
-		review_card: v.nullable(v.lazy(() => ReviewCardSchema)),
-		recent_activity_at: v.string(),
+		reviewCard: v.nullable(v.lazy(() => ReviewCardSchema)),
+		recentActivityAt: v.string(),
 	})

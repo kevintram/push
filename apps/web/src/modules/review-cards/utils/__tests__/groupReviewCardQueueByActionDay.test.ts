@@ -6,27 +6,27 @@ import { groupReviewCardQueueByActionDay } from '../groupReviewCardQueueByAction
 
 const baseCard: ReviewCard = {
 	id: 1,
-	topic_id: 1,
-	topic_title: 'Algebra',
+	topicId: 1,
+	topicTitle: 'Algebra',
 	type: 'practice',
-	primary_text: 'Prompt',
-	secondary_text: 'Answer',
-	inserted_at: '2026-01-01T12:00:00.000Z',
-	updated_at: '2026-01-02T12:00:00.000Z',
-	last_review_rating: null,
+	primaryText: 'Prompt',
+	secondaryText: 'Answer',
+	insertedAt: '2026-01-01T12:00:00.000Z',
+	updatedAt: '2026-01-02T12:00:00.000Z',
+	lastReviewRating: null,
 	stability: null,
 	difficulty: null,
 	state: 'new',
 	step: null,
 	retired: false,
-	flagged_at: null,
-	last_reviewed_at: null,
+	flaggedAt: null,
+	lastReviewedAt: null,
 	retrievability: null,
-	freshness_tier: null,
-	days_until_next_tier: null,
-	days_in_current_tier: null,
-	is_new: true,
-	status_badges: [],
+	freshnessTier: null,
+	daysUntilNextTier: null,
+	daysInCurrentTier: null,
+	isNew: true,
+	statusBadges: [],
 	notes: '',
 }
 
@@ -34,13 +34,13 @@ function buildQueueItem(
 	overrides: Partial<ReviewCardQueueItem>,
 ): ReviewCardQueueItem {
 	return {
-		queue_type: 'due',
+		queueType: 'due',
 		card: baseCard,
-		review_id: null,
-		scheduled_at: null,
-		action_days: null,
-		days_until_due: null,
-		days_until_hazy: null,
+		reviewId: null,
+		scheduledAt: null,
+		actionDays: null,
+		daysUntilDue: null,
+		daysUntilHazy: null,
 		...overrides,
 	}
 }
@@ -50,42 +50,42 @@ describe('groupReviewCardQueueByActionDay', () => {
 		const sections = groupReviewCardQueueByActionDay(
 			[
 				buildQueueItem({
-					queue_type: 'due',
+					queueType: 'due',
 					card: {
 						...baseCard,
 						id: 11,
-						primary_text: 'Stale overdue due',
+						primaryText: 'Stale overdue due',
 					},
-					review_id: 11,
-					scheduled_at: '2026-01-11',
-					action_days: -4,
-					days_until_due: -4,
+					reviewId: 11,
+					scheduledAt: '2026-01-11',
+					actionDays: -4,
+					daysUntilDue: -4,
 				}),
 				buildQueueItem({
-					queue_type: 'hazy',
-					card: { ...baseCard, id: 12, primary_text: 'Hazy overdue' },
-					action_days: -1,
-					days_until_hazy: -2,
+					queueType: 'hazy',
+					card: { ...baseCard, id: 12, primaryText: 'Hazy overdue' },
+					actionDays: -1,
+					daysUntilHazy: -2,
 				}),
 				buildQueueItem({
-					queue_type: 'due',
+					queueType: 'due',
 					card: {
 						...baseCard,
 						id: 13,
-						primary_text: 'Slightly overdue due',
+						primaryText: 'Slightly overdue due',
 					},
-					review_id: 13,
-					scheduled_at: '2026-01-14',
-					action_days: -1,
-					days_until_due: -1,
+					reviewId: 13,
+					scheduledAt: '2026-01-14',
+					actionDays: -1,
+					daysUntilDue: -1,
 				}),
 				buildQueueItem({
-					queue_type: 'due',
-					card: { ...baseCard, id: 14, primary_text: 'Today due' },
-					review_id: 14,
-					scheduled_at: '2026-01-15',
-					action_days: 0,
-					days_until_due: 0,
+					queueType: 'due',
+					card: { ...baseCard, id: 14, primaryText: 'Today due' },
+					reviewId: 14,
+					scheduledAt: '2026-01-15',
+					actionDays: 0,
+					daysUntilDue: 0,
 				}),
 			],
 			0,
@@ -96,12 +96,12 @@ describe('groupReviewCardQueueByActionDay', () => {
 			'Overdue',
 			'Today',
 		])
-		expect(sections[0]?.items.map(item => item.card.primary_text)).toEqual([
+		expect(sections[0]?.items.map(item => item.card.primaryText)).toEqual([
 			'Slightly overdue due',
 			'Stale overdue due',
 			'Hazy overdue',
 		])
-		expect(sections[1]?.items.map(item => item.card.primary_text)).toEqual([
+		expect(sections[1]?.items.map(item => item.card.primaryText)).toEqual([
 			'Today due',
 		])
 	})

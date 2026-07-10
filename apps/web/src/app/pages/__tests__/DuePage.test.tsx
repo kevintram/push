@@ -28,7 +28,7 @@ describe('DuePage', () => {
 			(params: { filter?: string; mode?: string }) => {
 				if (params.filter !== 'all') {
 					return {
-						data: { items: [], as_of: '2026-03-05' },
+						data: { items: [], asOf: '2026-03-05' },
 						isLoading: false,
 					}
 				}
@@ -37,63 +37,63 @@ describe('DuePage', () => {
 					data: {
 						items: [
 							{
-								queue_type: 'new' as const,
+								queueType: 'new' as const,
 								card: {
 									...reviewCard,
 									id: 51,
-									primary_text: 'New practice',
+									primaryText: 'New practice',
 									type: 'practice',
 								},
-								review_id: null,
-								scheduled_at: null,
-								action_days: null,
-								days_until_due: null,
-								days_until_hazy: null,
+								reviewId: null,
+								scheduledAt: null,
+								actionDays: null,
+								daysUntilDue: null,
+								daysUntilHazy: null,
 							},
 							{
-								queue_type: 'new' as const,
+								queueType: 'new' as const,
 								card: {
 									...reviewCard,
 									id: 52,
-									primary_text: 'New flashcard',
+									primaryText: 'New flashcard',
 									type: 'flashcard',
 								},
-								review_id: null,
-								scheduled_at: null,
-								action_days: null,
-								days_until_due: null,
-								days_until_hazy: null,
+								reviewId: null,
+								scheduledAt: null,
+								actionDays: null,
+								daysUntilDue: null,
+								daysUntilHazy: null,
 							},
 							{
-								queue_type: 'due' as const,
+								queueType: 'due' as const,
 								card: {
 									...reviewCard,
 									id: 61,
-									primary_text: 'Overdue practice',
+									primaryText: 'Overdue practice',
 									type: 'practice',
 								},
-								review_id: null,
-								scheduled_at: '2026-03-04',
-								action_days: -1,
-								days_until_due: -1,
-								days_until_hazy: null,
+								reviewId: null,
+								scheduledAt: '2026-03-04',
+								actionDays: -1,
+								daysUntilDue: -1,
+								daysUntilHazy: null,
 							},
 							{
-								queue_type: 'due' as const,
+								queueType: 'due' as const,
 								card: {
 									...reviewCard,
 									id: 62,
-									primary_text: 'Today flashcard',
+									primaryText: 'Today flashcard',
 									type: 'flashcard',
 								},
-								review_id: null,
-								scheduled_at: '2026-03-05',
-								action_days: 0,
-								days_until_due: 0,
-								days_until_hazy: null,
+								reviewId: null,
+								scheduledAt: '2026-03-05',
+								actionDays: 0,
+								daysUntilDue: 0,
+								daysUntilHazy: null,
 							},
 						],
-						as_of: '2026-03-05',
+						asOf: '2026-03-05',
 					},
 					isLoading: false,
 				}
@@ -143,7 +143,7 @@ describe('DuePage', () => {
 	it('uses the focus toggle to enter focus mode', async () => {
 		const user = userEvent.setup()
 		useReviewCardQueueMock.mockReturnValue({
-			data: { items: [], as_of: '2026-03-05' },
+			data: { items: [], asOf: '2026-03-05' },
 			isLoading: false,
 		})
 
@@ -164,7 +164,7 @@ describe('DuePage', () => {
 	it('switches filters, keeps global counts, and requests the filtered queue', async () => {
 		const user = userEvent.setup()
 		useReviewCardQueueMock.mockReturnValue({
-			data: { items: [], as_of: '2026-03-05' },
+			data: { items: [], asOf: '2026-03-05' },
 			isLoading: false,
 		})
 
@@ -215,7 +215,7 @@ describe('DuePage', () => {
 			},
 		)
 		useReviewCardQueueMock.mockReturnValue({
-			data: { items: [], as_of: '2026-03-05' },
+			data: { items: [], asOf: '2026-03-05' },
 			isLoading: false,
 		})
 
@@ -273,7 +273,7 @@ describe('DuePage', () => {
 			},
 		)
 		useReviewCardQueueMock.mockReturnValue({
-			data: { items: [], as_of: '2026-03-05' },
+			data: { items: [], asOf: '2026-03-05' },
 			isLoading: false,
 		})
 
@@ -286,7 +286,7 @@ describe('DuePage', () => {
 
 	it('warns on the due page when review mode is off', () => {
 		useReviewCardQueueMock.mockReturnValue({
-			data: { items: [], as_of: '2026-03-05' },
+			data: { items: [], asOf: '2026-03-05' },
 			isLoading: false,
 		})
 		useReviewModeMock.mockReturnValue({
@@ -315,7 +315,7 @@ describe('DuePage', () => {
 	it('auto-enables review mode on the due page and shows actions', async () => {
 		const setReviewMode = vi.fn()
 		useReviewCardQueueMock.mockReturnValue({
-			data: { items: [], as_of: '2026-03-05' },
+			data: { items: [], asOf: '2026-03-05' },
 			isLoading: false,
 		})
 		useReviewModeMock.mockReturnValue({

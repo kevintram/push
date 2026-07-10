@@ -23,7 +23,7 @@ export function estimateReviewCardSize(
 	return (
 		estimateCardSize(
 			getReviewCardDisplayTitle(reviewCard),
-			reviewCard.secondary_text || '',
+			reviewCard.secondaryText || '',
 			laneWidth,
 		) + extraHeight
 	)

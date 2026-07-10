@@ -47,7 +47,7 @@ function normalizeQueuePageResult(result: {
 			...result,
 			data: {
 				items: result.data,
-				as_of: '2026-03-05',
+				asOf: '2026-03-05',
 			},
 		}
 	}
@@ -143,12 +143,12 @@ vi.mock('~/modules/topics/components/TopicCard', () => ({
 
 vi.mock('~/modules/review-cards/components/ReviewCard', () => ({
 	ReviewCard: (props: {
-		reviewCard: { primary_text: string }
+		reviewCard: { primaryText: string }
 		enableLargeCardMode?: boolean
 	}) => {
 		reviewCardRenderSpy(props)
 		return (
-			<div data-testid='review-card'>{props.reviewCard.primary_text}</div>
+			<div data-testid='review-card'>{props.reviewCard.primaryText}</div>
 		)
 	},
 }))
@@ -235,36 +235,36 @@ export const topic = {
 	id: 1,
 	title: 'Algebra',
 	body: 'Working with expressions',
-	parent_id: null,
-	parent_title: null,
-	inserted_at: '2026-03-01T12:00:00.000Z',
-	updated_at: '2026-03-04T12:00:00.000Z',
+	parentId: null,
+	parentTitle: null,
+	insertedAt: '2026-03-01T12:00:00.000Z',
+	updatedAt: '2026-03-04T12:00:00.000Z',
 }
 
 export const reviewCard = {
 	id: 11,
-	topic_id: 1,
-	topic_title: 'Algebra',
+	topicId: 1,
+	topicTitle: 'Algebra',
 	type: 'practice' as const,
-	primary_text: 'Solve for x',
-	secondary_text: 'x = 3',
+	primaryText: 'Solve for x',
+	secondaryText: 'x = 3',
 	notes: 'Factor carefully',
-	inserted_at: '2026-03-01T12:00:00.000Z',
-	updated_at: '2026-03-04T12:00:00.000Z',
-	last_review_rating: null,
+	insertedAt: '2026-03-01T12:00:00.000Z',
+	updatedAt: '2026-03-04T12:00:00.000Z',
+	lastReviewRating: null,
 	stability: null,
 	difficulty: null,
 	state: 'new',
 	step: null,
 	retired: false,
-	flagged_at: null,
-	last_reviewed_at: null,
+	flaggedAt: null,
+	lastReviewedAt: null,
 	retrievability: null,
-	freshness_tier: null,
-	days_until_next_tier: null,
-	days_in_current_tier: null,
-	is_new: true,
-	status_badges: [],
+	freshnessTier: null,
+	daysUntilNextTier: null,
+	daysInCurrentTier: null,
+	isNew: true,
+	statusBadges: [],
 }
 
 export function renderDuePage({

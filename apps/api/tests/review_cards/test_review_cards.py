@@ -81,10 +81,10 @@ class TestReviewCardEndpoints:
         response = await test_client.post(
             "/review-cards/",
             json={
-                "topic_id": topic["id"],
+                "topicId": topic["id"],
                 "type": "flashcard",
-                "primary_text": "Prompt",
-                "secondary_text": "Answer",
+                "primaryText": "Prompt",
+                "secondaryText": "Answer",
                 "notes": "Reference material",
             },
         )
@@ -92,10 +92,10 @@ class TestReviewCardEndpoints:
         assert response.status_code == 201
         payload = response.json()
         assert payload["retired"] is False
-        assert payload["flagged_at"] is None
+        assert payload["flaggedAt"] is None
         assert payload["notes"] == "Reference material"
-        assert "srs_enabled" not in payload
-        assert "fsrs_state_id" not in payload
+        assert "srsEnabled" not in payload
+        assert "fsrsStateId" not in payload
 
     async def test_update_review_card_can_toggle_retired(
         self,
@@ -122,7 +122,7 @@ class TestReviewCardEndpoints:
         assert update_response.status_code == 200
         payload = update_response.json()
         assert payload["retired"] is True
-        assert "srs_enabled" not in payload
+        assert "srsEnabled" not in payload
 
     async def test_update_review_card_can_toggle_flagged(
         self,
@@ -142,7 +142,7 @@ class TestReviewCardEndpoints:
 
         assert update_response.status_code == 200
         payload = update_response.json()
-        assert payload["flagged_at"] is not None
+        assert payload["flaggedAt"] is not None
 
         unflag_response = await test_client.patch(
             f"/review-cards/{review_card['id']}/",
@@ -150,7 +150,7 @@ class TestReviewCardEndpoints:
         )
 
         assert unflag_response.status_code == 200
-        assert unflag_response.json()["flagged_at"] is None
+        assert unflag_response.json()["flaggedAt"] is None
 
     async def test_update_review_card_notes(
         self,
@@ -204,8 +204,8 @@ class TestReviewCardEndpoints:
         list_response = await test_client.get(f"/review-cards/?topic_id={topic['id']}")
         assert list_response.status_code == 200
         items = list_response.json()
-        assert [item["primary_text"] for item in items] == ["Third", "Flagged", "First"]
-        assert items[1]["flagged_at"] is not None
+        assert [item["primaryText"] for item in items] == ["Third", "Flagged", "First"]
+        assert items[1]["flaggedAt"] is not None
         assert items[-1]["id"] == first_card["id"]
 
         flagged_response = await test_client.get("/review-cards/?flagged=true")
@@ -600,8 +600,8 @@ class TestReviewCardEndpoints:
         assert today_response.status_code == 200
         assert summary_response.status_code == 200
         summary = summary_response.json()
-        assert len(late_response.json()) == summary["overdue_count"] == 2
-        assert len(today_response.json()) == summary["due_today_count"] == 2
+        assert len(late_response.json()) == summary["overdueCount"] == 2
+        assert len(today_response.json()) == summary["dueTodayCount"] == 2
 
     async def test_list_review_cards_filters_retired(
         self,
@@ -821,7 +821,7 @@ class TestReviewCardEndpoints:
 
         initial_response = await test_client.get("/review-cards/flagged-summary/")
         assert initial_response.status_code == 200
-        assert initial_response.json() == {"flagged_count": 0}
+        assert initial_response.json() == {"flaggedCount": 0}
 
         flag_response = await test_client.patch(
             f"/review-cards/{review_card['id']}/",
@@ -831,7 +831,7 @@ class TestReviewCardEndpoints:
 
         flagged_response = await test_client.get("/review-cards/flagged-summary/")
         assert flagged_response.status_code == 200
-        assert flagged_response.json() == {"flagged_count": 1}
+        assert flagged_response.json() == {"flaggedCount": 1}
 
         unflag_response = await test_client.patch(
             f"/review-cards/{review_card['id']}/",
@@ -841,7 +841,7 @@ class TestReviewCardEndpoints:
 
         unflagged_response = await test_client.get("/review-cards/flagged-summary/")
         assert unflagged_response.status_code == 200
-        assert unflagged_response.json() == {"flagged_count": 0}
+        assert unflagged_response.json() == {"flaggedCount": 0}
 
     async def test_review_card_flagged_summary_counts_only_authenticated_users_cards(
         self,
@@ -876,7 +876,7 @@ class TestReviewCardEndpoints:
         response = await test_client.get("/review-cards/flagged-summary/")
 
         assert response.status_code == 200
-        assert response.json() == {"flagged_count": 1}
+        assert response.json() == {"flaggedCount": 1}
 
     async def test_create_review_card_rejects_legacy_srs_enabled_field(
         self,

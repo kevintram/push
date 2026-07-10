@@ -16,20 +16,20 @@ describe('RecentPage', () => {
 		useSearchAllMock.mockReturnValue({
 			data: [
 				{
-					entity_type: 'topic',
+					entityType: 'topic',
 					topic,
-					review_card: null,
-					recent_activity_at: '2026-03-05T09:00:00.000Z',
+					reviewCard: null,
+					recentActivityAt: '2026-03-05T09:00:00.000Z',
 				},
 				{
-					entity_type: 'review_card',
+					entityType: 'review_card',
 					topic: null,
-					review_card: {
+					reviewCard: {
 						...reviewCard,
 						id: 12,
-						primary_text: 'Different prompt',
+						primaryText: 'Different prompt',
 					},
-					recent_activity_at: '2026-03-05T08:00:00.000Z',
+					recentActivityAt: '2026-03-05T08:00:00.000Z',
 				},
 			],
 			isLoading: false,

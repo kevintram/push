@@ -180,7 +180,7 @@ export function useTopicDetailPage({
 					currentTopicId === topicId ? null : currentTopicId,
 				)
 				setPendingCreatedParentTopicId(currentParentTopicId =>
-					currentParentTopicId === nodeById.get(topicId)?.parent_id
+					currentParentTopicId === nodeById.get(topicId)?.parentId
 						? null
 						: currentParentTopicId,
 				)
@@ -269,7 +269,7 @@ export function useTopicDetailPage({
 			const created = await createTopicAsync({
 				title: '',
 				body: '',
-				parent_id: topic.id,
+				parentId: topic.id,
 			})
 			handleSubtopicCreated(topic.id, created.id)
 		} catch {
@@ -285,10 +285,10 @@ export function useTopicDetailPage({
 			setIsDeleteDialogOpen(false)
 			toast.success('Topic deleted')
 
-			if (topic.parent_id != null && nodeById.has(topic.parent_id)) {
+			if (topic.parentId != null && nodeById.has(topic.parentId)) {
 				await navigate({
 					to: '/topics/$topicId',
-					params: { topicId: topic.parent_id.toString() },
+					params: { topicId: topic.parentId.toString() },
 				})
 				return
 			}

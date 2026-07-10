@@ -92,11 +92,11 @@ export function ReviewCard({
 
 	const metrics = useLearnableMetrics({
 		retrievability: reviewCard.retrievability,
-		freshness_tier: toFreshnessTier(reviewCard.freshness_tier),
-		days_until_next_tier: reviewCard.days_until_next_tier,
+		freshnessTier: toFreshnessTier(reviewCard.freshnessTier),
+		daysUntilNextTier: reviewCard.daysUntilNextTier,
 		stability: reviewCard.stability,
-		last_reviewed_at: reviewCard.last_reviewed_at,
-		inherited_stability: null,
+		lastReviewedAt: reviewCard.lastReviewedAt,
+		inheritedStability: null,
 	})
 
 	const {
@@ -109,7 +109,7 @@ export function ReviewCard({
 	const { hidesPrimary, hidesSecondary } = useReviewMode()
 	const effectiveHidesSecondary =
 		hidesSecondary && reviewCard.type !== 'practice'
-	const hideParent = hidesPrimary && reviewCard.topic_id != null
+	const hideParent = hidesPrimary && reviewCard.topicId != null
 	const [isPrimaryRevealed, setIsPrimaryRevealed] = useState(!hidesPrimary)
 	const [isSecondaryRevealed, setIsSecondaryRevealed] = useState(
 		!effectiveHidesSecondary,
@@ -120,38 +120,34 @@ export function ReviewCard({
 
 	const lastReviewed = useMemo(
 		() =>
-			formatRelativeDate(reviewCard.last_reviewed_at, {
+			formatRelativeDate(reviewCard.lastReviewedAt, {
 				includeFuture: false,
 				nullLabel: 'never',
 			}),
-		[reviewCard.last_reviewed_at],
+		[reviewCard.lastReviewedAt],
 	)
 	const lastReviewedDate = useMemo(
-		() => formatAbsoluteDate(reviewCard.last_reviewed_at),
-		[reviewCard.last_reviewed_at],
+		() => formatAbsoluteDate(reviewCard.lastReviewedAt),
+		[reviewCard.lastReviewedAt],
 	)
 
 	const highlightedPrimary = useMemo(() => {
-		if (!reviewCard.primary_text) return null
-		if (!searchQuery?.trim()) return reviewCard.primary_text
+		if (!reviewCard.primaryText) return null
+		if (!searchQuery?.trim()) return reviewCard.primaryText
 		return highlightText({
-			text: reviewCard.primary_text,
+			text: reviewCard.primaryText,
 			query: searchQuery,
 		})
-	}, [reviewCard.primary_text, searchQuery])
+	}, [reviewCard.primaryText, searchQuery])
 
 	const highlightedSecondary = useMemo(() => {
-		if (!reviewCard.secondary_text) return null
-		if (!searchQuery?.trim()) return reviewCard.secondary_text
-		return truncateWithHighlight(
-			reviewCard.secondary_text,
-			searchQuery,
-			200,
-		)
-	}, [reviewCard.secondary_text, searchQuery])
+		if (!reviewCard.secondaryText) return null
+		if (!searchQuery?.trim()) return reviewCard.secondaryText
+		return truncateWithHighlight(reviewCard.secondaryText, searchQuery, 200)
+	}, [reviewCard.secondaryText, searchQuery])
 
-	const hasPrimaryText = Boolean(reviewCard.primary_text.trim())
-	const hasSecondaryText = Boolean(reviewCard.secondary_text.trim())
+	const hasPrimaryText = Boolean(reviewCard.primaryText.trim())
+	const hasSecondaryText = Boolean(reviewCard.secondaryText.trim())
 	const hidePrimary = hidesPrimary && hasPrimaryText && !isPrimaryRevealed
 	const hideSecondary =
 		effectiveHidesSecondary && hasSecondaryText && !isSecondaryRevealed
@@ -161,10 +157,10 @@ export function ReviewCard({
 			cardRect.width > 0 ? cardRect.width : CARD_ESTIMATE_FALLBACK_WIDTH
 		return estimateExpandedCardSize(
 			displayPrimaryText,
-			reviewCard.secondary_text || '',
+			reviewCard.secondaryText || '',
 			estimatedWidth,
 		)
-	}, [cardRect.width, displayPrimaryText, reviewCard.secondary_text])
+	}, [cardRect.width, displayPrimaryText, reviewCard.secondaryText])
 	const isLargeCard =
 		enableLargeCardMode &&
 		estimatedExpandedCardHeight >= LARGE_CARD_CONTENT_HEIGHT_MIN
@@ -180,7 +176,7 @@ export function ReviewCard({
 		handleCopyGuessText,
 		handleCopyRevealText,
 	} = useRevealPanel({
-		revealText: reviewCard.secondary_text,
+		revealText: reviewCard.secondaryText,
 		entityId: reviewCard.id < 0 ? null : reviewCard.id,
 		hidesSecondary: effectiveHidesSecondary,
 	})
@@ -260,10 +256,10 @@ export function ReviewCard({
 			event.stopPropagation()
 			updateReviewCard({
 				id: reviewCard.id,
-				flagged: reviewCard.flagged_at == null,
+				flagged: reviewCard.flaggedAt == null,
 			})
 		},
-		[reviewCard.id, reviewCard.flagged_at, updateReviewCard],
+		[reviewCard.id, reviewCard.flaggedAt, updateReviewCard],
 	)
 
 	const handleSeeReviews = useCallback(() => {
@@ -292,30 +288,29 @@ export function ReviewCard({
 	const { openReviewDialog } = useReviewDialog()
 	const reviewCardStatusBadges = useMemo(
 		() =>
-			orderReviewCardStatusBadges(reviewCard.status_badges).map(
-				apiBadge =>
-					toReviewCardStatusBadge(apiBadge, {
-						onOpenReviewDialog: openReviewDialog,
-					}),
+			orderReviewCardStatusBadges(reviewCard.statusBadges).map(apiBadge =>
+				toReviewCardStatusBadge(apiBadge, {
+					onOpenReviewDialog: openReviewDialog,
+				}),
 			),
-		[reviewCard.status_badges, openReviewDialog],
+		[reviewCard.statusBadges, openReviewDialog],
 	)
 	const resolvedStatusBadges = statusBadges ?? reviewCardStatusBadges
 
 	const typeBadgeLabel =
 		typeLabelOverride ??
 		(reviewCard.type === 'practice' ? 'Practice' : 'Flashcard')
-	const isFlagged = reviewCard.flagged_at != null
-	const topicTitle = reviewCard.topic_title?.trim() ?? ''
+	const isFlagged = reviewCard.flaggedAt != null
+	const topicTitle = reviewCard.topicTitle?.trim() ?? ''
 	const resolvedParentLabel =
 		parentLabel ??
-		(topicTitle.length > 0 ? topicTitle : `Topic #${reviewCard.topic_id}`)
+		(topicTitle.length > 0 ? topicTitle : `Topic #${reviewCard.topicId}`)
 	const hasMeasuredCardWidth = cardRect.width > 0
 	const showReviewedMeta =
 		!hasMeasuredCardWidth || cardRect.width >= CARD_WIDTH_REVIEWED_META_MIN
 	const showRatingMeta =
 		showReviewedMeta &&
-		reviewCard.last_review_rating != null &&
+		reviewCard.lastReviewRating != null &&
 		(!hasMeasuredCardWidth || cardRect.width >= CARD_WIDTH_RATING_META_MIN)
 	const showStabilityMeta =
 		!hasMeasuredCardWidth || cardRect.width >= CARD_WIDTH_STABILITY_META_MIN
@@ -362,7 +357,7 @@ export function ReviewCard({
 				isLargeCard={isLargeCard}
 				isRevealPanelCopied={isRevealPanelCopied}
 				revealPanelTab={revealPanelTab}
-				reviewCardAnswer={reviewCard.secondary_text}
+				reviewCardAnswer={reviewCard.secondaryText}
 				setGuessSecondaryText={setGuessSecondaryText}
 				setRevealPanelTab={setRevealPanelTab}
 			/>
@@ -372,7 +367,7 @@ export function ReviewCard({
 				isUnreviewed={isUnreviewed}
 				lastReviewedDate={lastReviewedDate}
 				lastReviewedText={lastReviewed.text}
-				lastReviewRating={reviewCard.last_review_rating}
+				lastReviewRating={reviewCard.lastReviewRating}
 				showRatingMeta={showRatingMeta}
 				showReviewedMeta={showReviewedMeta}
 				showStabilityMeta={showStabilityMeta}

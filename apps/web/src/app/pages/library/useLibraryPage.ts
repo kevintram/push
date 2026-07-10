@@ -24,10 +24,10 @@ const LIBRARY_ROOT_NODE: Omit<TopicTreeNode, 'children'> = {
 	id: TOPIC_DETAIL_SYNTHETIC_LIBRARY_ROOT_ID,
 	title: 'Library',
 	body: '',
-	parent_id: null,
-	parent_title: null,
-	inserted_at: '',
-	updated_at: '',
+	parentId: null,
+	parentTitle: null,
+	insertedAt: '',
+	updatedAt: '',
 }
 
 type UseLibraryPageOptions = {

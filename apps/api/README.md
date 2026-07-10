@@ -46,6 +46,11 @@ Once the server is running, visit:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
+Public JSON request and response object properties use `camelCase`. Python,
+SQLAlchemy, and database field names remain `snake_case`. Existing query and
+path parameter names are also `snake_case` unless an endpoint documents an
+explicit alias.
+
 ### Authentication
 
 The API uses token-based authentication:

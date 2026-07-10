@@ -229,9 +229,9 @@ export function DueFocusPage({
 
 		try {
 			await createReviewMutation.mutateAsync({
-				review_card_id: activeCard.id,
+				reviewCardId: activeCard.id,
 				rating,
-				completed_at: localDateString(),
+				completedAt: localDateString(),
 			})
 			advanceAfterCompletedItem()
 		} catch {

@@ -21,9 +21,7 @@ describe('TopicDetailPage masonry', () => {
 		})
 		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
-			data: [
-				{ ...reviewCard, id: 13, primary_text: 'Topic detail card' },
-			],
+			data: [{ ...reviewCard, id: 13, primaryText: 'Topic detail card' }],
 			isLoading: false,
 		})
 
@@ -45,9 +43,7 @@ describe('TopicDetailPage masonry', () => {
 		})
 		useTopicsMock.mockReturnValue({ data: [], isLoading: false })
 		useReviewCardsMock.mockReturnValue({
-			data: [
-				{ ...reviewCard, id: 13, primary_text: 'Topic detail card' },
-			],
+			data: [{ ...reviewCard, id: 13, primaryText: 'Topic detail card' }],
 			isLoading: false,
 		})
 

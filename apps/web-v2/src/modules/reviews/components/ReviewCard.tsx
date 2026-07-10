@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { type ReviewCard as ReviewCardData } from '~/modules/reviews/types/review.types'
+import type { ReviewCard as ReviewCardData } from '~/modules/reviews/types/review.types'
 import { colors, fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -20,14 +20,14 @@ const styles = stylex.create({
 	},
 })
 
-type ReviewCardProps = Pick<ReviewCardData, 'primary_text' | 'secondary_text'>
+type ReviewCardProps = Pick<ReviewCardData, 'primaryText' | 'secondaryText'>
 
-export function ReviewCard({ primary_text, secondary_text }: ReviewCardProps) {
+export function ReviewCard({ primaryText, secondaryText }: ReviewCardProps) {
 	return (
 		<div {...stylex.props(styles.container)}>
-			<p {...stylex.props(styles.title)}>{primary_text}</p>
-			{secondary_text ? (
-				<p {...stylex.props(styles.description)}>{secondary_text}</p>
+			<p {...stylex.props(styles.title)}>{primaryText}</p>
+			{secondaryText ? (
+				<p {...stylex.props(styles.description)}>{secondaryText}</p>
 			) : null}
 		</div>
 	)

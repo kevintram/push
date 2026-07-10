@@ -194,9 +194,9 @@ export function ReviewCardDetailSurface({
 						closeOnSelect={false}
 						createLabel='Create topic'
 						filterResult={result =>
-							result.entity_type === 'topic' &&
+							result.entityType === 'topic' &&
 							result.topic != null &&
-							result.topic.id !== reviewCard.topic_id
+							result.topic.id !== reviewCard.topicId
 						}
 						initialFilter='topic'
 						isCreating={isTopicMutationPending}

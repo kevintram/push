@@ -9,16 +9,16 @@ export const handlers = [
 	}),
 	http.get('*/review-cards/queue-summary/', () =>
 		HttpResponse.json({
-			overdue_count: 0,
-			due_today_count: 0,
-			due_next_seven_days_count: 0,
-			new_count: 0,
-			as_of: '2026-03-05',
+			overdueCount: 0,
+			dueTodayCount: 0,
+			dueNextSevenDaysCount: 0,
+			newCount: 0,
+			asOf: '2026-03-05',
 		}),
 	),
 	http.get('*/review-cards/flagged-summary/', () =>
 		HttpResponse.json({
-			flagged_count: 0,
+			flaggedCount: 0,
 		}),
 	),
 	http.get('*/topics/', ({ request }) => {

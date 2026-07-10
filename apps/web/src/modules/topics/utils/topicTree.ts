@@ -34,12 +34,12 @@ export function buildTopicTree(topics: Array<Topic>): TopicTree {
 		const node = nodeById.get(topic.id)
 		if (!node) continue
 
-		if (topic.parent_id == null) {
+		if (topic.parentId == null) {
 			roots.push(node)
 			continue
 		}
 
-		const parentNode = nodeById.get(topic.parent_id)
+		const parentNode = nodeById.get(topic.parentId)
 		if (!parentNode) {
 			roots.push(node)
 			continue

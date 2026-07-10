@@ -149,11 +149,11 @@ export function useReviewsMenu({
 	const createReview = useCallback(
 		async (completedAt: string | null, rating: Rating | null) => {
 			const review = await createReviewMutation.mutateAsync({
-				review_card_id: reviewCardId,
+				reviewCardId: reviewCardId,
 				rating,
 				description: '',
-				scheduled_at: null,
-				completed_at: completedAt,
+				scheduledAt: null,
+				completedAt: completedAt,
 			})
 
 			if (completedAt === null) {

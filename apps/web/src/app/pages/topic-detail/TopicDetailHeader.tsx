@@ -124,16 +124,16 @@ export function TopicDetailHeader({
 						<div>
 							<TopicDetailSectionMeta
 								createdDate={formatAbsoluteDate(
-									topic.inserted_at,
+									topic.insertedAt,
 								)}
 								createdText={
-									formatRelativeDate(topic.inserted_at).text
+									formatRelativeDate(topic.insertedAt).text
 								}
 								updatedDate={formatAbsoluteDate(
-									topic.updated_at,
+									topic.updatedAt,
 								)}
 								updatedText={
-									formatRelativeDate(topic.updated_at).text
+									formatRelativeDate(topic.updatedAt).text
 								}
 							/>
 						</div>

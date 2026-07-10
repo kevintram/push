@@ -78,8 +78,8 @@ export function TopicCard({
 
 	const resolvedParentLabel =
 		parentLabel ??
-		topic.parent_title?.trim() ??
-		(topic.parent_id == null ? 'No parent' : `Topic #${topic.parent_id}`)
+		topic.parentTitle?.trim() ??
+		(topic.parentId == null ? 'No parent' : `Topic #${topic.parentId}`)
 	const hasBodyText = Boolean(topic.body.trim())
 	const hideSecondary = hidesSecondary && hasBodyText && !isSecondaryRevealed
 	const estimatedCardHeight = useMemo(() => {
@@ -127,28 +127,28 @@ export function TopicCard({
 
 	const updated = useMemo(
 		() =>
-			formatRelativeDate(topic.updated_at, {
+			formatRelativeDate(topic.updatedAt, {
 				includeFuture: false,
 				nullLabel: 'never',
 			}),
-		[topic.updated_at],
+		[topic.updatedAt],
 	)
 	const created = useMemo(
 		() =>
-			formatRelativeDate(topic.inserted_at, {
+			formatRelativeDate(topic.insertedAt, {
 				includeFuture: false,
 				nullLabel: 'never',
 			}),
-		[topic.inserted_at],
+		[topic.insertedAt],
 	)
 
 	const updatedDate = useMemo(
-		() => formatAbsoluteDate(topic.updated_at),
-		[topic.updated_at],
+		() => formatAbsoluteDate(topic.updatedAt),
+		[topic.updatedAt],
 	)
 	const createdDate = useMemo(
-		() => formatAbsoluteDate(topic.inserted_at),
-		[topic.inserted_at],
+		() => formatAbsoluteDate(topic.insertedAt),
+		[topic.insertedAt],
 	)
 
 	const handleActivate = useCallback(() => {

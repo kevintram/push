@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
+
+from app.schemas.base import ApiModel
 
 
 class StatusBadgeKeyEnum(str, Enum):
@@ -20,7 +22,7 @@ class StatusBadgeToneEnum(str, Enum):
     WARNING = "warning"
 
 
-class StatusBadge(BaseModel):
+class StatusBadge(ApiModel):
     model_config = ConfigDict(from_attributes=True)
 
     key: StatusBadgeKeyEnum
