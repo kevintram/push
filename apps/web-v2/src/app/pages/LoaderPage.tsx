@@ -1,0 +1,36 @@
+import * as stylex from '@stylexjs/stylex'
+import { Loader } from 'lucide-react'
+
+import { colors, iconSizes } from '~/styles/tokens.stylex'
+
+const spin = stylex.keyframes({
+	to: {
+		transform: 'rotate(360deg)',
+	},
+})
+
+const styles = stylex.create({
+	page: {
+		alignItems: 'center',
+		display: 'flex',
+		justifyContent: 'center',
+		minHeight: '100%',
+	},
+	loader: {
+		animationDuration: '1s',
+		animationIterationCount: 'infinite',
+		animationName: spin,
+		animationTimingFunction: 'linear',
+		color: colors.mutedForeground,
+		height: iconSizes.lg,
+		width: iconSizes.lg,
+	},
+})
+
+export function LoaderPage() {
+	return (
+		<div aria-label='Loading' role='status' {...stylex.props(styles.page)}>
+			<Loader aria-hidden='true' {...stylex.props(styles.loader)} />
+		</div>
+	)
+}

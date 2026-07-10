@@ -6,6 +6,7 @@ import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
+import { LoaderPage } from './app/pages/LoaderPage'
 import { routeTree } from './app/routeTree.gen'
 
 if (import.meta.env.DEV && !import.meta.env.VITEST) {
@@ -22,8 +23,14 @@ const router = createRouter({
 	context: {
 		queryClient,
 	},
+
 	defaultPreload: 'intent',
 	defaultPreloadStaleTime: 0, // let Query decide freshness, not the router
+
+	defaultPendingComponent: LoaderPage,
+	defaultPendingMs: 200,
+	defaultPendingMinMs: 200,
+
 	scrollRestoration: true,
 })
 
