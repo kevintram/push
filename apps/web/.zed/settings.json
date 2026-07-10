@@ -26,33 +26,33 @@
 	"languages": {
 		"JavaScript": {
 			"format_on_save": "on",
+			"code_actions_on_format": {
+				"source.fixAll.oxc": true
+			},
 			"prettier": { "allowed": false },
 			"tab_size": 4,
 			"hard_tabs": true,
-			"formatter": [
-				{ "language_server": { "name": "oxfmt" } },
-				{ "code_action": "source.fixAll.oxc" }
-			]
+			"formatter": { "language_server": { "name": "oxfmt" } }
 		},
 		"TypeScript": {
 			"format_on_save": "on",
+			"code_actions_on_format": {
+				"source.fixAll.oxc": true
+			},
 			"prettier": { "allowed": false },
 			"tab_size": 4,
 			"hard_tabs": true,
-			"formatter": [
-				{ "language_server": { "name": "oxfmt" } },
-				{ "code_action": "source.fixAll.oxc" }
-			]
+			"formatter": { "language_server": { "name": "oxfmt" } }
 		},
 		"TSX": {
 			"format_on_save": "on",
+			"code_actions_on_format": {
+				"source.fixAll.oxc": true
+			},
 			"prettier": { "allowed": false },
 			"tab_size": 4,
 			"hard_tabs": true,
-			"formatter": [
-				{ "language_server": { "name": "oxfmt" } },
-				{ "code_action": "source.fixAll.oxc" }
-			]
+			"formatter": { "language_server": { "name": "oxfmt" } }
 		},
 		"CSS": {
 			"format_on_save": "on",
