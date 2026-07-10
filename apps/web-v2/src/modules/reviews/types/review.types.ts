@@ -1,8 +1,11 @@
-export type ReviewCardStatus = 'due' | 'new' | 'late'
+import type { DateString } from '~/types/date'
 
 export type ReviewCard = {
 	id: number
-	status?: ReviewCardStatus
 	primary_text: string
 	secondary_text?: string
+}
+
+export type ReviewCardFilters = {
+	due: 'late' | 'new' | DateString
 }

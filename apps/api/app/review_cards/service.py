@@ -11,6 +11,7 @@ from app.exceptions import BadRequestError, NotFoundError
 from app.models import Review, ReviewCard, ReviewCardTypeAssignment, Topic
 from app.review_cards.status_badges import (
     compute_days_until_hazy,
+    get_earliest_due_review,
     get_days_until_hazy,
     get_hazy_action_days,
 )
@@ -52,6 +53,109 @@ def _parse_order_by(value: str) -> list[tuple[str, bool]]:
             raise BadRequestError(f"Unknown order_by field: {field}")
         parsed.append((field, descending))
     return parsed
+
+
+def _due_card_ids_query(
+    user_id: str,
+    *,
+    card_types: tuple[str, ...] | None = None,
+):
+    stmt = (
+        select(Review.review_card_id)
+        .join(ReviewCard, Review.review_card_id == ReviewCard.id)
+        .where(
+            Review.user_id == user_id,
+            Review.review_card_id.isnot(None),
+            Review.completed_at.is_(None),
+            Review.scheduled_at.isnot(None),
+        )
+        .distinct()
+    )
+    if card_types is not None:
+        stmt = stmt.where(ReviewCard.type.in_(card_types))
+    return stmt
+
+
+async def _apply_review_card_filters(
+    session: AsyncSession,
+    stmt,
+    user_id: str,
+    *,
+    topic_id: int | None,
+    include_descendants: bool,
+    card_type: str | None,
+    flagged: bool | None,
+    retired: bool | None,
+):
+    if topic_id is not None:
+        if include_descendants:
+            topic_result = await session.execute(
+                select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
+            )
+            topic = topic_result.scalar_one_or_none()
+            if not topic:
+                raise NotFoundError("Topic", topic_id)
+
+            stmt = stmt.join(Topic, ReviewCard.topic_id == Topic.id).where(
+                Topic.path.op("<@")(topic.path)
+            )
+        else:
+            stmt = stmt.where(ReviewCard.topic_id == topic_id)
+    if card_type is not None:
+        stmt = stmt.where(ReviewCard.type == card_type)
+    if flagged is True:
+        stmt = stmt.where(ReviewCard.flagged_at.isnot(None))
+    if retired is not None:
+        stmt = stmt.where(ReviewCard.retired.is_(retired))
+    return stmt
+
+
+def _effective_due_date(
+    review_card: ReviewCard,
+    *,
+    as_of: date,
+    hazy_action_days: dict[int, int],
+) -> date:
+    if review_card.id in hazy_action_days:
+        return as_of + timedelta(days=hazy_action_days[review_card.id])
+
+    due_review = get_earliest_due_review(review_card)
+    assert due_review is not None and due_review.scheduled_at is not None
+    return due_review.scheduled_at
+
+
+def _sort_merged_due_review_cards(
+    review_cards: list[ReviewCard],
+    *,
+    order_fields: list[tuple[str, bool]],
+    as_of: date,
+    hazy_action_days: dict[int, int],
+) -> list[ReviewCard]:
+    sorted_cards = list(review_cards)
+    last_descending = order_fields[-1][1]
+    sorted_cards.sort(key=lambda review_card: review_card.id, reverse=last_descending)
+
+    for field, descending in reversed(order_fields):
+        if field == "inserted_at":
+            sorted_cards.sort(
+                key=lambda review_card: review_card.inserted_at,
+                reverse=descending,
+            )
+            continue
+
+        sorted_cards.sort(
+            key=lambda review_card: 1 if review_card.id in hazy_action_days else 0
+        )
+        sorted_cards.sort(
+            key=lambda review_card: _effective_due_date(
+                review_card,
+                as_of=as_of,
+                hazy_action_days=hazy_action_days,
+            ),
+            reverse=descending,
+        )
+
+    return sorted_cards
 
 
 def resolve_queue_card_types(
@@ -116,18 +220,7 @@ async def _list_actionable_due_queue_items(
     card_types: tuple[str, ...],
     as_of: date,
 ) -> list[ReviewCardQueueItem]:
-    due_card_ids_query = (
-        select(Review.review_card_id)
-        .join(ReviewCard, Review.review_card_id == ReviewCard.id)
-        .where(
-            Review.user_id == user_id,
-            Review.review_card_id.isnot(None),
-            Review.completed_at.is_(None),
-            Review.scheduled_at.isnot(None),
-            ReviewCard.type.in_(card_types),
-        )
-        .distinct()
-    )
+    due_card_ids_query = _due_card_ids_query(user_id, card_types=card_types)
 
     due_result = await session.execute(
         select(Review)
@@ -203,6 +296,61 @@ async def _list_actionable_due_queue_items(
 
     items.sort(key=_queue_sort_key)
     return items
+
+
+async def _list_hazy_due_cards(
+    session: AsyncSession,
+    user_id: str,
+    *,
+    as_of: date,
+    due: date | Literal["late"],
+    topic_id: int | None,
+    include_descendants: bool,
+    card_type: str | None,
+    flagged: bool | None,
+) -> tuple[list[ReviewCard], dict[int, int]]:
+    card_types = (card_type,) if card_type is not None else None
+    stmt = select(ReviewCard).where(
+        ReviewCard.user_id == user_id,
+        ReviewCard.retired.is_(False),
+        ~ReviewCard.id.in_(_due_card_ids_query(user_id, card_types=card_types)),
+    )
+    stmt = await _apply_review_card_filters(
+        session,
+        stmt,
+        user_id,
+        topic_id=topic_id,
+        include_descendants=include_descendants,
+        card_type=card_type,
+        flagged=flagged,
+        retired=None,
+    )
+    stmt = stmt.options(
+        selectinload(ReviewCard.topic),
+        selectinload(ReviewCard.reviews),
+        selectinload(ReviewCard.type_assignments),
+    )
+
+    result = await session.execute(stmt)
+    hazy_cards: list[ReviewCard] = []
+    hazy_action_days: dict[int, int] = {}
+    for review_card in result.scalars().unique().all():
+        days_until_hazy = get_days_until_hazy(review_card, today=as_of)
+        if days_until_hazy is None:
+            continue
+
+        action_days = get_hazy_action_days(days_until_hazy)
+        if due == "late":
+            if action_days < 0:
+                hazy_cards.append(review_card)
+                hazy_action_days[review_card.id] = action_days
+            continue
+
+        if action_days == (due - as_of).days:
+            hazy_cards.append(review_card)
+            hazy_action_days[review_card.id] = action_days
+
+    return hazy_cards, hazy_action_days
 
 
 async def _list_new_queue_items(
@@ -300,6 +448,8 @@ async def list_review_cards(
     order_fields = _parse_order_by(order_by)
     orders_by_due = any(field == "due" for field, _descending in order_fields)
     due_schedule_subquery = None
+    as_of = get_current_date()
+    merges_hazy_due_cards = due not in (None, "new") and retired is not True
 
     stmt = select(ReviewCard).where(ReviewCard.user_id == user_id)
 
@@ -323,22 +473,16 @@ async def list_review_cards(
             due_schedule_subquery.c.review_card_id == ReviewCard.id,
         )
 
-    if topic_id is not None:
-        if include_descendants:
-            topic_result = await session.execute(
-                select(Topic).where(Topic.id == topic_id, Topic.user_id == user_id)
-            )
-            topic = topic_result.scalar_one_or_none()
-            if not topic:
-                raise NotFoundError("Topic", topic_id)
-
-            stmt = stmt.join(Topic, ReviewCard.topic_id == Topic.id).where(
-                Topic.path.op("<@")(topic.path)
-            )
-        else:
-            stmt = stmt.where(ReviewCard.topic_id == topic_id)
-    if card_type is not None:
-        stmt = stmt.where(ReviewCard.type == card_type)
+    stmt = await _apply_review_card_filters(
+        session,
+        stmt,
+        user_id,
+        topic_id=topic_id,
+        include_descendants=include_descendants,
+        card_type=card_type,
+        flagged=None,
+        retired=None,
+    )
     if due == "new":
         completed_exists = (
             select(Review.id)
@@ -352,13 +496,19 @@ async def list_review_cards(
     elif due is not None:
         assert due_schedule_subquery is not None
         if due == "late":
-            stmt = stmt.where(due_schedule_subquery.c.due_date < get_current_date())
+            stmt = stmt.where(due_schedule_subquery.c.due_date < as_of)
         else:
             stmt = stmt.where(due_schedule_subquery.c.due_date == due)
-    if flagged is True:
-        stmt = stmt.where(ReviewCard.flagged_at.isnot(None))
-    if retired is not None:
-        stmt = stmt.where(ReviewCard.retired.is_(retired))
+    stmt = await _apply_review_card_filters(
+        session,
+        stmt,
+        user_id,
+        topic_id=None,
+        include_descendants=False,
+        card_type=None,
+        flagged=flagged,
+        retired=retired,
+    )
 
     order_clauses = []
     last_descending = order_fields[-1][1]
@@ -384,7 +534,28 @@ async def list_review_cards(
     )
 
     result = await session.execute(stmt)
-    return list(result.scalars().unique().all())
+    review_cards = list(result.scalars().unique().all())
+    if not merges_hazy_due_cards:
+        return review_cards
+
+    assert due is not None and due != "new"
+    hazy_cards, hazy_action_days = await _list_hazy_due_cards(
+        session,
+        user_id,
+        as_of=as_of,
+        due=due,
+        topic_id=topic_id,
+        include_descendants=include_descendants,
+        card_type=card_type,
+        flagged=flagged,
+    )
+    review_cards.extend(hazy_cards)
+    return _sort_merged_due_review_cards(
+        review_cards,
+        order_fields=order_fields,
+        as_of=as_of,
+        hazy_action_days=hazy_action_days,
+    )
 
 
 async def create_review_card(
@@ -580,18 +751,7 @@ async def get_review_card_queue_summary(
     due_today_count = due_summary.due_today_count
     due_next_seven_days_count = due_summary.due_next_seven_days_count
 
-    due_card_ids_query = (
-        select(Review.review_card_id)
-        .join(ReviewCard, Review.review_card_id == ReviewCard.id)
-        .where(
-            Review.user_id == user_id,
-            Review.review_card_id.isnot(None),
-            Review.completed_at.is_(None),
-            Review.scheduled_at.isnot(None),
-            ReviewCard.type.in_(card_types),
-        )
-        .distinct()
-    )
+    due_card_ids_query = _due_card_ids_query(user_id, card_types=card_types)
 
     hazy_cards_stmt = select(
         ReviewCard.id,

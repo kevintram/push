@@ -1,12 +1,13 @@
 """Integration tests for review-card endpoints."""
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.review_cards import ReviewCard
 from app.models.topics import Topic
+from app.review_cards import service as review_card_service
 
 
 async def _create_topic(test_client: AsyncClient, title: str = "Topic") -> dict:
@@ -60,6 +61,14 @@ async def _create_review(
     response = await test_client.post("/reviews/", json=payload)
     assert response.status_code == 200
     return response.json()
+
+
+def _patch_hazy_days(monkeypatch, hazy_days_by_card_id: dict[int, int]) -> None:
+    monkeypatch.setattr(
+        review_card_service,
+        "get_days_until_hazy",
+        lambda review_card, *, today=None: hazy_days_by_card_id.get(review_card.id),
+    )
 
 
 class TestReviewCardEndpoints:
@@ -292,6 +301,307 @@ class TestReviewCardEndpoints:
 
         assert response.status_code == 200
         assert [item["id"] for item in response.json()] == [late_card["id"]]
+
+    async def test_list_review_cards_due_filters_include_matching_hazy_cards(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        today = date(2026, 7, 9)
+        topic = await _create_topic(test_client, "Hazy due filters")
+        scheduled_late_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Scheduled late"
+        )
+        scheduled_today_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Scheduled today"
+        )
+        hazy_late_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Hazy late"
+        )
+        hazy_today_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Hazy today"
+        )
+        hazy_future_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Hazy future"
+        )
+        future_scheduled_hazy_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Future scheduled hazy"
+        )
+        retired_hazy_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Retired hazy"
+        )
+
+        await _create_review(
+            test_client,
+            scheduled_late_card["id"],
+            scheduled_at=str(today - timedelta(days=1)),
+        )
+        await _create_review(
+            test_client, scheduled_today_card["id"], scheduled_at=str(today)
+        )
+        await _create_review(
+            test_client,
+            future_scheduled_hazy_card["id"],
+            scheduled_at=str(today + timedelta(days=7)),
+        )
+        retire_response = await test_client.patch(
+            f"/review-cards/{retired_hazy_card['id']}/",
+            json={"retired": True},
+        )
+        assert retire_response.status_code == 200
+
+        _patch_hazy_days(
+            monkeypatch,
+            {
+                hazy_late_card["id"]: -2,
+                hazy_today_card["id"]: 0,
+                hazy_future_card["id"]: 3,
+                future_scheduled_hazy_card["id"]: -2,
+                retired_hazy_card["id"]: -2,
+            },
+        )
+
+        late_response = await test_client.get(
+            "/review-cards/?due=late",
+            headers={"X-Client-Date": str(today)},
+        )
+        today_response = await test_client.get(
+            f"/review-cards/?due={today}",
+            headers={"X-Client-Date": str(today)},
+        )
+        future_response = await test_client.get(
+            f"/review-cards/?due={today + timedelta(days=3)}",
+            headers={"X-Client-Date": str(today)},
+        )
+        retired_response = await test_client.get(
+            "/review-cards/?due=late&retired=true",
+            headers={"X-Client-Date": str(today)},
+        )
+
+        assert late_response.status_code == 200
+        assert today_response.status_code == 200
+        assert future_response.status_code == 200
+        assert retired_response.status_code == 200
+        assert {item["id"] for item in late_response.json()} == {
+            scheduled_late_card["id"],
+            hazy_late_card["id"],
+        }
+        assert {item["id"] for item in today_response.json()} == {
+            scheduled_today_card["id"],
+            hazy_today_card["id"],
+        }
+        assert [item["id"] for item in future_response.json()] == [
+            hazy_future_card["id"]
+        ]
+        assert retired_response.json() == []
+
+    async def test_list_review_cards_hazy_due_cards_respect_filters(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        today = date(2026, 7, 9)
+        root = await _create_topic(test_client, "Filtered hazy root")
+        child_response = await test_client.post(
+            "/topics/",
+            json={"title": "Filtered hazy child", "body": "", "parent_id": root["id"]},
+        )
+        assert child_response.status_code == 201
+        child = child_response.json()
+        outside = await _create_topic(test_client, "Filtered hazy outside")
+
+        matching_card = await _create_review_card(
+            test_client,
+            child["id"],
+            card_type="practice",
+            primary_text="Matching hazy",
+        )
+        wrong_type_card = await _create_review_card(
+            test_client,
+            child["id"],
+            card_type="flashcard",
+            primary_text="Wrong type hazy",
+        )
+        unflagged_card = await _create_review_card(
+            test_client,
+            child["id"],
+            card_type="practice",
+            primary_text="Unflagged hazy",
+        )
+        outside_card = await _create_review_card(
+            test_client,
+            outside["id"],
+            card_type="practice",
+            primary_text="Outside hazy",
+        )
+
+        for card in [matching_card, wrong_type_card, outside_card]:
+            flag_response = await test_client.patch(
+                f"/review-cards/{card['id']}/",
+                json={"flagged": True},
+            )
+            assert flag_response.status_code == 200
+
+        _patch_hazy_days(
+            monkeypatch,
+            {
+                matching_card["id"]: -2,
+                wrong_type_card["id"]: -2,
+                unflagged_card["id"]: -2,
+                outside_card["id"]: -2,
+            },
+        )
+
+        response = await test_client.get(
+            "/review-cards/"
+            f"?due=late&topic_id={root['id']}&include_descendants=true"
+            "&type=practice&flagged=true",
+            headers={"X-Client-Date": str(today)},
+        )
+
+        assert response.status_code == 200
+        assert [item["id"] for item in response.json()] == [matching_card["id"]]
+
+    async def test_list_review_cards_orders_merged_hazy_and_scheduled_due_cards(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        today = date(2026, 7, 9)
+        topic = await _create_topic(test_client, "Merged due order")
+        scheduled_older_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Scheduled older"
+        )
+        hazy_older_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Hazy older"
+        )
+        scheduled_tie_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Scheduled tie"
+        )
+        hazy_tie_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Hazy tie"
+        )
+
+        await _create_review(
+            test_client,
+            scheduled_older_card["id"],
+            scheduled_at=str(today - timedelta(days=2)),
+        )
+        await _create_review(
+            test_client,
+            scheduled_tie_card["id"],
+            scheduled_at=str(today - timedelta(days=1)),
+        )
+        _patch_hazy_days(
+            monkeypatch,
+            {
+                hazy_older_card["id"]: -3,
+                hazy_tie_card["id"]: -2,
+            },
+        )
+
+        ascending_response = await test_client.get(
+            "/review-cards/?due=late&order_by=due",
+            headers={"X-Client-Date": str(today)},
+        )
+        descending_response = await test_client.get(
+            "/review-cards/?due=late&order_by=-due",
+            headers={"X-Client-Date": str(today)},
+        )
+
+        assert ascending_response.status_code == 200
+        assert descending_response.status_code == 200
+        assert [item["id"] for item in ascending_response.json()] == [
+            scheduled_older_card["id"],
+            hazy_older_card["id"],
+            scheduled_tie_card["id"],
+            hazy_tie_card["id"],
+        ]
+        assert [item["id"] for item in descending_response.json()] == [
+            scheduled_tie_card["id"],
+            hazy_tie_card["id"],
+            scheduled_older_card["id"],
+            hazy_older_card["id"],
+        ]
+
+    async def test_list_review_cards_due_filter_counts_match_queue_summary(
+        self,
+        test_client: AsyncClient,
+        monkeypatch,
+    ):
+        today = date(2026, 7, 9)
+        topic = await _create_topic(test_client, "Due queue parity")
+        scheduled_late_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="Scheduled late parity",
+        )
+        scheduled_today_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="Scheduled today parity",
+        )
+        hazy_late_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="Hazy late parity",
+        )
+        hazy_today_card = await _create_review_card(
+            test_client,
+            topic["id"],
+            card_type="practice",
+            primary_text="Hazy today parity",
+        )
+
+        await _create_review(
+            test_client,
+            scheduled_late_card["id"],
+            scheduled_at=str(today - timedelta(days=1)),
+        )
+        await _create_review(
+            test_client, scheduled_today_card["id"], scheduled_at=str(today)
+        )
+        _patch_hazy_days(
+            monkeypatch,
+            {
+                hazy_late_card["id"]: -2,
+                hazy_today_card["id"]: 0,
+            },
+        )
+        monkeypatch.setattr(
+            review_card_service,
+            "_get_hazy_action_days",
+            lambda *, review_card_id, stability, last_reviewed_at, today: (
+                -1
+                if review_card_id == hazy_late_card["id"]
+                else 0
+                if review_card_id == hazy_today_card["id"]
+                else None
+            ),
+        )
+
+        late_response = await test_client.get(
+            "/review-cards/?due=late&type=practice",
+            headers={"X-Client-Date": str(today)},
+        )
+        today_response = await test_client.get(
+            f"/review-cards/?due={today}&type=practice",
+            headers={"X-Client-Date": str(today)},
+        )
+        summary_response = await test_client.get(
+            "/review-cards/queue-summary/?type=practice",
+            headers={"X-Client-Date": str(today)},
+        )
+
+        assert late_response.status_code == 200
+        assert today_response.status_code == 200
+        assert summary_response.status_code == 200
+        summary = summary_response.json()
+        assert len(late_response.json()) == summary["overdue_count"] == 2
+        assert len(today_response.json()) == summary["due_today_count"] == 2
 
     async def test_list_review_cards_filters_retired(
         self,
