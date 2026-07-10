@@ -22,6 +22,9 @@ const router = createRouter({
 	context: {
 		queryClient,
 	},
+	defaultPreload: 'intent',
+	defaultPreloadStaleTime: 0, // let Query decide freshness, not the router
+	scrollRestoration: true,
 })
 
 declare module '@tanstack/react-router' {
