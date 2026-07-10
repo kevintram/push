@@ -1,8 +1,4 @@
-import type { DateString } from '~/types/date'
-
-type ReviewCardFilters = {
-	due: 'late' | 'new' | DateString
-}
+import type { ReviewCardFilters } from '../types/review.types'
 
 export const reviewCardKeys = {
 	all: ['review-cards'] as const,
