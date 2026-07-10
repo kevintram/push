@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import * as v from 'valibot'
 
 import { ReviewCardSchema } from '../types/review.schemas'
@@ -23,9 +22,9 @@ const fetchReviewCards = async (
 	return v.parse(v.array(ReviewCardSchema), data)
 }
 
-export function useGetReviewCards(filters?: ReviewCardFilters) {
-	return useQuery({
+export const getReviewCardsParams = (filters?: ReviewCardFilters) => {
+	return {
 		queryKey: reviewCardKeys.list(filters),
 		queryFn: () => fetchReviewCards(filters),
-	})
+	}
 }

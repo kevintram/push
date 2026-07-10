@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
+import { useQuery } from '@tanstack/react-query'
 
-import { useGetReviewCards } from '~/modules/reviews/api/getReviewCards'
+import { getReviewCardsParams } from '~/modules/reviews/api/getReviewCards'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 import { getTodayAsString } from '~/utils/date'
@@ -14,10 +15,8 @@ const styles = stylex.create({
 	},
 })
 
-const today = getTodayAsString()
-
 export function ReviewDuePage() {
-	const { data } = useGetReviewCards({ due: today })
+	const { data } = useQuery(getReviewCardsParams({ due: getTodayAsString() }))
 
 	return (
 		<>
