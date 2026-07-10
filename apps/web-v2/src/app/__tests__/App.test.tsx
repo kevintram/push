@@ -5,9 +5,16 @@ import {
 	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
+
+vi.mock('~/modules/reviews/api/getReviewCards', () => ({
+	getReviewCardsParams: (filters?: unknown) => ({
+		queryKey: ['review-cards', 'test', filters],
+		queryFn: async () => [],
+	}),
+}))
 
 function renderRoute(path: string) {
 	const queryClient = new QueryClient()
