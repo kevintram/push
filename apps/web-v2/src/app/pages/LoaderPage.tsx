@@ -14,6 +14,9 @@ const styles = stylex.create({
 		alignItems: 'center',
 		display: 'flex',
 		justifyContent: 'center',
+
+		flexBasis: 0,
+		flexGrow: 1,
 		minHeight: '100%',
 	},
 	loader: {
