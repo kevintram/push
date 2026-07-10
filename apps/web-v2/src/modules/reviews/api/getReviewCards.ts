@@ -14,7 +14,7 @@ export async function fetchReviewCards(
 	const response = await fetch(url, { credentials: 'include' })
 
 	if (!response.ok) {
-		throw new Error(`Failed to fetch new reviews: ${response.status}`)
+		throw new Error(`Failed to fetch reviews: ${response.status}`)
 	}
 
 	const data = await response.json()

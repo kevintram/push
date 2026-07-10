@@ -1,16 +1,16 @@
 import * as stylex from '@stylexjs/stylex'
+import { useQuery } from '@tanstack/react-query'
 
-import topics from '~/modules/library/mock-data/topics.json'
 import { spacing } from '~/styles/tokens.stylex'
 
-import type { Topic } from '../../types/topic.types'
+import { topicQueries } from '../../api/queries'
 import { TopicLink } from './TopicLink'
 
 const styles = stylex.create({
 	container: {
 		padding: spacing.md,
 
-		overflow: 'hidden',
+		overflowY: 'auto',
 
 		flexShrink: 0,
 		inlineSize: '240px',
@@ -31,10 +31,12 @@ const styles = stylex.create({
 })
 
 export function LibrarySidebar() {
+	const { data } = useQuery(topicQueries.list())
+
 	return (
 		<nav aria-label='Library topics' {...stylex.props(styles.container)}>
 			<ul {...stylex.props(styles.list)}>
-				{(topics as Array<Topic>).map(topic => (
+				{data?.map(topic => (
 					<TopicLink key={topic.id} {...topic} />
 				))}
 			</ul>

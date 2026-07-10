@@ -3,9 +3,9 @@ import { Link } from '@tanstack/react-router'
 
 import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
-import { type Topic } from '../../types/topic.types'
+import { type TopicWithChildren } from '../../types/topic.types'
 
-type TopicLinkProps = Topic
+type TopicLinkProps = TopicWithChildren
 
 const styles = stylex.create({
 	item: {
@@ -42,18 +42,18 @@ const styles = stylex.create({
 	},
 })
 
-export function TopicLink({ slug, title, children }: TopicLinkProps) {
+export function TopicLink({ id, title, children }: TopicLinkProps) {
 	return (
 		<li {...stylex.props(styles.item)}>
 			<Link
 				to='/library/$topicId'
-				params={{ topicId: slug }}
+				params={{ topicId: String(id) }}
 				{...stylex.props(styles.link)}
 			>
 				{title}
 			</Link>
 
-			{children.length > 0 ? (
+			{children && children.length > 0 ? (
 				<ul {...stylex.props(styles.children)}>
 					{children.map(child => (
 						<TopicLink key={child.id} {...child} />

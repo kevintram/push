@@ -1,7 +1,6 @@
 [
 	{
 		"id": 1,
-		"slug": "react-foundations",
 		"title": "React Foundations",
 		"body": "Core React concepts for building predictable user interfaces from reusable components.",
 		"reviewCards": [
@@ -24,7 +23,7 @@
 		"children": [
 			{
 				"id": 2,
-				"slug": "component-composition",
+				"parentId": 1,
 				"title": "Component Composition",
 				"body": "Patterns for combining small components into larger interfaces while keeping data flow clear.",
 				"reviewCards": [
@@ -42,7 +41,7 @@
 				"children": [
 					{
 						"id": 3,
-						"slug": "controlled-components",
+						"parentId": 2,
 						"title": "Controlled Components",
 						"body": "Form and input patterns where React state is the source of truth.",
 						"reviewCards": [
@@ -63,7 +62,7 @@
 			},
 			{
 				"id": 4,
-				"slug": "react-effects",
+				"parentId": 1,
 				"title": "Effects",
 				"body": "Using effects for synchronization with systems outside React rendering.",
 				"reviewCards": [
@@ -84,7 +83,6 @@
 	},
 	{
 		"id": 5,
-		"slug": "typescript-basics",
 		"title": "TypeScript Basics",
 		"body": "TypeScript language features that make application data and component contracts explicit.",
 		"reviewCards": [
@@ -102,7 +100,7 @@
 		"children": [
 			{
 				"id": 6,
-				"slug": "discriminated-unions",
+				"parentId": 5,
 				"title": "Discriminated Unions",
 				"body": "Modeling related variants with a shared discriminant field.",
 				"reviewCards": [
