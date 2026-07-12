@@ -10,6 +10,7 @@ import { spacing } from '~/styles/tokens.stylex'
 const styles = stylex.create({
 	outerContainer: {
 		padding: spacing.lg,
+		width: '100%',
 	},
 	link: {
 		display: 'flex',

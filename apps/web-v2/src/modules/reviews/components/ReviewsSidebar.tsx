@@ -25,7 +25,7 @@ const styles = stylex.create({
 		padding: spacing.lg,
 		borderRadius: radii.lg,
 		backgroundColor: colors.muted,
-		inlineSize: '280px',
+		inlineSize: '320px',
 	},
 	header: {
 		display: 'flex',
