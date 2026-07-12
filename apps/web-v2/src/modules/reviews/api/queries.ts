@@ -11,18 +11,29 @@ export const reviewCardQueries = {
 			queryKey: [...reviewCardQueries.all, 'list', filters],
 			queryFn: () => fetchReviewCards(filters),
 		}),
-	detail: (reviewCardId: number | string) =>
-		queryOptions({
-			queryKey: [...reviewCardQueries.all, 'detail', reviewCardId],
-			queryFn: () => fetchReviewCard(reviewCardId),
-		}),
+	detail: (reviewCardId: number | string) => {
+		const normalizedReviewCardId = String(reviewCardId)
+		return queryOptions({
+			queryKey: [
+				...reviewCardQueries.all,
+				'detail',
+				normalizedReviewCardId,
+			],
+			queryFn: () => fetchReviewCard(normalizedReviewCardId),
+		})
+	},
 }
 
 export const reviewQueries = {
 	all: ['reviews'] as const,
-	list: (filters: ReviewFilters) =>
-		queryOptions({
-			queryKey: [...reviewQueries.all, 'list', filters],
-			queryFn: () => fetchReviews(filters),
-		}),
+	list: (filters: ReviewFilters) => {
+		const normalizedFilters = {
+			...filters,
+			reviewCardId: String(filters.reviewCardId),
+		}
+		return queryOptions({
+			queryKey: [...reviewQueries.all, 'list', normalizedFilters],
+			queryFn: () => fetchReviews(normalizedFilters),
+		})
+	},
 }
