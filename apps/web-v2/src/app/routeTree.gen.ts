@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RecentRouteImport } from './routes/recent'
 import { Route as PinnedRouteImport } from './routes/pinned'
 import { Route as FlaggedRouteImport } from './routes/flagged'
+import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as ReviewRouteRouteImport } from './routes/review/route'
 import { Route as LibraryRouteRouteImport } from './routes/library/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -22,6 +23,9 @@ import { Route as ReviewNewRouteImport } from './routes/review/new'
 import { Route as ReviewLateRouteImport } from './routes/review/late'
 import { Route as ReviewDueRouteImport } from './routes/review/due'
 import { Route as LibraryTopicIdRouteImport } from './routes/library/$topicId'
+import { Route as LibraryTopicIdReviewCardIdRouteRouteImport } from './routes/library/$topicId_.$reviewCardId/route'
+import { Route as LibraryTopicIdReviewCardIdIndexRouteImport } from './routes/library/$topicId_.$reviewCardId/index'
+import { Route as LibraryTopicIdReviewCardIdReviewRouteImport } from './routes/library/$topicId_.$reviewCardId/review'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -41,6 +45,11 @@ const PinnedRoute = PinnedRouteImport.update({
 const FlaggedRoute = FlaggedRouteImport.update({
   id: '/flagged',
   path: '/flagged',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignSystemRoute = DesignSystemRouteImport.update({
+  id: '/design-system',
+  path: '/design-system',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewRouteRoute = ReviewRouteRouteImport.update({
@@ -88,11 +97,30 @@ const LibraryTopicIdRoute = LibraryTopicIdRouteImport.update({
   path: '/$topicId',
   getParentRoute: () => LibraryRouteRoute,
 } as any)
+const LibraryTopicIdReviewCardIdRouteRoute =
+  LibraryTopicIdReviewCardIdRouteRouteImport.update({
+    id: '/$topicId_/$reviewCardId',
+    path: '/$topicId/$reviewCardId',
+    getParentRoute: () => LibraryRouteRoute,
+  } as any)
+const LibraryTopicIdReviewCardIdIndexRoute =
+  LibraryTopicIdReviewCardIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => LibraryTopicIdReviewCardIdRouteRoute,
+  } as any)
+const LibraryTopicIdReviewCardIdReviewRoute =
+  LibraryTopicIdReviewCardIdReviewRouteImport.update({
+    id: '/review',
+    path: '/review',
+    getParentRoute: () => LibraryTopicIdReviewCardIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/library': typeof LibraryRouteRouteWithChildren
   '/review': typeof ReviewRouteRouteWithChildren
+  '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
@@ -103,9 +131,13 @@ export interface FileRoutesByFullPath {
   '/review/new': typeof ReviewNewRoute
   '/library/': typeof LibraryIndexRoute
   '/review/': typeof ReviewIndexRoute
+  '/library/$topicId/$reviewCardId': typeof LibraryTopicIdReviewCardIdRouteRouteWithChildren
+  '/library/$topicId/$reviewCardId/review': typeof LibraryTopicIdReviewCardIdReviewRoute
+  '/library/$topicId/$reviewCardId/': typeof LibraryTopicIdReviewCardIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
@@ -116,12 +148,15 @@ export interface FileRoutesByTo {
   '/review/new': typeof ReviewNewRoute
   '/library': typeof LibraryIndexRoute
   '/review': typeof ReviewIndexRoute
+  '/library/$topicId/$reviewCardId/review': typeof LibraryTopicIdReviewCardIdReviewRoute
+  '/library/$topicId/$reviewCardId': typeof LibraryTopicIdReviewCardIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/library': typeof LibraryRouteRouteWithChildren
   '/review': typeof ReviewRouteRouteWithChildren
+  '/design-system': typeof DesignSystemRoute
   '/flagged': typeof FlaggedRoute
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
@@ -132,6 +167,9 @@ export interface FileRoutesById {
   '/review/new': typeof ReviewNewRoute
   '/library/': typeof LibraryIndexRoute
   '/review/': typeof ReviewIndexRoute
+  '/library/$topicId_/$reviewCardId': typeof LibraryTopicIdReviewCardIdRouteRouteWithChildren
+  '/library/$topicId_/$reviewCardId/review': typeof LibraryTopicIdReviewCardIdReviewRoute
+  '/library/$topicId_/$reviewCardId/': typeof LibraryTopicIdReviewCardIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/library'
     | '/review'
+    | '/design-system'
     | '/flagged'
     | '/pinned'
     | '/recent'
@@ -149,9 +188,13 @@ export interface FileRouteTypes {
     | '/review/new'
     | '/library/'
     | '/review/'
+    | '/library/$topicId/$reviewCardId'
+    | '/library/$topicId/$reviewCardId/review'
+    | '/library/$topicId/$reviewCardId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/design-system'
     | '/flagged'
     | '/pinned'
     | '/recent'
@@ -162,11 +205,14 @@ export interface FileRouteTypes {
     | '/review/new'
     | '/library'
     | '/review'
+    | '/library/$topicId/$reviewCardId/review'
+    | '/library/$topicId/$reviewCardId'
   id:
     | '__root__'
     | '/'
     | '/library'
     | '/review'
+    | '/design-system'
     | '/flagged'
     | '/pinned'
     | '/recent'
@@ -177,12 +223,16 @@ export interface FileRouteTypes {
     | '/review/new'
     | '/library/'
     | '/review/'
+    | '/library/$topicId_/$reviewCardId'
+    | '/library/$topicId_/$reviewCardId/review'
+    | '/library/$topicId_/$reviewCardId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LibraryRouteRoute: typeof LibraryRouteRouteWithChildren
   ReviewRouteRoute: typeof ReviewRouteRouteWithChildren
+  DesignSystemRoute: typeof DesignSystemRoute
   FlaggedRoute: typeof FlaggedRoute
   PinnedRoute: typeof PinnedRoute
   RecentRoute: typeof RecentRoute
@@ -217,6 +267,13 @@ declare module '@tanstack/react-router' {
       path: '/flagged'
       fullPath: '/flagged'
       preLoaderRoute: typeof FlaggedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/design-system': {
+      id: '/design-system'
+      path: '/design-system'
+      fullPath: '/design-system'
+      preLoaderRoute: typeof DesignSystemRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/review': {
@@ -282,17 +339,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryTopicIdRouteImport
       parentRoute: typeof LibraryRouteRoute
     }
+    '/library/$topicId_/$reviewCardId': {
+      id: '/library/$topicId_/$reviewCardId'
+      path: '/$topicId/$reviewCardId'
+      fullPath: '/library/$topicId/$reviewCardId'
+      preLoaderRoute: typeof LibraryTopicIdReviewCardIdRouteRouteImport
+      parentRoute: typeof LibraryRouteRoute
+    }
+    '/library/$topicId_/$reviewCardId/': {
+      id: '/library/$topicId_/$reviewCardId/'
+      path: '/'
+      fullPath: '/library/$topicId/$reviewCardId/'
+      preLoaderRoute: typeof LibraryTopicIdReviewCardIdIndexRouteImport
+      parentRoute: typeof LibraryTopicIdReviewCardIdRouteRoute
+    }
+    '/library/$topicId_/$reviewCardId/review': {
+      id: '/library/$topicId_/$reviewCardId/review'
+      path: '/review'
+      fullPath: '/library/$topicId/$reviewCardId/review'
+      preLoaderRoute: typeof LibraryTopicIdReviewCardIdReviewRouteImport
+      parentRoute: typeof LibraryTopicIdReviewCardIdRouteRoute
+    }
   }
 }
+
+interface LibraryTopicIdReviewCardIdRouteRouteChildren {
+  LibraryTopicIdReviewCardIdReviewRoute: typeof LibraryTopicIdReviewCardIdReviewRoute
+  LibraryTopicIdReviewCardIdIndexRoute: typeof LibraryTopicIdReviewCardIdIndexRoute
+}
+
+const LibraryTopicIdReviewCardIdRouteRouteChildren: LibraryTopicIdReviewCardIdRouteRouteChildren =
+  {
+    LibraryTopicIdReviewCardIdReviewRoute:
+      LibraryTopicIdReviewCardIdReviewRoute,
+    LibraryTopicIdReviewCardIdIndexRoute: LibraryTopicIdReviewCardIdIndexRoute,
+  }
+
+const LibraryTopicIdReviewCardIdRouteRouteWithChildren =
+  LibraryTopicIdReviewCardIdRouteRoute._addFileChildren(
+    LibraryTopicIdReviewCardIdRouteRouteChildren,
+  )
 
 interface LibraryRouteRouteChildren {
   LibraryTopicIdRoute: typeof LibraryTopicIdRoute
   LibraryIndexRoute: typeof LibraryIndexRoute
+  LibraryTopicIdReviewCardIdRouteRoute: typeof LibraryTopicIdReviewCardIdRouteRouteWithChildren
 }
 
 const LibraryRouteRouteChildren: LibraryRouteRouteChildren = {
   LibraryTopicIdRoute: LibraryTopicIdRoute,
   LibraryIndexRoute: LibraryIndexRoute,
+  LibraryTopicIdReviewCardIdRouteRoute:
+    LibraryTopicIdReviewCardIdRouteRouteWithChildren,
 }
 
 const LibraryRouteRouteWithChildren = LibraryRouteRoute._addFileChildren(
@@ -321,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LibraryRouteRoute: LibraryRouteRouteWithChildren,
   ReviewRouteRoute: ReviewRouteRouteWithChildren,
+  DesignSystemRoute: DesignSystemRoute,
   FlaggedRoute: FlaggedRoute,
   PinnedRoute: PinnedRoute,
   RecentRoute: RecentRoute,

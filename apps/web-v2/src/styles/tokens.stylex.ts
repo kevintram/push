@@ -105,6 +105,7 @@ export const radii = stylex.defineVars({
 	sm: '4px',
 	md: '6px',
 	lg: '8px',
+	full: '9999px',
 })
 
 export const spacing = stylex.defineVars({

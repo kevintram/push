@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
+import { Link } from '@tanstack/react-router'
 
-import { type ReviewCard as ReviewCardData } from '~/modules/reviews/types/review.types'
+import { type ReviewCard } from '~/modules/reviews/types/review.types'
 import { colors, fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -10,6 +11,9 @@ const styles = stylex.create({
 		borderBottomColor: colors.border,
 		borderBottomStyle: 'solid',
 		borderBottomWidth: '1px',
+
+		textDecoration: 'none',
+		color: 'inherit',
 	},
 	title: {
 		fontSize: fontSizes.md,
@@ -20,15 +24,22 @@ const styles = stylex.create({
 	},
 })
 
-type ReviewCardProps = Pick<ReviewCardData, 'primary_text' | 'secondary_text'>
-
-export function ReviewCard({ primary_text, secondary_text }: ReviewCardProps) {
+export function ReviewCard({
+	id,
+	topic_id,
+	primary_text,
+	secondary_text,
+}: ReviewCard) {
 	return (
-		<div {...stylex.props(styles.container)}>
+		<Link
+			to='/library/$topicId/$reviewCardId'
+			params={{ topicId: String(topic_id), reviewCardId: String(id) }}
+			{...stylex.props(styles.container)}
+		>
 			<p {...stylex.props(styles.title)}>{primary_text}</p>
 			{secondary_text ? (
 				<p {...stylex.props(styles.description)}>{secondary_text}</p>
 			) : null}
-		</div>
+		</Link>
 	)
 }

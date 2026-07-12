@@ -1,0 +1,115 @@
+import * as stylex from '@stylexjs/stylex'
+
+import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+
+import { radiiSpecimens, spacingSpecimens } from './specimens.data'
+import { SpecimenSection } from './SpecimenSection'
+
+const styles = stylex.create({
+	subhead: {
+		color: colors.mutedForeground,
+		fontSize: fontSizes.xs,
+		letterSpacing: '0.08em',
+		textTransform: 'uppercase',
+
+		marginBottom: spacing.lg,
+	},
+	subheadGap: {
+		marginTop: spacing['3xl'],
+	},
+
+	ruler: {
+		display: 'flex',
+		flexDirection: 'column',
+	},
+	rulerRow: {
+		gap: spacing.lg,
+
+		alignItems: 'center',
+		display: 'flex',
+
+		paddingBlock: spacing.md,
+	},
+	rulerLabel: {
+		color: colors.mutedForeground,
+		fontSize: fontSizes.xs,
+
+		flexShrink: 0,
+		textAlign: 'right',
+		width: '96px',
+	},
+	bar: {
+		borderRadius: radii.lg,
+
+		backgroundColor: colors.foreground,
+		height: '10px',
+	},
+
+	radii: {
+		gap: spacing.xl,
+
+		display: 'flex',
+		flexWrap: 'wrap',
+	},
+	radiusItem: {
+		gap: spacing.md,
+
+		alignItems: 'center',
+		display: 'flex',
+		flexDirection: 'column',
+	},
+	radiusBox: {
+		borderColor: colors.foreground,
+		borderStyle: 'solid',
+		borderWidth: '2px',
+
+		backgroundColor: colors.surface,
+
+		height: '72px',
+		width: '72px',
+	},
+	radiusLabel: {
+		color: colors.mutedForeground,
+		fontSize: fontSizes.xs,
+	},
+})
+
+export function ScaleSection() {
+	return (
+		<SpecimenSection
+			id='scale'
+			title='Space & radius'
+			meta={`${spacingSpecimens.length} steps · ${radiiSpecimens.length} corners`}
+		>
+			<p {...stylex.props(styles.subhead)}>Spacing</p>
+			<div {...stylex.props(styles.ruler)}>
+				{spacingSpecimens.map(step => (
+					<div key={step.name} {...stylex.props(styles.rulerRow)}>
+						<span {...stylex.props(styles.rulerLabel)}>
+							{step.name} · {step.value}
+						</span>
+						<span
+							className={stylex.props(styles.bar).className}
+							style={{ width: step.value }}
+						/>
+					</div>
+				))}
+			</div>
+
+			<p {...stylex.props(styles.subhead, styles.subheadGap)}>Radius</p>
+			<div {...stylex.props(styles.radii)}>
+				{radiiSpecimens.map(radius => (
+					<div key={radius.name} {...stylex.props(styles.radiusItem)}>
+						<span
+							className={stylex.props(styles.radiusBox).className}
+							style={{ borderRadius: radius.value }}
+						/>
+						<span {...stylex.props(styles.radiusLabel)}>
+							{radius.name} · {radius.value}
+						</span>
+					</div>
+				))}
+			</div>
+		</SpecimenSection>
+	)
+}
