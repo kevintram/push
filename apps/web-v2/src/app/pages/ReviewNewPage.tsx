@@ -21,11 +21,7 @@ export function ReviewNewPage() {
 		<>
 			<h2 {...stylex.props(styles.title)}>New</h2>
 			{data?.map(card => (
-				<ReviewCard
-					key={card.id}
-					primary_text={card.primary_text}
-					secondary_text={card.secondary_text}
-				/>
+				<ReviewCard key={card.id} {...card} />
 			))}
 		</>
 	)

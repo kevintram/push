@@ -51,11 +51,7 @@ export function TopicPage() {
 
 			<div {...stylex.props(styles.reviewCards)}>
 				{topic?.reviewCards?.map(reviewCard => (
-					<ReviewCard
-						key={reviewCard.id}
-						primary_text={reviewCard.primary_text}
-						secondary_text={reviewCard.secondary_text}
-					/>
+					<ReviewCard key={reviewCard.id} {...reviewCard} />
 				))}
 			</div>
 		</div>
