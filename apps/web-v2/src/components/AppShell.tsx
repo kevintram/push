@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
-import { colors, fonts } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/tokens.stylex'
 
 import { AppSidebar } from './AppSidebar'
 
@@ -14,13 +14,12 @@ const styles = stylex.create({
 
 		display: 'flex',
 
-		fontFamily: fonts.sans,
-
 		height: '100svh',
 	},
 	children: {
 		flexGrow: 1,
 		minHeight: 0,
+		minWidth: 0,
 
 		overflowY: 'auto',
 	},
