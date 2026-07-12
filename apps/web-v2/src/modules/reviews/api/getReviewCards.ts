@@ -8,7 +8,12 @@ export async function fetchReviewCards(
 ): Promise<Array<ReviewCard>> {
 	const url = new URL(import.meta.env.VITE_API_URL + '/review-cards/')
 	if (filters !== undefined) {
-		url.search = new URLSearchParams(filters).toString()
+		if (filters.due !== undefined) {
+			url.searchParams.set('due', filters.due)
+		}
+		if (filters.topicId !== undefined) {
+			url.searchParams.set('topic_id', String(filters.topicId))
+		}
 	}
 
 	const response = await fetch(url, { credentials: 'include' })

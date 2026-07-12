@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 
 import { topicQueries } from '~/modules/library/api/queries'
+import { reviewCardQueries } from '~/modules/reviews/api/queries'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
@@ -39,6 +40,7 @@ const styles = stylex.create({
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
 	const { data: topic } = useQuery(topicQueries.detail(topicId))
+	const { data: reviewCards } = useQuery(reviewCardQueries.list({ topicId }))
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -50,7 +52,7 @@ export function TopicPage() {
 			<h2>Review Cards</h2>
 
 			<div {...stylex.props(styles.reviewCards)}>
-				{topic?.reviewCards?.map(reviewCard => (
+				{reviewCards?.map(reviewCard => (
 					<ReviewCard key={reviewCard.id} {...reviewCard} />
 				))}
 			</div>

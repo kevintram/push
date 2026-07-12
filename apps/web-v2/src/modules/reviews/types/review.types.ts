@@ -9,7 +9,8 @@ export type ReviewCard = {
 }
 
 export type ReviewCardFilters = {
-	due: 'late' | 'new' | DateString
+	due?: 'late' | 'new' | DateString
+	topicId?: number | string
 }
 
 export type Rating = 'miss' | 'hard' | 'good' | 'easy'
