@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ReviewCardPageOverview } from '~/app/pages/ReviewCardPage/ReviewCardPageOverview'
+import { ReviewCardPageOverview } from '~/app/pages/ReviewCardpage/ReviewCardPageOverview'
 import { reviewCardQueries, reviewQueries } from '~/modules/reviews/api/queries'
 
 export const Route = createFileRoute('/library/$topicId_/$reviewCardId/')({
