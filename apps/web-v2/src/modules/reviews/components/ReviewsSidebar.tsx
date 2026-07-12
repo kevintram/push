@@ -5,19 +5,8 @@ import { Plus } from 'lucide-react'
 
 import { Button } from '~/components/ui'
 import { reviewQueries } from '~/modules/reviews/api/queries'
-import {
-	colors,
-	fontSizes,
-	fontWeights,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
-import { getTodayAsString } from '~/utils/date'
+import { colors, radii, spacing } from '~/styles/tokens.stylex'
 
-import {
-	getLatestCompletedReview,
-	groupReviews,
-} from '../utils/reviewCollections'
 import { Review } from './review/Review'
 
 const styles = stylex.create({
@@ -41,13 +30,7 @@ const styles = stylex.create({
 		flexShrink: 1,
 	},
 	seeAll: { textDecoration: 'none', color: 'inherit' },
-	section: { display: 'flex', flexDirection: 'column' },
-	title: {
-		color: colors.mutedForeground,
-		fontSize: fontSizes.sm,
-		fontWeight: fontWeights.regular,
-		marginBottom: spacing.md,
-	},
+	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
 
 export function ReviewsSidebar() {
@@ -57,9 +40,6 @@ export function ReviewsSidebar() {
 	const { data: reviews } = useQuery(
 		reviewQueries.list({ reviewCardId, order: 'desc' }),
 	)
-	const groups = groupReviews(reviews ?? [], getTodayAsString())
-	const dueReviews = [...groups.overdue, ...groups.today]
-	const latestCompletedReview = getLatestCompletedReview(reviews ?? [])
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -80,40 +60,11 @@ export function ReviewsSidebar() {
 					</Button>
 				</div>
 			</div>
-			{/* Due */}
-			{dueReviews.length > 0 ? (
-				<section {...stylex.props(styles.section)}>
-					<h2 {...stylex.props(styles.title)}>Due</h2>
-					{dueReviews.map(review => (
-						<Review key={review.id} review={review} />
-					))}
-				</section>
-			) : null}
-			{/* Unscheduled */}
-			{groups.uncompleted.length > 0 ? (
-				<section {...stylex.props(styles.section)}>
-					<h2 {...stylex.props(styles.title)}>Unscheduled</h2>
-					{groups.uncompleted.map(review => (
-						<Review key={review.id} review={review} />
-					))}
-				</section>
-			) : null}
-			{/* Upcoming */}
-			{groups.upcoming.length > 0 ? (
-				<section {...stylex.props(styles.section)}>
-					<h2 {...stylex.props(styles.title)}>Scheduled</h2>
-					{groups.upcoming.map(review => (
-						<Review key={review.id} review={review} />
-					))}
-				</section>
-			) : null}
-			{/* Last Completed */}
-			{latestCompletedReview ? (
-				<section {...stylex.props(styles.section)}>
-					<h2 {...stylex.props(styles.title)}>Last reviewed</h2>
-					<Review review={latestCompletedReview} />
-				</section>
-			) : null}
+			<div {...stylex.props(styles.list)}>
+				{reviews?.map(review => (
+					<Review key={review.id} review={review} />
+				))}
+			</div>
 		</div>
 	)
 }
