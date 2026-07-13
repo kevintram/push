@@ -27,9 +27,12 @@ const sections = [
 		label: 'Scale',
 		count: spacingSpecimens.length + radiiSpecimens.length,
 	},
-	{ href: '#components', label: 'Components', count: 3 },
-	{ href: '#dropdown-menu', label: 'Dropdown menu', count: 1 },
+	{ href: '#components', label: 'Button', count: 4 },
+	{ href: '#textarea', label: 'Textarea', count: 3 },
+	{ href: '#dialog', label: 'Dialog', count: 1 },
+	{ href: '#dropdown-menu', label: 'Dropdown menu', count: 8 },
 	{ href: '#tabs', label: 'Tabs', count: 2 },
+	{ href: '#toast', label: 'Toast', count: 3 },
 ]
 
 const styles = stylex.create({
