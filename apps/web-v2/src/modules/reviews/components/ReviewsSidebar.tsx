@@ -7,7 +7,7 @@ import { Button } from '~/components/ui'
 import { reviewQueries } from '~/modules/reviews/api/queries'
 import { colors, radii, spacing } from '~/styles/tokens.stylex'
 
-import { Review } from './review/Review'
+import { Review } from './Review'
 
 const styles = stylex.create({
 	container: {
