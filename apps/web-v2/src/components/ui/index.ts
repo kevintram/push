@@ -1,3 +1,5 @@
 export { Button, type ButtonProps } from './Button'
 export * from './DropdownMenu'
+export { Toaster } from './Sonner'
 export * from './Tabs'
+export { Textarea, type TextareaProps } from './Textarea'

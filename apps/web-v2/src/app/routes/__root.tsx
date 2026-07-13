@@ -4,6 +4,7 @@ import { ErrorBoundary, type FallbackProps } from 'react-error-boundary'
 
 import { NotFoundPage } from '~/app/pages/NotFoundPage'
 import { AppShell } from '~/components/AppShell'
+import { Toaster } from '~/components/ui'
 
 export type RouterContext = {
 	queryClient: QueryClient
@@ -21,10 +22,13 @@ function renderError({ error }: FallbackProps) {
 export const Route = createRootRouteWithContext<RouterContext>()({
 	notFoundComponent: NotFoundPage,
 	component: () => (
-		<AppShell>
-			<ErrorBoundary fallbackRender={renderError}>
-				<Outlet />
-			</ErrorBoundary>
-		</AppShell>
+		<>
+			<AppShell>
+				<ErrorBoundary fallbackRender={renderError}>
+					<Outlet />
+				</ErrorBoundary>
+			</AppShell>
+			<Toaster />
+		</>
 	),
 })

@@ -4,12 +4,13 @@ import { fetchTopic, fetchTopics } from './getTopics'
 
 export const topicQueries = {
 	all: ['topics'] as const,
+	lists: () => [...topicQueries.all, 'lists'],
 	list: () =>
 		queryOptions({
-			queryKey: [...topicQueries.all, 'list'],
+			queryKey: topicQueries.lists(),
 			queryFn: () => fetchTopics(),
 		}),
-	detail: (topicId: number | string) =>
+	detail: (topicId: string) =>
 		queryOptions({
 			queryKey: [...topicQueries.all, 'detail', topicId],
 			queryFn: () => fetchTopic(topicId),

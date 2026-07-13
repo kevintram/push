@@ -6,9 +6,10 @@ import { fetchReviews } from './getReviews'
 
 export const reviewCardQueries = {
 	all: ['review-cards'] as const,
+	lists: () => [...reviewCardQueries.all, 'lists'],
 	list: (filters?: ReviewCardFilters) =>
 		queryOptions({
-			queryKey: [...reviewCardQueries.all, 'list', filters],
+			queryKey: [...reviewCardQueries.lists(), filters],
 			queryFn: () => fetchReviewCards(filters),
 		}),
 	detail: (reviewCardId: number | string) => {
