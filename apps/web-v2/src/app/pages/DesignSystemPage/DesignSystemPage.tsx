@@ -31,6 +31,7 @@ const sections = [
 	{ href: '#textarea', label: 'Textarea', count: 3 },
 	{ href: '#dialog', label: 'Dialog', count: 1 },
 	{ href: '#dropdown-menu', label: 'Dropdown menu', count: 8 },
+	{ href: '#context-menu', label: 'Context menu', count: 3 },
 	{ href: '#tabs', label: 'Tabs', count: 2 },
 	{ href: '#toast', label: 'Toast', count: 3 },
 ]

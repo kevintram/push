@@ -3,7 +3,12 @@ import * as stylex from '@stylexjs/stylex'
 
 import { spacing } from '~/styles/tokens.stylex'
 
-export type TabsProps = React.ComponentProps<typeof TabsPrimitive.Root>
+export interface TabsProps extends Omit<
+	React.ComponentProps<typeof TabsPrimitive.Root>,
+	'className' | 'style'
+> {
+	xstyle?: stylex.StyleXStyles
+}
 
 const styles = stylex.create({
 	root: {
@@ -16,6 +21,8 @@ const styles = stylex.create({
 	},
 })
 
-export function Tabs(props: TabsProps) {
-	return <TabsPrimitive.Root {...stylex.props(styles.root)} {...props} />
+export function Tabs({ xstyle, ...props }: TabsProps) {
+	return (
+		<TabsPrimitive.Root {...stylex.props(styles.root, xstyle)} {...props} />
+	)
 }

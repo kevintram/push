@@ -1,4 +1,5 @@
 export { Button, type ButtonProps } from './Button'
+export * from './ContextMenu'
 export * from './Dialog'
 export * from './DropdownMenu'
 export { Toaster } from './Sonner'

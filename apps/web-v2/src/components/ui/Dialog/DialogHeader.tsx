@@ -13,7 +13,7 @@ const styles = stylex.create({
 	header: {
 		gap: spacing.sm,
 		display: 'flex',
-		flexDirection: 'column',
+		inlineSize: '100%',
 	},
 })
 

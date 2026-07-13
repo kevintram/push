@@ -1,13 +1,16 @@
 import * as stylex from '@stylexjs/stylex'
 import {
 	ChevronDown,
+	Copy,
 	CreditCard,
+	FilePenLine,
 	LogOut,
 	Monitor,
 	Moon,
 	Settings,
 	Star,
 	Sun,
+	Trash2,
 	User,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -15,6 +18,12 @@ import { toast } from 'sonner'
 
 import {
 	Button,
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuSeparator,
+	ContextMenuShortcut,
+	ContextMenuTrigger,
 	Dialog,
 	DialogClose,
 	DialogContent,
@@ -105,6 +114,20 @@ const styles = stylex.create({
 	fieldLabel: {
 		color: colors.mutedForeground,
 		fontSize: fontSizes.xs,
+	},
+	contextMenuTrigger: {
+		alignItems: 'center',
+		display: 'flex',
+		justifyContent: 'center',
+
+		borderColor: colors.border,
+		borderRadius: '6px',
+		borderStyle: 'dashed',
+		borderWidth: '1px',
+		color: colors.mutedForeground,
+
+		blockSize: '8rem',
+		inlineSize: '16rem',
 	},
 })
 
@@ -287,6 +310,35 @@ export function ComponentSection() {
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
+				</div>
+			</SpecimenSection>
+			<SpecimenSection
+				id='context-menu'
+				title='Context menu'
+				meta='Base UI · right click or long press'
+			>
+				<div {...stylex.props(styles.rowButtons)}>
+					<ContextMenu>
+						<ContextMenuTrigger
+							{...stylex.props(styles.contextMenuTrigger)}
+						>
+							Right click here
+						</ContextMenuTrigger>
+						<ContextMenuContent>
+							<ContextMenuItem>
+								<FilePenLine aria-hidden size={16} /> Edit
+								<ContextMenuShortcut>⌘E</ContextMenuShortcut>
+							</ContextMenuItem>
+							<ContextMenuItem>
+								<Copy aria-hidden size={16} /> Duplicate
+								<ContextMenuShortcut>⌘D</ContextMenuShortcut>
+							</ContextMenuItem>
+							<ContextMenuSeparator />
+							<ContextMenuItem variant='destructive'>
+								<Trash2 aria-hidden size={16} /> Delete
+							</ContextMenuItem>
+						</ContextMenuContent>
+					</ContextMenu>
 				</div>
 			</SpecimenSection>
 			<SpecimenSection
