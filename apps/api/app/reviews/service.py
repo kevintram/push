@@ -129,7 +129,7 @@ async def list_reviews(
 
     if order == "desc":
         stmt = stmt.order_by(
-            Review.effective_date.desc().nulls_last(), Review.id.desc()
+            Review.effective_date.desc().nulls_first(), Review.id.desc()
         )
     else:
         stmt = stmt.order_by(Review.effective_date.asc().nulls_first(), Review.id.asc())

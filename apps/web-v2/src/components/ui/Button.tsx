@@ -9,7 +9,12 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-type ButtonVariant = 'default' | 'secondary' | 'outline' | 'ghost'
+type ButtonVariant =
+	| 'default'
+	| 'destructive'
+	| 'secondary'
+	| 'outline'
+	| 'ghost'
 type ButtonSize = 'sm' | 'default' | 'lg' | 'icon'
 
 export interface ButtonProps extends React.ComponentProps<
@@ -61,6 +66,15 @@ const styles = stylex.create({
 			':hover': colors.primaryHover,
 		},
 		color: colors.primaryForeground,
+	},
+	variantDestructive: {
+		borderColor: 'transparent',
+
+		backgroundColor: {
+			default: colors.destructive,
+			':hover': colors.destructive,
+		},
+		color: colors.destructiveForeground,
 	},
 	variantSecondary: {
 		borderColor: 'transparent',
@@ -122,6 +136,7 @@ const styles = stylex.create({
 
 const variantStyles: Record<ButtonVariant, stylex.StyleXStyles> = {
 	default: styles.variantDefault,
+	destructive: styles.variantDestructive,
 	ghost: styles.variantGhost,
 	outline: styles.variantOutline,
 	secondary: styles.variantSecondary,

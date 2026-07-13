@@ -23,6 +23,7 @@ const styles = stylex.create({
 		borderRadius: radii.md,
 		borderStyle: 'solid',
 		borderWidth: '1px',
+		outline: 'none',
 		backgroundColor: colors.surface,
 		boxShadow: '0 8px 24px rgb(0 0 0 / 0.14)',
 		color: colors.foreground,

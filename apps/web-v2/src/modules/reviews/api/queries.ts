@@ -27,13 +27,19 @@ export const reviewCardQueries = {
 
 export const reviewQueries = {
 	all: ['reviews'] as const,
+	lists: () => [...reviewQueries.all, 'list'] as const,
+	forCard: (reviewCardId: number | string) =>
+		[
+			...reviewQueries.lists(),
+			{ reviewCardId: String(reviewCardId) },
+		] as const,
 	list: (filters: ReviewFilters) => {
 		const normalizedFilters = {
 			...filters,
 			reviewCardId: String(filters.reviewCardId),
 		}
 		return queryOptions({
-			queryKey: [...reviewQueries.all, 'list', normalizedFilters],
+			queryKey: [...reviewQueries.lists(), normalizedFilters],
 			queryFn: () => fetchReviews(normalizedFilters),
 		})
 	},
