@@ -99,6 +99,51 @@ class TestReviewsEndpoints:
         assert items[0]["review_card"]["id"] == review_card["id"]
         assert items[0]["review_card"]["type"] == "flashcard"
 
+    async def test_descending_order_places_reviews_without_dates_first(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Review ordering")
+        review_card = await _create_review_card(test_client, topic["id"])
+
+        dated_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": review_card["id"],
+                "scheduled_at": str(date.today()),
+                "description": "Dated",
+            },
+        )
+        first_undated_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": review_card["id"],
+                "description": "First undated",
+            },
+        )
+        second_undated_response = await test_client.post(
+            "/reviews/",
+            json={
+                "review_card_id": review_card["id"],
+                "description": "Second undated",
+            },
+        )
+
+        assert dated_response.status_code == 200
+        assert first_undated_response.status_code == 200
+        assert second_undated_response.status_code == 200
+
+        response = await test_client.get(
+            f"/reviews/?review_card_id={review_card['id']}&order=desc"
+        )
+
+        assert response.status_code == 200
+        assert [review["description"] for review in response.json()] == [
+            "Second undated",
+            "First undated",
+            "Dated",
+        ]
+
     async def test_nested_review_card_create_endpoint_delegates_to_reviews_flow(
         self,
         test_client: AsyncClient,

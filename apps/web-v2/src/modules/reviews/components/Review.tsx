@@ -1,13 +1,36 @@
 import * as stylex from '@stylexjs/stylex'
-import { Check, CheckCheck, Circle, Construction, X } from 'lucide-react'
-import { useCallback } from 'react'
+import {
+	Check,
+	CheckCheck,
+	ChevronDown,
+	Circle,
+	Construction,
+	Ellipsis,
+	Trash2,
+	X,
+} from 'lucide-react'
+import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
-import { Dialog, DialogContent, DialogTrigger, Textarea } from '~/components/ui'
+import {
+	Button,
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuTrigger,
+	Textarea,
+} from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
+import { useDeleteReview } from '~/modules/reviews/api/deleteReview'
 import { useUpdateReview } from '~/modules/reviews/api/updateReview'
 
-import type { Review as ReviewModel } from '../types/review.types'
+import type { Rating, Review as ReviewModel } from '../types/review.types'
 
 const styles = stylex.create({
 	contentContainer: {
@@ -26,13 +49,62 @@ const styles = stylex.create({
 		gridColumn: '1',
 		gridRow: '1',
 	},
+	ratingTrigger: {
+		padding: 0,
+
+		gap: '2px',
+		alignItems: 'center',
+		display: 'inline-flex',
+
+		font: 'inherit',
+		borderColor: 'transparent',
+		borderStyle: 'solid',
+		borderWidth: 0,
+		backgroundColor: 'transparent',
+		color: 'inherit',
+		cursor: 'pointer',
+		outlineColor: {
+			default: 'transparent',
+			':focus-visible': 'currentColor',
+		},
+		outlineOffset: '2px',
+		outlineStyle: 'solid',
+		outlineWidth: '2px',
+	},
 	description: {
 		gridColumn: '2',
-		gridRow: '1',
+		gridRowEnd: '-1',
+		gridRowStart: '1',
+
+		padding: 0,
+
+		alignContent: 'center',
+		display: 'grid',
+		gridTemplateRows: 'auto auto',
+		justifyItems: 'start',
+		minInlineSize: 0,
+
+		font: 'inherit',
+		borderColor: 'transparent',
+		borderStyle: 'solid',
+		borderWidth: 0,
+		backgroundColor: 'transparent',
+		color: 'inherit',
+		cursor: 'pointer',
+		outlineColor: {
+			default: 'transparent',
+			':focus-visible': 'currentColor',
+		},
+		outlineOffset: '2px',
+		outlineStyle: 'solid',
+		outlineWidth: '2px',
+		textAlign: 'start',
 	},
 	footer: {
-		gridColumn: '2',
 		gridRow: '2',
+	},
+	dialogHeader: {
+		justifyContent: 'flex-end',
 	},
 	descriptionEditor: { minBlockSize: '96px' },
 	notesEditor: { minBlockSize: '96px' },
@@ -56,7 +128,21 @@ function formatDate(value: string | null) {
 }
 
 export function Review({ review }: { review: ReviewModel }) {
-	const { mutateAsync } = useUpdateReview()
+	const { isPending, mutateAsync } = useUpdateReview()
+	const { isPending: isDeleting, mutateAsync: deleteReview } =
+		useDeleteReview()
+	const [isOpen, setIsOpen] = useState(false)
+	const updateRating = useCallback(
+		async (rating: Rating) => {
+			if (rating === review.rating) return
+			try {
+				await mutateAsync({ id: review.id, rating })
+			} catch {
+				toast.error('Failed to update review rating')
+			}
+		},
+		[mutateAsync, review.id, review.rating],
+	)
 	const save = useCallback(
 		async (field: 'description' | 'notes', value: string) => {
 			if (value === review[field]) return
@@ -98,25 +184,90 @@ export function Review({ review }: { review: ReviewModel }) {
 				? `${stabilityAfter}d (new)`
 				: `${stabilityAfter}d (${stabilityDelta >= 0 ? '+' : ''}${stabilityDelta})`
 
+	const handleDelete = async () => {
+		try {
+			await deleteReview(review.id)
+			setIsOpen(false)
+		} catch {
+			toast.error('Failed to delete review')
+		}
+	}
+
 	return (
-		<Dialog>
-			<DialogTrigger {...stylex.props(styles.contentContainer)}>
+		<Dialog open={isOpen} onOpenChange={setIsOpen}>
+			<div {...stylex.props(styles.contentContainer)}>
 				<div
 					aria-label={rating?.label ?? 'Uncompleted'}
 					{...stylex.props(styles.rating)}
 				>
-					<RatingIcon aria-hidden='true' />
+					<DropdownMenu>
+						<DropdownMenuTrigger
+							{...stylex.props(styles.ratingTrigger)}
+						>
+							<RatingIcon aria-hidden='true' />
+							<ChevronDown aria-hidden='true' size={16} />
+						</DropdownMenuTrigger>
+						<DropdownMenuContent>
+							<DropdownMenuRadioGroup
+								value={review.rating ?? ''}
+								onValueChange={value =>
+									void updateRating(value as Rating)
+								}
+							>
+								{Object.entries(ratingDetails).map(
+									([value, { label, Icon }]) => (
+										<DropdownMenuRadioItem
+											key={value}
+											value={value}
+											disabled={isPending}
+										>
+											<Icon
+												aria-hidden='true'
+												size={16}
+											/>
+											{label}
+										</DropdownMenuRadioItem>
+									),
+								)}
+							</DropdownMenuRadioGroup>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
-				<div {...stylex.props(styles.description)}>
+				<DialogTrigger {...stylex.props(styles.description)}>
 					{description || 'No description'}
-				</div>
-				<div {...stylex.props(styles.footer)}>
-					{formatDate(effectiveDate)}
-					{stabilityChange ? ` · ${stabilityChange}` : null}
-				</div>
-			</DialogTrigger>
+					<div {...stylex.props(styles.footer)}>
+						{formatDate(effectiveDate)}
+						{stabilityChange ? ` · ${stabilityChange}` : null}
+					</div>
+				</DialogTrigger>
+			</div>
 
 			<DialogContent>
+				<DialogHeader xstyle={styles.dialogHeader}>
+					<DropdownMenu>
+						<DropdownMenuTrigger
+							render={
+								<Button
+									aria-label='Review actions'
+									size='icon'
+									variant='ghost'
+								/>
+							}
+						>
+							<Ellipsis aria-hidden='true' />
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end'>
+							<DropdownMenuItem
+								disabled={isDeleting}
+								variant='destructive'
+								onClick={() => void handleDelete()}
+							>
+								<Trash2 aria-hidden='true' size={16} />
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</DialogHeader>
 				<Textarea
 					aria-label='Review description'
 					placeholder='Add a review description'

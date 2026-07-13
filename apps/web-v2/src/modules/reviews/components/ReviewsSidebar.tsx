@@ -2,8 +2,10 @@ import * as stylex from '@stylexjs/stylex'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { Button } from '~/components/ui'
+import { useCreateReview } from '~/modules/reviews/api/createReview'
 import { reviewQueries } from '~/modules/reviews/api/queries'
 import { colors, radii, spacing } from '~/styles/tokens.stylex'
 
@@ -40,6 +42,15 @@ export function ReviewsSidebar() {
 	const { data: reviews } = useQuery(
 		reviewQueries.list({ reviewCardId, order: 'desc' }),
 	)
+	const { isPending, mutateAsync } = useCreateReview()
+
+	const addReview = async () => {
+		try {
+			await mutateAsync({ reviewCardId })
+		} catch {
+			toast.error('Failed to create review')
+		}
+	}
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -55,7 +66,12 @@ export function ReviewsSidebar() {
 						See all
 					</Link>
 
-					<Button variant='ghost'>
+					<Button
+						aria-label='Add review'
+						variant='ghost'
+						disabled={isPending}
+						onClick={() => void addReview()}
+					>
 						<Plus />
 					</Button>
 				</div>

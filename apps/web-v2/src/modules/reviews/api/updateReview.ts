@@ -2,11 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 
 import { ReviewSchema } from '../types/review.schemas'
-import type { Review } from '../types/review.types'
+import type { Rating, Review } from '../types/review.types'
 import { reviewQueries } from './queries'
 
 export type UpdateReviewInput = {
 	id: number | string
+	rating?: Rating | null
 	description?: string
 	notes?: string
 }
