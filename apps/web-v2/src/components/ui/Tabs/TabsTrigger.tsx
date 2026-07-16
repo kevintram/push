@@ -11,7 +11,10 @@ import {
 
 import { type TabsVariant, useTabsVariant } from './TabsContext'
 
-export type TabsTriggerProps = React.ComponentProps<typeof TabsPrimitive.Tab>
+export type TabsTriggerProps = Omit<
+	React.ComponentProps<typeof TabsPrimitive.Tab>,
+	'className' | 'style'
+>
 
 const styles = stylex.create({
 	base: {

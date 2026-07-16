@@ -43,7 +43,7 @@ export function DropdownMenuRadioItem({
 	children,
 	disabled,
 	...props
-}: React.ComponentProps<typeof Menu.RadioItem>) {
+}: Omit<React.ComponentProps<typeof Menu.RadioItem>, 'className' | 'style'>) {
 	return (
 		<Menu.RadioItem
 			disabled={disabled}

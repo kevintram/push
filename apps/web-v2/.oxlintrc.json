@@ -156,6 +156,18 @@
 				"typescript/prefer-namespace-keyword": "error",
 				"typescript/triple-slash-reference": "error",
 				"react/display-name": "error",
+				"react/forbid-component-props": [
+					"error",
+					{
+						"forbid": ["className", "style"]
+					}
+				],
+				"react/forbid-dom-props": [
+					"error",
+					{
+						"forbid": ["className", "style"]
+					}
+				],
 				"react/jsx-key": "error",
 				"react/jsx-no-comment-textnodes": "error",
 				"react/jsx-no-duplicate-props": "error",

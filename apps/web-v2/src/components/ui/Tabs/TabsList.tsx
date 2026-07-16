@@ -5,8 +5,9 @@ import { colors, radii, spacing } from '~/styles/tokens.stylex'
 
 import { type TabsVariant, TabsVariantContext } from './TabsContext'
 
-export interface TabsListProps extends React.ComponentProps<
-	typeof TabsPrimitive.List
+export interface TabsListProps extends Omit<
+	React.ComponentProps<typeof TabsPrimitive.List>,
+	'className' | 'style'
 > {
 	variant?: TabsVariant
 }

@@ -3,7 +3,10 @@ import * as stylex from '@stylexjs/stylex'
 
 import { colors } from '~/styles/tokens.stylex'
 
-export type TabsContentProps = React.ComponentProps<typeof TabsPrimitive.Panel>
+export type TabsContentProps = Omit<
+	React.ComponentProps<typeof TabsPrimitive.Panel>,
+	'className' | 'style'
+>
 
 const styles = stylex.create({
 	content: {

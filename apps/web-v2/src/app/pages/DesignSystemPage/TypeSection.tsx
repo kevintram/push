@@ -80,6 +80,12 @@ const styles = stylex.create({
 		textOverflow: 'ellipsis',
 		whiteSpace: 'nowrap',
 	},
+	sampleFontSize: (value: string) => ({
+		fontSize: value,
+	}),
+	sampleFontWeight: (value: string) => ({
+		fontWeight: value,
+	}),
 })
 
 export function TypeSection() {
@@ -104,8 +110,10 @@ export function TypeSection() {
 							{size.name} · {size.value}
 						</span>
 						<span
-							className={stylex.props(styles.sample).className}
-							style={{ fontSize: size.value }}
+							{...stylex.props(
+								styles.sample,
+								styles.sampleFontSize(size.value),
+							)}
 						>
 							{TYPE_SPECIMEN_LINE}
 						</span>
@@ -121,8 +129,10 @@ export function TypeSection() {
 							{weight.name} · {weight.value}
 						</span>
 						<span
-							className={stylex.props(styles.sample).className}
-							style={{ fontWeight: weight.value }}
+							{...stylex.props(
+								styles.sample,
+								styles.sampleFontWeight(weight.value),
+							)}
 						>
 							{TYPE_SPECIMEN_LINE}
 						</span>

@@ -128,11 +128,11 @@ type ButtonSize = keyof typeof sizeVariants
 
 export interface ButtonProps extends Omit<
 	React.ComponentProps<typeof ButtonPrimitive>,
-	'style'
+	'className' | 'style'
 > {
 	variant?: ButtonVariant
 	size?: ButtonSize
-	style?: stylex.StyleXStyles
+	xstyle?: stylex.StyleXStyles
 }
 
 export function Button({
@@ -141,20 +141,22 @@ export function Button({
 	disabled,
 	children,
 	ref,
-	style,
+	xstyle,
 	...props
 }: ButtonProps) {
+	const styleProps = stylex.props(
+		styles.base,
+		colorVariants[variant],
+		sizeVariants[size],
+		disabled && styles.disabled,
+		xstyle,
+	)
+
 	return (
 		<ButtonPrimitive
 			ref={ref}
 			disabled={disabled}
-			{...stylex.props(
-				styles.base,
-				colorVariants[variant],
-				sizeVariants[size],
-				disabled && styles.disabled,
-				style,
-			)}
+			{...styleProps}
 			{...props}
 		>
 			{children}

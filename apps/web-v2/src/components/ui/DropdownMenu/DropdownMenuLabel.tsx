@@ -3,8 +3,9 @@ import * as stylex from '@stylexjs/stylex'
 
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
-export interface DropdownMenuLabelProps extends React.ComponentProps<
-	typeof Menu.GroupLabel
+export interface DropdownMenuLabelProps extends Omit<
+	React.ComponentProps<typeof Menu.GroupLabel>,
+	'className' | 'style'
 > {
 	inset?: boolean
 }

@@ -44,6 +44,9 @@ const styles = stylex.create({
 		backgroundColor: colors.foreground,
 		height: '10px',
 	},
+	barWidth: (value: string) => ({
+		width: value,
+	}),
 
 	radii: {
 		gap: spacing.xl,
@@ -68,6 +71,9 @@ const styles = stylex.create({
 		height: '72px',
 		width: '72px',
 	},
+	radius: (value: string) => ({
+		borderRadius: value,
+	}),
 	radiusLabel: {
 		color: colors.mutedForeground,
 		fontSize: fontSizes.xs,
@@ -89,8 +95,10 @@ export function ScaleSection() {
 							{step.name} · {step.value}
 						</span>
 						<span
-							className={stylex.props(styles.bar).className}
-							style={{ width: step.value }}
+							{...stylex.props(
+								styles.bar,
+								styles.barWidth(step.value),
+							)}
 						/>
 					</div>
 				))}
@@ -101,8 +109,10 @@ export function ScaleSection() {
 				{radiiSpecimens.map(radius => (
 					<div key={radius.name} {...stylex.props(styles.radiusItem)}>
 						<span
-							className={stylex.props(styles.radiusBox).className}
-							style={{ borderRadius: radius.value }}
+							{...stylex.props(
+								styles.radiusBox,
+								styles.radius(radius.value),
+							)}
 						/>
 						<span {...stylex.props(styles.radiusLabel)}>
 							{radius.name} · {radius.value}
