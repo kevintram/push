@@ -9,21 +9,6 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-type ButtonVariant =
-	| 'default'
-	| 'destructive'
-	| 'secondary'
-	| 'outline'
-	| 'ghost'
-type ButtonSize = 'sm' | 'default' | 'lg' | 'icon'
-
-export interface ButtonProps extends React.ComponentProps<
-	typeof ButtonPrimitive
-> {
-	variant?: ButtonVariant
-	size?: ButtonSize
-}
-
 const styles = stylex.create({
 	base: {
 		borderRadius: radii.md,
@@ -57,8 +42,10 @@ const styles = stylex.create({
 		opacity: 0.5,
 		pointerEvents: 'none',
 	},
+})
 
-	variantDefault: {
+const colorVariants = stylex.create({
+	default: {
 		borderColor: 'transparent',
 
 		backgroundColor: {
@@ -67,7 +54,7 @@ const styles = stylex.create({
 		},
 		color: colors.primaryForeground,
 	},
-	variantDestructive: {
+	destructive: {
 		borderColor: 'transparent',
 
 		backgroundColor: {
@@ -76,7 +63,7 @@ const styles = stylex.create({
 		},
 		color: colors.destructiveForeground,
 	},
-	variantSecondary: {
+	secondary: {
 		borderColor: 'transparent',
 
 		backgroundColor: {
@@ -85,7 +72,7 @@ const styles = stylex.create({
 		},
 		color: colors.secondaryForeground,
 	},
-	variantOutline: {
+	outline: {
 		borderColor: colors.border,
 
 		backgroundColor: {
@@ -94,7 +81,7 @@ const styles = stylex.create({
 		},
 		color: colors.foreground,
 	},
-	variantGhost: {
+	ghost: {
 		borderColor: 'transparent',
 
 		backgroundColor: {
@@ -103,14 +90,16 @@ const styles = stylex.create({
 		},
 		color: colors.foreground,
 	},
+})
 
-	sizeDefault: {
+const sizeVariants = stylex.create({
+	default: {
 		paddingBlock: spacing.sm,
 		paddingInline: spacing.lg,
 
 		blockSize: '36px',
 	},
-	sizeSm: {
+	sm: {
 		paddingBlock: spacing.xs,
 		paddingInline: spacing.md,
 
@@ -118,7 +107,7 @@ const styles = stylex.create({
 		blockSize: '32px',
 		fontSize: fontSizes.xs,
 	},
-	sizeLg: {
+	lg: {
 		paddingBlock: spacing.md,
 		paddingInline: spacing.xl,
 
@@ -126,7 +115,7 @@ const styles = stylex.create({
 		blockSize: '44px',
 		fontSize: fontSizes.md,
 	},
-	sizeIcon: {
+	icon: {
 		padding: spacing.none,
 
 		blockSize: '36px',
@@ -134,19 +123,16 @@ const styles = stylex.create({
 	},
 })
 
-const variantStyles: Record<ButtonVariant, stylex.StyleXStyles> = {
-	default: styles.variantDefault,
-	destructive: styles.variantDestructive,
-	ghost: styles.variantGhost,
-	outline: styles.variantOutline,
-	secondary: styles.variantSecondary,
-}
+type ButtonVariant = keyof typeof colorVariants
+type ButtonSize = keyof typeof sizeVariants
 
-const sizeStyles: Record<ButtonSize, stylex.StyleXStyles> = {
-	default: styles.sizeDefault,
-	icon: styles.sizeIcon,
-	lg: styles.sizeLg,
-	sm: styles.sizeSm,
+export interface ButtonProps extends Omit<
+	React.ComponentProps<typeof ButtonPrimitive>,
+	'style'
+> {
+	variant?: ButtonVariant
+	size?: ButtonSize
+	style?: stylex.StyleXStyles
 }
 
 export function Button({
@@ -155,6 +141,7 @@ export function Button({
 	disabled,
 	children,
 	ref,
+	style,
 	...props
 }: ButtonProps) {
 	return (
@@ -163,9 +150,10 @@ export function Button({
 			disabled={disabled}
 			{...stylex.props(
 				styles.base,
-				variantStyles[variant],
-				sizeStyles[size],
+				colorVariants[variant],
+				sizeVariants[size],
 				disabled && styles.disabled,
+				style,
 			)}
 			{...props}
 		>
