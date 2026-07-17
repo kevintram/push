@@ -66,14 +66,14 @@ export function ReviewsSidebar() {
 						See all
 					</Link>
 
-					<Button
+					<Button.Icon
 						aria-label='Add review'
 						variant='ghost'
 						disabled={isPending}
 						onClick={() => void addReview()}
 					>
-						<Plus />
-					</Button>
+						<Plus aria-hidden='true' />
+					</Button.Icon>
 				</div>
 			</div>
 			<div {...stylex.props(styles.list)}>

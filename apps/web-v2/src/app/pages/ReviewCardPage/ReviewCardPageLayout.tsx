@@ -139,7 +139,7 @@ export function ReviewCardPageLayout() {
 				<DropdownMenu>
 					<DropdownMenuTrigger
 						render={
-							<Button
+							<Button.Icon
 								aria-label='Review card actions'
 								variant='ghost'
 							/>

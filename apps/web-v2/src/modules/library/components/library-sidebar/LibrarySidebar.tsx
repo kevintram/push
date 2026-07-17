@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Button } from '~/components/ui'
-import { spacing } from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateTopic } from '../../api/createTopic'
 import { useDeleteTopic } from '../../api/deleteTopic'
@@ -17,6 +17,10 @@ import { type TopicDeleteTarget, TopicLink } from './TopicLink'
 const styles = stylex.create({
 	header: {
 		display: 'flex',
+		
+		padding: spacing.md,
+		paddingBlockEnd: spacing.none,
+		paddingInlineStart: spacing.lg,
 	},
 	headerText: {
 		flexBasis: 0,
@@ -105,13 +109,15 @@ export function LibrarySidebar() {
 		<div>
 			<div {...stylex.props(styles.header)}>
 				<p {...stylex.props(styles.headerText)}>Library</p>
-				<Button
+				<Button.Icon
 					aria-label='Add topic'
 					disabled={isCreatingTopic}
+					size='micro'
+					variant='ghost'
 					onClick={() => void addTopic(undefined)}
 				>
-					<Plus />
-				</Button>
+					<Plus aria-hidden='true' size={iconSizes.sm} />
+				</Button.Icon>
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
 				<ul {...stylex.props(styles.list)}>

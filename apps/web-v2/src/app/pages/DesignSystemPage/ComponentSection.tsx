@@ -175,9 +175,12 @@ export function ComponentSection() {
 							<Button danger shape='round' variant='secondary'>
 								Danger round
 							</Button>
-							<Button shape='round' variant='outline'>
-								<Star aria-hidden size={16} />{' '}
-								<span>Icon + label</span>
+							<Button
+								prefix={<Star aria-hidden size={16} />}
+								shape='round'
+								variant='outline'
+							>
+								Icon + label
 							</Button>
 						</div>
 					</div>
@@ -187,7 +190,7 @@ export function ComponentSection() {
 						</span>
 						<div {...stylex.props(styles.rowButtons)}>
 							{buttonSizes.map(size => (
-								<Button
+								<Button.Icon
 									aria-label={`${size} favorite`}
 									key={size}
 									shape='round'
@@ -195,7 +198,7 @@ export function ComponentSection() {
 									variant='outline'
 								>
 									<Star aria-hidden size={16} />
-								</Button>
+								</Button.Icon>
 							))}
 						</div>
 					</div>
@@ -292,10 +295,16 @@ export function ComponentSection() {
 				<div {...stylex.props(styles.rowButtons)}>
 					<DropdownMenu>
 						<DropdownMenuTrigger
-							render={<Button variant='outline' />}
+							render={
+								<Button
+									suffix={
+										<ChevronDown aria-hidden size={16} />
+									}
+									variant='outline'
+								/>
+							}
 						>
 							My account
-							<ChevronDown aria-hidden size={16} />
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
 							<DropdownMenuGroup>
