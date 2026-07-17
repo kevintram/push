@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Button } from '~/components/ui'
-import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { fontWeights, iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateTopic } from '../../api/createTopic'
 import { useDeleteTopic } from '../../api/deleteTopic'
@@ -15,22 +15,26 @@ import { topicQueries } from '../../api/queries'
 import { type TopicDeleteTarget, TopicLink } from './TopicLink'
 
 const styles = stylex.create({
+	container: {
+		overflowY: 'auto',
+	},
 	header: {
 		display: 'flex',
 		
 		padding: spacing.md,
 		paddingBlockEnd: spacing.none,
-		paddingInlineStart: spacing.lg,
 	},
 	headerText: {
+		paddingInline: spacing.sm,
+		
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
+
+		fontWeight: fontWeights.semibold,
 	},
 	nav: {
 		padding: spacing.md,
-
-		overflowY: 'auto',
 
 		flexShrink: 0,
 		inlineSize: '240px',
@@ -106,7 +110,7 @@ export function LibrarySidebar() {
 	const topicToDeleteTitle = topicToDelete?.title.trim() || 'Untitled'
 
 	return (
-		<div>
+		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.header)}>
 				<p {...stylex.props(styles.headerText)}>Library</p>
 				<Button.Icon
