@@ -35,7 +35,7 @@ const styles = stylex.create({
 
 export function ReviewCardPageOverview() {
 	const { reviewCardId } = useParams({
-		from: '/library/$topicId_/$reviewCardId',
+		from: '/review-cards/$reviewCardId',
 	})
 	const { data: reviewCard } = useQuery(
 		reviewCardQueries.detail(reviewCardId),

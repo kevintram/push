@@ -10,7 +10,18 @@ import { describe, expect, it, vi } from 'vitest'
 import { routeTree } from '~/app/routeTree.gen'
 
 vi.mock('~/modules/reviews/api/getReviewCards', () => ({
+	fetchReviewCard: async () => ({
+		id: 3,
+		topic_id: 1,
+		primary_text: 'Question',
+		secondary_text: 'Answer',
+		notes: 'Notes',
+	}),
 	fetchReviewCards: async () => [],
+}))
+
+vi.mock('~/modules/reviews/api/getReviews', () => ({
+	fetchReviews: async () => [],
 }))
 
 vi.mock('~/modules/library/api/getTopics', () => ({
@@ -69,6 +80,27 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByRole('heading', { name: heading }),
 		).toBeInTheDocument()
+	})
+
+	it('renders a review card at its standalone route', async () => {
+		renderRoute('/review-cards/3')
+
+		expect(
+			await screen.findByLabelText('Review-card primary text'),
+		).toHaveValue('Question')
+		expect(screen.getByRole('link', { name: 'Topic' })).toHaveAttribute(
+			'href',
+			'/library/1',
+		)
+		expect(
+			screen.queryByRole('navigation', { name: 'Library topics' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('renders review history under the standalone review-card route', async () => {
+		renderRoute('/review-cards/3/reviews')
+
+		expect(await screen.findByText('No reviews yet.')).toBeInTheDocument()
 	})
 
 	it('renders the not found route', async () => {

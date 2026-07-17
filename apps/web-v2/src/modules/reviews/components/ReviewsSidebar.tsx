@@ -36,8 +36,8 @@ const styles = stylex.create({
 })
 
 export function ReviewsSidebar() {
-	const { reviewCardId, topicId } = useParams({
-		from: '/library/$topicId_/$reviewCardId',
+	const { reviewCardId } = useParams({
+		from: '/review-cards/$reviewCardId',
 	})
 	const { data: reviews } = useQuery(
 		reviewQueries.list({ reviewCardId, order: 'desc' }),
@@ -59,8 +59,8 @@ export function ReviewsSidebar() {
 
 				<div {...stylex.props(styles.actions)}>
 					<Link
-						to='/library/$topicId/$reviewCardId/review'
-						params={{ reviewCardId, topicId }}
+						to='/review-cards/$reviewCardId/reviews'
+						params={{ reviewCardId }}
 						{...stylex.props(styles.seeAll)}
 					>
 						See all

@@ -24,16 +24,11 @@ const styles = stylex.create({
 	},
 })
 
-export function ReviewCard({
-	id,
-	topic_id,
-	primary_text,
-	secondary_text,
-}: ReviewCard) {
+export function ReviewCard({ id, primary_text, secondary_text }: ReviewCard) {
 	return (
 		<Link
-			to='/library/$topicId/$reviewCardId'
-			params={{ topicId: String(topic_id), reviewCardId: String(id) }}
+			to='/review-cards/$reviewCardId'
+			params={{ reviewCardId: String(id) }}
 			{...stylex.props(styles.container)}
 		>
 			<p {...stylex.props(styles.title)}>{primary_text}</p>

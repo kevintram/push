@@ -128,9 +128,8 @@ export function TopicPage() {
 		try {
 			const reviewCard = await createReviewCard({ topicId })
 			await navigate({
-				to: '/library/$topicId/$reviewCardId',
+				to: '/review-cards/$reviewCardId',
 				params: {
-					topicId,
 					reviewCardId: String(reviewCard.id),
 				},
 			})

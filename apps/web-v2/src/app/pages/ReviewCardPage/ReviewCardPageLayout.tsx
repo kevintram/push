@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
 	Link,
 	Outlet,
+	useLoaderData,
 	useMatchRoute,
 	useNavigate,
 	useParams,
@@ -60,8 +61,11 @@ const styles = stylex.create({
 })
 
 export function ReviewCardPageLayout() {
-	const { reviewCardId, topicId } = useParams({
-		from: '/library/$topicId_/$reviewCardId',
+	const { reviewCardId } = useParams({
+		from: '/review-cards/$reviewCardId',
+	})
+	const { topicId } = useLoaderData({
+		from: '/review-cards/$reviewCardId',
 	})
 
 	const { data: topic } = useQuery(topicQueries.detail(topicId))
@@ -73,8 +77,8 @@ export function ReviewCardPageLayout() {
 
 	const matchRoute = useMatchRoute()
 	const activeTab = matchRoute({
-		to: '/library/$topicId/$reviewCardId/review',
-		params: { reviewCardId, topicId },
+		to: '/review-cards/$reviewCardId/reviews',
+		params: { reviewCardId },
 	})
 		? 'review'
 		: 'overview'
@@ -113,8 +117,8 @@ export function ReviewCardPageLayout() {
 							nativeButton={false}
 							render={
 								<Link
-									to='/library/$topicId/$reviewCardId'
-									params={{ reviewCardId, topicId }}
+									to='/review-cards/$reviewCardId'
+									params={{ reviewCardId }}
 									{...stylex.props(styles.tabLink)}
 								/>
 							}
@@ -126,8 +130,8 @@ export function ReviewCardPageLayout() {
 							nativeButton={false}
 							render={
 								<Link
-									to='/library/$topicId/$reviewCardId/review'
-									params={{ reviewCardId, topicId }}
+									to='/review-cards/$reviewCardId/reviews'
+									params={{ reviewCardId }}
 									{...stylex.props(styles.tabLink)}
 								/>
 							}

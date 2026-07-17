@@ -23,9 +23,9 @@ import { Route as ReviewNewRouteImport } from './routes/review/new'
 import { Route as ReviewLateRouteImport } from './routes/review/late'
 import { Route as ReviewDueRouteImport } from './routes/review/due'
 import { Route as LibraryTopicIdRouteImport } from './routes/library/$topicId'
-import { Route as LibraryTopicIdReviewCardIdRouteRouteImport } from './routes/library/$topicId_.$reviewCardId/route'
-import { Route as LibraryTopicIdReviewCardIdIndexRouteImport } from './routes/library/$topicId_.$reviewCardId/index'
-import { Route as LibraryTopicIdReviewCardIdReviewRouteImport } from './routes/library/$topicId_.$reviewCardId/review'
+import { Route as ReviewCardsReviewCardIdRouteRouteImport } from './routes/review-cards/$reviewCardId/route'
+import { Route as ReviewCardsReviewCardIdIndexRouteImport } from './routes/review-cards/$reviewCardId/index'
+import { Route as ReviewCardsReviewCardIdReviewsRouteImport } from './routes/review-cards/$reviewCardId/reviews'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -97,23 +97,23 @@ const LibraryTopicIdRoute = LibraryTopicIdRouteImport.update({
   path: '/$topicId',
   getParentRoute: () => LibraryRouteRoute,
 } as any)
-const LibraryTopicIdReviewCardIdRouteRoute =
-  LibraryTopicIdReviewCardIdRouteRouteImport.update({
-    id: '/$topicId_/$reviewCardId',
-    path: '/$topicId/$reviewCardId',
-    getParentRoute: () => LibraryRouteRoute,
+const ReviewCardsReviewCardIdRouteRoute =
+  ReviewCardsReviewCardIdRouteRouteImport.update({
+    id: '/review-cards/$reviewCardId',
+    path: '/review-cards/$reviewCardId',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const LibraryTopicIdReviewCardIdIndexRoute =
-  LibraryTopicIdReviewCardIdIndexRouteImport.update({
+const ReviewCardsReviewCardIdIndexRoute =
+  ReviewCardsReviewCardIdIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => LibraryTopicIdReviewCardIdRouteRoute,
+    getParentRoute: () => ReviewCardsReviewCardIdRouteRoute,
   } as any)
-const LibraryTopicIdReviewCardIdReviewRoute =
-  LibraryTopicIdReviewCardIdReviewRouteImport.update({
-    id: '/review',
-    path: '/review',
-    getParentRoute: () => LibraryTopicIdReviewCardIdRouteRoute,
+const ReviewCardsReviewCardIdReviewsRoute =
+  ReviewCardsReviewCardIdReviewsRouteImport.update({
+    id: '/reviews',
+    path: '/reviews',
+    getParentRoute: () => ReviewCardsReviewCardIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -125,15 +125,15 @@ export interface FileRoutesByFullPath {
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
+  '/review-cards/$reviewCardId': typeof ReviewCardsReviewCardIdRouteRouteWithChildren
   '/library/$topicId': typeof LibraryTopicIdRoute
   '/review/due': typeof ReviewDueRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
   '/library/': typeof LibraryIndexRoute
   '/review/': typeof ReviewIndexRoute
-  '/library/$topicId/$reviewCardId': typeof LibraryTopicIdReviewCardIdRouteRouteWithChildren
-  '/library/$topicId/$reviewCardId/review': typeof LibraryTopicIdReviewCardIdReviewRoute
-  '/library/$topicId/$reviewCardId/': typeof LibraryTopicIdReviewCardIdIndexRoute
+  '/review-cards/$reviewCardId/reviews': typeof ReviewCardsReviewCardIdReviewsRoute
+  '/review-cards/$reviewCardId/': typeof ReviewCardsReviewCardIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -148,8 +148,8 @@ export interface FileRoutesByTo {
   '/review/new': typeof ReviewNewRoute
   '/library': typeof LibraryIndexRoute
   '/review': typeof ReviewIndexRoute
-  '/library/$topicId/$reviewCardId/review': typeof LibraryTopicIdReviewCardIdReviewRoute
-  '/library/$topicId/$reviewCardId': typeof LibraryTopicIdReviewCardIdIndexRoute
+  '/review-cards/$reviewCardId/reviews': typeof ReviewCardsReviewCardIdReviewsRoute
+  '/review-cards/$reviewCardId': typeof ReviewCardsReviewCardIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,15 +161,15 @@ export interface FileRoutesById {
   '/pinned': typeof PinnedRoute
   '/recent': typeof RecentRoute
   '/settings': typeof SettingsRoute
+  '/review-cards/$reviewCardId': typeof ReviewCardsReviewCardIdRouteRouteWithChildren
   '/library/$topicId': typeof LibraryTopicIdRoute
   '/review/due': typeof ReviewDueRoute
   '/review/late': typeof ReviewLateRoute
   '/review/new': typeof ReviewNewRoute
   '/library/': typeof LibraryIndexRoute
   '/review/': typeof ReviewIndexRoute
-  '/library/$topicId_/$reviewCardId': typeof LibraryTopicIdReviewCardIdRouteRouteWithChildren
-  '/library/$topicId_/$reviewCardId/review': typeof LibraryTopicIdReviewCardIdReviewRoute
-  '/library/$topicId_/$reviewCardId/': typeof LibraryTopicIdReviewCardIdIndexRoute
+  '/review-cards/$reviewCardId/reviews': typeof ReviewCardsReviewCardIdReviewsRoute
+  '/review-cards/$reviewCardId/': typeof ReviewCardsReviewCardIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -182,15 +182,15 @@ export interface FileRouteTypes {
     | '/pinned'
     | '/recent'
     | '/settings'
+    | '/review-cards/$reviewCardId'
     | '/library/$topicId'
     | '/review/due'
     | '/review/late'
     | '/review/new'
     | '/library/'
     | '/review/'
-    | '/library/$topicId/$reviewCardId'
-    | '/library/$topicId/$reviewCardId/review'
-    | '/library/$topicId/$reviewCardId/'
+    | '/review-cards/$reviewCardId/reviews'
+    | '/review-cards/$reviewCardId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -205,8 +205,8 @@ export interface FileRouteTypes {
     | '/review/new'
     | '/library'
     | '/review'
-    | '/library/$topicId/$reviewCardId/review'
-    | '/library/$topicId/$reviewCardId'
+    | '/review-cards/$reviewCardId/reviews'
+    | '/review-cards/$reviewCardId'
   id:
     | '__root__'
     | '/'
@@ -217,15 +217,15 @@ export interface FileRouteTypes {
     | '/pinned'
     | '/recent'
     | '/settings'
+    | '/review-cards/$reviewCardId'
     | '/library/$topicId'
     | '/review/due'
     | '/review/late'
     | '/review/new'
     | '/library/'
     | '/review/'
-    | '/library/$topicId_/$reviewCardId'
-    | '/library/$topicId_/$reviewCardId/review'
-    | '/library/$topicId_/$reviewCardId/'
+    | '/review-cards/$reviewCardId/reviews'
+    | '/review-cards/$reviewCardId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -237,6 +237,7 @@ export interface RootRouteChildren {
   PinnedRoute: typeof PinnedRoute
   RecentRoute: typeof RecentRoute
   SettingsRoute: typeof SettingsRoute
+  ReviewCardsReviewCardIdRouteRoute: typeof ReviewCardsReviewCardIdRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -339,58 +340,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryTopicIdRouteImport
       parentRoute: typeof LibraryRouteRoute
     }
-    '/library/$topicId_/$reviewCardId': {
-      id: '/library/$topicId_/$reviewCardId'
-      path: '/$topicId/$reviewCardId'
-      fullPath: '/library/$topicId/$reviewCardId'
-      preLoaderRoute: typeof LibraryTopicIdReviewCardIdRouteRouteImport
-      parentRoute: typeof LibraryRouteRoute
+    '/review-cards/$reviewCardId': {
+      id: '/review-cards/$reviewCardId'
+      path: '/review-cards/$reviewCardId'
+      fullPath: '/review-cards/$reviewCardId'
+      preLoaderRoute: typeof ReviewCardsReviewCardIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/library/$topicId_/$reviewCardId/': {
-      id: '/library/$topicId_/$reviewCardId/'
+    '/review-cards/$reviewCardId/': {
+      id: '/review-cards/$reviewCardId/'
       path: '/'
-      fullPath: '/library/$topicId/$reviewCardId/'
-      preLoaderRoute: typeof LibraryTopicIdReviewCardIdIndexRouteImport
-      parentRoute: typeof LibraryTopicIdReviewCardIdRouteRoute
+      fullPath: '/review-cards/$reviewCardId/'
+      preLoaderRoute: typeof ReviewCardsReviewCardIdIndexRouteImport
+      parentRoute: typeof ReviewCardsReviewCardIdRouteRoute
     }
-    '/library/$topicId_/$reviewCardId/review': {
-      id: '/library/$topicId_/$reviewCardId/review'
-      path: '/review'
-      fullPath: '/library/$topicId/$reviewCardId/review'
-      preLoaderRoute: typeof LibraryTopicIdReviewCardIdReviewRouteImport
-      parentRoute: typeof LibraryTopicIdReviewCardIdRouteRoute
+    '/review-cards/$reviewCardId/reviews': {
+      id: '/review-cards/$reviewCardId/reviews'
+      path: '/reviews'
+      fullPath: '/review-cards/$reviewCardId/reviews'
+      preLoaderRoute: typeof ReviewCardsReviewCardIdReviewsRouteImport
+      parentRoute: typeof ReviewCardsReviewCardIdRouteRoute
     }
   }
 }
-
-interface LibraryTopicIdReviewCardIdRouteRouteChildren {
-  LibraryTopicIdReviewCardIdReviewRoute: typeof LibraryTopicIdReviewCardIdReviewRoute
-  LibraryTopicIdReviewCardIdIndexRoute: typeof LibraryTopicIdReviewCardIdIndexRoute
-}
-
-const LibraryTopicIdReviewCardIdRouteRouteChildren: LibraryTopicIdReviewCardIdRouteRouteChildren =
-  {
-    LibraryTopicIdReviewCardIdReviewRoute:
-      LibraryTopicIdReviewCardIdReviewRoute,
-    LibraryTopicIdReviewCardIdIndexRoute: LibraryTopicIdReviewCardIdIndexRoute,
-  }
-
-const LibraryTopicIdReviewCardIdRouteRouteWithChildren =
-  LibraryTopicIdReviewCardIdRouteRoute._addFileChildren(
-    LibraryTopicIdReviewCardIdRouteRouteChildren,
-  )
 
 interface LibraryRouteRouteChildren {
   LibraryTopicIdRoute: typeof LibraryTopicIdRoute
   LibraryIndexRoute: typeof LibraryIndexRoute
-  LibraryTopicIdReviewCardIdRouteRoute: typeof LibraryTopicIdReviewCardIdRouteRouteWithChildren
 }
 
 const LibraryRouteRouteChildren: LibraryRouteRouteChildren = {
   LibraryTopicIdRoute: LibraryTopicIdRoute,
   LibraryIndexRoute: LibraryIndexRoute,
-  LibraryTopicIdReviewCardIdRouteRoute:
-    LibraryTopicIdReviewCardIdRouteRouteWithChildren,
 }
 
 const LibraryRouteRouteWithChildren = LibraryRouteRoute._addFileChildren(
@@ -415,6 +396,22 @@ const ReviewRouteRouteWithChildren = ReviewRouteRoute._addFileChildren(
   ReviewRouteRouteChildren,
 )
 
+interface ReviewCardsReviewCardIdRouteRouteChildren {
+  ReviewCardsReviewCardIdReviewsRoute: typeof ReviewCardsReviewCardIdReviewsRoute
+  ReviewCardsReviewCardIdIndexRoute: typeof ReviewCardsReviewCardIdIndexRoute
+}
+
+const ReviewCardsReviewCardIdRouteRouteChildren: ReviewCardsReviewCardIdRouteRouteChildren =
+  {
+    ReviewCardsReviewCardIdReviewsRoute: ReviewCardsReviewCardIdReviewsRoute,
+    ReviewCardsReviewCardIdIndexRoute: ReviewCardsReviewCardIdIndexRoute,
+  }
+
+const ReviewCardsReviewCardIdRouteRouteWithChildren =
+  ReviewCardsReviewCardIdRouteRoute._addFileChildren(
+    ReviewCardsReviewCardIdRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LibraryRouteRoute: LibraryRouteRouteWithChildren,
@@ -424,6 +421,8 @@ const rootRouteChildren: RootRouteChildren = {
   PinnedRoute: PinnedRoute,
   RecentRoute: RecentRoute,
   SettingsRoute: SettingsRoute,
+  ReviewCardsReviewCardIdRouteRoute:
+    ReviewCardsReviewCardIdRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -19,7 +19,7 @@ const styles = stylex.create({
 
 export function ReviewCardPageReviews() {
 	const { reviewCardId } = useParams({
-		from: '/library/$topicId_/$reviewCardId',
+		from: '/review-cards/$reviewCardId',
 	})
 	const {
 		data: reviews,
