@@ -20,13 +20,13 @@ const styles = stylex.create({
 	},
 	header: {
 		display: 'flex',
-		
+
 		padding: spacing.md,
 		paddingBlockEnd: spacing.none,
 	},
 	headerText: {
 		paddingInline: spacing.sm,
-		
+
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
