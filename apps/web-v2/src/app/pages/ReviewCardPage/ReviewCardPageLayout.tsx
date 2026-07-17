@@ -141,7 +141,6 @@ export function ReviewCardPageLayout() {
 						render={
 							<Button
 								aria-label='Review card actions'
-								size='icon'
 								variant='ghost'
 							/>
 						}

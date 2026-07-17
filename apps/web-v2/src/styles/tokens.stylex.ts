@@ -82,6 +82,100 @@ export const colors = stylex.defineVars({
 	},
 })
 
+export const gray = stylex.defineVars({
+	'50': {
+		default: 'oklch(99.11% 0 none)',
+		[DARK]: 'oklch(20.02% 0 none)',
+	},
+	'100': {
+		default: 'oklch(97.91% 0 none)',
+		[DARK]: 'oklch(22.64% 0 none)',
+	},
+	'200': {
+		default: 'oklch(96.42% 0 none)',
+		[DARK]: 'oklch(25.62% 0 none)',
+	},
+	'300': {
+		default: 'oklch(94.61% 0 none)',
+		[DARK]: 'oklch(27.68% 0 none)',
+	},
+	'400': {
+		default: 'oklch(93.10% 0 none)',
+		[DARK]: 'oklch(30.12% 0 none)',
+	},
+	'500': {
+		default: 'oklch(91.28% 0 none)',
+		[DARK]: 'oklch(32.50% 0 none)',
+	},
+	'600': {
+		default: 'oklch(89.14% 0 none)',
+		[DARK]: 'oklch(36.39% 0 none)',
+	},
+	'700': {
+		default: 'oklch(82.97% 0 none)',
+		[DARK]: 'oklch(43.13% 0 none)',
+	},
+	'800': {
+		default: 'oklch(65.00% 0 none)',
+		[DARK]: 'oklch(54.52% 0 none)',
+	},
+	'900': {
+		default: 'oklch(61.67% 0 none)',
+		[DARK]: 'oklch(59.31% 0 none)',
+	},
+	'950': {
+		default: 'oklch(20.46% 0 none)',
+		[DARK]: 'oklch(94.61% 0 none)',
+	},
+})
+
+export const red = stylex.defineVars({
+	'50': {
+		default: 'oklch(98.4% 0.0098 29.02)',
+		[DARK]: 'oklch(20.7% 0.0196 29.02)',
+	},
+	'100': {
+		default: 'oklch(95.5% 0.0285 29.02)',
+		[DARK]: 'oklch(25.4% 0.0569 29.02)',
+	},
+	'200': {
+		default: 'oklch(92.7% 0.0619 29.02)',
+		[DARK]: 'oklch(29.2% 0.0945 29.02)',
+	},
+	'300': {
+		default: 'oklch(89.3% 0.0820 29.02)',
+		[DARK]: 'oklch(33.2% 0.1049 29.02)',
+	},
+	'400': {
+		default: 'oklch(85.4% 0.1003 29.02)',
+		[DARK]: 'oklch(38.2% 0.1080 29.02)',
+	},
+	'500': {
+		default: 'oklch(80.4% 0.1221 29.02)',
+		[DARK]: 'oklch(45.0% 0.1171 29.02)',
+	},
+	'600': {
+		default: 'oklch(71.7% 0.1888 29.02)',
+		[DARK]: 'oklch(53.9% 0.1438 29.02)',
+	},
+	'700': {
+		default: 'oklch(63.0% 0.2555 29.02)',
+		[DARK]: 'oklch(63.0% 0.2555 29.02)',
+	},
+	'800': {
+		default: 'oklch(58.9% 0.2577 29.02)',
+		[DARK]: 'oklch(68.0% 0.2350 29.02)',
+	},
+	'900': {
+		default: 'oklch(56.4% 0.2555 29.02)',
+		[DARK]: 'oklch(79.0% 0.1892 29.02)',
+	},
+	'950': {
+		default: 'oklch(24.6% 0.0591 29.02)',
+		[DARK]: 'oklch(90.9% 0.0545 29.02)',
+	},
+})
+
 export const fonts = stylex.defineVars({
 	sans: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 })
@@ -105,6 +199,7 @@ export const radii = stylex.defineVars({
 	sm: '4px',
 	md: '6px',
 	lg: '8px',
+	xl: '10px',
 	full: '9999px',
 })
 

@@ -183,7 +183,6 @@ export function TopicPage() {
 									render={
 										<Button
 											aria-label='Topic actions'
-											size='icon'
 											variant='ghost'
 										/>
 									}

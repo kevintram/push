@@ -249,7 +249,6 @@ export function Review({ review }: { review: ReviewModel }) {
 							render={
 								<Button
 									aria-label='Review actions'
-									size='icon'
 									variant='ghost'
 								/>
 							}

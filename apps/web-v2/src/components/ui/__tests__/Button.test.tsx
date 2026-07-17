@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Star } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from '../Button'
@@ -40,7 +41,7 @@ describe('Button', () => {
 	})
 
 	it('renders with different variants', () => {
-		const { rerender } = render(<Button variant='default'>Default</Button>)
+		const { rerender } = render(<Button variant='primary'>Primary</Button>)
 		expect(screen.getByRole('button')).toBeInTheDocument()
 
 		rerender(<Button variant='secondary'>Secondary</Button>)
@@ -51,20 +52,53 @@ describe('Button', () => {
 
 		rerender(<Button variant='ghost'>Ghost</Button>)
 		expect(screen.getByRole('button')).toBeInTheDocument()
+
+		rerender(<Button danger>Danger primary</Button>)
+		expect(screen.getByRole('button')).toBeInTheDocument()
+
+		rerender(
+			<Button danger variant='ghost'>
+				Danger ghost
+			</Button>,
+		)
+		expect(screen.getByRole('button')).toBeInTheDocument()
 	})
 
 	it('renders with different sizes', () => {
-		const { rerender } = render(<Button size='sm'>Small</Button>)
+		const { rerender } = render(<Button size='micro'>Micro</Button>)
 		expect(screen.getByRole('button')).toBeInTheDocument()
 
-		rerender(<Button size='default'>Default</Button>)
+		rerender(<Button size='tiny'>Tiny</Button>)
 		expect(screen.getByRole('button')).toBeInTheDocument()
 
-		rerender(<Button size='lg'>Large</Button>)
+		rerender(<Button size='small'>Small</Button>)
 		expect(screen.getByRole('button')).toBeInTheDocument()
 
-		rerender(<Button size='icon'>Icon</Button>)
+		rerender(<Button size='medium'>Medium</Button>)
 		expect(screen.getByRole('button')).toBeInTheDocument()
+
+		rerender(<Button size='large'>Large</Button>)
+		expect(screen.getByRole('button')).toBeInTheDocument()
+	})
+
+	it('supports square and round shapes', () => {
+		const { rerender } = render(<Button shape='square'>Square</Button>)
+		expect(screen.getByRole('button')).toBeInTheDocument()
+
+		rerender(<Button shape='round'>Round</Button>)
+		expect(screen.getByRole('button')).toBeInTheDocument()
+	})
+
+	it('keeps icon-only buttons accessible', () => {
+		render(
+			<Button aria-label='Favorite review'>
+				<Star aria-hidden='true' />
+			</Button>,
+		)
+
+		expect(
+			screen.getByRole('button', { name: 'Favorite review' }),
+		).toBeInTheDocument()
 	})
 
 	it('forwards ref to the button element', () => {
@@ -72,5 +106,13 @@ describe('Button', () => {
 		render(<Button ref={ref}>Click me</Button>)
 
 		expect(ref.current).toBeInstanceOf(HTMLButtonElement)
+	})
+
+	it('supports Base UI render composition', () => {
+		render(<Button render={<a href='/library' />}>Open library</Button>)
+
+		expect(
+			screen.getByRole('link', { name: 'Open library' }),
+		).toHaveAttribute('href', '/library')
 	})
 })
