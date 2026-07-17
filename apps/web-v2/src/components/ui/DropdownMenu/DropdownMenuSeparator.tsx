@@ -13,7 +13,10 @@ const styles = stylex.create({
 })
 
 export function DropdownMenuSeparator(
-	props: React.ComponentProps<typeof Menu.Separator>,
+	props: Omit<
+		React.ComponentProps<typeof Menu.Separator>,
+		'className' | 'style'
+	>,
 ) {
 	return <Menu.Separator {...stylex.props(styles.separator)} {...props} />
 }

@@ -247,9 +247,8 @@ export function Review({ review }: { review: ReviewModel }) {
 					<DropdownMenu>
 						<DropdownMenuTrigger
 							render={
-								<Button
+								<Button.Icon
 									aria-label='Review actions'
-									size='icon'
 									variant='ghost'
 								/>
 							}

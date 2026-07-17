@@ -19,7 +19,7 @@ const styles = stylex.create({
 
 export function ReviewCardPageReviews() {
 	const { reviewCardId } = useParams({
-		from: '/library/$topicId_/$reviewCardId',
+		from: '/review-cards/$reviewCardId',
 	})
 	const {
 		data: reviews,
@@ -39,8 +39,11 @@ export function ReviewCardPageReviews() {
 	return (
 		<div {...stylex.props(styles.page)}>
 			<div {...stylex.props(styles.actions)}>
-				<Button disabled={isCreating} onClick={() => void addReview()}>
-					<Plus />
+				<Button
+					disabled={isCreating}
+					prefix={<Plus aria-hidden='true' />}
+					onClick={() => void addReview()}
+				>
 					Review
 				</Button>
 			</div>

@@ -4,8 +4,9 @@ import { ChevronRight } from 'lucide-react'
 
 import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
-export interface DropdownMenuSubTriggerProps extends React.ComponentProps<
-	typeof Menu.SubmenuTrigger
+export interface DropdownMenuSubTriggerProps extends Omit<
+	React.ComponentProps<typeof Menu.SubmenuTrigger>,
+	'className' | 'style'
 > {
 	inset?: boolean
 }

@@ -128,9 +128,8 @@ export function TopicPage() {
 		try {
 			const reviewCard = await createReviewCard({ topicId })
 			await navigate({
-				to: '/library/$topicId/$reviewCardId',
+				to: '/review-cards/$reviewCardId',
 				params: {
-					topicId,
 					reviewCardId: String(reviewCard.id),
 				},
 			})
@@ -181,9 +180,8 @@ export function TopicPage() {
 							<DropdownMenu>
 								<DropdownMenuTrigger
 									render={
-										<Button
+										<Button.Icon
 											aria-label='Topic actions'
-											size='icon'
 											variant='ghost'
 										/>
 									}
@@ -220,13 +218,13 @@ export function TopicPage() {
 				<h2 {...stylex.props(styles.reviewCardsHeaderText)}>
 					Review Cards
 				</h2>
-				<Button
+				<Button.Icon
 					aria-label='Add review card'
 					disabled={isCreatingReviewCard}
 					onClick={() => void addReviewCard()}
 				>
-					<Plus />
-				</Button>
+					<Plus aria-hidden='true' />
+				</Button.Icon>
 			</div>
 
 			<div {...stylex.props(styles.reviewCardsList)}>

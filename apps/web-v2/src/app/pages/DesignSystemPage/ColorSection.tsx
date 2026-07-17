@@ -106,6 +106,9 @@ const styles = stylex.create({
 		},
 		minWidth: 0,
 	},
+	swatchColor: (value: string) => ({
+		backgroundColor: value,
+	}),
 	value: {
 		paddingBlock: spacing.xs,
 		paddingInline: spacing.sm,
@@ -153,16 +156,20 @@ export function ColorSection() {
 							</span>
 						</span>
 						<span
-							className={stylex.props(styles.swatch).className}
-							style={{ backgroundColor: token.light }}
+							{...stylex.props(
+								styles.swatch,
+								styles.swatchColor(token.light),
+							)}
 						>
 							<span {...stylex.props(styles.value)}>
 								{token.light}
 							</span>
 						</span>
 						<span
-							className={stylex.props(styles.swatch).className}
-							style={{ backgroundColor: token.dark }}
+							{...stylex.props(
+								styles.swatch,
+								styles.swatchColor(token.dark),
+							)}
 						>
 							<span {...stylex.props(styles.value)}>
 								{token.dark}

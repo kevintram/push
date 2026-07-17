@@ -3,8 +3,9 @@ import * as stylex from '@stylexjs/stylex'
 
 import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
-export interface DropdownMenuItemProps extends React.ComponentProps<
-	typeof Menu.Item
+export interface DropdownMenuItemProps extends Omit<
+	React.ComponentProps<typeof Menu.Item>,
+	'className' | 'style'
 > {
 	inset?: boolean
 	variant?: 'default' | 'destructive'

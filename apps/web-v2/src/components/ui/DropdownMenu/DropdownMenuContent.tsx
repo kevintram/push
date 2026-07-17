@@ -3,8 +3,9 @@ import * as stylex from '@stylexjs/stylex'
 
 import { colors, radii, spacing } from '~/styles/tokens.stylex'
 
-export interface DropdownMenuContentProps extends React.ComponentProps<
-	typeof Menu.Popup
+export interface DropdownMenuContentProps extends Omit<
+	React.ComponentProps<typeof Menu.Popup>,
+	'className' | 'style'
 > {
 	align?: React.ComponentProps<typeof Menu.Positioner>['align']
 	alignOffset?: React.ComponentProps<typeof Menu.Positioner>['alignOffset']

@@ -52,8 +52,8 @@ import { colors, fontSizes, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
 
-const buttonVariants = ['default', 'secondary', 'outline', 'ghost'] as const
-const buttonSizes = ['sm', 'default', 'lg', 'icon'] as const
+const buttonVariants = ['primary', 'secondary', 'outline', 'ghost'] as const
+const buttonSizes = ['micro', 'tiny', 'small', 'medium', 'large'] as const
 
 const styles = stylex.create({
 	rowGrid: {
@@ -140,31 +140,84 @@ export function ComponentSection() {
 			<SpecimenSection
 				id='components'
 				title='Button'
-				meta={`${buttonVariants.length} variants · ${buttonSizes.length} sizes`}
+				meta={`${buttonVariants.length} variants · ${buttonSizes.length} sizes · normal + danger`}
 			>
 				<div>
-					{buttonVariants.map(variant => (
-						<div key={variant} {...stylex.props(styles.rowGrid)}>
+					{(['normal', 'danger'] as const).flatMap(palette =>
+						buttonVariants.map(variant => (
+							<div
+								key={`${palette}-${variant}`}
+								{...stylex.props(styles.rowGrid)}
+							>
+								<span {...stylex.props(styles.rowLabel)}>
+									{palette} · {variant}
+								</span>
+								<div {...stylex.props(styles.rowButtons)}>
+									{buttonSizes.map(size => (
+										<Button
+											danger={palette === 'danger'}
+											key={size}
+											size={size}
+											variant={variant}
+										>
+											{size}
+										</Button>
+									))}
+								</div>
+							</div>
+						)),
+					)}
+					<div {...stylex.props(styles.rowGrid)}>
+						<span {...stylex.props(styles.rowLabel)}>shapes</span>
+						<div {...stylex.props(styles.rowButtons)}>
+							<Button shape='square'>Square</Button>
+							<Button shape='round'>Round</Button>
+							<Button danger shape='round' variant='secondary'>
+								Danger round
+							</Button>
+							<Button
+								prefix={<Star aria-hidden size={16} />}
+								shape='round'
+								variant='outline'
+							>
+								Icon + label
+							</Button>
+						</div>
+					</div>
+					<div {...stylex.props(styles.rowGrid)}>
+						<span {...stylex.props(styles.rowLabel)}>
+							icon only
+						</span>
+						<div {...stylex.props(styles.rowButtons)}>
+							{buttonSizes.map(size => (
+								<Button.Icon
+									aria-label={`${size} favorite`}
+									key={size}
+									shape='round'
+									size={size}
+									variant='outline'
+								>
+									<Star aria-hidden size={16} />
+								</Button.Icon>
+							))}
+						</div>
+					</div>
+					{(['normal', 'danger'] as const).map(palette => (
+						<div key={palette} {...stylex.props(styles.rowGrid)}>
 							<span {...stylex.props(styles.rowLabel)}>
-								{variant}
+								{palette} · disabled
 							</span>
 							<div {...stylex.props(styles.rowButtons)}>
-								{buttonSizes.map(size => (
+								{buttonVariants.map(variant => (
 									<Button
-										key={size}
-										size={size}
+										danger={palette === 'danger'}
+										disabled
+										key={variant}
 										variant={variant}
 									>
-										{size === 'icon' ? (
-											<Star size={16} />
-										) : (
-											size
-										)}
+										{variant}
 									</Button>
 								))}
-								<Button disabled variant={variant}>
-									disabled
-								</Button>
 							</div>
 						</div>
 					))}
@@ -242,10 +295,16 @@ export function ComponentSection() {
 				<div {...stylex.props(styles.rowButtons)}>
 					<DropdownMenu>
 						<DropdownMenuTrigger
-							render={<Button variant='outline' />}
+							render={
+								<Button
+									suffix={
+										<ChevronDown aria-hidden size={16} />
+									}
+									variant='outline'
+								/>
+							}
 						>
 							My account
-							<ChevronDown aria-hidden size={16} />
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
 							<DropdownMenuGroup>

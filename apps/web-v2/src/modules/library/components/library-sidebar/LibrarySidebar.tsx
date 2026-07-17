@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Button } from '~/components/ui'
-import { spacing } from '~/styles/tokens.stylex'
+import { fontWeights, iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { useCreateTopic } from '../../api/createTopic'
 import { useDeleteTopic } from '../../api/deleteTopic'
@@ -15,18 +15,26 @@ import { topicQueries } from '../../api/queries'
 import { type TopicDeleteTarget, TopicLink } from './TopicLink'
 
 const styles = stylex.create({
+	container: {
+		overflowY: 'auto',
+	},
 	header: {
 		display: 'flex',
+
+		padding: spacing.md,
+		paddingBlockEnd: spacing.none,
 	},
 	headerText: {
+		paddingInline: spacing.sm,
+
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
+
+		fontWeight: fontWeights.semibold,
 	},
 	nav: {
 		padding: spacing.md,
-
-		overflowY: 'auto',
 
 		flexShrink: 0,
 		inlineSize: '240px',
@@ -102,16 +110,18 @@ export function LibrarySidebar() {
 	const topicToDeleteTitle = topicToDelete?.title.trim() || 'Untitled'
 
 	return (
-		<div>
+		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.header)}>
 				<p {...stylex.props(styles.headerText)}>Library</p>
-				<Button
+				<Button.Icon
 					aria-label='Add topic'
 					disabled={isCreatingTopic}
+					size='micro'
+					variant='ghost'
 					onClick={() => void addTopic(undefined)}
 				>
-					<Plus />
-				</Button>
+					<Plus aria-hidden='true' size={iconSizes.sm} />
+				</Button.Icon>
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
 				<ul {...stylex.props(styles.list)}>

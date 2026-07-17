@@ -43,7 +43,10 @@ export function DropdownMenuCheckboxItem({
 	children,
 	disabled,
 	...props
-}: React.ComponentProps<typeof Menu.CheckboxItem>) {
+}: Omit<
+	React.ComponentProps<typeof Menu.CheckboxItem>,
+	'className' | 'style'
+>) {
 	return (
 		<Menu.CheckboxItem
 			disabled={disabled}

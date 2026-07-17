@@ -11,6 +11,8 @@ const styles = stylex.create({
 	},
 })
 
-export function DropdownMenuShortcut(props: React.ComponentProps<'span'>) {
+export function DropdownMenuShortcut(
+	props: Omit<React.ComponentProps<'span'>, 'className' | 'style'>,
+) {
 	return <span {...stylex.props(styles.shortcut)} {...props} />
 }

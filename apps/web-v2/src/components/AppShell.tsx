@@ -8,6 +8,7 @@ import { AppSidebar } from './AppSidebar'
 const styles = stylex.create({
 	shell: {
 		overflow: 'hidden',
+		overscrollBehavior: 'none',
 
 		backgroundColor: colors.background,
 		color: colors.foreground,
