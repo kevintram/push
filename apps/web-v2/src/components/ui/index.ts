@@ -1,4 +1,5 @@
-export { Button, type ButtonProps } from './Button'
+export { Button, type ButtonProps } from './Button/Button'
+export { ButtonIcon, type ButtonIconProps } from './Button/ButtonIcon'
 export * from './ContextMenu'
 export * from './Dialog'
 export * from './DropdownMenu'

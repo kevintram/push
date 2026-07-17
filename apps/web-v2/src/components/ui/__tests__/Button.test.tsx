@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Star } from 'lucide-react'
+import { Plus, Search, Star } from 'lucide-react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Button } from '../Button'
@@ -91,14 +91,46 @@ describe('Button', () => {
 
 	it('keeps icon-only buttons accessible', () => {
 		render(
-			<Button aria-label='Favorite review'>
+			<Button.Icon aria-label='Favorite review'>
 				<Star aria-hidden='true' />
-			</Button>,
+			</Button.Icon>,
 		)
 
 		expect(
 			screen.getByRole('button', { name: 'Favorite review' }),
 		).toBeInTheDocument()
+	})
+
+	it('renders prefix and suffix slots', () => {
+		render(
+			<Button
+				prefix={<Search aria-hidden='true' />}
+				suffix={<Plus aria-hidden='true' />}
+			>
+				Search
+			</Button>,
+		)
+
+		const button = screen.getByRole('button', { name: 'Search' })
+		expect(button.querySelectorAll('svg')).toHaveLength(2)
+	})
+
+	it('supports square and round icon buttons', () => {
+		const { rerender } = render(
+			<Button.Icon aria-label='Add'>
+				<Plus aria-hidden='true' />
+			</Button.Icon>,
+		)
+
+		expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument()
+
+		rerender(
+			<Button.Icon aria-label='Add' shape='round'>
+				<Plus aria-hidden='true' />
+			</Button.Icon>,
+		)
+
+		expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument()
 	})
 
 	it('forwards ref to the button element', () => {

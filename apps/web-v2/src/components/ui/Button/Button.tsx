@@ -5,11 +5,13 @@ import {
 	colors,
 	fontSizes,
 	fontWeights,
-	grayScale,
+	gray,
 	radii,
-	redScale,
+	red,
 	spacing,
 } from '~/styles/tokens.stylex'
+
+import { ButtonIcon } from './ButtonIcon'
 
 const DARK = '@media (prefers-color-scheme: dark)'
 const RED_PRIMARY_SHADOW =
@@ -57,6 +59,20 @@ const styles = stylex.create({
 		transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 		userSelect: 'none',
 	},
+	iconButton: {
+		paddingInline: spacing.none,
+		aspectRatio: '1 / 1',
+	},
+	content: {
+		alignItems: 'center',
+		display: 'inline-flex',
+	},
+	slot: {
+		alignItems: 'center',
+		display: 'inline-flex',
+		flexShrink: 0,
+		justifyContent: 'center',
+	},
 	disabled: {
 		borderColor: {
 			default: 'transparent',
@@ -64,12 +80,12 @@ const styles = stylex.create({
 			':active': 'transparent',
 		},
 		backgroundColor: {
-			default: grayScale.shade400,
-			':hover': grayScale.shade400,
-			':active': grayScale.shade400,
+			default: gray[400],
+			':hover': gray[400],
+			':active': gray[400],
 		},
 		boxShadow: 'none',
-		color: grayScale.shade900,
+		color: gray[900],
 		cursor: 'not-allowed',
 		filter: {
 			default: 'none',
@@ -91,11 +107,11 @@ const normalVariants = stylex.create({
 				':hover': 'color-mix(in srgb, white 90%, transparent)',
 				':active': 'color-mix(in srgb, white 90%, transparent)',
 			},
-			default: grayScale.shade950,
-			':hover': `color-mix(in srgb, ${grayScale.shade950} 90%, transparent)`,
-			':active': `color-mix(in srgb, ${grayScale.shade950} 90%, transparent)`,
+			default: gray[950],
+			':hover': `color-mix(in srgb, ${gray[950]} 90%, transparent)`,
+			':active': `color-mix(in srgb, ${gray[950]} 90%, transparent)`,
 		},
-		color: { [DARK]: grayScale.shade50, default: 'white' },
+		color: { [DARK]: gray[50], default: 'white' },
 		filter: {
 			[DARK]: {
 				default: 'none',
@@ -108,38 +124,38 @@ const normalVariants = stylex.create({
 	secondary: {
 		borderColor: 'transparent',
 		backgroundColor: {
-			default: grayScale.shade200,
-			':hover': grayScale.shade300,
-			':active': grayScale.shade400,
+			default: gray[200],
+			':hover': gray[300],
+			':active': gray[400],
 		},
-		color: grayScale.shade950,
+		color: gray[950],
 	},
 	outline: {
 		borderColor: {
-			default: grayScale.shade500,
-			':hover': grayScale.shade600,
-			':active': grayScale.shade600,
+			default: gray[500],
+			':hover': gray[600],
+			':active': gray[600],
 		},
 		backgroundColor: {
 			[DARK]: {
-				default: grayScale.shade50,
-				':hover': grayScale.shade200,
-				':active': grayScale.shade300,
+				default: gray[50],
+				':hover': gray[200],
+				':active': gray[300],
 			},
 			default: 'white',
-			':hover': grayScale.shade200,
-			':active': grayScale.shade300,
+			':hover': gray[200],
+			':active': gray[300],
 		},
-		color: grayScale.shade950,
+		color: gray[950],
 	},
 	ghost: {
 		borderColor: 'transparent',
 		backgroundColor: {
 			default: 'transparent',
-			':hover': grayScale.shade300,
-			':active': grayScale.shade400,
+			':hover': gray[300],
+			':active': gray[400],
 		},
-		color: grayScale.shade950,
+		color: gray[950],
 	},
 })
 
@@ -147,9 +163,9 @@ const dangerVariants = stylex.create({
 	primary: {
 		borderColor: 'transparent',
 		backgroundColor: {
-			default: redScale.shade700,
-			':hover': redScale.shade800,
-			':active': redScale.shade800,
+			default: red[700],
+			':hover': red[800],
+			':active': red[800],
 		},
 		boxShadow: {
 			[DARK]: RED_PRIMARY_SHADOW_DARK,
@@ -168,33 +184,33 @@ const dangerVariants = stylex.create({
 	secondary: {
 		borderColor: 'transparent',
 		backgroundColor: {
-			default: redScale.shade100,
-			':hover': redScale.shade200,
-			':active': redScale.shade300,
+			default: red[100],
+			':hover': red[200],
+			':active': red[300],
 		},
-		color: redScale.shade900,
+		color: red[900],
 	},
 	outline: {
 		borderColor: {
-			default: redScale.shade400,
-			':hover': redScale.shade500,
-			':active': redScale.shade500,
+			default: red[400],
+			':hover': red[500],
+			':active': red[500],
 		},
 		backgroundColor: {
-			default: redScale.shade50,
-			':hover': redScale.shade100,
-			':active': redScale.shade200,
+			default: red[50],
+			':hover': red[100],
+			':active': red[200],
 		},
-		color: redScale.shade900,
+		color: red[900],
 	},
 	ghost: {
 		borderColor: 'transparent',
 		backgroundColor: {
 			default: 'transparent',
-			':hover': redScale.shade100,
-			':active': redScale.shade200,
+			':hover': red[100],
+			':active': red[200],
 		},
-		color: redScale.shade900,
+		color: red[900],
 	},
 })
 
@@ -202,70 +218,35 @@ const sizeVariants = stylex.create({
 	micro: {
 		borderRadius: radii.lg,
 		paddingBlock: spacing.none,
-		paddingInline: {
-			default: spacing.sm,
-			':has(> svg:only-child)': spacing.none,
-		},
-		aspectRatio: {
-			default: 'auto',
-			':has(> svg:only-child)': '1 / 1',
-		},
+		paddingInline: spacing.sm,
 		blockSize: '26px',
 		fontSize: fontSizes.sm,
 	},
 	tiny: {
 		borderRadius: radii.lg,
 		paddingBlock: spacing.none,
-		paddingInline: {
-			default: spacing.sm,
-			':has(> svg:only-child)': spacing.none,
-		},
-		aspectRatio: {
-			default: 'auto',
-			':has(> svg:only-child)': '1 / 1',
-		},
+		paddingInline: spacing.sm,
 		blockSize: '28px',
 		fontSize: fontSizes.sm,
 	},
 	small: {
 		borderRadius: radii.xl,
 		paddingBlock: spacing.none,
-		paddingInline: {
-			default: spacing.sm,
-			':has(> svg:only-child)': spacing.none,
-		},
-		aspectRatio: {
-			default: 'auto',
-			':has(> svg:only-child)': '1 / 1',
-		},
+		paddingInline: spacing.sm,
 		blockSize: '32px',
 		fontSize: '15px',
 	},
 	medium: {
 		borderRadius: radii.xl,
 		paddingBlock: spacing.none,
-		paddingInline: {
-			default: spacing.md,
-			':has(> svg:only-child)': spacing.none,
-		},
-		aspectRatio: {
-			default: 'auto',
-			':has(> svg:only-child)': '1 / 1',
-		},
+		paddingInline: spacing.md,
 		blockSize: '36px',
 		fontSize: '15px',
 	},
 	large: {
 		borderRadius: radii.xl,
 		paddingBlock: spacing.none,
-		paddingInline: {
-			default: spacing.md,
-			':has(> svg:only-child)': spacing.none,
-		},
-		aspectRatio: {
-			default: 'auto',
-			':has(> svg:only-child)': '1 / 1',
-		},
+		paddingInline: spacing.md,
 		blockSize: '40px',
 		fontSize: '15px',
 	},
@@ -282,16 +263,23 @@ type ButtonShape = keyof typeof shapeVariants
 
 export interface ButtonProps extends Omit<
 	React.ComponentProps<typeof ButtonPrimitive>,
-	'className' | 'style'
+	'className' | 'style' | 'prefix' | 'suffix'
 > {
 	variant?: ButtonVariant
 	size?: ButtonSize
 	shape?: ButtonShape
 	danger?: boolean
+	prefix?: React.ReactNode
+	suffix?: React.ReactNode
+	iconOnly?: boolean
 	xstyle?: stylex.StyleXStyles
 }
 
-export function Button({
+interface ButtonRenderProps extends ButtonProps {
+	iconOnly?: boolean
+}
+
+function renderButton({
 	variant = 'primary',
 	size = 'medium',
 	shape = 'square',
@@ -299,13 +287,17 @@ export function Button({
 	disabled,
 	children,
 	ref,
+	iconOnly = false,
+	prefix,
+	suffix,
 	xstyle,
 	...props
-}: ButtonProps) {
+}: ButtonRenderProps) {
 	const styleProps = stylex.props(
 		styles.base,
 		danger ? dangerVariants[variant] : normalVariants[variant],
 		sizeVariants[size],
+		iconOnly && styles.iconButton,
 		shapeVariants[shape],
 		disabled && styles.disabled,
 		xstyle,
@@ -318,7 +310,19 @@ export function Button({
 			{...styleProps}
 			{...props}
 		>
-			{children}
+			{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}
+			{iconOnly ? (
+				<span {...stylex.props(styles.slot)}>{children}</span>
+			) : (
+				<span {...stylex.props(styles.content)}>{children}</span>
+			)}
+			{suffix && <span {...stylex.props(styles.slot)}>{suffix}</span>}
 		</ButtonPrimitive>
 	)
 }
+
+export function Button(props: ButtonProps) {
+	return renderButton(props)
+}
+
+Button.Icon = ButtonIcon
