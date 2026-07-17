@@ -158,9 +158,10 @@ export const spacingSpecimens: Array<ScaleSpecimen> = [
 ]
 
 export const radiiSpecimens: Array<ScaleSpecimen> = [
-	{ name: 'sm', value: '4px' },
-	{ name: 'md', value: '6px' },
-	{ name: 'lg', value: '8px' },
+	{ name: 'sm', value: '6px' },
+	{ name: 'md', value: '12px' },
+	{ name: 'lg', value: '16px' },
+	{ name: 'full', value: '9999px' },
 ]
 
 /** A branded line used to set type specimens, in place of a generic pangram. */

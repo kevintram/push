@@ -48,7 +48,7 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { colors, fontSizes, spacing } from '~/styles/tokens.stylex'
+import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
 
@@ -121,7 +121,7 @@ const styles = stylex.create({
 		justifyContent: 'center',
 
 		borderColor: colors.border,
-		borderRadius: '6px',
+		borderRadius: radii.sm,
 		borderStyle: 'dashed',
 		borderWidth: '1px',
 		color: colors.mutedForeground,
