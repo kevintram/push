@@ -1,10 +1,11 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors, fontSizes } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	shortcut: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.1em',
 		marginInlineStart: 'auto',
