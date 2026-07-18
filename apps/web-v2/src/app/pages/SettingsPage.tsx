@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors, fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const apiUrl = import.meta.env.VITE_API_URL
 
@@ -22,7 +23,7 @@ const styles = stylex.create({
 	description: {
 		margin: 0,
 
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.md,
 		lineHeight: 1.5,
 	},

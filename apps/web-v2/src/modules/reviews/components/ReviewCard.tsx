@@ -2,18 +2,19 @@ import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 
 import { type ReviewCard } from '~/modules/reviews/types/review.types'
-import { colors, fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
 		paddingBlock: spacing.lg,
 
-		borderBottomColor: colors.border,
+		borderBottomColor: colors.borderSecondary,
 		borderBottomStyle: 'solid',
 		borderBottomWidth: '1px',
 
 		textDecoration: 'none',
-		color: 'inherit',
+		color: colors.text,
 	},
 	title: {
 		fontSize: fontSizes.md,

@@ -29,6 +29,7 @@ import {
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { useDeleteReview } from '~/modules/reviews/api/deleteReview'
 import { useUpdateReview } from '~/modules/reviews/api/updateReview'
+import { colors } from '~/styles/colors.stylex'
 
 import type { Rating, Review as ReviewModel } from '../types/review.types'
 
@@ -41,7 +42,7 @@ const styles = stylex.create({
 		alignItems: 'center',
 		justifyItems: 'start',
 
-		backgroundColor: 'transparent',
+		backgroundColor: colors.bgSurfaceTransparent,
 
 		borderWidth: 0,
 	},
@@ -60,12 +61,12 @@ const styles = stylex.create({
 		borderColor: 'transparent',
 		borderStyle: 'solid',
 		borderWidth: 0,
-		backgroundColor: 'transparent',
+		backgroundColor: colors.bgSurfaceTransparent,
 		color: 'inherit',
 		cursor: 'pointer',
 		outlineColor: {
 			default: 'transparent',
-			':focus-visible': 'currentColor',
+			':focus-visible': colors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -88,12 +89,12 @@ const styles = stylex.create({
 		borderColor: 'transparent',
 		borderStyle: 'solid',
 		borderWidth: 0,
-		backgroundColor: 'transparent',
-		color: 'inherit',
+		backgroundColor: colors.bgSurfaceTransparent,
+		color: colors.text,
 		cursor: 'pointer',
 		outlineColor: {
 			default: 'transparent',
-			':focus-visible': 'currentColor',
+			':focus-visible': colors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -258,7 +259,6 @@ export function Review({ review }: { review: ReviewModel }) {
 						<DropdownMenuContent align='end'>
 							<DropdownMenuItem
 								disabled={isDeleting}
-								variant='destructive'
 								onClick={() => void handleDelete()}
 							>
 								<Trash2 aria-hidden='true' size={16} />

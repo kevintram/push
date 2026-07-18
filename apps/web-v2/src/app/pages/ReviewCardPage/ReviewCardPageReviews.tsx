@@ -8,12 +8,13 @@ import { Button } from '~/components/ui'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
 import { reviewQueries } from '~/modules/reviews/api/queries'
 import { Review as ReviewComponent } from '~/modules/reviews/components/Review'
-import { colors, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	page: { gap: spacing.xl, display: 'flex', flexDirection: 'column' },
 	actions: { display: 'flex', justifyContent: 'flex-end' },
-	message: { color: colors.mutedForeground },
+	message: { color: colors.textSecondary },
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
 
