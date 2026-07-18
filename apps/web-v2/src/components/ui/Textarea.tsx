@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors, radii, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { radii, spacing } from '~/styles/tokens.stylex'
 
 export interface TextareaProps extends Omit<
 	React.ComponentProps<'textarea'>,
@@ -14,19 +15,31 @@ const styles = stylex.create({
 	textarea: {
 		fieldSizing: 'content',
 		borderColor: {
-			default: colors.border,
-			':focus-visible': colors.focusRing,
-			':is([aria-invalid="true"])': colors.destructive,
-			':disabled': colors.border,
+			default: colors.inputBorder,
+			':focus-visible': colors.inputBorderActive,
+			':is(:disabled:hover)': colors.borderDisabled,
+			':is([aria-invalid="true"])': colors.borderDangerSecondary,
+			':is([aria-invalid="true"]:hover)': colors.borderDangerSecondary,
+			':disabled': colors.borderDisabled,
+			':hover': colors.inputBorderHover,
 		},
-		borderRadius: radii.md,
+		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		paddingBlock: spacing.sm,
 		paddingInline: spacing.md,
-		backgroundColor: 'transparent',
+		backgroundColor: {
+			default: colors.inputBgSurface,
+			':focus-visible': colors.inputBgSurfaceActive,
+			':is(:disabled:hover)': colors.bgSurfaceDisabled,
+			':disabled': colors.bgSurfaceDisabled,
+			':hover': colors.inputBgSurfaceHover,
+		},
 		boxSizing: 'border-box',
-		color: colors.foreground,
+		color: {
+			default: colors.text,
+			':disabled': colors.textDisabled,
+		},
 		cursor: { default: 'text', ':disabled': 'not-allowed' },
 		fontFamily: 'inherit',
 		fontSize: 'inherit',
@@ -34,16 +47,15 @@ const styles = stylex.create({
 		inlineSize: '100%',
 		lineHeight: 'inherit',
 		minBlockSize: '64px',
-		opacity: { default: 1, ':disabled': 0.5 },
 		outlineColor: {
 			default: 'transparent',
-			':focus-visible': colors.focusRing,
+			':focus-visible': colors.borderFocus,
 		},
 		outlineOffset: '1px',
 		outlineStyle: 'solid',
 		outlineWidth: '2px',
 		resize: 'none',
-		'::placeholder': { color: colors.mutedForeground },
+		'::placeholder': { color: colors.textSecondary },
 	},
 })
 
