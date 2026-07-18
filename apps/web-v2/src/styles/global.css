@@ -91,15 +91,4 @@ h6 {
 
 :root {
 	color-scheme: light dark;
-	background-color: oklch(97% 0.0082 91.48);
-}
-
-@media (prefers-color-scheme: dark) {
-	:root {
-		background-color: oklch(18.2% 0.006 91.48);
-	}
-}
-
-body {
-	background-color: inherit;
 }
