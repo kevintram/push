@@ -1,8 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 
+import { colors } from '~/styles/colors.stylex'
 import {
-	colors,
 	fontSizes,
 	fontWeights,
 	iconSizes,
@@ -10,54 +10,57 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-import { type BaseSidebarLinkProps } from './SidebarLink.types'
+import { type SidebarLinkFatProps } from './SidebarLink.types'
 
 const styles = stylex.create({
-	container: {
+	link: {
 		textDecoration: 'none',
 
+		padding: spacing.sm,
+		borderRadius: radii.xl,
 		alignItems: 'center',
-		color: 'inherit',
-
 		display: 'flex',
 		flexDirection: 'column',
-
 		fontSize: fontSizes.xs,
 		fontWeight: fontWeights.medium,
 		textAlign: 'center',
-	},
-	iconContainer: {
-		padding: spacing.sm,
-
-		borderRadius: radii.lg,
-		marginBlock: spacing.xs,
 
 		backgroundColor: {
-			[stylex.when.ancestor(':hover')]: colors.surfaceActive,
-			[stylex.when.ancestor('[data-status=active]')]:
-				colors.surfaceActive,
+			'[data-status=active]': colors.navBgSurfaceActive,
+			default: colors.bg,
+			':is([data-status=active]:hover)': colors.navBgSurfaceActive,
+			':hover': colors.navBgSurfaceHover,
+		},
+		color: {
+			'[data-status=active]': colors.textLinkActive,
+			default: colors.textLink,
+			':hover': colors.textLinkHover,
 		},
 	},
 	icon: {
 		blockSize: iconSizes.sm,
-
 		display: 'block',
-
 		inlineSize: iconSizes.sm,
+	},
+	iconContainer: {
+		padding: spacing.xs,
+		marginBlock: spacing.xs,
 	},
 })
 
-export function FatSidebarLink({
-	icon: Icon,
-	to,
-	text,
+export function SidebarLinkFat({
 	ariaLabel,
-}: BaseSidebarLinkProps) {
+	icon: Icon,
+	params,
+	text,
+	to,
+}: SidebarLinkFatProps) {
 	return (
 		<Link
+			params={params}
 			to={to}
 			aria-label={ariaLabel ?? text}
-			{...stylex.props(styles.container, stylex.defaultMarker())}
+			{...stylex.props(styles.link)}
 		>
 			<div {...stylex.props(styles.iconContainer)}>
 				<Icon {...stylex.props(styles.icon)} />

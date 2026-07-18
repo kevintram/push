@@ -7,15 +7,16 @@ import { toast } from 'sonner'
 import { Button } from '~/components/ui'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
 import { reviewQueries } from '~/modules/reviews/api/queries'
-import { colors, radii, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { radii, spacing } from '~/styles/tokens.stylex'
 
 import { Review } from './Review'
 
 const styles = stylex.create({
 	container: {
 		padding: spacing.lg,
-		borderRadius: radii.lg,
-		backgroundColor: colors.muted,
+		borderRadius: radii.xl,
+		backgroundColor: colors.bgSurfaceSecondary,
 		inlineSize: '320px',
 	},
 	header: {
@@ -31,7 +32,14 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 1,
 	},
-	seeAll: { textDecoration: 'none', color: 'inherit' },
+	seeAll: {
+		textDecoration: 'none',
+		color: {
+			default: colors.textLink,
+			':hover': colors.textLinkHover,
+			':active': colors.textLinkActive,
+		},
+	},
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
 

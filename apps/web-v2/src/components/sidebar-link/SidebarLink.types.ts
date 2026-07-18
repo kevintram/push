@@ -1,11 +1,13 @@
 import { type LinkProps } from '@tanstack/react-router'
 import { type LucideIcon } from 'lucide-react'
 
-export type BaseSidebarLinkProps = {
-	icon: LucideIcon
+export type SidebarLinkCommonProps = {
+	params?: LinkProps['params']
 	to: LinkProps['to']
 	text?: string
 	ariaLabel?: string
 }
 
-export type SidebarLinkVariant = 'fat' | 'skinny'
+export type SidebarLinkFatProps = SidebarLinkCommonProps & {
+	icon: LucideIcon
+}
