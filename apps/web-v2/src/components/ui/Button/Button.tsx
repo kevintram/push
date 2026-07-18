@@ -1,35 +1,25 @@
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import * as stylex from '@stylexjs/stylex'
 
-import {
-	colors,
-	fontSizes,
-	fontWeights,
-	gray,
-	radii,
-	red,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { ButtonIcon } from './ButtonIcon'
 
-const DARK = '@media (prefers-color-scheme: dark)'
-const RED_PRIMARY_SHADOW =
-	'inset 0 0 0 1px color-mix(in srgb, black 15%, transparent)'
-const RED_PRIMARY_SHADOW_DARK =
-	'inset 0 0 0 1px color-mix(in srgb, white 15%, transparent)'
-
 const styles = stylex.create({
 	base: {
+		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 
 		gap: spacing.sm,
+		paddingBlock: spacing.none,
 
 		alignItems: 'center',
 		display: 'inline-flex',
 		justifyContent: 'center',
 
+		fontSize: fontSizes.md,
 		fontWeight: fontWeights.regular,
 		lineHeight: 1.5,
 		whiteSpace: 'nowrap',
@@ -41,7 +31,7 @@ const styles = stylex.create({
 		},
 		outlineColor: {
 			default: 'transparent',
-			':focus-visible': colors.focusRing,
+			':focus-visible': colors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -74,18 +64,7 @@ const styles = stylex.create({
 		justifyContent: 'center',
 	},
 	disabled: {
-		borderColor: {
-			default: 'transparent',
-			':hover': 'transparent',
-			':active': 'transparent',
-		},
-		backgroundColor: {
-			default: gray[400],
-			':hover': gray[400],
-			':active': gray[400],
-		},
 		boxShadow: 'none',
-		color: gray[900],
 		cursor: 'not-allowed',
 		filter: {
 			default: 'none',
@@ -102,60 +81,54 @@ const normalVariants = stylex.create({
 	primary: {
 		borderColor: 'transparent',
 		backgroundColor: {
-			[DARK]: {
-				default: 'white',
-				':hover': 'color-mix(in srgb, white 90%, transparent)',
-				':active': 'color-mix(in srgb, white 90%, transparent)',
-			},
-			default: gray[950],
-			':hover': `color-mix(in srgb, ${gray[950]} 90%, transparent)`,
-			':active': `color-mix(in srgb, ${gray[950]} 90%, transparent)`,
+			default: colors.bgFillBrand,
+			':hover': colors.bgFillBrandHover,
+			':active': colors.bgFillBrandActive,
 		},
-		color: { [DARK]: gray[50], default: 'white' },
-		filter: {
-			[DARK]: {
-				default: 'none',
-				':active': 'brightness(90%)',
-			},
-			default: 'none',
-			':active': 'brightness(115%)',
+		color: {
+			default: colors.textBrandOnBgFill,
+			':hover': colors.textBrandOnBgFillHover,
+			':active': colors.textBrandOnBgFillActive,
 		},
 	},
 	secondary: {
 		borderColor: 'transparent',
 		backgroundColor: {
-			default: gray[200],
-			':hover': gray[300],
-			':active': gray[400],
+			default: colors.bgFillSecondary,
+			':hover': colors.bgFillSecondaryHover,
+			':active': colors.bgFillSecondaryActive,
 		},
-		color: gray[950],
+		color: {
+			default: colors.textInteractive,
+			':hover': colors.textInteractiveHover,
+			':active': colors.textInteractiveActive,
+		},
 	},
 	outline: {
-		borderColor: {
-			default: gray[500],
-			':hover': gray[600],
-			':active': gray[600],
-		},
+		borderColor: colors.borderTertiary,
 		backgroundColor: {
-			[DARK]: {
-				default: gray[50],
-				':hover': gray[200],
-				':active': gray[300],
-			},
-			default: 'white',
-			':hover': gray[200],
-			':active': gray[300],
+			default: colors.bgFillTertiary,
+			':hover': colors.bgFillTertiaryHover,
+			':active': colors.bgFillTertiaryActive,
 		},
-		color: gray[950],
+		color: {
+			default: colors.textInteractive,
+			':hover': colors.textInteractiveHover,
+			':active': colors.textInteractiveActive,
+		},
 	},
 	ghost: {
 		borderColor: 'transparent',
 		backgroundColor: {
-			default: 'transparent',
-			':hover': gray[300],
-			':active': gray[400],
+			default: colors.bgSurfaceTransparent,
+			':hover': colors.bgFillTransparentHover,
+			':active': colors.bgFillTransparentActive,
 		},
-		color: gray[950],
+		color: {
+			default: colors.textInteractive,
+			':hover': colors.textInteractiveHover,
+			':active': colors.textInteractiveActive,
+		},
 	},
 })
 
@@ -163,92 +136,111 @@ const dangerVariants = stylex.create({
 	primary: {
 		borderColor: 'transparent',
 		backgroundColor: {
-			default: red[700],
-			':hover': red[800],
-			':active': red[800],
+			default: colors.bgFillDanger,
+			':hover': colors.bgFillDangerHover,
+			':active': colors.bgFillDangerActive,
 		},
-		boxShadow: {
-			[DARK]: RED_PRIMARY_SHADOW_DARK,
-			default: RED_PRIMARY_SHADOW,
-		},
-		color: 'white',
-		filter: {
-			[DARK]: {
-				default: 'none',
-				':active': 'brightness(110%) contrast(95%)',
-			},
-			default: 'none',
-			':active': 'brightness(95%)',
-		},
+		boxShadow: `inset 0 0 0 1px ${colors.insetContrast}`,
+		color: colors.textDangerOnBgFill,
 	},
 	secondary: {
 		borderColor: 'transparent',
 		backgroundColor: {
-			default: red[100],
-			':hover': red[200],
-			':active': red[300],
+			default: colors.bgFillDangerSecondary,
+			':hover': colors.bgFillDangerSecondaryHover,
+			':active': colors.bgFillDangerSecondaryActive,
 		},
-		color: red[900],
+		color: {
+			default: colors.textDanger,
+			':hover': colors.textDangerHover,
+			':active': colors.textDangerActive,
+		},
 	},
 	outline: {
 		borderColor: {
-			default: red[400],
-			':hover': red[500],
-			':active': red[500],
+			default: colors.borderDanger,
+			':hover': colors.borderDangerHover,
+			':active': colors.borderDangerActive,
 		},
 		backgroundColor: {
-			default: red[50],
-			':hover': red[100],
-			':active': red[200],
+			default: colors.bgFillDangerTertiary,
+			':hover': colors.bgFillDangerTertiaryHover,
+			':active': colors.bgFillDangerTertiaryActive,
 		},
-		color: red[900],
+		color: {
+			default: colors.textDanger,
+			':hover': colors.textDangerHover,
+			':active': colors.textDangerActive,
+		},
 	},
 	ghost: {
 		borderColor: 'transparent',
 		backgroundColor: {
-			default: 'transparent',
-			':hover': red[100],
-			':active': red[200],
+			default: colors.bgSurfaceTransparent,
+			':hover': colors.bgFillDangerTransparentHover,
+			':active': colors.bgFillDangerTransparentActive,
 		},
-		color: red[900],
+		color: {
+			default: colors.textDanger,
+			':hover': colors.textDangerHover,
+			':active': colors.textDangerActive,
+		},
+	},
+})
+
+const disabledVariants = stylex.create({
+	brand: {
+		borderColor: {
+			default: 'transparent',
+			':hover': 'transparent',
+			':active': 'transparent',
+		},
+		backgroundColor: {
+			default: colors.bgFillBrandDisabled,
+			':hover': colors.bgFillBrandDisabled,
+			':active': colors.bgFillBrandDisabled,
+		},
+		color: colors.textBrandOnBgFillDisabled,
+	},
+	generic: {
+		borderColor: {
+			default: colors.borderDisabled,
+			':hover': colors.borderDisabled,
+			':active': colors.borderDisabled,
+		},
+		backgroundColor: {
+			default: colors.bgFillDisabled,
+			':hover': colors.bgFillDisabled,
+			':active': colors.bgFillDisabled,
+		},
+		color: colors.textDisabled,
 	},
 })
 
 const sizeVariants = stylex.create({
 	micro: {
-		borderRadius: radii.lg,
-		paddingBlock: spacing.none,
+		borderRadius: radii.sm,
 		paddingInline: spacing.sm,
 		blockSize: '26px',
 		fontSize: fontSizes.sm,
 	},
 	tiny: {
-		borderRadius: radii.lg,
-		paddingBlock: spacing.none,
+		borderRadius: radii.sm,
 		paddingInline: spacing.sm,
 		blockSize: '28px',
 		fontSize: fontSizes.sm,
 	},
 	small: {
-		borderRadius: radii.lg,
-		paddingBlock: spacing.none,
 		paddingInline: spacing.sm,
 		blockSize: '32px',
-		fontSize: '15px',
 	},
 	medium: {
-		borderRadius: radii.lg,
-		paddingBlock: spacing.none,
 		paddingInline: spacing.md,
 		blockSize: '36px',
-		fontSize: '15px',
 	},
 	large: {
-		borderRadius: radii.lg,
-		paddingBlock: spacing.none,
 		paddingInline: spacing.md,
 		blockSize: '40px',
-		fontSize: '15px',
 	},
 })
 
@@ -300,6 +292,10 @@ function renderButton({
 		iconOnly && styles.iconButton,
 		shapeVariants[shape],
 		disabled && styles.disabled,
+		disabled &&
+			(!danger && variant === 'primary'
+				? disabledVariants.brand
+				: disabledVariants.generic),
 		xstyle,
 	)
 
