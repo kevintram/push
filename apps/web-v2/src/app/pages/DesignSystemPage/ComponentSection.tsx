@@ -48,7 +48,8 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
 
@@ -64,7 +65,7 @@ const styles = stylex.create({
 		},
 	},
 	rowLabel: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 
 		paddingBlock: {
@@ -112,7 +113,7 @@ const styles = stylex.create({
 		minWidth: 0,
 	},
 	fieldLabel: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 	},
 	contextMenuTrigger: {
@@ -121,10 +122,10 @@ const styles = stylex.create({
 		justifyContent: 'center',
 
 		borderColor: colors.border,
-		borderRadius: radii.sm,
+		borderRadius: radii.xs,
 		borderStyle: 'dashed',
 		borderWidth: '1px',
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 
 		blockSize: '8rem',
 		inlineSize: '16rem',
@@ -364,7 +365,7 @@ export function ComponentSection() {
 								</DropdownMenuSubContent>
 							</DropdownMenuSub>
 							<DropdownMenuSeparator />
-							<DropdownMenuItem variant='destructive'>
+							<DropdownMenuItem>
 								<LogOut aria-hidden size={16} /> Log out
 							</DropdownMenuItem>
 						</DropdownMenuContent>
@@ -393,7 +394,7 @@ export function ComponentSection() {
 								<ContextMenuShortcut>⌘D</ContextMenuShortcut>
 							</ContextMenuItem>
 							<ContextMenuSeparator />
-							<ContextMenuItem variant='destructive'>
+							<ContextMenuItem>
 								<Trash2 aria-hidden size={16} /> Delete
 							</ContextMenuItem>
 						</ContextMenuContent>
@@ -403,7 +404,7 @@ export function ComponentSection() {
 			<SpecimenSection
 				id='toast'
 				title='Toast'
-				meta='Sonner · default · success · error'
+				meta='Sonner · default · info · success · warning · error'
 			>
 				<div {...stylex.props(styles.rowButtons)}>
 					<Button
@@ -414,9 +415,23 @@ export function ComponentSection() {
 					</Button>
 					<Button
 						variant='outline'
+						onClick={() => toast.info('A new review is available')}
+					>
+						Info toast
+					</Button>
+					<Button
+						variant='outline'
 						onClick={() => toast.success('Review completed')}
 					>
 						Success toast
+					</Button>
+					<Button
+						variant='outline'
+						onClick={() =>
+							toast.warning('Review is almost overdue')
+						}
+					>
+						Warning toast
 					</Button>
 					<Button
 						variant='outline'

@@ -1,7 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui'
-import { colors, fontSizes, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
 
@@ -24,13 +25,13 @@ const styles = stylex.create({
 	label: {
 		marginBottom: spacing.md,
 
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 	},
 	panel: {
 		paddingBlock: spacing.lg,
 
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.sm,
 		lineHeight: 1.5,
 	},
