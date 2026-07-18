@@ -196,9 +196,11 @@ export const fontWeights = stylex.defineVars({
 })
 
 export const radii = stylex.defineVars({
-	sm: '6px',
-	md: '12px',
-	lg: '16px',
+	xs: '6px',
+	sm: '8px',
+	md: '10px',
+	lg: '12px',
+	xl: '16px',
 	full: '9999px',
 })
 
