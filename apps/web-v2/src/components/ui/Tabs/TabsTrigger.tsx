@@ -1,13 +1,8 @@
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import * as stylex from '@stylexjs/stylex'
 
-import {
-	colors,
-	fontSizes,
-	fontWeights,
-	radii,
-	spacing,
-} from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, fontWeights, radii, spacing } from '~/styles/tokens.stylex'
 
 import { type TabsVariant, useTabsVariant } from './TabsContext'
 
@@ -26,10 +21,14 @@ const styles = stylex.create({
 		borderWidth: '1px',
 		gap: spacing.sm,
 		alignItems: 'center',
-		backgroundColor: 'transparent',
+		backgroundColor: colors.bgSurfaceTransparent,
 		color: {
-			default: colors.mutedForeground,
-			':is([data-active])': colors.foreground,
+			default: colors.textInteractive,
+			':is([data-active])': colors.textInteractiveActive,
+			':is([data-disabled])': colors.textDisabled,
+			':is([data-disabled]:hover)': colors.textDisabled,
+			':hover': colors.textInteractiveHover,
+			':active': colors.textInteractiveActive,
 		},
 		cursor: {
 			default: 'pointer',
@@ -40,13 +39,9 @@ const styles = stylex.create({
 		fontWeight: fontWeights.medium,
 		justifyContent: 'center',
 		lineHeight: 1,
-		opacity: {
-			default: 1,
-			':is([data-disabled])': 0.5,
-		},
 		outlineColor: {
 			default: 'transparent',
-			':focus-visible': colors.focusRing,
+			':focus-visible': colors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
@@ -58,27 +53,27 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	default: {
-		borderRadius: radii.sm,
+		borderRadius: radii.lg,
 		backgroundColor: {
-			default: 'transparent',
-			':is([data-active])': colors.surface,
+			default: colors.bgSurfaceTransparent,
+			':is([data-active])': colors.bgFillTransparentSelected,
 		},
 		boxShadow: {
 			default: 'none',
-			':is([data-active])': '0 1px 2px rgb(0 0 0 / 0.08)',
+			':is([data-active])': `0 1px 2px ${colors.shadowSubtle}`,
 		},
 	},
 	line: {
 		borderRadius: 0,
 		borderBlockEndColor: {
 			default: 'transparent',
-			':is([data-active])': colors.foreground,
+			':is([data-active])': colors.borderBrand,
 			':is([data-orientation="vertical"])': 'transparent',
 		},
 		borderInlineEndColor: {
 			default: 'transparent',
 			':is([data-active][data-orientation="vertical"])':
-				colors.foreground,
+				colors.borderBrand,
 		},
 		marginBlockEnd: {
 			default: '-1px',

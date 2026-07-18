@@ -2,7 +2,8 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
 import { X } from 'lucide-react'
 
-import { colors, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { DialogOverlay } from './DialogOverlay'
 
@@ -36,13 +37,13 @@ const styles = stylex.create({
 		maxInlineSize: '32rem',
 
 		borderColor: colors.border,
-		borderRadius: radii.lg,
+		borderRadius: radii.xl,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		outline: 'none',
-		backgroundColor: colors.surface,
-		boxShadow: '0 16px 48px rgb(0 0 0 / 0.18)',
-		color: colors.foreground,
+		backgroundColor: colors.bgSurface,
+		boxShadow: `0 16px 48px ${colors.shadowStrong}`,
+		color: colors.text,
 		opacity: {
 			default: 1,
 			':is([data-starting-style], [data-ending-style])': 0,
@@ -70,24 +71,25 @@ const styles = stylex.create({
 		justifyContent: 'center',
 
 		borderColor: 'transparent',
-		borderRadius: radii.md,
+		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		backgroundColor: {
-			default: 'transparent',
-			':hover': colors.secondary,
+			default: colors.bgSurfaceTransparent,
+			':hover': colors.bgFillTransparentHover,
+			':active': colors.bgFillTransparentActive,
 		},
-		color: colors.mutedForeground,
+		color: 'inherit',
 		cursor: 'pointer',
 		outlineColor: {
 			default: 'transparent',
-			':focus-visible': colors.focusRing,
+			':focus-visible': colors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',
 		outlineWidth: '2px',
 		transitionDuration: '120ms',
-		transitionProperty: 'background-color, color',
+		transitionProperty: 'background-color',
 	},
 	icon: {
 		blockSize: iconSizes.sm,
