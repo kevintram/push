@@ -1,5 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link } from '@tanstack/react-router'
+import { Link, type LinkProps } from '@tanstack/react-router'
+import { type LucideIcon } from 'lucide-react'
+import { type ReactElement } from 'react'
 
 import { colors } from '~/styles/colors.stylex'
 import {
@@ -11,6 +13,14 @@ import {
 } from '~/styles/tokens.stylex'
 
 import { type SidebarLinkFatProps } from './SidebarLink.types'
+
+type SidebarLinkFatImplementationProps = {
+	params?: LinkProps['params']
+	to: LinkProps['to']
+	text?: string
+	ariaLabel?: string
+	icon: LucideIcon
+}
 
 const styles = stylex.create({
 	link: {
@@ -48,13 +58,16 @@ const styles = stylex.create({
 	},
 })
 
+export function SidebarLinkFat<const TOptions>(
+	props: SidebarLinkFatProps<TOptions>,
+): ReactElement
 export function SidebarLinkFat({
 	ariaLabel,
 	icon: Icon,
 	params,
 	text,
 	to,
-}: SidebarLinkFatProps) {
+}: SidebarLinkFatImplementationProps) {
 	return (
 		<Link
 			params={params}

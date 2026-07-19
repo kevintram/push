@@ -1,13 +1,17 @@
-import { type LinkProps } from '@tanstack/react-router'
+import {
+	type RegisteredRouter,
+	type ValidateLinkOptions,
+} from '@tanstack/react-router'
 import { type LucideIcon } from 'lucide-react'
 
-export type SidebarLinkCommonProps = {
-	params?: LinkProps['params']
-	to: LinkProps['to']
+export type SidebarLinkCommonProps<TOptions> = ValidateLinkOptions<
+	RegisteredRouter,
+	TOptions
+> & {
 	text?: string
 	ariaLabel?: string
 }
 
-export type SidebarLinkFatProps = SidebarLinkCommonProps & {
+export type SidebarLinkFatProps<TOptions> = SidebarLinkCommonProps<TOptions> & {
 	icon: LucideIcon
 }

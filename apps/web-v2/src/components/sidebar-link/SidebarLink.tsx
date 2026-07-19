@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link } from '@tanstack/react-router'
+import { Link, type LinkProps } from '@tanstack/react-router'
 import { type LucideIcon } from 'lucide-react'
 import {
 	type ComponentPropsWithoutRef,
@@ -13,14 +13,19 @@ import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 import { type SidebarLinkCommonProps } from './SidebarLink.types'
 import { SidebarLinkFat } from './SidebarLinkFat'
 
-type SidebarLinkProps = SidebarLinkCommonProps & {
+type SidebarLinkProps<TOptions> = SidebarLinkCommonProps<TOptions> & {
+	children?: ReactNode
+	icon?: LucideIcon
+}
+
+type SidebarLinkImplementationProps = {
+	params?: LinkProps['params']
+	to: LinkProps['to']
+	text?: string
+	ariaLabel?: string
 	children?: ReactNode
 	icon?: LucideIcon
 } & Omit<ComponentPropsWithoutRef<'a'>, 'aria-label' | 'children'>
-
-type SidebarLinkComponent = ((props: SidebarLinkProps) => ReactElement) & {
-	Fat: typeof SidebarLinkFat
-}
 
 const styles = stylex.create({
 	icon: {
@@ -55,7 +60,10 @@ const styles = stylex.create({
 	},
 })
 
-export const SidebarLink: SidebarLinkComponent = ({
+export function SidebarLink<const TOptions>(
+	props: SidebarLinkProps<TOptions>,
+): ReactElement
+export function SidebarLink({
 	ariaLabel,
 	children,
 	icon: Icon,
@@ -63,7 +71,7 @@ export const SidebarLink: SidebarLinkComponent = ({
 	text,
 	to,
 	...linkProps
-}) => {
+}: SidebarLinkImplementationProps) {
 	return (
 		<Link
 			{...linkProps}
