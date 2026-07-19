@@ -31,6 +31,7 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import { useDeleteReview } from '~/modules/reviews/api/deleteReview'
 import { useUpdateReview } from '~/modules/reviews/api/updateReview'
 import { colors } from '~/styles/colors.stylex'
+import { fontSizes, iconSizes } from '~/styles/tokens.stylex'
 
 import type { Rating, Review as ReviewModel } from '../types/review.types'
 
@@ -87,6 +88,8 @@ const styles = stylex.create({
 		minInlineSize: 0,
 
 		font: 'inherit',
+		fontSize: fontSizes.sm,
+
 		borderColor: 'transparent',
 		borderStyle: 'solid',
 		borderWidth: 0,
@@ -209,8 +212,14 @@ export function Review({ review }: { review: ReviewModel }) {
 							<DropdownMenuTrigger
 								{...stylex.props(styles.ratingTrigger)}
 							>
-								<RatingIcon aria-hidden='true' />
-								<ChevronDown aria-hidden='true' size={16} />
+								<RatingIcon
+									aria-hidden='true'
+									size={iconSizes.sm}
+								/>
+								<ChevronDown
+									aria-hidden='true'
+									size={iconSizes.sm}
+								/>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent>
 								<DropdownMenuRadioGroup
@@ -225,11 +234,13 @@ export function Review({ review }: { review: ReviewModel }) {
 												key={value}
 												value={value}
 												disabled={isPending}
+												prefix={
+													<Icon
+														aria-hidden='true'
+														size={iconSizes.sm}
+													/>
+												}
 											>
-												<Icon
-													aria-hidden='true'
-													size={16}
-												/>
 												{label}
 											</DropdownMenuRadioItem>
 										),
