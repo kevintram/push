@@ -8,7 +8,7 @@ import { Button } from '~/components/ui'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
 import { reviewQueries } from '~/modules/reviews/api/queries'
 import { colors } from '~/styles/colors.stylex'
-import { radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { Review } from './Review'
 
@@ -20,7 +20,9 @@ const styles = stylex.create({
 		inlineSize: '320px',
 	},
 	header: {
+		alignItems: 'center',
 		display: 'flex',
+		paddingBlockEnd: spacing.sm,
 	},
 	actions: {
 		gap: spacing.sm,
@@ -39,6 +41,7 @@ const styles = stylex.create({
 			':hover': colors.textLinkHover,
 			':active': colors.textLinkActive,
 		},
+		fontSize: fontSizes.sm,
 	},
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
@@ -80,7 +83,7 @@ export function ReviewsSidebar() {
 						disabled={isPending}
 						onClick={() => void addReview()}
 					>
-						<Plus aria-hidden='true' />
+						<Plus aria-hidden='true' size={iconSizes.sm} />
 					</Button.Icon>
 				</div>
 			</div>
