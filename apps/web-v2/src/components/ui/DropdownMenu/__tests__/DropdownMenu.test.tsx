@@ -87,4 +87,28 @@ describe('DropdownMenu', () => {
 			expect.anything(),
 		)
 	})
+
+	it('renders item prefix and suffix slots', async () => {
+		const user = userEvent.setup()
+
+		render(
+			<DropdownMenu>
+				<DropdownMenuTrigger>Actions</DropdownMenuTrigger>
+				<DropdownMenuContent>
+					<DropdownMenuItem prefix='⌘' suffix='→'>
+						Open
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>,
+		)
+
+		await user.click(screen.getByRole('button', { name: 'Actions' }))
+
+		const item = screen.getByRole('menuitem', {
+			name: '⌘ Open →',
+		})
+		expect(item).toHaveTextContent('⌘')
+		expect(item).toHaveTextContent('Open')
+		expect(item).toHaveTextContent('→')
+	})
 })
