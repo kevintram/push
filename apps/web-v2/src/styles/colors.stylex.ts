@@ -151,19 +151,6 @@ export const colors = stylex.defineVars({
 		default: violetLight.s5,
 		[DARK]: violetDark.s5,
 	},
-	// Use for backgrounds of elements suggested by magic AI.
-	bgSurfaceMagic: { default: violetLight.s3, [DARK]: violetDark.s3 },
-	// The hover state color for elements suggested by magic AI.
-	bgSurfaceMagicHover: {
-		default: violetLight.s4,
-		[DARK]: violetDark.s4,
-	},
-	// The active state (on press) color for elements suggested by magic AI.
-	bgSurfaceMagicActive: {
-		default: violetLight.s5,
-		[DARK]: violetDark.s5,
-	},
-
 	// Inverse and transparent surfaces
 	// Use for elements on bg-inverse.
 	bgSurfaceInverse: { default: grayDark.s5, [DARK]: grayDark.s5 },
@@ -332,24 +319,6 @@ export const colors = stylex.defineVars({
 		default: blueLight.s10,
 		[DARK]: blueDark.s10,
 	},
-	// The background color of elements suggested by magic AI, like a badge or a banner.
-	bgFillMagic: { default: violetLight.s9, [DARK]: violetDark.s9 },
-	// The background color of elements suggested by magic AI, with a secondary level of prominence.
-	bgFillMagicSecondary: {
-		default: violetLight.s3,
-		[DARK]: violetDark.s3,
-	},
-	// The hover state color of elements suggested by magic AI, with a secondary level of prominence.
-	bgFillMagicSecondaryHover: {
-		default: violetLight.s4,
-		[DARK]: violetDark.s4,
-	},
-	// The active state (on press) color of elements suggested by magic AI, with a secondary level of prominence.
-	bgFillMagicSecondaryActive: {
-		default: violetLight.s5,
-		[DARK]: violetDark.s5,
-	},
-
 	// Inverse and transparent fills
 	// The background color of elements with a smaller surface area on an inverse background.
 	bgFillInverse: { default: grayDark.s5, [DARK]: grayDark.s5 },
@@ -531,17 +500,6 @@ export const colors = stylex.defineVars({
 		[DARK]: baseColors.black,
 	},
 
-	// Magic text
-	// Use for text suggested by magic AI.
-	textMagic: { default: violetLight.s12, [DARK]: violetDark.s12 },
-	// Use for text suggested by magic AI with a secondary level of prominence.
-	textMagicSecondary: {
-		default: violetLight.s11,
-		[DARK]: violetDark.s11,
-	},
-	// Use for text and icons on bg-fill-magic.
-	textMagicOnBgFill: { default: baseColors.white, [DARK]: baseColors.white },
-
 	// Inverse text
 	// Use for text on an inverse background.
 	textInverse: { default: grayDark.s12, [DARK]: grayDark.s12 },
@@ -596,20 +554,6 @@ export const colors = stylex.defineVars({
 	borderEmphasisActive: {
 		default: blueLight.s8,
 		[DARK]: blueDark.s8,
-	},
-
-	// Magic borders
-	// Use for borders suggested by magic AI.
-	borderMagic: { default: violetLight.s7, [DARK]: violetDark.s7 },
-	// Use for borders suggested by magic AI, such as borders on text fields.
-	borderMagicSecondary: {
-		default: violetLight.s8,
-		[DARK]: violetDark.s8,
-	},
-	// Use for borders suggested by magic AI, such as borders on text fields.
-	borderMagicSecondaryHover: {
-		default: violetLight.s8,
-		[DARK]: violetDark.s8,
 	},
 
 	// Inverse borders
