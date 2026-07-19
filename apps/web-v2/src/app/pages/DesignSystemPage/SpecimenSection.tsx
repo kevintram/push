@@ -1,7 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import { type ReactNode } from 'react'
 
-import { colors, fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	section: {
@@ -26,7 +27,7 @@ const styles = stylex.create({
 		lineHeight: 1,
 	},
 	meta: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.sm,
 	},
 	body: {

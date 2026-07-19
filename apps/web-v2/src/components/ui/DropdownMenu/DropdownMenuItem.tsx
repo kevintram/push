@@ -1,14 +1,14 @@
 import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface DropdownMenuItemProps extends Omit<
 	React.ComponentProps<typeof Menu.Item>,
 	'className' | 'style'
 > {
 	inset?: boolean
-	variant?: 'default' | 'destructive'
 }
 
 const styles = stylex.create({
@@ -20,15 +20,16 @@ const styles = stylex.create({
 		columnGap: spacing.sm,
 		display: 'flex',
 
-		borderRadius: radii.sm,
+		borderRadius: radii.xs,
 		outline: 'none',
 		backgroundColor: {
-			default: 'transparent',
-			':is([data-highlighted])': colors.surfaceActive,
+			default: colors.bgSurfaceTransparent,
+			':is([data-highlighted])': colors.bgSurfaceSecondaryHover,
 		},
 		color: {
-			default: colors.foreground,
-			':is([data-highlighted])': colors.foreground,
+			default: colors.textInteractive,
+			':is([data-highlighted])': colors.textInteractiveHover,
+			':active': colors.textInteractiveActive,
 		},
 		cursor: 'default',
 		fontSize: fontSizes.sm,
@@ -42,21 +43,10 @@ const styles = stylex.create({
 	inset: {
 		paddingInlineStart: spacing['2xl'],
 	},
-	destructive: {
-		backgroundColor: {
-			default: 'transparent',
-			':is([data-highlighted])': colors.destructiveMuted,
-		},
-		color: {
-			default: colors.destructive,
-			':is([data-highlighted])': colors.destructive,
-		},
-	},
 })
 
 export function DropdownMenuItem({
 	inset = false,
-	variant = 'default',
 	disabled,
 	...props
 }: DropdownMenuItemProps) {
@@ -66,7 +56,6 @@ export function DropdownMenuItem({
 			{...stylex.props(
 				styles.item,
 				inset && styles.inset,
-				variant === 'destructive' && styles.destructive,
 				disabled && styles.disabled,
 			)}
 			{...props}

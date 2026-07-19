@@ -7,7 +7,6 @@ import { spacing } from '~/styles/tokens.stylex'
 const styles = stylex.create({
 	container: {
 		padding: spacing.md,
-		gap: spacing.xs,
 
 		display: 'flex',
 		flexDirection: 'column',
@@ -17,24 +16,9 @@ const styles = stylex.create({
 export function ReviewSidebar() {
 	return (
 		<nav aria-label='review sections' {...stylex.props(styles.container)}>
-			<SidebarLink
-				icon={Calendar}
-				text='Due'
-				to='/review/due'
-				variant='skinny'
-			/>
-			<SidebarLink
-				icon={Sparkles}
-				text='New'
-				to='/review/new'
-				variant='skinny'
-			/>
-			<SidebarLink
-				icon={BellRing}
-				text='Late'
-				to='/review/late'
-				variant='skinny'
-			/>
+			<SidebarLink icon={Calendar} text='Due' to='/review/due' />
+			<SidebarLink icon={Sparkles} text='New' to='/review/new' />
+			<SidebarLink icon={BellRing} text='Late' to='/review/late' />
 		</nav>
 	)
 }

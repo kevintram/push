@@ -1,7 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import type { ReactNode } from 'react'
 
-import { colors } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
 
 import { AppSidebar } from './AppSidebar'
 
@@ -10,8 +10,8 @@ const styles = stylex.create({
 		overflow: 'hidden',
 		overscrollBehavior: 'none',
 
-		backgroundColor: colors.background,
-		color: colors.foreground,
+		backgroundColor: colors.bg,
+		color: colors.text,
 
 		display: 'flex',
 

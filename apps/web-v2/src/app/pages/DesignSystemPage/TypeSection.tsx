@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors, fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 import {
 	fontSizeSpecimens,
@@ -11,7 +12,7 @@ import { SpecimenSection } from './SpecimenSection'
 
 const styles = stylex.create({
 	subhead: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.08em',
 		textTransform: 'uppercase',
@@ -43,7 +44,7 @@ const styles = stylex.create({
 		marginTop: spacing.md,
 	},
 	faceRole: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 
 		marginTop: spacing.xs,
@@ -64,14 +65,14 @@ const styles = stylex.create({
 		paddingBlock: spacing.md,
 	},
 	rowLabel: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 
 		flexShrink: 0,
 		width: '120px',
 	},
 	sample: {
-		color: colors.foreground,
+		color: colors.text,
 
 		flexGrow: 1,
 		minWidth: 0,

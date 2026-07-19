@@ -1,13 +1,14 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { radiiSpecimens, spacingSpecimens } from './specimens.data'
 import { SpecimenSection } from './SpecimenSection'
 
 const styles = stylex.create({
 	subhead: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.08em',
 		textTransform: 'uppercase',
@@ -31,7 +32,7 @@ const styles = stylex.create({
 		paddingBlock: spacing.md,
 	},
 	rulerLabel: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 
 		flexShrink: 0,
@@ -39,9 +40,9 @@ const styles = stylex.create({
 		width: '96px',
 	},
 	bar: {
-		borderRadius: radii.lg,
+		borderRadius: radii.xl,
 
-		backgroundColor: colors.foreground,
+		backgroundColor: colors.bgFillTertiary,
 		height: '10px',
 	},
 	barWidth: (value: string) => ({
@@ -62,11 +63,11 @@ const styles = stylex.create({
 		flexDirection: 'column',
 	},
 	radiusBox: {
-		borderColor: colors.foreground,
+		borderColor: colors.border,
 		borderStyle: 'solid',
 		borderWidth: '2px',
 
-		backgroundColor: colors.surface,
+		backgroundColor: colors.bgSurface,
 
 		height: '72px',
 		width: '72px',
@@ -75,7 +76,7 @@ const styles = stylex.create({
 		borderRadius: value,
 	}),
 	radiusLabel: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 	},
 })

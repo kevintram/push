@@ -2,7 +2,8 @@ import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 import { Check } from 'lucide-react'
 
-import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	item: {
@@ -14,13 +15,17 @@ const styles = stylex.create({
 		display: 'flex',
 		position: 'relative',
 
-		borderRadius: radii.sm,
+		borderRadius: radii.xs,
 		outline: 'none',
 		backgroundColor: {
-			default: 'transparent',
-			':is([data-highlighted])': colors.surfaceActive,
+			default: colors.bgSurfaceTransparent,
+			':is([data-highlighted])': colors.bgSurfaceSecondaryHover,
 		},
-		color: colors.foreground,
+		color: {
+			default: colors.textInteractive,
+			':is([data-highlighted])': colors.textInteractiveHover,
+			':active': colors.textInteractiveActive,
+		},
 		cursor: 'default',
 		fontSize: fontSizes.sm,
 		userSelect: 'none',
