@@ -12,6 +12,7 @@ import {
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
+import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
 	Dialog,
@@ -133,6 +134,7 @@ export function Review({ review }: { review: ReviewModel }) {
 	const { isPending: isDeleting, mutateAsync: deleteReview } =
 		useDeleteReview()
 	const [isOpen, setIsOpen] = useState(false)
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const updateRating = useCallback(
 		async (rating: Rating) => {
 			if (rating === review.rating) return
@@ -188,6 +190,7 @@ export function Review({ review }: { review: ReviewModel }) {
 	const handleDelete = async () => {
 		try {
 			await deleteReview(review.id)
+			setIsDeleteDialogOpen(false)
 			setIsOpen(false)
 		} catch {
 			toast.error('Failed to delete review')
@@ -195,95 +198,105 @@ export function Review({ review }: { review: ReviewModel }) {
 	}
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<div {...stylex.props(styles.contentContainer)}>
-				<div
-					aria-label={rating?.label ?? 'Uncompleted'}
-					{...stylex.props(styles.rating)}
-				>
-					<DropdownMenu>
-						<DropdownMenuTrigger
-							{...stylex.props(styles.ratingTrigger)}
-						>
-							<RatingIcon aria-hidden='true' />
-							<ChevronDown aria-hidden='true' size={16} />
-						</DropdownMenuTrigger>
-						<DropdownMenuContent>
-							<DropdownMenuRadioGroup
-								value={review.rating ?? ''}
-								onValueChange={value =>
-									void updateRating(value as Rating)
+		<>
+			<Dialog open={isOpen} onOpenChange={setIsOpen}>
+				<div {...stylex.props(styles.contentContainer)}>
+					<div
+						aria-label={rating?.label ?? 'Uncompleted'}
+						{...stylex.props(styles.rating)}
+					>
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								{...stylex.props(styles.ratingTrigger)}
+							>
+								<RatingIcon aria-hidden='true' />
+								<ChevronDown aria-hidden='true' size={16} />
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuRadioGroup
+									value={review.rating ?? ''}
+									onValueChange={value =>
+										void updateRating(value as Rating)
+									}
+								>
+									{Object.entries(ratingDetails).map(
+										([value, { label, Icon }]) => (
+											<DropdownMenuRadioItem
+												key={value}
+												value={value}
+												disabled={isPending}
+											>
+												<Icon
+													aria-hidden='true'
+													size={16}
+												/>
+												{label}
+											</DropdownMenuRadioItem>
+										),
+									)}
+								</DropdownMenuRadioGroup>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+					<DialogTrigger {...stylex.props(styles.description)}>
+						{description || 'No description'}
+						<div {...stylex.props(styles.footer)}>
+							{formatDate(effectiveDate)}
+							{stabilityChange ? ` · ${stabilityChange}` : null}
+						</div>
+					</DialogTrigger>
+				</div>
+
+				<DialogContent>
+					<DialogHeader xstyle={styles.dialogHeader}>
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								render={
+									<Button.Icon
+										aria-label='Review actions'
+										variant='ghost'
+									/>
 								}
 							>
-								{Object.entries(ratingDetails).map(
-									([value, { label, Icon }]) => (
-										<DropdownMenuRadioItem
-											key={value}
-											value={value}
-											disabled={isPending}
-										>
-											<Icon
-												aria-hidden='true'
-												size={16}
-											/>
-											{label}
-										</DropdownMenuRadioItem>
-									),
-								)}
-							</DropdownMenuRadioGroup>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-				<DialogTrigger {...stylex.props(styles.description)}>
-					{description || 'No description'}
-					<div {...stylex.props(styles.footer)}>
-						{formatDate(effectiveDate)}
-						{stabilityChange ? ` · ${stabilityChange}` : null}
-					</div>
-				</DialogTrigger>
-			</div>
-
-			<DialogContent>
-				<DialogHeader xstyle={styles.dialogHeader}>
-					<DropdownMenu>
-						<DropdownMenuTrigger
-							render={
-								<Button.Icon
-									aria-label='Review actions'
-									variant='ghost'
-								/>
-							}
-						>
-							<Ellipsis aria-hidden='true' />
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end'>
-							<DropdownMenuItem
-								disabled={isDeleting}
-								onClick={() => void handleDelete()}
-							>
-								<Trash2 aria-hidden='true' size={16} />
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</DialogHeader>
-				<Textarea
-					aria-label='Review description'
-					placeholder='Add a review description'
-					value={descriptionEditor.value}
-					onChange={descriptionEditor.onChange}
-					onBlur={descriptionEditor.flush}
-					xstyle={styles.descriptionEditor}
-				/>
-				<Textarea
-					aria-label='Review notes'
-					placeholder='Add review notes'
-					value={notesEditor.value}
-					onChange={notesEditor.onChange}
-					onBlur={notesEditor.flush}
-					xstyle={styles.notesEditor}
-				/>
-			</DialogContent>
-		</Dialog>
+								<Ellipsis aria-hidden='true' />
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align='end'>
+								<DropdownMenuItem
+									disabled={isDeleting}
+									onClick={() => setIsDeleteDialogOpen(true)}
+								>
+									<Trash2 aria-hidden='true' size={16} />
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</DialogHeader>
+					<Textarea
+						aria-label='Review description'
+						placeholder='Add a review description'
+						value={descriptionEditor.value}
+						onChange={descriptionEditor.onChange}
+						onBlur={descriptionEditor.flush}
+						xstyle={styles.descriptionEditor}
+					/>
+					<Textarea
+						aria-label='Review notes'
+						placeholder='Add review notes'
+						value={notesEditor.value}
+						onChange={notesEditor.onChange}
+						onBlur={notesEditor.flush}
+						xstyle={styles.notesEditor}
+					/>
+				</DialogContent>
+			</Dialog>
+			<DeleteConfirmationDialog
+				description='This will delete this review.'
+				isPending={isDeleting}
+				onConfirm={() => void handleDelete()}
+				onOpenChange={setIsDeleteDialogOpen}
+				open={isDeleteDialogOpen}
+				title='Delete review?'
+			/>
+		</>
 	)
 }
