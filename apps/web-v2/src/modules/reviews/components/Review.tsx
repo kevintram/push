@@ -102,10 +102,10 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	notesIndicator: {
-		blockSize: iconSizes.xs,
+		blockSize: iconSizes.sm,
 		color: colors.textSecondary,
 		flexShrink: 0,
-		inlineSize: iconSizes.xs,
+		inlineSize: iconSizes.sm,
 	},
 	footer: {
 		gridColumnEnd: 'footer',
@@ -136,8 +136,8 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	durabilityIcon: {
-		blockSize: iconSizes.xs,
-		inlineSize: iconSizes.xs,
+		blockSize: iconSizes.sm,
+		inlineSize: iconSizes.sm,
 	},
 	positiveChange: { color: colors.textSuccess },
 	negativeChange: { color: colors.textDanger },
@@ -401,7 +401,10 @@ export function Review({ review }: { review: ReviewModel }) {
 									disabled={isDeleting}
 									onClick={() => setIsDeleteDialogOpen(true)}
 								>
-									<Trash2 aria-hidden='true' size={16} />
+									<Trash2
+										aria-hidden='true'
+										size={iconSizes.sm}
+									/>
 									Delete
 								</DropdownMenuItem>
 							</DropdownMenuContent>
