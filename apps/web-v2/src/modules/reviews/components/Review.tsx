@@ -56,7 +56,7 @@ const styles = stylex.create({
 		gridRowEnd: 'rating',
 		gridRowStart: 'rating',
 
-		alignSelf: 'baseline',
+		alignSelf: 'center',
 
 		paddingInline: spacing.xs,
 	},
@@ -66,10 +66,13 @@ const styles = stylex.create({
 		gridRowEnd: 'description',
 		gridRowStart: 'description',
 
-		padding: 0,
+		paddingBlock: spacing.xs,
 		paddingInlineStart: spacing.sm,
 
+		overflow: 'hidden',
 		minInlineSize: 0,
+		textOverflow: 'ellipsis',
+		whiteSpace: 'nowrap',
 
 		fontSize: fontSizes.sm,
 
