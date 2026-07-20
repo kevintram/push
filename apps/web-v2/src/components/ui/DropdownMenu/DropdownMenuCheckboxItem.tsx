@@ -31,6 +31,16 @@ const styles = stylex.create({
 		userSelect: 'none',
 		whiteSpace: 'nowrap',
 	},
+	innerContainer: {
+		gap: spacing.sm,
+		alignItems: 'center',
+		display: 'flex',
+	},
+	content: {
+		alignItems: 'center',
+		columnGap: spacing.sm,
+		display: 'inline-flex',
+	},
 	disabled: {
 		opacity: 0.5,
 		pointerEvents: 'none',
@@ -42,16 +52,29 @@ const styles = stylex.create({
 		justifyContent: 'center',
 		position: 'absolute',
 	},
+	slot: {
+		alignItems: 'center',
+		display: 'inline-flex',
+		flexShrink: 0,
+		justifyContent: 'center',
+	},
 })
+
+export interface DropdownMenuCheckboxItemProps extends Omit<
+	React.ComponentProps<typeof Menu.CheckboxItem>,
+	'className' | 'style' | 'prefix' | 'suffix'
+> {
+	prefix?: React.ReactNode
+	suffix?: React.ReactNode
+}
 
 export function DropdownMenuCheckboxItem({
 	children,
 	disabled,
+	prefix,
+	suffix,
 	...props
-}: Omit<
-	React.ComponentProps<typeof Menu.CheckboxItem>,
-	'className' | 'style'
->) {
+}: DropdownMenuCheckboxItemProps) {
 	return (
 		<Menu.CheckboxItem
 			disabled={disabled}
@@ -61,7 +84,11 @@ export function DropdownMenuCheckboxItem({
 			<Menu.CheckboxItemIndicator {...stylex.props(styles.indicator)}>
 				<Check aria-hidden size={16} />
 			</Menu.CheckboxItemIndicator>
-			{children}
+			<div {...stylex.props(styles.innerContainer)}>
+				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}
+				<span {...stylex.props(styles.content)}>{children}</span>
+				{suffix && <span {...stylex.props(styles.slot)}>{suffix}</span>}
+			</div>
 		</Menu.CheckboxItem>
 	)
 }

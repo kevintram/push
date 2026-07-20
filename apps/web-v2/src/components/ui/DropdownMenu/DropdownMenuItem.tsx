@@ -6,9 +6,11 @@ import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface DropdownMenuItemProps extends Omit<
 	React.ComponentProps<typeof Menu.Item>,
-	'className' | 'style'
+	'className' | 'style' | 'prefix' | 'suffix'
 > {
 	inset?: boolean
+	prefix?: React.ReactNode
+	suffix?: React.ReactNode
 }
 
 const styles = stylex.create({
@@ -36,6 +38,16 @@ const styles = stylex.create({
 		userSelect: 'none',
 		whiteSpace: 'nowrap',
 	},
+	innerContainer: {
+		gap: spacing.sm,
+		alignItems: 'center',
+		display: 'flex',
+	},
+	content: {
+		alignItems: 'center',
+		columnGap: spacing.sm,
+		display: 'inline-flex',
+	},
 	disabled: {
 		opacity: 0.5,
 		pointerEvents: 'none',
@@ -43,11 +55,20 @@ const styles = stylex.create({
 	inset: {
 		paddingInlineStart: spacing['2xl'],
 	},
+	slot: {
+		alignItems: 'center',
+		display: 'inline-flex',
+		flexShrink: 0,
+		justifyContent: 'center',
+	},
 })
 
 export function DropdownMenuItem({
 	inset = false,
 	disabled,
+	children,
+	prefix,
+	suffix,
 	...props
 }: DropdownMenuItemProps) {
 	return (
@@ -59,6 +80,12 @@ export function DropdownMenuItem({
 				disabled && styles.disabled,
 			)}
 			{...props}
-		/>
+		>
+			<div {...stylex.props(styles.innerContainer)}>
+				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}
+				<span {...stylex.props(styles.content)}>{children}</span>
+				{suffix && <span {...stylex.props(styles.slot)}>{suffix}</span>}
+			</div>
+		</Menu.Item>
 	)
 }

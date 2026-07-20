@@ -1,11 +1,13 @@
 import * as stylex from '@stylexjs/stylex'
 import {
+	Anvil,
 	Check,
 	CheckCheck,
 	ChevronDown,
 	Circle,
 	Construction,
 	Ellipsis,
+	File,
 	Trash2,
 	X,
 } from 'lucide-react'
@@ -17,7 +19,6 @@ import {
 	Button,
 	Dialog,
 	DialogContent,
-	DialogHeader,
 	DialogTrigger,
 	DropdownMenu,
 	DropdownMenuContent,
@@ -31,103 +32,129 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import { useDeleteReview } from '~/modules/reviews/api/deleteReview'
 import { useUpdateReview } from '~/modules/reviews/api/updateReview'
 import { colors } from '~/styles/colors.stylex'
+import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
+import type { DateString } from '~/types/date'
+import { getTodayAsString } from '~/utils/date'
 
 import type { Rating, Review as ReviewModel } from '../types/review.types'
+import { ReviewDatePicker } from './ReviewDatePicker'
 
 const styles = stylex.create({
 	contentContainer: {
+		gridTemplateAreas: `
+			'rating description'
+			'empty footer'
+		`,
 		display: 'grid',
 		gridTemplateColumns: 'auto 1fr',
 		gridTemplateRows: 'auto auto',
 
-		alignItems: 'center',
-		justifyItems: 'start',
-
 		backgroundColor: colors.bgSurfaceTransparent,
+		cursor: 'pointer',
 
 		borderWidth: 0,
 	},
 	rating: {
-		gridColumn: '1',
-		gridRow: '1',
+		gridColumnEnd: 'rating',
+		gridColumnStart: 'rating',
+		gridRowEnd: 'rating',
+		gridRowStart: 'rating',
+
+		alignSelf: 'center',
+
+		paddingInline: spacing.xs,
 	},
-	ratingTrigger: {
-		padding: 0,
-
-		gap: '2px',
+	ratingBadge: {
+		borderRadius: radii.full,
 		alignItems: 'center',
-		display: 'inline-flex',
-
-		font: 'inherit',
-		borderColor: 'transparent',
-		borderStyle: 'solid',
-		borderWidth: 0,
-		backgroundColor: colors.bgSurfaceTransparent,
-		color: 'inherit',
-		cursor: 'pointer',
-		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
-		},
-		outlineOffset: '2px',
-		outlineStyle: 'solid',
-		outlineWidth: '2px',
+		backgroundColor: colors.bgFillBrand,
+		blockSize: iconSizes.sm,
+		color: colors.textBrandOnBgFill,
+		display: 'flex',
+		flexShrink: 0,
+		inlineSize: iconSizes.sm,
+		justifyContent: 'center',
 	},
 	description: {
-		gridColumn: '2',
-		gridRowEnd: '-1',
-		gridRowStart: '1',
+		gridColumnEnd: 'description',
+		gridColumnStart: 'description',
+		gridRowEnd: 'description',
+		gridRowStart: 'description',
 
-		padding: 0,
+		paddingBlock: spacing.xs,
+		paddingInlineStart: spacing.sm,
 
-		alignContent: 'center',
-		display: 'grid',
-		gridTemplateRows: 'auto auto',
-		justifyItems: 'start',
+		alignItems: 'center',
+		columnGap: '6px',
+		display: 'flex',
 		minInlineSize: 0,
 
-		font: 'inherit',
-		borderColor: 'transparent',
-		borderStyle: 'solid',
-		borderWidth: 0,
+		fontSize: fontSizes.sm,
+
 		backgroundColor: colors.bgSurfaceTransparent,
 		color: colors.text,
 		cursor: 'pointer',
-		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
-		},
-		outlineOffset: '2px',
-		outlineStyle: 'solid',
-		outlineWidth: '2px',
-		textAlign: 'start',
+	},
+	descriptionText: {
+		overflow: 'hidden',
+		minInlineSize: 0,
+		textOverflow: 'ellipsis',
+		whiteSpace: 'nowrap',
+	},
+	notesIndicator: {
+		blockSize: iconSizes.xs,
+		color: colors.textSecondary,
+		flexShrink: 0,
+		inlineSize: iconSizes.xs,
 	},
 	footer: {
-		gridRow: '2',
+		gridColumnEnd: 'footer',
+		gridColumnStart: 'footer',
+		gridRowEnd: 'footer',
+		gridRowStart: 'footer',
+
+		paddingBlockStart: spacing.xs,
+		paddingInlineStart: spacing.sm,
+
+		alignItems: 'center',
+		columnGap: spacing.md,
+		display: 'flex',
+		minInlineSize: 0,
+
+		fontSize: fontSizes.sm,
 	},
-	dialogHeader: {
-		justifyContent: 'flex-end',
+	spacer: {
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+	},
+	durability: {
+		alignItems: 'center',
+		color: colors.textSecondary,
+		columnGap: spacing.xs,
+		display: 'flex',
+		whiteSpace: 'nowrap',
+	},
+	durabilityIcon: {
+		blockSize: iconSizes.xs,
+		inlineSize: iconSizes.xs,
+	},
+	positiveChange: { color: colors.textSuccess },
+	negativeChange: { color: colors.textDanger },
+	more: {
+		flexShrink: 0,
+		marginInlineStart: 'auto',
 	},
 	descriptionEditor: { minBlockSize: '96px' },
 	notesEditor: { minBlockSize: '96px' },
 })
 
-const ratingDetails = {
+const ratings = {
 	miss: { label: 'Miss', Icon: X },
 	hard: { label: 'Hard', Icon: Construction },
 	good: { label: 'Good', Icon: Check },
 	easy: { label: 'Easy', Icon: CheckCheck },
 } as const
-
-function formatDate(value: string | null) {
-	if (value === null) return 'Unscheduled'
-	return new Intl.DateTimeFormat(undefined, {
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric',
-		timeZone: 'UTC',
-	}).format(new Date(`${value}T00:00:00Z`))
-}
 
 export function Review({ review }: { review: ReviewModel }) {
 	const { isPending, mutateAsync } = useUpdateReview()
@@ -136,15 +163,28 @@ export function Review({ review }: { review: ReviewModel }) {
 	const [isOpen, setIsOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const updateRating = useCallback(
-		async (rating: Rating) => {
-			if (rating === review.rating) return
+		async (rating: Rating | null) => {
+			const completionMatchesRating =
+				rating === null
+					? review.completed_at === null
+					: review.completed_at !== null
+			if (rating === review.rating && completionMatchesRating) return
 			try {
-				await mutateAsync({ id: review.id, rating })
+				const completedAt =
+					rating === null
+						? null
+						: ((review.completed_at as DateString | null) ??
+							getTodayAsString())
+				await mutateAsync({
+					id: review.id,
+					rating,
+					completed_at: completedAt,
+				})
 			} catch {
 				toast.error('Failed to update review rating')
 			}
 		},
-		[mutateAsync, review.id, review.rating],
+		[mutateAsync, review.completed_at, review.id, review.rating],
 	)
 	const save = useCallback(
 		async (field: 'description' | 'notes', value: string) => {
@@ -168,9 +208,10 @@ export function Review({ review }: { review: ReviewModel }) {
 		key: `review-notes-${review.id}`,
 	})
 
-	const rating = review.rating === null ? null : ratingDetails[review.rating]
+	const rating = review.rating === null ? null : ratings[review.rating]
 	const RatingIcon = rating?.Icon ?? Circle
 	const description = review.description.trim()
+	const hasNotes = review.notes.trim().length > 0
 	const stabilityAfter =
 		review.stability_after === null
 			? null
@@ -179,13 +220,35 @@ export function Review({ review }: { review: ReviewModel }) {
 		review.stability_before === null || review.stability_after === null
 			? null
 			: Math.round(review.stability_after - review.stability_before)
-	const effectiveDate = review.completed_at ?? review.scheduled_at
+	const effectiveDate = (review.completed_at ??
+		review.scheduled_at) as DateString | null
 	const stabilityChange =
-		stabilityAfter === null
-			? null
-			: stabilityDelta === null
-				? `${stabilityAfter}d (new)`
-				: `${stabilityAfter}d (${stabilityDelta >= 0 ? '+' : ''}${stabilityDelta})`
+		stabilityDelta === null
+			? 'new'
+			: `${stabilityDelta >= 0 ? '+' : ''}${stabilityDelta}`
+	const stabilityChangeStyle =
+		stabilityDelta === null || stabilityDelta >= 0
+			? styles.positiveChange
+			: styles.negativeChange
+
+	const updateDate = useCallback(
+		async (value: DateString | null) => {
+			try {
+				if (review.completed_at !== null) {
+					await mutateAsync({
+						id: review.id,
+						completed_at: value,
+						...(value === null ? { rating: null } : {}),
+					})
+				} else {
+					await mutateAsync({ id: review.id, scheduled_at: value })
+				}
+			} catch {
+				toast.error('Failed to update review date')
+			}
+		},
+		[mutateAsync, review.completed_at, review.id],
+	)
 
 	const handleDelete = async () => {
 		try {
@@ -200,67 +263,140 @@ export function Review({ review }: { review: ReviewModel }) {
 	return (
 		<>
 			<Dialog open={isOpen} onOpenChange={setIsOpen}>
-				<div {...stylex.props(styles.contentContainer)}>
-					<div
-						aria-label={rating?.label ?? 'Uncompleted'}
-						{...stylex.props(styles.rating)}
-					>
-						<DropdownMenu>
-							<DropdownMenuTrigger
-								{...stylex.props(styles.ratingTrigger)}
+				<DialogTrigger
+					nativeButton={false}
+					render={<div />}
+					{...stylex.props(styles.contentContainer)}
+				>
+					<DropdownMenu>
+						<DropdownMenuTrigger
+							aria-label={rating?.label ?? 'Uncompleted'}
+							onClick={event => event.stopPropagation()}
+							onMouseDown={event => event.stopPropagation()}
+							render={
+								<Button
+									size='micro'
+									variant='ghost'
+									xstyle={styles.rating}
+								/>
+							}
+						>
+							{review.rating === null ? (
+								<RatingIcon
+									aria-hidden='true'
+									size={iconSizes.sm}
+								/>
+							) : (
+								<span {...stylex.props(styles.ratingBadge)}>
+									<RatingIcon
+										aria-hidden='true'
+										size={iconSizes.xs}
+									/>
+								</span>
+							)}
+							<ChevronDown
+								aria-hidden='true'
+								size={iconSizes.sm}
+							/>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent
+							onClick={event => event.stopPropagation()}
+							onMouseDown={event => event.stopPropagation()}
+						>
+							<DropdownMenuRadioGroup
+								value={review.rating ?? ''}
+								onValueChange={value =>
+									void updateRating(
+										value === '' ? null : (value as Rating),
+									)
+								}
 							>
-								<RatingIcon aria-hidden='true' />
-								<ChevronDown aria-hidden='true' size={16} />
-							</DropdownMenuTrigger>
-							<DropdownMenuContent>
-								<DropdownMenuRadioGroup
-									value={review.rating ?? ''}
-									onValueChange={value =>
-										void updateRating(value as Rating)
+								<DropdownMenuRadioItem
+									value=''
+									disabled={isPending}
+									prefix={
+										<Circle
+											aria-hidden='true'
+											size={iconSizes.sm}
+										/>
 									}
 								>
-									{Object.entries(ratingDetails).map(
-										([value, { label, Icon }]) => (
-											<DropdownMenuRadioItem
-												key={value}
-												value={value}
-												disabled={isPending}
-											>
+									Uncompleted
+								</DropdownMenuRadioItem>
+								{Object.entries(ratings).map(
+									([value, { label, Icon }]) => (
+										<DropdownMenuRadioItem
+											key={value}
+											value={value}
+											disabled={isPending}
+											prefix={
 												<Icon
 													aria-hidden='true'
-													size={16}
+													size={iconSizes.sm}
 												/>
-												{label}
-											</DropdownMenuRadioItem>
-										),
-									)}
-								</DropdownMenuRadioGroup>
-							</DropdownMenuContent>
-						</DropdownMenu>
+											}
+										>
+											{label}
+										</DropdownMenuRadioItem>
+									),
+								)}
+							</DropdownMenuRadioGroup>
+						</DropdownMenuContent>
+					</DropdownMenu>
+					<div {...stylex.props(styles.description)}>
+						<span {...stylex.props(styles.descriptionText)}>
+							{description || 'No description'}
+						</span>
+						{hasNotes && (
+							<File
+								aria-label='Has notes'
+								{...stylex.props(styles.notesIndicator)}
+							/>
+						)}
 					</div>
-					<DialogTrigger {...stylex.props(styles.description)}>
-						{description || 'No description'}
-						<div {...stylex.props(styles.footer)}>
-							{formatDate(effectiveDate)}
-							{stabilityChange ? ` · ${stabilityChange}` : null}
-						</div>
-					</DialogTrigger>
-				</div>
-
-				<DialogContent>
-					<DialogHeader xstyle={styles.dialogHeader}>
+					<div {...stylex.props(styles.footer)}>
+						<ReviewDatePicker
+							disabled={isPending}
+							isCompleted={review.completed_at !== null}
+							onChange={updateDate}
+							value={effectiveDate}
+						/>
+						{stabilityAfter !== null && (
+							<span {...stylex.props(styles.durability)}>
+								<Anvil
+									aria-hidden='true'
+									{...stylex.props(styles.durabilityIcon)}
+								/>
+								<span>{stabilityAfter}d</span>
+								<span {...stylex.props(stabilityChangeStyle)}>
+									({stabilityChange})
+								</span>
+							</span>
+						)}
+						<div {...stylex.props(styles.spacer)} />
 						<DropdownMenu>
 							<DropdownMenuTrigger
+								onClick={event => event.stopPropagation()}
+								onMouseDown={event => event.stopPropagation()}
 								render={
 									<Button.Icon
 										aria-label='Review actions'
+										size='micro'
 										variant='ghost'
+										xstyle={styles.more}
 									/>
 								}
 							>
-								<Ellipsis aria-hidden='true' />
+								<Ellipsis
+									aria-hidden='true'
+									size={iconSizes.sm}
+								/>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align='end'>
+							<DropdownMenuContent
+								align='end'
+								onClick={event => event.stopPropagation()}
+								onMouseDown={event => event.stopPropagation()}
+							>
 								<DropdownMenuItem
 									disabled={isDeleting}
 									onClick={() => setIsDeleteDialogOpen(true)}
@@ -270,7 +406,10 @@ export function Review({ review }: { review: ReviewModel }) {
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
-					</DialogHeader>
+					</div>
+				</DialogTrigger>
+
+				<DialogContent>
 					<Textarea
 						aria-label='Review description'
 						placeholder='Add a review description'

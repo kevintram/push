@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client'
 
 import { LoaderPage } from './app/pages/LoaderPage'
 import { routeTree } from './app/routeTree.gen'
+import { TooltipProvider } from './components/ui'
 import { AuthRedirectError } from './utils/apiFetch'
 
 if (import.meta.env.DEV && !import.meta.env.VITEST) {
@@ -54,10 +55,12 @@ const container = document.querySelector('#root')
 if (container) {
 	createRoot(container).render(
 		<StrictMode>
-			<QueryClientProvider client={queryClient}>
-				<ReactQueryDevtools initialIsOpen={false} />
-				<RouterProvider context={{ queryClient }} router={router} />
-			</QueryClientProvider>
+			<TooltipProvider>
+				<QueryClientProvider client={queryClient}>
+					<ReactQueryDevtools initialIsOpen={false} />
+					<RouterProvider context={{ queryClient }} router={router} />
+				</QueryClientProvider>
+			</TooltipProvider>
 		</StrictMode>,
 	)
 }

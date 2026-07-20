@@ -2,7 +2,10 @@ import { Menu } from '@base-ui/react/menu'
 
 import { DropdownMenuContent } from './DropdownMenuContent'
 
-export { DropdownMenuCheckboxItem } from './DropdownMenuCheckboxItem'
+export {
+	DropdownMenuCheckboxItem,
+	type DropdownMenuCheckboxItemProps,
+} from './DropdownMenuCheckboxItem'
 export {
 	DropdownMenuContent,
 	type DropdownMenuContentProps,
@@ -15,7 +18,10 @@ export {
 	DropdownMenuLabel,
 	type DropdownMenuLabelProps,
 } from './DropdownMenuLabel'
-export { DropdownMenuRadioItem } from './DropdownMenuRadioItem'
+export {
+	DropdownMenuRadioItem,
+	type DropdownMenuRadioItemProps,
+} from './DropdownMenuRadioItem'
 export { DropdownMenuSeparator } from './DropdownMenuSeparator'
 export { DropdownMenuShortcut } from './DropdownMenuShortcut'
 export {

@@ -42,9 +42,9 @@ export const spacing = stylex.defineVars({
 })
 
 export const iconSizes = stylex.defineVars({
-	xs: '12px',
-	sm: '16px',
-	md: '24px',
-	lg: '32px',
-	xl: '48px',
+	xs: '0.75rem',
+	sm: '1rem',
+	md: '1.5rem',
+	lg: '2rem',
+	xl: '3rem',
 })

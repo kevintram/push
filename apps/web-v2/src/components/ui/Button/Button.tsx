@@ -220,12 +220,14 @@ const disabledVariants = stylex.create({
 const sizeVariants = stylex.create({
 	micro: {
 		borderRadius: radii.sm,
+		gap: spacing.xs,
 		paddingInline: spacing.sm,
 		blockSize: '26px',
 		fontSize: fontSizes.sm,
 	},
 	tiny: {
 		borderRadius: radii.sm,
+		gap: spacing.xs,
 		paddingInline: spacing.sm,
 		blockSize: '28px',
 		fontSize: fontSizes.sm,

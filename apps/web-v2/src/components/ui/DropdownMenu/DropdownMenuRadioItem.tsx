@@ -31,6 +31,16 @@ const styles = stylex.create({
 		userSelect: 'none',
 		whiteSpace: 'nowrap',
 	},
+	innerContainer: {
+		gap: spacing.sm,
+		alignItems: 'center',
+		display: 'flex',
+	},
+	content: {
+		alignItems: 'center',
+		columnGap: spacing.sm,
+		display: 'inline-flex',
+	},
 	disabled: {
 		opacity: 0.5,
 		pointerEvents: 'none',
@@ -42,13 +52,29 @@ const styles = stylex.create({
 		justifyContent: 'center',
 		position: 'absolute',
 	},
+	slot: {
+		alignItems: 'center',
+		display: 'inline-flex',
+		flexShrink: 0,
+		justifyContent: 'center',
+	},
 })
+
+export interface DropdownMenuRadioItemProps extends Omit<
+	React.ComponentProps<typeof Menu.RadioItem>,
+	'className' | 'style' | 'prefix' | 'suffix'
+> {
+	prefix?: React.ReactNode
+	suffix?: React.ReactNode
+}
 
 export function DropdownMenuRadioItem({
 	children,
 	disabled,
+	prefix,
+	suffix,
 	...props
-}: Omit<React.ComponentProps<typeof Menu.RadioItem>, 'className' | 'style'>) {
+}: DropdownMenuRadioItemProps) {
 	return (
 		<Menu.RadioItem
 			disabled={disabled}
@@ -58,7 +84,11 @@ export function DropdownMenuRadioItem({
 			<Menu.RadioItemIndicator {...stylex.props(styles.indicator)}>
 				<Circle aria-hidden fill='currentColor' size={8} />
 			</Menu.RadioItemIndicator>
-			{children}
+			<div {...stylex.props(styles.innerContainer)}>
+				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}
+				<span {...stylex.props(styles.content)}>{children}</span>
+				{suffix && <span {...stylex.props(styles.slot)}>{suffix}</span>}
+			</div>
 		</Menu.RadioItem>
 	)
 }
