@@ -30,12 +30,12 @@ describe('updateTopic', () => {
 		})
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/topics/7/'),
-			{
+			expect.objectContaining({
 				method: 'PATCH',
 				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
+				headers: expect.any(Headers),
 				body: JSON.stringify({ title: 'Edited' }),
-			},
+			}),
 		)
 	})
 

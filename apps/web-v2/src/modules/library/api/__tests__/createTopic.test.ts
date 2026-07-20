@@ -30,12 +30,12 @@ describe('createTopic', () => {
 		})
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/topics/'),
-			{
+			expect.objectContaining({
 				method: 'POST',
 				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
+				headers: expect.any(Headers),
 				body: JSON.stringify({ parent_id: 7 }),
-			},
+			}),
 		)
 	})
 })

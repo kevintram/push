@@ -33,12 +33,12 @@ describe('updateReviewCard', () => {
 		).resolves.toEqual(response)
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/review-cards/8/'),
-			{
+			expect.objectContaining({
 				method: 'PATCH',
 				credentials: 'include',
-				headers: { 'Content-Type': 'application/json' },
+				headers: expect.any(Headers),
 				body: JSON.stringify({ notes: 'Notes' }),
-			},
+			}),
 		)
 	})
 

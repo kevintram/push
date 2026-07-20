@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client'
 import { LoaderPage } from './app/pages/LoaderPage'
 import { routeTree } from './app/routeTree.gen'
 import { TooltipProvider } from './components/ui'
+import { AuthRedirectError } from './utils/apiFetch'
 
 if (import.meta.env.DEV && !import.meta.env.VITEST) {
 	const branchLabel = __APP_BRANCH__
@@ -17,7 +18,15 @@ if (import.meta.env.DEV && !import.meta.env.VITEST) {
 	}
 }
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			retry: (failureCount, error) =>
+				// only retry 3 times; don't retry at all if auth error
+				!(error instanceof AuthRedirectError) && failureCount < 3,
+		},
+	},
+})
 
 const router = createRouter({
 	routeTree,

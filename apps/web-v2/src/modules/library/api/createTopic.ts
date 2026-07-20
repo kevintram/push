@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 
+import { apiFetch } from '~/utils/apiFetch'
+
 import { TopicSchema } from '../types/topic.schemas'
 import type { Topic } from '../types/topic.types'
 import { topicQueries } from './queries'
@@ -13,9 +15,8 @@ export async function createTopic({
 	parentId,
 }: CreateTopicInput = {}): Promise<Topic> {
 	const url = new URL(import.meta.env.VITE_API_URL + '/topics/')
-	const response = await fetch(url, {
+	const response = await apiFetch(url, {
 		method: 'POST',
-		credentials: 'include',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(
 			parentId === undefined ? {} : { parent_id: parentId },
