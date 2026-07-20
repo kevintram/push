@@ -1,13 +1,14 @@
 import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	separator: {
 		marginBlock: spacing.xs,
 		marginInline: `calc(${spacing.xs} * -1)`,
-		backgroundColor: colors.border,
+		backgroundColor: colors.borderSecondary,
 		blockSize: '1px',
 	},
 })

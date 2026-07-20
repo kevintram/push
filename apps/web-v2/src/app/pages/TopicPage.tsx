@@ -191,7 +191,6 @@ export function TopicPage() {
 								<DropdownMenuContent align='end'>
 									<DropdownMenuItem
 										disabled={isDeletingTopic}
-										variant='destructive'
 										onClick={() =>
 											setIsDeleteDialogOpen(true)
 										}

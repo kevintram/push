@@ -1,7 +1,8 @@
 import { Menu } from '@base-ui/react/menu'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors, radii, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { radii, spacing } from '~/styles/tokens.stylex'
 
 export interface DropdownMenuContentProps extends Omit<
 	React.ComponentProps<typeof Menu.Popup>,
@@ -21,13 +22,13 @@ const styles = stylex.create({
 		padding: spacing.xs,
 
 		borderColor: colors.border,
-		borderRadius: radii.md,
+		borderRadius: radii.lg,
 		borderStyle: 'solid',
 		borderWidth: '1px',
 		outline: 'none',
-		backgroundColor: colors.surface,
-		boxShadow: '0 8px 24px rgb(0 0 0 / 0.14)',
-		color: colors.foreground,
+		backgroundColor: colors.bgSurface,
+		boxShadow: `0 8px 24px ${colors.shadowSubtle}`,
+		color: colors.text,
 
 		maxBlockSize: 'var(--available-height)',
 		minInlineSize: '8rem',

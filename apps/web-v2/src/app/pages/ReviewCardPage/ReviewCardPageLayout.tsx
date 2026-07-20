@@ -26,6 +26,7 @@ import {
 import { topicQueries } from '~/modules/library/api/queries'
 import { useDeleteReviewCard } from '~/modules/reviews/api/deleteReviewCard'
 import { reviewCardQueries } from '~/modules/reviews/api/queries'
+import { colors } from '~/styles/colors.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -49,11 +50,12 @@ const styles = stylex.create({
 
 		gap: spacing.sm,
 
-		textDecoration: {
-			default: 'none',
-			':hover': 'underline',
+		textDecoration: 'none',
+		color: {
+			default: colors.textLink,
+			':hover': colors.textLinkHover,
+			':active': colors.textLinkActive,
 		},
-		color: 'inherit',
 	},
 	tabLink: {
 		textDecoration: 'none',
@@ -154,7 +156,6 @@ export function ReviewCardPageLayout() {
 					<DropdownMenuContent align='end'>
 						<DropdownMenuItem
 							disabled={isDeleting}
-							variant='destructive'
 							onClick={() => setIsDeleteDialogOpen(true)}
 						>
 							<Trash2 aria-hidden='true' size={16} />

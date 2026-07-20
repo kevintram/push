@@ -1,7 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
 import { Loader } from 'lucide-react'
 
-import { colors, iconSizes } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { iconSizes } from '~/styles/tokens.stylex'
 
 const spin = stylex.keyframes({
 	to: {
@@ -24,7 +25,7 @@ const styles = stylex.create({
 		animationIterationCount: 'infinite',
 		animationName: spin,
 		animationTimingFunction: 'linear',
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		height: iconSizes.lg,
 		width: iconSizes.lg,
 	},

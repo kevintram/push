@@ -1,15 +1,14 @@
 import * as stylex from '@stylexjs/stylex'
-import { Link } from '@tanstack/react-router'
 import { Plus, Trash2 } from 'lucide-react'
 
+import { SidebarLink } from '~/components/sidebar-link'
 import {
 	ContextMenu,
 	ContextMenuContent,
 	ContextMenuItem,
-	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from '~/components/ui'
-import { colors, fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 
 import { type TopicWithChildren } from '../../types/topic.types'
 
@@ -32,24 +31,6 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	link: {
-		borderRadius: radii.md,
-
-		paddingBlock: spacing.xs,
-		paddingInline: spacing.sm,
-
-		textDecoration: 'none',
-
-		backgroundColor: {
-			'[data-status=active]': colors.surfaceActive,
-			':hover': colors.surfaceActive,
-		},
-
-		color: 'inherit',
-		display: 'block',
-
-		fontSize: fontSizes.sm,
-	},
 	children: {
 		gap: spacing.xs,
 
@@ -70,19 +51,21 @@ export function TopicLink({
 	onAddSubtopic,
 	onDeleteTopic,
 }: TopicLinkProps) {
+	const topicTitle = title.trim() || 'Untitled'
+
 	return (
 		<li {...stylex.props(styles.item)}>
 			<ContextMenu>
 				<ContextMenuTrigger
 					render={
-						<Link
+						<SidebarLink
 							to='/library/$topicId'
 							params={{ topicId: String(id) }}
-							{...stylex.props(styles.link)}
+							text={topicTitle}
 						/>
 					}
 				>
-					{title.trim() || 'Untitled'}
+					{topicTitle}
 				</ContextMenuTrigger>
 				<ContextMenuContent>
 					<ContextMenuItem
@@ -92,10 +75,8 @@ export function TopicLink({
 						<Plus aria-hidden='true' size={16} />
 						Add subtopic
 					</ContextMenuItem>
-					<ContextMenuSeparator />
 					<ContextMenuItem
 						disabled={isDeletingTopic}
-						variant='destructive'
 						onClick={() =>
 							onDeleteTopic({ children, id, parentId, title })
 						}

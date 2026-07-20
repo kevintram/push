@@ -1,6 +1,8 @@
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import * as stylex from '@stylexjs/stylex'
 
+import { colors } from '~/styles/colors.stylex'
+
 export interface DialogOverlayProps extends Omit<
 	DialogPrimitive.Backdrop.Props,
 	'className' | 'style'
@@ -15,7 +17,7 @@ const styles = stylex.create({
 		zIndex: 50,
 
 		backdropFilter: 'blur(2px)',
-		backgroundColor: 'rgb(0 0 0 / 0.32)',
+		backgroundColor: colors.backdropBg,
 		opacity: {
 			default: 1,
 			':is([data-starting-style], [data-ending-style])': 0,

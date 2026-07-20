@@ -1,7 +1,7 @@
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import * as stylex from '@stylexjs/stylex'
 
-import { colors } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
 
 export type TabsContentProps = Omit<
 	React.ComponentProps<typeof TabsPrimitive.Panel>,
@@ -12,7 +12,7 @@ const styles = stylex.create({
 	content: {
 		outlineColor: {
 			default: 'transparent',
-			':focus-visible': colors.focusRing,
+			':focus-visible': colors.borderFocus,
 		},
 		outlineOffset: '2px',
 		outlineStyle: 'solid',

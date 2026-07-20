@@ -1,12 +1,11 @@
 import * as stylex from '@stylexjs/stylex'
 
-import { colors, fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { colors } from '~/styles/colors.stylex'
+import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
-import { ColorSection } from './ColorSection'
 import { ComponentSection } from './ComponentSection'
 import { ScaleSection } from './ScaleSection'
 import {
-	colorSpecimens,
 	fontSizeSpecimens,
 	fontWeightSpecimens,
 	radiiSpecimens,
@@ -16,7 +15,6 @@ import { TabsSection } from './TabsSection'
 import { TypeSection } from './TypeSection'
 
 const sections = [
-	{ href: '#color', label: 'Color', count: colorSpecimens.length },
 	{
 		href: '#type',
 		label: 'Type',
@@ -33,7 +31,7 @@ const sections = [
 	{ href: '#dropdown-menu', label: 'Dropdown menu', count: 8 },
 	{ href: '#context-menu', label: 'Context menu', count: 3 },
 	{ href: '#tabs', label: 'Tabs', count: 2 },
-	{ href: '#toast', label: 'Toast', count: 3 },
+	{ href: '#toast', label: 'Toast', count: 5 },
 ]
 
 const styles = stylex.create({
@@ -62,7 +60,7 @@ const styles = stylex.create({
 		},
 	},
 	kicker: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 		letterSpacing: '0.08em',
 		textTransform: 'uppercase',
@@ -94,7 +92,7 @@ const styles = stylex.create({
 	description: {
 		margin: 0,
 
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.md,
 		lineHeight: 1.55,
 		maxWidth: '54ch',
@@ -114,16 +112,12 @@ const styles = stylex.create({
 
 		paddingBlock: spacing.xs,
 
-		textDecoration: {
-			default: 'none',
-			':hover': 'underline',
-		},
-		color: colors.foreground,
+		textDecoration: 'none',
+		color: colors.text,
 		fontSize: fontSizes.sm,
-		textUnderlineOffset: '3px',
 	},
 	indexCount: {
-		color: colors.mutedForeground,
+		color: colors.textSecondary,
 		fontSize: fontSizes.xs,
 	},
 	sections: {
@@ -171,7 +165,6 @@ export function DesignSystemPage() {
 				</header>
 
 				<div {...stylex.props(styles.sections)}>
-					<ColorSection />
 					<TypeSection />
 					<ScaleSection />
 					<ComponentSection />
