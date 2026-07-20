@@ -31,82 +31,73 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import { useDeleteReview } from '~/modules/reviews/api/deleteReview'
 import { useUpdateReview } from '~/modules/reviews/api/updateReview'
 import { colors } from '~/styles/colors.stylex'
-import { fontSizes, iconSizes } from '~/styles/tokens.stylex'
+import { fontSizes, iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import type { Rating, Review as ReviewModel } from '../types/review.types'
 
 const styles = stylex.create({
 	contentContainer: {
+		gridTemplateAreas: `
+			'rating description'
+			'empty metadata'
+		`,
 		display: 'grid',
 		gridTemplateColumns: 'auto 1fr',
 		gridTemplateRows: 'auto auto',
 
-		alignItems: 'center',
-		justifyItems: 'start',
-
 		backgroundColor: colors.bgSurfaceTransparent,
+		cursor: 'pointer',
 
 		borderWidth: 0,
 	},
 	rating: {
-		gridColumn: '1',
-		gridRow: '1',
+		gridColumnEnd: 'rating',
+		gridColumnStart: 'rating',
+		gridRowEnd: 'rating',
+		gridRowStart: 'rating',
+
+		alignSelf: 'baseline',
+
+		display: 'flex',
 	},
 	ratingTrigger: {
 		padding: 0,
 
-		gap: '2px',
-		alignItems: 'center',
+		gap: spacing.xs,
 		display: 'inline-flex',
 
 		font: 'inherit',
-		borderColor: 'transparent',
-		borderStyle: 'solid',
-		borderWidth: 0,
 		backgroundColor: colors.bgSurfaceTransparent,
 		color: 'inherit',
 		cursor: 'pointer',
-		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
-		},
-		outlineOffset: '2px',
-		outlineStyle: 'solid',
-		outlineWidth: '2px',
 	},
 	description: {
-		gridColumn: '2',
-		gridRowEnd: '-1',
-		gridRowStart: '1',
+		gridColumnEnd: 'description',
+		gridColumnStart: 'description',
+		gridRowEnd: 'description',
+		gridRowStart: 'description',
 
 		padding: 0,
+		paddingInlineStart: spacing.sm,
 
-		alignContent: 'center',
-		display: 'grid',
-		gridTemplateRows: 'auto auto',
-		justifyItems: 'start',
 		minInlineSize: 0,
 
-		font: 'inherit',
 		fontSize: fontSizes.sm,
 
-		borderColor: 'transparent',
-		borderStyle: 'solid',
-		borderWidth: 0,
 		backgroundColor: colors.bgSurfaceTransparent,
 		color: colors.text,
 		cursor: 'pointer',
-		outlineColor: {
-			default: 'transparent',
-			':focus-visible': colors.borderFocus,
-		},
-		outlineOffset: '2px',
-		outlineStyle: 'solid',
-		outlineWidth: '2px',
-		textAlign: 'start',
 	},
-	footer: {
-		gridRow: '2',
+	metadata: {
+		gridColumnEnd: 'metadata',
+		gridColumnStart: 'metadata',
+		gridRowEnd: 'metadata',
+		gridRowStart: 'metadata',
+
+		paddingBlockStart: spacing.xs,
+		paddingInlineStart: spacing.sm,
+
+		fontSize: fontSizes.sm,
 	},
 	dialogHeader: {
 		justifyContent: 'flex-end',
@@ -203,14 +194,21 @@ export function Review({ review }: { review: ReviewModel }) {
 	return (
 		<>
 			<Dialog open={isOpen} onOpenChange={setIsOpen}>
-				<div {...stylex.props(styles.contentContainer)}>
+				<DialogTrigger
+					nativeButton={false}
+					render={<div />}
+					{...stylex.props(styles.contentContainer)}
+				>
 					<div
 						aria-label={rating?.label ?? 'Uncompleted'}
 						{...stylex.props(styles.rating)}
 					>
 						<DropdownMenu>
 							<DropdownMenuTrigger
+								onClick={event => event.stopPropagation()}
+								onMouseDown={event => event.stopPropagation()}
 								{...stylex.props(styles.ratingTrigger)}
+								render={<Button size='micro' />}
 							>
 								<RatingIcon
 									aria-hidden='true'
@@ -221,7 +219,10 @@ export function Review({ review }: { review: ReviewModel }) {
 									size={iconSizes.sm}
 								/>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent>
+							<DropdownMenuContent
+								onClick={event => event.stopPropagation()}
+								onMouseDown={event => event.stopPropagation()}
+							>
 								<DropdownMenuRadioGroup
 									value={review.rating ?? ''}
 									onValueChange={value =>
@@ -249,14 +250,14 @@ export function Review({ review }: { review: ReviewModel }) {
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
-					<DialogTrigger {...stylex.props(styles.description)}>
+					<div {...stylex.props(styles.description)}>
 						{description || 'No description'}
-						<div {...stylex.props(styles.footer)}>
-							{formatDate(effectiveDate)}
-							{stabilityChange ? ` · ${stabilityChange}` : null}
-						</div>
-					</DialogTrigger>
-				</div>
+					</div>
+					<div {...stylex.props(styles.metadata)}>
+						{formatDate(effectiveDate)}
+						{stabilityChange ? ` · ${stabilityChange}` : null}
+					</div>
+				</DialogTrigger>
 
 				<DialogContent>
 					<DialogHeader xstyle={styles.dialogHeader}>

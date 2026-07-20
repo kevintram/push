@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -87,5 +87,22 @@ describe('Review', () => {
 
 		expect(deleteReview).toHaveBeenCalledOnce()
 		expect(deleteReview).toHaveBeenCalledWith(12)
+	})
+
+	it('keeps the rating menu independent from the dialog trigger', async () => {
+		const user = userEvent.setup()
+		render(<Review review={review} />)
+
+		await user.click(
+			within(screen.getByLabelText('Good')).getByRole('button'),
+		)
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+		expect(screen.getByRole('menu')).toBeInTheDocument()
+
+		await user.click(screen.getByRole('menuitemradio', { name: 'Easy' }))
+
+		expect(updateReview).toHaveBeenCalledWith({ id: 12, rating: 'easy' })
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 	})
 })
