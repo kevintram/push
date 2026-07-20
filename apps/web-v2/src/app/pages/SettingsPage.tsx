@@ -30,15 +30,17 @@ const styles = stylex.create({
 
 export function SettingsPage() {
 	const handleLogin = () => {
-		console.log('logging in!')
-		window.location.replace(`${apiUrl}/login`)
+		const url = new URL(`${apiUrl}/login`)
+		url.searchParams.set('return_to', window.location.href)
+
+		window.location.replace(url)
 	}
 
 	const handleFetch = async () => {
-		console.log('fetching!')
 		const response = await fetch(`${apiUrl}/reviews`, {
 			credentials: 'include',
 		})
+
 		const data = await response.json()
 		console.log(data)
 	}
