@@ -2,6 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { apiFetch } from '~/utils/apiFetch'
 
 const apiUrl = import.meta.env.VITE_API_URL
 
@@ -31,15 +32,15 @@ const styles = stylex.create({
 
 export function SettingsPage() {
 	const handleLogin = () => {
-		console.log('logging in!')
-		window.location.replace(`${apiUrl}/login`)
+		const url = new URL(`${apiUrl}/login`)
+		url.searchParams.set('return_to', window.location.href)
+
+		window.location.replace(url)
 	}
 
 	const handleFetch = async () => {
-		console.log('fetching!')
-		const response = await fetch(`${apiUrl}/reviews`, {
-			credentials: 'include',
-		})
+		const response = await apiFetch(`${apiUrl}/reviews`)
+
 		const data = await response.json()
 		console.log(data)
 	}

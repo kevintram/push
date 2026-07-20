@@ -6,8 +6,6 @@
  * - Detects 401 errors and redirects to login page once
  */
 
-const TRAILING_SLASH_PATTERN = /\/$/u
-
 let isAuthRedirectInFlight = false
 
 export class AuthRedirectError extends Error {
@@ -17,17 +15,16 @@ export class AuthRedirectError extends Error {
 	}
 }
 
-function getLoginUrl(): string {
-	return `${import.meta.env.VITE_API_URL.replace(TRAILING_SLASH_PATTERN, '')}/login/`
-}
-
 function startAuthRedirect() {
 	if (isAuthRedirectInFlight) {
 		return
 	}
 
+	const url = new URL('/login/', import.meta.env.VITE_API_URL)
+	url.searchParams.set('return_to', window.location.href)
+
 	isAuthRedirectInFlight = true
-	window.location.assign(getLoginUrl())
+	window.location.assign(url)
 }
 
 export async function apiFetch(

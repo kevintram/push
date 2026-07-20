@@ -51,7 +51,13 @@ describe('apiFetch', () => {
 			apiFetch('http://api.example/topics'),
 		).rejects.toBeInstanceOf(AuthRedirectError)
 		expect(assignSpy).toHaveBeenCalledTimes(1)
-		expect(assignSpy).toHaveBeenCalledWith('http://api.example/login/')
+
+		const redirectUrl = new URL(assignSpy.mock.calls[0]![0] as string)
+		expect(redirectUrl.origin).toBe('http://api.example')
+		expect(redirectUrl.pathname).toBe('/login/')
+		expect(redirectUrl.searchParams.get('return_to')).toBe(
+			window.location.href,
+		)
 	})
 
 	it('suppresses duplicate redirects for concurrent 401 responses', async () => {

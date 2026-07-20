@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as v from 'valibot'
 
+import { apiFetch } from '~/utils/apiFetch'
+
 import { ReviewCardSchema } from '../types/review.schemas'
 import type { ReviewCard } from '../types/review.types'
 import { reviewCardQueries } from './queries'
@@ -15,9 +17,8 @@ export async function createReviewCard({
 	type = 'practice',
 }: CreateReviewCardInput): Promise<ReviewCard> {
 	const url = new URL(import.meta.env.VITE_API_URL + '/review-cards/')
-	const response = await fetch(url, {
+	const response = await apiFetch(url, {
 		method: 'POST',
-		credentials: 'include',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ topic_id: Number(topicId), type }),
 	})
