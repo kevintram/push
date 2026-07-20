@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -93,9 +93,7 @@ describe('Review', () => {
 		const user = userEvent.setup()
 		render(<Review review={review} />)
 
-		await user.click(
-			within(screen.getByLabelText('Good')).getByRole('button'),
-		)
+		await user.click(screen.getByRole('button', { name: 'Good' }))
 
 		expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 		expect(screen.getByRole('menu')).toBeInTheDocument()

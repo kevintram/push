@@ -58,18 +58,7 @@ const styles = stylex.create({
 
 		alignSelf: 'baseline',
 
-		display: 'flex',
-	},
-	ratingTrigger: {
-		padding: 0,
-
-		gap: spacing.xs,
-		display: 'inline-flex',
-
-		font: 'inherit',
-		backgroundColor: colors.bgSurfaceTransparent,
-		color: 'inherit',
-		cursor: 'pointer',
+		paddingInline: spacing.xs,
 	},
 	description: {
 		gridColumnEnd: 'description',
@@ -199,57 +188,58 @@ export function Review({ review }: { review: ReviewModel }) {
 					render={<div />}
 					{...stylex.props(styles.contentContainer)}
 				>
-					<div
-						aria-label={rating?.label ?? 'Uncompleted'}
-						{...stylex.props(styles.rating)}
-					>
-						<DropdownMenu>
-							<DropdownMenuTrigger
-								onClick={event => event.stopPropagation()}
-								onMouseDown={event => event.stopPropagation()}
-								{...stylex.props(styles.ratingTrigger)}
-								render={<Button size='micro' />}
-							>
-								<RatingIcon
-									aria-hidden='true'
-									size={iconSizes.sm}
+					<DropdownMenu>
+						<DropdownMenuTrigger
+							aria-label={rating?.label ?? 'Uncompleted'}
+							onClick={event => event.stopPropagation()}
+							onMouseDown={event => event.stopPropagation()}
+							render={
+								<Button
+									size='micro'
+									variant='ghost'
+									xstyle={styles.rating}
 								/>
-								<ChevronDown
-									aria-hidden='true'
-									size={iconSizes.sm}
-								/>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent
-								onClick={event => event.stopPropagation()}
-								onMouseDown={event => event.stopPropagation()}
+							}
+						>
+							<RatingIcon
+								aria-hidden='true'
+								size={iconSizes.sm}
+							/>
+							<ChevronDown
+								aria-hidden='true'
+								size={iconSizes.sm}
+							/>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent
+							onClick={event => event.stopPropagation()}
+							onMouseDown={event => event.stopPropagation()}
+						>
+							<DropdownMenuRadioGroup
+								value={review.rating ?? ''}
+								onValueChange={value =>
+									void updateRating(value as Rating)
+								}
 							>
-								<DropdownMenuRadioGroup
-									value={review.rating ?? ''}
-									onValueChange={value =>
-										void updateRating(value as Rating)
-									}
-								>
-									{Object.entries(ratingDetails).map(
-										([value, { label, Icon }]) => (
-											<DropdownMenuRadioItem
-												key={value}
-												value={value}
-												disabled={isPending}
-												prefix={
-													<Icon
-														aria-hidden='true'
-														size={iconSizes.sm}
-													/>
-												}
-											>
-												{label}
-											</DropdownMenuRadioItem>
-										),
-									)}
-								</DropdownMenuRadioGroup>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
+								{Object.entries(ratingDetails).map(
+									([value, { label, Icon }]) => (
+										<DropdownMenuRadioItem
+											key={value}
+											value={value}
+											disabled={isPending}
+											prefix={
+												<Icon
+													aria-hidden='true'
+													size={iconSizes.sm}
+												/>
+											}
+										>
+											{label}
+										</DropdownMenuRadioItem>
+									),
+								)}
+							</DropdownMenuRadioGroup>
+						</DropdownMenuContent>
+					</DropdownMenu>
 					<div {...stylex.props(styles.description)}>
 						{description || 'No description'}
 					</div>
