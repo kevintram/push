@@ -80,6 +80,7 @@ export function ReviewsSidebar() {
 					<Button.Icon
 						aria-label='Add review'
 						variant='ghost'
+						size='micro'
 						disabled={isPending}
 						onClick={() => void addReview()}
 					>
