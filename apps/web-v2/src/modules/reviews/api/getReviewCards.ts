@@ -1,5 +1,7 @@
 import * as v from 'valibot'
 
+import { apiFetch } from '~/utils/apiFetch'
+
 import { ReviewCardSchema } from '../types/review.schemas'
 import type { ReviewCard, ReviewCardFilters } from '../types/review.types'
 
@@ -16,7 +18,7 @@ export async function fetchReviewCards(
 		}
 	}
 
-	const response = await fetch(url, { credentials: 'include' })
+	const response = await apiFetch(url)
 
 	if (!response.ok) {
 		throw new Error(`Failed to fetch reviews: ${response.status}`)
@@ -32,7 +34,7 @@ export async function fetchReviewCard(
 	const url = new URL(
 		import.meta.env.VITE_API_URL + `/review-cards/${reviewCardId}/`,
 	)
-	const response = await fetch(url, { credentials: 'include' })
+	const response = await apiFetch(url)
 
 	if (!response.ok) {
 		throw new Error(

@@ -38,7 +38,10 @@ describe('deleteReview', () => {
 
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/reviews/1/'),
-			{ method: 'DELETE', credentials: 'include' },
+			expect.objectContaining({
+				method: 'DELETE',
+				credentials: 'include',
+			}),
 		)
 		expect(client.getQueryData<Array<Review>>(listQuery.queryKey)).toEqual([
 			{ id: 2 },

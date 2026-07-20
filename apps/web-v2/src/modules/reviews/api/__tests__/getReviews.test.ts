@@ -22,7 +22,7 @@ describe('fetchReviews', () => {
 		).resolves.toEqual([])
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/reviews/?review_card_id=42&order=desc'),
-			{ credentials: 'include' },
+			expect.objectContaining({ credentials: 'include' }),
 		)
 	})
 })

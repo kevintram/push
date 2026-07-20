@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 
 import { colors, fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import { apiFetch } from '~/utils/apiFetch'
 
 const apiUrl = import.meta.env.VITE_API_URL
 
@@ -37,9 +38,7 @@ export function SettingsPage() {
 	}
 
 	const handleFetch = async () => {
-		const response = await fetch(`${apiUrl}/reviews`, {
-			credentials: 'include',
-		})
+		const response = await apiFetch(`${apiUrl}/reviews`)
 
 		const data = await response.json()
 		console.log(data)

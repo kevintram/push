@@ -45,7 +45,10 @@ describe('deleteReviewCard', () => {
 
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/review-cards/8/'),
-			{ method: 'DELETE', credentials: 'include' },
+			expect.objectContaining({
+				method: 'DELETE',
+				credentials: 'include',
+			}),
 		)
 		expect(invalidate).toHaveBeenCalledWith({
 			queryKey: reviewCardQueries.lists(),

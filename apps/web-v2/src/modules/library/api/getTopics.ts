@@ -1,12 +1,14 @@
 import * as v from 'valibot'
 
+import { apiFetch } from '~/utils/apiFetch'
+
 import { TopicSchema } from '../types/topic.schemas'
 import type { Topic, TopicWithChildren } from '../types/topic.types'
 
 export async function fetchTopics(): Promise<Array<TopicWithChildren>> {
 	const url = new URL(import.meta.env.VITE_API_URL + '/topics/')
 
-	const response = await fetch(url, { credentials: 'include' })
+	const response = await apiFetch(url)
 	if (!response.ok) {
 		throw new Error(`Failed to fetch topics!: ${response.status}`)
 	}
@@ -23,7 +25,7 @@ export async function fetchTopics(): Promise<Array<TopicWithChildren>> {
 
 export async function fetchTopic(topicId: number | string): Promise<Topic> {
 	const url = new URL(import.meta.env.VITE_API_URL + `/topics/${topicId}`)
-	const response = await fetch(url, { credentials: 'include' })
+	const response = await apiFetch(url)
 	if (!response.ok) {
 		throw new Error(`Failed to fetch topic ${topicId}: ${response.status}`)
 	}

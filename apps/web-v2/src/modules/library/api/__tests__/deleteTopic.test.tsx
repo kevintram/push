@@ -25,7 +25,10 @@ describe('deleteTopic', () => {
 		await expect(deleteTopic(7)).resolves.toBeUndefined()
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/topics/7/'),
-			{ method: 'DELETE', credentials: 'include' },
+			expect.objectContaining({
+				method: 'DELETE',
+				credentials: 'include',
+			}),
 		)
 	})
 

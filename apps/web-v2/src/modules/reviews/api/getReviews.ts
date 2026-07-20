@@ -1,5 +1,7 @@
 import * as v from 'valibot'
 
+import { apiFetch } from '~/utils/apiFetch'
+
 import { ReviewSchema } from '../types/review.schemas'
 import type { Review, ReviewFilters } from '../types/review.types'
 
@@ -13,7 +15,7 @@ export async function fetchReviews({
 		order,
 	}).toString()
 
-	const response = await fetch(url, { credentials: 'include' })
+	const response = await apiFetch(url)
 
 	if (!response.ok) {
 		throw new Error(`Failed to fetch reviews: ${response.status}`)
