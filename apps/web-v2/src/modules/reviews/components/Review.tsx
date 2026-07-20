@@ -32,7 +32,7 @@ import { useAutoSave } from '~/hooks/useAutoSave'
 import { useDeleteReview } from '~/modules/reviews/api/deleteReview'
 import { useUpdateReview } from '~/modules/reviews/api/updateReview'
 import { colors } from '~/styles/colors.stylex'
-import { fontSizes, iconSizes, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
 import { getTodayAsString } from '~/utils/date'
 
@@ -63,6 +63,17 @@ const styles = stylex.create({
 		alignSelf: 'center',
 
 		paddingInline: spacing.xs,
+	},
+	ratingBadge: {
+		borderRadius: radii.full,
+		alignItems: 'center',
+		backgroundColor: colors.bgFillBrand,
+		blockSize: iconSizes.sm,
+		color: colors.textBrandOnBgFill,
+		display: 'flex',
+		flexShrink: 0,
+		inlineSize: iconSizes.sm,
+		justifyContent: 'center',
 	},
 	description: {
 		gridColumnEnd: 'description',
@@ -270,10 +281,19 @@ export function Review({ review }: { review: ReviewModel }) {
 								/>
 							}
 						>
-							<RatingIcon
-								aria-hidden='true'
-								size={iconSizes.sm}
-							/>
+							{review.rating === null ? (
+								<RatingIcon
+									aria-hidden='true'
+									size={iconSizes.sm}
+								/>
+							) : (
+								<span {...stylex.props(styles.ratingBadge)}>
+									<RatingIcon
+										aria-hidden='true'
+										size={iconSizes.xs}
+									/>
+								</span>
+							)}
 							<ChevronDown
 								aria-hidden='true'
 								size={iconSizes.sm}
