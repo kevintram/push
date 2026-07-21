@@ -13,7 +13,7 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 vi.mock('@tanstack/react-query', () => ({
 	queryOptions: <T,>(options: T) => options,
-	useQuery: () => ({ data: card }),
+	useSuspenseQuery: () => ({ data: card }),
 }))
 vi.mock('~/modules/reviews/components/ReviewsSidebar', () => ({
 	ReviewsSidebar: () => null,

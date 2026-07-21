@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import {
 	Link,
 	Outlet,
@@ -68,7 +68,7 @@ export function ReviewCardPageLayout() {
 		from: '/review-cards/$reviewCardId',
 	})
 
-	const { data: topic } = useQuery(topicQueries.detail(topicId))
+	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
 	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
 		useDeleteReviewCard()
 	const navigate = useNavigate()
@@ -106,7 +106,7 @@ export function ReviewCardPageLayout() {
 						{...stylex.props(styles.link)}
 					>
 						<ArrowLeft />
-						{topic?.title}
+						{topic.title}
 					</Link>
 					<TabsList aria-label='Review card sections'>
 						<TabsTrigger

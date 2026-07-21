@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
@@ -21,11 +21,9 @@ export function ReviewCardPageReviews() {
 	const { reviewCardId } = useParams({
 		from: '/review-cards/$reviewCardId',
 	})
-	const {
-		data: reviews,
-		isError,
-		isPending: isLoading,
-	} = useQuery(reviewQueries.list({ reviewCardId, order: 'desc' }))
+	const { data: reviews } = useSuspenseQuery(
+		reviewQueries.list({ reviewCardId, order: 'desc' }),
+	)
 	const { isPending: isCreating, mutate: createReview } = useCreateReview()
 
 	return (
@@ -39,16 +37,10 @@ export function ReviewCardPageReviews() {
 					Review
 				</Button>
 			</div>
-			{isLoading ? (
-				<p {...stylex.props(styles.message)}>Loading reviews…</p>
-			) : null}
-			{isError ? (
-				<p {...stylex.props(styles.message)}>Unable to load reviews.</p>
-			) : null}
-			{!isLoading && !isError && reviews?.length === 0 ? (
+			{reviews.length === 0 ? (
 				<p {...stylex.props(styles.message)}>No reviews yet.</p>
 			) : null}
-			{reviews && reviews.length > 0 ? (
+			{reviews.length > 0 ? (
 				<div {...stylex.props(styles.list)}>
 					{reviews.map(review => (
 						<ReviewComponent key={review.id} review={review} />

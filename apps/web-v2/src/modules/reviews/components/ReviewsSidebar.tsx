@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
@@ -49,7 +49,7 @@ export function ReviewsSidebar() {
 	const { reviewCardId } = useParams({
 		from: '/review-cards/$reviewCardId',
 	})
-	const { data: reviews } = useQuery(
+	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.list({ reviewCardId, order: 'desc' }),
 	)
 	const { isPending, mutate: createReview } = useCreateReview()
@@ -80,7 +80,7 @@ export function ReviewsSidebar() {
 				</div>
 			</div>
 			<div {...stylex.props(styles.list)}>
-				{reviews?.map(review => (
+				{reviews.map(review => (
 					<Review key={review.id} review={review} />
 				))}
 			</div>

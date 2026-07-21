@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -78,8 +78,10 @@ export function TopicPage() {
 			).focusTopicTitle === true,
 	})
 
-	const { data: topic } = useQuery(topicQueries.detail(topicId))
-	const { data: reviewCards } = useQuery(reviewCardQueries.list({ topicId }))
+	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
+	const { data: reviewCards } = useSuspenseQuery(
+		reviewCardQueries.list({ topicId }),
+	)
 	const { mutate: updateTopic } = useUpdateTopic()
 	const { isPending: isDeletingTopic, mutateAsync: deleteTopic } =
 		useDeleteTopic()
@@ -89,7 +91,7 @@ export function TopicPage() {
 
 	const saveTitle = useCallback(
 		(title: string) => {
-			if (!topic || title === topic.title) return
+			if (title === topic.title) return
 			updateTopic({ id: topic.id, title })
 		},
 		[topic, updateTopic],
@@ -97,21 +99,21 @@ export function TopicPage() {
 
 	const saveBody = useCallback(
 		(body: string) => {
-			if (!topic || body === topic.body) return
+			if (body === topic.body) return
 			updateTopic({ id: topic.id, body })
 		},
 		[topic, updateTopic],
 	)
 
 	const title = useAutoSave({
-		initialValue: topic?.title ?? '',
+		initialValue: topic.title,
 		onSave: saveTitle,
-		key: `topic-title-${topic?.id ?? topicId}`,
+		key: `topic-title-${topic.id}`,
 	})
 	const body = useAutoSave({
-		initialValue: topic?.body ?? '',
+		initialValue: topic.body,
 		onSave: saveBody,
-		key: `topic-body-${topic?.id ?? topicId}`,
+		key: `topic-body-${topic.id}`,
 	})
 
 	const addReviewCard = async () => {
@@ -129,7 +131,6 @@ export function TopicPage() {
 	}
 
 	const confirmDeleteTopic = async () => {
-		if (!topic) return
 		try {
 			await deleteTopic(topic.id)
 		} catch {
@@ -150,52 +151,46 @@ export function TopicPage() {
 	return (
 		<div {...stylex.props(styles.container)}>
 			<header {...stylex.props(styles.header)}>
-				{topic && (
-					<>
-						<div {...stylex.props(styles.titleBar)}>
-							<Textarea
-								aria-label='Topic title'
-								autoFocus={shouldFocusTitle}
-								placeholder='Topic title'
-								value={title.value}
-								onChange={title.onChange}
-								onBlur={title.flush}
-								xstyle={styles.title}
-							/>
-							<DropdownMenu>
-								<DropdownMenuTrigger
-									render={
-										<Button.Icon
-											aria-label='Topic actions'
-											variant='ghost'
-										/>
-									}
-								>
-									<Ellipsis aria-hidden='true' />
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align='end'>
-									<DropdownMenuItem
-										disabled={isDeletingTopic}
-										onClick={() =>
-											setIsDeleteDialogOpen(true)
-										}
-									>
-										<Trash2 aria-hidden='true' size={16} />
-										Delete
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
-						<Textarea
-							aria-label='Topic body'
-							placeholder='Add a topic description'
-							value={body.value}
-							onChange={body.onChange}
-							onBlur={body.flush}
-							xstyle={styles.body}
-						/>
-					</>
-				)}
+				<div {...stylex.props(styles.titleBar)}>
+					<Textarea
+						aria-label='Topic title'
+						autoFocus={shouldFocusTitle}
+						placeholder='Topic title'
+						value={title.value}
+						onChange={title.onChange}
+						onBlur={title.flush}
+						xstyle={styles.title}
+					/>
+					<DropdownMenu>
+						<DropdownMenuTrigger
+							render={
+								<Button.Icon
+									aria-label='Topic actions'
+									variant='ghost'
+								/>
+							}
+						>
+							<Ellipsis aria-hidden='true' />
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end'>
+							<DropdownMenuItem
+								disabled={isDeletingTopic}
+								onClick={() => setIsDeleteDialogOpen(true)}
+							>
+								<Trash2 aria-hidden='true' size={16} />
+								Delete
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+				<Textarea
+					aria-label='Topic body'
+					placeholder='Add a topic description'
+					value={body.value}
+					onChange={body.onChange}
+					onBlur={body.flush}
+					xstyle={styles.body}
+				/>
 			</header>
 
 			<div {...stylex.props(styles.reviewCardsHeaderContainer)}>
@@ -212,7 +207,7 @@ export function TopicPage() {
 			</div>
 
 			<div {...stylex.props(styles.reviewCardsList)}>
-				{reviewCards?.map(reviewCard => (
+				{reviewCards.map(reviewCard => (
 					<ReviewCard key={reviewCard.id} {...reviewCard} />
 				))}
 			</div>

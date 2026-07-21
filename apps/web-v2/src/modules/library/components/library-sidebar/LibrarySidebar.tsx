@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
@@ -60,7 +60,7 @@ function containsTopic(topic: TopicDeleteTarget, topicId?: string): boolean {
 export function LibrarySidebar() {
 	const navigate = useNavigate()
 	const { topicId: currentTopicId } = useParams({ strict: false })
-	const { data } = useQuery(topicQueries.list())
+	const { data } = useSuspenseQuery(topicQueries.list())
 	const { isPending: isCreatingTopic, mutateAsync: createTopic } =
 		useCreateTopic()
 	const { isPending: isDeletingTopic, mutateAsync: deleteTopic } =
@@ -121,7 +121,7 @@ export function LibrarySidebar() {
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
 				<ul {...stylex.props(styles.list)}>
-					{data?.map(topic => (
+					{data.map(topic => (
 						<TopicLink
 							key={topic.id}
 							{...topic}

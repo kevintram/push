@@ -12,7 +12,7 @@ let currentTopicId: string | undefined = '2'
 
 vi.mock('@tanstack/react-query', () => ({
 	queryOptions: <T,>(options: T) => options,
-	useQuery: () => ({
+	useSuspenseQuery: () => ({
 		data: [
 			{
 				id: '1',
