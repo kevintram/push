@@ -21,6 +21,7 @@ if (import.meta.env.DEV && !import.meta.env.VITEST) {
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
+			staleTime: 60_000,
 			retry: (failureCount, error) =>
 				// only retry 3 times; don't retry at all if auth error
 				!(error instanceof AuthRedirectError) && failureCount < 3,
