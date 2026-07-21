@@ -48,9 +48,9 @@ const styles = stylex.create({
 		},
 	},
 	icon: {
-		blockSize: iconSizes.sm,
+		blockSize: iconSizes.md,
 		display: 'block',
-		inlineSize: iconSizes.sm,
+		inlineSize: iconSizes.md,
 	},
 	iconContainer: {
 		padding: spacing.xs,

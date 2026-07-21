@@ -86,7 +86,7 @@ export function ReviewDatePicker({
 					onClick={event => event.stopPropagation()}
 					onMouseDown={event => event.stopPropagation()}
 					prefix={
-						<CalendarIcon aria-hidden='true' size={iconSizes.sm} />
+						<CalendarIcon aria-hidden='true' size={iconSizes.md} />
 					}
 					size='micro'
 					variant='ghost'

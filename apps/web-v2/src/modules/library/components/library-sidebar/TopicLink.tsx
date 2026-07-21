@@ -8,7 +8,7 @@ import {
 	ContextMenuItem,
 	ContextMenuTrigger,
 } from '~/components/ui'
-import { spacing } from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { type TopicWithChildren } from '../../types/topic.types'
 
@@ -25,13 +25,13 @@ type TopicLinkProps = TopicWithChildren & {
 }
 
 const styles = stylex.create({
-	item: {
+	container: {
 		gap: spacing.xs,
 
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	children: {
+	childrenList: {
 		gap: spacing.xs,
 
 		display: 'flex',
@@ -54,7 +54,7 @@ export function TopicLink({
 	const topicTitle = title.trim() || 'Untitled'
 
 	return (
-		<li {...stylex.props(styles.item)}>
+		<li {...stylex.props(styles.container)}>
 			<ContextMenu>
 				<ContextMenuTrigger
 					render={
@@ -72,7 +72,7 @@ export function TopicLink({
 						disabled={isAddingTopic}
 						onClick={() => onAddSubtopic(id)}
 					>
-						<Plus aria-hidden='true' size={16} />
+						<Plus aria-hidden='true' size={iconSizes.md} />
 						Add subtopic
 					</ContextMenuItem>
 					<ContextMenuItem
@@ -81,14 +81,14 @@ export function TopicLink({
 							onDeleteTopic({ children, id, parentId, title })
 						}
 					>
-						<Trash2 aria-hidden='true' size={16} />
+						<Trash2 aria-hidden='true' size={iconSizes.md} />
 						Delete
 					</ContextMenuItem>
 				</ContextMenuContent>
 			</ContextMenu>
 
 			{children && children.length > 0 ? (
-				<ul {...stylex.props(styles.children)}>
+				<ul {...stylex.props(styles.childrenList)}>
 					{children.map(child => (
 						<TopicLink
 							key={child.id}
