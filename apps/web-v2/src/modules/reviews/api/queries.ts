@@ -6,7 +6,7 @@ import { fetchReviews } from './getReviews'
 
 export const reviewCardQueries = {
 	all: ['review-cards'] as const,
-	lists: () => [...reviewCardQueries.all, 'lists'],
+	lists: () => [...reviewCardQueries.all, 'list'] as const,
 	list: (filters?: ReviewCardFilters) => {
 		const normalizedFilters =
 			filters === undefined
@@ -45,9 +45,10 @@ export const reviewQueries = {
 			{ reviewCardId: String(reviewCardId) },
 		] as const,
 	list: (filters: ReviewFilters) => {
-		const normalizedFilters = {
+		const normalizedFilters: ReviewFilters = {
 			...filters,
 			reviewCardId: String(filters.reviewCardId),
+			order: filters.order ?? 'desc',
 		}
 		return queryOptions({
 			queryKey: [...reviewQueries.lists(), normalizedFilters],

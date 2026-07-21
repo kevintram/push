@@ -4,7 +4,7 @@ import { fetchTopic, fetchTopics } from './getTopics'
 
 export const topicQueries = {
 	all: ['topics'] as const,
-	lists: () => [...topicQueries.all, 'lists'],
+	lists: () => [...topicQueries.all, 'list'] as const,
 	list: () =>
 		queryOptions({
 			queryKey: topicQueries.lists(),
