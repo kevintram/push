@@ -25,7 +25,7 @@ import {
 import { topicQueries } from '~/modules/library/api/queries'
 import { useDeleteReviewCard } from '~/modules/reviews/api/deleteReviewCard'
 import { colors } from '~/styles/colors.stylex'
-import { spacing } from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	outerContainer: {
@@ -153,7 +153,7 @@ export function ReviewCardPageLayout() {
 							disabled={isDeleting}
 							onClick={() => setIsDeleteDialogOpen(true)}
 						>
-							<Trash2 aria-hidden='true' size={16} />
+							<Trash2 aria-hidden='true' size={iconSizes.md} />
 							Delete
 						</DropdownMenuItem>
 					</DropdownMenuContent>

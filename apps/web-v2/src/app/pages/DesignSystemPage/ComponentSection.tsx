@@ -49,7 +49,7 @@ import {
 	Textarea,
 } from '~/components/ui'
 import { colors } from '~/styles/colors.stylex'
-import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 import { SpecimenSection } from './SpecimenSection'
 
@@ -177,7 +177,9 @@ export function ComponentSection() {
 								Danger round
 							</Button>
 							<Button
-								prefix={<Star aria-hidden size={16} />}
+								prefix={
+									<Star aria-hidden size={iconSizes.md} />
+								}
 								shape='round'
 								variant='outline'
 							>
@@ -198,7 +200,7 @@ export function ComponentSection() {
 									size={size}
 									variant='outline'
 								>
-									<Star aria-hidden size={16} />
+									<Star aria-hidden size={iconSizes.md} />
 								</Button.Icon>
 							))}
 						</div>
@@ -299,7 +301,10 @@ export function ComponentSection() {
 							render={
 								<Button
 									suffix={
-										<ChevronDown aria-hidden size={16} />
+										<ChevronDown
+											aria-hidden
+											size={iconSizes.md}
+										/>
 									}
 									variant='outline'
 								/>
@@ -313,16 +318,22 @@ export function ComponentSection() {
 									My account
 								</DropdownMenuLabel>
 								<DropdownMenuItem>
-									<User aria-hidden size={16} /> Profile
+									<User aria-hidden size={iconSizes.md} />{' '}
+									Profile
 									<DropdownMenuShortcut>
 										⇧⌘P
 									</DropdownMenuShortcut>
 								</DropdownMenuItem>
 								<DropdownMenuItem>
-									<CreditCard aria-hidden size={16} /> Billing
+									<CreditCard
+										aria-hidden
+										size={iconSizes.md}
+									/>{' '}
+									Billing
 								</DropdownMenuItem>
 								<DropdownMenuItem disabled>
-									<Settings aria-hidden size={16} /> Settings
+									<Settings aria-hidden size={iconSizes.md} />{' '}
+									Settings
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
 							<DropdownMenuSeparator />
@@ -346,17 +357,23 @@ export function ComponentSection() {
 											onValueChange={setTheme}
 										>
 											<DropdownMenuRadioItem value='light'>
-												<Sun aria-hidden size={16} />{' '}
+												<Sun
+													aria-hidden
+													size={iconSizes.md}
+												/>{' '}
 												Light
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value='dark'>
-												<Moon aria-hidden size={16} />{' '}
+												<Moon
+													aria-hidden
+													size={iconSizes.md}
+												/>{' '}
 												Dark
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value='system'>
 												<Monitor
 													aria-hidden
-													size={16}
+													size={iconSizes.md}
 												/>{' '}
 												System
 											</DropdownMenuRadioItem>
@@ -366,7 +383,8 @@ export function ComponentSection() {
 							</DropdownMenuSub>
 							<DropdownMenuSeparator />
 							<DropdownMenuItem>
-								<LogOut aria-hidden size={16} /> Log out
+								<LogOut aria-hidden size={iconSizes.md} /> Log
+								out
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -386,16 +404,19 @@ export function ComponentSection() {
 						</ContextMenuTrigger>
 						<ContextMenuContent>
 							<ContextMenuItem>
-								<FilePenLine aria-hidden size={16} /> Edit
+								<FilePenLine aria-hidden size={iconSizes.md} />{' '}
+								Edit
 								<ContextMenuShortcut>⌘E</ContextMenuShortcut>
 							</ContextMenuItem>
 							<ContextMenuItem>
-								<Copy aria-hidden size={16} /> Duplicate
+								<Copy aria-hidden size={iconSizes.md} />{' '}
+								Duplicate
 								<ContextMenuShortcut>⌘D</ContextMenuShortcut>
 							</ContextMenuItem>
 							<ContextMenuSeparator />
 							<ContextMenuItem>
-								<Trash2 aria-hidden size={16} /> Delete
+								<Trash2 aria-hidden size={iconSizes.md} />{' '}
+								Delete
 							</ContextMenuItem>
 						</ContextMenuContent>
 					</ContextMenu>

@@ -26,8 +26,8 @@ const styles = stylex.create({
 		animationName: spin,
 		animationTimingFunction: 'linear',
 		color: colors.textSecondary,
-		height: iconSizes.lg,
-		width: iconSizes.lg,
+		height: iconSizes.xl,
+		width: iconSizes.xl,
 	},
 })
 

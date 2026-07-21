@@ -29,8 +29,8 @@ type SidebarLinkImplementationProps = {
 
 const styles = stylex.create({
 	icon: {
-		blockSize: iconSizes.sm,
-		inlineSize: iconSizes.sm,
+		blockSize: iconSizes.md,
+		inlineSize: iconSizes.md,
 	},
 	link: {
 		textDecoration: 'none',
