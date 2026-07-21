@@ -26,7 +26,6 @@ import {
 const styles = stylex.create({
 	trigger: {
 		blockSize: 'auto',
-		color: colors.textSecondary,
 
 		paddingInline: spacing.xs,
 	},
