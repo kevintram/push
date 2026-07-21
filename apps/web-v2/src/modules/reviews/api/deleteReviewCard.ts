@@ -15,6 +15,7 @@ export function useDeleteReviewCard() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: deleteReviewCard,
+		meta: { errorMessage: 'Failed to delete review card' },
 		onSuccess: (_, id) => {
 			queryClient.removeQueries({
 				queryKey: reviewCardQueries.detail(id).queryKey,

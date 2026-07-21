@@ -26,6 +26,7 @@ export function useUpdateTopic() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: updateTopic,
+		meta: { errorMessage: 'Failed to update topic' },
 		onSuccess: topic => {
 			queryClient.setQueryData(
 				topicQueries.detail(topic.id).queryKey,

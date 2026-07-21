@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { toast } from 'sonner'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
@@ -81,7 +80,7 @@ export function TopicPage() {
 
 	const { data: topic } = useQuery(topicQueries.detail(topicId))
 	const { data: reviewCards } = useQuery(reviewCardQueries.list({ topicId }))
-	const { mutateAsync: updateTopic } = useUpdateTopic()
+	const { mutate: updateTopic } = useUpdateTopic()
 	const { isPending: isDeletingTopic, mutateAsync: deleteTopic } =
 		useDeleteTopic()
 	const { isPending: isCreatingReviewCard, mutateAsync: createReviewCard } =
@@ -89,25 +88,17 @@ export function TopicPage() {
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	const saveTitle = useCallback(
-		async (title: string) => {
+		(title: string) => {
 			if (!topic || title === topic.title) return
-			try {
-				await updateTopic({ id: topic.id, title })
-			} catch {
-				toast.error('Failed to update topic title')
-			}
+			updateTopic({ id: topic.id, title })
 		},
 		[topic, updateTopic],
 	)
 
 	const saveBody = useCallback(
-		async (body: string) => {
+		(body: string) => {
 			if (!topic || body === topic.body) return
-			try {
-				await updateTopic({ id: topic.id, body })
-			} catch {
-				toast.error('Failed to update topic body')
-			}
+			updateTopic({ id: topic.id, body })
 		},
 		[topic, updateTopic],
 	)
@@ -124,35 +115,36 @@ export function TopicPage() {
 	})
 
 	const addReviewCard = async () => {
-		try {
-			const reviewCard = await createReviewCard({ topicId })
-			await navigate({
-				to: '/review-cards/$reviewCardId',
-				params: {
-					reviewCardId: reviewCard.id,
-				},
-			})
-		} catch {
-			toast.error('Failed to create review card')
-		}
+		const reviewCard = await createReviewCard({ topicId }).catch(
+			() => undefined,
+		)
+		if (!reviewCard) return
+
+		await navigate({
+			to: '/review-cards/$reviewCardId',
+			params: {
+				reviewCardId: reviewCard.id,
+			},
+		})
 	}
 
 	const confirmDeleteTopic = async () => {
 		if (!topic) return
 		try {
 			await deleteTopic(topic.id)
-			setIsDeleteDialogOpen(false)
-			if (topic.parentId === undefined) {
-				await navigate({ to: '/library' })
-				return
-			}
-			await navigate({
-				to: '/library/$topicId',
-				params: { topicId: topic.parentId },
-			})
 		} catch {
-			toast.error('Failed to delete topic')
+			return
 		}
+
+		setIsDeleteDialogOpen(false)
+		if (topic.parentId === undefined) {
+			await navigate({ to: '/library' })
+			return
+		}
+		await navigate({
+			to: '/library/$topicId',
+			params: { topicId: topic.parentId },
+		})
 	}
 
 	return (

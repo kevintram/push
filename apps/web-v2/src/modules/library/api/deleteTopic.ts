@@ -48,6 +48,7 @@ export function useDeleteTopic() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: deleteTopic,
+		meta: { errorMessage: 'Failed to delete topic' },
 		onSuccess: (_, id) => {
 			const deletedTopicIds = new Set<string>([id])
 			for (const [, topics] of queryClient.getQueriesData<

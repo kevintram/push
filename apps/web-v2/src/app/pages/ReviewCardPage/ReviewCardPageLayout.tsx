@@ -10,7 +10,6 @@ import {
 } from '@tanstack/react-router'
 import { ArrowLeft, Ellipsis, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
@@ -86,14 +85,15 @@ export function ReviewCardPageLayout() {
 	const confirmDelete = async () => {
 		try {
 			await deleteReviewCard(reviewCardId)
-			setIsDeleteDialogOpen(false)
-			await navigate({
-				to: '/library/$topicId',
-				params: { topicId },
-			})
 		} catch {
-			toast.error('Failed to delete review card')
+			return
 		}
+
+		setIsDeleteDialogOpen(false)
+		await navigate({
+			to: '/library/$topicId',
+			params: { topicId },
+		})
 	}
 
 	return (

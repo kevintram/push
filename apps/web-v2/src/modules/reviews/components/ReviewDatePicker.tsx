@@ -42,7 +42,7 @@ const styles = stylex.create({
 interface ReviewDatePickerProps {
 	disabled?: boolean
 	isCompleted: boolean
-	onChange: (value: DateString | null) => Promise<void>
+	onChange: (value: DateString | null) => void | Promise<void>
 	value: DateString | null
 }
 

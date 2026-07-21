@@ -2,7 +2,6 @@ import * as stylex from '@stylexjs/stylex'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
-import { toast } from 'sonner'
 
 import { Button } from '~/components/ui'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
@@ -27,15 +26,7 @@ export function ReviewCardPageReviews() {
 		isError,
 		isPending: isLoading,
 	} = useQuery(reviewQueries.list({ reviewCardId, order: 'desc' }))
-	const { isPending: isCreating, mutateAsync } = useCreateReview()
-
-	const addReview = async () => {
-		try {
-			await mutateAsync({ reviewCardId })
-		} catch {
-			toast.error('Failed to create review')
-		}
-	}
+	const { isPending: isCreating, mutate: createReview } = useCreateReview()
 
 	return (
 		<div {...stylex.props(styles.page)}>
@@ -43,7 +34,7 @@ export function ReviewCardPageReviews() {
 				<Button
 					disabled={isCreating}
 					prefix={<Plus aria-hidden='true' />}
-					onClick={() => void addReview()}
+					onClick={() => createReview({ reviewCardId })}
 				>
 					Review
 				</Button>

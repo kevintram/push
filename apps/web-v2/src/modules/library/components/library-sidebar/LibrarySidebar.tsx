@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Button } from '~/components/ui'
@@ -69,19 +68,17 @@ export function LibrarySidebar() {
 	const [topicToDelete, setTopicToDelete] = useState<TopicDeleteTarget>()
 
 	const addTopic = async (parentId?: string) => {
-		try {
-			const topic = await createTopic({ parentId })
-			await navigate({
-				to: '/library/$topicId',
-				params: { topicId: topic.id },
-				state: previous => ({
-					...previous,
-					focusTopicTitle: true,
-				}),
-			})
-		} catch {
-			toast.error('Failed to create topic')
-		}
+		const topic = await createTopic({ parentId }).catch(() => undefined)
+		if (!topic) return
+
+		await navigate({
+			to: '/library/$topicId',
+			params: { topicId: topic.id },
+			state: previous => ({
+				...previous,
+				focusTopicTitle: true,
+			}),
+		})
 	}
 
 	const confirmDeleteTopic = async () => {
@@ -89,20 +86,21 @@ export function LibrarySidebar() {
 
 		try {
 			await deleteTopic(topicToDelete.id)
-			setTopicToDelete(undefined)
-
-			if (!containsTopic(topicToDelete, currentTopicId)) return
-			if (topicToDelete.parentId === undefined) {
-				await navigate({ to: '/library' })
-				return
-			}
-			await navigate({
-				to: '/library/$topicId',
-				params: { topicId: topicToDelete.parentId },
-			})
 		} catch {
-			toast.error('Failed to delete topic')
+			return
 		}
+
+		setTopicToDelete(undefined)
+
+		if (!containsTopic(topicToDelete, currentTopicId)) return
+		if (topicToDelete.parentId === undefined) {
+			await navigate({ to: '/library' })
+			return
+		}
+		await navigate({
+			to: '/library/$topicId',
+			params: { topicId: topicToDelete.parentId },
+		})
 	}
 
 	const topicToDeleteTitle = topicToDelete?.title.trim() || 'Untitled'

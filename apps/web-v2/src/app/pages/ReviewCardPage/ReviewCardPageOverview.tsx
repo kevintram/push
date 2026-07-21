@@ -2,7 +2,6 @@ import * as stylex from '@stylexjs/stylex'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useCallback } from 'react'
-import { toast } from 'sonner'
 
 import { Textarea } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -40,46 +39,27 @@ export function ReviewCardPageOverview() {
 	const { data: reviewCard } = useQuery(
 		reviewCardQueries.detail(reviewCardId),
 	)
-	const { mutateAsync } = useUpdateReviewCard()
+	const { mutate } = useUpdateReviewCard()
 	const save = useCallback(
-		async (
-			field: 'primary_text' | 'secondary_text' | 'notes',
-			value: string,
-			message: string,
-		) => {
+		(field: 'primary_text' | 'secondary_text' | 'notes', value: string) => {
 			if (!reviewCard || value === reviewCard[field]) return
-			try {
-				await mutateAsync({ id: reviewCard.id, [field]: value })
-			} catch {
-				toast.error(message)
-			}
+			mutate({ id: reviewCard.id, [field]: value })
 		},
-		[mutateAsync, reviewCard],
+		[mutate, reviewCard],
 	)
 	const primary = useAutoSave({
 		initialValue: reviewCard?.primary_text ?? '',
-		onSave: value =>
-			void save(
-				'primary_text',
-				value,
-				'Failed to update review-card primary text',
-			),
+		onSave: value => save('primary_text', value),
 		key: `review-card-primary-${reviewCard?.id ?? reviewCardId}`,
 	})
 	const secondary = useAutoSave({
 		initialValue: reviewCard?.secondary_text ?? '',
-		onSave: value =>
-			void save(
-				'secondary_text',
-				value,
-				'Failed to update review-card secondary text',
-			),
+		onSave: value => save('secondary_text', value),
 		key: `review-card-secondary-${reviewCard?.id ?? reviewCardId}`,
 	})
 	const notes = useAutoSave({
 		initialValue: reviewCard?.notes ?? '',
-		onSave: value =>
-			void save('notes', value, 'Failed to update review-card notes'),
+		onSave: value => save('notes', value),
 		key: `review-card-notes-${reviewCard?.id ?? reviewCardId}`,
 	})
 

@@ -1,10 +1,15 @@
 import './styles/global.css'
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import {
+	MutationCache,
+	QueryClient,
+	QueryClientProvider,
+} from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { toast } from 'sonner'
 
 import { LoaderPage } from './app/pages/LoaderPage'
 import { routeTree } from './app/routeTree.gen'
@@ -19,6 +24,15 @@ if (import.meta.env.DEV && !import.meta.env.VITEST) {
 }
 
 const queryClient = new QueryClient({
+	mutationCache: new MutationCache({
+		onError: (_error, _variables, _context, mutation) => {
+			const message = mutation.meta?.errorMessage
+
+			toast.error(
+				typeof message === 'string' ? message : 'Something went wrong',
+			)
+		},
+	}),
 	defaultOptions: {
 		queries: {
 			staleTime: 60_000,

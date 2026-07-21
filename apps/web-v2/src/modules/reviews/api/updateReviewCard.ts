@@ -27,6 +27,7 @@ export function useUpdateReviewCard() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: updateReviewCard,
+		meta: { errorMessage: 'Failed to update review card' },
 		onSuccess: reviewCard => {
 			queryClient.setQueryData(
 				reviewCardQueries.detail(reviewCard.id).queryKey,

@@ -13,13 +13,13 @@ const updateReview = vi.fn()
 vi.mock('../../api/deleteReview', () => ({
 	useDeleteReview: () => ({
 		isPending: false,
-		mutateAsync: deleteReview,
+		mutate: deleteReview,
 	}),
 }))
 vi.mock('../../api/updateReview', () => ({
 	useUpdateReview: () => ({
 		isPending: false,
-		mutateAsync: updateReview,
+		mutate: updateReview,
 	}),
 }))
 
@@ -55,8 +55,10 @@ const review: ReviewModel = {
 
 describe('Review', () => {
 	beforeEach(() => {
-		deleteReview.mockReset().mockResolvedValue(undefined)
-		updateReview.mockReset().mockResolvedValue(undefined)
+		deleteReview
+			.mockReset()
+			.mockImplementation((_id, options) => options?.onSuccess?.())
+		updateReview.mockReset()
 	})
 
 	it('requires confirmation before deleting a review', async () => {
@@ -86,7 +88,10 @@ describe('Review', () => {
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
 		expect(deleteReview).toHaveBeenCalledOnce()
-		expect(deleteReview).toHaveBeenCalledWith('12')
+		expect(deleteReview).toHaveBeenCalledWith(
+			'12',
+			expect.objectContaining({ onSuccess: expect.any(Function) }),
+		)
 	})
 
 	it('keeps the rating menu independent from the dialog trigger', async () => {

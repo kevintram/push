@@ -23,6 +23,7 @@ export function useCreateReview() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: createReview,
+		meta: { errorMessage: 'Failed to create review' },
 		onSuccess: (review, { reviewCardId }) => {
 			for (const [queryKey, reviews] of queryClient.getQueriesData<
 				Array<Review>

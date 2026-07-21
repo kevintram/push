@@ -30,6 +30,7 @@ export function useUpdateReview() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: updateReview,
+		meta: { errorMessage: 'Failed to update review' },
 		onSuccess: async (review, updates) => {
 			if (
 				'scheduled_at' in updates ||

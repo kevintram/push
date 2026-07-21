@@ -23,6 +23,7 @@ export function useCreateTopic() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: createTopic,
+		meta: { errorMessage: 'Failed to create topic' },
 		onSuccess: topic => {
 			queryClient.setQueryData(
 				topicQueries.detail(topic.id).queryKey,

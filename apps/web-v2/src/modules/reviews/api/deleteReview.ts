@@ -16,6 +16,7 @@ export function useDeleteReview() {
 	const queryClient = useQueryClient()
 	return useMutation({
 		mutationFn: deleteReview,
+		meta: { errorMessage: 'Failed to delete review' },
 		onSuccess: (_, id) => {
 			queryClient.setQueriesData<Array<Review>>(
 				{ queryKey: reviewQueries.all },
