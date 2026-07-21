@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { getFetchRequest } from '~/testing/getFetchRequest'
+
 import { createReviewCard } from '../createReviewCard'
 
 describe('createReviewCard', () => {
@@ -28,14 +30,14 @@ describe('createReviewCard', () => {
 			secondary_text: 'Answer',
 			notes: '',
 		})
-		expect(fetchMock).toHaveBeenCalledWith(
-			new URL('http://test-api/review-cards/'),
-			expect.objectContaining({
-				method: 'POST',
-				credentials: 'include',
-				headers: expect.any(Headers),
-				body: JSON.stringify({ topic_id: 7, type: 'practice' }),
-			}),
-		)
+		expect(fetchMock).toHaveBeenCalledTimes(1)
+		const request = getFetchRequest(fetchMock)
+		expect(request.url).toBe('http://test-api/review-cards/')
+		expect(request.method).toBe('POST')
+		expect(request.credentials).toBe('include')
+		await expect(request.clone().json()).resolves.toEqual({
+			topic_id: 7,
+			type: 'practice',
+		})
 	})
 })

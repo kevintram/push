@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { reviewCardQueries, reviewQueries } from '~/modules/reviews/api/queries'
 import type { Review } from '~/modules/reviews/types/review.types'
+import { getFetchRequest } from '~/testing/getFetchRequest'
 
 import { deleteTopic, useDeleteTopic } from '../deleteTopic'
 import { topicQueries } from '../queries'
@@ -23,13 +24,11 @@ describe('deleteTopic', () => {
 		vi.stubGlobal('fetch', fetchMock)
 
 		await expect(deleteTopic('7')).resolves.toBeUndefined()
-		expect(fetchMock).toHaveBeenCalledWith(
-			new URL('http://test-api/topics/7/'),
-			expect.objectContaining({
-				method: 'DELETE',
-				credentials: 'include',
-			}),
-		)
+		expect(fetchMock).toHaveBeenCalledTimes(1)
+		const request = getFetchRequest(fetchMock)
+		expect(request.url).toBe('http://test-api/topics/7/')
+		expect(request.method).toBe('DELETE')
+		expect(request.credentials).toBe('include')
 	})
 
 	it('throws for unsuccessful responses', async () => {

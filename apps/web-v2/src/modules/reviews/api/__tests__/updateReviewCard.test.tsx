@@ -3,6 +3,8 @@ import { renderHook, waitFor } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { getFetchRequest } from '~/testing/getFetchRequest'
+
 import { reviewCardQueries } from '../queries'
 import { updateReviewCard, useUpdateReviewCard } from '../updateReviewCard'
 
@@ -31,15 +33,14 @@ describe('updateReviewCard', () => {
 		await expect(
 			updateReviewCard({ id: '8', notes: 'Notes' }),
 		).resolves.toEqual({ ...response, id: '8', topic_id: '7' })
-		expect(fetchMock).toHaveBeenCalledWith(
-			new URL('http://test-api/review-cards/8/'),
-			expect.objectContaining({
-				method: 'PATCH',
-				credentials: 'include',
-				headers: expect.any(Headers),
-				body: JSON.stringify({ notes: 'Notes' }),
-			}),
-		)
+		expect(fetchMock).toHaveBeenCalledTimes(1)
+		const request = getFetchRequest(fetchMock)
+		expect(request.url).toBe('http://test-api/review-cards/8/')
+		expect(request.method).toBe('PATCH')
+		expect(request.credentials).toBe('include')
+		await expect(request.clone().json()).resolves.toEqual({
+			notes: 'Notes',
+		})
 	})
 
 	it('throws for unsuccessful responses', async () => {

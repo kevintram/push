@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { getFetchRequest } from '~/testing/getFetchRequest'
+
 import { createTopic } from '../createTopic'
 
 describe('createTopic', () => {
@@ -28,14 +30,11 @@ describe('createTopic', () => {
 			id: '8',
 			parentId: '7',
 		})
-		expect(fetchMock).toHaveBeenCalledWith(
-			new URL('http://test-api/topics/'),
-			expect.objectContaining({
-				method: 'POST',
-				credentials: 'include',
-				headers: expect.any(Headers),
-				body: JSON.stringify({ parent_id: 7 }),
-			}),
-		)
+		expect(fetchMock).toHaveBeenCalledTimes(1)
+		const request = getFetchRequest(fetchMock)
+		expect(request.url).toBe('http://test-api/topics/')
+		expect(request.method).toBe('POST')
+		expect(request.credentials).toBe('include')
+		await expect(request.clone().json()).resolves.toEqual({ parent_id: 7 })
 	})
 })

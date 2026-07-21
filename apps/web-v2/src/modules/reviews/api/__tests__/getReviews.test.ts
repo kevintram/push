@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { getFetchRequest } from '~/testing/getFetchRequest'
+
 import { fetchReviews } from '../getReviews'
 
 describe('fetchReviews', () => {
@@ -20,9 +22,11 @@ describe('fetchReviews', () => {
 		await expect(
 			fetchReviews({ reviewCardId: '42', order: 'desc' }),
 		).resolves.toEqual([])
-		expect(fetchMock).toHaveBeenCalledWith(
-			new URL('http://test-api/reviews/?review_card_id=42&order=desc'),
-			expect.objectContaining({ credentials: 'include' }),
+		expect(fetchMock).toHaveBeenCalledTimes(1)
+		const request = getFetchRequest(fetchMock)
+		expect(request.url).toBe(
+			'http://test-api/reviews/?review_card_id=42&order=desc',
 		)
+		expect(request.credentials).toBe('include')
 	})
 })

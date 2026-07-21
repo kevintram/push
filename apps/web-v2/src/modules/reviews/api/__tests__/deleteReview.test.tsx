@@ -3,6 +3,8 @@ import { renderHook, waitFor } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { getFetchRequest } from '~/testing/getFetchRequest'
+
 import type { Review } from '../../types/review.types'
 import { deleteReview, useDeleteReview } from '../deleteReview'
 import { reviewCardQueries, reviewQueries } from '../queries'
@@ -36,13 +38,11 @@ describe('deleteReview', () => {
 		result.current.mutate('1')
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(fetchMock).toHaveBeenCalledWith(
-			new URL('http://test-api/reviews/1/'),
-			expect.objectContaining({
-				method: 'DELETE',
-				credentials: 'include',
-			}),
-		)
+		expect(fetchMock).toHaveBeenCalledTimes(1)
+		const request = getFetchRequest(fetchMock)
+		expect(request.url).toBe('http://test-api/reviews/1/')
+		expect(request.method).toBe('DELETE')
+		expect(request.credentials).toBe('include')
 		expect(client.getQueryData<Array<Review>>(listQuery.queryKey)).toEqual([
 			{ id: '2' },
 		])

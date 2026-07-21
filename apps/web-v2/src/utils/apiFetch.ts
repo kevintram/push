@@ -7,24 +7,29 @@
 
 import * as v from 'valibot'
 
-let isAuthRedirectInFlight = false
+/**
+ * A non-2xx API response. `data` is the canonical response body because the
+ * response body has already been consumed by the time this error is thrown.
+ */
+export class HttpError extends Error {
+	readonly response: Response
+	readonly request: Request
+	readonly data: unknown
 
-export class AuthRedirectError extends Error {
-	constructor() {
-		super('Authentication required')
+	constructor(response: Response, request: Request, data: unknown) {
+		const status = `${response.status} ${response.statusText}`.trim()
+		super(
+			`Request failed with status ${status}: ` +
+				`${request.method} ${request.url}`,
+		)
 		this.name = new.target.name
+		this.response = response
+		this.request = request
+		this.data = data
 	}
-}
 
-export class ApiError extends Error {
-	readonly status: number
-	readonly path: string
-
-	constructor(status: number, path: string) {
-		super(`API request failed (${status}): ${path}`)
-		this.name = new.target.name
-		this.status = status
-		this.path = path
+	get status() {
+		return this.response.status
 	}
 }
 
@@ -50,18 +55,25 @@ export async function apiFetch<TSchema extends v.GenericSchema>(
 	headers.set('X-Client-Date', getClientDate())
 	if (hasBody) headers.set('Content-Type', 'application/json')
 
-	const response = await fetch(url, {
+	const request = new Request(url, {
 		...init,
 		headers,
 		body: hasBody ? JSON.stringify(body) : undefined,
 		credentials: 'include',
 	})
+	const response = await fetch(request)
 
-	if (response.status === 401) {
-		startAuthRedirect()
-		throw new AuthRedirectError()
+	if (!response.ok) {
+		const error = new HttpError(
+			response,
+			request,
+			await safeParse(response),
+		)
+
+		if (response.status === 401) startAuthRedirect()
+
+		throw error
 	}
-	if (!response.ok) throw new ApiError(response.status, path)
 
 	const data: unknown =
 		response.status === 204 ? undefined : await response.json()
@@ -76,6 +88,29 @@ function getClientDate() {
 	return `${year}-${month}-${day}`
 }
 
+async function safeParse(response: Response): Promise<unknown> {
+	// Safely read the response and return whatever we got.
+	//
+	// First read as text (bc not guaranteed to contain valid JSON),
+	// then as JSON if applicable
+	try {
+		const text = await response.text()
+		if (text.trim().length === 0) return undefined
+
+		const contentType = response.headers.get('Content-Type')?.toLowerCase()
+		if (!contentType?.includes('json')) return text
+
+		try {
+			return JSON.parse(text) as unknown
+		} catch {
+			return text
+		}
+	} catch {
+		return undefined
+	}
+}
+
+let isAuthRedirectInFlight = false
 function startAuthRedirect() {
 	if (isAuthRedirectInFlight) return
 
