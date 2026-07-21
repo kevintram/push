@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Circle } from 'lucide-react'
 
 import { colors } from '~/styles/colors.stylex'
-import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	item: {
@@ -82,7 +82,7 @@ export function DropdownMenuRadioItem({
 			{...props}
 		>
 			<Menu.RadioItemIndicator {...stylex.props(styles.indicator)}>
-				<Circle aria-hidden fill='currentColor' size={8} />
+				<Circle aria-hidden fill='currentColor' size={iconSizes.xs} />
 			</Menu.RadioItemIndicator>
 			<div {...stylex.props(styles.innerContainer)}>
 				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}

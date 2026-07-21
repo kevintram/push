@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { ChevronRight } from 'lucide-react'
 
 import { colors } from '~/styles/colors.stylex'
-import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 export interface DropdownMenuSubTriggerProps extends Omit<
 	React.ComponentProps<typeof Menu.SubmenuTrigger>,
@@ -60,7 +60,7 @@ export function DropdownMenuSubTrigger({
 			{children}
 			<ChevronRight
 				aria-hidden
-				size={16}
+				size={iconSizes.md}
 				{...stylex.props(styles.icon)}
 			/>
 		</Menu.SubmenuTrigger>

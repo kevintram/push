@@ -8,7 +8,7 @@ import {
 	ContextMenuItem,
 	ContextMenuTrigger,
 } from '~/components/ui'
-import { spacing } from '~/styles/tokens.stylex'
+import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 import { type TopicWithChildren } from '../../types/topic.types'
 
@@ -32,7 +32,7 @@ const styles = stylex.create({
 		flexDirection: 'column',
 	},
 	children: {
-		gap: spacing.xs,
+		// gap: spacing.xs,
 
 		display: 'flex',
 		flexDirection: 'column',
@@ -72,7 +72,7 @@ export function TopicLink({
 						disabled={isAddingTopic}
 						onClick={() => onAddSubtopic(id)}
 					>
-						<Plus aria-hidden='true' size={16} />
+						<Plus aria-hidden='true' size={iconSizes.md} />
 						Add subtopic
 					</ContextMenuItem>
 					<ContextMenuItem
@@ -81,7 +81,7 @@ export function TopicLink({
 							onDeleteTopic({ children, id, parentId, title })
 						}
 					>
-						<Trash2 aria-hidden='true' size={16} />
+						<Trash2 aria-hidden='true' size={iconSizes.md} />
 						Delete
 					</ContextMenuItem>
 				</ContextMenuContent>

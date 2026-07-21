@@ -3,7 +3,7 @@ import * as stylex from '@stylexjs/stylex'
 import { Check } from 'lucide-react'
 
 import { colors } from '~/styles/colors.stylex'
-import { fontSizes, radii, spacing } from '~/styles/tokens.stylex'
+import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	item: {
@@ -82,7 +82,7 @@ export function DropdownMenuCheckboxItem({
 			{...props}
 		>
 			<Menu.CheckboxItemIndicator {...stylex.props(styles.indicator)}>
-				<Check aria-hidden size={16} />
+				<Check aria-hidden size={iconSizes.md} />
 			</Menu.CheckboxItemIndicator>
 			<div {...stylex.props(styles.innerContainer)}>
 				{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}

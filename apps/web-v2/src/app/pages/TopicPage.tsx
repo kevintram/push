@@ -21,7 +21,12 @@ import { useUpdateTopic } from '~/modules/library/api/updateTopic'
 import { useCreateReviewCard } from '~/modules/reviews/api/createReviewCard'
 import { reviewCardQueries } from '~/modules/reviews/api/queries'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
-import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
+import {
+	fontSizes,
+	fontWeights,
+	iconSizes,
+	spacing,
+} from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
@@ -195,7 +200,10 @@ export function TopicPage() {
 											setIsDeleteDialogOpen(true)
 										}
 									>
-										<Trash2 aria-hidden='true' size={16} />
+										<Trash2
+											aria-hidden='true'
+											size={iconSizes.md}
+										/>
 										Delete
 									</DropdownMenuItem>
 								</DropdownMenuContent>
