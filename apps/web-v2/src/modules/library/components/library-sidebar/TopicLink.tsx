@@ -25,14 +25,14 @@ type TopicLinkProps = TopicWithChildren & {
 }
 
 const styles = stylex.create({
-	item: {
+	container: {
 		gap: spacing.xs,
 
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	children: {
-		// gap: spacing.xs,
+	childrenList: {
+		gap: spacing.xs,
 
 		display: 'flex',
 		flexDirection: 'column',
@@ -54,7 +54,7 @@ export function TopicLink({
 	const topicTitle = title.trim() || 'Untitled'
 
 	return (
-		<li {...stylex.props(styles.item)}>
+		<li {...stylex.props(styles.container)}>
 			<ContextMenu>
 				<ContextMenuTrigger
 					render={
@@ -88,7 +88,7 @@ export function TopicLink({
 			</ContextMenu>
 
 			{children && children.length > 0 ? (
-				<ul {...stylex.props(styles.children)}>
+				<ul {...stylex.props(styles.childrenList)}>
 					{children.map(child => (
 						<TopicLink
 							key={child.id}
