@@ -221,13 +221,19 @@ if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
     echo "Updated apps/site/.env"
 fi
 
-# Create root .env if missing (test user credentials, no vars to update)
+# Link root .env to the shared test-account credentials template
 ROOT_ENV="$ROOT_DIR/.env"
-if [ ! -f "$ROOT_ENV" ]; then
-    if [ -f "$PARENT_DIR/root.env.local" ]; then
-        cp "$PARENT_DIR/root.env.local" "$ROOT_ENV"
-        echo "Created .env"
-    else
-        echo "WARNING: Template root.env.local not found in $PARENT_DIR and .env does not exist"
+ROOT_ENV_TEMPLATE="$PARENT_DIR/root.env.local"
+ROOT_ENV_LINK="../root.env.local"
+if [ ! -f "$ROOT_ENV_TEMPLATE" ]; then
+    echo "WARNING: Template root.env.local not found in $PARENT_DIR"
+elif [ -L "$ROOT_ENV" ]; then
+    if [ "$(readlink "$ROOT_ENV")" != "$ROOT_ENV_LINK" ]; then
+        echo "WARNING: $ROOT_ENV points to an unexpected target; leaving it unchanged"
     fi
+elif [ -e "$ROOT_ENV" ]; then
+    echo "WARNING: $ROOT_ENV exists and is not a symlink; leaving it unchanged"
+else
+    ln -s "$ROOT_ENV_LINK" "$ROOT_ENV"
+    echo "Created .env symlink"
 fi
