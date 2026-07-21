@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -70,7 +70,6 @@ const styles = stylex.create({
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
 	const navigate = useNavigate()
-	const queryClient = useQueryClient()
 	const shouldFocusTitle = useLocation({
 		select: location =>
 			(
@@ -145,17 +144,11 @@ export function TopicPage() {
 			setIsDeleteDialogOpen(false)
 			if (topic.parentId === undefined) {
 				await navigate({ to: '/library' })
-				queryClient.removeQueries({
-					queryKey: topicQueries.detail(topicId).queryKey,
-				})
 				return
 			}
 			await navigate({
 				to: '/library/$topicId',
 				params: { topicId: topic.parentId },
-			})
-			queryClient.removeQueries({
-				queryKey: topicQueries.detail(topicId).queryKey,
 			})
 		} catch {
 			toast.error('Failed to delete topic')

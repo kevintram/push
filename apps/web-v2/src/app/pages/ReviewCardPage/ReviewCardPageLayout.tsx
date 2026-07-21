@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import {
 	Link,
 	Outlet,
@@ -25,7 +25,6 @@ import {
 } from '~/components/ui'
 import { topicQueries } from '~/modules/library/api/queries'
 import { useDeleteReviewCard } from '~/modules/reviews/api/deleteReviewCard'
-import { reviewCardQueries } from '~/modules/reviews/api/queries'
 import { colors } from '~/styles/colors.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
@@ -71,7 +70,6 @@ export function ReviewCardPageLayout() {
 	})
 
 	const { data: topic } = useQuery(topicQueries.detail(topicId))
-	const queryClient = useQueryClient()
 	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
 		useDeleteReviewCard()
 	const navigate = useNavigate()
@@ -92,9 +90,6 @@ export function ReviewCardPageLayout() {
 			await navigate({
 				to: '/library/$topicId',
 				params: { topicId },
-			})
-			queryClient.removeQueries({
-				queryKey: reviewCardQueries.detail(reviewCardId).queryKey,
 			})
 		} catch {
 			toast.error('Failed to delete review card')

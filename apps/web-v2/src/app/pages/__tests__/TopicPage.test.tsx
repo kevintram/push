@@ -28,7 +28,6 @@ vi.mock('@tanstack/react-router', () => ({
 }))
 vi.mock('@tanstack/react-query', () => ({
 	queryOptions: <T,>(options: T) => options,
-	useQueryClient: () => ({ removeQueries: vi.fn() }),
 	useQuery: ({ queryKey }: { queryKey: Array<string> }) => ({
 		data: queryKey[0] === 'topics' ? topic : [],
 	}),
