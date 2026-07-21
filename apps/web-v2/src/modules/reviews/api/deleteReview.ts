@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import * as v from 'valibot'
 
 import { apiFetch } from '~/utils/apiFetch'
 
@@ -6,13 +7,9 @@ import type { Review } from '../types/review.types'
 import { reviewCardQueries, reviewQueries } from './queries'
 
 export async function deleteReview(id: string): Promise<void> {
-	const url = new URL(import.meta.env.VITE_API_URL + `/reviews/${id}/`)
-	const response = await apiFetch(url, {
+	await apiFetch(v.unknown(), `/reviews/${id}/`, {
 		method: 'DELETE',
 	})
-	if (!response.ok) {
-		throw new Error(`Failed to delete review ${id}: ${response.status}`)
-	}
 }
 
 export function useDeleteReview() {

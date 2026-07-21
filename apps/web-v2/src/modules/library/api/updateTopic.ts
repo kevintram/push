@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import * as v from 'valibot'
 
 import { apiFetch } from '~/utils/apiFetch'
 
@@ -17,16 +16,10 @@ export async function updateTopic({
 	id,
 	...updates
 }: UpdateTopicInput): Promise<Topic> {
-	const url = new URL(import.meta.env.VITE_API_URL + `/topics/${id}/`)
-	const response = await apiFetch(url, {
+	return apiFetch(TopicSchema, `/topics/${id}/`, {
 		method: 'PATCH',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(updates),
+		body: updates,
 	})
-	if (!response.ok) {
-		throw new Error(`Failed to update topic ${id}: ${response.status}`)
-	}
-	return v.parse(TopicSchema, await response.json())
 }
 
 export function useUpdateTopic() {

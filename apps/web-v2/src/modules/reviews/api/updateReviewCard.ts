@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import * as v from 'valibot'
 
 import { apiFetch } from '~/utils/apiFetch'
 
@@ -18,18 +17,10 @@ export async function updateReviewCard({
 	id,
 	...updates
 }: UpdateReviewCardInput): Promise<ReviewCard> {
-	const url = new URL(import.meta.env.VITE_API_URL + `/review-cards/${id}/`)
-	const response = await apiFetch(url, {
+	return apiFetch(ReviewCardSchema, `/review-cards/${id}/`, {
 		method: 'PATCH',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(updates),
+		body: updates,
 	})
-	if (!response.ok) {
-		throw new Error(
-			`Failed to update review card ${id}: ${response.status}`,
-		)
-	}
-	return v.parse(ReviewCardSchema, await response.json())
 }
 
 export function useUpdateReviewCard() {

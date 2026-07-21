@@ -1,4 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
+import * as v from 'valibot'
 
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
@@ -39,9 +40,7 @@ export function SettingsPage() {
 	}
 
 	const handleFetch = async () => {
-		const response = await apiFetch(`${apiUrl}/reviews`)
-
-		const data = await response.json()
+		const data = await apiFetch(v.unknown(), '/reviews/')
 		console.log(data)
 	}
 

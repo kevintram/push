@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import * as v from 'valibot'
 
 import { reviewCardQueries, reviewQueries } from '~/modules/reviews/api/queries'
 import type { Review, ReviewCard } from '~/modules/reviews/types/review.types'
@@ -38,13 +39,9 @@ function collectTopicIds(topic: TopicWithChildren, ids: Set<string>): void {
 }
 
 export async function deleteTopic(id: string): Promise<void> {
-	const url = new URL(import.meta.env.VITE_API_URL + `/topics/${id}/`)
-	const response = await apiFetch(url, {
+	await apiFetch(v.unknown(), `/topics/${id}/`, {
 		method: 'DELETE',
 	})
-	if (!response.ok) {
-		throw new Error(`Failed to delete topic ${id}: ${response.status}`)
-	}
 }
 
 export function useDeleteTopic() {
