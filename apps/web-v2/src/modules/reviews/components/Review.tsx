@@ -68,11 +68,11 @@ const styles = stylex.create({
 		borderRadius: radii.full,
 		alignItems: 'center',
 		backgroundColor: colors.bgFillBrand,
-		blockSize: iconSizes.sm,
+		blockSize: iconSizes.md,
 		color: colors.textBrandOnBgFill,
 		display: 'flex',
 		flexShrink: 0,
-		inlineSize: iconSizes.sm,
+		inlineSize: iconSizes.md,
 		justifyContent: 'center',
 	},
 	description: {
@@ -102,10 +102,10 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	notesIndicator: {
-		blockSize: iconSizes.sm,
+		blockSize: iconSizes.md,
 		color: colors.textSecondary,
 		flexShrink: 0,
-		inlineSize: iconSizes.sm,
+		inlineSize: iconSizes.md,
 	},
 	footer: {
 		gridColumnEnd: 'footer',
@@ -136,8 +136,8 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	durabilityIcon: {
-		blockSize: iconSizes.sm,
-		inlineSize: iconSizes.sm,
+		blockSize: iconSizes.md,
+		inlineSize: iconSizes.md,
 	},
 	positiveChange: { color: colors.textSuccess },
 	negativeChange: { color: colors.textDanger },
@@ -284,19 +284,19 @@ export function Review({ review }: { review: ReviewModel }) {
 							{review.rating === null ? (
 								<RatingIcon
 									aria-hidden='true'
-									size={iconSizes.sm}
+									size={iconSizes.md}
 								/>
 							) : (
 								<span {...stylex.props(styles.ratingBadge)}>
 									<RatingIcon
 										aria-hidden='true'
-										size={iconSizes.xs}
+										size={iconSizes.sm}
 									/>
 								</span>
 							)}
 							<ChevronDown
 								aria-hidden='true'
-								size={iconSizes.sm}
+								size={iconSizes.md}
 							/>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent
@@ -317,7 +317,7 @@ export function Review({ review }: { review: ReviewModel }) {
 									prefix={
 										<Circle
 											aria-hidden='true'
-											size={iconSizes.sm}
+											size={iconSizes.md}
 										/>
 									}
 								>
@@ -332,7 +332,7 @@ export function Review({ review }: { review: ReviewModel }) {
 											prefix={
 												<Icon
 													aria-hidden='true'
-													size={iconSizes.sm}
+													size={iconSizes.md}
 												/>
 											}
 										>
@@ -389,7 +389,7 @@ export function Review({ review }: { review: ReviewModel }) {
 							>
 								<Ellipsis
 									aria-hidden='true'
-									size={iconSizes.sm}
+									size={iconSizes.md}
 								/>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent
@@ -403,7 +403,7 @@ export function Review({ review }: { review: ReviewModel }) {
 								>
 									<Trash2
 										aria-hidden='true'
-										size={iconSizes.sm}
+										size={iconSizes.md}
 									/>
 									Delete
 								</DropdownMenuItem>

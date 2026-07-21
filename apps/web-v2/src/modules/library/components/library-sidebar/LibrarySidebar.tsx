@@ -118,7 +118,7 @@ export function LibrarySidebar() {
 					variant='ghost'
 					onClick={() => void addTopic(undefined)}
 				>
-					<Plus aria-hidden='true' size={iconSizes.sm} />
+					<Plus aria-hidden='true' size={iconSizes.md} />
 				</Button.Icon>
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>

@@ -84,7 +84,7 @@ export function ReviewsSidebar() {
 						disabled={isPending}
 						onClick={() => void addReview()}
 					>
-						<Plus aria-hidden='true' size={iconSizes.sm} />
+						<Plus aria-hidden='true' size={iconSizes.md} />
 					</Button.Icon>
 				</div>
 			</div>

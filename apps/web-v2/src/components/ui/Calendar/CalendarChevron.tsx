@@ -9,7 +9,7 @@ import {
 import { iconSizes } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
-	icon: { blockSize: iconSizes.sm, inlineSize: iconSizes.sm },
+	icon: { blockSize: iconSizes.md, inlineSize: iconSizes.md },
 })
 
 type CalendarChevronProps = React.ComponentProps<'svg'> & {
