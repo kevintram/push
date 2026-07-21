@@ -4,7 +4,7 @@ import { apiFetch } from '~/utils/apiFetch'
 
 import { reviewCardQueries, reviewQueries } from './queries'
 
-export async function deleteReviewCard(id: number | string): Promise<void> {
+export async function deleteReviewCard(id: string): Promise<void> {
 	const url = new URL(import.meta.env.VITE_API_URL + `/review-cards/${id}/`)
 	const response = await apiFetch(url, {
 		method: 'DELETE',

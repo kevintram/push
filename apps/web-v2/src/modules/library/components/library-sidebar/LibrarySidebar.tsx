@@ -54,7 +54,7 @@ const styles = stylex.create({
 
 function containsTopic(topic: TopicDeleteTarget, topicId?: string): boolean {
 	if (topicId === undefined) return false
-	if (String(topic.id) === topicId) return true
+	if (topic.id === topicId) return true
 	return topic.children?.some(child => containsTopic(child, topicId)) ?? false
 }
 
@@ -68,12 +68,12 @@ export function LibrarySidebar() {
 		useDeleteTopic()
 	const [topicToDelete, setTopicToDelete] = useState<TopicDeleteTarget>()
 
-	const addTopic = async (parentId?: number) => {
+	const addTopic = async (parentId?: string) => {
 		try {
 			const topic = await createTopic({ parentId })
 			await navigate({
 				to: '/library/$topicId',
-				params: { topicId: String(topic.id) },
+				params: { topicId: topic.id },
 				state: previous => ({
 					...previous,
 					focusTopicTitle: true,
@@ -98,7 +98,7 @@ export function LibrarySidebar() {
 			}
 			await navigate({
 				to: '/library/$topicId',
-				params: { topicId: String(topicToDelete.parentId) },
+				params: { topicId: topicToDelete.parentId },
 			})
 		} catch {
 			toast.error('Failed to delete topic')

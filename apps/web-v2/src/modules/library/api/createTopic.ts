@@ -8,7 +8,7 @@ import type { Topic } from '../types/topic.types'
 import { topicQueries } from './queries'
 
 export type CreateTopicInput = {
-	parentId?: number
+	parentId?: string
 }
 
 export async function createTopic({
@@ -19,7 +19,7 @@ export async function createTopic({
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(
-			parentId === undefined ? {} : { parent_id: parentId },
+			parentId === undefined ? {} : { parent_id: Number(parentId) },
 		),
 	})
 	if (!response.ok) {
@@ -34,7 +34,7 @@ export function useCreateTopic() {
 		mutationFn: createTopic,
 		onSuccess: topic => {
 			queryClient.setQueryData(
-				topicQueries.detail(String(topic.id)).queryKey,
+				topicQueries.detail(topic.id).queryKey,
 				topic,
 			)
 			void queryClient.invalidateQueries({

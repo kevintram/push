@@ -28,16 +28,16 @@ describe('getTopics', () => {
 
 		await expect(fetchTopics()).resolves.toEqual([
 			{
-				id: 1,
+				id: '1',
 				title: 'Root',
 				body: '',
 				parentId: undefined,
 				children: [
 					{
-						id: 2,
+						id: '2',
 						title: 'Child',
 						body: '',
-						parentId: 1,
+						parentId: '1',
 						children: [],
 					},
 				],

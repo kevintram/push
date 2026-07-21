@@ -20,7 +20,7 @@ export type TopicDeleteTarget = Pick<
 type TopicLinkProps = TopicWithChildren & {
 	isAddingTopic: boolean
 	isDeletingTopic: boolean
-	onAddSubtopic: (parentId: number) => void
+	onAddSubtopic: (parentId: string) => void
 	onDeleteTopic: (topic: TopicDeleteTarget) => void
 }
 
@@ -60,7 +60,7 @@ export function TopicLink({
 					render={
 						<SidebarLink
 							to='/library/$topicId'
-							params={{ topicId: String(id) }}
+							params={{ topicId: id }}
 							text={topicTitle}
 						/>
 					}

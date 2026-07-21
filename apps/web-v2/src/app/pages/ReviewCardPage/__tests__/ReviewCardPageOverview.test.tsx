@@ -22,8 +22,8 @@ vi.mock('~/modules/reviews/components/ReviewsSidebar', () => ({
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }))
 
 const card = {
-	id: 3,
-	topic_id: 1,
+	id: '3',
+	topic_id: '1',
 	primary_text: 'Question',
 	secondary_text: 'Answer',
 	notes: 'Notes',
@@ -48,7 +48,10 @@ describe('ReviewCardPageOverview editors', () => {
 		const editor = screen.getByLabelText(label)
 		fireEvent.change(editor, { target: { value: 'Edited' } })
 		await act(async () => fireEvent.blur(editor))
-		expect(mutateAsync).toHaveBeenCalledWith({ id: 3, [field]: 'Edited' })
+		expect(mutateAsync).toHaveBeenCalledWith({
+			id: '3',
+			[field]: 'Edited',
+		})
 	})
 
 	it('debounces persistence while updating text immediately', async () => {
@@ -59,7 +62,7 @@ describe('ReviewCardPageOverview editors', () => {
 		expect(mutateAsync).not.toHaveBeenCalled()
 		await act(async () => vi.advanceTimersByTime(1000))
 		expect(mutateAsync).toHaveBeenCalledWith({
-			id: 3,
+			id: '3',
 			primary_text: 'Edited',
 		})
 	})
@@ -71,7 +74,7 @@ describe('ReviewCardPageOverview editors', () => {
 		})
 		await act(async () => unmount())
 		expect(mutateAsync).toHaveBeenCalledWith({
-			id: 3,
+			id: '3',
 			notes: 'Pending notes',
 		})
 	})

@@ -23,7 +23,7 @@ export async function fetchTopics(): Promise<Array<TopicWithChildren>> {
 	return treeify(parsed.output)
 }
 
-export async function fetchTopic(topicId: number | string): Promise<Topic> {
+export async function fetchTopic(topicId: string): Promise<Topic> {
 	const url = new URL(import.meta.env.VITE_API_URL + `/topics/${topicId}`)
 	const response = await apiFetch(url)
 	if (!response.ok) {
@@ -40,7 +40,7 @@ export async function fetchTopic(topicId: number | string): Promise<Topic> {
  * @returns topic tree
  */
 function treeify(topics: Array<Topic>): Array<TopicWithChildren> {
-	const topicById = new Map<number, TopicWithChildren>()
+	const topicById = new Map<string, TopicWithChildren>()
 
 	for (const topic of topics) {
 		topicById.set(topic.id, {

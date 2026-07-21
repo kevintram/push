@@ -35,7 +35,7 @@ vi.mock('@tanstack/react-query', () => ({
 }))
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }))
 
-const topic = { id: 1, title: 'Title', body: 'Body' }
+const topic = { id: '1', title: 'Title', body: 'Body' }
 
 describe('TopicPage editors', () => {
 	beforeEach(() => {
@@ -55,7 +55,10 @@ describe('TopicPage editors', () => {
 		expect(title).toHaveValue('New title')
 		expect(mutateAsync).not.toHaveBeenCalled()
 		await act(async () => vi.advanceTimersByTime(1000))
-		expect(mutateAsync).toHaveBeenCalledWith({ id: 1, title: 'New title' })
+		expect(mutateAsync).toHaveBeenCalledWith({
+			id: '1',
+			title: 'New title',
+		})
 	})
 
 	it('flushes the body save on blur', async () => {
@@ -63,7 +66,7 @@ describe('TopicPage editors', () => {
 		const body = screen.getByLabelText('Topic body')
 		fireEvent.change(body, { target: { value: 'New body' } })
 		await act(async () => fireEvent.blur(body))
-		expect(mutateAsync).toHaveBeenCalledWith({ id: 1, body: 'New body' })
+		expect(mutateAsync).toHaveBeenCalledWith({ id: '1', body: 'New body' })
 	})
 
 	it('keeps local text and reports failed saves', async () => {

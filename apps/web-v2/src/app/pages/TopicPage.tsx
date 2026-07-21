@@ -130,7 +130,7 @@ export function TopicPage() {
 			await navigate({
 				to: '/review-cards/$reviewCardId',
 				params: {
-					reviewCardId: String(reviewCard.id),
+					reviewCardId: reviewCard.id,
 				},
 			})
 		} catch {
@@ -152,7 +152,7 @@ export function TopicPage() {
 			}
 			await navigate({
 				to: '/library/$topicId',
-				params: { topicId: String(topic.parentId) },
+				params: { topicId: topic.parentId },
 			})
 			queryClient.removeQueries({
 				queryKey: topicQueries.detail(topicId).queryKey,

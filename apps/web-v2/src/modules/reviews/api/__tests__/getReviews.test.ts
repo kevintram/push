@@ -18,7 +18,7 @@ describe('fetchReviews', () => {
 		vi.stubGlobal('fetch', fetchMock)
 
 		await expect(
-			fetchReviews({ reviewCardId: 42, order: 'desc' }),
+			fetchReviews({ reviewCardId: '42', order: 'desc' }),
 		).resolves.toEqual([])
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/reviews/?review_card_id=42&order=desc'),

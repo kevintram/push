@@ -1,9 +1,11 @@
 import * as v from 'valibot'
 
+import { IdSchema } from '~/types/id.schema'
+
 export const TopicSchema = v.pipe(
 	v.object({
-		id: v.number(),
-		parent_id: v.nullable(v.number()),
+		id: IdSchema,
+		parent_id: v.nullable(IdSchema),
 		title: v.string(),
 		body: v.string(),
 	}),

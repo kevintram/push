@@ -9,7 +9,7 @@ export const Route = createFileRoute('/review-cards/$reviewCardId')({
 		const reviewCard = await context.queryClient.ensureQueryData(
 			reviewCardQueries.detail(params.reviewCardId),
 		)
-		const topicId = String(reviewCard.topic_id)
+		const topicId = reviewCard.topic_id
 
 		await context.queryClient.ensureQueryData(topicQueries.detail(topicId))
 

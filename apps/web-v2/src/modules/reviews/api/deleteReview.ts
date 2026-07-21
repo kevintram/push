@@ -5,7 +5,7 @@ import { apiFetch } from '~/utils/apiFetch'
 import type { Review } from '../types/review.types'
 import { reviewCardQueries, reviewQueries } from './queries'
 
-export async function deleteReview(id: number | string): Promise<void> {
+export async function deleteReview(id: string): Promise<void> {
 	const url = new URL(import.meta.env.VITE_API_URL + `/reviews/${id}/`)
 	const response = await apiFetch(url, {
 		method: 'DELETE',
@@ -22,7 +22,7 @@ export function useDeleteReview() {
 		onSuccess: (_, id) => {
 			queryClient.setQueriesData<Array<Review>>(
 				{ queryKey: reviewQueries.all },
-				reviews => reviews?.filter(review => review.id !== Number(id)),
+				reviews => reviews?.filter(review => review.id !== id),
 			)
 			void queryClient.invalidateQueries({
 				queryKey: reviewCardQueries.lists(),

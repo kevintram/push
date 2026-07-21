@@ -29,8 +29,8 @@ describe('updateReviewCard', () => {
 			)
 		vi.stubGlobal('fetch', fetchMock)
 		await expect(
-			updateReviewCard({ id: 8, notes: 'Notes' }),
-		).resolves.toEqual(response)
+			updateReviewCard({ id: '8', notes: 'Notes' }),
+		).resolves.toEqual({ ...response, id: '8', topic_id: '7' })
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/review-cards/8/'),
 			expect.objectContaining({
@@ -47,7 +47,7 @@ describe('updateReviewCard', () => {
 			'fetch',
 			vi.fn().mockResolvedValue(new Response('', { status: 404 })),
 		)
-		await expect(updateReviewCard({ id: 8, notes: 'x' })).rejects.toThrow(
+		await expect(updateReviewCard({ id: '8', notes: 'x' })).rejects.toThrow(
 			'404',
 		)
 	})
@@ -69,11 +69,11 @@ describe('updateReviewCard', () => {
 			</QueryClientProvider>
 		)
 		const { result } = renderHook(useUpdateReviewCard, { wrapper })
-		result.current.mutate({ id: 8, notes: 'Notes' })
+		result.current.mutate({ id: '8', notes: 'Notes' })
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 		expect(
-			client.getQueryData(reviewCardQueries.detail(8).queryKey),
-		).toEqual(response)
+			client.getQueryData(reviewCardQueries.detail('8').queryKey),
+		).toEqual({ ...response, id: '8', topic_id: '7' })
 		expect(invalidate).toHaveBeenCalledWith({
 			queryKey: reviewCardQueries.lists(),
 		})

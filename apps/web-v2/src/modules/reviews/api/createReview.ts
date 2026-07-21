@@ -8,7 +8,7 @@ import type { Review } from '../types/review.types'
 import { reviewQueries } from './queries'
 
 export type CreateReviewInput = {
-	reviewCardId: number | string
+	reviewCardId: string
 }
 
 export async function createReview({

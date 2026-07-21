@@ -11,7 +11,7 @@ export async function fetchReviews({
 }: ReviewFilters): Promise<Array<Review>> {
 	const url = new URL(import.meta.env.VITE_API_URL + '/reviews/')
 	url.search = new URLSearchParams({
-		review_card_id: String(reviewCardId),
+		review_card_id: reviewCardId,
 		order,
 	}).toString()
 

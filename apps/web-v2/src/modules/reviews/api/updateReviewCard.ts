@@ -8,7 +8,7 @@ import type { ReviewCard } from '../types/review.types'
 import { reviewCardQueries } from './queries'
 
 export type UpdateReviewCardInput = {
-	id: number | string
+	id: string
 	primary_text?: string
 	secondary_text?: string
 	notes?: string

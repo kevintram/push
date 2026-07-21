@@ -24,9 +24,9 @@ describe('createTopic', () => {
 		)
 		vi.stubGlobal('fetch', fetchMock)
 
-		await expect(createTopic({ parentId: 7 })).resolves.toMatchObject({
-			id: 8,
-			parentId: 7,
+		await expect(createTopic({ parentId: '7' })).resolves.toMatchObject({
+			id: '8',
+			parentId: '7',
 		})
 		expect(fetchMock).toHaveBeenCalledWith(
 			new URL('http://test-api/topics/'),

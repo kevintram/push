@@ -23,9 +23,9 @@ describe('updateTopic', () => {
 			)
 		vi.stubGlobal('fetch', fetchMock)
 		await expect(
-			updateTopic({ id: 7, title: 'Edited' }),
+			updateTopic({ id: '7', title: 'Edited' }),
 		).resolves.toMatchObject({
-			id: 7,
+			id: '7',
 			title: 'Edited',
 		})
 		expect(fetchMock).toHaveBeenCalledWith(
@@ -44,7 +44,7 @@ describe('updateTopic', () => {
 			'fetch',
 			vi.fn().mockResolvedValue(new Response('', { status: 500 })),
 		)
-		await expect(updateTopic({ id: 7, body: 'x' })).rejects.toThrow('500')
+		await expect(updateTopic({ id: '7', body: 'x' })).rejects.toThrow('500')
 	})
 
 	it('updates the normalized detail cache and invalidates lists', async () => {
@@ -66,7 +66,7 @@ describe('updateTopic', () => {
 			</QueryClientProvider>
 		)
 		const { result } = renderHook(useUpdateTopic, { wrapper })
-		result.current.mutate({ id: 7, title: 'Edited' })
+		result.current.mutate({ id: '7', title: 'Edited' })
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 		expect(
 			client.getQueryData(topicQueries.detail('7').queryKey),

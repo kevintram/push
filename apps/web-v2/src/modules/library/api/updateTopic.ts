@@ -8,7 +8,7 @@ import type { Topic } from '../types/topic.types'
 import { topicQueries } from './queries'
 
 export type UpdateTopicInput = {
-	id: number | string
+	id: string
 	title?: string
 	body?: string
 }
@@ -35,7 +35,7 @@ export function useUpdateTopic() {
 		mutationFn: updateTopic,
 		onSuccess: topic => {
 			queryClient.setQueryData(
-				topicQueries.detail(String(topic.id)).queryKey,
+				topicQueries.detail(topic.id).queryKey,
 				topic,
 			)
 			void queryClient.invalidateQueries({

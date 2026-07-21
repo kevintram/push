@@ -20,10 +20,10 @@ describe('deleteReview', () => {
 			.mockResolvedValue(new Response('{}', { status: 200 }))
 		vi.stubGlobal('fetch', fetchMock)
 		const client = new QueryClient()
-		const listQuery = reviewQueries.list({ reviewCardId: 8 })
+		const listQuery = reviewQueries.list({ reviewCardId: '8' })
 		client.setQueryData(listQuery.queryKey, [
-			{ id: 1 },
-			{ id: 2 },
+			{ id: '1' },
+			{ id: '2' },
 		] as Array<Review>)
 		const invalidate = vi.spyOn(client, 'invalidateQueries')
 		const wrapper = ({ children }: PropsWithChildren) => (
@@ -33,7 +33,7 @@ describe('deleteReview', () => {
 		)
 		const { result } = renderHook(useDeleteReview, { wrapper })
 
-		result.current.mutate(1)
+		result.current.mutate('1')
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
 		expect(fetchMock).toHaveBeenCalledWith(
@@ -44,7 +44,7 @@ describe('deleteReview', () => {
 			}),
 		)
 		expect(client.getQueryData<Array<Review>>(listQuery.queryKey)).toEqual([
-			{ id: 2 },
+			{ id: '2' },
 		])
 		expect(invalidate).toHaveBeenCalledWith({
 			queryKey: reviewCardQueries.lists(),
@@ -57,6 +57,6 @@ describe('deleteReview', () => {
 			'fetch',
 			vi.fn().mockResolvedValue(new Response('', { status: 404 })),
 		)
-		await expect(deleteReview(1)).rejects.toThrow('404')
+		await expect(deleteReview('1')).rejects.toThrow('404')
 	})
 })

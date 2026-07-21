@@ -14,7 +14,7 @@ export async function fetchReviewCards(
 			url.searchParams.set('due', filters.due)
 		}
 		if (filters.topicId !== undefined) {
-			url.searchParams.set('topic_id', String(filters.topicId))
+			url.searchParams.set('topic_id', filters.topicId)
 		}
 	}
 
@@ -29,7 +29,7 @@ export async function fetchReviewCards(
 }
 
 export async function fetchReviewCard(
-	reviewCardId: number | string,
+	reviewCardId: string,
 ): Promise<ReviewCard> {
 	const url = new URL(
 		import.meta.env.VITE_API_URL + `/review-cards/${reviewCardId}/`,

@@ -8,7 +8,7 @@ import type { ReviewCard } from '../types/review.types'
 import { reviewCardQueries } from './queries'
 
 export type CreateReviewCardInput = {
-	topicId: number | string
+	topicId: string
 	type?: 'practice' | 'flashcard'
 }
 

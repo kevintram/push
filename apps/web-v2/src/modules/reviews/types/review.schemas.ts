@@ -1,16 +1,18 @@
 import * as v from 'valibot'
 
+import { IdSchema } from '~/types/id.schema'
+
 export const ReviewCardSchema = v.object({
-	id: v.number(),
-	topic_id: v.number(),
+	id: IdSchema,
+	topic_id: IdSchema,
 	primary_text: v.string(),
 	secondary_text: v.string(),
 	notes: v.string(),
 })
 
 export const ReviewSchema = v.object({
-	id: v.number(),
-	review_card_id: v.number(),
+	id: IdSchema,
+	review_card_id: IdSchema,
 	rating: v.nullable(v.picklist(['miss', 'hard', 'good', 'easy'])),
 	description: v.string(),
 	notes: v.string(),
@@ -20,8 +22,8 @@ export const ReviewSchema = v.object({
 	inserted_at: v.string(),
 	updated_at: v.string(),
 	review_card: v.object({
-		id: v.number(),
-		topic_id: v.number(),
+		id: IdSchema,
+		topic_id: IdSchema,
 		type: v.picklist(['practice', 'flashcard']),
 		primary_text: v.string(),
 		secondary_text: v.string(),
