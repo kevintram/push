@@ -12,7 +12,6 @@ import {
 	X,
 } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { toast } from 'sonner'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
@@ -157,45 +156,36 @@ const ratings = {
 } as const
 
 export function Review({ review }: { review: ReviewModel }) {
-	const { isPending, mutateAsync } = useUpdateReview()
-	const { isPending: isDeleting, mutateAsync: deleteReview } =
-		useDeleteReview()
+	const { isPending, mutate: updateReview } = useUpdateReview()
+	const { isPending: isDeleting, mutate: deleteReview } = useDeleteReview()
 	const [isOpen, setIsOpen] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const updateRating = useCallback(
-		async (rating: Rating | null) => {
+		(rating: Rating | null) => {
 			const completionMatchesRating =
 				rating === null
 					? review.completed_at === null
 					: review.completed_at !== null
 			if (rating === review.rating && completionMatchesRating) return
-			try {
-				const completedAt =
-					rating === null
-						? null
-						: ((review.completed_at as DateString | null) ??
-							getTodayAsString())
-				await mutateAsync({
-					id: review.id,
-					rating,
-					completed_at: completedAt,
-				})
-			} catch {
-				toast.error('Failed to update review rating')
-			}
+			const completedAt =
+				rating === null
+					? null
+					: ((review.completed_at as DateString | null) ??
+						getTodayAsString())
+			updateReview({
+				id: review.id,
+				rating,
+				completed_at: completedAt,
+			})
 		},
-		[mutateAsync, review.completed_at, review.id, review.rating],
+		[review.completed_at, review.id, review.rating, updateReview],
 	)
 	const save = useCallback(
-		async (field: 'description' | 'notes', value: string) => {
+		(field: 'description' | 'notes', value: string) => {
 			if (value === review[field]) return
-			try {
-				await mutateAsync({ id: review.id, [field]: value })
-			} catch {
-				toast.error(`Failed to update review ${field}`)
-			}
+			updateReview({ id: review.id, [field]: value })
 		},
-		[mutateAsync, review],
+		[review, updateReview],
 	)
 	const descriptionEditor = useAutoSave({
 		initialValue: review.description,
@@ -232,32 +222,27 @@ export function Review({ review }: { review: ReviewModel }) {
 			: styles.negativeChange
 
 	const updateDate = useCallback(
-		async (value: DateString | null) => {
-			try {
-				if (review.completed_at !== null) {
-					await mutateAsync({
-						id: review.id,
-						completed_at: value,
-						...(value === null ? { rating: null } : {}),
-					})
-				} else {
-					await mutateAsync({ id: review.id, scheduled_at: value })
-				}
-			} catch {
-				toast.error('Failed to update review date')
+		(value: DateString | null) => {
+			if (review.completed_at !== null) {
+				updateReview({
+					id: review.id,
+					completed_at: value,
+					...(value === null ? { rating: null } : {}),
+				})
+			} else {
+				updateReview({ id: review.id, scheduled_at: value })
 			}
 		},
-		[mutateAsync, review.completed_at, review.id],
+		[review.completed_at, review.id, updateReview],
 	)
 
-	const handleDelete = async () => {
-		try {
-			await deleteReview(review.id)
-			setIsDeleteDialogOpen(false)
-			setIsOpen(false)
-		} catch {
-			toast.error('Failed to delete review')
-		}
+	const handleDelete = () => {
+		deleteReview(review.id, {
+			onSuccess: () => {
+				setIsDeleteDialogOpen(false)
+				setIsOpen(false)
+			},
+		})
 	}
 
 	return (

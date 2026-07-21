@@ -11,8 +11,8 @@ import { routeTree } from '~/app/routeTree.gen'
 
 vi.mock('~/modules/reviews/api/getReviewCards', () => ({
 	fetchReviewCard: async () => ({
-		id: 3,
-		topic_id: 1,
+		id: '3',
+		topic_id: '1',
 		primary_text: 'Question',
 		secondary_text: 'Answer',
 		notes: 'Notes',
@@ -25,7 +25,7 @@ vi.mock('~/modules/reviews/api/getReviews', () => ({
 }))
 
 vi.mock('~/modules/library/api/getTopics', () => ({
-	fetchTopic: async () => ({ id: 1, title: 'Topic', body: '' }),
+	fetchTopic: async () => ({ id: '1', title: 'Topic', body: '' }),
 	fetchTopics: async () => [],
 }))
 

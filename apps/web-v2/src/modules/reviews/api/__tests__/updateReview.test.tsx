@@ -8,8 +8,8 @@ import { reviewCardQueries, reviewQueries } from '../queries'
 import { useUpdateReview } from '../updateReview'
 
 const updatedReview = {
-	id: 3,
-	review_card_id: 8,
+	id: '3',
+	review_card_id: '8',
 	rating: 'good',
 	description: 'Updated review',
 	notes: '',
@@ -19,8 +19,8 @@ const updatedReview = {
 	inserted_at: '2026-07-13T00:00:00Z',
 	updated_at: '2026-07-20T00:00:00Z',
 	review_card: {
-		id: 8,
-		topic_id: 7,
+		id: '8',
+		topic_id: '7',
 		type: 'practice',
 		primary_text: 'Question',
 		secondary_text: 'Answer',
@@ -37,6 +37,13 @@ const updatedReview = {
 	due_after: null,
 } satisfies Review
 
+const rawUpdatedReview = {
+	...updatedReview,
+	id: 3,
+	review_card_id: 8,
+	review_card: { ...updatedReview.review_card, id: 8, topic_id: 7 },
+}
+
 describe('useUpdateReview', () => {
 	beforeEach(() => vi.stubEnv('VITE_API_URL', 'http://test-api'))
 	afterEach(() => {
@@ -47,7 +54,7 @@ describe('useUpdateReview', () => {
 	function setup() {
 		vi.stubGlobal(
 			'fetch',
-			vi.fn().mockResolvedValue(Response.json(updatedReview)),
+			vi.fn().mockResolvedValue(Response.json(rawUpdatedReview)),
 		)
 		const client = new QueryClient()
 		const wrapper = ({ children }: PropsWithChildren) => (
@@ -63,7 +70,7 @@ describe('useUpdateReview', () => {
 		const { client, result } = setup()
 		const invalidate = vi.spyOn(client, 'invalidateQueries')
 
-		result.current.mutate({ id: 3, scheduled_at: '2026-07-21' })
+		result.current.mutate({ id: '3', scheduled_at: '2026-07-21' })
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
 		expect(invalidate).toHaveBeenCalledWith({
@@ -79,7 +86,7 @@ describe('useUpdateReview', () => {
 		const { client, result } = setup()
 		const invalidate = vi.spyOn(client, 'invalidateQueries')
 
-		result.current.mutate({ id: 3, rating: 'good' })
+		result.current.mutate({ id: '3', rating: 'good' })
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
 		expect(invalidate).toHaveBeenCalledWith({
@@ -93,13 +100,13 @@ describe('useUpdateReview', () => {
 
 	it('continues patching cached lists for non-date updates', async () => {
 		const { client, result } = setup()
-		const listQuery = reviewQueries.list({ reviewCardId: 8 })
+		const listQuery = reviewQueries.list({ reviewCardId: '8' })
 		client.setQueryData(listQuery.queryKey, [
 			{ ...updatedReview, description: 'Old review' },
 		])
 		const invalidate = vi.spyOn(client, 'invalidateQueries')
 
-		result.current.mutate({ id: 3, description: 'Updated review' })
+		result.current.mutate({ id: '3', description: 'Updated review' })
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
 		expect(client.getQueryData(listQuery.queryKey)).toEqual([updatedReview])

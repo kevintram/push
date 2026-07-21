@@ -1,8 +1,8 @@
 import type { DateString } from '~/types/date'
 
 export type ReviewCard = {
-	id: number
-	topic_id: number
+	id: string
+	topic_id: string
 	primary_text: string
 	secondary_text: string
 	notes: string
@@ -10,14 +10,14 @@ export type ReviewCard = {
 
 export type ReviewCardFilters = {
 	due?: 'late' | 'new' | DateString
-	topicId?: number | string
+	topicId?: string
 }
 
 export type Rating = 'miss' | 'hard' | 'good' | 'easy'
 
 export type Review = {
-	id: number
-	review_card_id: number
+	id: string
+	review_card_id: string
 	rating: Rating | null
 	description: string
 	notes: string
@@ -27,8 +27,8 @@ export type Review = {
 	inserted_at: string
 	updated_at: string
 	review_card: {
-		id: number
-		topic_id: number
+		id: string
+		topic_id: string
 		type: 'practice' | 'flashcard'
 		primary_text: string
 		secondary_text: string
@@ -46,6 +46,6 @@ export type Review = {
 }
 
 export type ReviewFilters = {
-	reviewCardId: number | string
+	reviewCardId: string
 	order?: 'asc' | 'desc'
 }

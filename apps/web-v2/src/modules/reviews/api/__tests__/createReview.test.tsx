@@ -16,8 +16,8 @@ describe('useCreateReview', () => {
 
 	it('adds the created review only to the affected card lists', async () => {
 		const createdReview = {
-			id: 3,
-			review_card_id: 8,
+			id: '3',
+			review_card_id: '8',
 			rating: null,
 			description: '',
 			notes: '',
@@ -27,8 +27,8 @@ describe('useCreateReview', () => {
 			inserted_at: '2026-07-13T00:00:00Z',
 			updated_at: '2026-07-13T00:00:00Z',
 			review_card: {
-				id: 8,
-				topic_id: 7,
+				id: '8',
+				topic_id: '7',
 				type: 'practice',
 				primary_text: 'Question',
 				secondary_text: 'Answer',
@@ -44,28 +44,34 @@ describe('useCreateReview', () => {
 			step_after: null,
 			due_after: null,
 		} satisfies Review
+		const rawCreatedReview = {
+			...createdReview,
+			id: 3,
+			review_card_id: 8,
+			review_card: { ...createdReview.review_card, id: 8, topic_id: 7 },
+		}
 		vi.stubGlobal(
 			'fetch',
-			vi.fn().mockResolvedValue(Response.json(createdReview)),
+			vi.fn().mockResolvedValue(Response.json(rawCreatedReview)),
 		)
 		const client = new QueryClient()
 		const descendingQuery = reviewQueries.list({
-			reviewCardId: 8,
+			reviewCardId: '8',
 			order: 'desc',
 		})
 		const ascendingQuery = reviewQueries.list({
-			reviewCardId: 8,
+			reviewCardId: '8',
 			order: 'asc',
 		})
-		const unrelatedQuery = reviewQueries.list({ reviewCardId: 9 })
+		const unrelatedQuery = reviewQueries.list({ reviewCardId: '9' })
 		client.setQueryData(descendingQuery.queryKey, [
-			{ id: 2 },
+			{ id: '2' },
 		] as Array<Review>)
 		client.setQueryData(ascendingQuery.queryKey, [
-			{ id: 1 },
+			{ id: '1' },
 		] as Array<Review>)
 		client.setQueryData(unrelatedQuery.queryKey, [
-			{ id: 4 },
+			{ id: '4' },
 		] as Array<Review>)
 		const invalidate = vi.spyOn(client, 'invalidateQueries')
 		const wrapper = ({ children }: PropsWithChildren) => (
@@ -75,24 +81,24 @@ describe('useCreateReview', () => {
 		)
 		const { result } = renderHook(useCreateReview, { wrapper })
 
-		result.current.mutate({ reviewCardId: 8 })
+		result.current.mutate({ reviewCardId: '8' })
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
 		expect(
 			client
 				.getQueryData<Array<Review>>(descendingQuery.queryKey)
 				?.map(review => review.id),
-		).toEqual([3, 2])
+		).toEqual(['3', '2'])
 		expect(
 			client
 				.getQueryData<Array<Review>>(ascendingQuery.queryKey)
 				?.map(review => review.id),
-		).toEqual([1, 3])
+		).toEqual(['1', '3'])
 		expect(
 			client
 				.getQueryData<Array<Review>>(unrelatedQuery.queryKey)
 				?.map(review => review.id),
-		).toEqual([4])
+		).toEqual(['4'])
 		expect(invalidate).not.toHaveBeenCalled()
 	})
 })

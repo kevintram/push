@@ -13,19 +13,19 @@ const updateReview = vi.fn()
 vi.mock('../../api/deleteReview', () => ({
 	useDeleteReview: () => ({
 		isPending: false,
-		mutateAsync: deleteReview,
+		mutate: deleteReview,
 	}),
 }))
 vi.mock('../../api/updateReview', () => ({
 	useUpdateReview: () => ({
 		isPending: false,
-		mutateAsync: updateReview,
+		mutate: updateReview,
 	}),
 }))
 
 const review: ReviewModel = {
-	id: 12,
-	review_card_id: 3,
+	id: '12',
+	review_card_id: '3',
 	rating: 'good',
 	description: 'Photosynthesis review',
 	notes: '',
@@ -35,8 +35,8 @@ const review: ReviewModel = {
 	inserted_at: '2026-07-18T12:00:00Z',
 	updated_at: '2026-07-18T12:00:00Z',
 	review_card: {
-		id: 3,
-		topic_id: 4,
+		id: '3',
+		topic_id: '4',
 		type: 'flashcard',
 		primary_text: 'Photosynthesis',
 		secondary_text: 'How plants convert light into energy',
@@ -55,8 +55,10 @@ const review: ReviewModel = {
 
 describe('Review', () => {
 	beforeEach(() => {
-		deleteReview.mockReset().mockResolvedValue(undefined)
-		updateReview.mockReset().mockResolvedValue(undefined)
+		deleteReview
+			.mockReset()
+			.mockImplementation((_id, options) => options?.onSuccess?.())
+		updateReview.mockReset()
 	})
 
 	it('requires confirmation before deleting a review', async () => {
@@ -86,7 +88,10 @@ describe('Review', () => {
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
 		expect(deleteReview).toHaveBeenCalledOnce()
-		expect(deleteReview).toHaveBeenCalledWith(12)
+		expect(deleteReview).toHaveBeenCalledWith(
+			'12',
+			expect.objectContaining({ onSuccess: expect.any(Function) }),
+		)
 	})
 
 	it('keeps the rating menu independent from the dialog trigger', async () => {
@@ -110,7 +115,7 @@ describe('Review', () => {
 		await user.click(screen.getByRole('menuitemradio', { name: 'Easy' }))
 
 		expect(updateReview).toHaveBeenCalledWith({
-			id: 12,
+			id: '12',
 			rating: 'easy',
 			completed_at: getTodayAsString(),
 		})
@@ -127,7 +132,7 @@ describe('Review', () => {
 		)
 
 		expect(updateReview).toHaveBeenCalledWith({
-			id: 12,
+			id: '12',
 			rating: null,
 			completed_at: null,
 		})
@@ -176,7 +181,7 @@ describe('Review', () => {
 		await user.click(screen.getByRole('button', { name: 'Clear' }))
 
 		expect(updateReview).toHaveBeenCalledWith({
-			id: 12,
+			id: '12',
 			scheduled_at: null,
 		})
 		expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
@@ -192,7 +197,7 @@ describe('Review', () => {
 		await user.click(screen.getByRole('button', { name: 'Clear' }))
 
 		expect(updateReview).toHaveBeenCalledWith({
-			id: 12,
+			id: '12',
 			completed_at: null,
 			rating: null,
 		})

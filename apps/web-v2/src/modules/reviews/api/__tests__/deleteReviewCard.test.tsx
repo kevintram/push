@@ -3,6 +3,8 @@ import { renderHook, waitFor } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { getFetchRequest } from '~/testing/getFetchRequest'
+
 import type { Review } from '../../types/review.types'
 import { deleteReviewCard, useDeleteReviewCard } from '../deleteReviewCard'
 import { reviewCardQueries, reviewQueries } from '../queries'
@@ -20,18 +22,20 @@ describe('deleteReviewCard', () => {
 			.mockResolvedValue(new Response(null, { status: 204 }))
 		vi.stubGlobal('fetch', fetchMock)
 		const client = new QueryClient()
-		client.setQueryData(reviewCardQueries.detail(8).queryKey, {
-			id: 8,
-			topic_id: 7,
+		client.setQueryData(reviewCardQueries.detail('8').queryKey, {
+			id: '8',
+			topic_id: '7',
 			primary_text: 'Question',
 			secondary_text: 'Answer',
 			notes: '',
 		})
 		const reviewsQuery = reviewQueries.list({
-			reviewCardId: 8,
+			reviewCardId: '8',
 			order: 'desc',
 		})
-		client.setQueryData(reviewsQuery.queryKey, [{ id: 1 }] as Array<Review>)
+		client.setQueryData(reviewsQuery.queryKey, [
+			{ id: '1' },
+		] as Array<Review>)
 		const invalidate = vi.spyOn(client, 'invalidateQueries')
 		const wrapper = ({ children }: PropsWithChildren) => (
 			<QueryClientProvider client={client}>
@@ -40,22 +44,20 @@ describe('deleteReviewCard', () => {
 		)
 		const { result } = renderHook(useDeleteReviewCard, { wrapper })
 
-		result.current.mutate(8)
+		result.current.mutate('8')
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-		expect(fetchMock).toHaveBeenCalledWith(
-			new URL('http://test-api/review-cards/8/'),
-			expect.objectContaining({
-				method: 'DELETE',
-				credentials: 'include',
-			}),
-		)
+		expect(fetchMock).toHaveBeenCalledTimes(1)
+		const request = getFetchRequest(fetchMock)
+		expect(request.url).toBe('http://test-api/review-cards/8/')
+		expect(request.method).toBe('DELETE')
+		expect(request.credentials).toBe('include')
 		expect(invalidate).toHaveBeenCalledWith({
 			queryKey: reviewCardQueries.lists(),
 		})
 		expect(invalidate).toHaveBeenCalledTimes(1)
 		expect(
-			client.getQueryData(reviewCardQueries.detail(8).queryKey),
+			client.getQueryData(reviewCardQueries.detail('8').queryKey),
 		).toBeUndefined()
 		expect(client.getQueryData(reviewsQuery.queryKey)).toBeUndefined()
 	})
@@ -65,6 +67,6 @@ describe('deleteReviewCard', () => {
 			'fetch',
 			vi.fn().mockResolvedValue(new Response('', { status: 404 })),
 		)
-		await expect(deleteReviewCard(8)).rejects.toThrow('404')
+		await expect(deleteReviewCard('8')).rejects.toThrow('404')
 	})
 })

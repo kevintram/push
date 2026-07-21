@@ -1,8 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
-import { toast } from 'sonner'
 
 import { Button } from '~/components/ui'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
@@ -50,18 +49,10 @@ export function ReviewsSidebar() {
 	const { reviewCardId } = useParams({
 		from: '/review-cards/$reviewCardId',
 	})
-	const { data: reviews } = useQuery(
+	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.list({ reviewCardId, order: 'desc' }),
 	)
-	const { isPending, mutateAsync } = useCreateReview()
-
-	const addReview = async () => {
-		try {
-			await mutateAsync({ reviewCardId })
-		} catch {
-			toast.error('Failed to create review')
-		}
-	}
+	const { isPending, mutate: createReview } = useCreateReview()
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -82,14 +73,14 @@ export function ReviewsSidebar() {
 						variant='ghost'
 						size='micro'
 						disabled={isPending}
-						onClick={() => void addReview()}
+						onClick={() => createReview({ reviewCardId })}
 					>
 						<Plus aria-hidden='true' size={iconSizes.md} />
 					</Button.Icon>
 				</div>
 			</div>
 			<div {...stylex.props(styles.list)}>
-				{reviews?.map(review => (
+				{reviews.map(review => (
 					<Review key={review.id} review={review} />
 				))}
 			</div>

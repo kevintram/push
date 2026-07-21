@@ -26,7 +26,6 @@ import {
 const styles = stylex.create({
 	trigger: {
 		blockSize: 'auto',
-		color: colors.textSecondary,
 
 		paddingInline: spacing.xs,
 	},
@@ -43,7 +42,7 @@ const styles = stylex.create({
 interface ReviewDatePickerProps {
 	disabled?: boolean
 	isCompleted: boolean
-	onChange: (value: DateString | null) => Promise<void>
+	onChange: (value: DateString | null) => void | Promise<void>
 	value: DateString | null
 }
 

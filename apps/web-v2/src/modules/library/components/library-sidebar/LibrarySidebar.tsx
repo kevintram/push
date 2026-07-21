@@ -1,9 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Button } from '~/components/ui'
@@ -55,34 +54,32 @@ const styles = stylex.create({
 
 function containsTopic(topic: TopicDeleteTarget, topicId?: string): boolean {
 	if (topicId === undefined) return false
-	if (String(topic.id) === topicId) return true
+	if (topic.id === topicId) return true
 	return topic.children?.some(child => containsTopic(child, topicId)) ?? false
 }
 
 export function LibrarySidebar() {
 	const navigate = useNavigate()
 	const { topicId: currentTopicId } = useParams({ strict: false })
-	const { data } = useQuery(topicQueries.list())
+	const { data } = useSuspenseQuery(topicQueries.list())
 	const { isPending: isCreatingTopic, mutateAsync: createTopic } =
 		useCreateTopic()
 	const { isPending: isDeletingTopic, mutateAsync: deleteTopic } =
 		useDeleteTopic()
 	const [topicToDelete, setTopicToDelete] = useState<TopicDeleteTarget>()
 
-	const addTopic = async (parentId?: number) => {
-		try {
-			const topic = await createTopic({ parentId })
-			await navigate({
-				to: '/library/$topicId',
-				params: { topicId: String(topic.id) },
-				state: previous => ({
-					...previous,
-					focusTopicTitle: true,
-				}),
-			})
-		} catch {
-			toast.error('Failed to create topic')
-		}
+	const addTopic = async (parentId?: string) => {
+		const topic = await createTopic({ parentId }).catch(() => undefined)
+		if (!topic) return
+
+		await navigate({
+			to: '/library/$topicId',
+			params: { topicId: topic.id },
+			state: previous => ({
+				...previous,
+				focusTopicTitle: true,
+			}),
+		})
 	}
 
 	const confirmDeleteTopic = async () => {
@@ -90,20 +87,21 @@ export function LibrarySidebar() {
 
 		try {
 			await deleteTopic(topicToDelete.id)
-			setTopicToDelete(undefined)
-
-			if (!containsTopic(topicToDelete, currentTopicId)) return
-			if (topicToDelete.parentId === undefined) {
-				await navigate({ to: '/library' })
-				return
-			}
-			await navigate({
-				to: '/library/$topicId',
-				params: { topicId: String(topicToDelete.parentId) },
-			})
 		} catch {
-			toast.error('Failed to delete topic')
+			return
 		}
+
+		setTopicToDelete(undefined)
+
+		if (!containsTopic(topicToDelete, currentTopicId)) return
+		if (topicToDelete.parentId === undefined) {
+			await navigate({ to: '/library' })
+			return
+		}
+		await navigate({
+			to: '/library/$topicId',
+			params: { topicId: topicToDelete.parentId },
+		})
 	}
 
 	const topicToDeleteTitle = topicToDelete?.title.trim() || 'Untitled'
@@ -124,7 +122,7 @@ export function LibrarySidebar() {
 			</div>
 			<nav aria-label='Library topics' {...stylex.props(styles.nav)}>
 				<ul {...stylex.props(styles.list)}>
-					{data?.map(topic => (
+					{data.map(topic => (
 						<TopicLink
 							key={topic.id}
 							{...topic}

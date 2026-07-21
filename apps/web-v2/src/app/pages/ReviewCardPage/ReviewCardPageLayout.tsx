@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import {
 	Link,
 	Outlet,
@@ -10,7 +10,6 @@ import {
 } from '@tanstack/react-router'
 import { ArrowLeft, Ellipsis, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
@@ -25,7 +24,6 @@ import {
 } from '~/components/ui'
 import { topicQueries } from '~/modules/library/api/queries'
 import { useDeleteReviewCard } from '~/modules/reviews/api/deleteReviewCard'
-import { reviewCardQueries } from '~/modules/reviews/api/queries'
 import { colors } from '~/styles/colors.stylex'
 import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
@@ -70,8 +68,7 @@ export function ReviewCardPageLayout() {
 		from: '/review-cards/$reviewCardId',
 	})
 
-	const { data: topic } = useQuery(topicQueries.detail(topicId))
-	const queryClient = useQueryClient()
+	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
 	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
 		useDeleteReviewCard()
 	const navigate = useNavigate()
@@ -88,17 +85,15 @@ export function ReviewCardPageLayout() {
 	const confirmDelete = async () => {
 		try {
 			await deleteReviewCard(reviewCardId)
-			setIsDeleteDialogOpen(false)
-			await navigate({
-				to: '/library/$topicId',
-				params: { topicId },
-			})
-			queryClient.removeQueries({
-				queryKey: reviewCardQueries.detail(reviewCardId).queryKey,
-			})
 		} catch {
-			toast.error('Failed to delete review card')
+			return
 		}
+
+		setIsDeleteDialogOpen(false)
+		await navigate({
+			to: '/library/$topicId',
+			params: { topicId },
+		})
 	}
 
 	return (
@@ -111,7 +106,7 @@ export function ReviewCardPageLayout() {
 						{...stylex.props(styles.link)}
 					>
 						<ArrowLeft />
-						{topic?.title}
+						{topic.title}
 					</Link>
 					<TabsList aria-label='Review card sections'>
 						<TabsTrigger

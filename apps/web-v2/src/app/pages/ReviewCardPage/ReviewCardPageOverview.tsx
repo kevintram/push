@@ -1,8 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useCallback } from 'react'
-import { toast } from 'sonner'
 
 import { Textarea } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
@@ -37,83 +36,60 @@ export function ReviewCardPageOverview() {
 	const { reviewCardId } = useParams({
 		from: '/review-cards/$reviewCardId',
 	})
-	const { data: reviewCard } = useQuery(
+	const { data: reviewCard } = useSuspenseQuery(
 		reviewCardQueries.detail(reviewCardId),
 	)
-	const { mutateAsync } = useUpdateReviewCard()
+	const { mutate } = useUpdateReviewCard()
 	const save = useCallback(
-		async (
-			field: 'primary_text' | 'secondary_text' | 'notes',
-			value: string,
-			message: string,
-		) => {
-			if (!reviewCard || value === reviewCard[field]) return
-			try {
-				await mutateAsync({ id: reviewCard.id, [field]: value })
-			} catch {
-				toast.error(message)
-			}
+		(field: 'primary_text' | 'secondary_text' | 'notes', value: string) => {
+			if (value === reviewCard[field]) return
+			mutate({ id: reviewCard.id, [field]: value })
 		},
-		[mutateAsync, reviewCard],
+		[mutate, reviewCard],
 	)
 	const primary = useAutoSave({
-		initialValue: reviewCard?.primary_text ?? '',
-		onSave: value =>
-			void save(
-				'primary_text',
-				value,
-				'Failed to update review-card primary text',
-			),
-		key: `review-card-primary-${reviewCard?.id ?? reviewCardId}`,
+		initialValue: reviewCard.primary_text,
+		onSave: value => save('primary_text', value),
+		key: `review-card-primary-${reviewCard.id}`,
 	})
 	const secondary = useAutoSave({
-		initialValue: reviewCard?.secondary_text ?? '',
-		onSave: value =>
-			void save(
-				'secondary_text',
-				value,
-				'Failed to update review-card secondary text',
-			),
-		key: `review-card-secondary-${reviewCard?.id ?? reviewCardId}`,
+		initialValue: reviewCard.secondary_text,
+		onSave: value => save('secondary_text', value),
+		key: `review-card-secondary-${reviewCard.id}`,
 	})
 	const notes = useAutoSave({
-		initialValue: reviewCard?.notes ?? '',
-		onSave: value =>
-			void save('notes', value, 'Failed to update review-card notes'),
-		key: `review-card-notes-${reviewCard?.id ?? reviewCardId}`,
+		initialValue: reviewCard.notes,
+		onSave: value => save('notes', value),
+		key: `review-card-notes-${reviewCard.id}`,
 	})
 
 	return (
 		<div {...stylex.props(styles.container)}>
 			<main {...stylex.props(styles.main)}>
-				{reviewCard && (
-					<>
-						<Textarea
-							aria-label='Review-card primary text'
-							placeholder='Primary text'
-							value={primary.value}
-							onChange={primary.onChange}
-							onBlur={primary.flush}
-							xstyle={styles.primary}
-						/>
-						<Textarea
-							aria-label='Review-card secondary text'
-							placeholder='Secondary text'
-							value={secondary.value}
-							onChange={secondary.onChange}
-							onBlur={secondary.flush}
-							xstyle={styles.secondary}
-						/>
-						<Textarea
-							aria-label='Review-card notes'
-							placeholder='Add notes'
-							value={notes.value}
-							onChange={notes.onChange}
-							onBlur={notes.flush}
-							xstyle={styles.notes}
-						/>
-					</>
-				)}
+				<Textarea
+					aria-label='Review-card primary text'
+					placeholder='Primary text'
+					value={primary.value}
+					onChange={primary.onChange}
+					onBlur={primary.flush}
+					xstyle={styles.primary}
+				/>
+				<Textarea
+					aria-label='Review-card secondary text'
+					placeholder='Secondary text'
+					value={secondary.value}
+					onChange={secondary.onChange}
+					onBlur={secondary.flush}
+					xstyle={styles.secondary}
+				/>
+				<Textarea
+					aria-label='Review-card notes'
+					placeholder='Add notes'
+					value={notes.value}
+					onChange={notes.onChange}
+					onBlur={notes.flush}
+					xstyle={styles.notes}
+				/>
 			</main>
 			<aside>
 				<ReviewsSidebar />

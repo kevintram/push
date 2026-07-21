@@ -1,5 +1,5 @@
 import * as stylex from '@stylexjs/stylex'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
 import { reviewCardQueries } from '~/modules/reviews/api/queries'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
@@ -16,14 +16,14 @@ const styles = stylex.create({
 })
 
 export function ReviewDuePage() {
-	const { data } = useQuery(
+	const { data } = useSuspenseQuery(
 		reviewCardQueries.list({ due: getTodayAsString() }),
 	)
 
 	return (
 		<>
 			<h2 {...stylex.props(styles.title)}>Due</h2>
-			{data?.map(card => (
+			{data.map(card => (
 				<ReviewCard key={card.id} {...card} />
 			))}
 		</>

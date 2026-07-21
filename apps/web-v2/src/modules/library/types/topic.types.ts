@@ -1,8 +1,8 @@
 import { type ReviewCard } from '~/modules/reviews/types/review.types'
 
 export type Topic = {
-	id: number
-	parentId?: number
+	id: string
+	parentId?: string
 	title: string
 	body: string
 	reviewCards?: Array<ReviewCard>

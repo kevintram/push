@@ -29,7 +29,7 @@ export function ReviewCard({ id, primary_text, secondary_text }: ReviewCard) {
 	return (
 		<Link
 			to='/review-cards/$reviewCardId'
-			params={{ reviewCardId: String(id) }}
+			params={{ reviewCardId: id }}
 			{...stylex.props(styles.container)}
 		>
 			<p {...stylex.props(styles.title)}>{primary_text}</p>

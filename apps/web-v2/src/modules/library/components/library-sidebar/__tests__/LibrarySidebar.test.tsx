@@ -12,16 +12,16 @@ let currentTopicId: string | undefined = '2'
 
 vi.mock('@tanstack/react-query', () => ({
 	queryOptions: <T,>(options: T) => options,
-	useQuery: () => ({
+	useSuspenseQuery: () => ({
 		data: [
 			{
-				id: 1,
+				id: '1',
 				title: 'Parent',
 				body: '',
 				children: [
 					{
-						id: 2,
-						parentId: 1,
+						id: '2',
+						parentId: '1',
 						title: '',
 						body: '',
 						children: [],
@@ -29,7 +29,7 @@ vi.mock('@tanstack/react-query', () => ({
 				],
 			},
 			{
-				id: 4,
+				id: '4',
 				title: 'Unrelated',
 				body: '',
 				children: [],
@@ -73,8 +73,8 @@ describe('LibrarySidebar', () => {
 		currentTopicId = '2'
 		navigate.mockReset().mockResolvedValue(undefined)
 		createTopic.mockReset().mockResolvedValue({
-			id: 3,
-			parentId: 2,
+			id: '3',
+			parentId: '2',
 			title: '',
 			body: '',
 		})
@@ -91,7 +91,7 @@ describe('LibrarySidebar', () => {
 		fireEvent.contextMenu(childLink)
 		await user.click(screen.getByRole('menuitem', { name: 'Add subtopic' }))
 
-		expect(createTopic).toHaveBeenCalledWith({ parentId: 2 })
+		expect(createTopic).toHaveBeenCalledWith({ parentId: '2' })
 		expect(navigate).toHaveBeenCalledOnce()
 		expect(navigate.mock.calls[0]?.[0]).toMatchObject({
 			to: '/library/$topicId',
@@ -112,7 +112,7 @@ describe('LibrarySidebar', () => {
 		).toBeInTheDocument()
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
-		expect(deleteTopic).toHaveBeenCalledWith(1)
+		expect(deleteTopic).toHaveBeenCalledWith('1')
 		expect(navigate).toHaveBeenCalledWith({ to: '/library' })
 	})
 
@@ -124,7 +124,7 @@ describe('LibrarySidebar', () => {
 		await user.click(screen.getByRole('menuitem', { name: 'Delete' }))
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
-		expect(deleteTopic).toHaveBeenCalledWith(4)
+		expect(deleteTopic).toHaveBeenCalledWith('4')
 		expect(navigate).not.toHaveBeenCalled()
 	})
 })
