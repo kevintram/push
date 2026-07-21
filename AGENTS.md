@@ -95,7 +95,8 @@ Each worktree gets a slot *S* (0–15) that determines its ports (API `8000 + S`
 
 Please use the playwright-cli skill to perform E2E validations using your own dedicated session to prevent conflicts. 
 
-Please authenticate with the test user account (see `.env`).
+Please authenticate with the test user account using `TEST_ACCOUNT_EMAIL` and
+`TEST_ACCOUNT_PASSWORD` from the root `.env`.
 
 Please clean up your session when you are finished testing. 
 
