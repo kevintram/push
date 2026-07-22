@@ -4,6 +4,7 @@ import { BookOpen, Clock, Flag, Library, PinIcon, Settings } from 'lucide-react'
 import { colors } from '~/styles/colors.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
+import { ReviewModeItem } from './ReviewModeItem'
 import { SidebarLink } from './sidebar-link'
 
 const styles = stylex.create({
@@ -19,6 +20,8 @@ const styles = stylex.create({
 
 		display: 'flex',
 		flexDirection: 'column',
+
+		maxInlineSize: '80px',
 	},
 	spacer: {
 		flexBasis: 0,
@@ -36,6 +39,7 @@ export function AppSidebar() {
 			<SidebarLink.Fat icon={PinIcon} text='Pinned' to='/pinned' />
 			<SidebarLink.Fat icon={Library} text='Library' to='/library' />
 			<div {...stylex.props(styles.spacer)} />
+			<ReviewModeItem />
 			<SidebarLink.Fat
 				ariaLabel='Settings'
 				icon={Settings}

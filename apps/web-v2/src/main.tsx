@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { LoaderPage } from './app/pages/LoaderPage'
 import { routeTree } from './app/routeTree.gen'
 import { TooltipProvider } from './components/ui'
+import { HideModeProvider } from './stores/HideMode'
 import { HttpError } from './utils/apiFetch'
 
 if (import.meta.env.DEV && !import.meta.env.VITEST) {
@@ -73,10 +74,15 @@ if (container) {
 	createRoot(container).render(
 		<StrictMode>
 			<TooltipProvider>
-				<QueryClientProvider client={queryClient}>
-					<ReactQueryDevtools initialIsOpen={false} />
-					<RouterProvider context={{ queryClient }} router={router} />
-				</QueryClientProvider>
+				<HideModeProvider>
+					<QueryClientProvider client={queryClient}>
+						<ReactQueryDevtools initialIsOpen={false} />
+						<RouterProvider
+							context={{ queryClient }}
+							router={router}
+						/>
+					</QueryClientProvider>
+				</HideModeProvider>
 			</TooltipProvider>
 		</StrictMode>,
 	)

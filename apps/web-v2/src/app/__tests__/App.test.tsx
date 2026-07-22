@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
+import { HideModeProvider } from '~/stores/HideMode'
 
 vi.mock('~/modules/reviews/api/getReviewCards', () => ({
 	fetchReviewCard: async () => ({
@@ -42,9 +43,11 @@ function renderRoute(path: string) {
 	})
 
 	return render(
-		<QueryClientProvider client={queryClient}>
-			<RouterProvider context={{ queryClient }} router={router} />
-		</QueryClientProvider>,
+		<HideModeProvider>
+			<QueryClientProvider client={queryClient}>
+				<RouterProvider context={{ queryClient }} router={router} />
+			</QueryClientProvider>
+		</HideModeProvider>,
 	)
 }
 
