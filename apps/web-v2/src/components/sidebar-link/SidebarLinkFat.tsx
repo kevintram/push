@@ -28,6 +28,7 @@ const styles = stylex.create({
 
 		padding: spacing.sm,
 		borderRadius: radii.xl,
+		gap: spacing.sm,
 		alignItems: 'center',
 		display: 'flex',
 		flexDirection: 'column',
@@ -48,13 +49,7 @@ const styles = stylex.create({
 		},
 	},
 	icon: {
-		blockSize: iconSizes.md,
 		display: 'block',
-		inlineSize: iconSizes.md,
-	},
-	iconContainer: {
-		padding: spacing.xs,
-		marginBlock: spacing.xs,
 	},
 })
 
@@ -75,9 +70,7 @@ export function SidebarLinkFat({
 			aria-label={ariaLabel ?? text}
 			{...stylex.props(styles.link)}
 		>
-			<div {...stylex.props(styles.iconContainer)}>
-				<Icon {...stylex.props(styles.icon)} />
-			</div>
+			<Icon {...stylex.props(styles.icon)} size={iconSizes.md} />
 			{text}
 		</Link>
 	)

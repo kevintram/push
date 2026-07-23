@@ -31,9 +31,9 @@ export function ReviewCardPageReviews() {
 			<div {...stylex.props(styles.actions)}>
 				<Button
 					disabled={isCreating}
-					prefix={<Plus aria-hidden='true' />}
 					onClick={() => createReview({ reviewCardId })}
 				>
+					<Plus aria-hidden='true' />
 					Review
 				</Button>
 			</div>

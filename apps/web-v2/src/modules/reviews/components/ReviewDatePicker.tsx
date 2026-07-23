@@ -84,17 +84,15 @@ export function ReviewDatePicker({
 					disabled={disabled}
 					onClick={event => event.stopPropagation()}
 					onMouseDown={event => event.stopPropagation()}
-					prefix={
-						<CalendarIcon aria-hidden='true' size={iconSizes.md} />
-					}
 					size='micro'
 					variant='ghost'
 					xstyle={[styles.trigger, dateToneStyle]}
-				/>
+				>
+					<CalendarIcon aria-hidden='true' size={iconSizes.md} />
+					{relativeDate}
+				</Button>
 			}
-		>
-			{relativeDate}
-		</PopoverTrigger>
+		/>
 	)
 
 	return (
