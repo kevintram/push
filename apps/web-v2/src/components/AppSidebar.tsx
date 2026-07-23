@@ -43,6 +43,7 @@ export function AppSidebar() {
 			<HideModeButton />
 			<SidebarLink.Fat
 				ariaLabel='Settings'
+				text='Settings'
 				icon={Settings}
 				to='/settings'
 			/>
