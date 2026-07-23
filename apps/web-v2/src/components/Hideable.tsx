@@ -65,7 +65,7 @@ export function Hideable({ children, xstyle }: HideableProps) {
 					revealed ? styles.overlayHidden : null,
 				)}
 			>
-				<Button onClick={reveal} variant='outline' shape='round'>
+				<Button onClick={reveal} shape='round'>
 					Reveal
 				</Button>
 			</div>
