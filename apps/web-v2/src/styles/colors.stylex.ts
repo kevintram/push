@@ -157,8 +157,8 @@ export const colors = stylex.defineVars({
 	// Use for elements that need a fully transparent background.
 	// The transparent value is represented by a zero-alpha primitive.
 	bgSurfaceTransparent: {
-		default: grayAlphaDark.s1,
-		[DARK]: grayAlphaDark.s1,
+		default: baseColors.transparent,
+		[DARK]: baseColors.transparent,
 	},
 
 	// Fills

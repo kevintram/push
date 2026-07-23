@@ -23,6 +23,10 @@ const SUPPORTS_OKLCH = '@supports (color: oklch(0% 0 0))'
 export const baseColors = stylex.defineVars({
 	white: { default: '#ffffff', [SUPPORTS_OKLCH]: 'oklch(100% 0 0)' },
 	black: { default: '#000000', [SUPPORTS_OKLCH]: 'oklch(0% 0 0)' },
+	transparent: {
+		default: '#00000000',
+		[SUPPORTS_OKLCH]: 'oklch(0% 0 0 / 0)',
+	},
 })
 
 export const grayLight = stylex.defineVars({
