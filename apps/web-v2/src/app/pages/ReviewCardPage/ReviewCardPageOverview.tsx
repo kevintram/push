@@ -102,7 +102,7 @@ export function ReviewCardPageOverview() {
 					xstyle={styles.secondary}
 				/>
 				<Separator xstyle={styles.separator} />
-				<Hideable xstyle={styles.notesContainer}>
+				<Hideable key={reviewCardId} xstyle={styles.notesContainer}>
 					<Textarea
 						aria-label='Review-card notes'
 						placeholder='Add notes'
