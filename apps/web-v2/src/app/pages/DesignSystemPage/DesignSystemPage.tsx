@@ -5,6 +5,7 @@ import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 import { ComponentSection } from './ComponentSection'
 import { ScaleSection } from './ScaleSection'
+import { SeparatorSection } from './SeparatorSection'
 import {
 	fontSizeSpecimens,
 	fontWeightSpecimens,
@@ -30,6 +31,7 @@ const sections = [
 	{ href: '#dialog', label: 'Dialog', count: 1 },
 	{ href: '#dropdown-menu', label: 'Dropdown menu', count: 8 },
 	{ href: '#context-menu', label: 'Context menu', count: 3 },
+	{ href: '#separator', label: 'Separator', count: 2 },
 	{ href: '#tabs', label: 'Tabs', count: 2 },
 	{ href: '#toast', label: 'Toast', count: 5 },
 ]
@@ -168,6 +170,7 @@ export function DesignSystemPage() {
 					<TypeSection />
 					<ScaleSection />
 					<ComponentSection />
+					<SeparatorSection />
 					<TabsSection />
 				</div>
 			</div>
