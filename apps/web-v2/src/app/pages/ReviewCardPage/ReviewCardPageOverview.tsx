@@ -3,6 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useCallback } from 'react'
 
+import { Hideable } from '~/components/Hideable'
 import { Separator, Textarea } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { reviewCardQueries } from '~/modules/reviews/api/queries'
@@ -12,16 +13,20 @@ import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
-		blockSize: '100%',
 		display: 'flex',
-		inlineSize: '100%',
+
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
 	},
 	main: {
 		padding: spacing.xl,
 		gap: spacing.xs,
+
 		display: 'flex',
-		flexBasis: 0,
 		flexDirection: 'column',
+
+		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
 	},
@@ -33,10 +38,15 @@ const styles = stylex.create({
 	separator: {
 		marginBlock: spacing.xl,
 	},
-	notes: {
+	notesContainer: {
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
+	},
+	notes: {
+		blockSize: '100%',
+		inlineSize: '100%',
+
 		fontSize: fontSizes.md,
 	},
 })
@@ -92,14 +102,16 @@ export function ReviewCardPageOverview() {
 					xstyle={styles.secondary}
 				/>
 				<Separator xstyle={styles.separator} />
-				<Textarea
-					aria-label='Review-card notes'
-					placeholder='Add notes'
-					value={notes.value}
-					onChange={notes.onChange}
-					onBlur={notes.flush}
-					xstyle={styles.notes}
-				/>
+				<Hideable xstyle={styles.notesContainer}>
+					<Textarea
+						aria-label='Review-card notes'
+						placeholder='Add notes'
+						value={notes.value}
+						onChange={notes.onChange}
+						onBlur={notes.flush}
+						xstyle={styles.notes}
+					/>
+				</Hideable>
 			</main>
 			<aside>
 				<ReviewsSidebar />

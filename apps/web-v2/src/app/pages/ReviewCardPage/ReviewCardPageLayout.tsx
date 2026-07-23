@@ -29,9 +29,13 @@ import { iconSizes, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	outerContainer: {
-		padding: spacing.lg,
 		blockSize: '100%',
 		inlineSize: '100%',
+
+		display: 'flex',
+		flexDirection: 'column',
+
+		padding: spacing.lg,
 	},
 	header: {
 		display: 'flex',
