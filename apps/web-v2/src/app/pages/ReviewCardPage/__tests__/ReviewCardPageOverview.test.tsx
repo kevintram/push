@@ -1,8 +1,18 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { act } from 'react'
+import { act, type ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { HideModeProvider } from '~/stores/HideMode'
+
 import { ReviewCardPageOverview } from '../ReviewCardPageOverview'
+
+function renderOverview() {
+	return render(<ReviewCardPageOverview />, {
+		wrapper: ({ children }: { children: ReactNode }) => (
+			<HideModeProvider>{children}</HideModeProvider>
+		),
+	})
+}
 
 const updateReviewCard = vi.fn()
 vi.mock('~/modules/reviews/api/updateReviewCard', () => ({
@@ -41,7 +51,7 @@ describe('ReviewCardPageOverview editors', () => {
 		['Review-card secondary text', 'secondary_text'],
 		['Review-card notes', 'notes'],
 	] as const)('saves %s with its API field', async (label, field) => {
-		render(<ReviewCardPageOverview />)
+		renderOverview()
 		const editor = screen.getByLabelText(label)
 		fireEvent.change(editor, { target: { value: 'Edited' } })
 		await act(async () => fireEvent.blur(editor))
@@ -52,7 +62,7 @@ describe('ReviewCardPageOverview editors', () => {
 	})
 
 	it('debounces persistence while updating text immediately', async () => {
-		render(<ReviewCardPageOverview />)
+		renderOverview()
 		const editor = screen.getByLabelText('Review-card primary text')
 		fireEvent.change(editor, { target: { value: 'Edited' } })
 		expect(editor).toHaveValue('Edited')
@@ -65,7 +75,7 @@ describe('ReviewCardPageOverview editors', () => {
 	})
 
 	it('flushes pending edits when the page unmounts', async () => {
-		const { unmount } = render(<ReviewCardPageOverview />)
+		const { unmount } = renderOverview()
 		fireEvent.change(screen.getByLabelText('Review-card notes'), {
 			target: { value: 'Pending notes' },
 		})
@@ -77,7 +87,7 @@ describe('ReviewCardPageOverview editors', () => {
 	})
 
 	it('keeps local text visible while dispatching the save', async () => {
-		render(<ReviewCardPageOverview />)
+		renderOverview()
 		const notes = screen.getByLabelText('Review-card notes')
 		fireEvent.change(notes, { target: { value: 'Unsaved notes' } })
 		await act(async () => fireEvent.blur(notes))
