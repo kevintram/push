@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 
 import { baseColors } from '~/styles/colorPrimitives.stylex'
 import { colors } from '~/styles/colors.stylex'
-import { radii, spacing } from '~/styles/tokens.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 
 export interface TextareaProps extends Omit<
 	React.ComponentProps<'textarea'>,
@@ -16,13 +16,9 @@ const styles = stylex.create({
 	textarea: {
 		fieldSizing: 'content',
 		borderColor: baseColors.transparent,
-		borderRadius: radii.lg,
-		borderStyle: 'solid',
-		borderWidth: '1px',
-		paddingBlock: spacing.sm,
-		paddingInline: spacing.md,
+		paddingBlock: spacing.none,
+		paddingInline: spacing.none,
 		backgroundColor: baseColors.transparent,
-		boxSizing: 'border-box',
 		color: {
 			default: colors.text,
 			':disabled': colors.textDisabled,

@@ -3,7 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useCallback } from 'react'
 
-import { Textarea } from '~/components/ui'
+import { Separator, Textarea } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { reviewCardQueries } from '~/modules/reviews/api/queries'
 import { useUpdateReviewCard } from '~/modules/reviews/api/updateReviewCard'
@@ -12,11 +12,13 @@ import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
+		blockSize: '100%',
 		display: 'flex',
+		inlineSize: '100%',
 	},
 	main: {
-		padding: '24px',
-		gap: spacing.md,
+		padding: spacing.xl,
+		gap: spacing.xs,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'column',
@@ -26,10 +28,17 @@ const styles = stylex.create({
 	primary: {
 		fontSize: fontSizes.xl,
 		fontWeight: fontWeights.bold,
-		minBlockSize: '44px',
 	},
 	secondary: { fontSize: fontSizes.md },
-	notes: { fontSize: fontSizes.sm, minBlockSize: '96px' },
+	separator: {
+		marginBlock: spacing.xl,
+	},
+	notes: {
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+		fontSize: fontSizes.md,
+	},
 })
 
 export function ReviewCardPageOverview() {
@@ -82,6 +91,7 @@ export function ReviewCardPageOverview() {
 					onBlur={secondary.flush}
 					xstyle={styles.secondary}
 				/>
+				<Separator xstyle={styles.separator} />
 				<Textarea
 					aria-label='Review-card notes'
 					placeholder='Add notes'
