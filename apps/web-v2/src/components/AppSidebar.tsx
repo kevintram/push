@@ -21,7 +21,7 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 
-		maxInlineSize: '85px',
+		inlineSize: '85px',
 	},
 	spacer: {
 		flexBasis: 0,
