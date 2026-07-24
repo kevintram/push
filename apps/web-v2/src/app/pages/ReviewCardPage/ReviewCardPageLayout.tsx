@@ -5,32 +5,24 @@ import {
 	Outlet,
 	useLoaderData,
 	useMatchRoute,
-	useNavigate,
 	useParams,
 } from '@tanstack/react-router'
-import { ArrowLeft, Ellipsis, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 
-import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
-import {
-	Button,
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-	Tabs,
-	TabsList,
-	TabsTrigger,
-} from '~/components/ui'
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import { topicQueries } from '~/modules/library/api/queries'
-import { useDeleteReviewCard } from '~/modules/reviews/api/deleteReviewCard'
 import { colors } from '~/styles/colors.stylex'
-import { iconSizes, spacing } from '~/styles/tokens.stylex'
+import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	outerContainer: {
+		blockSize: '100%',
+		inlineSize: '100%',
+
+		display: 'flex',
+		flexDirection: 'column',
+
 		padding: spacing.lg,
-		width: '100%',
 	},
 	header: {
 		display: 'flex',
@@ -69,10 +61,6 @@ export function ReviewCardPageLayout() {
 	})
 
 	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
-	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
-		useDeleteReviewCard()
-	const navigate = useNavigate()
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	const matchRoute = useMatchRoute()
 	const activeTab = matchRoute({
@@ -81,20 +69,6 @@ export function ReviewCardPageLayout() {
 	})
 		? 'review'
 		: 'overview'
-
-	const confirmDelete = async () => {
-		try {
-			await deleteReviewCard(reviewCardId)
-		} catch {
-			return
-		}
-
-		setIsDeleteDialogOpen(false)
-		await navigate({
-			to: '/library/$topicId',
-			params: { topicId },
-		})
-	}
 
 	return (
 		<div {...stylex.props(styles.outerContainer)}>
@@ -137,37 +111,8 @@ export function ReviewCardPageLayout() {
 						</TabsTrigger>
 					</TabsList>
 				</Tabs>
-				<DropdownMenu>
-					<DropdownMenuTrigger
-						render={
-							<Button.Icon
-								aria-label='Review card actions'
-								variant='ghost'
-							/>
-						}
-					>
-						<Ellipsis aria-hidden='true' />
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align='end'>
-						<DropdownMenuItem
-							disabled={isDeleting}
-							onClick={() => setIsDeleteDialogOpen(true)}
-						>
-							<Trash2 aria-hidden='true' size={iconSizes.md} />
-							Delete
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
 			</header>
 			<Outlet />
-			<DeleteConfirmationDialog
-				description='This will delete this review card and all linked reviews.'
-				isPending={isDeleting}
-				onConfirm={() => void confirmDelete()}
-				onOpenChange={setIsDeleteDialogOpen}
-				open={isDeleteDialogOpen}
-				title='Delete review card?'
-			/>
 		</div>
 	)
 }

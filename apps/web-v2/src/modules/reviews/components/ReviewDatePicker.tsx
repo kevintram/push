@@ -82,19 +82,15 @@ export function ReviewDatePicker({
 				<Button
 					aria-label={`Change review date, ${relativeDate}`}
 					disabled={disabled}
-					onClick={event => event.stopPropagation()}
-					onMouseDown={event => event.stopPropagation()}
-					prefix={
-						<CalendarIcon aria-hidden='true' size={iconSizes.md} />
-					}
 					size='micro'
 					variant='ghost'
 					xstyle={[styles.trigger, dateToneStyle]}
-				/>
+				>
+					<CalendarIcon aria-hidden='true' size={iconSizes.md} />
+					{relativeDate}
+				</Button>
 			}
-		>
-			{relativeDate}
-		</PopoverTrigger>
+		/>
 	)
 
 	return (
@@ -105,12 +101,7 @@ export function ReviewDatePicker({
 					{absoluteDate ?? 'Add due date'}
 				</TooltipContent>
 			</Tooltip>
-			<PopoverContent
-				align='center'
-				onClick={event => event.stopPropagation()}
-				onMouseDown={event => event.stopPropagation()}
-				xstyle={styles.popover}
-			>
+			<PopoverContent align='center' xstyle={styles.popover}>
 				<div {...stylex.props(styles.content)}>
 					<Calendar
 						defaultMonth={selectedDate}

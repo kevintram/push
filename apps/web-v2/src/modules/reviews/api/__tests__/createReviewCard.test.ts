@@ -16,9 +16,15 @@ describe('createReviewCard', () => {
 			Response.json({
 				id: 8,
 				topic_id: 7,
+				type: 'practice',
 				primary_text: 'Question',
 				secondary_text: 'Answer',
 				notes: '',
+				stability: null,
+				last_reviewed_at: null,
+				next_due_at: null,
+				freshness_tier: null,
+				flagged_at: null,
 			}),
 		)
 		vi.stubGlobal('fetch', fetchMock)
@@ -26,9 +32,15 @@ describe('createReviewCard', () => {
 		await expect(createReviewCard({ topicId: '7' })).resolves.toEqual({
 			id: '8',
 			topic_id: '7',
+			type: 'practice',
 			primary_text: 'Question',
 			secondary_text: 'Answer',
 			notes: '',
+			stability: null,
+			last_reviewed_at: null,
+			next_due_at: null,
+			freshness_tier: null,
+			flagged_at: null,
 		})
 		expect(fetchMock).toHaveBeenCalledTimes(1)
 		const request = getFetchRequest(fetchMock)

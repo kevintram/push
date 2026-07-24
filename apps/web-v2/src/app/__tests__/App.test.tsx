@@ -8,14 +8,21 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
+import { HideModeProvider } from '~/stores/HideMode'
 
 vi.mock('~/modules/reviews/api/getReviewCards', () => ({
 	fetchReviewCard: async () => ({
 		id: '3',
 		topic_id: '1',
+		type: 'practice',
 		primary_text: 'Question',
 		secondary_text: 'Answer',
 		notes: 'Notes',
+		stability: null,
+		last_reviewed_at: null,
+		next_due_at: null,
+		freshness_tier: null,
+		flagged_at: null,
 	}),
 	fetchReviewCards: async () => [],
 }))
@@ -42,9 +49,11 @@ function renderRoute(path: string) {
 	})
 
 	return render(
-		<QueryClientProvider client={queryClient}>
-			<RouterProvider context={{ queryClient }} router={router} />
-		</QueryClientProvider>,
+		<HideModeProvider>
+			<QueryClientProvider client={queryClient}>
+				<RouterProvider context={{ queryClient }} router={router} />
+			</QueryClientProvider>
+		</HideModeProvider>,
 	)
 }
 

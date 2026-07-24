@@ -8,9 +8,11 @@ import { reviewCardQueries } from './queries'
 
 export type UpdateReviewCardInput = {
 	id: string
+	type?: 'practice' | 'flashcard'
 	primary_text?: string
 	secondary_text?: string
 	notes?: string
+	flagged?: boolean
 }
 
 export async function updateReviewCard({

@@ -1,5 +1,3 @@
-import 'react-day-picker/style.css'
-
 import * as stylex from '@stylexjs/stylex'
 import { DayPicker } from 'react-day-picker'
 

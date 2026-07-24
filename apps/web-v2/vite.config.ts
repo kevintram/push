@@ -30,7 +30,9 @@ export default defineConfig(() => ({
 			],
 		}),
 		stylex.vite({
-			useCSSLayers: true,
+			useCSSLayers: {
+				before: ['reset', 'vendor'],
+			},
 			aliases: {
 				'~/*': [path.resolve(import.meta.dirname, './src/*')],
 			},

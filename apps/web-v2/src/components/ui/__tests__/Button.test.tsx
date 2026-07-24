@@ -101,13 +101,12 @@ describe('Button', () => {
 		).toBeInTheDocument()
 	})
 
-	it('renders prefix and suffix slots', () => {
+	it('renders child icon and label bundles', () => {
 		render(
-			<Button
-				prefix={<Search aria-hidden='true' />}
-				suffix={<Plus aria-hidden='true' />}
-			>
+			<Button>
+				<Search aria-hidden='true' />
 				Search
+				<Plus aria-hidden='true' />
 			</Button>,
 		)
 

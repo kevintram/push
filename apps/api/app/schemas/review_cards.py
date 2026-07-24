@@ -47,6 +47,7 @@ class ReviewCardRead(ReviewCardBase):
     retired: bool = False
     flagged_at: datetime | None = None
     last_reviewed_at: date | None = None
+    next_due_at: date | None = None
     retrievability: float | None = None
     freshness_tier: str | None = None
     days_until_next_tier: int | None = None

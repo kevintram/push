@@ -113,6 +113,7 @@ export function LibrarySidebar() {
 				<Button.Icon
 					aria-label='Add topic'
 					disabled={isCreatingTopic}
+					shape='round'
 					size='micro'
 					variant='ghost'
 					onClick={() => void addTopic(undefined)}

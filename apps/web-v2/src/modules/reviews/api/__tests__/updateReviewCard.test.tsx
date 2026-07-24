@@ -11,9 +11,15 @@ import { updateReviewCard, useUpdateReviewCard } from '../updateReviewCard'
 const response = {
 	id: 8,
 	topic_id: 7,
+	type: 'flashcard',
 	primary_text: 'Question',
 	secondary_text: 'Answer',
 	notes: 'Notes',
+	stability: null,
+	last_reviewed_at: null,
+	next_due_at: null,
+	freshness_tier: null,
+	flagged_at: null,
 }
 
 describe('updateReviewCard', () => {

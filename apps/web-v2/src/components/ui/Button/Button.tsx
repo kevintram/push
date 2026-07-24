@@ -53,10 +53,6 @@ const styles = stylex.create({
 		paddingInline: spacing.none,
 		aspectRatio: '1 / 1',
 	},
-	content: {
-		alignItems: 'center',
-		display: 'inline-flex',
-	},
 	slot: {
 		alignItems: 'center',
 		display: 'inline-flex',
@@ -263,8 +259,6 @@ export interface ButtonProps extends Omit<
 	size?: ButtonSize
 	shape?: ButtonShape
 	danger?: boolean
-	prefix?: React.ReactNode
-	suffix?: React.ReactNode
 	iconOnly?: boolean
 	xstyle?: stylex.StyleXStyles
 }
@@ -282,8 +276,6 @@ function renderButton({
 	children,
 	ref,
 	iconOnly = false,
-	prefix,
-	suffix,
 	xstyle,
 	...props
 }: ButtonRenderProps) {
@@ -308,13 +300,11 @@ function renderButton({
 			{...styleProps}
 			{...props}
 		>
-			{prefix && <span {...stylex.props(styles.slot)}>{prefix}</span>}
 			{iconOnly ? (
 				<span {...stylex.props(styles.slot)}>{children}</span>
 			) : (
-				<span {...stylex.props(styles.content)}>{children}</span>
+				children
 			)}
-			{suffix && <span {...stylex.props(styles.slot)}>{suffix}</span>}
 		</ButtonPrimitive>
 	)
 }

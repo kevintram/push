@@ -157,8 +157,8 @@ export const colors = stylex.defineVars({
 	// Use for elements that need a fully transparent background.
 	// The transparent value is represented by a zero-alpha primitive.
 	bgSurfaceTransparent: {
-		default: grayAlphaDark.s1,
-		[DARK]: grayAlphaDark.s1,
+		default: baseColors.transparent,
+		[DARK]: baseColors.transparent,
 	},
 
 	// Fills
@@ -510,6 +510,15 @@ export const colors = stylex.defineVars({
 	},
 	// Use for text links on an inverse background.
 	textLinkInverse: { default: grayDark.s11, [DARK]: grayDark.s11 },
+
+	iconFlashcardActive: {
+		default: amberLight.s9,
+		[DARK]: amberDark.s9,
+	},
+	iconFlagActive: {
+		default: orangeLight.s9,
+		[DARK]: orangeDark.s9,
+	},
 
 	// Borders
 	// Neutral borders
