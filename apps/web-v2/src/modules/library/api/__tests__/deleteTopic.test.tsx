@@ -64,33 +64,57 @@ describe('deleteTopic', () => {
 			{
 				id: '80',
 				topic_id: '8',
+				type: 'flashcard',
 				primary_text: 'Question',
 				secondary_text: 'Answer',
 				notes: '',
+				stability: null,
+				last_reviewed_at: null,
+				next_due_at: null,
+				freshness_tier: null,
+				flagged_at: null,
 			},
 		])
 		client.setQueryData(dueCardsQuery.queryKey, [
 			{
 				id: '80',
 				topic_id: '8',
+				type: 'flashcard',
 				primary_text: 'Deleted',
 				secondary_text: '',
 				notes: '',
+				stability: null,
+				last_reviewed_at: null,
+				next_due_at: null,
+				freshness_tier: null,
+				flagged_at: null,
 			},
 			{
 				id: '90',
 				topic_id: '9',
+				type: 'flashcard',
 				primary_text: 'Unrelated',
 				secondary_text: '',
 				notes: '',
+				stability: null,
+				last_reviewed_at: null,
+				next_due_at: null,
+				freshness_tier: null,
+				flagged_at: null,
 			},
 		])
 		client.setQueryData(reviewCardQueries.detail('80').queryKey, {
 			id: '80',
 			topic_id: '8',
+			type: 'flashcard',
 			primary_text: 'Deleted',
 			secondary_text: '',
 			notes: '',
+			stability: null,
+			last_reviewed_at: null,
+			next_due_at: null,
+			freshness_tier: null,
+			flagged_at: null,
 		})
 		const reviewsQuery = reviewQueries.list({ reviewCardId: '80' })
 		client.setQueryData(reviewsQuery.queryKey, [
@@ -125,9 +149,15 @@ describe('deleteTopic', () => {
 			{
 				id: '90',
 				topic_id: '9',
+				type: 'flashcard',
 				primary_text: 'Unrelated',
 				secondary_text: '',
 				notes: '',
+				stability: null,
+				last_reviewed_at: null,
+				next_due_at: null,
+				freshness_tier: null,
+				flagged_at: null,
 			},
 		])
 	})

@@ -3,9 +3,15 @@ import type { DateString } from '~/types/date'
 export type ReviewCard = {
 	id: string
 	topic_id: string
+	type: 'practice' | 'flashcard'
 	primary_text: string
 	secondary_text: string
 	notes: string
+	stability: number | null
+	last_reviewed_at: DateString | null
+	next_due_at: DateString | null
+	freshness_tier: string | null
+	flagged_at: string | null
 }
 
 export type ReviewCardFilters = {

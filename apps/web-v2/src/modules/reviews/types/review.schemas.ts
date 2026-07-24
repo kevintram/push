@@ -1,13 +1,20 @@
 import * as v from 'valibot'
 
+import { DateStringSchema } from '~/types/date.schema'
 import { IdSchema } from '~/types/id.schema'
 
 export const ReviewCardSchema = v.object({
 	id: IdSchema,
 	topic_id: IdSchema,
+	type: v.picklist(['practice', 'flashcard']),
 	primary_text: v.string(),
 	secondary_text: v.string(),
 	notes: v.string(),
+	stability: v.nullable(v.number()),
+	last_reviewed_at: v.nullable(DateStringSchema),
+	next_due_at: v.nullable(DateStringSchema),
+	freshness_tier: v.nullable(v.string()),
+	flagged_at: v.nullable(v.string()),
 })
 
 export const ReviewSchema = v.object({

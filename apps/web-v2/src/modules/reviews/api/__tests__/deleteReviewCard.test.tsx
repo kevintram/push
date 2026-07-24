@@ -25,9 +25,15 @@ describe('deleteReviewCard', () => {
 		client.setQueryData(reviewCardQueries.detail('8').queryKey, {
 			id: '8',
 			topic_id: '7',
+			type: 'flashcard',
 			primary_text: 'Question',
 			secondary_text: 'Answer',
 			notes: '',
+			stability: null,
+			last_reviewed_at: null,
+			next_due_at: null,
+			freshness_tier: null,
+			flagged_at: null,
 		})
 		const reviewsQuery = reviewQueries.list({
 			reviewCardId: '8',
