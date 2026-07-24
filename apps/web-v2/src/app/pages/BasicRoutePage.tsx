@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
+import { ContentColumn } from '~/components/ContentColumn'
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
@@ -36,9 +37,9 @@ const styles = stylex.create({
 
 export function BasicRoutePage({ description, title }: BasicRoutePageProps) {
 	return (
-		<main {...stylex.props(styles.page)}>
+		<ContentColumn xstyle={styles.page}>
 			<h1 {...stylex.props(styles.title)}>{title}</h1>
 			<p {...stylex.props(styles.description)}>{description}</p>
-		</main>
+		</ContentColumn>
 	)
 }

@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import * as v from 'valibot'
 
+import { ContentColumn } from '~/components/ContentColumn'
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 import { apiFetch } from '~/utils/apiFetch'
@@ -14,7 +15,7 @@ const styles = stylex.create({
 
 		alignItems: 'start',
 		display: 'grid',
-		width: 'fit-content',
+		justifyItems: 'start',
 	},
 	title: {
 		margin: 0,
@@ -45,13 +46,13 @@ export function SettingsPage() {
 	}
 
 	return (
-		<main {...stylex.props(styles.page)}>
+		<ContentColumn xstyle={styles.page}>
 			<h1 {...stylex.props(styles.title)}>Settings</h1>
 			<p {...stylex.props(styles.description)}>
 				App settings will appear here.
 			</p>
 			<button onClick={handleLogin}>Log In</button>
 			<button onClick={handleFetch}>Fetch</button>
-		</main>
+		</ContentColumn>
 	)
 }

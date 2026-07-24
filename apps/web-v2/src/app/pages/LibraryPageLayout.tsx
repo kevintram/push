@@ -9,13 +9,24 @@ const styles = stylex.create({
 
 		height: '100%',
 	},
+	content: {
+		display: 'flex',
+		flexDirection: 'column',
+
+		flexBasis: 0,
+		flexGrow: 1,
+		flexShrink: 1,
+		minWidth: 0,
+	},
 })
 
 export function LibraryPageLayout() {
 	return (
 		<div {...stylex.props(styles.container)}>
 			<LibrarySidebar />
-			<Outlet />
+			<div {...stylex.props(styles.content)}>
+				<Outlet />
+			</div>
 		</div>
 	)
 }

@@ -3,6 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
+import { ContentColumn } from '~/components/ContentColumn'
 import { Button } from '~/components/ui'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
 import { reviewQueries } from '~/modules/reviews/api/queries'
@@ -27,7 +28,7 @@ export function ReviewCardPageReviews() {
 	const { isPending: isCreating, mutate: createReview } = useCreateReview()
 
 	return (
-		<div {...stylex.props(styles.page)}>
+		<ContentColumn xstyle={styles.page}>
 			<div {...stylex.props(styles.actions)}>
 				<Button
 					disabled={isCreating}
@@ -47,6 +48,6 @@ export function ReviewCardPageReviews() {
 					))}
 				</div>
 			) : null}
-		</div>
+		</ContentColumn>
 	)
 }
