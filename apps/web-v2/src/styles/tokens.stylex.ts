@@ -49,3 +49,7 @@ export const iconSizes = stylex.defineVars({
 	xl: '2rem',
 	'2xl': '3rem',
 })
+
+export const layout = stylex.defineConsts({
+	contentMaxWidth: '805px',
+})

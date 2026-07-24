@@ -3,6 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { useCallback } from 'react'
 
+import { ContentColumn } from '~/components/ContentColumn'
 import { Textarea } from '~/components/ui'
 import { useAutoSave } from '~/hooks/useAutoSave'
 import { reviewCardQueries } from '~/modules/reviews/api/queries'
@@ -16,12 +17,17 @@ const styles = stylex.create({
 	},
 	main: {
 		padding: '24px',
-		gap: spacing.md,
 		display: 'flex',
 		flexBasis: 0,
 		flexDirection: 'column',
 		flexGrow: 1,
 		flexShrink: 1,
+		minWidth: 0,
+	},
+	fields: {
+		gap: spacing.md,
+		display: 'flex',
+		flexDirection: 'column',
 	},
 	primary: {
 		fontSize: fontSizes.xl,
@@ -65,32 +71,34 @@ export function ReviewCardPageOverview() {
 
 	return (
 		<div {...stylex.props(styles.container)}>
-			<main {...stylex.props(styles.main)}>
-				<Textarea
-					aria-label='Review-card primary text'
-					placeholder='Primary text'
-					value={primary.value}
-					onChange={primary.onChange}
-					onBlur={primary.flush}
-					xstyle={styles.primary}
-				/>
-				<Textarea
-					aria-label='Review-card secondary text'
-					placeholder='Secondary text'
-					value={secondary.value}
-					onChange={secondary.onChange}
-					onBlur={secondary.flush}
-					xstyle={styles.secondary}
-				/>
-				<Textarea
-					aria-label='Review-card notes'
-					placeholder='Add notes'
-					value={notes.value}
-					onChange={notes.onChange}
-					onBlur={notes.flush}
-					xstyle={styles.notes}
-				/>
-			</main>
+			<div {...stylex.props(styles.main)}>
+				<ContentColumn xstyle={styles.fields}>
+					<Textarea
+						aria-label='Review-card primary text'
+						placeholder='Primary text'
+						value={primary.value}
+						onChange={primary.onChange}
+						onBlur={primary.flush}
+						xstyle={styles.primary}
+					/>
+					<Textarea
+						aria-label='Review-card secondary text'
+						placeholder='Secondary text'
+						value={secondary.value}
+						onChange={secondary.onChange}
+						onBlur={secondary.flush}
+						xstyle={styles.secondary}
+					/>
+					<Textarea
+						aria-label='Review-card notes'
+						placeholder='Add notes'
+						value={notes.value}
+						onChange={notes.onChange}
+						onBlur={notes.flush}
+						xstyle={styles.notes}
+					/>
+				</ContentColumn>
+			</div>
 			<aside>
 				<ReviewsSidebar />
 			</aside>
