@@ -1,7 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useState } from 'react'
 
-import { useHideMode } from '~/stores/HideMode'
 import { colors } from '~/styles/colors.stylex'
 import { radii } from '~/styles/tokens.stylex'
 
@@ -9,6 +8,9 @@ import { Button } from './ui'
 
 type HideableProps = {
 	children?: ReactNode
+	defaultRevealed?: boolean
+	onRevealedChange?: (revealed: boolean) => void
+	revealed?: boolean
 	xstyle?: stylex.StyleXStyles
 }
 
@@ -31,37 +33,42 @@ const styles = stylex.create({
 
 		backgroundColor: colors.bgFillSecondary,
 	},
-	overlayHidden: {
-		display: 'none',
-	},
 })
 
-export function Hideable({ children, xstyle }: HideableProps) {
-	const { hideMode } = useHideMode()
-	const [revealed, setRevealed] = useState(hideMode === 'off')
-
-	useEffect(() => {
-		// hide when review mode turns on, show when it turns off
-		setRevealed(hideMode === 'off')
-	}, [hideMode])
+export function Hideable({
+	children,
+	defaultRevealed,
+	onRevealedChange,
+	revealed,
+	xstyle,
+}: HideableProps) {
+	const [uncontrolledRevealed, setUncontrolledRevealed] = useState(
+		() => defaultRevealed ?? false,
+	)
+	const isControlled = revealed !== undefined
+	const isRevealed = isControlled ? revealed : uncontrolledRevealed
 
 	const reveal = useCallback(() => {
-		setRevealed(true)
-	}, [])
+		if (!isControlled) setUncontrolledRevealed(true)
+		onRevealedChange?.(true)
+	}, [isControlled, onRevealedChange])
 
 	return (
 		<div {...stylex.props(styles.container, xstyle)}>
-			<div {...stylex.props(styles.children)}>{children}</div>
 			<div
-				{...stylex.props(
-					styles.overlay,
-					revealed ? styles.overlayHidden : null,
-				)}
+				{...stylex.props(styles.children)}
+				aria-hidden={isRevealed ? undefined : true}
+				inert={isRevealed ? undefined : true}
 			>
-				<Button onClick={reveal} shape='round'>
-					Reveal
-				</Button>
+				{children}
 			</div>
+			{isRevealed ? null : (
+				<div {...stylex.props(styles.overlay)}>
+					<Button onClick={reveal} shape='round'>
+						Reveal
+					</Button>
+				</div>
+			)}
 		</div>
 	)
 }
