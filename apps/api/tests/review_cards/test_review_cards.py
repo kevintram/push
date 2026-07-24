@@ -274,6 +274,46 @@ class TestReviewCardEndpoints:
         assert response.status_code == 200
         assert [item["id"] for item in response.json()] == [due_card["id"]]
 
+    async def test_list_review_cards_exposes_next_due_at(
+        self,
+        test_client: AsyncClient,
+    ):
+        topic = await _create_topic(test_client, "Next due")
+        scheduled_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Scheduled"
+        )
+        completed_only_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Completed"
+        )
+        unscheduled_card = await _create_review_card(
+            test_client, topic["id"], primary_text="Unscheduled"
+        )
+        # next_due_at is the earliest uncompleted scheduled review.
+        await _create_review(
+            test_client, scheduled_card["id"], scheduled_at="2026-07-20"
+        )
+        await _create_review(
+            test_client, scheduled_card["id"], scheduled_at="2026-07-15"
+        )
+        # A completed review must not count toward next_due_at.
+        await _create_review(
+            test_client,
+            completed_only_card["id"],
+            scheduled_at="2026-07-12",
+            completed_at="2026-07-12",
+        )
+        await _create_review(test_client, unscheduled_card["id"])
+
+        response = await test_client.get(f"/review-cards/?topic_id={topic['id']}")
+
+        assert response.status_code == 200
+        next_due_by_id = {
+            item["id"]: item["next_due_at"] for item in response.json()
+        }
+        assert next_due_by_id[scheduled_card["id"]] == "2026-07-15"
+        assert next_due_by_id[completed_only_card["id"]] is None
+        assert next_due_by_id[unscheduled_card["id"]] is None
+
     async def test_list_review_cards_filters_late_due_date_from_client_date(
         self,
         test_client: AsyncClient,

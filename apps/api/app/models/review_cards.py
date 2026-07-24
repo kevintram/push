@@ -179,6 +179,15 @@ class ReviewCard(Base):
         )
 
     @property
+    def next_due_at(self) -> date | None:
+        scheduled = [
+            review.scheduled_at
+            for review in self.reviews
+            if review.completed_at is None and review.scheduled_at is not None
+        ]
+        return min(scheduled) if scheduled else None
+
+    @property
     def reviews_due_today_count(self) -> int:
         today = get_current_date()
         return sum(
