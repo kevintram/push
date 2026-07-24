@@ -14,9 +14,15 @@ vi.mock('~/modules/reviews/api/getReviewCards', () => ({
 	fetchReviewCard: async () => ({
 		id: '3',
 		topic_id: '1',
+		type: 'practice',
 		primary_text: 'Question',
 		secondary_text: 'Answer',
 		notes: 'Notes',
+		stability: null,
+		last_reviewed_at: null,
+		next_due_at: null,
+		freshness_tier: null,
+		flagged_at: null,
 	}),
 	fetchReviewCards: async () => [],
 }))

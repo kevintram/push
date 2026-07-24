@@ -2,7 +2,7 @@ import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Hideable } from '~/components/Hideable'
@@ -20,12 +20,7 @@ import { useDeleteReviewCard } from '~/modules/reviews/api/deleteReviewCard'
 import { reviewCardQueries } from '~/modules/reviews/api/queries'
 import { useUpdateReviewCard } from '~/modules/reviews/api/updateReviewCard'
 import { ReviewsSidebar } from '~/modules/reviews/components/ReviewsSidebar'
-import {
-	amberDark,
-	amberLight,
-	orangeDark,
-	orangeLight,
-} from '~/styles/colorPrimitives.stylex'
+import { useHideMode } from '~/stores/HideMode'
 import { colors } from '~/styles/colors.stylex'
 import {
 	fontSizes,
@@ -35,7 +30,7 @@ import {
 } from '~/styles/tokens.stylex'
 import { formatRelativeDate } from '~/utils/date'
 
-const DARK = '@media (prefers-color-scheme: dark)'
+type EditableField = 'primary_text' | 'secondary_text' | 'notes'
 
 const styles = stylex.create({
 	container: {
@@ -47,7 +42,7 @@ const styles = stylex.create({
 	},
 	main: {
 		padding: spacing.xl,
-		gap: spacing.xs,
+		gap: spacing.xl,
 
 		display: 'flex',
 		flexDirection: 'column',
@@ -61,6 +56,11 @@ const styles = stylex.create({
 		fontWeight: fontWeights.bold,
 	},
 	secondary: { fontSize: fontSizes.md },
+	separatorGroup: {
+		gap: spacing.sm,
+		display: 'flex',
+		flexDirection: 'column',
+	},
 	footer: {
 		gap: spacing.md,
 		alignItems: 'center',
@@ -89,19 +89,12 @@ const styles = stylex.create({
 		flexShrink: 0,
 	},
 	flashcardOn: {
-		fill: { [DARK]: amberDark.s9, default: amberLight.s9 },
-		color: { [DARK]: amberDark.s9, default: amberLight.s9 },
+		fill: colors.iconFlashcardActive,
+		color: colors.iconFlashcardActive,
 	},
 	flagOn: {
-		fill: { [DARK]: orangeDark.s9, default: orangeLight.s9 },
-		color: { [DARK]: orangeDark.s9, default: orangeLight.s9 },
-	},
-	separatorGroup: {
-		marginBlock: spacing.xl,
-
-		gap: spacing.sm,
-		display: 'flex',
-		flexDirection: 'column',
+		fill: colors.iconFlagActive,
+		color: colors.iconFlagActive,
 	},
 	notesContainer: {
 		flexBasis: 0,
@@ -123,14 +116,18 @@ export function ReviewCardPageOverview() {
 	const { data: reviewCard } = useSuspenseQuery(
 		reviewCardQueries.detail(reviewCardId),
 	)
-	const { mutate } = useUpdateReviewCard()
 	const router = useRouter()
+	const { mutate } = useUpdateReviewCard()
 	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
 		useDeleteReviewCard()
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const { hideMode } = useHideMode()
 
-	const save = useCallback(
-		(field: 'primary_text' | 'secondary_text' | 'notes', value: string) => {
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
+	const [notesRevealed, setNotesRevealed] = useState(false)
+
+	const saveField = useCallback(
+		(field: EditableField, value: string) => {
 			if (value === reviewCard[field]) return
 			mutate({ id: reviewCard.id, [field]: value })
 		},
@@ -138,21 +135,26 @@ export function ReviewCardPageOverview() {
 	)
 	const primary = useAutoSave({
 		initialValue: reviewCard.primary_text,
-		onSave: value => save('primary_text', value),
+		onSave: value => saveField('primary_text', value),
 		key: `review-card-primary-${reviewCard.id}`,
 	})
 	const secondary = useAutoSave({
 		initialValue: reviewCard.secondary_text,
-		onSave: value => save('secondary_text', value),
+		onSave: value => saveField('secondary_text', value),
 		key: `review-card-secondary-${reviewCard.id}`,
 	})
 	const notes = useAutoSave({
 		initialValue: reviewCard.notes,
-		onSave: value => save('notes', value),
+		onSave: value => saveField('notes', value),
 		key: `review-card-notes-${reviewCard.id}`,
 	})
 
 	const targetType = reviewCard.type === 'practice' ? 'flashcard' : 'practice'
+
+	useEffect(() => {
+		setSecondaryRevealed(false)
+		setNotesRevealed(false)
+	}, [hideMode, reviewCard.id])
 
 	const toggleFlag = () =>
 		mutate({ id: reviewCard.id, flagged: reviewCard.flagged_at === null })
@@ -168,8 +170,6 @@ export function ReviewCardPageOverview() {
 		router.history.back()
 	}
 
-	const isUnreviewed = reviewCard.last_reviewed_at === null
-
 	return (
 		<div {...stylex.props(styles.container)}>
 			<main {...stylex.props(styles.main)}>
@@ -181,19 +181,28 @@ export function ReviewCardPageOverview() {
 					onBlur={primary.flush}
 					xstyle={styles.primary}
 				/>
-				<Textarea
-					aria-label='Review-card secondary text'
-					placeholder='Secondary text'
-					value={secondary.value}
-					onChange={secondary.onChange}
-					onBlur={secondary.flush}
-					xstyle={styles.secondary}
-				/>
+				<Hideable
+					revealed={
+						reviewCard.type === 'practice' || // always show if practice
+						hideMode === 'off' || // always show if hideMode off
+						secondaryRevealed
+					}
+					onRevealedChange={setSecondaryRevealed}
+				>
+					<Textarea
+						aria-label='Review-card secondary text'
+						placeholder='Secondary text'
+						value={secondary.value}
+						onChange={secondary.onChange}
+						onBlur={secondary.flush}
+						xstyle={styles.secondary}
+					/>
+				</Hideable>
 
 				<div {...stylex.props(styles.separatorGroup)}>
 					<div {...stylex.props(styles.footer)}>
 						<div {...stylex.props(styles.metadata)}>
-							{isUnreviewed ? (
+							{reviewCard.last_reviewed_at === null ? (
 								<span {...stylex.props(styles.metadataItem)}>
 									Unreviewed
 								</span>
@@ -217,18 +226,14 @@ export function ReviewCardPageOverview() {
 											{`Due ${formatRelativeDate(reviewCard.next_due_at)}`}
 										</span>
 									) : null}
-									{reviewCard.last_reviewed_at !== null ? (
-										<span
-											{...stylex.props(
-												styles.metadataItem,
-											)}
-										>
-											<Check size={iconSizes.md} />
-											{formatRelativeDate(
-												reviewCard.last_reviewed_at,
-											)}
-										</span>
-									) : null}
+									<span
+										{...stylex.props(styles.metadataItem)}
+									>
+										<Check size={iconSizes.md} />
+										{formatRelativeDate(
+											reviewCard.last_reviewed_at,
+										)}
+									</span>
 									{reviewCard.stability !== null ? (
 										<span
 											{...stylex.props(
@@ -338,7 +343,11 @@ export function ReviewCardPageOverview() {
 					<Separator />
 				</div>
 
-				<Hideable key={reviewCardId} xstyle={styles.notesContainer}>
+				<Hideable
+					revealed={hideMode === 'off' || notesRevealed}
+					onRevealedChange={setNotesRevealed}
+					xstyle={styles.notesContainer}
+				>
 					<Textarea
 						aria-label='Review-card notes'
 						placeholder='Add notes'
