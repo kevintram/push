@@ -47,11 +47,10 @@ const styles = stylex.create({
 		display: 'grid',
 		gridTemplateColumns: 'auto 1fr',
 		gridTemplateRows: 'auto auto',
+		position: 'relative',
 
 		backgroundColor: colors.bgSurfaceTransparent,
 		cursor: 'pointer',
-
-		borderWidth: 0,
 	},
 	rating: {
 		gridColumnEnd: 'rating',
@@ -89,10 +88,24 @@ const styles = stylex.create({
 		minInlineSize: 0,
 
 		fontSize: fontSizes.sm,
+		textAlign: 'start',
 
 		backgroundColor: colors.bgSurfaceTransparent,
 		color: colors.text,
 		cursor: 'pointer',
+
+		borderWidth: 0,
+
+		// stretched link trick
+		'::after': {
+			inset: 0,
+			content: '""',
+			position: 'absolute',
+		},
+	},
+	raised: {
+		position: 'relative',
+		zIndex: 1,
 	},
 	descriptionText: {
 		overflow: 'hidden',
@@ -248,21 +261,15 @@ export function Review({ review }: { review: ReviewModel }) {
 	return (
 		<>
 			<Dialog open={isOpen} onOpenChange={setIsOpen}>
-				<DialogTrigger
-					nativeButton={false}
-					render={<div />}
-					{...stylex.props(styles.contentContainer)}
-				>
+				<div {...stylex.props(styles.contentContainer)}>
 					<DropdownMenu>
 						<DropdownMenuTrigger
 							aria-label={rating?.label ?? 'Uncompleted'}
-							onClick={event => event.stopPropagation()}
-							onMouseDown={event => event.stopPropagation()}
 							render={
 								<ButtonIcon
 									size='micro'
 									variant='ghost'
-									xstyle={styles.rating}
+									xstyle={[styles.rating, styles.raised]}
 								/>
 							}
 						>
@@ -280,10 +287,7 @@ export function Review({ review }: { review: ReviewModel }) {
 								</span>
 							)}
 						</DropdownMenuTrigger>
-						<DropdownMenuContent
-							onClick={event => event.stopPropagation()}
-							onMouseDown={event => event.stopPropagation()}
-						>
+						<DropdownMenuContent>
 							<DropdownMenuRadioGroup
 								value={review.rating ?? ''}
 								onValueChange={value =>
@@ -324,7 +328,7 @@ export function Review({ review }: { review: ReviewModel }) {
 							</DropdownMenuRadioGroup>
 						</DropdownMenuContent>
 					</DropdownMenu>
-					<div {...stylex.props(styles.description)}>
+					<DialogTrigger {...stylex.props(styles.description)}>
 						<span {...stylex.props(styles.descriptionText)}>
 							{description || 'No description'}
 						</span>
@@ -334,14 +338,16 @@ export function Review({ review }: { review: ReviewModel }) {
 								{...stylex.props(styles.notesIndicator)}
 							/>
 						)}
-					</div>
+					</DialogTrigger>
 					<div {...stylex.props(styles.footer)}>
-						<ReviewDatePicker
-							disabled={isPending}
-							isCompleted={review.completed_at !== null}
-							onChange={updateDate}
-							value={effectiveDate}
-						/>
+						<div {...stylex.props(styles.raised)}>
+							<ReviewDatePicker
+								disabled={isPending}
+								isCompleted={review.completed_at !== null}
+								onChange={updateDate}
+								value={effectiveDate}
+							/>
+						</div>
 						{stabilityAfter !== null && (
 							<span {...stylex.props(styles.durability)}>
 								<Anvil
@@ -357,14 +363,12 @@ export function Review({ review }: { review: ReviewModel }) {
 						<div {...stylex.props(styles.spacer)} />
 						<DropdownMenu>
 							<DropdownMenuTrigger
-								onClick={event => event.stopPropagation()}
-								onMouseDown={event => event.stopPropagation()}
 								render={
 									<Button.Icon
 										aria-label='Review actions'
 										size='micro'
 										variant='ghost'
-										xstyle={styles.more}
+										xstyle={[styles.more, styles.raised]}
 									/>
 								}
 							>
@@ -373,11 +377,7 @@ export function Review({ review }: { review: ReviewModel }) {
 									size={iconSizes.md}
 								/>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent
-								align='end'
-								onClick={event => event.stopPropagation()}
-								onMouseDown={event => event.stopPropagation()}
-							>
+							<DropdownMenuContent align='end'>
 								<DropdownMenuItem
 									disabled={isDeleting}
 									onClick={() => setIsDeleteDialogOpen(true)}
@@ -391,7 +391,7 @@ export function Review({ review }: { review: ReviewModel }) {
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
-				</DialogTrigger>
+				</div>
 
 				<DialogContent>
 					<Textarea
