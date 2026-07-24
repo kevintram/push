@@ -307,9 +307,7 @@ class TestReviewCardEndpoints:
         response = await test_client.get(f"/review-cards/?topic_id={topic['id']}")
 
         assert response.status_code == 200
-        next_due_by_id = {
-            item["id"]: item["next_due_at"] for item in response.json()
-        }
+        next_due_by_id = {item["id"]: item["next_due_at"] for item in response.json()}
         assert next_due_by_id[scheduled_card["id"]] == "2026-07-15"
         assert next_due_by_id[completed_only_card["id"]] is None
         assert next_due_by_id[unscheduled_card["id"]] is None
