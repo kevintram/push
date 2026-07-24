@@ -1,5 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 
+import { ContentColumn } from '~/components/ContentColumn'
 import { fontSizes, fontWeights, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
@@ -14,7 +15,7 @@ const styles = stylex.create({
 
 		display: 'flex',
 		flexDirection: 'column',
-		width: 'min(100%, 760px)',
+		width: '100%',
 	},
 	eyebrow: {
 		margin: 0,
@@ -36,13 +37,13 @@ const styles = stylex.create({
 
 export function HomePage() {
 	return (
-		<main {...stylex.props(styles.page)}>
+		<ContentColumn xstyle={styles.page}>
 			<section {...stylex.props(styles.hero)}>
 				<p {...stylex.props(styles.eyebrow)}>3gulp v2</p>
 				<h1 {...stylex.props(styles.title)}>
 					A clean foundation for the rewrite.
 				</h1>
 			</section>
-		</main>
+		</ContentColumn>
 	)
 }

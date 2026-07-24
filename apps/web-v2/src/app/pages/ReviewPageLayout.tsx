@@ -1,6 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
 import { Outlet } from '@tanstack/react-router'
 
+import { ContentColumn } from '~/components/ContentColumn'
 import { ReviewSidebar } from '~/modules/reviews/components/ReviewSidebar'
 import { spacing } from '~/styles/tokens.stylex'
 
@@ -24,6 +25,10 @@ const styles = stylex.create({
 		flexGrow: 1,
 		flexShrink: 1,
 	},
+	content: {
+		display: 'flex',
+		flexDirection: 'column',
+	},
 })
 
 export function ReviewPageLayout() {
@@ -31,7 +36,9 @@ export function ReviewPageLayout() {
 		<div {...stylex.props(styles.outerContainer)}>
 			<ReviewSidebar />
 			<div {...stylex.props(styles.innerContainer)}>
-				<Outlet />
+				<ContentColumn xstyle={styles.content}>
+					<Outlet />
+				</ContentColumn>
 			</div>
 		</div>
 	)

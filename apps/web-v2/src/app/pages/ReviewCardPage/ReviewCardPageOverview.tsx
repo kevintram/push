@@ -4,6 +4,7 @@ import { useParams, useRouter } from '@tanstack/react-router'
 import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
+import { ContentColumn } from '~/components/ContentColumn'
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Hideable } from '~/components/Hideable'
 import {
@@ -42,7 +43,6 @@ const styles = stylex.create({
 	},
 	main: {
 		padding: spacing.xl,
-		gap: spacing.xl,
 
 		display: 'flex',
 		flexDirection: 'column',
@@ -50,6 +50,12 @@ const styles = stylex.create({
 		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
+		minWidth: 0,
+	},
+	column: {
+		gap: spacing.xl,
+		display: 'flex',
+		flexDirection: 'column',
 	},
 	primary: {
 		fontSize: fontSizes.xl,
@@ -173,190 +179,205 @@ export function ReviewCardPageOverview() {
 	return (
 		<div {...stylex.props(styles.container)}>
 			<main {...stylex.props(styles.main)}>
-				<Textarea
-					aria-label='Review-card primary text'
-					placeholder='Primary text'
-					value={primary.value}
-					onChange={primary.onChange}
-					onBlur={primary.flush}
-					xstyle={styles.primary}
-				/>
-				<Hideable
-					revealed={
-						reviewCard.type === 'practice' || // always show if practice
-						hideMode === 'off' || // always show if hideMode off
-						secondaryRevealed
-					}
-					onRevealedChange={setSecondaryRevealed}
-				>
+				<ContentColumn xstyle={styles.column}>
 					<Textarea
-						aria-label='Review-card secondary text'
-						placeholder='Secondary text'
-						value={secondary.value}
-						onChange={secondary.onChange}
-						onBlur={secondary.flush}
-						xstyle={styles.secondary}
+						aria-label='Review-card primary text'
+						placeholder='Primary text'
+						value={primary.value}
+						onChange={primary.onChange}
+						onBlur={primary.flush}
+						xstyle={styles.primary}
 					/>
-				</Hideable>
+					<Hideable
+						revealed={
+							reviewCard.type === 'practice' || // always show if practice
+							hideMode === 'off' || // always show if hideMode off
+							secondaryRevealed
+						}
+						onRevealedChange={setSecondaryRevealed}
+					>
+						<Textarea
+							aria-label='Review-card secondary text'
+							placeholder='Secondary text'
+							value={secondary.value}
+							onChange={secondary.onChange}
+							onBlur={secondary.flush}
+							xstyle={styles.secondary}
+						/>
+					</Hideable>
 
-				<div {...stylex.props(styles.separatorGroup)}>
-					<div {...stylex.props(styles.footer)}>
-						<div {...stylex.props(styles.metadata)}>
-							{reviewCard.last_reviewed_at === null ? (
-								<span {...stylex.props(styles.metadataItem)}>
-									Unreviewed
-								</span>
-							) : (
-								<>
-									{reviewCard.freshness_tier !== null ? (
-										<span
-											{...stylex.props(
-												styles.metadataItem,
-											)}
-										>
-											{reviewCard.freshness_tier}
-										</span>
-									) : null}
-									{reviewCard.next_due_at !== null ? (
-										<span
-											{...stylex.props(
-												styles.metadataItem,
-											)}
-										>
-											{`Due ${formatRelativeDate(reviewCard.next_due_at)}`}
-										</span>
-									) : null}
+					<div {...stylex.props(styles.separatorGroup)}>
+						<div {...stylex.props(styles.footer)}>
+							<div {...stylex.props(styles.metadata)}>
+								{reviewCard.last_reviewed_at === null ? (
 									<span
 										{...stylex.props(styles.metadataItem)}
 									>
-										<Check size={iconSizes.md} />
-										{formatRelativeDate(
-											reviewCard.last_reviewed_at,
-										)}
+										Unreviewed
 									</span>
-									{reviewCard.stability !== null ? (
+								) : (
+									<>
+										{reviewCard.freshness_tier !== null ? (
+											<span
+												{...stylex.props(
+													styles.metadataItem,
+												)}
+											>
+												{reviewCard.freshness_tier}
+											</span>
+										) : null}
+										{reviewCard.next_due_at !== null ? (
+											<span
+												{...stylex.props(
+													styles.metadataItem,
+												)}
+											>
+												{`Due ${formatRelativeDate(reviewCard.next_due_at)}`}
+											</span>
+										) : null}
 										<span
 											{...stylex.props(
 												styles.metadataItem,
 											)}
 										>
-											Durable for{' '}
-											{Math.round(reviewCard.stability)}d
+											<Check size={iconSizes.md} />
+											{formatRelativeDate(
+												reviewCard.last_reviewed_at,
+											)}
 										</span>
-									) : null}
-								</>
-							)}
-						</div>
+										{reviewCard.stability !== null ? (
+											<span
+												{...stylex.props(
+													styles.metadataItem,
+												)}
+											>
+												Durable for{' '}
+												{Math.round(
+													reviewCard.stability,
+												)}
+												d
+											</span>
+										) : null}
+									</>
+								)}
+							</div>
 
-						<div {...stylex.props(styles.actions)}>
-							{reviewCard.type === 'flashcard' ? (
-								<Button.Icon
-									aria-label='Unflashcard'
-									shape='round'
-									variant='ghost'
-									size='small'
-									onClick={toggleType}
-								>
-									<Zap
-										aria-hidden='true'
-										size={iconSizes.md}
-										{...stylex.props(styles.flashcardOn)}
-									/>
-								</Button.Icon>
-							) : null}
-							{reviewCard.flagged_at !== null ? (
-								<Button.Icon
-									aria-label='Unflag'
-									shape='round'
-									variant='ghost'
-									size='small'
-									onClick={toggleFlag}
-								>
-									<Flag
-										aria-hidden='true'
-										size={iconSizes.md}
-										{...stylex.props(styles.flagOn)}
-									/>
-								</Button.Icon>
-							) : null}
-
-							<DropdownMenu>
-								<DropdownMenuTrigger
-									render={
-										<Button.Icon
-											aria-label='Review card actions'
-											shape='round'
-											variant='ghost'
-											size='small'
-										/>
-									}
-								>
-									<Ellipsis
-										aria-hidden='true'
-										size={iconSizes.md}
-									/>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align='end'>
-									<DropdownMenuItem onClick={toggleType}>
+							<div {...stylex.props(styles.actions)}>
+								{reviewCard.type === 'flashcard' ? (
+									<Button.Icon
+										aria-label='Unflashcard'
+										shape='round'
+										variant='ghost'
+										size='small'
+										onClick={toggleType}
+									>
 										<Zap
 											aria-hidden='true'
 											size={iconSizes.md}
-											{...(reviewCard.type === 'flashcard'
-												? stylex.props(
-														styles.flashcardOn,
-													)
-												: {})}
+											{...stylex.props(
+												styles.flashcardOn,
+											)}
 										/>
-										{reviewCard.type === 'flashcard'
-											? 'Unflashcard'
-											: 'Flashcard'}
-									</DropdownMenuItem>
-									<DropdownMenuItem onClick={toggleFlag}>
+									</Button.Icon>
+								) : null}
+								{reviewCard.flagged_at !== null ? (
+									<Button.Icon
+										aria-label='Unflag'
+										shape='round'
+										variant='ghost'
+										size='small'
+										onClick={toggleFlag}
+									>
 										<Flag
 											aria-hidden='true'
 											size={iconSizes.md}
-											{...(reviewCard.flagged_at !== null
-												? stylex.props(styles.flagOn)
-												: {})}
+											{...stylex.props(styles.flagOn)}
 										/>
-										{reviewCard.flagged_at !== null
-											? 'Unflag'
-											: 'Flag'}
-									</DropdownMenuItem>
-									<DropdownMenuItem
-										disabled={isDeleting}
-										onClick={() =>
-											setIsDeleteDialogOpen(true)
+									</Button.Icon>
+								) : null}
+
+								<DropdownMenu>
+									<DropdownMenuTrigger
+										render={
+											<Button.Icon
+												aria-label='Review card actions'
+												shape='round'
+												variant='ghost'
+												size='small'
+											/>
 										}
 									>
-										<Trash2
+										<Ellipsis
 											aria-hidden='true'
 											size={iconSizes.md}
 										/>
-										Delete
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align='end'>
+										<DropdownMenuItem onClick={toggleType}>
+											<Zap
+												aria-hidden='true'
+												size={iconSizes.md}
+												{...(reviewCard.type ===
+												'flashcard'
+													? stylex.props(
+															styles.flashcardOn,
+														)
+													: {})}
+											/>
+											{reviewCard.type === 'flashcard'
+												? 'Unflashcard'
+												: 'Flashcard'}
+										</DropdownMenuItem>
+										<DropdownMenuItem onClick={toggleFlag}>
+											<Flag
+												aria-hidden='true'
+												size={iconSizes.md}
+												{...(reviewCard.flagged_at !==
+												null
+													? stylex.props(
+															styles.flagOn,
+														)
+													: {})}
+											/>
+											{reviewCard.flagged_at !== null
+												? 'Unflag'
+												: 'Flag'}
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											disabled={isDeleting}
+											onClick={() =>
+												setIsDeleteDialogOpen(true)
+											}
+										>
+											<Trash2
+												aria-hidden='true'
+												size={iconSizes.md}
+											/>
+											Delete
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</div>
 						</div>
+
+						<Separator />
 					</div>
 
-					<Separator />
-				</div>
-
-				<Hideable
-					revealed={hideMode === 'off' || notesRevealed}
-					onRevealedChange={setNotesRevealed}
-					xstyle={styles.notesContainer}
-				>
-					<Textarea
-						aria-label='Review-card notes'
-						placeholder='Add notes'
-						value={notes.value}
-						onChange={notes.onChange}
-						onBlur={notes.flush}
-						xstyle={styles.notes}
-					/>
-				</Hideable>
+					<Hideable
+						revealed={hideMode === 'off' || notesRevealed}
+						onRevealedChange={setNotesRevealed}
+						xstyle={styles.notesContainer}
+					>
+						<Textarea
+							aria-label='Review-card notes'
+							placeholder='Add notes'
+							value={notes.value}
+							onChange={notes.onChange}
+							onBlur={notes.flush}
+							xstyle={styles.notes}
+						/>
+					</Hideable>
+				</ContentColumn>
 			</main>
 			<aside>
 				<ReviewsSidebar />

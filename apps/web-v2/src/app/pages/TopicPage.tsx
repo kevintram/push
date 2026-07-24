@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
+import { ContentColumn } from '~/components/ContentColumn'
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
@@ -34,10 +35,6 @@ const styles = stylex.create({
 
 		display: 'flex',
 		flexDirection: 'column',
-
-		flexBasis: 0,
-		flexGrow: '1',
-		flexShrink: '1',
 	},
 	header: {
 		display: 'flex',
@@ -154,7 +151,7 @@ export function TopicPage() {
 	}
 
 	return (
-		<div {...stylex.props(styles.container)}>
+		<ContentColumn xstyle={styles.container}>
 			<header {...stylex.props(styles.header)}>
 				<div {...stylex.props(styles.titleBar)}>
 					<Textarea
@@ -228,6 +225,6 @@ export function TopicPage() {
 				open={isDeleteDialogOpen}
 				title='Delete topic?'
 			/>
-		</div>
+		</ContentColumn>
 	)
 }
