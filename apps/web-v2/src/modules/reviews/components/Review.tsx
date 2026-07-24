@@ -397,7 +397,7 @@ export function Review({ review }: { review: ReviewModel }) {
 				<DialogContent>
 					<Textarea
 						aria-label='Review description'
-						placeholder='Add a review description'
+						placeholder='Add a description…'
 						value={descriptionEditor.value}
 						onChange={descriptionEditor.onChange}
 						onBlur={descriptionEditor.flush}
@@ -405,7 +405,7 @@ export function Review({ review }: { review: ReviewModel }) {
 					/>
 					<Textarea
 						aria-label='Review notes'
-						placeholder='Add review notes'
+						placeholder='Add notes…'
 						value={notesEditor.value}
 						onChange={notesEditor.onChange}
 						onBlur={notesEditor.flush}

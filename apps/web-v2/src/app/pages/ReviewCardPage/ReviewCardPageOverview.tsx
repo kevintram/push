@@ -182,7 +182,9 @@ export function ReviewCardPageOverview() {
 				<ContentColumn xstyle={styles.column}>
 					<Textarea
 						aria-label='Review-card primary text'
-						placeholder='Primary text'
+						placeholder={
+							reviewCard.type === 'flashcard' ? 'Prompt' : 'Title'
+						}
 						value={primary.value}
 						onChange={primary.onChange}
 						onBlur={primary.flush}
@@ -198,7 +200,11 @@ export function ReviewCardPageOverview() {
 					>
 						<Textarea
 							aria-label='Review-card secondary text'
-							placeholder='Secondary text'
+							placeholder={
+								reviewCard.type === 'flashcard'
+									? 'Answer'
+									: 'Add a description…'
+							}
 							value={secondary.value}
 							onChange={secondary.onChange}
 							onBlur={secondary.flush}
@@ -370,7 +376,7 @@ export function ReviewCardPageOverview() {
 					>
 						<Textarea
 							aria-label='Review-card notes'
-							placeholder='Add notes'
+							placeholder='Add notes…'
 							value={notes.value}
 							onChange={notes.onChange}
 							onBlur={notes.flush}

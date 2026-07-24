@@ -157,7 +157,7 @@ export function TopicPage() {
 					<Textarea
 						aria-label='Topic title'
 						autoFocus={shouldFocusTitle}
-						placeholder='Topic title'
+						placeholder='Title'
 						value={title.value}
 						onChange={title.onChange}
 						onBlur={title.flush}
@@ -191,7 +191,7 @@ export function TopicPage() {
 				</div>
 				<Textarea
 					aria-label='Topic body'
-					placeholder='Add a topic description'
+					placeholder='Add a description…'
 					value={body.value}
 					onChange={body.onChange}
 					onBlur={body.flush}
