@@ -2,14 +2,27 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { HideModeButton } from '~/components/HideModeButton'
+import { HideModeProvider } from '~/stores/HideMode'
 import type { DateString } from '~/types/date'
 import { formatRelativeDate } from '~/utils/date'
 
 import type { ReviewCard as ReviewCardModel } from '../../types/review.types'
 import { ReviewCard } from '../ReviewCard'
 
+const renderCard = (ui: React.ReactElement) =>
+	render(ui, {
+		wrapper: ({ children }) => (
+			<HideModeProvider>
+				<HideModeButton />
+				{children}
+			</HideModeProvider>
+		),
+	})
+
 const updateReviewCard = vi.fn()
 const deleteReviewCard = vi.fn()
+const linkClick = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
 	Link: ({
@@ -21,7 +34,11 @@ vi.mock('@tanstack/react-router', () => ({
 		to?: string
 		params?: unknown
 		children?: React.ReactNode
-	}) => <a {...props}>{children}</a>,
+	}) => (
+		<a {...props} onClick={linkClick}>
+			{children}
+		</a>
+	),
 }))
 vi.mock('../../api/updateReviewCard', () => ({
 	useUpdateReviewCard: () => ({ mutate: updateReviewCard }),
@@ -49,13 +66,96 @@ const card: ReviewCardModel = {
 
 describe('ReviewCard', () => {
 	beforeEach(() => {
+		sessionStorage.clear()
 		updateReviewCard.mockReset()
 		deleteReviewCard.mockReset().mockResolvedValue(undefined)
+		linkClick.mockReset()
+	})
+
+	it('reveals a practice answer when hide mode is on', () => {
+		sessionStorage.setItem('hideMode', 'on')
+		renderCard(<ReviewCard {...card} />)
+
+		expect(
+			screen.queryByRole('button', { name: 'Reveal' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('reveals a flashcard answer when hide mode is off', () => {
+		renderCard(<ReviewCard {...card} type='flashcard' />)
+
+		expect(
+			screen.queryByRole('button', { name: 'Reveal' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('covers a flashcard answer when hide mode is on', () => {
+		sessionStorage.setItem('hideMode', 'on')
+		renderCard(<ReviewCard {...card} type='flashcard' />)
+
+		expect(
+			screen.getByRole('button', { name: 'Reveal' }),
+		).toBeInTheDocument()
+	})
+
+	it('reveals only the clicked flashcard answer', async () => {
+		sessionStorage.setItem('hideMode', 'on')
+		const user = userEvent.setup()
+		renderCard(
+			<>
+				<ReviewCard {...card} id='3' type='flashcard' />
+				<ReviewCard {...card} id='4' type='flashcard' />
+			</>,
+		)
+
+		await user.click(screen.getAllByRole('button', { name: 'Reveal' })[0]!)
+
+		expect(screen.getAllByRole('button', { name: 'Reveal' })).toHaveLength(
+			1,
+		)
+	})
+
+	it('covers an answer after changing from practice to flashcard', () => {
+		sessionStorage.setItem('hideMode', 'on')
+		const { rerender } = renderCard(<ReviewCard {...card} />)
+
+		rerender(<ReviewCard {...card} type='flashcard' />)
+
+		expect(
+			screen.getByRole('button', { name: 'Reveal' }),
+		).toBeInTheDocument()
+	})
+
+	it('reveals without activating the stretched detail link', async () => {
+		sessionStorage.setItem('hideMode', 'on')
+		const user = userEvent.setup()
+		renderCard(<ReviewCard {...card} type='flashcard' />)
+
+		await user.click(screen.getByRole('button', { name: 'Reveal' }))
+
+		expect(linkClick).not.toHaveBeenCalled()
+		expect(
+			screen.queryByRole('button', { name: 'Reveal' }),
+		).not.toBeInTheDocument()
+	})
+
+	it('resets a manual reveal when hide mode changes', async () => {
+		sessionStorage.setItem('hideMode', 'on')
+		const user = userEvent.setup()
+		renderCard(<ReviewCard {...card} type='flashcard' />)
+		await user.click(screen.getByRole('button', { name: 'Reveal' }))
+
+		await user.click(screen.getByRole('button', { name: 'Hide Mode' }))
+		await user.click(screen.getByRole('button', { name: 'Hide Mode' }))
+
+		expect(
+			screen.getByRole('button', { name: 'Reveal' }),
+		).toBeInTheDocument()
 	})
 
 	it('turns a practice card into a flashcard from the overflow menu', async () => {
 		const user = userEvent.setup()
-		render(<ReviewCard {...card} />)
+		renderCard(<ReviewCard {...card} />)
 
 		await user.click(
 			screen.getByRole('button', { name: 'Review card actions' }),
@@ -70,7 +170,7 @@ describe('ReviewCard', () => {
 
 	it('unflashcards a flashcard from its footer button', async () => {
 		const user = userEvent.setup()
-		render(<ReviewCard {...card} type='flashcard' />)
+		renderCard(<ReviewCard {...card} type='flashcard' />)
 
 		await user.click(screen.getByRole('button', { name: 'Unflashcard' }))
 
@@ -82,7 +182,7 @@ describe('ReviewCard', () => {
 
 	it('unflashcards a flashcard from the overflow menu', async () => {
 		const user = userEvent.setup()
-		render(<ReviewCard {...card} type='flashcard' />)
+		renderCard(<ReviewCard {...card} type='flashcard' />)
 
 		await user.click(
 			screen.getByRole('button', { name: 'Review card actions' }),
@@ -97,7 +197,7 @@ describe('ReviewCard', () => {
 
 	it('flags an unflagged card', async () => {
 		const user = userEvent.setup()
-		render(<ReviewCard {...card} />)
+		renderCard(<ReviewCard {...card} />)
 
 		await user.click(
 			screen.getByRole('button', { name: 'Review card actions' }),
@@ -112,7 +212,7 @@ describe('ReviewCard', () => {
 
 	it('unflags a flagged card from its footer button', async () => {
 		const user = userEvent.setup()
-		render(<ReviewCard {...card} flagged_at='2026-07-15T00:00:00Z' />)
+		renderCard(<ReviewCard {...card} flagged_at='2026-07-15T00:00:00Z' />)
 
 		await user.click(screen.getByRole('button', { name: 'Unflag' }))
 
@@ -124,7 +224,7 @@ describe('ReviewCard', () => {
 
 	it('unflags a flagged card from the overflow menu', async () => {
 		const user = userEvent.setup()
-		render(<ReviewCard {...card} flagged_at='2026-07-15T00:00:00Z' />)
+		renderCard(<ReviewCard {...card} flagged_at='2026-07-15T00:00:00Z' />)
 
 		await user.click(
 			screen.getByRole('button', { name: 'Review card actions' }),
@@ -139,7 +239,7 @@ describe('ReviewCard', () => {
 
 	it('requires confirmation before deleting', async () => {
 		const user = userEvent.setup()
-		render(<ReviewCard {...card} />)
+		renderCard(<ReviewCard {...card} />)
 
 		await user.click(
 			screen.getByRole('button', { name: 'Review card actions' }),
@@ -157,7 +257,7 @@ describe('ReviewCard', () => {
 	})
 
 	it('renders metadata chips from real fields', () => {
-		render(<ReviewCard {...card} />)
+		renderCard(<ReviewCard {...card} />)
 
 		expect(screen.getByText('Hazy')).toBeInTheDocument()
 		expect(screen.getByText('Durable for 16d')).toBeInTheDocument()
@@ -173,7 +273,7 @@ describe('ReviewCard', () => {
 	})
 
 	it('shows a single Unreviewed chip for new cards', () => {
-		render(
+		renderCard(
 			<ReviewCard
 				{...card}
 				stability={null}

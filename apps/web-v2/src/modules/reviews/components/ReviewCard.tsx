@@ -1,9 +1,10 @@
 import * as stylex from '@stylexjs/stylex'
 import { Link } from '@tanstack/react-router'
 import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
+import { Hideable } from '~/components/Hideable'
 import {
 	Button,
 	DropdownMenu,
@@ -14,12 +15,7 @@ import {
 import { useDeleteReviewCard } from '~/modules/reviews/api/deleteReviewCard'
 import { useUpdateReviewCard } from '~/modules/reviews/api/updateReviewCard'
 import { type ReviewCard } from '~/modules/reviews/types/review.types'
-import {
-	amberDark,
-	amberLight,
-	orangeDark,
-	orangeLight,
-} from '~/styles/colorPrimitives.stylex'
+import { useHideMode } from '~/stores/HideMode'
 import { colors } from '~/styles/colors.stylex'
 import {
 	fontSizes,
@@ -28,8 +24,6 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 import { formatRelativeDate } from '~/utils/date'
-
-const DARK = '@media (prefers-color-scheme: dark)'
 
 const styles = stylex.create({
 	container: {
@@ -53,17 +47,24 @@ const styles = stylex.create({
 		textDecoration: 'none',
 		color: colors.text,
 
-		// Stretched-link overlay: makes the whole card a click target for this
-		// link while keeping full anchor semantics (keyboard, cmd-click, copy).
+		// Stretched-link trick
 		'::after': {
 			inset: 0,
 			content: '""',
 			position: 'absolute',
 		},
 	},
-	description: {
+	raised: {
+		// Create seperate z-index context so streched-link
+		// overlay doesn't capture interactins
+		position: 'relative',
+		zIndex: 1,
+	},
+	secondaryText: {
+		paddingBlock: spacing.sm,
 		fontSize: fontSizes.sm,
 	},
+
 	footer: {
 		gap: spacing.md,
 		alignItems: 'center',
@@ -86,21 +87,18 @@ const styles = stylex.create({
 		whiteSpace: 'nowrap',
 	},
 	actions: {
-		// Sits above the stretched-link overlay so it captures its own clicks.
 		gap: spacing.xs,
 		alignItems: 'center',
 		display: 'flex',
 		flexShrink: 0,
-		position: 'relative',
-		zIndex: 1,
 	},
 	flashcardOn: {
-		fill: { [DARK]: amberDark.s9, default: amberLight.s9 },
-		color: { [DARK]: amberDark.s9, default: amberLight.s9 },
+		fill: colors.iconFlashcardActive,
+		color: colors.iconFlashcardActive,
 	},
 	flagOn: {
-		fill: { [DARK]: orangeDark.s9, default: orangeLight.s9 },
-		color: { [DARK]: orangeDark.s9, default: orangeLight.s9 },
+		fill: colors.iconFlagActive,
+		color: colors.iconFlagActive,
 	},
 })
 
@@ -115,16 +113,34 @@ export function ReviewCard({
 	freshness_tier,
 	flagged_at,
 }: ReviewCard) {
-	const { mutate: updateReviewCard } = useUpdateReviewCard()
 	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
 		useDeleteReviewCard()
+	const { mutate: updateReviewCard } = useUpdateReviewCard()
+
+	const { hideMode } = useHideMode()
+
+	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-	const targetType = type === 'practice' ? 'flashcard' : 'practice'
+	const isUnreviewed = last_reviewed_at === null
+
+	const secondaryShown =
+		type === 'practice' || // always show if practice
+		hideMode === 'off' || // always show if hideMode off
+		secondaryRevealed
+
+	useEffect(() => {
+		// reset secondaryRevealed
+		setSecondaryRevealed(false)
+	}, [hideMode, id])
 
 	const toggleFlag = () =>
 		updateReviewCard({ id, flagged: flagged_at === null })
-	const toggleType = () => updateReviewCard({ id, type: targetType })
+	const toggleType = () =>
+		updateReviewCard({
+			id,
+			type: type === 'practice' ? 'flashcard' : 'practice',
+		})
 
 	const confirmDelete = async () => {
 		try {
@@ -134,8 +150,6 @@ export function ReviewCard({
 		}
 		setIsDeleteDialogOpen(false)
 	}
-
-	const isUnreviewed = last_reviewed_at === null
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -148,7 +162,18 @@ export function ReviewCard({
 			</Link>
 
 			{secondary_text ? (
-				<p {...stylex.props(styles.description)}>{secondary_text}</p>
+				<Hideable
+					revealed={secondaryShown}
+					onRevealedChange={setSecondaryRevealed}
+					// Only raise while hidden so the Reveal button stays
+					// clickable; once revealed, let the answer text fall
+					// under the stretched link so the card stays navigable.
+					xstyle={secondaryShown ? undefined : styles.raised}
+				>
+					<p {...stylex.props(styles.secondaryText)}>
+						{secondary_text}
+					</p>
+				</Hideable>
 			) : null}
 
 			<div {...stylex.props(styles.footer)}>
@@ -184,7 +209,7 @@ export function ReviewCard({
 					)}
 				</div>
 
-				<div {...stylex.props(styles.actions)}>
+				<div {...stylex.props(styles.actions, styles.raised)}>
 					{type === 'flashcard' ? (
 						<Button.Icon
 							aria-label='Unflashcard'

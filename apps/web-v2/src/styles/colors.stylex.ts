@@ -511,6 +511,15 @@ export const colors = stylex.defineVars({
 	// Use for text links on an inverse background.
 	textLinkInverse: { default: grayDark.s11, [DARK]: grayDark.s11 },
 
+	iconFlashcardActive: {
+		default: amberLight.s9,
+		[DARK]: amberDark.s9,
+	},
+	iconFlagActive: {
+		default: orangeLight.s9,
+		[DARK]: orangeDark.s9,
+	},
+
 	// Borders
 	// Neutral borders
 	// The default color for borders on any element.
