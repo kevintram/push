@@ -168,6 +168,7 @@ export function TopicPage() {
 							render={
 								<Button.Icon
 									aria-label='Topic actions'
+									shape='round'
 									variant='ghost'
 								/>
 							}
@@ -205,6 +206,7 @@ export function TopicPage() {
 				<Button.Icon
 					aria-label='Add review card'
 					disabled={isCreatingReviewCard}
+					shape='round'
 					onClick={() => void addReviewCard()}
 				>
 					<Plus aria-hidden='true' />

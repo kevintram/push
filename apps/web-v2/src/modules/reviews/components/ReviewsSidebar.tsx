@@ -73,6 +73,7 @@ export function ReviewsSidebar() {
 						variant='ghost'
 						size='micro'
 						disabled={isPending}
+						shape='round'
 						onClick={() => createReview({ reviewCardId })}
 					>
 						<Plus aria-hidden='true' size={iconSizes.md} />

@@ -15,7 +15,6 @@ import { useCallback, useState } from 'react'
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
-	ButtonIcon,
 	Dialog,
 	DialogContent,
 	DialogTrigger,
@@ -266,7 +265,8 @@ export function Review({ review }: { review: ReviewModel }) {
 						<DropdownMenuTrigger
 							aria-label={rating?.label ?? 'Uncompleted'}
 							render={
-								<ButtonIcon
+								<Button.Icon
+									shape='round'
 									size='micro'
 									variant='ghost'
 									xstyle={[styles.rating, styles.raised]}
@@ -366,6 +366,7 @@ export function Review({ review }: { review: ReviewModel }) {
 								render={
 									<Button.Icon
 										aria-label='Review actions'
+										shape='round'
 										size='micro'
 										variant='ghost'
 										xstyle={[styles.more, styles.raised]}
