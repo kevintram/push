@@ -3,7 +3,6 @@ import {
 	Anvil,
 	Check,
 	CheckCheck,
-	ChevronDown,
 	Circle,
 	Construction,
 	Ellipsis,
@@ -16,6 +15,7 @@ import { useCallback, useState } from 'react'
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
+	ButtonIcon,
 	Dialog,
 	DialogContent,
 	DialogTrigger,
@@ -259,7 +259,7 @@ export function Review({ review }: { review: ReviewModel }) {
 							onClick={event => event.stopPropagation()}
 							onMouseDown={event => event.stopPropagation()}
 							render={
-								<Button
+								<ButtonIcon
 									size='micro'
 									variant='ghost'
 									xstyle={styles.rating}
@@ -279,10 +279,6 @@ export function Review({ review }: { review: ReviewModel }) {
 									/>
 								</span>
 							)}
-							<ChevronDown
-								aria-hidden='true'
-								size={iconSizes.md}
-							/>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent
 							onClick={event => event.stopPropagation()}
