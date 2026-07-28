@@ -55,9 +55,7 @@ const review: ReviewModel = {
 
 describe('Review', () => {
 	beforeEach(() => {
-		deleteReview
-			.mockReset()
-			.mockImplementation((_id, options) => options?.onSuccess?.())
+		deleteReview.mockReset()
 		updateReview.mockReset()
 	})
 
@@ -88,10 +86,7 @@ describe('Review', () => {
 		await user.click(screen.getByRole('button', { name: 'Delete' }))
 
 		expect(deleteReview).toHaveBeenCalledOnce()
-		expect(deleteReview).toHaveBeenCalledWith(
-			'12',
-			expect.objectContaining({ onSuccess: expect.any(Function) }),
-		)
+		expect(deleteReview).toHaveBeenCalledWith('12')
 	})
 
 	it('keeps the rating menu independent from the dialog trigger', async () => {

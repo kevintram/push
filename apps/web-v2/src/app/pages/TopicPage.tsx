@@ -1,6 +1,11 @@
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
+import {
+	useLocation,
+	useNavigate,
+	useParams,
+	useRouter,
+} from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
@@ -21,6 +26,7 @@ import { useUpdateTopic } from '~/modules/library/api/updateTopic'
 import { useCreateReviewCard } from '~/modules/reviews/api/createReviewCard'
 import { reviewCardQueries } from '~/modules/reviews/api/queries'
 import { ReviewCard } from '~/modules/reviews/components/ReviewCard'
+import { colors } from '~/styles/colors.stylex'
 import {
 	fontSizes,
 	fontWeights,
@@ -66,11 +72,16 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
+	pending: {
+		paddingBlock: spacing.lg,
+		color: colors.textSecondary,
+	},
 })
 
 export function TopicPage() {
 	const { topicId } = useParams({ from: '/library/$topicId' })
 	const navigate = useNavigate()
+	const router = useRouter()
 	const shouldFocusTitle = useLocation({
 		select: location =>
 			(
@@ -85,10 +96,12 @@ export function TopicPage() {
 		reviewCardQueries.list({ topicId }),
 	)
 	const { mutate: updateTopic } = useUpdateTopic()
-	const { isPending: isDeletingTopic, mutateAsync: deleteTopic } =
-		useDeleteTopic()
-	const { isPending: isCreatingReviewCard, mutateAsync: createReviewCard } =
-		useCreateReviewCard()
+	const { isPending: isDeletingTopic, mutate: deleteTopic } = useDeleteTopic()
+	const {
+		isPending: isCreatingReviewCard,
+		mutate: createReviewCard,
+		variables: createReviewCardVariables,
+	} = useCreateReviewCard()
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	const saveTitle = useCallback(
@@ -118,33 +131,32 @@ export function TopicPage() {
 		key: `topic-body-${topic.id}`,
 	})
 
-	const addReviewCard = async () => {
-		const reviewCard = await createReviewCard({ topicId }).catch(
-			() => undefined,
-		)
-		if (!reviewCard) return
-
-		await navigate({
-			to: '/review-cards/$reviewCardId',
-			params: {
-				reviewCardId: reviewCard.id,
+	const addReviewCard = () => {
+		const sourceHref = router.state.location.href
+		createReviewCard(
+			{ topicId },
+			{
+				onSuccess: reviewCard => {
+					if (router.state.location.href !== sourceHref) return
+					void navigate({
+						to: '/review-cards/$reviewCardId',
+						params: {
+							reviewCardId: reviewCard.id,
+						},
+					})
+				},
 			},
-		})
+		)
 	}
 
-	const confirmDeleteTopic = async () => {
-		try {
-			await deleteTopic(topic.id)
-		} catch {
-			return
-		}
-
+	const confirmDeleteTopic = () => {
 		setIsDeleteDialogOpen(false)
+		deleteTopic(topic.id)
 		if (topic.parentId === undefined) {
-			await navigate({ to: '/library' })
+			void navigate({ to: '/library' })
 			return
 		}
-		await navigate({
+		void navigate({
 			to: '/library/$topicId',
 			params: { topicId: topic.parentId },
 		})
@@ -207,7 +219,7 @@ export function TopicPage() {
 					aria-label='Add review card'
 					disabled={isCreatingReviewCard}
 					shape='round'
-					onClick={() => void addReviewCard()}
+					onClick={addReviewCard}
 				>
 					<Plus aria-hidden='true' />
 				</Button.Icon>
@@ -217,12 +229,18 @@ export function TopicPage() {
 				{reviewCards.map(reviewCard => (
 					<ReviewCard key={reviewCard.id} {...reviewCard} />
 				))}
+				{isCreatingReviewCard &&
+				createReviewCardVariables?.topicId === topicId ? (
+					<p aria-disabled='true' {...stylex.props(styles.pending)}>
+						Creating review card…
+					</p>
+				) : null}
 			</div>
 
 			<DeleteConfirmationDialog
 				description='This will delete this topic, its subtopics, and all linked review cards and reviews.'
 				isPending={isDeletingTopic}
-				onConfirm={() => void confirmDeleteTopic()}
+				onConfirm={confirmDeleteTopic}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
 				title='Delete topic?'
