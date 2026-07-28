@@ -43,6 +43,7 @@ const styles = stylex.create({
 		fontSize: fontSizes.sm,
 	},
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
+	pending: { color: colors.textSecondary, fontSize: fontSizes.sm },
 })
 
 export function ReviewsSidebar() {
@@ -52,7 +53,11 @@ export function ReviewsSidebar() {
 	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.list({ reviewCardId, order: 'desc' }),
 	)
-	const { isPending, mutate: createReview } = useCreateReview()
+	const {
+		isPending,
+		mutate: createReview,
+		variables: createReviewVariables,
+	} = useCreateReview()
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -81,6 +86,12 @@ export function ReviewsSidebar() {
 				</div>
 			</div>
 			<div {...stylex.props(styles.list)}>
+				{isPending &&
+				createReviewVariables?.reviewCardId === reviewCardId ? (
+					<p aria-disabled='true' {...stylex.props(styles.pending)}>
+						Creating review…
+					</p>
+				) : null}
 				{reviews.map(review => (
 					<Review key={review.id} review={review} />
 				))}

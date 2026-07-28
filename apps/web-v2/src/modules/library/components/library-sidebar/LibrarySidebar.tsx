@@ -1,6 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { useNavigate, useParams, useRouter } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { useState } from 'react'
 
@@ -60,47 +60,52 @@ function containsTopic(topic: TopicDeleteTarget, topicId?: string): boolean {
 
 export function LibrarySidebar() {
 	const navigate = useNavigate()
+	const router = useRouter()
 	const { topicId: currentTopicId } = useParams({ strict: false })
 	const { data } = useSuspenseQuery(topicQueries.list())
-	const { isPending: isCreatingTopic, mutateAsync: createTopic } =
-		useCreateTopic()
-	const { isPending: isDeletingTopic, mutateAsync: deleteTopic } =
-		useDeleteTopic()
+	const {
+		isPending: isCreatingTopic,
+		mutate: createTopic,
+		variables: createTopicVariables,
+	} = useCreateTopic()
+	const { isPending: isDeletingTopic, mutate: deleteTopic } = useDeleteTopic()
 	const [topicToDelete, setTopicToDelete] = useState<TopicDeleteTarget>()
 
-	const addTopic = async (parentId?: string) => {
-		const topic = await createTopic({ parentId }).catch(() => undefined)
-		if (!topic) return
-
-		await navigate({
-			to: '/library/$topicId',
-			params: { topicId: topic.id },
-			state: previous => ({
-				...previous,
-				focusTopicTitle: true,
-			}),
-		})
+	const addTopic = (parentId?: string) => {
+		const sourceHref = router.state.location.href
+		createTopic(
+			{ parentId },
+			{
+				onSuccess: topic => {
+					if (router.state.location.href !== sourceHref) return
+					void navigate({
+						to: '/library/$topicId',
+						params: { topicId: topic.id },
+						state: previous => ({
+							...previous,
+							focusTopicTitle: true,
+						}),
+					})
+				},
+			},
+		)
 	}
 
-	const confirmDeleteTopic = async () => {
-		if (!topicToDelete) return
-
-		try {
-			await deleteTopic(topicToDelete.id)
-		} catch {
-			return
-		}
+	const confirmDeleteTopic = () => {
+		const target = topicToDelete
+		if (!target) return
 
 		setTopicToDelete(undefined)
+		deleteTopic(target.id)
 
-		if (!containsTopic(topicToDelete, currentTopicId)) return
-		if (topicToDelete.parentId === undefined) {
-			await navigate({ to: '/library' })
+		if (!containsTopic(target, currentTopicId)) return
+		if (target.parentId === undefined) {
+			void navigate({ to: '/library' })
 			return
 		}
-		await navigate({
+		void navigate({
 			to: '/library/$topicId',
-			params: { topicId: topicToDelete.parentId },
+			params: { topicId: target.parentId },
 		})
 	}
 
@@ -129,18 +134,27 @@ export function LibrarySidebar() {
 							{...topic}
 							isAddingTopic={isCreatingTopic}
 							isDeletingTopic={isDeletingTopic}
-							onAddSubtopic={parentId => void addTopic(parentId)}
+							pendingParentId={
+								isCreatingTopic
+									? createTopicVariables?.parentId
+									: undefined
+							}
+							onAddSubtopic={addTopic}
 							onDeleteTopic={setTopicToDelete}
 						/>
 					))}
+					{isCreatingTopic &&
+					createTopicVariables?.parentId === undefined ? (
+						<li aria-disabled='true'>Creating topic…</li>
+					) : null}
 				</ul>
 			</nav>
 			<DeleteConfirmationDialog
 				description='This will delete this topic, its subtopics, and all linked review cards and reviews.'
 				isPending={isDeletingTopic}
-				onConfirm={() => void confirmDeleteTopic()}
+				onConfirm={confirmDeleteTopic}
 				onOpenChange={open => {
-					if (!open && !isDeletingTopic) setTopicToDelete(undefined)
+					if (!open) setTopicToDelete(undefined)
 				}}
 				open={topicToDelete !== undefined}
 				title={`Delete “${topicToDeleteTitle}”?`}

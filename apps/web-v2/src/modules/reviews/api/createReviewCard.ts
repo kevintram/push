@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { mutationScopes, optimisticMutationKeys } from '~/lib/mutationConfig'
+import { invalidateAfterOptimisticBatch } from '~/lib/optimisticInvalidation'
 import { apiFetch } from '~/utils/apiFetch'
 
 import { ReviewCardSchema } from '../types/review.schemas'
@@ -24,6 +26,8 @@ export async function createReviewCard({
 export function useCreateReviewCard() {
 	const queryClient = useQueryClient()
 	return useMutation({
+		mutationKey: [...optimisticMutationKeys.reviewCards, 'create'],
+		scope: mutationScopes.reviewCards,
 		mutationFn: createReviewCard,
 		meta: { errorMessage: 'Failed to create review card' },
 		onSuccess: reviewCard => {
@@ -31,9 +35,10 @@ export function useCreateReviewCard() {
 				reviewCardQueries.detail(reviewCard.id).queryKey,
 				reviewCard,
 			)
-			void queryClient.invalidateQueries({
-				queryKey: reviewCardQueries.lists(),
-			})
 		},
+		onSettled: () =>
+			invalidateAfterOptimisticBatch(queryClient, [
+				reviewCardQueries.lists(),
+			]),
 	})
 }

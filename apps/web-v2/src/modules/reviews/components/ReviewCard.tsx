@@ -113,7 +113,7 @@ export function ReviewCard({
 	freshness_tier,
 	flagged_at,
 }: ReviewCard) {
-	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
+	const { isPending: isDeleting, mutate: deleteReviewCard } =
 		useDeleteReviewCard()
 	const { mutate: updateReviewCard } = useUpdateReviewCard()
 
@@ -142,13 +142,9 @@ export function ReviewCard({
 			type: type === 'practice' ? 'flashcard' : 'practice',
 		})
 
-	const confirmDelete = async () => {
-		try {
-			await deleteReviewCard(id)
-		} catch {
-			return
-		}
+	const confirmDelete = () => {
 		setIsDeleteDialogOpen(false)
+		deleteReviewCard(id)
 	}
 
 	return (
@@ -295,7 +291,7 @@ export function ReviewCard({
 			<DeleteConfirmationDialog
 				description='This will delete this review card and all linked reviews.'
 				isPending={isDeleting}
-				onConfirm={() => void confirmDelete()}
+				onConfirm={confirmDelete}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
 				title='Delete review card?'

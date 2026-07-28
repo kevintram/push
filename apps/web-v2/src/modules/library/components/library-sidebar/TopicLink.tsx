@@ -20,6 +20,7 @@ export type TopicDeleteTarget = Pick<
 type TopicLinkProps = TopicWithChildren & {
 	isAddingTopic: boolean
 	isDeletingTopic: boolean
+	pendingParentId?: string
 	onAddSubtopic: (parentId: string) => void
 	onDeleteTopic: (topic: TopicDeleteTarget) => void
 }
@@ -48,6 +49,7 @@ export function TopicLink({
 	children,
 	isAddingTopic,
 	isDeletingTopic,
+	pendingParentId,
 	onAddSubtopic,
 	onDeleteTopic,
 }: TopicLinkProps) {
@@ -87,18 +89,22 @@ export function TopicLink({
 				</ContextMenuContent>
 			</ContextMenu>
 
-			{children && children.length > 0 ? (
+			{(children && children.length > 0) || pendingParentId === id ? (
 				<ul {...stylex.props(styles.childrenList)}>
-					{children.map(child => (
+					{children?.map(child => (
 						<TopicLink
 							key={child.id}
 							{...child}
 							isAddingTopic={isAddingTopic}
 							isDeletingTopic={isDeletingTopic}
+							pendingParentId={pendingParentId}
 							onAddSubtopic={onAddSubtopic}
 							onDeleteTopic={onDeleteTopic}
 						/>
 					))}
+					{pendingParentId === id ? (
+						<li aria-disabled='true'>Creating topic…</li>
+					) : null}
 				</ul>
 			) : null}
 		</li>
