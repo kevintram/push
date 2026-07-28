@@ -124,7 +124,7 @@ export function ReviewCardPageOverview() {
 	)
 	const router = useRouter()
 	const { mutate } = useUpdateReviewCard()
-	const { isPending: isDeleting, mutate: deleteReviewCard } =
+	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
 		useDeleteReviewCard()
 	const { hideMode } = useHideMode()
 
@@ -166,14 +166,14 @@ export function ReviewCardPageOverview() {
 		mutate({ id: reviewCard.id, flagged: reviewCard.flagged_at === null })
 	const toggleType = () => mutate({ id: reviewCard.id, type: targetType })
 
-	const confirmDelete = () => {
+	const confirmDelete = async () => {
+		try {
+			await deleteReviewCard(reviewCard.id)
+		} catch {
+			return
+		}
 		setIsDeleteDialogOpen(false)
-		// Navigating before the server confirms would strand the user off the
-		// card with only a generic toast when the delete fails. Staying mounted
-		// also keeps this callback alive to run.
-		deleteReviewCard(reviewCard.id, {
-			onSuccess: () => router.history.back(),
-		})
+		router.history.back()
 	}
 
 	return (
@@ -392,7 +392,7 @@ export function ReviewCardPageOverview() {
 			<DeleteConfirmationDialog
 				description='This will delete this review card and all linked reviews.'
 				isPending={isDeleting}
-				onConfirm={confirmDelete}
+				onConfirm={() => void confirmDelete()}
 				onOpenChange={setIsDeleteDialogOpen}
 				open={isDeleteDialogOpen}
 				title='Delete review card?'

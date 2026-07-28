@@ -46,7 +46,7 @@ vi.mock('../../api/updateReviewCard', () => ({
 vi.mock('../../api/deleteReviewCard', () => ({
 	useDeleteReviewCard: () => ({
 		isPending: false,
-		mutate: deleteReviewCard,
+		mutateAsync: deleteReviewCard,
 	}),
 }))
 

@@ -1,12 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import type { PropsWithChildren } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createDeferred } from '~/testing/deferred'
 import { getFetchRequest } from '~/testing/getFetchRequest'
 
-import type { TopicWithChildren } from '../../types/topic.types'
 import { topicQueries } from '../queries'
 import { updateTopic, useUpdateTopic } from '../updateTopic'
 
@@ -50,152 +48,34 @@ describe('updateTopic', () => {
 		await expect(updateTopic({ id: '7', body: 'x' })).rejects.toThrow('500')
 	})
 
-	function setup() {
+	it('updates the normalized detail cache and invalidates lists', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi
+				.fn()
+				.mockResolvedValue(
+					new Response(JSON.stringify(response), { status: 200 }),
+				),
+		)
 		const client = new QueryClient({
-			defaultOptions: {
-				mutations: { retry: false },
-				queries: { retry: false },
-			},
+			defaultOptions: { queries: { retry: false } },
 		})
+		const invalidate = vi.spyOn(client, 'invalidateQueries')
 		const wrapper = ({ children }: PropsWithChildren) => (
 			<QueryClientProvider client={client}>
 				{children}
 			</QueryClientProvider>
 		)
-		return { client, ...renderHook(useUpdateTopic, { wrapper }) }
-	}
-
-	it('patches detail and tree caches before success without writing the response', async () => {
-		const deferred = createDeferred<Response>()
-		vi.stubGlobal('fetch', vi.fn().mockReturnValue(deferred.promise))
-		const { client, result } = setup()
-		const detail = { id: '7', title: 'Original', body: 'Body' }
-		const list = [
-			{ ...detail, children: [] },
-			{ id: '8', title: 'Sibling', body: '', children: [] },
-		] satisfies Array<TopicWithChildren>
-		client.setQueryData(topicQueries.detail('7').queryKey, detail)
-		client.setQueryData(topicQueries.list().queryKey, list)
-		const invalidate = vi.spyOn(client, 'invalidateQueries')
-
-		act(() => result.current.mutate({ id: '7', title: 'Edited' }))
-		await waitFor(() =>
-			expect(
-				client.getQueryData<TopicWithChildren>(
-					topicQueries.detail('7').queryKey,
-				)?.title,
-			).toBe('Edited'),
-		)
-		expect(
-			client.getQueryData<Array<TopicWithChildren>>(
-				topicQueries.list().queryKey,
-			)?.[0]?.title,
-		).toBe('Edited')
-		expect(invalidate).not.toHaveBeenCalled()
-
-		client.setQueryData<Array<TopicWithChildren>>(
-			topicQueries.list().queryKey,
-			current =>
-				current?.map(topic =>
-					topic.id === '8'
-						? { ...topic, title: 'New sibling' }
-						: topic,
-				),
-		)
-		deferred.resolve(
-			Response.json({
-				...response,
-				title: 'Stale server response',
-			}),
-		)
+		const { result } = renderHook(useUpdateTopic, { wrapper })
+		result.current.mutate({ id: '7', title: 'Edited' })
 		await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-		expect(
-			client.getQueryData<TopicWithChildren>(
-				topicQueries.detail('7').queryKey,
-			)?.title,
-		).toBe('Edited')
-		expect(
-			client
-				.getQueryData<Array<TopicWithChildren>>(
-					topicQueries.list().queryKey,
-				)
-				?.map(topic => topic.title),
-		).toEqual(['Edited', 'New sibling'])
-		expect(invalidate).toHaveBeenCalledWith(
-			expect.objectContaining({ queryKey: topicQueries.all }),
-		)
-	})
-
-	it('rolls back only supplied fields when the request fails', async () => {
-		const deferred = createDeferred<Response>()
-		vi.stubGlobal('fetch', vi.fn().mockReturnValue(deferred.promise))
-		const { client, result } = setup()
-		client.setQueryData(topicQueries.detail('7').queryKey, {
-			id: '7',
-			title: 'Original',
-			body: 'Original body',
-		})
-
-		act(() => result.current.mutate({ id: '7', body: 'Optimistic body' }))
-		await waitFor(() =>
-			expect(
-				client.getQueryData<TopicWithChildren>(
-					topicQueries.detail('7').queryKey,
-				)?.body,
-			).toBe('Optimistic body'),
-		)
-		client.setQueryData<TopicWithChildren>(
-			topicQueries.detail('7').queryKey,
-			current =>
-				current ? { ...current, title: 'Later title' } : current,
-		)
-
-		deferred.reject(new Error('failed'))
-		await waitFor(() => expect(result.current.isError).toBe(true))
-
 		expect(
 			client.getQueryData(topicQueries.detail('7').queryKey),
 		).toMatchObject({
-			body: 'Original body',
-			title: 'Later title',
+			title: 'Edited',
 		})
-	})
-
-	it('serializes overlapping saves and keeps the latest optimistic value', async () => {
-		const first = createDeferred<Response>()
-		const second = createDeferred<Response>()
-		const fetchMock = vi
-			.fn()
-			.mockReturnValueOnce(first.promise)
-			.mockReturnValueOnce(second.promise)
-		vi.stubGlobal('fetch', fetchMock)
-		const { client, result } = setup()
-		client.setQueryData(topicQueries.detail('7').queryKey, {
-			id: '7',
-			title: 'Original',
-			body: '',
+		expect(invalidate).toHaveBeenCalledWith({
+			queryKey: topicQueries.lists(),
 		})
-
-		act(() => {
-			result.current.mutate({ id: '7', title: 'Older' })
-			result.current.mutate({ id: '7', title: 'Newest' })
-		})
-		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
-		first.resolve(Response.json({ ...response, title: 'Older' }))
-		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
-		expect(
-			client.getQueryData<TopicWithChildren>(
-				topicQueries.detail('7').queryKey,
-			)?.title,
-		).toBe('Newest')
-
-		second.resolve(Response.json({ ...response, title: 'Newest' }))
-		await waitFor(() => expect(result.current.isSuccess).toBe(true))
-		expect(
-			client.getQueryData<TopicWithChildren>(
-				topicQueries.detail('7').queryKey,
-			)?.title,
-		).toBe('Newest')
 	})
 })

@@ -25,11 +25,7 @@ export function ReviewCardPageReviews() {
 	const { data: reviews } = useSuspenseQuery(
 		reviewQueries.list({ reviewCardId, order: 'desc' }),
 	)
-	const {
-		isPending: isCreating,
-		mutate: createReview,
-		variables: createReviewVariables,
-	} = useCreateReview()
+	const { isPending: isCreating, mutate: createReview } = useCreateReview()
 
 	return (
 		<ContentColumn xstyle={styles.page}>
@@ -42,20 +38,11 @@ export function ReviewCardPageReviews() {
 					Review
 				</Button>
 			</div>
-			{reviews.length === 0 && !isCreating ? (
+			{reviews.length === 0 ? (
 				<p {...stylex.props(styles.message)}>No reviews yet.</p>
 			) : null}
-			{reviews.length > 0 || isCreating ? (
+			{reviews.length > 0 ? (
 				<div {...stylex.props(styles.list)}>
-					{isCreating &&
-					createReviewVariables?.reviewCardId === reviewCardId ? (
-						<p
-							aria-disabled='true'
-							{...stylex.props(styles.message)}
-						>
-							Creating review…
-						</p>
-					) : null}
 					{reviews.map(review => (
 						<ReviewComponent key={review.id} review={review} />
 					))}

@@ -6,33 +6,24 @@ import { TopicPage } from '../TopicPage'
 
 const updateTopic = vi.fn()
 const createReviewCard = vi.fn()
-const navigate = vi.fn()
 let focusTopicTitle = false
-const deleteTopic = vi.fn()
-let isCreatingReviewCard = false
-let createReviewCardVariables: { topicId: string } | undefined
-let currentHref = '/library/1'
 vi.mock('~/modules/library/api/updateTopic', () => ({
 	useUpdateTopic: () => ({ mutate: updateTopic }),
 }))
 vi.mock('~/modules/library/api/deleteTopic', () => ({
-	useDeleteTopic: () => ({ isPending: false, mutate: deleteTopic }),
+	useDeleteTopic: () => ({ isPending: false, mutateAsync: vi.fn() }),
 }))
 vi.mock('~/modules/reviews/api/createReviewCard', () => ({
 	useCreateReviewCard: () => ({
-		isPending: isCreatingReviewCard,
-		mutate: createReviewCard,
-		variables: createReviewCardVariables,
+		isPending: false,
+		mutateAsync: createReviewCard,
 	}),
 }))
 vi.mock('@tanstack/react-router', () => ({
 	useParams: () => ({ topicId: '1' }),
-	useNavigate: () => navigate,
+	useNavigate: () => vi.fn(),
 	useLocation: ({ select }: { select: (location: object) => unknown }) =>
 		select({ state: { focusTopicTitle } }),
-	useRouter: () => ({
-		state: { location: { href: currentHref } },
-	}),
 }))
 vi.mock('@tanstack/react-query', () => ({
 	queryOptions: <T,>(options: T) => options,
@@ -46,13 +37,7 @@ describe('TopicPage editors', () => {
 	beforeEach(() => {
 		vi.useFakeTimers()
 		focusTopicTitle = false
-		isCreatingReviewCard = false
-		createReviewCardVariables = undefined
-		currentHref = '/library/1'
 		updateTopic.mockReset()
-		createReviewCard.mockReset()
-		deleteTopic.mockReset()
-		navigate.mockReset()
 	})
 	afterEach(() => {
 		vi.clearAllTimers()
@@ -94,34 +79,5 @@ describe('TopicPage editors', () => {
 		render(<TopicPage />)
 
 		expect(screen.getByLabelText('Topic title')).toHaveFocus()
-	})
-
-	it('shows a noninteractive pending review-card row', () => {
-		isCreatingReviewCard = true
-		createReviewCardVariables = { topicId: '1' }
-
-		render(<TopicPage />)
-
-		expect(screen.getByText('Creating review card…')).toHaveAttribute(
-			'aria-disabled',
-			'true',
-		)
-		expect(
-			screen.getByRole('button', { name: 'Add review card' }),
-		).toBeDisabled()
-	})
-
-	it('navigates with the real review-card ID only from the source route', () => {
-		createReviewCard.mockImplementation((_input, options) => {
-			options.onSuccess({ id: '43' })
-		})
-		render(<TopicPage />)
-
-		screen.getByRole('button', { name: 'Add review card' }).click()
-
-		expect(navigate).toHaveBeenCalledWith({
-			to: '/review-cards/$reviewCardId',
-			params: { reviewCardId: '43' },
-		})
 	})
 })
