@@ -1,12 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { mutationScopes, optimisticMutationKeys } from '~/lib/mutationConfig'
-import {
-	combineRollbacks,
-	type OptimisticContext,
-	type Rollback,
-} from '~/lib/optimistic'
-import { invalidateAfterOptimisticBatch } from '~/lib/optimisticInvalidation'
 import type { DateString } from '~/types/date'
 import { apiFetch } from '~/utils/apiFetch'
 
@@ -36,68 +29,31 @@ export async function updateReview({
 export function useUpdateReview() {
 	const queryClient = useQueryClient()
 	return useMutation({
-		mutationKey: [...optimisticMutationKeys.reviews, 'update'],
-		scope: mutationScopes.reviews,
 		mutationFn: updateReview,
 		meta: { errorMessage: 'Failed to update review' },
-		onMutate: async ({ id, ...updates }): Promise<OptimisticContext> => {
-			const changesScheduling =
-				'rating' in updates ||
+		onSuccess: async (review, updates) => {
+			if (
+				'scheduled_at' in updates ||
 				'completed_at' in updates ||
-				'scheduled_at' in updates
-			if (changesScheduling) return { rollback: () => undefined }
-
-			await queryClient.cancelQueries({ queryKey: reviewQueries.all })
-			const changes: Partial<Pick<Review, 'description' | 'notes'>> = {
-				...('description' in updates
-					? { description: updates.description }
-					: {}),
-				...('notes' in updates ? { notes: updates.notes } : {}),
+				'rating' in updates
+			) {
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: reviewQueries.forCard(review.review_card_id),
+					}),
+					queryClient.invalidateQueries({
+						queryKey: reviewCardQueries.all,
+					}),
+				])
+				return
 			}
-			const rollbacks: Array<Rollback> = []
-			for (const [queryKey, reviews] of queryClient.getQueriesData<
-				Array<Review>
-			>({ queryKey: reviewQueries.lists() })) {
-				const review = reviews?.find(existing => existing.id === id)
-				if (!reviews || !review) continue
-				const previous = Object.fromEntries(
-					Object.keys(changes).map(key => [
-						key,
-						review[key as keyof Review],
-					]),
-				) as Partial<Pick<Review, 'description' | 'notes'>>
-				queryClient.setQueryData<Array<Review>>(
-					queryKey,
-					reviews.map(existing =>
-						existing.id === id
-							? { ...existing, ...changes }
-							: existing,
+
+			queryClient.setQueriesData<Array<Review>>(
+				{ queryKey: reviewQueries.all },
+				reviews =>
+					reviews?.map(existing =>
+						existing.id === review.id ? review : existing,
 					),
-				)
-				rollbacks.push(() => {
-					queryClient.setQueryData<Array<Review>>(queryKey, current =>
-						current?.map(existing =>
-							existing.id === id
-								? { ...existing, ...previous }
-								: existing,
-						),
-					)
-				})
-			}
-
-			return { rollback: combineRollbacks(rollbacks) }
-		},
-		onError: (_error, _updates, context) => context?.rollback(),
-		onSettled: (_data, _error, updates) => {
-			const changesScheduling =
-				'rating' in updates ||
-				'completed_at' in updates ||
-				'scheduled_at' in updates
-			return invalidateAfterOptimisticBatch(
-				queryClient,
-				changesScheduling
-					? [reviewQueries.all, reviewCardQueries.all]
-					: [reviewQueries.all],
 			)
 		},
 	})

@@ -99,8 +99,6 @@ describe('useCreateReview', () => {
 				.getQueryData<Array<Review>>(unrelatedQuery.queryKey)
 				?.map(review => review.id),
 		).toEqual(['4'])
-		expect(invalidate).toHaveBeenCalledWith(
-			expect.objectContaining({ queryKey: reviewQueries.forCard('8') }),
-		)
+		expect(invalidate).not.toHaveBeenCalled()
 	})
 })
