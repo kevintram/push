@@ -249,9 +249,12 @@ export function Review({ review }: { review: ReviewModel }) {
 	)
 
 	const handleDelete = () => {
-		setIsDeleteDialogOpen(false)
-		setIsOpen(false)
-		deleteReview(review.id)
+		deleteReview(review.id, {
+			onSuccess: () => {
+				setIsDeleteDialogOpen(false)
+				setIsOpen(false)
+			},
+		})
 	}
 
 	return (

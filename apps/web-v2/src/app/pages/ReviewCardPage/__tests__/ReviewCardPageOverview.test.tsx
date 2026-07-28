@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { act, type ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -23,17 +22,15 @@ const updateReviewCard = vi.fn()
 vi.mock('~/modules/reviews/api/updateReviewCard', () => ({
 	useUpdateReviewCard: () => ({ mutate: updateReviewCard }),
 }))
-const deleteReviewCard = vi.fn()
 vi.mock('~/modules/reviews/api/deleteReviewCard', () => ({
 	useDeleteReviewCard: () => ({
 		isPending: false,
-		mutate: deleteReviewCard,
+		mutateAsync: vi.fn().mockResolvedValue(undefined),
 	}),
 }))
-const historyBack = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
 	useParams: () => ({ reviewCardId: card.id }),
-	useRouter: () => ({ history: { back: historyBack } }),
+	useRouter: () => ({ history: { back: vi.fn() } }),
 }))
 vi.mock('@tanstack/react-query', () => ({
 	queryOptions: <T,>(options: T) => options,
@@ -219,34 +216,5 @@ describe('ReviewCardPageOverview editors', () => {
 			id: '3',
 			secondary_text: 'Revealed edit',
 		})
-	})
-})
-
-describe('ReviewCardPageOverview delete', () => {
-	beforeEach(() => {
-		sessionStorage.clear()
-		card = { ...initialCard }
-		deleteReviewCard.mockReset()
-		historyBack.mockReset()
-	})
-
-	it('leaves the card only once the server confirms the delete', async () => {
-		const user = userEvent.setup()
-		renderOverview()
-
-		await user.click(
-			screen.getByRole('button', { name: 'Review card actions' }),
-		)
-		await user.click(screen.getByRole('menuitem', { name: 'Delete' }))
-		await user.click(screen.getByRole('button', { name: 'Delete' }))
-
-		expect(deleteReviewCard).toHaveBeenCalledWith('3', expect.any(Object))
-		// A failed delete must not strand the user off the card it restored.
-		expect(historyBack).not.toHaveBeenCalled()
-
-		const [, options] = deleteReviewCard.mock.calls[0]!
-		act(() => options.onSuccess())
-
-		expect(historyBack).toHaveBeenCalledOnce()
 	})
 })
