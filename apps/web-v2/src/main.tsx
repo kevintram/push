@@ -11,9 +11,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
+import { AuthConnectionProbe } from './app/dev/AuthConnectionProbe'
 import { LoaderPage } from './app/pages/LoaderPage'
 import { routeTree } from './app/routeTree.gen'
 import { TooltipProvider } from './components/ui'
+import { AuthProvider } from './stores/Auth/AuthProvider'
 import { HideModeProvider } from './stores/HideMode'
 import { HttpError } from './utils/apiFetch'
 
@@ -73,17 +75,22 @@ const container = document.querySelector('#root')
 if (container) {
 	createRoot(container).render(
 		<StrictMode>
-			<TooltipProvider>
-				<HideModeProvider>
-					<QueryClientProvider client={queryClient}>
-						<ReactQueryDevtools initialIsOpen={false} />
-						<RouterProvider
-							context={{ queryClient }}
-							router={router}
-						/>
-					</QueryClientProvider>
-				</HideModeProvider>
-			</TooltipProvider>
+			<AuthProvider>
+				<TooltipProvider>
+					<HideModeProvider>
+						<QueryClientProvider client={queryClient}>
+							<ReactQueryDevtools initialIsOpen={false} />
+							<RouterProvider
+								context={{ queryClient }}
+								router={router}
+							/>
+						</QueryClientProvider>
+					</HideModeProvider>
+				</TooltipProvider>
+				{import.meta.env.DEV && !import.meta.env.VITEST ? (
+					<AuthConnectionProbe />
+				) : null}
+			</AuthProvider>
 		</StrictMode>,
 	)
 }
