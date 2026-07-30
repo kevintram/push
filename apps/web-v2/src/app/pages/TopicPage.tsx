@@ -4,7 +4,6 @@ import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
-import { ContentColumn } from '~/components/ContentColumn'
 import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
@@ -25,16 +24,29 @@ import {
 	fontSizes,
 	fontWeights,
 	iconSizes,
+	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
+		display: 'flex',
+		justifyContent: 'center',
+		minHeight: '100%',
+		width: '100%',
+
+		overflow: 'auto',
+	},
+	content: {
 		padding: spacing.xl,
 		gap: spacing.md,
 
 		display: 'flex',
 		flexDirection: 'column',
+		flexShrink: 1,
+		maxWidth: layout.contentMaxWidth,
+		minWidth: 0,
+		width: '100%',
 	},
 	header: {
 		display: 'flex',
@@ -151,82 +163,84 @@ export function TopicPage() {
 	}
 
 	return (
-		<ContentColumn xstyle={styles.container}>
-			<header {...stylex.props(styles.header)}>
-				<div {...stylex.props(styles.titleBar)}>
-					<Textarea
-						aria-label='Topic title'
-						autoFocus={shouldFocusTitle}
-						placeholder='Title'
-						value={title.value}
-						onChange={title.onChange}
-						onBlur={title.flush}
-						xstyle={styles.title}
-					/>
-					<DropdownMenu>
-						<DropdownMenuTrigger
-							render={
-								<Button.Icon
-									aria-label='Topic actions'
-									shape='round'
-									variant='ghost'
-								/>
-							}
-						>
-							<Ellipsis aria-hidden='true' />
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end'>
-							<DropdownMenuItem
-								disabled={isDeletingTopic}
-								onClick={() => setIsDeleteDialogOpen(true)}
+		<div {...stylex.props(styles.container)}>
+			<div {...stylex.props(styles.content)}>
+				<header {...stylex.props(styles.header)}>
+					<div {...stylex.props(styles.titleBar)}>
+						<Textarea
+							aria-label='Topic title'
+							autoFocus={shouldFocusTitle}
+							placeholder='Title'
+							value={title.value}
+							onChange={title.onChange}
+							onBlur={title.flush}
+							xstyle={styles.title}
+						/>
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								render={
+									<Button.Icon
+										aria-label='Topic actions'
+										shape='round'
+										variant='ghost'
+									/>
+								}
 							>
-								<Trash2
-									aria-hidden='true'
-									size={iconSizes.md}
-								/>
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+								<Ellipsis aria-hidden='true' />
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align='end'>
+								<DropdownMenuItem
+									disabled={isDeletingTopic}
+									onClick={() => setIsDeleteDialogOpen(true)}
+								>
+									<Trash2
+										aria-hidden='true'
+										size={iconSizes.md}
+									/>
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+					<Textarea
+						aria-label='Topic body'
+						placeholder='Add a description…'
+						value={body.value}
+						onChange={body.onChange}
+						onBlur={body.flush}
+						xstyle={styles.body}
+					/>
+				</header>
+
+				<div {...stylex.props(styles.reviewCardsHeaderContainer)}>
+					<h2 {...stylex.props(styles.reviewCardsHeaderText)}>
+						Review Cards
+					</h2>
+					<Button.Icon
+						aria-label='Add review card'
+						disabled={isCreatingReviewCard}
+						shape='round'
+						onClick={() => void addReviewCard()}
+					>
+						<Plus aria-hidden='true' />
+					</Button.Icon>
 				</div>
-				<Textarea
-					aria-label='Topic body'
-					placeholder='Add a description…'
-					value={body.value}
-					onChange={body.onChange}
-					onBlur={body.flush}
-					xstyle={styles.body}
+
+				<div {...stylex.props(styles.reviewCardsList)}>
+					{reviewCards.map(reviewCard => (
+						<ReviewCard key={reviewCard.id} {...reviewCard} />
+					))}
+				</div>
+
+				<DeleteConfirmationDialog
+					description='This will delete this topic, its subtopics, and all linked review cards and reviews.'
+					isPending={isDeletingTopic}
+					onConfirm={() => void confirmDeleteTopic()}
+					onOpenChange={setIsDeleteDialogOpen}
+					open={isDeleteDialogOpen}
+					title='Delete topic?'
 				/>
-			</header>
-
-			<div {...stylex.props(styles.reviewCardsHeaderContainer)}>
-				<h2 {...stylex.props(styles.reviewCardsHeaderText)}>
-					Review Cards
-				</h2>
-				<Button.Icon
-					aria-label='Add review card'
-					disabled={isCreatingReviewCard}
-					shape='round'
-					onClick={() => void addReviewCard()}
-				>
-					<Plus aria-hidden='true' />
-				</Button.Icon>
 			</div>
-
-			<div {...stylex.props(styles.reviewCardsList)}>
-				{reviewCards.map(reviewCard => (
-					<ReviewCard key={reviewCard.id} {...reviewCard} />
-				))}
-			</div>
-
-			<DeleteConfirmationDialog
-				description='This will delete this topic, its subtopics, and all linked review cards and reviews.'
-				isPending={isDeletingTopic}
-				onConfirm={() => void confirmDeleteTopic()}
-				onOpenChange={setIsDeleteDialogOpen}
-				open={isDeleteDialogOpen}
-				title='Delete topic?'
-			/>
-		</ContentColumn>
+		</div>
 	)
 }

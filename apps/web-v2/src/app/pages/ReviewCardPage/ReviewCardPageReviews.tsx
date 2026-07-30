@@ -3,16 +3,28 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
-import { ContentColumn } from '~/components/ContentColumn'
 import { Button } from '~/components/ui'
 import { useCreateReview } from '~/modules/reviews/api/createReview'
 import { reviewQueries } from '~/modules/reviews/api/queries'
 import { Review as ReviewComponent } from '~/modules/reviews/components/Review'
 import { colors } from '~/styles/colors.stylex'
-import { spacing } from '~/styles/tokens.stylex'
+import { layout, spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
-	page: { gap: spacing.xl, display: 'flex', flexDirection: 'column' },
+	container: {
+		overflow: 'auto',
+		display: 'flex',
+		justifyContent: 'center',
+	},
+	content: {
+		gap: spacing.xl,
+		display: 'flex',
+		flexDirection: 'column',
+		flexShrink: 1,
+		maxWidth: layout.contentMaxWidth,
+		minWidth: 0,
+		width: '100%',
+	},
 	actions: { display: 'flex', justifyContent: 'flex-end' },
 	message: { color: colors.textSecondary },
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
@@ -28,26 +40,28 @@ export function ReviewCardPageReviews() {
 	const { isPending: isCreating, mutate: createReview } = useCreateReview()
 
 	return (
-		<ContentColumn xstyle={styles.page}>
-			<div {...stylex.props(styles.actions)}>
-				<Button
-					disabled={isCreating}
-					onClick={() => createReview({ reviewCardId })}
-				>
-					<Plus aria-hidden='true' />
-					Review
-				</Button>
-			</div>
-			{reviews.length === 0 ? (
-				<p {...stylex.props(styles.message)}>No reviews yet.</p>
-			) : null}
-			{reviews.length > 0 ? (
-				<div {...stylex.props(styles.list)}>
-					{reviews.map(review => (
-						<ReviewComponent key={review.id} review={review} />
-					))}
+		<div {...stylex.props(styles.container)}>
+			<div {...stylex.props(styles.content)}>
+				<div {...stylex.props(styles.actions)}>
+					<Button
+						disabled={isCreating}
+						onClick={() => createReview({ reviewCardId })}
+					>
+						<Plus aria-hidden='true' />
+						Review
+					</Button>
 				</div>
-			) : null}
-		</ContentColumn>
+				{reviews.length === 0 ? (
+					<p {...stylex.props(styles.message)}>No reviews yet.</p>
+				) : null}
+				{reviews.length > 0 ? (
+					<div {...stylex.props(styles.list)}>
+						{reviews.map(review => (
+							<ReviewComponent key={review.id} review={review} />
+						))}
+					</div>
+				) : null}
+			</div>
+		</div>
 	)
 }
