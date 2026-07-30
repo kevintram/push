@@ -1,7 +1,6 @@
 import * as stylex from '@stylexjs/stylex'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 
-import { ContentColumn } from '~/components/ContentColumn'
 import {
 	Button,
 	DropdownMenu,
@@ -16,6 +15,7 @@ import {
 	fontSizes,
 	fontWeights,
 	iconSizes,
+	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
 
@@ -43,10 +43,22 @@ const reviewCards: Array<ReviewCardModel> = [
 
 const styles = stylex.create({
 	container: {
+		display: 'flex',
+		justifyContent: 'center',
+		minHeight: '100%',
+		width: '100%',
+
+		overflow: 'auto',
+	},
+	content: {
 		padding: spacing.xl,
 		gap: spacing.md,
 		display: 'flex',
 		flexDirection: 'column',
+		flexShrink: 1,
+		maxWidth: layout.contentMaxWidth,
+		minWidth: 0,
+		width: '100%',
 	},
 	header: { gap: spacing.sm, display: 'flex', flexDirection: 'column' },
 	titleBar: { gap: spacing.sm, alignItems: 'center', display: 'flex' },
@@ -63,62 +75,66 @@ const styles = stylex.create({
 
 export function TopicPage() {
 	return (
-		<ContentColumn xstyle={styles.container}>
-			<header {...stylex.props(styles.header)}>
-				<div {...stylex.props(styles.titleBar)}>
+		<div {...stylex.props(styles.container)}>
+			<div {...stylex.props(styles.content)}>
+				<header {...stylex.props(styles.header)}>
+					<div {...stylex.props(styles.titleBar)}>
+						<Textarea
+							aria-label='Topic title'
+							readOnly
+							value={topic.title}
+							xstyle={styles.title}
+						/>
+						<DropdownMenu>
+							<DropdownMenuTrigger
+								render={
+									<Button.Icon
+										aria-label='Topic actions'
+										shape='round'
+										variant='ghost'
+									/>
+								}
+							>
+								<Ellipsis aria-hidden='true' />
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align='end'>
+								<DropdownMenuItem disabled>
+									<Trash2
+										aria-hidden='true'
+										size={iconSizes.md}
+									/>
+									Delete
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
 					<Textarea
-						aria-label='Topic title'
+						aria-label='Topic body'
 						readOnly
-						value={topic.title}
-						xstyle={styles.title}
+						value={topic.body}
+						xstyle={styles.body}
 					/>
-					<DropdownMenu>
-						<DropdownMenuTrigger
-							render={
-								<Button.Icon
-									aria-label='Topic actions'
-									shape='round'
-									variant='ghost'
-								/>
-							}
-						>
-							<Ellipsis aria-hidden='true' />
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align='end'>
-							<DropdownMenuItem disabled>
-								<Trash2
-									aria-hidden='true'
-									size={iconSizes.md}
-								/>
-								Delete
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+				</header>
+
+				<div {...stylex.props(styles.reviewCardsHeaderContainer)}>
+					<h2 {...stylex.props(styles.reviewCardsHeaderText)}>
+						Review Cards
+					</h2>
+					<Button.Icon
+						aria-label='Add review card'
+						disabled
+						shape='round'
+					>
+						<Plus aria-hidden='true' />
+					</Button.Icon>
 				</div>
-				<Textarea
-					aria-label='Topic body'
-					readOnly
-					value={topic.body}
-					xstyle={styles.body}
-				/>
-			</header>
-			<div {...stylex.props(styles.reviewCardsHeaderContainer)}>
-				<h2 {...stylex.props(styles.reviewCardsHeaderText)}>
-					Review Cards
-				</h2>
-				<Button.Icon
-					aria-label='Add review card'
-					disabled
-					shape='round'
-				>
-					<Plus aria-hidden='true' />
-				</Button.Icon>
+
+				<div {...stylex.props(styles.reviewCardsList)}>
+					{reviewCards.map(reviewCard => (
+						<ReviewCard key={reviewCard.id} {...reviewCard} />
+					))}
+				</div>
 			</div>
-			<div {...stylex.props(styles.reviewCardsList)}>
-				{reviewCards.map(reviewCard => (
-					<ReviewCard key={reviewCard.id} {...reviewCard} />
-				))}
-			</div>
-		</ContentColumn>
+		</div>
 	)
 }

@@ -6,6 +6,9 @@ import { spacing } from '~/styles/tokens.stylex'
 
 const styles = stylex.create({
 	container: {
+		position: 'sticky',
+		top: 0,
+
 		padding: spacing.md,
 
 		gap: spacing.xs,

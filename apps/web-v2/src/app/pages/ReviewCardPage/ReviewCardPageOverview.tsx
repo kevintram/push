@@ -2,7 +2,6 @@ import * as stylex from '@stylexjs/stylex'
 import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { ContentColumn } from '~/components/ContentColumn'
 import { Hideable } from '~/components/Hideable'
 import {
 	Button,
@@ -21,6 +20,7 @@ import {
 	fontSizes,
 	fontWeights,
 	iconSizes,
+	layout,
 	spacing,
 } from '~/styles/tokens.stylex'
 import { formatRelativeDate } from '~/utils/date'
@@ -39,18 +39,42 @@ const reviewCard: ReviewCard = {
 	flagged_at: null,
 }
 const styles = stylex.create({
-	container: { display: 'flex', flexBasis: 0, flexGrow: 1, flexShrink: 1 },
-	main: {
-		padding: spacing.xl,
+	layout: {
 		display: 'flex',
+
 		flexBasis: 0,
-		flexDirection: 'column',
+		flexGrow: 1,
+		flexShrink: 1,
+
+		overflow: 'hidden',
+	},
+	main: {
+		paddingBlock: spacing.xl,
+		paddingInline: spacing.sm,
+
+		display: 'flex',
+		justifyContent: 'center',
+
+		flexBasis: 0,
 		flexGrow: 1,
 		flexShrink: 1,
 		minWidth: 0,
+
+		overflow: 'auto',
 	},
-	column: { gap: spacing.xl, display: 'flex', flexDirection: 'column' },
-	primary: { fontSize: fontSizes.xl, fontWeight: fontWeights.bold },
+	content: {
+		gap: spacing.xl,
+		display: 'flex',
+		flexDirection: 'column',
+		flexShrink: 1,
+		maxWidth: layout.contentMaxWidth,
+		minWidth: 0,
+		width: '100%',
+	},
+	primary: {
+		fontSize: fontSizes.xl,
+		fontWeight: fontWeights.bold,
+	},
 	secondary: { fontSize: fontSizes.md },
 	separatorGroup: {
 		gap: spacing.sm,
@@ -101,9 +125,9 @@ export function ReviewCardPageOverview() {
 		setNotesRevealed(false)
 	}, [hideMode])
 	return (
-		<div {...stylex.props(styles.container)}>
+		<div {...stylex.props(styles.layout)}>
 			<main {...stylex.props(styles.main)}>
-				<ContentColumn xstyle={styles.column}>
+				<div {...stylex.props(styles.content)}>
 					<Textarea
 						aria-label='Review-card primary text'
 						readOnly
@@ -283,9 +307,11 @@ export function ReviewCardPageOverview() {
 							xstyle={styles.notes}
 						/>
 					</Hideable>
-				</ContentColumn>
+				</div>
 			</main>
-			<ReviewsSidebar />
+			<aside>
+				<ReviewsSidebar />
+			</aside>
 		</div>
 	)
 }

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { ReviewNewPage } from '~/app/pages/ReviewNewPage'
+import { ReviewListPage } from '~/app/pages/ReviewListPage'
 
 export const Route = createFileRoute('/review/new')({
-	component: ReviewNewPage,
+	component: () => <ReviewListPage filters={{ due: 'new' }} title='New' />,
 })

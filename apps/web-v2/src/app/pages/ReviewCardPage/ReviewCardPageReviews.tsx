@@ -1,11 +1,11 @@
 import * as stylex from '@stylexjs/stylex'
 import { Plus } from 'lucide-react'
 
-import { ContentColumn } from '~/components/ContentColumn'
 import { Button } from '~/components/ui'
 import { Review } from '~/modules/reviews/components/Review'
 import type { Review as ReviewModel } from '~/modules/reviews/types/review.types'
-import { spacing } from '~/styles/tokens.stylex'
+import { layout, spacing } from '~/styles/tokens.stylex'
+
 const reviews: Array<ReviewModel> = [
 	{
 		id: 'generics-review-1',
@@ -37,25 +37,41 @@ const reviews: Array<ReviewModel> = [
 		due_after: '2026-07-30',
 	},
 ]
+
 const styles = stylex.create({
-	page: { gap: spacing.xl, display: 'flex', flexDirection: 'column' },
+	container: {
+		overflow: 'auto',
+		display: 'flex',
+		justifyContent: 'center',
+	},
+	content: {
+		gap: spacing.xl,
+		display: 'flex',
+		flexDirection: 'column',
+		flexShrink: 1,
+		maxWidth: layout.contentMaxWidth,
+		minWidth: 0,
+		width: '100%',
+	},
 	actions: { display: 'flex', justifyContent: 'flex-end' },
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
 export function ReviewCardPageReviews() {
 	return (
-		<ContentColumn xstyle={styles.page}>
-			<div {...stylex.props(styles.actions)}>
-				<Button disabled>
-					<Plus aria-hidden='true' />
-					Review
-				</Button>
+		<div {...stylex.props(styles.container)}>
+			<div {...stylex.props(styles.content)}>
+				<div {...stylex.props(styles.actions)}>
+					<Button disabled>
+						<Plus aria-hidden='true' />
+						Review
+					</Button>
+				</div>
+				<div {...stylex.props(styles.list)}>
+					{reviews.map(review => (
+						<Review key={review.id} review={review} />
+					))}
+				</div>
 			</div>
-			<div {...stylex.props(styles.list)}>
-				{reviews.map(review => (
-					<Review key={review.id} review={review} />
-				))}
-			</div>
-		</ContentColumn>
+		</div>
 	)
 }
