@@ -1,4 +1,8 @@
+import { api } from '@convex/_generated/api'
+import type { Id } from '@convex/_generated/dataModel'
 import * as stylex from '@stylexjs/stylex'
+import { useParams } from '@tanstack/react-router'
+import { useQuery } from 'convex/react'
 import { Ellipsis, Plus, Trash2 } from 'lucide-react'
 
 import {
@@ -19,17 +23,12 @@ import {
 	spacing,
 } from '~/styles/tokens.stylex'
 
-const topic = {
-	id: 'learning-typescript',
-	title: 'Learning TypeScript',
-	body: 'Notes and flashcards for TypeScript fundamentals.',
-}
 const reviewCards = Array.from({ length: 18 }, (_, index): ReviewCardModel => {
 	const number = index + 1
 
 	return {
 		id: index === 0 ? 'typescript-generics' : `topic-review-card-${number}`,
-		topic_id: topic.id,
+		topic_id: 'topic-id',
 		type: index % 4 === 3 ? 'practice' : 'flashcard',
 		primary_text:
 			index === 0
@@ -74,13 +73,16 @@ const styles = stylex.create({
 		fontWeight: fontWeights.bold,
 		minBlockSize: '44px',
 	},
-	body: { fontSize: fontSizes.md },
+	description: { fontSize: fontSizes.md },
 	reviewCardsHeaderContainer: { display: 'flex' },
 	reviewCardsHeaderText: { flexBasis: 0, flexGrow: 1, flexShrink: 1 },
 	reviewCardsList: { display: 'flex', flexDirection: 'column' },
 })
 
 export function TopicPage() {
+	const { topicId } = useParams({ from: '/library/$topicId' })
+	const topic = useQuery(api.topics.get, { topicId: topicId as Id<'topics'> })
+
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
@@ -89,7 +91,7 @@ export function TopicPage() {
 						<Textarea
 							aria-label='Topic title'
 							readOnly
-							value={topic.title}
+							value={topic?.title}
 							xstyle={styles.title}
 						/>
 						<DropdownMenu>
@@ -118,8 +120,8 @@ export function TopicPage() {
 					<Textarea
 						aria-label='Topic body'
 						readOnly
-						value={topic.body}
-						xstyle={styles.body}
+						value={topic?.description}
+						xstyle={styles.description}
 					/>
 				</header>
 

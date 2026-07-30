@@ -41,7 +41,7 @@ const styles = stylex.create({
 })
 
 export function LibrarySidebar() {
-	const topics = useQuery(api.topics.get)
+	const topics = useQuery(api.topics.list)
 	const topicTree = useMemo(() => treeifyTopics(topics ?? []), [topics])
 
 	return (

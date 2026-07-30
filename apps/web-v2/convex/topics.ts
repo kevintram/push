@@ -1,9 +1,15 @@
+import { v } from 'convex/values'
+
 import { query } from './_generated/server'
 
-export const get = query({
+export const list = query({
 	args: {},
-	handler: async ctx => {
-		const topics = await ctx.db.query('topics').collect()
-		return topics
+	handler: async ctx => await ctx.db.query('topics').collect(),
+})
+
+export const get = query({
+	args: {
+		topicId: v.id('topics'),
 	},
+	handler: async (ctx, args) => await ctx.db.get('topics', args.topicId),
 })
