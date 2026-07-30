@@ -3,13 +3,46 @@
 	"authKit": {
 		"dev": {
 			"configure": {
-				"redirectUris": ["http://localhost:6179/callback"],
-				"appHomepageUrl": "http://localhost:6179",
-				"corsOrigins": ["http://localhost:6179"]
+				"redirectUris": [
+					"http://localhost:6173/callback",
+					"http://localhost:6174/callback",
+					"http://localhost:6175/callback",
+					"http://localhost:6176/callback",
+					"http://localhost:6177/callback",
+					"http://localhost:6178/callback",
+					"http://localhost:6179/callback",
+					"http://localhost:6180/callback",
+					"http://localhost:6181/callback",
+					"http://localhost:6182/callback",
+					"http://localhost:6183/callback",
+					"http://localhost:6184/callback",
+					"http://localhost:6185/callback",
+					"http://localhost:6186/callback",
+					"http://localhost:6187/callback",
+					"http://localhost:6188/callback"
+				],
+				"appHomepageUrl": "http://localhost:6173",
+				"corsOrigins": [
+					"http://localhost:6173",
+					"http://localhost:6174",
+					"http://localhost:6175",
+					"http://localhost:6176",
+					"http://localhost:6177",
+					"http://localhost:6178",
+					"http://localhost:6179",
+					"http://localhost:6180",
+					"http://localhost:6181",
+					"http://localhost:6182",
+					"http://localhost:6183",
+					"http://localhost:6184",
+					"http://localhost:6185",
+					"http://localhost:6186",
+					"http://localhost:6187",
+					"http://localhost:6188"
+				]
 			},
 			"localEnvVars": {
-				"VITE_WORKOS_CLIENT_ID": "${authEnv.WORKOS_CLIENT_ID}",
-				"VITE_WORKOS_REDIRECT_URI": "http://localhost:6179/callback"
+				"VITE_WORKOS_CLIENT_ID": "${authEnv.WORKOS_CLIENT_ID}"
 			}
 		},
 		"prod": {

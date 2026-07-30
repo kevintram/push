@@ -207,6 +207,7 @@ if [ -d "$ROOT_DIR/apps/web-v2" ]; then
         fi
     fi
     set_env_var "$WEB_V2_ENV" "VITE_API_URL" "$API_URL"
+    set_env_var "$WEB_V2_ENV" "VITE_WORKOS_REDIRECT_URI" "${APP_V2_URL}/callback"
     if [ "${WORKTREE_ENV_VERBOSE:-0}" = "1" ]; then
         echo "Updated apps/web-v2/.env.local"
     fi
