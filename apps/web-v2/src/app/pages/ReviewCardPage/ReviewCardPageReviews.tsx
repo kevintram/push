@@ -1,14 +1,50 @@
 import * as stylex from '@stylexjs/stylex'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
 import { Button } from '~/components/ui'
-import { useCreateReview } from '~/modules/reviews/api/createReview'
-import { reviewQueries } from '~/modules/reviews/api/queries'
-import { Review as ReviewComponent } from '~/modules/reviews/components/Review'
-import { colors } from '~/styles/colors.stylex'
+import { Review } from '~/modules/reviews/components/Review'
+import type { Review as ReviewModel } from '~/modules/reviews/types/review.types'
 import { layout, spacing } from '~/styles/tokens.stylex'
+
+const ratings: Array<ReviewModel['rating']> = ['miss', 'hard', 'good', 'easy']
+const reviews = Array.from({ length: 16 }, (_, index): ReviewModel => {
+	const number = index + 1
+	const stabilityBefore = 3 + (index % 5)
+
+	return {
+		id: `generics-review-${number}`,
+		review_card_id: 'typescript-generics',
+		rating: ratings[index % ratings.length] ?? null,
+		description:
+			index === 0
+				? 'Correctly described generics.'
+				: `Mock review ${number} for vertical overflow testing.`,
+		notes:
+			index % 3 === 0 ? `Detailed notes for mock review ${number}.` : '',
+		scheduled_at: null,
+		completed_at: '2026-07-28',
+		effective_date: '2026-07-28',
+		inserted_at: '2026-07-28',
+		updated_at: '2026-07-28',
+		review_card: {
+			id: 'typescript-generics',
+			topic_id: 'learning-typescript',
+			type: 'flashcard',
+			primary_text: 'What problem do generics solve?',
+			secondary_text: 'They preserve type safety across reusable code.',
+		},
+		stability_before: stabilityBefore,
+		difficulty_before: 5,
+		state_before: 'REVIEW',
+		step_before: null,
+		due_before: '2026-07-28',
+		stability_after: stabilityBefore + ((index % 3) - 1),
+		difficulty_after: 4,
+		state_after: 'REVIEW',
+		step_after: null,
+		due_after: '2026-07-30',
+	}
+})
 
 const styles = stylex.create({
 	container: {
@@ -26,41 +62,24 @@ const styles = stylex.create({
 		width: '100%',
 	},
 	actions: { display: 'flex', justifyContent: 'flex-end' },
-	message: { color: colors.textSecondary },
 	list: { gap: spacing.md, display: 'flex', flexDirection: 'column' },
 })
 
 export function ReviewCardPageReviews() {
-	const { reviewCardId } = useParams({
-		from: '/review-cards/$reviewCardId',
-	})
-	const { data: reviews } = useSuspenseQuery(
-		reviewQueries.list({ reviewCardId, order: 'desc' }),
-	)
-	const { isPending: isCreating, mutate: createReview } = useCreateReview()
-
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div {...stylex.props(styles.content)}>
 				<div {...stylex.props(styles.actions)}>
-					<Button
-						disabled={isCreating}
-						onClick={() => createReview({ reviewCardId })}
-					>
+					<Button disabled>
 						<Plus aria-hidden='true' />
 						Review
 					</Button>
 				</div>
-				{reviews.length === 0 ? (
-					<p {...stylex.props(styles.message)}>No reviews yet.</p>
-				) : null}
-				{reviews.length > 0 ? (
-					<div {...stylex.props(styles.list)}>
-						{reviews.map(review => (
-							<ReviewComponent key={review.id} review={review} />
-						))}
-					</div>
-				) : null}
+				<div {...stylex.props(styles.list)}>
+					{reviews.map(review => (
+						<Review key={review.id} review={review} />
+					))}
+				</div>
 			</div>
 		</div>
 	)

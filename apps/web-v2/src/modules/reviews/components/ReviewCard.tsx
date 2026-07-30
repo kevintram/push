@@ -3,7 +3,6 @@ import { Link } from '@tanstack/react-router'
 import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Hideable } from '~/components/Hideable'
 import {
 	Button,
@@ -12,8 +11,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '~/components/ui'
-import { useDeleteReviewCard } from '~/modules/reviews/api/deleteReviewCard'
-import { useUpdateReviewCard } from '~/modules/reviews/api/updateReviewCard'
 import { type ReviewCard } from '~/modules/reviews/types/review.types'
 import { useHideMode } from '~/stores/HideMode'
 import { colors } from '~/styles/colors.stylex'
@@ -113,14 +110,9 @@ export function ReviewCard({
 	freshness_tier,
 	flagged_at,
 }: ReviewCard) {
-	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
-		useDeleteReviewCard()
-	const { mutate: updateReviewCard } = useUpdateReviewCard()
-
 	const { hideMode } = useHideMode()
 
 	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
 	const isUnreviewed = last_reviewed_at === null
 
@@ -133,23 +125,6 @@ export function ReviewCard({
 		// reset secondaryRevealed
 		setSecondaryRevealed(false)
 	}, [hideMode, id])
-
-	const toggleFlag = () =>
-		updateReviewCard({ id, flagged: flagged_at === null })
-	const toggleType = () =>
-		updateReviewCard({
-			id,
-			type: type === 'practice' ? 'flashcard' : 'practice',
-		})
-
-	const confirmDelete = async () => {
-		try {
-			await deleteReviewCard(id)
-		} catch {
-			return
-		}
-		setIsDeleteDialogOpen(false)
-	}
 
 	return (
 		<div {...stylex.props(styles.container)}>
@@ -216,7 +191,7 @@ export function ReviewCard({
 							shape='round'
 							variant='ghost'
 							size='small'
-							onClick={toggleType}
+							disabled
 						>
 							<Zap
 								aria-hidden='true'
@@ -231,7 +206,7 @@ export function ReviewCard({
 							shape='round'
 							variant='ghost'
 							size='small'
-							onClick={toggleFlag}
+							disabled
 						>
 							<Flag
 								aria-hidden='true'
@@ -255,7 +230,7 @@ export function ReviewCard({
 							<Ellipsis aria-hidden='true' size={iconSizes.md} />
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align='end'>
-							<DropdownMenuItem onClick={toggleType}>
+							<DropdownMenuItem disabled>
 								<Zap
 									aria-hidden='true'
 									size={iconSizes.md}
@@ -267,7 +242,7 @@ export function ReviewCard({
 									? 'Unflashcard'
 									: 'Flashcard'}
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={toggleFlag}>
+							<DropdownMenuItem disabled>
 								<Flag
 									aria-hidden='true'
 									size={iconSizes.md}
@@ -277,10 +252,7 @@ export function ReviewCard({
 								/>
 								{flagged_at !== null ? 'Unflag' : 'Flag'}
 							</DropdownMenuItem>
-							<DropdownMenuItem
-								disabled={isDeleting}
-								onClick={() => setIsDeleteDialogOpen(true)}
-							>
+							<DropdownMenuItem disabled>
 								<Trash2
 									aria-hidden='true'
 									size={iconSizes.md}
@@ -291,15 +263,6 @@ export function ReviewCard({
 					</DropdownMenu>
 				</div>
 			</div>
-
-			<DeleteConfirmationDialog
-				description='This will delete this review card and all linked reviews.'
-				isPending={isDeleting}
-				onConfirm={() => void confirmDelete()}
-				onOpenChange={setIsDeleteDialogOpen}
-				open={isDeleteDialogOpen}
-				title='Delete review card?'
-			/>
 		</div>
 	)
 }

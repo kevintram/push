@@ -1,16 +1,8 @@
 import * as stylex from '@stylexjs/stylex'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import {
-	Link,
-	Outlet,
-	useLoaderData,
-	useMatchRoute,
-	useParams,
-} from '@tanstack/react-router'
+import { Link, Outlet, useMatchRoute, useParams } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
-import { topicQueries } from '~/modules/library/api/queries'
 import { colors } from '~/styles/colors.stylex'
 import { spacing } from '~/styles/tokens.stylex'
 
@@ -58,11 +50,8 @@ export function ReviewCardPageLayout() {
 	const { reviewCardId } = useParams({
 		from: '/review-cards/$reviewCardId',
 	})
-	const { topicId } = useLoaderData({
-		from: '/review-cards/$reviewCardId',
-	})
-
-	const { data: topic } = useSuspenseQuery(topicQueries.detail(topicId))
+	const topicId = 'learning-typescript'
+	const topicTitle = 'Learning TypeScript'
 
 	const matchRoute = useMatchRoute()
 	const activeTab = matchRoute({
@@ -82,7 +71,7 @@ export function ReviewCardPageLayout() {
 						{...stylex.props(styles.link)}
 					>
 						<ArrowLeft />
-						{topic.title}
+						{topicTitle}
 					</Link>
 					<TabsList aria-label='Review card sections'>
 						<TabsTrigger

@@ -1,10 +1,7 @@
 import * as stylex from '@stylexjs/stylex'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { useParams, useRouter } from '@tanstack/react-router'
 import { Check, Ellipsis, Flag, Trash2, Zap } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import { Hideable } from '~/components/Hideable'
 import {
 	Button,
@@ -15,11 +12,8 @@ import {
 	Separator,
 	Textarea,
 } from '~/components/ui'
-import { useAutoSave } from '~/hooks/useAutoSave'
-import { useDeleteReviewCard } from '~/modules/reviews/api/deleteReviewCard'
-import { reviewCardQueries } from '~/modules/reviews/api/queries'
-import { useUpdateReviewCard } from '~/modules/reviews/api/updateReviewCard'
 import { ReviewsSidebar } from '~/modules/reviews/components/ReviewsSidebar'
+import type { ReviewCard } from '~/modules/reviews/types/review.types'
 import { useHideMode } from '~/stores/HideMode'
 import { colors } from '~/styles/colors.stylex'
 import {
@@ -31,8 +25,19 @@ import {
 } from '~/styles/tokens.stylex'
 import { formatRelativeDate } from '~/utils/date'
 
-type EditableField = 'primary_text' | 'secondary_text' | 'notes'
-
+const reviewCard: ReviewCard = {
+	id: 'typescript-generics',
+	topic_id: 'learning-typescript',
+	type: 'flashcard',
+	primary_text: 'What problem do generics solve?',
+	secondary_text: 'They preserve type safety across reusable code.',
+	notes: 'Start with simple examples.',
+	stability: 8,
+	last_reviewed_at: '2026-07-28',
+	next_due_at: '2026-07-30',
+	freshness_tier: 'Fresh',
+	flagged_at: null,
+}
 const styles = stylex.create({
 	layout: {
 		display: 'flex',
@@ -76,11 +81,7 @@ const styles = stylex.create({
 		display: 'flex',
 		flexDirection: 'column',
 	},
-	footer: {
-		gap: spacing.md,
-		alignItems: 'center',
-		display: 'flex',
-	},
+	footer: { gap: spacing.md, alignItems: 'center', display: 'flex' },
 	metadata: {
 		gap: spacing.xl,
 		alignItems: 'center',
@@ -111,116 +112,43 @@ const styles = stylex.create({
 		fill: colors.iconFlagActive,
 		color: colors.iconFlagActive,
 	},
-	notesContainer: {
-		flexBasis: 0,
-		flexGrow: 1,
-		flexShrink: 1,
-	},
-	notes: {
-		blockSize: '100%',
-		inlineSize: '100%',
-
-		fontSize: fontSizes.md,
-	},
+	notesContainer: { flexBasis: 0, flexGrow: 1, flexShrink: 1 },
+	notes: { blockSize: '100%', fontSize: fontSizes.md, inlineSize: '100%' },
 })
 
 export function ReviewCardPageOverview() {
-	const { reviewCardId } = useParams({
-		from: '/review-cards/$reviewCardId',
-	})
-	const { data: reviewCard } = useSuspenseQuery(
-		reviewCardQueries.detail(reviewCardId),
-	)
-	const router = useRouter()
-	const { mutate } = useUpdateReviewCard()
-	const { isPending: isDeleting, mutateAsync: deleteReviewCard } =
-		useDeleteReviewCard()
 	const { hideMode } = useHideMode()
-
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 	const [secondaryRevealed, setSecondaryRevealed] = useState(false)
 	const [notesRevealed, setNotesRevealed] = useState(false)
-
-	const saveField = useCallback(
-		(field: EditableField, value: string) => {
-			if (value === reviewCard[field]) return
-			mutate({ id: reviewCard.id, [field]: value })
-		},
-		[mutate, reviewCard],
-	)
-	const primary = useAutoSave({
-		initialValue: reviewCard.primary_text,
-		onSave: value => saveField('primary_text', value),
-		key: `review-card-primary-${reviewCard.id}`,
-	})
-	const secondary = useAutoSave({
-		initialValue: reviewCard.secondary_text,
-		onSave: value => saveField('secondary_text', value),
-		key: `review-card-secondary-${reviewCard.id}`,
-	})
-	const notes = useAutoSave({
-		initialValue: reviewCard.notes,
-		onSave: value => saveField('notes', value),
-		key: `review-card-notes-${reviewCard.id}`,
-	})
-
-	const targetType = reviewCard.type === 'practice' ? 'flashcard' : 'practice'
-
 	useEffect(() => {
 		setSecondaryRevealed(false)
 		setNotesRevealed(false)
-	}, [hideMode, reviewCard.id])
-
-	const toggleFlag = () =>
-		mutate({ id: reviewCard.id, flagged: reviewCard.flagged_at === null })
-	const toggleType = () => mutate({ id: reviewCard.id, type: targetType })
-
-	const confirmDelete = async () => {
-		try {
-			await deleteReviewCard(reviewCard.id)
-		} catch {
-			return
-		}
-		setIsDeleteDialogOpen(false)
-		router.history.back()
-	}
-
+	}, [hideMode])
 	return (
 		<div {...stylex.props(styles.layout)}>
 			<main {...stylex.props(styles.main)}>
 				<div {...stylex.props(styles.content)}>
 					<Textarea
 						aria-label='Review-card primary text'
-						placeholder={
-							reviewCard.type === 'flashcard' ? 'Prompt' : 'Title'
-						}
-						value={primary.value}
-						onChange={primary.onChange}
-						onBlur={primary.flush}
+						readOnly
+						value={reviewCard.primary_text}
 						xstyle={styles.primary}
 					/>
 					<Hideable
 						revealed={
-							reviewCard.type === 'practice' || // always show if practice
-							hideMode === 'off' || // always show if hideMode off
+							reviewCard.type === 'practice' ||
+							hideMode === 'off' ||
 							secondaryRevealed
 						}
 						onRevealedChange={setSecondaryRevealed}
 					>
 						<Textarea
 							aria-label='Review-card secondary text'
-							placeholder={
-								reviewCard.type === 'flashcard'
-									? 'Answer'
-									: 'Add a description…'
-							}
-							value={secondary.value}
-							onChange={secondary.onChange}
-							onBlur={secondary.flush}
+							readOnly
+							value={reviewCard.secondary_text}
 							xstyle={styles.secondary}
 						/>
 					</Hideable>
-
 					<div {...stylex.props(styles.separatorGroup)}>
 						<div {...stylex.props(styles.footer)}>
 							<div {...stylex.props(styles.metadata)}>
@@ -246,9 +174,7 @@ export function ReviewCardPageOverview() {
 												{...stylex.props(
 													styles.metadataItem,
 												)}
-											>
-												{`Due ${formatRelativeDate(reviewCard.next_due_at)}`}
-											</span>
+											>{`Due ${formatRelativeDate(reviewCard.next_due_at)}`}</span>
 										) : null}
 										<span
 											{...stylex.props(
@@ -276,15 +202,14 @@ export function ReviewCardPageOverview() {
 									</>
 								)}
 							</div>
-
 							<div {...stylex.props(styles.actions)}>
 								{reviewCard.type === 'flashcard' ? (
 									<Button.Icon
 										aria-label='Unflashcard'
+										disabled
 										shape='round'
 										variant='ghost'
 										size='small'
-										onClick={toggleType}
 									>
 										<Zap
 											aria-hidden='true'
@@ -298,10 +223,10 @@ export function ReviewCardPageOverview() {
 								{reviewCard.flagged_at !== null ? (
 									<Button.Icon
 										aria-label='Unflag'
+										disabled
 										shape='round'
 										variant='ghost'
 										size='small'
-										onClick={toggleFlag}
 									>
 										<Flag
 											aria-hidden='true'
@@ -310,7 +235,6 @@ export function ReviewCardPageOverview() {
 										/>
 									</Button.Icon>
 								) : null}
-
 								<DropdownMenu>
 									<DropdownMenuTrigger
 										render={
@@ -328,7 +252,7 @@ export function ReviewCardPageOverview() {
 										/>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent align='end'>
-										<DropdownMenuItem onClick={toggleType}>
+										<DropdownMenuItem disabled>
 											<Zap
 												aria-hidden='true'
 												size={iconSizes.md}
@@ -343,7 +267,7 @@ export function ReviewCardPageOverview() {
 												? 'Unflashcard'
 												: 'Flashcard'}
 										</DropdownMenuItem>
-										<DropdownMenuItem onClick={toggleFlag}>
+										<DropdownMenuItem disabled>
 											<Flag
 												aria-hidden='true'
 												size={iconSizes.md}
@@ -358,12 +282,7 @@ export function ReviewCardPageOverview() {
 												? 'Unflag'
 												: 'Flag'}
 										</DropdownMenuItem>
-										<DropdownMenuItem
-											disabled={isDeleting}
-											onClick={() =>
-												setIsDeleteDialogOpen(true)
-											}
-										>
+										<DropdownMenuItem disabled>
 											<Trash2
 												aria-hidden='true'
 												size={iconSizes.md}
@@ -374,10 +293,8 @@ export function ReviewCardPageOverview() {
 								</DropdownMenu>
 							</div>
 						</div>
-
 						<Separator />
 					</div>
-
 					<Hideable
 						revealed={hideMode === 'off' || notesRevealed}
 						onRevealedChange={setNotesRevealed}
@@ -385,10 +302,8 @@ export function ReviewCardPageOverview() {
 					>
 						<Textarea
 							aria-label='Review-card notes'
-							placeholder='Add notes…'
-							value={notes.value}
-							onChange={notes.onChange}
-							onBlur={notes.flush}
+							readOnly
+							value={reviewCard.notes}
 							xstyle={styles.notes}
 						/>
 					</Hideable>
@@ -397,15 +312,6 @@ export function ReviewCardPageOverview() {
 			<aside>
 				<ReviewsSidebar />
 			</aside>
-
-			<DeleteConfirmationDialog
-				description='This will delete this review card and all linked reviews.'
-				isPending={isDeleting}
-				onConfirm={() => void confirmDelete()}
-				onOpenChange={setIsDeleteDialogOpen}
-				open={isDeleteDialogOpen}
-				title='Delete review card?'
-			/>
 		</div>
 	)
 }
