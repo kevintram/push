@@ -11,6 +11,13 @@
 				"VITE_WORKOS_CLIENT_ID": "${authEnv.WORKOS_CLIENT_ID}",
 				"VITE_WORKOS_REDIRECT_URI": "http://localhost:6179/callback"
 			}
+		},
+		"prod": {
+			"configure": {
+				"redirectUris": ["https://v2.app.3gulp.com/callback"],
+				"appHomepageUrl": "https://v2.app.3gulp.com",
+				"corsOrigins": ["https://v2.app.3gulp.com"]
+			}
 		}
 	}
 }
