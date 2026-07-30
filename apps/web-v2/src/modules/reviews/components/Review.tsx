@@ -10,9 +10,8 @@ import {
 	Trash2,
 	X,
 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
-import { DeleteConfirmationDialog } from '~/components/DeleteConfirmationDialog'
 import {
 	Button,
 	Dialog,
@@ -26,15 +25,11 @@ import {
 	DropdownMenuTrigger,
 	Textarea,
 } from '~/components/ui'
-import { useAutoSave } from '~/hooks/useAutoSave'
-import { useDeleteReview } from '~/modules/reviews/api/deleteReview'
-import { useUpdateReview } from '~/modules/reviews/api/updateReview'
 import { colors } from '~/styles/colors.stylex'
 import { fontSizes, iconSizes, radii, spacing } from '~/styles/tokens.stylex'
 import type { DateString } from '~/types/date'
-import { getTodayAsString } from '~/utils/date'
 
-import type { Rating, Review as ReviewModel } from '../types/review.types'
+import type { Review as ReviewModel } from '../types/review.types'
 import { ReviewDatePicker } from './ReviewDatePicker'
 
 const styles = stylex.create({
@@ -168,47 +163,7 @@ const ratings = {
 } as const
 
 export function Review({ review }: { review: ReviewModel }) {
-	const { isPending, mutate: updateReview } = useUpdateReview()
-	const { isPending: isDeleting, mutate: deleteReview } = useDeleteReview()
 	const [isOpen, setIsOpen] = useState(false)
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-	const updateRating = useCallback(
-		(rating: Rating | null) => {
-			const completionMatchesRating =
-				rating === null
-					? review.completed_at === null
-					: review.completed_at !== null
-			if (rating === review.rating && completionMatchesRating) return
-			const completedAt =
-				rating === null
-					? null
-					: ((review.completed_at as DateString | null) ??
-						getTodayAsString())
-			updateReview({
-				id: review.id,
-				rating,
-				completed_at: completedAt,
-			})
-		},
-		[review.completed_at, review.id, review.rating, updateReview],
-	)
-	const save = useCallback(
-		(field: 'description' | 'notes', value: string) => {
-			if (value === review[field]) return
-			updateReview({ id: review.id, [field]: value })
-		},
-		[review, updateReview],
-	)
-	const descriptionEditor = useAutoSave({
-		initialValue: review.description,
-		onSave: value => void save('description', value),
-		key: `review-description-${review.id}`,
-	})
-	const notesEditor = useAutoSave({
-		initialValue: review.notes,
-		onSave: value => void save('notes', value),
-		key: `review-notes-${review.id}`,
-	})
 
 	const rating = review.rating === null ? null : ratings[review.rating]
 	const RatingIcon = rating?.Icon ?? Circle
@@ -222,8 +177,6 @@ export function Review({ review }: { review: ReviewModel }) {
 		review.stability_before === null || review.stability_after === null
 			? null
 			: Math.round(review.stability_after - review.stability_before)
-	const effectiveDate = (review.completed_at ??
-		review.scheduled_at) as DateString | null
 	const stabilityChange =
 		stabilityDelta === null
 			? 'new'
@@ -232,30 +185,6 @@ export function Review({ review }: { review: ReviewModel }) {
 		stabilityDelta === null || stabilityDelta >= 0
 			? styles.positiveChange
 			: styles.negativeChange
-
-	const updateDate = useCallback(
-		(value: DateString | null) => {
-			if (review.completed_at !== null) {
-				updateReview({
-					id: review.id,
-					completed_at: value,
-					...(value === null ? { rating: null } : {}),
-				})
-			} else {
-				updateReview({ id: review.id, scheduled_at: value })
-			}
-		},
-		[review.completed_at, review.id, updateReview],
-	)
-
-	const handleDelete = () => {
-		deleteReview(review.id, {
-			onSuccess: () => {
-				setIsDeleteDialogOpen(false)
-				setIsOpen(false)
-			},
-		})
-	}
 
 	return (
 		<>
@@ -288,17 +217,10 @@ export function Review({ review }: { review: ReviewModel }) {
 							)}
 						</DropdownMenuTrigger>
 						<DropdownMenuContent>
-							<DropdownMenuRadioGroup
-								value={review.rating ?? ''}
-								onValueChange={value =>
-									void updateRating(
-										value === '' ? null : (value as Rating),
-									)
-								}
-							>
+							<DropdownMenuRadioGroup value={review.rating ?? ''}>
 								<DropdownMenuRadioItem
 									value=''
-									disabled={isPending}
+									disabled
 									prefix={
 										<Circle
 											aria-hidden='true'
@@ -313,7 +235,7 @@ export function Review({ review }: { review: ReviewModel }) {
 										<DropdownMenuRadioItem
 											key={value}
 											value={value}
-											disabled={isPending}
+											disabled
 											prefix={
 												<Icon
 													aria-hidden='true'
@@ -342,10 +264,12 @@ export function Review({ review }: { review: ReviewModel }) {
 					<div {...stylex.props(styles.footer)}>
 						<div {...stylex.props(styles.raised)}>
 							<ReviewDatePicker
-								disabled={isPending}
+								disabled
 								isCompleted={review.completed_at !== null}
-								onChange={updateDate}
-								value={effectiveDate}
+								value={
+									(review.completed_at ??
+										review.scheduled_at) as DateString | null
+								}
 							/>
 						</div>
 						{stabilityAfter !== null && (
@@ -379,10 +303,7 @@ export function Review({ review }: { review: ReviewModel }) {
 								/>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align='end'>
-								<DropdownMenuItem
-									disabled={isDeleting}
-									onClick={() => setIsDeleteDialogOpen(true)}
-								>
+								<DropdownMenuItem disabled>
 									<Trash2
 										aria-hidden='true'
 										size={iconSizes.md}
@@ -398,29 +319,19 @@ export function Review({ review }: { review: ReviewModel }) {
 					<Textarea
 						aria-label='Review description'
 						placeholder='Add a description…'
-						value={descriptionEditor.value}
-						onChange={descriptionEditor.onChange}
-						onBlur={descriptionEditor.flush}
+						readOnly
+						value={review.description}
 						xstyle={styles.descriptionEditor}
 					/>
 					<Textarea
 						aria-label='Review notes'
 						placeholder='Add notes…'
-						value={notesEditor.value}
-						onChange={notesEditor.onChange}
-						onBlur={notesEditor.flush}
+						readOnly
+						value={review.notes}
 						xstyle={styles.notesEditor}
 					/>
 				</DialogContent>
 			</Dialog>
-			<DeleteConfirmationDialog
-				description='This will delete this review.'
-				isPending={isDeleting}
-				onConfirm={() => void handleDelete()}
-				onOpenChange={setIsDeleteDialogOpen}
-				open={isDeleteDialogOpen}
-				title='Delete review?'
-			/>
 		</>
 	)
 }

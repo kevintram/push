@@ -42,7 +42,7 @@ const styles = stylex.create({
 interface ReviewDatePickerProps {
 	disabled?: boolean
 	isCompleted: boolean
-	onChange: (value: DateString | null) => void | Promise<void>
+	onChange?: (value: DateString | null) => void | Promise<void>
 	value: DateString | null
 }
 
@@ -66,12 +66,12 @@ export function ReviewDatePicker({
 
 	const selectDate = async (date: Date | undefined) => {
 		if (!date) return
-		await onChange(format(date, 'yyyy-MM-dd') as DateString)
+		if (onChange) await onChange(format(date, 'yyyy-MM-dd') as DateString)
 		setIsOpen(false)
 	}
 
 	const clearDate = async () => {
-		await onChange(null)
+		if (onChange) await onChange(null)
 		setIsOpen(false)
 	}
 
