@@ -18,10 +18,20 @@ type AdaptedAuthState = {
 
 type RedirectCallback = () => void
 
+const testAuthConfig = vi.hoisted(() => ({
+	convexUrl: 'https://example.convex.cloud',
+	workOsClientId: 'client_example',
+	workOsRedirectUri: 'https://example.com/callback',
+}))
+
 const authState = vi.hoisted(() => ({
 	authKit: undefined as AuthKitState | undefined,
 	convex: undefined as AdaptedAuthState | undefined,
 	onRedirectCallback: undefined as RedirectCallback | undefined,
+}))
+
+vi.mock('../authConfig', () => ({
+	readPublicAuthConfig: () => testAuthConfig,
 }))
 
 vi.mock('@workos-inc/authkit-react', () => ({
@@ -99,11 +109,11 @@ describe('AuthProvider', () => {
 		expect(convexProvider).toContainElement(existingProviders)
 		expect(authKitProvider).toHaveAttribute(
 			'data-client-id',
-			import.meta.env.VITE_WORKOS_CLIENT_ID,
+			testAuthConfig.workOsClientId,
 		)
 		expect(authKitProvider).toHaveAttribute(
 			'data-redirect-uri',
-			import.meta.env.VITE_WORKOS_REDIRECT_URI,
+			testAuthConfig.workOsRedirectUri,
 		)
 		expect(authState.convex).toMatchObject({
 			isLoading: true,
