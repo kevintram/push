@@ -66,19 +66,16 @@ supabase db push        # push new migrations to prod db
 
 ## Commit Guidelines
 
-This project follows [Conventional Commits](https://www.conventionalcommits.org/):
+**Format**: `<scope>[, <scope>...]: <description>`
 
-**Format**: `<type>(<scope>): <description>`
-
-**Types**: `feat`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`
-
-**Scopes**: `web`, `site`, `api`, `android`, `ios` (or omit for repo-wide changes)
+**Scopes**: `web`, `web-v2`, `site`, `api`, `android`, `ios` (or omit for repo-wide changes)
 
 **Examples**:
 ```
-feat(web): add dark mode toggle
-fix(api): handle non-existent user edge case
-chore: update root .gitignore
+web: add dark mode toggle
+api: handle non-existent user edge case
+web, api: update user authentication flow
+update root .gitignore
 ```
 ## Worktree and Environment Files
 
