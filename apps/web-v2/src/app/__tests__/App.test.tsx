@@ -1,48 +1,17 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	createMemoryHistory,
 	createRouter,
 	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { routeTree } from '~/app/routeTree.gen'
 import { HideModeProvider } from '~/stores/HideMode'
 
-vi.mock('~/modules/reviews/api/getReviewCards', () => ({
-	fetchReviewCard: async () => ({
-		id: '3',
-		topic_id: '1',
-		type: 'practice',
-		primary_text: 'Question',
-		secondary_text: 'Answer',
-		notes: 'Notes',
-		stability: null,
-		last_reviewed_at: null,
-		next_due_at: null,
-		freshness_tier: null,
-		flagged_at: null,
-	}),
-	fetchReviewCards: async () => [],
-}))
-
-vi.mock('~/modules/reviews/api/getReviews', () => ({
-	fetchReviews: async () => [],
-}))
-
-vi.mock('~/modules/library/api/getTopics', () => ({
-	fetchTopic: async () => ({ id: '1', title: 'Topic', body: '' }),
-	fetchTopics: async () => [],
-}))
-
 function renderRoute(path: string) {
-	const queryClient = new QueryClient()
 	const router = createRouter({
 		routeTree,
-		context: {
-			queryClient,
-		},
 		history: createMemoryHistory({
 			initialEntries: [path],
 		}),
@@ -50,9 +19,7 @@ function renderRoute(path: string) {
 
 	return render(
 		<HideModeProvider>
-			<QueryClientProvider client={queryClient}>
-				<RouterProvider context={{ queryClient }} router={router} />
-			</QueryClientProvider>
+			<RouterProvider router={router} />
 		</HideModeProvider>,
 	)
 }
@@ -96,11 +63,10 @@ describe('v2 app setup', () => {
 
 		expect(
 			await screen.findByLabelText('Review-card primary text'),
-		).toHaveValue('Question')
-		expect(screen.getByRole('link', { name: 'Topic' })).toHaveAttribute(
-			'href',
-			'/library/1',
-		)
+		).toHaveValue('What problem do generics solve?')
+		expect(
+			screen.getByRole('link', { name: 'Learning TypeScript' }),
+		).toHaveAttribute('href', '/library/learning-typescript')
 		expect(
 			screen.queryByRole('navigation', { name: 'Library topics' }),
 		).not.toBeInTheDocument()
@@ -109,7 +75,9 @@ describe('v2 app setup', () => {
 	it('renders review history under the standalone review-card route', async () => {
 		renderRoute('/review-cards/3/reviews')
 
-		expect(await screen.findByText('No reviews yet.')).toBeInTheDocument()
+		expect(
+			await screen.findByText('Correctly described generics.'),
+		).toBeInTheDocument()
 	})
 
 	it('renders the not found route', async () => {
