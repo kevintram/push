@@ -81,7 +81,6 @@ describe('v2 app setup', () => {
 		['/flagged', 'Flagged'],
 		['/recent', 'Recent'],
 		['/pinned', 'Pinned'],
-		['/library', 'Library'],
 		['/settings', 'Settings'],
 	])('renders the %s route', async (path, heading) => {
 		renderRoute(path)
@@ -89,6 +88,17 @@ describe('v2 app setup', () => {
 		expect(
 			await screen.findByRole('heading', { name: heading }),
 		).toBeInTheDocument()
+	})
+
+	it('renders the blank library index route', async () => {
+		renderRoute('/library')
+
+		expect(
+			await screen.findByRole('navigation', { name: 'Library topics' }),
+		).toBeInTheDocument()
+		expect(
+			screen.queryByRole('heading', { name: 'Library' }),
+		).not.toBeInTheDocument()
 	})
 
 	it('renders a review card at its standalone route', async () => {
